@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Crystal Orb BigBang UI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background: radial-gradient(circle at center, #0f1026 0%, #030308 100%);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      touch-action: none;
+    }
+    #spaceCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .hud {
+      position: relative;
+      z-index: 10;
+      margin-top: 40px;
+      text-align: center;
+    }
+    .hud h1 {
+      font-size: 1.15rem;
+      letter-spacing: 3px;
+      color: #b5c2ff;
+      text-transform: uppercase;
+    }
+    .hud p {
+      font-size: 0.8rem;
+      color: #6d738f;
+      margin-top: 6px;
+    }
+
+    /* 메인 화면 컨텍스트 */
+    .viewport-card {
+      position: relative;
+      z-index: 5;
+      width: 86%;
+      max-width: 360px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .viewport-card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
+    .viewport-card p {
+      font-size: 0.85rem;
+      color: #9ba1ba;
+      line-height: 1.5;
+    }
+
+    /* 하단 수정구슬 영역 */
+    .bottom-bar {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    /* 수정구슬 쉘(Shell) */
+    .crystal-ball {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(0, 0, 0, 0.7) 100%);
+      box-shadow: 
+        inset 0 0 20px rgba(255, 255, 255, 0.3),
+        inset -5px -5px 15px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(110, 130, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.1s;
+    }
+    .crystal-ball::before {
+      /* 상단 유리 반사광 */
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 18px;
+      width: 32px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, transparent 80%);
+      transform: rotate(-25deg);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* 구슬 내부 미래 투영 홀로그램 (Peeking Vision) */
+    .orb-vision {
+      position: absolute;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6px;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.15s, transform 0.15s, filter 0.15s;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .orb-vision .icon {
+      font-size: 1.4rem;
+      margin-bottom: 2px;
+    }
+    .orb-vision .label {
+      font-size: 0.58rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      line-height: 1.1;
+      white-space: pre-line;
+    }
+
+    .telemetry {
+      font-family: monospace;
+      font-size: 0.72rem;
+      color: #585e78;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="spaceCanvas"></canvas>
+
+  <div class="hud">
+    <h1>Crystal Orb Gateway</h1>
+    <p>손끝으로 구슬을 지그시 눌러 비치는 미래를 확인하세요</p>
+  </div>
+
+  <div id="viewCard" class="viewport-card">
+    <h2 id="viewTitle">현재 차원: 홈 대시보드</h2>
+    <p id="viewDesc">구슬에 손가락을 대면 다음 기능과 미래의 화면이 구슬 속에 실시간으로 맺힙니다.</p>
+  </div>
+
+  <div class="bottom-bar">
+    <div id="crystalBall" class="crystal-ball">
+      <div id="orbVision" class="orb-vision">
+        <div id="visionIcon" class="icon">✨</div>
+        <div id="visionLabel" class="label">미래 투영 중</div>
+      </div>
+    </div>
+    <div id="telemetry" class="telemetry">Orb State: SLEEPING</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("spaceCanvas");
+    const ctx = canvas.getContext("2d");
+    const ball = document.getElementById("crystalBall");
+    const vision = document.getElementById("orbVision");
+    const visionIcon = document.getElementById("visionIcon");
+    const visionLabel = document.getElementById("visionLabel");
+    const viewCard = document.getElementById("viewCard");
+    const viewTitle = document.getElementById("viewTitle");
+    const viewDesc = document.getElementById("viewDesc");
+    const telemetry = document.getElementById("telemetry");
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    let isGazing = false;
+    let gazeStartTime = 0;
+    let forceLevel = 0; // 0.0 ~ 1.0
+    let targetForce = 0;
+    let particles = [];
+
+    function triggerBigBang(x, y, isDeep) {
+      particles = [];
+      const count = 130;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = isDeep ? (Math.random() * 12 + 4) : (Math.random() * 7 + 2);
+        particles.push({
+          x: x,
+          y: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          radius: Math.random() * 3.5 + 1,
+          color: isDeep ? `hsl(${Math.random() * 40 + 300}, 100%, 70%)` : `hsl(${Math.random() * 40 + 180}, 100%, 75%)`,
+          alpha: 1.0,
+          decay: Math.random() * 0.02 + 0.015
+        });
+      }
+    }
+
+    function onStart(e) {
+      if (e.cancelable) e.preventDefault();
+      isGazing = true;
+      gazeStartTime = performance.now();
+      targetForce = 0.2;
+
+      vision.style.opacity = "1";
+      vision.style.transform = "scale(0.85)";
+      ball.style.boxShadow = "0 0 35px rgba(0, 240, 255, 0.4)";
+    }
+
+    function onMove(e) {
+      if (!isGazing) return;
+      const touch = e.touches ? e.touches[0] : null;
+      if (touch && touch.force > 0) {
+        targetForce = touch.force;
+      }
+    }
+
+    function onEnd(e) {
+      if (!isGazing) return;
+      isGazing = false;
+
+      const duration = performance.now() - gazeStartTime;
+      const rect = ball.getBoundingClientRect();
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top + rect.height / 2;
+
+      if (duration < 220 && forceLevel < 0.3) {
+        // [1순위: 가벼운 탭 ➔ 맑은 빛 즉시 실행]
+        triggerBigBang(originX, originY, false);
+        viewTitle.textContent = "✨ 1순위: 즉시 요약 실행";
+        viewTitle.style.color = "#00f0ff";
+        viewDesc.textContent = "수정구슬 속에 보였던 가장 명확한 핵심 액션이 현실 화면으로 펼쳐졌습니다.";
+        viewCard.style.borderColor = "rgba(0, 240, 255, 0.5)";
+      } 
+      else if (forceLevel >= 0.3 && forceLevel < 0.7) {
+        // [화이트홀 수렴 전이]
+        triggerBigBang(originX, originY, false);
+        viewTitle.textContent = "🔮 타로 1장 뽑기 전이";
+        viewTitle.style.color = "#a2b4ff";
+        viewDesc.textContent = "구슬 속 맑은 예지가 화면 전체로 확장되어 오늘의 운명 카드가 펼쳐집니다.";
+        viewCard.style.borderColor = "rgba(162, 180, 255, 0.5)";
+      } 
+      else {
+        // [블랙홀 빅뱅 전이]
+        triggerBigBang(originX, originY, true);
+        viewTitle.textContent = "💥 다차원 AI 심층 리딩 폭발";
+        viewTitle.style.color = "#ff0099";
+        viewDesc.textContent = "구슬 속 깊은 우주가 폭발하며 78장의 카드 전체 맥락과 AI 심층 운명 리포트가 생성되었습니다.";
+        viewCard.style.borderColor = "rgba(255, 0, 153, 0.6)";
+      }
+
+      // 리셋
+      vision.style.opacity = "0";
+      vision.style.transform = "scale(0.6)";
+      ball.style.boxShadow = "0 0 30px rgba(110, 130, 255, 0.2)";
+      telemetry.textContent = "Orb State: MANIFESTED (0s)";
+      forceLevel = 0;
+      targetForce = 0;
+    }
+
+    // 마우스 에뮬레이션
+    let pressTimer = null;
+    ball.addEventListener("mousedown", (e) => {
+      onStart(e);
+      pressTimer = setInterval(() => {
+        if (isGazing) {
+          targetForce = Math.min(1.0, targetForce + 0.04);
+        }
+      }, 30);
+    });
+    window.addEventListener("mouseup", (e) => {
+      clearInterval(pressTimer);
+      onEnd(e);
+    });
+
+    ball.addEventListener("touchstart", onStart, { passive: false });
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd);
+
+    // 렌더링 루프
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (isGazing) {
+        forceLevel += (targetForce - forceLevel) * 0.15;
+        const percent = (forceLevel * 100).toFixed(0);
+
+        if (forceLevel < 0.3) {
+          visionIcon.textContent = "⚡";
+          visionLabel.textContent = "즉시 탭\n[빠른 실행]";
+          vision.style.color = "#fff";
+          vision.style.textShadow = "0 0 8px #fff";
+          ball.style.boxShadow = "0 0 25px rgba(255, 255, 255, 0.5)";
+          telemetry.textContent = `Orb Vision: CLEAR FOCUS (${percent}%)`;
+        } 
+        else if (forceLevel >= 0.3 && forceLevel < 0.7) {
+          visionIcon.textContent = "🔮";
+          visionLabel.textContent = "화이트홀 예지\n[오늘의 카드]";
+          vision.style.color = "#00f0ff";
+          vision.style.textShadow = "0 0 12px #00f0ff";
+          ball.style.boxShadow = "0 0 35px rgba(0, 240, 255, 0.6)";
+          telemetry.textContent = `Orb Vision: WHITEHOLE PEEK (${percent}%)`;
+        } 
+        else {
+          visionIcon.textContent = "🌌";
+          visionLabel.textContent = "블랙홀 빅뱅\n[전체 심층 리포트]";
+          vision.style.color = "#ff0099";
+          vision.style.textShadow = "0 0 16px #ff0099";
+          ball.style.boxShadow = "0 0 45px rgba(255, 0, 153, 0.8)";
+          telemetry.textContent = `Orb Vision: BIGBANG MATRIX (${percent}%)`;
+        }
+      }
+
+      // 파티클 드로잉
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      requestAnimationFrame(render);
+    }
+    render();
+  </script>
+</body>
+</html>

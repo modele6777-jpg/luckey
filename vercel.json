@@ -1,0 +1,123 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 60,
+      "includeFiles": "server/**"
+    },
+    "api/ai/tts.ts": {
+      "maxDuration": 60,
+      "includeFiles": "server/**"
+    },
+    "api/ai/daily-bgm.ts": {
+      "maxDuration": 60,
+      "includeFiles": "server/**"
+    },
+    "api/muse/docent.ts": {
+      "maxDuration": 60,
+      "includeFiles": "server/**"
+    },
+    "api/bluebird/docent.ts": {
+      "maxDuration": 60,
+      "includeFiles": "server/**"
+    },
+    "api/muse/artwork-image.ts": {
+      "maxDuration": 60,
+      "includeFiles": "server/**"
+    },
+    "api/muse/artwork-image/proxy.ts": {
+      "maxDuration": 30,
+      "includeFiles": "server/**"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(orb|gateway|crystal|orb\\.html)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/(sw\\.js|registerSW\\.js)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/ai/tts",
+      "destination": "/api/ai/tts"
+    },
+    {
+      "source": "/api/ai/daily-bgm",
+      "destination": "/api/ai/daily-bgm"
+    },
+    {
+      "source": "/api/muse/artwork-image/proxy",
+      "destination": "/api/muse/artwork-image/proxy"
+    },
+    {
+      "source": "/api/muse/artwork-image",
+      "destination": "/api/muse/artwork-image"
+    },
+    {
+      "source": "/api/muse/docent",
+      "destination": "/api/muse/docent"
+    },
+    {
+      "source": "/api/bluebird/docent",
+      "destination": "/api/bluebird/docent"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/chat",
+      "destination": "/chat.html"
+    },
+    {
+      "source": "/lucy",
+      "destination": "/chat.html"
+    },
+    {
+      "source": "/handbook",
+      "destination": "/handbook.html"
+    },
+    {
+      "source": "/handbook/(.*)",
+      "destination": "/handbook.html"
+    },
+    {
+      "source": "/orb",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gateway",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/crystal",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

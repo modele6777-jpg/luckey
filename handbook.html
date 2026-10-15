@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script>
+      // Immediate cleanup of stale ServiceWorker & caches on localhost
+      if (typeof window !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (var i = 0; i < registrations.length; i++) {
+              registrations[i].unregister();
+            }
+          }).catch(function() {});
+        }
+      }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>PRISM 핸드북 & 바이블 (PRISM HANDBOOK & BIBLE)</title>
+    
+    <!-- PWA & Mobile Meta Tags -->
+    <meta name="application-name" content="프리즘핸드북" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="프리즘핸드북" />
+    <meta name="theme-color" content="#0E051D" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/handbook-icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/handbook-icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/handbook-icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-handbook.png" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest-handbook.webmanifest" />
+
+    <!-- Instant redirect to SPA /handbook route if opened directly -->
+    <script>
+      (function() {
+        if (window.location.pathname === '/handbook.html') {
+          try {
+            window.history.replaceState(null, '', '/handbook' + window.location.search);
+          } catch(e) {
+            window.location.replace('/handbook' + window.location.search);
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body class="bg-[#05010a] text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

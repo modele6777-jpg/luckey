@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    /* Defensive patch for iframe sandbox where window.fetch has only a getter */
+    (function() {
+      try {
+        function makeFetchWritable(obj) {
+          try {
+            if (!obj) return;
+            var desc = Object.getOwnPropertyDescriptor(obj, 'fetch');
+            if (desc && desc.get && !desc.set) {
+              var activeFetch = desc.get.call(obj) || window.fetch;
+              Object.defineProperty(obj, 'fetch', {
+                configurable: true,
+                enumerable: desc.enumerable !== undefined ? desc.enumerable : true,
+                get: function() { return activeFetch; },
+                set: function(fn) { activeFetch = fn; }
+              });
+            } else if (!desc || (desc.configurable && (!desc.writable && !desc.set))) {
+              var curr = obj.fetch;
+              Object.defineProperty(obj, 'fetch', {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: curr
+              });
+            }
+          } catch (e) {}
+        }
+        makeFetchWritable(window);
+        if (typeof Window !== 'undefined' && Window.prototype) {
+          makeFetchWritable(Window.prototype);
+        }
+        var origDefine = Object.defineProperty;
+        Object.defineProperty = function(obj, prop, descriptor) {
+          if ((obj === window || (typeof Window !== 'undefined' && obj === Window.prototype)) && prop === 'fetch' && descriptor) {
+            var customFetch = null;
+            var origGet = descriptor.get;
+            var origSet = descriptor.set;
+            var patched = {
+              configurable: true,
+              enumerable: descriptor.enumerable !== undefined ? descriptor.enumerable : true,
+              get: function() {
+                if (customFetch !== null) return customFetch;
+                if (origGet) return origGet.call(this);
+                return descriptor.value;
+              },
+              set: function(val) {
+                customFetch = val;
+                if (origSet) {
+                  try { origSet.call(this, val); } catch (e) {}
+                }
+              }
+            };
+            return origDefine.call(Object, obj, prop, patched);
+          }
+          return origDefine.apply(Object, arguments);
+        };
+      } catch (err) {}
+    })();
+
+    // 0-B. Instant parent handshake to dismiss parent cosmic loader immediately
+    (function() {
+      function notifyReady() {
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'CALM_FRAME_READY' }, '*');
+          }
+        } catch (_) {}
+      }
+      notifyReady();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', notifyReady);
+      }
+      window.addEventListener('load', notifyReady);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Key - 왜 나는 불안할까 | 제이미 저커먼 도서 연동 마음 치유 동반자</title>
+  <meta name="description" content="제이미 저커먼 박사의 도서 '왜 나는 불안할까'와 함께 읽으며 시너지를 내는 프리미엄 독서 동반자 & 40가지 마음 연습 실천 스튜디오">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <!-- PWA Settings -->
+  <link rel="manifest" href="./manifest.json?v=11.0">
+  <meta name="theme-color" content="#fcf9f5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Key">
+  <link rel="icon" type="image/png" sizes="48x48" href="./favicon.png?v=11.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=11.0">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./style.css?v=34.0">
+  <style id="organic-balloon-breathing-css">
+    /* Fluid Organic Balloon Breathing Sequence */
+    .balloon-stage-area {
+      position: relative;
+      height: 290px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 28px 0;
+      overflow: visible;
+      perspective: 1000px;
+    }
+
+    .balloon-aura-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 150px;
+      height: 150px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .balloon-aura-ring {
+      position: absolute;
+      inset: -16px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(224, 169, 109, 0.45);
+      border-top-color: rgba(251, 191, 36, 0.72);
+      border-bottom-color: rgba(162, 89, 59, 0.35);
+      background: radial-gradient(circle, rgba(224, 169, 109, 0.12) 0%, rgba(162, 89, 59, 0.03) 70%, transparent 100%);
+      opacity: 0.25;
+      transform: scale(0.9) rotate(0deg);
+      transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+      filter: blur(0.5px);
+      will-change: transform, opacity, box-shadow;
+      transform-origin: center center;
+    }
+
+    .balloon-aura-ring.ring-2 {
+      inset: -36px;
+      border: 1px solid rgba(224, 169, 109, 0.28);
+      border-left-color: rgba(245, 158, 11, 0.58);
+      border-right-color: rgba(251, 191, 36, 0.36);
+      opacity: 0.15;
+    }
+
+    .balloon-aura-ring.ring-3 {
+      inset: -62px;
+      border: 1px dashed rgba(217, 119, 6, 0.22);
+      border-top-color: rgba(254, 240, 138, 0.48);
+      border-bottom-color: rgba(224, 169, 109, 0.18);
+      opacity: 0.1;
+    }
+
+    .organic-balloon {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #f6cf9c 0%, #e0a96d 35%, #b86b43 72%, #7e3a20 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 14px 40px rgba(162, 89, 59, 0.38), 0 0 25px rgba(224, 169, 109, 0.22);
+      z-index: 2;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      will-change: transform, border-radius, box-shadow;
+      transform-origin: center center;
+      transform: scale(1);
+      transition: box-shadow 0.6s ease;
+    }
+
+    .organic-balloon::before {
+      content: "";
+      position: absolute;
+      top: 10%;
+      left: 15%;
+      width: 45%;
+      height: 30%;
+      border-radius: 50% 50% 40% 40%;
+      background: radial-gradient(ellipse at 40% 30%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0) 75%);
+      pointer-events: none;
+      filter: blur(2px);
+      transform: rotate(-15deg);
+      transition: opacity 1.5s ease;
+    }
+
+    .organic-balloon::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border-radius: inherit;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: inset 0 2px 12px rgba(255, 255, 255, 0.4), inset 0 -6px 16px rgba(0, 0, 0, 0.25);
+      pointer-events: none;
+    }
+
+    .balloon-glow-core {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 35% 30%, rgba(255, 235, 200, 0.4) 0%, rgba(245, 158, 11, 0.15) 45%, transparent 70%);
+      pointer-events: none;
+      opacity: 0.7;
+      transition: opacity 2s ease;
+    }
+
+    .organic-balloon .b-phase {
+      position: relative;
+      z-index: 3;
+      font-size: 0.92rem;
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      padding: 0 12px;
+      transition: all 0.4s ease;
+    }
+
+    .organic-balloon .b-timer {
+      position: relative;
+      z-index: 3;
+      font-size: 1.75rem;
+      font-weight: 800;
+      font-family: 'Cinzel', serif, sans-serif;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+
+    /* 1. INHALE PHASE: 5s Fluid Organic Morphing & Diaphragmatic Blob Expansion */
+    .organic-balloon.phase-inhale {
+      animation: organicBalloonInflate 5s cubic-bezier(0.33, 0, 0.18, 1) forwards;
+    }
+    .balloon-stage-area.phase-inhale .balloon-aura-ring.ring-1 {
+      animation: auraInflate1 5s cubic-bezier(0.33, 0, 0.18, 1) forwards;
+    }
+    .balloon-stage-area.phase-inhale .balloon-aura-ring.ring-2 {
+      animation: auraInflate2 5s cubic-bezier(0.33, 0, 0.18, 1) forwards;
+    }
+    .balloon-stage-area.phase-inhale .balloon-aura-ring.ring-3 {
+      animation: auraInflate3 5s cubic-bezier(0.33, 0, 0.18, 1) forwards;
+    }
+
+    @keyframes organicBalloonInflate {
+      0% {
+        transform: scale(0.85) translateY(4px) rotate(0deg);
+        border-radius: 48% 52% 49% 51% / 52% 48% 52% 48%;
+        box-shadow: 0 8px 24px rgba(162, 89, 59, 0.25), 0 0 12px rgba(224, 169, 109, 0.15);
+        background: radial-gradient(circle at 35% 35%, #e0a96d 0%, #b86b43 60%, #7e3a20 100%);
+      }
+      15% {
+        transform: scale(0.97) translateY(2px) rotate(0.8deg);
+        border-radius: 54% 46% 58% 42% / 46% 55% 45% 54%;
+        box-shadow: 0 10px 28px rgba(162, 89, 59, 0.28), 0 0 16px rgba(224, 169, 109, 0.18);
+      }
+      32% {
+        transform: scale(1.14) translateY(-1px) rotate(-1.2deg);
+        border-radius: 44% 56% 41% 59% / 58% 43% 57% 42%;
+        box-shadow: 0 13px 36px rgba(162, 89, 59, 0.35), 0 0 24px rgba(245, 158, 11, 0.24);
+      }
+      50% {
+        transform: scale(1.29) translateY(-3.5px) rotate(1.4deg);
+        border-radius: 59% 41% 55% 45% / 42% 59% 41% 58%;
+        box-shadow: 0 17px 46px rgba(162, 89, 59, 0.42), 0 0 36px rgba(245, 158, 11, 0.32);
+      }
+      68% {
+        transform: scale(1.42) translateY(-6px) rotate(-0.9deg);
+        border-radius: 46% 54% 61% 39% / 56% 45% 55% 44%;
+        box-shadow: 0 20px 55px rgba(162, 89, 59, 0.45), 0 0 46px rgba(245, 158, 11, 0.36);
+      }
+      84% {
+        transform: scale(1.50) translateY(-7.5px) rotate(0.6deg);
+        border-radius: 55% 45% 47% 53% / 47% 54% 46% 53%;
+        box-shadow: 0 22px 62px rgba(162, 89, 59, 0.48), 0 0 52px rgba(245, 158, 11, 0.39);
+      }
+      100% {
+        transform: scale(1.52) translateY(-8px) rotate(0deg);
+        border-radius: 52% 48% 53% 47% / 49% 52% 48% 51%;
+        box-shadow: 0 22px 65px rgba(162, 89, 59, 0.48), 0 0 55px rgba(245, 158, 11, 0.4);
+        background: radial-gradient(circle at 30% 25%, #fbe3c1 0%, #e0a96d 38%, #b86b43 75%, #7e3a20 100%);
+      }
+    }
+
+    @keyframes auraInflate1 {
+      0% {
+        transform: scale(0.85) translateY(4px) rotate(0deg);
+        opacity: 0.18;
+        box-shadow: 0 0 10px rgba(224, 169, 109, 0.12);
+      }
+      15% {
+        transform: scale(1.02) translateY(2px) rotate(4deg);
+        opacity: 0.28;
+        box-shadow: 0 0 16px rgba(224, 169, 109, 0.2);
+      }
+      32% {
+        transform: scale(1.19) translateY(-1px) rotate(11deg);
+        opacity: 0.38;
+        box-shadow: 0 0 24px rgba(224, 169, 109, 0.3);
+      }
+      50% {
+        transform: scale(1.36) translateY(-3.5px) rotate(19deg);
+        opacity: 0.48;
+        box-shadow: 0 0 30px rgba(245, 158, 11, 0.38);
+      }
+      68% {
+        transform: scale(1.50) translateY(-6px) rotate(27deg);
+        opacity: 0.58;
+        box-shadow: 0 0 38px rgba(245, 158, 11, 0.45);
+      }
+      84% {
+        transform: scale(1.60) translateY(-7.5px) rotate(33deg);
+        opacity: 0.64;
+        box-shadow: 0 0 44px rgba(245, 158, 11, 0.5);
+      }
+      100% {
+        transform: scale(1.66) translateY(-8px) rotate(36deg);
+        opacity: 0.68;
+        box-shadow: 0 0 48px rgba(245, 158, 11, 0.55);
+      }
+    }
+
+    @keyframes auraInflate2 {
+      0% {
+        transform: scale(0.88) translateY(4px) rotate(0deg);
+        opacity: 0.10;
+        box-shadow: 0 0 12px rgba(224, 169, 109, 0.08);
+      }
+      15% {
+        transform: scale(1.05) translateY(2px) rotate(-6deg);
+        opacity: 0.16;
+        box-shadow: 0 0 18px rgba(224, 169, 109, 0.15);
+      }
+      32% {
+        transform: scale(1.26) translateY(-1px) rotate(-16deg);
+        opacity: 0.24;
+        box-shadow: 0 0 26px rgba(224, 169, 109, 0.22);
+      }
+      50% {
+        transform: scale(1.48) translateY(-3.5px) rotate(-28deg);
+        opacity: 0.33;
+        box-shadow: 0 0 34px rgba(245, 158, 11, 0.3);
+      }
+      68% {
+        transform: scale(1.66) translateY(-6px) rotate(-38deg);
+        opacity: 0.39;
+        box-shadow: 0 0 42px rgba(245, 158, 11, 0.36);
+      }
+      84% {
+        transform: scale(1.78) translateY(-7.5px) rotate(-45deg);
+        opacity: 0.43;
+        box-shadow: 0 0 48px rgba(245, 158, 11, 0.4);
+      }
+      100% {
+        transform: scale(1.86) translateY(-8px) rotate(-48deg);
+        opacity: 0.46;
+        box-shadow: 0 0 52px rgba(245, 158, 11, 0.42);
+      }
+    }
+
+    @keyframes auraInflate3 {
+      0% {
+        transform: scale(0.92) translateY(4px) rotate(0deg);
+        opacity: 0.05;
+        box-shadow: 0 0 14px rgba(217, 119, 6, 0.04);
+      }
+      15% {
+        transform: scale(1.10) translateY(2px) rotate(3deg);
+        opacity: 0.10;
+        box-shadow: 0 0 20px rgba(217, 119, 6, 0.08);
+      }
+      32% {
+        transform: scale(1.34) translateY(-1px) rotate(8deg);
+        opacity: 0.16;
+        box-shadow: 0 0 28px rgba(217, 119, 6, 0.14);
+      }
+      50% {
+        transform: scale(1.60) translateY(-3.5px) rotate(14deg);
+        opacity: 0.22;
+        box-shadow: 0 0 36px rgba(217, 119, 6, 0.2);
+      }
+      68% {
+        transform: scale(1.82) translateY(-6px) rotate(20deg);
+        opacity: 0.26;
+        box-shadow: 0 0 44px rgba(217, 119, 6, 0.24);
+      }
+      84% {
+        transform: scale(1.98) translateY(-7.5px) rotate(25deg);
+        opacity: 0.29;
+        box-shadow: 0 0 50px rgba(217, 119, 6, 0.28);
+      }
+      100% {
+        transform: scale(2.08) translateY(-8px) rotate(28deg);
+        opacity: 0.32;
+        box-shadow: 0 0 56px rgba(217, 119, 6, 0.3);
+      }
+    }
+
+    /* 2. HOLD PHASE: 2s Suspended Weightless Float */
+    .organic-balloon.phase-hold {
+      animation: organicBalloonHold 2s ease-in-out infinite alternate;
+    }
+    .balloon-stage-area.phase-hold .balloon-aura-ring.ring-1 {
+      animation: auraHoldPulse1 2s ease-in-out infinite alternate;
+    }
+    .balloon-stage-area.phase-hold .balloon-aura-ring.ring-2 {
+      animation: auraHoldPulse2 2s ease-in-out infinite alternate;
+    }
+    .balloon-stage-area.phase-hold .balloon-aura-ring.ring-3 {
+      animation: auraHoldPulse3 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes organicBalloonHold {
+      0% {
+        transform: scale(1.52) translateY(-8px) rotate(0deg);
+        border-radius: 52% 48% 53% 47% / 49% 52% 48% 51%;
+        box-shadow: 0 22px 65px rgba(162, 89, 59, 0.48), 0 0 55px rgba(245, 158, 11, 0.4);
+      }
+      100% {
+        transform: scale(1.55) translateY(-11px) rotate(1deg);
+        border-radius: 48% 52% 47% 53% / 53% 48% 52% 47%;
+        box-shadow: 0 26px 75px rgba(162, 89, 59, 0.55), 0 0 65px rgba(245, 158, 11, 0.5);
+      }
+    }
+
+    @keyframes auraHoldPulse1 {
+      0% {
+        transform: scale(1.66) translateY(-8px) rotate(36deg);
+        opacity: 0.68;
+        box-shadow: 0 0 48px rgba(245, 158, 11, 0.55);
+      }
+      100% {
+        transform: scale(1.72) translateY(-11px) rotate(42deg);
+        opacity: 0.82;
+        box-shadow: 0 0 60px rgba(245, 158, 11, 0.68);
+      }
+    }
+
+    @keyframes auraHoldPulse2 {
+      0% {
+        transform: scale(1.86) translateY(-8px) rotate(-48deg);
+        opacity: 0.46;
+        box-shadow: 0 0 52px rgba(245, 158, 11, 0.42);
+      }
+      100% {
+        transform: scale(1.92) translateY(-11px) rotate(-55deg);
+        opacity: 0.56;
+        box-shadow: 0 0 64px rgba(245, 158, 11, 0.5);
+      }
+    }
+
+    @keyframes auraHoldPulse3 {
+      0% {
+        transform: scale(2.08) translateY(-8px) rotate(28deg);
+        opacity: 0.32;
+        box-shadow: 0 0 56px rgba(217, 119, 6, 0.3);
+      }
+      100% {
+        transform: scale(2.15) translateY(-11px) rotate(34deg);
+        opacity: 0.40;
+        box-shadow: 0 0 68px rgba(217, 119, 6, 0.38);
+      }
+    }
+
+    /* 3. EXHALE PHASE: 5s Fluid Organic Deflation & Synchronized Contracting Pulse */
+    .organic-balloon.phase-exhale {
+      animation: organicBalloonDeflate 5s cubic-bezier(0.28, 0.05, 0.22, 1) forwards;
+    }
+    .balloon-stage-area.phase-exhale .balloon-aura-ring.ring-1 {
+      animation: auraDeflate1 5s cubic-bezier(0.28, 0.05, 0.22, 1) forwards;
+    }
+    .balloon-stage-area.phase-exhale .balloon-aura-ring.ring-2 {
+      animation: auraDeflate2 5s cubic-bezier(0.28, 0.05, 0.22, 1) forwards;
+    }
+    .balloon-stage-area.phase-exhale .balloon-aura-ring.ring-3 {
+      animation: auraDeflate3 5s cubic-bezier(0.28, 0.05, 0.22, 1) forwards;
+    }
+
+    @keyframes organicBalloonDeflate {
+      0% {
+        transform: scale(1.52) translateY(-8px) rotate(0deg);
+        border-radius: 52% 48% 53% 47% / 49% 52% 48% 51%;
+        box-shadow: 0 22px 65px rgba(162, 89, 59, 0.48), 0 0 55px rgba(245, 158, 11, 0.4);
+        background: radial-gradient(circle at 30% 25%, #fbe3c1 0%, #e0a96d 38%, #b86b43 75%, #7e3a20 100%);
+      }
+      20% {
+        transform: scale(1.39) translateY(-6px) rotate(-0.7deg);
+        border-radius: 47% 53% 44% 56% / 54% 46% 54% 46%;
+      }
+      45% {
+        transform: scale(1.21) translateY(-3px) rotate(1deg);
+        border-radius: 56% 44% 57% 43% / 44% 57% 43% 56%;
+        box-shadow: 0 16px 45px rgba(162, 89, 59, 0.38), 0 0 32px rgba(245, 158, 11, 0.28);
+      }
+      70% {
+        transform: scale(1.04) translateY(0px) rotate(-0.5deg);
+        border-radius: 45% 55% 43% 57% / 55% 45% 55% 45%;
+        box-shadow: 0 12px 32px rgba(162, 89, 59, 0.3), 0 0 20px rgba(224, 169, 109, 0.2);
+      }
+      100% {
+        transform: scale(0.85) translateY(4px) rotate(0deg);
+        border-radius: 48% 52% 49% 51% / 52% 48% 52% 48%;
+        box-shadow: 0 8px 24px rgba(162, 89, 59, 0.25), 0 0 12px rgba(224, 169, 109, 0.15);
+        background: radial-gradient(circle at 35% 35%, #e0a96d 0%, #b86b43 60%, #7e3a20 100%);
+      }
+    }
+
+    @keyframes auraDeflate1 {
+      0% {
+        transform: scale(1.66) translateY(-8px) rotate(36deg);
+        opacity: 0.68;
+        box-shadow: 0 0 48px rgba(245, 158, 11, 0.55);
+      }
+      20% {
+        transform: scale(1.48) translateY(-6px) rotate(28deg);
+        opacity: 0.54;
+        box-shadow: 0 0 34px rgba(162, 89, 59, 0.38);
+      }
+      45% {
+        transform: scale(1.28) translateY(-3px) rotate(18deg);
+        opacity: 0.42;
+        box-shadow: 0 0 25px rgba(162, 89, 59, 0.28);
+      }
+      70% {
+        transform: scale(1.06) translateY(0px) rotate(8deg);
+        opacity: 0.30;
+        box-shadow: 0 0 16px rgba(224, 169, 109, 0.2);
+      }
+      100% {
+        transform: scale(0.85) translateY(4px) rotate(0deg);
+        opacity: 0.18;
+        box-shadow: 0 0 8px rgba(224, 169, 109, 0.1);
+      }
+    }
+
+    @keyframes auraDeflate2 {
+      0% {
+        transform: scale(1.86) translateY(-8px) rotate(-48deg);
+        opacity: 0.46;
+        box-shadow: 0 0 52px rgba(245, 158, 11, 0.42);
+      }
+      20% {
+        transform: scale(1.64) translateY(-6px) rotate(-38deg);
+        opacity: 0.36;
+        box-shadow: 0 0 38px rgba(162, 89, 59, 0.3);
+      }
+      45% {
+        transform: scale(1.38) translateY(-3px) rotate(-24deg);
+        opacity: 0.26;
+        box-shadow: 0 0 28px rgba(162, 89, 59, 0.22);
+      }
+      70% {
+        transform: scale(1.12) translateY(0px) rotate(-11deg);
+        opacity: 0.18;
+        box-shadow: 0 0 18px rgba(224, 169, 109, 0.15);
+      }
+      100% {
+        transform: scale(0.88) translateY(4px) rotate(0deg);
+        opacity: 0.10;
+        box-shadow: 0 0 10px rgba(224, 169, 109, 0.05);
+      }
+    }
+
+    @keyframes auraDeflate3 {
+      0% {
+        transform: scale(2.08) translateY(-8px) rotate(28deg);
+        opacity: 0.32;
+        box-shadow: 0 0 56px rgba(217, 119, 6, 0.3);
+      }
+      20% {
+        transform: scale(1.80) translateY(-6px) rotate(22deg);
+        opacity: 0.24;
+        box-shadow: 0 0 42px rgba(162, 89, 59, 0.24);
+      }
+      45% {
+        transform: scale(1.50) translateY(-3px) rotate(14deg);
+        opacity: 0.16;
+        box-shadow: 0 0 30px rgba(162, 89, 59, 0.18);
+      }
+      70% {
+        transform: scale(1.20) translateY(0px) rotate(6deg);
+        opacity: 0.10;
+        box-shadow: 0 0 20px rgba(217, 119, 6, 0.1);
+      }
+      100% {
+        transform: scale(0.92) translateY(4px) rotate(0deg);
+        opacity: 0.05;
+        box-shadow: 0 0 12px rgba(217, 119, 6, 0.03);
+      }
+    }
+
+    /* 4. IDLE / PAUSED PHASE: Gentle Resting Aura Breathing Pulse */
+    .balloon-stage-area.phase-idle .balloon-aura-ring.ring-1 {
+      animation: auraIdlePulse1 4s ease-in-out infinite alternate;
+    }
+    .balloon-stage-area.phase-idle .balloon-aura-ring.ring-2 {
+      animation: auraIdlePulse2 4s ease-in-out infinite alternate 0.25s;
+    }
+    .balloon-stage-area.phase-idle .balloon-aura-ring.ring-3 {
+      animation: auraIdlePulse3 4s ease-in-out infinite alternate 0.5s;
+    }
+
+    @keyframes auraIdlePulse1 {
+      0% {
+        transform: scale(0.9) translateY(0) rotate(0deg);
+        opacity: 0.22;
+        box-shadow: 0 0 10px rgba(224, 169, 109, 0.15);
+      }
+      100% {
+        transform: scale(0.96) translateY(-3px) rotate(4deg);
+        opacity: 0.32;
+        box-shadow: 0 0 18px rgba(224, 169, 109, 0.25);
+      }
+    }
+    @keyframes auraIdlePulse2 {
+      0% {
+        transform: scale(0.92) translateY(0) rotate(0deg);
+        opacity: 0.14;
+        box-shadow: 0 0 12px rgba(224, 169, 109, 0.1);
+      }
+      100% {
+        transform: scale(0.98) translateY(-3px) rotate(-5deg);
+        opacity: 0.20;
+        box-shadow: 0 0 20px rgba(224, 169, 109, 0.18);
+      }
+    }
+    @keyframes auraIdlePulse3 {
+      0% {
+        transform: scale(0.94) translateY(0) rotate(0deg);
+        opacity: 0.08;
+        box-shadow: 0 0 14px rgba(217, 119, 6, 0.05);
+      }
+      100% {
+        transform: scale(1.01) translateY(-3px) rotate(3deg);
+        opacity: 0.14;
+        box-shadow: 0 0 22px rgba(217, 119, 6, 0.12);
+      }
+    }
+
+    .organic-balloon.phase-idle {
+      transform: scale(1) translateY(0);
+      transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 1.2s ease, border-radius 1.2s ease;
+      animation: gentleIdleSway 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes gentleIdleSway {
+      0% {
+        transform: scale(1) translateY(0);
+        border-radius: 50% 50% 50% 50%;
+      }
+      100% {
+        transform: scale(1.03) translateY(-4px);
+        border-radius: 52% 48% 51% 49% / 49% 51% 49% 51%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Canvas Watermark -->
+  <div class="canvas-watermark"></div>
+
+  <!-- Top Sticky Navigation -->
+  <nav class="top-nav">
+    <div class="brand-wrapper" id="nav-brand">
+      <div class="brand-icon-thumb">
+        <img src="./apple-touch-icon.png?v=3.0" alt="Key 북커버 고래 아이콘">
+      </div>
+      <div class="brand-text-col">
+        <div class="brand-heading">
+          Key
+        </div>
+        <div class="brand-subheading">왜 나는 불안할까 · 제이미 저커먼 저</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="nav-actions"></div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+    <!-- Hero Book Showcase -->
+    <header class="hero-showcase">
+      <div class="book-3d-frame">
+        <img src="./book-cover.jpg" alt="FIND YOUR 왜 나는 불안할까 도서 표지 (파도 속 고래 일러스트)">
+      </div>
+      <div class="hero-text-content">
+        <div class="hero-tag">Clinical Psychology · ACT Workbook</div>
+        <h1 class="hero-title">불안에 맞서 싸우지 마세요,<br>파도처럼 가만히 지나가게 두세요</h1>
+        <p class="hero-desc">
+          임상심리학자 제이미 저커먼 박사의 도서 <strong>《FIND YOUR 왜 나는 불안할까》</strong>와 함께 읽는 디지털 워크북입니다. 책을 읽으며 쪽수를 맞추고, 40가지 연습을 직접 실천하며 나만의 평온을 찾아가세요.
+        </p>
+      </div>
+      <div class="hero-actions">
+        <button id="hero-btn-random" class="nav-btn nav-btn-primary">
+          <span>🎲 오늘의 랜덤 실천 처방</span>
+        </button>
+        <button id="hero-btn-explore" class="nav-btn">
+          <span>🎯 40가지 실천 연습실</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Key Featured Quick Practice Card -->
+    <div id="sync-drawer-card" class="sync-drawer-card">
+      <div class="sync-drawer-info">
+        <span class="sync-drawer-chapter" id="sync-chapter-badge">1장 · 머릿속 혼돈과 거리 두기</span>
+        <h3 class="sync-drawer-title" id="sync-title-text">연습 1. 걱정 그리기</h3>
+        <p class="sync-drawer-desc" id="sync-desc-text">오감을 사용해 머릿속 불안에 형태와 색깔, 무게를 부여하고 관찰자와 생각을 분리하는 인지적 탈융합 연습입니다.</p>
+      </div>
+      <div class="sync-drawer-buttons">
+        <button id="btn-sync-practice" class="btn-copper">🎯 지금 바로 실천하기</button>
+      </div>
+    </div>
+
+    <!-- Segmented Navigation Tabs -->
+    <div class="view-tabs-container">
+      <div class="segmented-tabs" role="tablist">
+        <button class="tab-pill active" data-tab="tab-exercises" role="tab">
+          <span class="tab-pill-icon">🎯</span>
+          <span class="tab-label-full">40가지 실천 연습실</span>
+          <span class="tab-label-short">40개 연습</span>
+        </button>
+        <button class="tab-pill" data-tab="tab-workbook" role="tab">
+          <span class="tab-pill-icon">📓</span>
+          <span class="tab-label-full">나의 실천 워크북</span>
+          <span class="tab-label-short">실천 워크북</span>
+        </button>
+        <button class="tab-pill" data-tab="tab-breathing" role="tab">
+          <span class="tab-pill-icon">🎈</span>
+          <span class="tab-label-full">풍선 호흡 (이완)</span>
+          <span class="tab-label-short">풍선 호흡</span>
+        </button>
+        <button class="tab-pill" data-tab="tab-teachings" role="tab">
+          <span class="tab-pill-icon">✨</span>
+          <span class="tab-label-full">내면의 쉼표 가르침</span>
+          <span class="tab-label-short">내면의 쉼표</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: 40 Exercises Studio Grid -->
+    <section id="tab-exercises" class="tab-view-section active">
+      <div class="exercises-view-wrapper">
+        <div class="exercises-filter-strip">
+          <button class="filter-pill-btn active" data-chapter="all">전체 (40개 연습)</button>
+          <button class="filter-pill-btn" data-chapter="1">1장: 머릿속 혼돈과 거리 두기 (1~12)</button>
+          <button class="filter-pill-btn" data-chapter="2">2장: 내 몸의 감각 깨우기 (13~22)</button>
+          <button class="filter-pill-btn" data-chapter="3">3장: 불편한 감정 직면하기 (23~40)</button>
+        </div>
+
+        <div id="exercises-grid" class="cards-gallery-grid">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Systematic Workbook Journal (나의 실천 워크북 기록장) -->
+    <section id="tab-workbook" class="tab-view-section">
+      <div class="workbook-view-wrapper">
+        <!-- 1. 워크북 에디토리얼 헤더 카드 -->
+        <div class="workbook-header-card">
+          <div class="workbook-header-content">
+            <div class="workbook-tag-row">
+              <span class="hero-tag">Clinical Psychological Records · ACT Workbook</span>
+              <span class="workbook-save-badge">🔒 로컬 브라우저 영구 안전 보관</span>
+            </div>
+            <h2 class="workbook-main-title">나의 실천 워크북 기록장</h2>
+            <p class="workbook-main-desc">
+              《FIND YOUR 왜 나는 불안할까》 40가지 연습과 3분 응급 처방전을 실천하며 기록한 나만의 치유 저널입니다. 생각과 감정의 변화, 주관적 불편감(SUD) 완화 추이를 한눈에 확인하고 지속적인 성장을 이어가세요.
+            </p>
+          </div>
+          <div class="workbook-header-actions">
+            <button id="wb-btn-export" class="nav-btn" title="모든 실천 기록을 텍스트 파일로 저장합니다">
+              <span>📥 텍스트로 내보내기</span>
+            </button>
+            <button id="wb-btn-clear" class="nav-btn" style="color: #c44;" title="저장된 모든 실천 기록을 삭제합니다">
+              <span>기록 전체 삭제</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1-2. 40가지 연습 완주율 동그란 프로그레스 차트 카드 -->
+        <div class="wb-circular-hero-card">
+          <div class="wb-circular-chart-container">
+            <svg class="wb-circular-svg" viewBox="0 0 140 140" width="140" height="140">
+              <defs>
+                <linearGradient id="wbCircularGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="var(--copper-primary, #a2593b)" />
+                  <stop offset="50%" stop-color="#c5865b" />
+                  <stop offset="100%" stop-color="var(--gold-accent, #c98a58)" />
+                </linearGradient>
+              </defs>
+              <!-- Background Ring -->
+              <circle
+                class="wb-circular-bg-ring"
+                cx="70"
+                cy="70"
+                r="56"
+              />
+              <!-- Animated Fill Ring -->
+              <circle
+                id="wb-circular-ring"
+                class="wb-circular-fill-ring"
+                cx="70"
+                cy="70"
+                r="56"
+                stroke-dasharray="351.86"
+                stroke-dashoffset="351.86"
+              />
+            </svg>
+            <div class="wb-circular-center-content">
+              <span id="wb-circle-rate-percent" class="wb-circle-percent">0%</span>
+              <span id="wb-circle-rate-count" class="wb-circle-fraction">0 / 40개</span>
+            </div>
+          </div>
+
+          <div class="wb-circular-hero-info">
+            <div class="wb-circular-badge-row">
+              <span class="wb-circle-tag">🎯 40가지 치유 실천 완주율</span>
+              <span id="wb-circle-status-badge" class="wb-circle-status">첫 걸음을 시작해보세요 🌱</span>
+            </div>
+            <h3 id="wb-circle-main-heading" class="wb-circle-heading">40가지 연습 중 0개 완주</h3>
+            <p class="wb-circle-description">
+              《FIND YOUR 왜 나는 불안할까》 1장(머릿속 혼돈), 2장(신체 감각), 3장(불편한 감정)의 40가지 심리 연습을 실천할 때마다 동그란 원형 차트가 실시간으로 채워집니다.
+            </p>
+
+            <div class="wb-circular-chapters-row">
+              <div class="wb-circle-chapter-badge">
+                <span class="wb-ch-name">1장 머릿속 혼돈</span>
+                <span class="wb-ch-val" id="wb-circle-ch1">0 / 12개</span>
+              </div>
+              <div class="wb-circle-chapter-badge">
+                <span class="wb-ch-name">2장 신체 감각</span>
+                <span class="wb-ch-val" id="wb-circle-ch2">0 / 10개</span>
+              </div>
+              <div class="wb-circle-chapter-badge">
+                <span class="wb-ch-name">3장 불편한 감정</span>
+                <span class="wb-ch-val" id="wb-circle-ch3">0 / 18개</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 체계적 분석 및 통계 대시보드 그리드 -->
+        <div class="workbook-stats-grid">
+          <div class="wb-stat-card">
+            <div class="wb-stat-icon">🎯</div>
+            <div class="wb-stat-info">
+              <div class="wb-stat-label">40개 연습 완주율</div>
+              <div class="wb-stat-val" id="wb-stat-rate">0 / 40개 (0%)</div>
+              <div class="wb-progress-track">
+                <div class="wb-progress-bar" id="wb-stat-bar" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wb-stat-card">
+            <div class="wb-stat-icon">📝</div>
+            <div class="wb-stat-info">
+              <div class="wb-stat-label">누적 실천 횟수</div>
+              <div class="wb-stat-val" id="wb-stat-count">0회</div>
+              <div class="wb-stat-sub" id="wb-stat-streak">꾸준한 치유 여정</div>
+            </div>
+          </div>
+
+          <div class="wb-stat-card">
+            <div class="wb-stat-icon">🌱</div>
+            <div class="wb-stat-info">
+              <div class="wb-stat-label">평균 마음불편도 (SUD)</div>
+              <div class="wb-stat-val" id="wb-stat-sud">- / 10점</div>
+              <div class="wb-stat-sub" id="wb-stat-sud-desc">10점 만점 기준 (낮을수록 평온)</div>
+            </div>
+          </div>
+
+          <div class="wb-stat-card">
+            <div class="wb-stat-icon">🌟</div>
+            <div class="wb-stat-info">
+              <div class="wb-stat-label">최근 실천 리추얼</div>
+              <div class="wb-stat-val" id="wb-stat-last">-</div>
+              <div class="wb-stat-sub" id="wb-stat-last-chapter">오늘의 연습을 실천해보세요</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 체계적 필터 및 검색 툴바 -->
+        <div class="workbook-toolbar">
+          <div class="wb-filter-pills" id="wb-filter-pills">
+            <button class="wb-pill active" data-wb-filter="all">전체 기록 (<span id="wb-cnt-all">0</span>)</button>
+            <button class="wb-pill" data-wb-filter="1">1장: 머릿속 혼돈 (<span id="wb-cnt-ch1">0</span>)</button>
+            <button class="wb-pill" data-wb-filter="2">2장: 신체 감각 (<span id="wb-cnt-ch2">0</span>)</button>
+            <button class="wb-pill" data-wb-filter="3">3장: 불편한 감정 (<span id="wb-cnt-ch3">0</span>)</button>
+            <button class="wb-pill" data-wb-filter="rx">💊 3분 처방전 (<span id="wb-cnt-rx">0</span>)</button>
+          </div>
+
+          <div class="wb-search-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="wb-search-input" placeholder="기록 내용, 연습 제목, 키워드 검색...">
+          </div>
+        </div>
+
+        <!-- 4. 구조화된 워크북 피드 목록 -->
+        <div class="workbook-entries-container" id="workbook-entries-container">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Balloon Breathing Studio -->
+    <section id="tab-breathing" class="tab-view-section">
+      <div class="breathing-studio-card">
+        <span class="hero-tag">Vagus Nerve Reset · 미주신경 이완</span>
+        <h2 style="font-family: 'Nanum Myeongjo', serif; font-size: 1.6rem; color: var(--text-title); margin: 8px 0;">5초 유기적 풍선 호흡</h2>
+        <p style="font-size: 0.92rem; color: var(--text-muted); max-width: 520px;">
+          풍선이 부풀어 오를 때 코로 숨을 깊게 들이쉬고, 줄어들 때 입으로 천천히 내쉬어 보세요. 부교감 신경을 즉각 자극하여 몸의 긴장을 풉니다.
+        </p>
+
+        <!-- 세션 목표 사이클 선택 바 -->
+        <div class="breathing-goals-row" id="breathing-goals-row">
+          <span class="breathing-goals-label">세션 목표:</span>
+          <button type="button" class="btn-breathing-goal" data-cycles="3">3회 (약 35초)</button>
+          <button type="button" class="btn-breathing-goal active" data-cycles="5">5회 (약 1분)</button>
+          <button type="button" class="btn-breathing-goal" data-cycles="10">10회 (약 2분)</button>
+        </div>
+
+        <div class="balloon-stage-area phase-idle">
+          <!-- Multi-layered fluid breathing aura rings -->
+          <div class="balloon-aura-wrapper" aria-hidden="true">
+            <div class="balloon-aura-ring ring-1"></div>
+            <div class="balloon-aura-ring ring-2"></div>
+            <div class="balloon-aura-ring ring-3"></div>
+          </div>
+
+          <div id="breathing-balloon" class="organic-balloon phase-idle" role="button" tabindex="0" title="클릭하여 호흡 시작/일시정지" aria-label="5초 유기적 풍선 호흡">
+            <div class="balloon-glow-core" aria-hidden="true"></div>
+            <div id="balloon-phase" class="b-phase">준비</div>
+            <div id="balloon-timer" class="b-timer">5</div>
+          </div>
+        </div>
+
+        <div class="breathing-controls-row">
+          <button id="btn-breathing-toggle" class="btn-copper" style="padding: 12px 28px; font-size: 1rem;">
+            <span>호흡 시작하기</span>
+          </button>
+          <button id="btn-breathing-finish" class="btn-outline-sage" style="display: none; padding: 12px 20px; font-size: 0.92rem;">
+            <span>세션 완료하기 ✨</span>
+          </button>
+          <span class="cycle-count-badge">
+            완료한 사이클: <strong id="cycle-count" style="color: var(--copper-primary);">0</strong> / <span id="target-cycle-display">5</span>회
+          </span>
+        </div>
+
+        <!-- 🔔 오디오 & 📳 햅틱 진동 알림 설정 패널 -->
+        <div class="breathing-audio-panel" id="breathing-audio-panel">
+          <div class="breathing-audio-header">
+            <span class="audio-panel-tag">🔔 알림 & 📳 정점 햅틱 설정</span>
+            <span class="audio-bell-status" id="audio-bell-status">싱잉볼 소리 활성</span>
+          </div>
+          <div class="breathing-audio-toggle-wrap">
+            <button type="button" id="btn-breathing-audio-toggle" class="btn-audio-bell-toggle active" title="세션 종료 시 부드러운 종소리(싱잉볼) 재생 알림 켜기/끄기">
+              <span id="breathing-audio-icon" class="audio-bell-icon">🔔</span>
+              <span id="breathing-audio-label" class="audio-bell-label">종소리 알림: 켜짐</span>
+            </button>
+            <button type="button" id="btn-breathing-haptic-toggle" class="btn-audio-bell-toggle active" title="들숨/날숨 정점(Peak) 진동 햅틱 피드백 켜기/끄기">
+              <span id="breathing-haptic-icon" class="audio-bell-icon">📳</span>
+              <span id="breathing-haptic-label" class="audio-bell-label">정점 햅틱: 켜짐</span>
+            </button>
+            <button type="button" id="btn-breathing-audio-preview" class="btn-audio-preview" title="부드러운 티베트 싱잉볼 종소리 미리 듣기">
+              <span>싱잉볼 미리듣기 🎵</span>
+            </button>
+          </div>
+          <p class="breathing-audio-hint">
+            들숨과 날숨이 최고점에 달할 때 부드러운 진동 햅틱이 울려 화면을 보지 않고도 호흡 리듬을 체감할 수 있습니다. 세션 완주 시 528Hz 솔페지오 싱잉볼 종소리가 울립니다.
+          </p>
+        </div>
+
+        <!-- 완주 축하 & 이완 안내 배너 (초기 숨김) -->
+        <div id="breathing-celebration-card" class="breathing-celebration-card" style="display: none;">
+          <div class="celebration-icon">🎉 🔔</div>
+          <h4 id="celebration-title">풍선 호흡 세션 완주!</h4>
+          <p id="celebration-desc">부드러운 싱잉볼 종소리와 함께 온몸의 긴장이 풀리고 평온이 깃들었습니다.</p>
+          <button type="button" id="btn-breathing-restart" class="btn-copper" style="padding: 10px 22px; font-size: 0.9rem; margin-top: 10px;">
+            <span>다시 호흡하기 ↻</span>
+          </button>
+        </div>
+      </div>
+    </section>
+    <!-- TAB 4: Inner Pause Teachings (내면의 쉼표 3단계 가르침 섹션) -->
+    <section id="tab-teachings" class="tab-view-section">
+      <div class="teachings-view-wrapper">
+        <!-- Teachings Hero Introduction -->
+        <div class="teachings-intro-banner">
+          <div class="teachings-badge-row">
+            <span class="teachings-mini-badge">Somatic Grounding · ACIM Forgiveness · Inherent Wholeness</span>
+            <span class="teachings-mini-badge">영적 지혜 & 임상 심리학의 통합</span>
+          </div>
+          <h2 class="teachings-main-title">내면의 쉼표 3단계 가르침</h2>
+          <p class="teachings-main-desc">
+            불안의 파도에 맞서 싸우지 않고, 신체 감각을 자각하며(신체 접지), 두려운 해석을 내려놓고(기적수업 용서), 훼손되지 않는 본래의 평화를 선언(온전함)하는 내면의 쉼표 수행입니다.
+          </p>
+        </div>
+
+        <!-- 1. 오늘의 3단계 가르침 받기 오라클 카드 -->
+        <div class="teaching-oracle-card" id="teaching-oracle-card">
+          <div class="oracle-card-topbar">
+            <div class="oracle-theme-pill" id="oracle-theme-pill">
+              <span id="oracle-icon">🌊</span>
+              <span id="oracle-theme">파도와 바다</span>
+            </div>
+            <div class="oracle-top-actions">
+              <button id="btn-play-all-teaching" class="btn-sage" title="3단계 가르침 전체 음성으로 연속 듣기">
+                <span id="all-teaching-icon">🔊</span>
+                <span id="all-teaching-text">3단계 연속 듣기</span>
+              </button>
+              <button id="btn-draw-teaching" class="btn-copper" title="다른 3단계 가르침 받기">
+                <span>🎲 오늘의 가르침 새로 받기</span>
+              </button>
+            </div>
+          </div>
+
+          <h3 class="oracle-headline" id="oracle-headline">불안은 바다의 파도일 뿐, 당신은 바다 그 자체입니다</h3>
+          <p class="oracle-quote" id="oracle-quote">"맞서 싸우면 휩쓸리지만, 가만히 바라보면 파도는 스스로 하얗게 부서지며 가라앉습니다."</p>
+
+          <!-- 3단계 가르침 그리드 -->
+          <div class="teaching-stages-grid">
+            <!-- 1단계 -->
+            <div class="teaching-stage-item stage-grounding" id="stage-card-1">
+              <div class="stage-item-header">
+                <div class="stage-item-header-top">
+                  <span class="stage-item-badge">🌿 1. 신체 접지 (Somatic)</span>
+                  <button type="button" class="btn-stage-voice-play" data-stage="1" id="btn-stage-voice-1" title="1단계 가이드 음성 듣기">
+                    <span class="stage-voice-icon">🔊</span>
+                    <span class="stage-voice-text">음성 가이드</span>
+                  </button>
+                </div>
+                <span class="stage-item-keyword">몸의 긴장 이완 & 호흡 닻 내리기</span>
+              </div>
+              <p class="stage-item-desc" id="oracle-grounding-inst">턱과 어깨의 힘을 툭 빼고, 아랫배가 부풀어 올랐다 가라앉는 숨의 파도에 의식의 닻을 내리세요.</p>
+              <div class="stage-item-practice-box">
+                <strong>실천 가이드:</strong>
+                <span id="oracle-grounding-prac">코로 4초 깊게 들이쉬고, 입으로 6초 동안 천천히 내쉬며 온몸의 긴장을 바닥으로 흘려보냅니다.</span>
+              </div>
+            </div>
+
+            <!-- 2단계 -->
+            <div class="teaching-stage-item stage-healing" id="stage-card-2">
+              <div class="stage-item-header">
+                <div class="stage-item-header-top">
+                  <span class="stage-item-badge">💧 2. 기적수업 용서 (ACIM & ACT)</span>
+                  <button type="button" class="btn-stage-voice-play" data-stage="2" id="btn-stage-voice-2" title="2단계 가이드 음성 듣기">
+                    <span class="stage-voice-icon">🔊</span>
+                    <span class="stage-voice-text">음성 가이드</span>
+                  </button>
+                </div>
+                <span class="stage-item-keyword">두려운 해석 거두기 & 관찰자 분리</span>
+              </div>
+              <p class="stage-item-desc" id="oracle-healing-inst">감정을 억누르거나 상황을 탓하려던 마음속의 투쟁을 조용히 손에서 내려놓으세요.</p>
+              <div class="stage-item-practice-box">
+                <strong>마음 선언:</strong>
+                <span id="oracle-healing-prac">"지금 내 마음에 불안이라는 파도가 찾아왔구나. 하지만 나는 저항하지 않고 관찰하겠다" 하고 용서하세요.</span>
+              </div>
+            </div>
+
+            <!-- 3단계 -->
+            <div class="teaching-stage-item stage-liberation" id="stage-card-3">
+              <div class="stage-item-header">
+                <div class="stage-item-header-top">
+                  <span class="stage-item-badge">✨ 3. 본래의 온전함 (Liberation)</span>
+                  <button type="button" class="btn-stage-voice-play" data-stage="3" id="btn-stage-voice-3" title="3단계 가이드 음성 듣기">
+                    <span class="stage-voice-icon">🔊</span>
+                    <span class="stage-voice-text">음성 가이드</span>
+                  </button>
+                </div>
+                <span class="stage-item-keyword">조건 없는 영원한 평화 선언</span>
+              </div>
+              <div class="stage-item-declaration-box">
+                <p id="oracle-liberation-decl">수면 위의 파도가 제아무리 거세게 요동쳐도, 심연 속 바다의 깊은 평화는 단 1밀리미터도 훼손되지 않습니다. 나는 이미 온전합니다.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 가르침 하단 액션 버튼 바 -->
+          <div class="oracle-card-footer">
+            <div class="oracle-question-wrap">
+              <span class="q-icon">💡</span>
+              <span class="q-text" id="oracle-question">지금 내 마음에 이는 파도를 억지로 잔잔하게 만들려 애쓰고 있진 않나요?</span>
+            </div>
+            <div class="oracle-action-btns">
+              <button id="btn-meditate-teaching" class="btn-sage">
+                <span>🧘 3분 체화 명상 리추얼</span>
+              </button>
+              <button id="btn-ask-teaching" class="btn-copper">
+                <span>💬 이 가르침으로 상담받기</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 3단계 치유 핵심 원리 마스터 가이드 -->
+        <div class="principles-showcase-section">
+          <div class="section-subheading-box">
+            <h3>📖 3단계 치유 핵심 원리 마스터 가이드</h3>
+            <p>신체와 생각, 영혼의 3차원을 통합하는 근본적인 평온의 메커니즘을 이해합니다.</p>
+          </div>
+
+          <div class="principles-3col-grid">
+            <div class="principle-column-card">
+              <div class="p-card-icon">🌿</div>
+              <h4>왜 신체 접지가 가장 먼저인가?</h4>
+              <div class="p-card-tag">미주신경 & 뇌간 안정화</div>
+              <p>
+                불안이 일어날 때 우리 뇌의 편도체(경보 장치)는 온몸에 비상 신호를 뿜어냅니다. 이 상태에서는 긍정적인 생각이나 논리적 설득이 통하지 않습니다.
+              </p>
+              <p class="p-card-highlight">
+                가장 먼저 신체 감각(발바닥, 호흡의 온도, 어깨 이완)에 닻을 내려 자율신경계에 "지금 위험하지 않다"는 생리적 신호를 보내야 생각의 빗장이 풀립니다.
+              </p>
+            </div>
+
+            <div class="principle-column-card">
+              <div class="p-card-icon">💧</div>
+              <h4>기적수업의 '용서'와 ACT의 '탈융합'</h4>
+              <div class="p-card-tag">해석의 투사 거두기 & 관찰자 자각</div>
+              <p>
+                기적수업에서 용서란 타인의 잘못을 참는 것이 아니라, "상황을 위협으로 해석하던 내 마음의 두려운 투사를 거두어들이는 것"입니다.
+              </p>
+              <p class="p-card-highlight">
+                수용전념치료(ACT)의 인지적 탈융합과 마찬가지로, 떠오르는 생각을 '나 자신'이 아닌 '마음에 잠시 스쳐 지나가는 구름'으로 분리할 때 공간이 생깁니다.
+              </p>
+            </div>
+
+            <div class="principle-column-card">
+              <div class="p-card-icon">✨</div>
+              <h4>본래의 온전함(Inherent Wholeness)</h4>
+              <div class="p-card-tag">훼손될 수 없는 영원한 순수 평화</div>
+              <p>
+                우리는 종종 불안이나 결점을 고쳐야만 완전해진다고 착각합니다. 하지만 구름이 아무리 짙게 껴도 구름 뒤 푸른 하늘은 결코 상처 입지 않습니다.
+              </p>
+              <p class="p-card-highlight">
+                당신은 결코 망가지지 않았습니다. 어떤 불안의 파도도 내면의 거룩한 빛을 파괴할 수 없습니다. "나는 지금 이대로 온전하다"는 선언이 평온을 엽니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 3분 내면의 쉼표 인터랙티브 명상 플레이어 카드 -->
+        <div class="teaching-meditation-box" id="teaching-meditation-box">
+          <div class="t-med-top">
+            <div class="t-med-title-col">
+              <span class="hero-tag">Guided 3-Stage Ritual</span>
+              <h3>🧘 내면의 쉼표 3분 체화 명상</h3>
+              <p>접지(60초) · 용서(60초) · 온전함(60초)을 Dr. Z의 실시간 TTS 음성과 타이머로 직접 체화합니다.</p>
+            </div>
+
+            <div class="t-med-controls-col">
+              <div class="t-med-tts-toolbar">
+                <button type="button" id="btn-ritual-voice-toggle" class="btn-voice-toggle active" title="TTS 음성 안내 켜기/끄기">
+                  <span class="voice-toggle-icon" id="voice-toggle-icon">🔊</span>
+                  <span class="voice-toggle-text" id="voice-toggle-text">음성 안내 ON</span>
+                </button>
+                <div class="voice-select-wrap">
+                  <label for="ritual-voice-select" class="voice-select-label">보이스:</label>
+                  <select id="ritual-voice-select" class="ritual-voice-select" aria-label="명상 가이드 목소리 선택">
+                    <option value="ko-KR-SunHiNeural" selected>클라우드 뉴럴: 선희 (차분하고 따뜻한 명상 특화)</option>
+                    <option value="ko-KR-InJoonNeural">클라우드 뉴럴: 인준 (따뜻하고 편안한 남성음)</option>
+                    <option value="ko-KR-HyunsuNeural">클라우드 뉴럴: 현수 (부드럽고 차분한 남성음)</option>
+                    <option value="browser">기기 로컬 음성 (Web Speech)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button id="btn-start-ritual" class="btn-copper">
+                <span>명상 리추얼 시작</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="t-med-player hidden" id="t-med-player">
+            <div class="t-med-stepper">
+              <div class="t-step-dot active" id="t-dot-1">1단계: 신체 접지 (60초)</div>
+              <div class="t-step-divider"></div>
+              <div class="t-step-dot" id="t-dot-2">2단계: 기적수업 용서 (60초)</div>
+              <div class="t-step-divider"></div>
+              <div class="t-step-dot" id="t-dot-3">3단계: 온전함 선언 (60초)</div>
+            </div>
+
+            <div class="t-med-clock-box">
+              <div class="t-med-clock-num" id="t-med-sec">--</div>
+              <div class="t-med-clock-label" id="t-med-stage-name">1단계: 신체 접지 안내</div>
+            </div>
+
+            <!-- 재생 진행률 프로그레스 바 & 자동 넘김 인디케이터 -->
+            <div class="t-med-progress-wrap" id="t-med-progress-wrap">
+              <div class="t-med-progress-track">
+                <div class="t-med-progress-bar" id="t-med-progress-bar" style="width: 0%;"></div>
+              </div>
+              <div class="t-med-progress-meta">
+                <span id="t-med-time-current" class="t-med-time-val">00:00</span>
+                <span class="t-med-auto-advance-badge" id="t-med-auto-badge">⚡ 음성 진행률에 맞춰 다음 단계 자동 전환</span>
+                <span id="t-med-time-total" class="t-med-time-val">00:00</span>
+              </div>
+            </div>
+
+            <!-- 실시간 TTS 음성 상태 인디케이터 바 -->
+            <div class="t-med-voice-status" id="t-med-voice-status">
+              <div class="voice-wave-bars" id="voice-wave-bars">
+                <span class="wave-bar bar-1"></span>
+                <span class="wave-bar bar-2"></span>
+                <span class="wave-bar bar-3"></span>
+                <span class="wave-bar bar-4"></span>
+              </div>
+              <span id="voice-status-text" class="voice-status-text">🎙️ Dr. Z 음성 안내 준비 완료</span>
+              <button type="button" id="btn-replay-voice" class="btn-replay-voice" title="현재 단계 음성 다시 듣기">
+                <span>🔄 음성 다시 듣기</span>
+              </button>
+            </div>
+
+            <p class="t-med-guidance-text" id="t-med-guide">
+              가만히 눈을 감고 어깨의 힘을 뺍니다. 아랫배가 부풀어 오르고 가라앉는 숨의 온도를 느껴보세요.
+            </p>
+
+            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 14px;">
+              <button id="btn-stop-ritual" class="nav-btn">명상 중단</button>
+              <button id="btn-next-stage" class="nav-btn" title="다음 단계로 바로 넘어가기">다음 단계 ➔</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Practice Studio Interactive Modal -->
+  <div id="modal-practice" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-window">
+      <div class="modal-top-bar">
+        <div class="modal-title-box">
+          <div class="modal-title-icon" id="studio-icon">🎯</div>
+          <div class="modal-title-text">
+            <span class="sync-drawer-chapter" id="studio-chapter">1장 · 머릿속 혼돈과 거리 두기</span>
+            <h2 id="studio-title">연습 1. 걱정 그리기</h2>
+          </div>
+        </div>
+        <button id="btn-close-studio" class="modal-close-icon-btn" aria-label="닫기">&times;</button>
+      </div>
+
+      <div class="modal-scrollable-body" id="studio-body">
+        <!-- Interactive Step Components dynamically injected -->
+      </div>
+
+      <div class="modal-bottom-bar">
+        <div class="stepper-dots-row" id="studio-stepper-dots">
+          <!-- Step dots -->
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button id="studio-prev-step" class="nav-btn">이전 단계</button>
+          <button id="studio-next-step" class="btn-copper">다음 단계</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 💊 3-Minute Emergency Prescription Studio Modal (오늘의 3분 마음 응급처방 전용 스튜디오) -->
+  <div id="modal-prescription" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-window prescription-modal-window">
+      <div class="modal-top-bar">
+        <div class="modal-title-box">
+          <div class="modal-title-icon" style="background: #fdf0e6; color: var(--copper-primary);">💊</div>
+          <div class="modal-title-text">
+            <h2>Dr. Z의 오늘의 3분 마음 처방</h2>
+            <p>180초 동안 신체를 이완하고 걱정을 털어내며 오늘의 처방전을 발급받습니다.</p>
+          </div>
+        </div>
+        <button id="btn-close-prescription" class="modal-close-icon-btn" aria-label="닫기">&times;</button>
+      </div>
+
+      <!-- 3분 타이머 및 단계 인디케이터 헤더 -->
+      <div class="rx-timer-banner">
+        <div class="rx-timer-clock">
+          <span id="rx-timer-digits">03:00</span>
+          <span class="rx-timer-label">남은 시간</span>
+        </div>
+        <div class="rx-steps-timeline">
+          <div class="rx-step-chip active" id="rx-chip-1">
+            <span class="rx-step-num">1</span>
+            <span class="rx-step-name">신체 이완 (45초)</span>
+          </div>
+          <div class="rx-step-divider"></div>
+          <div class="rx-step-chip" id="rx-chip-2">
+            <span class="rx-step-num">2</span>
+            <span class="rx-step-name">걱정 털어내기 (75초)</span>
+          </div>
+          <div class="rx-step-divider"></div>
+          <div class="rx-step-chip" id="rx-chip-3">
+            <span class="rx-step-num">3</span>
+            <span class="rx-step-name">처방전 발급 (60초)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-scrollable-body" id="rx-modal-body">
+        <!-- 1단계: 신체 이완 & 4-6 호흡 -->
+        <div class="rx-stage-view" id="rx-stage-1">
+          <div class="rx-guide-box">
+            <h3>🌿 1단계: 지금-여기 내 몸으로 돌아오기</h3>
+            <p>머릿속 생각의 폭풍에서 빠져나와 몸의 감각에 닻을 내립니다. 가슴에 한 손을 얹고 어깨의 긴장을 툭 내려놓으세요.</p>
+          </div>
+
+          <div class="rx-breath-circle-container">
+            <div class="rx-breath-circle" id="rx-breath-visual">
+              <div id="rx-breath-instruction">숨 들이쉬기</div>
+              <div class="rx-breath-sec" id="rx-breath-sec">4</div>
+            </div>
+          </div>
+
+          <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+            4초간 코로 깊게 들이쉬고, 6초간 입으로 천천히 내쉽니다.
+          </p>
+        </div>
+
+        <!-- 2단계: 걱정 털어내기 & 파도 탈융합 -->
+        <div class="rx-stage-view hidden" id="rx-stage-2">
+          <div class="rx-guide-box">
+            <h3>🌊 2단계: 걱정을 파도에 흘려보내기</h3>
+            <p>오늘 나를 괴롭히는 생각, 두려움, 자책을 적어보세요. 그 생각은 '사실'이 아니라 마음을 스쳐가는 '파도'일 뿐입니다.</p>
+          </div>
+
+          <div class="rx-worry-shredder-box">
+            <div id="rx-worry-input-area">
+              <textarea id="rx-worry-text" rows="3" placeholder="예: 오늘 회의에서 실수할까 봐 너무 불안하고 심장이 뛰어..."></textarea>
+              <button id="btn-dissolve-worry" class="btn-copper" style="width: 100%; padding: 14px; font-size: 1rem;">
+                <span>🌊 이 생각을 파도에 녹여 흘려보내기</span>
+              </button>
+            </div>
+
+            <!-- 녹아내리는 애니메이션 뷰 -->
+            <div id="rx-dissolved-result" class="hidden">
+              <div class="rx-wave-animation">
+                <div class="rx-dissolved-quote">
+                  "방금 흘려보낸 생각은 당신 자신이 아닙니다.<br>
+                  감정의 파도는 스스로 정점을 찍고 바다로 가라앉습니다."
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3단계: 처방전 영수증 발급 -->
+        <div class="rx-stage-view hidden" id="rx-stage-3">
+          <div class="rx-receipt-card" id="rx-receipt-printable">
+            <!-- 인쇄 시 상단 절취선 가이드 (출력 시 깔끔하게 잘리도록 표시) -->
+            <div class="rx-cut-guide rx-cut-guide-top print-only">
+              <span class="rx-cut-icon">✂</span>
+              <span class="rx-cut-text">절취선 (Cut along the dashed line)</span>
+              <span class="rx-cut-icon">✂</span>
+            </div>
+
+            <div class="rx-receipt-header">
+              <div class="rx-receipt-badge">DR. Z's CLINICAL RX</div>
+              <h2>오늘의 3분 마음 처방전</h2>
+              <div class="rx-receipt-date" id="rx-receipt-date">2026. 09. 12</div>
+            </div>
+
+            <div class="rx-receipt-divider">--------------------------------</div>
+
+            <!-- 섹션 1: 처방 대상 -->
+            <div class="rx-receipt-section rx-section-patient">
+              <div class="rx-receipt-row">
+                <span class="rx-label">처방 대상:</span>
+                <span class="rx-val">지금 평온이 필요한 나</span>
+              </div>
+            </div>
+
+            <!-- 섹션 2: 상태 -->
+            <div class="rx-receipt-section rx-section-status">
+              <div class="rx-receipt-row">
+                <span class="rx-label">오늘의 상태:</span>
+                <span class="rx-val" id="rx-receipt-worry-label">긴장 및 불안 완화</span>
+              </div>
+            </div>
+
+            <!-- 섹션 3: 상세 처방 -->
+            <div class="rx-receipt-section rx-section-detail">
+              <div class="rx-receipt-row rx-section-detail-header">
+                <span class="rx-label">상세 처방:</span>
+                <span class="rx-section-badge">맞춤 행동 요법</span>
+              </div>
+              <div class="rx-receipt-box">
+                <div class="rx-rec-badge-mini" id="rx-rec-badge">1장 · 인지적 탈융합</div>
+                <h4 id="rx-rec-title">연습 1. 걱정 그리기 (18쪽)</h4>
+                <p id="rx-rec-desc">머릿속 혼돈에 형태와 무게를 부여해 나와 분리하는 연습입니다.</p>
+              </div>
+
+              <div class="rx-receipt-quote">
+                <span class="quote-mark">“</span>
+                <p id="rx-rec-quote">괜찮지 않아도 괜찮습니다. 생각은 통제할 수 없지만, 그 생각을 대하는 나의 태도는 선택할 수 있습니다.</p>
+              </div>
+            </div>
+
+            <div class="rx-receipt-footer">
+              <p>도서 《왜 나는 불안할까》 제이미 저커먼 박사 지식 연동</p>
+              <div class="rx-receipt-barcode">||| | |||| | ||| ||||| || | |||</div>
+            </div>
+
+            <!-- 인쇄 시 하단 절취선 가이드 (출력 시 깔끔하게 잘리도록 표시) -->
+            <div class="rx-cut-guide rx-cut-guide-bottom print-only">
+              <span class="rx-cut-icon">✂</span>
+              <span class="rx-cut-text">절취선 (Cut along the dashed line)</span>
+              <span class="rx-cut-icon">✂</span>
+            </div>
+          </div>
+
+          <div class="rx-receipt-actions">
+            <button id="btn-rx-save-journal" class="btn-copper">
+              <span>📓 내 워크북에 처방전 보관</span>
+            </button>
+            <button id="btn-rx-practice-now" class="btn-sage">
+              <span>🎯 처방된 연습 지금 실천하기</span>
+            </button>
+            <button id="btn-rx-print" class="btn-outline-sage" type="button" title="처방전 인쇄/출력">
+              <span>🖨️ 처방전 인쇄</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bottom-bar">
+        <button id="btn-rx-toggle-sound" class="nav-btn">
+          <span>🔔 싱잉볼 소리 켜기</span>
+        </button>
+        <div style="display: flex; gap: 10px;">
+          <button id="btn-rx-prev" class="nav-btn hidden">이전</button>
+          <button id="btn-rx-next" class="btn-copper">다음 단계</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workbook Journal Modal -->
+  <div id="modal-journal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-window">
+      <div class="modal-top-bar">
+        <div class="modal-title-box">
+          <div class="modal-title-icon">📓</div>
+          <div class="modal-title-text">
+            <h2>나의 실천 워크북 기록장</h2>
+            <p>직접 실천하고 기록한 40가지 연습의 답변과 치유의 순간들입니다.</p>
+          </div>
+        </div>
+        <button id="btn-close-journal" class="modal-close-icon-btn" aria-label="닫기">&times;</button>
+      </div>
+
+      <div class="modal-scrollable-body" id="journal-entries-container">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="modal-bottom-bar" style="justify-content: flex-end;">
+        <button id="btn-export-journal" class="nav-btn" style="margin-right: auto;">📥 텍스트로 내보내기</button>
+        <button id="btn-clear-journal" class="nav-btn" style="color: #c44;">기록 전체 삭제</button>
+        <button id="btn-done-journal" class="btn-copper">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="./practice-data.js?v=34.0"></script>
+  <script src="./teachings-data.js?v=34.0"></script>
+  <script src="./audio-synth.js?v=34.0"></script>
+  <script src="./app.js?v=34.0"></script>
+</body>
+</html>

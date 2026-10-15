@@ -1,0 +1,1724 @@
+@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;1,400&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", "SUIT Variable", -apple-system, sans-serif;
+  --font-serif: "Playfair Display", "Noto Serif KR", serif;
+  --font-display: "Outfit", "SUIT Variable", sans-serif;
+  --font-cute: "SUIT Variable", sans-serif;
+  --font-soft: "SUIT Variable", sans-serif;
+}
+
+@layer base {
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --nav-bar-h: 2.1rem;
+    --nav-total-h: calc(var(--nav-bar-h) + var(--sab));
+  }
+
+  html {
+    height: 100%;
+    height: -webkit-fill-available;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input/textarea focus */
+  @media screen and (max-width: 768px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
+    background: oklch(0.035 0.03 275);
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: auto;
+    touch-action: pan-y;
+  }
+
+  #root,
+  .prism-app-shell {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
+    overflow: hidden;
+    overscroll-behavior-x: none !important;
+  }
+
+  [data-app-scroll-root] {
+    overscroll-behavior-x: none !important;
+  }
+  .glass {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* GPU-optimized backdrop blurs: caps excessive blur radiuses to prevent GPU fill-rate throttling */
+  .backdrop-blur-3xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-xl {
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  .backdrop-blur-lg {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* Mobile GPU & Compositor Optimization: Prevents WebKit offscreen render-pass thrashing */
+  @media screen and (max-width: 768px) {
+    .backdrop-blur-3xl,
+    .backdrop-blur-2xl,
+    .backdrop-blur-xl {
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+    }
+    .backdrop-blur-lg,
+    .backdrop-blur-md,
+    .backdrop-blur {
+      backdrop-filter: blur(4px) !important;
+      -webkit-backdrop-filter: blur(4px) !important;
+    }
+    .glass {
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+    }
+  }
+
+  .perf-mobile .backdrop-blur-3xl,
+  .perf-mobile .backdrop-blur-2xl,
+  .perf-mobile .backdrop-blur-xl,
+  .perf-reduced .backdrop-blur-3xl,
+  .perf-reduced .backdrop-blur-2xl,
+  .perf-reduced .backdrop-blur-xl {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+  }
+  .perf-mobile .backdrop-blur-lg,
+  .perf-mobile .backdrop-blur-md,
+  .perf-mobile .backdrop-blur,
+  .perf-reduced .backdrop-blur-lg,
+  .perf-reduced .backdrop-blur-md,
+  .perf-reduced .backdrop-blur {
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+  .perf-mobile .glass,
+  .perf-reduced .glass {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+  }
+
+  /* Global touch responsiveness & scrolling smoothness */
+  button, a, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* GPU acceleration on scroll containers: pure native momentum scrolling without breaking layer compositing */
+  [data-app-scroll-root],
+  .overflow-y-auto,
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  .prism-rainbow-btn {
+    background: linear-gradient(135deg, #ff6b6b, #feca57, #1dd1a1, #54a0ff, #5f27cd);
+    background-size: 250% 250%;
+    animation: prism-gradient-flow 5s ease infinite;
+  }
+  .celestial-tarot-btn {
+    background: linear-gradient(135deg, #feca57, #ff5959, #a21caf, #6366f1, #3b82f6);
+    background-size: 250% 250%;
+    animation: celestial-gradient-flow 5s ease infinite;
+  }
+  .prism-fab-3d {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border: 1.5px solid rgba(255, 255, 255, 0.32);
+    box-shadow:
+      inset 0 2px 5px rgba(255, 255, 255, 0.4),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.24),
+      0 5px 0 rgba(0, 0, 0, 0.34),
+      0 8px 16px rgba(0, 0, 0, 0.36),
+      0 14px 28px rgba(0, 0, 0, 0.18);
+    transition:
+      transform 0.16s ease,
+      box-shadow 0.16s ease,
+      filter 0.16s ease;
+  }
+  .prism-fab-3d::before {
+    content: "";
+    position: absolute;
+    inset: 6% 10% 54% 10%;
+    border-radius: 9999px;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.12) 58%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+  .prism-fab-3d::after {
+    content: "";
+    position: absolute;
+    inset: 56% 14% 10% 14%;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.22) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .prism-fab-3d > * {
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  }
+  .prism-fab-3d-rainbow {
+    box-shadow:
+      inset 0 2px 5px rgba(255, 255, 255, 0.42),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+      0 5px 0 rgba(38, 44, 58, 0.72),
+      0 8px 16px rgba(255, 107, 107, 0.26),
+      0 14px 26px rgba(0, 0, 0, 0.3);
+  }
+  .prism-fab-3d-chat {
+    box-shadow:
+      inset 0 2px 5px rgba(255, 255, 255, 0.38),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.26),
+      0 5px 0 rgba(76, 29, 149, 0.78),
+      0 8px 16px rgba(162, 28, 175, 0.34),
+      0 14px 26px rgba(0, 0, 0, 0.3);
+  }
+  .prism-fab-3d:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+  }
+  .prism-fab-3d-rainbow:hover {
+    box-shadow:
+      inset 0 2px 6px rgba(255, 255, 255, 0.48),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.18),
+      0 7px 0 rgba(38, 44, 58, 0.72),
+      0 11px 20px rgba(29, 209, 161, 0.32),
+      0 16px 30px rgba(0, 0, 0, 0.28);
+  }
+  .prism-fab-3d-chat:hover {
+    box-shadow:
+      inset 0 2px 6px rgba(255, 255, 255, 0.44),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.22),
+      0 7px 0 rgba(76, 29, 149, 0.78),
+      0 11px 20px rgba(162, 28, 175, 0.42),
+      0 16px 30px rgba(0, 0, 0, 0.28);
+  }
+  .prism-fab-3d:active {
+    transform: translateY(4px);
+    filter: brightness(0.98);
+  }
+  .prism-fab-3d-rainbow:active {
+    box-shadow:
+      inset 0 1px 3px rgba(255, 255, 255, 0.28),
+      inset 0 -2px 5px rgba(0, 0, 0, 0.28),
+      0 2px 0 rgba(38, 44, 58, 0.72),
+      0 4px 10px rgba(0, 0, 0, 0.28);
+  }
+  .prism-fab-3d-chat:active {
+    box-shadow:
+      inset 0 1px 3px rgba(255, 255, 255, 0.26),
+      inset 0 -2px 5px rgba(0, 0, 0, 0.3),
+      0 2px 0 rgba(76, 29, 149, 0.78),
+      0 4px 10px rgba(0, 0, 0, 0.28);
+  }
+  @keyframes prism-gradient-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes celestial-gradient-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @media (max-width: 480px) {
+    .glass {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  }
+}
+
+@layer utilities {
+  .prism-app-shell {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS Safari GPU-accelerated smooth scrolling for active scroll roots */
+  [data-app-scroll-root],
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    transform: translateZ(0);
+  }
+
+  .prism-bottom-nav {
+    flex-shrink: 0;
+    width: 100%;
+    padding-bottom: var(--sab);
+    background: oklch(0.08 0.02 270);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  [data-app-scroll-root] {
+    padding-bottom: 0;
+    scroll-padding-bottom: 0;
+    /* Explicitly tell iOS WebKit this container handles vertical pan gestures.
+       Prevents the fixed-layer compositing bug from swallowing scroll touch events. */
+    touch-action: pan-y;
+  }
+
+
+  .h-screen-dvh,
+  .h-app-full {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .min-h-screen-dvh {
+    min-height: 100%;
+  }
+
+  .pt-safe {
+    padding-top: var(--sat);
+  }
+
+  .pb-safe {
+    padding-bottom: var(--sab);
+  }
+
+  .pl-safe {
+    padding-left: var(--sal);
+  }
+
+  .pr-safe {
+    padding-right: var(--sar);
+  }
+
+  .px-safe {
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+  }
+
+  .pt-safe-4 {
+    padding-top: calc(var(--sat) + 1rem);
+  }
+
+  .pb-safe-4 {
+    padding-bottom: calc(var(--sab) + 1rem);
+  }
+
+  .top-safe-2 {
+    top: calc(var(--sat) + 0.75rem);
+  }
+
+  .top-safe-4 {
+    top: calc(var(--sat) + 1.25rem);
+  }
+
+  .top-safe-5 {
+    top: calc(var(--sat) + 1.5rem);
+  }
+
+  .top-safe-nav {
+    top: calc(var(--sat) + 4.25rem);
+  }
+
+  .md\:top-safe-4 {
+    @media (width >= 48rem) {
+      top: calc(var(--sat) + 1.25rem);
+    }
+  }
+
+  .md\:top-safe-5 {
+    @media (width >= 48rem) {
+      top: calc(var(--sat) + 1.5rem);
+    }
+  }
+
+  .md\:top-safe-nav-md {
+    @media (width >= 48rem) {
+      top: calc(var(--sat) + 4.75rem);
+    }
+  }
+
+  .pt-page {
+    padding-top: calc(var(--sat) + 6rem);
+  }
+
+  .pt-page-sm {
+    padding-top: calc(var(--sat) + 5.25rem);
+  }
+
+  .pt-home {
+    padding-top: calc(var(--sat) + 5.5rem);
+  }
+
+  .pb-page,
+  .pb-page-sm {
+    padding-bottom: calc(var(--sab) + 6.5rem);
+  }
+
+  .md\:pt-page-md {
+    @media (width >= 48rem) {
+      padding-top: calc(var(--sat) + 7rem);
+    }
+  }
+
+  .md\:pt-home-md {
+    @media (width >= 48rem) {
+      padding-top: calc(var(--sat) + 6.5rem);
+    }
+  }
+
+  .md\:pb-page-md {
+    @media (width >= 48rem) {
+      padding-bottom: 2rem;
+    }
+  }
+
+  .bottom-safe-fab {
+    bottom: calc(var(--sab) + 3.85rem);
+  }
+
+  .bottom-safe-music {
+    bottom: calc(var(--sab) + 3.85rem);
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Mobile Viewport (iPhone / Galaxy / Modern Smartphones < 768px) & Responsive Spacing */
+@media (max-width: 768px) {
+  :root {
+    --nav-bar-h: 2.75rem;
+    --nav-total-h: calc(var(--nav-bar-h) + var(--sab));
+  }
+
+  .pt-page {
+    padding-top: calc(var(--sat) + 5.5rem);
+  }
+
+  .pt-page-sm {
+    padding-top: calc(var(--sat) + 4.75rem);
+  }
+
+  .pt-home {
+    padding-top: calc(var(--sat) + 4.5rem);
+  }
+
+  .top-safe-nav {
+    top: calc(var(--sat) + 3.25rem);
+  }
+
+  .top-safe-2 {
+    top: calc(var(--sat) + 0.5rem);
+  }
+
+  .prism-app-shell {
+    width: 100%;
+    max-width: 100vw;
+    /* overflow-x:clip is safe here — doesn't create scroll container */
+    overflow-x: clip;
+    @supports not (overflow: clip) {
+      overflow-x: hidden;
+    }
+  }
+
+  .prism-xs-pad {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .prism-subnav-btn {
+    padding: 0.35rem 0.65rem !important;
+    gap: 0.3rem !important;
+    border-radius: 9999px !important;
+  }
+
+  .prism-subnav-label {
+    font-size: 9px !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .prism-xs-subnav {
+    top: calc(var(--sat) + 3.25rem) !important;
+    padding: 0.2rem !important;
+    max-width: calc(100vw - 0.75rem) !important;
+    border-radius: 9999px !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+  }
+
+  .prism-xs-card,
+  .prism-xs-hub-card {
+    padding: 1.125rem !important;
+    border-radius: 1.35rem !important;
+  }
+
+  .prism-xs-app-card {
+    padding: 1rem !important;
+    border-radius: 1.25rem !important;
+  }
+
+  .prism-xs-app-card h3 {
+    font-size: 1.125rem !important;
+  }
+
+  .prism-xs-app-card p {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .prism-xs-modal {
+    padding: 1.25rem !important;
+    border-radius: 1.5rem !important;
+    max-height: 85dvh !important;
+    max-width: calc(100vw - 1.25rem) !important;
+  }
+
+  .prism-top-chrome {
+    gap: 0.25rem !important;
+    right: 0.5rem !important;
+  }
+
+  .prism-top-chrome button {
+    padding: 0.4rem !important;
+  }
+
+  .prism-xs-fab-group {
+    right: 0.75rem !important;
+    left: auto !important;
+  }
+
+  .prism-xs-fab {
+    padding: 0.65rem !important;
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .prism-xs-fab svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .bottom-safe-fab {
+    bottom: calc(var(--sab) + 3.85rem);
+  }
+
+  .bottom-safe-music {
+    bottom: calc(var(--sab) + 3.85rem);
+    left: 0.75rem;
+  }
+
+  .prism-bottom-nav {
+    border-top-width: 0.5px;
+    padding-bottom: var(--sab);
+    height: var(--nav-total-h);
+  }
+
+  .no-scrollbar {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  [data-app-scroll-root] {
+    padding-bottom: calc(var(--sab) + 6.5rem) !important;
+    scroll-padding-bottom: calc(var(--sab) + 6.5rem);
+  }
+
+  .pb-page,
+  .pb-page-sm {
+    padding-bottom: calc(var(--sab) + 6.5rem) !important;
+  }
+}
+
+/* ==========================================================================
+   iPhone XS (Apple A12 Bionic, 5.8" Super Retina OLED, 375x812 pt @ 3x DPR)
+   GPU Fill-rate & WebKit Frame-Pacing Optimizations
+   ========================================================================== */
+html.prism-iphone-xs,
+html.perf-iphone-xs {
+  --sat: env(safe-area-inset-top, 44px);
+  --sab: env(safe-area-inset-bottom, 34px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+html.prism-iphone-xs .prism-hub-header {
+  top: calc(var(--sat) + 0.25rem) !important;
+  left: 0.5rem !important;
+}
+
+html.prism-iphone-xs .prism-xs-hub-title {
+  font-size: 1.05rem !important;
+}
+
+/* Touch responsiveness: eliminate 300ms tap delay & highlight box */
+html.prism-iphone-xs button,
+html.prism-iphone-xs a,
+html.prism-iphone-xs [role="button"],
+html.perf-iphone-xs button,
+html.perf-iphone-xs a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scroll root: native iOS momentum scrolling (clean native momentum scroll without compositor overrides) */
+html.prism-iphone-xs [data-app-scroll-root],
+html.perf-iphone-xs [data-app-scroll-root] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Input font-size: strictly 16px to stop iOS Safari auto-zooming the viewport */
+html.prism-iphone-xs input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.prism-iphone-xs textarea,
+html.prism-iphone-xs select,
+html.perf-iphone-xs input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.perf-iphone-xs textarea,
+html.perf-iphone-xs select {
+  font-size: 16px !important;
+}
+
+/* Safe area bottom padding for iPhone X/XS Home Indicator Bar (34px) */
+html.prism-iphone-xs .prism-bottom-nav,
+html.perf-iphone-xs .prism-bottom-nav {
+  padding-bottom: max(0.6rem, env(safe-area-inset-bottom, 34px)) !important;
+}
+
+/* GPU fill-rate protection for iPhone X (Apple A11) & XS (Apple A12):
+   Completely bypass expensive offscreen multi-pass backdrop-filter blurs on 3x Retina buffer.
+   Replaces with lightweight, high-performance cosmic dark surfaces with 0% blur overhead. */
+html.prism-iphone-xs [class*="backdrop-blur"],
+html.perf-iphone-xs [class*="backdrop-blur"],
+html.prism-iphone-xs .glass,
+html.perf-iphone-xs .glass,
+html.perf-legacy [class*="backdrop-blur"],
+html.perf-legacy .glass,
+html.perf-reduced [class*="backdrop-blur"],
+html.perf-reduced .glass {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: rgba(18, 16, 30, 0.88) !important;
+}
+
+html.prism-iphone-xs .prism-bottom-nav,
+html.perf-iphone-xs .prism-bottom-nav,
+html.perf-legacy .prism-bottom-nav {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: rgba(14, 12, 24, 0.96) !important;
+}
+
+html.prism-iphone-xs .prism-xs-subnav,
+html.perf-iphone-xs .prism-xs-subnav,
+html.perf-legacy .prism-xs-subnav {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: rgba(22, 20, 36, 0.94) !important;
+}
+
+/* Eliminate continuous ping/pulse animations in viewport to prevent layer invalidations during scroll */
+html.prism-iphone-xs .animate-ping,
+html.perf-iphone-xs .animate-ping {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+html.prism-iphone-xs .animate-pulse,
+html.perf-iphone-xs .animate-pulse {
+  animation: none !important;
+}
+
+/* Lightweight box-shadow to prevent GPU rasterization thrashing */
+html.prism-iphone-xs .shadow-2xl,
+html.perf-iphone-xs .shadow-2xl {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Clamp excessive CSS filter blurs (e.g. 75px or 48px) to zero/none */
+html.prism-iphone-xs .blur-3xl,
+html.perf-iphone-xs .blur-3xl,
+html.prism-iphone-xs .blur-2xl,
+html.perf-iphone-xs .blur-2xl {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* Avoid expensive SVG drop-shadow filters during animation */
+html.prism-iphone-xs [class*="drop-shadow-"],
+html.perf-iphone-xs [class*="drop-shadow-"] {
+  filter: none !important;
+}
+
+/* Map expensive mix-blend-mode to normal opacity on mobile WebKit */
+html.prism-iphone-xs .mix-blend-screen,
+html.perf-iphone-xs .mix-blend-screen {
+  mix-blend-mode: normal !important;
+  opacity: 0.72 !important;
+}
+
+/* Smooth vector rendering for icons and rings */
+html.prism-iphone-xs svg,
+html.perf-iphone-xs svg {
+  shape-rendering: geometricPrecision;
+}
+
+/* Aurora & background elements lightweight containment */
+html.prism-iphone-xs .prism-aura-bg,
+html.perf-iphone-xs .prism-aura-bg {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+
+/* Galaxy S23 & Android Mobile: silky-smooth native touch momentum scrolling (NO layout thrashing content-visibility on scroll root) */
+html.perf-galaxy [data-app-scroll-root],
+html.perf-mobile [data-app-scroll-root] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+html.perf-galaxy .fixed,
+html.perf-galaxy .prism-bottom-nav,
+html.perf-mobile .fixed,
+html.perf-mobile .prism-bottom-nav {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+html.perf-galaxy .prism-aura-bg,
+html.perf-mobile .prism-aura-bg {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+html.perf-galaxy svg,
+html.perf-mobile svg {
+  shape-rendering: optimizeSpeed;
+}
+
+html.perf-galaxy .aura-orb-1,
+html.perf-galaxy .aura-orb-2,
+html.perf-galaxy .aura-orb-3 {
+  will-change: transform;
+}
+
+/* Galaxy Z Fold SE: flagship Android foldable tuning */
+html.perf-galaxy-fold [data-app-scroll-root] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+html.perf-galaxy-fold .fixed,
+html.perf-galaxy-fold .prism-bottom-nav,
+html.perf-galaxy-fold .prism-xs-fab-group {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+html.perf-galaxy-fold .prism-aura-bg {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+html.perf-galaxy-fold .glass {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html.perf-galaxy-fold[data-fold-cover="true"] .glass {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.perf-galaxy-fold[data-fold-cover="true"] .prism-fab-3d::before,
+html.perf-galaxy-fold[data-fold-cover="true"] .prism-fab-3d::after {
+  opacity: 0.65;
+}
+
+html.perf-galaxy-fold[data-fold-cover="false"] .aura-orb-1,
+html.perf-galaxy-fold[data-fold-cover="false"] .aura-orb-2,
+html.perf-galaxy-fold[data-fold-cover="false"] .aura-orb-3 {
+  will-change: transform, opacity;
+}
+
+html.perf-galaxy-fold[data-fold-cover="true"] .aura-orb-1,
+html.perf-galaxy-fold[data-fold-cover="true"] .aura-orb-2,
+html.perf-galaxy-fold[data-fold-cover="true"] .aura-orb-3 {
+  animation-duration: 22s !important;
+}
+
+/* PWA / mobile: backdrop-blur and heavy motion are the main mobile GPU lag sources */
+html.perf-mobile .glass,
+html.perf-reduced .glass,
+html.pwa-standalone .glass,
+html.perf-mobile .prism-bottom-nav,
+html.perf-reduced .prism-bottom-nav,
+html.pwa-standalone .prism-bottom-nav {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: rgba(18, 16, 30, 0.94) !important;
+}
+
+html.perf-mobile [class*="backdrop-blur"],
+html.perf-reduced [class*="backdrop-blur"],
+html.pwa-standalone [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.perf-mobile .prism-rainbow-btn,
+html.perf-mobile .celestial-tarot-btn,
+html.perf-reduced .prism-rainbow-btn,
+html.perf-reduced .celestial-tarot-btn,
+html.pwa-standalone .prism-rainbow-btn,
+html.pwa-standalone .celestial-tarot-btn {
+  animation: none !important;
+  background-size: 100% 100% !important;
+}
+
+html.perf-mobile .prism-fab-3d,
+html.perf-reduced .prism-fab-3d,
+html.pwa-standalone .prism-fab-3d {
+  box-shadow:
+    inset 0 1px 3px rgba(255, 255, 255, 0.3),
+    0 4px 10px rgba(0, 0, 0, 0.28) !important;
+}
+
+html.perf-mobile .prism-fab-3d::before,
+html.perf-mobile .prism-fab-3d::after,
+html.perf-reduced .prism-fab-3d::before,
+html.perf-reduced .prism-fab-3d::after,
+html.pwa-standalone .prism-fab-3d::before,
+html.pwa-standalone .prism-fab-3d::after {
+  display: none;
+}
+
+html.perf-mobile *,
+html.perf-reduced *,
+html.pwa-standalone * {
+  scroll-behavior: auto !important;
+}
+
+@media (display-mode: standalone) {
+  .glass,
+  .prism-bottom-nav,
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* iPhone XS / legacy mobile: A12-class device performance budget */
+html.perf-legacy {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --font-cute: -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-soft: -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Noto Serif KR", Georgia, serif;
+}
+
+/* FIX: perf-legacy animation kill was too aggressive — it froze ALL transitions
+   including button taps, making the UI feel completely unresponsive on modern iPhones
+   that were incorrectly matched by isIPhoneXSClass(). Now only disables the MOST
+   expensive animations (background gradient sweeps, complex multi-property keyframes)
+   while keeping interactive transitions alive so buttons/taps feel responsive. */
+html.perf-legacy .prism-rainbow-btn,
+html.perf-legacy .celestial-tarot-btn,
+html.perf-legacy .aura-orb-1,
+html.perf-legacy .aura-orb-2,
+html.perf-legacy .aura-orb-3,
+html.perf-legacy .cosmic-star-twinkle,
+html.perf-legacy .cosmic-constellations,
+html.perf-legacy .cosmic-star-flare,
+html.perf-legacy .animate-ping {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+html.perf-legacy .animate-pulse {
+  animation: none !important;
+}
+
+html.perf-legacy .animate-spin {
+  animation-duration: 0.8s !important;
+  animation-iteration-count: infinite !important;
+}
+
+html.perf-legacy [data-app-scroll-root] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+html.perf-legacy [class*="shadow-"] {
+  box-shadow: none !important;
+}
+
+html.perf-legacy [class*="blur-"]:not(.prism-aura-bg):not(.prism-aura-bg *) {
+  filter: none !important;
+}
+
+.prism-aura-bg {
+  isolation: isolate;
+}
+
+html.perf-legacy svg {
+  shape-rendering: optimizeSpeed;
+}
+
+@keyframes aura-orb-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.38; }
+  50% { transform: translate(4%, 3%) scale(1.06); opacity: 0.44; }
+}
+
+@keyframes aura-orb-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.28; }
+  50% { transform: translate(-3%, -4%) scale(1.05); opacity: 0.34; }
+}
+
+@keyframes aura-orb-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.22; }
+  50% { transform: translate(2%, -2%) scale(1.08); opacity: 0.28; }
+}
+
+.aura-orb-1 {
+  animation: aura-orb-drift-1 14s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.aura-orb-2 {
+  animation: aura-orb-drift-2 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.aura-orb-3 {
+  animation: aura-orb-drift-3 16s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+html.perf-legacy .aura-orb-1,
+html.perf-legacy .aura-orb-2,
+html.perf-legacy .aura-orb-3,
+html.perf-mobile .aura-orb-1,
+html.perf-mobile .aura-orb-2,
+html.perf-mobile .aura-orb-3,
+html.perf-reduced .aura-orb-1,
+html.perf-reduced .aura-orb-2,
+html.perf-reduced .aura-orb-3 {
+  animation: none !important;
+}
+
+@keyframes cosmic-star-twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.35); }
+}
+
+.cosmic-star-twinkle {
+  animation: cosmic-star-twinkle 4s ease-in-out infinite;
+}
+
+html.perf-legacy .cosmic-star-twinkle,
+html.perf-mobile .cosmic-star-twinkle,
+html.perf-reduced .cosmic-star-twinkle {
+  animation: none !important;
+}
+
+/* 별똥별: 좌상단 → 우하단, 빠른 직선 비행 + 긴 꼬리 + 눈부신 헤드 광채 */
+.cosmic-meteor {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  animation: cosmic-meteor-fly var(--meteor-cycle, 10s) linear var(--meteor-delay, 0s) infinite;
+  will-change: transform, opacity;
+  z-index: 1;
+}
+
+.cosmic-meteor__streak {
+  position: relative;
+  display: block;
+  width: var(--meteor-trail, 110px);
+  height: 1.5px;
+  border-radius: 9999px;
+  transform: rotate(var(--meteor-angle, 38deg));
+  transform-origin: 100% 50%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0) 6%,
+    rgba(180, 220, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.95) 86%,
+    #ffffff 100%
+  );
+  filter: drop-shadow(0 0 3px rgba(180, 220, 255, 0.8));
+}
+
+.cosmic-meteor__streak::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: #ffffff;
+  transform: translateY(-50%);
+  box-shadow:
+    0 0 6px 2px rgba(255, 255, 255, 1),
+    0 0 12px 4px rgba(160, 215, 255, 0.85),
+    0 0 20px 6px rgba(254, 240, 138, 0.5);
+}
+
+@keyframes cosmic-meteor-fly {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  0.3% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  5.5% {
+    opacity: 0.95;
+    transform: translate3d(var(--meteor-end-x, 92vw), var(--meteor-end-y, 68vh), 0);
+  }
+  6.8% {
+    opacity: 0;
+    transform: translate3d(var(--meteor-end-x, 92vw), var(--meteor-end-y, 68vh), 0);
+  }
+  6.81%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+html.perf-legacy .prism-aura-bg .cosmic-meteor,
+html.perf-mobile .prism-aura-bg .cosmic-meteor,
+html.perf-reduced .prism-aura-bg .cosmic-meteor {
+  animation: cosmic-meteor-fly var(--meteor-cycle, 10s) linear var(--meteor-delay, 0s) infinite !important;
+}
+
+/* 별자리 (Constellations): 우아하고 은은한 성도 선 및 알파 성급 반짝임 */
+@keyframes cosmic-constellation-pulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes cosmic-star-flare {
+  0%, 100% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.25) rotate(15deg);
+    opacity: 1;
+  }
+}
+
+.cosmic-constellations {
+  animation: cosmic-constellation-pulse 8s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.cosmic-star-flare {
+  animation: cosmic-star-flare 5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+html.perf-legacy .cosmic-constellations,
+html.perf-reduced .cosmic-constellations,
+html.perf-legacy .cosmic-star-flare,
+html.perf-reduced .cosmic-star-flare {
+  animation: none !important;
+}
+
+/* LP 판 (Vinyl Record) 턴테이블 회전 및 반사광 스타일 */
+@keyframes lp-vinyl-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lp-vinyl-disc {
+  position: relative;
+  border-radius: 9999px;
+  background: radial-gradient(circle at center, #27272a 0%, #18181b 45%, #09090b 80%, #000000 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 4px 14px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  user-select: none;
+}
+
+.lp-vinyl-grooves {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      transparent 0,
+      transparent 2px,
+      rgba(255, 255, 255, 0.05) 2.5px,
+      transparent 3.5px
+    ),
+    conic-gradient(
+      from 0deg,
+      rgba(255, 255, 255, 0.18) 0deg,
+      transparent 45deg,
+      rgba(255, 255, 255, 0.04) 90deg,
+      transparent 135deg,
+      rgba(255, 255, 255, 0.18) 180deg,
+      transparent 225deg,
+      rgba(255, 255, 255, 0.04) 270deg,
+      transparent 315deg,
+      rgba(255, 255, 255, 0.18) 360deg
+    );
+  pointer-events: none;
+}
+
+.lp-spinning {
+  animation: lp-vinyl-spin 3.2s linear infinite;
+  animation-play-state: running;
+  will-change: transform;
+}
+
+.lp-paused {
+  animation: lp-vinyl-spin 3.2s linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
+}
+
+/* 🌟 빅뱅 차원도약: 빛비춤(화이트홀) & 어둠현상(블랙홀) 복원 효과 */
+@keyframes bigbang-starlight-rays {
+  0% {
+    transform: rotate(0deg) scale(0.95);
+    opacity: 0.75;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) scale(0.95);
+    opacity: 0.75;
+  }
+}
+
+@keyframes bigbang-darkness-suction {
+  0% {
+    transform: scale(1.38);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(0.92);
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(0.48);
+    opacity: 0;
+  }
+}
+
+@keyframes bigbang-radiance-pulse {
+  0% {
+    opacity: 0.72;
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 0.98;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.72;
+    transform: scale(0.99);
+  }
+}
+
+@keyframes bigbang-darkness-pulse {
+  0% {
+    opacity: 0.82;
+    transform: scale(1.01);
+  }
+  50% {
+    opacity: 0.98;
+    transform: scale(0.99);
+  }
+  100% {
+    opacity: 0.82;
+    transform: scale(1.01);
+  }
+}
+
+@keyframes bigbang-photon-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.bigbang-rays-spin {
+  animation: bigbang-starlight-rays 14s linear infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.bigbang-suction-wave-1 {
+  animation: bigbang-darkness-suction 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.bigbang-suction-wave-2 {
+  animation: bigbang-darkness-suction 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.75s;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.bigbang-radiance-field {
+  animation: bigbang-radiance-pulse 2.4s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+.bigbang-darkness-field {
+  animation: bigbang-darkness-pulse 2.2s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+.bigbang-photon-sweep {
+  animation: bigbang-photon-sweep 24s linear infinite;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+@keyframes bigbang-wormhole-vortex {
+  0% {
+    transform: rotate(0deg) scale(0.92);
+    opacity: 0.75;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.08);
+    opacity: 0.95;
+  }
+  100% {
+    transform: rotate(360deg) scale(0.92);
+    opacity: 0.75;
+  }
+}
+
+.bigbang-wormhole-vortex {
+  animation: bigbang-wormhole-vortex 3.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@keyframes blackhole-smoke-swirl-cw {
+  0% {
+    transform: rotate(0deg) scale(0.92);
+    opacity: 0.75;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.18);
+    opacity: 0.98;
+  }
+  100% {
+    transform: rotate(360deg) scale(0.92);
+    opacity: 0.75;
+  }
+}
+
+@keyframes blackhole-smoke-swirl-ccw {
+  0% {
+    transform: rotate(360deg) scale(1.15);
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(180deg) scale(0.95);
+    opacity: 0.96;
+  }
+  100% {
+    transform: rotate(0deg) scale(1.15);
+    opacity: 0.8;
+  }
+}
+
+.blackhole-smoke-swirl-cw {
+  animation: blackhole-smoke-swirl-cw 3.8s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.blackhole-smoke-swirl-ccw {
+  animation: blackhole-smoke-swirl-ccw 4.6s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@keyframes rainbow-wave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-rainbow-wave {
+  animation: rainbow-wave 4s ease infinite;
+}
+
+/* Circular Progress Indicator Smooth Rotation on Data Update */
+@keyframes progress-spin-smooth {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progress-spin-pulse {
+  0% {
+    transform: rotate(0deg) scale(0.96);
+  }
+  45% {
+    transform: rotate(180deg) scale(1.08);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.animate-progress-spin-smooth {
+  animation: progress-spin-smooth 3.2s linear infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.animate-progress-update-pulse {
+  animation: progress-spin-pulse 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Top Nav Sticky Position & Visual Separation Box Shadow */
+.top-nav {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 25;
+  background: rgba(9, 9, 11, 0.72);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45), 0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+/* Subtle Shimmering Light Effect Gliding Horizontally on Bottom Border */
+.top-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(168, 85, 247, 0.15) 15%,
+    rgba(216, 180, 254, 0.75) 45%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(216, 180, 254, 0.75) 55%,
+    rgba(168, 85, 247, 0.15) 85%,
+    transparent 100%
+  );
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.9)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
+  animation: top-nav-celestial-shimmer 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes top-nav-celestial-shimmer {
+  0% {
+    transform: translateX(-150%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(350%);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   📱 iPhone 13 mini & Compact Mobile Display & Performance Optimizations
+   (Viewport: 375px x 812px, iOS WebKit Safari, A15 Bionic GPU Acceleration)
+   ========================================================================== */
+
+/* Universal Korean & English anti-truncation: complete sentences wrap cleanly without awkward ellipsis */
+h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* Force-full sentence visibility: ensures no sentence is ever chopped off with ellipsis */
+.sentence-full,
+.no-truncate {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: keep-all !important;
+  overflow-wrap: break-word !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+}
+
+/* iOS Safe Area & Compact Viewport Tuning */
+@media screen and (max-width: 414px) {
+  /* Prevent horizontal edge bleeding and accidental horizontal bounce */
+  html, body, #root {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Compact padding for cards on iPhone 13 mini (375px width) */
+  .prism-xs-pad {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Ensure touch targets meet Apple HIG minimum (44px) */
+  button:not(.inline-btn),
+  [role="button"]:not(.inline-btn) {
+    min-height: 40px;
+  }
+
+  /* Hardware-accelerated smooth scrolling on iOS WebKit */
+  [data-app-scroll-root] {
+    -webkit-overflow-scrolling: touch;
+    transform: translate3d(0, 0, 0);
+    will-change: scroll-position;
+  }
+
+  /* Safe area inset handling for bottom navigation and floating controls */
+  .prism-subnav-btn {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* Compact glass card padding to maximize readable text area */
+  .rounded-\[32px\],
+  .rounded-\[36px\],
+  .rounded-\[40px\],
+  .rounded-\[44px\],
+  .rounded-\[48px\] {
+    border-radius: 1.25rem;
+  }
+}
+
+/* Specific optimization for 375px width (iPhone 13 mini / SE / compact iOS) */
+@media screen and (max-width: 380px) {
+  .glass {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+  
+  /* Optimize font rendering and spacing on compact screens */
+  p, span, div {
+    letter-spacing: -0.015em;
+  }
+}
+
+/* High-DPI Retina optimization for crisp text and zero GPU jitter on A15 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* =========================================================================
+   Mystical Tarot Card Draw: Flicker & Shimmer Aesthetics
+   ========================================================================= */
+
+@keyframes tarot-mystic-flicker {
+  0%, 100% {
+    opacity: 0.82;
+    filter: drop-shadow(0 0 6px rgba(234, 179, 8, 0.3)) drop-shadow(0 0 14px rgba(245, 158, 11, 0.18));
+  }
+  16% {
+    opacity: 0.98;
+    filter: drop-shadow(0 0 16px rgba(250, 204, 21, 0.6)) drop-shadow(0 0 24px rgba(234, 179, 8, 0.35));
+  }
+  32% {
+    opacity: 0.74;
+    filter: drop-shadow(0 0 5px rgba(234, 179, 8, 0.22)) drop-shadow(0 0 10px rgba(245, 158, 11, 0.12));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 20px rgba(254, 240, 138, 0.65)) drop-shadow(0 0 30px rgba(234, 179, 8, 0.4));
+  }
+  68% {
+    opacity: 0.79;
+    filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.28)) drop-shadow(0 0 16px rgba(245, 158, 11, 0.18));
+  }
+  84% {
+    opacity: 0.94;
+    filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.5)) drop-shadow(0 0 22px rgba(234, 179, 8, 0.3));
+  }
+}
+
+@keyframes tarot-border-flicker {
+  0%, 100% {
+    border-color: rgba(234, 179, 8, 0.45);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.18), inset 0 0 6px rgba(234, 179, 8, 0.12);
+  }
+  24% {
+    border-color: rgba(254, 240, 138, 0.85);
+    box-shadow: 0 0 18px rgba(250, 204, 21, 0.48), inset 0 0 12px rgba(250, 204, 21, 0.28);
+  }
+  44% {
+    border-color: rgba(234, 179, 8, 0.35);
+    box-shadow: 0 0 7px rgba(234, 179, 8, 0.12), inset 0 0 5px rgba(234, 179, 8, 0.08);
+  }
+  70% {
+    border-color: rgba(253, 224, 71, 0.9);
+    box-shadow: 0 0 22px rgba(234, 179, 8, 0.52), inset 0 0 15px rgba(234, 179, 8, 0.32);
+  }
+  86% {
+    border-color: rgba(234, 179, 8, 0.5);
+    box-shadow: 0 0 12px rgba(234, 179, 8, 0.22), inset 0 0 8px rgba(234, 179, 8, 0.18);
+  }
+}
+
+@keyframes tarot-draw-shimmer-sweep {
+  0% {
+    transform: translateX(-160%) skewX(-20deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(260%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes tarot-ambient-shimmer {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(0.99) rotate(0deg);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.01) rotate(0.8deg);
+  }
+}
+
+.tarot-card-drawing-flicker {
+  animation: tarot-mystic-flicker 2.6s ease-in-out infinite;
+}
+
+.tarot-card-border-flicker {
+  animation: tarot-border-flicker 2.3s ease-in-out infinite;
+}
+
+.tarot-card-shimmer-sweep {
+  animation: tarot-draw-shimmer-sweep 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+.tarot-card-shimmer-sweep-once {
+  animation: tarot-draw-shimmer-sweep 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.tarot-ambient-shimmer-layer {
+  animation: tarot-ambient-shimmer 3.4s ease-in-out infinite;
+}
+
+/* =========================================================================
+   Google Cloud Sync Header & Auth Styles
+   ========================================================================= */
+.sync-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-box {
+  display: flex;
+  align-items: center;
+}
+
+.google-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.google-login-btn:hover {
+  filter: brightness(1.05);
+}
+
+.google-icon {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.user-name {
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* =========================================================================
+   Tarot Card Flip Micro-Vibration & Particle Burst Effects
+   ========================================================================= */
+@keyframes tarot-screen-vibrate {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  12% {
+    transform: translate3d(-2.8px, 1.8px, 0) rotate(-0.25deg);
+  }
+  25% {
+    transform: translate3d(3.2px, -2px, 0) rotate(0.3deg);
+  }
+  38% {
+    transform: translate3d(-2.2px, -1.4px, 0) rotate(-0.18deg);
+  }
+  50% {
+    transform: translate3d(1.8px, 1.4px, 0) rotate(0.12deg);
+  }
+  65% {
+    transform: translate3d(-1.2px, 0.8px, 0) rotate(-0.06deg);
+  }
+  80% {
+    transform: translate3d(0.6px, -0.4px, 0) rotate(0.02deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+.tarot-screen-vibrating {
+  animation: tarot-screen-vibrate 0.34s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  will-change: transform;
+}
+
+/* 🌟 Real-time TTS Sentence-by-Sentence Synchronized Glow Highlight */
+@keyframes tts-sentence-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(251, 191, 36, 0.42);
+  }
+}
+
+.tts-active-sentence-highlight {
+  display: inline;
+  border-radius: 4px;
+  animation: tts-sentence-pulse 2.2s ease-in-out infinite;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+
+

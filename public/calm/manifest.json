@@ -1,0 +1,35 @@
+{
+  "name": "Key - 왜 나는 불안할까",
+  "short_name": "Key",
+  "description": "불안이라는 착각을 깨고 나를 돌보는 40가지 마음 연습 (제이미 저커먼 저)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fcf9f5",
+  "theme_color": "#fcf9f5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

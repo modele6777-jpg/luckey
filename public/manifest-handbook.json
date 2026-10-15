@@ -1,0 +1,54 @@
+{
+  "id": "/handbook",
+  "name": "ReBible",
+  "short_name": "ReBible",
+  "description": "ReBible - PRISM 7대 우주 공간 가이드 & 론다번·사주·세도나·호오포노포노·아티스트웨이 바이블",
+  "start_url": "/handbook",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#05010A",
+  "theme_color": "#05010A",
+  "categories": [
+    "lifestyle",
+    "education",
+    "books",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/handbook-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/handbook-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/handbook-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon-handbook.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/handbook-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

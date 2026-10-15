@@ -1,0 +1,133 @@
+{
+  "entities": {
+    "HistoryEntry": {
+      "title": "History Entry",
+      "description": "A generic entry for app history (chat, analysis, etc.)",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "content": { "type": "string" },
+        "response": { "type": "string" },
+        "createdAt": { "type": "object" },
+        "imageData": { "type": "string" },
+        "aiKeywords": { "type": "array", "items": { "type": "string" } },
+        "aiEmotions": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["createdAt"]
+    },
+    "SharedState": {
+      "title": "Shared State",
+      "description": "User profile and app-wide shared state",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "mood": { "type": "string" },
+        "updatedAt": { "type": "object" }
+      }
+    },
+    "ReBibleVerse": {
+      "title": "Re:Bible Verse",
+      "description": "User's sacred verses transmuting facts to insight with annotations",
+      "type": "object",
+      "properties": {
+        "bookTitle": { "type": "string" },
+        "chapterNumber": { "type": "number" },
+        "verseNumber": { "type": "number" },
+        "title": { "type": "string" },
+        "fact": { "type": "string" },
+        "insight": { "type": "string" },
+        "emotions": { "type": "array", "items": { "type": "string" } },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "annotations": { "type": "array" },
+        "isSacredFavorite": { "type": "boolean" },
+        "recordedAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["fact", "insight", "recordedAt"]
+    },
+    "SoulMirrorEntry": {
+      "title": "Soul Mirror Entry",
+      "description": "Dapp and analyzer metrics or state representing the user's soul configuration",
+      "type": "object",
+      "properties": {
+        "coreValue": { "type": "string" },
+        "unconsciousPattern": { "type": "string" },
+        "preference": { "type": "string" },
+        "stats": { "type": "array" },
+        "energyFlow": { "type": "array" },
+        "emotions": { "type": "array" }
+      }
+    },
+    "EpilogueCommunityPost": {
+      "title": "Epilogue Community Post",
+      "description": "Shared achievement statistics card and reflection to community",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhotoURL": { "type": "string" },
+        "dateKey": { "type": "string" },
+        "streakDays": { "type": "number" },
+        "totalDiaries": { "type": "number" },
+        "totalGratitudes": { "type": "number" },
+        "topMood": { "type": "string" },
+        "topMoodEmoji": { "type": "string" },
+        "soulEvolutionLevel": { "type": "string" },
+        "mindDiarySnippet": { "type": "string" },
+        "imageData": { "type": "string" },
+        "cheersCount": { "type": "number" },
+        "sharedAt": { "type": "string" }
+      },
+      "required": ["userId", "dateKey", "sharedAt"]
+    }
+  },
+  "firestore": {
+    "/epilogue_community/{postId}": {
+      "schema": "EpilogueCommunityPost",
+      "description": "Shared Epilogue achievement statistics and cards in community"
+    },
+    "/sharedState/{userId}": {
+      "schema": "SharedState",
+      "description": "User's global state and profile"
+    },
+    "/chatThreads/{userId}": {
+      "schema": "SharedState",
+      "description": "User's cross-device unified chat history threads"
+    },
+    "/soul_mirror/{userId}/dapps/{dappId}": {
+      "schema": "SoulMirrorEntry",
+      "description": "Persistent soul mirror metrics and characteristics for each dapp"
+    },
+    "/bluebird_history/{userId}/entries/{entryId}": {
+      "schema": "HistoryEntry",
+      "description": "History for Bluebird app"
+    },
+    "/orange_history/{userId}/entries/{entryId}": {
+      "schema": "HistoryEntry",
+      "description": "History for Orange app"
+    },
+    "/muse_history/{userId}/entries/{entryId}": {
+      "schema": "HistoryEntry",
+      "description": "History for Muse app"
+    },
+    "/trinity_history/{userId}/entries/{entryId}": {
+      "schema": "HistoryEntry",
+      "description": "History for Trinity app"
+    },
+    "/heal_history/{userId}/entries/{entryId}": {
+      "schema": "HistoryEntry",
+      "description": "History for Heal app"
+    },
+    "/rebible_verses/{userId}/verses/{verseId}": {
+      "schema": "ReBibleVerse",
+      "description": "Sacred verse entries and annotations for Re:Bible"
+    },
+    "/prescriptions/{prescriptionId}": {
+      "schema": "HistoryEntry",
+      "description": "Legacy prescriptions collection"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+steps:
+  - name: node:22
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        npm ci
+        npm run build
+
+options:
+  logging: CLOUD_LOGGING_ONLY

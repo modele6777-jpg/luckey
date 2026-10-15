@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules/
+dist/
+dev-dist/
+tmp/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+.vercel
+.grok/

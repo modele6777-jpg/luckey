@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 1. Shared State Profile & Standalone User Profiles
+    match /sharedState/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /userProfiles/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 1b. Unified Lucy chat thread (cross-device sync)
+    match /chatThreads/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 2. Soul Mirror persistent state
+    match /soul_mirror/{userId}/dapps/{dappId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 3. Partitioned History entries for each applet explicitly
+    match /bluebird_history/{userId}/entries/{entryId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /orange_history/{userId}/entries/{entryId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /muse_history/{userId}/entries/{entryId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /trinity_history/{userId}/entries/{entryId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /heal_history/{userId}/entries/{entryId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /aura_healing_missions/{userId}/missions/{missionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 3b. Re:Bible Verses & Sacred Annotations
+    match /rebible_verses/{userId}/verses/{verseId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 3c. Trinity Daily Lucky (quests, reports, boosts)
+    match /trinity_daily_lucky/{userId}/days/{dayId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 4. Cross-Device Paired Real-Time Vaults (PIN / Device Pair Sync)
+    match /pairedVaults/{vaultId} {
+      allow read, write: if true;
+    }
+
+    // 4b. Community Shared Achievement Cards
+    match /epilogue_community/{postId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    // 5. Legacy Prescriptions
+    match /prescriptions/{prescriptionId} {
+      allow read: if isSignedIn();
+      allow write: if false; 
+    }
+
+    // 0. Fallback Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      // Immediate cleanup of stale ServiceWorker & caches on localhost
+      if (typeof window !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (var i = 0; i < registrations.length; i++) {
+              registrations[i].unregister();
+            }
+          }).catch(function() {});
+        }
+      }
+    </script>
+    <script>
+      // 0. Prevent "Cannot set property fetch of #<Window> which has only a getter" error across all environments
+      (function() {
+        try {
+          var originalFetch = window.fetch;
+          if (originalFetch) {
+            var assignedFetch = originalFetch;
+            var fetchPropDesc = {
+              get: function() {
+                return assignedFetch;
+              },
+              set: function(val) {
+                assignedFetch = val;
+              },
+              configurable: true,
+              enumerable: true
+            };
+            try {
+              Object.defineProperty(window, 'fetch', fetchPropDesc);
+            } catch (e1) {}
+            if (typeof Window !== 'undefined' && Window.prototype) {
+              try {
+                Object.defineProperty(Window.prototype, 'fetch', fetchPropDesc);
+              } catch (e2) {}
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("[FetchShield] Failed to patch fetch setter", fetchErr);
+        }
+      })();
+
+      // Sandbox & compatibility protections
+      (function() {
+        var isRestrictedEnv = (function() {
+          try {
+            var h = location.hostname || '';
+            if (h.includes('google') || h.includes('aistudio') || h.includes('run.app') || (h.includes('vercel.app') === false && h.includes('localhost') === false)) {
+              if (window.top !== window) return true;
+            }
+            if (window.__AI_STUDIO_SANDBOX__ || (document.cookie && document.cookie.includes('aistudio'))) return true;
+            return false;
+          } catch (_) { return false; }
+        })();
+
+        if (!isRestrictedEnv) {
+          console.log('[Prism] Normal environment ??skipping sandbox patches for proper mobile persistence.');
+          return;
+        }
+
+        console.warn('[Prism] Restricted/sandbox environment detected ??applying compatibility patches.');
+
+        // 1. WebSocket function-based security shield
+        try {
+          const OriginalWebSocket = window.WebSocket;
+          if (OriginalWebSocket) {
+            const SafeWebSocket = function(url, protocols) {
+              if (typeof url === 'string' && (url.includes('vite') || url.includes('/ws') || (url.indexOf('wss://') === 0 && url.includes('run.app')))) {
+                return {
+                  url: url,
+                  readyState: OriginalWebSocket.CLOSED,
+                  bufferedAmount: 0,
+                  extensions: "",
+                  protocol: "",
+                  binaryType: "blob",
+                  send: function() {},
+                  close: function() {},
+                  addEventListener: function() {},
+                  removeEventListener: function() {},
+                  dispatchEvent: function() { return true; },
+                  onopen: null,
+                  onclose: null,
+                  onerror: null,
+                  onmessage: null
+                };
+              }
+              return new OriginalWebSocket(url, protocols);
+            };
+            SafeWebSocket.prototype = OriginalWebSocket.prototype;
+            SafeWebSocket.CONNECTING = OriginalWebSocket.CONNECTING;
+            SafeWebSocket.OPEN = OriginalWebSocket.OPEN;
+            SafeWebSocket.CLOSING = OriginalWebSocket.CLOSING;
+            SafeWebSocket.CLOSED = OriginalWebSocket.CLOSED;
+            window.WebSocket = SafeWebSocket;
+          }
+        } catch (wsErr) {
+          console.warn("[SafeWebSocket] Init failed", wsErr);
+        }
+
+        // 3. High-performance Fail-safe Hybrid Storage Generator (Anti-crash & Data-Preservation) ??only in sandbox
+        const nativeLocalStorage = (function() {
+          try { return window.localStorage; } catch(e) { return null; }
+        })();
+        const nativeSessionStorage = (function() {
+          try { return window.sessionStorage; } catch(e) { return null; }
+        })();
+
+        function createHybridStorage(type) {
+          let memoryStore = {};
+          let nativeStorageWorks = false;
+          const native = type === 'localStorage' ? nativeLocalStorage : nativeSessionStorage;
+
+          const proxy = {
+            getItem: function(key) {
+              if (nativeStorageWorks && native) {
+                try {
+                  return native.getItem(key);
+                } catch (err) {
+                   // Fallback to memory on live runtime blocks
+                }
+              }
+              return key in memoryStore ? memoryStore[key] : null;
+            },
+            setItem : function(key, value) {
+              const strVal = String(value);
+              if (nativeStorageWorks && native) {
+                try {
+                  native.setItem(key, strVal);
+                  return;
+                } catch (err) {
+                  // Fallback to memory output
+                }
+              }
+              memoryStore[key] = strVal;
+            },
+            removeItem: function(key ) {
+              if (nativeStorageWorks && native) {
+                try {
+                  native.removeItem(key);
+                  return;
+                } catch (err) {
+                  // Fallback
+                }
+              }
+              delete memoryStore[key];
+            },
+            clear: function() {
+              if (nativeStorageWorks && native) {
+                try {
+                  native.clear();
+                  return;
+                } catch (err) {}
+              }
+              memoryStore = {};
+            },
+            key: function(index) {
+              if (nativeStorageWorks && native) {
+                try {
+                  return native.key(index);
+                } catch (err) {}
+              }
+              return Object.keys(memoryStore)[index] || null;
+            },
+            get length() {
+              if (nativeStorageWorks && native) {
+                try {
+                  return native.length;
+                } catch (err) {}
+              }
+              return Object.keys(memoryStore).length;
+            }
+          };
+
+          // Perform defensive safe testing on native storage
+          try {
+            const testKey = '__hybrid_storage_test_key__';
+            if (native && typeof native.setItem === 'function') {
+              native.setItem(testKey, '1');
+              native.removeItem(testKey);
+              nativeStorageWorks = true;
+            }
+          } catch (e) {
+            console.warn(`[StorageShield] Native ${type} is guarded/blocked. Switching to resilient hybrid mode.`);
+          }
+         return proxy;
+        }
+
+        // Install globals securely before any app bundle script launches
+        window.safeLocalStorage = createHybridStorage('localStorage');
+        window.safeSessionStorage = createHybridStorage('sessionStorage');
+
+        try {
+          const defineOn = function(obj, name, fallback) {
+            try {
+              Object.defineProperty(obj, name, {
+                get: function() { return fallback; },
+                set: function() {},
+                configurable: true,
+                enumerable: true
+              });
+            } catch (err) {
+              try {
+                obj[name] = fallback;
+              } catch (err2) {}
+            }
+          };
+          if (typeof window !== 'undefined') {
+            defineOn(window, 'localStorage', window.safeLocalStorage);
+            defineOn(window, 'sessionStorage', window.safeSessionStorage);
+            if (window.self) {
+              defineOn(window.self, 'localStorage', window.safeLocalStorage);
+              defineOn(window.self, 'sessionStorage', window.safeSessionStorage);
+            }
+          }
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            defineOn(Window.prototype, 'localStorage', window.safeLocalStorage);
+            defineOn(Window.prototype, 'sessionStorage', window.safeSessionStorage);
+          }
+        } catch (polyErr) {
+          console.warn("[StorageShield] Property override failed, proceeding with global proxy namespaces.", polyErr);
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>루시 AI 프로 - LUCY AI PRO</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/lucy-icon-192.png" /><link rel="manifest" href="/manifest-lucy.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-lucy.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-lucy.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon-lucy.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="루시 AI 프로">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#FAFAF9">
+    <meta name="msapplication-tap-highlight" content="no">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      (() => {
+        const recoveryKey = 'prism_chunk_recovery_at';
+        let recovering = false;
+
+        const recoverFromStaleAssets = async () => {
+          if (recovering) return;
+          const lastRecovery = Number(sessionStorage.getItem(recoveryKey) || 0);
+          if (Date.now() - lastRecovery < 30000) return;
+
+          recovering = true;
+          sessionStorage.setItem(recoveryKey, String(Date.now()));
+          try {
+            if ('caches' in window) {
+              const cacheNames = await caches.keys();
+              await Promise.all(cacheNames.map((name) => caches.delete(name)));
+            }
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(registrations.map((registration) => registration.update().catch(() => undefined)));
+            }
+          } finally {
+            window.location.reload();
+          }
+        };
+
+        const isStaleAssetError = (value) => {
+          const message = String(value?.message || value?.reason?.message || value?.reason || value || '');
+          return /ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module|Importing a module script failed|preload/i.test(message);
+        };
+
+        window.addEventListener('vite:preloadError', (event) => {
+          event.preventDefault();
+          void recoverFromStaleAssets();
+        });
+        window.addEventListener('unhandledrejection', (event) => {
+          if (isStaleAssetError(event)) void recoverFromStaleAssets();
+        });
+        window.addEventListener('error', (event) => {
+          const failedScript = event.target instanceof HTMLScriptElement && event.target.src;
+          if (failedScript || isStaleAssetError(event.error || event.message)) void recoverFromStaleAssets();
+        }, true);
+      })();
+    </script>
+    <script>
+      (function() {
+        if (window.location.pathname === '/chat.html') {
+          try {
+            window.history.replaceState(null, '', '/chat' + window.location.search);
+          } catch(e) {}
+        }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

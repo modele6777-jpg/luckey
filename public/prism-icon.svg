@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Deep Pitch-Black Cosmic Background Canvas -->
+    <radialGradient id="prismCosmicBg" cx="50%" cy="45%" r="75%">
+      <stop offset="0%" stop-color="#0a0a14" />
+      <stop offset="45%" stop-color="#040408" />
+      <stop offset="100%" stop-color="#000000" />
+    </radialGradient>
+
+    <!-- Holographic Squircle Border Gradient -->
+    <linearGradient id="prismBorderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8" />
+      <stop offset="20%" stop-color="#38bdf8" stop-opacity="0.6" />
+      <stop offset="40%" stop-color="#a855f7" stop-opacity="0.4" />
+      <stop offset="60%" stop-color="#ec4899" stop-opacity="0.4" />
+      <stop offset="80%" stop-color="#f59e0b" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.75" />
+    </linearGradient>
+
+    <!-- Glass 3D Facet Gradients -->
+    <linearGradient id="prismGlassMain" x1="30%" y1="0%" x2="70%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+      <stop offset="35%" stop-color="#38bdf8" stop-opacity="0.12" />
+      <stop offset="70%" stop-color="#818cf8" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.6" />
+    </linearGradient>
+
+    <linearGradient id="prismGlassReflect" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6" />
+      <stop offset="15%" stop-color="#ffffff" stop-opacity="0.2" />
+      <stop offset="85%" stop-color="#67e8f9" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.4" />
+    </linearGradient>
+
+    <!-- Optical Bloom / Glow Filters -->
+    <filter id="lightBeamGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="spectrumBloom" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="apexStarGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Rainbow Spectral Beam Gradients (Fanning Outward to Right) -->
+    <!-- Red Ray -->
+    <linearGradient id="rayRed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="12%" stop-color="#ff3366" stop-opacity="0.95" />
+      <stop offset="70%" stop-color="#ef4444" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Orange Ray -->
+    <linearGradient id="rayOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="12%" stop-color="#ff7700" stop-opacity="0.95" />
+      <stop offset="70%" stop-color="#f97316" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Yellow Ray -->
+    <linearGradient id="rayYellow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="12%" stop-color="#facc15" stop-opacity="0.95" />
+      <stop offset="70%" stop-color="#eab308" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#eab308" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Green Ray -->
+    <linearGradient id="rayGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="12%" stop-color="#34d399" stop-opacity="0.95" />
+      <stop offset="70%" stop-color="#10b981" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Cyan Ray -->
+    <linearGradient id="rayCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="12%" stop-color="#38bdf8" stop-opacity="0.95" />
+      <stop offset="70%" stop-color="#06b6d4" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Blue Ray -->
+    <linearGradient id="rayBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="12%" stop-color="#60a5fa" stop-opacity="0.95" />
+      <stop offset="70%" stop-color="#3b82f6" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Violet Ray -->
+    <linearGradient id="rayViolet" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="12%" stop-color="#c084fc" stop-opacity="0.95" />
+      <stop offset="70%" stop-color="#a855f7" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Incident Beam Gradient (Left to Right) -->
+    <linearGradient id="incidentBeamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.0" />
+      <stop offset="25%" stop-color="#e0f2fe" stop-opacity="0.6" />
+      <stop offset="80%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Black Cosmic Canvas -->
+  <rect width="512" height="512" rx="112" fill="url(#prismCosmicBg)" />
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="url(#prismBorderGrad)" stroke-width="3" />
+
+  <!-- Background Soft Ambient Stardust & Caustic Halo -->
+  <circle cx="256" cy="270" r="190" fill="#38bdf8" opacity="0.06" filter="url(#spectrumBloom)" />
+  <ellipse cx="256" cy="380" rx="140" ry="25" fill="#818cf8" opacity="0.12" filter="url(#spectrumBloom)" />
+
+  <!-- ==================== 1. DISPERSED SPECTRAL RAINBOW RAYS ==================== -->
+  <g filter="url(#spectrumBloom)" opacity="0.95">
+    <!-- Red Ray (Top) -->
+    <polygon points="310,250 495,170 495,195 311,257" fill="url(#rayRed)" />
+    <!-- Orange Ray -->
+    <polygon points="311,255 495,198 495,224 312,263" fill="url(#rayOrange)" />
+    <!-- Yellow Ray -->
+    <polygon points="312,261 495,227 495,253 313,269" fill="url(#rayYellow)" />
+    <!-- Green Ray -->
+    <polygon points="313,267 495,256 495,282 314,275" fill="url(#rayGreen)" />
+    <!-- Cyan Ray -->
+    <polygon points="314,273 495,285 495,311 315,281" fill="url(#rayCyan)" />
+    <!-- Blue Ray -->
+    <polygon points="315,279 495,314 495,340 316,287" fill="url(#rayBlue)" />
+    <!-- Violet Ray (Bottom) -->
+    <polygon points="316,285 495,343 495,372 317,293" fill="url(#rayViolet)" />
+  </g>
+
+  <!-- Sharp Core Overlay for Crisp Rainbow Definition -->
+  <g opacity="0.85">
+    <polygon points="310,250 480,174 480,192 311,257" fill="url(#rayRed)" />
+    <polygon points="311,255 480,201 480,221 312,263" fill="url(#rayOrange)" />
+    <polygon points="312,261 480,230 480,250 313,269" fill="url(#rayYellow)" />
+    <polygon points="313,267 480,259 480,279 314,275" fill="url(#rayGreen)" />
+    <polygon points="314,273 480,288 480,308 315,281" fill="url(#rayCyan)" />
+    <polygon points="315,279 480,317 480,337 316,287" fill="url(#rayBlue)" />
+    <polygon points="316,285 480,346 480,369 317,293" fill="url(#rayViolet)" />
+  </g>
+
+  <!-- ==================== 2. INCIDENT WHITE LIGHT BEAM ==================== -->
+  <g filter="url(#lightBeamGlow)">
+    <!-- Broad Soft Glow Beam -->
+    <polygon points="20,225 204,260 204,276 20,245" fill="url(#incidentBeamGrad)" opacity="0.5" />
+    <!-- Sharp Core Laser Beam -->
+    <polygon points="35,232 204,264 204,272 35,240" fill="#ffffff" opacity="0.95" />
+  </g>
+
+  <!-- ==================== 3. 3D CRYSTAL PRISM BODY ==================== -->
+  <!-- Inner Glass Dispersion Refraction Core -->
+  <polygon points="204,264 256,120 313,269" fill="url(#prismGlassReflect)" opacity="0.35" />
+
+  <!-- Main 3D Prism Triangle -->
+  <polygon
+    points="256,115 146,365 366,365"
+    fill="url(#prismGlassMain)"
+    stroke="#67e8f9"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+
+  <!-- Internal 3D Bevel Facet Lines (Giving Glass Depth) -->
+  <line x1="256" y1="115" x2="256" y2="365" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.3" stroke-dasharray="3 3" />
+  <line x1="146" y1="365" x2="256" y2="280" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4" />
+  <line x1="366" y1="365" x2="256" y2="280" stroke="#a855f7" stroke-width="1.5" stroke-opacity="0.4" />
+  <line x1="256" y1="115" x2="256" y2="280" stroke="#ffffff" stroke-width="2" stroke-opacity="0.6" />
+
+  <!-- Specular Highlights on Prism Edges -->
+  <!-- Left Glass Leading Edge -->
+  <line x1="256" y1="115" x2="146" y2="365" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+  <!-- Bottom Glass Rim Light -->
+  <line x1="146" y1="365" x2="366" y2="365" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <!-- Right Dispersion Exit Edge -->
+  <line x1="256" y1="115" x2="366" y2="365" stroke="#ec4899" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+
+  <!-- ==================== 4. OPTICAL FLARES & IMPACT POINTS ==================== -->
+  <!-- Entry Impact Lens Flare (Where white beam hits left facet) -->
+  <g filter="url(#apexStarGlow)" transform="translate(204, 268)">
+    <circle cx="0" cy="0" r="14" fill="#ffffff" opacity="0.9" />
+    <circle cx="0" cy="0" r="28" fill="#38bdf8" opacity="0.5" />
+    <line x1="-22" y1="0" x2="22" y2="0" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+    <line x1="0" y1="-22" x2="0" y2="22" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Exit Dispersion Sparkle (Where rainbow bursts from right facet) -->
+  <g filter="url(#apexStarGlow)" transform="translate(313, 270)">
+    <circle cx="0" cy="0" r="12" fill="#ffffff" opacity="0.95" />
+    <circle cx="0" cy="0" r="24" fill="#facc15" opacity="0.4" />
+  </g>
+
+  <!-- Apex Brilliant Starlight Glint (Top of the Prism) -->
+  <g filter="url(#apexStarGlow)" transform="translate(256, 115)">
+    <!-- 4-point Diamond Glint -->
+    <path d="M 0 -24 Q 0 0 24 0 Q 0 0 0 24 Q 0 0 -24 0 Q 0 0 0 -24 Z" fill="#ffffff" />
+    <circle cx="0" cy="0" r="5" fill="#e0f2fe" />
+  </g>
+
+  <!-- Micro Starlight Dots in Black Void -->
+  <circle cx="105" cy="140" r="2.5" fill="#38bdf8" opacity="0.7" />
+  <circle cx="410" cy="120" r="2" fill="#ec4899" opacity="0.6" />
+  <circle cx="95" cy="405" r="2" fill="#ffffff" opacity="0.5" />
+  <circle cx="425" cy="415" r="2.5" fill="#facc15" opacity="0.7" />
+</svg>

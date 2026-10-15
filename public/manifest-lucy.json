@@ -1,0 +1,53 @@
+{
+  "id": "/chat",
+  "name": "Lucy",
+  "short_name": "Lucy",
+  "description": "올인원 소울메이트 & 마스터 AI 지능 가이드 Lucy",
+  "start_url": "/chat",
+  "scope": "/chat",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#05040a",
+  "theme_color": "#05040a",
+  "categories": [
+    "lifestyle",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/lucy-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lucy-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lucy-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon-lucy.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lucy-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

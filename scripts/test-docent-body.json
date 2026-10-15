@@ -1,0 +1,21 @@
+{
+  "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Claude_Monet_044.jpg/960px-Claude_Monet_044.jpg",
+  "title": "수련",
+  "creator": "클로드 모네",
+  "artworkType": "미술",
+  "era": "인상주의",
+  "description": "연못의 수련",
+  "whyRecommended": "고요함",
+  "famousPoem": {
+    "title": "호수",
+    "poet": "정지용",
+    "excerpt": "얼굴 하나야"
+  },
+  "famousSong": {
+    "title": "달빛",
+    "artist": "드뷔시",
+    "listeningGuide": "잔잔하게 들어보세요"
+  },
+  "isFirstMessage": true,
+  "mode": "audio"
+}
