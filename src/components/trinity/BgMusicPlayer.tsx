@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Play, Pause, Disc, SkipForward, Volume2, VolumeX, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Music, Headphones, Shuffle, Repeat, Repeat1, RefreshCw, Trash2, EyeOff, RotateCcw, GripVertical, Sparkles, Maximize2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, Pause, Disc, SkipForward, SkipBack, Volume2, VolumeX, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Music, Headphones, Shuffle, Repeat, Repeat1, RefreshCw, Trash2, EyeOff, RotateCcw, GripVertical, Sparkles, Maximize2, X, Sliders } from "lucide-react";
 import { AudioReactive3DVisualizer } from "./AudioReactive3DVisualizer";
 import {
   getSharedAudioContext,
@@ -216,15 +216,41 @@ export function BgMusicPlayer() {
   const [isPanelActive, setIsPanelActive] = useState(() => !!(window as any).__lucy_active_panel);
   const [show3DVisualizerStage, setShow3DVisualizerStage] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isDetailMenuOpen, setIsDetailMenuOpen] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isHoldTriggeredRef = useRef(false);
+  const holdStartPosRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const handleNavState = (e: any) => {
       if (typeof e?.detail?.isOpen === 'boolean') {
         setIsNavOpen(e.detail.isOpen);
+        if (e.detail.isOpen) {
+          setIsDetailMenuOpen(false);
+        }
       }
     };
     window.addEventListener('left-sidebar-state', handleNavState);
     return () => window.removeEventListener('left-sidebar-state', handleNavState);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isDetailMenuOpen) {
+        setIsDetailMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDetailMenuOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+      }
+    };
   }, []);
 
   // Unified Mood Sound Integration (빗소리 · 백색소음 · 숲속소리 등)
@@ -1107,7 +1133,70 @@ export function BgMusicPlayer() {
     playTrackDirectly(currentIdx);
   };
 
+  // --- LP DISC HOLD & INTERACTION HANDLERS ---
+  const handleLpPointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    isHoldTriggeredRef.current = false;
+    holdStartPosRef.current = { x: e.clientX, y: e.clientY };
+    setIsHolding(true);
 
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+    }
+
+    holdTimerRef.current = setTimeout(() => {
+      isHoldTriggeredRef.current = true;
+      setIsHolding(false);
+      holdTimerRef.current = null;
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        try {
+          navigator.vibrate(40);
+        } catch (_) {}
+      }
+      setIsDetailMenuOpen((prev) => !prev);
+    }, 450);
+  };
+
+  const handleLpPointerMove = (e: React.PointerEvent) => {
+    if (!holdStartPosRef.current || !holdTimerRef.current) return;
+    const dx = Math.abs(e.clientX - holdStartPosRef.current.x);
+    const dy = Math.abs(e.clientY - holdStartPosRef.current.y);
+    if (dx > 10 || dy > 10) {
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+      setIsHolding(false);
+    }
+  };
+
+  const handleLpPointerUp = () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setIsHolding(false);
+  };
+
+  const handleLpClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isHoldTriggeredRef.current) {
+      isHoldTriggeredRef.current = false;
+      return;
+    }
+    handlePlayToggle(e);
+  };
+
+  const handleLpContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setIsHolding(false);
+    setIsDetailMenuOpen((prev) => !prev);
+  };
 
   const queueAndPlayTrack = (trackIndex: number) => {
     const qIdx = shuffledIndicesRef.current.indexOf(trackIndex);
@@ -1713,14 +1802,31 @@ export function BgMusicPlayer() {
         >
           <button
             type="button"
-            onClick={handlePlayToggle}
+            onPointerDown={handleLpPointerDown}
+            onPointerMove={handleLpPointerMove}
+            onPointerUp={handleLpPointerUp}
+            onPointerCancel={handleLpPointerUp}
+            onPointerLeave={handleLpPointerUp}
+            onClick={handleLpClick}
+            onContextMenu={handleLpContextMenu}
             onDoubleClick={(e) => {
               e.stopPropagation();
+              if (holdTimerRef.current) {
+                clearTimeout(holdTimerRef.current);
+                holdTimerRef.current = null;
+              }
+              setIsHolding(false);
               handleNextTrack();
             }}
-            aria-label={isPlaying ? "배경음 일시정지" : "배경음 재생"}
-            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-90"
-            title={isPlaying ? `배경음 일시정지: ${currentTrack?.name || "음악"} (더블클릭시 다음 곡)` : `배경음 재생: ${currentTrack?.name || "음악"}`}
+            aria-label={isPlaying ? "배경음 일시정지 (길게 누르면 상세메뉴)" : "배경음 재생 (길게 누르면 상세메뉴)"}
+            className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer transition-all duration-200 ${
+              isHolding ? "scale-90 ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.8)]" : "active:scale-95"
+            }`}
+            title={
+              isPlaying
+                ? `🎵 ${currentTrack?.name || "음악 재생 중"} (클릭: 일시정지 · 더블클릭: 다음곡 · 꾹 누르기: 상세메뉴)`
+                : `⏸️ ${currentTrack?.name || "음악 일시정지"} (클릭: 재생 · 더블클릭: 다음곡 · 꾹 누르기: 상세메뉴)`
+            }
           >
             {/* Ambient active playing glow halo */}
             {isPlaying && (
@@ -1753,13 +1859,525 @@ export function BgMusicPlayer() {
               />
             )}
 
+            {/* Hold Progress Indicator Ring */}
+            {isHolding && (
+              <svg
+                className="absolute -inset-1.5 w-[calc(100%+12px)] h-[calc(100%+12px)] -rotate-90 pointer-events-none z-30"
+                viewBox="0 0 52 52"
+              >
+                <circle
+                  cx="26"
+                  cy="26"
+                  r="23"
+                  fill="none"
+                  stroke="rgba(251, 191, 36, 0.95)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeDasharray="145"
+                  strokeDashoffset="145"
+                  className="animate-lp-hold"
+                  style={{
+                    filter: "drop-shadow(0 0 8px rgba(251, 191, 36, 0.9))",
+                  }}
+                />
+              </svg>
+            )}
+
             {/* Desktop hover tooltip */}
             <span className="hidden sm:group-hover:block absolute bottom-full mb-2.5 left-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-lg pointer-events-none z-50">
-              {isPlaying ? `🎵 ${currentTrack?.name || "음악 재생 중"}` : `⏸️ ${currentTrack?.name || "음악 일시정지"}`} (클릭 재생 · 더블클릭 다음곡)
+              {isPlaying ? `🎵 ${currentTrack?.name || "음악 재생 중"}` : `⏸️ ${currentTrack?.name || "음악 일시정지"}`} (클릭 재생 · 더블클릭 다음곡 · 꾹 홀드 상세메뉴)
             </span>
           </button>
         </motion.div>
       )}
+
+      {/* Detailed Menu Modal Popup (LP판 홀드시 노출되는 프리미엄 상세메뉴) */}
+      <AnimatePresence>
+        {isDetailMenuOpen && !isNavOpen && (
+          <>
+            {/* Backdrop Dimmer Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              onClick={() => setIsDetailMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[410]"
+            />
+
+            {/* Floating Detail Menu Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 16 }}
+              transition={{ type: "spring", damping: 26, stiffness: 340 }}
+              className="fixed bottom-safe-music-menu z-[420] w-[calc(100vw-1.75rem)] sm:w-[420px] max-w-[420px] max-h-[82vh] flex flex-col rounded-3xl bg-neutral-950/95 border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] backdrop-blur-2xl text-white overflow-hidden select-none"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Card Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0 bg-neutral-900/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative flex items-center justify-center">
+                    <LPRecordDisc isPlaying={isPlaying && !isBuffering} size="xs" />
+                    {isPlaying && !isBuffering && (
+                      <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[12px] font-black tracking-wider text-amber-200">
+                      LUCKEY SOUND SUITE
+                    </span>
+                    <span className="text-[10px] text-white/50">
+                      턴테이블 음악 & 자연 무드 사운드
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDetailMenuOpen(false)}
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+                  aria-label="상세메뉴 닫기"
+                >
+                  <X size={14} className="text-white/80" />
+                </button>
+              </div>
+
+              {/* Scrollable Container */}
+              <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
+                {/* Hero Now-Playing Track Card */}
+                <div className="p-3 mx-3 mt-3 rounded-2xl bg-gradient-to-br from-amber-500/15 via-neutral-900/80 to-black/90 border border-amber-500/25 shrink-0 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <LPRecordDisc
+                      isPlaying={isPlaying && !isBuffering}
+                      isBuffering={isBuffering}
+                      size="md"
+                      className="shrink-0 shadow-md"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {currentTrack?.category && (
+                          <span className="px-2 py-0.5 rounded-full text-[8.5px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0">
+                            {currentTrack.category}
+                          </span>
+                        )}
+                        <span className="text-[9.5px] text-white/40 truncate">
+                          {currentTrack?.artist || "Lucy Procedural Suite"}
+                        </span>
+                      </div>
+                      <h4 className="text-[13px] font-bold text-white/95 truncate leading-tight">
+                        {currentTrack?.name || "선택된 트랙 없음"}
+                      </h4>
+                    </div>
+
+                    {/* Equalizer animation bars or Buffer spinner */}
+                    <div className="shrink-0 flex items-center">
+                      {isBuffering ? (
+                        <RefreshCw size={15} className="animate-spin text-amber-300" />
+                      ) : isPlaying ? (
+                        <div className="flex items-end gap-0.5 h-4 px-1">
+                          <span className="w-0.5 bg-amber-400 rounded-full animate-pulse h-3" />
+                          <span className="w-0.5 bg-amber-300 rounded-full animate-pulse h-4 delay-75" />
+                          <span className="w-0.5 bg-amber-400 rounded-full animate-pulse h-2 delay-150" />
+                          <span className="w-0.5 bg-amber-200 rounded-full animate-pulse h-3.5 delay-100" />
+                        </div>
+                      ) : (
+                        <span className="text-[9px] text-white/40 font-mono">PAUSED</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3D Visualizer Fullscreen Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDetailMenuOpen(false);
+                      setShow3DVisualizerStage(true);
+                    }}
+                    className="w-full mt-2.5 py-1.5 px-3 rounded-xl bg-white/5 hover:bg-amber-400/15 border border-white/10 hover:border-amber-400/30 text-amber-200 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <Sparkles size={12} className="text-amber-300 animate-pulse" />
+                    <span>3D 비주얼라이저 무대 열기</span>
+                  </button>
+                </div>
+
+                {/* Primary Playback Controls Row */}
+                <div className="flex items-center justify-between px-6 py-2.5 shrink-0">
+                  {/* Shuffle Button */}
+                  <button
+                    type="button"
+                    onClick={handleToggleShuffle}
+                    className={`p-2 rounded-xl border transition-all active:scale-95 cursor-pointer ${
+                      isShuffle
+                        ? "bg-amber-400/20 text-amber-300 border-amber-400/40 shadow-[0_0_10px_rgba(251,191,36,0.2)]"
+                        : "text-white/40 border-transparent hover:text-white/80 hover:bg-white/5"
+                    }`}
+                    title={isShuffle ? "랜덤 셔플 On" : "순차 재생"}
+                  >
+                    <Shuffle size={16} />
+                  </button>
+
+                  {/* Previous Track */}
+                  <button
+                    type="button"
+                    onClick={handlePrevTrack}
+                    className="p-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:scale-90 transition-all cursor-pointer"
+                    title="이전 곡"
+                  >
+                    <SkipBack size={18} />
+                  </button>
+
+                  {/* Play / Pause Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={handlePlayToggle}
+                    className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 via-amber-300 to-amber-200 text-neutral-950 font-bold flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    title={isPlaying ? "일시정지" : "재생"}
+                  >
+                    {isPlaying && !isBuffering ? (
+                      <Pause size={20} className="fill-neutral-950" />
+                    ) : (
+                      <Play size={20} className="fill-neutral-950 ml-0.5" />
+                    )}
+                  </button>
+
+                  {/* Next Track */}
+                  <button
+                    type="button"
+                    onClick={handleNextTrack}
+                    className="p-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:scale-90 transition-all cursor-pointer"
+                    title="다음 곡"
+                  >
+                    <SkipForward size={18} />
+                  </button>
+
+                  {/* Repeat Mode */}
+                  <button
+                    type="button"
+                    onClick={handleToggleRepeat}
+                    className={`p-2 rounded-xl border transition-all active:scale-95 cursor-pointer flex items-center gap-1 ${
+                      repeatMode !== "off"
+                        ? "bg-amber-400/20 text-amber-300 border-amber-400/40 shadow-[0_0_10px_rgba(251,191,36,0.2)]"
+                        : "text-white/40 border-transparent hover:text-white/80 hover:bg-white/5"
+                    }`}
+                    title={`반복 모드: ${REPEAT_MODE_LABEL[repeatMode]}`}
+                  >
+                    {repeatMode === "one" ? <Repeat1 size={16} /> : <Repeat size={16} />}
+                  </button>
+                </div>
+
+                {/* Master Volume Slider Row */}
+                <div className="flex items-center gap-2.5 px-4 py-2 shrink-0 bg-white/[0.02] border-y border-white/5">
+                  <button
+                    type="button"
+                    onClick={handleToggleMute}
+                    className="p-1 rounded-lg text-white/60 hover:text-amber-300 hover:bg-white/5 transition-colors cursor-pointer"
+                    title={isMuted ? "음소거 해제" : "음소거"}
+                  >
+                    {isMuted || volume === 0 ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                    className="flex-1 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-400"
+                    aria-label="볼륨 조절"
+                  />
+                  <span className="text-[10px] text-white/50 font-mono w-8 text-right">
+                    {Math.round((isMuted ? 0 : volume) * 100)}%
+                  </span>
+                </div>
+
+                {/* Media Tab Selector: BGM vs Mood */}
+                <div className="flex items-center gap-1 px-3 pt-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveMediaTab('bgm')}
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      activeMediaTab === 'bgm'
+                        ? "bg-amber-400/20 text-amber-200 border border-amber-400/30 shadow-[0_0_10px_rgba(251,191,36,0.15)]"
+                        : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
+                    }`}
+                  >
+                    <Music size={13} />
+                    <span>BGM 음악 ({tracks.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveMediaTab('mood')}
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      activeMediaTab === 'mood'
+                        ? "bg-emerald-400/20 text-emerald-200 border border-emerald-400/30 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
+                        : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
+                    }`}
+                  >
+                    <Headphones size={13} />
+                    <span>자연의 소리 {isMoodPlaying ? "· 켜짐" : ""}</span>
+                  </button>
+                </div>
+
+                {/* Tab 1: BGM Playlist */}
+                {activeMediaTab === 'bgm' && (
+                  <div className="flex flex-col p-3 pt-2">
+                    {/* Category Filter Chips */}
+                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-2">
+                      {[
+                        { id: "all", label: "전체", count: tracks.length },
+                        { id: "사주·오행", label: "사주·오행", count: tracks.filter((t) => t.category === "사주·오행").length },
+                        { id: "오라클 타로", label: "오라클 타로", count: tracks.filter((t) => t.category === "오라클 타로").length },
+                        { id: "솔페지오", label: "솔페지오", count: tracks.filter((t) => t.category === "솔페지오").length },
+                        { id: "세도나 방하착", label: "세도나 방하착", count: tracks.filter((t) => t.category === "세도나 방하착").length },
+                        { id: "호오포노포노", label: "호오포노포노", count: tracks.filter((t) => t.category === "호오포노포노").length },
+                        { id: "양자·뮤즈", label: "양자·뮤즈", count: tracks.filter((t) => t.category === "양자·뮤즈").length },
+                      ].map((cat) => {
+                        const isCatActive = selectedCategory === cat.id;
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => setSelectedCategory(cat.id)}
+                            className={`px-2 py-1 rounded-full text-[9px] font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                              isCatActive
+                                ? "bg-amber-400/25 text-amber-300 border border-amber-400/40 shadow-[0_0_6px_rgba(251,191,36,0.2)]"
+                                : "text-white/45 hover:text-white/80 hover:bg-white/5 border border-transparent"
+                            }`}
+                          >
+                            {cat.label} ({cat.count})
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Tracks List */}
+                    <div className="max-h-[220px] overflow-y-auto no-scrollbar flex flex-col gap-1 pr-0.5">
+                      {showHiddenTracks ? (
+                        hiddenTracks.length > 0 ? (
+                          hiddenTracks.map((hidden) => (
+                            <div
+                              key={hidden.id}
+                              className="flex items-center gap-1.5 w-full rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-all px-2.5 py-1.5"
+                            >
+                              <div className="flex flex-1 min-w-0 flex-col">
+                                <span className="text-[11px] text-white/80 truncate">{hidden.name}</span>
+                                <span className="text-[9px] text-white/30 truncate">
+                                  {hidden.artist || "숨김 처리됨"}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => handleRestoreTrack(hidden, e)}
+                                className="shrink-0 p-1.5 rounded-lg text-white/40 hover:text-emerald-300 hover:bg-emerald-500/10 transition-all cursor-pointer"
+                                title="목록에 다시 추가"
+                              >
+                                <RotateCcw size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => void handlePermanentDeleteTrack(hidden, e)}
+                                className="shrink-0 p-1.5 rounded-lg text-white/30 hover:text-rose-400 hover:bg-rose-500/15 transition-all cursor-pointer"
+                                title="영구 삭제"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="px-2 py-8 text-[11px] text-white/35 text-center">
+                            숨겨진 곡이 없습니다.
+                          </p>
+                        )
+                      ) : (
+                        tracks
+                          .map((track, idx) => ({ track, idx }))
+                          .filter(({ track }) => selectedCategory === "all" || track.category === selectedCategory)
+                          .map(({ track, idx }) => {
+                            const isActive = shuffledIndices[queueIndex] === idx;
+                            const rowKey = getBgmTrackId(track);
+                            return (
+                              <div
+                                key={rowKey}
+                                className={`flex items-center gap-1.5 w-full rounded-xl transition-all duration-150 ${
+                                  isActive
+                                    ? "bg-amber-400/15 border border-amber-400/35 shadow-[0_0_10px_rgba(251,191,36,0.15)]"
+                                    : "hover:bg-white/5 border border-transparent"
+                                }`}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectTrack(idx)}
+                                  className={`flex flex-1 min-w-0 items-center justify-between text-left px-2.5 py-1.5 transition-all cursor-pointer ${
+                                    isActive ? "text-amber-200 font-semibold" : "text-white/70 hover:text-white"
+                                  }`}
+                                >
+                                  <div className="flex flex-col min-w-0 max-w-[85%]">
+                                    <span className="text-[11px] truncate flex items-center gap-1.5">
+                                      {track.name}
+                                      {isActive && isPlaying && !isBuffering && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                                      )}
+                                    </span>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      {track.category && (
+                                        <span className="px-1.5 py-0.2 rounded text-[7.5px] font-semibold bg-amber-400/10 text-amber-300 border border-amber-400/20 shrink-0">
+                                          {track.category}
+                                        </span>
+                                      )}
+                                      <span className="text-[8.5px] text-white/40 truncate">{track.artist}</span>
+                                    </div>
+                                  </div>
+                                  {isActive && (
+                                    <span className="text-[9px] text-amber-300 font-mono shrink-0 font-bold">
+                                      PLAYING
+                                    </span>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleRemoveTrack(idx, e)}
+                                  disabled={tracks.length <= 1}
+                                  className="shrink-0 p-1.5 mr-1 rounded-lg text-white/25 hover:text-rose-300 hover:bg-rose-500/10 disabled:opacity-20 disabled:pointer-events-none transition-all cursor-pointer"
+                                  title="목록에서 숨기기"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            );
+                          })
+                      )}
+                    </div>
+
+                    {/* Playlist Footer Actions */}
+                    <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={handleResetToCurated30Tracks}
+                        className="text-[10px] text-white/45 hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={10} />
+                        <span>30곡 원본 전체 복원</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleToggleHiddenTracks}
+                        className="text-[10px] text-white/45 hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <EyeOff size={10} />
+                        <span>{showHiddenTracks ? "음악 목록 보기" : `숨긴 곡 (${hiddenTracks.length})`}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 2: Mood Sounds (자연의 소리 & 백색소음) */}
+                {activeMediaTab === 'mood' && (
+                  <div className="flex flex-col p-3 pt-2 gap-3">
+                    {/* Master Mood Controls Row */}
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{currentMoodPreset.emoji}</span>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-bold text-white">
+                            {currentMoodPreset.name}
+                          </span>
+                          <span className="text-[9px] text-white/40">
+                            {isMoodPlaying ? "현재 앰비언트 재생 중" : "일시정지됨"}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleMoodPlay()}
+                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                          isMoodPlaying
+                            ? "bg-emerald-400 text-neutral-950 shadow-[0_0_12px_rgba(52,211,153,0.5)]"
+                            : "bg-white/10 text-white/70 hover:bg-white/20"
+                        }`}
+                      >
+                        {isMoodPlaying ? "앰비언트 끄기" : "앰비언트 켜기"}
+                      </button>
+                    </div>
+
+                    {/* Independent Mood Sound Volume Slider */}
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/5">
+                      <Headphones size={14} className="text-emerald-400 shrink-0" />
+                      <div className="flex flex-col flex-1">
+                        <div className="flex items-center justify-between text-[10px] text-white/60 mb-1">
+                          <span>자연의 소리 독립 볼륨 (BGM과 동시 믹싱)</span>
+                          <span className="font-mono text-emerald-300 font-bold">
+                            {Math.round(moodVolume * 100)}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={moodVolume}
+                          onChange={(e) => setMoodVolume(parseFloat(e.target.value))}
+                          className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Presets Grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {moodPresets.map((preset) => {
+                        const isPresetActive = isMoodPlaying && activeMood === preset.id;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => {
+                              if (activeMood === preset.id && isMoodPlaying) {
+                                toggleMoodPlay();
+                              } else {
+                                setMoodSound(preset.id);
+                                if (!isMoodPlaying) {
+                                  toggleMoodPlay(preset.id);
+                                }
+                              }
+                            }}
+                            className={`p-2.5 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                              isPresetActive
+                                ? `bg-gradient-to-br ${preset.accentClass} shadow-[0_0_12px_rgba(52,211,153,0.2)]`
+                                : "bg-white/[0.02] hover:bg-white/[0.05] border-white/5 text-white/70"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xl">{preset.emoji}</span>
+                              <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/60">
+                                {preset.badge}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-bold text-white leading-tight">
+                                {preset.name}
+                              </p>
+                              <p className="text-[8.5px] text-white/40 truncate mt-0.5">
+                                {preset.description}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Card Footer Hint */}
+              <div className="px-4 py-2 border-t border-white/10 bg-black/50 text-center shrink-0">
+                <p className="text-[10px] text-white/40">
+                  💡 LP판 탭: 재생/일시정지 · 더블탭: 다음곡 · 꾹 누르기(홀드): 상세메뉴
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Fullscreen Immersive 3D Audio Visualizer Stage */}
       {show3DVisualizerStage && (

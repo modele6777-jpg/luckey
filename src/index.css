@@ -441,6 +441,38 @@
     }
   }
 
+  .bottom-safe-music-menu {
+    bottom: calc(var(--sab) + 8.25rem);
+    left: calc(var(--sal) + 0.875rem);
+  }
+
+  @media (min-width: 640px) {
+    .bottom-safe-music-menu {
+      bottom: calc(var(--sab) + 8.5rem);
+      left: calc(var(--sal) + 0.875rem);
+    }
+  }
+
+  @media (max-height: 720px) {
+    .bottom-safe-music-menu {
+      bottom: calc(var(--sab) + 0.75rem);
+      left: calc(var(--sal) + 4.5rem);
+    }
+  }
+
+  @keyframes lpHoldProgress {
+    0% {
+      stroke-dashoffset: 145;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .animate-lp-hold {
+    animation: lpHoldProgress 450ms linear forwards;
+  }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
