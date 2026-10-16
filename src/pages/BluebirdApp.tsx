@@ -2114,7 +2114,7 @@ export default function BluebirdApp() {
       const data = await invokeLLMStructured({
         messages: [
           { role: 'system', content: `당신은 마음의 주파수를 꿰뚫어보는 영적 데이터 분석가 블루버드입니다. 사용자의 사주와 기운, 프로��, 최근 감정 기록 및 오늘의 Daily 오라클 진단을 종합적으로 분석하여 영혼의 치유와 안식을 주는 소울 리포트를 매우 심층적이고 고도화된 수준으로 작성하세요. [데이터 가이드: 프로필(${userProfileStr}), 최근상태(${recentMemory}), 데일리진단(${dailyContext})]\n준수사항: 'guidance' 필드는 소제목, 리스트, 강조 등 마크다운 양식을 적극 활용하여 최소 4문단 이상의 깊이 있는 통찰과 치유의 방향을 제시할 것. 또한, luckyColor(예: '하늘색', '시안 블루 (청청색)'), luckyItem(예: '푸른 깃털', '오르골'), deepSyncLevel(예: '최적화', '완전한 조화')는 반드시 완전한 한글 구문으로 기입하세요.` },
-          { role: 'user', content: `이름: ${form.name || sharedState?.userProfile?.basic?.name}, 닉네임: ${form.nickname || sharedState?.userProfile?.basic?.nickname}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 생시: ${form.birthtime || sharedState?.userProfile?.basic?.birthtime}, 거주지: ${form.city}, 성별: ${form.gender}. 현재 내 영혼의 에너지 레벨, 치유의 포인트, 그리고 나아가야 할 방향을 초고도화된 리포트로 전해줘.` }
+          { role: 'user', content: `호칭/닉네임: ${form.nickname || sharedState?.userProfile?.basic?.nickname || form.name || sharedState?.userProfile?.basic?.name || '제제'}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 생시: ${form.birthtime || sharedState?.userProfile?.basic?.birthtime}, 거주지: ${form.city}, 성별: ${form.gender}. 현재 내 영혼의 에너지 레벨, 치유의 포인트, 그리고 나아가야 할 방향을 초고도화된 리포트로 전해줘.` }
         ],
         schema: SoulInsightSchema
       });

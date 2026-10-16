@@ -384,6 +384,7 @@ export interface SajuAnalysisResult {
   hasBirthInfo: boolean;
   name: string;
   nickname: string;
+  realName?: string;
   birthdate: string;
   birthtime?: string;
   gender: string;
@@ -469,10 +470,13 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
   }
 
   const genderStr = basic.gender === 'male' ? '남성' : '여성';
-  const rawName = basic.name?.trim();
-  const name = (rawName && rawName !== '여행자') ? rawName : '제제';
   const rawNickname = basic.nickname?.trim();
-  const nickname = (rawNickname && rawNickname !== '여행자') ? rawNickname : name;
+  const rawName = basic.name?.trim();
+  const preferredName = (rawNickname && rawNickname !== '여행자')
+    ? rawNickname
+    : ((rawName && rawName !== '여행자') ? rawName : '제제');
+  const name = preferredName;
+  const nickname = preferredName;
 
   // 1. 절기 기준 년도(Saju Year) 보정 (양력 2월 4일 입춘 전 출생자는 전년도 간지 적용)
   const isBeforeIpchun = (m === 1) || (m === 2 && d < 4);
@@ -859,6 +863,7 @@ ${specialStrText || '• 안정적인 오행 순환 구조'}
     hasBirthInfo: true,
     name,
     nickname,
+    realName: rawName || '',
     birthdate: basic.birthdate,
     birthtime: basic.birthtime,
     gender: genderStr,

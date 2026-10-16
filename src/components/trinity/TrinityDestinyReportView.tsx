@@ -88,9 +88,9 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   // 프로필 편집 모달/인라인 토글
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState(
-    (profile?.basic?.name && profile.basic.name !== '여행자')
-      ? profile.basic.name
-      : (profile?.basic?.nickname || '제제')
+    (profile?.basic?.nickname && profile.basic.nickname !== '여행자')
+      ? profile.basic.nickname
+      : ((profile?.basic?.name && profile.basic.name !== '여행자') ? profile.basic.name : '제제')
   );
   const [editBirthdate, setEditBirthdate] = useState(profile?.basic?.birthdate || '1995-05-15');
   const [editBirthtime, setEditBirthtime] = useState(profile?.basic?.birthtime || '12:00');
@@ -181,11 +181,13 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   // 프로필 저장 핸들러
   const handleSaveProfile = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    const chosenEditName = editName.trim() || '제제';
     const newProfile = {
       ...(profile || {}),
       basic: {
         ...(profile?.basic || {}),
-        name: editName.trim() || '여행자',
+        name: profile?.basic?.name || chosenEditName,
+        nickname: chosenEditName,
         birthdate: editBirthdate,
         birthtime: editBirthtime,
         gender: editGender,

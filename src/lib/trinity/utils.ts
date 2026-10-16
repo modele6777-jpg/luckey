@@ -845,7 +845,11 @@ export function buildTarotContextPromptAddon(opts: {
   if (basic?.name || basic?.birthdate || saju || opts.sajuData?.trim()) {
     const profileLines: string[] = [];
     if (basic?.name || basic?.nickname) {
-      profileLines.push(`· 질문자: ${basic.name || basic.nickname}${basic.nickname && basic.name && basic.nickname !== basic.name ? ` (닉네임: ${basic.nickname})` : ''}`);
+      const preferredName = basic.nickname?.trim() || basic.name?.trim() || '질문자';
+      profileLines.push(`· 질문자 호칭 (반드시 부를 이름): ${preferredName}`);
+      if (basic.nickname?.trim() && basic.name?.trim() && basic.nickname.trim() !== basic.name.trim()) {
+        profileLines.push(`· 호칭 절대 주의: 본명(${basic.name.trim()}) 대신 사용자가 설정한 닉네임 '${basic.nickname.trim()}'(으)로만 다정하고 정중하게 부를 것.`);
+      }
     }
     if (basic?.birthdate) {
       profileLines.push(`· 생년월일: ${basic.birthdate} (${basic.lunarSolar === 'lunar' ? '음력' : '양력'})${basic.birthtime ? ` ${basic.birthtime}` : ''}${basic.birthCity ? ` / 출생지: ${basic.birthCity}` : ''}`);

@@ -1704,7 +1704,7 @@ ${globalMemory ? `[에코시스템 배경 메모리]: ${globalMemory}\n` : ''}${
 # User Context Schema (앱 주입 변수)
 [사용자 기본 정보]
 - 이름/닉네임: ${nickname || realName || '친구'}
-- 별자리/차트 요약: ${astro || '정보 없음'}
+${nickname && realName && nickname !== realName ? `- 호칭 절대 원칙: 사용자의 본명(${realName}) 대신 닉네임 '${nickname}'(으)로만 다정하게 부를 것.\n` : ''}- 별자리/차트 요약: ${astro || '정보 없음'}
 - 사주 정보: ${saju || '정보 없음'}
 - 이전 대화 참고(배경): ${memory || '새로운 만남'}
 - 현재 에너지: ${currentVibe || '평온함'}
@@ -1719,11 +1719,11 @@ ${relationships || '등록된 특정 지인 정보 없음 (대화 중 인물 언
 ${LUCY_NO_YA_PREFIX_RULE}
 반드시 대답 끝에 [EMOTION: 감정표현] 태그를 달아주세요.`,
 
-  lucyDaily: (saju: string, astro: string, cards: string, realName?: string) =>
+  lucyDaily: (saju: string, astro: string, cards: string, nicknameOrName?: string) =>
     `당신은 사용자의 오늘 하루 운세를 짚어주는 다정한 운명 가이드 '루시(Lucy)'야.
 너는 항상 100% 반말만 사용하는 캐릭터야.
 [사용자 기본 정보]
-${realName ? `- 사용자 실명: ${realName}\n` : ''}- 사주 기운: ${saju || '정보 없음'}
+${nicknameOrName ? `- 사용자 호칭: ${nicknameOrName}\n` : ''}- 사주 기운: ${saju || '정보 없음'}
 - 별자리 흐름: ${astro || '정보 없음'}
 - 오늘의 카드: ${cards}
 
@@ -1744,13 +1744,13 @@ ${LUCY_NO_YA_PREFIX_RULE}
   "actions": ["실천 팁 1", "실천 팁 2"]
 }`,
 
-  lucyVision: (saju: string, astro: string, cards: string, concern: string, realName?: string) =>
+  lucyVision: (saju: string, astro: string, cards: string, concern: string, nicknameOrName?: string) =>
     `당신은 타로 카드와 점성술, 사주를 결합하여 심층 비전을 제시하는 운명 가이드 '루시(Lucy)'야.
 너는 항상 100% 반말만 사용하는 캐릭터야.
 [사용자 고민]
 "${concern}"
 [상담 데이터]
-${realName ? `- 이름: ${realName}\n` : ''}- 사주: ${saju || '정보 없음'}
+${nicknameOrName ? `- 호칭: ${nicknameOrName}\n` : ''}- 사주: ${saju || '정보 없음'}
 - 별자리: ${astro || '정보 없음'}
 - 선택된 카드: ${cards}
 
@@ -1789,14 +1789,14 @@ ${LUCY_NO_YA_PREFIX_RULE}
   "frequency": "추천 주파수 (예: 528Hz)"
 }`,
 
-  lucyTarot: (deck: string, cards: string, concern: string, saju: string, astro: string, memory: string, realName?: string) =>
+  lucyTarot: (deck: string, cards: string, concern: string, saju: string, astro: string, memory: string, nicknameOrName?: string) =>
     `당신은 타로 리딩과 사주, 별자리를 종합하여 조언을 건네는 운명 가이드 '루시(Lucy)'야.
 너는 항상 100% 반말만 사용하는 캐릭터야.
 [상담 정보]
 - 선택된 덱: ${deck}
 - 뽑힌 카드들: ${cards}
 - 사용자 고민: "${concern}"
-${realName ? `- 실명: ${realName}\n` : ''}- 사주 정보: ${saju || '정보 없음'}
+${nicknameOrName ? `- 호칭: ${nicknameOrName}\n` : ''}- 사주 정보: ${saju || '정보 없음'}
 - 별자리 정보: ${astro || '정보 없음'}
 - 이전 대화 메모리: ${memory || '없음'}
 
@@ -2012,9 +2012,17 @@ export function buildDeepSynapseContext(profile?: UserProfile): string {
   // 사주 정밀 계산
   const saju = calculateDetailedSaju(profile);
 
+  const preferredName = basic.nickname?.trim() || basic.name?.trim() || '친구';
   let context = `[유저 심층 시냅스 메타데이터]\n`;
-  if (basic.name) context += `- 본명: ${basic.name}\n`;
-  if (basic.nickname) context += `- 닉네임: ${basic.nickname}\n`;
+  context += `- 호칭 (대화 시 반드시 부를 이름): ${preferredName}\n`;
+  if (basic.nickname?.trim()) {
+    context += `- 닉네임: ${basic.nickname.trim()}\n`;
+    if (basic.name?.trim() && basic.nickname.trim() !== basic.name.trim()) {
+      context += `- 호칭 절대 주의: 본명(${basic.name.trim()})은 명리학/사주 연산 참고용일 뿐이며, 대화나 답변에서는 절대로 본명을 부르지 말고 반드시 사용자가 설정한 닉네임 '${basic.nickname.trim()}'(으)로만 다정하게 부를 것.\n`;
+    }
+  } else if (basic.name?.trim()) {
+    context += `- 이름: ${basic.name.trim()}\n`;
+  }
   if (basic.birthdate) context += `- 생년월일: ${basic.birthdate} (${basic.lunarSolar === 'lunar' ? '음력' : '양력'})\n`;
   if (basic.birthtime) context += `- 생시: ${basic.birthtime}\n`;
   if (basic.gender) context += `- 성별: ${basic.gender === 'male' ? '남성' : '여성'}\n`;

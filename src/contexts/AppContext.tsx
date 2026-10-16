@@ -323,7 +323,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Single Unified Chat Timeline across all personas & portals
   const [unifiedMessages, setUnifiedMessages] = useState<UnifiedMessage[]>(() => {
     const loaded = loadSavedUnifiedMessages();
-    const result = processDailyChatArchival(loaded, '제제');
+    const initialProfile = getPersistentUserProfile();
+    const rawInitialNick = initialProfile?.basic?.nickname?.trim() || initialProfile?.basic?.name?.trim();
+    const initialNick = (rawInitialNick && rawInitialNick !== '여행자') ? rawInitialNick : '제제';
+    const result = processDailyChatArchival(loaded, initialNick);
     if (result.wasArchived) {
       saveUnifiedMessagesSafely(result.messages);
     }
@@ -1472,8 +1475,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     // 3. Prepare AI Prompt
     const profile = sharedState?.userProfile || getPersistentUserProfile();
-    const nickname = profile?.basic?.nickname || "";
-    const realName = profile?.basic?.name || "";
+    const rawNickname = profile?.basic?.nickname?.trim();
+    const rawRealName = profile?.basic?.name?.trim();
+    const nickname = (rawNickname && rawNickname !== '여행자') ? rawNickname : (rawRealName || "");
+    const realName = rawRealName || "";
     const mbti = profile?.psych?.mbti || "정보 없음";
     
     const sajuObj = calculateDetailedSaju(profile);
@@ -1590,6 +1595,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // 강력한 대화 포커스 및 인지 능력, 기억력 개선
     systemPrompt += `\n\n[루시의 최우선 커뮤니케이션 & 대화 기억 원칙]
+0. [호칭 절대 원칙 (★매우 중요)]: 사용자의 호칭은 반드시 사용자가 설정한 닉네임('${nickname || realName || "제제"}')으로만 불러야 해. 이전 대화 기록이나 프로필, 사주 데이터에 본명(${realName ? `"${realName}"` : "실명"})이 있더라도 절대로 본명을 부르지 말고 오직 닉네임 '${nickname || realName || "제제"}'(으)로만 다정하게 불러줘.
 1. [현재 입력 최우선 경청]: 사용자가 방금 보낸 최신 메시지(질문, 일상 대화, 타로 해석 요청, 고민 등)의 의도와 핵심을 가장 먼저 정확히 파악하여, 그 질문에 직접적이고 명쾌하며 다정하게 대답해줘.
 2. [자연스러운 대화 기억과 연속성]: 사용자와 지금까지 나누었던 대화 기록과 이야기들을 자연스럽게 기억하고 존중해줘. 사용자가 "아까 내가 말했던 거 기억해?", "그때 추천해준 건?", "전에 했던 이야기" 등을 언급할 때 대화 기록을 기반으로 섬세하게 인지하고 대답해줘.
 3. [유연한 흐름 전환]: 사용자가 새로운 질문이나 다른 주제를 꺼낼 때는 과거 이야기에 억지로 얽매이지 않고, 새로운 주제에 맞춰 매끄럽고 유연하게 반응해줘.

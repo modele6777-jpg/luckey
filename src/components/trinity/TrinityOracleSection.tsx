@@ -397,7 +397,7 @@ export function buildFallbackHealingMessage(
   synergy?: SajuTarotSynergy,
   microAction?: any
 ): string {
-  const sajuNameStr = saju?.name || recipientName || '내담자';
+  const sajuNameStr = recipientName || saju?.name || '내담자';
   const dayMasterStr = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean} · ${saju.dayMaster.symbolName})` : '본원 기운';
   const domElStr = saju?.elements?.dominant?.name || '우세 오행';
   const domElAdvice = saju?.elements?.dominant?.advice || '유연한 흐름';
@@ -480,7 +480,7 @@ export function buildFallbackGrowthMessage(
   macroFocus?: string,
   microMission?: any
 ): string {
-  const sajuNameStr = saju?.name || recipientName || '도전자';
+  const sajuNameStr = recipientName || saju?.name || '도전자';
   const dayMasterStr = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.symbolName})` : '본원 기질';
   const domElStr = saju?.elements?.dominant?.name || '우세 오행';
   const lackElStr = saju?.elements?.lacking?.name || '결핍 오행';
@@ -533,7 +533,7 @@ export function buildFallbackMiracleMessage(
   miracleLesson?: { source: string; quote: string; application: string },
   microAction?: any
 ): string {
-  const sajuNameStr = saju?.name || recipientName || '빛의 형제';
+  const sajuNameStr = recipientName || saju?.name || '빛의 형제';
   const dayMasterStr = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean} · ${saju.dayMaster.symbolName})` : '본원 생명';
   const yongsinStr = saju?.yongsin?.name || '평화의 중심';
 
@@ -646,10 +646,13 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     if (userProfile?.basic?.birthdate) {
       return calculateDetailedSaju(userProfile);
     }
+    const fallbackNick = (userProfile?.basic?.nickname && userProfile.basic.nickname !== '여행자')
+      ? userProfile.basic.nickname
+      : ((userProfile?.basic?.name && userProfile.basic.name !== '여행자') ? userProfile.basic.name : '제제');
     return calculateDetailedSaju({
       basic: {
-        name: (userProfile?.basic?.name && userProfile.basic.name !== '여행자') ? userProfile.basic.name : '제제',
-        nickname: (userProfile?.basic?.nickname && userProfile.basic.nickname !== '여행자') ? userProfile.basic.nickname : '제제',
+        name: fallbackNick,
+        nickname: fallbackNick,
         birthdate: '1995-05-15',
         birthtime: '12:00',
         gender: (userProfile?.basic?.gender as any) || 'female',
@@ -785,11 +788,13 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 
   const handleSaveSajuProfile = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    const chosenEditName = editName.trim() || '제제';
     const updatedProfile = {
       ...(userProfile || {}),
       basic: {
         ...(userProfile?.basic || {}),
-        name: editName.trim() || '제제',
+        name: userProfile?.basic?.name || chosenEditName,
+        nickname: chosenEditName,
         birthdate: editBirthdate,
         birthtime: editBirthtime,
         gender: editGender,
@@ -1589,7 +1594,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     setIsLoading(true);
     stopTTS();
 
-    const sajuNameStr = saju?.name || recipientName || '내담자';
+    const sajuNameStr = recipientName || saju?.name || '내담자';
     const dayMasterStr = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean} · ${saju.dayMaster.symbolName})` : '본원 기운';
     const domElStr = saju?.elements?.dominant?.name || '우세 오행';
     const lackElStr = saju?.elements?.lacking?.name || '결핍 오행';
@@ -1622,7 +1627,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     const sajuContextPrompt = saju
       ? `
 # 질문자의 사주명리학(四柱命理) 정밀 원국:
-- 이름 및 성별: ${saju.name} (${saju.gender})
+- 이름 및 성별: ${recipientName || saju.name} (${saju.gender})
 - 일간(Day Master) 본원: ${saju.dayMaster.hanja}(${saju.dayMaster.korean}) — ${saju.dayMaster.symbolName}
   * 영적 아키타입: ${saju.dayMaster.archetypeTitle}
   * 핵심 기질 키워드: ${saju.dayMaster.coreKeywords.join(', ')}
@@ -2598,9 +2603,9 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
   const renderExecutiveSummaryCard = () => {
     const synergy = oracleMode === 'healing' ? healingResult?.saju_tarot_synergy : oracleMode === 'miracle' ? miracleResult?.saju_tarot_synergy : growthResult?.saju_tarot_synergy;
     const verdict = synergy?.saju_oracle_verdict || (oracleMode === 'healing'
-      ? `${saju?.name || recipientName || '내담자'} 님의 사주 본원 기운과 3장의 카드가 조화롭게 만나, 삶의 긴장을 덜고 내면의 평온과 지혜를 회복하는 힐링의 관문이 활짝 열렸습니다.`
+      ? `${recipientName || saju?.name || '내담자'} 님의 사주 본원 기운과 3장의 카드가 조화롭게 만나, 삶의 긴장을 덜고 내면의 평온과 지혜를 회복하는 힐링의 관문이 활짝 열렸습니다.`
       : oracleMode === 'miracle'
-      ? `${saju?.name || recipientName || '내담자'} 님의 에고의 두려움이 온전히 해체되고, 성령의 지각 전환을 통해 하나님의 평화와 참된 용서의 관문이 열렸습니다.`
+      ? `${recipientName || saju?.name || '내담자'} 님의 에고의 두려움이 온전히 해체되고, 성령의 지각 전환을 통해 하나님의 평화와 참된 용서의 관문이 열렸습니다.`
       : growthResult?.macro_focus);
     const resonance = synergy?.day_master_resonance;
     const flow = synergy?.destiny_flow_synthesis;
