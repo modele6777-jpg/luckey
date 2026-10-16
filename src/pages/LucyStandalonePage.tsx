@@ -336,6 +336,13 @@ export function resolveMessageModeAndChannels(
   let rawChannels: string[] = Array.isArray(msg?.channels) ? msg.channels : [];
   let rawMode: string = msg?.mode || msg?.channel || '';
 
+  // 0. 환영 및 일일 인사말 메시지인 경우 100% 수다 모드로 고정
+  const msgId = String(msg?.id || '');
+  if (msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.includes('greet')) {
+    rawChannels = [];
+    rawMode = 'casual';
+  }
+
   // 1. 모델 메시지에 채널이 비어 있다면 직전 사용자 메시지의 채널 확인
   if (rawChannels.length === 0 && !rawMode && filteredMessages && typeof index === 'number' && index > 0) {
     const prev = filteredMessages[index - 1];
@@ -443,7 +450,7 @@ export default function LucyStandalonePage() {
     } catch (_) {}
   }, [abortGenerating]);
 
-  // 🎛️ Multi-select active channels state (나갔다 들어와도 유지되도록 safeLocalStorage 복원 지원)
+  // 🎛️ Multi-select active channels state (기본: 수다 모드 [], 외부 명시 진입 시 pending 채널 반영)
   const [activeChannels, setActiveChannels] = useState<SpecialChannel[]>(() => {
     try {
       const pending = safeSessionStorage.getItem('lucy_pro_pending_channel');
@@ -453,13 +460,8 @@ export default function LucyStandalonePage() {
         safeLocalStorage.setItem('lucy_active_channels', JSON.stringify(parsed));
         return parsed;
       }
-      const saved = safeLocalStorage.getItem('lucy_active_channels');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
     } catch (_) {}
-    return [];
+    return []; // 기본 진입은 항상 수다 모드 (채널 비어있음)
   });
 
   // 채널 변경 시 safeLocalStorage에 영구 동기화
@@ -1291,14 +1293,14 @@ export default function LucyStandalonePage() {
                     <Sparkles size={10} className="text-indigo-500 animate-spin" />
                     AI 자동 감지
                   </span>
-                  {autoDetectedTitle && (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80">
-                      {autoDetectedTitle}
-                    </span>
-                  )}
+                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80">
+                    {autoDetectedTitle || '💬 수다 모드'}
+                  </span>
                 </div>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
-                  {autoDetectedTitle ? `${autoDetectedTitle} · 실시간 맞춤 지능 응답 가동 중` : '대화 내용과 맥락에 맞춰 최적의 지능 모드가 실시간 자동 감지됩니다.'}
+                  {autoDetectedTitle
+                    ? `${autoDetectedTitle} · 실시간 맞춤 지능 응답 가동 중`
+                    : '루시와 편안하게 나누는 다정하고 따뜻한 일상 수다 (입력 시 전문 지능 자동 감지)'}
                 </p>
               </div>
             </div>
@@ -1426,10 +1428,10 @@ export default function LucyStandalonePage() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                  안녕하세요, {userDisplayName} 님! Lucy예요.
+                  안녕, {userDisplayName}! 루시야 💬
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">
-                  궁금한 점이나 고민, 일상 이야기를 자유롭게 들려주세요.<br/>AI가 대화 내용을 실시간으로 자동 감지하여 최적의 전문 지능(사주·전략·치유·호흡·창의)으로 응답합니다.
+                  오늘 하루는 어땠어? 사소한 일상부터 기분 좋은 이야기까지 편하게 들려줘.<br/>언제든 친구처럼 다정하게 수다 떨 준비되어 있어! ✨
                 </p>
               </div>
             </div>
@@ -1541,7 +1543,10 @@ export default function LucyStandalonePage() {
                               cleanText.includes('반가워! 나는 루시야') ||
                               cleanText.includes('오늘도 새로운 하루가 시작되었어') ||
                               cleanText.includes('지난 대화들의 소중한 이야기들도 내 마음에 다 간직하고 있으니') ||
-                              cleanText.includes('영혼 여정을 함께하는')
+                              cleanText.includes('영혼 여정을 함께하는') ||
+                              cleanText.includes('수다 떨 준비되어 있어') ||
+                              cleanText.includes('나랑 가볍게 수다 떨자') ||
+                              cleanText.includes('언제든 친구처럼 다정하게 수다')
                             ) {
                               return true;
                             }
@@ -1840,7 +1845,7 @@ export default function LucyStandalonePage() {
                 isRecording 
                   ? '마이크로 말씀하시는 중입니다...' 
                   : isCasualChat 
-                  ? '루시와 편하게 이야기해 보세요... (채널을 켜서 전문 상담 가능)'
+                  ? '루시와 편하게 수다를 떨어보세요... (전문적인 질문 시 AI 맞춤 모드 자동 전환)'
                   : isFullProMaster 
                   ? '5대 지능 풀가동 마스터에게 무엇이든 질문해 보세요... (Enter 전송)'
                   : `${currentModeTitle}에 질문해 보세요... (Enter 전송)`

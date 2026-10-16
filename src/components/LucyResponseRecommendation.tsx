@@ -253,7 +253,10 @@ export function LucyResponseRecommendation({
     cleanLucyText.includes('반가워! 나는 루시야') ||
     cleanLucyText.includes('오늘도 새로운 하루가 시작되었어') ||
     cleanLucyText.includes('지난 대화들의 소중한 이야기들도 내 마음에 다 간직하고 있으니') ||
-    cleanLucyText.includes('영혼 여정을 함께하는')
+    cleanLucyText.includes('영혼 여정을 함께하는') ||
+    cleanLucyText.includes('수다 떨 준비되어 있어') ||
+    cleanLucyText.includes('나랑 가볍게 수다 떨자') ||
+    cleanLucyText.includes('언제든 친구처럼 다정하게 수다')
   ) {
     return null;
   }

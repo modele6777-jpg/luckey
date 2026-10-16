@@ -185,13 +185,15 @@ export function processDailyChatArchival(
     };
   }
 
-  // 4. If today is a fresh start with no messages yet today, give the daily greeting
+  // 4. If today is a fresh start with no messages yet today, give the daily greeting (수다 모드)
   const freshMorningGreeting: UnifiedMessage = {
     id: `greet-${todayKey}`,
     role: 'model',
-    content: `좋은 하루야, ${userName}! 오늘도 새로운 하루가 시작되었어. 지난 대화들의 소중한 이야기들도 내 마음에 다 간직하고 있으니, 오늘 하루도 편안하게 이야기해 줘 ✨`,
+    content: `좋은 하루야, ${userName}! 오늘 기분은 어때? ㅎㅎ 사소한 일상이나 오늘 있었던 이야기 편하게 들려줘. 나랑 가볍게 수다 떨자! 💬✨`,
     timestamp: Date.now(),
     persona: 'lucy',
+    mode: 'casual',
+    channels: [],
   };
 
   return {

@@ -29,16 +29,32 @@ export const STORAGE_KEYS = {
   LEGACY_LUCY: 'chat_history_lucy'
 };
 
+function getSavedNickname(): string {
+  try {
+    const saved = safeLocalStorage.getItem('userProfile');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const nick = parsed?.basic?.nickname?.trim() || parsed?.basic?.name?.trim();
+      if (nick && nick !== '여행자') return nick;
+    }
+  } catch (_) {}
+  return '제제';
+}
+
 /**
- * 기본 환영 메시지 생성자
+ * 기본 환영 메시지 생성자 (수다 모드 친근한 구어체)
  */
-export function createDefaultGreeting(targetPersona: PersonaType = 'lucy'): UnifiedMessage {
+export function createDefaultGreeting(targetPersona: PersonaType = 'lucy', userName?: string): UnifiedMessage {
+  const nick = userName || getSavedNickname();
+  const nameLabel = nick && nick !== '여행자' ? `${nick}! ` : '';
   return {
     id: 'greet-main',
     role: 'model',
-    content: "안녕, 나는 당신의 영혼 여정을 함께하는 통합 AI 마스터 가이드 '루시'야. 사주, 타로, 마음치유, 웰니스, 휴식, 예술적 영감까지... 프리즘의 모든 차원에서 일어나는 당신의 이야기들을 언제든 편안히 들려줘.",
+    content: `안녕, ${nameLabel}오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 언제든 친구처럼 다정하게 수다 떨 준비되어 있어! 💬✨`,
     timestamp: Date.now(),
     persona: targetPersona,
+    mode: 'casual',
+    channels: [],
   };
 }
 
@@ -176,7 +192,12 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
     if (savedV3) {
       const parsed = JSON.parse(savedV3);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map((m) => {
+          if (m.id === 'greet-main' || (typeof m.content === 'string' && m.content.includes("통합 AI 마스터 가이드 '루시'야"))) {
+            return createDefaultGreeting(m.persona || 'lucy');
+          }
+          return m;
+        });
       }
     }
   } catch (e) {
