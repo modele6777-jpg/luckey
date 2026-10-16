@@ -978,6 +978,17 @@ export function BigBangButton() {
     }
 
     if (typeof window !== 'undefined') {
+      // 🎙️ 음성 모드가 이미 켜져 있다면 홀드 시 즉시 종료 토글
+      if (voiceModeInfo.isOpen) {
+        window.dispatchEvent(new CustomEvent('prism:close_lucy_voice'));
+        triggerHaptic('whitehole');
+        touchStartSelectionRef.current = '';
+        setActivePhase('idle');
+        setGauge(0);
+        setDurationMs(0);
+        return;
+      }
+
       window.dispatchEvent(
         new CustomEvent('prism:bigbang_commit', {
           detail: {
@@ -985,7 +996,7 @@ export function BigBangButton() {
             target: {
               id: 'lucy_voice',
               name: '루시 AI 음성 대화',
-              destinationPath: '/chat?voice=1',
+              destinationPath: location,
               themeColor: '#fde68a',
               eventHorizonMode: 'whitehole',
               previewLabel: '[홀드 소환] 루시 AI 음성 대화',
@@ -998,7 +1009,7 @@ export function BigBangButton() {
         })
       );
 
-      // 🎙️ 전역 루시 AI 음성 모드 모달 즉각 팝업 호출
+      // 🎙️ 전역 루시 AI 음성 모드 즉각 가동 (별도 팝업 없이 현재 화면 위에서 직접 가동)
       window.dispatchEvent(
         new CustomEvent('prism:open_lucy_voice', {
           detail: { initialPrompt, sourcePath: location },
