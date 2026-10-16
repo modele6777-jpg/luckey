@@ -236,53 +236,60 @@ export default function LeftSidebarNav() {
           key={path}
           type="button"
           onClick={() => handleNavigate(path)}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left relative group cursor-pointer rainbow-channel-box ${
-            isActive
-              ? 'bg-white/[0.12] text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)] rainbow-channel-active-halo'
-              : 'text-neutral-300 hover:text-white hover:bg-white/[0.08]'
+          aria-label={label}
+          className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
+            isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
           }`}
         >
-          {/* Active glowing indicator pill - rainbow gradient */}
-          {isActive ? (
+          {/* Active left indicator bar */}
+          {isActive && (
             <motion.div
               layoutId="active-nav-glow"
-              className="absolute left-1 top-2 bottom-2 w-1.5 rounded-full rainbow-gradient-flow shadow-[0_0_10px_rgba(255,255,255,0.7)]"
+              className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,255,255,0.8)]"
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             />
-          ) : (
-            <div className="absolute left-1 top-3.5 bottom-3.5 w-0.5 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
           )}
 
-          {/* Rainbow Channel Icon Container with rotating conic halo */}
-          <div className="relative w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 overflow-hidden p-[1.5px] shadow-[0_0_12px_rgba(255,107,107,0.3)]">
+          {/* Rainbow Conic Halo Border */}
+          <div
+            className={`relative w-full h-full rounded-xl overflow-hidden p-[1.5px] transition-shadow duration-300 ${
+              isActive
+                ? 'shadow-[0_0_16px_rgba(255,107,107,0.55)]'
+                : 'group-hover:shadow-[0_0_12px_rgba(255,107,107,0.35)]'
+            }`}
+          >
             <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
-            <div className="relative w-full h-full rounded-[6.5px] bg-neutral-950/90 flex items-center justify-center">
+            <div
+              className={`relative w-full h-full rounded-[10px] flex items-center justify-center transition-colors ${
+                isActive
+                  ? 'bg-neutral-900/95 ring-1 ring-white/30'
+                  : 'bg-neutral-950/90 group-hover:bg-neutral-900/90'
+              }`}
+            >
               <Icon
-                size={18}
-                className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.85)] transition-transform group-hover:rotate-6"
+                size={20}
+                className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)] transition-transform duration-200 group-hover:scale-110"
               />
             </div>
           </div>
 
-          {/* Label & Description */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black tracking-wider uppercase font-sans truncate rainbow-text-shimmer drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]">
-                {label}
-              </span>
-              {isActive ? (
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md rainbow-gradient-flow text-white shadow-[0_0_10px_rgba(255,107,107,0.5)]">
-                  ACTIVE
-                </span>
-              ) : (
-                <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-white/[0.08] text-neutral-300 border border-white/10 group-hover:border-white/20 group-hover:text-white transition-colors">
-                  {isMainChat ? 'AI CORE' : 'HEALING'}
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] text-neutral-300 group-hover:text-neutral-100 font-sans truncate mt-0.5 transition-colors">
+          {/* Floating Tooltip to the Right */}
+          <div className="hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50 transition-all">
+            <span className="text-xs font-black uppercase tracking-wider rainbow-text-shimmer">
+              {label}
+            </span>
+            <span className="text-[11px] text-neutral-300">
               {subLabel}
-            </p>
+            </span>
+            {isActive ? (
+              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
+                ACTIVE
+              </span>
+            ) : (
+              <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 border border-white/10">
+                {isMainChat ? 'AI CORE' : 'HEALING'}
+              </span>
+            )}
           </div>
         </button>
       );
@@ -294,17 +301,21 @@ export default function LeftSidebarNav() {
         key={path}
         type="button"
         onClick={() => handleNavigate(path)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-left relative group cursor-pointer ${
-          isActive
-            ? 'bg-white/[0.09] text-white border border-white/15 shadow-[0_2px_12px_rgba(0,0,0,0.3)]'
-            : 'text-neutral-400 hover:text-neutral-100 hover:bg-white/[0.04]'
+        aria-label={label}
+        className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
+          isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
         }`}
+        style={{
+          backgroundColor: isActive ? `${color}25` : 'rgba(255, 255, 255, 0.04)',
+          border: `1px solid ${isActive ? `${color}70` : 'rgba(255, 255, 255, 0.08)'}`,
+          boxShadow: isActive ? `0 0 14px ${color}40` : undefined,
+        }}
       >
-        {/* Active glowing indicator pill */}
+        {/* Active left indicator bar */}
         {isActive && (
           <motion.div
             layoutId="active-nav-glow"
-            className="absolute left-1 top-2 bottom-2 w-1 rounded-full"
+            className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full"
             style={{
               backgroundColor: color,
               boxShadow: `0 0 8px ${color}`,
@@ -313,45 +324,37 @@ export default function LeftSidebarNav() {
           />
         )}
 
-        {/* Channel Icon Container */}
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
-          style={{
-            backgroundColor: isActive ? `${color}25` : 'rgba(255, 255, 255, 0.04)',
-            border: `1px solid ${isActive ? `${color}60` : 'rgba(255, 255, 255, 0.08)'}`,
-          }}
-        >
-          <Icon
-            size={18}
-            style={{ color: isActive ? color : undefined }}
-            className={isActive ? '' : 'text-neutral-400 group-hover:text-neutral-200'}
-          />
-        </div>
+        <Icon
+          size={20}
+          style={{ color: isActive ? color : undefined }}
+          className={`transition-transform duration-200 group-hover:scale-110 ${
+            isActive ? '' : 'text-neutral-400 group-hover:text-neutral-100'
+          }`}
+        />
 
-        {/* Label & Description */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <span
-              className="text-xs font-bold tracking-wider uppercase font-sans truncate"
-              style={{ color: isActive ? color : undefined }}
-            >
-              {label}
-            </span>
-            {isActive && (
-              <span
-                className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded"
-                style={{
-                  color,
-                  backgroundColor: `${color}15`,
-                }}
-              >
-                ACTIVE
-              </span>
-            )}
-          </div>
-          <p className="text-[11px] text-neutral-400 group-hover:text-neutral-300 font-sans truncate mt-0.5">
+        {/* Floating Tooltip to the Right */}
+        <div className="hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50 transition-all">
+          <span
+            className="text-xs font-bold uppercase tracking-wider font-sans"
+            style={{ color }}
+          >
+            {label}
+          </span>
+          <span className="text-[11px] text-neutral-300">
             {subLabel}
-          </p>
+          </span>
+          {isActive && (
+            <span
+              className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded"
+              style={{
+                color,
+                backgroundColor: `${color}20`,
+                border: `1px solid ${color}40`,
+              }}
+            >
+              ACTIVE
+            </span>
+          )}
         </div>
       </button>
     );
@@ -408,7 +411,7 @@ export default function LeftSidebarNav() {
         </motion.div>
       )}
 
-      {/* 2. Expanded State: Floating Overlay Backdrop + Slide-in Drawer */}
+      {/* 2. Expanded State: Floating Overlay Backdrop + Slide-in Slim Icon Rail Dock */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -424,7 +427,7 @@ export default function LeftSidebarNav() {
               aria-hidden="true"
             />
 
-            {/* Slide-in Left Drawer Panel */}
+            {/* Slide-in Left Slim Icon Rail */}
             <motion.aside
               key="nav-drawer"
               role="navigation"
@@ -432,25 +435,15 @@ export default function LeftSidebarNav() {
               initial={{ x: '-100%', opacity: 0.6 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '-100%', opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 340, damping: 32 }}
-              className="fixed left-0 top-0 bottom-0 w-[290px] max-w-[85vw] bg-neutral-950/95 backdrop-blur-2xl border-r border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] z-[460] flex flex-col justify-between overflow-hidden text-neutral-200"
+              transition={{ type: 'spring', stiffness: 360, damping: 32 }}
+              className="fixed left-0 top-0 bottom-0 w-[68px] sm:w-[72px] bg-neutral-950/95 backdrop-blur-2xl border-r border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] z-[460] flex flex-col justify-between text-neutral-200 select-none"
             >
-              {/* Header */}
-              <div className="pt-[calc(var(--sat)+1.25rem)] px-5 pb-4 border-b border-white/10 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative w-8 h-8 rounded-lg overflow-hidden p-[1.5px] flex items-center justify-center">
-                    <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
-                    <div className="relative w-full h-full rounded-[6.5px] bg-neutral-950/90 flex items-center justify-center text-amber-300">
-                      <Compass size={16} />
-                    </div>
-                  </div>
-                  <div>
-                    <h2 className="text-xs font-black tracking-widest uppercase rainbow-text-shimmer font-sans">
-                      LUCKEY PRISM
-                    </h2>
-                    <p className="text-[10px] text-neutral-400 font-mono tracking-tight">
-                      SOUL & PRISM CHANNELS
-                    </p>
+              {/* Header: Compact Brand Compass & Close Button */}
+              <div className="pt-[calc(var(--sat)+0.75rem)] px-2 pb-2 border-b border-white/10 flex flex-col items-center gap-2 shrink-0">
+                <div className="relative w-9 h-9 rounded-xl overflow-hidden p-[1.5px] flex items-center justify-center shadow-md">
+                  <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
+                  <div className="relative w-full h-full rounded-[10px] bg-neutral-950/90 flex items-center justify-center text-amber-300">
+                    <Compass size={17} />
                   </div>
                 </div>
 
@@ -458,66 +451,55 @@ export default function LeftSidebarNav() {
                   type="button"
                   onClick={() => setIsOpen(false)}
                   aria-label="메뉴 닫기"
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer active:scale-90"
+                  title="메뉴 닫기"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               </div>
 
-              {/* Navigation Channel Items Grouped by Category */}
-              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 no-scrollbar">
-                {/* Category 1: AI 가이드 & 마음약방 (LUCY & KEY) */}
-                <div>
-                  <div className="px-2 pb-1.5 flex items-center justify-between text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-400">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full rainbow-fab-halo" />
-                      <span className="text-neutral-300 font-bold">AI 코어 & 마음약방</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-full border border-pink-500/30 text-pink-300/80 bg-pink-500/10">
-                      PRISM CORE
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {CORE_CHANNELS.map(renderNavButton)}
-                  </div>
+              {/* Navigation Channel Items (Icon-Only Rail) */}
+              <div className="flex-1 overflow-y-auto sm:overflow-y-visible px-2 py-3 space-y-2 no-scrollbar flex flex-col items-center w-full">
+                {/* Core Channels: LUCY & KEY */}
+                <div className="flex flex-col items-center gap-2 w-full">
+                  {CORE_CHANNELS.map(renderNavButton)}
                 </div>
 
-                {/* Category 2: 7대 프리즘 여정 (PROLOGUE ~ EPILOGUE) */}
-                <div className="pt-2 border-t border-white/[0.08]">
-                  <div className="px-2 pb-1.5 flex items-center gap-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    <span>7대 프리즘 여정</span>
-                  </div>
-                  <div className="space-y-1">
-                    {PRISM_CHANNELS.map(renderNavButton)}
-                  </div>
+                {/* Subtle Divider */}
+                <div className="w-6 h-[1px] bg-white/15 my-1 rounded-full shrink-0" />
+
+                {/* 7 Prism Channels: PROLOGUE ~ EPILOGUE */}
+                <div className="flex flex-col items-center gap-2 w-full">
+                  {PRISM_CHANNELS.map(renderNavButton)}
                 </div>
               </div>
 
               {/* Footer: User Profile Button & Collapse Button */}
-              <div className="pb-[calc(var(--sab)+1.25rem)] px-4 pt-3 border-t border-white/10 flex items-center justify-between text-neutral-300">
+              <div className="pb-[calc(var(--sab)+0.75rem)] px-2 pt-2 border-t border-white/10 flex flex-col items-center gap-2 shrink-0">
+                {/* User Profile Button */}
                 <button
                   type="button"
                   onClick={() => handleNavigate('/profile')}
-                  className="flex items-center gap-2 py-1.5 px-2.5 rounded-xl hover:bg-white/[0.08] text-neutral-200 hover:text-white transition-all cursor-pointer group active:scale-95 max-w-[180px]"
-                  title={`${userNickname} 프로필 화면으로 이동`}
+                  className="relative group w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 hover:bg-amber-400/25 transition-all cursor-pointer active:scale-95"
+                  aria-label={`${userNickname} 프로필`}
                 >
-                  <div className="w-6 h-6 rounded-lg bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 group-hover:scale-105 transition-transform shrink-0">
-                    <User size={13} />
+                  <User size={16} className="group-hover:scale-110 transition-transform" />
+                  {/* Desktop Hover Tooltip */}
+                  <div className="hidden sm:group-hover:flex items-center gap-1.5 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-amber-300">{userNickname}</span>
+                    <span className="text-[11px] text-neutral-400">프로필</span>
                   </div>
-                  <span className="text-xs font-semibold font-sans truncate text-neutral-200 group-hover:text-amber-300 transition-colors">
-                    {userNickname}
-                  </span>
                 </button>
 
+                {/* Collapse Button */}
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-1 py-1.5 px-2.5 rounded-xl text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer text-xs font-sans active:scale-95"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer text-xs active:scale-90"
                   title="메뉴 닫기"
+                  aria-label="메뉴 닫기"
                 >
-                  <ChevronLeft size={14} />
-                  <span>접기</span>
+                  <ChevronLeft size={16} />
                 </button>
               </div>
             </motion.aside>
