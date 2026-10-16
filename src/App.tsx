@@ -2,10 +2,9 @@ import React from "react";
 import { Route, Switch, Redirect, useLocation } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
-
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { LoginScreen } from "./components/LoginScreen";
-import BottomNav from "./components/BottomNav";
+import LeftSidebarNav from "./components/navigation/LeftSidebarNav";
 import { BigBangButton } from "./components/omniwarp/BigBangButton";
 import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionOverlay";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -68,7 +67,7 @@ import { usePinScreenLock } from "./hooks/usePinScreenLock";
 import { resolveCanonicalPath } from "./lib/prismRouteRegistry";
 
 const ROUTES_MAP = [
-  { path: "/", Component: HubHome },
+  { path: "/", Component: LucyStandalonePage },
   { path: "/prologue", Component: HubHome },
   { path: "/universe", Component: HubHome },
   { path: "/ecpr", Component: HubHome },
@@ -103,7 +102,7 @@ function ActivePage({ loc }: { loc: string }) {
   return (
     <React.Suspense fallback={<PageLoader />}>
       <Switch location={cleanLoc}>
-        <Route path="/"><HubHome /></Route>
+        <Route path="/"><LucyStandalonePage /></Route>
         <Route path="/prologue"><HubHome /></Route>
         <Route path="/universe"><HubHome /></Route>
         <Route path="/ecpr"><HubHome /></Route>
@@ -335,10 +334,18 @@ function AppContent() {
     }
   }, [isUnlocked, sharedState?.themeColor]);
 
-  const isStandaloneChat = location === '/chat' || location === '/lucy' || location === '/handbook' || location === '/rebible' || location === '/orb' || location === '/gateway' || location === '/crystal' || location === '/key' || location === '/calm';
+  const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy';
+  const isKeyRoute = location === '/key' || location === '/calm';
+  const isDistractionFreeRoute =
+    location === '/handbook' ||
+    location === '/rebible' ||
+    location === '/orb' ||
+    location === '/gateway' ||
+    location === '/crystal';
+  const isStandaloneChat = isLucyRoute || isKeyRoute || isDistractionFreeRoute;
   const isOrbSite = location === '/orb' || location === '/gateway' || location === '/crystal';
   const isCalmSite = location === '/calm' || location === '/key';
-  const isChatView = location === '/chat' || location === '/lucy';
+  const isChatView = isLucyRoute;
 
   // Standalone routes bypass full auth gating immediately so they never hang on key/calm/chat entry
   if ((!isAuthReady || !appEntranceDone) && !isStandaloneChat) {
@@ -409,7 +416,7 @@ function AppContent() {
           <ActivePage loc={location} />
         </motion.div>
       </main>
-      {!isChatOpen && !isStandaloneChat && <BottomNav />}
+      {!isChatOpen && !isDistractionFreeRoute && <LeftSidebarNav />}
       <BigBangButton />
       <BigBangExpansionOverlay />
 

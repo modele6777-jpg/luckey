@@ -566,9 +566,17 @@ export function TodayLucyPersonaCard({
 
             <button
               type="button"
-              onClick={() => setIsTarotNarrationOpen(true)}
+              onClick={() => {
+                try {
+                  sessionStorage.setItem('prism_tarot_focus_daily', 'true');
+                  sessionStorage.setItem('prism_target_tab', 'tarot');
+                } catch (_) {}
+                window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'tarot', focusDaily: true } }));
+                window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/trinity?tab=tarot', tab: 'tarot' } }));
+                navigate('/trinity?tab=tarot');
+              }}
               className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black font-bold text-xs flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(234,179,8,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shrink-0 font-sans"
-              title="오늘의 타로 결과 및 음성 낭독 보기"
+              title="트리니티 오늘의 타로 결과 보기로 이동"
             >
               <Sparkles size={13} />
               <span>오늘의 타로 결과 보기</span>

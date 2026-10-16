@@ -182,6 +182,32 @@ const MASTER_PROMPT_POOL = [
   '영혼의 사명과 현실적 성공을 일치시키는 홀리스틱 마스터 코칭'
 ];
 
+// 💬 일상 대화 & 힐링 & 인생 조언을 위한 풍부한 캐주얼 추천 질문 풀 (동적 순환)
+const CASUAL_PROMPT_POOL = [
+  '루시야, 오늘 하루 어떻게 보내면 기분이 좋아질까?',
+  '요즘 생각이 너무 많은데 머릿속을 정리할 수 있는 좋은 질문을 던져줘.',
+  '오늘 나에게 어울리는 행운의 컬러와 마음가짐은 뭐야?',
+  '지금 이 순간 내 마음에 가장 필요한 따뜻한 위로는 무엇일까?',
+  '오늘 하루를 특별하게 만들어줄 작은 실천 팁 하나 알려줘.',
+  '지친 나를 위해 따뜻한 차 한 잔 마시듯 마음을 녹여줘.',
+  '답답했던 마음을 시원하게 환기할 수 있는 긍정적인 생각법은?',
+  '오늘 밤 편안하게 푹 쉴 수 있는 힐링 한마디 부탁해.',
+  '내 안의 불안을 가라앉히고 평온함을 되찾는 짧은 대화 나누자.',
+  '루시, 오늘 나 자신을 더 사랑할 수 있는 칭찬 한마디 해줄래?',
+  '새로운 시작을 앞두고 용기를 북돋워 주는 조언을 듣고 싶어.',
+  '내 마음의 날씨를 알아차리고 다독여주는 시간 가져보자.',
+  '오늘 하루 소소하지만 확실한 행복을 찾는 비결은?',
+  '루시의 눈으로 본 나의 가장 빛나는 장점은 무엇일까?',
+  '스트레스를 비우고 좋은 에너지를 채우는 오늘의 확언 한 줄!',
+  '마음이 복잡할 때 호흡을 가다듬는 1분 이완법 알려줘.',
+  '인간관계에서 마음의 경계를 건강하게 지키는 법은?',
+  '오늘 나에게 일어날 수 있는 기분 좋은 우연과 행운은?',
+  '스스로에게 너무 엄격해질 때 나를 안아주는 법',
+  '오늘 하루를 감사함으로 마무리하는 루틴 추천해줘.',
+  '무기력할 때 작은 활력을 불어넣는 3분 기분 전환 팁',
+  '내 마음속 숨은 열정과 호기심을 깨우는 영감 질문'
+];
+
 const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
   // 1. 주 (주황) - 오렌지 
   orange: {
@@ -625,18 +651,39 @@ export default function LucyStandalonePage() {
     return `${names} 지능이 결합되어 다각도 입체 시너지 통찰을 제공합니다.`;
   }, [channelCount, activeChannels, isCasualChat, isFullProMaster, isSingleSpecial]);
 
-  // 🎲 Randomly Sampled Context-Aware Prompts (Updates dynamically per channel & reshuffle)
+  // 🎲 Randomly Sampled Context-Aware Prompts (대화 맥락 및 채널에 맞춰 실시간 동적 순환)
   const currentPrompts = useMemo(() => {
-    if (isCasualChat) return [];
+    // 1. 일상 대화(Casual) 모드: 최근 대화 맥락 반영 + CASUAL_PROMPT_POOL 셔플
+    if (isCasualChat) {
+      const lastMsg = lucyMessages[lucyMessages.length - 1];
+      const contextual: string[] = [];
+      const txt = typeof lastMsg?.content === 'string' ? lastMsg.content : '';
+      if (txt) {
+        if (txt.includes('불안') || txt.includes('걱정') || txt.includes('스트레스')) {
+          contextual.push('이 불안을 안전하게 흘려보내는 구체적인 마음 챙김 팁은?');
+        }
+        if (txt.includes('사주') || txt.includes('운') || txt.includes('타이밍') || txt.includes('대운')) {
+          contextual.push('내 타고난 기운과 잘 맞는 올해의 기회는 무엇일까?');
+        }
+        if (txt.includes('아이디어') || txt.includes('기획') || txt.includes('생각')) {
+          contextual.push('이 아이디어를 더 구체적이고 매력적으로 발전시키려면?');
+        }
+        if (txt.includes('호흡') || txt.includes('몸') || txt.includes('피로') || txt.includes('잠')) {
+          contextual.push('지금 바로 몸의 긴장을 풀 수 있는 간단한 스트레칭 알려줘.');
+        }
+      }
+      const shuffledCasual = shuffle(CASUAL_PROMPT_POOL);
+      return Array.from(new Set([...contextual, ...shuffledCasual])).slice(0, 6);
+    }
 
     if (isFullProMaster) {
-      return shuffle(MASTER_PROMPT_POOL).slice(0, 4);
+      return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
     }
 
     if (isSingleSpecial) {
       const ch = activeChannels[0];
-      const pool = (ch && CHANNEL_PROMPT_POOLS[ch]) || [];
-      return shuffle(pool).slice(0, 4);
+      const pool = (ch && CHANNEL_PROMPT_POOLS[ch]) || CASUAL_PROMPT_POOL;
+      return shuffle(pool).slice(0, 6);
     }
 
     // Synergy mode: draw 1~2 random prompts from each active channel
@@ -660,8 +707,8 @@ export default function LucyStandalonePage() {
       selectedPool.unshift('논리적이면서도 사람들의 마음을 사로잡는 혁신적 기획 아이디어는?');
     }
 
-    return shuffle(Array.from(new Set(selectedPool))).slice(0, 4);
-  }, [activeChannels, isCasualChat, isFullProMaster, isSingleSpecial, promptSeed]);
+    return shuffle(Array.from(new Set(selectedPool))).slice(0, 6);
+  }, [activeChannels, isCasualChat, isFullProMaster, isSingleSpecial, promptSeed, lucyMessages]);
 
   // Automatically refresh random prompts when new messages arrive
   useEffect(() => {
@@ -1225,39 +1272,35 @@ export default function LucyStandalonePage() {
         className="w-full px-3.5 sm:px-8 lg:px-12 pb-3 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative"
       >
         <div className="flex items-center justify-between gap-2 min-w-0">
-          {/* Brand Logo & Tagline */}
-          <div
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 sm:gap-3 min-w-0 cursor-pointer group select-none"
-            role="button"
-            tabIndex={0}
-            title="허브 홈으로 이동"
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/'); }}
-          >
-            <div className="relative group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center text-white shadow-sm font-bold text-base sm:text-lg shrink-0 ring-2 ring-amber-400/30 group-hover:scale-105 transition-transform">
-                <Sparkles size={18} className="text-white" />
-              </div>
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-300 animate-pulse" title="Lucy 엔진 실시간 온라인" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-sm sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5">
-                  Lucy
-                </h1>
-                <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 text-indigo-600 border border-indigo-200/60 flex items-center gap-1">
-                  <Sparkles size={10} className="text-indigo-500 animate-spin" />
-                  AI 자동 감지
-                </span>
-                {autoDetectedTitle && (
-                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80">
-                    {autoDetectedTitle}
+          {/* Brand Logo & Left empty space (상단 로고 왼쪽 아이콘 제거 및 빈 공간 유지) */}
+          <div className="flex items-center min-w-0 pl-1 sm:pl-3">
+            <div
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 sm:gap-3 min-w-0 cursor-pointer group select-none"
+              role="button"
+              tabIndex={0}
+              title="Lucy 메인 홈"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/'); }}
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <h1 className="text-base sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+                    Lucy
+                  </h1>
+                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 text-indigo-600 border border-indigo-200/60 flex items-center gap-1">
+                    <Sparkles size={10} className="text-indigo-500 animate-spin" />
+                    AI 자동 감지
                   </span>
-                )}
+                  {autoDetectedTitle && (
+                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80">
+                      {autoDetectedTitle}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
+                  {autoDetectedTitle ? `${autoDetectedTitle} · 실시간 맞춤 지능 응답 가동 중` : '대화 내용과 맥락에 맞춰 최적의 지능 모드가 실시간 자동 감지됩니다.'}
+                </p>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
-                {autoDetectedTitle ? `${autoDetectedTitle} · 실시간 맞춤 지능 응답 가동 중` : '대화 내용과 맥락에 맞춰 최적의 지능 모드가 실시간 자동 감지됩니다.'}
-              </p>
             </div>
           </div>
 
@@ -1624,36 +1667,7 @@ export default function LucyStandalonePage() {
         )}
       </AnimatePresence>
 
-      {/*  Dynamic Context Suggestion Chips (Hidden in Casual Chat mode, Randomly updated in active modes) */}
-      {!isCasualChat && currentPrompts.length > 0 && (
-        <div className="w-full bg-white/80 backdrop-blur-xs border-t border-slate-200/70 shrink-0">
-          <div className="max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-3.5 sm:px-8 lg:px-12 py-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-              {currentPrompts.map((promptText, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(promptText)}
-                  disabled={isLucyGenerating}
-                  className="shrink-0 px-3 py-1.5 rounded-full bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-xs font-medium text-slate-700 hover:text-amber-950 transition-all shadow-xs cursor-pointer active:scale-95 disabled:opacity-40"
-                >
-                  {promptText}
-                </button>
-              ))}
-            </div>
-
-            {/*  Random Shuffle Button */}
-            <button
-              onClick={refreshPrompts}
-              className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-amber-600 transition-colors shrink-0 cursor-pointer"
-              title="새로운 맞춤 예시 질문 추천 받기 (랜덤 셔플)"
-            >
-              <RefreshCw size={13} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
+      {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
         style={{ paddingBottom: 'max(0.5rem, calc(var(--sab, 0px) + 0.35rem))' }}
         className="w-full px-3 sm:px-4 pt-1.5 pb-2 sm:pb-3 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
@@ -1729,6 +1743,35 @@ export default function LucyStandalonePage() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* 💡 추천 질문 가로 나열 바 (대화창 바로 위 가로 나열 & 동적 순환 셔플) */}
+          {currentPrompts.length > 0 && (
+            <div className="w-full flex items-center gap-1.5 pt-0.5 pb-0.5">
+              <button
+                type="button"
+                onClick={refreshPrompts}
+                className="p-1 sm:p-1.5 rounded-lg text-amber-600 hover:text-amber-800 bg-amber-50/90 hover:bg-amber-100 border border-amber-200/80 transition-all shrink-0 cursor-pointer active:scale-90 flex items-center gap-1 shadow-2xs"
+                title="새로운 맞춤 추천 질문으로 변경 (랜덤 셔플)"
+                aria-label="추천 질문 새로고침"
+              >
+                <Sparkles size={12} className="text-amber-500" />
+                <RefreshCw size={11} className={`text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
+              </button>
+              <div className="flex-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
+                {currentPrompts.map((promptText, idx) => (
+                  <button
+                    key={`${promptSeed}-${idx}`}
+                    type="button"
+                    onClick={() => handleSend(promptText)}
+                    disabled={isLucyGenerating}
+                    className="shrink-0 px-2.5 sm:px-3 py-1 rounded-full bg-slate-50/90 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-[11px] sm:text-xs font-medium text-slate-700 hover:text-amber-950 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
+                  >
+                    {promptText}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className={`flex items-center gap-1.5 sm:gap-2 bg-slate-50 border rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all shadow-inner ${
             isRecording 

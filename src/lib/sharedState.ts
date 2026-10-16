@@ -131,12 +131,15 @@ function mergeSectionSafely<T extends any>(baseSection?: T, incomingSection?: T,
     if (typeof bVal === 'string' && typeof iVal === 'string') {
       const bStr = bVal.trim();
       const iStr = iVal.trim();
-      if (bStr === iStr) {
+      if (!iStr) {
         res[k] = bStr;
+      } else if (!bStr) {
+        res[k] = iStr;
       } else if (preferIncoming) {
         res[k] = iStr;
       } else {
-        res[k] = iStr.length >= bStr.length ? iStr : bStr;
+        // incoming(신규 업데이트)을 우선하되 둘 다 있으면 iStr 우선
+        res[k] = iStr || bStr;
       }
       continue;
     }

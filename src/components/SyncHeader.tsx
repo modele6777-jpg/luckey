@@ -49,12 +49,14 @@ export function SyncHeader({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const rawNickname = sharedState?.userProfile?.basic?.nickname?.trim();
+  const rawName = sharedState?.userProfile?.basic?.name?.trim();
   const displayName =
-    firebaseUser?.displayName ||
-    sharedState?.userProfile?.basic?.nickname ||
-    sharedState?.userProfile?.basic?.name ||
-    firebaseUser?.email?.split('@')[0] ||
-    '제제';
+    (rawNickname && rawNickname !== '여행자')
+      ? rawNickname
+      : ((rawName && rawName !== '여행자')
+        ? rawName
+        : (firebaseUser?.displayName || firebaseUser?.email?.split('@')[0] || '제제'));
 
   const handleLogin = async () => {
     setLoading(true);

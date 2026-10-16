@@ -224,7 +224,7 @@ export default function HubHome() {
       } else if (newTab === 'todo') {
         navigate('/todo');
       } else {
-        navigate('/');
+        navigate('/prologue');
       }
     },
     enabled: true,
@@ -476,22 +476,8 @@ export default function HubHome() {
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         className="prism-hub-header fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-all duration-300 isolate"
       >
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div 
-            className="relative w-11 h-11 rounded-full border border-white/10 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.05)] group backdrop-blur-md cursor-pointer transition-transform active:scale-95 shrink-0"
-            onClick={() => openChannelIntro('hub')}
-            title="프롤로그 허브 채널 소개 (클릭)"
-          >
-             <motion.div 
-               animate={{ rotate: 360 }} 
-               transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }} 
-               className="absolute inset-0 rounded-full border border-dashed border-red-500/40 group-hover:border-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all" 
-             />
-             <div className="absolute inset-[3px] rounded-full border border-red-500/30 bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-all">
-               <Sun size={20} className="relative z-10 text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.8)] transition-transform group-hover:scale-110 duration-300 animate-pulse" strokeWidth={1.5} />
-             </div>
-          </div>
-          <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/')}>
+        <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
+          <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/prologue')}>
             <h1>
               <LucKeyLogoText />
             </h1>
@@ -528,7 +514,7 @@ export default function HubHome() {
                 } else if (item.id === 'todo') {
                   navigate('/todo');
                 } else {
-                  navigate('/');
+                  navigate('/prologue');
                 }
               }}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold font-sans transition-all duration-300 whitespace-nowrap cursor-pointer ${

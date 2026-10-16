@@ -797,25 +797,7 @@ export default function EpilogueApp() {
         className="prism-hub-header fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-opacity duration-300"
       >
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div
-            className="relative w-11 h-11 rounded-full border border-white/10 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.05)] group backdrop-blur-md cursor-pointer transition-transform active:scale-95 shrink-0"
-            onClick={() => openChannelIntro('epilogue')}
-            title="에필로그 밤 서재 채널 소개 (클릭)"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
-              className="absolute inset-0 rounded-full border border-dashed border-emerald-400/40 group-hover:border-emerald-400 group-hover:shadow-[0_0_15px_rgba(52,211,153,0.5)] transition-all"
-            />
-            <div className="absolute inset-[3px] rounded-full border border-emerald-400/30 bg-emerald-500/10 group-hover:bg-emerald-500/20 flex items-center justify-center transition-all">
-              <Moon
-                size={20}
-                className="relative z-10 text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.8)] transition-transform group-hover:scale-110 duration-300 animate-pulse"
-                strokeWidth={1.5}
-              />
-            </div>
-          </div>
-          <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/')}>
+          <div className="cursor-pointer flex flex-col justify-center select-none pl-1 sm:pl-2" onClick={() => navigate('/')}>
             <h1>
               <LucKeyLogoText />
             </h1>

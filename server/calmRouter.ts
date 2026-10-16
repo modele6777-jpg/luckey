@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
 import { OpenAI } from "openai";
-import { getGeminiApiKey } from "../server";
+import { getGeminiApiKey } from "./geminiKey";
 
 export const calmRouter = express.Router();
 

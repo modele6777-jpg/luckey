@@ -2554,21 +2554,7 @@ export default function BluebirdApp() {
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         className={`fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
       >
-         <div className="flex items-center gap-2.5 sm:gap-3">
-            <div 
-              className="relative w-11 h-11 rounded-full border border-white/10 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.05)] group backdrop-blur-md cursor-pointer transition-transform active:scale-95 shrink-0" 
-              onClick={() => openChannelIntro('bluebird')}
-              title="파랑새의 성소 채널 소개 (클릭)"
-            >
-               <motion.div 
-                 animate={{ rotate: 360 }} 
-                 transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }} 
-                 className="absolute inset-0 rounded-full border border-dashed border-sky-400/40 group-hover:border-sky-400 group-hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] transition-all" 
-               />
-               <div className="absolute inset-[3px] rounded-full border border-sky-400/30 bg-sky-500/10 group-hover:bg-sky-500/20 flex items-center justify-center transition-all">
-                 <Bird size={20} className="relative z-10 text-sky-400 drop-shadow-[0_0_12px_currentColor] transition-transform group-hover:scale-110 duration-300 animate-pulse" strokeWidth={1.5} />
-               </div>
-            </div>
+         <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
             <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/')}>
                <h1><LucKeyLogoText /></h1>
                <p className="text-[8px] md:text-[9px] text-white/40 uppercase tracking-widest font-bold font-sans leading-none mt-0.5">BLUEBIRD • SOUL SANCTUARY</p>

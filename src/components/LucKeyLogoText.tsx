@@ -29,13 +29,17 @@ export function LucKeyLogoText({
       className={`font-display font-black uppercase leading-tight inline-flex items-center select-none ${sizeClasses} ${className}`}
       title="LUCKEY · LUCY · LUCKY · KEY"
     >
-      {/* LUC: Radiant Emerald Green */}
+      {/* LUCK: Radiant Emerald Green (L, U, C, K 초록색) */}
       <span className="bg-gradient-to-r from-emerald-400 via-green-400 to-teal-300 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(52,211,153,0.85)]">
-        LUC
+        LUCK
       </span>
-      {/* KEY: Radiant Imperial Gold & Solar Yellow (KE & Y 모두 노란색 통일) */}
+      {/* E: Radiant Imperial Gold & Solar Yellow (E만 노란색) */}
       <span className="bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(251,191,36,0.85)]">
-        KEY
+        E
+      </span>
+      {/* Y: Radiant Emerald Green (Y 초록색) */}
+      <span className="bg-gradient-to-r from-emerald-400 via-green-400 to-teal-300 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(52,211,153,0.85)]">
+        Y
       </span>
     </span>
   );

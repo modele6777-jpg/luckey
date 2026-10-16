@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Play, Pause, Disc, SkipForward, Volume2, VolumeX, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Music, Headphones, Shuffle, Repeat, Repeat1, RefreshCw, Trash2, EyeOff, RotateCcw, GripVertical, Sparkles, Maximize2 } from "lucide-react";
 import { AudioReactive3DVisualizer } from "./AudioReactive3DVisualizer";
 import {
@@ -214,6 +215,17 @@ export function BgMusicPlayer() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isPanelActive, setIsPanelActive] = useState(() => !!(window as any).__lucy_active_panel);
   const [show3DVisualizerStage, setShow3DVisualizerStage] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
+  useEffect(() => {
+    const handleNavState = (e: any) => {
+      if (typeof e?.detail?.isOpen === 'boolean') {
+        setIsNavOpen(e.detail.isOpen);
+      }
+    };
+    window.addEventListener('left-sidebar-state', handleNavState);
+    return () => window.removeEventListener('left-sidebar-state', handleNavState);
+  }, []);
 
   // Unified Mood Sound Integration (빗소리 · 백색소음 · 숲속소리 등)
   const {
@@ -1676,32 +1688,9 @@ export function BgMusicPlayer() {
   const handleAudioWaiting = () => setIsBuffering(true);
   const handleAudioPlaying = () => setIsBuffering(false);
 
-  // --- RENDER COMPONENT ---
-  const isRightDock = dragPos
-    ? (dragPos.x + 50 >= window.innerWidth / 2)
-    : bgmPos.dockSide === "right";
-
+  // --- RENDER COMPONENT (메뉴 버튼 상단 동일 크기 고정 LP판 플레이어) ---
   return (
-    <div
-      ref={playerContainerRef}
-      className={`fixed z-[300] font-sans select-none ${
-        isDragging ? "transition-none cursor-grabbing" : "transition-all duration-300"
-      } ${isPanelActive ? "opacity-0 pointer-events-none scale-75" : "opacity-100"}`}
-      style={
-        dragPos
-          ? {
-              top: `${dragPos.y}px`,
-              left: `${dragPos.x}px`,
-              right: "auto",
-              bottom: "auto",
-            }
-          : {
-              top: `${bgmPos.y}px`,
-              right: isRightDock ? (bgmPos.isDocked ? "0px" : "12px") : undefined,
-              left: !isRightDock ? (bgmPos.isDocked ? "0px" : "12px") : undefined,
-            }
-      }
-    >
+    <>
       {/* Invisible HTML5 Audio Node for Legacy MP3s */}
       <audio
         ref={audioRef}
@@ -1713,620 +1702,63 @@ export function BgMusicPlayer() {
         preload={shouldPreloadBgmAudio() ? "auto" : "none"}
       />
 
-      {/* When Edge-Docked: Minimalist self-draggable tab with original sm-sized LP disc toggle and arrow expand */}
-      {bgmPos.isDocked ? (
-        <div
-          onPointerDown={handlePointerDown}
-          onClick={(e) => {
-            if (!isDragging && !dragJustEndedRef.current) {
-              handleExpandPlayer(e);
-            }
-          }}
-          className={`flex items-center gap-1.5 py-1 px-1.5 cursor-grab active:cursor-grabbing touch-none bg-black/85 hover:bg-black/95 backdrop-blur-2xl border border-amber-400/40 shadow-[0_2px_15px_rgba(251,191,36,0.3)] transition-all select-none group ${
-            isRightDock
-              ? "rounded-l-full rounded-r-none border-r-0 pl-1.5 pr-2 shadow-[-3px_3px_15px_rgba(251,191,36,0.3)]"
-              : "rounded-r-full rounded-l-none border-l-0 pr-1.5 pl-2 shadow-[3px_3px_15px_rgba(251,191,36,0.3)]"
-          }`}
-          title="엣지 배경음: 자체 드래그하여 상하좌우 이동, LP판 클릭시 재생/멈춤, 화살표 클릭시 플레이어 펼치기"
+      {/* Minimalist Floating LP Disc Music Player - Fixed directly above Menu Button */}
+      {!isNavOpen && (
+        <motion.div
+          initial={{ y: 20, opacity: 0, scale: 0.9 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: 20, opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.2 }}
+          className="fixed bottom-safe-music-lp z-[400] select-none"
         >
-          {isRightDock ? (
-            <>
-              {/* Arrow expand button */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isDragging && !dragJustEndedRef.current) {
-                    handleExpandPlayer(e);
-                  }
-                }}
-                className="p-1 rounded-full text-amber-300 hover:text-white hover:bg-white/15 active:scale-90 transition-all shrink-0 cursor-pointer touch-none"
-                title="배경음 플레이어 펼치기"
-                aria-label="배경음 플레이어 펼치기"
-              >
-                <ChevronLeft size={15} className="animate-pulse" />
-              </button>
-
-              {/* LP Disc button: Directly toggles playback */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isDragging && !dragJustEndedRef.current) {
-                    handlePlayToggle(e);
-                  }
-                }}
-                className={`relative rounded-full flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 cursor-pointer touch-none ${
-                  isPlaying
-                    ? "shadow-[0_0_12px_rgba(251,191,36,0.7)] ring-2 ring-amber-400"
-                    : "opacity-85 hover:opacity-100 ring-1 ring-white/30"
-                }`}
-                title={isPlaying ? "배경음 일시정지 (LP판 클릭)" : "배경음 재생 (LP판 클릭)"}
-                aria-label={isPlaying ? "배경음 일시정지" : "배경음 재생"}
-              >
-                <LPRecordDisc isPlaying={isPlaying} isBuffering={isBuffering} size="sm" />
-              </button>
-            </>
-          ) : (
-            <>
-              {/* LP Disc button: Directly toggles playback */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isDragging && !dragJustEndedRef.current) {
-                    handlePlayToggle(e);
-                  }
-                }}
-                className={`relative rounded-full flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 cursor-pointer touch-none ${
-                  isPlaying
-                    ? "shadow-[0_0_12px_rgba(251,191,36,0.7)] ring-2 ring-amber-400"
-                    : "opacity-85 hover:opacity-100 ring-1 ring-white/30"
-                }`}
-                title={isPlaying ? "배경음 일시정지 (LP판 클릭)" : "배경음 재생 (LP판 클릭)"}
-                aria-label={isPlaying ? "배경음 일시정지" : "배경음 재생"}
-              >
-                <LPRecordDisc isPlaying={isPlaying} isBuffering={isBuffering} size="sm" />
-              </button>
-
-              {/* Arrow expand button */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isDragging && !dragJustEndedRef.current) {
-                    handleExpandPlayer(e);
-                  }
-                }}
-                className="p-1 rounded-full text-amber-300 hover:text-white hover:bg-white/15 active:scale-90 transition-all shrink-0 cursor-pointer touch-none"
-                title="배경음 플레이어 펼치기"
-                aria-label="배경음 플레이어 펼치기"
-              >
-                <ChevronRight size={15} className="animate-pulse" />
-              </button>
-            </>
-          )}
-        </div>
-      ) : (
-        /* Full Expanded Player - Integrated Elongated Card with Fixed Size */
-        <div
-          className={`flex flex-col rounded-2xl glass border border-white/20 shadow-2xl hover:border-white/30 transition-all duration-300 relative w-[290px] sm:w-[320px] max-w-[calc(100vw-24px)] bg-black/90 backdrop-blur-2xl overflow-hidden ${
-            isRightDock ? "origin-top-right" : "origin-top-left"
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Audio-Reactive 3D Particle Visualizer embedded in card background */}
-          <AudioReactive3DVisualizer
-            mode="card-bg"
-            isPlaying={isPlaying && !isBuffering}
-            trackCategory={currentTrack.category}
-            trackName={currentTrack.name}
-            trackArtist={currentTrack.artist}
-          />
-
-          {/* Top Control Bar Header */}
-          <div className="relative z-10 flex items-center gap-1.5 p-1.5 pl-2 pr-1.5 border-b border-white/10 bg-white/[0.03]">
-            {/* Drag Handle */}
-            <div
-              onPointerDown={handlePointerDown}
-              className="cursor-grab active:cursor-grabbing p-1 text-white/30 hover:text-white/80 rounded-full transition-colors shrink-0 touch-none"
-              title="상하좌우 드래그하여 위치 이동"
-            >
-              <GripVertical size={13} />
-            </div>
-
-            {/* Collapse button back to edge */}
-            <button
-              type="button"
-              onClick={handleCollapse}
-              className="p-1 rounded-full text-white/40 hover:text-white hover:bg-white/10 active:scale-90 transition-all shrink-0 cursor-pointer"
-              title="엣지모드로 접기"
-              aria-label="음악 플레이어 엣지모드로 접기"
-            >
-              {isRightDock ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-            </button>
-
-            {/* Clickable Current Track info (toggles elongated playlist view) */}
-            <div
-              onClick={() => setShowPlaylist((p) => !p)}
-              className="flex items-center gap-1 cursor-pointer bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg border border-white/5 transition-all flex-1 min-w-0 group/title"
-              title={showPlaylist ? "플레이리스트 접기" : "플레이리스트 펼치기"}
-            >
-              <div className="flex flex-col truncate flex-1 min-w-0">
-                <span className="text-[10px] font-bold text-white/90 truncate leading-tight tracking-wide flex items-center gap-1">
-                  {currentTrack.name}
-                  {isBuffering && <RefreshCw size={8} className="animate-spin text-amber-300 shrink-0" />}
-                </span>
-                <span className="text-[8px] text-white/40 truncate tracking-wider leading-none mt-0.5 flex items-center gap-1">
-                  {currentTrack.category && (
-                    <span className="text-amber-300/80 font-semibold shrink-0">[{currentTrack.category}]</span>
-                  )}
-                  <span className="truncate">{currentTrack.artist}</span>
-                </span>
-              </div>
-              <ChevronDown
-                size={12}
-                className={`text-white/40 group-hover/title:text-white transition-transform duration-200 shrink-0 ${
-                  showPlaylist ? "rotate-180 text-amber-400" : ""
-                }`}
-              />
-            </div>
-
-            {/* 3D Visualizer Fullscreen Stage Button */}
-            <button
-              type="button"
-              onClick={() => setShow3DVisualizerStage(true)}
-              className="p-1.5 rounded-lg text-amber-300/80 hover:text-amber-200 hover:bg-amber-400/20 active:scale-95 transition-all shrink-0 cursor-pointer flex items-center justify-center border border-amber-400/25 shadow-sm"
-              title="3D 오디오 시각화 무대 열기"
-              aria-label="3D 오디오 시각화 무대 열기"
-            >
-              <Maximize2 size={11} />
-            </button>
-
-            {/* LP Record Vinyl - on right corner */}
-            <button
-              type="button"
-              onClick={(e) => handlePlayToggle(e)}
-              className={`relative rounded-full flex items-center justify-center shrink-0 cursor-pointer active:scale-95 transition-all group ${
-                isPlaying
-                  ? "shadow-[0_0_16px_rgba(254,202,87,0.45)] ring-2 ring-amber-400/50"
-                  : "opacity-75 hover:opacity-100 ring-1 ring-white/20"
-              }`}
-              title={isPlaying ? "일시정지 (LP판 멈춤)" : "재생 (LP판 회전)"}
-              aria-label={isPlaying ? "배경음 일시정지" : "배경음 재생"}
-            >
-              <LPRecordDisc isPlaying={isPlaying} isBuffering={isBuffering} size="md" />
-            </button>
-          </div>
-
-          {/* Quick Media Controls & Volume Strip */}
-          <div className="relative z-10 flex items-center justify-between gap-1 px-2.5 py-1.5 bg-black/60 backdrop-blur-md border-b border-white/5 text-white/70">
-            {/* Playback Buttons */}
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={handlePrevTrack}
-                className="p-1 rounded-md text-white/50 hover:text-white hover:bg-white/10 active:scale-90 transition-all"
-                title="이전 곡"
-              >
-                <SkipForward size={11} className="rotate-180" />
-              </button>
-              <button
-                onClick={handleNextTrack}
-                className="p-1 rounded-md text-white/50 hover:text-white hover:bg-white/10 active:scale-90 transition-all"
-                title="다음 곡"
-              >
-                <SkipForward size={11} />
-              </button>
-              <button
-                onClick={handleToggleShuffle}
-                className={`p-1 rounded-md active:scale-90 transition-all ${
-                  isShuffle ? "text-amber-300 bg-amber-400/15" : "text-white/40 hover:text-white"
-                }`}
-                title="셔플 재생"
-              >
-                <Shuffle size={11} />
-              </button>
-              <button
-                onClick={handleToggleRepeat}
-                className={`p-1 rounded-md active:scale-90 transition-all ${
-                  repeatMode !== "off" ? "text-amber-300 bg-amber-400/15" : "text-white/40 hover:text-white"
-                }`}
-                title={REPEAT_MODE_LABEL[repeatMode]}
-              >
-                {repeatMode === "one" ? <Repeat1 size={11} /> : <Repeat size={11} />}
-              </button>
-              {/* Quick Mood Sound Toggle Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowPlaylist(true);
-                  setActiveMediaTab('mood');
-                }}
-                className={`p-1 rounded-md text-[8.5px] flex items-center gap-1 transition-all active:scale-90 ${
-                  isMoodPlaying ? "text-emerald-300 bg-emerald-400/20 border border-emerald-400/30" : "text-white/40 hover:text-white"
-                }`}
-                title="무드 사운드 설정 (빗소리·숲속·백색소음...)"
-              >
-                <span>{currentMoodPreset.emoji}</span>
-                {isMoodPlaying && <span className="text-[7.5px] font-bold hidden xs:inline">{currentMoodPreset.name}</span>}
-              </button>
-            </div>
-
-            {/* Reactive Wave Equalizer & 3D Stage Trigger */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <div className="flex items-end gap-[2px] h-3 px-1 shrink-0">
-                {[1, 2, 3, 4].map((idx) => {
-                  let animDur = "0.6s";
-                  if (idx === 2) animDur = "0.4s";
-                  if (idx === 3) animDur = "0.8s";
-                  if (idx === 4) animDur = "0.5s";
-                  return (
-                    <span
-                      key={idx}
-                      style={{
-                        animationDuration: animDur,
-                        animationIterationCount: "infinite",
-                        animationTimingFunction: "ease-in-out",
-                      }}
-                      className={`w-[2px] rounded-full bg-gradient-to-t from-amber-400/50 to-white transition-all duration-300 ${
-                        isPlaying && !isBuffering ? "animate-bounce" : "h-[2px] opacity-30"
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* 3D Visualizer Quick Badge */}
-              <button
-                type="button"
-                onClick={() => setShow3DVisualizerStage(true)}
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[7px] font-bold text-amber-300 bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 transition-all cursor-pointer active:scale-95 shadow-sm"
-                title="주파수 반응형 3D 파티클 시각화 무대 열기"
-              >
-                <Sparkles size={8} className="animate-pulse text-amber-300" />
-                <span>3D</span>
-              </button>
-            </div>
-
-            {/* Integrated Volume Control */}
-            <div ref={volumeRef} className="flex items-center gap-1 shrink-0 ml-auto">
-              <button
-                onClick={handleToggleMute}
-                className="p-1 rounded-md text-white/50 hover:text-white transition-colors"
-                title={isMuted ? "음소거 해제" : "음소거"}
-              >
-                {isMuted ? <VolumeX size={11} className="text-white" /> : <Volume2 size={11} />}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                className="w-12 sm:w-16 h-1 accent-amber-400 bg-white/20 rounded-lg cursor-pointer"
-                title={`음량: ${Math.round(volume * 100)}%`}
-              />
-              <span className="text-[7.5px] font-mono text-white/50 w-5 text-right shrink-0">
-                {isMuted ? "0%" : `${Math.round(volume * 100)}%`}
-              </span>
-            </div>
-          </div>
-
-          {/* Elongated Continuous Playlist Section (길게 이어진 고정 크기 플레이리스트) */}
-          <div
-            className={`relative z-10 bg-black/60 backdrop-blur-md transition-all duration-300 flex flex-col ${
-              showPlaylist
-                ? "max-h-[320px] opacity-100"
-                : "max-h-0 opacity-0 pointer-events-none"
-            }`}
+          <button
+            type="button"
+            onClick={handlePlayToggle}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              handleNextTrack();
+            }}
+            aria-label={isPlaying ? "배경음 일시정지" : "배경음 재생"}
+            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-90"
+            title={isPlaying ? `배경음 일시정지: ${currentTrack?.name || "음악"} (더블클릭시 다음 곡)` : `배경음 재생: ${currentTrack?.name || "음악"}`}
           >
-            {/* Media Selector Tabs: BGM vs Mood Sound */}
-            <div className="flex items-center gap-1 p-1 border-b border-white/5 bg-white/[0.02]">
-              <button
-                type="button"
-                onClick={() => setActiveMediaTab('bgm')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded-lg text-[8.5px] font-bold transition-all cursor-pointer ${
-                  activeMediaTab === 'bgm'
-                    ? 'bg-amber-400/20 text-amber-200 border border-amber-400/30'
-                    : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <Music size={10} className={activeMediaTab === 'bgm' ? 'text-amber-400' : 'text-white/40'} />
-                <span>BGM ({tracks.length})</span>
-              </button>
+            {/* Ambient active playing glow halo */}
+            {isPlaying && (
+              <span
+                className="absolute -inset-0.5 rounded-full opacity-60 group-hover:opacity-90 blur-xs transition-opacity"
+                style={{
+                  backgroundColor: "oklch(0.85 0.15 90)",
+                  boxShadow: "0 0 14px rgba(251, 191, 36, 0.7)",
+                }}
+              />
+            )}
 
-              <button
-                type="button"
-                onClick={() => setActiveMediaTab('mood')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded-lg text-[8.5px] font-bold transition-all cursor-pointer ${
-                  activeMediaTab === 'mood'
-                    ? 'bg-emerald-400/20 text-emerald-200 border border-emerald-400/30'
-                    : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <Sparkles size={10} className={activeMediaTab === 'mood' ? 'text-emerald-400' : 'text-white/40'} />
-                <span>무드 사운드 {isMoodPlaying ? `· ${currentMoodPreset.name}` : '(6종)'}</span>
-                {isMoodPlaying && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
-              </button>
+            {/* Inner LP Disc */}
+            <div className="relative flex items-center justify-center">
+              <LPRecordDisc
+                isPlaying={isPlaying}
+                isBuffering={isBuffering}
+                size="sm"
+                className="transition-transform duration-300 group-hover:scale-105"
+              />
             </div>
 
-            {activeMediaTab === 'mood' ? (
-              <div className="h-[210px] overflow-y-auto px-2 py-2 flex flex-col gap-2 custom-scrollbar">
-                {/* Active mood sound status banner */}
-                <div
-                  className="flex items-center justify-between p-2 rounded-xl border transition-all"
-                  style={{
-                    backgroundColor: `${currentMoodPreset.color}15`,
-                    borderColor: `${currentMoodPreset.color}40`,
-                  }}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-base">{currentMoodPreset.emoji}</span>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] font-bold text-white truncate">
-                        {currentMoodPreset.name}
-                        {isMoodPlaying ? ' (재생 중)' : ' (선택됨)'}
-                      </span>
-                      <span className="text-[8px] text-white/50 truncate font-sans">
-                        {currentMoodPreset.description}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => toggleMoodPlay()}
-                    className="px-2.5 py-1 rounded-lg text-[9px] font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-md"
-                    style={{
-                      backgroundColor: isMoodPlaying ? `${currentMoodPreset.color}35` : 'rgba(255,255,255,0.1)',
-                      color: isMoodPlaying ? '#fff' : 'rgba(255,255,255,0.8)',
-                      borderColor: `${currentMoodPreset.color}50`,
-                      borderWidth: '1px',
-                    }}
-                  >
-                    {isMoodPlaying ? <Pause size={10} /> : <Play size={10} />}
-                    <span>{isMoodPlaying ? '정지' : '재생'}</span>
-                  </button>
-                </div>
-
-                {/* Mood sound volume control */}
-                <div className="flex items-center justify-between gap-2 px-1.5 py-1 rounded-lg bg-white/[0.03] border border-white/5">
-                  <div className="flex items-center gap-1 text-[8px] text-white/60 font-sans">
-                    <Volume2 size={11} className="text-emerald-400" />
-                    <span>무드 볼륨</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={moodVolume}
-                    onChange={(e) => setMoodVolume(parseFloat(e.target.value))}
-                    className="w-24 sm:w-28 h-1 accent-emerald-400 bg-white/20 rounded-lg cursor-pointer"
-                  />
-                  <span className="text-[8px] font-mono text-white/50 w-6 text-right">
-                    {Math.round(moodVolume * 100)}%
-                  </span>
-                </div>
-
-                {/* 6 Mood Sound Presets Grid */}
-                <div className="grid grid-cols-2 gap-1.5 pt-0.5">
-                  {moodPresets.map((preset) => {
-                    const isSelected = activeMood === preset.id;
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => {
-                          if (isSelected) {
-                            toggleMoodPlay();
-                          } else {
-                            setMoodSound(preset.id as MoodSoundId);
-                            if (!isMoodPlaying) toggleMoodPlay(preset.id as MoodSoundId);
-                          }
-                        }}
-                        className={`flex items-center gap-1.5 p-1.5 rounded-xl border text-left transition-all cursor-pointer ${
-                          isSelected
-                            ? 'text-white font-bold shadow-md'
-                            : 'bg-white/[0.03] hover:bg-white/[0.08] text-white/70 border-white/5 hover:border-white/10'
-                        }`}
-                        style={
-                          isSelected
-                            ? {
-                                backgroundColor: `${preset.color}25`,
-                                borderColor: `${preset.color}60`,
-                              }
-                            : undefined
-                        }
-                      >
-                        <span className="text-sm shrink-0">{preset.emoji}</span>
-                        <div className="flex flex-col truncate min-w-0">
-                          <span className="text-[9px] truncate leading-tight flex items-center gap-1">
-                            {preset.name}
-                            {isSelected && isMoodPlaying && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            )}
-                          </span>
-                          <span className="text-[7.5px] text-white/40 truncate font-sans">
-                            {preset.id}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Playlist Header */}
-                <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-white/5 bg-white/[0.02]">
-                  <span className="text-[9px] font-extrabold text-white/90 uppercase tracking-widest flex items-center gap-1.5 min-w-0">
-                    <Sparkles size={10} className="text-amber-400 animate-pulse shrink-0" />
-                    <span className="truncate">
-                      {showHiddenTracks ? "숨김 곡" : "PRISM 힐링 사운드스케이프 (30곡)"}
-                    </span>
-                  </span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleResetToCurated30Tracks}
-                      className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[7px] font-semibold text-white/45 hover:text-amber-300 hover:bg-amber-400/10 border border-transparent hover:border-amber-400/30 transition-all"
-                      title="기존 음원 전부 삭제 및 어플 맞춤 30곡 클린 복원"
-                    >
-                      <RotateCcw size={7.5} />
-                      <span>30곡 복원</span>
-                    </button>
-                    {hiddenTracks.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleToggleHiddenTracks}
-                        className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[7px] font-semibold transition-all ${
-                          showHiddenTracks
-                            ? "text-amber-300 bg-amber-400/20 border border-amber-400/30"
-                            : "text-white/45 hover:text-white border border-transparent hover:bg-white/5"
-                        }`}
-                        title={showHiddenTracks ? "재생 목록 보기" : "숨김 곡 보기"}
-                      >
-                        <EyeOff size={8} />
-                        {showHiddenTracks ? "목록" : `숨김 ${hiddenTracks.length}`}
-                      </button>
-                    )}
-                    <span className="text-[7.5px] font-semibold text-white/40">
-                      {showHiddenTracks ? `${hiddenTracks.length} hidden` : `${tracks.length} tracks`}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Category Filter Pills (전체 및 테마별 30곡 필터링) */}
-                {!showHiddenTracks && (
-                  <div className="flex items-center gap-1 px-2 py-1 overflow-x-auto no-scrollbar border-b border-white/5 bg-black/20">
-                    {[
-                      { id: "all", label: "전체", count: tracks.length },
-                      { id: "사주·오행", label: "사주·오행", count: tracks.filter((t) => t.category === "사주·오행").length },
-                      { id: "오라클 타로", label: "오라클 타로", count: tracks.filter((t) => t.category === "오라클 타로").length },
-                      { id: "솔페지오", label: "솔페지오", count: tracks.filter((t) => t.category === "솔페지오").length },
-                      { id: "세도나 방하착", label: "세도나 방하착", count: tracks.filter((t) => t.category === "세도나 방하착").length },
-                      { id: "호오포노포노", label: "호오포노포노", count: tracks.filter((t) => t.category === "호오포노포노").length },
-                      { id: "양자·뮤즈", label: "양자·뮤즈", count: tracks.filter((t) => t.category === "양자·뮤즈").length },
-                    ].map((cat) => {
-                      const isCatActive = selectedCategory === cat.id;
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => setSelectedCategory(cat.id)}
-                          className={`px-1.5 py-0.5 rounded-full text-[7px] font-semibold whitespace-nowrap transition-all shrink-0 ${
-                            isCatActive
-                              ? "bg-amber-400/25 text-amber-300 border border-amber-400/40 shadow-[0_0_6px_rgba(251,191,36,0.2)]"
-                              : "text-white/45 hover:text-white/80 hover:bg-white/5 border border-transparent"
-                          }`}
-                        >
-                          {cat.label} ({cat.count})
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Fixed-Size Elongated Tracks List (고정 크기 스크롤 영역) */}
-                <div className="h-[190px] overflow-y-auto px-1.5 py-1 flex flex-col gap-0.5 custom-scrollbar">
-                  {showHiddenTracks ? (
-                    hiddenTracks.length > 0 ? (
-                      hiddenTracks.map((hidden) => (
-                        <div
-                          key={hidden.id}
-                          className="flex items-center gap-1 w-full rounded-lg border border-transparent hover:bg-white/5 transition-all duration-150 px-1 py-1"
-                        >
-                          <div className="flex flex-1 min-w-0 flex-col px-1.5 text-white/50">
-                            <span className="text-[9px] truncate">{hidden.name}</span>
-                            <span className="text-[7px] text-white/30 truncate">
-                              {hidden.artist || "숨김 처리됨"}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={(e) => handleRestoreTrack(hidden, e)}
-                            className="shrink-0 p-1 rounded-md text-white/35 hover:text-emerald-300 hover:bg-emerald-500/10 transition-all"
-                            title="목록에 다시 추가"
-                          >
-                            <RotateCcw size={10} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => void handlePermanentDeleteTrack(hidden, e)}
-                            className="shrink-0 p-1 mr-0.5 rounded-md text-white/30 hover:text-rose-400 hover:bg-rose-500/15 transition-all"
-                            title="영원히 삭제"
-                          >
-                            <Trash2 size={10} />
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="px-2 py-6 text-[8px] text-white/35 text-center">
-                        숨긴 곡이 없습니다.
-                      </p>
-                    )
-                  ) : (
-                    tracks
-                      .map((track, idx) => ({ track, idx }))
-                      .filter(({ track }) => selectedCategory === "all" || track.category === selectedCategory)
-                      .map(({ track, idx }) => {
-                        const isActive = shuffledIndices[queueIndex] === idx;
-                        const rowKey = getBgmTrackId(track);
-                        return (
-                          <div
-                            key={rowKey}
-                            className={`flex items-center gap-1 w-full rounded-lg transition-all duration-150 ${
-                              isActive
-                                ? "bg-amber-400/15 border border-amber-400/30 shadow-[0_0_8px_rgba(251,191,36,0.15)]"
-                                : "hover:bg-white/5 border border-transparent"
-                            }`}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => handleSelectTrack(idx)}
-                              className={`flex flex-1 min-w-0 items-center justify-between text-left px-2 py-1 transition-all duration-150 ${
-                                isActive ? "text-amber-200 font-semibold" : "text-white/60 hover:text-white"
-                              }`}
-                            >
-                              <div className="flex flex-col min-w-0 max-w-[85%]">
-                                <span className="text-[9px] truncate flex items-center gap-1">
-                                  {track.name}
-                                  {isActive && isPlaying && !isBuffering && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-                                  )}
-                                </span>
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                  {track.category && (
-                                    <span className="px-1 py-0.2 rounded text-[6.5px] font-semibold bg-amber-400/10 text-amber-300 border border-amber-400/20 shrink-0">
-                                      {track.category}
-                                    </span>
-                                  )}
-                                  <span className="text-[7.5px] text-white/40 truncate">{track.artist}</span>
-                                </div>
-                              </div>
-                              {isActive && (
-                                <span className="text-[8px] text-amber-300 font-mono shrink-0">PLAYING</span>
-                              )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => handleRemoveTrack(idx, e)}
-                              disabled={tracks.length <= 1}
-                              className="shrink-0 p-1 mr-0.5 rounded-md text-white/30 hover:text-rose-300 hover:bg-rose-500/10 disabled:opacity-20 disabled:pointer-events-none transition-all"
-                              title="목록에서 숨기기"
-                            >
-                              <Trash2 size={10} />
-                            </button>
-                          </div>
-                        );
-                      })
-                  )}
-                </div>
-              </>
+            {/* Playing pulse indicator dot */}
+            {isPlaying && (
+              <span
+                className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ring-2 ring-neutral-950 bg-amber-400 animate-pulse"
+                style={{
+                  boxShadow: "0 0 8px rgba(251, 191, 36, 0.9)",
+                }}
+              />
             )}
-          </div>
-        </div>
+
+            {/* Desktop hover tooltip */}
+            <span className="hidden sm:group-hover:block absolute bottom-full mb-2.5 left-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-lg pointer-events-none z-50">
+              {isPlaying ? `🎵 ${currentTrack?.name || "음악 재생 중"}` : `⏸️ ${currentTrack?.name || "음악 일시정지"}`} (클릭 재생 · 더블클릭 다음곡)
+            </span>
+          </button>
+        </motion.div>
       )}
 
       {/* Fullscreen Immersive 3D Audio Visualizer Stage */}
@@ -2334,12 +1766,12 @@ export function BgMusicPlayer() {
         <AudioReactive3DVisualizer
           mode="stage"
           isPlaying={isPlaying && !isBuffering}
-          trackCategory={currentTrack.category}
-          trackName={currentTrack.name}
-          trackArtist={currentTrack.artist}
+          trackCategory={currentTrack?.category}
+          trackName={currentTrack?.name}
+          trackArtist={currentTrack?.artist}
           onCloseStage={() => setShow3DVisualizerStage(false)}
         />
       )}
-    </div>
+    </>
   );
 }
