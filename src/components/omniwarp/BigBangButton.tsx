@@ -109,6 +109,9 @@ export function BigBangButton() {
   const lastTapTimeRef = useRef<number>(0);
   const singleTapTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 🎙️ PTT (Push-to-Talk) 음성 입력 진행 중 여부 ref
+  const isPttRecordingRef = useRef<boolean>(false);
+
   // 🎙️ 루시 AI 실시간 음성모드 연동 상태 (열림 여부 및 경청/생각/발화 단계)
   const [voiceModeInfo, setVoiceModeInfo] = useState<{
     isOpen: boolean;
@@ -364,20 +367,44 @@ export function BigBangButton() {
       const isTextToss = Boolean(textToToss);
       target = {
         id: 'lucy',
-        icon: '💬',
+        icon: '🎙️',
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: '루시 1:1 대화',
+        title: '루시 1:1 음성 대화 (PTT)',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
           ? `[루시 토스] "${textToToss.slice(0, 16)}..." ➔ 루시 질의`
-          : `[홀드 소환] 루시 1:1 대화`,
-        previewDescription: '마음의 안식처 루시와 나누는 따뜻한 대화와 지혜 조언',
-        destinationPath: '/chat',
+          : `[음성 PTT] 질문 말씀 중... (손을 떼면 즉시 답변)`,
+        previewDescription: '버튼을 누른 채 질문을 말하고, 손을 떼면 즉각 루시의 음성 답변이 출력됩니다',
+        destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
       };
+
+      // 🎙️ [PTT] 250ms 이상 제자리 홀드 시 즉시 질문 음성 녹음 시작!
+      if (dist < 25 && !metrics.isAborted && !isPttRecordingRef.current) {
+        isPttRecordingRef.current = true;
+        unlockAudioPlayback();
+        primeTTSAudioElement();
+        triggerHaptic('whitehole');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('prism:start_lucy_voice_ptt', {
+              detail: { sourcePath: location, textToToss },
+            })
+          );
+        }
+      }
+
+      // 🛑 PTT 녹음 중 버튼 바깥으로 드래그하면 취소
+      if (dist >= 35 && isPttRecordingRef.current) {
+        isPttRecordingRef.current = false;
+        triggerHaptic('abort');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+        }
+      }
     } else {
       currentHole = 'whitehole';
       target = {
@@ -747,6 +774,12 @@ export function BigBangButton() {
     } catch (_) {}
 
     if (metrics.isAborted || isAborted) {
+      if (isPttRecordingRef.current) {
+        isPttRecordingRef.current = false;
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+        }
+      }
       omniWarpAudio.playAbort();
       triggerHaptic('abort');
       setActivePhase('idle');
@@ -754,6 +787,20 @@ export function BigBangButton() {
       setDurationMs(0);
       setIsAborted(false);
       resetActiveWormholePeek();
+      return;
+    }
+
+    // 🎙️ [PTT 완료] 손을 떼는 순간 녹음 마감 및 무음 대기 없이 즉각 루시 질문 발송!
+    if (isPttRecordingRef.current) {
+      isPttRecordingRef.current = false;
+      triggerHaptic('whitehole');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('prism:commit_lucy_voice_ptt'));
+      }
+      touchStartSelectionRef.current = '';
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
       return;
     }
 
@@ -1025,6 +1072,12 @@ export function BigBangButton() {
 
   const handlePointerCancel = () => {
     cleanupGlobalPointerListeners();
+    if (isPttRecordingRef.current) {
+      isPttRecordingRef.current = false;
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+      }
+    }
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;

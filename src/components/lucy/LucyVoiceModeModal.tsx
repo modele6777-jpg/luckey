@@ -67,6 +67,10 @@ export function LucyVoiceModeModal() {
   const voiceStateRef = useRef<VoiceState>('idle');
   voiceStateRef.current = voiceState;
 
+  // 🎙️ Push-to-Talk (버튼 홀드 녹음) 상태 및 최신 발화 ref
+  const isPttActiveRef = useRef(false);
+  const latestTranscriptRef = useRef('');
+
   // 🌟 실시간 음성모드 활성 상태 및 단계(경청/생각/발화)를 빅뱅 버튼에 브로드캐스팅
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -142,16 +146,19 @@ export function LucyVoiceModeModal() {
 
         const combined = (finalStr || interimStr).trim();
         if (combined) {
+          latestTranscriptRef.current = combined;
           setTranscript(combined);
           setInterimTranscript(interimStr);
 
-          // 1.2초 무음 감지 시 자동 턴테이킹(발화 자동 전송)
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = setTimeout(() => {
-            if (combined.length >= 2 && voiceStateRef.current === 'listening') {
-              handleSendPrompt(combined);
-            }
-          }, 1250);
+          // PTT(홀드) 모드가 아닐 때만 1.2초 무음 감지 시 자동 전송
+          if (!isPttActiveRef.current) {
+            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = setTimeout(() => {
+              if (combined.length >= 2 && voiceStateRef.current === 'listening') {
+                handleSendPrompt(combined);
+              }
+            }, 1250);
+          }
         }
       };
 
@@ -290,8 +297,55 @@ export function LucyVoiceModeModal() {
       handleClose();
     };
 
+    // 🎙️ PTT (빅뱅 버튼 홀드 시 즉시 질문 녹음 시작)
+    const handleStartVoicePtt = (e: Event) => {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+      triggerHaptic('whitehole');
+
+      isPttActiveRef.current = true;
+      latestTranscriptRef.current = '';
+      setIsOpen(true);
+      isComponentOpenRef.current = true;
+      setErrorMessage(null);
+      setTranscript('');
+      setInterimTranscript('');
+      setVoiceState('listening');
+
+      const detail = (e as CustomEvent)?.detail;
+      const tossed = detail?.textToToss;
+      if (tossed && typeof tossed === 'string' && tossed.trim()) {
+        latestTranscriptRef.current = tossed.trim();
+        setTranscript(tossed.trim());
+      }
+
+      startListening();
+    };
+
+    // 🚀 PTT (손을 떼는 순간 무음 대기 없이 즉각 루시 질문 발송)
+    const handleCommitVoicePtt = () => {
+      isPttActiveRef.current = false;
+      stopRecognition();
+      const promptToSend = latestTranscriptRef.current.trim();
+      if (promptToSend.length >= 1) {
+        handleSendPrompt(promptToSend);
+      } else {
+        setVoiceState('idle');
+      }
+    };
+
+    // 🛑 PTT (드래그 아웃 또는 취소)
+    const handleAbortVoicePtt = () => {
+      isPttActiveRef.current = false;
+      stopRecognition();
+      handleClose();
+    };
+
     window.addEventListener('prism:open_lucy_voice', handleOpenVoice);
     window.addEventListener('prism:close_lucy_voice', handleCloseVoice);
+    window.addEventListener('prism:start_lucy_voice_ptt', handleStartVoicePtt);
+    window.addEventListener('prism:commit_lucy_voice_ptt', handleCommitVoicePtt);
+    window.addEventListener('prism:abort_lucy_voice_ptt', handleAbortVoicePtt);
 
     // URL 쿼리 파라미터 감지 (?voice=1 or ?voice=true)
     if (typeof window !== 'undefined') {
@@ -304,6 +358,9 @@ export function LucyVoiceModeModal() {
     return () => {
       window.removeEventListener('prism:open_lucy_voice', handleOpenVoice);
       window.removeEventListener('prism:close_lucy_voice', handleCloseVoice);
+      window.removeEventListener('prism:start_lucy_voice_ptt', handleStartVoicePtt);
+      window.removeEventListener('prism:commit_lucy_voice_ptt', handleCommitVoicePtt);
+      window.removeEventListener('prism:abort_lucy_voice_ptt', handleAbortVoicePtt);
     };
   }, [startListening]);
 
@@ -338,6 +395,8 @@ export function LucyVoiceModeModal() {
   const handleClose = () => {
     triggerHaptic('whitehole');
     isComponentOpenRef.current = false;
+    isPttActiveRef.current = false;
+    latestTranscriptRef.current = '';
     stopRecognition();
     stopTTS();
     setIsOpen(false);
@@ -479,7 +538,11 @@ export function LucyVoiceModeModal() {
               </div>
             ) : (
               <div className="text-slate-400 text-[11px] px-1 flex items-center justify-between">
-                <span>편하게 말씀하세요. 루시가 실시간으로 듣고 있어요.</span>
+                <span>
+                  {isPttActiveRef.current
+                    ? '말씀하신 후 손을 떼면 즉시 답변이 나와요.'
+                    : '편하게 말씀하세요. 루시가 실시간으로 듣고 있어요.'}
+                </span>
                 <button
                   type="button"
                   onClick={handleNavigateToChat}
