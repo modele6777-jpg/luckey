@@ -109,6 +109,28 @@ export function BigBangButton() {
   const lastTapTimeRef = useRef<number>(0);
   const singleTapTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 🎙️ 루시 AI 실시간 음성모드 연동 상태 (열림 여부 및 경청/생각/발화 단계)
+  const [voiceModeInfo, setVoiceModeInfo] = useState<{
+    isOpen: boolean;
+    state: 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
+  }>({ isOpen: false, state: 'idle' });
+
+  useEffect(() => {
+    const handleVoiceState = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (detail) {
+        setVoiceModeInfo({
+          isOpen: !!detail.isOpen,
+          state: detail.state || 'idle',
+        });
+      }
+    };
+    window.addEventListener('prism:lucy_voice_state', handleVoiceState);
+    return () => {
+      window.removeEventListener('prism:lucy_voice_state', handleVoiceState);
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       if (singleTapTimerRef.current) {
@@ -1082,7 +1104,9 @@ export function BigBangButton() {
     <>
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
-        className="fixed bottom-safe-fab-right z-[350] pointer-events-none flex items-center justify-center select-none"
+        className={`fixed bottom-safe-fab-right pointer-events-none flex items-center justify-center select-none ${
+          voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[350]'
+        }`}
       >
         <div
           className="group relative flex flex-col items-center justify-center pointer-events-auto select-none"
@@ -1214,6 +1238,10 @@ export function BigBangButton() {
                   ? 'border-amber-100/95 shadow-[0_0_40px_rgba(255,255,255,0.95),0_0_28px_rgba(254,240,138,0.8),inset_0_0_24px_rgba(255,255,255,0.9)]'
                   : isPressing && isBlackholeMode
                   ? 'border-purple-900/90 shadow-[0_0_40px_rgba(0,0,0,1),0_0_24px_rgba(147,51,234,0.6),inset_0_0_28px_rgba(0,0,0,1)]'
+                  : voiceModeInfo.isOpen && voiceModeInfo.state === 'speaking'
+                  ? 'border-amber-400/95 shadow-[0_0_42px_rgba(251,191,36,0.7),inset_0_0_24px_rgba(251,191,36,0.45)]'
+                  : voiceModeInfo.isOpen
+                  ? 'border-cyan-300/90 shadow-[0_0_36px_rgba(34,211,238,0.6),inset_0_0_20px_rgba(34,211,238,0.35)]'
                   : isPressing
                   ? 'border-cyan-300/80 shadow-[0_0_32px_rgba(56,189,248,0.45),inset_0_0_22px_rgba(56,189,248,0.35)]'
                   : 'border-cyan-400/40 hover:border-cyan-300/80 shadow-[0_0_24px_rgba(56,189,248,0.3)]'
@@ -1310,6 +1338,83 @@ export function BigBangButton() {
                     : 'inset 0 0 16px rgba(0, 0, 0, 0.95)',
                 }}
               />
+
+              {/* 🌊 음성 모드 활성화 시 빅뱅 버튼 내부 파동 효과 (Sonic Ripple Waves) */}
+              <AnimatePresence>
+                {voiceModeInfo.isOpen && (
+                  <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none z-18 flex items-center justify-center">
+                    {/* 외곽 파동 링 1 */}
+                    <motion.div
+                      initial={{ scale: 0.25, opacity: 0.8 }}
+                      animate={{ scale: [0.25, 1.35, 1.9], opacity: [0.85, 0.45, 0] }}
+                      transition={{
+                        duration: voiceModeInfo.state === 'speaking' ? 1.3 : 2.1,
+                        repeat: Infinity,
+                        ease: 'easeOut',
+                      }}
+                      className={`absolute w-12 h-12 rounded-full border-2 ${
+                        voiceModeInfo.state === 'speaking'
+                          ? 'border-amber-400/90 shadow-[0_0_18px_rgba(251,191,36,0.9)]'
+                          : voiceModeInfo.state === 'thinking'
+                          ? 'border-purple-400/80 shadow-[0_0_14px_rgba(192,132,252,0.8)]'
+                          : 'border-cyan-400/90 shadow-[0_0_18px_rgba(34,211,238,0.9)]'
+                      }`}
+                    />
+                    {/* 중간 파동 링 2 */}
+                    <motion.div
+                      initial={{ scale: 0.2, opacity: 0.7 }}
+                      animate={{ scale: [0.2, 1.0, 1.5], opacity: [0.75, 0.35, 0] }}
+                      transition={{
+                        duration: voiceModeInfo.state === 'speaking' ? 1.3 : 2.1,
+                        repeat: Infinity,
+                        ease: 'easeOut',
+                        delay: 0.45,
+                      }}
+                      className={`absolute w-10 h-10 rounded-full border ${
+                        voiceModeInfo.state === 'speaking'
+                          ? 'border-rose-400/80 shadow-[0_0_12px_rgba(244,63,94,0.7)]'
+                          : voiceModeInfo.state === 'thinking'
+                          ? 'border-fuchsia-400/70 shadow-[0_0_10px_rgba(232,121,249,0.7)]'
+                          : 'border-teal-400/80 shadow-[0_0_12px_rgba(20,184,166,0.7)]'
+                      }`}
+                    />
+                    {/* 중심 코어 파동 링 3 */}
+                    <motion.div
+                      initial={{ scale: 0.15, opacity: 0.9 }}
+                      animate={{ scale: [0.15, 0.75, 1.15], opacity: [0.9, 0.5, 0] }}
+                      transition={{
+                        duration: voiceModeInfo.state === 'speaking' ? 1.3 : 2.1,
+                        repeat: Infinity,
+                        ease: 'easeOut',
+                        delay: 0.85,
+                      }}
+                      className={`absolute w-8 h-8 rounded-full border ${
+                        voiceModeInfo.state === 'speaking'
+                          ? 'border-yellow-200/90'
+                          : voiceModeInfo.state === 'thinking'
+                          ? 'border-violet-300/80'
+                          : 'border-cyan-200/90'
+                      }`}
+                    />
+                    {/* 코어 음파 발광 펄스 */}
+                    <motion.div
+                      animate={{ scale: [1, 1.45, 1], opacity: [0.75, 1, 0.75] }}
+                      transition={{
+                        duration: voiceModeInfo.state === 'speaking' ? 0.9 : 1.6,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                      className={`w-4 h-4 rounded-full blur-[1px] ${
+                        voiceModeInfo.state === 'speaking'
+                          ? 'bg-amber-300 shadow-[0_0_22px_#fbbf24]'
+                          : voiceModeInfo.state === 'thinking'
+                          ? 'bg-purple-300 shadow-[0_0_18px_#c084fc]'
+                          : 'bg-cyan-300 shadow-[0_0_20px_#22d3ee]'
+                      }`}
+                    />
+                  </div>
+                )}
+              </AnimatePresence>
 
               {/* 🎯 Big Bang Center: 순수 코스믹 싱귤래리티 코어 (아이콘 없이 순수 빛과 에너지 집중) */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">

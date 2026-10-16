@@ -543,7 +543,7 @@ export default function LucyStandalonePage() {
         stopTTS();
         setPlayingMsgId(null);
       }
-      setAutoTtsToast(next ? '🔊 질문자(남성)와 루시 답변(여성) 연속 자동 음성 읽기가 켜졌습니다.' : '🔇 자동 음성 읽기가 꺼졌습니다.');
+      setAutoTtsToast(next ? '🔊 루시 답변 바로 음성 읽기(질문 낭독 생략)가 켜졌습니다.' : '🔇 자동 음성 읽기가 꺼졌습니다.');
       setTimeout(() => setAutoTtsToast(null), 2500);
       return next;
     });
@@ -776,17 +776,14 @@ export default function LucyStandalonePage() {
             : '';
 
           stopTTS();
-          playQAndATTS(
-            { text: cleanQuestion, id: prevUserMsg?.id },
-            { text: cleanAnswer, id: lastMsg.id },
-            'Kore',
-            'Kore',
-            (_speaker, msg) => {
-              if (msg.id) setPlayingMsgId(msg.id);
-            }
-          ).catch((err) => {
-            console.warn('[Auto-TTS Fallback] Play error:', err);
-          });
+          if (lastMsg.id) setPlayingMsgId(lastMsg.id);
+          playTTSInChunks(cleanAnswer, 'Kore')
+            .catch((err) => {
+              console.warn('[Auto-TTS Fallback] Play error:', err);
+            })
+            .finally(() => {
+              setPlayingMsgId(null);
+            });
         }
       }
     }
@@ -1076,15 +1073,11 @@ export default function LucyStandalonePage() {
                 lastAutoSpokenMsgIdRef.current = replyMsgId;
               }
               stopTTS();
-              await playQAndATTS(
-                { text: cleanQuestion, id: undefined },
-                { text: cleanAnswer, id: replyMsgId },
-                'Kore',
-                'Kore',
-                (_speaker, msg) => {
-                  if (msg.id) setPlayingMsgId(msg.id);
-                }
-              );
+              if (replyMsgId) {
+                setPlayingMsgId(replyMsgId);
+              }
+              await playTTSInChunks(cleanAnswer, 'Kore');
+              setPlayingMsgId(null);
             }
           } catch (ttsErr) {
             console.warn('[Auto-TTS] Immediate voice playback error:', ttsErr);
@@ -1345,8 +1338,8 @@ export default function LucyStandalonePage() {
                   ? 'bg-gradient-to-r from-emerald-50 to-teal-100/80 text-emerald-800 border border-emerald-300 shadow-2xs font-semibold'
                   : 'bg-slate-100/90 text-slate-400 hover:text-slate-600 border border-slate-200/80'
               }`}
-              title={isAutoTts ? '질문자(남성) 및 루시 답변(여성) 연속 자동 음성 읽기 켜짐 - 클릭하여 끄기' : '자동 음성 읽기 꺼짐 - 클릭하여 켜기'}
-              aria-label={isAutoTts ? '질문·답변 연속 자동 음성 읽기 켜짐' : '자동 음성 읽기 꺼짐'}
+              title={isAutoTts ? '루시 답변 바로 음성 읽기 켜짐 (질문 낭독 생략) - 클릭하여 끄기' : '자동 음성 읽기 꺼짐 - 클릭하여 켜기'}
+              aria-label={isAutoTts ? '루시 답변 바로 음성 읽기 켜짐' : '자동 음성 읽기 꺼짐'}
             >
               {isAutoTts ? (
                 <>

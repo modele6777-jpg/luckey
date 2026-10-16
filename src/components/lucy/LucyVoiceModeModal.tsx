@@ -75,6 +75,26 @@ export function LucyVoiceModeModal() {
   const voiceStateRef = useRef<VoiceState>('idle');
   voiceStateRef.current = voiceState;
 
+  // 🌟 실시간 음성모드 활성 상태 및 단계(경청/생각/발화)를 빅뱅 버튼에 브로드캐스팅
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('prism:lucy_voice_state', {
+          detail: { isOpen, state: voiceState },
+        })
+      );
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('prism:lucy_voice_state', {
+            detail: { isOpen: false, state: 'idle' },
+          })
+        );
+      }
+    };
+  }, [isOpen, voiceState]);
+
   // 🎙️ SpeechRecognition 초기화 및 경청 시작
   const startListening = useCallback(() => {
     if (typeof window === 'undefined') return;
