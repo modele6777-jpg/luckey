@@ -322,14 +322,24 @@ export function peekNextRecommendedMenuByCycle(
         return false;
       }
       if (menu.path === '/universe') return false;
-      // 🛡️ 루시(/chat) 및 Key(/key)는 사용자 지정 제스처에 배정되므로 추천 1순위 후보에서 엄격 배제
+      // 🛡️ 루시(/, /chat, /lucy) 및 Key(/key, /calm, /orb 등)는 추천 후보에서 엄격 배제
       const menuPathLower = (menu.path || '').toLowerCase();
       const menuIdLower = (menu.id || '').toLowerCase();
+      const cleanPath = (menu.path || '').split('?')[0].split('#')[0];
       if (
+        cleanPath === '/' ||
+        cleanPath === '/chat' ||
+        cleanPath === '/lucy' ||
+        cleanPath === '/key' ||
+        cleanPath === '/calm' ||
+        cleanPath === '/orb' ||
+        cleanPath === '/gateway' ||
+        cleanPath === '/crystal' ||
         menuPathLower.includes('chat') ||
         menuPathLower.includes('lucy') ||
         menuPathLower.includes('key') ||
         menuPathLower.includes('calm') ||
+        menuPathLower.includes('orb') ||
         menuIdLower.includes('lucy') ||
         menuIdLower.includes('key')
       ) {

@@ -334,9 +334,10 @@ export function BigBangButton() {
     const dist = Math.hypot(deltaX, deltaY);
 
     // 🎯 제스처 실시간 타깃 및 HUD 매핑:
-    // 1) 드래그 (dist >= 20): Key (마음약방 & 40가지 연습) 도약
-    // 2) 제자리 홀드 (dist < 20, elapsed >= 250): 루시 (/chat 1:1 대화) 소환
+    // 1) 드래그 (dist >= 20): 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약
+    // 2) 제자리 홀드 (dist < 20, elapsed >= 250): 루시 AI PTT 실시간 음성 대화
     // 3) 가볍게 탭 (dist < 20, elapsed < 250): 홈 (/) 베이스캠프 복귀
+    // 4) 더블탭: Key 마음약방 & 40가지 연습 도약
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
@@ -346,21 +347,26 @@ export function BigBangButton() {
       setIsPageScrolling(false);
       currentHole = 'blackhole';
       const isTextToss = Boolean(textToToss);
+      const rec = peekNextRecommendedMenuByCycle(location, textToToss || undefined);
+      const targetMenu = rec.menu;
+      const safeDest = rec.safePath || targetMenu.path;
       target = {
-        id: 'key',
-        icon: '🔑',
+        id: targetMenu.id,
+        icon: targetMenu.emoji || '🌀',
         phase: 'blackhole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: 'Key 마음약방',
+        title: targetMenu.name,
+        name: targetMenu.name,
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[Key 토스] "${textToToss.slice(0, 16)}..." ➔ 40가지 연습 처방`
-          : `[드래그 도약] Key 마음약방`,
-        previewDescription: '제이미 저커먼 도서 연동 마음 치유 동반자 & 40가지 소매틱 연습',
-        destinationPath: '/key',
-        themeColor: '#0ea5e9',
-        accentGlow: 'rgba(14, 165, 233, 0.85)',
+          ? `[추천 토스] "${textToToss.slice(0, 16)}..." ➔ ${targetMenu.name}`
+          : `[드래그 도약] ${targetMenu.name} (${rec.stats.visitedCount + 1}/${rec.stats.totalCount})`,
+        previewDescription: targetMenu.subName || rec.reason || '루시/Key 제외 7대 코어 앱 순환 추천 도약',
+        destinationPath: safeDest,
+        themeColor: targetMenu.themeColor || '#a855f7',
+        accentGlow: targetMenu.themeColor ? `${targetMenu.themeColor}aa` : 'rgba(168, 85, 247, 0.85)',
+        cycleStats: rec.stats,
       };
     } else if (elapsed >= 250) {
       currentHole = 'whitehole';
@@ -608,7 +614,7 @@ export function BigBangButton() {
     currentPointerEventRef.current = e;
   };
 
-  // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 시 실행 - 루시와 Key는 엄격 제외)
+  // ⚡ 추천 1순위 즉시 도약 헬퍼 (드래그 시 실행 - 루시와 Key는 엄격 제외)
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any) => {
     // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
     if (singleTapTimerRef.current) {
@@ -617,8 +623,8 @@ export function BigBangButton() {
     }
     lastTapTimeRef.current = 0;
 
-    // 🌟 더블탭: 추천 1순위 웜홀 사운드 & 햅틱
-    omniWarpAudio.playDoubleTap();
+    // 🌟 드래그: 추천 1순위 웜홀 사운드 & 햅틱
+    omniWarpAudio.playWormhole();
     triggerHaptic('wormhole');
 
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
@@ -631,10 +637,19 @@ export function BigBangButton() {
     const isExcluded = (p: string, id: string) => {
       const lower = `${p} ${id}`.toLowerCase();
       return (
+        p === '/' ||
+        p === '/chat' ||
+        p === '/lucy' ||
+        p === '/key' ||
+        p === '/calm' ||
+        p === '/orb' ||
+        p === '/gateway' ||
+        p === '/crystal' ||
         lower.includes('chat') ||
         lower.includes('lucy') ||
         lower.includes('key') ||
-        lower.includes('calm')
+        lower.includes('calm') ||
+        lower.includes('orb')
       );
     };
 
@@ -647,7 +662,7 @@ export function BigBangButton() {
       isDisallowedWarpDestination(finalSafePath) ||
       isExcluded(finalSafePath, finalMenu.id)
     ) {
-      console.warn(`[DoubleTapRecommend] Filtered restricted path: ${finalSafePath}`);
+      console.warn(`[DragRecommend] Filtered restricted path: ${finalSafePath}`);
       const fallback = PRISM_ALL_APP_DESTINATIONS.find(
         (d) => d.tossTargetId === 'trinity' || d.basePath === '/trinity'
       ) || PRISM_ALL_APP_DESTINATIONS[0];
@@ -660,8 +675,8 @@ export function BigBangButton() {
       : `순환 ${stats.visitedCount}/${stats.totalCount}`;
 
     const previewLabel = textToToss
-      ? `[추천 1위 토스 · ${cycleLabel}] ${finalMenu.name}`
-      : `[추천 1위 도약 · ${cycleLabel}] ${finalMenu.name}`;
+      ? `[추천 토스 · ${cycleLabel}] ${finalMenu.name}`
+      : `[드래그 도약 · ${cycleLabel}] ${finalMenu.name}`;
 
     const previewDescription = textToToss
       ? `"${textToToss.slice(0, 20)}..." ➔ ${finalMenu.name} 즉시 실행`
@@ -716,6 +731,105 @@ export function BigBangButton() {
         }
       }
     }
+
+    touchStartSelectionRef.current = '';
+    setActivePhase('idle');
+    setGauge(0);
+    setDurationMs(0);
+    resetActiveContextPeek();
+  }, [location, navigate, getActiveSelectionText, isKeySite]);
+
+  // 🔑 Key 마음약방 도약 헬퍼 (더블탭/더블클릭 시 실행 - 텍스트 선택 시 40가지 연습 토스 연동)
+  const goToKey = useCallback((customContext?: any, customMetrics?: any) => {
+    // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
+    if (singleTapTimerRef.current) {
+      clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
+    }
+    lastTapTimeRef.current = 0;
+
+    // 🌟 더블탭: Key 도약 사운드 & 햅틱
+    omniWarpAudio.playDoubleTap();
+    triggerHaptic('blackhole');
+
+    const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
+
+    // 🔑 텍스트 선택 연동: 글자를 선택한 상태에서 더블탭 ➔ Key 40가지 연습으로 즉시 토스!
+    if (textToToss) {
+      savePendingSelection(textToToss, 'key', location);
+      try {
+        sessionStorage.setItem('key_tossed_text', textToToss);
+        sessionStorage.setItem('key_target_tab', 'tab-exercises');
+      } catch (_) {}
+      sendPrismToss({
+        sourceApp: location || 'bigbang_button',
+        targetApp: 'key',
+        actionType: 'smart_toss',
+        contextMessage: textToToss,
+        autoPrompt: textToToss,
+        tossedAt: Date.now(),
+      });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('prism:selection_tossed', {
+            detail: { text: textToToss, target: 'key', sourcePath: location },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('prism:selection_saved', {
+            detail: { text: textToToss, target: 'key', sourcePath: location },
+          })
+        );
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('prism:bigbang_commit', {
+          detail: {
+            phase: 'blackhole',
+            target: {
+              id: 'key',
+              name: 'Key',
+              destinationPath: '/key',
+              themeColor: '#0ea5e9',
+              eventHorizonMode: 'blackhole',
+              previewLabel: textToToss
+                ? `[Key 토스] "${textToToss.slice(0, 16)}..." ➔ 40가지 연습 처방`
+                : '[더블탭 도약] Key 마음약방',
+              previewDescription: '제이미 저커먼 도서 연동 마음 치유 동반자 & 40가지 소매틱 연습',
+            },
+            context: customContext || serializeCurrentView(location),
+            metrics: customMetrics || { phase: 'blackhole' },
+            timestamp: Date.now(),
+          },
+        })
+      );
+    }
+
+    setTimeout(() => {
+      if (isKeySite && !textToToss) {
+        // Key 사이트에서 실행 시 홈 귀환
+        const returnPath = safeSessionStorage.getItem('prism_key_return_path') || '/';
+        safeSessionStorage.removeItem('prism_key_return_path');
+        const finalDest =
+          returnPath.includes('key') || returnPath.includes('calm') || returnPath.includes('orb')
+            ? '/'
+            : returnPath;
+        window.location.href = finalDest;
+      } else {
+        // Key 사이트로 도약
+        const currentPath = location || '/';
+        safeSessionStorage.setItem('prism_key_return_path', currentPath);
+        if (isKeySite) {
+          window.location.href = '/key';
+        } else {
+          navigate('/key');
+          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/key' } }));
+          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
+        }
+      }
+    }, 160);
 
     touchStartSelectionRef.current = '';
     setActivePhase('idle');
@@ -825,9 +939,9 @@ export function BigBangButton() {
       const nowMs = performance.now();
       const timeSinceLastTap = nowMs - lastTapTimeRef.current;
 
-      // 🎯 더블탭 감지 (이전 탭 후 30ms ~ 380ms 이내 재탭 시): 추천 1순위 즉시 도약! (루시/Key 엄격 제외)
+      // 🎯 더블탭 감지 (이전 탭 후 30ms ~ 380ms 이내 재탭 시): Key 마음약방으로 즉시 도약!
       if (timeSinceLastTap > 30 && timeSinceLastTap < 380) {
-        goToNextRecommended(context, metrics);
+        goToKey(context, metrics);
         return;
       }
 
@@ -905,91 +1019,9 @@ export function BigBangButton() {
     // [2] 홀드 (300ms 이상) 또는 드래그 릴리즈 분기
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
 
-    // 🔑 [드래그: dist >= 20] ➔ Key (마음약방 & 40가지 연습) 도약!
+    // 🌀 [드래그: dist >= 20] ➔ 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약!
     if (dist >= 20) {
-      triggerHaptic('blackhole');
-      omniWarpAudio.playBlackHole();
-
-      // 🔑 텍스트 드래그(선택) 연동: 글자를 스크롤/선택한 상태에서 드래그 ➔ Key 40가지 연습으로 즉시 토스!
-      if (textToToss) {
-        savePendingSelection(textToToss, 'key', location);
-        try {
-          sessionStorage.setItem('key_tossed_text', textToToss);
-          sessionStorage.setItem('key_target_tab', 'tab-exercises');
-        } catch (_) {}
-        sendPrismToss({
-          sourceApp: location || 'bigbang_button',
-          targetApp: 'key',
-          actionType: 'smart_toss',
-          contextMessage: textToToss,
-          autoPrompt: textToToss,
-          tossedAt: Date.now(),
-        });
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('prism:selection_tossed', {
-              detail: { text: textToToss, target: 'key', sourcePath: location },
-            })
-          );
-          window.dispatchEvent(
-            new CustomEvent('prism:selection_saved', {
-              detail: { text: textToToss, target: 'key', sourcePath: location },
-            })
-          );
-        }
-      }
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('prism:bigbang_commit', {
-            detail: {
-              phase: 'blackhole',
-              target: {
-                id: 'key',
-                name: 'Key',
-                destinationPath: '/key',
-                themeColor: '#0ea5e9',
-                eventHorizonMode: 'blackhole',
-                previewLabel: '[드래그 도약] Key 마음약방',
-                previewDescription: '제이미 저커먼 도서 연동 마음 치유 동반자 & 40가지 소매틱 연습',
-              },
-              context,
-              metrics: { ...metrics, phase: 'blackhole' },
-              timestamp: Date.now(),
-            },
-          })
-        );
-      }
-
-      setTimeout(() => {
-        if (isKeySite && !textToToss) {
-          // Key 사이트에서 드래그 시 홈 귀환
-          const returnPath = safeSessionStorage.getItem('prism_key_return_path') || '/';
-          safeSessionStorage.removeItem('prism_key_return_path');
-          const finalDest =
-            returnPath.includes('key') || returnPath.includes('calm') || returnPath.includes('orb')
-              ? '/'
-              : returnPath;
-          window.location.href = finalDest;
-        } else {
-          // Key 사이트로 도약
-          const currentPath = location || '/';
-          safeSessionStorage.setItem('prism_key_return_path', currentPath);
-          if (isKeySite) {
-            window.location.href = '/key';
-          } else {
-            navigate('/key');
-            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/key' } }));
-            window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
-          }
-        }
-      }, 240);
-
-      touchStartSelectionRef.current = '';
-      setActivePhase('idle');
-      setGauge(0);
-      setDurationMs(0);
-      resetActiveContextPeek();
+      goToNextRecommended(context, metrics);
       return;
     }
 
@@ -1138,8 +1170,8 @@ export function BigBangButton() {
     if (activePhase === 'wormhole') return 'omniwarp';
     // 🌌 사건의 지평선 상태 (조준 중): 해당 조준 채널의 아이콘을 최우선으로 표출!
     if (radialSectorIndex >= 0) return RADIAL_WARP_APPS[radialSectorIndex]?.id || 'hub';
-    // 🔑 드래그 시: Key 마음약방
-    if (dragDistance >= 20) return 'key';
+    // 🌀 드래그 시: 추천 순환 목적지 앱
+    if (dragDistance >= 20) return currentTarget?.id || 'omniwarp';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 홈 귀환
     if (isChatView) return 'hub';
     // 💬 제자리 홀드 - 일반 화면에서는 루시 1:1 대화
@@ -1156,8 +1188,8 @@ export function BigBangButton() {
       const subTitle = currentTarget?.title || '';
       return subTitle ? `${channel?.name || ''} · ${subTitle}` : (channel?.name || '');
     }
-    // 🔑 드래그 시: Key 마음약방 도약
-    if (dragDistance >= 20) return 'Key (마음약방 도약)';
+    // 🌀 드래그 시: 추천 앱 도약
+    if (dragDistance >= 20) return currentTarget?.title ? `추천: ${currentTarget.title}` : '추천 앱 차원 도약';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 귀환
     if (isChatView) return '프리즘 귀환 (채팅 나가기)';
     // 💬 제자리 홀드 - 일반 화면에서는 루시 음성 대화
@@ -1190,11 +1222,11 @@ export function BigBangButton() {
                 <span className="text-xs">✨</span>
                 <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸홈</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-purple-300 font-black">더블탭</span><span className="text-slate-300">▸추천1위</span>
+                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸Key</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸루시 음성</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-cyan-300 font-black">드래그</span><span className="text-slate-300">▸Key</span>
+                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸추천 앱</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1267,7 +1299,7 @@ export function BigBangButton() {
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                goToNextRecommended();
+                goToKey();
               }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -1336,11 +1368,11 @@ export function BigBangButton() {
                   ? 'inset 0 0 22px rgba(56, 189, 248, 0.35), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.45)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 홈 / 더블탭: 추천 1순위 / 홀드: 루시 / 드래그: Key)"
+              title="빅뱅 버튼 (탭: 홈 / 더블탭: Key 마음약방 / 홀드: 루시 음성 / 드래그: 추천 앱)"
               aria-label={
                 hasSelectionToss
                   ? '빅뱅 버튼 · 선택 내용 토스 대기중'
-                  : '빅뱅 버튼 · 탭: 홈, 더블탭: 추천 1순위, 홀드: 루시, 드래그: Key'
+                  : '빅뱅 버튼 · 탭: 홈, 더블탭: Key 마음약방, 홀드: 루시 음성, 드래그: 추천 앱'
               }
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
