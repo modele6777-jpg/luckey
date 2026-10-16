@@ -195,7 +195,68 @@ export default function LeftSidebarNav() {
       : isPrologue
       ? isPrologueActive
       : cleanPath === path || cleanPath.startsWith(path + '/');
+    const isRainbow = Boolean(isMainChat || isKey);
 
+    // 🌈 Special Rainbow Glowing Style for Core Sanctuary Channels (LUCY & KEY)
+    if (isRainbow) {
+      return (
+        <button
+          key={path}
+          type="button"
+          onClick={() => handleNavigate(path)}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left relative group cursor-pointer rainbow-channel-box ${
+            isActive
+              ? 'bg-white/[0.12] text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)] rainbow-channel-active-halo'
+              : 'text-neutral-300 hover:text-white hover:bg-white/[0.08]'
+          }`}
+        >
+          {/* Active glowing indicator pill - rainbow gradient */}
+          {isActive ? (
+            <motion.div
+              layoutId="active-nav-glow"
+              className="absolute left-1 top-2 bottom-2 w-1.5 rounded-full rainbow-gradient-flow shadow-[0_0_10px_rgba(255,255,255,0.7)]"
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+            />
+          ) : (
+            <div className="absolute left-1 top-3.5 bottom-3.5 w-0.5 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+          )}
+
+          {/* Rainbow Channel Icon Container with rotating conic halo */}
+          <div className="relative w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 overflow-hidden p-[1.5px] shadow-[0_0_12px_rgba(255,107,107,0.3)]">
+            <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
+            <div className="relative w-full h-full rounded-[6.5px] bg-neutral-950/90 flex items-center justify-center">
+              <Icon
+                size={18}
+                className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.85)] transition-transform group-hover:rotate-6"
+              />
+            </div>
+          </div>
+
+          {/* Label & Description */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black tracking-wider uppercase font-sans truncate rainbow-text-shimmer drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]">
+                {label}
+              </span>
+              {isActive ? (
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md rainbow-gradient-flow text-white shadow-[0_0_10px_rgba(255,107,107,0.5)]">
+                  ACTIVE
+                </span>
+              ) : (
+                <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-white/[0.08] text-neutral-300 border border-white/10 group-hover:border-white/20 group-hover:text-white transition-colors">
+                  {isMainChat ? 'AI CORE' : 'HEALING'}
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-neutral-300 group-hover:text-neutral-100 font-sans truncate mt-0.5 transition-colors">
+              {subLabel}
+            </p>
+          </div>
+        </button>
+      );
+    }
+
+    // Standard 7 Prism Journey Channels
     return (
       <button
         key={path}
@@ -266,7 +327,7 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {/* 1. Collapsed State: Sleek Fixed Circular Floating FAB on the Bottom-Left */}
+      {/* 1. Collapsed State: Sleek Fixed Circular Floating FAB with Animated Rainbow Prismatic Aura */}
       {!isOpen && (
         <motion.div
           initial={{ y: 20, opacity: 0, scale: 0.9 }}
@@ -283,31 +344,33 @@ export default function LeftSidebarNav() {
             className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer text-neutral-300 hover:text-white transition-all duration-200 active:scale-90"
             title="메뉴 열기"
           >
-            {/* Ambient active channel glow halo */}
+            {/* Ambient outer rotating conic rainbow aura halo */}
             <span
-              className="absolute -inset-0.5 rounded-full opacity-40 group-hover:opacity-75 blur-xs transition-opacity"
-              style={{
-                backgroundColor: activeItem.color,
-                boxShadow: `0 0 12px ${activeItem.color}`,
-              }}
+              className="absolute -inset-1.5 sm:-inset-2 rounded-full rainbow-fab-halo blur-[8px] opacity-75 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+              aria-hidden="true"
             />
 
-            {/* Inner icon & indicator */}
-            <div className="relative flex items-center justify-center">
+            {/* Crisp rotating conic rainbow border ring */}
+            <span
+              className="absolute -inset-[2px] rounded-full rainbow-fab-halo opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none"
+              aria-hidden="true"
+            />
+
+            {/* Inner icon & indicator with iridescent rainbow styling */}
+            <div className="relative z-10 flex items-center justify-center">
               <Compass
-                size={20}
-                style={{ color: activeItem.color }}
-                className="transition-transform duration-300 group-hover:rotate-45 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                size={21}
+                className="text-white transition-transform duration-500 group-hover:rotate-90 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]"
               />
               <span
-                className="absolute -top-1 -right-1 w-2 h-2 rounded-full ring-2 ring-neutral-950 animate-pulse"
-                style={{ backgroundColor: activeItem.color }}
+                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-neutral-950 rainbow-gradient-flow animate-pulse shadow-[0_0_8px_rgba(255,107,107,0.8)]"
               />
             </div>
 
             {/* Desktop hover tooltip */}
-            <span className="hidden sm:group-hover:block absolute bottom-full mb-2.5 left-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-lg pointer-events-none">
-              메뉴 열기 ({activeItem.label})
+            <span className="hidden sm:group-hover:flex items-center gap-1.5 absolute bottom-full mb-2.5 left-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-30">
+              <span className="w-1.5 h-1.5 rounded-full rainbow-fab-halo" />
+              <span>메뉴 열기 ({activeItem.label})</span>
             </span>
           </button>
         </motion.div>
@@ -343,11 +406,14 @@ export default function LeftSidebarNav() {
               {/* Header */}
               <div className="pt-[calc(var(--sat)+1.25rem)] px-5 pb-4 border-b border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-amber-300">
-                    <Compass size={18} />
+                  <div className="relative w-8 h-8 rounded-lg overflow-hidden p-[1.5px] flex items-center justify-center">
+                    <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
+                    <div className="relative w-full h-full rounded-[6.5px] bg-neutral-950/90 flex items-center justify-center text-amber-300">
+                      <Compass size={16} />
+                    </div>
                   </div>
                   <div>
-                    <h2 className="text-xs font-bold tracking-widest uppercase text-white font-sans">
+                    <h2 className="text-xs font-black tracking-widest uppercase rainbow-text-shimmer font-sans">
                       LUCKEY PRISM
                     </h2>
                     <p className="text-[10px] text-neutral-400 font-mono tracking-tight">
@@ -370,11 +436,16 @@ export default function LeftSidebarNav() {
               <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 no-scrollbar">
                 {/* Category 1: AI 가이드 & 마음약방 (LUCY & KEY) */}
                 <div>
-                  <div className="px-2 pb-1.5 flex items-center gap-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                    <span>AI 가이드 & 마음약방</span>
+                  <div className="px-2 pb-1.5 flex items-center justify-between text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-400">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full rainbow-fab-halo" />
+                      <span className="text-neutral-300 font-bold">AI 코어 & 마음약방</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-full border border-pink-500/30 text-pink-300/80 bg-pink-500/10">
+                      PRISM CORE
+                    </span>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     {CORE_CHANNELS.map(renderNavButton)}
                   </div>
                 </div>

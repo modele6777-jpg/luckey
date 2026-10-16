@@ -1780,5 +1780,163 @@ h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
   -webkit-box-decoration-break: clone;
 }
 
+/* =========================================================================
+   🌈 Cosmic Rainbow Prismatic Aurora (Menu FAB & Sidebar LUCY / KEY)
+   ========================================================================= */
 
+@keyframes rainbow-conic-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
+@keyframes rainbow-shimmer-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rainbow-pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5)) drop-shadow(0 0 16px rgba(84, 160, 255, 0.4));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(254, 202, 87, 0.75)) drop-shadow(0 0 24px rgba(29, 209, 161, 0.65));
+    opacity: 1;
+  }
+}
+
+/* Rotating Conic Rainbow Halo for Menu Button FAB & Icon accents */
+.rainbow-fab-halo {
+  background: conic-gradient(
+    from 0deg,
+    #ff4b72,
+    #ff8f3d,
+    #ffd13b,
+    #00e699,
+    #00d4ff,
+    #7a5cff,
+    #e056fd,
+    #ff4b72
+  );
+  animation: rainbow-conic-spin 4s linear infinite;
+  will-change: transform;
+}
+
+/* Linear Rainbow Shimmer Background */
+.rainbow-gradient-flow {
+  background: linear-gradient(
+    135deg,
+    #ff4b72,
+    #ff8f3d,
+    #ffd13b,
+    #00e699,
+    #00d4ff,
+    #7a5cff,
+    #e056fd,
+    #ff4b72
+  );
+  background-size: 300% 300%;
+  animation: rainbow-shimmer-flow 5s ease-in-out infinite;
+}
+
+/* Rainbow Text Shimmer with Clipping */
+.rainbow-text-shimmer {
+  background: linear-gradient(
+    90deg,
+    #ff6b8b,
+    #ffa94d,
+    #ffe066,
+    #38d9a9,
+    #4dabf7,
+    #b197fc,
+    #ff85c0,
+    #ff6b8b
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: rainbow-shimmer-flow 4s linear infinite;
+}
+
+/* Sidebar Rainbow Item Outer Box */
+.rainbow-channel-box {
+  position: relative;
+  isolation: isolate;
+  background: rgba(22, 19, 32, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.75rem;
+}
+
+.rainbow-channel-box::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.2px;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 75, 114, 0.75),
+    rgba(255, 143, 61, 0.75),
+    rgba(255, 209, 59, 0.75),
+    rgba(0, 230, 153, 0.75),
+    rgba(0, 212, 255, 0.75),
+    rgba(122, 92, 255, 0.75),
+    rgba(224, 86, 253, 0.75),
+    rgba(255, 75, 114, 0.75)
+  );
+  background-size: 250% 250%;
+  animation: rainbow-shimmer-flow 5s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rainbow-channel-box:hover::before {
+  background: linear-gradient(
+    115deg,
+    rgba(255, 75, 114, 1),
+    rgba(255, 143, 61, 1),
+    rgba(255, 209, 59, 1),
+    rgba(0, 230, 153, 1),
+    rgba(0, 212, 255, 1),
+    rgba(122, 92, 255, 1),
+    rgba(224, 86, 253, 1),
+    rgba(255, 75, 114, 1)
+  );
+  background-size: 250% 250%;
+  animation: rainbow-shimmer-flow 3.5s ease infinite;
+}
+
+.rainbow-channel-active-halo {
+  box-shadow: 
+    0 0 16px -2px rgba(255, 75, 114, 0.45),
+    0 0 28px -4px rgba(0, 212, 255, 0.35),
+    inset 0 0 14px rgba(255, 209, 59, 0.15);
+}
+
+/* Reduced Motion and Low-Power Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .rainbow-fab-halo,
+  .rainbow-gradient-flow,
+  .rainbow-text-shimmer,
+  .rainbow-channel-box::before {
+    animation: none !important;
+  }
+}
