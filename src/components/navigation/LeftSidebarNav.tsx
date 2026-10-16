@@ -12,6 +12,9 @@ import {
   Clover,
   KeyRound,
   User,
+  Library,
+  BookOpen,
+  Compass,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
@@ -102,8 +105,48 @@ export const PRISM_CHANNELS: NavItemConfig[] = [
 ];
 
 const LUCY_SUBPATHS = ['/', '/chat', '/lucy'];
-const KEY_SUBPATHS = ['/key', '/calm'];
+const KEY_SUBPATHS = ['/key', '/calm', '/orb', '/gateway', '/crystal'];
 const PROLOGUE_SUBPATHS = ['/prologue', '/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'];
+const EPILOGUE_SUBPATHS = ['/epilogue', '/profile', '/chronicle'];
+
+// 3. Auxiliary Channels with dedicated identities
+export const AUXILIARY_CHANNELS: NavItemConfig[] = [
+  {
+    path: '/library',
+    icon: Library,
+    label: 'LIBRARY',
+    subLabel: '통합 아카이브 기록관',
+    color: 'oklch(0.75 0.16 200)',
+  },
+  {
+    path: '/rebible',
+    icon: BookOpen,
+    label: 'REBIBLE',
+    subLabel: '리바이블 지혜 성전',
+    color: 'oklch(0.78 0.18 85)',
+  },
+  {
+    path: '/handbook',
+    icon: BookOpen,
+    label: 'HANDBOOK',
+    subLabel: '리바이블 핸드북',
+    color: 'oklch(0.78 0.18 85)',
+  },
+  {
+    path: '/omniwarp',
+    icon: Compass,
+    label: 'BIGBANG',
+    subLabel: '옴니워프 & 빅뱅 내비게이션',
+    color: 'oklch(0.72 0.22 340)',
+  },
+  {
+    path: '/bigbang',
+    icon: Compass,
+    label: 'BIGBANG',
+    subLabel: '빅뱅 보이스 & 옴니워프',
+    color: 'oklch(0.72 0.22 340)',
+  },
+];
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -153,6 +196,10 @@ export default function LeftSidebarNav() {
     (p) => cleanPath === p || cleanPath.startsWith(p + '/')
   );
 
+  const isEpilogueActive = EPILOGUE_SUBPATHS.some(
+    (p) => cleanPath === p || cleanPath.startsWith(p + '/')
+  );
+
   // Find the currently active nav item to highlight theme accent
   const allNavItems = [...CORE_CHANNELS, ...PRISM_CHANNELS];
   const activeItem =
@@ -160,8 +207,15 @@ export default function LeftSidebarNav() {
       if (item.isMainChat) return isLucyActive;
       if (item.isKey) return isKeyActive;
       if (item.isPrologue) return isPrologueActive;
+      if (item.path === '/epilogue') return isEpilogueActive;
       return cleanPath === item.path || cleanPath.startsWith(item.path + '/');
-    }) || CORE_CHANNELS[0];
+    }) ||
+    AUXILIARY_CHANNELS.find(
+      (item) => cleanPath === item.path || cleanPath.startsWith(item.path + '/')
+    ) ||
+    CORE_CHANNELS[0];
+
+  const ActiveNavIcon = activeItem?.icon || Clover;
 
   // Close when pressing Escape key
   const handleKeyDown = useCallback(
@@ -373,10 +427,10 @@ export default function LeftSidebarNav() {
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            aria-label="네비게이션 메뉴 열기"
+            aria-label={`네비게이션 메뉴 열기 (${activeItem.label})`}
             aria-expanded={isOpen}
             className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer text-neutral-300 hover:text-white transition-all duration-200 active:scale-90"
-            title="메뉴 열기"
+            title={`메뉴 열기 (${activeItem.label})`}
           >
             {/* Ambient outer rotating conic rainbow aura halo */}
             <span
@@ -390,12 +444,24 @@ export default function LeftSidebarNav() {
               aria-hidden="true"
             />
 
-            {/* Inner icon & indicator with iridescent rainbow styling */}
+            {/* Inner icon & indicator with active app dynamic styling */}
             <div className="relative z-10 flex items-center justify-center">
-              <Clover
-                size={21}
-                className="text-emerald-300 transition-transform duration-500 group-hover:rotate-45 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(52,211,153,0.9)]"
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeItem?.label || 'LUCY'}
+                  initial={{ scale: 0.6, opacity: 0, rotate: -20 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  exit={{ scale: 0.6, opacity: 0, rotate: 20 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="flex items-center justify-center"
+                >
+                  <ActiveNavIcon
+                    size={21}
+                    style={{ color: activeItem?.color || '#34d399' }}
+                    className="transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 drop-shadow-[0_0_8px_currentColor]"
+                  />
+                </motion.div>
+              </AnimatePresence>
               <span
                 className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-neutral-950 rainbow-gradient-flow animate-pulse shadow-[0_0_8px_rgba(255,107,107,0.8)]"
               />
