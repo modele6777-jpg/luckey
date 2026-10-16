@@ -186,8 +186,8 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
       ...(profile || {}),
       basic: {
         ...(profile?.basic || {}),
-        name: profile?.basic?.name || chosenEditName,
-        nickname: chosenEditName,
+        name: chosenEditName,
+        nickname: profile?.basic?.nickname !== undefined ? profile.basic.nickname : '',
         birthdate: editBirthdate,
         birthtime: editBirthtime,
         gender: editGender,

@@ -79,6 +79,12 @@ export function saveProfileToAllVaults(profile: UserProfile | undefined): void {
     const finalMerged = mergeUserProfiles(existing, profile, true);
     if (!finalMerged || Object.keys(finalMerged).length === 0) return;
 
+    // Explicitly guarantee nickname is preserved as passed in profile (e.g. if user intentionally cleared it to "")
+    if (profile.basic && typeof profile.basic.nickname === 'string') {
+      if (!finalMerged.basic) finalMerged.basic = {};
+      finalMerged.basic.nickname = profile.basic.nickname;
+    }
+
     const serialized = JSON.stringify(finalMerged);
 
     // 1. 모든 LocalStorage 금고에 저장

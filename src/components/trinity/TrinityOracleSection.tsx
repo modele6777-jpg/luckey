@@ -793,8 +793,8 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
       ...(userProfile || {}),
       basic: {
         ...(userProfile?.basic || {}),
-        name: userProfile?.basic?.name || chosenEditName,
-        nickname: chosenEditName,
+        name: chosenEditName,
+        nickname: userProfile?.basic?.nickname !== undefined ? userProfile.basic.nickname : '',
         birthdate: editBirthdate,
         birthtime: editBirthtime,
         gender: editGender,

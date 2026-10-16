@@ -1806,7 +1806,7 @@ function playDailyCardChimeAsync() {
 
     setForm((prev) => ({
       name: fbProfile.name || prev.name,
-      nickname: fbProfile.nickname || prev.nickname,
+      nickname: fbProfile.nickname !== undefined ? fbProfile.nickname : prev.nickname,
       birthdate: fbProfile.birthdate || prev.birthdate,
       birthtime: fbProfile.birthtime || prev.birthtime,
       gender: fbProfile.gender === "male" ? "남성" : (fbProfile.gender === "female" ? "여성" : prev.gender),

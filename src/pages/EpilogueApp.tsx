@@ -373,6 +373,11 @@ export default function EpilogueApp() {
 
   useEffect(() => {
     const handleProfileUpdate = () => {
+      // 입력 중인 사용자 포커스가 있을 경우 외부/디바운스 이벤트에 의한 덮어쓰기 방지
+      const activeEl = document.activeElement;
+      const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+      if (isInputFocused) return;
+
       const profile = sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile();
       if (!profile) return;
       if (profile.basic) {
@@ -448,6 +453,12 @@ export default function EpilogueApp() {
         psych,
         art,
       }, true);
+
+      // Explicitly guarantee nickname is preserved as entered (even empty string)
+      if (typeof basic.nickname === 'string') {
+        if (!profile.basic) profile.basic = {};
+        profile.basic.nickname = basic.nickname;
+      }
 
       // 1. 즉시 로컬 볼트 및 브라우저 스토리지에 저장 (0ms 오프라인 보장)
       saveProfileToAllVaults(profile);

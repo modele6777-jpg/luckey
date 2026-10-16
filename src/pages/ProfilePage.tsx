@@ -150,6 +150,11 @@ export default function ProfilePage() {
   // Firebase 및 클라우드 동기화 이벤트 수신
   useEffect(() => {
     const handleProfileUpdate = (e?: any) => {
+      // 입력 중인 사용자 포커스가 있을 경우 외부/디바운스 이벤트에 의한 덮어쓰기 방지
+      const activeEl = document.activeElement;
+      const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+      if (isInputFocused) return;
+
       const detailProfile = (e as CustomEvent)?.detail?.userProfile || (e as CustomEvent)?.detail;
       const profile = detailProfile || sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile();
       if (!profile) return;
@@ -191,7 +196,14 @@ export default function ProfilePage() {
         relationships,
       }, true);
 
+      // Explicitly guarantee nickname is preserved as entered (even empty string)
+      if (typeof basic.nickname === 'string') {
+        if (!profile.basic) profile.basic = {};
+        profile.basic.nickname = basic.nickname;
+      }
+
       setPersistentUserProfile(profile);
+      saveProfileToAllVaults(profile);
 
       // 로컬 저장은 즉시 완료하고, 네트워크 동기화가 저장 버튼을 무한히 붙잡지 않도록 3.5초 타임아웃 제한
       const syncTimeout = new Promise<void>((resolve) => {

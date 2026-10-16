@@ -99,12 +99,12 @@ function mergeProfileSection<T extends any>(baseSection?: T, incomingSection?: T
     const iEmpty = isPlaceholder(iVal);
 
     if (bEmpty && iEmpty) {
-      result[key] = !bEmpty ? bVal : (!iEmpty ? iVal : bVal || iVal);
+      result[key] = !bEmpty ? bVal : (!iEmpty ? iVal : (preferIncoming ? iVal : (bVal || iVal)));
       continue;
     }
 
     if (!bEmpty && iEmpty) {
-      result[key] = bVal;
+      result[key] = preferIncoming ? iVal : bVal;
       continue;
     }
 
@@ -124,10 +124,14 @@ function mergeProfileSection<T extends any>(baseSection?: T, incomingSection?: T
     if (typeof bVal === 'string' && typeof iVal === 'string') {
       const bStr = bVal.trim();
       const iStr = iVal.trim();
-      if (bStr === iStr) {
+      if (preferIncoming) {
+        result[key] = iVal;
+      } else if (bStr === iStr) {
         result[key] = bStr;
-      } else if (preferIncoming) {
+      } else if (!bStr && iStr) {
         result[key] = iStr;
+      } else if (bStr && !iStr) {
+        result[key] = bStr;
       } else {
         result[key] = iStr.length >= bStr.length ? iStr : bStr;
       }
@@ -153,9 +157,18 @@ export function mergeUserProfile(
   const localScore = profileCompleteness(local);
   const remoteScore = profileCompleteness(remote);
 
-  // Determine preference: if one side is vastly more complete, prefer it
-  let preferRemote = remoteScore > localScore;
-  if (remoteScore === localScore) {
+  // Determine preference: Recent user action timestamp takes precedence over completeness score,
+  // preventing user deletion of fields (which lowers score) from being rejected as "inferior".
+  let preferRemote = false;
+  if (remoteUpdatedAt && localUpdatedAt && remoteUpdatedAt !== localUpdatedAt) {
+    preferRemote = remoteUpdatedAt > localUpdatedAt;
+  } else if (remoteUpdatedAt && !localUpdatedAt) {
+    preferRemote = true;
+  } else if (!remoteUpdatedAt && localUpdatedAt) {
+    preferRemote = false;
+  } else if (remoteScore !== localScore) {
+    preferRemote = remoteScore > localScore;
+  } else {
     preferRemote = remoteUpdatedAt >= localUpdatedAt;
   }
 

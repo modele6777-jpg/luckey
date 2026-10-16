@@ -105,7 +105,7 @@ function mergeSectionSafely<T extends any>(baseSection?: T, incomingSection?: T,
     const iEmpty = isProfilePlaceholder(iVal);
 
     if (bEmpty && iEmpty) {
-      res[k] = !bEmpty ? bVal : (!iEmpty ? iVal : bVal || iVal);
+      res[k] = !bEmpty ? bVal : (!iEmpty ? iVal : (preferIncoming ? iVal : (bVal || iVal)));
       continue;
     }
     if (!bEmpty && iEmpty) {
@@ -131,11 +131,11 @@ function mergeSectionSafely<T extends any>(baseSection?: T, incomingSection?: T,
     if (typeof bVal === 'string' && typeof iVal === 'string') {
       const bStr = bVal.trim();
       const iStr = iVal.trim();
-      if (!iStr) {
+      if (preferIncoming) {
+        res[k] = iVal;
+      } else if (!iStr) {
         res[k] = bStr;
       } else if (!bStr) {
-        res[k] = iStr;
-      } else if (preferIncoming) {
         res[k] = iStr;
       } else {
         // incoming(신규 업데이트)을 우선하되 둘 다 있으면 iStr 우선

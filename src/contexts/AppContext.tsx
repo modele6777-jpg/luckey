@@ -1129,12 +1129,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSharedState(prev => {
       const persistentProfile = getPersistentUserProfile();
       const existingProfile = mergeUserProfiles(
+        prev?.userProfile,
         persistentProfile,
-        prev?.userProfile
+        true
       );
       const updatedProfile = updates.userProfile 
         ? mergeUserProfiles(existingProfile, updates.userProfile, true)
         : existingProfile;
+
+      if (updates.userProfile?.basic && typeof updates.userProfile.basic.nickname === 'string') {
+        if (!updatedProfile.basic) updatedProfile.basic = {};
+        updatedProfile.basic.nickname = updates.userProfile.basic.nickname;
+      }
 
       finalMerged = mergeSharedState(
         prev || {},
@@ -1145,6 +1151,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           clientUpdatedAt: Date.now(),
         }
       );
+
+      if (updatedProfile?.basic && typeof updatedProfile.basic.nickname === 'string' && finalMerged.userProfile?.basic) {
+        finalMerged.userProfile.basic.nickname = updatedProfile.basic.nickname;
+      }
 
       if (updatedProfile && Object.keys(updatedProfile).length > 0) {
         setPersistentUserProfile(updatedProfile);
