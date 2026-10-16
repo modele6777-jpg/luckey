@@ -15,6 +15,7 @@ import {
   User,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 
 export interface NavItemConfig {
   path: string;
@@ -107,8 +108,39 @@ const PROLOGUE_SUBPATHS = ['/prologue', '/universe', '/ecpr', '/todo', '/mission
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [, setProfileVersion] = useState(0);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
+
+  // Extract user profile / nickname for sidebar footer
+  let userNickname = '제제';
+  try {
+    const { sharedState } = useApp();
+    const rawNick = sharedState?.userProfile?.basic?.nickname?.trim();
+    const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
+    const rawName = sharedState?.userProfile?.basic?.name?.trim() || getPersistentUserProfile()?.basic?.name?.trim();
+    userNickname = rawNick || fallbackNick || rawName || '제제';
+  } catch {
+    const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
+    userNickname = fallbackNick || getPersistentUserProfile()?.basic?.name?.trim() || '제제';
+  }
+
+  // Realtime event sync for profile edits across views
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileVersion((v) => v + 1);
+    };
+    window.addEventListener('prism:profile_updated', handleProfileUpdate);
+    window.addEventListener('prism:feature_updated', handleProfileUpdate);
+    window.addEventListener('prism:realtime_sync', handleProfileUpdate);
+    window.addEventListener('storage', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('prism:profile_updated', handleProfileUpdate);
+      window.removeEventListener('prism:feature_updated', handleProfileUpdate);
+      window.removeEventListener('prism:realtime_sync', handleProfileUpdate);
+      window.removeEventListener('storage', handleProfileUpdate);
+    };
+  }, []);
 
   const isLucyActive = LUCY_SUBPATHS.some(
     (p) => cleanPath === p || (p !== '/' && cleanPath.startsWith(p + '/'))
@@ -467,13 +499,15 @@ export default function LeftSidebarNav() {
                 <button
                   type="button"
                   onClick={() => handleNavigate('/profile')}
-                  className="flex items-center gap-2 py-1.5 px-2.5 rounded-xl hover:bg-white/[0.08] text-neutral-200 hover:text-white transition-all cursor-pointer group active:scale-95"
-                  title="내 프로필 화면으로 이동"
+                  className="flex items-center gap-2 py-1.5 px-2.5 rounded-xl hover:bg-white/[0.08] text-neutral-200 hover:text-white transition-all cursor-pointer group active:scale-95 max-w-[180px]"
+                  title={`${userNickname} 프로필 화면으로 이동`}
                 >
-                  <div className="w-6 h-6 rounded-lg bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 group-hover:scale-105 transition-transform">
+                  <div className="w-6 h-6 rounded-lg bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 group-hover:scale-105 transition-transform shrink-0">
                     <User size={13} />
                   </div>
-                  <span className="text-xs font-semibold font-sans">내 프로필</span>
+                  <span className="text-xs font-semibold font-sans truncate text-neutral-200 group-hover:text-amber-300 transition-colors">
+                    {userNickname}
+                  </span>
                 </button>
 
                 <button

@@ -1,12 +1,12 @@
 {
   "name": "luckey",
-  "version": "1.4.264",
-  "summary": "사이드바 루시·키 코어 채널 및 플로팅 메뉴 버튼 무지개빛(Rainbow Glow) 발광 인터랙션 구현",
-  "builtAt": "2026-10-16T14:55:00.000Z",
+  "version": "1.4.265",
+  "summary": "사이드바 하단 프로필 버튼 라벨 사용자 닉네임 실시간 연동",
+  "builtAt": "2026-10-16T15:05:00.000Z",
   "items": [
-    "사이드바(네비게이션 드로어) 최상단 코어 채널인 LUCY(루시 AI)와 KEY(키 마음약방)에 은은하게 흐르는 무지개 테두리(rainbow-channel-box), 회전 코닉 오라 아이콘 박스, 무지개 텍스트 그라데이션 시머(rainbow-text-shimmer) 및 무지개 활성 인디케이터 필 적용",
-    "화면 좌측 하단 플로팅 메뉴 버튼(FAB)에 부드럽게 360도 회전하는 코닉 무지개 오라 헤일로(rainbow-fab-halo) 및 무지개빛 펄스 인디케이터 점을 적용하여 다크 모드에 최적화된 신비롭고 영롱한 비주얼 아이덴티티 구축",
-    "사이드바 헤더의 나침반 아이콘 및 LUCKEY PRISM 타이틀에 무지개 프리즘 시머 연동 및 코어 카테고리 헤더에 PRISM CORE 무지개 인디케이터 배지 추가",
-    "저사양 디바이스 및 prefers-reduced-motion 환경을 고려한 GPU 가속 및 접근성 스타일 최적화 완료"
+    "사이드바(LeftSidebarNav) 드로어 하단 좌측의 '내 프로필' 버튼 라벨을 사용자가 설정한 실제 닉네임(기본값: '제제')으로 실시간 연동",
+    "AppContext 전역 상태 및 getPersistentUserProfile 영구 볼트 캐시를 우선순위 체계로 결합하여 닉네임 조회 안전성 확보",
+    "prism:profile_updated, prism:feature_updated, prism:realtime_sync 및 storage 전역 이벤트 리스너를 등록하여 프로필 페이지에서 닉네임 수정 시 새로고침 없이 즉각 사이드바에 반영되도록 구현",
+    "긴 닉네임 입력 시에도 레이아웃이 깨지지 않도록 truncate 및 반응형 최대 너비(max-w-[180px]) 보호 스타일 적용"
   ]
 }
