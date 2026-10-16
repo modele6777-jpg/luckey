@@ -9,8 +9,7 @@ import {
   Activity,
   Moon,
   ChevronLeft,
-  Compass,
-  X,
+  Clover,
   KeyRound,
   User,
 } from 'lucide-react';
@@ -393,9 +392,9 @@ export default function LeftSidebarNav() {
 
             {/* Inner icon & indicator with iridescent rainbow styling */}
             <div className="relative z-10 flex items-center justify-center">
-              <Compass
+              <Clover
                 size={21}
-                className="text-white transition-transform duration-500 group-hover:rotate-90 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                className="text-emerald-300 transition-transform duration-500 group-hover:rotate-45 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(52,211,153,0.9)]"
               />
               <span
                 className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-neutral-950 rainbow-gradient-flow animate-pulse shadow-[0_0_8px_rgba(255,107,107,0.8)]"
@@ -438,23 +437,28 @@ export default function LeftSidebarNav() {
               transition={{ type: 'spring', stiffness: 360, damping: 32 }}
               className="fixed left-0 top-0 bottom-0 w-[68px] sm:w-[72px] bg-neutral-950/95 backdrop-blur-2xl border-r border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] z-[460] flex flex-col justify-between text-neutral-200 select-none"
             >
-              {/* Header: Compact Brand Compass & Close Button */}
-              <div className="pt-[calc(var(--sat)+0.75rem)] px-2 pb-2 border-b border-white/10 flex flex-col items-center gap-2 shrink-0">
-                <div className="relative w-9 h-9 rounded-xl overflow-hidden p-[1.5px] flex items-center justify-center shadow-md">
-                  <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
-                  <div className="relative w-full h-full rounded-[10px] bg-neutral-950/90 flex items-center justify-center text-amber-300">
-                    <Compass size={17} />
-                  </div>
-                </div>
-
+              {/* Header: Compact Brand LucKey Four-Leaf Clover Emblem */}
+              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-3 border-b border-white/10 flex flex-col items-center shrink-0">
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
-                  aria-label="메뉴 닫기"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer active:scale-90"
-                  title="메뉴 닫기"
+                  onClick={() => handleNavigate('/')}
+                  className="group relative w-10 h-10 rounded-xl overflow-hidden p-[1.5px] flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                  title="LucKey 메인 홈으로 이동"
+                  aria-label="LucKey 메인 홈"
                 >
-                  <X size={16} />
+                  <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px] group-hover:opacity-100 transition-opacity" />
+                  <div className="relative w-full h-full rounded-[10px] bg-neutral-950/90 group-hover:bg-neutral-900/90 flex items-center justify-center text-emerald-400 transition-colors">
+                    <Clover
+                      size={20}
+                      className="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
+                    />
+                  </div>
+
+                  {/* Desktop Hover Tooltip */}
+                  <div className="hidden sm:group-hover:flex items-center gap-1.5 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50">
+                    <span className="text-xs font-black tracking-wider text-emerald-300">LucKey</span>
+                    <span className="text-[11px] text-neutral-300">네잎클로버 · 홈으로</span>
+                  </div>
                 </button>
               </div>
 
