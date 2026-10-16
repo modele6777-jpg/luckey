@@ -28,10 +28,11 @@ export function BigBangExpansionOverlay() {
       if (detail) {
         setActiveCommit(detail);
 
-        // Spawn Big Bang particles from crystal orb origin (bottom-center area)
+        // Spawn Big Bang particles from crystal orb origin (bottom-right button area)
         const canvas = canvasRef.current;
-        const originX = window.innerWidth / 2;
-        const originY = window.innerHeight - 90;
+        const btnRect = document.getElementById('bigbang-omnibutton')?.getBoundingClientRect();
+        const originX = btnRect ? (btnRect.left + btnRect.width / 2) : (window.innerWidth - 60);
+        const originY = btnRect ? (btnRect.top + btnRect.height / 2) : (window.innerHeight - 60);
         const isWhitehole = detail.phase === 'whitehole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'whitehole');
         const isBlackhole = detail.phase === 'blackhole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'blackhole');
         const isWormhole = detail.phase === 'wormhole';
