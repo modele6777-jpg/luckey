@@ -1,12 +1,11 @@
 {
   "name": "luckey",
-  "version": "1.4.265",
-  "summary": "사이드바 하단 프로필 버튼 라벨 사용자 닉네임 실시간 연동",
-  "builtAt": "2026-10-16T15:05:00.000Z",
+  "version": "1.4.266",
+  "summary": "프로필 화면 상단 우측 클라우드 동기화 플로팅 배지 제거 및 UI 최적화",
+  "builtAt": "2026-10-16T15:08:00.000Z",
   "items": [
-    "사이드바(LeftSidebarNav) 드로어 하단 좌측의 '내 프로필' 버튼 라벨을 사용자가 설정한 실제 닉네임(기본값: '제제')으로 실시간 연동",
-    "AppContext 전역 상태 및 getPersistentUserProfile 영구 볼트 캐시를 우선순위 체계로 결합하여 닉네임 조회 안전성 확보",
-    "prism:profile_updated, prism:feature_updated, prism:realtime_sync 및 storage 전역 이벤트 리스너를 등록하여 프로필 페이지에서 닉네임 수정 시 새로고침 없이 즉각 사이드바에 반영되도록 구현",
-    "긴 닉네임 입력 시에도 레이아웃이 깨지지 않도록 truncate 및 반응형 최대 너비(max-w-[180px]) 보호 스타일 적용"
+    "프로필 화면(EpilogueApp profile 모드) 진입 시 상단 우측에 중복 노출되던 '클라우드 동기화' 플로팅 배지 숨김 처리",
+    "AnimatePresence 기반의 부드러운 페이드 전환을 적용하여 다이어리/시너지 탭과의 전환 시 시각적 일관성 유지",
+    "프로필 본문 하단의 Google 계정 클라우드 연동 및 6자리 핀코드 실시간 동기화 카드를 단일 진실 공급원(Single Source of Truth)으로 정비하여 헤더 시각적 노이즈 해소"
   ]
 }
