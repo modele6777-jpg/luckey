@@ -18,6 +18,7 @@ import {
 } from '@/lib/omniWarp/contextNavCycleEngine';
 import { omniWarpAudio } from '@/lib/omniWarp/omniWarpAudio';
 import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { safeSessionStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, savePendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
 import { sendPrismToss } from '@/lib/prismToss';
@@ -923,18 +924,18 @@ export function BigBangButton() {
       return;
     }
 
-    // 💬 [홀드: dist < 20] ➔ 루시 (/chat 1:1 대화) 소환!
+    // 🎙️ [홀드: dist < 20] ➔ 어디서든 루시 AI 음성 모드 즉시 연결!
+    unlockAudioPlayback();
+    primeTTSAudioElement();
     triggerHaptic('whitehole');
     omniWarpAudio.playWhiteHole();
 
-    // 🌟 텍스트 드래그(선택) 연동: 글자를 스크롤/선택한 상태에서 빅뱅 홀드 ➔ 루시에게 즉시 토스!
+    // 🌟 텍스트 드래그(선택) 연동: 글자를 스크롤/선택한 상태에서 빅뱅 홀드 ➔ 음성 질의 프롬프트로 전달!
+    let initialPrompt: string | undefined;
     if (textToToss) {
+      initialPrompt = textToToss;
       savePendingSelection(textToToss, 'lucy', location);
       try {
-        sessionStorage.setItem(
-          'lucy_injected_auto_send',
-          `[선택 내용 토스 질의]\n"${textToToss}"\n\n이 내용에 대해 핵심 분석과 실천적인 마음 치유 및 지혜 조언을 해줘.`
-        );
         sessionStorage.setItem('lucy_injected_input_draft', textToToss);
       } catch (_) {}
       sendPrismToss({
@@ -960,13 +961,13 @@ export function BigBangButton() {
           detail: {
             phase: 'whitehole',
             target: {
-              id: 'lucy',
-              name: '루시 1:1 대화',
-              destinationPath: '/chat',
+              id: 'lucy_voice',
+              name: '루시 AI 음성 대화',
+              destinationPath: '/chat?voice=1',
               themeColor: '#fde68a',
               eventHorizonMode: 'whitehole',
-              previewLabel: '[홀드 소환] 루시 1:1 대화',
-              previewDescription: '마음의 안식처 루시와 나누는 따뜻한 대화와 지혜 조언',
+              previewLabel: '[홀드 소환] 루시 AI 음성 대화',
+              previewDescription: '마음의 안식처 루시와 나누는 따뜻한 1:1 음성 대화 (여성 목소리)',
             },
             context,
             metrics: { ...metrics, phase: 'whitehole' },
@@ -974,34 +975,14 @@ export function BigBangButton() {
           },
         })
       );
-    }
 
-    setTimeout(() => {
-      if (isChatView && !textToToss) {
-        // 채팅 화면에서 홀드 시 이전 페이지 귀환
-        const returnPath = safeSessionStorage.getItem('prism_chat_return_path') || '/';
-        safeSessionStorage.removeItem('prism_chat_return_path');
-        const finalDest = returnPath.includes('chat') ? '/' : returnPath;
-        if (isKeySite) {
-          window.location.href = finalDest;
-        } else {
-          navigate(finalDest);
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: finalDest } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: finalDest } }));
-        }
-      } else {
-        // 루시 채팅방으로 입장
-        const currentPath = location || '/';
-        safeSessionStorage.setItem('prism_chat_return_path', currentPath);
-        if (isKeySite) {
-          window.location.href = '/chat';
-        } else {
-          navigate('/chat');
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
-        }
-      }
-    }, 240);
+      // 🎙️ 전역 루시 AI 음성 모드 모달 즉각 팝업 호출
+      window.dispatchEvent(
+        new CustomEvent('prism:open_lucy_voice', {
+          detail: { initialPrompt, sourcePath: location },
+        })
+      );
+    }
 
     touchStartSelectionRef.current = '';
     setActivePhase('idle');
@@ -1093,8 +1074,8 @@ export function BigBangButton() {
     if (dragDistance >= 20) return 'Key (마음약방 도약)';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 귀환
     if (isChatView) return '프리즘 귀환 (채팅 나가기)';
-    // 💬 제자리 홀드 - 일반 화면에서는 루시 대화
-    return '루시 (1:1 마음 대화)';
+    // 💬 제자리 홀드 - 일반 화면에서는 루시 음성 대화
+    return '루시 (1:1 음성 대화)';
   })();
 
   return (
@@ -1123,7 +1104,7 @@ export function BigBangButton() {
                 <span className="text-slate-500">│</span>
                 <span className="text-purple-300 font-black">더블탭</span><span className="text-slate-300">▸추천1위</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸루시</span>
+                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸루시 음성</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-cyan-300 font-black">드래그</span><span className="text-slate-300">▸Key</span>
               </motion.div>

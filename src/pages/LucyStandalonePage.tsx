@@ -1320,6 +1320,22 @@ export default function LucyStandalonePage() {
               <Search size={16} />
             </button>
 
+            {/* 🎙️ 루시 AI 실시간 음성 모드 (여성 목소리) 진입 버튼 */}
+            <button
+              type="button"
+              onClick={() => {
+                unlockAudioPlayback();
+                primeTTSAudioElement();
+                window.dispatchEvent(new CustomEvent('prism:open_lucy_voice'));
+              }}
+              className="p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-cyan-500/15 text-slate-800 border border-amber-300/80 hover:border-amber-400 font-semibold"
+              title="루시 AI 실시간 음성 모드 (여성 목소리 1:1 대화)"
+              aria-label="루시 AI 음성 모드 열기"
+            >
+              <Mic size={16} className="text-amber-600 animate-pulse" />
+              <span className="text-[11px] font-bold text-slate-800 hidden sm:inline">음성 모드</span>
+            </button>
+
             {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 버튼) */}
             <button
               type="button"

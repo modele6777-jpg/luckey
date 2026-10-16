@@ -12,6 +12,7 @@ import ReloadPrompt from "./components/ReloadPrompt";
 import InstallPrompt from "./components/InstallPrompt";
 import { GlobalHandbookAudioWidget } from "./components/GlobalHandbookAudioWidget";
 import { ChannelIntroModal } from "./components/common/ChannelIntroModal";
+import { LucyVoiceModeModal } from "./components/lucy/LucyVoiceModeModal";
 import { PageLoader } from "./components/PageLoader";
 import { PrismRainbowLoader } from "./components/PrismRainbowLoader";
 import { LucyAuraLoader } from "./components/LucyAuraLoader";
@@ -424,6 +425,7 @@ function AppContent() {
       <InstallPrompt />
       <ChannelIntroModal />
       <GlobalHandbookAudioWidget />
+      <LucyVoiceModeModal />
       <SelectionBridgeToolbar />
       <UpdateNoticeModal
         key={updateNoticeKey}
