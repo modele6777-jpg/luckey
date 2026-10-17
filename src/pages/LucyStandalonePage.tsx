@@ -721,20 +721,26 @@ export default function LucyStandalonePage() {
       if (footerRef.current) {
         const height = footerRef.current.offsetHeight;
         document.documentElement.style.setProperty('--lucy-chat-bar-height', `${height}px`);
+        document.body.style.setProperty('--lucy-chat-bar-height', `${height}px`);
         document.documentElement.classList.add('in-lucy-chat');
+        document.body.classList.add('in-lucy-chat');
       }
     };
 
     updateFooterHeight();
+    const rafId = requestAnimationFrame(updateFooterHeight);
     const ro = new ResizeObserver(updateFooterHeight);
     if (footerRef.current) ro.observe(footerRef.current);
     window.addEventListener('resize', updateFooterHeight);
 
     return () => {
+      cancelAnimationFrame(rafId);
       ro.disconnect();
       window.removeEventListener('resize', updateFooterHeight);
       document.documentElement.style.removeProperty('--lucy-chat-bar-height');
+      document.body.style.removeProperty('--lucy-chat-bar-height');
       document.documentElement.classList.remove('in-lucy-chat');
+      document.body.classList.remove('in-lucy-chat');
     };
   }, []);
 
@@ -762,10 +768,11 @@ export default function LucyStandalonePage() {
     } catch (_) {}
 
     const basic = sharedState?.userProfile?.basic || getPersistentUserProfile()?.basic;
-    // 🌟 사용자 요청: 프로필 추가/상담 창에서는 닉네임 대신 본명(실명)으로 표시
+    // 🌟 사용자 요청: 프로필 추가/상담 창 및 독 칩에서는 닉네임 대신 본명(실명)으로 표시
     const rawRealName = basic?.name?.trim();
-    const rawNickname = basic?.nickname?.trim();
-    const myRealName = rawRealName || (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '제제' ? rawNickname : '박주형');
+    const myRealName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
+      ? rawRealName
+      : (getPersistentUserProfile()?.basic?.name?.trim() || '박주형');
     const myProfile: ChatTargetProfile = {
       id: 'my-profile',
       isMe: true,
@@ -843,8 +850,9 @@ export default function LucyStandalonePage() {
         const me = prev.find((p) => p.isMe);
         if (!me) return prev;
         const rawRealName = basic?.name?.trim();
-        const rawNickname = basic?.nickname?.trim();
-        const newName = rawRealName || (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '제제' ? rawNickname : '박주형');
+        const newName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
+          ? rawRealName
+          : (getPersistentUserProfile()?.basic?.name?.trim() || '박주형');
         const newBirthdate = basic?.birthdate || me.birthdate;
         const newBirthtime = basic?.birthtime ?? me.birthtime;
         const newGender = basic?.gender || me.gender;
@@ -2067,7 +2075,7 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-24 sm:h-28 w-full shrink-0" />
+          <div className="h-28 sm:h-32 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>
@@ -2084,7 +2092,7 @@ export default function LucyStandalonePage() {
               setIsUserScrolledUp(false);
               scrollToBottom(true, true);
             }}
-            style={{ bottom: 'calc(var(--lucy-chat-bar-height, 92px) + 4.2rem)' }}
+            style={{ bottom: 'calc(var(--lucy-chat-bar-height, 130px) + 5.5rem)' }}
             className="fixed right-4 sm:right-10 z-40 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-[11px] sm:text-xs font-bold shadow-xl backdrop-blur-xs border border-slate-700/60 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
             title="최신 메시지 보기"
           >
@@ -2353,14 +2361,18 @@ export default function LucyStandalonePage() {
                   <Sparkles size={24} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">{userDisplayName} 님의 소울 프로필</h3>
+                  <h3 className="text-lg font-bold text-slate-900">{primaryProfile?.name || sharedState?.userProfile?.basic?.name || '박주형'} 님의 소울 프로필</h3>
                   <p className="text-xs text-slate-500">Google 계정 연동 및 사주·에너지 요약</p>
                 </div>
               </div>
 
               <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 space-y-2.5 text-xs text-slate-700">
                 <div className="flex justify-between border-b border-amber-200/60 pb-2">
-                  <span className="text-slate-500 font-medium">소울 닉네임</span>
+                  <span className="text-slate-500 font-medium">본명 (실명)</span>
+                  <span className="font-bold text-amber-900">{primaryProfile?.name || sharedState?.userProfile?.basic?.name || '박주형'}</span>
+                </div>
+                <div className="flex justify-between border-b border-amber-200/60 pb-2">
+                  <span className="text-slate-500 font-medium">소울 닉네임 (호칭)</span>
                   <span className="font-bold text-amber-900">{userDisplayName}</span>
                 </div>
                 <div className="flex justify-between border-b border-amber-200/60 pb-2">

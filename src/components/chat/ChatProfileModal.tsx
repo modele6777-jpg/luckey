@@ -101,7 +101,7 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setErrorMessage('이름 또는 호칭을 입력해 주세요.');
+      setErrorMessage('본명(실명)을 입력해 주세요.');
       return;
     }
     if (!birthdate) {
@@ -179,7 +179,7 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
           <div className="space-y-1.5">
             <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <User size={14} className="text-amber-500" />
-              이름 (본명) <span className="text-amber-500">*</span>
+              본명 (실명) <span className="text-amber-500">*</span>
             </label>
             <input
               type="text"
