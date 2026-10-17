@@ -64,9 +64,9 @@ function compressImageIfNeeded(file: File): Promise<string> {
   });
 }
 
-//  5 Specialized Booster Channels (오렌지  -> 트리니티  -> 아우라  -> 블루버드  -> 뮤즈 )
-export type SpecialChannel = 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
-const ALL_CHANNELS: SpecialChannel[] = ['orange', 'trinity', 'aura', 'bluebird', 'muse'];
+// 🌟 7대 셉타그램 채널 (프롤로그 -> 오렌지 -> 트리니티 -> 아우라 -> 블루버드 -> 뮤즈 -> 에필로그)
+export type SpecialChannel = 'prologue' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse' | 'epilogue';
+const ALL_CHANNELS: SpecialChannel[] = ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'];
 
 interface ChannelConfig {
   id: SpecialChannel;
@@ -82,8 +82,15 @@ interface ChannelConfig {
   prompts: string[];
 }
 
-//  Rich Prompt Pools for Dynamic Random Sampling
+// 🌟 Rich Prompt Pools for Dynamic Random Sampling
 const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
+  prologue: [
+    '새로운 시작을 앞두고 내 삶의 중심축을 바로잡는 나침반 질문은?',
+    '지금 나의 인생 10년 주기에서 어떤 새로운 서막이 열리고 있을까?',
+    '낯선 도전을 시작할 때 두려움을 용기와 설렘으로 바꾸는 법',
+    '내 안의 가장 순수한 열망과 비전을 명확한 첫걸음으로 구체화해줘.',
+    '올해 새롭게 펼쳐질 나의 운명적 기회와 전환점은 무엇일까?'
+  ],
   orange: [
     '모든 공격은 사랑을 청하는 외침(Call for Love)이라는 기적수업의 관점으로 갈등 풀기',
     '세상의 최면과 아르콘(집착의 굴레)을 꿰뚫고 자유로워지는 그노시스 통찰은?',
@@ -166,10 +173,17 @@ const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
     '상상력을 극대화하는 SCAMPER 기법으로 내 고민을 재해석해줘.',
     '감각적인 비유와 독창적인 문체로 풀어내는 글쓰기 팁',
     '세상에 없던 새로운 시각으로 문제를 재정의하는 발상 전환'
+  ],
+  epilogue: [
+    '오늘 하루 있었던 일들을 차분히 정리하고 마음을 비워내는 회고 질문',
+    '마음에 남은 응어리와 미련을 있는 그대로 흘려보내는 세도나 4문답 해줘.',
+    '오늘 밤 편안한 쉼과 숙면으로 인도하는 밤의 서재 방하착 가이드',
+    '하루 동안 수고한 나 자신에게 건네는 따뜻한 자기 자비와 감사',
+    '오늘 겪은 크고 작은 경험 속에서 얻은 영혼의 선물은 무엇일까?'
   ]
 };
 
-//  5개 풀가동 PRO 마스터 Pool
+// 👑 7대 채널 풀가동 PRO 마스터 Pool
 const MASTER_PROMPT_POOL = [
   '초기불교의 사티(알아차림) + 영지주의의 그노시스 + 기적수업의 용서를 융합해 내 고민을 풀어줘.',
   '초기불교의 무아(Anattā)와 영지주의의 신성한 불꽃(Pneuma)을 융합해 진단해줘.',
@@ -211,6 +225,20 @@ const CASUAL_PROMPT_POOL = [
 ];
 
 const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
+  // 0. 빨 (빨강) - 프롤로그
+  prologue: {
+    id: 'prologue',
+    name: '프롤로그',
+    shortName: '프롤로그',
+    tagline: '새로운 서막, 비전 설계 & 운명의 나침반',
+    icon: Compass,
+    persona: 'lucy',
+    badgeColor: 'bg-red-500 text-white',
+    activeColor: 'border-red-500 bg-red-50 text-red-950 ring-2 ring-red-400/50',
+    dotColor: 'bg-red-500',
+    onBadgeColor: 'bg-red-200/90 text-red-950 font-bold',
+    prompts: CHANNEL_PROMPT_POOLS.prologue
+  },
   // 1. 주 (주황) - 오렌지 
   orange: {
     id: 'orange',
@@ -280,6 +308,20 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     dotColor: 'bg-indigo-600',
     onBadgeColor: 'bg-indigo-200/90 text-indigo-950 font-bold',
     prompts: CHANNEL_PROMPT_POOLS.muse
+  },
+  // 6. 보 (보라/분홍) - 에필로그
+  epilogue: {
+    id: 'epilogue',
+    name: '에필로그',
+    shortName: '에필로그',
+    tagline: '하루 마감 회고, 밤의 서재 & 마음 방하착',
+    icon: BookOpen,
+    persona: 'lucy',
+    badgeColor: 'bg-pink-500 text-white',
+    activeColor: 'border-pink-500 bg-pink-50 text-pink-950 ring-2 ring-pink-400/50',
+    dotColor: 'bg-pink-500',
+    onBadgeColor: 'bg-pink-200/90 text-pink-950 font-bold',
+    prompts: CHANNEL_PROMPT_POOLS.epilogue
   }
 };
 
@@ -288,15 +330,22 @@ function parsePendingChannels(pending: string | null): SpecialChannel[] {
   if (pending === 'casual' || pending === 'lucy') {
     return []; // 💬 Casual Chat (수다 모드)
   }
-  if (pending === 'master' || pending === 'epilogue' || pending === 'all') {
-    return ['orange', 'trinity', 'aura', 'bluebird', 'muse']; // 👑 5대 우주 지능 올인원 PRO 마스터 모드
+  if (pending === 'master' || pending === 'all') {
+    return ALL_CHANNELS; // 👑 7대 채널 올인원 PRO 마스터 모드
   }
   const aliasMap: Record<string, SpecialChannel> = {
+    prologue: 'prologue',
     deepthink: 'orange',
+    orange: 'orange',
     oracle: 'trinity',
+    trinity: 'trinity',
     vitality: 'aura',
+    aura: 'aura',
     healing: 'bluebird',
+    bluebird: 'bluebird',
     creative: 'muse',
+    muse: 'muse',
+    epilogue: 'epilogue',
   };
   const resolved = (aliasMap[pending] || pending) as SpecialChannel;
   if (ALL_CHANNELS.includes(resolved)) {
@@ -365,7 +414,7 @@ export function resolveMessageModeAndChannels(
       : (Array.isArray(msg?.content) ? (msg.content[0]?.text || '') : '');
     const detected = detectLucyChannelsFromText(text);
     if (detected.isMaster) {
-      rawChannels = ['orange', 'trinity', 'aura', 'bluebird', 'muse'];
+      rawChannels = ALL_CHANNELS;
       rawMode = 'master';
     } else if (detected.channels.length > 0) {
       rawChannels = detected.channels;
@@ -377,10 +426,10 @@ export function resolveMessageModeAndChannels(
   }
 
   const validChannels: SpecialChannel[] = rawChannels.filter((c: any) =>
-    ['orange', 'trinity', 'aura', 'bluebird', 'muse'].includes(c)
+    ALL_CHANNELS.includes(c)
   ) as SpecialChannel[];
 
-  const isMaster = rawMode === 'master' || validChannels.length === 5;
+  const isMaster = rawMode === 'master' || validChannels.length === ALL_CHANNELS.length;
   const isCasual = (rawMode === 'casual' || validChannels.length === 0) && !isMaster;
 
   let badgeLabel = '수다 모드';
@@ -396,10 +445,10 @@ export function resolveMessageModeAndChannels(
     const cfg = SPECIAL_CHANNELS[ch];
     badgeLabel = cfg ? cfg.name : ch;
     badgeColor = cfg ? `${cfg.activeColor} border font-bold` : 'bg-amber-100 text-amber-900 border-amber-200';
-    badgeIcon = ch === 'trinity' ? '🔮' : ch === 'orange' ? '🍊' : ch === 'aura' ? '🌿' : ch === 'bluebird' ? '🕊️' : '🎨';
+    badgeIcon = ch === 'prologue' ? '🌅' : ch === 'trinity' ? '🔮' : ch === 'orange' ? '🍊' : ch === 'aura' ? '🌿' : ch === 'bluebird' ? '🕊️' : ch === 'muse' ? '🎨' : '🌙';
   } else if (validChannels.length >= 2) {
-    const names = validChannels.map((c) => SPECIAL_CHANNELS[c]?.shortName || c).join(' × ');
-    badgeLabel = `${names} 시너지`;
+    const names = validChannels.map((c) => SPECIAL_CHANNELS[c]?.shortName || c).join(' + ');
+    badgeLabel = `${validChannels.length}중 융합 (${names})`;
     badgeColor = 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-indigo-300 font-bold';
     badgeIcon = '⚡';
   }
@@ -414,7 +463,7 @@ export function resolveMessageModeAndChannels(
     badgeIcon: string;
   } = {
     mode: isMaster ? 'master' : (isCasual ? 'casual' : (validChannels.length === 1 ? validChannels[0] : 'synergy')),
-    channels: isMaster ? (['orange', 'trinity', 'aura', 'bluebird', 'muse'] as SpecialChannel[]) : validChannels,
+    channels: isMaster ? ALL_CHANNELS : validChannels,
     isMaster,
     isCasual,
     badgeLabel,
@@ -605,9 +654,9 @@ export default function LucyStandalonePage() {
     refreshPrompts();
   };
 
-  // Toggle all 5 channels at once
+  // Toggle all 7 channels at once
   const toggleAllChannels = () => {
-    if (activeChannels.length === 5) {
+    if (activeChannels.length === ALL_CHANNELS.length) {
       setActiveChannels([]); // Reset to Casual Chat
     } else {
       setActiveChannels([...ALL_CHANNELS]); // Full PRO Master
@@ -618,7 +667,7 @@ export default function LucyStandalonePage() {
   // 말풍선 클릭 시 해당 말풍선의 고유 모드로 즉각 활성화
   const handleActivateMessageMode = (targetChannels: SpecialChannel[], targetIsMaster: boolean, label?: string) => {
     if (targetIsMaster) {
-      setActiveChannels(['orange', 'trinity', 'aura', 'bluebird', 'muse']);
+      setActiveChannels([...ALL_CHANNELS]);
     } else {
       setActiveChannels(targetChannels);
     }
@@ -632,24 +681,24 @@ export default function LucyStandalonePage() {
   // Dynamic Current Mode Info
   const channelCount = activeChannels.length;
   const isCasualChat = channelCount === 0;
-  const isFullProMaster = channelCount === 5;
+  const isFullProMaster = channelCount === ALL_CHANNELS.length;
   const isSingleSpecial = channelCount === 1;
-  const isSynergy = channelCount >= 2 && channelCount <= 4;
+  const isSynergy = channelCount >= 2 && channelCount < ALL_CHANNELS.length;
 
   const currentModeTitle = useMemo(() => {
     if (isCasualChat) return '가벼운 일상 수다';
-    if (isFullProMaster) return '올인원 PRO 마스터 (풀가동)';
+    if (isFullProMaster) return '7대 채널 올인원 PRO 마스터 (풀가동)';
     if (isSingleSpecial) {
       const ch = activeChannels[0];
       return (ch && SPECIAL_CHANNELS[ch]?.name) || '특화 채널';
     }
-    const names = activeChannels.map((c) => (c && SPECIAL_CHANNELS[c]?.shortName) || c).join(' × ');
-    return `[${names}] ${channelCount}중 융합 시너지`;
+    const names = activeChannels.map((c) => (c && SPECIAL_CHANNELS[c]?.shortName) || c).join(' + ');
+    return `${channelCount}중 융합 (${names})`;
   }, [channelCount, activeChannels, isCasualChat, isFullProMaster, isSingleSpecial]);
 
   const currentModeTagline = useMemo(() => {
     if (isCasualChat) return '루시와 편안하게 나누는 친근하고 따뜻한 일상 대화';
-    if (isFullProMaster) return '5대 우주 지능 전원 풀가동 (사주·전략·힐링·활력·창의력 최고 출력)';
+    if (isFullProMaster) return '7대 우주 지능 전원 풀가동 (서막·전략·운명·치유·위로·창의·회고 최고 출력)';
     if (isSingleSpecial) {
       const ch = activeChannels[0];
       return (ch && SPECIAL_CHANNELS[ch]?.tagline) || '특화 지능 통찰';
@@ -1015,7 +1064,7 @@ export default function LucyStandalonePage() {
     if (isAutoDetect && forcedChannels === undefined && userCleanText.length > 0) {
       const detected = detectLucyChannelsFromText(userCleanText);
       if (detected.isMaster) {
-        channels = ['orange', 'trinity', 'aura', 'bluebird', 'muse'];
+        channels = ALL_CHANNELS;
       } else {
         channels = detected.channels;
       }
@@ -1038,12 +1087,12 @@ export default function LucyStandalonePage() {
       extraSystemContext = `[${SPECIAL_CHANNELS[channels[0]].name} 전문 모드]
 - ${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`;
     } else if (isMaster) {
-      extraSystemContext = `[올인원 PRO 마스터 풀가동]
-- 5대 채널(사주 운명, 딥 리즈닝 전략, 마음치유, 신체 웰니스, 창의적 영감)을 총동원한 올인원 마스터 지능입니다.
+      extraSystemContext = `[7대 채널 올인원 PRO 마스터 풀가동]
+- 7대 채널(서막 비전, 전략적 성찰, 사주 타로 운명, 신체 웰니스, 마음 치유, 창작 영감, 하루 마감 회고)을 총동원한 올인원 마스터 지능입니다.
 - 다각도의 지능 엔진 관점을 융합하여 체계적인 분석과 깊이 있고 따뜻한 실천 조언을 제공해 줘.`;
       targetPersona = 'lucy';
     } else if (isSyn) {
-      const channelNames = channels.map((c) => SPECIAL_CHANNELS[c].name).join(' + ');
+      const channelNames = channels.map((c) => SPECIAL_CHANNELS[c]?.name || c).join(' + ');
       extraSystemContext = `[${channelCount}중 융합 시너지 모드: ${channelNames}]
 - 자동 감지된 결합 지능 엔진들의 관점을 다각도로 융합하여 깊이 있고 유용한 시너지 답변을 도출해 줘.`;
       targetPersona = 'lucy';
@@ -1133,7 +1182,7 @@ export default function LucyStandalonePage() {
         // Determine channels based on pending channel or fallback to Master Mode
         const finalChannels: SpecialChannel[] = targetChannels !== null
           ? targetChannels
-          : ['orange', 'trinity', 'aura', 'bluebird', 'muse'];
+          : ALL_CHANNELS;
         setActiveChannels(finalChannels);
         // Automatically start the conversation with reliable retry
         const runSend = (attempt = 0) => {
@@ -1151,7 +1200,7 @@ export default function LucyStandalonePage() {
       const pendingSelection = getAndClearPendingSelection();
       if (pendingSelection && pendingSelection.text) {
         const queryText = `[선택 내용 안내 요청]\n"${pendingSelection.text}"\n\n방금 내가 앱에서 선택한 이 내용에 대해 핵심과 의미, 유용한 조언을 자세히 안내해 줘.`;
-        const finalChannels: SpecialChannel[] = ['orange', 'trinity', 'aura', 'bluebird', 'muse'];
+        const finalChannels: SpecialChannel[] = ALL_CHANNELS;
         setActiveChannels(finalChannels);
         const runSend = (attempt = 0) => {
           if (handleSendRef.current) {
@@ -1176,7 +1225,7 @@ export default function LucyStandalonePage() {
       if (detail?.prompt) {
         const injectedChannels: SpecialChannel[] = detail.channel
           ? parsePendingChannels(detail.channel)
-          : (detail.channels || ['orange', 'trinity', 'aura', 'bluebird', 'muse']);
+          : (detail.channels || ALL_CHANNELS);
         setActiveChannels(injectedChannels);
         setTimeout(() => {
           if (handleSendRef.current) {
@@ -1190,7 +1239,7 @@ export default function LucyStandalonePage() {
       const detail = (e as CustomEvent)?.detail;
       if (detail?.text && detail?.target === 'lucy') {
         const queryText = `[선택 내용 안내 요청]\n"${detail.text}"\n\n방금 내가 앱에서 선택한 이 내용에 대해 핵심과 의미, 유용한 조언을 자세히 안내해 줘.`;
-        const finalChannels: SpecialChannel[] = ['orange', 'trinity', 'aura', 'bluebird', 'muse'];
+        const finalChannels: SpecialChannel[] = ALL_CHANNELS;
         setActiveChannels(finalChannels);
         setTimeout(() => {
           if (handleSendRef.current) {

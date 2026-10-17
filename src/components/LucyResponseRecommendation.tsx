@@ -36,6 +36,19 @@ interface ChannelMeta {
 }
 
 const CHANNELS_META: Record<SpecialChannel, ChannelMeta> = {
+  prologue: {
+    id: 'prologue',
+    name: '프롤로그 (서막)',
+    shortName: '프롤로그',
+    tagline: '새로운 서막 & 운명의 나침반',
+    badgeLabel: '서막·시작',
+    icon: Compass,
+    color: '#ef4444',
+    badgeClass: 'bg-red-500/15 border-red-500/30 text-red-700 dark:text-red-300',
+    hoverClass: 'hover:bg-red-500/25 hover:border-red-500/50',
+    reason: '새로운 출발과 인생의 서막, 비전 설계에 특화된 채널',
+    path: '/prologue',
+  },
   orange: {
     id: 'orange',
     name: '오렌지 (성찰)',
@@ -100,6 +113,19 @@ const CHANNELS_META: Record<SpecialChannel, ChannelMeta> = {
     hoverClass: 'hover:bg-pink-500/25 hover:border-pink-500/50',
     reason: '명화와 명곡 처방, 시적 은유와 창작 영감에 특화된 채널',
     path: '/muse',
+  },
+  epilogue: {
+    id: 'epilogue',
+    name: '에필로그 (회고)',
+    shortName: '에필로그',
+    tagline: '밤의 서재 회고 & 마음 방하착',
+    badgeLabel: '회고·방하착',
+    icon: Moon,
+    color: '#ec4899',
+    badgeClass: 'bg-pink-500/15 border-pink-500/30 text-pink-700 dark:text-pink-300',
+    hoverClass: 'hover:bg-pink-500/25 hover:border-pink-500/50',
+    reason: '하루 마감 회고, 밤의 서재와 감정 내려놓기에 특화된 채널',
+    path: '/epilogue',
   },
 };
 
@@ -288,6 +314,10 @@ export function LucyResponseRecommendation({
 
     // 각 채널별 정밀 도메인 키워드 사전
     const CHANNEL_KEYWORDS: Record<SpecialChannel, string[]> = {
+      prologue: [
+        '시작', '새해', '신년', '출발', '첫걸음', '도전', '서막', '비전', '프롤로그', '탄생',
+        '개척', '새길', '입문', '오리엔테이션', '전환점', '새로운시작', '목표수립'
+      ],
       orange: [
         '전략', '1원칙', '분석', '계획', '의사결정', '선택', '판단', '로드맵', '우선순위',
         '해결책', '대안', '원인', '성찰', '이성', '논리', '체계', '소원', '우물', '소망',
@@ -313,15 +343,21 @@ export function LucyResponseRecommendation({
         '작시', '영감', '창작', '글쓰기', '문장', '표현', '아이디어', '카피', '감성', '감수성',
         '도슨트', '박물관', '전시', '아름다움', '뮤즈', '낭만', '예술치유', '선율'
       ],
+      epilogue: [
+        '마감', '회고', '일기', '저널', '기록', '하루', '밤', '취침', '잠들기전', '수고했어',
+        '에필로그', '결산', '방하착', '내려놓기', '감사', '쉼', '마무리'
+      ],
     };
 
     // 채널 점수 계산 (사용자 질문 가중치 6점 / 루시 답변 가중치 3점)
     const channelScores: Record<SpecialChannel, number> = {
+      prologue: 0,
       orange: 0,
       trinity: 0,
       aura: 0,
       bluebird: 0,
       muse: 0,
+      epilogue: 0,
     };
 
     (Object.keys(CHANNEL_KEYWORDS) as SpecialChannel[]).forEach((ch) => {
