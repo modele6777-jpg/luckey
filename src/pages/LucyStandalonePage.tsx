@@ -23,6 +23,7 @@ import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { getAndClearPendingSelection } from '@/lib/selectionBridge';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
 import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
+import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { HORI_PROMPT_LIBRARY } from '@/data/horiPromptLibrary';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -586,6 +587,7 @@ export default function LucyStandalonePage() {
   const [ttsInfo, setTtsInfo] = useState({ isSpeaking: false, isLoading: false, activeText: null as string | null });
   const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const currentGhostPromptRef = useRef<string>('');
   const [promptSeed, setPromptSeed] = useState<number>(0);
 
   // 🔊 루시 답변 자동 음성 재생 (Auto-TTS 바로재생) 상태 및 설정 (기본값: ON, localStorage 영구 보존)
@@ -785,6 +787,26 @@ export default function LucyStandalonePage() {
 
     return shuffle(Array.from(new Set(selectedPool))).slice(0, 6);
   }, [activeChannels, isCasualChat, isFullProMaster, isSingleSpecial, promptSeed, lucyMessages]);
+
+  // 🌟 호리(hori.chat) 스타일 동적 예시 고민 풀 (77선 + 활성 채널/캐주얼 풀 결합)
+  const dynamicGhostPrompts = useMemo(() => {
+    const horiTitles = HORI_PROMPT_LIBRARY.map((p) => p.title);
+    
+    let contextualPrompts: string[] = [];
+    if (isCasualChat) {
+      contextualPrompts = CASUAL_PROMPT_POOL;
+    } else if (isFullProMaster) {
+      contextualPrompts = MASTER_PROMPT_POOL;
+    } else if (activeChannels.length > 0) {
+      activeChannels.forEach((c) => {
+        const chPool = CHANNEL_PROMPT_POOLS[c];
+        if (chPool) contextualPrompts.push(...chPool);
+      });
+    }
+
+    const combined = [...contextualPrompts, ...horiTitles];
+    return Array.from(new Set(combined.filter((p) => p && p.trim().length > 0)));
+  }, [activeChannels, isCasualChat, isFullProMaster]);
 
   // Automatically refresh random prompts when new messages arrive
   useEffect(() => {
@@ -2031,29 +2053,44 @@ export default function LucyStandalonePage() {
               {isAutoTts ? <Volume2 size={16} className="text-emerald-600 animate-pulse" /> : <VolumeX size={16} />}
             </button>
 
-            {/* Textarea */}
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
+            {/* Textarea Wrapper for Ghost Typewriter Overlay */}
+            <div className="relative flex-1 min-h-[34px] flex items-center">
+              {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
+              <DynamicGhostInputPlaceholder
+                prompts={dynamicGhostPrompts}
+                isVisible={!input && !isRecording && !isLucyGenerating}
+                onCurrentPromptChange={(prompt) => {
+                  currentGhostPromptRef.current = prompt;
+                }}
+              />
+
+              {/* Textarea */}
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab' && !input && currentGhostPromptRef.current) {
+                    e.preventDefault();
+                    setInput(currentGhostPromptRef.current);
+                    return;
+                  }
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder={
+                  isRecording 
+                    ? '마이크로 말씀하시는 중입니다...' 
+                    : isLucyGenerating
+                    ? '루시가 답변을 생성하는 중입니다...'
+                    : ''
                 }
-              }}
-              placeholder={
-                isRecording 
-                  ? '마이크로 말씀하시는 중입니다...' 
-                  : isCasualChat 
-                  ? '루시와 편하게 수다를 떨어보세요... (전문적인 질문 시 AI 맞춤 모드 자동 전환)'
-                  : isFullProMaster 
-                  ? '5대 지능 풀가동 마스터에게 무엇이든 질문해 보세요... (Enter 전송)'
-                  : `${currentModeTitle}에 질문해 보세요... (Enter 전송)`
-              }
-              rows={1}
-              className="flex-1 bg-transparent text-slate-800 placeholder-slate-400 text-xs sm:text-sm resize-none outline-none leading-relaxed min-h-[34px] max-h-[100px] py-1"
-            />
+                rows={1}
+                className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-xs sm:text-sm resize-none outline-none leading-relaxed min-h-[34px] max-h-[100px] py-1 z-10"
+              />
+            </div>
 
             {/* Send or Stop Generation Button */}
             {isLucyGenerating ? (
