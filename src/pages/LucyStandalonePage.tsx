@@ -2000,7 +2000,7 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-16 w-full shrink-0" />
+          <div className="h-10 sm:h-14 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>
@@ -2017,11 +2017,11 @@ export default function LucyStandalonePage() {
               setIsUserScrolledUp(false);
               scrollToBottom(true, true);
             }}
-            style={{ bottom: 'calc(var(--sab, 0px) + 8.5rem)' }}
-            className="fixed right-5 sm:right-10 z-40 px-3.5 py-2 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-xs font-bold shadow-xl backdrop-blur-xs border border-slate-700/60 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+            style={{ bottom: 'calc(var(--sab, 0px) + 6.8rem)' }}
+            className="fixed right-4 sm:right-10 z-40 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-[11px] sm:text-xs font-bold shadow-xl backdrop-blur-xs border border-slate-700/60 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
             title="최신 메시지 보기"
           >
-            <ChevronDown size={14} className="text-amber-400 animate-bounce" />
+            <ChevronDown size={13} className="text-amber-400 animate-bounce" />
             <span>최신 대화</span>
           </motion.button>
         )}
@@ -2029,20 +2029,20 @@ export default function LucyStandalonePage() {
 
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
-        style={{ paddingBottom: 'max(0.5rem, calc(var(--sab, 0px) + 0.35rem))' }}
-        className="w-full px-3 sm:px-4 pt-1.5 pb-2 sm:pb-3 bg-white border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
+        style={{ paddingBottom: 'max(0.35rem, calc(var(--sab, 0px) + 0.2rem))' }}
+        className="w-full px-2.5 sm:px-4 pt-1 pb-1 sm:pt-1.5 sm:pb-2.5 bg-white border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
       >
-        <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-1.5">
+        <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-1 sm:gap-1.5">
           {/* Image Attachment Preview */}
           {attachedImage && (
-            <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl w-fit border border-slate-200">
-              <img src={attachedImage} alt="첨부 미리보기" className="w-10 h-10 object-cover rounded-lg" />
-              <div className="text-xs text-slate-600 font-medium pr-2">이미지 비전 분석 준비됨</div>
+            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
+              <img src={attachedImage} alt="첨부 미리보기" className="w-8 h-8 object-cover rounded-lg" />
+              <div className="text-[11px] text-slate-600 font-medium pr-1.5">이미지 비전 준비됨</div>
               <button 
                 onClick={() => setAttachedImage(null)}
-                className="p-1 rounded-full hover:bg-slate-200 text-slate-500 cursor-pointer"
+                className="p-0.5 rounded-full hover:bg-slate-200 text-slate-500 cursor-pointer"
               >
-                <X size={14} />
+                <X size={12} />
               </button>
             </div>
           )}
@@ -2054,12 +2054,12 @@ export default function LucyStandalonePage() {
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
-                className="flex items-center gap-1.5 px-2.5 py-0.5 bg-violet-50 border border-violet-200/90 text-violet-900 rounded-full text-[10px] font-semibold w-fit shadow-2xs"
+                className="flex items-center gap-1 px-2 py-0.2 bg-violet-50 border border-violet-200/90 text-violet-900 rounded-full text-[9px] sm:text-[10px] font-semibold w-fit shadow-2xs"
               >
-                <Sparkles size={11} className="text-violet-600 animate-spin" />
-                <span>AI 대화 맥락 감지:</span>
+                <Sparkles size={10} className="text-violet-600 animate-spin" />
+                <span>AI 감지:</span>
                 <span className="font-bold text-violet-950 underline decoration-violet-300">{autoDetectedTitle}</span>
-                <span className="text-[9px] text-violet-600 bg-violet-100/80 px-1 py-0.2 rounded-full font-medium">자동 전환됨</span>
+                <span className="text-[8px] sm:text-[9px] text-violet-600 bg-violet-100/80 px-1 py-0.1 rounded-full font-medium">자동 전환</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -2071,20 +2071,20 @@ export default function LucyStandalonePage() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
-                className="flex items-center justify-between px-3 py-1.5 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 rounded-xl text-xs text-amber-950 shadow-xs backdrop-blur-xs"
+                className="flex items-center justify-between px-2.5 py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 shadow-xs backdrop-blur-xs"
               >
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
                   {ttsInfo.isLoading ? (
-                    <Loader2 size={13} className="animate-spin text-amber-600 shrink-0" />
+                    <Loader2 size={11} className="animate-spin text-amber-600 shrink-0" />
                   ) : (
-                    <Volume2 size={13} className="text-amber-600 animate-pulse shrink-0" />
+                    <Volume2 size={11} className="text-amber-600 animate-pulse shrink-0" />
                   )}
-                  <span className="font-bold text-amber-950 text-[11px] shrink-0">
+                  <span className="font-bold text-amber-950 text-[10px] sm:text-[11px] shrink-0">
                     {ttsInfo.isLoading ? '루시 음성 준비 중...' : '루시 음성 안내 중'}
                   </span>
                   {ttsInfo.activeText && ttsInfo.activeText !== '__CONVERSATION__' && (
-                    <span className="text-[10px] text-amber-900/70 truncate max-w-[200px] sm:max-w-[340px]">
-                      "{ttsInfo.activeText.slice(0, 35)}..."
+                    <span className="text-[9px] sm:text-[10px] text-amber-900/70 truncate max-w-[170px] sm:max-w-[340px]">
+                      "{ttsInfo.activeText.slice(0, 30)}..."
                     </span>
                   )}
                 </div>
@@ -2094,10 +2094,10 @@ export default function LucyStandalonePage() {
                     stopTTS();
                     setPlayingMsgId(null);
                   }}
-                  className="flex items-center gap-1 px-2 py-0.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 ml-2"
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[9px] cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 ml-1.5"
                   title="음성 즉시 중지"
                 >
-                  <Square size={9} className="fill-current" />
+                  <Square size={8} className="fill-current" />
                   <span>중지</span>
                 </button>
               </motion.div>
@@ -2114,19 +2114,19 @@ export default function LucyStandalonePage() {
           />
 
           {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 (13P · 77선) 버튼 */}
-          <div className="w-full flex items-center gap-1.5 pt-0.5 pb-0.5">
+          <div className="w-full flex items-center gap-1 sm:gap-1.5 py-0">
             {/* ✨ 13페이지 추천질문 전체보기 모달 트리거 버튼 */}
             <button
               id="lucy-open-prompt-library-btn"
               type="button"
               onClick={() => setIsPromptLibraryOpen(true)}
-              className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 text-[11px] sm:text-xs font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-2xs group"
+              className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 text-[10px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1 shadow-2xs group"
               title="사주·타로·점성술·자미두수 77가지 추천질문 (13페이지 전편)"
               aria-label="추천질문 13페이지 라이브러리 열기"
             >
-              <Sparkles size={13} className="text-amber-500 group-hover:scale-110 transition-transform" />
+              <Sparkles size={11} className="sm:w-3 sm:h-3 text-amber-500 group-hover:scale-110 transition-transform" />
               <span>추천질문</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-amber-500 text-slate-950 font-black">
+              <span className="px-1 py-0.1 rounded-full text-[8px] sm:text-[9px] bg-amber-500 text-slate-950 font-black">
                 13P
               </span>
             </button>
@@ -2139,19 +2139,19 @@ export default function LucyStandalonePage() {
               title="새로운 맞춤 추천 질문으로 변경 (랜덤 셔플)"
               aria-label="추천 질문 새로고침"
             >
-              <RefreshCw size={11} className={`text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
+              <RefreshCw size={10} className={`sm:w-2.5 sm:h-2.5 text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
             </button>
 
             {/* 가로 스크롤 추천 질문 리스트 */}
             {currentPrompts.length > 0 && (
-              <div className="flex-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
+              <div className="flex-1 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
                 {currentPrompts.map((promptText) => (
                   <button
                     key={promptText}
                     type="button"
                     onClick={() => handleSelectRecommendationChip(promptText)}
                     disabled={isLucyGenerating}
-                    className="shrink-0 px-2.5 sm:px-3 py-1 rounded-full bg-slate-50/90 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-[11px] sm:text-xs font-medium text-slate-700 hover:text-amber-950 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
+                    className="shrink-0 px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-50/90 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-[10px] sm:text-[11px] font-medium text-slate-700 hover:text-amber-950 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
                   >
                     {promptText}
                   </button>
@@ -2160,7 +2160,7 @@ export default function LucyStandalonePage() {
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50 border border-slate-200 focus-within:border-amber-400 focus-within:bg-white rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all shadow-inner">
+          <div className="flex items-center gap-1 sm:gap-2 bg-slate-50 border border-slate-200 focus-within:border-amber-400 focus-within:bg-white rounded-xl sm:rounded-2xl px-2 sm:px-3 py-0.5 sm:py-1 min-h-[34px] sm:min-h-[40px] transition-all shadow-inner">
             {/* Hidden File Input */}
             <input 
               type="file" 
@@ -2174,17 +2174,17 @@ export default function LucyStandalonePage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-amber-700 hover:bg-slate-200/70 transition-colors cursor-pointer shrink-0"
+              className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-amber-700 hover:bg-slate-200/70 transition-colors cursor-pointer shrink-0"
               title="사진/이미지 첨부 (멀티모달 비전 분석)"
             >
-              <Camera size={16} />
+              <Camera size={15} className="sm:w-4 sm:h-4" />
             </button>
 
             {/* 🔊 Auto-TTS Quick Toggle Button (입력창 바로 옆 원클릭 토글) */}
             <button
               type="button"
               onClick={toggleAutoTts}
-              className={`p-1.5 rounded-xl transition-all cursor-pointer shrink-0 ${
+              className={`p-1 sm:p-1.5 rounded-lg transition-all cursor-pointer shrink-0 ${
                 isAutoTts
                   ? 'text-emerald-600 bg-emerald-100/80 border border-emerald-300 shadow-2xs'
                   : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/70'
@@ -2192,11 +2192,11 @@ export default function LucyStandalonePage() {
               title={isAutoTts ? '루시 답변 자동 음성 읽기 켜짐 (클릭 시 끄기)' : '자동 음성 읽기 꺼짐 (클릭 시 켜기)'}
               aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐' : '음성 자동 읽기 꺼짐'}
             >
-              {isAutoTts ? <Volume2 size={16} className="text-emerald-600 animate-pulse" /> : <VolumeX size={16} />}
+              {isAutoTts ? <Volume2 size={15} className="sm:w-4 sm:h-4 text-emerald-600 animate-pulse" /> : <VolumeX size={15} className="sm:w-4 sm:h-4" />}
             </button>
 
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
-            <div className="relative flex-1 min-h-[34px] flex items-center">
+            <div className="relative flex-1 min-h-[28px] sm:min-h-[32px] flex items-center">
               {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
               <DynamicGhostInputPlaceholder
                 prompts={dynamicGhostPrompts}
@@ -2231,7 +2231,7 @@ export default function LucyStandalonePage() {
                     : ''
                 }
                 rows={1}
-                className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-xs sm:text-sm resize-none outline-none leading-relaxed min-h-[34px] max-h-[100px] py-1 z-10"
+                className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-[12px] sm:text-sm resize-none outline-none leading-snug sm:leading-relaxed min-h-[28px] sm:min-h-[32px] max-h-[88px] py-0.5 sm:py-1 z-10"
               />
             </div>
 
@@ -2240,21 +2240,21 @@ export default function LucyStandalonePage() {
               <button
                 type="button"
                 onClick={handleAbortGeneration}
-                className="p-2 sm:p-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl transition-all shadow-md cursor-pointer shrink-0 active:scale-95 flex items-center justify-center animate-pulse"
+                className="w-7 h-7 sm:w-8 sm:h-8 p-1 sm:p-1.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg sm:rounded-xl transition-all shadow-md cursor-pointer shrink-0 active:scale-95 flex items-center justify-center animate-pulse"
                 title="답변 생성 중단 (클릭 시 대기를 즉시 멈추고 입력창이 활성화됩니다)"
                 aria-label="생성 중단"
               >
-                <Square size={15} className="fill-current text-white" />
+                <Square size={12} className="sm:w-3.5 sm:h-3.5 fill-current text-white" />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => handleSend()}
                 disabled={!input.trim() && !attachedImage}
-                className="p-2 sm:p-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 disabled:opacity-30 text-slate-950 font-bold rounded-xl transition-all shadow-sm cursor-pointer shrink-0 active:scale-95"
+                className="w-7 h-7 sm:w-8 sm:h-8 p-1 sm:p-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 disabled:opacity-30 text-slate-950 font-bold rounded-lg sm:rounded-xl transition-all shadow-sm cursor-pointer shrink-0 active:scale-95 flex items-center justify-center"
                 title="메시지 전송"
               >
-                <Send size={15} />
+                <Send size={13} className="sm:w-3.5 sm:h-3.5" />
               </button>
             )}
           </div>
