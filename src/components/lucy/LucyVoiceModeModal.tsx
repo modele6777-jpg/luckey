@@ -232,8 +232,8 @@ export function LucyVoiceModeModal() {
           setVoiceState('speaking');
 
           try {
-            // 🌟 100% 여성 목소리(Kore / Web Speech 여성 보이스)로 낭독
-            await playTTS(spokenText, 'Kore', true, 'calm');
+            // 🌟 100% 여성 목소리(Aoede / Web Speech 여성 보이스)로 낭독
+            await playTTS(spokenText, 'Aoede', true, 'calm');
           } catch (ttsErr) {
             console.warn('[LucyVoice] playTTS error:', ttsErr);
           } finally {

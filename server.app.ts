@@ -1460,7 +1460,7 @@ ${content}
 
   // TTS - 고품질 Edge Neural TTS + Google TTS 다중 엔진 통합 엔드포인트
   app.post("/api/ai/tts", async (req, res) => {
-    const { text, voice = 'Kore', emotion, rate, speed, pitch, language } = req.body || {};
+    const { text, voice = 'Aoede', emotion, rate, speed, pitch, language } = req.body || {};
 
     try {
       const { handleTTS } = await import('./server/api-lib/ttsHandler');

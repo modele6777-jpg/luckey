@@ -1011,7 +1011,7 @@ export default function LucyStandalonePage() {
     if (lucyMessages.length > 0 && !isLucyGenerating) {
       const lastMsg = lucyMessages[lucyMessages.length - 1];
       if (lastMsg && lastMsg.role !== 'user' && typeof lastMsg.content === 'string' && lastMsg.content.length > 1) {
-        prefetchTTS(lastMsg.content, 'Kore');
+        prefetchTTS(lastMsg.content, 'Aoede');
       }
     }
   }, [lucyMessages, isLucyGenerating]);
@@ -1054,7 +1054,7 @@ export default function LucyStandalonePage() {
 
           stopTTS();
           if (lastMsg.id) setPlayingMsgId(lastMsg.id);
-          playTTSInChunks(cleanAnswer, 'Kore')
+          playTTSInChunks(cleanAnswer, 'Aoede')
             .catch((err) => {
               console.warn('[Auto-TTS Fallback] Play error:', err);
             })
@@ -1313,7 +1313,7 @@ export default function LucyStandalonePage() {
               if (replyMsgId) {
                 setPlayingMsgId(replyMsgId);
               }
-              await playTTSInChunks(cleanAnswer, 'Kore');
+              await playTTSInChunks(cleanAnswer, 'Aoede');
               setPlayingMsgId(null);
             }
           } catch (ttsErr) {
@@ -1549,7 +1549,7 @@ export default function LucyStandalonePage() {
     } else {
       stopTTS();
       setPlayingMsgId(id);
-      playTTSInChunks(clean, 'Kore', 110);
+      playTTSInChunks(clean, 'Aoede', 110);
     }
   };
 
@@ -1958,7 +1958,7 @@ export default function LucyStandalonePage() {
                       {copiedId === msgId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                     </button>
                     <button
-                      onClick={() => handleVoicePlay(msgId, textContent, 'Kore')}
+                      onClick={() => handleVoicePlay(msgId, textContent, 'Aoede')}
                       className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                         playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
                           ? 'text-amber-600 bg-amber-50'
@@ -2189,7 +2189,7 @@ export default function LucyStandalonePage() {
                   ? 'text-emerald-600 bg-emerald-100/80 border border-emerald-300 shadow-2xs'
                   : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/70'
               }`}
-              title={isAutoTts ? '질문자(남성) 및 루시 답변(여성) 연속 자동 음성 읽기 켜짐 (클릭 시 끄기)' : '자동 음성 읽기 꺼짐 (클릭 시 켜기)'}
+              title={isAutoTts ? '루시 답변 자동 음성 읽기 켜짐 (클릭 시 끄기)' : '자동 음성 읽기 꺼짐 (클릭 시 켜기)'}
               aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐' : '음성 자동 읽기 꺼짐'}
             >
               {isAutoTts ? <Volume2 size={16} className="text-emerald-600 animate-pulse" /> : <VolumeX size={16} />}

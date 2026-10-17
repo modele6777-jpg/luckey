@@ -38,7 +38,7 @@ export function playNativeBrowserSpeech(
   wait: boolean = false,
   sessionToVerify?: string | null,
   isSequenceChunk: boolean = false,
-  voiceNameOrType: string = 'Kore',
+  voiceNameOrType: string = 'Aoede',
   speed?: number,
 ): Promise<void> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -77,6 +77,9 @@ export function playNativeBrowserSpeech(
     const getVoiceScore = (voiceItem: SpeechSynthesisVoice) => {
       const name = voiceItem.name.toLowerCase();
       const isMaleVoiceName =
+        name.includes('google 한국의') ||
+        name.includes('google korean') ||
+        name.includes('korean male') ||
         name.includes('injoon') ||
         name.includes('minsu') ||
         name.includes('david') ||
@@ -84,7 +87,8 @@ export function playNativeBrowserSpeech(
         name.includes('mark') ||
         name.includes('george') ||
         name.includes('male') ||
-        name.includes('남성');
+        name.includes('남성') ||
+        name.includes('ism'); // Android Google TTS male voice (ko-kr-x-ism)
 
       const isFemaleVoiceName =
         name.includes('sunhi') ||
@@ -97,17 +101,28 @@ export function playNativeBrowserSpeech(
         name.includes('siri') ||
         name.includes('female') ||
         name.includes('여성') ||
-        name.includes('kore') ||
         name.includes('aoede') ||
+        name.includes('kore') ||
         name.includes('clara') ||
         name.includes('aria') ||
-        name.includes('zira');
+        name.includes('zira') ||
+        name.includes('kfb'); // Android Google TTS female voice (ko-kr-x-kfb)
 
       // 🌟 모든 TTS 낭독은 무조건 여성 음성만 나오도록 철저 제한 (남성 음성 원천 차단)
       if (isMaleVoiceName) return -10000;
       if (isFemaleVoiceName) {
-        if (name.includes('sunhi') || name.includes('heami') || name.includes('yuna') || name.includes('seoyeon') || name.includes('siri') || name.includes('aria')) return 120;
-        return 100;
+        if (
+          name.includes('heami') ||
+          name.includes('sunhi') ||
+          name.includes('yuna') ||
+          name.includes('seoyeon') ||
+          name.includes('narae') ||
+          name.includes('siri') ||
+          name.includes('aria') ||
+          name.includes('kfb') ||
+          name.includes('aoede')
+        ) return 200;
+        return 120;
       }
       return 10;
     };
@@ -125,14 +140,16 @@ export function playNativeBrowserSpeech(
         chosenName.includes('siri') ||
         chosenName.includes('female') ||
         chosenName.includes('여성') ||
-        chosenName.includes('aria');
-      // 🌟 남성 음성 방지: 확실한 여성 음색이 아니거나 시스템 기본 음성(Google 한국의 등)일 경우 피치를 1.28로 조정하여 명확한 여성 톤 보장
-      utterance.pitch = isKnownFemale ? 1.05 : 1.28;
+        chosenName.includes('aria') ||
+        chosenName.includes('kfb') ||
+        chosenName.includes('aoede');
+      // 🌟 여성 음색 보장: 맑고 자연스러운 여성 음조 (1.05 ~ 1.15)
+      utterance.pitch = isKnownFemale ? 1.05 : 1.15;
     } else {
-      utterance.pitch = 1.28;
+      utterance.pitch = 1.15;
     }
   } else {
-    utterance.pitch = 1.28;
+    utterance.pitch = 1.15;
   }
 
   updateTTSState({
@@ -364,7 +381,7 @@ export function normalizeTextForSpeech(text: string): string {
 
 export const playTTS = async (
   text: string,
-  voice: string = 'Kore',
+  voice: string = 'Aoede',
   wait: boolean = false,
   emotion?: string,
   sequenceSessionId?: string,
@@ -377,8 +394,8 @@ export const playTTS = async (
   const cleanText = normalizeTextForSpeech(text);
   if (!cleanText) return;
 
-  // 🌟 모든 TTS 재생은 엄격하게 여성 음성만 사용
-  const targetVoice = 'Kore';
+  // 🌟 모든 TTS 재생은 엄격하게 맑은 여성 음성(Aoede / SunHi / Heami)만 사용
+  const targetVoice = 'Aoede';
 
   // If we are calling playTTS standalone (without sequence) and something is already loading/speaking for this exact text, second click stops it
   if (!sequenceSessionId && (ttsState.isSpeaking || ttsState.isLoading) && (ttsState.activeText === cleanText || ttsState.activeFullText === cleanText)) {
@@ -840,8 +857,8 @@ export const playTTSInChunks = async (
 
 export const playConversation = async (
   messages: { role: string; content: string; id?: string }[],
-  aiVoice: string = 'Kore',
-  userVoice: string = 'Kore',
+  aiVoice: string = 'Aoede',
+  userVoice: string = 'Aoede',
   onMessageStart?: (index: number, msg: { role: string; content: string; id?: string }) => void,
 ) => {
   // If we are already speaking or loading, click again to stop
@@ -856,9 +873,9 @@ export const playConversation = async (
   isPlayingSequence = true;
   acquireScreenWakeLock().catch(() => {});
 
-  // 🌟 모든 대화 참여자의 음성은 여성 보이스(Kore / SunHi)로 일원화
-  const resolvedAiVoice = 'Kore';
-  const resolvedUserVoice = 'Kore';
+  // 🌟 모든 대화 참여자의 음성은 밝고 부드러운 여성 보이스(Aoede / SunHi)로 일원화
+  const resolvedAiVoice = 'Aoede';
+  const resolvedUserVoice = 'Aoede';
 
   try {
     for (let i = 0; i < messages.length; i++) {
@@ -904,8 +921,8 @@ export interface QAndAMessageItem {
 export const playQAndATTS = async (
   question: QAndAMessageItem,
   answer: QAndAMessageItem,
-  userVoice: string = 'Kore',
-  aiVoice: string = 'Kore',
+  userVoice: string = 'Aoede',
+  aiVoice: string = 'Aoede',
   onSpeakerChange?: (speaker: 'user' | 'assistant', msg: QAndAMessageItem) => void,
 ): Promise<void> => {
   if (ttsState.isSpeaking || ttsState.isLoading) {

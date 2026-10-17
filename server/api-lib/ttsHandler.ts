@@ -32,7 +32,7 @@ export interface TTSHandlerResult {
 }
 
 export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerResult> {
-  const { text, voice = "Kore", emotion, speed } = options;
+  const { text, voice = "Aoede", emotion, speed } = options;
   if (!text) {
     throw new Error("Empty speech text");
   }
@@ -42,11 +42,11 @@ export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerR
     throw new Error("Empty speech text");
   }
 
-  const resolvedVoiceKey = "Kore";
+  const resolvedVoiceKey = "Aoede";
 
   const isKorean = /[가-힣]/.test(cleanText);
 
-  // 🌟 모든 TTS 재생은 항상 고품질 여성 음성(ko-KR-SunHiNeural / Kore / en-US-AriaNeural)으로 고정
+  // 🌟 모든 TTS 재생은 항상 고품질 여성 음성(ko-KR-SunHiNeural / Aoede / en-US-AriaNeural)으로 고정
   let voiceName = "ko-KR-SunHiNeural";
 
   let lang = "ko-KR";
@@ -61,7 +61,7 @@ export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerR
 
   // 🌟 모든 낭독은 유니버스 인사이트 명언과 동일한 맑고 따뜻한 단일 표준 음정(+0Hz, 1.0x)으로 100% 일원화
   // 감정 태그에 따른 인위적 피치 저하(-0.8Hz, -0.5Hz 등 남성적 저음 왜곡)를 전면 배제합니다.
-  const cacheKey = `universe_kore_female_v5_${cleanText}`;
+  const cacheKey = `universe_aoede_female_v6_${cleanText}`;
 
   // Check in-memory cache
   const cached = ttsServerCache.get(cacheKey);
@@ -162,13 +162,13 @@ function stripID3Header(buf: Buffer): Buffer {
     }
   }
 
-  // 2. Secondary Engine: Google AI Studio Gemini Voice (Voice: "Kore")
+  // 2. Secondary Engine: Google AI Studio Gemini Voice (Voice: "Aoede")
   const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.AI_API_KEY;
   if (geminiApiKey) {
     try {
       const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-      const selectedVoice = "Kore";
+      const selectedVoice = "Aoede";
 
       const ttsModels = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts"];
       for (const modelName of ttsModels) {
