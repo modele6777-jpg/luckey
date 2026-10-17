@@ -5,7 +5,7 @@ import {
   Download, User, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
   Loader2, Copy, RefreshCw, Camera, MicOff, Mic, BookOpen, BookMarked
 } from 'lucide-react';
-import { useApp, PersonaType } from '@/contexts/AppContext';
+import { useApp, PersonaType, getPersistentUserProfile } from '@/contexts/AppContext';
 import { useLocation } from 'wouter';
 import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, normalizeTextForSpeech } from '@/utils/tts';
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
@@ -24,6 +24,10 @@ import { getAndClearPendingSelection } from '@/lib/selectionBridge';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
 import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
+import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
+import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
+import { type ChatTargetProfile } from '@/types/chatProfile';
+import { buildMultiProfileSystemContext, generateMultiProfilePrompts } from '@/lib/multiProfileContext';
 import { HORI_PROMPT_LIBRARY } from '@/data/horiPromptLibrary';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -659,6 +663,105 @@ export default function LucyStandalonePage() {
   const lucyMessages = personaMessages?.lucy || [];
   const isLucyGenerating = isGenerating?.lucy || false;
 
+  // 👥 대화창 내 다자간 프로필 (최대 4인) 상태 관리
+  // 새로고침 시 '내 프로필'은 항상 1순위로 복원됩니다.
+  const [activeProfiles, setActiveProfiles] = useState<ChatTargetProfile[]>(() => {
+    const basic = sharedState?.userProfile?.basic || getPersistentUserProfile()?.basic;
+    const myProfile: ChatTargetProfile = {
+      id: 'my-profile',
+      isMe: true,
+      name: basic?.nickname || basic?.name || '나 (본인)',
+      birthdate: basic?.birthdate || '1995-01-01',
+      birthtime: basic?.birthtime || '12:00',
+      gender: basic?.gender || 'male',
+      birthCity: basic?.birthCity || '서울',
+      lunarSolar: basic?.lunarSolar || 'solar',
+      relationship: '본인'
+    };
+
+    try {
+      const savedExtras = sessionStorage.getItem('lucy_chat_extra_profiles');
+      if (savedExtras) {
+        const parsed = JSON.parse(savedExtras);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const validExtras = parsed.filter((p: any) => p && p.id && !p.isMe).slice(0, 3);
+          return [myProfile, ...validExtras];
+        }
+      }
+    } catch (_) {}
+
+    return [myProfile];
+  });
+
+  // 세션 스토리지에 추가 프로필들 동기화
+  useEffect(() => {
+    try {
+      const extras = activeProfiles.filter((p) => !p.isMe);
+      sessionStorage.setItem('lucy_chat_extra_profiles', JSON.stringify(extras));
+    } catch (_) {}
+  }, [activeProfiles]);
+
+  // sharedState 변경 시 내 프로필 정보 동기화
+  useEffect(() => {
+    const basic = sharedState?.userProfile?.basic;
+    if (basic?.name || basic?.nickname || basic?.birthdate) {
+      setActiveProfiles((prev) => {
+        const hasMe = prev.some((p) => p.isMe);
+        if (hasMe) {
+          return prev.map((p) =>
+            p.isMe
+              ? {
+                  ...p,
+                  name: basic?.nickname || basic?.name || p.name,
+                  birthdate: basic?.birthdate || p.birthdate,
+                  birthtime: basic?.birthtime ?? p.birthtime,
+                  gender: basic?.gender || p.gender,
+                  birthCity: basic?.birthCity || p.birthCity,
+                  lunarSolar: basic?.lunarSolar || p.lunarSolar,
+                }
+              : p
+          );
+        }
+        return prev;
+      });
+    }
+  }, [sharedState?.userProfile?.basic]);
+
+  // 프로필 모달 상태
+  const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
+  const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
+
+  const handleOpenAddChatProfile = useCallback(() => {
+    setEditingChatProfile(null);
+    setIsChatProfileModalOpen(true);
+  }, []);
+
+  const handleOpenEditChatProfile = useCallback((profile: ChatTargetProfile) => {
+    setEditingChatProfile(profile);
+    setIsChatProfileModalOpen(true);
+  }, []);
+
+  const handleSaveChatProfile = useCallback((profile: ChatTargetProfile) => {
+    setActiveProfiles((prev) => {
+      const existsIndex = prev.findIndex((p) => p.id === profile.id);
+      if (existsIndex !== -1) {
+        const updated = [...prev];
+        updated[existsIndex] = profile;
+        return updated;
+      }
+      if (prev.length >= 4) return prev;
+      return [...prev, profile];
+    });
+  }, []);
+
+  const handleRemoveChatProfile = useCallback((profileId: string) => {
+    setActiveProfiles((prev) => {
+      // 2명 이상일 때만 삭제 가능 (내 프로필 포함)
+      if (prev.length <= 1) return prev;
+      return prev.filter((p) => p.id !== profileId);
+    });
+  }, []);
+
   // Refresh / Reshuffle prompts
   const refreshPrompts = useCallback(() => {
     setPromptSeed((prev) => prev + 1);
@@ -730,6 +833,12 @@ export default function LucyStandalonePage() {
 
   // 🎲 Randomly Sampled Context-Aware Prompts (대화 맥락 및 채널에 맞춰 실시간 동적 순환)
   const currentPrompts = useMemo(() => {
+    // 0. 다자간(2인 이상) 프로필 활성화 시: 두 사람(구성원)의 이름을 반영한 궁합·연애·시너지 맞춤 질문
+    if (activeProfiles.length >= 2) {
+      const multiPrompts = generateMultiProfilePrompts(activeProfiles);
+      return shuffle(multiPrompts).slice(0, 6);
+    }
+
     // 1. 일상 대화(Casual) 모드: 최근 대화 맥락 반영 + CASUAL_PROMPT_POOL 셔플
     if (isCasualChat) {
       const lastMsg = lucyMessages[lucyMessages.length - 1];
@@ -786,10 +895,15 @@ export default function LucyStandalonePage() {
     }
 
     return shuffle(Array.from(new Set(selectedPool))).slice(0, 6);
-  }, [activeChannels, isCasualChat, isFullProMaster, isSingleSpecial, promptSeed, lucyMessages]);
+  }, [activeProfiles, activeChannels, isCasualChat, isFullProMaster, isSingleSpecial, promptSeed, lucyMessages]);
 
-  // 🌟 호리(hori.chat) 스타일 동적 예시 고민 풀 (77선 + 활성 채널/캐주얼 풀 결합)
+  // 🌟 호리(hori.chat) 스타일 동적 예시 고민 풀 (1인: 77선+채널/캐주얼 풀 / 2인 이상: 맞춤 궁합 질문 풀)
   const dynamicGhostPrompts = useMemo(() => {
+    // 2인 이상 시 두 사람(다자간) 맞춤 궁합 질문 우선 노출
+    if (activeProfiles.length >= 2) {
+      return generateMultiProfilePrompts(activeProfiles);
+    }
+
     const horiTitles = HORI_PROMPT_LIBRARY.map((p) => p.title);
     
     let contextualPrompts: string[] = [];
@@ -806,7 +920,7 @@ export default function LucyStandalonePage() {
 
     const combined = [...contextualPrompts, ...horiTitles];
     return Array.from(new Set(combined.filter((p) => p && p.trim().length > 0)));
-  }, [activeChannels, isCasualChat, isFullProMaster]);
+  }, [activeProfiles, activeChannels, isCasualChat, isFullProMaster]);
 
   // Automatically refresh random prompts when new messages arrive
   useEffect(() => {
@@ -1126,21 +1240,30 @@ export default function LucyStandalonePage() {
     let targetPersona: PersonaType = 'lucy';
     let extraSystemContext: string | undefined = undefined;
 
+    // 👥 활성화된 1인~4인 프로필 사주·점성술 데이터 및 다자간 궁합 가이드 주입
+    const multiProfileContext = buildMultiProfileSystemContext(activeProfiles);
+    if (multiProfileContext) {
+      extraSystemContext = multiProfileContext;
+    }
+
     if (isCasual) {
       targetPersona = 'lucy';
     } else if (isSingle) {
       targetPersona = SPECIAL_CHANNELS[channels[0]].persona;
-      extraSystemContext = `[${SPECIAL_CHANNELS[channels[0]].name} 전문 모드]
+      const singleContext = `[${SPECIAL_CHANNELS[channels[0]].name} 전문 모드]
 - ${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`;
+      extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${singleContext}` : singleContext;
     } else if (isMaster) {
-      extraSystemContext = `[7대 채널 올인원 PRO 마스터 풀가동]
+      const masterContext = `[7대 채널 올인원 PRO 마스터 풀가동]
 - 7대 채널(서막 비전, 전략적 성찰, 사주 타로 운명, 신체 웰니스, 마음 치유, 창작 영감, 하루 마감 회고)을 총동원한 올인원 마스터 지능입니다.
 - 다각도의 지능 엔진 관점을 융합하여 체계적인 분석과 깊이 있고 따뜻한 실천 조언을 제공해 줘.`;
+      extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
       targetPersona = 'lucy';
     } else if (isSyn) {
       const channelNames = channels.map((c) => SPECIAL_CHANNELS[c]?.name || c).join(' + ');
-      extraSystemContext = `[${channelCount}중 융합 시너지 모드: ${channelNames}]
+      const synContext = `[${channelCount}중 융합 시너지 모드: ${channelNames}]
 - 자동 감지된 결합 지능 엔진들의 관점을 다각도로 융합하여 깊이 있고 유용한 시너지 답변을 도출해 줘.`;
+      extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${synContext}` : synContext;
       targetPersona = 'lucy';
     }
 
@@ -1953,6 +2076,15 @@ export default function LucyStandalonePage() {
             )}
           </AnimatePresence>
 
+          {/* 👥 대화창 상담 대상자 프로필 독 바 (최대 4인 · 궁합/연애/시너지 모드) */}
+          <ChatProfileDock
+            profiles={activeProfiles}
+            onAddClick={handleOpenAddChatProfile}
+            onEditProfile={handleOpenEditChatProfile}
+            onRemoveProfile={handleRemoveChatProfile}
+            maxProfiles={4}
+          />
+
           {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 (13P · 77선) 버튼 */}
           <div className="w-full flex items-center gap-1.5 pt-0.5 pb-0.5">
             {/* ✨ 13페이지 추천질문 전체보기 모달 트리거 버튼 */}
@@ -2270,6 +2402,15 @@ export default function LucyStandalonePage() {
         isOpen={isPromptLibraryOpen}
         onClose={() => setIsPromptLibraryOpen(false)}
         onSelectPrompt={handleSelectPromptFromLibrary}
+      />
+
+      {/* 👥 대화창 프로필 추가/수정 모달 */}
+      <ChatProfileModal
+        isOpen={isChatProfileModalOpen}
+        onClose={() => setIsChatProfileModalOpen(false)}
+        onSave={handleSaveChatProfile}
+        initialProfile={editingChatProfile}
+        totalProfilesCount={activeProfiles.length}
       />
 
       {/* End of content */}
