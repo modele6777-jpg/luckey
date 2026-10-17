@@ -38,7 +38,9 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       setIsTimeUnknown(!initialProfile.birthtime);
       setGender(initialProfile.gender || 'female');
       setBirthCity(initialProfile.birthCity || '서울');
-      setRelationship(initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인'));
+      // 👥 프로필이 1명뿐인 경우 분류를 자동으로 '본인'으로 설정
+      const defaultRel = totalProfilesCount === 1 ? '본인' : (initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인'));
+      setRelationship(defaultRel);
     } else {
       // Default for adding a new second/third person
       setName('');
@@ -48,7 +50,7 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       setIsTimeUnknown(false);
       setGender('female');
       setBirthCity('서울');
-      setRelationship(totalProfilesCount === 1 ? '연인' : '친구');
+      setRelationship(totalProfilesCount === 0 ? '본인' : (totalProfilesCount === 1 ? '연인' : '친구'));
     }
     setErrorMessage(null);
   }, [initialProfile, isOpen, totalProfilesCount]);
@@ -66,16 +68,18 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       return;
     }
 
+    const isSoleProfile = totalProfilesCount === 1 && Boolean(initialProfile);
+    const resolvedRelationship = isSoleProfile ? '본인' : relationship;
     const savedProfile: ChatTargetProfile = {
       id: initialProfile?.id || `profile-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       name: name.trim(),
-      isMe: initialProfile?.isMe || false,
+      isMe: isSoleProfile ? true : (initialProfile?.isMe || false),
       birthdate,
       lunarSolar,
       birthtime: isTimeUnknown ? undefined : birthtime,
       gender,
       birthCity: birthCity.trim() || '서울',
-      relationship
+      relationship: resolvedRelationship
     };
 
     onSave(savedProfile);
@@ -142,10 +146,17 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
 
           {/* 2. 관계 태그 */}
           <div className="space-y-1.5">
-            <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <Heart size={14} className="text-rose-500" />
-              관계 구분
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Heart size={14} className="text-rose-500" />
+                관계 구분
+              </label>
+              {totalProfilesCount === 1 && Boolean(initialProfile) && (
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                  (1인 상담 프로필: 본인)
+                </span>
+              )}
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {RELATIONSHIP_TAGS.map((tag) => (
                 <button

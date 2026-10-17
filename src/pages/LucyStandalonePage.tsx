@@ -820,6 +820,22 @@ export default function LucyStandalonePage() {
     }
   }, [sharedState?.userProfile?.basic]);
 
+  // 👥 프로필이 1명만 남게 되면 자동으로 분류를 '본인'으로 보정
+  useEffect(() => {
+    if (activeProfiles.length === 1) {
+      const only = activeProfiles[0];
+      if (only && (only.relationship !== '본인' || !only.isMe)) {
+        setActiveProfiles([
+          {
+            ...only,
+            isMe: true,
+            relationship: '본인',
+          },
+        ]);
+      }
+    }
+  }, [activeProfiles]);
+
   // 프로필 모달 상태
   const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
   const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
@@ -845,6 +861,14 @@ export default function LucyStandalonePage() {
         if (prev.length >= 4) return prev;
         updated = [...prev, profile];
       }
+      // 👥 프로필이 한명만 남거나 존재할 때는 자동으로 분류를 '본인'으로 설정
+      if (updated.length === 1) {
+        updated[0] = {
+          ...updated[0],
+          isMe: true,
+          relationship: '본인',
+        };
+      }
       setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
       return updated;
     });
@@ -854,7 +878,18 @@ export default function LucyStandalonePage() {
     setActiveProfiles((prev) => {
       // 2명 이상일 때만 삭제 가능 (내 프로필 포함)
       if (prev.length <= 1) return prev;
-      const updated = prev.filter((p) => p.id !== profileId);
+      const remaining = prev.filter((p) => p.id !== profileId);
+      // 👥 한명만 남게 되면 자동으로 분류를 '본인'으로 변경
+      const updated =
+        remaining.length === 1
+          ? [
+              {
+                ...remaining[0],
+                isMe: true,
+                relationship: '본인',
+              },
+            ]
+          : remaining;
       setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
       return updated;
     });
