@@ -572,20 +572,18 @@ export default function LucyStandalonePage() {
     title: string;
   } | null>(null);
 
-  // Real-time input text analysis for live dynamic mode switching (AI 자동 감지 모드일 때만 가동)
+  // Real-time input text analysis for live dynamic mode indicator badge (AI 자동 감지 모드일 때 실시간 인디케이터 배지 표시용)
   useEffect(() => {
     if (!isAutoDetect) return;
 
     if (!input.trim() || input.trim().length < 2) {
       presetModeRef.current = null;
       setAutoDetectedTitle(null);
-      setActiveChannels([]);
       return;
     }
 
     // 질문 라이브러리/칩에서 선택된 질문 내용과 완전히 일치할 경우 사전 지정된 모드 유지
     if (presetModeRef.current && presetModeRef.current.text === input) {
-      setActiveChannels(presetModeRef.current.channels);
       setAutoDetectedTitle(presetModeRef.current.title);
       return;
     }
@@ -595,24 +593,12 @@ export default function LucyStandalonePage() {
 
     const timer = setTimeout(() => {
       const detected = detectLucyChannelsFromText(input);
-      const nextChannels: SpecialChannel[] = detected.isMaster
-        ? ALL_CHANNELS
-        : detected.channels.length > 0
-        ? detected.channels
-        : [];
       const nextTitle = detected.isMaster || detected.channels.length > 0
         ? detected.modeTitle
         : '가벼운 일상 수다';
 
-      setActiveChannels((prev) => {
-        if (prev.length === nextChannels.length && prev.every((c, i) => c === nextChannels[i])) {
-          return prev;
-        }
-        return nextChannels;
-      });
-
       setAutoDetectedTitle((prev) => (prev === nextTitle ? prev : nextTitle));
-    }, 250);
+    }, 300);
     return () => clearTimeout(timer);
   }, [input, isAutoDetect]);
 
@@ -917,7 +903,7 @@ export default function LucyStandalonePage() {
     return `${names} 지능이 결합되어 다각도 입체 시너지 통찰을 제공합니다.`;
   }, [channelCount, activeChannels, isCasualChat, isFullProMaster, isSingleSpecial]);
 
-  // 🎲 Randomly Sampled Context-Aware Prompts (대화 맥락 및 채널에 맞춰 실시간 동적 순환)
+  // 🎲 Stably Sampled Context-Aware Prompts (새로고침 버튼 클릭, 모드 변경, 대화 턴 완료 시에만 안정적으로 갱신)
   const currentPrompts = useMemo(() => {
     // 0. 다자간(2인 이상) 프로필 활성화 시: 두 사람(구성원)의 이름을 반영한 궁합·연애·시너지 맞춤 질문
     if (activeProfiles.length >= 2) {
@@ -925,44 +911,21 @@ export default function LucyStandalonePage() {
       return shuffle(multiPrompts).slice(0, 6);
     }
 
-    // 1. 특정 모드 및 채널이 활성화된 경우
-    if (isFullProMaster) {
-      return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
-    }
-
-    if (isSingleSpecial) {
-      const ch = activeChannels[0];
-      const pool = (ch && CHANNEL_PROMPT_POOLS[ch]) || CASUAL_PROMPT_POOL;
+    // 1. 단일 특화 채널 모드 선택 시
+    if (selectedMode !== 'auto' && selectedMode !== 'casual' && selectedMode !== 'master') {
+      const pool = CHANNEL_PROMPT_POOLS[selectedMode] || CASUAL_PROMPT_POOL;
       return shuffle(pool).slice(0, 6);
     }
 
-    if (isSynergy) {
-      const selectedPool: string[] = [];
-      activeChannels.forEach((c) => {
-        const chPool = CHANNEL_PROMPT_POOLS[c];
-        if (chPool && chPool.length > 0) {
-          const picked = shuffle(chPool).slice(0, 2);
-          selectedPool.push(...picked);
-        }
-      });
-
-      if (activeChannels.includes('orange') && activeChannels.includes('trinity')) {
-        selectedPool.unshift('내 사주 대운 흐름을 기반으로 한 1원칙 커리어 전략과 리스크는?');
-      }
-      if (activeChannels.includes('bluebird') && activeChannels.includes('aura')) {
-        selectedPool.unshift('마음의 불안을 다독이는 치유와 신체 호흡 이완법을 함께 처방해줘.');
-      }
-      if (activeChannels.includes('orange') && activeChannels.includes('muse')) {
-        selectedPool.unshift('논리적이면서도 사람들의 마음을 사로잡는 혁신적 기획 아이디어는?');
-      }
-
-      return shuffle(Array.from(new Set(selectedPool))).slice(0, 6);
+    // 2. 7대 채널 올인원 마스터 모드 선택 시
+    if (selectedMode === 'master') {
+      return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
     }
 
-    // 2. 수다 모드 명시 선택 시
+    // 3. 수다 모드 명시 선택 시
     if (selectedMode === 'casual') {
-      const lastMsg = lucyMessages[lucyMessages.length - 1];
       const contextual: string[] = [];
+      const lastMsg = lucyMessages.length > 0 ? lucyMessages[lucyMessages.length - 1] : null;
       const txt = typeof lastMsg?.content === 'string' ? lastMsg.content : '';
       if (txt) {
         if (txt.includes('불안') || txt.includes('걱정') || txt.includes('스트레스')) {
@@ -982,7 +945,7 @@ export default function LucyStandalonePage() {
       return Array.from(new Set(shuffledCasual)).slice(0, 6);
     }
 
-    // 3. AI 스마트 자동 감지 모드 기본 대기 상태 (7대 채널 + 호리 77선 전편에서 다채롭게 추천)
+    // 4. AI 스마트 자동 감지 모드 기본 대기 상태 (7대 채널 + 호리 77선 전편에서 안정적으로 선별)
     const diversePool: string[] = [
       ...shuffle(CHANNEL_PROMPT_POOLS.trinity).slice(0, 2),
       ...shuffle(CHANNEL_PROMPT_POOLS.orange).slice(0, 2),
@@ -993,7 +956,8 @@ export default function LucyStandalonePage() {
       ...shuffle(CASUAL_PROMPT_POOL).slice(0, 2),
     ];
     return shuffle(Array.from(new Set(diversePool))).slice(0, 6);
-  }, [activeProfiles, activeChannels, selectedMode, isCasualChat, isFullProMaster, isSingleSpecial, isSynergy, promptSeed, lucyMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfiles, selectedMode, promptSeed]);
 
   // 🌟 호리(hori.chat) 스타일 동적 예시 고민 풀 (1인: 77선+채널/캐주얼 풀 / 2인 이상: 맞춤 궁합 질문 풀)
   const dynamicGhostPrompts = useMemo(() => {
@@ -1007,13 +971,11 @@ export default function LucyStandalonePage() {
     let contextualPrompts: string[] = [];
     if (selectedMode === 'casual') {
       contextualPrompts = CASUAL_PROMPT_POOL;
-    } else if (isFullProMaster) {
+    } else if (selectedMode === 'master') {
       contextualPrompts = MASTER_PROMPT_POOL;
-    } else if (activeChannels.length > 0) {
-      activeChannels.forEach((c) => {
-        const chPool = CHANNEL_PROMPT_POOLS[c];
-        if (chPool) contextualPrompts.push(...chPool);
-      });
+    } else if (selectedMode !== 'auto') {
+      const chPool = CHANNEL_PROMPT_POOLS[selectedMode];
+      if (chPool) contextualPrompts = chPool;
     } else {
       // AI 자동 모드 기본 상태: 7대 채널 대표 질문 + 캐주얼 질문 혼합
       contextualPrompts = [
@@ -1028,14 +990,16 @@ export default function LucyStandalonePage() {
 
     const combined = [...contextualPrompts, ...horiTitles];
     return Array.from(new Set(combined.filter((p) => p && p.trim().length > 0)));
-  }, [activeProfiles, activeChannels, selectedMode, isFullProMaster]);
+  }, [activeProfiles, selectedMode]);
 
-  // Automatically refresh random prompts when new messages arrive
+  // 답변 생성이 완전히 종료되었을 때만 추천 질문 1회 차분하게 갱신 (스트리밍 도중이나 타이핑 중 번쩍임 방지)
+  const prevGeneratingRef = useRef(isLucyGenerating);
   useEffect(() => {
-    if (lucyMessages.length > 0) {
+    if (prevGeneratingRef.current && !isLucyGenerating && lucyMessages.length > 0) {
       refreshPrompts();
     }
-  }, [lucyMessages.length, refreshPrompts]);
+    prevGeneratingRef.current = isLucyGenerating;
+  }, [isLucyGenerating, lucyMessages.length, refreshPrompts]);
 
   // Filter messages by search query if search is active
   const filteredMessages = useMemo(() => {
@@ -2213,9 +2177,9 @@ export default function LucyStandalonePage() {
             {/* 가로 스크롤 추천 질문 리스트 */}
             {currentPrompts.length > 0 && (
               <div className="flex-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
-                {currentPrompts.map((promptText, idx) => (
+                {currentPrompts.map((promptText) => (
                   <button
-                    key={`${promptSeed}-${idx}`}
+                    key={promptText}
                     type="button"
                     onClick={() => handleSelectRecommendationChip(promptText)}
                     disabled={isLucyGenerating}
