@@ -218,7 +218,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
               >
                 전체
               </button>
-              {['saju', 'tarot', 'astrology', 'jami', 'liuren', 'hongguk', 'tojeong'].map((tKey) => {
+              {Object.keys(TOOL_CATEGORIES).map((tKey) => {
                 const meta = TOOL_CATEGORIES[tKey];
                 if (!meta) return null;
                 const isSelected = selectedTool === tKey;

@@ -1,6 +1,7 @@
 /**
- * hori.chat/prompts 13페이지 (총 77개) 추천질문 라이브러리 데이터셋
- * 카테고리: 인연(20), 발견(18), 운세(14), 고민(14), 성공(11) - 총 77개 / 13페이지 (페이지당 6개)
+ * hori.chat/prompts 13페이지 (총 77개) 플랫폼 최적화 추천질문 라이브러리 데이터셋
+ * 카테고리: 인연(20), 발견(18), 운세(14), 고민(14), 성공(11) - 총 77개 / 13페이지 (페이지당 6개, 13P 5개)
+ * 럭키 9대 네이티브 엔진: 사주(saju), 점성술(astrology), 타로(tarot), 소매틱(somatic), 세도나(sedona), 1원칙전략(orange), 비폭력대화(bluebird), 영적지혜(rebible), 뮤즈영감(muse)
  */
 
 export interface HoriPromptItem {
@@ -66,7 +67,7 @@ export const TOOL_CATEGORIES: Record<string, ToolCategoryMeta> = {
   "saju": {
     "key": "saju",
     "name": "사주",
-    "icon": "fa-broom",
+    "icon": "fa-scroll",
     "color": "#f59e0b"
   },
   "astrology": {
@@ -75,83 +76,47 @@ export const TOOL_CATEGORIES: Record<string, ToolCategoryMeta> = {
     "icon": "fa-star",
     "color": "#3b82f6"
   },
-  "jami": {
-    "key": "jami",
-    "name": "자미두수",
-    "icon": "fa-moon",
-    "color": "#8b5cf6"
-  },
   "tarot": {
     "key": "tarot",
     "name": "타로",
     "icon": "fa-layer-group",
     "color": "#ec4899"
   },
-  "thai": {
-    "key": "thai",
-    "name": "태국 점성술",
-    "icon": "fa-tools",
-    "color": "#f2d364"
-  },
-  "syukuyo": {
-    "key": "syukuyo",
-    "name": "숙요",
-    "icon": "fa-torii-gate",
-    "color": "#ef4444"
-  },
-  "mahabote": {
-    "key": "mahabote",
-    "name": "마하보테",
-    "icon": "fa-tools",
-    "color": "#abf264"
-  },
-  "liuren": {
-    "key": "liuren",
-    "name": "육임",
-    "icon": "fa-compass",
-    "color": "#0ea5e9"
-  },
-  "vedic": {
-    "key": "vedic",
-    "name": "베딕",
-    "icon": "fa-om",
-    "color": "#f97316"
-  },
-  "hongguk": {
-    "key": "hongguk",
-    "name": "홍국기문",
-    "icon": "fa-door-closed",
+  "somatic": {
+    "key": "somatic",
+    "name": "소매틱",
+    "icon": "fa-leaf",
     "color": "#10b981"
   },
-  "kabbalistic": {
-    "key": "kabbalistic",
-    "name": "카발라",
-    "icon": "fa-tree",
-    "color": "#84cc16"
+  "sedona": {
+    "key": "sedona",
+    "name": "세도나",
+    "icon": "fa-feather-pointed",
+    "color": "#a855f7"
   },
-  "iching": {
-    "key": "iching",
-    "name": "주역",
-    "icon": "fa-table-cells",
-    "color": "#64748b"
+  "orange": {
+    "key": "orange",
+    "name": "1원칙전략",
+    "icon": "fa-brain",
+    "color": "#f97316"
   },
-  "tojeong": {
-    "key": "tojeong",
-    "name": "토정비결",
-    "icon": "fa-book-open",
-    "color": "#a16207"
-  },
-  "ninestarki": {
-    "key": "ninestarki",
-    "name": "구성학",
-    "icon": "fa-border-all",
+  "bluebird": {
+    "key": "bluebird",
+    "name": "비폭력대화",
+    "icon": "fa-dove",
     "color": "#06b6d4"
   },
-  "taiyi": {
-    "key": "taiyi",
-    "name": "태을신수",
-    "icon": "fa-chess-board",
-    "color": "#14b8a6"
+  "rebible": {
+    "key": "rebible",
+    "name": "영적지혜",
+    "icon": "fa-book-open",
+    "color": "#eab308"
+  },
+  "muse": {
+    "key": "muse",
+    "name": "뮤즈영감",
+    "icon": "fa-palette",
+    "color": "#6366f1"
   }
 };
 
@@ -181,32 +146,32 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "astrology"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "astrology"
     ],
-    "body": "사주 대운 교체기와 자미두수 대한 변화 시점을 겹쳐서 분석해줘. 과거 전환기도 검증하고, 앞으로 올 전환기의 시기·주제·준비법을 알려줘.",
+    "body": "내 사주의 10년 대운 변화와 점성술 주요 외행성 트랜짓(목성·토성 주기)을 결합해서, 내 인생의 가장 결정적인 대전환기가 언제 찾아오는지 짚어줘. 운의 흐름이 크게 바뀌는 분기점과 그때 내가 취해야 할 지혜로운 태도를 알려줘.",
     "questionCount": 712
   },
   {
     "id": "general-personality-composite",
     "category": "discovery",
     "categoryLabel": "발견",
-    "title": "사주·점성술·자미두수 종합 성격 분석",
+    "title": "사주·점성술·타로 트리니티(Trinity) 종합 성격 분석",
     "hint": "",
     "tools": [
       "saju",
       "astrology",
-      "jami"
+      "tarot"
     ],
     "tool_ids": [
       "saju",
       "astrology",
-      "jami"
+      "tarot"
     ],
-    "body": "내 사주, 점성술, 자미두수를 종합해서 타고난 성격과 기질을 입체적으로 분석해줘. 세 체계에서 겹치는 특성과 고유한 면을 구분해서 설명하고, 나라는 사람을 한 문단으로 요약해줘.",
+    "body": "내 사주 오행과 십신, 점성술 네이탈 차트(태양·달·상승궁), 그리고 타로의 소울 카드 상징을 결합해 나의 입체적인 성격과 잠재력을 종합 분석해줘. 세 관점이 가리키는 나의 고유한 영혼의 청사진을 알려줘.",
     "questionCount": 702
   },
   {
@@ -216,12 +181,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "향후 10년 흐름과 전환점",
     "hint": "",
     "tools": [
-      "jami"
+      "saju",
+      "astrology"
     ],
     "tool_ids": [
-      "jami"
+      "saju",
+      "astrology"
     ],
-    "body": "자미두수 대한·소한으로 향후 10년의 흐름을 정리해줘. 각 구간의 인생 테마를 설명하고, 가장 중요한 전환점 2~3개와 준비 방법을 알려줘.",
+    "body": "내 사주 대운(10년 주기)과 점성술 목성·토성 사이클을 분석해서 향후 10년간 펼쳐질 삶의 흐름과 핵심 전환점을 짚어줘. 어느 시기에 역량을 축적하고 언제 도약해야 하는지 주기별 로드맵을 알려줘.",
     "questionCount": 560
   },
   {
@@ -232,13 +199,13 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "astrology",
-      "jami"
+      "saju"
     ],
     "tool_ids": [
       "astrology",
-      "jami"
+      "saju"
     ],
-    "body": "점성술 차트 룰러·MC 지배성과 자미두수 명궁 주성을 교차 분석해서 내가 가장 빛날 수 있는 분야를 3가지 이상 추천하고 근거를 설명해줘.",
+    "body": "점성술 10하우스(MC)와 천직 지표, 그리고 내 사주의 관성(사회적 명예)과 식상(재능 발현)을 결합해서 내가 사회에서 가장 빛나고 성공할 수 있는 분야와 커리어 방향을 짚어줘.",
     "questionCount": 444
   },
   {
@@ -248,14 +215,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "나와 찰떡인 연애 스타일",
     "hint": "",
     "tools": [
-      "jami",
-      "astrology"
+      "astrology",
+      "saju"
     ],
     "tool_ids": [
-      "jami",
-      "astrology"
+      "astrology",
+      "saju"
     ],
-    "body": "자미두수 부처궁과 점성술 금성을 함께 보고 나와 잘 맞는 연애 스타일을 알려줘. 사랑 표현 방식, 이상적 데이트, 끌리는 유형까지 정리해줘.",
+    "body": "점성술 5·7하우스(금성과 화성 배치)와 내 사주의 일지(배우자궁) 및 십신을 분석해서, 나에게 꼭 맞는 연애 스타일과 편안함을 느끼는 상대의 유형을 짚어줘.",
     "questionCount": 419
   },
   {
@@ -265,12 +232,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "내 이상형 캐릭터 설정서",
     "hint": "",
     "tools": [
-      "jami"
+      "astrology",
+      "saju"
     ],
     "tool_ids": [
-      "jami"
+      "astrology",
+      "saju"
     ],
-    "body": "자미두수 명궁과 부처궁을 엮어 내 이상형을 캐릭터 설정서처럼 묘사해줘. 외모 분위기, 성격, 말투, 직업, 첫 만남 장면까지 써줘.",
+    "body": "내 점성술 7하우스(디센던트와 금성)와 사주 일지(배우자궁)의 기운을 바탕으로 내가 끌리는 이상형을 한 편의 캐릭터 프로필(외모 분위기, 성격, 행동 양식, 반전 매력)로 재미있게 정리해줘.",
     "questionCount": 366
   },
   {
@@ -280,14 +249,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "그 사람과 나, 다시 엮일 인연일까",
     "hint": "",
     "tools": [
-      "kabbalistic",
-      "astrology"
+      "astrology",
+      "rebible"
     ],
     "tool_ids": [
-      "kabbalistic",
-      "astrology"
+      "astrology",
+      "rebible"
     ],
-    "body": "내 출생 차트를 카발라식 상징 체계와 연결해서, 그 사람과 나 사이에 아직 풀리지 않은 카르마적 주제가 남아 있는지 봐줘. 생명나무 위 두 사람의 에너지가 어떻게 연결되는지 상징으로 풀어서, 이 인연을 붙잡는 게 성장인지 집착인지 짚어줘.",
+    "body": "점성술 시나스트리(궁합 차트)와 기적수업(ACIM)의 관계 지혜를 바탕으로, 헤어진 그 사람과 내가 다시 엮일 인연인지 봐줘. 두 사람의 에너지적 흐름과 이 관계가 서로의 영혼 성장에 어떤 배움을 주는지 통찰해줘.",
     "questionCount": 343
   },
   {
@@ -315,13 +284,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "astrology",
-      "jami"
+      "saju",
+      "orange"
     ],
     "tool_ids": [
       "astrology",
-      "jami"
+      "saju",
+      "orange"
     ],
-    "body": "점성술 10하우스와 자미두수 관록궁을 묶어 분석하고, 직업적 적성에 맞는 구체적 직업군을 3~5개 추천해줘. 진로 전환에 유리한 시기도 알려줘.",
+    "body": "점성술 2·6·10하우스(재물·일·성취)와 사주 격국/용신을 분석하고, 1원칙 사고(First Principles)를 적용해 내가 선택할 수 있는 진로 방향과 구체적인 현실 전략을 제시해줘.",
     "questionCount": 296
   },
   {
@@ -332,13 +303,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "astrology",
+      "bluebird"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "astrology",
+      "bluebird"
     ],
-    "body": "사주 궁합과 자미두수 부처궁을 함께 보고 결혼 적합도를 분석해줘. 성격·가치관 충돌 포인트와 갈등을 줄이기 위해 노력할 부분도 짚어줘.",
+    "body": "사주 일지(배우자궁)와 점성술 7하우스 및 달 별자리를 교차 분석해서, 결혼 생활에서 발생하기 쉬운 갈등 포인트와 이를 비폭력 대화(NVC)로 지혜롭게 조율하는 해법을 알려줘.",
     "questionCount": 294
   },
   {
@@ -349,13 +322,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "astrology",
+      "muse"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "astrology",
+      "muse"
     ],
-    "body": "사주 일주와 자미두수 명궁 주성을 엮어서 내 정체성을 한 인물상으로 그려줘. 직업, 가치관, 행동 습관, 인생 모토까지 캐릭터 소개서처럼 써줘.",
+    "body": "내 사주 일간의 오행과 점성술 상승궁(어센던트)·태양 별자리를 결합해, 소설이나 영화 속 주인공처럼 나를 한 명의 매력적인 인물상(성격, 외모 분위기, 삶의 철학)으로 입체감 있게 그려줘.",
     "questionCount": 291
   },
   {
@@ -365,12 +340,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "연락 올까, 내가 먼저 할까",
     "hint": "",
     "tools": [
-      "liuren"
+      "tarot",
+      "astrology"
     ],
     "tool_ids": [
-      "liuren"
+      "tarot",
+      "astrology"
     ],
-    "body": "지금 이 순간을 기준으로 육임 명반을 뽑아서, 내가 기다리는 그 사람에게서 연락이 올 가능성과 시기를 봐줘. 내가 먼저 움직이는 게 나은지, 기다리는 게 나은지 흐름으로 짚어줘.",
+    "body": "지금 이 순간의 에너지로 타로 3장 스프레드를 펼치고 점성술 수성·금성 트랜짓을 함께 살펴서, 그 사람에게서 연락이 올 가능성이 높은지 아니면 내가 먼저 다가가는 게 나은지 타이밍과 흐름을 조언해줘.",
     "questionCount": 285
   },
   {
@@ -381,13 +358,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "astrology",
+      "sedona"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "astrology",
+      "sedona"
     ],
-    "body": "요즘 마음이 복잡한데 사주 대운/세운과 자미두수 대한 흐름을 함께 보고 원인을 분석해줘. 이 시기가 언제까지인지, 마음을 편하게 할 조언도 알려줘.",
+    "body": "내 사주 월운과 현재 점성술 행성 트랜짓(달·해왕성 영향)을 분석해 최근 마음이 복잡하고 불안했던 근본 원인을 짚어주고, 세도나 메서드 릴리징 질문을 통해 불필요한 집착과 불안을 즉시 흘려보내는 법을 알려줘.",
     "questionCount": 252
   },
   {
@@ -397,12 +376,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "지금 우리 사이, 어디로 가고 있을까",
     "hint": "",
     "tools": [
-      "iching"
+      "tarot",
+      "astrology"
     ],
     "tool_ids": [
-      "iching"
+      "tarot",
+      "astrology"
     ],
-    "body": "지금 이 순간을 기준으로 주역 괘를 뽑아서, 내가 마음 쓰고 있는 이 관계가 지금 어떤 국면에 있고 앞으로 어느 방향으로 흘러갈지 봐줘. 괘의 상징을 풀어서 지금 내가 취하면 좋은 태도도 조언해줘.",
+    "body": "지금 이 순간의 에너지로 타로 3장 스프레드(과거-현재-미래)를 펼치고 현재 점성술 관계 트랜짓을 결합해, 요즘 방향을 잃은 듯한 우리 사이가 어디로 향하고 있는지 흐름과 해법을 짚어줘.",
     "questionCount": 248
   },
   {
@@ -413,15 +394,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami",
-      "mahabote"
+      "astrology",
+      "tarot"
     ],
     "tool_ids": [
       "saju",
-      "jami",
-      "mahabote"
+      "astrology",
+      "tarot"
     ],
-    "body": "사주, 자미두수, 마하보테를 함께 이용해서 지금 만나는 사람과 결혼까지 이어질 인연인지 봐줘. 세 관점에서 본 궁합과 흐름을 엮어서, 결실을 맺기 좋은 시기와 넘어야 할 고비를 짚어줘.",
+    "body": "사주 일지 합충과 오행 조화, 점성술 7하우스 시나스트리(토성·목성 결합), 그리고 타로 카드의 조언을 결합해서 이 사람과 장기적으로 결혼까지 이어질 가능성과 준비해야 할 점을 짚어줘.",
     "questionCount": 244
   },
   {
@@ -432,13 +413,13 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "astrology"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "astrology"
     ],
-    "body": "다음 3개월의 재물 흐름을 사주 월운과 자미두수 재백궁 유년운으로 함께 봐줘. 돈이 들어오기 쉬운 달과 지출 조심할 달을 월별로 짚어줘.",
+    "body": "내 사주의 재성(정재·편재) 월운 흐름과 점성술 2하우스(재물/자원) 트랜짓을 분석해서 앞으로 3개월간의 금전 흐름과 수입·지출 타이밍, 재물운을 높이는 조언을 알려줘.",
     "questionCount": 242
   },
   {
@@ -463,12 +444,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "인생 전반부 vs 후반부 흐름",
     "hint": "",
     "tools": [
-      "jami"
+      "saju",
+      "astrology"
     ],
     "tool_ids": [
-      "jami"
+      "saju",
+      "astrology"
     ],
-    "body": "자미두수 명궁과 신궁을 함께 보고 인생 전반부와 후반부의 흐름 차이를 알려줘. 두 궁의 에너지가 충돌하는 시기와 대처법도 짚어줘.",
+    "body": "내 사주의 년·월·일·시 4기둥과 대운의 흐름, 그리고 점성술 출생 차트의 상반기/하반기 에너지 구성을 비교해서 인생 전반부와 후반부의 성향 변화와 운의 상승기를 명확히 짚어줘.",
     "questionCount": 214
   },
   {
@@ -478,14 +461,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이번 달 무슨 일이 생길까",
     "hint": "",
     "tools": [
-      "liuren",
-      "tojeong"
+      "saju",
+      "tarot"
     ],
     "tool_ids": [
-      "liuren",
-      "tojeong"
+      "saju",
+      "tarot"
     ],
-    "body": "육임과 토정비결을 함께 이용해서 이번 달 나에게 어떤 일이 생길지 봐줘. 지금 이 시점의 육임 흐름과 토정비결 월별 괘를 엮어서, 이달의 핵심 흐름과 조심할 점, 기대할 만한 일을 짚어줘.",
+    "body": "내 사주의 이번 달 월운(月運) 간지와 타로 3장 월별 스프레드를 통합해서, 이번 달 나에게 찾아올 가장 중요한 사건과 기회, 그리고 조심해야 할 변수를 미리 짚어줘.",
     "questionCount": 210
   },
   {
@@ -495,12 +478,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이 사람과 나는 어떤 인연일까",
     "hint": "",
     "tools": [
-      "syukuyo"
+      "astrology",
+      "saju"
     ],
     "tool_ids": [
-      "syukuyo"
+      "astrology",
+      "saju"
     ],
-    "body": "숙요를 이용해서 지금 내 곁에 있는 이 사람과 나 사이가 숙요 궁합으로 어떤 관계인지 봐줘. 서로에게 끌어당기는 힘과 부딪히기 쉬운 지점을 짚고, 이 인연을 어떻게 대하면 오래갈지 조언해줘.",
+    "body": "점성술 시나스트리(노스노드 카르마 축과 달·금성 상호작용)와 사주 일지 궁합을 분석해, 이 사람과 내가 전생과 우주적 관점에서 어떤 인연의 고리로 엮여 있는지 그 깊은 의미를 알려줘.",
     "questionCount": 207
   },
   {
@@ -559,12 +544,16 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이 직장이 나한테 맞을까?",
     "hint": "",
     "tools": [
-      "jami"
+      "saju",
+      "astrology",
+      "orange"
     ],
     "tool_ids": [
-      "jami"
+      "saju",
+      "astrology",
+      "orange"
     ],
-    "body": "자미두수 관록궁의 주성·사화·살성으로 이 직장이 나에게 맞는지 판단해줘. 이상적 업무 환경과 현재 상황의 부합도를 비교하고 대안도 조언해줘.",
+    "body": "내 사주의 관성(조직 적합성) 및 십신 격국과 점성술 6·10하우스를 분석하고, 1원칙 분석으로 지금 회사의 조직 문화와 내 기질이 얼마나 맞는지, 장기적 성장에 유리한지 진단해줘.",
     "questionCount": 183
   },
   {
@@ -574,27 +563,31 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이 사람이 나에게 어떤 존재일까",
     "hint": "",
     "tools": [
-      "syukuyo"
+      "astrology",
+      "rebible"
     ],
     "tool_ids": [
-      "syukuyo"
+      "astrology",
+      "rebible"
     ],
-    "body": "숙요를 이용해서 지금 마음 쓰이는 그 사람이 숙요 관계에서 나에게 어떤 자리에 있는지 봐줘. 나를 성장시키는 인연인지 기대게 되는 인연인지 풀어서, 이 관계에서 내가 어떤 태도를 가지면 좋을지 조언해줘.",
+    "body": "점성술 출생 차트와 기적수업(ACIM)의 '거룩한 관계' 관점을 통해, 이 사람이 내 삶에 찾아온 진정한 영적 의미와 내 내면의 투사를 거두고 배울 수 있는 지혜를 알려줘.",
     "questionCount": 177
   },
   {
     "id": "fortune-jami-year-keyword",
     "category": "fortune",
     "categoryLabel": "운세",
-    "title": "자미두수 올해 키워드 & 월별 주의점",
+    "title": "올해 핵심 키워드 & 월별 주의점",
     "hint": "",
     "tools": [
-      "jami"
+      "saju",
+      "astrology"
     ],
     "tool_ids": [
-      "jami"
+      "saju",
+      "astrology"
     ],
-    "body": "자미두수 유년 운세로 올해 핵심 키워드 3개를 뽑고, 살성이 강하게 작용하거나 사화가 만나는 달을 콕 짚어 월별 코멘트로 정리해줘.",
+    "body": "내 사주의 신년 세운(歲運) 십신과 점성술 올해 주요 외행성 트랜짓을 종합해, 올해를 관통하는 핵심 키워드 3가지와 가장 유의해야 할 월별 타이밍을 짚어줘.",
     "questionCount": 170
   },
   {
@@ -619,12 +612,16 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "가족·친구·동료 관계의 결",
     "hint": "",
     "tools": [
-      "jami"
+      "saju",
+      "astrology",
+      "bluebird"
     ],
     "tool_ids": [
-      "jami"
+      "saju",
+      "astrology",
+      "bluebird"
     ],
-    "body": "자미두수 부모궁·형제궁·노복궁을 각각 분석해서 가족·친구·동료 관계의 특성과 긴장 포인트, 관계를 더 좋게 가꾸는 방법을 궁별로 설명해줘.",
+    "body": "사주의 비겁(동료)·인성(가족) 궁위와 점성술 3·4·11하우스를 분석해 가족, 친구, 직장 동료와의 관계의 결을 짚어주고, 관계 스트레스를 줄이는 소통법을 알려줘.",
     "questionCount": 149
   },
   {
@@ -635,13 +632,13 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "astrology"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "astrology"
     ],
-    "body": "사주 세운과 자미두수 유년운을 교차해서 올해 가장 좋은 달 TOP 3와 조심할 달 TOP 3를 선정해줘. 각 달의 근거와 실천 리스트도 정리해줘.",
+    "body": "내 사주 원국과 올해 세운에 비추어 12개월 월운(月運)의 오행 합충과 점성술 행성 트랜짓을 대조해, 올해 나에게 가장 기회가 넘치는 최고의 달과 매사 조심해야 할 달을 짚어줘.",
     "questionCount": 149
   },
   {
@@ -651,61 +648,65 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "나에게 흐르는 가장 강한 기운",
     "hint": "",
     "tools": [
-      "hongguk"
+      "saju",
+      "astrology"
     ],
     "tool_ids": [
-      "hongguk"
+      "saju",
+      "astrology"
     ],
-    "body": "홍국기문을 이용해서 내 타고난 성격과 기질을 분석해줘. 나에게 가장 강하게 작용하는 기운이 무엇인지, 그 기운이 성격이나 삶의 방식에서 어떻게 드러나는지 설명하고, 나라는 사람을 한 문단으로 요약해줘.",
+    "body": "내 사주의 오행 득령·득지 세력과 최강 십신, 그리고 점성술 네이탈 차트의 우세 원소(불·흙·공기·물)를 분석해 내 안에서 가장 지배적으로 작동하는 강한 기운과 이를 생산적으로 쓰는 법을 알려줘.",
     "questionCount": 139
   },
   {
     "id": "hori-5c-076",
     "category": "fortune",
     "categoryLabel": "운세",
-    "title": "자세한 올해 운세, 솔라리턴과 토정비결로",
+    "title": "자세한 올해 운세, 솔라리턴과 사주 세운으로",
     "hint": "",
     "tools": [
       "astrology",
-      "tojeong",
       "saju"
     ],
     "tool_ids": [
       "astrology",
-      "tojeong",
       "saju"
     ],
-    "body": "점성술 솔라리턴, 토정비결, 사주를 함께 이용해서 올해 운세를 자세히 봐줘. 세 관점이 가리키는 올해의 큰 테마와 재물, 관계, 건강 흐름을 엮고, 특히 중요한 시기 몇 달을 콕 짚어줘.",
+    "body": "점성술 1년 운세인 솔라리턴(Solar Return) 차트와 사주 신년 세운(歲運)을 정밀하게 결합해 올해 나에게 찾아올 주요 기회와 도전, 테마를 종합적으로 분석해줘.",
     "questionCount": 129
   },
   {
     "id": "hori-5c-018",
     "category": "discovery",
     "categoryLabel": "발견",
-    "title": "아홉 별로 보는 나의 기질",
+    "title": "사주 일주와 오행으로 보는 타고난 기질",
     "hint": "",
     "tools": [
-      "ninestarki"
+      "saju",
+      "somatic"
     ],
     "tool_ids": [
-      "ninestarki"
+      "saju",
+      "somatic"
     ],
-    "body": "구성학을 이용해서 내 본명성으로 타고난 성격과 행동 방식을 분석해줘. 나에게 강하게 드러나는 기운이 무엇인지, 그 기운이 일상과 대인관계에서 어떻게 나타나는지 풀어서 나라는 사람을 한 문단으로 요약해줘.",
+    "body": "내 사주 일주(60간지 고유 에너지)와 오행의 편중 상태를 분석하고, 신체 신경계(소매틱) 관점에서 내가 스트레스를 받을 때 몸과 마음이 어떤 패턴으로 반응하는지 입체적으로 풀어줘.",
     "questionCount": 120
   },
   {
     "id": "general-jami-strong-weak",
     "category": "discovery",
     "categoryLabel": "발견",
-    "title": "자미두수 12궁 강약 TOP 3",
+    "title": "내 인생을 이끄는 핵심 하우스 & 십신 TOP 3",
     "hint": "",
     "tools": [
-      "jami"
+      "astrology",
+      "saju"
     ],
     "tool_ids": [
-      "jami"
+      "astrology",
+      "saju"
     ],
-    "body": "자미두수 12궁 중 가장 강한 궁 3개와 약한 궁 3개를 짚어줘. 각 궁의 주성·사화·살성 근거와 실제 인생에서의 발현 예시도 설명해줘.",
+    "body": "내 점성술 차트에서 행성들이 가장 집중된 강력한 12하우스 TOP 3와 사주에서 가장 발달한 십신을 뽑아서, 내 삶을 견인하는 핵심 엔진과 주의가 필요한 취약점을 알려줘.",
     "questionCount": 118
   },
   {
@@ -715,12 +716,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "돈과 사람이 모이는 방식",
     "hint": "",
     "tools": [
-      "hongguk"
+      "saju",
+      "astrology"
     ],
     "tool_ids": [
-      "hongguk"
+      "saju",
+      "astrology"
     ],
-    "body": "홍국기문을 이용해서 나의 재물운과 인간관계의 흐름을 분석해줘. 타고난 재물 운용 스타일과 돈이 모이는 방식, 그리고 사람들과의 관계에서 자주 나타나는 패턴을 함께 정리해줘.",
+    "body": "사주의 식상생재(재능이 돈이 되는 통로)와 관인상생 흐름, 그리고 점성술 2하우스(재물)와 11하우스(네트워크)를 분석해 나에게 돈과 귀인이 어떤 방식으로 모여드는지 알려줘.",
     "questionCount": 118
   },
   {
@@ -745,12 +748,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "인간관계 갈등 패턴 분석",
     "hint": "",
     "tools": [
-      "saju"
+      "saju",
+      "bluebird"
     ],
     "tool_ids": [
-      "saju"
+      "saju",
+      "bluebird"
     ],
-    "body": "내 사주 십성 구조에서 인간관계 갈등이 잘 생기는 지점을 분석해줘. 어떤 유형과 부딪히기 쉬운지, 관계를 부드럽게 만드는 팁도 알려줘.",
+    "body": "사주 비견·겁재와 지지 형충파해를 분석해 내가 인간관계에서 반복해서 겪는 갈등의 원인을 파악하고, 비폭력 대화(NVC)를 활용해 관계의 상처를 지혜롭게 회복하는 법을 알려줘.",
     "questionCount": 116
   },
   {
@@ -761,13 +766,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "astrology",
-      "jami"
+      "saju",
+      "orange"
     ],
     "tool_ids": [
       "astrology",
-      "jami"
+      "saju",
+      "orange"
     ],
-    "body": "솔라리턴 차트 강조 하우스와 자미두수 유년 명궁을 묶어 올해 주력할 분야를 짚어줘. 왜 그 분야에 에너지를 쏟아야 하는지 근거와 행동 플랜도 줘.",
+    "body": "점성술 올해 주요 트랜짓(목성·토성 위치)과 사주 세운을 대조해 올해 내가 가장 공을 들여야 할 핵심 분야를 정하고, 1원칙 전략으로 한 해의 성과를 극대화하는 실행 계획을 알려줘.",
     "questionCount": 115
   },
   {
@@ -777,12 +784,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이번 주 나에게 흐르는 기운",
     "hint": "",
     "tools": [
-      "liuren"
+      "tarot",
+      "saju"
     ],
     "tool_ids": [
-      "liuren"
+      "tarot",
+      "saju"
     ],
-    "body": "지금 이 순간을 기준으로 육임 명반을 뽑아서, 앞으로 일주일 동안 나에게 어떤 흐름이 흐르는지 봐줘. 특히 신경 써야 할 날이나 기회가 올 만한 타이밍이 있으면 짚어줘.",
+    "body": "타로 오라클 카드와 내 사주의 이번 주 일진(日辰) 오행 흐름을 결합해서, 이번 주 나에게 흐르는 기운과 가장 운이 트이는 요일, 피해야 할 행동을 짚어줘.",
     "questionCount": 114
   },
   {
@@ -808,13 +817,13 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "orange"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "orange"
     ],
-    "body": "자미두수 재백궁과 사주 재성을 함께 보고 이 투자·사업이 내게 맞는지 분석해줘. 타고난 재물 운용 스타일과 현재 시기의 리스크를 짚어줘.",
+    "body": "사주의 편재·상관(사업적 수완과 리스크 성향)과 1원칙 인지 전략을 통해 내 기질이 사업이나 적극적 투자에 맞는지 진단하고, 리스크를 통제하는 현실적인 성공 방안을 알려줘.",
     "questionCount": 111
   },
   {
@@ -839,12 +848,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이 고민, 지금 결론이 나 있을까",
     "hint": "",
     "tools": [
-      "liuren"
+      "orange",
+      "tarot"
     ],
     "tool_ids": [
-      "liuren"
+      "orange",
+      "tarot"
     ],
-    "body": "지금 이 순간을 기준으로 육임 명반을 뽑아서, 요즘 머릿속을 떠나지 않는 이 고민이 어느 방향으로 움직이고 있는지 봐줘. 이미 답이 정해진 흐름인지, 아직 바뀔 여지가 있는지 알려줘.",
+    "body": "1원칙 인지적 거리두기(사실과 두려움 분리)와 타로 결단 카드를 결합해서, 내가 오래 끌어온 이 고민이 실은 이미 마음속에 답이 정해져 있는지 비추어보고 결단을 내릴 수 있게 도와줘.",
     "questionCount": 110
   },
   {
@@ -854,14 +865,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "식은 마음, 다시 살아날 수 있을까",
     "hint": "",
     "tools": [
-      "iching",
-      "tarot"
+      "tarot",
+      "bluebird"
     ],
     "tool_ids": [
-      "iching",
-      "tarot"
+      "tarot",
+      "bluebird"
     ],
-    "body": "지금 이 순간을 기준으로 주역 괘를 뽑고 타로 한 장을 더해서, 요즘 미지근해진 이 관계가 다시 뜨거워질 여지가 있는지 봐줘. 괘와 카드가 함께 가리키는 흐름을 통합해서, 지금 내가 붙잡아야 할지 놓아야 할지 조언해줘.",
+    "body": "타로 3장 스프레드와 비폭력 대화(NVC) 욕구 분석을 결합해, 요즘 미지근해진 이 관계가 다시 살아날 여지가 있는지 짚어주고, 지금 내가 붙잡아야 할지 아니면 마음을 놓아야 할지 진솔한 조언을 줘.",
     "questionCount": 109
   },
   {
@@ -871,12 +882,16 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이 친구와 오래 갈 수 있을까",
     "hint": "",
     "tools": [
-      "syukuyo"
+      "saju",
+      "astrology",
+      "bluebird"
     ],
     "tool_ids": [
-      "syukuyo"
+      "saju",
+      "astrology",
+      "bluebird"
     ],
-    "body": "숙요를 이용해서 이 친구와 나 사이의 숙요 관계를 봐줘. 둘 사이에 흐르는 기운이 오래 이어질 인연인지, 시간이 지나며 멀어지기 쉬운지 짚고, 관계를 지키려면 무엇을 신경 쓰면 좋을지 알려줘.",
+    "body": "내 사주의 비겁(친구/인연) 기운과 점성술 11하우스(우정·동료) 지표를 바탕으로 이 친구와 나의 기운이 오래 이어질 인연인지, 서로의 다름을 존중하며 관계를 돈독히 지키는 비결을 알려줘.",
     "questionCount": 105
   },
   {
@@ -918,14 +933,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "두 눈으로 보는 나의 성격",
     "hint": "",
     "tools": [
-      "hongguk",
-      "saju"
+      "saju",
+      "astrology"
     ],
     "tool_ids": [
-      "hongguk",
-      "saju"
+      "saju",
+      "astrology"
     ],
-    "body": "홍국기문과 사주를 함께 이용해서 내 성격과 기질을 입체적으로 분석해줘. 두 관점에서 겹치는 특성과 서로 다르게 보이는 면을 구분해서 설명하고, 종합적으로 나를 어떤 사람이라 할 수 있는지 정리해줘.",
+    "body": "동양의 사주명리학과 서양의 점성술 두 가지 관점을 결합해 내 성격과 기질을 입체적으로 분석해줘. 두 관점에서 겹치는 본질적인 특성과 서로 다르게 보이는 면을 구분해 종합적인 나를 정리해줘.",
     "questionCount": 103
   },
   {
@@ -935,12 +950,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "나랑 잘 맞는 사람은 어떤 유형",
     "hint": "",
     "tools": [
-      "syukuyo"
+      "astrology",
+      "saju"
     ],
     "tool_ids": [
-      "syukuyo"
+      "astrology",
+      "saju"
     ],
-    "body": "숙요를 이용해서 내 별자리 기준으로 나와 가장 잘 맞는 사람과 어긋나기 쉬운 사람의 유형을 알려줘. 어떤 결을 가진 사람에게 편안함을 느끼고, 어떤 유형과는 노력이 필요한지 정리해줘.",
+    "body": "내 점성술 7하우스(디센던트, 금성)와 사주 일지(배우자궁) 및 용신을 분석해, 나와 에너지가 가장 편안하게 맞는 사람과 서로 배려가 필요한 유형을 명확히 정리해줘.",
     "questionCount": 103
   },
   {
@@ -965,14 +982,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "다시 시작한다면 무엇이 달라질까",
     "hint": "",
     "tools": [
-      "kabbalistic",
-      "tarot"
+      "tarot",
+      "sedona"
     ],
     "tool_ids": [
-      "kabbalistic",
-      "tarot"
+      "tarot",
+      "sedona"
     ],
-    "body": "카발라 생명나무와 타로를 함께 이용해서, 만약 이 관계를 다시 시작한다면 지난번과 무엇이 달라질 수 있는지 봐줘. 내가 성장시켜야 할 세피라의 에너지와 카드가 가리키는 흐름을 통합해서, 반복하지 않으려면 무엇을 바꿔야 하는지 알려줘.",
+    "body": "타로 3장 스프레드와 세도나 메서드(Sedona Method)의 놓아버림 지혜를 결합해서, 만약 이 관계를 다시 시작한다면 과거의 어떤 집착과 통제 욕구를 내려놓아야 하는지, 똑같은 실수를 반복하지 않는 법을 알려줘.",
     "questionCount": 101
   },
   {
@@ -1013,13 +1030,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "jami"
+      "sedona",
+      "somatic"
     ],
     "tool_ids": [
       "saju",
-      "jami"
+      "sedona",
+      "somatic"
     ],
-    "body": "사주 일간과 자미두수 명궁을 보고 내가 자주 빠지는 감정 패턴(완벽주의, 감정 회피 등)의 뿌리를 분석하고, 바로 써먹을 수 있는 대처법을 알려줘.",
+    "body": "사주 일간과 취약한 오행을 살피고, 세도나 메서드와 소매틱(신체 감각) 관점에서 내가 반복해서 빠지는 감정 패턴(완벽주의, 자책, 회피 등)의 뿌리를 찾아 바로 흘려보낼 수 있는 실전 대처법을 알려줘.",
     "questionCount": 89
   },
   {
@@ -1044,12 +1063,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "밖에서 받는 스트레스 흐름",
     "hint": "",
     "tools": [
-      "jami"
+      "astrology",
+      "orange"
     ],
     "tool_ids": [
-      "jami"
+      "astrology",
+      "orange"
     ],
-    "body": "자미두수 천이궁으로 외부 환경에서 받는 스트레스 원인과 패턴을 짚어줘. 겉으로 비치는 이미지와 내면의 간극, 편안하게 지내는 방법도 설명해줘.",
+    "body": "점성술 6·10하우스와 토성 배치로 사회 환경에서 받는 스트레스의 원인과 패턴을 짚어주고, 1원칙 인지적 거리두기(Fly-on-the-wall 관점)로 마음의 평정을 되찾는 팁을 알려줘.",
     "questionCount": 87
   },
   {
@@ -1075,15 +1096,15 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "astrology",
-      "hongguk",
-      "thai"
+      "saju",
+      "muse"
     ],
     "tool_ids": [
       "astrology",
-      "hongguk",
-      "thai"
+      "saju",
+      "muse"
     ],
-    "body": "점성술, 홍국기문, 호라삿타이를 함께 이용해서 우리 아이가 타고난 재능과 기질을 봐줘. 세 관점에서 공통으로 드러나는 강점과 어울리는 성장 방향을 정리하고, 부모로서 어떻게 이끌면 좋을지 조언해줘.",
+    "body": "점성술 5하우스(창의성·재능)와 출생 차트, 그리고 사주의 식상(표현력)과 인성(학습 역량)을 결합해서 우리 아이가 타고난 고유한 잠재력과 강점을 짚어주고, 부모로서 어떻게 지지해주면 좋을지 조언해줘.",
     "questionCount": 84
   },
   {
@@ -1093,12 +1114,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "건강과 스트레스 패턴 진단",
     "hint": "",
     "tools": [
-      "jami"
+      "saju",
+      "somatic"
     ],
     "tool_ids": [
-      "jami"
+      "saju",
+      "somatic"
     ],
-    "body": "자미두수 질액궁의 주성·살성으로 내 건강 취약 부위와 스트레스 패턴을 짚어줘. 현재 대한·유년에서 주의할 건강 이슈와 관리 팁도 알려줘.",
+    "body": "내 사주 오행의 과다·고립 상태와 소매틱(Somatic) 신경계 관점을 결합해 신체 건강 취약 부위와 만성 스트레스 패턴을 진단하고, 매일 1분 실천할 수 있는 신경계 안정 리셋 루틴을 알려줘.",
     "questionCount": 84
   },
   {
@@ -1108,12 +1131,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "내가 일할 때 빛나는 순간",
     "hint": "",
     "tools": [
-      "hongguk"
+      "saju",
+      "orange"
     ],
     "tool_ids": [
-      "hongguk"
+      "saju",
+      "orange"
     ],
-    "body": "홍국기문을 이용해서 나의 직업 적성과 사회생활 스타일을 분석해줘. 조직에서 어떤 방식으로 일할 때 강점이 살아나는지, 어울리는 직업 방향과 함께 사람들과 관계 맺는 특성도 짚어줘.",
+    "body": "사주의 격국과 용신, 그리고 1원칙 커리어 분석을 통해 내가 조직이나 일터에서 어떤 방식으로 일할 때 최고의 성과와 빛을 발하는지, 나만의 독보적인 업무 강점과 최적의 역할을 알려줘.",
     "questionCount": 83
   },
   {
@@ -1123,12 +1148,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이 면접/지원 결과 가능성",
     "hint": "",
     "tools": [
-      "liuren"
+      "tarot",
+      "saju"
     ],
     "tool_ids": [
-      "liuren"
+      "tarot",
+      "saju"
     ],
-    "body": "방금 이 질문을 던진 시점으로 육임 명반을 뽑아서, 내가 기다리는 합격이나 결과 소식의 가능성과 언제쯤 윤곽이 잡힐지 봐줘. 지금 내가 더 준비하거나 챙길 부분이 있으면 조언해줘.",
+    "body": "타로 3장 스프레드와 내 사주의 이달 관운(시험·합격운)을 함께 분석해, 내가 기다리는 합격이나 면접 결과 소식의 긍정적 흐름과 윤곽이 드러날 시기를 짚어주고 막판에 챙겨야 할 실전 조언을 줘.",
     "questionCount": 80
   },
   {
@@ -1154,13 +1181,13 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "hint": "",
     "tools": [
       "saju",
-      "iching"
+      "astrology"
     ],
     "tool_ids": [
       "saju",
-      "iching"
+      "astrology"
     ],
-    "body": "내 사주와 주역을 함께 이용해서 지금 마음이 가는 상대와 내가 얼마나 잘 맞는지 봐줘. 사주로 본 나의 연애 기질과 지금 뽑은 괘가 가리키는 두 사람 사이의 흐름을 엮어서, 이 인연을 어떻게 대하면 좋을지 정리해줘.",
+    "body": "내 사주와 상대방의 별자리 시나스트리를 함께 이용해서 지금 마음이 가는 상대와 나의 성향적 결이 얼마나 맞는지 봐줘. 두 사람 사이의 에너지 시너지와 현명하게 가까워지는 소통법을 정리해줘.",
     "questionCount": 77
   },
   {
@@ -1197,19 +1224,19 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "id": "general-keyword-compare",
     "category": "discovery",
     "categoryLabel": "발견",
-    "title": "세 관점 핵심 키워드 비교",
+    "title": "사주·점성술·타로 세 관점 핵심 키워드 비교",
     "hint": "",
     "tools": [
       "saju",
       "astrology",
-      "jami"
+      "tarot"
     ],
     "tool_ids": [
       "saju",
       "astrology",
-      "jami"
+      "tarot"
     ],
-    "body": "사주, 점성술, 자미두수 세 관점에서 나를 설명하는 키워드를 각각 3개씩 뽑아 표로 정리하고, 공통점과 차이점을 비교한 뒤 한 줄로 요약해줘.",
+    "body": "사주, 점성술, 타로 오라클 세 관점에서 나를 설명하는 핵심 키워드를 각각 3개씩 뽑아 비교 표로 정리하고, 세 렌즈가 비추는 공통점과 차이점을 한 줄로 요약해줘.",
     "questionCount": 72
   },
   {
@@ -1266,14 +1293,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "올해 나는 나아갈 때일까 다질 때일까",
     "hint": "",
     "tools": [
-      "ninestarki",
-      "saju"
+      "saju",
+      "orange"
     ],
     "tool_ids": [
-      "ninestarki",
-      "saju"
+      "saju",
+      "orange"
     ],
-    "body": "구성학과 사주를 이용해서 올해 나에게 흐르는 기운과 운의 흐름을 봐줘. 본명성 흐름에서 올해가 움직이기 좋은 해인지 자리를 다지기 좋은 해인지 짚고, 유리한 방향과 조심할 시기를 알려줘.",
+    "body": "내 사주 대운·세운의 십신 흐름과 1원칙 전략 분석을 결합해, 올해 내가 적극적으로 공격적인 확장을 해야 할 때인지 아니면 내실을 다지며 때를 기다려야 할 때인지 명확한 기준과 행동 지침을 알려줘.",
     "questionCount": 67
   },
   {
@@ -1283,12 +1310,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "나는 어떤 RPG 캐릭터?",
     "hint": "",
     "tools": [
-      "jami"
+      "saju",
+      "astrology"
     ],
     "tool_ids": [
-      "jami"
+      "saju",
+      "astrology"
     ],
-    "body": "자미두수 주성 조합을 RPG 캐릭터로 만들어줘. 직업, 6스탯 수치(100점 만점), 고유 스킬 2개, 패시브 1개를 게임 설명서처럼 재미있게 써줘.",
+    "body": "내 사주 오행(목화토금수)과 점성술 태양·상승궁 조합을 바탕으로 나를 RPG 게임 캐릭터로 만들어줘. 직업, 6대 스탯(근력·민첩·지능 등 100점 만점), 고유 스킬 2개와 패시브 능력을 게임 캐릭터 설명서처럼 재치 있게 써줘.",
     "questionCount": 66
   },
   {
@@ -1298,12 +1327,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "이 이별이 나에게 남긴 과제",
     "hint": "",
     "tools": [
-      "kabbalistic"
+      "rebible",
+      "sedona"
     ],
     "tool_ids": [
-      "kabbalistic"
+      "rebible",
+      "sedona"
     ],
-    "body": "카발라 생명나무의 세피라 배치로 이 이별이 내 안에 어떤 과제를 남겼는지 봐줘. 반복되는 관계 패턴이 어느 세피라의 흐름에서 비롯되는지 풀어서, 재회를 바라기 전에 내가 먼저 마주해야 할 내면의 주제를 알려줘.",
+    "body": "기적수업(ACIM)의 용서 지혜와 세도나 메서드를 통해, 이 가슴 아픈 이별이 내 안에 어떤 영적 배움과 내면 과제를 남겼는지 비추어줘. 재회를 바라거나 자책하기 전에 내가 온전히 마주하고 놓아주어야 할 감정을 알려줘.",
     "questionCount": 66
   },
   {
@@ -1328,12 +1359,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "고백할까, 조금 더 기다릴까",
     "hint": "",
     "tools": [
-      "liuren"
+      "tarot",
+      "astrology"
     ],
     "tool_ids": [
-      "liuren"
+      "tarot",
+      "astrology"
     ],
-    "body": "지금 이 순간을 기준으로 육임 명반을 뽑아서, 내가 마음을 표현하려는 지금이 타이밍이 맞는지 봐줘. 지금 움직이는 게 좋은지 조금 더 기다리는 게 나은지, 그리고 상대의 마음이 지금 어느 쪽으로 기울어 있는지 흐름으로 짚어줘.",
+    "body": "지금 이 순간의 기운으로 타로 3장 스프레드를 펼치고 점성술 금성·화성 배치를 살펴, 마음에 품은 고백을 지금 전하는 게 맞을지 조금 더 기다려 타이밍을 보는 게 나을지, 상대의 마음 흐름과 함께 짚어줘.",
     "questionCount": 63
   },
   {
@@ -1358,12 +1391,14 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
     "title": "오늘 이 결정 밀어붙여도 될까",
     "hint": "",
     "tools": [
-      "liuren"
+      "orange",
+      "tarot"
     ],
     "tool_ids": [
-      "liuren"
+      "orange",
+      "tarot"
     ],
-    "body": "지금 이 순간을 기준으로 육임 명반을 뽑아서, 내가 지금 밀어붙이려는 이 선택이 흐름을 타고 있는지 거스르고 있는지 봐줘. 바로 움직여도 되는지, 조금 기다렸다 가는 게 나은지 결론을 내려줘.",
+    "body": "1원칙 현실 분석(Orange)과 타로 결단 오라클을 결합해, 내가 지금 밀어붙이려는 이 선택이 자연스러운 흐름을 타고 있는지 아니면 조급함에 의한 무리수인지 짚어주고, 지금 추진할지 완급을 조절할지 판단 기준을 제시해줘.",
     "questionCount": 57
   },
   {
@@ -1386,7 +1421,7 @@ export const HORI_PROMPT_LIBRARY: HoriPromptItem[] = [
 ];
 
 export const PROMPTS_PER_PAGE = 6;
-export const TOTAL_PAGES = Math.ceil(HORI_PROMPT_LIBRARY.length / PROMPTS_PER_PAGE); // 13페이지
+export const TOTAL_PAGES = 13;
 
 export function filterPrompts(
   prompts: HoriPromptItem[],
