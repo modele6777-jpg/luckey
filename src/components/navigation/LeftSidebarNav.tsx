@@ -686,34 +686,25 @@ export default function LeftSidebarNav() {
 
                   <button
                     type="button"
-                    onClick={() => handleNavigate('/profile')}
-                    className="w-full h-full rounded-xl bg-amber-400/15 border border-amber-400/30 hover:border-amber-400/70 flex items-center justify-center text-amber-300 hover:bg-amber-400/25 transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm"
-                    aria-label={`${userNickname} 프로필`}
-                    title={`${userNickname} 프로필`}
+                    onClick={() => sidebarAvatarInputRef.current?.click()}
+                    className="relative w-full h-full rounded-xl bg-amber-400/15 border border-amber-400/30 hover:border-amber-400/70 flex items-center justify-center text-amber-300 hover:bg-amber-400/25 transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm"
+                    aria-label="내 사진 변경"
+                    title="내 사진 변경 (클릭하여 사진 선택)"
                   >
                     {userAvatarUrl ? (
                       <img
                         src={userAvatarUrl}
                         alt={userNickname}
-                        className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                        className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <User size={16} className="group-hover:scale-110 transition-transform" />
                     )}
-                  </button>
 
-                  {/* Quick photo change button badge */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      sidebarAvatarInputRef.current?.click();
-                    }}
-                    className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-neutral-950/95 border border-amber-400/50 shadow flex items-center justify-center text-amber-300 hover:bg-amber-400/30 hover:text-white transition-all cursor-pointer active:scale-90 z-10"
-                    title="내 사진 변경"
-                    aria-label="내 사진 변경"
-                  >
-                    <Camera size={10} />
+                    {/* Hover camera overlay on photo */}
+                    <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white rounded-xl pointer-events-none">
+                      <Camera size={13} className="text-amber-300" />
+                    </div>
                   </button>
 
                   {/* Desktop Hover Tooltip */}
@@ -724,9 +715,20 @@ export default function LeftSidebarNav() {
                       <span className="w-2 h-2 rounded-full bg-amber-400" />
                     )}
                     <span className="text-xs font-bold text-amber-300">{userNickname}</span>
-                    <span className="text-[11px] text-neutral-400">프로필</span>
+                    <span className="text-[11px] text-neutral-400">클릭하여 사진 변경</span>
                   </div>
                 </div>
+
+                {/* Profile Settings Page Button */}
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('/profile')}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-amber-300 hover:bg-white/[0.08] transition-colors cursor-pointer text-xs active:scale-90"
+                  title={`${userNickname} 프로필 설정`}
+                  aria-label={`${userNickname} 프로필 설정`}
+                >
+                  <User size={15} />
+                </button>
 
                 {/* Collapse Button */}
                 <button
