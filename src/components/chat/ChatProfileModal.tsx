@@ -8,6 +8,7 @@ interface ChatProfileModalProps {
   onSave: (profile: ChatTargetProfile) => void;
   initialProfile?: ChatTargetProfile | null;
   totalProfilesCount: number;
+  existingProfiles?: ChatTargetProfile[];
 }
 
 const RELATIONSHIP_TAGS = ['본인', '연인', '썸', '친구', '동업자', '가족', '직장동료'];
@@ -17,7 +18,8 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
   onClose,
   onSave,
   initialProfile,
-  totalProfilesCount
+  totalProfilesCount,
+  existingProfiles = []
 }) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('1996-01-01');
@@ -29,6 +31,13 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
   const [relationship, setRelationship] = useState('연인');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Check if there is already an existing '본인' profile (excluding the profile being edited)
+  const hasExistingSelf = Boolean(
+    existingProfiles?.some(
+      (p) => (p.isMe || p.relationship === '본인') && p.id !== initialProfile?.id
+    )
+  );
+
   useEffect(() => {
     if (initialProfile) {
       setName(initialProfile.name || '');
@@ -38,8 +47,12 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       setIsTimeUnknown(!initialProfile.birthtime);
       setGender(initialProfile.gender || 'female');
       setBirthCity(initialProfile.birthCity || '서울');
+      
       // 👥 프로필이 1명뿐인 경우 분류를 자동으로 '본인'으로 설정
-      const defaultRel = totalProfilesCount === 1 ? '본인' : (initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인'));
+      let defaultRel = totalProfilesCount === 1 ? '본인' : (initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인'));
+      if (hasExistingSelf && defaultRel === '본인') {
+        defaultRel = '연인';
+      }
       setRelationship(defaultRel);
     } else {
       // Default for adding a new second/third person
@@ -50,10 +63,15 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       setIsTimeUnknown(false);
       setGender('female');
       setBirthCity('서울');
-      setRelationship(totalProfilesCount === 0 ? '본인' : (totalProfilesCount === 1 ? '연인' : '친구'));
+      // If there's already a self profile, new profile MUST be a non-self relation
+      if (hasExistingSelf || totalProfilesCount >= 1) {
+        setRelationship('연인');
+      } else {
+        setRelationship('본인');
+      }
     }
     setErrorMessage(null);
-  }, [initialProfile, isOpen, totalProfilesCount]);
+  }, [initialProfile, isOpen, totalProfilesCount, hasExistingSelf]);
 
   if (!isOpen) return null;
 
@@ -68,12 +86,19 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       return;
     }
 
+    if (relationship === '본인' && hasExistingSelf) {
+      setErrorMessage("이미 '본인' 프로필이 등록되어 있습니다. 연인, 친구 등 다른 관계를 선택해 주세요.");
+      return;
+    }
+
     const isSoleProfile = totalProfilesCount === 1 && Boolean(initialProfile);
-    const resolvedRelationship = isSoleProfile ? '본인' : relationship;
+    const resolvedRelationship = isSoleProfile ? '본인' : (hasExistingSelf && relationship === '본인' ? '연인' : relationship);
+    const resolvedIsMe = isSoleProfile ? true : (!hasExistingSelf && (initialProfile?.isMe || resolvedRelationship === '본인'));
+
     const savedProfile: ChatTargetProfile = {
       id: initialProfile?.id || `profile-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       name: name.trim(),
-      isMe: isSoleProfile ? true : (initialProfile?.isMe || false),
+      isMe: resolvedIsMe,
       birthdate,
       lunarSolar,
       birthtime: isTimeUnknown ? undefined : birthtime,
@@ -151,28 +176,47 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
                 <Heart size={14} className="text-rose-500" />
                 관계 구분
               </label>
-              {totalProfilesCount === 1 && Boolean(initialProfile) && (
+              {totalProfilesCount === 1 && Boolean(initialProfile) ? (
                 <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
                   (1인 상담 프로필: 본인)
                 </span>
-              )}
+              ) : hasExistingSelf ? (
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                  ('본인' 이미 등록됨 · 타인 관계 선택)
+                </span>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {RELATIONSHIP_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => setRelationship(tag)}
-                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    relationship === tag
-                      ? 'bg-amber-500 text-slate-950 shadow-2xs font-bold'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
+              {RELATIONSHIP_TAGS.map((tag) => {
+                const isSelfDisabled = tag === '본인' && hasExistingSelf;
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    disabled={isSelfDisabled}
+                    onClick={() => {
+                      if (isSelfDisabled) return;
+                      setRelationship(tag);
+                    }}
+                    title={isSelfDisabled ? "이미 '본인' 프로필이 등록되어 있어 선택할 수 없습니다." : tag}
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+                      isSelfDisabled
+                        ? 'opacity-35 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400 line-through'
+                        : relationship === tag
+                        ? 'bg-amber-500 text-slate-950 shadow-2xs font-bold cursor-pointer'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer'
+                    }`}
+                  >
+                    {tag}{isSelfDisabled ? ' (등록됨)' : ''}
+                  </button>
+                );
+              })}
             </div>
+            {hasExistingSelf && (
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
+                💡 '본인' 프로필은 1명만 유지되므로, 추가 프로필은 연인·친구 등 다른 관계만 선택하실 수 있습니다.
+              </p>
+            )}
           </div>
 
           {/* 3. 생년월일 & 양력/음력 */}

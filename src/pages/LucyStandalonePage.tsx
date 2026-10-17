@@ -847,14 +847,28 @@ export default function LucyStandalonePage() {
   const handleSaveChatProfile = useCallback((profile: ChatTargetProfile) => {
     setActiveProfiles((prev) => {
       const existsIndex = prev.findIndex((p) => p.id === profile.id);
+      
+      // Check if another profile is already '본인'
+      const existingSelfIndex = prev.findIndex(
+        (p) => p.id !== profile.id && (p.isMe || p.relationship === '본인')
+      );
+
+      let safeProfile = { ...profile };
+      // 🛡️ '본인' 중복 방지: 이미 본인이 존재한다면 추가 프로필은 타인 관계로 강제 보정
+      if (existingSelfIndex !== -1 && (safeProfile.relationship === '본인' || safeProfile.isMe)) {
+        safeProfile.relationship = '연인';
+        safeProfile.isMe = false;
+      }
+
       let updated: ChatTargetProfile[];
       if (existsIndex !== -1) {
         updated = [...prev];
-        updated[existsIndex] = profile;
+        updated[existsIndex] = safeProfile;
       } else {
         if (prev.length >= 4) return prev;
-        updated = [...prev, profile];
+        updated = [...prev, safeProfile];
       }
+
       // 👥 프로필이 한명만 남거나 존재할 때는 자동으로 분류를 '본인'으로 설정
       if (updated.length === 1) {
         updated[0] = {
@@ -862,7 +876,21 @@ export default function LucyStandalonePage() {
           isMe: true,
           relationship: '본인',
         };
+      } else {
+        // 2명 이상일 때 '본인'이 2명 이상 중복되지 않도록 보장 (첫 번째 본인만 유지)
+        let foundFirstSelf = false;
+        updated = updated.map((p) => {
+          if (p.isMe || p.relationship === '본인') {
+            if (!foundFirstSelf) {
+              foundFirstSelf = true;
+              return { ...p, isMe: true, relationship: '본인' };
+            }
+            return { ...p, isMe: false, relationship: '연인' };
+          }
+          return p;
+        });
       }
+
       setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
       return updated;
     });
@@ -2394,6 +2422,7 @@ export default function LucyStandalonePage() {
         onSave={handleSaveChatProfile}
         initialProfile={editingChatProfile}
         totalProfilesCount={activeProfiles.length}
+        existingProfiles={activeProfiles}
       />
 
       {/* End of content */}
