@@ -513,17 +513,17 @@ export function LucyResponseRecommendation({
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-800/70 text-slate-800 dark:text-slate-200"
+      className="mt-3 pt-2.5 border-t border-amber-900/10 dark:border-amber-100/10 text-stone-800 dark:text-stone-200"
     >
-      {/* 🌟 단일 통합 추천 칸 (Key 추천 기법 + LucKey 연계 추천 경로 1개를 같은 칸에 배치) */}
-      <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/90 to-slate-900 text-white border border-cyan-500/30 shadow-md space-y-2.5 transition-all hover:border-cyan-400/50">
+      {/* 🌟 단일 통합 추천 칸 (Key 추천 기법 + LucKey 연계 추천 경로 1개를 같은 칸에 배치 - 프리미엄 베이지 테마) */}
+      <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#FAF6EE] via-[#FDFBF7] to-[#F5EFE6] dark:from-[#25201A] dark:via-[#2C241D] dark:to-[#211B16] border border-[#E6D9C5] dark:border-[#544332] shadow-[0_2px_12px_rgba(180,140,90,0.08)] dark:shadow-none space-y-2.5 transition-all hover:border-[#D6C4AA] dark:hover:border-[#6B5540]">
         {/* 헤더: LucKey 연계 추천 라벨 & 테마 이유 */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-300">
-            <Sparkles size={13} className="text-amber-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EFE4D2] dark:bg-[#3D3124] border border-[#DFCEB3] dark:border-[#5A4734] text-[10.5px] font-bold text-[#844A14] dark:text-[#F3D7B5] shadow-2xs">
+            <Sparkles size={12} className="text-[#D97706] dark:text-[#FBBF24] animate-pulse shrink-0" />
             <span>LucKey 연계 추천</span>
           </div>
-          <span className="text-[10px] text-slate-400 truncate max-w-[210px] sm:max-w-none">
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium truncate max-w-[210px] sm:max-w-none">
             {themeReason}
           </span>
         </div>
@@ -533,38 +533,38 @@ export function LucyResponseRecommendation({
           {/* A. Key 추천 기법 (40가지 실천 연습실) */}
           <div
             onClick={() => handleLeapToFeature(recommendedFeature)}
-            className="flex-1 flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-cyan-400/25 hover:border-cyan-400/60 transition-all duration-200 hover:scale-[1.015] cursor-pointer group active:scale-[0.99] min-w-0"
+            className="flex-1 flex items-center gap-2.5 p-2 rounded-xl bg-white/90 dark:bg-[#1E1914]/80 hover:bg-white dark:hover:bg-[#251F19] border border-[#E8DEC9] dark:border-[#4B3C2D] hover:border-[#D0BD9D] dark:hover:border-[#6A543E] transition-all duration-200 hover:scale-[1.015] cursor-pointer group active:scale-[0.99] min-w-0 shadow-xs"
             title={`${recommendedFeature.featureTitle} (클릭 시 Key 연습실로 바로 이동)`}
           >
             <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border font-serif font-black text-base text-white shadow-sm transition-transform duration-200 group-hover:scale-105"
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border font-serif font-black text-base shadow-xs transition-transform duration-200 group-hover:scale-105"
               style={{
-                background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25) 0%, rgba(20,20,35,0.95) 80%)',
-                borderColor: recommendedFeature.color,
-                boxShadow: `0 0 10px ${recommendedFeature.glowColor}`,
+                background: 'linear-gradient(135deg, #FFFDF9 0%, #EFE5D2 100%)',
+                borderColor: '#DFCBB0',
+                boxShadow: '0 1px 4px rgba(180, 140, 90, 0.15)',
               }}
             >
               {recommendedFeature.iconText || '🔑'}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 font-bold border border-cyan-400/40 shrink-0">
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#F3E8D5] dark:bg-[#3B2F22] text-[#8C4F13] dark:text-[#F0CF9F] font-bold border border-[#E0CFB3] dark:border-[#574431] shrink-0">
                   Key 추천 기법
                 </span>
-                <span className="text-xs font-bold text-white break-keep break-words group-hover:text-cyan-200 transition-colors">
+                <span className="text-xs font-bold text-stone-900 dark:text-stone-100 break-keep break-words group-hover:text-[#9A520E] dark:group-hover:text-[#F59E0B] transition-colors">
                   {recommendedFeature.shortName}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300 break-keep break-words whitespace-normal mt-0.5 font-normal">
+              <p className="text-[11px] text-stone-600 dark:text-stone-300 break-keep break-words whitespace-normal mt-0.5 font-normal">
                 {recommendedFeature.description}
               </p>
             </div>
             <button
               type="button"
               disabled={isLeaping}
-              className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-black shrink-0 flex items-center gap-1 shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:brightness-110 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white shrink-0 flex items-center gap-1 shadow-xs transition-all duration-200 group-hover:scale-105 group-hover:brightness-105 active:scale-95 cursor-pointer"
               style={{
-                background: `linear-gradient(135deg, ${recommendedFeature.color}, #f59e0b)`,
+                background: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)',
               }}
             >
               <span>실천</span>
@@ -573,7 +573,7 @@ export function LucyResponseRecommendation({
           </div>
 
           {/* B. LucKey 연계 추천 경로 (단 1개만 같은 칸에 배치) */}
-          <div className="sm:border-l sm:border-white/10 sm:pl-2.5 flex items-center justify-between sm:justify-start gap-2 shrink-0">
+          <div className="sm:border-l sm:border-[#DFCBB0]/70 dark:sm:border-[#4E3E2E]/70 sm:pl-2.5 flex items-center justify-between sm:justify-start gap-2 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -594,12 +594,12 @@ export function LucyResponseRecommendation({
                 });
                 onSwitchChannel([recommendedChannel.id], false, recommendedChannel.name);
               }}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-xs active:scale-95 ${recommendedChannel.badgeClass} ${recommendedChannel.hoverClass}`}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-2xs active:scale-95 bg-[#FCF8F2] dark:bg-[#282119] hover:bg-[#F3EAD5] dark:hover:bg-[#332A20] border-[#E2D2B8] dark:border-[#503E2D] text-stone-800 dark:text-stone-200 hover:text-stone-950 dark:hover:text-white"
               title={`[${recommendedChannel.name}] LucKey 채널로 즉시 입장합니다.`}
             >
-              <RecChannelIcon size={13} className="shrink-0" />
+              <RecChannelIcon size={13} className="shrink-0" style={{ color: recommendedChannel.color }} />
               <span>{recommendedChannel.shortName} 채널</span>
-              <span className="text-[10px] opacity-75 font-normal">➔</span>
+              <span className="text-[10px] text-stone-400 group-hover:text-stone-600 dark:text-stone-400 font-normal">➔</span>
             </button>
           </div>
         </div>
