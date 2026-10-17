@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Compass, Moon, Sun, Users, Plus, Trash2, Heart, Shield, HelpCircle } from 'lucide-react';
+import { Sparkles, Compass, Moon, Sun, Users, Plus, Trash2, Heart, Shield, HelpCircle, Target } from 'lucide-react';
 import { calculateNatalChart, ZODIAC_SIGNS, type NatalChartResult } from '@/lib/astrologyAnalysis';
 import type { UserProfile, RelationshipEntry } from '@/lib/sharedState';
 
@@ -59,7 +59,7 @@ export function NatalChartCardView({ profile, onUpdateRelationships, className =
     );
   }
 
-  const { sun, moon, ascendant, mercury, venus, mars, elements, psychologicalBlueprint } = chart;
+  const { sun, moon, ascendant, mc, mercury, venus, mars, elements, psychologicalBlueprint } = chart;
 
   return (
     <motion.div
@@ -76,7 +76,7 @@ export function NatalChartCardView({ profile, onUpdateRelationships, className =
               <span>서양 점성학 출생 천궁도 (Natal Chart)</span>
             </h3>
             <p className="text-xs text-white/50 font-sans tracking-wide">
-              태양 {sun.sign.name} · 달 {moon.sign.name} · 상승 {ascendant.sign.name} | 우세 원소: <strong className="text-purple-300">{elements.dominant}</strong>
+              태양 {sun.sign.name} · 달 {moon.sign.name} · 상승 {ascendant.sign.name}{mc ? ` · MC ${mc.sign.name}` : ''} | 우세 원소: <strong className="text-purple-300">{elements.dominant}</strong>
             </p>
           </div>
           <div className="px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1.5">
@@ -85,8 +85,8 @@ export function NatalChartCardView({ profile, onUpdateRelationships, className =
         </div>
       </div>
 
-      {/* The Big Three (태양, 달, 상승궁) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* The Core Four (태양, 달, 상승궁, 천정점 MC) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* 태양 (자아 & 생명력) */}
         <div className="p-4 rounded-2xl bg-white/[0.04] border border-amber-500/20 space-y-2">
           <div className="flex items-center justify-between">
@@ -137,6 +137,25 @@ export function NatalChartCardView({ profile, onUpdateRelationships, className =
             세상을 처음 마주할 때 발현되는 고유의 분위기와 에너지 장막
           </p>
         </div>
+
+        {/* 천정점 MC (사회적 소명 & 인생의 정점) */}
+        {mc && (
+          <div className="p-4 rounded-2xl bg-white/[0.04] border border-emerald-500/20 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-emerald-300/80 flex items-center gap-1">
+                <Target size={13} className="text-emerald-400" /> 천정점 (MC · 소명)
+              </span>
+              <span className="text-lg">{mc.sign.symbol}</span>
+            </div>
+            <div>
+              <div className="text-base font-bold text-emerald-200">{mc.sign.name}</div>
+              <div className="text-[11px] text-white/50">{mc.degree}° ({mc.sign.element} / {mc.sign.modality})</div>
+            </div>
+            <p className="text-[11px] text-white/70 font-sans leading-relaxed">
+              사회적 성취와 커리어에서 지향하는 최고의 영적 천명
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 주요 개인 행성 (수성, 금성, 화성) */}

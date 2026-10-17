@@ -204,6 +204,7 @@ export interface NatalChartResult {
   sun: NatalPlacement;
   moon: NatalPlacement;
   ascendant: NatalPlacement;
+  mc: NatalPlacement;
   mercury: NatalPlacement;
   venus: NatalPlacement;
   mars: NatalPlacement;
@@ -309,12 +310,17 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
   const epsRad = (23.439291 - 0.0130042 * t) * (Math.PI / 180); // 황도경사각
   const latRad = lat * (Math.PI / 180);
 
-  // Ascendant 공식: tan(Asc) = -cos(RAMC) / (sin(RAMC)*cos(eps) + tan(lat)*sin(eps))
-  const yAsc = -Math.cos(ramcRad);
-  const xAsc = Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad);
+  // Ascendant 공식 (구면천문학 표준: y = cos(RAMC), x = -sin(RAMC)*cos(eps) - tan(lat)*sin(eps))
+  const yAsc = Math.cos(ramcRad);
+  const xAsc = -Math.sin(ramcRad) * Math.cos(epsRad) - Math.tan(latRad) * Math.sin(epsRad);
   let ascRad = Math.atan2(yAsc, xAsc);
   let ascDeg = (ascRad * (180 / Math.PI) + 360) % 360;
   const ascPlacement = longitudeToPlacement(ascDeg);
+
+  // 천정점 (MC / Midheaven: tan(MC) = tan(RAMC) / cos(eps))
+  const mcRad = Math.atan2(Math.sin(ramcRad), Math.cos(ramcRad) * Math.cos(epsRad));
+  const mcDeg = (mcRad * (180 / Math.PI) + 360) % 360;
+  const mcPlacement = longitudeToPlacement(mcDeg);
 
   // 4. 주요 행성 배치 (수성, 금성, 화성, 목성, 토성 근사 궤도)
   const mercuryLon = (sunTrueLongitude + 15 * Math.sin((jd * 0.07) % (2 * Math.PI)) + 360) % 360;
@@ -354,7 +360,7 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
   };
 
   // 6. 요약 텍스트
-  const summaryText = `태양 ${sunPlacement.sign.name} ${sunPlacement.sign.symbol}, 달 ${moonPlacement.sign.name} ${moonPlacement.sign.symbol}, 상승 ${ascPlacement.sign.name} ${ascPlacement.sign.symbol} (수성 ${mercuryPlacement.sign.name}, 금성 ${venusPlacement.sign.name}, 화성 ${marsPlacement.sign.name})`;
+  const summaryText = `태양 ${sunPlacement.sign.name} ${sunPlacement.sign.symbol}, 달 ${moonPlacement.sign.name} ${moonPlacement.sign.symbol}, 상승 ${ascPlacement.sign.name} ${ascPlacement.sign.symbol}, 천정점 ${mcPlacement.sign.name} ${mcPlacement.sign.symbol} (수성 ${mercuryPlacement.sign.name}, 금성 ${venusPlacement.sign.name}, 화성 ${marsPlacement.sign.name})`;
 
   // 7. 심리 패턴 청사진
   const psychologicalBlueprint = `${sunPlacement.sign.name}의 ${sunPlacement.sign.coreTrait}을 중심으로, 내면 무의식은 ${moonPlacement.sign.name}의 ${moonPlacement.sign.emotionalTendency} 흐름을 보입니다. 타인에게 첫인상으로 드러나는 외적 페르소나는 ${ascPlacement.sign.name}의 기운이 지배적입니다.`;
@@ -363,6 +369,7 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
     sun: sunPlacement,
     moon: moonPlacement,
     ascendant: ascPlacement,
+    mc: mcPlacement,
     mercury: mercuryPlacement,
     venus: venusPlacement,
     mars: marsPlacement,

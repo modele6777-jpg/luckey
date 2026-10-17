@@ -100,8 +100,8 @@ export function getStemBranchForDate(targetDate: Date) {
   const d = targetDate.getDate();
 
   const a = Math.floor((14 - m) / 12);
-  const yr = y - a;
-  const mo = m + 12 * a - 2;
+  const yr = y + 4800 - a;
+  const mo = m + 12 * a - 3;
   const jd =
     d +
     Math.floor((153 * mo + 2) / 5) +

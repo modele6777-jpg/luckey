@@ -464,9 +464,11 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
 
   const [y, m, d] = dateParts;
   let h = -1;
+  let minute = 0;
   if (basic.birthtime) {
     const timeParts = basic.birthtime.split(':').map(Number);
     if (!isNaN(timeParts[0])) h = timeParts[0];
+    if (timeParts.length > 1 && !isNaN(timeParts[1])) minute = timeParts[1];
   }
 
   const genderStr = basic.gender === 'male' ? '남성' : '여성';
@@ -543,19 +545,22 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
 
   // 3. 일주 (Day Pillar - 율리우스 적일 기준 계산)
   const a = Math.floor((14 - m) / 12);
-  const yr = y - a;
-  const mo = m + 12 * a - 2;
+  const yr = y + 4800 - a;
+  const mo = m + 12 * a - 3;
   const jd = d + Math.floor((153 * mo + 2) / 5) + 365 * yr + Math.floor(yr / 4) - Math.floor(yr / 100) + Math.floor(yr / 400) - 32045;
   const di = (jd + 49) % 60;
   const dGan = HEAVENLY_STEMS[(di % 10 + 10) % 10];
   const dZhi = EARTHLY_BRANCHES[(di % 12 + 12) % 12];
 
-  // 4. 시주 (Hour Pillar - 시두법 적용)
+  // 4. 시주 (Hour Pillar - 한국 진태양시 30분 보정 및 시두법 적용)
   let hGan: string | null = null;
   let hZhi: string | null = null;
   if (h >= 0) {
-    // 23:30~01:29: 子, 01:30~03:29: 丑, ..., 13:00~14:59: 未
-    const hIdx = Math.floor((h + 1) / 2) % 12;
+    // 한국 표준시(135°E, KST) 기준 서울(~127°E) 진태양시 30분 보정 적용:
+    // 23:30~01:29: 子, 01:30~03:29: 丑, ..., 11:30~13:29: 午, 13:30~15:29: 未
+    const totalMins = h * 60 + minute;
+    const adjustedMins = (totalMins - 30 + 1440) % 1440;
+    const hIdx = Math.floor((adjustedMins + 60) / 120) % 12;
     hZhi = EARTHLY_BRANCHES[hIdx];
     const dGanIdx = HEAVENLY_STEMS.indexOf(dGan);
     const startStemForHour = ((dGanIdx % 5) * 2) % 10;
@@ -1195,8 +1200,8 @@ export function generateDailySajuReport(
 
   // 율리우스 적일 기준 당일 일주(일진) 산출
   const a = Math.floor((14 - m) / 12);
-  const yr = y - a;
-  const mo = m + 12 * a - 2;
+  const yr = y + 4800 - a;
+  const mo = m + 12 * a - 3;
   const jd = d + Math.floor((153 * mo + 2) / 5) + 365 * yr + Math.floor(yr / 4) - Math.floor(yr / 100) + Math.floor(yr / 400) - 32045;
   const di = (jd + 49) % 60;
   const todayGan = HEAVENLY_STEMS[(di % 10 + 10) % 10];

@@ -75,14 +75,14 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
                 <div className="space-y-0.5">
                   <span className="text-xl md:text-2xl font-black text-white font-serif">{pillars.hour.gan}</span>
                   <p className="text-[10px] text-white/70 font-sans">
-                    {pillars.hour.ganKr}화 ({pillars.hour.yinYangGan}{pillars.hour.elGan}/{pillars.hour.tenGodGan.name.split('(')[0]})
+                    {pillars.hour.ganKr}{pillars.hour.elGan} ({pillars.hour.yinYangGan}{pillars.hour.elGan}/{pillars.hour.tenGodGan.name.split('(')[0]})
                   </p>
                 </div>
                 {/* 지지 */}
                 <div className="space-y-0.5 pt-1.5 border-t border-white/5">
                   <span className="text-xl md:text-2xl font-black text-white font-serif">{pillars.hour.zhi}</span>
                   <p className="text-[10px] text-white/70 font-sans">
-                    {pillars.hour.zhiKr}토 ({pillars.hour.yinYangZhi}{pillars.hour.elZhi}/{pillars.hour.tenGodZhi.name.split('(')[0]})
+                    {pillars.hour.zhiKr}{pillars.hour.elZhi} ({pillars.hour.yinYangZhi}{pillars.hour.elZhi}/{pillars.hour.tenGodZhi.name.split('(')[0]})
                   </p>
                 </div>
               </div>
@@ -102,14 +102,14 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
               <div className="space-y-0.5">
                 <span className="text-xl md:text-2xl font-black text-amber-200 font-serif">{pillars.day.gan}</span>
                 <p className="text-[10px] text-amber-300 font-bold font-sans">
-                  {pillars.day.ganKr}토 ({pillars.day.yinYangGan}{pillars.day.elGan}/일간)
+                  {pillars.day.ganKr}{pillars.day.elGan} ({pillars.day.yinYangGan}{pillars.day.elGan}/일간)
                 </p>
               </div>
               {/* 지지 */}
               <div className="space-y-0.5 pt-1.5 border-t border-amber-500/20">
                 <span className="text-xl md:text-2xl font-black text-amber-200 font-serif">{pillars.day.zhi}</span>
                 <p className="text-[10px] text-amber-300/90 font-sans">
-                  {pillars.day.zhiKr}토 ({pillars.day.yinYangZhi}{pillars.day.elZhi}/{pillars.day.tenGodZhi.name.split('(')[0]})
+                  {pillars.day.zhiKr}{pillars.day.elZhi} ({pillars.day.yinYangZhi}{pillars.day.elZhi}/{pillars.day.tenGodZhi.name.split('(')[0]})
                 </p>
               </div>
             </div>
@@ -123,14 +123,14 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
               <div className="space-y-0.5">
                 <span className="text-xl md:text-2xl font-black text-white font-serif">{pillars.month.gan}</span>
                 <p className="text-[10px] text-white/70 font-sans">
-                  {pillars.month.ganKr}목 ({pillars.month.yinYangGan}{pillars.month.elGan}/{pillars.month.tenGodGan.name.split('(')[0]})
+                  {pillars.month.ganKr}{pillars.month.elGan} ({pillars.month.yinYangGan}{pillars.month.elGan}/{pillars.month.tenGodGan.name.split('(')[0]})
                 </p>
               </div>
               {/* 지지 */}
               <div className="space-y-0.5 pt-1.5 border-t border-white/5">
                 <span className="text-xl md:text-2xl font-black text-white font-serif">{pillars.month.zhi}</span>
                 <p className="text-[10px] text-white/70 font-sans">
-                  {pillars.month.zhiKr}토 ({pillars.month.yinYangZhi}{pillars.month.elZhi}/{pillars.month.tenGodZhi.name.split('(')[0]})
+                  {pillars.month.zhiKr}{pillars.month.elZhi} ({pillars.month.yinYangZhi}{pillars.month.elZhi}/{pillars.month.tenGodZhi.name.split('(')[0]})
                 </p>
               </div>
             </div>
@@ -144,14 +144,14 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
               <div className="space-y-0.5">
                 <span className="text-xl md:text-2xl font-black text-white font-serif">{pillars.year.gan}</span>
                 <p className="text-[10px] text-white/70 font-sans">
-                  {pillars.year.ganKr}수 ({pillars.year.yinYangGan}{pillars.year.elGan}/{pillars.year.tenGodGan.name.split('(')[0]})
+                  {pillars.year.ganKr}{pillars.year.elGan} ({pillars.year.yinYangGan}{pillars.year.elGan}/{pillars.year.tenGodGan.name.split('(')[0]})
                 </p>
               </div>
               {/* 지지 */}
               <div className="space-y-0.5 pt-1.5 border-t border-white/5">
                 <span className="text-xl md:text-2xl font-black text-white font-serif">{pillars.year.zhi}</span>
                 <p className="text-[10px] text-white/70 font-sans">
-                  {pillars.year.zhiKr}금 ({pillars.year.yinYangZhi}{pillars.year.elZhi}/{pillars.year.tenGodZhi.name.split('(')[0]})
+                  {pillars.year.zhiKr}{pillars.year.elZhi} ({pillars.year.yinYangZhi}{pillars.year.elZhi}/{pillars.year.tenGodZhi.name.split('(')[0]})
                 </p>
               </div>
             </div>
