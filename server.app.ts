@@ -225,22 +225,14 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
 
 function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const defaultModels = [
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
-    "gemini-2.0-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-flash-latest",
+    "gemini-3.8-flash",
   ];
 
-  const sanitizeModel = (m?: string) => {
-    if (!m) return "";
-    const trimmed = m.trim();
-    if (trimmed.startsWith("gemini-3.") || trimmed.includes("gemini-3")) return "gemini-2.0-flash";
-    return trimmed;
-  };
-
   const uniqueCandidates = [
-    sanitizeModel(requestedModel),
-    sanitizeModel(process.env.GEMINI_MODEL),
+    requestedModel,
+    process.env.GEMINI_MODEL,
     ...defaultModels,
   ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
 
@@ -601,9 +593,9 @@ async function startServer() {
 
         const validRatio = ["1:1", "3:4", "4:3", "9:16", "16:9"].includes(aspectRatio) ? aspectRatio : "1:1";
         const modelsToTry = [
-          'imagen-3.0-generate-002',
-          'imagen-3.0-generate-001',
-          'gemini-2.0-flash'
+          'gemini-3.1-flash-lite-image',
+          'gemini-3.1-flash-image',
+          'gemini-3-pro-image'
         ];
 
         for (const modelName of modelsToTry) {
@@ -1429,7 +1421,7 @@ ${content}
           setTimeout(() => reject(new Error("Fast AI Timeout")), 3500)
         );
         const { response } = await Promise.race([
-          callGeminiContentWithFallback(ai, contents, config, "gemini-2.0-flash"),
+          callGeminiContentWithFallback(ai, contents, config, "gemini-3.1-flash-lite"),
           timeoutPromise
         ]);
         const parsed = JSON.parse(response.text);
@@ -1788,6 +1780,7 @@ ${content}
             { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
             { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
             { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
           ]
         };
         if (systemMessages.length > 0) {
@@ -1817,7 +1810,7 @@ ${content}
           const streamModels = getPrioritizedGeminiModels(req.body.model);
           let streamSuccess = false;
           let chunksDelivered = 0;
-          let activeModelUsed = streamModels[0] || "gemini-2.0-flash";
+          let activeModelUsed = streamModels[0] || "gemini-3.1-flash-lite";
 
           for (const currentModel of streamModels) {
             try {

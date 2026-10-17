@@ -83,9 +83,11 @@ ${JSON.stringify(facts, null, 2)}
     const { Type } = await import("@google/genai");
 
     const modelsToTry = [
-      "gemini-2.0-flash",
-      "gemini-1.5-flash",
-      "gemini-2.0-flash-lite",
+      "gemini-3.7-flash",
+      "gemini-3.1-flash-lite",
+      "gemini-3.5-flash",
+      "gemini-3.6-flash",
+      "gemini-flash-latest",
     ];
 
     for (const model of modelsToTry) {

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.4.279",
+    "summary": "v1.4.278 변경사항 롤백: v1.4.277 기능 및 코드베이스 상태로 복원",
+    "builtAt": "2026-10-17T09:28:00.000Z",
+    "items": [
+      "사용자 요청에 따라 v1.4.278 Gemini API 정규화 변경사항을 롤백하고 v1.4.277 코드베이스 상태로 안전하게 복원",
+      "api, server, src(AppContext, ai.ts, oneMinuteMeditation 등), vite.config.ts 전반을 v1.4.277 상태로 복구",
+      "프로젝트 버전 규정에 따라 v1.4.279로 버전업 및 히스토리 보존 롤백 완료"
+    ]
+  },
+  {
     "version": "1.4.278",
     "summary": "Gemini API 'Failed to call the Gemini API: Request contains an invalid argument' 오류 해결 및 GenAI 정규 모델/페이로드 전면 표준화",
     "builtAt": "2026-10-17T09:09:00.000Z",

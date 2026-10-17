@@ -338,7 +338,7 @@ async function invokeFastMeditationPrescriptionLLM(
   const runGeneration = async (): Promise<any> => {
     // 1. Direct Gemini SDK call
     if (geminiApiKey) {
-      const fastModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-lite'];
+      const fastModels = ['gemini-3.7-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash'];
       for (const model of fastModels) {
         try {
           const ai = new GoogleGenAI({ apiKey: geminiApiKey });
@@ -376,7 +376,7 @@ async function invokeFastMeditationPrescriptionLLM(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: modelName || 'gemini-2.0-flash',
+          model: modelName || 'gemini-3.7-flash',
           messages: [
             { role: 'system', content: `${systemInstruction}\nOutput ONLY a valid JSON object.` },
             { role: 'user', content: prompt }
