@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
   Sun,
@@ -9,6 +9,7 @@ import {
   Activity,
   Moon,
   ChevronLeft,
+  ChevronRight,
   Clover,
   KeyRound,
   User,
@@ -217,6 +218,37 @@ export default function LeftSidebarNav() {
   });
 
   const [isChannelsOpen, setIsChannelsOpen] = useState(isAnyPrismActive);
+  const [isLuckeyHovered, setIsLuckeyHovered] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLuckeyMouseEnter = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsLuckeyHovered(true);
+  }, []);
+
+  const handleLuckeyMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsLuckeyHovered(false);
+    }, 220);
+  }, []);
+
+  // Reset hover state when sidebar closes or unmounts
+  useEffect(() => {
+    if (!isOpen) {
+      setIsLuckeyHovered(false);
+    }
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, [isOpen]);
 
   // Automatically expand if navigating to any of the 7 prism channels
   useEffect(() => {
@@ -312,19 +344,200 @@ export default function LeftSidebarNav() {
 
     // 🌈 Special Rainbow Glowing Style for Core Sanctuary Channels (LUCY, KEY, LUCKEY)
     if (isRainbow) {
+      if (isLuckey) {
+        return (
+          <div
+            key={path}
+            className="relative flex items-center justify-center group shrink-0"
+            onMouseEnter={handleLuckeyMouseEnter}
+            onMouseLeave={handleLuckeyMouseLeave}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setIsChannelsOpen((prev) => !prev);
+              }}
+              aria-label={`${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'}`}
+              aria-expanded={isChannelsOpen}
+              className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
+              }`}
+            >
+              {/* Active left indicator bar */}
+              {isActive && (
+                <motion.div
+                  layoutId="active-nav-glow"
+                  className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+
+              {/* Rainbow Conic Halo Border */}
+              <div
+                className={`relative w-full h-full rounded-xl overflow-hidden p-[1.5px] transition-shadow duration-300 ${
+                  isActive
+                    ? 'shadow-[0_0_16px_rgba(52,211,153,0.6)]'
+                    : 'group-hover:shadow-[0_0_14px_rgba(52,211,153,0.45)]'
+                }`}
+              >
+                <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
+                <div
+                  className={`relative w-full h-full rounded-[10px] flex items-center justify-center transition-colors ${
+                    isActive
+                      ? 'bg-neutral-900/95 ring-1 ring-emerald-400/40'
+                      : 'bg-neutral-950/90 group-hover:bg-neutral-900/90'
+                  }`}
+                >
+                  <Icon
+                    size={20}
+                    className="text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12"
+                  />
+
+                  {/* For LUCKEY: Mini indicator for channels toggle */}
+                  <span
+                    className={`absolute -bottom-1 -right-1 text-[8px] font-black px-1 py-0.5 rounded-full border transition-all ${
+                      isChannelsOpen
+                        ? 'bg-emerald-500 text-neutral-950 border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+                        : 'bg-neutral-800 text-neutral-300 border-white/20'
+                    }`}
+                  >
+                    {isChannelsOpen ? '▲' : '7'}
+                  </span>
+                </div>
+              </div>
+            </button>
+
+            {/* 7 Channels Quick-Launch Flyout Menu on Hover */}
+            <AnimatePresence>
+              {isLuckeyHovered && (
+                <motion.div
+                  key="luckey-channels-flyout"
+                  initial={{ opacity: 0, x: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -8, scale: 0.95 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  onMouseEnter={handleLuckeyMouseEnter}
+                  onMouseLeave={handleLuckeyMouseLeave}
+                  className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-[28%] w-64 sm:w-72 p-2.5 rounded-2xl bg-neutral-950/95 backdrop-blur-2xl border border-emerald-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_22px_rgba(52,211,153,0.22)] z-[500] select-none text-left pointer-events-auto max-h-[calc(100vh-40px)] overflow-y-auto no-scrollbar"
+                >
+                  {/* Invisible hit-testing bridge between button and popover */}
+                  <div className="absolute -left-3 top-0 bottom-0 w-3 pointer-events-auto" aria-hidden="true" />
+
+                  {/* Flyout Header */}
+                  <div className="flex items-center justify-between pb-2 mb-1.5 border-b border-white/10 px-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]">
+                        <Clover size={14} className="animate-spin-slow" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-black tracking-wide text-white flex items-center gap-1.5">
+                          <span>LUCKEY</span>
+                          <span className="text-[10px] font-semibold text-emerald-400">7대 채널</span>
+                        </div>
+                        <p className="text-[10px] text-neutral-400">원클릭 채널 앱 바로가기</p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm">
+                      7 APPS
+                    </span>
+                  </div>
+
+                  {/* 7 Channels Interactive List */}
+                  <div className="space-y-1">
+                    {PRISM_CHANNELS.map((channel, idx) => {
+                      const ChannelIcon = channel.icon;
+                      const isChannelActive =
+                        channel.isPrologue
+                          ? isPrologueActive
+                          : channel.path === '/epilogue'
+                          ? isEpilogueActive
+                          : cleanPath === channel.path || cleanPath.startsWith(channel.path + '/');
+
+                      return (
+                        <button
+                          key={channel.path}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNavigate(channel.path);
+                            setIsLuckeyHovered(false);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all duration-150 text-left cursor-pointer group/item ${
+                            isChannelActive
+                              ? 'bg-white/10 border border-white/20 shadow-sm ring-1 ring-white/15'
+                              : 'hover:bg-white/[0.08] hover:border-white/15 border border-transparent'
+                          }`}
+                        >
+                          {/* Channel Icon with Tinted Glow */}
+                          <div
+                            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200 group-hover/item:scale-110"
+                            style={{
+                              backgroundColor: `${channel.color}25`,
+                              border: `1px solid ${channel.color}50`,
+                              boxShadow: isChannelActive ? `0 0 10px ${channel.color}60` : undefined,
+                            }}
+                          >
+                            <ChannelIcon size={14} style={{ color: channel.color }} />
+                          </div>
+
+                          {/* Labels */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className="text-xs font-bold uppercase tracking-wider font-sans"
+                                style={{ color: channel.color }}
+                              >
+                                {channel.label}
+                              </span>
+                              <span className="text-[9px] text-neutral-400 font-mono">#{idx + 1}</span>
+                            </div>
+                            <div className="text-[11px] text-neutral-300 truncate">
+                              {channel.subLabel}
+                            </div>
+                          </div>
+
+                          {/* Right Status / Arrow */}
+                          {isChannelActive ? (
+                            <span
+                              className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 shadow-sm"
+                              style={{
+                                backgroundColor: `${channel.color}25`,
+                                color: channel.color,
+                                border: `1px solid ${channel.color}50`,
+                              }}
+                            >
+                              ACTIVE
+                            </span>
+                          ) : (
+                            <ChevronRight
+                              size={14}
+                              className="text-neutral-500 group-hover/item:text-neutral-200 group-hover/item:translate-x-0.5 transition-all opacity-0 group-hover/item:opacity-100 shrink-0"
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer Hint */}
+                  <div className="pt-2 mt-1.5 border-t border-white/5 flex items-center justify-between text-[10px] text-neutral-400 px-1">
+                    <span>클릭 시 해당 앱으로 바로 이동</span>
+                    <span className="font-mono text-[9px] text-emerald-400/80">LUCKEY HUB</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      }
+
+      // Standard style for LUCY and KEY
       return (
         <button
           key={path}
           type="button"
-          onClick={() => {
-            if (isLuckey) {
-              setIsChannelsOpen((prev) => !prev);
-            } else {
-              handleNavigate(path);
-            }
-          }}
-          aria-label={isLuckey ? `${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'}` : label}
-          aria-expanded={isLuckey ? isChannelsOpen : undefined}
+          onClick={() => handleNavigate(path)}
+          aria-label={label}
           className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
             isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
           }`}
@@ -342,9 +555,7 @@ export default function LeftSidebarNav() {
           <div
             className={`relative w-full h-full rounded-xl overflow-hidden p-[1.5px] transition-shadow duration-300 ${
               isActive
-                ? isLuckey
-                  ? 'shadow-[0_0_16px_rgba(52,211,153,0.6)]'
-                  : 'shadow-[0_0_16px_rgba(255,107,107,0.55)]'
+                ? 'shadow-[0_0_16px_rgba(255,107,107,0.55)]'
                 : 'group-hover:shadow-[0_0_12px_rgba(255,107,107,0.35)]'
             }`}
           >
@@ -352,53 +563,24 @@ export default function LeftSidebarNav() {
             <div
               className={`relative w-full h-full rounded-[10px] flex items-center justify-center transition-colors ${
                 isActive
-                  ? isLuckey
-                    ? 'bg-neutral-900/95 ring-1 ring-emerald-400/40'
-                    : 'bg-neutral-900/95 ring-1 ring-white/30'
+                  ? 'bg-neutral-900/95 ring-1 ring-white/30'
                   : 'bg-neutral-950/90 group-hover:bg-neutral-900/90'
               }`}
             >
               <Icon
                 size={20}
-                className={`${
-                  isLuckey
-                    ? 'text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)]'
-                    : 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
-                } transition-transform duration-300 group-hover:scale-110 ${isLuckey ? 'group-hover:rotate-12' : ''}`}
+                className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)] transition-transform duration-300 group-hover:scale-110"
               />
-
-              {/* For LUCKEY: Mini indicator for channels toggle */}
-              {isLuckey && (
-                <span
-                  className={`absolute -bottom-1 -right-1 text-[8px] font-black px-1 py-0.5 rounded-full border transition-all ${
-                    isChannelsOpen
-                      ? 'bg-emerald-500 text-neutral-950 border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.8)]'
-                      : 'bg-neutral-800 text-neutral-300 border-white/20'
-                  }`}
-                >
-                  {isChannelsOpen ? '▲' : '7'}
-                </span>
-              )}
             </div>
           </div>
 
           {/* Floating Tooltip to the Right */}
           <div className="hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50 transition-all">
-            <span
-              className={`text-xs font-black uppercase tracking-wider ${
-                isLuckey ? 'text-emerald-300' : 'rainbow-text-shimmer'
-              }`}
-            >
+            <span className="text-xs font-black uppercase tracking-wider rainbow-text-shimmer">
               {label}
             </span>
-            <span className="text-[11px] text-neutral-300">
-              {isLuckey ? (isChannelsOpen ? '7대 채널 접기' : '7대 채널 펼치기') : subLabel}
-            </span>
-            {isLuckey ? (
-              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
-                {isChannelsOpen ? 'OPEN (7)' : '7 CHANNELS'}
-              </span>
-            ) : isActive ? (
+            <span className="text-[11px] text-neutral-300">{subLabel}</span>
+            {isActive ? (
               <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
                 ACTIVE
               </span>
@@ -573,9 +755,9 @@ export default function LeftSidebarNav() {
               </div>
 
               {/* Navigation Channel Items (Icon-Only Rail) */}
-              <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
+              <div className="flex-1 overflow-y-auto sm:overflow-visible px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
                 {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
-                <div className="flex flex-col items-center gap-2 w-full">
+                <div className="flex flex-col items-center gap-2 w-full overflow-visible">
                   {CORE_CHANNELS.map(renderNavButton)}
                 </div>
 
