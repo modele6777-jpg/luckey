@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.4.311",
+    "summary": "메뉴 버튼 및 배경음 버튼 투명 유리(Glassmorphism) 재질 적용 및 메뉴 버튼 문양 무지개빛 광채 이펙트 개선",
+    "builtAt": "2026-10-17T19:09:00.000Z",
+    "items": [
+      "메뉴 버튼(LeftSidebarNav FAB) 및 배경음 버튼(BgMusicPlayer LP FAB)을 투명 유리 재질(frosted glass, glassmorphism, 상단 글래스 하이라이트)로 개편",
+      "메뉴 버튼 심볼(ActiveNavIcon)에 하드웨어 가속 다중 스탑 무지개 그라데이션 SVG 및 은은한 무지개 아우라(subtle rainbow aura)와 입체 발광 적용",
+      "하단 양측 FAB 버튼의 시각적 대칭성 및 투명 크리스털 질감 완성"
+    ]
+  },
+  {
     "version": "1.4.310",
     "summary": "사이드바 푸터 영역의 프로필 설정 버튼 삭제",
     "builtAt": "2026-10-17T19:03:00.000Z",

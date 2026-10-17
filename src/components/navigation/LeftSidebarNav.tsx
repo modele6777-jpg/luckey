@@ -562,11 +562,46 @@ export default function LeftSidebarNav() {
             onClick={() => setIsOpen(true)}
             aria-label={`네비게이션 메뉴 열기 (${activeItem.label})`}
             aria-expanded={isOpen}
-            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 hover:border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.65)] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] flex items-center justify-center cursor-pointer text-neutral-300 hover:text-white transition-all duration-200 active:scale-90"
+            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/[0.08] hover:bg-white/[0.16] backdrop-blur-2xl border border-white/30 hover:border-white/55 shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.5),inset_0_-1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_0_24px_rgba(255,255,255,0.25),inset_0_1.5px_2px_rgba(255,255,255,0.7)] flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-90 overflow-hidden"
             title={`메뉴 열기 (${activeItem.label})`}
           >
-            {/* Inner icon & indicator with active app dynamic styling */}
+            {/* Top glass reflection sheen highlight */}
+            <div
+              className="absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/[0.04] to-transparent pointer-events-none"
+              aria-hidden="true"
+            />
+
+            {/* Animated Rainbow SVG Gradient Definition for Menu Icon */}
+            <svg width="0" height="0" className="absolute pointer-events-none" aria-hidden="true">
+              <defs>
+                <linearGradient id="nav-rainbow-symbol-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ff4b72">
+                    <animate attributeName="stop-color" values="#ff4b72;#ff9f0a;#ffd13b;#00e699;#00d4ff;#7a5cff;#e056fd;#ff4b72" dur="5s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="25%" stopColor="#ff9f0a">
+                    <animate attributeName="stop-color" values="#ff9f0a;#ffd13b;#00e699;#00d4ff;#7a5cff;#e056fd;#ff4b72;#ff9f0a" dur="5s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="50%" stopColor="#00e699">
+                    <animate attributeName="stop-color" values="#00e699;#00d4ff;#7a5cff;#e056fd;#ff4b72;#ff9f0a;#ffd13b;#00e699" dur="5s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="75%" stopColor="#00d4ff">
+                    <animate attributeName="stop-color" values="#00d4ff;#7a5cff;#e056fd;#ff4b72;#ff9f0a;#ffd13b;#00e699;#00d4ff" dur="5s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="100%" stopColor="#e056fd">
+                    <animate attributeName="stop-color" values="#e056fd;#ff4b72;#ff9f0a;#ffd13b;#00e699;#00d4ff;#7a5cff;#e056fd" dur="5s" repeatCount="indefinite" />
+                  </stop>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            {/* Inner icon & indicator with rainbow-shining dynamic styling */}
             <div className="relative z-10 flex items-center justify-center">
+              {/* Subtle rainbow aura blur behind symbol */}
+              <div
+                className="absolute -inset-2 rounded-full blur-[7px] opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none bigbang-subtle-rainbow-aura"
+                aria-hidden="true"
+              />
+
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeItem?.label || 'LUCY'}
@@ -574,21 +609,18 @@ export default function LeftSidebarNav() {
                   animate={{ scale: 1, opacity: 1, rotate: 0 }}
                   exit={{ scale: 0.6, opacity: 0, rotate: 20 }}
                   transition={{ duration: 0.22, ease: 'easeOut' }}
-                  className="flex items-center justify-center"
+                  className="relative z-10 flex items-center justify-center"
                 >
                   <ActiveNavIcon
                     size={21}
-                    style={{ color: activeItem?.color || '#34d399' }}
-                    className="transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 drop-shadow-[0_0_8px_currentColor]"
+                    stroke="url(#nav-rainbow-symbol-grad)"
+                    style={{ stroke: 'url(#nav-rainbow-symbol-grad)' }}
+                    className="transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.85)] drop-shadow-[0_0_14px_rgba(0,212,255,0.6)]"
                   />
                 </motion.div>
               </AnimatePresence>
               <span
-                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-neutral-950 animate-pulse"
-                style={{
-                  backgroundColor: activeItem?.color || '#34d399',
-                  boxShadow: `0 0 8px ${activeItem?.color || '#34d399'}`,
-                }}
+                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-white/30 animate-pulse bg-gradient-to-tr from-pink-500 via-amber-400 to-cyan-400 shadow-[0_0_8px_rgba(0,240,255,0.8)] z-20"
               />
             </div>
 
