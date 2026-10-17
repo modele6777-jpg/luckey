@@ -29,7 +29,7 @@ import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
 import { buildMultiProfileSystemContext, generateMultiProfilePrompts } from '@/lib/multiProfileContext';
 import { HORI_PROMPT_LIBRARY } from '@/data/horiPromptLibrary';
-import { LucyModeSelectorBar, type LucyChatMode, LUCY_MODE_CONFIGS } from '@/components/chat/LucyModeSelectorBar';
+import { type LucyChatMode, LUCY_MODE_CONFIGS } from '@/components/chat/LucyModeSelectorBar';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -1767,13 +1767,6 @@ export default function LucyStandalonePage() {
           )}
         </AnimatePresence>
       </header>
-
-      {/* 🔮 대화창 전용 10대 모드(수다, 사주·타로, 전략, 치유, 위로, 창작, 비전, 회고, 마스터, AI자동) 선택 바 */}
-      <LucyModeSelectorBar
-        selectedMode={selectedMode}
-        onSelectMode={handleSelectMode}
-        autoDetectedTitle={autoDetectedTitle}
-      />
 
       {/* Chat Messages Stream */}
       <main ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto select-text">
