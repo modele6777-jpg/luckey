@@ -1960,7 +1960,8 @@ export default function LucyStandalonePage() {
               setIsUserScrolledUp(false);
               scrollToBottom(true, true);
             }}
-            className="fixed bottom-28 right-5 sm:right-10 z-40 px-3.5 py-2 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-xs font-bold shadow-xl backdrop-blur-xs border border-slate-700/60 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+            style={{ bottom: 'calc(var(--sab, 0px) + 8.5rem)' }}
+            className="fixed right-5 sm:right-10 z-40 px-3.5 py-2 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-xs font-bold shadow-xl backdrop-blur-xs border border-slate-700/60 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
             title="최신 메시지 보기"
           >
             <ChevronDown size={14} className="text-amber-400 animate-bounce" />
