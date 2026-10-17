@@ -738,8 +738,12 @@ export default function LucyStandalonePage() {
   const isLucyGenerating = isGenerating?.lucy || false;
 
   // 👥 대화창 내 다자간 프로필 (최대 4인) 상태 관리
-  // 새로고침 시 '내 프로필'은 항상 1순위로 복원됩니다.
+  // 새로고침 또는 재진입 시에는 항상 '내 프로필' 1인만 나오도록 초기화됩니다.
   const [activeProfiles, setActiveProfiles] = useState<ChatTargetProfile[]>(() => {
+    try {
+      sessionStorage.removeItem('lucy_chat_extra_profiles');
+    } catch (_) {}
+
     const basic = sharedState?.userProfile?.basic || getPersistentUserProfile()?.basic;
     const myProfile: ChatTargetProfile = {
       id: 'my-profile',
@@ -753,27 +757,17 @@ export default function LucyStandalonePage() {
       relationship: '본인'
     };
 
-    try {
-      const savedExtras = sessionStorage.getItem('lucy_chat_extra_profiles');
-      if (savedExtras) {
-        const parsed = JSON.parse(savedExtras);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const validExtras = parsed.filter((p: any) => p && p.id && !p.isMe).slice(0, 3);
-          return [myProfile, ...validExtras];
-        }
-      }
-    } catch (_) {}
-
     return [myProfile];
   });
 
-  // 세션 스토리지에 추가 프로필들 동기화
+  // 루시 채팅에서 벗어날 때(언마운트 시) 세션 스토리지 정리
   useEffect(() => {
-    try {
-      const extras = activeProfiles.filter((p) => !p.isMe);
-      sessionStorage.setItem('lucy_chat_extra_profiles', JSON.stringify(extras));
-    } catch (_) {}
-  }, [activeProfiles]);
+    return () => {
+      try {
+        sessionStorage.removeItem('lucy_chat_extra_profiles');
+      } catch (_) {}
+    };
+  }, []);
 
   // 🎲 차분하게 유지되는 맞춤 추천 질문 상태 (새로고침 🔄 클릭, 모드 전환, 프로필 변경 시에만 명시적으로 갱신되며 실시간 임의 변동 방지)
   const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
