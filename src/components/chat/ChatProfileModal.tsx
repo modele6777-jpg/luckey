@@ -48,8 +48,8 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       setGender(initialProfile.gender || 'female');
       setBirthCity(initialProfile.birthCity || '서울');
       
-      // 👥 프로필이 1명뿐인 경우 분류를 자동으로 '본인'으로 설정
-      let defaultRel = totalProfilesCount === 1 ? '본인' : (initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인'));
+      // 👥 기존 프로필 수정 시 관계 설정 (이미 다른 본인이 있다면 본인 중복 방지)
+      let defaultRel = initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인');
       if (hasExistingSelf && defaultRel === '본인') {
         defaultRel = '연인';
       }
@@ -91,9 +91,8 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       return;
     }
 
-    const isSoleProfile = totalProfilesCount === 1 && Boolean(initialProfile);
-    const resolvedRelationship = isSoleProfile ? '본인' : (hasExistingSelf && relationship === '본인' ? '연인' : relationship);
-    const resolvedIsMe = isSoleProfile ? true : (!hasExistingSelf && (initialProfile?.isMe || resolvedRelationship === '본인'));
+    const resolvedRelationship = (hasExistingSelf && relationship === '본인') ? '연인' : relationship;
+    const resolvedIsMe = resolvedRelationship === '본인';
 
     const savedProfile: ChatTargetProfile = {
       id: initialProfile?.id || `profile-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,

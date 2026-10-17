@@ -784,9 +784,13 @@ export default function LucyStandalonePage() {
     return [myProfile];
   });
 
-  // 루시 채팅에서 벗어날 때(언마운트 시) 세션 스토리지 정리
+  // 사용자가 대화창에서 프로필을 직접 변경/수정한 경우 플래그 (새로고침 또는 페이지 재진입 전까지 프로필 원복 방지)
+  const hasUserCustomizedProfilesRef = useRef(false);
+
+  // 루시 채팅에서 벗어날 때(언마운트 시) 세션 스토리지 정리 및 커스텀 플래그 초기화
   useEffect(() => {
     return () => {
+      hasUserCustomizedProfilesRef.current = false;
       try {
         sessionStorage.removeItem('lucy_chat_extra_profiles');
       } catch (_) {}
@@ -798,11 +802,13 @@ export default function LucyStandalonePage() {
     return getCuratedPrompts(activeProfiles, selectedMode, activeChannels);
   });
 
-  // sharedState 변경 시 내 프로필 정보 동기화 (실제 변경이 있을 때만 activeProfiles 갱신하여 불필요한 리렌더 방지)
+  // sharedState 변경 시 내 프로필 정보 동기화 (사용자가 대화창에서 프로필을 직접 수정한 경우 덮어쓰지 않고 변경 상태 유지)
   useEffect(() => {
+    if (hasUserCustomizedProfilesRef.current) return;
     const basic = sharedState?.userProfile?.basic;
     if (basic?.name || basic?.nickname || basic?.birthdate) {
       setActiveProfiles((prev) => {
+        if (hasUserCustomizedProfilesRef.current) return prev;
         const me = prev.find((p) => p.isMe);
         if (!me) return prev;
         const rawN = basic?.nickname?.trim();
@@ -839,22 +845,6 @@ export default function LucyStandalonePage() {
     }
   }, [sharedState?.userProfile?.basic]);
 
-  // 👥 프로필이 1명만 남게 되면 자동으로 분류를 '본인'으로 보정
-  useEffect(() => {
-    if (activeProfiles.length === 1) {
-      const only = activeProfiles[0];
-      if (only && (only.relationship !== '본인' || !only.isMe)) {
-        setActiveProfiles([
-          {
-            ...only,
-            isMe: true,
-            relationship: '본인',
-          },
-        ]);
-      }
-    }
-  }, [activeProfiles]);
-
   // 프로필 모달 상태
   const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
   const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
@@ -870,6 +860,7 @@ export default function LucyStandalonePage() {
   }, []);
 
   const handleSaveChatProfile = useCallback((profile: ChatTargetProfile) => {
+    hasUserCustomizedProfilesRef.current = true;
     setActiveProfiles((prev) => {
       const existsIndex = prev.findIndex((p) => p.id === profile.id);
       
@@ -894,15 +885,8 @@ export default function LucyStandalonePage() {
         updated = [...prev, safeProfile];
       }
 
-      // 👥 프로필이 한명만 남거나 존재할 때는 자동으로 분류를 '본인'으로 설정
-      if (updated.length === 1) {
-        updated[0] = {
-          ...updated[0],
-          isMe: true,
-          relationship: '본인',
-        };
-      } else {
-        // 2명 이상일 때 '본인'이 2명 이상 중복되지 않도록 보장 (첫 번째 본인만 유지)
+      // 2명 이상일 때 '본인'이 2명 이상 중복되지 않도록 보장 (첫 번째 본인만 유지)
+      if (updated.length >= 2) {
         let foundFirstSelf = false;
         updated = updated.map((p) => {
           if (p.isMe || p.relationship === '본인') {
@@ -916,52 +900,19 @@ export default function LucyStandalonePage() {
         });
       }
 
-      // 🛡️ 본인 프로필 정보 수정 시 전역 프로필 및 다중 금고에 즉시 영구 저장
-      if (safeProfile.isMe || safeProfile.relationship === '본인') {
-        const curProfile = sharedState?.userProfile || getPersistentUserProfile() || {};
-        const safeNick = (safeProfile.name.trim() && safeProfile.name.trim() !== '여행자' && safeProfile.name.trim() !== '사용자' && safeProfile.name.trim() !== '박주형') 
-          ? safeProfile.name.trim() 
-          : '제제';
-        const updatedUserProfile = {
-          ...curProfile,
-          basic: {
-            ...(curProfile.basic || {}),
-            nickname: safeNick,
-            birthdate: safeProfile.birthdate,
-            birthtime: safeProfile.birthtime,
-            gender: safeProfile.gender,
-            birthCity: safeProfile.birthCity,
-            lunarSolar: safeProfile.lunarSolar,
-          },
-        };
-        setPersistentUserProfile(updatedUserProfile);
-        saveProfileToAllVaults(updatedUserProfile);
-        void updateSharedState({ userProfile: updatedUserProfile }, 'lucy');
-      }
-
       setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
       return updated;
     });
-  }, [selectedMode, activeChannels, sharedState?.userProfile, updateSharedState]);
+  }, [selectedMode, activeChannels]);
 
   const handleRemoveChatProfile = useCallback((profileId: string) => {
+    hasUserCustomizedProfilesRef.current = true;
     setActiveProfiles((prev) => {
       // 2명 이상일 때만 삭제 가능 (내 프로필 포함)
       if (prev.length <= 1) return prev;
       const remaining = prev.filter((p) => p.id !== profileId);
-      // 👥 한명만 남게 되면 자동으로 분류를 '본인'으로 변경
-      const updated =
-        remaining.length === 1
-          ? [
-              {
-                ...remaining[0],
-                isMe: true,
-                relationship: '본인',
-              },
-            ]
-          : remaining;
-      setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
-      return updated;
+      setCurrentPrompts(getCuratedPrompts(remaining, selectedMode, activeChannels));
+      return remaining;
     });
   }, [selectedMode, activeChannels]);
 
