@@ -281,7 +281,12 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                               return (
                                 <span
                                   key={t}
-                                  className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-600"
+                                  className="px-2 py-0.5 rounded-md text-[10px] font-bold border transition-colors shadow-2xs"
+                                  style={{
+                                    color: toolMeta?.color || '#3b82f6',
+                                    backgroundColor: toolMeta ? `${toolMeta.color}15` : 'rgba(148, 163, 184, 0.1)',
+                                    borderColor: toolMeta ? `${toolMeta.color}35` : 'rgba(148, 163, 184, 0.25)'
+                                  }}
                                 >
                                   {toolMeta?.name || t}
                                 </span>
