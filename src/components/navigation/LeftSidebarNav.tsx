@@ -28,9 +28,10 @@ export interface NavItemConfig {
   isMainChat?: boolean;
   isKey?: boolean;
   isPrologue?: boolean;
+  isLuckey?: boolean;
 }
 
-// 1. Core Sanctuary Channels (AI 가이드 & 마음약방)
+// 1. Core Sanctuary Channels (AI 가이드 & 마음약방 & 럭키 7대 채널)
 export const CORE_CHANNELS: NavItemConfig[] = [
   {
     path: '/',
@@ -47,6 +48,14 @@ export const CORE_CHANNELS: NavItemConfig[] = [
     subLabel: '40대 불안 치유 마음약방',
     color: 'oklch(0.72 0.18 160)',
     isKey: true,
+  },
+  {
+    path: '#luckey',
+    icon: Clover,
+    label: 'LUCKEY',
+    subLabel: '7대 프리즘 채널',
+    color: 'oklch(0.75 0.22 150)',
+    isLuckey: true,
   },
 ];
 
@@ -200,12 +209,29 @@ export default function LeftSidebarNav() {
     (p) => cleanPath === p || cleanPath.startsWith(p + '/')
   );
 
+  // Check if any of the 7 PRISM channels are active
+  const isAnyPrismActive = PRISM_CHANNELS.some((item) => {
+    if (item.isPrologue) return isPrologueActive;
+    if (item.path === '/epilogue') return isEpilogueActive;
+    return cleanPath === item.path || cleanPath.startsWith(item.path + '/');
+  });
+
+  const [isChannelsOpen, setIsChannelsOpen] = useState(isAnyPrismActive);
+
+  // Automatically expand if navigating to any of the 7 prism channels
+  useEffect(() => {
+    if (isAnyPrismActive) {
+      setIsChannelsOpen(true);
+    }
+  }, [isAnyPrismActive]);
+
   // Find the currently active nav item to highlight theme accent
   const allNavItems = [...CORE_CHANNELS, ...PRISM_CHANNELS];
   const activeItem =
     allNavItems.find((item) => {
       if (item.isMainChat) return isLucyActive;
       if (item.isKey) return isKeyActive;
+      if (item.isLuckey) return false;
       if (item.isPrologue) return isPrologueActive;
       if (item.path === '/epilogue') return isEpilogueActive;
       return cleanPath === item.path || cleanPath.startsWith(item.path + '/');
@@ -272,24 +298,33 @@ export default function LeftSidebarNav() {
   };
 
   const renderNavButton = (item: NavItemConfig) => {
-    const { path, icon: Icon, label, subLabel, color, isMainChat, isKey, isPrologue } = item;
+    const { path, icon: Icon, label, subLabel, color, isMainChat, isKey, isPrologue, isLuckey } = item;
     const isActive = isMainChat
       ? isLucyActive
       : isKey
       ? isKeyActive
+      : isLuckey
+      ? Boolean(isAnyPrismActive || isChannelsOpen)
       : isPrologue
       ? isPrologueActive
       : cleanPath === path || cleanPath.startsWith(path + '/');
-    const isRainbow = Boolean(isMainChat || isKey);
+    const isRainbow = Boolean(isMainChat || isKey || isLuckey);
 
-    // 🌈 Special Rainbow Glowing Style for Core Sanctuary Channels (LUCY & KEY)
+    // 🌈 Special Rainbow Glowing Style for Core Sanctuary Channels (LUCY, KEY, LUCKEY)
     if (isRainbow) {
       return (
         <button
           key={path}
           type="button"
-          onClick={() => handleNavigate(path)}
-          aria-label={label}
+          onClick={() => {
+            if (isLuckey) {
+              setIsChannelsOpen((prev) => !prev);
+            } else {
+              handleNavigate(path);
+            }
+          }}
+          aria-label={isLuckey ? `${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'}` : label}
+          aria-expanded={isLuckey ? isChannelsOpen : undefined}
           className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
             isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
           }`}
@@ -307,7 +342,9 @@ export default function LeftSidebarNav() {
           <div
             className={`relative w-full h-full rounded-xl overflow-hidden p-[1.5px] transition-shadow duration-300 ${
               isActive
-                ? 'shadow-[0_0_16px_rgba(255,107,107,0.55)]'
+                ? isLuckey
+                  ? 'shadow-[0_0_16px_rgba(52,211,153,0.6)]'
+                  : 'shadow-[0_0_16px_rgba(255,107,107,0.55)]'
                 : 'group-hover:shadow-[0_0_12px_rgba(255,107,107,0.35)]'
             }`}
           >
@@ -315,26 +352,53 @@ export default function LeftSidebarNav() {
             <div
               className={`relative w-full h-full rounded-[10px] flex items-center justify-center transition-colors ${
                 isActive
-                  ? 'bg-neutral-900/95 ring-1 ring-white/30'
+                  ? isLuckey
+                    ? 'bg-neutral-900/95 ring-1 ring-emerald-400/40'
+                    : 'bg-neutral-900/95 ring-1 ring-white/30'
                   : 'bg-neutral-950/90 group-hover:bg-neutral-900/90'
               }`}
             >
               <Icon
                 size={20}
-                className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)] transition-transform duration-200 group-hover:scale-110"
+                className={`${
+                  isLuckey
+                    ? 'text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)]'
+                    : 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
+                } transition-transform duration-300 group-hover:scale-110 ${isLuckey ? 'group-hover:rotate-12' : ''}`}
               />
+
+              {/* For LUCKEY: Mini indicator for channels toggle */}
+              {isLuckey && (
+                <span
+                  className={`absolute -bottom-1 -right-1 text-[8px] font-black px-1 py-0.5 rounded-full border transition-all ${
+                    isChannelsOpen
+                      ? 'bg-emerald-500 text-neutral-950 border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+                      : 'bg-neutral-800 text-neutral-300 border-white/20'
+                  }`}
+                >
+                  {isChannelsOpen ? '▲' : '7'}
+                </span>
+              )}
             </div>
           </div>
 
           {/* Floating Tooltip to the Right */}
           <div className="hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50 transition-all">
-            <span className="text-xs font-black uppercase tracking-wider rainbow-text-shimmer">
+            <span
+              className={`text-xs font-black uppercase tracking-wider ${
+                isLuckey ? 'text-emerald-300' : 'rainbow-text-shimmer'
+              }`}
+            >
               {label}
             </span>
             <span className="text-[11px] text-neutral-300">
-              {subLabel}
+              {isLuckey ? (isChannelsOpen ? '7대 채널 접기' : '7대 채널 펼치기') : subLabel}
             </span>
-            {isActive ? (
+            {isLuckey ? (
+              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
+                {isChannelsOpen ? 'OPEN (7)' : '7 CHANNELS'}
+              </span>
+            ) : isActive ? (
               <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
                 ACTIVE
               </span>
@@ -503,45 +567,43 @@ export default function LeftSidebarNav() {
               transition={{ type: 'spring', stiffness: 360, damping: 32 }}
               className="fixed left-0 top-0 bottom-0 w-[68px] sm:w-[72px] bg-neutral-950/95 backdrop-blur-2xl border-r border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] z-[460] flex flex-col justify-between text-neutral-200 select-none"
             >
-              {/* Header: Compact Brand LucKey Four-Leaf Clover Emblem */}
-              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-3 border-b border-white/10 flex flex-col items-center shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleNavigate('/')}
-                  className="group relative w-10 h-10 rounded-xl overflow-hidden p-[1.5px] flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-105 active:scale-95"
-                  title="LucKey 메인 홈으로 이동"
-                  aria-label="LucKey 메인 홈"
-                >
-                  <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px] group-hover:opacity-100 transition-opacity" />
-                  <div className="relative w-full h-full rounded-[10px] bg-neutral-950/90 group-hover:bg-neutral-900/90 flex items-center justify-center text-emerald-400 transition-colors">
-                    <Clover
-                      size={20}
-                      className="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
-                    />
-                  </div>
-
-                  {/* Desktop Hover Tooltip */}
-                  <div className="hidden sm:group-hover:flex items-center gap-1.5 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50">
-                    <span className="text-xs font-black tracking-wider text-emerald-300">LucKey</span>
-                    <span className="text-[11px] text-neutral-300">네잎클로버 · 홈으로</span>
-                  </div>
-                </button>
+              {/* Safe-Area Top Spacer & Indicator */}
+              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex flex-col items-center shrink-0">
+                <div className="w-8 h-1 rounded-full bg-white/10" />
               </div>
 
               {/* Navigation Channel Items (Icon-Only Rail) */}
-              <div className="flex-1 overflow-y-auto sm:overflow-y-visible px-2 py-3 space-y-2 no-scrollbar flex flex-col items-center w-full">
-                {/* Core Channels: LUCY & KEY */}
+              <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
+                {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
                 <div className="flex flex-col items-center gap-2 w-full">
                   {CORE_CHANNELS.map(renderNavButton)}
                 </div>
 
-                {/* Subtle Divider */}
-                <div className="w-6 h-[1px] bg-white/15 my-1 rounded-full shrink-0" />
+                {/* 7 Prism Channels: Accordion Toggled by 3rd LUCKEY Icon */}
+                <AnimatePresence initial={false}>
+                  {isChannelsOpen && (
+                    <motion.div
+                      key="prism-channels-accordion"
+                      initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                      exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                      transition={{ duration: 0.24, ease: 'easeOut' }}
+                      className="w-full flex flex-col items-center overflow-hidden"
+                    >
+                      {/* Prismatic Connection Accent Line */}
+                      <div className="w-full flex items-center justify-center my-1.5">
+                        <div className="w-5 h-[2px] rounded-full bg-gradient-to-r from-emerald-500/70 via-purple-500/70 to-pink-500/70 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                      </div>
 
-                {/* 7 Prism Channels: PROLOGUE ~ EPILOGUE */}
-                <div className="flex flex-col items-center gap-2 w-full">
-                  {PRISM_CHANNELS.map(renderNavButton)}
-                </div>
+                      {/* 7 Prism Channels: PROLOGUE ~ EPILOGUE */}
+                      <div className="relative flex flex-col items-center gap-2 w-full py-0.5">
+                        {/* Connecting vertical ambient thread */}
+                        <div className="absolute top-2 bottom-2 left-1/2 -translate-x-1/2 w-[1px] bg-gradient-to-b from-emerald-500/40 via-purple-500/30 to-transparent pointer-events-none" />
+                        {PRISM_CHANNELS.map(renderNavButton)}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Footer: User Profile Button & Collapse Button */}
