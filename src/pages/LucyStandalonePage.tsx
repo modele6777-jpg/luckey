@@ -537,18 +537,6 @@ export default function LucyStandalonePage() {
   const [autoTtsToast, setAutoTtsToast] = useState<string | null>(null);
   const lastAutoSpokenMsgIdRef = useRef<string | null>(null);
 
-  // 🎙️ 실시간 음성 모드 가동 여부 추적
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
-  useEffect(() => {
-    const handleVoiceState = (e: Event) => {
-      const detail = (e as CustomEvent)?.detail;
-      if (detail) {
-        setIsVoiceActive(!!detail.isOpen);
-      }
-    };
-    window.addEventListener('prism:lucy_voice_state', handleVoiceState);
-    return () => window.removeEventListener('prism:lucy_voice_state', handleVoiceState);
-  }, []);
 
   const toggleAutoTts = () => {
     setIsAutoTts((prev) => {
@@ -1344,31 +1332,6 @@ export default function LucyStandalonePage() {
               <Search size={16} />
             </button>
 
-            {/* 🎙️ 루시 AI 실시간 음성 모드 (여성 목소리) 토글 버튼 */}
-            <button
-              type="button"
-              onClick={() => {
-                if (isVoiceActive) {
-                  window.dispatchEvent(new CustomEvent('prism:close_lucy_voice'));
-                } else {
-                  unlockAudioPlayback();
-                  primeTTSAudioElement();
-                  window.dispatchEvent(new CustomEvent('prism:open_lucy_voice'));
-                }
-              }}
-              className={`p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1.5 font-semibold ${
-                isVoiceActive
-                  ? 'bg-cyan-500/20 text-cyan-800 border-cyan-400 ring-2 ring-cyan-400/30'
-                  : 'bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-cyan-500/15 text-slate-800 border border-amber-300/80 hover:border-amber-400'
-              }`}
-              title={isVoiceActive ? "루시 AI 음성 모드 가동 중 (클릭하여 종료)" : "루시 AI 실시간 음성 모드 (여성 목소리 1:1 대화)"}
-              aria-label={isVoiceActive ? "루시 AI 음성 모드 종료" : "루시 AI 음성 모드 열기"}
-            >
-              <Mic size={16} className={isVoiceActive ? "text-cyan-600 animate-bounce" : "text-amber-600 animate-pulse"} />
-              <span className="text-[11px] font-bold text-slate-800 hidden sm:inline">
-                {isVoiceActive ? "음성 가동 중" : "음성 모드"}
-              </span>
-            </button>
 
             {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 버튼) */}
             <button
