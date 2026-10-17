@@ -24,10 +24,10 @@ export const DynamicGhostInputPlaceholder: React.FC<DynamicGhostInputPlaceholder
   prompts,
   isVisible,
   onCurrentPromptChange,
-  typingSpeed = 48,
-  deletingSpeed = 24,
-  pauseDuration = 2400,
-  switchPause = 450,
+  typingSpeed = 45,
+  deletingSpeed = 20,
+  pauseDuration = 12000,
+  switchPause = 800,
 }) => {
   const [shuffledList, setShuffledList] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);

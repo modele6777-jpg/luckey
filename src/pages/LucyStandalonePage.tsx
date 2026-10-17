@@ -486,6 +486,43 @@ export function resolveMessageModeAndChannels(
   return result;
 }
 
+// 🎲 현재 프로필 및 모드에 맞춰 차분하게 제공되는 엄선된 추천 질문 6선 생성 순수 함수
+function getCuratedPrompts(profiles: ChatTargetProfile[], mode: LucyChatMode): string[] {
+  // 0. 다자간(2인 이상) 프로필 활성화 시: 두 사람(구성원)의 이름을 반영한 궁합·연애·시너지 맞춤 질문
+  if (profiles.length >= 2) {
+    const multiPrompts = generateMultiProfilePrompts(profiles);
+    return shuffle(multiPrompts).slice(0, 6);
+  }
+
+  // 1. 단일 특화 채널 모드 선택 시
+  if (mode !== 'auto' && mode !== 'casual' && mode !== 'master') {
+    const pool = CHANNEL_PROMPT_POOLS[mode] || CASUAL_PROMPT_POOL;
+    return shuffle(pool).slice(0, 6);
+  }
+
+  // 2. 7대 채널 올인원 마스터 모드 선택 시
+  if (mode === 'master') {
+    return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
+  }
+
+  // 3. 수다 모드 명시 선택 시
+  if (mode === 'casual') {
+    return shuffle(CASUAL_PROMPT_POOL).slice(0, 6);
+  }
+
+  // 4. AI 스마트 자동 감지 모드 기본 대기 상태 (7대 채널 + 호리 77선 전편에서 균형 있게 선별)
+  const diversePool: string[] = [
+    ...shuffle(CHANNEL_PROMPT_POOLS.trinity).slice(0, 2),
+    ...shuffle(CHANNEL_PROMPT_POOLS.orange).slice(0, 2),
+    ...shuffle(CHANNEL_PROMPT_POOLS.aura).slice(0, 2),
+    ...shuffle(CHANNEL_PROMPT_POOLS.bluebird).slice(0, 2),
+    ...shuffle(CHANNEL_PROMPT_POOLS.muse).slice(0, 2),
+    ...shuffle(HORI_PROMPT_LIBRARY.map((p) => p.title)).slice(0, 4),
+    ...shuffle(CASUAL_PROMPT_POOL).slice(0, 2),
+  ];
+  return shuffle(Array.from(new Set(diversePool))).slice(0, 6);
+}
+
 export default function LucyStandalonePage() {
   const [, navigate] = useLocation();
 
@@ -615,7 +652,6 @@ export default function LucyStandalonePage() {
   const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentGhostPromptRef = useRef<string>('');
-  const [promptSeed, setPromptSeed] = useState<number>(0);
 
   // 🔊 루시 답변 자동 음성 재생 (Auto-TTS 바로재생) 상태 및 설정 (기본값: ON, localStorage 영구 보존)
   const [isAutoTts, setIsAutoTts] = useState<boolean>(() => {
@@ -723,28 +759,47 @@ export default function LucyStandalonePage() {
     } catch (_) {}
   }, [activeProfiles]);
 
-  // sharedState 변경 시 내 프로필 정보 동기화
+  // 🎲 차분하게 유지되는 맞춤 추천 질문 상태 (새로고침 🔄 클릭, 모드 전환, 프로필 변경 시에만 명시적으로 갱신되며 실시간 임의 변동 방지)
+  const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
+    return getCuratedPrompts(activeProfiles, selectedMode);
+  });
+
+  // sharedState 변경 시 내 프로필 정보 동기화 (실제 변경이 있을 때만 activeProfiles 갱신하여 불필요한 리렌더 방지)
   useEffect(() => {
     const basic = sharedState?.userProfile?.basic;
     if (basic?.name || basic?.nickname || basic?.birthdate) {
       setActiveProfiles((prev) => {
-        const hasMe = prev.some((p) => p.isMe);
-        if (hasMe) {
-          return prev.map((p) =>
-            p.isMe
-              ? {
-                  ...p,
-                  name: basic?.nickname || basic?.name || p.name,
-                  birthdate: basic?.birthdate || p.birthdate,
-                  birthtime: basic?.birthtime ?? p.birthtime,
-                  gender: basic?.gender || p.gender,
-                  birthCity: basic?.birthCity || p.birthCity,
-                  lunarSolar: basic?.lunarSolar || p.lunarSolar,
-                }
-              : p
-          );
+        const me = prev.find((p) => p.isMe);
+        if (!me) return prev;
+        const newName = basic?.nickname || basic?.name || me.name;
+        const newBirthdate = basic?.birthdate || me.birthdate;
+        const newBirthtime = basic?.birthtime ?? me.birthtime;
+        const newGender = basic?.gender || me.gender;
+        const newCity = basic?.birthCity || me.birthCity;
+        const newLs = basic?.lunarSolar || me.lunarSolar;
+        if (
+          me.name === newName &&
+          me.birthdate === newBirthdate &&
+          me.birthtime === newBirthtime &&
+          me.gender === newGender &&
+          me.birthCity === newCity &&
+          me.lunarSolar === newLs
+        ) {
+          return prev;
         }
-        return prev;
+        return prev.map((p) =>
+          p.isMe
+            ? {
+                ...p,
+                name: newName,
+                birthdate: newBirthdate,
+                birthtime: newBirthtime,
+                gender: newGender,
+                birthCity: newCity,
+                lunarSolar: newLs,
+              }
+            : p
+        );
       });
     }
   }, [sharedState?.userProfile?.basic]);
@@ -766,28 +821,33 @@ export default function LucyStandalonePage() {
   const handleSaveChatProfile = useCallback((profile: ChatTargetProfile) => {
     setActiveProfiles((prev) => {
       const existsIndex = prev.findIndex((p) => p.id === profile.id);
+      let updated: ChatTargetProfile[];
       if (existsIndex !== -1) {
-        const updated = [...prev];
+        updated = [...prev];
         updated[existsIndex] = profile;
-        return updated;
+      } else {
+        if (prev.length >= 4) return prev;
+        updated = [...prev, profile];
       }
-      if (prev.length >= 4) return prev;
-      return [...prev, profile];
+      setCurrentPrompts(getCuratedPrompts(updated, selectedMode));
+      return updated;
     });
-  }, []);
+  }, [selectedMode]);
 
   const handleRemoveChatProfile = useCallback((profileId: string) => {
     setActiveProfiles((prev) => {
       // 2명 이상일 때만 삭제 가능 (내 프로필 포함)
       if (prev.length <= 1) return prev;
-      return prev.filter((p) => p.id !== profileId);
+      const updated = prev.filter((p) => p.id !== profileId);
+      setCurrentPrompts(getCuratedPrompts(updated, selectedMode));
+      return updated;
     });
-  }, []);
+  }, [selectedMode]);
 
-  // Refresh / Reshuffle prompts
+  // Refresh / Reshuffle prompts (새로고침 버튼 클릭 시에만 안정적으로 갱신)
   const refreshPrompts = useCallback(() => {
-    setPromptSeed((prev) => prev + 1);
-  }, []);
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode));
+  }, [activeProfiles, selectedMode]);
 
   // 상담 모드 선택 처리 함수
   const handleSelectMode = useCallback((mode: LucyChatMode) => {
@@ -822,9 +882,9 @@ export default function LucyStandalonePage() {
       setAutoDetectedTitle(title);
       setModeSwitchToast(`✨ [${title}] 모드로 전환되었습니다.`);
     }
-    refreshPrompts();
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, mode));
     setTimeout(() => setModeSwitchToast(null), 2500);
-  }, [input, refreshPrompts]);
+  }, [input, activeProfiles]);
 
   // Multi-channel Toggle Logic (Reshuffles prompts on toggle)
   const toggleChannel = (channelId: SpecialChannel) => {
@@ -849,25 +909,30 @@ export default function LucyStandalonePage() {
 
   // 말풍선 클릭 시 해당 말풍선의 고유 모드로 즉각 활성화
   const handleActivateMessageMode = (targetChannels: SpecialChannel[], targetIsMaster: boolean, label?: string) => {
+    let nextMode: LucyChatMode = 'auto';
     if (targetIsMaster) {
+      nextMode = 'master';
       setSelectedMode('master');
       setActiveChannels([...ALL_CHANNELS]);
       setAutoDetectedTitle('7대 채널 올인원 마스터');
     } else if (targetChannels.length === 1) {
+      nextMode = targetChannels[0];
       setSelectedMode(targetChannels[0]);
       setActiveChannels(targetChannels);
       const cfg = SPECIAL_CHANNELS[targetChannels[0]];
       setAutoDetectedTitle(label || cfg?.name || targetChannels[0]);
     } else if (targetChannels.length === 0) {
+      nextMode = 'casual';
       setSelectedMode('casual');
       setActiveChannels([]);
       setAutoDetectedTitle('💬 수다 모드');
     } else {
+      nextMode = 'auto';
       setSelectedMode('auto');
       setActiveChannels(targetChannels);
       setAutoDetectedTitle(label || formatChannelsModeTitle(targetChannels));
     }
-    refreshPrompts();
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, nextMode));
     if (label) {
       setModeSwitchToast(`✨ [${label}] 모드로 전환되었습니다.`);
       setTimeout(() => setModeSwitchToast(null), 2500);
@@ -903,62 +968,6 @@ export default function LucyStandalonePage() {
     return `${names} 지능이 결합되어 다각도 입체 시너지 통찰을 제공합니다.`;
   }, [channelCount, activeChannels, isCasualChat, isFullProMaster, isSingleSpecial]);
 
-  // 🎲 Stably Sampled Context-Aware Prompts (새로고침 버튼 클릭, 모드 변경, 대화 턴 완료 시에만 안정적으로 갱신)
-  const currentPrompts = useMemo(() => {
-    // 0. 다자간(2인 이상) 프로필 활성화 시: 두 사람(구성원)의 이름을 반영한 궁합·연애·시너지 맞춤 질문
-    if (activeProfiles.length >= 2) {
-      const multiPrompts = generateMultiProfilePrompts(activeProfiles);
-      return shuffle(multiPrompts).slice(0, 6);
-    }
-
-    // 1. 단일 특화 채널 모드 선택 시
-    if (selectedMode !== 'auto' && selectedMode !== 'casual' && selectedMode !== 'master') {
-      const pool = CHANNEL_PROMPT_POOLS[selectedMode] || CASUAL_PROMPT_POOL;
-      return shuffle(pool).slice(0, 6);
-    }
-
-    // 2. 7대 채널 올인원 마스터 모드 선택 시
-    if (selectedMode === 'master') {
-      return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
-    }
-
-    // 3. 수다 모드 명시 선택 시
-    if (selectedMode === 'casual') {
-      const contextual: string[] = [];
-      const lastMsg = lucyMessages.length > 0 ? lucyMessages[lucyMessages.length - 1] : null;
-      const txt = typeof lastMsg?.content === 'string' ? lastMsg.content : '';
-      if (txt) {
-        if (txt.includes('불안') || txt.includes('걱정') || txt.includes('스트레스')) {
-          contextual.push('이 불안을 안전하게 흘려보내는 구체적인 마음 챙김 팁은?');
-        }
-        if (txt.includes('사주') || txt.includes('운') || txt.includes('타이밍') || txt.includes('대운')) {
-          contextual.push('내 타고난 기운과 잘 맞는 올해의 기회는 무엇일까?');
-        }
-        if (txt.includes('아이디어') || txt.includes('기획') || txt.includes('생각')) {
-          contextual.push('이 아이디어를 더 구체적이고 매력적으로 발전시키려면?');
-        }
-        if (txt.includes('호흡') || txt.includes('몸') || txt.includes('피로') || txt.includes('잠')) {
-          contextual.push('지금 바로 몸의 긴장을 풀 수 있는 간단한 스트레칭 알려줘.');
-        }
-      }
-      const shuffledCasual = shuffle([...CASUAL_PROMPT_POOL, ...contextual]);
-      return Array.from(new Set(shuffledCasual)).slice(0, 6);
-    }
-
-    // 4. AI 스마트 자동 감지 모드 기본 대기 상태 (7대 채널 + 호리 77선 전편에서 안정적으로 선별)
-    const diversePool: string[] = [
-      ...shuffle(CHANNEL_PROMPT_POOLS.trinity).slice(0, 2),
-      ...shuffle(CHANNEL_PROMPT_POOLS.orange).slice(0, 2),
-      ...shuffle(CHANNEL_PROMPT_POOLS.aura).slice(0, 2),
-      ...shuffle(CHANNEL_PROMPT_POOLS.bluebird).slice(0, 2),
-      ...shuffle(CHANNEL_PROMPT_POOLS.muse).slice(0, 2),
-      ...shuffle(HORI_PROMPT_LIBRARY.map((p) => p.title)).slice(0, 4),
-      ...shuffle(CASUAL_PROMPT_POOL).slice(0, 2),
-    ];
-    return shuffle(Array.from(new Set(diversePool))).slice(0, 6);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeProfiles, selectedMode, promptSeed]);
-
   // 🌟 호리(hori.chat) 스타일 동적 예시 고민 풀 (1인: 77선+채널/캐주얼 풀 / 2인 이상: 맞춤 궁합 질문 풀)
   const dynamicGhostPrompts = useMemo(() => {
     // 2인 이상 시 두 사람(다자간) 맞춤 궁합 질문 우선 노출
@@ -990,16 +999,7 @@ export default function LucyStandalonePage() {
 
     const combined = [...contextualPrompts, ...horiTitles];
     return Array.from(new Set(combined.filter((p) => p && p.trim().length > 0)));
-  }, [activeProfiles, selectedMode]);
-
-  // 답변 생성이 완전히 종료되었을 때만 추천 질문 1회 차분하게 갱신 (스트리밍 도중이나 타이핑 중 번쩍임 방지)
-  const prevGeneratingRef = useRef(isLucyGenerating);
-  useEffect(() => {
-    if (prevGeneratingRef.current && !isLucyGenerating && lucyMessages.length > 0) {
-      refreshPrompts();
-    }
-    prevGeneratingRef.current = isLucyGenerating;
-  }, [isLucyGenerating, lucyMessages.length, refreshPrompts]);
+  }, [activeProfiles.length, selectedMode]);
 
   // Filter messages by search query if search is active
   const filteredMessages = useMemo(() => {
@@ -2233,6 +2233,9 @@ export default function LucyStandalonePage() {
               <DynamicGhostInputPlaceholder
                 prompts={dynamicGhostPrompts}
                 isVisible={!input && !isLucyGenerating}
+                pauseDuration={12000}
+                typingSpeed={45}
+                deletingSpeed={20}
                 onCurrentPromptChange={(prompt) => {
                   currentGhostPromptRef.current = prompt;
                 }}
