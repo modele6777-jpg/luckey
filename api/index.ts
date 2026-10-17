@@ -38,18 +38,76 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
 
   try {
     const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-    const model = req.body.model || "gemini-3.7-flash";
+    let model = req.body.model || "gemini-2.0-flash";
+    if (model.startsWith("gemini-3.") || model.includes("gemini-3")) {
+      model = "gemini-2.0-flash";
+    }
     const messages = req.body.messages || [];
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
-    const systemPrompt = messages.filter((m: any) => m.role === "system").map((m: any) => m.content).join("\n");
+    const systemPrompt = messages
+      .filter((m: any) => m.role === "system")
+      .map((m: any) => (typeof m.content === "string" ? m.content : JSON.stringify(m.content)))
+      .filter(Boolean)
+      .join("\n\n");
+    const nonSystem = messages.filter((m: any) => m.role !== "system");
 
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: lastUserMessage,
-      config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
-    });
+    const contents: any[] = [];
+    for (const m of nonSystem) {
+      if (!m) continue;
+      const role = (m.role === "assistant" || m.role === "model") ? "model" : "user";
+      const parts: any[] = [];
+      if (typeof m.content === "string") {
+        const trimmed = m.content.trim();
+        if (trimmed) parts.push({ text: trimmed });
+      } else if (Array.isArray(m.content)) {
+        for (const p of m.content) {
+          if (!p) continue;
+          if (typeof p === "string" && p.trim()) parts.push({ text: p.trim() });
+          else if (p.type === "text" && typeof p.text === "string" && p.text.trim()) parts.push({ text: p.text.trim() });
+        }
+      }
+      if (parts.length > 0) {
+        if (contents.length > 0 && contents[contents.length - 1].role === role) {
+          contents[contents.length - 1].parts.push(...parts);
+        } else {
+          contents.push({ role, parts });
+        }
+      }
+    }
 
-    const replyText = response.text || "";
+    while (contents.length > 0 && contents[0].role === "model") {
+      contents.shift();
+    }
+    if (contents.length === 0) {
+      contents.push({ role: "user", parts: [{ text: "안녕하세요" }] });
+    }
+
+    const candidateModels = [
+      model,
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-2.0-flash-lite",
+    ].filter((m, i, arr) => Boolean(m) && arr.indexOf(m) === i);
+
+    let response: any = null;
+    let lastError: any = null;
+    for (const curModel of candidateModels) {
+      try {
+        response = await ai.models.generateContent({
+          model: curModel,
+          contents,
+          config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
+        });
+        if (response) break;
+      } catch (e: any) {
+        lastError = e;
+      }
+    }
+
+    if (!response && lastError) {
+      throw lastError;
+    }
+
+    const replyText = response?.text || "";
 
     if (req.body.stream) {
       res.setHeader("Content-Type", "text/event-stream");
@@ -146,7 +204,7 @@ ${content}
     try {
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
       const geminiRes = await ai.models.generateContent({
-        model: "gemini-3.7-flash",
+        model: "gemini-2.0-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json"

@@ -22,7 +22,7 @@ function parseImageDataUrl(url: string): { mimeType: string; data: string } | nu
 }
 
 export interface Message {
-  role: "system" | "user" | "assistant";
+  role: "system" | "user" | "assistant" | "model";
   content: string | any[];
 }
 
@@ -33,44 +33,56 @@ export interface InvokeLLMParams {
 
 export async function invokeLLM(params: InvokeLLMParams) {
   const ai = getGeminiClient();
-  const modelName = process.env.GEMINI_MODEL || "gemini-3.7-flash";
+  const rawModel = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const modelName = (rawModel.startsWith("gemini-3") || rawModel.includes("gemini-3")) ? "gemini-2.0-flash" : rawModel;
 
   const systemMessage = params.messages.find(m => m.role === "system");
-  const history = params.messages.filter(m => m.role !== "system");
-  const userMessage = history.pop();
+  const nonSystem = params.messages.filter(m => m.role !== "system");
 
-  if (!userMessage) throw new Error("No user message found");
-
-  const contents = [
-    ...history.map(m => ({
-      role: m.role === "assistant" ? "model" as const : "user" as const,
-      parts: Array.isArray(m.content) 
-        ? m.content.map(p => {
-            if (p.type === 'text' || !p.image_url?.url) return { text: p.text || '' };
-            const img = parseImageDataUrl(p.image_url.url);
-            return img ? { inlineData: { data: img.data, mimeType: img.mimeType } } : { text: '' };
-          })
-        : [{ text: m.content as string }],
-    })),
-    {
-      role: "user" as const,
-      parts: Array.isArray(userMessage.content)
-        ? userMessage.content.map(p => {
-            if (p.type === 'text' || !p.image_url?.url) return { text: p.text || '' };
-            const img = parseImageDataUrl(p.image_url.url);
-            return img ? { inlineData: { data: img.data, mimeType: img.mimeType } } : { text: '' };
-          })
-        : [{ text: userMessage.content as string }],
+  const contents: any[] = [];
+  for (const m of nonSystem) {
+    if (!m) continue;
+    const role = (m.role === "assistant" || m.role === "model") ? ("model" as const) : ("user" as const);
+    const parts: any[] = [];
+    if (typeof m.content === "string") {
+      const trimmed = m.content.trim();
+      if (trimmed) parts.push({ text: trimmed });
+    } else if (Array.isArray(m.content)) {
+      for (const p of m.content) {
+        if (!p) continue;
+        if (typeof p === "string" && p.trim()) {
+          parts.push({ text: p.trim() });
+        } else if (p.type === "text" && typeof p.text === "string" && p.text.trim()) {
+          parts.push({ text: p.text.trim() });
+        } else if (p.type === "image_url" || p.image_url) {
+          const url = p.image_url?.url || p.url || "";
+          const img = parseImageDataUrl(url);
+          if (img) parts.push({ inlineData: { data: img.data, mimeType: img.mimeType } });
+        }
+      }
     }
-  ];
+    if (parts.length === 0) continue;
+    if (contents.length > 0 && contents[contents.length - 1].role === role) {
+      contents[contents.length - 1].parts.push(...parts);
+    } else {
+      contents.push({ role, parts });
+    }
+  }
+
+  while (contents.length > 0 && contents[0].role === "model") {
+    contents.shift();
+  }
+
+  if (contents.length === 0) {
+    contents.push({ role: "user" as const, parts: [{ text: "계속 진행해줘" }] });
+  }
 
   const candidateModels = [
     modelName,
-    "gemini-3.7-flash",
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-3.6-flash",
-    "gemini-flash-latest",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro",
+    "gemini-2.0-flash-lite",
   ].filter((m, i, arr) => Boolean(m) && arr.indexOf(m) === i);
 
   let response;

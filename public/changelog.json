@@ -1,5 +1,18 @@
 [
   {
+    "version": "1.4.278",
+    "summary": "Gemini API 'Failed to call the Gemini API: Request contains an invalid argument' 오류 해결 및 GenAI 정규 모델/페이로드 전면 표준화",
+    "builtAt": "2026-10-17T09:09:00.000Z",
+    "items": [
+      "구글 GenAI 공식 모델 파이프라인 전면 개편: 실존하지 않는 가상 모델명(gemini-3.x)을 공식 정규 모델(gemini-2.0-flash, gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-lite)로 전면 교체",
+      "Gemini SDK Contents 정규화 파이프라인(buildNormalizedGeminiContents) 구축: 빈 문자열/빈 파트 제거, 연속된 동일 role 병합, 선두 model 턴 제거, 시스템 프롬프트(systemInstruction) 분리 추출 완비",
+      "AppContext 대화 히스토리 슬라이스 정제: 빈 어시스턴트 메시지 필터링 및 사용자 메시지 중복 전달 방지",
+      "Gemini SafetySettings 최적화: 400 Bad Request를 유발하는 비표준 HARM_CATEGORY_CIVIC_INTEGRITY 제거 및 표준 안전성 카테고리 4종 체계 안정화",
+      "서버 및 Vercel 서버리스(/api/index.ts, server.app.ts, server/_core/llm.ts)의 OpenAI 호환 엔드포인트 수신 메시지 정규화 및 다단계 모델 폴백 아키텍처 보강",
+      "Vite 환경 변수(VITE_GEMINI_MODEL) 및 CalmRouter, MuseDocent, RecommendArt, Meditation, TTS 전역의 모델 호출 파이프라인 표준화"
+    ]
+  },
+  {
     "version": "1.4.277",
     "summary": "빅뱅 버튼 제스처 재정의: 더블클릭/더블탭 시 Key 마음약방 도약 & 드래그 시 루시·Key 제외 7대 코어 앱 순환 추천 도약",
     "builtAt": "2026-10-17T08:46:00.000Z",

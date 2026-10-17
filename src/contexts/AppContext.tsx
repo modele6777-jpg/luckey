@@ -1644,7 +1644,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // 사용자와의 대화 맥락과 기억을 충분히 보존하면서 최신 대화에 가장 민첩하게 실시간 반응할 수 있도록 전달 (최근 10개 메시지)
     // Safari PWA / 저성능 기기: 대화 기록을 줄여 메모리 과부하 방지
     const historyLimit = _isPerfReduced ? 6 : 10;
-    const historySlice = [...unifiedMessages, userMsg].filter((message) => !isLegacyAIErrorMessage(message)).slice(-historyLimit);
+    const validHistory = unifiedMessages.filter((message) => {
+      if (isLegacyAIErrorMessage(message)) return false;
+      if (typeof message.content === 'string') {
+        return message.content.trim().length > 0;
+      }
+      return Boolean(message.content);
+    });
+
+    const historySlice = (validHistory.some(m => m.id === userMsg.id)
+      ? validHistory
+      : [...validHistory, userMsg]
+    ).slice(-historyLimit);
+
     const conversationForAPI: Message[] = [
       { role: 'system', content: systemPrompt },
       ...historySlice.map((m, idx) => {
@@ -1654,6 +1666,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           role: m.role === 'model' ? 'assistant' : m.role,
           content: finalContent
         };
+      }).filter(m => {
+        if (typeof m.content === 'string') return m.content.trim().length > 0;
+        return Boolean(m.content);
       })
     ];
     

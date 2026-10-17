@@ -170,7 +170,7 @@ function stripID3Header(buf: Buffer): Buffer {
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
       const selectedVoice = "Kore";
 
-      const ttsModels = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts"];
+      const ttsModels = ["gemini-2.0-flash"];
       for (const modelName of ttsModels) {
         try {
           const geminiResponse = await Promise.race([

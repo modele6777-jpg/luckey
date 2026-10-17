@@ -46,12 +46,95 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true // Required for client-side usage in this environment
 });
 
+export const OFFICIAL_GEMINI_MODELS = [
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+  "gemini-2.0-flash-lite",
+] as const;
+
+export function sanitizeGeminiModel(name?: string): string {
+  if (!name) return "gemini-2.0-flash";
+  const trimmed = name.trim();
+  if (trimmed.startsWith("gemini-3.") || trimmed.includes("gemini-3")) {
+    return "gemini-2.0-flash";
+  }
+  return trimmed;
+}
+
 // @ts-ignore
-export const modelName = import.meta.env?.VITE_GEMINI_MODEL || (aiType === "grok" ? "grok-4.3" : "gemini-3.8-flash");
+export const modelName = sanitizeGeminiModel(import.meta.env?.VITE_GEMINI_MODEL) || (aiType === "grok" ? "grok-4.3" : "gemini-2.0-flash");
 
 export interface Message {
   role: "system" | "user" | "model" | "assistant";
   content: string | any[];
+}
+
+export function buildNormalizedGeminiContents(rawMessages: Message[]) {
+  const systemParts: string[] = [];
+  const contents: Array<{
+    role: "user" | "model";
+    parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }>;
+  }> = [];
+
+  for (const m of rawMessages) {
+    if (!m) continue;
+    if (m.role === "system") {
+      const text = typeof m.content === "string" ? m.content : JSON.stringify(m.content);
+      if (text && text.trim()) systemParts.push(text.trim());
+      continue;
+    }
+
+    const role: "user" | "model" = (m.role === "assistant" || m.role === "model") ? "model" : "user";
+    const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [];
+
+    if (typeof m.content === "string") {
+      const trimmed = m.content.trim();
+      if (trimmed) {
+        parts.push({ text: trimmed });
+      }
+    } else if (Array.isArray(m.content)) {
+      for (const p of m.content) {
+        if (!p) continue;
+        if (typeof p === "string" && p.trim()) {
+          parts.push({ text: p.trim() });
+        } else if (p.type === "text" && typeof p.text === "string" && p.text.trim()) {
+          parts.push({ text: p.text.trim() });
+        } else if (p.type === "image_url" || p.image_url) {
+          const url = p.image_url?.url || p.url || "";
+          const img = parseImageDataUrl(url);
+          if (img) {
+            parts.push({ inlineData: { data: img.data, mimeType: img.mimeType } });
+          }
+        }
+      }
+    }
+
+    if (parts.length === 0) continue;
+
+    // Merge consecutive messages with the same role
+    if (contents.length > 0 && contents[contents.length - 1].role === role) {
+      contents[contents.length - 1].parts.push(...parts);
+    } else {
+      contents.push({ role, parts });
+    }
+  }
+
+  // Gemini requires the conversation sequence to start with 'user'
+  let startIndex = 0;
+  while (startIndex < contents.length && contents[startIndex].role === "model") {
+    startIndex++;
+  }
+  const filteredContents = contents.slice(startIndex);
+
+  if (filteredContents.length === 0) {
+    filteredContents.push({ role: "user", parts: [{ text: "안녕하세요" }] });
+  }
+
+  return {
+    contents: filteredContents,
+    systemInstruction: systemParts.length > 0 ? systemParts.join("\n\n") : undefined
+  };
 }
 
 const KOREAN_ONLY_OUTPUT_RULE = `출력 언어 및 문장 가독성 원칙:
@@ -317,19 +400,14 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
 
   // Gemini logic
   if (genAI) {
-    const systemMessage = params.messages.find(m => m.role === "system");
-    let contents = params.messages.filter(m => m.role !== "system");
-
-    if (contents.length === 0 && systemMessage) {
-      // Gemini requires at least one content part even if system instruction is present
-      contents = [{ role: 'user', content: "Continue" }];
-    }
+    const { contents, systemInstruction } = buildNormalizedGeminiContents(params.messages);
 
     const modelsToTry = [
-      modelName,
-      "gemini-flash-latest",
-      "gemini-3.1-flash-lite",
-    ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i).slice(0, 2);
+      sanitizeGeminiModel(modelName),
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-2.0-flash-lite",
+    ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i).slice(0, 3);
 
     for (const currentModel of modelsToTry) {
       try {
@@ -340,18 +418,9 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
         const response = await Promise.race([
           genAI.models.generateContent({
             model: currentModel,
-            contents: contents.map(m => ({
-              role: m.role === "assistant" ? "model" : m.role as any,
-              parts: Array.isArray(m.content) 
-                ? m.content.map(p => {
-                    if (p.type === 'text' || !p.image_url?.url) return { text: p.text || '' };
-                    const img = parseImageDataUrl(p.image_url.url);
-                    return img ? { inlineData: { data: img.data, mimeType: img.mimeType } } : { text: '' };
-                  })
-                : [{ text: m.content as string }],
-            })),
+            contents,
             config: {
-              systemInstruction: systemMessage?.content as string,
+              systemInstruction,
               responseMimeType: params.responseFormat?.type === "json_object" ? "application/json" : "text/plain",
             }
           }),
@@ -407,7 +476,7 @@ export async function textToSpeech(text: string, _voice: string = 'Kore') {
   if (genAI) {
     try {
       const response = await genAI.models.generateContent({
-        model: "gemini-3.1-flash-tts-preview",
+        model: "gemini-2.0-flash",
         contents: [{ parts: [{ text: voiceInstruction }] }],
         config: {
           responseModalities: [Modality.AUDIO],
@@ -732,15 +801,14 @@ export async function invokeEpilogueSummaryLLM(messages: Message[]): Promise<str
   const attemptInvoke = async (): Promise<string> => {
     // 1. First Attempt: Direct Ultra-Fast Gemini Flash Lite with generous token limit
     if (genAI) {
-      const systemMessage = messages.find(m => m.role === "system");
-      let contents = messages.filter(m => m.role !== "system");
-      if (contents.length === 0 && systemMessage) {
-        contents = [{ role: 'user', content: "성찰 요약 생성" }];
-      }
+      const { contents, systemInstruction } = buildNormalizedGeminiContents(messages);
 
-      const fastModels = ["gemini-3.7-flash", "gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash", modelName].filter(
-        (m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i
-      );
+      const fastModels = [
+        sanitizeGeminiModel(modelName),
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
+      ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
 
       for (const currentModel of fastModels) {
         try {
@@ -751,14 +819,9 @@ export async function invokeEpilogueSummaryLLM(messages: Message[]): Promise<str
           const response = await Promise.race([
             genAI.models.generateContent({
               model: currentModel,
-              contents: contents.map(m => ({
-                role: m.role === "assistant" ? "model" : (m.role as any),
-                parts: Array.isArray(m.content)
-                  ? m.content.map(p => ({ text: (p as any).text || '' }))
-                  : [{ text: String(m.content || '') }],
-              })),
+              contents,
               config: {
-                systemInstruction: systemMessage?.content as string,
+                systemInstruction,
                 temperature: 0.7,
                 maxOutputTokens: 1024,
               }
@@ -1265,19 +1328,13 @@ async function invokeLLMStreamInner(params: {
   // 1. Direct High-Speed Gemini SDK Streaming (Fastest & Most Reliable)
   if (genAI) {
     try {
-      const systemMessage = params.messages.find(m => m.role === "system");
-      let contents = params.messages.filter(m => m.role !== "system");
-      if (contents.length === 0 && systemMessage) {
-        contents = [{ role: 'user', content: "대화를 시작해줘" }];
-      }
+      const { contents, systemInstruction } = buildNormalizedGeminiContents(params.messages);
 
       const modelsToTry = [
-        modelName,
-        "gemini-3.7-flash",
-        "gemini-3.1-flash-lite",
-        "gemini-3.5-flash",
-        "gemini-3.6-flash",
-        "gemini-flash-latest",
+        sanitizeGeminiModel(modelName),
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
       ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
 
       let hasEmittedToCaller = false;
@@ -1295,18 +1352,9 @@ async function invokeLLMStreamInner(params: {
           while (modelRetry <= MAX_EMPTY_RETRIES) {
             const responseStream = await genAI.models.generateContentStream({
               model: currentModel,
-              contents: contents.map(m => ({
-                role: m.role === "assistant" ? "model" : m.role as any,
-                parts: Array.isArray(m.content) 
-                  ? m.content.map(p => {
-                      if (p.type === 'text' || !p.image_url?.url) return { text: p.text || '' };
-                      const img = parseImageDataUrl(p.image_url.url);
-                      return img ? { inlineData: { data: img.data, mimeType: img.mimeType } } : { text: '' };
-                    })
-                  : [{ text: String(m.content || '') }],
-              })),
+              contents,
               config: {
-                systemInstruction: systemMessage?.content as string,
+                systemInstruction,
                 temperature: modelRetry > 0 ? 0.8 : 0.7, // 재시도 시 온도 약간 올려서 빈 응답 방지
                 maxOutputTokens: params.maxOutputTokens || 8192,
               }
