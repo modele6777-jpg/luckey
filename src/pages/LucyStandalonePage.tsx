@@ -22,6 +22,8 @@ import { detectLucyChannelsFromText } from '@/lib/lucyAutoModeDetector';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { getAndClearPendingSelection } from '@/lib/selectionBridge';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
+import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
+import { HORI_PROMPT_LIBRARY } from '@/data/horiPromptLibrary';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -514,6 +516,8 @@ export default function LucyStandalonePage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
   const [ttsInfo, setTtsInfo] = useState({ isSpeaking: false, isLoading: false, activeText: null as string | null });
+  const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [promptSeed, setPromptSeed] = useState<number>(0);
 
   // 🔊 루시 답변 자동 음성 재생 (Auto-TTS 바로재생) 상태 및 설정 (기본값: ON, localStorage 영구 보존)
@@ -687,7 +691,8 @@ export default function LucyStandalonePage() {
           contextual.push('지금 바로 몸의 긴장을 풀 수 있는 간단한 스트레칭 알려줘.');
         }
       }
-      const shuffledCasual = shuffle(CASUAL_PROMPT_POOL);
+      const horiTitles = HORI_PROMPT_LIBRARY.map((p) => p.title);
+      const shuffledCasual = shuffle([...CASUAL_PROMPT_POOL, ...horiTitles]);
       return Array.from(new Set([...contextual, ...shuffledCasual])).slice(0, 6);
     }
 
@@ -1104,6 +1109,19 @@ export default function LucyStandalonePage() {
   useEffect(() => {
     handleSendRef.current = handleSend;
   }, [handleSend]);
+
+  const handleSelectPromptFromLibrary = useCallback((promptText: string, sendImmediately: boolean) => {
+    if (sendImmediately) {
+      if (handleSendRef.current) {
+        handleSendRef.current(promptText);
+      }
+    } else {
+      setInput(promptText);
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 60);
+    }
+  }, []);
 
   // Handle pending channel and draft / auto-send input from other sub-apps (ReBible, Prism, etc.)
   useEffect(() => {
@@ -1781,19 +1799,37 @@ export default function LucyStandalonePage() {
             )}
           </AnimatePresence>
 
-          {/* 💡 추천 질문 가로 나열 바 (대화창 바로 위 가로 나열 & 동적 순환 셔플) */}
-          {currentPrompts.length > 0 && (
-            <div className="w-full flex items-center gap-1.5 pt-0.5 pb-0.5">
-              <button
-                type="button"
-                onClick={refreshPrompts}
-                className="p-1 sm:p-1.5 rounded-lg text-amber-600 hover:text-amber-800 bg-amber-50/90 hover:bg-amber-100 border border-amber-200/80 transition-all shrink-0 cursor-pointer active:scale-90 flex items-center gap-1 shadow-2xs"
-                title="새로운 맞춤 추천 질문으로 변경 (랜덤 셔플)"
-                aria-label="추천 질문 새로고침"
-              >
-                <Sparkles size={12} className="text-amber-500" />
-                <RefreshCw size={11} className={`text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
-              </button>
+          {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 (13P · 77선) 버튼 */}
+          <div className="w-full flex items-center gap-1.5 pt-0.5 pb-0.5">
+            {/* ✨ 13페이지 추천질문 전체보기 모달 트리거 버튼 */}
+            <button
+              id="lucy-open-prompt-library-btn"
+              type="button"
+              onClick={() => setIsPromptLibraryOpen(true)}
+              className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 text-[11px] sm:text-xs font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-2xs group"
+              title="사주·타로·점성술·자미두수 77가지 추천질문 (13페이지 전편)"
+              aria-label="추천질문 13페이지 라이브러리 열기"
+            >
+              <Sparkles size={13} className="text-amber-500 group-hover:scale-110 transition-transform" />
+              <span>추천질문</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-amber-500 text-slate-950 font-black">
+                13P
+              </span>
+            </button>
+
+            {/* 새로고침 셔플 버튼 */}
+            <button
+              type="button"
+              onClick={refreshPrompts}
+              className="p-1 sm:p-1.5 rounded-lg text-amber-600 hover:text-amber-800 bg-amber-50/90 hover:bg-amber-100 border border-amber-200/80 transition-all shrink-0 cursor-pointer active:scale-90 flex items-center gap-1 shadow-2xs"
+              title="새로운 맞춤 추천 질문으로 변경 (랜덤 셔플)"
+              aria-label="추천 질문 새로고침"
+            >
+              <RefreshCw size={11} className={`text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
+            </button>
+
+            {/* 가로 스크롤 추천 질문 리스트 */}
+            {currentPrompts.length > 0 && (
               <div className="flex-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
                 {currentPrompts.map((promptText, idx) => (
                   <button
@@ -1807,8 +1843,8 @@ export default function LucyStandalonePage() {
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className={`flex items-center gap-1.5 sm:gap-2 bg-slate-50 border rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all shadow-inner ${
             isRecording 
@@ -1865,6 +1901,7 @@ export default function LucyStandalonePage() {
 
             {/* Textarea */}
             <textarea
+              ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -2058,6 +2095,13 @@ export default function LucyStandalonePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 📖 13페이지 추천 질문 라이브러리 모달 */}
+      <PromptLibraryModal
+        isOpen={isPromptLibraryOpen}
+        onClose={() => setIsPromptLibraryOpen(false)}
+        onSelectPrompt={handleSelectPromptFromLibrary}
+      />
 
       {/* End of content */}
 

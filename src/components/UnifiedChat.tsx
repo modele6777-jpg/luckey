@@ -15,6 +15,8 @@ import { cleanUserMessageDisplay } from "../utils/cleanMessage";
 import { ChatInsightsBoardModal } from "./ChatInsightsBoardModal";
 import { saveLucyChatSummary } from "../lib/prismOmniSync";
 import { invokeLLM } from "../lib/ai";
+import { PromptLibraryModal } from "./chat/PromptLibraryModal";
+import { HORI_PROMPT_LIBRARY } from "../data/horiPromptLibrary";
 
 const PERSONA_CONFIG: Record<PersonaType, { 
   name: string; 
@@ -322,6 +324,7 @@ export function UnifiedChat() {
 
   const [input, setInput] = useState("");
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summaryDone, setSummaryDone] = useState(false);
 
@@ -1153,6 +1156,16 @@ export function UnifiedChat() {
                   className="w-full px-4 py-3 overflow-x-auto scroll-smooth touch-pan-x flex items-center gap-2 cursor-grab active:cursor-grabbing select-none [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(0,0,0,0.3)] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-black/30 [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/40"
                 >
                   <div className="flex items-center gap-2 pr-10 pl-1 w-max">
+                    <button
+                      id="unified-chat-open-prompt-library-btn"
+                      type="button"
+                      onClick={() => setIsPromptLibraryOpen(true)}
+                      className="px-3.5 py-2 rounded-full border border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-[12px] font-bold text-amber-300 transition-all text-left whitespace-nowrap shrink-0 cursor-pointer shadow-md active:scale-95 flex items-center gap-1.5 backdrop-blur-md"
+                      title="사주·타로·점성술·자미두수 77가지 추천질문 (13페이지 전편)"
+                    >
+                      <Sparkles size={12} className="text-amber-400 shrink-0" />
+                      <span>추천질문 13P</span>
+                    </button>
                     {displayPrompts.map((p, idx) => (
                       <button
                         key={idx}
@@ -1319,6 +1332,19 @@ export function UnifiedChat() {
           </motion.div>
         </div>
       )}
+
+      {/* 📖 13페이지 추천 질문 라이브러리 모달 */}
+      <PromptLibraryModal
+        isOpen={isPromptLibraryOpen}
+        onClose={() => setIsPromptLibraryOpen(false)}
+        onSelectPrompt={(promptText, sendImmediately) => {
+          if (sendImmediately) {
+            handleSend(promptText);
+          } else {
+            setInput(promptText);
+          }
+        }}
+      />
     </AnimatePresence>
   );
 }
