@@ -39,6 +39,8 @@ import {
   ELEMENT_DETAILS,
   BRANCH_KOREAN,
   STEM_KOREAN,
+  STEM_ELEMENT,
+  BRANCH_ELEMENT,
   type SajuAnalysisResult,
   type FiveElement,
   type DailySajuReport
@@ -485,7 +487,18 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
     );
   }
 
-  const { pillars, dayMaster, elements, yongsin, annual2026, specialStructures } = saju;
+  const {
+    pillars,
+    dayMaster,
+    elements,
+    yongsin,
+    yongsinDetails,
+    geokguk,
+    bodyStrength,
+    daewunDetail,
+    annual2026,
+    specialStructures,
+  } = saju;
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-8 text-left">
@@ -939,13 +952,19 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
                 {/* 지장간 & 12운성 */}
                 <div className="pt-2 border-t border-white/10 space-y-1 text-[10px] font-mono text-zinc-400">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-zinc-500">지장간:</span>
-                    <span className="text-zinc-300 font-serif">{(JIJANGAN_MAP[pillars.hour.zhi] || []).join(' ')}</span>
+                    <span className="text-zinc-300 font-serif">
+                      {pillars.hour.hiddenStems ? (
+                        `${pillars.hour.hiddenStems.early.stem}(${pillars.hour.hiddenStems.early.tenGod}) ` +
+                        (pillars.hour.hiddenStems.middle ? `${pillars.hour.hiddenStems.middle.stem}(${pillars.hour.hiddenStems.middle.tenGod}) ` : '') +
+                        `${pillars.hour.hiddenStems.main.stem}(${pillars.hour.hiddenStems.main.tenGod})`
+                      ) : (JIJANGAN_MAP[pillars.hour.zhi] || []).join(' ')}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-zinc-500">12운성:</span>
-                    <span className="text-amber-300 font-bold">{getTwelveStage(pillars.hour.zhi)}</span>
+                    <span className="text-amber-300 font-bold">{pillars.hour.twelveStage || getTwelveStage(pillars.hour.zhi)}</span>
                   </div>
                 </div>
               </div>
@@ -1002,13 +1021,19 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
               {/* 지장간 & 12운성 */}
               <div className="pt-2 border-t border-amber-500/20 space-y-1 text-[10px] font-mono text-zinc-400">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-zinc-500">지장간:</span>
-                  <span className="text-amber-200 font-serif font-medium">{(JIJANGAN_MAP[pillars.day.zhi] || []).join(' ')}</span>
+                  <span className="text-amber-200 font-serif font-medium">
+                    {pillars.day.hiddenStems ? (
+                      `${pillars.day.hiddenStems.early.stem}(${pillars.day.hiddenStems.early.tenGod}) ` +
+                      (pillars.day.hiddenStems.middle ? `${pillars.day.hiddenStems.middle.stem}(${pillars.day.hiddenStems.middle.tenGod}) ` : '') +
+                      `${pillars.day.hiddenStems.main.stem}(${pillars.day.hiddenStems.main.tenGod})`
+                    ) : (JIJANGAN_MAP[pillars.day.zhi] || []).join(' ')}
+                  </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-zinc-500">12운성:</span>
-                  <span className="text-amber-300 font-bold">{getTwelveStage(pillars.day.zhi)}</span>
+                  <span className="text-amber-300 font-bold">{pillars.day.twelveStage || getTwelveStage(pillars.day.zhi)}</span>
                 </div>
               </div>
             </div>
@@ -1052,13 +1077,19 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
               {/* 지장간 & 12운성 */}
               <div className="pt-2 border-t border-white/10 space-y-1 text-[10px] font-mono text-zinc-400">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-zinc-500">지장간:</span>
-                  <span className="text-zinc-300 font-serif">{(JIJANGAN_MAP[pillars.month.zhi] || []).join(' ')}</span>
+                  <span className="text-zinc-300 font-serif">
+                    {pillars.month.hiddenStems ? (
+                      `${pillars.month.hiddenStems.early.stem}(${pillars.month.hiddenStems.early.tenGod}) ` +
+                      (pillars.month.hiddenStems.middle ? `${pillars.month.hiddenStems.middle.stem}(${pillars.month.hiddenStems.middle.tenGod}) ` : '') +
+                      `${pillars.month.hiddenStems.main.stem}(${pillars.month.hiddenStems.main.tenGod})`
+                    ) : (JIJANGAN_MAP[pillars.month.zhi] || []).join(' ')}
+                  </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-zinc-500">12운성:</span>
-                  <span className="text-amber-300 font-bold">{getTwelveStage(pillars.month.zhi)}</span>
+                  <span className="text-amber-300 font-bold">{pillars.month.twelveStage || getTwelveStage(pillars.month.zhi)}</span>
                 </div>
               </div>
             </div>
@@ -1102,19 +1133,184 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
               {/* 지장간 & 12운성 */}
               <div className="pt-2 border-t border-white/10 space-y-1 text-[10px] font-mono text-zinc-400">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-zinc-500">지장간:</span>
-                  <span className="text-zinc-300 font-serif">{(JIJANGAN_MAP[pillars.year.zhi] || []).join(' ')}</span>
+                  <span className="text-zinc-300 font-serif">
+                    {pillars.year.hiddenStems ? (
+                      `${pillars.year.hiddenStems.early.stem}(${pillars.year.hiddenStems.early.tenGod}) ` +
+                      (pillars.year.hiddenStems.middle ? `${pillars.year.hiddenStems.middle.stem}(${pillars.year.hiddenStems.middle.tenGod}) ` : '') +
+                      `${pillars.year.hiddenStems.main.stem}(${pillars.year.hiddenStems.main.tenGod})`
+                    ) : (JIJANGAN_MAP[pillars.year.zhi] || []).join(' ')}
+                  </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-zinc-500">12운성:</span>
-                  <span className="text-amber-300 font-bold">{getTwelveStage(pillars.year.zhi)}</span>
+                  <span className="text-amber-300 font-bold">{pillars.year.twelveStage || getTwelveStage(pillars.year.zhi)}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* 3-1. 정통 격국(格局) & 신강/신약(身强/身弱) 정밀 감명 */}
+      <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1b1c24] via-[#14151a] to-[#121318] border border-amber-500/30 shadow-2xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+              <Compass size={16} />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-serif font-bold text-white flex items-center gap-2">
+                <span>정통 격국(格局) 및 신강·신약(身强身弱) 정밀 감명</span>
+              </h3>
+              <p className="text-[11px] text-zinc-400 font-sans">
+                월령(月令)의 지장간 사령과 일간의 뿌리(득령·득지·득세)를 과학적으로 분석한 사주 구조
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold font-serif">
+              {geokguk.name}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs font-bold">
+              {bodyStrength.level} ({bodyStrength.score}점)
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 격국 설명 */}
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-400 flex items-center gap-1 font-serif">
+                <span>🏛️</span> 정통 격국: {geokguk.name}
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-400">
+                {geokguk.category} 분류
+              </span>
+            </div>
+            <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+              {geokguk.description}
+            </p>
+          </div>
+
+          {/* 신강/신약 설명 및 득령/득지 뱃지 */}
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-purple-400 flex items-center gap-1">
+                <span>⚖️</span> 본원 세력: {bodyStrength.level}
+              </span>
+              <div className="flex items-center gap-1">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${bodyStrength.deukRyeong ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-bold' : 'bg-white/5 text-zinc-500 border-white/5'}`}>
+                  득령(得令) {bodyStrength.deukRyeong ? '성공' : '미달'}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${bodyStrength.deukJi ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-bold' : 'bg-white/5 text-zinc-500 border-white/5'}`}>
+                  득지(得地) {bodyStrength.deukJi ? '성공' : '미달'}
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+              {bodyStrength.summary}
+            </p>
+          </div>
+        </div>
+
+        {/* 용신·희신·기신 정통 3대 에너지 처방 */}
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent border border-amber-500/20 space-y-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-xs font-bold text-amber-300 flex items-center gap-1">
+              <Sparkles size={14} className="text-amber-400" />
+              <span>정통 억부·조후 용신(用神) & 희신(喜神) 배합</span>
+            </span>
+            <div className="flex items-center gap-2 text-xs flex-wrap">
+              <span className="text-zinc-400">용신: <strong className="text-amber-300">{yongsin.name}</strong></span>
+              <span className="text-white/20">|</span>
+              <span className="text-zinc-400">희신: <strong className="text-emerald-400">{yongsinDetails.heeshin}</strong></span>
+              <span className="text-white/20">|</span>
+              <span className="text-zinc-400">기신: <strong className="text-rose-400">{yongsinDetails.gisin}</strong></span>
+            </div>
+          </div>
+          <p className="text-xs text-zinc-300 leading-relaxed">
+            {yongsin.meaning}
+          </p>
+        </div>
+      </div>
+
+      {/* 3-2. 인생 10년 주기 대운(大運) 타임라인 & 정밀 대운수(大運數) */}
+      {daewunDetail && (
+        <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300">
+                <TrendingUp size={16} />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white flex items-center gap-2 flex-wrap">
+                  <span>인생 10년 주기 대운(大運) 타임라인</span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                    대운수 {daewunDetail.daewunNumber} • {daewunDetail.directionText}
+                  </span>
+                </h3>
+                <p className="text-[11px] text-zinc-400 font-sans">
+                  절입일과 생년월일시 간격으로 정밀 계산된 10년 단위의 인생 계절 변화
+                </p>
+              </div>
+            </div>
+
+            <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-zinc-300">
+              현재 대운: <strong className="text-amber-300">{saju.daeun.current}</strong>
+            </div>
+          </div>
+
+          {/* 대운 카드 그리드 */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
+            {daewunDetail.timeline.map((dw) => {
+              const isCurrent = saju.koreanAge >= dw.startAge && saju.koreanAge <= dw.endAge;
+              const ganEl = STEM_ELEMENT[dw.gan];
+              const zhiEl = BRANCH_ELEMENT[dw.zhi];
+
+              return (
+                <div
+                  key={dw.order}
+                  className={`p-3 rounded-2xl border text-center transition-all relative overflow-hidden ${
+                    isCurrent
+                      ? 'bg-amber-500/15 border-amber-400 ring-2 ring-amber-400/30 shadow-lg shadow-amber-500/10'
+                      : 'bg-white/[0.02] border-white/5 hover:border-white/20'
+                  }`}
+                >
+                  {isCurrent && (
+                    <div className="absolute top-1 right-1">
+                      <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-zinc-950 text-[8px] font-black">
+                        현재
+                      </span>
+                    </div>
+                  )}
+
+                  <span className="text-[10px] text-zinc-500 font-mono block">
+                    {dw.startAge}~{dw.endAge}세
+                  </span>
+
+                  <div className="py-1">
+                    <span className="text-xl sm:text-2xl font-serif font-black text-white block">
+                      <span className={ELEMENT_COLORS[ganEl]?.text}>{dw.gan}</span>
+                      <span className={ELEMENT_COLORS[zhiEl]?.text}>{dw.zhi}</span>
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-mono block">
+                      {dw.ganKr}{dw.zhiKr}
+                    </span>
+                  </div>
+
+                  <div className="pt-1 border-t border-white/5 space-y-0.5 text-[9px] font-mono text-zinc-400">
+                    <div className="text-zinc-300">{dw.tenGodGan} · {dw.tenGodZhi}</div>
+                    <div className="text-amber-300 font-semibold">{dw.twelveStage}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 3. 오행(木·火·土·金·水) 밸런스 & 맞춤 처방전 */}
       <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6">

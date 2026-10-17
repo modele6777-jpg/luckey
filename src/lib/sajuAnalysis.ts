@@ -12,6 +12,11 @@
  */
 
 import type { UserProfile } from './sharedState';
+import {
+  getAstronomicalSajuYear,
+  getAstronomicalMonthBranch,
+  calculatePreciseDaewun,
+} from './astronomicalSolarTerms';
 
 // 10간(Ten Heavenly Stems) & 12지(Twelve Earthly Branches)
 export const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'] as const;
@@ -359,6 +364,42 @@ export function calculateTenGod(dayGan: string, targetStemOrBranch: string, isBr
   return { name: '비견(比肩)', category: '비겁', desc: '동등한 에너지' };
 }
 
+// 12운성 (일간 기준 각 지지의 12운성: 장생, 목욕, 관대, 건록, 제왕, 쇠, 병, 사, 묘, 절, 태, 양)
+export const TWELVE_STAGES_MATRIX: Record<string, Record<string, string>> = {
+  甲: { 亥: '장생', 子: '목욕', 丑: '관대', 寅: '건록', 卯: '제왕', 辰: '쇠', 巳: '병', 午: '사', 未: '묘', 申: '절', 酉: '태', 戌: '양' },
+  乙: { 午: '장생', 巳: '목욕', 辰: '관대', 卯: '건록', 寅: '제왕', 丑: '쇠', 子: '병', 亥: '사', 戌: '묘', 酉: '절', 申: '태', 未: '양' },
+  丙: { 寅: '장생', 卯: '목욕', 辰: '관대', 巳: '건록', 午: '제왕', 未: '쇠', 申: '병', 酉: '사', 戌: '묘', 亥: '절', 子: '태', 丑: '양' },
+  丁: { 酉: '장생', 申: '목욕', 未: '관대', 午: '건록', 巳: '제왕', 辰: '쇠', 卯: '병', 寅: '사', 丑: '묘', 子: '절', 亥: '태', 戌: '양' },
+  戊: { 寅: '장생', 卯: '목욕', 辰: '관대', 巳: '건록', 午: '제왕', 未: '쇠', 申: '병', 酉: '사', 戌: '묘', 亥: '절', 子: '태', 丑: '양' },
+  己: { 酉: '장생', 申: '목욕', 未: '관대', 午: '건록', 巳: '제왕', 辰: '쇠', 卯: '병', 寅: '사', 丑: '묘', 子: '절', 亥: '태', 戌: '양' },
+  庚: { 巳: '장생', 午: '목욕', 未: '관대', 申: '건록', 酉: '제왕', 戌: '쇠', 亥: '병', 子: '사', 丑: '묘', 寅: '절', 卯: '태', 辰: '양' },
+  辛: { 子: '장생', 亥: '목욕', 戌: '관대', 酉: '건록', 申: '제왕', 未: '쇠', 午: '병', 巳: '사', 辰: '묘', 卯: '절', 寅: '태', 丑: '양' },
+  壬: { 申: '장생', 酉: '목욕', 戌: '관대', 亥: '건록', 子: '제왕', 丑: '쇠', 寅: '병', 卯: '사', 辰: '묘', 巳: '절', 午: '태', 未: '양' },
+  癸: { 卯: '장생', 寅: '목욕', 丑: '관대', 子: '건록', 亥: '제왕', 戌: '쇠', 酉: '병', 申: '사', 未: '묘', 午: '절', 巳: '태', 辰: '양' },
+};
+
+// 12지지별 정통 지장간(地藏干) 일수 및 천간 매핑 (초기/여기, 중기, 정기/본기)
+export const HIDDEN_STEMS: Record<string, { early: [string, number]; middle?: [string, number]; main: [string, number] }> = {
+  '子': { early: ['壬', 10], main: ['癸', 20] },
+  '丑': { early: ['癸', 9], middle: ['辛', 3], main: ['己', 18] },
+  '寅': { early: ['戊', 7], middle: ['丙', 7], main: ['甲', 16] },
+  '卯': { early: ['甲', 10], main: ['乙', 20] },
+  '辰': { early: ['乙', 9], middle: ['癸', 3], main: ['戊', 18] },
+  '巳': { early: ['戊', 7], middle: ['庚', 7], main: ['丙', 16] },
+  '午': { early: ['丙', 10], middle: ['己', 9], main: ['丁', 11] },
+  '未': { early: ['丁', 9], middle: ['乙', 3], main: ['己', 18] },
+  '申': { early: ['戊', 7], middle: ['壬', 7], main: ['庚', 16] },
+  '酉': { early: ['庚', 10], main: ['辛', 20] },
+  '戌': { early: ['辛', 9], middle: ['丁', 3], main: ['戊', 18] },
+  '亥': { early: ['戊', 7], middle: ['甲', 7], main: ['壬', 16] },
+};
+
+export interface HiddenStemPillar {
+  early: { stem: string; days: number; stemKr: string; el: FiveElement; tenGod: string };
+  middle?: { stem: string; days: number; stemKr: string; el: FiveElement; tenGod: string };
+  main: { stem: string; days: number; stemKr: string; el: FiveElement; tenGod: string };
+}
+
 export interface SajuPillarDetail {
   gan: string;
   zhi: string;
@@ -372,6 +413,8 @@ export interface SajuPillarDetail {
   tenGodZhi: { name: string; category: string; desc: string };
   animal: string;
   full: string;
+  twelveStage: string; // 12운성 (장생, 건록, 제왕, 관대 등)
+  hiddenStems?: HiddenStemPillar; // 지장간 (초기, 중기, 정기)
 }
 
 export interface SpecialStarCombination {
@@ -410,7 +453,24 @@ export interface SajuAnalysisResult {
     summary: string;
   };
 
-  // 핵심 신살 및 특수 구조 (백호대살, 사고지, 무계합, 축미충 등)
+  // 정통 10정격 격국 (Geokguk)
+  geokguk: {
+    name: string;
+    category: string;
+    description: string;
+  };
+
+  // 신강/신약 판정 (Body Strength)
+  bodyStrength: {
+    level: '극신강' | '신강' | '중화' | '신약' | '극신약';
+    score: number; // 0~100
+    deukRyeong: boolean; // 득령 여부
+    deukJi: boolean; // 득지 여부
+    deukSeScore: number; // 득세 점수
+    summary: string;
+  };
+
+  // 핵심 신살 및 특수 구조 (천을귀인, 문창귀인, 도화살, 역마살, 화개살, 백호대살, 괴강살 등)
   specialStructures: SpecialStarCombination[];
   
   // 웹앱 연동용 파라미터
@@ -421,12 +481,21 @@ export interface SajuAnalysisResult {
     recommendedKeywords: string[];
   };
 
-  // 용신 (Yongsin - 보약 에너지)
+  // 용신 (Yongsin - 억부/조후/희신/기신 정밀 보약 에너지)
   yongsin: {
     element: FiveElement;
     name: string;
     meaning: string;
     actionTip: string;
+  };
+
+  // 용신 정밀 분석 세부
+  yongsinDetails: {
+    eokbuYongsin: FiveElement;
+    johuYongsin?: FiveElement;
+    heeshin: FiveElement;
+    gisin: FiveElement;
+    analysisNote: string;
   };
 
   // 2026 병오년(丙午年) 운세 조화
@@ -444,13 +513,33 @@ export interface SajuAnalysisResult {
     next: string;
   };
 
+  // 정밀 대운수 및 8대 대운 타임라인
+  daewunDetail: {
+    daewunNumber: number;
+    isForward: boolean;
+    directionText: string;
+    timeline: Array<{
+      order: number;
+      ganZhi: string;
+      gan: string;
+      zhi: string;
+      ganKr: string;
+      zhiKr: string;
+      startAge: number;
+      endAge: number;
+      tenGodGan: string;
+      tenGodZhi: string;
+      twelveStage: string;
+    }>;
+  };
+
   // 통합 프롬프트 헌장 및 요약 문자열
   systemPromptSummary: string;
   shortDigest: string;
 }
 
 /**
- * 24절기(입춘 등)와 만세력 절입일을 적용하여 정확한 사주 4주 8자와 심층 구조를 분석합니다.
+ * 24절기 천문학적 절입시각과 정밀 만세력을 적용하여 정확한 사주 4주 8자, 격국, 신강신약, 용신, 대운을 분석합니다.
  */
 export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysisResult | null {
   try {
@@ -462,452 +551,634 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
       return null;
     }
 
-  const [y, m, d] = dateParts;
-  let h = -1;
-  let minute = 0;
-  if (basic.birthtime) {
-    const timeParts = basic.birthtime.split(':').map(Number);
-    if (!isNaN(timeParts[0])) h = timeParts[0];
-    if (timeParts.length > 1 && !isNaN(timeParts[1])) minute = timeParts[1];
-  }
+    const [y, m, d] = dateParts;
+    let h = -1;
+    let minute = 0;
+    if (basic.birthtime) {
+      const timeParts = basic.birthtime.split(':').map(Number);
+      if (!isNaN(timeParts[0])) h = timeParts[0];
+      if (timeParts.length > 1 && !isNaN(timeParts[1])) minute = timeParts[1];
+    }
 
-  const genderStr = basic.gender === 'male' ? '남성' : '여성';
-  const rawNickname = basic.nickname?.trim();
-  const rawName = basic.name?.trim();
-  const preferredName = (rawNickname && rawNickname !== '여행자')
-    ? rawNickname
-    : ((rawName && rawName !== '여행자') ? rawName : '제제');
-  const name = preferredName;
-  const nickname = preferredName;
+    const genderStr = basic.gender === 'male' ? '남성' : '여성';
+    const rawNickname = basic.nickname?.trim();
+    const rawName = basic.name?.trim();
+    const preferredName = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '박주형')
+      ? rawNickname
+      : ((rawName && rawName !== '여행자' && rawName !== '사용자') ? rawName : '제제');
+    const name = preferredName;
+    const nickname = preferredName;
 
-  // 1. 절기 기준 년도(Saju Year) 보정 (양력 2월 4일 입춘 전 출생자는 전년도 간지 적용)
-  const isBeforeIpchun = (m === 1) || (m === 2 && d < 4);
-  const sajuYear = isBeforeIpchun ? y - 1 : y;
+    // 한국 표준시(KST: UTC+9) 기준 생년월일시 Date 생성
+    const birthHour = h >= 0 ? h : 12;
+    const birthKstDate = new Date(Date.UTC(y, m - 1, d, birthHour, minute, 0) - 9 * 3600 * 1000);
 
-  const yi = (sajuYear - 4) % 60;
-  const yGan = HEAVENLY_STEMS[(yi % 10 + 10) % 10];
-  const yZhi = EARTHLY_BRANCHES[(yi % 12 + 12) % 12];
+    // 1. 천문학적 24절기 입춘(315°) 절입시각 기준 사주 년도(Saju Year) 및 년주 산출
+    const { sajuYear } = getAstronomicalSajuYear(birthKstDate);
+    const yi = (sajuYear - 4) % 60;
+    const yGan = HEAVENLY_STEMS[(yi % 10 + 10) % 10];
+    const yZhi = EARTHLY_BRANCHES[(yi % 12 + 12) % 12];
 
-  // 2. 24절기 절입일 기준 월지(Month Branch) 산출
-  // 丑월(1월 5일경~2월 3일), 寅월(2월 4일~3월 4일), 卯월(3월 5일~4월 4일), 辰월(4월 5일~5월 4일),
-  // 巳월(5월 5일~6월 4일), 午월(6월 5일~7월 6일), 未월(7월 7일~8월 6일), 申월(8월 7일~9월 6일),
-  // 酉월(9월 7일~10월 7일), 戌월(10월 8일~11월 6일), 亥월(11월 7일~12월 6일), 子월(12월 7일~1월 4일)
-  let monthZhiIdx = 1; // 丑
-  let monthOffsetFromTiger = 11; // 0 = 寅, 1 = 卯, ..., 11 = 丑
+    // 2. 천문학적 12절 절입시각 기준 정밀 월지(Month Branch) 산출
+    // monthBranchIndex: 0=寅(인월), 1=卯(묘월), ..., 10=子(자월), 11=丑(축월)
+    const { monthBranchIndex } = getAstronomicalMonthBranch(birthKstDate);
+    const mZhiIdx = (monthBranchIndex + 2) % 12;
+    const mZhi = EARTHLY_BRANCHES[mZhiIdx];
 
-  if ((m === 1 && d >= 5) || (m === 2 && d < 4)) {
-    monthZhiIdx = 1; // 丑
-    monthOffsetFromTiger = 11;
-  } else if ((m === 2 && d >= 4) || (m === 3 && d < 5)) {
-    monthZhiIdx = 2; // 寅
-    monthOffsetFromTiger = 0;
-  } else if ((m === 3 && d >= 5) || (m === 4 && d < 5)) {
-    monthZhiIdx = 3; // 卯
-    monthOffsetFromTiger = 1;
-  } else if ((m === 4 && d >= 5) || (m === 5 && d < 5)) {
-    monthZhiIdx = 4; // 辰
-    monthOffsetFromTiger = 2;
-  } else if ((m === 5 && d >= 5) || (m === 6 && d < 5)) {
-    monthZhiIdx = 5; // 巳
-    monthOffsetFromTiger = 3;
-  } else if ((m === 6 && d >= 5) || (m === 7 && d < 7)) {
-    monthZhiIdx = 6; // 午
-    monthOffsetFromTiger = 4;
-  } else if ((m === 7 && d >= 7) || (m === 8 && d < 7)) {
-    monthZhiIdx = 7; // 未
-    monthOffsetFromTiger = 5;
-  } else if ((m === 8 && d >= 7) || (m === 9 && d < 7)) {
-    monthZhiIdx = 8; // 申
-    monthOffsetFromTiger = 6;
-  } else if ((m === 9 && d >= 7) || (m === 10 && d < 8)) {
-    monthZhiIdx = 9; // 酉
-    monthOffsetFromTiger = 7;
-  } else if ((m === 10 && d >= 8) || (m === 11 && d < 7)) {
-    monthZhiIdx = 10; // 戌
-    monthOffsetFromTiger = 8;
-  } else if ((m === 11 && d >= 7) || (m === 12 && d < 7)) {
-    monthZhiIdx = 11; // 亥
-    monthOffsetFromTiger = 9;
-  } else {
-    // (m === 12 && d >= 7) || (m === 1 && d < 5)
-    monthZhiIdx = 0; // 子
-    monthOffsetFromTiger = 10;
-  }
+    // 월두법(月頭法): 년간에 따라 인월(寅月)의 천간 시작점 결정
+    const yGanIdx = HEAVENLY_STEMS.indexOf(yGan);
+    const startStemForTiger = ((yGanIdx % 5) * 2 + 2) % 10;
+    const monthGanIdx = (startStemForTiger + monthBranchIndex) % 10;
+    const mGan = HEAVENLY_STEMS[monthGanIdx];
 
-  const mZhi = EARTHLY_BRANCHES[monthZhiIdx];
+    // 3. 일주 (Day Pillar - 율리우스 적일 및 한국 진태양시 조자시/야자시 보정)
+    // 23:30 이후 출생은 자시(子時)의 영역이자 익일 일진으로 전환
+    let dayYear = y;
+    let dayMonth = m;
+    let dayDate = d;
+    if (h === 23 && minute >= 30) {
+      const nextDay = new Date(y, m - 1, d + 1);
+      dayYear = nextDay.getFullYear();
+      dayMonth = nextDay.getMonth() + 1;
+      dayDate = nextDay.getDate();
+    }
 
-  // 월두법(月頭法): 년간에 따라 인월(寅月)의 천간 시작점 결정
-  // 甲/己년 -> 丙寅(2), 乙/庚년 -> 戊寅(4), 丙/辛년 -> 庚寅(6), 丁/壬년 -> 壬寅(8), 戊/癸년 -> 甲寅(0)
-  const yGanIdx = HEAVENLY_STEMS.indexOf(yGan);
-  const startStemForTiger = ((yGanIdx % 5) * 2 + 2) % 10;
-  const monthGanIdx = (startStemForTiger + monthOffsetFromTiger) % 10;
-  const mGan = HEAVENLY_STEMS[monthGanIdx];
+    const a = Math.floor((14 - dayMonth) / 12);
+    const yr = dayYear + 4800 - a;
+    const mo = dayMonth + 12 * a - 3;
+    const jd = dayDate + Math.floor((153 * mo + 2) / 5) + 365 * yr + Math.floor(yr / 4) - Math.floor(yr / 100) + Math.floor(yr / 400) - 32045;
+    const di = (jd + 49) % 60;
+    const dGan = HEAVENLY_STEMS[(di % 10 + 10) % 10];
+    const dZhi = EARTHLY_BRANCHES[(di % 12 + 12) % 12];
 
-  // 3. 일주 (Day Pillar - 율리우스 적일 기준 계산)
-  const a = Math.floor((14 - m) / 12);
-  const yr = y + 4800 - a;
-  const mo = m + 12 * a - 3;
-  const jd = d + Math.floor((153 * mo + 2) / 5) + 365 * yr + Math.floor(yr / 4) - Math.floor(yr / 100) + Math.floor(yr / 400) - 32045;
-  const di = (jd + 49) % 60;
-  const dGan = HEAVENLY_STEMS[(di % 10 + 10) % 10];
-  const dZhi = EARTHLY_BRANCHES[(di % 12 + 12) % 12];
+    // 4. 시주 (Hour Pillar - 한국 서울 진태양시 -30분 시차 및 시두법 적용)
+    let hGan: string | null = null;
+    let hZhi: string | null = null;
+    if (h >= 0) {
+      const totalMins = h * 60 + minute;
+      const adjustedMins = (totalMins - 30 + 1440) % 1440;
+      const hIdx = Math.floor((adjustedMins + 60) / 120) % 12;
+      hZhi = EARTHLY_BRANCHES[hIdx];
+      const dGanIdx = HEAVENLY_STEMS.indexOf(dGan);
+      const startStemForHour = ((dGanIdx % 5) * 2) % 10;
+      const hGanIdx = (startStemForHour + hIdx) % 10;
+      hGan = HEAVENLY_STEMS[hGanIdx];
+    }
 
-  // 4. 시주 (Hour Pillar - 한국 진태양시 30분 보정 및 시두법 적용)
-  let hGan: string | null = null;
-  let hZhi: string | null = null;
-  if (h >= 0) {
-    // 한국 표준시(135°E, KST) 기준 서울(~127°E) 진태양시 30분 보정 적용:
-    // 23:30~01:29: 子, 01:30~03:29: 丑, ..., 11:30~13:29: 午, 13:30~15:29: 未
-    const totalMins = h * 60 + minute;
-    const adjustedMins = (totalMins - 30 + 1440) % 1440;
-    const hIdx = Math.floor((adjustedMins + 60) / 120) % 12;
-    hZhi = EARTHLY_BRANCHES[hIdx];
-    const dGanIdx = HEAVENLY_STEMS.indexOf(dGan);
-    const startStemForHour = ((dGanIdx % 5) * 2) % 10;
-    const hGanIdx = (startStemForHour + hIdx) % 10;
-    hGan = HEAVENLY_STEMS[hGanIdx];
-  }
+    // 5. 십신(十神) 산출
+    const yGanTenGod = calculateTenGod(dGan, yGan, false);
+    const yZhiTenGod = calculateTenGod(dGan, yZhi, true);
+    const mGanTenGod = calculateTenGod(dGan, mGan, false);
+    const mZhiTenGod = calculateTenGod(dGan, mZhi, true);
+    const dGanTenGod = { name: '일간(日干/본원)', category: '본원', desc: '나 자신(Self)' };
+    const dZhiTenGod = calculateTenGod(dGan, dZhi, true);
+    const hGanTenGod = hGan ? calculateTenGod(dGan, hGan, false) : null;
+    const hZhiTenGod = hZhi ? calculateTenGod(dGan, hZhi, true) : null;
 
-  // 5. 십신(十神) 산출
-  const yGanTenGod = calculateTenGod(dGan, yGan, false);
-  const yZhiTenGod = calculateTenGod(dGan, yZhi, true);
+    // 지장간 헬퍼
+    const buildPillarHiddenStems = (zhi: string): HiddenStemPillar | undefined => {
+      const info = HIDDEN_STEMS[zhi];
+      if (!info) return undefined;
+      const earlyEl = STEM_ELEMENT[info.early[0]];
+      const earlyTg = calculateTenGod(dGan, info.early[0], false).name.split('(')[0];
+      const mainEl = STEM_ELEMENT[info.main[0]];
+      const mainTg = calculateTenGod(dGan, info.main[0], false).name.split('(')[0];
+      let middle;
+      if (info.middle) {
+        const midEl = STEM_ELEMENT[info.middle[0]];
+        const midTg = calculateTenGod(dGan, info.middle[0], false).name.split('(')[0];
+        middle = {
+          stem: info.middle[0],
+          days: info.middle[1],
+          stemKr: STEM_KOREAN[info.middle[0]],
+          el: midEl,
+          tenGod: midTg,
+        };
+      }
+      return {
+        early: { stem: info.early[0], days: info.early[1], stemKr: STEM_KOREAN[info.early[0]], el: earlyEl, tenGod: earlyTg },
+        middle,
+        main: { stem: info.main[0], days: info.main[1], stemKr: STEM_KOREAN[info.main[0]], el: mainEl, tenGod: mainTg },
+      };
+    };
 
-  const mGanTenGod = calculateTenGod(dGan, mGan, false);
-  const mZhiTenGod = calculateTenGod(dGan, mZhi, true);
+    // 6. 4주 구성 객체 완성 (12운성 및 지장간 포함)
+    const pillars = {
+      year: {
+        gan: yGan, zhi: yZhi,
+        ganKr: STEM_KOREAN[yGan], zhiKr: BRANCH_KOREAN[yZhi],
+        elGan: STEM_ELEMENT[yGan], elZhi: BRANCH_ELEMENT[yZhi],
+        yinYangGan: STEM_YIN_YANG[yGan], yinYangZhi: BRANCH_YIN_YANG[yZhi],
+        tenGodGan: yGanTenGod, tenGodZhi: yZhiTenGod,
+        animal: BRANCH_ANIMALS[yZhi],
+        full: `${yGan}${yZhi}(${STEM_KOREAN[yGan]}${BRANCH_KOREAN[yZhi]}년, ${BRANCH_ANIMALS[yZhi]}띠)`,
+        twelveStage: TWELVE_STAGES_MATRIX[dGan]?.[yZhi] || '조화',
+        hiddenStems: buildPillarHiddenStems(yZhi),
+      },
+      month: {
+        gan: mGan, zhi: mZhi,
+        ganKr: STEM_KOREAN[mGan], zhiKr: BRANCH_KOREAN[mZhi],
+        elGan: STEM_ELEMENT[mGan], elZhi: BRANCH_ELEMENT[mZhi],
+        yinYangGan: STEM_YIN_YANG[mGan], yinYangZhi: BRANCH_YIN_YANG[mZhi],
+        tenGodGan: mGanTenGod, tenGodZhi: mZhiTenGod,
+        animal: BRANCH_ANIMALS[mZhi],
+        full: `${mGan}${mZhi}(${STEM_KOREAN[mGan]}${BRANCH_KOREAN[mZhi]}월)`,
+        twelveStage: TWELVE_STAGES_MATRIX[dGan]?.[mZhi] || '조화',
+        hiddenStems: buildPillarHiddenStems(mZhi),
+      },
+      day: {
+        gan: dGan, zhi: dZhi,
+        ganKr: STEM_KOREAN[dGan], zhiKr: BRANCH_KOREAN[dZhi],
+        elGan: STEM_ELEMENT[dGan], elZhi: BRANCH_ELEMENT[dZhi],
+        yinYangGan: STEM_YIN_YANG[dGan], yinYangZhi: BRANCH_YIN_YANG[dZhi],
+        tenGodGan: dGanTenGod, tenGodZhi: dZhiTenGod,
+        animal: BRANCH_ANIMALS[dZhi],
+        full: `${dGan}${dZhi}(${STEM_KOREAN[dGan]}${BRANCH_KOREAN[dZhi]}일)`,
+        twelveStage: TWELVE_STAGES_MATRIX[dGan]?.[dZhi] || '건록',
+        hiddenStems: buildPillarHiddenStems(dZhi),
+      },
+      hour: hGan && hZhi && hGanTenGod && hZhiTenGod ? {
+        gan: hGan, zhi: hZhi,
+        ganKr: STEM_KOREAN[hGan], zhiKr: BRANCH_KOREAN[hZhi],
+        elGan: STEM_ELEMENT[hGan], elZhi: BRANCH_ELEMENT[hZhi],
+        yinYangGan: STEM_YIN_YANG[hGan], yinYangZhi: BRANCH_YIN_YANG[hZhi],
+        tenGodGan: hGanTenGod, tenGodZhi: hZhiTenGod,
+        animal: BRANCH_ANIMALS[hZhi],
+        full: `${hGan}${hZhi}(${STEM_KOREAN[hGan]}${BRANCH_KOREAN[hZhi]}시)`,
+        twelveStage: TWELVE_STAGES_MATRIX[dGan]?.[hZhi] || '조화',
+        hiddenStems: buildPillarHiddenStems(hZhi),
+      } : null,
+    };
 
-  const dGanTenGod = { name: '일간(日干/본원)', category: '본원', desc: '나 자신(Self)' };
-  const dZhiTenGod = calculateTenGod(dGan, dZhi, true);
+    // 7. 오행 카운트 (Five Elements count)
+    const counts: Record<FiveElement, number> = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+    const allStems = [yGan, mGan, dGan, ...(hGan ? [hGan] : [])];
+    const allBranches = [yZhi, mZhi, dZhi, ...(hZhi ? [hZhi] : [])];
 
-  const hGanTenGod = hGan ? calculateTenGod(dGan, hGan, false) : null;
-  const hZhiTenGod = hZhi ? calculateTenGod(dGan, hZhi, true) : null;
-
-  // 6. 4주 구성 객체 완성
-  const pillars = {
-    year: {
-      gan: yGan, zhi: yZhi,
-      ganKr: STEM_KOREAN[yGan], zhiKr: BRANCH_KOREAN[yZhi],
-      elGan: STEM_ELEMENT[yGan], elZhi: BRANCH_ELEMENT[yZhi],
-      yinYangGan: STEM_YIN_YANG[yGan], yinYangZhi: BRANCH_YIN_YANG[yZhi],
-      tenGodGan: yGanTenGod, tenGodZhi: yZhiTenGod,
-      animal: BRANCH_ANIMALS[yZhi],
-      full: `${yGan}${yZhi}(${STEM_KOREAN[yGan]}${BRANCH_KOREAN[yZhi]}년, ${BRANCH_ANIMALS[yZhi]}띠)`,
-    },
-    month: {
-      gan: mGan, zhi: mZhi,
-      ganKr: STEM_KOREAN[mGan], zhiKr: BRANCH_KOREAN[mZhi],
-      elGan: STEM_ELEMENT[mGan], elZhi: BRANCH_ELEMENT[mZhi],
-      yinYangGan: STEM_YIN_YANG[mGan], yinYangZhi: BRANCH_YIN_YANG[mZhi],
-      tenGodGan: mGanTenGod, tenGodZhi: mZhiTenGod,
-      animal: BRANCH_ANIMALS[mZhi],
-      full: `${mGan}${mZhi}(${STEM_KOREAN[mGan]}${BRANCH_KOREAN[mZhi]}월)`,
-    },
-    day: {
-      gan: dGan, zhi: dZhi,
-      ganKr: STEM_KOREAN[dGan], zhiKr: BRANCH_KOREAN[dZhi],
-      elGan: STEM_ELEMENT[dGan], elZhi: BRANCH_ELEMENT[dZhi],
-      yinYangGan: STEM_YIN_YANG[dGan], yinYangZhi: BRANCH_YIN_YANG[dZhi],
-      tenGodGan: dGanTenGod, tenGodZhi: dZhiTenGod,
-      animal: BRANCH_ANIMALS[dZhi],
-      full: `${dGan}${dZhi}(${STEM_KOREAN[dGan]}${BRANCH_KOREAN[dZhi]}일)`,
-    },
-    hour: hGan && hZhi && hGanTenGod && hZhiTenGod ? {
-      gan: hGan, zhi: hZhi,
-      ganKr: STEM_KOREAN[hGan], zhiKr: BRANCH_KOREAN[hZhi],
-      elGan: STEM_ELEMENT[hGan], elZhi: BRANCH_ELEMENT[hZhi],
-      yinYangGan: STEM_YIN_YANG[hGan], yinYangZhi: BRANCH_YIN_YANG[hZhi],
-      tenGodGan: hGanTenGod, tenGodZhi: hZhiTenGod,
-      animal: BRANCH_ANIMALS[hZhi],
-      full: `${hGan}${hZhi}(${STEM_KOREAN[hGan]}${BRANCH_KOREAN[hZhi]}시)`,
-    } : null,
-  };
-
-  // 7. 오행 카운트 (Five Elements count)
-  const counts: Record<FiveElement, number> = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
-  const allStems = [yGan, mGan, dGan, ...(hGan ? [hGan] : [])];
-  const allBranches = [yZhi, mZhi, dZhi, ...(hZhi ? [hZhi] : [])];
-
-  allStems.forEach(stem => {
-    const el = STEM_ELEMENT[stem];
-    if (el) counts[el] += 1;
-  });
-
-  allBranches.forEach(branch => {
-    const el = BRANCH_ELEMENT[branch];
-    if (el) counts[el] += 1;
-  });
-
-  const totalElements = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
-  const percentages: Record<FiveElement, number> = {
-    목: Math.round((counts.목 / totalElements) * 100),
-    화: Math.round((counts.화 / totalElements) * 100),
-    토: Math.round((counts.토 / totalElements) * 100),
-    금: Math.round((counts.금 / totalElements) * 100),
-    수: Math.round((counts.수 / totalElements) * 100),
-  };
-
-  const sortedElements = (Object.entries(counts) as [FiveElement, number][]).sort((a, b) => b[1] - a[1]);
-  const dominantEl = sortedElements[0][0];
-  const lackingEl = sortedElements[sortedElements.length - 1][0];
-
-  const dominantDetail = ELEMENT_DETAILS[dominantEl];
-  const lackingDetail = ELEMENT_DETAILS[lackingEl];
-
-  const elementsSummary = counts[dominantEl] >= 3
-    ? `중심 기운인 ${dominantDetail.name}가 묵직하게 기틀을 잡고 있으며, 다른 오행들이 순환하며 조화를 이루는 구조입니다.`
-    : `오행이 비교적 골고루 분포되어 유연하고 다채로운 잠재력을 발휘하는 안정적인 구조입니다.`;
-
-  // 8. 일간 본원 아키타입
-  const dayMaster = DAY_MASTER_ARCHETYPES[dGan] || DAY_MASTER_ARCHETYPES['甲'];
-
-  // 9. 핵심 신살 및 특수 구조 정밀 분석
-  const specialStructures: SpecialStarCombination[] = [];
-  const dayPillarStr = `${dGan}${dZhi}`;
-
-  // 백호대살
-  const BAEKHO_PILLARS = ['戊辰', '丁丑', '丙戌', '乙未', '甲辰', '壬戌', '癸丑'];
-  if (BAEKHO_PILLARS.includes(dayPillarStr)) {
-    specialStructures.push({
-      name: `${dayPillarStr} 일주 & 백호대살(白虎大殺)`,
-      category: '신살',
-      description: '황룡의 기상으로 온화함 뒤에 강한 뚝심과 위기 돌파력을 지님.',
+    allStems.forEach(stem => {
+      const el = STEM_ELEMENT[stem];
+      if (el) counts[el] += 1;
     });
-  }
 
-  // 사고지(四庫之 - 辰, 戌, 丑, 未) 카운트
-  const sagoBranches = ['辰', '戌', '丑', '未'];
-  const userSagoCount = allBranches.filter(b => sagoBranches.includes(b)).length;
-  if (userSagoCount >= 2) {
-    const presentSago = Array.from(new Set(allBranches.filter(b => sagoBranches.includes(b)))).map(b => BRANCH_KOREAN[b]).join('·');
-    specialStructures.push({
-      name: `${presentSago} 사고지(四庫之) ${userSagoCount}위 보유`,
-      category: '특수격국',
-      description: '화개살 중첩으로 통찰력, 영성/학문, 데이터/기술 축적 감각 탁월.',
+    allBranches.forEach(branch => {
+      const el = BRANCH_ELEMENT[branch];
+      if (el) counts[el] += 1;
     });
-  }
 
-  // 천간합(天干合) 분석 (戊-癸 합, 甲-己 합, 乙-庚 합, 丙-辛 합, 丁-壬 합)
-  const stemsSet = new Set(allStems);
-  if (stemsSet.has('戊') && stemsSet.has('癸')) {
-    specialStructures.push({
-      name: '무계합(戊癸合 火)',
-      category: '천간합',
-      description: '나와 재물이 유기적으로 결합하여 실속과 현실적 자산 증식력 우수.',
+    const totalElements = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+    const percentages: Record<FiveElement, number> = {
+      목: Math.round((counts.목 / totalElements) * 100),
+      화: Math.round((counts.화 / totalElements) * 100),
+      토: Math.round((counts.토 / totalElements) * 100),
+      금: Math.round((counts.금 / totalElements) * 100),
+      수: Math.round((counts.수 / totalElements) * 100),
+    };
+
+    const sortedElements = (Object.entries(counts) as [FiveElement, number][]).sort((a, b) => b[1] - a[1]);
+    const dominantEl = sortedElements[0][0];
+    const lackingEl = sortedElements[sortedElements.length - 1][0];
+    const dominantDetail = ELEMENT_DETAILS[dominantEl];
+    const lackingDetail = ELEMENT_DETAILS[lackingEl];
+
+    // 8. 일간 본원 아키타입
+    const dayMaster = DAY_MASTER_ARCHETYPES[dGan] || DAY_MASTER_ARCHETYPES['甲'];
+    const dEl = STEM_ELEMENT[dGan];
+    const GENERATES_EL: Record<FiveElement, FiveElement> = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
+    const SUPPORTING_EL = (Object.entries(GENERATES_EL).find(([, v]) => v === dEl)?.[0] || '수') as FiveElement; // 인성 오행
+
+    // 9. 정통 10정격 격국 (Geokguk) 판정
+    const mHidden = HIDDEN_STEMS[mZhi];
+    const exposedStems = [yGan, mGan, ...(hGan ? [hGan] : [])];
+    let geokgukStem = mHidden.main[0];
+    let geokgukReason = '월령 본기(정기) 사령';
+
+    if (exposedStems.includes(mHidden.main[0])) {
+      geokgukStem = mHidden.main[0];
+      geokgukReason = '월령 본기(정기) 천간 투간';
+    } else if (mHidden.middle && exposedStems.includes(mHidden.middle[0])) {
+      geokgukStem = mHidden.middle[0];
+      geokgukReason = '월령 중기 천간 투간';
+    } else if (exposedStems.includes(mHidden.early[0])) {
+      geokgukStem = mHidden.early[0];
+      geokgukReason = '월령 초기(여기) 천간 투간';
+    }
+
+    const geokgukTenGod = calculateTenGod(dGan, geokgukStem, false);
+    let geokgukName = `${geokgukTenGod.name.split('(')[0]}격(${geokgukTenGod.name})`;
+    let geokgukCategory = geokgukTenGod.category;
+    let geokgukDesc = '';
+
+    // 건록격 및 양인격 특수 판정
+    const isGeonrok = (dGan === '甲' && mZhi === '寅') || (dGan === '乙' && mZhi === '卯') ||
+      (dGan === '丙' && mZhi === '巳') || (dGan === '丁' && mZhi === '午') ||
+      (dGan === '庚' && mZhi === '申') || (dGan === '辛' && mZhi === '酉') ||
+      (dGan === '壬' && mZhi === '亥') || (dGan === '癸' && mZhi === '子');
+
+    const isYangin = (dGan === '甲' && mZhi === '卯') || (dGan === '庚' && mZhi === '酉') ||
+      (dGan === '壬' && mZhi === '子') || (dGan === '丙' && mZhi === '午') || (dGan === '戊' && mZhi === '午');
+
+    if (isGeonrok) {
+      geokgukName = '건록격(建祿格)';
+      geokgukCategory = '비겁';
+      geokgukDesc = '월지에 건록을 얻어 주체성과 자립심이 극히 강하며, 스스로 가문을 일으키고 개척하는 당당한 기상';
+    } else if (isYangin) {
+      geokgukName = '양인격(陽刃格)';
+      geokgukCategory = '비겁';
+      geokgukDesc = '칼날을 쥔 영웅의 기상으로 강인한 담력과 카리스마, 난관을 과감히 돌파하는 결단력';
+    } else {
+      geokgukDesc = `${geokgukReason}으로 성립된 정통 격국으로, 삶의 핵심 소명과 사회적 역량이 ${geokgukTenGod.desc}을 중심으로 발현됨`;
+    }
+
+    const geokguk = {
+      name: geokgukName,
+      category: geokgukCategory,
+      description: geokgukDesc,
+    };
+
+    // 10. 신강/신약 판정 (득령 35%, 득지 15%, 득세 50% 가중치 스코어링)
+    const mEl = BRANCH_ELEMENT[mZhi];
+    const deukRyeong = (mEl === dEl || mEl === SUPPORTING_EL);
+    const deukRyeongScore = mEl === dEl ? 35 : (mEl === SUPPORTING_EL ? 30 : 0);
+
+    const dZhiEl = BRANCH_ELEMENT[dZhi];
+    const deukJi = (dZhiEl === dEl || dZhiEl === SUPPORTING_EL);
+    const deukJiScore = dZhiEl === dEl ? 15 : (dZhiEl === SUPPORTING_EL ? 12 : 0);
+
+    let deukSeScore = 0;
+    if (STEM_ELEMENT[yGan] === dEl) deukSeScore += 8;
+    else if (STEM_ELEMENT[yGan] === SUPPORTING_EL) deukSeScore += 7;
+
+    if (STEM_ELEMENT[mGan] === dEl) deukSeScore += 12;
+    else if (STEM_ELEMENT[mGan] === SUPPORTING_EL) deukSeScore += 10;
+
+    if (hGan) {
+      if (STEM_ELEMENT[hGan] === dEl) deukSeScore += 10;
+      else if (STEM_ELEMENT[hGan] === SUPPORTING_EL) deukSeScore += 8;
+    }
+    if (BRANCH_ELEMENT[yZhi] === dEl) deukSeScore += 10;
+    else if (BRANCH_ELEMENT[yZhi] === SUPPORTING_EL) deukSeScore += 8;
+
+    if (hZhi) {
+      if (BRANCH_ELEMENT[hZhi] === dEl) deukSeScore += 10;
+      else if (BRANCH_ELEMENT[hZhi] === SUPPORTING_EL) deukSeScore += 8;
+    }
+
+    const totalStrengthScore = Math.min(100, deukRyeongScore + deukJiScore + deukSeScore);
+    let strengthLevel: '극신강' | '신강' | '중화' | '신약' | '극신약' = '중화';
+    if (totalStrengthScore >= 75) strengthLevel = '극신강';
+    else if (totalStrengthScore >= 55) strengthLevel = '신강';
+    else if (totalStrengthScore >= 45) strengthLevel = '중화';
+    else if (totalStrengthScore >= 25) strengthLevel = '신약';
+    else strengthLevel = '극신약';
+
+    const bodyStrength = {
+      level: strengthLevel,
+      score: totalStrengthScore,
+      deukRyeong,
+      deukJi,
+      deukSeScore,
+      summary: deukRyeong && deukJi
+        ? `득령(得令)과 득지(得地)를 모두 얻어 뿌리가 매우 단단하며 (${totalStrengthScore}점, ${strengthLevel}), 주체성이 강합니다.`
+        : deukRyeong
+        ? `월령(月令)을 얻어 기운의 계절적 배경이 든든하며 (${totalStrengthScore}점, ${strengthLevel}), 추진력이 우수합니다.`
+        : deukJi
+        ? `일지(日支)에 든든한 통근처를 두어 내면의 자생력과 뚝심이 견고합니다 (${totalStrengthScore}점, ${strengthLevel}).`
+        : `오행의 조화와 주변의 조력을 유연하게 활용하는 포용적인 기질입니다 (${totalStrengthScore}점, ${strengthLevel}).`,
+    };
+
+    // 11. 정통 억부(抑扶) & 조후(調候) 용신/희신/기신 산출
+    let eokbuYongsin: FiveElement;
+    if (totalStrengthScore >= 55) {
+      // 신강: 식상, 재성, 관성 중 유력한 오행 우선
+      const candidates: FiveElement[] = [
+        GENERATES_EL[dEl], // 식상
+        GENERATES_EL[GENERATES_EL[dEl]], // 재성
+        (Object.entries(GENERATES_EL).find(([, v]) => GENERATES_EL[v as FiveElement] === dEl)?.[0] || '금') as FiveElement, // 관성
+      ];
+      eokbuYongsin = candidates.sort((a, b) => (counts[b] || 0) - (counts[a] || 0))[0] || candidates[0];
+    } else if (totalStrengthScore <= 44) {
+      // 신약: 인성, 비겁 중 유력한 오행
+      eokbuYongsin = (counts[SUPPORTING_EL] >= counts[dEl]) ? SUPPORTING_EL : dEl;
+    } else {
+      eokbuYongsin = lackingEl;
+    }
+
+    // 조후용신
+    let johuYongsin: FiveElement | undefined;
+    if (monthBranchIndex >= 9 && monthBranchIndex <= 11) {
+      // 동절(해, 자, 축월) -> 온난한 화(火) 필수
+      johuYongsin = '화';
+    } else if (monthBranchIndex >= 3 && monthBranchIndex <= 5) {
+      // 하절(사, 오, 미월) -> 청량한 수(水) 필수
+      johuYongsin = '수';
+    }
+
+    // 최종 주 용신: 조후가 긴급한 계절(동절/하절)은 조후 우선, 그 외는 억부용신
+    const finalYongsinEl = (johuYongsin && (counts[johuYongsin] <= 2)) ? johuYongsin : eokbuYongsin;
+    const yongsinDetail = ELEMENT_DETAILS[finalYongsinEl];
+    const heeshinEl = (Object.entries(GENERATES_EL).find(([, v]) => v === finalYongsinEl)?.[0] || '목') as FiveElement;
+    const CONTROLS_EL: Record<FiveElement, FiveElement> = { 목: '토', 토: '수', 수: '화', 화: '금', 금: '목' };
+    const gisinEl = (Object.entries(CONTROLS_EL).find(([, v]) => v === finalYongsinEl)?.[0] || '토') as FiveElement;
+
+    const yongsin = {
+      element: finalYongsinEl,
+      name: yongsinDetail.name,
+      meaning: johuYongsin === finalYongsinEl
+        ? `계절적 한열(寒熱)의 균형을 맞추는 조후용신 [${yongsinDetail.hanja}(${finalYongsinEl})]으로, 심신의 긴장을 완화하고 생명력을 소생시키는 결정적 에너지`
+        : `사주 원국의 신강·신약 균형을 맞추는 억부용신 [${yongsinDetail.hanja}(${finalYongsinEl})]으로, 잠재력을 극대화하고 운의 흐름을 상생으로 이끄는 수호 에너지`,
+      actionTip: `행운의 색: ${yongsinDetail.colorName} | 추천 음식: ${yongsinDetail.remedyFood} | 추천 활동: ${yongsinDetail.remedyActivity}`,
+    };
+
+    const yongsinDetails = {
+      eokbuYongsin,
+      johuYongsin,
+      heeshin: heeshinEl,
+      gisin: gisinEl,
+      analysisNote: `용신: ${yongsinDetail.name} | 희신: ${ELEMENT_DETAILS[heeshinEl].name} | 기신: ${ELEMENT_DETAILS[gisinEl].name}`,
+    };
+
+    // 12. 핵심 12대 신살 및 특수 구조 정밀 탐색
+    const specialStructures: SpecialStarCombination[] = [];
+    const dayPillarStr = `${dGan}${dZhi}`;
+    const allPillarsStr = [pillars.year.full, pillars.month.full, pillars.day.full, ...(pillars.hour ? [pillars.hour.full] : [])];
+
+    // 1) 천을귀인(天乙貴人)
+    const nobleMap: Record<string, string[]> = {
+      '甲': ['丑', '未'], '戊': ['丑', '未'], '庚': ['丑', '未'],
+      '乙': ['子', '申'], '己': ['子', '申'],
+      '丙': ['亥', '酉'], '丁': ['亥', '酉'],
+      '辛': ['午', '寅'],
+      '壬': ['巳', '卯'], '癸': ['巳', '卯'],
+    };
+    const nobles = nobleMap[dGan] || [];
+    const foundNobles = allBranches.filter(b => nobles.includes(b));
+    if (foundNobles.length > 0) {
+      specialStructures.push({
+        name: `천을귀인(天乙貴人) ${foundNobles.map(b => BRANCH_KOREAN[b]).join('·')} 보유`,
+        category: '신살',
+        description: '위기 상황에서 뜻밖의 조력자와 귀인의 도움을 받아 흉을 길로 바꾸는 최상의 길신.',
+      });
+    }
+
+    // 2) 문창귀인(文昌貴人)
+    const munchangMap: Record<string, string> = {
+      '甲': '巳', '乙': '午', '丙': '申', '戊': '申', '丁': '酉', '己': '酉', '庚': '亥', '辛': '子', '壬': '寅', '癸': '卯'
+    };
+    if (allBranches.includes(munchangMap[dGan])) {
+      specialStructures.push({
+        name: `문창귀인(文昌貴人) [${BRANCH_KOREAN[munchangMap[dGan]]}] 보유`,
+        category: '신살',
+        description: '학문과 지적 탐구력, 탁월한 문장력과 기획력으로 명예와 전문성을 성취하는 길신.',
+      });
+    }
+
+    // 3) 백호대살(白虎大殺)
+    const BAEKHO_PILLARS = ['戊辰', '丁丑', '丙戌', '乙未', '甲辰', '壬戌', '癸丑'];
+    const foundBaekho = allPillarsStr.filter(p => BAEKHO_PILLARS.some(bp => p.startsWith(bp)));
+    if (foundBaekho.length > 0) {
+      specialStructures.push({
+        name: `백호대살(白虎大殺) [${dayPillarStr}]`,
+        category: '신살',
+        description: '호랑이의 용맹함처럼 온화함 뒤에 압도적인 뚝심과 위기 돌파 카리스마를 지님.',
+      });
+    }
+
+    // 4) 괴강살(魁罡殺)
+    const GOEGANG_PILLARS = ['庚辰', '庚戌', '壬辰', '壬戌', '戊戌'];
+    if (GOEGANG_PILLARS.includes(dayPillarStr)) {
+      specialStructures.push({
+        name: `괴강살(魁罡殺) [${dayPillarStr}] 일주`,
+        category: '특수격국',
+        description: '총명하고 결단력이 남다르며, 대중을 리드하고 판을 새로 짜는 강력한 혁신가 기상.',
+      });
+    }
+
+    // 5) 도화살 / 역마살 / 화개살 (사오미, 신자진, 인오술, 해묘미 삼합 기준)
+    const samhapGroup = (z: string) => {
+      if (['寅', '午', '戌'].includes(z)) return '화';
+      if (['申', '子', '辰'].includes(z)) return '수';
+      if (['巳', '酉', '丑'].includes(z)) return '금';
+      return '목';
+    };
+    const refZhi = dZhi;
+    const group = samhapGroup(refZhi);
+    const dohwaBranchMap: Record<string, string> = { '화': '卯', '수': '酉', '금': '午', '목': '子' };
+    const yeokmaBranchMap: Record<string, string> = { '화': '申', '수': '寅', '금': '亥', '목': '巳' };
+    const hwagaeBranchMap: Record<string, string> = { '화': '戌', '수': '辰', '금': '丑', '목': '未' };
+
+    if (allBranches.includes(dohwaBranchMap[group])) {
+      specialStructures.push({
+        name: `정통 도화살(桃花殺) [${BRANCH_KOREAN[dohwaBranchMap[group]]}]`,
+        category: '신살',
+        description: '사람을 자연스럽게 끌어당기는 매력과 예술적 센스, 공감 표현력이 풍부함.',
+      });
+    }
+
+    if (allBranches.includes(yeokmaBranchMap[group])) {
+      specialStructures.push({
+        name: `정통 역마살(驛馬殺) [${BRANCH_KOREAN[yeokmaBranchMap[group]]}]`,
+        category: '신살',
+        description: '활동 무대가 넓고 이동과 환경 변화를 통해 끊임없이 도약하는 역동적 기운.',
+      });
+    }
+
+    // 사고지(四庫之 - 辰, 戌, 丑, 未) 및 화개살
+    const sagoBranches = ['辰', '戌', '丑', '未'];
+    const userSagoCount = allBranches.filter(b => sagoBranches.includes(b)).length;
+    if (userSagoCount >= 2 || allBranches.includes(hwagaeBranchMap[group])) {
+      const presentSago = Array.from(new Set(allBranches.filter(b => sagoBranches.includes(b)))).map(b => BRANCH_KOREAN[b]).join('·');
+      specialStructures.push({
+        name: `화개살(華蓋殺) & ${presentSago || '사고지'} ${userSagoCount}위 보유`,
+        category: '특수격국',
+        description: '사색과 영성, 학문과 예술성, 지식 데이터를 축적하고 숙성시키는 통찰력 탁월.',
+      });
+    }
+
+    // 6) 천간합(天干合)
+    const stemsSet = new Set(allStems);
+    if (stemsSet.has('戊') && stemsSet.has('癸')) specialStructures.push({ name: '무계합(戊癸合 火)', category: '천간합', description: '나와 재물이 유기적으로 결합하여 실속과 현실적 자산 증식력 우수.' });
+    if (stemsSet.has('甲') && stemsSet.has('己')) specialStructures.push({ name: '갑기합(甲己合 土)', category: '천간합', description: '중정지합(中正之合)으로 신의가 두텁고 사람들에게 깊은 신뢰를 얻음.' });
+    if (stemsSet.has('乙') && stemsSet.has('庚')) specialStructures.push({ name: '을경합(乙庚合 金)', category: '천간합', description: '인의지합(仁義之合)으로 결단력과 유연한 친화력이 완벽한 균형을 이룸.' });
+    if (stemsSet.has('丙') && stemsSet.has('辛')) specialStructures.push({ name: '병신합(丙辛合 水)', category: '천간합', description: '빛과 보석의 만남으로 예리한 심미안과 높은 지혜를 발휘.' });
+    if (stemsSet.has('丁') && stemsSet.has('壬')) specialStructures.push({ name: '정임합(丁壬合 木)', category: '천간합', description: '목화통명의 영감과 깊은 감수성, 인간적인 매력이 풍부함.' });
+
+    // 7) 지지충(地支沖)
+    const branchList = allBranches;
+    if (branchList.includes('丑') && branchList.includes('未')) specialStructures.push({ name: '축미충(丑未沖)', category: '지지충', description: '현실적 이성과 직관적 열정 간의 지속적인 상호작용으로 전문성 심화.' });
+    if (branchList.includes('子') && branchList.includes('午')) specialStructures.push({ name: '자오충(子午沖)', category: '지지충', description: '수화상쟁의 다이내믹한 에너지로 강력한 영감과 추진력을 분출.' });
+    if (branchList.includes('卯') && branchList.includes('酉')) specialStructures.push({ name: '묘유충(卯酉沖)', category: '지지충', description: '섬세한 감각과 결단력의 충돌을 창작과 정밀한 기술력으로 승화.' });
+    if (branchList.includes('辰') && branchList.includes('戌')) specialStructures.push({ name: '진술충(辰戌沖)', category: '지지충', description: '광활한 대지의 지각 변동처럼 새로운 판을 짜고 혁신을 주도하는 힘.' });
+    if (branchList.includes('寅') && branchList.includes('申')) specialStructures.push({ name: '인신충(寅申沖)', category: '지지충', description: '새로운 시작과 완성된 결실 간의 역동적 이동과 결단력.' });
+    if (branchList.includes('巳') && branchList.includes('亥')) specialStructures.push({ name: '사해충(巳亥沖)', category: '지지충', description: '불꽃과 물의 충돌을 창의적 지혜와 신속한 문제 해결력으로 전환.' });
+
+    // 13. 웹앱 연동용 파라미터 산출
+    const earthCount = counts.토;
+    const driveScore = Math.min(98, Math.max(50, 50 + Math.round(totalStrengthScore * 0.4) + (earthCount * 4)));
+    const waterCount = counts.수;
+    const metalCount = counts.금;
+    const wealthAffinityScore = Math.min(98, Math.max(50, 55 + (waterCount * 6) + (metalCount * 5)));
+    const intuitionScore = Math.min(99, Math.max(65, 70 + (userSagoCount * 7) + (counts.화 * 3)));
+
+    const recommendedKeywords = [
+      geokguk.name.split('(')[0],
+      `${bodyStrength.level} 본원`,
+      `용신(${yongsin.name.split('(')[0]}) 보완`,
+      '시스템 아키텍처',
+      '전문성 구축',
+    ];
+
+    // 14. 2026 병오년(丙午年) 세운 분석
+    let annualTheme = '';
+    let annualOpp = '';
+    let annualCaution = '';
+
+    if (dEl === '목') {
+      annualTheme = '식상(食傷) 만개의 해 — 창작과 표현의 꽃이 피어나는 도약기';
+      annualOpp = '새로운 아이디어를 세상에 발표하고, 프로젝트나 예술적 작업을 과감히 추진하기에 최적입니다.';
+      annualCaution = '의욕이 앞서 에너지가 과열될 수 있으니 충분한 수분 섭취와 휴식으로 내실을 다지세요.';
+    } else if (dEl === '화') {
+      annualTheme = '비겁(比劫) 공명의 해 — 강력한 주체성과 동료와의 연대';
+      annualOpp = '자신감이 최고조에 달하며, 마음이 맞는 소중한 동반자나 팀원들과 큰 시너지를 낼 수 있습니다.';
+      annualCaution = '고집이나 성급한 감정 표출을 경계하고, 타인의 입장을 한 번 더 헤아리는 지혜가 필요합니다.';
+    } else if (dEl === '토') {
+      annualTheme = '인성(印星) 조력의 해 — 든든한 후원과 학문/자격의 결실';
+      annualOpp = '귀인의 도움을 받거나, 지식 습득, 자격 취득, 계약 등에서 안정적인 결실을 맺습니다.';
+      annualCaution = '생각만 많아져 실행을 미루지 말고, 현실적인 한 걸음을 차근차근 내딛으세요.';
+    } else if (dEl === '금') {
+      annualTheme = '관성(官星) 제련의 해 — 담금질을 거쳐 명품 보석으로 거듭나는 성장';
+      annualOpp = '사회적 명예와 책임감이 커지며, 어려움을 돌파하여 커리어의 새로운 전기를 맞이합니다.';
+      annualCaution = '압박감이나 과도한 책임감으로 인한 스트레스를 주의하고 세도나 방하착 명상을 적극 활용하세요.';
+    } else {
+      annualTheme = '재성(財星) 활약의 해 — 현실적 성과와 재물, 기회의 확장';
+      annualOpp = '재정적 기회가 열리고 그동안 준비했던 일들이 현실적인 이익과 가치로 환산됩니다.';
+      annualCaution = '과도한 지출이나 충동적인 투자를 삼가고 알짜배기 실속을 챙기는 차분함을 유지하세요.';
+    }
+
+    const annual2026 = {
+      yearName: '2026 병오년(丙午年 - 붉은 말의 해)',
+      elementFlow: `강렬한 순수 화(火)의 불꽃 에너지와 ${name}님의 ${dayMaster.symbolName}의 상호작용`,
+      theme: annualTheme,
+      keyOpportunity: annualOpp,
+      caution: annualCaution,
+    };
+
+    // 15. 정밀 대운수(大運數) 및 8대 대운 타임라인 산출
+    const daewunCalc = calculatePreciseDaewun(birthKstDate, genderStr as '남성' | '여성', yGan);
+    const daewunNumber = daewunCalc.daewunNumber;
+    const isFwd = daewunCalc.isForward;
+    const nowYear = new Date().getFullYear();
+    const koreanAge = nowYear - y + 1;
+
+    const daewunTimeline = Array.from({ length: 8 }, (_, i) => {
+      const step = isFwd ? (i + 1) : -(i + 1);
+      const dGanIndex = ((monthGanIdx + step) % 10 + 10) % 10;
+      const dZhiIndex = ((mZhiIdx + step) % 12 + 12) % 12;
+      const gan = HEAVENLY_STEMS[dGanIndex];
+      const zhi = EARTHLY_BRANCHES[dZhiIndex];
+      const startAge = daewunNumber + i * 10;
+      const endAge = startAge + 9;
+      return {
+        order: i + 1,
+        ganZhi: `${gan}${zhi}`,
+        gan,
+        zhi,
+        ganKr: STEM_KOREAN[gan],
+        zhiKr: BRANCH_KOREAN[zhi],
+        startAge,
+        endAge,
+        tenGodGan: calculateTenGod(dGan, gan, false).name.split('(')[0],
+        tenGodZhi: calculateTenGod(dGan, zhi, true).name.split('(')[0],
+        twelveStage: TWELVE_STAGES_MATRIX[dGan]?.[zhi] || '조화',
+      };
     });
-  }
-  if (stemsSet.has('甲') && stemsSet.has('己')) {
-    specialStructures.push({
-      name: '갑기합(甲己合 土)',
-      category: '천간합',
-      description: '중정지합(中正之合)으로 신의가 두텁고 사람들에게 깊은 신뢰를 얻음.',
-    });
-  }
-  if (stemsSet.has('乙') && stemsSet.has('庚')) {
-    specialStructures.push({
-      name: '을경합(乙庚合 金)',
-      category: '천간합',
-      description: '인의지합(仁義之合)으로 결단력과 유연한 친화력이 완벽한 균형을 이룸.',
-    });
-  }
-  if (stemsSet.has('丙') && stemsSet.has('辛')) {
-    specialStructures.push({
-      name: '병신합(丙辛合 水)',
-      category: '천간합',
-      description: '빛과 보석의 만남으로 예리한 심미안과 높은 지혜를 발휘.',
-    });
-  }
-  if (stemsSet.has('丁') && stemsSet.has('壬')) {
-    specialStructures.push({
-      name: '정임합(丁壬合 木)',
-      category: '천간합',
-      description: '목화통명의 영감과 깊은 감수성, 인간적인 매력이 풍부함.',
-    });
-  }
 
-  // 지지충(地支沖) 분석 (丑-未 충, 子-午 충, 卯-酉 충, 寅-申 충, 巳-亥 충, 辰-戌 충)
-  const branchList = allBranches;
-  if (branchList.includes('丑') && branchList.includes('未')) {
-    specialStructures.push({
-      name: '축미충(丑未沖)',
-      category: '지지충',
-      description: '현실적 이성과 직관적 열정 간의 지속적인 상호작용으로 전문성 심화.',
-    });
-  }
-  if (branchList.includes('子') && branchList.includes('午')) {
-    specialStructures.push({
-      name: '자오충(子午沖)',
-      category: '지지충',
-      description: '수화상쟁의 다이내믹한 에너지로 강력한 영감과 추진력을 분출.',
-    });
-  }
-  if (branchList.includes('卯') && branchList.includes('酉')) {
-    specialStructures.push({
-      name: '묘유충(卯酉沖)',
-      category: '지지충',
-      description: '섬세한 감각과 결단력의 충돌을 창작과 정밀한 기술력으로 승화.',
-    });
-  }
-  if (branchList.includes('辰') && branchList.includes('戌')) {
-    specialStructures.push({
-      name: '진술충(辰戌沖)',
-      category: '지지충',
-      description: '광활한 대지의 지각 변동처럼 새로운 판을 짜고 혁신을 주도하는 힘.',
-    });
-  }
+    const curD = daewunTimeline.find(d => koreanAge >= d.startAge && koreanAge <= d.endAge);
+    const nextD = daewunTimeline.find(d => d.startAge > koreanAge);
+    const daeunInfo = {
+      current: curD ? `${curD.ganZhi}대운 (${curD.startAge}세 ~ ${curD.endAge}세)` : `${daewunNumber}세 대운 진입기`,
+      next: nextD ? `${nextD.ganZhi}대운 (${nextD.startAge}세~)` : '미래 대운',
+    };
 
-  // 10. 웹앱 연동용 파라미터 산출
-  // 토 기운 & 비겁/인성 비중 -> 내면 추진력 지수 (0~100)
-  const earthCount = counts.토;
-  const driveScore = Math.min(95, Math.max(60, 65 + (earthCount * 6) + (counts.목 * 3)));
+    const daewunDetail = {
+      daewunNumber,
+      isForward: isFwd,
+      directionText: daewunCalc.directionText,
+      timeline: daewunTimeline,
+    };
 
-  // 수 기운 & 재성 비중 -> 재물 및 실속 친화력 (0~100)
-  const waterCount = counts.수;
-  const metalCount = counts.금;
-  const wealthAffinityScore = Math.min(95, Math.max(55, 60 + (waterCount * 7) + (metalCount * 4)));
+    // 16. AI 시스템 프롬프트 헌장
+    const specialStrText = specialStructures.map(s => `• ${s.name}: ${s.description}`).join('\n');
+    const elementsSummary = counts[dominantEl] >= 3
+      ? `중심 기운인 ${dominantDetail.name}가 묵직하게 기틀을 잡고 있으며, 다른 오행들이 순환하며 조화를 이루는 구조입니다.`
+      : `오행이 비교적 골고루 분포되어 유연하고 다채로운 잠재력을 발휘하는 안정적인 구조입니다.`;
 
-  // 직관/영성 지수 (사고지 및 화개살 반영)
-  const intuitionScore = Math.min(98, Math.max(65, 70 + (userSagoCount * 8)));
-
-  const recommendedKeywords = [
-    '시스템 아키텍처',
-    '지식 자산화',
-    '직관적 분석',
-    '전문성 구축',
-    `${dayMaster.element} 기운 조율`,
-  ];
-
-  // 11. 용신 (보약 에너지 산출)
-  const yongsinEl = lackingEl;
-  const yongsinDetail = ELEMENT_DETAILS[yongsinEl];
-  const yongsin = {
-    element: yongsinEl,
-    name: yongsinDetail.name,
-    meaning: `사주 원국에서 가장 갈증을 느끼는 [${yongsinDetail.hanja}(${yongsinEl})] 기운으로, 심신의 긴장을 풀고 균형을 되찾아주는 수호 에너지`,
-    actionTip: `행운의 색: ${yongsinDetail.colorName} | 추천 음식: ${yongsinDetail.remedyFood} | 추천 활동: ${yongsinDetail.remedyActivity}`,
-  };
-
-  // 12. 2026 병오년(丙午年) 세운 분석
-  const dmEl = dayMaster.element;
-  let annualTheme = '';
-  let annualOpp = '';
-  let annualCaution = '';
-
-  if (dmEl === '목') {
-    annualTheme = '식상(食傷) 만개의 해 — 창작과 표현의 꽃이 피어나는 도약기';
-    annualOpp = '새로운 아이디어를 세상에 발표하고, 프로젝트나 예술적 작업을 과감히 추진하기에 최적입니다.';
-    annualCaution = '의욕이 앞서 에너지가 과열될 수 있으니 충분한 수분 섭취와 휴식으로 내실을 다지세요.';
-  } else if (dmEl === '화') {
-    annualTheme = '비겁(比劫) 공명의 해 — 강력한 주체성과 동료와의 연대';
-    annualOpp = '자신감이 최고조에 달하며, 마음이 맞는 소중한 동반자나 팀원들과 큰 시너지를 낼 수 있습니다.';
-    annualCaution = '고집이나 성급한 감정 표출을 경계하고, 타인의 입장을 한 번 더 헤아리는 지혜가 필요합니다.';
-  } else if (dmEl === '토') {
-    annualTheme = '인성(印星) 조력의 해 — 든든한 후원과 학문/자격의 결실';
-    annualOpp = '귀인의 도움을 받거나, 지식 습득, 자격 취득, 계약 등에서 안정적인 결실을 맺습니다.';
-    annualCaution = '생각만 많아져 실행을 미루지 말고, 현실적인 한 걸음을 차근차근 내딛으세요.';
-  } else if (dmEl === '금') {
-    annualTheme = '관성(官星) 제련의 해 — 담금질을 거쳐 명품 보석으로 거듭나는 성장';
-    annualOpp = '사회적 명예와 책임감이 커지며, 어려움을 돌파하여 커리어의 새로운 전기를 맞이합니다.';
-    annualCaution = '압박감이나 과도한 책임감으로 인한 스트레스를 주의하고 세도나 방하착 명상을 적극 활용하세요.';
-  } else {
-    annualTheme = '재성(財星) 활약의 해 — 현실적 성과와 재물, 기회의 확장';
-    annualOpp = '재정적 기회가 열리고 그동안 준비했던 일들이 현실적인 이익과 가치로 환산됩니다.';
-    annualCaution = '과도한 지출이나 충동적인 투자를 삼가고 알짜배기 실속을 챙기는 차분함을 유지하세요.';
-  }
-
-  const annual2026 = {
-    yearName: '2026 병오년(丙午年 - 붉은 말의 해)',
-    elementFlow: `강렬한 순수 화(火)의 불꽃 에너지와 ${name}님의 ${dayMaster.symbolName}의 상호작용`,
-    theme: annualTheme,
-    keyOpportunity: annualOpp,
-    caution: annualCaution,
-  };
-
-  // 13. 대운 (Daeun)
-  const isYangYear = HEAVENLY_STEMS.indexOf(yGan) % 2 === 0;
-  const isFwd = (isYangYear && genderStr === '남성') || (!isYangYear && genderStr === '여성');
-  const mGanIdx = HEAVENLY_STEMS.indexOf(mGan);
-  const mZhiIdx = EARTHLY_BRANCHES.indexOf(mZhi);
-  const nowYear = new Date().getFullYear();
-  const koreanAge = nowYear - y + 1;
-
-  const daeuns = Array.from({ length: 8 }, (_, i) => i + 1).map(i => ({
-    ganZhi: HEAVENLY_STEMS[((mGanIdx + (isFwd ? i : -i)) % 10 + 10) % 10] + EARTHLY_BRANCHES[((mZhiIdx + (isFwd ? i : -i)) % 12 + 12) % 12],
-    startAge: i * 10 - 9,
-    startYear: y + i * 10 - 9,
-  }));
-  const curD = daeuns.find(d => d.startYear <= nowYear && d.startYear + 10 > nowYear);
-  const nextD = daeuns.find(d => d.startYear > nowYear);
-
-  const daeunInfo = {
-    current: curD ? `${curD.ganZhi}대운 (${curD.startAge}세 ~ ${curD.startAge + 9}세)` : '대운 진입기',
-    next: nextD ? `${nextD.ganZhi}대운 (${nextD.startAge}세~)` : '미래 대운',
-  };
-
-  // 14. AI 시스템 프롬프트 헌장
-  const specialStrText = specialStructures.map(s => `• ${s.name}: ${s.description}`).join('\n');
-
-  const systemPromptSummary = `
+    const systemPromptSummary = `
 [사주명리학(四柱命理) 정밀 본원 에너지 헌장]
 - 사주 4주 8자: 년주(${pillars.year.full} - ${pillars.year.tenGodGan.name}/${pillars.year.tenGodZhi.name}) | 월주(${pillars.month.full} - ${pillars.month.tenGodGan.name}/${pillars.month.tenGodZhi.name}) | 일주(${pillars.day.full} - ${pillars.day.tenGodGan.name}/${pillars.day.tenGodZhi.name})${pillars.hour ? ` | 시주(${pillars.hour.full} - ${pillars.hour.tenGodGan.name}/${pillars.hour.tenGodZhi.name})` : ' | 시주(생시 미입력)'}
 - 일간(Day Master) 본원: ${dayMaster.hanja}(${dayMaster.korean}) - ${dayMaster.symbolName}
   * 영적 아키타입: ${dayMaster.archetypeTitle}
-  * 핵심 기질 키워드: ${dayMaster.coreKeywords.join(', ')}
-  * 본원 성향: ${dayMaster.personalityEssence}
-- 오행 구성: 토(${counts.토}개/40%), 목(${counts.목}개), 화(${counts.화}개), 금(${counts.금}개), 수(${counts.수}개) — ${elementsSummary}
+  * 핵심 기질: ${dayMaster.coreKeywords.join(', ')}
+- 격국(格局): ${geokguk.name} (${geokguk.description})
+- 신강/신약: ${bodyStrength.level} (${bodyStrength.score}점 / ${bodyStrength.summary})
+- 정통 용신: ${yongsin.name} (${yongsin.meaning}) | 희신: ${ELEMENT_DETAILS[heeshinEl].name} | 기신: ${ELEMENT_DETAILS[gisinEl].name}
+- 대운 흐름: ${daeunInfo.current} (대운수 ${daewunNumber}, ${daewunDetail.directionText})
+- 2026 병오년(丙午年) 세운: ${annual2026.theme}
 - 핵심 신살 및 특수 구조:
 ${specialStrText || '• 안정적인 오행 순환 구조'}
-- 웹앱 연동 파라미터: 내면 추진력(${driveScore}/100), 재물/실속 친화력(${wealthAffinityScore}/100), 추천 테마(${recommendedKeywords.slice(0, 3).join(', ')})
-- 2026 병오년(丙午年) 세운: ${annual2026.theme}
-- 용신 보약 에너지: ${lackingDetail.name} (추천 컬러: ${lackingDetail.colorName}, 음식: ${lackingDetail.remedyFood})
 [사주 기반 AI 페르소나 지침]:
-사용자의 일간 본원(${dayMaster.symbolName})과 특수 격국(${specialStructures.map(s=>s.name).join(', ')})을 완벽히 인지하여, 타고난 장점과 추진력은 적극 지지하고 결핍된 기운은 편안하게 채워주는 깊이 있는 상담을 제공하세요.
+사용자의 일간 본원(${dayMaster.symbolName}), 격국(${geokguk.name}), 신강신약(${bodyStrength.level}), 용신(${yongsin.name})을 완벽히 인지하여, 타고난 장점과 추진력은 적극 지지하고 결핍된 기운은 편안하게 채워주는 깊이 있는 상담을 제공하세요.
 `.trim();
 
-  const shortDigest = `${dayMaster.hanja} ${dayMaster.symbolName} · 토(${counts.토})목(${counts.목})화(${counts.화})금(${counts.금})수(${counts.수}) · ${specialStructures[0]?.name || ''}`;
+    const shortDigest = `${dayMaster.hanja} ${dayMaster.symbolName} · ${geokguk.name.split('(')[0]} · ${bodyStrength.level} · 대운수 ${daewunNumber} · 용신 ${yongsin.name.split('(')[0]}`;
 
-  return {
-    hasBirthInfo: true,
-    name,
-    nickname,
-    realName: rawName || '',
-    birthdate: basic.birthdate,
-    birthtime: basic.birthtime,
-    gender: genderStr,
-    koreanAge,
-    pillars,
-    dayMaster,
-    elements: {
-      counts,
-      percentages,
-      dominant: {
-        element: dominantEl,
-        count: counts[dominantEl],
-        name: dominantDetail.name,
-        advice: `${dominantDetail.name}의 기운이 강하여 ${dominantDetail.emotionNegative} 경향이 나타날 수 있으니 이완과 순환이 중요합니다.`,
+    return {
+      hasBirthInfo: true,
+      name,
+      nickname,
+      realName: rawName || '',
+      birthdate: basic.birthdate,
+      birthtime: basic.birthtime,
+      gender: genderStr,
+      koreanAge,
+      pillars,
+      dayMaster,
+      elements: {
+        counts,
+        percentages,
+        dominant: {
+          element: dominantEl,
+          count: counts[dominantEl],
+          name: dominantDetail.name,
+          advice: `${dominantDetail.name}의 기운이 강하여 ${dominantDetail.emotionNegative} 경향이 나타날 수 있으니 이완과 순환이 중요합니다.`,
+        },
+        lacking: {
+          element: lackingEl,
+          count: counts[lackingEl],
+          name: lackingDetail.name,
+          remedy: `${lackingDetail.name}의 기운이 부족하여 보충이 필요합니다.`,
+          luckyColor: lackingDetail.colorName,
+          luckyFood: lackingDetail.remedyFood,
+          luckyPlace: lackingDetail.remedyActivity,
+        },
+        summary: elementsSummary,
       },
-      lacking: {
-        element: lackingEl,
-        count: counts[lackingEl],
-        name: lackingDetail.name,
-        remedy: `${lackingDetail.name}의 기운이 부족하여 보충이 필요합니다.`,
-        luckyColor: lackingDetail.colorName,
-        luckyFood: lackingDetail.remedyFood,
-        luckyPlace: lackingDetail.remedyActivity,
+      geokguk,
+      bodyStrength,
+      specialStructures,
+      webAppParameters: {
+        driveScore,
+        wealthAffinityScore,
+        intuitionScore,
+        recommendedKeywords,
       },
-      summary: elementsSummary,
-    },
-    specialStructures,
-    webAppParameters: {
-      driveScore,
-      wealthAffinityScore,
-      intuitionScore,
-      recommendedKeywords,
-    },
-    yongsin,
-    annual2026,
-    daeun: daeunInfo,
-    systemPromptSummary,
-    shortDigest,
-  };
+      yongsin,
+      yongsinDetails,
+      annual2026,
+      daeun: daeunInfo,
+      daewunDetail,
+      systemPromptSummary,
+      shortDigest,
+    };
   } catch (err) {
     console.warn("calculateDetailedSaju error:", err);
     return null;
@@ -1358,40 +1629,43 @@ export function generateSajuMasterConsultation(saju: SajuAnalysisResult, questio
   const annual = saju.annual2026;
   const wealthScore = saju.webAppParameters.wealthAffinityScore;
   const driveScore = saju.webAppParameters.driveScore;
+  const geokguk = saju.geokguk?.name || '정통 격국';
+  const bodyStrength = saju.bodyStrength?.level || '중화';
+  const daewunNow = saju.daeun?.current || '대운';
 
   // 1. 이직 / 퇴사 / 이동 / 전직 관련 질문
   if (/(?:이직|퇴사|이동|바꾸|옮기|전직|새로운 회사)/.test(normQ)) {
-    return `조급한 도피성 이직보다는 내 전문성과 주도권을 온전히 인정받는 자리로 옮길 때 훨씬 길합니다. 상반기에는 실력을 다져두고, 기운이 무르익는 시기에 결단을 내리시면 최적의 도약 기회를 맞이합니다.`;
+    return `${dayMaster.symbolName} 본원과 ${geokguk}을 갖춘 명식으로, 조급한 도피성 이직보다는 내 전문성과 주도권을 온전히 인정받는 자리로 옮길 때 훨씬 길합니다. 현재 ${daewunNow}의 기운 속에서 용신(${yongsin.name})의 때를 기다려 결단을 내리시면 최적의 도약 기회를 맞이합니다.`;
   }
 
   // 2. 시험 / 합격 / 공부 / 자격증 / 취업 / 승진 관련 질문
   if (/(?:시험|합격|공부|자격증|취업|승진|면접|고시|임용|테스트)/.test(normQ)) {
-    return `목표가 뚜렷할 때 발휘되는 집중력과 뚝심이 뛰어난 명식이라 합격운의 기운이 충분히 열려 있습니다. 시험 직전의 조급증과 체력 소진만 주의하시고, 본인의 호흡대로 우직하게 밀고 나가시면 분명한 합격의 결실을 맺습니다.`;
+    return `사주 원국의 신강·신약 지수가 [${bodyStrength}]로 조화롭고 목표가 뚜렷할 때 발휘되는 집중력과 뚝심이 뛰어난 명식이라 합격운의 기운이 충분히 열려 있습니다. 시험 직전의 조급증과 체력 소진만 주의하시고, 본인의 호흡대로 우직하게 밀고 나가시면 분명한 합격의 결실을 맺습니다.`;
   }
 
   // 3. 직업 / 적성 / 진로 / 업무 스타일 / 일 관련 질문
   if (/(?:직업|적성|진로|업무|일|스타일|회사|직무|분야)/.test(normQ)) {
-    return `타인의 통제에 수동적으로 따르기보다 자신의 자율성과 전문적인 기획·분석력을 펼칠 수 있는 업무가 천성에 가장 잘 맞습니다. 전문 연구, 기획·전략, 크리에이티브 독립 업무에서 용신(${yongsin.name})의 기운을 살려 주도적으로 일할 때 성과가 극대화됩니다.`;
+    return `타인의 통제에 수동적으로 따르기보다 ${geokguk}의 소명과 자신의 자율성, 전문적인 기획·분석력을 펼칠 수 있는 업무가 천성에 가장 잘 맞습니다. 전문 연구, 기획·전략, 크리에이티브 독립 업무에서 용신(${yongsin.name})의 기운을 살려 주도적으로 일할 때 성과가 극대화됩니다.`;
   }
 
   // 4. 재물 / 돈 / 금전 / 부자 / 자산 / 투자 / 주식 / 부동산 관련 질문
   if (/(?:재물|돈|금전|부자|부|자산|투자|주식|부동산|모으|소비|지출|재운|수익|코인|빚)/.test(normQ)) {
-    return `요행이나 단기 투기보다는 확실한 원칙을 세워 안정적으로 굴릴 때 자산이 가장 단단히 모이는 명식(재물 친화력 ${wealthScore}점)입니다. 충동적인 지출을 경계하고 우량 자산 위주로 차곡차곡 축적하는 전략이 부를 지키는 열쇠입니다.`;
+    return `요행이나 단기 투기보다는 확실한 원칙을 세워 안정적으로 굴릴 때 자산이 가장 단단히 모이는 명식(재물 친화력 ${wealthScore}점, ${bodyStrength})입니다. 충동적인 지출을 경계하고 우량 자산 위주로 차곡차곡 축적하는 전략이 부를 지키는 열쇠입니다.`;
   }
 
   // 5. 연애 / 사랑 / 결혼 / 이성 / 궁합 / 인연 / 재회 관련 질문
   if (/(?:연애|사랑|결혼|이성|궁합|애인|인연|남친|여친|배우자|호감|만남|재회|헤어)/.test(normQ)) {
-    return `화려한 겉모습보다 내면의 진솔한 신뢰와 정서적 안정을 가장 중요하게 여기는 연애 성향입니다. 내 감정 기복을 따뜻하게 감싸주고 편안하게 대화가 통하는 상대와 함께할 때 가장 행복하고 안정된 인연이 이어집니다.`;
+    return `화려한 겉모습보다 내면의 진솔한 신뢰와 정서적 안정을 가장 중요하게 여기는 연애 성향입니다. ${dayMaster.symbolName}의 깊은 감수성을 따뜻하게 감싸주고 편안하게 대화가 통하는 상대와 함께할 때 가장 행복하고 안정된 인연이 이어집니다.`;
   }
 
   // 6. 2026년 / 새해 / 세운 / 대운 / 기회 / 터닝포인트 관련 질문
   if (/(?:2026|새해|운세|터닝|포인트|기회|흐름|올해|내년|미래|대운|세운|병오)/.test(normQ)) {
-    return `2026년(${annual.theme})은 그동안 축적해 온 잠재력과 전문성이 세상 밖으로 드러나는 역동적인 기회의 해입니다. 망설이던 도전이나 프로젝트가 있다면 과감하게 실행에 옮기셔도 운의 강한 조력을 받습니다.`;
+    return `2026년(${annual.theme})과 ${daewunNow}은 그동안 축적해 온 잠재력과 전문성이 세상 밖으로 드러나는 역동적인 기회의 시기입니다. 망설이던 도전이나 프로젝트가 있다면 용신(${yongsin.name})의 조력을 믿고 과감하게 실행에 옮기셔도 운의 강한 지지를 받습니다.`;
   }
 
   // 7. 건강 / 컨디션 / 피로 / 스트레스 / 멘탈 / 수면 관련 질문
   if (/(?:건강|피로|체력|힐링|컨디션|몸|스트레스|잠|불면|아프|우울|두통|소화)/.test(normQ)) {
-    return `중심 기운(${dominant.name})이 과도하게 쏠려 신경계의 긴장과 피로가 누적되기 쉬운 흐름입니다. 스스로에게 완벽을 강요하지 말고, 충분한 수분 섭취와 가벼운 휴식으로 몸과 마음의 조화를 회복하는 것이 최우선입니다.`;
+    return `중심 기운(${dominant.name})이 과도하게 쏠려 신경계의 긴장과 피로가 누적되기 쉬운 흐름입니다. 스스로에게 완벽을 강요하지 말고, 용신(${yongsin.name})의 추천 활동인 ${yongsin.actionTip}을 생활화하여 몸과 마음의 조화를 회복하는 것이 최우선입니다.`;
   }
 
   // 8. 인간관계 / 대인 / 친구 / 동료 / 가족 / 갈등 / 구설 관련 질문
@@ -1406,15 +1680,15 @@ export function generateSajuMasterConsultation(saju: SajuAnalysisResult, questio
 
   // 10. 사업 / 창업 / 독립 / 프리랜서 관련 질문
   if (/(?:사업|창업|독립|프리랜서|동업|장사|오픈)/.test(normQ)) {
-    return `추진력(${driveScore}점)은 충분하나 초기에 무리하게 자금을 투입하기보다는 작게 테스트하며 확장해야 안전합니다. 내 부족한 점을 채워줄 든든한 파트너나 조력자와 함께할 때 성공 가능성이 크게 높아집니다.`;
+    return `추진력(${driveScore}점, ${bodyStrength})은 충분하나 초기에 무리하게 자금을 투입하기보다는 작게 테스트하며 확장해야 안전합니다. 내 부족한 점을 채워줄 든든한 파트너나 조력자와 함께할 때 성공 가능성이 크게 높아집니다.`;
   }
 
   // 11. 오행 보충 / 결핍 / 개운 / 행운의 비책 관련 질문
   if (/(?:오행|부족|결핍|채우|보충|용신|개운|습관|음식|색상|컬러|팁|행운)/.test(normQ)) {
-    return `내담자님에게 가장 필요한 기운은 **${lacking.name}**입니다. 일상에서 ${lacking.luckyColor} 계열 소품을 곁에 두고 ${lacking.luckyFood}을 섭취하며, ${lacking.luckyPlace}에서 휴식을 취하시면 오행이 맑게 순환됩니다.`;
+    return `내담자님에게 가장 필요한 기운은 **${lacking.name}**이며, 핵심 보약 에너지는 **${yongsin.name}**입니다. 일상에서 ${lacking.luckyColor} 계열 소품을 곁에 두고 ${lacking.luckyFood}을 섭취하며, ${lacking.luckyPlace}에서 휴식을 취하시면 오행이 맑게 순환됩니다.`;
   }
 
   // 12. 기타 자유 질문 (동적 심층 합성)
-  return `사주 원국([${dayMaster.hanja} ${dayMaster.symbolName}])의 직관과 내면 에너지를 믿고 주체적으로 판단하시면 됩니다. 주변의 잡음이나 조급증에 흔들리지 말고 본인만의 페이스를 유지하는 것이 가장 현명한 정답입니다.`;
+  return `사주 원국([${dayMaster.hanja} ${dayMaster.symbolName}], ${geokguk}, ${bodyStrength})의 직관과 내면 에너지를 믿고 주체적으로 판단하시면 됩니다. 현재 ${daewunNow}의 흐름 속에서 주변의 잡음이나 조급증에 흔들리지 말고 본인만의 페이스를 유지하는 것이 가장 현명한 정답입니다.`;
 }
 
