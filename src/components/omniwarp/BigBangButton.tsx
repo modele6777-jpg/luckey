@@ -1234,7 +1234,7 @@ export function BigBangButton() {
     <>
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
-        className={`fixed bottom-safe-fab-right pointer-events-none flex items-center justify-center select-none ${
+        className={`fixed bottom-safe-fab-center pointer-events-none flex items-center justify-center select-none ${
           voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[350]'
         }`}
       >
@@ -1251,7 +1251,7 @@ export function BigBangButton() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.85, y: 4 }}
                 transition={{ duration: 0.15, ease: 'easeOut' }}
-                className="absolute -top-12 right-0 sm:left-1/2 sm:-translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
+                className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">✨</span>
                 <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸홈</span>
@@ -1273,7 +1273,7 @@ export function BigBangButton() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.9 }}
                 transition={{ duration: 0.15, ease: 'easeOut' }}
-                className="absolute -top-16 right-0 sm:left-1/2 sm:-translate-x-1/2 pointer-events-none z-50 flex flex-col items-end sm:items-center whitespace-nowrap select-none"
+                className="absolute -top-16 left-1/2 -translate-x-1/2 pointer-events-none z-50 flex flex-col items-center whitespace-nowrap select-none"
               >
                 <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/90 backdrop-blur-md border border-cyan-400/50 shadow-[0_0_24px_rgba(56,189,248,0.4)]">
                   <PrismAppIcon

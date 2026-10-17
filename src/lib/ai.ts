@@ -1604,8 +1604,8 @@ export async function invokeLLMStream(params: {
   signal?: AbortSignal;
   maxOutputTokens?: number;
 }) {
-  const maxDurationMs = params.timeoutMs ?? 90000;
-  const idleTimeoutMs = 35000;
+  const maxDurationMs = params.timeoutMs ?? 180000;
+  const idleTimeoutMs = 45000;
   let lastActivity = Date.now();
 
   const wrappedOnChunk = (chunk: string) => {

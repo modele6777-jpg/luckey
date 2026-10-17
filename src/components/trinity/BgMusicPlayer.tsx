@@ -1819,8 +1819,8 @@ export function BgMusicPlayer() {
               handleNextTrack();
             }}
             aria-label={isPlaying ? "배경음 일시정지 (길게 누르면 상세메뉴)" : "배경음 재생 (길게 누르면 상세메뉴)"}
-            className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer transition-all duration-200 ${
-              isHolding ? "scale-90 ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.8)]" : "active:scale-95"
+            className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-90 ${
+              isHolding ? "scale-90 ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.8)]" : ""
             }`}
             title={
               isPlaying
@@ -1828,6 +1828,18 @@ export function BgMusicPlayer() {
                 : `⏸️ ${currentTrack?.name || "음악 일시정지"} (클릭: 재생 · 더블클릭: 다음곡 · 꾹 누르기: 상세메뉴)`
             }
           >
+            {/* Ambient outer rotating conic rainbow aura halo */}
+            <span
+              className="absolute -inset-1.5 sm:-inset-2 rounded-full rainbow-fab-halo blur-[8px] opacity-75 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+              aria-hidden="true"
+            />
+
+            {/* Crisp rotating conic rainbow border ring */}
+            <span
+              className="absolute -inset-[2px] rounded-full rainbow-fab-halo opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none"
+              aria-hidden="true"
+            />
+
             {/* Ambient active playing glow halo */}
             {isPlaying && (
               <span
@@ -1840,7 +1852,7 @@ export function BgMusicPlayer() {
             )}
 
             {/* Inner LP Disc */}
-            <div className="relative flex items-center justify-center">
+            <div className="relative z-10 flex items-center justify-center">
               <LPRecordDisc
                 isPlaying={isPlaying}
                 isBuffering={isBuffering}
@@ -1852,10 +1864,7 @@ export function BgMusicPlayer() {
             {/* Playing pulse indicator dot */}
             {isPlaying && (
               <span
-                className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ring-2 ring-neutral-950 bg-amber-400 animate-pulse"
-                style={{
-                  boxShadow: "0 0 8px rgba(251, 191, 36, 0.9)",
-                }}
+                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-neutral-950 bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.9)] z-20"
               />
             )}
 
@@ -1884,7 +1893,7 @@ export function BgMusicPlayer() {
             )}
 
             {/* Desktop hover tooltip */}
-            <span className="hidden sm:group-hover:block absolute bottom-full mb-2.5 left-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-lg pointer-events-none z-50">
+            <span className="hidden sm:group-hover:block absolute bottom-full mb-2.5 right-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-lg pointer-events-none z-50">
               {isPlaying ? `🎵 ${currentTrack?.name || "음악 재생 중"}` : `⏸️ ${currentTrack?.name || "음악 일시정지"}`} (클릭 재생 · 더블클릭 다음곡 · 꾹 홀드 상세메뉴)
             </span>
           </button>

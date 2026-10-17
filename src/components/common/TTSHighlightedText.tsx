@@ -69,33 +69,38 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
   // 1. Direct equality
   if (cleanS === cleanA) return true;
 
-  // 2. Direct containment with length safety (prevents whole paragraphs from matching a single short sentence)
-  if (cleanA.includes(cleanS) && cleanS.length >= 3) return true;
-  if (cleanS.includes(cleanA) && cleanS.length <= Math.max(cleanA.length * 1.35, cleanA.length + 12)) return true;
+  // Length ratio check: prevents short labels, fragments, or single common words from matching long sentences
+  const minLen = Math.min(cleanS.length, cleanA.length);
+  const maxLen = Math.max(cleanS.length, cleanA.length);
+  const ratio = minLen / maxLen;
+
+  if (ratio < 0.6) return false;
+
+  // 2. Direct containment with length similarity
+  if (cleanA.includes(cleanS) || cleanS.includes(cleanA)) return true;
 
   // 3. Substring & prefix alignment (handles slight TTS normalizations or trailing words)
-  if (cleanS.length >= 5 && cleanA.length >= 5) {
-    const minLen = Math.min(10, cleanS.length, cleanA.length);
-    const subA = cleanA.slice(0, minLen);
-    if (cleanS.includes(subA) && Math.abs(cleanS.length - cleanA.length) <= 15) return true;
-    const subS = cleanS.slice(0, minLen);
-    if (cleanA.includes(subS) && Math.abs(cleanS.length - cleanA.length) <= 15) return true;
+  if (cleanS.length >= 6 && cleanA.length >= 6 && Math.abs(cleanS.length - cleanA.length) <= 10) {
+    const prefixLen = Math.min(8, cleanS.length, cleanA.length);
+    const subA = cleanA.slice(0, prefixLen);
+    const subS = cleanS.slice(0, prefixLen);
+    if (cleanS.startsWith(subA) || cleanA.startsWith(subS)) return true;
   }
 
-  // 4. Key phrase token overlap (for headings or sentences with slight grammar variations)
-  if (cleanS.length >= 6 && cleanA.length >= 6 && Math.abs(cleanS.length - cleanA.length) <= 15) {
+  // 4. Key phrase token overlap
+  if (cleanS.length >= 8 && cleanA.length >= 8 && Math.abs(cleanS.length - cleanA.length) <= 10) {
     const tokensS = sentence
       .replace(/[^가-힣a-zA-Z0-9\s]/g, ' ')
       .split(/\s+/)
       .map(cleanSentenceForMatching)
       .filter((t) => t.length >= 2);
 
-    if (tokensS.length > 0) {
+    if (tokensS.length >= 2) {
       let matchedCount = 0;
       for (const tok of tokensS) {
         if (cleanA.includes(tok)) matchedCount += 1;
       }
-      if (matchedCount / tokensS.length >= 0.6) {
+      if (matchedCount / tokensS.length >= 0.75) {
         return true;
       }
     }
@@ -253,7 +258,7 @@ export function TTSHighlightedText({
   enabled?: boolean;
 }) {
   const { isSpeaking, activeText, currentSentence } = useTTSState();
-  const activeTarget = (enabled && isSpeaking) ? (currentSentence || activeText) : null;
+  const activeTarget = (enabled && isSpeaking) ? (currentSentence || (activeText && activeText.length <= 100 ? activeText : null)) : null;
 
   const content = useMemo(() => {
     if (!enabled || !activeTarget) return text;

@@ -211,7 +211,7 @@ export function Streamdown({
 
   // Dynamic TTS sentence tracking (strictly isolated to matching reading context)
   const { isSpeaking, activeText, currentSentence } = useTTSState();
-  const rawTarget = (enableTTSHighlight && isSpeaking) ? (currentSentence || activeText) : null;
+  const rawTarget = (enableTTSHighlight && isSpeaking) ? (currentSentence || (activeText && activeText.length <= 100 ? activeText : null)) : null;
 
   const activeTarget = useMemo(() => {
     if (!rawTarget || !enableTTSHighlight) return null;

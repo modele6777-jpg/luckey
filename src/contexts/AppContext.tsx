@@ -1473,15 +1473,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     isGeneratingRef.current[sourcePersona] = true;
     setIsGenerating(prev => ({ ...prev, [sourcePersona]: true }));
 
-    // 60-second Safety Watchdog Timer: prevents UI from hanging indefinitely on network loss/stalls while allowing full generation for complex queries
-    const watchdogTimer = setTimeout(() => {
-      if (isGeneratingRef.current[sourcePersona]) {
-        console.warn(`[AppContext] Safety watchdog auto-released isGenerating for ${sourcePersona}`);
-        try { currentAbortController.abort(); } catch (_) {}
-        isGeneratingRef.current[sourcePersona] = false;
-        setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
-      }
-    }, 60000);
+    // Adaptive Activity Watchdog Timer:
+    // Resets on incoming chunks. Allows up to 45s between chunks, and up to 180s total generation time.
+    let lastActivityTime = Date.now();
+    const generationStartTime = Date.now();
+    let watchdogTimer: NodeJS.Timeout | null = null;
+
+    const resetWatchdog = () => {
+      lastActivityTime = Date.now();
+      if (watchdogTimer) clearTimeout(watchdogTimer);
+      watchdogTimer = setTimeout(() => {
+        const now = Date.now();
+        const isIdleTooLong = now - lastActivityTime >= 45000;
+        const isMaxDurationReached = now - generationStartTime >= 180000;
+
+        if (isGeneratingRef.current[sourcePersona] && (isIdleTooLong || isMaxDurationReached)) {
+          console.warn(`[AppContext] Activity watchdog auto-released (${isIdleTooLong ? 'idle' : 'max cap'}) for ${sourcePersona}`);
+          try { currentAbortController.abort(); } catch (_) {}
+          isGeneratingRef.current[sourcePersona] = false;
+          setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+        } else if (isGeneratingRef.current[sourcePersona]) {
+          resetWatchdog();
+        }
+      }, 45000);
+    };
+
+    resetWatchdog();
     
     // 3. Prepare AI Prompt
     const profile = sharedState?.userProfile || getPersistentUserProfile();
@@ -1682,8 +1699,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await invokeLLMStream({
         messages: conversationForAPI,
         signal: currentAbortController.signal,
-        timeoutMs: 60000,
+        timeoutMs: 180000,
         onChunk: (chunk: string) => {
+          resetWatchdog();
           replyText += chunk;
           latestCleanReply = cleanChatDisplayText(replyText);
           if (pendingRaf === null) {

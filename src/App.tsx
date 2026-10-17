@@ -152,7 +152,7 @@ function AppContent() {
   isTarotActiveRef.current = isTarotActive;
   const isSessionBusy = React.useCallback(() => isTarotActiveRef.current, []);
 
-  const pinScreenActive = !isUnlocked && !!firebaseUser;
+  const pinScreenActive = !isUnlocked;
   usePinScreenLock(pinScreenActive);
 
   React.useEffect(() => {
@@ -375,7 +375,7 @@ function AppContent() {
     );
   }
 
-  if (!isUnlocked && !isStandaloneChat) {
+  if (!isUnlocked) {
     return (
       <div className="prism-app-shell relative z-[1] bg-transparent">
         <PinLockScreen onUnlock={unlock} />

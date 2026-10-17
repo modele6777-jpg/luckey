@@ -424,6 +424,12 @@
     left: calc(var(--sal) + 0.875rem);
   }
 
+  .bottom-safe-fab-center {
+    bottom: calc(var(--sab) + 1.25rem);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
   .bottom-safe-fab-right {
     bottom: calc(var(--sab) + 1.25rem);
     right: calc(var(--sar) + 0.875rem);
@@ -440,33 +446,33 @@
   }
 
   .bottom-safe-music-lp {
-    bottom: calc(var(--sab) + 4.5rem);
-    left: calc(var(--sal) + 0.875rem);
+    bottom: calc(var(--sab) + 1.25rem);
+    right: calc(var(--sar) + 0.875rem);
   }
 
   @media (min-width: 640px) {
     .bottom-safe-music-lp {
-      bottom: calc(var(--sab) + 4.75rem);
-      left: calc(var(--sal) + 0.875rem);
+      bottom: calc(var(--sab) + 1.25rem);
+      right: calc(var(--sar) + 1.5rem);
     }
   }
 
   .bottom-safe-music-menu {
-    bottom: calc(var(--sab) + 8.25rem);
-    left: calc(var(--sal) + 0.875rem);
+    bottom: calc(var(--sab) + 4.5rem);
+    right: calc(var(--sar) + 0.875rem);
   }
 
   @media (min-width: 640px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 8.5rem);
-      left: calc(var(--sal) + 0.875rem);
+      bottom: calc(var(--sab) + 4.75rem);
+      right: calc(var(--sar) + 1.5rem);
     }
   }
 
   @media (max-height: 720px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 0.75rem);
-      left: calc(var(--sal) + 4.5rem);
+      bottom: calc(var(--sab) + 4.25rem);
+      right: calc(var(--sar) + 0.875rem);
     }
   }
 
@@ -616,6 +622,12 @@
     left: calc(var(--sal) + 0.875rem);
   }
 
+  .bottom-safe-fab-center {
+    bottom: calc(var(--sab) + 1.25rem);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
   .bottom-safe-fab-right {
     bottom: calc(var(--sab) + 1.25rem);
     right: calc(var(--sar) + 0.875rem);
@@ -632,8 +644,13 @@
   }
 
   .bottom-safe-music-lp {
-    bottom: calc(var(--sab) + 4.5rem);
-    left: calc(var(--sal) + 0.875rem);
+    bottom: calc(var(--sab) + 1.25rem);
+    right: calc(var(--sar) + 0.875rem);
+  }
+  @media (min-width: 640px) {
+    .bottom-safe-music-lp {
+      right: calc(var(--sar) + 1.5rem);
+    }
   }
 
   .prism-bottom-nav {

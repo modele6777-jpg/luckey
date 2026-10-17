@@ -210,6 +210,13 @@ export function LucyProTypewriter({
     }
   }, [content, displayedLength, shouldAnimate, typewriterSpeed]);
 
+  // When generation finishes, immediately reveal 100% of the completed response to avoid cutoffs or frozen typing
+  useEffect(() => {
+    if (!isGenerating && displayedLength < content.length) {
+      setDisplayedLength(content.length);
+    }
+  }, [isGenerating, content.length, displayedLength]);
+
   const displayedText = useMemo(() => {
     if (!shouldAnimate || displayedLength >= content.length) {
       return content;

@@ -515,11 +515,27 @@ function base64ToBytes(base64: string): Uint8Array {
   return bytes;
 }
 
+let silentWavBlobUrl: string | null = null;
+function getSilentWavBlobUrl(): string {
+  if (!silentWavBlobUrl && typeof window !== 'undefined') {
+    try {
+      const sampleRate = 8000;
+      const numSamples = 4000; // 0.5s clean silent WAV buffer
+      const bytes = new Uint8Array(numSamples * 2);
+      const blob = pcm16ToWavBlob(bytes, sampleRate);
+      silentWavBlobUrl = URL.createObjectURL(blob);
+    } catch (_) {
+      silentWavBlobUrl = SILENT_WAV_DATA_URI;
+    }
+  }
+  return silentWavBlobUrl || SILENT_WAV_DATA_URI;
+}
+
 function startTTSKeepAlive() {
   if (typeof window === 'undefined') return;
   try {
     if (!ttsKeepAliveEl) {
-      ttsKeepAliveEl = new Audio(SILENT_WAV_DATA_URI);
+      ttsKeepAliveEl = new Audio(getSilentWavBlobUrl());
       ttsKeepAliveEl.loop = true;
       ttsKeepAliveEl.volume = 0.001;
       ttsKeepAliveEl.setAttribute('playsinline', 'true');
@@ -1200,6 +1216,11 @@ export function initTTSAudioLifecycle(): void {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       handleResume();
+    } else if (document.visibilityState === 'hidden') {
+      if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
+        configurePlaybackAudioSession();
+        startTTSKeepAlive();
+      }
     }
   });
   window.addEventListener('pageshow', handleResume);

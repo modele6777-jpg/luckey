@@ -156,6 +156,36 @@ export const loadTodayOracleSession = (
   return null;
 };
 
+export const findAnyTodayOracleSession = (
+  dateKey?: string,
+  cloudSharedState?: any
+): SavedDailyOracleSession | null => {
+  if (typeof window === 'undefined') return null;
+  const targetDateKey = dateKey || getTodayDateKey();
+  const modes: OracleMode[] = ['healing', 'miracle', 'growth'];
+
+  // 1. Check active today oracle key
+  try {
+    const activeRaw = localStorage.getItem('prism_oracle_today_active');
+    if (activeRaw) {
+      const activeObj = JSON.parse(activeRaw);
+      if (activeObj && activeObj.dateKey === targetDateKey && activeObj.session) {
+        return activeObj.session;
+      }
+    }
+  } catch (_) {}
+
+  // 2. Check each mode
+  for (const m of modes) {
+    const s = loadTodayOracleSession(m, targetDateKey, cloudSharedState);
+    if (s && (s.healingResult || s.growthResult || s.miracleResult || (s.drawnCards && s.drawnCards.length > 0))) {
+      return s;
+    }
+  }
+
+  return null;
+};
+
 export const saveDailyOracleSession = (mode: OracleMode, dateKey: string, session: SavedDailyOracleSession) => {
   if (typeof window === 'undefined') return;
   try {
@@ -164,7 +194,9 @@ export const saveDailyOracleSession = (mode: OracleMode, dateKey: string, sessio
     localStorage.setItem(primaryKey, jsonStr);
     localStorage.setItem(`prism_trinity_oracle_session_${mode}_${dateKey}`, jsonStr);
     localStorage.setItem(`prism_oracle_${mode}_${dateKey}`, jsonStr);
+    localStorage.setItem('prism_oracle_today_active', JSON.stringify({ mode, dateKey, session }));
     sessionStorage.setItem(primaryKey, jsonStr);
+    sessionStorage.setItem('prism_oracle_today_active', JSON.stringify({ mode, dateKey, session }));
     window.dispatchEvent(new CustomEvent('prism:oracle_session_updated', {
       detail: { mode, dateKey, session, oracleSessions: { [`${mode}_${dateKey}`]: session } }
     }));
@@ -808,6 +840,10 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   const [oracleMode, setOracleMode] = useState<OracleMode>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const todayS = findAnyTodayOracleSession(getTodayDateKey());
+        if (todayS && todayS.mode) {
+          return todayS.mode;
+        }
         const searchParams = new URLSearchParams(window.location.search);
         const urlMode = searchParams.get('mode') || searchParams.get('oracleMode');
         if (urlMode === 'healing' || urlMode === 'growth' || urlMode === 'miracle') {
@@ -840,11 +876,14 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   const [zoomedCard, setZoomedCard] = useState<{ card: TarotCard; slotName?: string } | null>(null);
 
   // Track whether the user has explicitly selected a mode or needs to choose
-  // 🌟 사용자 요청: "오라클타로 모드직접선택 화면을 오라클타로 초기화면으로 수정"
-  // 기본적으로 진입 시 모드 직접 선택 화면(isModeChosen = false)을 초기화면으로 표시
+  // 🌟 1일 1회 이미 완료된 세션이 오늘 존재하면 즉시 결과 화면(isModeChosen = true, stage = 'result')으로 진입
   const [isModeChosen, setIsModeChosen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const todayS = findAnyTodayOracleSession(getTodayDateKey());
+        if (todayS && (todayS.healingResult || todayS.growthResult || todayS.miracleResult || (todayS.drawnCards && todayS.drawnCards.length > 0))) {
+          return true;
+        }
         const searchParams = new URLSearchParams(window.location.search);
         const urlMode = searchParams.get('mode') || searchParams.get('oracleMode');
         if (urlMode === 'healing' || urlMode === 'growth' || urlMode === 'miracle' || urlMode === 'acim') return true;
@@ -856,10 +895,13 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   });
 
   const handleResetToModeSelection = useCallback(() => {
-    setIsModeChosen(false);
+    const todayS = findAnyTodayOracleSession(todayDateKey, sharedState);
+    if (!todayS) {
+      setIsModeChosen(false);
+    }
     setSelectedCardIdx(0);
     stopTTS();
-  }, []);
+  }, [todayDateKey, sharedState]);
 
   // 질문자 명칭 추출 (닉네임 최우선 호칭)
   const recipientName = useMemo(() => {
@@ -884,14 +926,49 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   const [isSummaryCopied, setIsSummaryCopied] = useState<boolean>(false);
 
   // 2. Card Draw Stage State ('intro' | 'spread' | 'result')
-  const [stage, setStage] = useState<'intro' | 'spread' | 'result'>('spread');
-  const [drawnCards, setDrawnCards] = useState<TarotCard[]>([]);
+  // 🌟 1일 1회 원칙: 당일 완료된 세션이 존재하면 항상 'result'로 즉시 복원
+  const [stage, setStage] = useState<'intro' | 'spread' | 'result'>(() => {
+    if (typeof window !== 'undefined') {
+      const todayS = findAnyTodayOracleSession(getTodayDateKey());
+      if (todayS && (todayS.healingResult || todayS.growthResult || todayS.miracleResult || (todayS.drawnCards && todayS.drawnCards.length > 0))) {
+        return 'result';
+      }
+    }
+    return 'spread';
+  });
+  const [drawnCards, setDrawnCards] = useState<TarotCard[]>(() => {
+    if (typeof window !== 'undefined') {
+      const todayS = findAnyTodayOracleSession(getTodayDateKey());
+      if (todayS && todayS.drawnCards && todayS.drawnCards.length > 0) {
+        return todayS.drawnCards;
+      }
+    }
+    return [];
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // 3. Results State
-  const [healingResult, setHealingResult] = useState<HealingResult | null>(null);
-  const [growthResult, setGrowthResult] = useState<GrowthResult | null>(null);
-  const [miracleResult, setMiracleResult] = useState<MiracleResult | null>(null);
+  // 3. Results State (초기 당일 세션에서 자동 복원)
+  const [healingResult, setHealingResult] = useState<HealingResult | null>(() => {
+    if (typeof window !== 'undefined') {
+      const todayS = findAnyTodayOracleSession(getTodayDateKey());
+      if (todayS?.mode === 'healing' && todayS.healingResult) return todayS.healingResult;
+    }
+    return null;
+  });
+  const [growthResult, setGrowthResult] = useState<GrowthResult | null>(() => {
+    if (typeof window !== 'undefined') {
+      const todayS = findAnyTodayOracleSession(getTodayDateKey());
+      if (todayS?.mode === 'growth' && todayS.growthResult) return todayS.growthResult;
+    }
+    return null;
+  });
+  const [miracleResult, setMiracleResult] = useState<MiracleResult | null>(() => {
+    if (typeof window !== 'undefined') {
+      const todayS = findAnyTodayOracleSession(getTodayDateKey());
+      if (todayS?.mode === 'miracle' && todayS.miracleResult) return todayS.miracleResult;
+    }
+    return null;
+  });
 
   // 4. Mission Completion & Rewards State
   const [isHealingCompleted, setIsHealingCompleted] = useState<boolean>(false);
@@ -915,12 +992,21 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   // TTS State
   const isTTSActive = useTTSActive();
   const ttsState = useTTSState();
-  const [inquiryText, setInquiryText] = useState<string>('');
+  const [inquiryText, setInquiryText] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const todayS = findAnyTodayOracleSession(getTodayDateKey());
+      if (todayS?.inquiryText) return todayS.inquiryText;
+    }
+    return '';
+  });
 
   // 🌟 오늘의 오라클 당일 1회 세션 및 복원 상태 (힐링/자기계발/기적수업 모두 1일 1회 엄격 적용)
-  const [todayDailySession, setTodayDailySession] = useState<SavedDailyOracleSession | null>(() =>
-    loadTodayOracleSession(oracleMode, todayDateKey, sharedState)
-  );
+  const [todayDailySession, setTodayDailySession] = useState<SavedDailyOracleSession | null>(() => {
+    if (typeof window !== 'undefined') {
+      return findAnyTodayOracleSession(getTodayDateKey());
+    }
+    return null;
+  });
 
   const healingTodaySession = useMemo(
     () => loadTodayOracleSession('healing', todayDateKey, sharedState),
@@ -937,14 +1023,16 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 
   // 모드 변경 또는 마운트 시 당일 저장된 오라클 세션 동기화 (1일 1회 완료된 경우 결과 자동 복원)
   useEffect(() => {
-    const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState);
-    setTodayDailySession(saved);
+    const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
     if (saved && (saved.healingResult || saved.growthResult || saved.miracleResult)) {
+      setTodayDailySession(saved);
       if (saved.drawnCards && saved.drawnCards.length > 0) setDrawnCards(saved.drawnCards);
-      if (oracleMode === 'healing' && saved.healingResult) setHealingResult(saved.healingResult);
-      if (oracleMode === 'growth' && saved.growthResult) setGrowthResult(saved.growthResult);
-      if (oracleMode === 'miracle' && saved.miracleResult) setMiracleResult(saved.miracleResult);
+      const effMode = saved.mode || oracleMode;
+      if (effMode === 'healing' && saved.healingResult) setHealingResult(saved.healingResult);
+      if (effMode === 'growth' && saved.growthResult) setGrowthResult(saved.growthResult);
+      if (effMode === 'miracle' && saved.miracleResult) setMiracleResult(saved.miracleResult);
       if (saved.inquiryText) setInquiryText(saved.inquiryText);
+      setIsModeChosen(true);
       setStage('result');
     }
   }, [oracleMode, todayDateKey, sharedState]);
@@ -1038,21 +1126,24 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 
   // 오늘 결과 보기 핸들러
   const handleRestoreTodayOracle = useCallback((targetMode?: OracleMode) => {
-    const mode = targetMode || oracleMode;
-    const saved = loadTodayOracleSession(mode, todayDateKey, sharedState) || todayDailySession;
+    const todayAny = findAnyTodayOracleSession(todayDateKey, sharedState);
+    const mode = targetMode || todayAny?.mode || oracleMode;
+    const saved = loadTodayOracleSession(mode, todayDateKey, sharedState) || todayAny || todayDailySession;
     if (!saved) return;
     if (saved.drawnCards && saved.drawnCards.length > 0) {
       setDrawnCards(saved.drawnCards);
     }
     if (saved.inquiryText) setInquiryText(saved.inquiryText);
-    if (mode === 'healing' && saved.healingResult) {
+    const effectiveMode = saved.mode || mode;
+    if (effectiveMode === 'healing' && saved.healingResult) {
       setHealingResult(saved.healingResult);
-    } else if (mode === 'growth' && saved.growthResult) {
+    } else if (effectiveMode === 'growth' && saved.growthResult) {
       setGrowthResult(saved.growthResult);
-    } else if (mode === 'miracle' && saved.miracleResult) {
+    } else if (effectiveMode === 'miracle' && saved.miracleResult) {
       setMiracleResult(saved.miracleResult);
     }
-    setOracleMode(mode);
+    setOracleMode(effectiveMode);
+    setTodayDailySession(saved);
     setIsModeChosen(true);
     setStage('result');
   }, [oracleMode, todayDateKey, sharedState, todayDailySession]);
@@ -1060,18 +1151,18 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   // 🌟 당일 완료된 결과가 있는 경우 카드뽑기 화면(spread)을 건너뛰고 즉시 결과 화면으로 자동 전환
   useEffect(() => {
     if (stage === 'spread') {
-      const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState);
+      const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
       if (saved && (saved.healingResult || saved.growthResult || saved.miracleResult)) {
-        handleRestoreTodayOracle();
+        handleRestoreTodayOracle(saved.mode);
       }
     }
   }, [stage, oracleMode, todayDateKey, sharedState, handleRestoreTodayOracle]);
 
   // 🚪 오라클 카드 선택창 닫기 핸들러: 기존 저장된 세션이 있으면 결과창으로, 없으면 모드 선택창으로 안전하게 복귀
   const handleCancelOracleSpread = useCallback(() => {
-    const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState);
+    const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
     if (saved && (saved.healingResult || saved.growthResult || saved.miracleResult)) {
-      handleRestoreTodayOracle();
+      handleRestoreTodayOracle(saved.mode);
     } else {
       setIsModeChosen(false);
       setStage('spread');
@@ -1474,7 +1565,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       localStorage.setItem(STORAGE_ORACLE_MODE_SELECTED, 'true');
     } catch (_) {}
 
-    const saved = loadTodayOracleSession(mode, todayDateKey, sharedState);
+    const saved = loadTodayOracleSession(mode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
     setTodayDailySession(saved);
     stopTTS();
     setSelectedCardIdx(0);
@@ -1484,9 +1575,11 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       if (saved.drawnCards && saved.drawnCards.length > 0) {
         setDrawnCards(saved.drawnCards);
       }
-      if (mode === 'healing' && saved.healingResult) setHealingResult(saved.healingResult);
-      if (mode === 'growth' && saved.growthResult) setGrowthResult(saved.growthResult);
-      if (mode === 'miracle' && saved.miracleResult) setMiracleResult(saved.miracleResult);
+      const effectiveMode = saved.mode || mode;
+      setOracleMode(effectiveMode);
+      if (effectiveMode === 'healing' && saved.healingResult) setHealingResult(saved.healingResult);
+      if (effectiveMode === 'growth' && saved.growthResult) setGrowthResult(saved.growthResult);
+      if (effectiveMode === 'miracle' && saved.miracleResult) setMiracleResult(saved.miracleResult);
       if (saved.inquiryText) setInquiryText(saved.inquiryText);
       setStage('result');
     } else {
@@ -1531,12 +1624,14 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         localStorage.setItem(STORAGE_ORACLE_MODE_SELECTED, 'true');
       } catch (_) {}
 
-      const existing = loadTodayOracleSession(targetMode, todayDateKey, sharedState);
+      const existing = loadTodayOracleSession(targetMode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
       if (existing && (existing.healingResult || existing.growthResult || existing.miracleResult)) {
         if (existing.drawnCards && existing.drawnCards.length > 0) setDrawnCards(existing.drawnCards);
-        if (targetMode === 'healing' && existing.healingResult) setHealingResult(existing.healingResult);
-        if (targetMode === 'growth' && existing.growthResult) setGrowthResult(existing.growthResult);
-        if (targetMode === 'miracle' && existing.miracleResult) setMiracleResult(existing.miracleResult);
+        const effMode = existing.mode || targetMode;
+        setOracleMode(effMode);
+        if (effMode === 'healing' && existing.healingResult) setHealingResult(existing.healingResult);
+        if (effMode === 'growth' && existing.growthResult) setGrowthResult(existing.growthResult);
+        if (effMode === 'miracle' && existing.miracleResult) setMiracleResult(existing.miracleResult);
         setStage('result');
         return;
       }
@@ -3526,9 +3621,14 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
             <button
               type="button"
               onClick={() => {
-                setIsModeChosen(false);
-                setDrawnCards([]);
-                setStage('spread');
+                const todaySession = findAnyTodayOracleSession(todayDateKey, sharedState);
+                if (todaySession) {
+                  handleRestoreTodayOracle(todaySession.mode);
+                } else {
+                  setIsModeChosen(false);
+                  setDrawnCards([]);
+                  setStage('spread');
+                }
                 stopTTS();
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-300 hover:text-white transition-colors cursor-pointer"

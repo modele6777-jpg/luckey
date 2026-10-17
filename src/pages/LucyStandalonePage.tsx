@@ -1054,7 +1054,7 @@ export default function LucyStandalonePage() {
 
           stopTTS();
           if (lastMsg.id) setPlayingMsgId(lastMsg.id);
-          playTTSInChunks(cleanAnswer, 'Aoede')
+          playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true })
             .catch((err) => {
               console.warn('[Auto-TTS Fallback] Play error:', err);
             })
@@ -1313,7 +1313,7 @@ export default function LucyStandalonePage() {
               if (replyMsgId) {
                 setPlayingMsgId(replyMsgId);
               }
-              await playTTSInChunks(cleanAnswer, 'Aoede');
+              await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true });
               setPlayingMsgId(null);
             }
           } catch (ttsErr) {
@@ -1549,7 +1549,7 @@ export default function LucyStandalonePage() {
     } else {
       stopTTS();
       setPlayingMsgId(id);
-      playTTSInChunks(clean, 'Aoede', 110);
+      playTTSInChunks(clean, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true });
     }
   };
 

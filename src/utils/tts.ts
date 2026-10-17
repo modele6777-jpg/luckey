@@ -13,11 +13,16 @@ import {
   analyzeTextEmotion,
   duckAmbientAudio,
 } from '../lib/audio';
+import { playAiResultNotification } from '../lib/audioHaptics';
 import { setTTSSessionActive, clearTTSSession, initTTSSessionHandlers, pauseTTSSession, resumeTTSSession } from '../lib/ttsMediaSession';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from '../lib/wakeLock';
 import { prepareNaturalSpeechText } from './speechText';
 export { prepareNaturalSpeechText };
 import { isIOSDevice } from '../lib/perfMode';
+
+export interface TTSPlaybackOptions {
+  skipCompletionChime?: boolean;
+}
 
 // Pre-warm the browser's speechSynthesis engine to load premium voices asynchronously immediately on load
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -389,6 +394,7 @@ export const playTTS = async (
   fullTextReference?: string,
   _rate?: string,
   _speed?: number,
+  options?: TTSPlaybackOptions,
 ): Promise<void> => {
   ensureTTSLifecycle();
   const cleanText = normalizeTextForSpeech(text);
@@ -540,6 +546,11 @@ export const playTTS = async (
         } finally {
           if (sessionToVerify && ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
             stopTTS();
+            if (!options?.skipCompletionChime) {
+              try {
+                playAiResultNotification();
+              } catch (_) {}
+            }
           }
         }
       } else {
@@ -548,6 +559,11 @@ export const playTTS = async (
           .then(() => {
             if (sessionToVerify && ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
               stopTTS();
+              if (!options?.skipCompletionChime) {
+                try {
+                  playAiResultNotification();
+                } catch (_) {}
+              }
             }
           })
           .catch((err) => {
@@ -702,6 +718,7 @@ export const playTTSInChunks = async (
   maxChunkLength = 110,
   emotion?: string,
   _speed?: number,
+  options?: TTSPlaybackOptions,
 ): Promise<void> => {
   const cleanText = prepareNaturalSpeechText(text);
   if (!cleanText) return;
@@ -833,9 +850,14 @@ export const playTTSInChunks = async (
         break;
       }
 
-      // 완독 성공 시 저장된 위치 초기화 (다음 번엔 처음부터 들을 수 있도록)
+      // 완독 성공 시 저장된 위치 초기화 및 완료 종소리 재생 (중간 중단/루시 채팅 제외)
       if (isLastChunk) {
         lastTTSProgress = null;
+        if (!options?.skipCompletionChime) {
+          try {
+            playAiResultNotification();
+          } catch (_) {}
+        }
       }
 
       // 🌟 해당 문장 낭독 완료: 다음 문장 넘어가기 전 이전 형광펜 하이라이트 즉각 해제
