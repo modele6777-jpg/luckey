@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.4.290",
+    "summary": "루시 대화창 마이크 버튼 및 STT 음성 인식 기능 삭제",
+    "builtAt": "2026-10-17T11:30:00.000Z",
+    "items": [
+      "루시 채팅창(LucyStandalonePage) 하단 입력창에서 마이크(STT 음성 인식) 버튼 및 Web Speech API 로직 완전 삭제",
+      "isRecording 상태, recognitionRef 레퍼런스 및 toggleSpeechRecognition 핸들러 제거",
+      "입력창 컨테이너의 조건부 녹음 테두리 링 스타일을 단일 정적 스타일로 깔끔하게 정리",
+      "텍스트에어리어 플레이스홀더 및 DynamicGhostInputPlaceholder 가시성 조건에서 녹음 분기 정리"
+    ]
+  },
+  {
     "version": "1.4.289",
     "summary": "대화창 내 다자간 프로필(최대 4인) 추가 및 2인 이상 맞춤 궁합·연애 점괘 구현",
     "builtAt": "2026-10-17T11:25:00.000Z",

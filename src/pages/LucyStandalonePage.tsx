@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Trash2, Search, X, ChevronDown, Check, Volume2, VolumeX, Square,
   Download, User, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
-  Loader2, Copy, RefreshCw, Camera, MicOff, Mic, BookOpen, BookMarked
+  Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked
 } from 'lucide-react';
 import { useApp, PersonaType, getPersistentUserProfile } from '@/contexts/AppContext';
 import { useLocation } from 'wouter';
@@ -579,7 +579,6 @@ export default function LucyStandalonePage() {
   }, [input]);
 
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -632,7 +631,6 @@ export default function LucyStandalonePage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
   const isTTSActive = useTTSActive();
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const isUserScrolledUpRef = useRef(false);
@@ -1127,64 +1125,6 @@ export default function LucyStandalonePage() {
     }
   }, [lucyMessages, isLucyGenerating, scrollToBottom]);
 
-  // Handle Speech-to-Text (STT) Mic input
-  const toggleSpeechRecognition = () => {
-    if (isRecording) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setIsRecording(false);
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('현재 브라우저에서 마이크 음성 인식이 지원되지 않습니다. Chrome이나 Safari 최신 버전을 권장합니다.');
-      return;
-    }
-
-    try {
-      // 🔊 사용자의 마이크 버튼 클릭 시점에 오디오 컨텍스트 사전 잠금 해제
-      unlockAudioPlayback();
-      primeTTSAudioElement();
-
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ko-KR';
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      let baseInput = input;
-      recognition.onstart = () => {
-        setIsRecording(true);
-        baseInput = input;
-      };
-
-      recognition.onresult = (event: any) => {
-        let currentTranscript = '';
-        for (let i = 0; i < event.results.length; ++i) {
-          currentTranscript += event.results[i][0].transcript;
-        }
-        if (currentTranscript) {
-          setInput(baseInput ? `${baseInput.trim()} ${currentTranscript.trim()}` : currentTranscript.trim());
-        }
-      };
-
-      recognition.onerror = (e: any) => {
-        console.warn('[STT] Speech recognition error:', e);
-        setIsRecording(false);
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (e) {
-      console.error('[STT] Failed to initialize recognition:', e);
-      setIsRecording(false);
-    }
-  };
 
   // Handle image attachment with auto-compression (prevents stuttering & infinite scroll)
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1270,10 +1210,6 @@ export default function LucyStandalonePage() {
     setInput('');
     const imgToSend = attachedImage || undefined;
     setAttachedImage(null);
-    if (isRecording && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    }
     stopTTS();
 
     // 🔊 사용자 액션(전송 클릭 또는 Enter 입력) 시 오디오 컨텍스트를 즉시 해제 및 프라이밍
@@ -1309,7 +1245,7 @@ export default function LucyStandalonePage() {
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, activeChannels, isAutoDetect, isRecording, sendUnifiedMessage]);
+  }, [input, attachedImage, isLucyGenerating, activeChannels, isAutoDetect, sendUnifiedMessage]);
 
   const handleSendRef = useRef(handleSend);
   useEffect(() => {
@@ -2132,11 +2068,7 @@ export default function LucyStandalonePage() {
             )}
           </div>
 
-          <div className={`flex items-center gap-1.5 sm:gap-2 bg-slate-50 border rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all shadow-inner ${
-            isRecording 
-              ? 'border-rose-400 bg-rose-50/40 ring-2 ring-rose-200' 
-              : 'border-slate-200 focus-within:border-amber-400 focus-within:bg-white'
-          }`}>
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50 border border-slate-200 focus-within:border-amber-400 focus-within:bg-white rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all shadow-inner">
             {/* Hidden File Input */}
             <input 
               type="file" 
@@ -2154,20 +2086,6 @@ export default function LucyStandalonePage() {
               title="사진/이미지 첨부 (멀티모달 비전 분석)"
             >
               <Camera size={16} />
-            </button>
-
-            {/* ️ STT Mic Voice Input Button */}
-            <button
-              type="button"
-              onClick={toggleSpeechRecognition}
-              className={`p-1.5 rounded-xl transition-all cursor-pointer shrink-0 ${
-                isRecording 
-                  ? 'bg-rose-500 text-white animate-pulse shadow-sm' 
-                  : 'text-slate-400 hover:text-amber-700 hover:bg-slate-200/70'
-              }`}
-              title={isRecording ? '음성 녹음 중지' : '마이크로 음성 말하기 (Speech to Text)'}
-            >
-              {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
             </button>
 
             {/* 🔊 Auto-TTS Quick Toggle Button (입력창 바로 옆 원클릭 토글) */}
@@ -2190,7 +2108,7 @@ export default function LucyStandalonePage() {
               {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
               <DynamicGhostInputPlaceholder
                 prompts={dynamicGhostPrompts}
-                isVisible={!input && !isRecording && !isLucyGenerating}
+                isVisible={!input && !isLucyGenerating}
                 onCurrentPromptChange={(prompt) => {
                   currentGhostPromptRef.current = prompt;
                 }}
@@ -2213,9 +2131,7 @@ export default function LucyStandalonePage() {
                   }
                 }}
                 placeholder={
-                  isRecording 
-                    ? '마이크로 말씀하시는 중입니다...' 
-                    : isLucyGenerating
+                  isLucyGenerating
                     ? '루시가 답변을 생성하는 중입니다...'
                     : ''
                 }
