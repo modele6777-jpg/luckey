@@ -1853,7 +1853,7 @@ h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
   }
 }
 
-/* Rotating Conic Rainbow Halo for Menu Button FAB & Icon accents */
+/* Rotating Conic Rainbow Halo for Icon accents */
 .rainbow-fab-halo {
   background: conic-gradient(
     from 0deg,
@@ -1867,6 +1867,23 @@ h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
     #ff4b72
   );
   animation: rainbow-conic-spin 4s linear infinite;
+  will-change: transform;
+}
+
+/* Subtle lingering mystical rainbow aura for Big Bang Button */
+.bigbang-subtle-rainbow-aura {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 75, 114, 0.42),
+    rgba(255, 143, 61, 0.42),
+    rgba(255, 209, 59, 0.42),
+    rgba(0, 230, 153, 0.42),
+    rgba(0, 212, 255, 0.42),
+    rgba(122, 92, 255, 0.42),
+    rgba(224, 86, 253, 0.42),
+    rgba(255, 75, 114, 0.42)
+  );
+  animation: rainbow-conic-spin 7s linear infinite;
   will-change: transform;
 }
 

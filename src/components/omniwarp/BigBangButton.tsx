@@ -1303,6 +1303,16 @@ export function BigBangButton() {
           {/* 🎯 버튼 & 궤도 정밀 센터링 앵커 (대형 코스믹 아티팩트 규격 76~84px) */}
           <div className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center shrink-0">
 
+            {/* 🌈 은은하고 신비로운 코스믹 레인보우 아우라 (Subtle Lingering Rainbow Aura) */}
+            <div
+              className="absolute -inset-2.5 sm:-inset-3.5 rounded-full bigbang-subtle-rainbow-aura blur-[14px] opacity-40 group-hover:opacity-75 transition-opacity duration-500 pointer-events-none z-0"
+              aria-hidden="true"
+            />
+            <div
+              className="absolute -inset-[3px] sm:-inset-[4px] rounded-full bigbang-subtle-rainbow-aura blur-[4px] opacity-45 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none z-0"
+              aria-hidden="true"
+            />
+
             {/* 🌟 빅뱅 아케인 마법진 매트릭스 (하드웨어 가속, 상시 렌더링 및 누를 때 공명 가속) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
               <BigBangCircularMeter

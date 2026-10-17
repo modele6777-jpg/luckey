@@ -562,21 +562,9 @@ export default function LeftSidebarNav() {
             onClick={() => setIsOpen(true)}
             aria-label={`네비게이션 메뉴 열기 (${activeItem.label})`}
             aria-expanded={isOpen}
-            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.65)] flex items-center justify-center cursor-pointer text-neutral-300 hover:text-white transition-all duration-200 active:scale-90"
+            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-neutral-950/90 hover:bg-neutral-900/95 backdrop-blur-xl border border-white/20 hover:border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.65)] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] flex items-center justify-center cursor-pointer text-neutral-300 hover:text-white transition-all duration-200 active:scale-90"
             title={`메뉴 열기 (${activeItem.label})`}
           >
-            {/* Ambient outer rotating conic rainbow aura halo */}
-            <span
-              className="absolute -inset-1.5 sm:-inset-2 rounded-full rainbow-fab-halo blur-[8px] opacity-75 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-              aria-hidden="true"
-            />
-
-            {/* Crisp rotating conic rainbow border ring */}
-            <span
-              className="absolute -inset-[2px] rounded-full rainbow-fab-halo opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none"
-              aria-hidden="true"
-            />
-
             {/* Inner icon & indicator with active app dynamic styling */}
             <div className="relative z-10 flex items-center justify-center">
               <AnimatePresence mode="wait">
@@ -596,13 +584,20 @@ export default function LeftSidebarNav() {
                 </motion.div>
               </AnimatePresence>
               <span
-                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-neutral-950 rainbow-gradient-flow animate-pulse shadow-[0_0_8px_rgba(255,107,107,0.8)]"
+                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-neutral-950 animate-pulse"
+                style={{
+                  backgroundColor: activeItem?.color || '#34d399',
+                  boxShadow: `0 0 8px ${activeItem?.color || '#34d399'}`,
+                }}
               />
             </div>
 
             {/* Desktop hover tooltip */}
             <span className="hidden sm:group-hover:flex items-center gap-1.5 absolute bottom-full mb-2.5 left-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-30">
-              <span className="w-1.5 h-1.5 rounded-full rainbow-fab-halo" />
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: activeItem?.color || '#34d399' }}
+              />
               <span>메뉴 열기 ({activeItem.label})</span>
             </span>
           </button>
