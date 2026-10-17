@@ -426,10 +426,26 @@
   }
 
   .bottom-safe-fab-center {
+    position: fixed;
     bottom: calc(var(--sab) + 1.25rem);
-    left: 50%;
-    transform: translateX(-50%);
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: 76px !important;
+    height: 76px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @media (min-width: 640px) {
+    .bottom-safe-fab-center {
+      width: 84px !important;
+      height: 84px !important;
+    }
   }
 
   .bottom-safe-fab-right {
@@ -489,6 +505,31 @@
 
   .in-lucy-chat .bottom-safe-music-menu {
     bottom: calc(var(--lucy-chat-bar-height, 92px) + 4.2rem) !important;
+  }
+
+  /* 💎 프리미엄 스모키 크리스털 글래스모피즘 (모바일 및 전 해상도 완벽 렌더링) */
+  .prism-glass-fab {
+    background: rgba(15, 23, 42, 0.42) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.38) !important;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1.5px 2px rgba(255, 255, 255, 0.55),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.15) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .prism-glass-fab:hover {
+    background: rgba(15, 23, 42, 0.58) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 
+      0 0 24px rgba(255, 255, 255, 0.25),
+      inset 0 1.5px 2px rgba(255, 255, 255, 0.75),
+      0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  }
+  .prism-glass-fab:active {
+    transform: scale(0.9) !important;
+    background: rgba(15, 23, 42, 0.68) !important;
   }
 
   @keyframes lpHoldProgress {
@@ -626,46 +667,6 @@
   .prism-xs-fab svg {
     width: 18px !important;
     height: 18px !important;
-  }
-
-  .bottom-safe-fab {
-    bottom: calc(var(--sab) + 1.25rem);
-  }
-
-  .bottom-safe-nav-fab {
-    bottom: calc(var(--sab) + 1.25rem);
-    left: calc(var(--sal) + 0.875rem);
-  }
-
-  .bottom-safe-fab-center {
-    bottom: calc(var(--sab) + 1.25rem);
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .bottom-safe-fab-right {
-    bottom: calc(var(--sab) + 1.25rem);
-    right: calc(var(--sar) + 0.875rem);
-  }
-  @media (min-width: 640px) {
-    .bottom-safe-fab-right {
-      right: calc(var(--sar) + 1.5rem);
-    }
-  }
-
-  .bottom-safe-music {
-    bottom: calc(var(--sab) + 1.25rem);
-    left: calc(var(--sal) + 4.5rem);
-  }
-
-  .bottom-safe-music-lp {
-    bottom: calc(var(--sab) + 1.25rem);
-    right: calc(var(--sar) + 0.875rem);
-  }
-  @media (min-width: 640px) {
-    .bottom-safe-music-lp {
-      right: calc(var(--sar) + 1.5rem);
-    }
   }
 
   .prism-bottom-nav {

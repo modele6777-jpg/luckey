@@ -1818,8 +1818,7 @@ export function BgMusicPlayer() {
               setIsHolding(false);
               handleNextTrack();
             }}
-            aria-label={isPlaying ? "배경음 일시정지 (길게 누르면 상세메뉴)" : "배경음 재생 (길게 누르면 상세메뉴)"}
-            className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/[0.08] hover:bg-white/[0.16] backdrop-blur-2xl border border-white/30 hover:border-white/55 shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.5),inset_0_-1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_0_24px_rgba(255,255,255,0.25),inset_0_1.5px_2px_rgba(255,255,255,0.7)] flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-90 overflow-hidden ${
+            className={`prism-glass-fab group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center cursor-pointer overflow-hidden select-none ${
               isHolding ? "scale-90 ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.8)]" : ""
             }`}
             title={
