@@ -25,6 +25,8 @@ import { sendPrismToss } from '@/lib/prismToss';
 import { tossSelectionToMenu, PRISM_ALL_APP_DESTINATIONS } from '@/lib/selectionContextRecommender';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
 import { PrismAppIcon } from './PrismAppIcon';
+// 🎯 미세 드래그 판정 임계값 (터치스크린 2~6px 노이즈 면역 + 1mm 미세 드래그 즉시 감지)
+const DRAG_RECOMMEND_THRESHOLD = 14;
 
 export function BigBangButton() {
   let location = '/';
@@ -332,18 +334,32 @@ export function BigBangButton() {
     const deltaX = currentPointer ? currentPointer.clientX - start.x : 0;
     const deltaY = currentPointer ? currentPointer.clientY - start.y : 0;
     const dist = Math.hypot(deltaX, deltaY);
+    if (dist > maxDragDistanceRef.current) {
+      maxDragDistanceRef.current = dist;
+    }
+    const maxDist = Math.max(dist, maxDragDistanceRef.current);
+    const isDragGesture = maxDist >= DRAG_RECOMMEND_THRESHOLD;
 
     // 🎯 제스처 실시간 타깃 및 HUD 매핑:
-    // 1) 드래그 (dist >= 20): 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약
-    // 2) 제자리 홀드 (dist < 20, elapsed >= 250): 루시 AI PTT 실시간 음성 대화
-    // 3) 가볍게 탭 (dist < 20, elapsed < 250): 홈 (/) 베이스캠프 복귀
+    // 1) 드래그 (dist >= 14px): 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약 (홀드 중 드래그 시 PTT 즉시 취소)
+    // 2) 제자리 홀드 (dist < 14px, elapsed >= 250): 루시 AI PTT 실시간 음성 대화
+    // 3) 가볍게 탭 (dist < 14px, elapsed < 250): 홈 (/) 베이스캠프 복귀
     // 4) 더블탭: Key 마음약방 & 40가지 연습 도약
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
-    if (dist >= 20) {
+    if (isDragGesture) {
+      // 🛑 홀드 중 드래그 발생 시 진행 중이던 PTT 녹음 즉시 취소!
+      if (isPttRecordingRef.current) {
+        isPttRecordingRef.current = false;
+        triggerHaptic('abort');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+        }
+      }
+
       setIsPageScrolling(false);
       currentHole = 'blackhole';
       const isTextToss = Boolean(textToToss);
@@ -389,7 +405,7 @@ export function BigBangButton() {
       };
 
       // 🎙️ [PTT] 250ms 이상 제자리 홀드 시 즉시 질문 음성 녹음 시작!
-      if (dist < 25 && !metrics.isAborted && !isPttRecordingRef.current) {
+      if (!metrics.isAborted && !isPttRecordingRef.current) {
         isPttRecordingRef.current = true;
         unlockAudioPlayback();
         primeTTSAudioElement();
@@ -400,15 +416,6 @@ export function BigBangButton() {
               detail: { sourcePath: location, textToToss },
             })
           );
-        }
-      }
-
-      // 🛑 PTT 녹음 중 버튼 바깥으로 드래그하면 취소
-      if (dist >= 35 && isPttRecordingRef.current) {
-        isPttRecordingRef.current = false;
-        triggerHaptic('abort');
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
         }
       }
     } else {
@@ -534,6 +541,14 @@ export function BigBangButton() {
         const d = Math.hypot(ev.clientX - touchStartRef.current.x, ev.clientY - touchStartRef.current.y);
         if (d > maxDragDistanceRef.current) {
           maxDragDistanceRef.current = d;
+        }
+        // 🛑 홀드 중 조금이라도 드래그(14px 이상) 발생 시 0ms 즉각 PTT 취소 이벤트 발송!
+        if (d >= DRAG_RECOMMEND_THRESHOLD && isPttRecordingRef.current) {
+          isPttRecordingRef.current = false;
+          triggerHaptic('abort');
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+          }
         }
       }
     };
@@ -859,6 +874,8 @@ export function BigBangButton() {
     const deltaX = e.clientX - start.x;
     const deltaY = e.clientY - start.y;
     const dist = Math.hypot(deltaX, deltaY);
+    const maxDist = Math.max(dist, maxDragDistanceRef.current);
+    const isDragGesture = maxDist >= DRAG_RECOMMEND_THRESHOLD;
 
     const metrics = calculateWarpMetrics(
       start.time,
@@ -904,7 +921,27 @@ export function BigBangButton() {
       return;
     }
 
-    // 🎙️ [PTT 완료] 손을 떼는 순간 녹음 마감 및 무음 대기 없이 즉각 루시 질문 발송!
+    setIsAborted(false);
+    const context = serializeCurrentView(location);
+
+    // 🌀 [드래그: dist >= 14px] ➔ 홀드 음성 PTT 즉시 취소 및 7대 코어 앱 순환 추천 도약 실행!
+    if (isDragGesture) {
+      if (isPttRecordingRef.current) {
+        isPttRecordingRef.current = false;
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+        }
+      }
+      if (singleTapTimerRef.current) {
+        clearTimeout(singleTapTimerRef.current);
+        singleTapTimerRef.current = null;
+      }
+      lastTapTimeRef.current = 0;
+      goToNextRecommended(context, metrics);
+      return;
+    }
+
+    // 🎙️ [PTT 완료] 제자리 홀드 상태에서 손을 뗀 경우 녹음 마감 및 무음 대기 없이 질문 발송!
     if (isPttRecordingRef.current) {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
@@ -918,9 +955,6 @@ export function BigBangButton() {
       return;
     }
 
-    setIsAborted(false);
-    const context = serializeCurrentView(location);
-
     // 버튼 영역 내부인지 정밀 판별 (버튼 bounding rect 기준)
     const isWithinButton = (() => {
       if (buttonRef.current) {
@@ -933,8 +967,8 @@ export function BigBangButton() {
       return dist <= 44;
     })();
 
-    // [1] 제자리 탭 (360ms 미만 및 제자리 영역 dist < 30 또는 버튼 내부 터치)
-    const isTapGesture = (duration < 360 && dist < 30) || (duration < 320 && isWithinButton);
+    // [1] 제자리 탭 (360ms 미만 및 제자리 영역 dist < 14px)
+    const isTapGesture = !isDragGesture && ((duration < 360 && dist < DRAG_RECOMMEND_THRESHOLD) || (duration < 320 && isWithinButton && maxDist < DRAG_RECOMMEND_THRESHOLD));
     if (isTapGesture) {
       const nowMs = performance.now();
       const timeSinceLastTap = nowMs - lastTapTimeRef.current;
@@ -1019,13 +1053,13 @@ export function BigBangButton() {
     // [2] 홀드 (300ms 이상) 또는 드래그 릴리즈 분기
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
 
-    // 🌀 [드래그: dist >= 20] ➔ 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약!
-    if (dist >= 20) {
+    // 🌀 [드래그: dist >= 14px] ➔ 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약!
+    if (isDragGesture || dist >= DRAG_RECOMMEND_THRESHOLD) {
       goToNextRecommended(context, metrics);
       return;
     }
 
-    // 🎙️ [홀드: dist < 20] ➔ 어디서든 루시 AI 음성 모드 즉시 연결!
+    // 🎙️ [홀드: dist < 14px] ➔ 어디서든 루시 AI 음성 모드 즉시 연결!
     unlockAudioPlayback();
     primeTTSAudioElement();
     triggerHaptic('whitehole');
@@ -1233,7 +1267,7 @@ export function BigBangButton() {
 
           {/* 🎯 드래그 시 실시간 맥락 추천 순환(Cycle) HUD 칩 */}
           <AnimatePresence>
-            {isPressing && dragDistance >= 38 && !isAborted && !isPageScrolling && currentTarget && (
+            {isPressing && dragDistance >= DRAG_RECOMMEND_THRESHOLD && !isAborted && !isPageScrolling && currentTarget && (
               <motion.div
                 initial={{ opacity: 0, y: 12, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
