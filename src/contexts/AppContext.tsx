@@ -55,6 +55,7 @@ export interface SendUnifiedMessageOptions {
   keyExerciseIndex?: number;
   force?: boolean;
   oracleContext?: string;
+  customUserProfile?: UserProfile;
 }
 
 interface AppContextValue {
@@ -1548,8 +1549,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     resetWatchdog();
     
-    // 3. Prepare AI Prompt
-    const profile = sharedState?.userProfile || getPersistentUserProfile();
+    // 3. Prepare AI Prompt (🌟 상담 대상자가 지정된 경우 해당 인물 프로필로 사주·점성학 전면 전환)
+    const profile = options?.customUserProfile || sharedState?.userProfile || getPersistentUserProfile();
     const rawNickname = profile?.basic?.nickname?.trim();
     const rawRealName = profile?.basic?.name?.trim();
     const nickname = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '박주형') ? rawNickname : '제제';

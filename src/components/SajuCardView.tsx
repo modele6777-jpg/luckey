@@ -49,7 +49,7 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
               <span>{dayMaster.hanja}({dayMaster.korean}) 사주 원국 및 분석 명세서</span>
             </h3>
             <p className="text-xs text-white/50 font-sans tracking-wide">
-              생년월일시: <strong className="text-white/80">{saju.birthdate} {saju.birthtime || '시간 미지정'}</strong> (양력) | 성별: <strong className="text-white/80">{saju.gender}</strong> | 일주: <strong className="text-amber-300">{pillars.day.gan}{pillars.day.zhi}({pillars.day.ganKr}{pillars.day.zhiKr})</strong>
+              생년월일시: <strong className="text-white/80">{saju.birthdate} {saju.birthtime || '시간 미지정'}</strong> {saju.isLunar ? <span className="text-amber-300 font-semibold">(음력 · 양력 환산: {saju.solarEquivalentDate})</span> : '(양력)'} | 성별: <strong className="text-white/80">{saju.gender}</strong> | 일주: <strong className="text-amber-300">{pillars.day.gan}{pillars.day.zhi}({pillars.day.ganKr}{pillars.day.zhiKr})</strong>
             </p>
           </div>
           <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">

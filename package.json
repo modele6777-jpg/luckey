@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.4.319",
+  "version": "1.4.321",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -45,6 +45,7 @@
     "google-tts-api": "^2.0.2",
     "html-to-image": "^1.11.13",
     "http-proxy-middleware": "^4.0.0",
+    "korean-lunar-calendar": "^0.4.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "node-edge-tts": "^1.2.10",

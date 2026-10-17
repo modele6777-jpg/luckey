@@ -11,6 +11,7 @@
  */
 
 import type { UserProfile, RelationshipEntry } from './sharedState';
+import { resolveEffectiveSolarDate } from './lunarCalendar';
 
 export interface ZodiacSignInfo {
   id: string;
@@ -257,12 +258,10 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
   let day = 1;
 
   if (basic.birthdate) {
-    const parts = basic.birthdate.split('-').map(Number);
-    if (parts.length === 3 && parts[0] && parts[1] && parts[2]) {
-      year = parts[0];
-      month = parts[1];
-      day = parts[2];
-    }
+    const { solarDate } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar);
+    year = solarDate.year;
+    month = solarDate.month;
+    day = solarDate.day;
   }
 
   let hour = 12;

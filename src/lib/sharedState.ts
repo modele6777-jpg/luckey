@@ -23,6 +23,7 @@ export interface ProfileBasic {
   gender?: 'male' | 'female' | 'other';
   birthCity?: string;
   lunarSolar?: 'solar' | 'lunar';
+  isLeapMonth?: boolean;
   avatarUrl?: string;       // 프로필 사진 (DataURL 또는 이미지 URL)
 }
 

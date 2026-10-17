@@ -28,6 +28,7 @@ import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInpu
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
 import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
+import type { UserProfile } from '@/lib/sharedState';
 import { buildMultiProfileSystemContext, generateMultiProfilePrompts } from '@/lib/multiProfileContext';
 import { HORI_PROMPT_LIBRARY } from '@/data/horiPromptLibrary';
 import { type LucyChatMode, LUCY_MODE_CONFIGS } from '@/components/chat/LucyModeSelectorBar';
@@ -753,12 +754,6 @@ export default function LucyStandalonePage() {
     ? rawNickname
     : '제제';
 
-  // Detailed Saju Info for Soul Profile View
-  const sajuInfo = useMemo(() => calculateDetailedSaju(sharedState?.userProfile), [sharedState?.userProfile]);
-
-  const lucyMessages = personaMessages?.lucy || [];
-  const isLucyGenerating = isGenerating?.lucy || false;
-
   // 👥 대화창 내 다자간 프로필 (최대 4인) 상태 관리
   // 새로고침 또는 재진입 시에는 항상 '내 프로필' 1인만 나오도록 초기화됩니다.
   const [activeProfiles, setActiveProfiles] = useState<ChatTargetProfile[]>(() => {
@@ -767,12 +762,14 @@ export default function LucyStandalonePage() {
     } catch (_) {}
 
     const basic = sharedState?.userProfile?.basic || getPersistentUserProfile()?.basic;
-    const rawN = basic?.nickname?.trim();
-    const myName = (rawN && rawN !== '여행자' && rawN !== '사용자' && rawN !== '박주형') ? rawN : '제제';
+    // 🌟 사용자 요청: 프로필 추가/상담 창에서는 닉네임 대신 본명(실명)으로 표시
+    const rawRealName = basic?.name?.trim();
+    const rawNickname = basic?.nickname?.trim();
+    const myRealName = rawRealName || (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '제제' ? rawNickname : '박주형');
     const myProfile: ChatTargetProfile = {
       id: 'my-profile',
       isMe: true,
-      name: myName,
+      name: myRealName,
       birthdate: basic?.birthdate || '1995-01-01',
       birthtime: basic?.birthtime || '12:00',
       gender: basic?.gender || 'male',
@@ -783,6 +780,40 @@ export default function LucyStandalonePage() {
 
     return [myProfile];
   });
+
+  // 👥 현재 상담 메인 기준 대상 프로필 ID
+  const [activeProfileId, setActiveProfileId] = useState<string>('my-profile');
+
+  // 현재 활성 상담 대상 프로필 (다자간 모드 시 선택된 대상, 1인 시 해당 1인)
+  const primaryProfile = useMemo(() => {
+    if (activeProfiles.length === 1) return activeProfiles[0];
+    const found = activeProfiles.find((p) => p.id === activeProfileId);
+    return found || activeProfiles[0];
+  }, [activeProfiles, activeProfileId]);
+
+  // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (만세력·사주 전면 전환)
+  const counselingUserProfile: UserProfile = useMemo(() => {
+    if (!primaryProfile) return sharedState?.userProfile || getPersistentUserProfile();
+    return {
+      ...sharedState?.userProfile,
+      basic: {
+        ...sharedState?.userProfile?.basic,
+        name: primaryProfile.name,
+        nickname: primaryProfile.name,
+        birthdate: primaryProfile.birthdate,
+        birthtime: primaryProfile.birthtime,
+        gender: primaryProfile.gender,
+        birthCity: primaryProfile.birthCity,
+        lunarSolar: primaryProfile.lunarSolar || 'solar',
+      },
+    };
+  }, [primaryProfile, sharedState?.userProfile]);
+
+  // Detailed Saju Info for Soul Profile View (상담 대상자 기준으로 자동 동기화)
+  const sajuInfo = useMemo(() => calculateDetailedSaju(counselingUserProfile), [counselingUserProfile]);
+
+  const lucyMessages = personaMessages?.lucy || [];
+  const isLucyGenerating = isGenerating?.lucy || false;
 
   // 사용자가 대화창에서 프로필을 직접 변경/수정한 경우 플래그 (새로고침 또는 페이지 재진입 전까지 프로필 원복 방지)
   const hasUserCustomizedProfilesRef = useRef(false);
@@ -811,8 +842,9 @@ export default function LucyStandalonePage() {
         if (hasUserCustomizedProfilesRef.current) return prev;
         const me = prev.find((p) => p.isMe);
         if (!me) return prev;
-        const rawN = basic?.nickname?.trim();
-        const newName = (rawN && rawN !== '여행자' && rawN !== '사용자' && rawN !== '박주형') ? rawN : '제제';
+        const rawRealName = basic?.name?.trim();
+        const rawNickname = basic?.nickname?.trim();
+        const newName = rawRealName || (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '제제' ? rawNickname : '박주형');
         const newBirthdate = basic?.birthdate || me.birthdate;
         const newBirthtime = basic?.birthtime ?? me.birthtime;
         const newGender = basic?.gender || me.gender;
@@ -885,8 +917,17 @@ export default function LucyStandalonePage() {
         updated = [...prev, safeProfile];
       }
 
-      // 2명 이상일 때 '본인'이 2명 이상 중복되지 않도록 보장 (첫 번째 본인만 유지)
-      if (updated.length >= 2) {
+      // 🌟 1명만 남은 경우 무조건 '본인'으로 자동 확정
+      if (updated.length === 1) {
+        updated = [
+          {
+            ...updated[0],
+            isMe: true,
+            relationship: '본인',
+          },
+        ];
+      } else if (updated.length >= 2) {
+        // 2명 이상일 때 '본인'이 2명 이상 중복되지 않도록 보장 (첫 번째 본인만 유지)
         let foundFirstSelf = false;
         updated = updated.map((p) => {
           if (p.isMe || p.relationship === '본인') {
@@ -905,16 +946,42 @@ export default function LucyStandalonePage() {
     });
   }, [selectedMode, activeChannels]);
 
+  const handleSelectActiveProfile = useCallback((profileId: string) => {
+    setActiveProfileId(profileId);
+    const target = activeProfiles.find((p) => p.id === profileId);
+    if (target) {
+      setModeSwitchToast(`🔮 상담 기준 전환 · [${target.name}] 님의 만세력·사주로 분석합니다`);
+      setTimeout(() => setModeSwitchToast(null), 2500);
+      try {
+        triggerHaptic('whitehole');
+      } catch (_) {}
+    }
+  }, [activeProfiles]);
+
   const handleRemoveChatProfile = useCallback((profileId: string) => {
     hasUserCustomizedProfilesRef.current = true;
     setActiveProfiles((prev) => {
       // 2명 이상일 때만 삭제 가능 (내 프로필 포함)
       if (prev.length <= 1) return prev;
-      const remaining = prev.filter((p) => p.id !== profileId);
+      let remaining = prev.filter((p) => p.id !== profileId);
+      // 🌟 사용자 요청: 1명만 남으면 무조건 '본인'으로 자동 확정
+      if (remaining.length === 1) {
+        remaining = [
+          {
+            ...remaining[0],
+            isMe: true,
+            relationship: '본인',
+          },
+        ];
+      }
+      // 삭제된 프로필이 현재 활성 상담 대상이었던 경우 첫 번째 프로필로 자동 전환
+      if (profileId === activeProfileId && remaining.length > 0) {
+        setActiveProfileId(remaining[0].id);
+      }
       setCurrentPrompts(getCuratedPrompts(remaining, selectedMode, activeChannels));
       return remaining;
     });
-  }, [selectedMode, activeChannels]);
+  }, [selectedMode, activeChannels, activeProfileId]);
 
   // Refresh / Reshuffle prompts (새로고침 버튼 클릭 시에만 안정적으로 갱신)
   const refreshPrompts = useCallback(() => {
@@ -1032,38 +1099,54 @@ export default function LucyStandalonePage() {
     });
   }, []);
 
+  // 🔊 자동 음성 재생(Auto-TTS) 동시 중복 호출 및 자기 취소 방지용 단일 러너 뮤텍스
+  const isAutoTtsBusyRef = useRef(false);
+
+  const triggerAutoTts = useCallback(async (textToSpeak: string, msgId?: string) => {
+    if (!isAutoTtsRef.current || !textToSpeak || !textToSpeak.trim()) return;
+    if (msgId && lastAutoSpokenMsgIdRef.current === msgId) return;
+    if (isAutoTtsBusyRef.current) return;
+
+    if (msgId) {
+      lastAutoSpokenMsgIdRef.current = msgId;
+      setPlayingMsgId(msgId);
+    }
+    isAutoTtsBusyRef.current = true;
+
+    try {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+
+      const cleanAnswer = normalizeTextForSpeech(textToSpeak);
+      if (cleanAnswer) {
+        await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, {
+          skipCompletionChime: true,
+          isAutoPlay: true,
+        });
+      }
+    } catch (ttsErr) {
+      console.warn('[Auto-TTS] Voice playback error:', ttsErr);
+    } finally {
+      setPlayingMsgId(null);
+      isAutoTtsBusyRef.current = false;
+    }
+  }, []);
+
   // 🔊 자동 음성 재생(Auto-TTS) 안전 백업 감시자: 새 어시스턴트 메시지 도착 시 바로재생 보장
   useEffect(() => {
-    if (!isAutoTtsRef.current || isLucyGenerating || lucyMessages.length === 0) return;
+    if (!isAutoTtsRef.current || isLucyGenerating || lucyMessages.length === 0 || isAutoTtsBusyRef.current) return;
     const lastMsg = lucyMessages[lucyMessages.length - 1];
     if (!lastMsg || lastMsg.role === 'user' || typeof lastMsg.content !== 'string' || !lastMsg.content.trim()) return;
 
     // 방금 전송된 메시지이고 아직 음성 재생되지 않은 경우 바로 자동 재생
     if (lastMsg.id && lastAutoSpokenMsgIdRef.current !== lastMsg.id && !ttsInfo.isSpeaking && !ttsInfo.isLoading) {
       const msgTime = lastMsg.timestamp || 0;
-      const isRecent = Date.now() - msgTime < 20000;
+      const isRecent = Date.now() - msgTime < 25000;
       if (isRecent) {
-        lastAutoSpokenMsgIdRef.current = lastMsg.id;
-        const cleanAnswer = normalizeTextForSpeech(lastMsg.content);
-        if (cleanAnswer) {
-          const prevUserMsg = lucyMessages.slice(0, -1).reverse().find((m) => m.role === 'user');
-          const cleanQuestion = prevUserMsg && typeof prevUserMsg.content === 'string'
-            ? normalizeTextForSpeech(cleanUserMessageDisplay(prevUserMsg.content))
-            : '';
-
-          stopTTS();
-          if (lastMsg.id) setPlayingMsgId(lastMsg.id);
-          playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true })
-            .catch((err) => {
-              console.warn('[Auto-TTS Fallback] Play error:', err);
-            })
-            .finally(() => {
-              setPlayingMsgId(null);
-            });
-        }
+        triggerAutoTts(lastMsg.content, lastMsg.id);
       }
     }
-  }, [lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, ttsInfo.isLoading]);
+  }, [lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, ttsInfo.isLoading, triggerAutoTts]);
 
 
   //  Dynamic PWA Manifest & iOS Home-screen Metadata Switcher
@@ -1256,8 +1339,8 @@ export default function LucyStandalonePage() {
     let targetPersona: PersonaType = 'lucy';
     let extraSystemContext: string | undefined = undefined;
 
-    // 👥 활성화된 1인~4인 프로필 사주·점성술 데이터 및 다자간 궁합 가이드 주입
-    const multiProfileContext = buildMultiProfileSystemContext(activeProfiles);
+    // 👥 활성화된 1인~4인 프로필 사주·점성술 데이터 및 다자간 궁합 가이드 주입 (현재 메인 상담 대상자 강조)
+    const multiProfileContext = buildMultiProfileSystemContext(activeProfiles, activeProfileId);
     if (multiProfileContext) {
       extraSystemContext = multiProfileContext;
     }
@@ -1293,35 +1376,20 @@ export default function LucyStandalonePage() {
     unlockAudioPlayback();
     primeTTSAudioElement();
 
+    // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
       extraSystemContext,
+      customUserProfile: counselingUserProfile,
       channels: channels,
       mode: isMaster ? 'master' : (isCasual ? 'casual' : (isSingle ? channels[0] : 'synergy')),
       channel: isSingle ? channels[0] : undefined,
-      onFinish: async (fullText, sentText, replyMsgId) => {
+      onFinish: async (fullText, _sentText, replyMsgId) => {
         if (isAutoTtsRef.current && fullText && fullText.trim()) {
-          try {
-            const cleanAnswer = normalizeTextForSpeech(fullText);
-            const rawQuestion = sentText || userCleanText || '';
-            const cleanQuestion = normalizeTextForSpeech(cleanUserMessageDisplay(rawQuestion));
-            if (cleanAnswer) {
-              if (replyMsgId) {
-                lastAutoSpokenMsgIdRef.current = replyMsgId;
-              }
-              stopTTS();
-              if (replyMsgId) {
-                setPlayingMsgId(replyMsgId);
-              }
-              await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true });
-              setPlayingMsgId(null);
-            }
-          } catch (ttsErr) {
-            console.warn('[Auto-TTS] Immediate voice playback error:', ttsErr);
-          }
+          void triggerAutoTts(fullText, replyMsgId);
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, activeChannels, isAutoDetect, sendUnifiedMessage]);
+  }, [input, attachedImage, isLucyGenerating, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts]);
 
   const handleSendRef = useRef(handleSend);
   useEffect(() => {
@@ -2107,6 +2175,8 @@ export default function LucyStandalonePage() {
           {/* 👥 대화창 상담 대상자 프로필 독 바 (최대 4인 · 궁합/연애/시너지 모드) */}
           <ChatProfileDock
             profiles={activeProfiles}
+            activeProfileId={activeProfileId}
+            onSelectProfile={handleSelectActiveProfile}
             onAddClick={handleOpenAddChatProfile}
             onEditProfile={handleOpenEditChatProfile}
             onRemoveProfile={handleRemoveChatProfile}

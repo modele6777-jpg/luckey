@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Calendar, Clock, MapPin, Heart, Sparkles, Check } from 'lucide-react';
+import { X, User, Calendar, Clock, MapPin, Heart, Sparkles, Check, Moon } from 'lucide-react';
 import type { ChatTargetProfile } from '@/types/chatProfile';
+import { resolveEffectiveSolarDate } from '@/lib/lunarCalendar';
+import { getPersistentUserProfile } from '@/contexts/AppContext';
 
 interface ChatProfileModalProps {
   isOpen: boolean;
@@ -24,6 +26,7 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('1996-01-01');
   const [lunarSolar, setLunarSolar] = useState<'solar' | 'lunar'>('solar');
+  const [isLeapMonth, setIsLeapMonth] = useState(false);
   const [birthtime, setBirthtime] = useState('12:00');
   const [isTimeUnknown, setIsTimeUnknown] = useState(false);
   const [gender, setGender] = useState<'male' | 'female' | 'other'>('female');
@@ -31,8 +34,16 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
   const [relationship, setRelationship] = useState('연인');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // 🌟 사용자 요청: 프로필 추가/수정 창에서 1명만 남거나 1인 단독 상태이면 무조건 '본인'으로 자동 확정
+  // - 수정 모드(initialProfile 존재)일 때 전체 프로필이 1명 이하인 경우 -> 무조건 '본인'
+  // - 추가 모드(!initialProfile)일 때 기존 등록된 프로필이 0명인 경우 -> 첫 프로필이므로 무조건 '본인'
+  const isOnlyOneProfile = Boolean(initialProfile)
+    ? (totalProfilesCount <= 1 || (existingProfiles && existingProfiles.length <= 1))
+    : (totalProfilesCount === 0 || (existingProfiles && existingProfiles.length === 0));
+
   // Check if there is already an existing '본인' profile (excluding the profile being edited)
   const hasExistingSelf = Boolean(
+    !isOnlyOneProfile &&
     existingProfiles?.some(
       (p) => (p.isMe || p.relationship === '본인') && p.id !== initialProfile?.id
     )
@@ -40,38 +51,50 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
 
   useEffect(() => {
     if (initialProfile) {
-      setName(initialProfile.name || '');
+      const isSelf = initialProfile.isMe || initialProfile.relationship === '본인' || isOnlyOneProfile;
+      const persistentProfile = getPersistentUserProfile()?.basic;
+      let effectiveName = initialProfile.name?.trim() || '';
+      // 🌟 사용자 요청: 프로필 추가/수정 창에서는 닉네임('제제', '여행자', '사용자') 대신 본명으로 나오게 설정
+      if (isSelf && (!effectiveName || effectiveName === '제제' || effectiveName === '여행자' || effectiveName === '사용자')) {
+        effectiveName = persistentProfile?.name?.trim() || '박주형';
+      }
+      setName(effectiveName);
       setBirthdate(initialProfile.birthdate || '1996-01-01');
       setLunarSolar(initialProfile.lunarSolar || 'solar');
+      setIsLeapMonth(Boolean(initialProfile.isLeapMonth));
       setBirthtime(initialProfile.birthtime || '');
       setIsTimeUnknown(!initialProfile.birthtime);
       setGender(initialProfile.gender || 'female');
       setBirthCity(initialProfile.birthCity || '서울');
       
-      // 👥 기존 프로필 수정 시 관계 설정 (이미 다른 본인이 있다면 본인 중복 방지)
+      // 👥 기존 프로필 수정 시: 1명만 남은 경우 무조건 '본인'으로 강제
       let defaultRel = initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인');
-      if (hasExistingSelf && defaultRel === '본인') {
+      if (isOnlyOneProfile) {
+        defaultRel = '본인';
+      } else if (hasExistingSelf && defaultRel === '본인') {
         defaultRel = '연인';
       }
       setRelationship(defaultRel);
     } else {
-      // Default for adding a new second/third person
-      setName('');
+      // Default for adding a profile
+      const persistentProfile = getPersistentUserProfile()?.basic;
+      if (isOnlyOneProfile) {
+        setName(persistentProfile?.name?.trim() || '박주형');
+        setRelationship('본인');
+      } else {
+        setName('');
+        setRelationship('연인');
+      }
       setBirthdate('1996-05-15');
       setLunarSolar('solar');
+      setIsLeapMonth(false);
       setBirthtime('12:00');
       setIsTimeUnknown(false);
       setGender('female');
       setBirthCity('서울');
-      // If there's already a self profile, new profile MUST be a non-self relation
-      if (hasExistingSelf || totalProfilesCount >= 1) {
-        setRelationship('연인');
-      } else {
-        setRelationship('본인');
-      }
     }
     setErrorMessage(null);
-  }, [initialProfile, isOpen, totalProfilesCount, hasExistingSelf]);
+  }, [initialProfile, isOpen, totalProfilesCount, hasExistingSelf, isOnlyOneProfile]);
 
   if (!isOpen) return null;
 
@@ -86,13 +109,13 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       return;
     }
 
-    if (relationship === '본인' && hasExistingSelf) {
+    if (!isOnlyOneProfile && relationship === '본인' && hasExistingSelf) {
       setErrorMessage("이미 '본인' 프로필이 등록되어 있습니다. 연인, 친구 등 다른 관계를 선택해 주세요.");
       return;
     }
 
-    const resolvedRelationship = (hasExistingSelf && relationship === '본인') ? '연인' : relationship;
-    const resolvedIsMe = resolvedRelationship === '본인';
+    const resolvedRelationship = isOnlyOneProfile ? '본인' : ((hasExistingSelf && relationship === '본인') ? '연인' : relationship);
+    const resolvedIsMe = resolvedRelationship === '본인' || isOnlyOneProfile;
 
     const savedProfile: ChatTargetProfile = {
       id: initialProfile?.id || `profile-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -100,6 +123,7 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       isMe: resolvedIsMe,
       birthdate,
       lunarSolar,
+      isLeapMonth: lunarSolar === 'lunar' ? isLeapMonth : false,
       birthtime: isTimeUnknown ? undefined : birthtime,
       gender,
       birthCity: birthCity.trim() || '서울',
@@ -151,21 +175,24 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
             </div>
           )}
 
-          {/* 1. 이름 / 호칭 */}
+          {/* 1. 이름 (본명) */}
           <div className="space-y-1.5">
             <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <User size={14} className="text-amber-500" />
-              이름 또는 호칭 <span className="text-amber-500">*</span>
+              이름 (본명) <span className="text-amber-500">*</span>
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="예: 김영희, 상대방, 동업자, 짝꿍"
+              placeholder="본명(실명)을 입력해 주세요 (예: 김철수, 박주형)"
               maxLength={20}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:border-amber-400 focus:bg-white dark:focus:bg-slate-800 transition-all"
               autoFocus
             />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              💡 닉네임 대신 본명(실명)을 사용하시면 사주 만세력과 운명 분석이 가장 정밀하게 산출됩니다.
+            </p>
           </div>
 
           {/* 2. 관계 태그 */}
@@ -175,9 +202,9 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
                 <Heart size={14} className="text-rose-500" />
                 관계 구분
               </label>
-              {totalProfilesCount === 1 && Boolean(initialProfile) ? (
-                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
-                  (1인 상담 프로필: 본인)
+              {isOnlyOneProfile ? (
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                  (단독 1인 프로필: '본인' 자동 확정)
                 </span>
               ) : hasExistingSelf ? (
                 <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
@@ -187,35 +214,45 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
             </div>
             <div className="flex flex-wrap gap-1.5">
               {RELATIONSHIP_TAGS.map((tag) => {
-                const isSelfDisabled = tag === '본인' && hasExistingSelf;
+                const isTagDisabled = isOnlyOneProfile ? tag !== '본인' : (tag === '본인' && hasExistingSelf);
                 return (
                   <button
                     key={tag}
                     type="button"
-                    disabled={isSelfDisabled}
+                    disabled={isTagDisabled}
                     onClick={() => {
-                      if (isSelfDisabled) return;
+                      if (isTagDisabled) return;
                       setRelationship(tag);
                     }}
-                    title={isSelfDisabled ? "이미 '본인' 프로필이 등록되어 있어 선택할 수 없습니다." : tag}
+                    title={
+                      isOnlyOneProfile && tag !== '본인'
+                        ? "1인 단독 프로필에서는 '본인'으로 고정됩니다."
+                        : isTagDisabled
+                        ? "이미 '본인' 프로필이 등록되어 있어 선택할 수 없습니다."
+                        : tag
+                    }
                     className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
-                      isSelfDisabled
+                      isTagDisabled
                         ? 'opacity-35 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400 line-through'
                         : relationship === tag
                         ? 'bg-amber-500 text-slate-950 shadow-2xs font-bold cursor-pointer'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer'
                     }`}
                   >
-                    {tag}{isSelfDisabled ? ' (등록됨)' : ''}
+                    {tag}{tag === '본인' && isOnlyOneProfile ? ' (확정)' : isTagDisabled ? ' (제한)' : ''}
                   </button>
                 );
               })}
             </div>
-            {hasExistingSelf && (
+            {isOnlyOneProfile ? (
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 pt-0.5">
+                💡 혼자 남은 단독 상담 프로필은 항상 '본인'으로 설정되어 정확한 개인 만세력이 적용됩니다.
+              </p>
+            ) : hasExistingSelf ? (
               <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
                 💡 '본인' 프로필은 1명만 유지되므로, 추가 프로필은 연인·친구 등 다른 관계만 선택하실 수 있습니다.
               </p>
-            )}
+            ) : null}
           </div>
 
           {/* 3. 생년월일 & 양력/음력 */}
@@ -225,30 +262,43 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
                 <Calendar size={14} className="text-amber-500" />
                 생년월일 <span className="text-amber-500">*</span>
               </label>
-              {/* 양력 / 음력 선택 */}
-              <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 text-[11px] font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setLunarSolar('solar')}
-                  className={`px-2 py-0.5 rounded-md transition-all ${
-                    lunarSolar === 'solar'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-bold'
-                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                  }`}
-                >
-                  양력
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLunarSolar('lunar')}
-                  className={`px-2 py-0.5 rounded-md transition-all ${
-                    lunarSolar === 'lunar'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-bold'
-                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                  }`}
-                >
-                  음력
-                </button>
+              {/* 양력 / 음력 선택 및 윤달 체크 */}
+              <div className="flex items-center gap-1.5">
+                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 text-[11px] font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setLunarSolar('solar')}
+                    className={`px-2 py-0.5 rounded-md transition-all ${
+                      lunarSolar === 'solar'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-bold'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    양력
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLunarSolar('lunar')}
+                    className={`px-2 py-0.5 rounded-md transition-all ${
+                      lunarSolar === 'lunar'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-bold'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    음력
+                  </button>
+                </div>
+                {lunarSolar === 'lunar' && (
+                  <label className="flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-400 cursor-pointer select-none pl-1">
+                    <input
+                      type="checkbox"
+                      checked={isLeapMonth}
+                      onChange={(e) => setIsLeapMonth(e.target.checked)}
+                      className="rounded text-amber-500 focus:ring-amber-400"
+                    />
+                    <span>윤달</span>
+                  </label>
+                )}
               </div>
             </div>
             <input
@@ -257,6 +307,18 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
               onChange={(e) => setBirthdate(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:border-amber-400 focus:bg-white dark:focus:bg-slate-800 transition-all"
             />
+            {/* 음력 선택 시 실시간 양력 변환 표시 카드 */}
+            {lunarSolar === 'lunar' && birthdate && (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-900 dark:text-amber-200 flex flex-wrap items-center justify-between gap-1">
+                <span className="flex items-center gap-1 font-medium">
+                  <Moon size={12} className="text-amber-500 shrink-0" />
+                  <span>음력 {birthdate} {isLeapMonth ? '(윤달)' : '(평달)'}</span>
+                </span>
+                <span className="font-bold text-amber-700 dark:text-amber-300">
+                  천문 24절기 양력 환산: {resolveEffectiveSolarDate(birthdate, 'lunar', isLeapMonth).solarDateString}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* 4. 출생시간 & 모름 체크 */}

@@ -17,6 +17,7 @@ import {
   getAstronomicalMonthBranch,
   calculatePreciseDaewun,
 } from './astronomicalSolarTerms';
+import { resolveEffectiveSolarDate } from './lunarCalendar';
 
 // 10간(Ten Heavenly Stems) & 12지(Twelve Earthly Branches)
 export const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'] as const;
@@ -432,6 +433,8 @@ export interface SajuAnalysisResult {
   birthtime?: string;
   gender: string;
   koreanAge: number;
+  isLunar?: boolean;
+  solarEquivalentDate?: string;
   
   // 4주 8자
   pillars: {
@@ -546,12 +549,11 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const basic = profile?.basic;
     if (!basic?.birthdate) return null;
 
-    const dateParts = basic.birthdate.split('-').map(Number);
-    if (dateParts.length < 3 || isNaN(dateParts[0]) || isNaN(dateParts[1]) || isNaN(dateParts[2])) {
-      return null;
-    }
-
-    const [y, m, d] = dateParts;
+    // 음력(lunar)인 경우 1900~2050 정밀 한국 천문역법에 따라 양력(solar) 일자로 정확히 변환
+    const { solarDate, isLunar, solarDateString } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar);
+    const y = solarDate.year;
+    const m = solarDate.month;
+    const d = solarDate.day;
     let h = -1;
     let minute = 0;
     if (basic.birthtime) {
@@ -1114,6 +1116,7 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
 
     const systemPromptSummary = `
 [사주명리학(四柱命理) 정밀 본원 에너지 헌장]
+- 생년월일 기준: ${basic.birthdate} (${isLunar ? `음력 ➔ 정밀 환산 양력 ${solarDateString}` : '양력'})${basic.birthtime ? ` ${basic.birthtime}` : ' (생시 미입력)'}
 - 사주 4주 8자: 년주(${pillars.year.full} - ${pillars.year.tenGodGan.name}/${pillars.year.tenGodZhi.name}) | 월주(${pillars.month.full} - ${pillars.month.tenGodGan.name}/${pillars.month.tenGodZhi.name}) | 일주(${pillars.day.full} - ${pillars.day.tenGodGan.name}/${pillars.day.tenGodZhi.name})${pillars.hour ? ` | 시주(${pillars.hour.full} - ${pillars.hour.tenGodGan.name}/${pillars.hour.tenGodZhi.name})` : ' | 시주(생시 미입력)'}
 - 일간(Day Master) 본원: ${dayMaster.hanja}(${dayMaster.korean}) - ${dayMaster.symbolName}
   * 영적 아키타입: ${dayMaster.archetypeTitle}
@@ -1138,6 +1141,8 @@ ${specialStrText || '• 안정적인 오행 순환 구조'}
       realName: rawName || '',
       birthdate: basic.birthdate,
       birthtime: basic.birthtime,
+      isLunar,
+      solarEquivalentDate: solarDateString,
       gender: genderStr,
       koreanAge,
       pillars,

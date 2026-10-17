@@ -1150,11 +1150,11 @@ export function BgMusicPlayer() {
       holdTimerRef.current = null;
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         try {
-          navigator.vibrate(40);
+          navigator.vibrate(35);
         } catch (_) {}
       }
-      setIsDetailMenuOpen((prev) => !prev);
-    }, 450);
+      setIsDetailMenuOpen(true);
+    }, 400);
   };
 
   const handleLpPointerMove = (e: React.PointerEvent) => {
@@ -1897,23 +1897,23 @@ export function BgMusicPlayer() {
       <AnimatePresence>
         {isDetailMenuOpen && !isNavOpen && (
           <>
-            {/* Backdrop Dimmer Overlay */}
+            {/* Backdrop Dimmer Overlay (가벼운 오버레이로 외부 터치 시 즉시 닫힘) */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
+              transition={{ duration: 0.15 }}
               onClick={() => setIsDetailMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[410]"
+              className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[410]"
             />
 
-            {/* Floating Detail Menu Modal Card */}
+            {/* Floating Quick Popover Card (LP판 바로 위 플로팅 퀵 팝오버) */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 16 }}
+              initial={{ opacity: 0, scale: 0.92, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 16 }}
-              transition={{ type: "spring", damping: 26, stiffness: 340 }}
-              className="fixed bottom-safe-music-menu z-[420] w-[calc(100vw-1.75rem)] sm:w-[420px] max-w-[420px] max-h-[82vh] flex flex-col rounded-3xl bg-neutral-950/95 border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] backdrop-blur-2xl text-white overflow-hidden select-none"
+              exit={{ opacity: 0, scale: 0.92, y: 12 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="fixed bottom-safe-music-menu z-[420] w-[calc(100vw-1.75rem)] sm:w-[380px] max-w-[380px] max-h-[78vh] flex flex-col rounded-3xl bg-neutral-950/95 border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] backdrop-blur-2xl text-white overflow-hidden select-none"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Card Header */}
@@ -1927,10 +1927,10 @@ export function BgMusicPlayer() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[12px] font-black tracking-wider text-amber-200">
-                      LUCKEY SOUND SUITE
+                      LUCKEY 퀵 플레이어
                     </span>
                     <span className="text-[10px] text-white/50">
-                      턴테이블 음악 & 자연 무드 사운드
+                      LP 플로팅 퀵 팝오버 · 음악 & 자연 사운드
                     </span>
                   </div>
                 </div>
@@ -1938,7 +1938,7 @@ export function BgMusicPlayer() {
                   type="button"
                   onClick={() => setIsDetailMenuOpen(false)}
                   className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-                  aria-label="상세메뉴 닫기"
+                  aria-label="퀵 메뉴 닫기"
                 >
                   <X size={14} className="text-white/80" />
                 </button>

@@ -4,6 +4,8 @@ import type { ChatTargetProfile } from '@/types/chatProfile';
 
 interface ChatProfileDockProps {
   profiles: ChatTargetProfile[];
+  activeProfileId?: string;
+  onSelectProfile?: (profileId: string) => void;
   onAddClick: () => void;
   onEditProfile: (profile: ChatTargetProfile) => void;
   onRemoveProfile: (profileId: string) => void;
@@ -12,6 +14,8 @@ interface ChatProfileDockProps {
 
 export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
   profiles,
+  activeProfileId,
+  onSelectProfile,
   onAddClick,
   onEditProfile,
   onRemoveProfile,
@@ -21,14 +25,14 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
   const isMax = profiles.length >= maxProfiles;
 
   const getRelationshipIcon = (p: ChatTargetProfile) => {
+    if (!isMulti || p.isMe || p.relationship === '본인') {
+      return <User size={10} className="sm:w-3 sm:h-3 text-amber-600 shrink-0" />;
+    }
     if (p.relationship === '연인' || p.relationship === '썸') {
       return <Heart size={10} className="sm:w-3 sm:h-3 text-rose-500 fill-rose-500/20 shrink-0" />;
     }
     if (p.relationship === '동업자' || p.relationship === '직장동료') {
       return <Briefcase size={10} className="sm:w-3 sm:h-3 text-blue-500 shrink-0" />;
-    }
-    if (p.isMe) {
-      return <User size={10} className="sm:w-3 sm:h-3 text-amber-600 shrink-0" />;
     }
     return <User size={10} className="sm:w-3 sm:h-3 text-indigo-500 shrink-0" />;
   };
@@ -62,24 +66,37 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
       <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
         {profiles.map((profile) => {
           const birthSnippet = profile.birthdate ? profile.birthdate.slice(2).replace(/-/g, '.') : '';
+          const isSelectedTarget = isMulti ? (activeProfileId === profile.id || (!activeProfileId && profile.isMe)) : true;
+          const displayRel = (!isMulti || profile.isMe) ? '본인' : profile.relationship;
+
           return (
             <div
               key={profile.id}
               className={`group flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold border transition-all shadow-2xs shrink-0 ${
-                profile.isMe
-                  ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-300/80 dark:border-amber-700 text-amber-950 dark:text-amber-200'
-                  : 'bg-white/90 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:border-amber-300'
+                isSelectedTarget
+                  ? 'bg-amber-100/90 dark:bg-amber-950/70 border-amber-400 dark:border-amber-500 text-amber-950 dark:text-amber-100 ring-2 ring-amber-400/50 shadow-sm'
+                  : 'bg-white/90 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-amber-300'
               }`}
             >
-              {/* Profile icon & info (Clickable to edit) */}
+              {/* Profile icon & info (Clickable to select as main target or edit) */}
               <button
                 type="button"
-                onClick={() => onEditProfile(profile)}
-                className="flex items-center gap-0.5 sm:gap-1 cursor-pointer hover:opacity-80 active:scale-95 transition-transform"
-                title={`${profile.name} (${profile.relationship || '상담대상'}) 정보 수정`}
+                onClick={() => {
+                  if (isMulti && onSelectProfile && !isSelectedTarget) {
+                    onSelectProfile(profile.id);
+                  } else {
+                    onEditProfile(profile);
+                  }
+                }}
+                className="flex items-center gap-0.5 sm:gap-1 cursor-pointer hover:opacity-85 active:scale-95 transition-transform"
+                title={
+                  isMulti
+                    ? (isSelectedTarget ? `${profile.name} (현재 상담 메인 기준) · 클릭 시 수정` : `${profile.name} 사주 기준으로 상담 전환하기`)
+                    : `${profile.name} (본인) 정보 수정`
+                }
               >
                 {getRelationshipIcon(profile)}
-                <span className="font-bold truncate max-w-[65px] sm:max-w-[100px]">
+                <span className={`truncate max-w-[65px] sm:max-w-[100px] ${isSelectedTarget ? 'font-black text-amber-950 dark:text-amber-200' : 'font-bold'}`}>
                   {profile.name}
                 </span>
                 {birthSnippet && (
@@ -87,9 +104,18 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
                     {birthSnippet}
                   </span>
                 )}
-                {profile.relationship && (
-                  <span className="text-[8px] sm:text-[9px] px-1 py-0.1 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-normal">
-                    {profile.relationship}
+                {displayRel && (
+                  <span className={`text-[8px] sm:text-[9px] px-1 py-0.1 rounded font-normal ${
+                    isSelectedTarget 
+                      ? 'bg-amber-200/80 dark:bg-amber-800/60 text-amber-900 dark:text-amber-200 font-bold'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'
+                  }`}>
+                    {displayRel}
+                  </span>
+                )}
+                {isMulti && isSelectedTarget && (
+                  <span className="text-[8px] text-amber-600 dark:text-amber-300 font-black" title="현재 상담 사주 기준">
+                    ★
                   </span>
                 )}
               </button>

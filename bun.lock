@@ -32,6 +32,7 @@
         "google-tts-api": "^2.0.2",
         "html-to-image": "^1.11.13",
         "http-proxy-middleware": "^4.0.0",
+        "korean-lunar-calendar": "^0.4.0",
         "lucide-react": "^0.546.0",
         "motion": "^12.23.24",
         "node-edge-tts": "^1.2.10",
@@ -1262,6 +1263,8 @@
     "katex": ["katex@0.16.47", "", { "dependencies": { "commander": "^8.3.0" }, "bin": "cli.js" }, ""],
 
     "khroma": ["khroma@2.1.0", "", {}, ""],
+
+    "korean-lunar-calendar": ["korean-lunar-calendar@0.4.0", "", {}, "sha512-kJXyH3sI/butJxCBtsLXlMJsl5qqNKNjduf1Na0s7XXwP+D/Wdlx0R0/S5ygxPVFSXf/JZ3bBKaCP6bGWhgZ0w=="],
 
     "layout-base": ["layout-base@1.0.2", "", {}, ""],
 

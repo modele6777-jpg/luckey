@@ -46,22 +46,35 @@ export function formatProfileAnalysisContext(profile: ChatTargetProfile, index: 
 
 /**
  * 대화창에 등록된 1인~4인 프로필에 맞추어 루시 AI 시스템 프롬프트(extraSystemContext)를 동적 생성합니다.
+ * activeProfileId가 전달되면 해당 인물을 메인 1순위 상담 대상으로 강력하게 지정합니다.
  */
-export function buildMultiProfileSystemContext(profiles: ChatTargetProfile[]): string {
+export function buildMultiProfileSystemContext(profiles: ChatTargetProfile[], activeProfileId?: string): string {
   if (!profiles || profiles.length === 0) return '';
 
-  const formattedProfiles = profiles.map((p, idx) => formatProfileAnalysisContext(p, idx)).join('\n\n');
+  const primary = activeProfileId 
+    ? (profiles.find(p => p.id === activeProfileId) || profiles[0])
+    : profiles[0];
+
+  const formattedProfiles = profiles.map((p, idx) => {
+    const isTarget = p.id === primary.id;
+    const prefix = isTarget ? '★ [현재 메인 상담 분석 대상자]' : `[대상자 ${idx + 1}]`;
+    return `${prefix}\n${formatProfileAnalysisContext(p, idx)}`;
+  }).join('\n\n');
 
   if (profiles.length === 1) {
     const single = profiles[0];
-    return `[대화창 활성 상담 대상자 1인 전용 점괘 데이터]
+    return `[대화창 활성 상담 대상자 1인 전용 만세력·사주 데이터]
 ${formattedProfiles}
-- 지침: 위 대상자 '${single.name}'님의 사주와 점성학적 천문 데이터를 기반으로 질문자의 고민에 맞춘 정밀하고 현실적인 1:1 맞춤 점괘와 조언을 제공하십시오.`;
+- 핵심 지침: 위 대상자 '${single.name}'(${single.relationship || '본인'})님의 만세력(사주 4주 8자)과 점성학적 천문 데이터를 기반으로 질문자의 고민에 맞춘 정밀하고 현실적인 맞춤 점괘와 운명 통찰을 제공하십시오.`;
   }
 
   const names = profiles.map(p => p.name).join(' · ');
   return `[대화창 2인 이상 다자간 궁합/인연/시너지 통합 점괘 데이터 (${profiles.length}명: ${names})]
 ${formattedProfiles}
+
+[★ 메인 상담 분석 기준 인물 전면 전환 지침]:
+- 현재 질문자가 메인 분석 기준으로 지정한 대상자: '${primary.name}' (관계: ${primary.relationship || (primary.isMe ? '본인' : '상담대상')})
+- 지침: 기존 사용자 본인 기준이 아니라, 사용자가 명시적으로 선택한 '${primary.name}'님의 사주와 만세력(일간, 오행, 신살, 대운)을 메인 제1 분석 기준으로 전면 전환하여 질문자의 질문을 집중 풀이하십시오.
 
 [★ 다자간 궁합 및 인연 점괘 핵심 가이드]:
 1. [상호 오행 및 일간 조화 분석]: 각 대상자의 일간(본원)과 오행(목화토금수) 분포의 상생(相生)·상극(相克)을 비교하여, 서로의 기운이 어떻게 상호 보완되거나 마찰이 일어나는지 명확히 짚어주십시오.

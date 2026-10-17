@@ -22,6 +22,7 @@ import { isIOSDevice } from '../lib/perfMode';
 
 export interface TTSPlaybackOptions {
   skipCompletionChime?: boolean;
+  isAutoPlay?: boolean;
 }
 
 // Pre-warm the browser's speechSynthesis engine to load premium voices asynchronously immediately on load
@@ -723,8 +724,10 @@ export const playTTSInChunks = async (
   const cleanText = prepareNaturalSpeechText(text);
   if (!cleanText) return;
 
-  // If already speaking or loading this exact sequence, click again toggles/stops playback
+  // If already speaking or loading this exact sequence, user click again toggles/stops playback
+  // (자동읽기 isAutoPlay일 때는 토글-오프 오작동 방지)
   if (
+    !options?.isAutoPlay &&
     (ttsState.isSpeaking || ttsState.isLoading) &&
     (ttsState.activeFullText === cleanText || ttsState.activeText === cleanText)
   ) {

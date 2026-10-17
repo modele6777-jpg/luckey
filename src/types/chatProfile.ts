@@ -7,5 +7,6 @@ export interface ChatTargetProfile {
   gender: 'male' | 'female' | 'other';
   birthCity?: string; // 출생지 (예: 서울, 부산, 대구 등)
   lunarSolar?: 'solar' | 'lunar';
+  isLeapMonth?: boolean;
   relationship?: string; // 관계 태그 (본인, 연인, 썸, 친구, 동업자, 가족, 동료 등)
 }
