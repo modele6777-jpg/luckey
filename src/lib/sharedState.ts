@@ -23,6 +23,7 @@ export interface ProfileBasic {
   gender?: 'male' | 'female' | 'other';
   birthCity?: string;
   lunarSolar?: 'solar' | 'lunar';
+  avatarUrl?: string;       // 프로필 사진 (DataURL 또는 이미지 URL)
 }
 
 // 섹션2: 사주/운세 관심사

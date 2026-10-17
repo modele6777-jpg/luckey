@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import {
   User, Star, Music, Brain, Palette,
-  ChevronRight, ChevronLeft, Check, Save, ArrowLeft, Sparkles
+  ChevronRight, ChevronLeft, Check, Save, ArrowLeft, Sparkles,
+  Camera, Upload, RotateCcw
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { loadProfileFromAllVaults, saveProfileToAllVaults } from '@/lib/profileVault';
 import { type UserProfile, mergeUserProfiles } from '@/lib/sharedState';
+import { compressImageToDataUrl } from '@/utils/imageCompress';
 import { APP_VERSION, fetchDeployedAppVersion, compareVersions } from '@/lib/appVersion';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { SajuCardView } from '@/components/SajuCardView';
@@ -121,6 +123,7 @@ export default function ProfilePage() {
     gender: (initialProfile?.basic?.gender || '') as '' | 'male' | 'female' | 'other',
     birthCity: initialProfile?.basic?.birthCity || '',
     lunarSolar: (initialProfile?.basic?.lunarSolar || 'solar') as 'solar' | 'lunar',
+    avatarUrl: initialProfile?.basic?.avatarUrl || '',
   });
   const [fate, setFate] = useState({
     fateInterests: initialProfile?.fate?.fateInterests || [] as string[],
@@ -180,6 +183,52 @@ export default function ProfilePage() {
     };
   }, [sharedState?.userProfile]);
 
+  const avatarFileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingAvatar(true);
+      const compressedDataUrl = await compressImageToDataUrl(file, 320, 0.85);
+      setBasic(prev => ({ ...prev, avatarUrl: compressedDataUrl }));
+
+      // Save immediately to ensure instant sidebar and vault sync
+      const existingProfile = sharedState?.userProfile || getPersistentUserProfile() || {};
+      const updatedProfile = mergeUserProfiles(existingProfile, {
+        basic: { ...existingProfile.basic, avatarUrl: compressedDataUrl },
+      }, true);
+      if (!updatedProfile.basic) updatedProfile.basic = {};
+      updatedProfile.basic.avatarUrl = compressedDataUrl;
+      setPersistentUserProfile(updatedProfile);
+      saveProfileToAllVaults(updatedProfile);
+      updateSharedState({ userProfile: updatedProfile }, 'profile').catch(() => {});
+      window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: { userProfile: updatedProfile } }));
+    } catch (err) {
+      console.error('[ProfilePage] Failed to compress avatar:', err);
+      alert('이미지를 처리하는 중 오류가 발생했습니다.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarFileInputRef.current) avatarFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setBasic(prev => ({ ...prev, avatarUrl: '' }));
+    const existingProfile = sharedState?.userProfile || getPersistentUserProfile() || {};
+    const updatedProfile = mergeUserProfiles(existingProfile, {
+      basic: { ...existingProfile.basic, avatarUrl: '' },
+    }, true);
+    if (!updatedProfile.basic) updatedProfile.basic = {};
+    updatedProfile.basic.avatarUrl = '';
+    setPersistentUserProfile(updatedProfile);
+    saveProfileToAllVaults(updatedProfile);
+    updateSharedState({ userProfile: updatedProfile }, 'profile').catch(() => {});
+    window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: { userProfile: updatedProfile } }));
+  };
+
   const handleSave = async (silent = false) => {
     if (!silent) setSaving(true);
     try {
@@ -196,10 +245,14 @@ export default function ProfilePage() {
         relationships,
       }, true);
 
-      // Explicitly guarantee nickname is preserved as entered (even empty string)
+      // Explicitly guarantee nickname & avatarUrl are preserved as entered (even empty string)
       if (typeof basic.nickname === 'string') {
         if (!profile.basic) profile.basic = {};
         profile.basic.nickname = basic.nickname;
+      }
+      if (typeof basic.avatarUrl === 'string') {
+        if (!profile.basic) profile.basic = {};
+        profile.basic.avatarUrl = basic.avatarUrl;
       }
 
       setPersistentUserProfile(profile);
@@ -251,6 +304,76 @@ export default function ProfilePage() {
       case 0: // 기본 정보
         return (
           <div className="space-y-4">
+            {/* 프로필 사진 (내 사진) 설정 카드 */}
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-4">
+              <div className="relative group shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-neutral-900 border-2 border-amber-400/40 shadow-[0_0_15px_rgba(251,191,36,0.15)] flex items-center justify-center">
+                  {(basic.avatarUrl || firebaseUser?.photoURL) ? (
+                    <img
+                      src={basic.avatarUrl || firebaseUser?.photoURL || ''}
+                      alt="프로필 사진"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={30} className="text-amber-300/80" />
+                  )}
+                </div>
+                {/* Overlay hover trigger */}
+                <button
+                  type="button"
+                  onClick={() => avatarFileInputRef.current?.click()}
+                  className="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer"
+                  title="사진 변경"
+                >
+                  <Camera size={16} className="mb-0.5 text-amber-300" />
+                  <span className="text-[10px] font-medium">변경</span>
+                </button>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <h3 className="text-sm font-semibold text-white/90">프로필 사진</h3>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 font-mono border border-amber-400/30">
+                    사이드바 연동
+                  </span>
+                </div>
+                <p className="text-xs text-white/40 mb-3 leading-relaxed">
+                  사이드바와 루시 채팅에서 보여질 내 사진을 등록하세요.
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={avatarFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarFileSelect}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => avatarFileInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                  >
+                    <Upload size={12} />
+                    {isUploadingAvatar ? '압축 중...' : (basic.avatarUrl ? '사진 변경' : '사진 등록')}
+                  </button>
+
+                  {basic.avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveAvatar}
+                      className="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-white/5 hover:bg-rose-500/20 text-white/50 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                      title="기본 아이콘으로 복원"
+                    >
+                      <RotateCcw size={12} />
+                      초기화
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <InputField label="실명 *" value={basic.name}
               onChange={v => setBasic(b => ({ ...b, name: v }))} placeholder="예: 홍길동" />
             <InputField label="닉네임 (루시가 부를 이름)" value={basic.nickname}

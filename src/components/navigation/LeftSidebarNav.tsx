@@ -15,9 +15,13 @@ import {
   Library,
   BookOpen,
   Compass,
+  Camera,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
+import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
+import { saveProfileToAllVaults } from '@/lib/profileVault';
+import { mergeUserProfiles } from '@/lib/sharedState';
+import { compressImageToDataUrl } from '@/utils/imageCompress';
 
 export interface NavItemConfig {
   path: string;
@@ -163,18 +167,54 @@ export default function LeftSidebarNav() {
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
 
-  // Extract user profile / nickname for sidebar footer
+  // Extract user profile / nickname and avatar URL for sidebar footer
   let userNickname = '제제';
+  let userAvatarUrl: string | undefined = undefined;
+  let updateSharedStateFn: any = null;
   try {
-    const { sharedState } = useApp();
+    const { sharedState, updateSharedState, firebaseUser } = useApp();
+    updateSharedStateFn = updateSharedState;
     const rawNick = sharedState?.userProfile?.basic?.nickname?.trim();
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
     const rawName = sharedState?.userProfile?.basic?.name?.trim() || getPersistentUserProfile()?.basic?.name?.trim();
     userNickname = rawNick || fallbackNick || rawName || '제제';
+    userAvatarUrl = sharedState?.userProfile?.basic?.avatarUrl || getPersistentUserProfile()?.basic?.avatarUrl || firebaseUser?.photoURL || undefined;
   } catch {
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
     userNickname = fallbackNick || getPersistentUserProfile()?.basic?.name?.trim() || '제제';
+    userAvatarUrl = getPersistentUserProfile()?.basic?.avatarUrl || undefined;
   }
+
+  const sidebarAvatarInputRef = useRef<HTMLInputElement | null>(null);
+  const [, setIsQuickUploadingAvatar] = useState(false);
+
+  const handleQuickAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsQuickUploadingAvatar(true);
+      const compressedDataUrl = await compressImageToDataUrl(file, 320, 0.85);
+      const existingProfile = getPersistentUserProfile() || {};
+      const updatedProfile = mergeUserProfiles(existingProfile, {
+        basic: { ...existingProfile.basic, avatarUrl: compressedDataUrl },
+      }, true);
+      if (!updatedProfile.basic) updatedProfile.basic = {};
+      updatedProfile.basic.avatarUrl = compressedDataUrl;
+      setPersistentUserProfile(updatedProfile);
+      saveProfileToAllVaults(updatedProfile);
+      if (updateSharedStateFn) {
+        updateSharedStateFn({ userProfile: updatedProfile }, 'profile').catch(() => {});
+      }
+      window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: { userProfile: updatedProfile } }));
+      setProfileVersion((v) => v + 1);
+    } catch (err) {
+      console.error('[LeftSidebarNav] Quick avatar upload error:', err);
+    } finally {
+      setIsQuickUploadingAvatar(false);
+      if (sidebarAvatarInputRef.current) sidebarAvatarInputRef.current.value = '';
+    }
+  };
 
   // Realtime event sync for profile edits across views
   useEffect(() => {
@@ -639,20 +679,59 @@ export default function LeftSidebarNav() {
 
               {/* Footer: User Profile Button & Collapse Button */}
               <div className="pb-[calc(var(--sab)+0.75rem)] px-2 pt-2 border-t border-white/10 flex flex-col items-center gap-2 shrink-0">
-                {/* User Profile Button */}
-                <button
-                  type="button"
-                  onClick={() => handleNavigate('/profile')}
-                  className="relative group w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 hover:bg-amber-400/25 transition-all cursor-pointer active:scale-95"
-                  aria-label={`${userNickname} 프로필`}
-                >
-                  <User size={16} className="group-hover:scale-110 transition-transform" />
+                {/* User Profile Button with Photo Support */}
+                <div className="relative group w-10 h-10 shrink-0">
+                  <input
+                    ref={sidebarAvatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleQuickAvatarUpload}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate('/profile')}
+                    className="w-full h-full rounded-xl bg-amber-400/15 border border-amber-400/30 hover:border-amber-400/70 flex items-center justify-center text-amber-300 hover:bg-amber-400/25 transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm"
+                    aria-label={`${userNickname} 프로필`}
+                    title={`${userNickname} 프로필`}
+                  >
+                    {userAvatarUrl ? (
+                      <img
+                        src={userAvatarUrl}
+                        alt={userNickname}
+                        className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <User size={16} className="group-hover:scale-110 transition-transform" />
+                    )}
+                  </button>
+
+                  {/* Quick photo change button badge */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sidebarAvatarInputRef.current?.click();
+                    }}
+                    className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-neutral-950/95 border border-amber-400/50 shadow flex items-center justify-center text-amber-300 hover:bg-amber-400/30 hover:text-white transition-all cursor-pointer active:scale-90 z-10"
+                    title="내 사진 변경"
+                    aria-label="내 사진 변경"
+                  >
+                    <Camera size={10} />
+                  </button>
+
                   {/* Desktop Hover Tooltip */}
-                  <div className="hidden sm:group-hover:flex items-center gap-1.5 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50">
+                  <div className="hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50">
+                    {userAvatarUrl ? (
+                      <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
+                    ) : (
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    )}
                     <span className="text-xs font-bold text-amber-300">{userNickname}</span>
                     <span className="text-[11px] text-neutral-400">프로필</span>
                   </div>
-                </button>
+                </div>
 
                 {/* Collapse Button */}
                 <button
