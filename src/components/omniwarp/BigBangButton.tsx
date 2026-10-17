@@ -376,9 +376,11 @@ export function BigBangButton() {
         name: targetMenu.name,
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[추천 토스] "${textToToss.slice(0, 16)}..." ➔ ${targetMenu.name}`
+          ? `[럭키 추천] "${textToToss.slice(0, 16)}..." ➔ ${targetMenu.name}`
           : `[드래그 도약] ${targetMenu.name} (${rec.stats.visitedCount + 1}/${rec.stats.totalCount})`,
-        previewDescription: targetMenu.subName || rec.reason || '루시/Key 제외 7대 코어 앱 순환 추천 도약',
+        previewDescription: isTextToss
+          ? `선택 문장 맥락에 가장 가까운 럭키 기능: ${targetMenu.subName || targetMenu.name}`
+          : (targetMenu.subName || rec.reason || '루시/Key 제외 7대 코어 앱 순환 추천 도약'),
         destinationPath: safeDest,
         themeColor: targetMenu.themeColor || '#a855f7',
         accentGlow: targetMenu.themeColor ? `${targetMenu.themeColor}aa` : 'rgba(168, 85, 247, 0.85)',
@@ -393,12 +395,14 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: '루시 1:1 음성 대화 (PTT)',
+        title: isTextToss ? '루시 음성 피드백' : '루시 1:1 음성 대화 (PTT)',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[루시 토스] "${textToToss.slice(0, 16)}..." ➔ 루시 질의`
+          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ 루시 음성 피드백`
           : `[음성 PTT] 질문 말씀 중... (손을 떼면 즉시 답변)`,
-        previewDescription: '버튼을 누른 채 질문을 말하고, 손을 떼면 즉각 루시의 음성 답변이 출력됩니다',
+        previewDescription: isTextToss
+          ? '손을 떼면 선택한 문장에 대한 루시의 음성 답변이 바로 출력됩니다'
+          : '버튼을 누른 채 질문을 말하고, 손을 떼면 즉각 루시의 음성 답변이 출력됩니다',
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
@@ -420,17 +424,22 @@ export function BigBangButton() {
       }
     } else {
       currentHole = 'whitehole';
+      const isTextToss = Boolean(textToToss);
       target = {
-        id: 'hub',
-        icon: '🏠',
+        id: isTextToss ? 'lucy' : 'hub',
+        icon: isTextToss ? '💬' : '🏠',
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: '홈 베이스캠프',
-        actionType: 'navigate',
-        previewLabel: '가볍게 탭 ➔ 홈으로 이동',
-        previewDescription: '프롤로그 허브 메인으로 귀환합니다',
-        destinationPath: '/',
+        title: isTextToss ? '루시 채팅 피드백' : '홈 베이스캠프',
+        actionType: isTextToss ? 'smart_toss' : 'navigate',
+        previewLabel: isTextToss
+          ? `[탭] "${textToToss.slice(0, 16)}..." ➔ 루시 채팅 피드백`
+          : '가볍게 탭 ➔ 홈으로 이동',
+        previewDescription: isTextToss
+          ? '선택한 문장에 대한 루시의 맞춤 피드백과 조언을 받습니다'
+          : '프롤로그 허브 메인으로 귀환합니다',
+        destinationPath: isTextToss ? '/chat' : '/',
         themeColor: '#38bdf8',
         accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
@@ -690,7 +699,7 @@ export function BigBangButton() {
       : `순환 ${stats.visitedCount}/${stats.totalCount}`;
 
     const previewLabel = textToToss
-      ? `[추천 토스 · ${cycleLabel}] ${finalMenu.name}`
+      ? `[럭키 추천 · ${cycleLabel}] ${finalMenu.name}`
       : `[드래그 도약 · ${cycleLabel}] ${finalMenu.name}`;
 
     const previewDescription = textToToss
@@ -832,6 +841,8 @@ export function BigBangButton() {
             ? '/'
             : returnPath;
         window.location.href = finalDest;
+      } else if (isKeySite && textToToss) {
+        // 이미 Key 사이트인 경우: 실시간 prism:selection_tossed 이벤트로 연습실이 즉각 실행되므로 불필요한 전체 재로딩 생략
       } else {
         // Key 사이트로 도약
         const currentPath = location || '/';
@@ -945,8 +956,13 @@ export function BigBangButton() {
     if (isPttRecordingRef.current) {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
+      const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('prism:commit_lucy_voice_ptt'));
+        window.dispatchEvent(
+          new CustomEvent('prism:commit_lucy_voice_ptt', {
+            detail: { textToToss },
+          })
+        );
       }
       touchStartSelectionRef.current = '';
       setActivePhase('idle');
@@ -979,19 +995,88 @@ export function BigBangButton() {
         return;
       }
 
-      // ☀️ 첫 번째 탭: 더블탭 입력 대기 (240ms) 후 싱글탭(홈으로 이동) 실행
+      // ☀️ 첫 번째 탭: 더블탭 입력 대기 (240ms) 후 싱글탭 실행
       lastTapTimeRef.current = nowMs;
 
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
       }
 
+      const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
+
       singleTapTimerRef.current = setTimeout(() => {
         singleTapTimerRef.current = null;
         triggerHaptic('whitehole');
         omniWarpAudio.playWhiteHole();
 
-        // ☀️ 제자리 탭: 럭키 프롤로그 홈('/')으로 즉시 복귀!
+        // 🌟 텍스트 드래그(선택) 상태에서 탭: 루시 채팅 피드백으로 즉각 도약 및 질의 실행!
+        if (textToToss) {
+          const prompt = `[선택 문장 피드백 요청]\n"${textToToss}"\n\n내가 선택한 위 내용에 대해 핵심과 의미, 유용한 피드백과 조언을 자세히 안내해 줘.`;
+          try {
+            sessionStorage.setItem('lucy_injected_auto_send', prompt);
+            sessionStorage.setItem('lucy_injected_input_draft', prompt);
+          } catch (_) {}
+          savePendingSelection(textToToss, 'lucy', location);
+          sendPrismToss({
+            sourceApp: location || 'bigbang_button',
+            targetApp: 'lucy',
+            actionType: 'smart_toss',
+            contextMessage: prompt,
+            autoPrompt: prompt,
+            autoTrigger: true,
+            tossedAt: Date.now(),
+          });
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('prism:bigbang_commit', {
+                detail: {
+                  phase: 'whitehole',
+                  target: {
+                    id: 'lucy',
+                    name: '루시 채팅 피드백',
+                    destinationPath: '/chat',
+                    themeColor: '#38bdf8',
+                    eventHorizonMode: 'whitehole',
+                    previewLabel: `[루시 피드백] "${textToToss.slice(0, 16)}..." ➔ 루시 답변`,
+                    previewDescription: '선택한 문장에 대한 루시의 맞춤 피드백과 조언을 받습니다',
+                  },
+                  context,
+                  metrics: { ...metrics, phase: 'whitehole' },
+                  timestamp: Date.now(),
+                },
+              })
+            );
+            window.dispatchEvent(
+              new CustomEvent('prism:selection_tossed', {
+                detail: { text: textToToss, target: 'lucy', sourcePath: location, prompt, autoTrigger: true },
+              })
+            );
+            window.dispatchEvent(
+              new CustomEvent('prism:inject_lucy_prompt', {
+                detail: { prompt, autoSend: true },
+              })
+            );
+          }
+
+          if (isChatView) {
+            // 이미 채팅 화면이면 추가 페이지 이동 없음
+          } else if (isKeySite) {
+            window.location.href = '/chat';
+          } else {
+            navigate('/chat');
+            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
+            window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
+          }
+
+          touchStartSelectionRef.current = '';
+          setActivePhase('idle');
+          setGauge(0);
+          setDurationMs(0);
+          return;
+        }
+
+        // ☀️ 제자리 탭 (텍스트 미선택): 럭키 프롤로그 홈('/')으로 즉시 복귀!
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
             new CustomEvent('prism:bigbang_commit', {
@@ -1068,7 +1153,7 @@ export function BigBangButton() {
     // 🌟 텍스트 드래그(선택) 연동: 글자를 스크롤/선택한 상태에서 빅뱅 홀드 ➔ 음성 질의 프롬프트로 전달!
     let initialPrompt: string | undefined;
     if (textToToss) {
-      initialPrompt = textToToss;
+      initialPrompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 음성으로 이야기해 줘.`;
       savePendingSelection(textToToss, 'lucy', location);
       try {
         sessionStorage.setItem('lucy_injected_input_draft', textToToss);
@@ -1078,7 +1163,7 @@ export function BigBangButton() {
         targetApp: 'lucy',
         actionType: 'smart_toss',
         contextMessage: textToToss,
-        autoPrompt: textToToss,
+        autoPrompt: initialPrompt,
         tossedAt: Date.now(),
       });
       if (typeof window !== 'undefined') {
@@ -1125,7 +1210,7 @@ export function BigBangButton() {
       // 🎙️ 전역 루시 AI 음성 모드 즉각 가동 (별도 팝업 없이 현재 화면 위에서 직접 가동)
       window.dispatchEvent(
         new CustomEvent('prism:open_lucy_voice', {
-          detail: { initialPrompt, sourcePath: location },
+          detail: { initialPrompt, sourcePath: location, textToToss },
         })
       );
     }
@@ -1254,13 +1339,13 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">✨</span>
-                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸홈</span>
+                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 채팅 피드백</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸Key</span>
+                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸Key 맞춤 연습</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸루시 음성</span>
+                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸루시 음성 피드백</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸추천 앱</span>
+                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸럭키 추천 기능</span>
               </motion.div>
             )}
           </AnimatePresence>

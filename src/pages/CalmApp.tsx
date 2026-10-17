@@ -145,6 +145,26 @@ export default function CalmApp() {
     }
   }, [iframeLoaded]);
 
+  // 🌟 Key 화면에 이미 머물고 있는 상태에서 빅뱅 버튼 더블탭 등으로 토스된 경우 실시간 즉각 실행
+  useEffect(() => {
+    const handleLiveToss = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (detail?.target === 'key' && detail?.text) {
+        iframeRef.current?.contentWindow?.postMessage(
+          {
+            type: 'TOSS_TO_EXERCISES',
+            text: detail.text,
+          },
+          '*'
+        );
+      }
+    };
+    window.addEventListener('prism:selection_tossed', handleLiveToss);
+    return () => {
+      window.removeEventListener('prism:selection_tossed', handleLiveToss);
+    };
+  }, []);
+
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
   const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=38.0' : '?v=38.0'}`;
 

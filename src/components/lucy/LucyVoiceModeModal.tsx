@@ -70,6 +70,7 @@ export function LucyVoiceModeModal() {
   // 🎙️ Push-to-Talk (버튼 홀드 녹음) 상태 및 최신 발화 ref
   const isPttActiveRef = useRef(false);
   const latestTranscriptRef = useRef('');
+  const tossedTextRef = useRef('');
 
   // 🌟 실시간 음성모드 활성 상태 및 단계(경청/생각/발화)를 빅뱅 버튼에 브로드캐스팅
   useEffect(() => {
@@ -281,9 +282,12 @@ export function LucyVoiceModeModal() {
       setErrorMessage(null);
 
       const initPrompt = detail?.initialPrompt;
-      if (initPrompt && typeof initPrompt === 'string' && initPrompt.trim()) {
-        // 이전 선택 텍스트가 전달된 경우 즉시 루시 질의 시작
-        handleSendPrompt(initPrompt.trim());
+      const tossed = detail?.textToToss;
+      const promptText = initPrompt || (tossed ? `내가 선택한 문장이야:\n"${tossed}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 음성으로 이야기해 줘.` : '');
+
+      if (promptText && typeof promptText === 'string' && promptText.trim()) {
+        // 선택 문장 피드백 요청이 전달된 경우 즉시 루시 질의 및 음성 출력 시작
+        handleSendPrompt(promptText.trim());
       } else {
         // 일반 홀드 진입: 즉시 마이크 경청 시작
         setVoiceState('listening');
@@ -315,18 +319,38 @@ export function LucyVoiceModeModal() {
       const detail = (e as CustomEvent)?.detail;
       const tossed = detail?.textToToss;
       if (tossed && typeof tossed === 'string' && tossed.trim()) {
+        tossedTextRef.current = tossed.trim();
         latestTranscriptRef.current = tossed.trim();
         setTranscript(tossed.trim());
+      } else {
+        tossedTextRef.current = '';
       }
 
       startListening();
     };
 
     // 🚀 PTT (손을 떼는 순간 무음 대기 없이 즉각 루시 질문 발송)
-    const handleCommitVoicePtt = () => {
+    const handleCommitVoicePtt = (e?: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      const tossed = detail?.textToToss || tossedTextRef.current;
       isPttActiveRef.current = false;
       stopRecognition();
-      const promptToSend = latestTranscriptRef.current.trim();
+
+      const userSpeech = latestTranscriptRef.current.trim();
+      let promptToSend = '';
+
+      if (tossed) {
+        if (userSpeech && userSpeech !== tossed) {
+          promptToSend = `[선택 문장]\n"${tossed}"\n\n[사용자 음성 질문]\n${userSpeech}`;
+        } else {
+          promptToSend = `내가 선택한 문장이야:\n"${tossed}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 음성으로 이야기해 줘.`;
+        }
+      } else {
+        promptToSend = userSpeech;
+      }
+
+      tossedTextRef.current = '';
+
       if (promptToSend.length >= 1) {
         handleSendPrompt(promptToSend);
       } else {
@@ -337,6 +361,7 @@ export function LucyVoiceModeModal() {
     // 🛑 PTT (드래그 아웃 또는 취소)
     const handleAbortVoicePtt = () => {
       isPttActiveRef.current = false;
+      tossedTextRef.current = '';
       stopRecognition();
       handleClose();
     };

@@ -265,16 +265,39 @@ document.addEventListener('DOMContentLoaded', () => {
       // 2. 토스된 텍스트와 가장 알맞은 40가지 연습 매칭 및 자동 시작
       if (text && window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length > 0) {
         let bestEx = window.PRACTICE_EXERCISES[0];
-        let maxScore = 0;
+        let maxScore = -1;
         const lower = text.toLowerCase();
         const keywords = lower.match(/[가-힣a-zA-Z0-9]{2,}/g) || [];
+
+        // 감정 및 상태별 테마 보정 가중치 사전
+        const themeBoosters = [
+          { pattern: /불안|걱정|초조|두려|공황|긴장|안절부절/, tags: ['외재화', '인지적 탈융합', '그라운딩', '신체 자각'] },
+          { pattern: /호흡|숨|가슴|답답|맥박|심장/, tags: ['호흡', '이완', '미주신경', '신체 자각'] },
+          { pattern: /우울|무기력|슬프|눈물|지침|피곤|공허/, tags: ['행동 활성화', '자기 자비', '가치 탐색', '인지 전환'] },
+          { pattern: /화|분노|짜증|억울|격분|폭발/, tags: ['감정 수용', '신체 이완', '탈융합', '호흡'] },
+          { pattern: /통증|어깨|목|두통|근육|뻐근|신체/, tags: ['바디스캔', '점진적 근육 이완', '신체 자각', '이완'] },
+          { pattern: /자책|후회|죄책감|괴로|미안|자괴감/, tags: ['자기 자비', '내면 대화', '인지적 탈융합', '수용'] },
+          { pattern: /잠|수면|불면|밤|악몽|뒤척/, tags: ['수면 위생', '점진적 근육 이완', '호흡', '이완'] },
+          { pattern: /관계|사람|가족|친구|상처|갈등|외로/, tags: ['대인관계', '경계 세우기', '자기 자비', '소통'] },
+          { pattern: /생각|잡념|과잉|꼬리|되뇌/, tags: ['생각 멈춤', '인지적 탈융합', '주의 전환', '그라운딩'] }
+        ];
 
         window.PRACTICE_EXERCISES.forEach(ex => {
           let score = 0;
           const searchSpace = `${ex.title} ${ex.subtitle || ''} ${ex.tag || ''} ${ex.purpose || ''} ${ex.affirmation || ''} ${ex.clinicalTip || ''}`.toLowerCase();
+          
           keywords.forEach(kw => {
-            if (searchSpace.includes(kw)) score += 5;
+            if (searchSpace.includes(kw)) score += Math.max(kw.length * 3, 6);
           });
+
+          themeBoosters.forEach(b => {
+            if (b.pattern.test(lower)) {
+              if (b.tags.some(t => searchSpace.includes(t.toLowerCase()))) {
+                score += 16;
+              }
+            }
+          });
+
           if (score > maxScore) {
             maxScore = score;
             bestEx = ex;

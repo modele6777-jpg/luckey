@@ -295,9 +295,12 @@ export function peekNextRecommendedMenuByCycle(
   let isFullCycleCompleted = false;
 
   // 1. 이번 사이클에서 아직 방문하지 않은 앱 후보군 (현재 앱 제외)
-  let candidateAppIds = PRISM_CORE_APP_IDS.filter(
-    (appId) => appId !== currentAppId && !effectiveVisited.includes(appId)
-  );
+  // 🌟 텍스트 드래그(선택) 시에는 텍스트 내용과 가장 가까운 최적 럭키 추천기능을 찾기 위해
+  //    방문 이력에 구애받지 않고 현재 앱을 제외한 전체 앱을 후보군으로 평가
+  const hasSelectedText = Boolean(overrideContextText && overrideContextText.trim().length >= 2);
+  let candidateAppIds = hasSelectedText
+    ? PRISM_CORE_APP_IDS.filter((appId) => appId !== currentAppId)
+    : PRISM_CORE_APP_IDS.filter((appId) => appId !== currentAppId && !effectiveVisited.includes(appId));
 
   // 2. 만약 모든 앱을 이미 다 방문했다면 (7대 앱 1사이클 완주!)
   //    -> 사이클 완료 플래그 활성화 및 현재 앱을 제외한 전체 앱을 다시 후보군으로 초기화
