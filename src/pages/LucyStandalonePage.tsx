@@ -29,7 +29,7 @@ import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
 import { buildMultiProfileSystemContext, generateMultiProfilePrompts } from '@/lib/multiProfileContext';
 import { HORI_PROMPT_LIBRARY } from '@/data/horiPromptLibrary';
-import { type LucyChatMode, LUCY_MODE_CONFIGS } from '@/components/chat/LucyModeSelectorBar';
+import { type LucyChatMode, LUCY_MODE_CONFIGS, LucyModeSelectorBar } from '@/components/chat/LucyModeSelectorBar';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -487,36 +487,57 @@ export function resolveMessageModeAndChannels(
 }
 
 // 🎲 현재 프로필 및 모드에 맞춰 차분하게 제공되는 엄선된 추천 질문 6선 생성 순수 함수
-function getCuratedPrompts(profiles: ChatTargetProfile[], mode: LucyChatMode): string[] {
+function getCuratedPrompts(
+  profiles: ChatTargetProfile[], 
+  mode: LucyChatMode,
+  channels: SpecialChannel[] = []
+): string[] {
   // 0. 다자간(2인 이상) 프로필 활성화 시: 두 사람(구성원)의 이름을 반영한 궁합·연애·시너지 맞춤 질문
   if (profiles.length >= 2) {
     const multiPrompts = generateMultiProfilePrompts(profiles);
     return shuffle(multiPrompts).slice(0, 6);
   }
 
-  // 1. 단일 특화 채널 모드 선택 시
-  if (mode !== 'auto' && mode !== 'casual' && mode !== 'master') {
-    const pool = CHANNEL_PROMPT_POOLS[mode] || CASUAL_PROMPT_POOL;
+  // 1. 2개 이상의 채널이 활성화된 융합(Fusion / Synergy) 모드인 경우
+  if (channels.length >= 2) {
+    const fusionPool: string[] = [];
+    channels.forEach((ch) => {
+      const pool = CHANNEL_PROMPT_POOLS[ch];
+      if (pool) {
+        fusionPool.push(...shuffle(pool).slice(0, 3));
+      }
+    });
+    if (fusionPool.length >= 4) {
+      return shuffle(Array.from(new Set(fusionPool))).slice(0, 6);
+    }
+  }
+
+  // 2. 단일 특화 채널 모드 선택 시 (channels[0] 또는 mode가 특정 채널)
+  const singleChannel = (channels.length === 1 ? channels[0] : (mode !== 'auto' && mode !== 'casual' && mode !== 'master' ? mode : null)) as SpecialChannel | null;
+  if (singleChannel && CHANNEL_PROMPT_POOLS[singleChannel]) {
+    const pool = CHANNEL_PROMPT_POOLS[singleChannel];
     return shuffle(pool).slice(0, 6);
   }
 
-  // 2. 7대 채널 올인원 마스터 모드 선택 시
-  if (mode === 'master') {
+  // 3. 7대 채널 올인원 마스터 모드 (레거시 또는 7대 전체 활성)
+  if (mode === 'master' || channels.length === ALL_CHANNELS.length) {
     return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
   }
 
-  // 3. 수다 모드 명시 선택 시
+  // 4. 수다 모드 명시 선택 시 (레거시)
   if (mode === 'casual') {
     return shuffle(CASUAL_PROMPT_POOL).slice(0, 6);
   }
 
-  // 4. AI 스마트 자동 감지 모드 기본 대기 상태 (7대 채널 + 호리 77선 전편에서 균형 있게 선별)
+  // 5. AI 스마트 자동 감지 모드 기본 대기 상태 (7대 채널 + 호리 77선 전편에서 균형 있게 선별)
   const diversePool: string[] = [
     ...shuffle(CHANNEL_PROMPT_POOLS.trinity).slice(0, 2),
     ...shuffle(CHANNEL_PROMPT_POOLS.orange).slice(0, 2),
     ...shuffle(CHANNEL_PROMPT_POOLS.aura).slice(0, 2),
     ...shuffle(CHANNEL_PROMPT_POOLS.bluebird).slice(0, 2),
     ...shuffle(CHANNEL_PROMPT_POOLS.muse).slice(0, 2),
+    ...shuffle(CHANNEL_PROMPT_POOLS.prologue).slice(0, 1),
+    ...shuffle(CHANNEL_PROMPT_POOLS.epilogue).slice(0, 1),
     ...shuffle(HORI_PROMPT_LIBRARY.map((p) => p.title)).slice(0, 4),
     ...shuffle(CASUAL_PROMPT_POOL).slice(0, 2),
   ];
@@ -599,8 +620,20 @@ export default function LucyStandalonePage() {
   });
 
   const currentActiveModeConfig = useMemo(() => {
+    if (activeChannels.length >= 2) {
+      return {
+        id: 'auto' as const,
+        icon: '⚡',
+        label: `${activeChannels.length}중 융합`,
+        subLabel: '시너지 모드',
+        tagline: `${activeChannels.map((c) => SPECIAL_CHANNELS[c]?.shortName || c).join(' + ')} 융합 시너지 지능 가동 중`,
+        activeGradient: 'from-indigo-500 to-purple-600 text-white shadow-indigo-200/50',
+        activeBorder: 'border-indigo-400',
+        badgeBg: 'bg-indigo-100 text-indigo-950 border-indigo-200',
+      };
+    }
     return LUCY_MODE_CONFIGS.find((m) => m.id === selectedMode) || LUCY_MODE_CONFIGS[0];
-  }, [selectedMode]);
+  }, [selectedMode, activeChannels]);
 
   // 📌 추천 질문 라이브러리 및 칩에서 지정된 모드를 보존하여 실시간 디바운스 임의 덮어쓰기 방지
   const presetModeRef = useRef<{
@@ -761,7 +794,7 @@ export default function LucyStandalonePage() {
 
   // 🎲 차분하게 유지되는 맞춤 추천 질문 상태 (새로고침 🔄 클릭, 모드 전환, 프로필 변경 시에만 명시적으로 갱신되며 실시간 임의 변동 방지)
   const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
-    return getCuratedPrompts(activeProfiles, selectedMode);
+    return getCuratedPrompts(activeProfiles, selectedMode, activeChannels);
   });
 
   // sharedState 변경 시 내 프로필 정보 동기화 (실제 변경이 있을 때만 activeProfiles 갱신하여 불필요한 리렌더 방지)
@@ -829,27 +862,105 @@ export default function LucyStandalonePage() {
         if (prev.length >= 4) return prev;
         updated = [...prev, profile];
       }
-      setCurrentPrompts(getCuratedPrompts(updated, selectedMode));
+      setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
       return updated;
     });
-  }, [selectedMode]);
+  }, [selectedMode, activeChannels]);
 
   const handleRemoveChatProfile = useCallback((profileId: string) => {
     setActiveProfiles((prev) => {
       // 2명 이상일 때만 삭제 가능 (내 프로필 포함)
       if (prev.length <= 1) return prev;
       const updated = prev.filter((p) => p.id !== profileId);
-      setCurrentPrompts(getCuratedPrompts(updated, selectedMode));
+      setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
       return updated;
     });
-  }, [selectedMode]);
+  }, [selectedMode, activeChannels]);
 
   // Refresh / Reshuffle prompts (새로고침 버튼 클릭 시에만 안정적으로 갱신)
   const refreshPrompts = useCallback(() => {
-    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode));
-  }, [activeProfiles, selectedMode]);
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels));
+  }, [activeProfiles, selectedMode, activeChannels]);
 
-  // 상담 모드 선택 처리 함수
+  // ⚡ 1. AI 모드 선택 (채널 선택 해제 및 순수 AI 스마트 자동 감지 모드 복귀)
+  const handleSelectAiMode = useCallback(() => {
+    setSelectedMode('auto');
+    setActiveChannels([]);
+    setAutoDetectedTitle(null);
+    try {
+      safeLocalStorage.setItem('lucy_selected_mode', 'auto');
+      safeLocalStorage.setItem('lucy_active_channels', JSON.stringify([]));
+    } catch (_) {}
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, 'auto', []));
+    setModeSwitchToast('⚡ [AI 모드]로 설정되었습니다.');
+    setTimeout(() => setModeSwitchToast(null), 2500);
+  }, [activeProfiles]);
+
+  // 🌈 2. 7대 채널 모드 토글 (융합 다중 선택 지원)
+  const handleToggleChannelMode = useCallback((channelId: SpecialChannel) => {
+    setActiveChannels((prev) => {
+      let next: SpecialChannel[];
+      if (prev.includes(channelId)) {
+        next = prev.filter((id) => id !== channelId);
+      } else {
+        next = [...prev, channelId];
+      }
+
+      try {
+        safeLocalStorage.setItem('lucy_active_channels', JSON.stringify(next));
+      } catch (_) {}
+
+      if (next.length === 0) {
+        setSelectedMode('auto');
+        setAutoDetectedTitle(null);
+        try {
+          safeLocalStorage.setItem('lucy_selected_mode', 'auto');
+        } catch (_) {}
+        setCurrentPrompts(getCuratedPrompts(activeProfiles, 'auto', []));
+        setModeSwitchToast('⚡ [AI 모드]로 복귀하였습니다.');
+      } else if (next.length === 1) {
+        setSelectedMode(next[0]);
+        const cfg = SPECIAL_CHANNELS[next[0]];
+        const title = cfg ? cfg.name : next[0];
+        setAutoDetectedTitle(title);
+        try {
+          safeLocalStorage.setItem('lucy_selected_mode', next[0]);
+        } catch (_) {}
+        setCurrentPrompts(getCuratedPrompts(activeProfiles, next[0], next));
+        setModeSwitchToast(`✨ [${title}] 모드로 전환되었습니다.`);
+      } else {
+        setSelectedMode('auto');
+        const title = `${next.length}중 융합 (${next.map((c) => SPECIAL_CHANNELS[c]?.shortName || c).join('+')})`;
+        setAutoDetectedTitle(title);
+        try {
+          safeLocalStorage.setItem('lucy_selected_mode', 'synergy');
+        } catch (_) {}
+        setCurrentPrompts(getCuratedPrompts(activeProfiles, 'auto', next));
+        setModeSwitchToast(`⚡ [${next.length}중 융합 모드]가 가동되었습니다.`);
+      }
+      setTimeout(() => setModeSwitchToast(null), 2500);
+      return next;
+    });
+  }, [activeProfiles]);
+
+  // 🎯 3. 특정 단일 채널만 단독 활성화 (더블클릭 또는 명시적 선택)
+  const handleSelectOnlyChannelMode = useCallback((channelId: SpecialChannel) => {
+    const next = [channelId];
+    setActiveChannels(next);
+    setSelectedMode(channelId);
+    const cfg = SPECIAL_CHANNELS[channelId];
+    const title = cfg ? cfg.name : channelId;
+    setAutoDetectedTitle(title);
+    try {
+      safeLocalStorage.setItem('lucy_selected_mode', channelId);
+      safeLocalStorage.setItem('lucy_active_channels', JSON.stringify(next));
+    } catch (_) {}
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, channelId, next));
+    setModeSwitchToast(`✨ [${title}] 모드로 설정되었습니다.`);
+    setTimeout(() => setModeSwitchToast(null), 2500);
+  }, [activeProfiles]);
+
+  // 상담 모드 선택 처리 함수 (레거시 및 외부 연동 호환)
   const handleSelectMode = useCallback((mode: LucyChatMode) => {
     setSelectedMode(mode);
     try {
@@ -866,15 +977,15 @@ export default function LucyStandalonePage() {
         setActiveChannels([]);
         setAutoDetectedTitle(null);
       }
-      setModeSwitchToast('⚡ [AI 스마트 자동 감지] 모드로 설정되었습니다.');
+      setModeSwitchToast('⚡ [AI 모드]로 설정되었습니다.');
     } else if (mode === 'casual') {
       setActiveChannels([]);
       setAutoDetectedTitle('💬 수다 모드');
       setModeSwitchToast('💬 [수다 모드]로 전환되었습니다.');
     } else if (mode === 'master') {
       setActiveChannels([...ALL_CHANNELS]);
-      setAutoDetectedTitle('7대 채널 올인원 마스터');
-      setModeSwitchToast('👑 [7대 채널 올인원 마스터] 모드로 전환되었습니다.');
+      setAutoDetectedTitle('7대 채널 전체 융합');
+      setModeSwitchToast('👑 [7대 채널 전체 융합] 모드로 전환되었습니다.');
     } else {
       setActiveChannels([mode]);
       const cfg = SPECIAL_CHANNELS[mode];
@@ -882,7 +993,8 @@ export default function LucyStandalonePage() {
       setAutoDetectedTitle(title);
       setModeSwitchToast(`✨ [${title}] 모드로 전환되었습니다.`);
     }
-    setCurrentPrompts(getCuratedPrompts(activeProfiles, mode));
+    const targetChs = mode === 'master' ? [...ALL_CHANNELS] : (mode === 'auto' || mode === 'casual' ? [] : [mode]);
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, mode, targetChs));
     setTimeout(() => setModeSwitchToast(null), 2500);
   }, [input, activeProfiles]);
 
@@ -932,7 +1044,7 @@ export default function LucyStandalonePage() {
       setActiveChannels(targetChannels);
       setAutoDetectedTitle(label || formatChannelsModeTitle(targetChannels));
     }
-    setCurrentPrompts(getCuratedPrompts(activeProfiles, nextMode));
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, nextMode, targetIsMaster ? [...ALL_CHANNELS] : targetChannels));
     if (label) {
       setModeSwitchToast(`✨ [${label}] 모드로 전환되었습니다.`);
       setTimeout(() => setModeSwitchToast(null), 2500);
@@ -1106,8 +1218,14 @@ export default function LucyStandalonePage() {
     let themeColorTag = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
     const prevThemeColor = themeColorTag ? themeColorTag.getAttribute('content') : null;
     if (themeColorTag) {
-      themeColorTag.setAttribute('content', '#FAFAF9');
+      themeColorTag.setAttribute('content', '#FFFFFF');
     }
+
+    // 📱 앱(PWA) 모드에서 상하단 안전영역(노치/홈바)이 어두운 body 배경으로 비쳐 회색으로 보이는 현상 방지
+    const prevHtmlBg = document.documentElement.style.background;
+    const prevBodyBg = document.body.style.background;
+    document.documentElement.style.background = '#FFFFFF';
+    document.body.style.background = '#FFFFFF';
 
     return () => {
       document.title = prevTitle;
@@ -1120,6 +1238,8 @@ export default function LucyStandalonePage() {
       });
       if (appleTitleTag && prevAppleTitle) appleTitleTag.setAttribute('content', prevAppleTitle);
       if (themeColorTag && prevThemeColor) themeColorTag.setAttribute('content', prevThemeColor);
+      document.documentElement.style.background = prevHtmlBg;
+      document.body.style.background = prevBodyBg;
     };
   }, []);
 
@@ -1588,7 +1708,7 @@ export default function LucyStandalonePage() {
   }
 
   return (
-    <div className="h-full min-h-0 flex-1 w-full max-w-full overflow-hidden flex flex-col bg-[#FAFAF9] text-slate-800 font-sans select-text relative">
+    <div className="h-full min-h-0 flex-1 w-full max-w-full overflow-hidden flex flex-col bg-white text-slate-800 font-sans select-text relative">
       {/* Mode Switch Toast */}
       <AnimatePresence>
         {modeSwitchToast && (
@@ -1607,7 +1727,7 @@ export default function LucyStandalonePage() {
       {/* PRO Top Header Bar */}
       <header 
         style={{ paddingTop: 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))' }}
-        className="w-full px-3.5 sm:px-8 lg:px-12 pb-3 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative"
+        className="w-full px-3.5 sm:px-8 lg:px-12 pb-3 bg-white border-b border-slate-200/80 shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative"
       >
         <div className="flex items-center justify-between gap-2 min-w-0">
           {/* Brand Logo & Left empty space (상단 로고 왼쪽 아이콘 제거 및 빈 공간 유지) */}
@@ -1625,11 +1745,11 @@ export default function LucyStandalonePage() {
                   <h1 className="text-base sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
                     Lucy
                   </h1>
-                  {selectedMode === 'auto' ? (
+                  {selectedMode === 'auto' && activeChannels.length === 0 ? (
                     <>
                       <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 text-indigo-600 border border-indigo-200/60 flex items-center gap-1">
                         <Sparkles size={10} className="text-indigo-500 animate-spin" />
-                        AI 자동 감지
+                        AI 모드
                       </span>
                       {autoDetectedTitle && (
                         <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-900 border border-violet-200/80">
@@ -1637,6 +1757,11 @@ export default function LucyStandalonePage() {
                         </span>
                       )}
                     </>
+                  ) : activeChannels.length >= 2 ? (
+                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-300 flex items-center gap-1 shadow-xs">
+                      <span>⚡</span>
+                      <span>{activeChannels.length}중 융합 가동 중</span>
+                    </span>
                   ) : (
                     <span className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${currentActiveModeConfig.badgeBg}`}>
                       <span>{currentActiveModeConfig.icon}</span>
@@ -1645,10 +1770,10 @@ export default function LucyStandalonePage() {
                   )}
                 </div>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
-                  {selectedMode === 'auto'
+                  {selectedMode === 'auto' && activeChannels.length === 0
                     ? (autoDetectedTitle
                         ? `${autoDetectedTitle} · 실시간 맞춤 지능 응답 가동 중`
-                        : '사주·타로·전략·치유·수다 등 질문 입력 시 전문 지능 자동 전환')
+                        : '질문 맥락에 맞춰 최적의 전문 지능으로 자동 응답')
                     : currentActiveModeConfig.tagline}
                 </p>
               </div>
@@ -1768,6 +1893,16 @@ export default function LucyStandalonePage() {
         </AnimatePresence>
       </header>
 
+      {/* 🌟 AI 모드 + 7대 채널(제목) 총 8대 모드 & 융합(Fusion) 바 */}
+      <LucyModeSelectorBar
+        isAiMode={selectedMode === 'auto' && activeChannels.length === 0}
+        activeChannels={activeChannels}
+        onSelectAiMode={handleSelectAiMode}
+        onToggleChannel={handleToggleChannelMode}
+        onSelectOnlyChannel={handleSelectOnlyChannelMode}
+        autoDetectedTitle={autoDetectedTitle}
+      />
+
       {/* Chat Messages Stream */}
       <main ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto select-text">
         <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-28 sm:pb-32">
@@ -1782,35 +1917,32 @@ export default function LucyStandalonePage() {
                   <span>{currentActiveModeConfig.icon}</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">
-                  {selectedMode === 'auto' && (
+                  {selectedMode === 'auto' && activeChannels.length === 0 && (
                     <>사주·타로·전략·치유·위로·창작부터 일상 수다까지, 마음속 어떤 이야기든 편하게 건네줘.<br />루시가 실시간으로 최적의 전문 지능을 가동해 줄게! ✨</>
                   )}
-                  {selectedMode === 'casual' && (
-                    <>오늘 하루는 어땠어? 사소한 일상부터 기분 좋은 이야기까지 편하게 들려줘.<br />언제든 친구처럼 다정하게 수다 떨 준비되어 있어! 💬✨</>
+                  {activeChannels.length >= 2 && (
+                    <>{activeChannels.length}대 채널 융합 모드가 가동 중이야.<br />선택된 전문 지능들을 유기적으로 결합하여 입체적인 시너지 통찰을 제공해 줄게! ⚡✨</>
                   )}
-                  {selectedMode === 'trinity' && (
+                  {activeChannels.length <= 1 && selectedMode === 'trinity' && (
                     <>사주명리와 타로, 운세의 흐름, 우주의 타이밍까지...<br />알고 싶은 운명의 모든 지혜를 깊이 있게 짚어줄게! 🔮✨</>
                   )}
-                  {selectedMode === 'orange' && (
+                  {activeChannels.length <= 1 && selectedMode === 'orange' && (
                     <>제1원칙 기반 근본 분석과 현실적인 커리어·이직·의사결정 로드맵을 함께 설계해 보자.<br />어떤 복잡한 문제든 명쾌한 돌파구를 찾아줄게! 🍊✨</>
                   )}
-                  {selectedMode === 'aura' && (
+                  {activeChannels.length <= 1 && selectedMode === 'aura' && (
                     <>지친 몸과 마음에 숨을 불어넣고 편안한 웰니스와 숙면을 선물해 줄게.<br />1분 호흡과 생체 에너지 조율로 가볍게 회복해 보자! 🌿✨</>
                   )}
-                  {selectedMode === 'bluebird' && (
+                  {activeChannels.length <= 1 && selectedMode === 'bluebird' && (
                     <>마음의 어떤 아픔이나 눈물, 말 못 할 고민도 따뜻하게 안아줄게.<br />언제나 너의 편에서 정화와 위로를 전해줄게! 🕊️✨</>
                   )}
-                  {selectedMode === 'muse' && (
+                  {activeChannels.length <= 1 && selectedMode === 'muse' && (
                     <>새로운 영감, 매력적인 글과 카피, 예술적 아이디어를 함께 빚어보자.<br />창작의 불꽃을 피울 준비가 되어 있어! 🎨✨</>
                   )}
-                  {selectedMode === 'prologue' && (
+                  {activeChannels.length <= 1 && selectedMode === 'prologue' && (
                     <>새로운 도전과 목표, 미래를 향한 첫걸음의 비전을 밝혀줄게.<br />운명의 멋진 서막을 함께 열어가자! 🌅✨</>
                   )}
-                  {selectedMode === 'epilogue' && (
+                  {activeChannels.length <= 1 && selectedMode === 'epilogue' && (
                     <>오늘 하루도 참 고생 많았어. 밤의 서재에서 따뜻한 감사와 회고를 기록해 보자.<br />평온한 밤을 지혜롭게 매듭지어줄게! 🌙✨</>
-                  )}
-                  {selectedMode === 'master' && (
-                    <>사주·타로·전략·치유·위로·창작·회고의 7대 지능을 총동원한 올인원 마스터 가동 중이야.<br />다각도의 깊은 통찰을 종합하여 최선의 해답을 도출해 줄게! 👑✨</>
                   )}
                 </p>
               </div>
@@ -2055,7 +2187,7 @@ export default function LucyStandalonePage() {
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
         style={{ paddingBottom: 'max(0.5rem, calc(var(--sab, 0px) + 0.35rem))' }}
-        className="w-full px-3 sm:px-4 pt-1.5 pb-2 sm:pb-3 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
+        className="w-full px-3 sm:px-4 pt-1.5 pb-2 sm:pb-3 bg-white border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
       >
         <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-1.5">
           {/* Image Attachment Preview */}

@@ -11,8 +11,8 @@
     "standalone",
     "minimal-ui"
   ],
-  "background_color": "#05040a",
-  "theme_color": "#05040a",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "categories": [
     "lifestyle",
     "productivity",
