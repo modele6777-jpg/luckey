@@ -719,17 +719,6 @@ export default function LeftSidebarNav() {
                   </div>
                 </div>
 
-                {/* Profile Settings Page Button */}
-                <button
-                  type="button"
-                  onClick={() => handleNavigate('/profile')}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-amber-300 hover:bg-white/[0.08] transition-colors cursor-pointer text-xs active:scale-90"
-                  title={`${userNickname} 프로필 설정`}
-                  aria-label={`${userNickname} 프로필 설정`}
-                >
-                  <User size={15} />
-                </button>
-
                 {/* Collapse Button */}
                 <button
                   type="button"
