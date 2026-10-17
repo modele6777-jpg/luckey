@@ -707,9 +707,33 @@ export default function LucyStandalonePage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
   const isTTSActive = useTTSActive();
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const isUserScrolledUpRef = useRef(false);
+
+  // 📏 하단 채팅 란 높이 실시간 측정 및 글로벌 하단 3개 버튼(메뉴, 빅뱅, 배경음) 상향 배치 연동
+  useEffect(() => {
+    const updateFooterHeight = () => {
+      if (footerRef.current) {
+        const height = footerRef.current.offsetHeight;
+        document.documentElement.style.setProperty('--lucy-chat-bar-height', `${height}px`);
+        document.documentElement.classList.add('in-lucy-chat');
+      }
+    };
+
+    updateFooterHeight();
+    const ro = new ResizeObserver(updateFooterHeight);
+    if (footerRef.current) ro.observe(footerRef.current);
+    window.addEventListener('resize', updateFooterHeight);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateFooterHeight);
+      document.documentElement.style.removeProperty('--lucy-chat-bar-height');
+      document.documentElement.classList.remove('in-lucy-chat');
+    };
+  }, []);
 
   // Dedicated Lucy entrance aura loader
   const [isLucyReady, setIsLucyReady] = useState(false);
@@ -2000,7 +2024,7 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-10 sm:h-14 w-full shrink-0" />
+          <div className="h-24 sm:h-28 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>
@@ -2017,7 +2041,7 @@ export default function LucyStandalonePage() {
               setIsUserScrolledUp(false);
               scrollToBottom(true, true);
             }}
-            style={{ bottom: 'calc(var(--sab, 0px) + 6.8rem)' }}
+            style={{ bottom: 'calc(var(--lucy-chat-bar-height, 92px) + 4.2rem)' }}
             className="fixed right-4 sm:right-10 z-40 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-[11px] sm:text-xs font-bold shadow-xl backdrop-blur-xs border border-slate-700/60 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
             title="최신 메시지 보기"
           >
@@ -2029,6 +2053,7 @@ export default function LucyStandalonePage() {
 
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
+        ref={footerRef}
         style={{ paddingBottom: 'max(0.35rem, calc(var(--sab, 0px) + 0.2rem))' }}
         className="w-full px-2.5 sm:px-4 pt-1 pb-1 sm:pt-1.5 sm:pb-2.5 bg-white border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
       >

@@ -422,12 +422,14 @@
   .bottom-safe-nav-fab {
     bottom: calc(var(--sab) + 1.25rem);
     left: calc(var(--sal) + 0.875rem);
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .bottom-safe-fab-center {
     bottom: calc(var(--sab) + 1.25rem);
     left: 50%;
     transform: translateX(-50%);
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .bottom-safe-fab-right {
@@ -448,6 +450,7 @@
   .bottom-safe-music-lp {
     bottom: calc(var(--sab) + 1.25rem);
     right: calc(var(--sar) + 0.875rem);
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (min-width: 640px) {
@@ -460,6 +463,7 @@
   .bottom-safe-music-menu {
     bottom: calc(var(--sab) + 4.5rem);
     right: calc(var(--sar) + 0.875rem);
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (min-width: 640px) {
@@ -474,6 +478,17 @@
       bottom: calc(var(--sab) + 4.25rem);
       right: calc(var(--sar) + 0.875rem);
     }
+  }
+
+  /* 🌌 루시 채팅 모드: 하단 3개 버튼(메뉴, 빅뱅, 배경음)을 채팅 입력란(타이핑칸~프로필설정) 위로 상향 배치 */
+  .in-lucy-chat .bottom-safe-nav-fab,
+  .in-lucy-chat .bottom-safe-fab-center,
+  .in-lucy-chat .bottom-safe-music-lp {
+    bottom: calc(var(--lucy-chat-bar-height, 92px) + 0.5rem) !important;
+  }
+
+  .in-lucy-chat .bottom-safe-music-menu {
+    bottom: calc(var(--lucy-chat-bar-height, 92px) + 4.2rem) !important;
   }
 
   @keyframes lpHoldProgress {
