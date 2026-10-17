@@ -324,8 +324,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [unifiedMessages, setUnifiedMessages] = useState<UnifiedMessage[]>(() => {
     const loaded = loadSavedUnifiedMessages();
     const initialProfile = getPersistentUserProfile();
-    const rawInitialNick = initialProfile?.basic?.nickname?.trim() || initialProfile?.basic?.name?.trim();
-    const initialNick = (rawInitialNick && rawInitialNick !== '여행자') ? rawInitialNick : '제제';
+    const rawInitialNick = initialProfile?.basic?.nickname?.trim();
+    const initialNick = (rawInitialNick && rawInitialNick !== '여행자' && rawInitialNick !== '사용자' && rawInitialNick !== '박주형') ? rawInitialNick : '제제';
     const result = processDailyChatArchival(loaded, initialNick);
     if (result.wasArchived) {
       saveUnifiedMessagesSafely(result.messages);
@@ -497,8 +497,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (isAnyGenerating) return;
 
       try {
-        const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname || sharedStateRef.current?.userProfile?.basic?.name;
-        const nick = (rawNick && rawNick !== '여행자') ? rawNick : '제제';
+        const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+        const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
         const currentStored = loadSavedUnifiedMessages();
         const archivalResult = processDailyChatArchival(currentStored, nick);
         if (archivalResult.wasArchived) {
@@ -610,8 +610,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
 
           if (remoteList.length > 0) {
-            const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname || sharedStateRef.current?.userProfile?.basic?.name;
-            const nick = (rawNick && rawNick !== '여행자') ? rawNick : '제제';
+            const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+            const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
             const archivalResult = processDailyChatArchival(remoteList, nick);
             if (archivalResult.wasArchived) {
               saveUnifiedMessagesSafely(archivalResult.messages);
@@ -724,6 +724,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
           // Lossless profile merge: combine local and cloud without data destruction
           const mergedProfile = mergeUserProfiles(localVaultProfile, cloudProfile);
+          if (mergedProfile?.basic) {
+            const rawN = mergedProfile.basic.nickname?.trim();
+            if (!rawN || rawN === '여행자' || rawN === '사용자' || rawN === '박주형') {
+              mergedProfile.basic.nickname = '제제';
+            }
+          }
 
           // Gather all local activities before merge
           const guestActivities = collectAllLocalActivities(user.uid);
@@ -1409,8 +1415,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const clearPersonaMessages = useCallback((persona?: PersonaType) => {
     const target = persona || 'lucy';
-    const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname || sharedStateRef.current?.userProfile?.basic?.name;
-    const nick = (rawNick && rawNick !== '여행자') ? rawNick : '제제';
+    const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+    const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
     const initialGreet = archiveAndResetChat(unifiedMessages, nick, target);
 
     if (pushChatThreadsTimerRef.current) {
@@ -1546,8 +1552,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const profile = sharedState?.userProfile || getPersistentUserProfile();
     const rawNickname = profile?.basic?.nickname?.trim();
     const rawRealName = profile?.basic?.name?.trim();
-    const nickname = (rawNickname && rawNickname !== '여행자') ? rawNickname : (rawRealName || "");
-    const realName = rawRealName || "";
+    const nickname = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '박주형') ? rawNickname : '제제';
+    const realName = rawRealName || '박주형';
     const mbti = profile?.psych?.mbti || "정보 없음";
     
     const sajuObj = calculateDetailedSaju(profile);
@@ -1665,7 +1671,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // 강력한 대화 포커스 및 인지 능력, 기억력 개선
     systemPrompt += `\n\n[루시의 최우선 커뮤니케이션 & 대화 기억 원칙]
-0. [호칭 절대 원칙 (★매우 중요)]: 사용자의 호칭은 반드시 사용자가 설정한 닉네임('${nickname || realName || "제제"}')으로만 불러야 해. 이전 대화 기록이나 프로필, 사주 데이터에 본명(${realName ? `"${realName}"` : "실명"})이 있더라도 절대로 본명을 부르지 말고 오직 닉네임 '${nickname || realName || "제제"}'(으)로만 다정하게 불러줘.
+0. [호칭 절대 원칙 (★매우 중요)]: 사용자의 호칭은 반드시 사용자가 설정한 닉네임('${nickname}')으로만 다정하게 불러야 해. 사용자의 본명('${realName}')은 사주나 명리학 분석용일 뿐이므로 절대로 본명을 직접 부르지 말고, 오직 닉네임 '${nickname}'(으)로만 다정하게 불러줘.
 1. [현재 입력 최우선 경청]: 사용자가 방금 보낸 최신 메시지(질문, 일상 대화, 타로 해석 요청, 고민 등)의 의도와 핵심을 가장 먼저 정확히 파악하여, 그 질문에 직접적이고 명쾌하며 다정하게 대답해줘.
 2. [자연스러운 대화 기억과 연속성]: 사용자와 지금까지 나누었던 대화 기록과 이야기들을 자연스럽게 기억하고 존중해줘. 사용자가 "아까 내가 말했던 거 기억해?", "그때 추천해준 건?", "전에 했던 이야기" 등을 언급할 때 대화 기록을 기반으로 섬세하게 인지하고 대답해줘.
 3. [유연한 흐름 전환]: 사용자가 새로운 질문이나 다른 주제를 꺼낼 때는 과거 이야기에 억지로 얽매이지 않고, 새로운 주제에 맞춰 매끄럽고 유연하게 반응해줘.

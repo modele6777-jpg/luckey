@@ -34,6 +34,7 @@ import { getTarotCardDetails } from '@/lib/dailyTarotOracle';
 import { sendPrismToss } from '@/lib/prismToss';
 import { MUSE_ART_CATALOG } from '@/lib/museDailyArt';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
+import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { getTodayDateKey, getTrinityDailyResultKey } from '@/lib/dailyCache';
 import {
   calculateDetailedSaju,
@@ -821,18 +822,21 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   const handleSaveSajuProfile = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const chosenEditName = editName.trim() || '제제';
+    const rawNick = userProfile?.basic?.nickname?.trim();
+    const safeNick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
     const updatedProfile = {
       ...(userProfile || {}),
       basic: {
         ...(userProfile?.basic || {}),
         name: chosenEditName,
-        nickname: userProfile?.basic?.nickname !== undefined ? userProfile.basic.nickname : '',
+        nickname: safeNick,
         birthdate: editBirthdate,
         birthtime: editBirthtime,
         gender: editGender,
       },
     };
     setPersistentUserProfile(updatedProfile);
+    saveProfileToAllVaults(updatedProfile);
     setShowSajuModal(false);
   };
 
@@ -906,15 +910,11 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   // 질문자 명칭 추출 (닉네임 최우선 호칭)
   const recipientName = useMemo(() => {
     const rawNick = userProfile?.basic?.nickname?.trim();
-    if (rawNick && rawNick !== '여행자') {
+    if (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') {
       return rawNick;
     }
-    const rawName = userProfile?.basic?.name?.trim();
-    if (rawName && rawName !== '여행자') {
-      return rawName;
-    }
     return '제제';
-  }, [userProfile?.basic?.nickname, userProfile?.basic?.name]);
+  }, [userProfile?.basic?.nickname]);
 
   // 🌿 제제 전용 다정한 호칭
   const jejeName = useMemo(() => {

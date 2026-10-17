@@ -1322,7 +1322,7 @@ export default function HealApp() {
     const p = getPersistentUserProfile()?.basic;
     return {
       name: p?.name || '',
-      nickname: p?.nickname || '',
+      nickname: (p?.nickname && p.nickname !== '박주형' && p.nickname !== '여행자' && p.nickname !== '사용자') ? p.nickname : '제제',
       birthdate: p?.birthdate || '',
       birthtime: p?.birthtime || '',
       gender: p?.gender === 'male' ? '남성' : '여성',
@@ -1337,7 +1337,7 @@ export default function HealApp() {
 
     setForm((prev) => ({
       name: fbProfile.name || prev.name,
-      nickname: fbProfile.nickname !== undefined ? fbProfile.nickname : prev.nickname,
+      nickname: (fbProfile.nickname && fbProfile.nickname !== '박주형' && fbProfile.nickname !== '여행자' && fbProfile.nickname !== '사용자') ? fbProfile.nickname : (prev.nickname || '제제'),
       birthdate: fbProfile.birthdate || prev.birthdate,
       birthtime: fbProfile.birthtime || prev.birthtime,
       gender: fbProfile.gender === 'male' ? '남성' : '여성',
@@ -1612,7 +1612,7 @@ export default function HealApp() {
         messages: [
           { role: 'system', content: `당신은 전인적 치유와 에너지를 꿰뚫어보는 영적 웰니스 코치 AURA 지요입니다. 사용자의 프로필, 질환 이력, 최근 상태 및 오늘의 Daily 진단을 합쳐 에너지 레벨과 소울의 회복 상태를 파악하는 심층 통찰을 제공하세요. [데이터 가이드: 프로필(${userProfileStr}), 최근상태(${recentMemory}), 데일리진단(${dailyContext})]
 각 스코어는 0-100 사이 숫자로 반환할 것.` },
-          { role: 'user', content: `호칭/닉네임: ${form.nickname || sharedState?.userProfile?.basic?.nickname || form.name || sharedState?.userProfile?.basic?.name || '제제'}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 성별: ${form.gender}. 현재 내 신체의 에너지 레벨, 치유의 포인트, 그리고 회복해야 할 장기적 방향성을 분석해줘.` }
+          { role: 'user', content: `호칭/닉네임: ${(form.nickname && form.nickname !== '박주형' && form.nickname !== '여행자' && form.nickname !== '사용자') ? form.nickname : (sharedState?.userProfile?.basic?.nickname && sharedState.userProfile.basic.nickname !== '박주형' && sharedState.userProfile.basic.nickname !== '여행자' ? sharedState.userProfile.basic.nickname : '제제')}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 성별: ${form.gender}. 현재 내 신체의 에너지 레벨, 치유의 포인트, 그리고 회복해야 할 장기적 방향성을 분석해줘.` }
         ],
         schema: SoulInsightSchema
       });

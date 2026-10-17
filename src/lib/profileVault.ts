@@ -64,7 +64,24 @@ export function loadProfileFromAllVaults(): UserProfile | undefined {
     Object.keys(merged.art || {}).length > 0
   );
 
-  return isPopulated ? merged : undefined;
+  if (!isPopulated || !merged) return undefined;
+
+  // 🛡️ 닉네임 불변 원칙: 실명('박주형'), '여행자', '사용자' 또는 공백으로 오염된 경우 무조건 '제제'로 자가 치유
+  if (!merged.basic) merged.basic = {};
+  const loadedNick = merged.basic.nickname?.trim();
+  if (!loadedNick || loadedNick === '여행자' || loadedNick === '사용자' || loadedNick === '박주형') {
+    merged.basic.nickname = '제제';
+    // 오염된 로컬 9개 볼트 및 세션 키 즉시 자가 치유(Self-Healing) 동기화
+    try {
+      const cleanedSerialized = JSON.stringify(merged);
+      for (const key of PROFILE_VAULT_KEYS) {
+        safeLocalStorage.setItem(key, cleanedSerialized);
+      }
+      safeSessionStorage.setItem('prism_user_profile_session_vault', cleanedSerialized);
+    } catch (_) {}
+  }
+
+  return merged;
 }
 
 /**
@@ -79,11 +96,12 @@ export function saveProfileToAllVaults(profile: UserProfile | undefined): void {
     const finalMerged = mergeUserProfiles(existing, profile, true);
     if (!finalMerged || Object.keys(finalMerged).length === 0) return;
 
-    // Explicitly guarantee nickname is preserved as passed in profile (e.g. if user intentionally cleared it to "")
-    if (profile.basic && typeof profile.basic.nickname === 'string') {
-      if (!finalMerged.basic) finalMerged.basic = {};
-      finalMerged.basic.nickname = profile.basic.nickname;
-    }
+    if (!finalMerged.basic) finalMerged.basic = {};
+    const inputNick = profile.basic?.nickname?.trim() || finalMerged.basic?.nickname?.trim();
+    // 🛡️ 닉네임 영구 고정: '박주형', '여행자', '사용자' 또는 공백은 무조건 '제제'로 저장
+    finalMerged.basic.nickname = (inputNick && inputNick !== '여행자' && inputNick !== '사용자' && inputNick !== '박주형') 
+      ? inputNick 
+      : '제제';
 
     const serialized = JSON.stringify(finalMerged);
 

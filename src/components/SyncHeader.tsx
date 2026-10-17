@@ -50,13 +50,9 @@ export function SyncHeader({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const rawNickname = sharedState?.userProfile?.basic?.nickname?.trim();
-  const rawName = sharedState?.userProfile?.basic?.name?.trim();
-  const displayName =
-    (rawNickname && rawNickname !== '여행자')
-      ? rawNickname
-      : ((rawName && rawName !== '여행자')
-        ? rawName
-        : (firebaseUser?.displayName || firebaseUser?.email?.split('@')[0] || '제제'));
+  const displayName = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '박주형')
+    ? rawNickname
+    : '제제';
 
   const handleLogin = async () => {
     setLoading(true);

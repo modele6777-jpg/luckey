@@ -111,8 +111,8 @@ export default function ProfilePage() {
 
   const rawInitName = initialProfile?.basic?.name || '';
   const initName = (rawInitName && rawInitName !== '여행자') ? rawInitName : '';
-  const rawInitNick = initialProfile?.basic?.nickname || '';
-  const initNick = (rawInitNick && rawInitNick !== '여행자') ? rawInitNick : '';
+  const rawInitNick = initialProfile?.basic?.nickname?.trim();
+  const initNick = (rawInitNick && rawInitNick !== '여행자' && rawInitNick !== '사용자' && rawInitNick !== '박주형') ? rawInitNick : '제제';
 
   // 5개 섹션 상태
   const [basic, setBasic] = useState({
@@ -245,11 +245,11 @@ export default function ProfilePage() {
         relationships,
       }, true);
 
-      // Explicitly guarantee nickname & avatarUrl are preserved as entered (even empty string)
-      if (typeof basic.nickname === 'string') {
-        if (!profile.basic) profile.basic = {};
-        profile.basic.nickname = basic.nickname;
-      }
+      if (!profile.basic) profile.basic = {};
+      const safeNick = (basic.nickname?.trim() && basic.nickname.trim() !== '여행자' && basic.nickname.trim() !== '사용자' && basic.nickname.trim() !== '박주형')
+        ? basic.nickname.trim()
+        : '제제';
+      profile.basic.nickname = safeNick;
       if (typeof basic.avatarUrl === 'string') {
         if (!profile.basic) profile.basic = {};
         profile.basic.avatarUrl = basic.avatarUrl;

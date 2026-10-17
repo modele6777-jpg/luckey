@@ -1334,7 +1334,7 @@ function playDailyCardChimeAsync() {
       birthdate: p?.birthdate || "",
       birthtime: p?.birthtime || "",
       gender: p?.gender === "male" ? "남성" : "여성",
-      nickname: p?.nickname || "",
+      nickname: (p?.nickname && p.nickname !== '박주형' && p.nickname !== '여행자' && p.nickname !== '사용자') ? p.nickname : "제제",
       city: p?.birthCity || "서울",
     };
   });
@@ -1806,7 +1806,7 @@ function playDailyCardChimeAsync() {
 
     setForm((prev) => ({
       name: fbProfile.name || prev.name,
-      nickname: fbProfile.nickname !== undefined ? fbProfile.nickname : prev.nickname,
+      nickname: (fbProfile.nickname && fbProfile.nickname !== '박주형' && fbProfile.nickname !== '여행자' && fbProfile.nickname !== '사용자') ? fbProfile.nickname : (prev.nickname || "제제"),
       birthdate: fbProfile.birthdate || prev.birthdate,
       birthtime: fbProfile.birthtime || prev.birthtime,
       gender: fbProfile.gender === "male" ? "남성" : (fbProfile.gender === "female" ? "여성" : prev.gender),
@@ -3034,7 +3034,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
           },
           {
             role: "user",
-            content: `호칭/닉네임: ${form.nickname || sharedState?.userProfile?.basic?.nickname || form.name || sharedState?.userProfile?.basic?.name || '제제'}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 성별: ${form.gender}. 현재 내 영적 오라클 주파수와 에너지 레벨, 연애운, 재물운, 소울 상태를 심도 있게 통찰하고 처방을 내려줘.`,
+            content: `호칭/닉네임: ${(form.nickname && form.nickname !== '박주형' && form.nickname !== '여행자' && form.nickname !== '사용자') ? form.nickname : (sharedState?.userProfile?.basic?.nickname && sharedState.userProfile.basic.nickname !== '박주형' && sharedState.userProfile.basic.nickname !== '여행자' ? sharedState.userProfile.basic.nickname : '제제')}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 성별: ${form.gender}. 현재 내 영적 오라클 주파수와 에너지 레벨, 연애운, 재물운, 소울 상태를 심도 있게 통찰하고 처방을 내려줘.`,
           },
         ],
         schema: EnergyAnalysisSchema as any,

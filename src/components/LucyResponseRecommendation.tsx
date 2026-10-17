@@ -597,7 +597,9 @@ export function LucyResponseRecommendation({
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-2xs active:scale-95 bg-[#FCF8F2] dark:bg-[#282119] hover:bg-[#F3EAD5] dark:hover:bg-[#332A20] border-[#E2D2B8] dark:border-[#503E2D] text-stone-800 dark:text-stone-200 hover:text-stone-950 dark:hover:text-white"
               title={`[${recommendedChannel.name}] LucKey 채널로 즉시 입장합니다.`}
             >
-              <RecChannelIcon size={13} className="shrink-0" style={{ color: recommendedChannel.color }} />
+              <span className="shrink-0 flex items-center" style={{ color: recommendedChannel.color }}>
+                <RecChannelIcon size={13} />
+              </span>
               <span>{recommendedChannel.shortName} 채널</span>
               <span className="text-[10px] text-stone-400 group-hover:text-stone-600 dark:text-stone-400 font-normal">➔</span>
             </button>

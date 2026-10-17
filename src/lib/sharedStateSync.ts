@@ -124,6 +124,23 @@ function mergeProfileSection<T extends any>(baseSection?: T, incomingSection?: T
     if (typeof bVal === 'string' && typeof iVal === 'string') {
       const bStr = bVal.trim();
       const iStr = iVal.trim();
+
+      // 🛡️ 닉네임 병합 특화: 실명('박주형'), '여행자', '사용자' 오염 방지
+      if (key === 'nickname') {
+        const isBInvalid = !bStr || bStr === '여행자' || bStr === '사용자' || bStr === '박주형';
+        const isIInvalid = !iStr || iStr === '여행자' || iStr === '사용자' || iStr === '박주형';
+        if (!isIInvalid && isBInvalid) {
+          result[key] = iStr;
+        } else if (!isBInvalid && isIInvalid) {
+          result[key] = bStr;
+        } else if (!isIInvalid && !isBInvalid) {
+          result[key] = preferIncoming ? iStr : bStr;
+        } else {
+          result[key] = '제제';
+        }
+        continue;
+      }
+
       if (preferIncoming) {
         result[key] = iVal;
       } else if (bStr === iStr) {
@@ -133,7 +150,7 @@ function mergeProfileSection<T extends any>(baseSection?: T, incomingSection?: T
       } else if (bStr && !iStr) {
         result[key] = bStr;
       } else {
-        result[key] = iStr.length >= bStr.length ? iStr : bStr;
+        result[key] = iStr || bStr;
       }
       continue;
     }

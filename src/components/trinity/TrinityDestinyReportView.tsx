@@ -31,6 +31,7 @@ import {
   Sun
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
+import { saveProfileToAllVaults } from '@/lib/profileVault';
 import {
   calculateDetailedSaju,
   generateDailySajuReport,
@@ -87,10 +88,9 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
   // 프로필 편집 모달/인라인 토글
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const rawNick = profile?.basic?.nickname?.trim();
   const [editName, setEditName] = useState(
-    (profile?.basic?.nickname && profile.basic.nickname !== '여행자')
-      ? profile.basic.nickname
-      : ((profile?.basic?.name && profile.basic.name !== '여행자') ? profile.basic.name : '제제')
+    (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제'
   );
   const [editBirthdate, setEditBirthdate] = useState(profile?.basic?.birthdate || '1995-05-15');
   const [editBirthtime, setEditBirthtime] = useState(profile?.basic?.birthtime || '12:00');
@@ -182,18 +182,21 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   const handleSaveProfile = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const chosenEditName = editName.trim() || '제제';
+    const curNick = profile?.basic?.nickname?.trim();
+    const safeNick = (curNick && curNick !== '여행자' && curNick !== '사용자' && curNick !== '박주형') ? curNick : '제제';
     const newProfile = {
       ...(profile || {}),
       basic: {
         ...(profile?.basic || {}),
         name: chosenEditName,
-        nickname: profile?.basic?.nickname !== undefined ? profile.basic.nickname : '',
+        nickname: safeNick,
         birthdate: editBirthdate,
         birthtime: editBirthtime,
         gender: editGender,
       },
     };
     setPersistentUserProfile(newProfile as any);
+    saveProfileToAllVaults(newProfile as any);
     setIsEditingProfile(false);
   };
 

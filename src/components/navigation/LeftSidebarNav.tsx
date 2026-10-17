@@ -176,12 +176,12 @@ export default function LeftSidebarNav() {
     updateSharedStateFn = updateSharedState;
     const rawNick = sharedState?.userProfile?.basic?.nickname?.trim();
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
-    const rawName = sharedState?.userProfile?.basic?.name?.trim() || getPersistentUserProfile()?.basic?.name?.trim();
-    userNickname = rawNick || fallbackNick || rawName || '제제';
+    const chosen = rawNick || fallbackNick;
+    userNickname = (chosen && chosen !== '여행자' && chosen !== '사용자' && chosen !== '박주형') ? chosen : '제제';
     userAvatarUrl = sharedState?.userProfile?.basic?.avatarUrl || getPersistentUserProfile()?.basic?.avatarUrl || firebaseUser?.photoURL || undefined;
   } catch {
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
-    userNickname = fallbackNick || getPersistentUserProfile()?.basic?.name?.trim() || '제제';
+    userNickname = (fallbackNick && fallbackNick !== '여행자' && fallbackNick !== '사용자' && fallbackNick !== '박주형') ? fallbackNick : '제제';
     userAvatarUrl = getPersistentUserProfile()?.basic?.avatarUrl || undefined;
   }
 

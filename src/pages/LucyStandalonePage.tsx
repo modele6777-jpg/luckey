@@ -5,7 +5,8 @@ import {
   Download, User, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked
 } from 'lucide-react';
-import { useApp, PersonaType, getPersistentUserProfile } from '@/contexts/AppContext';
+import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
+import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { useLocation } from 'wouter';
 import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, normalizeTextForSpeech } from '@/utils/tts';
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
@@ -555,6 +556,7 @@ export default function LucyStandalonePage() {
     isGenerating,
     abortGenerating,
     sharedState,
+    updateSharedState,
     clearPersonaMessages
   } = useApp();
 
@@ -745,15 +747,11 @@ export default function LucyStandalonePage() {
   }, []);
 
 
-  // Determine User Nickname
+  // Determine User Nickname (🛡️ 실명이나 구글 계정명으로 폴백하지 않고 '제제'로 영구 고정)
   const rawNickname = sharedState?.userProfile?.basic?.nickname?.trim();
-  const rawDisplayName = firebaseUser?.displayName?.trim();
-  const rawName = sharedState?.userProfile?.basic?.name?.trim();
-  const userDisplayName = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자')
+  const userDisplayName = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '박주형')
     ? rawNickname
-    : ((rawName && rawName !== '여행자')
-      ? rawName
-      : (rawDisplayName || '제제'));
+    : '제제';
 
   // Detailed Saju Info for Soul Profile View
   const sajuInfo = useMemo(() => calculateDetailedSaju(sharedState?.userProfile), [sharedState?.userProfile]);
@@ -769,10 +767,12 @@ export default function LucyStandalonePage() {
     } catch (_) {}
 
     const basic = sharedState?.userProfile?.basic || getPersistentUserProfile()?.basic;
+    const rawN = basic?.nickname?.trim();
+    const myName = (rawN && rawN !== '여행자' && rawN !== '사용자' && rawN !== '박주형') ? rawN : '제제';
     const myProfile: ChatTargetProfile = {
       id: 'my-profile',
       isMe: true,
-      name: basic?.nickname || basic?.name || '나 (본인)',
+      name: myName,
       birthdate: basic?.birthdate || '1995-01-01',
       birthtime: basic?.birthtime || '12:00',
       gender: basic?.gender || 'male',
@@ -805,7 +805,8 @@ export default function LucyStandalonePage() {
       setActiveProfiles((prev) => {
         const me = prev.find((p) => p.isMe);
         if (!me) return prev;
-        const newName = basic?.nickname || basic?.name || me.name;
+        const rawN = basic?.nickname?.trim();
+        const newName = (rawN && rawN !== '여행자' && rawN !== '사용자' && rawN !== '박주형') ? rawN : '제제';
         const newBirthdate = basic?.birthdate || me.birthdate;
         const newBirthtime = basic?.birthtime ?? me.birthtime;
         const newGender = basic?.gender || me.gender;
@@ -915,10 +916,33 @@ export default function LucyStandalonePage() {
         });
       }
 
+      // 🛡️ 본인 프로필 정보 수정 시 전역 프로필 및 다중 금고에 즉시 영구 저장
+      if (safeProfile.isMe || safeProfile.relationship === '본인') {
+        const curProfile = sharedState?.userProfile || getPersistentUserProfile() || {};
+        const safeNick = (safeProfile.name.trim() && safeProfile.name.trim() !== '여행자' && safeProfile.name.trim() !== '사용자' && safeProfile.name.trim() !== '박주형') 
+          ? safeProfile.name.trim() 
+          : '제제';
+        const updatedUserProfile = {
+          ...curProfile,
+          basic: {
+            ...(curProfile.basic || {}),
+            nickname: safeNick,
+            birthdate: safeProfile.birthdate,
+            birthtime: safeProfile.birthtime,
+            gender: safeProfile.gender,
+            birthCity: safeProfile.birthCity,
+            lunarSolar: safeProfile.lunarSolar,
+          },
+        };
+        setPersistentUserProfile(updatedUserProfile);
+        saveProfileToAllVaults(updatedUserProfile);
+        void updateSharedState({ userProfile: updatedUserProfile }, 'lucy');
+      }
+
       setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
       return updated;
     });
-  }, [selectedMode, activeChannels]);
+  }, [selectedMode, activeChannels, sharedState?.userProfile, updateSharedState]);
 
   const handleRemoveChatProfile = useCallback((profileId: string) => {
     setActiveProfiles((prev) => {
