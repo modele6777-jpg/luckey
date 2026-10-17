@@ -620,7 +620,9 @@ export function getSharedStateSignature(s: SharedState | null | undefined): stri
     : '';
 
   const latestChatMsg = Array.isArray(s.chatHistory) && s.chatHistory.length > 0 ? s.chatHistory[s.chatHistory.length - 1] : null;
-  const chatSummary = latestChatMsg ? `${s.chatHistory?.length}_${latestChatMsg.id || ''}_${latestChatMsg.timestamp || 0}` : '0';
+  const chatSummary = latestChatMsg 
+    ? `${s.chatHistory?.length}_${latestChatMsg.id || ''}_${latestChatMsg.role || ''}_${String(latestChatMsg.content || '').slice(0, 30)}_${latestChatMsg.timestamp || 0}` 
+    : '0';
 
   const newestVerse = Array.isArray(s.rebibleVerses) && s.rebibleVerses.length > 0 ? s.rebibleVerses[0] : null;
   const rebibleSummary = newestVerse ? `${s.rebibleVerses?.length}_${newestVerse.id}_${newestVerse.updatedAt || newestVerse.recordedAt || ''}` : '0';
@@ -1329,12 +1331,10 @@ export function mergeSharedState(
     merged.rebibleVerses = Array.from(verseMap.values()).sort((a, b) => new Date(b.recordedAt || 0).getTime() - new Date(a.recordedAt || 0).getTime());
   }
 
-  // 6d. Merge Unified Chat History
-  const chatMap = new Map<string, any>();
-  (remote.chatHistory || []).forEach((m: any) => { if (m?.id) chatMap.set(m.id, m); });
-  (local.chatHistory || []).forEach((m: any) => { if (m?.id) chatMap.set(m.id, m); });
-  if (chatMap.size > 0) {
-    merged.chatHistory = Array.from(chatMap.values()).sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
+  // 6d. Merge Unified Chat History (Lossless merge preserving user questions and AI responses)
+  const mergedChat = mergeUnifiedMessages(local.chatHistory || [], remote.chatHistory || []);
+  if (mergedChat.length > 0) {
+    merged.chatHistory = mergedChat.slice(-150);
   }
 
   // 6e. Merge Prologue ToDo Missions (lossless union of custom & curated missions)
@@ -1627,6 +1627,7 @@ export async function syncSharedStateWithCloud(
   try {
     const localUpdatedAt = getSharedStateUpdatedAt(local);
     const subColls = [
+      { key: 'lucy', coll: 'lucy_history' },
       { key: 'trinity', coll: 'trinity_history' },
       { key: 'orange', coll: 'orange_history' },
       { key: 'muse', coll: 'muse_history' },
@@ -1676,7 +1677,8 @@ export async function syncSharedStateWithCloud(
     subCollDocs.forEach((res) => {
       if (res && res.entries && res.entries.length > 0) {
         const { key, entries } = res;
-        if (key === 'trinity') merged.trinityHistory = entries;
+        if (key === 'lucy') merged.lucyHistory = entries;
+        else if (key === 'trinity') merged.trinityHistory = entries;
         else if (key === 'orange') merged.orangeHistory = entries;
         else if (key === 'muse') merged.museHistory = entries;
         else if (key === 'bluebird') merged.bluebirdHistory = entries;

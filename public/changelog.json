@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.4.306",
+    "summary": "루시 채팅 다중 기기 및 클라우드 동기화 시 사용자 질문(user message) 100% 무손실 동반 동기화 파이프라인 구축",
+    "builtAt": "2026-10-17T17:10:00.000Z",
+    "items": [
+      "사용자 질문 발송 즉시 저장 & 클라우드 푸시(Zero-Latency Sync): sendUnifiedMessage 시 600ms 디바운스 대기 없이 로컬스토리지 영구 커밋, 브로드캐스트 전송 및 Firestore chatThreads 즉시 푸시 실행",
+      "대화 기록 스마트 머지 엔진(Smart Deduplicating Merge) 강화: mergeSharedState의 단순 ID Map 방식을 mergeUnifiedMessages로 교체하여 ID 누락 및 타임스탬프 불일치로 인한 질문 유실 원천 차단",
+      "원격 동기화 React State 실시간 반영: unpackAndHydrateLocalStorage 완료 시 발생하는 prism:chat_synced 이벤트를 AppContext에서 수신하여 대화창 UI 즉각 리렌더링",
+      "스토리지 변경 감지 복구: StorageEvent 리스너의 키 필터링 오류를 수정하여 타 탭/PWA 창 간 chat_history_unified_v3 변경 사항을 정상 동기화",
+      "서브컬렉션 히스토리 보존 개선: Firestore 서브컬렉션 로깅 시 질문 40자 축약을 제거하고 lucy_history를 정식 추가하여 질문 전문(Full Question) 및 루시 대화 온전한 보존 보장"
+    ]
+  },
+  {
     "version": "1.4.305",
     "summary": "하단 도크 버튼 크기 및 순서 재배열, 루시 응답 중단 방지, TTS 백그라운드 재생 및 여성 음성 통일, 낭독 하이라이트 중복 제거, 오라클 타로 당일 결과 보존, TTS 완료 종소리 지원",
     "builtAt": "2026-10-17T16:50:00.000Z",

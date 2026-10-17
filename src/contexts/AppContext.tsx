@@ -412,20 +412,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Helper to push chat history to Firestore in real-time for multi-device sync with debounce
+  // Helper to push chat history to Firestore in real-time for multi-device sync with debounce or immediate mode
   const pushChatThreadsTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const pushChatThreadsToFirestore = useCallback((messagesToPush: UnifiedMessage[] | Record<PersonaType, UnifiedMessage[]>) => {
+  const pushChatThreadsToFirestore = useCallback((
+    messagesToPush: UnifiedMessage[] | Record<PersonaType, UnifiedMessage[]>,
+    immediate = false
+  ) => {
     const currentUid = auth.currentUser?.uid || firebaseUser?.uid || activePairedVaultId || getPairedVaultId();
     if (!currentUid) return;
 
     if (pushChatThreadsTimerRef.current) {
       clearTimeout(pushChatThreadsTimerRef.current);
+      pushChatThreadsTimerRef.current = null;
     }
 
-    pushChatThreadsTimerRef.current = setTimeout(() => {
+    const executePush = () => {
       try {
         const chatDocRef = doc(db, 'chatThreads', currentUid);
-        const payload = Array.isArray(messagesToPush) ? messagesToPush : (messagesToPush.lucy || Object.values(messagesToPush)[0] || []);
+        const rawPayload = Array.isArray(messagesToPush) ? messagesToPush : (messagesToPush.lucy || Object.values(messagesToPush)[0] || []);
+        // Don't push empty model placeholders to remote Firestore
+        const payload = rawPayload.filter(m => m.role !== 'model' || (typeof m.content === 'string' ? m.content.trim() !== '' : !!m.content));
         const cleanList = cleanFirestoreData(payload);
         setDoc(chatDocRef, {
           messages: cleanList,
@@ -437,8 +443,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.warn('[ChatThreads] Failed to push to Firestore:', e);
       }
-    }, 600);
+    };
+
+    if (immediate) {
+      executePush();
+    } else {
+      pushChatThreadsTimerRef.current = setTimeout(executePush, 600);
+    }
   }, [firebaseUser?.uid, activePairedVaultId]);
+
+  // Listen to cross-device chat sync events triggered by unpackAndHydrateLocalStorage
+  useEffect(() => {
+    const handleChatSynced = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (Array.isArray(customEvent.detail) && customEvent.detail.length > 0) {
+        const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
+        if (!isAnyGenerating) {
+          setUnifiedMessages((prev) => mergeUnifiedMessages(prev, customEvent.detail));
+        }
+      }
+    };
+    window.addEventListener('prism:chat_synced', handleChatSynced);
+    return () => {
+      window.removeEventListener('prism:chat_synced', handleChatSynced);
+    };
+  }, []);
 
   // Persist unified messages whenever they change locally & broadcast to other tabs/PWA windows & sync to Firestore
   useEffect(() => {
@@ -461,7 +490,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleSyncFromStorage = (e?: StorageEvent) => {
       // Only process storage events that specifically affect chat timeline
-      if (e && e.key && !e.key.includes('unified_messages')) {
+      if (e && e.key && !e.key.includes('chat_history') && !e.key.includes('unified') && !e.key.includes('prism_chat')) {
         return;
       }
       const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
@@ -1433,7 +1462,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // 1. Add user message
     const userMsg: UnifiedMessage = { 
-      id: 'msg-' + Math.random().toString(36).substring(2, 9), 
+      id: 'msg-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8), 
       role: 'user', 
       content, 
       timestamp: Date.now(),
@@ -1443,14 +1472,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       mode: options?.mode
     };
     
+    // 즉시 로컬 스토리지에 질문 영구 보존 및 브로드캐스트 & 클라우드 즉시 푸시
+    const currentStored = loadSavedUnifiedMessages();
+    const cleanPrior = currentStored.filter(m => m.role !== 'model' || (typeof m.content === 'string' ? m.content.trim() !== '' : !!m.content));
+    const nextCommitted = mergeUnifiedMessages(cleanPrior, [userMsg]);
+    saveUnifiedMessagesSafely(nextCommitted);
+
+    if (chatBroadcastRef.current) {
+      chatBroadcastRef.current.postMessage({ messages: nextCommitted, timestamp: Date.now() });
+    }
+    pushChatThreadsToFirestore(nextCommitted, true);
+    updateSharedState({
+      chatHistory: nextCommitted.slice(-150)
+    }, 'lucy');
+
     // Create assistant message placeholder
     const assistMsgId = 'reply-' + Math.random().toString(36).substring(2, 9);
     let replyText = "";
 
     // Append both user message and assistant placeholder directly to unified timeline
-    setUnifiedMessages(prev => [
-      ...prev,
-      userMsg,
+    setUnifiedMessages([
+      ...nextCommitted,
       { 
         id: assistMsgId, 
         role: 'model' as const, 
@@ -1767,6 +1809,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (fUser && safeLocalStorage.getItem('developer_bypass') !== 'true') {
             try {
               const targets = [
+                { collectionName: 'lucy_history', logType: 'chat_sync', logTitle: '루시 마스터 대화' },
                 { collectionName: 'orange_history', logType: 'chat_sync', logTitle: '오렌지 다이어리 교감' },
                 { collectionName: 'bluebird_history', logType: 'chat_sync', logTitle: '블루버드 라디오 교감' },
                 { collectionName: 'heal_history', logType: 'chat_sync', logTitle: '아우라 주파수 조율' },
@@ -1779,7 +1822,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   addDoc(collection(db, target.collectionName, fUser.uid, 'entries'), {
                     type: target.logType,
                     title: target.logTitle,
-                    content: text.length > 40 ? `${text.slice(0, 40)}...` : text,
+                    content: text,
                     response: cleanFullText,
                     metadata: { question: text },
                     createdAt: serverTimestamp()

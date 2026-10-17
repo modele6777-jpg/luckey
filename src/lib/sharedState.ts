@@ -192,6 +192,7 @@ export interface SharedState {
   prologueMemory?: string; // Specific to Prologue (Hub Home Page)
   epilogueMemory?: string; // Specific to Epilogue (Reflection Page)
   deepSyncHistory?: any[]; // For Trinity Library
+  lucyHistory?: any[];     // For Lucy Library
   museHistory?: any[];     // For Muse Library
   orangeHistory?: any[];   // For Orange Library
   bluebirdHistory?: any[]; // For Bluebird Library

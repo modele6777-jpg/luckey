@@ -87,9 +87,26 @@ function getMessageSignature(m: UnifiedMessage): string {
   return `${m.role}_${time}_${contentStr.slice(0, 50)}`;
 }
 
+function getMessageFallbackKey(m: UnifiedMessage): string {
+  const contentStr = typeof m.content === 'string' ? m.content.trim() : JSON.stringify(m.content);
+  const time = Math.floor(Number(m.timestamp || 0) / 3000); // 3초 버퍼 노멀라이즈
+  return `${m.role}_${time}_${contentStr.slice(0, 80)}`;
+}
+
+function isEmptyPlaceholder(m: UnifiedMessage): boolean {
+  if (!m) return true;
+  if (m.role === 'model' || m.role === 'assistant') {
+    if (!m.content) return true;
+    if (typeof m.content === 'string' && m.content.trim() === '') return true;
+  }
+  return false;
+}
+
 /**
  * 두 개 이상의 대화 기록 목록을 스마트하게 병합 (Smart Deduplicating Merge)
  * - 실제 대화가 존재할 경우 불필요한 단독 인사말(greet-main, greet-*) 제거
+ * - 빈 모델 응답 플레이스홀더(생성 시작 시 임시 생성된 빈 메시지)는 영구 보관 대상에서 필터링
+ * - 사용자 질문(role: 'user')과 AI 응답 쌍의 무손실 보존
  * - 타임스탬프 순서 보장
  * - 빈 목록이나 greet-main 단독 목록으로 기존 대화가 덮어씌워지는 것 완벽 방지
  */
@@ -97,8 +114,8 @@ export function mergeUnifiedMessages(
   primary: UnifiedMessage[],
   incoming: UnifiedMessage[]
 ): UnifiedMessage[] {
-  const cleanPrimary = (Array.isArray(primary) ? primary : []).filter((m) => !isErrorMessage(m));
-  const cleanIncoming = (Array.isArray(incoming) ? incoming : []).filter((m) => !isErrorMessage(m));
+  const cleanPrimary = (Array.isArray(primary) ? primary : []).filter((m) => !isErrorMessage(m) && !isEmptyPlaceholder(m));
+  const cleanIncoming = (Array.isArray(incoming) ? incoming : []).filter((m) => !isErrorMessage(m) && !isEmptyPlaceholder(m));
 
   const hasPrimaryUser = hasRealUserConversation(cleanPrimary);
   const hasIncomingUser = hasRealUserConversation(cleanIncoming);
@@ -110,8 +127,9 @@ export function mergeUnifiedMessages(
     return [createDefaultGreeting()];
   }
 
-  // 병합용 맵
+  // 병합용 맵 (Primary Key: ID or Exact Signature, Secondary Lookup: Fallback Content Key)
   const map = new Map<string, UnifiedMessage>();
+  const fallbackToKey = new Map<string, string>();
 
   // 유저 대화가 있을 때는 순수 greet-main / greet-*은 제외하고 병합
   const shouldFilterGreet = hasPrimaryUser || hasIncomingUser;
@@ -120,13 +138,36 @@ export function mergeUnifiedMessages(
     if (shouldFilterGreet && (msg.id === 'greet-main' || msg.id === 'greet' || msg.id?.startsWith('greet-'))) {
       return;
     }
+
     const sig = getMessageSignature(msg);
-    if (!map.has(sig)) {
+    const fbKey = getMessageFallbackKey(msg);
+
+    // 1. Exact signature match
+    let targetKey = map.has(sig) ? sig : null;
+
+    // 2. Fallback key match (e.g. same content and time range but different/missing ID)
+    if (!targetKey && fallbackToKey.has(fbKey)) {
+      targetKey = fallbackToKey.get(fbKey) || null;
+    }
+
+    if (!targetKey) {
       map.set(sig, msg);
+      fallbackToKey.set(fbKey, sig);
     } else {
-      // 기존 메시지보다 더 상세한 정보(예: persona, id 등)가 있다면 업데이트
-      const existing = map.get(sig)!;
-      map.set(sig, { ...existing, ...msg });
+      const existing = map.get(targetKey)!;
+      // 온전한 컨텐츠가 빈 컨텐츠나 짧은 청크로 덮어써지지 않도록 보호
+      const hasContent = (c: any) => c && (typeof c !== 'string' || c.trim() !== '');
+      const preferredContent = hasContent(msg.content) ? msg.content : existing.content;
+
+      map.set(targetKey, {
+        ...existing,
+        ...msg,
+        content: preferredContent,
+        id: existing.id || msg.id,
+        timestamp: existing.timestamp || msg.timestamp,
+        persona: msg.persona || existing.persona,
+        role: existing.role || msg.role,
+      });
     }
   });
 
