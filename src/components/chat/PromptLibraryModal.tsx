@@ -17,7 +17,12 @@ import {
 interface PromptLibraryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectPrompt: (promptText: string, sendImmediately: boolean) => void;
+  onSelectPrompt: (
+    promptText: string,
+    sendImmediately: boolean,
+    toolIds?: string[],
+    promptTitle?: string
+  ) => void;
 }
 
 export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
@@ -69,7 +74,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
   const { items: pageItems, totalPages, totalCount } = paginationData;
 
   const handlePromptAction = useCallback((prompt: HoriPromptItem, sendImmediately: boolean) => {
-    onSelectPrompt(prompt.body, sendImmediately);
+    onSelectPrompt(prompt.body, sendImmediately, prompt.tool_ids, prompt.title);
     onClose();
   }, [onSelectPrompt, onClose]);
 
@@ -265,7 +270,11 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                       key={prompt.id}
                       className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 hover:border-amber-400/80 dark:hover:border-amber-500/80 transition-all shadow-xs hover:shadow-md flex flex-col justify-between group"
                     >
-                      <div className="space-y-2.5">
+                      <div 
+                        className="space-y-2.5 cursor-pointer"
+                        onClick={() => handlePromptAction(prompt, false)}
+                        title="클릭하여 대화 입력창에 넣고 해당 모드로 전환합니다."
+                      >
                         {/* Badges: Category & Tools */}
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5 flex-wrap">

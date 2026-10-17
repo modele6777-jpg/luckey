@@ -18,7 +18,7 @@ import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { cleanUserMessageDisplay } from '@/utils/cleanMessage';
-import { detectLucyChannelsFromText } from '@/lib/lucyAutoModeDetector';
+import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { getAndClearPendingSelection } from '@/lib/selectionBridge';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
@@ -525,16 +525,35 @@ export default function LucyStandalonePage() {
   const isAutoDetect = true;
   const [autoDetectedTitle, setAutoDetectedTitle] = useState<string | null>(null);
 
+  // 📌 추천 질문 라이브러리 및 칩에서 지정된 모드를 보존하여 실시간 디바운스 임의 덮어쓰기 방지
+  const presetModeRef = useRef<{
+    text: string;
+    channels: SpecialChannel[];
+    title: string;
+  } | null>(null);
+
   // Real-time input text analysis for live dynamic mode switching (항시 AI 자동 감지 고정)
   useEffect(() => {
     if (!input.trim() || input.trim().length < 2) {
+      presetModeRef.current = null;
       setAutoDetectedTitle((prev) => (prev !== null ? null : prev));
       return;
     }
+
+    // 질문 라이브러리/칩에서 선택된 질문 내용과 완전히 일치할 경우 사전 지정된 모드 유지
+    if (presetModeRef.current && presetModeRef.current.text === input) {
+      setActiveChannels(presetModeRef.current.channels);
+      setAutoDetectedTitle(presetModeRef.current.title);
+      return;
+    }
+
+    // 사용자가 직접 내용을 수정/타이핑하기 시작하면 프리셋을 해제하고 실시간 감지 실행
+    presetModeRef.current = null;
+
     const timer = setTimeout(() => {
       const detected = detectLucyChannelsFromText(input);
       const nextChannels: SpecialChannel[] = detected.isMaster
-        ? ['orange', 'trinity', 'aura', 'bluebird', 'muse']
+        ? ALL_CHANNELS
         : detected.channels.length > 0
         ? detected.channels
         : [];
@@ -1069,6 +1088,11 @@ export default function LucyStandalonePage() {
         channels = detected.channels;
       }
       setActiveChannels(channels);
+      setAutoDetectedTitle(detected.modeTitle);
+    } else if (forcedChannels !== undefined) {
+      channels = forcedChannels;
+      setActiveChannels(forcedChannels);
+      setAutoDetectedTitle(formatChannelsModeTitle(forcedChannels));
     }
 
     const channelCount = channels.length;
@@ -1147,16 +1171,112 @@ export default function LucyStandalonePage() {
     handleSendRef.current = handleSend;
   }, [handleSend]);
 
-  const handleSelectPromptFromLibrary = useCallback((promptText: string, sendImmediately: boolean) => {
+  const handleSelectPromptFromLibrary = useCallback((
+    promptText: string, 
+    sendImmediately: boolean,
+    toolIds?: string[],
+    _promptTitle?: string
+  ) => {
+    // 1. 도구 ID(toolIds)로부터 유효한 7대 채널 목록 추출
+    let resolvedChannels: SpecialChannel[] = [];
+    if (toolIds && toolIds.length > 0) {
+      resolvedChannels = toolIds.filter((t) => ALL_CHANNELS.includes(t as SpecialChannel)) as SpecialChannel[];
+    }
+    if (resolvedChannels.length === 0) {
+      const detected = detectLucyChannelsFromText(promptText);
+      resolvedChannels = detected.isMaster ? ALL_CHANNELS : detected.channels;
+    }
+
+    // 2. 일관된 모드 명칭 생성 (단일: '오렌지 (성찰)', 융합: '2중 융합 (오렌지 + 트리니티)')
+    const modeTitle = formatChannelsModeTitle(resolvedChannels);
+
+    // 3. 헤더 배지 및 활성 채널 상태 즉시 전환
+    setActiveChannels(resolvedChannels);
+    setAutoDetectedTitle(modeTitle);
+
+    // 4. 프리셋 레퍼런스에 등록하여 250ms 디바운스 실시간 감지기가 임의로 덮어쓰지 못하도록 보존
+    presetModeRef.current = {
+      text: promptText,
+      channels: resolvedChannels,
+      title: modeTitle,
+    };
+
     if (sendImmediately) {
       if (handleSendRef.current) {
-        handleSendRef.current(promptText);
+        handleSendRef.current(promptText, resolvedChannels);
       }
     } else {
       setInput(promptText);
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 60);
+    }
+  }, []);
+
+  // 🎯 가로 스크롤 추천 질문 칩 클릭 시 해당 질문에 맞는 7대 채널 모드로 전환 및 전송
+  const handleSelectRecommendationChip = useCallback((promptText: string) => {
+    // 1. HORI_PROMPT_LIBRARY 77선 라이브러리 항목 일치 확인
+    const horiItem = HORI_PROMPT_LIBRARY.find((p) => p.title === promptText || p.body === promptText);
+    if (horiItem && horiItem.tool_ids && horiItem.tool_ids.length > 0) {
+      const validChannels = horiItem.tool_ids.filter((t) => ALL_CHANNELS.includes(t as SpecialChannel)) as SpecialChannel[];
+      const modeTitle = formatChannelsModeTitle(validChannels);
+      setActiveChannels(validChannels);
+      setAutoDetectedTitle(modeTitle);
+      presetModeRef.current = {
+        text: horiItem.body,
+        channels: validChannels,
+        title: modeTitle,
+      };
+      if (handleSendRef.current) {
+        handleSendRef.current(horiItem.body, validChannels);
+      }
+      return;
+    }
+
+    // 2. 단일 채널 전용 추천 풀 일치 확인
+    for (const [ch, pool] of Object.entries(CHANNEL_PROMPT_POOLS)) {
+      if (pool.includes(promptText)) {
+        const targetChannels: SpecialChannel[] = [ch as SpecialChannel];
+        const modeTitle = formatChannelsModeTitle(targetChannels);
+        setActiveChannels(targetChannels);
+        setAutoDetectedTitle(modeTitle);
+        presetModeRef.current = {
+          text: promptText,
+          channels: targetChannels,
+          title: modeTitle,
+        };
+        if (handleSendRef.current) {
+          handleSendRef.current(promptText, targetChannels);
+        }
+        return;
+      }
+    }
+
+    // 3. 올인원 마스터 추천 풀 일치 확인
+    if (MASTER_PROMPT_POOL.includes(promptText)) {
+      const targetChannels = ALL_CHANNELS;
+      const modeTitle = formatChannelsModeTitle(targetChannels);
+      setActiveChannels(targetChannels);
+      setAutoDetectedTitle(modeTitle);
+      presetModeRef.current = {
+        text: promptText,
+        channels: targetChannels,
+        title: modeTitle,
+      };
+      if (handleSendRef.current) {
+        handleSendRef.current(promptText, targetChannels);
+      }
+      return;
+    }
+
+    // 4. 일반/융합 질문 풀 및 텍스트 자동 감지 폴백
+    const detected = detectLucyChannelsFromText(promptText);
+    const targetChannels = detected.isMaster ? ALL_CHANNELS : detected.channels;
+    const modeTitle = detected.modeTitle || formatChannelsModeTitle(targetChannels);
+    setActiveChannels(targetChannels);
+    setAutoDetectedTitle(modeTitle);
+    if (handleSendRef.current) {
+      handleSendRef.current(promptText, targetChannels);
     }
   }, []);
 
@@ -1847,7 +1967,7 @@ export default function LucyStandalonePage() {
                   <button
                     key={`${promptSeed}-${idx}`}
                     type="button"
-                    onClick={() => handleSend(promptText)}
+                    onClick={() => handleSelectRecommendationChip(promptText)}
                     disabled={isLucyGenerating}
                     className="shrink-0 px-2.5 sm:px-3 py-1 rounded-full bg-slate-50/90 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-[11px] sm:text-xs font-medium text-slate-700 hover:text-amber-950 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
                   >

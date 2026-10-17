@@ -1337,7 +1337,7 @@ export function UnifiedChat() {
       <PromptLibraryModal
         isOpen={isPromptLibraryOpen}
         onClose={() => setIsPromptLibraryOpen(false)}
-        onSelectPrompt={(promptText, sendImmediately) => {
+        onSelectPrompt={(promptText, sendImmediately, _toolIds, _promptTitle) => {
           if (sendImmediately) {
             handleSend(promptText);
           } else {

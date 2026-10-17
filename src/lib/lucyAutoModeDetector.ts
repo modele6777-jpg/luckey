@@ -31,6 +31,24 @@ export const SEPTAGRAM_SINGLE_TITLES: Record<SeptagramChannel, string> = {
 };
 
 /**
+ * 채널 목록을 기반으로 7대 채널 명칭에 부합하는 일관된 모드 타이틀을 반환합니다.
+ */
+export function formatChannelsModeTitle(channels: SpecialChannel[]): string {
+  if (!channels || channels.length === 0) {
+    return '가벼운 일상 수다';
+  }
+  if (channels.length === 7) {
+    return '7대 채널 올인원 마스터';
+  }
+  if (channels.length === 1) {
+    const ch = channels[0] as SeptagramChannel;
+    return SEPTAGRAM_SINGLE_TITLES[ch] || SEPTAGRAM_CHANNEL_NAMES[ch] || ch;
+  }
+  const channelNames = channels.map((c) => SEPTAGRAM_CHANNEL_NAMES[c as SeptagramChannel] || c);
+  return `${channels.length}중 융합 (${channelNames.join(' + ')})`;
+}
+
+/**
  * 텍스트의 키워드 및 대화 의도를 분석하여 적절한 루시 상담 모드를 자동 감지합니다.
  * 7대 채널(프롤로그·오렌지·트리니티·아우라·블루버드·뮤즈·에필로그) 지원 및
  * 융합(Fusion) 시에도 7대 채널명으로 구성된 모드 타이틀 반환.
@@ -160,13 +178,7 @@ export function detectLucyChannelsFromText(text: string): LucyAutoDetectResult {
   const channels = Array.from(matchedChannels);
   const isCasual = channels.length === 0;
 
-  let modeTitle = '가벼운 일상 수다';
-  if (channels.length === 1) {
-    modeTitle = SEPTAGRAM_SINGLE_TITLES[channels[0]] || SEPTAGRAM_CHANNEL_NAMES[channels[0]] || channels[0];
-  } else if (channels.length >= 2) {
-    const channelNames = channels.map((c) => SEPTAGRAM_CHANNEL_NAMES[c] || c);
-    modeTitle = `${channels.length}중 융합 (${channelNames.join(' + ')})`;
-  }
+  const modeTitle = formatChannelsModeTitle(channels);
 
   return {
     channels,
