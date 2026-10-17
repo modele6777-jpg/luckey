@@ -384,7 +384,7 @@ function AppContent() {
   }
 
   return (
-    <div className="prism-app-shell relative z-[1] bg-transparent">
+    <div className={`prism-app-shell relative z-[1] bg-transparent ${isLucyRoute ? 'in-lucy-chat' : ''}`}>
       <NotchScrollToTopBar />
       {/* Draggable & Edge-Dockable Background Music Player */}
       {shouldMountBgMusicPlayer() && (

@@ -715,35 +715,6 @@ export default function LucyStandalonePage() {
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const isUserScrolledUpRef = useRef(false);
 
-  // 📏 하단 채팅 란 높이 실시간 측정 및 글로벌 하단 3개 버튼(메뉴, 빅뱅, 배경음) 상향 배치 연동
-  useEffect(() => {
-    const updateFooterHeight = () => {
-      if (footerRef.current) {
-        const height = footerRef.current.offsetHeight;
-        document.documentElement.style.setProperty('--lucy-chat-bar-height', `${height}px`);
-        document.body.style.setProperty('--lucy-chat-bar-height', `${height}px`);
-        document.documentElement.classList.add('in-lucy-chat');
-        document.body.classList.add('in-lucy-chat');
-      }
-    };
-
-    updateFooterHeight();
-    const rafId = requestAnimationFrame(updateFooterHeight);
-    const ro = new ResizeObserver(updateFooterHeight);
-    if (footerRef.current) ro.observe(footerRef.current);
-    window.addEventListener('resize', updateFooterHeight);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      ro.disconnect();
-      window.removeEventListener('resize', updateFooterHeight);
-      document.documentElement.style.removeProperty('--lucy-chat-bar-height');
-      document.body.style.removeProperty('--lucy-chat-bar-height');
-      document.documentElement.classList.remove('in-lucy-chat');
-      document.body.classList.remove('in-lucy-chat');
-    };
-  }, []);
-
   // Dedicated Lucy entrance aura loader
   const [isLucyReady, setIsLucyReady] = useState(false);
   useEffect(() => {
@@ -752,6 +723,48 @@ export default function LucyStandalonePage() {
     }, 800);
     return () => clearTimeout(timer);
   }, []);
+
+  // 📏 하단 채팅 란 높이 실시간 측정 및 글로벌 하단 3개 버튼(메뉴, 빅뱅, 배경음) 상향 배치 연동
+  useEffect(() => {
+    // 1. 선제 기본 클래스 및 기본 높이 설정 (깜빡임 및 중첩 원천 차단)
+    document.documentElement.classList.add('in-lucy-chat');
+    document.body.classList.add('in-lucy-chat');
+    document.documentElement.style.setProperty('--lucy-chat-bar-height', '136px');
+    document.body.style.setProperty('--lucy-chat-bar-height', '136px');
+
+    if (!isLucyReady) return;
+
+    const updateFooterHeight = () => {
+      if (footerRef.current) {
+        const height = footerRef.current.offsetHeight;
+        if (height > 0) {
+          document.documentElement.style.setProperty('--lucy-chat-bar-height', `${height}px`);
+          document.body.style.setProperty('--lucy-chat-bar-height', `${height}px`);
+        }
+      }
+    };
+
+    updateFooterHeight();
+    const rafId = requestAnimationFrame(updateFooterHeight);
+    let ro: ResizeObserver | null = null;
+    if (footerRef.current) {
+      ro = new ResizeObserver(updateFooterHeight);
+      ro.observe(footerRef.current);
+    }
+    window.addEventListener('resize', updateFooterHeight);
+    window.addEventListener('orientationchange', updateFooterHeight);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', updateFooterHeight);
+      window.removeEventListener('orientationchange', updateFooterHeight);
+      document.documentElement.style.removeProperty('--lucy-chat-bar-height');
+      document.body.style.removeProperty('--lucy-chat-bar-height');
+      document.documentElement.classList.remove('in-lucy-chat');
+      document.body.classList.remove('in-lucy-chat');
+    };
+  }, [isLucyReady]);
 
 
   // Determine User Nickname (🛡️ 실명이나 구글 계정명으로 폴백하지 않고 '제제'로 영구 고정)
@@ -2075,7 +2088,7 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-28 sm:h-32 w-full shrink-0" />
+          <div className="h-32 sm:h-36 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>

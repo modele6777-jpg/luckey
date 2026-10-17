@@ -502,13 +502,19 @@
   .in-lucy-chat .bottom-safe-music-lp,
   body.in-lucy-chat .bottom-safe-nav-fab,
   body.in-lucy-chat .bottom-safe-fab-center,
-  body.in-lucy-chat .bottom-safe-music-lp {
-    bottom: calc(var(--lucy-chat-bar-height, 130px) + 0.65rem) !important;
+  body.in-lucy-chat .bottom-safe-music-lp,
+  html.in-lucy-chat .bottom-safe-nav-fab,
+  html.in-lucy-chat .bottom-safe-fab-center,
+  html.in-lucy-chat .bottom-safe-music-lp {
+    bottom: calc(var(--lucy-chat-bar-height, 136px) + 0.75rem) !important;
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
   .in-lucy-chat .bottom-safe-music-menu,
-  body.in-lucy-chat .bottom-safe-music-menu {
-    bottom: calc(var(--lucy-chat-bar-height, 130px) + 5.2rem) !important;
+  body.in-lucy-chat .bottom-safe-music-menu,
+  html.in-lucy-chat .bottom-safe-music-menu {
+    bottom: calc(var(--lucy-chat-bar-height, 136px) + 5.5rem) !important;
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
   /* 💎 프리미엄 스모키 크리스털 글래스모피즘 (모바일 및 전 해상도 완벽 렌더링) */
