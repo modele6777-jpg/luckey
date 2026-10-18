@@ -496,27 +496,6 @@
     }
   }
 
-  /* 🌌 루시 채팅 모드: 하단 3개 버튼(메뉴, 빅뱅, 배경음)을 채팅 입력란(타이핑칸~프로필설정) 위로 플로팅 상향 배치 */
-  .in-lucy-chat .bottom-safe-nav-fab,
-  .in-lucy-chat .bottom-safe-fab-center,
-  .in-lucy-chat .bottom-safe-music-lp,
-  body.in-lucy-chat .bottom-safe-nav-fab,
-  body.in-lucy-chat .bottom-safe-fab-center,
-  body.in-lucy-chat .bottom-safe-music-lp,
-  html.in-lucy-chat .bottom-safe-nav-fab,
-  html.in-lucy-chat .bottom-safe-fab-center,
-  html.in-lucy-chat .bottom-safe-music-lp {
-    bottom: calc(var(--lucy-chat-bar-height, 136px) + 0.75rem) !important;
-    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  }
-
-  .in-lucy-chat .bottom-safe-music-menu,
-  body.in-lucy-chat .bottom-safe-music-menu,
-  html.in-lucy-chat .bottom-safe-music-menu {
-    bottom: calc(var(--lucy-chat-bar-height, 136px) + 5.5rem) !important;
-    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  }
-
   /* 💎 프리미엄 스모키 크리스털 글래스모피즘 (모바일 및 전 해상도 완벽 렌더링) */
   .prism-glass-fab {
     background: rgba(15, 23, 42, 0.42) !important;
