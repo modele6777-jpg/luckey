@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Trash2, Search, X, ChevronDown, Check, Volume2, VolumeX, Square,
+  Send, Trash2, Search, X, Check, Volume2, VolumeX, Square,
   Download, User, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked
 } from 'lucide-react';
@@ -715,7 +715,6 @@ export default function LucyStandalonePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const isTTSActive = useTTSActive();
-  const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const isUserScrolledUpRef = useRef(false);
 
   // Dedicated Lucy entrance aura loader
@@ -1350,10 +1349,7 @@ export default function LucyStandalonePage() {
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
     const isUp = distanceFromBottom > 140;
-    if (isUserScrolledUpRef.current !== isUp) {
-      isUserScrolledUpRef.current = isUp;
-      setIsUserScrolledUp(isUp);
-    }
+    isUserScrolledUpRef.current = isUp;
   }, []);
 
   const scrollToBottom = useCallback((force = false, smooth = true) => {
@@ -1422,7 +1418,6 @@ export default function LucyStandalonePage() {
       if (messagesContainerRef.current) {
         messagesContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         isUserScrolledUpRef.current = true; // 사용자가 상단으로 이동했으므로 상태 갱신
-        setIsUserScrolledUp(true);
       }
     };
     window.addEventListener('prism:scroll_to_top', handleScrollToTopEvent);
@@ -1430,6 +1425,18 @@ export default function LucyStandalonePage() {
       window.removeEventListener('prism:scroll_to_top', handleScrollToTopEvent);
     };
   }, []);
+
+  // 🚀 최하단 스크롤 이벤트 수신 시 루시 대화창 최하단으로 부드럽게 스크롤
+  useEffect(() => {
+    const handleScrollToBottomEvent = () => {
+      isUserScrolledUpRef.current = false;
+      scrollToBottom(true, true);
+    };
+    window.addEventListener('prism:scroll_to_bottom', handleScrollToBottomEvent);
+    return () => {
+      window.removeEventListener('prism:scroll_to_bottom', handleScrollToBottomEvent);
+    };
+  }, [scrollToBottom]);
 
 
   // Handle image attachment with auto-compression (prevents stuttering & infinite scroll)
@@ -2274,28 +2281,6 @@ export default function LucyStandalonePage() {
           <div ref={chatEndRef} />
         </div>
       </main>
-
-      {/*  Floating Jump to Bottom Button when Scrolled Up */}
-      <AnimatePresence>
-        {isUserScrolledUp && (
-          <motion.button
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            onClick={() => {
-              isUserScrolledUpRef.current = false;
-              setIsUserScrolledUp(false);
-              scrollToBottom(true, true);
-            }}
-            style={{ bottom: 'calc(var(--lucy-chat-bar-height, 130px) + 5.5rem)' }}
-            className="fixed right-4 sm:right-10 z-40 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white text-[11px] sm:text-xs font-bold shadow-xl backdrop-blur-xs border border-slate-700/60 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-            title="최신 메시지 보기"
-          >
-            <ChevronDown size={13} className="text-amber-400 animate-bounce" />
-            <span>최신 대화</span>
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
