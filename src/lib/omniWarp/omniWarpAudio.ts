@@ -155,6 +155,67 @@ class OmniWarpAudioEngine {
   }
 
   /**
+   * 🌌 코스믹 흡입 워프 (Cosmic Suction Warp):
+   * 더블탭 시 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 흡입 및 도약 음향
+   */
+  playCosmicSuctionWarp(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+
+      // 1. 중력 특이점 서브베이스 흡입음 (Deep Gravitational Singularity Suction)
+      const subOsc = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      subOsc.type = 'sawtooth';
+      subOsc.frequency.setValueAtTime(95, now);
+      subOsc.frequency.exponentialRampToValueAtTime(32, now + 0.46);
+      subGain.gain.setValueAtTime(0.2, now);
+      subGain.gain.linearRampToValueAtTime(0.42, now + 0.28);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.52);
+      subOsc.connect(subGain);
+      subGain.connect(ctx.destination);
+      subOsc.start(now);
+      subOsc.stop(now + 0.54);
+
+      // 2. 시공간 소용돌이 하이퍼스페이스 와류 (Hyperspace Dimensional Vortex Whoosh)
+      const warpOsc = ctx.createOscillator();
+      const filter = ctx.createBiquadFilter();
+      const warpGain = ctx.createGain();
+      warpOsc.type = 'triangle';
+      warpOsc.frequency.setValueAtTime(140, now);
+      warpOsc.frequency.exponentialRampToValueAtTime(840, now + 0.44);
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(350, now);
+      filter.frequency.exponentialRampToValueAtTime(2400, now + 0.44);
+      filter.Q.value = 4.2;
+      warpGain.gain.setValueAtTime(0.15, now);
+      warpGain.gain.linearRampToValueAtTime(0.38, now + 0.32);
+      warpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      warpOsc.connect(filter);
+      filter.connect(warpGain);
+      warpGain.connect(ctx.destination);
+      warpOsc.start(now);
+      warpOsc.stop(now + 0.52);
+
+      // 3. 차원 도약 성광 플래시 크리스탈 차임 (Starlight Breakthrough Burst)
+      const chimeOsc = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chimeOsc.type = 'sine';
+      chimeOsc.frequency.setValueAtTime(1100, now + 0.38);
+      chimeOsc.frequency.exponentialRampToValueAtTime(1980, now + 0.5);
+      chimeGain.gain.setValueAtTime(0.001, now);
+      chimeGain.gain.setValueAtTime(0.28, now + 0.38);
+      chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.54);
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(ctx.destination);
+      chimeOsc.start(now + 0.38);
+      chimeOsc.stop(now + 0.55);
+    } catch (_) {}
+  }
+
+  /**
    * 사건의 지평선 (Event Horizon): 주파수가 낮아지며 굵어짐 (*두둑...*)
    */
   playEventHorizon(): void {

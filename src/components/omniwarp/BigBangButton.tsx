@@ -65,6 +65,7 @@ export function BigBangButton() {
 
   const [isPressing, setIsPressing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isCosmicSuctionActive, setIsCosmicSuctionActive] = useState(false);
   const [activePhase, setActivePhase] = useState<WarpPhase>('idle');
   const [gauge, setGauge] = useState(0);
   const [durationMs, setDurationMs] = useState(0);
@@ -634,8 +635,11 @@ export function BigBangButton() {
     currentPointerEventRef.current = e;
   };
 
-  // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭/더블클릭 시 실행 - 루시와 Key는 엄격 제외)
+  // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭/더블클릭 시 실행 - 룬 문자 사이 우주 흡입 워프 연출)
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any) => {
+    // 🛡️ 이미 우주 흡입 워프 진행 중인 경우 중복 격발 방지
+    if (isCosmicSuctionActive) return;
+
     // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
     if (singleTapTimerRef.current) {
       clearTimeout(singleTapTimerRef.current);
@@ -643,8 +647,9 @@ export function BigBangButton() {
     }
     lastTapTimeRef.current = 0;
 
-    // 🌟 더블탭: 추천 1순위 웜홀 사운드 & 햅틱
-    omniWarpAudio.playWormhole();
+    // 🌌 더블탭: 고대 룬 문자 사이 우주 흡입 워프 사운드 & 햅틱 발동!
+    setIsCosmicSuctionActive(true);
+    omniWarpAudio.playCosmicSuctionWarp();
     triggerHaptic('wormhole');
 
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
@@ -707,6 +712,7 @@ export function BigBangButton() {
         new CustomEvent('prism:bigbang_commit', {
           detail: {
             phase: 'wormhole',
+            isDoubleTapSuction: true,
             target: {
               id: finalMenu.id,
               name: finalMenu.name,
@@ -725,39 +731,47 @@ export function BigBangButton() {
       );
     }
 
-    if (textToToss) {
-      tossSelectionToMenu(textToToss, finalMenu, location, (targetPath) => {
-        if (isKeySite) {
-          window.location.href = targetPath;
-        } else {
-          navigate(targetPath);
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
-        }
-      });
-    } else {
-      if (isKeySite) {
-        window.location.href = finalSafePath;
+    // 🚀 약 500ms 동안 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 연출 후 도약 실행!
+    setTimeout(() => {
+      if (textToToss) {
+        tossSelectionToMenu(textToToss, finalMenu, location, (targetPath) => {
+          if (isKeySite) {
+            window.location.href = targetPath;
+          } else {
+            navigate(targetPath);
+            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
+            window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
+          }
+        });
       } else {
-        navigate(finalSafePath);
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: finalSafePath } }));
-        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: finalSafePath } }));
-        if (finalSafePath.includes('?tab=')) {
-          const tabName = finalSafePath.split('?tab=')[1]?.split('&')[0];
-          if (tabName) {
-            sessionStorage.setItem('prism_target_tab', tabName);
-            window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: tabName } }));
+        if (isKeySite) {
+          window.location.href = finalSafePath;
+        } else {
+          navigate(finalSafePath);
+          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: finalSafePath } }));
+          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: finalSafePath } }));
+          if (finalSafePath.includes('?tab=')) {
+            const tabName = finalSafePath.split('?tab=')[1]?.split('&')[0];
+            if (tabName) {
+              sessionStorage.setItem('prism_target_tab', tabName);
+              window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: tabName } }));
+            }
           }
         }
       }
-    }
 
-    touchStartSelectionRef.current = '';
-    setActivePhase('idle');
-    setGauge(0);
-    setDurationMs(0);
-    resetActiveContextPeek();
-  }, [location, navigate, getActiveSelectionText, isKeySite]);
+      touchStartSelectionRef.current = '';
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      resetActiveContextPeek();
+    }, 500);
+
+    // 650ms 시점에 흡입 애니메이션 상태 해제
+    setTimeout(() => {
+      setIsCosmicSuctionActive(false);
+    }, 650);
+  }, [location, navigate, getActiveSelectionText, isKeySite, isCosmicSuctionActive]);
 
   // 🔑 Key 마음약방 도약 헬퍼 (드래그 시 실행 - 텍스트 선택 시 40가지 연습 토스 연동)
   const goToKey = useCallback((customContext?: any, customMetrics?: any) => {
@@ -1427,6 +1441,7 @@ export function BigBangButton() {
                 activePhase={activePhase}
                 isAborted={isAborted}
                 onRuneNavigate={handleRuneNavigate}
+                isCosmicSuction={isCosmicSuctionActive}
               />
             </div>
 
@@ -1467,15 +1482,19 @@ export function BigBangButton() {
                     ? (dragDistance > 0 ? (dragOffset.y * Math.min(dragDistance * 0.7, 48)) / dragDistance : 0)
                     : (dragDistance > 0 ? (dragOffset.y * Math.min(dragDistance * 0.6, 40)) / dragDistance : 0)
                   : 0,
-                scale: isPressing
+                scale: isCosmicSuctionActive
+                  ? 0.88
+                  : isPressing
                   ? (1.04 + gauge * 0.08)
                   : 1.0,
               }}
               transition={{
-                duration: 0.08,
+                duration: isCosmicSuctionActive ? 0.35 : 0.08,
               }}
               className={`w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] rounded-full flex flex-col items-center justify-center shrink-0 cursor-pointer outline-none relative overflow-hidden transition-all duration-200 border will-change-transform z-30 touch-none select-none ${
-                isPressing && isAborted
+                isCosmicSuctionActive
+                  ? 'border-cyan-200 shadow-[0_0_50px_rgba(56,189,248,1),0_0_80px_rgba(168,85,247,0.9),inset_0_0_30px_rgba(0,0,0,1)]'
+                  : isPressing && isAborted
                   ? 'opacity-70 border-red-500/70 shadow-[0_0_24px_rgba(239,68,68,0.5)]'
                   : isPressing && activePhase === 'wormhole'
                   ? 'border-emerald-300/90 shadow-[0_0_40px_rgba(52,211,153,0.9),0_0_24px_rgba(6,182,212,0.7),inset_0_0_26px_rgba(52,211,153,0.7)]'

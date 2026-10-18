@@ -89,6 +89,8 @@ interface BigBangCircularMeterProps {
   idleCycleProgress?: number;
   /** 고대 룬 클릭 시 네비게이션 콜백 (선택적) */
   onRuneNavigate?: (path: string, runeId: string) => void;
+  /** 🌌 더블탭 시 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 상태 */
+  isCosmicSuction?: boolean;
 }
 
 /**
@@ -97,6 +99,7 @@ interface BigBangCircularMeterProps {
  * - 직경 144px로 확대되어 76~84px 크기의 코스믹 옵시디언 버튼을 웅장하고 유려하게 감쌈
  * - 4방위 룬 점: 상(최상단 스크롤), 하(최하단 스크롤), 좌(메뉴 드로어), 우(배경음 컨트롤 & 홀딩 메뉴)
  * - 4대 고대 룬 문자: ᚱ(Raido), ᛉ(Algiz), ᛋ(Sowilo), ᛟ(Othala) 블랙홀 공전 및 호버 시 대각선 안착 / 소멸 도약
+ * - 더블탭 시: 고대 룬 문자들 사이로 시공간이 붕괴하며 우주 심연으로 빨려들어가는 하이퍼스페이스 흡입 연출
  */
 export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   isPressing,
@@ -106,6 +109,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   activePhase = 'idle',
   isAborted = false,
   onRuneNavigate,
+  isCosmicSuction = false,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
 
@@ -452,7 +456,9 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         height={size}
         viewBox={`0 0 ${size} ${size}`}
         className={`absolute inset-0 pointer-events-none will-change-transform ${
-          isPressing
+          isCosmicSuction
+            ? 'animate-[spin_0.6s_linear_infinite]'
+            : isPressing
             ? 'animate-[spin_6s_linear_infinite]'
             : isHovered
             ? 'animate-[spin_12s_linear_infinite]'
@@ -516,7 +522,9 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         height={size}
         viewBox={`0 0 ${size} ${size}`}
         className={`absolute inset-0 pointer-events-none will-change-transform ${
-          isPressing
+          isCosmicSuction
+            ? 'animate-[spin_0.45s_linear_infinite_reverse]'
+            : isPressing
             ? 'animate-[spin_8s_linear_infinite_reverse]'
             : isHovered
             ? 'animate-[spin_14s_linear_infinite_reverse]'
@@ -567,13 +575,91 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         />
       </svg>
 
-      {/* 🔮 4.5. 4대 고대 룬 문자 (블랙홀 공전 & 호버 시 4대 대각선 안착 / 클릭 시 소멸 도약) */}
+      {/* 🌌 4.3. 더블탭 시 룬 문자들 사이로 우주로 빨려들어가는 하이퍼스페이스 차원문 (Cosmic Suction Abyss) */}
+      <AnimatePresence>
+        {isCosmicSuction && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 2 }}
+            transition={{ duration: 0.18 }}
+            className="absolute inset-0 pointer-events-none z-25 flex items-center justify-center overflow-visible"
+          >
+            {/* 1) 룬과 룬을 잇는 사각형 시공간 전자기 플라즈마 결선 (Rune Quantum Plasma Web) */}
+            <svg
+              width={size}
+              height={size}
+              viewBox={`0 0 ${size} ${size}`}
+              className="absolute inset-0 pointer-events-none animate-[spin_0.8s_linear_infinite]"
+            >
+              <polygon
+                points={`${center - 39.6},${center - 39.6} ${center + 39.6},${center - 39.6} ${center + 39.6},${center + 39.6} ${center - 39.6},${center + 39.6}`}
+                fill="none"
+                stroke="#38bdf8"
+                strokeWidth="1.6"
+                strokeDasharray="4 3"
+                opacity="0.9"
+                filter={`url(#${gradientId}-magic-glow)`}
+                className="animate-pulse"
+              />
+              <polygon
+                points={`${center},${center - 56} ${center + 56},${center} ${center},${center + 56} ${center - 56},${center}`}
+                fill="none"
+                stroke="#c084fc"
+                strokeWidth="1.4"
+                strokeDasharray="3 4"
+                opacity="0.85"
+                filter={`url(#${gradientId}-magic-glow)`}
+              />
+              {/* 대각선 4대 룬에서 중심 블랙홀로 꽂히는 광자 광선 (Inward Suction Beams) */}
+              <line x1={center - 39.6} y1={center - 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+              <line x1={center + 39.6} y1={center - 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+              <line x1={center + 39.6} y1={center + 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+              <line x1={center - 39.6} y1={center + 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+            </svg>
+
+            {/* 2) 룬 사이 우주 심연 흡입 볼텍스 (Cosmic Singularity Vortex) */}
+            <div
+              className="absolute w-36 h-36 rounded-full pointer-events-none animate-[spin_1.2s_linear_infinite] opacity-90 blur-[1px]"
+              style={{
+                background:
+                  'conic-gradient(from 0deg, rgba(56,189,248,0.95) 0deg, rgba(147,51,234,0.85) 60deg, transparent 120deg, rgba(254,240,138,0.9) 180deg, rgba(52,211,153,0.85) 240deg, transparent 300deg, rgba(56,189,248,0.95) 360deg)',
+              }}
+            />
+            {/* 3) 중심으로 수축/흡입되는 중력파 파동 링 (Darkness Inward Suction Waves) */}
+            <motion.div
+              initial={{ scale: 1.5, opacity: 0.9 }}
+              animate={{ scale: [1.5, 0.4, 0.05], opacity: [0.9, 0.7, 0] }}
+              transition={{ duration: 0.45, ease: 'easeIn', repeat: Infinity }}
+              className="absolute w-28 h-28 rounded-full border-2 border-cyan-300 shadow-[0_0_24px_rgba(56,189,248,1),inset_0_0_18px_rgba(168,85,247,0.9)] bg-[radial-gradient(circle_at_center,black_0%,rgba(15,10,24,0.85)_50%,transparent_80%)]"
+            />
+            {/* 4) 깊은 우주 성운 칠흑 보이드 (Deep Cosmic Abyss Aperture) */}
+            <div
+              className="absolute w-24 h-24 rounded-full pointer-events-none bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.98)_0%,rgba(15,10,35,0.9)_55%,transparent_90%)] shadow-[0_0_30px_rgba(0,0,0,1)]"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🔮 4.5. 4대 고대 룬 문자 (블랙홀 공전 & 호버 시 4대 대각선 안착 / 클릭 시 소멸 도약 / 더블탭 시 우주 흡입 도약) */}
       <motion.div
         className="absolute inset-0 pointer-events-none z-30"
         style={{ transformOrigin: `${center}px ${center}px` }}
-        animate={{ rotate: isHovered ? 0 : 360 }}
+        animate={
+          isCosmicSuction
+            ? {
+                rotate: [0, 360, 900],
+                scale: [1, 1.25, 3.4],
+                opacity: [1, 1, 0],
+              }
+            : isHovered
+            ? { rotate: 0 }
+            : { rotate: 360 }
+        }
         transition={
-          isHovered
+          isCosmicSuction
+            ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
+            : isHovered
             ? { type: 'spring', stiffness: 280, damping: 22, mass: 0.8 }
             : { repeat: Infinity, duration: 24, ease: 'linear' }
         }
@@ -600,7 +686,17 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 onPointerUp={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
                 animate={
-                  isImploding
+                  isCosmicSuction
+                    ? {
+                        scale: [1, 1.35, 2.8],
+                        opacity: [1, 1, 0],
+                        filter: [
+                          'brightness(1.2) drop-shadow(0 0 10px currentColor)',
+                          'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
+                          'blur(6px) brightness(3)',
+                        ],
+                      }
+                    : isImploding
                     ? {
                         scale: [1, 2.2],
                         opacity: [1, 0],
@@ -611,10 +707,12 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                         opacity: isHovered ? 1 : 0.75,
                       }
                 }
-                whileHover={!isImploding ? { scale: 1.25 } : undefined}
-                whileTap={!isImploding ? { scale: 0.9 } : undefined}
+                whileHover={!isImploding && !isCosmicSuction ? { scale: 1.25 } : undefined}
+                whileTap={!isImploding && !isCosmicSuction ? { scale: 0.9 } : undefined}
                 transition={
-                  isImploding
+                  isCosmicSuction
+                    ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
+                    : isImploding
                     ? { duration: 0.22, ease: 'easeOut' }
                     : { type: 'spring', stiffness: 350, damping: 25 }
                 }

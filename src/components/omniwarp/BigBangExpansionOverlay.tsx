@@ -18,6 +18,7 @@ interface Particle {
 
 export function BigBangExpansionOverlay() {
   const [activeCommit, setActiveCommit] = useState<BigBangCommitEventDetail | null>(null);
+  const [origin, setOrigin] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animFrameRef = useRef<number | null>(null);
@@ -33,6 +34,7 @@ export function BigBangExpansionOverlay() {
         const btnRect = document.getElementById('bigbang-omnibutton')?.getBoundingClientRect();
         const originX = btnRect ? (btnRect.left + btnRect.width / 2) : (window.innerWidth - 60);
         const originY = btnRect ? (btnRect.top + btnRect.height / 2) : (window.innerHeight - 60);
+        setOrigin({ x: originX, y: originY });
         const isWhitehole = detail.phase === 'whitehole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'whitehole');
         const isBlackhole = detail.phase === 'blackhole' || (detail.phase === 'event_horizon' && detail.target?.eventHorizonMode === 'blackhole');
         const isWormhole = detail.phase === 'wormhole';
@@ -255,16 +257,37 @@ export function BigBangExpansionOverlay() {
         {/* 🌀 3. 웜홀: [빛비춤] + [어두운 심연] 동시 전개 및 [사건의 지평선(Event Horizon)] 효과 */}
         {isWormhole && (
           <>
-            {/* 🕳️ 1) 심연 효과: 화면 외곽을 집어삼키는 칠흑 같은 암흑 보이드 비네트 */}
+            {/* 🕳️ 1) 심연 효과: 화면 외곽 및 버튼 중심을 집어삼키는 칠흑 같은 암흑 보이드 비네트 */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0.95, 0.88, 0] }}
               transition={{ duration: 0.72, ease: 'easeInOut' }}
-              className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_20%,rgba(13,4,24,0.92)_55%,rgba(2,1,5,0.98)_100%)]"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: origin.x > 0
+                  ? `radial-gradient(circle at ${origin.x}px ${origin.y}px, transparent 15%, rgba(13,4,24,0.92) 55%, rgba(2,1,5,0.98) 100%)`
+                  : 'radial-gradient(circle at center, transparent 20%, rgba(13,4,24,0.92) 55%, rgba(2,1,5,0.98) 100%)',
+              }}
             />
             {/* 외곽에서 중심으로 소용돌이치며 빨려들어가는 암흑 흡입 파동 (Darkness Suction Waves) */}
             <div className="absolute inset-[-20%] pointer-events-none bigbang-suction-wave-1 opacity-80 bg-[radial-gradient(circle_at_center,transparent_15%,rgba(147,51,234,0.45)_52%,rgba(0,0,0,0.95)_88%)]" />
             <div className="absolute inset-[-20%] pointer-events-none bigbang-suction-wave-2 opacity-75 bg-[radial-gradient(circle_at_center,transparent_10%,rgba(79,70,229,0.4)_45%,rgba(0,0,0,0.92)_82%)]" />
+
+            {/* 🌌 더블탭 시 고대 룬 문자 사이 우주로 빨려들어가는 하이퍼스페이스 스타 스트릭 (Hyperspace Star Tunnel) */}
+            {activeCommit.isDoubleTapSuction && (
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  left: origin.x > 0 ? origin.x : '50%',
+                  top: origin.y > 0 ? origin.y : '50%',
+                  width: '280vmax',
+                  height: '280vmax',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                <div className="absolute inset-0 rounded-full animate-[spin_0.7s_linear_infinite] opacity-85 bg-[conic-gradient(from_0deg,rgba(255,255,255,0.95)_0deg,transparent_15deg,rgba(56,189,248,0.85)_30deg,transparent_45deg,rgba(168,85,247,0.75)_60deg,transparent_75deg,rgba(255,255,255,0.95)_90deg,transparent_105deg,rgba(56,189,248,0.85)_120deg,transparent_135deg,rgba(254,240,138,0.9)_150deg,transparent_165deg,rgba(255,255,255,0.95)_180deg,transparent_195deg,rgba(56,189,248,0.85)_210deg,transparent_225deg,rgba(168,85,247,0.75)_240deg,transparent_255deg,rgba(255,255,255,0.95)_270deg,transparent_285deg,rgba(56,189,248,0.85)_300deg,transparent_315deg,rgba(52,211,153,0.85)_330deg,transparent_345deg,rgba(255,255,255,0.95)_360deg)] [mask-image:radial-gradient(circle_at_center,transparent_4%,black_35%,transparent_85%)]" />
+              </div>
+            )}
 
             {/* ☀️ 2) 빛비춤 효과: 중심에서 폭발하는 찬란한 눈부신 백색광 플래시 & 래디언스 */}
             <motion.div

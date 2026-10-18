@@ -63,4 +63,6 @@ export interface BigBangCommitEventDetail {
   context: OmniWarpContext;
   metrics: WarpForceMetrics;
   timestamp: number;
+  /** 🌌 더블탭 시 고대 룬 문자 사이 우주 흡입 워프 플래그 */
+  isDoubleTapSuction?: boolean;
 }
