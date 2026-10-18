@@ -1516,11 +1516,11 @@ export function BigBangButton() {
 
             {/* 🌈 은은하고 신비로운 코스믹 레인보우 아우라 (Subtle Lingering Rainbow Aura) */}
             <div
-              className="absolute -inset-2.5 sm:-inset-3.5 rounded-full bigbang-subtle-rainbow-aura blur-[14px] opacity-40 group-hover:opacity-75 transition-opacity duration-500 pointer-events-none z-0"
+              className="absolute -inset-2.5 sm:-inset-3.5 rounded-full bigbang-subtle-rainbow-aura blur-[14px] opacity-75 transition-opacity duration-500 pointer-events-none z-0"
               aria-hidden="true"
             />
             <div
-              className="absolute -inset-[3px] sm:-inset-[4px] rounded-full bigbang-subtle-rainbow-aura blur-[4px] opacity-45 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none z-0"
+              className="absolute -inset-[3px] sm:-inset-[4px] rounded-full bigbang-subtle-rainbow-aura blur-[4px] opacity-80 transition-opacity duration-300 pointer-events-none z-0"
               aria-hidden="true"
             />
 
@@ -1538,8 +1538,8 @@ export function BigBangButton() {
               />
             </div>
 
-            {/* Ambient Gravitational Ripple Waves - active on hover to prevent continuous mobile composite thrashing */}
-            {activePhase === 'idle' && isHovered && (
+            {/* Ambient Gravitational Ripple Waves - active by default in idle state */}
+            {activePhase === 'idle' && (
               <>
                 <div className="absolute -inset-2.5 rounded-full border border-cyan-400/25 animate-ping opacity-20 pointer-events-none z-0" />
                 <div className="absolute -inset-4 rounded-full border border-purple-400/15 animate-pulse opacity-30 pointer-events-none z-0" />
@@ -1601,7 +1601,7 @@ export function BigBangButton() {
                   ? 'border-cyan-300/90 shadow-[0_0_36px_rgba(34,211,238,0.6),inset_0_0_20px_rgba(34,211,238,0.35)]'
                   : isPressing
                   ? 'border-cyan-300/80 shadow-[0_0_32px_rgba(56,189,248,0.45),inset_0_0_22px_rgba(56,189,248,0.35)]'
-                  : 'border-cyan-400/40 hover:border-cyan-300/80 shadow-[0_0_24px_rgba(56,189,248,0.3)]'
+                  : 'border-cyan-300/80 shadow-[0_0_24px_rgba(56,189,248,0.3)]'
               }`}
               style={{
                 touchAction: 'none',
@@ -1678,7 +1678,7 @@ export function BigBangButton() {
               {/* 🔮 빅뱅 내부 마법진 만다라 워터마크 음각 (Arcane Core Inscription Seal) */}
               <div
                 className={`absolute inset-2 sm:inset-2.5 rounded-full pointer-events-none z-12 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300 ${
-                  isPressing ? 'opacity-30' : 'opacity-65 hover:opacity-95'
+                  isPressing ? 'opacity-30' : 'opacity-95'
                 }`}
               >
                 {/* 시계방향 회전 아케인 매트릭스 링 */}

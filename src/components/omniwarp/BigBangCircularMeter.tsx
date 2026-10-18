@@ -1,5 +1,5 @@
 import React, { useId, useCallback, useState, useEffect, useRef } from 'react';
-import { Sun, Moon, Star, Disc3 } from 'lucide-react';
+import { ChevronUp, ChevronDown, Menu, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase } from '@/lib/omniWarp/types';
 import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
@@ -269,10 +269,10 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       style={{
         width: size,
         height: size,
-        transform: isPressing ? 'scale(1.12)' : isHovered ? 'scale(1.08)' : 'scale(1)',
+        transform: isPressing ? 'scale(1.12)' : 'scale(1.08)',
       }}
     >
-      {/* 🌟 1. 마법진 앰비언트 글로우 오라 (호버 시 찬란하게 증폭되는 성운 플레어) */}
+      {/* 🌟 1. 마법진 앰비언트 글로우 오라 (상시 찬란하게 증폭되는 성운 플레어) */}
       <div
         className="absolute -inset-1 rounded-full pointer-events-none transition-all duration-500 blur-[10px]"
         style={{
@@ -284,10 +284,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               : activePhase === 'blackhole'
               ? 'radial-gradient(circle, rgba(88,28,135,0.6) 0%, rgba(0,0,0,0.8) 50%, transparent 80%)'
               : 'radial-gradient(circle, rgba(0,240,255,0.45) 0%, rgba(168,85,247,0.4) 50%, transparent 75%)'
-            : isHovered
-            ? 'radial-gradient(circle, rgba(0,240,255,0.38) 0%, rgba(192,132,252,0.32) 45%, rgba(251,191,36,0.25) 65%, transparent 80%)'
-            : 'radial-gradient(circle, rgba(0,240,255,0.2) 0%, rgba(168,85,247,0.18) 45%, transparent 75%)',
-          opacity: isPressing ? 1 : isHovered ? 0.95 : 0.7,
+            : 'radial-gradient(circle, rgba(0,240,255,0.38) 0%, rgba(192,132,252,0.32) 45%, rgba(251,191,36,0.25) 65%, transparent 80%)',
+          opacity: isPressing ? 1 : 0.95,
         }}
       />
 
@@ -335,7 +333,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           stroke={`url(#${gradientId}-aurora-gradient)`}
           strokeWidth={0.7}
           strokeDasharray="2 3"
-          opacity={isHovered ? 0.85 : 0.55}
+          opacity={0.85}
           filter={`url(#${gradientId}-magic-glow)`}
         />
         <circle
@@ -345,7 +343,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           fill="none"
           stroke="#00f0ff"
           strokeWidth={0.8}
-          opacity={isHovered ? 0.75 : 0.45}
+          opacity={0.75}
         />
         <circle
           cx={center}
@@ -355,18 +353,18 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           stroke="#c084fc"
           strokeWidth={0.6}
           strokeDasharray="4 4"
-          opacity={isHovered ? 0.7 : 0.4}
+          opacity={0.7}
         />
 
         {/* 실시간 타이밍 오로라 아크 진행선 (누를 때 실시간 압력 게이지 연동) */}
-        <g style={{ transformOrigin: `${center}px ${center}px` }} className={isPressing ? 'animate-[spin_2s_linear_infinite]' : isHovered ? 'animate-[spin_3.6s_linear_infinite]' : ''}>
+        <g style={{ transformOrigin: `${center}px ${center}px` }} className={isPressing ? 'animate-[spin_2s_linear_infinite]' : 'animate-[spin_3.6s_linear_infinite]'}>
           <circle
             cx={center}
             cy={center}
             r={rArc}
             fill="none"
             stroke={`url(#${gradientId}-aurora-gradient)`}
-            strokeWidth={isPressing ? 2.8 : isHovered ? 2.2 : 1.8}
+            strokeWidth={isPressing ? 2.8 : 2.2}
             strokeDasharray={
               isPressing
                 ? `${circumferenceArc * Math.max(0.15, Math.min(1.0, gauge))} ${circumferenceArc * (1 - Math.max(0.15, Math.min(1.0, gauge)))}`
@@ -374,7 +372,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
             }
             strokeLinecap="round"
             filter={`url(#${gradientId}-magic-glow)`}
-            opacity={isPressing ? 1 : isHovered ? 0.95 : 0.85}
+            opacity={isPressing ? 1 : 0.95}
           />
         </g>
       </svg>
@@ -389,9 +387,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
             ? 'animate-[spin_0.6s_linear_infinite]'
             : isPressing
             ? 'animate-[spin_6s_linear_infinite]'
-            : isHovered
-            ? 'animate-[spin_12s_linear_infinite]'
-            : 'animate-[spin_22s_linear_infinite]'
+            : 'animate-[spin_12s_linear_infinite]'
         }`}
       >
         <circle
@@ -402,7 +398,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           stroke="#38bdf8"
           strokeWidth={0.8}
           strokeDasharray="2 4"
-          opacity={isHovered ? 0.8 : 0.5}
+          opacity={0.8}
         />
 
         {/* 12방위 외곽 고대 룬 문자 각인 및 눈금 보석 */}
@@ -427,7 +423,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 fontFamily="serif"
                 textAnchor="middle"
                 dominantBaseline="central"
-                opacity={isHovered ? 0.95 : 0.75}
+                opacity={0.95}
                 filter={`url(#${gradientId}-magic-glow)`}
                 className="select-none"
               >
@@ -438,7 +434,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 cy={sy}
                 r="1"
                 fill="#fbbf24"
-                opacity={isHovered ? 0.85 : 0.5}
+                opacity={0.85}
               />
             </g>
           );
@@ -455,9 +451,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
             ? 'animate-[spin_0.45s_linear_infinite_reverse]'
             : isPressing
             ? 'animate-[spin_8s_linear_infinite_reverse]'
-            : isHovered
-            ? 'animate-[spin_14s_linear_infinite_reverse]'
-            : 'animate-[spin_20s_linear_infinite_reverse]'
+            : 'animate-[spin_14s_linear_infinite_reverse]'
         }`}
       >
         <circle
@@ -468,7 +462,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           stroke="#c084fc"
           strokeWidth={0.8}
           strokeDasharray="3 5"
-          opacity={isHovered ? 0.85 : 0.6}
+          opacity={0.85}
         />
         <circle
           cx={center}
@@ -478,7 +472,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           stroke="#38bdf8"
           strokeWidth={0.6}
           strokeDasharray="2 3"
-          opacity={isHovered ? 0.75 : 0.45}
+          opacity={0.75}
         />
 
         {/* 8방위 옥타그램 성좌: 정사각형 1 (0°, 90°, 180°, 270°) */}
@@ -488,7 +482,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           stroke={`url(#${gradientId}-gold-gradient)`}
           strokeWidth={0.8}
           strokeDasharray="2 3"
-          opacity={isHovered ? 0.9 : 0.65}
+          opacity={0.9}
           filter={`url(#${gradientId}-magic-glow)`}
         />
 
@@ -499,7 +493,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           stroke="#38bdf8"
           strokeWidth={0.8}
           strokeDasharray="2 3"
-          opacity={isHovered ? 0.85 : 0.6}
+          opacity={0.85}
           filter={`url(#${gradientId}-magic-glow)`}
         />
       </svg>
@@ -570,7 +564,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         )}
       </AnimatePresence>
 
-      {/* 🌟 4.5. 4방위 코스믹 보석 점 (대기 시 천체 공전 & 호버 시 상하좌우 안착 / 탭 시 임플로전 펄스 / 더블탭 시 우주 흡입 도약) */}
+      {/* 🌟 4.5. 4방위 코스믹 보석 점 (상하좌우 정위치 상시 안착 / 탭 시 임플로전 펄스 / 더블탭 시 우주 흡입 도약) */}
       <motion.div
         className="absolute inset-0 pointer-events-none z-30"
         style={{ transformOrigin: `${center}px ${center}px` }}
@@ -581,19 +575,15 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 scale: [1, 1.25, 3.4],
                 opacity: [1, 1, 0],
               }
-            : isHovered
-            ? { rotate: 0 }
-            : { rotate: 360 }
+            : { rotate: 0 }
         }
         transition={
           isCosmicSuction
             ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
-            : isHovered
-            ? { type: 'spring', stiffness: 280, damping: 22, mass: 0.8 }
-            : { repeat: Infinity, duration: 24, ease: 'linear' }
+            : { type: 'spring', stiffness: 280, damping: 22, mass: 0.8 }
         }
       >
-        {/* ☀️ 상(North) 점: 순수 해(Sun) 문양 · 화면 최상단 스크롤 (deg = 0) */}
+        {/* ⬆️ 상(North) 점: 상단 쉐브론 화살표 · 화면 최상단 스크롤 (deg = 0) */}
         <div
           style={{
             left: `${center}px`,
@@ -624,11 +614,11 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                     filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
                   }
                 : {
-                    scale: isHovered ? 1.2 : 1,
-                    opacity: isHovered ? 1 : 0.85,
+                    scale: 1.2,
+                    opacity: 1,
                   }
             }
-            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.28 } : undefined}
             whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
             transition={
               isCosmicSuction
@@ -638,7 +628,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { type: 'spring', stiffness: 350, damping: 25 }
             }
             className="group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40"
-            title="화면 최상단 이동 (해)"
+            title="화면 최상단 이동"
             aria-label="화면 최상단 이동"
           >
             {/* 클릭 시 임플로전 펄스 링 */}
@@ -649,14 +639,14 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               />
             )}
 
-            {/* 순수 해(Sun) 문양 */}
-            <Sun
-              className="w-5 h-5 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(251,191,36,1)] group-hover:text-amber-300 stroke-[2.2]"
+            {/* 상단 쉐브론 화살표 (ChevronUp) */}
+            <ChevronUp
+              className="w-5 h-5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(251,191,36,1)] group-hover:text-amber-300 stroke-[2.4]"
             />
           </motion.button>
         </div>
 
-        {/* 🌀 우(East) 점: 순수 은하(Galaxy) 문양 · 배경음 제어 & 400ms 홀딩 메뉴 (deg = 90) */}
+        {/* 🎵 우(East) 점: 음표 아이콘 · 배경음 제어 & 400ms 홀딩 메뉴 (deg = 90) */}
         <div
           style={{
             left: `${center + 62}px`,
@@ -692,11 +682,11 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                     filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
                   }
                 : {
-                    scale: isBgmHolding ? 0.9 : isHovered ? 1.2 : 1,
-                    opacity: isHovered ? 1 : 0.85,
+                    scale: isBgmHolding ? 0.9 : 1.2,
+                    opacity: 1,
                   }
             }
-            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.28 } : undefined}
             whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
             transition={
               isCosmicSuction
@@ -708,7 +698,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
             className={`group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40 ${
               isBgmHolding ? 'scale-90' : ''
             }`}
-            title={isBgmPlaying ? '배경음 일시정지 (은하)' : '배경음 재생 (은하)'}
+            title={isBgmPlaying ? '배경음 일시정지' : '배경음 재생'}
             aria-label="배경음 제어"
           >
             {/* 클릭 시 임플로전 펄스 링 */}
@@ -719,18 +709,18 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               />
             )}
 
-            {/* 순수 은하(Galaxy) 문양 */}
-            <Disc3
-              className={`w-5 h-5 transition-all duration-300 stroke-[2.2] group-hover:drop-shadow-[0_0_12px_rgba(251,113,133,1)] ${
+            {/* 음표 아이콘 (Music) */}
+            <Music
+              className={`w-5 h-5 transition-all duration-300 stroke-[2.4] group-hover:drop-shadow-[0_0_12px_rgba(251,113,133,1)] ${
                 isBgmPlaying
-                  ? 'text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.85)] animate-[spin_4s_linear_infinite]'
-                  : 'text-[#fb7185] drop-shadow-[0_0_6px_rgba(251,113,133,0.6)] group-hover:text-rose-300'
+                  ? 'text-[#fbbf24] drop-shadow-[0_0_10px_rgba(251,191,36,0.95)] animate-pulse'
+                  : 'text-[#fb7185] drop-shadow-[0_0_8px_rgba(251,113,133,0.8)] group-hover:text-rose-300'
               }`}
             />
           </motion.button>
         </div>
 
-        {/* 🌙 하(South) 점: 순수 달(Moon) 문양 · 화면 최하단 스크롤 (deg = 180) */}
+        {/* ⬇️ 하(South) 점: 하단 쉐브론 화살표 · 화면 최하단 스크롤 (deg = 180) */}
         <div
           style={{
             left: `${center}px`,
@@ -761,11 +751,11 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                     filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
                   }
                 : {
-                    scale: isHovered ? 1.2 : 1,
-                    opacity: isHovered ? 1 : 0.85,
+                    scale: 1.2,
+                    opacity: 1,
                   }
             }
-            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.28 } : undefined}
             whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
             transition={
               isCosmicSuction
@@ -775,7 +765,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { type: 'spring', stiffness: 350, damping: 25 }
             }
             className="group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40"
-            title="화면 최하단 이동 (달)"
+            title="화면 최하단 이동"
             aria-label="화면 최하단 이동"
           >
             {/* 클릭 시 임플로전 펄스 링 */}
@@ -786,14 +776,14 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               />
             )}
 
-            {/* 순수 달(Moon) 문양 */}
-            <Moon
-              className="w-5 h-5 text-[#c084fc] drop-shadow-[0_0_6px_rgba(192,132,252,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(192,132,252,1)] group-hover:text-purple-200 stroke-[2.2]"
+            {/* 하단 쉐브론 화살표 (ChevronDown) */}
+            <ChevronDown
+              className="w-5 h-5 text-[#c084fc] drop-shadow-[0_0_8px_rgba(192,132,252,0.8)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(192,132,252,1)] group-hover:text-purple-200 stroke-[2.4]"
             />
           </motion.button>
         </div>
 
-        {/* ⭐ 좌(West) 점: 순수 별(Star) 문양 · 메뉴 열기 (deg = 270) */}
+        {/* ☰ 좌(West) 점: 3선 메뉴 아이콘 · 메뉴 열기 (deg = 270) */}
         <div
           style={{
             left: `${center - 62}px`,
@@ -824,11 +814,11 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                     filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
                   }
                 : {
-                    scale: isHovered ? 1.2 : 1,
-                    opacity: isHovered ? 1 : 0.85,
+                    scale: 1.2,
+                    opacity: 1,
                   }
             }
-            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.28 } : undefined}
             whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
             transition={
               isCosmicSuction
@@ -838,7 +828,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { type: 'spring', stiffness: 350, damping: 25 }
             }
             className="group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40"
-            title="메뉴 열기 (별)"
+            title="메뉴 열기"
             aria-label="메뉴 열기"
           >
             {/* 클릭 시 임플로전 펄스 링 */}
@@ -849,9 +839,9 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               />
             )}
 
-            {/* 순수 별(Star) 문양 */}
-            <Star
-              className="w-5 h-5 text-[#38bdf8] drop-shadow-[0_0_6px_rgba(56,189,248,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(56,189,248,1)] group-hover:text-sky-200 stroke-[2.2]"
+            {/* 3선 메뉴 아이콘 (Menu) */}
+            <Menu
+              className="w-5 h-5 text-[#38bdf8] drop-shadow-[0_0_8px_rgba(56,189,248,0.8)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(56,189,248,1)] group-hover:text-sky-200 stroke-[2.4]"
             />
           </motion.button>
         </div>
