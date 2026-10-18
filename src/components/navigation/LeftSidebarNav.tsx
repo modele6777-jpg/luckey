@@ -16,9 +16,12 @@ import {
   BookOpen,
   Compass,
   Camera,
+  Monitor,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { mergeUserProfiles } from '@/lib/sharedState';
 import { compressImageToDataUrl } from '@/utils/imageCompress';
@@ -166,6 +169,7 @@ export default function LeftSidebarNav() {
   const [, setProfileVersion] = useState(0);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
+  const { themeMode, resolvedTheme, setThemeMode } = useTheme();
 
   // Extract user profile / nickname and avatar URL for sidebar footer
   let userNickname = '제제';
@@ -632,8 +636,73 @@ export default function LeftSidebarNav() {
                 </AnimatePresence>
               </div>
 
-              {/* Footer: User Profile Button & Collapse Button */}
+              {/* Footer: Theme Switcher & User Profile Button & Collapse Button */}
               <div className="pb-[calc(var(--sab)+0.75rem)] px-2 pt-2 border-t border-white/10 flex flex-col items-center gap-2 shrink-0">
+                {/* Theme Mode Switcher Micro-Pill (Light / Dark / Auto) */}
+                <div
+                  className="relative group flex items-center justify-between p-0.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 w-[56px] h-[22px] shrink-0 shadow-inner"
+                  role="group"
+                  aria-label="화면 테마 모드 선택"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('whitehole');
+                      setThemeMode('light');
+                    }}
+                    className={`w-[16px] h-[16px] rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                      themeMode === 'light'
+                        ? 'bg-amber-400 text-slate-950 shadow-[0_0_8px_rgba(251,191,36,0.8)] scale-110'
+                        : 'text-neutral-400 hover:text-amber-300 hover:bg-white/10'
+                    }`}
+                    aria-label="라이트 모드"
+                    title="라이트 모드"
+                  >
+                    <Sun size={9} strokeWidth={themeMode === 'light' ? 2.6 : 2} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('whitehole');
+                      setThemeMode('dark');
+                    }}
+                    className={`w-[16px] h-[16px] rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                      themeMode === 'dark'
+                        ? 'bg-indigo-500 text-white shadow-[0_0_8px_rgba(99,102,241,0.8)] scale-110'
+                        : 'text-neutral-400 hover:text-indigo-300 hover:bg-white/10'
+                    }`}
+                    aria-label="다크 모드"
+                    title="다크 모드"
+                  >
+                    <Moon size={9} strokeWidth={themeMode === 'dark' ? 2.6 : 2} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('whitehole');
+                      setThemeMode('auto');
+                    }}
+                    className={`w-[16px] h-[16px] rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                      themeMode === 'auto'
+                        ? 'bg-cyan-400 text-slate-950 shadow-[0_0_8px_rgba(34,211,238,0.8)] scale-110'
+                        : 'text-neutral-400 hover:text-cyan-300 hover:bg-white/10'
+                    }`}
+                    aria-label={`시스템 자동 모드 (현재: ${resolvedTheme === 'dark' ? '다크' : '라이트'})`}
+                    title={`시스템 자동 모드 (현재: ${resolvedTheme === 'dark' ? '다크' : '라이트'})`}
+                  >
+                    <Monitor size={9} strokeWidth={themeMode === 'auto' ? 2.6 : 2} />
+                  </button>
+
+                  {/* Desktop Hover Tooltip for Theme Switcher */}
+                  <div className="hidden sm:group-hover:flex items-center gap-1.5 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50">
+                    <span className="text-[11px] font-bold text-amber-300">
+                      {themeMode === 'light' ? '☀️ 라이트 모드' : themeMode === 'dark' ? '🌙 다크 모드' : `💻 자동 (${resolvedTheme === 'dark' ? '다크' : '라이트'})`}
+                    </span>
+                  </div>
+                </div>
+
                 {/* User Profile Button with Photo Support */}
                 <div className="relative group w-10 h-10 shrink-0">
                   <input

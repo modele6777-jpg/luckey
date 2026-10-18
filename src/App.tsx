@@ -3,6 +3,7 @@ import { Route, Switch, Redirect, useLocation } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
 import { AppProvider, useApp } from "./contexts/AppContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { LoginScreen } from "./components/LoginScreen";
 import LeftSidebarNav from "./components/navigation/LeftSidebarNav";
 import { BigBangButton } from "./components/omniwarp/BigBangButton";
@@ -440,10 +441,12 @@ function AppContent() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuroraBackground />
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
+      <ThemeProvider>
+        <AuroraBackground />
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

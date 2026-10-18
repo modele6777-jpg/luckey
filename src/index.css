@@ -2,6 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;1,400&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Outfit", "SUIT Variable", -apple-system, sans-serif;
   --font-serif: "Playfair Display", "Noto Serif KR", serif;
@@ -48,6 +50,16 @@
     overscroll-behavior-x: none !important;
     overscroll-behavior-y: auto;
     touch-action: pan-y;
+  }
+
+  html.light,
+  html.light body {
+    background: #f8fafc;
+  }
+
+  html.dark,
+  html.dark body {
+    background: oklch(0.035 0.03 275);
   }
 
   #root,
