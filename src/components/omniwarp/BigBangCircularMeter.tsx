@@ -1,4 +1,5 @@
 import React, { useId, useCallback } from 'react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { WarpPhase } from '@/lib/omniWarp/types';
 import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
@@ -72,6 +73,22 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
 
     resetAppScrollToBottom('smooth');
     window.dispatchEvent(new CustomEvent('prism:scroll_to_bottom'));
+  }, []);
+
+  // 🔮 좌(West) 및 우(East) 룬 탭 시 이벤트 전파 방지 및 햅틱/효과음 피드백
+  const handleRuneClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      playAudioHaptic('tap_light');
+    } catch (_) {}
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(10);
+      } catch (_) {}
+    }
   }, []);
 
   // 대형화된 버튼(76~84px) 외곽을 웅장하고 신비롭게 감싸는 최적의 마법진 직경 (144px)
@@ -252,44 +269,66 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         />
       </svg>
 
-      {/* 🌟 5. 4 방위 고정 룬 보석 (상/하/좌/우) - 마법진 회전과 무관하게 4방위 고정 앵커링 */}
+      {/* 🌟 5. 4 방위 고정 룬 보석 (상/하/좌/우) - 마우스 호버 시 상하좌우 화살표로 매끄럽게 전환 */}
       <div className="absolute inset-0 pointer-events-none z-30">
-        {/* 하(South) 점: 클릭/탭 시 화면 최하단으로 스무스 스크롤 (32x32px 터치 영역 제공) */}
-        <button
-          type="button"
-          onClick={handleScrollToBottom}
-          onPointerDown={(e) => e.stopPropagation()}
-          onPointerUp={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          className="group pointer-events-auto absolute left-1/2 -translate-x-1/2 -bottom-[11px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="화면 최하단으로 이동"
-          aria-label="화면 최하단으로 이동"
-        >
-          <span className="w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc] group-hover:bg-[#fbbf24] group-hover:shadow-[0_0_12px_#fbbf24] group-hover:scale-135 transition-all duration-200" />
-        </button>
-        {/* 좌(West) 점 */}
-        <span
-          className="absolute top-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_6px_#38bdf8] pointer-events-none"
-          style={{ left: 2.5 }}
-        />
-        {/* 우(East) 점 */}
-        <span
-          className="absolute top-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_6px_#c084fc] pointer-events-none"
-          style={{ left: 136.5 }}
-        />
-
-        {/* 상(North) 점: 클릭/탭 시 화면 최상단으로 스무스 스크롤 (32x32px 터치 영역 제공) */}
+        {/* 상(North) 점 / 화살표: 화면 최상단 이동 */}
         <button
           type="button"
           onClick={handleScrollToTop}
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
-          className="group pointer-events-auto absolute left-1/2 -translate-x-1/2 -top-[11px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
+          className="group pointer-events-auto absolute left-1/2 -translate-x-1/2 -top-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
           title="화면 최상단으로 이동"
           aria-label="화면 최상단으로 이동"
         >
-          <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] group-hover:bg-[#fbbf24] group-hover:shadow-[0_0_12px_#fbbf24] group-hover:scale-135 transition-all duration-200" />
+          <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
+          <ArrowUp className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
+        </button>
+
+        {/* 하(South) 점 / 화살표: 화면 최하단 이동 */}
+        <button
+          type="button"
+          onClick={handleScrollToBottom}
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="group pointer-events-auto absolute left-1/2 -translate-x-1/2 -bottom-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
+          title="화면 최하단으로 이동"
+          aria-label="화면 최하단으로 이동"
+        >
+          <span className="w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
+          <ArrowDown className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
+        </button>
+
+        {/* 좌(West) 점 / 화살표 */}
+        <button
+          type="button"
+          onClick={handleRuneClick}
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -left-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
+          title="서쪽 룬"
+          aria-label="서쪽 룬"
+        >
+          <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
+          <ArrowLeft className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
+        </button>
+
+        {/* 우(East) 점 / 화살표 */}
+        <button
+          type="button"
+          onClick={handleRuneClick}
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -right-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
+          title="동쪽 룬"
+          aria-label="동쪽 룬"
+        >
+          <span className="w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
+          <ArrowRight className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
       </div>
     </div>
