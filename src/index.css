@@ -496,6 +496,14 @@
     }
   }
 
+  /* 🌌 루시 채팅 모드: 빅뱅 버튼만 하단 대화창(footer) 위로 플로팅 상향 배치 (메뉴 및 배경음 버튼은 하단 대화창과 자연스럽게 겹침) */
+  .in-lucy-chat .bottom-safe-fab-center,
+  body.in-lucy-chat .bottom-safe-fab-center,
+  html.in-lucy-chat .bottom-safe-fab-center {
+    bottom: calc(var(--lucy-chat-bar-height, 128px) + 0.75rem) !important;
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
   /* 💎 프리미엄 스모키 크리스털 글래스모피즘 (모바일 및 전 해상도 완벽 렌더링) */
   .prism-glass-fab {
     background: rgba(15, 23, 42, 0.42) !important;

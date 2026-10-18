@@ -713,6 +713,7 @@ export default function LucyStandalonePage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
 
@@ -725,11 +726,40 @@ export default function LucyStandalonePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // 🌌 루시 채팅 페이지 스코프 설정
+  // 🌌 루시 채팅 페이지 스코프 설정 & 빅뱅 버튼 상향 배치 연동
   useEffect(() => {
     document.documentElement.classList.add('in-lucy-chat');
     document.body.classList.add('in-lucy-chat');
+    document.documentElement.style.setProperty('--lucy-chat-bar-height', '128px');
+    document.body.style.setProperty('--lucy-chat-bar-height', '128px');
+
+    const updateFooterHeight = () => {
+      if (footerRef.current) {
+        const height = footerRef.current.offsetHeight;
+        if (height > 0) {
+          document.documentElement.style.setProperty('--lucy-chat-bar-height', `${height}px`);
+          document.body.style.setProperty('--lucy-chat-bar-height', `${height}px`);
+        }
+      }
+    };
+
+    updateFooterHeight();
+    const rafId = requestAnimationFrame(updateFooterHeight);
+    let ro: ResizeObserver | null = null;
+    if (footerRef.current && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(updateFooterHeight);
+      ro.observe(footerRef.current);
+    }
+    window.addEventListener('resize', updateFooterHeight);
+    window.addEventListener('orientationchange', updateFooterHeight);
+
     return () => {
+      cancelAnimationFrame(rafId);
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', updateFooterHeight);
+      window.removeEventListener('orientationchange', updateFooterHeight);
+      document.documentElement.style.removeProperty('--lucy-chat-bar-height');
+      document.body.style.removeProperty('--lucy-chat-bar-height');
       document.documentElement.classList.remove('in-lucy-chat');
       document.body.classList.remove('in-lucy-chat');
     };
@@ -2244,14 +2274,16 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-4 sm:h-6 w-full shrink-0" />
+          <div className="h-28 sm:h-32 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>
 
-      {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send (하단 3개 버튼 바로 위에 안착) */}
+      {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
-        className="w-full px-2.5 sm:px-4 py-1.5 sm:py-2 bg-white/95 backdrop-blur-md border-t border-b border-slate-200/80 shadow-xs shrink-0 z-30 relative"
+        ref={footerRef}
+        style={{ paddingBottom: 'max(0.5rem, calc(var(--sab, 0px) + 0.35rem))' }}
+        className="w-full px-2.5 sm:px-4 py-1.5 sm:py-2 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
       >
         <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-1 sm:gap-1.5">
           {/* Image Attachment Preview */}
@@ -2503,12 +2535,6 @@ export default function LucyStandalonePage() {
           </div>
         </div>
       </footer>
-
-      {/* 🌟 하단 3개 버튼(메뉴, 빅뱅, 배경음) 전용 도크 영역 (다른 앱과 동일한 최하단 배치 공간) */}
-      <div 
-        className="w-full shrink-0 pointer-events-none bg-gradient-to-b from-white/60 via-amber-50/20 to-amber-50/40"
-        style={{ height: 'calc(var(--sab, 0px) + 8.25rem)' }}
-      />
 
       {/*  제제 님의 소울 프로필 퀵뷰 모달 */}
       <AnimatePresence>
