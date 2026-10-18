@@ -216,7 +216,7 @@ export default function HubHome() {
   }, [location]);
 
   // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
-  useSwipeableTabs<HubSwipeTab>({
+  const { swipeHandlers: hubSwipeHandlers } = useSwipeableTabs<HubSwipeTab>({
     tabs: HUB_SWIPE_TABS,
     activeTab: activeSection,
     onTabChange: (newTab) => {
@@ -537,7 +537,7 @@ export default function HubHome() {
         })}
       </motion.nav>
 
-      <div data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
+      <div data-app-scroll-root {...hubSwipeHandlers} className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
         {!legacy && <FloatingParticles count={narrow ? 4 : 20} />}
 
         {activeSection === 'ecpr' ? (

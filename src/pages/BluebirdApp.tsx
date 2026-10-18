@@ -271,7 +271,7 @@ export default function BluebirdApp() {
   // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
   const currentBluebirdTab: BluebirdSwipeTab = (activeMode === 'secretMessage' || activeMode === 'synergy') ? activeMode : 'daily';
 
-  useSwipeableTabs<BluebirdSwipeTab>({
+  const { swipeHandlers: bluebirdSwipeHandlers } = useSwipeableTabs<BluebirdSwipeTab>({
     tabs: BLUEBIRD_SWIPE_TABS,
     activeTab: currentBluebirdTab,
     onTabChange: (newTab) => {
@@ -2598,7 +2598,7 @@ export default function BluebirdApp() {
          })}
       </motion.nav>
 
-      <main data-app-scroll-root className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth">
+      <main data-app-scroll-root {...bluebirdSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth">
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
            <AnimatePresence mode="wait">
              {activeMode === 'synergy' ? (

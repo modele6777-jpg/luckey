@@ -359,7 +359,7 @@ export default function OrangeApp() {
   // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
   const currentOrangeTab: OrangeSwipeTab = (activeMode === 'wishingWell' || activeMode === 'synergy') ? activeMode : 'secret';
 
-  useSwipeableTabs<OrangeSwipeTab>({
+  const { swipeHandlers: orangeSwipeHandlers } = useSwipeableTabs<OrangeSwipeTab>({
     tabs: ORANGE_SWIPE_TABS,
     activeTab: currentOrangeTab,
     onTabChange: (newTab) => {
@@ -1357,7 +1357,7 @@ export default function OrangeApp() {
         })}
       </motion.nav>
 
-      <main data-app-scroll-root className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white">
+      <main data-app-scroll-root {...orangeSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white">
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">
           <AnimatePresence mode="wait">
               {activeMode === 'synergy' ? (

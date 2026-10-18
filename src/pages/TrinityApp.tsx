@@ -1522,7 +1522,7 @@ function playDailyCardChimeAsync() {
     ? 'oracle'
     : (activeMode === 'tarot' ? 'tarot' : 'destiny');
 
-  useSwipeableTabs<TrinitySwipeTab>({
+  const { swipeHandlers: trinitySwipeHandlers } = useSwipeableTabs<TrinitySwipeTab>({
     tabs: TRINITY_SWIPE_TABS,
     activeTab: currentTrinityTab,
     onTabChange: (newTab) => {
@@ -3165,6 +3165,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       {/* Main Layout Area — 동일 앱 내에서만 탭 스와이프 전환 지원 및 브라우저 외부 이탈 방지 */}
       <main
         data-app-scroll-root
+        {...trinitySwipeHandlers}
 
         className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white touch-pan-y overscroll-x-none"
       >

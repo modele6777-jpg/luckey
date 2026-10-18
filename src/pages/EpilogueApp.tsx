@@ -504,7 +504,7 @@ export default function EpilogueApp() {
   };
 
   // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
-  useSwipeableTabs<EpilogueSwipeTab>({
+  const { swipeHandlers: epilogueSwipeHandlers } = useSwipeableTabs<EpilogueSwipeTab>({
     tabs: EPILOGUE_SWIPE_TABS,
     activeTab: activeMode,
     onTabChange: (newTab) => {
@@ -898,7 +898,7 @@ export default function EpilogueApp() {
       </motion.nav>
 
       {/* Main Content Area */}
-      <div data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
+      <div data-app-scroll-root {...epilogueSwipeHandlers} className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
         {activeMode === 'synergy' ? (
           <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md space-y-6">
             <EpilogueSynergySection />

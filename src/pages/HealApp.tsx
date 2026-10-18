@@ -968,7 +968,8 @@ export default function HealApp() {
   const {
     direction,
     changeTabWithDirection,
-      } = useSwipeableTabs<HealSwipeTab>({
+    swipeHandlers: healSwipeHandlers,
+  } = useSwipeableTabs<HealSwipeTab>({
     tabs: HEAL_SWIPE_TABS,
     activeTab: currentSwipeTab,
     enabled: true,
@@ -1704,6 +1705,7 @@ export default function HealApp() {
 
       <main
         data-app-scroll-root
+        {...healSwipeHandlers}
         className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white touch-pan-y"
       >
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
