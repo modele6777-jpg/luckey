@@ -713,7 +713,6 @@ export default function LucyStandalonePage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const footerRef = useRef<HTMLElement>(null);
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
 
@@ -726,38 +725,14 @@ export default function LucyStandalonePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // 🌌 루시 채팅 페이지 스코프 설정 & 빅뱅 버튼 상향 배치 연동
+  // 🌌 루시 채팅 페이지 스코프 설정 (배경 순백색 고정용)
   useEffect(() => {
     document.documentElement.classList.add('in-lucy-chat');
     document.body.classList.add('in-lucy-chat');
-    document.documentElement.style.setProperty('--lucy-chat-bar-height', '0px');
-    document.body.style.setProperty('--lucy-chat-bar-height', '0px');
-
-    const updateFooterHeight = () => {
-      if (footerRef.current) {
-        const height = footerRef.current.offsetHeight;
-        if (height > 0) {
-          document.documentElement.style.setProperty('--lucy-chat-bar-height', `${height}px`);
-          document.body.style.setProperty('--lucy-chat-bar-height', `${height}px`);
-        }
-      }
-    };
-
-    updateFooterHeight();
-    const rafId = requestAnimationFrame(updateFooterHeight);
-    let ro: ResizeObserver | null = null;
-    if (footerRef.current && typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(updateFooterHeight);
-      ro.observe(footerRef.current);
-    }
-    window.addEventListener('resize', updateFooterHeight);
-    window.addEventListener('orientationchange', updateFooterHeight);
+    document.documentElement.style.removeProperty('--lucy-chat-bar-height');
+    document.body.style.removeProperty('--lucy-chat-bar-height');
 
     return () => {
-      cancelAnimationFrame(rafId);
-      if (ro) ro.disconnect();
-      window.removeEventListener('resize', updateFooterHeight);
-      window.removeEventListener('orientationchange', updateFooterHeight);
       document.documentElement.style.removeProperty('--lucy-chat-bar-height');
       document.body.style.removeProperty('--lucy-chat-bar-height');
       document.documentElement.classList.remove('in-lucy-chat');
@@ -2305,7 +2280,6 @@ export default function LucyStandalonePage() {
 
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send (Pure White & Ultra-Slim) */}
       <footer 
-        ref={footerRef}
         style={{ paddingBottom: 'max(0.25rem, calc(var(--sab, 0px) + 0.15rem))' }}
         className="w-full px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 bg-white border-t border-slate-100 shadow-xs shrink-0 z-30 relative"
       >
