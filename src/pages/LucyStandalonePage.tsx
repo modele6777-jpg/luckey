@@ -730,8 +730,8 @@ export default function LucyStandalonePage() {
   useEffect(() => {
     document.documentElement.classList.add('in-lucy-chat');
     document.body.classList.add('in-lucy-chat');
-    document.documentElement.style.setProperty('--lucy-chat-bar-height', '128px');
-    document.body.style.setProperty('--lucy-chat-bar-height', '128px');
+    document.documentElement.style.setProperty('--lucy-chat-bar-height', '0px');
+    document.body.style.setProperty('--lucy-chat-bar-height', '0px');
 
     const updateFooterHeight = () => {
       if (footerRef.current) {

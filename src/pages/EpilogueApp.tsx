@@ -898,7 +898,7 @@ export default function EpilogueApp() {
       </motion.nav>
 
       {/* Main Content Area */}
-      <div data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-56 sm:pb-64">
+      <div data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-44 sm:pb-48">
         {activeMode === 'synergy' ? (
           <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md space-y-6">
             <EpilogueSynergySection />

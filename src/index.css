@@ -394,7 +394,7 @@
 
   .pb-page,
   .pb-page-sm {
-    padding-bottom: calc(var(--sab) + 14.5rem);
+    padding-bottom: calc(var(--sab) + 11.5rem);
   }
 
   .md\:pt-page-md {
@@ -411,7 +411,7 @@
 
   .md\:pb-page-md {
     @media (width >= 48rem) {
-      padding-bottom: calc(var(--sab) + 14.5rem);
+      padding-bottom: calc(var(--sab) + 11.5rem);
     }
   }
 
@@ -427,7 +427,7 @@
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: calc(var(--sab) + 8.25rem);
+    bottom: calc(var(--sab) + 5.5rem);
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
@@ -443,6 +443,7 @@
   }
   @media (min-width: 640px) {
     .bottom-safe-fab-center {
+      bottom: calc(var(--sab) + 6.75rem);
       width: 84px !important;
       height: 84px !important;
     }
@@ -496,12 +497,20 @@
     }
   }
 
-  /* 🌌 루시 채팅 모드: 빅뱅 버튼만 하단 대화창(footer) 위로 플로팅 상향 배치 (메뉴 및 배경음 버튼은 하단 대화창과 자연스럽게 겹침) */
+  /* 🌌 루시 채팅 모드: 기본적으로 모든 앱과 동일한 5.5rem(sm: 6.75rem) 위치에 일관되게 고정되되,
+     이미지 첨부나 궁합 독 등으로 footer가 기본 높이보다 높아질 때만 상향 플로팅으로 자연스럽게 밀려 올라감 */
   .in-lucy-chat .bottom-safe-fab-center,
   body.in-lucy-chat .bottom-safe-fab-center,
   html.in-lucy-chat .bottom-safe-fab-center {
-    bottom: calc(var(--lucy-chat-bar-height, 128px) + 0.75rem) !important;
+    bottom: max(calc(var(--sab) + 5.5rem), calc(var(--lucy-chat-bar-height, 0px) + 1.25rem)) !important;
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  @media (min-width: 640px) {
+    .in-lucy-chat .bottom-safe-fab-center,
+    body.in-lucy-chat .bottom-safe-fab-center,
+    html.in-lucy-chat .bottom-safe-fab-center {
+      bottom: max(calc(var(--sab) + 6.75rem), calc(var(--lucy-chat-bar-height, 0px) + 1.25rem)) !important;
+    }
   }
 
   /* 🤍 루시 채팅 모드: 모바일 및 전 해상도 배경 순백 고정 (노치/홈바 및 바디 회색 투과 원천 방지) */
@@ -686,13 +695,13 @@
   }
 
   [data-app-scroll-root] {
-    padding-bottom: calc(var(--sab) + 14.5rem) !important;
-    scroll-padding-bottom: calc(var(--sab) + 14.5rem);
+    padding-bottom: calc(var(--sab) + 11.5rem) !important;
+    scroll-padding-bottom: calc(var(--sab) + 11.5rem);
   }
 
   .pb-page,
   .pb-page-sm {
-    padding-bottom: calc(var(--sab) + 14.5rem) !important;
+    padding-bottom: calc(var(--sab) + 11.5rem) !important;
   }
 }
 
