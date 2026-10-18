@@ -394,7 +394,7 @@
 
   .pb-page,
   .pb-page-sm {
-    padding-bottom: calc(var(--sab) + 6.5rem);
+    padding-bottom: calc(var(--sab) + 14.5rem);
   }
 
   .md\:pt-page-md {
@@ -411,7 +411,7 @@
 
   .md\:pb-page-md {
     @media (width >= 48rem) {
-      padding-bottom: 2rem;
+      padding-bottom: calc(var(--sab) + 14.5rem);
     }
   }
 
@@ -427,7 +427,7 @@
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: calc(var(--sab) + 1.25rem);
+    bottom: calc(var(--sab) + 8.25rem);
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
@@ -677,13 +677,13 @@
   }
 
   [data-app-scroll-root] {
-    padding-bottom: calc(var(--sab) + 6.5rem) !important;
-    scroll-padding-bottom: calc(var(--sab) + 6.5rem);
+    padding-bottom: calc(var(--sab) + 14.5rem) !important;
+    scroll-padding-bottom: calc(var(--sab) + 14.5rem);
   }
 
   .pb-page,
   .pb-page-sm {
-    padding-bottom: calc(var(--sab) + 6.5rem) !important;
+    padding-bottom: calc(var(--sab) + 14.5rem) !important;
   }
 }
 
