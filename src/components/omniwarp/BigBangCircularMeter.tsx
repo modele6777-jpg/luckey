@@ -1,76 +1,13 @@
 import React, { useId, useCallback, useState, useEffect, useRef } from 'react';
-import { ArrowUp, ArrowDown, Menu, Music } from 'lucide-react';
+import { Sun, Moon, Star, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase } from '@/lib/omniWarp/types';
 import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
-interface AncientRuneConfig {
-  id: string;
-  symbol: string;
-  name: string;
-  meaning: string;
-  path: string;
-  color: string;
-  glowColor: string;
-  /** 대각선 안착 각도 (0은 북쪽 기준, 45=NE, 135=SE, 225=SW, 315=NW) */
-  diagonalDeg: number;
-}
-
-const ANCIENT_RUNES: AncientRuneConfig[] = [
-  {
-    id: 'raido',
-    symbol: 'ᚱ',
-    name: 'Raido',
-    meaning: '운명과 여정',
-    path: '/trinity',
-    color: '#38bdf8',
-    glowColor: 'rgba(56, 189, 248, 0.85)',
-    diagonalDeg: 315, // 북서 (상좌) ➔ 트리니티
-  },
-  {
-    id: 'algiz',
-    symbol: 'ᛉ',
-    name: 'Algiz',
-    meaning: '소망과 보호',
-    path: '/orange',
-    color: '#fb923c',
-    glowColor: 'rgba(251, 146, 60, 0.85)',
-    diagonalDeg: 45, // 북동 (상우) ➔ 오렌지
-  },
-  {
-    id: 'sowilo',
-    symbol: 'ᛋ',
-    name: 'Sowilo',
-    meaning: '태양과 치유',
-    path: '/heal',
-    color: '#fbbf24',
-    glowColor: 'rgba(251, 191, 36, 0.85)',
-    diagonalDeg: 135, // 남동 (하우) ➔ 힐링
-  },
-  {
-    id: 'othala',
-    symbol: 'ᛟ',
-    name: 'Othala',
-    meaning: '평화와 안식',
-    path: '/bluebird',
-    color: '#c084fc',
-    glowColor: 'rgba(192, 132, 252, 0.85)',
-    diagonalDeg: 225, // 남서 (하좌) ➔ 블루버드
-  },
-];
-
-// 12방위 외곽 룬 문자 각인 (Elder Futhark)
+// 12방위 외곽 룬 문자 각인 (Elder Futhark) - 아케인 서클 미세 글리프 유지
 const OUTER_MINI_RUNES = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ'];
-
-function getRunePosition(deg: number, center: number, radius: number) {
-  const rad = (deg * Math.PI) / 180;
-  return {
-    x: center + radius * Math.sin(rad),
-    y: center - radius * Math.cos(rad),
-  };
-}
 
 interface BigBangCircularMeterProps {
   /** 사용자가 누르고 있는지 여부 */
@@ -113,61 +50,86 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
 
+  // 🔮 4방위 점 탭 시 룬문자 임플로전(Implosion) 발광 펄스 상태 관리
+  const [implodingDotId, setImplodingDotId] = useState<string | null>(null);
+
+  const triggerDotPulse = useCallback((dotId: string) => {
+    setImplodingDotId(dotId);
+    setTimeout(() => {
+      setImplodingDotId((current) => (current === dotId ? null : current));
+    }, 240);
+  }, []);
+
   // 🚀 상단(North) 점 탭 시 화면/대화창 최상단 부드러운 스크롤 이동
   const handleScrollToTop = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
+    triggerDotPulse('north');
+
     try {
-      playAudioHaptic('tap_light');
+      playAudioHaptic('tap_impact');
+    } catch (_) {}
+    try {
+      triggerHaptic('wormhole');
     } catch (_) {}
 
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
-        navigator.vibrate(15);
+        navigator.vibrate(20);
       } catch (_) {}
     }
 
     resetAppScroll('smooth');
     window.dispatchEvent(new CustomEvent('prism:scroll_to_top'));
-  }, []);
+  }, [triggerDotPulse]);
 
   // 🚀 하단(South) 점 탭 시 화면/대화창 최하단 부드러운 스크롤 이동
   const handleScrollToBottom = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
+    triggerDotPulse('south');
+
     try {
-      playAudioHaptic('tap_light');
+      playAudioHaptic('tap_impact');
+    } catch (_) {}
+    try {
+      triggerHaptic('wormhole');
     } catch (_) {}
 
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
-        navigator.vibrate(15);
+        navigator.vibrate(20);
       } catch (_) {}
     }
 
     resetAppScrollToBottom('smooth');
     window.dispatchEvent(new CustomEvent('prism:scroll_to_bottom'));
-  }, []);
+  }, [triggerDotPulse]);
 
   // 🚀 좌(West) 점 탭 시 사이드 네비게이션 메뉴 열기/토글
   const handleMenuClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
+    triggerDotPulse('west');
+
     try {
-      playAudioHaptic('tap_light');
+      playAudioHaptic('tap_impact');
+    } catch (_) {}
+    try {
+      triggerHaptic('wormhole');
     } catch (_) {}
 
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
-        navigator.vibrate(15);
+        navigator.vibrate(20);
       } catch (_) {}
     }
 
     window.dispatchEvent(new CustomEvent('prism:toggle_menu'));
-  }, []);
+  }, [triggerDotPulse]);
 
   // 🎵 우(East) 점 배경음 상태 및 롱프레스(홀딩) 제어
   const [isBgmPlaying, setIsBgmPlaying] = useState<boolean>(() => {
@@ -253,18 +215,23 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       return;
     }
 
+    triggerDotPulse('east');
+
     try {
-      playAudioHaptic('tap_light');
+      playAudioHaptic('tap_impact');
+    } catch (_) {}
+    try {
+      triggerHaptic('wormhole');
     } catch (_) {}
 
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
-        navigator.vibrate(15);
+        navigator.vibrate(20);
       } catch (_) {}
     }
 
     window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
-  }, []);
+  }, [triggerDotPulse]);
 
   const handleBgmContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -288,45 +255,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     window.dispatchEvent(new CustomEvent('prism:next_bgm_track'));
   }, []);
 
-  // 🔮 4대 고대 룬 문자 상태 관리 (클릭 시 소멸, 호버 해제 시 복구 초기화)
-  const [vanishedRuneIds, setVanishedRuneIds] = useState<Set<string>>(new Set());
-  const [implodingRuneId, setImplodingRuneId] = useState<string | null>(null);
 
-  // 호버를 떼었다가 다시 호버하면 소멸된 룬 즉시 초기화
-  useEffect(() => {
-    if (!isHovered) {
-      setVanishedRuneIds(new Set());
-      setImplodingRuneId(null);
-    }
-  }, [isHovered]);
-
-  const handleRuneClick = useCallback(
-    (e: React.MouseEvent, rune: AncientRuneConfig) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      try {
-        playAudioHaptic('tap_impact');
-      } catch (_) {}
-      try {
-        triggerHaptic('wormhole');
-      } catch (_) {}
-
-      setImplodingRuneId(rune.id);
-
-      setTimeout(() => {
-        setVanishedRuneIds((prev) => new Set([...prev, rune.id]));
-        setImplodingRuneId(null);
-        if (onRuneNavigate) {
-          onRuneNavigate(rune.path, rune.id);
-        } else if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: rune.path } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: rune.path } }));
-        }
-      }, 200);
-    },
-    [onRuneNavigate]
-  );
 
   // 대형화된 버튼(76~84px) 외곽을 웅장하고 신비롭게 감싸는 최적의 마법진 직경 (144px)
   const size = 144;
@@ -575,7 +504,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         />
       </svg>
 
-      {/* 🌌 4.3. 더블탭 시 룬 문자들 사이로 우주로 빨려들어가는 하이퍼스페이스 차원문 (Cosmic Suction Abyss) */}
+      {/* 🌌 4.3. 더블탭 시 4방위 점 사이로 우주로 빨려들어가는 하이퍼스페이스 차원문 (Cosmic Suction Abyss) */}
       <AnimatePresence>
         {isCosmicSuction && (
           <motion.div
@@ -585,7 +514,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
             transition={{ duration: 0.18 }}
             className="absolute inset-0 pointer-events-none z-25 flex items-center justify-center overflow-visible"
           >
-            {/* 1) 룬과 룬을 잇는 사각형 시공간 전자기 플라즈마 결선 (Rune Quantum Plasma Web) */}
+            {/* 1) 4방위 점들을 잇는 시공간 전자기 플라즈마 결선 */}
             <svg
               width={size}
               height={size}
@@ -593,7 +522,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               className="absolute inset-0 pointer-events-none animate-[spin_0.8s_linear_infinite]"
             >
               <polygon
-                points={`${center - 39.6},${center - 39.6} ${center + 39.6},${center - 39.6} ${center + 39.6},${center + 39.6} ${center - 39.6},${center + 39.6}`}
+                points={`${center},${center - 62} ${center + 62},${center} ${center},${center + 62} ${center - 62},${center}`}
                 fill="none"
                 stroke="#38bdf8"
                 strokeWidth="1.6"
@@ -603,7 +532,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 className="animate-pulse"
               />
               <polygon
-                points={`${center},${center - 56} ${center + 56},${center} ${center},${center + 56} ${center - 56},${center}`}
+                points={`${center - 43.8},${center - 43.8} ${center + 43.8},${center - 43.8} ${center + 43.8},${center + 43.8} ${center - 43.8},${center + 43.8}`}
                 fill="none"
                 stroke="#c084fc"
                 strokeWidth="1.4"
@@ -611,11 +540,11 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 opacity="0.85"
                 filter={`url(#${gradientId}-magic-glow)`}
               />
-              {/* 대각선 4대 룬에서 중심 블랙홀로 꽂히는 광자 광선 (Inward Suction Beams) */}
-              <line x1={center - 39.6} y1={center - 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
-              <line x1={center + 39.6} y1={center - 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
-              <line x1={center + 39.6} y1={center + 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
-              <line x1={center - 39.6} y1={center + 39.6} x2={center} y2={center} stroke="#fde047" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+              {/* 4방위 점에서 중심 블랙홀로 꽂히는 광자 흡입 빔 */}
+              <line x1={center} y1={center - 62} x2={center} y2={center} stroke="#38bdf8" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+              <line x1={center + 62} y1={center} x2={center} y2={center} stroke="#fbbf24" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+              <line x1={center} y1={center + 62} x2={center} y2={center} stroke="#c084fc" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
+              <line x1={center - 62} y1={center} x2={center} y2={center} stroke="#38bdf8" strokeWidth="1.4" strokeDasharray="3 2" opacity="0.95" />
             </svg>
 
             {/* 2) 룬 사이 우주 심연 흡입 볼텍스 (Cosmic Singularity Vortex) */}
@@ -641,7 +570,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         )}
       </AnimatePresence>
 
-      {/* 🔮 4.5. 4대 고대 룬 문자 (블랙홀 공전 & 호버 시 4대 대각선 안착 / 클릭 시 소멸 도약 / 더블탭 시 우주 흡입 도약) */}
+      {/* 🌟 4.5. 4방위 코스믹 보석 점 (대기 시 천체 공전 & 호버 시 상하좌우 안착 / 탭 시 임플로전 펄스 / 더블탭 시 우주 흡입 도약) */}
       <motion.div
         className="absolute inset-0 pointer-events-none z-30"
         style={{ transformOrigin: `${center}px ${center}px` }}
@@ -664,206 +593,269 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
             : { repeat: Infinity, duration: 24, ease: 'linear' }
         }
       >
-        {ANCIENT_RUNES.map((rune) => {
-          if (vanishedRuneIds.has(rune.id)) return null;
-
-          const isImploding = implodingRuneId === rune.id;
-          const { x, y } = getRunePosition(rune.diagonalDeg, center, 56);
-
-          return (
-            <div
-              key={rune.id}
-              style={{
-                left: `${x}px`,
-                top: `${y}px`,
-              }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            >
-              <motion.button
-                type="button"
-                onClick={(e) => handleRuneClick(e, rune)}
-                onPointerDown={(e) => e.stopPropagation()}
-                onPointerUp={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                animate={
-                  isCosmicSuction
-                    ? {
-                        scale: [1, 1.35, 2.8],
-                        opacity: [1, 1, 0],
-                        filter: [
-                          'brightness(1.2) drop-shadow(0 0 10px currentColor)',
-                          'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
-                          'blur(6px) brightness(3)',
-                        ],
-                      }
-                    : isImploding
-                    ? {
-                        scale: [1, 2.2],
-                        opacity: [1, 0],
-                        filter: ['blur(0px) brightness(1)', 'blur(8px) brightness(2.5)'],
-                      }
-                    : {
-                        scale: isHovered ? 1.05 : 0.85,
-                        opacity: isHovered ? 1 : 0.75,
-                      }
-                }
-                whileHover={!isImploding && !isCosmicSuction ? { scale: 1.25 } : undefined}
-                whileTap={!isImploding && !isCosmicSuction ? { scale: 0.9 } : undefined}
-                transition={
-                  isCosmicSuction
-                    ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
-                    : isImploding
-                    ? { duration: 0.22, ease: 'easeOut' }
-                    : { type: 'spring', stiffness: 350, damping: 25 }
-                }
-                className="group pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none transition-shadow duration-200"
-                style={{
-                  color: rune.color,
-                  textShadow: `0 0 10px ${rune.glowColor}`,
-                }}
-                title={`${rune.symbol} ${rune.name} · ${rune.meaning}`}
-                aria-label={`${rune.name} (${rune.meaning})`}
-              >
-                {/* 룬 스톤 배경 링 & 백드롭 (호버 시 뚜렷하게 발광 안착) */}
-                <span
-                  className="absolute inset-0 rounded-full border border-white/20 transition-all duration-300"
-                  style={{
-                    backgroundColor: isHovered ? 'rgba(2, 6, 23, 0.85)' : 'rgba(2, 6, 23, 0.4)',
-                    boxShadow: isHovered ? `0 0 12px ${rune.glowColor}` : `0 0 6px ${rune.glowColor}`,
-                    borderColor: isHovered ? rune.color : 'rgba(255, 255, 255, 0.15)',
-                  }}
-                />
-
-                {/* 소멸 시 외곽 충격파 펄스 */}
-                {isImploding && (
-                  <span
-                    className="absolute -inset-2 rounded-full animate-ping pointer-events-none"
-                    style={{ backgroundColor: rune.color, opacity: 0.6 }}
-                  />
-                )}
-
-                {/* 고대 룬 문자 글리프 */}
-                <span className="relative z-10 text-[13px] font-black tracking-tighter select-none leading-none drop-shadow">
-                  {rune.symbol}
-                </span>
-
-                {/* 호버 시 툴팁 안내 */}
-                {isHovered && !isImploding && (
-                  <span
-                    className={`absolute pointer-events-none whitespace-nowrap px-2 py-0.5 rounded-md bg-slate-950/90 border border-white/20 text-[10px] font-bold text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 ${
-                      rune.diagonalDeg === 315
-                        ? '-top-6 -left-12'
-                        : rune.diagonalDeg === 45
-                        ? '-top-6 -right-12'
-                        : rune.diagonalDeg === 135
-                        ? '-bottom-6 -right-12'
-                        : '-bottom-6 -left-12'
-                    }`}
-                    style={{ borderColor: rune.color }}
-                  >
-                    <span style={{ color: rune.color }} className="mr-1">
-                      {rune.symbol}
-                    </span>
-                    {rune.meaning}
-                  </span>
-                )}
-              </motion.button>
-            </div>
-          );
-        })}
-      </motion.div>
-
-      {/* 🌟 5. 4 방위 고정 룬 보석 (상/하/좌/우) - 마우스 호버 시 상하좌우 화살표로 매끄럽게 전환 */}
-      <div className="absolute inset-0 pointer-events-none z-30">
-        {/* 상(North) 점 / 화살표: 화면 최상단 이동 */}
-        <button
-          type="button"
-          onClick={handleScrollToTop}
-          onPointerDown={(e) => e.stopPropagation()}
-          onPointerUp={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          className="group pointer-events-auto absolute left-1/2 -translate-x-1/2 -top-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="화면 최상단으로 이동"
-          aria-label="화면 최상단으로 이동"
+        {/* ☀️ 상(North) 점: 순수 해(Sun) 문양 · 화면 최상단 스크롤 (deg = 0) */}
+        <div
+          style={{
+            left: `${center}px`,
+            top: `${center - 62}px`,
+          }}
+          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
         >
-          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
-            <span className="absolute w-2 h-2 rotate-45 border border-[#38bdf8] shadow-[0_0_8px_#38bdf8] bg-slate-950/80" />
-            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
-          </span>
-          <ArrowUp className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
-        </button>
+          <motion.button
+            type="button"
+            onClick={handleScrollToTop}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            animate={
+              isCosmicSuction
+                ? {
+                    scale: [1, 1.4, 2.8],
+                    opacity: [1, 1, 0],
+                    filter: [
+                      'brightness(1.2) drop-shadow(0 0 10px #fbbf24)',
+                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
+                      'blur(6px) brightness(3)',
+                    ],
+                  }
+                : implodingDotId === 'north'
+                ? {
+                    scale: [1, 1.4, 1],
+                    filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
+                  }
+                : {
+                    scale: isHovered ? 1.2 : 1,
+                    opacity: isHovered ? 1 : 0.85,
+                  }
+            }
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
+            transition={
+              isCosmicSuction
+                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
+                : implodingDotId === 'north'
+                ? { duration: 0.22, ease: 'easeOut' }
+                : { type: 'spring', stiffness: 350, damping: 25 }
+            }
+            className="group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40"
+            title="화면 최상단 이동 (해)"
+            aria-label="화면 최상단 이동"
+          >
+            {/* 클릭 시 임플로전 펄스 링 */}
+            {implodingDotId === 'north' && (
+              <span
+                className="absolute w-8 h-8 rounded-full animate-ping pointer-events-none"
+                style={{ backgroundColor: '#fbbf24', opacity: 0.7 }}
+              />
+            )}
 
-        {/* 하(South) 점 / 화살표: 화면 최하단 이동 */}
-        <button
-          type="button"
-          onClick={handleScrollToBottom}
-          onPointerDown={(e) => e.stopPropagation()}
-          onPointerUp={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          className="group pointer-events-auto absolute left-1/2 -translate-x-1/2 -bottom-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="화면 최하단으로 이동"
-          aria-label="화면 최하단으로 이동"
-        >
-          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
-            <span className="absolute w-2 h-2 rotate-45 border border-[#c084fc] shadow-[0_0_8px_#c084fc] bg-slate-950/80" />
-            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
-          </span>
-          <ArrowDown className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
-        </button>
+            {/* 순수 해(Sun) 문양 */}
+            <Sun
+              className="w-5 h-5 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(251,191,36,1)] group-hover:text-amber-300 stroke-[2.2]"
+            />
+          </motion.button>
+        </div>
 
-        {/* 좌(West) 점: 메뉴 열기 (LeftSidebarNav 드로어 토글) */}
-        <button
-          type="button"
-          onClick={handleMenuClick}
-          onPointerDown={(e) => e.stopPropagation()}
-          onPointerUp={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -left-[12px] w-9 h-9 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="메뉴 열기 (네비게이션)"
-          aria-label="메뉴 열기"
+        {/* 🌀 우(East) 점: 순수 은하(Galaxy) 문양 · 배경음 제어 & 400ms 홀딩 메뉴 (deg = 90) */}
+        <div
+          style={{
+            left: `${center + 62}px`,
+            top: `${center}px`,
+          }}
+          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
         >
-          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
-            <span className="absolute w-2 h-2 rotate-45 border border-[#38bdf8] shadow-[0_0_8px_#38bdf8] bg-slate-950/80" />
-            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
-          </span>
-          <Menu className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
-        </button>
+          <motion.button
+            type="button"
+            onPointerDown={handleBgmPointerDown}
+            onPointerMove={handleBgmPointerMove}
+            onPointerUp={handleBgmPointerUp}
+            onPointerCancel={handleBgmPointerUp}
+            onPointerLeave={handleBgmPointerUp}
+            onClick={handleBgmClick}
+            onContextMenu={handleBgmContextMenu}
+            onDoubleClick={handleBgmDoubleClick}
+            onTouchStart={(e) => e.stopPropagation()}
+            animate={
+              isCosmicSuction
+                ? {
+                    scale: [1, 1.4, 2.8],
+                    opacity: [1, 1, 0],
+                    filter: [
+                      'brightness(1.2) drop-shadow(0 0 10px #fb7185)',
+                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
+                      'blur(6px) brightness(3)',
+                    ],
+                  }
+                : implodingDotId === 'east'
+                ? {
+                    scale: [1, 1.4, 1],
+                    filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
+                  }
+                : {
+                    scale: isBgmHolding ? 0.9 : isHovered ? 1.2 : 1,
+                    opacity: isHovered ? 1 : 0.85,
+                  }
+            }
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
+            transition={
+              isCosmicSuction
+                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
+                : implodingDotId === 'east'
+                ? { duration: 0.22, ease: 'easeOut' }
+                : { type: 'spring', stiffness: 350, damping: 25 }
+            }
+            className={`group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40 ${
+              isBgmHolding ? 'scale-90' : ''
+            }`}
+            title={isBgmPlaying ? '배경음 일시정지 (은하)' : '배경음 재생 (은하)'}
+            aria-label="배경음 제어"
+          >
+            {/* 클릭 시 임플로전 펄스 링 */}
+            {implodingDotId === 'east' && (
+              <span
+                className="absolute w-8 h-8 rounded-full animate-ping pointer-events-none"
+                style={{ backgroundColor: isBgmPlaying ? '#fbbf24' : '#fb7185', opacity: 0.7 }}
+              />
+            )}
 
-        {/* 우(East) 점: 배경음 재생/일시정지 및 400ms 홀딩 시 팝오버 상세메뉴 */}
-        <button
-          type="button"
-          onPointerDown={handleBgmPointerDown}
-          onPointerMove={handleBgmPointerMove}
-          onPointerUp={handleBgmPointerUp}
-          onPointerCancel={handleBgmPointerUp}
-          onPointerLeave={handleBgmPointerUp}
-          onClick={handleBgmClick}
-          onContextMenu={handleBgmContextMenu}
-          onDoubleClick={handleBgmDoubleClick}
-          onTouchStart={(e) => e.stopPropagation()}
-          className={`group pointer-events-auto absolute top-1/2 -translate-y-1/2 -right-[12px] w-9 h-9 flex items-center justify-center cursor-pointer transition-all duration-200 z-40 ${
-            isBgmHolding ? "scale-90 ring-2 ring-amber-400/80 shadow-[0_0_16px_rgba(251,191,36,0.9)]" : "active:scale-90"
-          }`}
-          title={isBgmPlaying ? "배경음 일시정지 (꾹 누르면 플레이어 메뉴)" : "배경음 재생 (꾹 누르면 플레이어 메뉴)"}
-          aria-label="배경음 제어"
-        >
-          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
-            <span
-              className={`absolute w-2 h-2 rotate-45 border bg-slate-950/80 transition-all duration-200 ${
+            {/* 순수 은하(Galaxy) 문양 */}
+            <Disc3
+              className={`w-5 h-5 transition-all duration-300 stroke-[2.2] group-hover:drop-shadow-[0_0_12px_rgba(251,113,133,1)] ${
                 isBgmPlaying
-                  ? 'border-[#fbbf24] shadow-[0_0_10px_#fbbf24]'
-                  : 'border-[#c084fc] shadow-[0_0_8px_#c084fc]'
+                  ? 'text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.85)] animate-[spin_4s_linear_infinite]'
+                  : 'text-[#fb7185] drop-shadow-[0_0_6px_rgba(251,113,133,0.6)] group-hover:text-rose-300'
               }`}
             />
-            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
-          </span>
-          <Music
-            className={`absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5] ${
-              isBgmPlaying ? "animate-[spin_6s_linear_infinite]" : ""
-            }`}
-          />
-        </button>
-      </div>
+          </motion.button>
+        </div>
+
+        {/* 🌙 하(South) 점: 순수 달(Moon) 문양 · 화면 최하단 스크롤 (deg = 180) */}
+        <div
+          style={{
+            left: `${center}px`,
+            top: `${center + 62}px`,
+          }}
+          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
+        >
+          <motion.button
+            type="button"
+            onClick={handleScrollToBottom}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            animate={
+              isCosmicSuction
+                ? {
+                    scale: [1, 1.4, 2.8],
+                    opacity: [1, 1, 0],
+                    filter: [
+                      'brightness(1.2) drop-shadow(0 0 10px #c084fc)',
+                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
+                      'blur(6px) brightness(3)',
+                    ],
+                  }
+                : implodingDotId === 'south'
+                ? {
+                    scale: [1, 1.4, 1],
+                    filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
+                  }
+                : {
+                    scale: isHovered ? 1.2 : 1,
+                    opacity: isHovered ? 1 : 0.85,
+                  }
+            }
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
+            transition={
+              isCosmicSuction
+                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
+                : implodingDotId === 'south'
+                ? { duration: 0.22, ease: 'easeOut' }
+                : { type: 'spring', stiffness: 350, damping: 25 }
+            }
+            className="group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40"
+            title="화면 최하단 이동 (달)"
+            aria-label="화면 최하단 이동"
+          >
+            {/* 클릭 시 임플로전 펄스 링 */}
+            {implodingDotId === 'south' && (
+              <span
+                className="absolute w-8 h-8 rounded-full animate-ping pointer-events-none"
+                style={{ backgroundColor: '#c084fc', opacity: 0.7 }}
+              />
+            )}
+
+            {/* 순수 달(Moon) 문양 */}
+            <Moon
+              className="w-5 h-5 text-[#c084fc] drop-shadow-[0_0_6px_rgba(192,132,252,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(192,132,252,1)] group-hover:text-purple-200 stroke-[2.2]"
+            />
+          </motion.button>
+        </div>
+
+        {/* ⭐ 좌(West) 점: 순수 별(Star) 문양 · 메뉴 열기 (deg = 270) */}
+        <div
+          style={{
+            left: `${center - 62}px`,
+            top: `${center}px`,
+          }}
+          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
+        >
+          <motion.button
+            type="button"
+            onClick={handleMenuClick}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            animate={
+              isCosmicSuction
+                ? {
+                    scale: [1, 1.4, 2.8],
+                    opacity: [1, 1, 0],
+                    filter: [
+                      'brightness(1.2) drop-shadow(0 0 10px #38bdf8)',
+                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
+                      'blur(6px) brightness(3)',
+                    ],
+                  }
+                : implodingDotId === 'west'
+                ? {
+                    scale: [1, 1.4, 1],
+                    filter: ['brightness(1)', 'brightness(2.2)', 'brightness(1)'],
+                  }
+                : {
+                    scale: isHovered ? 1.2 : 1,
+                    opacity: isHovered ? 1 : 0.85,
+                  }
+            }
+            whileHover={!implodingDotId && !isCosmicSuction ? { scale: 1.22 } : undefined}
+            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.9 } : undefined}
+            transition={
+              isCosmicSuction
+                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
+                : implodingDotId === 'west'
+                ? { duration: 0.22, ease: 'easeOut' }
+                : { type: 'spring', stiffness: 350, damping: 25 }
+            }
+            className="group pointer-events-auto relative w-8 h-8 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 transition-transform duration-200 z-40"
+            title="메뉴 열기 (별)"
+            aria-label="메뉴 열기"
+          >
+            {/* 클릭 시 임플로전 펄스 링 */}
+            {implodingDotId === 'west' && (
+              <span
+                className="absolute w-8 h-8 rounded-full animate-ping pointer-events-none"
+                style={{ backgroundColor: '#38bdf8', opacity: 0.7 }}
+              />
+            )}
+
+            {/* 순수 별(Star) 문양 */}
+            <Star
+              className="w-5 h-5 text-[#38bdf8] drop-shadow-[0_0_6px_rgba(56,189,248,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(56,189,248,1)] group-hover:text-sky-200 stroke-[2.2]"
+            />
+          </motion.button>
+        </div>
+      </motion.div>
     </div>
   );
 });

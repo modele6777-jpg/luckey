@@ -5,12 +5,100 @@ import { KeyCosmicLoader } from "@/components/KeyCosmicLoader";
 import { savePendingSelection, clearPendingSelection } from "@/lib/selectionBridge";
 import { getPendingPrismToss, clearPrismToss } from "@/lib/prismToss";
 import { playAudioHaptic } from "@/lib/audioHaptics";
+import { useTheme } from "@/contexts/ThemeContext";
+
+const CALM_DARK_THEME_CSS = `
+  html.dark {
+    --bg-canvas: #0c0e16 !important;
+    --bg-canvas-subtle: #131622 !important;
+    --bg-card: #161a29 !important;
+    --bg-card-glass: rgba(22, 26, 41, 0.88) !important;
+    --border-linen: rgba(255, 255, 255, 0.12) !important;
+    --border-focus: #e09f7d !important;
+    --copper-primary: #e09f7d !important;
+    --copper-hover: #f3b899 !important;
+    --copper-light: rgba(224, 159, 125, 0.14) !important;
+    --copper-subtle: rgba(224, 159, 125, 0.12) !important;
+    --gold-accent: #f59e0b !important;
+    --sage-accent: #6ee7b7 !important;
+    --sage-light: rgba(16, 185, 129, 0.14) !important;
+    --text-title: #ffffff !important;
+    --text-body: #f8fafc !important;
+    --text-muted: #cbd5e1 !important;
+    --text-dim: #94a3b8 !important;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5) !important;
+    --shadow-float: 0 20px 45px -10px rgba(0, 0, 0, 0.65) !important;
+    color-scheme: dark;
+  }
+  html.dark body {
+    background: var(--bg-canvas) !important;
+    color: #ffffff !important;
+  }
+  html.dark .portal-header,
+  html.dark .portal-card,
+  html.dark .habit-card,
+  html.dark .mission-card,
+  html.dark .card {
+    background: rgba(22, 26, 41, 0.92) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+  }
+  html.dark h1,
+  html.dark h2,
+  html.dark h3,
+  html.dark h4,
+  html.dark .portal-title-group h2,
+  html.dark .portal-card-head h3,
+  html.dark .habit-card-title,
+  html.dark .mission-card-title,
+  html.dark .section-title {
+    color: #ffffff !important;
+  }
+  html.dark p,
+  html.dark span:not(.badge),
+  html.dark li,
+  html.dark label,
+  html.dark .portal-title-group p,
+  html.dark .portal-card-body p,
+  html.dark .habit-card-desc,
+  html.dark .mission-card-desc {
+    color: #f1f5f9 !important;
+  }
+`;
 
 export default function CalmApp() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [, navigate] = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  const syncIframeTheme = useCallback((theme: 'light' | 'dark') => {
+    try {
+      const doc = iframeRef.current?.contentDocument;
+      if (!doc || !doc.documentElement) return;
+      if (!doc.getElementById('prism-calm-theme-sync')) {
+        const styleEl = doc.createElement('style');
+        styleEl.id = 'prism-calm-theme-sync';
+        styleEl.textContent = CALM_DARK_THEME_CSS;
+        doc.head?.appendChild(styleEl);
+      }
+      if (theme === 'dark') {
+        doc.documentElement.classList.add('dark');
+        doc.documentElement.classList.remove('light');
+      } else {
+        doc.documentElement.classList.remove('dark');
+        doc.documentElement.classList.add('light');
+      }
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    if (iframeLoaded) {
+      syncIframeTheme(resolvedTheme);
+    }
+  }, [resolvedTheme, iframeLoaded, syncIframeTheme]);
 
   const dismissLoader = useCallback(() => {
     setIsLoading(false);
@@ -90,11 +178,12 @@ export default function CalmApp() {
   // Once iframe onLoad fires, release loading immediately
   const handleIFrameLoad = useCallback(() => {
     setIframeLoaded(true);
+    syncIframeTheme(resolvedTheme);
     // Smooth micro-transition: dismiss after short frame flush
     requestAnimationFrame(() => {
       setIsLoading(false);
     });
-  }, []);
+  }, [resolvedTheme, syncIframeTheme]);
 
   // 전달받은 토스 텍스트 또는 특정 실천 연습이 있으면 iframe 로드 후 즉시 실행 요청
   useEffect(() => {
@@ -169,7 +258,11 @@ export default function CalmApp() {
   const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=38.0' : '?v=38.0'}`;
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] bg-[#fcf9f5] z-40 overflow-hidden flex flex-col">
+    <div
+      className={`fixed inset-0 w-full h-[100dvh] z-40 overflow-hidden flex flex-col transition-colors duration-300 ${
+        resolvedTheme === 'dark' ? 'bg-[#0c0e16]' : 'bg-[#fcf9f5]'
+      }`}
+    >
       <AnimatePresence mode="wait">
         {isLoading && (
           <motion.div

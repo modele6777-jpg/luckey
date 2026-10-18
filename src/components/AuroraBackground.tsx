@@ -8,8 +8,9 @@ import {
   isMobileDevice,
   isPerfReduced,
 } from '@/lib/perfMode';
+import { useTheme } from '@/contexts/ThemeContext';
 
-/** Deep-space palette for PRISM cosmic theme */
+/** Deep-space palette for PRISM cosmic dark theme */
 const COSMOS = {
   void: 'oklch(0.035 0.03 275)',
   abyss: 'oklch(0.055 0.04 265)',
@@ -18,6 +19,19 @@ const COSMOS = {
   nebulaMagenta: 'oklch(0.52 0.21 330)',
   nebulaCyan: 'oklch(0.50 0.14 215)',
   galacticGold: 'oklch(0.72 0.10 85)',
+};
+
+/** Warm Ivory & Pastel Aurora palette for PRISM daylight sanctuary theme */
+const DAYLIGHT_AURORA = {
+  ivoryBase: 'oklch(0.982 0.012 85)',
+  warmCream: 'oklch(0.965 0.018 75)',
+  softPearl: 'oklch(0.958 0.016 300)',
+  pastelPeach: 'oklch(0.86 0.095 35)',
+  pastelLavender: 'oklch(0.85 0.09 295)',
+  pastelRose: 'oklch(0.86 0.09 350)',
+  pastelMint: 'oklch(0.88 0.085 168)',
+  pastelSky: 'oklch(0.87 0.08 230)',
+  champagneGold: 'oklch(0.89 0.095 85)',
 };
 
 function withAlpha(color: string, alpha: number): string {
@@ -405,6 +419,8 @@ function NebulaOrb({
 }
 
 const AuroraBackgroundComponent: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const profile = getPerfProfile();
   const { void: voidColor, abyss, nebulaViolet, nebulaBlue, nebulaMagenta, nebulaCyan, galacticGold } =
     COSMOS;
@@ -433,9 +449,109 @@ const AuroraBackgroundComponent: React.FC = () => {
   const staticStarCount = isMobile ? 20 : isXS ? 18 : legacy ? 28 : foldCover ? 32 : 36;
   const shootingStarCount = isXS ? 4 : legacy ? 4 : foldCover ? 5 : profile === 'full' ? 8 : galaxy ? 6 : 5;
 
+  if (isLight) {
+    const {
+      ivoryBase,
+      warmCream,
+      softPearl,
+      pastelPeach,
+      pastelLavender,
+      pastelRose,
+      pastelMint,
+      pastelSky,
+      champagneGold,
+    } = DAYLIGHT_AURORA;
+
+    return (
+      <div
+        className="prism-aura-bg prism-aura-bg-light fixed inset-0 pointer-events-none z-0 overflow-hidden transition-colors duration-500"
+        style={{ contain: 'strict', contentVisibility: 'auto' }}
+        aria-hidden
+      >
+        <div
+          className="absolute inset-0 transition-all duration-500"
+          style={{
+            background: isMobile
+              ? [
+                  `radial-gradient(ellipse 92% 55% at 50% 100%, ${withAlpha(pastelPeach, 0.42)} 0%, transparent 65%)`,
+                  `radial-gradient(ellipse 75% 48% at 15% 18%, ${withAlpha(pastelLavender, 0.38)} 0%, transparent 60%)`,
+                  `radial-gradient(ellipse 70% 45% at 85% 25%, ${withAlpha(pastelMint, 0.32)} 0%, transparent 58%)`,
+                  `linear-gradient(180deg, ${ivoryBase} 0%, ${warmCream} 52%, ${softPearl} 100%)`,
+                ].join(', ')
+              : [
+                  `radial-gradient(ellipse 95% 60% at 50% 105%, ${withAlpha(pastelPeach, 0.45)} 0%, transparent 65%)`,
+                  `radial-gradient(ellipse 78% 55% at 8% 18%, ${withAlpha(pastelLavender, 0.42)} 0%, transparent 60%)`,
+                  `radial-gradient(ellipse 72% 52% at 92% 28%, ${withAlpha(pastelRose, 0.36)} 0%, transparent 58%)`,
+                  `radial-gradient(ellipse 62% 48% at 76% 78%, ${withAlpha(pastelMint, 0.34)} 0%, transparent 55%)`,
+                  `radial-gradient(ellipse 52% 42% at 24% 68%, ${withAlpha(champagneGold, 0.35)} 0%, transparent 52%)`,
+                  `linear-gradient(180deg, ${ivoryBase} 0%, ${warmCream} 44%, ${softPearl} 100%)`,
+                ].join(', '),
+          }}
+        />
+
+        {!isMobile && (
+          <>
+            <div
+              className={`absolute left-[-15%] top-[14%] w-[130%] h-[32%] rotate-[-10deg] pointer-events-none ${animateOrbs ? 'aura-orb-2' : ''}`}
+              style={{
+                opacity: 0.45,
+                background: `radial-gradient(ellipse 75% 50% at 50% 50%, ${withAlpha(pastelPeach, 0.55)} 0%, ${withAlpha(pastelLavender, 0.42)} 48%, ${withAlpha(pastelSky, 0.3)} 78%, transparent 100%)`,
+                willChange: animateOrbs ? 'transform' : 'auto',
+                transform: 'translateZ(0)',
+              }}
+            />
+
+            <NebulaOrb
+              positionClass="-top-[10%] -left-[8%] w-[88vw] h-[68vw]"
+              orbClass="aura-orb-1"
+              color={pastelLavender}
+              opacity={0.44}
+              blurPx={nebulaBlur}
+              animate={animateOrbs}
+            />
+            <NebulaOrb
+              positionClass="top-[4%] -right-[10%] w-[76vw] h-[62vw]"
+              orbClass="aura-orb-2"
+              color={pastelPeach}
+              opacity={0.42}
+              blurPx={nebulaBlur}
+              animate={animateOrbs}
+            />
+            <NebulaOrb
+              positionClass="-bottom-[12%] right-[0%] w-[82vw] h-[64vw]"
+              orbClass="aura-orb-3"
+              color={pastelRose}
+              opacity={0.36}
+              blurPx={nebulaBlur}
+              animate={animateOrbs}
+            />
+            <NebulaOrb
+              positionClass="bottom-[8%] left-[5%] w-[58vw] h-[50vw]"
+              orbClass="aura-orb-1"
+              color={pastelMint}
+              opacity={0.34}
+              blurPx={Math.round(nebulaBlur * 0.85)}
+              animate={animateOrbs}
+              animationDuration="22s"
+            />
+            <NebulaOrb
+              positionClass="top-[38%] left-[36%] w-[42vw] h-[36vw]"
+              orbClass="aura-orb-3"
+              color={champagneGold}
+              opacity={0.32}
+              blurPx={Math.round(nebulaBlur * 0.7)}
+              animate={animateOrbs}
+              animationDuration="26s"
+            />
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
-      className="prism-aura-bg fixed inset-0 pointer-events-none z-0 overflow-hidden"
+      className="prism-aura-bg fixed inset-0 pointer-events-none z-0 overflow-hidden transition-colors duration-500"
       style={{ contain: 'strict', contentVisibility: 'auto' }}
       aria-hidden
     >

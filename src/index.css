@@ -54,12 +54,14 @@
 
   html.light,
   html.light body {
-    background: #f8fafc;
+    background: #fdfaf5;
+    color: #1e293b;
   }
 
   html.dark,
   html.dark body {
     background: oklch(0.035 0.03 275);
+    color: #f8fafc;
   }
 
   #root,
@@ -516,13 +518,21 @@
   }
 
 
-  /* 🤍 루시 채팅 모드: 모바일 및 전 해상도 배경 순백 고정 (노치/홈바 및 바디 회색 투과 원천 방지) */
-  html.in-lucy-chat,
-  body.in-lucy-chat,
-  .in-lucy-chat #root,
-  .in-lucy-chat .prism-app-shell {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
+  /* 🤍 루시 채팅 모드: 라이트/다크 테마별 배경 고정 (노치/홈바 및 바디 회색 투과 원천 방지) */
+  html.light.in-lucy-chat,
+  html.light body.in-lucy-chat,
+  html.light.in-lucy-chat #root,
+  html.light.in-lucy-chat .prism-app-shell {
+    background: #faf6f0 !important;
+    background-color: #faf6f0 !important;
+  }
+
+  html.dark.in-lucy-chat,
+  html.dark body.in-lucy-chat,
+  html.dark.in-lucy-chat #root,
+  html.dark.in-lucy-chat .prism-app-shell {
+    background: #050508 !important;
+    background-color: #050508 !important;
   }
 
   /* 💎 프리미엄 스모키 크리스털 글래스모피즘 (모바일 및 전 해상도 완벽 렌더링) */
@@ -2028,3 +2038,95 @@ h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
     animation: none !important;
   }
 }
+
+/* =========================================================================
+   ☀️ Global Warm Ivory & Pastel Aurora Light Mode Theme Engine
+   Transforms cosmic dark pages, cards, glass surfaces & typography into
+   a cohesive Warm Ivory White & Pastel Glassmorphism sanctuary.
+   ========================================================================= */
+
+html.light .glass {
+  background-color: rgba(255, 253, 249, 0.78) !important;
+  border-color: rgba(180, 145, 105, 0.2) !important;
+  box-shadow: 0 8px 30px rgba(140, 110, 80, 0.07);
+}
+
+/* Convert opaque dark page wrappers inside main to transparent/ivory so Pastel Aurora shines through */
+html.light main [class*="bg-[#0"],
+html.light main [class*="bg-[#1"],
+html.light main .bg-slate-950,
+html.light main .bg-neutral-950,
+html.light main .bg-zinc-950,
+html.light main .bg-black {
+  background-color: rgba(253, 250, 245, 0.65) !important;
+  color: #1e293b !important;
+}
+
+/* Convert dark translucent card & panel surfaces into Warm Ivory Pearl Glass */
+html.light main .bg-slate-900\/90,
+html.light main .bg-slate-900\/80,
+html.light main .bg-slate-900\/70,
+html.light main .bg-slate-900\/60,
+html.light main .bg-slate-900\/50,
+html.light main .bg-slate-900\/40,
+html.light main .bg-neutral-900\/90,
+html.light main .bg-neutral-900\/80,
+html.light main .bg-neutral-900\/60,
+html.light main .bg-neutral-900\/50,
+html.light main .bg-zinc-900\/90,
+html.light main .bg-zinc-900\/80,
+html.light main .bg-zinc-900\/60,
+html.light main .bg-black\/60,
+html.light main .bg-black\/50,
+html.light main .bg-black\/40,
+html.light main .bg-black\/30,
+html.light main .bg-white\/5,
+html.light main .bg-white\/10,
+html.light main [class*="bg-white/[0.0"] {
+  background-color: rgba(255, 253, 249, 0.82) !important;
+  border-color: rgba(180, 145, 105, 0.22) !important;
+  box-shadow: 0 4px 20px rgba(135, 105, 75, 0.06);
+}
+
+/* Refine borders in Light Mode to warm champagne/stone tones */
+html.light main .border-white\/5,
+html.light main .border-white\/10,
+html.light main .border-white\/15,
+html.light main .border-white\/20,
+html.light main .border-slate-800,
+html.light main .border-neutral-800,
+html.light main .border-zinc-800 {
+  border-color: rgba(180, 145, 105, 0.22) !important;
+}
+
+/* High-contrast readable typography on Warm Ivory surfaces (preserves white text on colored buttons/badges/bubbles) */
+html.light main:not(.lucy-chat-main) :is(h1, h2, h3, h4, p, span, div, label, li):is(.text-white, .text-slate-100, .text-neutral-100, .text-zinc-100):not(button):not(button *):not([class*="bg-gradient"]):not([class*="bg-gradient"] *):not([class*="rainbow"]):not([class*="bg-indigo-"]):not([class*="bg-indigo-"] *):not([class*="bg-sky-"]):not([class*="bg-sky-"] *):not([class*="bg-blue-"]):not([class*="bg-blue-"] *):not([class*="bg-amber-5"]):not([class*="bg-amber-6"]):not([class*="bg-emerald-5"]):not([class*="bg-emerald-6"]):not([class*="bg-rose-5"]):not([class*="bg-rose-6"]):not([class*="bg-purple-"]):not([class*="bg-slate-900"]):not([class*="bg-slate-900"] *) {
+  color: #1e293b !important;
+}
+
+html.light main:not(.lucy-chat-main) :is(.text-slate-200, .text-slate-300, .text-neutral-200, .text-neutral-300, .text-zinc-200, .text-zinc-300, .text-white\/90, .text-white\/80, .text-white\/70):not([class*="bg-indigo-"] *):not([class*="bg-sky-"] *):not([class*="bg-blue-"] *):not([class*="bg-slate-900"] *) {
+  color: #334155 !important;
+}
+
+html.light main:not(.lucy-chat-main) :is(.text-slate-400, .text-neutral-400, .text-zinc-400, .text-white\/60, .text-white\/50) {
+  color: #64748b !important;
+}
+
+/* ============================================================================
+   🌙 DARK MODE: Crisp White Typography Enforcement (Prevents black/dark text on dark backgrounds)
+   ============================================================================ */
+html.dark,
+html.dark body,
+html.dark #root,
+html.dark .lucy-chat-shell {
+  color: #f8fafc;
+}
+
+html.dark .lucy-chat-shell :is(h1, h2, h3, h4, p, span, div, li, label, textarea, input):is(.text-slate-900, .text-slate-800, .text-slate-700, .text-stone-900, .text-stone-800, .text-zinc-900, .text-zinc-800, .text-neutral-900, .text-neutral-800, .text-gray-900, .text-gray-800):not([class*="bg-amber-4"]):not([class*="bg-amber-5"]):not([class*="from-amber-"]):not([class*="bg-yellow-"]):not([class*="bg-white"]) {
+  color: #ffffff !important;
+}
+
+html.dark .lucy-chat-shell :is(h1, h2, h3, h4, p, span, div, li, label):is(.text-slate-600, .text-slate-500, .text-stone-600, .text-stone-500, .text-zinc-600, .text-zinc-500):not([class*="bg-amber-4"]):not([class*="bg-amber-5"]):not([class*="from-amber-"]):not([class*="bg-yellow-"]):not([class*="bg-white"]) {
+  color: #e2e8f0 !important;
+}
+

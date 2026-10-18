@@ -1,6 +1,7 @@
 import React from 'react';
-import { User, Plus, X, Heart, Users, Sparkles, Briefcase } from 'lucide-react';
+import { User, Plus, X, Heart, Sparkles, Briefcase } from 'lucide-react';
 import type { ChatTargetProfile } from '@/types/chatProfile';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ChatProfileDockProps {
   profiles: ChatTargetProfile[];
@@ -21,12 +22,14 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
   onRemoveProfile,
   maxProfiles = 4,
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const isMulti = profiles.length >= 2;
   const isMax = profiles.length >= maxProfiles;
 
   const getRelationshipIcon = (p: ChatTargetProfile) => {
     if (!isMulti || p.isMe || p.relationship === '본인') {
-      return <User size={10} className="sm:w-3 sm:h-3 text-amber-600 shrink-0" />;
+      return <User size={10} className="sm:w-3 sm:h-3 text-amber-500 shrink-0" />;
     }
     if (p.relationship === '연인' || p.relationship === '썸') {
       return <Heart size={10} className="sm:w-3 sm:h-3 text-rose-500 fill-rose-500/20 shrink-0" />;
@@ -44,9 +47,14 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
         <span
           className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black flex items-center gap-0.5 sm:gap-1 shadow-2xs border ${
             isMulti
-              ? 'bg-gradient-to-r from-rose-500/15 via-purple-500/15 to-amber-500/15 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800'
-              : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+              ? isLight
+                ? 'bg-gradient-to-r from-rose-500/15 via-purple-500/15 to-amber-500/15 text-rose-800 border-rose-300'
+                : 'bg-gradient-to-r from-rose-500/25 via-purple-500/25 to-amber-500/25 text-white border-rose-500/40'
+              : isLight
+              ? 'bg-amber-50 text-amber-800 border-amber-200'
+              : 'bg-amber-950/60 text-white border-amber-500/40'
           }`}
+          style={{ color: isLight ? undefined : '#ffffff' }}
         >
           {isMulti ? (
             <>
@@ -55,7 +63,7 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
             </>
           ) : (
             <>
-              <User size={9} className="sm:w-2.5 sm:h-2.5 text-amber-600 shrink-0" />
+              <User size={9} className="sm:w-2.5 sm:h-2.5 text-amber-500 shrink-0" />
               <span>1인 점괘 모드</span>
             </>
           )}
@@ -74,9 +82,14 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
               key={profile.id}
               className={`group flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold border transition-all shadow-2xs shrink-0 ${
                 isSelectedTarget
-                  ? 'bg-amber-100/90 dark:bg-amber-950/70 border-amber-400 dark:border-amber-500 text-amber-950 dark:text-amber-100 ring-2 ring-amber-400/50 shadow-sm'
-                  : 'bg-white hover:bg-amber-50/60 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-amber-300'
+                  ? isLight
+                    ? 'bg-amber-100/90 border-amber-400 text-amber-950 ring-2 ring-amber-400/50 shadow-sm'
+                    : 'bg-amber-950/75 border-amber-400 text-white ring-2 ring-amber-400/40 shadow-sm'
+                  : isLight
+                  ? 'bg-white hover:bg-amber-50/60 border-slate-200 text-slate-700 hover:border-amber-300'
+                  : 'bg-slate-900 hover:bg-slate-800 border-white/20 text-white hover:border-amber-400/50'
               }`}
+              style={{ color: isLight ? undefined : '#ffffff' }}
             >
               {/* Profile icon & info (Clickable to select as main target or edit) */}
               <button
@@ -96,25 +109,32 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
                 }
               >
                 {getRelationshipIcon(profile)}
-                <span className={`truncate max-w-[65px] sm:max-w-[100px] ${isSelectedTarget ? 'font-black text-amber-950 dark:text-amber-200' : 'font-bold'}`}>
+                <span
+                  className={`truncate max-w-[65px] sm:max-w-[100px] ${
+                    isSelectedTarget
+                      ? isLight ? 'font-black text-amber-950' : 'font-black text-white'
+                      : isLight ? 'font-bold text-slate-800' : 'font-bold text-white'
+                  }`}
+                  style={{ color: isLight ? undefined : '#ffffff' }}
+                >
                   {profile.name}
                 </span>
                 {birthSnippet && (
-                  <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500">
+                  <span className={`text-[9px] sm:text-[10px] ${isLight ? 'text-slate-400' : 'text-white/75'}`}>
                     {birthSnippet}
                   </span>
                 )}
                 {displayRel && (
                   <span className={`text-[8px] sm:text-[9px] px-1 py-0.1 rounded font-normal ${
                     isSelectedTarget 
-                      ? 'bg-amber-200/80 dark:bg-amber-800/60 text-amber-900 dark:text-amber-200 font-bold'
-                      : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'
+                      ? isLight ? 'bg-amber-200/80 text-amber-900 font-bold' : 'bg-amber-800/70 text-white font-bold'
+                      : isLight ? 'bg-slate-100 text-slate-500' : 'bg-slate-800 text-white/85'
                   }`}>
                     {displayRel}
                   </span>
                 )}
                 {isMulti && isSelectedTarget && (
-                  <span className="text-[8px] text-amber-600 dark:text-amber-300 font-black" title="현재 상담 사주 기준">
+                  <span className="text-[8px] text-amber-500 dark:text-amber-300 font-black" title="현재 상담 사주 기준">
                     ★
                   </span>
                 )}
@@ -128,7 +148,9 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
                     e.stopPropagation();
                     onRemoveProfile(profile.id);
                   }}
-                  className="p-0.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors ml-0.5 cursor-pointer"
+                  className={`p-0.5 rounded-full transition-colors ml-0.5 cursor-pointer ${
+                    isLight ? 'text-slate-400 hover:text-rose-600 hover:bg-rose-50' : 'text-white/70 hover:text-rose-300 hover:bg-rose-950/50'
+                  }`}
                   title={`${profile.name} 프로필을 대화창에서 제거`}
                   aria-label={`${profile.name} 삭제`}
                 >
@@ -144,17 +166,24 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
           <button
             type="button"
             onClick={onAddClick}
-            className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white hover:bg-amber-50 dark:bg-slate-800 dark:hover:bg-amber-950/60 border border-slate-200 dark:border-slate-700 hover:border-amber-300 text-slate-700 dark:text-slate-300 hover:text-amber-900 text-[10px] sm:text-[11px] font-bold transition-all shadow-2xs shrink-0 cursor-pointer active:scale-95"
+            className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border text-[10px] sm:text-[11px] font-bold transition-all shadow-2xs shrink-0 cursor-pointer active:scale-95 ${
+              isLight
+                ? 'bg-white hover:bg-amber-50 border-slate-200 hover:border-amber-300 text-slate-700 hover:text-amber-900'
+                : 'bg-slate-900 hover:bg-slate-800 border-white/20 hover:border-amber-400/50 text-white'
+            }`}
+            style={{ color: isLight ? '#334155' : '#ffffff' }}
             title="상담/궁합 대상자 프로필 추가 (최대 4인)"
           >
-            <Plus size={10} className="sm:w-3 sm:h-3 text-amber-600 dark:text-amber-400 shrink-0" />
+            <Plus size={10} className="sm:w-3 sm:h-3 text-amber-500 shrink-0" />
             <span>프로필 추가</span>
-            <span className="text-[8px] sm:text-[9px] text-slate-400 font-semibold">
+            <span className={`text-[8px] sm:text-[9px] font-semibold ${isLight ? 'text-slate-400' : 'text-white/75'}`}>
               ({profiles.length}/{maxProfiles})
             </span>
           </button>
         ) : (
-          <span className="px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] text-slate-400 font-medium shrink-0">
+          <span className={`px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium shrink-0 ${
+            isLight ? 'bg-slate-100 text-slate-400' : 'bg-slate-800 text-white/70'
+          }`}>
             최대 4인 ({profiles.length}/{maxProfiles})
           </span>
         )}

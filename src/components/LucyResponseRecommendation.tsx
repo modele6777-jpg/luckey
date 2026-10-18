@@ -9,6 +9,7 @@ import { sendPrismToss } from '@/lib/prismToss';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { resolveCanonicalPath } from '@/lib/prismRouteRegistry';
 import { findBestKeyExercise } from '@/lib/keyExercisesCatalog';
+import { useTheme } from '@/contexts/ThemeContext';
 import type { SpecialChannel } from '@/pages/LucyStandalonePage';
 
 export interface LucyResponseRecommendationProps {
@@ -266,6 +267,8 @@ export function LucyResponseRecommendation({
   onNavigate,
 }: LucyResponseRecommendationProps) {
   const [isLeaping, setIsLeaping] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
 
   // 1. 수다 모드(isCasual) 또는 루시의 인사말(isGreeting)에서는 기법 추천과 채널 추천을 전면 생략
   if (isCasual || isGreeting) {
@@ -513,17 +516,27 @@ export function LucyResponseRecommendation({
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-3 pt-2.5 border-t border-amber-900/10 dark:border-amber-100/10 text-stone-800 dark:text-stone-200"
+      className={`mt-3 pt-2.5 border-t ${isLight ? 'border-amber-900/10 text-stone-800' : 'border-white/15 text-white'}`}
     >
-      {/* 🌟 단일 통합 추천 칸 (Key 추천 기법 + LucKey 연계 추천 경로 1개를 같은 칸에 배치 - 프리미엄 베이지 테마) */}
-      <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#FAF6EE] via-[#FDFBF7] to-[#F5EFE6] dark:from-[#25201A] dark:via-[#2C241D] dark:to-[#211B16] border border-[#E6D9C5] dark:border-[#544332] shadow-[0_2px_12px_rgba(180,140,90,0.08)] dark:shadow-none space-y-2.5 transition-all hover:border-[#D6C4AA] dark:hover:border-[#6B5540]">
+      {/* 🌟 단일 통합 추천 칸 (Key 추천 기법 + LucKey 연계 추천 경로 1개를 같은 칸에 배치 - 프리미엄 베이지/다크 테마) */}
+      <div className={`p-3 sm:p-3.5 rounded-2xl border space-y-2.5 transition-all ${
+        isLight
+          ? 'bg-gradient-to-r from-[#FAF6EE] via-[#FDFBF7] to-[#F5EFE6] border-[#E6D9C5] shadow-[0_2px_12px_rgba(180,140,90,0.08)] hover:border-[#D6C4AA]'
+          : 'bg-slate-950/80 border-white/15 hover:border-amber-400/40'
+      }`}>
         {/* 헤더: LucKey 연계 추천 라벨 & 테마 이유 */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EFE4D2] dark:bg-[#3D3124] border border-[#DFCEB3] dark:border-[#5A4734] text-[10.5px] font-bold text-[#844A14] dark:text-[#F3D7B5] shadow-2xs">
+          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10.5px] font-bold shadow-2xs ${
+            isLight
+              ? 'bg-[#EFE4D2] border-[#DFCEB3] text-[#844A14]'
+              : 'bg-amber-950/70 border-amber-500/40 text-amber-200'
+          }`}>
             <Sparkles size={12} className="text-[#D97706] dark:text-[#FBBF24] animate-pulse shrink-0" />
             <span>LucKey 연계 추천</span>
           </div>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium truncate max-w-[210px] sm:max-w-none">
+          <span className={`text-[10px] font-medium truncate max-w-[210px] sm:max-w-none ${
+            isLight ? 'text-stone-500' : 'text-white/80'
+          }`}>
             {themeReason}
           </span>
         </div>
@@ -533,14 +546,20 @@ export function LucyResponseRecommendation({
           {/* A. Key 추천 기법 (40가지 실천 연습실) */}
           <div
             onClick={() => handleLeapToFeature(recommendedFeature)}
-            className="flex-1 flex items-center gap-2.5 p-2 rounded-xl bg-white/90 dark:bg-[#1E1914]/80 hover:bg-white dark:hover:bg-[#251F19] border border-[#E8DEC9] dark:border-[#4B3C2D] hover:border-[#D0BD9D] dark:hover:border-[#6A543E] transition-all duration-200 hover:scale-[1.015] cursor-pointer group active:scale-[0.99] min-w-0 shadow-xs"
+            className={`flex-1 flex items-center gap-2.5 p-2 rounded-xl border transition-all duration-200 hover:scale-[1.015] cursor-pointer group active:scale-[0.99] min-w-0 shadow-xs ${
+              isLight
+                ? 'bg-white/90 hover:bg-white border-[#E8DEC9] hover:border-[#D0BD9D]'
+                : 'bg-slate-900/90 hover:bg-slate-800/90 border-white/15 hover:border-amber-400/50'
+            }`}
             title={`${recommendedFeature.featureTitle} (클릭 시 Key 연습실로 바로 이동)`}
           >
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border font-serif font-black text-base shadow-xs transition-transform duration-200 group-hover:scale-105"
               style={{
-                background: 'linear-gradient(135deg, #FFFDF9 0%, #EFE5D2 100%)',
-                borderColor: '#DFCBB0',
+                background: isLight
+                  ? 'linear-gradient(135deg, #FFFDF9 0%, #EFE5D2 100%)'
+                  : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                borderColor: isLight ? '#DFCBB0' : 'rgba(255,255,255,0.2)',
                 boxShadow: '0 1px 4px rgba(180, 140, 90, 0.15)',
               }}
             >
@@ -548,14 +567,30 @@ export function LucyResponseRecommendation({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#F3E8D5] dark:bg-[#3B2F22] text-[#8C4F13] dark:text-[#F0CF9F] font-bold border border-[#E0CFB3] dark:border-[#574431] shrink-0">
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold border shrink-0 ${
+                  isLight
+                    ? 'bg-[#F3E8D5] text-[#8C4F13] border-[#E0CFB3]'
+                    : 'bg-amber-950/70 text-amber-200 border-amber-500/40'
+                }`}>
                   Key 추천 기법
                 </span>
-                <span className="text-xs font-bold text-stone-900 dark:text-stone-100 break-keep break-words group-hover:text-[#9A520E] dark:group-hover:text-[#F59E0B] transition-colors">
+                <span
+                  className={`text-xs font-bold break-keep break-words transition-colors ${
+                    isLight
+                      ? 'text-stone-900 group-hover:text-[#9A520E]'
+                      : 'text-white group-hover:text-amber-300'
+                  }`}
+                  style={{ color: isLight ? '#1c1917' : '#ffffff' }}
+                >
                   {recommendedFeature.shortName}
                 </span>
               </div>
-              <p className="text-[11px] text-stone-600 dark:text-stone-300 break-keep break-words whitespace-normal mt-0.5 font-normal">
+              <p
+                className={`text-[11px] break-keep break-words whitespace-normal mt-0.5 font-normal ${
+                  isLight ? 'text-stone-600' : 'text-white/85'
+                }`}
+                style={{ color: isLight ? '#57534e' : 'rgba(255,255,255,0.88)' }}
+              >
                 {recommendedFeature.description}
               </p>
             </div>
@@ -573,7 +608,9 @@ export function LucyResponseRecommendation({
           </div>
 
           {/* B. LucKey 연계 추천 경로 (단 1개만 같은 칸에 배치) */}
-          <div className="sm:border-l sm:border-[#DFCBB0]/70 dark:sm:border-[#4E3E2E]/70 sm:pl-2.5 flex items-center justify-between sm:justify-start gap-2 shrink-0">
+          <div className={`sm:border-l sm:pl-2.5 flex items-center justify-between sm:justify-start gap-2 shrink-0 ${
+            isLight ? 'sm:border-[#DFCBB0]/70' : 'sm:border-white/15'
+          }`}>
             <button
               type="button"
               onClick={() => {
@@ -594,14 +631,19 @@ export function LucyResponseRecommendation({
                 });
                 onSwitchChannel([recommendedChannel.id], false, recommendedChannel.name);
               }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-2xs active:scale-95 bg-[#FCF8F2] dark:bg-[#282119] hover:bg-[#F3EAD5] dark:hover:bg-[#332A20] border-[#E2D2B8] dark:border-[#503E2D] text-stone-800 dark:text-stone-200 hover:text-stone-950 dark:hover:text-white"
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                isLight
+                  ? 'bg-[#FCF8F2] hover:bg-[#F3EAD5] border-[#E2D2B8] text-stone-800 hover:text-stone-950'
+                  : 'bg-slate-900 hover:bg-slate-800 border-white/20 text-white'
+              }`}
+              style={{ color: isLight ? '#292524' : '#ffffff' }}
               title={`[${recommendedChannel.name}] LucKey 채널로 즉시 입장합니다.`}
             >
               <span className="shrink-0 flex items-center" style={{ color: recommendedChannel.color }}>
                 <RecChannelIcon size={13} />
               </span>
               <span>{recommendedChannel.shortName} 채널</span>
-              <span className="text-[10px] text-stone-400 group-hover:text-stone-600 dark:text-stone-400 font-normal">➔</span>
+              <span className={`text-[10px] font-normal ${isLight ? 'text-stone-400 group-hover:text-stone-600' : 'text-white/70'}`}>➔</span>
             </button>
           </div>
         </div>

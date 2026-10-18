@@ -6,6 +6,7 @@ import {
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked
 } from 'lucide-react';
 import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { useLocation } from 'wouter';
 import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, prefetchTTSChunks, normalizeTextForSpeech } from '@/utils/tts';
@@ -90,147 +91,182 @@ interface ChannelConfig {
   prompts: string[];
 }
 
-// 🌟 Rich Prompt Pools for Dynamic Random Sampling
+// 🌟 Rich Prompt Pools for Dynamic Random Sampling (모두 자연스럽게 완성된 문장형으로 구성)
 const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
   prologue: [
-    '새로운 시작을 앞두고 내 삶의 중심축을 바로잡는 나침반 질문은?',
+    '새로운 시작을 앞두고 내 삶의 중심축을 바로잡는 나침반 질문은 무엇일까?',
     '지금 나의 인생 10년 주기에서 어떤 새로운 서막이 열리고 있을까?',
-    '낯선 도전을 시작할 때 두려움을 용기와 설렘으로 바꾸는 법',
-    '내 안의 가장 순수한 열망과 비전을 명확한 첫걸음으로 구체화해줘.',
-    '올해 새롭게 펼쳐질 나의 운명적 기회와 전환점은 무엇일까?'
+    '낯선 도전을 시작할 때 두려움을 용기와 설렘으로 바꾸려면 어떻게 해야 할까?',
+    '내 안의 가장 순수한 열망과 비전을 명확한 첫걸음으로 구체화해 줘.',
+    '올해 새롭게 펼쳐질 나의 운명적 기회와 전환점은 무엇일지 알려줘.'
   ],
   orange: [
-    '모든 공격은 사랑을 청하는 외침(Call for Love)이라는 기적수업의 관점으로 갈등 풀기',
-    '세상의 최면과 아르콘(집착의 굴레)을 꿰뚫고 자유로워지는 그노시스 통찰은?',
-    '12연기(연기법)의 관점에서 내 반복되는 고통의 연결고리를 끊는 법은?',
-    '내가 직면한 문제를 1원칙(First Principles)으로 분해해서 분석해 줘.',
-    '중요한 결정을 앞두고 고려해야 할 숨겨진 변수와 리스크는?',
+    '기적수업의 관점으로 지금 내가 겪는 인간관계 갈등을 지혜롭게 풀어줘.',
+    '집착의 굴레를 꿰뚫고 마음의 자유를 얻는 통찰을 들려줘.',
+    '연기법의 관점에서 내가 반복해서 겪는 고민의 연결고리를 끊는 법을 알려줘.',
+    '내가 직면한 문제를 1원칙(First Principles)으로 분해해서 명확히 분석해 줘.',
+    '중요한 결정을 앞두고 반드시 고려해야 할 숨겨진 변수와 리스크는 무엇일까?',
     '장기적 성장을 위한 나만의 고유한 전략적 로드맵을 설계해 줘.',
-    '직관과 논리가 충돌할 때 최선의 결정을 내리는 사고 프레임워크는?',
-    '현재 상황에서 가장 큰 레버리지(지렛대 효과)를 낼 수 있는 1가지 핵심 행동은?',
-    '확증 편향과 인지적 맹점을 점검하고 반대 논리를 냉철하게 검토해 줘.',
-    '시간과 에너지의 병목 현상을 해결하는 시스템적 접근법은?',
-    '불확실성이 높을 때 위험을 최소화하면서 기회를 포착하는 의사결정법은?',
-    '복잡한 딜레마를 MECE(상호배제·전체포괄) 관점으로 깔끔하게 정리해줘.',
-    '문제의 근본 원인(Root Cause)을 파헤치는 5 Whys 기법을 적용해줘.',
-    '단기적 유혹을 이겨내고 장기적 복리 효과를 만드는 전략적 사고법은?',
-    '비효율적인 습관과 생각의 낭비를 구조적으로 제거하는 실행 팁'
+    '직관과 논리가 충돌할 때 최선의 결정을 내리는 사고 프레임워크를 알려줘.',
+    '현재 상황에서 가장 큰 레버리지 효과를 낼 수 있는 핵심 행동 한 가지는 무엇일까?',
+    '내 생각의 확증 편향과 맹점을 점검하고 반대 논리를 냉철하게 검토해 줘.',
+    '시간과 에너지의 병목 현상을 해결하는 시스템적 접근법을 알려줘.',
+    '불확실성이 높을 때 위험을 최소화하면서 기회를 포착하는 의사결정법은 무엇일까?',
+    '복잡한 딜레마를 MECE 관점으로 한눈에 보기 쉽게 정리해 줘.',
+    '문제의 근본 원인을 파헤치는 5 Whys 기법을 내 고민에 적용해 줘.',
+    '단기적 유혹을 이겨내고 장기적 복리 효과를 만드는 전략적 사고법을 알려줘.',
+    '비효율적인 습관과 생각의 낭비를 구조적으로 줄이는 실행 팁을 알려줘.'
   ],
   trinity: [
-    '특별한 관계(Special Relationship)에서 거룩한 관계(Holy Relationship)로 나아가는 영적 흐름은?',
-    '플레로마(빛의 충만함)와 소피아의 회복 여정에서 내 영혼의 단계는?',
-    '제행무상과 제법무아의 관점에서 내 운명의 흐름을 어떻게 바라볼까?',
-    '나의 사주 본원과 올해 병오년의 에너지적 조화는 어때?',
-    '현재 나의 운의 계절에서 지금은 씨앗을 뿌릴 때일까, 수확할 때일까?',
-    '나의 천을귀인 기운을 활성화할 수 있는 실천 팁을 알려줘.',
-    '오늘 나의 소울 주파수를 상승시키는 타로적 메시지를 들려줘.',
-    '타고난 사주 오행 중 부족한 기운을 일상에서 채우는 개운법',
-    '앞으로 마주할 운의 터닝포인트와 주의해야 할 에너지 흐름',
-    '내 사주원국의 십신 강점을 극대화하여 재물운을 높이는 법',
-    '내 직관과 무의식이 가리키는 다음 단계의 영적 방향성',
-    '운의 흐름이 정체되었을 때 기운의 물꼬를 트는 방하착 비결',
-    '내 사주 대운의 흐름에 맞는 올해의 커리어 및 재물 타이밍은?',
-    '오늘 나를 지켜주는 우주적 수호 가이드의 조언을 들려줘.',
-    '최근 겪는 반복적인 우연과 동시성(Synchronicity)의 의미는?'
+    '집착하는 관계에서 성숙하고 조화로운 관계로 나아가는 영적 흐름을 짚어줘.',
+    '내 영혼의 성장 여정에서 지금 나는 어떤 단계를 지나고 있을까?',
+    '제행무상과 제법무아의 관점에서 내 운명의 흐름을 어떻게 바라보면 좋을까?',
+    '나의 사주 본원과 올해 병오년의 에너지적 조화는 어떤지 분석해 줘.',
+    '현재 나의 운의 계절에서 지금은 씨앗을 뿌릴 때일까, 아니면 수확할 때일까?',
+    '나의 천을귀인 기운을 일상에서 활성화할 수 있는 실천 팁을 알려줘.',
+    '오늘 나의 소울 주파수를 높여주는 타로적 메시지를 들려줘.',
+    '타고난 사주 오행 중 부족한 기운을 일상에서 채우는 개운법을 알려줘.',
+    '앞으로 마주할 운의 터닝포인트와 주의해야 할 에너지 흐름을 짚어줘.',
+    '내 사주원국의 십신 강점을 극대화하여 재물운을 높이는 방법을 알려줘.',
+    '내 직관과 무의식이 가리키는 다음 단계의 영적 방향성은 무엇일까?',
+    '운의 흐름이 정체되었을 때 기운의 물꼬를 트는 방하착 비결을 알려줘.',
+    '내 사주 대운의 흐름에 맞는 올해의 커리어 및 재물 타이밍은 언제일까?',
+    '오늘 나를 지켜주는 우주적 수호 가이드의 따뜻한 조언을 들려줘.',
+    '최근 겪는 반복적인 우연과 동시성(Synchronicity)에는 어떤 의미가 있을까?'
   ],
   bluebird: [
-    '기적수업 레슨 34: "나는 이것 대신 평화를 볼 수 있다"를 지금 내 상황에 적용해줘.',
-    '누군가에 대한 억울함과 상처를 기적수업의 참된 용서로 치유하는 법',
-    '내 안의 꺼지지 않는 신성한 불꽃(Divine Spark)을 깨우는 법은?',
-    '도마 복음서의 가르침처럼 내면의 것을 꺼내 구원을 얻는 비결',
-    '괴로움(Dukkha)이 밀려올 때 두 번째 화살을 맞지 않는 지혜는?',
-    '초기불교 사념처(신수심법)로 지금 내 감정을 알아차리는 법',
-    '루시야, 오늘 마음이 조금 지치고 버거운데 따뜻하게 안아줘.',
-    '남들과 비교하며 작아지는 내 마음을 편안하게 달래줘.',
-    '불안과 걱정이 올라올 때 내 마음을 지켜주는 세도나 4문답 해줘.',
-    '오늘 하루 수고한 나 자신에게 건네는 포근한 손편지 써줘.',
-    '내 안의 작은 아이(내면아이)에게 건네는 다정한 포옹과 위로',
-    '스스로를 자책하고 비난하는 마음을 멈추는 자기자비 연습',
-    '과거의 상처로부터 안전하게 나를 지키는 온기 가득한 대화',
-    '완벽하지 않아도 온전히 사랑받을 자격이 있다는 확신을 줘.',
-    '오늘 밤 편안하게 숙면을 취할 수 있는 마음 토닥임 명상',
-    '가슴속 응어리진 감정을 편안하게 흘려보내는 안전한 위로',
-    '남의 눈치를 보느라 지쳐버린 나를 위한 따뜻한 응원',
-    '오늘 끌어당김의 법칙으로 우주에 전달할 긍정 확언 문장'
+    '기적수업의 평화의 관점을 지금 내 마음과 상황에 따뜻하게 적용해 줘.',
+    '누군가에 대한 억울함과 상처를 참된 용서로 치유하려면 어떻게 해야 할까?',
+    '내 안에 숨겨진 꺼지지 않는 신성한 가능성과 빛을 깨우는 법을 알려줘.',
+    '내면의 지혜를 꺼내어 마음의 평안을 얻는 비결을 들려줘.',
+    '괴로움이 밀려올 때 스스로를 더 아프게 하지 않는 지혜는 무엇일까?',
+    '지금 내 몸과 감정의 상태를 있는 그대로 다정하게 알아차리는 법을 알려줘.',
+    '루시야, 오늘 마음이 조금 지치고 버거운데 따뜻하게 위로해 줘.',
+    '남들과 비교하며 작아지는 내 마음을 편안하게 달래줄래?',
+    '불안과 걱정이 올라올 때 내 마음을 지켜주는 세도나 4문답을 함께 해줘.',
+    '오늘 하루 수고한 나 자신에게 건네는 포근한 손편지를 써줘.',
+    '내 안의 상처받은 내면아이에게 다정한 포옹과 위로의 말을 건네줘.',
+    '스스로를 자책하고 비난하는 마음을 멈추는 자기자비 연습법을 알려줘.',
+    '과거의 상처로부터 안전하게 나를 지키는 따뜻한 조언을 들려줘.',
+    '완벽하지 않아도 온전히 사랑받을 자격이 있다는 확신을 불어넣어 줘.',
+    '오늘 밤 편안하게 숙면을 취할 수 있도록 마음을 토닥여 줘.',
+    '가슴속 응어리진 감정을 편안하게 흘려보내는 안전한 위로를 들려줘.',
+    '남의 눈치를 보느라 지쳐버린 나를 위해 따뜻한 응원을 건네줘.',
+    '오늘 내 마음을 밝게 채워줄 긍정 확언 문장을 만들어 줘.'
   ],
   aura: [
-    '지금 바로 몸의 긴장을 풀고 피로를 날리는 3분 호흡법 알려줘.',
-    '오늘 나의 신체 에너지와 바이오리듬을 끌어올리는 루틴 추천해줘.',
-    '숙면을 취하고 아침을 상쾌하게 깨우는 나이트 케어 가이드줘.',
-    '무기력할 때 뇌를 깨우는 간단한 스트레칭과 수분 루틴은?',
-    '머리에 몰린 열과 생각을 발끝으로 내리는 1분 그라운딩 기법',
-    '신경계를 안정시키고 미주신경을 활성화하는 4-7-8 이완 호흡',
-    '에너지가 방전되었을 때 10분 만에 안전하게 재충전하는 법',
-    '잠들기 전 5분 동안 온몸의 긴장을 푸는 바디스캔 가이드',
-    '스트레스로 소화가 안 되거나 가슴이 답답할 때 누르는 혈자리',
-    '집중력을 2배로 높여주는 뽀모도로 브레인 리셋 루틴',
-    '오후의 나른함을 날려버리는 활력 충전 스트레칭',
-    '내 몸의 코어 에너지와 면역력을 지켜주는 데일리 건강 수칙'
+    '지금 바로 몸의 긴장을 풀고 피로를 날리는 3분 호흡법을 알려줘.',
+    '오늘 나의 신체 에너지와 바이오리듬을 끌어올리는 루틴을 추천해 줘.',
+    '깊은 숙면을 취하고 아침을 상쾌하게 깨우는 나이트 케어 가이드를 알려줘.',
+    '무기력할 때 뇌를 깨우는 간단한 스트레칭과 수분 섭취 루틴은 무엇일까?',
+    '머리에 몰린 열과 복잡한 생각을 발끝으로 내리는 1분 그라운딩 기법을 알려줘.',
+    '신경계를 안정시키고 미주신경을 활성화하는 4-7-8 이완 호흡법을 가이드해 줘.',
+    '에너지가 방전되었을 때 10분 만에 안전하게 재충전하는 방법을 알려줘.',
+    '잠들기 전 5분 동안 온몸의 긴장을 부드럽게 푸는 바디스캔 가이드를 해줘.',
+    '스트레스로 소화가 안 되거나 가슴이 답답할 때 도움이 되는 이완법을 알려줘.',
+    '집중력을 두 배로 높여주는 브레인 리셋 루틴을 추천해 줘.',
+    '오후의 나른함을 상쾌하게 날려버리는 활력 충전 스트레칭을 알려줘.',
+    '내 몸의 코어 에너지와 면역력을 지켜주는 데일리 건강 수칙을 알려줘.'
   ],
   muse: [
-    '빌립 복음서의 신방(Bridal Chamber)처럼 대립하는 생각을 하나로 융합하는 법',
-    '새로운 아이디어가 필요한데, 생각을 뒤흔드는 신선한 질문을 던져줘!',
-    '지금 내 감정을 은유적으로 담아낸 아름다운 시 한 편 지어줘.',
-    '사람들의 마음을 사로잡는 감각적인 문장과 스토리텔링 아이디어 줘.',
-    '창작의 벽에 부딪혔을 때 영감의 물꼬를 트는 무작위 발상법은?',
-    '오늘의 소소한 일상을 특별한 예술적 시선으로 바라보는 관점',
-    '완벽주의를 내려놓고 편안하게 시작하는 창작 루틴',
-    '내 프로젝트에 생명력을 불어넣는 참신한 카피라이팅 아이디어',
-    '아이디어가 완전히 고갈됐을 때 뇌를 번뜩이게 하는 질문은?',
-    '창작 슬럼프를 기분 좋은 휴식과 새로운 도약의 계기로 바꾸기',
-    '상상력을 극대화하는 SCAMPER 기법으로 내 고민을 재해석해줘.',
-    '감각적인 비유와 독창적인 문체로 풀어내는 글쓰기 팁',
-    '세상에 없던 새로운 시각으로 문제를 재정의하는 발상 전환'
+    '서로 대립하는 두 가지 생각을 창의적으로 하나로 융합하는 방법을 알려줘.',
+    '새로운 아이디어가 필요한데 내 고정관념을 깨우는 신선한 질문을 던져줘!',
+    '지금 내 감정을 은유적으로 담아낸 아름다운 시 한 편을 지어줘.',
+    '사람들의 마음을 사로잡는 감각적인 문장과 스토리텔링 아이디어를 추천해 줘.',
+    '창작의 벽에 부딪혔을 때 영감의 물꼬를 트는 발상법은 무엇일까?',
+    '오늘의 소소한 일상을 특별한 예술적 시선으로 바라보는 관점을 들려줘.',
+    '완벽주의를 내려놓고 가벼운 마음으로 시작하는 창작 루틴을 알려줘.',
+    '내 프로젝트에 생명력을 불어넣는 참신한 카피라이팅 아이디어를 제안해 줘.',
+    '아이디어가 완전히 고갈됐을 때 뇌를 번뜩이게 하는 질문은 무엇일까?',
+    '창작 슬럼프를 기분 좋은 휴식과 새로운 도약의 계기로 바꾸는 법을 알려줘.',
+    '상상력을 극대화하는 SCAMPER 기법으로 내 고민을 새롭게 재해석해 줘.',
+    '감각적인 비유와 독창적인 문체로 마음을 움직이는 글쓰기 팁을 알려줘.',
+    '세상에 없던 새로운 시각으로 문제를 재정의하는 발상 전환법을 알려줘.'
   ],
   epilogue: [
-    '오늘 하루 있었던 일들을 차분히 정리하고 마음을 비워내는 회고 질문',
-    '마음에 남은 응어리와 미련을 있는 그대로 흘려보내는 세도나 4문답 해줘.',
-    '오늘 밤 편안한 쉼과 숙면으로 인도하는 밤의 서재 방하착 가이드',
-    '하루 동안 수고한 나 자신에게 건네는 따뜻한 자기 자비와 감사',
-    '오늘 겪은 크고 작은 경험 속에서 얻은 영혼의 선물은 무엇일까?'
+    '오늘 하루 있었던 일들을 차분히 정리하고 마음을 비워내는 회고 질문을 던져줘.',
+    '마음에 남은 응어리와 미련을 있는 그대로 흘려보내는 세도나 4문답을 해줘.',
+    '오늘 밤 편안한 쉼과 숙면으로 인도하는 밤의 서재 방하착 가이드를 들려줘.',
+    '하루 동안 수고한 나 자신에게 따뜻한 자기자비와 감사의 인사를 건네줘.',
+    '오늘 겪은 크고 작은 경험 속에서 내가 얻은 가장 소중한 깨달음은 무엇일까?'
   ]
 };
 
 // 👑 7대 채널 풀가동 PRO 마스터 Pool
 const MASTER_PROMPT_POOL = [
-  '초기불교의 사티(알아차림) + 영지주의의 그노시스 + 기적수업의 용서를 융합해 내 고민을 풀어줘.',
-  '초기불교의 무아(Anattā)와 영지주의의 신성한 불꽃(Pneuma)을 융합해 진단해줘.',
-  '초기불교 4성제와 8정도의 지혜를 내 현재 삶과 고민에 적용해 줘.',
+  '알아차림과 통찰, 그리고 용서의 지혜를 융합해 지금 내 고민을 입체적으로 풀어줘.',
+  '내면의 본질과 잠재된 가능성을 결합해 지금 나의 상태를 깊이 진단해 줘.',
+  '고통의 원인을 밝히고 바른 길로 나아가는 지혜를 내 현재 삶에 적용해 줘.',
   '나의 사주·심리·신체 에너지와 인생 전략을 총망라해서 통합 진단해 줘.',
   '현재 직면한 중대한 전환점을 5대 영역에서 입체적으로 분석해 줘.',
   '내 영혼의 최고 잠재력을 끌어올리기 위한 올인원 마스터 로드맵을 설계해 줘.',
-  '오늘 하루 나의 운과 마인드셋을 최고조로 끌어올리는 마스터 가이드는?',
-  '내 운명의 타이밍에 맞춘 5개년 비즈니스 & 라이프 마스터플랜',
-  '내면의 상처를 치유하고 외적 실행력을 폭발시키는 심신통합 전략',
-  '우주적 동시성과 1원칙 논리가 만나는 최고의 의사결정 해답',
-  '영혼의 사명과 현실적 성공을 일치시키는 홀리스틱 마스터 코칭'
+  '오늘 하루 나의 운과 마인드셋을 최고조로 끌어올리는 마스터 가이드를 알려줘.',
+  '내 운명의 타이밍에 맞춘 5개년 비즈니스 & 라이프 마스터플랜을 설계해 줘.',
+  '내면의 상처를 치유하고 외적 실행력을 높이는 심신통합 전략을 알려줘.',
+  '우주적 동시성과 1원칙 논리가 만나는 최고의 의사결정 해답을 제시해 줘.',
+  '영혼의 사명과 현실적 성공을 일치시키는 홀리스틱 마스터 코칭을 해줘.'
 ];
 
 // 💬 일상 대화 & 힐링 & 인생 조언을 위한 풍부한 캐주얼 추천 질문 풀 (동적 순환)
 const CASUAL_PROMPT_POOL = [
-  '루시야, 오늘 하루 어떻게 보내면 기분이 좋아질까?',
+  '루시야, 오늘 하루를 어떻게 보내면 기분이 한결 좋아질까?',
   '요즘 생각이 너무 많은데 머릿속을 정리할 수 있는 좋은 질문을 던져줘.',
-  '오늘 나에게 어울리는 행운의 컬러와 마음가짐은 뭐야?',
+  '오늘 나에게 어울리는 행운의 컬러와 마음가짐은 무엇인지 알려줘.',
   '지금 이 순간 내 마음에 가장 필요한 따뜻한 위로는 무엇일까?',
-  '오늘 하루를 특별하게 만들어줄 작은 실천 팁 하나 알려줘.',
-  '지친 나를 위해 따뜻한 차 한 잔 마시듯 마음을 녹여줘.',
-  '답답했던 마음을 시원하게 환기할 수 있는 긍정적인 생각법은?',
-  '오늘 밤 편안하게 푹 쉴 수 있는 힐링 한마디 부탁해.',
-  '내 안의 불안을 가라앉히고 평온함을 되찾는 짧은 대화 나누자.',
+  '오늘 하루를 특별하게 만들어줄 작은 실천 팁 하나만 알려줘.',
+  '지친 나를 위해 따뜻한 차 한 잔 마시듯 마음을 포근하게 녹여줘.',
+  '답답했던 마음을 시원하게 환기할 수 있는 긍정적인 생각법을 알려줘.',
+  '오늘 밤 편안하게 푹 쉴 수 있는 다정한 힐링 한마디 부탁해.',
+  '내 안의 불안을 가라앉히고 평온함을 되찾는 짧은 대화를 나누자.',
   '루시, 오늘 나 자신을 더 사랑할 수 있는 칭찬 한마디 해줄래?',
-  '새로운 시작을 앞두고 용기를 북돋워 주는 조언을 듣고 싶어.',
-  '내 마음의 날씨를 알아차리고 다독여주는 시간 가져보자.',
-  '오늘 하루 소소하지만 확실한 행복을 찾는 비결은?',
-  '루시의 눈으로 본 나의 가장 빛나는 장점은 무엇일까?',
-  '스트레스를 비우고 좋은 에너지를 채우는 오늘의 확언 한 줄!',
-  '마음이 복잡할 때 호흡을 가다듬는 1분 이완법 알려줘.',
-  '인간관계에서 마음의 경계를 건강하게 지키는 법은?',
-  '오늘 나에게 일어날 수 있는 기분 좋은 우연과 행운은?',
-  '스스로에게 너무 엄격해질 때 나를 안아주는 법',
-  '오늘 하루를 감사함으로 마무리하는 루틴 추천해줘.',
-  '무기력할 때 작은 활력을 불어넣는 3분 기분 전환 팁',
-  '내 마음속 숨은 열정과 호기심을 깨우는 영감 질문'
+  '새로운 시작을 앞두고 용기를 북돋워 주는 따뜻한 조언을 듣고 싶어.',
+  '지금 내 마음의 날씨를 알아차리고 다독여주는 시간을 가져보자.',
+  '오늘 하루 소소하지만 확실한 행복을 찾는 비결은 무엇일까?',
+  '루시의 눈으로 본 나의 가장 빛나는 장점은 무엇인지 말해줘.',
+  '스트레스를 비우고 좋은 에너지를 채우는 오늘의 확언 한 줄을 들려줘!',
+  '마음이 복잡할 때 호흡을 차분히 가다듬는 1분 이완법을 알려줘.',
+  '인간관계에서 마음의 경계를 건강하게 지키는 방법은 무엇일까?',
+  '오늘 나에게 일어날 수 있는 기분 좋은 우연과 행운은 무엇일지 알려줘.',
+  '스스로에게 너무 엄격해질 때 나를 다정하게 안아주는 법을 알려줘.',
+  '오늘 하루를 감사함으로 마무리하는 저녁 루틴을 추천해 줘.',
+  '무기력할 때 작은 활력을 불어넣는 3분 기분 전환 팁을 알려줘.',
+  '내 마음속 숨은 열정과 호기심을 깨우는 영감 질문을 던져줘.'
 ];
+
+// 호리 프롬프트의 짧은 명사형 제목을 자연스럽게 완성된 문장형 질문으로 변환하는 헬퍼
+function toCompleteSentencePrompt(title: string, body?: string): string {
+  const t = (title || '').trim();
+  if (!t) return '';
+  // 이미 완성된 문장 종결어미로 끝나는 경우 그대로 사용하되 물음표/마침표 보정
+  if (/[.!?]$/.test(t)) return t;
+  if (/(할까|일까|볼까|줄래|할래|있을까|없을까|언제|누구|뭐야|어때|어떨까|무엇일까|어디일까)$/.test(t)) {
+    return `${t}?`;
+  }
+  if (/(해줘|해 줘|알려줘|알려 줘|짚어줘|짚어 줘|봐줘|봐 줘|들려줘|들려 줘|써줘|써 줘|지어줘|부탁해|나누자|가져보자|싶어)$/.test(t)) {
+    return `${t}.`;
+  }
+  // 본문(body)의 첫 문장이 적절한 길이(65자 이하)의 완성형 문장이라면 활용
+  if (body) {
+    const firstSentence = body.split(/(?<=[.!?])\s+/)[0]?.trim();
+    if (firstSentence && firstSentence.length >= 14 && firstSentence.length <= 62) {
+      return firstSentence;
+    }
+  }
+  // 명사구 형태로 끝나는 제목을 자연스러운 완성형 질문 문장으로 변환
+  if (/(방법|비결|가이드|루틴|팁|전략|처방|연습|기법|법)$/.test(t)) {
+    return `${t}을 자세히 알려줘.`;
+  }
+  if (/(분석|진단|점검|설계|해석|풀이)$/.test(t)) {
+    return `${t}을 해줘.`;
+  }
+  if (/(시기|타이밍|언제)$/.test(t)) {
+    return `${t}는 언제쯤 찾아올까?`;
+  }
+  if (/(운세|흐름|전환점|가능성|점수|궁합|속마음|재능|분야|스타일|특징|의미|이유)$/.test(t)) {
+    return `${t}은 어떤지 자세히 알려줘.`;
+  }
+  return `${t}에 대해 자세히 분석해서 알려줘.`;
+}
 
 const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
   // 0. 빨 (빨강) - 프롤로그
@@ -441,7 +477,7 @@ export function resolveMessageModeAndChannels(
   const isCasual = (rawMode === 'casual' || validChannels.length === 0) && !isMaster;
 
   let badgeLabel = '수다 모드';
-  let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
+  let badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white border-slate-200 dark:border-white/20';
   let badgeIcon = '💬';
 
   if (isMaster) {
@@ -452,7 +488,7 @@ export function resolveMessageModeAndChannels(
     const ch = validChannels[0];
     const cfg = SPECIAL_CHANNELS[ch];
     badgeLabel = cfg ? cfg.name : ch;
-    badgeColor = cfg ? `${cfg.activeColor} border font-bold` : 'bg-amber-100 text-amber-900 border-amber-200';
+    badgeColor = cfg ? `${cfg.activeColor} dark:bg-slate-800 dark:text-white dark:border-amber-400/50 border font-bold` : 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-white border-amber-200 dark:border-amber-500/40';
     badgeIcon = ch === 'prologue' ? '🌅' : ch === 'trinity' ? '🔮' : ch === 'orange' ? '🍊' : ch === 'aura' ? '🌿' : ch === 'bluebird' ? '🕊️' : ch === 'muse' ? '🎨' : '🌙';
   } else if (validChannels.length >= 2) {
     const names = validChannels.map((c) => SPECIAL_CHANNELS[c]?.shortName || c).join(' + ');
@@ -540,7 +576,7 @@ function getCuratedPrompts(
     ...shuffle(CHANNEL_PROMPT_POOLS.muse).slice(0, 2),
     ...shuffle(CHANNEL_PROMPT_POOLS.prologue).slice(0, 1),
     ...shuffle(CHANNEL_PROMPT_POOLS.epilogue).slice(0, 1),
-    ...shuffle(HORI_PROMPT_LIBRARY.map((p) => p.title)).slice(0, 4),
+    ...shuffle(HORI_PROMPT_LIBRARY.map((p) => toCompleteSentencePrompt(p.title, p.body))).slice(0, 4),
     ...shuffle(CASUAL_PROMPT_POOL).slice(0, 2),
   ];
   return shuffle(Array.from(new Set(diversePool))).slice(0, 6);
@@ -548,6 +584,8 @@ function getCuratedPrompts(
 
 export default function LucyStandalonePage() {
   const [, navigate] = useLocation();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
 
   const { 
     firebaseUser, 
@@ -1053,14 +1091,14 @@ export default function LucyStandalonePage() {
     return `${names} 지능이 결합되어 다각도 입체 시너지 통찰을 제공합니다.`;
   }, [channelCount, activeChannels, isCasualChat, isFullProMaster, isSingleSpecial]);
 
-  // 🌟 호리(hori.chat) 스타일 동적 예시 고민 풀 (1인: 77선+채널/캐주얼 풀 / 2인 이상: 맞춤 궁합 질문 풀)
+  // 🌟 호리(hori.chat) 스타일 동적 예시 고민 풀 (모두 자연스럽게 완성된 문장형 질문으로 제공)
   const dynamicGhostPrompts = useMemo(() => {
     // 2인 이상 시 두 사람(다자간) 맞춤 궁합 질문 우선 노출
     if (activeProfiles.length >= 2) {
-      return generateMultiProfilePrompts(activeProfiles);
+      return generateMultiProfilePrompts(activeProfiles).map((q) => toCompleteSentencePrompt(q));
     }
 
-    const horiTitles = HORI_PROMPT_LIBRARY.map((p) => p.title);
+    const horiSentences = HORI_PROMPT_LIBRARY.map((p) => toCompleteSentencePrompt(p.title, p.body));
     
     let contextualPrompts: string[] = [];
     if (selectedMode === 'casual') {
@@ -1082,7 +1120,7 @@ export default function LucyStandalonePage() {
       ];
     }
 
-    const combined = [...contextualPrompts, ...horiTitles];
+    const combined = [...contextualPrompts.map((q) => toCompleteSentencePrompt(q)), ...horiSentences];
     return Array.from(new Set(combined.filter((p) => p && p.trim().length > 0)));
   }, [activeProfiles.length, selectedMode]);
 
@@ -1842,7 +1880,12 @@ export default function LucyStandalonePage() {
   }
 
   return (
-    <div className="h-full min-h-0 flex-1 w-full max-w-full overflow-hidden flex flex-col bg-white text-slate-800 font-sans select-text relative">
+    <div
+      className={`lucy-chat-shell h-full min-h-0 flex-1 w-full max-w-full overflow-hidden flex flex-col bg-transparent font-sans select-text relative transition-colors duration-300 ${
+        isLight ? 'text-slate-800' : 'text-white'
+      }`}
+      style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+    >
       {/* Mode Switch Toast */}
       <AnimatePresence>
         {modeSwitchToast && (
@@ -1861,7 +1904,11 @@ export default function LucyStandalonePage() {
       {/* PRO Top Header Bar */}
       <header 
         style={{ paddingTop: 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))' }}
-        className="w-full px-3.5 sm:px-8 lg:px-12 pb-3 bg-white border-b border-slate-200/80 shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative"
+        className={`w-full px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-300 ${
+          isLight
+            ? 'bg-[#fffdf9]/85 border-amber-900/12 text-slate-800'
+            : 'bg-slate-950/80 border-white/10 text-white'
+        }`}
       >
         <div className="flex items-center justify-between gap-2 min-w-0">
           {/* Brand Logo & Left empty space (상단 로고 왼쪽 아이콘 제거 및 빈 공간 유지) */}
@@ -1876,11 +1923,16 @@ export default function LucyStandalonePage() {
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <h1 className="text-base sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+                  <h1
+                    className={`text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 ${
+                      isLight ? 'text-slate-900' : 'text-white'
+                    }`}
+                    style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+                  >
                     Lucy
                   </h1>
-                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 text-indigo-600 border border-indigo-200/60 flex items-center gap-1">
-                    <Sparkles size={10} className="text-indigo-500 animate-spin" />
+                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/20 text-indigo-600 dark:text-indigo-200 border border-indigo-200/60 dark:border-indigo-400/30 flex items-center gap-1">
+                    <Sparkles size={10} className="text-indigo-500 dark:text-indigo-300 animate-spin" />
                     AI 모드
                   </span>
                   {activeChannels.length === ALL_CHANNELS.length ? (
@@ -1894,12 +1946,17 @@ export default function LucyStandalonePage() {
                       <span>{activeChannels.length}중 융합 가동 중</span>
                     </span>
                   ) : autoDetectedTitle ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-900 border border-violet-200/80">
+                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-900 dark:text-violet-100 border border-violet-200/80 dark:border-violet-500/30">
                       {autoDetectedTitle}
                     </span>
                   ) : null}
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
+                <p
+                  className={`text-[10px] sm:text-[11px] font-medium truncate ${
+                    isLight ? 'text-slate-500' : 'text-white/80'
+                  }`}
+                  style={{ color: isLight ? '#64748b' : 'rgba(255, 255, 255, 0.82)' }}
+                >
                   {autoDetectedTitle
                     ? `${autoDetectedTitle} · 질문 맥락에 맞춰 최적 지능 자동 가동 중`
                     : '질문 맥락에 맞춰 7대 채널·융합·마스터 지능이 자동 전환됩니다'}
@@ -1914,7 +1971,11 @@ export default function LucyStandalonePage() {
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className={`p-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center ${
-                isSearchOpen ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                isSearchOpen
+                  ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40'
+                  : isLight
+                  ? 'bg-amber-50/80 hover:bg-amber-100/80 text-slate-600 border border-amber-900/10'
+                  : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
               }`}
               title="대화 내역 검색"
               aria-label="대화 검색"
@@ -1929,21 +1990,23 @@ export default function LucyStandalonePage() {
               onClick={toggleAutoTts}
               className={`p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1.5 ${
                 isAutoTts
-                  ? 'bg-gradient-to-r from-emerald-50 to-teal-100/80 text-emerald-800 border border-emerald-300 shadow-2xs font-semibold'
-                  : 'bg-slate-100/90 text-slate-400 hover:text-slate-600 border border-slate-200/80'
+                  ? 'bg-gradient-to-r from-emerald-50 to-teal-100/80 dark:from-emerald-950/80 dark:to-teal-900/70 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs font-semibold'
+                  : isLight
+                  ? 'bg-amber-50/80 text-slate-500 hover:text-slate-700 border border-amber-900/10'
+                  : 'bg-white/10 text-white/85 hover:text-white border border-white/15'
               }`}
               title={isAutoTts ? '루시 답변 바로 음성 읽기 켜짐 (질문 낭독 생략) - 클릭하여 끄기' : '자동 음성 읽기 꺼짐 - 클릭하여 켜기'}
               aria-label={isAutoTts ? '루시 답변 바로 음성 읽기 켜짐' : '자동 음성 읽기 꺼짐'}
             >
               {isAutoTts ? (
                 <>
-                  <Volume2 size={16} className="text-emerald-600 animate-pulse" />
-                  <span className="text-[11px] font-bold text-emerald-800 hidden sm:inline">자동 읽기</span>
+                  <Volume2 size={16} className="text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                  <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-200 hidden sm:inline">자동 읽기</span>
                 </>
               ) : (
                 <>
-                  <VolumeX size={16} className="text-slate-400" />
-                  <span className="text-[11px] font-medium text-slate-500 hidden sm:inline">자동 읽기 OFF</span>
+                  <VolumeX size={16} className={isLight ? 'text-slate-400' : 'text-white/75'} />
+                  <span className={`text-[11px] font-medium hidden sm:inline ${isLight ? 'text-slate-500' : 'text-white/85'}`}>자동 읽기 OFF</span>
                 </>
               )}
             </button>
@@ -1953,7 +2016,11 @@ export default function LucyStandalonePage() {
               <button
                 type="button"
                 onClick={() => setIsResetConfirmOpen(true)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 hover:border-rose-200 transition-all cursor-pointer flex items-center justify-center shrink-0"
+                className={`p-2 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 border ${
+                  isLight
+                    ? 'bg-amber-50/80 hover:bg-rose-50 hover:text-rose-600 text-slate-500 border-amber-900/10'
+                    : 'bg-white/10 hover:bg-rose-950/60 hover:text-rose-300 text-white border-white/15'
+                }`}
                 title="대화 초기화 (새 대화 시작)"
                 aria-label="대화 초기화"
               >
@@ -1965,7 +2032,11 @@ export default function LucyStandalonePage() {
             {lucyMessages.length > 0 && (
               <button
                 onClick={handleExportChat}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-all cursor-pointer hidden xs:flex items-center justify-center"
+                className={`p-2 rounded-xl text-xs font-semibold transition-all cursor-pointer hidden xs:flex items-center justify-center border ${
+                  isLight
+                    ? 'bg-amber-50/80 hover:bg-amber-100/80 text-slate-600 border-amber-900/10'
+                    : 'bg-white/10 hover:bg-white/15 text-white border-white/15'
+                }`}
                 title="대화 내역 Markdown으로 내보내기"
                 aria-label="대화 내보내기"
               >
@@ -1977,7 +2048,11 @@ export default function LucyStandalonePage() {
             {!firebaseUser && (
               <button
                 onClick={() => signInWithGoogle()}
-                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${
+                  isLight
+                    ? 'bg-amber-50/90 hover:bg-amber-100 border-amber-900/15 text-slate-700'
+                    : 'bg-white/10 hover:bg-white/20 border-white/20 text-white'
+                }`}
               >
                 로그인
               </button>
@@ -1994,24 +2069,29 @@ export default function LucyStandalonePage() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="flex items-center gap-2 bg-slate-100/90 border border-slate-300/80 rounded-xl px-3 py-1.5 focus-within:border-amber-400 focus-within:bg-white transition-all">
-                <Search size={14} className="text-slate-400 shrink-0" />
+              <div className={`flex items-center gap-2 border rounded-xl px-3 py-1.5 focus-within:border-amber-400 transition-all ${
+                isLight ? 'bg-[#fffdf9]/90 border-amber-900/20' : 'bg-slate-900/90 border-white/15'
+              }`}>
+                <Search size={14} className={isLight ? 'text-slate-400 shrink-0' : 'text-white/70 shrink-0'} />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="대화 내용 검색 (키워드 입력)..."
-                  className="flex-1 bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 outline-none"
+                  className={`flex-1 bg-transparent text-xs sm:text-sm outline-none ${
+                    isLight ? 'text-slate-800 placeholder-slate-400' : 'text-white placeholder-white/60'
+                  }`}
+                  style={{ color: isLight ? '#1e293b' : '#ffffff' }}
                   autoFocus
                 />
                 {searchQuery && (
-                  <span className="text-[11px] font-medium text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                  <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 px-1.5 py-0.5 rounded">
                     {filteredMessages.length}개 발견
                   </span>
                 )}
                 <button 
                   onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }}
-                  className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
+                  className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 cursor-pointer"
                 >
                   <X size={14} />
                 </button>
@@ -2022,19 +2102,29 @@ export default function LucyStandalonePage() {
       </header>
 
       {/* Chat Messages Stream */}
-      <main ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto select-text">
+      <main ref={messagesContainerRef} onScroll={handleScroll} className="lucy-chat-main flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto select-text">
         <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-28 sm:pb-32">
           {filteredMessages.length === 0 && (
             <div className="text-center py-12 sm:py-20 px-4 space-y-5">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-200 to-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-sm ring-4 ring-amber-100">
-                <Sparkles size={36} className="text-amber-600" />
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-200 to-amber-100 dark:from-amber-500/25 dark:to-purple-500/25 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto shadow-sm ring-4 ring-amber-100 dark:ring-amber-400/20">
+                <Sparkles size={36} className="text-amber-600 dark:text-amber-300" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center justify-center gap-2">
+                <h2
+                  className={`text-xl sm:text-2xl font-bold flex items-center justify-center gap-2 ${
+                    isLight ? 'text-slate-900' : 'text-white'
+                  }`}
+                  style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+                >
                   <span>안녕, {userDisplayName}!</span>
                   <span>✨</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">
+                <p
+                  className={`text-xs sm:text-sm max-w-lg mx-auto leading-relaxed ${
+                    isLight ? 'text-slate-600' : 'text-white/90'
+                  }`}
+                  style={{ color: isLight ? '#475569' : 'rgba(255, 255, 255, 0.9)' }}
+                >
                   사주·타로·전략·치유·위로·창작·회고부터 일상 수다까지, 마음속 어떤 이야기든 편하게 건네줘.<br />
                   루시 AI가 질문 맥락을 분석하여 7대 전문 지능, 다중 융합, 올인원 마스터를 실시간으로 자동 가동해 줄게! ⚡✨
                 </p>
@@ -2101,13 +2191,19 @@ export default function LucyStandalonePage() {
                 {/* Speaker Label, Mode Badge Pill (Clickable) & Timestamp */}
                 <div className="flex items-center gap-1.5 mb-1.5 px-1 text-[11px] flex-wrap">
                   {!isUser ? (
-                    <span className="font-bold text-amber-800 flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span
+                      className={`font-bold flex items-center gap-1 ${isLight ? 'text-amber-800' : 'text-amber-300'}`}
+                      style={{ color: isLight ? '#92400e' : '#fcd34d' }}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />
                       Lucy
                     </span>
                   ) : (
-                    <span className="font-bold text-slate-600 flex items-center gap-1">
-                      <User size={12} className="text-slate-400" />
+                    <span
+                      className={`font-bold flex items-center gap-1 ${isLight ? 'text-slate-600' : 'text-white'}`}
+                      style={{ color: isLight ? '#475569' : '#ffffff' }}
+                    >
+                      <User size={12} className={isLight ? 'text-slate-400' : 'text-white/80'} />
                       {userDisplayName}
                     </span>
                   )}
@@ -2127,7 +2223,7 @@ export default function LucyStandalonePage() {
                     <span className="text-[9px] opacity-75 font-normal">모드 ON</span>
                   </button>
 
-                  <span className="text-[10px] text-slate-400">{timeStr}</span>
+                  <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
 
                 <div className="relative group max-w-[92%] sm:max-w-[85%] lg:max-w-[80%]">
@@ -2136,7 +2232,7 @@ export default function LucyStandalonePage() {
                     const cardImageToDisplay = isUser ? imageUrl : (imageUrl || null);
                     if (!cardImageToDisplay) return null;
                     return (
-                      <div className="mb-2 overflow-hidden rounded-2xl border border-slate-200 shadow-sm max-w-xs bg-slate-100 min-h-[100px]">
+                      <div className="mb-2 overflow-hidden rounded-2xl border border-amber-900/15 dark:border-white/15 shadow-sm max-w-xs bg-[#fffdf9] dark:bg-slate-900 min-h-[100px]">
                         <img 
                           src={cardImageToDisplay} 
                           alt="첨부 이미지" 
@@ -2149,14 +2245,24 @@ export default function LucyStandalonePage() {
 
                   {/* Message Bubble */}
                   <div 
-                    className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed shadow-xs select-text ${
+                    className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text transition-colors duration-300 ${
                       isUser
-                        ? 'bg-slate-900 text-white rounded-tr-xs font-sans'
-                        : 'bg-white border border-slate-200/90 text-slate-800 rounded-tl-xs shadow-sm font-sans transition-all'
+                        ? isLight
+                          ? 'bg-amber-100/95 border border-amber-300/90 text-slate-900 rounded-tr-xs font-sans shadow-xs'
+                          : 'bg-indigo-600/90 border border-indigo-400/30 text-white rounded-tr-xs font-sans shadow-sm'
+                        : isLight
+                        ? 'bg-[#fffdf9]/95 backdrop-blur-md border border-amber-900/15 text-slate-800 rounded-tl-xs shadow-[0_4px_20px_rgba(140,110,80,0.08)] font-sans'
+                        : 'bg-slate-900/88 backdrop-blur-md border border-white/15 text-white rounded-tl-xs shadow-[0_6px_28px_rgba(0,0,0,0.45)] font-sans'
                     }`}
+                    style={{ color: isUser ? (isLight ? '#0f172a' : '#ffffff') : (isLight ? '#1e293b' : '#ffffff') }}
                   >
                     {isUser ? (
-                      <div className="whitespace-pre-wrap">{textContent}</div>
+                      <div
+                        className={`whitespace-pre-wrap font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}
+                        style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+                      >
+                        {textContent}
+                      </div>
                     ) : (
                       <>
                         <LucyProTypewriter 
@@ -2164,29 +2270,6 @@ export default function LucyStandalonePage() {
                           isLatest={index === filteredMessages.length - 1}
                           isGenerating={isLucyGenerating && index === filteredMessages.length - 1}
                         />
-                        {/* 🌸 최초 진입 및 루시의 인사말 전용 원터치 음성 듣기 배지 */}
-                        {isGreeting && (
-                          <div className="mt-2.5 flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleVoicePlay(msgId, textContent, 'Aoede')}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs ${
-                                playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
-                                  ? 'bg-amber-500 text-white shadow-amber-200'
-                                  : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80'
-                              }`}
-                            >
-                              {playingMsgId === msgId && ttsInfo.isLoading ? (
-                                <Loader2 size={13} className="animate-spin text-amber-600" />
-                              ) : playingMsgId === msgId && ttsInfo.isSpeaking ? (
-                                <VolumeX size={13} className="animate-pulse" />
-                              ) : (
-                                <Volume2 size={13} className="text-amber-600 animate-bounce" />
-                              )}
-                              <span>{playingMsgId === msgId && ttsInfo.isSpeaking ? '인사말 멈추기' : '루시 인사말 듣기'}</span>
-                            </button>
-                          </div>
-                        )}
                         {/* 🔮 LucKey 연계 추천 채널 및 Key 실천 도약 바: 수다모드 및 루시의 인사말에서는 생략, 전문 모드에서만 유지 */}
                         {(() => {
                           if (isLucyGenerating && index === filteredMessages.length - 1) return null;
@@ -2225,7 +2308,11 @@ export default function LucyStandalonePage() {
                   <div className={`flex items-center gap-1.5 mt-1.5 flex-wrap ${isUser ? 'justify-end pr-1' : 'pl-1'}`}>
                     <button
                       onClick={() => handleCopy(msgId, textContent)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                        isLight
+                          ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                          : 'text-white/65 hover:text-white hover:bg-white/10'
+                      }`}
                       title="복사"
                     >
                       {copiedId === msgId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
@@ -2234,8 +2321,10 @@ export default function LucyStandalonePage() {
                       onClick={() => handleVoicePlay(msgId, textContent, 'Aoede')}
                       className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                         playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
-                          ? 'text-amber-600 bg-amber-50'
-                          : 'text-slate-400 hover:text-amber-600 hover:bg-slate-100'
+                          ? 'text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60'
+                          : isLight
+                          ? 'text-slate-400 hover:text-amber-600 hover:bg-slate-100'
+                          : 'text-white/65 hover:text-amber-300 hover:bg-white/10'
                       }`}
                       title={
                         playingMsgId === msgId && ttsInfo.isLoading
@@ -2260,14 +2349,21 @@ export default function LucyStandalonePage() {
           })}
 
           {isLucyGenerating && (
-            <div className="flex items-center gap-2.5 p-3.5 bg-white/95 border border-emerald-200/80 rounded-2xl w-fit shadow-xs animate-pulse">
+            <div className={`flex items-center gap-2.5 p-3.5 border rounded-2xl w-fit shadow-xs animate-pulse ${
+              isLight
+                ? 'bg-[#fffdf9]/95 border-emerald-200/80 text-emerald-950'
+                : 'bg-slate-900/90 border-emerald-500/30 text-white'
+            }`}>
               <span className="text-base select-none animate-bounce">🍀</span>
               <div className="flex gap-1 items-center">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce delay-100" />
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce delay-200" />
               </div>
-              <span className="text-xs sm:text-sm text-emerald-950 font-bold ml-1">
+              <span
+                className={`text-xs sm:text-sm font-bold ml-1 ${isLight ? 'text-emerald-950' : 'text-white'}`}
+                style={{ color: isLight ? '#022c22' : '#ffffff' }}
+              >
                 Lucy가 답변을 작성하고 있습니다...
               </span>
             </div>
@@ -2278,20 +2374,24 @@ export default function LucyStandalonePage() {
         </div>
       </main>
 
-      {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send (Pure White & Ultra-Slim) */}
+      {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
         style={{ paddingBottom: 'max(0.25rem, calc(var(--sab, 0px) + 0.15rem))' }}
-        className="w-full px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 bg-white border-t border-slate-100 shadow-xs shrink-0 z-30 relative"
+        className={`w-full px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
+          isLight
+            ? 'bg-[#fffdf9]/88 border-amber-900/12 text-slate-800'
+            : 'bg-slate-950/88 border-white/10 text-white'
+        }`}
       >
         <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-0.5 sm:gap-1">
           {/* Image Attachment Preview */}
           {attachedImage && (
-            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
+            <div className="flex items-center gap-1.5 bg-amber-50/90 dark:bg-slate-900 p-1 rounded-xl w-fit border border-amber-200 dark:border-white/15">
               <img src={attachedImage} alt="첨부 미리보기" className="w-8 h-8 object-cover rounded-lg" />
-              <div className="text-[11px] text-slate-600 font-medium pr-1.5">이미지 비전 준비됨</div>
+              <div className={`text-[11px] font-medium pr-1.5 ${isLight ? 'text-slate-600' : 'text-white'}`}>이미지 비전 준비됨</div>
               <button 
                 onClick={() => setAttachedImage(null)}
-                className="p-0.5 rounded-full hover:bg-slate-200 text-slate-500 cursor-pointer"
+                className="p-0.5 rounded-full hover:bg-amber-200/60 dark:hover:bg-white/10 text-slate-500 dark:text-white/80 cursor-pointer"
               >
                 <X size={12} />
               </button>
@@ -2305,12 +2405,12 @@ export default function LucyStandalonePage() {
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
-                className="flex items-center gap-1 px-2 py-0.2 bg-violet-50 border border-violet-200/90 text-violet-900 rounded-full text-[9px] sm:text-[10px] font-semibold w-fit shadow-2xs"
+                className="flex items-center gap-1 px-2 py-0.2 bg-violet-50 dark:bg-violet-950/70 border border-violet-200/90 dark:border-violet-500/30 text-violet-900 dark:text-white rounded-full text-[9px] sm:text-[10px] font-semibold w-fit shadow-2xs"
               >
-                <Sparkles size={10} className="text-violet-600 animate-spin" />
+                <Sparkles size={10} className="text-violet-600 dark:text-violet-300 animate-spin" />
                 <span>AI 감지:</span>
-                <span className="font-bold text-violet-950 underline decoration-violet-300">{autoDetectedTitle}</span>
-                <span className="text-[8px] sm:text-[9px] text-violet-600 bg-violet-100/80 px-1 py-0.1 rounded-full font-medium">자동 전환</span>
+                <span className="font-bold text-violet-950 dark:text-white underline decoration-violet-300">{autoDetectedTitle}</span>
+                <span className="text-[8px] sm:text-[9px] text-violet-600 dark:text-violet-100 bg-violet-100/80 dark:bg-violet-900/60 px-1 py-0.1 rounded-full font-medium">자동 전환</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -2322,19 +2422,19 @@ export default function LucyStandalonePage() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
-                className="flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 shadow-xs"
+                className="flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 dark:border-amber-500/40 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 dark:text-white shadow-xs"
               >
                 <div className="flex items-center gap-1.5 min-w-0">
                   {ttsInfo.isLoading ? (
-                    <Loader2 size={11} className="animate-spin text-amber-600 shrink-0" />
+                    <Loader2 size={11} className="animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
                   ) : (
-                    <Volume2 size={11} className="text-amber-600 animate-pulse shrink-0" />
+                    <Volume2 size={11} className="text-amber-600 dark:text-amber-400 animate-pulse shrink-0" />
                   )}
-                  <span className="font-bold text-amber-950 text-[10px] sm:text-[11px] shrink-0">
+                  <span className={`font-bold text-[10px] sm:text-[11px] shrink-0 ${isLight ? 'text-amber-950' : 'text-white'}`}>
                     {ttsInfo.isLoading ? '루시 음성 준비 중...' : '루시 음성 안내 중'}
                   </span>
                   {ttsInfo.activeText && ttsInfo.activeText !== '__CONVERSATION__' && (
-                    <span className="text-[9px] sm:text-[10px] text-amber-900/70 truncate max-w-[170px] sm:max-w-[340px]">
+                    <span className={`text-[9px] sm:text-[10px] truncate max-w-[170px] sm:max-w-[340px] ${isLight ? 'text-amber-900/70' : 'text-white/85'}`}>
                       "{ttsInfo.activeText.slice(0, 30)}..."
                     </span>
                   )}
@@ -2368,7 +2468,7 @@ export default function LucyStandalonePage() {
             />
           )}
 
-          {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 (13P · 77선) 버튼 (+ 1인 모드 시 슬림 프로필 칩 통합) */}
+          {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 버튼 (+ 1인 모드 시 슬림 프로필 칩 통합) */}
           <div className="w-full flex items-center gap-1 sm:gap-1.5 py-0 overflow-x-auto no-scrollbar scroll-smooth">
             {/* 1인 점괘 모드일 때: 별도 세로줄을 차지하지 않고 한 줄에 초슬림하게 통합 */}
             {activeProfiles.length <= 1 && (
@@ -2382,10 +2482,15 @@ export default function LucyStandalonePage() {
                       handleOpenAddChatProfile();
                     }
                   }}
-                  className="px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 text-amber-900 text-[9px] sm:text-[10px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 shadow-2xs"
+                  className={`px-1.5 sm:px-2 py-0.5 rounded-full border text-[9px] sm:text-[10px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 shadow-2xs ${
+                    isLight
+                      ? 'bg-amber-50/90 hover:bg-amber-100 border-amber-300/80 text-amber-900'
+                      : 'bg-amber-950/60 hover:bg-amber-900/60 border-amber-500/40 text-white'
+                  }`}
+                  style={{ color: isLight ? '#78350f' : '#ffffff' }}
                   title="내 사주 프로필 수정"
                 >
-                  <User size={9} className="text-amber-600 shrink-0" />
+                  <User size={9} className="text-amber-600 dark:text-amber-400 shrink-0" />
                   <span className="truncate max-w-[42px] sm:max-w-[70px]">
                     {activeProfiles[0]?.name || '내 프로필'}
                   </span>
@@ -2393,40 +2498,49 @@ export default function LucyStandalonePage() {
                 <button
                   type="button"
                   onClick={handleOpenAddChatProfile}
-                  className="px-1 sm:px-1.5 py-0.5 rounded-full bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-600 hover:text-amber-800 text-[8px] sm:text-[9px] font-medium transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 shadow-2xs"
+                  className={`px-1 sm:px-1.5 py-0.5 rounded-full border text-[8px] sm:text-[9px] font-medium transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 shadow-2xs ${
+                    isLight
+                      ? 'bg-[#fffdf9] hover:bg-amber-50 border-amber-900/15 hover:border-amber-300 text-slate-600 hover:text-amber-800'
+                      : 'bg-slate-900 hover:bg-slate-800 border-white/15 hover:border-amber-400/50 text-white'
+                  }`}
+                  style={{ color: isLight ? '#475569' : '#ffffff' }}
                   title="궁합/상담 대상자 추가"
                 >
-                  <Plus size={8} className="text-amber-600 shrink-0" />
+                  <Plus size={8} className="text-amber-600 dark:text-amber-400 shrink-0" />
                   <span className="hidden xs:inline">궁합</span>
                 </button>
               </div>
             )}
 
-            {/* ✨ 13페이지 추천질문 전체보기 모달 트리거 버튼 */}
+            {/* ✨ 추천질문 전체보기 모달 트리거 버튼 (13P 배지 제거) */}
             <button
               id="lucy-open-prompt-library-btn"
               type="button"
               onClick={() => setIsPromptLibraryOpen(true)}
-              className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 text-[9px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 sm:gap-1 shadow-2xs group"
-              title="사주·타로·점성술·자미두수 77가지 추천질문 (13페이지 전편)"
-              aria-label="추천질문 13페이지 라이브러리 열기"
+              className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-[9px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1 shadow-2xs group ${
+                isLight ? 'text-amber-900' : 'text-white'
+              }`}
+              style={{ color: isLight ? '#78350f' : '#ffffff' }}
+              title="사주·타로·점성술·자미두수 추천질문 전체보기"
+              aria-label="추천질문 라이브러리 열기"
             >
-              <Sparkles size={10} className="sm:w-3 sm:h-3 text-amber-500 group-hover:scale-110 transition-transform" />
-              <span className="hidden xs:inline">추천질문</span>
-              <span className="px-1 py-0.1 rounded-full text-[8px] sm:text-[9px] bg-amber-500 text-slate-950 font-black">
-                13P
-              </span>
+              <Sparkles size={10} className="sm:w-3 sm:h-3 text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+              <span>추천질문</span>
             </button>
 
             {/* 새로고침 셔플 버튼 */}
             <button
               type="button"
               onClick={refreshPrompts}
-              className="p-1 sm:p-1.5 rounded-lg text-amber-600 hover:text-amber-800 bg-white hover:bg-amber-50 border border-amber-200/80 transition-all shrink-0 cursor-pointer active:scale-90 flex items-center gap-1 shadow-2xs"
+              className={`p-1 sm:p-1.5 rounded-lg border transition-all shrink-0 cursor-pointer active:scale-90 flex items-center gap-1 shadow-2xs ${
+                isLight
+                  ? 'text-amber-600 hover:text-amber-800 bg-[#fffdf9] hover:bg-amber-50 border-amber-200/80'
+                  : 'text-amber-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 border-amber-500/30'
+              }`}
               title="새로운 맞춤 추천 질문으로 변경 (랜덤 셔플)"
               aria-label="추천 질문 새로고침"
             >
-              <RefreshCw size={9} className={`sm:w-2.5 sm:h-2.5 text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
+              <RefreshCw size={9} className={`sm:w-2.5 sm:h-2.5 text-amber-600 dark:text-amber-400 ${isLucyGenerating ? 'animate-spin' : ''}`} />
             </button>
 
             {/* 가로 스크롤 추천 질문 리스트 */}
@@ -2438,7 +2552,12 @@ export default function LucyStandalonePage() {
                     type="button"
                     onClick={() => handleSelectRecommendationChip(promptText)}
                     disabled={isLucyGenerating}
-                    className="shrink-0 px-2 sm:px-2.5 py-0.5 rounded-full bg-white hover:bg-amber-50 border border-amber-200/80 hover:border-amber-300 text-[9px] sm:text-[11px] font-medium text-slate-800 hover:text-amber-950 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
+                    className={`shrink-0 px-2 sm:px-2.5 py-0.5 rounded-full border text-[9px] sm:text-[11px] font-medium transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap ${
+                      isLight
+                        ? 'bg-[#fffdf9]/90 hover:bg-amber-50 border-amber-200/80 hover:border-amber-300 text-slate-800 hover:text-amber-950'
+                        : 'bg-slate-900/90 hover:bg-slate-800 border-white/20 hover:border-amber-400/50 text-white hover:text-amber-200'
+                    }`}
+                    style={{ color: isLight ? '#1e293b' : '#ffffff' }}
                   >
                     {promptText}
                   </button>
@@ -2448,7 +2567,11 @@ export default function LucyStandalonePage() {
           </div>
 
           {/* 💬 Input Container */}
-          <div className="flex items-center gap-1 sm:gap-2 bg-white border border-slate-200/90 focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs">
+          <div className={`flex items-center gap-1 sm:gap-2 border focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs ${
+            isLight
+              ? 'bg-[#fffdf9] border-amber-900/15'
+              : 'bg-slate-900/90 border-white/15'
+          }`}>
             {/* Hidden File Input */}
             <input 
               type="file" 
@@ -2462,7 +2585,11 @@ export default function LucyStandalonePage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-0.5 sm:p-1.5 rounded-md text-slate-400 hover:text-amber-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+              className={`p-0.5 sm:p-1.5 rounded-md transition-colors cursor-pointer shrink-0 ${
+                isLight
+                  ? 'text-slate-400 hover:text-amber-700 hover:bg-amber-50'
+                  : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
+              }`}
               title="사진/이미지 첨부 (멀티모달 비전 분석)"
             >
               <Camera size={14} className="sm:w-4 sm:h-4" />
@@ -2474,13 +2601,15 @@ export default function LucyStandalonePage() {
               onClick={toggleAutoTts}
               className={`p-0.5 sm:p-1.5 rounded-md transition-all cursor-pointer shrink-0 ${
                 isAutoTts
-                  ? 'text-emerald-600 bg-emerald-100/80 border border-emerald-300 shadow-2xs'
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                  ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs'
+                  : isLight
+                  ? 'text-slate-400 hover:text-slate-600 hover:bg-amber-50'
+                  : 'text-white/75 hover:text-white hover:bg-white/10'
               }`}
               title={isAutoTts ? '루시 답변 자동 음성 읽기 켜짐 (클릭 시 끄기)' : '자동 음성 읽기 꺼짐 (클릭 시 켜기)'}
               aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐' : '음성 자동 읽기 꺼짐'}
             >
-              {isAutoTts ? <Volume2 size={14} className="sm:w-4 sm:h-4 text-emerald-600 animate-pulse" /> : <VolumeX size={14} className="sm:w-4 sm:h-4" />}
+              {isAutoTts ? <Volume2 size={14} className="sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" /> : <VolumeX size={14} className="sm:w-4 sm:h-4" />}
             </button>
 
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
@@ -2520,7 +2649,10 @@ export default function LucyStandalonePage() {
                     : ''
                 }
                 rows={1}
-                className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-xs sm:text-sm resize-none outline-none leading-tight sm:leading-snug min-h-[22px] sm:min-h-[28px] max-h-[88px] py-0.5 z-10"
+                className={`w-full bg-transparent text-xs sm:text-sm resize-none outline-none leading-tight sm:leading-snug min-h-[22px] sm:min-h-[28px] max-h-[88px] py-0.5 z-10 ${
+                  isLight ? 'text-slate-800 placeholder-slate-400' : 'text-white placeholder-white/65'
+                }`}
+                style={{ color: isLight ? '#1e293b' : '#ffffff' }}
               />
             </div>
 
@@ -2577,11 +2709,13 @@ export default function LucyStandalonePage() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-200 relative space-y-4"
+              className={`rounded-3xl p-6 w-full max-w-md shadow-2xl border relative space-y-4 ${
+                isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-slate-900 border-white/15 text-white'
+              }`}
             >
               <button
                 onClick={() => setIsProfileModalOpen(false)}
-                className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+                className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -2591,38 +2725,40 @@ export default function LucyStandalonePage() {
                   <Sparkles size={24} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">{primaryProfile?.name || sharedState?.userProfile?.basic?.name || '박주형'} 님의 소울 프로필</h3>
-                  <p className="text-xs text-slate-500">Google 계정 연동 및 사주·에너지 요약</p>
+                  <h3 className={`text-lg font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{primaryProfile?.name || sharedState?.userProfile?.basic?.name || '박주형'} 님의 소울 프로필</h3>
+                  <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-white/75'}`}>Google 계정 연동 및 사주·에너지 요약</p>
                 </div>
               </div>
 
-              <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 space-y-2.5 text-xs text-slate-700">
-                <div className="flex justify-between border-b border-amber-200/60 pb-2">
-                  <span className="text-slate-500 font-medium">본명 (실명)</span>
-                  <span className="font-bold text-amber-900">{primaryProfile?.name || sharedState?.userProfile?.basic?.name || '박주형'}</span>
+              <div className={`border rounded-2xl p-4 space-y-2.5 text-xs ${
+                isLight ? 'bg-amber-50/60 border-amber-200/80 text-slate-700' : 'bg-slate-800/80 border-white/15 text-white'
+              }`}>
+                <div className="flex justify-between border-b border-amber-200/60 dark:border-white/10 pb-2">
+                  <span className={isLight ? 'text-slate-500 font-medium' : 'text-white/75 font-medium'}>본명 (실명)</span>
+                  <span className={`font-bold ${isLight ? 'text-amber-900' : 'text-amber-300'}`}>{primaryProfile?.name || sharedState?.userProfile?.basic?.name || '박주형'}</span>
                 </div>
-                <div className="flex justify-between border-b border-amber-200/60 pb-2">
-                  <span className="text-slate-500 font-medium">소울 닉네임 (호칭)</span>
-                  <span className="font-bold text-amber-900">{userDisplayName}</span>
+                <div className="flex justify-between border-b border-amber-200/60 dark:border-white/10 pb-2">
+                  <span className={isLight ? 'text-slate-500 font-medium' : 'text-white/75 font-medium'}>소울 닉네임 (호칭)</span>
+                  <span className={`font-bold ${isLight ? 'text-amber-900' : 'text-amber-300'}`}>{userDisplayName}</span>
                 </div>
-                <div className="flex justify-between border-b border-amber-200/60 pb-2">
-                  <span className="text-slate-500 font-medium">연동 이메일</span>
-                  <span className="font-medium text-slate-800 truncate max-w-[200px]">{firebaseUser?.email || '미연동'}</span>
+                <div className="flex justify-between border-b border-amber-200/60 dark:border-white/10 pb-2">
+                  <span className={isLight ? 'text-slate-500 font-medium' : 'text-white/75 font-medium'}>연동 이메일</span>
+                  <span className={`font-medium truncate max-w-[200px] ${isLight ? 'text-slate-800' : 'text-white'}`}>{firebaseUser?.email || '미연동'}</span>
                 </div>
-                <div className="flex justify-between border-b border-amber-200/60 pb-2">
-                  <span className="text-slate-500 font-medium">사주 본원 (일주)</span>
-                  <span className="font-bold text-amber-900">{sajuInfo ? sajuInfo.shortDigest : '기본 분석 진행 중'}</span>
+                <div className="flex justify-between border-b border-amber-200/60 dark:border-white/10 pb-2">
+                  <span className={isLight ? 'text-slate-500 font-medium' : 'text-white/75 font-medium'}>사주 본원 (일주)</span>
+                  <span className={`font-bold ${isLight ? 'text-amber-900' : 'text-amber-300'}`}>{sajuInfo ? sajuInfo.shortDigest : '기본 분석 진행 중'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 font-medium">상담 선호 스타일</span>
-                  <span className="font-bold text-emerald-800">{sharedState?.userProfile?.psych?.counselingStyle || '따뜻하고 직관적인 공감'}</span>
+                  <span className={isLight ? 'text-slate-500 font-medium' : 'text-white/75 font-medium'}>상담 선호 스타일</span>
+                  <span className={`font-bold ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>{sharedState?.userProfile?.psych?.counselingStyle || '따뜻하고 직관적인 공감'}</span>
                 </div>
               </div>
 
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setIsProfileModalOpen(false)}
-                  className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 font-bold text-xs hover:bg-slate-800 dark:hover:bg-amber-400 transition-colors cursor-pointer"
                 >
                   닫기
                 </button>
@@ -2640,24 +2776,28 @@ export default function LucyStandalonePage() {
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4"
+              className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border space-y-4 ${
+                isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-slate-900 border-white/15 text-white'
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-500/30 text-rose-600 dark:text-rose-300 flex items-center justify-center shrink-0">
                   <Trash2 size={22} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">대화 초기화 & 새 대화 시작</h3>
-                  <p className="text-xs text-slate-500">대화창을 비우고 상쾌하게 새로 시작합니다</p>
+                  <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>대화 초기화 & 새 대화 시작</h3>
+                  <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-white/75'}`}>대화창을 비우고 상쾌하게 새로 시작합니다</p>
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2 text-xs text-slate-600 leading-relaxed">
+              <div className={`border rounded-2xl p-4 space-y-2 text-xs leading-relaxed ${
+                isLight ? 'bg-slate-50 border-slate-200/80 text-slate-600' : 'bg-slate-800/80 border-white/10 text-white/90'
+              }`}>
                 <p>
-                  지금까지 나눈 소중한 대화 내역은 루시의 <span className="font-bold text-indigo-600">영구 기억(Soul Memory) 아카이브</span>에 안전하게 요약 보존됩니다.
+                  지금까지 나눈 소중한 대화 내역은 루시의 <span className="font-bold text-indigo-600 dark:text-indigo-300">영구 기억(Soul Memory) 아카이브</span>에 안전하게 요약 보존됩니다.
                 </p>
-                <p className="text-slate-500">
+                <p className={isLight ? 'text-slate-500' : 'text-white/75'}>
                   대화창을 깨끗한 새 화면으로 초기화할까요?
                 </p>
               </div>
@@ -2666,7 +2806,9 @@ export default function LucyStandalonePage() {
                 <button
                   type="button"
                   onClick={() => setIsResetConfirmOpen(false)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                    isLight ? 'text-slate-600 hover:bg-slate-100' : 'text-white/85 hover:bg-white/10'
+                  }`}
                 >
                   취소
                 </button>

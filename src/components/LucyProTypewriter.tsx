@@ -5,6 +5,7 @@ import { Download, Maximize2, X, ExternalLink, Image as ImageIcon, Loader2 } fro
 import { AnimatePresence, motion } from 'motion/react';
 import { isMobileDevice, isPerfReduced } from '@/lib/perfMode';
 import { useTTSCurrentSentence, renderWithSentenceHighlight } from '@/utils/ttsHighlight';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface LucyProTypewriterProps {
   content: string;
@@ -28,24 +29,24 @@ function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
 
   return (
     <>
-      <div className="my-3 overflow-hidden rounded-2xl border border-slate-200 shadow-md group relative bg-slate-100/80 transition-all duration-300">
+      <div className="my-3 overflow-hidden rounded-2xl border border-slate-200 dark:border-white/15 shadow-md group relative bg-slate-100/80 dark:bg-slate-900/80 transition-all duration-300">
         {/* Placeholder skeleton while loading */}
         {!isLoaded && !hasError && (
-          <div className="w-full h-56 sm:h-72 flex flex-col items-center justify-center gap-2 bg-gradient-to-tr from-slate-100 via-amber-50/40 to-slate-100 text-slate-400 animate-pulse">
+          <div className="w-full h-56 sm:h-72 flex flex-col items-center justify-center gap-2 bg-gradient-to-tr from-slate-100 via-amber-50/40 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-slate-400 animate-pulse">
             <Loader2 size={24} className="animate-spin text-amber-500" />
-            <span className="text-xs text-slate-500 font-medium">루시 AI 이미지를 불러오는 중...</span>
+            <span className="text-xs text-slate-500 dark:text-slate-300 font-medium">루시 AI 이미지를 불러오는 중...</span>
           </div>
         )}
 
         {hasError ? (
-          <div className="w-full h-40 flex flex-col items-center justify-center gap-2 bg-rose-50 text-rose-500 p-4 text-center">
+          <div className="w-full h-40 flex flex-col items-center justify-center gap-2 bg-rose-50 dark:bg-rose-950/60 text-rose-500 dark:text-rose-300 p-4 text-center">
             <ImageIcon size={28} />
             <span className="text-xs font-bold">이미지를 불러오지 못했습니다.</span>
             <a
               href={src}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] underline text-rose-600 flex items-center gap-1"
+              className="text-[11px] underline text-rose-600 dark:text-rose-300 flex items-center gap-1"
             >
               <ExternalLink size={12} /> 새 창에서 열기
             </a>
@@ -162,6 +163,8 @@ export function LucyProTypewriter({
   isGenerating = false,
   typewriterSpeed = 32,
 }: LucyProTypewriterProps) {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const isMobile = typeof window !== 'undefined' && (isMobileDevice() || isPerfReduced());
   // On mobile, render streamed content directly to prevent 80-markdown-parses-per-second CPU lag.
   // The LLM stream already provides natural live chunking!
@@ -246,29 +249,111 @@ export function LucyProTypewriter({
   const isTyping = isGenerating || (shouldAnimate && displayedLength < content.length);
 
   return (
-    <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed font-sans [&_h1]:text-slate-900 [&_h1]:font-bold [&_h1]:text-lg [&_h1]:mb-2 [&_h2]:text-slate-900 [&_h2]:font-bold [&_h2]:text-base [&_h2]:mb-2 [&_h3]:text-slate-900 [&_h3]:font-semibold [&_h3]:text-sm [&_h3]:mb-1.5 [&_strong]:text-amber-900 [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_blockquote]:my-2 [&_code]:bg-amber-50 [&_code]:text-amber-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-slate-900 [&_pre]:text-slate-100 [&_pre]:p-3.5 [&_pre]:rounded-xl [&_p]:mb-2.5 [&_p:last-child]:mb-0">
+    <div
+      className={`max-w-none leading-relaxed font-sans [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-slate-900 [&_pre]:text-white [&_pre]:p-3.5 [&_pre]:rounded-xl [&_p]:mb-2.5 [&_p:last-child]:mb-0 ${
+        isLight
+          ? 'text-slate-800 [&_h1]:text-slate-900 [&_h2]:text-slate-900 [&_h3]:text-slate-900 [&_strong]:text-amber-900 [&_blockquote]:text-slate-600 [&_code]:bg-amber-50 [&_code]:text-amber-800'
+          : 'text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-amber-200 [&_strong]:text-amber-300 [&_blockquote]:text-white/90 [&_code]:bg-amber-950/60 [&_code]:text-amber-200'
+      }`}
+      style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           p: ({ node, children, ...props }) => (
-            <div className="mb-2.5 last:mb-0 leading-relaxed font-sans" {...props}>
-              {renderWithSentenceHighlight(children, targetSentence, true)}
+            <div
+              className={`mb-2.5 last:mb-0 leading-relaxed font-sans ${isLight ? 'text-slate-800' : 'text-white'}`}
+              style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+              {...props}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight)}
             </div>
           ),
           li: ({ node, children, ...props }) => (
-            <li className="mb-1" {...props}>
-              {renderWithSentenceHighlight(children, targetSentence, true)}
+            <li
+              className={`mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}
+              style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+              {...props}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight)}
             </li>
           ),
-          h1: ({ children }) => <h1 className="text-slate-900 font-bold text-lg mb-2">{renderWithSentenceHighlight(children, targetSentence, true, true)}</h1>,
-          h2: ({ children }) => <h2 className="text-slate-900 font-bold text-base mb-2">{renderWithSentenceHighlight(children, targetSentence, true, true)}</h2>,
-          h3: ({ children }) => <h3 className="text-slate-900 font-semibold text-sm mb-1.5">{renderWithSentenceHighlight(children, targetSentence, true, true)}</h3>,
-          h4: ({ children }) => <h4 className="text-slate-900 font-semibold text-xs mb-1.5">{renderWithSentenceHighlight(children, targetSentence, true, true)}</h4>,
-          h5: ({ children }) => <h5 className="text-slate-900 font-medium text-xs mb-1">{renderWithSentenceHighlight(children, targetSentence, true, true)}</h5>,
-          h6: ({ children }) => <h6 className="text-slate-900 font-medium text-[11px] mb-1">{renderWithSentenceHighlight(children, targetSentence, true, true)}</h6>,
-          blockquote: ({ children }) => <blockquote className="border-l-4 border-amber-400 pl-3 italic text-slate-600 my-2">{renderWithSentenceHighlight(children, targetSentence, true, false)}</blockquote>,
-          th: ({ children }) => <th className="px-2.5 py-1.5 text-left font-bold text-xs border-b border-slate-200">{renderWithSentenceHighlight(children, targetSentence, true, false)}</th>,
-          td: ({ children }) => <td className="px-2.5 py-1.5 text-xs border-b border-slate-100">{renderWithSentenceHighlight(children, targetSentence, true, false)}</td>,
+          h1: ({ children }) => (
+            <h1
+              className={`font-bold text-lg mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}
+              style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, true)}
+            </h1>
+          ),
+          h2: ({ children }) => (
+            <h2
+              className={`font-bold text-base mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}
+              style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, true)}
+            </h2>
+          ),
+          h3: ({ children }) => (
+            <h3
+              className={`font-semibold text-sm mb-1.5 ${isLight ? 'text-slate-900' : 'text-amber-100'}`}
+              style={{ color: isLight ? '#0f172a' : '#fef3c7' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, true)}
+            </h3>
+          ),
+          h4: ({ children }) => (
+            <h4
+              className={`font-semibold text-xs mb-1.5 ${isLight ? 'text-slate-900' : 'text-amber-100'}`}
+              style={{ color: isLight ? '#0f172a' : '#fef3c7' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, true)}
+            </h4>
+          ),
+          h5: ({ children }) => (
+            <h5
+              className={`font-medium text-xs mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}
+              style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, true)}
+            </h5>
+          ),
+          h6: ({ children }) => (
+            <h6
+              className={`font-medium text-[11px] mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}
+              style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, true)}
+            </h6>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote
+              className={`border-l-4 border-amber-400 pl-3 italic my-2 ${isLight ? 'text-slate-600' : 'text-white/90'}`}
+              style={{ color: isLight ? '#475569' : 'rgba(255, 255, 255, 0.92)' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, false)}
+            </blockquote>
+          ),
+          th: ({ children }) => (
+            <th
+              className={`px-2.5 py-1.5 text-left font-bold text-xs border-b ${
+                isLight ? 'border-slate-200 text-slate-900' : 'border-white/15 text-white'
+              }`}
+              style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, false)}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td
+              className={`px-2.5 py-1.5 text-xs border-b ${
+                isLight ? 'border-slate-100 text-slate-800' : 'border-white/10 text-white'
+              }`}
+              style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+            >
+              {renderWithSentenceHighlight(children, targetSentence, isLight, false)}
+            </td>
+          ),
           img: ({ node, ...props }) => (
             <LucyProImageItem src={props.src} alt={props.alt} />
           ),
@@ -287,4 +372,5 @@ export function LucyProTypewriter({
     </div>
   );
 }
+
 

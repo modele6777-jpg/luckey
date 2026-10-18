@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface DynamicGhostInputPlaceholderProps {
   prompts: string[];
@@ -29,6 +30,8 @@ export const DynamicGhostInputPlaceholder: React.FC<DynamicGhostInputPlaceholder
   pauseDuration = 12000,
   switchPause = 800,
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [shuffledList, setShuffledList] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
@@ -150,10 +153,16 @@ export const DynamicGhostInputPlaceholder: React.FC<DynamicGhostInputPlaceholder
       className="absolute inset-0 flex items-center pointer-events-none select-none overflow-hidden pr-2 z-0"
       aria-hidden="true"
     >
-      <span className="text-xs sm:text-sm text-slate-400/90 dark:text-slate-500/90 font-normal truncate leading-tight sm:leading-snug">
+      <span
+        className={`text-xs sm:text-sm font-normal truncate leading-tight sm:leading-snug ${
+          isLight ? 'text-slate-400/90' : 'text-white/70'
+        }`}
+        style={{ color: isLight ? 'rgba(100, 116, 139, 0.85)' : 'rgba(255, 255, 255, 0.72)' }}
+      >
         {displayText}
       </span>
-      <span className="inline-block w-[1.5px] h-[10px] sm:h-[13px] bg-amber-500/70 dark:bg-amber-400/70 ml-0.5 animate-pulse shrink-0 align-middle" />
+      <span className="inline-block w-[1.5px] h-[10px] sm:h-[13px] bg-amber-500/70 dark:bg-amber-400/80 ml-0.5 animate-pulse shrink-0 align-middle" />
     </div>
   );
 };
+
