@@ -548,38 +548,21 @@ export default function LeftSidebarNav() {
                     : 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
                 } transition-transform duration-300 group-hover:scale-110 ${isLuckey ? 'group-hover:rotate-12' : ''}`}
               />
-
-              {/* For LUCKEY: Mini indicator for channels toggle */}
-              {isLuckey && (
-                <span
-                  className={`absolute -bottom-1 -right-1 text-[8px] font-black px-1 py-0.5 rounded-full border transition-all ${
-                    isChannelsOpen
-                      ? 'bg-emerald-500 text-neutral-950 border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.8)]'
-                      : isLight
-                      ? 'bg-amber-100 text-slate-800 border-amber-300/80 shadow-xs'
-                      : 'bg-neutral-800 text-neutral-300 border-white/20'
-                  }`}
-                >
-                  {isChannelsOpen ? '▲' : '7'}
-                </span>
-              )}
             </div>
           </div>
 
-          {/* For LUCKEY: Top-right #1 recommendation indicator badge when channels are collapsed or active */}
+          {/* For LUCKEY: Clean glowing theme-color circular dot in top-right corner */}
           {isLuckey && recommendedPrismChannel && (
             <span
-              className="absolute -top-1.5 -right-1.5 z-20 flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[8px] font-black tracking-tighter text-white shadow-md pointer-events-none transition-transform duration-200 group-hover:scale-105"
+              className="absolute -top-1 -right-1 z-20 w-3 h-3 rounded-full pointer-events-none transition-transform duration-200 group-hover:scale-110"
               style={{
                 backgroundColor: recommendedPrismChannel.color,
-                boxShadow: `0 0 8px ${recommendedPrismChannel.color}90`,
+                boxShadow: `0 0 8px ${recommendedPrismChannel.color}, 0 0 14px ${recommendedPrismChannel.color}90`,
                 border: isLight
-                  ? '1px solid rgba(255, 255, 255, 0.92)'
-                  : '1px solid rgba(255, 255, 255, 0.4)',
+                  ? '1.5px solid rgba(255, 255, 255, 0.95)'
+                  : '1.5px solid rgba(15, 15, 20, 0.85)',
               }}
-            >
-              1순위
-            </span>
+            />
           )}
 
           {/* Floating Tooltip to the Right */}
@@ -633,11 +616,12 @@ export default function LeftSidebarNav() {
                 }`}
               >
                 <span
-                  className="px-1.5 py-0.5 rounded text-[9px] font-extrabold text-white shadow-xs"
-                  style={{ backgroundColor: recommendedPrismChannel.color }}
-                >
-                  추천 1순위
-                </span>
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{
+                    backgroundColor: recommendedPrismChannel.color,
+                    boxShadow: `0 0 6px ${recommendedPrismChannel.color}`,
+                  }}
+                />
                 <span className="font-bold" style={{ color: recommendedPrismChannel.color }}>
                   {recommendedPrismChannel.label}
                 </span>
@@ -716,35 +700,19 @@ export default function LeftSidebarNav() {
           />
         )}
 
-        {/* Top-1 Recommended Mini Badge on Top-Right Corner */}
+        {/* Top-1 Recommended Clean Theme-Color Circular Dot on Top-Right Corner */}
         {isRecommendedTop1 && (
           <span
-            className="absolute -top-1.5 -right-1.5 z-20 px-1.5 py-[1px] rounded-full text-[8px] font-black tracking-tighter text-white shadow-md pointer-events-none transition-transform duration-200 group-hover:scale-105"
+            className="absolute -top-1 -right-1 z-20 w-3 h-3 rounded-full pointer-events-none transition-transform duration-200 group-hover:scale-110"
             style={{
               backgroundColor: color,
-              boxShadow: `0 0 10px ${color}95`,
+              boxShadow: `0 0 8px ${color}, 0 0 14px ${color}95`,
               border: isLight
-                ? '1px solid rgba(255, 255, 255, 0.95)'
-                : '1px solid rgba(255, 255, 255, 0.45)',
+                ? '1.5px solid rgba(255, 255, 255, 0.95)'
+                : '1.5px solid rgba(15, 15, 20, 0.85)',
             }}
-          >
-            1순위
-          </span>
+          />
         )}
-
-        {/* Floating Theme Color Light Gem above the glyph */}
-        <div
-          className="absolute top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full transition-all duration-300 pointer-events-none"
-          style={{
-            backgroundColor: color,
-            boxShadow: `0 0 8px ${color}, 0 0 14px ${color}`,
-            opacity: isActive || isHovered || isRecommendedTop1 ? 1 : 0,
-            transform:
-              isActive || isHovered || isRecommendedTop1
-                ? 'translate(-50%, 0) scale(1.2)'
-                : 'translate(-50%, 3px) scale(0.5)',
-          }}
-        />
 
         {/* Ambient Radial Theme Color Flare blooming behind & over glyph */}
         <div

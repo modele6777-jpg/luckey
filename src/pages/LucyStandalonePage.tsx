@@ -1984,13 +1984,13 @@ export default function LucyStandalonePage() {
             </button>
 
 
-            {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 버튼) */}
+            {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 아이콘 버튼) */}
             <button
               type="button"
               onClick={toggleAutoTts}
-              className={`p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1.5 ${
+              className={`p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center justify-center ${
                 isAutoTts
-                  ? 'bg-gradient-to-r from-emerald-50 to-teal-100/80 dark:from-emerald-950/80 dark:to-teal-900/70 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs font-semibold'
+                  ? 'bg-gradient-to-r from-emerald-50 to-teal-100/80 dark:from-emerald-950/80 dark:to-teal-900/70 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs'
                   : isLight
                   ? 'bg-amber-50/80 text-slate-500 hover:text-slate-700 border border-amber-900/10'
                   : 'bg-white/10 text-white/85 hover:text-white border border-white/15'
@@ -1999,15 +1999,9 @@ export default function LucyStandalonePage() {
               aria-label={isAutoTts ? '루시 답변 바로 음성 읽기 켜짐' : '자동 음성 읽기 꺼짐'}
             >
               {isAutoTts ? (
-                <>
-                  <Volume2 size={16} className="text-emerald-600 dark:text-emerald-400 animate-pulse" />
-                  <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-200 hidden sm:inline">자동 읽기</span>
-                </>
+                <Volume2 size={16} className="text-emerald-600 dark:text-emerald-400 animate-pulse" />
               ) : (
-                <>
-                  <VolumeX size={16} className={isLight ? 'text-slate-400' : 'text-white/75'} />
-                  <span className={`text-[11px] font-medium hidden sm:inline ${isLight ? 'text-slate-500' : 'text-white/85'}`}>자동 읽기 OFF</span>
-                </>
+                <VolumeX size={16} className={isLight ? 'text-slate-400' : 'text-white/75'} />
               )}
             </button>
 
@@ -2512,12 +2506,12 @@ export default function LucyStandalonePage() {
               </div>
             )}
 
-            {/* ✨ 추천질문 전체보기 모달 트리거 버튼 (13P 배지 제거) */}
+            {/* ✨ 추천질문 전체보기 모달 트리거 아이콘 버튼 */}
             <button
               id="lucy-open-prompt-library-btn"
               type="button"
               onClick={() => setIsPromptLibraryOpen(true)}
-              className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-[9px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1 shadow-2xs group ${
+              className={`p-1 sm:p-1.5 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 transition-all shrink-0 cursor-pointer active:scale-95 flex items-center justify-center shadow-2xs group ${
                 isLight ? 'text-amber-900' : 'text-white'
               }`}
               style={{ color: isLight ? '#78350f' : '#ffffff' }}
@@ -2525,7 +2519,6 @@ export default function LucyStandalonePage() {
               aria-label="추천질문 라이브러리 열기"
             >
               <Sparkles size={10} className="sm:w-3 sm:h-3 text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-              <span>추천질문</span>
             </button>
 
             {/* 새로고침 셔플 버튼 */}

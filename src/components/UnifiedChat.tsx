@@ -1160,11 +1160,11 @@ export function UnifiedChat() {
                       id="unified-chat-open-prompt-library-btn"
                       type="button"
                       onClick={() => setIsPromptLibraryOpen(true)}
-                      className="px-3.5 py-2 rounded-full border border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-[12px] font-bold text-amber-300 transition-all text-left whitespace-nowrap shrink-0 cursor-pointer shadow-md active:scale-95 flex items-center gap-1.5 backdrop-blur-md"
-                      title="사주·타로·점성술·자미두수 77가지 추천질문 (13페이지 전편)"
+                      className="p-2.5 rounded-full border border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 transition-all shrink-0 cursor-pointer shadow-md active:scale-95 flex items-center justify-center backdrop-blur-md group"
+                      title="사주·타로·점성술·자미두수 77가지 추천질문 전체보기"
+                      aria-label="추천질문 라이브러리 열기"
                     >
-                      <Sparkles size={12} className="text-amber-400 shrink-0" />
-                      <span>추천질문 13P</span>
+                      <Sparkles size={13} className="text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
                     </button>
                     {displayPrompts.map((p, idx) => (
                       <button
