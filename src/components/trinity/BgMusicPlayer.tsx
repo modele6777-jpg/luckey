@@ -1133,6 +1133,11 @@ export function BgMusicPlayer() {
     playTrackDirectly(currentIdx);
   };
 
+  const handlePlayToggleRef = useRef(handlePlayToggle);
+  handlePlayToggleRef.current = handlePlayToggle;
+  const advanceToNextTrackRef = useRef(advanceToNextTrack);
+  advanceToNextTrackRef.current = advanceToNextTrack;
+
   // --- LP DISC HOLD & INTERACTION HANDLERS ---
   const handleLpPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 && e.pointerType === "mouse") return;
@@ -1629,6 +1634,45 @@ export function BgMusicPlayer() {
     };
   }, []);
 
+  // Global event listeners for BGM controls from BigBang East button
+  useEffect(() => {
+    const handlePrismToggleBgm = () => {
+      handlePlayToggleRef.current();
+    };
+    const handlePrismOpenBgmMenu = () => {
+      setIsDetailMenuOpen(true);
+    };
+    const handlePrismToggleBgmMenu = () => {
+      setIsDetailMenuOpen((prev) => !prev);
+    };
+    const handlePrismNextBgmTrack = () => {
+      advanceToNextTrackRef.current();
+    };
+
+    window.addEventListener("prism:toggle_bgm", handlePrismToggleBgm);
+    window.addEventListener("prism:open_bgm_menu", handlePrismOpenBgmMenu);
+    window.addEventListener("prism:toggle_bgm_menu", handlePrismToggleBgmMenu);
+    window.addEventListener("prism:next_bgm_track", handlePrismNextBgmTrack);
+    return () => {
+      window.removeEventListener("prism:toggle_bgm", handlePrismToggleBgm);
+      window.removeEventListener("prism:open_bgm_menu", handlePrismOpenBgmMenu);
+      window.removeEventListener("prism:toggle_bgm_menu", handlePrismToggleBgmMenu);
+      window.removeEventListener("prism:next_bgm_track", handlePrismNextBgmTrack);
+    };
+  }, []);
+
+  // Broadcast BGM playback state to BigBang button and other consumers
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("prism:bgm_state_change", {
+        detail: {
+          isPlaying,
+          trackName: currentTrack?.name,
+        },
+      })
+    );
+  }, [isPlaying, currentTrack?.name]);
+
   // --- CLICK OUTSIDE TO COLLAPSE EXPANDED PLAYER & VOLUME SLIDER ---
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
@@ -1790,108 +1834,6 @@ export function BgMusicPlayer() {
         loop={repeatMode === "one"}
         preload={shouldPreloadBgmAudio() ? "auto" : "none"}
       />
-
-      {/* Minimalist Floating LP Disc Music Player - Fixed directly above Menu Button */}
-      {!isNavOpen && (
-        <motion.div
-          initial={{ y: 20, opacity: 0, scale: 0.9 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: 20, opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.2 }}
-          className="fixed bottom-safe-music-lp z-[400] select-none"
-        >
-          <button
-            type="button"
-            onPointerDown={handleLpPointerDown}
-            onPointerMove={handleLpPointerMove}
-            onPointerUp={handleLpPointerUp}
-            onPointerCancel={handleLpPointerUp}
-            onPointerLeave={handleLpPointerUp}
-            onClick={handleLpClick}
-            onContextMenu={handleLpContextMenu}
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              if (holdTimerRef.current) {
-                clearTimeout(holdTimerRef.current);
-                holdTimerRef.current = null;
-              }
-              setIsHolding(false);
-              handleNextTrack();
-            }}
-            className={`prism-glass-fab group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center cursor-pointer overflow-hidden select-none ${
-              isHolding ? "scale-90 ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.8)]" : ""
-            }`}
-            title={
-              isPlaying
-                ? `🎵 ${currentTrack?.name || "음악 재생 중"} (클릭: 일시정지 · 더블클릭: 다음곡 · 꾹 누르기: 상세메뉴)`
-                : `⏸️ ${currentTrack?.name || "음악 일시정지"} (클릭: 재생 · 더블클릭: 다음곡 · 꾹 누르기: 상세메뉴)`
-            }
-          >
-            {/* Top glass reflection sheen highlight */}
-            <div
-              className="absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/[0.04] to-transparent pointer-events-none"
-              aria-hidden="true"
-            />
-
-            {/* Ambient active playing glow halo */}
-            {isPlaying && (
-              <span
-                className="absolute -inset-0.5 rounded-full opacity-60 group-hover:opacity-90 blur-xs transition-opacity"
-                style={{
-                  backgroundColor: "oklch(0.85 0.15 90)",
-                  boxShadow: "0 0 14px rgba(251, 191, 36, 0.7)",
-                }}
-              />
-            )}
-
-            {/* Inner LP Disc */}
-            <div className="relative z-10 flex items-center justify-center">
-              <LPRecordDisc
-                isPlaying={isPlaying}
-                isBuffering={isBuffering}
-                size="sm"
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-
-            {/* Playing pulse indicator dot */}
-            {isPlaying && (
-              <span
-                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-white/30 bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.9)] z-20"
-              />
-            )}
-
-            {/* Hold Progress Indicator Ring */}
-            {isHolding && (
-              <svg
-                className="absolute -inset-1.5 w-[calc(100%+12px)] h-[calc(100%+12px)] -rotate-90 pointer-events-none z-30"
-                viewBox="0 0 52 52"
-              >
-                <circle
-                  cx="26"
-                  cy="26"
-                  r="23"
-                  fill="none"
-                  stroke="rgba(251, 191, 36, 0.95)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeDasharray="145"
-                  strokeDashoffset="145"
-                  className="animate-lp-hold"
-                  style={{
-                    filter: "drop-shadow(0 0 8px rgba(251, 191, 36, 0.9))",
-                  }}
-                />
-              </svg>
-            )}
-
-            {/* Desktop hover tooltip */}
-            <span className="hidden sm:group-hover:block absolute bottom-full mb-2.5 right-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-lg pointer-events-none z-50">
-              {isPlaying ? `🎵 ${currentTrack?.name || "음악 재생 중"}` : `⏸️ ${currentTrack?.name || "음악 일시정지"}`} (클릭 재생 · 더블클릭 다음곡 · 꾹 홀드 상세메뉴)
-            </span>
-          </button>
-        </motion.div>
-      )}
 
       {/* Detailed Menu Modal Popup (LP판 홀드시 노출되는 프리미엄 상세메뉴) */}
       <AnimatePresence>

@@ -415,7 +415,7 @@ function AppContent() {
           <ActivePage loc={location} />
         </motion.div>
       </main>
-      {!isChatOpen && !isDistractionFreeRoute && <LeftSidebarNav />}
+      {!isChatOpen && <LeftSidebarNav />}
       <BigBangButton />
       <BigBangExpansionOverlay />
 

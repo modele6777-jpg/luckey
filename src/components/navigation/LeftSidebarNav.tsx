@@ -216,6 +216,22 @@ export default function LeftSidebarNav() {
     }
   };
 
+  // Global event listeners for opening/toggling menu from BigBang West button
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    const handleToggle = () => setIsOpen((prev) => !prev);
+    const handleClose = () => setIsOpen(false);
+
+    window.addEventListener('prism:open_menu', handleOpen);
+    window.addEventListener('prism:toggle_menu', handleToggle);
+    window.addEventListener('prism:close_menu', handleClose);
+    return () => {
+      window.removeEventListener('prism:open_menu', handleOpen);
+      window.removeEventListener('prism:toggle_menu', handleToggle);
+      window.removeEventListener('prism:close_menu', handleClose);
+    };
+  }, []);
+
   // Realtime event sync for profile edits across views
   useEffect(() => {
     const handleProfileUpdate = () => {
@@ -548,95 +564,7 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {/* 1. Collapsed State: Sleek Fixed Circular Floating FAB with Animated Rainbow Prismatic Aura */}
-      {!isOpen && (
-        <motion.div
-          initial={{ y: 20, opacity: 0, scale: 0.9 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: 20, opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.2 }}
-          className="fixed bottom-safe-nav-fab z-[400] select-none"
-        >
-          <button
-            type="button"
-            onClick={() => setIsOpen(true)}
-            aria-label={`네비게이션 메뉴 열기 (${activeItem.label})`}
-            aria-expanded={isOpen}
-            className="prism-glass-fab group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center cursor-pointer overflow-hidden select-none"
-            title={`메뉴 열기 (${activeItem.label})`}
-          >
-            {/* Top glass reflection sheen highlight */}
-            <div
-              className="absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/[0.04] to-transparent pointer-events-none"
-              aria-hidden="true"
-            />
-
-            {/* Animated Rainbow SVG Gradient Definition for Menu Icon */}
-            <svg width="0" height="0" className="absolute pointer-events-none" aria-hidden="true">
-              <defs>
-                <linearGradient id="nav-rainbow-symbol-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ff4b72">
-                    <animate attributeName="stop-color" values="#ff4b72;#ff9f0a;#ffd13b;#00e699;#00d4ff;#7a5cff;#e056fd;#ff4b72" dur="5s" repeatCount="indefinite" />
-                  </stop>
-                  <stop offset="25%" stopColor="#ff9f0a">
-                    <animate attributeName="stop-color" values="#ff9f0a;#ffd13b;#00e699;#00d4ff;#7a5cff;#e056fd;#ff4b72;#ff9f0a" dur="5s" repeatCount="indefinite" />
-                  </stop>
-                  <stop offset="50%" stopColor="#00e699">
-                    <animate attributeName="stop-color" values="#00e699;#00d4ff;#7a5cff;#e056fd;#ff4b72;#ff9f0a;#ffd13b;#00e699" dur="5s" repeatCount="indefinite" />
-                  </stop>
-                  <stop offset="75%" stopColor="#00d4ff">
-                    <animate attributeName="stop-color" values="#00d4ff;#7a5cff;#e056fd;#ff4b72;#ff9f0a;#ffd13b;#00e699;#00d4ff" dur="5s" repeatCount="indefinite" />
-                  </stop>
-                  <stop offset="100%" stopColor="#e056fd">
-                    <animate attributeName="stop-color" values="#e056fd;#ff4b72;#ff9f0a;#ffd13b;#00e699;#00d4ff;#7a5cff;#e056fd" dur="5s" repeatCount="indefinite" />
-                  </stop>
-                </linearGradient>
-              </defs>
-            </svg>
-
-            {/* Inner icon & indicator with rainbow-shining dynamic styling */}
-            <div className="relative z-10 flex items-center justify-center">
-              {/* Subtle rainbow aura blur behind symbol */}
-              <div
-                className="absolute -inset-2 rounded-full blur-[7px] opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none bigbang-subtle-rainbow-aura"
-                aria-hidden="true"
-              />
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeItem?.label || 'LUCY'}
-                  initial={{ scale: 0.6, opacity: 0, rotate: -20 }}
-                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                  exit={{ scale: 0.6, opacity: 0, rotate: 20 }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
-                  className="relative z-10 flex items-center justify-center"
-                >
-                  <ActiveNavIcon
-                    size={21}
-                    stroke="url(#nav-rainbow-symbol-grad)"
-                    style={{ stroke: 'url(#nav-rainbow-symbol-grad)' }}
-                    className="transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.85)] drop-shadow-[0_0_14px_rgba(0,212,255,0.6)]"
-                  />
-                </motion.div>
-              </AnimatePresence>
-              <span
-                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-white/30 animate-pulse bg-gradient-to-tr from-pink-500 via-amber-400 to-cyan-400 shadow-[0_0_8px_rgba(0,240,255,0.8)] z-20"
-              />
-            </div>
-
-            {/* Desktop hover tooltip */}
-            <span className="hidden sm:group-hover:flex items-center gap-1.5 absolute bottom-full mb-2.5 left-0 px-2.5 py-1 rounded-lg bg-neutral-900/95 text-[11px] text-neutral-200 font-medium whitespace-nowrap border border-white/10 shadow-xl pointer-events-none z-30">
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: activeItem?.color || '#34d399' }}
-              />
-              <span>메뉴 열기 ({activeItem.label})</span>
-            </span>
-          </button>
-        </motion.div>
-      )}
-
-      {/* 2. Expanded State: Floating Overlay Backdrop + Slide-in Slim Icon Rail Dock */}
+      {/* Expanded State: Floating Overlay Backdrop + Slide-in Slim Icon Rail Dock */}
       <AnimatePresence>
         {isOpen && (
           <>

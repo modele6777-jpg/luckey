@@ -1,5 +1,5 @@
-import React, { useId, useCallback } from 'react';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import React, { useId, useCallback, useState, useEffect, useRef } from 'react';
+import { ArrowUp, ArrowDown, Menu, Music } from 'lucide-react';
 import { motion } from 'motion/react';
 import { WarpPhase } from '@/lib/omniWarp/types';
 import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
@@ -26,6 +26,7 @@ interface BigBangCircularMeterProps {
  * 🔮 빅뱅 아케인 마법진 매트릭스 (BigBang Arcane Magic Circle)
  * - 현대적이고 신비로운 대형 코스믹 아케인 서클 시스템
  * - 직경 144px로 확대되어 76~84px 크기의 코스믹 옵시디언 버튼을 웅장하고 유려하게 감쌈
+ * - 4방위 룬 점: 상(최상단 스크롤), 하(최하단 스크롤), 좌(메뉴 드로어), 우(배경음 컨트롤 & 홀딩 메뉴)
  */
 export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   isPressing,
@@ -75,8 +76,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     window.dispatchEvent(new CustomEvent('prism:scroll_to_bottom'));
   }, []);
 
-  // 🚀 좌(West) 점 탭 시 이전 탭으로 스와이프 전환
-  const handleTabPrev = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  // 🚀 좌(West) 점 탭 시 사이드 네비게이션 메뉴 열기/토글
+  const handleMenuClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -90,13 +91,92 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       } catch (_) {}
     }
 
-    window.dispatchEvent(new CustomEvent('prism:tab_prev', { detail: { direction: -1 } }));
+    window.dispatchEvent(new CustomEvent('prism:toggle_menu'));
   }, []);
 
-  // 🚀 우(East) 점 탭 시 다음 탭으로 스와이프 전환
-  const handleTabNext = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  // 🎵 우(East) 점 배경음 상태 및 롱프레스(홀딩) 제어
+  const [isBgmPlaying, setIsBgmPlaying] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('prism_bgm_playing') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isBgmHolding, setIsBgmHolding] = useState(false);
+  const bgmHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isBgmHoldTriggeredRef = useRef(false);
+  const bgmHoldStartPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // 실시간 재생 상태 동기화
+  useEffect(() => {
+    const handleBgmState = (e: Event) => {
+      const customEvent = e as CustomEvent<{ isPlaying?: boolean }>;
+      if (typeof customEvent.detail?.isPlaying === 'boolean') {
+        setIsBgmPlaying(customEvent.detail.isPlaying);
+      }
+    };
+    window.addEventListener('prism:bgm_state_change', handleBgmState);
+    return () => {
+      window.removeEventListener('prism:bgm_state_change', handleBgmState);
+    };
+  }, []);
+
+  const handleBgmPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    e.stopPropagation();
+    isBgmHoldTriggeredRef.current = false;
+    bgmHoldStartPosRef.current = { x: e.clientX, y: e.clientY };
+    setIsBgmHolding(true);
+
+    if (bgmHoldTimerRef.current) {
+      clearTimeout(bgmHoldTimerRef.current);
+    }
+
+    bgmHoldTimerRef.current = setTimeout(() => {
+      isBgmHoldTriggeredRef.current = true;
+      setIsBgmHolding(false);
+      bgmHoldTimerRef.current = null;
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+          navigator.vibrate(35);
+        } catch (_) {}
+      }
+      try {
+        playAudioHaptic('success');
+      } catch (_) {}
+      window.dispatchEvent(new CustomEvent('prism:open_bgm_menu'));
+    }, 400);
+  }, []);
+
+  const handleBgmPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!bgmHoldStartPosRef.current || !bgmHoldTimerRef.current) return;
+    const dx = Math.abs(e.clientX - bgmHoldStartPosRef.current.x);
+    const dy = Math.abs(e.clientY - bgmHoldStartPosRef.current.y);
+    if (dx > 10 || dy > 10) {
+      if (bgmHoldTimerRef.current) {
+        clearTimeout(bgmHoldTimerRef.current);
+        bgmHoldTimerRef.current = null;
+      }
+      setIsBgmHolding(false);
+    }
+  }, []);
+
+  const handleBgmPointerUp = useCallback((e: React.PointerEvent) => {
+    e.stopPropagation();
+    if (bgmHoldTimerRef.current) {
+      clearTimeout(bgmHoldTimerRef.current);
+      bgmHoldTimerRef.current = null;
+    }
+    setIsBgmHolding(false);
+  }, []);
+
+  const handleBgmClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isBgmHoldTriggeredRef.current) {
+      isBgmHoldTriggeredRef.current = false;
+      return;
+    }
 
     try {
       playAudioHaptic('tap_light');
@@ -108,7 +188,29 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       } catch (_) {}
     }
 
-    window.dispatchEvent(new CustomEvent('prism:tab_next', { detail: { direction: 1 } }));
+    window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
+  }, []);
+
+  const handleBgmContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (bgmHoldTimerRef.current) {
+      clearTimeout(bgmHoldTimerRef.current);
+      bgmHoldTimerRef.current = null;
+    }
+    setIsBgmHolding(false);
+    window.dispatchEvent(new CustomEvent('prism:toggle_bgm_menu'));
+  }, []);
+
+  const handleBgmDoubleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (bgmHoldTimerRef.current) {
+      clearTimeout(bgmHoldTimerRef.current);
+      bgmHoldTimerRef.current = null;
+    }
+    setIsBgmHolding(false);
+    window.dispatchEvent(new CustomEvent('prism:next_bgm_track'));
   }, []);
 
   // 대형화된 버튼(76~84px) 외곽을 웅장하고 신비롭게 감싸는 최적의 마법진 직경 (144px)
@@ -321,34 +423,51 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           <ArrowDown className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
 
-        {/* 좌(West) 점 / 화살표: 이전 탭으로 스와이프 전환 */}
+        {/* 좌(West) 점: 메뉴 열기 (LeftSidebarNav 드로어 토글) */}
         <button
           type="button"
-          onClick={handleTabPrev}
+          onClick={handleMenuClick}
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
-          className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -left-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="이전 탭으로 전환 (좌측)"
-          aria-label="이전 탭으로 전환"
+          className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -left-[12px] w-9 h-9 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
+          title="메뉴 열기 (네비게이션)"
+          aria-label="메뉴 열기"
         >
           <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
-          <ArrowLeft className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
+          <Menu className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
 
-        {/* 우(East) 점 / 화살표: 다음 탭으로 스와이프 전환 */}
+        {/* 우(East) 점: 배경음 재생/일시정지 및 400ms 홀딩 시 팝오버 상세메뉴 */}
         <button
           type="button"
-          onClick={handleTabNext}
-          onPointerDown={(e) => e.stopPropagation()}
-          onPointerUp={(e) => e.stopPropagation()}
+          onPointerDown={handleBgmPointerDown}
+          onPointerMove={handleBgmPointerMove}
+          onPointerUp={handleBgmPointerUp}
+          onPointerCancel={handleBgmPointerUp}
+          onPointerLeave={handleBgmPointerUp}
+          onClick={handleBgmClick}
+          onContextMenu={handleBgmContextMenu}
+          onDoubleClick={handleBgmDoubleClick}
           onTouchStart={(e) => e.stopPropagation()}
-          className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -right-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="다음 탭으로 전환 (우측)"
-          aria-label="다음 탭으로 전환"
+          className={`group pointer-events-auto absolute top-1/2 -translate-y-1/2 -right-[12px] w-9 h-9 flex items-center justify-center cursor-pointer transition-all duration-200 z-40 ${
+            isBgmHolding ? "scale-90 ring-2 ring-amber-400/80 shadow-[0_0_16px_rgba(251,191,36,0.9)]" : "active:scale-90"
+          }`}
+          title={isBgmPlaying ? "배경음 일시정지 (꾹 누르면 플레이어 메뉴)" : "배경음 재생 (꾹 누르면 플레이어 메뉴)"}
+          aria-label="배경음 제어"
         >
-          <span className="w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
-          <ArrowRight className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
+          <span
+            className={`w-[5px] h-[5px] rounded-full transition-all duration-200 group-hover:opacity-0 group-hover:scale-0 ${
+              isBgmPlaying
+                ? "bg-[#fbbf24] shadow-[0_0_10px_#fbbf24] animate-pulse"
+                : "bg-[#c084fc] shadow-[0_0_8px_#c084fc]"
+            }`}
+          />
+          <Music
+            className={`absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5] ${
+              isBgmPlaying ? "animate-[spin_6s_linear_infinite]" : ""
+            }`}
+          />
         </button>
       </div>
     </div>

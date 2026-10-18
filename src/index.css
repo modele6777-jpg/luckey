@@ -484,22 +484,22 @@
   }
 
   .bottom-safe-music-menu {
-    bottom: calc(var(--sab) + 8.25rem);
-    right: calc(var(--sar) + 0.875rem);
+    bottom: calc(var(--sab) + 7.75rem);
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (min-width: 640px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 9.5rem);
-      right: calc(var(--sar) + 1.5rem);
+      bottom: calc(var(--sab) + 9.0rem);
     }
   }
 
   @media (max-height: 720px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 7.75rem);
-      right: calc(var(--sar) + 0.875rem);
+      bottom: calc(var(--sab) + 7.25rem);
     }
   }
 
