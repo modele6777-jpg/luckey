@@ -44,10 +44,7 @@ import { parseSuggestions, SUGGESTIONS_SYSTEM_SUFFIX } from '@/utils/suggestions
 import { getPendingPrismToss, clearPrismToss } from '@/lib/prismToss';
 import { getContextAwarePrompts } from '@/utils/dynamicContextSuggestions';
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
-import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
 
-const ORANGE_SWIPE_TABS = ['secret', 'wishingWell', 'synergy'] as const;
-type OrangeSwipeTab = typeof ORANGE_SWIPE_TABS[number];
 
 const THEME_COLOR = 'oklch(0.72 0.18 55)';
 const BG = 'oklch(0.10 0.02 55)';
@@ -355,20 +352,7 @@ export default function OrangeApp() {
   });
   useScrollToTopOnChange([activeMode]);
 
-  const currentOrangeTab: OrangeSwipeTab = (activeMode === 'wishingWell' || activeMode === 'synergy') ? activeMode : 'secret';
-
-  const { swipeHandlers: orangeSwipeHandlers } = useSwipeableTabs<OrangeSwipeTab>({
-    tabs: ORANGE_SWIPE_TABS,
-    activeTab: currentOrangeTab,
-    onTabChange: (newTab) => {
-      setActiveMode(newTab);
-      setShowWishingWellModal(false);
-      setStage('landing');
-      resetAppScroll();
-    },
-    enabled: true,
-  });
-
+  
   useEffect(() => {
     const applyTargetTab = (tab: string | null | undefined) => {
       if (!tab) return;
@@ -1354,7 +1338,7 @@ export default function OrangeApp() {
         })}
       </motion.nav>
 
-      <main data-app-scroll-root {...orangeSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white">
+      <main data-app-scroll-root className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white">
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">
           <AnimatePresence mode="wait">
               {activeMode === 'synergy' ? (

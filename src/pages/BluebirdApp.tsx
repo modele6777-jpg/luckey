@@ -62,10 +62,7 @@ import {
   useSpecialFeatureChromeHidden,
 } from '@/components/SpecialFeaturePanel';
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
-import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
 
-const BLUEBIRD_SWIPE_TABS = ['daily', 'secretMessage', 'synergy'] as const;
-type BluebirdSwipeTab = typeof BLUEBIRD_SWIPE_TABS[number];
 
 const QuickInsightSchema = z.object({
   diagnosis: z.string(),
@@ -267,21 +264,7 @@ export default function BluebirdApp() {
   });
   useScrollToTopOnChange([activeMode]);
 
-  const currentBluebirdTab: BluebirdSwipeTab = (activeMode === 'secretMessage' || activeMode === 'synergy') ? activeMode : 'daily';
-
-  const { swipeHandlers: bluebirdSwipeHandlers } = useSwipeableTabs<BluebirdSwipeTab>({
-    tabs: BLUEBIRD_SWIPE_TABS,
-    activeTab: currentBluebirdTab,
-    onTabChange: (newTab) => {
-      setActiveMode(newTab);
-      setShowSecretMessageModal(false);
-      setStage('landing');
-      setShowChat(false);
-      resetAppScroll();
-    },
-    enabled: true,
-  });
-
+  
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showSecretMessageModal, setShowSecretMessageModal] = useState(false);
   const [showChat, setShowChat] = useState(false);
@@ -2595,7 +2578,7 @@ export default function BluebirdApp() {
          })}
       </motion.nav>
 
-      <main data-app-scroll-root {...bluebirdSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth">
+      <main data-app-scroll-root className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth">
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
            <AnimatePresence mode="wait">
              {activeMode === 'synergy' ? (

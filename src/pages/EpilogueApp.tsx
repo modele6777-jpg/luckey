@@ -42,10 +42,7 @@ import { APP_VERSION, fetchDeployedAppVersion, compareVersions } from '@/lib/app
 import { fetchChangelog, getManualSyncChangelogEntries, type ChangelogEntry } from '@/lib/updateNotice';
 import { UpdateNoticeModal } from '@/components/UpdateNoticeModal';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
-import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
 
-const EPILOGUE_SWIPE_TABS = ['diary', 'synergy', 'profile'] as const;
-type EpilogueSwipeTab = typeof EPILOGUE_SWIPE_TABS[number];
 
 function GoogleLogo({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -502,18 +499,7 @@ export default function EpilogueApp() {
     }
   };
 
-  const { swipeHandlers: epilogueSwipeHandlers } = useSwipeableTabs<EpilogueSwipeTab>({
-    tabs: EPILOGUE_SWIPE_TABS,
-    activeTab: activeMode,
-    onTabChange: (newTab) => {
-      if (activeMode === 'profile' && newTab !== 'profile') {
-        handleSave(true);
-      }
-      setActiveMode(newTab);
-    },
-    enabled: true,
-  });
-
+  
   const section = SECTIONS[currentSection];
   const SectionIcon = section.icon;
 
@@ -895,7 +881,7 @@ export default function EpilogueApp() {
       </motion.nav>
 
       {/* Main Content Area */}
-      <div data-app-scroll-root {...epilogueSwipeHandlers} className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-28 sm:pb-32">
+      <div data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-28 sm:pb-32">
         {activeMode === 'synergy' ? (
           <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md space-y-6">
             <EpilogueSynergySection />

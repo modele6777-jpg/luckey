@@ -100,7 +100,7 @@ import { TarotSpreadSelectionModal } from "@/components/trinity/TarotSpreadSelec
 import { TarotCardBackCustomizerModal } from "@/components/trinity/TarotCardBackCustomizerModal";
 import { PhysicalTarotInputModal } from "@/components/trinity/PhysicalTarotInputModal";
 import { useTarotCardBack } from "@/hooks/useTarotCardBack";
-import { useSwipeableTabs } from "@/hooks/useSwipeableTabs";
+
 import { playAudioHaptic, playAiResultNotification } from "@/lib/audioHaptics";
 import { TodayTarotNarrationModal } from "@/components/trinity/TodayTarotNarrationModal";
 import { LucyTarotAdviceCard } from "@/components/trinity/LucyTarotAdviceCard";
@@ -1511,28 +1511,6 @@ function playDailyCardChimeAsync() {
   } = useSmartScroll({
     enabled: !showDailyModal && !showFollowUpWheelModal && !zoomedCard,
     resumeDelayMs: 3000,
-  });
-
-  // 📱 좌우 스와이프 제스처: 다른 앱으로 이탈하지 않고 같은 앱 내에서만 탭 이동 (SAJU <-> TAROT <-> ORACLE)
-  const trinitySwipeTabs = useMemo(() => ['destiny', 'tarot', 'oracle'] as const, []);
-  const currentTrinityTab = (activeMode === 'oracle' || activeMode === 'synergy')
-    ? 'oracle'
-    : (activeMode === 'tarot' ? 'tarot' : 'destiny');
-
-  const { swipeHandlers: trinitySwipeHandlers } = useSwipeableTabs({
-    tabs: trinitySwipeTabs,
-    activeTab: currentTrinityTab,
-    onTabChange: (newTab) => {
-      if (newTab === 'tarot') {
-        if (!tarotResult && !isTarotGenerating) {
-          resetTarotSession(true);
-        }
-        setActiveMode('tarot');
-      } else {
-        setActiveMode(newTab);
-      }
-    },
-    enabled: !tarotVirtualMode && !showDailyModal && !isDailyOracleLoading && !zoomedCard,
   });
   const [tarotConcern, setTarotConcern] = useState<string>(() => {
     const today = getTodayDateKey();
@@ -3161,7 +3139,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       {/* Main Layout Area — 동일 앱 내에서만 탭 스와이프 전환 지원 및 브라우저 외부 이탈 방지 */}
       <main
         data-app-scroll-root
-        {...trinitySwipeHandlers}
+
         className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white touch-pan-y overscroll-x-none"
       >
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">

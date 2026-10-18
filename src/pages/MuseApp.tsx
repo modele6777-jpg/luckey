@@ -146,11 +146,8 @@ import {
   useSpecialFeatureChromeHidden,
 } from "@/components/SpecialFeaturePanel";
 
-import { useSwipeableTabs } from "@/hooks/useSwipeableTabs";
 import { playAiResultNotification } from "@/lib/audioHaptics";
 
-const MUSE_SWIPE_TABS = ['artRecommendation', 'roleModel', 'synergy'] as const;
-type MuseSwipeTab = typeof MUSE_SWIPE_TABS[number];
 
 const THEME_COLOR = "oklch(0.35 0.14 240)";
 const BG = "oklch(0.08 0.03 240)";
@@ -705,18 +702,7 @@ export default function MuseApp() {
   });
   useScrollToTopOnChange([activeMode]);
 
-  const currentMuseTab: MuseSwipeTab = (activeMode === 'roleModel' || activeMode === 'synergy') ? activeMode : 'artRecommendation';
-
-  const { swipeHandlers: museSwipeHandlers } = useSwipeableTabs<MuseSwipeTab>({
-    tabs: MUSE_SWIPE_TABS,
-    activeTab: currentMuseTab,
-    onTabChange: (newTab) => {
-      setActiveMode(newTab);
-      resetAppScroll();
-    },
-    enabled: true,
-  });
-
+  
   useEffect(() => {
     const applyTargetTab = (tab: string | null | undefined) => {
       if (!tab) return;
@@ -1551,7 +1537,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
       </motion.nav>
 
 
-      <main data-app-scroll-root {...museSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white">
+      <main data-app-scroll-root className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white">
         <div className={`w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col ${activeMode === 'roleModel' ? 'max-w-6xl' : 'max-w-5xl'}`}>
           <AnimatePresence mode="wait">
             {activeMode === 'synergy' ? (
