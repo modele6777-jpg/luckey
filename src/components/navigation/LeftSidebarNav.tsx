@@ -73,7 +73,7 @@ export const PRISM_CHANNELS: NavItemConfig[] = [
     icon: Sun,
     label: 'PROLOGUE',
     subLabel: '서막 · 비전의 시작',
-    color: 'oklch(0.60 0.22 15)',
+    color: '#ef4444',
     isPrologue: true,
   },
   {
@@ -81,42 +81,42 @@ export const PRISM_CHANNELS: NavItemConfig[] = [
     icon: TreeDeciduous,
     label: 'ORANGE',
     subLabel: '마음챙김 & 소원부적',
-    color: 'oklch(0.72 0.18 55)',
+    color: '#f97316',
   },
   {
     path: '/trinity',
     icon: Sparkles,
     label: 'TRINITY',
     subLabel: '트리니티 오라클 타로',
-    color: 'oklch(0.85 0.15 90)',
+    color: '#fbbf24',
   },
   {
     path: '/heal',
     icon: Activity,
     label: 'AURA',
     subLabel: '세도나 치유 & 명상',
-    color: 'oklch(0.70 0.15 150)',
+    color: '#10b981',
   },
   {
     path: '/bluebird',
     icon: Bird,
     label: 'BLUEBIRD',
     subLabel: '파랑새 호오포노포노',
-    color: 'oklch(0.75 0.12 230)',
+    color: '#0ea5e9',
   },
   {
     path: '/muse',
     icon: Music,
     label: 'MUSE',
     subLabel: '시와 예술 갤러리',
-    color: 'oklch(0.40 0.15 250)',
+    color: '#6366f1',
   },
   {
     path: '/epilogue',
     icon: Moon,
     label: 'EPILOGUE',
     subLabel: '에필로그 & 통합 일기',
-    color: 'oklch(0.65 0.25 310)',
+    color: '#a855f7',
   },
 ];
 
@@ -132,41 +132,42 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
     icon: Library,
     label: 'LIBRARY',
     subLabel: '통합 아카이브 기록관',
-    color: 'oklch(0.75 0.16 200)',
+    color: '#06b6d4',
   },
   {
     path: '/rebible',
     icon: BookOpen,
     label: 'REBIBLE',
     subLabel: '리바이블 지혜 성전',
-    color: 'oklch(0.78 0.18 85)',
+    color: '#eab308',
   },
   {
     path: '/handbook',
     icon: BookOpen,
     label: 'HANDBOOK',
     subLabel: '리바이블 핸드북',
-    color: 'oklch(0.78 0.18 85)',
+    color: '#eab308',
   },
   {
     path: '/omniwarp',
     icon: Compass,
     label: 'BIGBANG',
     subLabel: '옴니워프 & 빅뱅 내비게이션',
-    color: 'oklch(0.72 0.22 340)',
+    color: '#ec4899',
   },
   {
     path: '/bigbang',
     icon: Compass,
     label: 'BIGBANG',
     subLabel: '빅뱅 보이스 & 옴니워프',
-    color: 'oklch(0.72 0.22 340)',
+    color: '#ec4899',
   },
 ];
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [, setProfileVersion] = useState(0);
+  const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { themeMode, resolvedTheme, setThemeMode } = useTheme();
@@ -396,6 +397,7 @@ export default function LeftSidebarNav() {
       ? isPrologueActive
       : cleanPath === path || cleanPath.startsWith(path + '/');
     const isRainbow = Boolean(isMainChat || isKey || isLuckey);
+    const isHovered = hoveredNavPath === path;
 
     // 🌈 Special Rainbow Glowing Style for Core Sanctuary Channels (LUCY, KEY, LUCKEY)
     if (isRainbow) {
@@ -410,8 +412,14 @@ export default function LeftSidebarNav() {
               handleNavigate(path);
             }
           }}
-          onMouseEnter={isLuckey ? handleChannelsMouseEnter : undefined}
-          onMouseLeave={isLuckey ? handleChannelsMouseLeave : undefined}
+          onMouseEnter={() => {
+            setHoveredNavPath(path);
+            if (isLuckey) handleChannelsMouseEnter();
+          }}
+          onMouseLeave={() => {
+            setHoveredNavPath(null);
+            if (isLuckey) handleChannelsMouseLeave();
+          }}
           aria-label={isLuckey ? `${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'}` : label}
           aria-expanded={isLuckey ? isChannelsOpen : undefined}
           className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
@@ -501,20 +509,22 @@ export default function LeftSidebarNav() {
       );
     }
 
-    // Standard 7 Prism Journey Channels
+    // Standard 7 Prism Journey Channels & Auxiliary Channels
     return (
       <button
         key={path}
         type="button"
         onClick={() => handleNavigate(path)}
+        onMouseEnter={() => setHoveredNavPath(path)}
+        onMouseLeave={() => setHoveredNavPath(null)}
         aria-label={label}
         className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
-          isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
+          isActive || isHovered ? 'scale-105' : 'hover:scale-105 active:scale-95'
         }`}
         style={{
-          backgroundColor: isActive ? `${color}25` : 'rgba(255, 255, 255, 0.04)',
-          border: `1px solid ${isActive ? `${color}70` : 'rgba(255, 255, 255, 0.08)'}`,
-          boxShadow: isActive ? `0 0 14px ${color}40` : undefined,
+          backgroundColor: isActive ? `${color}25` : isHovered ? `${color}18` : 'rgba(255, 255, 255, 0.04)',
+          border: `1px solid ${isActive ? `${color}80` : isHovered ? `${color}60` : 'rgba(255, 255, 255, 0.08)'}`,
+          boxShadow: isActive ? `0 0 16px ${color}50` : isHovered ? `0 0 14px ${color}35` : undefined,
         }}
       >
         {/* Active left indicator bar */}
@@ -530,16 +540,47 @@ export default function LeftSidebarNav() {
           />
         )}
 
+        {/* Floating Theme Color Light Gem above the glyph (문양 바로 위에 부유하는 테마 빛 보석) */}
+        <div
+          className="absolute top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full transition-all duration-300 pointer-events-none"
+          style={{
+            backgroundColor: color,
+            boxShadow: `0 0 8px ${color}, 0 0 14px ${color}`,
+            opacity: isActive || isHovered ? 1 : 0,
+            transform: isActive || isHovered ? 'translate(-50%, 0) scale(1.2)' : 'translate(-50%, 3px) scale(0.5)',
+          }}
+        />
+
+        {/* Ambient Radial Theme Color Flare blooming behind & over glyph */}
+        <div
+          className="absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at center, ${color}35 0%, ${color}10 50%, transparent 75%)`,
+            opacity: isActive || isHovered ? 1 : 0,
+          }}
+        />
+
+        {/* Icon Glyph with Theme Color & Glowing Drop Shadow on Hover / Active */}
         <Icon
           size={20}
-          style={{ color: isActive ? color : undefined }}
-          className={`transition-transform duration-200 group-hover:scale-110 ${
-            isActive ? '' : 'text-neutral-400 group-hover:text-neutral-100'
+          style={{
+            color: isActive || isHovered ? color : undefined,
+            filter: isActive || isHovered ? `drop-shadow(0 0 8px ${color})` : undefined,
+          }}
+          className={`relative z-10 transition-all duration-200 ${
+            isActive || isHovered ? 'scale-110' : 'text-neutral-400 group-hover:text-neutral-200'
           }`}
         />
 
-        {/* Floating Tooltip to the Right */}
+        {/* Floating Tooltip to the Right with Theme Color Beacon */}
         <div className="hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-neutral-900/95 backdrop-blur-xl border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)] pointer-events-none whitespace-nowrap z-50 transition-all">
+          <span
+            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+            style={{
+              backgroundColor: color,
+              boxShadow: `0 0 8px ${color}`,
+            }}
+          />
           <span
             className="text-xs font-bold uppercase tracking-wider font-sans"
             style={{ color }}
@@ -627,8 +668,8 @@ export default function LeftSidebarNav() {
 
                       {/* 7 Prism Channels: PROLOGUE ~ EPILOGUE */}
                       <div className="relative flex flex-col items-center gap-2 w-full py-0.5">
-                        {/* Connecting vertical ambient thread */}
-                        <div className="absolute top-2 bottom-2 left-1/2 -translate-x-1/2 w-[1px] bg-gradient-to-b from-emerald-500/40 via-purple-500/30 to-transparent pointer-events-none" />
+                        {/* Connecting vertical rainbow ambient thread */}
+                        <div className="absolute top-2 bottom-2 left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-red-500/60 via-amber-400/50 via-emerald-400/50 via-blue-500/50 to-purple-500/60 shadow-[0_0_8px_rgba(168,85,247,0.3)] pointer-events-none" />
                         {PRISM_CHANNELS.map(renderNavButton)}
                       </div>
                     </motion.div>
