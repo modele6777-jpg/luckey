@@ -860,6 +860,26 @@ export function BigBangButton() {
     resetActiveContextPeek();
   }, [location, navigate, getActiveSelectionText, isKeySite]);
 
+  // 🔮 4대 고대 룬 문자 클릭 시 다이렉트 차원 도약 핸들러
+  const handleRuneNavigate = useCallback(
+    (targetPath: string) => {
+      if (singleTapTimerRef.current) {
+        clearTimeout(singleTapTimerRef.current);
+        singleTapTimerRef.current = null;
+      }
+      lastTapTimeRef.current = 0;
+
+      if (isKeySite) {
+        window.location.href = targetPath;
+      } else {
+        navigate(targetPath);
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
+        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
+      }
+    },
+    [isKeySite, navigate]
+  );
+
   const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement> | PointerEvent) => {
     cleanupGlobalPointerListeners();
     if (!touchStartRef.current) return;
@@ -1324,6 +1344,9 @@ export function BigBangButton() {
           onPointerEnter={() => setIsHovered(true)}
           onPointerLeave={() => setIsHovered(false)}
         >
+          {/* Expanded radial hover hitbox to encompass 144px arcane circle & diagonal runes */}
+          <div className="absolute -inset-7 rounded-full pointer-events-auto -z-10" />
+
           {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 */}
           <AnimatePresence>
             {hasSelectionToss && !isPressing && (
@@ -1403,6 +1426,7 @@ export function BigBangButton() {
                 durationMs={durationMs}
                 activePhase={activePhase}
                 isAborted={isAborted}
+                onRuneNavigate={handleRuneNavigate}
               />
             </div>
 

@@ -1,9 +1,73 @@
 import React, { useId, useCallback, useState, useEffect, useRef } from 'react';
 import { ArrowUp, ArrowDown, Menu, Music } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase } from '@/lib/omniWarp/types';
 import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
 import { playAudioHaptic } from '@/lib/audioHaptics';
+import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+
+interface AncientRuneConfig {
+  id: string;
+  symbol: string;
+  name: string;
+  meaning: string;
+  path: string;
+  color: string;
+  glowColor: string;
+  /** 대각선 안착 각도 (0은 북쪽 기준, 45=NE, 135=SE, 225=SW, 315=NW) */
+  diagonalDeg: number;
+}
+
+const ANCIENT_RUNES: AncientRuneConfig[] = [
+  {
+    id: 'raido',
+    symbol: 'ᚱ',
+    name: 'Raido',
+    meaning: '운명과 여정',
+    path: '/trinity',
+    color: '#38bdf8',
+    glowColor: 'rgba(56, 189, 248, 0.85)',
+    diagonalDeg: 315, // 북서 (상좌) ➔ 트리니티
+  },
+  {
+    id: 'algiz',
+    symbol: 'ᛉ',
+    name: 'Algiz',
+    meaning: '소망과 보호',
+    path: '/orange',
+    color: '#fb923c',
+    glowColor: 'rgba(251, 146, 60, 0.85)',
+    diagonalDeg: 45, // 북동 (상우) ➔ 오렌지
+  },
+  {
+    id: 'sowilo',
+    symbol: 'ᛋ',
+    name: 'Sowilo',
+    meaning: '태양과 치유',
+    path: '/heal',
+    color: '#fbbf24',
+    glowColor: 'rgba(251, 191, 36, 0.85)',
+    diagonalDeg: 135, // 남동 (하우) ➔ 힐링
+  },
+  {
+    id: 'othala',
+    symbol: 'ᛟ',
+    name: 'Othala',
+    meaning: '평화와 안식',
+    path: '/bluebird',
+    color: '#c084fc',
+    glowColor: 'rgba(192, 132, 252, 0.85)',
+    diagonalDeg: 225, // 남서 (하좌) ➔ 블루버드
+  },
+];
+
+function getRunePosition(deg: number, center: number, radius: number) {
+  const rad = (deg * Math.PI) / 180;
+  return {
+    x: center + radius * Math.sin(rad),
+    y: center - radius * Math.cos(rad),
+  };
+}
 
 interface BigBangCircularMeterProps {
   /** 사용자가 누르고 있는지 여부 */
@@ -20,6 +84,8 @@ interface BigBangCircularMeterProps {
   isAborted?: boolean;
   /** 무한 반복 대기 사이클 타이밍 값 (선택적) */
   idleCycleProgress?: number;
+  /** 고대 룬 클릭 시 네비게이션 콜백 (선택적) */
+  onRuneNavigate?: (path: string, runeId: string) => void;
 }
 
 /**
@@ -27,6 +93,7 @@ interface BigBangCircularMeterProps {
  * - 현대적이고 신비로운 대형 코스믹 아케인 서클 시스템
  * - 직경 144px로 확대되어 76~84px 크기의 코스믹 옵시디언 버튼을 웅장하고 유려하게 감쌈
  * - 4방위 룬 점: 상(최상단 스크롤), 하(최하단 스크롤), 좌(메뉴 드로어), 우(배경음 컨트롤 & 홀딩 메뉴)
+ * - 4대 고대 룬 문자: ᚱ(Raido), ᛉ(Algiz), ᛋ(Sowilo), ᛟ(Othala) 블랙홀 공전 및 호버 시 대각선 안착 / 소멸 도약
  */
 export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   isPressing,
@@ -35,6 +102,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   durationMs = 0,
   activePhase = 'idle',
   isAborted = false,
+  onRuneNavigate,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
 
@@ -213,6 +281,46 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     window.dispatchEvent(new CustomEvent('prism:next_bgm_track'));
   }, []);
 
+  // 🔮 4대 고대 룬 문자 상태 관리 (클릭 시 소멸, 호버 해제 시 복구 초기화)
+  const [vanishedRuneIds, setVanishedRuneIds] = useState<Set<string>>(new Set());
+  const [implodingRuneId, setImplodingRuneId] = useState<string | null>(null);
+
+  // 호버를 떼었다가 다시 호버하면 소멸된 룬 즉시 초기화
+  useEffect(() => {
+    if (!isHovered) {
+      setVanishedRuneIds(new Set());
+      setImplodingRuneId(null);
+    }
+  }, [isHovered]);
+
+  const handleRuneClick = useCallback(
+    (e: React.MouseEvent, rune: AncientRuneConfig) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        playAudioHaptic('tap_impact');
+      } catch (_) {}
+      try {
+        triggerHaptic('wormhole');
+      } catch (_) {}
+
+      setImplodingRuneId(rune.id);
+
+      setTimeout(() => {
+        setVanishedRuneIds((prev) => new Set([...prev, rune.id]));
+        setImplodingRuneId(null);
+        if (onRuneNavigate) {
+          onRuneNavigate(rune.path, rune.id);
+        } else if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: rune.path } }));
+          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: rune.path } }));
+        }
+      }, 200);
+    },
+    [onRuneNavigate]
+  );
+
   // 대형화된 버튼(76~84px) 외곽을 웅장하고 신비롭게 감싸는 최적의 마법진 직경 (144px)
   const size = 144;
   const center = size / 2; // 72px
@@ -390,6 +498,114 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           className="opacity-40"
         />
       </svg>
+
+      {/* 🔮 4.5. 4대 고대 룬 문자 (블랙홀 공전 & 호버 시 4대 대각선 안착 / 클릭 시 소멸 도약) */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none z-30"
+        style={{ transformOrigin: `${center}px ${center}px` }}
+        animate={{ rotate: isHovered ? 0 : 360 }}
+        transition={
+          isHovered
+            ? { type: 'spring', stiffness: 280, damping: 22, mass: 0.8 }
+            : { repeat: Infinity, duration: 24, ease: 'linear' }
+        }
+      >
+        {ANCIENT_RUNES.map((rune) => {
+          if (vanishedRuneIds.has(rune.id)) return null;
+
+          const isImploding = implodingRuneId === rune.id;
+          const { x, y } = getRunePosition(rune.diagonalDeg, center, 56);
+
+          return (
+            <div
+              key={rune.id}
+              style={{
+                left: `${x}px`,
+                top: `${y}px`,
+              }}
+              className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            >
+              <motion.button
+                type="button"
+                onClick={(e) => handleRuneClick(e, rune)}
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerUp={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                animate={
+                  isImploding
+                    ? {
+                        scale: [1, 2.2],
+                        opacity: [1, 0],
+                        filter: ['blur(0px) brightness(1)', 'blur(8px) brightness(2.5)'],
+                      }
+                    : {
+                        scale: isHovered ? 1.05 : 0.85,
+                        opacity: isHovered ? 1 : 0.75,
+                      }
+                }
+                whileHover={!isImploding ? { scale: 1.25 } : undefined}
+                whileTap={!isImploding ? { scale: 0.9 } : undefined}
+                transition={
+                  isImploding
+                    ? { duration: 0.22, ease: 'easeOut' }
+                    : { type: 'spring', stiffness: 350, damping: 25 }
+                }
+                className="group pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none transition-shadow duration-200"
+                style={{
+                  color: rune.color,
+                  textShadow: `0 0 10px ${rune.glowColor}`,
+                }}
+                title={`${rune.symbol} ${rune.name} · ${rune.meaning}`}
+                aria-label={`${rune.name} (${rune.meaning})`}
+              >
+                {/* 룬 스톤 배경 링 & 백드롭 (호버 시 뚜렷하게 발광 안착) */}
+                <span
+                  className="absolute inset-0 rounded-full border border-white/20 transition-all duration-300"
+                  style={{
+                    backgroundColor: isHovered ? 'rgba(2, 6, 23, 0.85)' : 'rgba(2, 6, 23, 0.4)',
+                    boxShadow: isHovered ? `0 0 12px ${rune.glowColor}` : `0 0 6px ${rune.glowColor}`,
+                    borderColor: isHovered ? rune.color : 'rgba(255, 255, 255, 0.15)',
+                  }}
+                />
+
+                {/* 소멸 시 외곽 충격파 펄스 */}
+                {isImploding && (
+                  <span
+                    className="absolute -inset-2 rounded-full animate-ping pointer-events-none"
+                    style={{ backgroundColor: rune.color, opacity: 0.6 }}
+                  />
+                )}
+
+                {/* 고대 룬 문자 글리프 */}
+                <span className="relative z-10 text-[13px] font-black tracking-tighter select-none leading-none drop-shadow">
+                  {rune.symbol}
+                </span>
+
+                {/* 호버 시 툴팁 안내 */}
+                {isHovered && !isImploding && (
+                  <span
+                    className={`absolute pointer-events-none whitespace-nowrap px-2 py-0.5 rounded-md bg-slate-950/90 border border-white/20 text-[10px] font-bold text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 ${
+                      rune.diagonalDeg === 315
+                        ? '-top-6 -left-12'
+                        : rune.diagonalDeg === 45
+                        ? '-top-6 -right-12'
+                        : rune.diagonalDeg === 135
+                        ? '-bottom-6 -right-12'
+                        : '-bottom-6 -left-12'
+                    }`}
+                    style={{ borderColor: rune.color }}
+                  >
+                    <span style={{ color: rune.color }} className="mr-1">
+                      {rune.symbol}
+                    </span>
+                    {rune.meaning}
+                  </span>
+                )}
+              </motion.button>
+            </div>
+          );
+        })}
+      </motion.div>
 
       {/* 🌟 5. 4 방위 고정 룬 보석 (상/하/좌/우) - 마우스 호버 시 상하좌우 화살표로 매끄럽게 전환 */}
       <div className="absolute inset-0 pointer-events-none z-30">
