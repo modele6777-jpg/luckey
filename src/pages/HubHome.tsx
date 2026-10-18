@@ -537,7 +537,7 @@ export default function HubHome() {
         })}
       </motion.nav>
 
-      <div data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-44 sm:pb-48">
+      <div data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
         {!legacy && <FloatingParticles count={narrow ? 4 : 20} />}
 
         {activeSection === 'ecpr' ? (

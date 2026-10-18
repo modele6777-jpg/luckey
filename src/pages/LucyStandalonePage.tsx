@@ -2273,7 +2273,7 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-20 sm:h-24 w-full shrink-0" />
+          <div className="h-28 sm:h-32 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>
