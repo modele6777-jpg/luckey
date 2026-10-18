@@ -420,9 +420,15 @@
   }
 
   .bottom-safe-nav-fab {
-    bottom: calc(var(--sab) + 1.25rem);
+    bottom: calc(var(--sab) + 4.75rem);
     left: calc(var(--sal) + 0.875rem);
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @media (min-width: 640px) {
+    .bottom-safe-nav-fab {
+      bottom: calc(var(--sab) + 6.0rem);
+      left: calc(var(--sal) + 1.5rem);
+    }
   }
 
   .bottom-safe-fab-center {
@@ -460,44 +466,44 @@
   }
 
   .bottom-safe-music {
-    bottom: calc(var(--sab) + 1.25rem);
+    bottom: calc(var(--sab) + 4.75rem);
     left: calc(var(--sal) + 4.5rem);
   }
 
   .bottom-safe-music-lp {
-    bottom: calc(var(--sab) + 1.25rem);
+    bottom: calc(var(--sab) + 4.75rem);
     right: calc(var(--sar) + 0.875rem);
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (min-width: 640px) {
     .bottom-safe-music-lp {
-      bottom: calc(var(--sab) + 1.25rem);
+      bottom: calc(var(--sab) + 6.0rem);
       right: calc(var(--sar) + 1.5rem);
     }
   }
 
   .bottom-safe-music-menu {
-    bottom: calc(var(--sab) + 4.5rem);
+    bottom: calc(var(--sab) + 8.25rem);
     right: calc(var(--sar) + 0.875rem);
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (min-width: 640px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 4.75rem);
+      bottom: calc(var(--sab) + 9.5rem);
       right: calc(var(--sar) + 1.5rem);
     }
   }
 
   @media (max-height: 720px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 4.25rem);
+      bottom: calc(var(--sab) + 7.75rem);
       right: calc(var(--sar) + 0.875rem);
     }
   }
 
-  /* 🌌 루시 채팅 모드: 기본적으로 모든 앱과 동일한 5.5rem(sm: 6.75rem) 위치에 일관되게 고정되되,
+  /* 🌌 루시 채팅 모드: 3개 버튼 모두 기본 위치에 일관되게 고정되되,
      이미지 첨부나 궁합 독 등으로 footer가 기본 높이보다 높아질 때만 상향 플로팅으로 자연스럽게 밀려 올라감 */
   .in-lucy-chat .bottom-safe-fab-center,
   body.in-lucy-chat .bottom-safe-fab-center,
@@ -510,6 +516,48 @@
     body.in-lucy-chat .bottom-safe-fab-center,
     html.in-lucy-chat .bottom-safe-fab-center {
       bottom: max(calc(var(--sab) + 6.75rem), calc(var(--lucy-chat-bar-height, 0px) + 1.25rem)) !important;
+    }
+  }
+
+  .in-lucy-chat .bottom-safe-nav-fab,
+  body.in-lucy-chat .bottom-safe-nav-fab,
+  html.in-lucy-chat .bottom-safe-nav-fab {
+    bottom: max(calc(var(--sab) + 4.75rem), calc(var(--lucy-chat-bar-height, 0px) + 0.875rem)) !important;
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  @media (min-width: 640px) {
+    .in-lucy-chat .bottom-safe-nav-fab,
+    body.in-lucy-chat .bottom-safe-nav-fab,
+    html.in-lucy-chat .bottom-safe-nav-fab {
+      bottom: max(calc(var(--sab) + 6.0rem), calc(var(--lucy-chat-bar-height, 0px) + 0.875rem)) !important;
+    }
+  }
+
+  .in-lucy-chat .bottom-safe-music-lp,
+  body.in-lucy-chat .bottom-safe-music-lp,
+  html.in-lucy-chat .bottom-safe-music-lp {
+    bottom: max(calc(var(--sab) + 4.75rem), calc(var(--lucy-chat-bar-height, 0px) + 0.875rem)) !important;
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  @media (min-width: 640px) {
+    .in-lucy-chat .bottom-safe-music-lp,
+    body.in-lucy-chat .bottom-safe-music-lp,
+    html.in-lucy-chat .bottom-safe-music-lp {
+      bottom: max(calc(var(--sab) + 6.0rem), calc(var(--lucy-chat-bar-height, 0px) + 0.875rem)) !important;
+    }
+  }
+
+  .in-lucy-chat .bottom-safe-music-menu,
+  body.in-lucy-chat .bottom-safe-music-menu,
+  html.in-lucy-chat .bottom-safe-music-menu {
+    bottom: max(calc(var(--sab) + 8.25rem), calc(var(--lucy-chat-bar-height, 0px) + 4.25rem)) !important;
+    transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  @media (min-width: 640px) {
+    .in-lucy-chat .bottom-safe-music-menu,
+    body.in-lucy-chat .bottom-safe-music-menu,
+    html.in-lucy-chat .bottom-safe-music-menu {
+      bottom: max(calc(var(--sab) + 9.5rem), calc(var(--lucy-chat-bar-height, 0px) + 4.25rem)) !important;
     }
   }
 
