@@ -1399,7 +1399,7 @@ export function BigBangButton() {
             />
 
             {/* 🌟 빅뱅 아케인 마법진 매트릭스 (하드웨어 가속, 상시 렌더링 및 누를 때 공명 가속) */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-35">
               <BigBangCircularMeter
                 isPressing={isPressing}
                 isHovered={isHovered}

@@ -1,6 +1,8 @@
-import React, { useId } from 'react';
+import React, { useId, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { WarpPhase } from '@/lib/omniWarp/types';
+import { resetAppScroll } from '@/utils/scrollToTop';
+import { playAudioHaptic } from '@/lib/audioHaptics';
 
 interface BigBangCircularMeterProps {
   /** 사용자가 누르고 있는지 여부 */
@@ -33,6 +35,25 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   isAborted = false,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
+
+  // 🚀 상단(North) 점 탭 시 화면/대화창 최상단 부드러운 스크롤 이동
+  const handleScrollToTop = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      playAudioHaptic('tap_light');
+    } catch (_) {}
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+
+    resetAppScroll('smooth');
+    window.dispatchEvent(new CustomEvent('prism:scroll_to_top'));
+  }, []);
 
   // 대형화된 버튼(76~84px) 외곽을 웅장하고 신비롭게 감싸는 최적의 마법진 직경 (144px)
   const size = 144;
@@ -167,11 +188,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           );
         })}
 
-        {/* 4 방위 룬 보석 */}
-        <circle cx={center} cy={5} r={2.2} fill="#38bdf8" />
-        <circle cx={center} cy={size - 5} r={2.2} fill="#c084fc" />
-        <circle cx={5} cy={center} r={2.2} fill="#38bdf8" />
-        <circle cx={size - 5} cy={center} r={2.2} fill="#c084fc" />
       </svg>
 
       {/* 🌟 4. 내부 역방향 회전 신성기하학 마법진 (CSS spin-reverse, 누를 때 가속) */}
@@ -216,6 +232,39 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           className="opacity-40"
         />
       </svg>
+
+      {/* 🌟 5. 4 방위 고정 룬 보석 (상/하/좌/우) - 마법진 회전과 무관하게 4방위 고정 앵커링 */}
+      <div className="absolute inset-0 pointer-events-none z-30">
+        {/* 하(South) 점 */}
+        <span
+          className="absolute left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_6px_#c084fc] pointer-events-none"
+          style={{ top: 136.5 }}
+        />
+        {/* 좌(West) 점 */}
+        <span
+          className="absolute top-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_6px_#38bdf8] pointer-events-none"
+          style={{ left: 2.5 }}
+        />
+        {/* 우(East) 점 */}
+        <span
+          className="absolute top-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_6px_#c084fc] pointer-events-none"
+          style={{ left: 136.5 }}
+        />
+
+        {/* 상(North) 점: 클릭/탭 시 화면 최상단으로 스무스 스크롤 (32x32px 터치 영역 제공) */}
+        <button
+          type="button"
+          onClick={handleScrollToTop}
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="group pointer-events-auto absolute left-1/2 -translate-x-1/2 -top-[11px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
+          title="화면 최상단으로 이동"
+          aria-label="화면 최상단으로 이동"
+        >
+          <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] group-hover:bg-[#fbbf24] group-hover:shadow-[0_0_12px_#fbbf24] group-hover:scale-135 transition-all duration-200" />
+        </button>
+      </div>
     </div>
   );
 });

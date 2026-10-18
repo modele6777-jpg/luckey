@@ -1416,6 +1416,21 @@ export default function LucyStandalonePage() {
     }
   }, [lucyMessages, isLucyGenerating, scrollToBottom]);
 
+  // 🚀 최상단 스크롤 이벤트 수신 시 루시 대화창 최상단으로 부드럽게 스크롤
+  useEffect(() => {
+    const handleScrollToTopEvent = () => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        isUserScrolledUpRef.current = true; // 사용자가 상단으로 이동했으므로 상태 갱신
+        setIsUserScrolledUp(true);
+      }
+    };
+    window.addEventListener('prism:scroll_to_top', handleScrollToTopEvent);
+    return () => {
+      window.removeEventListener('prism:scroll_to_top', handleScrollToTopEvent);
+    };
+  }, []);
+
 
   // Handle image attachment with auto-compression (prevents stuttering & infinite scroll)
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
