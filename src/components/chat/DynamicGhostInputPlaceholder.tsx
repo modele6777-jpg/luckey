@@ -46,17 +46,41 @@ export const DynamicGhostInputPlaceholder: React.FC<DynamicGhostInputPlaceholder
       setCurrentIndex(0);
       setDisplayText('');
       setPhase('typing');
+      if (shuffled[0] && onCurrentPromptChange) {
+        onCurrentPromptChange(shuffled[0]);
+      }
     }
-  }, [prompts]);
+  }, [prompts, onCurrentPromptChange]);
 
   const currentPrompt = shuffledList[currentIndex] || '';
 
-  // Notify parent of active prompt for Tab completion
+  // Notify parent of active prompt for Tab completion and instant send
   useEffect(() => {
     if (currentPrompt && onCurrentPromptChange) {
       onCurrentPromptChange(currentPrompt);
     }
   }, [currentPrompt, onCurrentPromptChange]);
+
+  // When placeholder becomes visible again (e.g. after AI finishes generating), auto-advance to the next prompt
+  const isVisiblePrevRef = useRef(isVisible);
+  useEffect(() => {
+    if (!isVisiblePrevRef.current && isVisible && shuffledList.length > 0) {
+      let nextIndex = currentIndex + 1;
+      let list = shuffledList;
+      if (nextIndex >= shuffledList.length) {
+        list = shuffleArray(prompts);
+        setShuffledList(list);
+        nextIndex = 0;
+      }
+      setCurrentIndex(nextIndex);
+      setDisplayText('');
+      setPhase('typing');
+      if (list[nextIndex] && onCurrentPromptChange) {
+        onCurrentPromptChange(list[nextIndex]);
+      }
+    }
+    isVisiblePrevRef.current = isVisible;
+  }, [isVisible, currentIndex, shuffledList, prompts, onCurrentPromptChange]);
 
   // Typewriter effect state machine
   useEffect(() => {
@@ -87,14 +111,18 @@ export const DynamicGhostInputPlaceholder: React.FC<DynamicGhostInputPlaceholder
     } else if (phase === 'switching') {
       timer = setTimeout(() => {
         let nextIndex = currentIndex + 1;
+        let list = shuffledList;
         if (nextIndex >= shuffledList.length) {
-          const reshuffled = shuffleArray(prompts);
-          setShuffledList(reshuffled);
+          list = shuffleArray(prompts);
+          setShuffledList(list);
           nextIndex = 0;
         }
         setCurrentIndex(nextIndex);
         setDisplayText('');
         setPhase('typing');
+        if (list[nextIndex] && onCurrentPromptChange) {
+          onCurrentPromptChange(list[nextIndex]);
+        }
       }, switchPause);
     }
 

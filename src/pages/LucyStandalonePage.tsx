@@ -671,6 +671,7 @@ export default function LucyStandalonePage() {
   const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentGhostPromptRef = useRef<string>('');
+  const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');
 
   // 🔊 루시 답변 자동 음성 재생 (Auto-TTS 바로재생) 상태 및 설정 (기본값: ON, localStorage 영구 보존)
   const [isAutoTts, setIsAutoTts] = useState<boolean>(() => {
@@ -1114,6 +1115,14 @@ export default function LucyStandalonePage() {
     return Array.from(new Set(combined.filter((p) => p && p.trim().length > 0)));
   }, [activeProfiles.length, selectedMode]);
 
+  // dynamicGhostPrompts가 준비되면 즉시 첫 예시 질문을 activeGhostPrompt의 기본값으로 동기화
+  useEffect(() => {
+    if (!currentGhostPromptRef.current && dynamicGhostPrompts.length > 0) {
+      currentGhostPromptRef.current = dynamicGhostPrompts[0];
+      setActiveGhostPrompt(dynamicGhostPrompts[0]);
+    }
+  }, [dynamicGhostPrompts]);
+
   // Filter messages by search query if search is active
   const filteredMessages = useMemo(() => {
     if (!searchQuery.trim()) return lucyMessages;
@@ -1432,13 +1441,45 @@ export default function LucyStandalonePage() {
 
   // Send message with multi-channel context routing
   const handleSend = useCallback(async (textToSend?: string, forcedChannels?: SpecialChannel[]) => {
-    const rawMsg = textToSend || input;
+    // 💡 사용자가 직접 입력한 텍스트가 없고 첨부 이미지가 없는 경우, 현재 화면에 표시/타이핑 중인 완성형 예시 질문 채택
+    const candidateGhost = (!input.trim() && !attachedImage)
+      ? (currentGhostPromptRef.current || activeGhostPrompt || dynamicGhostPrompts[0] || '')
+      : '';
+    const rawMsg = textToSend || (input.trim() ? input : candidateGhost);
     if ((!rawMsg.trim() && !attachedImage) || isLucyGenerating) return;
 
     const userCleanText = rawMsg.trim();
 
-    let channels = forcedChannels !== undefined ? forcedChannels : activeChannels;
-    if (isAutoDetect && forcedChannels === undefined && userCleanText.length > 0) {
+    // 💡 만약 예시 질문(candidateGhost)이 전송된 것이라면 해당 예시 질문의 특성에 맞는 채널 자동 매핑 우선 확인
+    let effectiveForcedChannels = forcedChannels;
+    if (effectiveForcedChannels === undefined && !input.trim() && candidateGhost && userCleanText === candidateGhost.trim()) {
+      const horiItem = HORI_PROMPT_LIBRARY.find((p) => p.title === userCleanText || p.body === userCleanText);
+      if (horiItem && horiItem.tool_ids && horiItem.tool_ids.length > 0) {
+        effectiveForcedChannels = horiItem.tool_ids.filter((t) => ALL_CHANNELS.includes(t as SpecialChannel)) as SpecialChannel[];
+      } else {
+        for (const [ch, pool] of Object.entries(CHANNEL_PROMPT_POOLS)) {
+          if (pool.includes(userCleanText)) {
+            effectiveForcedChannels = [ch as SpecialChannel];
+            break;
+          }
+        }
+        if (!effectiveForcedChannels && MASTER_PROMPT_POOL.includes(userCleanText)) {
+          effectiveForcedChannels = ALL_CHANNELS;
+        }
+      }
+    }
+
+    let channels = effectiveForcedChannels !== undefined ? effectiveForcedChannels : activeChannels;
+    if (effectiveForcedChannels !== undefined) {
+      channels = effectiveForcedChannels;
+      setActiveChannels(effectiveForcedChannels);
+      setAutoDetectedTitle(formatChannelsModeTitle(effectiveForcedChannels));
+      presetModeRef.current = {
+        text: userCleanText,
+        channels: effectiveForcedChannels,
+        title: formatChannelsModeTitle(effectiveForcedChannels),
+      };
+    } else if (isAutoDetect && forcedChannels === undefined && userCleanText.length > 0) {
       const detected = detectLucyChannelsFromText(userCleanText);
       if (detected.isMaster) {
         channels = ALL_CHANNELS;
@@ -1512,7 +1553,7 @@ export default function LucyStandalonePage() {
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts]);
+  }, [input, attachedImage, isLucyGenerating, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts]);
 
   const handleSendRef = useRef(handleSend);
   useEffect(() => {
@@ -2423,6 +2464,7 @@ export default function LucyStandalonePage() {
                 deletingSpeed={20}
                 onCurrentPromptChange={(prompt) => {
                   currentGhostPromptRef.current = prompt;
+                  setActiveGhostPrompt(prompt);
                 }}
               />
 
@@ -2467,9 +2509,28 @@ export default function LucyStandalonePage() {
               <button
                 type="button"
                 onClick={() => handleSend()}
-                disabled={!input.trim() && !attachedImage}
-                className="w-7 h-7 sm:w-8 sm:h-8 p-1 sm:p-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 disabled:opacity-30 text-slate-950 font-bold rounded-lg sm:rounded-xl transition-all shadow-sm cursor-pointer shrink-0 active:scale-95 flex items-center justify-center"
-                title="메시지 전송"
+                disabled={!input.trim() && !attachedImage && !activeGhostPrompt}
+                className={`w-7 h-7 sm:w-8 sm:h-8 p-1 sm:p-1.5 font-bold rounded-lg sm:rounded-xl transition-all shadow-sm cursor-pointer shrink-0 active:scale-95 flex items-center justify-center ${
+                  input.trim() || attachedImage
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-amber-500/20'
+                    : activeGhostPrompt
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-amber-500/20 ring-1 ring-amber-400/40'
+                    : 'bg-gradient-to-r from-amber-500 to-yellow-500 opacity-30 cursor-not-allowed text-slate-950'
+                }`}
+                title={
+                  input.trim()
+                    ? '메시지 전송'
+                    : activeGhostPrompt
+                    ? `예시 질문 바로 전송: "${activeGhostPrompt}"`
+                    : '메시지를 입력하거나 예시를 선택하세요'
+                }
+                aria-label={
+                  input.trim()
+                    ? '메시지 전송'
+                    : activeGhostPrompt
+                    ? `예시 질문 바로 전송: ${activeGhostPrompt}`
+                    : '메시지 전송'
+                }
               >
                 <Send size={13} className="sm:w-3.5 sm:h-3.5" />
               </button>
