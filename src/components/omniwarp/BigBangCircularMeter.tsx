@@ -75,8 +75,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     window.dispatchEvent(new CustomEvent('prism:scroll_to_bottom'));
   }, []);
 
-  // 🔮 좌(West) 및 우(East) 룬 탭 시 이벤트 전파 방지 및 햅틱/효과음 피드백
-  const handleRuneClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  // 🚀 좌(West) 점 탭 시 이전 탭으로 스와이프 전환
+  const handleTabPrev = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -86,9 +86,29 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
 
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
-        navigator.vibrate(10);
+        navigator.vibrate(15);
       } catch (_) {}
     }
+
+    window.dispatchEvent(new CustomEvent('prism:tab_prev', { detail: { direction: -1 } }));
+  }, []);
+
+  // 🚀 우(East) 점 탭 시 다음 탭으로 스와이프 전환
+  const handleTabNext = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      playAudioHaptic('tap_light');
+    } catch (_) {}
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+
+    window.dispatchEvent(new CustomEvent('prism:tab_next', { detail: { direction: 1 } }));
   }, []);
 
   // 대형화된 버튼(76~84px) 외곽을 웅장하고 신비롭게 감싸는 최적의 마법진 직경 (144px)
@@ -301,31 +321,31 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           <ArrowDown className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
 
-        {/* 좌(West) 점 / 화살표 */}
+        {/* 좌(West) 점 / 화살표: 이전 탭으로 스와이프 전환 */}
         <button
           type="button"
-          onClick={handleRuneClick}
+          onClick={handleTabPrev}
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
           className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -left-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="서쪽 룬"
-          aria-label="서쪽 룬"
+          title="이전 탭으로 전환 (좌측)"
+          aria-label="이전 탭으로 전환"
         >
           <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
           <ArrowLeft className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
 
-        {/* 우(East) 점 / 화살표 */}
+        {/* 우(East) 점 / 화살표: 다음 탭으로 스와이프 전환 */}
         <button
           type="button"
-          onClick={handleRuneClick}
+          onClick={handleTabNext}
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
           className="group pointer-events-auto absolute top-1/2 -translate-y-1/2 -right-[10px] w-8 h-8 flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 z-40"
-          title="동쪽 룬"
-          aria-label="동쪽 룬"
+          title="다음 탭으로 전환 (우측)"
+          aria-label="다음 탭으로 전환"
         >
           <span className="w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
           <ArrowRight className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />

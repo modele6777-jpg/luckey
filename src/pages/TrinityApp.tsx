@@ -100,6 +100,10 @@ import { TarotSpreadSelectionModal } from "@/components/trinity/TarotSpreadSelec
 import { TarotCardBackCustomizerModal } from "@/components/trinity/TarotCardBackCustomizerModal";
 import { PhysicalTarotInputModal } from "@/components/trinity/PhysicalTarotInputModal";
 import { useTarotCardBack } from "@/hooks/useTarotCardBack";
+import { useSwipeableTabs } from "@/hooks/useSwipeableTabs";
+
+const TRINITY_SWIPE_TABS = ['destiny', 'tarot', 'oracle'] as const;
+type TrinitySwipeTab = typeof TRINITY_SWIPE_TABS[number];
 
 import { playAudioHaptic, playAiResultNotification } from "@/lib/audioHaptics";
 import { TodayTarotNarrationModal } from "@/components/trinity/TodayTarotNarrationModal";
@@ -1511,6 +1515,28 @@ function playDailyCardChimeAsync() {
   } = useSmartScroll({
     enabled: !showDailyModal && !showFollowUpWheelModal && !zoomedCard,
     resumeDelayMs: 3000,
+  });
+
+  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
+  const currentTrinityTab: TrinitySwipeTab = (activeMode === 'oracle' || activeMode === 'synergy')
+    ? 'oracle'
+    : (activeMode === 'tarot' ? 'tarot' : 'destiny');
+
+  useSwipeableTabs<TrinitySwipeTab>({
+    tabs: TRINITY_SWIPE_TABS,
+    activeTab: currentTrinityTab,
+    onTabChange: (newTab) => {
+      if (newTab === 'tarot') {
+        if (!tarotResult && !isTarotGenerating) {
+          resetTarotSession(true);
+        }
+        setActiveMode('tarot');
+      } else {
+        setActiveMode(newTab);
+      }
+      resetAppScroll();
+    },
+    enabled: !tarotVirtualMode && !showDailyModal && !isDailyOracleLoading && !zoomedCard,
   });
   const [tarotConcern, setTarotConcern] = useState<string>(() => {
     const today = getTodayDateKey();

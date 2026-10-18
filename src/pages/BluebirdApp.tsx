@@ -62,6 +62,10 @@ import {
   useSpecialFeatureChromeHidden,
 } from '@/components/SpecialFeaturePanel';
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
+import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
+
+const BLUEBIRD_SWIPE_TABS = ['daily', 'secretMessage', 'synergy'] as const;
+type BluebirdSwipeTab = typeof BLUEBIRD_SWIPE_TABS[number];
 
 
 const QuickInsightSchema = z.object({
@@ -263,6 +267,22 @@ export default function BluebirdApp() {
     return 'daily';
   });
   useScrollToTopOnChange([activeMode]);
+
+  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
+  const currentBluebirdTab: BluebirdSwipeTab = (activeMode === 'secretMessage' || activeMode === 'synergy') ? activeMode : 'daily';
+
+  useSwipeableTabs<BluebirdSwipeTab>({
+    tabs: BLUEBIRD_SWIPE_TABS,
+    activeTab: currentBluebirdTab,
+    onTabChange: (newTab) => {
+      setActiveMode(newTab);
+      setShowSecretMessageModal(false);
+      setStage('landing');
+      setShowChat(false);
+      resetAppScroll();
+    },
+    enabled: true,
+  });
 
   
   const [showDailyModal, setShowDailyModal] = useState(false);

@@ -147,6 +147,10 @@ import {
 } from "@/components/SpecialFeaturePanel";
 
 import { playAiResultNotification } from "@/lib/audioHaptics";
+import { useSwipeableTabs } from "@/hooks/useSwipeableTabs";
+
+const MUSE_SWIPE_TABS = ['artRecommendation', 'roleModel', 'synergy'] as const;
+type MuseSwipeTab = typeof MUSE_SWIPE_TABS[number];
 
 
 const THEME_COLOR = "oklch(0.35 0.14 240)";
@@ -701,6 +705,19 @@ export default function MuseApp() {
     return "artRecommendation";
   });
   useScrollToTopOnChange([activeMode]);
+
+  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
+  const currentMuseTab: MuseSwipeTab = (activeMode === 'roleModel' || activeMode === 'synergy') ? activeMode : 'artRecommendation';
+
+  useSwipeableTabs<MuseSwipeTab>({
+    tabs: MUSE_SWIPE_TABS,
+    activeTab: currentMuseTab,
+    onTabChange: (newTab) => {
+      setActiveMode(newTab);
+      resetAppScroll();
+    },
+    enabled: true,
+  });
 
   
   useEffect(() => {

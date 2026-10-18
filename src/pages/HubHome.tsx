@@ -23,6 +23,10 @@ import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { GoalProgressRingDashboard } from '@/components/goals/GoalProgressRingDashboard';
 import { TodayLucyPersonaCard } from '@/components/TodayLucyPersonaCard';
 import { playAiResultNotification } from '@/lib/audioHaptics';
+import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
+
+const HUB_SWIPE_TABS = ['universe', 'ecpr', 'todo'] as const;
+type HubSwipeTab = typeof HUB_SWIPE_TABS[number];
 
 
 const APPS = [
@@ -210,6 +214,23 @@ export default function HubHome() {
       setActiveSection('universe');
     }
   }, [location]);
+
+  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
+  useSwipeableTabs<HubSwipeTab>({
+    tabs: HUB_SWIPE_TABS,
+    activeTab: activeSection,
+    onTabChange: (newTab) => {
+      setActiveSection(newTab);
+      if (newTab === 'ecpr') {
+        navigate('/ecpr');
+      } else if (newTab === 'todo') {
+        navigate('/todo');
+      } else {
+        navigate('/prologue');
+      }
+    },
+    enabled: true,
+  });
 
   
   // 첫 로그인 시 프로필 미완성이라면 팝업 표시

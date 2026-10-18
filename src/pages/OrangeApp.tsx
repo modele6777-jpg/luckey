@@ -44,6 +44,10 @@ import { parseSuggestions, SUGGESTIONS_SYSTEM_SUFFIX } from '@/utils/suggestions
 import { getPendingPrismToss, clearPrismToss } from '@/lib/prismToss';
 import { getContextAwarePrompts } from '@/utils/dynamicContextSuggestions';
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
+import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
+
+const ORANGE_SWIPE_TABS = ['secret', 'wishingWell', 'synergy'] as const;
+type OrangeSwipeTab = typeof ORANGE_SWIPE_TABS[number];
 
 
 const THEME_COLOR = 'oklch(0.72 0.18 55)';
@@ -351,6 +355,21 @@ export default function OrangeApp() {
     return 'secret';
   });
   useScrollToTopOnChange([activeMode]);
+
+  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
+  const currentOrangeTab: OrangeSwipeTab = (activeMode === 'wishingWell' || activeMode === 'synergy') ? activeMode : 'secret';
+
+  useSwipeableTabs<OrangeSwipeTab>({
+    tabs: ORANGE_SWIPE_TABS,
+    activeTab: currentOrangeTab,
+    onTabChange: (newTab) => {
+      setActiveMode(newTab);
+      setShowWishingWellModal(false);
+      setStage('landing');
+      resetAppScroll();
+    },
+    enabled: true,
+  });
 
   
   useEffect(() => {

@@ -42,6 +42,10 @@ import { APP_VERSION, fetchDeployedAppVersion, compareVersions } from '@/lib/app
 import { fetchChangelog, getManualSyncChangelogEntries, type ChangelogEntry } from '@/lib/updateNotice';
 import { UpdateNoticeModal } from '@/components/UpdateNoticeModal';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
+import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
+
+const EPILOGUE_SWIPE_TABS = ['diary', 'synergy', 'profile'] as const;
+type EpilogueSwipeTab = typeof EPILOGUE_SWIPE_TABS[number];
 
 
 function GoogleLogo({ className = 'w-4 h-4' }: { className?: string }) {
@@ -498,6 +502,19 @@ export default function EpilogueApp() {
       if (!silent) setSaving(false);
     }
   };
+
+  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
+  useSwipeableTabs<EpilogueSwipeTab>({
+    tabs: EPILOGUE_SWIPE_TABS,
+    activeTab: activeMode,
+    onTabChange: (newTab) => {
+      if (activeMode === 'profile' && newTab !== 'profile') {
+        handleSave(true);
+      }
+      setActiveMode(newTab);
+    },
+    enabled: true,
+  });
 
   
   const section = SECTIONS[currentSection];
