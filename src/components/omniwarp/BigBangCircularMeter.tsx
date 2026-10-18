@@ -61,6 +61,9 @@ const ANCIENT_RUNES: AncientRuneConfig[] = [
   },
 ];
 
+// 12방위 외곽 룬 문자 각인 (Elder Futhark)
+const OUTER_MINI_RUNES = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ'];
+
 function getRunePosition(deg: number, center: number, radius: number) {
   const rad = (deg * Math.PI) / 180;
   return {
@@ -336,26 +339,26 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         transform: isPressing ? 'scale(1.12)' : isHovered ? 'scale(1.08)' : 'scale(1)',
       }}
     >
-      {/* 🌟 1. 마법진 앰비언트 글로우 오라 */}
+      {/* 🌟 1. 마법진 앰비언트 글로우 오라 (호버 시 찬란하게 증폭되는 성운 플레어) */}
       <div
-        className="absolute inset-2 rounded-full pointer-events-none transition-opacity duration-300"
+        className="absolute -inset-1 rounded-full pointer-events-none transition-all duration-500 blur-[10px]"
         style={{
           background: isPressing
             ? activePhase === 'whitehole'
-              ? 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(254,240,138,0.4) 45%, transparent 75%)'
+              ? 'radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(254,240,138,0.5) 45%, transparent 75%)'
               : activePhase === 'mirrorhole'
-              ? 'radial-gradient(circle, rgba(224,242,254,0.5) 0%, rgba(186,230,253,0.4) 45%, transparent 75%)'
+              ? 'radial-gradient(circle, rgba(224,242,254,0.7) 0%, rgba(186,230,253,0.5) 45%, transparent 75%)'
               : activePhase === 'blackhole'
-              ? 'radial-gradient(circle, rgba(88,28,135,0.45) 0%, rgba(0,0,0,0.6) 50%, transparent 80%)'
-              : 'radial-gradient(circle, rgba(56,189,248,0.28) 0%, rgba(168,85,247,0.25) 50%, transparent 75%)'
+              ? 'radial-gradient(circle, rgba(88,28,135,0.6) 0%, rgba(0,0,0,0.8) 50%, transparent 80%)'
+              : 'radial-gradient(circle, rgba(0,240,255,0.45) 0%, rgba(168,85,247,0.4) 50%, transparent 75%)'
             : isHovered
-            ? 'radial-gradient(circle, rgba(56,189,248,0.22) 0%, rgba(168,85,247,0.2) 50%, transparent 75%)'
-            : 'radial-gradient(circle, rgba(56,189,248,0.12) 0%, rgba(168,85,247,0.1) 50%, transparent 75%)',
-          opacity: isPressing ? 1 : isHovered ? 0.9 : 0.6,
+            ? 'radial-gradient(circle, rgba(0,240,255,0.38) 0%, rgba(192,132,252,0.32) 45%, rgba(251,191,36,0.25) 65%, transparent 80%)'
+            : 'radial-gradient(circle, rgba(0,240,255,0.2) 0%, rgba(168,85,247,0.18) 45%, transparent 75%)',
+          opacity: isPressing ? 1 : isHovered ? 0.95 : 0.7,
         }}
       />
 
-      {/* 🌟 2. 정밀 아케인 SVG 벡터 마법진 베이스 & 동적 에너지 아크 */}
+      {/* 🌟 2. 정밀 아케인 SVG 벡터 마법진 베이스 & 고출력 네온 아크 */}
       <svg
         width={size}
         height={size}
@@ -363,30 +366,63 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         className="absolute inset-0 overflow-visible"
       >
         <defs>
-          <linearGradient id={`${gradientId}-magic-gradient`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity={0.95} />
-            <stop offset="30%" stopColor="#00f0ff" stopOpacity={0.9} />
-            <stop offset="70%" stopColor="#c084fc" stopOpacity={0.85} />
-            <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.9} />
+          {/* 초발광 아케인 네온 필터 */}
+          <filter id={`${gradientId}-magic-glow`} x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.8" result="blur1" />
+            <feGaussianBlur stdDeviation="4.5" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur2" />
+              <feMergeNode in="blur1" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          {/* 4색 네온 오로라 그라데이션 */}
+          <linearGradient id={`${gradientId}-aurora-gradient`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity={0.98} />
+            <stop offset="25%" stopColor="#00f0ff" stopOpacity={0.95} />
+            <stop offset="65%" stopColor="#c084fc" stopOpacity={0.9} />
+            <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.95} />
+          </linearGradient>
+
+          {/* 골드 성광 그라데이션 */}
+          <linearGradient id={`${gradientId}-gold-gradient`} x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.85} />
+            <stop offset="50%" stopColor="#fbbf24" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity={0.95} />
           </linearGradient>
         </defs>
 
-        {/* 베이스 궤도 가이드 링 */}
+        {/* 베이스 궤도 동심 가이드 링 (발광 강화) */}
+        <circle
+          cx={center}
+          cy={center}
+          r={68}
+          fill="none"
+          stroke={`url(#${gradientId}-aurora-gradient)`}
+          strokeWidth={0.7}
+          strokeDasharray="2 3"
+          opacity={isHovered ? 0.85 : 0.55}
+          filter={`url(#${gradientId}-magic-glow)`}
+        />
         <circle
           cx={center}
           cy={center}
           r={62}
           fill="none"
-          stroke="rgba(255, 255, 255, 0.15)"
+          stroke="#00f0ff"
           strokeWidth={0.8}
+          opacity={isHovered ? 0.75 : 0.45}
         />
         <circle
           cx={center}
           cy={center}
-          r={52}
+          r={50}
           fill="none"
-          stroke="rgba(0, 240, 255, 0.2)"
+          stroke="#c084fc"
           strokeWidth={0.6}
+          strokeDasharray="4 4"
+          opacity={isHovered ? 0.7 : 0.4}
         />
 
         {/* 실시간 타이밍 오로라 아크 진행선 (누를 때 실시간 압력 게이지 연동) */}
@@ -396,106 +432,138 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
             cy={center}
             r={rArc}
             fill="none"
-            stroke={`url(#${gradientId}-magic-gradient)`}
-            strokeWidth={isPressing ? 2.4 : isHovered ? 2 : 1.6}
+            stroke={`url(#${gradientId}-aurora-gradient)`}
+            strokeWidth={isPressing ? 2.8 : isHovered ? 2.2 : 1.8}
             strokeDasharray={
               isPressing
                 ? `${circumferenceArc * Math.max(0.15, Math.min(1.0, gauge))} ${circumferenceArc * (1 - Math.max(0.15, Math.min(1.0, gauge)))}`
                 : `${circumferenceArc * 0.45} ${circumferenceArc * 0.55}`
             }
             strokeLinecap="round"
-            opacity={isPressing ? 1 : 0.85}
+            filter={`url(#${gradientId}-magic-glow)`}
+            opacity={isPressing ? 1 : isHovered ? 0.95 : 0.85}
           />
         </g>
       </svg>
 
-      {/* 🌟 3. 외곽 정방향 회전 룬 서클 (누를 때 고속 공명) */}
+      {/* 🌟 3. 외곽 정방향 회전 12대 룬 각인 서클 (시계방향 공전, 누를 때 고속 공명) */}
       <svg
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className={`absolute inset-0 text-cyan-400/60 pointer-events-none will-change-transform ${
+        className={`absolute inset-0 pointer-events-none will-change-transform ${
           isPressing
             ? 'animate-[spin_6s_linear_infinite]'
             : isHovered
             ? 'animate-[spin_12s_linear_infinite]'
-            : ''
+            : 'animate-[spin_22s_linear_infinite]'
         }`}
       >
         <circle
           cx={center}
           cy={center}
-          r={66}
+          r={65}
           fill="none"
-          stroke="currentColor"
+          stroke="#38bdf8"
           strokeWidth={0.8}
-          strokeDasharray="3 5"
-          className="opacity-60"
+          strokeDasharray="2 4"
+          opacity={isHovered ? 0.8 : 0.5}
         />
 
-        {/* 12방위 정밀 눈금선 */}
-        {Array.from({ length: 12 }).map((_, i) => {
+        {/* 12방위 외곽 고대 룬 문자 각인 및 눈금 보석 */}
+        {OUTER_MINI_RUNES.map((glyph, i) => {
           const angle = (i * 30 * Math.PI) / 180;
-          const x1 = center + 60 * Math.cos(angle);
-          const y1 = center + 60 * Math.sin(angle);
-          const x2 = center + 66 * Math.cos(angle);
-          const y2 = center + 66 * Math.sin(angle);
+          const rx = center + 65 * Math.sin(angle);
+          const ry = center - 65 * Math.cos(angle);
+
+          // 눈금 사이의 미세 다이아몬드 별점 (15도 오프셋)
+          const starAngle = ((i * 30 + 15) * Math.PI) / 180;
+          const sx = center + 65 * Math.sin(starAngle);
+          const sy = center - 65 * Math.cos(starAngle);
+
           return (
-            <line
-              key={`rune-line-${i}`}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke="currentColor"
-              strokeWidth={0.8}
-              className="opacity-50"
-            />
+            <g key={`outer-glyph-${i}`}>
+              <text
+                x={rx}
+                y={ry}
+                fill={i % 2 === 0 ? '#38bdf8' : '#c084fc'}
+                fontSize="7.5"
+                fontWeight="900"
+                fontFamily="serif"
+                textAnchor="middle"
+                dominantBaseline="central"
+                opacity={isHovered ? 0.95 : 0.75}
+                filter={`url(#${gradientId}-magic-glow)`}
+                className="select-none"
+              >
+                {glyph}
+              </text>
+              <circle
+                cx={sx}
+                cy={sy}
+                r="1"
+                fill="#fbbf24"
+                opacity={isHovered ? 0.85 : 0.5}
+              />
+            </g>
           );
         })}
-
       </svg>
 
-      {/* 🌟 4. 내부 역방향 회전 신성기하학 마법진 (CSS spin-reverse, 누를 때 가속) */}
+      {/* 🌟 4. 내부 역방향 회전 8방위 신성기하학 옥타그램 (8-Pointed Sacred Octagram Seal) */}
       <svg
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className={`absolute inset-0 text-purple-400/60 pointer-events-none will-change-transform ${
+        className={`absolute inset-0 pointer-events-none will-change-transform ${
           isPressing
             ? 'animate-[spin_8s_linear_infinite_reverse]'
             : isHovered
-            ? 'animate-[spin_16s_linear_infinite_reverse]'
-            : ''
+            ? 'animate-[spin_14s_linear_infinite_reverse]'
+            : 'animate-[spin_20s_linear_infinite_reverse]'
         }`}
       >
         <circle
           cx={center}
           cy={center}
-          r={46}
+          r={45}
           fill="none"
-          stroke="currentColor"
+          stroke="#c084fc"
+          strokeWidth={0.8}
+          strokeDasharray="3 5"
+          opacity={isHovered ? 0.85 : 0.6}
+        />
+        <circle
+          cx={center}
+          cy={center}
+          r={38}
+          fill="none"
+          stroke="#38bdf8"
           strokeWidth={0.6}
-          strokeDasharray="4 6"
-          className="opacity-70"
+          strokeDasharray="2 3"
+          opacity={isHovered ? 0.75 : 0.45}
         />
 
-        {/* 교차 삼각성 (Hexagram Sacred Geometry) */}
+        {/* 8방위 옥타그램 성좌: 정사각형 1 (0°, 90°, 180°, 270°) */}
         <polygon
-          points={`${center},24 ${center + 36},86 ${center - 36},86`}
+          points={`${center},27 ${center + 45},72 ${center},117 ${center - 45},72`}
           fill="none"
-          stroke="currentColor"
-          strokeWidth={0.6}
+          stroke={`url(#${gradientId}-gold-gradient)`}
+          strokeWidth={0.8}
           strokeDasharray="2 3"
-          className="opacity-40"
+          opacity={isHovered ? 0.9 : 0.65}
+          filter={`url(#${gradientId}-magic-glow)`}
         />
+
+        {/* 8방위 옥타그램 성좌: 정사각형 2 (45°, 135°, 225°, 315° 회전 교차) */}
         <polygon
-          points={`${center},120 ${center - 36},58 ${center + 36},58`}
+          points={`${center + 31.8},${center - 31.8} ${center + 31.8},${center + 31.8} ${center - 31.8},${center + 31.8} ${center - 31.8},${center - 31.8}`}
           fill="none"
-          stroke="#fbbf24"
-          strokeWidth={0.6}
+          stroke="#38bdf8"
+          strokeWidth={0.8}
           strokeDasharray="2 3"
-          className="opacity-40"
+          opacity={isHovered ? 0.85 : 0.6}
+          filter={`url(#${gradientId}-magic-glow)`}
         />
       </svg>
 
@@ -620,7 +688,10 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           title="화면 최상단으로 이동"
           aria-label="화면 최상단으로 이동"
         >
-          <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
+          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
+            <span className="absolute w-2 h-2 rotate-45 border border-[#38bdf8] shadow-[0_0_8px_#38bdf8] bg-slate-950/80" />
+            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
+          </span>
           <ArrowUp className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
 
@@ -635,7 +706,10 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           title="화면 최하단으로 이동"
           aria-label="화면 최하단으로 이동"
         >
-          <span className="w-[5px] h-[5px] rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
+          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
+            <span className="absolute w-2 h-2 rotate-45 border border-[#c084fc] shadow-[0_0_8px_#c084fc] bg-slate-950/80" />
+            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
+          </span>
           <ArrowDown className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
 
@@ -650,7 +724,10 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           title="메뉴 열기 (네비게이션)"
           aria-label="메뉴 열기"
         >
-          <span className="w-[5px] h-[5px] rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] transition-all duration-200 group-hover:opacity-0 group-hover:scale-0" />
+          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
+            <span className="absolute w-2 h-2 rotate-45 border border-[#38bdf8] shadow-[0_0_8px_#38bdf8] bg-slate-950/80" />
+            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
+          </span>
           <Menu className="absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5]" />
         </button>
 
@@ -672,13 +749,16 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           title={isBgmPlaying ? "배경음 일시정지 (꾹 누르면 플레이어 메뉴)" : "배경음 재생 (꾹 누르면 플레이어 메뉴)"}
           aria-label="배경음 제어"
         >
-          <span
-            className={`w-[5px] h-[5px] rounded-full transition-all duration-200 group-hover:opacity-0 group-hover:scale-0 ${
-              isBgmPlaying
-                ? "bg-[#fbbf24] shadow-[0_0_10px_#fbbf24] animate-pulse"
-                : "bg-[#c084fc] shadow-[0_0_8px_#c084fc]"
-            }`}
-          />
+          <span className="relative flex items-center justify-center w-3 h-3 transition-all duration-200 group-hover:opacity-0 group-hover:scale-0">
+            <span
+              className={`absolute w-2 h-2 rotate-45 border bg-slate-950/80 transition-all duration-200 ${
+                isBgmPlaying
+                  ? 'border-[#fbbf24] shadow-[0_0_10px_#fbbf24]'
+                  : 'border-[#c084fc] shadow-[0_0_8px_#c084fc]'
+              }`}
+            />
+            <span className="relative w-1 h-1 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
+          </span>
           <Music
             className={`absolute w-3.5 h-3.5 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] opacity-0 scale-50 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none stroke-[2.5] ${
               isBgmPlaying ? "animate-[spin_6s_linear_infinite]" : ""

@@ -1563,6 +1563,89 @@ export function BigBangButton() {
                 />
               )}
 
+              {/* 🔮 빅뱅 내부 마법진 만다라 워터마크 음각 (Arcane Core Inscription Seal) */}
+              <div
+                className={`absolute inset-2 sm:inset-2.5 rounded-full pointer-events-none z-12 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300 ${
+                  isPressing ? 'opacity-30' : 'opacity-65 hover:opacity-95'
+                }`}
+              >
+                {/* 시계방향 회전 아케인 매트릭스 링 */}
+                <svg
+                  viewBox="0 0 64 64"
+                  className="w-full h-full animate-[spin_24s_linear_infinite]"
+                  fill="none"
+                >
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="29"
+                    stroke="#38bdf8"
+                    strokeWidth="0.75"
+                    strokeDasharray="2 3"
+                    opacity="0.8"
+                  />
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="24"
+                    stroke="#c084fc"
+                    strokeWidth="0.5"
+                    strokeDasharray="4 2"
+                    opacity="0.7"
+                  />
+                  {/* 중앙 성스러운 육각진 성좌 매트릭스 */}
+                  <polygon
+                    points="32,10 50,42 14,42"
+                    stroke="#38bdf8"
+                    strokeWidth="0.6"
+                    strokeDasharray="1.5 2.5"
+                    opacity="0.75"
+                  />
+                  <polygon
+                    points="32,54 14,22 50,22"
+                    stroke="#fde047"
+                    strokeWidth="0.6"
+                    strokeDasharray="1.5 2.5"
+                    opacity="0.7"
+                  />
+                  {/* 방위 눈금 틱 */}
+                  <line x1="32" y1="3" x2="32" y2="7" stroke="#38bdf8" strokeWidth="1" opacity="0.9" />
+                  <line x1="32" y1="57" x2="32" y2="61" stroke="#38bdf8" strokeWidth="1" opacity="0.9" />
+                  <line x1="3" y1="32" x2="7" y2="32" stroke="#38bdf8" strokeWidth="1" opacity="0.9" />
+                  <line x1="57" y1="32" x2="61" y2="32" stroke="#38bdf8" strokeWidth="1" opacity="0.9" />
+                </svg>
+
+                {/* 반시계방향 역회전 초미세 룬 보조 링 */}
+                <svg
+                  viewBox="0 0 64 64"
+                  className="absolute inset-0 w-full h-full animate-[spin_16s_linear_infinite_reverse]"
+                  fill="none"
+                >
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="19"
+                    stroke="#a855f7"
+                    strokeWidth="0.5"
+                    strokeDasharray="1 3"
+                    opacity="0.7"
+                  />
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="14"
+                    stroke="#38bdf8"
+                    strokeWidth="0.4"
+                    opacity="0.5"
+                  />
+                  {/* 대각선 미세 틱 */}
+                  <line x1="12" y1="12" x2="15" y2="15" stroke="#fde047" strokeWidth="0.8" opacity="0.7" />
+                  <line x1="52" y1="52" x2="49" y2="49" stroke="#fde047" strokeWidth="0.8" opacity="0.7" />
+                  <line x1="52" y1="12" x2="49" y2="15" stroke="#fde047" strokeWidth="0.8" opacity="0.7" />
+                  <line x1="12" y1="52" x2="15" y2="49" stroke="#fde047" strokeWidth="0.8" opacity="0.7" />
+                </svg>
+              </div>
+
               {/* Event Horizon Deep Singularity Core (크리스탈 구체의 코어 - 화이트홀/블랙홀/웜홀 반응) */}
               <div
                 className="absolute inset-2.5 sm:inset-3 rounded-full z-15 pointer-events-none transition-all duration-200 overflow-hidden flex items-center justify-center"
