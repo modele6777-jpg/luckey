@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
@@ -161,10 +161,22 @@ export function BigBangButton() {
     return '';
   }, []);
 
-  // 🌟 텍스트 드래그(선택) 감지: 탭 시 루시 토스, 홀드 시 Key 40가지 연습 토스 지원
+  // 🌟 텍스트 드래그(선택) 감지: 탭 시 루시 토스, 더블탭 시 럭키 추천 토스, 드래그 시 Key 40가지 연습 토스 지원
   const [hasSelectionToss, setHasSelectionToss] = useState(false);
   const [selectionPreviewText, setSelectionPreviewText] = useState('');
   const touchStartSelectionRef = useRef<string>('');
+  const lastValidSelectionRef = useRef<string>('');
+
+  // 🌟 문장 선택 시 맥락 엔진을 통해 럭키 1순위 추천 앱 이름 실시간 추출
+  const dynamicRecommendedLuckeyApp = useMemo(() => {
+    if (!hasSelectionToss || !selectionPreviewText) return '';
+    try {
+      const peek = peekNextRecommendedMenuByCycle(location, selectionPreviewText);
+      return peek?.menu?.name || '';
+    } catch (_) {
+      return '';
+    }
+  }, [hasSelectionToss, selectionPreviewText, location]);
 
   useEffect(() => {
     const updateSelectionState = () => {
@@ -177,15 +189,23 @@ export function BigBangButton() {
 
       const text = getActiveSelectionText();
 
+      // 🛡️ 더블탭 입력 간격(450ms 이내) 중 포커스 이동 등으로 인한 일시적 빈 선택 무시
+      const recentTapTime = typeof sessionStorage !== 'undefined' ? Number(sessionStorage.getItem('bigbang_recent_tap') || '0') : 0;
+      if (!text && Date.now() - recentTapTime < 450) {
+        return;
+      }
+
       // 🎯 스크롤(선택) 취소 감지:
       // 브라우저 텍스트 선택이 해제되거나 비어있으면 토스 모드 및 대기 스토리지 즉각 취소!
       if (!text) {
+        lastValidSelectionRef.current = '';
         clearPendingSelection();
         setHasSelectionToss(false);
         setSelectionPreviewText('');
         return;
       }
 
+      lastValidSelectionRef.current = text;
       setHasSelectionToss(true);
       setSelectionPreviewText(text.slice(0, 24));
     };
@@ -193,12 +213,14 @@ export function BigBangButton() {
     const handleSaved = (e: Event) => {
       const detail = (e as CustomEvent)?.detail;
       if (detail?.text && detail.text.length >= 2) {
+        lastValidSelectionRef.current = detail.text;
         setHasSelectionToss(true);
         setSelectionPreviewText(detail.text.slice(0, 24));
       }
     };
 
     const handleTossedOrCleared = () => {
+      lastValidSelectionRef.current = '';
       clearPendingSelection();
       setHasSelectionToss(false);
       setSelectionPreviewText('');
@@ -206,6 +228,7 @@ export function BigBangButton() {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        lastValidSelectionRef.current = '';
         clearPendingSelection();
         setHasSelectionToss(false);
         setSelectionPreviewText('');
@@ -346,7 +369,7 @@ export function BigBangButton() {
     // 2) 제자리 홀드 (dist < 14px, elapsed >= 250): 루시 AI PTT 실시간 음성 대화
     // 3) 가볍게 탭 (dist < 14px, elapsed < 250): 홈 (/) 베이스캠프 복귀
     // 4) 더블탭: 럭키 채널 안의 1순위 추천앱 즉시 도약
-    const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
+    const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
@@ -575,8 +598,14 @@ export function BigBangButton() {
       y: e.clientY,
     };
     currentPointerEventRef.current = e;
-    const initialSel = getActiveSelectionText();
-    touchStartSelectionRef.current = initialSel;
+    const liveSel = getActiveSelectionText();
+    const initialSel = liveSel || lastValidSelectionRef.current;
+    if (initialSel) {
+      lastValidSelectionRef.current = initialSel;
+      touchStartSelectionRef.current = initialSel;
+    } else {
+      touchStartSelectionRef.current = '';
+    }
     try {
       sessionStorage.setItem('bigbang_pressing', 'true');
       if (initialSel) {
@@ -652,7 +681,7 @@ export function BigBangButton() {
     omniWarpAudio.playCosmicSuctionWarp();
     triggerHaptic('wormhole');
 
-    const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
+    const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
     const { menu: targetMenu, reason, stats, safePath } = commitNextRecommendedMenuByCycle(
       location,
       textToToss || undefined
@@ -760,7 +789,9 @@ export function BigBangButton() {
         }
       }
 
+      lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
+      clearPendingSelection();
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
@@ -786,7 +817,7 @@ export function BigBangButton() {
     omniWarpAudio.playDoubleTap();
     triggerHaptic('blackhole');
 
-    const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
+    const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
 
     // 🔑 텍스트 선택 연동: 글자를 선택한 상태에서 드래그 ➔ Key 40가지 연습으로 즉시 토스!
     if (textToToss) {
@@ -867,7 +898,9 @@ export function BigBangButton() {
       }
     }, 160);
 
+    lastValidSelectionRef.current = '';
     touchStartSelectionRef.current = '';
+    clearPendingSelection();
     setActivePhase('idle');
     setGauge(0);
     setDurationMs(0);
@@ -986,7 +1019,7 @@ export function BigBangButton() {
     if (isPttRecordingRef.current) {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
-      const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
+      const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('prism:commit_lucy_voice_ptt', {
@@ -994,7 +1027,9 @@ export function BigBangButton() {
           })
         );
       }
+      lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
+      clearPendingSelection();
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
@@ -1027,12 +1062,15 @@ export function BigBangButton() {
 
       // ☀️ 첫 번째 탭: 더블탭 입력 대기 (240ms) 후 싱글탭 실행
       lastTapTimeRef.current = nowMs;
+      try {
+        sessionStorage.setItem('bigbang_recent_tap', String(Date.now()));
+      } catch (_) {}
 
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
       }
 
-      const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
+      const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
 
       singleTapTimerRef.current = setTimeout(() => {
         singleTapTimerRef.current = null;
@@ -1099,7 +1137,9 @@ export function BigBangButton() {
             window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
           }
 
+          lastValidSelectionRef.current = '';
           touchStartSelectionRef.current = '';
+          clearPendingSelection();
           setActivePhase('idle');
           setGauge(0);
           setDurationMs(0);
@@ -1372,18 +1412,18 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">✨</span>
-                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 채팅 피드백</span>
+                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 피드백</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸럭키 1순위 추천</span>
+                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">{dynamicRecommendedLuckeyApp ? `▸${dynamicRecommendedLuckeyApp}` : '▸럭키 추천'}</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸루시 음성 피드백</span>
+                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸음성 피드백</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸Key 맞춤 연습</span>
+                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸Key 맞춤연습</span>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* 🎯 드래그 시 실시간 맥락 추천 순환(Cycle) HUD 칩 */}
+          {/* 🎯 드래그 시 실시간 Key 도약 및 문장 토스 처방 HUD 칩 */}
           <AnimatePresence>
             {isPressing && dragDistance >= DRAG_RECOMMEND_THRESHOLD && !isAborted && !isPageScrolling && currentTarget && (
               <motion.div
@@ -1393,25 +1433,33 @@ export function BigBangButton() {
                 transition={{ duration: 0.15, ease: 'easeOut' }}
                 className="absolute -top-16 left-1/2 -translate-x-1/2 pointer-events-none z-50 flex flex-col items-center whitespace-nowrap select-none"
               >
-                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/90 backdrop-blur-md border border-cyan-400/50 shadow-[0_0_24px_rgba(56,189,248,0.4)]">
+                <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/90 backdrop-blur-md border ${
+                  currentTarget.id === 'key'
+                    ? 'border-sky-400/60 shadow-[0_0_24px_rgba(14,165,233,0.5)]'
+                    : 'border-cyan-400/50 shadow-[0_0_24px_rgba(56,189,248,0.4)]'
+                }`}>
                   <PrismAppIcon
                     nameOrId={currentTarget.id || currentTarget.destinationPath || currentTarget.name || currentTarget.title}
                     size={18}
                     className="shrink-0 drop-shadow"
-                    color={currentTarget.themeColor || '#38bdf8'}
+                    color={currentTarget.themeColor || '#0ea5e9'}
                   />
                   <span className="text-xs font-bold text-white tracking-tight">
                     {currentTarget.title || currentTarget.name}
                   </span>
-                  {currentTarget.cycleStats && (
+                  {currentTarget.id === 'key' && (hasSelectionToss || touchStartSelectionRef.current || lastValidSelectionRef.current) ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/25 text-sky-300 border border-sky-400/40 animate-pulse">
+                      40가지 소매틱 연습
+                    </span>
+                  ) : currentTarget.cycleStats ? (
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/25 text-cyan-300 border border-cyan-400/40">
                       {currentTarget.cycleStats.isFullCycleCompleted
                         ? `새 순환 ${currentTarget.cycleStats.cycleIndex}회차`
                         : `순환 ${currentTarget.cycleStats.visitedCount}/${currentTarget.cycleStats.totalCount}`}
                     </span>
-                  )}
+                  ) : null}
                 </div>
-                <div className="text-[10px] text-cyan-200/90 font-medium mt-1 px-2.5 py-0.5 bg-black/60 rounded-md backdrop-blur-sm drop-shadow max-w-[260px] truncate text-center">
+                <div className="text-[10px] text-sky-200/90 font-medium mt-1 px-2.5 py-0.5 bg-black/70 rounded-md backdrop-blur-sm drop-shadow max-w-[280px] truncate text-center border border-sky-500/20">
                   {currentTarget.previewDescription || '손을 떼면 즉시 차원 도약합니다'}
                 </div>
               </motion.div>

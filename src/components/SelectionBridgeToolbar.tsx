@@ -24,8 +24,11 @@ export default function SelectionBridgeToolbar({ currentPath: _currentPath }: Se
         // 🌟 일반 본문 및 input/textarea 빈칸 입력창 내부 선택 텍스트까지 포괄 추출
         const text = getLiveSelectedText();
 
-        // 🛡️ 만약 사용자가 빅뱅 버튼을 조작/터치 중이라면 pendingSelection을 섣불리 지우지 않고 보존!
+        // 🛡️ 만약 사용자가 빅뱅 버튼을 조작/터치 중이거나 더블탭 대기 중(450ms 이내)이라면 pendingSelection을 섣불리 지우지 않고 보존!
+        const recentTapTime = typeof sessionStorage !== 'undefined' ? Number(sessionStorage.getItem('bigbang_recent_tap') || '0') : 0;
+        const isRecentTap = Date.now() - recentTapTime < 450;
         const isBigBangActive = Boolean(
+          isRecentTap ||
           document.querySelector('#bigbang-omnibutton:active, [data-bigbang="true"]:active') ||
           (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('bigbang_pressing') === 'true')
         );
@@ -49,6 +52,12 @@ export default function SelectionBridgeToolbar({ currentPath: _currentPath }: Se
     const handleDocumentMouseDown = (e: MouseEvent | TouchEvent) => {
       // 대기 중인 선택이 전혀 없으면 불필요한 DOM 질의 및 타이머 스케줄링 즉시 생략
       if (typeof sessionStorage === 'undefined' || !sessionStorage.getItem('prism_dragged_selection_context')) {
+        return;
+      }
+
+      // 🛡️ 빅뱅 버튼 최근 탭(450ms 이내) 또는 터치 중인 경우 보호
+      const recentTapTime = typeof sessionStorage !== 'undefined' ? Number(sessionStorage.getItem('bigbang_recent_tap') || '0') : 0;
+      if (Date.now() - recentTapTime < 450) {
         return;
       }
 

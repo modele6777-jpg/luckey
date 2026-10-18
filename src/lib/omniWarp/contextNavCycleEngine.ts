@@ -271,7 +271,10 @@ export function peekNextRecommendedMenuByCycle(
 ): ContextNextMenuResult {
   const curr = currentLocation || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/');
 
-  if (activeSessionResult) {
+  // 🌟 텍스트 선택(문장 드래그) 시에는 이전 캐시를 무효화하고 선택 텍스트에 기반한 새로운 추천 산출
+  if (overrideContextText && overrideContextText.trim().length >= 2) {
+    activeSessionResult = null;
+  } else if (activeSessionResult) {
     if (
       isSameAppOrPage(activeSessionResult.menu.path, curr) ||
       isSameAppOrPage(activeSessionResult.menu.basePath, curr)
