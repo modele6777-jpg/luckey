@@ -23,6 +23,8 @@ import { isIOSDevice } from '../lib/perfMode';
 export interface TTSPlaybackOptions {
   skipCompletionChime?: boolean;
   isAutoPlay?: boolean;
+  isAutoPlayback?: boolean;
+  isUserToggleClick?: boolean;
 }
 
 // Pre-warm the browser's speechSynthesis engine to load premium voices asynchronously immediately on load
@@ -404,9 +406,11 @@ export const playTTS = async (
   // 🌟 모든 TTS 재생은 엄격하게 맑은 여성 음성(Aoede / SunHi / Heami)만 사용
   const targetVoice = 'Aoede';
 
-  // If we are calling playTTS standalone (without sequence) and something is already loading/speaking for this exact text, second click stops it
+  // If we are calling playTTS standalone (without sequence) and something is already loading/speaking for this exact text:
   if (!sequenceSessionId && (ttsState.isSpeaking || ttsState.isLoading) && (ttsState.activeText === cleanText || ttsState.activeFullText === cleanText)) {
-    stopTTS();
+    if (options?.isUserToggleClick) {
+      stopTTS();
+    }
     return;
   }
 
@@ -724,14 +728,16 @@ export const playTTSInChunks = async (
   const cleanText = prepareNaturalSpeechText(text);
   if (!cleanText) return;
 
-  // If already speaking or loading this exact sequence, user click again toggles/stops playback
-  // (자동읽기 isAutoPlay일 때는 토글-오프 오작동 방지)
+  // If already speaking or loading this exact sequence:
   if (
     !options?.isAutoPlay &&
+    !options?.isAutoPlayback &&
     (ttsState.isSpeaking || ttsState.isLoading) &&
     (ttsState.activeFullText === cleanText || ttsState.activeText === cleanText)
   ) {
-    stopTTS();
+    if (options?.isUserToggleClick) {
+      stopTTS();
+    }
     return;
   }
 

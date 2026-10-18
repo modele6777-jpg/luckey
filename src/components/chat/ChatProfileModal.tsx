@@ -11,6 +11,7 @@ interface ChatProfileModalProps {
   initialProfile?: ChatTargetProfile | null;
   totalProfilesCount: number;
   existingProfiles?: ChatTargetProfile[];
+  userRealName?: string;
 }
 
 const RELATIONSHIP_TAGS = ['본인', '연인', '썸', '친구', '동업자', '가족', '직장동료'];
@@ -21,7 +22,8 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
   onSave,
   initialProfile,
   totalProfilesCount,
-  existingProfiles = []
+  existingProfiles = [],
+  userRealName = '박주형'
 }) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('1996-01-01');
@@ -78,23 +80,27 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
     } else {
       // Default for adding a profile
       const persistentProfile = getPersistentUserProfile()?.basic;
-      if (isOnlyOneProfile) {
-        setName(persistentProfile?.name?.trim() || '박주형');
+      const isSelf = isOnlyOneProfile || (!hasExistingSelf && totalProfilesCount === 0);
+      if (isSelf) {
+        setName(persistentProfile?.name?.trim() || userRealName || '박주형');
         setRelationship('본인');
+        setBirthdate('1995-01-01');
+        setBirthtime('12:00');
+        setGender('male');
       } else {
         setName('');
         setRelationship('연인');
+        setBirthdate('1996-05-15');
+        setBirthtime('12:00');
+        setGender('female');
       }
-      setBirthdate('1996-05-15');
       setLunarSolar('solar');
       setIsLeapMonth(false);
-      setBirthtime('12:00');
       setIsTimeUnknown(false);
-      setGender('female');
       setBirthCity('서울');
     }
     setErrorMessage(null);
-  }, [initialProfile, isOpen, totalProfilesCount, hasExistingSelf, isOnlyOneProfile]);
+  }, [initialProfile, isOpen, totalProfilesCount, hasExistingSelf, isOnlyOneProfile, userRealName]);
 
   if (!isOpen) return null;
 
@@ -185,7 +191,7 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="본명(실명)을 입력해 주세요 (예: 김철수, 박주형)"
+              placeholder={relationship === '본인' ? `본명 입력 (예: ${userRealName || '박주형'})` : "본명(실명)을 입력해 주세요 (예: 김철수, 박주형, 김영희)"}
               maxLength={20}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:border-amber-400 focus:bg-white dark:focus:bg-slate-800 transition-all"
               autoFocus

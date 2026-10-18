@@ -8,7 +8,7 @@ import {
 import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { useLocation } from 'wouter';
-import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, normalizeTextForSpeech } from '@/utils/tts';
+import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, prefetchTTSChunks, normalizeTextForSpeech } from '@/utils/tts';
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
 import { getLocalDateKey } from '@/lib/rebibleStorage';
@@ -688,6 +688,8 @@ export default function LucyStandalonePage() {
 
   const [autoTtsToast, setAutoTtsToast] = useState<string | null>(null);
   const lastAutoSpokenMsgIdRef = useRef<string | null>(null);
+  const hasGreetingSpokenRef = useRef(false);
+  const [isGreetingPendingTap, setIsGreetingPendingTap] = useState(false);
 
 
   const toggleAutoTts = () => {
@@ -863,16 +865,16 @@ export default function LucyStandalonePage() {
         const me = prev.find((p) => p.isMe);
         if (!me) return prev;
         const rawRealName = basic?.name?.trim();
-        const newName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
+        const realName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
           ? rawRealName
-          : (getPersistentUserProfile()?.basic?.name?.trim() || '박주형');
+          : (getPersistentUserProfile()?.basic?.name?.trim() || me.name || '박주형');
         const newBirthdate = basic?.birthdate || me.birthdate;
         const newBirthtime = basic?.birthtime ?? me.birthtime;
         const newGender = basic?.gender || me.gender;
         const newCity = basic?.birthCity || me.birthCity;
         const newLs = basic?.lunarSolar || me.lunarSolar;
         if (
-          me.name === newName &&
+          me.name === realName &&
           me.birthdate === newBirthdate &&
           me.birthtime === newBirthtime &&
           me.gender === newGender &&
@@ -885,7 +887,7 @@ export default function LucyStandalonePage() {
           p.isMe
             ? {
                 ...p,
-                name: newName,
+                name: realName,
                 birthdate: newBirthdate,
                 birthtime: newBirthtime,
                 gender: newGender,
@@ -960,6 +962,35 @@ export default function LucyStandalonePage() {
           }
           return p;
         });
+      }
+
+      // 🛡️ 내 프로필(isMe) 수정 시 글로벌 sharedState 및 영구 볼트의 사주 실명/생년월일 동기화 (닉네임 '제제'는 불변 유지)
+      if (safeProfile.isMe) {
+        const currentProfile = getPersistentUserProfile();
+        const existingNick = (currentProfile?.basic?.nickname && currentProfile.basic.nickname !== '박주형')
+          ? currentProfile.basic.nickname
+          : '제제';
+        const updatedBasic = {
+          ...(currentProfile?.basic || {}),
+          name: safeProfile.name.trim() || '박주형',
+          nickname: existingNick,
+          birthdate: safeProfile.birthdate,
+          birthtime: safeProfile.birthtime,
+          gender: safeProfile.gender,
+          birthCity: safeProfile.birthCity,
+          lunarSolar: safeProfile.lunarSolar,
+        };
+        const updatedUserProfile = {
+          ...(currentProfile || {}),
+          basic: updatedBasic,
+        };
+        saveProfileToAllVaults(updatedUserProfile);
+        updateSharedState({
+          userProfile: {
+            ...(sharedState?.userProfile || {}),
+            basic: updatedBasic,
+          },
+        }, 'lucy');
       }
 
       setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
@@ -1098,7 +1129,7 @@ export default function LucyStandalonePage() {
     if (lucyMessages.length > 0 && !isLucyGenerating) {
       const lastMsg = lucyMessages[lucyMessages.length - 1];
       if (lastMsg && lastMsg.role !== 'user' && typeof lastMsg.content === 'string' && lastMsg.content.length > 1) {
-        prefetchTTS(lastMsg.content, 'Aoede');
+        prefetchTTSChunks(lastMsg.content, 'Aoede');
       }
     }
   }, [lucyMessages, isLucyGenerating]);
@@ -1153,11 +1184,82 @@ export default function LucyStandalonePage() {
     }
   }, []);
 
+  // 🌸 최초 진입 시 루시의 인사말 TTS 자동 재생 및 브라우저 Autoplay 언락 브릿지
+  useEffect(() => {
+    if (!isLucyReady || !isAutoTtsRef.current || hasGreetingSpokenRef.current) return;
+    if (lucyMessages.length === 0) return;
+
+    // 대화 내역 중 실제 사용자 발화가 있는지 확인 (사용자 발화가 하나도 없다면 환영/인사말 상태)
+    const hasUser = lucyMessages.some((m) => m.role === 'user' && !!m.content);
+    const firstMsg = lucyMessages[0];
+    if (typeof firstMsg.content !== 'string' || !firstMsg.content.trim()) return;
+    const isGreetingMsg = !hasUser && firstMsg.role !== 'user';
+
+    if (!isGreetingMsg) return;
+
+    const greetingId = firstMsg.id || 'greet-main';
+    const cleanGreeting = normalizeTextForSpeech(firstMsg.content);
+    if (!cleanGreeting) return;
+
+    // 인사말 청크들을 즉시 사전 프리페치
+    prefetchTTSChunks(cleanGreeting, 'Aoede');
+
+    let isDisposed = false;
+
+    const playGreetingAudio = async () => {
+      if (isDisposed || hasGreetingSpokenRef.current) return;
+      try {
+        unlockAudioPlayback();
+        primeTTSAudioElement();
+        setPlayingMsgId(greetingId);
+        hasGreetingSpokenRef.current = true;
+        setIsGreetingPendingTap(false);
+        await playTTSInChunks(cleanGreeting, 'Aoede', 110, undefined, undefined, {
+          skipCompletionChime: true,
+          isAutoPlay: true,
+        });
+      } catch (err: any) {
+        console.warn('[Greeting-TTS] Autoplay blocked or interrupted:', err);
+        // 브라우저 자동 재생 정책에 의해 차단된 경우 플래그 원복 및 첫 터치 대기
+        hasGreetingSpokenRef.current = false;
+        setIsGreetingPendingTap(true);
+      } finally {
+        if (!isDisposed) {
+          setPlayingMsgId(null);
+        }
+      }
+    };
+
+    // 1차: 진입 즉시 재생 시도 (인앱 네비게이션 또는 브라우저 권한 허용 환경)
+    playGreetingAudio();
+
+    // 2차: 브라우저 차단 시 사용자의 첫 화면 터치/클릭 즉시 언락 & 인사말 재생
+    const handleFirstUserInteraction = () => {
+      if (hasGreetingSpokenRef.current) return;
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+      playGreetingAudio();
+    };
+
+    window.addEventListener('pointerdown', handleFirstUserInteraction, { once: true, passive: true });
+    window.addEventListener('keydown', handleFirstUserInteraction, { once: true, passive: true });
+
+    return () => {
+      isDisposed = true;
+      window.removeEventListener('pointerdown', handleFirstUserInteraction);
+      window.removeEventListener('keydown', handleFirstUserInteraction);
+    };
+  }, [isLucyReady, lucyMessages]);
+
   // 🔊 자동 음성 재생(Auto-TTS) 안전 백업 감시자: 새 어시스턴트 메시지 도착 시 바로재생 보장
   useEffect(() => {
     if (!isAutoTtsRef.current || isLucyGenerating || lucyMessages.length === 0 || isAutoTtsBusyRef.current) return;
     const lastMsg = lucyMessages[lucyMessages.length - 1];
     if (!lastMsg || lastMsg.role === 'user' || typeof lastMsg.content !== 'string' || !lastMsg.content.trim()) return;
+
+    // 만약 첫 인사말 메시지라면 최초 진입 인사말 전용 핸들러에서 다루므로 스킵
+    const isFirstGreetingOnly = lucyMessages.length === 1 && (lastMsg.id?.startsWith('greet') || !lucyMessages.some(m => m.role === 'user'));
+    if (isFirstGreetingOnly) return;
 
     // 방금 전송된 메시지이고 아직 음성 재생되지 않은 경우 바로 자동 재생
     if (lastMsg.id && lastAutoSpokenMsgIdRef.current !== lastMsg.id && !ttsInfo.isSpeaking && !ttsInfo.isLoading) {
@@ -1630,6 +1732,8 @@ export default function LucyStandalonePage() {
   };
 
   const handleVoicePlay = (id: string, text: string, _voice?: string) => {
+    unlockAudioPlayback();
+    primeTTSAudioElement();
     const clean = normalizeTextForSpeech(text);
     if (playingMsgId === id && (ttsInfo.isSpeaking || ttsInfo.isLoading)) {
       stopTTS();
@@ -1637,7 +1741,7 @@ export default function LucyStandalonePage() {
     } else {
       stopTTS();
       setPlayingMsgId(id);
-      playTTSInChunks(clean, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true });
+      playTTSInChunks(clean, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true, isUserToggleClick: true });
     }
   };
 
@@ -1890,6 +1994,44 @@ export default function LucyStandalonePage() {
             const textContent = isUser ? cleanUserMessageDisplay(rawTextContent) : rawTextContent;
             const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index);
 
+            // 루시의 인사말인지 여부 정밀 판별
+            const isGreeting = (() => {
+              if (isUser) return false;
+              if (msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.toLowerCase().includes('greet')) {
+                return true;
+              }
+              const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
+              if (!prevUser) {
+                return true;
+              }
+              const cleanText = textContent.trim();
+              if (
+                cleanText.includes("통합 AI 마스터 가이드 '루시'야") ||
+                cleanText.includes('반가워! 나는 루시야') ||
+                cleanText.includes('오늘도 새로운 하루가 시작되었어') ||
+                cleanText.includes('지난 대화들의 소중한 이야기들도 내 마음에 다 간직하고 있으니') ||
+                cleanText.includes('영혼 여정을 함께하는') ||
+                cleanText.includes('수다 떨 준비되어 있어') ||
+                cleanText.includes('나랑 가볍게 수다 떨자') ||
+                cleanText.includes('언제든 친구처럼 다정하게 수다')
+              ) {
+                return true;
+              }
+              const userText = (typeof prevUser.content === 'string'
+                ? prevUser.content
+                : Array.isArray(prevUser.content)
+                ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
+                : '').trim();
+              if (!userText) {
+                return true;
+              }
+              const isSimpleGreetingQuery = /^(안녕|안녕하세요|안뇽|하이|hi|hello|좋은\s*아침|좋은\s*하루|반가워|반갑습니다|루시\s*안녕|루시야\s*안녕|안녕\s*루시)[!~.\s]*$/i.test(userText);
+              if (isSimpleGreetingQuery && cleanText.length < 160) {
+                return true;
+              }
+              return false;
+            })();
+
             return (
               <motion.div
                 key={msgId}
@@ -1963,50 +2105,34 @@ export default function LucyStandalonePage() {
                           isLatest={index === filteredMessages.length - 1}
                           isGenerating={isLucyGenerating && index === filteredMessages.length - 1}
                         />
+                        {/* 🌸 최초 진입 및 루시의 인사말 전용 원터치 음성 듣기 배지 */}
+                        {isGreeting && (
+                          <div className="mt-2.5 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleVoicePlay(msgId, textContent, 'Aoede')}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs ${
+                                playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
+                                  ? 'bg-amber-500 text-white shadow-amber-200'
+                                  : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80'
+                              }`}
+                            >
+                              {playingMsgId === msgId && ttsInfo.isLoading ? (
+                                <Loader2 size={13} className="animate-spin text-amber-600" />
+                              ) : playingMsgId === msgId && ttsInfo.isSpeaking ? (
+                                <VolumeX size={13} className="animate-pulse" />
+                              ) : (
+                                <Volume2 size={13} className="text-amber-600 animate-bounce" />
+                              )}
+                              <span>{playingMsgId === msgId && ttsInfo.isSpeaking ? '인사말 멈추기' : '루시 인사말 듣기'}</span>
+                            </button>
+                          </div>
+                        )}
                         {/* 🔮 LucKey 연계 추천 채널 및 Key 실천 도약 바: 수다모드 및 루시의 인사말에서는 생략, 전문 모드에서만 유지 */}
                         {(() => {
                           if (isLucyGenerating && index === filteredMessages.length - 1) return null;
                           if (!textContent || textContent.trim().length <= 10) return null;
                           if (msgModeInfo.isCasual) return null;
-
-                          // 루시의 인사말인지 여부 정밀 판별
-                          const isGreeting = (() => {
-                            if (msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.toLowerCase().includes('greet')) {
-                              return true;
-                            }
-                            // 이전 사용자 메시지가 전혀 없는 경우 (최초 입장 시 출력되는 루시 인사말)
-                            const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
-                            if (!prevUser) {
-                              return true;
-                            }
-                            const cleanText = textContent.trim();
-                            if (
-                              cleanText.includes("통합 AI 마스터 가이드 '루시'야") ||
-                              cleanText.includes('반가워! 나는 루시야') ||
-                              cleanText.includes('오늘도 새로운 하루가 시작되었어') ||
-                              cleanText.includes('지난 대화들의 소중한 이야기들도 내 마음에 다 간직하고 있으니') ||
-                              cleanText.includes('영혼 여정을 함께하는') ||
-                              cleanText.includes('수다 떨 준비되어 있어') ||
-                              cleanText.includes('나랑 가볍게 수다 떨자') ||
-                              cleanText.includes('언제든 친구처럼 다정하게 수다')
-                            ) {
-                              return true;
-                            }
-                            const userText = (typeof prevUser.content === 'string'
-                              ? prevUser.content
-                              : Array.isArray(prevUser.content)
-                              ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
-                              : '').trim();
-                            if (!userText) {
-                              return true;
-                            }
-                            const isSimpleGreetingQuery = /^(안녕|안녕하세요|안뇽|하이|hi|hello|좋은\s*아침|좋은\s*하루|반가워|반갑습니다|루시\s*안녕|루시야\s*안녕|안녕\s*루시)[!~.\s]*$/i.test(userText);
-                            if (isSimpleGreetingQuery && cleanText.length < 160) {
-                              return true;
-                            }
-                            return false;
-                          })();
-
                           if (isGreeting) return null;
 
                           const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
@@ -2518,6 +2644,7 @@ export default function LucyStandalonePage() {
         initialProfile={editingChatProfile}
         totalProfilesCount={activeProfiles.length}
         existingProfiles={activeProfiles}
+        userRealName={sharedState?.userProfile?.basic?.name || getPersistentUserProfile()?.basic?.name || '박주형'}
       />
 
       {/* End of content */}

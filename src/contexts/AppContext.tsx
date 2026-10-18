@@ -29,6 +29,8 @@ import { hasUnlockedPinToday, markPinUnlockedToday, getTodayDateKey } from '../l
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES } from '../lib/copyTone';
 import { isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
+import { unlockAudioPlayback, primeTTSAudioElement } from '../lib/audio';
+import { prefetchTTS } from '../utils/tts';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
@@ -268,6 +270,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     persona?: PersonaType | 'epilogue' | string,
     options?: { autoSendPrompt?: string; draftPrompt?: string; mode?: string }
   ) => {
+    // 🔊 사용자 터치/클릭 제스처 내에서 오디오 컨텍스트 및 TTS 엘리먼트를 즉시 언락
+    try {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+    } catch (_) {}
+
     const targetPersona: PersonaType = persona === 'epilogue' ? 'lucy' : ((persona as any) || 'lucy');
     setActivePersona(targetPersona);
     if (typeof window !== 'undefined') {
@@ -1744,6 +1752,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     };
 
+    let hasPrefetchedFirstSentence = false;
+
     try {
       await invokeLLMStream({
         messages: conversationForAPI,
@@ -1755,6 +1765,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           latestCleanReply = cleanChatDisplayText(replyText);
           if (pendingRaf === null) {
             pendingRaf = requestAnimationFrame(flushChunk);
+          }
+
+          // 🔊 첫 문장 완성 즉시 사전 음성 변환 프리페치 가동 (0ms 즉시 재생 보장)
+          if (!hasPrefetchedFirstSentence && replyText.length >= 15) {
+            const sentenceEndMatch = replyText.match(/([^\n.!?]+[.!?\n])/);
+            if (sentenceEndMatch && sentenceEndMatch[1]) {
+              const firstSentence = sentenceEndMatch[1].trim();
+              if (firstSentence.length >= 10) {
+                hasPrefetchedFirstSentence = true;
+                try {
+                  prefetchTTS(firstSentence, 'Aoede');
+                } catch (_) {}
+              }
+            }
           }
         },
         onFinish: async (fullText: string) => {
@@ -1811,34 +1835,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             return updated;
           });
 
-          // Save firestore history under appropriate app schema if not developer bypass
+          // Save firestore history in background without awaiting to eliminate latency for onFinish / TTS
           const fUser = auth.currentUser;
           if (fUser && safeLocalStorage.getItem('developer_bypass') !== 'true') {
-            try {
-              const targets = [
-                { collectionName: 'lucy_history', logType: 'chat_sync', logTitle: '루시 마스터 대화' },
-                { collectionName: 'orange_history', logType: 'chat_sync', logTitle: '오렌지 다이어리 교감' },
-                { collectionName: 'bluebird_history', logType: 'chat_sync', logTitle: '블루버드 라디오 교감' },
-                { collectionName: 'heal_history', logType: 'chat_sync', logTitle: '아우라 주파수 조율' },
-                { collectionName: 'muse_history', logType: 'chat_sync', logTitle: '뮤즈 영감 싱크' },
-                { collectionName: 'trinity_history', logType: 'chat_sync', logTitle: '트리니티 오라클 자문' }
-              ];
+            const targets = [
+              { collectionName: 'lucy_history', logType: 'chat_sync', logTitle: '루시 마스터 대화' },
+              { collectionName: 'orange_history', logType: 'chat_sync', logTitle: '오렌지 다이어리 교감' },
+              { collectionName: 'bluebird_history', logType: 'chat_sync', logTitle: '블루버드 라디오 교감' },
+              { collectionName: 'heal_history', logType: 'chat_sync', logTitle: '아우라 주파수 조율' },
+              { collectionName: 'muse_history', logType: 'chat_sync', logTitle: '뮤즈 영감 싱크' },
+              { collectionName: 'trinity_history', logType: 'chat_sync', logTitle: '트리니티 오라클 자문' }
+            ];
 
-              await Promise.all(
-                targets.map(target =>
-                  addDoc(collection(db, target.collectionName, fUser.uid, 'entries'), {
-                    type: target.logType,
-                    title: target.logTitle,
-                    content: text,
-                    response: cleanFullText,
-                    metadata: { question: text },
-                    createdAt: serverTimestamp()
-                  })
-                )
-              );
-            } catch (dbErr) {
+            void Promise.all(
+              targets.map(target =>
+                addDoc(collection(db, target.collectionName, fUser.uid, 'entries'), {
+                  type: target.logType,
+                  title: target.logTitle,
+                  content: text,
+                  response: cleanFullText,
+                  metadata: { question: text },
+                  createdAt: serverTimestamp()
+                })
+              )
+            ).catch((dbErr) => {
               console.warn("Failed saving unified chat log entry to all app histories:", dbErr);
-            }
+            });
           }
 
           if (options?.onFinish) {

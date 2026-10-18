@@ -632,7 +632,7 @@ export function getTTSAudioElement(): HTMLAudioElement {
     });
 
     const audio = getTTSAudioElement();
-    if (!audio.src || audio.src === window.location.href) {
+    if (!audio.src || audio.src === window.location.href || audio.paused) {
       // Keep the same media element playing a silent loop until the async TTS
       // request finishes. Mobile Safari/Chrome may revoke the autoplay grant
       // when the priming element is immediately paused after the tap.
