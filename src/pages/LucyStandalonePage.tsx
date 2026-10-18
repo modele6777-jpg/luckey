@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Trash2, Search, X, Check, Volume2, VolumeX, Square,
-  Download, User, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
+  Download, User, Plus, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked
 } from 'lucide-react';
 import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
@@ -1308,17 +1308,32 @@ export default function LucyStandalonePage() {
       appleTitleTag.setAttribute('content', 'Lucy');
     }
 
+    let statusBarStyleTag = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') as HTMLMetaElement | null;
+    const prevStatusBarStyle = statusBarStyleTag ? statusBarStyleTag.getAttribute('content') : null;
+    if (statusBarStyleTag) {
+      statusBarStyleTag.setAttribute('content', 'default');
+    }
+
     let themeColorTag = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
     const prevThemeColor = themeColorTag ? themeColorTag.getAttribute('content') : null;
-    if (themeColorTag) {
-      themeColorTag.setAttribute('content', '#FFFFFF');
+    let didCreateThemeTag = false;
+    if (!themeColorTag) {
+      themeColorTag = document.createElement('meta');
+      themeColorTag.setAttribute('name', 'theme-color');
+      document.head.appendChild(themeColorTag);
+      didCreateThemeTag = true;
     }
+    themeColorTag.setAttribute('content', '#FFFFFF');
 
     // 📱 앱(PWA) 모드에서 상하단 안전영역(노치/홈바)이 어두운 body 배경으로 비쳐 회색으로 보이는 현상 방지
     const prevHtmlBg = document.documentElement.style.background;
     const prevBodyBg = document.body.style.background;
+    const prevHtmlBgColor = document.documentElement.style.backgroundColor;
+    const prevBodyBgColor = document.body.style.backgroundColor;
     document.documentElement.style.background = '#FFFFFF';
     document.body.style.background = '#FFFFFF';
+    document.documentElement.style.backgroundColor = '#FFFFFF';
+    document.body.style.backgroundColor = '#FFFFFF';
 
     return () => {
       document.title = prevTitle;
@@ -1330,9 +1345,18 @@ export default function LucyStandalonePage() {
         if (prevFaviconHrefs[idx]) favTag.href = prevFaviconHrefs[idx];
       });
       if (appleTitleTag && prevAppleTitle) appleTitleTag.setAttribute('content', prevAppleTitle);
-      if (themeColorTag && prevThemeColor) themeColorTag.setAttribute('content', prevThemeColor);
+      if (statusBarStyleTag && prevStatusBarStyle) statusBarStyleTag.setAttribute('content', prevStatusBarStyle);
+      if (themeColorTag) {
+        if (didCreateThemeTag) {
+          themeColorTag.remove();
+        } else if (prevThemeColor) {
+          themeColorTag.setAttribute('content', prevThemeColor);
+        }
+      }
       document.documentElement.style.background = prevHtmlBg;
       document.body.style.background = prevBodyBg;
+      document.documentElement.style.backgroundColor = prevHtmlBgColor;
+      document.body.style.backgroundColor = prevBodyBgColor;
     };
   }, []);
 
@@ -2274,18 +2298,18 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-28 sm:h-32 w-full shrink-0" />
+          <div className="h-20 sm:h-24 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>
 
-      {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
+      {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send (Pure White & Ultra-Slim) */}
       <footer 
         ref={footerRef}
-        style={{ paddingBottom: 'max(0.5rem, calc(var(--sab, 0px) + 0.35rem))' }}
-        className="w-full px-2.5 sm:px-4 py-1.5 sm:py-2 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-xs shrink-0 z-30 relative"
+        style={{ paddingBottom: 'max(0.25rem, calc(var(--sab, 0px) + 0.15rem))' }}
+        className="w-full px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 bg-white border-t border-slate-100 shadow-xs shrink-0 z-30 relative"
       >
-        <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-1 sm:gap-1.5">
+        <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-0.5 sm:gap-1">
           {/* Image Attachment Preview */}
           {attachedImage && (
             <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
@@ -2324,7 +2348,7 @@ export default function LucyStandalonePage() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
-                className="flex items-center justify-between px-2.5 py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 shadow-xs backdrop-blur-xs"
+                className="flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 shadow-xs"
               >
                 <div className="flex items-center gap-1.5 min-w-0">
                   {ttsInfo.isLoading ? (
@@ -2357,30 +2381,64 @@ export default function LucyStandalonePage() {
             )}
           </AnimatePresence>
 
-          {/* 👥 대화창 상담 대상자 프로필 독 바 (최대 4인 · 궁합/연애/시너지 모드) */}
-          <ChatProfileDock
-            profiles={activeProfiles}
-            activeProfileId={activeProfileId}
-            onSelectProfile={handleSelectActiveProfile}
-            onAddClick={handleOpenAddChatProfile}
-            onEditProfile={handleOpenEditChatProfile}
-            onRemoveProfile={handleRemoveChatProfile}
-            maxProfiles={4}
-          />
+          {/* 👥 대화창 상담 대상자 프로필 독 바 (2인 이상 궁합/시너지 모드 시 항시 표시) */}
+          {activeProfiles.length > 1 && (
+            <ChatProfileDock
+              profiles={activeProfiles}
+              activeProfileId={activeProfileId}
+              onSelectProfile={handleSelectActiveProfile}
+              onAddClick={handleOpenAddChatProfile}
+              onEditProfile={handleOpenEditChatProfile}
+              onRemoveProfile={handleRemoveChatProfile}
+              maxProfiles={4}
+            />
+          )}
 
-          {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 (13P · 77선) 버튼 */}
-          <div className="w-full flex items-center gap-1 sm:gap-1.5 py-0">
+          {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 (13P · 77선) 버튼 (+ 1인 모드 시 슬림 프로필 칩 통합) */}
+          <div className="w-full flex items-center gap-1 sm:gap-1.5 py-0 overflow-x-auto no-scrollbar scroll-smooth">
+            {/* 1인 점괘 모드일 때: 별도 세로줄을 차지하지 않고 한 줄에 초슬림하게 통합 */}
+            {activeProfiles.length <= 1 && (
+              <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeProfiles[0]) {
+                      handleOpenEditChatProfile(activeProfiles[0]);
+                    } else {
+                      handleOpenAddChatProfile();
+                    }
+                  }}
+                  className="px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-50/90 hover:bg-amber-100 border border-amber-300/80 text-amber-900 text-[9px] sm:text-[10px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 shadow-2xs"
+                  title="내 사주 프로필 수정"
+                >
+                  <User size={9} className="text-amber-600 shrink-0" />
+                  <span className="truncate max-w-[42px] sm:max-w-[70px]">
+                    {activeProfiles[0]?.name || '내 프로필'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenAddChatProfile}
+                  className="px-1 sm:px-1.5 py-0.5 rounded-full bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-600 hover:text-amber-800 text-[8px] sm:text-[9px] font-medium transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 shadow-2xs"
+                  title="궁합/상담 대상자 추가"
+                >
+                  <Plus size={8} className="text-amber-600 shrink-0" />
+                  <span className="hidden xs:inline">궁합</span>
+                </button>
+              </div>
+            )}
+
             {/* ✨ 13페이지 추천질문 전체보기 모달 트리거 버튼 */}
             <button
               id="lucy-open-prompt-library-btn"
               type="button"
               onClick={() => setIsPromptLibraryOpen(true)}
-              className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 text-[10px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1 shadow-2xs group"
+              className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 text-[9px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-0.5 sm:gap-1 shadow-2xs group"
               title="사주·타로·점성술·자미두수 77가지 추천질문 (13페이지 전편)"
               aria-label="추천질문 13페이지 라이브러리 열기"
             >
-              <Sparkles size={11} className="sm:w-3 sm:h-3 text-amber-500 group-hover:scale-110 transition-transform" />
-              <span>추천질문</span>
+              <Sparkles size={10} className="sm:w-3 sm:h-3 text-amber-500 group-hover:scale-110 transition-transform" />
+              <span className="hidden xs:inline">추천질문</span>
               <span className="px-1 py-0.1 rounded-full text-[8px] sm:text-[9px] bg-amber-500 text-slate-950 font-black">
                 13P
               </span>
@@ -2390,11 +2448,11 @@ export default function LucyStandalonePage() {
             <button
               type="button"
               onClick={refreshPrompts}
-              className="p-1 sm:p-1.5 rounded-lg text-amber-600 hover:text-amber-800 bg-amber-50/90 hover:bg-amber-100 border border-amber-200/80 transition-all shrink-0 cursor-pointer active:scale-90 flex items-center gap-1 shadow-2xs"
+              className="p-1 sm:p-1.5 rounded-lg text-amber-600 hover:text-amber-800 bg-white hover:bg-amber-50 border border-amber-200/80 transition-all shrink-0 cursor-pointer active:scale-90 flex items-center gap-1 shadow-2xs"
               title="새로운 맞춤 추천 질문으로 변경 (랜덤 셔플)"
               aria-label="추천 질문 새로고침"
             >
-              <RefreshCw size={10} className={`sm:w-2.5 sm:h-2.5 text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
+              <RefreshCw size={9} className={`sm:w-2.5 sm:h-2.5 text-amber-600 ${isLucyGenerating ? 'animate-spin' : ''}`} />
             </button>
 
             {/* 가로 스크롤 추천 질문 리스트 */}
@@ -2406,7 +2464,7 @@ export default function LucyStandalonePage() {
                     type="button"
                     onClick={() => handleSelectRecommendationChip(promptText)}
                     disabled={isLucyGenerating}
-                    className="shrink-0 px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-50/90 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-[10px] sm:text-[11px] font-medium text-slate-700 hover:text-amber-950 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
+                    className="shrink-0 px-2 sm:px-2.5 py-0.5 rounded-full bg-white hover:bg-amber-50 border border-amber-200/80 hover:border-amber-300 text-[9px] sm:text-[11px] font-medium text-slate-800 hover:text-amber-950 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
                   >
                     {promptText}
                   </button>
@@ -2415,7 +2473,8 @@ export default function LucyStandalonePage() {
             )}
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2 bg-slate-50 border border-slate-200 focus-within:border-amber-400 focus-within:bg-white rounded-xl sm:rounded-2xl px-2 sm:px-3 py-0.5 sm:py-1 min-h-[34px] sm:min-h-[40px] transition-all shadow-inner">
+          {/* 💬 Input Container */}
+          <div className="flex items-center gap-1 sm:gap-2 bg-white border border-slate-200/90 focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs">
             {/* Hidden File Input */}
             <input 
               type="file" 
@@ -2425,33 +2484,33 @@ export default function LucyStandalonePage() {
               className="hidden" 
             />
 
-            {/*  Image / Camera Button */}
+            {/* 📷 Image / Camera Button */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-amber-700 hover:bg-slate-200/70 transition-colors cursor-pointer shrink-0"
+              className="p-0.5 sm:p-1.5 rounded-md text-slate-400 hover:text-amber-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
               title="사진/이미지 첨부 (멀티모달 비전 분석)"
             >
-              <Camera size={15} className="sm:w-4 sm:h-4" />
+              <Camera size={14} className="sm:w-4 sm:h-4" />
             </button>
 
             {/* 🔊 Auto-TTS Quick Toggle Button (입력창 바로 옆 원클릭 토글) */}
             <button
               type="button"
               onClick={toggleAutoTts}
-              className={`p-1 sm:p-1.5 rounded-lg transition-all cursor-pointer shrink-0 ${
+              className={`p-0.5 sm:p-1.5 rounded-md transition-all cursor-pointer shrink-0 ${
                 isAutoTts
                   ? 'text-emerald-600 bg-emerald-100/80 border border-emerald-300 shadow-2xs'
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/70'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
               }`}
               title={isAutoTts ? '루시 답변 자동 음성 읽기 켜짐 (클릭 시 끄기)' : '자동 음성 읽기 꺼짐 (클릭 시 켜기)'}
               aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐' : '음성 자동 읽기 꺼짐'}
             >
-              {isAutoTts ? <Volume2 size={15} className="sm:w-4 sm:h-4 text-emerald-600 animate-pulse" /> : <VolumeX size={15} className="sm:w-4 sm:h-4" />}
+              {isAutoTts ? <Volume2 size={14} className="sm:w-4 sm:h-4 text-emerald-600 animate-pulse" /> : <VolumeX size={14} className="sm:w-4 sm:h-4" />}
             </button>
 
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
-            <div className="relative flex-1 min-h-[28px] sm:min-h-[32px] flex items-center">
+            <div className="relative flex-1 min-h-[22px] sm:min-h-[28px] flex items-center">
               {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
               <DynamicGhostInputPlaceholder
                 prompts={dynamicGhostPrompts}
@@ -2487,7 +2546,7 @@ export default function LucyStandalonePage() {
                     : ''
                 }
                 rows={1}
-                className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-[12px] sm:text-sm resize-none outline-none leading-snug sm:leading-relaxed min-h-[28px] sm:min-h-[32px] max-h-[88px] py-0.5 sm:py-1 z-10"
+                className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-xs sm:text-sm resize-none outline-none leading-tight sm:leading-snug min-h-[22px] sm:min-h-[28px] max-h-[88px] py-0.5 z-10"
               />
             </div>
 
@@ -2496,18 +2555,18 @@ export default function LucyStandalonePage() {
               <button
                 type="button"
                 onClick={handleAbortGeneration}
-                className="w-7 h-7 sm:w-8 sm:h-8 p-1 sm:p-1.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg sm:rounded-xl transition-all shadow-md cursor-pointer shrink-0 active:scale-95 flex items-center justify-center animate-pulse"
+                className="w-6 h-6 sm:w-7 sm:h-7 p-0 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg sm:rounded-xl transition-all shadow-md cursor-pointer shrink-0 active:scale-95 flex items-center justify-center animate-pulse"
                 title="답변 생성 중단 (클릭 시 대기를 즉시 멈추고 입력창이 활성화됩니다)"
                 aria-label="생성 중단"
               >
-                <Square size={12} className="sm:w-3.5 sm:h-3.5 fill-current text-white" />
+                <Square size={10} className="sm:w-3 sm:h-3 fill-current text-white" />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => handleSend()}
                 disabled={!input.trim() && !attachedImage && !activeGhostPrompt}
-                className={`w-7 h-7 sm:w-8 sm:h-8 p-1 sm:p-1.5 font-bold rounded-lg sm:rounded-xl transition-all shadow-sm cursor-pointer shrink-0 active:scale-95 flex items-center justify-center ${
+                className={`w-6 h-6 sm:w-7 sm:h-7 p-0 font-bold rounded-lg sm:rounded-xl transition-all shadow-xs cursor-pointer shrink-0 active:scale-95 flex items-center justify-center ${
                   input.trim() || attachedImage
                     ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-amber-500/20'
                     : activeGhostPrompt
@@ -2529,7 +2588,7 @@ export default function LucyStandalonePage() {
                     : '메시지 전송'
                 }
               >
-                <Send size={13} className="sm:w-3.5 sm:h-3.5" />
+                <Send size={11} className="sm:w-3.5 sm:h-3.5" />
               </button>
             )}
           </div>

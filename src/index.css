@@ -504,6 +504,15 @@
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
+  /* 🤍 루시 채팅 모드: 모바일 및 전 해상도 배경 순백 고정 (노치/홈바 및 바디 회색 투과 원천 방지) */
+  html.in-lucy-chat,
+  body.in-lucy-chat,
+  .in-lucy-chat #root,
+  .in-lucy-chat .prism-app-shell {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+  }
+
   /* 💎 프리미엄 스모키 크리스털 글래스모피즘 (모바일 및 전 해상도 완벽 렌더링) */
   .prism-glass-fab {
     background: rgba(15, 23, 42, 0.42) !important;

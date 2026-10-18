@@ -38,7 +38,7 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
   };
 
   return (
-    <div className="w-full flex items-center justify-between gap-1 sm:gap-1.5 py-0.5 px-0.5 sm:py-1 sm:px-1 overflow-x-auto no-scrollbar scroll-smooth">
+    <div className="w-full flex items-center justify-between gap-1 sm:gap-1.5 py-0 sm:py-0.5 px-0.5 sm:px-1 overflow-x-auto no-scrollbar scroll-smooth">
       {/* Left: Mode Badge */}
       <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
         <span
@@ -75,7 +75,7 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
               className={`group flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold border transition-all shadow-2xs shrink-0 ${
                 isSelectedTarget
                   ? 'bg-amber-100/90 dark:bg-amber-950/70 border-amber-400 dark:border-amber-500 text-amber-950 dark:text-amber-100 ring-2 ring-amber-400/50 shadow-sm'
-                  : 'bg-white/90 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-amber-300'
+                  : 'bg-white hover:bg-amber-50/60 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-amber-300'
               }`}
             >
               {/* Profile icon & info (Clickable to select as main target or edit) */}
@@ -144,7 +144,7 @@ export const ChatProfileDock: React.FC<ChatProfileDockProps> = ({
           <button
             type="button"
             onClick={onAddClick}
-            className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 border border-slate-200 dark:border-slate-700 hover:border-amber-300 text-slate-700 dark:text-slate-300 hover:text-amber-900 text-[10px] sm:text-[11px] font-bold transition-all shadow-2xs shrink-0 cursor-pointer active:scale-95"
+            className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white hover:bg-amber-50 dark:bg-slate-800 dark:hover:bg-amber-950/60 border border-slate-200 dark:border-slate-700 hover:border-amber-300 text-slate-700 dark:text-slate-300 hover:text-amber-900 text-[10px] sm:text-[11px] font-bold transition-all shadow-2xs shrink-0 cursor-pointer active:scale-95"
             title="상담/궁합 대상자 프로필 추가 (최대 4인)"
           >
             <Plus size={10} className="sm:w-3 sm:h-3 text-amber-600 dark:text-amber-400 shrink-0" />

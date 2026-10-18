@@ -150,10 +150,10 @@ export const DynamicGhostInputPlaceholder: React.FC<DynamicGhostInputPlaceholder
       className="absolute inset-0 flex items-center pointer-events-none select-none overflow-hidden pr-2 z-0"
       aria-hidden="true"
     >
-      <span className="text-[12px] sm:text-sm text-slate-400/90 dark:text-slate-500/90 font-normal truncate leading-snug sm:leading-relaxed">
+      <span className="text-xs sm:text-sm text-slate-400/90 dark:text-slate-500/90 font-normal truncate leading-tight sm:leading-snug">
         {displayText}
       </span>
-      <span className="inline-block w-[1.5px] h-[11px] sm:h-[13px] bg-amber-500/70 dark:bg-amber-400/70 ml-0.5 animate-pulse shrink-0 align-middle" />
+      <span className="inline-block w-[1.5px] h-[10px] sm:h-[13px] bg-amber-500/70 dark:bg-amber-400/70 ml-0.5 animate-pulse shrink-0 align-middle" />
     </div>
   );
 };
