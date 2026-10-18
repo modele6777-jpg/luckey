@@ -341,10 +341,10 @@ export function BigBangButton() {
     const isDragGesture = maxDist >= DRAG_RECOMMEND_THRESHOLD;
 
     // 🎯 제스처 실시간 타깃 및 HUD 매핑:
-    // 1) 드래그 (dist >= 14px): 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약 (홀드 중 드래그 시 PTT 즉시 취소)
+    // 1) 드래그 (dist >= 14px): Key 채널 마음약방 도약 (홀드 중 드래그 시 PTT 즉시 취소)
     // 2) 제자리 홀드 (dist < 14px, elapsed >= 250): 루시 AI PTT 실시간 음성 대화
     // 3) 가볍게 탭 (dist < 14px, elapsed < 250): 홈 (/) 베이스캠프 복귀
-    // 4) 더블탭: Key 마음약방 & 40가지 연습 도약
+    // 4) 더블탭: 럭키 채널 안의 1순위 추천앱 즉시 도약
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
@@ -363,28 +363,24 @@ export function BigBangButton() {
       setIsPageScrolling(false);
       currentHole = 'blackhole';
       const isTextToss = Boolean(textToToss);
-      const rec = peekNextRecommendedMenuByCycle(location, textToToss || undefined);
-      const targetMenu = rec.menu;
-      const safeDest = rec.safePath || targetMenu.path;
       target = {
-        id: targetMenu.id,
-        icon: targetMenu.emoji || '🌀',
+        id: 'key',
+        icon: '🔑',
         phase: 'blackhole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: targetMenu.name,
-        name: targetMenu.name,
+        title: isTextToss ? 'Key 40가지 연습 처방' : (isKeySite ? '프리즘 귀환' : 'Key 마음약방'),
+        name: 'Key',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[럭키 추천] "${textToToss.slice(0, 16)}..." ➔ ${targetMenu.name}`
-          : `[드래그 도약] ${targetMenu.name} (${rec.stats.visitedCount + 1}/${rec.stats.totalCount})`,
+          ? `[Key 토스] "${textToToss.slice(0, 16)}..." ➔ 40가지 연습 처방`
+          : (isKeySite ? '[드래그 귀환] 프리즘 홈' : '[드래그 도약] Key 마음약방'),
         previewDescription: isTextToss
-          ? `선택 문장 맥락에 가장 가까운 럭키 기능: ${targetMenu.subName || targetMenu.name}`
-          : (targetMenu.subName || rec.reason || '루시/Key 제외 7대 코어 앱 순환 추천 도약'),
-        destinationPath: safeDest,
-        themeColor: targetMenu.themeColor || '#a855f7',
-        accentGlow: targetMenu.themeColor ? `${targetMenu.themeColor}aa` : 'rgba(168, 85, 247, 0.85)',
-        cycleStats: rec.stats,
+          ? '선택한 문장을 Key 마음약방 40가지 소매틱 연습실로 즉시 전달합니다'
+          : (isKeySite ? '이전 머물던 앱 또는 프리즘 홈 베이스캠프로 복귀합니다' : '제이미 저커먼 도서 연동 마음 치유 동반자 & 40가지 소매틱 연습'),
+        destinationPath: isKeySite ? (safeSessionStorage.getItem('prism_key_return_path') || '/') : '/key',
+        themeColor: '#0ea5e9',
+        accentGlow: 'rgba(14, 165, 233, 0.85)',
       };
     } else if (elapsed >= 250) {
       currentHole = 'whitehole';
@@ -638,7 +634,7 @@ export function BigBangButton() {
     currentPointerEventRef.current = e;
   };
 
-  // ⚡ 추천 1순위 즉시 도약 헬퍼 (드래그 시 실행 - 루시와 Key는 엄격 제외)
+  // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭/더블클릭 시 실행 - 루시와 Key는 엄격 제외)
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any) => {
     // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
     if (singleTapTimerRef.current) {
@@ -647,7 +643,7 @@ export function BigBangButton() {
     }
     lastTapTimeRef.current = 0;
 
-    // 🌟 드래그: 추천 1순위 웜홀 사운드 & 햅틱
+    // 🌟 더블탭: 추천 1순위 웜홀 사운드 & 햅틱
     omniWarpAudio.playWormhole();
     triggerHaptic('wormhole');
 
@@ -700,7 +696,7 @@ export function BigBangButton() {
 
     const previewLabel = textToToss
       ? `[럭키 추천 · ${cycleLabel}] ${finalMenu.name}`
-      : `[드래그 도약 · ${cycleLabel}] ${finalMenu.name}`;
+      : `[더블탭 도약 · ${cycleLabel}] ${finalMenu.name}`;
 
     const previewDescription = textToToss
       ? `"${textToToss.slice(0, 20)}..." ➔ ${finalMenu.name} 즉시 실행`
@@ -763,7 +759,7 @@ export function BigBangButton() {
     resetActiveContextPeek();
   }, [location, navigate, getActiveSelectionText, isKeySite]);
 
-  // 🔑 Key 마음약방 도약 헬퍼 (더블탭/더블클릭 시 실행 - 텍스트 선택 시 40가지 연습 토스 연동)
+  // 🔑 Key 마음약방 도약 헬퍼 (드래그 시 실행 - 텍스트 선택 시 40가지 연습 토스 연동)
   const goToKey = useCallback((customContext?: any, customMetrics?: any) => {
     // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
     if (singleTapTimerRef.current) {
@@ -772,13 +768,13 @@ export function BigBangButton() {
     }
     lastTapTimeRef.current = 0;
 
-    // 🌟 더블탭: Key 도약 사운드 & 햅틱
+    // 🌟 드래그: Key 도약 사운드 & 햅틱
     omniWarpAudio.playDoubleTap();
     triggerHaptic('blackhole');
 
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
 
-    // 🔑 텍스트 선택 연동: 글자를 선택한 상태에서 더블탭 ➔ Key 40가지 연습으로 즉시 토스!
+    // 🔑 텍스트 선택 연동: 글자를 선택한 상태에서 드래그 ➔ Key 40가지 연습으로 즉시 토스!
     if (textToToss) {
       savePendingSelection(textToToss, 'key', location);
       try {
@@ -820,7 +816,7 @@ export function BigBangButton() {
               eventHorizonMode: 'blackhole',
               previewLabel: textToToss
                 ? `[Key 토스] "${textToToss.slice(0, 16)}..." ➔ 40가지 연습 처방`
-                : '[더블탭 도약] Key 마음약방',
+                : (isKeySite ? '[드래그 귀환] 프리즘 홈' : '[드래그 도약] Key 마음약방'),
               previewDescription: '제이미 저커먼 도서 연동 마음 치유 동반자 & 40가지 소매틱 연습',
             },
             context: customContext || serializeCurrentView(location),
@@ -935,7 +931,7 @@ export function BigBangButton() {
     setIsAborted(false);
     const context = serializeCurrentView(location);
 
-    // 🌀 [드래그: dist >= 14px] ➔ 홀드 음성 PTT 즉시 취소 및 7대 코어 앱 순환 추천 도약 실행!
+    // 🌀 [드래그: dist >= 14px] ➔ 홀드 음성 PTT 즉시 취소 및 Key 채널 도약 실행!
     if (isDragGesture) {
       if (isPttRecordingRef.current) {
         isPttRecordingRef.current = false;
@@ -948,7 +944,7 @@ export function BigBangButton() {
         singleTapTimerRef.current = null;
       }
       lastTapTimeRef.current = 0;
-      goToNextRecommended(context, metrics);
+      goToKey(context, metrics);
       return;
     }
 
@@ -989,9 +985,9 @@ export function BigBangButton() {
       const nowMs = performance.now();
       const timeSinceLastTap = nowMs - lastTapTimeRef.current;
 
-      // 🎯 더블탭 감지 (이전 탭 후 30ms ~ 380ms 이내 재탭 시): Key 마음약방으로 즉시 도약!
+      // 🎯 더블탭 감지 (이전 탭 후 30ms ~ 380ms 이내 재탭 시): 럭키 채널 안의 1순위 추천앱으로 즉시 도약!
       if (timeSinceLastTap > 30 && timeSinceLastTap < 380) {
-        goToKey(context, metrics);
+        goToNextRecommended(context, metrics);
         return;
       }
 
@@ -1138,9 +1134,9 @@ export function BigBangButton() {
     // [2] 홀드 (300ms 이상) 또는 드래그 릴리즈 분기
     const textToToss = touchStartSelectionRef.current || getActiveSelectionText();
 
-    // 🌀 [드래그: dist >= 14px] ➔ 루시와 Key를 제외한 7대 코어 앱 순환 추천 도약!
+    // 🌀 [드래그: dist >= 14px] ➔ Key 채널 도약!
     if (isDragGesture || dist >= DRAG_RECOMMEND_THRESHOLD) {
-      goToNextRecommended(context, metrics);
+      goToKey(context, metrics);
       return;
     }
 
@@ -1289,8 +1285,8 @@ export function BigBangButton() {
     if (activePhase === 'wormhole') return 'omniwarp';
     // 🌌 사건의 지평선 상태 (조준 중): 해당 조준 채널의 아이콘을 최우선으로 표출!
     if (radialSectorIndex >= 0) return RADIAL_WARP_APPS[radialSectorIndex]?.id || 'hub';
-    // 🌀 드래그 시: 추천 순환 목적지 앱
-    if (dragDistance >= 20) return currentTarget?.id || 'omniwarp';
+    // 🌀 드래그 시: Key 채널
+    if (dragDistance >= 20) return currentTarget?.id || 'key';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 홈 귀환
     if (isChatView) return 'hub';
     // 💬 제자리 홀드 - 일반 화면에서는 루시 1:1 대화
@@ -1307,8 +1303,8 @@ export function BigBangButton() {
       const subTitle = currentTarget?.title || '';
       return subTitle ? `${channel?.name || ''} · ${subTitle}` : (channel?.name || '');
     }
-    // 🌀 드래그 시: 추천 앱 도약
-    if (dragDistance >= 20) return currentTarget?.title ? `추천: ${currentTarget.title}` : '추천 앱 차원 도약';
+    // 🌀 드래그 시: Key 채널 도약
+    if (dragDistance >= 20) return isKeySite ? '프리즘 귀환' : 'Key 마음약방 도약';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 귀환
     if (isChatView) return '프리즘 귀환 (채팅 나가기)';
     // 💬 제자리 홀드 - 일반 화면에서는 루시 음성 대화
@@ -1341,11 +1337,11 @@ export function BigBangButton() {
                 <span className="text-xs">✨</span>
                 <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 채팅 피드백</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸Key 맞춤 연습</span>
+                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸럭키 1순위 추천</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸루시 음성 피드백</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸럭키 추천 기능</span>
+                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸Key 맞춤 연습</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1428,7 +1424,7 @@ export function BigBangButton() {
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                goToKey();
+                goToNextRecommended();
               }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -1497,11 +1493,11 @@ export function BigBangButton() {
                   ? 'inset 0 0 22px rgba(56, 189, 248, 0.35), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.45)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 홈 / 더블탭: Key 마음약방 / 홀드: 루시 음성 / 드래그: 추천 앱)"
+              title="빅뱅 버튼 (탭: 홈 / 더블탭: 럭키 1순위 추천 / 홀드: 루시 음성 / 드래그: Key 채널)"
               aria-label={
                 hasSelectionToss
                   ? '빅뱅 버튼 · 선택 내용 토스 대기중'
-                  : '빅뱅 버튼 · 탭: 홈, 더블탭: Key 마음약방, 홀드: 루시 음성, 드래그: 추천 앱'
+                  : '빅뱅 버튼 · 탭: 홈, 더블탭: 럭키 1순위 추천, 홀드: 루시 음성, 드래그: Key 채널'
               }
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
