@@ -29,6 +29,7 @@ import { recordPrismFeature } from '@/lib/prismOmniSync';
 import { playAiResultNotification } from '@/lib/audioHaptics';
 import { playTTS, stopTTS, useTTSActive } from '@/utils/tts';
 import { EpilogueAchievementShareModal } from './EpilogueAchievementShareModal';
+import { EpilogueAchievementStatsCard } from './EpilogueAchievementStatsCard';
 import { calculateEpilogueAchievementStats } from '@/types/epilogueAchievement';
 import {
   COSMIC_FOCUS_OPTIONS,
@@ -58,6 +59,7 @@ export function EpilogueSynergySection() {
   const [copied, setCopied] = useState<boolean>(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
+  const [shareModalTab, setShareModalTab] = useState<'card' | 'feed'>('card');
   const [archiveHistory, setArchiveHistory] = useState<ChronicleStampData[]>([]);
   const [isArchiveOpen, setIsArchiveOpen] = useState<boolean>(false);
 
@@ -298,8 +300,21 @@ export function EpilogueSynergySection() {
             </p>
           </div>
 
-          {/* Ambient Meditation Sound Control */}
-          <div className="flex items-center gap-2 self-start md:self-auto">
+          {/* Action Buttons: Meditation Tone & Soul Achievement Report */}
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setShareModalTab('card');
+                setIsShareModalOpen(true);
+              }}
+              className="px-4 py-2.5 rounded-xl text-xs font-bold font-sans flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border border-purple-400/40 shadow-lg shadow-purple-500/25 active:scale-95 transition-all cursor-pointer shrink-0"
+              title="에필로그 성취 통계 카드 & 커뮤니티 공유 모달 열기"
+            >
+              <Share2 size={15} className="text-amber-300" />
+              <span>성취 리포트 공유</span>
+            </button>
+
             <button
               onClick={() => toggleFrequencyTone()}
               className={`px-4 py-2.5 rounded-xl text-xs font-bold font-sans flex items-center gap-2 border transition-all cursor-pointer shrink-0 ${
@@ -314,6 +329,16 @@ export function EpilogueSynergySection() {
           </div>
         </div>
       </div>
+
+      {/* 🌟 Standing Epilogue Soul Achievement Stats Card */}
+      <EpilogueAchievementStatsCard
+        stats={achievementStats}
+        onOpenShareModal={(tab) => {
+          setShareModalTab(tab || 'card');
+          setIsShareModalOpen(true);
+        }}
+        compact={true}
+      />
 
       {/* 7-Prism Cosmic Live Footprint Grid */}
       <div className="glass p-6 sm:p-7 rounded-[32px] border border-white/10 space-y-4">
@@ -583,6 +608,7 @@ export function EpilogueSynergySection() {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         stats={achievementStats}
+        initialTab={shareModalTab}
       />
     </div>
   );

@@ -16,21 +16,26 @@ import type { EpilogueAchievementStats } from '@/types/epilogueAchievement';
 interface Props {
   stats: EpilogueAchievementStats;
   innerRef?: React.RefObject<HTMLDivElement | null>;
+  isCapture?: boolean;
 }
 
-export function EpilogueAchievementReportCard({ stats, innerRef }: Props) {
+export function EpilogueAchievementReportCard({ stats, innerRef, isCapture = false }: Props) {
   return (
     <div
       ref={innerRef}
       id="epilogue-achievement-card-root"
       style={{
-        width: '640px',
-        minHeight: '820px',
+        width: isCapture ? '640px' : '100%',
+        maxWidth: isCapture ? '640px' : '640px',
+        minHeight: isCapture ? '820px' : 'auto',
+        boxSizing: 'border-box',
         background: 'linear-gradient(145deg, #090915 0%, #110d24 50%, #080712 100%)',
         color: '#ffffff',
         fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
-      className="p-8 rounded-[36px] border border-purple-500/30 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none"
+      className={`rounded-[32px] sm:rounded-[36px] border border-purple-500/30 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none ${
+        isCapture ? 'p-8' : 'p-4 sm:p-7 md:p-8 w-full'
+      }`}
     >
       {/* Radiant Background Accents */}
       <div 

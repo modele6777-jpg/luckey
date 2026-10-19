@@ -30,16 +30,25 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   stats: EpilogueAchievementStats;
+  initialTab?: 'card' | 'feed';
 }
 
-export function EpilogueAchievementShareModal({ isOpen, onClose, stats }: Props) {
+export function EpilogueAchievementShareModal({ isOpen, onClose, stats, initialTab = 'card' }: Props) {
   const { firebaseUser } = useApp();
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const [activeTab, setActiveTab] = useState<'card' | 'feed'>('card');
+  const [activeTab, setActiveTab] = useState<'card' | 'feed'>(initialTab);
   const [renderedImageUrl, setRenderedImageUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState<boolean>(false);
   const [renderingError, setRenderingError] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+
+  // Sync initialTab when modal opens
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   // Sharing states
   const [isSharingToCommunity, setIsSharingToCommunity] = useState<boolean>(false);
@@ -152,9 +161,27 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats }: Props)
 
   // 2. Download Image File
   const handleDownloadImage = async () => {
-    if (!renderedImageUrl) return;
-    const filename = `luckey-epilogue-achievement-${stats.todayDateKey}`;
-    await downloadImage(renderedImageUrl, filename);
+    if (isDownloading) return;
+    setIsDownloading(true);
+    try {
+      let targetUrl = renderedImageUrl;
+      if (!targetUrl && cardRef.current) {
+        targetUrl = await toPng(cardRef.current, {
+          quality: 0.96,
+          pixelRatio: 2,
+          cacheBust: true,
+        });
+        setRenderedImageUrl(targetUrl);
+      }
+      if (targetUrl) {
+        const filename = `luckey-epilogue-achievement-${stats.todayDateKey}`;
+        await downloadImage(targetUrl, filename);
+      }
+    } catch (err) {
+      console.error('[EpilogueAchievement] Download capture failed:', err);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // 3. Copy Summary / Image
@@ -221,9 +248,19 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats }: Props)
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-5 overflow-y-auto no-scrollbar bg-black/85 backdrop-blur-xl">
-        {/* Hidden off-screen render target for html-to-image */}
-        <div style={{ position: 'fixed', left: '-9999px', top: '-9999px', pointerEvents: 'none' }}>
-          <EpilogueAchievementReportCard stats={stats} innerRef={cardRef} />
+        {/* Safe off-screen render target for html-to-image */}
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '640px',
+            opacity: 0,
+            pointerEvents: 'none',
+            zIndex: -100,
+          }}
+        >
+          <EpilogueAchievementReportCard stats={stats} innerRef={cardRef} isCapture />
         </div>
 
         {/* Modal Window Container */}
@@ -311,34 +348,50 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats }: Props)
               <div className="space-y-6">
                 {/* 🖼️ Card Preview Display Area */}
                 <div className="w-full flex flex-col items-center justify-center p-3 sm:p-5 rounded-[28px] bg-black/50 border border-white/10 relative overflow-hidden">
-                  {isRendering ? (
-                    <div className="py-24 flex flex-col items-center justify-center gap-3 text-white/60">
-                      <RefreshCw size={32} className="animate-spin text-purple-400" />
-                      <p className="text-xs font-mono tracking-wider">
-                        고화질 성취 리포트 카드를 이미지로 주조하는 중...
-                      </p>
-                    </div>
-                  ) : renderedImageUrl ? (
-                    <div className="w-full max-w-[480px] rounded-[24px] overflow-hidden shadow-2xl border border-purple-500/30 group relative">
-                      <img
-                        src={renderedImageUrl}
-                        alt="에필로그 성취 통계 카드"
-                        className="w-full h-auto object-cover select-none"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-4">
-                        <span className="text-xs text-white/90 font-bold bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-md">
-                          클릭하여 전체 저장 또는 공유
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full max-w-[480px]">
-                      {renderingError && (
-                        <p className="text-xs text-amber-300 mb-3 text-center">{renderingError}</p>
-                      )}
-                      <EpilogueAchievementReportCard stats={stats} />
+                  {/* Status chip over preview */}
+                  <div className="w-full flex items-center justify-between pb-3 px-1 text-xs">
+                    <span className="text-white/60 font-mono text-[11px] flex items-center gap-1.5">
+                      <Sparkles size={12} className="text-amber-400" />
+                      성취 리포트 증명서 미리보기
+                    </span>
+                    {isRendering ? (
+                      <span className="text-[10px] text-amber-300 font-mono font-bold flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 animate-pulse">
+                        <RefreshCw size={10} className="animate-spin" /> HD 2x 이미지 생성 중...
+                      </span>
+                    ) : renderedImageUrl ? (
+                      <span className="text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <Check size={10} /> 고화질 2x HD 준비 완료
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {renderingError && (
+                    <div className="w-full max-w-[540px] p-2.5 mb-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs text-center font-mono">
+                      {renderingError}
                     </div>
                   )}
+
+                  {/* Immediate Visual Card: Rendered Image if available, otherwise flawless Live Responsive Card */}
+                  <div className="w-full max-w-[540px] flex items-center justify-center">
+                    {renderedImageUrl ? (
+                      <div className="w-full rounded-[28px] overflow-hidden shadow-2xl border border-purple-500/30 group relative">
+                        <img
+                          src={renderedImageUrl}
+                          alt="에필로그 성취 통계 카드"
+                          className="w-full h-auto object-cover select-none"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-4">
+                          <span className="text-xs text-white/90 font-bold bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-md">
+                            2x HD 고화질 캡처본
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full">
+                        <EpilogueAchievementReportCard stats={stats} isCapture={false} />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* 🚀 Action Toolbar */}
@@ -372,12 +425,21 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats }: Props)
                   <button
                     type="button"
                     onClick={handleDownloadImage}
-                    disabled={!renderedImageUrl}
-                    className="w-full py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer border border-white/10"
+                    disabled={isDownloading}
+                    className="w-full py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer border border-white/10 disabled:opacity-50"
                     title="고화질 PNG 이미지 파일로 내 기기에 저장"
                   >
-                    <Download size={14} />
-                    <span>이미지 기기 저장 (PNG)</span>
+                    {isDownloading ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin text-purple-300" />
+                        <span>이미지 생성 및 저장 중...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download size={14} />
+                        <span>이미지 기기 저장 (PNG)</span>
+                      </>
+                    )}
                   </button>
 
                   {/* Action 3: Copy Text / Image */}
