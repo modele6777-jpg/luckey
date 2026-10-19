@@ -12,6 +12,8 @@ import {
   initTTSAudioLifecycle,
   analyzeTextEmotion,
   duckAmbientAudio,
+  configureSpeechAudioSession,
+  configureAmbientAudioSession,
 } from '../lib/audio';
 import { playAiResultNotification } from '../lib/audioHaptics';
 import { setTTSSessionActive, clearTTSSession, initTTSSessionHandlers, pauseTTSSession, resumeTTSSession } from '../lib/ttsMediaSession';
@@ -262,9 +264,13 @@ const updateTTSState = (newState: Partial<TTSState>) => {
   const nextActive = ttsState.isSpeaking || ttsState.isLoading;
 
   if (!prevActive && nextActive) {
-    duckAmbientAudio(true, 0.3);
+    // 외부 음악 앱은 멈추지 않고 살짝 덕킹(iOS 17+), 앱 BGM은 부드럽게 60%로
+    configureSpeechAudioSession();
+    duckAmbientAudio(true, 0.6);
   } else if (prevActive && !nextActive) {
-    duckAmbientAudio(false, 0.5);
+    duckAmbientAudio(false, 1.2);
+    // TTS 종료 → 외부 음악 원래 볼륨 복귀
+    configureAmbientAudioSession();
   }
 
   listeners.forEach((l) => l(ttsState));

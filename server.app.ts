@@ -257,9 +257,12 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
 function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const defaultModels = [
     "gemini-4-argon",
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
     "gemini-3.1-flash-lite-preview",
     "gemini-3-flash-preview",
-    "gemini-3.8-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-flash-latest",
   ];
 
   const normalizedRequested = normalizeRequestedGeminiModel(requestedModel);
@@ -278,13 +281,15 @@ function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   return [...available, ...throttled];
 }
 
-function buildFastModelConfig(baseConfig: any, model: string) {
+function buildFastModelConfig(baseConfig: any, model: string, thinkingLevel?: string) {
   const cfg: any = {
     ...baseConfig,
     maxOutputTokens: baseConfig?.maxOutputTokens || 2048,
   };
   if (model === "gemini-3-flash-preview" || model === "gemini-3.1-flash-lite-preview") {
     cfg.thinkingConfig = { thinkingBudget: 0 };
+  } else if (thinkingLevel && typeof model === "string" && model.startsWith("gemini-4")) {
+    cfg.thinkingConfig = { thinkingLevel };
   }
   return cfg;
 }
@@ -1814,7 +1819,7 @@ ${content}
         const contents = convertOpenAIMessagesToGeminiContents(rawMessages);
 
         const config: any = {
-          maxOutputTokens: req.body.max_tokens ? Math.max(Number(req.body.max_tokens), 8192) : 8192,
+          maxOutputTokens: req.body.max_tokens ? Number(req.body.max_tokens) : 8192,
           safetySettings: [
             { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
             { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -1854,7 +1859,7 @@ ${content}
 
           for (const currentModel of streamModels) {
             try {
-              const streamConfig = buildFastModelConfig(config, currentModel);
+              const streamConfig = buildFastModelConfig(config, currentModel, req.body.thinking_level);
               const stream = await ai.models.generateContentStream({
                 model: currentModel,
                 contents,

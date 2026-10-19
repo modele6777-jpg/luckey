@@ -142,9 +142,12 @@ export function getAmbientAnalyserNode(): AnalyserNode | null {
 
 let isAmbientDucked = false;
 
+/** TTS 재생 중 앱 내부 BGM 볼륨 비율 (1.0 = 줄이지 않음). 음성과 함께 자연스럽게 들리도록 60% 유지 */
+export const TTS_BGM_DUCK_GAIN = 0.6;
+
 /**
- * Keeps the in-app ambient background music playing naturally alongside TTS speech
- * (gentle 92% balance during speech, 100% when speech concludes) so both BGM and TTS mix harmoniously.
+ * Smoothly ducks the ambient background music bus to TTS_BGM_DUCK_GAIN (60%) during TTS speech
+ * and gently restores it to 100% when speech concludes so both BGM and TTS mix naturally.
  */
 export function duckAmbientAudio(duck: boolean, durationSec: number = 0.35): void {
   try {
@@ -153,7 +156,7 @@ export function duckAmbientAudio(duck: boolean, durationSec: number = 0.35): voi
     const bus = getAmbientAudioBus();
     const now = ctx.currentTime;
 
-    const targetGain = duck ? 0.92 : 1.0;
+    const targetGain = duck ? TTS_BGM_DUCK_GAIN : 1.0;
     isAmbientDucked = duck;
 
     bus.gain.cancelScheduledValues(now);
@@ -624,6 +627,14 @@ export function configurePlaybackAudioSession(): void {
   configureTransientDuckingAudioSession();
 }
 
+/**
+ * TTS 전용 오디오 세션 (iOS/iPadOS Safari 17+ · 홈 화면 PWA에서 동작).
+ * 유튜브 뮤직·멜론·스포티파이 등 외부 음악 앱이 멈추지 않고 TTS와 동시에 재생되도록 비독점 믹싱/더킹 지원
+ */
+export function configureSpeechAudioSession(): void {
+  configureTransientDuckingAudioSession();
+}
+
 export function getTTSAudioElement(): HTMLAudioElement {
   if (typeof window === 'undefined') {
     throw new Error('HTMLAudioElement is only available in the browser');
@@ -634,6 +645,7 @@ export function getTTSAudioElement(): HTMLAudioElement {
     ttsAudioEl.setAttribute('playsinline', 'true');
     ttsAudioEl.setAttribute('webkit-playsinline', 'true');
   }
+  configureSpeechAudioSession();
   return ttsAudioEl;
 }
 
@@ -1130,7 +1142,7 @@ export async function playTTSAudio(
   }
 
   // Configure non-exclusive transient ducking / ambient session so external music apps keep playing
-  configureTransientDuckingAudioSession();
+  configureSpeechAudioSession();
   const audioCtx = getSharedAudioContext();
   if (audioCtx.state === 'suspended') {
     await audioCtx.resume().catch(() => {});
@@ -1206,6 +1218,11 @@ export function initTTSAudioLifecycle(): void {
       }
     } catch (error) {
       console.error('[AudioLifecycle] Failed to restore AudioContext:', error);
+    }
+
+    // 앱 복귀 시 TTS 진행 중이면 외부 음악 덕킹 세션으로 복귀
+    if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
+      configureSpeechAudioSession();
     }
 
     if (ttsShouldBePlaying && !ttsUserExplicitlyPaused && ttsActiveBuffer && !ttsActiveSource) {

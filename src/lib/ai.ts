@@ -14,6 +14,7 @@ import {
   calculateNatalChart
 } from "./astrologyAnalysis";
 import { buildTarotMentalSupportSystemPrompt } from "./tarotMentalSupportCoach";
+import type { LucyThinkingLevel } from "./copyTone";
 
 // Initialization 
 export function getApiBaseUrl(): string {
@@ -48,6 +49,17 @@ const openai = new OpenAI({
 
 // @ts-ignore
 export const modelName = import.meta.env?.VITE_GEMINI_MODEL || (aiType === "grok" ? "grok-4.3" : "gemini-4-argon");
+
+/** 루시 채팅 전용 최신 모델 (Gemini 4 Argon). 다른 기능은 기존 빠른 Flash 모델 유지 */
+export const LUCY_CHAT_MODEL = "gemini-4-argon";
+
+/** Argon 과부하/실패 시 자동 폴백 순서 */
+export const LUCY_CHAT_FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.1-flash-lite"];
+
+/** thinkingLevel은 이를 지원하는 Gemini 4 계열에만 적용 (폴백 모델 요청 거부 방지) */
+function supportsThinkingLevel(model: string): boolean {
+  return model.startsWith("gemini-4");
+}
 
 export interface Message {
   role: "system" | "user" | "model" | "assistant";
@@ -1260,6 +1272,8 @@ async function invokeLLMStreamInner(params: {
   timeoutMs?: number,
   signal?: AbortSignal,
   maxOutputTokens?: number,
+  model?: string,
+  thinkingLevel?: LucyThinkingLevel,
 }) {
   const requestTimeoutMs = params.timeoutMs ?? 75000;
   const idleTimeoutMs = 35000;
@@ -1273,13 +1287,22 @@ async function invokeLLMStreamInner(params: {
         contents = [{ role: 'user', content: "대화를 시작해줘" }];
       }
 
-      const modelsToTry = [
-        modelName,
-        "gemini-4-argon",
-        "gemini-3.1-flash-lite-preview",
-        "gemini-3-flash-preview",
-        "gemini-3.8-flash",
-      ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
+      const modelsToTry = (params.model
+        ? [params.model, ...LUCY_CHAT_FALLBACK_MODELS]
+        : [
+            modelName,
+            "gemini-4-argon",
+            "gemini-3.8-flash",
+            "gemini-3.7-flash",
+            "gemini-3.1-flash-lite-preview",
+            "gemini-3-flash-preview",
+            "gemini-3.1-flash-lite",
+            "gemini-flash-latest",
+          ]
+      ).filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
+
+      const streamStartedAt = Date.now();
+      let hasLoggedFirstChunk = false;
 
       let hasEmittedToCaller = false;
       // 빈 응답 자동 재시도: 최대 2회
@@ -1310,6 +1333,9 @@ async function invokeLLMStreamInner(params: {
                 systemInstruction: systemMessage?.content as string,
                 temperature: modelRetry > 0 ? 0.8 : 0.7, // 재시도 시 온도 약간 올려서 빈 응답 방지
                 maxOutputTokens: params.maxOutputTokens || 8192,
+                ...(params.thinkingLevel && supportsThinkingLevel(currentModel)
+                  ? { thinkingConfig: { thinkingLevel: params.thinkingLevel as any } }
+                  : {}),
               }
             });
 
@@ -1317,6 +1343,10 @@ async function invokeLLMStreamInner(params: {
             for await (const chunk of responseStream) {
               const chunkText = chunk.text || "";
               if (chunkText) {
+                if (!hasLoggedFirstChunk) {
+                  hasLoggedFirstChunk = true;
+                  console.info(`[LucyLLM] model=${currentModel} thinking=${params.thinkingLevel || 'default'} ttft=${Date.now() - streamStartedAt}ms`);
+                }
                 const candidate = attemptContent + chunkText;
                 const loopCheck = checkRepetitionLoop(candidate);
                 if (loopCheck.isLoop) {
@@ -1394,11 +1424,12 @@ async function invokeLLMStreamInner(params: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: modelName,
+              model: params.model || modelName,
               messages,
               stream: true,
               temperature: 0.7,
               max_tokens: params.maxOutputTokens || 8192,
+              ...(params.thinkingLevel ? { thinking_level: params.thinkingLevel } : {}),
               presence_penalty: 0.3,
               frequency_penalty: 0.5,
             }),
@@ -1426,10 +1457,12 @@ async function invokeLLMStreamInner(params: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: modelName,
+              model: params.model || modelName,
               messages,
               stream: false,
               temperature: 0.7,
+              ...(params.maxOutputTokens ? { max_tokens: params.maxOutputTokens } : {}),
+              ...(params.thinkingLevel ? { thinking_level: params.thinkingLevel } : {}),
             }),
             signal: fallbackController.signal,
           });
@@ -1611,6 +1644,10 @@ export async function invokeLLMStream(params: {
   timeoutMs?: number;
   signal?: AbortSignal;
   maxOutputTokens?: number;
+  /** 지정 시 해당 모델을 우선 사용 (예: 루시 채팅 = gemini-4-argon) */
+  model?: string;
+  /** Gemini 4 계열 사고 깊이 (수다 MINIMAL / 채널 LOW / 마스터 MEDIUM) */
+  thinkingLevel?: LucyThinkingLevel;
 }) {
   const maxDurationMs = params.timeoutMs ?? 180000;
   const idleTimeoutMs = 45000;
