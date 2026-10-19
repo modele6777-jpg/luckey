@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.4.367",
+    "summary": "개발 서버 의존성 복구 및 정상 기동 완료, changelog.json 구문 무결성 보정 및 Vite Gemini 4 Argon 기본 모델 동기화",
+    "builtAt": "2026-10-19T14:05:00.000Z",
+    "items": [
+      "누락된 패키지 의존성(node_modules) 설치 및 Express + Vite 미들웨어 개발 서버(포트 3000) 정상 기동 복구",
+      "public/changelog.json 내 JSON 배열 구문 오류 수정으로 버전 플러그인 및 변경이력 파서 안정화",
+      "vite.config.ts의 VITE_GEMINI_MODEL 기본값을 최신 gemini-4-argon으로 동기화"
+    ]
+  },
+  {
     "version": "1.4.366",
     "summary": "라이트 테마 흰 글씨 근본 원인 수정: CSS :not() 안 자손 선택자 무효 버그 해결 — Contrast Engine v2",
     "builtAt": "2026-10-19T13:57:00.000Z",
@@ -35,6 +45,7 @@
       "자동화 검증 스크립트(scripts/audit_theme_contrast.mjs) 구축을 통한 전수 대비 감사 및 0 오류 통과"
     ]
   },
+  {
     "version": "1.4.363",
     "summary": "에필로그 성취 통계 카드 상시 노출 및 커뮤니티 공유 성취 리포트 카드 렌더링·다운로드·우주 광장 피드 완벽 복원",
     "builtAt": "2026-10-19T12:26:00.000Z",
@@ -48,6 +59,7 @@
       "라이트 모드 고대비 텍스트 엔진과 완벽 호환되도록 다크/라이트 양방향 명도 대비 7:1 이상 확보"
     ]
   },
+  {
     "version": "1.4.362",
     "summary": "라이트 모드 고대비 가독성 엔진 완벽 재설계 및 ProfileModal 전면 테마 지원: 버튼/배지 화이트 텍스트 철벽 보호 및 파스텔 텍스트 시인성 극대화",
     "builtAt": "2026-10-19T11:58:00.000Z",
