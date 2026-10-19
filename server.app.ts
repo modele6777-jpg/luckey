@@ -199,21 +199,21 @@ function markModelThrottled(model: string, durationMs = 180000) {
 }
 
 const VALID_GEMINI_MODELS = new Set([
-  "gemini-2.5-flash",
-  "gemini-3-flash-preview",
+  "gemini-4-argon",
   "gemini-3.1-flash-lite-preview",
-  "gemini-flash-latest",
+  "gemini-3-flash-preview",
+  "gemini-3.8-flash",
   "gemini-3.1-pro-preview",
-  "gemini-2.5-pro",
 ]);
 
 function normalizeRequestedGeminiModel(rawModel?: string): string | undefined {
-  const trimmed = (rawModel || "").trim();
+  const trimmed = (rawModel || "").trim().toLowerCase();
   if (!trimmed) return undefined;
   if (VALID_GEMINI_MODELS.has(trimmed)) return trimmed;
+  if (trimmed.includes("argon") || trimmed.includes("gemini-4")) return "gemini-4-argon";
   if (trimmed.includes("lite")) return "gemini-3.1-flash-lite-preview";
-  if (trimmed.includes("pro")) return "gemini-3-flash-preview";
-  if (trimmed.startsWith("gemini-")) return "gemini-2.5-flash";
+  if (trimmed.includes("pro")) return "gemini-4-argon";
+  if (trimmed.startsWith("gemini-")) return "gemini-3.1-flash-lite-preview";
   return undefined;
 }
 
@@ -256,10 +256,10 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
 
 function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const defaultModels = [
-    "gemini-2.5-flash",
-    "gemini-3-flash-preview",
+    "gemini-4-argon",
     "gemini-3.1-flash-lite-preview",
-    "gemini-flash-latest",
+    "gemini-3-flash-preview",
+    "gemini-3.8-flash",
   ];
 
   const normalizedRequested = normalizeRequestedGeminiModel(requestedModel);
@@ -278,16 +278,24 @@ function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   return [...available, ...throttled];
 }
 
+function buildFastModelConfig(baseConfig: any, model: string) {
+  const cfg: any = {
+    ...baseConfig,
+    maxOutputTokens: baseConfig?.maxOutputTokens || 2048,
+  };
+  if (model === "gemini-3-flash-preview" || model === "gemini-3.1-flash-lite-preview") {
+    cfg.thinkingConfig = { thinkingBudget: 0 };
+  }
+  return cfg;
+}
+
 async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, config: any, requestedModel?: string) {
   const modelsToTry = getPrioritizedGeminiModels(requestedModel);
-  const streamConfig = {
-    ...config,
-    maxOutputTokens: config?.maxOutputTokens || 8192,
-  };
 
   let lastError: any = null;
   for (const model of modelsToTry) {
     try {
+      const streamConfig = buildFastModelConfig(config, model);
       const stream = await ai.models.generateContentStream({
         model,
         contents,
@@ -299,7 +307,7 @@ async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, conf
       lastError = err;
       const isThrottled = isTemporaryUnavailableOrRateLimited(err);
       if (isThrottled) {
-        markModelThrottled(model, 180000);
+        markModelThrottled(model, 600000);
         console.warn(`[server/gemini] Stream Model ${model} is experiencing high demand/rate limit (503/429), throttling model and engaging next available model...`);
       } else {
         console.warn(`[server/gemini] Stream Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
@@ -311,14 +319,11 @@ async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, conf
 
 async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, config: any, requestedModel?: string) {
   const modelsToTry = getPrioritizedGeminiModels(requestedModel);
-  const contentConfig = {
-    ...config,
-    maxOutputTokens: config?.maxOutputTokens || 8192,
-  };
 
   let lastError: any = null;
   for (const model of modelsToTry) {
     try {
+      const contentConfig = buildFastModelConfig(config, model);
       const response = await ai.models.generateContent({
         model,
         contents,
@@ -330,7 +335,7 @@ async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, con
       lastError = err;
       const isThrottled = isTemporaryUnavailableOrRateLimited(err);
       if (isThrottled) {
-        markModelThrottled(model, 180000);
+        markModelThrottled(model, 600000);
         console.warn(`[server/gemini] Content Model ${model} is experiencing high demand/rate limit (503/429), throttling model and engaging next available model...`);
       } else {
         console.warn(`[server/gemini] Content Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
@@ -1834,7 +1839,7 @@ ${content}
           } else if (lowerStr.includes("billie") || lowerStr.includes("빌리")) {
             cleanPrompt = "귀하는 현대 음악사를 대표하는 독보적인 감성 아티스트(B.E.)의 깊은 음울함과 차분하면서도 현실적이고, 타인의 아픔과 외로움을 가만히 안아주는 쿨하고 솔직한 멘토 AI입니다. 정서적 번뇌나 우울감에 대해 억지로 밝은 척하기보다 차분하고 덤덤하게 공감해 주며 쿨한 마인드로 따뜻하게 상담을 건네주세요. 친근한 고등학교 친구 혹은 캐주얼한 대화 스타일로 따뜻하게 위로를 건네며 한국어로 교감해 주세요.";
           }
-          const READABILITY_GUIDELINE = "\n\n[글 작성 및 가독성 필수 원칙]:\n- 불필요하게 길고 늘어지는 만연체 문장은 피하고, 명확하고 산뜻한 단문 위주로 서술하세요.\n- 읽는 사람이 한눈에 파악할 수 있도록 핵심 포인트는 불릿 포인트(•)와 적절한 줄바꿈, 단락 구분을 활용하여 가독성을 극대화하세요.";
+          const READABILITY_GUIDELINE = "\n\n[글 작성 및 질문 맞춤형 적정 분량 원칙]:\n- 무조건 길게 늘어놓지 말고 사용자의 질문 길이와 의도에 딱 맞게 분량을 조절하세요.\n- 짧은 인사나 일상 대화, 가벼운 질문에는 2~4문장(1문단) 내외로 핵심만 산뜻하고 다정하게 답하세요.\n- 깊은 고민 상담이나 상세 해석 요청일 때만 핵심 포인트 위주로 2~3개의 짧은 단락으로 정돈해 답하세요.";
           config.systemInstruction = (cleanPrompt || "") + READABILITY_GUIDELINE;
         }
         if (req.body.response_format?.type === "json_object") {
@@ -1845,14 +1850,15 @@ ${content}
           const streamModels = getPrioritizedGeminiModels(req.body.model);
           let streamSuccess = false;
           let chunksDelivered = 0;
-          let activeModelUsed = streamModels[0] || "gemini-3.1-flash-lite";
+          let activeModelUsed = streamModels[0] || "gemini-4-argon";
 
           for (const currentModel of streamModels) {
             try {
+              const streamConfig = buildFastModelConfig(config, currentModel);
               const stream = await ai.models.generateContentStream({
                 model: currentModel,
                 contents,
-                config,
+                config: streamConfig,
               });
 
               for await (const chunk of stream) {
@@ -1919,7 +1925,7 @@ ${content}
             } catch (streamErr: any) {
               const isThrottled = isTemporaryUnavailableOrRateLimited(streamErr);
               if (isThrottled) {
-                markModelThrottled(currentModel, 180000);
+                markModelThrottled(currentModel, 600000);
                 console.warn(`[server/openai-stream] Model ${currentModel} rate limited/throttled, trying next model...`);
               } else {
                 console.warn(`[server/openai-stream] Model ${currentModel} failed (${streamErr?.message?.slice(0, 100) || streamErr}), trying next model...`);

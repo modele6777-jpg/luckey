@@ -1,92 +1,91 @@
-# 빅뱅 버튼 4방위 아이콘 금빛 색상 통일 및 크기 정밀 축소
+# 외부 음악 앱 및 내부 힐링 BGM과 TTS 동시 재생 (오디오 믹싱 & 더킹 아키텍처)
 
-빅뱅 버튼 외곽 아케인 서클의 상·하·좌·우 4방위 기능 아이콘(상·하 쉐브론 화살표, 3선 메뉴, 음표)의 색상을 고급스러운 **황금빛(Golden Amber, `#fbbf24`)**으로 일괄 통일하고, 시각적 아이콘 크기를 약 20~25% 축소하여 마법진 궤도 안에 더욱 단정하고 조화롭게 어우러지도록 개선합니다.
+유튜브 뮤직, 멜론, 스포티파이, 애플 뮤직 등 외부 음악 앱으로 음악을 감상하는 도중에도 음악이 멈추지 않고 루시 및 도슨트 TTS 음성이 동시에 자연스럽게 믹싱되어 재생되도록 오디오 세션 및 재생 파이프라인을 개편합니다.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> 사전 질문에서 확정해 주신 두 가지 핵심 디자인 방향을 반영하여 계획을 수립했습니다.
+> 사용자 답변을 바탕으로 확정된 오디오 믹싱 정책입니다.
 
-- **Confirmed Decision 1 (4방위 금빛 통일 및 배경음 재생 상태 구분)**: 상·하 쉐브론 화살표, 좌측 3선 메뉴, 우측 음표 아이콘 모두 **황금빛(`#fbbf24`) 네온 발광**으로 통일합니다. 우측 음표 아이콘은 배경음 재생 중일 때 **더욱 밝은 황금빛 광채(`#fde68a` 하이라이트 및 이중 골드 글로우) 증폭과 부드러운 맥동(`animate-pulse`) 애니메이션**으로 재생 상태를 직관적으로 구분합니다.
-- **Confirmed Decision 2 (시각적 크기 20~25% 축소 및 터치 영역 유지)**: 기존 체감 크기(`20px` 아이콘 × `1.2` 배율 = 약 `24px`)에서 **약 20~25% 축소된 체감 `17.6px~18px` 규격**(`16px` 기본 크기 × `1.1` 상시 배율, 호버 시 `1.2` 배율)으로 줄여 아케인 서클 궤도 선과 겹치지 않고 단정하게 수납되도록 조정합니다. 단, 클릭·터치 편의성을 위한 투명 히트박스(`32px × 32px`)는 그대로 유지합니다.
+- **외부 음악 앱과의 동시 재생 및 볼륨 더킹**: 외부 음악 앱의 재생을 강제로 중지시키지 않고 동시에 재생하며, 운영체제/브라우저가 지원하는 기기에서는 TTS 발화 중에만 외부 음악 볼륨을 살짝 줄여(Transient Ducking) 음성이 또렷하게 들리도록 처리합니다.
+- **앱 내부 힐링 BGM과의 동시 재생**: TTS가 나올 때 앱 내부 배경음악(BGM)이 급격히 줄어들거나 끊기지 않고, 배경음악과 TTS 음성이 함께 자연스러운 밸런스로 어우러져 재생되도록 유지합니다.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: 빅뱅 버튼 주변 4방위 컨트롤(최상단 이동, 최하단 이동, 메뉴 열기, 배경음 제어)의 다채로운 네온 색상을 황금빛 아케인 테마로 일원화하고, 아이콘의 부피감을 줄여 중앙 코어와의 시각적 위계를 정돈합니다.
-- **Target Audience / Persona**: 우주적·신비주의 타로 인터페이스의 통일된 황금빛 미학을 선호하며, 작은 화면에서도 정교하고 깔끔한 컨트롤 비율을 원하는 사용자.
-- **Key Value**: 4가지 서로 다른 색상(골드·로즈·퍼플·시안)으로 분산되던 시선을 **단일 황금빛 아케인 팔레트**로 결속시켜 고급스러운 일체감을 부여하고, 과도하게 커 보이던 아이콘 크기를 줄여 마법진 기하학 문양의 디테일을 살립니다.
+- **What It Does**: 기존에는 TTS 재생 시 브라우저가 운영체제의 독점 미디어 포커스(Exclusive Audio Focus)를 가져가 외부 음악 앱이 일시정지되었으나, 이제 비독점 오디오 믹싱 파이프라인을 통해 외부 음악과 TTS가 끊김 없이 동시에 출력됩니다.
+- **Target Audience / Persona**: 유튜브 뮤직·멜론·스포티파이 등으로 좋아하는 음악을 들으면서 동시에 타로 리딩, 루시 AI 대화, 1분 명상 및 도슨트 음성 안내를 함께 듣고자 하는 모바일·데스크톱 사용자.
+- **Key Value**: 음악 감상의 흐름이 끊기지 않는 몰입감과 선명한 음성 전달력을 동시에 제공합니다.
 
 ---
 
 ## 2. User Experience & Visual Design
 
 - **Key User Flows**:
-  1. **기본 대기 상태**: 빅뱅 버튼 외곽 4방위에 단정한 크기의 황금빛(`#fbbf24`) 쉐브론 화살표(상·하), 3선 메뉴(좌), 음표(우) 아이콘이 은은한 골드 네온 후광과 함께 상시 고정되어 표시됩니다.
-  2. **호버 및 탭 인터랙션**: 각 아이콘에 마우스를 올리면 황금빛 네온 후광이 한층 밝아지며(`#fde68a`) 미세하게 확대(`1.1x` → `1.2x`)되고, 클릭 시 황금빛 임플로전 펄스 링이 퍼져 나갑니다.
-  3. **배경음 재생 상태 피드백**: 우측 음표 아이콘 클릭 시 배경음이 재생되면, 아이콘이 밝은 샴페인 골드(`#fde68a`) 코어와 강한 황금빛 광채(`drop-shadow(0 0 12px rgba(251,191,36,1))`)를 띠며 부드럽게 맥동합니다.
+  1. 사용자가 외부 음악 앱(유튜브 뮤직, 멜론, 스포티파이 등)에서 음악을 재생한 상태로 앱에 진입합니다.
+  2. 루시 대화창이나 도슨트 안내에서 TTS 듣기 버튼을 누르거나 자동 음성 낭독이 시작됩니다.
+  3. 외부 음악이 정지되지 않고 계속 흐르며(지원 기기에서는 외부 음악 볼륨이 부드럽게 살짝 낮아짐), 그 위로 루시의 음성이 또렷하게 겹쳐서 재생됩니다.
+  4. 앱 내부 힐링 BGM을 켜둔 경우에도 BGM 볼륨이 급격히 꺼지지 않고 TTS 음성과 함께 자연스럽게 조화를 이루며 재생됩니다.
+  5. TTS 낭독이 끝나면 외부 음악 볼륨이 즉시 원래대로 복원됩니다.
 - **Visual Identity & Theme**:
-  - *Aesthetic Direction*: Cosmic Golden Arcane — 신성 기하학 마법진과 조화를 이루는 순수 황금빛 성좌 컨트롤.
-  - *Color Palette & Mood*:
-    - **기본 대기 색상 (4방위 공통)**: Golden Amber (`#fbbf24`) + `drop-shadow(0 0 6px rgba(251, 191, 36, 0.75))`
-    - **마우스 호버 색상 (4방위 공통)**: Warm Champagne Gold (`#fde68a` / `text-amber-200`) + `drop-shadow(0 0 10px rgba(251, 191, 36, 1))`
-    - **배경음 재생 활성 상태 (우측 음표)**: Radiant Gold (`#fde68a`) + `drop-shadow(0 0 12px rgba(251, 191, 36, 1))` + `animate-pulse`
-    - **클릭 임플로전 링 & 블랙홀 수축 광채 (4방위 공통)**: `#fbbf24` 골드 펄스로 통일
-  - *Component Sizing & Spatial Math*:
-    - **투명 터치 히트박스**: `32px × 32px` (`w-8 h-8`) 유지로 모바일·데스크톱 오작동 방지
-    - **아이콘 렌더링 크기**: 기존 `20px` (`w-5 h-5`) + 상시 스케일 `1.2` (체감 `24px`) → **`16px` (`w-4 h-4`) + 상시 스케일 `1.1` (체감 `17.6px`, 약 26% 축소)** 및 선 두께 `stroke-[2.2]`로 세밀하게 조정
+  - 기존 UI 디자인과 금빛 빅뱅 버튼, 라이트/다크 테마를 그대로 유지하며, TTS 재생 중 문장 하이라이트 및 일시정지/재개/정지 컨트롤의 즉각적인 반응성을 보존합니다.
+- **Interactive Feedback & Motion**:
+  - TTS 일시정지(`pause`) 및 이어듣기(`resume`) 시 오디오 버퍼 오프셋을 정밀하게 추적하여, 외부 음악과 동시 재생 중에도 문장 중간부터 끊김 없이 즉시 재개됩니다.
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: 4방위 전체 황금빛(`#fbbf24`) 팔레트 일원화**
-  - *Chosen Approach*: 기존 하단(퍼플), 좌측(시안), 우측(로즈) 색상을 모두 상단과 동일한 황금빛(`#fbbf24`)으로 통일하고, 클릭 시 퍼지는 임플로전 링과 블랙홀 수축 필터 색상까지 모두 황금빛으로 일치시킵니다.
-  - *Why*: 빅뱅 버튼의 황금빛 마법진 링 및 상단 자동읽기·운세 버튼의 골드 포인트와 완벽한 시각적 통일성을 이룹니다.
-  - *Alternatives Considered*: 방위별로 미세하게 다른 골드 톤(로즈골드, 화이트골드 등)을 섞는 방안은 자칫 색상 편차나 오류처럼 보일 수 있어 순수 골드 톤으로 일괄 통일했습니다.
-- **Decision 2: 시각적 아이콘 축소(`w-4 h-4`, 스케일 `1.1`)와 히트박스(`w-8 h-8`) 분리**
-  - *Chosen Approach*: SVG 아이콘 자체 크기와 기본 스케일만 약 20~25% 줄이고, 외부 투명 버튼 컨테이너(`w-8 h-8`)는 그대로 유지합니다.
-  - *Why*: 아이콘이 작아져 마법진 링 내부 여백이 넓어지면서도, 손가락이나 마우스로 클릭할 때의 조작감은 전혀 저하되지 않습니다.
+- **Decision 1: 독점 미디어 엘리먼트(`HTMLAudioElement`) 대신 Web Audio API 믹싱 버퍼 엔진을 주 재생기로 전환**
+  - *Chosen Approach*: TTS 오디오(PCM 및 압축 MP3/WAV)를 공유 `AudioContext`의 `AudioBufferSourceNode` 및 전용 보이스 게인 버스를 통해 디코딩·재생하고, 외부 음악을 멈추게 하는 무음 `<audio>` 루프(`ttsKeepAliveEl`)와 독점 `<audio>` 재생을 비활성화합니다.
+  - *Why*: 모바일 iOS 및 Android 운영체제는 `<audio>` 태그가 재생될 때 이를 '새로운 뮤직 플레이어 앱'으로 인식하여 기존에 켜져 있던 멜론·유튜브 뮤직·스포티파이를 강제로 일시정지시킵니다. 반면 Web Audio API는 시스템 오디오 믹서 위에서 효과음/보이스 레이어로 합성되므로 외부 음악 앱을 멈추지 않고 동시 재생이 가능합니다.
+  - *Alternatives Considered*: `<audio>` 태그를 유지한 채 미디어 세션만 숨기는 방식은 Android Chrome과 iOS Safari의 OS 레벨 오디오 포커스 정책 때문에 여전히 외부 음악을 중지시키므로 제외했습니다.
+- **Decision 2: W3C AudioSession API 기반 스마트 더킹(`transient` / `ambient`) 적용**
+  - *Chosen Approach*: `navigator.audioSession`을 지원하는 환경에서 TTS 발화 시작 시 세션을 `'transient'`(외부 음악 동시 재생 + 일시적 볼륨 더킹)로 우선 설정하고, 미지원 시 `'ambient'`(외부 음악 동시 재생)로 폴백하며, 발화 종료 시 즉시 `'ambient'`로 복원합니다. 또한 `navigator.mediaSession.playbackState = 'playing'` 독점 선언을 제거하여 외부 음악 앱의 잠금화면 컨트롤러를 빼앗지 않도록 합니다.
+  - *Why*: 외부 음악 앱의 재생 상태를 보호하면서도, 지원 기기에서는 음성 안내 동안 외부 음악 볼륨만 살짝 낮춰 가청성을 높일 수 있습니다.
+- **Decision 3: 앱 내부 힐링 BGM 자연스러운 동시 재생 및 보이스 명료도 보정**
+  - *Chosen Approach*: TTS 시작 시 내부 BGM을 25%로 대폭 줄이던 기존 강제 더킹을 해제하여 내부 BGM이 자연스러운 볼륨(90%~100%)을 유지하도록 하고, TTS 출력 버스에는 보이스 대역이 선명하게 들리도록 마스터 버스 연결을 최적화합니다.
+  - *Why*: 사용자가 요청한 "앱 내부 배경음악도 함께 자연스럽게 재생" 경험을 충실히 구현합니다.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy *(Technical Reference)*
 
-### Architecture & Component Diagram
+- **Architecture & Component Diagram**:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    BigBangCircularMeter (200×200px)                     │
-│                                                                         │
-│       ┌─────────────────────────────────────────────────────────┐       │
-│       │       Outer Arcane Ring & Orbit Container (r=62px)      │       │
-│       │         Unified Palette: Golden Amber (#fbbf24)         │       │
-│       │         Visual Size: 16px × 1.1 scale (~17.6px)         │       │
-│       └────────────┬───────────────┬───────────────┬────────────┘       │
-│                    │               │               │                    │
-│        ┌───────────┴───┐   ┌───────┴───────┐   ┌───┴───────────┐        │
-│        ▼               ▼   ▼               ▼   ▼               ▼        │
-│  ┌───────────┐   ┌───────────────┐   ┌───────────────┐   ┌───────────┐  │
-│  │   North   │   │     South     │   │     West      │   │   East    │  │
-│  │ ChevronUp │   │  ChevronDown  │   │     Menu      │   │   Music   │  │
-│  │ (0° Top)  │   │ (180° Bottom) │   │  (270° Left)  │   │(90° Right)│  │
-│  │  #fbbf24  │   │    #fbbf24    │   │    #fbbf24    │   │  #fbbf24  │  │
-│  │ w-4 h-4   │   │    w-4 h-4    │   │    w-4 h-4    │   │  w-4 h-4  │  │
-│  └─────┬─────┘   └───────┬───────┘   └───────┬───────┘   └─────┬─────┘  │
-│        │                 │                   │                 │        │
-│        ▼                 ▼                   ▼                 ▼        │
-│  Scroll to Top    Scroll to Bottom     Open Quick Menu   Play/Pause BGM │
-│                                                          (Pulse + Bright│
-│                                                           Gold Active)  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                   OS System Audio Mixer (iOS / Android)              │
+│  ┌────────────────────────────┐    ┌──────────────────────────────┐  │
+│  │ External Music Apps        │    │ PRISM Web Audio Engine       │  │
+│  │ (YouTube Music / Melon /   │    │ (Non-Exclusive Mixing Layer) │  │
+│  │  Spotify / Apple Music)    │    └──────────────┬───────────────┘  │
+│  └─────────────▲──────────────┘                   │                  │
+└────────────────┼──────────────────────────────────┼──────────────────┘
+                 │                                  │
+   AudioSession: 'transient' / 'ambient'            ▼
+   (Ducks external music gently;        ┌───────────────────────────┐
+    never claims exclusive focus)       │ Shared AudioContext       │
+                                        │  ├─ Voice Bus (TTS Audio) │
+                                        │  │   └─ BufferSourceNode  │
+                                        │  │      (Pause/Resume     │
+                                        │  │       Offset Tracker)  │
+                                        │  └─ Ambient Bus (In-App   │
+                                        │      Healing BGM - 95%    │
+                                        │      Natural Co-Playback) │
+                                        └───────────────────────────┘
 ```
 
-### Interactive Component & State Mapping
-
-| 방위 (위치) | 아이콘 컴포넌트 | 크기 및 스케일 규격 | 색상 및 발광 상태 (대기 / 호버 / 활성) | 연결된 이벤트 핸들러 |
-| :--- | :--- | :--- | :--- | :--- |
-| **상 (North, 0°)** | `ChevronUp` | `w-4 h-4` (`16px`), 기본 `scale: 1.1`, 호버 `scale: 1.2`, 탭 `scale: 0.9` | 대기 `#fbbf24` 골드 글로우 / 호버 `text-amber-200` 밝은 골드 글로우 | `handleScrollToTop` |
-| **하 (South, 180°)** | `ChevronDown` | `w-4 h-4` (`16px`), 기본 `scale: 1.1`, 호버 `scale: 1.2`, 탭 `scale: 0.9` | 대기 `#fbbf24` 골드 글로우 / 호버 `text-amber-200` 밝은 골드 글로우 | `handleScrollToBottom` |
-| **좌 (West, 270°)** | `Menu` | `w-4 h-4` (`16px`), 기본 `scale: 1.1`, 호버 `scale: 1.2`, 탭 `scale: 0.9` | 대기 `#fbbf24` 골드 글로우 / 호버 `text-amber-200` 밝은 골드 글로우 | `handleMenuClick` |
-| **우 (East, 90°)** | `Music` | `w-4 h-4` (`16px`), 기본 `scale: 1.1` (홀딩 시 `0.9`), 호버 `scale: 1.2` | 대기 `#fbbf24` 골드 글로우 / 재생 중 `#fde68a` + 고휘도 골드 글로우 + `animate-pulse` | `handleBgmClick` 및 400ms 홀딩 핸들러 |
+- **Data Model & State**:
+  - **Web Audio TTS Playback Controller**: 현재 재생 중인 `AudioBuffer`, 시작 타임스탬프(`startedAtContextTime`), 일시정지 누적 오프셋(`pausedOffsetSec`), 재생 상태(`playing` | `paused` | `stopped`)를 관리하여 `AudioBufferSourceNode` 기반에서도 정확한 일시정지(`pauseTTSAudio`)와 이어듣기(`resumeTTSAudio`)를 지원합니다.
+  - **Audio Session Coordinator**: TTS 발화 시작 시 `configureTransientDuckingAudioSession()`을 호출해 `'transient'`(실패 시 `'ambient'`) 모드를 활성화하고, 발화 완료/정지 시 `configureAmbientAudioSession()`으로 복귀합니다.
+- **Interactive Component & State Mapping**:
+  - **TTS 발화 시작 (`playTTS` / `playTTSInChunks` / `playTTSAudio`)**:
+    1. `configureTransientDuckingAudioSession()`으로 외부 음악 앱 중단 방지 및 볼륨 더킹 힌트 전달.
+    2. 수신된 PCM 또는 MP3/WAV 오디오 데이터를 공유 `AudioContext`의 `AudioBuffer`로 디코딩하여 보이스 버스로 즉시 출력.
+    3. 앱 내부 BGM은 급격한 볼륨 감쇄 없이 자연스러운 밸런스로 동시 유지.
+  - **TTS 일시정지 / 재개 / 정지 (`pauseTTS` / `resumeTTS` / `stopTTS`)**:
+    1. 일시정지 시 현재 재생 오프셋을 기록하고 보이스 소스만 정지하여, 앱 내부 BGM과 외부 음악은 끊김 없이 계속 재생되도록 유지(전체 `AudioContext.suspend()` 호출 제거).
+    2. 재개 시 저장된 오프셋(`pausedOffsetSec`)부터 새로운 `AudioBufferSourceNode`를 즉시 연결해 자연스럽게 이어서 발화.
+    3. 정지 또는 완독 시 오디오 세션을 `'ambient'`로 복원하여 외부 음악 볼륨을 원래대로 되돌림.

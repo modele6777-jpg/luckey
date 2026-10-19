@@ -1,67 +1,32 @@
-let handlersBound = false;
+/**
+ * Non-exclusive TTS session coordinator.
+ *
+ * Intentionally avoids claiming `navigator.mediaSession.playbackState = 'playing'`
+ * or overwriting `navigator.mediaSession.metadata`, so external music apps
+ * (YouTube Music, Melon, Spotify, Apple Music, etc.) continue playing
+ * simultaneously without losing OS MediaSession / AudioFocus ownership.
+ */
 
-export function setTTSSessionActive(title: string, artist: string = 'PRISM'): void {
-  if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-
-  try {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: title.slice(0, 80) || '음성 안내',
-      artist,
-      album: 'PRISM Universe',
-      artwork: [
-        { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-      ],
-    });
-    // 백그라운드 재생 지속(화면 꺼짐 및 타 앱 전환 시 오디오 유지)을 위한 공식 playbackState 선언
-    navigator.mediaSession.playbackState = 'playing';
-  } catch {
-    // MediaMetadata unsupported on some browsers
-  }
+export function setTTSSessionActive(_title: string, _artist: string = 'PRISM'): void {
+  // No-op: do not claim exclusive OS MediaSession focus so external music apps keep playing.
 }
 
 export function pauseTTSSession(): void {
-  if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-  try {
-    navigator.mediaSession.playbackState = 'paused';
-  } catch {}
+  // No-op: preserve external music app's active MediaSession state.
 }
 
 export function resumeTTSSession(): void {
-  if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-  try {
-    navigator.mediaSession.playbackState = 'playing';
-  } catch {}
+  // No-op: preserve external music app's active MediaSession state.
 }
 
 export function clearTTSSession(): void {
-  if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-
-  try {
-    navigator.mediaSession.playbackState = 'none';
-    navigator.mediaSession.metadata = null;
-  } catch {
-    // ignore
-  }
+  // No-op: preserve external music app's active MediaSession state.
 }
 
 export function initTTSSessionHandlers(
-  onStop: () => void,
-  onPause?: () => void,
-  onResume?: () => void
+  _onStop: () => void,
+  _onPause?: () => void,
+  _onResume?: () => void
 ): void {
-  if (handlersBound || typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-  handlersBound = true;
-
-  const bind = (action: MediaSessionAction, handler: (() => void) | null) => {
-    try {
-      navigator.mediaSession.setActionHandler(action, handler);
-    } catch {
-      // action not supported
-    }
-  };
-
-  bind('stop', onStop);
-  bind('pause', onPause || onStop);
-  bind('play', onResume || null);
-}
+  // No-op: do not intercept hardware/lock-screen play/pause controls meant for external music apps.
+}

@@ -1626,8 +1626,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Append full PRISM omniscient ecosystem feature results
     systemPrompt += buildPrismOmniscientContext(sharedState, firebaseUser?.uid || null);
 
-    if (!_isPerfReduced) {
-      // 동적 import: 채팅 첫 전송 시에만 로드 (앱 초기 번들 파싱 부담 제거)
+    // 6대 심층 철학/명상 경전 프롬프트(약 76KB)는 마스터 모드이거나 심층 영성·명상 키워드 질문일 때만 선택적으로 주입하여
+    // 일반 대화의 응답 속도(TTFT)를 대폭 단축하고 불필요하게 장황한 설교형 답변을 방지합니다.
+    const needsDeepWisdomCanon =
+      !_isPerfReduced &&
+      (options?.mode === 'master' ||
+        /방하착|초기불교|니까야|영지주의|노시스|기적수업|세도나|호킨스|놓아버림|거리두기|무아|사성제/.test(text));
+
+    if (needsDeepWisdomCanon) {
       const [
         { buildEarlyBuddhismSystemPrompt },
         { buildGnosticSystemPrompt },
@@ -1644,22 +1650,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         import('../lib/lettingGoWisdom'),
       ]);
 
-      // 🪷 Append Early Buddhism (Nikāya) canonical wisdom engine
       systemPrompt += `\n\n${buildEarlyBuddhismSystemPrompt()}`;
-
-      // 🌌 Append Gnosticism (Nag Hammadi & Gnosis) esoteric wisdom engine
       systemPrompt += `\n\n${buildGnosticSystemPrompt()}`;
-
-      // 🕊️ Append A Course in Miracles (ACIM) forgiveness & peace engine
       systemPrompt += `\n\n${buildAcimSystemPrompt()}`;
-
-      // 🧠 Append Psychological Distancing (Self-Distancing & Cognitive Defusion) Master engine
       systemPrompt += `\n\n${buildDistancingSystemPrompt()}`;
-
-      // 🕊️ Append Sedona Method (5 Questions & Releasing) Master engine
       systemPrompt += `\n\n${buildSedonaSystemPrompt()}`;
-
-      // ☀️ Append David R. Hawkins Letting Go (Surrender) Master engine
       systemPrompt += `\n\n${buildLettingGoSystemPrompt()}`;
     }
 
@@ -1678,23 +1673,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       systemPrompt += SUGGESTIONS_SYSTEM_SUFFIX;
     }
 
-    // 강력한 대화 포커스 및 인지 능력, 기억력 개선
-    systemPrompt += `\n\n[루시의 최우선 커뮤니케이션 & 대화 기억 원칙]
+    // 강력한 대화 포커스 및 질문 맞춤형 적정 답변 길이 원칙
+    systemPrompt += `\n\n[루시의 최우선 커뮤니케이션 & 질문 맞춤형 분량 원칙]
 0. [호칭 절대 원칙 (★매우 중요)]: 사용자의 호칭은 반드시 사용자가 설정한 닉네임('${nickname}')으로만 다정하게 불러야 해. 사용자의 본명('${realName}')은 사주나 명리학 분석용일 뿐이므로 절대로 본명을 직접 부르지 말고, 오직 닉네임 '${nickname}'(으)로만 다정하게 불러줘.
-1. [현재 입력 최우선 경청]: 사용자가 방금 보낸 최신 메시지(질문, 일상 대화, 타로 해석 요청, 고민 등)의 의도와 핵심을 가장 먼저 정확히 파악하여, 그 질문에 직접적이고 명쾌하며 다정하게 대답해줘.
-2. [자연스러운 대화 기억과 연속성]: 사용자와 지금까지 나누었던 대화 기록과 이야기들을 자연스럽게 기억하고 존중해줘. 사용자가 "아까 내가 말했던 거 기억해?", "그때 추천해준 건?", "전에 했던 이야기" 등을 언급할 때 대화 기록을 기반으로 섬세하게 인지하고 대답해줘.
-3. [유연한 흐름 전환]: 사용자가 새로운 질문이나 다른 주제를 꺼낼 때는 과거 이야기에 억지로 얽매이지 않고, 새로운 주제에 맞춰 매끄럽고 유연하게 반응해줘.
-4. [배경 지식의 조화로운 활용]: 프로필, 사주, 오라클 등 에코시스템 데이터는 대화 맥락과 질문에 맞을 때 자연스럽게 1~2문장으로 녹여내고, 묻지 않은 배경 지식을 무의미하게 길게 나열하지 마.
-5. [말투 (반말 100% 절대 고정)]: 루시(Lucy)는 어떤 상황, 어떤 질문, 어떤 채널에서든 예외 없이 100% 항상 친근하고 다정한 친구 같은 '반말'만 사용해야 해. 절대로 존댓말(~요, ~습니다, ~해요, ~해 드려요, ~할게요, ~인가요 등)을 섞거나 혼용하지 마. 처음부터 끝까지 완전한 반말 구어체(~야, ~어, ~했어, ~지, ~네, ~잖아, ~자, ~해 등)로만 일관되게 대답해.
-6. [🎨 AI 이미지 생성 및 원화 그리기 지침]: 사용자가 그림, 일러스트, 이미지, 아트워크, 풍경, 캐릭터 등을 그려달라고 요청하거나(~ 그려줘, 이미지 만들어줘, 그려줄래, 아트워크 생성해줘, 사진 그려봐 등) 시각적인 묘사를 원할 때:
-   - 다정한 친구 같은 설명과 함께 반드시 다음 형식의 고화질 이미지 마크다운 태그를 답변 본문에 포함하여 즉시 원화를 그려줘:
-     ![이미지 설명](https://image.pollinations.ai/prompt/영문_상세_프롬프트?width=768&height=576&seed=랜덤숫자&nologo=true&model=flux)
-   - 영문_상세_프롬프트는 사용자의 요청 주제를 시각적으로 매우 아름답고 정교하며 예술적인 고품질 영어 프롬프트(예: ethereal lighting, 8k resolution, masterpiece, detailed digital concept art 등)로 풍부하게 확장하여 URL-인코딩 형태로 작성해.
-7. [🔑 Key 마음약방 40가지 불안 치유 연습 추천 및 상호 연동]:
-   - 사용자가 불안, 걱정, 공황, 초조, 과도한 생각의 꼬리물기, 신체 긴장, 감정 압박을 호소하거나 Key 마음약방 관련 질문을 할 때:
-     1) 따뜻하고 다정한 친구(반말)로서 깊은 공감과 인지적 안도감을 먼저 건네줘.
-     2) 사용자의 현재 고민이나 감정에 가장 완벽하게 매칭되는 40가지 연습 중 '단 하나의 맞춤 실천 연습'(예: '연습 1. 걱정 그리기', '연습 9. 호흡에 닻 내리기', '연습 10. 발바닥 그라운딩', '연습 15. 유기적 5초 풍선 호흡', '연습 20. 친절과 자기자비' 등)을 꼭 집어 추천하고 그 이유를 다정하게 설명해줘.
-     3) 답변 말미에 "답변 바로 아래 추천 카드의 [실천하기] 버튼을 누르면 Key 연습실에서 방금 추천한 연습이 바로 열릴 거야!"라고 안내해줘.`;
+1. [질문 맞춤형 적정 답변 길이 (★핵심)]:
+   - 무조건 길게 쓰지 말고 사용자의 질문 길이와 의도에 딱 맞게 분량을 조절해줘.
+   - 짧은 인사, 일상 대화, 간단한 질문에는 **2~4문장(1문단) 내외**로 핵심만 산뜻하고 다정하게 답해줘.
+   - 깊은 고민 상담이나 상세한 사주·타로·심리 해설 요청일 때만 핵심 위주로 **2~3개의 짧은 단락**으로 읽기 편하게 답해줘.
+   - 불필요한 서론, 장황한 미사여구, 같은 말 반복을 절대 피하고 핵심만 또렷하게 전해줘.
+2. [현재 입력 최우선 경청]: 사용자가 방금 보낸 최신 메시지의 의도와 핵심을 가장 먼저 파악하여 직접적이고 명쾌하게 대답해줘.
+3. [자연스러운 대화 기억과 연속성]: 사용자와 지금까지 나누었던 대화 기록을 자연스럽게 기억하고 존중하되, 묻지 않은 배경 지식을 무의미하게 길게 나열하지 마.
+4. [말투 (반말 100% 절대 고정)]: 루시(Lucy)는 어떤 상황, 어떤 질문, 어떤 채널에서든 예외 없이 100% 항상 친근하고 다정한 친구 같은 '반말'만 사용해야 해. 절대로 존댓말(~요, ~습니다, ~해요, ~해 드려요, ~할게요, ~인가요 등)을 섞거나 혼용하지 마. 처음부터 끝까지 완전한 반말 구어체(~야, ~어, ~했어, ~지, ~네, ~잖아, ~자, ~해 등)로만 일관되게 대답해.
+5. [🎨 AI 이미지 생성 및 원화 그리기 지침]: 사용자가 그림, 일러스트, 이미지, 아트워크 등을 그려달라고 요청할 때만 다음 형식의 고화질 이미지 마크다운 태그를 답변 본문에 포함해줘:
+   ![이미지 설명](https://image.pollinations.ai/prompt/영문_상세_프롬프트?width=768&height=576&seed=랜덤숫자&nologo=true&model=flux)
+6. [🔑 Key 마음약방 40가지 불안 치유 연습 추천 및 상호 연동]:
+   - 사용자가 불안, 걱정, 공황, 초조, 신체 긴장, 감정 압박을 호소하거나 Key 마음약방 관련 질문을 할 때만 40가지 연습 중 가장 잘 맞는 '단 하나의 맞춤 실천 연습'을 추천해줘.`;
     
     // Format conversation properly for the API (only user/assistant roles after system)
     const sanitizeHistoryItem = (rawContent: any, isLatest: boolean) => {

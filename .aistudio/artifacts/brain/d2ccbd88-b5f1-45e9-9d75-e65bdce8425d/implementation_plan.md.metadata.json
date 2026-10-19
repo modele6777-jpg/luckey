@@ -1,6 +1,6 @@
 {
-  "summary": "빅뱅 버튼의 4방위 아이콘(상·하 쉐브론 화살표, 3선 메뉴, 음표) 색상을 황금빛(#fbbf24)으로 일괄 통일하고, 시각적 크기를 현재보다 약 20~25% 축소하여 아케인 서클 링 내부에 단정하게 수납하는 구현 계획서입니다.",
-  "updatedAt": "2026-10-18T22:34:20.587322120Z",
+  "summary": "Implementation plan for concurrent TTS playback alongside external music apps (YouTube Music, Melon, Spotify, Apple Music) with transient audio ducking where supported and natural simultaneous playback with in-app healing BGM.",
+  "updatedAt": "2026-10-19T09:04:42.996098041Z",
   "requestFeedback": true,
   "userFacing": true
 }
