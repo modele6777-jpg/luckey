@@ -2165,112 +2165,187 @@ html.light :is(
   border-color: rgba(180, 145, 105, 0.22) !important;
 }
 
-/* 5. High-Contrast Pure Black / Deep Charcoal Typography Engine for Light Mode */
-/* Headings & bold titles -> Deep Obsidian Black (#090d16) */
+/* ============================================================================
+   ☀️ LIGHT MODE: Full-Spectrum Luminance Contrast Engine
+   Prevents ALL light/bright text on light surfaces.
+   Maps light colors (50~450) to high-contrast deep tones (800~950).
+   Protects white/light text inside dark containers/buttons.
+   ============================================================================ */
+
+/* 1. Global Light Base */
+html.light,
+html.light body,
+html.light #root,
+html.light .prism-app-shell,
+html.light [data-app-scroll-root],
+html.light main {
+  color: #0f172a;
+}
+
+/* 2. Headings & Strong/Bold Light Elements -> Obsidian Black (#090d16) */
 html.light :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*="font-extrabold"], [class*="font-bold"]):is(
   .text-white, [class*="text-white"],
-  .text-slate-50, .text-slate-100, .text-slate-200,
-  .text-neutral-50, .text-neutral-100, .text-neutral-200,
-  .text-zinc-50, .text-zinc-100, .text-zinc-200,
-  .text-gray-50, .text-gray-100, .text-gray-200,
-  .text-stone-50, .text-stone-100, .text-stone-200,
-  .text-purple-100, .text-purple-200,
-  .text-indigo-100, .text-indigo-200,
-  .text-pink-100, .text-pink-200,
-  .text-rose-100, .text-rose-200,
-  .text-amber-100, .text-yellow-100,
-  .text-emerald-100, .text-teal-100,
-  .text-cyan-100, .text-sky-100, .text-blue-100
+  .text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400,
+  .text-neutral-50, .text-neutral-100, .text-neutral-200, .text-neutral-300, .text-neutral-400,
+  .text-zinc-50, .text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400,
+  .text-gray-50, .text-gray-100, .text-gray-200, .text-gray-300, .text-gray-400,
+  .text-stone-50, .text-stone-100, .text-stone-200, .text-stone-300, .text-stone-400,
+  .text-purple-100, .text-purple-200, .text-purple-300, .text-purple-400,
+  .text-indigo-100, .text-indigo-200, .text-indigo-300, .text-indigo-400,
+  .text-pink-100, .text-pink-200, .text-pink-300, .text-pink-400,
+  .text-rose-100, .text-rose-200, .text-rose-300, .text-rose-400,
+  .text-amber-100, .text-amber-200, .text-amber-300, .text-amber-400,
+  .text-yellow-100, .text-yellow-200, .text-yellow-300, .text-yellow-400,
+  .text-emerald-100, .text-emerald-200, .text-emerald-300, .text-emerald-400,
+  .text-teal-100, .text-teal-200, .text-teal-300, .text-teal-400,
+  .text-cyan-100, .text-cyan-200, .text-cyan-300, .text-cyan-400,
+  .text-sky-100, .text-sky-200, .text-sky-300, .text-sky-400,
+  .text-blue-100, .text-blue-200, .text-blue-300, .text-blue-400,
+  .text-green-100, .text-green-200, .text-green-300, .text-green-400,
+  .text-orange-100, .text-orange-200, .text-orange-300, .text-orange-400,
+  .text-violet-100, .text-violet-200, .text-violet-300, .text-violet-400,
+  .text-fuchsia-100, .text-fuchsia-200, .text-fuchsia-300, .text-fuchsia-400
+):not(
+  .bg-black *, [class*="bg-black/"] *,
+  .bg-slate-950 *, [class*="bg-slate-950/"] *,
+  .bg-slate-900 *, [class*="bg-slate-900/"] *,
+  .bg-slate-800 *, [class*="bg-slate-800/"] *,
+  .bg-neutral-900 *, .bg-zinc-900 *,
+  .bg-indigo-500 *, .bg-indigo-600 *, .bg-indigo-700 *,
+  .bg-blue-500 *, .bg-blue-600 *, .bg-blue-700 *,
+  .bg-rose-500 *, .bg-rose-600 *, .bg-rose-700 *,
+  .bg-purple-500 *, .bg-purple-600 *, .bg-purple-700 *,
+  .bg-violet-500 *, .bg-violet-600 *, .bg-violet-700 *,
+  [class*="from-indigo-"] *, [class*="from-purple-"] *, [class*="from-violet-"] *,
+  [class*="from-rose-"] *, [class*="from-red-"] *, [class*="from-blue-"] *,
+  .keep-white *, [data-keep-white="true"] *, pre *
 ) {
   color: #090d16 !important;
 }
 
-/* Standard text-white & 85~100% white -> Rich Deep Charcoal (#0f172a) */
+/* 3. Pure White & Grayscale Light -> Deep Charcoal / Slate (#0f172a, #1e293b, #334155) */
 html.light :is(
-  .text-white,
-  .text-white\/100,
-  .text-white\/95,
-  .text-white\/90,
-  .text-white\/85,
-  .text-slate-50,
-  .text-slate-100,
-  .text-neutral-50,
-  .text-neutral-100,
-  .text-zinc-50,
-  .text-zinc-100,
-  .text-gray-50,
-  .text-gray-100,
-  .text-stone-50,
-  .text-stone-100,
-  .text-purple-100,
-  .text-purple-200,
-  .text-indigo-100,
-  .text-indigo-200,
-  .text-pink-100,
-  .text-pink-200,
-  .text-rose-100,
-  .text-rose-200,
-  .text-amber-100,
-  .text-yellow-100,
-  .text-emerald-100,
-  .text-teal-100,
-  .text-cyan-100,
-  .text-sky-100,
-  .text-blue-100
+  .text-white, .text-white\/100, .text-white\/95, .text-white\/90, .text-white\/85,
+  .text-slate-50, .text-slate-100,
+  .text-neutral-50, .text-neutral-100,
+  .text-zinc-50, .text-zinc-100,
+  .text-gray-50, .text-gray-100,
+  .text-stone-50, .text-stone-100
+):not(
+  .bg-black, [class*="bg-black/"],
+  .bg-slate-950, [class*="bg-slate-950/"],
+  .bg-slate-900, [class*="bg-slate-900/"],
+  .bg-slate-800, [class*="bg-slate-800/"],
+  .bg-neutral-900, .bg-zinc-900,
+  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700,
+  .bg-blue-500, .bg-blue-600, .bg-blue-700,
+  .bg-rose-500, .bg-rose-600, .bg-rose-700,
+  .bg-purple-500, .bg-purple-600, .bg-purple-700,
+  .bg-violet-500, .bg-violet-600, .bg-violet-700,
+  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
+  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
+  .keep-white, [data-keep-white="true"], pre
+):not(
+  .bg-black *, [class*="bg-black/"] *,
+  .bg-slate-950 *, [class*="bg-slate-950/"] *,
+  .bg-slate-900 *, [class*="bg-slate-900/"] *,
+  .bg-slate-800 *, [class*="bg-slate-800/"] *,
+  .bg-neutral-900 *, .bg-zinc-900 *,
+  .bg-indigo-500 *, .bg-indigo-600 *, .bg-indigo-700 *,
+  .bg-blue-500 *, .bg-blue-600 *, .bg-blue-700 *,
+  .bg-rose-500 *, .bg-rose-600 *, .bg-rose-700 *,
+  .bg-purple-500 *, .bg-purple-600 *, .bg-purple-700 *,
+  .bg-violet-500 *, .bg-violet-600 *, .bg-violet-700 *,
+  [class*="from-indigo-"] *, [class*="from-purple-"] *, [class*="from-violet-"] *,
+  [class*="from-rose-"] *, [class*="from-red-"] *, [class*="from-blue-"] *,
+  .keep-white *, [data-keep-white="true"] *, pre *
 ) {
   color: #0f172a !important;
 }
 
-/* High-Medium Readable Dark (65% ~ 80% opacity & slate 200/300) -> #1e293b */
 html.light :is(
-  .text-white\/80,
-  .text-white\/75,
-  .text-white\/70,
-  .text-white\/65,
-  .text-slate-200,
-  .text-slate-300,
-  .text-neutral-200,
-  .text-neutral-300,
-  .text-zinc-200,
-  .text-zinc-300,
-  .text-gray-200,
-  .text-gray-300,
-  .text-stone-200,
-  .text-stone-300
+  .text-white\/80, .text-white\/75, .text-white\/70, .text-white\/65,
+  .text-slate-200, .text-slate-300,
+  .text-neutral-200, .text-neutral-300,
+  .text-zinc-200, .text-zinc-300,
+  .text-gray-200, .text-gray-300,
+  .text-stone-200, .text-stone-300
+):not(
+  .bg-black *, [class*="bg-black/"] *,
+  .bg-slate-950 *, [class*="bg-slate-950/"] *,
+  .bg-slate-900 *, [class*="bg-slate-900/"] *,
+  .bg-slate-800 *, [class*="bg-slate-800/"] *,
+  .bg-neutral-900 *, .bg-zinc-900 *,
+  .keep-white *, [data-keep-white="true"] *, pre *
 ) {
   color: #1e293b !important;
 }
 
-/* Medium Slate Dark (50% ~ 60% opacity & slate 400) -> #334155 */
 html.light :is(
-  .text-white\/60,
-  .text-white\/55,
-  .text-white\/50,
-  .text-slate-400,
-  .text-neutral-400,
-  .text-zinc-400,
-  .text-gray-400,
-  .text-stone-400
+  .text-white\/60, .text-white\/55, .text-white\/50, .text-white\/45,
+  .text-white\/40, .text-white\/35, .text-white\/30, .text-white\/25,
+  .text-white\/20, .text-white\/15, .text-white\/10, .text-white\/5,
+  .text-slate-400, .text-neutral-400, .text-zinc-400, .text-gray-400, .text-stone-400
+):not(
+  .bg-black *, [class*="bg-black/"] *,
+  .bg-slate-950 *, [class*="bg-slate-950/"] *,
+  .bg-slate-900 *, [class*="bg-slate-900/"] *,
+  .bg-slate-800 *, [class*="bg-slate-800/"] *,
+  .bg-neutral-900 *, .bg-zinc-900 *,
+  .keep-white *, [data-keep-white="true"] *, pre *
 ) {
   color: #334155 !important;
 }
 
-/* Low-Opacity White (5% ~ 45% opacity) -> Readable Muted Slate (#475569) */
-html.light :is(
-  .text-white\/45,
-  .text-white\/40,
-  .text-white\/35,
-  .text-white\/30,
-  .text-white\/25,
-  .text-white\/20,
-  .text-white\/15,
-  .text-white\/10,
-  .text-white\/5
-) {
-  color: #475569 !important;
+/* 4. Full 15-Color Spectrum Luminance Calibration for Light Mode */
+/* Maps bright colored text (100~400) to rich deep readable tones (800~900) */
+html.light :is(.text-purple-100, .text-purple-200, .text-purple-300, .text-purple-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #581c87 !important; /* purple-900 */
+}
+html.light :is(.text-indigo-100, .text-indigo-200, .text-indigo-300, .text-indigo-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #312e81 !important; /* indigo-900 */
+}
+html.light :is(.text-pink-100, .text-pink-200, .text-pink-300, .text-pink-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #831843 !important; /* pink-900 */
+}
+html.light :is(.text-rose-100, .text-rose-200, .text-rose-300, .text-rose-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #881337 !important; /* rose-900 */
+}
+html.light :is(.text-amber-100, .text-amber-200, .text-amber-300, .text-amber-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #78350f !important; /* amber-900 */
+}
+html.light :is(.text-yellow-100, .text-yellow-200, .text-yellow-300, .text-yellow-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #713f12 !important; /* yellow-900 */
+}
+html.light :is(.text-cyan-100, .text-cyan-200, .text-cyan-300, .text-cyan-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #164e63 !important; /* cyan-900 */
+}
+html.light :is(.text-sky-100, .text-sky-200, .text-sky-300, .text-sky-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #0c4a6e !important; /* sky-900 */
+}
+html.light :is(.text-blue-100, .text-blue-200, .text-blue-300, .text-blue-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #1e3a8a !important; /* blue-900 */
+}
+html.light :is(.text-emerald-100, .text-emerald-200, .text-emerald-300, .text-emerald-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #064e3b !important; /* emerald-900 */
+}
+html.light :is(.text-teal-100, .text-teal-200, .text-teal-300, .text-teal-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #134e4a !important; /* teal-900 */
+}
+html.light :is(.text-green-100, .text-green-200, .text-green-300, .text-green-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #14532d !important; /* green-900 */
+}
+html.light :is(.text-orange-100, .text-orange-200, .text-orange-300, .text-orange-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #7c2d12 !important; /* orange-900 */
+}
+html.light :is(.text-violet-100, .text-violet-200, .text-violet-300, .text-violet-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #4c1d95 !important; /* violet-900 */
+}
+html.light :is(.text-fuchsia-100, .text-fuchsia-200, .text-fuchsia-300, .text-fuchsia-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
+  color: #701a75 !important; /* fuchsia-900 */
 }
 
-/* Catch-All Inline White Styles in Light Mode: override inline style on non-dark surfaces */
+/* 5. Catch-All Inline White Styles in Light Mode: override inline style on non-dark surfaces */
 html.light :not(
   .bg-black, [class*="bg-black/"],
   .bg-slate-950, [class*="bg-slate-950/"],
@@ -2307,34 +2382,11 @@ html.light select {
 }
 html.light ::placeholder,
 html.light [class*="placeholder-white"] {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
-/* 7. Pastel / Neon Text High-Contrast Calibration for Light Mode */
-/* Prevents yellow/amber text from washing out on light ivory surfaces while preserving warm identity */
+/* 7. Bulletproof Crisp White Text Protection on Dark / Saturated Surfaces & Buttons in Light Mode */
 html.light :is(
-  .text-yellow-200, .text-yellow-300, .text-yellow-400,
-  .text-amber-200, .text-amber-300, .text-amber-400
-):not(button):not(button *):not([class*="bg-black"] *):not([class*="bg-slate-9"] *):not([class*="bg-slate-8"] *):not([class*="bg-indigo-"] *):not([class*="bg-purple-"] *):not([class*="bg-blue-"] *):not([class*="from-"] *) {
-  color: #92400e !important;
-}
-
-html.light :is(
-  .text-teal-200, .text-teal-300, .text-teal-400
-):not(button):not(button *):not([class*="bg-black"] *):not([class*="bg-slate-9"] *):not([class*="bg-slate-8"] *):not([class*="bg-indigo-"] *):not([class*="bg-purple-"] *):not([class*="from-"] *) {
-  color: #0f766e !important;
-}
-
-html.light :is(
-  .text-sky-200, .text-sky-300, .text-sky-400, .text-blue-300
-):not(button):not(button *):not([class*="bg-black"] *):not([class*="bg-slate-9"] *):not([class*="bg-slate-8"] *):not([class*="bg-indigo-"] *):not([class*="bg-purple-"] *):not([class*="from-"] *) {
-  color: #0369a1 !important;
-}
-
-/* 8. Bulletproof Crisp White Text Protection on Dark / Saturated Surfaces & Buttons in Light Mode */
-/* Ensures buttons, chips, badges, and dark surfaces NEVER have dark-on-dark text */
-html.light :is(
-  /* Solid dark containers */
   .bg-black, [class*="bg-black/"],
   .bg-slate-950, [class*="bg-slate-950/"],
   .bg-slate-900, [class*="bg-slate-900/"],
@@ -2343,7 +2395,6 @@ html.light :is(
   .bg-neutral-800, [class*="bg-neutral-800/"],
   .bg-zinc-900, [class*="bg-zinc-900/"],
   .bg-zinc-800, [class*="bg-zinc-800/"],
-  /* Saturated color buttons and badges */
   .bg-indigo-500, .bg-indigo-600, .bg-indigo-700, [class*="bg-indigo-6"], [class*="bg-indigo-7"],
   .bg-blue-500, .bg-blue-600, .bg-blue-700, [class*="bg-blue-6"], [class*="bg-blue-7"],
   .bg-rose-500, .bg-rose-600, .bg-rose-700, [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-rose-7"],
@@ -2353,11 +2404,9 @@ html.light :is(
   .bg-yellow-600, .bg-yellow-700,
   .bg-purple-500, .bg-purple-600, .bg-purple-700, [class*="bg-purple-6"], [class*="bg-purple-7"],
   .bg-violet-500, .bg-violet-600, .bg-violet-700, [class*="bg-violet-6"], [class*="bg-violet-7"],
-  /* Gradient backgrounds */
   [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
   [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
   [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
-  /* Special buttons & custom white zones */
   .prism-rainbow-btn, .celestial-tarot-btn, .prism-fab-3d,
   .keep-white, [data-keep-white="true"], .force-white,
   pre
@@ -2365,7 +2414,6 @@ html.light :is(
   color: #ffffff !important;
 }
 
-/* Direct element application on buttons/links */
 html.light :is(
   button, a, span, div, [role="button"]
 ):is(
@@ -2402,8 +2450,10 @@ html.light pre code {
 
 
 /* ============================================================================
-   🌙 DARK MODE: Universal High-Contrast White Engine (Zero Black Text on Dark)
-   Transforms any accidentally dark or black text into pure luminous white globally.
+   🌙 DARK MODE: Full-Spectrum Luminance Contrast Engine
+   Prevents ALL dark/black text on dark surfaces.
+   Maps dark colors (500~950) to high-contrast luminous bright tones (200~300, #ffffff).
+   Protects dark/black text inside light containers/buttons (white, gold, yellow).
    ============================================================================ */
 html.dark,
 html.dark body,
@@ -2414,14 +2464,29 @@ html.dark main {
   color: #f8fafc;
 }
 
-/* Headings & bold titles in Dark Mode -> Pure White (#ffffff) */
+/* 1. Headings & Strong/Bold Dark Elements in Dark Mode -> Pure White (#ffffff) */
 html.dark :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*="font-extrabold"], [class*="font-bold"]):is(
   .text-black, [class*="text-black"],
-  .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700,
-  .text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700,
-  .text-neutral-950, .text-neutral-900, .text-neutral-800, .text-neutral-700,
-  .text-gray-950, .text-gray-900, .text-gray-800, .text-gray-700,
-  .text-stone-950, .text-stone-900, .text-stone-800, .text-stone-700
+  .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600, .text-slate-500,
+  .text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500,
+  .text-neutral-950, .text-neutral-900, .text-neutral-800, .text-neutral-700, .text-neutral-600, .text-neutral-500,
+  .text-gray-950, .text-gray-900, .text-gray-800, .text-gray-700, .text-gray-600, .text-gray-500,
+  .text-stone-950, .text-stone-900, .text-stone-800, .text-stone-700, .text-stone-600, .text-stone-500,
+  .text-purple-600, .text-purple-700, .text-purple-800, .text-purple-900, .text-purple-950,
+  .text-indigo-600, .text-indigo-700, .text-indigo-800, .text-indigo-900, .text-indigo-950,
+  .text-pink-600, .text-pink-700, .text-pink-800, .text-pink-900, .text-pink-950,
+  .text-rose-600, .text-rose-700, .text-rose-800, .text-rose-900, .text-rose-950,
+  .text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900, .text-amber-950,
+  .text-yellow-600, .text-yellow-700, .text-yellow-800, .text-yellow-900, .text-yellow-950,
+  .text-cyan-600, .text-cyan-700, .text-cyan-800, .text-cyan-900, .text-cyan-950,
+  .text-sky-600, .text-sky-700, .text-sky-800, .text-sky-900, .text-sky-950,
+  .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900, .text-blue-950,
+  .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950,
+  .text-teal-600, .text-teal-700, .text-teal-800, .text-teal-900, .text-teal-950,
+  .text-green-600, .text-green-700, .text-green-800, .text-green-900, .text-green-950,
+  .text-orange-600, .text-orange-700, .text-orange-800, .text-orange-900, .text-orange-950,
+  .text-violet-600, .text-violet-700, .text-violet-800, .text-violet-900, .text-violet-950,
+  .text-fuchsia-600, .text-fuchsia-700, .text-fuchsia-800, .text-fuchsia-900, .text-fuchsia-950
 ):not(
   .bg-white *, [class*="bg-white/"] *,
   .bg-amber-300 *, .bg-amber-400 *, .bg-amber-500 *,
@@ -2432,7 +2497,7 @@ html.dark :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*=
   color: #ffffff !important;
 }
 
-/* General Body & Paragraphs in Dark Mode -> High-Contrast Crisp White (#f8fafc) */
+/* 2. General Body / Paragraphs in Dark Mode (Black/Dark Slate -> High-Contrast Luminous White #f8fafc) */
 html.dark :is(p, span, div, li, label, a, button, [role="button"]):is(
   .text-black, [class*="text-black"],
   .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700,
@@ -2456,7 +2521,7 @@ html.dark :is(p, span, div, li, label, a, button, [role="button"]):is(
   color: #f8fafc !important;
 }
 
-/* Secondary & Muted Dark Text in Dark Mode -> Highly Legible Light Slate (#cbd5e1) */
+/* 3. Secondary & Muted Dark Text in Dark Mode -> Highly Legible Light Slate (#cbd5e1) */
 html.dark :is(p, span, div, li, label):is(
   .text-slate-600, .text-slate-500,
   .text-zinc-600, .text-zinc-500,
@@ -2472,7 +2537,55 @@ html.dark :is(p, span, div, li, label):is(
   color: #cbd5e1 !important;
 }
 
-/* Catch-All Inline Black Styles in Dark Mode: override inline style on non-light surfaces */
+/* 4. Full 15-Color Spectrum Luminance Calibration for Dark Mode */
+/* Maps dark colored text (500~950) to vibrant luminous bright tones (300) */
+html.dark :is(.text-purple-500, .text-purple-600, .text-purple-700, .text-purple-800, .text-purple-900, .text-purple-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #d8b4fe !important; /* purple-300 */
+}
+html.dark :is(.text-indigo-500, .text-indigo-600, .text-indigo-700, .text-indigo-800, .text-indigo-900, .text-indigo-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #a5b4fc !important; /* indigo-300 */
+}
+html.dark :is(.text-pink-500, .text-pink-600, .text-pink-700, .text-pink-800, .text-pink-900, .text-pink-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #f9a8d4 !important; /* pink-300 */
+}
+html.dark :is(.text-rose-500, .text-rose-600, .text-rose-700, .text-rose-800, .text-rose-900, .text-rose-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #fda4af !important; /* rose-300 */
+}
+html.dark :is(.text-amber-500, .text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900, .text-amber-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #fcd34d !important; /* amber-300 */
+}
+html.dark :is(.text-yellow-500, .text-yellow-600, .text-yellow-700, .text-yellow-800, .text-yellow-900, .text-yellow-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #fde047 !important; /* yellow-300 */
+}
+html.dark :is(.text-cyan-500, .text-cyan-600, .text-cyan-700, .text-cyan-800, .text-cyan-900, .text-cyan-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #67e8f9 !important; /* cyan-300 */
+}
+html.dark :is(.text-sky-500, .text-sky-600, .text-sky-700, .text-sky-800, .text-sky-900, .text-sky-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #7dd3fc !important; /* sky-300 */
+}
+html.dark :is(.text-blue-500, .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900, .text-blue-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #93c5fd !important; /* blue-300 */
+}
+html.dark :is(.text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #6ee7b7 !important; /* emerald-300 */
+}
+html.dark :is(.text-teal-500, .text-teal-600, .text-teal-700, .text-teal-800, .text-teal-900, .text-teal-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #5eead4 !important; /* teal-300 */
+}
+html.dark :is(.text-green-500, .text-green-600, .text-green-700, .text-green-800, .text-green-900, .text-green-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #86efac !important; /* green-300 */
+}
+html.dark :is(.text-orange-500, .text-orange-600, .text-orange-700, .text-orange-800, .text-orange-900, .text-orange-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #fdba74 !important; /* orange-300 */
+}
+html.dark :is(.text-violet-500, .text-violet-600, .text-violet-700, .text-violet-800, .text-violet-900, .text-violet-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #c4b5fd !important; /* violet-300 */
+}
+html.dark :is(.text-fuchsia-500, .text-fuchsia-600, .text-fuchsia-700, .text-fuchsia-800, .text-fuchsia-900, .text-fuchsia-950):not(.bg-white *):not([class*="bg-white/"] *):not(.bg-amber-300 *):not(.keep-dark *):not([data-keep-dark="true"] *) {
+  color: #f0abfc !important; /* fuchsia-300 */
+}
+
+/* 5. Catch-All Inline Black Styles in Dark Mode: override inline style on non-light surfaces */
 html.dark :not(
   .bg-white, [class*="bg-white/"],
   .bg-amber-300, .bg-amber-400, .bg-amber-500,
@@ -2489,8 +2602,19 @@ html.dark :not(
   color: #f8fafc !important;
 }
 
-/* Bulletproof Black Text Protection on White / Yellow / Amber Saturated Surfaces in Dark Mode */
-/* Ensures golden buttons, white chips, and light badges in dark mode keep razor-sharp black text */
+/* 6. Form Inputs & Textareas in Dark Mode */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+html.dark textarea,
+html.dark select {
+  color: #f8fafc !important;
+}
+html.dark ::placeholder,
+html.dark [class*="placeholder-slate-500"],
+html.dark [class*="placeholder-slate-600"] {
+  color: #94a3b8 !important;
+}
+
+/* 7. Bulletproof Black Text Protection on White / Yellow / Amber Saturated Surfaces in Dark Mode */
 html.dark :is(
   .bg-white,
   .bg-amber-300, .bg-amber-400,
@@ -2510,4 +2634,5 @@ html.dark :is(
 ) {
   color: #090d16 !important;
 }
+
 

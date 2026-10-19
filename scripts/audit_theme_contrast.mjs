@@ -17,21 +17,30 @@ if (!fs.existsSync(CSS_FILE)) {
 
 const cssContent = fs.readFileSync(CSS_FILE, 'utf-8');
 
-// Check Light Mode Anti-White Engine
+// Check Light Mode Anti-White & Pastel-Light Eradication Engine
 const hasLightModeWhiteEradication = 
   cssContent.includes('html.light') &&
   cssContent.includes('.text-white') &&
   cssContent.includes('#090d16') &&
   cssContent.includes('#0f172a');
 
-if (!hasLightModeWhiteEradication) {
-  console.error('❌ [CSS Check] Light mode white-text eradication rules are missing or incomplete in index.css!');
+// 15 Color Families Spectrum Check for Light Mode (bright colors mapped to deep 800~900)
+const colorFamilies = [
+  'purple', 'indigo', 'pink', 'rose', 'amber', 'yellow',
+  'cyan', 'sky', 'blue', 'emerald', 'teal', 'green', 'orange', 'violet', 'fuchsia'
+];
+
+const missingLightColors = colorFamilies.filter(c => !cssContent.includes(`.text-${c}-100`));
+const missingDarkColors = colorFamilies.filter(c => !cssContent.includes(`.text-${c}-500`) && !cssContent.includes(`.text-${c}-600`));
+
+if (!hasLightModeWhiteEradication || missingLightColors.length > 0) {
+  console.error(`❌ [CSS Check] Light mode luminance contrast rules missing for: ${missingLightColors.join(', ')}`);
   errorCount++;
 } else {
-  console.log('✅ [CSS Check] Light mode white-text eradication engine is active (Transforms to #090d16 / #0f172a / #1e293b).');
+  console.log(`✅ [CSS Check] Light mode full-spectrum luminance engine active (15 color families calibrated).`);
 }
 
-// Check Dark Mode Anti-Black Engine (Global Scope)
+// Check Dark Mode Anti-Black & Deep-Tone Eradication Engine (Global Scope)
 const hasDarkModeGlobalBlackEradication = 
   cssContent.includes('html.dark') &&
   cssContent.includes('.text-black') &&
@@ -39,11 +48,11 @@ const hasDarkModeGlobalBlackEradication =
   cssContent.includes('#ffffff') &&
   cssContent.includes('#f8fafc');
 
-if (!hasDarkModeGlobalBlackEradication) {
-  console.error('❌ [CSS Check] Dark mode global black-text eradication rules are missing in index.css!');
+if (!hasDarkModeGlobalBlackEradication || missingDarkColors.length > 0) {
+  console.error(`❌ [CSS Check] Dark mode luminance contrast rules missing for: ${missingDarkColors.join(', ')}`);
   errorCount++;
 } else {
-  console.log('✅ [CSS Check] Dark mode global black-text eradication engine is active (Transforms to #ffffff / #f8fafc).');
+  console.log(`✅ [CSS Check] Dark mode full-spectrum luminance engine active (15 color families calibrated).`);
 }
 
 // 2. Scan TSX files for risky inline color patterns
