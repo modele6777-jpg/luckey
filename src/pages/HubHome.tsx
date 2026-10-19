@@ -484,7 +484,7 @@ export default function HubHome() {
             <h1>
               <LucKeyLogoText />
             </h1>
-            <p className="text-[8px] md:text-[9px] text-white/40 uppercase tracking-widest font-bold font-sans leading-none mt-0.5">
+            <p className="text-[8px] md:text-[9px] text-slate-500 dark:text-white/50 uppercase tracking-widest font-bold font-sans leading-none mt-0.5">
               PROLOGUE • INTEGRATED HUB
             </p>
           </div>
@@ -497,7 +497,7 @@ export default function HubHome() {
         initial={{ y: -10, x: '-50%', opacity: 0.88 }}
         animate={{ y: 0, x: '-50%', opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-all duration-300"
+        className="prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/90 dark:bg-white/5 backdrop-blur-2xl border border-amber-900/15 dark:border-white/10 shadow-xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-all duration-300"
       >
         {[
           { id: 'universe', icon: Compass, label: 'Universe' },
@@ -527,10 +527,10 @@ export default function HubHome() {
                     : item.id === 'todo'
                     ? 'bg-gradient-to-r from-indigo-600/50 via-purple-600/40 to-amber-600/50 text-white border border-indigo-400/60 shadow-[0_0_20px_rgba(99,102,241,0.4)] scale-[1.02]'
                     : 'bg-gradient-to-r from-red-500/40 via-orange-500/30 to-amber-500/40 text-white border border-red-400/50 shadow-[0_0_15px_rgba(239,68,68,0.3)] scale-[1.02]'
-                  : 'text-white/40 hover:text-white/80 hover:bg-white/5 border border-transparent'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-white/60 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Icon size={14} className={isActive ? (item.id === 'ecpr' ? 'text-red-300 animate-pulse' : item.id === 'todo' ? 'text-indigo-300 animate-pulse' : 'text-amber-300 animate-pulse') : 'text-white/40'} />
+              <Icon size={14} className={isActive ? (item.id === 'ecpr' ? 'text-red-300 animate-pulse' : item.id === 'todo' ? 'text-indigo-300 animate-pulse' : 'text-amber-300 animate-pulse') : 'text-slate-400 dark:text-white/40'} />
               <span>{item.label}</span>
             </button>
           );
@@ -549,7 +549,7 @@ export default function HubHome() {
             </ErrorBoundary>
           </div>
         ) : (
-          <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col relative text-white font-sans">
+          <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col relative text-slate-900 dark:text-white font-sans">
             
             {/* 프로필 설정 유도 모달 */}
             <AnimatePresence>

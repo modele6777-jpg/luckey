@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.4.366",
+    "summary": "라이트 테마 흰 글씨 근본 원인 수정: CSS :not() 안 자손 선택자 무효 버그 해결 — Contrast Engine v2",
+    "builtAt": "2026-10-19T13:57:00.000Z",
+    "items": [
+      "CSS :not() 안에 자손 선택자(.bg-black *)를 넣으면 브라우저가 조용히 무시하는 CSS 명세 버그 발견 및 수정 — 이것이 라이트 테마에서 흰 글씨가 그대로 보이던 근본 원인",
+      "Contrast Engine v2 도입: STEP 1에서 html.light .text-white 등 단순 2-class 선택자로 무조건 모든 밝은 글씨를 다크 톤으로 리매핑",
+      "STEP 2에서 html.light .bg-black .text-white 등 올바른 자손 선택자(3-class 명시도)로 진짜 어두운 컨테이너 안에서만 흰색 복원",
+      "bg-black/, bg-slate-900/ 등 반투명 어두운 배경 컨테이너 내 text-white도 정확히 복원",
+      "기존 :not()에 넣었던 자손 선택자 패턴 전부 제거 — 유효한 CSS만 사용"
+    ]
+  },
+  {
     "version": "1.4.365",
     "summary": "풀-스펙트럼 명도 대비 엔진(Full-Spectrum Luminance Contrast Engine) 전역 완벽 적용: 라이트 테마 밝은 글씨 15색상 전면 금지 & 다크 테마 어두운 글씨 15색상 전면 금지",
     "builtAt": "2026-10-19T13:30:00.000Z",

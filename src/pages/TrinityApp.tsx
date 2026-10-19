@@ -3143,7 +3143,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
               className={`prism-subnav-btn flex shrink-0 whitespace-nowrap items-center gap-2 md:gap-3 px-4 md:px-5 py-2.5 md:py-3 rounded-2xl transition-all duration-300 group ${
                 isActive
                   ? "bg-yellow-600 text-white shadow-lg shadow-yellow-500/20 border border-yellow-500/30"
-                  : "text-white/40 hover:text-white hover:bg-white/5"
+                  : "text-slate-600 hover:text-slate-900 dark:text-white/60 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
               }`}
             >
               <item.icon size={16} className={isActive ? "animate-pulse" : ""} />
@@ -3167,7 +3167,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         data-app-scroll-root
         {...trinitySwipeHandlers}
 
-        className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white touch-pan-y overscroll-x-none"
+        className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none"
       >
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">
           <AnimatePresence mode="wait">

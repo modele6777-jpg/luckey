@@ -1,4 +1,4 @@
-@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
+﻿@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;1,400&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
@@ -80,6 +80,15 @@
   .glass {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  html.light .glass {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(210, 190, 160, 0.35);
+    box-shadow: 0 4px 24px rgba(180, 140, 90, 0.08);
+  }
+  html.dark .glass {
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
@@ -2166,10 +2175,13 @@ html.light :is(
 }
 
 /* ============================================================================
-   ☀️ LIGHT MODE: Full-Spectrum Luminance Contrast Engine
-   Prevents ALL light/bright text on light surfaces.
-   Maps light colors (50~450) to high-contrast deep tones (800~950).
-   Protects white/light text inside dark containers/buttons.
+   ☀️ LIGHT MODE: Full-Spectrum Luminance Contrast Engine v2
+   Strategy:
+     STEP 1 – Unconditional remap: ALL bright/white text → dark tones.
+              Uses simple 2-class selectors. No :not() with descendant
+              selectors (those are invalid CSS and silently ignored by browsers).
+     STEP 2 – Restore: proper descendant selectors restore white text inside
+              dark containers (3-class specificity beats STEP 1).
    ============================================================================ */
 
 /* 1. Global Light Base */
@@ -2182,199 +2194,57 @@ html.light main {
   color: #0f172a;
 }
 
-/* 2. Headings & Strong/Bold Light Elements -> Obsidian Black (#090d16) */
-html.light :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*="font-extrabold"], [class*="font-bold"]):is(
-  .text-white, [class*="text-white"],
-  .text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400,
-  .text-neutral-50, .text-neutral-100, .text-neutral-200, .text-neutral-300, .text-neutral-400,
-  .text-zinc-50, .text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400,
-  .text-gray-50, .text-gray-100, .text-gray-200, .text-gray-300, .text-gray-400,
-  .text-stone-50, .text-stone-100, .text-stone-200, .text-stone-300, .text-stone-400,
-  .text-purple-100, .text-purple-200, .text-purple-300, .text-purple-400,
-  .text-indigo-100, .text-indigo-200, .text-indigo-300, .text-indigo-400,
-  .text-pink-100, .text-pink-200, .text-pink-300, .text-pink-400,
-  .text-rose-100, .text-rose-200, .text-rose-300, .text-rose-400,
-  .text-amber-100, .text-amber-200, .text-amber-300, .text-amber-400,
-  .text-yellow-100, .text-yellow-200, .text-yellow-300, .text-yellow-400,
-  .text-emerald-100, .text-emerald-200, .text-emerald-300, .text-emerald-400,
-  .text-teal-100, .text-teal-200, .text-teal-300, .text-teal-400,
-  .text-cyan-100, .text-cyan-200, .text-cyan-300, .text-cyan-400,
-  .text-sky-100, .text-sky-200, .text-sky-300, .text-sky-400,
-  .text-blue-100, .text-blue-200, .text-blue-300, .text-blue-400,
-  .text-green-100, .text-green-200, .text-green-300, .text-green-400,
-  .text-orange-100, .text-orange-200, .text-orange-300, .text-orange-400,
-  .text-violet-100, .text-violet-200, .text-violet-300, .text-violet-400,
-  .text-fuchsia-100, .text-fuchsia-200, .text-fuchsia-300, .text-fuchsia-400
-):not(
-  .bg-black *, [class*="bg-black/"] *,
-  .bg-slate-950 *, [class*="bg-slate-950/"] *,
-  .bg-slate-900 *, [class*="bg-slate-900/"] *,
-  .bg-slate-800 *, [class*="bg-slate-800/"] *,
-  .bg-neutral-900 *, .bg-zinc-900 *,
-  .bg-indigo-500 *, .bg-indigo-600 *, .bg-indigo-700 *,
-  .bg-blue-500 *, .bg-blue-600 *, .bg-blue-700 *,
-  .bg-rose-500 *, .bg-rose-600 *, .bg-rose-700 *,
-  .bg-purple-500 *, .bg-purple-600 *, .bg-purple-700 *,
-  .bg-violet-500 *, .bg-violet-600 *, .bg-violet-700 *,
-  [class*="from-indigo-"] *, [class*="from-purple-"] *, [class*="from-violet-"] *,
-  [class*="from-rose-"] *, [class*="from-red-"] *, [class*="from-blue-"] *,
-  .keep-white *, [data-keep-white="true"] *, pre *
-) {
-  color: #090d16 !important;
-}
+/* ── STEP 1: UNCONDITIONAL REMAP ──────────────────────────────────────────── */
 
-/* 3. Pure White & Grayscale Light -> Deep Charcoal / Slate (#0f172a, #1e293b, #334155) */
-html.light :is(
-  .text-white, .text-white\/100, .text-white\/95, .text-white\/90, .text-white\/85,
-  .text-slate-50, .text-slate-100,
-  .text-neutral-50, .text-neutral-100,
-  .text-zinc-50, .text-zinc-100,
-  .text-gray-50, .text-gray-100,
-  .text-stone-50, .text-stone-100
-):not(
-  .bg-black, [class*="bg-black/"],
-  .bg-slate-950, [class*="bg-slate-950/"],
-  .bg-slate-900, [class*="bg-slate-900/"],
-  .bg-slate-800, [class*="bg-slate-800/"],
-  .bg-neutral-900, .bg-zinc-900,
-  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700,
-  .bg-blue-500, .bg-blue-600, .bg-blue-700,
-  .bg-rose-500, .bg-rose-600, .bg-rose-700,
-  .bg-purple-500, .bg-purple-600, .bg-purple-700,
-  .bg-violet-500, .bg-violet-600, .bg-violet-700,
-  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
-  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
-  .keep-white, [data-keep-white="true"], pre
-):not(
-  .bg-black *, [class*="bg-black/"] *,
-  .bg-slate-950 *, [class*="bg-slate-950/"] *,
-  .bg-slate-900 *, [class*="bg-slate-900/"] *,
-  .bg-slate-800 *, [class*="bg-slate-800/"] *,
-  .bg-neutral-900 *, .bg-zinc-900 *,
-  .bg-indigo-500 *, .bg-indigo-600 *, .bg-indigo-700 *,
-  .bg-blue-500 *, .bg-blue-600 *, .bg-blue-700 *,
-  .bg-rose-500 *, .bg-rose-600 *, .bg-rose-700 *,
-  .bg-purple-500 *, .bg-purple-600 *, .bg-purple-700 *,
-  .bg-violet-500 *, .bg-violet-600 *, .bg-violet-700 *,
-  [class*="from-indigo-"] *, [class*="from-purple-"] *, [class*="from-violet-"] *,
-  [class*="from-rose-"] *, [class*="from-red-"] *, [class*="from-blue-"] *,
-  .keep-white *, [data-keep-white="true"] *, pre *
-) {
+/* 2. Pure white & all text-white/* opacity variants */
+html.light .text-white,
+html.light [class*="text-white/"] {
   color: #0f172a !important;
 }
 
-html.light :is(
-  .text-white\/80, .text-white\/75, .text-white\/70, .text-white\/65,
-  .text-slate-200, .text-slate-300,
-  .text-neutral-200, .text-neutral-300,
-  .text-zinc-200, .text-zinc-300,
-  .text-gray-200, .text-gray-300,
-  .text-stone-200, .text-stone-300
-):not(
-  .bg-black *, [class*="bg-black/"] *,
-  .bg-slate-950 *, [class*="bg-slate-950/"] *,
-  .bg-slate-900 *, [class*="bg-slate-900/"] *,
-  .bg-slate-800 *, [class*="bg-slate-800/"] *,
-  .bg-neutral-900 *, .bg-zinc-900 *,
-  .keep-white *, [data-keep-white="true"] *, pre *
-) {
-  color: #1e293b !important;
+/* 3. Grayscale bright tones */
+html.light .text-slate-50,   html.light .text-slate-100,   html.light .text-slate-200,
+html.light .text-neutral-50, html.light .text-neutral-100, html.light .text-neutral-200,
+html.light .text-zinc-50,    html.light .text-zinc-100,    html.light .text-zinc-200,
+html.light .text-gray-50,    html.light .text-gray-100,    html.light .text-gray-200,
+html.light .text-stone-50,   html.light .text-stone-100,   html.light .text-stone-200 {
+  color: #0f172a !important;
 }
-
-html.light :is(
-  .text-white\/60, .text-white\/55, .text-white\/50, .text-white\/45,
-  .text-white\/40, .text-white\/35, .text-white\/30, .text-white\/25,
-  .text-white\/20, .text-white\/15, .text-white\/10, .text-white\/5,
-  .text-slate-400, .text-neutral-400, .text-zinc-400, .text-gray-400, .text-stone-400
-):not(
-  .bg-black *, [class*="bg-black/"] *,
-  .bg-slate-950 *, [class*="bg-slate-950/"] *,
-  .bg-slate-900 *, [class*="bg-slate-900/"] *,
-  .bg-slate-800 *, [class*="bg-slate-800/"] *,
-  .bg-neutral-900 *, .bg-zinc-900 *,
-  .keep-white *, [data-keep-white="true"] *, pre *
-) {
+html.light .text-slate-300,   html.light .text-slate-400,
+html.light .text-neutral-300, html.light .text-neutral-400,
+html.light .text-zinc-300,    html.light .text-zinc-400,
+html.light .text-gray-300,    html.light .text-gray-400,
+html.light .text-stone-300,   html.light .text-stone-400 {
   color: #334155 !important;
 }
 
-/* 4. Full 15-Color Spectrum Luminance Calibration for Light Mode */
-/* Maps bright colored text (100~400) to rich deep readable tones (800~900) */
-html.light :is(.text-purple-100, .text-purple-200, .text-purple-300, .text-purple-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #581c87 !important; /* purple-900 */
-}
-html.light :is(.text-indigo-100, .text-indigo-200, .text-indigo-300, .text-indigo-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #312e81 !important; /* indigo-900 */
-}
-html.light :is(.text-pink-100, .text-pink-200, .text-pink-300, .text-pink-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #831843 !important; /* pink-900 */
-}
-html.light :is(.text-rose-100, .text-rose-200, .text-rose-300, .text-rose-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #881337 !important; /* rose-900 */
-}
-html.light :is(.text-amber-100, .text-amber-200, .text-amber-300, .text-amber-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #78350f !important; /* amber-900 */
-}
-html.light :is(.text-yellow-100, .text-yellow-200, .text-yellow-300, .text-yellow-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #713f12 !important; /* yellow-900 */
-}
-html.light :is(.text-cyan-100, .text-cyan-200, .text-cyan-300, .text-cyan-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #164e63 !important; /* cyan-900 */
-}
-html.light :is(.text-sky-100, .text-sky-200, .text-sky-300, .text-sky-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #0c4a6e !important; /* sky-900 */
-}
-html.light :is(.text-blue-100, .text-blue-200, .text-blue-300, .text-blue-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #1e3a8a !important; /* blue-900 */
-}
-html.light :is(.text-emerald-100, .text-emerald-200, .text-emerald-300, .text-emerald-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #064e3b !important; /* emerald-900 */
-}
-html.light :is(.text-teal-100, .text-teal-200, .text-teal-300, .text-teal-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #134e4a !important; /* teal-900 */
-}
-html.light :is(.text-green-100, .text-green-200, .text-green-300, .text-green-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #14532d !important; /* green-900 */
-}
-html.light :is(.text-orange-100, .text-orange-200, .text-orange-300, .text-orange-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #7c2d12 !important; /* orange-900 */
-}
-html.light :is(.text-violet-100, .text-violet-200, .text-violet-300, .text-violet-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #4c1d95 !important; /* violet-900 */
-}
-html.light :is(.text-fuchsia-100, .text-fuchsia-200, .text-fuchsia-300, .text-fuchsia-400):not(.bg-black *):not([class*="bg-black/"] *):not(.bg-slate-900 *):not(.bg-slate-800 *):not(.keep-white *):not([data-keep-white="true"] *) {
-  color: #701a75 !important; /* fuchsia-900 */
-}
+/* 4. Full 15-color spectrum: bright (100~400) → deep (800~900) */
+html.light .text-purple-100, html.light .text-purple-200, html.light .text-purple-300, html.light .text-purple-400  { color: #581c87 !important; }
+html.light .text-indigo-100, html.light .text-indigo-200, html.light .text-indigo-300, html.light .text-indigo-400  { color: #312e81 !important; }
+html.light .text-pink-100,   html.light .text-pink-200,   html.light .text-pink-300,   html.light .text-pink-400    { color: #831843 !important; }
+html.light .text-rose-100,   html.light .text-rose-200,   html.light .text-rose-300,   html.light .text-rose-400    { color: #881337 !important; }
+html.light .text-amber-100,  html.light .text-amber-200,  html.light .text-amber-300,  html.light .text-amber-400   { color: #78350f !important; }
+html.light .text-yellow-100, html.light .text-yellow-200, html.light .text-yellow-300, html.light .text-yellow-400  { color: #713f12 !important; }
+html.light .text-cyan-100,   html.light .text-cyan-200,   html.light .text-cyan-300,   html.light .text-cyan-400    { color: #164e63 !important; }
+html.light .text-sky-100,    html.light .text-sky-200,    html.light .text-sky-300,    html.light .text-sky-400     { color: #0c4a6e !important; }
+html.light .text-blue-100,   html.light .text-blue-200,   html.light .text-blue-300,   html.light .text-blue-400    { color: #1e3a8a !important; }
+html.light .text-emerald-100,html.light .text-emerald-200,html.light .text-emerald-300,html.light .text-emerald-400 { color: #064e3b !important; }
+html.light .text-teal-100,   html.light .text-teal-200,   html.light .text-teal-300,   html.light .text-teal-400    { color: #134e4a !important; }
+html.light .text-green-100,  html.light .text-green-200,  html.light .text-green-300,  html.light .text-green-400   { color: #14532d !important; }
+html.light .text-orange-100, html.light .text-orange-200, html.light .text-orange-300, html.light .text-orange-400  { color: #7c2d12 !important; }
+html.light .text-violet-100, html.light .text-violet-200, html.light .text-violet-300, html.light .text-violet-400  { color: #4c1d95 !important; }
+html.light .text-fuchsia-100,html.light .text-fuchsia-200,html.light .text-fuchsia-300,html.light .text-fuchsia-400 { color: #701a75 !important; }
 
-/* 5. Catch-All Inline White Styles in Light Mode: override inline style on non-dark surfaces */
-html.light :not(
-  .bg-black, [class*="bg-black/"],
-  .bg-slate-950, [class*="bg-slate-950/"],
-  .bg-slate-900, [class*="bg-slate-900/"],
-  .bg-slate-800, [class*="bg-slate-800/"],
-  .bg-neutral-900, .bg-zinc-900,
-  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700,
-  .bg-blue-500, .bg-blue-600, .bg-blue-700,
-  .bg-rose-500, .bg-rose-600, .bg-rose-700,
-  .bg-red-500, .bg-red-600, .bg-red-700,
-  .bg-emerald-500, .bg-emerald-600, .bg-emerald-700,
-  .bg-amber-600, .bg-amber-700,
-  .bg-purple-500, .bg-purple-600, .bg-purple-700,
-  .bg-violet-500, .bg-violet-600, .bg-violet-700,
-  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
-  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
-  [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
-  .keep-white, [data-keep-white="true"], pre
-):is(
-  [style*="color: rgb(255, 255, 255)"],
-  [style*="color: rgba(255, 255, 255"],
-  [style*="color: #fff"],
-  [style*="color: #ffffff"],
-  [style*="color: white"]
-) {
+/* 5. Inline white styles */
+html.light [style*="color: rgb(255, 255, 255)"],
+html.light [style*="color: rgba(255, 255, 255"],
+html.light [style*="color: #fff"],
+html.light [style*="color: #ffffff"],
+html.light [style*="color: white"] {
   color: #0f172a !important;
 }
 
-/* 6. Form Inputs & Textareas & Placeholders in Light Mode */
+/* 6. Form inputs */
 html.light input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
 html.light textarea,
 html.light select {
@@ -2385,70 +2255,140 @@ html.light [class*="placeholder-white"] {
   color: #64748b !important;
 }
 
-/* 7. Bulletproof Crisp White Text Protection on Dark / Saturated Surfaces & Buttons in Light Mode */
-html.light :is(
-  .bg-black, [class*="bg-black/"],
-  .bg-slate-950, [class*="bg-slate-950/"],
-  .bg-slate-900, [class*="bg-slate-900/"],
-  .bg-slate-800, [class*="bg-slate-800/"],
-  .bg-neutral-900, [class*="bg-neutral-900/"],
-  .bg-neutral-800, [class*="bg-neutral-800/"],
-  .bg-zinc-900, [class*="bg-zinc-900/"],
-  .bg-zinc-800, [class*="bg-zinc-800/"],
-  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700, [class*="bg-indigo-6"], [class*="bg-indigo-7"],
-  .bg-blue-500, .bg-blue-600, .bg-blue-700, [class*="bg-blue-6"], [class*="bg-blue-7"],
-  .bg-rose-500, .bg-rose-600, .bg-rose-700, [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-rose-7"],
-  .bg-red-500, .bg-red-600, .bg-red-700, [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-red-7"],
-  .bg-emerald-500, .bg-emerald-600, .bg-emerald-700, [class*="bg-emerald-6"], [class*="bg-emerald-7"],
-  .bg-amber-600, .bg-amber-700, [class*="bg-amber-6"], [class*="bg-amber-7"],
-  .bg-yellow-600, .bg-yellow-700,
-  .bg-purple-500, .bg-purple-600, .bg-purple-700, [class*="bg-purple-6"], [class*="bg-purple-7"],
-  .bg-violet-500, .bg-violet-600, .bg-violet-700, [class*="bg-violet-6"], [class*="bg-violet-7"],
-  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
-  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
-  [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
-  .prism-rainbow-btn, .celestial-tarot-btn, .prism-fab-3d,
-  .keep-white, [data-keep-white="true"], .force-white,
-  pre
-) :is(.text-white, .text-white\/90, .text-white\/80, .text-white\/70, [class*="text-white"], .text-slate-100, .text-slate-200) {
+/* ── STEP 2: RESTORE white text inside dark containers ───────────────────── */
+
+/* Dark solid background containers */
+html.light .bg-black .text-white,
+html.light .bg-black [class*="text-white/"],
+html.light .bg-slate-950 .text-white,
+html.light .bg-slate-950 [class*="text-white/"],
+html.light .bg-slate-900 .text-white,
+html.light .bg-slate-900 [class*="text-white/"],
+html.light .bg-slate-800 .text-white,
+html.light .bg-slate-800 [class*="text-white/"],
+html.light .bg-neutral-900 .text-white,
+html.light .bg-neutral-900 [class*="text-white/"],
+html.light .bg-neutral-800 .text-white,
+html.light .bg-neutral-800 [class*="text-white/"],
+html.light .bg-zinc-900 .text-white,
+html.light .bg-zinc-900 [class*="text-white/"],
+html.light .bg-zinc-800 .text-white,
+html.light .bg-zinc-800 [class*="text-white/"] {
   color: #ffffff !important;
 }
 
-html.light :is(
-  button, a, span, div, [role="button"]
-):is(
-  .bg-black, [class*="bg-black/"],
-  .bg-slate-950, [class*="bg-slate-950/"],
-  .bg-slate-900, [class*="bg-slate-900/"],
-  .bg-slate-800, [class*="bg-slate-800/"],
-  .bg-neutral-900, .bg-zinc-900,
-  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700,
-  .bg-blue-500, .bg-blue-600, .bg-blue-700,
-  .bg-rose-500, .bg-rose-600, .bg-rose-700,
-  .bg-red-500, .bg-red-600, .bg-red-700,
-  .bg-emerald-500, .bg-emerald-600, .bg-emerald-700,
-  .bg-amber-600, .bg-amber-700,
-  .bg-yellow-600, .bg-yellow-700,
-  .bg-purple-500, .bg-purple-600, .bg-purple-700,
-  .bg-violet-500, .bg-violet-600, .bg-violet-700,
-  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
-  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
-  [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
-  .prism-rainbow-btn, .celestial-tarot-btn, .prism-fab-3d,
-  .keep-white, [data-keep-white="true"], .force-white
-) {
+/* Dark transparent background containers */
+html.light [class*="bg-black/"] .text-white,
+html.light [class*="bg-black/"] [class*="text-white/"],
+html.light [class*="bg-slate-950/"] .text-white,
+html.light [class*="bg-slate-950/"] [class*="text-white/"],
+html.light [class*="bg-slate-900/"] .text-white,
+html.light [class*="bg-slate-900/"] [class*="text-white/"],
+html.light [class*="bg-slate-800/"] .text-white,
+html.light [class*="bg-slate-800/"] [class*="text-white/"],
+html.light [class*="bg-neutral-900/"] .text-white,
+html.light [class*="bg-neutral-900/"] [class*="text-white/"],
+html.light [class*="bg-zinc-900/"] .text-white,
+html.light [class*="bg-zinc-900/"] [class*="text-white/"] {
   color: #ffffff !important;
 }
 
+/* Saturated color buttons/containers (children) */
+html.light .bg-indigo-500 .text-white,  html.light .bg-indigo-600 .text-white,  html.light .bg-indigo-700 .text-white,
+html.light .bg-blue-500 .text-white,    html.light .bg-blue-600 .text-white,    html.light .bg-blue-700 .text-white,
+html.light .bg-rose-500 .text-white,    html.light .bg-rose-600 .text-white,    html.light .bg-rose-700 .text-white,
+html.light .bg-red-500 .text-white,     html.light .bg-red-600 .text-white,     html.light .bg-red-700 .text-white,
+html.light .bg-emerald-500 .text-white, html.light .bg-emerald-600 .text-white, html.light .bg-emerald-700 .text-white,
+html.light .bg-amber-600 .text-white,   html.light .bg-amber-700 .text-white,
+html.light .bg-yellow-600 .text-white,  html.light .bg-yellow-700 .text-white,
+html.light .bg-purple-500 .text-white,  html.light .bg-purple-600 .text-white,  html.light .bg-purple-700 .text-white,
+html.light .bg-violet-500 .text-white,  html.light .bg-violet-600 .text-white,  html.light .bg-violet-700 .text-white {
+  color: #ffffff !important;
+}
+
+/* Self-colored elements that have both bg-* AND text-white */
+html.light .bg-indigo-500.text-white,  html.light .bg-indigo-600.text-white,  html.light .bg-indigo-700.text-white,
+html.light .bg-blue-500.text-white,    html.light .bg-blue-600.text-white,    html.light .bg-blue-700.text-white,
+html.light .bg-rose-500.text-white,    html.light .bg-rose-600.text-white,    html.light .bg-rose-700.text-white,
+html.light .bg-red-500.text-white,     html.light .bg-red-600.text-white,     html.light .bg-red-700.text-white,
+html.light .bg-emerald-500.text-white, html.light .bg-emerald-600.text-white, html.light .bg-emerald-700.text-white,
+html.light .bg-amber-600.text-white,   html.light .bg-amber-700.text-white,
+html.light .bg-yellow-600.text-white,  html.light .bg-yellow-700.text-white,
+html.light .bg-purple-500.text-white,  html.light .bg-purple-600.text-white,  html.light .bg-purple-700.text-white,
+html.light .bg-violet-500.text-white,  html.light .bg-violet-600.text-white,  html.light .bg-violet-700.text-white,
+html.light .bg-black.text-white,
+html.light .bg-slate-950.text-white,   html.light .bg-slate-900.text-white,   html.light .bg-slate-800.text-white {
+  color: #ffffff !important;
+}
+
+/* Gradient dark containers (children) */
+html.light [class*="from-indigo-"] .text-white,  html.light [class*="from-indigo-"] [class*="text-white/"],
+html.light [class*="from-purple-"] .text-white,  html.light [class*="from-purple-"] [class*="text-white/"],
+html.light [class*="from-violet-"] .text-white,  html.light [class*="from-violet-"] [class*="text-white/"],
+html.light [class*="from-rose-"] .text-white,    html.light [class*="from-rose-"] [class*="text-white/"],
+html.light [class*="from-red-"] .text-white,     html.light [class*="from-red-"] [class*="text-white/"],
+html.light [class*="from-blue-"] .text-white,    html.light [class*="from-blue-"] [class*="text-white/"],
+html.light [class*="from-emerald-"] .text-white, html.light [class*="from-emerald-"] [class*="text-white/"],
+html.light [class*="from-amber-"] .text-white,   html.light [class*="from-amber-"] [class*="text-white/"],
+html.light [class*="from-orange-"] .text-white,  html.light [class*="from-orange-"] [class*="text-white/"] {
+  color: #ffffff !important;
+}
+
+/* Special classes */
+html.light .keep-white,
+html.light [data-keep-white="true"],
+html.light .force-white,
+html.light .keep-white.text-white,
+html.light [data-keep-white="true"].text-white,
+html.light .prism-rainbow-btn,
+html.light .celestial-tarot-btn,
+html.light .prism-fab-3d {
+  color: #ffffff !important;
+}
+html.light .keep-white .text-white,
+html.light .keep-white [class*="text-white/"],
+html.light [data-keep-white="true"] .text-white,
+html.light [data-keep-white="true"] [class*="text-white/"],
+html.light .prism-rainbow-btn .text-white,
+html.light .celestial-tarot-btn .text-white,
+html.light .prism-fab-3d .text-white {
+  color: #ffffff !important;
+}
+
+/* Code blocks */
 html.light pre {
   background-color: #0f172a !important;
   color: #f8fafc !important;
 }
+html.light pre .text-white,
+html.light pre [class*="text-white/"],
 html.light pre code {
   color: #f8fafc !important;
 }
 
-
+/* Restore bright grayscale inside dark containers */
+html.light .bg-black .text-slate-100,
+html.light .bg-black .text-slate-200,
+html.light .bg-slate-900 .text-slate-100,
+html.light .bg-slate-900 .text-slate-200,
+html.light .bg-slate-800 .text-slate-100,
+html.light .bg-slate-800 .text-slate-200,
+html.light [class*="bg-black/"] .text-slate-100,
+html.light [class*="bg-black/"] .text-slate-200,
+html.light [class*="bg-slate-900/"] .text-slate-100,
+html.light [class*="bg-slate-900/"] .text-slate-200 {
+  color: #f1f5f9 !important;
+}
+html.light .bg-black .text-slate-300,
+html.light .bg-black .text-slate-400,
+html.light .bg-slate-900 .text-slate-300,
+html.light .bg-slate-900 .text-slate-400,
+html.light [class*="bg-black/"] .text-slate-300,
+html.light [class*="bg-black/"] .text-slate-400,
+html.light [class*="bg-slate-900/"] .text-slate-300,
+html.light [class*="bg-slate-900/"] .text-slate-400 {
+  color: #94a3b8 !important;
+}
 /* ============================================================================
    🌙 DARK MODE: Full-Spectrum Luminance Contrast Engine
    Prevents ALL dark/black text on dark surfaces.
@@ -2633,6 +2573,39 @@ html.dark :is(
   .keep-dark, [data-keep-dark="true"], .force-dark
 ) {
   color: #090d16 !important;
+}
+
+/* 8. Subnav Bar & Inactive Button Contrast Enforcements */
+html.light .prism-xs-subnav {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(180, 140, 90, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(160, 120, 70, 0.12) !important;
+}
+
+html.light .prism-subnav-btn:not([class*="bg-"]) {
+  color: #475569 !important;
+}
+
+html.light .prism-subnav-btn:not([class*="bg-"]):hover {
+  color: #0f172a !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 9. Dark Mode Dim Text Protection: prevent text-white/10~30 from disappearing into dark void */
+html.dark :is(.text-white\/10, .text-white\/15, .text-white\/20, .text-white\/25):not(
+  .bg-white *, [class*="bg-white/"] *,
+  .bg-amber-300 *, .bg-amber-400 *,
+  .keep-dark *, [data-keep-dark="true"] *
+) {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.dark :is(.text-white\/30, .text-white\/35, .text-white\/40):not(
+  .bg-white *, [class*="bg-white/"] *,
+  .bg-amber-300 *, .bg-amber-400 *,
+  .keep-dark *, [data-keep-dark="true"] *
+) {
+  color: rgba(255, 255, 255, 0.72) !important;
 }
 
 

@@ -155,7 +155,7 @@ function InputField({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-bold text-white/50 tracking-wider font-sans uppercase">
+      <label className="block text-xs font-bold text-slate-700 dark:text-white/70 tracking-wider font-sans uppercase">
         {label}
       </label>
       <input
@@ -164,7 +164,7 @@ function InputField({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder={placeholder}
-        className="w-full px-4 py-3.5 rounded-2xl text-sm text-white/95 placeholder-white/20 outline-none transition-all duration-200 bg-white/[0.03] backdrop-blur-md border border-white/10 focus:border-purple-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_20px_rgba(192,132,252,0.15)]"
+        className="w-full px-4 py-3.5 rounded-2xl text-sm text-slate-900 dark:text-white/95 placeholder-slate-400 dark:placeholder-white/40 outline-none transition-all duration-200 bg-white/80 dark:bg-white/[0.04] backdrop-blur-md border border-slate-300 dark:border-white/10 focus:border-purple-500 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-[0_0_20px_rgba(192,132,252,0.15)]"
       />
     </div>
   );
@@ -612,7 +612,7 @@ export default function EpilogueApp() {
         return (
           <div className="space-y-5 animate-in fade-in duration-300">
             <div>
-              <label className="block text-xs font-bold text-white/50 mb-2 tracking-wider font-sans uppercase">
+              <label className="block text-xs font-bold text-slate-700 dark:text-white/70 mb-2 tracking-wider font-sans uppercase">
                 관심 있는 분야 (다중 선택)
               </label>
               <TagSelector
@@ -640,7 +640,7 @@ export default function EpilogueApp() {
         return (
           <div className="space-y-5 animate-in fade-in duration-300">
             <div>
-              <label className="block text-xs font-bold text-white/50 mb-2 tracking-wider font-sans uppercase">
+              <label className="block text-xs font-bold text-slate-700 dark:text-white/70 mb-2 tracking-wider font-sans uppercase">
                 좋아하는 음악 장르 (다중 선택)
               </label>
               <TagSelector
@@ -651,7 +651,7 @@ export default function EpilogueApp() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-white/50 mb-2 tracking-wider font-sans uppercase">
+              <label className="block text-xs font-bold text-slate-700 dark:text-white/70 mb-2 tracking-wider font-sans uppercase">
                 다룰 수 있거나 관심 있는 악기 (다중 선택)
               </label>
               <TagSelector
@@ -679,7 +679,7 @@ export default function EpilogueApp() {
         return (
           <div className="space-y-5 animate-in fade-in duration-300">
             <div>
-              <label className="block text-xs font-bold text-white/50 mb-2 tracking-wider font-sans uppercase">
+              <label className="block text-xs font-bold text-slate-700 dark:text-white/70 mb-2 tracking-wider font-sans uppercase">
                 MBTI 유형
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -700,7 +700,7 @@ export default function EpilogueApp() {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-white/50 mb-2 tracking-wider font-sans uppercase">
+              <label className="block text-xs font-bold text-slate-700 dark:text-white/70 mb-2 tracking-wider font-sans uppercase">
                 선호하는 AI 상담 스타일
               </label>
               <div className="flex gap-2">
@@ -736,7 +736,7 @@ export default function EpilogueApp() {
         return (
           <div className="space-y-5 animate-in fade-in duration-300">
             <div>
-              <label className="block text-xs font-bold text-white/50 mb-2 tracking-wider font-sans uppercase">
+              <label className="block text-xs font-bold text-slate-700 dark:text-white/70 mb-2 tracking-wider font-sans uppercase">
                 선호하는 화풍 &amp; 미술 스타일 (다중 선택)
               </label>
               <TagSelector
@@ -747,7 +747,7 @@ export default function EpilogueApp() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-white/50 mb-2 tracking-wider font-sans uppercase">
+              <label className="block text-xs font-bold text-slate-700 dark:text-white/70 mb-2 tracking-wider font-sans uppercase">
                 선호하는 색감 &amp; 은하 톤 (다중 선택)
               </label>
               <TagSelector

@@ -1683,7 +1683,7 @@ export default function HealApp() {
                  setShowHealingMissionModal(false);
                  setIsChatOpen(false);
                }}
-               className={`prism-subnav-btn relative flex shrink-0 whitespace-nowrap items-center gap-2 md:gap-3 px-4 md:px-6 py-2.5 md:py-3 rounded-2xl transition-all duration-300 group cursor-pointer ${isActive ? 'text-white' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+               className={`prism-subnav-btn relative flex shrink-0 whitespace-nowrap items-center gap-2 md:gap-3 px-4 md:px-6 py-2.5 md:py-3 rounded-2xl transition-all duration-300 group cursor-pointer ${isActive ? 'text-white' : 'text-slate-600 hover:text-slate-900 dark:text-white/60 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'}`}
              >
                {isActive && (
                  <motion.div
@@ -1706,12 +1706,12 @@ export default function HealApp() {
       <main
         data-app-scroll-root
         {...healSwipeHandlers}
-        className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-white touch-pan-y"
+        className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y"
       >
         <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
           {/* Mobile Swipe Guidance & Tab Dots Indicator */}
           <div className="md:hidden flex items-center justify-between px-2 pt-1 pb-3 select-none">
-            <span className="text-[10px] text-white/35 font-medium tracking-wide flex items-center gap-1">
+            <span className="text-[10px] text-slate-500 dark:text-white/45 font-medium tracking-wide flex items-center gap-1">
               <span>↔ 좌우 스와이프로 탭 전환</span>
             </span>
             <div className="flex items-center gap-1.5">

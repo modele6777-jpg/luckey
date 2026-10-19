@@ -262,7 +262,7 @@ export default function LibraryPage() {
   }, [records]);
 
   return (
-    <div className="min-h-screen bg-[#070708] text-white/90 selection:bg-white/10 p-4 md:p-12 font-soft">
+    <div className="min-h-screen bg-[#fdfaf5] dark:bg-[#070708] text-slate-900 dark:text-white/90 selection:bg-amber-500/20 dark:selection:bg-white/10 p-4 md:p-12 font-soft">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <motion.header 
@@ -274,18 +274,18 @@ export default function LibraryPage() {
           <div className="space-y-4">
             <button 
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-white/30 hover:text-white transition-colors group"
+              className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white transition-colors group cursor-pointer"
             >
               <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
               <span className="text-[10px] font-bold uppercase tracking-widest">Back to Universe</span>
             </button>
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
-                <LibraryIcon size={28} className="text-white/60" />
+              <div className="w-14 h-14 rounded-3xl bg-white/70 dark:bg-white/5 border border-amber-900/10 dark:border-white/10 flex items-center justify-center shadow-inner">
+                <LibraryIcon size={28} className="text-slate-700 dark:text-white/60" />
               </div>
               <div>
-                <h1 className="text-4xl font-cute tracking-tight text-white/90">The Library of Souls</h1>
-                <p className="text-xs text-white/20 uppercase tracking-[0.4em] mt-1 font-sans">Universal Archive of Records & Memories</p>
+                <h1 className="text-4xl font-cute tracking-tight text-slate-900 dark:text-white/90">The Library of Souls</h1>
+                <p className="text-xs text-slate-500 dark:text-white/50 uppercase tracking-[0.4em] mt-1 font-sans">Universal Archive of Records & Memories</p>
               </div>
             </div>
           </div>
@@ -301,8 +301,8 @@ export default function LibraryPage() {
                 onClick={() => setActiveFilter(tab.id)}
                 className={`px-5 py-2.5 rounded-2xl border text-[10px] font-bold uppercase tracking-widest transition-all ${
                   activeFilter === tab.id 
-                    ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300 shadow-lg font-extrabold' 
-                    : 'bg-white/5 border-white/5 text-white/30 hover:bg-white/8 hover:text-white/60'
+                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-800 dark:text-yellow-300 shadow-md font-extrabold' 
+                    : 'bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 text-slate-600 dark:text-white/60 hover:bg-black/10 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {tab.label}
