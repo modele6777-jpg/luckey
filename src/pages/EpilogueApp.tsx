@@ -119,11 +119,14 @@ function TagSelector({
             key={opt}
             type="button"
             onClick={() => toggle(opt)}
-            className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md"
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md ${
+              active
+                ? 'text-zinc-900 dark:text-white font-bold'
+                : 'text-zinc-600 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white'
+            }`}
             style={{
               background: active ? `${color}30` : 'rgba(255, 255, 255, 0.04)',
               border: `1px solid ${active ? `${color}70` : 'rgba(255, 255, 255, 0.08)'}`,
-              color: active ? '#ffffff' : 'rgba(255, 255, 255, 0.55)',
               boxShadow: active ? `0 0 12px ${color}35` : 'none',
             }}
           >
@@ -554,12 +557,11 @@ export default function EpilogueApp() {
                       key={type}
                       type="button"
                       onClick={() => setBasic((b) => ({ ...b, lunarSolar: type }))}
-                      className="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer"
-                      style={{
-                        background: basic.lunarSolar === type ? 'rgba(192, 132, 252, 0.25)' : 'transparent',
-                        color: basic.lunarSolar === type ? '#e9d5ff' : 'rgba(255, 255, 255, 0.4)',
-                        border: basic.lunarSolar === type ? '1px solid rgba(192, 132, 252, 0.4)' : '1px solid transparent',
-                      }}
+                      className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                        basic.lunarSolar === type
+                          ? 'text-purple-900 dark:text-purple-200 bg-purple-500/25 border border-purple-400/40'
+                          : 'text-zinc-600 dark:text-white/50 border border-transparent hover:text-zinc-900 dark:hover:text-white'
+                      }`}
                     >
                       {type === 'solar' ? '양력' : '음력'}
                     </button>
@@ -593,13 +595,11 @@ export default function EpilogueApp() {
                     key={val}
                     type="button"
                     onClick={() => setBasic((b) => ({ ...b, gender: val as any }))}
-                    className="flex-1 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer backdrop-blur-md"
-                    style={{
-                      background: basic.gender === val ? 'rgba(192, 132, 252, 0.25)' : 'rgba(255, 255, 255, 0.03)',
-                      border: `1px solid ${basic.gender === val ? 'rgba(192, 132, 252, 0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-                      color: basic.gender === val ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
-                      boxShadow: basic.gender === val ? '0 0 15px rgba(192, 132, 252, 0.25)' : 'none',
-                    }}
+                    className={`flex-1 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer backdrop-blur-md ${
+                      basic.gender === val
+                        ? 'text-purple-950 dark:text-white bg-purple-500/25 border border-purple-400/50 shadow-[0_0_15px_rgba(192,132,252,0.25)]'
+                        : 'text-zinc-600 dark:text-white/50 bg-white/[0.03] border border-white/10 hover:text-zinc-900 dark:hover:text-white'
+                    }`}
                   >
                     {label}
                   </button>
@@ -688,13 +688,11 @@ export default function EpilogueApp() {
                     key={type}
                     type="button"
                     onClick={() => setPsych((p) => ({ ...p, mbti: type }))}
-                    className="py-2.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer backdrop-blur-md"
-                    style={{
-                      background: psych.mbti === type ? 'rgba(249, 115, 22, 0.25)' : 'rgba(255, 255, 255, 0.03)',
-                      border: `1px solid ${psych.mbti === type ? 'rgba(249, 115, 22, 0.6)' : 'rgba(255, 255, 255, 0.08)'}`,
-                      color: psych.mbti === type ? '#fed7aa' : 'rgba(255, 255, 255, 0.5)',
-                      boxShadow: psych.mbti === type ? '0 0 12px rgba(249, 115, 22, 0.25)' : 'none',
-                    }}
+                    className={`py-2.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer backdrop-blur-md ${
+                      psych.mbti === type
+                        ? 'text-amber-950 dark:text-amber-200 bg-amber-500/25 border border-amber-500/60 shadow-[0_0_12px_rgba(249,115,22,0.25)]'
+                        : 'text-zinc-600 dark:text-white/50 bg-white/[0.03] border border-white/10 hover:text-zinc-900 dark:hover:text-white'
+                    }`}
                   >
                     {type}
                   </button>
@@ -715,13 +713,11 @@ export default function EpilogueApp() {
                     key={val}
                     type="button"
                     onClick={() => setPsych((p) => ({ ...p, counselingStyle: val as any }))}
-                    className="flex-1 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer backdrop-blur-md"
-                    style={{
-                      background: psych.counselingStyle === val ? 'rgba(249, 115, 22, 0.25)' : 'rgba(255, 255, 255, 0.03)',
-                      border: `1px solid ${psych.counselingStyle === val ? 'rgba(249, 115, 22, 0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
-                      color: psych.counselingStyle === val ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
-                      boxShadow: psych.counselingStyle === val ? '0 0 12px rgba(249, 115, 22, 0.2)' : 'none',
-                    }}
+                    className={`flex-1 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer backdrop-blur-md ${
+                      psych.counselingStyle === val
+                        ? 'text-amber-950 dark:text-white bg-amber-500/25 border border-amber-500/50 shadow-[0_0_12px_rgba(249,115,22,0.2)]'
+                        : 'text-zinc-600 dark:text-white/50 bg-white/[0.03] border border-white/10 hover:text-zinc-900 dark:hover:text-white'
+                    }`}
                   >
                     {label}
                   </button>

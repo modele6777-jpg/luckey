@@ -2165,33 +2165,68 @@ html.light :is(
   border-color: rgba(180, 145, 105, 0.22) !important;
 }
 
-/* 5. High-Contrast Pure Black / Deep Charcoal Typography Engine */
+/* 5. High-Contrast Pure Black / Deep Charcoal Typography Engine for Light Mode */
 /* Headings & bold titles -> Deep Obsidian Black (#090d16) */
-html.light :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*="font-extrabold"], [class*="font-bold"]):is(.text-white, .text-slate-100, .text-neutral-100, .text-zinc-100, .text-gray-100, .text-stone-100) {
+html.light :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*="font-extrabold"], [class*="font-bold"]):is(
+  .text-white, [class*="text-white"],
+  .text-slate-50, .text-slate-100, .text-slate-200,
+  .text-neutral-50, .text-neutral-100, .text-neutral-200,
+  .text-zinc-50, .text-zinc-100, .text-zinc-200,
+  .text-gray-50, .text-gray-100, .text-gray-200,
+  .text-stone-50, .text-stone-100, .text-stone-200,
+  .text-purple-100, .text-purple-200,
+  .text-indigo-100, .text-indigo-200,
+  .text-pink-100, .text-pink-200,
+  .text-rose-100, .text-rose-200,
+  .text-amber-100, .text-yellow-100,
+  .text-emerald-100, .text-teal-100,
+  .text-cyan-100, .text-sky-100, .text-blue-100
+) {
   color: #090d16 !important;
 }
 
-/* Standard text-white & 95~100% white -> Rich Deep Charcoal (#0f172a) */
+/* Standard text-white & 85~100% white -> Rich Deep Charcoal (#0f172a) */
 html.light :is(
   .text-white,
   .text-white\/100,
   .text-white\/95,
+  .text-white\/90,
+  .text-white\/85,
+  .text-slate-50,
   .text-slate-100,
+  .text-neutral-50,
   .text-neutral-100,
+  .text-zinc-50,
   .text-zinc-100,
+  .text-gray-50,
   .text-gray-100,
-  .text-stone-100
+  .text-stone-50,
+  .text-stone-100,
+  .text-purple-100,
+  .text-purple-200,
+  .text-indigo-100,
+  .text-indigo-200,
+  .text-pink-100,
+  .text-pink-200,
+  .text-rose-100,
+  .text-rose-200,
+  .text-amber-100,
+  .text-yellow-100,
+  .text-emerald-100,
+  .text-teal-100,
+  .text-cyan-100,
+  .text-sky-100,
+  .text-blue-100
 ) {
   color: #0f172a !important;
 }
 
-/* High-Medium Readable Dark (70% ~ 90% opacity & slate 200/300) -> #1e293b */
+/* High-Medium Readable Dark (65% ~ 80% opacity & slate 200/300) -> #1e293b */
 html.light :is(
-  .text-white\/90,
-  .text-white\/85,
   .text-white\/80,
   .text-white\/75,
   .text-white\/70,
+  .text-white\/65,
   .text-slate-200,
   .text-slate-300,
   .text-neutral-200,
@@ -2206,9 +2241,8 @@ html.light :is(
   color: #1e293b !important;
 }
 
-/* Medium Slate Dark (50% ~ 65% opacity & slate 400) -> #334155 */
+/* Medium Slate Dark (50% ~ 60% opacity & slate 400) -> #334155 */
 html.light :is(
-  .text-white\/65,
   .text-white\/60,
   .text-white\/55,
   .text-white\/50,
@@ -2234,6 +2268,35 @@ html.light :is(
   .text-white\/5
 ) {
   color: #475569 !important;
+}
+
+/* Catch-All Inline White Styles in Light Mode: override inline style on non-dark surfaces */
+html.light :not(
+  .bg-black, [class*="bg-black/"],
+  .bg-slate-950, [class*="bg-slate-950/"],
+  .bg-slate-900, [class*="bg-slate-900/"],
+  .bg-slate-800, [class*="bg-slate-800/"],
+  .bg-neutral-900, .bg-zinc-900,
+  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700,
+  .bg-blue-500, .bg-blue-600, .bg-blue-700,
+  .bg-rose-500, .bg-rose-600, .bg-rose-700,
+  .bg-red-500, .bg-red-600, .bg-red-700,
+  .bg-emerald-500, .bg-emerald-600, .bg-emerald-700,
+  .bg-amber-600, .bg-amber-700,
+  .bg-purple-500, .bg-purple-600, .bg-purple-700,
+  .bg-violet-500, .bg-violet-600, .bg-violet-700,
+  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
+  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
+  [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
+  .keep-white, [data-keep-white="true"], pre
+):is(
+  [style*="color: rgb(255, 255, 255)"],
+  [style*="color: rgba(255, 255, 255"],
+  [style*="color: #fff"],
+  [style*="color: #ffffff"],
+  [style*="color: white"]
+) {
+  color: #0f172a !important;
 }
 
 /* 6. Form Inputs & Textareas & Placeholders in Light Mode */
@@ -2268,7 +2331,7 @@ html.light :is(
   color: #0369a1 !important;
 }
 
-/* 8. Bulletproof Crisp White Text Protection on Dark / Saturated Surfaces & Buttons */
+/* 8. Bulletproof Crisp White Text Protection on Dark / Saturated Surfaces & Buttons in Light Mode */
 /* Ensures buttons, chips, badges, and dark surfaces NEVER have dark-on-dark text */
 html.light :is(
   /* Solid dark containers */
@@ -2296,7 +2359,7 @@ html.light :is(
   [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
   /* Special buttons & custom white zones */
   .prism-rainbow-btn, .celestial-tarot-btn, .prism-fab-3d,
-  .keep-white, [data-keep-white="true"],
+  .keep-white, [data-keep-white="true"], .force-white,
   pre
 ) :is(.text-white, .text-white\/90, .text-white\/80, .text-white\/70, [class*="text-white"], .text-slate-100, .text-slate-200) {
   color: #ffffff !important;
@@ -2324,7 +2387,7 @@ html.light :is(
   [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
   [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
   .prism-rainbow-btn, .celestial-tarot-btn, .prism-fab-3d,
-  .keep-white, [data-keep-white="true"]
+  .keep-white, [data-keep-white="true"], .force-white
 ) {
   color: #ffffff !important;
 }
@@ -2339,20 +2402,112 @@ html.light pre code {
 
 
 /* ============================================================================
-   🌙 DARK MODE: Crisp White Typography Enforcement (Prevents black/dark text on dark backgrounds)
+   🌙 DARK MODE: Universal High-Contrast White Engine (Zero Black Text on Dark)
+   Transforms any accidentally dark or black text into pure luminous white globally.
    ============================================================================ */
 html.dark,
 html.dark body,
 html.dark #root,
-html.dark .lucy-chat-shell {
+html.dark .prism-app-shell,
+html.dark [data-app-scroll-root],
+html.dark main {
   color: #f8fafc;
 }
 
-html.dark .lucy-chat-shell :is(h1, h2, h3, h4, p, span, div, li, label, textarea, input):is(.text-slate-900, .text-slate-800, .text-slate-700, .text-stone-900, .text-stone-800, .text-zinc-900, .text-zinc-800, .text-neutral-900, .text-neutral-800, .text-gray-900, .text-gray-800):not([class*="bg-amber-4"]):not([class*="bg-amber-5"]):not([class*="from-amber-"]):not([class*="bg-yellow-"]):not([class*="bg-white"]) {
+/* Headings & bold titles in Dark Mode -> Pure White (#ffffff) */
+html.dark :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*="font-extrabold"], [class*="font-bold"]):is(
+  .text-black, [class*="text-black"],
+  .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700,
+  .text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700,
+  .text-neutral-950, .text-neutral-900, .text-neutral-800, .text-neutral-700,
+  .text-gray-950, .text-gray-900, .text-gray-800, .text-gray-700,
+  .text-stone-950, .text-stone-900, .text-stone-800, .text-stone-700
+):not(
+  .bg-white *, [class*="bg-white/"] *,
+  .bg-amber-300 *, .bg-amber-400 *, .bg-amber-500 *,
+  .bg-yellow-300 *, .bg-yellow-400 *, .bg-yellow-500 *,
+  [class*="from-amber-"] *, [class*="from-yellow-"] *,
+  .keep-dark *, [data-keep-dark="true"] *, .force-dark *
+) {
   color: #ffffff !important;
 }
 
-html.dark .lucy-chat-shell :is(h1, h2, h3, h4, p, span, div, li, label):is(.text-slate-600, .text-slate-500, .text-stone-600, .text-stone-500, .text-zinc-600, .text-zinc-500):not([class*="bg-amber-4"]):not([class*="bg-amber-5"]):not([class*="from-amber-"]):not([class*="bg-yellow-"]):not([class*="bg-white"]) {
-  color: #e2e8f0 !important;
+/* General Body & Paragraphs in Dark Mode -> High-Contrast Crisp White (#f8fafc) */
+html.dark :is(p, span, div, li, label, a, button, [role="button"]):is(
+  .text-black, [class*="text-black"],
+  .text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700,
+  .text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700,
+  .text-neutral-950, .text-neutral-900, .text-neutral-800, .text-neutral-700,
+  .text-gray-950, .text-gray-900, .text-gray-800, .text-gray-700,
+  .text-stone-950, .text-stone-900, .text-stone-800, .text-stone-700
+):not(
+  .bg-white, [class*="bg-white/"],
+  .bg-amber-300, .bg-amber-400, .bg-amber-500,
+  .bg-yellow-300, .bg-yellow-400, .bg-yellow-500,
+  [class*="from-amber-"], [class*="from-yellow-"],
+  .keep-dark, [data-keep-dark="true"], .force-dark
+):not(
+  .bg-white *, [class*="bg-white/"] *,
+  .bg-amber-300 *, .bg-amber-400 *, .bg-amber-500 *,
+  .bg-yellow-300 *, .bg-yellow-400 *, .bg-yellow-500 *,
+  [class*="from-amber-"] *, [class*="from-yellow-"] *,
+  .keep-dark *, [data-keep-dark="true"] *, .force-dark *
+) {
+  color: #f8fafc !important;
+}
+
+/* Secondary & Muted Dark Text in Dark Mode -> Highly Legible Light Slate (#cbd5e1) */
+html.dark :is(p, span, div, li, label):is(
+  .text-slate-600, .text-slate-500,
+  .text-zinc-600, .text-zinc-500,
+  .text-neutral-600, .text-neutral-500,
+  .text-gray-600, .text-gray-500,
+  .text-stone-600, .text-stone-500
+):not(
+  .bg-white *, [class*="bg-white/"] *,
+  .bg-amber-300 *, .bg-amber-400 *, .bg-amber-500 *,
+  .bg-yellow-300 *, .bg-yellow-400 *,
+  .keep-dark *, [data-keep-dark="true"] *, .force-dark *
+) {
+  color: #cbd5e1 !important;
+}
+
+/* Catch-All Inline Black Styles in Dark Mode: override inline style on non-light surfaces */
+html.dark :not(
+  .bg-white, [class*="bg-white/"],
+  .bg-amber-300, .bg-amber-400, .bg-amber-500,
+  .bg-yellow-300, .bg-yellow-400, .bg-yellow-500,
+  [class*="from-amber-"], [class*="from-yellow-"],
+  .keep-dark, [data-keep-dark="true"], .force-dark
+):is(
+  [style*="color: rgb(0, 0, 0)"],
+  [style*="color: rgba(0, 0, 0"],
+  [style*="color: #000"],
+  [style*="color: #000000"],
+  [style*="color: black"]
+) {
+  color: #f8fafc !important;
+}
+
+/* Bulletproof Black Text Protection on White / Yellow / Amber Saturated Surfaces in Dark Mode */
+/* Ensures golden buttons, white chips, and light badges in dark mode keep razor-sharp black text */
+html.dark :is(
+  .bg-white,
+  .bg-amber-300, .bg-amber-400,
+  .bg-yellow-300, .bg-yellow-400,
+  .keep-dark, [data-keep-dark="true"], .force-dark
+) :is(.text-black, [class*="text-black"], .text-slate-900, .text-zinc-900) {
+  color: #090d16 !important;
+}
+
+html.dark :is(
+  button, a, span, div, [role="button"]
+):is(
+  .bg-white,
+  .bg-amber-300, .bg-amber-400,
+  .bg-yellow-300, .bg-yellow-400,
+  .keep-dark, [data-keep-dark="true"], .force-dark
+) {
+  color: #090d16 !important;
 }
 
