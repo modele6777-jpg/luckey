@@ -2113,72 +2113,201 @@ html.light .lucy-user-bubble {
   color: #0f172a !important;
 }
 
-/* Convert opaque dark page wrappers inside main to transparent/ivory so Pastel Aurora shines through */
-html.light main [class*="bg-[#0"],
-html.light main [class*="bg-[#1"],
-html.light main .bg-slate-950,
-html.light main .bg-neutral-950,
-html.light main .bg-zinc-950,
-html.light main .bg-black,
+/* 1. Global Container & Text Inheritance Default */
+html.light,
+html.light body,
+html.light #root,
+html.light .prism-app-shell,
+html.light [data-app-scroll-root],
+html.light main {
+  color: #1e293b !important;
+}
+
+/* 2. Convert opaque dark page wrappers to Warm Ivory so Pastel Aurora shines through */
+html.light [class*="bg-[#0"],
+html.light [class*="bg-[#1"],
+html.light .bg-slate-950,
+html.light .bg-neutral-950,
+html.light .bg-zinc-950,
+html.light .bg-black:not(.keep-dark),
 html.light header.bg-slate-950,
 html.light header[class*="bg-slate-950/"],
 html.light header[class*="bg-black/"],
 html.light footer.bg-slate-950,
 html.light footer[class*="bg-slate-950/"],
 html.light footer[class*="bg-black/"] {
-  background-color: rgba(255, 253, 249, 0.92) !important;
+  background-color: rgba(255, 253, 249, 0.94) !important;
   color: #1e293b !important;
 }
 
-/* Convert dark translucent card & panel surfaces into Warm Ivory Pearl Glass */
-html.light main .bg-slate-900\/90,
-html.light main .bg-slate-900\/80,
-html.light main .bg-slate-900\/70,
-html.light main .bg-slate-900\/60,
-html.light main .bg-slate-900\/50,
-html.light main .bg-slate-900\/40,
-html.light main .bg-neutral-900\/90,
-html.light main .bg-neutral-900\/80,
-html.light main .bg-neutral-900\/60,
-html.light main .bg-neutral-900\/50,
-html.light main .bg-zinc-900\/90,
-html.light main .bg-zinc-900\/80,
-html.light main .bg-zinc-900\/60,
-html.light main .bg-black\/60,
-html.light main .bg-black\/50,
-html.light main .bg-black\/40,
-html.light main .bg-black\/30,
-html.light main .bg-white\/5,
-html.light main .bg-white\/10,
-html.light main [class*="bg-white/[0.0"] {
-  background-color: rgba(255, 253, 249, 0.82) !important;
+/* 3. Convert dark translucent card & panel surfaces into Warm Ivory Pearl Glass across all pages/modals */
+html.light :is(
+  .bg-slate-900\/95, .bg-slate-900\/90, .bg-slate-900\/88, .bg-slate-900\/85, .bg-slate-900\/80,
+  .bg-slate-900\/75, .bg-slate-900\/70, .bg-slate-900\/65, .bg-slate-900\/60, .bg-slate-900\/50,
+  .bg-slate-900\/40, .bg-slate-900\/30, .bg-slate-900\/20, .bg-slate-900\/10,
+  .bg-neutral-900\/90, .bg-neutral-900\/80, .bg-neutral-900\/70, .bg-neutral-900\/60, .bg-neutral-900\/50,
+  .bg-zinc-900\/90, .bg-zinc-900\/80, .bg-zinc-900\/70, .bg-zinc-900\/60,
+  .bg-black\/60, .bg-black\/50, .bg-black\/40, .bg-black\/30, .bg-black\/20,
+  .bg-white\/5, .bg-white\/10,
+  [class*="bg-white/[0.0"], [class*="bg-white/[0.04]"], [class*="bg-white/[0.06]"]
+) {
+  background-color: rgba(255, 253, 249, 0.86) !important;
   border-color: rgba(180, 145, 105, 0.22) !important;
   box-shadow: 0 4px 20px rgba(135, 105, 75, 0.06);
 }
 
-/* Refine borders in Light Mode to warm champagne/stone tones */
-html.light main .border-white\/5,
-html.light main .border-white\/10,
-html.light main .border-white\/15,
-html.light main .border-white\/20,
-html.light main .border-slate-800,
-html.light main .border-neutral-800,
-html.light main .border-zinc-800 {
+/* 4. Refine borders in Light Mode to warm champagne/stone tones */
+html.light :is(
+  .border-white\/5, .border-white\/10, .border-white\/15, .border-white\/20,
+  .border-white\/25, .border-white\/30,
+  .border-slate-800, .border-neutral-800, .border-zinc-800
+) {
   border-color: rgba(180, 145, 105, 0.22) !important;
 }
 
-/* High-contrast readable typography on Warm Ivory surfaces (preserves white text on colored buttons/badges/bubbles) */
-html.light main:not(.lucy-chat-main) :is(h1, h2, h3, h4, p, span, div, label, li):is(.text-white, .text-slate-100, .text-neutral-100, .text-zinc-100):not(button):not(button *):not([class*="bg-gradient"]):not([class*="bg-gradient"] *):not([class*="rainbow"]):not([class*="bg-indigo-"]):not([class*="bg-indigo-"] *):not([class*="bg-sky-"]):not([class*="bg-sky-"] *):not([class*="bg-blue-"]):not([class*="bg-blue-"] *):not([class*="bg-amber-5"]):not([class*="bg-amber-6"]):not([class*="bg-emerald-5"]):not([class*="bg-emerald-6"]):not([class*="bg-rose-5"]):not([class*="bg-rose-6"]):not([class*="bg-purple-"]):not([class*="bg-slate-900"]):not([class*="bg-slate-900"] *) {
+/* 5. High-Contrast Pure Black / Deep Charcoal Typography Engine */
+/* Headings & bold titles -> Deep Obsidian Black (#090d16) */
+html.light :is(h1, h2, h3, h4, h5, h6, strong, b, [class*="font-black"], [class*="font-extrabold"], [class*="font-bold"]):is(.text-white, .text-slate-100, .text-neutral-100, .text-zinc-100, .text-gray-100, .text-stone-100) {
+  color: #090d16 !important;
+}
+
+/* Standard text-white & 95~100% white -> Rich Deep Charcoal (#0f172a) */
+html.light :is(
+  .text-white,
+  .text-white\/100,
+  .text-white\/95,
+  .text-slate-100,
+  .text-neutral-100,
+  .text-zinc-100,
+  .text-gray-100,
+  .text-stone-100
+) {
+  color: #0f172a !important;
+}
+
+/* High-Medium Readable Dark (70% ~ 90% opacity & slate 200/300) -> #1e293b */
+html.light :is(
+  .text-white\/90,
+  .text-white\/85,
+  .text-white\/80,
+  .text-white\/75,
+  .text-white\/70,
+  .text-slate-200,
+  .text-slate-300,
+  .text-neutral-200,
+  .text-neutral-300,
+  .text-zinc-200,
+  .text-zinc-300,
+  .text-gray-200,
+  .text-gray-300,
+  .text-stone-200,
+  .text-stone-300
+) {
   color: #1e293b !important;
 }
 
-html.light main:not(.lucy-chat-main) :is(.text-slate-200, .text-slate-300, .text-neutral-200, .text-neutral-300, .text-zinc-200, .text-zinc-300, .text-white\/90, .text-white\/80, .text-white\/70):not([class*="bg-indigo-"] *):not([class*="bg-sky-"] *):not([class*="bg-blue-"] *):not([class*="bg-slate-900"] *) {
+/* Medium Slate Dark (50% ~ 65% opacity & slate 400) -> #334155 */
+html.light :is(
+  .text-white\/65,
+  .text-white\/60,
+  .text-white\/55,
+  .text-white\/50,
+  .text-slate-400,
+  .text-neutral-400,
+  .text-zinc-400,
+  .text-gray-400,
+  .text-stone-400
+) {
   color: #334155 !important;
 }
 
-html.light main:not(.lucy-chat-main) :is(.text-slate-400, .text-neutral-400, .text-zinc-400, .text-white\/60, .text-white\/50) {
-  color: #64748b !important;
+/* Low-Opacity White (5% ~ 45% opacity) -> Readable Muted Slate (#475569) */
+/* Converts previously invisible faint white metadata/descriptions into clear readable text */
+html.light :is(
+  .text-white\/45,
+  .text-white\/40,
+  .text-white\/35,
+  .text-white\/30,
+  .text-white\/25,
+  .text-white\/20,
+  .text-white\/15,
+  .text-white\/10,
+  .text-white\/5
+) {
+  color: #475569 !important;
 }
+
+/* 6. Form Inputs & Textareas & Placeholders in Light Mode */
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+html.light textarea,
+html.light select {
+  color: #0f172a !important;
+}
+html.light ::placeholder,
+html.light [class*="placeholder-white"] {
+  color: #94a3b8 !important;
+}
+
+/* 7. Preserve Crisp White Text on Saturated Buttons, Badges, CTAs, and Code Blocks */
+html.light :is(
+  /* Saturated gradient buttons & badges */
+  [class*="from-indigo-5"], [class*="from-indigo-6"], [class*="from-indigo-7"],
+  [class*="from-purple-5"], [class*="from-purple-6"], [class*="from-purple-7"],
+  [class*="from-violet-5"], [class*="from-violet-6"], [class*="from-violet-7"],
+  [class*="from-rose-5"], [class*="from-rose-6"], [class*="from-rose-7"],
+  [class*="from-red-5"], [class*="from-red-6"], [class*="from-red-7"],
+  [class*="from-blue-5"], [class*="from-blue-6"], [class*="from-blue-7"],
+  [class*="from-emerald-5"], [class*="from-emerald-6"], [class*="from-emerald-7"],
+  [class*="from-amber-6"], [class*="from-amber-7"], [class*="from-orange-5"], [class*="from-orange-6"],
+  /* Saturated solid color buttons & badges */
+  [class*="bg-indigo-6"], [class*="bg-indigo-7"],
+  [class*="bg-blue-6"], [class*="bg-blue-7"],
+  [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-rose-7"],
+  [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-red-7"],
+  [class*="bg-emerald-6"], [class*="bg-emerald-7"],
+  [class*="bg-amber-6"], [class*="bg-amber-7"],
+  [class*="bg-purple-6"], [class*="bg-purple-7"],
+  [class*="bg-violet-6"], [class*="bg-violet-7"],
+  /* Dark code blocks, modals, and toasts */
+  pre,
+  .bg-black,
+  .bg-slate-950,
+  .keep-white,
+  [data-keep-white="true"]
+) :is(.text-white, .text-white\/90, .text-white\/80, .text-white\/70, [class*="text-white"]),
+html.light :is(
+  button, a, span, div
+):is(
+  [class*="from-indigo-5"], [class*="from-indigo-6"], [class*="from-indigo-7"],
+  [class*="from-purple-5"], [class*="from-purple-6"], [class*="from-purple-7"],
+  [class*="from-violet-5"], [class*="from-violet-6"], [class*="from-violet-7"],
+  [class*="from-rose-5"], [class*="from-rose-6"], [class*="from-rose-7"],
+  [class*="from-red-5"], [class*="from-red-6"], [class*="from-red-7"],
+  [class*="from-blue-5"], [class*="from-blue-6"], [class*="from-blue-7"],
+  [class*="from-emerald-5"], [class*="from-emerald-6"], [class*="from-emerald-7"],
+  [class*="from-amber-6"], [class*="from-amber-7"], [class*="from-orange-5"], [class*="from-orange-6"],
+  [class*="bg-indigo-6"], [class*="bg-indigo-7"],
+  [class*="bg-blue-6"], [class*="bg-blue-7"],
+  [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-rose-7"],
+  [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-red-7"],
+  [class*="bg-emerald-6"], [class*="bg-emerald-7"],
+  [class*="bg-amber-6"], [class*="bg-amber-7"],
+  [class*="bg-purple-6"], [class*="bg-purple-7"],
+  [class*="bg-violet-6"], [class*="bg-violet-7"],
+  .keep-white,
+  [data-keep-white="true"]
+).text-white {
+  color: #ffffff !important;
+}
+
+html.light pre {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+html.light pre code {
+  color: #f8fafc !important;
+}
+
 
 /* ============================================================================
    🌙 DARK MODE: Crisp White Typography Enforcement (Prevents black/dark text on dark backgrounds)
