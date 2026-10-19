@@ -2222,7 +2222,6 @@ html.light :is(
 }
 
 /* Low-Opacity White (5% ~ 45% opacity) -> Readable Muted Slate (#475569) */
-/* Converts previously invisible faint white metadata/descriptions into clear readable text */
 html.light :is(
   .text-white\/45,
   .text-white\/40,
@@ -2248,55 +2247,85 @@ html.light [class*="placeholder-white"] {
   color: #94a3b8 !important;
 }
 
-/* 7. Preserve Crisp White Text on Saturated Buttons, Badges, CTAs, and Code Blocks */
+/* 7. Pastel / Neon Text High-Contrast Calibration for Light Mode */
+/* Prevents yellow/amber text from washing out on light ivory surfaces while preserving warm identity */
 html.light :is(
-  /* Saturated gradient buttons & badges */
-  [class*="from-indigo-5"], [class*="from-indigo-6"], [class*="from-indigo-7"],
-  [class*="from-purple-5"], [class*="from-purple-6"], [class*="from-purple-7"],
-  [class*="from-violet-5"], [class*="from-violet-6"], [class*="from-violet-7"],
-  [class*="from-rose-5"], [class*="from-rose-6"], [class*="from-rose-7"],
-  [class*="from-red-5"], [class*="from-red-6"], [class*="from-red-7"],
-  [class*="from-blue-5"], [class*="from-blue-6"], [class*="from-blue-7"],
-  [class*="from-emerald-5"], [class*="from-emerald-6"], [class*="from-emerald-7"],
-  [class*="from-amber-6"], [class*="from-amber-7"], [class*="from-orange-5"], [class*="from-orange-6"],
-  /* Saturated solid color buttons & badges */
-  [class*="bg-indigo-6"], [class*="bg-indigo-7"],
-  [class*="bg-blue-6"], [class*="bg-blue-7"],
-  [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-rose-7"],
-  [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-red-7"],
-  [class*="bg-emerald-6"], [class*="bg-emerald-7"],
-  [class*="bg-amber-6"], [class*="bg-amber-7"],
-  [class*="bg-purple-6"], [class*="bg-purple-7"],
-  [class*="bg-violet-6"], [class*="bg-violet-7"],
-  /* Dark code blocks, modals, and toasts */
-  pre,
-  .bg-black,
-  .bg-slate-950,
-  .keep-white,
-  [data-keep-white="true"]
-) :is(.text-white, .text-white\/90, .text-white\/80, .text-white\/70, [class*="text-white"]),
+  .text-yellow-200, .text-yellow-300, .text-yellow-400,
+  .text-amber-200, .text-amber-300, .text-amber-400
+):not(button):not(button *):not([class*="bg-black"] *):not([class*="bg-slate-9"] *):not([class*="bg-slate-8"] *):not([class*="bg-indigo-"] *):not([class*="bg-purple-"] *):not([class*="bg-blue-"] *):not([class*="from-"] *) {
+  color: #92400e !important;
+}
+
 html.light :is(
-  button, a, span, div
+  .text-teal-200, .text-teal-300, .text-teal-400
+):not(button):not(button *):not([class*="bg-black"] *):not([class*="bg-slate-9"] *):not([class*="bg-slate-8"] *):not([class*="bg-indigo-"] *):not([class*="bg-purple-"] *):not([class*="from-"] *) {
+  color: #0f766e !important;
+}
+
+html.light :is(
+  .text-sky-200, .text-sky-300, .text-sky-400, .text-blue-300
+):not(button):not(button *):not([class*="bg-black"] *):not([class*="bg-slate-9"] *):not([class*="bg-slate-8"] *):not([class*="bg-indigo-"] *):not([class*="bg-purple-"] *):not([class*="from-"] *) {
+  color: #0369a1 !important;
+}
+
+/* 8. Bulletproof Crisp White Text Protection on Dark / Saturated Surfaces & Buttons */
+/* Ensures buttons, chips, badges, and dark surfaces NEVER have dark-on-dark text */
+html.light :is(
+  /* Solid dark containers */
+  .bg-black, [class*="bg-black/"],
+  .bg-slate-950, [class*="bg-slate-950/"],
+  .bg-slate-900, [class*="bg-slate-900/"],
+  .bg-slate-800, [class*="bg-slate-800/"],
+  .bg-neutral-900, [class*="bg-neutral-900/"],
+  .bg-neutral-800, [class*="bg-neutral-800/"],
+  .bg-zinc-900, [class*="bg-zinc-900/"],
+  .bg-zinc-800, [class*="bg-zinc-800/"],
+  /* Saturated color buttons and badges */
+  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700, [class*="bg-indigo-6"], [class*="bg-indigo-7"],
+  .bg-blue-500, .bg-blue-600, .bg-blue-700, [class*="bg-blue-6"], [class*="bg-blue-7"],
+  .bg-rose-500, .bg-rose-600, .bg-rose-700, [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-rose-7"],
+  .bg-red-500, .bg-red-600, .bg-red-700, [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-red-7"],
+  .bg-emerald-500, .bg-emerald-600, .bg-emerald-700, [class*="bg-emerald-6"], [class*="bg-emerald-7"],
+  .bg-amber-600, .bg-amber-700, [class*="bg-amber-6"], [class*="bg-amber-7"],
+  .bg-yellow-600, .bg-yellow-700,
+  .bg-purple-500, .bg-purple-600, .bg-purple-700, [class*="bg-purple-6"], [class*="bg-purple-7"],
+  .bg-violet-500, .bg-violet-600, .bg-violet-700, [class*="bg-violet-6"], [class*="bg-violet-7"],
+  /* Gradient backgrounds */
+  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
+  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
+  [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
+  /* Special buttons & custom white zones */
+  .prism-rainbow-btn, .celestial-tarot-btn, .prism-fab-3d,
+  .keep-white, [data-keep-white="true"],
+  pre
+) :is(.text-white, .text-white\/90, .text-white\/80, .text-white\/70, [class*="text-white"], .text-slate-100, .text-slate-200) {
+  color: #ffffff !important;
+}
+
+/* Direct element application on buttons/links */
+html.light :is(
+  button, a, span, div, [role="button"]
 ):is(
-  [class*="from-indigo-5"], [class*="from-indigo-6"], [class*="from-indigo-7"],
-  [class*="from-purple-5"], [class*="from-purple-6"], [class*="from-purple-7"],
-  [class*="from-violet-5"], [class*="from-violet-6"], [class*="from-violet-7"],
-  [class*="from-rose-5"], [class*="from-rose-6"], [class*="from-rose-7"],
-  [class*="from-red-5"], [class*="from-red-6"], [class*="from-red-7"],
-  [class*="from-blue-5"], [class*="from-blue-6"], [class*="from-blue-7"],
-  [class*="from-emerald-5"], [class*="from-emerald-6"], [class*="from-emerald-7"],
-  [class*="from-amber-6"], [class*="from-amber-7"], [class*="from-orange-5"], [class*="from-orange-6"],
-  [class*="bg-indigo-6"], [class*="bg-indigo-7"],
-  [class*="bg-blue-6"], [class*="bg-blue-7"],
-  [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-rose-7"],
-  [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-red-7"],
-  [class*="bg-emerald-6"], [class*="bg-emerald-7"],
-  [class*="bg-amber-6"], [class*="bg-amber-7"],
-  [class*="bg-purple-6"], [class*="bg-purple-7"],
-  [class*="bg-violet-6"], [class*="bg-violet-7"],
-  .keep-white,
-  [data-keep-white="true"]
-).text-white {
+  .bg-black, [class*="bg-black/"],
+  .bg-slate-950, [class*="bg-slate-950/"],
+  .bg-slate-900, [class*="bg-slate-900/"],
+  .bg-slate-800, [class*="bg-slate-800/"],
+  .bg-neutral-900, .bg-zinc-900,
+  .bg-indigo-500, .bg-indigo-600, .bg-indigo-700,
+  .bg-blue-500, .bg-blue-600, .bg-blue-700,
+  .bg-rose-500, .bg-rose-600, .bg-rose-700,
+  .bg-red-500, .bg-red-600, .bg-red-700,
+  .bg-emerald-500, .bg-emerald-600, .bg-emerald-700,
+  .bg-amber-600, .bg-amber-700,
+  .bg-yellow-600, .bg-yellow-700,
+  .bg-purple-500, .bg-purple-600, .bg-purple-700,
+  .bg-violet-500, .bg-violet-600, .bg-violet-700,
+  [class*="from-indigo-"], [class*="from-purple-"], [class*="from-violet-"],
+  [class*="from-rose-"], [class*="from-red-"], [class*="from-blue-"],
+  [class*="from-emerald-"], [class*="from-amber-"], [class*="from-orange-"],
+  .prism-rainbow-btn, .celestial-tarot-btn, .prism-fab-3d,
+  .keep-white, [data-keep-white="true"]
+) {
   color: #ffffff !important;
 }
 
