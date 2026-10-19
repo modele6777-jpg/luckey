@@ -3,7 +3,7 @@ import { Route, Switch, Redirect, useLocation } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
 import { AppProvider, useApp } from "./contexts/AppContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { LoginScreen } from "./components/LoginScreen";
 import LeftSidebarNav from "./components/navigation/LeftSidebarNav";
 import { BigBangButton } from "./components/omniwarp/BigBangButton";
@@ -138,6 +138,7 @@ function ActivePage({ loc }: { loc: string }) {
 
 function AppContent() {
   const { firebaseUser, isAuthReady, logout, signInWithGoogle, sharedState, isUnlocked, unlock, isChatOpen, syncPrismDevices } = useApp();
+  const { resolvedTheme } = useTheme();
   const [location, navigate] = useLocation();
 
   const isFirstMount = React.useRef(true);
@@ -327,13 +328,16 @@ function AppContent() {
   // 잠금 해제 후에만 테마 색 적용 (PIN 배경은 usePinScreenLock이 고정)
   React.useEffect(() => {
     if (!isUnlocked) return;
-    if (sharedState?.themeColor) {
+    if (resolvedTheme === 'light') {
+      document.body.style.backgroundColor = '#fdfaf5';
+      document.body.style.transition = 'background-color 0.4s ease-in-out';
+    } else if (sharedState?.themeColor) {
       document.body.style.backgroundColor = sharedState.themeColor;
       document.body.style.transition = 'background-color 2s ease-in-out';
     } else {
       document.body.style.backgroundColor = 'oklch(0.08 0.02 270)';
     }
-  }, [isUnlocked, sharedState?.themeColor]);
+  }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy';
   const isKeyRoute = location === '/key' || location === '/calm';

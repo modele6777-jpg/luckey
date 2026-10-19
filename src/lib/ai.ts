@@ -47,7 +47,7 @@ const openai = new OpenAI({
 });
 
 // @ts-ignore
-export const modelName = import.meta.env?.VITE_GEMINI_MODEL || (aiType === "grok" ? "grok-4.3" : "gemini-3.8-flash");
+export const modelName = import.meta.env?.VITE_GEMINI_MODEL || (aiType === "grok" ? "grok-4.3" : "gemini-2.5-flash");
 
 export interface Message {
   role: "system" | "user" | "model" | "assistant";
@@ -272,7 +272,7 @@ export async function poeQuickInsight(input: string, history: Message[]) {
 }
 
 export async function invokeLLM(params: { messages: Message[], responseFormat?: { type: "json_object" | "text" }, timeoutMs?: number }) {
-  const timeoutMs = params.timeoutMs || 25000;
+  const timeoutMs = params.timeoutMs || 45000;
   const mappedMessages = withKoreanOnlyOutput(params.messages.map(m => {
     const role = m.role === "model" ? "assistant" : m.role;
     return {
@@ -327,9 +327,11 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
 
     const modelsToTry = [
       modelName,
+      "gemini-2.5-flash",
+      "gemini-3-flash-preview",
+      "gemini-3.1-flash-lite-preview",
       "gemini-flash-latest",
-      "gemini-3.1-flash-lite",
-    ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i).slice(0, 2);
+    ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i).slice(0, 3);
 
     for (const currentModel of modelsToTry) {
       try {
@@ -738,7 +740,7 @@ export async function invokeEpilogueSummaryLLM(messages: Message[]): Promise<str
         contents = [{ role: 'user', content: "성찰 요약 생성" }];
       }
 
-      const fastModels = ["gemini-3.7-flash", "gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash", modelName].filter(
+      const fastModels = ["gemini-2.5-flash", "gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-flash-latest", modelName].filter(
         (m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i
       );
 
@@ -1273,10 +1275,9 @@ async function invokeLLMStreamInner(params: {
 
       const modelsToTry = [
         modelName,
-        "gemini-3.7-flash",
-        "gemini-3.1-flash-lite",
-        "gemini-3.5-flash",
-        "gemini-3.6-flash",
+        "gemini-2.5-flash",
+        "gemini-3-flash-preview",
+        "gemini-3.1-flash-lite-preview",
         "gemini-flash-latest",
       ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
 
@@ -1539,10 +1540,17 @@ async function invokeLLMStreamInner(params: {
 
           // Process any remaining data in the buffer
           if (buffer && !isDone) {
-            const trimmed = buffer.trim();
-            if (trimmed.startsWith("data: ")) {
-              const dataStr = trimmed.slice(6).trim();
-              if (dataStr !== "[DONE]") {
+            const remainingLines = buffer.split("\n");
+            for (const remLine of remainingLines) {
+              const trimmed = remLine.trim();
+              if (!trimmed) continue;
+              if (trimmed.startsWith("data: ")) {
+                const dataStr = trimmed.slice(6).trim();
+                if (dataStr === "[DONE]") {
+                  isDone = true;
+                  receivedDoneSignal = true;
+                  break;
+                }
                 try {
                   const parsed = JSON.parse(dataStr);
                   const content = parsed.choices?.[0]?.delta?.content || "";
@@ -1565,7 +1573,7 @@ async function invokeLLMStreamInner(params: {
         }
       }
 
-      if (fullContent && fullContent.trim().length > 0 && receivedDoneSignal) {
+      if (fullContent && fullContent.trim().length > 0 && (receivedDoneSignal || !params.signal?.aborted)) {
         const finalCleaned = checkRepetitionLoop(fullContent).cleaned || "마음속에 무거운 감정이 밀려왔나 봐. 천천히 숨을 고르고, 편안하게 이야기해 줘.";
         params.onFinish?.(finalCleaned);
         return finalCleaned;

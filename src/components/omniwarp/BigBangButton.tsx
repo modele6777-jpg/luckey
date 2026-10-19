@@ -1337,7 +1337,11 @@ export function BigBangButton() {
     setActivePhase('idle');
     setGauge(0);
     setDurationMs(0);
+    setIsHovered(false);
+    buttonRef.current?.blur();
   };
+
+  const hoverContainerRef = useRef<HTMLDivElement>(null);
 
   const handlePointerCancel = () => {
     cleanupGlobalPointerListeners();
@@ -1353,6 +1357,7 @@ export function BigBangButton() {
     }
     stopBlackHoleContinuousHaptic();
     setIsPressing(false);
+    setIsHovered(false);
     setIsAborted(false);
     touchStartRef.current = null;
     currentPointerEventRef.current = null;
@@ -1367,6 +1372,7 @@ export function BigBangButton() {
     setGauge(0);
     setDurationMs(0);
     touchStartSelectionRef.current = '';
+    buttonRef.current?.blur();
     try {
       sessionStorage.removeItem('bigbang_pressing');
     } catch (_) {}
@@ -1374,15 +1380,39 @@ export function BigBangButton() {
 
   useEffect(() => {
     const handleGlobalCancel = () => {
+      setIsHovered(false);
+      buttonRef.current?.blur();
       if (touchStartRef.current) {
         handlePointerCancel();
       }
     };
+
+    const handleOutsidePointerDown = (e: PointerEvent | MouseEvent) => {
+      const target = e.target as Node | null;
+      if (hoverContainerRef.current && target && !hoverContainerRef.current.contains(target)) {
+        setIsHovered(false);
+        buttonRef.current?.blur();
+        if (
+          document.activeElement instanceof HTMLElement &&
+          hoverContainerRef.current.contains(document.activeElement)
+        ) {
+          document.activeElement.blur();
+        }
+        if (touchStartRef.current) {
+          handlePointerCancel();
+        }
+      }
+    };
+
     window.addEventListener('pointercancel', handleGlobalCancel);
     window.addEventListener('blur', handleGlobalCancel);
+    document.addEventListener('pointerdown', handleOutsidePointerDown, true);
+    document.addEventListener('click', handleOutsidePointerDown, true);
     return () => {
       window.removeEventListener('pointercancel', handleGlobalCancel);
       window.removeEventListener('blur', handleGlobalCancel);
+      document.removeEventListener('pointerdown', handleOutsidePointerDown, true);
+      document.removeEventListener('click', handleOutsidePointerDown, true);
       stopBlackHoleContinuousHaptic();
       cleanupGlobalPointerListeners();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -1442,11 +1472,21 @@ export function BigBangButton() {
         }`}
       >
         <div
-          className="group relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center pointer-events-auto select-none shrink-0"
-          onPointerEnter={() => setIsHovered(true)}
-          onPointerLeave={() => setIsHovered(false)}
+          ref={hoverContainerRef}
+          className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center pointer-events-auto select-none shrink-0"
+          onPointerEnter={(e) => {
+            if (e.pointerType === 'mouse') setIsHovered(true);
+          }}
+          onPointerLeave={() => {
+            setIsHovered(false);
+            buttonRef.current?.blur();
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            buttonRef.current?.blur();
+          }}
         >
-          {/* Expanded radial hover hitbox to encompass 144px arcane circle & diagonal runes */}
+          {/* Expanded radial hover hitbox to encompass 144px arcane circle & cardinal icons */}
           <div className="absolute -inset-7 rounded-full pointer-events-auto -z-10" />
 
           {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 */}
@@ -1516,11 +1556,15 @@ export function BigBangButton() {
 
             {/* 🌈 은은하고 신비로운 코스믹 레인보우 아우라 (Subtle Lingering Rainbow Aura) */}
             <div
-              className="absolute -inset-2.5 sm:-inset-3.5 rounded-full bigbang-subtle-rainbow-aura blur-[14px] opacity-75 transition-opacity duration-500 pointer-events-none z-0"
+              className={`absolute -inset-2.5 sm:-inset-3.5 rounded-full bigbang-subtle-rainbow-aura blur-[14px] transition-opacity duration-300 pointer-events-none z-0 ${
+                isHovered || isPressing ? 'opacity-75' : 'opacity-40'
+              }`}
               aria-hidden="true"
             />
             <div
-              className="absolute -inset-[3px] sm:-inset-[4px] rounded-full bigbang-subtle-rainbow-aura blur-[4px] opacity-80 transition-opacity duration-300 pointer-events-none z-0"
+              className={`absolute -inset-[3px] sm:-inset-[4px] rounded-full bigbang-subtle-rainbow-aura blur-[4px] transition-opacity duration-300 pointer-events-none z-0 ${
+                isHovered || isPressing ? 'opacity-80' : 'opacity-45'
+              }`}
               aria-hidden="true"
             />
 
@@ -1538,8 +1582,8 @@ export function BigBangButton() {
               />
             </div>
 
-            {/* Ambient Gravitational Ripple Waves - active by default in idle state */}
-            {activePhase === 'idle' && (
+            {/* Ambient Gravitational Ripple Waves - active on hover to prevent continuous mobile composite thrashing */}
+            {activePhase === 'idle' && isHovered && (
               <>
                 <div className="absolute -inset-2.5 rounded-full border border-cyan-400/25 animate-ping opacity-20 pointer-events-none z-0" />
                 <div className="absolute -inset-4 rounded-full border border-purple-400/15 animate-pulse opacity-30 pointer-events-none z-0" />
@@ -1562,7 +1606,10 @@ export function BigBangButton() {
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
-              whileHover={{ scale: 1.05 }}
+              onPointerLeave={() => {
+                setIsHovered(false);
+                buttonRef.current?.blur();
+              }}
               whileTap={{ scale: 0.95 }}
               animate={{
                 x: isPressing
@@ -1579,6 +1626,8 @@ export function BigBangButton() {
                   ? 0.88
                   : isPressing
                   ? (1.04 + gauge * 0.08)
+                  : isHovered
+                  ? 1.05
                   : 1.0,
               }}
               transition={{
@@ -1601,7 +1650,9 @@ export function BigBangButton() {
                   ? 'border-cyan-300/90 shadow-[0_0_36px_rgba(34,211,238,0.6),inset_0_0_20px_rgba(34,211,238,0.35)]'
                   : isPressing
                   ? 'border-cyan-300/80 shadow-[0_0_32px_rgba(56,189,248,0.45),inset_0_0_22px_rgba(56,189,248,0.35)]'
-                  : 'border-cyan-300/80 shadow-[0_0_24px_rgba(56,189,248,0.3)]'
+                  : isHovered
+                  ? 'border-cyan-300/80 shadow-[0_0_28px_rgba(56,189,248,0.45)]'
+                  : 'border-cyan-400/40 shadow-[0_0_24px_rgba(56,189,248,0.3)]'
               }`}
               style={{
                 touchAction: 'none',
@@ -1678,7 +1729,7 @@ export function BigBangButton() {
               {/* 🔮 빅뱅 내부 마법진 만다라 워터마크 음각 (Arcane Core Inscription Seal) */}
               <div
                 className={`absolute inset-2 sm:inset-2.5 rounded-full pointer-events-none z-12 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300 ${
-                  isPressing ? 'opacity-30' : 'opacity-95'
+                  isPressing ? 'opacity-30' : 'opacity-65 hover:opacity-95'
                 }`}
               >
                 {/* 시계방향 회전 아케인 매트릭스 링 */}

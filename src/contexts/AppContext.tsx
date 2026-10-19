@@ -7,7 +7,7 @@ import { syncPrismAcrossDevices, type PrismSyncResult } from '../lib/prismSync';
 import { unpackAndHydrateLocalStorage, cleanFirestoreData, mergeSharedState, getSharedStateSignature, collectAllLocalActivities, getSharedStateUpdatedAt } from '../lib/sharedStateSync';
 import { pushToServerVault, pullFromServerVault, generatePairingCode, importWithPairingCode, pushToPairedVault, pullFromPairedVault, getPairedVaultId, setPairedVaultId, subscribeToPairedVault } from '../lib/serverSyncClient';
 import { safeLocalStorage, safeSessionStorage } from '../utils/safeStorage';
-import { invokeLLMStream, PERSONAS, type Message, getCrossAppRecentDialogueContext } from '../lib/ai';
+import { invokeLLM, invokeLLMStream, PERSONAS, type Message, getCrossAppRecentDialogueContext } from '../lib/ai';
 import { buildPrismOmniscientContext } from '../lib/prismOmniSync';
 import { calculateDetailedSaju } from '../lib/sajuAnalysis';
 import { buildUserNatalSummary, formatRelationshipsContext } from '../lib/astrologyAnalysis';
@@ -1873,6 +1873,116 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       });
     } catch (err: any) {
+      if (pendingRaf !== null) {
+        cancelAnimationFrame(pendingRaf);
+        pendingRaf = null;
+      }
+
+      // If this request was intentionally aborted (e.g., user stopped generation or sent a newer message),
+      // never inject a network delay error message.
+      if (currentAbortController.signal.aborted) {
+        if (abortControllersRef.current[sourcePersona] === currentAbortController) {
+          isGeneratingRef.current[sourcePersona] = false;
+          setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+        }
+        if (latestCleanReply.trim().length > 0) {
+          setUnifiedMessages(prev => {
+            let found = false;
+            const updated = prev.map(m => {
+              if (m.id === assistMsgId) {
+                found = true;
+                return { ...m, content: latestCleanReply, persona: sourcePersona };
+              }
+              return m;
+            });
+            if (!found) {
+              updated.push({ id: assistMsgId, role: 'model' as const, content: latestCleanReply, timestamp: Date.now(), persona: sourcePersona });
+            }
+            return updated;
+          });
+        }
+        return;
+      }
+
+      // If we already received streamed content, preserve and finalize it instead of overwriting with an error
+      if (latestCleanReply.trim().length > 0) {
+        isGeneratingRef.current[sourcePersona] = false;
+        setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+        setUnifiedMessages(prev => {
+          let found = false;
+          const updated = prev.map(m => {
+            if (m.id === assistMsgId) {
+              found = true;
+              return { ...m, content: latestCleanReply, persona: sourcePersona };
+            }
+            return m;
+          });
+          if (!found) {
+            updated.push({ id: assistMsgId, role: 'model' as const, content: latestCleanReply, timestamp: Date.now(), persona: sourcePersona });
+          }
+          pushChatThreadsToFirestore(updated);
+          return updated;
+        });
+        return;
+      }
+
+      // Fast automatic recovery retry with compact context before showing any error
+      try {
+        resetWatchdog();
+        const compactMessages: Message[] = [
+          conversationForAPI[0],
+          ...conversationForAPI.slice(-4),
+        ];
+        const recoveredRaw = await invokeLLM({
+          messages: compactMessages,
+          timeoutMs: 35000,
+        });
+        const recoveredClean = cleanChatDisplayText(String(recoveredRaw || '').trim());
+        if (recoveredClean && recoveredClean.length > 0) {
+          isGeneratingRef.current[sourcePersona] = false;
+          setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+          setUnifiedMessages(prev => {
+            let found = false;
+            const updated = prev.map(m => {
+              if (m.id === assistMsgId) {
+                found = true;
+                return {
+                  ...m,
+                  content: recoveredClean,
+                  persona: sourcePersona,
+                  channel: options?.channel || m.channel,
+                  channels: options?.channels || m.channels,
+                  mode: options?.mode || m.mode,
+                };
+              }
+              return m;
+            });
+            if (!found) {
+              updated.push({
+                id: assistMsgId,
+                role: 'model' as const,
+                content: recoveredClean,
+                timestamp: Date.now(),
+                persona: sourcePersona,
+                channel: options?.channel,
+                channels: options?.channels,
+                mode: options?.mode,
+              });
+            }
+            pushChatThreadsToFirestore(updated);
+            return updated;
+          });
+          if (options?.onFinish) {
+            try {
+              await options.onFinish(recoveredClean, text, assistMsgId);
+            } catch (_) {}
+          }
+          return;
+        }
+      } catch (retryErr) {
+        console.warn("Fast recovery retry in sendUnifiedMessage also failed:", retryErr);
+      }
+
       console.error("Error in sendUnifiedMessage:", err);
       isGeneratingRef.current[sourcePersona] = false;
       setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
@@ -1891,7 +2001,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const updated = prev.map(m => {
           if (m.id === assistMsgId) {
             found = true;
-            const hasText = typeof m.content === 'string' && m.content.trim().length > 15;
+            const hasText = typeof m.content === 'string' && m.content.trim().length > 5;
             if (hasText) {
               return m;
             }

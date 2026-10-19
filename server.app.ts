@@ -198,14 +198,45 @@ function markModelThrottled(model: string, durationMs = 180000) {
   modelCooldownMap.set(model, Date.now() + durationMs);
 }
 
+const VALID_GEMINI_MODELS = new Set([
+  "gemini-2.5-flash",
+  "gemini-3-flash-preview",
+  "gemini-3.1-flash-lite-preview",
+  "gemini-flash-latest",
+  "gemini-3.1-pro-preview",
+  "gemini-2.5-pro",
+]);
+
+function normalizeRequestedGeminiModel(rawModel?: string): string | undefined {
+  const trimmed = (rawModel || "").trim();
+  if (!trimmed) return undefined;
+  if (VALID_GEMINI_MODELS.has(trimmed)) return trimmed;
+  if (trimmed.includes("lite")) return "gemini-3.1-flash-lite-preview";
+  if (trimmed.includes("pro")) return "gemini-3-flash-preview";
+  if (trimmed.startsWith("gemini-")) return "gemini-2.5-flash";
+  return undefined;
+}
+
 function isTemporaryUnavailableOrRateLimited(err: any): boolean {
   if (!err) return false;
   const status = err?.status ?? err?.error?.code ?? err?.statusCode;
-  if (status === 429 || status === 503 || status === 500 || status === 502 || status === 504 || status === 408) {
+  if (
+    status === 404 ||
+    status === 429 ||
+    status === 503 ||
+    status === 500 ||
+    status === 502 ||
+    status === 504 ||
+    status === 408
+  ) {
     return true;
   }
   const errStr = (String(err?.message || err || "") + " " + JSON.stringify(err || {})).toLowerCase();
   return (
+    errStr.includes("404") ||
+    errStr.includes("not found") ||
+    errStr.includes("not_found") ||
+    errStr.includes("not supported") ||
     errStr.includes("429") ||
     errStr.includes("503") ||
     errStr.includes("500") ||
@@ -225,14 +256,18 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
 
 function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const defaultModels = [
-    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-3-flash-preview",
+    "gemini-3.1-flash-lite-preview",
     "gemini-flash-latest",
-    "gemini-3.8-flash",
   ];
 
+  const normalizedRequested = normalizeRequestedGeminiModel(requestedModel);
+  const normalizedEnv = normalizeRequestedGeminiModel(process.env.GEMINI_MODEL);
+
   const uniqueCandidates = [
-    requestedModel,
-    process.env.GEMINI_MODEL,
+    normalizedRequested,
+    normalizedEnv,
     ...defaultModels,
   ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
 

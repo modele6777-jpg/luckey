@@ -1881,10 +1881,13 @@ export default function LucyStandalonePage() {
 
   return (
     <div
-      className={`lucy-chat-shell h-full min-h-0 flex-1 w-full max-w-full overflow-hidden flex flex-col bg-transparent font-sans select-text relative transition-colors duration-300 ${
-        isLight ? 'text-slate-800' : 'text-white'
+      className={`lucy-chat-shell h-full min-h-0 flex-1 w-full max-w-full overflow-hidden flex flex-col font-sans select-text relative transition-colors duration-300 ${
+        isLight ? 'bg-[#faf7f2] text-slate-800' : 'bg-transparent text-white'
       }`}
-      style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+      style={{
+        backgroundColor: isLight ? '#faf7f2' : undefined,
+        color: isLight ? '#1e293b' : '#ffffff',
+      }}
     >
       {/* Mode Switch Toast */}
       <AnimatePresence>
@@ -1903,10 +1906,14 @@ export default function LucyStandalonePage() {
 
       {/* PRO Top Header Bar */}
       <header 
-        style={{ paddingTop: 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))' }}
-        className={`w-full px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-300 ${
+        style={{
+          paddingTop: 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
+          backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
+          color: isLight ? '#1e293b' : '#ffffff',
+        }}
+        className={`lucy-chat-header w-full px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-300 ${
           isLight
-            ? 'bg-[#fffdf9]/85 border-amber-900/12 text-slate-800'
+            ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_2px_12px_rgba(180,140,90,0.08)]'
             : 'bg-slate-950/80 border-white/10 text-white'
         }`}
       >
@@ -2242,13 +2249,22 @@ export default function LucyStandalonePage() {
                     className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text transition-colors duration-300 ${
                       isUser
                         ? isLight
-                          ? 'bg-amber-100/95 border border-amber-300/90 text-slate-900 rounded-tr-xs font-sans shadow-xs'
+                          ? 'lucy-user-bubble bg-amber-100 border border-amber-300 text-slate-900 rounded-tr-xs font-sans shadow-xs'
                           : 'bg-indigo-600/90 border border-indigo-400/30 text-white rounded-tr-xs font-sans shadow-sm'
                         : isLight
-                        ? 'bg-[#fffdf9]/95 backdrop-blur-md border border-amber-900/15 text-slate-800 rounded-tl-xs shadow-[0_4px_20px_rgba(140,110,80,0.08)] font-sans'
+                        ? 'lucy-assistant-bubble bg-white backdrop-blur-md border border-amber-200/90 text-slate-800 rounded-tl-xs shadow-[0_4px_20px_rgba(140,110,80,0.08)] font-sans'
                         : 'bg-slate-900/88 backdrop-blur-md border border-white/15 text-white rounded-tl-xs shadow-[0_6px_28px_rgba(0,0,0,0.45)] font-sans'
                     }`}
-                    style={{ color: isUser ? (isLight ? '#0f172a' : '#ffffff') : (isLight ? '#1e293b' : '#ffffff') }}
+                    style={{
+                      backgroundColor: isUser
+                        ? isLight
+                          ? '#fef3c7'
+                          : undefined
+                        : isLight
+                        ? '#ffffff'
+                        : 'rgba(15, 23, 42, 0.92)',
+                      color: isUser ? (isLight ? '#0f172a' : '#ffffff') : (isLight ? '#1e293b' : '#ffffff'),
+                    }}
                   >
                     {isUser ? (
                       <div
@@ -2370,10 +2386,14 @@ export default function LucyStandalonePage() {
 
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
-        style={{ paddingBottom: 'max(0.25rem, calc(var(--sab, 0px) + 0.15rem))' }}
-        className={`w-full px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
+        style={{
+          paddingBottom: 'max(0.25rem, calc(var(--sab, 0px) + 0.15rem))',
+          backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
+          color: isLight ? '#1e293b' : '#ffffff',
+        }}
+        className={`lucy-chat-footer w-full px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
           isLight
-            ? 'bg-[#fffdf9]/88 border-amber-900/12 text-slate-800'
+            ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_-2px_12px_rgba(180,140,90,0.06)]'
             : 'bg-slate-950/88 border-white/10 text-white'
         }`}
       >
@@ -2560,11 +2580,14 @@ export default function LucyStandalonePage() {
           </div>
 
           {/* 💬 Input Container */}
-          <div className={`flex items-center gap-1 sm:gap-2 border focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs ${
-            isLight
-              ? 'bg-[#fffdf9] border-amber-900/15'
-              : 'bg-slate-900/90 border-white/15'
-          }`}>
+          <div
+            style={{ backgroundColor: isLight ? '#ffffff' : undefined }}
+            className={`flex items-center gap-1 sm:gap-2 border focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs ${
+              isLight
+                ? 'bg-white border-amber-300/70'
+                : 'bg-slate-900/90 border-white/15'
+            }`}
+          >
             {/* Hidden File Input */}
             <input 
               type="file" 

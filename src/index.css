@@ -774,31 +774,48 @@ html.perf-iphone-xs .prism-bottom-nav {
 
 /* GPU fill-rate protection for iPhone X (Apple A11) & XS (Apple A12):
    Completely bypass expensive offscreen multi-pass backdrop-filter blurs on 3x Retina buffer.
-   Replaces with lightweight, high-performance cosmic dark surfaces with 0% blur overhead. */
-html.prism-iphone-xs [class*="backdrop-blur"],
-html.perf-iphone-xs [class*="backdrop-blur"],
-html.prism-iphone-xs .glass,
-html.perf-iphone-xs .glass,
-html.perf-legacy [class*="backdrop-blur"],
-html.perf-legacy .glass,
-html.perf-reduced [class*="backdrop-blur"],
-html.perf-reduced .glass {
+   Replaces with lightweight, high-performance surfaces with 0% blur overhead. */
+html:not(.light).prism-iphone-xs [class*="backdrop-blur"],
+html:not(.light).perf-iphone-xs [class*="backdrop-blur"],
+html:not(.light).prism-iphone-xs .glass,
+html:not(.light).perf-iphone-xs .glass,
+html:not(.light).perf-legacy [class*="backdrop-blur"],
+html:not(.light).perf-legacy .glass,
+html:not(.light).perf-reduced [class*="backdrop-blur"],
+html:not(.light).perf-reduced .glass {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   background-color: rgba(18, 16, 30, 0.88) !important;
 }
 
-html.prism-iphone-xs .prism-bottom-nav,
-html.perf-iphone-xs .prism-bottom-nav,
-html.perf-legacy .prism-bottom-nav {
+html.light.prism-iphone-xs [class*="backdrop-blur"],
+html.light.perf-iphone-xs [class*="backdrop-blur"],
+html.light.perf-legacy [class*="backdrop-blur"],
+html.light.perf-reduced [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.light.prism-iphone-xs .glass,
+html.light.perf-iphone-xs .glass,
+html.light.perf-legacy .glass,
+html.light.perf-reduced .glass {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: rgba(255, 253, 249, 0.94) !important;
+}
+
+html:not(.light).prism-iphone-xs .prism-bottom-nav,
+html:not(.light).perf-iphone-xs .prism-bottom-nav,
+html:not(.light).perf-legacy .prism-bottom-nav {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   background-color: rgba(14, 12, 24, 0.96) !important;
 }
 
-html.prism-iphone-xs .prism-xs-subnav,
-html.perf-iphone-xs .prism-xs-subnav,
-html.perf-legacy .prism-xs-subnav {
+html:not(.light).prism-iphone-xs .prism-xs-subnav,
+html:not(.light).perf-iphone-xs .prism-xs-subnav,
+html:not(.light).perf-legacy .prism-xs-subnav {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   background-color: rgba(22, 20, 36, 0.94) !important;
@@ -936,15 +953,26 @@ html.perf-galaxy-fold[data-fold-cover="true"] .aura-orb-3 {
 }
 
 /* PWA / mobile: backdrop-blur and heavy motion are the main mobile GPU lag sources */
-html.perf-mobile .glass,
-html.perf-reduced .glass,
-html.pwa-standalone .glass,
-html.perf-mobile .prism-bottom-nav,
-html.perf-reduced .prism-bottom-nav,
-html.pwa-standalone .prism-bottom-nav {
+html:not(.light).perf-mobile .glass,
+html:not(.light).perf-reduced .glass,
+html:not(.light).pwa-standalone .glass,
+html:not(.light).perf-mobile .prism-bottom-nav,
+html:not(.light).perf-reduced .prism-bottom-nav,
+html:not(.light).pwa-standalone .prism-bottom-nav {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   background-color: rgba(18, 16, 30, 0.94) !important;
+}
+
+html.light.perf-mobile .glass,
+html.light.perf-reduced .glass,
+html.light.pwa-standalone .glass,
+html.light.perf-mobile .prism-bottom-nav,
+html.light.perf-reduced .prism-bottom-nav,
+html.light.pwa-standalone .prism-bottom-nav {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: rgba(255, 253, 249, 0.95) !important;
 }
 
 html.perf-mobile [class*="backdrop-blur"],
@@ -2046,9 +2074,43 @@ h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
    ========================================================================= */
 
 html.light .glass {
-  background-color: rgba(255, 253, 249, 0.78) !important;
-  border-color: rgba(180, 145, 105, 0.2) !important;
+  background-color: rgba(255, 253, 249, 0.88) !important;
+  border-color: rgba(180, 145, 105, 0.22) !important;
   box-shadow: 0 8px 30px rgba(140, 110, 80, 0.07);
+}
+
+html.light .top-nav,
+html.light .prism-bottom-nav,
+html.light .prism-xs-subnav {
+  background: rgba(255, 253, 249, 0.95) !important;
+  background-color: rgba(255, 253, 249, 0.95) !important;
+  border-color: rgba(180, 145, 105, 0.22) !important;
+  color: #1e293b !important;
+  box-shadow: 0 4px 20px rgba(140, 110, 80, 0.08) !important;
+}
+
+html.light .lucy-chat-shell {
+  background-color: #faf7f2 !important;
+  color: #1e293b !important;
+}
+
+html.light .lucy-chat-header,
+html.light .lucy-chat-footer {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(180, 145, 105, 0.2) !important;
+  color: #1e293b !important;
+}
+
+html.light .lucy-assistant-bubble {
+  background-color: #ffffff !important;
+  border-color: rgba(217, 119, 6, 0.25) !important;
+  color: #1e293b !important;
+}
+
+html.light .lucy-user-bubble {
+  background-color: #fef3c7 !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  color: #0f172a !important;
 }
 
 /* Convert opaque dark page wrappers inside main to transparent/ivory so Pastel Aurora shines through */
@@ -2057,8 +2119,14 @@ html.light main [class*="bg-[#1"],
 html.light main .bg-slate-950,
 html.light main .bg-neutral-950,
 html.light main .bg-zinc-950,
-html.light main .bg-black {
-  background-color: rgba(253, 250, 245, 0.65) !important;
+html.light main .bg-black,
+html.light header.bg-slate-950,
+html.light header[class*="bg-slate-950/"],
+html.light header[class*="bg-black/"],
+html.light footer.bg-slate-950,
+html.light footer[class*="bg-slate-950/"],
+html.light footer[class*="bg-black/"] {
+  background-color: rgba(255, 253, 249, 0.92) !important;
   color: #1e293b !important;
 }
 
