@@ -12,8 +12,8 @@ interface KeyCosmicLoaderProps {
  * Key (마음약방 & Calm) 전용 미니멀 키 실루엣 로딩 화면
  */
 export function KeyCosmicLoader({
-  message = 'Key 마음약방 처방 조율 중...',
-  subMessage = '40 CALM PRACTICES & CLINICAL SOMATIC RAG',
+  message = 'Key 개운(開運) 파동 조율 중...',
+  subMessage = '40 DESTINY OPENING RITUALS & FIVE ELEMENTS SOUND',
   fullScreen = true,
 }: KeyCosmicLoaderProps) {
   return (

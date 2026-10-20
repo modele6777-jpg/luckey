@@ -163,8 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnSyncAsk) {
     btnSyncAsk.addEventListener('click', () => {
-      const exerciseTitle = syncTitleText ? syncTitleText.textContent : '불안 치유 연습';
-      const text = `루시야, Key 마음약방의 '${exerciseTitle}'에 대해 질문하고 싶어. 실제 일상에서 불안하거나 마음이 초조할 때 어떻게 실천하면 효과가 좋은지 따뜻하게 안내해 줘.`;
+      const exerciseTitle = syncTitleText ? syncTitleText.textContent : '개운 리추얼';
+      const text = `루시야, Key 개운 성전의 '${exerciseTitle}'에 대해 질문하고 싶어. 일상에서 운이 막히거나 마음이 답답할 때 이 개운법을 어떻게 실천하면 좋은 기운을 끌어당길 수 있는지 따뜻하게 알려줘.`;
       askLucyWithText(text);
     });
   }
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const globalIdx = getGlobalExerciseIndex(ex.chapter, ex.index);
       cardsHtml += `
         <div style="margin-top: 18px; margin-bottom: 6px; font-weight: 700; color: var(--text-title); font-size: 0.92rem;">
-          📖 도서 《왜 나는 불안할까》 맞춤 추천 실천:
+          🔑 Key 개운 성전 맞춤 추천 리추얼:
         </div>
         <div class="chat-rec-box">
           <div class="chat-rec-header">
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const globalIdx = getGlobalExerciseIndex(ex.chapter, ex.index);
       contentHtml += `
         <div style="margin-top: 18px; margin-bottom: 6px; font-weight: 700; color: var(--text-title); font-size: 0.92rem;">
-          📖 도서 《왜 나는 불안할까》 맞춤 추천 실천:
+          🔑 Key 개운 성전 맞춤 추천 리추얼:
         </div>
         <div class="chat-rec-box">
           <div class="chat-rec-header">
@@ -597,16 +597,16 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="ex-card-top-line">
           <span class="ex-card-tag">${chapter}장 · ${tag}</span>
-          <span class="ex-card-page">P.${page}</span>
+          <span class="ex-card-page">비전 ${page}P</span>
         </div>
-        <h3 class="ex-card-title">${icon} 연습 ${index}. ${title}</h3>
+        <h3 class="ex-card-title">${icon} 개운법 ${index}. ${title}</h3>
         <div class="ex-card-subtitle">${subtitle}</div>
         <p class="ex-card-description">${description}</p>
         <div class="ex-card-footer-btns">
           <button class="btn-card-launch" onclick="window.startPractice(${ex.globalIndex})">
-            <span>🎯 직접 실천하기</span>
+            <span>🎯 개운 실천하기</span>
           </button>
-          <button class="btn-card-chat" onclick="window.askAboutPractice(${ex.globalIndex})" title="루시에게 이 연습 실천법 질문하기">
+          <button class="btn-card-chat" onclick="window.askAboutPractice(${ex.globalIndex})" title="루시에게 이 개운법 질문하기">
             💬 루시에게 질문
           </button>
         </div>
@@ -628,11 +628,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.askAboutPractice = function(globalIdx) {
     const ex = window.PRACTICE_EXERCISES.find(e => e.globalIndex === globalIdx);
     if (!ex) return;
-    const purposeText = ex.purpose ? `\n• 핵심 의도: ${ex.purpose}` : '';
-    const clinicalTipText = ex.clinicalTip ? `\n• 임상 팁: ${ex.clinicalTip}` : '';
-    const affirmationText = ex.affirmation ? `\n• 치유 확언: "${ex.affirmation}"` : '';
+    const purposeText = ex.purpose ? `\n• 개운 의도: ${ex.purpose}` : '';
+    const clinicalTipText = ex.clinicalTip ? `\n• 개운 비결: ${ex.clinicalTip}` : '';
+    const affirmationText = ex.affirmation ? `\n• 소원 확언: "${ex.affirmation}"` : '';
 
-    const text = `루시야, 《FIND YOUR 왜 나는 불안할까》 도서 ${ex.chapter}장의 '${ex.icon || '🎯'} 연습 ${ex.index}. ${ex.title}'(도서 P.${ex.page}) 실천 기법에 대해 질문하고 싶어.${purposeText}${clinicalTipText}${affirmationText}\n\n지금 마음이 불안하거나 잡념이 맴돌 때 이 기법을 일상에서 어떻게 구체적으로 연습하고 적용하면 좋을지, 핵심 실천 팁과 따뜻한 조언을 해줘.`;
+    const text = `루시야, Key 개운 성전 ${ex.chapter}장의 '${ex.icon || '🎯'} 개운법 ${ex.index}. ${ex.title}' 실천법에 대해 질문하고 싶어.${purposeText}${clinicalTipText}${affirmationText}\n\n지금 막힌 기운을 풀고 좋은 운을 불러들이기 위해 이 개운 리추얼을 일상에서 어떻게 실천하면 좋을지 핵심 비결과 따뜻한 조언을 해줘.`;
 
     try {
       sessionStorage.setItem('lucy_injected_auto_send', text);
@@ -1066,9 +1066,9 @@ document.addEventListener('DOMContentLoaded', () => {
     activePracticeIsRandom = isRandom;
 
     studioIcon.textContent = ex.icon || '🎯';
-    const randomBadge = isRandom ? '🎲 랜덤 처방 · ' : '';
-    studioChapter.textContent = `${randomBadge}${ex.chapter || 1}장 · ${ex.tag || '마음 연습'} (P.${ex.page || 18})`;
-    studioTitle.textContent = `연습 ${ex.index || 1}. ${ex.title || ''}`;
+    const randomBadge = isRandom ? '🎲 오늘의 개운 비법 · ' : '';
+    studioChapter.textContent = `${randomBadge}${ex.chapter || 1}장 · ${ex.tag || '개운 리추얼'} (비전 ${ex.page || 18}P)`;
+    studioTitle.textContent = `개운법 ${ex.index || 1}. ${ex.title || ''}`;
 
     renderStepDots();
     renderCurrentStep();
@@ -1109,25 +1109,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     studioPrevStep.style.display = activeStepIdx > 0 ? 'inline-block' : 'none';
     if (activeStepIdx === activePractice.steps.length - 1) {
-      studioNextStep.textContent = '실천 완료 및 워크북 저장';
+      studioNextStep.textContent = '개운 완료 및 운기 노트 저장';
     } else {
       studioNextStep.textContent = '다음 단계';
     }
 
     let stepHtml = '';
 
-    // 첫 번째 단계일 때 상단에 실천 목적 및 Dr. Z 코칭 팁 배너 표시
+    // 첫 번째 단계일 때 상단에 실천 목적 및 개운 마스터 코칭 팁 배너 표시
     if (activeStepIdx === 0) {
-      const purpose = activePractice.purpose || activePractice.description || '마음의 평온을 되찾기 위한 수용전념 실천입니다.';
-      const clinicalTip = activePractice.clinicalTip || '불안은 지나가는 파도입니다. 가만히 바라보며 지금 여기에 머물러보세요.';
+      const purpose = activePractice.purpose || activePractice.description || '막힌 기운을 비우고 행운의 물길을 여는 개운 실천입니다.';
+      const clinicalTip = activePractice.clinicalTip || '탁한 기운과 걱정은 스쳐 지나가는 파도입니다. 가만히 흘려보내면 맑은 운기가 차오릅니다.';
 
       if (activePracticeIsRandom) {
         stepHtml += `
           <div class="random-rx-banner">
             <span class="rx-badge-icon">🎲</span>
             <div>
-              <div class="rx-badge-title">오늘의 랜덤 맞춤 처방 실천</div>
-              <div class="rx-badge-sub">도서의 40가지 연습 중 지금 이 순간 당신에게 가장 필요한 연습이 추천되었습니다.</div>
+              <div class="rx-badge-title">오늘의 맞춤 개운(開運) 리추얼</div>
+              <div class="rx-badge-sub">40가지 개운 비법 중 지금 이 순간 당신의 운기를 틔워줄 리추얼이 선택되었습니다.</div>
             </div>
           </div>
         `;
@@ -1137,17 +1137,17 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="practice-overview-banner">
           <div class="practice-meta-row">
             <span class="practice-meta-pill">⏱ 소요시간: ${activePractice.timeEstimate || '3분'}</span>
-            <span class="practice-meta-pill">📖 원전 ${activePractice.page || 18}쪽</span>
-            <span class="practice-meta-pill">🏷️ ${activePractice.tag || '마음 연습'}</span>
+            <span class="practice-meta-pill">📖 비전 ${activePractice.page || 18}쪽</span>
+            <span class="practice-meta-pill">🏷️ ${activePractice.tag || '개운 리추얼'}</span>
             ${activePractice.preparation && activePractice.preparation !== '없음' ? `<span class="practice-meta-pill prep-pill" style="background: rgba(184, 115, 51, 0.12); color: var(--copper-primary); border-color: rgba(184, 115, 51, 0.3); font-weight: 700;">🎒 준비물: ${escapeHtml(activePractice.preparation)}</span>` : ''}
           </div>
           <div class="practice-purpose-text">
-            <strong>🎯 실천 목적:</strong> ${purpose}
+            <strong>🎯 개운 목적:</strong> ${purpose}
           </div>
         </div>
 
         <div class="clinical-tip-card">
-          <div class="clinical-tip-title">💡 Dr. Z 제이미 저커먼의 원포인트 코칭</div>
+          <div class="clinical-tip-title">💡 Key 개운(開運) 마스터의 원포인트 비결</div>
           <div class="clinical-tip-content">${clinicalTip}</div>
         </div>
       `;
@@ -1235,12 +1235,12 @@ document.addEventListener('DOMContentLoaded', () => {
       stepHtml += `</div>`;
     }
 
-    // 마지막 단계일 경우 확언 및 실천 후 불안감 척도(SUD) 슬라이더 추가
+    // 마지막 단계일 경우 소원 확언 및 실천 후 잔여 탁기(액운) 척도 슬라이더 추가
     if (activeStepIdx === activePractice.steps.length - 1 && activePractice.affirmation) {
       const sudVal = practiceAnswers['sud_score'] || 3;
       stepHtml += `
         <div style="margin-top: 24px; padding: 16px 20px; background: linear-gradient(135deg, #fcf9f2, #f6f0df); border-left: 4px solid var(--gold-accent); border-radius: 0 var(--radius-md) var(--radius-md) 0;">
-          <div style="font-size: 0.78rem; font-weight: 800; color: #a46c26; text-transform: uppercase;">🌟 가슴에 새길 오늘의 치유 확언</div>
+          <div style="font-size: 0.78rem; font-weight: 800; color: #a46c26; text-transform: uppercase;">🌟 가슴에 새길 오늘의 소원 & 개운 확언</div>
           <p style="font-family: 'Nanum Myeongjo', serif; font-size: 1.05rem; font-weight: 700; color: var(--text-title); margin-top: 4px;">
             "${activePractice.affirmation}"
           </p>
@@ -1248,14 +1248,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="sud-meter-box">
           <div class="sud-score-display">
-            <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-body);">실천 후 지금 마음의 불편함 정도 (SUD 척도):</span>
+            <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-body);">실천 후 남아 있는 답답함·탁기(액운) 정도:</span>
             <span class="sud-score-val" id="sud-val-text">${sudVal} / 10</span>
           </div>
           <input type="range" id="input-sud-meter" min="0" max="10" value="${sudVal}" style="cursor: pointer; accent-color: var(--copper-primary);">
           <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-muted);">
-            <span>0점: 완전한 평온</span>
-            <span>5점: 중간 불편함</span>
-            <span>10점: 극심한 공황</span>
+            <span>0점: 맑게 열린 운기</span>
+            <span>5점: 보통 상태</span>
+            <span>10점: 강한 답답함</span>
           </div>
         </div>
       `;
@@ -1590,31 +1590,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (circlePercent) circlePercent.textContent = `${completionRate}%`;
     if (circleCount) circleCount.textContent = `${completedCount} / 40개`;
     if (circleHeading) {
-      circleHeading.textContent = `40가지 연습 중 ${completedCount}개 완주 (${completionRate}%)`;
+      circleHeading.textContent = `40가지 개운법 중 ${completedCount}개 완주 (${completionRate}%)`;
     }
     if (circleStatus) {
       if (completedCount === 0) {
-        circleStatus.textContent = '첫 걸음을 시작해보세요 🌱';
+        circleStatus.textContent = '첫 개운을 시작해보세요 🌱';
         circleStatus.style.background = '#fef3e2';
         circleStatus.style.color = '#b87333';
       } else if (completionRate < 25) {
-        circleStatus.textContent = '치유의 첫 여정을 걷는 중 🌿';
+        circleStatus.textContent = '막힌 운기를 틔우는 중 🌿';
         circleStatus.style.background = '#eef6ee';
         circleStatus.style.color = '#2e7d32';
       } else if (completionRate < 50) {
-        circleStatus.textContent = '불안의 파도를 유연하게 타는 중 🌊';
+        circleStatus.textContent = '행운의 물길이 열리고 있습니다 🌊';
         circleStatus.style.background = '#e3f2fd';
         circleStatus.style.color = '#1565c0';
       } else if (completionRate < 75) {
-        circleStatus.textContent = '심리적 유연성이 깊어졌습니다 🌟';
+        circleStatus.textContent = '맑은 대운의 파동이 깊어졌습니다 🌟';
         circleStatus.style.background = '#f3e5f5';
         circleStatus.style.color = '#7b1fa2';
       } else if (completionRate < 100) {
-        circleStatus.textContent = '완주가 눈앞에 다가왔습니다! ✨';
+        circleStatus.textContent = '개운 마스터가 눈앞에 다가왔습니다! ✨';
         circleStatus.style.background = '#fff8e1';
         circleStatus.style.color = '#f57f17';
       } else {
-        circleStatus.textContent = '🏆 40가지 연습 마스터 완주 달성!';
+        circleStatus.textContent = '🏆 40가지 개운 리추얼 마스터 달성!';
         circleStatus.style.background = 'linear-gradient(135deg, #ffd700, #ffb300)';
         circleStatus.style.color = '#000000';
       }
@@ -1707,14 +1707,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cardsHtml = `
           <div class="wb-empty-card">
             <div class="wb-empty-icon">📖</div>
-            <div class="wb-empty-title">아직 기록된 실천 저널이 없습니다</div>
+            <div class="wb-empty-title">아직 기록된 소원 확언 & 운기 노트가 없습니다</div>
             <p class="wb-empty-desc">
-              《왜 나는 불안할까》는 머리로만 읽는 책이 아닌, 직접 마주하고 실천하는 책입니다.<br>
-              40가지 연습실이나 3분 응급 처방전에서 오늘의 치유 연습을 시작해 보세요.
+              막힌 운은 작은 실천과 확언을 기록할 때 비로소 트이기 시작합니다.<br>
+              40가지 개운 리추얼이나 3분 액운 정화에서 오늘의 첫 개운을 시작해 보세요.
             </p>
             <div class="wb-empty-btns">
-              <button class="btn-copper" onclick="switchTab('tab-exercises')">🎯 40가지 실천 연습실 가기</button>
-              <button class="btn-sage" onclick="launchRandomPractice()">🎲 오늘의 추천 연습 뽑기</button>
+              <button class="btn-copper" onclick="switchTab('tab-exercises')">🎯 40가지 개운 리추얼 가기</button>
+              <button class="btn-sage" onclick="launchRandomPractice()">🎲 오늘의 랜덤 개운법 뽑기</button>
             </div>
           </div>
         `;
@@ -1722,7 +1722,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cardsHtml = `
           <div class="wb-empty-card">
             <div class="wb-empty-icon">🔍</div>
-            <div class="wb-empty-title">일치하는 실천 기록이 없습니다</div>
+            <div class="wb-empty-title">일치하는 운기 기록이 없습니다</div>
             <p class="wb-empty-desc">선택하신 필터 조건이나 검색어와 일치하는 기록이 없습니다.</p>
             <div class="wb-empty-btns">
               <button class="btn-copper" onclick="window.resetWorkbookFilter()">전체 기록 보기</button>
@@ -1732,8 +1732,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       cardsHtml = filtered.map(r => {
-        const isRx = String(r.title).includes('처방전') || r.isRx;
-        const typeBadge = isRx ? '💊 3분 처방전' : '🎯 40가지 연습';
+        const isRx = String(r.title).includes('처방전') || String(r.title).includes('개운부적') || r.isRx;
+        const typeBadge = isRx ? '🔮 3분 개운부적' : '🎯 40가지 개운법';
         const typeClass = isRx ? 'wb-badge-rx' : 'wb-badge-ch';
         const sud = r.sudScore || (r.answers ? r.answers['sud_score'] : null);
         let sudHtml = '';
@@ -1741,14 +1741,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sud !== null && sud !== undefined && !isNaN(Number(sud))) {
           const sVal = Number(sud);
           let sColor = '#2e7d32';
-          let sText = '평온';
-          if (sVal > 3 && sVal <= 6) { sColor = '#d97706'; sText = '안정 완화'; }
-          else if (sVal > 6) { sColor = '#dc2626'; sText = '주의 관찰'; }
+          let sText = '맑은 운기';
+          if (sVal > 3 && sVal <= 6) { sColor = '#d97706'; sText = '탁기 정화 중'; }
+          else if (sVal > 6) { sColor = '#dc2626'; sText = '집중 정화 권장'; }
 
           sudHtml = `
             <div class="wb-sud-banner">
               <div class="wb-sud-row">
-                <span class="wb-sud-lbl">🌱 실천 후 마음 불편감(SUD) 척도:</span>
+                <span class="wb-sud-lbl">🌱 개운 실천 후 잔여 탁기(액운) 지수:</span>
                 <span class="wb-sud-num" style="color: ${sColor};">${sVal} / 10점 (${sText})</span>
               </div>
               <div class="wb-sud-track">
@@ -1760,7 +1760,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const affirmationHtml = r.affirmation ? `
           <div class="wb-affirmation-card">
-            <div class="wb-aff-label">🌟 가슴에 새긴 오늘의 치유 확언</div>
+            <div class="wb-aff-label">🌟 가슴에 새긴 오늘의 소원 & 개운 확언</div>
             <div class="wb-aff-text">"${escapeHtml(r.affirmation)}"</div>
           </div>
         ` : '';
@@ -1772,16 +1772,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="wb-card-topbar">
               <div class="wb-badges-group">
                 <span class="wb-badge-pill ${typeClass}">${typeBadge}</span>
-                <span class="wb-badge-pill wb-badge-ch">${r.chapter || 1}장 · P.${r.page || 18}</span>
+                <span class="wb-badge-pill wb-badge-ch">${r.chapter || 1}장 · 비전 ${r.page || 18}P</span>
                 <span class="wb-badge-date">📅 ${r.date}</span>
               </div>
             </div>
 
             <div class="wb-card-title-row">
-              <div class="wb-card-icon">${r.icon || (isRx ? '💊' : '🎯')}</div>
+              <div class="wb-card-icon">${r.icon || (isRx ? '🔮' : '🎯')}</div>
               <div>
                 <h3 class="wb-card-title">${escapeHtml(r.title)}</h3>
-                <div class="wb-card-page">도서 《FIND YOUR 왜 나는 불안할까》 ${r.page || 18}쪽 연동 실천 기록</div>
+                <div class="wb-card-page">《KEY : 운을 여는 40가지 개운 리추얼》 비전 ${r.page || 18}쪽 기록</div>
               </div>
             </div>
 
@@ -1789,7 +1789,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${sudHtml}
 
             <div class="wb-qa-box">
-              <div class="wb-qa-header-title">📝 나의 실천 및 작성 내용</div>
+              <div class="wb-qa-header-title">📝 나의 개운 실천 및 소원 기록</div>
               ${qaHtml}
             </div>
 
@@ -1837,7 +1837,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .join(', ');
     }
 
-    const text = `Key 마음약방에서 '${r.title}'을 실천하고 다음과 같이 기록했어:\n\n[실천 내용: ${ansSummary}]\n\n이 기록을 바탕으로 루시의 다정한 통찰과 함께 불안을 이겨낼 수 있는 피드백과 조언을 들려줘.`;
+    const text = `Key 개운 성전에서 '${r.title}' 리추얼을 실천하고 운기 노트에 다음과 같이 기록했어:\n\n[개운 실천 내용: ${ansSummary}]\n\n이 기록을 바탕으로 내 운의 흐름이 어떻게 맑아지고 있는지 루시의 다정한 통찰과 개운 조언을 들려줘.`;
     if (typeof askLucyWithText === 'function') {
       askLucyWithText(text);
     } else {
@@ -1890,8 +1890,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    let exportText = `# 📓 CALM 《FIND YOUR 왜 나는 불안할까》 나만의 실천 워크북 기록장\n`;
-    exportText += `> 임상심리학자 제이미 저커먼 박사 원작 연계 디지털 마음 저널\n\n`;
+    let exportText = `# 📓 KEY 《운을 여는 40가지 개운(開運) 리추얼》 나의 소원 확언 & 운기 노트\n`;
+    exportText += `> 동서양 7대 운명학 연계 디지털 개운 비전록\n\n`;
     exportText += `- 총 실천 횟수: ${records.length}회\n`;
     exportText += `- 내보낸 일시: ${new Date().toLocaleString('ko-KR')}\n\n`;
     exportText += `---\n\n`;
@@ -2677,28 +2677,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // 단계별 텍스트 가이드
   const RITUAL_STAGE_INFO = {
     1: {
-      name: "1단계: 신체 접지 (Somatic Grounding)",
+      name: "1단계: 기운 접지 (Earth Energy)",
       time: 60,
-      guide: "가만히 눈을 감고 어깨와 턱의 힘을 툭 뺍니다. 발바닥이 닿은 대지의 안정감을 느끼고, 아랫배가 오르내리는 숨의 파도에 집중하세요."
+      guide: "가만히 눈을 감고 어깨와 턱의 힘을 툭 뺍니다. 발바닥이 닿은 대지의 생기를 느끼고, 아랫배 단전이 오르내리는 숨의 파도에 집중하세요."
     },
     2: {
-      name: "2단계: 기적수업 용서 (ACIM Forgiveness)",
+      name: "2단계: 액운 정화 (Karma Clearing)",
       time: 60,
-      guide: "불안한 생각을 통제하려던 손을 조용히 내려놓습니다. 떠오르는 생각과 감정을 싸우지 않고 '바람에 스쳐 지나가는 구름'으로 관찰하며 용서하세요."
+      guide: "막힌 운과 불안을 억지로 통제하려던 집착을 조용히 내려놓습니다. 떠오르는 걱정을 '바람에 스쳐 지나가는 구름'으로 바라보며 탁한 기운을 씻어내세요."
     },
     3: {
-      name: "3단계: 본래의 온전함 선언 (Inherent Wholeness)",
+      name: "3단계: 대운 선언 (Destiny Manifestation)",
       time: 60,
-      guide: "심연 속 깊은 바다는 어떤 거센 파도에도 다치지 않습니다. '나는 지금 이대로 온전하며, 내 안의 평화는 영원하다'고 마음속으로 읊조려보세요."
+      guide: "심연 속 깊은 바다는 어떤 거센 파도에도 흔들리지 않습니다. '나의 길운은 이미 열려 있으며, 나는 모든 행운을 맞이할 준비가 되었다'고 마음속으로 선언해보세요."
     }
   };
 
-  // 단계별 전문 TTS 음성 스크립트 (차분하고 다정한 명상 나레이션)
+  // 단계별 전문 TTS 음성 스크립트 (차분하고 다정한 개운 명상 나레이션)
   const RITUAL_TTS_SCRIPTS = {
-    1: "1단계, 신체 접지입니다. 가만히 눈을 감고 어깨와 턱의 힘을 툭 뺍니다. 발바닥이 닿아 있는 대지의 안정감을 느껴보세요. 아랫배가 부풀어 오르고 가라앉는 숨의 파도에 집중합니다. 코로 4초간 깊게 들이쉬고, 입으로 6초간 모든 긴장을 비워냅니다.",
-    2: "2단계, 기적수업 용서입니다. 불안한 생각을 억지로 통제하려던 손을 조용히 내려놓으세요. 떠오르는 생각과 감정을 나와 분리하여, 하늘에 스쳐 지나가는 구름처럼 그저 관찰합니다. 이 감정을 느끼는 나 자신을 따뜻하게 안아주고 용서하세요.",
-    3: "3단계, 본래의 온전함 선언입니다. 심연 속 깊은 바다는 거센 파도에도 결코 다치지 않습니다. 마음속으로 가만히 선언해 보세요. '나는 지금 이대로 온전하며, 내 안의 깊은 평화는 영원하다.' 당신은 이미 완전하고 안전합니다.",
-    done: "3분 내면의 쉼표 명상 리추얼이 모두 완료되었습니다. 내면의 깊은 평온을 가슴에 품고, 편안한 호흡과 함께 천천히 눈을 떠보세요."
+    1: "1단계, 기운 접지입니다. 가만히 눈을 감고 어깨와 턱의 힘을 툭 뺍니다. 발바닥이 닿아 있는 대지의 든든한 생기를 느껴보세요. 아랫배 단전이 부풀어 오르고 가라앉는 숨의 파도에 집중합니다. 코로 4초간 맑은 천기를 깊게 들이쉬고, 입으로 6초간 묵은 탁기를 모두 비워냅니다.",
+    2: "2단계, 액운 정화입니다. 막힌 상황을 억지로 통제하려던 두려운 마음을 조용히 내려놓으세요. 떠오르는 걱정과 잡념을 내 운명과 분리하여, 하늘에 스쳐 지나가는 구름처럼 그저 흘려보냅니다. 묵은 액운이 씻겨 나가고 맑은 공간이 열립니다.",
+    3: "3단계, 대운 선언입니다. 먹구름 너머의 태양은 단 한 순간도 빛을 잃지 않습니다. 마음속으로 가만히 선언해 보세요. '나의 길은 활짝 열리고 있으며, 내 안의 복록과 행운은 언제나 충만하다.' 당신의 대운은 지금 이 순간 깨어납니다.",
+    done: "3분 개운 파동 명상이 모두 완료되었습니다. 맑게 정화된 운기와 행운의 파동을 가슴에 품고, 편안한 호흡과 함께 천천히 눈을 떠보세요."
   };
 
   function getActiveRitualScript(stageKey) {
@@ -2742,7 +2742,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (state === 'speaking') {
       tMedVoiceStatus.classList.add('speaking');
-      if (voiceStatusText) voiceStatusText.textContent = customText || '🎙️ Dr. Z 음성 안내 재생 중...';
+      if (voiceStatusText) voiceStatusText.textContent = customText || '🎙️ 개운 마스터 음성 안내 재생 중...';
     } else if (state === 'loading') {
       tMedVoiceStatus.classList.add('loading');
       if (voiceStatusText) voiceStatusText.textContent = customText || '⏳ 음성 안내 불러오는 중...';
@@ -2751,7 +2751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (state === 'disabled') {
       if (voiceStatusText) voiceStatusText.textContent = '🔇 음성 안내 꺼짐 (타이머 자동 진행 중)';
     } else {
-      if (voiceStatusText) voiceStatusText.textContent = customText || '🎙️ Dr. Z 음성 안내 준비 완료';
+      if (voiceStatusText) voiceStatusText.textContent = customText || '🎙️ 개운 마스터 음성 안내 준비 완료';
     }
   }
 

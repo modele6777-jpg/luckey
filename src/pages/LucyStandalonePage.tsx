@@ -21,6 +21,7 @@ import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
+import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { getAndClearPendingSelection } from '@/lib/selectionBridge';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
@@ -106,53 +107,45 @@ interface ChannelConfig {
 // 🌟 Rich Prompt Pools for Dynamic Random Sampling (모두 자연스럽게 완성된 문장형으로 구성)
 const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
   prologue: [
+    '태을신수와 토정비결로 올해 새롭게 펼쳐질 나의 운명적 기회와 서막을 알려줘.',
     '새로운 시작을 앞두고 내 삶의 중심축을 바로잡는 나침반 질문은 무엇일까?',
-    '지금 나의 인생 10년 주기에서 어떤 새로운 서막이 열리고 있을까?',
+    '태을신수의 거시적 흐름으로 볼 때 지금 내 인생 주기에서 어떤 서막이 열리고 있을까?',
+    '토정비결로 이번 달 나에게 찾아올 반가운 소식과 생활 속 길흉 지침을 짚어줘.',
     '낯선 도전을 시작할 때 두려움을 용기와 설렘으로 바꾸려면 어떻게 해야 할까?',
-    '내 안의 가장 순수한 열망과 비전을 명확한 첫걸음으로 구체화해 줘.',
-    '올해 새롭게 펼쳐질 나의 운명적 기회와 전환점은 무엇일지 알려줘.'
+    '내 안의 가장 순수한 열망과 비전을 명확한 첫걸음으로 구체화해 줘.'
   ],
   orange: [
+    '홍국기문(기문둔갑)으로 지금 막힌 상황을 뚫을 최적의 돌파구와 타이밍을 알려줘.',
+    '육임의 초전·중전·말전 흐름으로 내가 준비 중인 일의 진행 과정과 결과를 짚어줘.',
+    '구성학의 구궁 에너지로 볼 때 올해 나에게 유리한 이동 방향과 공간 개운법은 무엇일까?',
     '기적수업의 관점으로 지금 내가 겪는 인간관계 갈등을 지혜롭게 풀어줘.',
-    '집착의 굴레를 꿰뚫고 마음의 자유를 얻는 통찰을 들려줘.',
-    '연기법의 관점에서 내가 반복해서 겪는 고민의 연결고리를 끊는 법을 알려줘.',
-    '내가 직면한 문제를 1원칙(First Principles)으로 분해해서 명확히 분석해 줘.',
+    '내가 직면한 문제를 1원칙(First Principles)과 기문 전략으로 분해해서 명확히 분석해 줘.',
     '중요한 결정을 앞두고 반드시 고려해야 할 숨겨진 변수와 리스크는 무엇일까?',
     '장기적 성장을 위한 나만의 고유한 전략적 로드맵을 설계해 줘.',
     '직관과 논리가 충돌할 때 최선의 결정을 내리는 사고 프레임워크를 알려줘.',
     '현재 상황에서 가장 큰 레버리지 효과를 낼 수 있는 핵심 행동 한 가지는 무엇일까?',
     '내 생각의 확증 편향과 맹점을 점검하고 반대 논리를 냉철하게 검토해 줘.',
     '시간과 에너지의 병목 현상을 해결하는 시스템적 접근법을 알려줘.',
-    '불확실성이 높을 때 위험을 최소화하면서 기회를 포착하는 의사결정법은 무엇일까?',
-    '복잡한 딜레마를 MECE 관점으로 한눈에 보기 쉽게 정리해 줘.',
-    '문제의 근본 원인을 파헤치는 5 Whys 기법을 내 고민에 적용해 줘.',
-    '단기적 유혹을 이겨내고 장기적 복리 효과를 만드는 전략적 사고법을 알려줘.',
-    '비효율적인 습관과 생각의 낭비를 구조적으로 줄이는 실행 팁을 알려줘.'
+    '불확실성이 높을 때 위험을 최소화하면서 기회를 포착하는 의사결정법은 무엇일까?'
   ],
   trinity: [
-    '집착하는 관계에서 성숙하고 조화로운 관계로 나아가는 영적 흐름을 짚어줘.',
-    '내 영혼의 성장 여정에서 지금 나는 어떤 단계를 지나고 있을까?',
-    '제행무상과 제법무아의 관점에서 내 운명의 흐름을 어떻게 바라보면 좋을까?',
-    '나의 사주 본원과 올해 병오년의 에너지적 조화는 어떤지 분석해 줘.',
+    '사주와 자미두수, 점성술을 융합해서 올해 나의 재물운과 커리어 전환점을 분석해 줘.',
+    '자미두수 명반의 부처궁과 재백궁 관점에서 내 연애운과 재물 그릇을 쉽게 풀어줘.',
+    '나의 사주 본원과 서양 점성술 차트가 말해주는 내 진짜 매력과 강점은 무엇일까?',
+    '오늘 나의 소울 주파수를 높여주는 타로와 별자리 메시지를 들려줘.',
     '현재 나의 운의 계절에서 지금은 씨앗을 뿌릴 때일까, 아니면 수확할 때일까?',
     '나의 천을귀인 기운을 일상에서 활성화할 수 있는 실천 팁을 알려줘.',
-    '오늘 나의 소울 주파수를 높여주는 타로적 메시지를 들려줘.',
     '타고난 사주 오행 중 부족한 기운을 일상에서 채우는 개운법을 알려줘.',
     '앞으로 마주할 운의 터닝포인트와 주의해야 할 에너지 흐름을 짚어줘.',
     '내 사주원국의 십신 강점을 극대화하여 재물운을 높이는 방법을 알려줘.',
     '내 직관과 무의식이 가리키는 다음 단계의 영적 방향성은 무엇일까?',
-    '운의 흐름이 정체되었을 때 기운의 물꼬를 트는 방하착 비결을 알려줘.',
     '내 사주 대운의 흐름에 맞는 올해의 커리어 및 재물 타이밍은 언제일까?',
-    '오늘 나를 지켜주는 우주적 수호 가이드의 따뜻한 조언을 들려줘.',
     '최근 겪는 반복적인 우연과 동시성(Synchronicity)에는 어떤 의미가 있을까?'
   ],
   bluebird: [
-    '기적수업의 평화의 관점을 지금 내 마음과 상황에 따뜻하게 적용해 줘.',
+    '숙요(27숙)로 나와 내가 신경 쓰이는 사람의 인연 결이 왜 이런지 다정하게 풀어줘.',
+    '베딕 점성술 관점에서 내가 반복해서 겪는 마음의 아픔을 치유하는 지혜를 들려줘.',
     '누군가에 대한 억울함과 상처를 참된 용서로 치유하려면 어떻게 해야 할까?',
-    '내 안에 숨겨진 꺼지지 않는 신성한 가능성과 빛을 깨우는 법을 알려줘.',
-    '내면의 지혜를 꺼내어 마음의 평안을 얻는 비결을 들려줘.',
-    '괴로움이 밀려올 때 스스로를 더 아프게 하지 않는 지혜는 무엇일까?',
-    '지금 내 몸과 감정의 상태를 있는 그대로 다정하게 알아차리는 법을 알려줘.',
     '루시야, 오늘 마음이 조금 지치고 버거운데 따뜻하게 위로해 줘.',
     '남들과 비교하며 작아지는 내 마음을 편안하게 달래줄래?',
     '불안과 걱정이 올라올 때 내 마음을 지켜주는 세도나 4문답을 함께 해줘.',
@@ -160,13 +153,12 @@ const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
     '내 안의 상처받은 내면아이에게 다정한 포옹과 위로의 말을 건네줘.',
     '스스로를 자책하고 비난하는 마음을 멈추는 자기자비 연습법을 알려줘.',
     '과거의 상처로부터 안전하게 나를 지키는 따뜻한 조언을 들려줘.',
-    '완벽하지 않아도 온전히 사랑받을 자격이 있다는 확신을 불어넣어 줘.',
-    '오늘 밤 편안하게 숙면을 취할 수 있도록 마음을 토닥여 줘.',
     '가슴속 응어리진 감정을 편안하게 흘려보내는 안전한 위로를 들려줘.',
-    '남의 눈치를 보느라 지쳐버린 나를 위해 따뜻한 응원을 건네줘.',
     '오늘 내 마음을 밝게 채워줄 긍정 확언 문장을 만들어 줘.'
   ],
   aura: [
+    '마하보테와 태국점성술로 내 출생 요일 기운에 맞는 오늘의 활력 컬러와 루틴을 알려줘.',
+    '태국점성술(호라삿) 관점에서 요즘 지친 내 몸 컨디션을 회복하는 일상 개운법을 추천해 줘.',
     '지금 바로 몸의 긴장을 풀고 피로를 날리는 3분 호흡법을 알려줘.',
     '오늘 나의 신체 에너지와 바이오리듬을 끌어올리는 루틴을 추천해 줘.',
     '깊은 숙면을 취하고 아침을 상쾌하게 깨우는 나이트 케어 가이드를 알려줘.',
@@ -174,28 +166,23 @@ const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
     '머리에 몰린 열과 복잡한 생각을 발끝으로 내리는 1분 그라운딩 기법을 알려줘.',
     '신경계를 안정시키고 미주신경을 활성화하는 4-7-8 이완 호흡법을 가이드해 줘.',
     '에너지가 방전되었을 때 10분 만에 안전하게 재충전하는 방법을 알려줘.',
-    '잠들기 전 5분 동안 온몸의 긴장을 부드럽게 푸는 바디스캔 가이드를 해줘.',
-    '스트레스로 소화가 안 되거나 가슴이 답답할 때 도움이 되는 이완법을 알려줘.',
-    '집중력을 두 배로 높여주는 브레인 리셋 루틴을 추천해 줘.',
-    '오후의 나른함을 상쾌하게 날려버리는 활력 충전 스트레칭을 알려줘.',
-    '내 몸의 코어 에너지와 면역력을 지켜주는 데일리 건강 수칙을 알려줘.'
+    '잠들기 전 5분 동안 온몸의 긴장을 부드럽게 푸는 바디스캔 가이드를 해줘.'
   ],
   muse: [
+    '카발라 생명나무와 타로 원형 상징으로 지금 막힌 내 창작 아이디어의 물꼬를 터줘!',
+    '카발라의 세피로트 경로처럼 내 머릿속 영감을 현실의 멋진 결과물로 구현하는 법을 알려줘.',
     '서로 대립하는 두 가지 생각을 창의적으로 하나로 융합하는 방법을 알려줘.',
     '새로운 아이디어가 필요한데 내 고정관념을 깨우는 신선한 질문을 던져줘!',
     '지금 내 감정을 은유적으로 담아낸 아름다운 시 한 편을 지어줘.',
     '사람들의 마음을 사로잡는 감각적인 문장과 스토리텔링 아이디어를 추천해 줘.',
     '창작의 벽에 부딪혔을 때 영감의 물꼬를 트는 발상법은 무엇일까?',
     '오늘의 소소한 일상을 특별한 예술적 시선으로 바라보는 관점을 들려줘.',
-    '완벽주의를 내려놓고 가벼운 마음으로 시작하는 창작 루틴을 알려줘.',
     '내 프로젝트에 생명력을 불어넣는 참신한 카피라이팅 아이디어를 제안해 줘.',
-    '아이디어가 완전히 고갈됐을 때 뇌를 번뜩이게 하는 질문은 무엇일까?',
-    '창작 슬럼프를 기분 좋은 휴식과 새로운 도약의 계기로 바꾸는 법을 알려줘.',
-    '상상력을 극대화하는 SCAMPER 기법으로 내 고민을 새롭게 재해석해 줘.',
-    '감각적인 비유와 독창적인 문체로 마음을 움직이는 글쓰기 팁을 알려줘.',
-    '세상에 없던 새로운 시각으로 문제를 재정의하는 발상 전환법을 알려줘.'
+    '창작 슬럼프를 기분 좋은 휴식과 새로운 도약의 계기로 바꾸는 법을 알려줘.'
   ],
   epilogue: [
+    '주역 64괘의 지혜로 오늘 하루 나에게 있었던 일의 의미와 내일의 방향을 갈무리해 줘.',
+    '주역과 베딕의 성찰로 지금 내가 나아갈 때인지 잠시 숨을 고를 때인지 짚어줘.',
     '오늘 하루 있었던 일들을 차분히 정리하고 마음을 비워내는 회고 질문을 던져줘.',
     '마음에 남은 응어리와 미련을 있는 그대로 흘려보내는 세도나 4문답을 해줘.',
     '오늘 밤 편안한 쉼과 숙면으로 인도하는 밤의 서재 방하착 가이드를 들려줘.',
@@ -204,19 +191,18 @@ const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
   ]
 };
 
-// 👑 7대 채널 풀가동 PRO 마스터 Pool
+// 👑 7대 채널 풀가동 PRO 마스터 Pool (15대 운명학 도구 총동원 비교 분석)
 const MASTER_PROMPT_POOL = [
-  '알아차림과 통찰, 그리고 용서의 지혜를 융합해 지금 내 고민을 입체적으로 풀어줘.',
-  '내면의 본질과 잠재된 가능성을 결합해 지금 나의 상태를 깊이 진단해 줘.',
-  '고통의 원인을 밝히고 바른 길로 나아가는 지혜를 내 현재 삶에 적용해 줘.',
-  '나의 사주·심리·신체 에너지와 인생 전략을 총망라해서 통합 진단해 줘.',
-  '현재 직면한 중대한 전환점을 5대 영역에서 입체적으로 분석해 줘.',
-  '내 영혼의 최고 잠재력을 끌어올리기 위한 올인원 마스터 로드맵을 설계해 줘.',
-  '오늘 하루 나의 운과 마인드셋을 최고조로 끌어올리는 마스터 가이드를 알려줘.',
-  '내 운명의 타이밍에 맞춘 5개년 비즈니스 & 라이프 마스터플랜을 설계해 줘.',
-  '내면의 상처를 치유하고 외적 실행력을 높이는 심신통합 전략을 알려줘.',
-  '우주적 동시성과 1원칙 논리가 만나는 최고의 의사결정 해답을 제시해 줘.',
-  '영혼의 사명과 현실적 성공을 일치시키는 홀리스틱 마스터 코칭을 해줘.'
+  '15가지 운명학 도구를 총동원해서 올해 나의 운세와 핵심 전환점을 7대 테마별로 비교 분석해 줘.',
+  '지금 내가 고민 중인 중요한 선택을 15개 도구 관점으로 비교 분석하고 공통 결론을 내려줘.',
+  '사주·점성술·자미두수·홍국기문·주역 등 15대 도구를 총동원해 내 재물운과 커리어 돌파구를 비교해 줘.',
+  '알아차림과 통찰, 그리고 15대 운명학 지혜를 총동원해 지금 내 고민을 입체적으로 비교 분석해 줘.',
+  '내면의 본질과 잠재된 가능성을 7대 테마 15개 도구로 비교 진단해 줘.',
+  '나의 사주·심리·신체 에너지와 인생 전략을 15개 도구로 총망라해서 통합 비교해 줘.',
+  '현재 직면한 중대한 전환점을 7대 테마와 15대 운명학 관점에서 입체적으로 비교 분석해 줘.',
+  '내 영혼의 최고 잠재력을 끌어올리기 위한 15대 도구 비교 분석 마스터 로드맵을 설계해 줘.',
+  '내 운명의 타이밍에 맞춘 비즈니스 & 라이프 마스터플랜을 15개 도구 비교로 설계해 줘.',
+  '우주적 동시성과 1원칙 논리가 만나는 최고의 의사결정 해답을 15개 도구 비교 분석으로 제시해 줘.'
 ];
 
 // 💬 일상 대화 & 힐링 & 인생 조언을 위한 풍부한 캐주얼 추천 질문 풀 (동적 순환)
@@ -286,7 +272,7 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     id: 'prologue',
     name: '프롤로그',
     shortName: '프롤로그',
-    tagline: '새로운 서막, 비전 설계 & 운명의 나침반',
+    tagline: '태을신수·토정비결 기반 새로운 서막 & 비전 설계',
     icon: Compass,
     persona: 'lucy',
     badgeColor: 'bg-red-500 text-white',
@@ -300,7 +286,7 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     id: 'orange',
     name: '오렌지',
     shortName: '오렌지',
-    tagline: '1원칙 사고 기반 전략적 심층 분석 & 다이어리 통찰',
+    tagline: '홍국기문·육임·구성학 & 1원칙 전략적 결단',
     icon: TreeDeciduous,
     persona: 'orange',
     badgeColor: 'bg-orange-500 text-white',
@@ -314,7 +300,7 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     id: 'trinity',
     name: '트리니티',
     shortName: '트리니티',
-    tagline: '천문 사주원국 & 타로 주파수 영적 통찰',
+    tagline: '사주·점성술·자미두수·타로 입체 운명 통찰',
     icon: Sparkles,
     persona: 'trinity',
     badgeColor: 'bg-amber-400 text-amber-950 font-bold',
@@ -328,7 +314,7 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     id: 'aura',
     name: '아우라',
     shortName: '아우라',
-    tagline: '신체 컨디션, 호흡법 & 바이오리듬 조율',
+    tagline: '마하보테·태국점성술 생체 리듬 & 신체 웰니스',
     icon: Activity,
     persona: 'aura',
     badgeColor: 'bg-emerald-500 text-white',
@@ -342,7 +328,7 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     id: 'bluebird',
     name: '블루버드',
     shortName: '블루버드',
-    tagline: '내면아이 보듬기 & 따뜻한 심리 치유와 위로',
+    tagline: '숙요(27숙)·베딕 인연 치유 & 따뜻한 마음 위로',
     icon: Bird,
     persona: 'bluebird',
     badgeColor: 'bg-blue-500 text-white',
@@ -356,7 +342,7 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     id: 'muse',
     name: '뮤즈',
     shortName: '뮤즈',
-    tagline: '영감, 카피라이팅, 시 & 창작 아이디어',
+    tagline: '카발라 생명나무·타로 상징 & 창작 영감 발현',
     icon: Music,
     persona: 'muse',
     badgeColor: 'bg-indigo-600 text-white',
@@ -370,7 +356,7 @@ const SPECIAL_CHANNELS: Record<SpecialChannel, ChannelConfig> = {
     id: 'epilogue',
     name: '에필로그',
     shortName: '에필로그',
-    tagline: '하루 마감 회고, 밤의 서재 & 마음 방하착',
+    tagline: '주역 64괘·베딕 성찰 기반 하루 마감 & 회고',
     icon: BookOpen,
     persona: 'lucy',
     badgeColor: 'bg-pink-500 text-white',
@@ -874,7 +860,7 @@ export default function LucyStandalonePage() {
   // 사용자가 대화창에서 프로필을 직접 변경/수정한 경우 플래그 (새로고침 또는 페이지 재진입 전까지 프로필 원복 방지)
   const hasUserCustomizedProfilesRef = useRef(false);
 
-  // 루시 채팅 진입 시 일일 초기화 점검 및 '오늘 처음 진입' 여부에 따른 인사말 제어
+  // 루시 채팅 진입 시 일일 초기화 점검 및 대화 기록이 없을 때 기본 루시 인사말 보장
   useEffect(() => {
     const todayKey = getTodayDateKey();
     if (visitDateKeyRef.current !== todayKey) {
@@ -890,15 +876,12 @@ export default function LucyStandalonePage() {
       let nextList = archival.messages;
 
       const hasUserMsg = nextList.some((m) => m.role === 'user' && !!m.content);
-      if (isFirstVisitTodayRef.current) {
-        // 오늘 처음 루시채팅에 들어온 경우: 유저 대화가 아직 없다면 인사말 1회 표시
-        if (!hasUserMsg && nextList.length === 0) {
-          nextList = [createDefaultGreeting('lucy', userDisplayName)];
-        }
-      } else {
-        // 오늘 이미 루시채팅에 들어온 적이 있는 경우(재진입/새로고침): 인사말 제거
+      if (!hasUserMsg && nextList.length === 0) {
+        nextList = [createDefaultGreeting('lucy', userDisplayName)];
+      }
+
+      if (!isFirstVisitTodayRef.current) {
         markFirstLucyVisitCompletedToday();
-        nextList = nextList.filter((m) => !isGreetingMessage(m));
       }
 
       if (JSON.stringify(currentList) !== JSON.stringify(nextList)) {
@@ -924,7 +907,7 @@ export default function LucyStandalonePage() {
     };
   }, [setPersonaMessages, userDisplayName]);
 
-  // 루시 채팅에서 벗어날 때(언마운트 시) 오늘 첫 방문 완료 처리 및 단독 인사말 정리
+  // 루시 채팅에서 벗어날 때(언마운트 시) 오늘 첫 방문 완료 처리 (인사말은 제거하지 않고 유지)
   useEffect(() => {
     return () => {
       markFirstLucyVisitCompletedToday();
@@ -932,24 +915,8 @@ export default function LucyStandalonePage() {
       try {
         sessionStorage.removeItem('lucy_chat_extra_profiles');
       } catch (_) {}
-      setPersonaMessages((prevRecord) => {
-        const currentList = prevRecord.lucy || [];
-        const withoutGreet = currentList.filter((m) => !isGreetingMessage(m));
-        if (withoutGreet.length !== currentList.length) {
-          saveUnifiedMessagesSafely(withoutGreet);
-          return {
-            lucy: withoutGreet,
-            orange: withoutGreet,
-            trinity: withoutGreet,
-            aura: withoutGreet,
-            bluebird: withoutGreet,
-            muse: withoutGreet,
-          };
-        }
-        return prevRecord;
-      });
     };
-  }, [setPersonaMessages]);
+  }, []);
 
   // 🎲 차분하게 유지되는 맞춤 추천 질문 상태 (새로고침 🔄 클릭, 모드 전환, 프로필 변경 시에만 명시적으로 갱신되며 실시간 임의 변동 방지)
   const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
@@ -1223,15 +1190,16 @@ export default function LucyStandalonePage() {
     }
   }, [dynamicGhostPrompts]);
 
-  // Filter messages by search query if search is active
+  // Filter messages by search query if search is active (대화 기록이 비어있다면 기본 루시 인사말 표시 보장)
   const filteredMessages = useMemo(() => {
-    if (!searchQuery.trim()) return lucyMessages;
+    const baseList = lucyMessages.length > 0 ? lucyMessages : [createDefaultGreeting('lucy', userDisplayName)];
+    if (!searchQuery.trim()) return baseList;
     const q = searchQuery.toLowerCase();
-    return lucyMessages.filter((m) => {
+    return baseList.filter((m) => {
       const txt = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
       return txt.toLowerCase().includes(q);
     });
-  }, [lucyMessages, searchQuery]);
+  }, [lucyMessages, searchQuery, userDisplayName]);
 
   // Background Auto-Prefetch latest Lucy message for 0ms instant TTS playback
   useEffect(() => {
@@ -1662,21 +1630,35 @@ export default function LucyStandalonePage() {
       targetPersona = 'lucy';
     } else if (isSingle) {
       targetPersona = SPECIAL_CHANNELS[channels[0]].persona;
-      const singleContext = `[${SPECIAL_CHANNELS[channels[0]].name} 전문 모드]
-- ${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`;
+      const chCfg = THEME_PRIMARY_DIVINATION_TOOLS[channels[0]];
+      const singleContext = `[${SPECIAL_CHANNELS[channels[0]].name} 전문 모드 — ${SPECIAL_CHANNELS[channels[0]].tagline}]
+- ${chCfg ? `이 테마의 주력 운명학 도구: ${chCfg.fusionPhilosophy}` : `${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`}`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${singleContext}` : singleContext;
     } else if (isMaster) {
-      const masterContext = `[7대 채널 올인원 PRO 마스터 풀가동]
-- 7대 채널(서막 비전, 전략적 성찰, 사주 타로 운명, 신체 웰니스, 마음 치유, 창작 영감, 하루 마감 회고)을 총동원한 올인원 마스터 지능입니다.
-- 다각도의 지능 엔진 관점을 융합하여 체계적인 분석과 깊이 있고 따뜻한 실천 조언을 제공해 줘.`;
+      const masterContext = `[7대 채널 올인원 PRO 마스터 풀가동 — 15대 운명학 도구 전원 총동원 & 비교 분석 모드]
+- 7대 테마에 배정된 동서양 15가지 운명학 도구(프롤로그[태을신수·토정비결], 오렌지[홍국기문·육임·구성학], 트리니티[사주·점성술·자미두수·타로], 아우라[마하보테·태국점성술], 블루버드[숙요·베딕], 뮤즈[카발라·타로], 에필로그[주역·베딕])를 단 하나도 빠짐없이 전원 총동원합니다.
+- 7대 테마별로 묶어 15개 도구의 관점을 각각 비교 분석한 뒤, 15개 도구가 만장일치로 가리키는 공통 결론과 특이 변수를 도출해 명쾌한 마스터 해답을 제공해 줘.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
       targetPersona = 'lucy';
     } else if (isSyn) {
       const channelNames = channels.map((c) => SPECIAL_CHANNELS[c]?.name || c).join(' + ');
+      const themeFusions = channels
+        .map((c) => THEME_PRIMARY_DIVINATION_TOOLS[c]?.fusionPhilosophy)
+        .filter(Boolean)
+        .join(' / ');
       const synContext = `[${channelCount}중 융합 시너지 모드: ${channelNames}]
-- 자동 감지된 결합 지능 엔진들의 관점을 다각도로 융합하여 깊이 있고 유용한 시너지 답변을 도출해 줘.`;
+- 융합된 테마별 주력 도구 시너지: ${themeFusions}
+- 위 테마들과 질문 의도에 맞춰 가장 적합한 1~3개 핵심 운명학 도구를 교차 융합해 깊이 있고 유용한 시너지 답변을 도출해 줘.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${synContext}` : synContext;
       targetPersona = 'lucy';
+    }
+
+    // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
+    const divinationSelection = selectOptimalDivinationTools(userCleanText, channels, counselingUserProfile, isMaster);
+    if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
+      extraSystemContext = extraSystemContext
+        ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
+        : divinationSelection.promptInjection;
     }
 
     setInput('');

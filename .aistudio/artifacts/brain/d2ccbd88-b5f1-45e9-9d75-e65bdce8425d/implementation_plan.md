@@ -1,91 +1,52 @@
-# 외부 음악 앱 및 내부 힐링 BGM과 TTS 동시 재생 (오디오 믹싱 & 더킹 아키텍처)
+# 마스터 모드 15대 운명학 도구 총동원 & 7대 테마별 비교 분석 구현 계획
 
-유튜브 뮤직, 멜론, 스포티파이, 애플 뮤직 등 외부 음악 앱으로 음악을 감상하는 도중에도 음악이 멈추지 않고 루시 및 도슨트 TTS 음성이 동시에 자연스럽게 믹싱되어 재생되도록 오디오 세션 및 재생 파이프라인을 개편합니다.
-
-## User Review & Critical Decisions
-
-> [!IMPORTANT]
-> 사용자 답변을 바탕으로 확정된 오디오 믹싱 정책입니다.
-
-- **외부 음악 앱과의 동시 재생 및 볼륨 더킹**: 외부 음악 앱의 재생을 강제로 중지시키지 않고 동시에 재생하며, 운영체제/브라우저가 지원하는 기기에서는 TTS 발화 중에만 외부 음악 볼륨을 살짝 줄여(Transient Ducking) 음성이 또렷하게 들리도록 처리합니다.
-- **앱 내부 힐링 BGM과의 동시 재생**: TTS가 나올 때 앱 내부 배경음악(BGM)이 급격히 줄어들거나 끊기지 않고, 배경음악과 TTS 음성이 함께 자연스러운 밸런스로 어우러져 재생되도록 유지합니다.
+일반/단일·부분 융합 상담에서는 질문에 가장 적합한 **1~3개 핵심 도구**를 자동 선별해 간결하고 명쾌하게 풀이하고, **올인원 마스터 모드(7대 채널 풀가동)**에서는 **15가지 운명학 도구를 전원 총동원**하여 **7대 테마별로 묶어 비교 분석**한 뒤 공통 결론과 맞춤 실천 지침을 도출하도록 고도화합니다.
 
 ---
 
-## 1. Overview & Core Concept
+## 1. 상담 모드별 15대 도구 운용 이원화 체계
 
-- **What It Does**: 기존에는 TTS 재생 시 브라우저가 운영체제의 독점 미디어 포커스(Exclusive Audio Focus)를 가져가 외부 음악 앱이 일시정지되었으나, 이제 비독점 오디오 믹싱 파이프라인을 통해 외부 음악과 TTS가 끊김 없이 동시에 출력됩니다.
-- **Target Audience / Persona**: 유튜브 뮤직·멜론·스포티파이 등으로 좋아하는 음악을 들으면서 동시에 타로 리딩, 루시 AI 대화, 1분 명상 및 도슨트 음성 안내를 함께 듣고자 하는 모바일·데스크톱 사용자.
-- **Key Value**: 음악 감상의 흐름이 끊기지 않는 몰입감과 선명한 음성 전달력을 동시에 제공합니다.
-
----
-
-## 2. User Experience & Visual Design
-
-- **Key User Flows**:
-  1. 사용자가 외부 음악 앱(유튜브 뮤직, 멜론, 스포티파이 등)에서 음악을 재생한 상태로 앱에 진입합니다.
-  2. 루시 대화창이나 도슨트 안내에서 TTS 듣기 버튼을 누르거나 자동 음성 낭독이 시작됩니다.
-  3. 외부 음악이 정지되지 않고 계속 흐르며(지원 기기에서는 외부 음악 볼륨이 부드럽게 살짝 낮아짐), 그 위로 루시의 음성이 또렷하게 겹쳐서 재생됩니다.
-  4. 앱 내부 힐링 BGM을 켜둔 경우에도 BGM 볼륨이 급격히 꺼지지 않고 TTS 음성과 함께 자연스럽게 조화를 이루며 재생됩니다.
-  5. TTS 낭독이 끝나면 외부 음악 볼륨이 즉시 원래대로 복원됩니다.
-- **Visual Identity & Theme**:
-  - 기존 UI 디자인과 금빛 빅뱅 버튼, 라이트/다크 테마를 그대로 유지하며, TTS 재생 중 문장 하이라이트 및 일시정지/재개/정지 컨트롤의 즉각적인 반응성을 보존합니다.
-- **Interactive Feedback & Motion**:
-  - TTS 일시정지(`pause`) 및 이어듣기(`resume`) 시 오디오 버퍼 오프셋을 정밀하게 추적하여, 외부 음악과 동시 재생 중에도 문장 중간부터 끊김 없이 즉시 재개됩니다.
+| 모드 구분 | 도구 가동 범위 | 답변 구성 방식 |
+| :--- | :--- | :--- |
+| **단일 테마 / 부분 융합 모드** | 질문과 테마에 가장 적합한 **1~3개 핵심 도구** 자동 선별 | 핵심 통찰 중심의 쉽고 명쾌한 일상어 풀이 (4~7문장) |
+| **올인원 마스터 모드 (7대 채널 풀가동)** | **15가지 운명학 도구 전원 총동원 (15/15 Full Mobilization)** | **7대 테마별로 묶어 15개 도구의 관점을 교차 비교 분석** → 도구 간 일치점(공통 시그널)과 차이점(입체적 변수) 대조 → **최종 통합 결론 및 실천 처방 도출** |
 
 ---
 
-## 3. Key Product Decisions & Trade-Offs
+## 2. 마스터 모드: 7대 테마별 15개 도구 총동원 비교 분석 구조
 
-- **Decision 1: 독점 미디어 엘리먼트(`HTMLAudioElement`) 대신 Web Audio API 믹싱 버퍼 엔진을 주 재생기로 전환**
-  - *Chosen Approach*: TTS 오디오(PCM 및 압축 MP3/WAV)를 공유 `AudioContext`의 `AudioBufferSourceNode` 및 전용 보이스 게인 버스를 통해 디코딩·재생하고, 외부 음악을 멈추게 하는 무음 `<audio>` 루프(`ttsKeepAliveEl`)와 독점 `<audio>` 재생을 비활성화합니다.
-  - *Why*: 모바일 iOS 및 Android 운영체제는 `<audio>` 태그가 재생될 때 이를 '새로운 뮤직 플레이어 앱'으로 인식하여 기존에 켜져 있던 멜론·유튜브 뮤직·스포티파이를 강제로 일시정지시킵니다. 반면 Web Audio API는 시스템 오디오 믹서 위에서 효과음/보이스 레이어로 합성되므로 외부 음악 앱을 멈추지 않고 동시 재생이 가능합니다.
-  - *Alternatives Considered*: `<audio>` 태그를 유지한 채 미디어 세션만 숨기는 방식은 Android Chrome과 iOS Safari의 OS 레벨 오디오 포커스 정책 때문에 여전히 외부 음악을 중지시키므로 제외했습니다.
-- **Decision 2: W3C AudioSession API 기반 스마트 더킹(`transient` / `ambient`) 적용**
-  - *Chosen Approach*: `navigator.audioSession`을 지원하는 환경에서 TTS 발화 시작 시 세션을 `'transient'`(외부 음악 동시 재생 + 일시적 볼륨 더킹)로 우선 설정하고, 미지원 시 `'ambient'`(외부 음악 동시 재생)로 폴백하며, 발화 종료 시 즉시 `'ambient'`로 복원합니다. 또한 `navigator.mediaSession.playbackState = 'playing'` 독점 선언을 제거하여 외부 음악 앱의 잠금화면 컨트롤러를 빼앗지 않도록 합니다.
-  - *Why*: 외부 음악 앱의 재생 상태를 보호하면서도, 지원 기기에서는 음성 안내 동안 외부 음악 볼륨만 살짝 낮춰 가청성을 높일 수 있습니다.
-- **Decision 3: 앱 내부 힐링 BGM 자연스러운 동시 재생 및 보이스 명료도 보정**
-  - *Chosen Approach*: TTS 시작 시 내부 BGM을 25%로 대폭 줄이던 기존 강제 더킹을 해제하여 내부 BGM이 자연스러운 볼륨(90%~100%)을 유지하도록 하고, TTS 출력 버스에는 보이스 대역이 선명하게 들리도록 마스터 버스 연결을 최적화합니다.
-  - *Why*: 사용자가 요청한 "앱 내부 배경음악도 함께 자연스럽게 재생" 경험을 충실히 구현합니다.
+마스터 모드 가동 시 루시가 다음 3단계 구조로 깊이 있고 읽기 쉽게(100% 다정한 반말 구어체 유지) 비교 분석합니다:
+
+### [1단계] 7대 테마별 15개 도구 총동원 브리핑 & 관점 대조
+1. **🌅 프롤로그 (거시적 대세와 올해/이달의 흐름)**: **태을신수(太乙神數)** vs **토정비결(土亭秘訣)** 비교
+   - 태을신수가 보는 큰 시대·대세의 물줄기와 토정비결이 짚어주는 당장의 생활 길흉 비교
+2. **🍊 오렌지 (판세 돌파·사건 전개·공간 방위 전략)**: **홍국기문(기문둔갑)** vs **육임(大六壬)** vs **구성학(九星氣學)** 비교
+   - 홍국기문의 승부수 타이밍(생문·개문), 육임의 사건 진행(초전→중전→말전), 구성학의 방위·공간 에너지 교차 대조
+3. **🔮 트리니티 (타고난 명운·심리·명반 사건·무의식 직관)**: **사주명리** vs **서양 점성술** vs **자미두수** vs **타로** 비교
+   - 사주의 오행·대운, 점성술의 행성 심리, 자미두수 12궁의 구체적 사건, 타로의 현재 무의식 시그널 비교
+4. **🌿 아우라 (생체 리듬·요일 에너지·일상 개운)**: **마하보테(Mahabote)** vs **태국점성술(호라삿)** 비교
+   - 미얀마 8요일 생명력 균형과 태국 호라삿의 바이오리듬·행운 컬러·신체 활력 포인트 비교
+5. **🕊️ 블루버드 (인연 역학·감정 파동·카르마 치유)**: **숙요(27숙)** vs **베딕 점성술(조티쉬)** 비교
+   - 숙요가 비추는 인간관계·감정 파동과 베딕 다샤/나크샤트라가 말하는 영혼의 성숙·치유 과제 비교
+6. **🎨 뮤즈 (영감의 현실화·창조적 원형)**: **카발라(세피로트 생명나무)** vs **타로(메이저 원형)** 비교
+   - 카발라 생명나무의 현실 구현 경로와 타로 원형 상징이 깨우는 돌파 아이디어 비교
+7. **🌙 에필로그 (변화의 이치·성찰과 진퇴 결단)**: **주역(周易 64괘)** vs **베딕(카르마 성찰)** 비교
+   - 주역 괘상이 일깨우는 나아갈 때와 멈출 때(時·位)의 도리와 내면 성찰 종합
+
+### [2단계] 15대 도구 교차 검증 (일치하는 공통 시그널 vs 눈여겨볼 반전 포인트)
+- 동서양 15개 도구가 **만장일치로 가리키는 핵심 흐름(공통 결론)**과, 특정 도구에서만 포착된 **숨은 변수·주의점**을 한눈에 비교해 줍니다.
+
+### [3단계] 루시의 최종 마스터 결론 & 맞춤 액션 플랜
+- 15개 도구의 비교 분석을 하나로 압축한 **명쾌한 최종 해답**과 오늘 바로 실행할 수 있는 **핵심 개운 실천법**을 다정하게 제시합니다.
 
 ---
 
-## 4. Technical Architecture & Data Strategy *(Technical Reference)*
+## 3. 수정 대상 파일
 
-- **Architecture & Component Diagram**:
-
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                   OS System Audio Mixer (iOS / Android)              │
-│  ┌────────────────────────────┐    ┌──────────────────────────────┐  │
-│  │ External Music Apps        │    │ PRISM Web Audio Engine       │  │
-│  │ (YouTube Music / Melon /   │    │ (Non-Exclusive Mixing Layer) │  │
-│  │  Spotify / Apple Music)    │    └──────────────┬───────────────┘  │
-│  └─────────────▲──────────────┘                   │                  │
-└────────────────┼──────────────────────────────────┼──────────────────┘
-                 │                                  │
-   AudioSession: 'transient' / 'ambient'            ▼
-   (Ducks external music gently;        ┌───────────────────────────┐
-    never claims exclusive focus)       │ Shared AudioContext       │
-                                        │  ├─ Voice Bus (TTS Audio) │
-                                        │  │   └─ BufferSourceNode  │
-                                        │  │      (Pause/Resume     │
-                                        │  │       Offset Tracker)  │
-                                        │  └─ Ambient Bus (In-App   │
-                                        │      Healing BGM - 95%    │
-                                        │      Natural Co-Playback) │
-                                        └───────────────────────────┘
-```
-
-- **Data Model & State**:
-  - **Web Audio TTS Playback Controller**: 현재 재생 중인 `AudioBuffer`, 시작 타임스탬프(`startedAtContextTime`), 일시정지 누적 오프셋(`pausedOffsetSec`), 재생 상태(`playing` | `paused` | `stopped`)를 관리하여 `AudioBufferSourceNode` 기반에서도 정확한 일시정지(`pauseTTSAudio`)와 이어듣기(`resumeTTSAudio`)를 지원합니다.
-  - **Audio Session Coordinator**: TTS 발화 시작 시 `configureTransientDuckingAudioSession()`을 호출해 `'transient'`(실패 시 `'ambient'`) 모드를 활성화하고, 발화 완료/정지 시 `configureAmbientAudioSession()`으로 복귀합니다.
-- **Interactive Component & State Mapping**:
-  - **TTS 발화 시작 (`playTTS` / `playTTSInChunks` / `playTTSAudio`)**:
-    1. `configureTransientDuckingAudioSession()`으로 외부 음악 앱 중단 방지 및 볼륨 더킹 힌트 전달.
-    2. 수신된 PCM 또는 MP3/WAV 오디오 데이터를 공유 `AudioContext`의 `AudioBuffer`로 디코딩하여 보이스 버스로 즉시 출력.
-    3. 앱 내부 BGM은 급격한 볼륨 감쇄 없이 자연스러운 밸런스로 동시 유지.
-  - **TTS 일시정지 / 재개 / 정지 (`pauseTTS` / `resumeTTS` / `stopTTS`)**:
-    1. 일시정지 시 현재 재생 오프셋을 기록하고 보이스 소스만 정지하여, 앱 내부 BGM과 외부 음악은 끊김 없이 계속 재생되도록 유지(전체 `AudioContext.suspend()` 호출 제거).
-    2. 재개 시 저장된 오프셋(`pausedOffsetSec`)부터 새로운 `AudioBufferSourceNode`를 즉시 연결해 자연스럽게 이어서 발화.
-    3. 정지 또는 완독 시 오디오 세션을 `'ambient'`로 복원하여 외부 음악 볼륨을 원래대로 되돌림.
+1. **`src/lib/fifteenDivinationTools.ts`**
+   - `selectOptimalDivinationTools`에서 마스터 모드(`activeChannels.length === 7` 또는 `isMaster`)일 때 1~3개 제한 대신 **15개 도구 전체(`Object.values(FIFTEEN_DIVINATION_TOOLS)`)를 총동원**하도록 분기 처리합니다.
+   - 마스터 모드 전용 7대 테마별 15개 도구 총동원 비교 분석 프롬프트 생성기(`buildMasterFifteenToolsComparisonPrompt`)를 추가합니다.
+2. **`src/lib/copyTone.ts`**
+   - `LUCY_RESPONSE_PROFILES.long` (마스터 모드 답변 규칙)에 **7대 테마별 15개 운명학 도구 총동원 비교 분석 및 공통 결론 도출 지침**을 반영합니다.
+3. **`src/pages/LucyStandalonePage.tsx`**
+   - `handleSend`의 `isMaster` 분기 및 `MASTER_PROMPT_POOL`에 15대 도구 총동원 비교 분석 컨텍스트와 추천 질문을 연동합니다.

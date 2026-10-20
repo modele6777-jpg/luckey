@@ -97,7 +97,7 @@ export default function CalmApp() {
 
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = "Key - 40대 불안 치유 연습 & 마음약방";
+    document.title = "Key - 막힌 운을 여는 40가지 개운(開運) 리추얼 & 운기 노트";
 
     // Handle messages from iframe (navigation to Lucy, frame ready signal, or text selection)
     const handleMessage = (e: MessageEvent) => {
@@ -264,8 +264,8 @@ export default function CalmApp() {
           >
             <KeyCosmicLoader
               fullScreen
-              message="Key 마음약방 처방 조율 중..."
-              subMessage="40 CALM PRACTICES & CLINICAL SOMATIC RAG"
+              message="Key 개운(開運) 파동 조율 중..."
+              subMessage="40 DESTINY OPENING RITUALS & FIVE ELEMENTS SOUND"
             />
           </motion.div>
         )}

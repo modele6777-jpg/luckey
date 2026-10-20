@@ -15,10 +15,9 @@ import {
   Library,
   BookOpen,
   Compass,
-  Camera,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
+import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import {
@@ -26,9 +25,6 @@ import {
   resetActiveContextPeek,
   type ContextNextMenuResult,
 } from '@/lib/omniWarp/contextNavCycleEngine';
-import { saveProfileToAllVaults } from '@/lib/profileVault';
-import { mergeUserProfiles } from '@/lib/sharedState';
-import { compressImageToDataUrl } from '@/utils/imageCompress';
 
 const APP_ID_TO_PRISM_PATH: Record<string, string> = {
   hub: '/prologue',
@@ -66,7 +62,7 @@ export const CORE_CHANNELS: NavItemConfig[] = [
     path: '/key',
     icon: KeyRound,
     label: 'KEY',
-    subLabel: '40대 불안 치유 마음약방',
+    subLabel: '개운(開運) 리추얼 & 운기 노트',
     color: 'oklch(0.72 0.18 160)',
     isKey: true,
   },
@@ -238,10 +234,8 @@ export default function LeftSidebarNav() {
   // Extract user profile / nickname and avatar URL for sidebar footer
   let userNickname = '제제';
   let userAvatarUrl: string | undefined = undefined;
-  let updateSharedStateFn: any = null;
   try {
-    const { sharedState, updateSharedState, firebaseUser } = useApp();
-    updateSharedStateFn = updateSharedState;
+    const { sharedState, firebaseUser } = useApp();
     const rawNick = sharedState?.userProfile?.basic?.nickname?.trim();
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
     const chosen = rawNick || fallbackNick;
@@ -253,36 +247,7 @@ export default function LeftSidebarNav() {
     userAvatarUrl = getPersistentUserProfile()?.basic?.avatarUrl || undefined;
   }
 
-  const sidebarAvatarInputRef = useRef<HTMLInputElement | null>(null);
-  const [, setIsQuickUploadingAvatar] = useState(false);
-
-  const handleQuickAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsQuickUploadingAvatar(true);
-      const compressedDataUrl = await compressImageToDataUrl(file, 320, 0.85);
-      const existingProfile = getPersistentUserProfile() || {};
-      const updatedProfile = mergeUserProfiles(existingProfile, {
-        basic: { ...existingProfile.basic, avatarUrl: compressedDataUrl },
-      }, true);
-      if (!updatedProfile.basic) updatedProfile.basic = {};
-      updatedProfile.basic.avatarUrl = compressedDataUrl;
-      setPersistentUserProfile(updatedProfile);
-      saveProfileToAllVaults(updatedProfile);
-      if (updateSharedStateFn) {
-        updateSharedStateFn({ userProfile: updatedProfile }, 'profile').catch(() => {});
-      }
-      window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: { userProfile: updatedProfile } }));
-      setProfileVersion((v) => v + 1);
-    } catch (err) {
-      console.error('[LeftSidebarNav] Quick avatar upload error:', err);
-    } finally {
-      setIsQuickUploadingAvatar(false);
-      if (sidebarAvatarInputRef.current) sidebarAvatarInputRef.current.value = '';
-    }
-  };
+  const isProfileActive = cleanPath === '/profile' || cleanPath.startsWith('/profile/');
 
   // Global event listeners for opening/toggling menu from BigBang West button
   useEffect(() => {
@@ -644,17 +609,13 @@ export default function LeftSidebarNav() {
         onMouseLeave={() => setHoveredNavPath(null)}
         aria-label={isRecommendedTop1 ? `${label} (현재 추천 1순위)` : label}
         className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
-          isActive || isHovered || isRecommendedTop1 ? 'scale-105' : 'hover:scale-105 active:scale-95'
+          isActive || isHovered ? 'scale-105' : 'hover:scale-105 active:scale-95'
         }`}
         style={{
           backgroundColor: isActive
             ? isLight
               ? `${color}24`
               : `${color}28`
-            : isRecommendedTop1
-            ? isLight
-              ? `${color}18`
-              : `${color}20`
             : isHovered
             ? isLight
               ? `${color}16`
@@ -662,11 +623,9 @@ export default function LeftSidebarNav() {
             : isLight
             ? 'rgba(255, 255, 255, 0.78)'
             : 'rgba(255, 255, 255, 0.04)',
-          border: `${isRecommendedTop1 || isActive ? '1.5px' : '1px'} solid ${
+          border: `${isActive ? '1.5px' : '1px'} solid ${
             isActive
               ? `${color}95`
-              : isRecommendedTop1
-              ? `${color}88`
               : isHovered
               ? `${color}65`
               : isLight
@@ -675,10 +634,6 @@ export default function LeftSidebarNav() {
           }`,
           boxShadow: isActive
             ? `0 0 16px ${color}45`
-            : isRecommendedTop1
-            ? isLight
-              ? `0 0 14px ${color}40, inset 0 0 8px ${color}18`
-              : `0 0 16px ${color}55, inset 0 0 10px ${color}24`
             : isHovered
             ? `0 0 14px ${color}30`
             : isLight
@@ -718,22 +673,22 @@ export default function LeftSidebarNav() {
           className="absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none"
           style={{
             background: `radial-gradient(circle at center, ${color}35 0%, ${color}10 50%, transparent 75%)`,
-            opacity: isActive || isHovered || isRecommendedTop1 ? 1 : 0,
+            opacity: isActive || isHovered ? 1 : 0,
           }}
         />
 
-        {/* Icon Glyph with Theme Color & Glowing Drop Shadow on Hover / Active / Recommended #1 */}
+        {/* Icon Glyph with Theme Color & Glowing Drop Shadow on Hover / Active */}
         <Icon
           size={20}
           style={{
-            color: isActive || isHovered || isRecommendedTop1 ? color : undefined,
+            color: isActive || isHovered ? color : undefined,
             filter:
-              isActive || isHovered || isRecommendedTop1
+              isActive || isHovered
                 ? `drop-shadow(0 0 8px ${color})`
                 : undefined,
           }}
           className={`relative z-10 transition-all duration-200 ${
-            isActive || isHovered || isRecommendedTop1
+            isActive || isHovered
               ? 'scale-110'
               : isLight
               ? 'text-slate-600 group-hover:text-slate-900'
@@ -894,26 +849,28 @@ export default function LeftSidebarNav() {
                   isLight ? 'border-amber-900/15' : 'border-white/10'
                 }`}
               >
-                {/* User Profile Button with Photo Support */}
+                {/* User Profile Button -> Navigates to Epilogue Profile (/profile) */}
                 <div className="relative group w-10 h-10 shrink-0">
-                  <input
-                    ref={sidebarAvatarInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleQuickAvatarUpload}
-                  />
-
                   <button
                     type="button"
-                    onClick={() => sidebarAvatarInputRef.current?.click()}
+                    onClick={() => {
+                      try {
+                        sessionStorage.setItem('prism_target_tab', 'profile');
+                        window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
+                      } catch (_) {}
+                      handleNavigate('/profile');
+                    }}
                     className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
-                      isLight
+                      isProfileActive
+                        ? isLight
+                          ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
+                          : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
+                        : isLight
                         ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
                         : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
                     }`}
-                    aria-label="내 사진 변경"
-                    title="내 사진 변경 (클릭하여 사진 선택)"
+                    aria-label="내 프로필 및 사진 설정"
+                    title="내 프로필 및 사진 설정"
                   >
                     {userAvatarUrl ? (
                       <img
@@ -924,11 +881,6 @@ export default function LeftSidebarNav() {
                     ) : (
                       <User size={16} className="group-hover:scale-110 transition-transform" />
                     )}
-
-                    {/* Hover camera overlay on photo */}
-                    <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white rounded-xl pointer-events-none">
-                      <Camera size={13} className="text-amber-300" />
-                    </div>
                   </button>
 
                   {/* Desktop Hover Tooltip */}
@@ -948,7 +900,7 @@ export default function LeftSidebarNav() {
                       {userNickname}
                     </span>
                     <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
-                      클릭하여 사진 변경
+                      내 프로필 · 사진 설정
                     </span>
                   </div>
                 </div>

@@ -239,20 +239,20 @@ const FEATURE_APPS: FeatureAppMeta[] = [
   },
   {
     id: 'key',
-    name: 'KEY 마음약방',
-    shortName: 'Key 실천 연습',
-    featureTitle: '40가지 불안 치유 연습실 & Dr. Z 임상 솔루션',
+    name: 'KEY 개운 성전',
+    shortName: 'Key 개운 리추얼',
+    featureTitle: '40가지 개운(開運) 리추얼 & 오행 파동 정화',
     path: '/key',
     iconText: '🔑',
     runeSymbol: 'ᛟ',
     runeName: 'Othala',
     color: '#38bdf8',
     glowColor: 'rgba(56, 189, 248, 0.9)',
-    description: '불안, 걱정, 공황, 신체 긴장을 즉각 다스리는 40가지 수용전념치료(ACT) 행동 실천 연습실',
-    actionLabel: 'Key 실천 연습실 도약',
+    description: '막힌 운기와 액운을 비워내고 행운의 파동을 채우는 40가지 개운(開運) 실천 리추얼 & 소원 노트',
+    actionLabel: 'Key 개운 성전 도약',
     keywords: [
-      '불안', '걱정', '공황', '초조', '두려움', '스트레스', '긴장', '마음약방', '처방', '연습',
-      '실천', '키', 'key', '저커먼', '인지치료', 'act', '호흡연습', '신체감각', '마음챙김', '접지', '탈융합'
+      '개운', '액운', '운기', '소원', '정화', '불안', '걱정', '초조', '스트레스', '긴장', '마음약방', '처방', '연습',
+      '실천', '키', 'key', '오행', '파동', '호흡', '명상', '부적', '리추얼'
     ],
   },
 ];
@@ -410,9 +410,9 @@ export function LucyResponseRecommendation({
 
     const keyFeature: FeatureAppMeta = {
       id: 'key',
-      name: 'KEY 마음약방',
-      shortName: `연습 ${bestEx.index}. ${bestEx.title}`,
-      featureTitle: `40대 치유 연습 중 맞춤 추천: 연습 ${bestEx.index}. ${bestEx.title} (${bestEx.page}쪽)`,
+      name: 'KEY 개운 성전',
+      shortName: `개운법 ${bestEx.index}. ${bestEx.title}`,
+      featureTitle: `40대 개운 리추얼 맞춤 처방: 개운법 ${bestEx.index}. ${bestEx.title}`,
       path: `/key?ex=${bestEx.globalIndex}`,
       iconText: bestEx.icon || '🔑',
       runeSymbol: 'ᛟ',
@@ -420,11 +420,11 @@ export function LucyResponseRecommendation({
       color: '#38bdf8',
       glowColor: 'rgba(56, 189, 248, 0.9)',
       description: `[${bestEx.tag}] ${bestEx.purpose}`,
-      actionLabel: `실천`,
+      actionLabel: `개운 실천`,
       keywords: [],
     };
 
-    const reasonText = `[${bestEx.tag}·${primaryChannel.badgeLabel}] ${primaryChannel.shortName} 채널 × Key ${bestEx.title} 맞춤 연계`;
+    const reasonText = `[${bestEx.tag}·${primaryChannel.badgeLabel}] ${primaryChannel.shortName} 채널 × Key 개운법(${bestEx.title}) 맞춤 연계`;
 
     return {
       recommendedChannel: primaryChannel,

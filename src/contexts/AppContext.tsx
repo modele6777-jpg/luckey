@@ -11,6 +11,7 @@ import { invokeLLM, invokeLLMStream, PERSONAS, type Message, getCrossAppRecentDi
 import { buildPrismOmniscientContext } from '../lib/prismOmniSync';
 import { calculateDetailedSaju } from '../lib/sajuAnalysis';
 import { buildUserNatalSummary, formatRelationshipsContext } from '../lib/astrologyAnalysis';
+import { selectOptimalDivinationTools, type SevenThemeChannel } from '../lib/fifteenDivinationTools';
 // Heavy wisdom engines are dynamically imported on first chat use to reduce initial bundle parse time
 // import { buildEarlyBuddhismSystemPrompt } from '../lib/earlyBuddhismWisdom';
 // import { buildGnosticSystemPrompt } from '../lib/gnosticWisdom';
@@ -1707,6 +1708,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // 📖 Append Permanent Background Memory & Long-term Episodic Archive
     systemPrompt += `\n\n${buildPermanentMemoryPromptContext()}`;
 
+    // 🔮 15대 운명학 도구 자동 선별 주입 (일반/채널: 1~3개 핵심 도구 선별, 마스터 모드: 15개 도구 전원 총동원 비교 분석)
+    const hasDivinationInjection =
+      options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
+      options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원');
+    if (!hasDivinationInjection) {
+      const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
+      const isMasterCall = options?.mode === 'master' || activeThemeList.length === 7;
+      const toolSelection = selectOptimalDivinationTools(text, activeThemeList, profile, isMasterCall);
+      if (!toolSelection.isCasualMessage && toolSelection.promptInjection) {
+        systemPrompt += `\n\n${toolSelection.promptInjection}`;
+      }
+    }
+
     if (options?.extraSystemContext) {
       systemPrompt += `\n\n${options.extraSystemContext}`;
     }
@@ -1728,8 +1742,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 4. [말투 (반말 100% 절대 고정)]: 루시(Lucy)는 어떤 상황, 어떤 질문, 어떤 채널에서든 예외 없이 100% 항상 친근하고 다정한 친구 같은 '반말'만 사용해야 해. 절대로 존댓말(~요, ~습니다, ~해요, ~해 드려요, ~할게요, ~인가요 등)을 섞거나 혼용하지 마. 처음부터 끝까지 완전한 반말 구어체(~야, ~어, ~했어, ~지, ~네, ~잖아, ~자, ~해 등)로만 일관되게 대답해.
 5. [🎨 AI 이미지 생성 및 원화 그리기 지침]: 사용자가 그림, 일러스트, 이미지, 아트워크 등을 그려달라고 요청할 때만 다음 형식의 고화질 이미지 마크다운 태그를 답변 본문에 포함해줘:
    ![이미지 설명](https://image.pollinations.ai/prompt/영문_상세_프롬프트?width=768&height=576&seed=랜덤숫자&nologo=true&model=flux)
-6. [🔑 Key 마음약방 40가지 불안 치유 연습 추천 및 상호 연동]:
-   - 사용자가 불안, 걱정, 공황, 초조, 신체 긴장, 감정 압박을 호소하거나 Key 마음약방 관련 질문을 할 때만 40가지 연습 중 가장 잘 맞는 '단 하나의 맞춤 실천 연습'을 추천해줘.`;
+6. [🔑 Key 개운(開運) 성전 40가지 개운 리추얼 추천 및 상호 연동]:
+   - 사용자가 막힌 운기, 불안, 걱정, 답답함, 액운을 호소하거나 Key 개운 성전 관련 질문을 할 때만 40가지 개운 리추얼 중 가장 잘 맞는 '단 하나의 맞춤 개운 실천법'을 운명학적 개운(開運) 관점으로 자연스럽게 추천해줘.`;
 
     // 🎯 [최우선 적용] 모드별 답변 길이 규칙 (수다 짧게 / 7대채널 보통 / 마스터 길게)
     systemPrompt += `\n\n${responseProfile.rule}`;

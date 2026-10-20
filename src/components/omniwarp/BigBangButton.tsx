@@ -908,9 +908,9 @@ export function BigBangButton() {
               themeColor: '#0ea5e9',
               eventHorizonMode: 'blackhole',
               previewLabel: textToToss
-                ? `[Key 토스] "${textToToss.slice(0, 16)}..." ➔ 40가지 연습 처방`
-                : (isKeySite ? '[더블탭 귀환] 프리즘 홈' : '[더블탭 도약] Key 마음약방'),
-              previewDescription: '제이미 저커먼 도서 연동 마음 치유 동반자 & 40가지 소매틱 연습',
+                ? `[Key 개운 토스] "${textToToss.slice(0, 16)}..." ➔ 40가지 개운 리추얼`
+                : (isKeySite ? '[더블탭 귀환] 프리즘 홈' : '[더블탭 도약] Key 개운 성전'),
+              previewDescription: '막힌 운을 여는 40가지 개운(開運) 리추얼 & 오행 정화 호흡 · 소원 노트',
             },
             context: customContext || serializeCurrentView(location),
             metrics: customMetrics || { phase: 'blackhole' },

@@ -13,7 +13,6 @@ import { getTodayDateKey, isTimestampToday } from './dailyCache';
 import {
   forceResetUnifiedChatHistory,
   createDefaultGreeting,
-  hasCompletedFirstLucyVisitToday,
   isGreetingMessage,
   type UnifiedMessage,
   type PersonaType,
@@ -146,7 +145,6 @@ export function processDailyChatArchival(
 
   const hasPastUserMsgs = pastMessages.some((m) => m.role === 'user' && m.content);
   const hasPastMsgs = pastMessages.length > 0;
-  const firstVisitDoneToday = hasCompletedFirstLucyVisitToday();
 
   // 날짜가 바뀌지 않았고 과거 메시지도 없는 경우
   if (!isDateShifted && !hasPastMsgs) {
@@ -158,10 +156,6 @@ export function processDailyChatArchival(
       // 실제 대화가 있으면 인사말 제거
       const withoutGreet = todayMessages.filter((m) => !isGreetingMessage(m));
       return { messages: withoutGreet, wasArchived: false };
-    }
-    if (firstVisitDoneToday) {
-      const withoutGreet = todayMessages.filter((m) => !isGreetingMessage(m));
-      return { messages: withoutGreet, wasArchived: withoutGreet.length !== todayMessages.length };
     }
     return {
       messages: todayMessages.length > 0 ? todayMessages : [createDefaultGreeting('lucy', userName)],
@@ -201,15 +195,7 @@ export function processDailyChatArchival(
     };
   }
 
-  // 4. 오늘 첫 루시채팅 방문이 이미 끝난 상태라면 빈 캔버스 반환, 아직 첫 방문 전이라면 오늘의 첫 인사말 준비
-  if (firstVisitDoneToday) {
-    return {
-      messages: [],
-      wasArchived: true,
-      archivedDate: lastSessionDate,
-    };
-  }
-
+  // 4. 오늘 실제 대화 기록이 없다면 기본 루시 인사말 표시
   const freshMorningGreeting = createDefaultGreeting('lucy', userName);
   return {
     messages: [freshMorningGreeting],
@@ -242,11 +228,11 @@ ${formattedList}
 
 /**
  * 사용자가 수동으로 '대화 초기화'를 실행할 때,
- * 현재 대화를 영구 기억 아카이브에 먼저 안전하게 백업 저장한 뒤 스토리지와 대화창을 초기화합니다.
+ * 현재 대화를 영구 기억 아카이브에 먼저 안전하게 백업 저장한 뒤 기본 루시 인사말로 대화창을 초기화합니다.
  */
 export function archiveAndResetChat(
   messages: UnifiedMessage[],
-  _nickname: string = '제제',
+  nickname: string = '제제',
   targetPersona: PersonaType = 'lucy'
 ): UnifiedMessage[] {
   try {
@@ -262,5 +248,5 @@ export function archiveAndResetChat(
   } catch (e) {
     console.warn('[ChatMemoryArchive] Failed to archive on manual reset:', e);
   }
-  return forceResetUnifiedChatHistory(targetPersona);
+  return forceResetUnifiedChatHistory(targetPersona, nickname);
 }

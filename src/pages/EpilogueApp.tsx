@@ -22,6 +22,9 @@ import {
   RefreshCw,
   LogOut,
   BookOpen,
+  Camera,
+  Upload,
+  RotateCcw,
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { useBinauralBeat } from '@/hooks/useBinauralBeat';
@@ -32,6 +35,7 @@ import { loadProfileFromAllVaults, saveProfileToAllVaults } from '@/lib/profileV
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
 import { type UserProfile, mergeUserProfiles } from '@/lib/sharedState';
 import { cleanFirestoreData } from '@/lib/sharedStateSync';
+import { compressImageToDataUrl } from '@/utils/imageCompress';
 import { SajuCardView } from '@/components/SajuCardView';
 import { db, doc, setDoc, serverTimestamp } from '@/lib/firebase';
 import { EpilogueDiaryView } from '@/components/epilogue/EpilogueDiaryView';
@@ -195,6 +199,14 @@ export default function EpilogueApp() {
       setActiveMode('profile');
     } else if (location === '/chronicle') {
       setActiveMode('synergy');
+    } else if (location === '/epilogue') {
+      const targetTab = sessionStorage.getItem('prism_target_tab');
+      if (targetTab === 'profile' || targetTab === 'synergy' || targetTab === 'diary') {
+        sessionStorage.removeItem('prism_target_tab');
+        setActiveMode(targetTab);
+      } else {
+        setActiveMode('diary');
+      }
     }
   }, [location]);
 
@@ -241,7 +253,7 @@ export default function EpilogueApp() {
       window.removeEventListener('prism-tab-change', handleTabChange);
       window.removeEventListener('nav-click-active', handleNavClick);
     };
-  }, []);
+  }, [location, navigate]);
 
   useScrollToTopOnChange([activeMode]);
 
@@ -350,6 +362,7 @@ export default function EpilogueApp() {
     gender: (initialProfile?.basic?.gender || '') as '' | 'male' | 'female' | 'other',
     birthCity: initialProfile?.basic?.birthCity || '',
     lunarSolar: (initialProfile?.basic?.lunarSolar || 'solar') as 'solar' | 'lunar',
+    avatarUrl: initialProfile?.basic?.avatarUrl || '',
   });
   const [fate, setFate] = useState({
     fateInterests: initialProfile?.fate?.fateInterests || ([] as string[]),
@@ -375,14 +388,93 @@ export default function EpilogueApp() {
     artMedium: initialProfile?.art?.artMedium || ([] as string[]),
   });
 
+  const avatarFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingAvatar(true);
+      const compressedDataUrl = await compressImageToDataUrl(file, 320, 0.85);
+      setBasic((prev) => ({ ...prev, avatarUrl: compressedDataUrl }));
+
+      const existingProfile = sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile() || {};
+      const basicData: any = { ...existingProfile.basic, ...basic, avatarUrl: compressedDataUrl };
+      if (!basicData.gender) delete basicData.gender;
+      const updatedProfile = mergeUserProfiles(
+        existingProfile,
+        {
+          basic: basicData,
+        },
+        true
+      );
+      if (!updatedProfile.basic) updatedProfile.basic = {};
+      updatedProfile.basic.avatarUrl = compressedDataUrl;
+
+      saveProfileToAllVaults(updatedProfile);
+      setPersistentUserProfile(updatedProfile);
+      updateSharedState({ userProfile: updatedProfile }, 'profile').catch(() => {});
+      window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: { userProfile: updatedProfile } }));
+
+      if (firebaseUser?.uid && firebaseUser.uid !== 'developer-bypass-uid') {
+        const cleanProfile = cleanFirestoreData(updatedProfile);
+        const userDocRef = doc(db, 'sharedState', firebaseUser.uid);
+        const profileDocRef = doc(db, 'userProfiles', firebaseUser.uid);
+        Promise.all([
+          setDoc(userDocRef, { userProfile: cleanProfile, updatedAt: serverTimestamp() }, { merge: true }),
+          setDoc(profileDocRef, { ...cleanProfile, updatedAt: serverTimestamp() }, { merge: true }),
+        ]).catch(() => {});
+      }
+    } catch (err) {
+      console.error('[Profile] Failed to compress avatar:', err);
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarFileInputRef.current) avatarFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setBasic((prev) => ({ ...prev, avatarUrl: '' }));
+    const existingProfile = sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile() || {};
+    const basicData: any = { ...existingProfile.basic, ...basic, avatarUrl: '' };
+    if (!basicData.gender) delete basicData.gender;
+    const updatedProfile = mergeUserProfiles(
+      existingProfile,
+      {
+        basic: basicData,
+      },
+      true
+    );
+    if (!updatedProfile.basic) updatedProfile.basic = {};
+    updatedProfile.basic.avatarUrl = '';
+
+    saveProfileToAllVaults(updatedProfile);
+    setPersistentUserProfile(updatedProfile);
+    updateSharedState({ userProfile: updatedProfile }, 'profile').catch(() => {});
+    window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: { userProfile: updatedProfile } }));
+
+    if (firebaseUser?.uid && firebaseUser.uid !== 'developer-bypass-uid') {
+      const cleanProfile = cleanFirestoreData(updatedProfile);
+      const userDocRef = doc(db, 'sharedState', firebaseUser.uid);
+      const profileDocRef = doc(db, 'userProfiles', firebaseUser.uid);
+      Promise.all([
+        setDoc(userDocRef, { userProfile: cleanProfile, updatedAt: serverTimestamp() }, { merge: true }),
+        setDoc(profileDocRef, { ...cleanProfile, updatedAt: serverTimestamp() }, { merge: true }),
+      ]).catch(() => {});
+    }
+  };
+
   useEffect(() => {
-    const handleProfileUpdate = () => {
+    const handleProfileUpdate = (e?: any) => {
       // 입력 중인 사용자 포커스가 있을 경우 외부/디바운스 이벤트에 의한 덮어쓰기 방지
       const activeEl = document.activeElement;
       const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
       if (isInputFocused) return;
 
-      const profile = sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile();
+      const detailProfile = (e as CustomEvent)?.detail?.userProfile || (e as CustomEvent)?.detail;
+      const profile = detailProfile || sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile();
       if (!profile) return;
       if (profile.basic) {
         const cleanBasic = { ...profile.basic };
@@ -463,10 +555,14 @@ export default function EpilogueApp() {
         ? basic.nickname.trim()
         : '제제';
       profile.basic.nickname = safeNick;
+      if (typeof basic.avatarUrl === 'string') {
+        profile.basic.avatarUrl = basic.avatarUrl;
+      }
 
       // 1. 즉시 로컬 볼트 및 브라우저 스토리지에 저장 (0ms 오프라인 보장)
       saveProfileToAllVaults(profile);
       setPersistentUserProfile(profile);
+      window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: { userProfile: profile } }));
 
       // 2. 네트워크 동기화가 UI 저장 상태를 무한히 붙잡지 않도록 세이프티 타임아웃(3.5초) 적용
       const syncTimeout = new Promise<void>((resolve) => {
@@ -506,17 +602,20 @@ export default function EpilogueApp() {
     }
   };
 
-  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
+  // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화 (Diary / Profile / CHRONICLE)
   const { swipeHandlers: epilogueSwipeHandlers } = useSwipeableTabs<EpilogueSwipeTab>({
     tabs: EPILOGUE_SWIPE_TABS,
     activeTab: activeMode,
     onTabChange: (newTab) => {
-      if (activeMode === 'profile' && newTab !== 'profile') {
-        handleSave(true);
-      }
       setActiveMode(newTab);
+      if (newTab === 'profile' && location !== '/profile') {
+        navigate('/profile');
+      } else if (newTab === 'diary' && location !== '/epilogue') {
+        navigate('/epilogue');
+      } else if (newTab === 'synergy' && location !== '/chronicle') {
+        navigate('/chronicle');
+      }
     },
-    enabled: true,
   });
 
   
@@ -525,9 +624,81 @@ export default function EpilogueApp() {
 
   const renderSection = () => {
     switch (currentSection) {
-      case 0: // 기본 정보
+      case 0: { // 기본 정보
+        const effectiveAvatarUrl = basic.avatarUrl || firebaseUser?.photoURL || '';
+        const isUsingGoogleAvatar = !basic.avatarUrl && Boolean(firebaseUser?.photoURL);
         return (
           <div className="space-y-4 animate-in fade-in duration-300">
+            {/* 프로필 사진 변경 카드 (1단계 최상단) */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center gap-4 backdrop-blur-md">
+              <div className="flex items-center gap-4">
+                <div className="relative group/avatar shrink-0">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-white/5 border-2 border-purple-400/40 shadow-[0_0_18px_rgba(168,85,247,0.2)] flex items-center justify-center">
+                    {effectiveAvatarUrl ? (
+                      <img
+                        src={effectiveAvatarUrl}
+                        alt="프로필 사진"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User size={30} className="text-purple-300/80" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => avatarFileInputRef.current?.click()}
+                    className="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer"
+                    title="프로필 사진 변경"
+                  >
+                    <Camera size={16} className="mb-0.5 text-purple-300" />
+                    <span className="text-[10px] font-bold">변경</span>
+                  </button>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-sm font-bold text-white/95">프로필 사진</h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono font-bold border border-purple-400/30">
+                      {basic.avatarUrl ? '직접 등록됨' : isUsingGoogleAvatar ? '구글 계정 사진 연동됨' : '기본 아이콘'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/50 leading-relaxed">
+                    좌측 사이드바와 프로필에 표시될 나만의 사진입니다. 직접 등록하지 않으면 연동된 구글 계정 사진이 우선 표시됩니다.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 sm:ml-auto shrink-0">
+                <input
+                  ref={avatarFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarFileSelect}
+                />
+                <button
+                  type="button"
+                  disabled={isUploadingAvatar}
+                  onClick={() => avatarFileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-500/25 hover:bg-purple-500/35 text-purple-200 border border-purple-400/40 transition-all cursor-pointer active:scale-95"
+                >
+                  <Upload size={13} />
+                  <span>{isUploadingAvatar ? '처리 중...' : basic.avatarUrl ? '사진 변경' : '사진 등록'}</span>
+                </button>
+                {basic.avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-white/10 transition-all cursor-pointer active:scale-95"
+                    title="직접 등록한 사진 삭제 (구글 프로필 또는 기본 아이콘으로 복원)"
+                  >
+                    <RotateCcw size={13} />
+                    <span>초기화</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
             <InputField
               label="실명 *"
               value={basic.name}
@@ -608,6 +779,7 @@ export default function EpilogueApp() {
             </div>
           </div>
         );
+      }
       case 1: // 운명 관심사
         return (
           <div className="space-y-5 animate-in fade-in duration-300">
@@ -818,45 +990,40 @@ export default function EpilogueApp() {
         </div>
       </motion.div>
 
-      {/* Top Right Cloud Sync Status Indicator - 프로필 화면에서는 상단 배지 숨김 */}
-      <AnimatePresence>
-        {activeMode !== 'profile' && (
-          <motion.div
-            key="top-cloud-sync-badge"
-            initial={{ y: -8, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -8, opacity: 0 }}
-            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed top-safe-2 right-2 sm:right-4 md:top-safe-4 md:right-6 pointer-events-auto z-[110] flex items-center gap-2"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setActiveMode('profile');
-                setCurrentSection(0);
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-sans font-bold backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 ${
-                firebaseUser
-                  ? 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300 hover:bg-emerald-500/20'
-                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-              }`}
-              title={firebaseUser ? `${firebaseUser.displayName || '구글 사용자'} 계정으로 실시간 동기화 중 (클릭 시 즉시 동기화)` : '게스트 모드 (클릭하여 계정 연동 및 설정)'}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  firebaseUser
-                    ? 'bg-emerald-400 animate-pulse ring-2 ring-emerald-400/40'
-                    : 'bg-amber-400 ring-2 ring-amber-400/40'
-                }`}
-              />
-              <span className="hidden sm:inline">{firebaseUser ? (syncingDevices ? '동기화 중...' : '클라우드 동기화') : '게스트 (동기화 설정)'}</span>
-              <span className="sm:hidden">{firebaseUser ? (syncingDevices ? '동기화...' : '동기화됨') : '게스트'}</span>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Top Right Cloud Sync Status Indicator */}
+      <motion.div
+        initial={{ y: -8, opacity: 0.88 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed top-safe-2 right-2 sm:right-4 md:top-safe-4 md:right-6 pointer-events-auto z-[110] flex items-center gap-2"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setActiveMode('profile');
+            setCurrentSection(0);
+            if (location !== '/profile') navigate('/profile');
+          }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-sans font-bold backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 ${
+            firebaseUser
+              ? 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300 hover:bg-emerald-500/20'
+              : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+          }`}
+          title={firebaseUser ? `${firebaseUser.displayName || '구글 사용자'} 계정으로 실시간 동기화 중 (클릭 시 프로필 설정 이동)` : '게스트 모드 (클릭하여 계정 연동 및 프로필 설정)'}
+        >
+          <span
+            className={`w-2 h-2 rounded-full ${
+              firebaseUser
+                ? 'bg-emerald-400 animate-pulse ring-2 ring-emerald-400/40'
+                : 'bg-amber-400 ring-2 ring-amber-400/40'
+            }`}
+          />
+          <span className="hidden sm:inline">{firebaseUser ? (syncingDevices ? '동기화 중...' : '클라우드 동기화') : '게스트 (동기화 설정)'}</span>
+          <span className="sm:hidden">{firebaseUser ? (syncingDevices ? '동기화...' : '동기화됨') : '게스트'}</span>
+        </button>
+      </motion.div>
 
-      {/* Navigation Subnav Menu (Diary & Synergy & Profile Sections) */}
+      {/* Navigation Subnav Menu (Epilogue: Diary / CHRONICLE / Profile) */}
       <motion.nav
         initial={{ y: -10, x: '-50%', opacity: 0.88 }}
         animate={{ y: 0, x: '-50%', opacity: 1 }}
@@ -864,9 +1031,9 @@ export default function EpilogueApp() {
         className={`prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
       >
         {[
-          { id: 'diary', icon: BookOpen, label: 'Diary' },
-          { id: 'synergy', icon: Sparkles, label: 'CHRONICLE' },
-          { id: 'profile', icon: User, label: 'Profile' },
+          { id: 'diary', icon: BookOpen, label: 'Diary', path: '/epilogue' },
+          { id: 'synergy', icon: Sparkles, label: 'CHRONICLE', path: '/chronicle' },
+          { id: 'profile', icon: User, label: 'Profile', path: '/profile' },
         ].map((item) => {
           const isActive = activeMode === item.id;
           const Icon = item.icon;
@@ -875,10 +1042,10 @@ export default function EpilogueApp() {
               key={item.id}
               type="button"
               onClick={() => {
-                if (activeMode === 'profile' && item.id !== 'profile') {
-                  handleSave(true);
+                setActiveMode(item.id as 'diary' | 'profile' | 'synergy');
+                if (location !== item.path) {
+                  navigate(item.path);
                 }
-                setActiveMode(item.id as any);
               }}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold font-sans transition-all duration-300 whitespace-nowrap cursor-pointer ${
                 isActive

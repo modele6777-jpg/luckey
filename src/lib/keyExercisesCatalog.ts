@@ -104,11 +104,12 @@ export interface KeyExerciseValidationResult {
  * 루시 시스템 프롬프트에 주입할 Key 실천 기법 동기화 지침을 생성합니다.
  */
 export function buildKeyExercisePromptGuideline(targetExercise: KeyExerciseItem): string {
-  return `[🔮 LucKey 연계 추천 기법 동기화 필수 지침]
-- 이번 답변에서 사용자의 고민을 치유하기 위해 추천할 실천 기법은 반드시 40대 마음약방 중 **'연습 ${targetExercise.globalIndex}. ${targetExercise.title}'**(${targetExercise.subtitle})이어야 합니다.
+  return `[🔮 LucKey 연계 개운(開運) 리추얼 동기화 필수 지침]
+- 이번 답변에서 사용자의 막힌 운기를 틔우고 마음을 정화하기 위해 추천할 개운법은 반드시 Key 개운 성전 40대 리추얼 중 **'연습 ${targetExercise.globalIndex}. ${targetExercise.title}'**(${targetExercise.subtitle})이어야 합니다.
+- 임상심리학 용어 대신 '막힌 운을 여는 개운(開運) 실천법 / 액운 정화 리추얼'이라는 운명학적 관점으로 자연스럽게 권유해 주세요.
 - 답변 말미의 실천 권유에서 반드시 다음과 같은 명시적 표준 표기를 포함해 주세요:
   [추천 기법: 연습 ${targetExercise.globalIndex}. ${targetExercise.title}]
-- 이를 통해 답변 하단의 LucKey 연계 추천 카드와 100% 동일한 기법을 추천하도록 일관성을 유지해야 합니다.`;
+- 이를 통해 답변 하단의 LucKey 연계 추천 카드와 100% 동일한 개운법을 추천하도록 일관성을 유지해야 합니다.`;
 }
 
 /**

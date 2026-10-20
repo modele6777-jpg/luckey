@@ -225,14 +225,9 @@ export function mergeUnifiedMessages(
 
   const hasPrimaryUser = hasRealUserConversation(cleanPrimary);
   const hasIncomingUser = hasRealUserConversation(cleanIncoming);
-  const firstVisitDoneToday = hasCompletedFirstLucyVisitToday();
 
-  // 오늘 실제 유저 대화가 아직 없는 경우
+  // 오늘 실제 유저 대화가 아직 없는 경우: 항상 기본 루시 인사말 표시
   if (!hasPrimaryUser && !hasIncomingUser) {
-    // 오늘 이미 첫 루시채팅 진입을 마친 이후(재진입/초기화 이후)라면 인사말을 표시하지 않음
-    if (firstVisitDoneToday) {
-      return [];
-    }
     if (cleanPrimary.length > 0) return cleanPrimary;
     if (cleanIncoming.length > 0) return cleanIncoming;
     return [createDefaultGreeting()];
@@ -242,8 +237,8 @@ export function mergeUnifiedMessages(
   const map = new Map<string, UnifiedMessage>();
   const fallbackToKey = new Map<string, string>();
 
-  // 유저 대화가 있거나 첫 방문이 끝난 경우에는 인사말(greet-*)을 제외하고 병합
-  const shouldFilterGreet = hasPrimaryUser || hasIncomingUser || firstVisitDoneToday;
+  // 실제 유저 대화가 있는 경우 단독 기본 인사말(greet-*) 중복을 정리하거나 순서대로 유지
+  const shouldFilterGreet = hasPrimaryUser || hasIncomingUser;
 
   [...cleanPrimary, ...cleanIncoming].forEach((msg) => {
     if (shouldFilterGreet && isGreetingMessage(msg)) {
@@ -282,15 +277,13 @@ export function mergeUnifiedMessages(
   merged.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
 
   if (merged.length > 0) return merged;
-  return firstVisitDoneToday ? [] : [createDefaultGreeting()];
+  return [createDefaultGreeting()];
 }
 
 /**
- * 로컬스토리지에서 오늘의 대화 기록만 복원 (과거 날짜 기록은 자동 배제)
+ * 로컬스토리지에서 오늘의 대화 기록만 복원 (대화 기록이 없으면 기본 루시 인사말 반환)
  */
 export function loadSavedUnifiedMessages(): UnifiedMessage[] {
-  const firstVisitDoneToday = hasCompletedFirstLucyVisitToday();
-
   try {
     // 1. Primary V3
     const savedV3 = safeLocalStorage.getItem(STORAGE_KEYS.PRIMARY_V3);
@@ -301,7 +294,7 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
         if (hasRealUserConversation(todayOnly)) {
           return todayOnly.filter((m) => !isGreetingMessage(m));
         }
-        if (!firstVisitDoneToday && todayOnly.length > 0) {
+        if (todayOnly.length > 0) {
           return todayOnly;
         }
       }
@@ -315,6 +308,9 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
         const todayOnly = parsed.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
         if (hasRealUserConversation(todayOnly)) {
           return todayOnly.filter((m) => !isGreetingMessage(m));
+        }
+        if (todayOnly.length > 0) {
+          return todayOnly;
         }
       }
     }
@@ -351,7 +347,7 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
     console.error('[ChatSync] Failed to load chat history:', e);
   }
 
-  return firstVisitDoneToday ? [] : [createDefaultGreeting()];
+  return [createDefaultGreeting()];
 }
 
 /**
@@ -382,29 +378,31 @@ export function saveUnifiedMessagesSafely(messages: UnifiedMessage[]): void {
 }
 
 /**
- * 사용자가 수동으로 대화 기록을 초기화할 때 스토리지를 깨끗이 비움
- * (오늘 첫 방문 인사말은 이미 이루어졌으므로 수동 초기화 시에는 인사말을 다시 띄우지 않음)
+ * 사용자가 수동으로 대화 기록을 초기화할 때 스토리지를 비우고 기본 루시 인사말로 복원
  */
-export function forceResetUnifiedChatHistory(_targetPersona: PersonaType = 'lucy'): UnifiedMessage[] {
+export function forceResetUnifiedChatHistory(
+  targetPersona: PersonaType = 'lucy',
+  userName?: string
+): UnifiedMessage[] {
   markFirstLucyVisitCompletedToday();
   markDailyGreetingSpokenToday();
-  const emptyList: UnifiedMessage[] = [];
-  const jsonStr = JSON.stringify(emptyList);
+  const defaultList: UnifiedMessage[] = [createDefaultGreeting(targetPersona, userName)];
+  const jsonStr = JSON.stringify(defaultList);
   try {
     safeLocalStorage.setItem(STORAGE_KEYS.PRIMARY_V3, jsonStr);
     safeLocalStorage.setItem(STORAGE_KEYS.BACKUP_V3, jsonStr);
     safeLocalStorage.setItem('prism_unified_chat_history', jsonStr);
     safeLocalStorage.setItem(STORAGE_KEYS.LEGACY_OBJECT, JSON.stringify({
-      lucy: emptyList,
-      orange: emptyList,
-      trinity: emptyList,
-      aura: emptyList,
-      bluebird: emptyList,
-      muse: emptyList,
+      lucy: defaultList,
+      orange: defaultList,
+      trinity: defaultList,
+      aura: defaultList,
+      bluebird: defaultList,
+      muse: defaultList,
     }));
     safeLocalStorage.removeItem(STORAGE_KEYS.LEGACY_LUCY);
   } catch (e) {
     console.warn('[ChatSync] Failed to force reset chat history in storage:', e);
   }
-  return emptyList;
+  return defaultList;
 }
