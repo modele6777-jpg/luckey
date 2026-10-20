@@ -803,8 +803,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
           unpackAndHydrateLocalStorage(user.uid, mergedData, true);
 
-          // Restore and merge chat history across devices immediately on authentication
-          if (remoteChatSnap?.exists()) {
+          // Restore and merge chat history across devices immediately on authentication (skip if actively streaming a reply)
+          if (remoteChatSnap?.exists() && !Object.values(isGeneratingRef.current).some(Boolean)) {
             const chatData = remoteChatSnap.data();
             const rawChat = chatData?.unified || chatData?.messages;
             if (rawChat) {
@@ -821,7 +821,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 });
                 remoteList.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
               }
-              if (remoteList.length > 0) {
+              if (remoteList.length > 0 && !Object.values(isGeneratingRef.current).some(Boolean)) {
                 const rawNick = mergedData?.userProfile?.basic?.nickname?.trim();
                 const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
                 const remoteArchived = processDailyChatArchival(remoteList, nick);
@@ -1513,7 +1513,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ]
       : text;
 
-    // 1. Add user message
+    // 1. Lock generating state FIRST so background Firestore/storage/BroadcastChannel listeners never overwrite the in-flight message
+    if (abortControllersRef.current[sourcePersona]) {
+      try { abortControllersRef.current[sourcePersona]?.abort(); } catch (_) {}
+    }
+    const currentAbortController = new AbortController();
+    abortControllersRef.current[sourcePersona] = currentAbortController;
+
+    isGeneratingRef.current[sourcePersona] = true;
+    setIsGenerating(prev => ({ ...prev, [sourcePersona]: true }));
+
+    // 2. Add user message
     const userMsg: UnifiedMessage = { 
       id: 'msg-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8), 
       role: 'user', 
@@ -1525,25 +1535,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       mode: options?.mode
     };
     
-    // 즉시 로컬 스토리지에 질문 영구 보존 및 브로드캐스트 & 클라우드 즉시 푸시
+    // 즉시 로컬 스토리지에 질문 영구 보존 및 브로드캐스트 & 클라우드 비동기 푸시
     const currentStored = loadSavedUnifiedMessages();
     const cleanPrior = currentStored.filter(m => m.role !== 'model' || (typeof m.content === 'string' ? m.content.trim() !== '' : !!m.content));
     const nextCommitted = mergeUnifiedMessages(cleanPrior, [userMsg]);
     saveUnifiedMessagesSafely(nextCommitted);
 
-    if (chatBroadcastRef.current) {
-      chatBroadcastRef.current.postMessage({ messages: nextCommitted, timestamp: Date.now() });
-    }
-    pushChatThreadsToFirestore(nextCommitted, true);
-    updateSharedState({
-      chatHistory: nextCommitted.slice(-150)
-    }, 'lucy');
-
     // Create assistant message placeholder
     const assistMsgId = 'reply-' + Math.random().toString(36).substring(2, 9);
     let replyText = "";
 
-    // Append both user message and assistant placeholder directly to unified timeline
+    // Append both user message and assistant placeholder directly to unified timeline immediately
     setUnifiedMessages([
       ...nextCommitted,
       { 
@@ -1557,16 +1559,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         mode: options?.mode
       }
     ]);
-    
-    // 2. Set generating status and register AbortController
-    if (abortControllersRef.current[sourcePersona]) {
-      try { abortControllersRef.current[sourcePersona]?.abort(); } catch (_) {}
-    }
-    const currentAbortController = new AbortController();
-    abortControllersRef.current[sourcePersona] = currentAbortController;
 
-    isGeneratingRef.current[sourcePersona] = true;
-    setIsGenerating(prev => ({ ...prev, [sourcePersona]: true }));
+    if (chatBroadcastRef.current) {
+      chatBroadcastRef.current.postMessage({ messages: nextCommitted, timestamp: Date.now() });
+    }
+    pushChatThreadsToFirestore(nextCommitted, false);
+    void updateSharedState({
+      chatHistory: nextCommitted.slice(-150)
+    }, 'lucy');
 
     // Adaptive Activity Watchdog Timer:
     // Resets on incoming chunks. Allows up to 45s between chunks, and up to 180s total generation time.
@@ -1837,6 +1837,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         },
         onFinish: async (fullText: string) => {
+          if (watchdogTimer) {
+            clearTimeout(watchdogTimer);
+            watchdogTimer = null;
+          }
           if (pendingRaf !== null) {
             cancelAnimationFrame(pendingRaf);
             pendingRaf = null;
@@ -1920,7 +1924,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
           if (options?.onFinish) {
             try {
-              await options.onFinish(fullText, text, assistMsgId);
+              await options.onFinish(cleanFullText, text, assistMsgId);
             } catch (callbackErr) {
               console.warn("sendUnifiedMessage onFinish callback failed:", callbackErr);
             }
@@ -1928,6 +1932,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       });
     } catch (err: any) {
+      if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+      }
       if (pendingRaf !== null) {
         cancelAnimationFrame(pendingRaf);
         pendingRaf = null;

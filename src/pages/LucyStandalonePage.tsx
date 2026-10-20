@@ -2197,6 +2197,9 @@ export default function LucyStandalonePage() {
             const imageUrl = hasImage ? (msg.content as any[]).find((item: any) => item.type === 'image_url')?.image_url?.url : null;
             const rawTextContent = Array.isArray(msg.content) ? (msg.content as any[]).find((item: any) => item.type === 'text')?.text || '' : rawContent;
             const textContent = isUser ? cleanUserMessageDisplay(rawTextContent) : rawTextContent;
+            if (!isUser && !textContent.trim() && !imageUrl) {
+              return null;
+            }
             const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index);
 
             // 루시의 인사말인지 여부 정밀 판별

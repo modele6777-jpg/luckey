@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useTTSState } from '@/utils/tts';
+import { prepareNaturalSpeechText } from '@/utils/speechText';
 
 /**
  * Recursively extracts plain text content from any React node tree.
@@ -25,15 +26,16 @@ export function extractTextContent(node: React.ReactNode): string {
 
 /**
  * Clean string for fuzzy speech-to-text sentence alignment.
- * Normalizes ordinals/cardinals, speech idioms, punctuation, emojis, quotes, whitespace.
+ * Normalizes ordinals/cardinals, speech idioms, acronyms, symbols, punctuation, emojis, quotes, whitespace.
+ * Ensures 100% parity between raw UI text (including headings & bold text) and prepareNaturalSpeechText output.
  */
 export function cleanSentenceForMatching(s: string): string {
   if (!s) return '';
-  let str = String(s)
-    .replace(/\[(?:EMOTION|YOUTUBE|TOOL|IMAGE|PROMPT|STAGE|SOUL_UPDATE|CARD_DRAWN|SYSTEM):[\s\S]*?\]/gi, '')
-    .replace(/[*_~`#>\[\]()]/g, '');
+  // First pass through prepareNaturalSpeechText so symbols (%, ~, +, &, /, ->, =>, vs, AI, PRO, MBTI, etc.)
+  // are converted identically on both UI strings and TTS sentence chunks
+  let str = prepareNaturalSpeechText(String(s));
 
-  // 1. Ordinals & Numbers bidirectional normalization (TTS: 첫째, 1번 <-> UI: 1, 1.)
+  // Normalize ordinals & numbers bidirectionally (TTS: 첫째, 1번 <-> UI: 1, 1.)
   str = str
     .replace(/(?:첫째|첫번째|1번|일번)/g, '1')
     .replace(/(?:둘째|두번째|2번|이번)/g, '2')
@@ -46,14 +48,7 @@ export function cleanSentenceForMatching(s: string): string {
     .replace(/(?:아홉째|아홉번째|9번|구번)/g, '9')
     .replace(/(?:열째|열번째|10번|십번)/g, '10');
 
-  // 2. Acronyms normalization
-  str = str
-    .replace(/에이아이/gi, 'ai')
-    .replace(/유아이/gi, 'ui')
-    .replace(/유엑스/gi, 'ux')
-    .replace(/넘버/gi, 'no');
-
-  // 3. Keep only alphanumeric Korean/English/Numbers
+  // Keep only alphanumeric Korean/English/Numbers
   return str.replace(/[^가-힣a-zA-Z0-9]/g, '').toLowerCase();
 }
 
@@ -69,30 +64,35 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
   // 1. Direct equality
   if (cleanS === cleanA) return true;
 
-  // Length ratio check: prevents short labels, fragments, or single common words from matching long sentences
+  // Length ratio check: prevents short single-word fragments from falsely matching long sentences,
+  // while allowing headings or clauses split by TTS to match reliably.
   const minLen = Math.min(cleanS.length, cleanA.length);
   const maxLen = Math.max(cleanS.length, cleanA.length);
   const ratio = minLen / maxLen;
 
-  if (ratio < 0.6) return false;
+  // 2. Direct containment when lengths are reasonably close (or when a long sentence was split into clauses by TTS)
+  if (cleanA.includes(cleanS) || cleanS.includes(cleanA)) {
+    if (ratio >= 0.35) return true;
+    // Also allow if the shorter chunk is at least 8 chars (e.g., a long sentence split into clauses)
+    if (minLen >= 8 && (cleanS.includes(cleanA) || cleanA.includes(cleanS))) return true;
+  }
 
-  // 2. Direct containment with length similarity
-  if (cleanA.includes(cleanS) || cleanS.includes(cleanA)) return true;
+  if (ratio < 0.38) return false;
 
-  // 3. Substring & prefix alignment (handles slight TTS normalizations or trailing words)
-  if (cleanS.length >= 6 && cleanA.length >= 6 && Math.abs(cleanS.length - cleanA.length) <= 10) {
-    const prefixLen = Math.min(8, cleanS.length, cleanA.length);
+  // 3. Substring & prefix/suffix alignment (handles slight TTS normalizations or trailing words)
+  if (cleanS.length >= 4 && cleanA.length >= 4 && Math.abs(cleanS.length - cleanA.length) <= 16) {
+    const prefixLen = Math.min(6, cleanS.length, cleanA.length);
     const subA = cleanA.slice(0, prefixLen);
     const subS = cleanS.slice(0, prefixLen);
     if (cleanS.startsWith(subA) || cleanA.startsWith(subS)) return true;
   }
 
   // 4. Key phrase token overlap
-  if (cleanS.length >= 8 && cleanA.length >= 8 && Math.abs(cleanS.length - cleanA.length) <= 10) {
-    const tokensS = sentence
+  if (cleanS.length >= 5 && cleanA.length >= 5) {
+    const tokensS = prepareNaturalSpeechText(sentence)
       .replace(/[^가-힣a-zA-Z0-9\s]/g, ' ')
       .split(/\s+/)
-      .map(cleanSentenceForMatching)
+      .map((t) => cleanSentenceForMatching(t))
       .filter((t) => t.length >= 2);
 
     if (tokensS.length >= 2) {
@@ -100,7 +100,7 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
       for (const tok of tokensS) {
         if (cleanA.includes(tok)) matchedCount += 1;
       }
-      if (matchedCount / tokensS.length >= 0.75) {
+      if (matchedCount / tokensS.length >= 0.65) {
         return true;
       }
     }
@@ -112,10 +112,10 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
 /**
  * Premium highlighter marker styling:
  * Vivid warm amber glow that works gorgeously on both dark & light backgrounds,
- * perfectly readable across all typography sizes (headings h1~h6 to small body text).
+ * preserving parent font weight and size (crucial for h1~h6 headings and <strong> bold text).
  */
 export const TTS_HIGHLIGHT_CLASS =
-  'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] font-medium inline transition-all duration-300';
+  'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] inline transition-all duration-300';
 
 /**
  * Active Sentence Mark element with auto-scroll into view
@@ -123,9 +123,11 @@ export const TTS_HIGHLIGHT_CLASS =
 export function TTSHighlightMark({
   children,
   className = '',
+  isLight = false,
 }: {
   children: React.ReactNode;
   className?: string;
+  isLight?: boolean;
 }) {
   const markRef = useRef<HTMLElement>(null);
 
@@ -134,15 +136,19 @@ export function TTSHighlightMark({
       try {
         markRef.current.scrollIntoView({
           behavior: 'smooth',
-          block: 'center',
+          block: 'nearest',
           inline: 'nearest',
         });
       } catch (_) {}
     }
   }, []);
 
+  const themeClass = isLight
+    ? 'tts-active-sentence-highlight bg-amber-200/90 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-950 inline transition-all duration-300'
+    : 'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-50 inline transition-all duration-300';
+
   return (
-    <mark ref={markRef} className={`${TTS_HIGHLIGHT_CLASS} ${className}`}>
+    <mark ref={markRef} className={`${themeClass} ${className}`}>
       {children}
     </mark>
   );
@@ -155,6 +161,7 @@ export function TTSHighlightMark({
 export function highlightHeading(
   children: React.ReactNode,
   activeSentence: string | null | undefined,
+  isLight: boolean = false,
 ): React.ReactNode {
   if (!activeSentence || !children) return children;
 
@@ -162,84 +169,200 @@ export function highlightHeading(
   if (!fullText.trim()) return children;
 
   if (isSentenceActive(fullText, activeSentence)) {
-    return <TTSHighlightMark>{children}</TTSHighlightMark>;
+    return <TTSHighlightMark isLight={isLight}>{children}</TTSHighlightMark>;
   }
 
   return children;
 }
 
 /**
+ * Splits a mixed array of React child nodes (e.g., plain strings + <strong>bold</strong> + <em>italic</em>)
+ * at sentence boundaries (. ! ? 。 ！ ？ \n) so that any sentence containing inline bold/styled elements
+ * is grouped as a single unit and wrapped holistically in <TTSHighlightMark>.
+ */
+export function groupReactNodesIntoSentences(nodes: React.ReactNode[]): {
+  nodes: React.ReactNode[];
+  text: string;
+}[] {
+  const sentences: { nodes: React.ReactNode[]; text: string }[] = [];
+  let currentNodes: React.ReactNode[] = [];
+  let currentText = '';
+
+  const flushCurrent = () => {
+    if (currentNodes.length > 0 || currentText.length > 0) {
+      sentences.push({ nodes: currentNodes, text: currentText });
+      currentNodes = [];
+      currentText = '';
+    }
+  };
+
+  // Sentence boundary regex: matches ., !, ?, 。, ！, ？ (when not between digits like 3.14 and not a leading list number like "1. ") or newline
+  const splitStringBySentenceEnd = (str: string): { chunk: string; endedSentence: boolean }[] => {
+    const results: { chunk: string; endedSentence: boolean }[] = [];
+    let buf = '';
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      buf += ch;
+
+      if (ch === '\n') {
+        results.push({ chunk: buf, endedSentence: true });
+        buf = '';
+        continue;
+      }
+
+      if (/[.!?。！？]/.test(ch)) {
+        const prevChar = i > 0 ? str[i - 1] : (currentText.slice(-1) || '');
+        const nextChar = i + 1 < str.length ? str[i + 1] : '';
+
+        // Do not split on decimal points like 3.14
+        if (ch === '.' && /\d/.test(prevChar) && /\d/.test(nextChar)) {
+          continue;
+        }
+
+        // Do not split on leading ordinal numbers at the start of a sentence (e.g. "1. ")
+        const combinedSoFar = (currentText + buf).trim();
+        if (ch === '.' && /^\d+\.$/.test(combinedSoFar)) {
+          continue;
+        }
+
+        // Consume any immediately following closing quotes/brackets or duplicate punctuation
+        while (i + 1 < str.length && /[.!?。！？"'”’)\]]/.test(str[i + 1])) {
+          i++;
+          buf += str[i];
+        }
+        // Consume trailing spaces on the same line
+        while (i + 1 < str.length && str[i + 1] === ' ') {
+          i++;
+          buf += str[i];
+        }
+
+        results.push({ chunk: buf, endedSentence: true });
+        buf = '';
+      }
+    }
+
+    if (buf.length > 0) {
+      results.push({ chunk: buf, endedSentence: false });
+    }
+    return results;
+  };
+
+  const processNode = (node: React.ReactNode) => {
+    if (node === null || node === undefined || typeof node === 'boolean') {
+      return;
+    }
+
+    if (typeof node === 'string' || typeof node === 'number') {
+      const parts = splitStringBySentenceEnd(String(node));
+      for (const part of parts) {
+        currentNodes.push(part.chunk);
+        currentText += part.chunk;
+        if (part.endedSentence) {
+          flushCurrent();
+        }
+      }
+      return;
+    }
+
+    if (Array.isArray(node)) {
+      node.forEach(processNode);
+      return;
+    }
+
+    if (React.isValidElement(node)) {
+      const el = node as React.ReactElement<any>;
+      if (el.type === React.Fragment && el.props?.children) {
+        React.Children.toArray(el.props.children).forEach(processNode);
+        return;
+      }
+      if (el.type === 'br') {
+        currentNodes.push(el);
+        flushCurrent();
+        return;
+      }
+      // Inline element such as <strong>, <em>, <code>, <span>, <a>:
+      // Keep the element intact inside the current sentence group!
+      const elText = extractTextContent(el);
+      currentNodes.push(el);
+      currentText += elText;
+      const trimmedEl = elText.trim();
+      if (
+        /[.!?。！？]['"”’)\]]*$/.test(trimmedEl) &&
+        !/^\d+\.$/.test(trimmedEl)
+      ) {
+        flushCurrent();
+      }
+      return;
+    }
+  };
+
+  nodes.forEach(processNode);
+  flushCurrent();
+
+  return sentences;
+}
+
+/**
  * Recursively scans React children and wraps any sentence or heading matching the currently spoken TTS text with a highlighter marker.
- * When the active sentence changes or ends, previous highlighters are immediately cleared.
+ * Handles headings (h1~h6) and inline bold/styled elements (<strong>, <b>, <em>) seamlessly as a unified sentence highlight.
  */
 export function highlightSentencesInChildren(
   children: React.ReactNode,
   activeSentence: string | null | undefined,
   isHeading: boolean = false,
+  isLight: boolean = false,
 ): React.ReactNode {
-  if (!activeSentence) return children;
+  if (!activeSentence || !children) return children;
 
-  // If this block is a heading or subheading, treat as a single holistic title
+  // 1. If this block is a heading or subheading (h1~h6), treat as a single holistic title
   if (isHeading) {
-    return highlightHeading(children, activeSentence);
+    return highlightHeading(children, activeSentence, isLight);
   }
 
-  if (typeof children === 'string') {
-    if (!children.trim()) return children;
+  // 2. Check if the entire container text matches activeSentence holistically
+  // (e.g., a single-sentence paragraph or list item containing **bold** text)
+  const fullContainerText = extractTextContent(children);
+  if (!fullContainerText.trim()) return children;
 
-    // Split text into sentence tokens preserving delimiters (. ! ? \n)
-    const rawTokens = children.split(/([.!?。！？\n]+)/);
-    if (rawTokens.length <= 1) {
-      if (isSentenceActive(children, activeSentence)) {
-        return <TTSHighlightMark>{children}</TTSHighlightMark>;
-      }
-      return children;
+  const groupedSentences = groupReactNodesIntoSentences(React.Children.toArray(children));
+
+  if (groupedSentences.length <= 1) {
+    if (isSentenceActive(fullContainerText, activeSentence)) {
+      return <TTSHighlightMark isLight={isLight}>{children}</TTSHighlightMark>;
     }
+    return children;
+  }
 
-    const sentences: string[] = [];
-    for (let i = 0; i < rawTokens.length; i += 2) {
-      const body = rawTokens[i] || '';
-      const punct = rawTokens[i + 1] || '';
-      if (body || punct) {
-        sentences.push(body + punct);
-      }
+  // 3. Multi-sentence paragraph or block (may contain <strong> bold elements inside any sentence):
+  // Match each sentence group's aggregated text against activeSentence, and wrap the matching sentence group in a single <TTSHighlightMark>.
+  let anyGroupMatched = false;
+  const renderedGroups = groupedSentences.map((group, idx) => {
+    if (!anyGroupMatched && group.text.trim() && isSentenceActive(group.text, activeSentence)) {
+      anyGroupMatched = true;
+      return (
+        <TTSHighlightMark key={`sent-mark-${idx}`} isLight={isLight}>
+          {group.nodes.map((n, nIdx) => (
+            <React.Fragment key={nIdx}>{n}</React.Fragment>
+          ))}
+        </TTSHighlightMark>
+      );
     }
-
     return (
-      <>
-        {sentences.map((sent, idx) => {
-          if (isSentenceActive(sent, activeSentence)) {
-            return <TTSHighlightMark key={idx}>{sent}</TTSHighlightMark>;
-          }
-          return <React.Fragment key={idx}>{sent}</React.Fragment>;
-        })}
-      </>
+      <React.Fragment key={`sent-frag-${idx}`}>
+        {group.nodes.map((n, nIdx) => (
+          <React.Fragment key={nIdx}>{n}</React.Fragment>
+        ))}
+      </React.Fragment>
     );
+  });
+
+  if (anyGroupMatched) {
+    return <>{renderedGroups}</>;
   }
 
-  if (Array.isArray(children)) {
-    // If the combined text has only 1 sentence or is short, check holistic match
-    const combinedText = extractTextContent(children);
-    if (combinedText) {
-      const sentenceCount = combinedText.split(/[.!?。！？\n]+/).filter((s) => s.trim().length > 0).length;
-      if (sentenceCount <= 1 && isSentenceActive(combinedText, activeSentence)) {
-        return <TTSHighlightMark>{children}</TTSHighlightMark>;
-      }
-    }
-
-    return React.Children.map(children, (child) =>
-      highlightSentencesInChildren(child, activeSentence, false),
-    );
-  }
-
-  if (React.isValidElement(children)) {
-    // If element is a pure text container or inline tag, drill down
-    const element = children as React.ReactElement<any>;
-    if (element.props && element.props.children) {
-      return React.cloneElement(element, {
-        children: highlightSentencesInChildren(element.props.children, activeSentence, false),
-      });
-    }
+  // 4. Fallback: if holistic container matches (e.g., when TTS reads a whole short bullet)
+  if (isSentenceActive(fullContainerText, activeSentence)) {
+    return <TTSHighlightMark isLight={isLight}>{children}</TTSHighlightMark>;
   }
 
   return children;
@@ -252,18 +375,23 @@ export function TTSHighlightedText({
   text,
   className = '',
   enabled = true,
+  isLight = false,
 }: {
   text: string;
   className?: string;
   enabled?: boolean;
+  isLight?: boolean;
 }) {
   const { isSpeaking, activeText, currentSentence } = useTTSState();
-  const activeTarget = (enabled && isSpeaking) ? (currentSentence || (activeText && activeText.length <= 100 ? activeText : null)) : null;
+  const activeTarget =
+    enabled && isSpeaking
+      ? currentSentence || (activeText && activeText.length <= 140 ? activeText : null)
+      : null;
 
   const content = useMemo(() => {
     if (!enabled || !activeTarget) return text;
-    return highlightSentencesInChildren(text, activeTarget);
-  }, [text, activeTarget, enabled]);
+    return highlightSentencesInChildren(text, activeTarget, false, isLight);
+  }, [text, activeTarget, enabled, isLight]);
 
   return <span className={className}>{content}</span>;
 }

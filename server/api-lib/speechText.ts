@@ -12,22 +12,41 @@ export function prepareNaturalSpeechText(text: string): string {
   if (!text) return "";
   let clean = String(text);
 
-  // 1. Remove URLs
-  clean = clean.replace(/https?:\/\/\S+/gi, "");
-
-  // 2. Remove system & media directives
+  // 1. Remove [SUGGESTIONS: ...] blocks (including unclosed trailing blocks) and system/media directives
+  clean = clean.replace(/\[SUGGESTIONS\s*:[\s\S]*?(?:\]|$)/gi, "");
   clean = clean.replace(/\[(?:YOUTUBE|EMOTION|TOOL|IMAGE|PROMPT|STAGE|SOUL_UPDATE|CARD_DRAWN|SYSTEM):[\s\S]*?\]/gi, "");
 
-  // 3. Strip raw markdown links [Anchor](url) -> Anchor
+  // 2. Remove Markdown images ![alt](url) completely so image alt/prompt URLs are never read aloud
+  clean = clean.replace(/!\[[^\]]*\]\([^)]*\)/g, " ");
+
+  // 3. Remove URLs
+  clean = clean.replace(/https?:\/\/\S+/gi, "");
+
+  // 4. Strip raw markdown links [Anchor](url) -> Anchor
   clean = clean.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 
-  // 4. Remove all emojis, pictographs, special symbols, and surrogate pairs
+  // 4.5. Clean Hanja (CJK Ideographs) annotations so TTS does not double-read or break sentence highlighting:
+  // (a) Brackets containing ONLY Hanja and punctuation, e.g. 갑목(甲木), 개운(開運), [大吉] -> remove bracket completely
+  clean = clean.replace(
+    /([\(\[（［\{｛【<《〈「『])\s*[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\s,·:：\-/]+\s*([\)\]）］\}｝】>》〉」』])/g,
+    ""
+  );
+  // (b) Brackets starting with Hanja followed by separator and Korean explanation, e.g. (一白水星·지혜와 유연한 스승) -> (지혜와 유연한 스승)
+  clean = clean.replace(
+    /([\(\[（［\{｛【<《〈「『])\s*[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\s]+\s*[·:：\-/,]\s*([^\)\]）］\}｝】>》〉」』]+)([\)\]）］\}｝】>》〉」』])/g,
+    "$1$2$3"
+  );
+  // (c) Strip any remaining CJK Ideographs inside or outside brackets so Korean pronunciation and UI matching stay 100% aligned
+  clean = clean.replace(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]+/g, " ");
+
+  // 5. Remove all emojis, pictographs, special symbols, and surrogate pairs
   try {
     clean = clean.replace(/\p{Extended_Pictographic}/gu, " ");
   } catch (_) {
     clean = clean.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}]/gu, " ");
   }
-  clean = clean.replace(/[★☆✦✧♠♣♥♦✿❀❁❂▲▼▶◀►◄◈◇◆●○■□✔✓✗✘※]/g, " ");
+  clean = clean.replace(/[\uFE00-\uFE0F\u200B-\u200D\u200E\u200F\uFEFF]/g, "");
+  clean = clean.replace(/[★☆✦✧♠♣♥♦✿❀❁❂▲▼▶◀►◄◈◇◆●○■□✔✓✗✘※🕯️🔮✨⭐]/g, " ");
 
   // 5. Remove laugh/cry/chatter particles
   clean = clean.replace(/[ㅋㅎㅠㅜ]{1,}/g, " ");
@@ -81,11 +100,11 @@ export function prepareNaturalSpeechText(text: string): string {
   for (let pass = 0; pass < 3; pass++) {
     for (const regex of bracketRegexList) {
       clean = clean.replace(regex, (_match, inner) => {
-        const trimmed = (inner || '').trim();
+        const trimmed = (inner || '').replace(/^[\s,·:：\-/]+|[\s,·:：\-/]+$/g, '').trim();
         if (/[가-힣a-zA-Z0-9]/.test(trimmed)) {
           return `, ${trimmed}, `;
         }
-        return " ";
+        return "";
       });
     }
   }
@@ -103,7 +122,43 @@ export function prepareNaturalSpeechText(text: string): string {
     .replace(/~~/g, "")
     .replace(/==/g, "");
 
-  // 11. Convert numbered list headers
+  // 11. Markdown headers (#, ##, ###) & bold titles (**...**) - PRESERVE QUESTION MARKS
+  clean = clean.replace(/^#{1,6}\s*(.+)$/gm, (_m, title) => {
+    let t = String(title || '').replace(/[*#_~`>|\\]/g, " ").trim();
+    if (!t) return "";
+    t = t.replace(/^\s*1\.\s+/, "첫째, ");
+    t = t.replace(/^\s*2\.\s+/, "둘째, ");
+    t = t.replace(/^\s*3\.\s+/, "셋째, ");
+    t = t.replace(/^\s*4\.\s+/, "넷째, ");
+    t = t.replace(/^\s*5\.\s+/, "다섯째, ");
+    t = t.replace(/^\s*(\d+)\.\s+/, "$1번, ");
+    const isQuestion = /\?$/.test(t) || /(?:인가요|일까요|할까요|될까요|있을까요|없을까요|어떨까요|아닐까요|맞나요|하나요)\s*$/.test(t);
+    t = t.replace(/[.!?…,;:~]+$/, "").trim();
+    return isQuestion ? `${t}? \n\n` : `${t}. \n\n`;
+  });
+
+  // (b) Standalone Bold headings: only when the entire line is '**소제목**' (optionally ending with ':' or '-')
+  clean = clean.replace(/^(?:\s*)\*\*([^*\n]+?)\*\*\s*(?::|-)?\s*$/gm, (_m, boldText) => {
+    let b = String(boldText || '').replace(/[*#_~`>|\\]/g, " ").trim();
+    if (!b) return "";
+    b = b.replace(/^\s*1\.\s+/, "첫째, ");
+    b = b.replace(/^\s*2\.\s+/, "둘째, ");
+    b = b.replace(/^\s*3\.\s+/, "셋째, ");
+    b = b.replace(/^\s*4\.\s+/, "넷째, ");
+    b = b.replace(/^\s*5\.\s+/, "다섯째, ");
+    b = b.replace(/^\s*(\d+)\.\s+/, "$1번, ");
+    const isQuestion = /\?$/.test(b) || /(?:인가요|일까요|할까요|될까요|있을까요|없을까요|어떨까요|아닐까요|맞나요|하나요)\s*$/.test(b);
+    b = b.replace(/[.!?…,;:~]+$/, "").trim();
+    return isQuestion ? `\n${b}? \n` : `\n${b}. \n`;
+  });
+
+  // (b-2) Inline bold prefix followed by text on the same line: '**핵심 조언**: 내용...' -> '핵심 조언, 내용...'
+  clean = clean.replace(/(^|\n)(\s*(?:[-*•]|\d+\.)?\s*)\*\*([^*\n]+?)\*\*\s*[:：-]\s*/g, (_m, lineStart, bulletPrefix, boldLabel) => {
+    const cleanLabel = String(boldLabel || '').replace(/[*#_~`>|\\]/g, " ").trim();
+    return `${lineStart}${bulletPrefix || ''}${cleanLabel}, `;
+  });
+
+  // 12. Convert numbered list headers
   clean = clean.replace(/(?:^|\n)\s*1\.\s+/g, "\n첫째, ");
   clean = clean.replace(/(?:^|\n)\s*2\.\s+/g, "\n둘째, ");
   clean = clean.replace(/(?:^|\n)\s*3\.\s+/g, "\n셋째, ");
@@ -111,29 +166,12 @@ export function prepareNaturalSpeechText(text: string): string {
   clean = clean.replace(/(?:^|\n)\s*5\.\s+/g, "\n다섯째, ");
   clean = clean.replace(/(?:^|\n)\s*(\d+)\.\s+/g, "\n$1번, ");
 
-  // 12. Markdown headers & bold titles
-  clean = clean.replace(/^#{1,6}\s*(.+)$/gm, (_m, title) => {
-    let t = String(title || '').replace(/[*#_~`>|\\]/g, " ").trim();
-    if (!t) return "";
-    const isQuestion = /\?$/.test(t) || /(?:인가요|일까요|할까요|될까요|있을까요|없을까요|어떨까요|아닐까요|맞나요|하나요)\s*$/.test(t);
-    t = t.replace(/[.!?…,;:~]+$/, "").trim();
-    return isQuestion ? `${t}? \n\n` : `${t}. \n\n`;
-  });
-
-  clean = clean.replace(/(?:^|\n)\s*\*\*(.+?)\*\*\s*(?::|-)?\s*/gm, (_m, boldText) => {
-    let b = String(boldText || '').replace(/[*#_~`>|\\]/g, " ").trim();
-    if (!b) return "";
-    const isQuestion = /\?$/.test(b) || /(?:인가요|일까요|할까요|될까요|있을까요|없을까요|어떨까요|아닐까요|맞나요|하나요)\s*$/.test(b);
-    b = b.replace(/[.!?…,;:~]+$/, "").trim();
-    return isQuestion ? `\n${b}? \n` : `\n${b}. \n`;
-  });
-
-  clean = clean.replace(/(?:^|\n)\s*([가-힣a-zA-Z0-9\s]{2,15})\s*:\s*/gm, (_m, label) => {
+  clean = clean.replace(/(^|\n)\s*([가-힣a-zA-Z0-9\s]{2,15})\s*:\s*/gm, (_m, lineStart, label) => {
     const trimmed = label.trim();
     if (trimmed.length > 0 && trimmed.length <= 15) {
-      return `\n${trimmed}, `;
+      return `${lineStart}${trimmed}, `;
     }
-    return `\n${label}, `;
+    return `${lineStart}${label}, `;
   });
 
   // 13. Structure lines and paragraphs

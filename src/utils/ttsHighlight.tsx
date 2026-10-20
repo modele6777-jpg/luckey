@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { subscribeTTS, TTSState } from './tts';
 import {
   cleanSentenceForMatching,
   isSentenceActive,
   extractTextContent,
+  TTSHighlightMark,
+  highlightSentencesInChildren,
 } from '@/components/common/TTSHighlightedText';
 
 /**
@@ -30,7 +32,10 @@ export function useTTSCurrentSentence() {
   return {
     isSpeaking: ttsState.isSpeaking,
     isLoading: ttsState.isLoading,
-    activeSentence: ttsState.activeSentence || (ttsState.isSpeaking ? ttsState.activeText : null),
+    activeSentence:
+      ttsState.activeSentence ||
+      ttsState.currentSentence ||
+      (ttsState.isSpeaking ? ttsState.activeText : null),
     activeFullText: ttsState.activeFullText,
     activeSentenceIndex: ttsState.activeSentenceIndex ?? -1,
     totalSentences: ttsState.totalSentences ?? 0,
@@ -94,37 +99,12 @@ export function TTSActiveSentenceMark({
   children: React.ReactNode;
   isLight?: boolean;
 }) {
-  const markRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (markRef.current) {
-      try {
-        markRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'nearest',
-        });
-      } catch (_) {}
-    }
-  }, []);
-
-  return (
-    <mark
-      ref={markRef}
-      className={`tts-active-sentence-highlight inline rounded px-1.5 py-0.5 transition-all duration-300 ${
-        isLight
-          ? 'bg-amber-200/90 text-amber-950 border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] font-semibold'
-          : 'bg-amber-400/35 text-amber-100 border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] font-medium'
-      }`}
-    >
-      {children}
-    </mark>
-  );
+  return <TTSHighlightMark isLight={isLight}>{children}</TTSHighlightMark>;
 }
 
 /**
  * Recursively parses React children or string, locating targetSentence and wrapping it in TTSActiveSentenceMark.
- * If isHeading is true, matches the whole heading title holistically.
+ * Handles headings (h1~h6) and inline bold elements (<strong>) within multi-sentence paragraphs holistically.
  */
 export function renderWithSentenceHighlight(
   children: React.ReactNode,
@@ -132,74 +112,7 @@ export function renderWithSentenceHighlight(
   isLight: boolean = false,
   isHeading: boolean = false,
 ): React.ReactNode {
-  if (!activeSentence || !children) {
-    return children;
-  }
-
-  // 🌟 If this element is a heading (h1~h6), match the aggregated title text holistically
-  if (isHeading) {
-    const fullHeadingText = extractTextContent(children);
-    if (fullHeadingText && isSentenceActive(fullHeadingText, activeSentence)) {
-      return <TTSActiveSentenceMark isLight={isLight}>{children}</TTSActiveSentenceMark>;
-    }
-  }
-
-  // Check if the entire node text matches
-  const aggregated = extractTextContent(children);
-  if (aggregated && isSentenceActive(aggregated, activeSentence)) {
-    return <TTSActiveSentenceMark isLight={isLight}>{children}</TTSActiveSentenceMark>;
-  }
-
-  let hasHighlighted = false;
-
-  const traverse = (node: React.ReactNode): React.ReactNode => {
-    if (hasHighlighted || node === null || node === undefined) {
-      return node;
-    }
-
-    // 1. Plain string node
-    if (typeof node === 'string') {
-      const match = matchSentenceInString(node, activeSentence);
-      if (match) {
-        hasHighlighted = true;
-        const before = node.slice(0, match.start);
-        const highlighted = node.slice(match.start, match.end);
-        const after = node.slice(match.end);
-
-        return (
-          <>
-            {before}
-            <TTSActiveSentenceMark isLight={isLight}>
-              {highlighted}
-            </TTSActiveSentenceMark>
-            {after}
-          </>
-        );
-      }
-      return node;
-    }
-
-    // 2. Array of children
-    if (Array.isArray(node)) {
-      return node.map((child, idx) => (
-        <React.Fragment key={idx}>{traverse(child)}</React.Fragment>
-      ));
-    }
-
-    // 3. React Element
-    if (React.isValidElement(node)) {
-      const element = node as React.ReactElement<{ children?: React.ReactNode }>;
-      if (element.props && element.props.children) {
-        const newChildren = traverse(element.props.children);
-        return React.cloneElement(element, {}, newChildren);
-      }
-      return element;
-    }
-
-    return node;
-  };
-
-  return traverse(children);
+  return highlightSentencesInChildren(children, activeSentence, isHeading, isLight);
 }
 
 /**
@@ -217,7 +130,14 @@ export const TTSHighlightText: React.FC<{
 
   const isMatching = useMemo(() => {
     if (!enabled || !isSpeaking || !activeSentence || !text) return false;
-    return isSentenceActive(text, activeSentence);
+    const cleanText = cleanSentenceForMatching(text);
+    const cleanActive = cleanSentenceForMatching(activeSentence);
+    if (!cleanText || !cleanActive) return false;
+    return (
+      cleanText.includes(cleanActive) ||
+      cleanActive.includes(cleanText) ||
+      isSentenceActive(text, activeSentence)
+    );
   }, [enabled, isSpeaking, activeSentence, text]);
 
   const targetSentence = isMatching ? activeSentence : null;

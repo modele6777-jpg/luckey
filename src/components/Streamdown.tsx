@@ -210,8 +210,10 @@ export function Streamdown({
   const textWithCursor = isTyping ? displayedText + ' ▍' : displayedText;
 
   // Dynamic TTS sentence tracking (strictly isolated to matching reading context)
-  const { isSpeaking, activeText, currentSentence } = useTTSState();
-  const rawTarget = (enableTTSHighlight && isSpeaking) ? (currentSentence || (activeText && activeText.length <= 100 ? activeText : null)) : null;
+  const { isSpeaking, activeText, currentSentence, activeSentence } = useTTSState();
+  const rawTarget = (enableTTSHighlight && isSpeaking)
+    ? (currentSentence || activeSentence || (activeText && activeText.length <= 140 ? activeText : null))
+    : null;
 
   const activeTarget = useMemo(() => {
     if (!rawTarget || !enableTTSHighlight) return null;
