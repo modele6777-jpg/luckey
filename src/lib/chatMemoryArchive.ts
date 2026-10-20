@@ -5,11 +5,19 @@
  * 매일 자정(새로운 날)마다 대화창은 상쾌하게 새로운 캔버스로 초기화되지만,
  * 지난 날에 나눈 모든 소중한 대화 내역(고민, 취향, 인사이트, 영적 탐구 등)은
  * 루시의 [영구 배경 지식 및 장기 기억(Soul Memory)]에 자동으로 요약·누적 보존됩니다.
+ * 또한 인사말은 매일 '처음' 루시채팅에 들어갈 때만 표시됩니다.
  */
 
 import { safeLocalStorage } from '../utils/safeStorage';
 import { getTodayDateKey, isTimestampToday } from './dailyCache';
-import { forceResetUnifiedChatHistory, type UnifiedMessage, type PersonaType } from './chatHistorySync';
+import {
+  forceResetUnifiedChatHistory,
+  createDefaultGreeting,
+  hasCompletedFirstLucyVisitToday,
+  isGreetingMessage,
+  type UnifiedMessage,
+  type PersonaType,
+} from './chatHistorySync';
 import { extractLocalInsights, saveChatInsight } from './chatInsightsEngine';
 
 export const MEMORY_STORAGE_KEYS = {
@@ -31,7 +39,6 @@ export interface DailyMemoryEntry {
 function extractUserTopic(content: any): string {
   const str = typeof content === 'string' ? content : (Array.isArray(content) ? content.find((c: any) => c.type === 'text')?.text || '' : JSON.stringify(content));
   if (!str) return '';
-  // Clean markdown and trim
   const clean = str.replace(/!\[.*?\]\(.*?\)/g, '').replace(/[#*_]/g, '').trim();
   return clean.length > 60 ? clean.slice(0, 57) + '...' : clean;
 }
@@ -53,7 +60,6 @@ export function buildDailyMemorySummary(dateStr: string, messages: UnifiedMessag
     }
   });
 
-  // 대표 주제 및 대화 요약 생성
   const topTopicsStr = topics.slice(0, 6).map((t, idx) => `${idx + 1}) "${t}"`).join(', ');
   const summary = `[${dateStr} 대화 요약 (총 ${userMessages.length}회 질문)]: 주요 주제: ${topTopicsStr}`;
 
@@ -88,7 +94,6 @@ export function loadAllPermanentMemories(): DailyMemoryEntry[] {
 export function saveDailyMemoryToArchive(newEntry: DailyMemoryEntry): void {
   try {
     const currentList = loadAllPermanentMemories();
-    // 같은 날짜의 기억이 이미 있으면 더 풍부한 내용으로 갱신
     const existingIndex = currentList.findIndex((item) => item.date === newEntry.date);
     if (existingIndex >= 0) {
       currentList[existingIndex] = newEntry;
@@ -96,7 +101,6 @@ export function saveDailyMemoryToArchive(newEntry: DailyMemoryEntry): void {
       currentList.push(newEntry);
     }
 
-    // 최근 90일간의 기억 보존
     currentList.sort((a, b) => b.date.localeCompare(a.date));
     const pruned = currentList.slice(0, 90);
 
@@ -132,7 +136,6 @@ export function processDailyChatArchival(
     } else if (m.timestamp && !isTimestampToday(m.timestamp)) {
       pastMessages.push(m);
     } else {
-      // Message without timestamp: if current session was today, retain in today's messages
       if (lastSessionDate === todayKey) {
         todayMessages.push(m);
       } else {
@@ -142,16 +145,31 @@ export function processDailyChatArchival(
   });
 
   const hasPastUserMsgs = pastMessages.some((m) => m.role === 'user' && m.content);
+  const hasPastMsgs = pastMessages.length > 0;
+  const firstVisitDoneToday = hasCompletedFirstLucyVisitToday();
 
-  // If date hasn't shifted and there are no past messages, keep current messages completely intact
-  if (!isDateShifted && !hasPastUserMsgs) {
+  // 날짜가 바뀌지 않았고 과거 메시지도 없는 경우
+  if (!isDateShifted && !hasPastMsgs) {
     if (!lastSessionDate) {
       safeLocalStorage.setItem(MEMORY_STORAGE_KEYS.LAST_SESSION_DATE, todayKey);
     }
-    return { messages: currentMessages, wasArchived: false };
+    const hasTodayUser = todayMessages.some((m) => m.role === 'user' && m.content);
+    if (hasTodayUser) {
+      // 실제 대화가 있으면 인사말 제거
+      const withoutGreet = todayMessages.filter((m) => !isGreetingMessage(m));
+      return { messages: withoutGreet, wasArchived: false };
+    }
+    if (firstVisitDoneToday) {
+      const withoutGreet = todayMessages.filter((m) => !isGreetingMessage(m));
+      return { messages: withoutGreet, wasArchived: withoutGreet.length !== todayMessages.length };
+    }
+    return {
+      messages: todayMessages.length > 0 ? todayMessages : [createDefaultGreeting('lucy', userName)],
+      wasArchived: false,
+    };
   }
 
-  // 1. Archive only past days' conversations to Soul Memory
+  // 1. 과거 날짜의 대화를 영구 기억(Soul Memory) 및 인사이트 보드에 아카이빙
   if (hasPastUserMsgs) {
     const archiveDate = isDateShifted
       ? lastSessionDate
@@ -159,8 +177,6 @@ export function processDailyChatArchival(
     const memoryEntry = buildDailyMemorySummary(archiveDate, pastMessages);
     if (memoryEntry) {
       saveDailyMemoryToArchive(memoryEntry);
-      console.log(`[ChatMemoryArchive] Archived previous conversation (${archiveDate}) to Soul Memory!`);
-      // 인사이트 요약 보드에도 히스토리로 보존 연동
       try {
         const insight = extractLocalInsights(archiveDate, pastMessages);
         if (insight) {
@@ -172,30 +188,29 @@ export function processDailyChatArchival(
     }
   }
 
-  // 2. Update session date to today
+  // 2. 세션 날짜를 오늘로 갱신
   safeLocalStorage.setItem(MEMORY_STORAGE_KEYS.LAST_SESSION_DATE, todayKey);
 
-  // 3. Keep all of today's conversation! If user already has chat today, preserve it 100%
+  // 3. 오늘 이미 나눈 실제 대화가 있다면 오늘 대화만 보존 (인사말은 제거)
   const hasTodayUserMsgs = todayMessages.some((m) => m.role === 'user' && m.content);
-  if (hasTodayUserMsgs || todayMessages.length > 0) {
+  if (hasTodayUserMsgs) {
     return {
-      messages: todayMessages,
-      wasArchived: hasPastUserMsgs,
+      messages: todayMessages.filter((m) => !isGreetingMessage(m)),
+      wasArchived: true,
       archivedDate: lastSessionDate,
     };
   }
 
-  // 4. If today is a fresh start with no messages yet today, give the daily greeting (수다 모드)
-  const freshMorningGreeting: UnifiedMessage = {
-    id: `greet-${todayKey}`,
-    role: 'model',
-    content: `좋은 하루야, ${userName}! 오늘 기분은 어때? ㅎㅎ 사소한 일상이나 오늘 있었던 이야기 편하게 들려줘. 나랑 가볍게 수다 떨자! 💬✨`,
-    timestamp: Date.now(),
-    persona: 'lucy',
-    mode: 'casual',
-    channels: [],
-  };
+  // 4. 오늘 첫 루시채팅 방문이 이미 끝난 상태라면 빈 캔버스 반환, 아직 첫 방문 전이라면 오늘의 첫 인사말 준비
+  if (firstVisitDoneToday) {
+    return {
+      messages: [],
+      wasArchived: true,
+      archivedDate: lastSessionDate,
+    };
+  }
 
+  const freshMorningGreeting = createDefaultGreeting('lucy', userName);
   return {
     messages: [freshMorningGreeting],
     wasArchived: true,
@@ -210,7 +225,6 @@ export function buildPermanentMemoryPromptContext(): string {
   const memories = loadAllPermanentMemories();
   if (memories.length === 0) return '';
 
-  // 최근 10일간의 기억을 정밀하게 추출
   const recentMemories = memories.slice(0, 10);
   const formattedList = recentMemories
     .map((m) => `- [${m.date}]: ${m.summary}`)
@@ -232,7 +246,7 @@ ${formattedList}
  */
 export function archiveAndResetChat(
   messages: UnifiedMessage[],
-  nickname: string = '제제',
+  _nickname: string = '제제',
   targetPersona: PersonaType = 'lucy'
 ): UnifiedMessage[] {
   try {
@@ -241,7 +255,6 @@ export function archiveAndResetChat(
     if (entry) {
       saveDailyMemoryToArchive(entry);
     }
-    // 인사이트 요약 보드에도 히스토리로 영구 동기화 보존
     const insight = extractLocalInsights(todayKey, messages);
     if (insight) {
       saveChatInsight(insight);

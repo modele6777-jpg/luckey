@@ -16,7 +16,6 @@ import {
   BookOpen,
   Compass,
   Camera,
-  Monitor,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
@@ -185,7 +184,7 @@ export default function LeftSidebarNav() {
   const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
-  const { themeMode, resolvedTheme, setThemeMode } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [topRecommendation, setTopRecommendation] = useState<ContextNextMenuResult | null>(null);
 
   const refreshTopRecommendation = useCallback(
@@ -889,152 +888,12 @@ export default function LeftSidebarNav() {
                 </AnimatePresence>
               </div>
 
-              {/* Footer: Animated Theme Switcher & User Profile Button & Collapse Button */}
+              {/* Footer: User Profile Button & Collapse Button */}
               <div
                 className={`pb-[calc(var(--sab)+0.75rem)] px-1.5 pt-2.5 border-t flex flex-col items-center gap-2.5 shrink-0 transition-colors duration-300 ${
                   isLight ? 'border-amber-900/15' : 'border-white/10'
                 }`}
               >
-                {/* Intuitive Animated Theme Switcher (Light / Dark / Auto) */}
-                <div className="relative group flex flex-col items-center gap-1">
-                  <div
-                    className={`relative flex items-center justify-between p-0.5 rounded-full border w-[60px] h-[26px] shrink-0 transition-all duration-300 ${
-                      isLight
-                        ? 'bg-amber-100/90 border-amber-400/50 shadow-[inset_0_1px_4px_rgba(180,130,60,0.18),0_2px_10px_rgba(245,158,11,0.18)]'
-                        : 'bg-neutral-900/90 border-indigo-400/30 shadow-[inset_0_1px_4px_rgba(0,0,0,0.6),0_2px_10px_rgba(99,102,241,0.2)]'
-                    }`}
-                    role="group"
-                    aria-label="화면 테마 모드 선택"
-                  >
-                    {/* Light Mode Button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('whitehole');
-                        setThemeMode('light');
-                      }}
-                      className={`relative z-10 w-[18px] h-[20px] rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-                        themeMode === 'light'
-                          ? 'text-slate-950'
-                          : isLight
-                          ? 'text-amber-700/70 hover:text-amber-900'
-                          : 'text-neutral-400 hover:text-amber-300'
-                      }`}
-                      aria-label="라이트 모드"
-                      title="라이트 모드 (따스한 아이보리 & 파스텔 오로라)"
-                    >
-                      {themeMode === 'light' && (
-                        <motion.span
-                          layoutId="sidebar-theme-pill"
-                          className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-300 via-amber-400 to-orange-300 shadow-[0_0_10px_rgba(251,191,36,0.9)]"
-                          transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-                        />
-                      )}
-                      <Sun
-                        size={11}
-                        strokeWidth={themeMode === 'light' ? 2.8 : 2}
-                        className={`relative z-10 transition-transform duration-300 ${
-                          themeMode === 'light' ? 'rotate-45 scale-110' : ''
-                        }`}
-                      />
-                    </button>
-
-                    {/* Dark Mode Button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('whitehole');
-                        setThemeMode('dark');
-                      }}
-                      className={`relative z-10 w-[18px] h-[20px] rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-                        themeMode === 'dark'
-                          ? 'text-white'
-                          : isLight
-                          ? 'text-slate-500 hover:text-indigo-700'
-                          : 'text-neutral-400 hover:text-indigo-300'
-                      }`}
-                      aria-label="다크 모드"
-                      title="다크 모드 (딥 코스믹 나이트)"
-                    >
-                      {themeMode === 'dark' && (
-                        <motion.span
-                          layoutId="sidebar-theme-pill"
-                          className="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 shadow-[0_0_10px_rgba(99,102,241,0.9)]"
-                          transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-                        />
-                      )}
-                      <Moon
-                        size={11}
-                        strokeWidth={themeMode === 'dark' ? 2.8 : 2}
-                        className={`relative z-10 transition-transform duration-300 ${
-                          themeMode === 'dark' ? '-rotate-12 scale-110' : ''
-                        }`}
-                      />
-                    </button>
-
-                    {/* Auto Mode Button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('whitehole');
-                        setThemeMode('auto');
-                      }}
-                      className={`relative z-10 w-[18px] h-[20px] rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-                        themeMode === 'auto'
-                          ? 'text-slate-950'
-                          : isLight
-                          ? 'text-slate-500 hover:text-cyan-700'
-                          : 'text-neutral-400 hover:text-cyan-300'
-                      }`}
-                      aria-label={`시스템 자동 모드 (현재: ${resolvedTheme === 'dark' ? '다크' : '라이트'})`}
-                      title={`시스템 자동 모드 (현재: ${resolvedTheme === 'dark' ? '다크' : '라이트'})`}
-                    >
-                      {themeMode === 'auto' && (
-                        <motion.span
-                          layoutId="sidebar-theme-pill"
-                          className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-300 via-sky-400 to-teal-300 shadow-[0_0_10px_rgba(34,211,238,0.85)]"
-                          transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-                        />
-                      )}
-                      <Monitor
-                        size={10}
-                        strokeWidth={themeMode === 'auto' ? 2.6 : 2}
-                        className="relative z-10"
-                      />
-                    </button>
-                  </div>
-
-                  {/* Active Mode Micro Status Label */}
-                  <span
-                    className={`text-[9px] font-extrabold tracking-wider uppercase transition-colors duration-300 ${
-                      isLight ? 'text-amber-700' : 'text-indigo-300/90'
-                    }`}
-                  >
-                    {themeMode === 'light'
-                      ? '☀️ LIGHT'
-                      : themeMode === 'dark'
-                      ? '🌙 DARK'
-                      : `AUTO·${isLight ? 'DAY' : 'NIGHT'}`}
-                  </span>
-
-                  {/* Desktop Hover Tooltip for Theme Switcher */}
-                  <div
-                    className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                      isLight
-                        ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                        : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                    }`}
-                  >
-                    <span className={`text-xs font-bold ${isLight ? 'text-amber-600' : 'text-amber-300'}`}>
-                      {themeMode === 'light'
-                        ? '☀️ 라이트 모드 (아이보리 파스텔)'
-                        : themeMode === 'dark'
-                        ? '🌙 다크 모드 (코스믹 나이트)'
-                        : `💻 시스템 자동 (현재 ${isLight ? '라이트' : '다크'})`}
-                    </span>
-                  </div>
-                </div>
-
                 {/* User Profile Button with Photo Support */}
                 <div className="relative group w-10 h-10 shrink-0">
                   <input

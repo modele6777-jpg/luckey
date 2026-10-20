@@ -33,6 +33,18 @@ import type { UserProfile } from '@/lib/sharedState';
 import { buildMultiProfileSystemContext, generateMultiProfilePrompts } from '@/lib/multiProfileContext';
 import { HORI_PROMPT_LIBRARY } from '@/data/horiPromptLibrary';
 import { type LucyChatMode, LUCY_MODE_CONFIGS } from '@/components/chat/LucyModeSelectorBar';
+import {
+  hasEnteredLucyChatToday,
+  markLucyChatEnteredToday,
+  markFirstLucyVisitCompletedToday,
+  hasSpokenDailyGreetingToday,
+  markDailyGreetingSpokenToday,
+  createDefaultGreeting,
+  isGreetingMessage,
+  saveUnifiedMessagesSafely,
+} from '@/lib/chatHistorySync';
+import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
+import { getTodayDateKey } from '@/lib/dailyCache';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -592,6 +604,7 @@ export default function LucyStandalonePage() {
     signInWithGoogle, 
     sendUnifiedMessage, 
     personaMessages, 
+    setPersonaMessages,
     isGenerating,
     abortGenerating,
     sharedState,
@@ -727,8 +740,19 @@ export default function LucyStandalonePage() {
 
   const [autoTtsToast, setAutoTtsToast] = useState<string | null>(null);
   const lastAutoSpokenMsgIdRef = useRef<string | null>(null);
-  const hasGreetingSpokenRef = useRef(false);
+  const hasGreetingSpokenRef = useRef<boolean>(hasSpokenDailyGreetingToday());
   const [isGreetingPendingTap, setIsGreetingPendingTap] = useState(false);
+
+  // 🌟 매일 '처음' 루시채팅에 들어갈 때만 인사말을 표시·낭독하기 위한 일일 최초 진입 판별
+  const visitDateKeyRef = useRef<string>(getTodayDateKey());
+  const isFirstVisitTodayRef = useRef<boolean>((() => {
+    const alreadyEntered = hasEnteredLucyChatToday();
+    if (!alreadyEntered) {
+      markLucyChatEnteredToday();
+      return true;
+    }
+    return false;
+  })());
 
 
   const toggleAutoTts = () => {
@@ -850,15 +874,82 @@ export default function LucyStandalonePage() {
   // 사용자가 대화창에서 프로필을 직접 변경/수정한 경우 플래그 (새로고침 또는 페이지 재진입 전까지 프로필 원복 방지)
   const hasUserCustomizedProfilesRef = useRef(false);
 
-  // 루시 채팅에서 벗어날 때(언마운트 시) 세션 스토리지 정리 및 커스텀 플래그 초기화
+  // 루시 채팅 진입 시 일일 초기화 점검 및 '오늘 처음 진입' 여부에 따른 인사말 제어
+  useEffect(() => {
+    const todayKey = getTodayDateKey();
+    if (visitDateKeyRef.current !== todayKey) {
+      visitDateKeyRef.current = todayKey;
+      isFirstVisitTodayRef.current = true;
+      hasGreetingSpokenRef.current = false;
+      markLucyChatEnteredToday();
+    }
+
+    setPersonaMessages((prevRecord) => {
+      const currentList = prevRecord.lucy || [];
+      const archival = processDailyChatArchival(currentList, userDisplayName);
+      let nextList = archival.messages;
+
+      const hasUserMsg = nextList.some((m) => m.role === 'user' && !!m.content);
+      if (isFirstVisitTodayRef.current) {
+        // 오늘 처음 루시채팅에 들어온 경우: 유저 대화가 아직 없다면 인사말 1회 표시
+        if (!hasUserMsg && nextList.length === 0) {
+          nextList = [createDefaultGreeting('lucy', userDisplayName)];
+        }
+      } else {
+        // 오늘 이미 루시채팅에 들어온 적이 있는 경우(재진입/새로고침): 인사말 제거
+        markFirstLucyVisitCompletedToday();
+        nextList = nextList.filter((m) => !isGreetingMessage(m));
+      }
+
+      if (JSON.stringify(currentList) !== JSON.stringify(nextList)) {
+        saveUnifiedMessagesSafely(nextList);
+        return {
+          lucy: nextList,
+          orange: nextList,
+          trinity: nextList,
+          aura: nextList,
+          bluebird: nextList,
+          muse: nextList,
+        };
+      }
+      return prevRecord;
+    });
+
+    const handleBeforeUnload = () => {
+      markFirstLucyVisitCompletedToday();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [setPersonaMessages, userDisplayName]);
+
+  // 루시 채팅에서 벗어날 때(언마운트 시) 오늘 첫 방문 완료 처리 및 단독 인사말 정리
   useEffect(() => {
     return () => {
+      markFirstLucyVisitCompletedToday();
       hasUserCustomizedProfilesRef.current = false;
       try {
         sessionStorage.removeItem('lucy_chat_extra_profiles');
       } catch (_) {}
+      setPersonaMessages((prevRecord) => {
+        const currentList = prevRecord.lucy || [];
+        const withoutGreet = currentList.filter((m) => !isGreetingMessage(m));
+        if (withoutGreet.length !== currentList.length) {
+          saveUnifiedMessagesSafely(withoutGreet);
+          return {
+            lucy: withoutGreet,
+            orange: withoutGreet,
+            trinity: withoutGreet,
+            aura: withoutGreet,
+            bluebird: withoutGreet,
+            muse: withoutGreet,
+          };
+        }
+        return prevRecord;
+      });
     };
-  }, []);
+  }, [setPersonaMessages]);
 
   // 🎲 차분하게 유지되는 맞춤 추천 질문 상태 (새로고침 🔄 클릭, 모드 전환, 프로필 변경 시에만 명시적으로 갱신되며 실시간 임의 변동 방지)
   const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
@@ -1202,16 +1293,17 @@ export default function LucyStandalonePage() {
     }
   }, []);
 
-  // 🌸 최초 진입 시 루시의 인사말 TTS 자동 재생 및 브라우저 Autoplay 언락 브릿지
+  // 🌸 매일 '처음' 루시채팅 진입 시에만 루시의 인사말 TTS 자동 재생 및 브라우저 Autoplay 언락 브릿지
   useEffect(() => {
-    if (!isLucyReady || !isAutoTtsRef.current || hasGreetingSpokenRef.current) return;
+    if (!isLucyReady || !isAutoTtsRef.current) return;
+    if (!isFirstVisitTodayRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
     if (lucyMessages.length === 0) return;
 
     // 대화 내역 중 실제 사용자 발화가 있는지 확인 (사용자 발화가 하나도 없다면 환영/인사말 상태)
     const hasUser = lucyMessages.some((m) => m.role === 'user' && !!m.content);
     const firstMsg = lucyMessages[0];
     if (typeof firstMsg.content !== 'string' || !firstMsg.content.trim()) return;
-    const isGreetingMsg = !hasUser && firstMsg.role !== 'user';
+    const isGreetingMsg = !hasUser && firstMsg.role !== 'user' && isGreetingMessage(firstMsg);
 
     if (!isGreetingMsg) return;
 
@@ -1225,12 +1317,13 @@ export default function LucyStandalonePage() {
     let isDisposed = false;
 
     const playGreetingAudio = async () => {
-      if (isDisposed || hasGreetingSpokenRef.current) return;
+      if (isDisposed || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
       try {
         unlockAudioPlayback();
         primeTTSAudioElement();
         setPlayingMsgId(greetingId);
         hasGreetingSpokenRef.current = true;
+        markDailyGreetingSpokenToday();
         setIsGreetingPendingTap(false);
         await playTTSInChunks(cleanGreeting, 'Aoede', 110, undefined, undefined, {
           skipCompletionChime: true,
@@ -1238,7 +1331,7 @@ export default function LucyStandalonePage() {
         });
       } catch (err: any) {
         console.warn('[Greeting-TTS] Autoplay blocked or interrupted:', err);
-        // 브라우저 자동 재생 정책에 의해 차단된 경우 플래그 원복 및 첫 터치 대기
+        // 브라우저 자동 재생 정책에 의해 차단된 경우 첫 터치 대기
         hasGreetingSpokenRef.current = false;
         setIsGreetingPendingTap(true);
       } finally {
@@ -1253,7 +1346,7 @@ export default function LucyStandalonePage() {
 
     // 2차: 브라우저 차단 시 사용자의 첫 화면 터치/클릭 즉시 언락 & 인사말 재생
     const handleFirstUserInteraction = () => {
-      if (hasGreetingSpokenRef.current) return;
+      if (hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
       unlockAudioPlayback();
       primeTTSAudioElement();
       playGreetingAudio();
@@ -2105,31 +2198,11 @@ export default function LucyStandalonePage() {
       {/* Chat Messages Stream */}
       <main ref={messagesContainerRef} onScroll={handleScroll} className="lucy-chat-main flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto select-text">
         <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-28 sm:pb-32">
-          {filteredMessages.length === 0 && (
-            <div className="text-center py-12 sm:py-20 px-4 space-y-5">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-200 to-amber-100 dark:from-amber-500/25 dark:to-purple-500/25 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto shadow-sm ring-4 ring-amber-100 dark:ring-amber-400/20">
-                <Sparkles size={36} className="text-amber-600 dark:text-amber-300" />
-              </div>
-              <div className="space-y-2">
-                <h2
-                  className={`text-xl sm:text-2xl font-bold flex items-center justify-center gap-2 ${
-                    isLight ? 'text-slate-900' : 'text-white'
-                  }`}
-                  style={{ color: isLight ? '#0f172a' : '#ffffff' }}
-                >
-                  <span>안녕, {userDisplayName}!</span>
-                  <span>✨</span>
-                </h2>
-                <p
-                  className={`text-xs sm:text-sm max-w-lg mx-auto leading-relaxed ${
-                    isLight ? 'text-slate-600' : 'text-white/90'
-                  }`}
-                  style={{ color: isLight ? '#475569' : 'rgba(255, 255, 255, 0.9)' }}
-                >
-                  사주·타로·전략·치유·위로·창작·회고부터 일상 수다까지, 마음속 어떤 이야기든 편하게 건네줘.<br />
-                  루시 AI가 질문 맥락을 분석하여 7대 전문 지능, 다중 융합, 올인원 마스터를 실시간으로 자동 가동해 줄게! ⚡✨
-                </p>
-              </div>
+          {filteredMessages.length === 0 && searchQuery.trim().length > 0 && (
+            <div className="text-center py-12 px-4">
+              <p className="text-xs sm:text-sm text-slate-500">
+                검색 결과가 없습니다.
+              </p>
             </div>
           )}
 

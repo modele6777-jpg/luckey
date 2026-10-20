@@ -74,29 +74,20 @@ export default function CalmApp() {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const { resolvedTheme } = useTheme();
 
-  const syncIframeTheme = useCallback((theme: 'light' | 'dark') => {
+  const syncIframeTheme = useCallback(() => {
     try {
       const doc = iframeRef.current?.contentDocument;
       if (!doc || !doc.documentElement) return;
-      if (!doc.getElementById('prism-calm-theme-sync')) {
-        const styleEl = doc.createElement('style');
-        styleEl.id = 'prism-calm-theme-sync';
-        styleEl.textContent = CALM_DARK_THEME_CSS;
-        doc.head?.appendChild(styleEl);
-      }
-      if (theme === 'dark') {
-        doc.documentElement.classList.add('dark');
-        doc.documentElement.classList.remove('light');
-      } else {
-        doc.documentElement.classList.remove('dark');
-        doc.documentElement.classList.add('light');
-      }
+      doc.documentElement.classList.remove('dark');
+      doc.documentElement.classList.add('light');
+      doc.documentElement.setAttribute('data-theme', 'light');
+      doc.documentElement.style.colorScheme = 'light';
     } catch (_) {}
   }, []);
 
   useEffect(() => {
     if (iframeLoaded) {
-      syncIframeTheme(resolvedTheme);
+      syncIframeTheme();
     }
   }, [resolvedTheme, iframeLoaded, syncIframeTheme]);
 
@@ -178,12 +169,12 @@ export default function CalmApp() {
   // Once iframe onLoad fires, release loading immediately
   const handleIFrameLoad = useCallback(() => {
     setIframeLoaded(true);
-    syncIframeTheme(resolvedTheme);
+    syncIframeTheme();
     // Smooth micro-transition: dismiss after short frame flush
     requestAnimationFrame(() => {
       setIsLoading(false);
     });
-  }, [resolvedTheme, syncIframeTheme]);
+  }, [syncIframeTheme]);
 
   // 전달받은 토스 텍스트 또는 특정 실천 연습이 있으면 iframe 로드 후 즉시 실행 요청
   useEffect(() => {
@@ -259,9 +250,7 @@ export default function CalmApp() {
 
   return (
     <div
-      className={`fixed inset-0 w-full h-[100dvh] z-40 overflow-hidden flex flex-col transition-colors duration-300 ${
-        resolvedTheme === 'dark' ? 'bg-[#0c0e16]' : 'bg-[#fcf9f5]'
-      }`}
+      className="fixed inset-0 w-full h-[100dvh] z-40 overflow-hidden flex flex-col transition-colors duration-300 bg-[#fcf9f5]"
     >
       <AnimatePresence mode="wait">
         {isLoading && (

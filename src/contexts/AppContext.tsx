@@ -403,10 +403,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         chatBroadcastRef.current = channel;
 
         channel.onmessage = (event) => {
-          if (event.data && Array.isArray(event.data.messages) && event.data.messages.length > 0) {
+          if (event.data && Array.isArray(event.data.messages)) {
             const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
             if (!isAnyGenerating) {
-              setUnifiedMessages((prev) => mergeUnifiedMessages(prev, event.data.messages));
+              const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+              const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
+              const archived = processDailyChatArchival(event.data.messages, nick);
+              setUnifiedMessages((prev) => mergeUnifiedMessages(prev, archived.messages));
             }
           }
         };
@@ -465,10 +468,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleChatSynced = (e: Event) => {
       const customEvent = e as CustomEvent;
-      if (Array.isArray(customEvent.detail) && customEvent.detail.length > 0) {
+      if (Array.isArray(customEvent.detail)) {
         const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
         if (!isAnyGenerating) {
-          setUnifiedMessages((prev) => mergeUnifiedMessages(prev, customEvent.detail));
+          const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+          const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
+          const archived = processDailyChatArchival(customEvent.detail, nick);
+          setUnifiedMessages((prev) => mergeUnifiedMessages(prev, archived.messages));
         }
       }
     };
@@ -480,7 +486,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Persist unified messages whenever they change locally & broadcast to other tabs/PWA windows & sync to Firestore
   useEffect(() => {
-    if (unifiedMessages && unifiedMessages.length > 0) {
+    if (Array.isArray(unifiedMessages)) {
       saveUnifiedMessagesSafely(unifiedMessages);
 
       // Broadcast to other open windows/PWA standalone instances
@@ -494,6 +500,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [unifiedMessages, pushChatThreadsToFirestore]);
+
+  // Automatic Midnight / Date Rollover Watcher (resets chat window daily even if tab stays open)
+  useEffect(() => {
+    const checkDateRollover = () => {
+      const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
+      if (isAnyGenerating) return;
+      try {
+        const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+        const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
+        setUnifiedMessages((prev) => {
+          const result = processDailyChatArchival(prev, nick);
+          if (result.wasArchived) {
+            saveUnifiedMessagesSafely(result.messages);
+            return result.messages;
+          }
+          return prev;
+        });
+      } catch (_) {}
+    };
+    const intervalId = setInterval(checkDateRollover, 30000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Window Focus / Visibility Change Sync & Storage Event Listener (Smart Merge)
   useEffect(() => {
@@ -793,10 +821,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 remoteList.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
               }
               if (remoteList.length > 0) {
+                const rawNick = mergedData?.userProfile?.basic?.nickname?.trim();
+                const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
+                const remoteArchived = processDailyChatArchival(remoteList, nick);
                 const localMsgs = loadSavedUnifiedMessages();
-                const mergedChat = mergeUnifiedMessages(localMsgs, remoteList);
+                const mergedChat = mergeUnifiedMessages(localMsgs, remoteArchived.messages);
                 saveUnifiedMessagesSafely(mergedChat);
                 setUnifiedMessages(mergedChat);
+                if (remoteArchived.wasArchived) {
+                  pushChatThreadsToFirestore(mergedChat, true);
+                }
               }
             }
           }
@@ -1345,8 +1379,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 remoteList.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
               }
               if (remoteList.length > 0) {
+                const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+                const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
+                const remoteArchived = processDailyChatArchival(remoteList, nick);
                 setUnifiedMessages((prev) => {
-                  const merged = mergeUnifiedMessages(prev, remoteList);
+                  const merged = mergeUnifiedMessages(prev, remoteArchived.messages);
                   saveUnifiedMessagesSafely(merged);
                   return merged;
                 });

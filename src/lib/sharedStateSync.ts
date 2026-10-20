@@ -5,6 +5,7 @@ import { pickNewestVersion } from './appVersion';
 import { loadProfileFromAllVaults, saveProfileToAllVaults } from './profileVault';
 import { pushToServerVault, pullFromServerVault } from './serverSyncClient';
 import { loadSavedUnifiedMessages, mergeUnifiedMessages, saveUnifiedMessagesSafely, STORAGE_KEYS } from './chatHistorySync';
+import { processDailyChatArchival } from './chatMemoryArchive';
 
 export const GUEST_STATE_KEY = 'lucy_state_guest';
 
@@ -1024,14 +1025,14 @@ export function unpackAndHydrateLocalStorage(uid: string | null | undefined, sta
     } catch (_) {}
   }
 
-  // 4d. Hydrate Unified Chat History across devices (PC <-> Mobile)
+  // 4d. Hydrate Unified Chat History across devices (PC <-> Mobile) — strictly today's messages only
   if (Array.isArray(state.chatHistory) && state.chatHistory.length > 0) {
     try {
+      const nick = state.userProfile?.basic?.nickname?.trim() || '제제';
+      const archivedIncoming = processDailyChatArchival(state.chatHistory, nick);
       const currentMsgs = loadSavedUnifiedMessages();
-      const mergedMsgs = mergeUnifiedMessages(currentMsgs, state.chatHistory);
+      const mergedMsgs = mergeUnifiedMessages(currentMsgs, archivedIncoming.messages);
       saveUnifiedMessagesSafely(mergedMsgs);
-      safeLocalStorage.setItem(STORAGE_KEYS.PRIMARY_V3, JSON.stringify(mergedMsgs));
-      safeLocalStorage.setItem('prism_unified_chat_history', JSON.stringify(mergedMsgs));
       window.dispatchEvent(new CustomEvent('prism:chat_synced', { detail: mergedMsgs }));
     } catch (_) {}
   }

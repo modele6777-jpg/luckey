@@ -1,13 +1,14 @@
 /**
  * =========================================================================
- * PRISM & LUCY PRO: 통합 대화 기록 동기화 & 영구 보존 엔진 (Smart Chat Sync)
+ * PRISM & LUCY PRO: 통합 대화 기록 동기화 & 일일 초기화 엔진 (Smart Chat Sync)
  * =========================================================================
- * 프리즘 루시 채팅과 루시 프로(Standalone) 간의 전환 시 발생할 수 있는
- * 대화 내역 초기화 및 유실을 100% 원천 차단하고,
- * 로컬스토리지, 브로드캐스트 채널, Firestore 클라우드를 스마트 머지(Smart Merge)합니다.
+ * - 대화창은 하루 단위(자정 기준)로 초기화되며, 이전 날짜의 메시지가 백업이나 클라우드에서
+ *   다시 섞여 들어오지 않도록 오늘 날짜(isTimestampToday) 메시지만 유지합니다.
+ * - 루시 인사말은 매일 '처음' 루시채팅에 들어갈 때만 표시·낭독됩니다.
  */
 
 import { safeLocalStorage } from '../utils/safeStorage';
+import { getTodayDateKey, isTimestampToday } from './dailyCache';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
@@ -26,7 +27,10 @@ export const STORAGE_KEYS = {
   PRIMARY_V3: 'chat_history_unified_v3',
   BACKUP_V3: 'chat_history_unified_backup',
   LEGACY_OBJECT: 'chat_history_unified',
-  LEGACY_LUCY: 'chat_history_lucy'
+  LEGACY_LUCY: 'chat_history_lucy',
+  DAILY_FIRST_ENTRY_DATE: 'lucy_daily_first_entry_date_v1',
+  DAILY_FIRST_VISIT_DONE_DATE: 'lucy_daily_first_visit_done_date_v1',
+  DAILY_GREETING_SPOKEN_DATE: 'lucy_daily_greeting_spoken_date_v1',
 };
 
 function getSavedNickname(): string {
@@ -35,20 +39,121 @@ function getSavedNickname(): string {
     if (saved) {
       const parsed = JSON.parse(saved);
       const nick = parsed?.basic?.nickname?.trim() || parsed?.basic?.name?.trim();
-      if (nick && nick !== '여행자') return nick;
+      if (nick && nick !== '여행자' && nick !== '사용자' && nick !== '박주형') return nick;
     }
   } catch (_) {}
   return '제제';
 }
 
 /**
- * 기본 환영 메시지 생성자 (수다 모드 친근한 구어체)
+ * 오늘 이미 루시채팅에 처음 진입했는지 여부 확인
+ */
+export function hasEnteredLucyChatToday(): boolean {
+  try {
+    return safeLocalStorage.getItem(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE) === getTodayDateKey();
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * 오늘 루시채팅 첫 진입 기록
+ */
+export function markLucyChatEnteredToday(): void {
+  try {
+    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE, getTodayDateKey());
+  } catch (_) {}
+}
+
+/**
+ * 오늘 루시채팅의 첫 방문(인사말 노출 세션)이 이미 완료되었는지 여부
+ */
+export function hasCompletedFirstLucyVisitToday(): boolean {
+  try {
+    return safeLocalStorage.getItem(STORAGE_KEYS.DAILY_FIRST_VISIT_DONE_DATE) === getTodayDateKey();
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * 오늘 루시채팅 첫 방문 완료 기록 (이후 재진입 시 인사말 미노출)
+ */
+export function markFirstLucyVisitCompletedToday(): void {
+  try {
+    const today = getTodayDateKey();
+    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE, today);
+    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_FIRST_VISIT_DONE_DATE, today);
+  } catch (_) {}
+}
+
+/**
+ * 오늘 인사말 TTS가 이미 재생되었는지 여부
+ */
+export function hasSpokenDailyGreetingToday(): boolean {
+  try {
+    return safeLocalStorage.getItem(STORAGE_KEYS.DAILY_GREETING_SPOKEN_DATE) === getTodayDateKey();
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * 오늘 인사말 TTS 재생 완료 기록
+ */
+export function markDailyGreetingSpokenToday(): void {
+  try {
+    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_GREETING_SPOKEN_DATE, getTodayDateKey());
+  } catch (_) {}
+}
+
+/**
+ * 메시지가 인사말(greet) 메시지인지 판별
+ */
+export function isGreetingMessage(m: UnifiedMessage | null | undefined): boolean {
+  if (!m) return false;
+  if (m.role === 'user') return false;
+  const id = String(m.id || '');
+  if (id === 'greet' || id === 'greet-main' || id.startsWith('greet-')) return true;
+  if (typeof m.content === 'string') {
+    const text = m.content.trim();
+    if (
+      text.includes("통합 AI 마스터 가이드 '루시'야") ||
+      text.includes('언제든 친구처럼 다정하게 수다 떨 준비되어 있어') ||
+      text.includes('나랑 가볍게 수다 떨자! 💬✨')
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * 메시지가 오늘(자정 이후) 생성된 메시지인지 판별
+ */
+export function isMessageFromToday(m: UnifiedMessage | null | undefined): boolean {
+  if (!m) return false;
+  const todayKey = getTodayDateKey();
+  const id = String(m.id || '');
+  if (id.startsWith('greet-') && id !== 'greet-main') {
+    return id === `greet-${todayKey}`;
+  }
+  if (m.timestamp && typeof m.timestamp === 'number') {
+    return isTimestampToday(m.timestamp);
+  }
+  const lastSessionDate = safeLocalStorage.getItem('lucy_chat_session_date_v1');
+  return lastSessionDate === todayKey;
+}
+
+/**
+ * 기본 환영 메시지 생성자 (매일 처음 루시채팅 들어갈 때만 표시)
  */
 export function createDefaultGreeting(targetPersona: PersonaType = 'lucy', userName?: string): UnifiedMessage {
   const nick = userName || getSavedNickname();
   const nameLabel = nick && nick !== '여행자' ? `${nick}! ` : '';
+  const todayKey = getTodayDateKey();
   return {
-    id: 'greet-main',
+    id: `greet-${todayKey}`,
     role: 'model',
     content: `안녕, ${nameLabel}오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 언제든 친구처럼 다정하게 수다 떨 준비되어 있어! 💬✨`,
     timestamp: Date.now(),
@@ -59,11 +164,11 @@ export function createDefaultGreeting(targetPersona: PersonaType = 'lucy', userN
 }
 
 /**
- * 메시지 목록에 실제 사용자의 대화가 포함되어 있는지 검증
+ * 메시지 목록에 실제 사용자의 오늘 대화가 포함되어 있는지 검증
  */
 export function hasRealUserConversation(messages: UnifiedMessage[] | null | undefined): boolean {
   if (!Array.isArray(messages) || messages.length === 0) return false;
-  return messages.some((m) => m.role === 'user' && !!m.content);
+  return messages.some((m) => m.role === 'user' && !!m.content && isMessageFromToday(m));
 }
 
 /**
@@ -83,13 +188,13 @@ function getMessageSignature(m: UnifiedMessage): string {
     return String(m.id);
   }
   const contentStr = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
-  const time = Math.floor(Number(m.timestamp || 0) / 1000); // 1초 단위 노멀라이즈
+  const time = Math.floor(Number(m.timestamp || 0) / 1000);
   return `${m.role}_${time}_${contentStr.slice(0, 50)}`;
 }
 
 function getMessageFallbackKey(m: UnifiedMessage): string {
   const contentStr = typeof m.content === 'string' ? m.content.trim() : JSON.stringify(m.content);
-  const time = Math.floor(Number(m.timestamp || 0) / 3000); // 3초 버퍼 노멀라이즈
+  const time = Math.floor(Number(m.timestamp || 0) / 3000);
   return `${m.role}_${time}_${contentStr.slice(0, 80)}`;
 }
 
@@ -104,48 +209,51 @@ function isEmptyPlaceholder(m: UnifiedMessage): boolean {
 
 /**
  * 두 개 이상의 대화 기록 목록을 스마트하게 병합 (Smart Deduplicating Merge)
- * - 실제 대화가 존재할 경우 불필요한 단독 인사말(greet-main, greet-*) 제거
- * - 빈 모델 응답 플레이스홀더(생성 시작 시 임시 생성된 빈 메시지)는 영구 보관 대상에서 필터링
- * - 사용자 질문(role: 'user')과 AI 응답 쌍의 무손실 보존
- * - 타임스탬프 순서 보장
- * - 빈 목록이나 greet-main 단독 목록으로 기존 대화가 덮어씌워지는 것 완벽 방지
+ * - 오늘 날짜(isMessageFromToday)가 아닌 과거 메시지는 철저히 필터링하여 일일 초기화 보장
+ * - 실제 대화가 존재하거나 이미 오늘 첫 루시채팅 방문을 마친 경우 단독 인사말(greet-*) 제거
  */
 export function mergeUnifiedMessages(
   primary: UnifiedMessage[],
   incoming: UnifiedMessage[]
 ): UnifiedMessage[] {
-  const cleanPrimary = (Array.isArray(primary) ? primary : []).filter((m) => !isErrorMessage(m) && !isEmptyPlaceholder(m));
-  const cleanIncoming = (Array.isArray(incoming) ? incoming : []).filter((m) => !isErrorMessage(m) && !isEmptyPlaceholder(m));
+  const cleanPrimary = (Array.isArray(primary) ? primary : []).filter(
+    (m) => !isErrorMessage(m) && !isEmptyPlaceholder(m) && isMessageFromToday(m)
+  );
+  const cleanIncoming = (Array.isArray(incoming) ? incoming : []).filter(
+    (m) => !isErrorMessage(m) && !isEmptyPlaceholder(m) && isMessageFromToday(m)
+  );
 
   const hasPrimaryUser = hasRealUserConversation(cleanPrimary);
   const hasIncomingUser = hasRealUserConversation(cleanIncoming);
+  const firstVisitDoneToday = hasCompletedFirstLucyVisitToday();
 
-  // 둘 다 유효한 대화가 없고 하나만 greet가 있는 경우
+  // 오늘 실제 유저 대화가 아직 없는 경우
   if (!hasPrimaryUser && !hasIncomingUser) {
+    // 오늘 이미 첫 루시채팅 진입을 마친 이후(재진입/초기화 이후)라면 인사말을 표시하지 않음
+    if (firstVisitDoneToday) {
+      return [];
+    }
     if (cleanPrimary.length > 0) return cleanPrimary;
     if (cleanIncoming.length > 0) return cleanIncoming;
     return [createDefaultGreeting()];
   }
 
-  // 병합용 맵 (Primary Key: ID or Exact Signature, Secondary Lookup: Fallback Content Key)
+  // 병합용 맵
   const map = new Map<string, UnifiedMessage>();
   const fallbackToKey = new Map<string, string>();
 
-  // 유저 대화가 있을 때는 순수 greet-main / greet-*은 제외하고 병합
-  const shouldFilterGreet = hasPrimaryUser || hasIncomingUser;
+  // 유저 대화가 있거나 첫 방문이 끝난 경우에는 인사말(greet-*)을 제외하고 병합
+  const shouldFilterGreet = hasPrimaryUser || hasIncomingUser || firstVisitDoneToday;
 
   [...cleanPrimary, ...cleanIncoming].forEach((msg) => {
-    if (shouldFilterGreet && (msg.id === 'greet-main' || msg.id === 'greet' || msg.id?.startsWith('greet-'))) {
+    if (shouldFilterGreet && isGreetingMessage(msg)) {
       return;
     }
 
     const sig = getMessageSignature(msg);
     const fbKey = getMessageFallbackKey(msg);
 
-    // 1. Exact signature match
     let targetKey = map.has(sig) ? sig : null;
-
-    // 2. Fallback key match (e.g. same content and time range but different/missing ID)
     if (!targetKey && fallbackToKey.has(fbKey)) {
       targetKey = fallbackToKey.get(fbKey) || null;
     }
@@ -155,7 +263,6 @@ export function mergeUnifiedMessages(
       fallbackToKey.set(fbKey, sig);
     } else {
       const existing = map.get(targetKey)!;
-      // 온전한 컨텐츠가 빈 컨텐츠나 짧은 청크로 덮어써지지 않도록 보호
       const hasContent = (c: any) => c && (typeof c !== 'string' || c.trim() !== '');
       const preferredContent = hasContent(msg.content) ? msg.content : existing.content;
 
@@ -174,33 +281,45 @@ export function mergeUnifiedMessages(
   const merged = Array.from(map.values());
   merged.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
 
-  return merged.length > 0 ? merged : [createDefaultGreeting()];
+  if (merged.length > 0) return merged;
+  return firstVisitDoneToday ? [] : [createDefaultGreeting()];
 }
 
 /**
- * 로컬스토리지의 모든 키에서 가장 온전한 대화 기록을 복원
+ * 로컬스토리지에서 오늘의 대화 기록만 복원 (과거 날짜 기록은 자동 배제)
  */
 export function loadSavedUnifiedMessages(): UnifiedMessage[] {
+  const firstVisitDoneToday = hasCompletedFirstLucyVisitToday();
+
   try {
     // 1. Primary V3
     const savedV3 = safeLocalStorage.getItem(STORAGE_KEYS.PRIMARY_V3);
     if (savedV3) {
       const parsed = JSON.parse(savedV3);
-      if (Array.isArray(parsed) && hasRealUserConversation(parsed)) {
-        return parsed.filter((m) => !isErrorMessage(m));
+      if (Array.isArray(parsed)) {
+        const todayOnly = parsed.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
+        if (hasRealUserConversation(todayOnly)) {
+          return todayOnly.filter((m) => !isGreetingMessage(m));
+        }
+        if (!firstVisitDoneToday && todayOnly.length > 0) {
+          return todayOnly;
+        }
       }
     }
 
-    // 2. Backup V3
+    // 2. Backup V3 (오늘 대화만 허용)
     const savedBackup = safeLocalStorage.getItem(STORAGE_KEYS.BACKUP_V3);
     if (savedBackup) {
       const parsed = JSON.parse(savedBackup);
-      if (Array.isArray(parsed) && hasRealUserConversation(parsed)) {
-        return parsed.filter((m) => !isErrorMessage(m));
+      if (Array.isArray(parsed)) {
+        const todayOnly = parsed.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
+        if (hasRealUserConversation(todayOnly)) {
+          return todayOnly.filter((m) => !isGreetingMessage(m));
+        }
       }
     }
 
-    // 3. Legacy Object structure
+    // 3. Legacy Object structure (오늘 대화만 허용)
     const savedOld = safeLocalStorage.getItem(STORAGE_KEYS.LEGACY_OBJECT);
     if (savedOld) {
       const parsedOld = JSON.parse(savedOld);
@@ -212,7 +331,7 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
           Object.entries(parsedOld).forEach(([personaKey, msgs]) => {
             if (Array.isArray(msgs)) {
               msgs.forEach((m: UnifiedMessage) => {
-                if (!isErrorMessage(m) && m.id !== 'greet') {
+                if (!isErrorMessage(m) && !isGreetingMessage(m) && isMessageFromToday(m)) {
                   allMsgs.push({
                     ...m,
                     persona: (m.persona || personaKey) as PersonaType,
@@ -228,49 +347,34 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
         }
       }
     }
-
-    // 4. If primary V3 had at least greetings
-    if (savedV3) {
-      const parsed = JSON.parse(savedV3);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((m) => {
-          if (m.id === 'greet-main' || (typeof m.content === 'string' && m.content.includes("통합 AI 마스터 가이드 '루시'야"))) {
-            return createDefaultGreeting(m.persona || 'lucy');
-          }
-          return m;
-        });
-      }
-    }
   } catch (e) {
     console.error('[ChatSync] Failed to load chat history:', e);
   }
 
-  return [createDefaultGreeting()];
+  return firstVisitDoneToday ? [] : [createDefaultGreeting()];
 }
 
 /**
- * 대화 기록을 로컬스토리지 및 백업 키들에 안전하게 다중 저장
+ * 대화 기록을 로컬스토리지 및 백업 키들에 안전하게 동기화 저장
+ * (빈 배열이거나 초기화된 상태도 백업 키에 즉시 반영하여 과거 날짜 대화가 부활하는 현상 차단)
  */
 export function saveUnifiedMessagesSafely(messages: UnifiedMessage[]): void {
-  if (!Array.isArray(messages) || messages.length === 0) return;
+  if (!Array.isArray(messages)) return;
 
   try {
-    const jsonStr = JSON.stringify(messages);
+    const todayFiltered = messages.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
+    const jsonStr = JSON.stringify(todayFiltered);
     safeLocalStorage.setItem(STORAGE_KEYS.PRIMARY_V3, jsonStr);
+    safeLocalStorage.setItem(STORAGE_KEYS.BACKUP_V3, jsonStr);
+    safeLocalStorage.setItem('prism_unified_chat_history', jsonStr);
 
-    // 실제 대화가 있을 때만 백업 키 갱신 (초기화 방지용 방어벽)
-    if (hasRealUserConversation(messages)) {
-      safeLocalStorage.setItem(STORAGE_KEYS.BACKUP_V3, jsonStr);
-    }
-
-    // 레거시 호환 객체 구조도 동기화
     safeLocalStorage.setItem(STORAGE_KEYS.LEGACY_OBJECT, JSON.stringify({
-      lucy: messages,
-      orange: messages,
-      trinity: messages,
-      aura: messages,
-      bluebird: messages,
-      muse: messages,
+      lucy: todayFiltered,
+      orange: todayFiltered,
+      trinity: todayFiltered,
+      aura: todayFiltered,
+      bluebird: todayFiltered,
+      muse: todayFiltered,
     }));
   } catch (e) {
     console.warn('[ChatSync] Failed to save messages to storage:', e);
@@ -278,25 +382,29 @@ export function saveUnifiedMessagesSafely(messages: UnifiedMessage[]): void {
 }
 
 /**
- * 대화 기록을 완전히 초기화하고 새 환영 메시지만 로컬 및 백업 스토리지에 설정
+ * 사용자가 수동으로 대화 기록을 초기화할 때 스토리지를 깨끗이 비움
+ * (오늘 첫 방문 인사말은 이미 이루어졌으므로 수동 초기화 시에는 인사말을 다시 띄우지 않음)
  */
-export function forceResetUnifiedChatHistory(targetPersona: PersonaType = 'lucy'): UnifiedMessage[] {
-  const greeting = [createDefaultGreeting(targetPersona)];
-  const jsonStr = JSON.stringify(greeting);
+export function forceResetUnifiedChatHistory(_targetPersona: PersonaType = 'lucy'): UnifiedMessage[] {
+  markFirstLucyVisitCompletedToday();
+  markDailyGreetingSpokenToday();
+  const emptyList: UnifiedMessage[] = [];
+  const jsonStr = JSON.stringify(emptyList);
   try {
     safeLocalStorage.setItem(STORAGE_KEYS.PRIMARY_V3, jsonStr);
     safeLocalStorage.setItem(STORAGE_KEYS.BACKUP_V3, jsonStr);
+    safeLocalStorage.setItem('prism_unified_chat_history', jsonStr);
     safeLocalStorage.setItem(STORAGE_KEYS.LEGACY_OBJECT, JSON.stringify({
-      lucy: greeting,
-      orange: greeting,
-      trinity: greeting,
-      aura: greeting,
-      bluebird: greeting,
-      muse: greeting,
+      lucy: emptyList,
+      orange: emptyList,
+      trinity: emptyList,
+      aura: emptyList,
+      bluebird: emptyList,
+      muse: emptyList,
     }));
     safeLocalStorage.removeItem(STORAGE_KEYS.LEGACY_LUCY);
   } catch (e) {
     console.warn('[ChatSync] Failed to force reset chat history in storage:', e);
   }
-  return greeting;
+  return emptyList;
 }
