@@ -28,6 +28,47 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
   // Render thematic center glyph based on theme.id (no infinite spin/blur/shadow on 78 wheel cards)
   const renderThemeArtwork = () => {
     switch (theme.id) {
+      case 'oracle_healing':
+        return (
+          <div className={`relative flex items-center justify-center ${iconScale}`}>
+            <div className={`w-12 h-12 flex items-center justify-center ${isWheelFast ? '' : 'drop-shadow-[0_0_10px_rgba(253,164,175,0.45)]'}`}>
+              <svg viewBox="0 0 48 48" className="w-full h-full text-rose-200" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                <path d="M24 41V13M24 28C17 28 13 24 12 17c7 0 12 3 12 11ZM24 23c0-8 5-13 13-14 0 8-4 14-13 16ZM24 35c-6 0-10-3-12-9 7 0 11 3 12 9ZM24 32c1-7 5-10 12-11-1 7-5 11-12 12Z" />
+                <path d="M18 42h12" />
+              </svg>
+            </div>
+            {!isWheelFast && <div className="absolute w-14 h-14 rotate-45 border border-rose-300/30 rounded-tl-2xl rounded-br-2xl" />}
+          </div>
+        );
+
+      case 'oracle_growth':
+        return (
+          <div className={`relative flex items-center justify-center ${iconScale}`}>
+            <div className={`w-12 h-12 flex items-center justify-center ${isWheelFast ? '' : 'drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]'}`}>
+              <svg viewBox="0 0 48 48" className="w-full h-full text-amber-200" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+                <path d="M8 39h32M11 34h9v5M20 28h9v11M29 22h9v17" />
+                <path d="m13 25 10-9 7 5 9-11M32 10h7v7" />
+                <circle cx="14" cy="13" r="4" />
+                <path d="M14 5V3M14 23v-2M6 13H4M24 13h-2M8.3 7.3 7 6M21 20l-1.4-1.4" />
+              </svg>
+            </div>
+            {!isWheelFast && <div className="absolute inset-0 border border-amber-300/30 rotate-45" />}
+          </div>
+        );
+
+      case 'oracle_miracle':
+        return (
+          <div className={`relative flex items-center justify-center ${iconScale}`}>
+            <div className={`w-12 h-12 flex items-center justify-center ${isWheelFast ? '' : 'drop-shadow-[0_0_10px_rgba(196,181,253,0.5)]'}`}>
+              <svg viewBox="0 0 48 48" className="w-full h-full text-violet-200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+                <path d="M24 25c-8-2-11-8-8-15 7 2 10 7 8 15ZM24 25c-1-8 3-13 10-15 3 7 0 13-10 15ZM24 25c8-2 14 1 15 8-7 4-13 1-15-8ZM24 25c7 3 9 9 5 15-7-1-10-7-5-15ZM24 25c1 8-3 13-10 15-3-7 0-13 10-15ZM24 25c-8 2-14-1-15-8 7-4 13-1 15 8Z" />
+                <circle cx="24" cy="25" r="3" />
+              </svg>
+            </div>
+            {!isWheelFast && <div className="absolute inset-0 rounded-full border border-violet-300/40 border-dashed" />}
+          </div>
+        );
+
       case 'cosmic_midnight':
         return (
           <div className={`relative flex items-center justify-center ${iconScale}`}>
@@ -273,6 +314,12 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
   };
 
   const accentColor = theme.accentColor || '#eab308';
+  const oracleWheelBackgrounds: Record<string, string> = {
+    oracle_healing: `radial-gradient(ellipse at 50% 50%, ${accentColor}55 0 8%, transparent 8.5%), repeating-linear-gradient(45deg, transparent 0 8px, ${accentColor}18 8px 9px, transparent 9px 16px), linear-gradient(145deg, #3b1726, #130a17 58%, #2d1424)`,
+    oracle_growth: `radial-gradient(circle at 50% 30%, ${accentColor}66 0 11%, transparent 11.5%), repeating-conic-gradient(from 0deg at 50% 30%, ${accentColor}20 0deg 5deg, transparent 5deg 30deg), linear-gradient(145deg, #4a2c0e, #17100a 58%, #38200a)`,
+    oracle_miracle: `radial-gradient(circle at 50% 50%, ${accentColor}55 0 5%, transparent 5.5% 14%, ${accentColor}30 14.5% 16%, transparent 16.5% 26%, ${accentColor}24 26.5% 28%, transparent 28.5%), repeating-conic-gradient(from 15deg at 50% 50%, ${accentColor}18 0deg 8deg, transparent 8deg 30deg), linear-gradient(145deg, #2c1c54, #100b21 58%, #211640)`,
+  };
+  const isOracleBack = theme.id.startsWith('oracle_');
 
   // 🌟 78장 휠 카드 전용 초경량 단일 레이어 렌더링 (중첩 DOM·SVG 800여 개 제거 -> 60~120fps 무저항 스핀)
   if (isWheelFast) {
@@ -281,16 +328,18 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
         className={`absolute inset-0 w-full h-full rounded-lg sm:rounded-xl flex items-center justify-center pointer-events-none select-none ${className}`}
         style={{
           border: `1px solid ${isHovered ? '#fde047' : `${accentColor}88`}`,
-          backgroundImage: `radial-gradient(circle at 50% 50%, ${accentColor}33 0 3%, transparent 3.5% 17%, ${accentColor}22 17.5% 18.5%, transparent 19% 31%, ${accentColor}1f 31.5% 32.5%, transparent 33%), repeating-conic-gradient(from 22.5deg at 50% 50%, ${accentColor}12 0deg 4deg, transparent 4deg 45deg), radial-gradient(ellipse at 18% 0%, ${accentColor}30 0%, transparent 48%), linear-gradient(145deg, #211638, #090613 56%, #1b102b)`,
+          backgroundImage: oracleWheelBackgrounds[theme.id] || `radial-gradient(circle at 50% 50%, ${accentColor}33 0 3%, transparent 3.5% 17%, ${accentColor}22 17.5% 18.5%, transparent 19% 31%, ${accentColor}1f 31.5% 32.5%, transparent 33%), repeating-conic-gradient(from 22.5deg at 50% 50%, ${accentColor}12 0deg 4deg, transparent 4deg 45deg), radial-gradient(ellipse at 18% 0%, ${accentColor}30 0%, transparent 48%), linear-gradient(145deg, #211638, #090613 56%, #1b102b)`,
           boxShadow: isHovered ? `inset 0 0 0 2px ${accentColor}44, 0 0 16px ${accentColor}55` : `inset 0 0 0 2px ${accentColor}22`,
         }}
       >
-        <span
-          className="text-xl sm:text-2xl leading-none"
-          style={{ color: accentColor, textShadow: `0 0 12px ${accentColor}aa` }}
-        >
-          ✦
-        </span>
+        {isOracleBack ? renderThemeArtwork() : (
+          <span
+            className="text-xl sm:text-2xl leading-none"
+            style={{ color: accentColor, textShadow: `0 0 12px ${accentColor}aa` }}
+          >
+            ✦
+          </span>
+        )}
       </div>
     );
   }
@@ -301,7 +350,7 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
       }}
-      className={`absolute inset-0 w-full h-full bg-gradient-to-b from-[#100826] via-[#090514] to-black rounded-xl sm:rounded-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 overflow-hidden select-none shadow-2xl ${className}`}
+      className={`absolute inset-0 w-full h-full ${theme.id === 'oracle_healing' ? 'bg-gradient-to-b from-rose-950 via-[#170914] to-black' : theme.id === 'oracle_growth' ? 'bg-gradient-to-b from-amber-950 via-[#171006] to-black' : theme.id === 'oracle_miracle' ? 'bg-gradient-to-b from-violet-950 via-[#10091c] to-black' : 'bg-gradient-to-b from-[#100826] via-[#090514] to-black'} rounded-xl sm:rounded-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 overflow-hidden select-none shadow-2xl ${className}`}
     >
       {/* Outer filigree border */}
       <div
@@ -315,14 +364,15 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
         className="absolute inset-2 sm:inset-2.5 border rounded-md sm:rounded-lg bg-black/40 flex flex-col justify-between items-center p-1 sm:p-1.5 pointer-events-none"
         style={{ borderColor: `${accentColor}33` }}
       >
-        {/* Top Moon & Star motif */}
+        {/* Top mode-specific emblem */}
         <div
           className="flex items-center gap-1 opacity-80 text-[6px] sm:text-[7px]"
           style={{ color: accentColor }}
         >
-          <span>☽</span>
-          <span className="text-[7px] sm:text-[8px]">✧</span>
-          <span>☾</span>
+          {theme.id === 'oracle_healing' ? <><span>❧</span><span className="text-[7px] sm:text-[8px]">❀</span><span>❧</span></>
+            : theme.id === 'oracle_growth' ? <><span>△</span><span className="text-[7px] sm:text-[8px]">☼</span><span>△</span></>
+              : theme.id === 'oracle_miracle' ? <><span>✧</span><span className="text-[7px] sm:text-[8px]">❋</span><span>✧</span></>
+                : <><span>☽</span><span className="text-[7px] sm:text-[8px]">✧</span><span>☾</span></>}
         </div>
 
         {/* Center Thematic Sacred Artwork */}
@@ -330,14 +380,15 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
           {renderThemeArtwork()}
         </div>
 
-        {/* Bottom Symmetrical Moon & Star motif */}
+        {/* Bottom mode-specific emblem */}
         <div
           className="flex items-center gap-1 opacity-80 text-[6px] sm:text-[7px] rotate-180"
           style={{ color: accentColor }}
         >
-          <span>☽</span>
-          <span className="text-[7px] sm:text-[8px]">✧</span>
-          <span>☾</span>
+          {theme.id === 'oracle_healing' ? <><span>❧</span><span className="text-[7px] sm:text-[8px]">❀</span><span>❧</span></>
+            : theme.id === 'oracle_growth' ? <><span>△</span><span className="text-[7px] sm:text-[8px]">☼</span><span>△</span></>
+              : theme.id === 'oracle_miracle' ? <><span>✧</span><span className="text-[7px] sm:text-[8px]">❋</span><span>✧</span></>
+                : <><span>☽</span><span className="text-[7px] sm:text-[8px]">✧</span><span>☾</span></>}
         </div>
       </div>
 
@@ -348,4 +399,3 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
     </div>
   );
 });
-
