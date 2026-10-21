@@ -58,9 +58,9 @@ const STORAGE_DAILY_ORACLE_PREFIX = 'prism_oracle_daily_';
 export type OracleMode = 'healing' | 'growth' | 'miracle';
 
 const ORACLE_CARD_BACKS: Record<OracleMode, string> = {
-  healing: 'botanical_vintage',
-  growth: 'five_elements_emerald',
-  miracle: 'sacred_mandala',
+  healing: 'oracle_healing',
+  growth: 'oracle_growth',
+  miracle: 'oracle_miracle',
 };
 
 export interface SavedDailyOracleSession {
@@ -3741,7 +3741,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </button>
               </div>
               <p className="mt-2 text-[11px] text-zinc-500">
-                힐링 · 보태니컬 빈티지　|　자기계발 · 오행 비취　|　기적수업 · 신성 로터스 만다라
+                힐링 · 마음의 정원　|　자기계발 · 새벽의 도약　|　기적수업 · 평화의 연꽃
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-6 max-w-4xl mx-auto text-left">

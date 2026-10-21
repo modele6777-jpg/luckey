@@ -996,13 +996,36 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                         <span className="font-bold tracking-wide leading-tight break-keep">{positionLabel}</span>
                       </div>
                     ) : (
-                      <div
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.52, rotateY: 160, y: 18 }}
+                        animate={{ opacity: 1, scale: 1, rotateY: 0, y: 0 }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 220,
+                          damping: 16,
+                          duration: 0.7,
+                        }}
                         onClick={() => {
                           setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
                         }}
                         className="absolute inset-0 pointer-events-auto border-2 border-yellow-400 bg-zinc-950 rounded-xl md:rounded-2xl flex flex-col justify-between p-1.5 sm:p-2 md:p-3 text-center overflow-hidden cursor-zoom-in group hover:border-yellow-300"
+                        style={{ transformStyle: 'preserve-3d' }}
                         title={`${drawnCard!.nameKo} 카드 크게 보기`}
                       >
+                        <motion.div
+                          key={`draw-flash-${drawnCard!.id}`}
+                          initial={{ opacity: 0.95, scale: 0.45 }}
+                          animate={{ opacity: 0, scale: 1.9 }}
+                          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+                          className="absolute inset-[-35%] z-20 rounded-full bg-[radial-gradient(circle,rgba(255,255,220,0.95)_0%,rgba(250,204,21,0.55)_18%,rgba(168,85,247,0.22)_42%,transparent_70%)] pointer-events-none"
+                        />
+                        <motion.div
+                          key={`draw-sheen-${drawnCard!.id}`}
+                          initial={{ x: '-150%', opacity: 0.9 }}
+                          animate={{ x: '180%', opacity: 0 }}
+                          transition={{ duration: 0.8, ease: 'easeOut', delay: 0.08 }}
+                          className="absolute inset-y-0 left-0 z-30 w-1/2 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/75 to-transparent pointer-events-none"
+                        />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center z-30 pointer-events-none">
                           <div className="w-6 h-6 rounded-full bg-yellow-500/90 text-black flex items-center justify-center">
                             <ZoomIn size={12} />
@@ -1045,14 +1068,14 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                         <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-yellow-500/60 uppercase tracking-widest block z-20 shrink-0">
                           {drawnCard!.type}
                         </span>
-                      </div>
+                      </motion.div>
                     )}
                     {hasCard && (
                       <TarotCardFlipParticles
                         active
                         triggerKey={drawnCard!.id}
-                        size="sm"
-                        count={20}
+                        size="lg"
+                        count={36}
                         className="z-[60]"
                       />
                     )}

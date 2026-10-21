@@ -233,6 +233,42 @@ export const TAROT_CARD_BACKS: TarotCardBackTheme[] = [
   },
 ];
 
+const ORACLE_CARD_BACK_THEMES: TarotCardBackTheme[] = [
+  {
+    id: 'oracle_healing',
+    nameKo: '마음의 정원',
+    nameEn: 'Garden of Healing',
+    category: 'nature',
+    categoryLabelKo: '오라클 전용',
+    badge: '힐링',
+    description: '가지를 뻗은 생명의 나무와 내면의 잎사귀 문양',
+    accentColor: '#fda4af',
+    borderClass: 'border-rose-300/60',
+  },
+  {
+    id: 'oracle_growth',
+    nameKo: '새벽의 도약',
+    nameEn: 'Dawn of Growth',
+    category: 'sacred',
+    categoryLabelKo: '오라클 전용',
+    badge: '자기계발',
+    description: '떠오르는 태양과 앞으로 나아가는 상승 계단 문양',
+    accentColor: '#fbbf24',
+    borderClass: 'border-amber-300/60',
+  },
+  {
+    id: 'oracle_miracle',
+    nameKo: '평화의 연꽃',
+    nameEn: 'Lotus of Peace',
+    category: 'mystic',
+    categoryLabelKo: '오라클 전용',
+    badge: '기적수업',
+    description: '중심에서 피어나는 연꽃과 고요한 파동 문양',
+    accentColor: '#c4b5fd',
+    borderClass: 'border-violet-300/60',
+  },
+];
+
 export const DEFAULT_TAROT_CARD_BACK_ID = 'celestial_gold';
 
 const STORAGE_KEY = 'luckey_tarot_card_back_id';
@@ -260,6 +296,7 @@ export function getTarotCardBackTheme(id?: string): TarotCardBackTheme {
   const targetId = id || getSavedTarotCardBackId();
   return (
     TAROT_CARD_BACKS.find((b) => b.id === targetId) ||
+    ORACLE_CARD_BACK_THEMES.find((b) => b.id === targetId) ||
     TAROT_CARD_BACKS[0]
   );
 }
