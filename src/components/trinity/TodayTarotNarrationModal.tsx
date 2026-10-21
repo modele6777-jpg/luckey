@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -363,7 +364,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-2xl bg-[#0c0c12] border border-yellow-500/35 p-5 sm:p-7 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.8)] text-white max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col space-y-5"
+          className="relative w-full max-w-5xl bg-[#0c0c12] border border-yellow-500/35 p-5 sm:p-7 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.8)] text-white max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col space-y-5"
         >
           {/* Subtle Ambient Cosmic Glow */}
           <div
@@ -771,20 +772,17 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
           )}
 
           {/* 🎡 잔여 덱 전용 360도 원형 휠 선택 모달 */}
-          {showFollowUpWheelModal && (
-            <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4">
-              <div className="relative w-full max-w-5xl h-[88vh] rounded-3xl bg-slate-950/95 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col">
-                <TarotSpread
-                  deckSource={dailyRemainingDeck}
-                  maxCards={1}
-                  concern={pendingFollowUpQuestion}
-                  spreadName={`오늘의 타로 추가 질문 #${dailyFollowUpEntries.length + 1}`}
-                  spreadReason={`오늘의 타로를 제외한 ${dailyRemainingDeck.length}장의 잔여 덱에서 1장을 직접 고릅니다.`}
-                  onComplete={handleFollowUpWheelComplete}
-                  onCancel={() => setShowFollowUpWheelModal(false)}
-                />
-              </div>
-            </div>
+          {showFollowUpWheelModal && typeof document !== 'undefined' && createPortal(
+            <TarotSpread
+              deckSource={dailyRemainingDeck}
+              maxCards={1}
+              concern={pendingFollowUpQuestion}
+              spreadName={`오늘의 타로 추가 질문 #${dailyFollowUpEntries.length + 1}`}
+              spreadReason={`오늘의 타로를 제외한 ${dailyRemainingDeck.length}장의 잔여 덱에서 1장을 직접 고릅니다.`}
+              onComplete={handleFollowUpWheelComplete}
+              onCancel={() => setShowFollowUpWheelModal(false)}
+            />,
+            document.body,
           )}
         </motion.div>
       </motion.div>
