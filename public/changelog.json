@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.4.389",
+    "summary": "사이드바 프로필 아래 앱 버전 표시",
+    "builtAt": "2026-10-21T23:30:48.817+09:00",
+    "items": [
+      "사이드바 프로필 사진 바로 아래에 현재 앱 버전을 표시"
+    ]
+  },
+  {
     "version": "1.4.388",
     "summary": "Forward thinking level through buffered mobile calls",
     "builtAt": "2026-10-21T22:39:02.161+09:00",
