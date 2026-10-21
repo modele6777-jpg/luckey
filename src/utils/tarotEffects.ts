@@ -16,49 +16,17 @@ export interface TarotVibrationOptions {
 export function triggerTarotScreenVibration(options?: TarotVibrationOptions): void {
   if (typeof window === 'undefined') return;
 
-  // 1. 디바이스 물리 진동 햅틱 (Web Vibration API)
+  // 1. 디바이스 물리 진동 햅틱 (Web Vibration API - 경량 단일 펄스)
   try {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator && typeof navigator.vibrate === 'function') {
-      const pattern = options?.intensity === 'strong' 
-        ? [25, 40, 30] 
+      const pattern = options?.intensity === 'strong'
+        ? 22
         : options?.intensity === 'subtle'
-        ? [15, 20, 15]
-        : [18, 28, 20];
+        ? 10
+        : 15;
       navigator.vibrate(pattern);
     }
   } catch (_) {
     // 보안 컨텍스트나 무음 모드 등 진동 제한 시 무시
   }
-
-  // 2. 시각적 화면 미세 진동 (CSS 애니메이션 클래스 주입)
-  try {
-    const target =
-      options?.containerElement ||
-      document.getElementById('tarot-stage-container') ||
-      document.querySelector('.tarot-spread-stage-root') ||
-      document.getElementById('root');
-
-    if (target && target instanceof HTMLElement) {
-      target.classList.remove('tarot-screen-vibrating');
-      // 강제 리플로우(reflow)로 이전 애니메이션 즉각 초기화 후 재실행
-      void target.offsetWidth;
-      target.classList.add('tarot-screen-vibrating');
-
-      const timeout = options?.durationMs || 340;
-      window.setTimeout(() => {
-        target.classList.remove('tarot-screen-vibrating');
-      }, timeout);
-    }
-  } catch (_) {
-    // DOM 조작 실패 안전 방어
-  }
-
-  // 3. 글로벌 이벤트 디스패치 (리액트 컴포넌트 구독용)
-  try {
-    window.dispatchEvent(
-      new CustomEvent('tarot-screen-vibrate', {
-        detail: { timestamp: Date.now(), intensity: options?.intensity || 'medium' },
-      })
-    );
-  } catch (_) {}
 }

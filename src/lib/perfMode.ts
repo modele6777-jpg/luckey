@@ -338,40 +338,26 @@ export function isIPhoneXSClass(): boolean {
     return false;
   }
 
-  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  // 1. Exact screen physical resolution of iPhone X / XS / 11 Pro / mini: 375 x 812 (or innerWidth <= 375 on iOS)
+  const sw = window.screen?.width || window.innerWidth;
+  const sh = window.screen?.height || window.innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  const is375x812 =
+    (sw === 375 && sh === 812) ||
+    (sw === 812 && sh === 375) ||
+    (window.innerWidth === 375 && window.innerHeight <= 812);
 
-  // 1. Apple capped iPhone X (A11 Bionic) at iOS 16.7.
-  //    iOS 17+ means the device is at minimum iPhone XR (A12) or newer — not a legacy device.
-  //    iOS 16 or older = iPhone X era, treat as legacy.
-  const isIOS17Plus = /OS (1[7-9]|[2-9]\d)_/i.test(ua);
-  if (isIOS17Plus) {
-    // iOS 17+ devices are NOT XS-class legacy devices
-    cachedIPhoneXS = false;
-    return false;
+  if (is375x812 && dpr >= 2) {
+    cachedIPhoneXS = true;
+    return true;
   }
+
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
   if (/OS (1[0-6])_[0-9]/i.test(ua)) {
     cachedIPhoneXS = true;
     return true;
   }
 
-  // 2. Exact screen physical resolution of iPhone X / XS: 375 x 812 with DPR >= 2.5
-  //    NOTE: iPhone 11 Pro is also 375x812 but runs iOS 17 max — already excluded above.
-  const sw = window.screen?.width || window.innerWidth;
-  const sh = window.screen?.height || window.innerHeight;
-  const dpr = window.devicePixelRatio || 1;
-  const is375x812 = (sw === 375 && sh === 812) || (sw === 812 && sh === 375);
-
-  if (is375x812 && dpr >= 2.5) {
-    cachedIPhoneXS = true;
-    return true;
-  }
-
-  // 3. REMOVED: the minDim<=390 && dpr>=2.5 check was a false-positive catch-all
-  //    that matched iPhone 13 mini (375x812 @3x, iOS 17+), iPhone SE 3 (375x667 @2x),
-  //    and iPhone 16 Pro (393x852 @3x). Only match verified legacy screen sizes.
-  //    iPhone X/XS: 375x812. iPhone 8: 375x667 @2x (DPR=2, excluded by dpr>=2.5).
-
-  // General iPhone with narrow screen that failed all above checks → not legacy
   cachedIPhoneXS = false;
   return cachedIPhoneXS;
 }

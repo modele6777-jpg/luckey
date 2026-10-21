@@ -151,7 +151,7 @@ function mergeProfileSection<T extends any>(baseSection?: T, incomingSection?: T
       } else if (bStr && !iStr) {
         result[key] = bStr;
       } else {
-        result[key] = iStr || bStr;
+        result[key] = bStr || iStr;
       }
       continue;
     }
@@ -174,20 +174,22 @@ export function mergeUserProfile(
 
   const localScore = profileCompleteness(local);
   const remoteScore = profileCompleteness(remote);
+  const effLocalTs = Math.max(localUpdatedAt, Number((local as any).updatedAt || local.completedAt || 0));
+  const effRemoteTs = Math.max(remoteUpdatedAt, Number((remote as any).updatedAt || remote.completedAt || 0));
 
   // Determine preference: Recent user action timestamp takes precedence over completeness score,
   // preventing user deletion of fields (which lowers score) from being rejected as "inferior".
   let preferRemote = false;
-  if (remoteUpdatedAt && localUpdatedAt && remoteUpdatedAt !== localUpdatedAt) {
-    preferRemote = remoteUpdatedAt > localUpdatedAt;
-  } else if (remoteUpdatedAt && !localUpdatedAt) {
+  if (effRemoteTs && effLocalTs && effRemoteTs !== effLocalTs) {
+    preferRemote = effRemoteTs > effLocalTs;
+  } else if (effRemoteTs && !effLocalTs) {
     preferRemote = true;
-  } else if (!remoteUpdatedAt && localUpdatedAt) {
+  } else if (!effRemoteTs && effLocalTs) {
     preferRemote = false;
   } else if (remoteScore !== localScore) {
     preferRemote = remoteScore > localScore;
   } else {
-    preferRemote = remoteUpdatedAt >= localUpdatedAt;
+    preferRemote = effRemoteTs > effLocalTs;
   }
 
   return {
@@ -212,9 +214,10 @@ export function getSharedStateUpdatedAt(state?: SharedState | null): number {
 
 export function getProfileUpdatedAt(state?: SharedState | null): number {
   if (!state) return 0;
-  if (typeof state.profileUpdatedAt === 'number') return state.profileUpdatedAt;
-  if (state.sourceApp === 'profile') return getSharedStateUpdatedAt(state);
-  return 0;
+  const profTs = Number((state.userProfile as any)?.updatedAt || state.userProfile?.completedAt || 0);
+  if (typeof state.profileUpdatedAt === 'number') return Math.max(state.profileUpdatedAt, profTs);
+  if (state.sourceApp === 'profile' || state.sourceApp === 'lucy') return Math.max(getSharedStateUpdatedAt(state), profTs);
+  return profTs;
 }
 
 /**

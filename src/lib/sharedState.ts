@@ -157,34 +157,40 @@ function mergeSectionSafely<T extends any>(baseSection?: T, incomingSection?: T,
       } else if (!bStr) {
         res[k] = iStr;
       } else {
-        // incoming(신규 업데이트)을 우선하되 둘 다 있으면 iStr 우선
-        res[k] = iStr || bStr;
+        res[k] = bStr || iStr;
       }
       continue;
     }
 
-    res[k] = preferIncoming ? (iVal !== undefined ? iVal : bVal) : (iVal !== undefined ? iVal : bVal);
+    res[k] = preferIncoming ? (iVal !== undefined ? iVal : bVal) : (bVal !== undefined ? bVal : iVal);
   }
   return res as T;
 }
 
-export function mergeUserProfiles(base?: UserProfile, incoming?: UserProfile, preferIncoming = false): UserProfile {
+export function mergeUserProfiles(base?: UserProfile, incoming?: UserProfile, preferIncoming?: boolean): UserProfile {
   if (!base && !incoming) return {};
   if (!base) return incoming || {};
   if (!incoming) return base || {};
 
+  const baseTs = Number((base as any).updatedAt || base.completedAt || 0);
+  const incomingTs = Number((incoming as any).updatedAt || incoming.completedAt || 0);
+  const effectivePreferIncoming =
+    typeof preferIncoming === 'boolean'
+      ? preferIncoming
+      : (incomingTs > 0 && baseTs > 0 ? incomingTs >= baseTs : true);
+
   return {
-    ...(preferIncoming ? base : incoming),
-    ...(preferIncoming ? incoming : base),
-    basic: mergeSectionSafely(base.basic, incoming.basic, preferIncoming),
-    fate: mergeSectionSafely(base.fate, incoming.fate, preferIncoming),
-    music: mergeSectionSafely(base.music, incoming.music, preferIncoming),
-    psych: mergeSectionSafely(base.psych, incoming.psych, preferIncoming),
-    art: mergeSectionSafely(base.art, incoming.art, preferIncoming),
-    relationships: preferIncoming
+    ...(effectivePreferIncoming ? base : incoming),
+    ...(effectivePreferIncoming ? incoming : base),
+    basic: mergeSectionSafely(base.basic, incoming.basic, effectivePreferIncoming),
+    fate: mergeSectionSafely(base.fate, incoming.fate, effectivePreferIncoming),
+    music: mergeSectionSafely(base.music, incoming.music, effectivePreferIncoming),
+    psych: mergeSectionSafely(base.psych, incoming.psych, effectivePreferIncoming),
+    art: mergeSectionSafely(base.art, incoming.art, effectivePreferIncoming),
+    relationships: effectivePreferIncoming
       ? (incoming.relationships && incoming.relationships.length > 0 ? incoming.relationships : base.relationships)
       : (base.relationships && base.relationships.length > 0 ? base.relationships : incoming.relationships),
-    completedAt: (preferIncoming ? incoming.completedAt : base.completedAt) || incoming.completedAt || base.completedAt || Date.now(),
+    completedAt: (effectivePreferIncoming ? incoming.completedAt : base.completedAt) || incoming.completedAt || base.completedAt || Date.now(),
   };
 }
 

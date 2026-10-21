@@ -1,4 +1,4 @@
-﻿@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
+@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;1,400&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
@@ -147,6 +147,30 @@
   .perf-reduced .glass {
     backdrop-filter: blur(6px) !important;
     -webkit-backdrop-filter: blur(6px) !important;
+  }
+
+  /* iPhone X / XS (375x812 @ 3x DPR) Zero-Lag GPU Optimization:
+     Eliminates expensive WebKit offscreen backdrop-filter passes and continuous infinite background animations */
+  .perf-iphone-xs .backdrop-blur-3xl,
+  .perf-iphone-xs .backdrop-blur-2xl,
+  .perf-iphone-xs .backdrop-blur-xl,
+  .perf-iphone-xs .backdrop-blur-lg,
+  .perf-iphone-xs .backdrop-blur-md,
+  .perf-iphone-xs .backdrop-blur,
+  .perf-iphone-xs .backdrop-blur-sm,
+  .perf-iphone-xs .glass,
+  .prism-iphone-xs .backdrop-blur-3xl,
+  .prism-iphone-xs .backdrop-blur-2xl,
+  .prism-iphone-xs .backdrop-blur-xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .perf-iphone-xs .prism-rainbow-btn,
+  .perf-iphone-xs .celestial-tarot-btn,
+  .perf-iphone-xs .tarot-card-drawing-flicker,
+  .perf-iphone-xs .tarot-card-border-flicker,
+  .perf-iphone-xs .tarot-ambient-shimmer-layer {
+    animation: none !important;
   }
 
   /* Global touch responsiveness & scrolling smoothness */

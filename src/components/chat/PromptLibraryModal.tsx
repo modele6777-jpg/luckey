@@ -206,11 +206,11 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
               })}
             </div>
 
-            {/* Tools Quick Filter Pills */}
+            {/* Themes Quick Filter Pills */}
             <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-[11px]">
               <span className="text-slate-400 dark:text-slate-500 font-medium shrink-0 flex items-center gap-1 mr-1">
                 <Compass size={12} />
-                도구:
+                테마:
               </span>
               <button
                 type="button"

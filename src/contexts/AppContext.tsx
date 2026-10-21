@@ -45,6 +45,7 @@ export interface UnifiedMessage {
   channels?: string[];
   mode?: string;
   keyExerciseIndex?: number;
+  usedTools?: string[];
 }
 
 export interface SendUnifiedMessageOptions {
@@ -59,6 +60,7 @@ export interface SendUnifiedMessageOptions {
   force?: boolean;
   oracleContext?: string;
   customUserProfile?: UserProfile;
+  usedTools?: string[];
 }
 
 interface AppContextValue {
@@ -161,7 +163,7 @@ function loadFromLocal(uid: string): SharedState | null {
     const fallbackProfile = getPersistentUserProfile();
     if (parsed) {
       if (fallbackProfile) {
-        parsed.userProfile = mergeUserProfiles(fallbackProfile, parsed.userProfile);
+        parsed.userProfile = mergeUserProfiles(parsed.userProfile, fallbackProfile);
       }
       return parsed;
     }
@@ -190,7 +192,7 @@ function loadGuestState(): SharedState | null {
     const fallbackProfile = getPersistentUserProfile();
     if (parsed) {
       if (fallbackProfile) {
-        parsed.userProfile = mergeUserProfiles(fallbackProfile, parsed.userProfile);
+        parsed.userProfile = mergeUserProfiles(parsed.userProfile, fallbackProfile);
       }
       return parsed;
     }
@@ -926,16 +928,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         const localCached = loadFromLocal(firebaseUser.uid);
         const persistentProfile = getPersistentUserProfile();
+        const localBestProfile = mergeUserProfiles(localCached?.userProfile, persistentProfile, true);
+        const localProfTs = Number((localBestProfile as any)?.updatedAt || localBestProfile?.completedAt || localCached?.profileUpdatedAt || 0);
+        const remoteProfTs = Number((remoteData?.userProfile as any)?.updatedAt || remoteData?.userProfile?.completedAt || remoteData?.profileUpdatedAt || 0);
+        const preferRemoteProfile = remoteProfTs > localProfTs;
         const mergedProfile = mergeUserProfiles(
-          mergeUserProfiles(persistentProfile, localCached?.userProfile),
+          localBestProfile,
           remoteData?.userProfile,
-          true
+          preferRemoteProfile
         );
         const mergedData: SharedState = mergeSharedState(
           localCached || {},
           remoteData,
-          0,
-          Date.now()
+          localProfTs,
+          remoteProfTs
         );
         if (mergedProfile && Object.keys(mergedProfile).length > 0) {
           mergedData.userProfile = mergedProfile;
@@ -998,7 +1004,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const remoteProfile = snap.data() as UserProfile;
         if (!remoteProfile || Object.keys(remoteProfile).length === 0) return;
         const persistentProfile = getPersistentUserProfile();
-        const mergedProfile = mergeUserProfiles(persistentProfile, remoteProfile, true);
+        const localTs = Number((persistentProfile as any)?.updatedAt || persistentProfile?.completedAt || 0);
+        const remoteTs = Number((remoteProfile as any)?.updatedAt || (remoteProfile as any)?.completedAt || 0);
+        const mergedProfile = mergeUserProfiles(persistentProfile, remoteProfile, remoteTs > localTs);
         if (mergedProfile && Object.keys(mergedProfile).length > 0) {
           setPersistentUserProfile(mergedProfile);
           saveProfileToAllVaults(mergedProfile);
@@ -1216,9 +1224,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ? mergeUserProfiles(existingProfile, updates.userProfile, true)
         : existingProfile;
 
-      if (updates.userProfile?.basic && typeof updates.userProfile.basic.nickname === 'string') {
+      if (updates.userProfile?.basic) {
         if (!updatedProfile.basic) updatedProfile.basic = {};
-        updatedProfile.basic.nickname = updates.userProfile.basic.nickname;
+        if (typeof updates.userProfile.basic.nickname === 'string') {
+          updatedProfile.basic.nickname = updates.userProfile.basic.nickname;
+        }
+        if (typeof updates.userProfile.basic.birthtime === 'string') {
+          updatedProfile.basic.birthtime = updates.userProfile.basic.birthtime;
+        }
+      }
+
+      const nowTs = Date.now();
+      if (updates.userProfile && updatedProfile) {
+        updatedProfile.completedAt = nowTs;
+        (updatedProfile as any).updatedAt = nowTs;
       }
 
       finalMerged = mergeSharedState(
@@ -1226,13 +1245,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         {
           ...updates,
           ...(updatedProfile && Object.keys(updatedProfile).length > 0 ? { userProfile: updatedProfile } : {}),
+          ...(updates.userProfile ? { profileUpdatedAt: nowTs } : {}),
           sourceApp,
-          clientUpdatedAt: Date.now(),
+          clientUpdatedAt: nowTs,
         }
       );
 
-      if (updatedProfile?.basic && typeof updatedProfile.basic.nickname === 'string' && finalMerged.userProfile?.basic) {
-        finalMerged.userProfile.basic.nickname = updatedProfile.basic.nickname;
+      if (updatedProfile?.basic && finalMerged.userProfile?.basic) {
+        if (typeof updatedProfile.basic.nickname === 'string') {
+          finalMerged.userProfile.basic.nickname = updatedProfile.basic.nickname;
+        }
+        if (typeof updatedProfile.basic.birthtime === 'string') {
+          finalMerged.userProfile.basic.birthtime = updatedProfile.basic.birthtime;
+        }
       }
 
       if (updatedProfile && Object.keys(updatedProfile).length > 0) {
@@ -1556,7 +1581,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         persona: sourcePersona,
         channel: options?.channel,
         channels: options?.channels,
-        mode: options?.mode
+        mode: options?.mode,
+        usedTools: options?.usedTools
       }
     ]);
 

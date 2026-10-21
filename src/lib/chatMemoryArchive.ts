@@ -151,12 +151,6 @@ export function processDailyChatArchival(
     if (!lastSessionDate) {
       safeLocalStorage.setItem(MEMORY_STORAGE_KEYS.LAST_SESSION_DATE, todayKey);
     }
-    const hasTodayUser = todayMessages.some((m) => m.role === 'user' && m.content);
-    if (hasTodayUser) {
-      // 실제 대화가 있으면 인사말 제거
-      const withoutGreet = todayMessages.filter((m) => !isGreetingMessage(m));
-      return { messages: withoutGreet, wasArchived: false };
-    }
     return {
       messages: todayMessages.length > 0 ? todayMessages : [createDefaultGreeting('lucy', userName)],
       wasArchived: false,
@@ -185,11 +179,11 @@ export function processDailyChatArchival(
   // 2. 세션 날짜를 오늘로 갱신
   safeLocalStorage.setItem(MEMORY_STORAGE_KEYS.LAST_SESSION_DATE, todayKey);
 
-  // 3. 오늘 이미 나눈 실제 대화가 있다면 오늘 대화만 보존 (인사말은 제거)
+  // 3. 오늘 이미 나눈 실제 대화가 있다면 오늘 대화(인사말 포함) 보존
   const hasTodayUserMsgs = todayMessages.some((m) => m.role === 'user' && m.content);
   if (hasTodayUserMsgs) {
     return {
-      messages: todayMessages.filter((m) => !isGreetingMessage(m)),
+      messages: todayMessages,
       wasArchived: true,
       archivedDate: lastSessionDate,
     };

@@ -21,6 +21,7 @@ export interface UnifiedMessage {
   channel?: string;
   channels?: string[];
   mode?: string;
+  usedTools?: string[];
 }
 
 export const STORAGE_KEYS = {
@@ -236,12 +237,13 @@ export function mergeUnifiedMessages(
   // 병합용 맵
   const map = new Map<string, UnifiedMessage>();
   const fallbackToKey = new Map<string, string>();
-
-  // 실제 유저 대화가 있는 경우 단독 기본 인사말(greet-*) 중복을 정리하거나 순서대로 유지
-  const shouldFilterGreet = hasPrimaryUser || hasIncomingUser;
+  let greetingKept: UnifiedMessage | null = null;
 
   [...cleanPrimary, ...cleanIncoming].forEach((msg) => {
-    if (shouldFilterGreet && isGreetingMessage(msg)) {
+    if (isGreetingMessage(msg)) {
+      if (!greetingKept) {
+        greetingKept = msg;
+      }
       return;
     }
 
@@ -269,12 +271,22 @@ export function mergeUnifiedMessages(
         timestamp: existing.timestamp || msg.timestamp,
         persona: msg.persona || existing.persona,
         role: existing.role || msg.role,
+        usedTools: msg.usedTools || existing.usedTools,
       });
     }
   });
 
   const merged = Array.from(map.values());
   merged.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
+
+  if (greetingKept) {
+    const firstTs = merged.length > 0 ? Number(merged[0].timestamp || Date.now()) : Date.now();
+    const greetMsg: UnifiedMessage = {
+      ...(greetingKept as UnifiedMessage),
+      timestamp: Math.min(Number((greetingKept as UnifiedMessage).timestamp || firstTs), firstTs - 1000),
+    };
+    return [greetMsg, ...merged];
+  }
 
   if (merged.length > 0) return merged;
   return [createDefaultGreeting()];
@@ -291,9 +303,6 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
       const parsed = JSON.parse(savedV3);
       if (Array.isArray(parsed)) {
         const todayOnly = parsed.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
-        if (hasRealUserConversation(todayOnly)) {
-          return todayOnly.filter((m) => !isGreetingMessage(m));
-        }
         if (todayOnly.length > 0) {
           return todayOnly;
         }
@@ -306,9 +315,6 @@ export function loadSavedUnifiedMessages(): UnifiedMessage[] {
       const parsed = JSON.parse(savedBackup);
       if (Array.isArray(parsed)) {
         const todayOnly = parsed.filter((m) => !isErrorMessage(m) && isMessageFromToday(m));
-        if (hasRealUserConversation(todayOnly)) {
-          return todayOnly.filter((m) => !isGreetingMessage(m));
-        }
         if (todayOnly.length > 0) {
           return todayOnly;
         }

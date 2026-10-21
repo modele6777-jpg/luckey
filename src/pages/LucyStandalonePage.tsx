@@ -802,18 +802,26 @@ export default function LucyStandalonePage() {
       sessionStorage.removeItem('lucy_chat_extra_profiles');
     } catch (_) {}
 
-    const basic = sharedState?.userProfile?.basic || getPersistentUserProfile()?.basic;
+    const persistentBasic = getPersistentUserProfile()?.basic;
+    const sharedBasic = sharedState?.userProfile?.basic;
+    const basic = {
+      ...sharedBasic,
+      ...persistentBasic,
+      birthtime: persistentBasic?.birthtime ?? sharedBasic?.birthtime,
+      birthdate: persistentBasic?.birthdate || sharedBasic?.birthdate,
+      lunarSolar: persistentBasic?.lunarSolar || sharedBasic?.lunarSolar,
+    };
     // 🌟 사용자 요청: 프로필 추가/상담 창 및 독 칩에서는 닉네임 대신 본명(실명)으로 표시
     const rawRealName = basic?.name?.trim();
     const myRealName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
       ? rawRealName
-      : (getPersistentUserProfile()?.basic?.name?.trim() || '박주형');
+      : (persistentBasic?.name?.trim() || '박주형');
     const myProfile: ChatTargetProfile = {
       id: 'my-profile',
       isMe: true,
       name: myRealName,
       birthdate: basic?.birthdate || '1995-01-01',
-      birthtime: basic?.birthtime || '12:00',
+      birthtime: basic?.birthtime ?? '12:00',
       gender: basic?.gender || 'male',
       birthCity: basic?.birthCity || '서울',
       lunarSolar: basic?.lunarSolar || 'solar',
@@ -926,7 +934,12 @@ export default function LucyStandalonePage() {
   // sharedState 변경 시 내 프로필 정보 동기화 (사용자가 대화창에서 프로필을 직접 수정한 경우 덮어쓰지 않고 변경 상태 유지)
   useEffect(() => {
     if (hasUserCustomizedProfilesRef.current) return;
-    const basic = sharedState?.userProfile?.basic;
+    const persistentBasic = getPersistentUserProfile()?.basic;
+    const basic = {
+      ...sharedState?.userProfile?.basic,
+      ...persistentBasic,
+      birthtime: persistentBasic?.birthtime ?? sharedState?.userProfile?.basic?.birthtime,
+    };
     if (basic?.name || basic?.nickname || basic?.birthdate) {
       setActiveProfiles((prev) => {
         if (hasUserCustomizedProfilesRef.current) return prev;
@@ -935,7 +948,7 @@ export default function LucyStandalonePage() {
         const rawRealName = basic?.name?.trim();
         const realName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
           ? rawRealName
-          : (getPersistentUserProfile()?.basic?.name?.trim() || me.name || '박주형');
+          : (persistentBasic?.name?.trim() || me.name || '박주형');
         const newBirthdate = basic?.birthdate || me.birthdate;
         const newBirthtime = basic?.birthtime ?? me.birthtime;
         const newGender = basic?.gender || me.gender;
@@ -1053,6 +1066,7 @@ export default function LucyStandalonePage() {
           basic: updatedBasic,
         };
         saveProfileToAllVaults(updatedUserProfile);
+        setPersistentUserProfile(updatedUserProfile);
         updateSharedState({
           userProfile: {
             ...(sharedState?.userProfile || {}),
@@ -1660,6 +1674,7 @@ export default function LucyStandalonePage() {
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
         : divinationSelection.promptInjection;
     }
+    const usedToolNames = divinationSelection.selectedTools.map((t) => t.koName);
 
     setInput('');
     const imgToSend = attachedImage || undefined;
@@ -1678,6 +1693,7 @@ export default function LucyStandalonePage() {
       channels: channels,
       mode: isMaster ? 'master' : (isCasual ? 'casual' : (isSingle ? channels[0] : 'synergy')),
       channel: isSingle ? channels[0] : undefined,
+      usedTools: usedToolNames,
       onFinish: async (fullText, _sentText, replyMsgId) => {
         if (isAutoTtsRef.current && fullText && fullText.trim()) {
           void triggerAutoTts(fullText, replyMsgId);
@@ -2281,6 +2297,66 @@ export default function LucyStandalonePage() {
                     <span>{msgModeInfo.badgeLabel}</span>
                     <span className="text-[9px] opacity-75 font-normal">모드 ON</span>
                   </button>
+
+                  {/* 🔮 루시 답장에 15가지 운명학 도구 중 어떤 도구들이 쓰였는지 모드 옆에 표시 */}
+                  {!isUser && !isGreeting && (() => {
+                    const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
+                    const prevUserText = prevUser
+                      ? (typeof prevUser.content === 'string'
+                          ? prevUser.content
+                          : Array.isArray(prevUser.content)
+                          ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
+                          : '')
+                      : '';
+                    let resolvedTools: string[] = Array.isArray(msg.usedTools) && msg.usedTools.length > 0
+                      ? msg.usedTools
+                      : [];
+                    if (resolvedTools.length === 0) {
+                      const sel = selectOptimalDivinationTools(
+                        prevUserText || textContent,
+                        msgModeInfo.channels,
+                        counselingUserProfile,
+                        msgModeInfo.isMaster
+                      );
+                      resolvedTools = sel.selectedTools.map((t) => t.koName);
+                    }
+                    if (resolvedTools.length === 0) return null;
+
+                    if (msgModeInfo.isMaster || resolvedTools.length >= 15) {
+                      return (
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
+                            isLight
+                              ? 'bg-purple-50 text-purple-900 border-purple-300/80'
+                              : 'bg-purple-950/70 text-purple-200 border-purple-500/40'
+                          }`}
+                          title={`사용된 15대 운명학 도구: ${resolvedTools.join(', ')}`}
+                        >
+                          <span>🔮</span>
+                          <span>15대 도구 총동원 ({resolvedTools.slice(0, 4).join('·')} 외 11종)</span>
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <div className="inline-flex items-center gap-1 flex-wrap">
+                        {resolvedTools.map((toolName) => (
+                          <span
+                            key={toolName}
+                            className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
+                              isLight
+                                ? 'bg-amber-50/95 text-amber-900 border-amber-300/80'
+                                : 'bg-amber-950/60 text-amber-200 border-amber-500/35'
+                            }`}
+                            title={`이 답변에 활용된 15대 운명학 도구: ${toolName}`}
+                          >
+                            <span>🔮</span>
+                            <span>{toolName}</span>
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>

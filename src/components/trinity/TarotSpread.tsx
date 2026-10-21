@@ -297,20 +297,23 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const hadMovedRef = useRef(false);
   const momentumRafRef = useRef<number | null>(null);
 
+  const lastZIndexSyncDegRef = useRef<number>(-9999);
+
   // Preload cards in the deck asynchronously to eliminate image decoding lag on card selection
   useEffect(() => {
     if (typeof window === 'undefined' || deck.length === 0) return;
-    const urls = deck.slice(0, 24).map((c) => getTarotCardImageUrl(c)).filter(Boolean);
+    const urls = deck.slice(0, 32).map((c) => getTarotCardImageUrl(c)).filter(Boolean);
     const preload = () => {
       urls.forEach((u) => {
         const img = new Image();
+        img.decoding = 'async';
         img.src = u;
       });
     };
     if ('requestIdleCallback' in window) {
       (window as any).requestIdleCallback(preload);
     } else {
-      setTimeout(preload, 100);
+      setTimeout(preload, 80);
     }
   }, [deck]);
 
@@ -320,15 +323,17 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   );
 
   const applyRotation = useCallback(
-    (deg: number) => {
+    (deg: number, forceZIndexSync = false) => {
       rotationRef.current = deg;
       if (wheelLayerRef.current) {
         wheelLayerRef.current.style.transform = buildWheelTransform(deg);
 
-        // 🌟 360도 완벽 연결 원형 + 화면 밖 하단(+90도) 심(seam) 처리를 통한 무결점 단방향 캐스케이드:
-        // 회전 각도(deg)에 따라 각 카드가 화면 상에서 가지는 절대 방사 각도를 실시간 계산하여,
-        // 화면에 노출되는 모든 카드가 완벽히 단방향 순차(좌->우 균일 겹침)로 정렬되도록 z-index를 초고속 직접 동기화합니다.
-        // 이중 가림을 유발하는 위상 반전점은 항상 화면 밖 깊숙한 하단(+90도)에만 머무르므로, 사용자에게는 절대 보이지 않습니다.
+        // Throttle 78-card zIndex DOM style mutations to every 4.5 degrees of rotation to prevent WebKit style recalculation lag
+        if (!forceZIndexSync && Math.abs(deg - lastZIndexSyncDegRef.current) < 4.5) {
+          return;
+        }
+        lastZIndexSyncDegRef.current = deg;
+
         const cardEls = wheelLayerRef.current.children;
         const len = cardEls.length;
         const rotRad = (deg * Math.PI) / 180;
@@ -339,7 +344,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           const cardId = el.getAttribute?.('data-card-id');
           if (!cardId) continue;
           if (cardId === hoveredId) {
-            el.style.zIndex = '5000';
+            if (el.style.zIndex !== '5000') el.style.zIndex = '5000';
             continue;
           }
           const localAngleStr = el.getAttribute('data-card-local-angle');
@@ -348,8 +353,10 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           const screenAngleRad = localAngle + rotRad;
           let norm = (screenAngleRad - Math.PI / 2) % (2 * Math.PI);
           if (norm < 0) norm += 2 * Math.PI;
-          const z = 30 + Math.round((norm / (2 * Math.PI)) * 1000);
-          el.style.zIndex = String(z);
+          const z = String(30 + Math.round((norm / (2 * Math.PI)) * 1000));
+          if (el.style.zIndex !== z) {
+            el.style.zIndex = z;
+          }
         }
       }
     },
@@ -629,7 +636,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               })),
               null,
             );
-          }, 450);
+          }, 260);
         }
         return next;
       });
@@ -672,10 +679,22 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
     touchStartTimeRef.current = performance.now();
 
-    // Direct card element identification under touch pointer
+    // Direct card element identification under touch pointer & eager image preload
     const targetEl = e.target as HTMLElement | null;
     const cardEl = targetEl?.closest('[data-card-id]');
-    touchedCardIdRef.current = cardEl?.getAttribute('data-card-id') || null;
+    const touchedId = cardEl?.getAttribute('data-card-id') || null;
+    touchedCardIdRef.current = touchedId;
+    if (touchedId) {
+      const candidateCard = deck.find((c) => c.id === touchedId);
+      if (candidateCard) {
+        const url = getTarotCardImageUrl(candidateCard);
+        if (url) {
+          const img = new Image();
+          img.decoding = 'async';
+          img.src = url;
+        }
+      }
+    }
 
     if (e.pointerType === 'touch') {
       try {
@@ -1031,56 +1050,32 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                       </div>
                     ) : (
                       <>
-                        {/* Subtle Mystical Outer Candlelight / Aura Flicker while drawn */}
-                        <div
-                          className="absolute -inset-1 sm:-inset-1.5 rounded-xl md:rounded-2xl bg-gradient-to-tr from-amber-400/25 via-yellow-300/35 to-amber-500/25 blur-[6px] pointer-events-none tarot-card-drawing-flicker opacity-80"
-                          style={{ zIndex: 1 }}
-                        />
-
-                        {/* 🌟 카드가 뒤집히며 슬롯에 안착하는 순간 사방으로 터져나오는 찬란한 입자 애니메이션 */}
-                        <TarotCardFlipParticles
-                          active={true}
-                          triggerKey={`slot-draw-${i}-${drawnCard!.id}`}
-                          size={isMobile ? 'sm' : 'md'}
-                          count={isMobile ? 22 : 28}
-                        />
+                        {/* 🌟 가장 최근에 뽑힌 카드 슬롯에만 경량화된 파티클 버스트 실행 (다중 슬롯 동시 렌더링 렉 방지) */}
+                        {i === selectedEntries.length - 1 && (
+                          <TarotCardFlipParticles
+                            active={true}
+                            triggerKey={`slot-draw-${i}-${drawnCard!.id}`}
+                            size="sm"
+                            count={isMobile ? 8 : 12}
+                          />
+                        )}
 
                         <motion.div
-                          initial={{ scale: 0.25, y: 70, rotateY: 180, opacity: 0, rotateZ: i % 2 === 0 ? -8 : 8 }}
-                          animate={{ scale: 1, y: 0, rotateY: 0, opacity: 1, rotateZ: 0 }}
-                          transition={{ type: 'spring', stiffness: 320, damping: 24, delay: i * 0.06 }}
-                          whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+                          initial={{ scale: 0.78, y: 20, opacity: 0 }}
+                          animate={{ scale: 1, y: 0, opacity: 1 }}
+                          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                           onClick={() => {
                             triggerTarotScreenVibration({ containerElement: rootRef.current, intensity: 'subtle' });
                             setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
                           }}
-                          className="absolute inset-0 border-2 border-yellow-400 rounded-xl md:rounded-2xl flex flex-col justify-between p-1.5 sm:p-2 md:p-3 text-center shadow-lg shadow-yellow-500/20 overflow-hidden cursor-zoom-in group hover:border-yellow-300 hover:shadow-yellow-500/40 transition-all active:scale-95 tarot-card-border-flicker"
+                          className="absolute inset-0 border-2 border-yellow-400 rounded-xl md:rounded-2xl flex flex-col justify-between p-1.5 sm:p-2 md:p-3 text-center shadow-md overflow-hidden cursor-zoom-in group hover:border-yellow-300 transition-transform active:scale-95"
                           title={`${drawnCard!.nameKo} 카드 크게 보기`}
                           style={{
                             contain: 'layout style paint',
                             zIndex: 2,
-                            transformStyle: 'preserve-3d',
-                            WebkitTransformStyle: 'preserve-3d',
+                            willChange: 'transform, opacity',
                           }}
                         >
-                          {/* Radiant Shimmer Sweep on card draw */}
-                          <motion.div
-                            initial={{ x: '-150%', opacity: 0.9 }}
-                            animate={{ x: '240%', opacity: 0 }}
-                            transition={{
-                              duration: 1.1,
-                              delay: 0.12 + i * 0.08,
-                              ease: 'easeInOut',
-                            }}
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/50 via-yellow-100/75 to-transparent skew-x-12 pointer-events-none z-30"
-                          />
-
-                          {/* Continuous Ambient Mystical Shimmer Layer */}
-                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-yellow-300/10 to-transparent pointer-events-none z-25 tarot-ambient-shimmer-layer" />
-
-                          {/* Periodic Subtle Shimmer Beam */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-200/25 to-transparent skew-x-12 pointer-events-none z-25 opacity-0 group-hover:opacity-100 tarot-card-shimmer-sweep transition-opacity" />
-
                           {/* Hover Zoom Icon Badge */}
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-30 pointer-events-none">
                             <div className="w-6 h-6 rounded-full bg-yellow-500/90 text-black flex items-center justify-center shadow-lg">

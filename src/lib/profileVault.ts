@@ -103,6 +103,21 @@ export function saveProfileToAllVaults(profile: UserProfile | undefined): void {
       ? inputNick 
       : '제제';
 
+    // 🛡️ 태어난 시간(birthtime) 등 사용자가 직접 수정한 필드는 빈 문자열이나 새 값 모두 100% 반영
+    if (profile.basic && typeof profile.basic.birthtime === 'string') {
+      finalMerged.basic.birthtime = profile.basic.birthtime;
+    }
+    if (profile.basic && typeof profile.basic.birthdate === 'string' && profile.basic.birthdate) {
+      finalMerged.basic.birthdate = profile.basic.birthdate;
+    }
+    if (profile.basic && profile.basic.lunarSolar) {
+      finalMerged.basic.lunarSolar = profile.basic.lunarSolar;
+    }
+
+    const nowTs = Date.now();
+    finalMerged.completedAt = nowTs;
+    (finalMerged as any).updatedAt = nowTs;
+
     const serialized = JSON.stringify(finalMerged);
 
     // 1. 모든 LocalStorage 금고에 저장
@@ -111,6 +126,10 @@ export function saveProfileToAllVaults(profile: UserProfile | undefined): void {
         safeLocalStorage.setItem(key, serialized);
       } catch (_) {}
     }
+    try {
+      safeLocalStorage.setItem('userProfile', serialized);
+      safeLocalStorage.setItem('lucy_user_profile', serialized);
+    } catch (_) {}
 
     // 2. SessionStorage 금고에 저장
     try {

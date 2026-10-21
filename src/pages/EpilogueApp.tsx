@@ -347,7 +347,11 @@ export default function EpilogueApp() {
     }
   };
 
-  const initialProfile = sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile();
+  const initialProfile = mergeUserProfiles(
+    sharedState?.userProfile,
+    loadProfileFromAllVaults() || getPersistentUserProfile(),
+    true
+  );
 
   const rawInitName = initialProfile?.basic?.name || '';
   const initName = (rawInitName && rawInitName !== '여행자') ? rawInitName : '';
@@ -466,15 +470,21 @@ export default function EpilogueApp() {
     }
   };
 
+  const isInitialMount = useRef(true);
+  const debounceTimerRef = useRef<number | null>(null);
+  const lastLocalEditTimeRef = useRef<number>(0);
+
   useEffect(() => {
     const handleProfileUpdate = (e?: any) => {
-      // 입력 중인 사용자 포커스가 있을 경우 외부/디바운스 이벤트에 의한 덮어쓰기 방지
+      // 사용자가 방금 프로필 필드를 수정한 직후(3초 이내)이거나 입력 포커스 중일 때는 외부 이벤트로 덮어쓰지 않음
+      if (Date.now() - lastLocalEditTimeRef.current < 3000) return;
       const activeEl = document.activeElement;
       const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
       if (isInputFocused) return;
 
       const detailProfile = (e as CustomEvent)?.detail?.userProfile || (e as CustomEvent)?.detail;
-      const profile = detailProfile || sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile();
+      const vaultProfile = loadProfileFromAllVaults() || getPersistentUserProfile();
+      const profile = detailProfile || mergeUserProfiles(sharedState?.userProfile, vaultProfile, true);
       if (!profile) return;
       if (profile.basic) {
         const cleanBasic = { ...profile.basic };
@@ -495,21 +505,52 @@ export default function EpilogueApp() {
     };
   }, [sharedState?.userProfile]);
 
-  // 실시간 디바운스 자동 저장 (입력 중 1.0초 유휴 시 무소음 자동 동기화)
-  const isInitialMount = useRef(true);
-  const debounceTimerRef = useRef<number | null>(null);
+  const flushLocalProfileImmediate = (
+    nextBasic = basic,
+    nextFate = fate,
+    nextMusic = music,
+    nextPsych = psych,
+    nextArt = art
+  ) => {
+    try {
+      const existingProfile = loadProfileFromAllVaults() || getPersistentUserProfile() || sharedState?.userProfile || {};
+      const basicData: any = { ...nextBasic };
+      if (!basicData.gender) delete basicData.gender;
+      const merged: UserProfile = mergeUserProfiles(existingProfile, {
+        basic: basicData,
+        fate: nextFate,
+        music: nextMusic,
+        psych: nextPsych,
+        art: nextArt,
+      }, true);
+      if (!merged.basic) merged.basic = {};
+      merged.basic.birthtime = nextBasic.birthtime;
+      merged.basic.birthdate = nextBasic.birthdate;
+      merged.basic.lunarSolar = nextBasic.lunarSolar;
+      const safeNick = (nextBasic.nickname?.trim() && nextBasic.nickname.trim() !== '여행자' && nextBasic.nickname.trim() !== '사용자' && nextBasic.nickname.trim() !== '박주형')
+        ? nextBasic.nickname.trim()
+        : '제제';
+      merged.basic.nickname = safeNick;
+      saveProfileToAllVaults(merged);
+      setPersistentUserProfile(merged);
+    } catch (_) {}
+  };
 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
+    lastLocalEditTimeRef.current = Date.now();
+    // 변경 즉시 로컬 볼트에 0ms 동기화하여 페이지를 곧바로 나갔다 들어와도 절대 원상 복구되지 않도록 보장
+    flushLocalProfileImmediate(basic, fate, music, psych, art);
+
     if (debounceTimerRef.current) {
       window.clearTimeout(debounceTimerRef.current);
     }
     debounceTimerRef.current = window.setTimeout(() => {
       handleSave(true);
-    }, 1000);
+    }, 350);
     return () => {
       if (debounceTimerRef.current) {
         window.clearTimeout(debounceTimerRef.current);
@@ -538,7 +579,7 @@ export default function EpilogueApp() {
   const handleSave = async (silent = false) => {
     if (!silent) setSaving(true);
     try {
-      const existingProfile = sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile() || {};
+      const existingProfile = loadProfileFromAllVaults() || getPersistentUserProfile() || sharedState?.userProfile || {};
       const basicData: any = { ...basic };
       if (!basicData.gender) delete basicData.gender;
 
@@ -551,6 +592,9 @@ export default function EpilogueApp() {
       }, true);
 
       if (!profile.basic) profile.basic = {};
+      profile.basic.birthtime = basic.birthtime;
+      profile.basic.birthdate = basic.birthdate;
+      profile.basic.lunarSolar = basic.lunarSolar;
       const safeNick = (basic.nickname?.trim() && basic.nickname.trim() !== '여행자' && basic.nickname.trim() !== '사용자' && basic.nickname.trim() !== '박주형')
         ? basic.nickname.trim()
         : '제제';

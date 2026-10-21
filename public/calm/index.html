@@ -1470,5 +1470,45 @@
   <script src="./teachings-data.js?v=34.0"></script>
   <script src="./audio-synth.js?v=34.0"></script>
   <script src="./app.js?v=34.0"></script>
+  <script>
+    window.addEventListener("message", function (e) {
+      if (!e.data) return;
+      var behavior = e.data.behavior || "smooth";
+      if (e.data.type === "PRISM_SCROLL_TO_TOP") {
+        try { window.scrollTo({ top: 0, left: 0, behavior: behavior }); } catch (_) { window.scrollTo(0, 0); }
+        try {
+          document.documentElement.scrollTo({ top: 0, left: 0, behavior: behavior });
+          document.body.scrollTo({ top: 0, left: 0, behavior: behavior });
+        } catch (_) {
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }
+        document.querySelectorAll(".modal-scrollable-body, .modal-window, .portal-container, .main-content").forEach(function (el) {
+          if (el.scrollTop > 0) {
+            try { el.scrollTo({ top: 0, left: 0, behavior: behavior }); } catch (_) { el.scrollTop = 0; }
+          }
+        });
+      } else if (e.data.type === "PRISM_SCROLL_TO_BOTTOM") {
+        var maxH = Math.max(
+          document.documentElement ? document.documentElement.scrollHeight : 0,
+          document.body ? document.body.scrollHeight : 0,
+          window.innerHeight || 0
+        );
+        try { window.scrollTo({ top: maxH, left: 0, behavior: behavior }); } catch (_) { window.scrollTo(0, maxH); }
+        try {
+          document.documentElement.scrollTo({ top: maxH, left: 0, behavior: behavior });
+          document.body.scrollTo({ top: maxH, left: 0, behavior: behavior });
+        } catch (_) {
+          document.documentElement.scrollTop = maxH;
+          document.body.scrollTop = maxH;
+        }
+        document.querySelectorAll(".modal-scrollable-body, .modal-window, .portal-container, .main-content").forEach(function (el) {
+          if (el.scrollHeight > el.clientHeight) {
+            try { el.scrollTo({ top: el.scrollHeight, left: 0, behavior: behavior }); } catch (_) { el.scrollTop = el.scrollHeight; }
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>

@@ -36,6 +36,42 @@ function scrollRootsToTop(behavior: ScrollBehavior) {
       }
     }
   });
+
+  // Also scroll any embedded same-origin iframes (e.g., KEY channel /calm/index.html)
+  document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((iframe) => {
+    try {
+      iframe.contentWindow?.postMessage({ type: 'PRISM_SCROLL_TO_TOP', behavior }, '*');
+    } catch (_) {}
+    try {
+      const win = iframe.contentWindow;
+      const doc = iframe.contentDocument;
+      if (win) {
+        try {
+          win.scrollTo({ top: 0, left: 0, behavior });
+        } catch (_) {
+          win.scrollTo(0, 0);
+        }
+      }
+      if (doc) {
+        try {
+          doc.documentElement?.scrollTo({ top: 0, left: 0, behavior });
+          doc.body?.scrollTo({ top: 0, left: 0, behavior });
+        } catch (_) {
+          if (doc.documentElement) doc.documentElement.scrollTop = 0;
+          if (doc.body) doc.body.scrollTop = 0;
+        }
+        doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll, .portal-container, .main-content').forEach((el) => {
+          if (el.scrollTop > 0) {
+            try {
+              el.scrollTo({ top: 0, left: 0, behavior });
+            } catch (_) {
+              el.scrollTop = 0;
+            }
+          }
+        });
+      }
+    } catch (_) {}
+  });
 }
 
 export function resetAppScroll(behavior: ScrollBehavior = "auto") {
@@ -83,6 +119,47 @@ function scrollRootsToBottom(behavior: ScrollBehavior) {
     } catch (_) {
       el.scrollTop = el.scrollHeight;
     }
+  });
+
+  // Also scroll any embedded same-origin iframes (e.g., KEY channel /calm/index.html) to bottom
+  document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((iframe) => {
+    try {
+      iframe.contentWindow?.postMessage({ type: 'PRISM_SCROLL_TO_BOTTOM', behavior }, '*');
+    } catch (_) {}
+    try {
+      const win = iframe.contentWindow;
+      const doc = iframe.contentDocument;
+      if (doc) {
+        const maxIframeTop = Math.max(
+          doc.documentElement?.scrollHeight || 0,
+          doc.body?.scrollHeight || 0,
+          win?.innerHeight || 0
+        );
+        if (win) {
+          try {
+            win.scrollTo({ top: maxIframeTop, left: 0, behavior });
+          } catch (_) {
+            win.scrollTo(0, maxIframeTop);
+          }
+        }
+        try {
+          doc.documentElement?.scrollTo({ top: maxIframeTop, left: 0, behavior });
+          doc.body?.scrollTo({ top: maxIframeTop, left: 0, behavior });
+        } catch (_) {
+          if (doc.documentElement) doc.documentElement.scrollTop = maxIframeTop;
+          if (doc.body) doc.body.scrollTop = maxIframeTop;
+        }
+        doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll, .portal-container, .main-content').forEach((el) => {
+          if (el.scrollHeight > el.clientHeight) {
+            try {
+              el.scrollTo({ top: el.scrollHeight, left: 0, behavior });
+            } catch (_) {
+              el.scrollTop = el.scrollHeight;
+            }
+          }
+        });
+      }
+    } catch (_) {}
   });
 }
 
