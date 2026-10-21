@@ -201,7 +201,6 @@ function markModelThrottled(model: string, durationMs = 180000) {
 const VALID_GEMINI_MODELS = new Set([
   "gemini-3.1-flash-lite",
   "gemini-flash-latest",
-  "gemini-3.8-flash",
   "gemini-4-argon",
 ]);
 
@@ -265,7 +264,6 @@ function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const defaultModels = [
     "gemini-3.1-flash-lite",
     "gemini-flash-latest",
-    "gemini-3.8-flash",
   ];
 
   const normalizedRequested = normalizeRequestedGeminiModel(requestedModel);
