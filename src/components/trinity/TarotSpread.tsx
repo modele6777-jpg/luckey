@@ -8,6 +8,7 @@ import {
 import { TAROT_DECK, TarotCard, getTarotCardImageUrl, rollTarotReversed } from '../../data/tarotData';
 import { TarotCardZoomModal } from './TarotCardZoomModal';
 import { TarotCardBackFace } from './TarotCardBackFace';
+import { TarotCardFlipParticles } from './TarotCardFlipParticles';
 import { TarotCardBackCustomizerModal } from './TarotCardBackCustomizerModal';
 import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
@@ -612,7 +613,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               })),
               null,
             );
-          }, 80);
+          }, 950);
         }
         return next;
       });
@@ -956,7 +957,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           )
         )}
 
-        {/* Selected Card Slots Layer (Zero backdrop-blur, Zero particles, 0ms instant card mount) */}
+        {/* Selected card slots with a brief burst when a card is drawn. */}
         {(!isMobile || !isDaily || selectedEntries.length > 0) && (
           <div
             className="absolute flex flex-col items-center justify-center gap-1.5 sm:gap-4 md:gap-6 z-[95] pointer-events-none w-full px-2"
@@ -1045,6 +1046,15 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                           {drawnCard!.type}
                         </span>
                       </div>
+                    )}
+                    {hasCard && (
+                      <TarotCardFlipParticles
+                        active
+                        triggerKey={drawnCard!.id}
+                        size="sm"
+                        count={20}
+                        className="z-[60]"
+                      />
                     )}
                   </div>
                 );
