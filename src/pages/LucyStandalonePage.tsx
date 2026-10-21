@@ -1677,7 +1677,10 @@ export default function LucyStandalonePage() {
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
         : divinationSelection.promptInjection;
     }
-    const usedToolNames = divinationSelection.selectedTools.map((t) => t.koName);
+    const usedToolNames =
+      !divinationSelection.isCasualMessage && divinationSelection.promptInjection
+        ? divinationSelection.selectedTools.map((tool) => tool.koName)
+        : [];
 
     setInput('');
     const imgToSend = attachedImage || undefined;
@@ -2305,26 +2308,11 @@ export default function LucyStandalonePage() {
 
                   {/* 🔮 루시 답장에 15가지 운명학 도구 중 어떤 도구들이 쓰였는지 모드 옆에 표시 */}
                   {!isUser && !isGreeting && !msgModeInfo.isCasual && (() => {
-                    const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
-                    const prevUserText = prevUser
-                      ? (typeof prevUser.content === 'string'
-                          ? prevUser.content
-                          : Array.isArray(prevUser.content)
-                          ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
-                          : '')
-                      : '';
-                    let resolvedTools: string[] = Array.isArray(msg.usedTools) && msg.usedTools.length > 0
-                      ? msg.usedTools
+                    const resolvedTools: string[] = Array.isArray(msg.usedTools)
+                      ? msg.usedTools.filter((toolName: unknown): toolName is string =>
+                          typeof toolName === 'string' && toolName.trim().length > 0
+                        )
                       : [];
-                    if (resolvedTools.length === 0) {
-                      const sel = selectOptimalDivinationTools(
-                        prevUserText || textContent,
-                        msgModeInfo.channels,
-                        counselingUserProfile,
-                        msgModeInfo.isMaster
-                      );
-                      resolvedTools = sel.selectedTools.map((t) => t.koName);
-                    }
                     if (resolvedTools.length === 0) return null;
 
                     if (msgModeInfo.isMaster || resolvedTools.length >= 15) {

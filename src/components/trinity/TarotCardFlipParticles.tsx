@@ -90,17 +90,39 @@ export const TarotCardFlipParticles: React.FC<TarotCardFlipParticlesProps> = ({
       style={{ overflow: 'visible' }}
     >
       <AnimatePresence>
-        {/* 1. Radiant Expanding Shockwave Ring (GPU Transform + Opacity only, zero blur filter) */}
+        {/* Expanding golden burst with GPU-only transform and opacity animation. */}
         <motion.div
           key={`shockwave-${triggerKey}`}
-          initial={{ scale: 0.5, opacity: 0.85 }}
-          animate={{ scale: 1.75 * scaleMultiplier, opacity: 0 }}
-          transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute w-full h-full rounded-2xl border border-yellow-300/75"
+          initial={{ scale: 0.25, opacity: 0.95 }}
+          animate={{ scale: 2.3 * scaleMultiplier, opacity: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute w-full h-full rounded-2xl border-2 border-yellow-300/80 bg-[radial-gradient(ellipse_at_center,rgba(254,240,138,0.38)_0%,rgba(234,179,8,0.16)_50%,transparent_75%)]"
           style={{ willChange: 'transform, opacity' }}
         />
 
-        {/* 2. Burst of Lightweight Hardware-Accelerated Sparkles (zero SVG drop-shadow filters) */}
+        <motion.div
+          key={`solar-flash-${triggerKey}`}
+          initial={{ scale: 0.4, opacity: 1 }}
+          animate={{ scale: 1.8 * scaleMultiplier, opacity: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          className="absolute w-3/4 h-3/4 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.92)_0%,rgba(250,204,21,0.42)_45%,transparent_70%)]"
+          style={{ willChange: 'transform, opacity' }}
+        />
+
+        <motion.div
+          key={`cross-rays-${triggerKey}`}
+          initial={{ scale: 0.2, rotate: 0, opacity: 1 }}
+          animate={{ scale: 1.9 * scaleMultiplier, rotate: 45, opacity: 0 }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
+          className="absolute w-24 h-24 flex items-center justify-center"
+          style={{ willChange: 'transform, opacity' }}
+        >
+          <div className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-white to-transparent" />
+          <div className="absolute h-full w-[2px] bg-gradient-to-b from-transparent via-white to-transparent" />
+          <div className="absolute w-3/4 h-[1.5px] rotate-45 bg-gradient-to-r from-transparent via-yellow-200 to-transparent" />
+          <div className="absolute w-3/4 h-[1.5px] -rotate-45 bg-gradient-to-r from-transparent via-yellow-200 to-transparent" />
+        </motion.div>
+
         {particles.map((p) => (
           <motion.div
             key={`p-${triggerKey}-${p.id}`}
@@ -114,19 +136,20 @@ export const TarotCardFlipParticles: React.FC<TarotCardFlipParticlesProps> = ({
             animate={{
               x: p.targetX,
               y: p.targetY,
-              scale: [0.3, 1.15, 0.1],
-              opacity: [1, 0.9, 0],
-              rotate: p.rotation,
+              scale: [0.2, 1.4, 0.1],
+              opacity: [1, 1, 0],
+              rotate: p.rotation * 2,
             }}
             transition={{
-              duration: Math.min(0.45, p.duration * 0.65),
-              delay: p.delay * 0.5,
-              ease: 'easeOut',
+              duration: p.duration,
+              delay: p.delay,
+              ease: [0.18, 0.89, 0.32, 1.15],
             }}
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
             style={{
               width: p.size,
               height: p.size,
+              boxShadow: `0 0 5px ${p.glowColor}, 0 0 10px ${p.glowColor}`,
               willChange: 'transform, opacity',
             }}
           >

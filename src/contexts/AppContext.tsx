@@ -1583,7 +1583,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         channel: options?.channel,
         channels: options?.channels,
         mode: options?.mode,
-        usedTools: options?.usedTools
+        usedTools: []
       }
     ]);
 
@@ -1651,7 +1651,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const hasDivinationInjection =
       options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
-      options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원');
+      options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
+      options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = options?.mode === 'master' || activeThemeList.length === 7;
     const isCasualMode =
@@ -1662,7 +1663,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       : !hasDivinationInjection
       ? selectOptimalDivinationTools(text, activeThemeList, profile, isMasterCall)
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
-
+    const toolsIncludedInPrompt = isCasualMode
+      ? []
+      : toolSelection.promptInjection
+      ? toolSelection.selectedTools.map((tool) => tool.koName)
+      : hasDivinationInjection
+      ? options?.usedTools || []
+      : [];
     const isFastCasualPath =
       sourcePersona === 'lucy' &&
       responseLength === 'short' &&
@@ -1938,6 +1945,7 @@ ${responseProfile.rule}`;
                   channel: options?.channel || m.channel,
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
+                  usedTools: toolsIncludedInPrompt,
                   keyExerciseIndex: resolvedKeyExIndex ?? m.keyExerciseIndex
                 };
               }
@@ -1953,6 +1961,7 @@ ${responseProfile.rule}`;
                 channel: options?.channel,
                 channels: options?.channels,
                 mode: options?.mode,
+                usedTools: toolsIncludedInPrompt,
                 keyExerciseIndex: resolvedKeyExIndex
               });
             }
@@ -2085,6 +2094,7 @@ ${responseProfile.rule}`;
                   channel: options?.channel || m.channel,
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
+                  usedTools: [],
                 };
               }
               return m;
@@ -2099,6 +2109,7 @@ ${responseProfile.rule}`;
                 channel: options?.channel,
                 channels: options?.channels,
                 mode: options?.mode,
+                usedTools: [],
               });
             }
             pushChatThreadsToFirestore(updated);
