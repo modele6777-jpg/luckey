@@ -64,7 +64,7 @@ export const modelName = aiType === "grok" ? "grok-4.3" : resolvedPrimaryGeminiM
 export const LUCY_CHAT_MODEL = "gemini-3.1-flash-lite";
 
 /** 주력 모델 일시 지연 시 자동 폴백 순서 */
-export const LUCY_CHAT_FALLBACK_MODELS = ["gemini-flash-latest", "gemini-3.8-flash"];
+export const LUCY_CHAT_FALLBACK_MODELS = ["gemini-flash-latest"];
 
 const clientModelCooldownMap = new Map<string, number>();
 
