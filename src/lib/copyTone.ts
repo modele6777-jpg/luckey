@@ -44,7 +44,7 @@ export const LUCY_RESPONSE_PROFILES: Record<LucyResponseLength, LucyResponseProf
   },
   normal: {
     maxOutputTokens: 3072,
-    thinkingLevel: 'LOW',
+    thinkingLevel: 'MINIMAL',
     rule: `[답변 길이 규칙 — 7대 채널 · 최우선 적용]
 - 4~7문장, 1~2개 단락의 보통 길이로 답해.
 - 핵심 통찰 1개 + 바로 해볼 수 있는 실천 조언 1~2개에 집중하고, 장황한 배경 설명은 줄여.
@@ -52,7 +52,7 @@ export const LUCY_RESPONSE_PROFILES: Record<LucyResponseLength, LucyResponseProf
   },
   long: {
     maxOutputTokens: 8192,
-    thinkingLevel: 'MEDIUM',
+    thinkingLevel: 'LOW',
     rule: `[답변 길이 및 구성 규칙 — 올인원 마스터모드 · 최우선 적용]
 - 동서양 **15가지 운명학 도구(사주·점성술·자미두수·타로·숙요·마하보테·베딕·육임·홍국기문·카발라·주역·태국점성술·토정비결·구성학·태을신수)를 전원 총동원**해 풍성하고 깊이 있게 답해.
 - 반드시 **7대 테마(프롤로그·오렌지·트리니티·아우라·블루버드·뮤즈·에필로그)별로 묶어 15개 도구의 관점을 비교 분석**한 뒤, 마지막에 **15개 도구가 공통으로 가리키는 결론(일치점)과 눈여겨볼 차이점(변수), 그리고 맞춤 실천 조언**을 도출해 줘.`,

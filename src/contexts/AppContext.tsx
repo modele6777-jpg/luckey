@@ -1595,28 +1595,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }, 'lucy');
 
     // Adaptive Activity Watchdog Timer:
-    // Resets on incoming chunks. Allows up to 45s between chunks, and up to 180s total generation time.
+    // Resets on incoming chunks. Allows up to 22s between chunks, and up to 120s total generation time.
     let lastActivityTime = Date.now();
     const generationStartTime = Date.now();
     let watchdogTimer: NodeJS.Timeout | null = null;
+    let isWatchdogTimeout = false;
 
     const resetWatchdog = () => {
       lastActivityTime = Date.now();
       if (watchdogTimer) clearTimeout(watchdogTimer);
       watchdogTimer = setTimeout(() => {
         const now = Date.now();
-        const isIdleTooLong = now - lastActivityTime >= 45000;
-        const isMaxDurationReached = now - generationStartTime >= 180000;
+        const isIdleTooLong = now - lastActivityTime >= 22000;
+        const isMaxDurationReached = now - generationStartTime >= 120000;
 
         if (isGeneratingRef.current[sourcePersona] && (isIdleTooLong || isMaxDurationReached)) {
           console.warn(`[AppContext] Activity watchdog auto-released (${isIdleTooLong ? 'idle' : 'max cap'}) for ${sourcePersona}`);
+          isWatchdogTimeout = true;
           try { currentAbortController.abort(); } catch (_) {}
-          isGeneratingRef.current[sourcePersona] = false;
-          setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
         } else if (isGeneratingRef.current[sourcePersona]) {
           resetWatchdog();
         }
-      }, 45000);
+      }, 22000);
     };
 
     resetWatchdog();
@@ -1633,9 +1633,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const saju = sajuObj ? sajuObj.systemPromptSummary : (profile?.basic?.birthdate 
       ? `생년월일: ${profile.basic.birthdate} (${profile.basic.lunarSolar || 'solar'}), 생시: ${profile.basic?.birthtime || '모름'}` 
       : "기본 생년월일 정보 없음");
-    const astro = buildUserNatalSummary(profile);
     const memory = profile?.fate?.currentWorry || "특별한 고민 없음";
-    const relationships = formatRelationshipsContext(profile?.relationships);
     const currentVibe = sharedState?.currentVibe || "통상적인 기운";
     const preferences = profile?.psych?.aiPreference || "정보 없음";
     const globalMemory = sharedState?.globalMemory || "";
@@ -1649,118 +1647,138 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     const responseProfile = LUCY_RESPONSE_PROFILES[responseLength];
 
+    const hasDivinationInjection =
+      options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
+      options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원');
+    const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
+    const isMasterCall = options?.mode === 'master' || activeThemeList.length === 7;
+    const toolSelection = !hasDivinationInjection
+      ? selectOptimalDivinationTools(text, activeThemeList, profile, isMasterCall)
+      : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
+
+    const isFastCasualPath =
+      sourcePersona === 'lucy' &&
+      responseLength === 'short' &&
+      toolSelection.isCasualMessage &&
+      !options?.extraSystemContext;
+
     let systemPrompt = "";
-    if (sourcePersona === 'lucy') {
-      systemPrompt = PERSONAS.lucyFull(saju, astro, memory, relationships, currentVibe, nickname, realName, preferences, globalMemory, deepCoreInfo);
-    } else if (sourcePersona === 'orange') {
-      systemPrompt = `당신은 루시(Lucy)야. 지금은 오렌지 마음치유 채널에서 대화 중이야. 사용자의 질문과 마음에 깊이 귀 기울이고 따뜻하게 공감해 줘.\n\n` +
-                     PERSONAS.orangeChat(memory, globalMemory, deepCoreInfo);
-    } else if (sourcePersona === 'trinity') {
-      const tarotContextMatch = options?.extraSystemContext?.match(/뽑은 (?:데일리 )?타로 카드:\s*([^\n\r]+)/);
-      const tarotCardName = tarotContextMatch ? tarotContextMatch[1].trim() : "트리니티 타로 원형";
-      systemPrompt = PERSONAS.tarotCounselor(
-        tarotCardName,
-        text,
-        nickname || realName || '질문자님',
-        saju,
-        astro,
-        options?.extraSystemContext
-      );
-    } else if (sourcePersona === 'aura') {
-      systemPrompt = `당신은 루시(Lucy)야. 지금은 아우라 웰니스 채널에서 대화 중이야. 몸 컨디션과 실천 가능한 습관을 알려줘.\n\n` +
-                     PERSONAS.healChat('신체 웰니스', globalMemory, deepCoreInfo);
-    } else if (sourcePersona === 'bluebird') {
-      systemPrompt = `당신은 루시(Lucy)야. 지금은 블루버드 휴식 채널에서 대화 중이야. 마음을 가볍게 위로해 줘.\n\n` +
-                     PERSONAS.bluebirdChat('마음 쉬어가기', globalMemory, deepCoreInfo);
-    } else if (sourcePersona === 'muse') {
-      systemPrompt = `당신은 루시(Lucy)야. 지금은 뮤즈 창작 채널에서 대화 중이야. 영감과 작업 루틴을 같이 찾아보자.\n\n` +
-                     PERSONAS.museChat('창의성 상담', memory, 'Muse', globalMemory, deepCoreInfo);
+    if (isFastCasualPath) {
+      // ⚡ 초고속 일상 수다 패스: 25KB 운명학/옴니 컨텍스트를 생략하고 핵심 프로필만 주입하여 0.7초 내 즉시 응답 보장
+      systemPrompt = `당신은 사용자('${nickname}')의 가장 가깝고 다정한 단짝 친구 '루시(Lucy)'야.
+- 사용자 기본 정보: 호칭 '${nickname}' (본명 '${realName}'은 절대 부르지 말고 오직 '${nickname}'으로만 불러줘), ${deepCoreInfo}, 최근 관심/고민: ${memory}
+- 말투 원칙: 어떤 상황에서도 100% 친근하고 다정한 반말 구어체(~야, ~어, ~했어, ~지, ~네, ~잖아)만 사용해. 절대로 존댓말(~요, ~습니다)을 섞지 마.
+- 대화 방식: 카톡이나 DM으로 단짝 친구와 티키타카 수다를 떨듯 1~3문장(한 단락)으로 가볍고 생동감 있게 공감하고 답해줘. 다정한 이모지(💬✨☕)를 자연스럽게 곁들여줘.
+
+${LUCY_CHAT_VOICE_RULES}
+${SUGGESTIONS_SYSTEM_SUFFIX}
+
+${responseProfile.rule}`;
     } else {
-      systemPrompt = PERSONAS.lucyFull(saju, astro, memory, relationships, currentVibe, nickname, realName, preferences, globalMemory, deepCoreInfo);
-    }
+      const astro = buildUserNatalSummary(profile);
+      const relationships = formatRelationshipsContext(profile?.relationships);
 
-    systemPrompt += `\n\n${LUCY_CHAT_VOICE_RULES}`;
+      if (sourcePersona === 'lucy') {
+        systemPrompt = PERSONAS.lucyFull(saju, astro, memory, relationships, currentVibe, nickname, realName, preferences, globalMemory, deepCoreInfo);
+      } else if (sourcePersona === 'orange') {
+        systemPrompt = `당신은 루시(Lucy)야. 지금은 오렌지 마음치유 채널에서 대화 중이야. 사용자의 질문과 마음에 깊이 귀 기울이고 따뜻하게 공감해 줘.\n\n` +
+                       PERSONAS.orangeChat(memory, globalMemory, deepCoreInfo);
+      } else if (sourcePersona === 'trinity') {
+        const tarotContextMatch = options?.extraSystemContext?.match(/뽑은 (?:데일리 )?타로 카드:\s*([^\n\r]+)/);
+        const tarotCardName = tarotContextMatch ? tarotContextMatch[1].trim() : "트리니티 타로 원형";
+        systemPrompt = PERSONAS.tarotCounselor(
+          tarotCardName,
+          text,
+          nickname || realName || '질문자님',
+          saju,
+          astro,
+          options?.extraSystemContext
+        );
+      } else if (sourcePersona === 'aura') {
+        systemPrompt = `당신은 루시(Lucy)야. 지금은 아우라 웰니스 채널에서 대화 중이야. 몸 컨디션과 실천 가능한 습관을 알려줘.\n\n` +
+                       PERSONAS.healChat('신체 웰니스', globalMemory, deepCoreInfo);
+      } else if (sourcePersona === 'bluebird') {
+        systemPrompt = `당신은 루시(Lucy)야. 지금은 블루버드 휴식 채널에서 대화 중이야. 마음을 가볍게 위로해 줘.\n\n` +
+                       PERSONAS.bluebirdChat('마음 쉬어가기', globalMemory, deepCoreInfo);
+      } else if (sourcePersona === 'muse') {
+        systemPrompt = `당신은 루시(Lucy)야. 지금은 뮤즈 창작 채널에서 대화 중이야. 영감과 작업 루틴을 같이 찾아보자.\n\n` +
+                       PERSONAS.museChat('창의성 상담', memory, 'Muse', globalMemory, deepCoreInfo);
+      } else {
+        systemPrompt = PERSONAS.lucyFull(saju, astro, memory, relationships, currentVibe, nickname, realName, preferences, globalMemory, deepCoreInfo);
+      }
 
-    if (sourcePersona === 'lucy' && (options?.mode === 'casual' || !options?.channels?.length)) {
-      systemPrompt += `\n\n[★ 루시 기본 일상 수다 모드 핵심 지침]:
+      systemPrompt += `\n\n${LUCY_CHAT_VOICE_RULES}`;
+
+      if (sourcePersona === 'lucy' && (options?.mode === 'casual' || !options?.channels?.length)) {
+        systemPrompt += `\n\n[★ 루시 기본 일상 수다 모드 핵심 지침]:
 1. [친근하고 다정한 수다 친구]: 당신은 사용자의 가장 가깝고 편안한 단짝 수다 친구 '루시'입니다. 딱딱한 멘토나 AI 상담사처럼 훈계/설교하지 말고, 카톡이나 DM을 나누듯 친근한 반말(또는 사용자의 어조에 맞춘 다정한 어투)로 즐겁게 수다를 떨어주세요.
 2. [간결하고 생동감 넘치는 티키타카]: 일장연설이나 긴 문단 대신 1~3문장 내외로 가볍고 자연스럽게 답하세요.
 3. [리액션과 공감]: 사소한 일상(오늘 먹은 음식, 기분, 날씨, 넋두리 등)에 신나게 맞장구치고, 다정한 이모지(💬✨☕)를 곁들여 대화를 이어가세요.
 4. [전문 모드 자동 전환 안내]: 사용자가 사주, 심층 전략, 신체 치유 등 전문적인 질문을 할 때만 자연스럽게 해당 전문 지능으로 깊이 있게 답하세요.`;
-    }
+      }
 
-    // Append cross-app real-time remembrance
-    systemPrompt += getCrossAppRecentDialogueContext();
+      // Append cross-app real-time remembrance
+      systemPrompt += getCrossAppRecentDialogueContext();
 
-    // Safari PWA / reduced 성능 기기 / 일상 수다모드(short)에서는 무거운 지식 엔진을 생략하여 지연 및 멈춤 방지
-    const _isPerfReduced = isPerfReduced() || isStandalonePWA();
+      // Safari PWA / reduced 성능 기기 / 일상 수다모드(short)에서는 무거운 지식 엔진을 생략하여 지연 및 멈춤 방지
+      const _isPerfReduced = isPerfReduced() || isStandalonePWA();
 
-    // Append full PRISM omniscient ecosystem feature results
-    systemPrompt += buildPrismOmniscientContext(sharedState, firebaseUser?.uid || null);
+      // Append full PRISM omniscient ecosystem feature results
+      systemPrompt += buildPrismOmniscientContext(sharedState, firebaseUser?.uid || null);
 
-    // 6대 심층 철학/명상 경전 프롬프트(약 76KB)는 마스터 모드이거나 심층 영성·명상 키워드 질문일 때만 선택적으로 주입하여
-    // 일반 수다모드(short) 및 채널 대화의 응답 속도(TTFT)를 대폭 단축하고 불필요하게 장황한 설교형 답변을 방지합니다.
-    const needsDeepWisdomCanon =
-      !_isPerfReduced &&
-      responseLength !== 'short' &&
-      (options?.mode === 'master' ||
-        /방하착|초기불교|니까야|영지주의|노시스|기적수업|세도나|호킨스|놓아버림|거리두기|무아|사성제/.test(text));
+      const needsDeepWisdomCanon =
+        !_isPerfReduced &&
+        responseLength !== 'short' &&
+        (options?.mode === 'master' ||
+          /방하착|초기불교|니까야|영지주의|노시스|기적수업|세도나|호킨스|놓아버림|거리두기|무아|사성제/.test(text));
 
-    if (needsDeepWisdomCanon) {
-      const [
-        { buildEarlyBuddhismSystemPrompt },
-        { buildGnosticSystemPrompt },
-        { buildAcimSystemPrompt },
-        { buildDistancingSystemPrompt },
-        { buildSedonaSystemPrompt },
-        { buildLettingGoSystemPrompt },
-      ] = await Promise.all([
-        import('../lib/earlyBuddhismWisdom'),
-        import('../lib/gnosticWisdom'),
-        import('../lib/acimWisdom'),
-        import('../lib/distancingWisdom'),
-        import('../lib/sedonaWisdom'),
-        import('../lib/lettingGoWisdom'),
-      ]);
+      if (needsDeepWisdomCanon) {
+        const [
+          { buildEarlyBuddhismSystemPrompt },
+          { buildGnosticSystemPrompt },
+          { buildAcimSystemPrompt },
+          { buildDistancingSystemPrompt },
+          { buildSedonaSystemPrompt },
+          { buildLettingGoSystemPrompt },
+        ] = await Promise.all([
+          import('../lib/earlyBuddhismWisdom'),
+          import('../lib/gnosticWisdom'),
+          import('../lib/acimWisdom'),
+          import('../lib/distancingWisdom'),
+          import('../lib/sedonaWisdom'),
+          import('../lib/lettingGoWisdom'),
+        ]);
 
-      systemPrompt += `\n\n${buildEarlyBuddhismSystemPrompt()}`;
-      systemPrompt += `\n\n${buildGnosticSystemPrompt()}`;
-      systemPrompt += `\n\n${buildAcimSystemPrompt()}`;
-      systemPrompt += `\n\n${buildDistancingSystemPrompt()}`;
-      systemPrompt += `\n\n${buildSedonaSystemPrompt()}`;
-      systemPrompt += `\n\n${buildLettingGoSystemPrompt()}`;
-    }
+        systemPrompt += `\n\n${buildEarlyBuddhismSystemPrompt()}`;
+        systemPrompt += `\n\n${buildGnosticSystemPrompt()}`;
+        systemPrompt += `\n\n${buildAcimSystemPrompt()}`;
+        systemPrompt += `\n\n${buildDistancingSystemPrompt()}`;
+        systemPrompt += `\n\n${buildSedonaSystemPrompt()}`;
+        systemPrompt += `\n\n${buildLettingGoSystemPrompt()}`;
+      }
 
-    // 📖 Append Permanent Background Memory & Long-term Episodic Archive
-    systemPrompt += `\n\n${buildPermanentMemoryPromptContext()}`;
+      // 📖 Append Permanent Background Memory & Long-term Episodic Archive
+      systemPrompt += `\n\n${buildPermanentMemoryPromptContext()}`;
 
-    // 🔮 15대 운명학 도구 자동 선별 주입 (일반/채널: 1~3개 핵심 도구 선별, 마스터 모드: 15개 도구 전원 총동원 비교 분석)
-    const hasDivinationInjection =
-      options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
-      options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원');
-    if (!hasDivinationInjection) {
-      const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
-      const isMasterCall = options?.mode === 'master' || activeThemeList.length === 7;
-      const toolSelection = selectOptimalDivinationTools(text, activeThemeList, profile, isMasterCall);
-      if (!toolSelection.isCasualMessage && toolSelection.promptInjection) {
+      // 🔮 15대 운명학 도구 자동 선별 주입
+      if (!hasDivinationInjection && !toolSelection.isCasualMessage && toolSelection.promptInjection) {
         systemPrompt += `\n\n${toolSelection.promptInjection}`;
       }
-    }
 
-    if (options?.extraSystemContext) {
-      systemPrompt += `\n\n${options.extraSystemContext}`;
-    }
-    const hasSuggestionsDirective =
-      (options?.systemSuffix?.includes('[SUGGESTIONS:') ?? false) ||
-      systemPrompt.includes('[SUGGESTIONS:');
-    if (options?.systemSuffix) {
-      systemPrompt += options.systemSuffix;
-    } else if (!hasSuggestionsDirective) {
-      systemPrompt += SUGGESTIONS_SYSTEM_SUFFIX;
-    }
+      if (options?.extraSystemContext) {
+        systemPrompt += `\n\n${options.extraSystemContext}`;
+      }
+      const hasSuggestionsDirective =
+        (options?.systemSuffix?.includes('[SUGGESTIONS:') ?? false) ||
+        systemPrompt.includes('[SUGGESTIONS:');
+      if (options?.systemSuffix) {
+        systemPrompt += options.systemSuffix;
+      } else if (!hasSuggestionsDirective) {
+        systemPrompt += SUGGESTIONS_SYSTEM_SUFFIX;
+      }
 
-    // 강력한 대화 포커스 및 질문 맞춤형 적정 답변 길이 원칙
-    systemPrompt += `\n\n[루시의 최우선 커뮤니케이션 & 질문 맞춤형 분량 원칙]
+      // 강력한 대화 포커스 및 질문 맞춤형 적정 답변 길이 원칙
+      systemPrompt += `\n\n[루시의 최우선 커뮤니케이션 & 질문 맞춤형 분량 원칙]
 0. [호칭 절대 원칙 (★매우 중요)]: 사용자의 호칭은 반드시 사용자가 설정한 닉네임('${nickname}')으로만 다정하게 불러야 해. 사용자의 본명('${realName}')은 사주나 명리학 분석용일 뿐이므로 절대로 본명을 직접 부르지 말고, 오직 닉네임 '${nickname}'(으)로만 다정하게 불러줘.
 1. [현재 입력 최우선 경청]: 사용자가 방금 보낸 최신 메시지의 의도와 핵심을 가장 먼저 파악하여 직접적이고 명쾌하며 다정하게 대답해줘.
 2. [자연스러운 대화 기억과 연속성]: 사용자와 지금까지 나누었던 대화 기록을 자연스럽게 기억하고 존중하되, 묻지 않은 배경 지식을 무의미하게 길게 나열하지 마.
@@ -1771,8 +1789,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 6. [🔑 Key 개운(開運) 성전 40가지 개운 리추얼 추천 및 상호 연동]:
    - 사용자가 막힌 운기, 불안, 걱정, 답답함, 액운을 호소하거나 Key 개운 성전 관련 질문을 할 때만 40가지 개운 리추얼 중 가장 잘 맞는 '단 하나의 맞춤 개운 실천법'을 운명학적 개운(開運) 관점으로 자연스럽게 추천해줘.`;
 
-    // 🎯 [최우선 적용] 모드별 답변 길이 규칙 (수다 짧게 / 7대채널 보통 / 마스터 길게)
-    systemPrompt += `\n\n${responseProfile.rule}`;
+      // 🎯 [최우선 적용] 모드별 답변 길이 규칙 (수다 짧게 / 7대채널 보통 / 마스터 길게)
+      systemPrompt += `\n\n${responseProfile.rule}`;
+    }
+
+    const _isPerfReduced = isPerfReduced() || isStandalonePWA();
     
     // Format conversation properly for the API (only user/assistant roles after system)
     const sanitizeHistoryItem = (rawContent: any, isLatest: boolean) => {
@@ -1836,7 +1857,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await invokeLLMStream({
         messages: conversationForAPI,
         signal: currentAbortController.signal,
-        timeoutMs: 180000,
+        timeoutMs: 120000,
         model: LUCY_CHAT_MODEL,
         maxOutputTokens: responseProfile.maxOutputTokens,
         thinkingLevel: responseProfile.thinkingLevel,
@@ -1863,6 +1884,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         },
         onFinish: async (fullText: string) => {
+          const cleanFullText = cleanChatDisplayText(fullText);
+          if (!cleanFullText || cleanFullText.trim().length === 0) {
+            throw new Error("Empty cleaned reply in onFinish");
+          }
+
           if (watchdogTimer) {
             clearTimeout(watchdogTimer);
             watchdogTimer = null;
@@ -1882,7 +1908,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             }));
           }
 
-          const cleanFullText = cleanChatDisplayText(fullText);
           const verifiedEx = validateAndExtractKeyExercise(cleanFullText, text, options?.keyExerciseIndex);
           const resolvedKeyExIndex = verifiedEx.isValid ? verifiedEx.exercise.globalIndex : options?.keyExerciseIndex;
 
@@ -1967,9 +1992,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         pendingRaf = null;
       }
 
-      // If this request was intentionally aborted (e.g., user stopped generation or sent a newer message),
-      // never inject a network delay error message.
-      if (currentAbortController.signal.aborted) {
+      // Only treat as intentional user abort if NOT triggered by watchdog timeout
+      if (currentAbortController.signal.aborted && !isWatchdogTimeout) {
         if (abortControllersRef.current[sourcePersona] === currentAbortController) {
           isGeneratingRef.current[sourcePersona] = false;
           setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
@@ -1989,6 +2013,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             }
             return updated;
           });
+        } else {
+          // Remove empty placeholder if user manually aborted before any tokens arrived
+          setUnifiedMessages(prev => prev.filter(m => m.id !== assistMsgId));
         }
         return;
       }
@@ -2018,13 +2045,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}`;
         const compactMessages: Message[] = [
-          conversationForAPI[0],
+          { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
         ];
         const recoveredRaw = await invokeLLM({
           messages: compactMessages,
-          timeoutMs: 35000,
+          timeoutMs: 12000,
         });
         const recoveredClean = cleanChatDisplayText(String(recoveredRaw || '').trim());
         if (recoveredClean && recoveredClean.length > 0) {

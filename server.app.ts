@@ -199,21 +199,27 @@ function markModelThrottled(model: string, durationMs = 180000) {
 }
 
 const VALID_GEMINI_MODELS = new Set([
-  "gemini-4-argon",
-  "gemini-3.1-flash-lite-preview",
-  "gemini-3-flash-preview",
+  "gemini-3.1-flash-lite",
+  "gemini-flash-latest",
   "gemini-3.8-flash",
-  "gemini-3.1-pro-preview",
+  "gemini-4-argon",
 ]);
 
 function normalizeRequestedGeminiModel(rawModel?: string): string | undefined {
   const trimmed = (rawModel || "").trim().toLowerCase();
   if (!trimmed) return undefined;
+  if (
+    trimmed === "gemini-4-argon" ||
+    trimmed === "gemini-3.8-flash" ||
+    trimmed === "gemini-3.7-flash" ||
+    trimmed === "gemini-3.1-flash-lite-preview" ||
+    trimmed === "gemini-3-flash-preview" ||
+    trimmed.includes("lite")
+  ) {
+    return "gemini-3.1-flash-lite";
+  }
   if (VALID_GEMINI_MODELS.has(trimmed)) return trimmed;
-  if (trimmed.includes("argon") || trimmed.includes("gemini-4")) return "gemini-4-argon";
-  if (trimmed.includes("lite")) return "gemini-3.1-flash-lite-preview";
-  if (trimmed.includes("pro")) return "gemini-4-argon";
-  if (trimmed.startsWith("gemini-")) return "gemini-3.1-flash-lite-preview";
+  if (trimmed.startsWith("gemini-")) return "gemini-3.1-flash-lite";
   return undefined;
 }
 
@@ -241,6 +247,7 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
     errStr.includes("503") ||
     errStr.includes("500") ||
     errStr.includes("504") ||
+    errStr.includes("timeout") ||
     errStr.includes("resource_exhausted") ||
     errStr.includes("quota") ||
     errStr.includes("high demand") ||
@@ -256,19 +263,16 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
 
 function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const defaultModels = [
-    "gemini-4-argon",
-    "gemini-3.8-flash",
-    "gemini-3.7-flash",
-    "gemini-3.1-flash-lite-preview",
-    "gemini-3-flash-preview",
     "gemini-3.1-flash-lite",
     "gemini-flash-latest",
+    "gemini-3.8-flash",
   ];
 
   const normalizedRequested = normalizeRequestedGeminiModel(requestedModel);
   const normalizedEnv = normalizeRequestedGeminiModel(process.env.GEMINI_MODEL);
 
   const uniqueCandidates = [
+    "gemini-3.1-flash-lite",
     normalizedRequested,
     normalizedEnv,
     ...defaultModels,
@@ -284,12 +288,13 @@ function getPrioritizedGeminiModels(requestedModel?: string): string[] {
 function buildFastModelConfig(baseConfig: any, model: string, thinkingLevel?: string) {
   const cfg: any = {
     ...baseConfig,
-    maxOutputTokens: baseConfig?.maxOutputTokens || 2048,
+    maxOutputTokens: Math.max(baseConfig?.maxOutputTokens || 2048, 1536),
   };
-  if (model === "gemini-3-flash-preview" || model === "gemini-3.1-flash-lite-preview") {
-    cfg.thinkingConfig = { thinkingBudget: 0 };
-  } else if (thinkingLevel && typeof model === "string" && model.startsWith("gemini-4")) {
-    cfg.thinkingConfig = { thinkingLevel };
+  if (model.includes("3.1-flash-lite")) {
+    cfg.thinkingConfig = { thinkingLevel: thinkingLevel || "MINIMAL" };
+  } else if (model.startsWith("gemini-3") || model.startsWith("gemini-4") || model === "gemini-flash-latest") {
+    const safeLevel = !thinkingLevel || thinkingLevel === "MINIMAL" ? "LOW" : thinkingLevel;
+    cfg.thinkingConfig = { thinkingLevel: safeLevel };
   }
   return cfg;
 }
@@ -301,11 +306,17 @@ async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, conf
   for (const model of modelsToTry) {
     try {
       const streamConfig = buildFastModelConfig(config, model);
-      const stream = await ai.models.generateContentStream({
-        model,
-        contents,
-        config: streamConfig,
-      });
+      const timeoutMs = model.includes("3.1-flash-lite") ? 8000 : 5000;
+      const stream = await Promise.race([
+        ai.models.generateContentStream({
+          model,
+          contents,
+          config: streamConfig,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Stream connect timeout on ${model}`)), timeoutMs)
+        ),
+      ]);
       modelCooldownMap.delete(model);
       return { stream, modelUsed: model };
     } catch (err: any) {
@@ -315,6 +326,7 @@ async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, conf
         markModelThrottled(model, 600000);
         console.warn(`[server/gemini] Stream Model ${model} is experiencing high demand/rate limit (503/429), throttling model and engaging next available model...`);
       } else {
+        markModelThrottled(model, 180000);
         console.warn(`[server/gemini] Stream Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
       }
     }
@@ -329,13 +341,22 @@ async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, con
   for (const model of modelsToTry) {
     try {
       const contentConfig = buildFastModelConfig(config, model);
-      const response = await ai.models.generateContent({
-        model,
-        contents,
-        config: contentConfig,
-      });
-      modelCooldownMap.delete(model);
-      return { response, modelUsed: model };
+      const timeoutMs = model.includes("3.1-flash-lite") ? 12000 : 6000;
+      const response = await Promise.race([
+        ai.models.generateContent({
+          model,
+          contents,
+          config: contentConfig,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Content generation timeout on ${model}`)), timeoutMs)
+        ),
+      ]);
+      if (response?.text && String(response.text).trim().length > 0) {
+        modelCooldownMap.delete(model);
+        return { response, modelUsed: model };
+      }
+      throw new Error(`Empty response text from ${model}`);
     } catch (err: any) {
       lastError = err;
       const isThrottled = isTemporaryUnavailableOrRateLimited(err);
@@ -343,6 +364,7 @@ async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, con
         markModelThrottled(model, 600000);
         console.warn(`[server/gemini] Content Model ${model} is experiencing high demand/rate limit (503/429), throttling model and engaging next available model...`);
       } else {
+        markModelThrottled(model, 180000);
         console.warn(`[server/gemini] Content Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
       }
     }
@@ -1855,18 +1877,34 @@ ${content}
           const streamModels = getPrioritizedGeminiModels(req.body.model);
           let streamSuccess = false;
           let chunksDelivered = 0;
-          let activeModelUsed = streamModels[0] || "gemini-4-argon";
+          let activeModelUsed = streamModels[0] || "gemini-3.1-flash-lite";
 
           for (const currentModel of streamModels) {
             try {
               const streamConfig = buildFastModelConfig(config, currentModel, req.body.thinking_level);
-              const stream = await ai.models.generateContentStream({
-                model: currentModel,
-                contents,
-                config: streamConfig,
-              });
+              const firstChunkTimeoutMs = currentModel.includes("3.1-flash-lite") ? 8000 : 5000;
+              const stream = await Promise.race([
+                ai.models.generateContentStream({
+                  model: currentModel,
+                  contents,
+                  config: streamConfig,
+                }),
+                new Promise<never>((_, reject) =>
+                  setTimeout(() => reject(new Error(`SSE stream connect timeout (${firstChunkTimeoutMs}ms) on ${currentModel}`)), firstChunkTimeoutMs)
+                ),
+              ]);
 
-              for await (const chunk of stream) {
+              const iterator = stream[Symbol.asyncIterator]();
+              while (true) {
+                const waitMs = chunksDelivered === 0 ? firstChunkTimeoutMs : 20000;
+                const nextItem = await Promise.race([
+                  iterator.next(),
+                  new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error(`SSE chunk timeout (${waitMs}ms) on ${currentModel}`)), waitMs)
+                  ),
+                ]);
+                if (nextItem.done) break;
+                const chunk = nextItem.value;
                 let textChunk = "";
                 try {
                   if (typeof (chunk as any).text === "string" && (chunk as any).text) {
@@ -1927,12 +1965,14 @@ ${content}
                 streamSuccess = true;
                 break;
               }
+              markModelThrottled(currentModel, 180000);
             } catch (streamErr: any) {
               const isThrottled = isTemporaryUnavailableOrRateLimited(streamErr);
               if (isThrottled) {
                 markModelThrottled(currentModel, 600000);
                 console.warn(`[server/openai-stream] Model ${currentModel} rate limited/throttled, trying next model...`);
               } else {
+                markModelThrottled(currentModel, 180000);
                 console.warn(`[server/openai-stream] Model ${currentModel} failed (${streamErr?.message?.slice(0, 100) || streamErr}), trying next model...`);
               }
               if (chunksDelivered > 0) {

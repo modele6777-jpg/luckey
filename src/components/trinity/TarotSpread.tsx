@@ -12,7 +12,6 @@ import { TarotCardBackCustomizerModal } from './TarotCardBackCustomizerModal';
 import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
-import { TarotCardFlipParticles } from './TarotCardFlipParticles';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
 import { isDailyTarotConcern } from '@/lib/trinity/utils';
 
@@ -119,39 +118,26 @@ const DeckWheelCard = React.memo(
   }: DeckWheelCardProps) {
     const step = (2 * Math.PI) / Math.max(1, totalCards);
     const localAngle = originalIdx * step + gapAngleOffset;
-    const liftAmount = isHovered ? (isMobile ? 14 : 24) : 0;
+    const liftAmount = isHovered ? (isMobile ? 12 : 18) : 0;
     const finalRadius = radius + liftAmount;
-    const cardRotate = (localAngle * 180) / Math.PI + 90;
+    const cardRotate = Math.round(((localAngle * 180) / Math.PI + 90) * 10) / 10;
     const x = Math.round(finalRadius * Math.cos(localAngle) * 10) / 10;
     const y = Math.round(finalRadius * Math.sin(localAngle) * 10) / 10;
-
-    let norm = (localAngle - Math.PI / 2) % (2 * Math.PI);
-    if (norm < 0) norm += 2 * Math.PI;
-    const zIndex = isHovered ? 5000 : 30 + Math.round((norm / (2 * Math.PI)) * 1000);
-
-    // Only apply CSS transform transition to the 2-4 neighbor cards closing a local gap or hovered card
-    const shouldTransition = !isPicked && (gapAngleOffset !== 0 || isHovered);
 
     return (
       <div
         data-card-id={isPicked ? undefined : card.id}
         data-card-local-angle={localAngle}
-        className={`absolute left-1/2 top-1/2 w-16 h-28 sm:w-20 sm:h-34 md:w-24 md:h-40 rounded-lg sm:rounded-xl md:rounded-2xl flex items-center justify-center select-none overflow-hidden ${
-          shouldTransition ? 'transition-transform duration-150 ease-out' : ''
-        } ${
+        className={`absolute left-1/2 top-1/2 w-16 h-28 sm:w-20 sm:h-34 md:w-24 md:h-40 rounded-lg sm:rounded-xl flex items-center justify-center select-none ${
           isPicked
-            ? 'opacity-0 pointer-events-none invisible'
+            ? 'hidden pointer-events-none'
             : isHovered
-            ? 'pointer-events-auto cursor-pointer border-2 border-amber-300 ring-1 ring-yellow-400/60 z-[5000] scale-[1.12] bg-zinc-950'
-            : 'pointer-events-auto cursor-pointer border border-amber-500/40 bg-zinc-950'
+            ? 'pointer-events-auto cursor-pointer z-[5000]'
+            : 'pointer-events-auto cursor-pointer'
         }`}
         style={{
           transform: `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, 0) rotate(${cardRotate}deg)`,
           transformOrigin: 'center center',
-          zIndex,
-          backfaceVisibility: 'hidden',
-          WebkitBackfaceVisibility: 'hidden',
-          contain: 'layout style paint',
         }}
       >
         {!isPicked && (
@@ -332,67 +318,21 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const hadMovedRef = useRef(false);
   const momentumRafRef = useRef<number | null>(null);
 
-  const lastZIndexSyncDegRef = useRef<number>(-9999);
-
-  // Preload cards in the deck asynchronously to eliminate image decoding lag on card selection
-  useEffect(() => {
-    if (typeof window === 'undefined' || deck.length === 0) return;
-    const urls = deck.slice(0, 32).map((c) => getTarotCardImageUrl(c)).filter(Boolean);
-    const preload = () => {
-      urls.forEach((u) => {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = u;
-      });
-    };
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(preload);
-    } else {
-      setTimeout(preload, 80);
-    }
-  }, [deck]);
+  const wheelCenterRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const lastHoverCheckTimeRef = useRef<number>(0);
 
   const buildWheelTransform = useCallback(
     (deg: number) => `translate3d(-50%, calc(-50% + ${yOffset}px), 0) rotate(${deg}deg)`,
     [yOffset],
   );
 
+  // 🌟 Zero-Reflow O(1) GPU Wheel Rotation:
+  // 부모 휠 레이어의 단일 transform만 변경하며, 78장 자식 DOM 노드의 zIndex 루프 변경을 완전히 제거해 60~120fps 무저항 회전을 보장합니다.
   const applyRotation = useCallback(
-    (deg: number, forceZIndexSync = false) => {
+    (deg: number) => {
       rotationRef.current = deg;
       if (wheelLayerRef.current) {
         wheelLayerRef.current.style.transform = buildWheelTransform(deg);
-
-        // Throttle 78-card zIndex DOM style mutations to every 4.5 degrees of rotation to prevent WebKit style recalculation lag
-        if (!forceZIndexSync && Math.abs(deg - lastZIndexSyncDegRef.current) < 4.5) {
-          return;
-        }
-        lastZIndexSyncDegRef.current = deg;
-
-        const cardEls = wheelLayerRef.current.children;
-        const len = cardEls.length;
-        const rotRad = (deg * Math.PI) / 180;
-        const hoveredId = hoveredCardIdRef.current;
-
-        for (let i = 0; i < len; i++) {
-          const el = cardEls[i] as HTMLElement;
-          const cardId = el.getAttribute?.('data-card-id');
-          if (!cardId) continue;
-          if (cardId === hoveredId) {
-            if (el.style.zIndex !== '5000') el.style.zIndex = '5000';
-            continue;
-          }
-          const localAngleStr = el.getAttribute('data-card-local-angle');
-          if (!localAngleStr) continue;
-          const localAngle = parseFloat(localAngleStr);
-          const screenAngleRad = localAngle + rotRad;
-          let norm = (screenAngleRad - Math.PI / 2) % (2 * Math.PI);
-          if (norm < 0) norm += 2 * Math.PI;
-          const z = String(30 + Math.round((norm / (2 * Math.PI)) * 1000));
-          if (el.style.zIndex !== z) {
-            el.style.zIndex = z;
-          }
-        }
       }
     },
     [buildWheelTransform],
@@ -586,10 +526,15 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         }
       } catch (_) {}
 
-      // 2. High-precision geometric fallback
-      const rect = containerRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2 + yOffset;
+      // 2. High-precision geometric fallback using cached wheel center (zero forced reflow)
+      let centerX = wheelCenterRef.current.x;
+      let centerY = wheelCenterRef.current.y;
+      if (centerX === 0 && centerY === 0 && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        centerX = rect.left + rect.width / 2;
+        centerY = rect.top + rect.height / 2 + yOffset;
+        wheelCenterRef.current = { x: centerX, y: centerY };
+      }
       const dx = clientX - centerX;
       const dy = clientY - centerY;
       const dist = Math.hypot(dx, dy);
@@ -647,11 +592,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     (cardToSelect: TarotCard) => {
       if (isFinishing || hasCompletedRef.current || selectedEntries.length >= maxCards) return;
 
-      // Tactile audio haptic feedback (acoustic + physical vibration)
       playAudioHaptic('card_draw');
-
-      // 🌟 카드가 슬롯에 안착하며 뒤집히는 순간 화면 미세 진동 효과 트리거
-      triggerTarotScreenVibration({ containerElement: rootRef.current, intensity: 'medium' });
+      triggerTarotScreenVibration({ containerElement: rootRef.current, intensity: 'subtle' });
 
       setSelectedEntries((prev) => {
         if (prev.some((entry) => entry.card.id === cardToSelect.id) || prev.length >= maxCards) return prev;
@@ -661,7 +603,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           if (hasCompletedRef.current) return next;
           hasCompletedRef.current = true;
           setIsFinishing(true);
-          // Affirming chord & settling animation
           playAudioHaptic('save_success', { volume: 0.9 });
           window.setTimeout(() => {
             onComplete(
@@ -671,7 +612,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               })),
               null,
             );
-          }, 260);
+          }, 80);
         }
         return next;
       });
@@ -736,6 +677,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     const rect = containerRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2 + yOffset;
+    wheelCenterRef.current = { x: centerX, y: centerY };
 
     activePointerIdRef.current = e.pointerId;
     isDraggingRef.current = false;
@@ -750,16 +692,16 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!containerRef.current || isFinishing) return;
 
-    // Hover detection when mouse is moving without dragging (Desktop only)
+    // Hover detection when mouse is moving without dragging (Desktop only, throttled to 48ms)
     if (activePointerIdRef.current === null) {
-      if (e.pointerType !== 'touch') {
+      if (e.pointerType !== 'touch' && !isMobile) {
+        const now = performance.now();
+        if (now - lastHoverCheckTimeRef.current < 48) return;
+        lastHoverCheckTimeRef.current = now;
         const hovered = findTappedCard(e.clientX, e.clientY);
         const nextId = hovered?.id || null;
         if (nextId !== hoveredCardId) {
           setHoveredCardId(nextId);
-          if (nextId) {
-            playAudioHaptic('card_hover');
-          }
         }
       }
       return;
@@ -778,21 +720,18 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     );
 
     // Realistic touch drag threshold to prevent micro-jitter during taps from cancelling selection
-    const dragThreshold = e.pointerType === 'touch' ? 14 : 8;
+    const dragThreshold = e.pointerType === 'touch' ? 12 : 7;
 
     if (!isDraggingRef.current && moveDist > dragThreshold) {
       isDraggingRef.current = true;
       hadMovedRef.current = true;
       touchedCardIdRef.current = null;
-      containerRef.current.classList.add('cursor-grabbing');
-      containerRef.current.classList.remove('cursor-grab');
     }
 
     if (!isDraggingRef.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2 + yOffset;
+    // 🌟 Use cached center coordinates from pointerdown (ZERO getBoundingClientRect reflow during drag!)
+    const { x: centerX, y: centerY } = wheelCenterRef.current;
     const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
 
     // Shortest arc unwrapped angular delta (prevents -PI to +PI snap glitches)
@@ -804,7 +743,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     const now = performance.now();
     const dt = Math.max(1, now - lastTimeRef.current);
 
-    // Instant direct transform without state re-render latency
+    // Instant direct GPU transform without state re-render or DOM reflow
     applyRotation(rotationRef.current + deltaDeg);
 
     // Calculate instantaneous velocity for smooth flick release
@@ -890,7 +829,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={() => setShowCardBackModal(true)}
-          className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-yellow-500/40 bg-zinc-900/95 text-xs font-bold text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/70 shadow-[0_4px_24px_rgba(0,0,0,0.8)] backdrop-blur-md active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+          className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-yellow-500/40 bg-zinc-900 text-xs font-bold text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/70 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
           title="Quin 스타일 20종 타로 카드 뒷면 변경"
           aria-label="덱 뒷면 변경"
         >
@@ -901,7 +840,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={() => setShowPhysicalInputModal(true)}
-          className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-amber-500/40 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-xs font-bold text-amber-200 hover:text-yellow-100 hover:border-amber-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] backdrop-blur-md active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+          className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-amber-500/40 bg-zinc-900 text-xs font-bold text-amber-200 hover:text-yellow-100 hover:border-amber-400 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
           title="소장하신 실물 카드로 직접 입력하여 AI 리딩 받기"
           aria-label="실물 카드 직접 입력"
         >
@@ -917,7 +856,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           e.stopPropagation();
           onCancel();
         }}
-        className="absolute z-[320] px-3.5 sm:px-4 py-1.5 sm:py-2 min-h-[38px] sm:min-h-[44px] min-w-[38px] sm:min-w-[44px] rounded-full border border-yellow-500/40 bg-zinc-900/95 text-xs font-bold uppercase tracking-widest text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/60 shadow-[0_4px_24px_rgba(0,0,0,0.8)] backdrop-blur-md active:scale-95 transition-all flex items-center justify-center cursor-pointer pointer-events-auto"
+        className="absolute z-[320] px-3.5 sm:px-4 py-1.5 sm:py-2 min-h-[38px] sm:min-h-[44px] min-w-[38px] sm:min-w-[44px] rounded-full border border-yellow-500/40 bg-zinc-900 text-xs font-bold uppercase tracking-widest text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/60 active:scale-95 transition-transform flex items-center justify-center cursor-pointer pointer-events-auto"
         style={{
           top: 'calc(env(safe-area-inset-top, 0px) + 10px)',
           right: 'calc(env(safe-area-inset-right, 0px) + 12px)',
@@ -927,51 +866,28 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         닫기
       </button>
 
-      {/* Main Interactive Interactive Stage */}
+      {/* Main Interactive Stage (Zero 3D perspective & Zero backdrop-blur) */}
       <div
         ref={containerRef}
         className="flex-1 w-full relative flex items-center justify-center overflow-hidden touch-none select-none cursor-grab active:cursor-grabbing overscroll-none"
-        style={{ touchAction: 'none', overscrollBehavior: 'none', perspective: '1400px' }}
+        style={{ touchAction: 'none', overscrollBehavior: 'none' }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onPointerLeave={() => setHoveredCardId(null)}
       >
-        {/* Subtle Vignette & Depth Masking - positioned below card layer */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(9,9,11,0.6)_80%)] pointer-events-none z-[10]" />
-        <div className="absolute top-0 left-0 right-0 h-20 sm:h-44 bg-gradient-to-b from-zinc-950 via-zinc-950/70 to-transparent pointer-events-none z-[12]" />
-
-        {/* 78-Card GPU Composited Wheel Layer - Single Hardware Composite Target */}
+        {/* 78-Card GPU Composited Wheel Layer - Flat 2D Single Hardware Composite Target */}
         <div
           ref={wheelLayerRef}
-          className="absolute left-1/2 top-1/2 transition-opacity duration-300 z-[30]"
+          className="absolute left-1/2 top-1/2 z-[30]"
           style={{
-            transform: buildWheelTransform(0),
+            transform: buildWheelTransform(rotationRef.current),
             willChange: 'transform',
             transformOrigin: 'center center',
-            transformStyle: 'preserve-3d',
             opacity: wheelReady ? 1 : 0,
           }}
         >
-          {/* Subtle concentric orbit rings */}
-          <div
-            className="absolute left-1/2 top-1/2 rounded-full border border-yellow-500/15 bg-[radial-gradient(circle,rgba(234,179,8,0.03)_0%,transparent_75%)] pointer-events-none"
-            style={{
-              width: radius * 2,
-              height: radius * 2,
-              transform: 'translate(-50%, -50%)',
-            }}
-          />
-          <div
-            className="absolute left-1/2 top-1/2 rounded-full border border-dashed border-yellow-500/20 pointer-events-none"
-            style={{
-              width: radius * 2 + 16,
-              height: radius * 2 + 16,
-              transform: 'translate(-50%, -50%)',
-            }}
-          />
-
           {deck.map((card, originalIdx) => (
             <DeckWheelCard
               key={card.id}
@@ -988,20 +904,20 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           ))}
         </div>
 
-        {/* Top Info Banner & Mobile Daily Guidance */}
+        {/* Top Info Banner & Mobile Daily Guidance (Opaque surface, zero backdrop-blur) */}
         {isMobile && isDaily && selectedEntries.length === 0 ? (
           <div
             className="absolute left-0 right-0 z-[96] pointer-events-none flex flex-col items-center justify-center px-16 sm:px-24"
             style={{ top: 'calc(env(safe-area-inset-top, 0px) + 10px)' }}
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900/95 border border-yellow-500/40 text-yellow-300 shadow-[0_4px_24px_rgba(0,0,0,0.7)] backdrop-blur-md">
-              <Sparkles size={13} className="text-yellow-400 animate-pulse shrink-0" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-yellow-500/40 text-yellow-300">
+              <Sparkles size={13} className="text-yellow-400 shrink-0" />
               <span className="text-xs font-bold font-sans">오늘의 타로 · 1장 선택</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-200 font-mono font-bold">
                 {activeWheelCards.length}장
               </span>
             </div>
-            <p className="text-[11px] text-white/75 font-medium tracking-wide mt-1.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] animate-pulse">
+            <p className="text-[11px] text-white/75 font-medium tracking-wide mt-1.5">
               덱을 좌우로 넘겨 오늘의 카드를 탭하세요
             </p>
           </div>
@@ -1015,7 +931,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                 paddingLeft: isMobile ? '12px' : 'calc(env(safe-area-inset-left, 0px) + 16px)',
               }}
             >
-              <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-yellow-500/25 bg-zinc-900/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] space-y-0.5 pointer-events-none">
+              <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-yellow-500/25 bg-zinc-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 space-y-0.5 pointer-events-none">
                 {hasSpreadMeta && (
                   <div className="text-center">
                     <p className="text-[10px] sm:text-sm font-bold text-yellow-200">
@@ -1040,7 +956,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           )
         )}
 
-        {/* Selected Card Slots Layer (Hidden on mobile daily while picking to eliminate occlusion) */}
+        {/* Selected Card Slots Layer (Zero backdrop-blur, Zero particles, 0ms instant card mount) */}
         {(!isMobile || !isDaily || selectedEntries.length > 0) && (
           <div
             className="absolute flex flex-col items-center justify-center gap-1.5 sm:gap-4 md:gap-6 z-[95] pointer-events-none w-full px-2"
@@ -1067,11 +983,11 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                 return (
                   <div
                     key={`slot-${i}`}
-                    className={`${slotClass} bg-zinc-950/80 border border-yellow-500/30 rounded-xl md:rounded-2xl flex items-center justify-center relative shadow-2xl backdrop-blur-md`}
+                    className={`${slotClass} bg-zinc-900 border border-yellow-500/30 rounded-xl md:rounded-2xl flex items-center justify-center relative`}
                   >
                     {!hasCard ? (
-                      <div className="text-yellow-500/35 text-[7px] md:text-[9px] uppercase tracking-widest font-sans flex flex-col items-center gap-1 md:gap-1.5 px-1 text-center">
-                        <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border border-yellow-500/30 flex items-center justify-center bg-yellow-500/10 animate-pulse shadow-inner">
+                      <div className="text-yellow-500/40 text-[7px] md:text-[9px] uppercase tracking-widest font-sans flex flex-col items-center gap-1 md:gap-1.5 px-1 text-center">
+                        <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border border-yellow-500/30 flex items-center justify-center bg-yellow-500/10">
                           <span className="text-yellow-500/70 text-[8px] md:text-[10px] font-serif font-black">
                             {i + 1}
                           </span>
@@ -1079,79 +995,56 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                         <span className="font-bold tracking-wide leading-tight break-keep">{positionLabel}</span>
                       </div>
                     ) : (
-                      <>
-                        {/* 🌟 가장 최근에 뽑힌 카드 슬롯에만 경량화된 파티클 버스트 실행 (다중 슬롯 동시 렌더링 렉 방지) */}
-                        {i === selectedEntries.length - 1 && (
-                          <TarotCardFlipParticles
-                            active={true}
-                            triggerKey={`slot-draw-${i}-${drawnCard!.id}`}
-                            size="sm"
-                            count={isMobile ? 8 : 12}
-                          />
-                        )}
-
-                        <motion.div
-                          initial={{ scale: 0.78, y: 20, opacity: 0 }}
-                          animate={{ scale: 1, y: 0, opacity: 1 }}
-                          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                          onClick={() => {
-                            triggerTarotScreenVibration({ containerElement: rootRef.current, intensity: 'subtle' });
-                            setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
+                      <div
+                        onClick={() => {
+                          setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
+                        }}
+                        className="absolute inset-0 pointer-events-auto border-2 border-yellow-400 bg-zinc-950 rounded-xl md:rounded-2xl flex flex-col justify-between p-1.5 sm:p-2 md:p-3 text-center overflow-hidden cursor-zoom-in group hover:border-yellow-300"
+                        title={`${drawnCard!.nameKo} 카드 크게 보기`}
+                      >
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center z-30 pointer-events-none">
+                          <div className="w-6 h-6 rounded-full bg-yellow-500/90 text-black flex items-center justify-center">
+                            <ZoomIn size={12} />
+                          </div>
+                        </div>
+                        <img
+                          src={getTarotCardImageUrl(drawnCard!)}
+                          alt={drawnCard!.name}
+                          loading="eager"
+                          decoding="async"
+                          style={{ transform: entry.reversed ? 'rotate(180deg)' : undefined, transformOrigin: 'center center' }}
+                          className="absolute inset-0 w-full h-full object-cover z-0 rounded-xl md:rounded-2xl opacity-90"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
                           }}
-                          className="absolute inset-0 border-2 border-yellow-400 rounded-xl md:rounded-2xl flex flex-col justify-between p-1.5 sm:p-2 md:p-3 text-center shadow-md overflow-hidden cursor-zoom-in group hover:border-yellow-300 transition-transform active:scale-95"
-                          title={`${drawnCard!.nameKo} 카드 크게 보기`}
-                          style={{
-                            contain: 'layout style paint',
-                            zIndex: 2,
-                            willChange: 'transform, opacity',
-                          }}
-                        >
-                          {/* Hover Zoom Icon Badge */}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-30 pointer-events-none">
-                            <div className="w-6 h-6 rounded-full bg-yellow-500/90 text-black flex items-center justify-center shadow-lg">
-                              <ZoomIn size={12} />
-                            </div>
-                          </div>
-                          <img
-                            src={getTarotCardImageUrl(drawnCard!)}
-                            alt={drawnCard!.name}
-                            loading="eager"
-                            decoding="async"
-                            style={{ transform: entry.reversed ? 'rotate(180deg)' : undefined, transformOrigin: 'center center' }}
-                            className="absolute inset-0 w-full h-full object-cover z-0 rounded-xl md:rounded-2xl opacity-90 transition-opacity duration-200 group-hover:opacity-100"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70 z-10 pointer-events-none rounded-xl md:rounded-2xl" />
-                          <div className="absolute inset-0.5 border border-yellow-500/20 rounded-lg md:rounded-xl pointer-events-none z-20" />
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70 z-10 pointer-events-none rounded-xl md:rounded-2xl" />
 
-                          <div className="flex justify-between items-center text-[6px] md:text-[7px] font-mono text-yellow-500/80 z-20 shrink-0">
-                            <span>{entry.reversed ? 'REVERSED' : 'TRINITY'}</span>
-                            <Sparkles size={6} className="text-yellow-400/80" />
-                          </div>
+                        <div className="flex justify-between items-center text-[6px] md:text-[7px] font-mono text-yellow-500/80 z-20 shrink-0">
+                          <span>{entry.reversed ? 'REVERSED' : 'TRINITY'}</span>
+                          <Sparkles size={6} className="text-yellow-400/80" />
+                        </div>
 
-                          <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 mx-auto rounded-full bg-black/60 border border-yellow-500/30 flex items-center justify-center text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)] z-20 shrink-0">
-                            {React.createElement(getTarotCardVisual(drawnCard!).icon, {
-                              size: isMobile ? 12 : 20,
-                              className: getTarotCardVisual(drawnCard!).color,
-                            })}
-                          </div>
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 mx-auto rounded-full bg-black/70 border border-yellow-500/30 flex items-center justify-center text-yellow-400 z-20 shrink-0">
+                          {React.createElement(getTarotCardVisual(drawnCard!).icon, {
+                            size: isMobile ? 12 : 20,
+                            className: getTarotCardVisual(drawnCard!).color,
+                          })}
+                        </div>
 
-                          <div className="text-center z-20 flex flex-col gap-0.5 shrink-0 bg-black/80 py-0.5 sm:py-1 rounded-lg border border-yellow-500/20">
-                            <span className="text-[8px] sm:text-[9px] md:text-[11px] font-bold text-yellow-300 block leading-tight">
-                              {drawnCard!.nameKo}
-                            </span>
-                            <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-white/50 uppercase tracking-widest block">
-                              {entry.reversed ? '역방향' : drawnCard!.name}
-                            </span>
-                          </div>
-
-                          <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-yellow-500/60 uppercase tracking-widest block z-20 shrink-0">
-                            {drawnCard!.type}
+                        <div className="text-center z-20 flex flex-col gap-0.5 shrink-0 bg-black/85 py-0.5 sm:py-1 rounded-lg border border-yellow-500/20">
+                          <span className="text-[8px] sm:text-[9px] md:text-[11px] font-bold text-yellow-300 block leading-tight">
+                            {drawnCard!.nameKo}
                           </span>
-                        </motion.div>
-                      </>
+                          <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-white/50 uppercase tracking-widest block">
+                            {entry.reversed ? '역방향' : drawnCard!.name}
+                          </span>
+                        </div>
+
+                        <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-yellow-500/60 uppercase tracking-widest block z-20 shrink-0">
+                          {drawnCard!.type}
+                        </span>
+                      </div>
                     )}
                   </div>
                 );
@@ -1162,7 +1055,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
             {(!isMobile || !isDaily) && (
               <div className="text-center pointer-events-none flex flex-col items-center gap-1.5 px-4 w-full select-none">
                 <div className="flex items-center gap-2">
-                  <span className="text-yellow-400 font-bold tracking-[0.15em] text-xs sm:text-[13px] md:text-sm font-sans drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  <span className="text-yellow-400 font-bold tracking-[0.15em] text-xs sm:text-[13px] md:text-sm font-sans">
                     {selectedEntries.length} / {maxCards} 카드를 선택하세요
                   </span>
                   <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 font-mono font-bold">
@@ -1175,9 +1068,9 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         )}
       </div>
 
-      {/* Bottom Quick Control Bar */}
+      {/* Bottom Quick Control Bar (Opaque surface, zero backdrop-blur) */}
       <div
-        className="relative z-[310] flex items-center justify-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 sm:py-3 bg-zinc-950/85 backdrop-blur-md border-t border-yellow-500/20 w-full touch-none select-none overscroll-none"
+        className="relative z-[310] flex items-center justify-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 sm:py-3 bg-zinc-950 border-t border-yellow-500/20 w-full touch-none select-none overscroll-none"
         style={{
           touchAction: 'none',
           overscrollBehavior: 'none',
@@ -1187,7 +1080,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={() => handleQuickSpin('left')}
-          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-all shadow-md cursor-pointer shrink-0"
+          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer shrink-0"
           title="왼쪽으로 회전"
         >
           <ChevronLeft size={14} />
@@ -1197,7 +1090,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={handleShuffleDeck}
-          className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-yellow-500/20 via-amber-500/20 to-yellow-500/20 border border-yellow-500/40 hover:border-yellow-400 text-yellow-200 text-xs font-bold flex items-center gap-1 sm:gap-1.5 active:scale-95 transition-all shadow-md cursor-pointer shrink"
+          className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/40 hover:border-yellow-400 text-yellow-200 text-xs font-bold flex items-center gap-1 sm:gap-1.5 active:scale-95 transition-transform cursor-pointer shrink"
           title={`현재 남은 ${activeWheelCards.length}장의 덱을 셔플합니다 (이미 뽑은 카드는 덱에 다시 들어가지 않습니다)`}
         >
           <Shuffle size={13} className="text-yellow-400 shrink-0" />
@@ -1208,7 +1101,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           type="button"
           onClick={handleAutoPick}
           disabled={selectedEntries.length >= maxCards}
-          className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-yellow-500 text-zinc-950 font-bold text-xs flex items-center gap-1 sm:gap-1.5 hover:bg-yellow-400 active:scale-95 transition-all shadow-[0_0_16px_rgba(234,179,8,0.4)] disabled:opacity-40 disabled:pointer-events-none cursor-pointer shrink-0"
+          className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-yellow-500 text-zinc-950 font-bold text-xs flex items-center gap-1 sm:gap-1.5 hover:bg-yellow-400 active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none cursor-pointer shrink-0"
         >
           <Sparkles size={13} />
           <span className="whitespace-nowrap">자동 한 장</span>
@@ -1217,7 +1110,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={() => handleQuickSpin('right')}
-          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-all shadow-md cursor-pointer shrink-0"
+          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer shrink-0"
           title="오른쪽으로 회전"
         >
           <span className="hidden min-[380px]:inline">우회전</span>

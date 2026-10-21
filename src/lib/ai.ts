@@ -49,17 +49,50 @@ const openai = new OpenAI({
 });
 
 // @ts-ignore
-export const modelName = import.meta.env?.VITE_GEMINI_MODEL || (aiType === "grok" ? "grok-4.3" : "gemini-4-argon");
+const rawEnvModel = String(import.meta.env?.VITE_GEMINI_MODEL || "").trim();
+const resolvedPrimaryGeminiModel =
+  !rawEnvModel ||
+  rawEnvModel === "gemini-4-argon" ||
+  rawEnvModel === "gemini-3.8-flash" ||
+  rawEnvModel === "gemini-3.7-flash"
+    ? "gemini-3.1-flash-lite"
+    : rawEnvModel;
 
-/** 루시 채팅 전용 최신 모델 (Gemini 4 Argon). 다른 기능은 기존 빠른 Flash 모델 유지 */
-export const LUCY_CHAT_MODEL = "gemini-4-argon";
+export const modelName = aiType === "grok" ? "grok-4.3" : resolvedPrimaryGeminiModel;
 
-/** Argon 과부하/실패 시 자동 폴백 순서 */
-export const LUCY_CHAT_FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.1-flash-lite"];
+/** 루시 채팅 전용 초고속 모델 (TTFT ~0.8s). 유료 전용/지연 모델(argon, 3.8-flash) 선행 호출로 인한 15~45초 무응답 원천 차단 */
+export const LUCY_CHAT_MODEL = "gemini-3.1-flash-lite";
 
-/** thinkingLevel은 이를 지원하는 Gemini 4 계열에만 적용 (폴백 모델 요청 거부 방지) */
-function supportsThinkingLevel(model: string): boolean {
-  return model.startsWith("gemini-4");
+/** 주력 모델 일시 지연 시 자동 폴백 순서 */
+export const LUCY_CHAT_FALLBACK_MODELS = ["gemini-flash-latest", "gemini-3.8-flash"];
+
+const clientModelCooldownMap = new Map<string, number>();
+
+function isClientModelThrottled(model: string): boolean {
+  const exp = clientModelCooldownMap.get(model);
+  if (!exp) return false;
+  if (Date.now() > exp) {
+    clientModelCooldownMap.delete(model);
+    return false;
+  }
+  return true;
+}
+
+function markClientModelThrottled(model: string, durationMs = 300000) {
+  clientModelCooldownMap.set(model, Date.now() + durationMs);
+}
+
+/** 모델별 호환되는 thinkingLevel 반환 (gemini-3.1-flash-lite는 MINIMAL 지원, 3.8-flash/4-argon은 MINIMAL 시 400 에러이므로 LOW로 보정) */
+function resolveModelThinkingLevel(model: string, requested?: LucyThinkingLevel): string | undefined {
+  if (!model) return undefined;
+  if (model.includes("3.1-flash-lite")) {
+    return requested || "MINIMAL";
+  }
+  if (model.startsWith("gemini-3") || model.startsWith("gemini-4") || model === "gemini-flash-latest") {
+    if (!requested || requested === "MINIMAL") return "LOW";
+    return requested;
+  }
+  return undefined;
 }
 
 export interface Message {
@@ -338,19 +371,23 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
       contents = [{ role: 'user', content: "Continue" }];
     }
 
-    const modelsToTry = [
+    const rawModelsToTry = [
+      "gemini-3.1-flash-lite",
       modelName,
-      "gemini-4-argon",
-      "gemini-3.1-flash-lite-preview",
-      "gemini-3-flash-preview",
-      "gemini-3.8-flash",
-    ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i).slice(0, 3);
+      ...LUCY_CHAT_FALLBACK_MODELS,
+    ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
+
+    const availableModels = rawModelsToTry.filter(m => !isClientModelThrottled(m));
+    const throttledModels = rawModelsToTry.filter(m => isClientModelThrottled(m));
+    const modelsToTry = [...availableModels, ...throttledModels].slice(0, 3);
 
     for (const currentModel of modelsToTry) {
       try {
+        const perModelTimeout = Math.min(timeoutMs, currentModel.includes("3.1-flash-lite") ? 10000 : 6000);
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Gemini API Timeout")), timeoutMs)
+          setTimeout(() => reject(new Error("Gemini API Timeout")), perModelTimeout)
         );
+        const resolvedThinking = resolveModelThinkingLevel(currentModel, "MINIMAL");
 
         const response = await Promise.race([
           genAI.models.generateContent({
@@ -368,15 +405,19 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
             config: {
               systemInstruction: systemMessage?.content as string,
               responseMimeType: params.responseFormat?.type === "json_object" ? "application/json" : "text/plain",
+              ...(resolvedThinking ? { thinkingConfig: { thinkingLevel: resolvedThinking as any } } : {}),
             }
           }),
           timeoutPromise
         ]) as any;
 
-        if (response?.text) {
+        if (response?.text && String(response.text).trim().length > 0) {
+          clientModelCooldownMap.delete(currentModel);
           return response.text;
         }
+        markClientModelThrottled(currentModel, 120000);
       } catch (error: any) {
+        markClientModelThrottled(currentModel, 300000);
         console.warn(`[invokeLLM] Model ${currentModel} error or timeout, switching...`, error?.message || error);
       }
     }
@@ -1288,113 +1329,124 @@ async function invokeLLMStreamInner(params: {
         contents = [{ role: 'user', content: "대화를 시작해줘" }];
       }
 
-      const modelsToTry = (params.model
-        ? [params.model, ...LUCY_CHAT_FALLBACK_MODELS]
-        : [
-            modelName,
-            "gemini-4-argon",
-            "gemini-3.8-flash",
-            "gemini-3.7-flash",
-            "gemini-3.1-flash-lite-preview",
-            "gemini-3-flash-preview",
-            "gemini-3.1-flash-lite",
-            "gemini-flash-latest",
-          ]
-      ).filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
+      const requestedPrimary =
+        !params.model ||
+        params.model === "gemini-4-argon" ||
+        params.model === "gemini-3.8-flash" ||
+        params.model === "gemini-3.7-flash"
+          ? LUCY_CHAT_MODEL
+          : params.model;
+
+      const rawCandidates = [
+        requestedPrimary,
+        LUCY_CHAT_MODEL,
+        ...LUCY_CHAT_FALLBACK_MODELS,
+      ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
+
+      const availableModels = rawCandidates.filter(m => !isClientModelThrottled(m));
+      const throttledModels = rawCandidates.filter(m => isClientModelThrottled(m));
+      const modelsToTry = [...availableModels, ...throttledModels];
 
       const streamStartedAt = Date.now();
       let hasLoggedFirstChunk = false;
-
       let hasEmittedToCaller = false;
-      // 빈 응답 자동 재시도: 최대 2회
-      const MAX_EMPTY_RETRIES = 2;
-      let emptyRetryCount = 0;
+
+      const formattedContents = contents.map(m => ({
+        role: m.role === "assistant" ? "model" : m.role as any,
+        parts: Array.isArray(m.content) 
+          ? m.content.map(p => {
+              if (p.type === 'text' || !p.image_url?.url) return { text: p.text || '' };
+              const img = parseImageDataUrl(p.image_url.url);
+              return img ? { inlineData: { data: img.data, mimeType: img.mimeType } } : { text: '' };
+            })
+          : [{ text: String(m.content || '') }],
+      }));
 
       for (const currentModel of modelsToTry) {
-        // If we already emitted partial chunks from a failed model, don't blindly append from a second model
-        if (hasEmittedToCaller) break;
+        if (hasEmittedToCaller || params.signal?.aborted) break;
 
         try {
-          let modelFullContent = "";
-          let modelRetry = 0;
-          while (modelRetry <= MAX_EMPTY_RETRIES) {
-            const responseStream = await genAI.models.generateContentStream({
+          const resolvedThinking = resolveModelThinkingLevel(currentModel, params.thinkingLevel);
+          const firstTokenDeadlineMs =
+            params.thinkingLevel === "MEDIUM" || params.thinkingLevel === "HIGH"
+              ? 10000
+              : currentModel.includes("3.1-flash-lite")
+              ? 7500
+              : 5000;
+
+          const responseStream = await Promise.race([
+            genAI.models.generateContentStream({
               model: currentModel,
-              contents: contents.map(m => ({
-                role: m.role === "assistant" ? "model" : m.role as any,
-                parts: Array.isArray(m.content) 
-                  ? m.content.map(p => {
-                      if (p.type === 'text' || !p.image_url?.url) return { text: p.text || '' };
-                      const img = parseImageDataUrl(p.image_url.url);
-                      return img ? { inlineData: { data: img.data, mimeType: img.mimeType } } : { text: '' };
-                    })
-                  : [{ text: String(m.content || '') }],
-              })),
+              contents: formattedContents,
               config: {
                 systemInstruction: systemMessage?.content as string,
-                temperature: modelRetry > 0 ? 0.8 : 0.7, // 재시도 시 온도 약간 올려서 빈 응답 방지
-                maxOutputTokens: params.maxOutputTokens || 8192,
-                ...(params.thinkingLevel && supportsThinkingLevel(currentModel)
-                  ? { thinkingConfig: { thinkingLevel: params.thinkingLevel as any } }
+                temperature: 0.7,
+                maxOutputTokens: Math.max(params.maxOutputTokens || 2048, 1536),
+                ...(resolvedThinking
+                  ? { thinkingConfig: { thinkingLevel: resolvedThinking as any } }
                   : {}),
               }
-            });
+            }),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error(`Connect timeout (${firstTokenDeadlineMs}ms) on ${currentModel}`)), firstTokenDeadlineMs)
+            ),
+          ]);
 
-            let attemptContent = "";
-            for await (const chunk of responseStream) {
-              const chunkText = chunk.text || "";
-              if (chunkText) {
-                if (!hasLoggedFirstChunk) {
-                  hasLoggedFirstChunk = true;
-                  console.info(`[LucyLLM] model=${currentModel} thinking=${params.thinkingLevel || 'default'} ttft=${Date.now() - streamStartedAt}ms`);
-                }
-                const candidate = attemptContent + chunkText;
-                const loopCheck = checkRepetitionLoop(candidate);
-                if (loopCheck.isLoop) {
-                  console.warn("[invokeLLMStream] Degeneration Loop detected in Gemini stream! Tripping circuit breaker.");
-                  attemptContent = loopCheck.cleaned || "마음속에 무거운 감정이 밀려왔나 봐. 천천히 숨을 고르고, 편안하게 이야기해 줘.";
-                  break;
-                }
-                attemptContent += chunkText;
-                hasEmittedToCaller = true;
-                params.onChunk(chunkText);
+          let attemptContent = "";
+          const iterator = responseStream[Symbol.asyncIterator]();
+
+          while (true) {
+            if (params.signal?.aborted) break;
+            const timeoutForChunk = attemptContent.length === 0 ? firstTokenDeadlineMs : 20000;
+            const nextResult = await Promise.race([
+              iterator.next(),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error(`Chunk timeout (${timeoutForChunk}ms) on ${currentModel}`)), timeoutForChunk)
+              ),
+            ]);
+
+            if (nextResult.done) break;
+            const chunk = nextResult.value;
+            const chunkText = chunk?.text || "";
+            if (chunkText) {
+              if (!hasLoggedFirstChunk) {
+                hasLoggedFirstChunk = true;
+                console.info(`[LucyLLM] model=${currentModel} thinking=${resolvedThinking || 'default'} ttft=${Date.now() - streamStartedAt}ms`);
               }
+              const candidate = attemptContent + chunkText;
+              const loopCheck = checkRepetitionLoop(candidate);
+              if (loopCheck.isLoop) {
+                console.warn("[invokeLLMStream] Degeneration Loop detected in Gemini stream! Tripping circuit breaker.");
+                attemptContent = loopCheck.cleaned || "마음속에 무거운 감정이 밀려왔나 봐. 천천히 숨을 고르고, 편안하게 이야기해 줘.";
+                break;
+              }
+              attemptContent += chunkText;
+              hasEmittedToCaller = true;
+              params.onChunk(chunkText);
             }
-
-            if (attemptContent && attemptContent.trim().length > 0) {
-              modelFullContent = attemptContent;
-              break;
-            }
-            // 빈 응답 — 재시도
-            modelRetry++;
-            emptyRetryCount++;
-            console.warn(`[invokeLLMStream] Gemini model ${currentModel} returned empty response. Retry ${modelRetry}/${MAX_EMPTY_RETRIES}`);
           }
 
-          if (modelFullContent && modelFullContent.trim().length > 0) {
-            const finalCleaned = checkRepetitionLoop(modelFullContent).cleaned || "마음속에 무거운 감정이 밀려왔나 봐. 천천히 숨을 고르고, 편안하게 이야기해 줘.";
+          if (attemptContent && attemptContent.trim().length > 0) {
+            clientModelCooldownMap.delete(currentModel);
+            const finalCleaned = checkRepetitionLoop(attemptContent).cleaned || "마음속에 무거운 감정이 밀려왔나 봐. 천천히 숨을 고르고, 편안하게 이야기해 줘.";
             params.onFinish?.(finalCleaned);
             return finalCleaned;
           }
-        } catch (streamModelErr: any) {
-          console.warn(`[invokeLLMStream] Gemini stream model ${currentModel} error:`, streamModelErr?.message || streamModelErr);
-        }
-      }
 
-      // 모든 Gemini 모델이 빈 응답 반환 → 즉시 폴백 메시지로 응답하여 UI 멈춤 방지
-      if (emptyRetryCount > 0 && !hasEmittedToCaller) {
-        const fallback = "지금 잠깐 연결이 흔들렸어. 다시 한번 말해줄래? 🙏";
-        params.onChunk(fallback);
-        params.onFinish?.(fallback);
-        return fallback;
+          console.warn(`[invokeLLMStream] Gemini model ${currentModel} returned empty stream, switching immediately...`);
+          markClientModelThrottled(currentModel, 180000);
+        } catch (streamModelErr: any) {
+          markClientModelThrottled(currentModel, 300000);
+          console.warn(`[invokeLLMStream] Gemini stream model ${currentModel} error/timeout:`, streamModelErr?.message || streamModelErr);
+        }
       }
     } catch (geminiStreamErr) {
       console.warn("[invokeLLMStream] Gemini direct stream attempt failed:", geminiStreamErr);
     }
   }
 
-  // 2. OpenAI / Server Proxy Streaming
-  if (useOpenAI && openai) {
+  // 2. Server Proxy SSE Streaming (Always available as fallback even if client genAI is present)
+  if (openai) {
     let fullContent = "";
     try {
       const messages = withKoreanOnlyOutput(params.messages.map(m => {
@@ -1476,6 +1528,9 @@ async function invokeLLMStreamInner(params: {
           const data = await fallbackRes.json();
           // poe.com의 응답 포맷 또는 OpenAI 호환 포맷
           const fullResult = extractChatCompletionText(data?.choices?.[0]?.message?.content);
+          if (!fullResult || !fullResult.trim()) {
+            throw new Error("Empty fallback response from /api/openai/v1/chat/completions");
+          }
           params.onChunk(fullResult);
           params.onFinish?.(fullResult);
           return fullResult;

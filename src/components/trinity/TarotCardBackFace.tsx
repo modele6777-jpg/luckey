@@ -274,15 +274,32 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
 
   const accentColor = theme.accentColor || '#eab308';
 
+  // 🌟 78장 휠 카드 전용 초경량 단일 레이어 렌더링 (중첩 DOM·SVG 800여 개 제거 -> 60~120fps 무저항 스핀)
+  if (isWheelFast) {
+    return (
+      <div
+        className={`absolute inset-0 w-full h-full bg-[#0c071a] rounded-lg sm:rounded-xl flex items-center justify-center pointer-events-none select-none ${className}`}
+        style={{
+          border: `1px solid ${isHovered ? '#fde047' : `${accentColor}55`}`,
+        }}
+      >
+        <span
+          className="text-[11px] sm:text-xs leading-none"
+          style={{ color: accentColor }}
+        >
+          ✦
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
       }}
-      className={`absolute inset-0 w-full h-full bg-gradient-to-b from-[#100826] via-[#090514] to-black rounded-xl sm:rounded-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 overflow-hidden select-none ${
-        isWheelFast ? '' : 'shadow-2xl'
-      } ${className}`}
+      className={`absolute inset-0 w-full h-full bg-gradient-to-b from-[#100826] via-[#090514] to-black rounded-xl sm:rounded-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 overflow-hidden select-none shadow-2xl ${className}`}
     >
       {/* Outer filigree border */}
       <div
@@ -329,4 +346,5 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
     </div>
   );
 });
+
 
