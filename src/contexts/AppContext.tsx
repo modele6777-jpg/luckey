@@ -1654,7 +1654,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = options?.mode === 'master' || activeThemeList.length === 7;
-    const toolSelection = !hasDivinationInjection
+    const isCasualMode =
+      options?.mode === 'casual' ||
+      (!options?.mode && responseLength === 'short' && activeThemeList.length === 0);
+    const toolSelection = isCasualMode
+      ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
+      : !hasDivinationInjection
       ? selectOptimalDivinationTools(text, activeThemeList, profile, isMasterCall)
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
 
@@ -1793,6 +1798,9 @@ ${responseProfile.rule}`;
 
       // 🎯 [최우선 적용] 모드별 답변 길이 규칙 (수다 짧게 / 7대채널 보통 / 마스터 길게)
       systemPrompt += `\n\n${responseProfile.rule}`;
+    }
+    if (sourcePersona === 'lucy' && isCasualMode) {
+      systemPrompt += `\n\n[수다모드 도구 비활성화]\n이번 대화는 가벼운 수다 모드야. 운세·타로·사주 등 운명학 도구를 고르거나 분석에 적용하지 말고, 관련 도구 사용 여부나 결과 배지도 만들지 마. 사용자의 질문에 일상 대화처럼 직접 답해줘.`;
     }
 
     const _isPerfReduced = isPerfReduced() || isStandalonePWA();
@@ -2052,7 +2060,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),

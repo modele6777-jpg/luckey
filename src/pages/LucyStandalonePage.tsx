@@ -1669,7 +1669,9 @@ export default function LucyStandalonePage() {
     }
 
     // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
-    const divinationSelection = selectOptimalDivinationTools(userCleanText, channels, counselingUserProfile, isMaster);
+    const divinationSelection = isCasual
+      ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
+      : selectOptimalDivinationTools(userCleanText, channels, counselingUserProfile, isMaster);
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
@@ -2302,7 +2304,7 @@ export default function LucyStandalonePage() {
                   </button>
 
                   {/* 🔮 루시 답장에 15가지 운명학 도구 중 어떤 도구들이 쓰였는지 모드 옆에 표시 */}
-                  {!isUser && !isGreeting && (() => {
+                  {!isUser && !isGreeting && !msgModeInfo.isCasual && (() => {
                     const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
                     const prevUserText = prevUser
                       ? (typeof prevUser.content === 'string'
