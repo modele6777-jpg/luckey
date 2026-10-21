@@ -324,6 +324,7 @@ export async function invokeLLM(params: {
   signal?: AbortSignal;
   model?: string;
   maxOutputTokens?: number;
+  thinkingLevel?: LucyThinkingLevel;
   preferServer?: boolean;
 }) {
   const timeoutMs = params.timeoutMs || 45000;
@@ -396,7 +397,7 @@ export async function invokeLLM(params: {
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error("Gemini API Timeout")), perModelTimeout)
         );
-        const resolvedThinking = resolveModelThinkingLevel(currentModel, "MINIMAL");
+        const resolvedThinking = resolveModelThinkingLevel(currentModel, params.thinkingLevel || "MINIMAL");
 
         const response = await Promise.race([
           genAI.models.generateContent({
@@ -454,6 +455,7 @@ export async function invokeLLM(params: {
           stream: false,
           temperature: 0.7,
           ...(params.maxOutputTokens ? { max_tokens: params.maxOutputTokens } : {}),
+          ...(params.thinkingLevel ? { thinking_level: params.thinkingLevel } : {}),
           response_format: params.responseFormat?.type === "json_object" ? { type: "json_object" } : undefined,
         }),
         signal: controller.signal,
@@ -1349,6 +1351,7 @@ async function invokeLLMStreamInner(params: {
       signal: params.signal,
       model: params.model,
       maxOutputTokens: params.maxOutputTokens,
+      thinkingLevel: params.thinkingLevel,
       preferServer: true,
     });
     const fullText = extractChatCompletionText(response) || String(response || "").trim();

@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.4.388",
+    "summary": "Forward thinking level through buffered mobile calls",
+    "builtAt": "2026-10-21T22:39:02.161+09:00",
+    "items": [
+      "Forward the selected thinking level through buffered mobile requests and the server proxy payload",
+      "Honor requested thinking levels in direct Gemini calls while retaining the existing default"
+    ]
+  },
+  {
     "version": "1.4.387",
     "summary": "루시 답변 도구 배지를 실제 사용 지침에 맞추고 타로 폭죽 효과 복구",
     "builtAt": "2026-10-21T22:27:18.894+09:00",

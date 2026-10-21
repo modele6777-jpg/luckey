@@ -1,11 +1,10 @@
 {
   "name": "luckey",
-  "version": "1.4.387",
-  "summary": "루시 답변 도구 배지를 실제 사용 지침에 맞추고 타로 폭죽 효과 복구",
-  "builtAt": "2026-10-21T22:27:18.894+09:00",
+  "version": "1.4.388",
+  "summary": "Forward thinking level through buffered mobile calls",
+  "builtAt": "2026-10-21T22:39:02.161+09:00",
   "items": [
-    "답변 완료 후 실제 프롬프트에 주입된 운명학 도구만 메타데이터에 기록하고, 선택을 다시 추측해 표시하던 기존 배지를 제거",
-    "수다모드에서는 운명학 도구를 주입하지 않고 관련 도구 배지도 표시하지 않음",
-    "타로 카드가 뒤집힐 때 확장 충격파, 태양광 플래시, 별빛 광선과 빛나는 파티클 폭죽 효과 복구"
+    "Forward the selected thinking level through buffered mobile requests and the server proxy payload",
+    "Honor requested thinking levels in direct Gemini calls while retaining the existing default"
   ]
 }
