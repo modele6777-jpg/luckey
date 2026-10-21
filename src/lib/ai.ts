@@ -317,7 +317,15 @@ export async function poeQuickInsight(input: string, history: Message[]) {
   }));
 }
 
-export async function invokeLLM(params: { messages: Message[], responseFormat?: { type: "json_object" | "text" }, timeoutMs?: number }) {
+export async function invokeLLM(params: {
+  messages: Message[];
+  responseFormat?: { type: "json_object" | "text" };
+  timeoutMs?: number;
+  signal?: AbortSignal;
+  model?: string;
+  maxOutputTokens?: number;
+  preferServer?: boolean;
+}) {
   const timeoutMs = params.timeoutMs || 45000;
   const mappedMessages = withKoreanOnlyOutput(params.messages.map(m => {
     const role = m.role === "model" ? "assistant" : m.role;
@@ -332,7 +340,7 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
     };
   }));
 
-  if (useOpenAI && openai) {
+  if (!params.preferServer && useOpenAI && openai) {
     try {
       const createTimeoutPromise = (ms = timeoutMs) =>
         new Promise((_, reject) => setTimeout(() => reject(new Error("AI Request Timeout")), ms));
@@ -341,8 +349,9 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
       try {
         response = await Promise.race([
           openai.chat.completions.create({
-            model: modelName,
+            model: params.model || modelName,
             messages: mappedMessages,
+            ...(params.maxOutputTokens ? { max_tokens: params.maxOutputTokens } : {}),
             response_format: params.responseFormat?.type === "json_object" ? { type: "json_object" } : undefined,
             temperature: 0.7,
           }),
@@ -362,7 +371,7 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
   }
 
   // Gemini logic
-  if (genAI) {
+  if (!params.preferServer && genAI) {
     const systemMessage = params.messages.find(m => m.role === "system");
     let contents = params.messages.filter(m => m.role !== "system");
 
@@ -373,7 +382,7 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
 
     const rawModelsToTry = [
       "gemini-3.1-flash-lite",
-      modelName,
+      params.model || modelName,
       ...LUCY_CHAT_FALLBACK_MODELS,
     ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
 
@@ -404,6 +413,7 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
             })),
             config: {
               systemInstruction: systemMessage?.content as string,
+              ...(params.maxOutputTokens ? { maxOutputTokens: params.maxOutputTokens } : {}),
               responseMimeType: params.responseFormat?.type === "json_object" ? "application/json" : "text/plain",
               ...(resolvedThinking ? { thinkingConfig: { thinkingLevel: resolvedThinking as any } } : {}),
             }
@@ -428,26 +438,37 @@ export async function invokeLLM(params: { messages: Message[], responseFormat?: 
     const url = `${getApiBaseUrl()}/api/openai/v1/chat/completions`;
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), Math.max(timeoutMs, 15000));
-    const proxyResponse = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: modelName,
-        messages: mappedMessages,
-        stream: false,
-        temperature: 0.7,
-        response_format: params.responseFormat?.type === "json_object" ? { type: "json_object" } : undefined,
-      }),
-      signal: controller.signal,
-    });
-    window.clearTimeout(timer);
+    const abortRequest = () => controller.abort();
+    if (params.signal?.aborted) {
+      controller.abort();
+    } else {
+      params.signal?.addEventListener("abort", abortRequest, { once: true });
+    }
+    try {
+      const proxyResponse = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: params.model || modelName,
+          messages: mappedMessages,
+          stream: false,
+          temperature: 0.7,
+          ...(params.maxOutputTokens ? { max_tokens: params.maxOutputTokens } : {}),
+          response_format: params.responseFormat?.type === "json_object" ? { type: "json_object" } : undefined,
+        }),
+        signal: controller.signal,
+      });
 
-    if (proxyResponse.ok) {
-      const data = await proxyResponse.json();
-      const cleaned = extractChatCompletionText(data?.choices?.[0]?.message?.content);
-      if (cleaned) {
-        return cleaned;
+      if (proxyResponse.ok) {
+        const data = await proxyResponse.json();
+        const cleaned = extractChatCompletionText(data?.choices?.[0]?.message?.content);
+        if (cleaned) {
+          return cleaned;
+        }
       }
+    } finally {
+      window.clearTimeout(timer);
+      params.signal?.removeEventListener("abort", abortRequest);
     }
   } catch (fallbackErr) {
     console.error("[invokeLLM] Server-side API proxy fallback also failed:", fallbackErr);
@@ -1316,9 +1337,26 @@ async function invokeLLMStreamInner(params: {
   maxOutputTokens?: number,
   model?: string,
   thinkingLevel?: LucyThinkingLevel,
+  preferBuffered?: boolean,
 }) {
   const requestTimeoutMs = params.timeoutMs ?? 75000;
   const idleTimeoutMs = 35000;
+
+  if (params.preferBuffered) {
+    const response = await invokeLLM({
+      messages: params.messages,
+      timeoutMs: requestTimeoutMs,
+      signal: params.signal,
+      model: params.model,
+      maxOutputTokens: params.maxOutputTokens,
+      preferServer: true,
+    });
+    const fullText = extractChatCompletionText(response) || String(response || "").trim();
+    if (!fullText) throw new Error("Empty buffered response from LLM");
+    params.onChunk(fullText);
+    params.onFinish?.(fullText);
+    return fullText;
+  }
 
   // 1. Direct High-Speed Gemini SDK Streaming (Fastest & Most Reliable)
   if (genAI) {
@@ -1369,10 +1407,10 @@ async function invokeLLMStreamInner(params: {
           const resolvedThinking = resolveModelThinkingLevel(currentModel, params.thinkingLevel);
           const firstTokenDeadlineMs =
             params.thinkingLevel === "MEDIUM" || params.thinkingLevel === "HIGH"
-              ? 10000
+              ? 15000
               : currentModel.includes("3.1-flash-lite")
-              ? 7500
-              : 5000;
+              ? 10000
+              : 12000;
 
           const responseStream = await Promise.race([
             genAI.models.generateContentStream({
@@ -1397,7 +1435,7 @@ async function invokeLLMStreamInner(params: {
 
           while (true) {
             if (params.signal?.aborted) break;
-            const timeoutForChunk = attemptContent.length === 0 ? firstTokenDeadlineMs : 20000;
+            const timeoutForChunk = attemptContent.length === 0 ? firstTokenDeadlineMs : 30000;
             const nextResult = await Promise.race([
               iterator.next(),
               new Promise<never>((_, reject) =>
@@ -1704,9 +1742,11 @@ export async function invokeLLMStream(params: {
   model?: string;
   /** Gemini 4 계열 사고 깊이 (수다 MINIMAL / 채널 LOW / 마스터 MEDIUM) */
   thinkingLevel?: LucyThinkingLevel;
+  /** 모바일 등 불안정한 네트워크에서는 완료된 답변을 한 번에 받음 */
+  preferBuffered?: boolean;
 }) {
   const maxDurationMs = params.timeoutMs ?? 180000;
-  const idleTimeoutMs = 45000;
+  const idleTimeoutMs = params.preferBuffered ? maxDurationMs : 60000;
   let lastActivity = Date.now();
 
   const wrappedOnChunk = (chunk: string) => {
@@ -2224,4 +2264,3 @@ export function getCrossAppRecentDialogueContext(): string {
   }
   return '';
 }
-

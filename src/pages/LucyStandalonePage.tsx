@@ -19,7 +19,7 @@ import { ChatInsightsBoardModal } from '@/components/ChatInsightsBoardModal';
 import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { cleanUserMessageDisplay } from '@/utils/cleanMessage';
+import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
@@ -1210,7 +1210,8 @@ export default function LucyStandalonePage() {
     if (!searchQuery.trim()) return baseList;
     const q = searchQuery.toLowerCase();
     return baseList.filter((m) => {
-      const txt = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
+      const rawText = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
+      const txt = m.role === 'user' ? rawText : cleanAssistantMessageDisplay(rawText);
       return txt.toLowerCase().includes(q);
     });
   }, [lucyMessages, searchQuery, userDisplayName]);
@@ -1947,7 +1948,7 @@ export default function LucyStandalonePage() {
       const speaker = msg.role === 'user' ? userDisplayName : 'Lucy';
       const timeStr = new Date(msg.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
       const rawTxt = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
-      const txt = msg.role === 'user' ? cleanUserMessageDisplay(rawTxt) : rawTxt;
+      const txt = msg.role === 'user' ? cleanUserMessageDisplay(rawTxt) : cleanAssistantMessageDisplay(rawTxt);
       md += '### [' + speaker + '] (' + timeStr + ')\n' + txt + '\n\n---\n\n';
     });
 
@@ -2212,7 +2213,9 @@ export default function LucyStandalonePage() {
             const hasImage = Array.isArray(msg.content) && msg.content.some((item: any) => item.type === 'image_url');
             const imageUrl = hasImage ? (msg.content as any[]).find((item: any) => item.type === 'image_url')?.image_url?.url : null;
             const rawTextContent = Array.isArray(msg.content) ? (msg.content as any[]).find((item: any) => item.type === 'text')?.text || '' : rawContent;
-            const textContent = isUser ? cleanUserMessageDisplay(rawTextContent) : rawTextContent;
+            const textContent = isUser
+              ? cleanUserMessageDisplay(rawTextContent)
+              : cleanAssistantMessageDisplay(rawTextContent);
             if (!isUser && !textContent.trim() && !imageUrl) {
               return null;
             }

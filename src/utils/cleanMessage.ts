@@ -15,3 +15,24 @@ export function cleanUserMessageDisplay(text: string | null | undefined): string
     .replace(/^\[(?:⚡\s*)?[^\]]+\][^:\n]*:?>?\s*\n?/gi, '')
     .trimStart();
 }
+
+export function cleanAssistantMessageDisplay(text: string | null | undefined): string {
+  if (!text || typeof text !== 'string' || !text.trimStart().startsWith('{')) return text || '';
+
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      'diagnosis' in parsed &&
+      typeof parsed.diagnosis === 'string' &&
+      ['luckyNumber', 'luckyColor', 'remedy', 'symbol', 'frequency'].some((key) => key in parsed)
+    ) {
+      return parsed.diagnosis;
+    }
+  } catch {
+    return text;
+  }
+
+  return text;
+}

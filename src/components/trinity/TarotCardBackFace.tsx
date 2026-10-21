@@ -278,14 +278,16 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
   if (isWheelFast) {
     return (
       <div
-        className={`absolute inset-0 w-full h-full bg-[#0c071a] rounded-lg sm:rounded-xl flex items-center justify-center pointer-events-none select-none ${className}`}
+        className={`absolute inset-0 w-full h-full rounded-lg sm:rounded-xl flex items-center justify-center pointer-events-none select-none ${className}`}
         style={{
-          border: `1px solid ${isHovered ? '#fde047' : `${accentColor}55`}`,
+          border: `1px solid ${isHovered ? '#fde047' : `${accentColor}88`}`,
+          backgroundImage: `radial-gradient(circle at 50% 50%, ${accentColor}33 0 3%, transparent 3.5% 17%, ${accentColor}22 17.5% 18.5%, transparent 19% 31%, ${accentColor}1f 31.5% 32.5%, transparent 33%), repeating-conic-gradient(from 22.5deg at 50% 50%, ${accentColor}12 0deg 4deg, transparent 4deg 45deg), radial-gradient(ellipse at 18% 0%, ${accentColor}30 0%, transparent 48%), linear-gradient(145deg, #211638, #090613 56%, #1b102b)`,
+          boxShadow: isHovered ? `inset 0 0 0 2px ${accentColor}44, 0 0 16px ${accentColor}55` : `inset 0 0 0 2px ${accentColor}22`,
         }}
       >
         <span
-          className="text-[11px] sm:text-xs leading-none"
-          style={{ color: accentColor }}
+          className="text-xl sm:text-2xl leading-none"
+          style={{ color: accentColor, textShadow: `0 0 12px ${accentColor}aa` }}
         >
           ✦
         </span>
@@ -346,5 +348,4 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
     </div>
   );
 });
-
 

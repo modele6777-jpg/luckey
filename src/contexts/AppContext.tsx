@@ -28,10 +28,11 @@ import {
 } from '../utils/suggestions';
 import { hasUnlockedPinToday, markPinUnlockedToday, getTodayDateKey } from '../lib/dailyCache';
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
-import { isPerfReduced, isStandalonePWA } from '../lib/perfMode';
+import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { unlockAudioPlayback, primeTTSAudioElement } from '../lib/audio';
 import { prefetchTTS } from '../utils/tts';
+import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
@@ -1594,10 +1595,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       chatHistory: nextCommitted.slice(-150)
     }, 'lucy');
 
-    // Adaptive Activity Watchdog Timer:
-    // Resets on incoming chunks. Allows up to 22s between chunks, and up to 120s total generation time.
+    // Mobile buffered requests need enough time to complete without intermediate chunks.
     let lastActivityTime = Date.now();
     const generationStartTime = Date.now();
+    const isMobileChat = isMobileDevice();
+    const activityIdleTimeoutMs = isMobileChat ? 180000 : 60000;
     let watchdogTimer: NodeJS.Timeout | null = null;
     let isWatchdogTimeout = false;
 
@@ -1606,8 +1608,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (watchdogTimer) clearTimeout(watchdogTimer);
       watchdogTimer = setTimeout(() => {
         const now = Date.now();
-        const isIdleTooLong = now - lastActivityTime >= 22000;
-        const isMaxDurationReached = now - generationStartTime >= 120000;
+        const isIdleTooLong = now - lastActivityTime >= activityIdleTimeoutMs;
+        const isMaxDurationReached = now - generationStartTime >= (isMobileChat ? 180000 : 120000);
 
         if (isGeneratingRef.current[sourcePersona] && (isIdleTooLong || isMaxDurationReached)) {
           console.warn(`[AppContext] Activity watchdog auto-released (${isIdleTooLong ? 'idle' : 'max cap'}) for ${sourcePersona}`);
@@ -1616,7 +1618,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else if (isGeneratingRef.current[sourcePersona]) {
           resetWatchdog();
         }
-      }, 22000);
+      }, activityIdleTimeoutMs);
     };
 
     resetWatchdog();
@@ -1818,10 +1820,14 @@ ${responseProfile.rule}`;
     // Safari PWA / 저성능 기기: 대화 기록을 줄여 메모리 과부하 방지
     const historyLimit = _isPerfReduced ? 6 : 10;
     const historySlice = [...unifiedMessages, userMsg].filter((message) => !isLegacyAIErrorMessage(message)).slice(-historyLimit);
+    const taskContext = resetLucyContextOnTaskSwitch(historySlice, text);
+    if (taskContext.didReset) {
+      systemPrompt += `\n\n[새로운 작업 맥락 시작]\n사용자의 최신 요청이 이전 작업 유형과 달라졌습니다. 이전 작업의 역할·절차·출력 형식은 종료된 상태이므로 이어서 적용하지 말고, 이번 요청만 독립적으로 처리하세요.`;
+    }
     const conversationForAPI: Message[] = [
       { role: 'system', content: systemPrompt },
-      ...historySlice.map((m, idx) => {
-        const isLatestMessage = idx === historySlice.length - 1;
+      ...taskContext.messages.map((m, idx) => {
+        const isLatestMessage = idx === taskContext.messages.length - 1;
         const finalContent = sanitizeHistoryItem(m.content, isLatestMessage);
         return {
           role: m.role === 'model' ? 'assistant' : m.role,
@@ -1857,10 +1863,11 @@ ${responseProfile.rule}`;
       await invokeLLMStream({
         messages: conversationForAPI,
         signal: currentAbortController.signal,
-        timeoutMs: 120000,
+        timeoutMs: isMobileChat ? 180000 : 120000,
         model: LUCY_CHAT_MODEL,
         maxOutputTokens: responseProfile.maxOutputTokens,
         thinkingLevel: responseProfile.thinkingLevel,
+        preferBuffered: isMobileChat,
         onChunk: (chunk: string) => {
           resetWatchdog();
           replyText += chunk;
@@ -2052,7 +2059,7 @@ ${responseProfile.rule}`;
         ];
         const recoveredRaw = await invokeLLM({
           messages: compactMessages,
-          timeoutMs: 12000,
+          timeoutMs: 30000,
         });
         const recoveredClean = cleanChatDisplayText(String(recoveredRaw || '').trim());
         if (recoveredClean && recoveredClean.length > 0) {

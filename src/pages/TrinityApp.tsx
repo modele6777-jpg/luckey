@@ -1555,6 +1555,9 @@ function playDailyCardChimeAsync() {
   const deferredTarotConcern = useDeferredValue(tarotConcern);
   const tarotConcernAnalysis: TarotConcernAnalysis = useMemo(() => {
     const base = analyzeTarotConcern(deferredTarotConcern);
+    if (base.kind === 'yes_no' && customSpread?.theme !== 'yes_no') {
+      return base;
+    }
     if (customSpread) {
       const kind: TarotConcernKind =
         customSpread.theme === 'binary_choice'

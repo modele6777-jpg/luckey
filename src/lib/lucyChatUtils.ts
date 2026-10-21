@@ -27,6 +27,43 @@ export function getMessageText(content: any): string {
   return String(content);
 }
 
+export type LucyTaskIntent = "tarot" | "release" | null;
+
+export function detectLucyTaskIntent(text: string): LucyTaskIntent {
+  if (/(?:타로|tarot|예\s*(?:\/|또는|or)\s*아니오|yes\s*(?:\/|or)\s*no)/i.test(text)) {
+    return "tarot";
+  }
+  if (/(?:세도나|방하착|호오포노포노|놓아버리기|정화\s*리추얼|감정\s*릴리즈)/i.test(text)) {
+    return "release";
+  }
+  return null;
+}
+
+export function resetLucyContextOnTaskSwitch<T extends { role: string; content: unknown }>(
+  messages: T[],
+  currentRequest: string,
+): { messages: T[]; didReset: boolean } {
+  const currentIntent = detectLucyTaskIntent(currentRequest);
+  if (!currentIntent) return { messages, didReset: false };
+
+  const previousUserMessage = [...messages.slice(0, -1)]
+    .reverse()
+    .find((message) => message.role === "user");
+  const previousIntent = previousUserMessage
+    ? detectLucyTaskIntent(getMessageText(previousUserMessage.content))
+    : null;
+
+  if (!previousIntent || previousIntent === currentIntent) {
+    return { messages, didReset: false };
+  }
+
+  const currentMessage = messages[messages.length - 1];
+  return {
+    messages: currentMessage ? [currentMessage] : messages.slice(-1),
+    didReset: true,
+  };
+}
+
 export function cleanLucyChatText(text: string): string {
   if (!text) return "";
   let cleaned = text.trim();
