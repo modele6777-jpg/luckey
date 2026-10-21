@@ -28,10 +28,11 @@ import {
 } from '../utils/suggestions';
 import { hasUnlockedPinToday, markPinUnlockedToday, getTodayDateKey } from '../lib/dailyCache';
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
-import { isPerfReduced, isStandalonePWA } from '../lib/perfMode';
+import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { unlockAudioPlayback, primeTTSAudioElement } from '../lib/audio';
 import { prefetchTTS } from '../utils/tts';
+import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
@@ -1582,7 +1583,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         channel: options?.channel,
         channels: options?.channels,
         mode: options?.mode,
-        usedTools: options?.usedTools
+        usedTools: []
       }
     ]);
 
@@ -1594,10 +1595,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       chatHistory: nextCommitted.slice(-150)
     }, 'lucy');
 
-    // Adaptive Activity Watchdog Timer:
-    // Resets on incoming chunks. Allows up to 22s between chunks, and up to 120s total generation time.
+    // Mobile buffered requests need enough time to complete without intermediate chunks.
     let lastActivityTime = Date.now();
     const generationStartTime = Date.now();
+    const isMobileChat = isMobileDevice();
+    const activityIdleTimeoutMs = isMobileChat ? 180000 : 60000;
     let watchdogTimer: NodeJS.Timeout | null = null;
     let isWatchdogTimeout = false;
 
@@ -1606,8 +1608,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (watchdogTimer) clearTimeout(watchdogTimer);
       watchdogTimer = setTimeout(() => {
         const now = Date.now();
-        const isIdleTooLong = now - lastActivityTime >= 22000;
-        const isMaxDurationReached = now - generationStartTime >= 120000;
+        const isIdleTooLong = now - lastActivityTime >= activityIdleTimeoutMs;
+        const isMaxDurationReached = now - generationStartTime >= (isMobileChat ? 180000 : 120000);
 
         if (isGeneratingRef.current[sourcePersona] && (isIdleTooLong || isMaxDurationReached)) {
           console.warn(`[AppContext] Activity watchdog auto-released (${isIdleTooLong ? 'idle' : 'max cap'}) for ${sourcePersona}`);
@@ -1616,7 +1618,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else if (isGeneratingRef.current[sourcePersona]) {
           resetWatchdog();
         }
-      }, 22000);
+      }, activityIdleTimeoutMs);
     };
 
     resetWatchdog();
@@ -1649,13 +1651,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const hasDivinationInjection =
       options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
-      options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원');
+      options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
+      options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = options?.mode === 'master' || activeThemeList.length === 7;
-    const toolSelection = !hasDivinationInjection
+    const isCasualMode =
+      options?.mode === 'casual' ||
+      (!options?.mode && responseLength === 'short' && activeThemeList.length === 0);
+    const toolSelection = isCasualMode
+      ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
+      : !hasDivinationInjection
       ? selectOptimalDivinationTools(text, activeThemeList, profile, isMasterCall)
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
-
+    const toolsIncludedInPrompt = isCasualMode
+      ? []
+      : toolSelection.promptInjection
+      ? toolSelection.selectedTools.map((tool) => tool.koName)
+      : hasDivinationInjection
+      ? options?.usedTools || []
+      : [];
     const isFastCasualPath =
       sourcePersona === 'lucy' &&
       responseLength === 'short' &&
@@ -1792,6 +1806,9 @@ ${responseProfile.rule}`;
       // 🎯 [최우선 적용] 모드별 답변 길이 규칙 (수다 짧게 / 7대채널 보통 / 마스터 길게)
       systemPrompt += `\n\n${responseProfile.rule}`;
     }
+    if (sourcePersona === 'lucy' && isCasualMode) {
+      systemPrompt += `\n\n[수다모드 도구 비활성화]\n이번 대화는 가벼운 수다 모드야. 운세·타로·사주 등 운명학 도구를 고르거나 분석에 적용하지 말고, 관련 도구 사용 여부나 결과 배지도 만들지 마. 사용자의 질문에 일상 대화처럼 직접 답해줘.`;
+    }
 
     const _isPerfReduced = isPerfReduced() || isStandalonePWA();
     
@@ -1818,10 +1835,14 @@ ${responseProfile.rule}`;
     // Safari PWA / 저성능 기기: 대화 기록을 줄여 메모리 과부하 방지
     const historyLimit = _isPerfReduced ? 6 : 10;
     const historySlice = [...unifiedMessages, userMsg].filter((message) => !isLegacyAIErrorMessage(message)).slice(-historyLimit);
+    const taskContext = resetLucyContextOnTaskSwitch(historySlice, text);
+    if (taskContext.didReset) {
+      systemPrompt += `\n\n[새로운 작업 맥락 시작]\n사용자의 최신 요청이 이전 작업 유형과 달라졌습니다. 이전 작업의 역할·절차·출력 형식은 종료된 상태이므로 이어서 적용하지 말고, 이번 요청만 독립적으로 처리하세요.`;
+    }
     const conversationForAPI: Message[] = [
       { role: 'system', content: systemPrompt },
-      ...historySlice.map((m, idx) => {
-        const isLatestMessage = idx === historySlice.length - 1;
+      ...taskContext.messages.map((m, idx) => {
+        const isLatestMessage = idx === taskContext.messages.length - 1;
         const finalContent = sanitizeHistoryItem(m.content, isLatestMessage);
         return {
           role: m.role === 'model' ? 'assistant' : m.role,
@@ -1857,10 +1878,11 @@ ${responseProfile.rule}`;
       await invokeLLMStream({
         messages: conversationForAPI,
         signal: currentAbortController.signal,
-        timeoutMs: 120000,
+        timeoutMs: isMobileChat ? 180000 : 120000,
         model: LUCY_CHAT_MODEL,
         maxOutputTokens: responseProfile.maxOutputTokens,
         thinkingLevel: responseProfile.thinkingLevel,
+        preferBuffered: isMobileChat,
         onChunk: (chunk: string) => {
           resetWatchdog();
           replyText += chunk;
@@ -1923,6 +1945,7 @@ ${responseProfile.rule}`;
                   channel: options?.channel || m.channel,
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
+                  usedTools: toolsIncludedInPrompt,
                   keyExerciseIndex: resolvedKeyExIndex ?? m.keyExerciseIndex
                 };
               }
@@ -1938,6 +1961,7 @@ ${responseProfile.rule}`;
                 channel: options?.channel,
                 channels: options?.channels,
                 mode: options?.mode,
+                usedTools: toolsIncludedInPrompt,
                 keyExerciseIndex: resolvedKeyExIndex
               });
             }
@@ -2045,14 +2069,14 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
         ];
         const recoveredRaw = await invokeLLM({
           messages: compactMessages,
-          timeoutMs: 12000,
+          timeoutMs: 30000,
         });
         const recoveredClean = cleanChatDisplayText(String(recoveredRaw || '').trim());
         if (recoveredClean && recoveredClean.length > 0) {
@@ -2070,6 +2094,7 @@ ${responseProfile.rule}`;
                   channel: options?.channel || m.channel,
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
+                  usedTools: [],
                 };
               }
               return m;
@@ -2084,6 +2109,7 @@ ${responseProfile.rule}`;
                 channel: options?.channel,
                 channels: options?.channels,
                 mode: options?.mode,
+                usedTools: [],
               });
             }
             pushChatThreadsToFirestore(updated);

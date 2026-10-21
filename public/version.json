@@ -1,11 +1,10 @@
 {
   "name": "luckey",
-  "version": "1.4.379",
-  "summary": "타로 카드 뽑기 60fps 초고속 반응 최적화: 나머지 카드 고정 및 인접 카드 빈자리 국소 메움 적용, 78장 휠 카드 뒷면 무거운 발광·회전·블러 이펙트 제거",
-  "builtAt": "2026-10-21T09:24:00.000Z",
+  "version": "1.4.388",
+  "summary": "Forward thinking level through buffered mobile calls",
+  "builtAt": "2026-10-21T22:39:02.161+09:00",
   "items": [
-    "타로 카드를 뽑을 때 77장 전체의 각도를 재계산해 동시 리렌더링하던 병목을 제거하고, 나머지 카드는 고정한 채 뽑힌 카드 양옆 인접 카드만 부드럽게 빈자리를 메우도록 국소 보간(Local Gap Fill) 적용",
-    "78장 휠 카드 뒷면(TarotCardBackFace)에서 동시에 돌아가던 무한 회전(spin)·점멸(pulse/ping)·가우시안 블러(blur-md)·네온 그림자 및 대형 쉬머 레이어를 휠 전용 경량 모드로 전환하여 60fps 터치 반응 구현",
-    "카드 슬롯 안착 파티클(TarotCardFlipParticles)에서 무거운 SVG drop-shadow 필터와 블러 레이어를 제거하고 순수 GPU 가속(transform/opacity)으로 최적화"
+    "Forward the selected thinking level through buffered mobile requests and the server proxy payload",
+    "Honor requested thinking levels in direct Gemini calls while retaining the existing default"
   ]
 }

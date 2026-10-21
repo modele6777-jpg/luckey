@@ -741,7 +741,7 @@ ${content}
 2. 湲?댁씠??二쇰맂 留덉쓬 ?곹깭, 誘몃쵖???댁“, ?먮꼫吏 ?먮쫫???뺥솗??臾섏궗?섎뒗 媛먯젙/?щ━ ?곹깭 ?쒓렇 1~3媛?(諛곗뿴濡?異붿텧)
 
 ?ㅼ쭅 ?ㅼ쓬 JSON ?ㅽ궎留??뺤떇???좏슚??JSON 寃곌낵留?諛섑솚??二쇱꽭??
-{
+if (isJsonExpected) {
   "keywords": ["?ㅼ썙??", "?ㅼ썙??", "?ㅼ썙??"],
   "emotions": ["媛먯젙?쒓렇1", "媛먯젙?쒓렇2"]
 }`;
@@ -1583,6 +1583,7 @@ ${content}
 
 
   app.post("/api/openai/v1/chat/completions", async (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
     const getFriendlyErrorMessage = (err: any): string => {
       if (!err) return "알 수 없는 시스템 오류가 발생했습니다.";
       
@@ -1631,10 +1632,50 @@ ${content}
       return `[AI 서비스 안내]\n\n현재 일시적인 원인으로 인해 응답을 생성하지 못했습니다.\n\n▶ 상태: ${errorCategory}\n▶ 상세 내용: ${rawErrorDetail}\n\n▶ 조치 가이드:\n${actionSteps}`;
     };
 
-    const buildSmartFallbackText = (messages: any[], errMessage: string, isJsonExpected: boolean): string => {
-      const wholeStr = JSON.stringify(messages || "").toLowerCase();
+    const buildSedonaFallback = (cardName: string): string => JSON.stringify({
+      diagnosis: `### 🌿 [${cardName}] 카드의 에고 정화 테마와 의식 정렬\n오늘 당신의 무의식 정화 세션에 도출된 방하착 카드는 **[${cardName}]**입니다.\n현재 당신의 내면 깊은 곳에서 저항과 피로를 유발하던 무의식적 전압은 [${cardName}]의 청정한 주파수와 마주하며 부드럽게 녹아내리기 시작했습니다. 에고의 4대 결핍 갈망(통제/인정/안전/분리 욕구)을 자각하고 자연스러운 호흡과 함께 흘려보낼 때 진정한 내면의 평온이 회복됩니다.\n\n### 🌊 세도나 4단계 맞춤 방하착 (Releasing Process)\n1. **허용하기 (Could I allow it?)**: 지금 일어나는 [${cardName}] 카드의 감정과 묵직한 에고의 저항을 있는 그대로 허용할 수 있습니까? — *네, 온전히 허용합니다.*\n2. **흘려보내기 (Could I let it go?)**: 이 쥐고 있던 통제 욕구를 강물에 띄우듯 흘려보낼 수 있습니까? — *네, 자연스럽게 흘려보냅니다.*\n3. **기꺼이 놓아버리기 (Would I let it go?)**: 내면의 절대적 자유와 평화를 위해 지금 기꺼이 놓아버리겠습니까? — *네, 기꺼이 내려놓겠습니다.*\n4. **지금 이 순간 (When?)**: **지금 당장 (NOW)**, 가슴의 빗장을 열고 깊은 호흡과 함께 온전히 항복하십시오.\n\n### ✨ 에고 해방과 영혼의 항복 확언\n"나는 [${cardName}] 카드가 비추는 에고의 저항을 자각하며, 이 감정을 통제하려 했던 오랜 집착을 평화롭게 흘려보냅니다. 나는 이미 한없이 자유롭고 고요한 순수 의식입니다."`,
+      luckyNumber: "7",
+      luckyColor: "에메랄드 힐링 그린",
+      remedy: `[${cardName}] 카드의 상징을 마음에 품고, 호흡을 내쉴 때마다 가슴 속 긴장을 10초간 온전히 흘려보내기`,
+      symbol: `${cardName}의 정화 크리스탈`,
+      frequency: "528Hz 솔페지오 사랑과 치유",
+      spiritualEnergy: `[${cardName}] 카드의 치유 파동이 가슴 차크라와 공명하여 에고의 저항을 녹여내고 본연의 평온을 회복시킵니다.`,
+      blessingMessage: `모든 집착이 스러진 고요한 자리에서 [${cardName}]의 청정한 빛이 당신의 하루를 온전히 축복합니다.`,
+      focusPlaylist: "528Hz Cellular Healing & Release"
+    });
+
+    const buildTarotFallback = (cardName: string): string => JSON.stringify({
+      diagnosis: `### 🌟 [${cardName}] 카드의 고유한 상징과 비전\n오늘 당신의 의식 표면으로 드로우된 카드는 **[${cardName}]**입니다. 이 카드는 현재 질문자의 운명적 시점에 가장 필요한 우주적 메시지와 통찰의 파동을 전달하고 있습니다.\n\n### 🔮 오늘의 운명 흐름과 심층 파동\n오늘은 외부의 소음이나 타인의 시선에 휩쓸리지 않고, **[${cardName}]** 카드가 비추는 내면의 명료한 빛을 따라갈 때입니다. 당신의 에너지 파동은 맑고 조화로운 영점으로 수렴하고 있으며, 작은 직관 하나가 삶의 중요한 전환점을 만드는 열쇠가 될 것입니다.\n\n### ⚖️ 현실에서의 실천과 주의점 (Shadow & Light)\n지나친 걱정이나 불필요한 집착은 당신의 맑은 영적 파동을 흐릴 수 있습니다. **[${cardName}]** 카드는 당신이 이미 충분한 내면의 지혜와 분별력을 지니고 있음을 상기시켜 줍니다.\n\n### 🧭 오늘의 오라클 핵심 지침\n**[${cardName}]** 카드의 신성한 기운을 가슴에 품고, 오늘 하루 마주하는 모든 선택과 순간에 당신만의 정성과 평온을 담아보세요.`,
+      luckyNumber: "7",
+      luckyColor: "황금빛 골드 (Celestial Gold)",
+      remedy: `[${cardName}] 카드의 상징을 마음에 그리며 따뜻한 차 한 잔과 함께 3분간 깊은 복식호흡 수행하기`,
+      symbol: `${cardName}의 빛`,
+      frequency: "528Hz",
+      spiritualEnergy: `[${cardName}] 카드의 원소적 에너지가 당신의 내면 의식과 조화롭게 공명하여 깊은 통찰력과 정서적 안정감을 일깨웁니다.`,
+      blessingMessage: `오늘 하루 당신이 딛는 모든 길 위에 [${cardName}] 카드의 신성한 보호와 빛나는 은총이 함께하기를 축복합니다.`,
+      focusPlaylist: "528Hz Solfeggio Resonance"
+    });
+
+    const buildSmartFallbackText = (messages: any[], isJsonExpected: boolean): string => {
+      if (!isJsonExpected) {
+        return "지금은 답변을 생성하는 데 문제가 생겼어요. 잠시 후 다시 시도해 주세요.";
+      }
+
+      const latestUserMessage = Array.isArray(messages)
+        ? [...messages].reverse().find((message: any) => message?.role === "user")
+        : null;
+      const latestUserText = typeof latestUserMessage?.content === "string"
+        ? latestUserMessage.content
+        : Array.isArray(latestUserMessage?.content)
+          ? latestUserMessage.content.map((part: any) => part?.text || "").join(" ")
+          : "";
+      const currentSystemText = Array.isArray(messages)
+        ? messages.filter((message: any) => message?.role === "system").map((message: any) => String(message.content || "")).join(" ")
+        : "";
+      const wholeStr = `${currentSystemText} ${latestUserText}`.toLowerCase();
+      const explicitTarotRequest = /(?:타로|tarot|예\s*(?:\/|또는|or)\s*아니오|yes\s*(?:\/|or)\s*no)/i.test(latestUserText);
       
-      if (isJsonExpected || wholeStr.includes("json schema") || wholeStr.includes("json") || wholeStr.includes("schema")) {
+      {
         if (wholeStr.includes("globalsync") || wholeStr.includes("lucyguide") || wholeStr.includes("명언") || wholeStr.includes("global_sync")) {
           return JSON.stringify({
             summary: "진정한 발견의 여정은 새로운 풍경을 찾는 것이 아니라, 새로운 눈을 가지는 데 있다.",
@@ -1676,38 +1717,15 @@ ${content}
         if (wholeStr.includes("diagnosis") || wholeStr.includes("luckynumber") || wholeStr.includes("remedy") || wholeStr.includes("sedona") || wholeStr.includes("tarot") || wholeStr.includes("트리니티") || wholeStr.includes("오라클")) {
           // Extract card name if present
           let cardName = "우주의 오라클";
-          const cardMatch = wholeStr.match(/\[([가-힣\s\w\(\)]+)\]/);
+          const cardMatch = latestUserText.match(/\[([가-힣\s\w\(\)]+)\]/);
           if (cardMatch && cardMatch[1]) {
             cardName = cardMatch[1].trim();
           }
 
-          const isSedona = wholeStr.includes("sedona") || wholeStr.includes("세도나") || wholeStr.includes("방하착") || wholeStr.includes("호킨스");
-
-          if (isSedona) {
-            return JSON.stringify({
-              diagnosis: `### 🌿 [${cardName}] 카드의 에고 정화 테마와 의식 정렬\n오늘 당신의 무의식 정화 세션에 도출된 방하착 카드는 **[${cardName}]**입니다.\n현재 당신의 내면 깊은 곳에서 저항과 피로를 유발하던 무의식적 전압은 [${cardName}]의 청정한 주파수와 마주하며 부드럽게 녹아내리기 시작했습니다. 에고의 4대 결핍 갈망(통제/인정/안전/분리 욕구)을 자각하고 자연스러운 호흡과 함께 흘려보낼 때 진정한 내면의 평온이 회복됩니다.\n\n### 🌊 세도나 4단계 맞춤 방하착 (Releasing Process)\n1. **허용하기 (Could I allow it?)**: 지금 일어나는 [${cardName}] 카드의 감정과 묵직한 에고의 저항을 있는 그대로 허용할 수 있습니까? — *네, 온전히 허용합니다.*\n2. **흘려보내기 (Could I let it go?)**: 이 쥐고 있던 통제 욕구를 강물에 띄우듯 흘려보낼 수 있습니까? — *네, 자연스럽게 흘려보냅니다.*\n3. **기꺼이 놓아버리기 (Would I let it go?)**: 내면의 절대적 자유와 평화를 위해 지금 기꺼이 놓아버리겠습니까? — *네, 기꺼이 내려놓겠습니다.*\n4. **지금 이 순간 (When?)**: **지금 당장 (NOW)**, 가슴의 빗장을 열고 깊은 호흡과 함께 온전히 항복하십시오.\n\n### ✨ 에고 해방과 영혼의 항복 확언\n"나는 [${cardName}] 카드가 비추는 에고의 저항을 자각하며, 이 감정을 통제하려 했던 오랜 집착을 평화롭게 흘려보냅니다. 나는 이미 한없이 자유롭고 고요한 순수 의식입니다."`,
-              luckyNumber: "7",
-              luckyColor: "에메랄드 힐링 그린",
-              remedy: `[${cardName}] 카드의 상징을 마음에 품고, 호흡을 내쉴 때마다 가슴 속 긴장을 10초간 온전히 흘려보내기`,
-              symbol: `${cardName}의 정화 크리스탈`,
-              frequency: "528Hz 솔페지오 사랑과 치유",
-              spiritualEnergy: `[${cardName}] 카드의 치유 파동이 가슴 차크라와 공명하여 에고의 저항을 녹여내고 본연의 평온을 회복시킵니다.`,
-              blessingMessage: `모든 집착이 스러진 고요한 자리에서 [${cardName}]의 청정한 빛이 당신의 하루를 온전히 축복합니다.`,
-              focusPlaylist: "528Hz Cellular Healing & Release"
-            });
-          }
-
-          return JSON.stringify({
-            diagnosis: `### 🌟 [${cardName}] 카드의 고유한 상징과 비전\n오늘 당신의 의식 표면으로 드로우된 카드는 **[${cardName}]**입니다. 이 카드는 현재 질문자의 운명적 시점에 가장 필요한 우주적 메시지와 통찰의 파동을 전달하고 있습니다.\n\n### 🔮 오늘의 운명 흐름과 심층 파동\n오늘은 외부의 소음이나 타인의 시선에 휩쓸리지 않고, **[${cardName}]** 카드가 비추는 내면의 명료한 빛을 따라갈 때입니다. 당신의 에너지 파동은 맑고 조화로운 영점으로 수렴하고 있으며, 작은 직관 하나가 삶의 중요한 전환점을 만드는 열쇠가 될 것입니다.\n\n### ⚖️ 현실에서의 실천과 주의점 (Shadow & Light)\n지나친 걱정이나 불필요한 집착은 당신의 맑은 영적 파동을 흐릴 수 있습니다. **[${cardName}]** 카드는 당신이 이미 충분한 내면의 지혜와 분별력을 지니고 있음을 상기시켜 줍니다.\n\n### 🧭 오늘의 오라클 핵심 지침\n**[${cardName}]** 카드의 신성한 기운을 가슴에 품고, 오늘 하루 마주하는 모든 선택과 순간에 당신만의 정성과 평온을 담아보세요.`,
-            luckyNumber: "7",
-            luckyColor: "황금빛 골드 (Celestial Gold)",
-            remedy: `[${cardName}] 카드의 상징을 마음에 그리며 따뜻한 차 한 잔과 함께 3분간 깊은 복식호흡 수행하기`,
-            symbol: `${cardName}의 빛`,
-            frequency: "528Hz",
-            spiritualEnergy: `[${cardName}] 카드의 원소적 에너지가 당신의 내면 의식과 조화롭게 공명하여 깊은 통찰력과 정서적 안정감을 일깨웁니다.`,
-            blessingMessage: `오늘 하루 당신이 딛는 모든 길 위에 [${cardName}] 카드의 신성한 보호와 빛나는 은총이 함께하기를 축복합니다.`,
-            focusPlaylist: "528Hz Solfeggio Resonance"
-          });
+          const isSedona = !explicitTarotRequest &&
+            (latestUserText.match(/(?:세도나|방하착|호킨스|놓아버리기)/i) ||
+              (!latestUserText && /(?:세도나|방하착|호킨스|sedona)/i.test(currentSystemText)));
+          return isSedona ? buildSedonaFallback(cardName) : buildTarotFallback(cardName);
         }
 
         if (wholeStr.includes("themeid") || wholeStr.includes("apathy") || wholeStr.includes("brieftip") || wholeStr.includes("theme_id")) {
@@ -1762,7 +1780,7 @@ ${content}
 
       // Saju / Myeongli consultation fallback
       if (wholeStr.includes("사주") || wholeStr.includes("명리") || wholeStr.includes("일간") || wholeStr.includes("오행") || wholeStr.includes("만세력")) {
-        const userMsg = Array.isArray(messages) ? messages.find((m: any) => m.role === "user") : null;
+        const userMsg = latestUserMessage;
         const userQ = typeof userMsg?.content === "string" ? userMsg.content.trim() : "";
         const lowerQ = userQ.toLowerCase();
 
@@ -1928,7 +1946,7 @@ ${content}
 
                 if (!res.headersSent) {
                   res.setHeader('Content-Type', 'text/event-stream');
-                  res.setHeader('Cache-Control', 'no-cache');
+                  res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
                   res.setHeader('Connection', 'keep-alive');
                   res.setHeader('X-Accel-Buffering', 'no');
                   res.setHeader('Content-Encoding', 'none');
@@ -1989,7 +2007,7 @@ ${content}
               const fallbackText = fallbackRes.text || "안녕! 무엇을 도와줄까?";
               if (!res.headersSent) {
                 res.setHeader('Content-Type', 'text/event-stream');
-                res.setHeader('Cache-Control', 'no-cache');
+                res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
                 res.setHeader('Connection', 'keep-alive');
                 res.setHeader('X-Accel-Buffering', 'no');
                 res.setHeader('Content-Encoding', 'none');
@@ -2020,7 +2038,7 @@ ${content}
               const friendlyErr = getFriendlyErrorMessage(directErr);
               if (!res.headersSent) {
                 res.setHeader('Content-Type', 'text/event-stream');
-                res.setHeader('Cache-Control', 'no-cache');
+                res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
                 res.setHeader('Connection', 'keep-alive');
                 res.setHeader('X-Accel-Buffering', 'no');
                 res.setHeader('Content-Encoding', 'none');
@@ -2064,13 +2082,8 @@ ${content}
             text = geminiRes.text || "";
           } catch (genErr) {
             console.warn("[server/API/openai] generateContent failed, engaging guided mock:", genErr);
-            const systemMessage = systemMessages[0];
-            const lowerSysStr = (systemMessage?.content || "").toLowerCase();
-            const wholeMessagesStr = JSON.stringify(req.body.messages || "").toLowerCase();
-            const rawErrMessage = getFriendlyErrorMessage(genErr);
-            
-            const isJsonExpected = Boolean(req.body.response_format?.type === "json_object" || req.body.response_format || (systemMessage?.content || "").toLowerCase().includes("json"));
-            text = buildSmartFallbackText(req.body.messages || [], rawErrMessage, isJsonExpected);
+            const isJsonExpected = req.body.response_format?.type === "json_object";
+            text = buildSmartFallbackText(req.body.messages || [], isJsonExpected);
           }
 
           const mockCompletion = {
@@ -2099,15 +2112,13 @@ ${content}
       } catch (geminiErr: any) {
         console.error("[server/API/openai] Master Gemini fallback also failed, engaging ultra-robust guided mock:", geminiErr);
         
-        const systemMessage = req.body.messages?.find((m: any) => m.role === "system");
-        const rawErrMessage = getFriendlyErrorMessage(geminiErr);
-        const isJsonExpected = Boolean(req.body.response_format?.type === "json_object" || req.body.response_format || (systemMessage?.content || "").toLowerCase().includes("json"));
-        const safeText = buildSmartFallbackText(req.body.messages || [], rawErrMessage, isJsonExpected);
+        const isJsonExpected = req.body.response_format?.type === "json_object";
+        const safeText = buildSmartFallbackText(req.body.messages || [], isJsonExpected);
 
         if (req.body.stream) {
           if (!res.headersSent) {
             res.setHeader('Content-Type', 'text/event-stream');
-            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
             res.setHeader('Connection', 'keep-alive');
             res.setHeader('X-Accel-Buffering', 'no');
             res.setHeader('Content-Encoding', 'none');
@@ -2199,7 +2210,7 @@ ${content}
                 });
 
                 res.setHeader('Content-Type', 'text/event-stream');
-                res.setHeader('Cache-Control', 'no-cache');
+                res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
                 res.setHeader('Connection', 'keep-alive');
                 res.setHeader('X-Accel-Buffering', 'no');
                 res.setHeader('Content-Encoding', 'none');
@@ -2254,7 +2265,7 @@ ${content}
               });
 
               res.setHeader('Content-Type', 'text/event-stream');
-              res.setHeader('Cache-Control', 'no-cache');
+              res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
               res.setHeader('Connection', 'keep-alive');
               res.setHeader('X-Accel-Buffering', 'no');
               res.setHeader('Content-Encoding', 'none');
@@ -2545,6 +2556,9 @@ self.addEventListener('activate', (e) => {
   }
 
   const server = app.listen(PORT, "0.0.0.0", () => {
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 125000;
+  server.timeout = 240000;
   const address = server.address();
   const activePort = typeof address === "object" && address ? address.port : PORT;
   console.log(`Server running on http://localhost:${activePort} | AI_TYPE = ${process.env.AI_TYPE || 'grok'}`);
@@ -2559,6 +2573,9 @@ self.addEventListener('activate', (e) => {
   console.warn(`[server] Port ${PORT} is already in use; retrying on an ephemeral port.`);
   server.close(() => {
   const fallbackServer = app.listen(0, "0.0.0.0", () => {
+  fallbackServer.keepAliveTimeout = 120000;
+  fallbackServer.headersTimeout = 125000;
+  fallbackServer.timeout = 240000;
   const address = fallbackServer.address();
   const activePort = typeof address === "object" && address ? address.port : 0;
   console.log(`Server running on http://localhost:${activePort} | AI_TYPE = ${process.env.AI_TYPE || 'grok'}`);

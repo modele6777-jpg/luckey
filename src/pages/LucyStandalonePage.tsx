@@ -19,7 +19,7 @@ import { ChatInsightsBoardModal } from '@/components/ChatInsightsBoardModal';
 import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { cleanUserMessageDisplay } from '@/utils/cleanMessage';
+import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
@@ -1210,7 +1210,8 @@ export default function LucyStandalonePage() {
     if (!searchQuery.trim()) return baseList;
     const q = searchQuery.toLowerCase();
     return baseList.filter((m) => {
-      const txt = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
+      const rawText = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
+      const txt = m.role === 'user' ? rawText : cleanAssistantMessageDisplay(rawText);
       return txt.toLowerCase().includes(q);
     });
   }, [lucyMessages, searchQuery, userDisplayName]);
@@ -1668,13 +1669,18 @@ export default function LucyStandalonePage() {
     }
 
     // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
-    const divinationSelection = selectOptimalDivinationTools(userCleanText, channels, counselingUserProfile, isMaster);
+    const divinationSelection = isCasual
+      ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
+      : selectOptimalDivinationTools(userCleanText, channels, counselingUserProfile, isMaster);
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
         : divinationSelection.promptInjection;
     }
-    const usedToolNames = divinationSelection.selectedTools.map((t) => t.koName);
+    const usedToolNames =
+      !divinationSelection.isCasualMessage && divinationSelection.promptInjection
+        ? divinationSelection.selectedTools.map((tool) => tool.koName)
+        : [];
 
     setInput('');
     const imgToSend = attachedImage || undefined;
@@ -1947,7 +1953,7 @@ export default function LucyStandalonePage() {
       const speaker = msg.role === 'user' ? userDisplayName : 'Lucy';
       const timeStr = new Date(msg.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
       const rawTxt = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
-      const txt = msg.role === 'user' ? cleanUserMessageDisplay(rawTxt) : rawTxt;
+      const txt = msg.role === 'user' ? cleanUserMessageDisplay(rawTxt) : cleanAssistantMessageDisplay(rawTxt);
       md += '### [' + speaker + '] (' + timeStr + ')\n' + txt + '\n\n---\n\n';
     });
 
@@ -2212,7 +2218,9 @@ export default function LucyStandalonePage() {
             const hasImage = Array.isArray(msg.content) && msg.content.some((item: any) => item.type === 'image_url');
             const imageUrl = hasImage ? (msg.content as any[]).find((item: any) => item.type === 'image_url')?.image_url?.url : null;
             const rawTextContent = Array.isArray(msg.content) ? (msg.content as any[]).find((item: any) => item.type === 'text')?.text || '' : rawContent;
-            const textContent = isUser ? cleanUserMessageDisplay(rawTextContent) : rawTextContent;
+            const textContent = isUser
+              ? cleanUserMessageDisplay(rawTextContent)
+              : cleanAssistantMessageDisplay(rawTextContent);
             if (!isUser && !textContent.trim() && !imageUrl) {
               return null;
             }
@@ -2299,27 +2307,12 @@ export default function LucyStandalonePage() {
                   </button>
 
                   {/* 🔮 루시 답장에 15가지 운명학 도구 중 어떤 도구들이 쓰였는지 모드 옆에 표시 */}
-                  {!isUser && !isGreeting && (() => {
-                    const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
-                    const prevUserText = prevUser
-                      ? (typeof prevUser.content === 'string'
-                          ? prevUser.content
-                          : Array.isArray(prevUser.content)
-                          ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
-                          : '')
-                      : '';
-                    let resolvedTools: string[] = Array.isArray(msg.usedTools) && msg.usedTools.length > 0
-                      ? msg.usedTools
+                  {!isUser && !isGreeting && !msgModeInfo.isCasual && (() => {
+                    const resolvedTools: string[] = Array.isArray(msg.usedTools)
+                      ? msg.usedTools.filter((toolName: unknown): toolName is string =>
+                          typeof toolName === 'string' && toolName.trim().length > 0
+                        )
                       : [];
-                    if (resolvedTools.length === 0) {
-                      const sel = selectOptimalDivinationTools(
-                        prevUserText || textContent,
-                        msgModeInfo.channels,
-                        counselingUserProfile,
-                        msgModeInfo.isMaster
-                      );
-                      resolvedTools = sel.selectedTools.map((t) => t.koName);
-                    }
                     if (resolvedTools.length === 0) return null;
 
                     if (msgModeInfo.isMaster || resolvedTools.length >= 15) {
