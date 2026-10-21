@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { APP_VERSION } from '@/lib/appVersion';
 import {
   peekNextRecommendedMenuByCycle,
   resetActiveContextPeek,
@@ -850,59 +851,67 @@ export default function LeftSidebarNav() {
                 }`}
               >
                 {/* User Profile Button -> Navigates to Epilogue Profile (/profile) */}
-                <div className="relative group w-10 h-10 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      try {
-                        sessionStorage.setItem('prism_target_tab', 'profile');
-                        window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
-                      } catch (_) {}
-                      handleNavigate('/profile');
-                    }}
-                    className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
-                      isProfileActive
-                        ? isLight
-                          ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
-                          : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
-                        : isLight
-                        ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
-                        : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
-                    }`}
-                    aria-label="내 프로필 및 사진 설정"
-                    title="내 프로필 및 사진 설정"
-                  >
-                    {userAvatarUrl ? (
-                      <img
-                        src={userAvatarUrl}
-                        alt={userNickname}
-                        className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <User size={16} className="group-hover:scale-110 transition-transform" />
-                    )}
-                  </button>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="relative group w-10 h-10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          sessionStorage.setItem('prism_target_tab', 'profile');
+                          window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
+                        } catch (_) {}
+                        handleNavigate('/profile');
+                      }}
+                      className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
+                        isProfileActive
+                          ? isLight
+                            ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
+                            : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
+                          : isLight
+                          ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
+                          : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
+                      }`}
+                      aria-label="내 프로필 및 사진 설정"
+                      title="내 프로필 및 사진 설정"
+                    >
+                      {userAvatarUrl ? (
+                        <img
+                          src={userAvatarUrl}
+                          alt={userNickname}
+                          className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <User size={16} className="group-hover:scale-110 transition-transform" />
+                      )}
+                    </button>
 
-                  {/* Desktop Hover Tooltip */}
-                  <div
-                    className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                      isLight
-                        ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                        : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                    }`}
-                  >
-                    {userAvatarUrl ? (
-                      <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
-                    ) : (
-                      <span className="w-2 h-2 rounded-full bg-amber-400" />
-                    )}
-                    <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-                      {userNickname}
-                    </span>
-                    <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
-                      내 프로필 · 사진 설정
-                    </span>
+                    {/* Desktop Hover Tooltip */}
+                    <div
+                      className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                        isLight
+                          ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
+                          : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
+                      }`}
+                    >
+                      {userAvatarUrl ? (
+                        <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
+                      ) : (
+                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      )}
+                      <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
+                        {userNickname}
+                      </span>
+                      <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
+                        내 프로필 · 사진 설정
+                      </span>
+                    </div>
                   </div>
+                  <span
+                    className={`text-[8px] leading-none whitespace-nowrap ${isLight ? 'text-slate-500' : 'text-neutral-500'}`}
+                    aria-label={`앱 버전 ${APP_VERSION}`}
+                  >
+                    v{APP_VERSION}
+                  </span>
                 </div>
 
                 {/* Collapse Button */}

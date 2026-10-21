@@ -21,6 +21,7 @@ import { FollowUpTarotTimeline, FollowUpTarotEntry } from './FollowUpTarotTimeli
 import { FollowUpTarotInputBar } from './FollowUpTarotInputBar';
 import { TarotCardBackCustomizerModal } from './TarotCardBackCustomizerModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
+import { getTarotCardBackTheme } from '@/data/tarotCardBacks';
 import { getTodayAnchorTarotCard } from '@/lib/todayTarotNarration';
 import { TarotSummaryGraphicCard } from '@/components/trinity/TarotSummaryGraphicCard';
 import {
@@ -55,6 +56,12 @@ const STORAGE_ORACLE_MODE_SELECTED = 'trinity_oracle_mode_selected';
 const STORAGE_DAILY_ORACLE_PREFIX = 'prism_oracle_daily_';
 
 export type OracleMode = 'healing' | 'growth' | 'miracle';
+
+const ORACLE_CARD_BACKS: Record<OracleMode, string> = {
+  healing: 'botanical_vintage',
+  growth: 'five_elements_emerald',
+  miracle: 'sacred_mandala',
+};
 
 export interface SavedDailyOracleSession {
   dateKey: string;
@@ -979,7 +986,9 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   const [streakCount, setStreakCount] = useState<number>(1);
 
   // 🎴 20종 타로 덱 뒷면 커스텀 상태
-  const { theme: tarotBackTheme, cardBackId } = useTarotCardBack();
+  const { theme: tarotBackTheme } = useTarotCardBack();
+  const oracleCardBackId = ORACLE_CARD_BACKS[oracleMode];
+  const oracleCardBackTheme = getTarotCardBackTheme(oracleCardBackId);
   const [showCardBackModal, setShowCardBackModal] = useState<boolean>(false);
 
   // 🌟 오늘 전체 운기를 관통하는 데일리 지배 타로 카드 (오늘의 타로 결과 및 정/역방향 동기화)
@@ -3642,10 +3651,10 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
               type="button"
               onClick={() => setShowCardBackModal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-300 font-bold transition-all cursor-pointer shadow-sm active:scale-95"
-              title="Quin 스타일 20종 타로 카드 뒷면 덱 커스텀"
+              title="일반 타로 카드 뒷면 설정"
             >
               <Palette size={13} className="text-yellow-400" />
-              <span>덱 뒷면 ({tarotBackTheme.nameKo})</span>
+              <span>일반 타로 뒷면 설정</span>
             </button>
 
             {oracleMode === 'healing' ? (
@@ -3716,21 +3725,24 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 mt-2 max-w-xl mx-auto leading-relaxed">
                 사주 원국과 공명하는 3가지 특화 타로 모드(🌿 힐링 · 🕊️ 기적수업 · ⚡ 자기계발) 중 원하시는 방식을 선택하세요.<br className="hidden sm:inline" />
-                선택하신 모드는 자동으로 저장되어 다음번에도 그대로 유지됩니다.
+                선택하신 모드는 자동으로 저장되어 다음번에도 그대로 유지됩니다. 각 모드는 고유한 카드 뒷면을 사용합니다.
               </p>
 
-              {/* 🎴 오라클 덱 뒷면 선택 버튼 */}
+              {/* Standard tarot customization remains separate from the oracle-specific backs. */}
               <div className="mt-4 flex items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowCardBackModal(true)}
                   className="px-3.5 py-1.5 rounded-full border border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md active:scale-95"
-                  title="Quin 스타일 20종 타로 카드 뒷면 덱 커스텀"
+                  title="일반 타로 카드 뒷면 설정"
                 >
                   <Palette size={13} className="text-yellow-400" />
-                  <span>오라클 덱 뒷면: <strong className="text-white underline underline-offset-2">{tarotBackTheme.nameKo}</strong> (클릭하여 변경)</span>
+                  <span>일반 타로 뒷면 설정 ({tarotBackTheme.nameKo})</span>
                 </button>
               </div>
+              <p className="mt-2 text-[11px] text-zinc-500">
+                힐링 · 보태니컬 빈티지　|　자기계발 · 오행 비취　|　기적수업 · 신성 로터스 만다라
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-6 max-w-4xl mx-auto text-left">
                 {/* 🌿 Healing Mode Option Card */}
@@ -3874,11 +3886,14 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                     type="button"
                     onClick={() => setShowCardBackModal(true)}
                     className="px-2.5 py-1 rounded-xl border border-yellow-500/30 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-300 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="Quin 스타일 20종 타로 카드 뒷면 덱 커스텀"
+                    title="일반 타로 카드 뒷면 설정"
                   >
                     <Palette size={12} />
-                    <span>덱 뒷면 ({tarotBackTheme.nameKo})</span>
+                    <span>일반 타로 뒷면 설정</span>
                   </button>
+                  <span className="text-[10px] text-amber-200/80">
+                    오라클 전용 · {oracleCardBackTheme.nameKo}
+                  </span>
                   <button
                     type="button"
                     onClick={handleResetToModeSelection}
@@ -3991,11 +4006,11 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
               ) : (
                 <div className="w-full min-h-[440px] md:min-h-[480px] relative">
                   <TarotSpread
-                    key={`oracle-spread-${oracleMode}-${cardBackId}`}
+                    key={`oracle-spread-${oracleMode}-${oracleCardBackId}`}
                     maxCards={3}
                     positions={slotPositions}
                     deckSource={activeDeckSource}
-                    cardBackId={cardBackId}
+                    cardBackId={oracleCardBackId}
                     allowReversed={true}
                     spreadName={oracleMode === 'healing' ? '내면아이 쉼 스프레드' : oracleMode === 'miracle' ? '기적수업 지각전환 스프레드' : '4원소 마인드셋 스프레드'}
                     onComplete={handleCardsComplete}
@@ -4039,11 +4054,14 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                     type="button"
                     onClick={() => setShowCardBackModal(true)}
                     className="px-2.5 py-1 rounded-xl border border-yellow-500/30 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-300 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
-                    title="20종 타로 카드 뒷면 덱 커스텀"
+                    title="일반 타로 카드 뒷면 설정"
                   >
                     <Palette size={11} />
-                    <span>덱 뒷면 ({tarotBackTheme.nameKo})</span>
+                    <span>일반 타로 뒷면 설정</span>
                   </button>
+                  <span className="text-[10px] text-yellow-200/80">
+                    오라클 전용 · {oracleCardBackTheme.nameKo}
+                  </span>
                   <span className="text-[10px] text-yellow-300/70 font-sans flex items-center gap-1">
                     <ZoomIn size={11} className="text-yellow-400" />
                     <span>(카드 클릭 시 확대 보기)</span>
@@ -4081,12 +4099,12 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   const cardWithRev = { ...card, reversed: isRev };
                   return (
                     <TarotFlippingCard
-                      key={`${card.id}-${idx}-${cardBackId}`}
+                      key={`${card.id}-${idx}-${oracleCardBackId}`}
                       card={cardWithRev}
                       slotName={positionLabel}
                       index={idx}
                       size="md"
-                      cardBackId={cardBackId}
+                      cardBackId={oracleCardBackId}
                       onClick={() => setZoomedCard({ card: cardWithRev, slotName: `#${idx + 1} ${positionLabel}` })}
                     />
                   );
@@ -4509,7 +4527,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
             <TarotSpread
               deckSource={oracleRemainingDeck}
               maxCards={1}
-              cardBackId={cardBackId}
+              cardBackId={oracleCardBackId}
               allowReversed={true}
               concern={pendingOracleFollowUpQuestion}
               spreadName={`오라클 추가 질문 #${oracleFollowUpEntries.length + 1}`}
