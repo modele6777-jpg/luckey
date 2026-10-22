@@ -30,9 +30,9 @@ import { TarotCardBackFace } from './TarotCardBackFace';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 
 export interface CircularTarotSpreadProps {
-  /** 펼칠 타로 카드 배열 (기본값: 메이저 아르카나 22장) */
+  /** 펼칠 타로 카드 배열 (기본값: 전체 78장) */
   cards?: TarotCard[];
-  /** 원형에 배치할 카드 수 N (기본값: 22장 또는 cards.length) */
+  /** 원형에 배치할 카드 수 N (기본값: cards.length) */
   cardCount?: number;
   /** 원형 반지름(px) — 미지정 시 카드 크기와 N에 맞춰 자동 계산 */
   radius?: number;
@@ -88,8 +88,8 @@ const getCardSuitVisual = (card: TarotCard) => {
 };
 
 export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
-  cards = TAROT_DECK.slice(0, 22),
-  cardCount: initialCount = 22,
+  cards = TAROT_DECK,
+  cardCount: initialCount = cards.length,
   radius: customRadius,
   cardWidth = 74,
   cardHeight = 128,
@@ -103,9 +103,10 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
   showEscherDebug: initialDebug = false,
   className = '',
 }) => {
-  // 스프레드 렌더링 모드: 'cascade' (단방향 캐스케이드 — 이중 가림 완전 해소) | 'clean_orbit' (비가림 원형 궤도 — 100% 전면 노출)
+  // 카드 순서를 닫힌 고리로 배치하고 한쪽 겹침 방향을 유지한다.
   const [spreadMode, setSpreadMode] = useState<'cascade' | 'clean_orbit'>('cascade');
   const [activeCount, setActiveCount] = useState<number>(Math.min(initialCount, cards.length));
+  const [drawnCardIds, setDrawnCardIds] = useState<Set<string>>(() => new Set());
   const [isFaceUp, setIsFaceUp] = useState<boolean>(initialShowFaces);
   const [direction, setDirection] = useState<'clockwise' | 'counter-clockwise'>(initialDirection);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
@@ -119,25 +120,18 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
 
   // 사용할 카드 슬라이스
   const activeDeck = useMemo(() => {
-    return cards.slice(0, activeCount);
-  }, [cards, activeCount]);
+    return cards.slice(0, activeCount).filter((card) => !drawnCardIds.has(card.id));
+  }, [cards, activeCount, drawnCardIds]);
 
   const N = activeDeck.length;
 
-  // 동적 최적 반지름 계산:
-  // - clean_orbit: 각 카드가 서로 겹치지 않고 온전히 드러나도록 둘레 2 * PI * R 계산
-  // - cascade: 원형을 유지하면서 단방향으로 유려하게 겹치도록 계산
+  // Keep neighbors close enough to overlap once without reaching cards beyond them.
   const effectiveRadius = useMemo(() => {
     if (customRadius && customRadius > 0) return customRadius;
-    if (spreadMode === 'clean_orbit') {
-      const targetCircumference = N * (cardWidth + 14);
-      const computedR = targetCircumference / (2 * Math.PI);
-      return Math.max(160, Math.min(310, Math.round(computedR)));
-    }
-    // 단방향 캐스케이드: 평균 70% 노출
-    const targetCircumference = N * cardWidth * 0.74;
+    const cardSpacing = spreadMode === 'clean_orbit' ? cardWidth + 14 : cardWidth - 12;
+    const targetCircumference = Math.max(N * cardSpacing, 2 * Math.PI * 140);
     const computedR = targetCircumference / (2 * Math.PI);
-    return Math.max(140, Math.min(280, Math.round(computedR)));
+    return Math.max(140, Math.round(computedR));
   }, [customRadius, N, cardWidth, spreadMode]);
 
   // 천문 자이로스코프 자동 회전 루프
@@ -188,11 +182,13 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
   // 카드 클릭/선택 핸들러
   const handleCardClick = useCallback(
     (card: TarotCard, index: number) => {
-      setSelectedIdx(index);
+      setSelectedIdx(null);
+      setHoveredIdx(null);
       triggerHaptic('card_snap');
       if (onSelectCard) {
         onSelectCard(card, index);
       }
+      setDrawnCardIds((previous) => new Set(previous).add(card.id));
     },
     [triggerHaptic, onSelectCard]
   );
@@ -214,12 +210,13 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
    * 단일 카드 렌더러 함수
    * @param card 대상 타로 카드
    * @param i 카드 인덱스 (0 ~ N-1)
-   * @param isLastCard N-1번째 에셔 루프 클로징 카드 여부
-   * @param escherLayer 에셔 루프 분할 레이어 ('none' | 'overlap' | 'under')
+   * @param fragment Circular seam fragment used to close the one-way overlap loop
    */
   const renderCardElement = (
     card: TarotCard,
     i: number,
+    fragment: 'full' | 'under' | 'over' = 'full',
+    clipPath?: string,
   ) => {
     const isHovered = hoveredIdx === i;
     const isSelected = selectedIdx === i || selectedCardId === card.id;
@@ -259,7 +256,7 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
 
     return (
       <div
-        key={`${card.id}-${i}`}
+        key={`${card.id}-${fragment}`}
         data-card-index={i}
         onMouseEnter={() => handleCardHover(i)}
         onMouseLeave={() => handleCardHover(null)}
@@ -276,7 +273,8 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
           transform: `rotate(${currentAngle}deg) translateY(-${effectiveRadius + hoverLift}px) ${
             isHovered ? 'translateZ(60px)' : isSelected ? 'translateZ(30px)' : 'translateZ(0px)'
           } scale(${hoverScale})`,
-          zIndex,
+          zIndex: fragment === 'under' ? BASE_Z - 1 : zIndex,
+          clipPath,
           backfaceVisibility: 'hidden',
           transition: isAutoSpinning
             ? 'transform 0.15s ease-out, box-shadow 0.28s, filter 0.28s'
@@ -379,7 +377,7 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
                 </span>
               </div>
               <p className="text-[10px] text-zinc-400 font-sans">
-                원형을 유지하면서 이중 가려짐 없이 모든 카드가 선명하고 온전하게 노출됩니다
+                한 방향으로 한 장씩 겹쳐 펼치고, 카드를 뽑으면 순서를 유지한 채 간격을 메웁니다
               </p>
             </div>
           </div>
@@ -457,11 +455,11 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
         </div>
       )}
 
-      {/* 2. 카드 수 조절 프리셋 버튼 바 (8장 / 12장 / 16장 / 22장 메이저) */}
+      {/* 2. 카드 수 조절 프리셋 버튼 바 */}
       {showControls && (
         <div className="flex items-center justify-center gap-1.5 mb-4 max-w-full overflow-x-auto no-scrollbar py-1">
           <span className="text-[11px] text-zinc-400 font-mono mr-1 shrink-0">배치 장수 (N):</span>
-          {[8, 12, 16, 22].map((num) => (
+          {[8, 12, 16, 22, 78].map((num) => (
             <button
               key={num}
               type="button"
@@ -481,18 +479,17 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
         </div>
       )}
 
-      {/* 3. 메인 원형 휠 컨테이너 (고정 지름 영역) */}
-      <div
-        className="relative flex items-center justify-center overflow-visible my-3 sm:my-6"
-        style={{
-          width: `${(effectiveRadius + cardHeight) * 2 + 20}px`,
-          height: `${(effectiveRadius + cardHeight) * 2 + 20}px`,
-          maxWidth: '96vw',
-          maxHeight: '96vw',
-          perspective: '1200px',
-          transformStyle: 'preserve-3d',
-        }}
-      >
+      {/* 3. 닫힌 원형 궤도: 큰 덱은 스크롤해 전체 고리를 살펴볼 수 있다 */}
+      <div className="w-full max-w-full max-h-[70vh] overflow-auto my-3 sm:my-6">
+        <div
+          className="relative flex-none flex items-center justify-center overflow-visible mx-auto"
+          style={{
+            width: `${(effectiveRadius + cardHeight) * 2 + 20}px`,
+            height: `${(effectiveRadius + cardHeight) * 2 + 20}px`,
+            perspective: '1200px',
+            transformStyle: 'preserve-3d',
+          }}
+        >
         {/* 원형 배경 천문 링 & 가이드라인 */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {/* 외곽 부드러운 앰비언트 글로우 */}
@@ -566,8 +563,27 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
           </div>
         </div>
 
-        {/* 🎴 방사형 타로 카드 렌더링 루프 (이미지 절단 없이 3D 뎁스 틸트로 이중 가려짐 완벽 해소) */}
-        {activeDeck.map((card, i) => renderCardElement(card, i))}
+          {/* 닫힌 순환 겹침은 첫 카드를 두 레이어로 나눠 한 방향으로 이어 붙인다. */}
+          {activeDeck.map((card, i) => {
+            if (spreadMode !== 'cascade' || i !== 0 || N < 2) {
+              return renderCardElement(card, i);
+            }
+
+            const underClip = direction === 'clockwise'
+              ? 'inset(0 50% 0 0)'
+              : 'inset(0 0 0 50%)';
+            const overClip = direction === 'clockwise'
+              ? 'inset(0 0 0 50%)'
+              : 'inset(0 50% 0 0)';
+
+            return (
+              <React.Fragment key={`${card.id}-${i}-closed-loop`}>
+                {renderCardElement(card, i, 'under', underClip)}
+                {renderCardElement(card, i, 'over', overClip)}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
 
       {/* 4. 하단 상세 안내 및 무결점 원형 스프레드 설명 바 */}
@@ -577,7 +593,7 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
           <span>무결점 원형 타로 스프레드 (Zero-Occlusion Circular Spread) 원리</span>
         </div>
         <p className="text-[11px] text-zinc-300/80 leading-relaxed font-sans">
-          원형 궤도를 온전히 유지하면서 카드를 인위적으로 분할·절단하지 않고, 단방향 순차 캐스케이드 스택과 정밀 원형 궤도 최적화를 적용했습니다. 어떤 카드도 양쪽 이웃에게 동시에 가려지는(이중 가려짐) 결함이 완전히 해소되었으며, 3D 왜곡이나 일러스트 손상 없이 모든 카드가 100% 완전하고 선명하게 드러납니다.
+          카드 덱을 시작과 끝이 없는 닫힌 고리로 배치합니다. 기본 78장 전체를 펼치며, 첫 카드의 겹침 면을 레이어로 분할해 고리 경계에서도 단방향 겹침을 이어줍니다. 카드를 뽑으면 해당 카드만 빠지고 남은 순서는 유지한 채 간격을 다시 메웁니다.
         </p>
       </div>
     </div>
