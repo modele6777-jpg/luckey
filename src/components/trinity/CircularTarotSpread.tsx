@@ -34,8 +34,6 @@ export interface CircularTarotSpreadProps {
   selectedCardId?: string | null;
   /** 카드 클릭/선택 콜백 */
   onSelectCard?: (card: TarotCard, index: number) => void;
-  /** 선택된 카드를 원래 스프레드로 되돌릴 때 호출 */
-  onResetSelection?: () => void;
   /** 카드 뒷면 테마 ID (TarotCardBackFace 연동) */
   cardBackThemeId?: string;
   /** 사운드 및 햅틱 효과 활성화 여부 */
@@ -85,7 +83,6 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
   showFaces: initialShowFaces = false,
   selectedCardId,
   onSelectCard,
-  onResetSelection,
   cardBackThemeId = 'cosmic_midnight',
   enableSound = true,
   showControls = true,
@@ -352,7 +349,7 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
         </div>
       )}
 
-      {/* 카드 수 조절 프리셋과 뽑은 카드 되돌리기 */}
+      {/* 카드 수 조절 프리셋 */}
       {showControls && (
         <div className="w-full flex flex-wrap items-center justify-center gap-1.5 mb-4">
           <span className="text-[11px] text-zinc-400 font-mono mr-1">배치 장수:</span>
@@ -373,21 +370,6 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
               {num}장
             </button>
           ))}
-          {drawnCardIds.size > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setDrawnCardIds(new Set());
-                setHoveredIdx(null);
-                setSelectedIdx(null);
-                onResetSelection?.();
-                triggerHaptic('tap_light');
-              }}
-              className="px-3 py-1 rounded-full text-xs font-bold text-amber-200 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25 transition-all cursor-pointer"
-            >
-              뽑은 카드 되돌리기
-            </button>
-          )}
         </div>
       )}
 
@@ -424,7 +406,7 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
           <span>반원형 타로 아크</span>
         </div>
         <p className="text-[11px] text-zinc-300/80 leading-relaxed font-sans">
-          카드를 반원 궤도에 한 방향으로 겹쳐 펼칩니다. 한 장을 선택하면 그 카드만 아크에서 빠지고, 나머지 카드의 순서를 바꾸지 않은 채 전체 반원에 다시 균등 배치합니다. 되돌리기를 누르면 원래 카드가 복귀합니다.
+          카드를 반원 궤도에 한 방향으로 겹쳐 펼칩니다. 한 장을 선택하면 그 카드만 아크에서 빠지고, 나머지 카드의 순서를 바꾸지 않은 채 전체 반원에 다시 균등 배치합니다.
         </p>
       </div>
     </div>

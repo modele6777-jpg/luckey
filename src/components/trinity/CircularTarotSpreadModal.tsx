@@ -82,7 +82,6 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
               onSelectCard={(card) => {
                 setPickedCard(card);
               }}
-              onResetSelection={() => setPickedCard(null)}
               selectedCardId={pickedCard?.id}
             />
           </div>
