@@ -55,13 +55,13 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-white font-serif flex items-center gap-2">
-                  <span>원형 타로 카드 아크</span>
+                  <span>반원형 타로 카드 아크</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-sans">
-                    Zero-Occlusion Iris
+                    ARC PREVIEW
                   </span>
                 </h3>
                 <p className="text-[11px] text-zinc-400 font-sans">
-                  원형 궤도를 온전히 유지하며 이중 가림 없이 모든 카드가 선명하게 펼쳐지는 프리미엄 원형 타로 스프레드
+                  중앙에는 첫 카드를 뒷면으로 미리 보여주고, 가리킨 카드는 부드러운 흰 테두리로 강조합니다
                 </p>
               </div>
             </div>

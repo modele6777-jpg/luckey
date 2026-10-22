@@ -104,6 +104,8 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
   }, [cards, activeCount, drawnCardIds]);
 
   const N = activeDeck.length;
+  const centerPreviewCard = activeDeck[0];
+  const emphasizeCenterPreview = hoveredIdx === null;
 
   // Match the arc radius to the configured card count so neighboring cards overlap once.
   const effectiveRadius = useMemo(() => {
@@ -186,8 +188,8 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
     const tangentAngle = angleDeg - 90;
     const stackRank = direction === 'clockwise' ? i : N - 1 - i;
     const zIndex = isHovered ? 9999 : isSelected ? 9000 : BASE_Z + stackRank * Z_STEP;
-    const hoverLift = isHovered ? 26 : isSelected ? 16 : 0;
-    const hoverScale = isHovered ? 1.09 : isSelected ? 1.04 : 1.0;
+    const hoverLift = isHovered ? 8 : isSelected ? 5 : 0;
+    const hoverScale = isHovered ? 1.04 : isSelected ? 1.02 : 1.0;
 
     const SuitIcon = getCardSuitVisual(card).icon;
     const suitColor = getCardSuitVisual(card).color;
@@ -214,13 +216,13 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
           } scale(${hoverScale})`,
           zIndex,
           backfaceVisibility: 'hidden',
-          transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s, filter 0.32s',
+          transition: 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s, filter 0.6s',
           cursor: 'pointer',
           willChange: 'transform',
         }}
         className={`group select-none rounded-xl overflow-hidden transition-all duration-300 ${
           isHovered
-            ? 'ring-2 ring-amber-300 shadow-[0_16px_36px_rgba(245,158,11,0.5),0_0_24px_rgba(251,191,36,0.6)] brightness-110'
+            ? 'ring-2 ring-white shadow-[0_8px_24px_rgba(255,255,255,0.28)] brightness-110'
             : isSelected
             ? 'ring-2 ring-yellow-400 shadow-[0_12px_28px_rgba(234,179,8,0.4)]'
             : 'shadow-[0_6px_16px_rgba(0,0,0,0.7),0_1px_3px_rgba(255,255,255,0.08)] hover:brightness-105'
@@ -374,18 +376,47 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
       )}
 
       {/* 반원 아크 스테이지. 전체 덱은 스크롤해 양 끝까지 확인할 수 있다. */}
-      <div className="w-full max-w-full max-h-[70vh] overflow-auto my-3 sm:my-6">
-        <div
-          className="relative flex-none flex items-center justify-center overflow-visible mx-auto"
-          style={{
-            width: `${effectiveRadius * 2 + cardHeight + 24}px`,
-            height: `${effectiveRadius + cardHeight + 24}px`,
-            perspective: '1200px',
-            transformStyle: 'preserve-3d',
-          }}
-        >
-          {activeDeck.map((card, i) => renderCardElement(card, i))}
+      <div className="relative w-full max-w-full my-3 sm:my-6">
+        <div className="w-full max-h-[70vh] overflow-auto">
+          <div
+            className="relative flex-none flex items-center justify-center overflow-visible mx-auto"
+            style={{
+              width: `${effectiveRadius * 2 + cardHeight + 24}px`,
+              height: `${effectiveRadius + cardHeight + 24}px`,
+              perspective: '1200px',
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            {activeDeck.map((card, i) => renderCardElement(card, i))}
+          </div>
         </div>
+        {centerPreviewCard && (
+          <motion.div
+            aria-hidden="true"
+            animate={{
+              y: emphasizeCenterPreview ? -5 : 0,
+              scale: emphasizeCenterPreview ? 1.02 : 1,
+            }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className={`absolute left-1/2 z-[800] h-[164px] w-[108px] rounded-xl border-2 p-1 pointer-events-none transition-colors duration-500 ${
+              emphasizeCenterPreview
+                ? 'border-white shadow-[0_8px_28px_rgba(255,255,255,0.2)]'
+                : 'border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.45)]'
+            }`}
+            style={{
+              top: 'calc(50% + 64px)',
+              marginLeft: '-54px',
+              marginTop: '-82px',
+            }}
+          >
+            <TarotCardBackFace
+              cardBackId={cardBackThemeId}
+              isHovered={emphasizeCenterPreview}
+              size="preview"
+              className="rounded-lg"
+            />
+          </motion.div>
+        )}
       </div>
 
       {activeFocusCard && (
