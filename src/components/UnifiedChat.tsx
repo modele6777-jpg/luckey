@@ -8,15 +8,18 @@ import { motion, AnimatePresence } from "motion/react";
 import { useApp, PersonaType } from "../contexts/AppContext";
 import { Streamdown } from "./Streamdown";
 import { TTSButton } from "./TTSButton";
-import { stopTTS, playConversation, subscribeTTS } from "../utils/tts";
+import { stopTTS, playConversation, subscribeTTS, playTTSInChunks, normalizeTextForSpeech } from "../utils/tts";
 import { getContextAwarePrompts } from "../utils/dynamicContextSuggestions";
 import { calculateDetailedSaju } from "../lib/sajuAnalysis";
-import { cleanUserMessageDisplay } from "../utils/cleanMessage";
+import { cleanUserMessageDisplay, cleanAssistantMessageDisplay } from "../utils/cleanMessage";
 import { ChatInsightsBoardModal } from "./ChatInsightsBoardModal";
 import { saveLucyChatSummary } from "../lib/prismOmniSync";
 import { invokeLLM } from "../lib/ai";
 import { PromptLibraryModal } from "./chat/PromptLibraryModal";
 import { HORI_PROMPT_LIBRARY } from "../data/horiPromptLibrary";
+import { LucyKakaoBubbleGroup } from "./chat/LucyKakaoBubbleGroup";
+import { joinKakaoBubblesForTTS } from "../lib/lucyChatUtils";
+import { unlockAudioPlayback, primeTTSAudioElement } from "../lib/audio";
 
 const PERSONA_CONFIG: Record<PersonaType, { 
   name: string; 
@@ -482,14 +485,61 @@ export function UnifiedChat() {
     }
   }, [activePersona, getContextualPrompts]);
 
-  // Subscribe to global TTS state to determine if conversation mode is active
+  const [drawerPlayingMsgId, setDrawerPlayingMsgId] = useState<string | null>(null);
+  const [drawerTtsInfo, setDrawerTtsInfo] = useState<{ isSpeaking: boolean; isLoading: boolean; activeText: string | null }>({
+    isSpeaking: false,
+    isLoading: false,
+    activeText: null,
+  });
+  const [drawerCopiedId, setDrawerCopiedId] = useState<string | null>(null);
+  const drawerMountedAtRef = useRef<number>(Date.now());
+
+  // Subscribe to global TTS state to determine if conversation mode or bubble TTS is active
   useEffect(() => {
     const unsubscribe = subscribeTTS((state) => {
       setIsReadingAll(state.isSpeaking && state.activeText === '__CONVERSATION__');
       setIsReadingAllLoading(state.isLoading && state.activeText === '__CONVERSATION__');
+      setDrawerTtsInfo({
+        isSpeaking: state.isSpeaking,
+        isLoading: state.isLoading,
+        activeText: state.activeText,
+      });
+      if (!state.isSpeaking && !state.isLoading) {
+        setDrawerPlayingMsgId(null);
+      }
     });
     return unsubscribe;
   }, []);
+
+  const handleDrawerCopy = useCallback(async (id: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+    setDrawerCopiedId(id);
+    setTimeout(() => setDrawerCopiedId((prev) => (prev === id ? null : prev)), 2000);
+  }, []);
+
+  const handleDrawerVoicePlay = useCallback((id: string, text: string, voice = 'Aoede') => {
+    unlockAudioPlayback();
+    primeTTSAudioElement();
+    const joined = joinKakaoBubblesForTTS(text, 4) || text;
+    const clean = normalizeTextForSpeech(joined);
+    if (drawerPlayingMsgId === id && (drawerTtsInfo.isSpeaking || drawerTtsInfo.isLoading)) {
+      stopTTS();
+      setDrawerPlayingMsgId(null);
+    } else {
+      stopTTS();
+      setDrawerPlayingMsgId(id);
+      playTTSInChunks(clean, voice, 110, undefined, undefined, { skipCompletionChime: true, isUserToggleClick: true });
+    }
+  }, [drawerPlayingMsgId, drawerTtsInfo.isLoading, drawerTtsInfo.isSpeaking]);
 
   // Always use unified Lucy Master
   useEffect(() => {
@@ -781,8 +831,8 @@ export function UnifiedChat() {
     setShowScrollBottomBtn(false);
     scrollToBottom(true);
 
-    // Build extra context automatically for deep rich spiritual dialogue
-    const depthContext = "\n\n[대화 깊이 규칙: 깊은 교감 모드]\n- 너는 사용자와 깊고 따뜻한 교감을 나누기 위해 답변을 매우 정성스럽고 분량 있는 여러 단락(Paragraphs)의 글(최소 10문장 이상)로 풍부하게 풀어 써줘야 해.\n- 단편적이고 짧은 2~3줄짜리 짧은 대답은 전면 지양하며, 너만의 신비롭고 사랑스러운 은유와 비유, 그리고 감수성을 가득 실어 손편지처럼 충만한 답변으로 영적인 공감을 나누어줘.";
+    // Build extra context automatically for KakaoTalk-style multi-bubble warm dialogue
+    const depthContext = "\n\n[대화 깊이 & 카톡 다중 말풍선 규칙]\n- 실제 사람이 카카오톡으로 단짝 친구에게 이야기하듯, 긴 답변을 한 덩어리로 쓰지 말고 반드시 빈 줄(`\\n\\n`)로 구분된 2~4개의 자연스러운 말풍선 단락으로 쪼개어 답해줘.";
     
     await sendUnifiedMessage(textMsg, activePersona, imgToSend, {
       extraSystemContext: depthContext
@@ -943,7 +993,7 @@ export function UnifiedChat() {
                             role: m.role,
                             content: m.role === "user" ? cleanUserMessageDisplay(m.content as string) : (m.content as string)
                           }));
-                        playConversation(talkMessages, config.voice || 'Kore', 'Kore');
+                        playConversation(talkMessages, config.voice || 'Kore', 'Kore', undefined, { skipCompletionChime: true });
                       }
                     }}
                     className={`p-2 rounded-xl bg-white/5 border border-white/10 transition-all active:scale-95 flex items-center justify-center ${
@@ -1002,16 +1052,14 @@ export function UnifiedChat() {
               {currentMessages.map((m, i) => {
                 const isUser = m.role === "user";
                 if (!isUser && !m.content) return null;
+                const msgId = String((m as any).id || i);
                 const align = isUser ? "justify-end" : "justify-start";
-                const wrapBorder = isUser 
-                  ? "bg-gradient-to-tr from-[#3b82f6]/95 to-[#2563eb]/95 text-white rounded-br-none shadow-[0_8px_25px_-5px_rgba(59,130,246,0.5)] border-transparent" 
-                  : "bg-white/[0.03] border border-white/10 text-white/95 rounded-bl-none shadow-md";
 
-                return (
-                  <div key={(m as any).id || i} className={`flex ${align} items-end gap-2 w-full`}>
-                    <div className={`max-w-[85%] rounded-3xl px-5 py-3.5 transition-all duration-300 hover:border-white/20 ${wrapBorder}`}>
-                      {isUser ? (
-                        Array.isArray(m.content) ? (
+                if (isUser) {
+                  return (
+                    <div key={msgId} className={`flex ${align} items-end gap-2 w-full`}>
+                      <div className="max-w-[85%] rounded-3xl px-5 py-3.5 transition-all duration-300 bg-gradient-to-tr from-[#3b82f6]/95 to-[#2563eb]/95 text-white rounded-br-none shadow-[0_8px_25px_-5px_rgba(59,130,246,0.5)] border-transparent">
+                        {Array.isArray(m.content) ? (
                           <div className="space-y-2">
                             {m.content.map((p, idx) => {
                               if (p.type === 'text') {
@@ -1052,31 +1100,45 @@ export function UnifiedChat() {
                             })}
                           </div>
                         ) : (
-                          <p className="whitespace-pre-wrap font-sans text-[13.5px] leading-relaxed break-words">{cleanUserMessageDisplay(m.content as string)}</p>
-                        )
-                      ) : (
-                        <div className="font-sans text-[13.5px] leading-relaxed break-words markdown-body select-text text-left">
-                          <Streamdown>{m.content as string}</Streamdown>
-                        </div>
-                      )}
-                    </div>
-                    {!isUser && (
-                      <div className="flex items-center gap-1 shrink-0 mb-0.5 opacity-70 hover:opacity-100 transition-opacity">
-                        <button
-                          type="button"
-                          onClick={() => handleCopyMessage(typeof m.content === 'string' ? m.content : '', i)}
-                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white border border-white/10 transition-all active:scale-90 cursor-pointer"
-                          title={copiedIndex === i ? "복사 완료!" : "답변 복사하기"}
-                        >
-                          {copiedIndex === i ? (
-                            <Check size={13} className="text-emerald-400" />
-                          ) : (
-                            <Copy size={13} />
-                          )}
-                        </button>
-                        <TTSButton text={typeof m.content === 'string' ? m.content : ''} voice="Kore" className="shrink-0" />
+                          <p className="whitespace-pre-wrap font-sans text-[13.5px] leading-relaxed break-words">
+                            {cleanUserMessageDisplay(m.content as string)}
+                          </p>
+                        )}
                       </div>
-                    )}
+                    </div>
+                  );
+                }
+
+                const rawAssistantText = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
+                const cleanAssistantText = cleanAssistantMessageDisplay(rawAssistantText);
+                if (!cleanAssistantText.trim()) return null;
+
+                return (
+                  <div key={msgId} className="flex justify-start items-end gap-2 w-full">
+                    <div className="max-w-[88%] min-w-0">
+                      <LucyKakaoBubbleGroup
+                        msgId={msgId}
+                        textContent={cleanAssistantText}
+                        isLatest={i === currentMessages.length - 1}
+                        isGenerating={currentGenerating && i === currentMessages.length - 1}
+                        isHistorical={
+                          i < currentMessages.length - 1 ||
+                          Boolean(m.timestamp && m.timestamp < drawerMountedAtRef.current - 2000)
+                        }
+                        isLight={false}
+                        variant="drawer"
+                        playingMsgId={drawerPlayingMsgId}
+                        ttsInfo={drawerTtsInfo}
+                        copiedId={drawerCopiedId}
+                        onCopy={handleDrawerCopy}
+                        onVoicePlay={handleDrawerVoicePlay}
+                        onBubbleReveal={() => {
+                          if (!userScrolledUpRef.current) {
+                            scrollToBottom(true);
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                 );
               })}

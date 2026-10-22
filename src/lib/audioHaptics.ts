@@ -94,10 +94,10 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
     description: '3단 캐스케이드 샤프 펄스와 풍성한 축복 아르페지오',
   },
   ai_result_chime: {
-    vibration: [10, 25],
+    vibration: [18, 35, 22],
     category: 'success',
-    label: 'AI 결과 생성 완료 종소리',
-    description: '은은하고 맑은 약한 크리스탈 종소리와 미세 햅틱 진동',
+    label: 'TTS 및 작업 완료 싱잉볼',
+    description: '1.5~2초 내외의 짧고 담백한 싱잉볼 배음 울림과 부드러운 공명 진동 (루시 채팅 제외)',
   },
 
   // Breathing (Soft Rhythmic)
@@ -524,27 +524,49 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       }
 
       case 'ai_result_chime': {
-        // 은은하고 맑은 약한 종소리 (659Hz E5 + 1056Hz C6 + 1318Hz E6 잔향)
-        const harmonics = [
-          { freq: 659.25, gain: 0.08, decay: 1.05 },
-          { freq: 1056.0, gain: 0.045, decay: 0.85 },
-          { freq: 1318.5, gain: 0.025, decay: 0.65 },
+        // 짧고 담백한 싱잉볼 타종 사운드 (1.5~1.85초 내외의 깔끔한 여운, 루시 채팅 제외)
+        // 1) 부드러운 우드 말렛 타격 트랜지언트 (Warm Mallet Strike)
+        const strikeNoise = ctx.createBufferSource();
+        strikeNoise.buffer = getNoiseBuffer(ctx);
+        const strikeFilter = ctx.createBiquadFilter();
+        strikeFilter.type = 'bandpass';
+        strikeFilter.frequency.setValueAtTime(680, now);
+        strikeFilter.Q.setValueAtTime(2.2, now);
+
+        const strikeGain = ctx.createGain();
+        strikeGain.gain.setValueAtTime(0.0001, now);
+        strikeGain.gain.linearRampToValueAtTime(0.065 * volScale, now + 0.006);
+        strikeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
+
+        strikeNoise.connect(strikeFilter);
+        strikeFilter.connect(strikeGain);
+        strikeGain.connect(bus);
+        strikeNoise.start(now);
+        strikeNoise.stop(now + 0.042);
+
+        // 2) 싱잉볼 고유 배음 구조 (264Hz 바디 + 528Hz 기저음 + 529.3Hz 미세 맥놀이 + 1056Hz 배음 + 1457.28Hz(2.76x) 싱잉볼 배음)
+        const bowlPartials = [
+          { freq: 264.0, gain: 0.085, attack: 0.016, decay: 1.45 },
+          { freq: 528.0, gain: 0.15, attack: 0.014, decay: 1.85 },
+          { freq: 529.3, gain: 0.065, attack: 0.022, decay: 1.65 },
+          { freq: 1056.0, gain: 0.048, attack: 0.012, decay: 1.25 },
+          { freq: 1457.28, gain: 0.026, attack: 0.01, decay: 0.95 },
         ];
 
-        harmonics.forEach(({ freq, gain: baseG, decay }) => {
+        bowlPartials.forEach(({ freq, gain: baseG, attack, decay }) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, now);
 
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(baseG * volScale * 0.7, now + 0.025);
+          gain.gain.linearRampToValueAtTime(baseG * volScale, now + attack);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
 
           osc.connect(gain);
           gain.connect(bus);
           osc.start(now);
-          osc.stop(now + decay + 0.05);
+          osc.stop(now + decay + 0.04);
         });
         break;
       }

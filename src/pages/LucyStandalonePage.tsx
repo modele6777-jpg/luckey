@@ -46,6 +46,8 @@ import {
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { getTodayDateKey } from '@/lib/dailyCache';
+import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
+import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -1245,6 +1247,7 @@ export default function LucyStandalonePage() {
 
   // 🔊 자동 음성 재생(Auto-TTS) 동시 중복 호출 및 자기 취소 방지용 단일 러너 뮤텍스
   const isAutoTtsBusyRef = useRef(false);
+  const pageMountedAtRef = useRef<number>(Date.now());
 
   const triggerAutoTts = useCallback(async (textToSpeak: string, msgId?: string) => {
     if (!isAutoTtsRef.current || !textToSpeak || !textToSpeak.trim()) return;
@@ -1261,7 +1264,9 @@ export default function LucyStandalonePage() {
       unlockAudioPlayback();
       primeTTSAudioElement();
 
-      const cleanAnswer = normalizeTextForSpeech(textToSpeak);
+      // 분할된 2~4개의 카톡 말풍선을 순서대로 이어 붙여 한 번에 연속 낭독
+      const joinedBubblesText = joinKakaoBubblesForTTS(cleanAssistantMessageDisplay(textToSpeak), 4) || textToSpeak;
+      const cleanAnswer = normalizeTextForSpeech(joinedBubblesText);
       if (cleanAnswer) {
         await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, {
           skipCompletionChime: true,
@@ -1291,7 +1296,8 @@ export default function LucyStandalonePage() {
     if (!isGreetingMsg) return;
 
     const greetingId = firstMsg.id || 'greet-main';
-    const cleanGreeting = normalizeTextForSpeech(firstMsg.content);
+    const joinedGreeting = joinKakaoBubblesForTTS(firstMsg.content, 4) || firstMsg.content;
+    const cleanGreeting = normalizeTextForSpeech(joinedGreeting);
     if (!cleanGreeting) return;
 
     // 인사말 청크들을 즉시 사전 프리페치
@@ -1571,16 +1577,40 @@ export default function LucyStandalonePage() {
     }
   };
 
-  // Send message with multi-channel context routing
+  // Send message with multi-channel context routing (루시가 답변 준비 중일 때도 추가 연속 입력 허용 및 통합 맥락 반영)
   const handleSend = useCallback(async (textToSend?: string, forcedChannels?: SpecialChannel[]) => {
-    // 💡 사용자가 직접 입력한 텍스트가 없고 첨부 이미지가 없는 경우, 현재 화면에 표시/타이핑 중인 완성형 예시 질문 채택
-    const candidateGhost = (!input.trim() && !attachedImage)
+    const hasExplicitUserInput = Boolean(textToSend || input.trim() || attachedImage);
+    // 💡 사용자가 직접 입력한 텍스트가 없고 첨부 이미지가 없는 경우(생성 중이 아닐 때만), 현재 화면에 표시/타이핑 중인 완성형 예시 질문 채택
+    const candidateGhost = (!hasExplicitUserInput && !isLucyGenerating)
       ? (currentGhostPromptRef.current || activeGhostPrompt || dynamicGhostPrompts[0] || '')
       : '';
     const rawMsg = textToSend || (input.trim() ? input : candidateGhost);
-    if ((!rawMsg.trim() && !attachedImage) || isLucyGenerating) return;
+    if (!rawMsg.trim() && !attachedImage) return;
 
     const userCleanText = rawMsg.trim();
+
+    // 직전 완성된 루시 답변 이후 연속으로 쌓인 사용자 메시지가 있다면 함께 합쳐서 채널·운명학 도구를 판별
+    const priorUnansweredTexts: string[] = [];
+    for (let i = lucyMessages.length - 1; i >= 0; i--) {
+      const m = lucyMessages[i];
+      if (m.role === 'model') {
+        const mTxt = typeof m.content === 'string' ? m.content.trim() : '';
+        if (mTxt.length > 0) break;
+        continue;
+      }
+      if (m.role === 'user') {
+        const uTxt = typeof m.content === 'string'
+          ? m.content.trim()
+          : Array.isArray(m.content)
+          ? (m.content.find((item: any) => item.type === 'text')?.text || '').trim()
+          : '';
+        if (uTxt) priorUnansweredTexts.unshift(uTxt);
+      }
+    }
+    const combinedContextText =
+      priorUnansweredTexts.length > 0
+        ? [...priorUnansweredTexts, userCleanText].filter(Boolean).join('\n')
+        : userCleanText;
 
     // 💡 만약 예시 질문(candidateGhost)이 전송된 것이라면 해당 예시 질문의 특성에 맞는 채널 자동 매핑 우선 확인
     let effectiveForcedChannels = forcedChannels;
@@ -1611,8 +1641,8 @@ export default function LucyStandalonePage() {
         channels: effectiveForcedChannels,
         title: formatChannelsModeTitle(effectiveForcedChannels),
       };
-    } else if (isAutoDetect && forcedChannels === undefined && userCleanText.length > 0) {
-      const detected = detectLucyChannelsFromText(userCleanText);
+    } else if (isAutoDetect && forcedChannels === undefined && combinedContextText.length > 0) {
+      const detected = detectLucyChannelsFromText(combinedContextText);
       if (detected.isMaster) {
         channels = ALL_CHANNELS;
       } else {
@@ -1671,7 +1701,7 @@ export default function LucyStandalonePage() {
     // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
     const divinationSelection = isCasual
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
-      : selectOptimalDivinationTools(userCleanText, channels, counselingUserProfile, isMaster);
+      : selectOptimalDivinationTools(combinedContextText, channels, counselingUserProfile, isMaster);
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
@@ -1706,7 +1736,7 @@ export default function LucyStandalonePage() {
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts]);
+  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts]);
 
   const handleSendRef = useRef(handleSend);
   useEffect(() => {
@@ -1928,6 +1958,7 @@ export default function LucyStandalonePage() {
   const handleVoicePlay = (id: string, text: string, _voice?: string) => {
     unlockAudioPlayback();
     primeTTSAudioElement();
+    lastAutoSpokenMsgIdRef.current = id;
     const clean = normalizeTextForSpeech(text);
     if (playingMsgId === id && (ttsInfo.isSpeaking || ttsInfo.isLoading)) {
       stopTTS();
@@ -2380,115 +2411,117 @@ export default function LucyStandalonePage() {
                     );
                   })()}
 
-                  {/* Message Bubble */}
-                  <div 
-                    className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-colors duration-300 ${
-                      isUser
-                        ? isLight
-                          ? 'lucy-user-bubble bg-amber-100 border border-amber-300 text-slate-900 rounded-tr-xs font-sans shadow-xs'
-                          : 'bg-indigo-600/90 border border-indigo-400/30 text-white rounded-tr-xs font-sans shadow-sm'
-                        : isLight
-                        ? 'lucy-assistant-bubble bg-white backdrop-blur-md border border-amber-200/90 text-slate-800 rounded-tl-xs shadow-[0_4px_20px_rgba(140,110,80,0.08)] font-sans'
-                        : 'bg-slate-900/88 backdrop-blur-md border border-white/15 text-white rounded-tl-xs shadow-[0_6px_28px_rgba(0,0,0,0.45)] font-sans'
-                    }`}
-                    style={{
-                      backgroundColor: isUser
-                        ? isLight
-                          ? '#fef3c7'
-                          : undefined
-                        : isLight
-                        ? '#ffffff'
-                        : 'rgba(15, 23, 42, 0.92)',
-                      color: isUser ? (isLight ? '#0f172a' : '#ffffff') : (isLight ? '#1e293b' : '#ffffff'),
-                    }}
-                  >
-                    {isUser ? (
+                  {/* Message Bubble(s) */}
+                  {isUser ? (
+                    <>
                       <div
-                        className={`whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}
-                        style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+                        className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-colors duration-300 ${
+                          isLight
+                            ? 'lucy-user-bubble bg-amber-100 border border-amber-300 text-slate-900 rounded-tr-xs font-sans shadow-xs'
+                            : 'bg-indigo-600/90 border border-indigo-400/30 text-white rounded-tr-xs font-sans shadow-sm'
+                        }`}
+                        style={{
+                          backgroundColor: isLight ? '#fef3c7' : undefined,
+                          color: isLight ? '#0f172a' : '#ffffff',
+                        }}
                       >
-                        {textContent}
+                        <div
+                          className={`whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}
+                          style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+                        >
+                          {textContent}
+                        </div>
                       </div>
-                    ) : (
-                      <>
-                        <LucyProTypewriter 
-                          content={textContent}
-                          isLatest={index === filteredMessages.length - 1}
-                          isGenerating={isLucyGenerating && index === filteredMessages.length - 1}
-                        />
-                        {/* 🔮 LucKey 연계 추천 채널 및 Key 실천 도약 바: 수다모드 및 루시의 인사말에서는 생략, 전문 모드에서만 유지 */}
-                        {(() => {
-                          if (isLucyGenerating && index === filteredMessages.length - 1) return null;
-                          if (!textContent || textContent.trim().length <= 10) return null;
-                          if (msgModeInfo.isCasual) return null;
-                          if (isGreeting) return null;
 
-                          const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
-                          const prevUserQuery = prevUser
-                            ? typeof prevUser.content === 'string'
-                              ? prevUser.content
-                              : Array.isArray(prevUser.content)
-                              ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
-                              : ''
-                            : '';
-
-                          return (
-                            <div className="mt-2.5">
-                              <LucyResponseRecommendation
-                                userQuery={prevUserQuery}
-                                lucyAnswer={textContent}
-                                currentChannels={activeChannels}
-                                isCasual={msgModeInfo.isCasual}
-                                isGreeting={isGreeting}
-                                onSwitchChannel={(channels, isMaster, label) => handleActivateMessageMode(channels, isMaster, label)}
-                                onNavigate={(path) => navigate(path)}
-                              />
-                            </div>
-                          );
-                        })()}
-                      </>
-                    )}
-                  </div>
-
-                  {/* Action buttons: Copy & TTS */}
-                  <div className={`flex items-center gap-1.5 mt-1.5 flex-wrap ${isUser ? 'justify-end pr-1' : 'pl-1'}`}>
-                    <button
-                      onClick={() => handleCopy(msgId, textContent)}
-                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                        isLight
-                          ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                          : 'text-white/65 hover:text-white hover:bg-white/10'
-                      }`}
-                      title="복사"
-                    >
-                      {copiedId === msgId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                    </button>
-                    <button
-                      onClick={() => handleVoicePlay(msgId, textContent, 'Aoede')}
-                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                        playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
-                          ? 'text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60'
-                          : isLight
-                          ? 'text-slate-400 hover:text-amber-600 hover:bg-slate-100'
-                          : 'text-white/65 hover:text-amber-300 hover:bg-white/10'
-                      }`}
-                      title={
-                        playingMsgId === msgId && ttsInfo.isLoading
-                          ? "음성 준비 중..."
-                          : playingMsgId === msgId && ttsInfo.isSpeaking
-                          ? "음성 멈추기"
-                          : "음성으로 듣기"
+                      {/* User Action buttons: Copy & TTS */}
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap justify-end pr-1">
+                        <button
+                          onClick={() => handleCopy(msgId, textContent)}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                            isLight
+                              ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                              : 'text-white/65 hover:text-white hover:bg-white/10'
+                          }`}
+                          title="복사"
+                        >
+                          {copiedId === msgId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                        </button>
+                        <button
+                          onClick={() => handleVoicePlay(msgId, textContent, 'Aoede')}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                            playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
+                              ? 'text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60'
+                              : isLight
+                              ? 'text-slate-400 hover:text-amber-600 hover:bg-slate-100'
+                              : 'text-white/65 hover:text-amber-300 hover:bg-white/10'
+                          }`}
+                          title={
+                            playingMsgId === msgId && ttsInfo.isLoading
+                              ? '음성 준비 중...'
+                              : playingMsgId === msgId && ttsInfo.isSpeaking
+                              ? '음성 멈추기'
+                              : '음성으로 듣기'
+                          }
+                        >
+                          {playingMsgId === msgId && ttsInfo.isLoading ? (
+                            <Loader2 size={14} className="animate-spin text-amber-600" />
+                          ) : playingMsgId === msgId && ttsInfo.isSpeaking ? (
+                            <VolumeX size={14} className="animate-pulse" />
+                          ) : (
+                            <Volume2 size={14} />
+                          )}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <LucyKakaoBubbleGroup
+                      msgId={msgId}
+                      textContent={textContent}
+                      isLatest={index === filteredMessages.length - 1}
+                      isGenerating={isLucyGenerating && index === filteredMessages.length - 1}
+                      isHistorical={
+                        isGreeting ||
+                        index < filteredMessages.length - 1 ||
+                        Boolean(msg.timestamp && msg.timestamp < pageMountedAtRef.current - 2000)
                       }
-                    >
-                      {playingMsgId === msgId && ttsInfo.isLoading ? (
-                        <Loader2 size={14} className="animate-spin text-amber-600" />
-                      ) : playingMsgId === msgId && ttsInfo.isSpeaking ? (
-                        <VolumeX size={14} className="animate-pulse" />
-                      ) : (
-                        <Volume2 size={14} />
-                      )}
-                    </button>
-                  </div>
+                      isLight={isLight}
+                      variant="standalone"
+                      playingMsgId={playingMsgId}
+                      ttsInfo={ttsInfo}
+                      copiedId={copiedId}
+                      onCopy={handleCopy}
+                      onVoicePlay={handleVoicePlay}
+                      renderRecommendationFooter={() => {
+                        if (isLucyGenerating && index === filteredMessages.length - 1) return null;
+                        if (!textContent || textContent.trim().length <= 10) return null;
+                        if (msgModeInfo.isCasual) return null;
+                        if (isGreeting) return null;
+
+                        const prevUser = filteredMessages.slice(0, index).reverse().find((m: any) => m.role === 'user');
+                        const prevUserQuery = prevUser
+                          ? typeof prevUser.content === 'string'
+                            ? prevUser.content
+                            : Array.isArray(prevUser.content)
+                            ? prevUser.content.find((item: any) => item.type === 'text')?.text || ''
+                            : ''
+                          : '';
+
+                        return (
+                          <div className="mt-2.5">
+                            <LucyResponseRecommendation
+                              userQuery={prevUserQuery}
+                              lucyAnswer={textContent}
+                              currentChannels={activeChannels}
+                              isCasual={msgModeInfo.isCasual}
+                              isGreeting={isGreeting}
+                              onSwitchChannel={(channels, isMaster, label) => handleActivateMessageMode(channels, isMaster, label)}
+                              onNavigate={(path) => navigate(path)}
+                            />
+                          </div>
+                        );
+                      }}
+                    />
+                  )}
                 </div>
               </motion.div>
             );
@@ -2798,7 +2831,7 @@ export default function LucyStandalonePage() {
                 }}
                 placeholder={
                   isLucyGenerating
-                    ? '루시가 답변을 생성하는 중입니다...'
+                    ? '추가로 할 말을 입력하면 이어서 한 번에 답변해 드려요...'
                     : ''
                 }
                 rows={1}
@@ -2809,13 +2842,13 @@ export default function LucyStandalonePage() {
               />
             </div>
 
-            {/* Send or Stop Generation Button */}
-            {isLucyGenerating ? (
+            {/* Send or Stop Generation Button: 답변 준비 중이라도 입력창에 글자/이미지가 있으면 즉시 전송 버튼으로 자동 전환 */}
+            {isLucyGenerating && !input.trim() && !attachedImage ? (
               <button
                 type="button"
                 onClick={handleAbortGeneration}
                 className="w-6 h-6 sm:w-7 sm:h-7 p-0 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg sm:rounded-xl transition-all shadow-md cursor-pointer shrink-0 active:scale-95 flex items-center justify-center animate-pulse"
-                title="답변 생성 중단 (클릭 시 대기를 즉시 멈추고 입력창이 활성화됩니다)"
+                title="답변 생성 중단 (글자를 입력하면 추가 전송 버튼으로 자동 전환됩니다)"
                 aria-label="생성 중단"
               >
                 <Square size={10} className="sm:w-3 sm:h-3 fill-current text-white" />
@@ -2824,24 +2857,24 @@ export default function LucyStandalonePage() {
               <button
                 type="button"
                 onClick={() => handleSend()}
-                disabled={!input.trim() && !attachedImage && !activeGhostPrompt}
+                disabled={!input.trim() && !attachedImage && (!activeGhostPrompt || isLucyGenerating)}
                 className={`w-6 h-6 sm:w-7 sm:h-7 p-0 font-bold rounded-lg sm:rounded-xl transition-all shadow-xs cursor-pointer shrink-0 active:scale-95 flex items-center justify-center ${
                   input.trim() || attachedImage
                     ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-amber-500/20'
-                    : activeGhostPrompt
+                    : activeGhostPrompt && !isLucyGenerating
                     ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-amber-500/20 ring-1 ring-amber-400/40'
                     : 'bg-gradient-to-r from-amber-500 to-yellow-500 opacity-30 cursor-not-allowed text-slate-950'
                 }`}
                 title={
-                  input.trim()
-                    ? '메시지 전송'
+                  input.trim() || attachedImage
+                    ? (isLucyGenerating ? '추가 메시지 연속 전송 (진행 중인 답변을 멈추고 합쳐서 답변)' : '메시지 전송')
                     : activeGhostPrompt
                     ? `예시 질문 바로 전송: "${activeGhostPrompt}"`
                     : '메시지를 입력하거나 예시를 선택하세요'
                 }
                 aria-label={
-                  input.trim()
-                    ? '메시지 전송'
+                  input.trim() || attachedImage
+                    ? (isLucyGenerating ? '추가 메시지 연속 전송' : '메시지 전송')
                     : activeGhostPrompt
                     ? `예시 질문 바로 전송: ${activeGhostPrompt}`
                     : '메시지 전송'

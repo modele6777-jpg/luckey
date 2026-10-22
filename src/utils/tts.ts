@@ -50,6 +50,7 @@ export function playNativeBrowserSpeech(
   isSequenceChunk: boolean = false,
   voiceNameOrType: string = 'Aoede',
   speed?: number,
+  options?: TTSPlaybackOptions,
 ): Promise<void> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return Promise.resolve();
@@ -173,22 +174,16 @@ export function playNativeBrowserSpeech(
   });
   setTTSSessionActive(cleanText);
 
-  // Chrome/iOS keepalive timer
+  // Resume-only keepalive timer (never call pause() mid-utterance, which causes mobile TTS to restart from 0s)
   let keepAliveInterval: any = null;
   const startKeepAlive = () => {
-    let elapsed = 0;
     keepAliveInterval = setInterval(() => {
-      elapsed += 5000;
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         if (window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
-        } else if (elapsed >= 10000 && window.speechSynthesis.speaking) {
-          // Chrome 15s pause bug workaround: only cycle pause/resume after prolonged speaking
-          window.speechSynthesis.pause();
-          window.speechSynthesis.resume();
         }
       }
-    }, 5000);
+    }, 4000);
   };
   const clearKeepAlive = () => {
     if (keepAliveInterval) {
@@ -199,19 +194,24 @@ export function playNativeBrowserSpeech(
 
   return new Promise<void>((resolve) => {
     let isSettled = false;
-    const finish = () => {
+    const finish = (completedNaturally: boolean) => {
       if (isSettled) return;
       isSettled = true;
       activeUtterances.delete(utterance);
       clearKeepAlive();
       if (sessionToVerify && ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
         stopTTS();
+        if (completedNaturally && !options?.skipCompletionChime) {
+          try {
+            playAiResultNotification();
+          } catch (_) {}
+        }
       }
       resolve();
     };
 
-    utterance.onend = finish;
-    utterance.onerror = finish;
+    utterance.onend = () => finish(true);
+    utterance.onerror = () => finish(false);
 
     startKeepAlive();
     window.speechSynthesis.speak(utterance);
@@ -542,6 +542,7 @@ export const playTTS = async (
             1.0,
           );
         } catch (err) {
+          if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
           console.warn('[TTS] playTTSAudio failed, applying WebAudio direct buffer fallback:', err);
           if (encoding === 'pcm') {
             await playRawPCM(data!.audioContent, data!.sampleRate ?? 24000);
@@ -633,7 +634,7 @@ export const playTTS = async (
     }
 
     console.warn('[TTS] Single-play API generation failed, falling back to Native Browser Speech...', error);
-    return playNativeBrowserSpeech(cleanText, wait, sessionToVerify, isSequenceChunk, targetVoice, 1.0);
+    return playNativeBrowserSpeech(cleanText, wait, sessionToVerify, isSequenceChunk, targetVoice, 1.0, options);
   }
 };
 
@@ -897,6 +898,7 @@ export const playConversation = async (
   aiVoice: string = 'Aoede',
   userVoice: string = 'Aoede',
   onMessageStart?: (index: number, msg: { role: string; content: string; id?: string }) => void,
+  options?: TTSPlaybackOptions,
 ) => {
   // If we are already speaking or loading, click again to stop
   if (ttsState.isSpeaking || ttsState.isLoading) {
@@ -926,7 +928,7 @@ export const playConversation = async (
       }
 
       const isLastMsg = i === messages.length - 1;
-      await playTTS(m.content, voice, true, undefined, mySessionId, !isLastMsg);
+      await playTTS(m.content, voice, true, undefined, mySessionId, !isLastMsg, undefined, undefined, undefined, options);
       if (ttsState.activeSessionId !== mySessionId) break;
 
       // Natural pause between speaker turns
@@ -1052,7 +1054,7 @@ export const playQAndATTS = async (
 
         const isLastChunk = i === aChunks.length - 1;
         try {
-          await playTTS(aChunks[i], aiVoice, true, '다정', sequenceSessionId, !isLastChunk, cleanAnswer);
+          await playTTS(aChunks[i], aiVoice, true, '다정', sequenceSessionId, !isLastChunk, cleanAnswer, undefined, undefined, { skipCompletionChime: true });
         } catch (chunkErr) {
           console.warn(`[TTS] QA chunk ${i + 1}/${aChunks.length} error, maintaining voice consistency:`, chunkErr);
         }

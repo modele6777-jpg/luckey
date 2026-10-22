@@ -13,6 +13,7 @@ interface LucyProTypewriterProps {
   isLatest?: boolean;
   isGenerating?: boolean;
   typewriterSpeed?: number;
+  instantReveal?: boolean;
 }
 
 function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
@@ -163,13 +164,13 @@ export function LucyProTypewriter({
   isLatest = false,
   isGenerating = false,
   typewriterSpeed = 32,
+  instantReveal = false,
 }: LucyProTypewriterProps) {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
   const isMobile = typeof window !== 'undefined' && (isMobileDevice() || isPerfReduced());
-  // On mobile, render streamed content directly to prevent 80-markdown-parses-per-second CPU lag.
-  // The LLM stream already provides natural live chunking!
-  const shouldAnimate = !isMobile && (isLatest || isGenerating);
+  // On mobile or in KakaoTalk bubble pop-in mode, render bubble content directly while keeping TTS sentence highlighting
+  const shouldAnimate = !instantReveal && !isMobile && (isLatest || isGenerating);
   const [displayedLength, setDisplayedLength] = useState<number>(() => {
     return shouldAnimate ? 0 : content.length;
   });

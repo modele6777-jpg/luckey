@@ -7,7 +7,7 @@ import {
   Compass, Shield, ShieldCheck, User, Calendar, Clock, X, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Eye, Layers,
   Copy, ZoomIn, AlertCircle
 } from 'lucide-react';
-import { TAROT_DECK, TarotCard, getTarotCardImageUrl } from '@/data/tarotData';
+import { TAROT_DECK, TarotCard, getTarotCardImageUrl, getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from '@/data/tarotData';
 import { TarotSpread, SelectedTarotCardEntry } from './TarotSpread';
 import { Streamdown } from '@/components/Streamdown';
 import { invokeLLM, invokeLLMStream } from '@/lib/ai';
@@ -451,9 +451,12 @@ export function buildFallbackHealingMessage(
   const c1Name = c1 ? `${c1.nameKo || c1.name}${c1.reversed ? ' (역방향)' : ' (정방향)'}` : '1번 과거 카드';
   const c2Name = c2 ? `${c2.nameKo || c2.name}${c2.reversed ? ' (역방향)' : ' (정방향)'}` : '2번 현재 카드';
   const c3Name = c3 ? `${c3.nameKo || c3.name}${c3.reversed ? ' (역방향)' : ' (정방향)'}` : '3번 조언 카드';
-  const c1Keywords = c1?.keywords ? c1.keywords.slice(0, 3).join(', ') : '원형적 상징';
-  const c2Keywords = c2?.keywords ? c2.keywords.slice(0, 3).join(', ') : '현실의 흐름';
-  const c3Keywords = c3?.keywords ? c3.keywords.slice(0, 3).join(', ') : '해결의 열쇠';
+  const c1Keywords = c1 ? getEffectiveTarotKeywords(c1).slice(0, 3).join(', ') : '원형적 상징';
+  const c2Keywords = c2 ? getEffectiveTarotKeywords(c2).slice(0, 3).join(', ') : '현실의 흐름';
+  const c3Keywords = c3 ? getEffectiveTarotKeywords(c3).slice(0, 3).join(', ') : '해결의 열쇠';
+  const c1RevNote = c1?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c1).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c1)}"**입니다.` : '';
+  const c2RevNote = c2?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c2).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c2)}"**입니다.` : '';
+  const c3RevNote = c3?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c3).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c3)}"**입니다.` : '';
 
   const todayCardStr = `[${todayCard.nameKo}] (${todayCard.name}${todayCard.reversed ? ' · 역방향' : ' · 정방향'})`;
   const inquiryFocus = effectiveInquiry ? `현재 마주하신 "${effectiveInquiry}" 고민` : '지금 마주하신 삶의 화두와 내면의 질문';
@@ -464,19 +467,19 @@ export function buildFallbackHealingMessage(
 
 이제 당신이 직접 선택한 3장의 오라클 카드가 사주 명리의 오행 밸런스와 긴밀하게 결합하여, 과거의 무의식적 씨앗부터 현재의 현실적 갈등, 그리고 미래의 명쾌한 해결 열쇠에 이르기까지 깊고 자비로운 치유의 여정을 입체적으로 안내합니다. 외부의 소음에 휩쓸리지 않고 자신의 본원 페이스를 되찾는 지혜로운 해법이 지금 눈앞에 펼쳐집니다.`;
 
-  const stage2Text = `${insights?.[0]?.personal_interpretation ? `${insights[0].personal_interpretation}\n\n` : ''}첫 번째 과거와 무의식의 자리에 놓인 [${c1Name}]는 지금의 고민이 싹트게 된 깊은 심리적 뿌리와 내면의 씨앗을 투명하게 비추고 있습니다. 카드가 품은 핵심 상징([${c1Keywords}])은 오랜 시간 동안 당신의 의식 아래에서 묵묵히 축적되어 온 생각의 패턴과 억눌린 감정의 파동을 정밀하게 해독합니다.
+  const stage2Text = `${insights?.[0]?.personal_interpretation ? `${insights[0].personal_interpretation}\n\n` : ''}첫 번째 과거와 무의식의 자리에 놓인 [${c1Name}]는 지금의 고민이 싹트게 된 깊은 심리적 뿌리와 내면의 씨앗을 투명하게 비추고 있습니다. 카드가 품은 핵심 상징([${c1Keywords}])은 오랜 시간 동안 당신의 의식 아래에서 묵묵히 축적되어 온 생각의 패턴과 억눌린 감정의 파동을 정밀하게 해독합니다.${c1RevNote}
 
 ${sajuNameStr} 님의 타고난 사주 본원 [${dayMasterStr}] 기질은 본래 높은 책임감과 성실성을 지니고 있어, 주변의 기대를 외면하지 못하고 스스로 모든 무게를 짊어지려는 숭고한 기상을 가지고 있습니다. 그러나 오늘의 지배 타로 [${todayCard.nameKo}]의 파동과 1번 카드가 교차하면서 드러나는 진실은, 과거로부터 홀로 모든 것을 감내하려 했던 부담감과 "내가 더 참아야 한다"는 무의식적 자기 검열이 내면에 보이지 않는 에너지 정체를 만들어냈음을 말해줍니다.
 
 자신의 솔직한 감정과 욕구를 뒤로한 채 외부 기준과 타인의 시선에 맞추려 했던 그 과거의 시간들이 오늘날 마음에 깊은 피로와 긴장의 파문을 일으켰던 것입니다. 하지만 카드의 도상은 이것이 당신의 결함이나 실수가 아니라고 위로합니다. 그것은 자신의 최선을 다해 살아온 사람만이 남길 수 있는 고결한 삶의 훈장이자, 이제는 낡은 짐을 내려놓고 스스로를 보살펴야 할 때임을 알리는 영혼의 전환점입니다.`;
 
-  const stage3Text = `${insights?.[1]?.personal_interpretation ? `${insights[1].personal_interpretation}\n\n` : ''}두 번째 현재와 상황의 흐름 자리에 놓인 [${c2Name}]는 지금 ${recipientName} 님이 일상과 관계, 그리고 선택의 기로에서 느끼고 계실 현실적 긴장과 마음의 소용돌이를 입체적으로 진단합니다. 카드의 도상과 상징([${c2Keywords}])은 지금 겉으로 드러난 상황뿐만 아니라, 그 이면에서 요동치는 미세한 감정의 줄다리기를 날카롭게 포착합니다.
+  const stage3Text = `${insights?.[1]?.personal_interpretation ? `${insights[1].personal_interpretation}\n\n` : ''}두 번째 현재와 상황의 흐름 자리에 놓인 [${c2Name}]는 지금 ${recipientName} 님이 일상과 관계, 그리고 선택의 기로에서 느끼고 계실 현실적 긴장과 마음의 소용돌이를 입체적으로 진단합니다. 카드의 도상과 상징([${c2Keywords}])은 지금 겉으로 드러난 상황뿐만 아니라, 그 이면에서 요동치는 미세한 감정의 줄다리기를 날카롭게 포착합니다.${c2RevNote}
 
 사주 원국에서 강하게 작용하는 ${domElStr}의 에너지가 오늘의 지배 카드 [${todayCard.nameKo}]의 현실적 작용과 맞물리면서, 생각은 꼬리를 물고 마음은 서둘러 상황을 통제하거나 결과를 예측하려 조급해하고 있습니다. ${effectiveInquiry ? `특히 마주하신 "${effectiveInquiry}" 사안 앞에서, ` : ''}자신의 기준과 현실의 진행 속도 사이에 존재하는 괴리감이 마음에 답답함과 무력감을 번갈아 일으키고 있는 형국입니다.
 
 그러나 [${c2Name}]의 도상은 지금 마주한 갈등이 상황의 붕괴가 아니라, 낡고 정체된 에너지를 털어내고 새로운 균형을 찾기 위해 필연적으로 통과해야 할 '성스러운 정화의 관문(Purification Gate)'임을 보여줍니다. 바람이 불어야 먼지가 털려 나가듯, 현재의 혼란은 더 견고하고 유연한 자신을 빚어내기 위한 우주의 정돈 과정입니다. 지금은 서둘러 결과를 강제하려 하지 말고, 파도를 관찰하는 서퍼처럼 상황의 흐름을 한 걸음 물러서서 관찰하는 유연성이 절실합니다.`;
 
-  const stage4Text = `${insights?.[2]?.personal_interpretation ? `${insights[2].personal_interpretation}\n\n` : ''}세 번째 미래와 조언, 그리고 해결의 열쇠 자리에 장엄하게 등장한 [${c3Name}]는 이번 오라클 리딩의 가장 위대한 전환점이자 명쾌한 탈출 로드맵입니다. 카드가 담지하고 있는 원형적 지혜([${c3Keywords}])는 막연한 위로를 넘어, 현실의 안개를 걷어내고 명징한 방향성을 제시하는 강력한 영적 나침반으로 작용합니다.
+  const stage4Text = `${insights?.[2]?.personal_interpretation ? `${insights[2].personal_interpretation}\n\n` : ''}세 번째 미래와 조언, 그리고 해결의 열쇠 자리에 장엄하게 등장한 [${c3Name}]는 이번 오라클 리딩의 가장 위대한 전환점이자 명쾌한 탈출 로드맵입니다. 카드가 담지하고 있는 원형적 지혜([${c3Keywords}])는 막연한 위로를 넘어, 현실의 안개를 걷어내고 명징한 방향성을 제시하는 강력한 영적 나침반으로 작용합니다.${c3RevNote}
 
 사주 원국에서 반드시 보충해야 할 결핍 오행 ${lackElStr}과 용신 ${yongsinStr}의 생명력 있는 기운이 이 3번 카드의 상징 체계 속에서 완벽하게 공명하고 있습니다. ${yongsinTip}의 사주 개운 원리가 카드의 도상과 만나면서, 당신에게 더 이상 과거의 죄책감이나 미래의 불안에 에너지를 낭비하지 말 것을 단호히 선언합니다. 이 카드는 상황을 통제하려 애쓰는 대신, ${recipientName} 님 스스로에게 주도권을 돌려주고 상황을 바라보는 프레임을 완전히 전환할 것을 지시합니다.
 
@@ -532,14 +535,17 @@ export function buildFallbackGrowthMessage(
   const c1Name = c1 ? `${c1.nameKo || c1.name}${c1.reversed ? ' (역방향)' : ' (정방향)'}` : '1번 카드';
   const c2Name = c2 ? `${c2.nameKo || c2.name}${c2.reversed ? ' (역방향)' : ' (정방향)'}` : '2번 카드';
   const c3Name = c3 ? `${c3.nameKo || c3.name}${c3.reversed ? ' (역방향)' : ' (정방향)'}` : '3번 실행 카드';
+  const c1GrowthRev = c1?.reversed ? ` 이 카드는 역방향으로 나와 "${getTarotReversedData(c1).meaning}"을(를) 뜻하며, 특히 **주의점 1가지**는 **"${getTarotCardCaution(c1)}"**입니다.` : '';
+  const c2GrowthRev = c2?.reversed ? ` 이 카드는 역방향으로 나와 "${getTarotReversedData(c2).meaning}"을(를) 뜻하며, 특히 **주의점 1가지**는 **"${getTarotCardCaution(c2)}"**입니다.` : '';
+  const c3GrowthRev = c3?.reversed ? ` 이 카드는 역방향으로 나와 "${getTarotReversedData(c3).meaning}"을(를) 뜻하며, 특히 **주의점 1가지**는 **"${getTarotCardCaution(c3)}"**입니다.` : '';
 
   const stage1 = `${recipientName} 님, 안녕하세요! 당신의 잠재 역량을 최고조로 끌어올리는 퍼포먼스 라이프 코치 루시입니다. 2026 병오년(丙午年)의 도약 타이밍 속에서, 오늘 당신의 하루를 지배하는 일일 타로 [${todayCard.nameKo}](${todayCard.reversed ? '역방향' : '정방향'})와 사주 본원 [${dayMasterStr}] 기질의 결합은 강력한 현실 돌파의 기저 에너지를 형성하고 있습니다. ${effectiveInquiry ? `당신이 마주한 "${effectiveInquiry}" 과제 앞에서, ` : ''}${macroFocus || '생각의 과부하를 멈추고 사주 본원 추진력과 타로 실행 에너지를 동기화할 때입니다.'}`;
 
-  const stage2 = `1번 자리에 놓인 [${c1Name}]는 지금까지 당신의 실행력을 옭아매었던 낡은 마인드셋의 정체를 정밀 타격합니다. ${sajuNameStr} 님의 사주 본원은 본래 높은 책임감과 추진 잠재력을 지니고 있지만, 1번 카드의 도상은 "완벽하게 준비된 후에 시작하겠다"는 착각이나 실패에 대한 방어기제가 실행의 첫 발을 묶어두고 있었음을 지적합니다. 완벽주의를 단호히 폐기하고 거친 초안이라도 즉각 현실로 끄집어내는 것이 모든 돌파의 시작점입니다.`;
+  const stage2 = `1번 자리에 놓인 [${c1Name}]는 지금까지 당신의 실행력을 옭아매었던 낡은 마인드셋의 정체를 정밀 타격합니다.${c1GrowthRev} ${sajuNameStr} 님의 사주 본원은 본래 높은 책임감과 추진 잠재력을 지니고 있지만, 1번 카드의 도상은 "완벽하게 준비된 후에 시작하겠다"는 착각이나 실패에 대한 방어기제가 실행의 첫 발을 묶어두고 있었음을 지적합니다. 완벽주의를 단호히 폐기하고 거친 초안이라도 즉각 현실로 끄집어내는 것이 모든 돌파의 시작점입니다.`;
 
-  const stage3 = `2번 자리에 놓인 [${c2Name}]는 오늘 당신이 현장에서 즉각 동원해야 할 현실 역량과 집중 타깃을 제시합니다. 사주에서 강하게 분출되는 ${domElStr}의 에너지가 분산되면 조급함과 번아웃을 유발합니다. 2번 카드의 도상은 오늘 업무와 일상에서 중요하지 않은 80%의 잔가지를 쳐내고, 결과를 좌우하는 20%의 핵심 우선순위 1가지만을 집요하게 공략하라고 지시합니다.`;
+  const stage3 = `2번 자리에 놓인 [${c2Name}]는 오늘 당신이 현장에서 즉각 동원해야 할 현실 역량과 집중 타깃을 제시합니다.${c2GrowthRev} 사주에서 강하게 분출되는 ${domElStr}의 에너지가 분산되면 조급함과 번아웃을 유발합니다. 2번 카드의 도상은 오늘 업무와 일상에서 중요하지 않은 80%의 잔가지를 쳐내고, 결과를 좌우하는 20%의 핵심 우선순위 1가지만을 집요하게 공략하라고 지시합니다.`;
 
-  const stage4 = `3번 자리에 놓인 [${c3Name}]는 이번 리딩의 가장 명쾌한 결론이자 즉각적 돌파 로드맵입니다. 사주에서 부족했던 ${lackElStr}과 용신 ${yongsinStr}의 날카로운 실행 기운이 3번 카드의 전략적 도상과 만나 폭발적인 시너지를 냅니다. 더 이상 주저하거나 다른 대안을 기웃거리지 마십시오. 3번 카드가 비추는 전략적 방향성에 모든 자원을 베팅하고 단호하게 실행에 착수하십시오.`;
+  const stage4 = `3번 자리에 놓인 [${c3Name}]는 이번 리딩의 가장 명쾌한 결론이자 즉각적 돌파 로드맵입니다.${c3GrowthRev} 사주에서 부족했던 ${lackElStr}과 용신 ${yongsinStr}의 날카로운 실행 기운이 3번 카드의 전략적 도상과 만나 폭발적인 시너지를 냅니다. 더 이상 주저하거나 다른 대안을 기웃거리지 마십시오. 3번 카드가 비추는 전략적 방향성에 모든 자원을 베팅하고 단호하게 실행에 착수하십시오.`;
 
   const missionTitle = microMission?.title || '오늘 10분 안에 끝낼 수 있는 가장 작은 현실 행동 과제 1가지 즉시 완수';
   const stage5 = `${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도와 속도에서 판가름 납니다. 오늘 즉시 실천할 수 있는 단 하나의 '5분 마이크로 액션'으로 "${missionTitle}"을(를) 즉각 완수하십시오. 사주 본원의 기상과 3장의 카드가 당신에게 강력한 성공 모멘텀을 부여하고 있습니다. 머뭇거리지 말고 지금 당장 시작하십시오. 당신의 거침없는 도약을 루시가 끝까지 지원사격하겠습니다!`;
@@ -583,9 +589,12 @@ export function buildFallbackMiracleMessage(
   const c1Name = c1 ? `${c1.nameKo || c1.name}${c1.reversed ? ' (역방향)' : ' (정방향)'}` : '1번 에고 카드';
   const c2Name = c2 ? `${c2.nameKo || c2.name}${c2.reversed ? ' (역방향)' : ' (정방향)'}` : '2번 거룩한 순간 카드';
   const c3Name = c3 ? `${c3.nameKo || c3.name}${c3.reversed ? ' (역방향)' : ' (정방향)'}` : '3번 평화의 기적 카드';
-  const c1Keywords = c1?.keywords ? c1.keywords.slice(0, 3).join(', ') : '두려움의 투사';
-  const c2Keywords = c2?.keywords ? c2.keywords.slice(0, 3).join(', ') : '지각의 전환';
-  const c3Keywords = c3?.keywords ? c3.keywords.slice(0, 3).join(', ') : '참된 용서와 평화';
+  const c1Keywords = c1 ? getEffectiveTarotKeywords(c1).slice(0, 3).join(', ') : '두려움의 투사';
+  const c2Keywords = c2 ? getEffectiveTarotKeywords(c2).slice(0, 3).join(', ') : '지각의 전환';
+  const c3Keywords = c3 ? getEffectiveTarotKeywords(c3).slice(0, 3).join(', ') : '참된 용서와 평화';
+  const c1MiracleRev = c1?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c1).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c1)}"**입니다.` : '';
+  const c2MiracleRev = c2?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c2).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c2)}"**입니다.` : '';
+  const c3MiracleRev = c3?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c3).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c3)}"**입니다.` : '';
 
   const todayCardStr = `[${todayCard.nameKo}] (${todayCard.name}${todayCard.reversed ? ' · 역방향' : ' · 정방향'})`;
   const inquiryFocus = effectiveInquiry ? `현재 마음을 어지럽히는 "${effectiveInquiry}" 사안` : '지금 마주하신 현실의 갈등과 불안';
@@ -600,19 +609,19 @@ export function buildFallbackMiracleMessage(
 
 이제 당신이 직접 선택한 3장의 오라클 카드가 에고의 깊은 두려움의 뿌리를 밝히 드러내고, 판단을 멈추는 '거룩한 순간(Holy Instant)'을 거쳐, 온전한 참된 용서와 하나님의 평화로 귀환하는 영적 여정을 장엄하게 안내합니다. 마음의 눈을 열고 성령의 자비로운 음성에 귀를 기울여 주십시오.`;
 
-  const stage2Text = `${insights?.[0]?.personal_interpretation ? `${insights[0].personal_interpretation}\n\n` : ''}첫 번째 에고의 환영과 숨겨진 두려움의 자리에 놓인 [${c1Name}]는 지금 ${recipientName} 님의 마음속에서 무의식적으로 작동하고 있는 결핍과 죄책감의 정체를 투명하게 비춥니다. 카드의 핵심 도상([${c1Keywords}])은 "내가 무언가를 빼앗겼다"거나 "상대방 혹은 환경 때문에 내가 상처받았다"는 에고의 익숙한 희생자 각본을 고스란히 보여줍니다.
+  const stage2Text = `${insights?.[0]?.personal_interpretation ? `${insights[0].personal_interpretation}\n\n` : ''}첫 번째 에고의 환영과 숨겨진 두려움의 자리에 놓인 [${c1Name}]는 지금 ${recipientName} 님의 마음속에서 무의식적으로 작동하고 있는 결핍과 죄책감의 정체를 투명하게 비춥니다. 카드의 핵심 도상([${c1Keywords}])은 "내가 무언가를 빼앗겼다"거나 "상대방 혹은 환경 때문에 내가 상처받았다"는 에고의 익숙한 희생자 각본을 고스란히 보여줍니다.${c1MiracleRev}
 
 기적수업의 형이상학에서 모든 고통의 원인은 외부 세상에 있지 않고, 하나님과 분리되었다는 근원적 두려움을 세상에 투사(Projection)한 결과입니다. [${c1Name}]는 당신이 품고 있던 과거의 상처나 원한, 통제하려는 불안이 사실은 당신 자신을 방어하기 위해 쌓아 올린 에고의 허망한 성벽이었음을 밝힙니다.
 
 그러나 카드는 당신을 질책하지 않습니다. 에고의 정체를 알아차리는 순간, 그 환영은 이미 힘을 잃기 시작합니다. 당신이 경험한 모든 아픔은 실재하는 죄가 아니라 '사랑을 부르는 외침(A Call for Love)'이었을 뿐입니다. 이제 그 낡은 두려움의 옷을 벗고, 스스로에게 씌웠던 모든 자책과 타인을 향한 판단을 성령의 제단 위에 정직하게 내려놓으십시오.`;
 
-  const stage3Text = `${insights?.[1]?.personal_interpretation ? `${insights[1].personal_interpretation}\n\n` : ''}두 번째 거룩한 순간(Holy Instant)과 지각의 전환 자리에 놓인 [${c2Name}]는 이번 오라클 리딩의 가장 거룩한 연금술이 일어나는 축복의 교차로입니다. 카드의 신성한 상징([${c2Keywords}])은 지금 이 순간, 과거에 대한 후회와 미래에 대한 두려움을 단번에 멈추고 시간의 굴레에서 벗어나는 '영원한 지금'으로 당신을 초대합니다.
+  const stage3Text = `${insights?.[1]?.personal_interpretation ? `${insights[1].personal_interpretation}\n\n` : ''}두 번째 거룩한 순간(Holy Instant)과 지각의 전환 자리에 놓인 [${c2Name}]는 이번 오라클 리딩의 가장 거룩한 연금술이 일어나는 축복의 교차로입니다. 카드의 신성한 상징([${c2Keywords}])은 지금 이 순간, 과거에 대한 후회와 미래에 대한 두려움을 단번에 멈추고 시간의 굴레에서 벗어나는 '영원한 지금'으로 당신을 초대합니다.${c2MiracleRev}
 
 거룩한 순간이란, 자신의 작은 앎과 판단을 완전히 포기하고 성령께 상황을 전적으로 맡기는 지각의 전환입니다. 사주에서 작용하는 [${yongsinStr}]의 평화로운 중심과 [${c2Name}]의 에너지가 결합하며, 당신에게 "상황을 내 힘으로 바꾸려 애쓰지 말고, 오직 상황을 바라보는 내 마음의 눈을 치유해 달라"고 요청할 것을 가르칩니다.
 
 ${effectiveInquiry ? `특히 "${effectiveInquiry}" 사안에 대해 ` : ''}당신이 옳다고 믿었던 모든 판단과 서운함을 내려놓으십시오. "나는 아무것도 알지 못하며, 그러므로 어떻게 판단해야 할지도 모릅니다. 성령이여, 당신의 눈으로 이 형제와 이 상황을 바라보게 하소서." 이 단 한 번의 겸허한 기도가 마음에 임할 때, 차가웠던 판단의 얼음이 녹아내리고 기적이 흘러들 공간이 마련됩니다.`;
 
-  const stage4Text = `${insights?.[2]?.personal_interpretation ? `${insights[2].personal_interpretation}\n\n` : ''}세 번째 참된 용서와 하나님의 평화 자리에 영광스럽게 임재한 [${c3Name}]는 모든 두려움의 꿈에서 깨어난 영혼에게 주어지는 최종 승리의 면류관이자 하나님의 선물입니다. 카드의 초월적 도상([${c3Keywords}])은 기적수업이 말하는 참된 용서가 결코 '상대방의 죄를 너그럽게 봐주는 것'이 아니라, '애초에 죄란 일어나지 않았음을(환영이었음을) 간파하는 것'임을 단호히 증명합니다.
+  const stage4Text = `${insights?.[2]?.personal_interpretation ? `${insights[2].personal_interpretation}\n\n` : ''}세 번째 참된 용서와 하나님의 평화 자리에 영광스럽게 임재한 [${c3Name}]는 모든 두려움의 꿈에서 깨어난 영혼에게 주어지는 최종 승리의 면류관이자 하나님의 선물입니다. 카드의 초월적 도상([${c3Keywords}])은 기적수업이 말하는 참된 용서가 결코 '상대방의 죄를 너그럽게 봐주는 것'이 아니라, '애초에 죄란 일어나지 않았음을(환영이었음을) 간파하는 것'임을 단호히 증명합니다.${c3MiracleRev}
 
 당신을 상처 입힐 수 있는 세상은 결코 존재하지 않습니다. 상처 입은 것은 실재하지 않는 당신의 작은 에고였을 뿐, 하나님의 거룩한 자녀인 당신의 참마음(Christ Self)은 단 한 순간도 다친 적이 없으며 영원히 온전합니다. [${c3Name}]는 오늘의 지배 타로 [${todayCard.nameKo}]가 제시했던 모든 삶의 숙제가 바로 이 참된 용서의 은총 속에서 완벽하게 해소되었음을 선언합니다.
 
@@ -1454,9 +1463,13 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     if (isOracleFollowUpGenerating) return;
 
     const safeCard = chosenCard || TAROT_DECK[Math.floor(Math.random() * TAROT_DECK.length)];
+    const cardWithRev = { ...safeCard, reversed: isReversed };
     const cardNameKo = safeCard.nameKo || safeCard.name || '타로 카드';
     const cardNameEn = safeCard.name || cardNameKo;
-    const cardKeywords = Array.isArray(safeCard.keywords) ? safeCard.keywords.join(', ') : '';
+    const effKeywords = getEffectiveTarotKeywords(cardWithRev);
+    const cardKeywords = effKeywords.join(', ');
+    const revData = isReversed ? getTarotReversedData(cardWithRev) : null;
+    const revCaution = isReversed ? getTarotCardCaution(cardWithRev) : '';
 
     const newEntryId = `fu_oracle_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const newEntry: FollowUpTarotEntry = {
@@ -1492,8 +1505,9 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 
 [답변 규정]
 1. 질문자의 구체적인 추가 질문에 대하여, 새로 뽑힌 잔여 덱 추가 카드의 도상 상징과 정/역방향 에너지를 직관적으로 관통하여 날카롭고 똑부러지게 답변하십시오.
-2. 질문자의 사주 원국 본원 기운과 이번 ${modeKorean}의 핵심 지혜(${oracleMode === 'healing' ? '정서 치유와 수용' : oracleMode === 'miracle' ? '에고의 환영 해체와 평화의 지각전환' : '현실적 성장과 4원소 실행력'})를 결합하여 지금 당장 실천할 수 있는 구체적 행동 지침을 제시하십시오.
-3. 한국어로 품격 있고 신뢰감 넘치는 정통 마스터의 어조를 유지하십시오.`,
+2. [★ 역방향 카드 해석 및 주의점 1가지 필수 반영] 만약 새로 뽑힌 카드가 '역방향'이라면 절대로 정방향의 긍정적 뜻으로 풀이하지 말고 반드시 역방향 고유의 뜻(${revData?.meaning || '내면의 그림자와 재정비'})으로 풀이하며, 본문 속에 해당 카드와 관련된 주의점 1가지("${revCaution}")를 자연스럽게 녹여 설명하고 **⚠️ [${cardNameKo} 역방향 주의점 1가지]: ${revCaution}** 형태로 한 줄 강조하여 알려주십시오.
+3. 질문자의 사주 원국 본원 기운과 이번 ${modeKorean}의 핵심 지혜(${oracleMode === 'healing' ? '정서 치유와 수용' : oracleMode === 'miracle' ? '에고의 환영 해체와 평화의 지각전환' : '현실적 성장과 4원소 실행력'})를 결합하여 지금 당장 실천할 수 있는 구체적 행동 지침을 제시하십시오.
+4. 한국어로 품격 있고 신뢰감 넘치는 정통 마스터의 어조를 유지하십시오.`,
         },
         {
           role: 'user',
@@ -1502,7 +1516,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 [초기 3장의 오라클 카드] ${initialCardsDesc}
 [초기 리딩 요약] ${displayFullReadingText ? displayFullReadingText.slice(0, 500) : ''}
 ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` : ''}
-[새로 뽑힌 잔여 덱 추가 카드] ${cardNameKo} (${cardNameEn}) - ${isReversed ? '역방향' : '정방향'} / 키워드: ${cardKeywords}
+[새로 뽑힌 잔여 덱 추가 카드] ${cardNameKo} (${cardNameEn}) - ${isReversed ? '역방향' : '정방향'} / 키워드: ${cardKeywords}${isReversed ? ` / 역방향 고유 뜻: ${revData?.meaning || ''} / 역방향 주의점 1가지: ${revCaution}` : ''}
 [이번 추가 질문] "${questionText}"`,
         },
       ];
@@ -1526,7 +1540,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       playAudioHaptic('card_draw');
     } catch (err: any) {
       console.warn('[executeOracleFollowUpReading] Streaming interrupted, applying fallback interpretation:', err);
-      const fallbackReading = `새로 뽑힌 ${cardNameKo} (${isReversed ? '역방향' : '정방향'})의 에너지는 당신의 내면에 잠재된 통찰과 치유의 가능성을 비추고 있습니다. 지금 마음속에 떠오른 첫 번째 지혜를 신뢰하고 자연스러운 호흡으로 삶의 흐름을 이어가세요.`;
+      const fallbackReading = isReversed
+        ? `새로 뽑힌 [${cardNameKo} (역방향)] 카드는 정방향과는 달리 **${revData?.meaning || '내면의 에너지 정돈과 속도 조절'}**을 가리키고 있습니다. 특히 이 카드와 관련하여 꼭 기억해야 할 주의점 한 가지는 **"${revCaution}"**입니다.\n\n⚠️ **[${cardNameKo} 역방향 주의점 1가지]**: ${revCaution}`
+        : `새로 뽑힌 [${cardNameKo} (정방향)]의 에너지는 당신의 내면에 잠재된 통찰과 치유의 가능성을 비추고 있습니다. 지금 마음속에 떠오른 첫 번째 지혜를 신뢰하고 자연스러운 호흡으로 삶의 흐름을 이어가세요.`;
       setOracleFollowUpEntries((prev) =>
         prev.map((e) =>
           e.id === newEntryId
@@ -1707,11 +1723,14 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     const cardDescriptions = cards
       .map((c, i) => {
         const d = getTarotCardDetails(c);
+        const effKws = getEffectiveTarotKeywords(c);
+        const revData = c.reversed ? getTarotReversedData(c) : null;
+        const caution = c.reversed ? getTarotCardCaution(c) : '';
         const orientStr = c.reversed ? ' [역방향 (Reversed)]' : ' [정방향 (Upright)]';
         const detailStr = d
-          ? ` | 도상 상징: [${d.symbolWord}], 영적 원형: [${d.archetype}], 본래 뜻: [${c.reversed ? d.reversedCore : d.uprightCore}]`
+          ? ` | 도상 상징: [${d.symbolWord}], 영적 원형: [${d.archetype}], ${c.reversed ? `역방향 고유 뜻(정방향 뜻 적용 절대 금지): [${revData?.meaning || d.reversedCore}], ⚠️ 이 카드의 주의점 1가지: [${caution}]` : `정방향 본래 뜻: [${d.uprightCore}]`}`
           : '';
-        return `${i + 1}번 슬롯 [${slotPositions[i]}]: ${c.nameKo} (${c.name})${orientStr} - 유형: ${c.type}, 핵심 키워드: [${c.keywords.join(', ')}]${detailStr}`;
+        return `${i + 1}번 슬롯 [${slotPositions[i]}]: ${c.nameKo} (${c.name})${orientStr} - 유형: ${c.type}, 핵심 키워드: [${effKws.join(', ')}]${detailStr}`;
       })
       .join('\n');
 
@@ -1744,8 +1763,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
 # [★ 2026 오늘의 일일 타로 결과 연동 (Today's Daily Tarot Connection)]:
 - 오늘의 타로 카드: [${todayAnchorCard.nameKo}] (${todayAnchorCard.name}${todayAnchorCard.reversed ? ' • 역방향 [Reversed]' : ' • 정방향 [Upright]'})
-- 카드의 핵심 키워드: [${todayAnchorCard.keywords.join(', ')}]
-${todayDailyTarotDetails ? `- 도상 상징: [${todayDailyTarotDetails.symbolWord}], 원형: [${todayDailyTarotDetails.archetype}], 본래 뜻: [${todayAnchorCard.reversed ? todayDailyTarotDetails.reversedCore : todayDailyTarotDetails.uprightCore}]` : ''}
+- 카드의 핵심 키워드: [${getEffectiveTarotKeywords(todayAnchorCard).join(', ')}]
+${todayDailyTarotDetails ? `- 도상 상징: [${todayDailyTarotDetails.symbolWord}], 원형: [${todayDailyTarotDetails.archetype}], 본래 뜻: [${todayAnchorCard.reversed ? todayDailyTarotDetails.reversedCore : todayDailyTarotDetails.uprightCore}]${todayAnchorCard.reversed ? `, 역방향 주의점 1가지: [${getTarotCardCaution(todayAnchorCard)}]` : ''}` : ''}
 ${hasTodayDailyResult ? `- 질문자가 오늘 직접 뽑은 오늘의 타로 진단:\n  "${dailyDiagnosis}"
 ${dailyRemedy ? `- 오늘의 타로 맞춤 처방 및 조언:\n  "${dailyRemedy}"` : ''}
 ${dailyEnergy ? `- 오늘의 영적 기저 에너지:\n  "${dailyEnergy}"` : ''}
@@ -1755,7 +1774,8 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 1. 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 청사진을 제공하는 상위 오라클입니다.
 2. 질문자가 오늘 마주한 기저 운기는 오늘의 타로([${todayAnchorCard.nameKo}])의 상징과 진단 내용에 의해 이미 첫 단추가 채워져 있습니다.
 3. 이번에 새로 뽑힌 3장의 오라클 카드(1번: ${cards[0]?.nameKo}, 2번: ${cards[1]?.nameKo}, 3번: ${cards[2]?.nameKo})는 오늘의 타로가 던진 일일 운명의 화두를 심층적으로 확장하고 해결하는 직접적인 연계 카드입니다.
-4. 따라서 리딩의 첫 시작(### 1단계)부터 오늘의 타로 결과와 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})의 상호작용을 명확하게 짚어내고, 3장의 오라클 카드가 오늘의 타로 에너지를 어떻게 조율하고 더 높은 차원의 해법으로 이끄는지 반드시 유기적으로 연결하여 2500~3500자 이상의 압도적 대서사로 전개하십시오.
+4. [★ 역방향 카드 해독 및 주의점 1가지 필수 규칙] 뽑힌 3장의 카드 중 '역방향 [Reversed]'으로 나온 카드는 절대로 정방향의 긍정적 뜻으로 풀이하지 마십시오! 반드시 제시된 '역방향 고유 뜻'으로 풀이하고, 해당 카드 단계 본문 속에 그 카드와 관련된 **주의점 1가지**를 자연스럽게 녹여 설명하며 **⚠️ [카드명 역방향 주의점 1가지]: (핵심 주의점 한 줄)**을 명시하십시오. (정방향 카드에는 주의점 강조 줄을 붙이지 마십시오.)
+5. 따라서 리딩의 첫 시작(### 1단계)부터 오늘의 타로 결과와 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})의 상호작용을 명확하게 짚어내고, 3장의 오라클 카드가 오늘의 타로 에너지를 어떻게 조율하고 더 높은 차원의 해법으로 이끄는지 반드시 유기적으로 연결하여 2500~3500자 이상의 압도적 대서사로 전개하십시오.
 `
       : '';
 
@@ -3464,7 +3484,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
 
               <div className="mt-1.5 flex items-center gap-2 text-[11px] text-zinc-400 flex-wrap">
                 <span className="text-amber-400/80">✦</span>
-                <span>핵심 키워드: <strong className="text-zinc-200">{todayDailyTarot.keywords.slice(0, 3).join(', ')}</strong></span>
+                <span>핵심 키워드: <strong className="text-zinc-200">{getEffectiveTarotKeywords(todayDailyTarot).slice(0, 3).join(', ')}</strong></span>
                 <span className="text-zinc-500">|</span>
                 <span>오늘 일진: <strong className="text-white">{dailySaju?.dayPillar.full || '당일 운기'}</strong> {dailySaju?.tenGodGan.name && `[${dailySaju.tenGodGan.name}]`}</span>
               </div>
@@ -4191,6 +4211,37 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                       {hasTodayDailyResult ? '✓ 일일 타로 진단 ✕ 오라클 심층 확장' : '천문 지배 기저 에너지 결합'}
                     </span>
                   </div>
+
+                  {/* ⚠️ 역방향 카드 주의점 1가지 별도 강조 배너 (역방향 카드가 뽑혔을 때만 표시) */}
+                  {drawnCards.some((c) => c?.reversed) && (
+                    <div className="space-y-2 pt-1">
+                      {drawnCards.map((c, idx) => {
+                        if (!c?.reversed) return null;
+                        const revData = getTarotReversedData(c);
+                        const cautionText = getTarotCardCaution(c);
+                        const posLabel = slotPositions[idx] || `${idx + 1}번`;
+                        return (
+                          <div
+                            key={`rev-caution-${c.id}-${idx}`}
+                            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/50 via-rose-900/25 to-black/40 border border-rose-400/40 shadow-md space-y-1 text-xs"
+                          >
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <span className="font-bold text-rose-300 flex items-center gap-1.5">
+                                <span>⚠️ [{c.nameKo || c.name} (역방향) 주의점 1가지]</span>
+                                <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}</span>
+                              </span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30 font-medium">
+                                역방향 키워드: {revData.keywords.slice(0, 3).join(', ')}
+                              </span>
+                            </div>
+                            <p className="text-rose-100 font-semibold leading-snug break-keep">
+                              {cautionText}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   {/* 📜 Streamdown 기반 정통 마크다운 본문 리딩 */}
                   <div className="text-white/90 leading-relaxed font-sans text-xs sm:text-sm pt-2">

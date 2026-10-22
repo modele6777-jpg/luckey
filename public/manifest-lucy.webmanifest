@@ -6,6 +6,7 @@
   "start_url": "/chat",
   "scope": "/chat",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "display_override": [
     "window-controls-overlay",
     "standalone",

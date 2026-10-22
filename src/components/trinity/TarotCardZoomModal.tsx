@@ -314,6 +314,14 @@ export function TarotCardZoomModal({
                     <p className="font-medium">{revData.meaning}</p>
                   </div>
 
+                  {/* ⚠️ 역방향 주의점 1가지 (1줄 별도 강조 표시) */}
+                  {revData.caution && (
+                    <div className="px-3 py-2 rounded-xl bg-rose-500/15 border border-rose-400/40 text-[11px] sm:text-xs text-rose-100 flex items-start gap-2 shadow-sm">
+                      <span className="font-bold text-rose-300 shrink-0">⚠️ 주의점 1가지:</span>
+                      <span className="font-semibold leading-snug">{revData.caution}</span>
+                    </div>
+                  )}
+
                   {/* 역방향 실천 & 주의 조언 */}
                   <div className="flex items-start gap-2 pt-0.5 text-[11px] text-amber-200/90">
                     <span className="font-bold text-amber-400 shrink-0">💡 역방향 조언:</span>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Switch, Redirect, useLocation } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
-import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
+import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles, Smartphone, RotateCcw } from "lucide-react";
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { LoginScreen } from "./components/LoginScreen";
@@ -155,6 +155,71 @@ function AppContent() {
 
   const pinScreenActive = !isUnlocked;
   usePinScreenLock(pinScreenActive);
+
+  // 📱 세로 방향(Portrait) 전용 고정: Screen Orientation API 잠금 + 모바일 기기 가로 회전 시 차단 오버레이
+  const [isMobileLandscape, setIsMobileLandscape] = React.useState(false);
+
+  React.useEffect(() => {
+    const lockPortraitOrientation = () => {
+      try {
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+        const scrOrientation = (window.screen as any)?.orientation;
+        if (scrOrientation && typeof scrOrientation.lock === 'function') {
+          scrOrientation.lock('portrait-primary').catch(() => {
+            scrOrientation.lock('portrait').catch(() => {});
+          });
+        }
+      } catch (_) {}
+    };
+
+    const checkPhysicalLandscape = () => {
+      try {
+        const ua = typeof navigator !== 'undefined' ? navigator.userAgent || '' : '';
+        const isMobilePhone =
+          /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) ||
+          (navigator.maxTouchPoints > 0 && Math.min(window.screen.width, window.screen.height) < 768);
+
+        if (!isMobilePhone) {
+          setIsMobileLandscape(false);
+          return;
+        }
+
+        const orientationType = String((window.screen as any)?.orientation?.type || '');
+        const legacyAngle = typeof (window as any).orientation === 'number' ? Math.abs((window as any).orientation) : 0;
+        const isPhysicalLandscape =
+          orientationType.startsWith('landscape') ||
+          legacyAngle === 90;
+
+        setIsMobileLandscape(isPhysicalLandscape);
+        if (isPhysicalLandscape) {
+          lockPortraitOrientation();
+        }
+      } catch (_) {
+        setIsMobileLandscape(false);
+      }
+    };
+
+    lockPortraitOrientation();
+    checkPhysicalLandscape();
+
+    const scrOrientation = (window.screen as any)?.orientation;
+    window.addEventListener('orientationchange', checkPhysicalLandscape, { passive: true });
+    window.addEventListener('resize', checkPhysicalLandscape, { passive: true });
+    document.addEventListener('visibilitychange', lockPortraitOrientation);
+    window.addEventListener('touchstart', lockPortraitOrientation, { once: true, passive: true });
+    if (scrOrientation && typeof scrOrientation.addEventListener === 'function') {
+      scrOrientation.addEventListener('change', checkPhysicalLandscape);
+    }
+
+    return () => {
+      window.removeEventListener('orientationchange', checkPhysicalLandscape);
+      window.removeEventListener('resize', checkPhysicalLandscape);
+      document.removeEventListener('visibilitychange', lockPortraitOrientation);
+      if (scrOrientation && typeof scrOrientation.removeEventListener === 'function') {
+        scrOrientation.removeEventListener('change', checkPhysicalLandscape);
+      }
+    };
+  }, []);
 
   React.useEffect(() => {
     const handlePrismNavigate = (e: any) => {
@@ -371,9 +436,33 @@ function AppContent() {
     }
   })();
 
+  const portraitShield = isMobileLandscape ? (
+    <div
+      className="fixed inset-0 z-[999999] bg-[#06070a]/98 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none touch-none"
+      role="dialog"
+      aria-live="assertive"
+    >
+      <div className="relative mb-5 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+          <Smartphone size={32} className="text-emerald-400 -rotate-90 animate-pulse" />
+        </div>
+        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+          <RotateCcw size={14} />
+        </div>
+      </div>
+      <h2 className="text-base font-bold text-white tracking-tight mb-1.5 font-sans">
+        세로 방향 전용 앱입니다
+      </h2>
+      <p className="text-xs text-white/60 leading-relaxed max-w-xs font-sans">
+        가로 화면은 지원하지 않습니다. 기기를 세로 방향으로 돌려 사용해 주세요.
+      </p>
+    </div>
+  ) : null;
+
   if (!firebaseUser && !isStandaloneChat) {
     return (
       <div className="prism-app-shell relative z-[1] bg-transparent">
+        {portraitShield}
         <LoginScreen />
       </div>
     );
@@ -382,6 +471,7 @@ function AppContent() {
   if (!isUnlocked) {
     return (
       <div className="prism-app-shell relative z-[1] bg-transparent">
+        {portraitShield}
         <PinLockScreen onUnlock={unlock} />
       </div>
     );
@@ -389,6 +479,8 @@ function AppContent() {
 
   return (
     <div className={`prism-app-shell relative z-[1] bg-transparent ${isLucyRoute ? 'in-lucy-chat' : ''}`}>
+      {portraitShield}
+
       {/* Draggable & Edge-Dockable Background Music Player */}
       {shouldMountBgMusicPlayer() && (
         <BgMusicPlayer />

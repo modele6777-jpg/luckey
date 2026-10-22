@@ -1,6 +1,6 @@
 {
-  "summary":  "타로 휠을 돌릴 때와 카드를 탭할 때 발생하는 모든 버벅임을 제거하기 위해 강제 리플로우(getBoundingClientRect 및 78장 zIndex 루프), 3D preserve-3d 합성, 배경 블러(backdrop-blur), 폭죽 파티클, 모션 지연을 모두 제거하고 0초 즉시 반응 모드로 전환하는 계획서입니다.",
-  "updatedAt":  "2026-10-21T09:36:47.996587651Z",
+  "summary":  "루시의 긴 답변을 실제 카카오톡 대화처럼 2~4개의 자연스러운 말풍선으로 나누어 순차 전송하고, 자동읽기(Auto-TTS) 활성화 시 여러 말풍선을 끊김 없이 한 번에 연달아 낭독하는 구현 계획서입니다.",
+  "updatedAt":  "2026-10-22T11:15:59.596921592Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

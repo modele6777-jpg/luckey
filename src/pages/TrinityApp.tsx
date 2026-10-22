@@ -115,7 +115,7 @@ import { TarotFlippingCard } from "@/components/trinity/TarotFlippingCard";
 import { FollowUpTarotTimeline, FollowUpTarotEntry } from "@/components/trinity/FollowUpTarotTimeline";
 import { FollowUpTarotInputBar } from "@/components/trinity/FollowUpTarotInputBar";
 import { triggerTarotScreenVibration } from "@/utils/tarotEffects";
-import { TarotCard, TAROT_DECK, getTarotCardImageUrl } from "@/data/tarotData";
+import { TarotCard, TAROT_DECK, getTarotCardImageUrl, getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from "@/data/tarotData";
 import { shuffleCardDeck } from "@/lib/cardShuffle";
 import { playTTS, playTTSInChunks, splitSpeechIntoChunks, playConversation, stopTTS, useTTSActive, useTTSState, prefetchTTS, prepareNaturalSpeechText } from "@/utils/tts";
 import { z } from "zod";
@@ -2499,9 +2499,12 @@ function playDailyCardChimeAsync() {
               const pos = concernAnalysis.spread.positions[i] || `${i + 1}번`;
               const orient = c.reversed ? " [역방향]" : " [정방향]";
               const d = getTarotCardDetails(c);
+              const effKws = getEffectiveTarotKeywords(c);
+              const revData = c.reversed ? getTarotReversedData(c) : null;
+              const caution = c.reversed ? getTarotCardCaution(c) : "";
               const detailStr = d
-                ? ` (원형: ${d.archetype}, 상징: ${d.symbolWord}, 본래 뜻: ${c.reversed ? d.reversedCore : d.uprightCore})`
-                : (c.keywords?.length ? ` (키워드: ${c.keywords.slice(0, 3).join(', ')})` : '');
+                ? ` (키워드: ${effKws.slice(0, 3).join(', ')}, 원형: ${d.archetype}, 상징: ${d.symbolWord}, ${c.reversed ? `역방향 고유 뜻(정방향 뜻 적용 금지): ${revData?.meaning || d.reversedCore}, ⚠️ 주의점 1가지: ${caution}` : `정방향 본래 뜻: ${d.uprightCore}`})`
+                : (effKws.length ? ` (키워드: ${effKws.slice(0, 3).join(', ')}${caution ? `, ⚠️ 주의점 1가지: ${caution}` : ''})` : '');
               return `${pos}: ${c.nameKo} (${c.name})${orient}${detailStr}`;
             })
             .join(", ");
@@ -2532,10 +2535,12 @@ function playDailyCardChimeAsync() {
 - 적용 배열법: ${concernAnalysis.spread.name} (${concernAnalysis.spread.cardCount}장)
 - 펼쳐진 카드: [${cardNames}]${dailyCardDirective}
 
-[★ 최우선 필수 대원칙 — 뽑힌 카드의 고유한 상징과 뜻 중심의 심층 리딩]
+[★ 최우선 필수 대원칙 — 뽑힌 카드의 고유한 상징과 정/역방향 뜻 중심의 심층 리딩]
 1. **타로 본연의 도상과 상징 중심 해독**: 카드 이름만 단순 언급하고 지나가는 피상적 리딩은 절대 금지합니다. 뽑힌 모든 카드의 도상학적 상징(그림 속 인물의 표정과 자세, 손에 쥔 도구, 배경 색채, 4대 원소 기운)과 정통 타로의 본질적 의미(정방향/역방향의 깊은 뜻)를 리딩 전체의 가장 확고한 뼈대와 근거로 삼으십시오.
 2. **모든 단계에서 카드의 뜻과 의미를 인용하여 전개**: 모든 단계에 걸쳐 "이 카드의 [OO 상징]과 [OO 뜻]이 보여주듯...", "카드 속 [인물/도상]이 전하는 본질적 교훈처럼..."과 같이 각 카드의 상징과 뜻을 직접 거론하며 논리적이고 입체적으로 설명하십시오.
-3. **정방향과 역방향의 세밀한 뜻 구별**: 역방향 카드가 있다면, 단순히 부정적으로 치부하지 않고 에너지가 내면으로 향하거나, 억압·지연·정화가 필요한 카드의 고유한 그림자 의미를 정밀하게 짚어주십시오.
+3. **[★ 핵심 필수 규칙: 역방향 카드 해독 및 주의점 1가지 안내]**:
+   - 역방향([역방향])으로 뽑힌 카드는 **절대로 정방향 뜻이나 정방향 키워드로 풀이하지 마십시오!** 반드시 위에 제시된 **역방향 고유 뜻(에너지의 과잉·결핍·지연·내면의 그림자)**으로만 명확하게 풀이하십시오.
+   - 역방향 카드를 풀이할 때는 반드시 그 카드와 관련된 **주의점 1가지**를 본문 풀이 속에 자연스럽게 녹여 설명하고, 동시에 해당 카드 해석 아래에 **⚠️ [카드명 역방향 주의점 1가지]: (핵심 주의점 한 줄)** 형태로 별도 강조하여 알려주십시오. (정방향 카드에는 주의점 강조 줄을 추가하지 마십시오.)
 
 [🚫 절대 금지 규칙 — 우주물리학 비유 및 기계적 수치 언급 전면 금지]
 - '화이트홀', '블랙홀', '웜홀', '사건의 지평선' 등 공상과학/우주물리학 비유나 비현실적인 용어는 일체 사용하지 마십시오.
@@ -2835,9 +2840,13 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
     if (isFollowUpGenerating) return;
 
     const safeCard = chosenCard || TAROT_DECK[Math.floor(Math.random() * TAROT_DECK.length)];
+    const cardWithRev = { ...safeCard, reversed: isReversed };
     const cardNameKo = safeCard.nameKo || safeCard.name || '타로 카드';
     const cardNameEn = safeCard.name || cardNameKo;
-    const cardKeywords = Array.isArray(safeCard.keywords) ? safeCard.keywords.join(', ') : '';
+    const effKeywords = getEffectiveTarotKeywords(cardWithRev);
+    const cardKeywords = effKeywords.join(', ');
+    const revData = isReversed ? getTarotReversedData(cardWithRev) : null;
+    const revCaution = isReversed ? getTarotCardCaution(cardWithRev) : '';
 
     const newEntryId = `fu_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const newEntry: FollowUpTarotEntry = {
@@ -2879,8 +2888,9 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
 [답변 규정]
 1. 모호한 미사여구나 불필요한 장설, 뜬구름 잡는 우주적 추상주의는 완전히 지양하십시오.
 2. 질문자가 던진 구체적인 질문에 대하여, 새로 뽑힌 추가 카드의 상징과 정/역방향 에너지를 직관적으로 관통하여 날카롭고 똑부러지게 답변하십시오.
-3. 최초 질문 및 초기 리딩의 맥락을 완벽히 계승하되 중복 설명을 피하고, 이번 질문에 대한 즉각적이고 실천 가능한 현실적 해결책과 행동 지침을 제시하십시오.
-4. 한국어로 품격 있고 신뢰감 넘치는 마스터의 어조를 유지하십시오.${profileContext}`,
+3. [★ 역방향 카드 해독 및 주의점 1가지 필수 제시] 새로 뽑힌 카드가 '역방향'이라면 절대로 정방향 뜻으로 풀이하지 말고 반드시 역방향 고유의 뜻(${revData?.meaning || '내면의 그림자와 재정비'})으로 풀이하며, 본문 속에 해당 카드와 관련된 주의점 1가지("${revCaution}")를 자연스럽게 녹여 설명하고 **⚠️ [${cardNameKo} 역방향 주의점 1가지]: ${revCaution}** 형태로 한 줄 강조하여 알려주십시오.
+4. 최초 질문 및 초기 리딩의 맥락을 완벽히 계승하되 중복 설명을 피하고, 이번 질문에 대한 즉각적이고 실천 가능한 현실적 해결책과 행동 지침을 제시하십시오.
+5. 한국어로 품격 있고 신뢰감 넘치는 마스터의 어조를 유지하십시오.${profileContext}`,
         },
         {
           role: 'user',
@@ -2888,7 +2898,7 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
 [초기 선택 카드] ${effectiveDrawnCards.map((c: any) => `${c?.nameKo || c?.name || '카드'}(${c?.reversed ? '역방향' : '정방향'})`).join(', ')}
 [초기 리딩 요약] ${effectiveInitialSummary ? effectiveInitialSummary.slice(0, 500) : ''}
 ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` : ''}
-[새로 뽑힌 추가 카드] ${cardNameKo} (${cardNameEn}) - ${isReversed ? '역방향' : '정방향'} / 키워드: ${cardKeywords}
+[새로 뽑힌 추가 카드] ${cardNameKo} (${cardNameEn}) - ${isReversed ? '역방향' : '정방향'} / 키워드: ${cardKeywords}${isReversed ? ` / 역방향 고유 뜻: ${revData?.meaning || ''} / 역방향 주의점 1가지: ${revCaution}` : ''}
 [이번 추가 질문] "${questionText}"`,
         },
       ];
@@ -2912,7 +2922,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       playAudioHaptic('card_draw');
     } catch (err: any) {
       console.warn('[executeFollowUpReading] Streaming interrupted, applying robust master interpretation:', err);
-      const fallbackReading = `${cardNameKo} (${isReversed ? '역방향' : '정방향'})의 에너지는 현재 상황의 이면에 잠재된 핵심 실마리를 드러내고 있습니다. 기존의 혼란스러운 생각에 매몰되기보다는, 카드가 일깨우는 본연의 지혜와 직관을 신뢰하며 명확하고 주체적인 선택을 내리시길 권합니다.`;
+      const fallbackReading = isReversed
+        ? `[${cardNameKo} (역방향)] 카드는 정방향과는 달리 **${revData?.meaning || '내면의 정돈과 신중한 점검'}**을 가리키고 있습니다. 특히 이 카드와 관련하여 꼭 기억해야 할 주의점 한 가지는 **"${revCaution}"**입니다.\n\n⚠️ **[${cardNameKo} 역방향 주의점 1가지]**: ${revCaution}`
+        : `${cardNameKo} (정방향)의 에너지는 현재 상황의 이면에 잠재된 핵심 실마리를 드러내고 있습니다. 기존의 혼란스러운 생각에 매몰되기보다는, 카드가 일깨우는 본연의 지혜와 직관을 신뢰하며 명확하고 주체적인 선택을 내리시길 권합니다.`;
       setFollowUpEntries((prev) =>
         prev.map((e) =>
           e.id === newEntryId
@@ -3826,6 +3838,44 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                             </div>
                                           )}
 
+                                          {/* ⚠️ 역방향 카드 주의점 1가지 별도 강조 배너 (역방향 카드가 뽑혔을 때만 표시) */}
+                                          {(() => {
+                                            const activeReadingCards = (drawnCards && drawnCards.length > 0)
+                                              ? drawnCards
+                                              : (dailyResult?.drawnCard ? [dailyResult.drawnCard] : (dailyDrawnCard ? [dailyDrawnCard] : []));
+                                            const reversedCards = activeReadingCards.filter((c: any) => Boolean(c?.reversed));
+                                            if (reversedCards.length === 0) return null;
+                                            return (
+                                              <div className="mb-4 space-y-2">
+                                                {activeReadingCards.map((c: any, idx: number) => {
+                                                  if (!c?.reversed) return null;
+                                                  const revData = getTarotReversedData(c);
+                                                  const cautionText = getTarotCardCaution(c);
+                                                  const posLabel = tarotSpreadRecommendation?.positions?.[idx] || `${idx + 1}번 카드`;
+                                                  return (
+                                                    <div
+                                                      key={`trinity-rev-caution-${c.id || idx}-${idx}`}
+                                                      className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/55 via-rose-900/25 to-black/45 border border-rose-400/45 shadow-md space-y-1 text-xs"
+                                                    >
+                                                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                        <span className="font-bold text-rose-300 flex items-center gap-1.5">
+                                                          <span>⚠️ [{c.nameKo || c.name} (역방향) 주의점 1가지]</span>
+                                                          <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}</span>
+                                                        </span>
+                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30 font-medium">
+                                                          역방향 키워드: {revData.keywords.slice(0, 3).join(', ')}
+                                                        </span>
+                                                      </div>
+                                                      <p className="text-rose-100 font-semibold leading-snug break-keep">
+                                                        {cautionText}
+                                                      </p>
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            );
+                                          })()}
+
                                           <Streamdown immediate={!isTarotGenerating} enableTTSHighlight={isFullReadingTTSActive}>{displayTarotResult || stripSummaryFromTarotText(tarotResult || "")}</Streamdown>
                                           {/* 🌟 그에 맞는 루시의 조언 (TTS 가능) */}
                                           {tarotResult && !isTarotGenerating && (
@@ -3918,7 +3968,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                             nameKo: c.nameKo,
                                             name: c.name,
                                             reversed: !!c.reversed,
-                                            keywords: c.keywords,
+                                            keywords: getEffectiveTarotKeywords(c),
                                             imageUrl: getTarotCardImageUrl(c),
                                             slotName: tarotSpreadRecommendation?.positions?.[i] || `#${i + 1} 카드`,
                                           }))

@@ -1,4 +1,4 @@
-import type { TarotCard } from '@/data/tarotData';
+import { getTarotReversedData, getEffectiveTarotKeywords, getTarotCardCaution, type TarotCard } from '@/data/tarotData';
 import type { AuraThemeCard } from '@/lib/auraCards';
 import { getCardSoulBlessing } from '@/lib/tarotBlessings';
 
@@ -327,16 +327,19 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
 export function getSuitDetails(card: any): TarotDetailEntry {
   const isRev = !!card?.reversed;
   const name = card?.nameKo || card?.name || "운명의 카드";
-  const kws = Array.isArray(card?.keywords) ? card.keywords.join(", ") : "직관과 통찰";
+  const effKws = getEffectiveTarotKeywords(card);
+  const kws = effKws.length > 0 ? effKws.join(", ") : "직관과 통찰";
+  const revData = isRev ? getTarotReversedData(card) : null;
+  const specificCaution = isRev ? getTarotCardCaution(card) : "";
 
   if (card.type === "wands") {
     return {
       element: "불 (Fire - 열정, 행동, 사업, 영감)",
       archetype: `지팡이의 불꽃을 품은 ${name}`,
       uprightCore: `[${name}] 카드는 불꽃 같은 열정과 도전 정신, 그리고 새로운 기회를 향해 과감하게 뻗어나가는 역동적인 추진력을 상징합니다.`,
-      reversedCore: `[${name}] 역방향은 에너지가 과도하게 분산되거나 조급함으로 인해 탈진(Burnout)이 일어날 수 있음을 경고합니다.`,
-      shadowWarning: "의욕만 앞서 디테일을 놓치거나 성급하게 결론을 내리지 않도록 호흡을 가다듬으세요.",
-      actionGuidance: `키워드 '${kws}'를 가슴에 품고, 오늘 하루 미뤄왔던 행동 과제를 과감하게 실행에 옮기십시오.`,
+      reversedCore: revData?.meaning || `[${name}] 역방향은 에너지가 과도하게 분산되거나 조급함으로 인해 탈진(Burnout)이 일어날 수 있음을 경고합니다.`,
+      shadowWarning: specificCaution || "의욕만 앞서 디테일을 놓치거나 성급하게 결론을 내리지 않도록 호흡을 가다듬으세요.",
+      actionGuidance: revData?.advice || `키워드 '${kws}'를 가슴에 품고, 오늘 하루 미뤄왔던 행동 과제를 과감하게 실행에 옮기십시오.`,
       luckyColor: "타오르는 스칼렛 오렌지",
       luckyNum: "3",
       symbolWord: "싹이 돋아난 생명의 지팡이",
@@ -349,9 +352,9 @@ export function getSuitDetails(card: any): TarotDetailEntry {
       element: "물 (Water - 감정, 사랑, 관계, 직관)",
       archetype: `성배의 생명수를 품은 ${name}`,
       uprightCore: `[${name}] 카드는 풍성하게 넘쳐흐르는 감정의 교감, 따뜻한 사랑과 치유, 그리고 영혼을 채우는 직관적 감수성을 상징합니다.`,
-      reversedCore: `[${name}] 역방향은 감정의 기복이나 과거의 상처에 집착하여 현실적인 관계의 균형을 잃을 수 있음을 시사합니다.`,
-      shadowWarning: "감정에 휘둘려 이성적인 판단을 그르치거나 타인의 감정 쓰레기통이 되지 않도록 경계를 지키세요.",
-      actionGuidance: `키워드 '${kws}'를 되새기며, 나 자신과 소중한 사람에게 따뜻한 진심과 위로의 말을 전하세요.`,
+      reversedCore: revData?.meaning || `[${name}] 역방향은 감정의 기복이나 과거의 상처에 집착하여 현실적인 관계의 균형을 잃을 수 있음을 시사합니다.`,
+      shadowWarning: specificCaution || "감정에 휘둘려 이성적인 판단을 그르치거나 타인의 감정 쓰레기통이 되지 않도록 경계를 지키세요.",
+      actionGuidance: revData?.advice || `키워드 '${kws}'를 되새기며, 나 자신과 소중한 사람에게 따뜻한 진심과 위로의 말을 전하세요.`,
       luckyColor: "투명한 아쿠아 마린 블루",
       luckyNum: "2",
       symbolWord: "넘쳐흐르는 황금 성배",
@@ -364,9 +367,9 @@ export function getSuitDetails(card: any): TarotDetailEntry {
       element: "공기 (Air - 이성, 결단, 진실, 명석함)",
       archetype: `진실의 검을 벼리는 ${name}`,
       uprightCore: `[${name}] 카드는 냉철한 이성과 예리한 통찰력, 복잡한 혼란을 단칼에 베어내는 명쾌한 진실과 결단력을 상징합니다.`,
-      reversedCore: `[${name}] 역방향은 지나친 비판의식, 과도한 걱정과 뇌내 망상, 혹은 칼날에 스스로가 다치는 상처를 경고합니다.`,
-      shadowWarning: "말과 생각의 칼날로 타인이나 자신에게 상처를 주지 않도록 자비로운 분별력을 유지하세요.",
-      actionGuidance: `키워드 '${kws}'를 바탕으로, 불필요한 생각의 군더더기를 쳐내고 핵심 사실에만 집중하십시오.`,
+      reversedCore: revData?.meaning || `[${name}] 역방향은 지나친 비판의식, 과도한 걱정과 뇌내 망상, 혹은 칼날에 스스로가 다치는 상처를 경고합니다.`,
+      shadowWarning: specificCaution || "말과 생각의 칼날로 타인이나 자신에게 상처를 주지 않도록 자비로운 분별력을 유지하세요.",
+      actionGuidance: revData?.advice || `키워드 '${kws}'를 바탕으로, 불필요한 생각의 군더더기를 쳐내고 핵심 사실에만 집중하십시오.`,
       luckyColor: "차가운 다이아몬드 실버",
       luckyNum: "1",
       symbolWord: "구름을 뚫고 솟은 지혜의 검",
@@ -379,9 +382,9 @@ export function getSuitDetails(card: any): TarotDetailEntry {
       element: "대지 (Earth - 물질, 재정, 안정, 실질적 성취)",
       archetype: `황금 펜타클의 결실을 가꾸는 ${name}`,
       uprightCore: `[${name}] 카드는 단단한 현실적 기반, 성실한 노력의 결실, 그리고 손에 잡히는 구체적인 풍요와 안정을 상징합니다.`,
-      reversedCore: `[${name}] 역방향은 물질적 불안감, 인색함, 혹은 단기적인 이익에 눈이 멀어 장기적인 신뢰를 잃는 것을 경계합니다.`,
-      shadowWarning: "돈이나 소유물에 지나치게 집착하여 삶의 진정한 기쁨과 온기를 잊지 않도록 하세요.",
-      actionGuidance: `키워드 '${kws}'를 실천 지표로 삼아, 오늘 하루 현실의 작은 디테일을 정성껏 다듬고 관리하십시오.`,
+      reversedCore: revData?.meaning || `[${name}] 역방향은 물질적 불안감, 인색함, 혹은 단기적인 이익에 눈이 멀어 장기적인 신뢰를 잃는 것을 경계합니다.`,
+      shadowWarning: specificCaution || "돈이나 소유물에 지나치게 집착하여 삶의 진정한 기쁨과 온기를 잊지 않도록 하세요.",
+      actionGuidance: revData?.advice || `키워드 '${kws}'를 실천 지표로 삼아, 오늘 하루 현실의 작은 디테일을 정성껏 다듬고 관리하십시오.`,
       luckyColor: "풍요로운 에메랄드 골드",
       luckyNum: "8",
       symbolWord: "대지의 결실을 맺는 황금 코인",
@@ -394,9 +397,9 @@ export function getSuitDetails(card: any): TarotDetailEntry {
     element: "에테르 (Ether)",
     archetype: `신비의 상징 ${name}`,
     uprightCore: `[${name}] 카드는 삶의 균형과 영적 성장을 가리키는 우주의 신비로운 이정표입니다.`,
-    reversedCore: `[${name}] 역방향은 내면의 신호를 놓치지 말고 천천히 중심을 되찾을 것을 권고합니다.`,
-    shadowWarning: "조급한 마음에 휩쓸리지 않도록 마음의 영점을 지키세요.",
-    actionGuidance: `키워드 '${kws}'의 의미를 깊이 음미하며 오늘 하루를 온전히 정렬하세요.`,
+    reversedCore: revData?.meaning || `[${name}] 역방향은 내면의 신호를 놓치지 말고 천천히 중심을 되찾을 것을 권고합니다.`,
+    shadowWarning: specificCaution || "조급한 마음에 휩쓸리지 않도록 마음의 영점을 지키세요.",
+    actionGuidance: revData?.advice || `키워드 '${kws}'의 의미를 깊이 음미하며 오늘 하루를 온전히 정렬하세요.`,
     luckyColor: "황금빛 골드",
     luckyNum: "7",
     symbolWord: "우주의 조화",
@@ -425,7 +428,17 @@ export function getTarotCardDetails(card: any): TarotDetailEntry {
     };
   }
   const id = card.id || "";
-  return TAROT_DETAILS[id] || getSuitDetails(card);
+  const base = TAROT_DETAILS[id] || getSuitDetails(card);
+  if (card.reversed) {
+    const revData = getTarotReversedData(card);
+    const specificCaution = getTarotCardCaution(card);
+    return {
+      ...base,
+      reversedCore: revData.meaning || base.reversedCore,
+      shadowWarning: specificCaution || base.shadowWarning,
+    };
+  }
+  return base;
 }
 
 /**
@@ -563,13 +576,16 @@ export function buildSpecificTarotDailyOracle(card: TarotCard, mode: string = "o
   const cardEn = card.name;
   const isReversed = !!card.reversed;
   const orientation = isReversed ? "역방향 (Reversed)" : "정방향 (Upright)";
-  const keywords = (card.keywords || []).join(", ");
-  const details = TAROT_DETAILS[card.id] || getSuitDetails(card);
+  const effectiveKws = getEffectiveTarotKeywords(card);
+  const keywords = effectiveKws.join(", ");
+  const details = getTarotCardDetails(card);
+  const revData = isReversed ? getTarotReversedData(card) : null;
+  const specificCaution = isReversed ? getTarotCardCaution(card) : "";
   const luckyAction = getTarotLuckyAction(card, isReversed);
 
-  const cardMeaning = isReversed ? details.reversedCore : details.uprightCore;
+  const cardMeaning = isReversed ? (revData?.meaning || details.reversedCore) : details.uprightCore;
   const shadowWarn = isReversed
-    ? `${details.shadowWarning} 지금은 억지로 결과를 서두르기보다 마음의 중심을 단단히 잡고 내실을 다져야 할 때입니다.`
+    ? `${specificCaution || details.shadowWarning} 지금은 억지로 결과를 서두르기보다 마음의 중심을 단단히 잡고 내실을 다져야 할 때입니다.`
     : `${details.shadowWarning} 자만하거나 사소한 방심으로 흐름을 깨뜨리지 않도록 유의하세요.`;
 
   const workGuidance = isReversed
@@ -585,25 +601,25 @@ export function buildSpecificTarotDailyOracle(card: TarotCard, mode: string = "o
     : '오늘 일상에서 미뤄둔 핵심 과제 1가지를 정해 20분간 몰입해 완수하고 맑은 운의 파동을 일으키기.';
 
   const diagnosis = `[핵심 3줄 요약]
-- [현재 에너지] ${isReversed ? `[${cardName}] 카드의 역방향 에너지로 내면의 성찰과 차분한 정돈이 필요한 하루입니다.` : `[${cardName}] 카드의 정방향 에너지로 활기찬 생명력과 긍정적인 파동이 충만한 하루입니다.`}
-- [방향과 결단] ${isReversed ? '조급함을 내려놓고 기존의 결함을 점검하며 신중하게 나아가는 것이 최선의 선택입니다.' : '내면의 직관과 잠재력을 믿고 자신감 있게 적극적인 행동을 취할 때입니다.'}
+- [현재 에너지] ${isReversed ? `[${cardName}] 카드의 역방향 에너지(${keywords})가 발현되어, ${cardMeaning}` : `[${cardName}] 카드의 정방향 에너지로 활기찬 생명력과 긍정적인 파동이 충만한 하루입니다.`}
+- [방향과 결단] ${isReversed ? `⚠️ [역방향 주의점 1가지] ${specificCaution}` : '내면의 직관과 잠재력을 믿고 자신감 있게 적극적인 행동을 취할 때입니다.'}
 - [실천 처방] ${actionPrescription}
 
 ### 🕯️ 1. 카드가 비추는 당신의 마음과 현재 에너지
 ${cardMeaning}
-오늘 하루 당신의 영혼과 일상에는 **${keywords}**의 흐름이 깊숙이 침투해 있으며, 내면의 무의식 속에서는 ${isReversed ? '잠시 숨을 고르며 내면의 저항을 정돈하고 새로운 방향을 모색하는 정화의 에너지' : '오랜 시간 준비해 온 에너지가 밖으로 뻗어나가 결실을 맺고자 하는 역동적인 생명력'}이 꿈틀거리고 있습니다. 외부의 소음이나 타인의 기대에 휘둘리지 않고 당신의 내면 나침반을 신뢰할 때, 오늘 하루의 흐름은 가장 이상적인 조화를 이루게 될 것입니다.
+오늘 하루 당신의 영혼과 일상에는 **${keywords}**의 흐름이 깊숙이 자리하고 있으며, 내면의 무의식 속에서는 ${isReversed ? '잠시 숨을 고르며 내면의 저항과 과잉 에너지를 정돈하고 새로운 방향을 모색하는 재정비의 에너지' : '오랜 시간 준비해 온 에너지가 밖으로 뻗어나가 결실을 맺고자 하는 역동적인 생명력'}가 흐르고 있습니다.${isReversed ? ` 특히 오늘 [${cardName}] 역방향 카드를 마주한 당신이 꼭 기억해야 할 **핵심 주의점 1가지**는 **"${specificCaution}"**입니다.` : ''} 외부의 소음이나 타인의 기대에 휘둘리지 않고 당신의 내면 나침반을 신뢰할 때, 오늘 하루의 흐름은 가장 이상적인 조화를 이루게 될 것입니다.
 
 ### 🎴 2. 펼쳐진 카드들이 들려주는 이야기 (카드 상징과 본래 뜻 해독)
 오늘 당신의 손끝에서 모습을 드러낸 카드는 **[${cardName}${cardEn ? ` (${cardEn})` : ''}] (${orientation})**입니다.
 - **카드의 영적 원형과 도상 상징**: 이 카드는 4대 원소 중 **${details.element}**의 파동을 품고 있으며, **"${details.archetype}"**의 영적 원형과 **[${details.symbolWord}]**의 신성한 도상 상징을 담고 있습니다.
-- **카드가 품은 본래의 뜻**: ${isReversed ? `역방향으로 발현되어 **${details.reversedCore}**을(를) 나타냅니다. 에너지가 잠시 내면으로 향해 숨을 고르고, 내실을 다지며 재정비해야 할 운명적 신호입니다.` : `정방향으로 발현되어 **${details.uprightCore}**을(를) 선명하게 나타냅니다. 외부를 향한 생명력과 진취적인 창조의 흐름이 활짝 열려 있음을 가리킵니다.`}
+- **카드가 품은 본래의 뜻**: ${isReversed ? `정방향의 뜻이 아닌 **역방향 고유의 의미**로 발현되어, **${cardMeaning}**을(를) 선명하게 나타냅니다. 에너지가 잠시 내면으로 향해 숨을 고르고 내실을 다지며 재정비해야 할 운명적 신호입니다.` : `정방향으로 발현되어 **${details.uprightCore}**을(를) 선명하게 나타냅니다. 외부를 향한 생명력과 진취적인 창조의 흐름이 활짝 열려 있음을 가리킵니다.`}
 - **일과 활동**: ${workGuidance}
 - **대인관계 & 소통**: ${relationGuidance}
-- **주의할 점**: ${shadowWarn}
+- **${isReversed ? `[${cardName} 역방향 주의점 1가지]` : '주의할 점'}**: ${isReversed ? `**${specificCaution}**` : shadowWarn}
 
 ### 🔮 3. 트리니티 마스터의 직관적 결단 & 방향성
-**[${isReversed ? '신중한 내실 다지기 & 점검 필요' : '자신감 있는 실행 & 적극적인 전진'}]**
-${isReversed ? '지금은 억지로 결과를 서두르기보다 마음의 중심을 단단히 잡고 내실을 다져야 할 때입니다. 조급함을 내려놓을 때 보이지 않던 명쾌한 돌파구가 열립니다.' : '아이디어에 머물지 말고 자신감 있게 결단을 내리고 행동으로 옮기세요. 적극적인 소통과 실행이 기대 이상의 결과로 이어집니다.'}
+**[${isReversed ? '신중한 내실 다지기 & 역방향 주의점 점검' : '자신감 있는 실행 & 적극적인 전진'}]**
+${isReversed ? `${revData?.advice || '지금은 억지로 결과를 서두르기보다 마음의 중심을 단단히 잡고 내실을 다져야 할 때입니다.'} 무엇보다 "${specificCaution}"라는 이 카드의 경고를 마음 깊이 새길 때 보이지 않던 명쾌한 돌파구가 열립니다.` : '아이디어에 머물지 말고 자신감 있게 결단을 내리고 행동으로 옮기세요. 적극적인 소통과 실행이 기대 이상의 결과로 이어집니다.'}
 
 ### 🌿 4. 운의 흐름을 바꿀 마스터의 실천 처방 (개운 가이드)
 - **오늘의 핵심 실천**: ${luckyAction}

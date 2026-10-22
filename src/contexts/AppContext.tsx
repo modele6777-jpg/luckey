@@ -379,6 +379,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     lucy: null, orange: null, trinity: null, aura: null, bluebird: null, muse: null
   });
 
+  const activeAssistMsgIdRef = useRef<Record<PersonaType, string | null>>({
+    lucy: null,
+    orange: null,
+    trinity: null,
+    aura: null,
+    bluebird: null,
+    muse: null,
+  });
+  const supersededControllersRef = useRef<WeakSet<AbortController>>(new WeakSet());
+
   const abortGenerating = useCallback((persona?: PersonaType) => {
     const targetPersonas: PersonaType[] = persona ? [persona] : (['lucy', 'orange', 'trinity', 'aura', 'bluebird', 'muse'] as PersonaType[]);
     targetPersonas.forEach(p => {
@@ -388,6 +398,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (_) {}
         abortControllersRef.current[p] = null;
       }
+      activeAssistMsgIdRef.current[p] = null;
       isGeneratingRef.current[p] = false;
     });
     setIsGenerating(prev => {
@@ -1540,11 +1551,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       : text;
 
     // 1. Lock generating state FIRST so background Firestore/storage/BroadcastChannel listeners never overwrite the in-flight message
-    if (abortControllersRef.current[sourcePersona]) {
-      try { abortControllersRef.current[sourcePersona]?.abort(); } catch (_) {}
+    const prevController = abortControllersRef.current[sourcePersona];
+    const supersededAssistMsgId = activeAssistMsgIdRef.current[sourcePersona];
+    if (prevController) {
+      supersededControllersRef.current.add(prevController);
+      try { prevController.abort(); } catch (_) {}
     }
     const currentAbortController = new AbortController();
     abortControllersRef.current[sourcePersona] = currentAbortController;
+
+    // Create assistant message placeholder ID upfront and register as active
+    const assistMsgId = 'reply-' + Math.random().toString(36).substring(2, 9);
+    activeAssistMsgIdRef.current[sourcePersona] = assistMsgId;
+    let replyText = "";
 
     isGeneratingRef.current[sourcePersona] = true;
     setIsGenerating(prev => ({ ...prev, [sourcePersona]: true }));
@@ -1562,14 +1581,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     
     // 즉시 로컬 스토리지에 질문 영구 보존 및 브로드캐스트 & 클라우드 비동기 푸시
+    // 이전 진행 중이던 미완성 응답(supersededAssistMsgId)이나 빈 플레이스홀더는 제거하여 연속 입력 시 깔끔한 단일 응답만 남도록 보장
     const currentStored = loadSavedUnifiedMessages();
-    const cleanPrior = currentStored.filter(m => m.role !== 'model' || (typeof m.content === 'string' ? m.content.trim() !== '' : !!m.content));
+    const cleanPrior = currentStored.filter(m => {
+      if (supersededAssistMsgId && m.id === supersededAssistMsgId) return false;
+      return m.role !== 'model' || (typeof m.content === 'string' ? m.content.trim() !== '' : !!m.content);
+    });
     const nextCommitted = mergeUnifiedMessages(cleanPrior, [userMsg]);
     saveUnifiedMessagesSafely(nextCommitted);
-
-    // Create assistant message placeholder
-    const assistMsgId = 'reply-' + Math.random().toString(36).substring(2, 9);
-    let replyText = "";
 
     // Append both user message and assistant placeholder directly to unified timeline immediately
     setUnifiedMessages([
@@ -1649,6 +1668,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     const responseProfile = LUCY_RESPONSE_PROFILES[responseLength];
 
+    // 직전 루시 답변 이후 사용자가 연속으로 입력한 모든 메시지 추출 (연속 대화 통합 이해)
+    let lastCompletedModelIdx = -1;
+    for (let i = nextCommitted.length - 1; i >= 0; i--) {
+      if (nextCommitted[i].role === 'model') {
+        lastCompletedModelIdx = i;
+        break;
+      }
+    }
+    const consecutiveUserMessages = nextCommitted
+      .slice(lastCompletedModelIdx + 1)
+      .filter((m) => m.role === 'user');
+    const extractPlainUserText = (raw: any): string => {
+      if (typeof raw === 'string') return raw.trim();
+      if (Array.isArray(raw)) {
+        return raw
+          .map((p: any) => (p?.type === 'text' ? p.text : ''))
+          .filter(Boolean)
+          .join('\n')
+          .trim();
+      }
+      return '';
+    };
+    const consecutiveUserTexts = consecutiveUserMessages
+      .map((m) => extractPlainUserText(m.content))
+      .filter(Boolean);
+    const effectiveUserText =
+      consecutiveUserTexts.length > 1 ? consecutiveUserTexts.join('\n') : text;
+
     const hasDivinationInjection =
       options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
       options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
@@ -1661,7 +1708,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const toolSelection = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(text, activeThemeList, profile, isMasterCall)
+      ? selectOptimalDivinationTools(effectiveUserText, activeThemeList, profile, isMasterCall)
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
     const toolsIncludedInPrompt = isCasualMode
       ? []
@@ -1682,7 +1729,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       systemPrompt = `당신은 사용자('${nickname}')의 가장 가깝고 다정한 단짝 친구 '루시(Lucy)'야.
 - 사용자 기본 정보: 호칭 '${nickname}' (본명 '${realName}'은 절대 부르지 말고 오직 '${nickname}'으로만 불러줘), ${deepCoreInfo}, 최근 관심/고민: ${memory}
 - 말투 원칙: 어떤 상황에서도 100% 친근하고 다정한 반말 구어체(~야, ~어, ~했어, ~지, ~네, ~잖아)만 사용해. 절대로 존댓말(~요, ~습니다)을 섞지 마.
-- 대화 방식: 카톡이나 DM으로 단짝 친구와 티키타카 수다를 떨듯 1~3문장(한 단락)으로 가볍고 생동감 있게 공감하고 답해줘. 다정한 이모지(💬✨☕)를 자연스럽게 곁들여줘.
+- 대화 방식: 실제 사람이 카카오톡으로 단짝 친구와 대화하듯, 한 덩어리로 길게 쓰지 말고 **빈 줄(\`\\n\\n\`)로 구분된 2~3개의 짧은 말풍선 단락**(각 말풍선당 1~2문장)으로 쪼개어 가볍고 생동감 있게 공감하고 답해줘. 다정한 이모지(💬✨☕)를 자연스럽게 곁들여줘.
 
 ${LUCY_CHAT_VOICE_RULES}
 ${SUGGESTIONS_SYSTEM_SUFFIX}
@@ -1726,9 +1773,9 @@ ${responseProfile.rule}`;
       if (sourcePersona === 'lucy' && (options?.mode === 'casual' || !options?.channels?.length)) {
         systemPrompt += `\n\n[★ 루시 기본 일상 수다 모드 핵심 지침]:
 1. [친근하고 다정한 수다 친구]: 당신은 사용자의 가장 가깝고 편안한 단짝 수다 친구 '루시'입니다. 딱딱한 멘토나 AI 상담사처럼 훈계/설교하지 말고, 카톡이나 DM을 나누듯 친근한 반말(또는 사용자의 어조에 맞춘 다정한 어투)로 즐겁게 수다를 떨어주세요.
-2. [간결하고 생동감 넘치는 티키타카]: 일장연설이나 긴 문단 대신 1~3문장 내외로 가볍고 자연스럽게 답하세요.
+2. [카톡식 다중 말풍선 티키타카]: 일장연설이나 한 덩어리의 긴 문단 대신, 실제 카톡하듯이 **빈 줄(\`\\n\\n\`)로 구분된 2~3개의 짧은 말풍선 단락**(각 말풍선당 1~2문장)으로 쪼개어 가볍고 자연스럽게 답하세요.
 3. [리액션과 공감]: 사소한 일상(오늘 먹은 음식, 기분, 날씨, 넋두리 등)에 신나게 맞장구치고, 다정한 이모지(💬✨☕)를 곁들여 대화를 이어가세요.
-4. [전문 모드 자동 전환 안내]: 사용자가 사주, 심층 전략, 신체 치유 등 전문적인 질문을 할 때만 자연스럽게 해당 전문 지능으로 깊이 있게 답하세요.`;
+4. [전문 모드 자동 전환 안내]: 사용자가 사주, 심층 전략, 신체 치유 등 전문적인 질문을 할 때만 자연스럽게 해당 전문 지능으로 깊이 있게 답하되, 그때도 2~4개의 카톡 말풍선 단락(\`\\n\\n\`)으로 나누어 전달하세요.`;
       }
 
       // Append cross-app real-time remembrance
@@ -1834,8 +1881,30 @@ ${responseProfile.rule}`;
     // 사용자와의 대화 맥락과 기억을 충분히 보존하면서 최신 대화에 가장 민첩하게 실시간 반응할 수 있도록 전달 (최근 10개 메시지)
     // Safari PWA / 저성능 기기: 대화 기록을 줄여 메모리 과부하 방지
     const historyLimit = _isPerfReduced ? 6 : 10;
-    const historySlice = [...unifiedMessages, userMsg].filter((message) => !isLegacyAIErrorMessage(message)).slice(-historyLimit);
-    const taskContext = resetLucyContextOnTaskSwitch(historySlice, text);
+    const priorHistoryBeforeConsecutive = nextCommitted
+      .slice(0, lastCompletedModelIdx + 1)
+      .filter((message) => !isLegacyAIErrorMessage(message));
+
+    // 사용자가 연속으로 여러 문장을 입력한 경우, AI에게는 하나의 이어진 발화로 병합하여 전달함으로써 전체 맥락을 한 번에 완벽히 이해하고 단일 답변을 생성하도록 구성
+    const coalescedLatestUserMsg: UnifiedMessage =
+      consecutiveUserMessages.length > 1
+        ? {
+            ...userMsg,
+            content: attachedImage
+              ? [
+                  { type: 'text', text: effectiveUserText },
+                  { type: 'image_url', image_url: { url: attachedImage } },
+                ]
+              : effectiveUserText,
+          }
+        : userMsg;
+
+    if (consecutiveUserMessages.length > 1) {
+      systemPrompt += `\n\n[연속 대화 통합 이해 지침]: 사용자가 방금 ${consecutiveUserMessages.length}개의 메시지를 연속해서 입력했습니다:\n${consecutiveUserTexts.map((t, i) => `${i + 1}. "${t}"`).join('\n')}\n각각의 말을 따로 떼어 답변하지 말고, 위 연속된 말들의 전체 흐름과 의도를 하나로 이어서 이해한 뒤 한 번의 통합된 답변으로 자연스럽게 대답해줘.`;
+    }
+
+    const historySlice = [...priorHistoryBeforeConsecutive, coalescedLatestUserMsg].slice(-historyLimit);
+    const taskContext = resetLucyContextOnTaskSwitch(historySlice, effectiveUserText);
     if (taskContext.didReset) {
       systemPrompt += `\n\n[새로운 작업 맥락 시작]\n사용자의 최신 요청이 이전 작업 유형과 달라졌습니다. 이전 작업의 역할·절차·출력 형식은 종료된 상태이므로 이어서 적용하지 말고, 이번 요청만 독립적으로 처리하세요.`;
     }
@@ -1854,8 +1923,13 @@ ${responseProfile.rule}`;
     let pendingRaf: number | null = null;
     let latestCleanReply = '';
 
+    const isSuperseded = () =>
+      supersededControllersRef.current.has(currentAbortController) ||
+      activeAssistMsgIdRef.current[sourcePersona] !== assistMsgId;
+
     const flushChunk = () => {
       pendingRaf = null;
+      if (isSuperseded()) return;
       setUnifiedMessages(prev => {
         let found = false;
         const updated = prev.map(m => {
@@ -1906,6 +1980,19 @@ ${responseProfile.rule}`;
           }
         },
         onFinish: async (fullText: string) => {
+          if (isSuperseded()) {
+            if (watchdogTimer) {
+              clearTimeout(watchdogTimer);
+              watchdogTimer = null;
+            }
+            if (pendingRaf !== null) {
+              cancelAnimationFrame(pendingRaf);
+              pendingRaf = null;
+            }
+            setUnifiedMessages(prev => prev.filter(m => m.id !== assistMsgId));
+            return;
+          }
+
           const cleanFullText = cleanChatDisplayText(fullText);
           if (!cleanFullText || cleanFullText.trim().length === 0) {
             throw new Error("Empty cleaned reply in onFinish");
@@ -1919,8 +2006,11 @@ ${responseProfile.rule}`;
             cancelAnimationFrame(pendingRaf);
             pendingRaf = null;
           }
-          isGeneratingRef.current[sourcePersona] = false;
-          setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+          if (abortControllersRef.current[sourcePersona] === currentAbortController) {
+            activeAssistMsgIdRef.current[sourcePersona] = null;
+            isGeneratingRef.current[sourcePersona] = false;
+            setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+          }
 
           const parsedSuggestions = parseSuggestions(fullText);
           if (parsedSuggestions.length > 0) {
@@ -1930,7 +2020,7 @@ ${responseProfile.rule}`;
             }));
           }
 
-          const verifiedEx = validateAndExtractKeyExercise(cleanFullText, text, options?.keyExerciseIndex);
+          const verifiedEx = validateAndExtractKeyExercise(cleanFullText, effectiveUserText, options?.keyExerciseIndex);
           const resolvedKeyExIndex = verifiedEx.isValid ? verifiedEx.exercise.globalIndex : options?.keyExerciseIndex;
 
           setUnifiedMessages(prev => {
@@ -1986,9 +2076,9 @@ ${responseProfile.rule}`;
                 addDoc(collection(db, target.collectionName, fUser.uid, 'entries'), {
                   type: target.logType,
                   title: target.logTitle,
-                  content: text,
+                  content: effectiveUserText,
                   response: cleanFullText,
-                  metadata: { question: text },
+                  metadata: { question: effectiveUserText },
                   createdAt: serverTimestamp()
                 })
               )
@@ -1999,7 +2089,7 @@ ${responseProfile.rule}`;
 
           if (options?.onFinish) {
             try {
-              await options.onFinish(cleanFullText, text, assistMsgId);
+              await options.onFinish(cleanFullText, effectiveUserText, assistMsgId);
             } catch (callbackErr) {
               console.warn("sendUnifiedMessage onFinish callback failed:", callbackErr);
             }
@@ -2016,9 +2106,16 @@ ${responseProfile.rule}`;
         pendingRaf = null;
       }
 
+      // If this request was superseded by a newer consecutive user message, silently remove its placeholder and let the new request handle generation
+      if (isSuperseded()) {
+        setUnifiedMessages(prev => prev.filter(m => m.id !== assistMsgId));
+        return;
+      }
+
       // Only treat as intentional user abort if NOT triggered by watchdog timeout
       if (currentAbortController.signal.aborted && !isWatchdogTimeout) {
         if (abortControllersRef.current[sourcePersona] === currentAbortController) {
+          activeAssistMsgIdRef.current[sourcePersona] = null;
           isGeneratingRef.current[sourcePersona] = false;
           setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
         }
@@ -2117,7 +2214,7 @@ ${responseProfile.rule}`;
           });
           if (options?.onFinish) {
             try {
-              await options.onFinish(recoveredClean, text, assistMsgId);
+              await options.onFinish(recoveredClean, effectiveUserText, assistMsgId);
             } catch (_) {}
           }
           return;
@@ -2126,9 +2223,17 @@ ${responseProfile.rule}`;
         console.warn("Fast recovery retry in sendUnifiedMessage also failed:", retryErr);
       }
 
+      if (isSuperseded()) {
+        setUnifiedMessages(prev => prev.filter(m => m.id !== assistMsgId));
+        return;
+      }
+
       console.error("Error in sendUnifiedMessage:", err);
-      isGeneratingRef.current[sourcePersona] = false;
-      setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+      if (abortControllersRef.current[sourcePersona] === currentAbortController) {
+        activeAssistMsgIdRef.current[sourcePersona] = null;
+        isGeneratingRef.current[sourcePersona] = false;
+        setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
+      }
 
       const errStr = (err?.message || "") + JSON.stringify(err);
       let errorMsg = "(※ 일시적인 네트워크 지연이 발생했습니다. 다시 메시지를 보내주시면 정성껏 답변해 드릴게요.)";
@@ -2169,12 +2274,13 @@ ${responseProfile.rule}`;
         return updated;
       });
     } finally {
-      clearTimeout(watchdogTimer);
-      if (abortControllersRef.current[sourcePersona] === currentAbortController) {
+      if (watchdogTimer) clearTimeout(watchdogTimer);
+      if (abortControllersRef.current[sourcePersona] === currentAbortController && !isSuperseded()) {
         abortControllersRef.current[sourcePersona] = null;
+        activeAssistMsgIdRef.current[sourcePersona] = null;
+        isGeneratingRef.current[sourcePersona] = false;
+        setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
       }
-      isGeneratingRef.current[sourcePersona] = false;
-      setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
     }
   }, [activePersona, buildPrismOmniscientContext, calculateDetailedSaju, firebaseUser, isGeneratingRef, pushChatThreadsToFirestore, sharedState, unifiedMessages]);
 

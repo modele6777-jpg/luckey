@@ -10,11 +10,12 @@ interface TTSButtonProps {
   onPlay?: () => void;
   onClick?: () => void;
   emotion?: string;
+  skipCompletionChime?: boolean;
   /** @deprecated 모든 TTS 재생은 1.0 배속으로 영구 고정됩니다 */
   speed?: number;
 }
 
-export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', className = "", onPlay, onClick, emotion }) => {
+export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', className = "", onPlay, onClick, emotion, skipCompletionChime }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -63,9 +64,9 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', clas
     // for seamless real-time sentence highlighting and zero audio cutoffs.
     const sentences = splitSpeechIntoChunks(cleanText);
     if (sentences.length > 1) {
-      playTTSInChunks(cleanText, voice, 140, emotion);
+      playTTSInChunks(cleanText, voice, 140, emotion, undefined, { skipCompletionChime });
     } else {
-      playTTS(cleanText, voice, false, emotion);
+      playTTS(cleanText, voice, false, emotion, undefined, false, undefined, undefined, undefined, { skipCompletionChime });
     }
   };
 

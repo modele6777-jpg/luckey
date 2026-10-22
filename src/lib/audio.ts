@@ -40,9 +40,27 @@ export function getSharedAudioContext(): AudioContext {
       sharedAudioCtx = new AudioContextClass();
     }
     ensureMasterChain(sharedAudioCtx);
+
+    const ctxInstance = sharedAudioCtx;
+    ctxInstance.addEventListener('statechange', () => {
+      const st = ctxInstance.state as string;
+      if ((st === 'suspended' || st === 'interrupted') && ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
+        ctxInstance.resume().catch(() => {});
+        setTimeout(() => {
+          if (
+            ((ctxInstance.state as string) === 'suspended' || (ctxInstance.state as string) === 'interrupted') &&
+            ttsShouldBePlaying &&
+            !ttsUserExplicitlyPaused
+          ) {
+            ctxInstance.resume().catch(() => {});
+          }
+        }, 120);
+      }
+    });
   }
 
-  if (sharedAudioCtx.state === 'suspended') {
+  const stateStr = sharedAudioCtx.state as string;
+  if (stateStr === 'suspended' || stateStr === 'interrupted') {
     sharedAudioCtx.resume().catch(err => console.warn("[Audio] Failed to resume shared AudioContext:", err));
   }
 
@@ -325,9 +343,24 @@ export async function playRawPCM(base64: string, sampleRate: number = 24000): Pr
     
     return new Promise((resolve) => {
       let settled = false;
+      let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+      const startCtxTime = audioCtx.currentTime;
+      const expectedDurationSec = float32Array.length / sampleRate;
+
       const onEnded = () => {
         if (settled) return;
         settled = true;
+        if (safetyTimer) {
+          clearTimeout(safetyTimer);
+          safetyTimer = null;
+        }
+        try {
+          source.onended = null;
+          source.stop();
+        } catch {}
+        try {
+          source.disconnect();
+        } catch {}
         if (activePCMSource === source) {
           activePCMSource = null;
         }
@@ -335,14 +368,29 @@ export async function playRawPCM(base64: string, sampleRate: number = 24000): Pr
       };
       source.onended = onEnded;
 
-      // Safety timeout: If browser drops onended event, resolve cleanly after buffer duration
-      const durationMs = ((float32Array.length / sampleRate) * 1000) + 250;
-      setTimeout(() => {
-        if (!settled) {
+      const scheduleCheck = (delayMs: number) => {
+        if (safetyTimer) clearTimeout(safetyTimer);
+        safetyTimer = setTimeout(() => {
+          if (settled || activePlaybackId !== currentPlaybackId) {
+            onEnded();
+            return;
+          }
+          if ((audioCtx.state as string) !== 'running') {
+            audioCtx.resume().catch(() => {});
+            scheduleCheck(300);
+            return;
+          }
+          const elapsedSec = Math.max(0, audioCtx.currentTime - startCtxTime);
+          const remainingSec = expectedDurationSec - elapsedSec;
+          if (remainingSec > 0.06) {
+            scheduleCheck(Math.ceil(remainingSec * 1000) + 180);
+            return;
+          }
           onEnded();
-        }
-      }, durationMs);
+        }, delayMs);
+      };
 
+      scheduleCheck(Math.ceil(expectedDurationSec * 1000) + 250);
       source.start();
     });
   } catch (error) {
@@ -432,9 +480,24 @@ export async function playCompressedAudio(base64: string, playbackRate: number =
 
     return new Promise((resolve) => {
       let settled = false;
+      let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+      const startCtxTime = audioCtx.currentTime;
+      const expectedDurationSec = decodedBuffer.duration || 1;
+
       const onEnded = () => {
         if (settled) return;
         settled = true;
+        if (safetyTimer) {
+          clearTimeout(safetyTimer);
+          safetyTimer = null;
+        }
+        try {
+          source.onended = null;
+          source.stop();
+        } catch {}
+        try {
+          source.disconnect();
+        } catch {}
         if (activePCMSource === source) {
           activePCMSource = null;
         }
@@ -442,14 +505,29 @@ export async function playCompressedAudio(base64: string, playbackRate: number =
       };
       source.onended = onEnded;
 
-      // Safety timeout: If browser drops onended event, resolve cleanly after buffer duration
-      const durationMs = ((decodedBuffer.duration || 1) * 1000) + 250;
-      setTimeout(() => {
-        if (!settled) {
+      const scheduleCheck = (delayMs: number) => {
+        if (safetyTimer) clearTimeout(safetyTimer);
+        safetyTimer = setTimeout(() => {
+          if (settled || activePlaybackId !== currentPlaybackId) {
+            onEnded();
+            return;
+          }
+          if ((audioCtx.state as string) !== 'running') {
+            audioCtx.resume().catch(() => {});
+            scheduleCheck(300);
+            return;
+          }
+          const elapsedSec = Math.max(0, audioCtx.currentTime - startCtxTime);
+          const remainingSec = expectedDurationSec - elapsedSec;
+          if (remainingSec > 0.06) {
+            scheduleCheck(Math.ceil(remainingSec * 1000) + 180);
+            return;
+          }
           onEnded();
-        }
-      }, durationMs);
+        }, delayMs);
+      };
 
+      scheduleCheck(Math.ceil(expectedDurationSec * 1000) + 250);
       source.start(0);
     });
   } catch (error) {
@@ -537,12 +615,14 @@ function getSilentWavBlobUrl(): string {
 let ttsVoiceBusInput: GainNode | null = null;
 let ttsActiveBuffer: AudioBuffer | null = null;
 let ttsActiveSource: AudioBufferSourceNode | null = null;
+const activeTTSSources = new Set<AudioBufferSourceNode>();
 let ttsStartedAtCtxTime = 0;
 let ttsPausedOffsetSec = 0;
 let ttsActiveRate = 1.0;
 let ttsStoppingForPause = false;
 let ttsActiveFinishResolver: (() => void) | null = null;
 let ttsSafetyTimer: ReturnType<typeof setTimeout> | null = null;
+let currentAudioSessionMode: 'ambient' | 'speech' | null = null;
 
 function getTTSVoiceBus(ctx: AudioContext): GainNode {
   ensureMasterChain(ctx);
@@ -563,24 +643,38 @@ function clearTTSSafetyTimer() {
   }
 }
 
+function stopAndDisconnectTTSSourceNode(node: AudioBufferSourceNode | null) {
+  if (!node) return;
+  activeTTSSources.delete(node);
+  try {
+    node.onended = null;
+  } catch {}
+  try {
+    node.stop();
+  } catch {
+    // already stopped
+  }
+  try {
+    node.disconnect();
+  } catch {
+    // ignore
+  }
+}
+
 function stopActiveWebAudioTTSSource(forPause: boolean = false) {
   clearTTSSafetyTimer();
+  ttsStoppingForPause = forPause;
   if (ttsActiveSource) {
-    ttsStoppingForPause = forPause;
-    try {
-      ttsActiveSource.onended = null;
-      ttsActiveSource.stop();
-    } catch {
-      // already stopped
-    }
-    try {
-      ttsActiveSource.disconnect();
-    } catch {
-      // ignore
-    }
+    stopAndDisconnectTTSSourceNode(ttsActiveSource);
     ttsActiveSource = null;
-    ttsStoppingForPause = false;
   }
+  if (activeTTSSources.size > 0) {
+    for (const node of Array.from(activeTTSSources)) {
+      stopAndDisconnectTTSSourceNode(node);
+    }
+    activeTTSSources.clear();
+  }
+  ttsStoppingForPause = false;
 }
 
 function startTTSKeepAlive() {
@@ -594,9 +688,13 @@ function stopTTSKeepAlive() {
 }
 
 export function configureAmbientAudioSession(): void {
+  // Do not downgrade audio session while TTS is actively playing
+  if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) return;
+  if (currentAudioSessionMode === 'ambient') return;
   if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
     try {
       (navigator as any).audioSession.type = 'ambient';
+      currentAudioSessionMode = 'ambient';
     } catch (_) {}
   }
 }
@@ -606,17 +704,21 @@ export function configureAmbientAudioSession(): void {
  * - 'transient': mixes concurrently with external music apps and gently ducks their volume during speech.
  * - Fallback 'ambient': mixes concurrently with external music apps without stopping them.
  * Never uses 'playback', which would force external music apps to pause.
+ * Skips redundant reassignment if already configured for speech so the OS never hiccups mid-playback.
  */
 export function configureTransientDuckingAudioSession(): void {
+  if (currentAudioSessionMode === 'speech') return;
   if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
     try {
       (navigator as any).audioSession.type = 'transient';
       if ((navigator as any).audioSession.type !== 'transient') {
         (navigator as any).audioSession.type = 'ambient';
       }
+      currentAudioSessionMode = 'speech';
     } catch {
       try {
         (navigator as any).audioSession.type = 'ambient';
+        currentAudioSessionMode = 'speech';
       } catch (_) {}
     }
   }
@@ -692,7 +794,8 @@ export function isTTSAudioPlaying(): boolean {
 function launchWebAudioTTSSource(activePlaybackId: number): void {
   if (!ttsActiveBuffer || activePlaybackId !== ttsPlaybackId) return;
   const audioCtx = getSharedAudioContext();
-  if (audioCtx.state === 'suspended') {
+  const stateStr = audioCtx.state as string;
+  if (stateStr === 'suspended' || stateStr === 'interrupted') {
     audioCtx.resume().catch(() => {});
   }
 
@@ -717,13 +820,23 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
   const voiceBus = getTTSVoiceBus(audioCtx);
   source.connect(voiceBus);
 
+  activeTTSSources.add(source);
   ttsActiveSource = source;
-  ttsStartedAtCtxTime = audioCtx.currentTime;
+  const sourceStartCtxTime = audioCtx.currentTime;
+  ttsStartedAtCtxTime = sourceStartCtxTime;
+  const expectedDurationSec = remainingSec / Math.max(0.5, ttsActiveRate);
 
+  let ended = false;
   const onSourceEnded = () => {
+    if (ended) return;
     if (ttsStoppingForPause || ttsUserExplicitlyPaused) return;
-    if (activePlaybackId !== ttsPlaybackId) return;
+    if (activePlaybackId !== ttsPlaybackId) {
+      stopAndDisconnectTTSSourceNode(source);
+      return;
+    }
+    ended = true;
     clearTTSSafetyTimer();
+    stopAndDisconnectTTSSourceNode(source);
     if (ttsActiveSource === source) {
       ttsActiveSource = null;
     }
@@ -736,11 +849,36 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
 
   source.onended = onSourceEnded;
 
-  const durationMs = ((remainingSec / Math.max(0.5, ttsActiveRate)) * 1000) + 250;
-  clearTTSSafetyTimer();
-  ttsSafetyTimer = setTimeout(() => {
-    onSourceEnded();
-  }, durationMs);
+  const scheduleSafetyCheck = (delayMs: number) => {
+    clearTTSSafetyTimer();
+    ttsSafetyTimer = setTimeout(() => {
+      if (ended || ttsStoppingForPause || ttsUserExplicitlyPaused) return;
+      if (activePlaybackId !== ttsPlaybackId || ttsActiveSource !== source) {
+        stopAndDisconnectTTSSourceNode(source);
+        return;
+      }
+
+      // If the OS briefly suspended/interrupted the AudioContext during screen lock,
+      // resume it and wait for actual audio playback time instead of prematurely ending the chunk!
+      if ((audioCtx.state as string) !== 'running') {
+        audioCtx.resume().catch(() => {});
+        scheduleSafetyCheck(300);
+        return;
+      }
+
+      const elapsedCtxSec = Math.max(0, audioCtx.currentTime - sourceStartCtxTime);
+      const remainingCtxSec = expectedDurationSec - elapsedCtxSec;
+      if (remainingCtxSec > 0.06) {
+        scheduleSafetyCheck(Math.ceil(remainingCtxSec * 1000) + 180);
+        return;
+      }
+
+      onSourceEnded();
+    }, delayMs);
+  };
+
+  const initialDurationMs = Math.ceil(expectedDurationSec * 1000) + 250;
+  scheduleSafetyCheck(initialDurationMs);
 
   source.start(0, ttsPausedOffsetSec);
 }
@@ -1207,11 +1345,25 @@ export function initTTSAudioLifecycle(): void {
   ttsLifecycleInitialized = true;
   configureAmbientAudioSession();
 
-  const handleResume = () => {
+  const ensureAudioContextRunningForTTS = () => {
+    if (!ttsShouldBePlaying || ttsUserExplicitlyPaused) return;
+    try {
+      const ctx = getSharedAudioContext();
+      const st = ctx.state as string;
+      if (st === 'suspended' || st === 'interrupted') {
+        ctx.resume().catch(() => {});
+      }
+    } catch (error) {
+      console.error('[AudioLifecycle] Failed to restore AudioContext:', error);
+    }
+  };
+
+  const handleVisibleResume = () => {
     if (document.visibilityState === 'hidden') return;
     try {
       const ctx = getSharedAudioContext();
-      if (ctx.state === 'suspended') {
+      const st = ctx.state as string;
+      if (st === 'suspended' || st === 'interrupted') {
         ctx.resume().catch((error) => {
           console.error('[AudioLifecycle] AudioContext resume after visibility change rejected:', error);
         });
@@ -1220,31 +1372,29 @@ export function initTTSAudioLifecycle(): void {
       console.error('[AudioLifecycle] Failed to restore AudioContext:', error);
     }
 
-    // 앱 복귀 시 TTS 진행 중이면 외부 음악 덕킹 세션으로 복귀
     if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
       configureSpeechAudioSession();
-    }
-
-    if (ttsShouldBePlaying && !ttsUserExplicitlyPaused && ttsActiveBuffer && !ttsActiveSource) {
-      setTimeout(() => {
-        if (ttsShouldBePlaying && !ttsUserExplicitlyPaused && ttsActiveBuffer && !ttsActiveSource) {
-          launchWebAudioTTSSource(ttsPlaybackId);
-        }
-      }, 200);
+      // Only relaunch if the source node was explicitly detached with a saved non-zero offset.
+      // When AudioContext resumes, an existing ttsActiveSource continues seamlessly from its exact sample position.
+      if (ttsActiveBuffer && !ttsActiveSource && ttsPausedOffsetSec > 0 && ttsPausedOffsetSec < ttsActiveBuffer.duration - 0.05) {
+        launchWebAudioTTSSource(ttsPlaybackId);
+      }
     }
   };
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      handleResume();
+      handleVisibleResume();
     } else if (document.visibilityState === 'hidden') {
-      if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
-        configureTransientDuckingAudioSession();
-      }
+      // Do NOT reassign navigator.audioSession.type on screen lock (prevents OS audio session reset pause).
+      // Instead, ensure AudioContext stays running if the OS briefly suspends it during lock transition.
+      ensureAudioContextRunningForTTS();
+      setTimeout(ensureAudioContextRunningForTTS, 80);
+      setTimeout(ensureAudioContextRunningForTTS, 250);
     }
   });
-  window.addEventListener('pageshow', handleResume);
-  window.addEventListener('focus', handleResume);
+  window.addEventListener('pageshow', handleVisibleResume);
+  window.addEventListener('focus', handleVisibleResume);
 }
 
 /**

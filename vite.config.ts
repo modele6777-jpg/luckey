@@ -99,6 +99,7 @@ export default defineConfig(({mode}) => {
           description: "LucKey AI 페르소나 유니버스",
           start_url: "/",
           display: "standalone",
+          orientation: "portrait-primary",
           background_color: "#000000",
           theme_color: "#000000",
           icons: [
