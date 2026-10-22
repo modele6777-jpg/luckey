@@ -45,7 +45,7 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 16 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto no-scrollbar rounded-3xl bg-zinc-950/95 border border-amber-400/30 shadow-2xl p-4 sm:p-7 flex flex-col items-center justify-start z-10"
+          className="relative w-full max-w-6xl max-h-[92vh] overflow-y-auto no-scrollbar rounded-3xl bg-zinc-950/95 border border-amber-400/30 shadow-2xl p-4 sm:p-7 flex flex-col items-center justify-start z-10"
         >
           {/* Header */}
           <div className="w-full flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
@@ -55,7 +55,7 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-white font-serif flex items-center gap-2">
-                  <span>무결점 원형 타로 스프레드</span>
+                  <span>원형 타로 카드 아크</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-sans">
                     Zero-Occlusion Iris
                   </span>
@@ -82,6 +82,7 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
               onSelectCard={(card) => {
                 setPickedCard(card);
               }}
+              onResetSelection={() => setPickedCard(null)}
               selectedCardId={pickedCard?.id}
             />
           </div>
