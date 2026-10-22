@@ -1978,12 +1978,15 @@ export default function LucyStandalonePage() {
 
   return (
     <div
-      className={`lucy-chat-shell h-full min-h-0 flex-1 w-full max-w-full overflow-hidden flex flex-col font-sans select-text relative transition-colors duration-300 ${
+      className={`lucy-chat-shell h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-300 ${
         isLight ? 'bg-[#faf7f2] text-slate-800' : 'bg-transparent text-white'
       }`}
       style={{
         backgroundColor: isLight ? '#faf7f2' : undefined,
         color: isLight ? '#1e293b' : '#ffffff',
+        overflowX: 'hidden',
+        maxWidth: '100vw',
+        touchAction: 'pan-y',
       }}
     >
       {/* Mode Switch Toast */}
@@ -1993,10 +1996,10 @@ export default function LucyStandalonePage() {
             initial={{ opacity: 0, y: -30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -30, scale: 0.95 }}
-            className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full bg-slate-900/95 text-white shadow-xl border border-amber-400/40 flex items-center gap-2 font-sans text-xs sm:text-sm backdrop-blur-md font-bold"
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full bg-slate-900/95 text-white shadow-xl border border-amber-400/40 flex items-center gap-2 font-sans text-xs sm:text-sm backdrop-blur-md font-bold max-w-[92vw] truncate"
           >
-            <Sparkles size={14} className="text-amber-400 animate-spin" />
-            <span>{modeSwitchToast}</span>
+            <Sparkles size={14} className="text-amber-400 animate-spin shrink-0" />
+            <span className="truncate">{modeSwitchToast}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -2007,50 +2010,51 @@ export default function LucyStandalonePage() {
           paddingTop: 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
           backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
           color: isLight ? '#1e293b' : '#ffffff',
+          overflowX: 'hidden',
         }}
-        className={`lucy-chat-header w-full px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-300 ${
+        className={`lucy-chat-header w-full max-w-full overflow-x-hidden px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-300 ${
           isLight
             ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_2px_12px_rgba(180,140,90,0.08)]'
             : 'bg-slate-950/80 border-white/10 text-white'
         }`}
       >
-        <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2 min-w-0 w-full max-w-full">
           {/* Brand Logo & Left empty space (상단 로고 왼쪽 아이콘 제거 및 빈 공간 유지) */}
-          <div className="flex items-center min-w-0 pl-1 sm:pl-3">
+          <div className="flex items-center min-w-0 flex-1 pl-1 sm:pl-3 overflow-hidden">
             <div
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 sm:gap-3 min-w-0 cursor-pointer group select-none"
+              className="flex items-center gap-2 sm:gap-3 min-w-0 w-full cursor-pointer group select-none"
               role="button"
               tabIndex={0}
               title="Lucy 메인 홈"
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/'); }}
             >
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
                   <h1
-                    className={`text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 ${
+                    className={`text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 shrink-0 ${
                       isLight ? 'text-slate-900' : 'text-white'
                     }`}
                     style={{ color: isLight ? '#0f172a' : '#ffffff' }}
                   >
                     Lucy
                   </h1>
-                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/20 text-indigo-600 dark:text-indigo-200 border border-indigo-200/60 dark:border-indigo-400/30 flex items-center gap-1">
+                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/20 text-indigo-600 dark:text-indigo-200 border border-indigo-200/60 dark:border-indigo-400/30 flex items-center gap-1 shrink-0">
                     <Sparkles size={10} className="text-indigo-500 dark:text-indigo-300 animate-spin" />
                     AI 모드
                   </span>
                   {activeChannels.length === ALL_CHANNELS.length ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs">
+                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs truncate max-w-full">
                       <span>👑</span>
-                      <span>7대 채널 올인원 마스터</span>
+                      <span className="truncate">7대 채널 올인원 마스터</span>
                     </span>
                   ) : activeChannels.length >= 2 ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-300 flex items-center gap-1 shadow-xs">
+                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-300 flex items-center gap-1 shadow-xs truncate max-w-full">
                       <span>⚡</span>
-                      <span>{activeChannels.length}중 융합 가동 중</span>
+                      <span className="truncate">{activeChannels.length}중 융합 가동 중</span>
                     </span>
                   ) : autoDetectedTitle ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-900 dark:text-violet-100 border border-violet-200/80 dark:border-violet-500/30">
+                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-900 dark:text-violet-100 border border-violet-200/80 dark:border-violet-500/30 truncate max-w-full">
                       {autoDetectedTitle}
                     </span>
                   ) : null}
@@ -2200,8 +2204,13 @@ export default function LucyStandalonePage() {
       </header>
 
       {/* Chat Messages Stream */}
-      <main ref={messagesContainerRef} onScroll={handleScroll} className="lucy-chat-main flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto select-text">
-        <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-28 sm:pb-32">
+      <main
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        style={{ overflowX: 'hidden', touchAction: 'pan-y' }}
+        className="lucy-chat-main flex-1 overflow-y-auto overflow-x-hidden overscroll-x-none touch-pan-y p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto min-w-0 select-text"
+      >
+        <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-28 sm:pb-32 w-full max-w-full min-w-0 overflow-x-hidden">
           {filteredMessages.length === 0 && searchQuery.trim().length > 0 && (
             <div className="text-center py-12 px-4">
               <p className="text-xs sm:text-sm text-slate-500">
@@ -2269,10 +2278,10 @@ export default function LucyStandalonePage() {
                 key={msgId}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
+                className={`flex flex-col w-full max-w-full min-w-0 overflow-x-hidden ${isUser ? 'items-end' : 'items-start'}`}
               >
                 {/* Speaker Label, Mode Badge Pill (Clickable) & Timestamp */}
-                <div className="flex items-center gap-1.5 mb-1.5 px-1 text-[11px] flex-wrap">
+                <div className="flex items-center gap-1.5 mb-1.5 px-1 text-[11px] flex-wrap max-w-full min-w-0">
                   {!isUser ? (
                     <span
                       className={`font-bold flex items-center gap-1 ${isLight ? 'text-amber-800' : 'text-amber-300'}`}
@@ -2354,7 +2363,7 @@ export default function LucyStandalonePage() {
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
 
-                <div className="relative group max-w-[92%] sm:max-w-[85%] lg:max-w-[80%]">
+                <div className="relative group max-w-[92%] sm:max-w-[85%] lg:max-w-[80%] min-w-0">
                   {/* Attached Image Preview (in User Message or Lucy's Card Deep Insight Reply) */}
                   {(() => {
                     const cardImageToDisplay = isUser ? imageUrl : (imageUrl || null);
@@ -2373,7 +2382,7 @@ export default function LucyStandalonePage() {
 
                   {/* Message Bubble */}
                   <div 
-                    className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text transition-colors duration-300 ${
+                    className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-colors duration-300 ${
                       isUser
                         ? isLight
                           ? 'lucy-user-bubble bg-amber-100 border border-amber-300 text-slate-900 rounded-tr-xs font-sans shadow-xs'
@@ -2395,7 +2404,7 @@ export default function LucyStandalonePage() {
                   >
                     {isUser ? (
                       <div
-                        className={`whitespace-pre-wrap font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}
+                        className={`whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}
                         style={{ color: isLight ? '#0f172a' : '#ffffff' }}
                       >
                         {textContent}
@@ -2517,14 +2526,15 @@ export default function LucyStandalonePage() {
           paddingBottom: 'max(0.25rem, calc(var(--sab, 0px) + 0.15rem))',
           backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
           color: isLight ? '#1e293b' : '#ffffff',
+          overflowX: 'hidden',
         }}
-        className={`lucy-chat-footer w-full px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
+        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
           isLight
             ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_-2px_12px_rgba(180,140,90,0.06)]'
             : 'bg-slate-950/88 border-white/10 text-white'
         }`}
       >
-        <div className="max-w-lg sm:max-w-xl mx-auto flex flex-col gap-0.5 sm:gap-1">
+        <div className="w-full min-w-0 max-w-lg sm:max-w-xl mx-auto flex flex-col gap-0.5 sm:gap-1 overflow-x-hidden">
           {/* Image Attachment Preview */}
           {attachedImage && (
             <div className="flex items-center gap-1.5 bg-amber-50/90 dark:bg-slate-900 p-1 rounded-xl w-fit border border-amber-200 dark:border-white/15">
@@ -2685,7 +2695,7 @@ export default function LucyStandalonePage() {
 
             {/* 가로 스크롤 추천 질문 리스트 */}
             {currentPrompts.length > 0 && (
-              <div className="flex-1 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
+              <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
                 {currentPrompts.map((promptText) => (
                   <button
                     key={promptText}

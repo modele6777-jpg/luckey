@@ -236,7 +236,7 @@ export function LucyProTypewriter({
 
   return (
     <div
-      className={`max-w-none leading-relaxed font-sans [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-slate-900 [&_pre]:text-white [&_pre]:p-3.5 [&_pre]:rounded-xl [&_p]:mb-2.5 [&_p:last-child]:mb-0 ${
+      className={`min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] leading-relaxed font-sans [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:break-words [&_pre]:bg-slate-900 [&_pre]:text-white [&_pre]:p-3.5 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_table]:block [&_table]:overflow-x-auto [&_table]:max-w-full [&_p]:mb-2.5 [&_p:last-child]:mb-0 ${
         isLight
           ? 'text-slate-800 [&_h1]:text-slate-900 [&_h2]:text-slate-900 [&_h3]:text-slate-900 [&_strong]:text-amber-900 [&_blockquote]:text-slate-600 [&_code]:bg-amber-50 [&_code]:text-amber-800'
           : 'text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-amber-200 [&_strong]:text-amber-300 [&_blockquote]:text-white/90 [&_code]:bg-amber-950/60 [&_code]:text-amber-200'

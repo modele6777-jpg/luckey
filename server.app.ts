@@ -200,6 +200,7 @@ function markModelThrottled(model: string, durationMs = 180000) {
 
 const VALID_GEMINI_MODELS = new Set([
   "gemini-3.1-flash-lite",
+  "gemini-3.8-flash",
   "gemini-flash-latest",
   "gemini-4-argon",
 ]);
@@ -207,9 +208,14 @@ const VALID_GEMINI_MODELS = new Set([
 function normalizeRequestedGeminiModel(rawModel?: string): string | undefined {
   const trimmed = (rawModel || "").trim().toLowerCase();
   if (!trimmed) return undefined;
+  if (trimmed === "gemini-3.8-flash") {
+    return "gemini-3.8-flash";
+  }
+  if (trimmed === "gemini-flash-latest") {
+    return "gemini-flash-latest";
+  }
   if (
     trimmed === "gemini-4-argon" ||
-    trimmed === "gemini-3.8-flash" ||
     trimmed === "gemini-3.7-flash" ||
     trimmed === "gemini-3.1-flash-lite-preview" ||
     trimmed === "gemini-3-flash-preview" ||
@@ -263,6 +269,7 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
 function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const defaultModels = [
     "gemini-3.1-flash-lite",
+    "gemini-3.8-flash",
     "gemini-flash-latest",
   ];
 
@@ -270,8 +277,9 @@ function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   const normalizedEnv = normalizeRequestedGeminiModel(process.env.GEMINI_MODEL);
 
   const uniqueCandidates = [
-    "gemini-3.1-flash-lite",
     normalizedRequested,
+    "gemini-3.1-flash-lite",
+    "gemini-3.8-flash",
     normalizedEnv,
     ...defaultModels,
   ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
@@ -283,17 +291,22 @@ function getPrioritizedGeminiModels(requestedModel?: string): string[] {
   return [...available, ...throttled];
 }
 
-function buildFastModelConfig(baseConfig: any, model: string, thinkingLevel?: string) {
+function buildFastModelConfig(baseConfig: any, model: string, thinkingLevel?: string, omitThinking = false) {
   const cfg: any = {
     ...baseConfig,
     maxOutputTokens: Math.max(baseConfig?.maxOutputTokens || 2048, 1536),
   };
-  if (model.includes("3.1-flash-lite")) {
+  delete cfg.thinkingConfig;
+  if (omitThinking) {
+    return cfg;
+  }
+  if (model === "gemini-3.1-flash-lite") {
     cfg.thinkingConfig = { thinkingLevel: thinkingLevel || "MINIMAL" };
-  } else if (model.startsWith("gemini-3") || model.startsWith("gemini-4") || model === "gemini-flash-latest") {
+  } else if (model === "gemini-3.8-flash" || model === "gemini-4-argon") {
     const safeLevel = !thinkingLevel || thinkingLevel === "MINIMAL" ? "LOW" : thinkingLevel;
     cfg.thinkingConfig = { thinkingLevel: safeLevel };
   }
+  // Never attach thinkingLevel to gemini-flash-latest or other models as it causes 400 Bad Request
   return cfg;
 }
 
@@ -302,30 +315,36 @@ async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, conf
 
   let lastError: any = null;
   for (const model of modelsToTry) {
-    try {
-      const streamConfig = buildFastModelConfig(config, model);
-      const timeoutMs = model.includes("3.1-flash-lite") ? 8000 : 5000;
-      const stream = await Promise.race([
-        ai.models.generateContentStream({
-          model,
-          contents,
-          config: streamConfig,
-        }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Stream connect timeout on ${model}`)), timeoutMs)
-        ),
-      ]);
-      modelCooldownMap.delete(model);
-      return { stream, modelUsed: model };
-    } catch (err: any) {
-      lastError = err;
-      const isThrottled = isTemporaryUnavailableOrRateLimited(err);
-      if (isThrottled) {
-        markModelThrottled(model, 600000);
-        console.warn(`[server/gemini] Stream Model ${model} is experiencing high demand/rate limit (503/429), throttling model and engaging next available model...`);
-      } else {
-        markModelThrottled(model, 180000);
-        console.warn(`[server/gemini] Stream Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
+    for (const omitThinking of [false, true]) {
+      try {
+        const streamConfig = buildFastModelConfig(config, model, undefined, omitThinking);
+        const timeoutMs = 15000;
+        const stream = await Promise.race([
+          ai.models.generateContentStream({
+            model,
+            contents,
+            config: streamConfig,
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Stream connect timeout on ${model}`)), timeoutMs)
+          ),
+        ]);
+        modelCooldownMap.delete(model);
+        return { stream, modelUsed: model };
+      } catch (err: any) {
+        lastError = err;
+        if (!omitThinking && (model === "gemini-3.1-flash-lite" || model === "gemini-3.8-flash")) {
+          continue;
+        }
+        const isThrottled = isTemporaryUnavailableOrRateLimited(err);
+        if (isThrottled) {
+          markModelThrottled(model, 120000);
+          console.warn(`[server/gemini] Stream Model ${model} is experiencing high demand/rate limit, trying next available model...`);
+        } else {
+          markModelThrottled(model, 60000);
+          console.warn(`[server/gemini] Stream Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
+        }
+        break;
       }
     }
   }
@@ -337,33 +356,39 @@ async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, con
 
   let lastError: any = null;
   for (const model of modelsToTry) {
-    try {
-      const contentConfig = buildFastModelConfig(config, model);
-      const timeoutMs = model.includes("3.1-flash-lite") ? 12000 : 6000;
-      const response = await Promise.race([
-        ai.models.generateContent({
-          model,
-          contents,
-          config: contentConfig,
-        }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Content generation timeout on ${model}`)), timeoutMs)
-        ),
-      ]);
-      if (response?.text && String(response.text).trim().length > 0) {
-        modelCooldownMap.delete(model);
-        return { response, modelUsed: model };
-      }
-      throw new Error(`Empty response text from ${model}`);
-    } catch (err: any) {
-      lastError = err;
-      const isThrottled = isTemporaryUnavailableOrRateLimited(err);
-      if (isThrottled) {
-        markModelThrottled(model, 600000);
-        console.warn(`[server/gemini] Content Model ${model} is experiencing high demand/rate limit (503/429), throttling model and engaging next available model...`);
-      } else {
-        markModelThrottled(model, 180000);
-        console.warn(`[server/gemini] Content Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
+    for (const omitThinking of [false, true]) {
+      try {
+        const contentConfig = buildFastModelConfig(config, model, undefined, omitThinking);
+        const timeoutMs = 20000;
+        const response = await Promise.race([
+          ai.models.generateContent({
+            model,
+            contents,
+            config: contentConfig,
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Content generation timeout on ${model}`)), timeoutMs)
+          ),
+        ]);
+        if (response?.text && String(response.text).trim().length > 0) {
+          modelCooldownMap.delete(model);
+          return { response, modelUsed: model };
+        }
+        throw new Error(`Empty response text from ${model}`);
+      } catch (err: any) {
+        lastError = err;
+        if (!omitThinking && (model === "gemini-3.1-flash-lite" || model === "gemini-3.8-flash")) {
+          continue;
+        }
+        const isThrottled = isTemporaryUnavailableOrRateLimited(err);
+        if (isThrottled) {
+          markModelThrottled(model, 120000);
+          console.warn(`[server/gemini] Content Model ${model} is experiencing high demand/rate limit, trying next available model...`);
+        } else {
+          markModelThrottled(model, 60000);
+          console.warn(`[server/gemini] Content Model ${model} failed (${err?.message?.slice(0, 120) || err}), attempting fallback model...`);
+        }
+        break;
       }
     }
   }
@@ -738,10 +763,10 @@ ${content}
 1. 湲곕줉???듭떖 二쇱젣? ?앷컖, 愿???щЪ??愿?듯븯??????ㅼ썙??3~5媛?(諛곗뿴濡?異붿텧)
 2. 湲?댁씠??二쇰맂 留덉쓬 ?곹깭, 誘몃쵖???댁“, ?먮꼫吏 ?먮쫫???뺥솗??臾섏궗?섎뒗 媛먯젙/?щ━ ?곹깭 ?쒓렇 1~3媛?(諛곗뿴濡?異붿텧)
 
-?ㅼ쭅 ?ㅼ쓬 JSON ?ㅽ궎留??뺤떇???좏슚??JSON 寃곌낵留?諛섑솚??二쇱꽭??
-if (isJsonExpected) {
-  "keywords": ["?ㅼ썙??", "?ㅼ썙??", "?ㅼ썙??"],
-  "emotions": ["媛먯젙?쒓렇1", "媛먯젙?쒓렇2"]
+오직 다음 JSON 스키마 형식의 유효한 JSON 결과만 반환해 주세요:
+{
+  "keywords": ["키워드1", "키워드2", "키워드3"],
+  "emotions": ["감정태그1", "감정태그2"]
 }`;
 
     // 1. Gemini AI濡?遺꾩꽍 ?쒕룄
@@ -1896,106 +1921,116 @@ if (isJsonExpected) {
           let activeModelUsed = streamModels[0] || "gemini-3.1-flash-lite";
 
           for (const currentModel of streamModels) {
-            try {
-              const streamConfig = buildFastModelConfig(config, currentModel, req.body.thinking_level);
-              const firstChunkTimeoutMs = currentModel.includes("3.1-flash-lite") ? 8000 : 5000;
-              const stream = await Promise.race([
-                ai.models.generateContentStream({
-                  model: currentModel,
-                  contents,
-                  config: streamConfig,
-                }),
-                new Promise<never>((_, reject) =>
-                  setTimeout(() => reject(new Error(`SSE stream connect timeout (${firstChunkTimeoutMs}ms) on ${currentModel}`)), firstChunkTimeoutMs)
-                ),
-              ]);
-
-              const iterator = stream[Symbol.asyncIterator]();
-              while (true) {
-                const waitMs = chunksDelivered === 0 ? firstChunkTimeoutMs : 20000;
-                const nextItem = await Promise.race([
-                  iterator.next(),
+            for (const omitThinking of [false, true]) {
+              try {
+                const streamConfig = buildFastModelConfig(config, currentModel, req.body.thinking_level, omitThinking);
+                const firstChunkTimeoutMs = 15000;
+                const stream = await Promise.race([
+                  ai.models.generateContentStream({
+                    model: currentModel,
+                    contents,
+                    config: streamConfig,
+                  }),
                   new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error(`SSE chunk timeout (${waitMs}ms) on ${currentModel}`)), waitMs)
+                    setTimeout(() => reject(new Error(`SSE stream connect timeout (${firstChunkTimeoutMs}ms) on ${currentModel}`)), firstChunkTimeoutMs)
                   ),
                 ]);
-                if (nextItem.done) break;
-                const chunk = nextItem.value;
-                let textChunk = "";
-                try {
-                  if (typeof (chunk as any).text === "string" && (chunk as any).text) {
-                    textChunk = (chunk as any).text;
-                  } else if ((chunk as any).candidates?.[0]?.content?.parts) {
-                    textChunk = (chunk as any).candidates[0].content.parts
-                      .map((p: any) => (p.text || ""))
-                      .join("");
-                  }
-                } catch (safetyErr) {
+
+                const iterator = stream[Symbol.asyncIterator]();
+                while (true) {
+                  const waitMs = chunksDelivered === 0 ? firstChunkTimeoutMs : 25000;
+                  const nextItem = await Promise.race([
+                    iterator.next(),
+                    new Promise<never>((_, reject) =>
+                      setTimeout(() => reject(new Error(`SSE chunk timeout (${waitMs}ms) on ${currentModel}`)), waitMs)
+                    ),
+                  ]);
+                  if (nextItem.done) break;
+                  const chunk = nextItem.value;
+                  let textChunk = "";
                   try {
-                    textChunk = (chunk as any).candidates?.[0]?.content?.parts
-                      ?.map((p: any) => (p.text || ""))
-                      .join("") || "";
-                  } catch (_) {
-                    textChunk = "";
-                  }
-                }
-
-                if (!textChunk) continue;
-
-                if (!res.headersSent) {
-                  res.setHeader('Content-Type', 'text/event-stream');
-                  res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
-                  res.setHeader('Connection', 'keep-alive');
-                  res.setHeader('X-Accel-Buffering', 'no');
-                  res.setHeader('Content-Encoding', 'none');
-                  if ((res as any).flushHeaders) {
-                    (res as any).flushHeaders();
-                  }
-                }
-
-                chunksDelivered++;
-                activeModelUsed = currentModel;
-                const mockChunk = {
-                  id: `chatcmpl-${Date.now()}`,
-                  object: "chat.completion.chunk",
-                  created: Math.floor(Date.now() / 1000),
-                  model: req.body.model || currentModel,
-                  choices: [
-                    {
-                      index: 0,
-                      delta: {
-                        content: textChunk
-                      },
-                      finish_reason: null
+                    if (typeof (chunk as any).text === "string" && (chunk as any).text) {
+                      textChunk = (chunk as any).text;
+                    } else if ((chunk as any).candidates?.[0]?.content?.parts) {
+                      textChunk = (chunk as any).candidates[0].content.parts
+                        .map((p: any) => (p.text || ""))
+                        .join("");
                     }
-                  ]
-                };
-                res.write(`data: ${JSON.stringify(mockChunk)}\n\n`);
-                if ((res as any).flush) {
-                  (res as any).flush();
-                }
-              }
+                  } catch (safetyErr) {
+                    try {
+                      textChunk = (chunk as any).candidates?.[0]?.content?.parts
+                        ?.map((p: any) => (p.text || ""))
+                        .join("") || "";
+                    } catch (_) {
+                      textChunk = "";
+                    }
+                  }
 
-              if (chunksDelivered > 0) {
-                modelCooldownMap.delete(currentModel);
-                streamSuccess = true;
+                  if (!textChunk) continue;
+
+                  if (!res.headersSent) {
+                    res.setHeader('Content-Type', 'text/event-stream');
+                    res.setHeader('Cache-Control', 'no-cache, no-store, no-transform');
+                    res.setHeader('Connection', 'keep-alive');
+                    res.setHeader('X-Accel-Buffering', 'no');
+                    res.setHeader('Content-Encoding', 'none');
+                    if ((res as any).flushHeaders) {
+                      (res as any).flushHeaders();
+                    }
+                  }
+
+                  chunksDelivered++;
+                  activeModelUsed = currentModel;
+                  const mockChunk = {
+                    id: `chatcmpl-${Date.now()}`,
+                    object: "chat.completion.chunk",
+                    created: Math.floor(Date.now() / 1000),
+                    model: req.body.model || currentModel,
+                    choices: [
+                      {
+                        index: 0,
+                        delta: {
+                          content: textChunk
+                        },
+                        finish_reason: null
+                      }
+                    ]
+                  };
+                  res.write(`data: ${JSON.stringify(mockChunk)}\n\n`);
+                  if ((res as any).flush) {
+                    (res as any).flush();
+                  }
+                }
+
+                if (chunksDelivered > 0) {
+                  modelCooldownMap.delete(currentModel);
+                  streamSuccess = true;
+                  break;
+                }
+                if (!omitThinking && (currentModel === "gemini-3.1-flash-lite" || currentModel === "gemini-3.8-flash")) {
+                  continue;
+                }
+                markModelThrottled(currentModel, 60000);
                 break;
-              }
-              markModelThrottled(currentModel, 180000);
-            } catch (streamErr: any) {
-              const isThrottled = isTemporaryUnavailableOrRateLimited(streamErr);
-              if (isThrottled) {
-                markModelThrottled(currentModel, 600000);
-                console.warn(`[server/openai-stream] Model ${currentModel} rate limited/throttled, trying next model...`);
-              } else {
-                markModelThrottled(currentModel, 180000);
-                console.warn(`[server/openai-stream] Model ${currentModel} failed (${streamErr?.message?.slice(0, 100) || streamErr}), trying next model...`);
-              }
-              if (chunksDelivered > 0) {
-                streamSuccess = true;
+              } catch (streamErr: any) {
+                if (!omitThinking && chunksDelivered === 0 && (currentModel === "gemini-3.1-flash-lite" || currentModel === "gemini-3.8-flash")) {
+                  continue;
+                }
+                const isThrottled = isTemporaryUnavailableOrRateLimited(streamErr);
+                if (isThrottled) {
+                  markModelThrottled(currentModel, 120000);
+                  console.warn(`[server/openai-stream] Model ${currentModel} rate limited/throttled, trying next model...`);
+                } else {
+                  markModelThrottled(currentModel, 60000);
+                  console.warn(`[server/openai-stream] Model ${currentModel} failed (${streamErr?.message?.slice(0, 100) || streamErr}), trying next model...`);
+                }
+                if (chunksDelivered > 0) {
+                  streamSuccess = true;
+                }
                 break;
               }
             }
+            if (streamSuccess) break;
           }
 
           if (!streamSuccess || chunksDelivered === 0) {

@@ -1882,7 +1882,7 @@ ${responseProfile.rule}`;
         model: LUCY_CHAT_MODEL,
         maxOutputTokens: responseProfile.maxOutputTokens,
         thinkingLevel: responseProfile.thinkingLevel,
-        preferBuffered: isMobileChat,
+        preferBuffered: false,
         onChunk: (chunk: string) => {
           resetWatchdog();
           replyText += chunk;

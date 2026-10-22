@@ -2632,4 +2632,19 @@ html.dark :is(.text-white\/30, .text-white\/35, .text-white\/40):not(
   color: rgba(255, 255, 255, 0.72) !important;
 }
 
+/* 10. Strict Horizontal Scroll Lock for Lucy Chat */
+.lucy-chat-shell,
+.lucy-chat-header,
+.lucy-chat-main,
+.lucy-chat-footer {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+  overscroll-behavior-x: none !important;
+}
+
+.lucy-chat-main {
+  touch-action: pan-y;
+}
+
+
 
