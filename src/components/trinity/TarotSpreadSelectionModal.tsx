@@ -92,7 +92,7 @@ export function TarotSpreadSelectionModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-        className="relative z-10 w-full max-w-5xl max-h-[90vh] bg-gradient-to-b from-zinc-900 via-zinc-950 to-black border border-yellow-500/30 rounded-[32px] sm:rounded-[36px] shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(234,179,8,0.15)] flex flex-col overflow-hidden text-white"
+        className="relative z-10 w-full max-w-2xl max-h-[90vh] bg-gradient-to-b from-zinc-900 via-zinc-950 to-black border border-yellow-500/30 rounded-[32px] sm:rounded-[36px] shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(234,179,8,0.15)] flex flex-col overflow-hidden text-white"
       >
         {/* Header */}
         <div className="p-5 sm:p-6 pb-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/[0.02]">

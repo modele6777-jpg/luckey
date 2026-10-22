@@ -134,9 +134,10 @@ const DeckWheelCard = React.memo(
     const { angleStep } = getWheelLayout(totalCards, radius, cardWidth);
     const localAngle = originalIdx * angleStep + gapAngleOffset;
     const liftAmount = isHovered ? (isMobile ? 12 : 18) : 0;
+    const finalRadius = radius + liftAmount;
     const cardRotate = Math.round(((localAngle * 180) / Math.PI + 90) * 10) / 10;
-    const x = Math.round(radius * Math.cos(localAngle) * 10) / 10;
-    const y = Math.round((radius * Math.sin(localAngle) - liftAmount) * 10) / 10;
+    const x = Math.round(finalRadius * Math.cos(localAngle) * 10) / 10;
+    const y = Math.round(finalRadius * Math.sin(localAngle) * 10) / 10;
 
     return (
       <div
@@ -146,14 +147,13 @@ const DeckWheelCard = React.memo(
           isPicked
             ? 'hidden pointer-events-none'
             : isHovered
-            ? 'pointer-events-auto cursor-pointer z-[5000] ring-2 ring-white ring-offset-2 ring-offset-zinc-950 shadow-[0_8px_24px_rgba(255,255,255,0.32)] brightness-110'
+            ? 'pointer-events-auto cursor-pointer z-[5000]'
             : 'pointer-events-auto cursor-pointer'
         }`}
         style={{
           transform: `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, 0) rotate(${cardRotate}deg)`,
           transformOrigin: 'center center',
           zIndex: isHovered ? 5000 : totalCards - originalIdx,
-          transition: 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s, filter 0.6s',
         }}
       >
         {!isPicked && (
@@ -268,7 +268,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     () => deck.filter((card) => !selectedIdSet.has(card.id)),
     [deck, selectedIdSet],
   );
-  const centerPreviewCard = activeWheelCards[0];
   const wheelLayout = useMemo(
     () => getWheelLayout(deck.length, radius, wheelCardWidth),
     [deck.length, radius, wheelCardWidth],
@@ -925,32 +924,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
             />
           ))}
         </div>
-
-        {centerPreviewCard && (
-          <motion.div
-            key={centerPreviewCard.id}
-            aria-hidden="true"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{
-              opacity: 1,
-              y: hoveredCardId ? 0 : -5,
-              scale: hoveredCardId ? 0.98 : 1.02,
-            }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className={`absolute left-1/2 top-1/2 z-[50] h-32 w-20 -ml-10 -mt-16 rounded-xl border-2 p-1 pointer-events-none transition-colors duration-500 ${
-              hoveredCardId
-                ? 'border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.45)]'
-                : 'border-white shadow-[0_8px_28px_rgba(255,255,255,0.2)]'
-            }`}
-          >
-            <TarotCardBackFace
-              cardBackId={effectiveCardBackId}
-              isHovered={!hoveredCardId}
-              size="preview"
-              className="rounded-lg"
-            />
-          </motion.div>
-        )}
 
         {/* Top Info Banner & Mobile Daily Guidance (Opaque surface, zero backdrop-blur) */}
         {isMobile && isDaily && selectedEntries.length === 0 ? (

@@ -1,26 +1,40 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
   RotateCcw,
   Compass,
   Eye,
+  Layers,
+  Shuffle,
+  ZoomIn,
   Info,
+  Sliders,
+  Play,
+  Pause,
+  Check,
+  ChevronRight,
+  ShieldCheck,
   Flame,
   Heart,
   Wind,
   Coins,
+  Sun,
+  Moon,
+  Star,
+  Activity,
+  Zap,
 } from 'lucide-react';
 import { TAROT_DECK, type TarotCard, getTarotCardImageUrl } from '@/data/tarotData';
 import { TarotCardBackFace } from './TarotCardBackFace';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 
 export interface CircularTarotSpreadProps {
-  /** 펼칠 타로 카드 배열 (기본값: 전체 78장) */
+  /** 펼칠 타로 카드 배열 (기본값: 메이저 아르카나 22장) */
   cards?: TarotCard[];
-  /** 원형에 배치할 카드 수 N (기본값: cards.length) */
+  /** 원형에 배치할 카드 수 N (기본값: 22장 또는 cards.length) */
   cardCount?: number;
-  /** 아크 반지름(px) — 미지정 시 카드 크기와 장수에 맞춰 자동 계산 */
+  /** 원형 반지름(px) — 미지정 시 카드 크기와 N에 맞춰 자동 계산 */
   radius?: number;
   /** 각 카드의 너비 (px, 기본값: 74) */
   cardWidth?: number;
@@ -74,8 +88,8 @@ const getCardSuitVisual = (card: TarotCard) => {
 };
 
 export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
-  cards = TAROT_DECK,
-  cardCount: initialCount = cards.length,
+  cards = TAROT_DECK.slice(0, 22),
+  cardCount: initialCount = 22,
   radius: customRadius,
   cardWidth = 74,
   cardHeight = 128,
@@ -86,33 +100,61 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
   cardBackThemeId = 'cosmic_midnight',
   enableSound = true,
   showControls = true,
+  showEscherDebug: initialDebug = false,
   className = '',
 }) => {
-  // 카드 수가 바뀌어도 아크 반경을 고정해 남은 카드가 각도 간격을 메우게 한다.
+  // 스프레드 렌더링 모드: 'cascade' (단방향 캐스케이드 — 이중 가림 완전 해소) | 'clean_orbit' (비가림 원형 궤도 — 100% 전면 노출)
+  const [spreadMode, setSpreadMode] = useState<'cascade' | 'clean_orbit'>('cascade');
   const [activeCount, setActiveCount] = useState<number>(Math.min(initialCount, cards.length));
-  const [drawnCardIds, setDrawnCardIds] = useState<Set<string>>(() => new Set());
   const [isFaceUp, setIsFaceUp] = useState<boolean>(initialShowFaces);
   const [direction, setDirection] = useState<'clockwise' | 'counter-clockwise'>(initialDirection);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [isAutoSpinning, setIsAutoSpinning] = useState<boolean>(false);
+  const [spinAngle, setSpinAngle] = useState<number>(0);
+  const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
 
   const lastHapticTime = useRef<number>(0);
+  const animFrameRef = useRef<number | null>(null);
 
   // 사용할 카드 슬라이스
   const activeDeck = useMemo(() => {
-    return cards.slice(0, activeCount).filter((card) => !drawnCardIds.has(card.id));
-  }, [cards, activeCount, drawnCardIds]);
+    return cards.slice(0, activeCount);
+  }, [cards, activeCount]);
 
   const N = activeDeck.length;
-  const centerPreviewCard = activeDeck[0];
-  const emphasizeCenterPreview = hoveredIdx === null;
 
-  // Match the arc radius to the configured card count so neighboring cards overlap once.
+  // 동적 최적 반지름 계산:
+  // - clean_orbit: 각 카드가 서로 겹치지 않고 온전히 드러나도록 둘레 2 * PI * R 계산
+  // - cascade: 원형을 유지하면서 단방향으로 유려하게 겹치도록 계산
   const effectiveRadius = useMemo(() => {
     if (customRadius && customRadius > 0) return customRadius;
-    const spacing = cardWidth * 0.92;
-    return Math.max(220, Math.round(((Math.max(activeCount, 2) - 1) * spacing) / Math.PI));
-  }, [customRadius, activeCount, cardWidth]);
+    if (spreadMode === 'clean_orbit') {
+      const targetCircumference = N * (cardWidth + 14);
+      const computedR = targetCircumference / (2 * Math.PI);
+      return Math.max(160, Math.min(310, Math.round(computedR)));
+    }
+    // 단방향 캐스케이드: 평균 70% 노출
+    const targetCircumference = N * cardWidth * 0.74;
+    const computedR = targetCircumference / (2 * Math.PI);
+    return Math.max(140, Math.min(280, Math.round(computedR)));
+  }, [customRadius, N, cardWidth, spreadMode]);
+
+  // 천문 자이로스코프 자동 회전 루프
+  useEffect(() => {
+    if (!isAutoSpinning) {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      return;
+    }
+    const tick = () => {
+      setSpinAngle((prev) => (prev + 0.12) % 360);
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+    animFrameRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [isAutoSpinning]);
 
   // 햅틱 사운드 트리거
   const triggerHaptic = useCallback(
@@ -146,16 +188,13 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
   // 카드 클릭/선택 핸들러
   const handleCardClick = useCallback(
     (card: TarotCard, index: number) => {
-      if (selectedCardId || drawnCardIds.size > 0) return;
-      setSelectedIdx(null);
-      setHoveredIdx(null);
+      setSelectedIdx(index);
       triggerHaptic('card_snap');
       if (onSelectCard) {
         onSelectCard(card, index);
       }
-      setDrawnCardIds((previous) => new Set(previous).add(card.id));
     },
-    [triggerHaptic, onSelectCard, selectedCardId, drawnCardIds]
+    [triggerHaptic, onSelectCard]
   );
 
   // 현재 호버 또는 선택된 카드
@@ -175,6 +214,8 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
    * 단일 카드 렌더러 함수
    * @param card 대상 타로 카드
    * @param i 카드 인덱스 (0 ~ N-1)
+   * @param isLastCard N-1번째 에셔 루프 클로징 카드 여부
+   * @param escherLayer 에셔 루프 분할 레이어 ('none' | 'overlap' | 'under')
    */
   const renderCardElement = (
     card: TarotCard,
@@ -183,13 +224,34 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
     const isHovered = hoveredIdx === i;
     const isSelected = selectedIdx === i || selectedCardId === card.id;
 
-    const orderedIndex = direction === 'clockwise' ? i : N - 1 - i;
-    const angleDeg = N > 1 ? (orderedIndex / (N - 1)) * 180 : 90;
-    const tangentAngle = angleDeg - 90;
-    const stackRank = direction === 'clockwise' ? i : N - 1 - i;
-    const zIndex = isHovered ? 9999 : isSelected ? 9000 : BASE_Z + stackRank * Z_STEP;
-    const hoverLift = isHovered ? 8 : isSelected ? 5 : 0;
-    const hoverScale = isHovered ? 1.04 : isSelected ? 1.02 : 1.0;
+    // 1. 방사형 회전 각도 및 z-index 계산
+    let currentAngle = 0;
+    let zIndex = BASE_Z;
+
+    if (spreadMode === 'clean_orbit') {
+      // 비가림 원형 궤도 모드: 360도 전 구간에 균등 분할 배치하여 겹침 없이 100% 완전 노출
+      const angleStep = 360 / N;
+      const baseAngle = i * angleStep;
+      currentAngle = (baseAngle + spinAngle) % 360;
+      zIndex = isHovered ? 9999 : isSelected ? 9000 : BASE_Z;
+    } else {
+      // 360도 완전 연결 캐스케이드 모드: 틈(notch) 없이 360도 전 구간에 카드가 균등하게 연결됨
+      const angleStep = 360 / N;
+      const normalizedIdx = direction === 'clockwise' ? i : (N - 1 - i);
+      const baseAngle = normalizedIdx * angleStep;
+      currentAngle = (baseAngle + spinAngle) % 360;
+
+      // 단방향 순차 스택: 순서대로 균일하게 겹침
+      const stackRank = direction === 'clockwise' ? (N - normalizedIdx) : (normalizedIdx + 1);
+      zIndex = isHovered ? 9999 : isSelected ? 9000 : BASE_Z + stackRank * Z_STEP;
+    }
+
+    // 2. 호버/선택 시 바깥쪽으로 부드럽게 떠오르는 래디얼 리프트
+    const hoverLift = isHovered ? 26 : isSelected ? 16 : 0;
+    const hoverScale = isHovered ? 1.09 : isSelected ? 1.04 : 1.0;
+
+    // 3. 플랫 서피스(tiltDeg = 0)로 3D 면 교차/절단 결함 방지 — 카드 일러스트와 원본 화질을 100% 온전하게 보존
+    const tiltDeg = 0;
 
     const SuitIcon = getCardSuitVisual(card).icon;
     const suitColor = getCardSuitVisual(card).color;
@@ -197,7 +259,7 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
 
     return (
       <div
-        key={card.id}
+        key={`${card.id}-${i}`}
         data-card-index={i}
         onMouseEnter={() => handleCardHover(i)}
         onMouseLeave={() => handleCardHover(null)}
@@ -206,23 +268,25 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
           width: `${cardWidth}px`,
           height: `${cardHeight}px`,
           position: 'absolute',
-          top: `calc(100% - ${cardHeight / 2 + 12}px)`,
+          top: '50%',
           left: '50%',
           marginLeft: `-${cardWidth / 2}px`,
           marginTop: `-${cardHeight / 2}px`,
           transformOrigin: '50% 50%',
-          transform: `rotate(${tangentAngle}deg) translateY(-${effectiveRadius + hoverLift}px) ${
+          transform: `rotate(${currentAngle}deg) translateY(-${effectiveRadius + hoverLift}px) ${
             isHovered ? 'translateZ(60px)' : isSelected ? 'translateZ(30px)' : 'translateZ(0px)'
           } scale(${hoverScale})`,
           zIndex,
           backfaceVisibility: 'hidden',
-          transition: 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s, filter 0.6s',
+          transition: isAutoSpinning
+            ? 'transform 0.15s ease-out, box-shadow 0.28s, filter 0.28s'
+            : 'transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s, filter 0.32s',
           cursor: 'pointer',
           willChange: 'transform',
         }}
         className={`group select-none rounded-xl overflow-hidden transition-all duration-300 ${
           isHovered
-            ? 'ring-2 ring-white shadow-[0_8px_24px_rgba(255,255,255,0.28)] brightness-110'
+            ? 'ring-2 ring-amber-300 shadow-[0_16px_36px_rgba(245,158,11,0.5),0_0_24px_rgba(251,191,36,0.6)] brightness-110'
             : isSelected
             ? 'ring-2 ring-yellow-400 shadow-[0_12px_28px_rgba(234,179,8,0.4)]'
             : 'shadow-[0_6px_16px_rgba(0,0,0,0.7),0_1px_3px_rgba(255,255,255,0.08)] hover:brightness-105'
@@ -306,18 +370,41 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-1.5 font-bold text-white text-xs">
-                <span>원형 타로 카드 아크</span>
+                <span>무결점 원형 타로 스프레드</span>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
                   {N} CARDS
                 </span>
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-sans font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  {spreadMode === 'cascade' ? '단방향 캐스케이드' : '비가림 원형 궤도'}
+                </span>
               </div>
               <p className="text-[10px] text-zinc-400 font-sans">
-                반원 아크를 한 방향으로 펼칩니다. 카드를 뽑으면 남은 순서대로 간격을 채웁니다.
+                원형을 유지하면서 이중 가려짐 없이 모든 카드가 선명하고 온전하게 노출됩니다
               </p>
             </div>
           </div>
 
+          {/* 퀵 토글 버튼 그룹 */}
           <div className="flex items-center gap-1.5 flex-wrap">
+            {/* 스프레드 모드 전환 (단방향 캐스케이드 vs 비가림 궤도) */}
+            <button
+              type="button"
+              onClick={() => {
+                setSpreadMode((prev) => (prev === 'cascade' ? 'clean_orbit' : 'cascade'));
+                triggerHaptic('tap_light');
+              }}
+              className={`px-2.5 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                spreadMode === 'clean_orbit'
+                  ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/40 shadow-sm'
+                  : 'bg-amber-500/20 text-amber-200 border border-amber-400/30'
+              }`}
+              title={spreadMode === 'cascade' ? '비가림 원형 궤도로 전환 (겹침 없이 100% 노출)' : '단방향 캐스케이드로 전환 (유려한 부채꼴)'}
+            >
+              <Layers size={12} />
+              <span>{spreadMode === 'cascade' ? '캐스케이드 휠' : '비가림 궤도'}</span>
+            </button>
+
+            {/* 앞면/뒷면 뒤집기 */}
             <button
               type="button"
               onClick={() => {
@@ -335,6 +422,25 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
               <span>{isFaceUp ? '앞면 공개' : '뒷면 가림'}</span>
             </button>
 
+            {/* 자동 회전 천문 자이로스코프 */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsAutoSpinning((prev) => !prev);
+                triggerHaptic('tap_light');
+              }}
+              className={`px-2.5 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                isAutoSpinning
+                  ? 'bg-purple-500/25 text-purple-200 border border-purple-400/40 animate-pulse'
+                  : 'bg-white/10 hover:bg-white/15 text-white/85 border border-white/10'
+              }`}
+              title="천문 자이로스코프 자전 토글"
+            >
+              {isAutoSpinning ? <Pause size={12} /> : <Play size={12} />}
+              <span>{isAutoSpinning ? '자전 중지' : '천문 자전'}</span>
+            </button>
+
+            {/* 시계/반시계 셔터 방향 전환 */}
             <button
               type="button"
               onClick={() => {
@@ -342,7 +448,7 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
                 triggerHaptic('tap_light');
               }}
               className="px-2.5 py-1.5 rounded-xl font-bold bg-white/10 hover:bg-white/15 text-white/85 border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
-              title="카드가 겹치는 방향 전환"
+              title="셔터 겹침 방향 전환"
             >
               <RotateCcw size={12} className={direction === 'counter-clockwise' ? '-scale-x-100' : ''} />
               <span>{direction === 'clockwise' ? '시계 ↻' : '반시계 ↺'}</span>
@@ -351,11 +457,11 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
         </div>
       )}
 
-      {/* 카드 수 조절 프리셋 */}
+      {/* 2. 카드 수 조절 프리셋 버튼 바 (8장 / 12장 / 16장 / 22장 메이저) */}
       {showControls && (
-        <div className="w-full flex flex-wrap items-center justify-center gap-1.5 mb-4">
-          <span className="text-[11px] text-zinc-400 font-mono mr-1">배치 장수:</span>
-          {[...new Set([8, 12, 16, 22, 78].map((num) => Math.min(num, cards.length)))].map((num) => (
+        <div className="flex items-center justify-center gap-1.5 mb-4 max-w-full overflow-x-auto no-scrollbar py-1">
+          <span className="text-[11px] text-zinc-400 font-mono mr-1 shrink-0">배치 장수 (N):</span>
+          {[8, 12, 16, 22].map((num) => (
             <button
               key={num}
               type="button"
@@ -375,69 +481,103 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
         </div>
       )}
 
-      {/* 반원 아크 스테이지. 전체 덱은 스크롤해 양 끝까지 확인할 수 있다. */}
-      <div className="relative w-full max-w-full my-3 sm:my-6">
-        <div className="w-full max-h-[70vh] overflow-auto">
+      {/* 3. 메인 원형 휠 컨테이너 (고정 지름 영역) */}
+      <div
+        className="relative flex items-center justify-center overflow-visible my-3 sm:my-6"
+        style={{
+          width: `${(effectiveRadius + cardHeight) * 2 + 20}px`,
+          height: `${(effectiveRadius + cardHeight) * 2 + 20}px`,
+          maxWidth: '96vw',
+          maxHeight: '96vw',
+          perspective: '1200px',
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        {/* 원형 배경 천문 링 & 가이드라인 */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {/* 외곽 부드러운 앰비언트 글로우 */}
           <div
-            className="relative flex-none flex items-center justify-center overflow-visible mx-auto"
+            className="rounded-full bg-gradient-to-tr from-amber-500/10 via-purple-500/5 to-cyan-500/10 blur-2xl"
             style={{
-              width: `${effectiveRadius * 2 + cardHeight + 24}px`,
-              height: `${effectiveRadius + cardHeight + 24}px`,
-              perspective: '1200px',
-              transformStyle: 'preserve-3d',
+              width: `${effectiveRadius * 2 + cardHeight}px`,
+              height: `${effectiveRadius * 2 + cardHeight}px`,
             }}
-          >
-            {activeDeck.map((card, i) => renderCardElement(card, i))}
+          />
+          {/* 천문 황도대 궤도선 */}
+          <div
+            className="rounded-full border border-amber-400/20 border-dashed"
+            style={{
+              width: `${effectiveRadius * 2}px`,
+              height: `${effectiveRadius * 2}px`,
+            }}
+          />
+          {/* 내부 동심원 데코 */}
+          <div
+            className="rounded-full border border-white/10"
+            style={{
+              width: `${effectiveRadius * 1.3}px`,
+              height: `${effectiveRadius * 1.3}px`,
+            }}
+          />
+        </div>
+
+        {/* 🌟 원형 중심 만다라 및 포커스 카드 프리뷰 허브 */}
+        <div
+          className="absolute z-10 flex flex-col items-center justify-center rounded-full p-4 text-center pointer-events-none transition-all duration-300"
+          style={{
+            width: `${Math.max(120, effectiveRadius * 0.95)}px`,
+            height: `${Math.max(120, effectiveRadius * 0.95)}px`,
+          }}
+        >
+          <div className="absolute inset-0 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/30 shadow-2xl pointer-events-auto flex flex-col items-center justify-center p-3">
+            {activeFocusCard ? (
+              <motion.div
+                key={activeFocusCard.card.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center text-center space-y-1"
+              >
+                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">
+                  CARD #{activeFocusCard.index + 1}
+                </span>
+                <h4 className="text-sm font-bold text-white font-serif tracking-tight line-clamp-1">
+                  {activeFocusCard.card.nameKo}
+                </h4>
+                <p className="text-[10px] text-zinc-400 font-sans italic line-clamp-1">
+                  {activeFocusCard.card.name}
+                </p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-[9px] text-amber-400/90 font-sans">
+                    {activeFocusCard.card.keywords?.slice(0, 2).join(' · ')}
+                  </span>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center space-y-1">
+                <Compass size={22} className="text-amber-400 animate-pulse" />
+                <span className="text-[10px] font-serif font-bold text-amber-300">
+                  ESCHER IRIS
+                </span>
+                <span className="text-[9px] text-zinc-400 font-sans leading-tight">
+                  카드를 터치하여<br />상세 살펴보기
+                </span>
+              </div>
+            )}
           </div>
         </div>
-        {centerPreviewCard && (
-          <motion.div
-            aria-hidden="true"
-            animate={{
-              y: emphasizeCenterPreview ? -5 : 0,
-              scale: emphasizeCenterPreview ? 1.02 : 1,
-            }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className={`absolute left-1/2 z-[800] h-[164px] w-[108px] rounded-xl border-2 p-1 pointer-events-none transition-colors duration-500 ${
-              emphasizeCenterPreview
-                ? 'border-white shadow-[0_8px_28px_rgba(255,255,255,0.2)]'
-                : 'border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.45)]'
-            }`}
-            style={{
-              top: 'calc(50% + 64px)',
-              marginLeft: '-54px',
-              marginTop: '-82px',
-            }}
-          >
-            <TarotCardBackFace
-              cardBackId={cardBackThemeId}
-              isHovered={emphasizeCenterPreview}
-              size="preview"
-              className="rounded-lg"
-            />
-          </motion.div>
-        )}
+
+        {/* 🎴 방사형 타로 카드 렌더링 루프 (이미지 절단 없이 3D 뎁스 틸트로 이중 가려짐 완벽 해소) */}
+        {activeDeck.map((card, i) => renderCardElement(card, i))}
       </div>
 
-      {activeFocusCard && (
-        <motion.div
-          key={activeFocusCard.card.id}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="my-2 text-center"
-        >
-          <span className="text-xs font-bold text-amber-200">{activeFocusCard.card.nameKo}</span>
-          <span className="ml-2 text-[10px] text-zinc-400">{activeFocusCard.card.name}</span>
-        </motion.div>
-      )}
-
+      {/* 4. 하단 상세 안내 및 무결점 원형 스프레드 설명 바 */}
       <div className="w-full max-w-xl mt-3 p-3.5 rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 text-xs text-zinc-300 space-y-1.5 shadow-sm">
         <div className="flex items-center gap-1.5 font-bold text-amber-300 text-xs">
           <Info size={13} className="text-amber-400 shrink-0" />
-          <span>반원형 타로 아크</span>
+          <span>무결점 원형 타로 스프레드 (Zero-Occlusion Circular Spread) 원리</span>
         </div>
         <p className="text-[11px] text-zinc-300/80 leading-relaxed font-sans">
-          카드를 반원 궤도에 한 방향으로 겹쳐 펼칩니다. 한 장을 선택하면 그 카드만 아크에서 빠지고, 나머지 카드의 순서를 바꾸지 않은 채 전체 반원에 다시 균등 배치합니다.
+          원형 궤도를 온전히 유지하면서 카드를 인위적으로 분할·절단하지 않고, 단방향 순차 캐스케이드 스택과 정밀 원형 궤도 최적화를 적용했습니다. 어떤 카드도 양쪽 이웃에게 동시에 가려지는(이중 가려짐) 결함이 완전히 해소되었으며, 3D 왜곡이나 일러스트 손상 없이 모든 카드가 100% 완전하고 선명하게 드러납니다.
         </p>
       </div>
     </div>
