@@ -20,6 +20,7 @@ import {
 } from '@/data/tarotData';
 import { SelectedTarotCardEntry } from './TarotSpread';
 import { playAudioHaptic } from '@/lib/audioHaptics';
+import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 
 export interface PhysicalTarotInputModalProps {
   isOpen: boolean;
@@ -59,6 +60,7 @@ export const PhysicalTarotInputModal: React.FC<PhysicalTarotInputModalProps> = (
   }, [spreadCount]);
 
   const [concern, setConcern] = useState(initialConcern);
+  const [activeGhostPrompt, setActiveGhostPrompt] = useState('');
   const [slots, setSlots] = useState<SlotCardItem[]>(() =>
     defaultPositions.map((pos) => ({
       card: null,
@@ -211,7 +213,7 @@ export const PhysicalTarotInputModal: React.FC<PhysicalTarotInputModalProps> = (
       reversed: s.reversed,
     }));
 
-    onComplete(completedEntries, concern.trim());
+    onComplete(completedEntries, concern.trim() || activeGhostPrompt.trim());
     onClose();
   };
 
@@ -281,13 +283,31 @@ export const PhysicalTarotInputModal: React.FC<PhysicalTarotInputModalProps> = (
                 <Wand2 size={12} />
                 <span>질문 또는 고민 입력</span>
               </label>
-              <input
-                type="text"
-                value={concern}
-                onChange={(e) => setConcern(e.target.value)}
-                placeholder="예: 그 사람과의 재회 가능성과 앞으로의 조언을 듣고 싶어요"
-                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-yellow-500/30 text-white placeholder-white/40 text-xs sm:text-sm focus:outline-none focus:border-yellow-400 focus:bg-white/10 transition-all shadow-inner"
-              />
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={concern}
+                  onChange={(e) => setConcern(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Tab' && !concern.trim() && activeGhostPrompt) {
+                      e.preventDefault();
+                      setConcern(activeGhostPrompt);
+                    }
+                  }}
+                  placeholder=""
+                  className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-yellow-500/30 text-white placeholder-white/40 text-xs sm:text-sm focus:outline-none focus:border-yellow-400 focus:bg-white/10 transition-all shadow-inner"
+                />
+                <DynamicGhostInputPlaceholder
+                  isVisible={!concern}
+                  promptPool={quickQuestions}
+                  onActivePromptChange={setActiveGhostPrompt}
+                  onApplyPrompt={(prompt) => setConcern(prompt)}
+                  className="px-4 pr-10"
+                  textClassName="text-yellow-100/45 text-xs sm:text-sm font-sans"
+                  cursorClassName="bg-yellow-400/75"
+                  prefix="예시: "
+                />
+              </div>
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
                 {quickQuestions.map((q, idx) => (
                   <button

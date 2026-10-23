@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { TarotCard } from '@/data/tarotData';
 import { playAudioHaptic } from '@/lib/audioHaptics';
+import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 
 export interface FollowUpTarotInputBarProps {
   remainingCount: number;
@@ -45,6 +46,7 @@ export const FollowUpTarotInputBar: React.FC<FollowUpTarotInputBarProps> = ({
   subtitle,
 }) => {
   const [question, setQuestion] = useState('');
+  const [activeGhostPrompt, setActiveGhostPrompt] = useState('');
 
   // 💡 Generate context-aware smart recommendation chips
   const recommendedQuestions = useMemo(() => {
@@ -85,14 +87,14 @@ export const FollowUpTarotInputBar: React.FC<FollowUpTarotInputBarProps> = ({
   };
 
   const handleDirectClick = () => {
-    const q = question.trim() || '이 흐름에 대한 추가 통찰과 조언';
+    const q = question.trim() || activeGhostPrompt.trim() || '이 흐름에 대한 추가 통찰과 조언';
     playAudioHaptic('tap_light');
     setQuestion('');
     onDirectDraw(q);
   };
 
   const handleAutoClick = () => {
-    const q = question.trim() || '이 흐름에 대한 추가 통찰과 조언';
+    const q = question.trim() || activeGhostPrompt.trim() || '이 흐름에 대한 추가 통찰과 조언';
     playAudioHaptic('card_draw');
     setQuestion('');
     onAutoDraw(q);
@@ -167,6 +169,11 @@ export const FollowUpTarotInputBar: React.FC<FollowUpTarotInputBarProps> = ({
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
+              if (e.key === 'Tab' && !question.trim() && activeGhostPrompt) {
+                e.preventDefault();
+                setQuestion(activeGhostPrompt);
+                return;
+              }
               if (e.key === 'Enter' && !isGenerating && !isExhausted) {
                 e.preventDefault();
                 handleAutoClick();
@@ -176,9 +183,19 @@ export const FollowUpTarotInputBar: React.FC<FollowUpTarotInputBarProps> = ({
             placeholder={
               isExhausted
                 ? '모든 타로 카드가 소진되었습니다.'
-                : (placeholder || '궁금한 점을 직접 질문하세요 (예: 그 선택의 결과는?, 주의할 점은?)')
+                : ''
             }
             className="w-full bg-black/60 border border-white/15 focus:border-amber-400/70 rounded-xl px-3.5 py-2.5 pr-16 text-xs sm:text-sm text-white placeholder-white/35 outline-none transition-all focus:ring-1 focus:ring-amber-400/40 disabled:opacity-40"
+          />
+          <DynamicGhostInputPlaceholder
+            isVisible={!question && !isGenerating && !isExhausted}
+            promptPool={recommendedQuestions}
+            onActivePromptChange={setActiveGhostPrompt}
+            onApplyPrompt={(prompt) => setQuestion(prompt)}
+            className="px-3.5 pr-14"
+            textClassName="text-amber-100/45 text-xs sm:text-sm font-sans"
+            cursorClassName="bg-amber-400/75"
+            prefix="예시: "
           />
           {question && !isGenerating && (
             <button
@@ -193,7 +210,7 @@ export const FollowUpTarotInputBar: React.FC<FollowUpTarotInputBarProps> = ({
         </div>
         <div className="flex justify-between items-center text-[10px] text-white/40 pt-1 px-1">
           <span>{question.length}/100자</span>
-          <span>미입력 시 '이 흐름에 대한 추가 통찰'로 자동 지정됩니다</span>
+          <span>미입력 시 타이핑 중인 추천 질문으로 자동 리딩됩니다 (Tab 키로 입력)</span>
         </div>
       </div>
 

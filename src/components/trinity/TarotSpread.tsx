@@ -14,7 +14,6 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
-import { isDailyTarotConcern } from '@/lib/trinity/utils';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -261,9 +260,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const hasSpreadMeta = spreadName.trim().length > 0;
 
   const [isMobile, setIsMobile] = useState(false);
-  const isDaily = useMemo(() => {
-    return maxCards === 1 || isDailyTarotConcern(concern) || isDailyTarotConcern(spreadName);
-  }, [maxCards, concern, spreadName]);
 
   const compactSlots = maxCards >= 4 || isMobile;
   const slotClass = isMobile
@@ -1034,200 +1030,176 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           ))}
         </div>
 
-        {/* Top Info Banner & Mobile Daily Guidance (Opaque surface, zero backdrop-blur) */}
-        {isMobile && isDaily && selectedEntries.length === 0 ? (
+        {/* Top Info Banner (Unified across all spreads including Today's Tarot) */}
+        {(hasConcern || hasSpreadMeta) && (
           <div
-            className="absolute left-0 right-0 z-[96] pointer-events-none flex flex-col items-center justify-center px-16 sm:px-24"
-            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 10px)' }}
+            className="absolute left-0 right-0 z-[96] px-3 sm:px-4 pointer-events-none flex justify-center"
+            style={{
+              top: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 3.0rem)' : 'calc(env(safe-area-inset-top, 0px) + 12px)',
+              paddingRight: isMobile ? '12px' : 'calc(env(safe-area-inset-right, 0px) + 72px)',
+              paddingLeft: isMobile ? '12px' : 'calc(env(safe-area-inset-left, 0px) + 16px)',
+            }}
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-yellow-500/40 text-yellow-300">
-              <Sparkles size={13} className="text-yellow-400 shrink-0" />
-              <span className="text-xs font-bold font-sans">오늘의 타로 · 1장 선택</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-200 font-mono font-bold">
-                {activeWheelCards.length}장
-              </span>
+            <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-yellow-500/25 bg-zinc-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 space-y-0.5 pointer-events-none">
+              {hasSpreadMeta && (
+                <div className="text-center">
+                  <p className="text-[10px] sm:text-sm font-bold text-yellow-200">
+                    {spreadName} · {maxCards}장
+                  </p>
+                  {!isMobile && spreadReason && (
+                    <p className="text-[9px] sm:text-[10px] text-white/50 leading-tight mt-0.5 line-clamp-1 break-keep">
+                      {spreadReason}
+                    </p>
+                  )}
+                </div>
+              )}
+              {hasConcern && (
+                <div className={`text-center ${hasSpreadMeta ? 'border-t border-white/5 pt-0.5 sm:pt-1' : ''}`}>
+                  <p className="text-[10px] sm:text-xs text-white/90 leading-tight line-clamp-1 break-keep">
+                    {concernText}
+                  </p>
+                </div>
+              )}
             </div>
-            <p className="text-[11px] text-white/75 font-medium tracking-wide mt-1.5">
-              덱을 좌우로 넘겨 오늘의 카드를 탭하세요
-            </p>
           </div>
-        ) : (
-          (hasConcern || hasSpreadMeta) && (
-            <div
-              className="absolute left-0 right-0 z-[96] px-3 sm:px-4 pointer-events-none flex justify-center"
-              style={{
-                top: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 3.0rem)' : 'calc(env(safe-area-inset-top, 0px) + 12px)',
-                paddingRight: isMobile ? '12px' : 'calc(env(safe-area-inset-right, 0px) + 72px)',
-                paddingLeft: isMobile ? '12px' : 'calc(env(safe-area-inset-left, 0px) + 16px)',
-              }}
-            >
-              <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-yellow-500/25 bg-zinc-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 space-y-0.5 pointer-events-none">
-                {hasSpreadMeta && (
-                  <div className="text-center">
-                    <p className="text-[10px] sm:text-sm font-bold text-yellow-200">
-                      {spreadName} · {maxCards}장
-                    </p>
-                    {!isMobile && spreadReason && (
-                      <p className="text-[9px] sm:text-[10px] text-white/50 leading-tight mt-0.5 line-clamp-1 break-keep">
-                        {spreadReason}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {hasConcern && (
-                  <div className={`text-center ${hasSpreadMeta ? 'border-t border-white/5 pt-0.5 sm:pt-1' : ''}`}>
-                    <p className="text-[10px] sm:text-xs text-white/90 leading-tight line-clamp-1 break-keep">
-                      {concernText}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )
         )}
 
         {/* Selected card slots with a brief burst when a card is drawn. */}
-        {(!isMobile || !isDaily || selectedEntries.length > 0) && (
-          <div
-            className="absolute flex flex-col items-center justify-center gap-1.5 sm:gap-4 md:gap-6 z-[95] pointer-events-none w-full px-2"
-            style={{
-              top: isMobile
-                ? isDaily
-                  ? 'calc(env(safe-area-inset-top, 0px) + 2.5rem)'
-                  : hasConcern || hasSpreadMeta
-                    ? 'calc(env(safe-area-inset-top, 0px) + 6.2rem)'
-                    : 'calc(env(safe-area-inset-top, 0px) + 3.0rem)'
-                : hasConcern || hasSpreadMeta
-                  ? compactSlots
-                    ? 'calc(env(safe-area-inset-top, 0px) + 9.5rem)'
-                    : 'calc(env(safe-area-inset-top, 0px) + 8.5rem)'
-                  : 'calc(env(safe-area-inset-top, 0px) + 4.5rem)',
-            }}
-          >
-            <div className={slotsWrapClass}>
-              {Array.from({ length: maxCards }).map((_, i) => {
-                const entry = selectedEntries[i];
-                const hasCard = entry !== undefined;
-                const drawnCard = hasCard ? entry.card : null;
-                const positionLabel = positions[i] || `Card ${i + 1}`;
-                return (
-                  <div
-                    key={`slot-${i}`}
-                    className={`${slotClass} bg-zinc-900 border border-yellow-500/30 rounded-xl md:rounded-2xl flex items-center justify-center relative`}
-                  >
-                    {!hasCard ? (
-                      <div className="text-yellow-500/40 text-[7px] md:text-[9px] uppercase tracking-widest font-sans flex flex-col items-center gap-1 md:gap-1.5 px-1 text-center">
-                        <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border border-yellow-500/30 flex items-center justify-center bg-yellow-500/10">
-                          <span className="text-yellow-500/70 text-[8px] md:text-[10px] font-serif font-black">
-                            {i + 1}
-                          </span>
-                        </div>
-                        <span className="font-bold tracking-wide leading-tight break-keep">{positionLabel}</span>
-                      </div>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.52, rotateY: 160, y: 18 }}
-                        animate={{ opacity: 1, scale: 1, rotateY: 0, y: 0 }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 220,
-                          damping: 16,
-                          duration: 0.7,
-                        }}
-                        onClick={() => {
-                          setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
-                        }}
-                        className="absolute inset-0 pointer-events-auto border-2 border-yellow-400 bg-zinc-950 rounded-xl md:rounded-2xl flex flex-col justify-between p-1.5 sm:p-2 md:p-3 text-center overflow-hidden cursor-zoom-in group hover:border-yellow-300"
-                        style={{ transformStyle: 'preserve-3d' }}
-                        title={`${drawnCard!.nameKo} 카드 크게 보기`}
-                      >
-                        <motion.div
-                          key={`draw-flash-${drawnCard!.id}`}
-                          initial={{ opacity: 0.95, scale: 0.45 }}
-                          animate={{ opacity: 0, scale: 1.9 }}
-                          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-                          className="absolute inset-[-35%] z-20 rounded-full bg-[radial-gradient(circle,rgba(255,255,220,0.95)_0%,rgba(250,204,21,0.55)_18%,rgba(168,85,247,0.22)_42%,transparent_70%)] pointer-events-none"
-                        />
-                        <motion.div
-                          key={`draw-sheen-${drawnCard!.id}`}
-                          initial={{ x: '-150%', opacity: 0.9 }}
-                          animate={{ x: '180%', opacity: 0 }}
-                          transition={{ duration: 0.8, ease: 'easeOut', delay: 0.08 }}
-                          className="absolute inset-y-0 left-0 z-30 w-1/2 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/75 to-transparent pointer-events-none"
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center z-30 pointer-events-none">
-                          <div className="w-6 h-6 rounded-full bg-yellow-500/90 text-black flex items-center justify-center">
-                            <ZoomIn size={12} />
-                          </div>
-                        </div>
-                        <img
-                          src={getTarotCardImageUrl(drawnCard!)}
-                          alt={drawnCard!.name}
-                          loading="eager"
-                          decoding="async"
-                          style={{ transform: entry.reversed ? 'rotate(180deg)' : undefined, transformOrigin: 'center center' }}
-                          className="absolute inset-0 w-full h-full object-cover z-0 rounded-xl md:rounded-2xl opacity-90"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70 z-10 pointer-events-none rounded-xl md:rounded-2xl" />
-
-                        <div className="flex justify-between items-center text-[6px] md:text-[7px] font-mono text-yellow-500/80 z-20 shrink-0">
-                          <span>{entry.reversed ? 'REVERSED' : 'TRINITY'}</span>
-                          <Sparkles size={6} className="text-yellow-400/80" />
-                        </div>
-
-                        <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 mx-auto rounded-full bg-black/70 border border-yellow-500/30 flex items-center justify-center text-yellow-400 z-20 shrink-0">
-                          {React.createElement(getTarotCardVisual(drawnCard!).icon, {
-                            size: isMobile ? 12 : 20,
-                            className: getTarotCardVisual(drawnCard!).color,
-                          })}
-                        </div>
-
-                        <div className="text-center z-20 flex flex-col gap-0.5 shrink-0 bg-black/85 py-0.5 sm:py-1 rounded-lg border border-yellow-500/20">
-                          <span className="text-[8px] sm:text-[9px] md:text-[11px] font-bold text-yellow-300 block leading-tight">
-                            {drawnCard!.nameKo}
-                          </span>
-                          <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-white/50 uppercase tracking-widest block">
-                            {entry.reversed ? '역방향' : drawnCard!.name}
-                          </span>
-                        </div>
-
-                        <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-yellow-500/60 uppercase tracking-widest block z-20 shrink-0">
-                          {drawnCard!.type}
+        <div
+          className="absolute flex flex-col items-center justify-center gap-1.5 sm:gap-4 md:gap-6 z-[95] pointer-events-none w-full px-2"
+          style={{
+            top: isMobile
+              ? hasConcern || hasSpreadMeta
+                ? 'calc(env(safe-area-inset-top, 0px) + 6.2rem)'
+                : 'calc(env(safe-area-inset-top, 0px) + 3.0rem)'
+              : hasConcern || hasSpreadMeta
+                ? compactSlots
+                  ? 'calc(env(safe-area-inset-top, 0px) + 9.5rem)'
+                  : 'calc(env(safe-area-inset-top, 0px) + 8.5rem)'
+                : 'calc(env(safe-area-inset-top, 0px) + 4.5rem)',
+          }}
+        >
+          <div className={slotsWrapClass}>
+            {Array.from({ length: maxCards }).map((_, i) => {
+              const entry = selectedEntries[i];
+              const hasCard = entry !== undefined;
+              const drawnCard = hasCard ? entry.card : null;
+              const positionLabel = positions[i] || `Card ${i + 1}`;
+              return (
+                <div
+                  key={`slot-${i}`}
+                  className={`${slotClass} bg-zinc-900 border border-yellow-500/30 rounded-xl md:rounded-2xl flex items-center justify-center relative`}
+                >
+                  {!hasCard ? (
+                    <div className="text-yellow-500/40 text-[7px] md:text-[9px] uppercase tracking-widest font-sans flex flex-col items-center gap-1 md:gap-1.5 px-1 text-center">
+                      <div className="w-5 h-5 md:w-7 md:h-7 rounded-full border border-yellow-500/30 flex items-center justify-center bg-yellow-500/10">
+                        <span className="text-yellow-500/70 text-[8px] md:text-[10px] font-serif font-black">
+                          {i + 1}
                         </span>
-                      </motion.div>
-                    )}
-                    {hasCard && (
-                      <TarotCardFlipParticles
-                        active
-                        triggerKey={drawnCard!.id}
-                        size="lg"
-                        count={36}
-                        className="z-[60]"
+                      </div>
+                      <span className="font-bold tracking-wide leading-tight break-keep">{positionLabel}</span>
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.52, rotateY: 160, y: 18 }}
+                      animate={{ opacity: 1, scale: 1, rotateY: 0, y: 0 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 220,
+                        damping: 16,
+                        duration: 0.7,
+                      }}
+                      onClick={() => {
+                        setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
+                      }}
+                      className="absolute inset-0 pointer-events-auto border-2 border-yellow-400 bg-zinc-950 rounded-xl md:rounded-2xl flex flex-col justify-between p-1.5 sm:p-2 md:p-3 text-center overflow-hidden cursor-zoom-in group hover:border-yellow-300"
+                      style={{ transformStyle: 'preserve-3d' }}
+                      title={`${drawnCard!.nameKo} 카드 크게 보기`}
+                    >
+                      <motion.div
+                        key={`draw-flash-${drawnCard!.id}`}
+                        initial={{ opacity: 0.95, scale: 0.45 }}
+                        animate={{ opacity: 0, scale: 1.9 }}
+                        transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute inset-[-35%] z-20 rounded-full bg-[radial-gradient(circle,rgba(255,255,220,0.95)_0%,rgba(250,204,21,0.55)_18%,rgba(168,85,247,0.22)_42%,transparent_70%)] pointer-events-none"
                       />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      <motion.div
+                        key={`draw-sheen-${drawnCard!.id}`}
+                        initial={{ x: '-150%', opacity: 0.9 }}
+                        animate={{ x: '180%', opacity: 0 }}
+                        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.08 }}
+                        className="absolute inset-y-0 left-0 z-30 w-1/2 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/75 to-transparent pointer-events-none"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center z-30 pointer-events-none">
+                        <div className="w-6 h-6 rounded-full bg-yellow-500/90 text-black flex items-center justify-center">
+                          <ZoomIn size={12} />
+                        </div>
+                      </div>
+                      <img
+                        src={getTarotCardImageUrl(drawnCard!)}
+                        alt={drawnCard!.name}
+                        loading="eager"
+                        decoding="async"
+                        style={{ transform: entry.reversed ? 'rotate(180deg)' : undefined, transformOrigin: 'center center' }}
+                        className="absolute inset-0 w-full h-full object-cover z-0 rounded-xl md:rounded-2xl opacity-90"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70 z-10 pointer-events-none rounded-xl md:rounded-2xl" />
 
-            {/* Selection Instruction and Help */}
-            {(!isMobile || !isDaily) && (
-              <div className="text-center pointer-events-none flex flex-col items-center gap-1.5 px-4 w-full select-none">
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-400 font-bold tracking-[0.15em] text-xs sm:text-[13px] md:text-sm font-sans">
-                    {selectedEntries.length} / {maxCards} 카드를 선택하세요
-                  </span>
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 font-mono font-bold">
-                    남은 덱: {activeWheelCards.length}장
-                  </span>
+                      <div className="flex justify-between items-center text-[6px] md:text-[7px] font-mono text-yellow-500/80 z-20 shrink-0">
+                        <span>{entry.reversed ? 'REVERSED' : 'TRINITY'}</span>
+                        <Sparkles size={6} className="text-yellow-400/80" />
+                      </div>
+
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 mx-auto rounded-full bg-black/70 border border-yellow-500/30 flex items-center justify-center text-yellow-400 z-20 shrink-0">
+                        {React.createElement(getTarotCardVisual(drawnCard!).icon, {
+                          size: isMobile ? 12 : 20,
+                          className: getTarotCardVisual(drawnCard!).color,
+                        })}
+                      </div>
+
+                      <div className="text-center z-20 flex flex-col gap-0.5 shrink-0 bg-black/85 py-0.5 sm:py-1 rounded-lg border border-yellow-500/20">
+                        <span className="text-[8px] sm:text-[9px] md:text-[11px] font-bold text-yellow-300 block leading-tight">
+                          {drawnCard!.nameKo}
+                        </span>
+                        <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-white/50 uppercase tracking-widest block">
+                          {entry.reversed ? '역방향' : drawnCard!.name}
+                        </span>
+                      </div>
+
+                      <span className="text-[5px] sm:text-[6px] md:text-[7px] font-mono text-yellow-500/60 uppercase tracking-widest block z-20 shrink-0">
+                        {drawnCard!.type}
+                      </span>
+                    </motion.div>
+                  )}
+                  {hasCard && (
+                    <TarotCardFlipParticles
+                      active
+                      triggerKey={drawnCard!.id}
+                      size="lg"
+                      count={36}
+                      className="z-[60]"
+                    />
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
-        )}
+
+          {/* Selection Instruction and Help */}
+          <div className="text-center pointer-events-none flex flex-col items-center gap-1.5 px-4 w-full select-none">
+            <div className="flex items-center gap-2">
+              <span className="text-yellow-400 font-bold tracking-[0.15em] text-xs sm:text-[13px] md:text-sm font-sans">
+                {selectedEntries.length} / {maxCards} 카드를 선택하세요
+              </span>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 font-mono font-bold">
+                남은 덱: {activeWheelCards.length}장
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Bottom Quick Control Bar (Opaque surface, zero backdrop-blur) */}

@@ -144,6 +144,7 @@ import { DailyOracleLoadingOverlay } from "@/components/DailyOracleLoadingOverla
 import { useSmartScroll } from "@/hooks/useSmartScroll";
 import { SmartScrollResumeButton } from "@/components/common/SmartScrollResumeButton";
 import { TTSHighlightText } from "@/utils/ttsHighlight";
+import { DynamicGhostInputPlaceholder } from "@/components/chat/DynamicGhostInputPlaceholder";
 
 const EnergyAnalysisSchema = z.object({
   luckScore: z
@@ -1307,7 +1308,7 @@ function playDailyCardChimeAsync() {
     );
   };
 
-  const resetTarotSession = useCallback((preserveDailyIfUnfinished = true) => {
+  const resetTarotSession = useCallback((preserveDailyIfUnfinished = false) => {
     setDrawnCards(null);
     setTarotResult(null);
     setFollowUpEntries([]);
@@ -1529,7 +1530,7 @@ function playDailyCardChimeAsync() {
     onTabChange: (newTab) => {
       if (newTab === 'tarot') {
         if (!tarotResult && !isTarotGenerating) {
-          resetTarotSession(true);
+          resetTarotSession(false);
         }
         setActiveMode('tarot');
       } else {
@@ -1539,15 +1540,20 @@ function playDailyCardChimeAsync() {
     },
     enabled: !tarotVirtualMode && !showDailyModal && !isDailyOracleLoading && !zoomedCard,
   });
-  const [tarotConcern, setTarotConcern] = useState<string>(() => {
-    const today = getTodayDateKey();
-    const guestLimit = typeof window !== "undefined" ? localStorage.getItem(`limit_daily_trinity_guest_${today}`) : null;
-    const init = getInitialTrinityDailyResult();
-    if (!init && !guestLimit) {
-      return "오늘의 타로";
-    }
-    return "";
-  });
+  const [tarotConcern, setTarotConcern] = useState<string>("");
+  const [activeTarotGhostPrompt, setActiveTarotGhostPrompt] = useState<string>("");
+  const tarotGhostPromptPool = useMemo(
+    () => [
+      "그 사람의 진짜 속마음과 앞으로 우리 관계의 흐름은 어떨까요?",
+      "지금 다니는 직장에서 이직할까 말까, 어느 쪽이 더 나을까요?",
+      "올해 나의 재물운 흐름과 목돈을 모으기 위한 핵심 조언은?",
+      "기다리고 있는 연락이나 소식이 언제쯤 도착할까요?",
+      "준비 중인 시험·면접에서 합격할 수 있을지, 무엇을 보완해야 할까요?",
+      "타고난 사주 오행과 대운에 비추어 지금 꼭 잡아야 할 기회는?",
+      ...ALL_TAROT_SUGGESTIONS,
+    ],
+    []
+  );
   const [customSpread, setCustomSpread] = useState<TarotSpreadRecommendation | null>(null);
   const [isSpreadModalOpen, setIsSpreadModalOpen] = useState(false);
   const [showTarotCardBackModal, setShowTarotCardBackModal] = useState(false);
@@ -1556,9 +1562,6 @@ function playDailyCardChimeAsync() {
   const deferredTarotConcern = useDeferredValue(tarotConcern);
   const tarotConcernAnalysis: TarotConcernAnalysis = useMemo(() => {
     const base = analyzeTarotConcern(deferredTarotConcern);
-    if (base.kind === 'yes_no' && customSpread?.theme !== 'yes_no' && customSpread?.theme !== 'binary_choice') {
-      return base;
-    }
     if (customSpread) {
       const kind: TarotConcernKind =
         customSpread.theme === 'binary_choice'
@@ -2413,7 +2416,8 @@ function playDailyCardChimeAsync() {
       // Detailed Tarot Reading Tab
       if (isTarotGenerating) return;
       const selectedCards = params?.selectedCards;
-      if (!tarotConcern.trim()) {
+      const effectiveTarotConcern = tarotConcern.trim() || activeTarotGhostPrompt.trim();
+      if (!effectiveTarotConcern) {
         setNotice({
           open: true,
           title: "주제 입력 필요",
@@ -2421,9 +2425,12 @@ function playDailyCardChimeAsync() {
         });
         return;
       }
+      if (!tarotConcern.trim() && effectiveTarotConcern) {
+        setTarotConcern(effectiveTarotConcern);
+      }
 
       // 🌟 Check if this is the 1-card Daily Oracle flow from Tarot special feature
-      if (isDailyTarotConcern(tarotConcern)) {
+      if (isDailyTarotConcern(effectiveTarotConcern)) {
         if (isTrinityDailyLockedToday() || dailyResult?.drawnCard) {
           restoreTodayDailyResult();
           const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
@@ -3173,7 +3180,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                key={item.id}
               onClick={() => {
                 if (item.id === "tarot") {
-                  resetTarotSession(true);
+                  resetTarotSession(false);
                   setActiveMode("tarot");
                   setIsChatOpen(false);
                   return;
@@ -3220,15 +3227,18 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
               >
                 <TrinityOracleSection
                   onNavigateToTarot={(focusDaily = true) => {
-                    resetTarotSession(true);
+                    resetTarotSession(focusDaily);
                     if (focusDaily) {
                       setTarotConcern("오늘의 타로");
+                      setCustomSpread(null);
                       restoreTodayDailyResult();
                       const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
                       if (targetCard) {
                         setDrawnCards([targetCard]);
                         setTarotResult(dailyResult?.diagnosis || dailyResult?.summary || "");
                         setHideTarotPopup(false);
+                      } else {
+                        setTarotVirtualMode(true);
                       }
                     }
                     setActiveMode("tarot");
@@ -3243,7 +3253,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-4xl mx-auto space-y-8 pb-8 sm:pb-12"
               >
-                <div className="glass relative w-full p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl">
+                <div className={`glass relative w-full p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
                   {/* Subtle starlight gold specular glow */}
                   <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-yellow-500/10 blur-[100px] pointer-events-none" />
                   <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none" />
@@ -3304,9 +3314,66 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         !tarotResult &&
                         !isTarotGenerating ? (
                           <div className="space-y-4 flex-1 flex flex-col justify-between w-full">
-                            {/* 🌟 Cosmic Anchor Badge (Today's Ruling Card Background Energy - ONLY if today's reading is completed and not currently doing daily tarot concern) */}
-                            {dailyResult?.drawnCard && !isDailyTarotConcern(tarotConcern) && (
-                              <div className="rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-inner">
+                            {/* 🌟 Cosmic Anchor Banner: Oracle-style Pre-Recommendation when not yet drawn, or Active Anchor Status when drawn */}
+                            {!isDailyTarotChecked ? (
+                              <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="relative overflow-hidden rounded-3xl border border-yellow-400/40 bg-gradient-to-r from-yellow-950/40 via-amber-950/30 to-indigo-950/40 p-4 sm:p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)] backdrop-blur-xl text-left"
+                              >
+                                <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-yellow-500/15 blur-3xl pointer-events-none" />
+                                <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+
+                                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                  <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                                    <div className="w-11 h-11 rounded-2xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-yellow-300 shrink-0 shadow-[0_0_20px_rgba(234,179,8,0.3)] mt-0.5">
+                                      <Sparkles size={22} className="animate-pulse text-yellow-400" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                                        <span className="text-[11px] font-black uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
+                                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
+                                          오늘의 지배 카드 (Cosmic Anchor) 연동 안내
+                                        </span>
+                                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-yellow-400/20 text-yellow-200 border border-yellow-400/30">
+                                          사전 추천
+                                        </span>
+                                      </div>
+                                      <h4 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-1.5 flex-wrap">
+                                        <span>오늘의 타로 선택 시 더 정확한 안내가 가능합니다</span>
+                                      </h4>
+                                      <p className="text-xs text-zinc-300/90 mt-1 leading-relaxed break-keep">
+                                        타로 리딩은 오늘 하루를 관통하는 <strong className="text-yellow-300 font-bold">'오늘의 지배 카드'</strong>의 기저 파동 및 사주 본원과 융합하여 당신의 고민을 가장 입체적으로 해독합니다. <span className="text-amber-200 font-medium">오늘의 타로를 먼저 확인하시면 리딩의 정밀도가 극대화됩니다.</span>
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2 shrink-0 w-full md:w-auto">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setTarotConcern("오늘의 타로");
+                                        setCustomSpread(null);
+                                        const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
+                                        if (targetCard) {
+                                          setShowDailyModal(true);
+                                        } else {
+                                          setTarotVirtualMode(true);
+                                        }
+                                      }}
+                                      className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-400 hover:to-amber-400 text-black font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+                                    >
+                                      <Sparkles size={14} className="text-black" />
+                                      <span>오늘의 타로 먼저 선택하기 (추천)</span>
+                                    </button>
+                                    <span className="text-[10px] text-zinc-400 text-center md:text-right">
+                                      바로 일반 타로 카드를 뽑으셔도 무방합니다
+                                    </span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ) : (dailyResult?.drawnCard || dailyDrawnCard) ? (
+                              <div className="rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-inner text-left">
                                 <div className="flex items-center gap-3 min-w-0">
                                   <div className="w-9 h-9 rounded-xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-yellow-300 shrink-0 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
                                     <Sparkles size={16} className="animate-pulse" />
@@ -3316,12 +3383,12 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400">
                                         오늘의 지배 카드 (Cosmic Anchor)
                                       </span>
-                                      <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-yellow-400/20 text-yellow-200 border border-yellow-400/30">
-                                        배경 에너지 활성화
+                                      <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                        ✓ 배경 에너지 연동 활성화
                                       </span>
                                     </div>
                                     <p className="text-xs text-white/90 font-medium break-keep break-words mt-0.5">
-                                      ✨ {dailyResult.drawnCard.nameKo} ({dailyResult.drawnCard.name}) {dailyResult.drawnCard.reversed ? "· 역방향" : "· 정방향"}
+                                      ✨ {(dailyResult?.drawnCard || dailyDrawnCard)?.nameKo} ({(dailyResult?.drawnCard || dailyDrawnCard)?.name}) {(dailyResult?.drawnCard || dailyDrawnCard)?.reversed ? "· 역방향" : "· 정방향"}
                                     </p>
                                   </div>
                                 </div>
@@ -3348,49 +3415,13 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   </button>
                                 </div>
                               </div>
-                            )}
+                            ) : null}
 
-                            {!isDailyTarotChecked ? (
-                              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-yellow-500/15 via-amber-500/10 to-purple-950/20 border border-yellow-500/40 shadow-xl space-y-4 text-center my-4">
-                                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-yellow-500/20 border border-yellow-400/40 text-yellow-300 text-xs font-bold">
-                                  <Sparkles size={14} className="text-yellow-400 animate-pulse" />
-                                  <span>오늘의 타로 필수 확인 안내</span>
-                                </div>
-                                <div className="space-y-2 max-w-lg mx-auto">
-                                  <h3 className="text-base sm:text-lg font-bold text-white font-serif">
-                                    오늘의 타로를 먼저 확인해 주세요 🌟
-                                  </h3>
-                                  <p className="text-xs text-white/80 leading-relaxed break-keep">
-                                    개인 맞춤 타로 고민과 다양한 배열법 리딩을 진행하시려면 먼저 오늘 하루를 이끄는 천상의 지배 카드(오늘의 타로)를 확인해야 합니다. 오늘의 우주 에너지를 먼저 마주해 보세요!
-                                  </p>
-                                </div>
-                                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setTarotConcern("오늘의 타로");
-                                      setCustomSpread(null);
-                                      const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
-                                      if (targetCard) {
-                                        setShowDailyModal(true);
-                                      } else {
-                                        handleUnifiedReading("tarot");
-                                      }
-                                    }}
-                                    className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-400 hover:to-amber-400 text-black font-extrabold text-xs sm:text-sm tracking-wider flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(234,179,8,0.4)] transition-all cursor-pointer active:scale-95"
-                                  >
-                                    <Sparkles size={16} />
-                                    <span>🌟 오늘의 타로 원카드 지금 확인하기</span>
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="space-y-3 text-left w-full overflow-hidden">
-                                  <div className="flex items-center justify-between pl-2">
-                                    <label className="text-xs text-white/50 font-bold uppercase tracking-widest block">
-                                      Your Concern
-                                    </label>
+                            <div className="space-y-3 text-left w-full overflow-hidden">
+                              <div className="flex items-center justify-between pl-2">
+                                <label className="text-xs text-white/50 font-bold uppercase tracking-widest block">
+                                  Your Concern
+                                </label>
                                 <button
                                   type="button"
                                   onClick={() => setIsSpreadModalOpen(true)}
@@ -3414,8 +3445,23 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   <Layers size={12} className="text-yellow-400" />
                                   <span>🎴 전체 배열법 선택</span>
                                 </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setTarotConcern("오늘의 타로");
+                                    setCustomSpread(null);
+                                  }}
+                                  className={`flex-none px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm ${
+                                    isDailyTarotConcern(tarotConcern)
+                                      ? 'bg-yellow-500/25 border-yellow-400/60 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.3)]'
+                                      : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
+                                  }`}
+                                  title="오늘 하루를 이끄는 오늘의 지배 카드 1장 뽑기"
+                                >
+                                  <span>🌟 오늘의 타로 (1장)</span>
+                                </button>
                                 {POPULAR_TAROT_SPREAD_PRESETS.map((preset) => {
-                                  const isSelected = tarotSpreadRecommendation.theme === preset.theme;
+                                  const isSelected = tarotSpreadRecommendation.theme === preset.theme && !isDailyTarotConcern(tarotConcern);
                                   return (
                                     <button
                                       key={preset.theme}
@@ -3446,9 +3492,44 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       setCustomSpread(null);
                                     }
                                   }}
-                                  placeholder="타로에게 물어보고 싶은 고민을 상세히 적어주세요 (예: 이직할까 말까, 그 사람 속마음, 올해 재물운, 시험 합격 여부 등)..."
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Tab" && !tarotConcern.trim() && activeTarotGhostPrompt) {
+                                      e.preventDefault();
+                                      setTarotConcern(activeTarotGhostPrompt);
+                                      setCustomSpread(null);
+                                    }
+                                  }}
+                                  placeholder=""
                                   className="w-full h-36 bg-black/30 border border-white/10 rounded-2xl p-5 text-white font-sans focus:outline-none focus:border-yellow-500/50 transition-all resize-none placeholder:text-white/20 leading-relaxed text-sm pr-10"
                                 />
+                                <DynamicGhostInputPlaceholder
+                                  isVisible={!tarotConcern && !isTarotGenerating}
+                                  multiline
+                                  promptPool={tarotGhostPromptPool}
+                                  onActivePromptChange={setActiveTarotGhostPrompt}
+                                  onApplyPrompt={(prompt) => {
+                                    setTarotConcern(prompt);
+                                    setCustomSpread(null);
+                                  }}
+                                  className="p-5 pr-12"
+                                  textClassName="text-yellow-100/45 text-sm font-sans leading-relaxed"
+                                  cursorClassName="bg-yellow-400/75"
+                                  prefix="고민 예시: "
+                                />
+                                {!tarotConcern.trim() && activeTarotGhostPrompt && !isTarotGenerating && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setTarotConcern(activeTarotGhostPrompt);
+                                      setCustomSpread(null);
+                                    }}
+                                    className="absolute right-3.5 bottom-3.5 px-2.5 py-1 rounded-xl bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/35 text-yellow-300 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-sm active:scale-95"
+                                    title="현재 타이핑 중인 추천 고민 예시를 바로 입력합니다 (Tab 키 지원)"
+                                  >
+                                    <Sparkles size={11} className="text-yellow-400" />
+                                    <span>이 추천 고민 입력 [Tab]</span>
+                                  </button>
+                                )}
                                 {tarotConcern.trim().length > 0 && (
                                   <button
                                     type="button"
@@ -3466,35 +3547,81 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
                               {/* Live Real-time AI Spread Recommendation Indicator */}
                               {tarotConcern.trim().length > 0 && (
-                                <div className="px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-yellow-500/15 via-amber-500/10 to-yellow-500/5 border border-yellow-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm text-left">
-                                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-ping shrink-0" />
-                                    <span className="px-2 py-0.5 rounded-md bg-yellow-500/20 text-yellow-300 font-bold text-[11px] shrink-0 border border-yellow-500/40">
-                                      {tarotConcernAnalysis.themeEmoji} {tarotConcernAnalysis.themeLabel}
-                                    </span>
-                                    <span className="text-white/90 text-xs truncate">
-                                      고민 감지 ➔ <strong className="text-yellow-300 font-bold">{tarotSpreadRecommendation.name}</strong> ({tarotSpreadRecommendation.cardCount}장)
-                                    </span>
+                                <div className="px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-yellow-500/15 via-amber-500/10 to-yellow-500/5 border border-yellow-500/35 flex flex-col gap-2 shadow-sm text-left">
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
+                                      <span className="w-2 h-2 rounded-full bg-yellow-400 animate-ping shrink-0" />
+                                      <span className="px-2 py-0.5 rounded-md bg-yellow-500/20 text-yellow-300 font-bold text-[11px] shrink-0 border border-yellow-500/40">
+                                        {tarotConcernAnalysis.themeEmoji} {tarotConcernAnalysis.themeLabel}
+                                      </span>
+                                      <span className="text-white/90 text-xs truncate">
+                                        고민 감지 ➔ <strong className="text-yellow-300 font-bold">{tarotSpreadRecommendation.name}</strong> ({tarotSpreadRecommendation.cardCount}장)
+                                      </span>
+                                      {tarotConcernAnalysis.confidenceScore && (
+                                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shrink-0">
+                                          정확도 {tarotConcernAnalysis.confidenceScore}%
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                                      {isAutoRecommended ? (
+                                        <span className="text-[10px] font-mono text-yellow-400 bg-yellow-500/15 px-2.5 py-1 rounded-full border border-yellow-500/30 font-bold flex items-center gap-1">
+                                          <Sparkles size={11} className="text-yellow-400 animate-pulse" />
+                                          AI 맞춤 추천 적용됨
+                                        </span>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => setCustomSpread(null)}
+                                          className="text-[10px] font-bold text-yellow-300 hover:text-yellow-100 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 px-3 py-1 rounded-full transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                                          title="현재 작성한 고민에 맞춘 AI 자동 추천 배열법으로 전환"
+                                        >
+                                          <RotateCcw size={11} />
+                                          <span>AI 맞춤 추천으로 복원</span>
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
 
-                                  <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
-                                    {isAutoRecommended ? (
-                                      <span className="text-[10px] font-mono text-yellow-400 bg-yellow-500/15 px-2.5 py-1 rounded-full border border-yellow-500/30 font-bold flex items-center gap-1">
-                                        <Sparkles size={11} className="text-yellow-400 animate-pulse" />
-                                        AI 맞춤 추천 적용됨
-                                      </span>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={() => setCustomSpread(null)}
-                                        className="text-[10px] font-bold text-yellow-300 hover:text-yellow-100 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 px-3 py-1 rounded-full transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-                                        title="현재 작성한 고민에 맞춘 AI 자동 추천 배열법으로 전환"
-                                      >
-                                        <RotateCcw size={11} />
-                                        <span>AI 맞춤 추천으로 복원</span>
-                                      </button>
-                                    )}
-                                  </div>
+                                  {/* 감지된 핵심 의도 키워드 & 대안 배열법 원터치 전환 칩 */}
+                                  {((tarotConcernAnalysis.detectedKeywords && tarotConcernAnalysis.detectedKeywords.length > 0) ||
+                                    (tarotConcernAnalysis.alternativeSpreads && tarotConcernAnalysis.alternativeSpreads.length > 0)) && (
+                                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-yellow-500/20 text-[10px]">
+                                      {tarotConcernAnalysis.detectedKeywords && tarotConcernAnalysis.detectedKeywords.length > 0 && (
+                                        <div className="flex items-center gap-1 flex-wrap">
+                                          <span className="text-white/50 font-medium">감지 키워드:</span>
+                                          {tarotConcernAnalysis.detectedKeywords.map((kw, kIdx) => (
+                                            <span
+                                              key={kIdx}
+                                              className="px-1.5 py-0.5 rounded bg-black/40 border border-yellow-500/25 text-yellow-200/90 font-mono"
+                                            >
+                                              #{kw}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {tarotConcernAnalysis.alternativeSpreads && tarotConcernAnalysis.alternativeSpreads.length > 0 && (
+                                        <div className="flex items-center gap-1 flex-wrap">
+                                          <span className="text-white/50 font-medium">대안 배열법:</span>
+                                          {tarotConcernAnalysis.alternativeSpreads.map((alt, aIdx) => (
+                                            <button
+                                              key={aIdx}
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setCustomSpread(alt);
+                                              }}
+                                              className="px-2 py-0.5 rounded-full bg-white/5 hover:bg-yellow-500/25 border border-white/15 hover:border-yellow-400/50 text-white/75 hover:text-yellow-200 transition-all cursor-pointer font-medium"
+                                              title={`${alt.name} (${alt.cardCount}장) 배열법으로 즉시 전환`}
+                                            >
+                                              {alt.name} ({alt.cardCount}장)
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               )}
 
@@ -3580,7 +3707,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                               </div>
                             )}
 
-                            {!tarotConcern.trim() && (
+                            {smartTarotQuestions.length === 0 && !isGeneratingQuestions && (
                               <div className="space-y-2 mt-2 w-full text-left">
                                 <div className="flex items-center justify-between pl-2 pr-1">
                                   <span className="text-[10px] text-yellow-500/80 font-bold uppercase tracking-wider flex items-center gap-1 font-sans">
@@ -3650,7 +3777,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   <button
                                     type="button"
                                     onClick={() => handleUnifiedReading("tarot")}
-                                    disabled={isTarotGenerating || !tarotConcern.trim()}
+                                    disabled={isTarotGenerating || (!tarotConcern.trim() && !activeTarotGhostPrompt)}
                                     className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-500 hover:from-yellow-500 hover:to-amber-500 text-white font-bold tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_25px_rgba(234,179,8,0.3)] cursor-pointer text-xs uppercase active:scale-[0.98]"
                                   >
                                     {isTarotGenerating ? (
@@ -3681,8 +3808,6 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </div>
                               )}
                             </div>
-                          </>
-                        )}
                           </div>
                         ) : (
                           <div className="flex-1 flex flex-col overflow-hidden relative w-full text-left">

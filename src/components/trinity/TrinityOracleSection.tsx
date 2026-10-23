@@ -46,6 +46,7 @@ import {
   type FiveElement
 } from '@/lib/sajuAnalysis';
 import { ACIM_CORE_CANON, ACIM_SACRED_QUOTES } from '@/lib/acimWisdom';
+import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 
 // Local storage keys
 const STORAGE_HEALING_TREASURES = 'prism_oracle_healing_treasures';
@@ -1017,6 +1018,31 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     }
     return '';
   });
+  const [activeOracleGhostPrompt, setActiveOracleGhostPrompt] = useState<string>('');
+  const oracleGhostPromptPool = useMemo(() => {
+    if (oracleMode === 'healing') {
+      return [
+        '최근 번아웃과 감정 소모로 지친 마음을 어떻게 회복할 수 있을까요?',
+        '불안하고 복잡한 생각들을 내려놓고 내면의 평온을 찾는 방법은?',
+        '지금 내 마음이 나에게 보내는 가장 따뜻한 위로와 치유의 신호는?',
+        '관계에서 받은 상처를 보듬고 나 자신을 온전히 사랑하려면?',
+      ];
+    }
+    if (oracleMode === 'miracle') {
+      return [
+        '누군가를 향한 미움과 원망을 내려놓고 참된 용서에 이르는 길은?',
+        '미래에 대한 두려움(에고의 환영)을 걷어내고 평화를 선택하려면?',
+        '이 갈등 상황을 성령의 시선(거룩한 순간)으로 다시 본다면?',
+        '판단과 통제를 멈추고 온전한 내면의 평화를 회복하는 선언은?',
+      ];
+    }
+    return [
+      '미뤄왔던 목표와 프로젝트를 오늘 당장 돌파하기 위한 핵심 실행은?',
+      '커리어와 역량 성장을 가로막는 완벽주의 습관을 깨는 전략은?',
+      '지금 내 에너지를 가장 집중해야 할 단 하나의 우선순위는 무엇인가요?',
+      '슬럼프를 끊어내고 흔들리지 않는 데일리 루틴을 만드는 비결은?',
+    ];
+  }, [oracleMode]);
 
   // 🌟 오늘의 오라클 당일 1회 세션 및 복원 상태 (힐링/자기계발/기적수업 모두 1일 1회 엄격 적용)
   const [todayDailySession, setTodayDailySession] = useState<SavedDailyOracleSession | null>(() => {
@@ -3948,21 +3974,33 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
 
                 {/* Inquiry Display / Quick Edit in Spread Stage */}
                 <div className="max-w-md mx-auto mt-3">
-                  <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/40 border border-amber-400/25 focus-within:border-amber-400/60 transition-all">
+                  <div className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/40 border border-amber-400/25 focus-within:border-amber-400/60 transition-all">
                     <Sparkles size={14} className="text-amber-400 shrink-0" />
-                    <input
-                      type="text"
-                      value={inquiryText}
-                      onChange={(e) => setInquiryText(e.target.value)}
-                      placeholder={
-                        oracleMode === 'healing'
-                          ? "마음속 고민을 입력하면 치유 편지에 깊이 반영됩니다..."
-                          : oracleMode === 'miracle'
-                          ? "마음을 어지럽히는 갈등이나 원한을 입력하면 지각전환 리딩에 깊이 반영됩니다..."
-                          : "돌파하고 싶은 성장 고민을 입력하면 실행 편지에 깊이 반영됩니다..."
-                      }
-                      className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
-                    />
+                    <div className="relative flex-1 flex items-center min-w-0">
+                      <input
+                        type="text"
+                        value={inquiryText}
+                        onChange={(e) => setInquiryText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Tab' && !inquiryText.trim() && activeOracleGhostPrompt) {
+                            e.preventDefault();
+                            setInquiryText(activeOracleGhostPrompt);
+                          }
+                        }}
+                        placeholder=""
+                        className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
+                      />
+                      <DynamicGhostInputPlaceholder
+                        isVisible={!inquiryText}
+                        promptPool={oracleGhostPromptPool}
+                        onActivePromptChange={setActiveOracleGhostPrompt}
+                        onApplyPrompt={(prompt) => setInquiryText(prompt)}
+                        className="pr-2"
+                        textClassName="text-amber-100/45 text-xs font-sans"
+                        cursorClassName="bg-amber-400/75"
+                        prefix="예시: "
+                      />
+                    </div>
                     {inquiryText && (
                       <button
                         type="button"
