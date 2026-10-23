@@ -3500,20 +3500,16 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                     }
                                   }}
                                   placeholder=""
-                                  className="w-full h-36 bg-black/30 border border-white/10 rounded-2xl p-5 text-white font-sans focus:outline-none focus:border-yellow-500/50 transition-all resize-none placeholder:text-white/20 leading-relaxed text-sm pr-10"
+                                  className="block w-full h-36 bg-black/30 border border-white/10 rounded-2xl p-5 pb-12 text-white font-sans focus:outline-none focus:border-yellow-500/50 transition-all resize-none placeholder:text-white/20 leading-relaxed text-sm pr-10"
                                 />
                                 <DynamicGhostInputPlaceholder
                                   isVisible={!tarotConcern && !isTarotGenerating}
                                   multiline
                                   promptPool={tarotGhostPromptPool}
                                   onActivePromptChange={setActiveTarotGhostPrompt}
-                                  onApplyPrompt={(prompt) => {
-                                    setTarotConcern(prompt);
-                                    setCustomSpread(null);
-                                  }}
-                                  className="p-5 pr-12"
-                                  textClassName="text-yellow-100/45 text-sm font-sans leading-relaxed"
-                                  cursorClassName="bg-yellow-400/75"
+                                  className="p-5 pb-12 pr-10"
+                                  textClassName="text-yellow-100/55 text-sm font-sans leading-relaxed"
+                                  cursorClassName="bg-yellow-400/85"
                                   prefix="고민 예시: "
                                 />
                                 {!tarotConcern.trim() && activeTarotGhostPrompt && !isTarotGenerating && (
@@ -3523,7 +3519,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       setTarotConcern(activeTarotGhostPrompt);
                                       setCustomSpread(null);
                                     }}
-                                    className="absolute right-3.5 bottom-3.5 px-2.5 py-1 rounded-xl bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/35 text-yellow-300 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-sm active:scale-95"
+                                    className="absolute right-3.5 bottom-3.5 z-20 px-3 py-1.5 rounded-xl bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/35 text-yellow-200 hover:text-yellow-100 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
                                     title="현재 타이핑 중인 추천 고민 예시를 바로 입력합니다 (Tab 키 지원)"
                                   >
                                     <Sparkles size={11} className="text-yellow-400" />

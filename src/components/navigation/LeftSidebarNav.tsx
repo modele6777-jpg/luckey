@@ -26,6 +26,12 @@ import {
   resetActiveContextPeek,
   type ContextNextMenuResult,
 } from '@/lib/omniWarp/contextNavCycleEngine';
+import {
+  LPRecordDisc,
+  getBgmPublicState,
+  type BgmPublicState,
+} from '@/components/trinity/BgMusicPlayer';
+import { unlockAudioPlayback } from '@/lib/audio';
 
 const APP_ID_TO_PRISM_PATH: Record<string, string> = {
   hub: '/prologue',
@@ -183,6 +189,106 @@ export default function LeftSidebarNav() {
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();
   const [topRecommendation, setTopRecommendation] = useState<ContextNextMenuResult | null>(null);
+
+  // Sidebar LP BGM Button State & Long-Press Handlers
+  const [bgmState, setBgmState] = useState<BgmPublicState>(() => getBgmPublicState());
+  const [isBgmHolding, setIsBgmHolding] = useState(false);
+  const bgmHoldTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isBgmHoldTriggeredRef = useRef(false);
+  const bgmHoldStartPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const handleBgmStateChange = (e: Event) => {
+      const customEvent = e as CustomEvent<BgmPublicState>;
+      if (customEvent.detail) {
+        setBgmState((prev) => ({
+          ...prev,
+          ...customEvent.detail,
+        }));
+      }
+    };
+
+    window.addEventListener('prism:bgm_state_change', handleBgmStateChange);
+    window.dispatchEvent(new CustomEvent('prism:request_bgm_state'));
+    return () => {
+      window.removeEventListener('prism:bgm_state_change', handleBgmStateChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setBgmState(getBgmPublicState());
+      window.dispatchEvent(new CustomEvent('prism:request_bgm_state'));
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (bgmHoldTimerRef.current) {
+        clearTimeout(bgmHoldTimerRef.current);
+      }
+    };
+  }, []);
+
+  const clearBgmHoldTimer = useCallback(() => {
+    if (bgmHoldTimerRef.current) {
+      clearTimeout(bgmHoldTimerRef.current);
+      bgmHoldTimerRef.current = null;
+    }
+    setIsBgmHolding(false);
+  }, []);
+
+  const handleBgmPointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    isBgmHoldTriggeredRef.current = false;
+    bgmHoldStartPosRef.current = { x: e.clientX, y: e.clientY };
+    setIsBgmHolding(true);
+
+    if (bgmHoldTimerRef.current) {
+      clearTimeout(bgmHoldTimerRef.current);
+    }
+
+    bgmHoldTimerRef.current = setTimeout(() => {
+      isBgmHoldTriggeredRef.current = true;
+      setIsBgmHolding(false);
+      bgmHoldTimerRef.current = null;
+      triggerHaptic('mirrorhole');
+      window.dispatchEvent(new CustomEvent('prism:open_bgm_menu'));
+    }, 450);
+  }, []);
+
+  const handleBgmPointerMove = useCallback(
+    (e: React.PointerEvent<HTMLButtonElement>) => {
+      if (!bgmHoldStartPosRef.current || !bgmHoldTimerRef.current) return;
+      const dx = Math.abs(e.clientX - bgmHoldStartPosRef.current.x);
+      const dy = Math.abs(e.clientY - bgmHoldStartPosRef.current.y);
+      if (dx > 10 || dy > 10) {
+        clearBgmHoldTimer();
+      }
+    },
+    [clearBgmHoldTimer]
+  );
+
+  const handleBgmPointerUp = useCallback(() => {
+    clearBgmHoldTimer();
+  }, [clearBgmHoldTimer]);
+
+  const handleBgmClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (isBgmHoldTriggeredRef.current) {
+      isBgmHoldTriggeredRef.current = false;
+      return;
+    }
+    triggerHaptic('whitehole');
+    unlockAudioPlayback();
+    window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
+  }, []);
+
+  const handleBgmContextMenu = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    // Only prevent native mobile/browser context menu during hold; popup opens strictly via long-press
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const refreshTopRecommendation = useCallback(
     (forceResetCache = false) => {
@@ -361,6 +467,7 @@ export default function LeftSidebarNav() {
   const ActiveNavIcon = activeItem?.icon || Clover;
 
   // Close when pressing Escape key
+  // Close when pressing Escape key
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -374,6 +481,238 @@ export default function LeftSidebarNav() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
+
+  // --- AUTO-PEEK (LEFT EDGE HOVER & SWIPE) + 2.5S IDLE AUTO-COLLAPSE ---
+  const AUTO_COLLAPSE_DELAY_MS = 2500;
+  const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
+  const [isTouchingSidebar, setIsTouchingSidebar] = useState(false);
+  const [isBgmDetailOpen, setIsBgmDetailOpen] = useState(false);
+  const [isEdgeHovering, setIsEdgeHovering] = useState(false);
+  const [countdownCycle, setCountdownCycle] = useState(0);
+
+  const autoCollapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const edgeHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const edgeSwipeRef = useRef<{
+    startX: number;
+    startY: number;
+    triggered: boolean;
+    mode: 'open' | 'close';
+  } | null>(null);
+
+  // Sync LP detail modal open state so sidebar doesn't auto-collapse while LP settings popup is open
+  useEffect(() => {
+    const handleBgmDetailState = (e: Event) => {
+      const customEvent = e as CustomEvent<{ isOpen?: boolean }>;
+      if (typeof customEvent.detail?.isOpen === 'boolean') {
+        setIsBgmDetailOpen(customEvent.detail.isOpen);
+      }
+    };
+    const handleBgmMenuOpen = () => setIsBgmDetailOpen(true);
+
+    window.addEventListener('prism:bgm_detail_state', handleBgmDetailState);
+    window.addEventListener('prism:open_bgm_menu', handleBgmMenuOpen);
+    return () => {
+      window.removeEventListener('prism:bgm_detail_state', handleBgmDetailState);
+      window.removeEventListener('prism:open_bgm_menu', handleBgmMenuOpen);
+    };
+  }, []);
+
+  const isInteractingWithSidebar =
+    isHoveringSidebar || isTouchingSidebar || isBgmHolding || isBgmDetailOpen;
+  const isAutoCounting = isOpen && !isInteractingWithSidebar;
+
+  // Manage 2.5s auto-collapse timer when sidebar is open and user is not actively hovering/touching
+  useEffect(() => {
+    if (autoCollapseTimerRef.current) {
+      clearTimeout(autoCollapseTimerRef.current);
+      autoCollapseTimerRef.current = null;
+    }
+
+    if (!isOpen) {
+      setIsHoveringSidebar(false);
+      setIsTouchingSidebar(false);
+      setIsEdgeHovering(false);
+      return;
+    }
+
+    if (!isInteractingWithSidebar) {
+      setCountdownCycle((c) => c + 1);
+      autoCollapseTimerRef.current = setTimeout(() => {
+        setIsOpen(false);
+      }, AUTO_COLLAPSE_DELAY_MS);
+    }
+
+    return () => {
+      if (autoCollapseTimerRef.current) {
+        clearTimeout(autoCollapseTimerRef.current);
+        autoCollapseTimerRef.current = null;
+      }
+    };
+  }, [isOpen, isInteractingWithSidebar]);
+
+  // Desktop left-edge mouse proximity & hover detection
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      // Ignore synthetic mouse events from touch devices
+      if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        return;
+      }
+
+      if (!isOpen) {
+        if (e.clientX <= 8) {
+          if (!edgeHoverTimerRef.current) {
+            setIsEdgeHovering(true);
+            edgeHoverTimerRef.current = setTimeout(() => {
+              edgeHoverTimerRef.current = null;
+              setIsHoveringSidebar(true);
+              setIsOpen(true);
+            }, 60);
+          }
+        } else if (e.clientX > 22 && edgeHoverTimerRef.current) {
+          clearTimeout(edgeHoverTimerRef.current);
+          edgeHoverTimerRef.current = null;
+          setIsEdgeHovering(false);
+        }
+      } else {
+        // When open, keep isHoveringSidebar synced if cursor is within the 76px rail
+        if (e.clientX <= 76) {
+          setIsHoveringSidebar(true);
+        }
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (edgeHoverTimerRef.current) {
+        clearTimeout(edgeHoverTimerRef.current);
+        edgeHoverTimerRef.current = null;
+      }
+    };
+  }, [isOpen]);
+
+  // Mobile left-edge inward swipe to open & leftward swipe to close
+  useEffect(() => {
+    const EDGE_SWIPE_ZONE_PX = 32;
+    const EDGE_SWIPE_MIN_DX = 34;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+
+      if (!isOpen) {
+        if (touch.clientX <= EDGE_SWIPE_ZONE_PX) {
+          edgeSwipeRef.current = {
+            startX: touch.clientX,
+            startY: touch.clientY,
+            triggered: false,
+            mode: 'open',
+          };
+        } else {
+          edgeSwipeRef.current = null;
+        }
+      } else {
+        edgeSwipeRef.current = {
+          startX: touch.clientX,
+          startY: touch.clientY,
+          triggered: false,
+          mode: 'close',
+        };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!edgeSwipeRef.current || edgeSwipeRef.current.triggered || e.touches.length !== 1) {
+        return;
+      }
+      const touch = e.touches[0];
+      const dx = touch.clientX - edgeSwipeRef.current.startX;
+      const dy = Math.abs(touch.clientY - edgeSwipeRef.current.startY);
+
+      if (edgeSwipeRef.current.mode === 'open') {
+        if (dx >= EDGE_SWIPE_MIN_DX && dx > dy * 1.3) {
+          edgeSwipeRef.current.triggered = true;
+          setIsTouchingSidebar(true);
+          triggerHaptic('whitehole');
+          setIsOpen(true);
+        }
+      } else if (edgeSwipeRef.current.mode === 'close') {
+        if (dx <= -EDGE_SWIPE_MIN_DX && Math.abs(dx) > dy * 1.3) {
+          edgeSwipeRef.current.triggered = true;
+          setIsTouchingSidebar(false);
+          setIsOpen(false);
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (edgeSwipeRef.current?.mode === 'open' && edgeSwipeRef.current.triggered) {
+        if (touchReleaseTimerRef.current) clearTimeout(touchReleaseTimerRef.current);
+        touchReleaseTimerRef.current = setTimeout(() => {
+          setIsTouchingSidebar(false);
+        }, 80);
+      }
+      edgeSwipeRef.current = null;
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (touchReleaseTimerRef.current) {
+        clearTimeout(touchReleaseTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleEdgeTriggerMouseEnter = useCallback(() => {
+    setIsEdgeHovering(true);
+    if (edgeHoverTimerRef.current) {
+      clearTimeout(edgeHoverTimerRef.current);
+    }
+    edgeHoverTimerRef.current = setTimeout(() => {
+      edgeHoverTimerRef.current = null;
+      setIsHoveringSidebar(true);
+      setIsOpen(true);
+    }, 50);
+  }, []);
+
+  const handleEdgeTriggerMouseLeave = useCallback(() => {
+    setIsEdgeHovering(false);
+    if (edgeHoverTimerRef.current) {
+      clearTimeout(edgeHoverTimerRef.current);
+      edgeHoverTimerRef.current = null;
+    }
+  }, []);
+
+  const handleSidebarTouchStart = useCallback(() => {
+    if (touchReleaseTimerRef.current) {
+      clearTimeout(touchReleaseTimerRef.current);
+      touchReleaseTimerRef.current = null;
+    }
+    setIsTouchingSidebar(true);
+  }, []);
+
+  const handleSidebarTouchEnd = useCallback(() => {
+    if (touchReleaseTimerRef.current) {
+      clearTimeout(touchReleaseTimerRef.current);
+    }
+    touchReleaseTimerRef.current = setTimeout(() => {
+      setIsTouchingSidebar(false);
+    }, 100);
+  }, []);
 
   // Broadcast sidebar open/closed state so widgets like LP player can sync visibility
   useEffect(() => {
@@ -766,11 +1105,50 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {/* Expanded State: Floating Overlay Backdrop + Slide-in Slim Icon Rail Dock */}
+      {/* Collapsed State: Left-Edge Luminous Glow Hint & Hover/Swipe Trigger Zone */}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div
+            key="nav-edge-sensor"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onMouseEnter={handleEdgeTriggerMouseEnter}
+            onMouseLeave={handleEdgeTriggerMouseLeave}
+            onClick={() => {
+              triggerHaptic('whitehole');
+              setIsOpen(true);
+            }}
+            aria-label="좌측 끝 호버 또는 스와이프로 사이드바 열기"
+            title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
+            className="fixed left-0 top-16 bottom-16 w-3 sm:w-3.5 z-[440] flex items-center justify-start cursor-pointer select-none group"
+          >
+            {/* Subtle Prismatic Luminous Thread along the Far-Left Edge */}
+            <div
+              className={`w-[2.5px] sm:w-[3px] h-32 sm:h-40 rounded-r-full transition-all duration-300 ${
+                isEdgeHovering
+                  ? 'h-48 sm:h-56 w-[4px] opacity-100 scale-y-105'
+                  : 'opacity-55 group-hover:opacity-95 group-hover:h-44'
+              }`}
+              style={{
+                background: isLight
+                  ? `linear-gradient(180deg, transparent 0%, ${activeItem?.color || '#f59e0b'} 30%, #10b981 70%, transparent 100%)`
+                  : `linear-gradient(180deg, transparent 0%, ${activeItem?.color || '#fbbf24'} 25%, #34d399 55%, #a855f7 80%, transparent 100%)`,
+                boxShadow: isEdgeHovering
+                  ? `0 0 14px ${activeItem?.color || '#fbbf24'}, 0 0 24px rgba(52, 211, 153, 0.65)`
+                  : `0 0 8px ${activeItem?.color || '#fbbf24'}66`,
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Expanded State: Lightweight Overlay Scrim + Slide-in Slim Icon Rail Dock */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop Blur Overlay */}
+            {/* Lightweight Backdrop Scrim */}
             <motion.div
               key="nav-backdrop"
               initial={{ opacity: 0 }}
@@ -778,8 +1156,8 @@ export default function LeftSidebarNav() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsOpen(false)}
-              className={`fixed inset-0 backdrop-blur-sm z-[450] transition-colors duration-300 ${
-                isLight ? 'bg-amber-950/20' : 'bg-black/60'
+              className={`fixed inset-0 backdrop-blur-[1.5px] z-[450] transition-colors duration-300 ${
+                isLight ? 'bg-amber-950/10' : 'bg-black/30'
               }`}
               aria-hidden="true"
             />
@@ -793,19 +1171,52 @@ export default function LeftSidebarNav() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '-100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 360, damping: 32 }}
+              onMouseEnter={() => setIsHoveringSidebar(true)}
+              onMouseLeave={() => setIsHoveringSidebar(false)}
+              onTouchStart={handleSidebarTouchStart}
+              onTouchMove={handleSidebarTouchStart}
+              onTouchEnd={handleSidebarTouchEnd}
+              onTouchCancel={handleSidebarTouchEnd}
               className={`fixed left-0 top-0 bottom-0 w-[68px] sm:w-[74px] backdrop-blur-2xl border-r z-[460] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
                   ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
                   : 'bg-neutral-950/95 border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
               }`}
             >
-              {/* Safe-Area Top Spacer & Indicator */}
+              {/* Safe-Area Top Spacer & Auto-Collapse Progress Indicator */}
               <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex flex-col items-center shrink-0">
                 <div
-                  className={`w-8 h-1 rounded-full transition-colors duration-300 ${
-                    isLight ? 'bg-amber-900/20' : 'bg-white/10'
+                  className={`relative w-8 h-1 rounded-full overflow-hidden transition-colors duration-300 ${
+                    isLight ? 'bg-amber-900/15' : 'bg-white/10'
                   }`}
-                />
+                  title={
+                    isAutoCounting
+                      ? '2.5초 후 자동으로 접힙니다 (마우스 호버/터치 시 유지)'
+                      : '조작 중 — 열린 상태 유지'
+                  }
+                >
+                  {isAutoCounting ? (
+                    <motion.div
+                      key={`countdown-${countdownCycle}`}
+                      initial={{ scaleX: 1 }}
+                      animate={{ scaleX: 0 }}
+                      transition={{ duration: AUTO_COLLAPSE_DELAY_MS / 1000, ease: 'linear' }}
+                      style={{
+                        transformOrigin: 'left',
+                        backgroundColor: activeItem?.color || '#fbbf24',
+                      }}
+                      className="w-full h-full rounded-full opacity-85"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full rounded-full transition-opacity duration-200 opacity-90"
+                      style={{
+                        backgroundColor: activeItem?.color || '#10b981',
+                        boxShadow: `0 0 6px ${activeItem?.color || '#10b981'}`,
+                      }}
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Navigation Channel Items (Icon-Only Rail) */}
@@ -844,12 +1255,197 @@ export default function LeftSidebarNav() {
                 </AnimatePresence>
               </div>
 
-              {/* Footer: User Profile Button & Collapse Button */}
+              {/* Footer: LP BGM Button, User Profile Button & Collapse Button */}
               <div
                 className={`pb-[calc(var(--sab)+0.75rem)] px-1.5 pt-2.5 border-t flex flex-col items-center gap-2.5 shrink-0 transition-colors duration-300 ${
                   isLight ? 'border-amber-900/15' : 'border-white/10'
                 }`}
               >
+                {/* LP Background Music Button (Click: Play/Pause, Long-Press: LP Player Detail Popup) */}
+                <div className="relative group w-10 h-10 shrink-0 flex items-center justify-center">
+                  {/* Soundwave Ripple & Floating Musical Notes when Playing */}
+                  <AnimatePresence>
+                    {bgmState.isPlaying && !bgmState.isBuffering && (
+                      <>
+                        {/* Soft expanding soundwave pulse ring */}
+                        <motion.span
+                          key="bgm-wave-ring"
+                          initial={{ scale: 0.9, opacity: 0.55 }}
+                          animate={{ scale: [0.95, 1.28, 1.38], opacity: [0.5, 0.22, 0] }}
+                          transition={{ duration: 2.1, repeat: Infinity, ease: 'easeOut' }}
+                          className="absolute inset-0 rounded-xl border border-amber-400/60 pointer-events-none"
+                        />
+                        {/* Floating Note 1 (♪) */}
+                        <motion.span
+                          key="bgm-note-1"
+                          initial={{ opacity: 0, y: 2, x: -6, scale: 0.7 }}
+                          animate={{
+                            opacity: [0, 0.95, 0],
+                            y: [2, -14, -22],
+                            x: [-5, -9, -6],
+                            scale: [0.75, 1, 0.85],
+                          }}
+                          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                          className={`absolute -top-1 left-1 text-[9px] font-bold pointer-events-none select-none z-20 ${
+                            isLight
+                              ? 'text-amber-600 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]'
+                              : 'text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.9)]'
+                          }`}
+                        >
+                          ♪
+                        </motion.span>
+                        {/* Floating Note 2 (♫) */}
+                        <motion.span
+                          key="bgm-note-2"
+                          initial={{ opacity: 0, y: 2, x: 6, scale: 0.7 }}
+                          animate={{
+                            opacity: [0, 0.9, 0],
+                            y: [2, -13, -21],
+                            x: [5, 9, 6],
+                            scale: [0.7, 0.95, 0.8],
+                          }}
+                          transition={{
+                            duration: 2.4,
+                            delay: 1.15,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
+                          className={`absolute -top-1 right-0.5 text-[8.5px] font-bold pointer-events-none select-none z-20 ${
+                            isLight
+                              ? 'text-rose-500 drop-shadow-[0_0_4px_rgba(244,63,94,0.45)]'
+                              : 'text-amber-200 drop-shadow-[0_0_6px_rgba(251,191,36,0.85)]'
+                          }`}
+                        >
+                          ♫
+                        </motion.span>
+                      </>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Long-Press Hold Progress SVG Ring (450ms) */}
+                  {isBgmHolding && (
+                    <svg
+                      className="absolute -inset-1 w-12 h-12 -rotate-90 pointer-events-none z-30"
+                      viewBox="0 0 48 48"
+                    >
+                      <rect
+                        x="3"
+                        y="3"
+                        width="42"
+                        height="42"
+                        rx="13"
+                        fill="none"
+                        stroke="rgba(251, 191, 36, 0.95)"
+                        strokeWidth="2.5"
+                        strokeDasharray="145"
+                        className="animate-lp-hold drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]"
+                      />
+                    </svg>
+                  )}
+
+                  <button
+                    type="button"
+                    onPointerDown={handleBgmPointerDown}
+                    onPointerMove={handleBgmPointerMove}
+                    onPointerUp={handleBgmPointerUp}
+                    onPointerLeave={handleBgmPointerUp}
+                    onPointerCancel={handleBgmPointerUp}
+                    onClick={handleBgmClick}
+                    onContextMenu={handleBgmContextMenu}
+                    aria-label={
+                      bgmState.isPlaying
+                        ? '배경음 일시정지 (길게 누르면 LP 상세 설정)'
+                        : '배경음 재생 (길게 누르면 LP 상세 설정)'
+                    }
+                    title="클릭: 배경음 재생/일시정지 · 길게 누르기: LP 상세 설정"
+                    className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer select-none overflow-hidden ${
+                      isBgmHolding ? 'scale-92' : 'hover:scale-105 active:scale-95'
+                    } ${
+                      bgmState.isPlaying
+                        ? isLight
+                          ? 'bg-gradient-to-br from-amber-500/25 via-amber-400/15 to-rose-500/20 border-amber-500/80 shadow-[0_0_16px_rgba(245,158,11,0.38)]'
+                          : 'bg-gradient-to-br from-amber-500/25 via-neutral-900 to-rose-500/20 border-amber-400/75 shadow-[0_0_18px_rgba(251,191,36,0.45)]'
+                        : isLight
+                        ? 'bg-amber-900/[0.06] border-amber-900/20 hover:border-amber-600/50 hover:bg-amber-500/15'
+                        : 'bg-white/[0.05] border-white/15 hover:border-amber-400/50 hover:bg-white/[0.1]'
+                    }`}
+                  >
+                    {/* Mini LP Vinyl Disc Icon */}
+                    <LPRecordDisc
+                      isPlaying={bgmState.isPlaying}
+                      isBuffering={bgmState.isBuffering}
+                      size="sm"
+                      className="pointer-events-none"
+                    />
+
+                    {/* Playing Status Micro LED Dot */}
+                    <span
+                      className={`absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none transition-all duration-300 ${
+                        bgmState.isPlaying
+                          ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse'
+                          : isLight
+                          ? 'bg-slate-400/60'
+                          : 'bg-white/25'
+                      }`}
+                    />
+                  </button>
+
+                  {/* Desktop Hover Tooltip */}
+                  <div
+                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                      isLight
+                        ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
+                        : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          bgmState.isPlaying
+                            ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse'
+                            : 'bg-neutral-500'
+                        }`}
+                      />
+                      <span
+                        className={`text-xs font-extrabold tracking-wide ${
+                          isLight ? 'text-amber-700' : 'text-amber-300'
+                        }`}
+                      >
+                        LP 배경음 플레이어
+                      </span>
+                      <span
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+                          bgmState.isPlaying
+                            ? isLight
+                              ? 'bg-amber-500/15 text-amber-800 border-amber-500/35'
+                              : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
+                            : isLight
+                            ? 'bg-slate-200/70 text-slate-600 border-slate-300'
+                            : 'bg-white/10 text-neutral-400 border-white/10'
+                        }`}
+                      >
+                        {bgmState.isPlaying ? 'PLAYING' : 'PAUSED'}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[11px] font-medium max-w-[210px] truncate ${
+                        isLight ? 'text-slate-700' : 'text-neutral-200'
+                      }`}
+                    >
+                      {bgmState.trackName || '사운드스케이프 대기 중'}
+                    </span>
+                    <span
+                      className={`text-[9.5px] pt-0.5 border-t ${
+                        isLight
+                          ? 'border-amber-900/10 text-slate-500'
+                          : 'border-white/10 text-neutral-400'
+                      }`}
+                    >
+                      클릭: 재생/일시정지 · 꾹 누르기: LP 상세 설정
+                    </span>
+                  </div>
+                </div>
+
                 {/* User Profile Button -> Navigates to Epilogue Profile (/profile) */}
                 <div className="flex flex-col items-center gap-1">
                   <div className="relative group w-10 h-10 shrink-0">

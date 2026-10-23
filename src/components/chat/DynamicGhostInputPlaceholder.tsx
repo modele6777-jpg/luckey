@@ -170,74 +170,48 @@ export const DynamicGhostInputPlaceholder: React.FC<DynamicGhostInputPlaceholder
   if (multiline) {
     return (
       <div
-        className={
-          className ||
-          'absolute inset-0 p-5 pr-10 pointer-events-none select-none overflow-hidden z-0 flex flex-col justify-between'
-        }
+        className={`absolute inset-0 pointer-events-none select-none overflow-hidden z-10 flex flex-col justify-between ${
+          className || 'p-5 pr-10'
+        }`}
         aria-hidden="true"
       >
         <div
-          className={
-            textClassName ||
-            `text-sm font-sans leading-relaxed whitespace-pre-wrap break-words ${
-              isLight ? 'text-slate-400/90' : 'text-white/45'
-            }`
-          }
+          className={`text-sm font-sans leading-relaxed whitespace-pre-wrap break-words ${
+            textClassName || (isLight ? 'text-slate-400/90' : 'text-white/45')
+          }`}
         >
-          {prefix && <span className="text-yellow-400/70 font-medium mr-1.5">{prefix}</span>}
+          {prefix && <span className="text-yellow-400/80 font-semibold mr-1.5">{prefix}</span>}
           <span>{displayText}</span>
           <span
-            className={
-              cursorClassName ||
-              'inline-block w-[2px] h-[15px] bg-yellow-400/85 ml-0.5 animate-pulse align-middle translate-y-[1px]'
-            }
+            className={`inline-block w-[2px] h-[15px] ml-0.5 animate-pulse align-middle translate-y-[1px] ${
+              cursorClassName || 'bg-yellow-400/85'
+            }`}
           />
         </div>
-
-        {onApplyPrompt && currentPrompt && (
-          <div className="flex items-center justify-end pt-2">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onApplyPrompt(currentPrompt);
-              }}
-              className="pointer-events-auto px-2.5 py-1 rounded-xl bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-400/35 text-[11px] text-yellow-200/90 hover:text-yellow-100 font-semibold transition-all cursor-pointer active:scale-95 shadow-sm flex items-center gap-1"
-              title="현재 타이핑 중인 추천 고민을 입력창에 바로 채우기 (또는 Tab 키)"
-            >
-              <span>✨ 이 추천 고민 입력</span>
-              <span className="hidden sm:inline text-[10px] text-yellow-300/70 font-mono">[Tab]</span>
-            </button>
-          </div>
-        )}
       </div>
     );
   }
 
   return (
     <div
-      className={
-        className ||
-        'absolute inset-0 flex items-center pointer-events-none select-none overflow-hidden pr-2 z-0'
-      }
+      className={`absolute inset-0 flex items-center pointer-events-none select-none overflow-hidden z-10 ${
+        className || 'pr-2'
+      }`}
       aria-hidden="true"
     >
       <span
-        className={
-          textClassName ||
-          `text-xs sm:text-sm font-normal truncate leading-tight sm:leading-snug ${
-            isLight ? 'text-slate-400/90' : 'text-white/70'
-          }`
-        }
+        className={`text-xs sm:text-sm font-normal truncate leading-tight sm:leading-snug ${
+          textClassName || (isLight ? 'text-slate-400/90' : 'text-white/70')
+        }`}
         style={textClassName ? undefined : { color: isLight ? 'rgba(100, 116, 139, 0.85)' : 'rgba(255, 255, 255, 0.72)' }}
       >
-        {prefix}{displayText}
+        {prefix && <span className="text-amber-300/80 font-medium mr-1">{prefix}</span>}
+        {displayText}
       </span>
       <span
-        className={
-          cursorClassName ||
-          'inline-block w-[1.5px] h-[10px] sm:h-[13px] bg-amber-500/70 dark:bg-amber-400/80 ml-0.5 animate-pulse shrink-0 align-middle'
-        }
+        className={`inline-block w-[1.5px] h-[10px] sm:h-[13px] ml-0.5 animate-pulse shrink-0 align-middle ${
+          cursorClassName || 'bg-amber-500/70 dark:bg-amber-400/80'
+        }`}
       />
     </div>
   );

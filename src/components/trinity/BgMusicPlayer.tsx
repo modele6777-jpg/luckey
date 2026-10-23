@@ -87,10 +87,30 @@ function buildInitialTrackLibrary(): BgmTrack[] {
   return [...FLOW_AUDIO_TRACKS];
 }
 
+export interface BgmPublicState {
+  isPlaying: boolean;
+  isBuffering: boolean;
+  trackName: string;
+  trackArtist: string;
+  trackCategory: string;
+}
+
+let latestBgmPublicState: BgmPublicState = {
+  isPlaying: false,
+  isBuffering: false,
+  trackName: FLOW_AUDIO_TRACKS[0]?.name || '',
+  trackArtist: FLOW_AUDIO_TRACKS[0]?.artist || '',
+  trackCategory: FLOW_AUDIO_TRACKS[0]?.category || '',
+};
+
+export function getBgmPublicState(): BgmPublicState {
+  return latestBgmPublicState;
+}
+
 interface LPRecordDiscProps {
   isPlaying: boolean;
   isBuffering?: boolean;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
@@ -105,6 +125,7 @@ export function LPRecordDisc({
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
     lg: 'w-11 h-11',
+    xl: 'w-20 h-20',
   }[size];
 
   const labelSizeClasses = {
@@ -112,6 +133,7 @@ export function LPRecordDisc({
     sm: 'w-3.5 h-3.5',
     md: 'w-4.5 h-4.5',
     lg: 'w-5 h-5',
+    xl: 'w-7 h-7',
   }[size];
 
   const holeSizeClasses = {
@@ -119,6 +141,7 @@ export function LPRecordDisc({
     sm: 'w-1 h-1',
     md: 'w-1.5 h-1.5',
     lg: 'w-1.5 h-1.5',
+    xl: 'w-2 h-2',
   }[size];
 
   return (
@@ -226,14 +249,17 @@ export function BgMusicPlayer() {
     const handleNavState = (e: any) => {
       if (typeof e?.detail?.isOpen === 'boolean') {
         setIsNavOpen(e.detail.isOpen);
-        if (e.detail.isOpen) {
-          setIsDetailMenuOpen(false);
-        }
       }
     };
     window.addEventListener('left-sidebar-state', handleNavState);
     return () => window.removeEventListener('left-sidebar-state', handleNavState);
   }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('prism:bgm_detail_state', { detail: { isOpen: isDetailMenuOpen } })
+    );
+  }, [isDetailMenuOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1195,12 +1221,6 @@ export function BgMusicPlayer() {
   const handleLpContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    setIsHolding(false);
-    setIsDetailMenuOpen((prev) => !prev);
   };
 
   const queueAndPlayTrack = (trackIndex: number) => {
@@ -1649,29 +1669,43 @@ export function BgMusicPlayer() {
       advanceToNextTrackRef.current();
     };
 
+    const handlePrismRequestBgmState = () => {
+      window.dispatchEvent(
+        new CustomEvent("prism:bgm_state_change", {
+          detail: latestBgmPublicState,
+        })
+      );
+    };
+
     window.addEventListener("prism:toggle_bgm", handlePrismToggleBgm);
     window.addEventListener("prism:open_bgm_menu", handlePrismOpenBgmMenu);
     window.addEventListener("prism:toggle_bgm_menu", handlePrismToggleBgmMenu);
     window.addEventListener("prism:next_bgm_track", handlePrismNextBgmTrack);
+    window.addEventListener("prism:request_bgm_state", handlePrismRequestBgmState);
     return () => {
       window.removeEventListener("prism:toggle_bgm", handlePrismToggleBgm);
       window.removeEventListener("prism:open_bgm_menu", handlePrismOpenBgmMenu);
       window.removeEventListener("prism:toggle_bgm_menu", handlePrismToggleBgmMenu);
       window.removeEventListener("prism:next_bgm_track", handlePrismNextBgmTrack);
+      window.removeEventListener("prism:request_bgm_state", handlePrismRequestBgmState);
     };
   }, []);
 
-  // Broadcast BGM playback state to BigBang button and other consumers
+  // Broadcast BGM playback state to Sidebar, BigBang button, and other consumers
   useEffect(() => {
+    latestBgmPublicState = {
+      isPlaying,
+      isBuffering,
+      trackName: currentTrack?.name || "",
+      trackArtist: currentTrack?.artist || "Lucy Procedural Suite",
+      trackCategory: currentTrack?.category || "",
+    };
     window.dispatchEvent(
       new CustomEvent("prism:bgm_state_change", {
-        detail: {
-          isPlaying,
-          trackName: currentTrack?.name,
-        },
+        detail: latestBgmPublicState,
       })
     );
-  }, [isPlaying, currentTrack?.name]);
+  }, [isPlaying, isBuffering, currentTrack?.name, currentTrack?.artist, currentTrack?.category]);
 
   // --- CLICK OUTSIDE TO COLLAPSE EXPANDED PLAYER & VOLUME SLIDER ---
   useEffect(() => {
@@ -1835,9 +1869,9 @@ export function BgMusicPlayer() {
         preload={shouldPreloadBgmAudio() ? "auto" : "none"}
       />
 
-      {/* Detailed Menu Modal Popup (LP판 홀드시 노출되는 프리미엄 상세메뉴) */}
+      {/* Detailed Menu Modal Popup (LP판 홀드시 노출되는 프리미엄 LP 턴테이블 상세메뉴) */}
       <AnimatePresence>
-        {isDetailMenuOpen && !isNavOpen && (
+        {isDetailMenuOpen && (
           <>
             {/* Backdrop Dimmer Overlay (가벼운 오버레이로 외부 터치 시 즉시 닫힘) */}
             <motion.div
@@ -1846,20 +1880,24 @@ export function BgMusicPlayer() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
               onClick={() => setIsDetailMenuOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[410]"
+              className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[510]"
             />
 
-            {/* Floating Quick Popover Card (LP판 바로 위 플로팅 퀵 팝오버) */}
+            {/* Floating LP Turntable Popover Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 12 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="fixed bottom-safe-music-menu z-[420] w-[calc(100vw-1.75rem)] sm:w-[380px] max-w-[380px] max-h-[78vh] flex flex-col rounded-3xl bg-neutral-950/95 border border-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] backdrop-blur-2xl text-white overflow-hidden select-none"
+              className={`fixed z-[520] w-[calc(100vw-1.75rem)] sm:w-[390px] max-w-[390px] max-h-[82vh] flex flex-col rounded-3xl bg-neutral-950/95 border border-amber-400/25 shadow-[0_25px_65px_-15px_rgba(0,0,0,0.92),0_0_30px_rgba(251,191,36,0.12)] backdrop-blur-2xl text-white overflow-hidden select-none ${
+                isNavOpen
+                  ? "bottom-[calc(var(--sab)+1.25rem)] left-1/2 -translate-x-1/2 sm:left-[86px] sm:translate-x-0"
+                  : "bottom-safe-music-menu"
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Card Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0 bg-neutral-900/40">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0 bg-gradient-to-r from-neutral-900/80 via-neutral-900/40 to-neutral-900/80">
                 <div className="flex items-center gap-2.5">
                   <div className="relative flex items-center justify-center">
                     <LPRecordDisc isPlaying={isPlaying && !isBuffering} size="xs" />
@@ -1868,11 +1906,22 @@ export function BgMusicPlayer() {
                     )}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[12px] font-black tracking-wider text-amber-200">
-                      LUCKEY 퀵 플레이어
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[12px] font-black tracking-wider text-amber-200">
+                        LUCKEY LP TURNTABLE
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[8px] font-mono font-bold border ${
+                          isPlaying && !isBuffering
+                            ? "bg-amber-400/20 text-amber-300 border-amber-400/40"
+                            : "bg-white/5 text-white/40 border-white/10"
+                        }`}
+                      >
+                        {isPlaying && !isBuffering ? "33⅓ RPM · ON" : "STANDBY"}
+                      </span>
+                    </div>
                     <span className="text-[10px] text-white/50">
-                      LP 플로팅 퀵 팝오버 · 음악 & 자연 사운드
+                      아날로그 턴테이블 데크 · 테마 트랙 & 볼륨 설정
                     </span>
                   </div>
                 </div>
@@ -1880,7 +1929,7 @@ export function BgMusicPlayer() {
                   type="button"
                   onClick={() => setIsDetailMenuOpen(false)}
                   className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-                  aria-label="퀵 메뉴 닫기"
+                  aria-label="LP 상세 설정 닫기"
                 >
                   <X size={14} className="text-white/80" />
                 </button>
@@ -1888,45 +1937,136 @@ export function BgMusicPlayer() {
 
               {/* Scrollable Container */}
               <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
-                {/* Hero Now-Playing Track Card */}
-                <div className="p-3 mx-3 mt-3 rounded-2xl bg-gradient-to-br from-amber-500/15 via-neutral-900/80 to-black/90 border border-amber-500/25 shrink-0 shadow-lg">
-                  <div className="flex items-center gap-3">
-                    <LPRecordDisc
-                      isPlaying={isPlaying && !isBuffering}
-                      isBuffering={isBuffering}
-                      size="md"
-                      className="shrink-0 shadow-md"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        {currentTrack?.category && (
-                          <span className="px-2 py-0.5 rounded-full text-[8.5px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0">
-                            {currentTrack.category}
-                          </span>
-                        )}
-                        <span className="text-[9.5px] text-white/40 truncate">
-                          {currentTrack?.artist || "Lucy Procedural Suite"}
-                        </span>
+                {/* Analog LP Turntable Platter & Tonearm Deck Card */}
+                <div className="p-3.5 mx-3 mt-3 rounded-2xl bg-gradient-to-br from-neutral-900 via-zinc-950 to-black border border-amber-500/25 shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_10px_25px_rgba(0,0,0,0.6)] relative overflow-hidden">
+                  {/* Subtle warm ambient turntable lamp glow */}
+                  <div
+                    className={`absolute -top-8 -left-8 w-36 h-36 rounded-full bg-amber-400/15 blur-2xl pointer-events-none transition-opacity duration-700 ${
+                      isPlaying && !isBuffering ? "opacity-100" : "opacity-25"
+                    }`}
+                  />
+
+                  <div className="flex items-center gap-3.5 relative z-10">
+                    {/* Turntable Platter & Tonearm Enclosure */}
+                    <div
+                      onClick={handlePlayToggle}
+                      title={isPlaying ? "클릭하여 일시정지" : "클릭하여 재생"}
+                      className="relative w-[96px] h-[86px] rounded-xl bg-gradient-to-b from-zinc-800/70 to-zinc-950 border border-white/15 shadow-inner flex items-center justify-start pl-1.5 shrink-0 cursor-pointer group"
+                    >
+                      {/* Platter Strobe Rim */}
+                      <div className="relative w-[74px] h-[74px] rounded-full p-[3px] bg-gradient-to-tr from-zinc-700 via-zinc-400 to-zinc-600 shadow-[0_4px_12px_rgba(0,0,0,0.85)] flex items-center justify-center">
+                        {/* Vinyl Disc */}
+                        <div className="lp-vinyl-disc w-full h-full relative flex items-center justify-center rounded-full">
+                          <div
+                            className={`lp-vinyl-grooves ${
+                              isPlaying && !isBuffering ? "lp-spinning" : "lp-paused"
+                            }`}
+                          />
+                          <div className="absolute inset-1.5 rounded-full border border-white/10 pointer-events-none" />
+                          <div className="absolute inset-3.5 rounded-full border border-white/10 pointer-events-none" />
+                          <div className="absolute inset-5 rounded-full border border-amber-300/15 pointer-events-none" />
+
+                          {/* Center Label */}
+                          <div
+                            className={`relative z-10 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-indigo-500 flex items-center justify-center shadow-md border border-white/25 ${
+                              isPlaying && !isBuffering ? "lp-spinning" : "lp-paused"
+                            }`}
+                          >
+                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-950 border border-white/50 shadow-inner" />
+                          </div>
+                        </div>
                       </div>
-                      <h4 className="text-[13px] font-bold text-white/95 truncate leading-tight">
-                        {currentTrack?.name || "선택된 트랙 없음"}
-                      </h4>
+
+                      {/* Turntable Tonearm Assembly (Top-Right Pivot + Arm + Stylus Cartridge) */}
+                      <div className="absolute top-1.5 right-1.5 w-6 h-16 pointer-events-none z-20">
+                        {/* Tonearm Pivot Base */}
+                        <div className="absolute top-0 right-0 w-4 h-4 rounded-full bg-gradient-to-b from-zinc-300 to-zinc-600 border border-white/30 shadow-md flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+                        </div>
+
+                        {/* Pivoting Tonearm Shaft & Headshell */}
+                        <div
+                          className={`absolute top-2 right-2 w-1.5 h-12 origin-top transition-transform duration-700 ease-out ${
+                            isPlaying && !isBuffering ? "rotate-[24deg]" : "rotate-[-4deg]"
+                          }`}
+                        >
+                          {/* Counterweight */}
+                          <div className="w-2.5 h-2 -ml-[2px] -mt-1.5 rounded-xs bg-zinc-400 border border-black/40" />
+                          {/* Metallic Arm Tube */}
+                          <div className="w-[2px] h-10 mx-auto bg-gradient-to-b from-zinc-200 via-zinc-400 to-amber-200 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.8)]" />
+                          {/* Cartridge Headshell & Glowing Stylus Tip */}
+                          <div className="w-2.5 h-3 -ml-[2px] -mt-0.5 rounded-xs bg-zinc-800 border border-amber-400/60 flex items-end justify-center pb-0.5 shadow-md">
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                isPlaying && !isBuffering
+                                  ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]"
+                                  : "bg-zinc-500"
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom-Right Power Strobe Lamp */}
+                      <span
+                        className={`absolute bottom-1.5 right-1.5 w-2 h-2 rounded-full transition-all duration-300 ${
+                          isPlaying && !isBuffering
+                            ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]"
+                            : "bg-zinc-700"
+                        }`}
+                      />
+
+                      {/* Buffering Overlay */}
+                      {isBuffering && (
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] rounded-xl flex items-center justify-center z-30">
+                          <RefreshCw className="w-4 h-4 animate-spin text-amber-300" />
+                        </div>
+                      )}
                     </div>
 
-                    {/* Equalizer animation bars or Buffer spinner */}
-                    <div className="shrink-0 flex items-center">
-                      {isBuffering ? (
-                        <RefreshCw size={15} className="animate-spin text-amber-300" />
-                      ) : isPlaying ? (
-                        <div className="flex items-end gap-0.5 h-4 px-1">
-                          <span className="w-0.5 bg-amber-400 rounded-full animate-pulse h-3" />
-                          <span className="w-0.5 bg-amber-300 rounded-full animate-pulse h-4 delay-75" />
-                          <span className="w-0.5 bg-amber-400 rounded-full animate-pulse h-2 delay-150" />
-                          <span className="w-0.5 bg-amber-200 rounded-full animate-pulse h-3.5 delay-100" />
+                    {/* Right Side: Track Info & Equalizer */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          {currentTrack?.category && (
+                            <span className="px-2 py-0.5 rounded-full text-[8.5px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0">
+                              {currentTrack.category}
+                            </span>
+                          )}
+                          <span className="text-[9.5px] text-white/45 truncate">
+                            {currentTrack?.artist || "Lucy Procedural Suite"}
+                          </span>
                         </div>
-                      ) : (
-                        <span className="text-[9px] text-white/40 font-mono">PAUSED</span>
-                      )}
+                        <h4 className="text-[13px] font-bold text-white/95 truncate leading-snug">
+                          {currentTrack?.name || "선택된 트랙 없음"}
+                        </h4>
+                      </div>
+
+                      {/* Analog VU / Status Bar */}
+                      <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-white/10">
+                        <span className="text-[9.5px] text-amber-200/75 font-medium flex items-center gap-1">
+                          <Disc
+                            size={11}
+                            className={isPlaying && !isBuffering ? "animate-spin text-amber-400" : "text-white/40"}
+                          />
+                          <span>{isPlaying && !isBuffering ? "톤암 재생 중" : "톤암 대기 중"}</span>
+                        </span>
+
+                        <div className="shrink-0 flex items-center">
+                          {isBuffering ? (
+                            <RefreshCw size={13} className="animate-spin text-amber-300" />
+                          ) : isPlaying ? (
+                            <div className="flex items-end gap-0.5 h-3.5 px-1">
+                              <span className="w-0.5 bg-amber-400 rounded-full animate-pulse h-2.5" />
+                              <span className="w-0.5 bg-amber-300 rounded-full animate-pulse h-3.5 delay-75" />
+                              <span className="w-0.5 bg-amber-400 rounded-full animate-pulse h-2 delay-150" />
+                              <span className="w-0.5 bg-amber-200 rounded-full animate-pulse h-3 delay-100" />
+                            </div>
+                          ) : (
+                            <span className="text-[9px] text-white/40 font-mono">PAUSED</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -2315,7 +2455,7 @@ export function BgMusicPlayer() {
               {/* Card Footer Hint */}
               <div className="px-4 py-2 border-t border-white/10 bg-black/50 text-center shrink-0">
                 <p className="text-[10px] text-white/40">
-                  💡 LP판 탭: 재생/일시정지 · 더블탭: 다음곡 · 꾹 누르기(홀드): 상세메뉴
+                  💡 LP 버튼 클릭: 재생/일시정지 · 꾹 누르기(길게 누르기): LP 상세 설정
                 </p>
               </div>
             </motion.div>
