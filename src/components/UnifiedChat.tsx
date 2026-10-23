@@ -1235,7 +1235,7 @@ export function UnifiedChat() {
                         type="button"
                         onClick={() => {
                           if (hasMovedRef.current) return;
-                          handleSend(p);
+                          setInput(p);
                         }}
                         className="px-3.5 py-2 rounded-full border border-white/20 bg-white/[0.06] hover:bg-white/[0.18] hover:border-blue-400/70 text-[12px] font-medium text-white/90 hover:text-white transition-all text-left whitespace-nowrap shrink-0 cursor-pointer shadow-md active:scale-95 flex items-center gap-1.5 backdrop-blur-md"
                         title={p}
@@ -1399,12 +1399,8 @@ export function UnifiedChat() {
       <PromptLibraryModal
         isOpen={isPromptLibraryOpen}
         onClose={() => setIsPromptLibraryOpen(false)}
-        onSelectPrompt={(promptText, sendImmediately, _toolIds, _promptTitle) => {
-          if (sendImmediately) {
-            handleSend(promptText);
-          } else {
-            setInput(promptText);
-          }
+        onSelectPrompt={(promptText) => {
+          setInput(promptText);
         }}
       />
     </AnimatePresence>

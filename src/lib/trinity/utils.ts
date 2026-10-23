@@ -302,14 +302,155 @@ function cleanTarotOption(raw: string): string {
     .replace(/^[「『"'\s]+/, '')
     .replace(/[」』"'\s]+$/, '')
     .replace(/[?？!！.。,，:：]+$/g, '')
+    .replace(/^(?:지금|올해|이번에|과연|내가|제가|우리|혹시)\s+/, '')
+    .replace(/\s*(?:할까요?|갈까요?|될까요?|일까요?|나을까요?|좋을까요?|맞을까요?|할지|갈지|될지|일지)$/, '')
     .trim();
 }
 
 function hasMeaningfulOptions(a: string, b: string): boolean {
   if (!a || !b || a === b) return false;
-  if (a.length < 2 || b.length < 2) return false;
+  if (a.length < 1 || b.length < 1) return false;
+  if (/^[ABab12]$/.test(a.trim()) && /^[ABab12]$/.test(b.trim())) return false;
   if (a.length > 48 || b.length > 48) return false;
   return true;
+}
+
+/**
+ * 질문 텍스트에서 양자택일의 두 가지 실제 고민 선택지를 자연스러운 한국어 구절로 추출합니다.
+ * 기계적인 'A안', 'B안', 'A', 'B' 대신 사용자의 실제 고민(예: '새로운 곳으로 이직하기' vs '현재 직장에 남기')을 반환합니다.
+ */
+export function extractBinaryOptionsFromConcern(concern: string): { optionA: string; optionB: string } {
+  const text = (concern || '').trim().replace(/\s+/g, ' ');
+  if (!text) {
+    return { optionA: '적극적인 변화와 새로운 도전', optionB: '현재 위치 유지와 안정적 내실 다지기' };
+  }
+
+  // 1. "X vs Y" / "X 대 Y" (단, "A를 선택할까 vs B를 선택할까" 같은 기본 플레이스홀더 제외)
+  const vsMatch = text.match(/^(.{1,48}?)\s+(?:vs\.?|VS|대)\s+(.{1,48}?)$/i);
+  if (vsMatch) {
+    const rawA = vsMatch[1].replace(/를?\s*선택할까(?:요)?$/, '').trim();
+    const rawB = vsMatch[2].replace(/를?\s*선택할까(?:요)?[?？]*$/, '').trim();
+    const a = cleanTarotOption(rawA);
+    const b = cleanTarotOption(rawB);
+    if (hasMeaningfulOptions(a, b) && !/^[ABab](?:안|선택지)?$/.test(a) && !/^[ABab](?:안|선택지)?$/.test(b)) {
+      return { optionA: a, optionB: b };
+    }
+  }
+
+  // 2. "~할까 말까" / "~해야 할까 말까" / "~할지 말지" 딜레마 패턴 정밀 해독
+  const dilemmaMatch = text.match(
+    /(.+?)(?:해야\s*할까\s*말까|할까\s*말까|갈까\s*말까|살까\s*말까|만날까\s*말까|연락할까\s*말까|고백할까\s*말까|이직할까\s*말까|퇴사할까\s*말까|투자할까\s*말까|시작할까\s*말까|도전할까\s*말까|사귈까\s*말까|헤어질까\s*말까|이사할까\s*말까|할지\s*말지)/i
+  );
+  if (dilemmaMatch) {
+    const fullBefore = text.replace(/[?？!！.]+$/, '').trim();
+    if (/이직/.test(fullBefore)) {
+      return { optionA: '과감하게 이직 추진하기', optionB: '현재 직장에 남아 내실 다지기' };
+    }
+    if (/퇴사|그만둘/.test(fullBefore)) {
+      return { optionA: '퇴사 결단 및 새로운 길 모색', optionB: '현재 직장을 유지하며 준비하기' };
+    }
+    if (/연락/.test(fullBefore)) {
+      return { optionA: '먼저 용기 내어 연락하기', optionB: '연락하지 않고 상대의 흐름 지켜보기' };
+    }
+    if (/고백/.test(fullBefore)) {
+      return { optionA: '진심을 담아 마음 고백하기', optionB: '고백을 미루고 관계 분위기 살피기' };
+    }
+    if (/만날|만나/.test(fullBefore)) {
+      return { optionA: '직접 만나서 대화 나누기', optionB: '만남을 보류하고 거리 두기' };
+    }
+    if (/헤어질|이별/.test(fullBefore)) {
+      return { optionA: '관계를 정리하고 홀로서기', optionB: '관계를 이어가며 회복 노력하기' };
+    }
+    if (/재회/.test(fullBefore)) {
+      return { optionA: '다시 손을 잡고 재회 선택하기', optionB: '과거를 보내주고 새로운 인연 열기' };
+    }
+    if (/투자|매수|주식|코인|부동산/.test(fullBefore)) {
+      return { optionA: '적극적으로 투자 실행하기', optionB: '투자를 보류하고 현금·관망 유지하기' };
+    }
+    if (/창업|사업|개업/.test(fullBefore)) {
+      return { optionA: '새로운 사업·창업 도전하기', optionB: '무리한 확장을 멈추고 안정 유지하기' };
+    }
+    if (/이사/.test(fullBefore)) {
+      return { optionA: '새로운 곳으로 이사 추진하기', optionB: '현재 거주지에 머무르며 안정 찾기' };
+    }
+    if (/살까\s*말까|구매|구입/.test(fullBefore)) {
+      const itemPrefix = cleanTarotOption(dilemmaMatch[1]);
+      return {
+        optionA: itemPrefix ? `${itemPrefix} 구매 결단하기` : '원하는 것 구매 실행하기',
+        optionB: itemPrefix ? `${itemPrefix} 구매 보류하고 아끼기` : '구매를 미루고 지출 아끼기',
+      };
+    }
+    if (/갈까\s*말까/.test(fullBefore)) {
+      const placePrefix = cleanTarotOption(dilemmaMatch[1]);
+      return {
+        optionA: placePrefix ? `${placePrefix} 직접 가기` : '적극적으로 이동·참석하기',
+        optionB: placePrefix ? `${placePrefix} 가지 않고 머무르기` : '가지 않고 현재 자리 지키기',
+      };
+    }
+    const stem = cleanTarotOption(dilemmaMatch[1]);
+    if (stem && stem.length >= 2) {
+      return {
+        optionA: `${stem} 적극적으로 실행하기`,
+        optionB: `${stem} 보류하고 신중히 관망하기`,
+      };
+    }
+  }
+
+  // 3. "X와/과/랑/하고 Y 중/사이/둘 중"
+  const betweenMatch = text.match(/(.{1,30}?)\s*(?:와|과|랑|하고)\s*(.{1,30}?)\s*(?:중(?:에서)?|사이(?:에서)?|둘\s*중|어느\s*쪽)/);
+  if (betweenMatch) {
+    const a = cleanTarotOption(betweenMatch[1]);
+    const b = cleanTarotOption(betweenMatch[2]);
+    if (hasMeaningfulOptions(a, b)) {
+      return { optionA: a, optionB: b };
+    }
+  }
+
+  // 4. "X할까 Y할까" / "X할지 Y할지" / "X갈까 Y갈까" / "X가 나을까 Y가 나을까"
+  const doubleKkaMatch = text.match(
+    /(.{1,30}?(?:할까(?:요)?|갈까(?:요)?|될까(?:요)?|일까(?:요)?|할지|갈지|나을까(?:요)?|좋을까(?:요)?))\s*(?:,|아니면|혹은|또는|vs|\/|\s+)\s*(.{1,30}?(?:할까(?:요)?|갈까(?:요)?|될까(?:요)?|일까(?:요)?|할지|갈지|나을까(?:요)?|좋을까(?:요)?))/
+  );
+  if (doubleKkaMatch) {
+    const a = cleanTarotOption(doubleKkaMatch[1]);
+    const b = cleanTarotOption(doubleKkaMatch[2]);
+    if (hasMeaningfulOptions(a, b)) {
+      return { optionA: a, optionB: b };
+    }
+  }
+
+  // 5. "X 아니면 Y" / "X 또는 Y" / "X 혹은 Y"
+  const orMatch = text.match(/(.{2,30}?)\s+(?:아니면|또는|혹은)\s+(.{2,30}?)(?:[?？!！.]|$)/);
+  if (orMatch) {
+    const a = cleanTarotOption(orMatch[1]);
+    const b = cleanTarotOption(orMatch[2]);
+    if (hasMeaningfulOptions(a, b)) {
+      return { optionA: a, optionB: b };
+    }
+  }
+
+  // 6. 일반 고민 문장에서 주제 기반 양자택일 갈림길 자동 도출 (기계적인 A/B 절대 사용 금지)
+  const cleanTopic = text
+    .replace(/(?:양자택일\s*비교\s*배열|양자택일\s*배열|양자택일|둘\s*중\s*어느\s*쪽|어느\s*선택|비교해\s*줘|봐줘|알려줘)/g, '')
+    .replace(/^[?？!！.,\s]+|[?？!！.,\s]+$/g, '')
+    .trim();
+
+  if (/이직|퇴사|직장|회사|취업|진로|커리어/.test(text)) {
+    return { optionA: '새로운 환경으로 이직·도약하기', optionB: '현재 자리에서 안정과 내실 다지기' };
+  }
+  if (/연애|사랑|고백|연락|재회|이별|만남|그\s*사람|상대/.test(text)) {
+    return { optionA: '마음을 표현하며 적극적으로 다가가기', optionB: '거리를 두며 차분히 흐름 지켜보기' };
+  }
+  if (/투자|주식|코인|부동산|매매|계약|사업|창업|돈|재물/.test(text)) {
+    return { optionA: '과감하게 투자·계약 추진하기', optionB: '신중하게 리스크를 방어하며 관망하기' };
+  }
+  if (cleanTopic && cleanTopic.length >= 2 && cleanTopic.length <= 28 && !/A.*B/i.test(cleanTopic)) {
+    return {
+      optionA: `${cleanTopic} — 적극 추진 및 변화 선택`,
+      optionB: `${cleanTopic} — 신중한 보류 및 현재 유지`,
+    };
+  }
+
+  return { optionA: '적극적인 변화와 새로운 도전', optionB: '현재 흐름 유지와 안정적 준비' };
 }
 
 function detectTarotTheme(
@@ -363,8 +504,14 @@ export function buildSpreadForTheme(
   theme: TarotConcernTheme,
   analysis: Pick<TarotConcernAnalysis, 'kind' | 'optionA' | 'optionB'> = { kind: 'open' },
 ): TarotSpreadRecommendation {
-  const optionA = analysis.optionA || 'A';
-  const optionB = analysis.optionB || 'B';
+  const optionA =
+    analysis.optionA && !/^[ABab](?:안|선택지)?$/.test(analysis.optionA.trim())
+      ? analysis.optionA.trim()
+      : '첫 번째 길(적극 변화·추진)';
+  const optionB =
+    analysis.optionB && !/^[ABab](?:안|선택지)?$/.test(analysis.optionB.trim())
+      ? analysis.optionB.trim()
+      : '두 번째 길(신중 유지·관망)';
 
   const spreads: Record<TarotConcernTheme, TarotSpreadRecommendation> = {
     daily: {
@@ -593,8 +740,8 @@ export const POPULAR_TAROT_SPREAD_PRESETS = [
     theme: 'binary_choice' as const,
     name: '⚖️ 양자택일 비교 배열',
     cardCount: 4,
-    desc: 'A와 B 선택지 결과를 나란히 비교해 한쪽을 명확히 판정',
-    defaultPrompt: 'A를 선택할까 vs B를 선택할까?',
+    desc: '두 갈래 고민의 결과를 나란히 비교해 어느 쪽이 유리한지 명확히 판정',
+    defaultPrompt: '새로운 곳으로 이직할까 vs 현재 직장에 남을까?',
   },
   {
     theme: 'yes_no' as const,
@@ -734,7 +881,7 @@ export function analyzeTarotConcern(concern: string): TarotConcernAnalysis {
     }
   }
 
-  // 4. A가 나을까 B가 나을까 / A안 B안
+  // 4. A가 나을까 B가 나을까
   if (kind === 'open') {
     const naulMatch = text.match(/(.+?나을까요?)\s*(?:아니면|vs|또는|\/)\s*(.+?나을까요?)/);
     if (naulMatch) {
@@ -748,9 +895,16 @@ export function analyzeTarotConcern(concern: string): TarotConcernAnalysis {
     }
   }
 
-  // 5. Explicit choice keywords with question mark
-  if (kind === 'open' && /(?:둘\s*중\s*어느|양자택일|어느\s*쪽이\s*더|어느\s*선택)/.test(text) && /[?？]/.test(text)) {
+  // 5. Explicit choice keywords
+  if (kind === 'open' && /(?:둘\s*중\s*어느|양자택일|어느\s*쪽이\s*더|어느\s*선택)/.test(text)) {
     kind = 'binary_choice';
+  }
+
+  // 양자택일일 때 질문에서 실제 두 가지 고민 선택지를 반드시 파악하여 채움 ('A', 'B' 사용 금지)
+  if (kind === 'binary_choice' && (!optionA || !optionB || /^[ABab](?:안|선택지)?$/.test(optionA) || /^[ABab](?:안|선택지)?$/.test(optionB))) {
+    const extracted = extractBinaryOptionsFromConcern(text);
+    optionA = extracted.optionA;
+    optionB = extracted.optionB;
   }
 
   // 6. Yes/No questions (명시적 예/아니오, Yes/No 키워드, 양자딜레마, 단일 행동 실행 여부 검증 질문)
@@ -1014,21 +1168,27 @@ export function buildTarotBinaryChoicePromptAddon(analysis: TarotConcernAnalysis
   if (analysis.kind === 'open') return '';
 
   if (analysis.kind === 'binary_choice') {
-    const options =
-      analysis.optionA && analysis.optionB
-        ? `- 선택지 A: **${analysis.optionA}**\n- 선택지 B: **${analysis.optionB}**`
-        : '- 질문에 드러난 두 갈래 선택지(문맥에서 A/B를 명확히 구분)';
+    const optA =
+      analysis.optionA && !/^[ABab](?:안|선택지)?$/.test(analysis.optionA.trim())
+        ? analysis.optionA.trim()
+        : '첫 번째 선택지';
+    const optB =
+      analysis.optionB && !/^[ABab](?:안|선택지)?$/.test(analysis.optionB.trim())
+        ? analysis.optionB.trim()
+        : '두 번째 선택지';
 
     return `
 
-[⚖️ 양자택일 질문 상담 지침]
-내담자는 두 선택지 사이에서 깊은 갈등을 겪고 있습니다.
-${options}
+[⚖️ 양자택일 질문 상담 지침 — 기계적 'A안/B안' 표기 절대 금지!]
+내담자는 현재 두 가지 구체적인 길 사이에서 깊은 갈등을 겪고 있습니다.
+- 첫 번째 고민 선택지: **[${optA}]**
+- 두 번째 고민 선택지: **[${optB}]**
 
-[양자택일 마스터 결단 규칙]
-1. '3. 트리니티 마스터의 직관적 결단 & 방향성' 섹션에서 **최종 선택: [A 또는 B 중 정확히 하나의 이름]**을 굵게 선언하십시오.
-2. 애매하게 양다리를 걸치거나 회피하지 말고, 카드가 가리키는 쪽을 마스터의 확신 있는 어조로 단호하게 추천하십시오.
-3. 선택하지 않은 쪽이 왜 지금 시기에 불리한지 카드의 상징적 근거와 함께 명쾌하게 설명해 주십시오.`;
+[양자택일 마스터 결단 절대 규칙]
+1. 리딩 본문과 요약 어디에서도 절대로 'A안', 'B안', '선택지 A', '선택지 B', 'A를 선택', 'B를 선택' 같은 무미건조한 기호로 부르지 마십시오!
+2. 반드시 내담자의 질문에서 파악된 실제 고민 내용인 **[${optA}]**와 **[${optB}]**를 직접 언급하며 두 길의 현실적 결과와 장단점을 비교해 주십시오.
+3. '3. 트리니티 마스터의 직관적 결단 & 방향성' 섹션 첫 줄에서 **최종 선택: [${optA}]** 또는 **최종 선택: [${optB}]**와 같이 실제 선택지 이름을 대괄호 안에 명확히 선언하십시오.
+4. 애매하게 양다리를 걸치거나 회피하지 말고, 카드가 가리키는 한쪽을 마스터의 확신 있는 어조로 단호하게 추천하며 다른 한쪽이 왜 지금 아쉽거나 주의가 필요한지 카드의 상징적 근거와 함께 명쾌하게 설명해 주십시오.`;
   }
 
   if (analysis.kind === 'yes_no') {
@@ -1195,22 +1355,32 @@ export function getThemeTailoredReadingStructure(
   }
 
   if (theme === 'binary_choice') {
+    const extracted = extractBinaryOptionsFromConcern(tarotConcern);
+    const optA =
+      analysis?.optionA && !/^[ABab](?:안|선택지)?$/.test(analysis.optionA.trim())
+        ? analysis.optionA.trim()
+        : extracted.optionA;
+    const optB =
+      analysis?.optionB && !/^[ABab](?:안|선택지)?$/.test(analysis.optionB.trim())
+        ? analysis.optionB.trim()
+        : extracted.optionB;
+
     return {
-      themeTitle: '양자택일 갈림길 타로 (A vs B)',
+      themeTitle: `양자택일 갈림길 타로 (${optA} vs ${optB})`,
       themeBadge: 'BINARY FORK DECISION',
       themeEmoji: '⚖️',
       themeGradient: 'from-emerald-500/20 via-teal-500/10 to-transparent',
       stepTitles: [
-        '### ⚖️ 1. 두 갈래 기로에 선 내담자의 심리와 갈등의 본질',
-        '### 🔀 2. 선택지 A vs 선택지 B의 운명적 결과 심층 대비 (카드별 인과관계 해독)',
-        '### 🎯 3. 마스터의 단호한 최종 선택: [선택지 명시] 및 그 이유',
+        `### ⚖️ 1. [${optA}]와 [${optB}] 기로에 선 내담자의 심리와 갈등의 본질`,
+        `### 🔀 2. [${optA}] 선택 시 vs [${optB}] 선택 시의 운명적 결과 심층 대비`,
+        `### 🎯 3. 마스터의 단호한 최종 선택: [${optA} / ${optB} 중 택 1] 및 필연적 이유`,
         '### 🌿 4. 선택 후 흔들림 없이 나아가기 위한 마스터의 실천 가이드',
         '### ✨ 5. 선택한 길을 환하게 밝히는 운명의 축복',
       ],
       stepDescriptions: [
-        '두 선택지 사이에서 흔들리는 심리적 이유와 내면의 진짜 갈망을 짚어내세요.',
-        'A를 택했을 때의 흐름과 B를 택했을 때의 결과를 카드의 도상으로 입체 대비하세요.',
-        '둘 중 한쪽을 단호하게 최종 선택하여 마스터의 결단으로 제시하세요.',
+        `내담자가 '${optA}'와 '${optB}' 사이에서 흔들리는 심리적 이유와 내면의 진짜 갈망을 짚어내세요. ('A안', 'B안' 같은 기호 대신 실제 고민 명칭을 직접 부르세요.)`,
+        `'${optA}'의 길을 택했을 때의 흐름과 '${optB}'의 길을 택했을 때의 결과를 카드의 도상으로 입체 대비하세요.`,
+        `반드시 첫 줄에 **최종 선택: [${optA}]** 또는 **최종 선택: [${optB}]**로 실제 고민 명칭을 선언하고 이유를 제시하세요.`,
         '선택한 길에서 겪을 수 있는 초기 혼란을 막고 탄탄하게 밀고 나갈 실천법을 처방하세요.',
         '새로운 여정을 향해 나아가는 발걸음에 힘찬 축복을 선사하세요.',
       ],

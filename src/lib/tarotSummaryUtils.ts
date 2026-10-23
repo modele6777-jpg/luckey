@@ -119,20 +119,16 @@ export function stripSummaryFromTarotText(text: string): string {
     cleaned = cleaned.slice(0, headerIdx).trim();
   }
 
-  // 3. 5단계(영혼의 한마디) 이후 남아 있는 불필요한 후행 불릿이나 잔여 텍스트 제거
+  // 3. 5단계(영혼의 한마디) 이후 남아 있는 명시적 요약 태그 라인만 안전하게 제거 (5단계 본문 문장 절단 절대 금지)
   const step5Pattern = /(?:###\s*(?:[^\r\n\d]*?)?5[\.\s]|5단계|영혼의\s*한마디|당신의\s*길을\s*축복하는|황금빛\s*축복)/i;
   const step5Match = cleaned.match(step5Pattern);
   if (step5Match && step5Match.index !== undefined) {
     const afterStep5 = cleaned.slice(step5Match.index);
-    // 5단계 내부 인용구("> _"..."_") 또는 마지막 축복 문장 끝 탐색
-    const quoteEndMatch = afterStep5.match(/(?:["”'_]\s*(?:\r?\n|$)|[.!?]\s*(?:\r?\n|$))/);
-    if (quoteEndMatch && quoteEndMatch.index !== undefined) {
-      const quoteEndPos = step5Match.index + quoteEndMatch.index + quoteEndMatch[0].length;
-      const remainder = cleaned.slice(quoteEndPos).trim();
-      // 인용구 뒤에 요약이나 불릿 포인트가 달려있으면 잘라냄
-      if (/(?:핵심|요약|\[현재\s*에너지\]|\[오늘의\s*에너지\]|\[방향과\s*결단\]|\[실천\s*처방\]|\[상황\s*나침반\]|\[개운\s*액션\]|[-*•]\s*\[|[-*•]\s*현재|[-*•]\s*오늘|[-*•]\s*방향|[-*•]\s*실천|[-*•]\s*상황|[-*•]\s*개운)/i.test(remainder)) {
-        cleaned = cleaned.slice(0, quoteEndPos).trim();
-      }
+    const trailingExplicitSummaryIdx = afterStep5.search(
+      /(?:\r?\n)\s*(?:[-*•·\d.]+\s*)?(?:\*{1,2})?\s*\[(?:현재\s*에너지|오늘의\s*에너지|방향과\s*결단|실천\s*처방|상황\s*나침반|개운\s*액션|핵심\s*(?:3줄|세줄)?\s*요약)\]/i
+    );
+    if (trailingExplicitSummaryIdx !== -1) {
+      cleaned = cleaned.slice(0, step5Match.index + trailingExplicitSummaryIdx).trim();
     }
   }
 
@@ -213,71 +209,99 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     );
   };
 
+  // 명사형/미완결형 어미를 자연스러운 완결형 한국어 문장으로 다듬는 헬퍼
+  const ensureNaturalKoreanSentence = (str: string, rowIdx: number): string => {
+    let s = str.trim().replace(/[\s.…·,-]+$/, '');
+    if (!s) return s;
+
+    // 1. 다중 문장이면서 너무 긴 경우(125자 초과) 첫 번째 완결된 문장까지만 자연스럽게 보존 (단어 중간 절단 절대 금지)
+    if (s.length > 125) {
+      const sentenceEndMatch = s.slice(35, 125).match(/[.!?](?=\s|$)/);
+      if (sentenceEndMatch && sentenceEndMatch.index !== undefined) {
+        s = s.slice(0, 35 + sentenceEndMatch.index).trim();
+      }
+    }
+
+    // 2. 어색한 명사형 종결(~하기, ~시키기, ~열기, ~다지기, ~갖기, ~세우기, ~만들기, ~전환하기 등)을 자연스러운 서술형 문장으로 변환
+    s = s
+      .replace(/순환시키고\s*긍정\s*운을\s*활짝\s*열기$/, '순환시키고 긍정적인 운의 흐름을 활짝 열어 보세요')
+      .replace(/파동을\s*일으키기$/, '파동을 힘차게 일으켜 보세요')
+      .replace(/기운을\s*순환시키기$/, '기운을 맑게 순환시켜 보세요')
+      .replace(/충전하기$/, '충전해 보세요')
+      .replace(/안아주기$/, '안아 주세요')
+      .replace(/회복하기$/, '회복해 보세요')
+      .replace(/전환하기$/, '전환해 보세요')
+      .replace(/실천하기$/, '실천해 보세요')
+      .replace(/완수하기$/, '완수해 보세요')
+      .replace(/집중하기$/, '집중해 보세요')
+      .replace(/점검하기$/, '점검해 보세요')
+      .replace(/유지하기$/, '유지해 보세요')
+      .replace(/기록하기$/, '기록해 보세요')
+      .replace(/정돈하기$/, '정돈해 보세요')
+      .replace(/비워내기$/, '비워내 보세요')
+      .replace(/나아가기$/, '나아가 보세요')
+      .replace(/시작하기$/, '시작해 보세요')
+      .replace(/([가-힣]+)시키기$/, '$1시켜 보세요')
+      .replace(/([가-힣]+)하기$/, '$1해 보세요')
+      .replace(/([가-힣]+)열기$/, '$1열어 보세요')
+      .replace(/([가-힣]+)다지기$/, '$1다져 보세요')
+      .replace(/([가-힣]+)세우기$/, '$1세워 보세요')
+      .replace(/([가-힣]+)만들기$/, '$1만들어 보세요')
+      .replace(/([가-힣]+)찾기$/, '$1찾아 보세요')
+      .replace(/([가-힣]+)갖기$/, '$1가져 보세요');
+
+    // 3. 조사나 연결어미(~하고, ~하며, ~해서, ~인데, ~지만, ~으로, ~에서, ~의, ~을, ~를, ~이, ~가, ~은, ~는)로 중간에 끊긴 경우 자연스럽게 완결
+    if (/(?:하고|하며|하면서|해서|하여)$/.test(s)) {
+      s = s.replace(/(?:하고|하며|하면서|해서|하여)$/, rowIdx === 2 ? '해 보세요' : '하는 흐름입니다');
+    } else if (/(?:이고|이며)$/.test(s)) {
+      s = s.replace(/(?:이고|이며)$/, '입니다');
+    } else if (/(?:인데|지만|으나|는데)$/.test(s)) {
+      s = s.replace(/(?:인데|지만|으나|는데)$/, '는 흐름이니 마음의 중심을 단단히 잡으세요');
+    } else if (/(?:으로|로)\s*$/.test(s) && !/(?:스스로|새로|바로)$/.test(s)) {
+      s = `${s} 나아갈 때입니다`;
+    }
+
+    if (!/[.!?]$/.test(s)) {
+      s += '.';
+    }
+    return s;
+  };
+
   const formatSummaryLine = (tag: string, content: string, rowIdx: number): string => {
     let cleaned = stripGreetingFromText(content);
     cleaned = cleaned.replace(/^\[(?!YES\b|NO\b|조건부\s*YES)[^\]]+\]\s*(:|-|—)?\s*/i, '');
     cleaned = cleaned.replace(/^(?:현재\s*에너지|방향과\s*결단|실천\s*처방|개운\s*처방|행동\s*처방|실천\s*가이드|개운\s*가이드|상황\s*진단)\s*[:—\-]\s*/, '');
     cleaned = cleanSentence(cleaned);
 
-    // 50~70자 내외 최적화 (장문일 때 의미를 온전히 살리며 자연스러운 문장/어절 단위 압축)
-    if (cleaned.length > 76) {
-      const dotIdx = cleaned.slice(0, 74).lastIndexOf('.');
-      const exclIdx = cleaned.slice(0, 74).lastIndexOf('!');
-      const bestPunct = Math.max(dotIdx, exclIdx);
-      if (bestPunct >= 48) {
-        cleaned = cleaned.slice(0, bestPunct + 1);
-      } else {
-        const lastSpace = cleaned.lastIndexOf(' ', 72);
-        if (lastSpace >= 48) {
-          cleaned = cleaned.slice(0, lastSpace).trim();
-        } else {
-          cleaned = cleaned.slice(0, 70).trim();
-        }
-      }
-    }
-
-    // 지나치게 짧고 무성의한 문장(38자 미만)일 경우 카드 상징/사주 기운으로 50~70자 심층 보강
-    if (cleaned.length < 38) {
+    // 지나치게 짧은 조각(30자 미만)일 경우 카드 상징/사주 기운으로 자연스러운 완결 문장 보강
+    if (cleaned.length < 30) {
       const baseClean = cleaned.replace(/[.!?]+$/, '').trim();
       if (rowIdx === 0) {
         if (dayMaster && c1Name) {
-          cleaned = `사주 본원 [${dayMaster}]과 [${c1Name}] 카드가 만나 ${baseClean} 흐름 속에서 내면의 새로운 전환점을 맞이했습니다.`;
+          cleaned = `사주 본원 [${dayMaster}]과 [${c1Name}] 카드가 만나 ${baseClean ? `${baseClean} 흐름 속에서 ` : ''}내면의 새로운 전환점을 맞이하고 있습니다.`;
         } else if (c1Name) {
-          cleaned = `[${c1Name}] 카드의 도상 상징이 비추듯 ${baseClean} 내면의 직관을 차분히 회복하며 새로운 방향을 탐색할 때입니다.`;
+          cleaned = `[${c1Name}] 카드의 상징이 비추듯 ${baseClean ? `${baseClean} 가운데 ` : ''}내면의 직관을 차분히 회복하며 새로운 방향을 탐색할 때입니다.`;
         } else {
-          cleaned = `내면의 무의식적 흐름을 성찰하며 ${baseClean} 마음의 중심을 단단히 세우고 새로운 전환점을 맞이하세요.`;
+          cleaned = `내면의 흐름을 차분히 성찰하며 ${baseClean ? `${baseClean} 속에서 ` : ''}마음의 중심을 단단히 세우고 새로운 전환점을 맞이할 시기입니다.`;
         }
       } else if (rowIdx === 1) {
         if (yongsin && (c2Name || c1Name)) {
-          cleaned = `용신 [${yongsin}]과 [${c2Name || c1Name}] 카드의 안내를 따라 ${baseClean} 확신을 갖고 우선순위에 집중해 나아가세요.`;
+          cleaned = `용신 [${yongsin}]과 [${c2Name || c1Name}] 카드의 안내를 따라 ${baseClean ? `${baseClean} 방향으로 ` : ''}확신을 갖고 우선순위에 집중해 나아가세요.`;
         } else if (c2Name || c1Name) {
-          cleaned = `[${c2Name || c1Name}] 카드가 가리키듯 ${baseClean} 두려움을 비워내고 명확한 결단으로 중심을 잡을 타이밍입니다.`;
+          cleaned = `[${c2Name || c1Name}] 카드가 가리키듯 ${baseClean ? `${baseClean} 흐름을 믿고 ` : ''}두려움을 비워내어 명확한 결단으로 중심을 잡을 타이밍입니다.`;
         } else {
-          cleaned = `불필요한 망설임을 내려놓고 ${baseClean} 내면의 나침반을 신뢰하며 당당한 결단으로 전진할 때입니다.`;
+          cleaned = `불필요한 망설임을 내려놓고 ${baseClean ? `${baseClean} 방향으로 ` : ''}내면의 나침반을 신뢰하며 당당한 결단으로 전진할 때입니다.`;
         }
       } else {
-        if (baseClean.length >= 6) {
-          cleaned = `오늘 일상에서 "${baseClean}" 실천 과제를 정성껏 실행하여 정체된 에너지를 순환시키고 긍정 운을 활짝 열기.`;
+        if (baseClean.length >= 4) {
+          cleaned = `오늘 일상에서 '${baseClean}' 실천을 정성껏 실행하며 정체된 에너지를 맑게 순환시키고 긍정적인 운을 활짝 열어 보세요.`;
         } else {
-          cleaned = `오늘 일상에서 미뤄둔 핵심 과제 1가지를 정해 20분간 온전히 몰입해 즉시 완수하고 맑은 운의 파동을 일으키기.`;
-        }
-      }
-
-      // 보강 후에도 74자 이내로 정돈
-      if (cleaned.length > 76) {
-        const lastSpace = cleaned.lastIndexOf(' ', 72);
-        if (lastSpace >= 48) {
-          cleaned = cleaned.slice(0, lastSpace).trim();
-        } else {
-          cleaned = cleaned.slice(0, 70).trim();
+          cleaned = `오늘 미뤄둔 핵심 과제 한 가지를 정해 20분간 온전히 몰입하여 완수하고 맑은 물 한 잔으로 좋은 기운을 순환시켜 보세요.`;
         }
       }
     }
 
-    cleaned = cleaned.replace(/[\s.…·,-]+$/, '');
-    if (!/[.!?]$/.test(cleaned)) {
-      cleaned += '.';
-    }
+    cleaned = ensureNaturalKoreanSentence(cleaned, rowIdx);
     return `[${tag}] ${cleaned}`;
   };
 
@@ -481,12 +505,12 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     const actionSentence = allSentences.slice().reverse().find(
       (s) => s !== fallbackCurrent && s !== fallbackDecision && /실천|행동|처방|조언|오늘|개운|시작|호흡|정돈/.test(s)
     );
-    if (actionSentence && actionSentence.length >= 15 && actionSentence.length <= 60) {
+    if (actionSentence && actionSentence.length >= 15 && actionSentence.length <= 95) {
       fallbackAction = actionSentence;
     } else if (cardContext?.remedy && typeof cardContext.remedy === 'string' && cardContext.remedy.length >= 15) {
       fallbackAction = cardContext.remedy;
     } else {
-      fallbackAction = '오늘 일상에서 미뤄둔 핵심 과제 1가지를 정해 20분간 몰입해 즉시 완수하고 맑은 물 한 잔으로 기운을 순환시키기.';
+      fallbackAction = '오늘 일상에서 미뤄둔 핵심 과제 1가지를 정해 20분간 몰입해 완수하고 맑은 물 한 잔으로 기운을 순환시켜 보세요.';
     }
   }
 
@@ -602,14 +626,14 @@ export function extractOracleConciseSummary(params: OracleConciseSummaryParams):
     ? clean(microAction)
     : (microAction?.description || microMission?.title || '');
 
-  if (actionText && actionText.length >= 6 && actionText.length <= 45) {
-    line3 = `오늘 일상에서 "${actionText}"을(를) 정성껏 실천하며 내면의 에너지를 순환시키고 충전하기.`;
+  if (actionText && actionText.length >= 6 && actionText.length <= 55) {
+    line3 = `오늘 일상에서 '${actionText}' 실천을 정성껏 실행하며 내면의 에너지를 맑게 순환시키고 활력을 충전해 보세요.`;
   } else if (isHealing) {
-    line3 = `따뜻한 차 한 잔과 3번의 깊은 복식호흡으로 마음의 긴장을 즉시 비워내고 스스로를 다정하게 안아주기.`;
+    line3 = `따뜻한 차 한 잔과 세 번의 깊은 복식호흡으로 마음의 긴장을 부드럽게 내려놓고 스스로를 다정하게 안아 주세요.`;
   } else if (isMiracle) {
-    line3 = `기적수업 레슨처럼 "나는 이것 대신 평화를 보기를 선택한다"는 마음의 선언으로 거룩한 순간을 회복하기.`;
+    line3 = `기적수업의 가르침처럼 "나는 이것 대신 평화를 보기를 선택한다"고 선언하며 마음의 거룩한 평화를 회복해 보세요.`;
   } else {
-    line3 = `오늘 10분 안에 끝낼 수 있는 가장 작은 행동 과제 1가지를 정해 지금 즉시 행동으로 전환하기.`;
+    line3 = `오늘 10분 안에 끝낼 수 있는 가장 작은 핵심 과제 한 가지를 정해 미루지 말고 지금 바로 행동으로 옮겨 보세요.`;
   }
 
   return [

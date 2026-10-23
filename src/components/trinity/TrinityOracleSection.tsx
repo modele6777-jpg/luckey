@@ -2866,9 +2866,18 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
   const renderOracleSummaryCard = () => {
     if (!oracleSummaryBullets || oracleSummaryBullets.length === 0) return null;
 
+    const resolvedOracleQuestion =
+      inquiryText?.trim() ||
+      (oracleMode === 'healing'
+        ? '내 마음을 치유할 사주 ✕ 타로 힐링 오라클'
+        : oracleMode === 'miracle'
+          ? '마음의 평화와 지각전환을 위한 기적수업 오라클'
+          : '성장과 실행 돌파를 위한 자기계발 오라클');
+
     return (
       <TarotSummaryGraphicCard
         bullets={oracleSummaryBullets}
+        question={resolvedOracleQuestion}
         readingText={displayFullReadingText}
         isTTSActive={isOracleSummaryTTSActive}
         onToggleTTS={oracleSummarySpeechText ? handleToggleOracleSummaryTTS : undefined}

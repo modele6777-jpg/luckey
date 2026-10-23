@@ -322,26 +322,14 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
 
                       {/* Action Buttons */}
                       <div className="flex items-center gap-2 pt-3 mt-1 border-t border-slate-100 dark:border-slate-800">
-                        {/* 1. 입력창에 넣기 (수정 후 전송) */}
                         <button
                           type="button"
                           onClick={() => handlePromptAction(prompt, false)}
-                          className="flex-1 py-2 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95"
-                          title="대화 입력창에 넣고 필요 시 내용을 수정하여 보냅니다."
+                          className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-1.5 active:scale-95"
+                          title="대화 입력창에 질문을 입력하고 필요 시 내용을 수정하여 보냅니다."
                         >
                           <Edit3 size={13} />
-                          <span>수정 입력</span>
-                        </button>
-
-                        {/* 2. 즉시 질문하기 (1클릭 루시 상담 전송) */}
-                        <button
-                          type="button"
-                          onClick={() => handlePromptAction(prompt, true)}
-                          className="flex-1 py-2 px-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-1 active:scale-95"
-                          title="루시 AI에게 이 질문으로 즉각 상담을 시작합니다."
-                        >
-                          <Send size={13} />
-                          <span>질문하기</span>
+                          <span>채팅란에 입력하기</span>
                         </button>
                       </div>
                     </div>

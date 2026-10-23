@@ -29,13 +29,21 @@ export function extractTextContent(node: React.ReactNode): string {
  * Normalizes ordinals/cardinals, speech idioms, acronyms, symbols, punctuation, emojis, quotes, whitespace.
  * Ensures 100% parity between raw UI text (including headings & bold text) and prepareNaturalSpeechText output.
  */
+const cleanSentenceCache = new Map<string, string>();
+const tokenCache = new Map<string, string[]>();
+
+/**
+ * Clean string for fuzzy speech-to-text sentence alignment.
+ * Memoized with an in-memory cache to eliminate repeated regex work during TTS playback.
+ */
 export function cleanSentenceForMatching(s: string): string {
   if (!s) return '';
-  // First pass through prepareNaturalSpeechText so symbols (%, ~, +, &, /, ->, =>, vs, AI, PRO, MBTI, etc.)
-  // are converted identically on both UI strings and TTS sentence chunks
-  let str = prepareNaturalSpeechText(String(s));
+  const rawKey = String(s);
+  const cached = cleanSentenceCache.get(rawKey);
+  if (cached !== undefined) return cached;
 
-  // Normalize ordinals & numbers bidirectionally (TTS: 첫째, 1번 <-> UI: 1, 1.)
+  let str = prepareNaturalSpeechText(rawKey);
+
   str = str
     .replace(/(?:첫째|첫번째|1번|일번)/g, '1')
     .replace(/(?:둘째|두번째|2번|이번)/g, '2')
@@ -48,8 +56,29 @@ export function cleanSentenceForMatching(s: string): string {
     .replace(/(?:아홉째|아홉번째|9번|구번)/g, '9')
     .replace(/(?:열째|열번째|10번|십번)/g, '10');
 
-  // Keep only alphanumeric Korean/English/Numbers
-  return str.replace(/[^가-힣a-zA-Z0-9]/g, '').toLowerCase();
+  const result = str.replace(/[^가-힣a-zA-Z0-9]/g, '').toLowerCase();
+  if (cleanSentenceCache.size > 2000) {
+    cleanSentenceCache.clear();
+  }
+  cleanSentenceCache.set(rawKey, result);
+  return result;
+}
+
+function getCleanedTokens(sentence: string): string[] {
+  const cached = tokenCache.get(sentence);
+  if (cached !== undefined) return cached;
+
+  const tokens = prepareNaturalSpeechText(sentence)
+    .replace(/[^가-힣a-zA-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .map((t) => cleanSentenceForMatching(t))
+    .filter((t) => t.length >= 2);
+
+  if (tokenCache.size > 1500) {
+    tokenCache.clear();
+  }
+  tokenCache.set(sentence, tokens);
+  return tokens;
 }
 
 /**
@@ -64,22 +93,19 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
   // 1. Direct equality
   if (cleanS === cleanA) return true;
 
-  // Length ratio check: prevents short single-word fragments from falsely matching long sentences,
-  // while allowing headings or clauses split by TTS to match reliably.
   const minLen = Math.min(cleanS.length, cleanA.length);
   const maxLen = Math.max(cleanS.length, cleanA.length);
   const ratio = minLen / maxLen;
 
-  // 2. Direct containment when lengths are reasonably close (or when a long sentence was split into clauses by TTS)
+  // 2. Direct containment when lengths are reasonably close (or when a multi-sentence chunk is active)
   if (cleanA.includes(cleanS) || cleanS.includes(cleanA)) {
-    if (ratio >= 0.35) return true;
-    // Also allow if the shorter chunk is at least 8 chars (e.g., a long sentence split into clauses)
-    if (minLen >= 8 && (cleanS.includes(cleanA) || cleanA.includes(cleanS))) return true;
+    if (ratio >= 0.22) return true;
+    if (minLen >= 6 && (cleanS.includes(cleanA) || cleanA.includes(cleanS))) return true;
   }
 
-  if (ratio < 0.38) return false;
+  if (ratio < 0.25) return false;
 
-  // 3. Substring & prefix/suffix alignment (handles slight TTS normalizations or trailing words)
+  // 3. Substring & prefix/suffix alignment
   if (cleanS.length >= 4 && cleanA.length >= 4 && Math.abs(cleanS.length - cleanA.length) <= 16) {
     const prefixLen = Math.min(6, cleanS.length, cleanA.length);
     const subA = cleanA.slice(0, prefixLen);
@@ -87,14 +113,9 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
     if (cleanS.startsWith(subA) || cleanA.startsWith(subS)) return true;
   }
 
-  // 4. Key phrase token overlap
+  // 4. Key phrase token overlap (cached)
   if (cleanS.length >= 5 && cleanA.length >= 5) {
-    const tokensS = prepareNaturalSpeechText(sentence)
-      .replace(/[^가-힣a-zA-Z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .map((t) => cleanSentenceForMatching(t))
-      .filter((t) => t.length >= 2);
-
+    const tokensS = getCleanedTokens(sentence);
     if (tokensS.length >= 2) {
       let matchedCount = 0;
       for (const tok of tokensS) {
@@ -132,6 +153,7 @@ export function TTSHighlightMark({
   const markRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     if (markRef.current) {
       try {
         markRef.current.scrollIntoView({
@@ -371,6 +393,32 @@ export function highlightSentencesInChildren(
 /**
  * Standalone component that renders text with real-time TTS sentence highlighter.
  */
+function ActiveTTSHighlightedText({
+  text,
+  className = '',
+  isLight = false,
+}: {
+  text: string;
+  className?: string;
+  isLight?: boolean;
+}) {
+  const { isSpeaking, activeText, currentSentence } = useTTSState();
+  const activeTarget = isSpeaking
+    ? currentSentence || (activeText && activeText.length <= 280 ? activeText : null)
+    : null;
+
+  const content = useMemo(() => {
+    if (!activeTarget) return text;
+    return highlightSentencesInChildren(text, activeTarget, false, isLight);
+  }, [text, activeTarget, isLight]);
+
+  return <span className={className}>{content}</span>;
+}
+
+/**
+ * Standalone component that renders text with real-time TTS sentence highlighter.
+ * Only subscribes to TTS store when `enabled` is true, eliminating unnecessary re-renders across the app.
+ */
 export function TTSHighlightedText({
   text,
   className = '',
@@ -382,16 +430,8 @@ export function TTSHighlightedText({
   enabled?: boolean;
   isLight?: boolean;
 }) {
-  const { isSpeaking, activeText, currentSentence } = useTTSState();
-  const activeTarget =
-    enabled && isSpeaking
-      ? currentSentence || (activeText && activeText.length <= 140 ? activeText : null)
-      : null;
-
-  const content = useMemo(() => {
-    if (!enabled || !activeTarget) return text;
-    return highlightSentencesInChildren(text, activeTarget, false, isLight);
-  }, [text, activeTarget, enabled, isLight]);
-
-  return <span className={className}>{content}</span>;
+  if (!enabled) {
+    return <span className={className}>{text}</span>;
+  }
+  return <ActiveTTSHighlightedText text={text} className={className} isLight={isLight} />;
 }

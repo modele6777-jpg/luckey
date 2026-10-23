@@ -197,14 +197,37 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
     [triggerHaptic, onSelectCard]
   );
 
-  // 현재 호버 또는 선택된 카드
+  // 화면 상단 중앙(0도)에 가장 가까운 카드 인덱스 계산
+  const centerIdx = useMemo(() => {
+    if (N === 0) return null;
+    const angleStep = 360 / N;
+    let bestIdx = 0;
+    let bestDiff = Infinity;
+
+    for (let i = 0; i < N; i++) {
+      const normalizedIdx = spreadMode === 'clean_orbit' || direction === 'clockwise' ? i : N - 1 - i;
+      const baseAngle = normalizedIdx * angleStep;
+      const currentAngle = (((baseAngle + spinAngle) % 360) + 360) % 360;
+      const diff = Math.min(currentAngle, 360 - currentAngle);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }, [N, spreadMode, direction, spinAngle]);
+
+  // 호버 시에는 호버된 카드만 강조(중앙 카드 효과 해제), 비호버 시에는 중앙 카드 강조
+  const activeHighlightIdx = hoveredIdx !== null ? hoveredIdx : centerIdx;
+
+  // 현재 호버 또는 선택/중앙 포커스된 카드
   const activeFocusCard = useMemo(() => {
-    const idx = hoveredIdx !== null ? hoveredIdx : selectedIdx;
+    const idx = hoveredIdx !== null ? hoveredIdx : selectedIdx !== null ? selectedIdx : centerIdx;
     if (idx !== null && activeDeck[idx]) {
       return { card: activeDeck[idx], index: idx };
     }
     return null;
-  }, [hoveredIdx, selectedIdx, activeDeck]);
+  }, [hoveredIdx, selectedIdx, centerIdx, activeDeck]);
 
   // 베이스 z-index 단위
   const BASE_Z = 20;
@@ -214,26 +237,25 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
    * 단일 카드 렌더러 함수
    * @param card 대상 타로 카드
    * @param i 카드 인덱스 (0 ~ N-1)
-   * @param isLastCard N-1번째 에셔 루프 클로징 카드 여부
-   * @param escherLayer 에셔 루프 분할 레이어 ('none' | 'overlap' | 'under')
    */
   const renderCardElement = (
     card: TarotCard,
     i: number,
   ) => {
-    const isHovered = hoveredIdx === i;
+    const isHighlighted = activeHighlightIdx === i;
     const isSelected = selectedIdx === i || selectedCardId === card.id;
 
     // 1. 방사형 회전 각도 및 z-index 계산
     let currentAngle = 0;
     let zIndex = BASE_Z;
+    let isClosureCard = false;
 
     if (spreadMode === 'clean_orbit') {
       // 비가림 원형 궤도 모드: 360도 전 구간에 균등 분할 배치하여 겹침 없이 100% 완전 노출
       const angleStep = 360 / N;
       const baseAngle = i * angleStep;
       currentAngle = (baseAngle + spinAngle) % 360;
-      zIndex = isHovered ? 9999 : isSelected ? 9000 : BASE_Z;
+      zIndex = isHighlighted ? 9999 : isSelected ? 9000 : BASE_Z;
     } else {
       // 360도 완전 연결 캐스케이드 모드: 틈(notch) 없이 360도 전 구간에 카드가 균등하게 연결됨
       const angleStep = 360 / N;
@@ -243,117 +265,156 @@ export const CircularTarotSpread: React.FC<CircularTarotSpreadProps> = ({
 
       // 단방향 순차 스택: 순서대로 균일하게 겹침
       const stackRank = direction === 'clockwise' ? (N - normalizedIdx) : (normalizedIdx + 1);
-      zIndex = isHovered ? 9999 : isSelected ? 9000 : BASE_Z + stackRank * Z_STEP;
+      zIndex = isHighlighted ? 9999 : isSelected ? 9000 : BASE_Z + stackRank * Z_STEP;
+      isClosureCard = normalizedIdx === N - 1;
     }
 
-    // 2. 호버/선택 시 바깥쪽으로 부드럽게 떠오르는 래디얼 리프트
-    const hoverLift = isHovered ? 26 : isSelected ? 16 : 0;
-    const hoverScale = isHovered ? 1.09 : isSelected ? 1.04 : 1.0;
-
-    // 3. 플랫 서피스(tiltDeg = 0)로 3D 면 교차/절단 결함 방지 — 카드 일러스트와 원본 화질을 100% 온전하게 보존
-    const tiltDeg = 0;
+    // 2. 중앙/호버/선택 시 바깥쪽으로 부드럽게 떠오르는 래디얼 리프트
+    const hoverLift = isHighlighted ? 20 : isSelected ? 14 : 0;
+    const hoverScale = isHighlighted ? 1.05 : isSelected ? 1.03 : 1.0;
+    const showEscherSplit = spreadMode === 'cascade' && isClosureCard && !isHighlighted && !isSelected;
 
     const SuitIcon = getCardSuitVisual(card).icon;
     const suitColor = getCardSuitVisual(card).color;
     const imageUrl = getTarotCardImageUrl(card);
 
-    return (
-      <div
-        key={`${card.id}-${i}`}
-        data-card-index={i}
-        onMouseEnter={() => handleCardHover(i)}
-        onMouseLeave={() => handleCardHover(null)}
-        onClick={() => handleCardClick(card, i)}
-        style={{
-          width: `${cardWidth}px`,
-          height: `${cardHeight}px`,
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          marginLeft: `-${cardWidth / 2}px`,
-          marginTop: `-${cardHeight / 2}px`,
-          transformOrigin: '50% 50%',
-          transform: `rotate(${currentAngle}deg) translateY(-${effectiveRadius + hoverLift}px) ${
-            isHovered ? 'translateZ(60px)' : isSelected ? 'translateZ(30px)' : 'translateZ(0px)'
-          } scale(${hoverScale})`,
-          zIndex,
-          backfaceVisibility: 'hidden',
-          transition: isAutoSpinning
-            ? 'transform 0.15s ease-out, box-shadow 0.28s, filter 0.28s'
-            : 'transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s, filter 0.32s',
-          cursor: 'pointer',
-          willChange: 'transform',
-        }}
-        className={`group select-none rounded-xl overflow-hidden transition-all duration-300 ${
-          isHovered
-            ? 'ring-2 ring-amber-300 shadow-[0_16px_36px_rgba(245,158,11,0.5),0_0_24px_rgba(251,191,36,0.6)] brightness-110'
-            : isSelected
-            ? 'ring-2 ring-yellow-400 shadow-[0_12px_28px_rgba(234,179,8,0.4)]'
-            : 'shadow-[0_6px_16px_rgba(0,0,0,0.7),0_1px_3px_rgba(255,255,255,0.08)] hover:brightness-105'
-        }`}
-      >
-
-        {/* 🃏 카드 앞면 vs 뒷면 렌더링 */}
-        {isFaceUp ? (
-          /* [앞면 일러스트] */
-          <div className="relative w-full h-full bg-gradient-to-b from-stone-900 via-zinc-950 to-black flex flex-col justify-between border border-amber-500/40 rounded-xl overflow-hidden">
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={card.nameKo}
-                className="w-full h-full object-cover object-center pointer-events-none"
-                loading="eager"
-              />
-            ) : (
-              /* Fallback 명화/원소 아트워크 */
-              <div className="w-full h-full flex flex-col items-center justify-between p-2 relative bg-zinc-900/90">
-                <div className="flex items-center justify-between w-full text-[9px] font-mono text-amber-300/80">
-                  <span>{toRomanNumeral(i)}</span>
-                  <SuitIcon size={11} className={suitColor} />
-                </div>
-                <div className="flex flex-col items-center justify-center text-center my-auto">
-                  <div className="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-400/40 flex items-center justify-center mb-1 shadow-inner">
-                    <SuitIcon size={18} className={suitColor} />
-                  </div>
-                  <span className="text-[10px] font-bold text-white font-serif tracking-tight line-clamp-1">
-                    {card.nameKo}
-                  </span>
-                </div>
-                <div className="w-full text-center text-[8px] text-zinc-400 font-sans truncate">
-                  {card.keywords?.[0] || '지혜'}
-                </div>
-              </div>
-            )}
-
-            {/* 카드 상단 로마 숫자 / 인덱스 칩 */}
-            <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/75 border border-amber-400/40 text-[8px] font-mono font-bold text-amber-300 leading-none shadow-sm backdrop-blur-xs">
-              #{i + 1}
+    const cardBody = isFaceUp ? (
+      /* [앞면 일러스트] */
+      <div className="relative w-full h-full bg-gradient-to-b from-stone-900 via-zinc-950 to-black flex flex-col justify-between border border-amber-500/40 rounded-xl overflow-hidden">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={card.nameKo}
+            className="w-full h-full object-cover object-center pointer-events-none"
+            loading="eager"
+          />
+        ) : (
+          /* Fallback 명화/원소 아트워크 */
+          <div className="w-full h-full flex flex-col items-center justify-between p-2 relative bg-zinc-900/90">
+            <div className="flex items-center justify-between w-full text-[9px] font-mono text-amber-300/80">
+              <span>{toRomanNumeral(i)}</span>
+              <SuitIcon size={11} className={suitColor} />
             </div>
-
-            {/* 카드 하단 명칭 반투명 비네팅 배지 */}
-            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-1.5 py-1 text-center">
-              <span className="text-[9px] font-bold text-amber-200 tracking-tight font-serif truncate block drop-shadow">
+            <div className="flex flex-col items-center justify-center text-center my-auto">
+              <div className="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-400/40 flex items-center justify-center mb-1 shadow-inner">
+                <SuitIcon size={18} className={suitColor} />
+              </div>
+              <span className="text-[10px] font-bold text-white font-serif tracking-tight line-clamp-1">
                 {card.nameKo}
               </span>
             </div>
-          </div>
-        ) : (
-          /* [뒷면 패턴 Face] — TarotCardBackFace 컴포넌트 활용 */
-          <div className="relative w-full h-full rounded-xl overflow-hidden border border-amber-400/35 bg-black">
-            <TarotCardBackFace
-              cardBackId={cardBackThemeId}
-              isHovered={isHovered}
-              size="wheel"
-              className="w-full h-full"
-            />
-            {/* 세련된 황금 모서리 테두리 빛 */}
-            <div className="absolute inset-0 rounded-xl border border-amber-400/20 pointer-events-none" />
-            <div className="absolute top-1.5 left-1.5 px-1 py-0.5 rounded-sm bg-black/60 border border-amber-500/30 text-[7px] font-mono text-amber-300 font-bold leading-none">
-              #{i + 1}
+            <div className="w-full text-center text-[8px] text-zinc-400 font-sans truncate">
+              {card.keywords?.[0] || '지혜'}
             </div>
           </div>
         )}
+
+        {/* 카드 상단 로마 숫자 / 인덱스 칩 */}
+        <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/75 border border-amber-400/40 text-[8px] font-mono font-bold text-amber-300 leading-none shadow-sm backdrop-blur-xs">
+          #{i + 1}
+        </div>
+
+        {/* 카드 하단 명칭 반투명 비네팅 배지 */}
+        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-1.5 py-1 text-center">
+          <span className="text-[9px] font-bold text-amber-200 tracking-tight font-serif truncate block drop-shadow">
+            {card.nameKo}
+          </span>
+        </div>
       </div>
+    ) : (
+      /* [뒷면 패턴 Face] — TarotCardBackFace 컴포넌트 활용 */
+      <div className="relative w-full h-full rounded-xl overflow-hidden border border-amber-400/35 bg-black">
+        <TarotCardBackFace
+          cardBackId={cardBackThemeId}
+          isHovered={isHighlighted}
+          size="wheel"
+          className="w-full h-full"
+        />
+        {/* 세련된 황금 모서리 테두리 빛 */}
+        <div className="absolute inset-0 rounded-xl border border-amber-400/20 pointer-events-none" />
+        <div className="absolute top-1.5 left-1.5 px-1 py-0.5 rounded-sm bg-black/60 border border-amber-500/30 text-[7px] font-mono text-amber-300 font-bold leading-none">
+          #{i + 1}
+        </div>
+      </div>
+    );
+
+    const commonTransform = `rotate(${currentAngle}deg) translateY(-${effectiveRadius + hoverLift}px) ${
+      isHighlighted ? 'translateZ(60px)' : isSelected ? 'translateZ(30px)' : 'translateZ(0px)'
+    } scale(${hoverScale})`;
+
+    const commonTransition = isAutoSpinning
+      ? 'transform 0.18s ease-out, box-shadow 0.28s, filter 0.28s'
+      : 'transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1), filter 0.32s';
+
+    const leftClip = direction === 'clockwise'
+      ? 'polygon(-30% -20%, 50.5% -20%, 50.5% 120%, -30% 120%)'
+      : 'polygon(49.5% -20%, 130% -20%, 130% 120%, 49.5% 120%)';
+    const rightClip = direction === 'clockwise'
+      ? 'polygon(49.5% -20%, 130% -20%, 130% 120%, 49.5% 120%)'
+      : 'polygon(-30% -20%, 50.5% -20%, 50.5% 120%, -30% 120%)';
+    const topOverlayZ = BASE_Z + (N + 2) * Z_STEP;
+
+    return (
+      <React.Fragment key={`${card.id}-${i}`}>
+        <div
+          data-card-index={i}
+          onMouseEnter={() => handleCardHover(i)}
+          onMouseLeave={() => handleCardHover(null)}
+          onClick={() => handleCardClick(card, i)}
+          style={{
+            width: `${cardWidth}px`,
+            height: `${cardHeight}px`,
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            marginLeft: `-${cardWidth / 2}px`,
+            marginTop: `-${cardHeight / 2}px`,
+            transformOrigin: '50% 50%',
+            transform: commonTransform,
+            zIndex,
+            clipPath: showEscherSplit ? leftClip : undefined,
+            backfaceVisibility: 'hidden',
+            transition: commonTransition,
+            cursor: 'pointer',
+            willChange: 'transform',
+          }}
+          className={`group select-none rounded-xl overflow-hidden transition-all duration-300 ${
+            isHighlighted
+              ? 'ring-2 ring-white/95 shadow-[0_0_22px_rgba(255,255,255,0.58),0_12px_28px_rgba(0,0,0,0.65)] brightness-110'
+              : isSelected
+              ? 'ring-2 ring-yellow-400 shadow-[0_12px_28px_rgba(234,179,8,0.4)]'
+              : 'shadow-[0_6px_16px_rgba(0,0,0,0.7),0_1px_3px_rgba(255,255,255,0.08)] hover:brightness-105'
+          }`}
+        >
+          {cardBody}
+        </div>
+
+        {showEscherSplit && (
+          <div
+            aria-hidden="true"
+            style={{
+              width: `${cardWidth}px`,
+              height: `${cardHeight}px`,
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              marginLeft: `-${cardWidth / 2}px`,
+              marginTop: `-${cardHeight / 2}px`,
+              transformOrigin: '50% 50%',
+              transform: commonTransform,
+              zIndex: topOverlayZ,
+              clipPath: rightClip,
+              backfaceVisibility: 'hidden',
+              transition: commonTransition,
+              pointerEvents: 'none',
+              willChange: 'transform',
+            }}
+            className="select-none rounded-xl overflow-hidden shadow-[0_6px_16px_rgba(0,0,0,0.7),0_1px_3px_rgba(255,255,255,0.08)]"
+          >
+            {cardBody}
+          </div>
+        )}
+      </React.Fragment>
     );
   };
 

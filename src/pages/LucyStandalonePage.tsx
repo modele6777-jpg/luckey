@@ -1773,20 +1773,21 @@ export default function LucyStandalonePage() {
       title: modeTitle,
     };
 
-    if (sendImmediately) {
-      if (handleSendRef.current) {
-        handleSendRef.current(promptText, resolvedChannels);
-      }
-    } else {
-      setInput(promptText);
+    setInput(promptText);
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 60);
+  }, []);
+
+  // 🎯 가로 스크롤 추천 질문 칩 클릭 시 해당 질문에 맞는 7대 채널 모드로 전환하고 채팅 입력란에만 입력 (즉시 전송 X)
+  const handleSelectRecommendationChip = useCallback((promptText: string) => {
+    const focusInputBox = (textToFill: string) => {
+      setInput(textToFill);
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 60);
-    }
-  }, []);
+    };
 
-  // 🎯 가로 스크롤 추천 질문 칩 클릭 시 해당 질문에 맞는 7대 채널 모드로 전환 및 전송
-  const handleSelectRecommendationChip = useCallback((promptText: string) => {
     // 1. HORI_PROMPT_LIBRARY 77선 라이브러리 항목 일치 확인
     const horiItem = HORI_PROMPT_LIBRARY.find((p) => p.title === promptText || p.body === promptText);
     if (horiItem && horiItem.tool_ids && horiItem.tool_ids.length > 0) {
@@ -1799,9 +1800,7 @@ export default function LucyStandalonePage() {
         channels: validChannels,
         title: modeTitle,
       };
-      if (handleSendRef.current) {
-        handleSendRef.current(horiItem.body, validChannels);
-      }
+      focusInputBox(horiItem.body);
       return;
     }
 
@@ -1817,9 +1816,7 @@ export default function LucyStandalonePage() {
           channels: targetChannels,
           title: modeTitle,
         };
-        if (handleSendRef.current) {
-          handleSendRef.current(promptText, targetChannels);
-        }
+        focusInputBox(promptText);
         return;
       }
     }
@@ -1835,9 +1832,7 @@ export default function LucyStandalonePage() {
         channels: targetChannels,
         title: modeTitle,
       };
-      if (handleSendRef.current) {
-        handleSendRef.current(promptText, targetChannels);
-      }
+      focusInputBox(promptText);
       return;
     }
 
@@ -1847,9 +1842,12 @@ export default function LucyStandalonePage() {
     const modeTitle = detected.modeTitle || formatChannelsModeTitle(targetChannels);
     setActiveChannels(targetChannels);
     setAutoDetectedTitle(modeTitle);
-    if (handleSendRef.current) {
-      handleSendRef.current(promptText, targetChannels);
-    }
+    presetModeRef.current = {
+      text: promptText,
+      channels: targetChannels,
+      title: modeTitle,
+    };
+    focusInputBox(promptText);
   }, []);
 
   // Handle pending channel and draft / auto-send input from other sub-apps (ReBible, Prism, etc.)

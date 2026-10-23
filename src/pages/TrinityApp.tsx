@@ -241,6 +241,7 @@ import {
   drawCards,
   LUCKY_EXAMPLES,
   analyzeTarotConcern,
+  extractBinaryOptionsFromConcern,
   getTarotThemeMeta,
   getTarotRecommendationReason,
   isDailyTarotConcern,
@@ -1555,7 +1556,7 @@ function playDailyCardChimeAsync() {
   const deferredTarotConcern = useDeferredValue(tarotConcern);
   const tarotConcernAnalysis: TarotConcernAnalysis = useMemo(() => {
     const base = analyzeTarotConcern(deferredTarotConcern);
-    if (base.kind === 'yes_no' && customSpread?.theme !== 'yes_no') {
+    if (base.kind === 'yes_no' && customSpread?.theme !== 'yes_no' && customSpread?.theme !== 'binary_choice') {
       return base;
     }
     if (customSpread) {
@@ -1566,14 +1567,38 @@ function playDailyCardChimeAsync() {
             ? 'yes_no'
             : base.kind;
       const meta = getTarotThemeMeta(customSpread.theme);
+
+      let optionA = base.optionA;
+      let optionB = base.optionB;
+      let resolvedSpread = customSpread;
+
+      if (customSpread.theme === 'binary_choice') {
+        const extracted = extractBinaryOptionsFromConcern(deferredTarotConcern);
+        optionA =
+          base.optionA && !/^[ABab](?:안|선택지)?$/.test(base.optionA.trim())
+            ? base.optionA
+            : extracted.optionA;
+        optionB =
+          base.optionB && !/^[ABab](?:안|선택지)?$/.test(base.optionB.trim())
+            ? base.optionB
+            : extracted.optionB;
+        resolvedSpread = buildSpreadForTheme('binary_choice', {
+          kind: 'binary_choice',
+          optionA,
+          optionB,
+        });
+      }
+
       return {
         ...base,
         kind,
         theme: customSpread.theme,
         themeLabel: meta.label,
         themeEmoji: meta.emoji,
-        recommendationReason: customSpread.reason || base.recommendationReason,
-        spread: customSpread,
+        optionA,
+        optionB,
+        recommendationReason: resolvedSpread.reason || base.recommendationReason,
+        spread: resolvedSpread,
       };
     }
     return base;
@@ -3779,10 +3804,23 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       </div>
                                     ) : (
                                       <div className="space-y-4">
-                                          {/* ✨ 핵심 3줄 요약 프리미엄 그래픽 카드 (최상단 고정 & 원클릭 TTS) */}
+                                          {/* 💬 내가 한 질문 상단 표시 (핵심 요약이 아직 생성 중일 때도 즉시 표시) */}
+                                          {tarotConcern?.trim() && conciseSummaryBullets.length === 0 && (
+                                            <div className="px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-purple-500/15 border border-amber-400/35 flex items-start gap-2.5 shadow-md">
+                                              <span className="px-2 py-0.5 rounded-md bg-amber-400/25 border border-amber-300/40 text-amber-200 text-[10px] sm:text-[11px] font-extrabold tracking-wide shrink-0 mt-0.5">
+                                                💬 내가 한 질문
+                                              </span>
+                                              <p className="text-xs sm:text-sm font-bold text-amber-50 leading-relaxed break-keep">
+                                                &ldquo;{tarotConcern.trim()}&rdquo;
+                                              </p>
+                                            </div>
+                                          )}
+
+                                          {/* ✨ 핵심 3줄 요약 프리미엄 그래픽 카드 (내가 한 질문 포함 · 최상단 고정 & 원클릭 TTS) */}
                                           {conciseSummaryBullets.length > 0 && tarotResult && (
                                             <TarotSummaryGraphicCard
                                               bullets={conciseSummaryBullets}
+                                              question={tarotConcern?.trim() || '오늘의 타로'}
                                               readingText={displayTarotResult || tarotResult || ""}
                                               isTTSActive={isSummaryTTSActive}
                                               onToggleTTS={async () => {

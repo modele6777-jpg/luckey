@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'motion/react';
 import { StructuredDataRenderer } from './StructuredDataRenderer';
-import { useTTSState } from '@/utils/tts';
+import { useTTSCurrentSentence } from '@/utils/ttsHighlight';
 import { highlightSentencesInChildren } from './common/TTSHighlightedText';
 
 import remarkGfm from 'remark-gfm';
@@ -209,16 +209,12 @@ export function Streamdown({
   const isTyping = displayedText.length > 0 && displayedText.length < textContent.length;
   const textWithCursor = isTyping ? displayedText + ' ▍' : displayedText;
 
-  // Dynamic TTS sentence tracking (strictly isolated to matching reading context)
-  const { isSpeaking, activeText, currentSentence, activeSentence } = useTTSState();
-  const rawTarget = (enableTTSHighlight && isSpeaking)
-    ? (currentSentence || activeSentence || (activeText && activeText.length <= 140 ? activeText : null))
-    : null;
-
+  // Dynamic TTS sentence tracking (strictly isolated when enableTTSHighlight is true)
+  const { isSpeaking, activeSentence } = useTTSCurrentSentence(enableTTSHighlight);
   const activeTarget = useMemo(() => {
-    if (!rawTarget || !enableTTSHighlight) return null;
-    return rawTarget;
-  }, [rawTarget, enableTTSHighlight]);
+    if (!enableTTSHighlight || !isSpeaking || !activeSentence) return null;
+    return activeSentence;
+  }, [enableTTSHighlight, isSpeaking, activeSentence]);
 
   const components = useMemo(() => {
     return {

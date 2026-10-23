@@ -14,6 +14,7 @@ interface LucyProTypewriterProps {
   isGenerating?: boolean;
   typewriterSpeed?: number;
   instantReveal?: boolean;
+  enableTTSHighlight?: boolean;
 }
 
 function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
@@ -165,6 +166,7 @@ export function LucyProTypewriter({
   isGenerating = false,
   typewriterSpeed = 32,
   instantReveal = false,
+  enableTTSHighlight = false,
 }: LucyProTypewriterProps) {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -229,9 +231,9 @@ export function LucyProTypewriter({
     return content.slice(0, displayedLength);
   }, [content, displayedLength, shouldAnimate]);
 
-  const { isSpeaking, activeSentence } = useTTSCurrentSentence();
+  const { isSpeaking, activeSentence } = useTTSCurrentSentence(enableTTSHighlight);
 
-  const targetSentence = isSpeaking && activeSentence ? activeSentence : null;
+  const targetSentence = enableTTSHighlight && isSpeaking && activeSentence ? activeSentence : null;
 
   const isTyping = isGenerating || (shouldAnimate && displayedLength < content.length);
 

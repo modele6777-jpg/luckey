@@ -596,12 +596,43 @@ function base64ToBytes(base64: string): Uint8Array {
   return bytes;
 }
 
+function audioBufferToWavBlob(audioBuffer: AudioBuffer): Blob {
+  const numOfChan = 1;
+  const sampleRate = audioBuffer.sampleRate || 24000;
+  const channelData = audioBuffer.getChannelData(0);
+  const length = channelData.length * 2;
+  const buffer = new ArrayBuffer(44 + length);
+  const view = new DataView(buffer);
+
+  writeAscii(view, 0, 'RIFF');
+  view.setUint32(4, 36 + length, true);
+  writeAscii(view, 8, 'WAVE');
+  writeAscii(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numOfChan, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeAscii(view, 36, 'data');
+  view.setUint32(40, length, true);
+
+  let offset = 44;
+  for (let i = 0; i < channelData.length; i++, offset += 2) {
+    const s = Math.max(-1, Math.min(1, channelData[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
 let silentWavBlobUrl: string | null = null;
 function getSilentWavBlobUrl(): string {
   if (!silentWavBlobUrl && typeof window !== 'undefined') {
     try {
       const sampleRate = 8000;
-      const numSamples = 4000; // 0.5s clean silent WAV buffer
+      const numSamples = 8000; // 1.0s clean silent WAV buffer for seamless background bridge
       const bytes = new Uint8Array(numSamples * 2);
       const blob = pcm16ToWavBlob(bytes, sampleRate);
       silentWavBlobUrl = URL.createObjectURL(blob);
@@ -678,12 +709,31 @@ function stopActiveWebAudioTTSSource(forPause: boolean = false) {
 }
 
 function startTTSKeepAlive() {
-  // Intentionally does NOT play an HTMLAudioElement so external music apps
-  // (YouTube Music, Melon, Spotify, Apple Music) are never paused by OS audio focus.
-  configureTransientDuckingAudioSession();
+  configureSpeechAudioSession();
+  if (typeof window === 'undefined') return;
+  try {
+    if (!ttsKeepAliveEl) {
+      ttsKeepAliveEl = new Audio();
+      ttsKeepAliveEl.preload = 'auto';
+      ttsKeepAliveEl.loop = true;
+      ttsKeepAliveEl.volume = 0.01;
+      ttsKeepAliveEl.setAttribute('playsinline', 'true');
+      ttsKeepAliveEl.setAttribute('webkit-playsinline', 'true');
+      ttsKeepAliveEl.src = getSilentWavBlobUrl();
+    }
+    if (ttsKeepAliveEl.paused) {
+      ttsKeepAliveEl.play().catch(() => {});
+    }
+  } catch (_) {}
 }
 
 function stopTTSKeepAlive() {
+  if (ttsKeepAliveEl) {
+    try {
+      ttsKeepAliveEl.pause();
+      ttsKeepAliveEl.currentTime = 0;
+    } catch (_) {}
+  }
   configureAmbientAudioSession();
 }
 
@@ -700,24 +750,18 @@ export function configureAmbientAudioSession(): void {
 }
 
 /**
- * Configures non-exclusive audio mixing with transient ducking on supported devices.
- * - 'transient': mixes concurrently with external music apps and gently ducks their volume during speech.
- * - Fallback 'ambient': mixes concurrently with external music apps without stopping them.
- * Never uses 'playback', which would force external music apps to pause.
- * Skips redundant reassignment if already configured for speech so the OS never hiccups mid-playback.
+ * Configures active speech playback audio session so mobile OS (iOS / Android)
+ * maintains continuous audio output even when the screen turns off or is locked.
  */
 export function configureTransientDuckingAudioSession(): void {
   if (currentAudioSessionMode === 'speech') return;
   if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
     try {
-      (navigator as any).audioSession.type = 'transient';
-      if ((navigator as any).audioSession.type !== 'transient') {
-        (navigator as any).audioSession.type = 'ambient';
-      }
+      (navigator as any).audioSession.type = 'playback';
       currentAudioSessionMode = 'speech';
     } catch {
       try {
-        (navigator as any).audioSession.type = 'ambient';
+        (navigator as any).audioSession.type = 'transient';
         currentAudioSessionMode = 'speech';
       } catch (_) {}
     }
@@ -725,14 +769,9 @@ export function configureTransientDuckingAudioSession(): void {
 }
 
 export function configurePlaybackAudioSession(): void {
-  // Aliased to non-exclusive transient/ambient mixing so external music apps never stop
   configureTransientDuckingAudioSession();
 }
 
-/**
- * TTS 전용 오디오 세션 (iOS/iPadOS Safari 17+ · 홈 화면 PWA에서 동작).
- * 유튜브 뮤직·멜론·스포티파이 등 외부 음악 앱이 멈추지 않고 TTS와 동시에 재생되도록 비독점 믹싱/더킹 지원
- */
 export function configureSpeechAudioSession(): void {
   configureTransientDuckingAudioSession();
 }
@@ -752,7 +791,7 @@ export function getTTSAudioElement(): HTMLAudioElement {
 }
 
 /**
- * Unlock Web Audio output from a user gesture without claiming exclusive HTMLAudioElement focus.
+ * Unlock Web Audio output from a user gesture.
  */
 export function unlockAudioPlayback(): void {
   if (typeof window === 'undefined') return;
@@ -760,7 +799,6 @@ export function unlockAudioPlayback(): void {
     configureAmbientAudioSession();
     const audioCtx = getSharedAudioContext();
     const unlockSource = audioCtx.createBufferSource();
-    // A measurable 1ms silent buffer is required by iOS Safari to unlock Web Audio output.
     unlockSource.buffer = audioCtx.createBuffer(1, Math.max(1, Math.ceil(audioCtx.sampleRate * 0.001)), audioCtx.sampleRate);
     unlockSource.connect(masterBusInput ?? audioCtx.destination);
     unlockSource.start(0);
@@ -778,8 +816,14 @@ export function unlockAudioPlayback(): void {
 export function primeTTSAudioElement(): void {
   if (typeof window === 'undefined') return;
   try {
-    // Only unlock Web Audio context; do NOT call HTMLAudioElement.play() so external music apps keep playing.
     unlockAudioPlayback();
+    startTTSKeepAlive();
+    const el = getTTSAudioElement();
+    if (el.paused && !el.src) {
+      el.src = getSilentWavBlobUrl();
+      el.volume = 1.0;
+      el.play().catch(() => {});
+    }
   } catch {
     // ignore priming failures
   }
@@ -1325,8 +1369,13 @@ export async function playTTSAudio(
   ttsActiveRate = 1.0;
   startTTSKeepAlive();
 
+  // Play via native HTMLAudioElement WAV Blob first so mobile OS lock screens never suspend playback when screen is off,
+  // with seamless automatic fallback to Web Audio API if HTMLAudioElement is blocked by autoplay policy.
   await new Promise<void>((resolve) => {
-    ttsActiveFinishResolver = () => {
+    let finished = false;
+    const finishChunk = () => {
+      if (finished) return;
+      finished = true;
       if (activePlaybackId === ttsPlaybackId && !isSequenceChunk) {
         ttsShouldBePlaying = false;
         stopTTSKeepAlive();
@@ -1334,7 +1383,40 @@ export async function playTTSAudio(
       }
       resolve();
     };
-    launchWebAudioTTSSource(activePlaybackId);
+
+    ttsActiveFinishResolver = finishChunk;
+
+    try {
+      const wavBlob = audioBufferToWavBlob(decodedBuffer);
+      revokeTTSBlobUrl();
+      ttsBlobUrl = URL.createObjectURL(wavBlob);
+      const audioEl = getTTSAudioElement();
+      audioEl.onended = () => {
+        if (activePlaybackId !== ttsPlaybackId || ttsUserExplicitlyPaused) return;
+        ttsActiveBuffer = null;
+        ttsPausedOffsetSec = 0;
+        const r = ttsActiveFinishResolver;
+        ttsActiveFinishResolver = null;
+        r?.();
+      };
+      audioEl.onerror = () => {
+        if (activePlaybackId !== ttsPlaybackId || finished) return;
+        launchWebAudioTTSSource(activePlaybackId);
+      };
+      audioEl.src = ttsBlobUrl;
+      audioEl.currentTime = 0;
+      audioEl.playbackRate = 1.0;
+      audioEl.volume = 1.0;
+      const playPromise = audioEl.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          if (activePlaybackId !== ttsPlaybackId || finished) return;
+          launchWebAudioTTSSource(activePlaybackId);
+        });
+      }
+    } catch (_) {
+      launchWebAudioTTSSource(activePlaybackId);
+    }
   });
 }
 

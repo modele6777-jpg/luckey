@@ -219,6 +219,7 @@ export function LucyKakaoBubbleGroup({
                   isLatest={isLatest && isLastBubble}
                   isGenerating={false}
                   instantReveal={true}
+                  enableTTSHighlight={isBubbleSpeaking}
                 />
 
                 {/* 전문 모드 추천 채널 & Key 실천 도약 바는 마지막 말풍선 하단에 1회만 깔끔하게 표시 */}

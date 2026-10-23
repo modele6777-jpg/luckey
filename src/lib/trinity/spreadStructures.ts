@@ -388,8 +388,10 @@ export const THEME_STRUCTURES: Record<TarotConcernTheme, (spread: TarotSpreadRec
   }),
 
   binary_choice: (_spread, opts) => {
-    const optA = opts?.optionA || 'A';
-    const optB = opts?.optionB || 'B';
+    const rawA = opts?.optionA?.trim();
+    const rawB = opts?.optionB?.trim();
+    const optA = rawA && !/^[ABab](?:안|선택지)?$/.test(rawA) ? rawA : '첫 번째 길(적극 추진·변화)';
+    const optB = rawB && !/^[ABab](?:안|선택지)?$/.test(rawB) ? rawB : '두 번째 길(신중 유지·관망)';
     return {
       theme: 'binary_choice',
       spreadTitle: `⚖️ 양자택일 갈림길 비교 판정 — [${optA}] vs [${optB}]`,
@@ -399,30 +401,30 @@ export const THEME_STRUCTURES: Record<TarotConcernTheme, (spread: TarotSpreadRec
         {
           stepNumber: 1,
           emoji: '⚖️',
-          title: '갈림길에 선 현재 상황과 에너지 상태',
+          title: `[${optA}]와 [${optB}] 갈림길에 선 현재 상황과 에너지`,
           subtitle: '1번 카드: 질문자의 현실적 딜레마',
-          instruction: '1번 카드의 상징을 통해 두 선택지 사이에서 갈등하는 원인과 현재 상황의 숨은 진실을 짚어내십시오.',
+          instruction: `1번 카드의 상징을 통해 내담자가 '${optA}'와 '${optB}' 사이에서 갈등하는 원인과 현재 상황의 숨은 진실을 짚어내십시오. (절대로 'A안', 'B안'이라는 기호를 쓰지 말고 실제 고민 내용을 직접 언급하십시오.)`,
         },
         {
           stepNumber: 2,
-          emoji: '🅰️',
-          title: `[${optA}] 길을 걸어갈 때 펼쳐질 인과와 결말`,
-          subtitle: `2번 카드: ${optA} 선택 시의 득과 실`,
-          instruction: `2번 카드의 도상과 본래 뜻을 상세히 분석하여, ${optA}를 선택했을 때 찾아올 현실적 기회와 마주할 위험 요소를 가감 없이 밝히십시오.`,
+          emoji: '🌟',
+          title: `[${optA}] 길을 선택했을 때 펼쳐질 인과와 결말`,
+          subtitle: `2번 카드: [${optA}] 선택 시의 득과 실`,
+          instruction: `2번 카드의 도상과 본래 뜻을 상세히 분석하여, '${optA}'를 선택했을 때 찾아올 현실적 기회와 마주할 위험 요소를 가감 없이 밝히십시오.`,
         },
         {
           stepNumber: 3,
-          emoji: '🅱️',
-          title: `[${optB}] 길을 걸어갈 때 펼쳐질 인과와 결말`,
-          subtitle: `3번 카드: ${optB} 선택 시의 득과 실`,
-          instruction: `3번 카드의 도상과 본래 뜻을 분석하여, ${optB}를 선택했을 때 얻게 될 가치와 감수해야 할 대가를 냉철하게 분석하십시오.`,
+          emoji: '🧭',
+          title: `[${optB}] 길을 선택했을 때 펼쳐질 인과와 결말`,
+          subtitle: `3번 카드: [${optB}] 선택 시의 득과 실`,
+          instruction: `3번 카드의 도상과 본래 뜻을 분석하여, '${optB}'를 선택했을 때 얻게 될 가치와 감수해야 할 대가를 냉철하게 분석하십시오.`,
         },
         {
           stepNumber: 4,
           emoji: '🎯',
-          title: `트리니티 마스터의 결정적 최종 선택: [${optA} / ${optB}] 선언`,
-          subtitle: '4번 카드: 두 선택지를 가르는 최종 조언',
-          instruction: `반드시 첫 줄에 **최종 선택: [${optA}]** 또는 **최종 선택: [${optB}]**를 명확히 선언하고, 왜 이쪽을 골라야만 하는지 카드의 근거로 단호하게 판정하십시오.`,
+          title: `트리니티 마스터의 결정적 최종 선택: [${optA}] vs [${optB}] 선언`,
+          subtitle: '4번 카드: 두 갈래 고민을 가르는 최종 조언',
+          instruction: `반드시 첫 줄에 **최종 선택: [${optA}]** 또는 **최종 선택: [${optB}]**와 같이 내담자의 실제 고민 선택지 명칭을 그대로 선언하고, 왜 이 길을 골라야만 하는지 카드의 근거로 단호하게 판정하십시오.`,
         },
         {
           stepNumber: 5,

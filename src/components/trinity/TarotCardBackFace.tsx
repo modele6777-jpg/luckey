@@ -327,9 +327,12 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
       <div
         className={`absolute inset-0 w-full h-full rounded-lg sm:rounded-xl flex items-center justify-center pointer-events-none select-none ${className}`}
         style={{
-          border: `1px solid ${isHovered ? '#fde047' : `${accentColor}88`}`,
+          border: isHovered ? '2px solid rgba(255, 255, 255, 0.96)' : `1px solid ${accentColor}88`,
           backgroundImage: oracleWheelBackgrounds[theme.id] || `radial-gradient(circle at 50% 50%, ${accentColor}33 0 3%, transparent 3.5% 17%, ${accentColor}22 17.5% 18.5%, transparent 19% 31%, ${accentColor}1f 31.5% 32.5%, transparent 33%), repeating-conic-gradient(from 22.5deg at 50% 50%, ${accentColor}12 0deg 4deg, transparent 4deg 45deg), radial-gradient(ellipse at 18% 0%, ${accentColor}30 0%, transparent 48%), linear-gradient(145deg, #211638, #090613 56%, #1b102b)`,
-          boxShadow: isHovered ? `inset 0 0 0 2px ${accentColor}44, 0 0 16px ${accentColor}55` : `inset 0 0 0 2px ${accentColor}22`,
+          boxShadow: isHovered
+            ? '0 0 22px rgba(255, 255, 255, 0.58), 0 8px 24px rgba(0, 0, 0, 0.65), inset 0 0 0 1.5px rgba(255, 255, 255, 0.45)'
+            : `inset 0 0 0 2px ${accentColor}22`,
+          transition: 'border-color 260ms ease-out, box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         {isOracleBack ? renderThemeArtwork() : (
@@ -349,13 +352,18 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
       style={{
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
+        border: isHovered ? '2px solid rgba(255, 255, 255, 0.96)' : undefined,
+        boxShadow: isHovered
+          ? '0 0 22px rgba(255, 255, 255, 0.58), 0 10px 28px rgba(0, 0, 0, 0.65), inset 0 0 0 1.5px rgba(255, 255, 255, 0.45)'
+          : undefined,
+        transition: 'border-color 260ms ease-out, box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1)',
       }}
       className={`absolute inset-0 w-full h-full ${theme.id === 'oracle_healing' ? 'bg-gradient-to-b from-rose-950 via-[#170914] to-black' : theme.id === 'oracle_growth' ? 'bg-gradient-to-b from-amber-950 via-[#171006] to-black' : theme.id === 'oracle_miracle' ? 'bg-gradient-to-b from-violet-950 via-[#10091c] to-black' : 'bg-gradient-to-b from-[#100826] via-[#090514] to-black'} rounded-xl sm:rounded-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 overflow-hidden select-none shadow-2xl ${className}`}
     >
       {/* Outer filigree border */}
       <div
-        className={`absolute inset-1 sm:inset-1.5 border rounded-lg sm:rounded-xl pointer-events-none ${
-          isHovered ? 'border-white/50' : theme.borderClass
+        className={`absolute inset-1 sm:inset-1.5 border rounded-lg sm:rounded-xl pointer-events-none transition-colors duration-300 ${
+          isHovered ? 'border-white/90' : theme.borderClass
         }`}
       />
 

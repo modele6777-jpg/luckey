@@ -18,6 +18,7 @@ import { TTSHighlightedText } from '@/components/common/TTSHighlightedText';
 
 export interface TarotSummaryGraphicCardProps {
   bullets: string[];
+  question?: string;
   readingText?: string;
   isTTSActive?: boolean;
   onToggleTTS?: () => void;
@@ -45,6 +46,7 @@ interface ParsedSummaryRow {
 
 export function TarotSummaryGraphicCard({
   bullets,
+  question,
   readingText,
   isTTSActive = false,
   onToggleTTS,
@@ -53,6 +55,7 @@ export function TarotSummaryGraphicCard({
   subtitle = 'CARD SYMBOLISM ✕ SAJU ESSENCE · 고밀도 3대 차원 심층 요약',
 }: TarotSummaryGraphicCardProps) {
   const [copied, setCopied] = useState(false);
+  const cleanQuestion = question?.trim() || '';
 
   if (!bullets || bullets.length === 0) return null;
 
@@ -128,7 +131,8 @@ export function TarotSummaryGraphicCard({
 
   const handleCopy = async () => {
     try {
-      const summaryText = `【${title}】\n` + bullets.join('\n');
+      const qPrefix = cleanQuestion ? `💬 내가 한 질문: "${cleanQuestion}"\n\n` : '';
+      const summaryText = `${qPrefix}【${title}】\n` + bullets.join('\n');
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(summaryText);
         setCopied(true);
@@ -210,6 +214,18 @@ export function TarotSummaryGraphicCard({
           </button>
         </div>
       </div>
+
+      {/* 💬 내가 한 질문 표시 배너 */}
+      {cleanQuestion && (
+        <div className="relative z-10 px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-purple-500/15 border border-amber-400/35 flex items-start gap-2.5 shadow-inner">
+          <span className="px-2 py-0.5 rounded-md bg-amber-400/25 border border-amber-300/40 text-amber-200 text-[10px] sm:text-[11px] font-extrabold tracking-wide shrink-0 mt-0.5">
+            💬 내가 한 질문
+          </span>
+          <p className="text-xs sm:text-sm font-bold text-amber-50 leading-relaxed break-keep">
+            &ldquo;<TTSHighlightedText text={cleanQuestion} enabled={isTTSActive} />&rdquo;
+          </p>
+        </div>
+      )}
 
       {/* 3 Graphic Dimension Cards */}
       <div className="relative z-10 grid grid-cols-1 gap-2.5">

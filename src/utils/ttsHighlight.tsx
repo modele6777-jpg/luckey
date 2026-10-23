@@ -8,26 +8,58 @@ import {
   highlightSentencesInChildren,
 } from '@/components/common/TTSHighlightedText';
 
+const INACTIVE_TTS_STATE: TTSState = {
+  isSpeaking: false,
+  isLoading: false,
+  activeText: null,
+  activeFullText: null,
+  activeSessionId: null,
+  activeSentence: null,
+  activeSentenceIndex: -1,
+  totalSentences: 0,
+};
+
 /**
  * Hook to track current TTS speech state and the specific sentence currently being spoken.
+ * When `enabled` is false or the screen is off (`visibilityState === 'hidden'`), skips state updates to prevent UI lag.
  */
-export function useTTSCurrentSentence() {
-  const [ttsState, setTtsState] = useState<TTSState>({
-    isSpeaking: false,
-    isLoading: false,
-    activeText: null,
-    activeFullText: null,
-    activeSessionId: null,
-    activeSentence: null,
-    activeSentenceIndex: -1,
-    totalSentences: 0,
-  });
+export function useTTSCurrentSentence(enabled: boolean = true) {
+  const [ttsState, setTtsState] = useState<TTSState>(INACTIVE_TTS_STATE);
 
   useEffect(() => {
+    if (!enabled) {
+      setTtsState((prev) => (prev.isSpeaking || prev.isLoading ? INACTIVE_TTS_STATE : prev));
+      return;
+    }
     return subscribeTTS((state) => {
-      setTtsState(state);
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden' && state.isSpeaking) {
+        return;
+      }
+      setTtsState((prev) => {
+        if (
+          prev.isSpeaking === state.isSpeaking &&
+          prev.isLoading === state.isLoading &&
+          prev.activeSentence === state.activeSentence &&
+          prev.currentSentence === state.currentSentence &&
+          prev.activeText === state.activeText
+        ) {
+          return prev;
+        }
+        return state;
+      });
     });
-  }, []);
+  }, [enabled]);
+
+  if (!enabled) {
+    return {
+      isSpeaking: false,
+      isLoading: false,
+      activeSentence: null,
+      activeFullText: null,
+      activeSentenceIndex: -1,
+      totalSentences: 0,
+    };
+  }
 
   return {
     isSpeaking: ttsState.isSpeaking,
@@ -126,7 +158,7 @@ export const TTSHighlightText: React.FC<{
   isHeading?: boolean;
   enabled?: boolean;
 }> = ({ text, isLight = false, className = '', isHeading = false, enabled = true }) => {
-  const { isSpeaking, activeSentence } = useTTSCurrentSentence();
+  const { isSpeaking, activeSentence } = useTTSCurrentSentence(enabled);
 
   const isMatching = useMemo(() => {
     if (!enabled || !isSpeaking || !activeSentence || !text) return false;
@@ -141,7 +173,10 @@ export const TTSHighlightText: React.FC<{
   }, [enabled, isSpeaking, activeSentence, text]);
 
   const targetSentence = isMatching ? activeSentence : null;
-  const content = renderWithSentenceHighlight(text, targetSentence, isLight, isHeading);
+  const content = useMemo(
+    () => (targetSentence ? renderWithSentenceHighlight(text, targetSentence, isLight, isHeading) : text),
+    [text, targetSentence, isLight, isHeading]
+  );
 
   return <span className={className}>{content}</span>;
 };
