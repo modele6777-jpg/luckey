@@ -563,7 +563,7 @@ export default function HubHome() {
         initial={{ y: -10, x: '-50%', opacity: 0.88 }}
         animate={{ y: 0, x: '-50%', opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/90 dark:bg-white/5 backdrop-blur-2xl border border-amber-900/15 dark:border-white/10 shadow-xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-all duration-300"
+        className="prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1.5 p-1.5 rounded-full bg-slate-950/80 dark:bg-slate-950/75 backdrop-blur-2xl border border-white/15 shadow-[0_12px_32px_rgba(0,0,0,0.45)] max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-all duration-300"
       >
         {[
           { id: 'universe', icon: Compass, label: 'Universe' },
@@ -586,18 +586,29 @@ export default function HubHome() {
                   navigate('/prologue');
                 }
               }}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold font-sans transition-all duration-300 whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold font-sans transition-all duration-300 whitespace-nowrap cursor-pointer ${
                 isActive
                   ? item.id === 'ecpr'
-                    ? 'bg-gradient-to-r from-red-500/40 via-rose-500/30 to-amber-500/40 text-white border border-red-400/50 shadow-[0_0_15px_rgba(239,68,68,0.3)] scale-[1.02]'
+                    ? 'bg-gradient-to-r from-red-500/80 via-rose-500/70 to-amber-500/70 keep-white border border-red-300/60 shadow-[0_0_16px_rgba(239,68,68,0.35)] scale-[1.02]'
                     : item.id === 'todo'
-                    ? 'bg-gradient-to-r from-indigo-600/50 via-purple-600/40 to-amber-600/50 text-white border border-indigo-400/60 shadow-[0_0_20px_rgba(99,102,241,0.4)] scale-[1.02]'
-                    : 'bg-gradient-to-r from-red-500/40 via-orange-500/30 to-amber-500/40 text-white border border-red-400/50 shadow-[0_0_15px_rgba(239,68,68,0.3)] scale-[1.02]'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-white/60 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 border border-transparent'
+                    ? 'bg-gradient-to-r from-indigo-600/80 via-purple-600/70 to-amber-500/70 keep-white border border-indigo-300/60 shadow-[0_0_18px_rgba(99,102,241,0.4)] scale-[1.02]'
+                    : 'bg-gradient-to-r from-cyan-500/75 via-indigo-500/75 to-purple-500/75 keep-white border border-cyan-300/60 shadow-[0_0_18px_rgba(34,211,238,0.35)] scale-[1.02]'
+                  : 'text-white/65 hover:text-white hover:bg-white/10 border border-transparent'
               }`}
             >
-              <Icon size={14} className={isActive ? (item.id === 'ecpr' ? 'text-red-300 animate-pulse' : item.id === 'todo' ? 'text-indigo-300 animate-pulse' : 'text-amber-300 animate-pulse') : 'text-slate-400 dark:text-white/40'} />
-              <span>{item.label}</span>
+              <Icon
+                size={14}
+                className={
+                  isActive
+                    ? item.id === 'ecpr'
+                      ? 'text-rose-200 animate-pulse'
+                      : item.id === 'todo'
+                      ? 'text-indigo-200 animate-pulse'
+                      : 'text-cyan-200 animate-pulse'
+                    : 'text-white/45'
+                }
+              />
+              <span className={isActive ? 'keep-white' : ''}>{item.label}</span>
             </button>
           );
         })}
@@ -685,7 +696,7 @@ export default function HubHome() {
               )}
             </AnimatePresence>
 
-            <div className="relative z-10 w-full px-3 sm:px-5 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col max-w-6xl mx-auto">
+            <div className="relative z-10 w-full px-3.5 sm:px-6 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col max-w-6xl mx-auto space-y-6 md:space-y-7">
 
               {/* Dual-Pane Top Split: Left Pane (Today's Lucy Persona) & Right Pane (Universe Insight) */}
               <div className="duo-split-grid items-stretch">
@@ -700,15 +711,14 @@ export default function HubHome() {
 
                 {/* Global Insights Section (Universe Insight Diversified) */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="mb-6 flex flex-col h-full"
+                  className="flex flex-col h-full"
                 >
                   <UniverseInsightCard 
                     saju={saju} 
                     customInsight={globalData?.summary ? { summary: globalData.summary, author: globalData.author } : undefined}
                     onInsightChange={(newInsight) => {
-                      // Keep sharedState memory updated if needed
                       updateSharedState({
                         globalMemory: newInsight.quote,
                       }, 'HUB');
@@ -719,108 +729,122 @@ export default function HubHome() {
               
               {/* User-Defined Goals Progress Ring Dashboard */}
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
+                transition={{ delay: 0.04 }}
               >
                 <GoalProgressRingDashboard />
               </motion.div>
 
-              {/* 에너지 패턴 추천앱 복구 구성 */}
+              {/* 에너지 패턴 추천앱 카드 */}
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8"
               >
-                <div className="glass prism-xs-hub-card p-6 md:p-8 rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden group">
+                <div className="glass prism-xs-hub-card p-5 sm:p-6 md:p-7 rounded-[28px] border border-white/15 shadow-2xl relative overflow-hidden group">
                   <div 
-                    className="hidden md:block absolute top-0 right-0 w-80 h-80 rounded-full blur-[100px] opacity-10 pointer-events-none transition-transform duration-1000 group-hover:scale-110"
+                    className="hidden md:block absolute -top-12 -right-12 w-72 h-72 rounded-full blur-[90px] opacity-15 pointer-events-none transition-transform duration-1000 group-hover:scale-110"
                     style={{ background: energyAppColor }} 
                   />
                   
-                  <div className="relative z-10 flex flex-col md:flex-row items-stretch gap-6 md:gap-8">
+                  <div className="relative z-10 flex flex-col lg:flex-row items-stretch gap-5 lg:gap-8">
                     {/* 왼쪽 영역: 생체 상태 */}
-                    <div className="flex flex-col justify-between md:w-64 shrink-0 border-b md:border-b-0 md:border-r border-white/10 pb-6 md:pb-0 md:pr-8 gap-4">
+                    <div className="flex flex-col justify-between lg:w-72 shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 pb-5 lg:pb-0 lg:pr-7 gap-4">
                       <div>
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] font-mono block mb-1">REAL-TIME BIOMETRICS</span>
-                        <h3 className="text-lg font-display font-bold text-white tracking-tight">현재 실시간 에너지 패턴</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="text-[10px] font-bold text-white/55 uppercase tracking-[0.22em] font-mono">REAL-TIME BIOMETRICS</span>
+                        </div>
+                        <h3 className="text-base sm:text-lg font-display font-bold text-white tracking-tight">현재 실시간 에너지 패턴</h3>
                         {saju && (
-                          <p className="text-[11px] text-indigo-300/90 font-sans font-semibold mt-1 flex items-center gap-1">
-                            <Sparkles size={10} className="text-amber-400" />
-                            {saju.dayMaster.hanja}({saju.dayMaster.korean}) 본원 체질 · {saju.elements.dominant.element}기운 우세
+                          <p className="text-[11px] text-indigo-300/95 font-sans font-semibold mt-1 flex items-center gap-1.5">
+                            <Sparkles size={11} className="text-amber-400 shrink-0" />
+                            <span>{saju.dayMaster.hanja}({saju.dayMaster.korean}) 본원 체질 · {saju.elements.dominant.element}기운 우세</span>
                           </p>
                         )}
                       </div>
                       
-                      <div className="space-y-3.5 mt-2">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[11px] font-sans">
-                            <span className="text-white/40 flex items-center gap-1.5 font-medium"><Activity size={12} className="text-emerald-400" /> 피로도 (Fatigue)</span>
+                      <div className="grid grid-cols-3 lg:grid-cols-1 gap-2.5 lg:gap-3">
+                        <div className="p-2.5 lg:p-0 rounded-xl bg-white/[0.03] lg:bg-transparent border border-white/5 lg:border-0 space-y-1.5">
+                          <div className="flex justify-between items-center text-[11px] font-sans">
+                            <span className="text-white/65 flex items-center gap-1 font-medium"><Activity size={11} className="text-emerald-400 shrink-0" /> 피로도</span>
                             <span className="text-emerald-400 font-bold font-mono">{Math.round(fatigue)}%</span>
                           </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${Math.min(100, Math.max(5, fatigue))}%` }} />
+                          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-400 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, Math.max(5, fatigue))}%` }} />
                           </div>
                         </div>
                         
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[11px] font-sans">
-                            <span className="text-white/40 flex items-center gap-1.5 font-medium"><Brain size={12} className="text-red-400" /> 스트레스지표 (Stress)</span>
-                            <span className="text-red-400 font-bold font-mono">{Math.round(stress)}%</span>
+                        <div className="p-2.5 lg:p-0 rounded-xl bg-white/[0.03] lg:bg-transparent border border-white/5 lg:border-0 space-y-1.5">
+                          <div className="flex justify-between items-center text-[11px] font-sans">
+                            <span className="text-white/65 flex items-center gap-1 font-medium"><Brain size={11} className="text-rose-400 shrink-0" /> 스트레스</span>
+                            <span className="text-rose-400 font-bold font-mono">{Math.round(stress)}%</span>
                           </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-red-400 rounded-full" style={{ width: `${Math.min(100, Math.max(5, stress))}%` }} />
+                          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-rose-400 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, Math.max(5, stress))}%` }} />
                           </div>
                         </div>
 
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[11px] font-sans">
-                            <span className="text-white/40 flex items-center gap-1.5 font-medium"><Zap size={12} className="text-amber-400" /> 몰입 지수 (Focus)</span>
+                        <div className="p-2.5 lg:p-0 rounded-xl bg-white/[0.03] lg:bg-transparent border border-white/5 lg:border-0 space-y-1.5">
+                          <div className="flex justify-between items-center text-[11px] font-sans">
+                            <span className="text-white/65 flex items-center gap-1 font-medium"><Zap size={11} className="text-amber-400 shrink-0" /> 몰입도</span>
                             <span className="text-amber-400 font-bold font-mono">{Math.round(focus)}%</span>
                           </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-400 rounded-full" style={{ width: `${Math.min(100, Math.max(5, focus))}%` }} />
+                          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, Math.max(5, focus))}%` }} />
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* 오른쪽 영역: 에너지 동조 추천 앱 */}
-                    <div className="flex-1 flex flex-col justify-between space-y-4">
+                    <div className="flex-1 flex flex-col justify-between gap-4">
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="px-2.5 py-0.5 rounded-full text-[9px] font-bold font-mono border uppercase tracking-wider animate-pulse" style={{ color: energyAppColor, borderColor: `${energyAppColor}40`, background: `${energyAppColor}10` }}>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div
+                            className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono border uppercase tracking-wider"
+                            style={{ color: energyAppColor, borderColor: `${energyAppColor}55`, background: `${energyAppColor}18` }}
+                          >
                             SYNC RATE {matchPercentage}%
                           </div>
-                          <span className="text-[10px] text-white/45 font-bold uppercase tracking-widest font-mono">ENERGY SYNC ADVICE · {timeAdvice.slotLabel}</span>
+                          <span className="text-[10px] text-white/55 font-bold uppercase tracking-widest font-mono">
+                            ENERGY SYNC · {timeAdvice.slotLabel} 리듬
+                          </span>
                         </div>
 
-                        <h4 className="text-xl font-bold text-white tracking-tight break-keep" style={{ filter: `drop-shadow(0 0 10px ${energyAppColor}10)` }}>
+                        <h4 className="text-lg sm:text-xl font-bold text-white tracking-tight break-keep">
                           {energyPatternName}
                         </h4>
                         
-                        <p className="text-xs text-white/60 leading-relaxed break-keep font-medium">
+                        <p className="text-xs sm:text-[13px] text-white/75 leading-relaxed break-keep font-medium">
                           {energyPatternDesc}
                         </p>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 pt-3 border-t border-white/10">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center relative overflow-hidden shrink-0 border border-white/10" style={{ background: `${energyAppColor}10` }}>
-                            <EnergyAppIcon size={18} style={{ color: energyAppColor, filter: `drop-shadow(0 0 8px ${energyAppColor})` }} />
+                          <div
+                            className="w-11 h-11 rounded-2xl flex items-center justify-center relative overflow-hidden shrink-0 border border-white/15 shadow-inner"
+                            style={{ background: `${energyAppColor}18` }}
+                          >
+                            <EnergyAppIcon size={20} style={{ color: energyAppColor, filter: `drop-shadow(0 0 8px ${energyAppColor})` }} />
                           </div>
-                          <div className="text-left">
-                            <div className="text-xs font-bold text-white uppercase tracking-wider">{energyAppName} App</div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-mono leading-tight">{matchReason}</div>
+                          <div className="text-left min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-extrabold text-white uppercase tracking-wider">{energyAppName}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/10 text-white/80 font-semibold">추천 채널</span>
+                            </div>
+                            <div className="text-[11px] text-white/60 font-sans leading-snug mt-0.5 truncate">{matchReason}</div>
                           </div>
                         </div>
 
                         <button
+                          type="button"
                           onClick={() => navigate(recommendedEnergyApp?.path || '/')}
-                          className="w-full sm:w-auto px-5 py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 text-white/90 hover:text-white transition-all active:scale-95 cursor-pointer shrink-0 border border-white/10 hover:border-white/25 hover:bg-white/5 shadow-xl font-sans"
+                          className="w-full sm:w-auto px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 text-white transition-all active:scale-95 cursor-pointer shrink-0 border border-white/20 hover:border-white/40 bg-white/10 hover:bg-white/15 shadow-lg font-sans"
                         >
-                          <span>에너지 채널 즉시 접속하기</span>
-                          <ChevronRight size={14} className="opacity-60" />
+                          <span>추천 채널 바로가기</span>
+                          <ChevronRight size={14} className="opacity-80" />
                         </button>
                       </div>
                     </div>
@@ -828,60 +852,151 @@ export default function HubHome() {
                 </div>
               </motion.div>
 
-              {/* DApp Grid (Auto 2-Column Dual-Pane on Surface Duo / Foldable / Landscape) */}
-              <div className="duo-channel-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pb-4 md:pb-6 w-full">
-                {PROLOGUE_APPS.map((app, i) => {
-                  const Icon = app.icon;
-                  const isActive = activeApp?.id === app.id;
-                  
-                  return (
-                    <motion.button
-                      key={app.id}
-                      initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ duration: 0.45, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                      onClick={() => {
-                        navigate(app.path);
-                        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: app.path } }));
-                      }}
-                      className={`prism-xs-app-card group relative text-left rounded-[32px] p-6 md:p-8 overflow-hidden transition-all duration-500 border ${
-                        isActive 
-                          ? 'bg-white/10 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.1)] scale-[1.02]' 
-                          : 'glass border-white/5 hover:border-white/20 hover:bg-white/[0.08]'
-                      }`}
-                    >
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" style={{ backgroundImage: `radial-gradient(circle at center, ${app.color} 0%, transparent 70%)` }} />
-                      
-                      <div className="relative w-12 h-12 rounded-[20px] flex items-center justify-center mb-6 overflow-hidden border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
-                        <div className="absolute inset-0 bg-white/5" />
-                        <Icon 
-                          size={24} 
-                          className="relative z-10 group-hover:scale-110 transition-transform duration-500 group-hover:animate-pulse" 
-                          style={{ color: app.color, filter: `drop-shadow(0 0 12px ${app.color})` }} 
-                          strokeWidth={2}
+              {/* Universe 6-Channel DApp Section */}
+              <div className="space-y-3.5 pb-4 md:pb-6">
+                <div className="flex items-center justify-between px-1">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Compass size={15} className="text-cyan-400" />
+                      <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                        유니버스 6대 차원 DApp 채널
+                      </h3>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
+                        6 CHANNELS
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-white/55 mt-0.5">
+                      마음 치유·운명 분석·신체 활력·예술 사운드·창작 영감·통합 결산 채널로 바로 이동합니다
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openChannelIntro('hub')}
+                    className="px-3 py-1.5 rounded-full text-[11px] font-semibold text-white/75 hover:text-white bg-white/5 hover:bg-white/15 border border-white/15 transition-all cursor-pointer shrink-0"
+                  >
+                    전체 채널 안내
+                  </button>
+                </div>
+
+                {/* DApp Grid */}
+                <div className="duo-channel-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-5 w-full items-stretch">
+                  {PROLOGUE_APPS.map((app, i) => {
+                    const Icon = app.icon;
+                    const isActive = activeApp?.id === app.id;
+                    const isRecommended = recommendedEnergyApp?.id === app.id;
+                    
+                    return (
+                      <motion.div
+                        key={app.id}
+                        initial={{ opacity: 0, scale: 0.97, y: 12 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={() => {
+                          navigate(app.path);
+                          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: app.path } }));
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(app.path);
+                          }
+                        }}
+                        className={`prism-xs-app-card group relative text-left rounded-[26px] p-5 sm:p-6 overflow-hidden transition-all duration-300 border flex flex-col justify-between h-full cursor-pointer ${
+                          isActive
+                            ? 'glass border-white/35 shadow-[0_0_28px_rgba(255,255,255,0.12)] scale-[1.01]'
+                            : 'glass border-white/12 hover:border-white/30 hover:-translate-y-0.5 shadow-xl'
+                        }`}
+                      >
+                        <div
+                          className="absolute -top-16 -right-16 w-44 h-44 rounded-full blur-[65px] opacity-15 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none"
+                          style={{ background: app.color }}
                         />
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-2xl font-bold tracking-wider text-white group-hover:translate-x-1 transition-transform duration-500" style={{ color: app.color }}>{app.name}</h3>
-                        <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] pt-1 font-sans">{app.subtitle}</span>
-                      </div>
-                      <p className="text-sm leading-relaxed mb-8 max-w-[85%] font-sans font-medium text-white/80">
-                        {app.desc}
-                      </p>
-                      
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
-                          <span className="text-xs font-bold text-white/40 uppercase tracking-[0.2em] font-sans">
-                            {app.persona}
-                          </span>
+
+                        <div>
+                          {/* Top Row: Icon + Subtitle Badge & Guide Button */}
+                          <div className="flex items-start justify-between gap-3 mb-4 relative z-10">
+                            <div
+                              className="relative w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border border-white/15 shadow-md shrink-0"
+                              style={{ background: `${app.color}16` }}
+                            >
+                              <Icon
+                                size={22}
+                                className="relative z-10 group-hover:scale-110 transition-transform duration-300"
+                                style={{ color: app.color, filter: `drop-shadow(0 0 10px ${app.color})` }}
+                                strokeWidth={2.1}
+                              />
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {isRecommended && (
+                                <span
+                                  className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border"
+                                  style={{
+                                    color: app.color,
+                                    borderColor: `${app.color}55`,
+                                    background: `${app.color}18`,
+                                  }}
+                                >
+                                  오늘의 추천
+                                </span>
+                              )}
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-white/75 bg-white/[0.07] border border-white/10 tracking-wide">
+                                {app.subtitle}
+                              </span>
+                              <button
+                                type="button"
+                                title={`${app.name} 채널 소개`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openChannelIntro(app.id === 'heal' ? 'aura' : app.id);
+                                }}
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white/50 hover:text-white bg-white/5 hover:bg-white/15 border border-white/10 transition-colors cursor-pointer"
+                              >
+                                ?
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Title & Persona Desc */}
+                          <div className="relative z-10 mb-2">
+                            <div className="flex items-baseline gap-2">
+                              <h4
+                                className="text-xl font-extrabold tracking-wide transition-transform duration-300 group-hover:translate-x-0.5"
+                                style={{ color: app.color }}
+                              >
+                                {app.name}
+                              </h4>
+                              <span className="text-[11px] font-semibold text-white/55 truncate">
+                                {app.personaDesc}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Full-width Channel Description */}
+                          <p className="relative z-10 text-[13px] leading-relaxed text-white/80 font-sans font-medium break-keep">
+                            {app.desc}
+                          </p>
                         </div>
-                        <ChevronRight size={16} className="text-white/30 group-hover:text-white transition-colors group-hover:translate-x-1" />
-                      </div>
-                    </motion.button>
-                  );
-                })}
+
+                        {/* Card Footer */}
+                        <div className="relative z-10 flex items-center justify-between mt-5 pt-3.5 border-t border-white/10">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full" style={{ background: app.color }} />
+                            <span className="text-[11px] font-bold text-white/60 tracking-wide font-sans">
+                              {app.vibeKeyword} 스페이스
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs font-bold text-white/75 group-hover:text-white transition-colors">
+                            <span>채널 입장</span>
+                            <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>

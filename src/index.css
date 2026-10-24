@@ -437,7 +437,7 @@
   }
 
   .pt-home {
-    padding-top: calc(var(--sat) + 5.5rem);
+    padding-top: calc(var(--sat) + 7.25rem);
   }
 
   .pb-page,
@@ -453,7 +453,7 @@
 
   .md\:pt-home-md {
     @media (width >= 48rem) {
-      padding-top: calc(var(--sat) + 6.5rem);
+      padding-top: calc(var(--sat) + 8.25rem);
     }
   }
 
@@ -633,7 +633,7 @@
   }
 
   .pt-home {
-    padding-top: calc(var(--sat) + 4.5rem);
+    padding-top: calc(var(--sat) + 6.35rem);
   }
 
   .top-safe-nav {
@@ -2753,19 +2753,12 @@ label {
   padding-right: max(var(--sar, 0px), 0.75rem);
 }
 
-/* Dual-Pane 2-Column Split Grid (Default 1 col on narrow portrait -> 2 cols on Duo/Foldable/Landscape) */
+/* Dual-Pane 2-Column Split Grid (1 col on portrait/tablet -> 2 cols on wide desktop >= 1120px or Dual-Screen Hinge) */
 .duo-split-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
-}
-
-/* Activate 2-Column Dual-Pane Layout when wide/landscape or dual-pane-active */
-html.dual-pane-active .duo-split-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--duo-hinge-gap, 1.25rem);
-  row-gap: 1.25rem;
 }
 
 html.dual-pane-active .duo-channel-grid {
@@ -2774,28 +2767,24 @@ html.dual-pane-active .duo-channel-grid {
   row-gap: 1rem !important;
 }
 
-@media (min-width: 1180px) {
-  html.dual-pane-active:not([data-device="surface-duo"]) .duo-channel-grid {
+@media (min-width: 1120px) {
+  html.dual-pane-active .duo-split-grid,
+  .duo-split-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--duo-hinge-gap, 1.5rem);
+    row-gap: 1.5rem;
+  }
+
+  html.dual-pane-active:not([data-device="surface-duo"]) .duo-channel-grid,
+  .duo-channel-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 }
 
-@media screen and (min-width: 640px), screen and (orientation: landscape) and (min-width: 590px) {
-  .duo-split-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--duo-hinge-gap, 1.25rem);
-    row-gap: 1.25rem;
-  }
-
+@media screen and (min-width: 640px) and (max-width: 1119px) {
   .duo-channel-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: var(--duo-hinge-gap, 1.25rem);
-  }
-}
-
-@media screen and (min-width: 1180px) {
-  .duo-channel-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -2926,3 +2915,96 @@ html.perf-duo-ultra .aura-orb-3 {
   transform: translate3d(0, 0, 0);
 }
 
+/* ============================================================================
+   13. 🌌 Lucy Cosmic Glass Speech Bubble & BigBang Arcane Energy Ripple Engine
+   - Dark Cosmic Obsidian Glass Card (#060918 ~ #0E152E) + Aurora Neon Border (#00F0FF, #A855F7, #FBBF24)
+   - Protected from global light-mode color inversion for crisp 14:1+ high-contrast legibility
+   - Tap & Hold Arcane Energy Ripple Rings & Aurora Nebula Particle Dispersion Keyframes
+   ============================================================================ */
+
+/* Protect Crisp Luminous Text & Inputs inside Lucy Cosmic Bubble across Dark & Light themes */
+html.dark .lucy-cosmic-bubble,
+html.light .lucy-cosmic-bubble {
+  color: #f8fafc !important;
+}
+
+html.dark .lucy-cosmic-bubble textarea,
+html.light .lucy-cosmic-bubble textarea,
+html.dark .lucy-cosmic-bubble input,
+html.light .lucy-cosmic-bubble input {
+  color: #f8fafc !important;
+  caret-color: #00f0ff !important;
+}
+
+html.dark .lucy-cosmic-bubble .lucy-cosmic-title,
+html.light .lucy-cosmic-bubble .lucy-cosmic-title {
+  color: #ffffff !important;
+}
+
+html.dark .lucy-cosmic-bubble .lucy-cosmic-body,
+html.light .lucy-cosmic-bubble .lucy-cosmic-body {
+  color: #f8fafc !important;
+}
+
+html.dark .lucy-cosmic-bubble .lucy-cosmic-sub,
+html.light .lucy-cosmic-bubble .lucy-cosmic-sub {
+  color: #cbd5e1 !important;
+}
+
+html.dark .lucy-cosmic-bubble .lucy-cosmic-muted,
+html.light .lucy-cosmic-bubble .lucy-cosmic-muted {
+  color: #94a3b8 !important;
+}
+
+html.dark .lucy-cosmic-bubble .lucy-cosmic-cyan,
+html.light .lucy-cosmic-bubble .lucy-cosmic-cyan {
+  color: #38bdf8 !important;
+}
+
+html.dark .lucy-cosmic-bubble .lucy-user-cosmic-msg,
+html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg,
+html.dark .lucy-cosmic-bubble .lucy-user-cosmic-msg *,
+html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
+  color: #ffffff !important;
+}
+
+/* Arcane Energy Ripple & Aurora Conduit Keyframes */
+@keyframes arcane-shockwave-expand {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.78);
+    opacity: 0.95;
+  }
+  70% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.68);
+    opacity: 0;
+  }
+}
+
+@keyframes arcane-conduit-pulse {
+  0%, 100% {
+    transform: translate3d(-50%, 0, 0) rotate(45deg) scale(1);
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.75), 0 0 28px rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    transform: translate3d(-50%, -2px, 0) rotate(45deg) scale(1.08);
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.95), 0 0 36px rgba(251, 191, 36, 0.65);
+  }
+}
+
+.animate-arcane-ripple-1 {
+  animation: arcane-shockwave-expand 1.05s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.animate-arcane-ripple-2 {
+  animation: arcane-shockwave-expand 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.35s infinite;
+  will-change: transform, opacity;
+}
+
+.animate-arcane-conduit {
+  animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
+  will-change: transform;
+}

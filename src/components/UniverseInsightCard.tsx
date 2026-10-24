@@ -55,7 +55,7 @@ export function UniverseInsightCard({
   }, []);
 
   const [currentInsight, setCurrentInsight] = useState<UniverseInsightItem>(todayFixedInsight);
-  const [isResonanceExpanded, setIsResonanceExpanded] = useState(false);
+  const [isResonanceExpanded, setIsResonanceExpanded] = useState(true);
   const [isCodexOpen, setIsCodexOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -90,12 +90,12 @@ export function UniverseInsightCard({
 
   return (
     <>
-      <div className="glass prism-xs-hub-card p-4 sm:p-6 md:p-8 rounded-[28px] sm:rounded-[32px] border border-white/15 shadow-2xl relative overflow-hidden group bg-gradient-to-br from-white/[0.04] via-white/[0.01] to-black/40 backdrop-blur-xl">
+      <div className="glass prism-xs-hub-card h-full flex flex-col justify-between p-5 sm:p-6 md:p-7 rounded-[28px] border border-white/15 shadow-2xl relative overflow-hidden group backdrop-blur-2xl transition-all duration-300 hover:border-white/25">
         {/* Background Glow Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full blur-[90px] opacity-20 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.6) 0%, rgba(168,85,247,0.35) 60%, transparent 80%)' }} />
         
         {/* Header Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 relative z-10 pb-3 border-b border-white/10">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 relative z-10 pb-3.5 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="relative w-11 h-11 rounded-2xl border border-white/15 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,200,100,0.2)] group/sun backdrop-blur-md bg-gradient-to-br from-amber-500/20 via-purple-500/20 to-sky-500/20">
               <motion.div 
@@ -195,7 +195,7 @@ export function UniverseInsightCard({
         </div>
 
         {/* Quote Content Display */}
-        <div className="relative z-10 my-2">
+        <div className="relative z-10 flex-1 flex flex-col justify-between gap-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentInsight.id}
@@ -203,52 +203,37 @@ export function UniverseInsightCard({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
+              className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10"
             >
-              <p className="text-[17px] sm:text-lg md:text-xl font-sans font-medium leading-[1.65] text-white tracking-tight break-keep mb-3">
-                "{currentInsight.quote}"
+              <p className="text-[17px] sm:text-lg md:text-xl font-sans font-semibold leading-[1.65] text-white tracking-tight break-keep mb-3">
+                “{currentInsight.quote}”
               </p>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-sans mb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-sans pt-2 border-t border-white/10">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-amber-300/90 text-sm">— {currentInsight.author}</span>
-                  <span className="text-white/40 italic text-xs">《{currentInsight.source}》</span>
+                  <span className="font-bold text-amber-300 text-sm">— {currentInsight.author}</span>
+                  <span className="text-white/50 text-xs">《{currentInsight.source}》</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-white/45">
                   {currentInsight.tags.slice(0, 3).map((tag, idx) => (
-                    <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-white/40 border border-white/5">
-                      #{tag}
-                    </span>
+                    <span key={idx}>#{tag}</span>
                   ))}
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
 
-          {/* Saju Alignment Badge (if provided) */}
-          {saju && (
-            <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
-              <span className="text-[10px] px-2.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-bold font-sans flex items-center gap-1">
-                <Sparkles size={10} className="text-amber-400" />
-                본원: {saju.dayMaster.hanja} {saju.dayMaster.symbolName}
-              </span>
-              <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-medium font-sans">
-                🌿 보약 에너지: {saju.elements.lacking.name} 보충
-              </span>
-              <span className="text-[10px] px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-300 font-medium font-sans">
-                🔥 2026 {saju.annual2026.theme.split('—')[0].trim()}
-              </span>
-            </div>
-          )}
-
           {/* Expandable Cosmic Resonance & Action Reflection Guide */}
-          <div className="mt-3 pt-2">
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => setIsResonanceExpanded(!isResonanceExpanded)}
-              className="flex items-center gap-1.5 text-[11px] font-bold text-amber-300/80 hover:text-amber-200 transition-colors font-sans py-1 group/btn"
+              className="flex items-center justify-between text-xs font-bold text-amber-300/90 hover:text-amber-200 transition-colors font-sans py-1 cursor-pointer"
             >
-              <Sparkles size={12} className="text-amber-400 animate-pulse" />
-              <span>우주 통찰 & 성찰 가이드</span>
-              {isResonanceExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+              <span className="flex items-center gap-1.5">
+                <Sparkles size={13} className="text-amber-400" />
+                <span>우주 통찰 & 성찰 가이드</span>
+              </span>
+              {isResonanceExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
             <AnimatePresence>
@@ -260,13 +245,40 @@ export function UniverseInsightCard({
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-2 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-sky-500/10 border border-amber-400/20 text-xs sm:text-[13px] text-amber-100/90 leading-relaxed font-sans break-keep shadow-inner">
+                  <div className="p-4 rounded-2xl bg-white/[0.04] border border-amber-400/20 text-xs sm:text-[13.5px] text-white/85 leading-relaxed font-sans break-keep">
                     <p className="font-medium">{currentInsight.resonance}</p>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
+          {/* Saju Alignment Footer (if provided) */}
+          {saju && (
+            <div className="pt-3 mt-auto border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs text-white/60 font-sans">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-indigo-300 flex items-center gap-1">
+                  <Sparkles size={11} className="text-amber-400" />
+                  본원: {saju.dayMaster.hanja}({saju.dayMaster.symbolName})
+                </span>
+                <span className="text-white/25" aria-hidden="true">·</span>
+                <span className="text-emerald-300 font-medium">
+                  보약 기운: {saju.elements.lacking.name}
+                </span>
+                <span className="text-white/25 hidden sm:inline" aria-hidden="true">·</span>
+                <span className="text-amber-300/90 font-medium hidden sm:inline">
+                  2026 {saju.annual2026.theme.split('—')[0].trim()}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCodexOpen(true)}
+                className="text-[11px] font-bold text-amber-300 hover:underline cursor-pointer shrink-0"
+              >
+                명언 도감 전체보기 →
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

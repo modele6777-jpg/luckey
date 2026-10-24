@@ -204,18 +204,46 @@ function AppContent() {
     } catch (_) {}
   }, []);
 
+  const lockedLocationRef = React.useRef(location || '/');
+  const lockedFullUrlRef = React.useRef(
+    typeof window !== 'undefined'
+      ? `${window.location.pathname}${window.location.search || ''}${window.location.hash || ''}`
+      : '/'
+  );
+
   React.useEffect(() => {
+    const clean = location ? location.split('?')[0].split('#')[0] : '/';
+    lockedLocationRef.current = clean || '/';
+    if (typeof window !== 'undefined') {
+      lockedFullUrlRef.current = `${window.location.pathname}${window.location.search || ''}${window.location.hash || ''}`;
+    }
+  }, [location]);
+
+  React.useEffect(() => {
+    const markIntentionalNav = () => {
+      if (typeof window !== 'undefined') {
+        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+      }
+    };
+
     const handlePrismNavigate = (e: any) => {
       const targetPath = e?.detail?.path;
       if (targetPath && typeof targetPath === 'string') {
+        markIntentionalNav();
         const safePath = resolveCanonicalPath(targetPath);
         navigate(safePath);
       }
     };
 
     window.addEventListener("prism-navigate", handlePrismNavigate);
+    window.addEventListener("nav-click-active", markIntentionalNav);
+    window.addEventListener("prism:bigbang_commit", markIntentionalNav);
+    window.addEventListener("prism:cycle_nav", markIntentionalNav);
     return () => {
       window.removeEventListener("prism-navigate", handlePrismNavigate);
+      window.removeEventListener("nav-click-active", markIntentionalNav);
+      window.removeEventListener("prism:bigbang_commit", markIntentionalNav);
+      window.removeEventListener("prism:cycle_nav", markIntentionalNav);
     };
   }, [navigate]);
 
@@ -340,11 +368,12 @@ function AppContent() {
     return cleanupListeners;
   }, []);
 
-  // 📱 아이폰(노치·다이나믹 아일랜드·홈바) 및 듀얼 스크린 가장자리 스와이프 이탈 & 고무줄 바운스 잠금 강화
+  // 📱 모바일 화면 좌우 스와이프 페이지 변경 원천 차단 (빅뱅 버튼 및 명시적 버튼 조작만 허용)
   React.useEffect(() => {
     let startX = 0;
     let startY = 0;
     let isInsideHorizontalScroller = false;
+    let isInsideBigBang = false;
 
     const getSafeInsets = () => {
       try {
@@ -362,6 +391,9 @@ function AppContent() {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         const target = e.target as HTMLElement | null;
+        isInsideBigBang = !!target?.closest(
+          '#bigbang-omnibutton, [data-bigbang="true"]'
+        );
         isInsideHorizontalScroller = !!target?.closest(
           '.overflow-x-auto, .overflow-x-scroll, [data-allow-x-scroll], input[type="range"]'
         );
@@ -370,37 +402,77 @@ function AppContent() {
 
     const handleEdgeTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 1) {
+        // 빅뱅 버튼 직접 조작(드래그 워프 등)은 정상 허용
+        if (isInsideBigBang) return;
+
         const dx = e.touches[0].clientX - startX;
         const dy = e.touches[0].clientY - startY;
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
 
         const { sal, sar } = getSafeInsets();
-        const leftGuard = Math.max(48, sal + 40);
-        const rightGuard = Math.max(48, sar + 40);
+        const leftGuard = Math.max(52, sal + 44);
+        const rightGuard = Math.max(52, sar + 44);
 
-        // 1. 좌우 안전영역(노치·다이나믹 아일랜드 포함) 가장자리에서 시작된 수평 스와이프의 브라우저 히스토리/앱 이탈 원천 차단
-        if ((startX <= leftGuard && dx > 6) || (startX >= window.innerWidth - rightGuard && dx < -6)) {
-          if (absDx > absDy * 0.85) {
+        // 1. 좌우 가장자리에서 시작된 수평 스와이프의 브라우저 뒤로/앞으로(페이지 변경) 원천 차단
+        if ((startX <= leftGuard && dx > 3) || (startX >= window.innerWidth - rightGuard && dx < -3)) {
+          if (absDx > absDy * 0.7) {
+            (window as any).__prismLastScreenSwipeAt = Date.now();
+            (window as any).__prismAllowRouteChangeUntil = 0;
             if (e.cancelable) e.preventDefault();
             return;
           }
         }
 
-        // 2. 가로 스크롤러 내부가 아닐 때 불필요한 수평 고무줄 바운스(Rubber-band X-bounce) 차단
-        if (!isInsideHorizontalScroller && absDx > 14 && absDx > absDy * 1.35) {
+        // 2. 화면 일반 영역에서 좌우로 스와이프할 때 페이지 전환 및 수평 바운스 원천 차단
+        if (!isInsideHorizontalScroller && absDx > 8 && absDx > absDy * 1.05) {
+          (window as any).__prismLastScreenSwipeAt = Date.now();
+          (window as any).__prismAllowRouteChangeUntil = 0;
           if (e.cancelable) e.preventDefault();
         }
       }
     };
 
+    // 3. 명시적인 UI 버튼/링크 클릭 시에는 라우트 변경 허용 타임스탬프 갱신
+    const handleExplicitClickCapture = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('button, a, [role="button"], [data-bigbang="true"]')) {
+        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+      }
+    };
+
+    // 4. 모바일 브라우저 제스처 네비게이션(좌우 스와이프 popstate)으로 인한 의도치 않은 페이지 변경 차단
+    const handlePopStateCapture = (e: PopStateEvent) => {
+      const now = Date.now();
+      const allowUntil = Number((window as any).__prismAllowRouteChangeUntil || 0);
+      const lastSwipeAt = Number((window as any).__prismLastScreenSwipeAt || 0);
+      const isTouchDevice =
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        window.innerWidth <= 1024;
+
+      // 모바일/터치 환경에서 빅뱅 버튼이나 명시적 버튼 클릭 없이 발생한 스와이프성 popstate는 즉시 차단하고 현재 페이지 유지
+      if ((isTouchDevice || now - lastSwipeAt < 2500) && now > allowUntil) {
+        e.stopImmediatePropagation();
+        const lockedUrl = lockedFullUrlRef.current || lockedLocationRef.current || '/';
+        try {
+          window.history.pushState(null, '', lockedUrl);
+        } catch (_) {}
+        navigate(lockedLocationRef.current || '/', { replace: true });
+      }
+    };
+
     window.addEventListener('touchstart', handleEdgeTouchStart, { passive: true });
     window.addEventListener('touchmove', handleEdgeTouchMove, { passive: false });
+    window.addEventListener('click', handleExplicitClickCapture, true);
+    window.addEventListener('popstate', handlePopStateCapture, true);
     return () => {
       window.removeEventListener('touchstart', handleEdgeTouchStart);
       window.removeEventListener('touchmove', handleEdgeTouchMove);
+      window.removeEventListener('click', handleExplicitClickCapture, true);
+      window.removeEventListener('popstate', handlePopStateCapture, true);
     };
-  }, []);
+  }, [navigate]);
 
 
   // 잠금 해제 후에만 테마 색 적용 (PIN 배경은 usePinScreenLock이 고정)

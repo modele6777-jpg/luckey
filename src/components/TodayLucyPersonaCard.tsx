@@ -155,23 +155,23 @@ export function TodayLucyPersonaCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -12 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`glass prism-xs-hub-card relative rounded-[32px] p-5 sm:p-7 md:p-8 border border-white/15 shadow-[0_12px_45px_rgba(0,0,0,0.4)] overflow-hidden group bg-gradient-to-br from-indigo-950/50 via-purple-950/25 to-black/70 backdrop-blur-2xl mb-6 transition-all duration-300 hover:border-white/25 hover:shadow-[0_16px_55px_rgba(99,102,241,0.2)] ${className}`}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className={`glass prism-xs-hub-card h-full flex flex-col justify-between relative rounded-[28px] p-5 sm:p-6 md:p-7 border border-white/15 shadow-2xl overflow-hidden group backdrop-blur-2xl transition-all duration-300 hover:border-white/25 ${className}`}
     >
       {/* Iridescent Cosmic Aura Background Glow */}
       <div 
-        className="absolute -top-28 -right-28 w-80 h-80 rounded-full blur-[100px] opacity-25 pointer-events-none transition-transform duration-1000 group-hover:scale-125"
-        style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.85) 0%, rgba(59,130,246,0.5) 50%, transparent 80%)' }}
+        className="absolute -top-28 -right-28 w-80 h-80 rounded-full blur-[100px] opacity-20 pointer-events-none transition-transform duration-1000 group-hover:scale-125"
+        style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.75) 0%, rgba(59,130,246,0.4) 50%, transparent 80%)' }}
       />
       <div 
-        className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full blur-[90px] opacity-20 pointer-events-none transition-transform duration-1000 group-hover:scale-110"
-        style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.75) 0%, rgba(245,158,11,0.45) 60%, transparent 80%)' }}
+        className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full blur-[90px] opacity-15 pointer-events-none transition-transform duration-1000 group-hover:scale-110"
+        style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.65) 0%, rgba(245,158,11,0.35) 60%, transparent 80%)' }}
       />
 
-      <div className="relative z-10 flex flex-col gap-4 sm:gap-5">
-        {/* Top Header Bar: Clean unboxed typography (zero-pill discipline) */}
+      <div className="relative z-10 flex flex-col flex-1 justify-between gap-4">
+        {/* Top Header Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-white/10">
           <div className="flex items-center gap-3">
             {/* Lucy Avatar with Glowing Breathing Aura */}
@@ -421,14 +421,14 @@ export function TodayLucyPersonaCard({
         </AnimatePresence>
 
         {/* 💬 2. Proactive Bestie Speaking Bubble (먼저 건네는 베프의 안부) */}
-        <div className="relative p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-900/30 via-indigo-900/20 to-pink-900/20 border border-purple-500/25">
+        <div className="relative p-4 rounded-2xl bg-white/[0.04] border border-white/10">
           <div className="flex items-start gap-3">
-            <span className="text-xl sm:text-2xl shrink-0 select-none">💬</span>
+            <span className="text-xl shrink-0 select-none">💬</span>
             <div className="flex flex-col gap-1 min-w-0 flex-1">
-              <span className="text-xs font-bold text-purple-200 tracking-wide font-sans">
+              <span className="text-xs font-bold text-purple-300 tracking-wide font-sans">
                 {bestieGreeting.greetingHeadline}
               </span>
-              <p className="text-sm sm:text-[15px] text-white/90 leading-relaxed font-sans break-keep">
+              <p className="text-sm sm:text-[15px] text-white/90 leading-relaxed font-sans break-keep font-medium">
                 "{bestieGreeting.careQuestion}"
               </p>
               <span className="text-xs text-white/60 font-sans mt-0.5">
@@ -484,25 +484,25 @@ export function TodayLucyPersonaCard({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25 }}
-              className="flex flex-col gap-3 p-4 rounded-2xl bg-purple-950/30 border border-purple-500/30"
+              className="flex flex-col gap-2.5 p-4 rounded-2xl bg-white/[0.04] border border-purple-400/25"
             >
               {/* Empathy Response Headline */}
               <div className="flex items-center gap-2 text-amber-300">
-                <Heart size={16} className="text-rose-400 animate-pulse" />
+                <Heart size={16} className="text-rose-400 animate-pulse shrink-0" />
                 <h3 className="text-base sm:text-lg font-bold font-display text-white tracking-tight break-keep">
                   {selectedReaction.responseHeadline}
                 </h3>
               </div>
 
               {/* Lucy's Caring Voice Message */}
-              <p className="text-sm sm:text-[15px] text-white/90 leading-relaxed font-sans break-keep pl-3 border-l-2 border-rose-500/50">
+              <p className="text-sm sm:text-[15px] text-white/90 leading-relaxed font-sans break-keep">
                 {selectedReaction.lucyReply}
               </p>
 
               {/* Action Tip */}
-              <div className="flex items-center gap-2 pl-3 pt-1 text-xs text-amber-300/90 font-medium font-sans">
+              <div className="flex items-center gap-2 pt-1.5 border-t border-white/10 text-xs text-amber-300/90 font-medium font-sans">
                 <Zap size={13} className="text-amber-400 shrink-0" />
-                <span className="text-white/40 font-mono text-[10px] uppercase">LUCY'S RX</span>
+                <span className="text-white/50 font-mono text-[10px] uppercase shrink-0">실천 팁</span>
                 <span className="text-white/30">·</span>
                 <span className="break-keep">{selectedReaction.suggestedAction}</span>
               </div>
@@ -514,26 +514,23 @@ export function TodayLucyPersonaCard({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25 }}
-              className="flex flex-col gap-3"
+              className="flex flex-col gap-2.5 p-4 rounded-2xl bg-white/[0.03] border border-white/10"
             >
               {/* Headline Quote */}
-              <div className="flex items-start gap-2.5">
-                <span className="text-2xl text-purple-400/80 leading-none select-none font-serif">“</span>
-                <h3 className="text-lg sm:text-xl font-bold font-display text-white tracking-tight break-keep pt-0.5">
-                  {data.headline}
-                </h3>
-              </div>
+              <h3 className="text-base sm:text-lg font-bold font-display text-white tracking-tight break-keep">
+                “{data.headline}”
+              </h3>
 
               {/* Deep Lucy Message (100% 반말 친근한 톤) */}
-              <p className="text-sm sm:text-[15px] text-white/85 leading-relaxed font-sans break-keep pl-5 sm:pl-6 border-l-2 border-purple-500/40 my-0.5">
+              <p className="text-sm sm:text-[15px] text-white/85 leading-relaxed font-sans break-keep">
                 {data.message}
               </p>
 
               {/* Action Tip Kicker (현실 실천 가이드) */}
               {data.actionTip && (
-                <div className="flex items-center gap-2 pl-5 sm:pl-6 pt-1 text-xs text-amber-300/90 font-medium font-sans">
+                <div className="flex items-center gap-2 pt-2 border-t border-white/10 text-xs text-amber-300/90 font-medium font-sans">
                   <Zap size={13} className="text-amber-400 shrink-0" />
-                  <span className="text-white/40 font-mono text-[10px] uppercase">LUCY'S TIP</span>
+                  <span className="text-white/50 font-mono text-[10px] uppercase shrink-0">오늘의 팁</span>
                   <span className="text-white/30">·</span>
                   <span className="break-keep">{data.actionTip}</span>
                 </div>
@@ -585,9 +582,9 @@ export function TodayLucyPersonaCard({
         )}
 
         {/* 🤝 6. Bottom Interactive Bar: Converse with Lucy */}
-        <div className="pt-2 sm:pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+        <div className="pt-3 mt-auto border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-white/50 font-sans">
-            <Heart size={13} className="text-rose-400/80" />
+            <Heart size={13} className="text-rose-400/80 shrink-0" />
             <span>
               {selectedReaction
                 ? `루시가 네 감정을 소중하게 기억하고 있어`
@@ -598,15 +595,16 @@ export function TodayLucyPersonaCard({
           <button
             type="button"
             onClick={() => handleOpenLucyChat(selectedReaction?.label)}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 text-white bg-gradient-to-r from-purple-600/70 via-indigo-600/60 to-pink-600/70 hover:from-purple-600/90 hover:via-indigo-600/80 hover:to-pink-600/90 border border-purple-400/40 hover:border-purple-300/60 shadow-[0_4px_20px_rgba(168,85,247,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer font-sans"
+            data-keep-white="true"
+            className="keep-white w-full sm:w-auto px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 border border-purple-400/40 shadow-[0_4px_20px_rgba(168,85,247,0.3)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer font-sans"
           >
-            <MessageCircle size={14} className="text-purple-200" />
+            <MessageCircle size={14} className="text-purple-100" />
             <span>
               {selectedReaction 
                 ? `루시에게 "${selectedReaction.label}" 이야기 털어놓기`
                 : `루시에게 답장하고 1:1 대화 나누기`}
             </span>
-            <ArrowRight size={13} className="opacity-70 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight size={13} className="opacity-80 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>

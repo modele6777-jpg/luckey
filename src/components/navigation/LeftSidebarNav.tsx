@@ -601,42 +601,23 @@ export default function LeftSidebarNav() {
     };
   }, [isOpen]);
 
-  // Mobile left-edge inward swipe to open & leftward swipe to close (Safe-Area Left aware)
+  // Mobile leftward swipe to close when sidebar is already open (left-edge swipe-to-open disabled to prevent accidental mobile swipe navigation)
   useEffect(() => {
-    const EDGE_SWIPE_BASE_PX = 36;
     const EDGE_SWIPE_MIN_DX = 30;
-
-    const getSafeLeftPx = () => {
-      try {
-        return parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--sal')) || 0;
-      } catch {
-        return 0;
-      }
-    };
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
       const touch = e.touches[0];
-      const sal = getSafeLeftPx();
 
-      if (!isOpen) {
-        if (touch.clientX <= sal + EDGE_SWIPE_BASE_PX) {
-          edgeSwipeRef.current = {
-            startX: touch.clientX,
-            startY: touch.clientY,
-            triggered: false,
-            mode: 'open',
-          };
-        } else {
-          edgeSwipeRef.current = null;
-        }
-      } else {
+      if (isOpen) {
         edgeSwipeRef.current = {
           startX: touch.clientX,
           startY: touch.clientY,
           triggered: false,
           mode: 'close',
         };
+      } else {
+        edgeSwipeRef.current = null;
       }
     };
 
@@ -648,14 +629,7 @@ export default function LeftSidebarNav() {
       const dx = touch.clientX - edgeSwipeRef.current.startX;
       const dy = Math.abs(touch.clientY - edgeSwipeRef.current.startY);
 
-      if (edgeSwipeRef.current.mode === 'open') {
-        if (dx >= EDGE_SWIPE_MIN_DX && dx > dy * 1.3) {
-          edgeSwipeRef.current.triggered = true;
-          setIsTouchingSidebar(true);
-          triggerHaptic('whitehole');
-          setIsOpen(true);
-        }
-      } else if (edgeSwipeRef.current.mode === 'close') {
+      if (edgeSwipeRef.current.mode === 'close') {
         if (dx <= -EDGE_SWIPE_MIN_DX && Math.abs(dx) > dy * 1.3) {
           edgeSwipeRef.current.triggered = true;
           setIsTouchingSidebar(false);
@@ -665,12 +639,6 @@ export default function LeftSidebarNav() {
     };
 
     const handleTouchEnd = () => {
-      if (edgeSwipeRef.current?.mode === 'open' && edgeSwipeRef.current.triggered) {
-        if (touchReleaseTimerRef.current) clearTimeout(touchReleaseTimerRef.current);
-        touchReleaseTimerRef.current = setTimeout(() => {
-          setIsTouchingSidebar(false);
-        }, 80);
-      }
       edgeSwipeRef.current = null;
     };
 
@@ -764,6 +732,9 @@ export default function LeftSidebarNav() {
         ? isPrologueActive
         : cleanPath === path || cleanPath.startsWith(path + '/');
 
+    if (typeof window !== 'undefined') {
+      (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    }
     if (!isTargetActive) {
       navigate(path);
     }

@@ -59,10 +59,31 @@ export function BigBangButton() {
       window.location.pathname.includes('orb')
     ));
 
-  const isChatView =
-    location === '/chat' ||
-    location === '/lucy' ||
-    (typeof window !== 'undefined' && window.location.pathname.includes('chat'));
+  const checkIsInLucyChat = useCallback(() => {
+    const cleanLoc = (location || '').split('?')[0].split('#')[0] || '/';
+    const winPath =
+      typeof window !== 'undefined'
+        ? (window.location.pathname || '/').split('?')[0].split('#')[0]
+        : '/';
+    const isDomInLucyChat =
+      typeof document !== 'undefined' &&
+      (document.documentElement.classList.contains('in-lucy-chat') ||
+        document.body.classList.contains('in-lucy-chat') ||
+        Boolean(document.querySelector('.lucy-chat-shell')));
+    return (
+      cleanLoc === '/' ||
+      cleanLoc === '/chat' ||
+      cleanLoc === '/lucy' ||
+      winPath === '/' ||
+      winPath === '/chat' ||
+      winPath === '/lucy' ||
+      winPath.includes('/chat') ||
+      winPath.includes('/lucy') ||
+      isDomInLucyChat
+    );
+  }, [location]);
+
+  const isChatView = checkIsInLucyChat();
 
   const [isPressing, setIsPressing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -88,7 +109,17 @@ export function BigBangButton() {
   const [quickChatInitialPrompt, setQuickChatInitialPrompt] = useState('');
   const [quickChatAutoSend, setQuickChatAutoSend] = useState(false);
 
-  // 스크롤 중에는 추천 1순위나 HUD 칩이 미리 노출되지 않도록 감지
+  // 🛡️ 루시채팅(/, /chat, /lucy) 페이지 진입 시 별도 말풍선이 열려 있으면 즉시 닫음
+  useEffect(() => {
+    if (isChatView || checkIsInLucyChat()) {
+      setIsQuickChatOpen(false);
+      setQuickChatVoiceActive(false);
+      setQuickChatInitialPrompt('');
+      setQuickChatAutoSend(false);
+    }
+  }, [isChatView, location, checkIsInLucyChat]);
+
+  // 스크롤 중에는 추천 1순위나 HUD 칩이 미리 노출되지 않도록 감지 (내부 스크롤 컨테이너까지 capture: true로 감지)
   useEffect(() => {
     let scrollTimer: ReturnType<typeof setTimeout> | null = null;
     const handleScroll = () => {
@@ -97,11 +128,11 @@ export function BigBangButton() {
       if (scrollTimer) clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
         setIsPageScrolling(false);
-      }, 400);
+      }, 240);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll, { capture: true });
       if (scrollTimer) clearTimeout(scrollTimer);
     };
   }, []);
@@ -157,6 +188,10 @@ export function BigBangButton() {
   const downDirectionRef = useRef<'none' | 'north' | 'south' | 'west' | 'east'>('none');
   const cardinalActionsRef = useRef<BigBangCircularMeterActions | null>(null);
   const [cardinalInfo, setCardinalInfo] = useState<{ prevStepName?: string; nextStepName?: string }>({});
+
+  // ☁️ 탭 & 홀드 시 뭉게구름 피어오름(Cloud Genesis) 이펙트 상태
+  const [cloudBurstSeed, setCloudBurstSeed] = useState<number>(0);
+  const cloudBurstTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleRegisterActions = useCallback((actions: BigBangCircularMeterActions) => {
     cardinalActionsRef.current = actions;
@@ -574,18 +609,22 @@ export function BigBangButton() {
         accentGlow: 'rgba(253, 230, 138, 0.85)',
       };
 
-      // 🎙️ [PTT] 250ms 이상 제자리 홀드 시 즉시 말풍선 오픈 + 음성 모드 가동!
+      // 🎙️ [PTT] 250ms 이상 제자리 홀드 시: 루시채팅(/, /chat, /lucy) 외의 화면에서만 말풍선 오픈 + 음성 모드 가동!
       if (!metrics.isAborted && !isPttRecordingRef.current) {
         isPttRecordingRef.current = true;
         unlockAudioPlayback();
         primeTTSAudioElement();
         triggerHaptic('whitehole');
-        setIsQuickChatOpen(true);
-        setQuickChatVoiceActive(true);
-        if (textToToss) {
-          const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
-          setQuickChatInitialPrompt(prompt);
-          setQuickChatAutoSend(true);
+        if (!isChatView && !checkIsInLucyChat()) {
+          setIsQuickChatOpen(true);
+          setQuickChatVoiceActive(true);
+          if (textToToss) {
+            const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+            setQuickChatInitialPrompt(prompt);
+            setQuickChatAutoSend(true);
+          }
+        } else {
+          setIsQuickChatOpen(false);
         }
       }
     } else {
@@ -700,7 +739,7 @@ export function BigBangButton() {
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
-    const wasScrolling = (Date.now() - lastScrollTimeRef.current < 650) || isPageScrolling;
+    const wasScrolling = (Date.now() - lastScrollTimeRef.current < 180) || isPageScrolling;
     touchStartedWhileScrollingRef.current = wasScrolling;
     maxDragDistanceRef.current = 0;
 
@@ -795,6 +834,13 @@ export function BigBangButton() {
     setActivePhase('whitehole');
     setGauge(0.08);
     setDurationMs(0);
+
+    // ☁️ 탭 및 홀드 시작 시 뭉게구름 생성 버스트 트리거 (짧은 탭에서도 780ms 동안 구름 피어오름 유지)
+    setCloudBurstSeed((prev) => prev + 1);
+    if (cloudBurstTimerRef.current) clearTimeout(cloudBurstTimerRef.current);
+    cloudBurstTimerRef.current = setTimeout(() => {
+      setCloudBurstSeed(0);
+    }, 780);
 
     const initialMetrics = calculateWarpMetrics(
       now,
@@ -929,8 +975,14 @@ export function BigBangButton() {
 
     // 🚀 약 500ms 동안 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 연출 후 도약 실행!
     setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+      }
       if (textToToss) {
         tossSelectionToMenu(textToToss, finalMenu, location, (targetPath) => {
+          if (typeof window !== 'undefined') {
+            (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+          }
           navigate(targetPath);
           window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
           window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
@@ -1032,6 +1084,9 @@ export function BigBangButton() {
     }
 
     setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+      }
       navigate('/chat');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
@@ -1067,6 +1122,9 @@ export function BigBangButton() {
         } catch (_) {}
       }
 
+      if (typeof window !== 'undefined') {
+        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+      }
       navigate(targetPath);
       window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
       window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath, tab: targetTab } }));
@@ -1157,6 +1215,15 @@ export function BigBangButton() {
           window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
         }
       }
+      // 🛡️ 페이지 스크롤/스와이프 중 손가락이 버튼을 스치며 발생한 빠른 스와이프는 페이지 변경 무시
+      if (touchStartedWhileScrollingRef.current && duration < 240) {
+        touchStartedWhileScrollingRef.current = false;
+        setActivePhase('idle');
+        setGauge(0);
+        setDurationMs(0);
+        resetActiveWormholePeek();
+        return;
+      }
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = null;
@@ -1171,7 +1238,17 @@ export function BigBangButton() {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
-      if (textToToss) {
+      if (isChatView || checkIsInLucyChat()) {
+        setIsQuickChatOpen(false);
+        // 루시채팅 화면에서는 별도 말풍선을 띄우지 않고 루시채팅 자체 음성/질문으로 연결
+        if (textToToss && typeof window !== 'undefined') {
+          const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+          window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt } }));
+          window.getSelection()?.removeAllRanges();
+        } else if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('prism:toggle_lucy_chat_voice'));
+        }
+      } else if (textToToss) {
         const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
         setQuickChatInitialPrompt(prompt);
         setQuickChatAutoSend(true);
@@ -1259,6 +1336,23 @@ export function BigBangButton() {
         triggerHaptic('whitehole');
         omniWarpAudio.playWhiteHole();
 
+        // 🛡️ 루시채팅(/, /chat, /lucy) 화면에서는 별도로 퀵 말풍선을 절대 띄우지 않음!
+        if (isChatView || checkIsInLucyChat()) {
+          setIsQuickChatOpen(false);
+          if (textToToss && typeof window !== 'undefined') {
+            const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+            window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt } }));
+            window.getSelection()?.removeAllRanges();
+            lastValidSelectionRef.current = '';
+            touchStartSelectionRef.current = '';
+            clearPendingSelection();
+          }
+          setActivePhase('idle');
+          setGauge(0);
+          setDurationMs(0);
+          return;
+        }
+
         // 🌟 텍스트 드래그(선택) 상태에서 탭: 페이지 이동 대신 버튼 위 퀵 말풍선을 열어 선택 문장으로 루시 질의!
         if (textToToss) {
           const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
@@ -1327,11 +1421,29 @@ export function BigBangButton() {
       return;
     }
 
-    // 🎙️ [홀드: dist < 14px] ➔ 어디서든 루시 AI 음성 모드 즉시 연결!
+    // 🎙️ [홀드: dist < 14px] ➔ 루시 AI 음성 모드 연결 (단, 루시채팅 화면에서는 별도 말풍선을 띄우지 않음)
     unlockAudioPlayback();
     primeTTSAudioElement();
     triggerHaptic('whitehole');
     omniWarpAudio.playWhiteHole();
+
+    if (isChatView || checkIsInLucyChat()) {
+      setIsQuickChatOpen(false);
+      if (textToToss && typeof window !== 'undefined') {
+        const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+        window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt } }));
+        window.getSelection()?.removeAllRanges();
+      } else if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('prism:toggle_lucy_chat_voice'));
+      }
+      touchStartSelectionRef.current = '';
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      setIsHovered(false);
+      buttonRef.current?.blur();
+      return;
+    }
 
     // 🌟 텍스트 드래그(선택) 연동: 글자를 스크롤/선택한 상태에서 빅뱅 홀드 ➔ 음성 질의 프롬프트로 전달!
     let initialPrompt: string | undefined;
@@ -1510,19 +1622,21 @@ export function BigBangButton() {
           voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
       >
-        {/* 💬 루시 퀵 대화 말풍선 (빅뱅 버튼 상단 앵커) */}
-        <LucyQuickChatBubble
-          isOpen={isQuickChatOpen}
-          onClose={() => {
-            setIsQuickChatOpen(false);
-            setQuickChatVoiceActive(false);
-            setQuickChatInitialPrompt('');
-            setQuickChatAutoSend(false);
-          }}
-          initialPrompt={quickChatInitialPrompt}
-          initialVoiceActive={quickChatVoiceActive}
-          initialAutoSend={quickChatAutoSend}
-        />
+        {/* 💬 루시 퀵 대화 말풍선 (빅뱅 버튼 상단 앵커 - 루시채팅 화면에서는 렌더링 제외) */}
+        {!isChatView && (
+          <LucyQuickChatBubble
+            isOpen={isQuickChatOpen}
+            onClose={() => {
+              setIsQuickChatOpen(false);
+              setQuickChatVoiceActive(false);
+              setQuickChatInitialPrompt('');
+              setQuickChatAutoSend(false);
+            }}
+            initialPrompt={quickChatInitialPrompt}
+            initialVoiceActive={quickChatVoiceActive}
+            initialAutoSend={quickChatAutoSend}
+          />
+        )}
 
         <div
           ref={hoverContainerRef}
@@ -1535,7 +1649,7 @@ export function BigBangButton() {
             }
           }}
           onPointerMove={(e) => {
-            if (isPressing) return;
+            if (e.pointerType !== 'mouse' || isPressing) return;
             const dir = calculateCardinalDirection(e.clientX, e.clientY);
             setHoverDirection(dir);
             if (dir !== 'none') {
@@ -1557,12 +1671,12 @@ export function BigBangButton() {
             buttonRef.current?.blur();
           }}
         >
-          {/* Expanded radial hover hitbox to encompass 144px arcane circle & cardinal icons */}
-          <div className="absolute -inset-7 rounded-full pointer-events-auto -z-10" />
+          {/* Expanded radial hover hitbox to encompass 144px arcane circle & cardinal icons (desktop mouse only) */}
+          <div className="absolute -inset-7 rounded-full pointer-events-none sm:pointer-events-auto -z-10" />
 
-          {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 */}
+          {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 (루시채팅에서는 별도 말풍선 배지 제외) */}
           <AnimatePresence>
-            {hasSelectionToss && !isPressing && (
+            {hasSelectionToss && !isPressing && !isChatView && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.85, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1663,7 +1777,93 @@ export function BigBangButton() {
             )}
 
 
-            {/* 🎯 빅뱅 차원 수렴 인터랙션 (검은 동그라미 본체가 네 방향으로 물방울처럼 살짝 뾰족히 올라오는 일체형 코스믹 버튼) */}
+            {/* 🌌 탭 & 홀드 시 아케인 에너지 파동 링 & 오로라 성운 입자 확산 이펙트 */}
+            <AnimatePresence>
+              {(isPressing || cloudBurstSeed > 0) &&
+                !isCosmicSuctionActive &&
+                activePhase !== 'wormhole' &&
+                !isAborted && (
+                  <motion.div
+                    key={`arcane-ripple-${isPressing ? 'hold' : cloudBurstSeed}`}
+                    initial={{ opacity: 0, scale: 0.78 }}
+                    animate={{
+                      opacity: 1,
+                      scale: isPressing ? 1 + Math.min(0.38, gauge * 0.35) : 1.04,
+                    }}
+                    exit={{ opacity: 0, scale: 1.24 }}
+                    transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute -inset-6 sm:-inset-7 pointer-events-none z-25 flex items-center justify-center overflow-visible"
+                    aria-hidden="true"
+                  >
+                    {/* 1) 동심원 아케인 에너지 파동 링 1 (Cyan Shockwave Ring) */}
+                    <div
+                      className="animate-arcane-ripple-1 absolute inset-1 rounded-full border-[1.5px] border-cyan-300/85"
+                      style={{
+                        boxShadow:
+                          '0 0 22px rgba(0, 240, 255, 0.75), inset 0 0 14px rgba(0, 240, 255, 0.45)',
+                      }}
+                    />
+
+                    {/* 2) 동심원 아케인 에너지 파동 링 2 (Violet-Gold Resonance Ring) */}
+                    <div
+                      className="animate-arcane-ripple-2 absolute inset-0 rounded-full border border-purple-400/80"
+                      style={{
+                        boxShadow:
+                          '0 0 26px rgba(168, 85, 247, 0.7), inset 0 0 14px rgba(251, 191, 36, 0.35)',
+                      }}
+                    />
+
+                    {/* 3) 오로라 성운 에너지 플라즈마 오라 */}
+                    <div
+                      className="absolute -inset-2 rounded-full animate-[spin_4s_linear_infinite] opacity-85 blur-[6px]"
+                      style={{
+                        background:
+                          'conic-gradient(from 0deg, rgba(0,240,255,0.55) 0deg, rgba(168,85,247,0.5) 120deg, rgba(251,191,36,0.45) 240deg, rgba(0,240,255,0.55) 360deg)',
+                      }}
+                    />
+
+                    {/* 4) 12방위 방사형 & 상단 말풍선 연결 오로라 성운 스타더스트 입자 확산 */}
+                    {[
+                      { tx: 0, ty: -58, size: 'w-2 h-2', color: '#00f0ff', glow: 'rgba(0,240,255,0.95)', delay: 0 },
+                      { tx: -26, ty: -50, size: 'w-1.5 h-1.5', color: '#c084fc', glow: 'rgba(192,132,252,0.95)', delay: 0.04 },
+                      { tx: 26, ty: -50, size: 'w-1.5 h-1.5', color: '#fbbf24', glow: 'rgba(251,191,36,0.95)', delay: 0.08 },
+                      { tx: -46, ty: -28, size: 'w-1.5 h-1.5', color: '#00f0ff', glow: 'rgba(0,240,255,0.9)', delay: 0.12 },
+                      { tx: 46, ty: -28, size: 'w-1.5 h-1.5', color: '#c084fc', glow: 'rgba(192,132,252,0.9)', delay: 0.16 },
+                      { tx: -54, ty: 4, size: 'w-1.5 h-1.5', color: '#fbbf24', glow: 'rgba(251,191,36,0.9)', delay: 0.06 },
+                      { tx: 54, ty: 4, size: 'w-1.5 h-1.5', color: '#00f0ff', glow: 'rgba(0,240,255,0.9)', delay: 0.1 },
+                      { tx: -40, ty: 38, size: 'w-1.5 h-1.5', color: '#34d399', glow: 'rgba(52,211,153,0.9)', delay: 0.14 },
+                      { tx: 40, ty: 38, size: 'w-1.5 h-1.5', color: '#c084fc', glow: 'rgba(192,132,252,0.9)', delay: 0.18 },
+                      { tx: -14, ty: -68, size: 'w-1.5 h-1.5', color: '#fbbf24', glow: 'rgba(251,191,36,0.95)', delay: 0.2 },
+                      { tx: 14, ty: -68, size: 'w-1.5 h-1.5', color: '#00f0ff', glow: 'rgba(0,240,255,0.95)', delay: 0.24 },
+                      { tx: 0, ty: 48, size: 'w-1.5 h-1.5', color: '#38bdf8', glow: 'rgba(56,189,248,0.9)', delay: 0.15 },
+                    ].map((mote, mIdx) => (
+                      <motion.div
+                        key={`nebula-mote-${mIdx}`}
+                        initial={{ opacity: 0, x: 0, y: 0, scale: 0.3 }}
+                        animate={{
+                          opacity: [0, 1, 0.85, 0],
+                          x: [0, mote.tx * 0.55, mote.tx],
+                          y: [0, mote.ty * 0.55, mote.ty],
+                          scale: [0.3, 1.25, 0.5],
+                        }}
+                        transition={{
+                          duration: 0.76,
+                          delay: mote.delay,
+                          repeat: isPressing ? Infinity : 0,
+                          ease: 'easeOut',
+                        }}
+                        className={`absolute rounded-full ${mote.size}`}
+                        style={{
+                          backgroundColor: mote.color,
+                          boxShadow: `0 0 10px ${mote.glow}, 0 0 18px ${mote.glow}`,
+                        }}
+                      />
+                    ))}
+                  </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* 🎯 빅뱅 차원 수렴 인터랙션 (탭·홀드 시 아케인 파동 & 오로라 성운 코어가 공명하는 코스믹 버튼) */}
             <motion.button
               ref={buttonRef}
               id="bigbang-omnibutton"
@@ -1711,16 +1911,14 @@ export function BigBangButton() {
                   ? 'opacity-70 border-red-500/70 shadow-[0_0_24px_rgba(239,68,68,0.5)]'
                   : isPressing && activePhase === 'wormhole'
                   ? 'border-emerald-300/90 shadow-[0_0_40px_rgba(52,211,153,0.9),0_0_24px_rgba(6,182,212,0.7),inset_0_0_26px_rgba(52,211,153,0.7)]'
-                  : isPressing && isWhiteholeMode
-                  ? 'border-amber-100/95 shadow-[0_0_40px_rgba(255,255,255,0.95),0_0_28px_rgba(254,240,138,0.8),inset_0_0_24px_rgba(255,255,255,0.9)]'
-                  : isPressing && isBlackholeMode
-                  ? 'border-purple-900/90 shadow-[0_0_40px_rgba(0,0,0,1),0_0_24px_rgba(147,51,234,0.6),inset_0_0_28px_rgba(0,0,0,1)]'
+                  : (isPressing || cloudBurstSeed > 0) && (isWhiteholeMode || isBlackholeMode)
+                  ? 'border-cyan-300/95 border-[1.5px] shadow-[0_0_36px_rgba(0,240,255,0.65),0_0_54px_rgba(168,85,247,0.45),inset_0_0_22px_rgba(0,240,255,0.45)]'
                   : voiceModeInfo.isOpen && voiceModeInfo.state === 'speaking'
                   ? 'border-amber-400/95 shadow-[0_0_42px_rgba(251,191,36,0.7),inset_0_0_24px_rgba(251,191,36,0.45)]'
                   : voiceModeInfo.isOpen
                   ? 'border-cyan-300/90 shadow-[0_0_36px_rgba(34,211,238,0.6),inset_0_0_20px_rgba(34,211,238,0.35)]'
                   : isPressing
-                  ? 'border-cyan-300/80 shadow-[0_0_32px_rgba(56,189,248,0.45),inset_0_0_22px_rgba(56,189,248,0.35)]'
+                  ? 'border-cyan-300/95 border-[1.5px] shadow-[0_0_36px_rgba(0,240,255,0.65),0_0_54px_rgba(168,85,247,0.45),inset_0_0_22px_rgba(0,240,255,0.45)]'
                   : isHovered
                   ? 'border-cyan-300/80 shadow-[0_0_28px_rgba(56,189,248,0.45)]'
                   : 'border-cyan-400/40 shadow-[0_0_24px_rgba(56,189,248,0.3)]'
@@ -1733,23 +1931,19 @@ export function BigBangButton() {
                   ? 'radial-gradient(circle at 40% 35%, #1f0b0f 0%, #0d0406 55%, #040102 100%)'
                   : isPressing && activePhase === 'wormhole'
                   ? 'radial-gradient(circle at 50% 50%, #ffffff 0%, #38bdf8 20%, #a855f7 42%, #0e051e 68%, #000000 100%)'
-                  : isPressing && isWhiteholeMode
-                  ? 'radial-gradient(circle at 40% 30%, #ffffff 0%, #fef3c7 35%, #fde68a 65%, #f59e0b 100%)'
-                  : isPressing && isBlackholeMode
-                  ? 'radial-gradient(circle at 50% 50%, #000000 0%, #040308 45%, #090514 80%, #020104 100%)'
+                  : (isPressing || cloudBurstSeed > 0) && (isWhiteholeMode || isBlackholeMode)
+                  ? 'radial-gradient(circle at 38% 32%, #1d2658 0%, #121138 48%, #08091c 80%, #03040c 100%)'
                   : isPressing
-                  ? 'radial-gradient(circle at 35% 30%, #171833 0%, #0e0f21 45%, #060712 80%, #020207 100%)'
+                  ? 'radial-gradient(circle at 38% 32%, #1d2658 0%, #121138 48%, #08091c 80%, #03040c 100%)'
                   : 'radial-gradient(circle at 35% 30%, #171833 0%, #0e0f21 45%, #060712 80%, #020207 100%)',
                 boxShadow: isPressing && isAborted
                   ? 'inset 0 0 20px rgba(239, 68, 68, 0.4), 0 0 24px rgba(239, 68, 68, 0.5)'
                   : isPressing && activePhase === 'wormhole'
                   ? 'inset 0 0 25px rgba(52, 211, 153, 0.9), 0 0 35px rgba(6, 182, 212, 0.85)'
-                  : isPressing && isWhiteholeMode
-                  ? 'inset 0 0 25px rgba(255, 255, 255, 0.95), 0 0 35px rgba(253, 230, 138, 0.9)'
-                  : isPressing && isBlackholeMode
-                  ? 'inset 0 0 30px rgba(0, 0, 0, 1), inset 0 0 15px rgba(88, 28, 135, 0.5), 0 0 40px rgba(0, 0, 0, 0.95)'
+                  : (isPressing || cloudBurstSeed > 0) && (isWhiteholeMode || isBlackholeMode)
+                  ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : isPressing
-                  ? 'inset 0 0 22px rgba(56, 189, 248, 0.35), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.45)'
+                  ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
               title="빅뱅 버튼 (탭: 말풍선 답변 / 더블탭: 루시 채팅 / 홀드: 음성 답변 / 드래그: 럭키 1순위 추천)"
@@ -1771,24 +1965,19 @@ export function BigBangButton() {
                 </>
               )}
 
-              {/* 홀드 시 블랙홀: 피어오르는 자욱한 검은 연기 소용돌이 (Dense Black Smoke Plumes) */}
-              {isPressing && isBlackholeMode && (
-                <>
-                  {/* 외곽으로 뿜어져 퍼지는 자욱한 검은 연기 베일 */}
-                  <div className="absolute -inset-4 rounded-full pointer-events-none blackhole-smoke-swirl-cw opacity-90 blur-[10px] bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.98)_0%,rgba(15,10,24,0.9)_50%,transparent_80%)]" />
-                  <div className="absolute -inset-6 rounded-full pointer-events-none blackhole-smoke-swirl-ccw opacity-85 blur-[14px] bg-[radial-gradient(circle_at_center,rgba(0,0,0,1)_0%,rgba(24,16,36,0.85)_55%,transparent_85%)]" />
-                  {/* 내부에서 소용돌이치는 칠흑 먹구름 와류 */}
-                  <div className="absolute inset-0 rounded-full pointer-events-none animate-[spin_3s_linear_infinite] opacity-95 bg-[conic-gradient(from_0deg,rgba(0,0,0,1)_0deg,rgba(25,18,36,0.85)_90deg,rgba(0,0,0,1)_180deg,rgba(15,10,24,0.9)_270deg,rgba(0,0,0,1)_360deg)]" />
-                </>
-              )}
-
-              {/* 탭 시 화이트홀 찬란한 빛비춤 방사광 (Starlight Rays) */}
-              {isPressing && isWhiteholeMode && (
-                <div className="absolute inset-0 rounded-full pointer-events-none bigbang-rays-spin opacity-85 bg-[conic-gradient(from_0deg,rgba(255,255,255,0.95)_0deg,transparent_60deg,rgba(254,240,138,0.85)_120deg,transparent_180deg,rgba(255,255,255,0.95)_240deg,transparent_300deg,rgba(255,255,255,0.95)_360deg)]" />
+              {/* 🌌 탭 & 홀드 시 버튼 코어 내부에서 회전하는 오로라 아케인 네뷸라 링 */}
+              {(isPressing || cloudBurstSeed > 0) && activePhase !== 'wormhole' && !isAborted && (
+                <div
+                  className="absolute inset-0 rounded-full pointer-events-none overflow-hidden animate-[spin_3s_linear_infinite] opacity-85 z-14"
+                  style={{
+                    background:
+                      'conic-gradient(from 0deg, rgba(0,240,255,0.65) 0deg, transparent 70deg, rgba(168,85,247,0.65) 150deg, transparent 220deg, rgba(251,191,36,0.55) 290deg, rgba(0,240,255,0.65) 360deg)',
+                  }}
+                />
               )}
 
               {/* 기본 대기 상태일 때의 은은한 회전 볼텍스 링 */}
-              {!isPressing && (
+              {!isPressing && cloudBurstSeed === 0 && (
                 <div
                   className="absolute inset-0 rounded-full pointer-events-none z-10 transition-opacity duration-200 animate-[spin_12s_linear_infinite] opacity-40"
                   style={{
@@ -1801,7 +1990,7 @@ export function BigBangButton() {
               {/* 🔮 빅뱅 내부 마법진 만다라 워터마크 음각 (Arcane Core Inscription Seal - 외피 45° 회전 역보정) */}
               <div
                 className={`absolute inset-2 sm:inset-2.5 rounded-[inherit] pointer-events-none z-12 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300 -rotate-45 ${
-                  isPressing ? 'opacity-30' : 'opacity-65 hover:opacity-95'
+                  isPressing || cloudBurstSeed > 0 ? 'opacity-95 scale-105' : 'opacity-65 hover:opacity-95'
                 }`}
               >
                 {/* 시계방향 회전 아케인 매트릭스 링 */}
@@ -1881,24 +2070,20 @@ export function BigBangButton() {
                 </svg>
               </div>
 
-              {/* Event Horizon Deep Singularity Core (검은 동그라미 내부 코어도 외피와 동일한 물방울 곡률로 동기화) */}
+              {/* Event Horizon Deep Singularity Core (탭·홀드 시 포근한 뭉게구름 볼륨 코어로 전환) */}
               <div
                 className="absolute inset-2.5 sm:inset-3 z-15 pointer-events-none transition-[border-radius,background,box-shadow] duration-200 overflow-hidden flex items-center justify-center"
                 style={{
                   borderRadius: morphStyles.borderRadius,
                   background: isPressing && activePhase === 'wormhole'
                     ? 'radial-gradient(circle at 45% 35%, #052e16 0%, #064e3b 50%, #022c22 100%)'
-                    : isPressing && isWhiteholeMode
-                    ? 'radial-gradient(circle at 45% 35%, #ffffff 0%, #fef08a 45%, #f59e0b 100%)'
-                    : isPressing && isBlackholeMode
-                    ? 'radial-gradient(circle at 50% 50%, #000000 0%, #020206 55%, #05040b 100%)'
+                    : (isPressing || cloudBurstSeed > 0) && !isAborted
+                    ? 'radial-gradient(circle at 42% 35%, #FFFFFF 0%, #F0F9FF 55%, #BAE6FD 100%)'
                     : 'radial-gradient(circle at 45% 35%, #101228 0%, #090a1a 55%, #03030a 100%)',
                   boxShadow: isPressing && activePhase === 'wormhole'
                     ? '0 0 18px rgba(52, 211, 153, 0.8), inset 0 0 14px rgba(6, 182, 212, 0.7)'
-                    : isPressing && isWhiteholeMode
-                    ? '0 0 20px rgba(255, 255, 255, 1), inset 0 0 10px rgba(255, 255, 255, 0.9)'
-                    : isPressing && isBlackholeMode
-                    ? 'inset 0 0 24px rgba(0, 0, 0, 1)'
+                    : (isPressing || cloudBurstSeed > 0) && !isAborted
+                    ? 'inset 0 3px 10px #FFFFFF, 0 4px 14px rgba(56, 189, 248, 0.45)'
                     : 'inset 0 0 16px rgba(0, 0, 0, 0.95)',
                 }}
               />

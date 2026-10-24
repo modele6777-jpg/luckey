@@ -751,34 +751,78 @@ export default function LucyStandalonePage() {
   })());
 
 
-  const toggleAutoTts = () => {
-    setIsAutoTts((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('lucy_chat_auto_tts', String(next));
-        window.dispatchEvent(new CustomEvent('prism:auto_tts_changed', { detail: next }));
-      } catch (_) {}
-      if (!next) {
-        stopTTS();
-        setPlayingMsgId(null);
-      }
-      setAutoTtsToast(next ? '🔊 루시 답변 바로 음성 읽기(질문 낭독 생략)가 켜졌습니다.' : '🔇 자동 음성 읽기가 꺼졌습니다.');
-      setTimeout(() => setAutoTtsToast(null), 2500);
-      return next;
-    });
-  };
+  const autoTtsToastTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const toggleAutoTts = useCallback((e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    try {
+      playAudioHaptic('tap_impact');
+      triggerHaptic('whitehole');
+    } catch (_) {}
+
+    const currentVal = isAutoTtsRef.current;
+    // 이미 켜져 있는 상태에서 한 번 더 누르면 무조건 OFF(false)로 전환하고 진행 중인 음성도 즉시 중지
+    const next = currentVal ? false : true;
+
+    isAutoTtsRef.current = next;
+    isAutoTtsBusyRef.current = false;
+    setIsAutoTts(next);
+
+    try {
+      localStorage.setItem('lucy_chat_auto_tts', String(next));
+      window.dispatchEvent(new CustomEvent('prism:auto_tts_changed', { detail: next }));
+    } catch (_) {}
+
+    if (!next) {
+      hasGreetingSpokenRef.current = true;
+      setIsGreetingPendingTap(false);
+      stopTTS();
+      setPlayingMsgId(null);
+    }
+
+    if (autoTtsToastTimerRef.current) clearTimeout(autoTtsToastTimerRef.current);
+    setAutoTtsToast(
+      next
+        ? '🔊 자동읽기 ON · 루시 답변을 자동으로 읽어드려요'
+        : '🔇 자동읽기 OFF · 음성 자동 재생이 꺼졌습니다'
+    );
+    autoTtsToastTimerRef.current = setTimeout(() => setAutoTtsToast(null), 2200);
+  }, []);
 
   // 말풍선 모드 등 외부에서 변경된 자동읽기 설정 실시간 동기화
   useEffect(() => {
     const handleAutoTtsSync = (e: Event) => {
       const detail = (e as CustomEvent)?.detail;
       if (typeof detail === 'boolean') {
+        isAutoTtsRef.current = detail;
         setIsAutoTts(detail);
+        if (!detail) {
+          isAutoTtsBusyRef.current = false;
+          stopTTS();
+          setPlayingMsgId(null);
+        }
+      }
+    };
+    const handleStorageSync = (e: StorageEvent) => {
+      if (e.key === 'lucy_chat_auto_tts') {
+        const nextVal = e.newValue !== 'false';
+        isAutoTtsRef.current = nextVal;
+        setIsAutoTts(nextVal);
+        if (!nextVal) {
+          isAutoTtsBusyRef.current = false;
+          stopTTS();
+          setPlayingMsgId(null);
+        }
       }
     };
     window.addEventListener('prism:auto_tts_changed', handleAutoTtsSync);
+    window.addEventListener('storage', handleStorageSync);
     return () => {
       window.removeEventListener('prism:auto_tts_changed', handleAutoTtsSync);
+      window.removeEventListener('storage', handleStorageSync);
+      if (autoTtsToastTimerRef.current) clearTimeout(autoTtsToastTimerRef.current);
     };
   }, []);
   
@@ -1092,6 +1136,17 @@ export default function LucyStandalonePage() {
       startListening();
     }
   }, [isVoiceMode, startListening, stopRecognition]);
+
+  // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
+  useEffect(() => {
+    const handleBigBangVoiceToggle = () => {
+      handleToggleVoiceMode();
+    };
+    window.addEventListener('prism:toggle_lucy_chat_voice', handleBigBangVoiceToggle);
+    return () => {
+      window.removeEventListener('prism:toggle_lucy_chat_voice', handleBigBangVoiceToggle);
+    };
+  }, [handleToggleVoiceMode]);
 
   // AI 응답 생성 상태 변화에 따른 음성 모드 동기화
   useEffect(() => {
@@ -1568,7 +1623,7 @@ export default function LucyStandalonePage() {
     let isDisposed = false;
 
     const playGreetingAudio = async () => {
-      if (isDisposed || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
+      if (isDisposed || !isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
       try {
         unlockAudioPlayback();
         primeTTSAudioElement();
@@ -1582,7 +1637,6 @@ export default function LucyStandalonePage() {
         });
       } catch (err: any) {
         console.warn('[Greeting-TTS] Autoplay blocked or interrupted:', err);
-        // 브라우저 자동 재생 정책에 의해 차단된 경우 첫 터치 대기
         hasGreetingSpokenRef.current = false;
         setIsGreetingPendingTap(true);
       } finally {
@@ -1595,9 +1649,14 @@ export default function LucyStandalonePage() {
     // 1차: 진입 즉시 재생 시도 (인앱 네비게이션 또는 브라우저 권한 허용 환경)
     playGreetingAudio();
 
-    // 2차: 브라우저 차단 시 사용자의 첫 화면 터치/클릭 즉시 언락 & 인사말 재생
-    const handleFirstUserInteraction = () => {
-      if (hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
+    // 2차: 브라우저 차단 시 사용자의 첫 화면 터치/클릭 즉시 언락 & 인사말 재생 (단, 자동읽기 토글 버튼 클릭 시에는 제외)
+    const handleFirstUserInteraction = (ev?: Event) => {
+      const targetEl = ev?.target as HTMLElement | null;
+      if (targetEl?.closest?.('[data-auto-tts-toggle="true"]')) {
+        hasGreetingSpokenRef.current = true;
+        return;
+      }
+      if (!isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
       unlockAudioPlayback();
       primeTTSAudioElement();
       playGreetingAudio();
@@ -2287,17 +2346,17 @@ export default function LucyStandalonePage() {
         touchAction: 'pan-y',
       }}
     >
-      {/* Mode Switch Toast */}
+      {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>
-        {modeSwitchToast && (
+        {(modeSwitchToast || autoTtsToast) && (
           <motion.div
             initial={{ opacity: 0, y: -30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -30, scale: 0.95 }}
-            className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full bg-slate-900/95 text-white shadow-xl border border-amber-400/40 flex items-center gap-2 font-sans text-xs sm:text-sm backdrop-blur-md font-bold max-w-[92vw] truncate"
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full bg-slate-900/95 text-white shadow-xl border border-amber-400/40 flex items-center gap-2 font-sans text-xs sm:text-sm backdrop-blur-md font-bold max-w-[92vw] truncate pointer-events-none"
           >
             <Sparkles size={14} className="text-amber-400 animate-spin shrink-0" />
-            <span className="truncate">{modeSwitchToast}</span>
+            <span className="truncate">{autoTtsToast || modeSwitchToast}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -2407,24 +2466,32 @@ export default function LucyStandalonePage() {
               <Mic size={16} className={isVoiceMode ? 'text-amber-300 animate-pulse' : 'text-amber-500 dark:text-amber-400'} />
             </button>
 
-            {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 아이콘 버튼) */}
+            {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 버튼: 한 번 더 누르면 즉시 끄기) */}
             <button
               type="button"
+              data-auto-tts-toggle="true"
               onClick={toggleAutoTts}
-              className={`p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center justify-center ${
+              className={`px-2.5 py-1.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1 text-[11px] font-bold ${
                 isAutoTts
                   ? 'bg-gradient-to-r from-emerald-50 to-teal-100/80 dark:from-emerald-950/80 dark:to-teal-900/70 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs'
                   : isLight
                   ? 'bg-amber-50/80 text-slate-500 hover:text-slate-700 border border-amber-900/10'
                   : 'bg-white/10 text-white/85 hover:text-white border border-white/15'
               }`}
-              title={isAutoTts ? '루시 답변 바로 음성 읽기 켜짐 (질문 낭독 생략) - 클릭하여 끄기' : '자동 음성 읽기 꺼짐 - 클릭하여 켜기'}
-              aria-label={isAutoTts ? '루시 답변 바로 음성 읽기 켜짐' : '자동 음성 읽기 꺼짐'}
+              title={isAutoTts ? '자동읽기 ON - 한 번 더 누르면 즉시 꺼집니다' : '자동읽기 OFF - 누르면 켜집니다'}
+              aria-pressed={isAutoTts}
+              aria-label={isAutoTts ? '자동읽기 켜짐 (눌러서 끄기)' : '자동읽기 꺼짐 (눌러서 켜기)'}
             >
               {isAutoTts ? (
-                <Volume2 size={16} className="text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                <>
+                  <Volume2 size={15} className="text-emerald-600 dark:text-emerald-400 animate-pulse shrink-0" />
+                  <span className="hidden xs:inline">자동읽기 ON</span>
+                </>
               ) : (
-                <VolumeX size={16} className={isLight ? 'text-slate-400' : 'text-white/75'} />
+                <>
+                  <VolumeX size={15} className={isLight ? 'text-slate-400 shrink-0' : 'text-white/75 shrink-0'} />
+                  <span className="hidden xs:inline">자동읽기 OFF</span>
+                </>
               )}
             </button>
 
@@ -3216,19 +3283,21 @@ export default function LucyStandalonePage() {
               <Camera size={14} className="sm:w-4 sm:h-4" />
             </button>
 
-            {/* 🔊 Auto-TTS Quick Toggle Button (입력창 바로 옆 원클릭 토글) */}
+            {/* 🔊 Auto-TTS Quick Toggle Button (입력창 바로 옆 원클릭 토글: 한 번 더 누르면 즉시 끄기) */}
             <button
               type="button"
+              data-auto-tts-toggle="true"
               onClick={toggleAutoTts}
-              className={`p-0.5 sm:p-1.5 rounded-md transition-all cursor-pointer shrink-0 ${
+              className={`p-0.5 sm:p-1.5 rounded-md transition-all cursor-pointer shrink-0 active:scale-95 ${
                 isAutoTts
                   ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs'
                   : isLight
                   ? 'text-slate-400 hover:text-slate-600 hover:bg-amber-50'
                   : 'text-white/75 hover:text-white hover:bg-white/10'
               }`}
-              title={isAutoTts ? '루시 답변 자동 음성 읽기 켜짐 (클릭 시 끄기)' : '자동 음성 읽기 꺼짐 (클릭 시 켜기)'}
-              aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐' : '음성 자동 읽기 꺼짐'}
+              title={isAutoTts ? '자동읽기 ON (한 번 더 누르면 즉시 끄기)' : '자동읽기 OFF (누르면 켜기)'}
+              aria-pressed={isAutoTts}
+              aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐 (눌러서 끄기)' : '음성 자동 읽기 꺼짐 (눌러서 켜기)'}
             >
               {isAutoTts ? <Volume2 size={14} className="sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" /> : <VolumeX size={14} className="sm:w-4 sm:h-4" />}
             </button>

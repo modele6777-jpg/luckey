@@ -572,6 +572,10 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         setActiveTabOverride(null);
       }
 
+      if (typeof window !== 'undefined') {
+        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+      }
+
       if (onRuneNavigate) {
         onRuneNavigate(targetStep.path, targetStep.tab);
       } else {
@@ -756,18 +760,14 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         transform: isPressing ? 'scale(1.12)' : isHovered ? 'scale(1.08)' : 'scale(1)',
       }}
     >
-      {/* 🌟 1. 마법진 앰비언트 글로우 오라 (호버 시 찬란하게 증폭되는 성운 플레어) */}
+      {/* 🌌 1. 탭 & 홀드 시 공명하는 아케인 오로라 성운 오라 */}
       <div
         className="absolute -inset-1 rounded-full pointer-events-none transition-all duration-500 blur-[10px]"
         style={{
           background: isPressing
-            ? activePhase === 'whitehole'
-              ? 'radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(254,240,138,0.5) 45%, transparent 75%)'
-              : activePhase === 'mirrorhole'
-              ? 'radial-gradient(circle, rgba(224,242,254,0.7) 0%, rgba(186,230,253,0.5) 45%, transparent 75%)'
-              : activePhase === 'blackhole'
-              ? 'radial-gradient(circle, rgba(88,28,135,0.6) 0%, rgba(0,0,0,0.8) 50%, transparent 80%)'
-              : 'radial-gradient(circle, rgba(0,240,255,0.45) 0%, rgba(168,85,247,0.4) 50%, transparent 75%)'
+            ? activePhase === 'whitehole' || activePhase === 'blackhole' || activePhase === 'mirrorhole'
+              ? 'radial-gradient(circle, rgba(0,240,255,0.62) 0%, rgba(168,85,247,0.52) 48%, rgba(251,191,36,0.32) 72%, transparent 88%)'
+              : 'radial-gradient(circle, rgba(0,240,255,0.48) 0%, rgba(168,85,247,0.42) 50%, transparent 78%)'
             : isHovered
             ? 'radial-gradient(circle, rgba(0,240,255,0.38) 0%, rgba(192,132,252,0.32) 45%, rgba(251,191,36,0.25) 65%, transparent 80%)'
             : 'radial-gradient(circle, rgba(0,240,255,0.2) 0%, rgba(168,85,247,0.18) 45%, transparent 75%)',
