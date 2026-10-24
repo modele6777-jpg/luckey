@@ -2029,6 +2029,58 @@ h1, h2, h3, h4, h5, h6, p, span, label, blockquote {
   animation: rainbow-shimmer-flow 4s linear infinite;
 }
 
+/* =========================================================================
+   🌌 Left Screen Edge Full-Height Ambient Aurora Curtain & Neon Core
+   ========================================================================= */
+
+@keyframes edge-aurora-breathe {
+  0%, 100% {
+    opacity: 0.65;
+    filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.45)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.35));
+  }
+  50% {
+    opacity: 0.96;
+    filter: drop-shadow(0 0 16px rgba(52, 211, 153, 0.75)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 45px rgba(0, 240, 255, 0.45));
+  }
+}
+
+@keyframes edge-shimmer-flow {
+  0% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+
+.edge-aurora-veil {
+  background: linear-gradient(
+    180deg,
+    rgba(251, 191, 36, 0.5) 0%,
+    rgba(52, 211, 153, 0.65) 25%,
+    rgba(0, 240, 255, 0.6) 50%,
+    rgba(168, 85, 247, 0.65) 75%,
+    rgba(244, 63, 94, 0.5) 100%
+  );
+  background-size: 100% 250%;
+  animation: edge-shimmer-flow 7s ease-in-out infinite, edge-aurora-breathe 4.5s ease-in-out infinite;
+}
+
+.edge-aurora-veil-light {
+  background: linear-gradient(
+    180deg,
+    rgba(245, 158, 11, 0.4) 0%,
+    rgba(16, 185, 129, 0.5) 30%,
+    rgba(14, 165, 233, 0.45) 65%,
+    rgba(245, 158, 11, 0.4) 100%
+  );
+  background-size: 100% 220%;
+  animation: edge-shimmer-flow 6.5s ease-in-out infinite;
+}
+
 /* Sidebar Rainbow Item Outer Box */
 .rainbow-channel-box {
   position: relative;

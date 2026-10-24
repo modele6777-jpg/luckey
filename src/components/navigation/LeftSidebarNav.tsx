@@ -1122,28 +1122,93 @@ export default function LeftSidebarNav() {
             }}
             aria-label="좌측 끝 호버 또는 스와이프로 사이드바 열기"
             title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
-            className="fixed left-0 top-0 bottom-0 w-3.5 sm:w-4 z-[440] cursor-pointer select-none group pointer-events-auto"
+            className="fixed left-0 top-0 bottom-0 w-4 sm:w-5 z-[440] cursor-pointer select-none group pointer-events-auto overflow-visible"
           >
-            {/* 🌟 좌측 가장자리에 은은하게 위아래로 계속 유영하며 빛나는 빛 줄기 힌트 */}
+            {/* 🌌 레이어 1: 화면 안쪽으로 부드럽게 번져나가는 세로 전면 앰비언트 오로라 커튼 (Ambient Aurora Curtain) */}
+            <motion.div
+              animate={
+                isEdgeHovering
+                  ? {
+                      width: '44px',
+                      opacity: 0.88,
+                      filter: 'blur(10px) brightness(1.25)',
+                    }
+                  : {
+                      width: ['18px', '26px', '18px'],
+                      opacity: [0.38, 0.58, 0.38],
+                      filter: [
+                        'blur(12px) brightness(1)',
+                        'blur(16px) brightness(1.15)',
+                        'blur(12px) brightness(1)',
+                      ],
+                    }
+              }
+              transition={
+                isEdgeHovering
+                  ? { duration: 0.25, ease: 'easeOut' }
+                  : { duration: 5.5, repeat: Infinity, ease: 'easeInOut' }
+              }
+              className={`absolute left-0 top-0 bottom-0 h-full pointer-events-none transition-all duration-300 origin-left ${
+                isLight ? 'edge-aurora-veil-light' : 'edge-aurora-veil'
+              }`}
+              style={{
+                maskImage:
+                  'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
+                WebkitMaskImage:
+                  'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
+              }}
+            />
+
+            {/* 🌟 레이어 2: 세로 전면을 유려하게 관통하는 프리즘 빛의 파동 (Shimmer Ripple Beam) */}
             <motion.div
               animate={{
-                y: ['5vh', 'calc(95vh - 140px)', '5vh'],
-                opacity: [0.65, 0.95, 0.65],
+                y: ['-100%', '100%'],
+                opacity: isEdgeHovering ? [0.6, 1, 0.6] : [0.3, 0.7, 0.3],
               }}
               transition={{
-                duration: 6.5,
+                duration: isEdgeHovering ? 2.5 : 4.8,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: 'linear',
               }}
-              className={`w-[3px] sm:w-[3.5px] h-28 sm:h-36 rounded-r-full transition-all duration-300 ${
+              className="absolute left-0 w-3.5 h-1/2 pointer-events-none blur-[4px]"
+              style={{
+                background: isLight
+                  ? 'linear-gradient(180deg, transparent 0%, rgba(245,158,11,0.6) 50%, transparent 100%)'
+                  : 'linear-gradient(180deg, transparent 0%, rgba(251,191,36,0.8) 30%, rgba(52,211,153,0.9) 50%, rgba(0,240,255,0.8) 70%, transparent 100%)',
+              }}
+            />
+
+            {/* ✨ 레이어 3: 화면 최좌측 끝단 초정밀 네온 코어 빔 (Ultra-thin Precision Neon Edge) */}
+            <motion.div
+              animate={
                 isEdgeHovering
-                  ? 'w-[5px] h-36 sm:h-44 opacity-100 shadow-[0_0_20px_#fbbf24,0_0_35px_rgba(52,211,153,0.85)]'
-                  : 'shadow-[0_0_12px_rgba(251,191,36,0.55),0_0_24px_rgba(52,211,153,0.45)]'
+                  ? {
+                      width: '3.5px',
+                      opacity: 1,
+                    }
+                  : {
+                      width: ['1.5px', '2.5px', '1.5px'],
+                      opacity: [0.75, 0.98, 0.75],
+                    }
+              }
+              transition={
+                isEdgeHovering
+                  ? { duration: 0.2, ease: 'easeOut' }
+                  : { duration: 3.8, repeat: Infinity, ease: 'easeInOut' }
+              }
+              className={`absolute left-0 top-0 bottom-0 h-full rounded-r-full pointer-events-none transition-all duration-300 ${
+                isLight
+                  ? isEdgeHovering
+                    ? 'shadow-[0_0_14px_#f59e0b,0_0_26px_rgba(16,185,129,0.85)]'
+                    : 'shadow-[0_0_8px_rgba(245,158,11,0.6),0_0_16px_rgba(16,185,129,0.4)]'
+                  : isEdgeHovering
+                  ? 'shadow-[0_0_18px_#fbbf24,0_0_30px_rgba(52,211,153,0.9),0_0_48px_rgba(168,85,247,0.7)]'
+                  : 'shadow-[0_0_10px_rgba(251,191,36,0.65),0_0_20px_rgba(52,211,153,0.55),0_0_32px_rgba(168,85,247,0.35)]'
               }`}
               style={{
                 background: isLight
-                  ? 'linear-gradient(180deg, transparent 0%, rgba(245,158,11,0.2) 15%, #f59e0b 50%, #10b981 85%, transparent 100%)'
-                  : 'linear-gradient(180deg, transparent 0%, rgba(251,191,36,0.3) 15%, #fbbf24 45%, #34d399 75%, #a855f7 90%, transparent 100%)',
+                  ? 'linear-gradient(180deg, #f59e0b 0%, #10b981 35%, #0ea5e9 70%, #f59e0b 100%)'
+                  : 'linear-gradient(180deg, #fbbf24 0%, #34d399 28%, #00f0ff 52%, #a855f7 78%, #f43f5e 100%)',
               }}
             />
           </motion.div>
