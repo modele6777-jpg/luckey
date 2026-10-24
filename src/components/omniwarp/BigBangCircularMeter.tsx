@@ -1,5 +1,4 @@
 import React, { useId, useCallback, useState, useEffect, useRef, useMemo } from 'react';
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocation } from 'wouter';
 import { WarpPhase } from '@/lib/omniWarp/types';
@@ -357,6 +356,15 @@ export function findCurrentCycleStepIndex(
   return 0;
 }
 
+export interface BigBangCircularMeterActions {
+  scrollToTop: (e?: any) => void;
+  scrollToBottom: (e?: any) => void;
+  navigateBack: (e?: any) => void;
+  navigateForward: (e?: any) => void;
+  prevStep: BigBangCycleNavStep;
+  nextStep: BigBangCycleNavStep;
+}
+
 interface BigBangCircularMeterProps {
   /** 사용자가 누르고 있는지 여부 */
   isPressing: boolean;
@@ -376,6 +384,8 @@ interface BigBangCircularMeterProps {
   onRuneNavigate?: (path: string, tab?: string) => void;
   /** 🌌 더블탭 시 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 상태 */
   isCosmicSuction?: boolean;
+  /** 🧭 상하좌우 원뿔 모핑 액션 등록 콜백 */
+  onRegisterActions?: (actions: BigBangCircularMeterActions) => void;
 }
 
 /**
@@ -394,6 +404,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   isAborted = false,
   onRuneNavigate,
   isCosmicSuction = false,
+  onRegisterActions,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
   const meterRootRef = useRef<HTMLDivElement | null>(null);
@@ -687,6 +698,20 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       window.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, [handleNavigateBack, handleNavigateForward, isCosmicSuction, isPressing]);
+
+  // 🧭 부모(BigBangButton)에게 상하좌우 액션 핸들러 및 댑 정보 전달
+  useEffect(() => {
+    if (onRegisterActions) {
+      onRegisterActions({
+        scrollToTop: handleScrollToTop,
+        scrollToBottom: handleScrollToBottom,
+        navigateBack: handleNavigateBack,
+        navigateForward: handleNavigateForward,
+        prevStep,
+        nextStep,
+      });
+    }
+  }, [onRegisterActions, handleScrollToTop, handleScrollToBottom, handleNavigateBack, handleNavigateForward, prevStep, nextStep]);
 
   // 마우스 호버 해제 또는 다른 곳 클릭/터치 시 4방위 버튼 효과 즉시 해제
   useEffect(() => {
@@ -1029,325 +1054,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         )}
       </AnimatePresence>
 
-      {/* 🌟 4.5. 4방위 고정 금빛 아이콘 (상: 최상단 화살표 / 하: 최하단 화살표 / 좌: 3선 메뉴 / 우: 음표 음악) */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-30"
-        style={{ transformOrigin: `${center}px ${center}px` }}
-        animate={
-          isCosmicSuction
-            ? {
-                rotate: [0, 360, 900],
-                scale: [1, 1.25, 3.4],
-                opacity: [1, 1, 0],
-              }
-            : {
-                rotate: 0,
-                scale: 1,
-                opacity: 1,
-              }
-        }
-        transition={
-          isCosmicSuction
-            ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
-            : { duration: 0.2, ease: 'easeOut' }
-        }
-      >
-        {/* ▲ 상(North) 고정 아이콘: 금빛 쉐브론 화살표 · 화면 최상단 스크롤 */}
-        <div
-          style={{
-            left: `${center}px`,
-            top: `${center - 62}px`,
-          }}
-          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
-        >
-          <motion.button
-            type="button"
-            onClick={(e) => {
-              handleScrollToTop(e);
-              e.currentTarget.blur();
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              e.currentTarget.blur();
-            }}
-            onPointerLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'north' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onMouseLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'north' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onTouchStart={(e) => e.stopPropagation()}
-            animate={
-              isCosmicSuction
-                ? {
-                    scale: [1, 1.4, 2.8],
-                    opacity: [1, 1, 0],
-                    filter: [
-                      'brightness(1.2) drop-shadow(0 0 10px #fbbf24)',
-                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
-                      'blur(6px) brightness(3)',
-                    ],
-                  }
-                : implodingDotId === 'north'
-                ? {
-                    scale: [1, 1.35, 1],
-                    filter: ['brightness(1)', 'brightness(2.0)', 'brightness(1)'],
-                  }
-                : {
-                    scale: isHovered ? 1.12 : 1,
-                    opacity: isHovered ? 1 : 0.9,
-                  }
-            }
-            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.88 } : undefined}
-            transition={
-              isCosmicSuction
-                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
-                : implodingDotId === 'north'
-                ? { duration: 0.2, ease: 'easeOut' }
-                : { duration: 0.18, ease: 'easeOut' }
-            }
-            className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title="화면 최상단 이동"
-            aria-label="화면 최상단 이동"
-          >
-            {implodingDotId === 'north' && (
-              <span
-                className="absolute w-7 h-7 rounded-full animate-ping pointer-events-none"
-                style={{ backgroundColor: '#fbbf24', opacity: 0.7 }}
-              />
-            )}
-
-            <ChevronUp
-              className="w-4 h-4 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.75)] transition-all duration-200 hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] stroke-[2.4]"
-            />
-          </motion.button>
-        </div>
-
-        {/* ▶ 우(East) 고정 아이콘: 금빛 쉐브론 화살표 · 다음 페이지(앞으로 가기) */}
-        <div
-          style={{
-            left: `${center + 62}px`,
-            top: `${center}px`,
-          }}
-          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
-        >
-          <motion.button
-            type="button"
-            onClick={(e) => {
-              handleNavigateForward(e);
-              e.currentTarget.blur();
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              e.currentTarget.blur();
-            }}
-            onPointerLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'east' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onMouseLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'east' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onTouchStart={(e) => e.stopPropagation()}
-            animate={
-              isCosmicSuction
-                ? {
-                    scale: [1, 1.4, 2.8],
-                    opacity: [1, 1, 0],
-                    filter: [
-                      'brightness(1.2) drop-shadow(0 0 10px #fbbf24)',
-                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
-                      'blur(6px) brightness(3)',
-                    ],
-                  }
-                : implodingDotId === 'east'
-                ? {
-                    scale: [1, 1.35, 1],
-                    filter: ['brightness(1)', 'brightness(2.0)', 'brightness(1)'],
-                  }
-                : {
-                    scale: isHovered ? 1.12 : 1,
-                    opacity: isHovered ? 1 : 0.9,
-                  }
-            }
-            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.88 } : undefined}
-            transition={
-              isCosmicSuction
-                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
-                : implodingDotId === 'east'
-                ? { duration: 0.2, ease: 'easeOut' }
-                : { duration: 0.18, ease: 'easeOut' }
-            }
-            className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title={`다음: ${nextStep.name}`}
-            aria-label={`다음 댑: ${nextStep.name} 이동`}
-          >
-            {implodingDotId === 'east' && (
-              <span
-                className="absolute w-7 h-7 rounded-full animate-ping pointer-events-none"
-                style={{ backgroundColor: '#fbbf24', opacity: 0.7 }}
-              />
-            )}
-
-            <ChevronRight
-              className="w-4 h-4 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.75)] transition-all duration-200 hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] stroke-[2.4]"
-            />
-          </motion.button>
-        </div>
-
-        {/* ▼ 하(South) 고정 아이콘: 금빛 쉐브론 화살표 · 화면 최하단 스크롤 */}
-        <div
-          style={{
-            left: `${center}px`,
-            top: `${center + 62}px`,
-          }}
-          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
-        >
-          <motion.button
-            type="button"
-            onClick={(e) => {
-              handleScrollToBottom(e);
-              e.currentTarget.blur();
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              e.currentTarget.blur();
-            }}
-            onPointerLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'south' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onMouseLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'south' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onTouchStart={(e) => e.stopPropagation()}
-            animate={
-              isCosmicSuction
-                ? {
-                    scale: [1, 1.4, 2.8],
-                    opacity: [1, 1, 0],
-                    filter: [
-                      'brightness(1.2) drop-shadow(0 0 10px #fbbf24)',
-                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
-                      'blur(6px) brightness(3)',
-                    ],
-                  }
-                : implodingDotId === 'south'
-                ? {
-                    scale: [1, 1.35, 1],
-                    filter: ['brightness(1)', 'brightness(2.0)', 'brightness(1)'],
-                  }
-                : {
-                    scale: isHovered ? 1.12 : 1,
-                    opacity: isHovered ? 1 : 0.9,
-                  }
-            }
-            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.88 } : undefined}
-            transition={
-              isCosmicSuction
-                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
-                : implodingDotId === 'south'
-                ? { duration: 0.2, ease: 'easeOut' }
-                : { duration: 0.18, ease: 'easeOut' }
-            }
-            className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title="화면 최하단 이동"
-            aria-label="화면 최하단 이동"
-          >
-            {implodingDotId === 'south' && (
-              <span
-                className="absolute w-7 h-7 rounded-full animate-ping pointer-events-none"
-                style={{ backgroundColor: '#fbbf24', opacity: 0.7 }}
-              />
-            )}
-
-            <ChevronDown
-              className="w-4 h-4 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.75)] transition-all duration-200 hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] stroke-[2.4]"
-            />
-          </motion.button>
-        </div>
-
-        {/* ◀ 좌(West) 고정 아이콘: 금빛 쉐브론 화살표 · 이전 페이지(뒤로 가기) */}
-        <div
-          style={{
-            left: `${center - 62}px`,
-            top: `${center}px`,
-          }}
-          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center"
-        >
-          <motion.button
-            type="button"
-            onClick={(e) => {
-              handleNavigateBack(e);
-              e.currentTarget.blur();
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              e.currentTarget.blur();
-            }}
-            onPointerLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'west' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onMouseLeave={(e) => {
-              setImplodingDotId((curr) => (curr === 'west' ? null : curr));
-              e.currentTarget.blur();
-            }}
-            onTouchStart={(e) => e.stopPropagation()}
-            animate={
-              isCosmicSuction
-                ? {
-                    scale: [1, 1.4, 2.8],
-                    opacity: [1, 1, 0],
-                    filter: [
-                      'brightness(1.2) drop-shadow(0 0 10px #fbbf24)',
-                      'brightness(2.2) drop-shadow(0 0 24px #ffffff)',
-                      'blur(6px) brightness(3)',
-                    ],
-                  }
-                : implodingDotId === 'west'
-                ? {
-                    scale: [1, 1.35, 1],
-                    filter: ['brightness(1)', 'brightness(2.0)', 'brightness(1)'],
-                  }
-                : {
-                    scale: isHovered ? 1.12 : 1,
-                    opacity: isHovered ? 1 : 0.9,
-                  }
-            }
-            whileTap={!implodingDotId && !isCosmicSuction ? { scale: 0.88 } : undefined}
-            transition={
-              isCosmicSuction
-                ? { duration: 0.52, ease: [0.32, 0, 0.67, 0] }
-                : implodingDotId === 'west'
-                ? { duration: 0.2, ease: 'easeOut' }
-                : { duration: 0.18, ease: 'easeOut' }
-            }
-            className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title={`이전: ${prevStep.name}`}
-            aria-label={`이전 댑: ${prevStep.name} 이동`}
-          >
-            {implodingDotId === 'west' && (
-              <span
-                className="absolute w-7 h-7 rounded-full animate-ping pointer-events-none"
-                style={{ backgroundColor: '#fbbf24', opacity: 0.7 }}
-              />
-            )}
-
-            <ChevronLeft
-              className="w-4 h-4 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.75)] transition-all duration-200 hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] stroke-[2.4]"
-            />
-          </motion.button>
-        </div>
-      </motion.div>
     </div>
   );
 });

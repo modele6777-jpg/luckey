@@ -23,7 +23,7 @@ import { safeSessionStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, savePendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
 import { sendPrismToss } from '@/lib/prismToss';
 import { tossSelectionToMenu, PRISM_ALL_APP_DESTINATIONS } from '@/lib/selectionContextRecommender';
-import { BigBangCircularMeter } from './BigBangCircularMeter';
+import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
 import { PrismAppIcon } from './PrismAppIcon';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 2~6px 노이즈 면역 + 1mm 미세 드래그 즉시 감지)
 const DRAG_RECOMMEND_THRESHOLD = 14;
@@ -144,6 +144,107 @@ export function BigBangButton() {
       }
     };
   }, []);
+
+  // 🧭 상하좌우 원뿔 모양 모핑 방향 ('none' | 'north' | 'south' | 'west' | 'east')
+  const [hoverDirection, setHoverDirection] = useState<'none' | 'north' | 'south' | 'west' | 'east'>('none');
+  const downDirectionRef = useRef<'none' | 'north' | 'south' | 'west' | 'east'>('none');
+  const cardinalActionsRef = useRef<BigBangCircularMeterActions | null>(null);
+  const [cardinalInfo, setCardinalInfo] = useState<{ prevStepName?: string; nextStepName?: string }>({});
+
+  const handleRegisterActions = useCallback((actions: BigBangCircularMeterActions) => {
+    cardinalActionsRef.current = actions;
+    setCardinalInfo({
+      prevStepName: actions.prevStep?.name,
+      nextStepName: actions.nextStep?.name,
+    });
+  }, []);
+
+  // 🎯 마우스 및 터치 위치 기반 4방위(상/하/좌/우) 원뿔 방향 계산
+  const calculateCardinalDirection = useCallback(
+    (clientX: number, clientY: number): 'none' | 'north' | 'south' | 'west' | 'east' => {
+      const el = buttonRef.current || hoverContainerRef.current;
+      if (!el) return 'none';
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+      const dist = Math.hypot(dx, dy);
+
+      // 중심 코어 (18px 미만)는 완벽한 원형 유지, 74px 초과는 범위 이탈
+      if (dist < 18 || dist > 74) {
+        return 'none';
+      }
+
+      // 우세 축에 따른 상/하/좌/우 판별
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        return dy < 0 ? 'north' : 'south';
+      } else {
+        return dx < 0 ? 'west' : 'east';
+      }
+    },
+    []
+  );
+
+  // 🌀 방향에 따른 원뿔 모양 모핑 변형값 (border-radius 및 이동/스케일 연산)
+  const morphStyles = useMemo(() => {
+    if (dragDistance >= DRAG_RECOMMEND_THRESHOLD) {
+      return {
+        borderRadius: '50% 50% 50% 50% / 50% 50% 50% 50%',
+        x: isPressing
+          ? (dragDistance > 0 ? (dragOffset.x * Math.min(dragDistance * 0.6, 40)) / dragDistance : 0)
+          : 0,
+        y: isPressing
+          ? (dragDistance > 0 ? (dragOffset.y * Math.min(dragDistance * 0.6, 40)) / dragDistance : 0)
+          : 0,
+        scaleX: 1,
+        scaleY: 1,
+      };
+    }
+    switch (hoverDirection) {
+      case 'north':
+        return {
+          borderRadius: '15% 15% 50% 50% / 6% 6% 65% 65%',
+          x: 0,
+          y: -9,
+          scaleX: 0.94,
+          scaleY: 1.13,
+        };
+      case 'south':
+        return {
+          borderRadius: '50% 50% 15% 15% / 65% 65% 6% 6%',
+          x: 0,
+          y: 9,
+          scaleX: 0.94,
+          scaleY: 1.13,
+        };
+      case 'west':
+        return {
+          borderRadius: '6% 65% 65% 6% / 15% 50% 50% 15%',
+          x: -9,
+          y: 0,
+          scaleX: 1.13,
+          scaleY: 0.94,
+        };
+      case 'east':
+        return {
+          borderRadius: '65% 6% 6% 65% / 50% 15% 15% 50%',
+          x: 9,
+          y: 0,
+          scaleX: 1.13,
+          scaleY: 0.94,
+        };
+      case 'none':
+      default:
+        return {
+          borderRadius: '50% 50% 50% 50% / 50% 50% 50% 50%',
+          x: 0,
+          y: 0,
+          scaleX: 1,
+          scaleY: 1,
+        };
+    }
+  }, [hoverDirection, dragDistance, isPressing, dragOffset]);
 
   // 🎯 현재 활성화된 브라우저 텍스트 선택(스크롤) 내용 추출 (취소되었거나 비어있으면 '' 반환)
   // 일반 본문 노드뿐만 아니라 input/textarea 빈칸 입력창 및 방금 보존된 pending selection까지 완벽 지원
@@ -619,6 +720,14 @@ export function BigBangButton() {
         if (d > maxDragDistanceRef.current) {
           maxDragDistanceRef.current = d;
         }
+        if (d < DRAG_RECOMMEND_THRESHOLD) {
+          const curDir = calculateCardinalDirection(ev.clientX, ev.clientY);
+          setHoverDirection(curDir);
+          downDirectionRef.current = curDir;
+        } else {
+          setHoverDirection('none');
+          downDirectionRef.current = 'none';
+        }
         // 🛑 홀드 중 조금이라도 드래그(14px 이상) 발생 시 0ms 즉각 PTT 취소 이벤트 발송!
         if (d >= DRAG_RECOMMEND_THRESHOLD && isPttRecordingRef.current) {
           isPttRecordingRef.current = false;
@@ -646,6 +755,9 @@ export function BigBangButton() {
       y: e.clientY,
     };
     currentPointerEventRef.current = e;
+    const initialDir = calculateCardinalDirection(e.clientX, e.clientY);
+    downDirectionRef.current = initialDir;
+    setHoverDirection(initialDir);
     const liveSel = getActiveSelectionText();
     const initialSel = liveSel || lastValidSelectionRef.current;
     if (initialSel) {
@@ -710,6 +822,15 @@ export function BigBangButton() {
   const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!isPressing || !touchStartRef.current) return;
     currentPointerEventRef.current = e;
+    const d = Math.hypot(e.clientX - touchStartRef.current.x, e.clientY - touchStartRef.current.y);
+    if (d < DRAG_RECOMMEND_THRESHOLD) {
+      const curDir = calculateCardinalDirection(e.clientX, e.clientY);
+      setHoverDirection(curDir);
+      downDirectionRef.current = curDir;
+    } else {
+      setHoverDirection('none');
+      downDirectionRef.current = 'none';
+    }
   };
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (드래그 릴리즈 시 실행 - 룬 문자 사이 우주 흡입 워프 연출)
@@ -1019,6 +1140,7 @@ export function BigBangButton() {
     setDragDistance(0);
     setDragAngleDeg(0);
     setRadialSectorIndex(-1);
+    setHoverDirection('none');
     try {
       sessionStorage.removeItem('bigbang_pressing');
     } catch (_) {}
@@ -1071,6 +1193,29 @@ export function BigBangButton() {
             detail: { textToToss },
           })
         );
+      }
+      lastValidSelectionRef.current = '';
+      touchStartSelectionRef.current = '';
+      clearPendingSelection();
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      return;
+    }
+
+    // 🧭 [원뿔 방향 탭] 상하좌우 원뿔 각진 방향 클릭/터치 시 쉐브론 화살표 기능(스크롤 및 댑 순환 이동) 즉시 실행!
+    const targetDir = hoverDirection !== 'none' ? hoverDirection : downDirectionRef.current;
+    if (!isDragGesture && duration < 450 && targetDir !== 'none') {
+      downDirectionRef.current = 'none';
+      setHoverDirection('none');
+      if (targetDir === 'north') {
+        cardinalActionsRef.current?.scrollToTop(e);
+      } else if (targetDir === 'south') {
+        cardinalActionsRef.current?.scrollToBottom(e);
+      } else if (targetDir === 'west') {
+        cardinalActionsRef.current?.navigateBack(e);
+      } else if (targetDir === 'east') {
+        cardinalActionsRef.current?.navigateForward(e);
       }
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
@@ -1461,19 +1606,77 @@ export function BigBangButton() {
           ref={hoverContainerRef}
           className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center pointer-events-auto select-none shrink-0"
           onPointerEnter={(e) => {
-            if (e.pointerType === 'mouse') setIsHovered(true);
+            if (e.pointerType === 'mouse') {
+              setIsHovered(true);
+              const dir = calculateCardinalDirection(e.clientX, e.clientY);
+              setHoverDirection(dir);
+            }
+          }}
+          onPointerMove={(e) => {
+            if (isPressing) return;
+            const dir = calculateCardinalDirection(e.clientX, e.clientY);
+            setHoverDirection(dir);
+            if (dir !== 'none') {
+              setIsHovered(true);
+            }
           }}
           onPointerLeave={() => {
-            setIsHovered(false);
+            if (!isPressing) {
+              setIsHovered(false);
+              setHoverDirection('none');
+            }
             buttonRef.current?.blur();
           }}
           onMouseLeave={() => {
-            setIsHovered(false);
+            if (!isPressing) {
+              setIsHovered(false);
+              setHoverDirection('none');
+            }
             buttonRef.current?.blur();
           }}
         >
           {/* Expanded radial hover hitbox to encompass 144px arcane circle & cardinal icons */}
           <div className="absolute -inset-7 rounded-full pointer-events-auto -z-10" />
+
+          {/* 🧭 마우스 호버 / 터치 방향에 따른 기능 안내 툴팁 */}
+          <AnimatePresence>
+            {!isPressing && hoverDirection !== 'none' && !hasSelectionToss && (
+              <motion.div
+                initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 4, scale: 0.9 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="absolute -top-12 left-1/2 -translate-x-1/2 pointer-events-none z-50 whitespace-nowrap"
+              >
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/95 backdrop-blur-md border border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.4)] text-[11px] font-bold text-amber-200">
+                  {hoverDirection === 'north' && (
+                    <>
+                      <span className="text-amber-400 font-black">▲</span>
+                      <span>화면 최상단 이동</span>
+                    </>
+                  )}
+                  {hoverDirection === 'south' && (
+                    <>
+                      <span className="text-amber-400 font-black">▼</span>
+                      <span>화면 최하단 이동</span>
+                    </>
+                  )}
+                  {hoverDirection === 'west' && (
+                    <>
+                      <span className="text-amber-400 font-black">◀</span>
+                      <span>{cardinalInfo.prevStepName ? `이전: ${cardinalInfo.prevStepName}` : '이전 댑 이동'}</span>
+                    </>
+                  )}
+                  {hoverDirection === 'east' && (
+                    <>
+                      <span>{cardinalInfo.nextStepName ? `다음: ${cardinalInfo.nextStepName}` : '다음 댑 이동'}</span>
+                      <span className="text-amber-400 font-black">▶</span>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 */}
           <AnimatePresence>
@@ -1565,6 +1768,7 @@ export function BigBangButton() {
                 isAborted={isAborted}
                 onRuneNavigate={handleRuneNavigate}
                 isCosmicSuction={isCosmicSuctionActive}
+                onRegisterActions={handleRegisterActions}
               />
             </div>
 
@@ -1598,28 +1802,28 @@ export function BigBangButton() {
               }}
               whileTap={{ scale: 0.95 }}
               animate={{
-                x: isPressing
-                  ? isAborted
-                    ? (dragDistance > 0 ? (dragOffset.x * Math.min(dragDistance * 0.7, 48)) / dragDistance : 0)
-                    : (dragDistance > 0 ? (dragOffset.x * Math.min(dragDistance * 0.6, 40)) / dragDistance : 0)
-                  : 0,
-                y: isPressing
-                  ? isAborted
-                    ? (dragDistance > 0 ? (dragOffset.y * Math.min(dragDistance * 0.7, 48)) / dragDistance : 0)
-                    : (dragDistance > 0 ? (dragOffset.y * Math.min(dragDistance * 0.6, 40)) / dragDistance : 0)
-                  : 0,
+                borderRadius: morphStyles.borderRadius,
+                x: morphStyles.x,
+                y: morphStyles.y,
+                scaleX: morphStyles.scaleX,
+                scaleY: morphStyles.scaleY,
                 scale: isCosmicSuctionActive
                   ? 0.88
                   : isPressing
                   ? (1.04 + gauge * 0.08)
-                  : isHovered
+                  : isHovered && hoverDirection === 'none'
                   ? 1.05
                   : 1.0,
               }}
               transition={{
+                borderRadius: { duration: 0.22, ease: 'easeOut' },
+                x: { duration: 0.18, ease: 'easeOut' },
+                y: { duration: 0.18, ease: 'easeOut' },
+                scaleX: { duration: 0.2, ease: 'easeOut' },
+                scaleY: { duration: 0.2, ease: 'easeOut' },
                 duration: isCosmicSuctionActive ? 0.35 : 0.08,
               }}
-              className={`w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] rounded-full flex flex-col items-center justify-center shrink-0 cursor-pointer outline-none relative overflow-hidden transition-all duration-200 border will-change-transform z-30 touch-none select-none ${
+              className={`w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex flex-col items-center justify-center shrink-0 cursor-pointer outline-none relative overflow-hidden transition-all duration-200 border will-change-transform z-30 touch-none select-none ${
                 isCosmicSuctionActive
                   ? 'border-cyan-200 shadow-[0_0_50px_rgba(56,189,248,1),0_0_80px_rgba(168,85,247,0.9),inset_0_0_30px_rgba(0,0,0,1)]'
                   : isPressing && isAborted
@@ -1641,6 +1845,7 @@ export function BigBangButton() {
                   : 'border-cyan-400/40 shadow-[0_0_24px_rgba(56,189,248,0.3)]'
               }`}
               style={{
+                borderRadius: morphStyles.borderRadius,
                 touchAction: 'none',
                 userSelect: 'none',
                 background: isPressing && isAborted
@@ -1921,6 +2126,54 @@ export function BigBangButton() {
                   />
                 </div>
               </div>
+
+              {/* 🧭 호버/터치 방향에 따른 원뿔 첨탑 방향성 골드 인디케이터 */}
+              <AnimatePresence>
+                {hoverDirection !== 'none' && !isCosmicSuctionActive && (
+                  <>
+                    {hoverDirection === 'north' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 3 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 2 }}
+                        className="absolute top-1.5 inset-x-0 flex flex-col items-center pointer-events-none z-25"
+                      >
+                        <span className="text-[10px] font-black text-amber-300 drop-shadow-[0_0_8px_#fbbf24] leading-none animate-pulse">▲</span>
+                      </motion.div>
+                    )}
+                    {hoverDirection === 'south' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -3 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -2 }}
+                        className="absolute bottom-1.5 inset-x-0 flex flex-col items-center pointer-events-none z-25"
+                      >
+                        <span className="text-[10px] font-black text-amber-300 drop-shadow-[0_0_8px_#fbbf24] leading-none animate-pulse">▼</span>
+                      </motion.div>
+                    )}
+                    {hoverDirection === 'west' && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 3 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 2 }}
+                        className="absolute left-1.5 inset-y-0 flex items-center pointer-events-none z-25"
+                      >
+                        <span className="text-[10px] font-black text-amber-300 drop-shadow-[0_0_8px_#fbbf24] leading-none animate-pulse">◀</span>
+                      </motion.div>
+                    )}
+                    {hoverDirection === 'east' && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -3 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -2 }}
+                        className="absolute right-1.5 inset-y-0 flex items-center pointer-events-none z-25"
+                      >
+                        <span className="text-[10px] font-black text-amber-300 drop-shadow-[0_0_8px_#fbbf24] leading-none animate-pulse">▶</span>
+                      </motion.div>
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
             </motion.button>
           </div>
         </div>

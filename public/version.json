@@ -1,11 +1,12 @@
 {
   "name": "luckey",
-  "version": "1.4.416",
-  "summary": "Key 채널(/key) 진입 시 서버 리다이렉션 탈출 버그 수정 및 빅뱅버튼/사이드바 상시 정상 표시 복구",
-  "builtAt": "2026-10-24T04:36:00.000Z",
+  "version": "1.4.417",
+  "summary": "빅뱅버튼 쉐브론 화살표 제거 및 상하좌우 호버/터치 방향 원뿔 각진 모양 모핑 인터랙션 구현",
+  "builtAt": "2026-10-24T04:51:00.000Z",
   "items": [
-    "server.app.ts에서 '/key' 요청 시 정적 HTML 경로(/calm/)로 302 강제 리다이렉션되던 라우트 규칙을 제거하고, 리액트 SPA 라우팅(CalmApp 컴포넌트)을 온전히 수용하도록 수정",
-    "BigBangCircularMeter 및 BigBangButton에서 Key 채널 이동 시 window.location.href 전체 페이지 새로고침 우회를 제거하고 순수 SPA navigate('/key')로 통일하여 컴포넌트 언마운트 방지",
-    "vite.config.ts의 PWA Workbox navigateFallbackDenylist에서 /key와 /orb를 제외하여 오프라인/새로고침 시에도 index.html SPA가 안정적으로 서빙되도록 연동"
+    "빅뱅버튼 외곽 4방위에 고정 노출되던 쉐브론 화살표(ChevronUp, Down, Left, Right) 버튼을 전면 제거하여 코스믹 아케인 서클의 신비롭고 미려한 원형 미학 극대화",
+    "빅뱅버튼에 마우스 호버 또는 터치 시 커서/터치 위치(상/하/좌/우)에 맞추어 버튼 형태가 유기적인 원뿔(Cone) 형태로 각이지며 돌출되는 Framer Motion 모핑 애니메이션 연동",
+    "상하좌우 원뿔 모핑 영역 클릭 및 탭 시 기존 쉐브론 화살표의 4대 기능(최상단 스크롤, 최하단 스크롤, 23대 DApp 이전 순환, 다음 순환)이 즉각 발동하도록 원뿔 첨탑 인터랙션 통합",
+    "각진 원뿔 방향에 맞는 미세 골드 인디케이터 펄스(▲/▼/◀/▶) 및 기능 안내 툴팁 표출을 추가하여 직관적인 조작성 제공"
   ]
 }
