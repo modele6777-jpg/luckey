@@ -11,90 +11,333 @@ import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 const OUTER_MINI_RUNES = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ'];
 
 /**
- * 🌀 빅뱅 좌우 화살표 전용 순환 네비게이션 시퀀스 (9대 핵심 공간 무한 순환)
- * 순서: 루시채팅 -> KEY -> 럭키 7대 테마 DApp (프롤로그 -> 오렌지 -> 트리니티 -> 아우라 -> 블루버드 -> 뮤즈 -> 에필로그) -> 루시채팅...
+ * 🌀 빅뱅 좌우 화살표 전용 순환 네비게이션 시퀀스 (23대 핵심 차원 및 DApp 무한 순환)
+ * - 럭키채널 진입 시 앱을 통째로 건너뛰지 않고, 각 앱 내부의 댑(DApp/서브탭)들을 순서대로 건너뛰며 탐색
+ * - 순서:
+ *   1. 루시 AI 대화
+ *   2. KEY (개운 리추얼)
+ *   3. 프롤로그 DApps (유니버스 허브 -> ECPR 마음처방 -> 투두 & 미션)
+ *   4. 오렌지 DApps (시크릿 바이블 -> 소원우물 & 스크립팅 -> 마음치유 시너지)
+ *   5. 트리니티 DApps (사주 운명 리포트 -> 오라클 타로 스프레드 -> 오라클 나침반)
+ *   6. 아우라 DApps (세도나 힐링 명상 -> 1분 감정해방 호흡 -> 생체리듬 시너지)
+ *   7. 파랑새 DApps (데일리 호오포노포노 -> 비밀 메시지 -> 예술정서 시너지)
+ *   8. 뮤즈 DApps (명화·명시·명곡 예술처방 -> 시대의 롤모델 -> 영감창조 시너지)
+ *   9. 에필로그 DApps (밤 서재 하루 회고 -> 소울 크로니클 연대기 -> 영혼 프로필 & 여정)
+ *   -> 다시 루시 AI...
  */
 export interface BigBangCycleNavStep {
   id: string;
   name: string;
+  channelId: 'lucy' | 'key' | 'prologue' | 'orange' | 'trinity' | 'heal' | 'bluebird' | 'muse' | 'epilogue';
+  channelName: string;
+  dappName: string;
   path: string;
   aliases: string[];
+  tab?: string;
 }
 
 export const BIGBANG_CYCLE_NAV_STEPS: BigBangCycleNavStep[] = [
+  // 1. 루시 AI 대화
   {
     id: 'lucy',
-    name: '루시 채팅',
+    name: '루시 AI (영혼의 대화)',
+    channelId: 'lucy',
+    channelName: 'LUCY',
+    dappName: '루시 1:1 대화',
     path: '/',
     aliases: ['/chat', '/lucy'],
   },
+  // 2. KEY 개운 리추얼 성전
   {
     id: 'key',
     name: 'KEY (개운 리추얼)',
+    channelId: 'key',
+    channelName: 'KEY',
+    dappName: '개운 리추얼 & 운기 노트',
     path: '/key',
     aliases: ['/calm', '/orb', '/gateway', '/crystal', '/pharmacy'],
   },
+  // 3. 프롤로그 DApps
   {
-    id: 'prologue',
-    name: '프롤로그 (PROLOGUE)',
+    id: 'prologue-universe',
+    name: '프롤로그 · 유니버스 허브',
+    channelId: 'prologue',
+    channelName: 'PROLOGUE',
+    dappName: '유니버스 허브',
     path: '/prologue',
-    aliases: ['/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'],
+    aliases: ['/universe'],
+    tab: 'universe',
   },
   {
-    id: 'orange',
-    name: '오렌지 (ORANGE)',
+    id: 'prologue-ecpr',
+    name: '프롤로그 · ECPR 마음처방',
+    channelId: 'prologue',
+    channelName: 'PROLOGUE',
+    dappName: 'ECPR 마음처방',
+    path: '/ecpr',
+    aliases: ['/prologue?tab=ecpr'],
+    tab: 'ecpr',
+  },
+  {
+    id: 'prologue-todo',
+    name: '프롤로그 · 투두 & 미션',
+    channelId: 'prologue',
+    channelName: 'PROLOGUE',
+    dappName: '투두 & 데일리 미션',
+    path: '/todo',
+    aliases: ['/mission', '/synergy', '/aegis', '/prologue?tab=todo'],
+    tab: 'todo',
+  },
+  // 4. 오렌지 DApps
+  {
+    id: 'orange-secret',
+    name: '오렌지 · 시크릿 바이블',
+    channelId: 'orange',
+    channelName: 'ORANGE',
+    dappName: '비밀성찰 & 시크릿 바이블',
     path: '/orange',
-    aliases: [],
+    aliases: ['/orange?tab=secret'],
+    tab: 'secret',
   },
   {
-    id: 'trinity',
-    name: '트리니티 (TRINITY)',
+    id: 'orange-wishingWell',
+    name: '오렌지 · 소원우물 & 스크립팅',
+    channelId: 'orange',
+    channelName: 'ORANGE',
+    dappName: '소원우물 & 확언 스크립팅',
+    path: '/orange?tab=wishingWell',
+    aliases: [],
+    tab: 'wishingWell',
+  },
+  {
+    id: 'orange-synergy',
+    name: '오렌지 · 마음치유 시너지',
+    channelId: 'orange',
+    channelName: 'ORANGE',
+    dappName: '마음치유 시너지',
+    path: '/orange?tab=synergy',
+    aliases: [],
+    tab: 'synergy',
+  },
+  // 5. 트리니티 DApps
+  {
+    id: 'trinity-destiny',
+    name: '트리니티 · 사주 운명 리포트',
+    channelId: 'trinity',
+    channelName: 'TRINITY',
+    dappName: '사주 운명 리포트',
     path: '/trinity',
-    aliases: ['/oracle'],
+    aliases: ['/trinity?tab=destiny'],
+    tab: 'destiny',
   },
   {
-    id: 'heal',
-    name: '아우라 치유 (AURA)',
+    id: 'trinity-tarot',
+    name: '트리니티 · 오라클 타로 스프레드',
+    channelId: 'trinity',
+    channelName: 'TRINITY',
+    dappName: '오라클 타로 스프레드',
+    path: '/trinity?tab=tarot',
+    aliases: [],
+    tab: 'tarot',
+  },
+  {
+    id: 'trinity-oracle',
+    name: '트리니티 · 오라클 나침반 & 시너지',
+    channelId: 'trinity',
+    channelName: 'TRINITY',
+    dappName: '오라클 나침반 & 시너지',
+    path: '/trinity?tab=oracle',
+    aliases: ['/oracle', '/trinity?tab=synergy'],
+    tab: 'oracle',
+  },
+  // 6. 아우라 치유 DApps
+  {
+    id: 'heal-meditation',
+    name: '아우라 · 세도나 힐링 명상',
+    channelId: 'heal',
+    channelName: 'AURA',
+    dappName: '세도나 힐링 명상',
     path: '/heal',
-    aliases: ['/aura', '/hoponopono', '/lettinggo'],
+    aliases: ['/aura', '/heal?tab=meditation'],
+    tab: 'meditation',
   },
   {
-    id: 'bluebird',
-    name: '파랑새 (BLUEBIRD)',
+    id: 'heal-oneMinute',
+    name: '아우라 · 1분 감정해방 호흡',
+    channelId: 'heal',
+    channelName: 'AURA',
+    dappName: '1분 감정해방 호흡',
+    path: '/heal?tab=oneMinute',
+    aliases: ['/heal?tab=mission'],
+    tab: 'oneMinute',
+  },
+  {
+    id: 'heal-synergy',
+    name: '아우라 · 생체리듬 시너지',
+    channelId: 'heal',
+    channelName: 'AURA',
+    dappName: '생체리듬 시너지',
+    path: '/heal?tab=synergy',
+    aliases: [],
+    tab: 'synergy',
+  },
+  // 7. 파랑새 DApps
+  {
+    id: 'bluebird-daily',
+    name: '파랑새 · 데일리 호오포노포노',
+    channelId: 'bluebird',
+    channelName: 'BLUEBIRD',
+    dappName: '데일리 호오포노포노',
     path: '/bluebird',
-    aliases: [],
+    aliases: ['/bluebird?tab=daily'],
+    tab: 'daily',
   },
   {
-    id: 'muse',
-    name: '뮤즈 (MUSE)',
+    id: 'bluebird-secretMessage',
+    name: '파랑새 · 비밀 메시지',
+    channelId: 'bluebird',
+    channelName: 'BLUEBIRD',
+    dappName: '파랑새 비밀 메시지',
+    path: '/bluebird?tab=secretMessage',
+    aliases: [],
+    tab: 'secretMessage',
+  },
+  {
+    id: 'bluebird-synergy',
+    name: '파랑새 · 예술정서 시너지',
+    channelId: 'bluebird',
+    channelName: 'BLUEBIRD',
+    dappName: '예술정서 시너지',
+    path: '/bluebird?tab=synergy',
+    aliases: [],
+    tab: 'synergy',
+  },
+  // 8. 뮤즈 DApps
+  {
+    id: 'muse-art',
+    name: '뮤즈 · 예술처방 (명화·명시·명곡)',
+    channelId: 'muse',
+    channelName: 'MUSE',
+    dappName: '명화·명시·명곡 예술처방',
     path: '/muse',
-    aliases: [],
+    aliases: ['/muse?tab=artRecommendation'],
+    tab: 'artRecommendation',
   },
   {
-    id: 'epilogue',
-    name: '에필로그 (EPILOGUE)',
+    id: 'muse-roleModel',
+    name: '뮤즈 · 시대의 롤모델',
+    channelId: 'muse',
+    channelName: 'MUSE',
+    dappName: '시대의 롤모델 뮤즈',
+    path: '/muse?tab=roleModel',
+    aliases: [],
+    tab: 'roleModel',
+  },
+  {
+    id: 'muse-synergy',
+    name: '뮤즈 · 영감창조 시너지',
+    channelId: 'muse',
+    channelName: 'MUSE',
+    dappName: '영감창조 시너지',
+    path: '/muse?tab=synergy',
+    aliases: [],
+    tab: 'synergy',
+  },
+  // 9. 에필로그 DApps
+  {
+    id: 'epilogue-diary',
+    name: '에필로그 · 밤 서재 하루 회고',
+    channelId: 'epilogue',
+    channelName: 'EPILOGUE',
+    dappName: '밤 서재 회고 일기',
     path: '/epilogue',
-    aliases: ['/profile', '/chronicle'],
+    aliases: ['/epilogue?tab=diary'],
+    tab: 'diary',
+  },
+  {
+    id: 'epilogue-chronicle',
+    name: '에필로그 · 소울 크로니클 연대기',
+    channelId: 'epilogue',
+    channelName: 'EPILOGUE',
+    dappName: '소울 크로니클 & 황금 인장',
+    path: '/chronicle',
+    aliases: ['/epilogue?tab=synergy'],
+    tab: 'synergy',
+  },
+  {
+    id: 'epilogue-profile',
+    name: '에필로그 · 영혼 프로필 & 여정',
+    channelId: 'epilogue',
+    channelName: 'EPILOGUE',
+    dappName: '영혼 프로필 & 여정 기록',
+    path: '/profile',
+    aliases: ['/epilogue?tab=profile'],
+    tab: 'profile',
   },
 ];
 
-export function findCurrentCycleStepIndex(currentPath: string): number {
+export function findCurrentCycleStepIndex(
+  currentPath: string,
+  tabOverride?: string | null
+): number {
   if (!currentPath) return 0;
-  const clean = currentPath.split('?')[0].split('#')[0].toLowerCase();
 
-  // 1. 완전 일치 (path 또는 aliases)
-  const exact = BIGBANG_CYCLE_NAV_STEPS.findIndex(
-    (s) => s.path === clean || s.aliases.some((a) => a === clean)
-  );
-  if (exact !== -1) return exact;
+  let path = currentPath.split('#')[0].toLowerCase();
+  let search = '';
+  if (path.includes('?')) {
+    const parts = path.split('?');
+    path = parts[0];
+    search = parts[1] || '';
+  } else if (typeof window !== 'undefined' && window.location.search) {
+    search = window.location.search.replace(/^\?/, '').toLowerCase();
+  }
 
-  // 2. 접두사 매칭 ('/' 제외)
-  const prefix = BIGBANG_CYCLE_NAV_STEPS.findIndex(
-    (s) =>
-      (s.path !== '/' && (clean.startsWith(s.path + '/') || clean === s.path)) ||
-      s.aliases.some((a) => a !== '/' && (clean.startsWith(a + '/') || clean === a))
-  );
-  if (prefix !== -1) return prefix;
+  const searchParams = new URLSearchParams(search);
+  const effectiveTab =
+    (tabOverride && tabOverride.toLowerCase()) ||
+    (searchParams.get('tab') && searchParams.get('tab')!.toLowerCase()) ||
+    (typeof window !== 'undefined'
+      ? (sessionStorage.getItem('prism_target_tab') || '').toLowerCase()
+      : null);
+
+  // 1. 탭 정보가 명시된 경우: 현재 앱 경로와 탭이 일치하는 DApp 우선 검색
+  if (effectiveTab) {
+    const matchedWithTab = BIGBANG_CYCLE_NAV_STEPS.findIndex((s) => {
+      if (!s.tab) return false;
+      if (s.tab.toLowerCase() !== effectiveTab) return false;
+      const stepCleanPath = s.path.split('?')[0].toLowerCase();
+      if (stepCleanPath === path) return true;
+      return s.aliases.some((a) => a.split('?')[0].toLowerCase() === path);
+    });
+    if (matchedWithTab !== -1) return matchedWithTab;
+  }
+
+  // 2. 전체 URL (경로 + 쿼리) 완전 일치 또는 alias 완전 일치
+  const fullUrl = search ? `${path}?${search}` : path;
+  const exactMatch = BIGBANG_CYCLE_NAV_STEPS.findIndex((s) => {
+    const sFull = s.path.toLowerCase();
+    if (sFull === fullUrl) return true;
+    return s.aliases.some((a) => a.toLowerCase() === fullUrl);
+  });
+  if (exactMatch !== -1) return exactMatch;
+
+  // 3. 고유 단독 서브경로 매칭 (예: '/ecpr', '/todo', '/chronicle', '/profile', '/key')
+  const subpathMatch = BIGBANG_CYCLE_NAV_STEPS.findIndex((s) => {
+    const sPath = s.path.split('?')[0].toLowerCase();
+    if (sPath !== '/' && (path === sPath || path.startsWith(sPath + '/'))) return true;
+    return s.aliases.some((a) => {
+      const aPath = a.split('?')[0].toLowerCase();
+      return aPath !== '/' && (path === aPath || path.startsWith(aPath + '/'));
+    });
+  });
+  if (subpathMatch !== -1) return subpathMatch;
+
+  // 4. 메인 앱 경로 접두사 매칭 ('/' 제외) -> 해당 채널의 첫 번째 DApp 매칭
+  const prefixMatch = BIGBANG_CYCLE_NAV_STEPS.findIndex((s) => {
+    const sPath = s.path.split('?')[0].toLowerCase();
+    return sPath !== '/' && (path === sPath || path.startsWith(sPath + '/'));
+  });
+  if (prefixMatch !== -1) return prefixMatch;
 
   // 기본값: 루시 채팅 (인덱스 0)
   return 0;
@@ -216,34 +459,85 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     }
   }
 
-  const currentIndex = useMemo(() => findCurrentCycleStepIndex(location), [location]);
+  const fullLocation = typeof window !== 'undefined'
+    ? `${location}${window.location.search || ''}`
+    : location;
+
+  const [activeTabOverride, setActiveTabOverride] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const searchTab = new URLSearchParams(window.location.search).get('tab');
+      return searchTab || sessionStorage.getItem('prism_target_tab');
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    const handleTabChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      if (customEvent.detail?.tab) {
+        setActiveTabOverride(customEvent.detail.tab);
+      }
+    };
+    window.addEventListener('prism-tab-change', handleTabChange);
+    return () => {
+      window.removeEventListener('prism-tab-change', handleTabChange);
+    };
+  }, []);
+
+  const currentIndex = useMemo(
+    () => findCurrentCycleStepIndex(fullLocation, activeTabOverride),
+    [fullLocation, activeTabOverride]
+  );
   const prevIndex = (currentIndex - 1 + BIGBANG_CYCLE_NAV_STEPS.length) % BIGBANG_CYCLE_NAV_STEPS.length;
   const nextIndex = (currentIndex + 1) % BIGBANG_CYCLE_NAV_STEPS.length;
   const prevStep = BIGBANG_CYCLE_NAV_STEPS[prevIndex];
   const nextStep = BIGBANG_CYCLE_NAV_STEPS[nextIndex];
 
   const doNavigate = useCallback(
-    (targetPath: string) => {
+    (targetStep: BigBangCycleNavStep) => {
       if (onRuneNavigate) {
-        onRuneNavigate(targetPath);
+        onRuneNavigate(targetStep.path);
+        return;
+      }
+
+      const isKeyTarget = targetStep.path === '/key' || targetStep.path.startsWith('/key');
+      const isCurrentlyKey = typeof window !== 'undefined' && window.location.pathname.includes('key');
+      if (isCurrentlyKey || isKeyTarget) {
+        window.location.href = targetStep.path;
+        return;
+      }
+
+      if (targetStep.tab) {
+        try {
+          sessionStorage.setItem('prism_target_tab', targetStep.tab);
+        } catch (_) {}
+        setActiveTabOverride(targetStep.tab);
       } else {
-        const isKeyTarget = targetPath === '/key' || targetPath.startsWith('/key');
-        const isCurrentlyKey = typeof window !== 'undefined' && window.location.pathname.includes('key');
-        if (isCurrentlyKey || isKeyTarget) {
-          window.location.href = targetPath;
-        } else {
-          navigate(targetPath);
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
-        }
+        try {
+          sessionStorage.removeItem('prism_target_tab');
+        } catch (_) {}
+        setActiveTabOverride(null);
+      }
+
+      navigate(targetStep.path);
+      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetStep.path } }));
+      window.dispatchEvent(
+        new CustomEvent('nav-click-active', {
+          detail: { path: targetStep.path, tab: targetStep.tab },
+        })
+      );
+      if (targetStep.tab) {
+        window.dispatchEvent(
+          new CustomEvent('prism-tab-change', { detail: { tab: targetStep.tab } })
+        );
       }
     },
     [onRuneNavigate, navigate]
   );
 
-  // 🚀 좌(West) 점 탭 시 이전 순환 채널(에필로그, 뮤즈, ... 루시, Key)로 순환 이동
+  // 🚀 좌(West) 점 탭 시 이전 순환 DApp (럭키채널 23대 DApp)으로 순환 이동
   const handleNavigateBack = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (e: React.MouseEvent | React.TouchEvent | KeyboardEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -262,23 +556,26 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         } catch (_) {}
       }
 
-      const curIdx = findCurrentCycleStepIndex(location);
+      const currentFull = typeof window !== 'undefined'
+        ? `${window.location.pathname}${window.location.search || ''}`
+        : location;
+      const curIdx = findCurrentCycleStepIndex(currentFull, activeTabOverride);
       const targetIdx = (curIdx - 1 + BIGBANG_CYCLE_NAV_STEPS.length) % BIGBANG_CYCLE_NAV_STEPS.length;
       const targetStep = BIGBANG_CYCLE_NAV_STEPS[targetIdx];
 
-      doNavigate(targetStep.path);
+      doNavigate(targetStep);
       window.dispatchEvent(
         new CustomEvent('prism:cycle_nav', {
           detail: { target: targetStep, direction: 'backward' },
         })
       );
     },
-    [triggerDotPulse, location, doNavigate]
+    [triggerDotPulse, location, activeTabOverride, doNavigate]
   );
 
-  // 🚀 우(East) 점 탭 시 다음 순환 채널(루시 -> Key -> 7대 럭키 DApp -> 루시)로 순환 이동
+  // 🚀 우(East) 점 탭 시 다음 순환 DApp (럭키채널 23대 DApp)으로 순환 이동
   const handleNavigateForward = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (e: React.MouseEvent | React.TouchEvent | KeyboardEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -297,19 +594,52 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         } catch (_) {}
       }
 
-      const curIdx = findCurrentCycleStepIndex(location);
+      const currentFull = typeof window !== 'undefined'
+        ? `${window.location.pathname}${window.location.search || ''}`
+        : location;
+      const curIdx = findCurrentCycleStepIndex(currentFull, activeTabOverride);
       const targetIdx = (curIdx + 1) % BIGBANG_CYCLE_NAV_STEPS.length;
       const targetStep = BIGBANG_CYCLE_NAV_STEPS[targetIdx];
 
-      doNavigate(targetStep.path);
+      doNavigate(targetStep);
       window.dispatchEvent(
         new CustomEvent('prism:cycle_nav', {
           detail: { target: targetStep, direction: 'forward' },
         })
       );
     },
-    [triggerDotPulse, location, doNavigate]
+    [triggerDotPulse, location, activeTabOverride, doNavigate]
   );
+
+  // ⌨️ 키보드 좌우 화살표 (ArrowLeft / ArrowRight) 전역 단축키로 댑 무한 순환 연동
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
+      const activeEl = document.activeElement as HTMLElement | null;
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          activeEl.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (isCosmicSuction || isPressing) return;
+
+      if (e.key === 'ArrowLeft') {
+        handleNavigateBack(e);
+      } else if (e.key === 'ArrowRight') {
+        handleNavigateForward(e);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [handleNavigateBack, handleNavigateForward, isCosmicSuction, isPressing]);
 
   // 마우스 호버 해제 또는 다른 곳 클릭/터치 시 4방위 버튼 효과 즉시 해제
   useEffect(() => {
@@ -807,8 +1137,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { duration: 0.18, ease: 'easeOut' }
             }
             className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title={`다음 채널: ${nextStep.name} 이동`}
-            aria-label={`다음 채널: ${nextStep.name} 이동`}
+            title={`다음: ${nextStep.name}`}
+            aria-label={`다음 댑: ${nextStep.name} 이동`}
           >
             {implodingDotId === 'east' && (
               <span
@@ -955,8 +1285,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { duration: 0.18, ease: 'easeOut' }
             }
             className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title={`이전 채널: ${prevStep.name} 이동`}
-            aria-label={`이전 채널: ${prevStep.name} 이동`}
+            title={`이전: ${prevStep.name}`}
+            aria-label={`이전 댑: ${prevStep.name} 이동`}
           >
             {implodingDotId === 'west' && (
               <span

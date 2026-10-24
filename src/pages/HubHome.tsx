@@ -215,6 +215,13 @@ export default function HubHome() {
     }
   }, [location]);
 
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('prism_target_tab', activeSection);
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: activeSection } }));
+  }, [activeSection]);
+
   // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
   const { swipeHandlers: hubSwipeHandlers } = useSwipeableTabs<HubSwipeTab>({
     tabs: HUB_SWIPE_TABS,

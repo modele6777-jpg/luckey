@@ -356,6 +356,13 @@ export default function OrangeApp() {
   });
   useScrollToTopOnChange([activeMode]);
 
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('prism_target_tab', activeMode);
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: activeMode } }));
+  }, [activeMode]);
+
   // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
   const currentOrangeTab: OrangeSwipeTab = (activeMode === 'wishingWell' || activeMode === 'synergy') ? activeMode : 'secret';
 

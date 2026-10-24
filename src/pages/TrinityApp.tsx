@@ -867,6 +867,13 @@ export default function TrinityApp() {
   });
   useScrollToTopOnChange([activeMode]);
 
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('prism_target_tab', activeMode);
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: activeMode } }));
+  }, [activeMode]);
+
   // 🎯 토스된 글자가 있을 경우 타로 고민 입력 및 가상 카드 모드 즉각 활성화
   useEffect(() => {
     if (typeof window === 'undefined') return;

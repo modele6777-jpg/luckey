@@ -268,6 +268,13 @@ export default function BluebirdApp() {
   });
   useScrollToTopOnChange([activeMode]);
 
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('prism_target_tab', activeMode);
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: activeMode } }));
+  }, [activeMode]);
+
   // 🚀 빅뱅 버튼 좌우 룬 점 탭 전환 및 앱 내부 탭 동기화
   const currentBluebirdTab: BluebirdSwipeTab = (activeMode === 'secretMessage' || activeMode === 'synergy') ? activeMode : 'daily';
 
@@ -284,7 +291,57 @@ export default function BluebirdApp() {
     enabled: true,
   });
 
-  
+  useEffect(() => {
+    const applyTargetTab = (tab: string | null | undefined) => {
+      if (!tab) return;
+      if (tab === 'daily' || tab === 'synergy' || tab === 'secretMessage') {
+        setActiveMode(tab as any);
+        setShowSecretMessageModal(false);
+        setStage('landing');
+        setShowChat(false);
+        resetAppScroll();
+        try {
+          sessionStorage.removeItem('prism_target_tab');
+        } catch (_) {}
+      }
+    };
+
+    const handleTabChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      applyTargetTab(customEvent.detail?.tab);
+    };
+
+    const handleNavClick = (e: Event) => {
+      const customEvent = e as CustomEvent<{ path?: string; tab?: string }>;
+      const path = customEvent.detail?.path || '';
+      if (path.startsWith('/bluebird')) {
+        let tab = customEvent.detail?.tab;
+        if (!tab && path.includes('?')) {
+          try {
+            const url = new URL(path, 'http://localhost');
+            tab = url.searchParams.get('tab') || undefined;
+          } catch (_) {}
+        }
+        if (tab) {
+          applyTargetTab(tab);
+        } else if (path === '/bluebird') {
+          setActiveMode('daily');
+          setShowSecretMessageModal(false);
+          setStage('landing');
+          setShowChat(false);
+          resetAppScroll();
+        }
+      }
+    };
+
+    window.addEventListener('prism-tab-change', handleTabChange);
+    window.addEventListener('nav-click-active', handleNavClick);
+    return () => {
+      window.removeEventListener('prism-tab-change', handleTabChange);
+      window.removeEventListener('nav-click-active', handleNavClick);
+    };
+  }, []);
+
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showSecretMessageModal, setShowSecretMessageModal] = useState(false);
   const [showChat, setShowChat] = useState(false);

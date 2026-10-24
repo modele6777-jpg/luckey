@@ -958,6 +958,13 @@ export default function HealApp() {
   });
   useScrollToTopOnChange([activeMode]);
 
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('prism_target_tab', activeMode);
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: activeMode } }));
+  }, [activeMode]);
+
   const currentSwipeTab: HealSwipeTab =
     activeMode === 'oneMinute' || activeMode === 'mission'
       ? 'oneMinute'
