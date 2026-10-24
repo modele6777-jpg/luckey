@@ -25,6 +25,7 @@ import { sendPrismToss } from '@/lib/prismToss';
 import { tossSelectionToMenu, PRISM_ALL_APP_DESTINATIONS } from '@/lib/selectionContextRecommender';
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
 import { PrismAppIcon } from './PrismAppIcon';
+import { LucyQuickChatBubble } from './LucyQuickChatBubble';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 2~6px 노이즈 면역 + 1mm 미세 드래그 즉시 감지)
 const DRAG_RECOMMEND_THRESHOLD = 14;
 
@@ -80,6 +81,10 @@ export function BigBangButton() {
   const lastScrollTimeRef = useRef<number>(0);
   const maxDragDistanceRef = useRef<number>(0);
   const touchStartedWhileScrollingRef = useRef<boolean>(false);
+
+  // 💬 루시 퀵 대화 말풍선 열림 여부 및 초기 프롬프트 상태
+  const [isQuickChatOpen, setIsQuickChatOpen] = useState(false);
+  const [quickChatInitialPrompt, setQuickChatInitialPrompt] = useState('');
 
   // 스크롤 중에는 추천 1순위나 HUD 칩이 미리 노출되지 않도록 감지
   useEffect(() => {
@@ -835,6 +840,7 @@ export function BigBangButton() {
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (드래그 릴리즈 시 실행 - 룬 문자 사이 우주 흡입 워프 연출)
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any) => {
+    setIsQuickChatOpen(false);
     // 🛡️ 이미 우주 흡입 워프 진행 중인 경우 중복 격발 방지
     if (isCosmicSuctionActive) return;
 
@@ -967,6 +973,7 @@ export function BigBangButton() {
 
   // 🔑 Key 마음약방 도약 헬퍼 (더블탭/더블클릭 시 실행 - 텍스트 선택 시 40가지 연습 토스 연동)
   const goToKey = useCallback((customContext?: any, customMetrics?: any) => {
+    setIsQuickChatOpen(false);
     // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
     if (singleTapTimerRef.current) {
       clearTimeout(singleTapTimerRef.current);
@@ -1206,6 +1213,7 @@ export function BigBangButton() {
     // 🧭 [원뿔 방향 탭] 상하좌우 원뿔 각진 방향 클릭/터치 시 쉐브론 화살표 기능(스크롤 및 댑 순환 이동) 즉시 실행!
     const targetDir = hoverDirection !== 'none' ? hoverDirection : downDirectionRef.current;
     if (!isDragGesture && duration < 450 && targetDir !== 'none') {
+      setIsQuickChatOpen(false);
       downDirectionRef.current = 'none';
       setHoverDirection('none');
       if (targetDir === 'north') {
@@ -1267,64 +1275,10 @@ export function BigBangButton() {
         triggerHaptic('whitehole');
         omniWarpAudio.playWhiteHole();
 
-        // 🌟 텍스트 드래그(선택) 상태에서 탭: 루시 채팅 피드백으로 즉각 도약 및 질의 실행!
+        // 🌟 텍스트 드래그(선택) 상태에서 탭: 페이지 이동 대신 버튼 위 퀵 말풍선을 열어 선택 문장으로 루시 질의!
         if (textToToss) {
-          const prompt = `[선택 문장 피드백 요청]\n"${textToToss}"\n\n내가 선택한 위 내용에 대해 핵심과 의미, 유용한 피드백과 조언을 자세히 안내해 줘.`;
-          try {
-            sessionStorage.setItem('lucy_injected_auto_send', prompt);
-            sessionStorage.setItem('lucy_injected_input_draft', prompt);
-          } catch (_) {}
-          savePendingSelection(textToToss, 'lucy', location);
-          sendPrismToss({
-            sourceApp: location || 'bigbang_button',
-            targetApp: 'lucy',
-            actionType: 'smart_toss',
-            contextMessage: prompt,
-            autoPrompt: prompt,
-            autoTrigger: true,
-            tossedAt: Date.now(),
-          });
-
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(
-              new CustomEvent('prism:bigbang_commit', {
-                detail: {
-                  phase: 'whitehole',
-                  target: {
-                    id: 'lucy',
-                    name: '루시 채팅 피드백',
-                    destinationPath: '/chat',
-                    themeColor: '#38bdf8',
-                    eventHorizonMode: 'whitehole',
-                    previewLabel: `[루시 피드백] "${textToToss.slice(0, 16)}..." ➔ 루시 답변`,
-                    previewDescription: '선택한 문장에 대한 루시의 맞춤 피드백과 조언을 받습니다',
-                  },
-                  context,
-                  metrics: { ...metrics, phase: 'whitehole' },
-                  timestamp: Date.now(),
-                },
-              })
-            );
-            window.dispatchEvent(
-              new CustomEvent('prism:selection_tossed', {
-                detail: { text: textToToss, target: 'lucy', sourcePath: location, prompt, autoTrigger: true },
-              })
-            );
-            window.dispatchEvent(
-              new CustomEvent('prism:inject_lucy_prompt', {
-                detail: { prompt, autoSend: true },
-              })
-            );
-          }
-
-          if (isChatView) {
-            // 이미 채팅 화면이면 추가 페이지 이동 없음
-          } else {
-            navigate('/chat');
-            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
-            window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
-          }
-
+          setQuickChatInitialPrompt(textToToss);
+          setIsQuickChatOpen(true);
           lastValidSelectionRef.current = '';
           touchStartSelectionRef.current = '';
           clearPendingSelection();
@@ -1334,18 +1288,22 @@ export function BigBangButton() {
           return;
         }
 
-        // ☀️ 제자리 탭 (텍스트 미선택): 럭키 프롤로그 홈('/')으로 즉시 복귀!
+        // 💬 제자리 탭: 루시 채팅으로 페이지를 이동하지 않고 버튼 위에 '루시 퀵 대화 말풍선' 즉시 토글 오픈!
+        setIsQuickChatOpen((prev) => !prev);
+
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
             new CustomEvent('prism:bigbang_commit', {
               detail: {
                 phase: 'whitehole',
                 target: {
-                  id: 'hub',
-                  name: '홈 베이스캠프',
-                  destinationPath: '/',
+                  id: 'lucy_quick_chat',
+                  name: '루시 퀵 대화',
+                  destinationPath: location,
                   themeColor: '#38bdf8',
                   eventHorizonMode: 'whitehole',
+                  previewLabel: '[탭] 루시 퀵 대화 말풍선',
+                  previewDescription: '버튼 위에서 즉시 루시와 나누는 따뜻한 대화',
                 },
                 context,
                 metrics: { ...metrics, phase: 'whitehole' },
@@ -1353,21 +1311,6 @@ export function BigBangButton() {
               },
             })
           );
-        }
-
-        if (location === '/' || location === '') {
-          // 이미 홈 화면일 때는 최상단으로 부드럽게 스크롤
-          if (typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        } else {
-          // 다른 화면일 때는 홈('/')으로 즉시 이동
-          navigate('/');
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/' } }));
-          if (typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
         }
       }, 240);
 
@@ -1519,7 +1462,10 @@ export function BigBangButton() {
     };
 
     const handleOutsidePointerDown = (e: PointerEvent | MouseEvent) => {
-      const target = e.target as Node | null;
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest?.('[data-lucy-quick-chat="true"]')) {
+        return;
+      }
       if (hoverContainerRef.current && target && !hoverContainerRef.current.contains(target)) {
         setIsHovered(false);
         buttonRef.current?.blur();
@@ -1602,6 +1548,16 @@ export function BigBangButton() {
           voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
       >
+        {/* 💬 루시 퀵 대화 말풍선 (빅뱅 버튼 상단 앵커) */}
+        <LucyQuickChatBubble
+          isOpen={isQuickChatOpen}
+          onClose={() => {
+            setIsQuickChatOpen(false);
+            setQuickChatInitialPrompt('');
+          }}
+          initialPrompt={quickChatInitialPrompt}
+        />
+
         <div
           ref={hoverContainerRef}
           className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center pointer-events-auto select-none shrink-0"
@@ -1689,7 +1645,7 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">✨</span>
-                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 피드백</span>
+                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 퀵대화</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸Key 맞춤연습</span>
                 <span className="text-slate-500">│</span>
@@ -1871,11 +1827,11 @@ export function BigBangButton() {
                   ? 'inset 0 0 22px rgba(56, 189, 248, 0.35), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.45)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 홈 / 더블탭: Key 채널 / 홀드: 루시 음성 / 드래그: 럭키 1순위 추천)"
+              title="빅뱅 버튼 (탭: 루시 퀵 대화 / 더블탭: Key 채널 / 홀드: 루시 음성 / 드래그: 럭키 1순위 추천)"
               aria-label={
                 hasSelectionToss
                   ? '빅뱅 버튼 · 선택 내용 토스 대기중'
-                  : '빅뱅 버튼 · 탭: 홈, 더블탭: Key 채널, 홀드: 루시 음성, 드래그: 럭키 1순위 추천'
+                  : '빅뱅 버튼 · 탭: 루시 퀵 대화, 더블탭: Key 채널, 홀드: 루시 음성, 드래그: 럭키 1순위 추천'
               }
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
