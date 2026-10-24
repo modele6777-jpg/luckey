@@ -630,7 +630,7 @@ export default function LeftSidebarNav() {
       const dy = Math.abs(touch.clientY - edgeSwipeRef.current.startY);
 
       if (edgeSwipeRef.current.mode === 'close') {
-        if (dx <= -EDGE_SWIPE_MIN_DX && Math.abs(dx) > dy * 1.3) {
+        if (dx >= EDGE_SWIPE_MIN_DX && Math.abs(dx) > dy * 1.3) {
           edgeSwipeRef.current.triggered = true;
           setIsTouchingSidebar(false);
           setIsOpen(false);
@@ -858,9 +858,9 @@ export default function LeftSidebarNav() {
             />
           )}
 
-          {/* Floating Tooltip to the Right */}
+          {/* Floating Tooltip to the Left (facing screen center) */}
           <div
-            className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+            className={`hidden sm:group-hover:flex flex-col gap-1 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
               isLight
                 ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                 : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -1025,9 +1025,9 @@ export default function LeftSidebarNav() {
           }`}
         />
 
-        {/* Floating Tooltip to the Right with Theme Color Beacon */}
+        {/* Floating Tooltip to the Left (facing screen center) with Theme Color Beacon */}
         <div
-          className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+          className={`hidden sm:group-hover:flex flex-col gap-1 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
             isLight
               ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
               : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -1109,9 +1109,9 @@ export default function LeftSidebarNav() {
               triggerHaptic('whitehole');
               setIsOpen(true);
             }}
-            aria-label="좌측 끝 호버 또는 스와이프로 사이드바 열기"
+            aria-label="우측 끝 호버 또는 스와이프로 사이드바 열기"
             title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
-            style={{ left: 'var(--sal, 0px)' }}
+            style={{ right: 'var(--sar, 0px)' }}
             className="fixed top-0 bottom-0 w-4 sm:w-5 z-[440] cursor-pointer select-none group pointer-events-auto overflow-visible"
           >
             {/* 🌌 레이어 1: 화면 안쪽으로 부드럽게 번져나가는 세로 전면 앰비언트 오로라 커튼 (Ambient Aurora Curtain) */}
@@ -1138,14 +1138,14 @@ export default function LeftSidebarNav() {
                   ? { duration: 0.25, ease: 'easeOut' }
                   : { duration: 5.5, repeat: Infinity, ease: 'easeInOut' }
               }
-              className={`absolute left-0 top-0 bottom-0 h-full pointer-events-none transition-all duration-300 origin-left ${
+              className={`absolute right-0 top-0 bottom-0 h-full pointer-events-none transition-all duration-300 origin-right ${
                 isLight ? 'edge-aurora-veil-light' : 'edge-aurora-veil'
               }`}
               style={{
                 maskImage:
-                  'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
+                  'linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
                 WebkitMaskImage:
-                  'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
+                  'linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
               }}
             />
 
@@ -1160,7 +1160,7 @@ export default function LeftSidebarNav() {
                 repeat: Infinity,
                 ease: 'linear',
               }}
-              className="absolute left-0 w-3.5 h-1/2 pointer-events-none blur-[4px]"
+              className="absolute right-0 w-3.5 h-1/2 pointer-events-none blur-[4px]"
               style={{
                 background: isLight
                   ? 'linear-gradient(180deg, transparent 0%, rgba(245,158,11,0.6) 50%, transparent 100%)'
@@ -1168,7 +1168,7 @@ export default function LeftSidebarNav() {
               }}
             />
 
-            {/* ✨ 레이어 3: 화면 최좌측 끝단 초정밀 네온 코어 빔 (Ultra-thin Precision Neon Edge) */}
+            {/* ✨ 레이어 3: 화면 최우측 끝단 초정밀 네온 코어 빔 (Ultra-thin Precision Neon Edge) */}
             <motion.div
               animate={
                 isEdgeHovering
@@ -1186,7 +1186,7 @@ export default function LeftSidebarNav() {
                   ? { duration: 0.2, ease: 'easeOut' }
                   : { duration: 3.8, repeat: Infinity, ease: 'easeInOut' }
               }
-              className={`absolute left-0 top-0 bottom-0 h-full rounded-r-full pointer-events-none transition-all duration-300 ${
+              className={`absolute right-0 top-0 bottom-0 h-full rounded-l-full pointer-events-none transition-all duration-300 ${
                 isLight
                   ? isEdgeHovering
                     ? 'shadow-[0_0_14px_#f59e0b,0_0_26px_rgba(16,185,129,0.85)]'
@@ -1223,14 +1223,14 @@ export default function LeftSidebarNav() {
               aria-hidden="true"
             />
 
-            {/* Slide-in Left Slim Icon Rail */}
+            {/* Slide-in Right Slim Icon Rail */}
             <motion.aside
               key="nav-drawer"
               role="navigation"
               aria-label="사이드 네비게이션"
-              initial={{ x: '-100%', opacity: 0.6 }}
+              initial={{ x: '100%', opacity: 0.6 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '-100%', opacity: 0 }}
+              exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 360, damping: 32 }}
               onMouseEnter={() => setIsHoveringSidebar(true)}
               onMouseLeave={() => setIsHoveringSidebar(false)}
@@ -1239,13 +1239,13 @@ export default function LeftSidebarNav() {
               onTouchEnd={handleSidebarTouchEnd}
               onTouchCancel={handleSidebarTouchEnd}
               style={{
-                paddingLeft: 'var(--sal, 0px)',
-                width: 'calc(70px + var(--sal, 0px))',
+                paddingRight: 'var(--sar, 0px)',
+                width: 'calc(70px + var(--sar, 0px))',
               }}
-              className={`fixed left-0 top-0 bottom-0 backdrop-blur-2xl border-r z-[460] flex flex-col justify-between select-none transition-colors duration-300 ${
+              className={`fixed right-0 top-0 bottom-0 backdrop-blur-2xl border-l z-[460] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
-                  ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
-                  : 'bg-neutral-950/95 border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
+                  ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[-16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
+                  : 'bg-neutral-950/95 border-white/10 shadow-[-16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
               }`}
             >
               {/* Safe-Area Top Spacer & Auto-Collapse Progress Indicator */}
@@ -1286,6 +1286,9 @@ export default function LeftSidebarNav() {
 
               {/* Navigation Channel Items (Icon-Only Rail) */}
               <div className="flex-1 overflow-y-auto sm:overflow-visible px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
+                {/* 상단 1/3 빈 공간 (Spacer): 세로 화면 상단 1/3을 비우고 2/3 지점부터 아이콘 정렬 */}
+                <div className="w-full shrink-0 h-[30vh] sm:h-[33vh] pointer-events-none" aria-hidden="true" />
+
                 {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
                 <div className="flex flex-col items-center gap-2 w-full overflow-visible">
                   {CORE_CHANNELS.map(renderNavButton)}
@@ -1455,9 +1458,9 @@ export default function LeftSidebarNav() {
                     />
                   </button>
 
-                  {/* Desktop Hover Tooltip */}
+                  {/* Desktop Hover Tooltip to Left */}
                   <div
-                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
                       isLight
                         ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                         : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -1546,9 +1549,9 @@ export default function LeftSidebarNav() {
                       )}
                     </button>
 
-                    {/* Desktop Hover Tooltip */}
+                    {/* Desktop Hover Tooltip to Left */}
                     <div
-                      className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                      className={`hidden sm:group-hover:flex items-center gap-2 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
                         isLight
                           ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                           : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
