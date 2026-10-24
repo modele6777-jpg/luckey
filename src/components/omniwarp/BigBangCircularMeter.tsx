@@ -293,12 +293,18 @@ export function findCurrentCycleStepIndex(
   }
 
   const searchParams = new URLSearchParams(search);
-  const effectiveTab =
-    (tabOverride && tabOverride.toLowerCase()) ||
-    (searchParams.get('tab') && searchParams.get('tab')!.toLowerCase()) ||
-    (typeof window !== 'undefined'
-      ? (sessionStorage.getItem('prism_target_tab') || '').toLowerCase()
-      : null);
+  const queryTab = searchParams.get('tab') && searchParams.get('tab')!.toLowerCase();
+  const sessionTab = typeof window !== 'undefined' ? (sessionStorage.getItem('prism_target_tab') || '').toLowerCase() : null;
+
+  // 프롤로그 경로(/prologue, /universe)에서 쿼리나 오버라이드가 없을 경우 항상 universe 탭으로 간주
+  let effectiveTab = (tabOverride && tabOverride.toLowerCase()) || queryTab;
+  if (!effectiveTab) {
+    if (path === '/prologue' || path === '/universe') {
+      effectiveTab = 'universe';
+    } else {
+      effectiveTab = sessionTab;
+    }
+  }
 
   // 1. 탭 정보가 명시된 경우: 현재 앱 경로와 탭이 일치하는 DApp 우선 검색
   if (effectiveTab) {
@@ -307,7 +313,15 @@ export function findCurrentCycleStepIndex(
       if (s.tab.toLowerCase() !== effectiveTab) return false;
       const stepCleanPath = s.path.split('?')[0].toLowerCase();
       if (stepCleanPath === path) return true;
-      return s.aliases.some((a) => a.split('?')[0].toLowerCase() === path);
+      return s.aliases.some((a) => {
+        const cleanA = a.split('?')[0].toLowerCase();
+        if (cleanA !== path) return false;
+        if (a.includes('?')) {
+          const aTab = new URLSearchParams(a.split('?')[1]).get('tab')?.toLowerCase();
+          return aTab === effectiveTab;
+        }
+        return true;
+      });
     });
     if (matchedWithTab !== -1) return matchedWithTab;
   }
@@ -470,6 +484,24 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     }
     return null;
   });
+
+  // 경로 변화 시(예: /prologue, /ecpr, /todo, /key, /), 탭 오버라이드를 경로 특성에 맞게 실시간 동기화
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const clean = location ? location.split('?')[0].toLowerCase() : '';
+    const searchTab = new URLSearchParams(window.location.search).get('tab');
+    if (searchTab) {
+      setActiveTabOverride(searchTab);
+    } else if (clean === '/ecpr') {
+      setActiveTabOverride('ecpr');
+    } else if (clean === '/todo' || clean === '/mission' || clean === '/synergy' || clean === '/aegis') {
+      setActiveTabOverride('todo');
+    } else if (clean === '/prologue' || clean === '/universe') {
+      setActiveTabOverride('universe');
+    } else if (clean === '/' || clean === '/key') {
+      setActiveTabOverride(null);
+    }
+  }, [location]);
 
   useEffect(() => {
     const handleTabChange = (e: Event) => {

@@ -195,25 +195,84 @@ export default function HubHome() {
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   const [activeSection, setActiveSection] = useState<'universe' | 'ecpr' | 'todo'>(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/ecpr')) return 'ecpr';
-    if (typeof window !== 'undefined' && (
-      window.location.pathname.startsWith('/todo') || 
-      window.location.pathname.startsWith('/mission') || 
-      window.location.pathname.startsWith('/synergy') || 
-      window.location.pathname.startsWith('/aegis')
-    )) return 'todo';
+    if (typeof window !== 'undefined') {
+      const urlTab = new URLSearchParams(window.location.search).get('tab');
+      if (urlTab === 'ecpr' || urlTab === 'todo' || urlTab === 'universe') return urlTab;
+      const p = window.location.pathname.toLowerCase();
+      if (p.startsWith('/ecpr')) return 'ecpr';
+      if (
+        p.startsWith('/todo') || 
+        p.startsWith('/mission') || 
+        p.startsWith('/synergy') || 
+        p.startsWith('/aegis')
+      ) return 'todo';
+    }
     return 'universe';
   });
 
   useEffect(() => {
-    if (location === '/ecpr') {
+    const clean = location ? location.split('?')[0].toLowerCase() : '';
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    const searchTab = new URLSearchParams(search).get('tab');
+
+    if (searchTab === 'ecpr' || clean === '/ecpr') {
       setActiveSection('ecpr');
-    } else if (location === '/todo' || location === '/mission' || location === '/synergy' || location === '/aegis') {
+    } else if (
+      searchTab === 'todo' ||
+      clean === '/todo' || 
+      clean === '/mission' || 
+      clean === '/synergy' || 
+      clean === '/aegis'
+    ) {
       setActiveSection('todo');
-    } else if (location === '/' || location === '/universe') {
+    } else if (
+      searchTab === 'universe' ||
+      clean === '/prologue' || 
+      clean === '/universe' || 
+      clean === '/'
+    ) {
       setActiveSection('universe');
     }
   }, [location]);
+
+  useEffect(() => {
+    const applyTargetTab = (tab: string | null | undefined) => {
+      if (!tab) return;
+      if (tab === 'universe' || tab === 'ecpr' || tab === 'todo') {
+        setActiveSection(tab);
+        try {
+          sessionStorage.setItem('prism_target_tab', tab);
+        } catch (_) {}
+      }
+    };
+
+    const handleTabChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      applyTargetTab(customEvent.detail?.tab);
+    };
+
+    const handleNavClick = (e: Event) => {
+      const customEvent = e as CustomEvent<{ path?: string; tab?: string }>;
+      const path = customEvent.detail?.path || '';
+      const tab = customEvent.detail?.tab;
+      if (tab === 'universe' || tab === 'ecpr' || tab === 'todo') {
+        applyTargetTab(tab);
+      } else if (path === '/ecpr') {
+        setActiveSection('ecpr');
+      } else if (path === '/todo' || path === '/mission' || path === '/synergy' || path === '/aegis') {
+        setActiveSection('todo');
+      } else if (path === '/prologue' || path === '/universe') {
+        setActiveSection('universe');
+      }
+    };
+
+    window.addEventListener('prism-tab-change', handleTabChange);
+    window.addEventListener('nav-click-active', handleNavClick);
+    return () => {
+      window.removeEventListener('prism-tab-change', handleTabChange);
+      window.removeEventListener('nav-click-active', handleNavClick);
+    };
+  }, []);
 
   useEffect(() => {
     try {

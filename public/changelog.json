@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.4.414",
+    "summary": "프롤로그 앱 좌우 화살표 23대 DApp 순환 네비게이션 및 세션 탭 동기화 오류 전면 수정",
+    "builtAt": "2026-10-24T03:56:00.000Z",
+    "items": [
+      "프롤로그(HubHome) 내 location 동기화에서 누락되었던 '/prologue' 경로 매칭을 추가하여 ECPR/투두에서 유니버스 허브로의 역방향 및 정방향 탭 전환이 즉각 반응하도록 정상화",
+      "HubHome에 prism-tab-change 및 nav-click-active 이벤트 리스너를 연동하여 빅뱅 컨트롤러 좌우 화살표 조작 시 화면 섹션이 실시간 일치하도록 동기화",
+      "BigBangCircularMeter의 findCurrentCycleStepIndex 및 activeTabOverride 동기화 로직을 보강하여, 이전 채널의 잔여 세션 탭 오염을 방지하고 프롤로그 3대 DApp(유니버스·ECPR·투두) 간의 왕복 순환이 부드럽게 이어지도록 개선"
+    ]
+  },
+  {
     "version": "1.4.413",
     "summary": "좌측 가장자리 사이드바 오픈 힌트를 세로 전면 3단 프리즘 오로라 네온 발광 커튼으로 개편",
     "builtAt": "2026-10-24T03:38:00.000Z",
