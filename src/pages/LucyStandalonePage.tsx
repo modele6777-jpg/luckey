@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Trash2, Search, X, Check, Volume2, VolumeX, Square,
   Download, User, Plus, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
-  Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked
+  Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked, Mic, MicOff, MessageSquare
 } from 'lucide-react';
 import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -11,6 +11,7 @@ import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { useLocation } from 'wouter';
 import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, prefetchTTSChunks, normalizeTextForSpeech } from '@/utils/tts';
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
+import { playAudioHaptic } from '@/lib/audioHaptics';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
 import { getLocalDateKey } from '@/lib/rebibleStorage';
 import ReactMarkdown from 'react-markdown';
@@ -889,6 +890,229 @@ export default function LucyStandalonePage() {
   const lucyMessages = personaMessages?.lucy || [];
   const isLucyGenerating = isGenerating?.lucy || false;
 
+  // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
+  const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('lucy_chat_voice_mode') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [voiceState, setVoiceState] = useState<'idle' | 'listening' | 'thinking' | 'speaking' | 'error'>('idle');
+  const [speechTranscript, setSpeechTranscript] = useState<string>('');
+  const [speechInterim, setSpeechInterim] = useState<string>('');
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [isVoiceMuted, setIsVoiceMuted] = useState<boolean>(false);
+
+  const isVoiceModeRef = useRef<boolean>(isVoiceMode);
+  useEffect(() => {
+    isVoiceModeRef.current = isVoiceMode;
+    try {
+      sessionStorage.setItem('lucy_chat_voice_mode', String(isVoiceMode));
+    } catch (_) {}
+  }, [isVoiceMode]);
+
+  const voiceStateRef = useRef<'idle' | 'listening' | 'thinking' | 'speaking' | 'error'>('idle');
+  useEffect(() => {
+    voiceStateRef.current = voiceState;
+  }, [voiceState]);
+
+  const isVoiceMutedRef = useRef<boolean>(isVoiceMuted);
+  useEffect(() => {
+    isVoiceMutedRef.current = isVoiceMuted;
+  }, [isVoiceMuted]);
+
+  const recognitionRef = useRef<any>(null);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const speechTranscriptRef = useRef<string>('');
+  const isLucyGeneratingRef = useRef<boolean>(isLucyGenerating);
+
+  // 🎙️ 음성 인식 중지
+  const stopRecognition = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (_) {}
+      recognitionRef.current = null;
+    }
+  }, []);
+
+  const stopRecognitionRef = useRef(stopRecognition);
+  useEffect(() => {
+    stopRecognitionRef.current = stopRecognition;
+  }, [stopRecognition]);
+
+  // handleSend forward ref
+  const handleSendRef = useRef<(textToSend?: string, forcedChannels?: SpecialChannel[]) => Promise<void>>(async () => {});
+
+  // 🎙️ 음성 인식 시작 (STT)
+  const startListening = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setVoiceError('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome/Safari를 권장합니다.');
+      setVoiceState('error');
+      return;
+    }
+
+    try {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (_) {}
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ko-KR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setVoiceError(null);
+        setVoiceState('listening');
+        voiceStateRef.current = 'listening';
+      };
+
+      recognition.onresult = (event: any) => {
+        let finalStr = '';
+        let interimStr = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const chunk = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalStr += chunk;
+          } else {
+            interimStr += chunk;
+          }
+        }
+
+        const combined = (finalStr || interimStr).trim();
+        if (combined) {
+          speechTranscriptRef.current = combined;
+          setSpeechTranscript(combined);
+          setSpeechInterim(interimStr);
+
+          // 1.3초 무음 감지 시 발화 마감 및 자동 전송
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = setTimeout(() => {
+            if (combined.length >= 2 && voiceStateRef.current === 'listening') {
+              void handleSendRef.current(combined);
+              setSpeechTranscript('');
+              setSpeechInterim('');
+            }
+          }, 1300);
+        }
+      };
+
+      recognition.onerror = (e: any) => {
+        console.warn('[LucyChat] STT error:', e.error || e);
+        if (e.error === 'not-allowed') {
+          setVoiceError('마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
+          setVoiceState('error');
+        }
+      };
+
+      recognition.onend = () => {
+        if (
+          isVoiceModeRef.current &&
+          voiceStateRef.current === 'listening' &&
+          !isVoiceMutedRef.current &&
+          !isLucyGeneratingRef.current
+        ) {
+          try {
+            recognition.start();
+          } catch (_) {}
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err: any) {
+      console.warn('[LucyChat] startListening error:', err);
+      setVoiceState('idle');
+    }
+  }, []);
+
+  const startListeningRef = useRef(startListening);
+  useEffect(() => {
+    startListeningRef.current = startListening;
+  }, [startListening]);
+
+  // 🎙️ 루시 말 끊기 (인터럽트) 및 듣기 전환
+  const handleInterruptLucy = useCallback(() => {
+    try {
+      playAudioHaptic('tap_impact');
+      triggerHaptic('whitehole');
+    } catch (_) {}
+    stopTTS();
+    setVoiceState('listening');
+    voiceStateRef.current = 'listening';
+    startListening();
+  }, [startListening]);
+
+  // 🎙️ 음성 모드 토글
+  const handleToggleVoiceMode = useCallback(() => {
+    try {
+      playAudioHaptic('tap_impact');
+      triggerHaptic('whitehole');
+    } catch (_) {}
+
+    if (isVoiceMode) {
+      stopRecognition();
+      stopTTS();
+      setIsVoiceMode(false);
+      isVoiceModeRef.current = false;
+      setVoiceState('idle');
+      voiceStateRef.current = 'idle';
+      setSpeechTranscript('');
+      setSpeechInterim('');
+      setVoiceError(null);
+    } else {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+      setIsVoiceMode(true);
+      isVoiceModeRef.current = true;
+      setIsVoiceMuted(false);
+      isVoiceMutedRef.current = false;
+      setVoiceState('listening');
+      voiceStateRef.current = 'listening';
+      setSpeechTranscript('');
+      setSpeechInterim('');
+      setVoiceError(null);
+      startListening();
+    }
+  }, [isVoiceMode, startListening, stopRecognition]);
+
+  // AI 응답 생성 상태 변화에 따른 음성 모드 동기화
+  useEffect(() => {
+    isLucyGeneratingRef.current = isLucyGenerating;
+    if (isVoiceModeRef.current) {
+      if (isLucyGenerating) {
+        setVoiceState('thinking');
+        voiceStateRef.current = 'thinking';
+        stopRecognition();
+      }
+    }
+  }, [isLucyGenerating, stopRecognition]);
+
+  // 페이지 언마운트 시 음성 인식 및 TTS 정리
+  useEffect(() => {
+    return () => {
+      stopRecognition();
+      stopTTS();
+    };
+  }, [stopRecognition]);
+
   // 사용자가 대화창에서 프로필을 직접 변경/수정한 경우 플래그 (새로고침 또는 페이지 재진입 전까지 프로필 원복 방지)
   const hasUserCustomizedProfilesRef = useRef(false);
 
@@ -1270,6 +1494,16 @@ export default function LucyStandalonePage() {
       });
       if (!state.isSpeaking && !state.isLoading) {
         setPlayingMsgId(null);
+        if (isVoiceModeRef.current && !isLucyGeneratingRef.current) {
+          // 루시 음성 종료 시 자동으로 듣기(STT) 상태로 전환하여 연속 대화 연결
+          setVoiceState('listening');
+          voiceStateRef.current = 'listening';
+          startListeningRef.current?.();
+        }
+      } else if (state.isSpeaking && isVoiceModeRef.current) {
+        setVoiceState('speaking');
+        voiceStateRef.current = 'speaking';
+        stopRecognitionRef.current?.();
       }
     });
   }, []);
@@ -1279,7 +1513,7 @@ export default function LucyStandalonePage() {
   const pageMountedAtRef = useRef<number>(Date.now());
 
   const triggerAutoTts = useCallback(async (textToSpeak: string, msgId?: string) => {
-    if (!isAutoTtsRef.current || !textToSpeak || !textToSpeak.trim()) return;
+    if ((!isAutoTtsRef.current && !isVoiceModeRef.current) || !textToSpeak || !textToSpeak.trim()) return;
     if (msgId && lastAutoSpokenMsgIdRef.current === msgId) return;
     if (isAutoTtsBusyRef.current) return;
 
@@ -1747,6 +1981,12 @@ export default function LucyStandalonePage() {
     setAttachedImage(null);
     stopTTS();
 
+    if (isVoiceModeRef.current) {
+      setVoiceState('thinking');
+      voiceStateRef.current = 'thinking';
+      stopRecognition();
+    }
+
     // 🔊 사용자 액션(전송 클릭 또는 Enter 입력) 시 오디오 컨텍스트를 즉시 해제 및 프라이밍
     // 이를 통해 AI 응답 수신 후 브라우저 오디오 자동 재생 제한 없이 즉시 음성이 나옵니다.
     unlockAudioPlayback();
@@ -1761,14 +2001,13 @@ export default function LucyStandalonePage() {
       channel: isSingle ? channels[0] : undefined,
       usedTools: usedToolNames,
       onFinish: async (fullText, _sentText, replyMsgId) => {
-        if (isAutoTtsRef.current && fullText && fullText.trim()) {
+        if ((isAutoTtsRef.current || isVoiceModeRef.current) && fullText && fullText.trim()) {
           void triggerAutoTts(fullText, replyMsgId);
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts]);
+  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition]);
 
-  const handleSendRef = useRef(handleSend);
   useEffect(() => {
     handleSendRef.current = handleSend;
   }, [handleSend]);
@@ -2150,6 +2389,23 @@ export default function LucyStandalonePage() {
               <Search size={16} />
             </button>
 
+
+            {/* 🎙️ 1:1 실시간 음성 모드 토글 버튼 */}
+            <button
+              type="button"
+              onClick={handleToggleVoiceMode}
+              className={`p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center justify-center border ${
+                isVoiceMode
+                  ? 'bg-gradient-to-r from-amber-500/25 to-yellow-500/30 text-amber-300 border-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.35)] animate-pulse'
+                  : isLight
+                  ? 'bg-amber-50/80 hover:bg-amber-100/80 text-slate-600 border-amber-900/10'
+                  : 'bg-white/10 hover:bg-white/15 text-white/85 border border-white/15'
+              }`}
+              title={isVoiceMode ? '음성 모드 켜짐 (클릭 시 끄기)' : '루시 1:1 음성 대화 모드 켜기'}
+              aria-label={isVoiceMode ? '음성 모드 켜짐' : '음성 모드 켜기'}
+            >
+              <Mic size={16} className={isVoiceMode ? 'text-amber-300 animate-pulse' : 'text-amber-500 dark:text-amber-400'} />
+            </button>
 
             {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 아이콘 버튼) */}
             <button
@@ -2667,6 +2923,157 @@ export default function LucyStandalonePage() {
             )}
           </AnimatePresence>
 
+          {/* 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 패널 (Voice Mode Active Panel) */}
+          <AnimatePresence>
+            {isVoiceMode && (
+              <motion.div
+                initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                className={`p-2.5 sm:p-3 rounded-2xl border backdrop-blur-xl transition-all shadow-md my-0.5 ${
+                  isLight
+                    ? 'bg-gradient-to-r from-amber-50/95 via-yellow-50/90 to-amber-50/95 border-amber-300/80 text-slate-800 shadow-[0_2px_12px_rgba(251,191,36,0.15)]'
+                    : 'bg-gradient-to-r from-slate-900/95 via-amber-950/40 to-slate-900/95 border-amber-400/40 text-white shadow-[0_2px_16px_rgba(0,0,0,0.5)]'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {voiceState === 'listening' ? (
+                      <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-300">
+                        <div className="w-6 h-6 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-400/40 animate-pulse shrink-0">
+                          <Mic size={13} className="text-cyan-600 dark:text-cyan-300" />
+                        </div>
+                        <div className="flex items-center gap-0.5 h-3 px-0.5 shrink-0">
+                          <span className="w-1 h-2.5 bg-cyan-400 rounded-full animate-pulse" />
+                          <span className="w-1 h-3.5 bg-cyan-300 rounded-full animate-pulse" />
+                          <span className="w-1 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                        </div>
+                        <span className="text-xs font-bold truncate">
+                          루시가 듣고 있어요... 편하게 말씀하세요
+                        </span>
+                      </div>
+                    ) : voiceState === 'thinking' ? (
+                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-300">
+                        <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-400/40 shrink-0">
+                          <Loader2 size={13} className="animate-spin text-amber-600 dark:text-amber-300" />
+                        </div>
+                        <span className="text-xs font-bold truncate animate-pulse">
+                          루시가 생각을 정리하고 있어요...
+                        </span>
+                      </div>
+                    ) : voiceState === 'speaking' ? (
+                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-300">
+                        <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-400/40 animate-pulse shrink-0">
+                          <Volume2 size={13} className="text-amber-600 dark:text-amber-300 animate-pulse" />
+                        </div>
+                        <span className="text-xs font-bold truncate">
+                          루시가 다정하게 답변 중이에요
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-300">
+                        <Mic size={14} className="text-slate-400 shrink-0" />
+                        <span className="text-xs font-medium truncate">1:1 음성 대화 준비됨</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* 루시 말 끊기 (인터럽트) 버튼 */}
+                    {voiceState === 'speaking' && (
+                      <button
+                        type="button"
+                        onClick={handleInterruptLucy}
+                        className="px-2 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[10px] cursor-pointer active:scale-95 transition-all shadow-xs flex items-center gap-1"
+                        title="루시 말 끊고 바로 질문하기"
+                      >
+                        <Square size={8} className="fill-current" />
+                        <span>말끊기</span>
+                      </button>
+                    )}
+
+                    {/* 음소거 토글 */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextMuted = !isVoiceMuted;
+                        setIsVoiceMuted(nextMuted);
+                        isVoiceMutedRef.current = nextMuted;
+                        if (nextMuted) {
+                          stopRecognition();
+                          setVoiceState('idle');
+                        } else {
+                          setVoiceState('listening');
+                          startListening();
+                        }
+                      }}
+                      className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                        isVoiceMuted
+                          ? 'bg-rose-500/20 text-rose-400 border-rose-400/40'
+                          : isLight
+                          ? 'bg-white/80 hover:bg-amber-100 text-slate-600 border-amber-200'
+                          : 'bg-white/10 hover:bg-white/20 text-white/80 border-white/15'
+                      }`}
+                      title={isVoiceMuted ? '마이크 음소거 해제' : '마이크 임시 음소거'}
+                    >
+                      {isVoiceMuted ? <MicOff size={12} /> : <Mic size={12} />}
+                    </button>
+
+                    {/* 음성 모드 종료 버튼 */}
+                    <button
+                      type="button"
+                      onClick={handleToggleVoiceMode}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/10 cursor-pointer"
+                      title="음성 모드 끄기 (텍스트 모드로 복귀)"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 실시간 음성 인식 텍스트 표시 영역 */}
+                {(speechTranscript || speechInterim) && (
+                  <div className="mt-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-400/30 text-xs flex items-center justify-between gap-2">
+                    <span className="truncate text-slate-700 dark:text-amber-100/90 font-medium">
+                      "{speechTranscript || speechInterim}"
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const textToSend = (speechTranscript || speechInterim).trim();
+                        if (textToSend) {
+                          void handleSend(textToSend);
+                          setSpeechTranscript('');
+                          setSpeechInterim('');
+                        }
+                      }}
+                      className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-[10px] shrink-0 active:scale-95 transition-all shadow-xs cursor-pointer"
+                    >
+                      지금 전송
+                    </button>
+                  </div>
+                )}
+
+                {/* 마이크 에러 알림 */}
+                {voiceError && (
+                  <div className="mt-1 px-2 py-1 rounded-lg bg-rose-500/15 border border-rose-400/30 text-[11px] text-rose-300 flex items-center justify-between">
+                    <span>{voiceError}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVoiceError(null);
+                        startListening();
+                      }}
+                      className="text-[10px] font-bold underline ml-2 cursor-pointer"
+                    >
+                      다시 시도
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* 👥 대화창 상담 대상자 프로필 독 바 (2인 이상 궁합/시너지 모드 시 항시 표시) */}
           {activeProfiles.length > 1 && (
             <ChatProfileDock
@@ -2824,6 +3231,23 @@ export default function LucyStandalonePage() {
               aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐' : '음성 자동 읽기 꺼짐'}
             >
               {isAutoTts ? <Volume2 size={14} className="sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" /> : <VolumeX size={14} className="sm:w-4 sm:h-4" />}
+            </button>
+
+            {/* 🎙️ Voice Mode / STT Microphone Button */}
+            <button
+              type="button"
+              onClick={handleToggleVoiceMode}
+              className={`p-0.5 sm:p-1.5 rounded-md transition-all cursor-pointer shrink-0 ${
+                isVoiceMode
+                  ? 'text-amber-500 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-950/80 border border-amber-400 dark:border-amber-500/50 shadow-2xs animate-pulse ring-1 ring-amber-400/50'
+                  : isLight
+                  ? 'text-slate-400 hover:text-amber-700 hover:bg-amber-50'
+                  : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
+              }`}
+              title={isVoiceMode ? '루시 음성 모드 켜짐 (클릭 시 끄기)' : '루시 1:1 음성 모드 켜기 (마이크 실시간 대화)'}
+              aria-label={isVoiceMode ? '음성 모드 켜짐' : '음성 모드 켜기'}
+            >
+              <Mic size={14} className={`sm:w-4 sm:h-4 ${isVoiceMode ? 'text-amber-500 dark:text-amber-300 animate-pulse' : ''}`} />
             </button>
 
             {/* Textarea Wrapper for Ghost Typewriter Overlay */}
