@@ -251,6 +251,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
       await sendUnifiedMessage(userText, 'lucy', undefined, {
         mode: 'casual',
+        channels: [],
         extraSystemContext: voiceSystemContext,
         onFinish: async (fullText) => {
           if (!wasVoiceActive || !isVoiceModeRef.current) return;

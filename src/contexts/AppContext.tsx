@@ -1582,8 +1582,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     // 즉시 로컬 스토리지에 질문 영구 보존 및 브로드캐스트 & 클라우드 비동기 푸시
     // 이전 진행 중이던 미완성 응답(supersededAssistMsgId)이나 빈 플레이스홀더는 제거하여 연속 입력 시 깔끔한 단일 응답만 남도록 보장
+    const currentMemory = Array.isArray(unifiedMessages) ? unifiedMessages : [];
     const currentStored = loadSavedUnifiedMessages();
-    const cleanPrior = currentStored.filter(m => {
+    const combinedPrior = mergeUnifiedMessages(currentMemory, currentStored);
+    const cleanPrior = combinedPrior.filter(m => {
       if (supersededAssistMsgId && m.id === supersededAssistMsgId) return false;
       return m.role !== 'model' || (typeof m.content === 'string' ? m.content.trim() !== '' : !!m.content);
     });
@@ -2055,6 +2057,13 @@ ${responseProfile.rule}`;
                 keyExerciseIndex: resolvedKeyExIndex
               });
             }
+            saveUnifiedMessagesSafely(updated);
+            if (chatBroadcastRef.current) {
+              chatBroadcastRef.current.postMessage({ messages: updated, timestamp: Date.now() });
+            }
+            void updateSharedState({
+              chatHistory: updated.slice(-150)
+            }, 'lucy');
             pushChatThreadsToFirestore(updated);
             return updated;
           });
@@ -2132,6 +2141,14 @@ ${responseProfile.rule}`;
             if (!found) {
               updated.push({ id: assistMsgId, role: 'model' as const, content: latestCleanReply, timestamp: Date.now(), persona: sourcePersona });
             }
+            saveUnifiedMessagesSafely(updated);
+            if (chatBroadcastRef.current) {
+              chatBroadcastRef.current.postMessage({ messages: updated, timestamp: Date.now() });
+            }
+            void updateSharedState({
+              chatHistory: updated.slice(-150)
+            }, 'lucy');
+            pushChatThreadsToFirestore(updated);
             return updated;
           });
         } else {
@@ -2157,6 +2174,13 @@ ${responseProfile.rule}`;
           if (!found) {
             updated.push({ id: assistMsgId, role: 'model' as const, content: latestCleanReply, timestamp: Date.now(), persona: sourcePersona });
           }
+          saveUnifiedMessagesSafely(updated);
+          if (chatBroadcastRef.current) {
+            chatBroadcastRef.current.postMessage({ messages: updated, timestamp: Date.now() });
+          }
+          void updateSharedState({
+            chatHistory: updated.slice(-150)
+          }, 'lucy');
           pushChatThreadsToFirestore(updated);
           return updated;
         });
@@ -2209,6 +2233,13 @@ ${responseProfile.rule}`;
                 usedTools: [],
               });
             }
+            saveUnifiedMessagesSafely(updated);
+            if (chatBroadcastRef.current) {
+              chatBroadcastRef.current.postMessage({ messages: updated, timestamp: Date.now() });
+            }
+            void updateSharedState({
+              chatHistory: updated.slice(-150)
+            }, 'lucy');
             pushChatThreadsToFirestore(updated);
             return updated;
           });
@@ -2270,6 +2301,13 @@ ${responseProfile.rule}`;
             persona: sourcePersona
           });
         }
+        saveUnifiedMessagesSafely(updated);
+        if (chatBroadcastRef.current) {
+          chatBroadcastRef.current.postMessage({ messages: updated, timestamp: Date.now() });
+        }
+        void updateSharedState({
+          chatHistory: updated.slice(-150)
+        }, 'lucy');
         pushChatThreadsToFirestore(updated);
         return updated;
       });

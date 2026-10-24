@@ -43,6 +43,8 @@ import {
   createDefaultGreeting,
   isGreetingMessage,
   saveUnifiedMessagesSafely,
+  loadSavedUnifiedMessages,
+  mergeUnifiedMessages,
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { getTodayDateKey } from '@/lib/dailyCache';
@@ -886,7 +888,9 @@ export default function LucyStandalonePage() {
     }
 
     setPersonaMessages((prevRecord) => {
-      const currentList = prevRecord.lucy || [];
+      const existing = prevRecord.lucy || [];
+      const stored = loadSavedUnifiedMessages();
+      const currentList = mergeUnifiedMessages(existing, stored);
       const archival = processDailyChatArchival(currentList, userDisplayName);
       let nextList = archival.messages;
 
@@ -899,7 +903,7 @@ export default function LucyStandalonePage() {
         markFirstLucyVisitCompletedToday();
       }
 
-      if (JSON.stringify(currentList) !== JSON.stringify(nextList)) {
+      if (JSON.stringify(existing) !== JSON.stringify(nextList)) {
         saveUnifiedMessagesSafely(nextList);
         return {
           lucy: nextList,
