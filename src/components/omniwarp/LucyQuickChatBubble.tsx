@@ -13,6 +13,8 @@ import {
   MicOff,
   Volume2,
   VolumeX,
+  RotateCcw,
+  Clock,
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useApp, UnifiedMessage } from '@/contexts/AppContext';
@@ -286,15 +288,88 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     }
   }, [playingMessageId]);
 
-  // 🎯 인사말 제외 필터링 (사용자 요구: "이때 인사말은 생략하고")
+  // ⏱️ 말풍선 모드 1시간 주기 자동 초기화 관리 (1시간 = 3,600,000ms)
+  // 말풍선 모드는 1시간마다 초기화되어 가볍고 쾌적한 퀵 세션을 유지하며, 모든 대화는 루시채팅(/chat)에 영구 보존됩니다.
+  const [bubbleCutoffTime, setBubbleCutoffTime] = useState<number>(() => {
+    try {
+      const saved = Number(localStorage.getItem('lucy_bubble_session_cutoff') || '0');
+      return saved || 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [nowTick, setNowTick] = useState<number>(() => Date.now());
+
+  // 말풍선 열림 시 1시간 비활성 검사 및 열려있는 동안 15초 주기 만료 체크
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const currentNow = Date.now();
+    setNowTick(currentNow);
+
+    try {
+      const lastActive = Number(localStorage.getItem('lucy_bubble_last_active_at') || '0');
+      // 마지막 활동으로부터 1시간(60분) 경과 시 세션 기준시각 갱신하여 자동 리셋
+      if (lastActive > 0 && currentNow - lastActive >= 60 * 60 * 1000) {
+        localStorage.setItem('lucy_bubble_session_cutoff', String(currentNow));
+        setBubbleCutoffTime(currentNow);
+      }
+    } catch (_) {}
+
+    // 말풍선이 열려있는 동안 15초마다 시간 갱신하여 1시간 지난 대화 실시간 만료 처리
+    const timer = setInterval(() => {
+      setNowTick(Date.now());
+    }, 15000);
+
+    return () => clearInterval(timer);
+  }, [isOpen]);
+
+  // 🔄 말풍선 1시간 세션 수동 즉시 초기화 (새 대화 시작)
+  const handleResetBubbleSession = useCallback(() => {
+    try {
+      playAudioHaptic('tap_impact');
+      triggerHaptic('whitehole');
+    } catch (_) {}
+    const newCutoff = Date.now();
+    setBubbleCutoffTime(newCutoff);
+    setNowTick(newCutoff);
+    try {
+      localStorage.setItem('lucy_bubble_session_cutoff', String(newCutoff));
+      localStorage.setItem('lucy_bubble_last_active_at', String(newCutoff));
+    } catch (_) {}
+    stopTTS();
+    setPlayingMessageId(null);
+    setVoiceState((s) => (s === 'speaking' ? 'idle' : s));
+    if (autoReadToastTimerRef.current) clearTimeout(autoReadToastTimerRef.current);
+    setAutoReadToast('⏱️ 말풍선 대화가 1시간 새 세션으로 초기화되었습니다.');
+    autoReadToastTimerRef.current = setTimeout(() => setAutoReadToast(null), 2500);
+  }, []);
+
+  // 🎯 인사말 제외 및 1시간 주기 자동 초기화 필터링 (사용자 요구: "말풍선 모드는 1시간마다 초기화되게 해줘")
   const lucyMessages = useMemo(() => {
     const rawList = personaMessages?.lucy || [];
+    const oneHourAgo = nowTick - 60 * 60 * 1000;
+    const effectiveCutoff = Math.max(oneHourAgo, bubbleCutoffTime);
+
     return rawList.filter((m: UnifiedMessage) => {
       if (m.id === 'greet' || m.id === 'default-greeting') return false;
       if (isGreetingMessage(m)) return false;
+
+      // 1시간 이전 메시지 필터링
+      const msgTime =
+        m.timestamp ||
+        (typeof m.id === 'string' && m.id.startsWith('msg-')
+          ? parseInt(m.id.split('-')[1], 36)
+          : 0);
+
+      if (msgTime > 0 && msgTime < effectiveCutoff) {
+        return false;
+      }
+
       return true;
     });
-  }, [personaMessages?.lucy]);
+  }, [personaMessages?.lucy, nowTick, bubbleCutoffTime]);
 
   // 스크롤 최하단 자동 이동
   const scrollToBottom = useCallback((smooth = true) => {
@@ -337,6 +412,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       triggerHaptic('whitehole');
       unlockAudioPlayback();
       primeTTSAudioElement();
+      localStorage.setItem('lucy_bubble_last_active_at', String(Date.now()));
     } catch (_) {}
 
     const wasVoiceActive = isVoiceModeRef.current;
@@ -682,9 +758,12 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                   }`}>
                     {isVoiceMode ? '🎙️ 음성 모드' : '퀵 대화'}
                   </span>
+                  <span className="text-[9px] text-cyan-300/70 font-medium px-1.5 py-0.2 rounded-full bg-white/5 border border-white/10" title="말풍선 모드는 1시간 단위로 자동 초기화됩니다 (전체 기록은 루시채팅 보존)">
+                    ⏱️ 1시간 세션
+                  </span>
                 </div>
                 <span className="text-[10px] text-cyan-200/70 truncate max-w-[170px] sm:max-w-[220px]">
-                  {isVoiceMode ? '실시간 1:1 다정한 음성 대화' : '영혼의 안식처 · 즉각 대화'}
+                  {isVoiceMode ? '실시간 1:1 다정한 음성 대화' : '영혼의 안식처 · 1시간 퀵 세션'}
                 </span>
               </div>
             </div>
@@ -713,6 +792,17 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                     <span className="text-[10.5px]">자동읽기 OFF</span>
                   </>
                 )}
+              </button>
+
+              {/* 🔄 말풍선 1시간 세션 초기화 버튼 */}
+              <button
+                type="button"
+                onClick={handleResetBubbleSession}
+                className="p-1.5 rounded-xl text-cyan-300/70 hover:text-cyan-200 hover:bg-cyan-500/20 active:scale-95 transition-all cursor-pointer"
+                title="말풍선 대화 지금 초기화 (새 1시간 세션 시작 · 전체 대화는 루시채팅 보존)"
+                aria-label="말풍선 대화 초기화"
+              >
+                <RotateCcw size={13} />
               </button>
 
               <button
@@ -842,14 +932,25 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                 <p className="text-xs font-bold text-slate-200 mb-1">
                   루시에게 마음속 이야기를 건네보세요
                 </p>
-                <p className="text-[11px] text-slate-400 leading-relaxed max-w-[260px]">
+                <p className="text-[11px] text-slate-400 leading-relaxed max-w-[260px] mb-2.5">
                   {isVoiceMode
                     ? '말씀하시면 루시가 경청하고 다정한 목소리와 함께 답변해 드려요.'
                     : '아래 맞춤 예시를 탭하거나 질문을 자유롭게 적어 보내주세요.'}
                 </p>
+                <span className="inline-flex items-center gap-1 text-[10px] text-cyan-300/70 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
+                  <Clock size={10} />
+                  <span>말풍선은 1시간 단위로 자동 초기화됩니다</span>
+                </span>
               </div>
             ) : (
-              lucyMessages.map((msg, idx) => {
+              <>
+                <div className="flex justify-center pb-0.5">
+                  <span className="inline-flex items-center gap-1 text-[9.5px] text-cyan-300/60 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                    <Clock size={9} />
+                    <span>최근 1시간 퀵 대화 · 전체 기록은 루시채팅 보관</span>
+                  </span>
+                </div>
+                {lucyMessages.map((msg, idx) => {
                 const isUser = msg.role === 'user';
                 const isLatest = idx === lucyMessages.length - 1;
                 const msgContent =
@@ -926,8 +1027,9 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                     )}
                   </div>
                 );
-              })
-            )}
+              })}
+            </>
+          )}
 
             {/* AI 생성 중 로딩 인디케이터 (메시지가 아직 청크 도착 전일 때) */}
             {isLucyGenerating &&
