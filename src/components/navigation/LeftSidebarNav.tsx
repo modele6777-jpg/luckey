@@ -551,11 +551,11 @@ export default function LeftSidebarNav() {
     };
   }, [isOpen, isInteractingWithSidebar]);
 
-  // Desktop left-edge mouse proximity & hover detection (Safe-Area Left aware)
+  // Desktop right-edge mouse proximity & hover detection (Safe-Area Right aware)
   useEffect(() => {
-    const getSafeLeftPx = () => {
+    const getSafeRightPx = () => {
       try {
-        return parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--sal')) || 0;
+        return parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--sar')) || 0;
       } catch {
         return 0;
       }
@@ -567,25 +567,28 @@ export default function LeftSidebarNav() {
         return;
       }
 
-      const sal = getSafeLeftPx();
+      const sar = getSafeRightPx();
+      const distFromRight = window.innerWidth - sar - e.clientX;
+
       if (!isOpen) {
-        if (e.clientX <= sal + 10) {
+        // When cursor is within 24px of the right edge, trigger sidebar opening
+        if (distFromRight <= 24 && distFromRight >= -20) {
           if (!edgeHoverTimerRef.current) {
             setIsEdgeHovering(true);
             edgeHoverTimerRef.current = setTimeout(() => {
               edgeHoverTimerRef.current = null;
               setIsHoveringSidebar(true);
               setIsOpen(true);
-            }, 60);
+            }, 50);
           }
-        } else if (e.clientX > sal + 24 && edgeHoverTimerRef.current) {
+        } else if (distFromRight > 40 && edgeHoverTimerRef.current) {
           clearTimeout(edgeHoverTimerRef.current);
           edgeHoverTimerRef.current = null;
           setIsEdgeHovering(false);
         }
       } else {
         // When open, keep isHoveringSidebar synced if cursor is within the rail + safe area
-        if (e.clientX <= sal + 76) {
+        if (distFromRight <= 90 && distFromRight >= -20) {
           setIsHoveringSidebar(true);
         }
       }
@@ -1112,7 +1115,7 @@ export default function LeftSidebarNav() {
             aria-label="우측 끝 호버 또는 스와이프로 사이드바 열기"
             title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
             style={{ right: 'var(--sar, 0px)' }}
-            className="fixed top-0 bottom-0 w-4 sm:w-5 z-[440] cursor-pointer select-none group pointer-events-auto overflow-visible"
+            className="fixed top-0 bottom-0 w-6 sm:w-8 z-[470] cursor-pointer select-none group pointer-events-auto overflow-visible"
           >
             {/* 🌌 레이어 1: 화면 안쪽으로 부드럽게 번져나가는 세로 전면 앰비언트 오로라 커튼 (Ambient Aurora Curtain) */}
             <motion.div
@@ -1217,7 +1220,7 @@ export default function LeftSidebarNav() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsOpen(false)}
-              className={`fixed inset-0 backdrop-blur-[1.5px] z-[450] transition-colors duration-300 ${
+              className={`fixed inset-0 backdrop-blur-[1.5px] z-[475] transition-colors duration-300 ${
                 isLight ? 'bg-amber-950/10' : 'bg-black/30'
               }`}
               aria-hidden="true"
@@ -1242,7 +1245,7 @@ export default function LeftSidebarNav() {
                 paddingRight: 'var(--sar, 0px)',
                 width: 'calc(70px + var(--sar, 0px))',
               }}
-              className={`fixed right-0 top-0 bottom-0 backdrop-blur-2xl border-l z-[460] flex flex-col justify-between select-none transition-colors duration-300 ${
+              className={`fixed right-0 top-0 bottom-0 backdrop-blur-2xl border-l z-[480] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
                   ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[-16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
                   : 'bg-neutral-950/95 border-white/10 shadow-[-16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
