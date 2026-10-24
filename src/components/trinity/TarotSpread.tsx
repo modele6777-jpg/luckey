@@ -942,53 +942,81 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
     >
-      {/* Top Floating Action Buttons (Card Back & Physical Input) */}
+      {/* Unified Top Header Layer: Action Buttons & Perfectly Centered Info Banner */}
       <div
-        className="absolute z-[320] flex items-center gap-1.5 sm:gap-2 pointer-events-auto"
+        className="absolute top-0 left-0 right-0 z-[320] w-full pointer-events-none flex flex-col items-center"
         style={{
-          top: 'calc(env(safe-area-inset-top, 0px) + 10px)',
-          left: 'calc(env(safe-area-inset-left, 0px) + 12px)',
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 10px)',
+          paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 12px)',
+          paddingRight: 'calc(env(safe-area-inset-right, 0px) + 12px)',
         }}
       >
-        <button
-          type="button"
-          onClick={() => setShowCardBackModal(true)}
-          className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-yellow-500/40 bg-zinc-900 text-xs font-bold text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/70 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
-          title="Quin 스타일 20종 타로 카드 뒷면 변경"
-          aria-label="덱 뒷면 변경"
-        >
-          <Palette size={14} />
-          <span className="hidden sm:inline">덱 뒷면 변경</span>
-        </button>
+        {/* Top Controls Row: Left Action Buttons & Right Close Button */}
+        <div className="w-full flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowCardBackModal(true)}
+              className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-yellow-500/40 bg-zinc-900/95 text-xs font-bold text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/70 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer shadow-lg backdrop-blur-md"
+              title="Quin 스타일 20종 타로 카드 뒷면 변경"
+              aria-label="덱 뒷면 변경"
+            >
+              <Palette size={14} />
+              <span className="hidden sm:inline">덱 뒷면 변경</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setShowPhysicalInputModal(true)}
-          className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-amber-500/40 bg-zinc-900 text-xs font-bold text-amber-200 hover:text-yellow-100 hover:border-amber-400 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer"
-          title="소장하신 실물 카드로 직접 입력하여 AI 리딩 받기"
-          aria-label="실물 카드 직접 입력"
-        >
-          <BookOpen size={14} />
-          <span className="hidden sm:inline">실물 카드 직접 입력</span>
-        </button>
+            <button
+              type="button"
+              onClick={() => setShowPhysicalInputModal(true)}
+              className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-amber-500/40 bg-zinc-900/95 text-xs font-bold text-amber-200 hover:text-yellow-100 hover:border-amber-400 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer shadow-lg backdrop-blur-md"
+              title="소장하신 실물 카드로 직접 입력하여 AI 리딩 받기"
+              aria-label="실물 카드 직접 입력"
+            >
+              <BookOpen size={14} />
+              <span className="hidden sm:inline">실물 카드 직접 입력</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCancel();
+            }}
+            className="px-3.5 sm:px-4 py-1.5 sm:py-2 min-h-[38px] sm:min-h-[44px] min-w-[38px] sm:min-w-[44px] rounded-full border border-yellow-500/40 bg-zinc-900/95 text-xs font-bold uppercase tracking-widest text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/60 active:scale-95 transition-transform flex items-center justify-center cursor-pointer pointer-events-auto shrink-0 shadow-lg backdrop-blur-md"
+            aria-label="닫기"
+          >
+            닫기
+          </button>
+        </div>
+
+        {/* Top Info Banner (Always centered horizontally, never overlaps with action buttons) */}
+        {(hasConcern || hasSpreadMeta) && (
+          <div className="w-full flex justify-center mt-2 px-2 pointer-events-none">
+            <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-yellow-500/25 bg-zinc-900/95 px-3 py-1.5 sm:py-2 space-y-0.5 pointer-events-none shadow-xl backdrop-blur-md">
+              {hasSpreadMeta && (
+                <div className="text-center">
+                  <p className="text-[11px] sm:text-sm font-bold text-yellow-200">
+                    {spreadName} · {maxCards}장
+                  </p>
+                  {spreadReason && (
+                    <p className="text-[9px] sm:text-[10px] text-white/50 leading-tight mt-0.5 line-clamp-1 break-keep">
+                      {spreadReason}
+                    </p>
+                  )}
+                </div>
+              )}
+              {hasConcern && (
+                <div className={`text-center ${hasSpreadMeta ? 'border-t border-white/5 pt-0.5 sm:pt-1' : ''}`}>
+                  <p className="text-[10px] sm:text-xs text-white/90 leading-tight line-clamp-1 break-keep">
+                    {concernText}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Top Floating Close Button */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onCancel();
-        }}
-        className="absolute z-[320] px-3.5 sm:px-4 py-1.5 sm:py-2 min-h-[38px] sm:min-h-[44px] min-w-[38px] sm:min-w-[44px] rounded-full border border-yellow-500/40 bg-zinc-900 text-xs font-bold uppercase tracking-widest text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/60 active:scale-95 transition-transform flex items-center justify-center cursor-pointer pointer-events-auto"
-        style={{
-          top: 'calc(env(safe-area-inset-top, 0px) + 10px)',
-          right: 'calc(env(safe-area-inset-right, 0px) + 12px)',
-        }}
-        aria-label="닫기"
-      >
-        닫기
-      </button>
 
       {/* Main Interactive Stage (Zero 3D perspective & Zero backdrop-blur) */}
       <div
@@ -1029,40 +1057,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
             />
           ))}
         </div>
-
-        {/* Top Info Banner (Unified across all spreads including Today's Tarot) */}
-        {(hasConcern || hasSpreadMeta) && (
-          <div
-            className="absolute left-0 right-0 z-[96] px-3 sm:px-4 pointer-events-none flex justify-center"
-            style={{
-              top: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 3.0rem)' : 'calc(env(safe-area-inset-top, 0px) + 12px)',
-              paddingRight: isMobile ? '12px' : 'calc(env(safe-area-inset-right, 0px) + 72px)',
-              paddingLeft: isMobile ? '12px' : 'calc(env(safe-area-inset-left, 0px) + 16px)',
-            }}
-          >
-            <div className="w-full max-w-sm sm:max-w-md rounded-xl sm:rounded-2xl border border-yellow-500/25 bg-zinc-900 px-2.5 sm:px-3.5 py-1.5 sm:py-2 space-y-0.5 pointer-events-none">
-              {hasSpreadMeta && (
-                <div className="text-center">
-                  <p className="text-[10px] sm:text-sm font-bold text-yellow-200">
-                    {spreadName} · {maxCards}장
-                  </p>
-                  {!isMobile && spreadReason && (
-                    <p className="text-[9px] sm:text-[10px] text-white/50 leading-tight mt-0.5 line-clamp-1 break-keep">
-                      {spreadReason}
-                    </p>
-                  )}
-                </div>
-              )}
-              {hasConcern && (
-                <div className={`text-center ${hasSpreadMeta ? 'border-t border-white/5 pt-0.5 sm:pt-1' : ''}`}>
-                  <p className="text-[10px] sm:text-xs text-white/90 leading-tight line-clamp-1 break-keep">
-                    {concernText}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Selected card slots with a brief burst when a card is drawn. */}
         <div

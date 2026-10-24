@@ -3221,16 +3221,16 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         data-app-scroll-root
         {...trinitySwipeHandlers}
 
-        className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none"
+        className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col items-center relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none"
       >
-        <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">
+        <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col items-center min-w-0">
           <AnimatePresence mode="wait">
             {activeMode === "oracle" || activeMode === "synergy" ? (
               <motion.div
                 key="trinity-oracle"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full pb-8 sm:pb-12"
+                className="w-full self-center pb-8 sm:pb-12"
               >
                 <TrinityOracleSection
                   onNavigateToTarot={(focusDaily = true) => {
@@ -3258,9 +3258,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 key="tarot"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-4xl mx-auto space-y-8 pb-8 sm:pb-12"
+                className="w-full max-w-4xl mx-auto self-center space-y-8 pb-8 sm:pb-12"
               >
-                <div className={`glass relative w-full p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
+                <div className={`glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
                   {/* Subtle starlight gold specular glow */}
                   <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-yellow-500/10 blur-[100px] pointer-events-none" />
                   <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none" />
@@ -3298,7 +3298,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                     </div>
                   </div>
 
-                  <div className="relative w-full">
+                  <div className="relative w-full flex items-center justify-center">
                   {tarotVirtualMode && (
                     <TarotSpread
                       maxCards={tarotSpreadRecommendation.cardCount}
