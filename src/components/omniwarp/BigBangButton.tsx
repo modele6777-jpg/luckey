@@ -268,7 +268,7 @@ export function BigBangButton() {
     return '';
   }, []);
 
-  // 🌟 텍스트 드래그(선택) 감지: 탭 시 루시 토스, 더블탭 시 Key 40가지 연습 토스, 드래그 시 럭키 추천 1순위 토스 지원
+  // 🌟 텍스트 드래그(선택) 감지: 탭 시 루시 토스, 더블탭 시 루시 채팅 질문 토스, 드래그 시 럭키 추천 1순위 토스 지원
   const [hasSelectionToss, setHasSelectionToss] = useState(false);
   const [selectionPreviewText, setSelectionPreviewText] = useState('');
   const touchStartSelectionRef = useRef<string>('');
@@ -475,7 +475,7 @@ export function BigBangButton() {
     // 1) 드래그 (dist >= 14px): 럭키 채널 안의 추천 1순위 앱 순환 도약 + 우주 흡입 워프 (홀드 중 드래그 시 PTT 즉시 취소)
     // 2) 제자리 홀드 (dist < 14px, elapsed >= 250): 루시 AI PTT 실시간 음성 대화
     // 3) 가볍게 탭 (dist < 14px, elapsed < 250): 홈 (/) 베이스캠프 복귀
-    // 4) 더블탭: Key 채널 마음약방 즉시 도약 (문장 선택 시 Key 40가지 연습 처방 토스)
+    // 4) 더블탭: 루시 전체 채팅(/chat) 채널 즉시 도약 (문장 선택 시 루시 1:1 질문 토스)
     const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
@@ -970,32 +970,31 @@ export function BigBangButton() {
     }, 650);
   }, [location, navigate, getActiveSelectionText, isKeySite, isCosmicSuctionActive]);
 
-  // 🔑 Key 마음약방 도약 헬퍼 (더블탭/더블클릭 시 실행 - 텍스트 선택 시 40가지 연습 토스 연동)
-  const goToKey = useCallback((customContext?: any, customMetrics?: any) => {
+  // 💬 루시 채팅 도약 헬퍼 (더블탭/더블클릭 시 실행 - 텍스트 선택 시 루시 1:1 질문 토스 연동)
+  const goToLucyChat = useCallback((customContext?: any, customMetrics?: any) => {
     setIsQuickChatOpen(false);
-    // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
+    // 대기 중인 1회 탭(말풍선) 타이머 즉시 취소
     if (singleTapTimerRef.current) {
       clearTimeout(singleTapTimerRef.current);
       singleTapTimerRef.current = null;
     }
     lastTapTimeRef.current = 0;
 
-    // 🌟 더블탭: Key 도약 사운드 & 햅틱
+    // 🌟 더블탭: 루시 채팅 도약 사운드 & 햅틱
     omniWarpAudio.playDoubleTap();
-    triggerHaptic('blackhole');
+    triggerHaptic('whitehole');
 
     const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
 
-    // 🔑 텍스트 선택 연동: 글자를 선택한 상태에서 더블탭 ➔ Key 40가지 연습으로 즉시 토스!
+    // 💬 텍스트 선택 연동: 글자를 선택한 상태에서 더블탭 ➔ 루시 질문으로 즉시 토스!
     if (textToToss) {
-      savePendingSelection(textToToss, 'key', location);
+      savePendingSelection(textToToss, 'lucy', location);
       try {
-        sessionStorage.setItem('key_tossed_text', textToToss);
-        sessionStorage.setItem('key_target_tab', 'tab-exercises');
+        sessionStorage.setItem('lucy_injected_input_draft', textToToss);
       } catch (_) {}
       sendPrismToss({
         sourceApp: location || 'bigbang_button',
-        targetApp: 'key',
+        targetApp: 'lucy',
         actionType: 'smart_toss',
         contextMessage: textToToss,
         autoPrompt: textToToss,
@@ -1004,12 +1003,12 @@ export function BigBangButton() {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('prism:selection_tossed', {
-            detail: { text: textToToss, target: 'key', sourcePath: location },
+            detail: { text: textToToss, target: 'lucy', sourcePath: location },
           })
         );
         window.dispatchEvent(
           new CustomEvent('prism:selection_saved', {
-            detail: { text: textToToss, target: 'key', sourcePath: location },
+            detail: { text: textToToss, target: 'lucy', sourcePath: location },
           })
         );
       }
@@ -1019,20 +1018,20 @@ export function BigBangButton() {
       window.dispatchEvent(
         new CustomEvent('prism:bigbang_commit', {
           detail: {
-            phase: 'blackhole',
+            phase: 'whitehole',
             target: {
-              id: 'key',
-              name: 'Key',
-              destinationPath: '/key',
-              themeColor: '#0ea5e9',
-              eventHorizonMode: 'blackhole',
+              id: 'lucy_chat',
+              name: '루시 채팅',
+              destinationPath: '/chat',
+              themeColor: '#38bdf8',
+              eventHorizonMode: 'whitehole',
               previewLabel: textToToss
-                ? `[Key 개운 토스] "${textToToss.slice(0, 16)}..." ➔ 40가지 개운 리추얼`
-                : (isKeySite ? '[더블탭 귀환] 프리즘 홈' : '[더블탭 도약] Key 개운 성전'),
-              previewDescription: '막힌 운을 여는 40가지 개운(開運) 리추얼 & 오행 정화 호흡 · 소원 노트',
+                ? `[루시 질문 토스] "${textToToss.slice(0, 16)}..." ➔ 루시 1:1 채팅`
+                : '[더블탭 도약] 루시 전체 채팅',
+              previewDescription: '영혼의 안식처 루시와 나누는 따뜻하고 지혜로운 1:1 대화',
             },
             context: customContext || serializeCurrentView(location),
-            metrics: customMetrics || { phase: 'blackhole' },
+            metrics: customMetrics || { phase: 'whitehole' },
             timestamp: Date.now(),
           },
         })
@@ -1040,24 +1039,10 @@ export function BigBangButton() {
     }
 
     setTimeout(() => {
-      if (isKeySite && !textToToss) {
-        // Key 사이트에서 실행 시 홈 귀환
-        const returnPath = safeSessionStorage.getItem('prism_key_return_path') || '/';
-        safeSessionStorage.removeItem('prism_key_return_path');
-        const finalDest =
-          returnPath.includes('key') || returnPath.includes('calm') || returnPath.includes('orb')
-            ? '/'
-            : returnPath;
-        window.location.href = finalDest;
-      } else if (isKeySite && textToToss) {
-        // 이미 Key 사이트인 경우: 실시간 prism:selection_tossed 이벤트로 연습실이 즉각 실행되므로 불필요한 전체 재로딩 생략
-      } else {
-        // Key 사이트로 도약
-        const currentPath = location || '/';
-        safeSessionStorage.setItem('prism_key_return_path', currentPath);
-        navigate('/key');
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/key' } }));
-        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
+      navigate('/chat');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
+        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
       }
     }, 160);
 
@@ -1068,7 +1053,7 @@ export function BigBangButton() {
     setGauge(0);
     setDurationMs(0);
     resetActiveContextPeek();
-  }, [location, navigate, getActiveSelectionText, isKeySite]);
+  }, [location, navigate, getActiveSelectionText]);
 
   // 🔮 4대 고대 룬 문자 클릭 시 다이렉트 차원 도약 핸들러
   const handleRuneNavigate = useCallback(
@@ -1248,9 +1233,9 @@ export function BigBangButton() {
       const nowMs = performance.now();
       const timeSinceLastTap = nowMs - lastTapTimeRef.current;
 
-      // 🎯 더블탭 감지 (이전 탭 후 30ms ~ 380ms 이내 재탭 시): Key 마음약방 채널로 즉시 도약 (문장 선택 시 Key 40가지 연습 처방 토스)!
+      // 🎯 더블탭 감지 (이전 탭 후 30ms ~ 380ms 이내 재탭 시): 루시 전체 채팅(/chat)으로 즉시 도약!
       if (timeSinceLastTap > 30 && timeSinceLastTap < 380) {
-        goToKey(context, metrics);
+        goToLucyChat(context, metrics);
         return;
       }
 
@@ -1613,7 +1598,7 @@ export function BigBangButton() {
                 <span className="text-xs">✨</span>
                 <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 퀵대화</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸Key 맞춤연습</span>
+                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸루시채팅</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸음성 피드백</span>
                 <span className="text-slate-500">│</span>
@@ -1712,7 +1697,7 @@ export function BigBangButton() {
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                goToKey();
+                goToLucyChat();
               }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -1793,11 +1778,11 @@ export function BigBangButton() {
                   ? 'inset 0 0 22px rgba(56, 189, 248, 0.35), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.45)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 퀵 대화 / 더블탭: Key 채널 / 홀드: 루시 음성 / 드래그: 럭키 1순위 추천)"
+              title="빅뱅 버튼 (탭: 루시 퀵 대화 / 더블탭: 루시 채팅 / 홀드: 루시 음성 / 드래그: 럭키 1순위 추천)"
               aria-label={
                 hasSelectionToss
                   ? '빅뱅 버튼 · 선택 내용 토스 대기중'
-                  : '빅뱅 버튼 · 탭: 루시 퀵 대화, 더블탭: Key 채널, 홀드: 루시 음성, 드래그: 럭키 1순위 추천'
+                  : '빅뱅 버튼 · 탭: 루시 퀵 대화, 더블탭: 루시 채팅, 홀드: 루시 음성, 드래그: 럭키 1순위 추천'
               }
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
