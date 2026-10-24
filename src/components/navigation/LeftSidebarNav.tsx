@@ -551,16 +551,25 @@ export default function LeftSidebarNav() {
     };
   }, [isOpen, isInteractingWithSidebar]);
 
-  // Desktop left-edge mouse proximity & hover detection
+  // Desktop left-edge mouse proximity & hover detection (Safe-Area Left aware)
   useEffect(() => {
+    const getSafeLeftPx = () => {
+      try {
+        return parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--sal')) || 0;
+      } catch {
+        return 0;
+      }
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       // Ignore synthetic mouse events from touch devices
       if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
         return;
       }
 
+      const sal = getSafeLeftPx();
       if (!isOpen) {
-        if (e.clientX <= 8) {
+        if (e.clientX <= sal + 10) {
           if (!edgeHoverTimerRef.current) {
             setIsEdgeHovering(true);
             edgeHoverTimerRef.current = setTimeout(() => {
@@ -569,14 +578,14 @@ export default function LeftSidebarNav() {
               setIsOpen(true);
             }, 60);
           }
-        } else if (e.clientX > 22 && edgeHoverTimerRef.current) {
+        } else if (e.clientX > sal + 24 && edgeHoverTimerRef.current) {
           clearTimeout(edgeHoverTimerRef.current);
           edgeHoverTimerRef.current = null;
           setIsEdgeHovering(false);
         }
       } else {
-        // When open, keep isHoveringSidebar synced if cursor is within the 76px rail
-        if (e.clientX <= 76) {
+        // When open, keep isHoveringSidebar synced if cursor is within the rail + safe area
+        if (e.clientX <= sal + 76) {
           setIsHoveringSidebar(true);
         }
       }
@@ -592,17 +601,26 @@ export default function LeftSidebarNav() {
     };
   }, [isOpen]);
 
-  // Mobile left-edge inward swipe to open & leftward swipe to close
+  // Mobile left-edge inward swipe to open & leftward swipe to close (Safe-Area Left aware)
   useEffect(() => {
-    const EDGE_SWIPE_ZONE_PX = 32;
-    const EDGE_SWIPE_MIN_DX = 34;
+    const EDGE_SWIPE_BASE_PX = 36;
+    const EDGE_SWIPE_MIN_DX = 30;
+
+    const getSafeLeftPx = () => {
+      try {
+        return parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--sal')) || 0;
+      } catch {
+        return 0;
+      }
+    };
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
       const touch = e.touches[0];
+      const sal = getSafeLeftPx();
 
       if (!isOpen) {
-        if (touch.clientX <= EDGE_SWIPE_ZONE_PX) {
+        if (touch.clientX <= sal + EDGE_SWIPE_BASE_PX) {
           edgeSwipeRef.current = {
             startX: touch.clientX,
             startY: touch.clientY,
@@ -1122,7 +1140,8 @@ export default function LeftSidebarNav() {
             }}
             aria-label="좌측 끝 호버 또는 스와이프로 사이드바 열기"
             title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
-            className="fixed left-0 top-0 bottom-0 w-4 sm:w-5 z-[440] cursor-pointer select-none group pointer-events-auto overflow-visible"
+            style={{ left: 'var(--sal, 0px)' }}
+            className="fixed top-0 bottom-0 w-4 sm:w-5 z-[440] cursor-pointer select-none group pointer-events-auto overflow-visible"
           >
             {/* 🌌 레이어 1: 화면 안쪽으로 부드럽게 번져나가는 세로 전면 앰비언트 오로라 커튼 (Ambient Aurora Curtain) */}
             <motion.div
@@ -1248,7 +1267,11 @@ export default function LeftSidebarNav() {
               onTouchMove={handleSidebarTouchStart}
               onTouchEnd={handleSidebarTouchEnd}
               onTouchCancel={handleSidebarTouchEnd}
-              className={`fixed left-0 top-0 bottom-0 w-[68px] sm:w-[74px] backdrop-blur-2xl border-r z-[460] flex flex-col justify-between select-none transition-colors duration-300 ${
+              style={{
+                paddingLeft: 'var(--sal, 0px)',
+                width: 'calc(70px + var(--sal, 0px))',
+              }}
+              className={`fixed left-0 top-0 bottom-0 backdrop-blur-2xl border-r z-[460] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
                   ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
                   : 'bg-neutral-950/95 border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'

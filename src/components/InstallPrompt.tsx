@@ -160,23 +160,33 @@ export default function InstallPrompt() {
                     <img src="/luckey-icon-192.png" alt="LucKey" className="w-7 h-7 object-contain drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
                   </div>
                 </div>
+              ) : isLucySite ? (
+                <div className="relative w-12 h-12 rounded-2xl border border-white/10 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.2)] shrink-0 overflow-hidden bg-[#08080c]">
+                  <img src="/lucy-icon-192.png" alt="LUCY" className="w-full h-full object-cover" />
+                </div>
               ) : (
-                /* Prism / Lucy Icon with Glowing Rainbow Border */
-                <div className="relative w-12 h-12 rounded-full border border-white/10 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] shrink-0 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#ff6b6b] via-[#feca57] via-[#1dd1a1] via-[#54a0ff] to-[#5f27cd] opacity-35 mix-blend-screen rounded-full" />
+                /* Current Official LucKey Icon (Emerald 4-Leaf Clover + Golden Celestial Key) */
+                <div className="relative w-12 h-12 rounded-2xl border border-white/10 flex items-center justify-center shadow-[0_0_22px_rgba(52,211,153,0.18)] shrink-0 overflow-hidden bg-zinc-900/80">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 via-amber-500/15 to-cyan-500/20 opacity-45 mix-blend-screen rounded-2xl" />
                   <motion.div 
                     animate={{ rotate: 360 }} 
                     transition={{ duration: 25, repeat: Infinity, ease: "linear" }} 
-                    className="absolute inset-0 rounded-full border border-dashed border-white/20" 
+                    className="absolute inset-1 rounded-full border border-dashed border-emerald-400/25" 
                   />
-                  <div className="absolute inset-[3px] rounded-full border border-white/5 bg-[#08080c] flex items-center justify-center">
-                    <Triangle 
-                      className="relative z-10 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] -translate-y-[1px]" 
-                      fill="transparent" 
-                      strokeWidth={2.5} 
-                      size={16} 
-                    />
-                  </div>
+                  <svg viewBox="0 0 32 32" fill="none" className="relative z-10 w-7 h-7" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="#34d399" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M16 16 C16 11, 12 9, 12 12 C12 15, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                      <path d="M16 16 C21 16, 23 12, 20 12 C17 12, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                      <path d="M16 16 C16 21, 20 23, 20 20 C20 17, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                      <path d="M16 16 C11 16, 9 20, 12 20 C15 20, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                    </g>
+                    <g stroke="#fcd34d" strokeWidth="1.6" strokeLinecap="round">
+                      <circle cx="16" cy="16" r="2.5" fill="#fde047" stroke="none" />
+                      <path d="M16 18.5 L16 25" />
+                      <path d="M16 23 L18.5 23" />
+                      <path d="M16 25 L18 25" />
+                    </g>
+                  </svg>
                 </div>
               )}
 
@@ -254,22 +264,32 @@ export default function InstallPrompt() {
                       <img src="/luckey-icon-192.png" alt="LucKey" className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(168,85,247,0.9)]" />
                     </div>
                   </div>
+                ) : isLucySite ? (
+                  <div className="relative w-16 h-16 rounded-2xl border border-white/10 flex items-center justify-center shadow-[0_0_25px_rgba(168,85,247,0.25)] mb-4 overflow-hidden bg-[#0a0a0f]">
+                    <img src="/lucy-icon-192.png" alt="LUCY" className="w-full h-full object-cover" />
+                  </div>
                 ) : (
-                  <div className="relative w-16 h-16 rounded-full border border-white/10 flex items-center justify-center shadow-[0_0_25px_rgba(255,255,255,0.08)] mb-4 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-[#ff6b6b] via-[#feca57] via-[#1dd1a1] via-[#54a0ff] to-[#5f27cd] opacity-35 mix-blend-screen rounded-full" />
+                  <div className="relative w-16 h-16 rounded-2xl border border-white/10 flex items-center justify-center shadow-[0_0_26px_rgba(52,211,153,0.2)] mb-4 overflow-hidden bg-zinc-900/80">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 via-amber-500/15 to-cyan-500/20 opacity-45 mix-blend-screen rounded-2xl" />
                     <motion.div 
                       animate={{ rotate: 360 }} 
                       transition={{ duration: 25, repeat: Infinity, ease: "linear" }} 
-                      className="absolute inset-0 rounded-full border border-dashed border-white/20" 
+                      className="absolute inset-1.5 rounded-full border border-dashed border-emerald-400/25" 
                     />
-                    <div className="absolute inset-[4px] rounded-full border border-white/5 bg-[#0a0a0f] flex items-center justify-center">
-                      <Triangle 
-                        className="relative z-10 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] -translate-y-[1.5px]" 
-                        fill="transparent" 
-                        strokeWidth={2.5} 
-                        size={20} 
-                      />
-                    </div>
+                    <svg viewBox="0 0 32 32" fill="none" className="relative z-10 w-9 h-9" xmlns="http://www.w3.org/2000/svg">
+                      <g stroke="#34d399" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M16 16 C16 11, 12 9, 12 12 C12 15, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                        <path d="M16 16 C21 16, 23 12, 20 12 C17 12, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                        <path d="M16 16 C16 21, 20 23, 20 20 C20 17, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                        <path d="M16 16 C11 16, 9 20, 12 20 C15 20, 16 16, 16 16" fill="#34d399" fillOpacity="0.25" />
+                      </g>
+                      <g stroke="#fcd34d" strokeWidth="1.6" strokeLinecap="round">
+                        <circle cx="16" cy="16" r="2.5" fill="#fde047" stroke="none" />
+                        <path d="M16 18.5 L16 25" />
+                        <path d="M16 23 L18.5 23" />
+                        <path d="M16 25 L18 25" />
+                      </g>
+                    </svg>
                   </div>
                 )}
 

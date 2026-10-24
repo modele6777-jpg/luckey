@@ -18,6 +18,7 @@
     --sab: env(safe-area-inset-bottom, 0px);
     --sal: env(safe-area-inset-left, 0px);
     --sar: env(safe-area-inset-right, 0px);
+    --duo-hinge-gap: 1.25rem;
     --nav-bar-h: 2.1rem;
     --nav-total-h: calc(var(--nav-bar-h) + var(--sab));
   }
@@ -2698,5 +2699,183 @@ html.dark :is(.text-white\/30, .text-white\/35, .text-white\/40):not(
   touch-action: pan-y;
 }
 
+/* ============================================================================
+   11. 📱 iPhone Duo / Surface Duo / Foldable Dual-Screen & Safe-Area Engine
+   - 2-Column Dual-Pane automatic layout switching with Hinge Gutter avoidance
+   - 4-Way Safe-Area (Notch, Dynamic Island, Home Bar) calibration in Portrait/Landscape
+   - Zero-delay Touch Responsiveness & Rubber-Band Bounce / Gesture Lock
+   ============================================================================ */
 
+/* Global Rubber-Band Overscroll & Gesture Bounce Lock */
+html,
+body,
+#root,
+.prism-app-shell {
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: none !important;
+  -webkit-text-size-adjust: 100%;
+}
 
+[data-app-scroll-root],
+.lucy-chat-main,
+.overflow-y-auto {
+  overscroll-behavior-y: contain !important;
+  overscroll-behavior-x: none !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Instant Touch Response (<100ms) & Zero Tap Delay */
+button,
+a,
+[role="button"],
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 4-Way Safe-Area Calibration for Notch, Dynamic Island & Home Bar */
+.prism-hub-header {
+  left: calc(var(--sal, 0px) + 0.65rem) !important;
+}
+
+@media (min-width: 640px) {
+  .prism-hub-header {
+    left: calc(var(--sal, 0px) + 1.25rem) !important;
+  }
+}
+
+.lucy-chat-header,
+.lucy-chat-footer {
+  padding-left: max(var(--sal, 0px), 0.75rem);
+  padding-right: max(var(--sar, 0px), 0.75rem);
+}
+
+/* Dual-Pane 2-Column Split Grid (Default 1 col on narrow portrait -> 2 cols on Duo/Foldable/Landscape) */
+.duo-split-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Activate 2-Column Dual-Pane Layout when wide/landscape or dual-pane-active */
+html.dual-pane-active .duo-split-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--duo-hinge-gap, 1.25rem);
+  row-gap: 1.25rem;
+}
+
+html.dual-pane-active .duo-channel-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  column-gap: var(--duo-hinge-gap, 1.25rem) !important;
+  row-gap: 1rem !important;
+}
+
+@media (min-width: 1180px) {
+  html.dual-pane-active:not([data-device="surface-duo"]) .duo-channel-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media screen and (min-width: 640px), screen and (orientation: landscape) and (min-width: 590px) {
+  .duo-split-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--duo-hinge-gap, 1.25rem);
+    row-gap: 1.25rem;
+  }
+
+  .duo-channel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--duo-hinge-gap, 1.25rem);
+  }
+}
+
+@media screen and (min-width: 1180px) {
+  .duo-channel-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* W3C Viewport Segments / Surface Duo Spanned Hinge Avoidance */
+@media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
+  :root {
+    --duo-hinge-gap: max(
+      1.75rem,
+      calc(env(viewport-segment-left 1 0, 0px) - env(viewport-segment-right 0 0, 0px) + 1.25rem)
+    );
+  }
+
+  .duo-split-grid,
+  .duo-channel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: var(--duo-hinge-gap) !important;
+  }
+
+  /* Move center-floating BigBang button slightly onto the right thumb pane so it never straddles the physical hinge */
+  .bottom-safe-fab-center {
+    left: 75% !important;
+  }
+}
+
+/* Landscape & Short-Height Viewport Ergonomics (15% Sticky Cap & Safe-Area Harmony) */
+@media screen and (orientation: landscape) and (max-height: 540px) {
+  :root {
+    --nav-bar-h: 2.25rem;
+  }
+
+  .pt-home,
+  .md\:pt-home-md {
+    padding-top: calc(var(--sat, 0px) + 3.85rem) !important;
+  }
+
+  .pt-page,
+  .pt-page-sm,
+  .md\:pt-page-md {
+    padding-top: calc(var(--sat, 0px) + 4.1rem) !important;
+  }
+
+  .top-safe-nav,
+  .md\:top-safe-nav-md,
+  .prism-xs-subnav {
+    top: calc(var(--sat, 0px) + 0.5rem) !important;
+  }
+
+  .bottom-safe-fab-center {
+    bottom: calc(var(--sab, 0px) + 1.15rem) !important;
+    width: 68px !important;
+    height: 68px !important;
+  }
+
+  [data-app-scroll-root] {
+    padding-left: max(var(--sal, 0px), 0.75rem);
+    padding-right: max(var(--sar, 0px), 0.75rem);
+    padding-bottom: calc(var(--sab, 0px) + 6.5rem) !important;
+  }
+}
+
+/* Dual-Screen & Foldable GPU Frame-Pacing Optimization (perf-duo) */
+html.perf-duo [data-app-scroll-root] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  transform: translateZ(0);
+}
+
+html.perf-duo .fixed,
+html.perf-duo .prism-bottom-nav,
+html.perf-duo .prism-xs-subnav {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+html.perf-duo .glass {
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html.perf-duo .prism-aura-bg {
+  contain: layout style paint;
+  transform: translateZ(0);
+}

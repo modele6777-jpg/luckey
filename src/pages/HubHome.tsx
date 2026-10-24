@@ -603,19 +603,19 @@ export default function HubHome() {
         })}
       </motion.nav>
 
-      <div data-app-scroll-root {...hubSwipeHandlers} className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
-        {!legacy && <FloatingParticles count={narrow ? 4 : 20} />}
+      <div data-app-scroll-root {...hubSwipeHandlers} className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56 px-safe">
+        {!legacy && <FloatingParticles count={narrow ? 4 : 14} />}
 
         {activeSection === 'ecpr' ? (
           <PrologueECPRView />
         ) : activeSection === 'todo' ? (
-          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md">
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md">
             <ErrorBoundary>
               <PrologueTodoSection />
             </ErrorBoundary>
           </div>
         ) : (
-          <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col relative text-slate-900 dark:text-white font-sans">
+          <div className="flex-1 w-full max-w-6xl mx-auto flex flex-col relative text-slate-900 dark:text-white font-sans">
             
             {/* 프로필 설정 유도 모달 */}
             <AnimatePresence>
@@ -685,32 +685,37 @@ export default function HubHome() {
               )}
             </AnimatePresence>
 
-            <div className="relative z-10 w-full px-3 sm:px-5 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col max-w-5xl mx-auto">
+            <div className="relative z-10 w-full px-3 sm:px-5 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col max-w-6xl mx-auto">
 
-              {/* 오늘의 루시 페르소나 메시지 (Today's Lucy Persona Message) */}
-              <TodayLucyPersonaCard
-                saju={saju}
-                biometrics={{ fatigue, stress, focus, sleep }}
-                globalInsight={globalData?.summary}
-              />
+              {/* Dual-Pane Top Split: Left Pane (Today's Lucy Persona) & Right Pane (Universe Insight) */}
+              <div className="duo-split-grid items-stretch">
+                {/* 오늘의 루시 페르소나 메시지 (Today's Lucy Persona Message) */}
+                <div className="flex flex-col h-full">
+                  <TodayLucyPersonaCard
+                    saju={saju}
+                    biometrics={{ fatigue, stress, focus, sleep }}
+                    globalInsight={globalData?.summary}
+                  />
+                </div>
 
-              {/* Global Insights Section (Universe Insight Diversified) */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-6"
-              >
-                <UniverseInsightCard 
-                  saju={saju} 
-                  customInsight={globalData?.summary ? { summary: globalData.summary, author: globalData.author } : undefined}
-                  onInsightChange={(newInsight) => {
-                    // Keep sharedState memory updated if needed
-                    updateSharedState({
-                      globalMemory: newInsight.quote,
-                    }, 'HUB');
-                  }}
-                />
-              </motion.div>
+                {/* Global Insights Section (Universe Insight Diversified) */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-6 flex flex-col h-full"
+                >
+                  <UniverseInsightCard 
+                    saju={saju} 
+                    customInsight={globalData?.summary ? { summary: globalData.summary, author: globalData.author } : undefined}
+                    onInsightChange={(newInsight) => {
+                      // Keep sharedState memory updated if needed
+                      updateSharedState({
+                        globalMemory: newInsight.quote,
+                      }, 'HUB');
+                    }}
+                  />
+                </motion.div>
+              </div>
               
               {/* User-Defined Goals Progress Ring Dashboard */}
               <motion.div
@@ -823,8 +828,8 @@ export default function HubHome() {
                 </div>
               </motion.div>
 
-              {/* DApp Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pb-4 md:pb-6 w-full">
+              {/* DApp Grid (Auto 2-Column Dual-Pane on Surface Duo / Foldable / Landscape) */}
+              <div className="duo-channel-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pb-4 md:pb-6 w-full">
                 {PROLOGUE_APPS.map((app, i) => {
                   const Icon = app.icon;
                   const isActive = activeApp?.id === app.id;

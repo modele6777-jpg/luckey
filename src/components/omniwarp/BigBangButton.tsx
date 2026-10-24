@@ -166,32 +166,10 @@ export function BigBangButton() {
     });
   }, []);
 
-  // 🧭 나침반 원뿔 회전각 연속 상태 추적 (최단 경로 회전 보장)
-  const compassAngleRef = useRef<number>(0);
-  const [compassAngle, setCompassAngle] = useState<number>(0);
-
-  useEffect(() => {
-    if (hoverDirection === 'none') return;
-    const target =
-      hoverDirection === 'north'
-        ? 0
-        : hoverDirection === 'east'
-        ? 90
-        : hoverDirection === 'south'
-        ? 180
-        : 270;
-
-    const prev = compassAngleRef.current;
-    const diff = ((((target - (prev % 360)) + 540) % 360) - 180);
-    const next = prev + diff;
-    compassAngleRef.current = next;
-    setCompassAngle(next);
-  }, [hoverDirection]);
-
-  // 🎯 마우스 및 터치 위치 기반 4방위(상/하/좌/우) 원뿔 방향 계산
+  // 🎯 마우스 및 터치 위치 기반 4방위(상/하/좌/우) 물방울 방향 계산
   const calculateCardinalDirection = useCallback(
     (clientX: number, clientY: number): 'none' | 'north' | 'south' | 'west' | 'east' => {
-      const el = buttonRef.current || hoverContainerRef.current;
+      const el = hoverContainerRef.current || buttonRef.current;
       if (!el) return 'none';
       const rect = el.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
@@ -215,62 +193,52 @@ export function BigBangButton() {
     []
   );
 
-  // 🌀 방향에 따른 원뿔 모양 모핑 변형값 (border-radius 및 이동/스케일 연산)
+  // 💧 45° 대각 정렬 기반 4방위 물방울(Teardrop) 모핑 변형값
+  // 정사각형 외피를 +45° 고정 회전한 상태에서 각 꼭짓점(tl=상, tr=우, br=하, bl=좌)의 곡률만 뾰족하게 조여
+  // 별도의 외부 도형 없이 검은 동그라미 자체가 해당 방향으로 물방울처럼 살짝 뾰족히 올라오도록 구현
   const morphStyles = useMemo(() => {
     if (dragDistance >= DRAG_RECOMMEND_THRESHOLD) {
       return {
-        borderRadius: '50% 50% 50% 50% / 50% 50% 50% 50%',
+        borderRadius: '50% 50% 50% 50%',
         x: isPressing
           ? (dragDistance > 0 ? (dragOffset.x * Math.min(dragDistance * 0.6, 40)) / dragDistance : 0)
           : 0,
         y: isPressing
           ? (dragDistance > 0 ? (dragOffset.y * Math.min(dragDistance * 0.6, 40)) / dragDistance : 0)
           : 0,
-        scaleX: 1,
-        scaleY: 1,
       };
     }
     switch (hoverDirection) {
       case 'north':
         return {
-          borderRadius: '25% 25% 50% 50% / 10% 10% 68% 68%',
+          borderRadius: '10% 50% 54% 50%',
           x: 0,
-          y: -10,
-          scaleX: 0.92,
-          scaleY: 1.15,
-        };
-      case 'south':
-        return {
-          borderRadius: '50% 50% 25% 25% / 68% 68% 10% 10%',
-          x: 0,
-          y: 10,
-          scaleX: 0.92,
-          scaleY: 1.15,
-        };
-      case 'west':
-        return {
-          borderRadius: '10% 68% 68% 10% / 25% 50% 50% 25%',
-          x: -10,
-          y: 0,
-          scaleX: 1.15,
-          scaleY: 0.92,
+          y: -6,
         };
       case 'east':
         return {
-          borderRadius: '68% 10% 10% 68% / 50% 25% 25% 50%',
-          x: 10,
+          borderRadius: '50% 10% 50% 54%',
+          x: 6,
           y: 0,
-          scaleX: 1.15,
-          scaleY: 0.92,
+        };
+      case 'south':
+        return {
+          borderRadius: '54% 50% 10% 50%',
+          x: 0,
+          y: 6,
+        };
+      case 'west':
+        return {
+          borderRadius: '50% 54% 50% 10%',
+          x: -6,
+          y: 0,
         };
       case 'none':
       default:
         return {
-          borderRadius: '50% 50% 50% 50% / 50% 50% 50% 50%',
+          borderRadius: '50% 50% 50% 50%',
           x: 0,
           y: 0,
-          scaleX: 1,
-          scaleY: 1,
         };
     }
   }, [hoverDirection, dragDistance, isPressing, dragOffset]);
@@ -1592,46 +1560,6 @@ export function BigBangButton() {
           {/* Expanded radial hover hitbox to encompass 144px arcane circle & cardinal icons */}
           <div className="absolute -inset-7 rounded-full pointer-events-auto -z-10" />
 
-          {/* 🧭 마우스 호버 / 터치 방향에 따른 기능 안내 툴팁 */}
-          <AnimatePresence>
-            {!isPressing && hoverDirection !== 'none' && !hasSelectionToss && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 4, scale: 0.9 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-                className="absolute -top-12 left-1/2 -translate-x-1/2 pointer-events-none z-50 whitespace-nowrap"
-              >
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/95 backdrop-blur-md border border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.4)] text-[11px] font-bold text-amber-200">
-                  {hoverDirection === 'north' && (
-                    <>
-                      <span className="text-amber-400 font-black">▲</span>
-                      <span>화면 최상단 이동</span>
-                    </>
-                  )}
-                  {hoverDirection === 'south' && (
-                    <>
-                      <span className="text-amber-400 font-black">▼</span>
-                      <span>화면 최하단 이동</span>
-                    </>
-                  )}
-                  {hoverDirection === 'west' && (
-                    <>
-                      <span className="text-amber-400 font-black">◀</span>
-                      <span>{cardinalInfo.prevStepName ? `이전: ${cardinalInfo.prevStepName}` : '이전 댑 이동'}</span>
-                    </>
-                  )}
-                  {hoverDirection === 'east' && (
-                    <>
-                      <span>{cardinalInfo.nextStepName ? `다음: ${cardinalInfo.nextStepName}` : '다음 댑 이동'}</span>
-                      <span className="text-amber-400 font-black">▶</span>
-                    </>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 */}
           <AnimatePresence>
             {hasSelectionToss && !isPressing && (
@@ -1735,136 +1663,7 @@ export function BigBangButton() {
             )}
 
 
-            {/* 🧭 호버/터치 방향에 따른 뾰족한 나침반 원뿔 첨두 (Compass Needle Cone Spearhead) */}
-            <AnimatePresence>
-              {hoverDirection !== 'none' && !isCosmicSuctionActive && (
-                <motion.div
-                  key="bigbang-compass-cone-needle"
-                  initial={{ opacity: 0, scale: 0.3 }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    rotate: compassAngle,
-                    x:
-                      hoverDirection === 'west'
-                        ? -10
-                        : hoverDirection === 'east'
-                        ? 10
-                        : 0,
-                    y:
-                      hoverDirection === 'north'
-                        ? -10
-                        : hoverDirection === 'south'
-                        ? 10
-                        : 0,
-                  }}
-                  exit={{ opacity: 0, scale: 0.3 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 420,
-                    damping: 24,
-                    mass: 0.7,
-                  }}
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none z-36"
-                  style={{ transformOrigin: '50% 50%' }}
-                >
-                  <svg
-                    viewBox="0 0 100 100"
-                    className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] overflow-visible drop-shadow-[0_0_14px_rgba(56,189,248,0.95)]"
-                    style={{ overflow: 'visible' }}
-                  >
-                    <defs>
-                      <linearGradient id="compass-needle-left-facet" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="30%" stopColor="#fef08a" />
-                        <stop offset="65%" stopColor="#38bdf8" />
-                        <stop offset="100%" stopColor="#0284c7" />
-                      </linearGradient>
-                      <linearGradient id="compass-needle-right-facet" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#7dd3fc" />
-                        <stop offset="30%" stopColor="#0284c7" />
-                        <stop offset="70%" stopColor="#1e1b4b" />
-                        <stop offset="100%" stopColor="#0a0a1a" />
-                      </linearGradient>
-                      <linearGradient id="compass-needle-blade-stroke" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="25%" stopColor="#e0f2fe" />
-                        <stop offset="65%" stopColor="#38bdf8" />
-                        <stop offset="100%" stopColor="#0369a1" />
-                      </linearGradient>
-                      <filter id="compass-apex-glow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="2.5" result="blur" />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                    </defs>
-
-                    {/* 🌟 1. 후면 코스믹 발광 원뿔 아우라 (Cone Aura Flare) */}
-                    <path
-                      d="M 50 -6 L 33 26 C 41 24, 49 23, 50 23 C 51 23, 59 24, 67 26 Z"
-                      fill="rgba(56, 189, 248, 0.28)"
-                      className="animate-pulse"
-                      filter="url(#compass-apex-glow)"
-                    />
-
-                    {/* 🧭 2. 왼쪽 조명 패싯 (Light Bevel Facet) */}
-                    <path
-                      d="M 50 -4 L 35 24 C 41 22.5, 47 21.8, 50 21.8 Z"
-                      fill="url(#compass-needle-left-facet)"
-                      opacity="0.98"
-                    />
-
-                    {/* 🧭 3. 오른쪽 음영 패싯 (Dark Bevel Facet) */}
-                    <path
-                      d="M 50 -4 L 50 21.8 C 53 21.8, 59 22.5, 65 24 Z"
-                      fill="url(#compass-needle-right-facet)"
-                      opacity="0.98"
-                    />
-
-                    {/* ⚡ 4. 중앙 3D 융기선 (Sharp Spine Ridge Line) */}
-                    <line
-                      x1="50"
-                      y1="-4"
-                      x2="50"
-                      y2="21.8"
-                      stroke="#ffffff"
-                      strokeWidth="1.4"
-                      strokeLinecap="round"
-                      opacity="0.95"
-                    />
-
-                    {/* 🔪 5. 면도날처럼 뾰족한 외곽 칼날 테두리 (Razor Outer Blade Stroke) */}
-                    <path
-                      d="M 35 24 L 50 -4 L 65 24"
-                      fill="none"
-                      stroke="url(#compass-needle-blade-stroke)"
-                      strokeWidth="1.8"
-                      strokeLinejoin="miter"
-                      strokeMiterlimit="12"
-                      strokeLinecap="round"
-                    />
-
-                    {/* ✨ 6. 첨두 정점 다이아몬드 성광 섬광 (Apex Diamond Sparkle) */}
-                    <polygon
-                      points="50,-8.5 52.2,-4 50,0.5 47.8,-4"
-                      fill="#ffffff"
-                      filter="url(#compass-apex-glow)"
-                    />
-                    <circle
-                      cx="50"
-                      cy="-4"
-                      r="1.6"
-                      fill="#ffffff"
-                    />
-                  </svg>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* 🎯 빅뱅 차원 수렴 인터랙션 (군더더기 없는 현대적이고 신비로운 코스믹 아케인 버튼) */}
+            {/* 🎯 빅뱅 차원 수렴 인터랙션 (검은 동그라미 본체가 네 방향으로 물방울처럼 살짝 뾰족히 올라오는 일체형 코스믹 버튼) */}
             <motion.button
               ref={buttonRef}
               id="bigbang-omnibutton"
@@ -1885,28 +1684,27 @@ export function BigBangButton() {
               }}
               whileTap={{ scale: 0.95 }}
               animate={{
+                rotate: 45,
                 borderRadius: morphStyles.borderRadius,
                 x: morphStyles.x,
                 y: morphStyles.y,
-                scaleX: morphStyles.scaleX,
-                scaleY: morphStyles.scaleY,
                 scale: isCosmicSuctionActive
                   ? 0.88
                   : isPressing
                   ? (1.04 + gauge * 0.08)
                   : isHovered && hoverDirection === 'none'
                   ? 1.05
+                  : hoverDirection !== 'none'
+                  ? 1.04
                   : 1.0,
               }}
               transition={{
-                borderRadius: { duration: 0.22, ease: 'easeOut' },
+                borderRadius: { duration: 0.2, ease: 'easeOut' },
                 x: { duration: 0.18, ease: 'easeOut' },
                 y: { duration: 0.18, ease: 'easeOut' },
-                scaleX: { duration: 0.2, ease: 'easeOut' },
-                scaleY: { duration: 0.2, ease: 'easeOut' },
-                duration: isCosmicSuctionActive ? 0.35 : 0.08,
+                duration: isCosmicSuctionActive ? 0.35 : 0.12,
               }}
-              className={`w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex flex-col items-center justify-center shrink-0 cursor-pointer outline-none relative overflow-hidden transition-all duration-200 border will-change-transform z-30 touch-none select-none ${
+              className={`w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex flex-col items-center justify-center shrink-0 cursor-pointer outline-none relative overflow-hidden transition-colors duration-200 border will-change-transform z-30 touch-none select-none ${
                 isCosmicSuctionActive
                   ? 'border-cyan-200 shadow-[0_0_50px_rgba(56,189,248,1),0_0_80px_rgba(168,85,247,0.9),inset_0_0_30px_rgba(0,0,0,1)]'
                   : isPressing && isAborted
@@ -2000,9 +1798,9 @@ export function BigBangButton() {
                 />
               )}
 
-              {/* 🔮 빅뱅 내부 마법진 만다라 워터마크 음각 (Arcane Core Inscription Seal) */}
+              {/* 🔮 빅뱅 내부 마법진 만다라 워터마크 음각 (Arcane Core Inscription Seal - 외피 45° 회전 역보정) */}
               <div
-                className={`absolute inset-2 sm:inset-2.5 rounded-full pointer-events-none z-12 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300 ${
+                className={`absolute inset-2 sm:inset-2.5 rounded-[inherit] pointer-events-none z-12 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300 -rotate-45 ${
                   isPressing ? 'opacity-30' : 'opacity-65 hover:opacity-95'
                 }`}
               >
@@ -2083,10 +1881,11 @@ export function BigBangButton() {
                 </svg>
               </div>
 
-              {/* Event Horizon Deep Singularity Core (크리스탈 구체의 코어 - 화이트홀/블랙홀/웜홀 반응) */}
+              {/* Event Horizon Deep Singularity Core (검은 동그라미 내부 코어도 외피와 동일한 물방울 곡률로 동기화) */}
               <div
-                className="absolute inset-2.5 sm:inset-3 rounded-full z-15 pointer-events-none transition-all duration-200 overflow-hidden flex items-center justify-center"
+                className="absolute inset-2.5 sm:inset-3 z-15 pointer-events-none transition-[border-radius,background,box-shadow] duration-200 overflow-hidden flex items-center justify-center"
                 style={{
+                  borderRadius: morphStyles.borderRadius,
                   background: isPressing && activePhase === 'wormhole'
                     ? 'radial-gradient(circle at 45% 35%, #052e16 0%, #064e3b 50%, #022c22 100%)'
                     : isPressing && isWhiteholeMode
@@ -2209,54 +2008,6 @@ export function BigBangButton() {
                   />
                 </div>
               </div>
-
-              {/* 🧭 호버/터치 방향에 따른 원뿔 나침반 내부 방향성 인디케이터 */}
-              <AnimatePresence>
-                {hoverDirection !== 'none' && !isCosmicSuctionActive && (
-                  <>
-                    {hoverDirection === 'north' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 3 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 2 }}
-                        className="absolute top-1.5 inset-x-0 flex flex-col items-center pointer-events-none z-25"
-                      >
-                        <div className="w-1.5 h-3.5 bg-gradient-to-t from-cyan-400 to-amber-200 rounded-full animate-pulse shadow-[0_0_10px_#38bdf8]" />
-                      </motion.div>
-                    )}
-                    {hoverDirection === 'south' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -3 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -2 }}
-                        className="absolute bottom-1.5 inset-x-0 flex flex-col items-center pointer-events-none z-25"
-                      >
-                        <div className="w-1.5 h-3.5 bg-gradient-to-b from-cyan-400 to-amber-200 rounded-full animate-pulse shadow-[0_0_10px_#38bdf8]" />
-                      </motion.div>
-                    )}
-                    {hoverDirection === 'west' && (
-                      <motion.div
-                        initial={{ opacity: 0, x: 3 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 2 }}
-                        className="absolute left-1.5 inset-y-0 flex items-center pointer-events-none z-25"
-                      >
-                        <div className="h-1.5 w-3.5 bg-gradient-to-l from-cyan-400 to-amber-200 rounded-full animate-pulse shadow-[0_0_10px_#38bdf8]" />
-                      </motion.div>
-                    )}
-                    {hoverDirection === 'east' && (
-                      <motion.div
-                        initial={{ opacity: 0, x: -3 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 2 }}
-                        className="absolute right-1.5 inset-y-0 flex items-center pointer-events-none z-25"
-                      >
-                        <div className="h-1.5 w-3.5 bg-gradient-to-r from-cyan-400 to-amber-200 rounded-full animate-pulse shadow-[0_0_10px_#38bdf8]" />
-                      </motion.div>
-                    )}
-                  </>
-                )}
-              </AnimatePresence>
             </motion.button>
           </div>
         </div>

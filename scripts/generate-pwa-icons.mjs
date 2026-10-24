@@ -6,14 +6,19 @@ import sharp from 'sharp';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, '../public');
 
-// 1. Prism Icon Targets (from public/icon.svg)
+// 1. LucKey / Prism Icon Targets (from public/icon.svg)
 const prismSource = path.join(publicDir, 'icon.svg');
 const prismTargets = [
   { name: 'icon-512.png', size: 512 },
+  { name: 'icon-512-v2.png', size: 512 },
   { name: 'icon-192.png', size: 192 },
+  { name: 'icon-192-v2.png', size: 192 },
   { name: 'apple-touch-icon.png', size: 180 },
+  { name: 'apple-touch-icon-v2.png', size: 180 },
   { name: 'apple-touch-icon-precomposed.png', size: 180 },
   { name: 'favicon.png', size: 64 },
+  { name: 'luckey-icon-512.png', size: 512 },
+  { name: 'luckey-icon-192.png', size: 192 },
   { name: 'prism-icon-512.png', size: 512 },
   { name: 'prism-icon-192.png', size: 192 },
   { name: 'prism-icon-180.png', size: 180 },

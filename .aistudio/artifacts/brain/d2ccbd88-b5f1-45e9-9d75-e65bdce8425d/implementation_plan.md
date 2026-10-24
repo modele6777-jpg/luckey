@@ -1,109 +1,105 @@
-# 좌측 엣지 호버 & 스와이프 사이드바 오토 피크(Auto-Peek) 네비게이션
+# 아이폰 듀오 120Hz 초고주사율 가속 & 무지연 최고 성능(Ultra-Max) 엔진 구축 계획
 
-PC에서는 마우스를 화면 좌측 끝으로 이동할 때, 모바일에서는 화면 좌측 끝에서 안쪽으로 스와이프할 때 사이드바가 부드럽게 펼쳐지고, 사용자의 조작이 끝나면 약 2.5초 후 자동으로 다시 접히는 스마트 오토 피크(Auto-Peek) 네비게이션 경험을 구현합니다.
+아이폰 듀오 및 듀얼 스크린 환경에서 절전·다운그레이드 제한을 전면 해제하고, **120Hz ProMotion GPU 하드웨어 가속**, **전 채널 백그라운드 즉시 프리로딩(체감 로딩 0초)**, **AI 스트리밍·TTS 5청크 선행 프리페치 및 32보이스 WebAudio 최고 출력**, 그리고 **인메모리 캐시·상태 동기화 반응속도 극대화**를 동시에 적용합니다.
 
-### User Review & Critical Decisions
+## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> 사전 질의를 통해 확정된 사용자 인터페이스 및 자동 접힘 동작 사양입니다.
+> 질문 응답을 통해 확정된 4대 최고 성능(Ultra-Max) 핵심 사양입니다.
 
-- **자동 접힘 대기 시간 (확정)**: 마우스가 사이드바 영역을 벗어나거나 모바일 터치 조작이 종료된 시점부터 **약 2.5초(2,500ms) 후** 자동으로 부드럽게 접힙니다.
-- **조작 중 열린 상태 유지 (확정)**: 사이드바 내부에 마우스를 올려두거나 메뉴·배경음 컨트롤 등을 터치하여 조작하는 동안에는 자동 접힘 타이머가 일시정지되어 열린 상태를 안정적으로 유지하며, 손을 떼거나 마우스가 이탈하면 카운트다운이 시작됩니다.
-- **좌측 가장자리 빛 줄기 힌트 및 슬라이드 오픈 (확정)**: 사이드바가 닫혀 있을 때 화면 좌측 끝에 은은한 빛 줄기(Edge Glow Hint) 감지 영역을 표시하여 반응성을 직관적으로 알리고, 트리거 시 가볍고 매끄럽게 슬라이드 오픈합니다.
-
----
-
-### 1. Overview & Core Concept
-
-- **What It Does**: 별도의 메뉴 버튼을 찾아 클릭하지 않아도, 화면 왼쪽 끝으로 마우스를 가져가거나(PC) 왼쪽 가장자리를 쓸어 넘기는(모바일) 자연스러운 동작만으로 사이드바를 즉시 호출하고, 용무가 끝나면 스스로 정리되어 화면 몰입도를 높입니다.
-- **Target Audience / Persona**: 대화창(루시/키), 타로·오라클 리딩, 7대 프리즘 채널을 오가며 넓은 화면 몰입감과 빠른 채널 전환을 동시에 원하는 PC 및 모바일 사용자.
-- **Key Value**: 화면 상단·하단 고정 버튼의 시각적 간섭을 최소화하면서도, 한 손 엄지 스와이프나 마우스 엣지 이동만으로 즉시 네비게이션과 LP 배경음 컨트롤에 접근할 수 있는 무마찰(Zero-Friction) 탐색 환경을 제공합니다.
+- **확정 결정 1 — 120Hz 초고주사율 가속 + 무지연 프리로딩 동시 적용**: 기존에 듀얼 스크린(`duo`) 프로필에 걸려 있던 모바일 저사양 제한(`perf-reduced`)을 완전히 해제하고, 최고 성능 전용 등급(`perf-duo-ultra` / 120Hz ProMotion 모드)으로 승격합니다.
+- **확정 결정 2 — 모든 채널 화면 백그라운드 즉시 프리로딩(체감 로딩 0초)**: 첫 화면 진입 직후 유휴 프레임(`requestIdleCallback` 및 마이크로 스태거링)을 활용해 루시, 리바이블, 프롤로그, 오렌지, 트리니티, 오라, 파랑새, 뮤즈, 에필로그, 옴니워프, 키 등 **전 채널 모듈을 백그라운드에서 메모리에 즉시 프리로드**하여 채널 이동 시 로딩 스피너 없이 0.0초 만에 즉시 전환되도록 합니다.
+- **확정 결정 3 — 빅뱅버튼·사이드바·스크롤 120fps GPU 하드웨어 가속 극대화**: 빅뱅버튼 물방울 모핑, 좌측 오로라 커튼 및 사이드바 드로어, 듀얼 패널 스크롤 컨테이너에 3D 하드웨어 합성 레이어(`translate3d(0,0,0)`, `will-change: transform, opacity`, `backface-visibility: hidden`)를 강제 할당하여 120fps 프레임 드랍 없는 부드러운 모션을 구현합니다.
+- **확정 결정 4 — AI 응답·TTS 음성 합성 최고 출력 & 메모리 캐시·동기화 최우선 단축**:
+  - WebAudio 신디사이저 최대 동시 발음 수를 **32보이스(최고 폴리포니)**로 확대하고, BGM 및 오디오 컨텍스트 즉시 프리워밍을 활성화합니다.
+  - TTS 문장 선행 프리페치(Lookahead Prefetch) 범위를 기존 3청크에서 **5청크 동시 선행 해독 + 영구 인메모리 캐시**로 확장하여 끊김 없는 즉각 낭독을 보장합니다.
+  - 기기 간 상태 동기화 감지 주기를 **2.5초**, 실시간 생체·에너지 패턴 갱신 주기를 **30초**로 단축해 데이터 반영 지연을 최소화합니다.
 
 ---
 
-### 2. User Experience & Visual Design
+## 1. Overview & Core Concept
+
+- **What It Does**:
+  - 기기 성능 프로필에서 아이폰 듀오·듀얼 스크린·폴더블을 저사양 모바일(`perf-reduced`)과 분리하여 **최고 성능 등급(`duo` / `ultra`)**으로 구동합니다.
+  - 앱 실행 직후 모든 채널 번들과 오디오·TTS 파이프라인을 백그라운드에서 선행 가열(Pre-warming)하여, 사용자가 어느 채널이나 기능을 터치하든 지연 시간 0초로 즉각 반응합니다.
+- **Target Audience / Persona**:
+  - 아이폰 듀오 및 듀얼 스크린 환경에서 타협 없는 120fps 그래픽 유려함, 즉각적인 채널 전환, 빠른 AI·음성 응답을 원하는 파워 유저.
+- **Key Value**:
+  - 채널 전환 대기 시간 제거(0ms 체감 전환), 120Hz 주사율에 맞춘 물방울 빅뱅버튼·사이드바 모션, 끊김 없는 고해상도 사운드 및 초고속 상태 동기화를 동시에 제공합니다.
+
+---
+
+## 2. User Experience & Visual Design
 
 - **Key User Flows**:
-  1. **대기 상태 (Edge Glow Hint)**: 사이드바가 닫혀 있을 때 화면 좌측 가장자리(`left: 0`)를 따라 얇고 은은한 프리즘 빛 줄기 인디케이터가 호흡하듯 미세하게 빛나며 상호작용 가능 영역임을 암시합니다.
-  2. **PC 좌측 끝 마우스 호버 오픈**: 사용자가 마우스 커서를 화면 좌측 끝 감지 영역(폭 약 14px~18px)으로 옮기면, 빛 줄기가 밝아지며 슬림 아이콘 사이드바가 즉시 오른쪽으로 미끄러지듯 펼쳐집니다.
-  3. **모바일 좌측 끝 인워드 스와이프 오픈**: 모바일 화면 좌측 가장자리(좌측 끝 ~28px 이내)에서 안쪽(우측 방향, $\Delta x \ge 36\text{px}$, 수평 이동이 수직 스크롤보다 우세할 때)으로 스와이프하면 사이드바가 펼쳐지고, 타이머 카운트다운(2.5초)이 예약됩니다.
-  4. **조작 중 열림 유지 (Interactive Hold)**:
-     - PC에서 마우스 커서가 사이드바 내부에 머물러 있거나 7대 채널 아코디언·LP 플레이어 버튼을 조작하는 동안에는 자동 접힘 타이머가 멈추고 열린 상태를 유지합니다.
-     - 모바일에서 사이드바 내부를 터치하거나 스크롤·롱프레스하는 동안에도 타이머가 초기화되며, LP 상세 설정 팝업이 열려 있는 동안에도 사이드바가 닫히지 않도록 보호합니다.
-  5. **자동 접힘 (2.5초 카운트다운) 및 수동 닫기**:
-     - PC에서 마우스가 사이드바 밖으로 벗어나거나, 모바일에서 터치가 끝난 뒤 아무 조작 없이 2.5초가 경과하면 사이드바가 좌측으로 부드럽게 슬라이드 아웃되며 접힙니다.
-     - 사이드바 내부에서 반대 방향(좌측)으로 스와이프하거나 배경 영역을 탭하면 2.5초를 기다리지 않고 즉시 닫을 수 있습니다.
+  1. **앱 진입 직후 백그라운드 제로-레이턴시 프리로딩**: 첫 화면이 렌더링되자마자 메인 스레드를 방해하지 않고 12개 전체 페이지 모듈과 핵심 오디오·TTS 리소스를 백그라운드에서 메모리에 적재합니다.
+  2. **0.0초 즉시 채널 워프**: 사이드바나 빅뱅버튼 나침반(좌·우 물방울 모핑), 홈 허브 카드로 채널을 전환할 때 네트워크 대기나 로딩 화면 없이 즉시 화면이 열립니다.
+  3. **120fps 초고주사율 인터랙션**: 빅뱅버튼 4방위 물방울 텐션, 마법진 회전, 좌측 엣지 오로라 파동, 2단 듀얼 패널 스크롤이 GPU 전용 레이어에서 120Hz로 매끄럽게 구동됩니다.
+  4. **초고속 AI·TTS 및 실시간 동기화**: TTS 재생 시 첫 문장 재생과 동시에 향후 5개 문장 청크를 병렬 프리페치하고 인메모리에 캐싱하여 대기 시간 없이 연속 낭독합니다.
 
 - **Visual Identity & Theme**:
-  - *Aesthetic Direction*: 몰입형 다크/라이트 캔버스를 해치지 않는 유리질(Glassmorphic) 슬림 도크와 프리즘 광채 엣지 라인.
-  - *Color Palette & Mood*:
-    - 다크 모드: `bg-neutral-950/95` 슬림 레일과 현재 활성 채널의 테마 컬러(또는 골드/에메랄드/퍼플 프리즘 그라데이션)가 반영된 좌측 엣지 발광 라인.
-    - 라이트 모드: 따뜻한 아이보리(`bg-[#fdfaf5]/95`) 레일과 은은한 앰버 골드 빛 줄기 힌트.
-  - *Component Styling & Layout*:
-    - 엣지 힌트 라인은 화면 전체 높이가 아닌 중앙~하단 엄지 도달 영역(Thumb Zone)을 중심으로 세련된 수직 그라데이션 광선 형태로 배치하여 시각적 피로도를 줄이고 터치 유도성을 높입니다.
-    - 오토 피크 시 화면 본문 가독성을 유지하면서도 사이드바 아이콘에 시선이 집중되도록 부드러운 스프링 물리 애니메이션(`stiffness: 360, damping: 32`)을 적용합니다.
-
-- **Interactive Feedback & Motion**:
-  - 모든 열림/닫힘 전환은 레이아웃 리플로우 없이 `transform`과 `opacity`만을 사용하여 60fps의 매끄러운 모션을 보장합니다.
-  - 자동 접힘 카운트다운이 진행될 때 상단 인디케이터 바에 미세한 잔여 시간 피드백을 더해 사용자가 닫히는 타이밍을 직관적으로 인지할 수 있게 합니다.
+  - *Aesthetic Direction*: 기존 다크 코스믹 & 웜 아이보리 테마의 모든 프리미엄 광원 효과(프리즘 오로라, 별똥별, 빅뱅 아케인 룬, 크리스털 글래스모피즘)를 저사양 강제 비활성화 없이 100% 온전하게 표출합니다.
+  - *Color Palette & Mood*: 고대비 크리스털 글래스(`backdrop-filter: blur(16px) saturate(180%)`)와 선명한 네온·골드 광채를 GPU 합성 레이어 위에서 손실 없이 렌더링합니다.
+  - *Typography & Hierarchy*: Retina 고밀도 안티앨리어싱(`-webkit-font-smoothing: antialiased`)과 `tabular-nums` 수치 정렬로 선명한 가독성을 유지합니다.
+  - *Interactive Feedback & Motion*: 모든 인터랙션이 120Hz 프레임 페이싱에 맞춰 즉각 반응하며, 레이아웃 리플로우(Reflow) 없이 `transform`과 `opacity` 합성만으로 동작합니다.
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
+## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: 인터랙션 감지 기반의 스마트 2.5초 디바운스 타이머**
-  - *Chosen Approach*: 단순 오픈 후 무조건 2.5초 뒤 닫히는 고정 타이머가 아니라, `isPointerInside`(PC 호버) 및 `isTouchingSidebar`(모바일 터치) 상태와 연동되어 **조작이 멈춘 시점부터 2.5초를 카운트**하는 스마트 유휴 타이머를 적용합니다.
-  - *Why*: 사용자가 7대 프리즘 채널을 펼쳐서 둘러보거나 LP 배경음 버튼을 길게 눌러 설정할 때 도중에 사이드바가 닫혀버리는 불편을 완벽히 방지합니다.
-  - *Alternatives Considered*: 열린 직후 무조건 일정 시간 뒤 닫히는 방식은 메뉴 선택 중 오작동을 유발하므로 배제했습니다.
+- **Decision 1: `duo` 프로필의 `perf-reduced` 강제 편입 해제 및 `perf-duo-ultra` 전용 가속 활성화**
+  - *Chosen Approach*: `perfMode`에서 `duo` 프로필을 `perf-reduced` 대상에서 제외하고, `perf-duo` 및 `perf-duo-ultra` 클래스를 부여하여 모든 오로라·빅뱅·레인보우 셰이더 애니메이션을 120Hz GPU 가속 상태로 완전 개방합니다.
+  - *Why*: 기존에는 모바일·듀얼 기기가 일괄적으로 `perf-reduced`로 묶여 애니메이션과 블러가 강제로 꺼지고 사운드 보이스가 제한되었으나, 최고 성능 요청에 맞춰 하드웨어 잠재력을 100% 활용하기 위함입니다.
+  - *Alternatives Considered*: 단순 애니메이션 활성화만 적용할 경우 레이어 페인트 부하가 생길 수 있어, 각 애니메이션 요소를 독립 GPU 레이어(`translate3d(0,0,0)`)로 분리해 속도 저하 없이 최고 그래픽을 유지합니다.
 
-- **Decision 2: 모바일 수직 스크롤과 좌측 엣지 수평 스와이프의 정밀 분리**
-  - *Chosen Approach*: 터치 시작점(`clientX <= 28px`)을 검사하고, 이동 거리에서 수평 변위($\Delta x > 36\text{px}$)가 수직 변위($|\Delta y| \times 1.4$)보다 명확히 클 때만 사이드바 오픈으로 판정합니다.
-  - *Why*: 모바일 웹에서 채팅창이나 카드를 위아래로 스크롤할 때 의도치 않게 사이드바가 열리는 현상을 방지하기 위함입니다.
+- **Decision 2: 유휴 시간 스태거링 기반 전 채널 인메모리 프리로더 (`preloadAllChannelChunks`)**
+  - *Chosen Approach*: 초기 마운트 완료 후 150ms 시점부터 마이크로 배치(2~3개 모듈씩 60ms 간격)로 모든 Lazy 라우트 모듈을 선행 `import()`하여 브라우저 모듈 캐시에 상주시킵니다.
+  - *Why*: 초기 부팅 속도는 그대로 지키면서, 첫 클릭 시점에는 이미 모든 채널 코드가 메모리에 준비되어 체감 로딩 시간을 0초로 만듭니다.
+
+- **Decision 3: TTS 5-청크 병렬 선행 프리페치 & 32보이스 WebAudio 최고 출력**
+  - *Chosen Approach*: TTS 시퀀스 스트리밍 시 Lookahead 프리페치 개수를 3개에서 **5개**로 늘리고, 인메모리 캐시 상한을 대폭 확장하며, WebAudio 동시 발음 수를 **32보이스**로 설정합니다.
+  - *Why*: 긴 AI 답변이나 리바이블 낭독 시 문장 간 공백을 완전히 없애고 풍부한 공간 음향을 제공하기 위함입니다.
 
 ---
 
-### 4. Technical Architecture & Data Strategy *(Technical Reference)*
+## 4. Technical Architecture & Data Strategy *(Technical Reference)*
 
 - **Architecture & Component Diagram**:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                     Viewport Left Edge Gesture Layer                     │
-│  ┌────────────────────────────────┐  ┌────────────────────────────────┐  │
-│  │   Desktop Edge Hover Sensor    │  │  Mobile Edge Touch Recognizer  │  │
-│  │ (Left 0~16px Pointer Enter +   │  │ (TouchStart x<=28px -> Swipe   │  │
-│  │  Prismatic Glow Line Hint)     │  │  Right Δx>=36px, Δx > |Δy|*1.4)│  │
-│  └───────────────┬────────────────┘  └───────────────┬────────────────┘  │
-└──────────────────┼───────────────────────────────────┼───────────────────┘
-                   │                                   │
-                   ▼                                   ▼
+│                 iPhone Duo Ultra-Max Performance Engine                  │
+│  • Profile: 'duo' (perf-duo-ultra) — Zero Throttling, 120Hz ProMotion    │
+│  • Sync Poll: 2.5s | Biometric Refresh: 30s | WebAudio: 32 Voices        │
+└───────────┬──────────────────────────────┬───────────────────────────────┘
+            │                              │
+            ▼                              ▼
+┌──────────────────────────────────┐  ┌────────────────────────────────────┐
+│ Zero-Latency Channel Preloader   │  │ 120fps GPU Compositor & Audio Max  │
+│  • Staggered Background Import   │  │  • BigBang / Sidebar translate3d   │
+│  • All 12 Channel Bundles Warm   │  │  • Full Crystal Blur (16px/180%)   │
+│  • Instant 0.0s Route Switch     │  │  • TTS 5-Chunk Parallel Lookahead  │
+└───────────┬──────────────────────┘  └────────────────┬───────────────────┘
+            │                                          │
+            ▼                                          ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                Sidebar Auto-Peek & Idle Timer Controller                 │
-│  • States: isOpen, isHoveringSidebar, isTouchingSidebar, isAutoCounting  │
-│  • Pause Conditions: Pointer inside rail | Active touch | LP Hold/Modal  │
-│  • Resume Condition: Pointer leave / Touch end -> 2,500ms Auto-Collapse  │
-└──────────────────────────────────┬───────────────────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│                       Slide-In Left Slim Icon Rail                       │
-│  • Top Progress/Indicator Pill (Visualizes active hold vs auto-collapse) │
-│  • Core Sanctuary & 7 Prism Channels Accordion                           │
-│  • LP BGM Mini Vinyl Control & User Profile Action                       │
-│  • Leftward Swipe-to-Close & Backdrop Tap-to-Close                       │
+│                     Instant-Response Dual-Pane UI                        │
+│  • 0ms Channel Transitions across Lucy, Key, Prologue & 7 Prism Apps     │
+│  • Locked 120fps Teardrop Morphing, Edge Aurora & Dual-Pane Scrolling    │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 - **Data Model & State**:
-  - `isOpen` (`boolean`): 사이드바 현재 열림/닫힘 상태.
-  - `isInteracting` (`boolean`): 마우스가 사이드바 위에 있거나(`onMouseEnter`/`onMouseLeave`), 모바일 터치가 진행 중이거나(`onTouchStart`/`onTouchEnd`), LP 롱프레스/상세 팝업이 활성화된 상태인지 추적.
-  - `autoCloseTimerRef` (`Timeout Ref`): 조작이 해제된 순간부터 2,500ms 후 `setIsOpen(false)`를 실행하는 타이머 참조.
-  - `edgeSwipeRef` (`{ startX, startY, startTime, isEdgeSwipe }`): 모바일 좌측 끝 인워드 스와이프 및 열린 상태에서의 좌측 아웃워드 스와이프 닫기 제스처 좌표 상태.
+  - **Ultra Performance Configuration**:
+    - `getMaxSynthVoices()` → `32` (최대 동시 발음 수)
+    - `getSyncPendingPollMs()` → `2500` (2.5초 초고속 동기화 폴링)
+    - `getHubMetricsIntervalMs()` → `30000` (30초 실시간 생체 리듬 갱신)
+    - `getAutoSyncIntervalMs()` → `180000` (3분 자동 클라우드 동기화)
+    - `shouldPreloadBgmAudio()` → `true` (배경음악 및 오디오 컨텍스트 즉시 프리로드)
+  - **In-Memory Channel & TTS Cache**:
+    - 12개 전체 라우트 청크를 앱 마운트 직후 메모리에 영구 캐싱.
+    - `prefetchTTSChunks` 및 `playTTSInChunks`의 선행 프리페치 윈도우를 5청크로 확장하고 `MAX_TTS_CACHE_SIZE`를 250개 엔트리로 유지하여 재청취 시 네트워크 요청 0회 달성.
 
 - **Interactive Component & State Mapping**:
-  - **좌측 엣지 호버 감지 영역 (PC)**: 닫힌 상태에서 화면 좌측 끝(`w-4`) 영역에 마우스가 진입하면 80ms의 짧은 의도 확인 딜레이 후 `setIsOpen(true)`를 호출하여 스쳐 지나가는 마우스 오작동을 줄이고 자연스럽게 오픈합니다.
-  - **글로벌 좌측 엣지 터치 리스너 (모바일)**: `window` 레벨의 패시브 터치 이벤트(`touchstart`, `touchmove`, `touchend`)를 통해 좌측 가장자리 밖에서 안쪽으로 쓸어 넘기는 동작을 감지하여 어느 화면에서든 즉시 사이드바를 펼칩니다.
-  - **자동 접힘 타이머 동기화**:
-    - 사이드바가 열릴 때 마우스가 사이드바 외부에 있거나 모바일 스와이프로 열린 경우 즉시 2.5초 타이머가 가동됩니다.
-    - 사용자가 사이드바 위에 마우스를 올리거나 메뉴를 터치하면 타이머가 즉시 클리어(`clearTimeout`)됩니다.
-    - 마우스가 사이드바를 떠나거나(`onMouseLeave`) 터치가 끝나면(`onTouchEnd`) 다시 2.5초 카운트다운이 시작되어 만료 시 자동으로 접힙니다.
+  - **백그라운드 채널 프리로더**: `AppContent` 마운트 및 인증/언락 직후 백그라운드에서 모든 채널 컴포넌트를 비동기 프리로드하여, 사용자가 어떤 채널 아이콘을 누르든 `Suspense` 폴백 없이 즉시 화면을 전환합니다.
+  - **120Hz GPU 레이어 가속**: 빅뱅버튼(`.bottom-safe-fab-center`), 좌측 사이드바(`nav-drawer`, `nav-edge-sensor`), 상단 서브네비게이션(`.prism-xs-subnav`), 스크롤 루트(`[data-app-scroll-root]`)에 하드웨어 가속 스타일을 적용해 초고주사율 반응성을 보장합니다.

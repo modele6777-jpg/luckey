@@ -1,9 +1,10 @@
-export type PerfProfile = 'full' | 'galaxy' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
+export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
 let cachedProfile: PerfProfile | null = null;
 let cachedGalaxyS23: boolean | null = null;
 let cachedGalaxyFoldSe: boolean | null = null;
 let cachedIPhoneXS: boolean | null = null;
+let cachedDuo: boolean | null = null;
 
 export function isIOSDevice(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -43,16 +44,18 @@ export function getDevicePerfOverride(): string | null {
     if (paramDev) {
       const lower = paramDev.toLowerCase();
       if (lower === 'iphonex' || lower === 'iphonexs') return 'iphonexs';
+      if (lower === 'duo' || lower === 'iphoneduo' || lower === 'surfaceduo') return 'duo';
       return lower;
     }
     if (params.has('iphonex') || params.has('iphonexs')) return 'iphonexs';
+    if (params.has('duo') || params.has('iphoneduo')) return 'duo';
     return window.localStorage?.getItem('prism_device_perf_override') || null;
   } catch {
     return null;
   }
 }
 
-export function setDevicePerfOverride(override: 'iphonexs' | 'galaxy' | 'auto' | null): void {
+export function setDevicePerfOverride(override: 'iphonexs' | 'galaxy' | 'duo' | 'auto' | null): void {
   if (typeof window === 'undefined') return;
   try {
     if (override && override !== 'auto') {
@@ -64,10 +67,82 @@ export function setDevicePerfOverride(override: 'iphonexs' | 'galaxy' | 'auto' |
     cachedIPhoneXS = null;
     cachedGalaxyS23 = null;
     cachedGalaxyFoldSe = null;
+    cachedDuo = null;
     initPerfMode();
   } catch {}
 }
 
+/**
+ * Surface Duo / Foldable Dual-Screen / iPhone Duo detection.
+ * Checks W3C Viewport Segments API, spanning media queries, UA, and dual-screen geometry.
+ */
+export function isSurfaceDuoOrDualScreen(): boolean {
+  if (cachedDuo !== null) return cachedDuo;
+  if (typeof window === 'undefined') return false;
+
+  const override = getDevicePerfOverride();
+  if (override === 'duo') {
+    cachedDuo = true;
+    return true;
+  }
+
+  try {
+    if (
+      window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
+      window.matchMedia('(vertical-viewport-segments: 2)').matches ||
+      window.matchMedia('(spanning: single-fold-vertical)').matches ||
+      window.matchMedia('(spanning: single-fold-horizontal)').matches
+    ) {
+      cachedDuo = true;
+      return true;
+    }
+  } catch {}
+
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  if (/Surface Duo|SurfaceDuo/i.test(ua)) {
+    cachedDuo = true;
+    return true;
+  }
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  // Surface Duo 1 (540x720 single / 1114x720 spanned) & Surface Duo 2 (556x896 single / 1344x896 spanned)
+  const isDuoGeometry =
+    (w >= 1080 && w <= 1380 && h >= 660 && h <= 930) ||
+    (w >= 525 && w <= 575 && h >= 680 && h <= 920);
+
+  cachedDuo = isDuoGeometry;
+  return cachedDuo;
+}
+
+/**
+ * Determines whether the current viewport should activate the 2-Column Dual-Pane Split layout
+ * (Unfolded Foldable, Spanned Surface Duo, or Landscape / Wide iPhone Duo mode).
+ */
+export function isDualPaneLayout(): boolean {
+  if (typeof window === 'undefined') return false;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  try {
+    if (
+      window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
+      window.matchMedia('(spanning: single-fold-vertical)').matches
+    ) {
+      return true;
+    }
+  } catch {}
+
+  // Spanned Surface Duo or unfolded Galaxy Fold inner screen
+  if (isSurfaceDuoOrDualScreen() && w >= 640) return true;
+  if (isGalaxyFoldSeClass() && !isFoldCoverScreen()) return true;
+
+  // iPhone Landscape / Wide Dual-View (width > height and width >= 600px, or square-ish foldable >= 660px)
+  if (w > h && w >= 590) return true;
+  if (w >= 660 && w / Math.max(h, 1) >= 0.8) return true;
+
+  return false;
+}
 
 function isFoldableInnerScreen(): boolean {
   if (typeof window === 'undefined' || !isAndroidDevice()) return false;
@@ -148,6 +223,7 @@ export function isGalaxyPremiumClass(): boolean {
 }
 
 function resolvePerfProfile(): PerfProfile {
+  if (isSurfaceDuoOrDualScreen()) return 'duo';
   if (isIPhoneXSClass()) return 'iphonexs';
   if (isNarrowPhone() && isIOSDevice()) return 'legacy';
   if (isGalaxyFoldSeClass() || isGalaxyS23Class()) return 'galaxy';
@@ -185,10 +261,30 @@ function applyGalaxyDeviceFlags(): void {
   } else if (s23) {
     document.documentElement.dataset.device = 'galaxy-s23';
     document.documentElement.dataset.foldCover = '';
-  } else if (!isIPhoneXSClass()) {
+  } else if (!isIPhoneXSClass() && !isSurfaceDuoOrDualScreen()) {
     document.documentElement.dataset.device = '';
     document.documentElement.dataset.foldCover = '';
   }
+}
+
+function applyDuoAndViewportFlags(): void {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+  const isDuo = isSurfaceDuoOrDualScreen();
+  const dualPane = isDualPaneLayout();
+  const isLandscape = window.innerWidth > window.innerHeight;
+
+  document.documentElement.classList.toggle('perf-duo', isDuo || dualPane);
+  document.documentElement.classList.toggle('dual-pane-active', dualPane);
+  document.documentElement.dataset.dualScreen = dualPane ? 'true' : 'false';
+  document.documentElement.dataset.orientation = isLandscape ? 'landscape' : 'portrait';
+
+  if (isDuo) {
+    document.documentElement.dataset.device = 'surface-duo';
+  }
+
+  const vvh = window.visualViewport?.height || window.innerHeight;
+  document.documentElement.style.setProperty('--visual-vh', `${vvh}px`);
 }
 
 export function initPerfMode(): PerfProfile {
@@ -207,7 +303,7 @@ export function initPerfMode(): PerfProfile {
     document.documentElement.classList.add('perf-reduced');
   }
 
-  if (profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs') {
+  if (profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs' || profile === 'duo') {
     document.documentElement.classList.add('perf-reduced');
   }
   if (profile === 'legacy' || profile === 'iphonexs') {
@@ -225,6 +321,7 @@ export function initPerfMode(): PerfProfile {
 
   applyIPhoneXSDeviceFlags();
   applyGalaxyDeviceFlags();
+  applyDuoAndViewportFlags();
 
   return profile;
 }
@@ -236,7 +333,7 @@ export function getPerfProfile(): PerfProfile {
 export function isPerfReduced(): boolean {
   if (typeof window !== 'undefined' && isMobileDevice()) return true;
   const profile = getPerfProfile();
-  return profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs';
+  return profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs' || profile === 'duo';
 }
 
 export function isPwaStandalone(): boolean {
@@ -249,12 +346,13 @@ export function isLegacyMobile(): boolean {
 }
 
 export function isGalaxyPerfProfile(): boolean {
-  return getPerfProfile() === 'galaxy';
+  return getPerfProfile() === 'galaxy' || getPerfProfile() === 'duo';
 }
 
 export function getMaxSynthVoices(): number {
   const profile = getPerfProfile();
   if (profile === 'iphonexs' || profile === 'legacy') return 4;
+  if (profile === 'duo') return 14;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 10 : 18;
   if (isGalaxyS23Class()) return 12;
   if (profile === 'pwa') return 6;
@@ -265,6 +363,7 @@ export function getMaxSynthVoices(): number {
 export function getAutoSyncIntervalMs(): number {
   const profile = getPerfProfile();
   if (profile === 'iphonexs' || profile === 'legacy') return 10 * 60 * 1000;
+  if (profile === 'duo') return 6 * 60 * 1000;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 7 * 60 * 1000 : 5 * 60 * 1000;
   if (isGalaxyS23Class()) return 6 * 60 * 1000;
   if (profile === 'pwa') return 8 * 60 * 1000;
@@ -273,6 +372,7 @@ export function getAutoSyncIntervalMs(): number {
 
 export function getHubMetricsIntervalMs(): number {
   if (isIPhoneXSClass() || isLegacyMobile()) return 120_000;
+  if (isSurfaceDuoOrDualScreen()) return 80_000;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 105_000 : 75_000;
   if (isGalaxyS23Class()) return 90_000;
   return 60_000;
@@ -280,6 +380,7 @@ export function getHubMetricsIntervalMs(): number {
 
 export function getSyncPendingPollMs(): number {
   if (isIPhoneXSClass() || isLegacyMobile()) return 10_000;
+  if (isSurfaceDuoOrDualScreen()) return 6_000;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 8_000 : 5_000;
   if (isGalaxyS23Class()) return 7_000;
   return 5_000;
@@ -287,6 +388,7 @@ export function getSyncPendingPollMs(): number {
 
 export function getSwUpdateIntervalMs(): number {
   if (isIPhoneXSClass() || isLegacyMobile()) return 45 * 60 * 1000;
+  if (isSurfaceDuoOrDualScreen()) return 30 * 60 * 1000;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 40 * 60 * 1000 : 30 * 60 * 1000;
   if (isGalaxyS23Class()) return 35 * 60 * 1000;
   if (isPwaStandalone()) return 30 * 60 * 1000;
@@ -310,6 +412,7 @@ let narrowPhoneListenerAttached = false;
 
 export function isNarrowPhone(): boolean {
   if (typeof window === 'undefined') return false;
+  if (isDualPaneLayout()) return false;
   if (isGalaxyFoldSeClass() && !isFoldCoverScreen()) return false;
   return window.innerWidth <= NARROW_PHONE_MAX_WIDTH;
 }
@@ -369,6 +472,7 @@ export function initNarrowPhoneClass(): void {
     cachedGalaxyS23 = null;
     cachedGalaxyFoldSe = null;
     cachedIPhoneXS = null;
+    cachedDuo = null;
 
     const narrow = isNarrowPhone();
     document.documentElement.classList.toggle('prism-iphone-xs', narrow);
@@ -376,6 +480,7 @@ export function initNarrowPhoneClass(): void {
 
     applyIPhoneXSDeviceFlags();
     applyGalaxyDeviceFlags();
+    applyDuoAndViewportFlags();
   };
 
   apply();
@@ -384,5 +489,7 @@ export function initNarrowPhoneClass(): void {
     narrowPhoneListenerAttached = true;
     window.addEventListener('resize', apply, { passive: true });
     window.addEventListener('orientationchange', apply, { passive: true });
+    window.visualViewport?.addEventListener('resize', apply, { passive: true });
   }
 }
+
