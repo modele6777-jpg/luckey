@@ -163,16 +163,21 @@ export function playNativeBrowserSpeech(
     utterance.pitch = 1.15;
   }
 
+  const firstSub = splitSpeechIntoSentences(cleanText)[0] || cleanText;
   updateTTSState({
     isLoading: false,
     isSpeaking: true,
     activeText: cleanText,
-    currentSentence: cleanText,
-    activeSentence: cleanText,
+    ...(isSequenceChunk
+      ? {}
+      : {
+          currentSentence: firstSub,
+          activeSentence: firstSub,
+        }),
     activeSentenceIndex: 0,
     totalSentences: 1,
   });
-  setTTSSessionActive(cleanText);
+  setTTSSessionActive(isSequenceChunk ? (ttsState.activeSentence || cleanText) : firstSub);
 
   // Resume-only keepalive timer (never call pause() mid-utterance, which causes mobile TTS to restart from 0s)
   let keepAliveInterval: any = null;
@@ -422,6 +427,7 @@ export const playTTS = async (
 
   // Determine active session ID
   let mySessionId = sequenceSessionId;
+  const initialSubSentence = splitSpeechIntoSentences(cleanText)[0] || cleanText;
   if (!mySessionId) {
     mySessionId = Math.random().toString();
     stopTTS();
@@ -433,8 +439,8 @@ export const playTTS = async (
       isLoading: true,
       isSpeaking: false,
       activeText: cleanText,
-      currentSentence: cleanText,
-      activeSentence: cleanText,
+      currentSentence: initialSubSentence,
+      activeSentence: initialSubSentence,
       activeSentenceIndex: 0,
       totalSentences: 1,
       activeFullText: fullTextReference || cleanText,
@@ -447,8 +453,8 @@ export const playTTS = async (
         isLoading: true,
         isSpeaking: false,
         activeText: cleanText,
-        currentSentence: cleanText,
-        activeSentence: cleanText,
+        currentSentence: initialSubSentence,
+        activeSentence: initialSubSentence,
         activeSentenceIndex: 0,
         totalSentences: 1,
         activeFullText: fullTextReference || cleanText,
@@ -519,15 +525,20 @@ export const playTTS = async (
     }
 
     // Now transition state from loading to speaking
+    const speakingSubSentence = splitSpeechIntoSentences(cleanText)[0] || cleanText;
     updateTTSState({
       isLoading: false,
       isSpeaking: true,
       activeText: cleanText,
-      currentSentence: cleanText,
-      activeSentence: cleanText,
+      ...(isSequenceChunk
+        ? {}
+        : {
+            currentSentence: speakingSubSentence,
+            activeSentence: speakingSubSentence,
+          }),
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}),
     });
-    setTTSSessionActive(cleanText);
+    setTTSSessionActive(isSequenceChunk ? (ttsState.activeSentence || cleanText) : speakingSubSentence);
 
     if (data?.audioContent) {
       const encoding = data.encoding === 'pcm' ? 'pcm' : 'mp3';

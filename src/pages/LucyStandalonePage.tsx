@@ -1247,7 +1247,7 @@ export default function LucyStandalonePage() {
         isSpeaking: state.isSpeaking,
         isLoading: state.isLoading,
         activeText: state.activeText,
-        activeSentence: state.activeSentence || state.currentSentence || state.activeText,
+        activeSentence: state.activeSentence || state.currentSentence || null,
       });
       if (!state.isSpeaking && !state.isLoading) {
         setPlayingMsgId(null);

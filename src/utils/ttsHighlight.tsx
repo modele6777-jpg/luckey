@@ -67,7 +67,7 @@ export function useTTSCurrentSentence(enabled: boolean = true) {
     activeSentence:
       ttsState.activeSentence ||
       ttsState.currentSentence ||
-      (ttsState.isSpeaking ? ttsState.activeText : null),
+      null,
     activeFullText: ttsState.activeFullText,
     activeSentenceIndex: ttsState.activeSentenceIndex ?? -1,
     totalSentences: ttsState.totalSentences ?? 0,

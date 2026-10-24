@@ -81,6 +81,15 @@ function getCleanedTokens(sentence: string): string[] {
   return tokens;
 }
 
+function getCommonPrefixLength(a: string, b: string): number {
+  const max = Math.min(a.length, b.length);
+  let i = 0;
+  while (i < max && a[i] === b[i]) {
+    i++;
+  }
+  return i;
+}
+
 /**
  * Tests whether a given sentence or heading matches the currently active TTS sentence/chunk.
  */
@@ -97,31 +106,35 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
   const maxLen = Math.max(cleanS.length, cleanA.length);
   const ratio = minLen / maxLen;
 
-  // 2. Direct containment when lengths are reasonably close (or when a multi-sentence chunk is active)
+  // 2. High-confidence containment (ratio >= 0.70 or minimal diff <= 5 chars)
+  // Prevents long unrelated sentences or full chunks from falsely matching short sentences
   if (cleanA.includes(cleanS) || cleanS.includes(cleanA)) {
-    if (ratio >= 0.22) return true;
-    if (minLen >= 6 && (cleanS.includes(cleanA) || cleanA.includes(cleanS))) return true;
+    if (ratio >= 0.70 || maxLen - minLen <= 5) {
+      return true;
+    }
   }
 
-  if (ratio < 0.25) return false;
+  // Reject drastically different lengths
+  if (ratio < 0.65) return false;
 
-  // 3. Substring & prefix/suffix alignment
-  if (cleanS.length >= 4 && cleanA.length >= 4 && Math.abs(cleanS.length - cleanA.length) <= 16) {
-    const prefixLen = Math.min(6, cleanS.length, cleanA.length);
-    const subA = cleanA.slice(0, prefixLen);
-    const subS = cleanS.slice(0, prefixLen);
-    if (cleanS.startsWith(subA) || cleanA.startsWith(subS)) return true;
+  // 3. Substantial prefix alignment with close lengths
+  const prefixLen = getCommonPrefixLength(cleanS, cleanA);
+  if (prefixLen >= 6 && prefixLen / minLen >= 0.75) {
+    return true;
   }
 
-  // 4. Key phrase token overlap (cached)
-  if (cleanS.length >= 5 && cleanA.length >= 5) {
+  // 4. Key phrase token overlap with length ratio constraint
+  if (minLen >= 6 && ratio >= 0.70) {
     const tokensS = getCleanedTokens(sentence);
-    if (tokensS.length >= 2) {
+    const tokensA = getCleanedTokens(activeText);
+    if (tokensS.length >= 2 && tokensA.length >= 2) {
       let matchedCount = 0;
       for (const tok of tokensS) {
-        if (cleanA.includes(tok)) matchedCount += 1;
+        if (tokensA.some((tA) => tA.includes(tok) || tok.includes(tA))) {
+          matchedCount += 1;
+        }
       }
-      if (matchedCount / tokensS.length >= 0.65) {
+      if (matchedCount / Math.max(tokensS.length, tokensA.length) >= 0.75) {
         return true;
       }
     }
@@ -382,12 +395,9 @@ export function highlightSentencesInChildren(
     return <>{renderedGroups}</>;
   }
 
-  // 4. Fallback: if holistic container matches (e.g., when TTS reads a whole short bullet)
-  if (isSentenceActive(fullContainerText, activeSentence)) {
-    return <TTSHighlightMark isLight={isLight}>{children}</TTSHighlightMark>;
-  }
-
-  return children;
+  // If this was a multi-sentence paragraph and no individual sentence matched,
+  // do NOT highlight the entire multi-sentence container as a fallback.
+  return <>{renderedGroups}</>;
 }
 
 /**

@@ -127,12 +127,20 @@ export function LucyKakaoBubbleGroup({
   const isThisMsgPlaying = useMemo(() => {
     const isSpeakingOrLoading = Boolean(ttsInfo?.isSpeaking || ttsInfo?.isLoading);
     if (!isSpeakingOrLoading) return false;
-    if (playingMsgId && String(playingMsgId) === String(msgId)) return true;
+    // playingMsgId가 명시적으로 주어진 경우 해당 ID와 엄격 일치 여부만 신뢰 (다른 메시지로의 오염 방지)
+    if (playingMsgId) {
+      return String(playingMsgId) === String(msgId);
+    }
 
-    // Fallback: playingMsgId가 비어있거나 불일치하더라도 현재 읽는 중인 텍스트가 이 메시지의 내용에 포함되어 있는지 확인
+    // Fallback: playingMsgId가 비어있을 때만 현재 읽는 중인 텍스트가 이 메시지의 내용에 포함되어 있는지 확인
     const activeCandidate = ttsInfo?.activeSentence || ttsInfo?.activeText;
-    if (activeCandidate && isSentenceActive(textContent, activeCandidate)) {
-      return true;
+    if (activeCandidate) {
+      const cleanMsg = cleanSentenceForMatching(textContent);
+      const cleanActive = cleanSentenceForMatching(activeCandidate);
+      if (cleanActive && cleanMsg.includes(cleanActive)) {
+        return true;
+      }
+      return isSentenceActive(textContent, activeCandidate);
     }
     return false;
   }, [playingMsgId, msgId, ttsInfo?.isSpeaking, ttsInfo?.isLoading, ttsInfo?.activeSentence, ttsInfo?.activeText, textContent]);
@@ -145,22 +153,19 @@ export function LucyKakaoBubbleGroup({
     const activeCandidate = ttsInfo?.activeSentence || ttsInfo?.activeText;
     if (!activeCandidate) return 0;
 
-    // 1차: isSentenceActive로 말풍선 매칭
-    for (let i = 0; i < bubbles.length; i++) {
-      if (isSentenceActive(bubbles[i], activeCandidate)) {
-        return i;
-      }
-    }
-
-    // 2차: cleanSentenceForMatching 정규화 포함 관계
     const cleanActive = cleanSentenceForMatching(activeCandidate);
     if (cleanActive && cleanActive.length >= 2) {
+      // 1차: 말풍선 텍스트에 cleanActive가 직접 포함되는지 확인
       for (let i = 0; i < bubbles.length; i++) {
         const cleanBubble = cleanSentenceForMatching(bubbles[i]);
-        if (
-          cleanBubble.includes(cleanActive) ||
-          cleanActive.includes(cleanBubble.slice(0, Math.min(18, cleanBubble.length)))
-        ) {
+        if (cleanBubble.includes(cleanActive)) {
+          return i;
+        }
+      }
+
+      // 2차: 말풍선 내의 문장 단위 일치 검사
+      for (let i = 0; i < bubbles.length; i++) {
+        if (isSentenceActive(bubbles[i], activeCandidate)) {
           return i;
         }
       }
@@ -243,7 +248,7 @@ export function LucyKakaoBubbleGroup({
                   isLatest={isLatest && isLastBubble}
                   isGenerating={false}
                   instantReveal={true}
-                  enableTTSHighlight={isThisMsgPlaying}
+                  enableTTSHighlight={isBubbleSpeaking}
                 />
 
                 {/* 전문 모드 추천 채널 & Key 실천 도약 바는 마지막 말풍선 하단에 1회만 깔끔하게 표시 */}

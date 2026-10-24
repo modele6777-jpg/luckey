@@ -235,14 +235,14 @@ export function LucyProTypewriter({
 
   const isContentMatching = useMemo(() => {
     if (!isSpeaking || !activeSentence || !content) return false;
-    return (
-      isSentenceActive(content, activeSentence) ||
-      cleanSentenceForMatching(content).includes(cleanSentenceForMatching(activeSentence))
-    );
+    const cleanC = cleanSentenceForMatching(content);
+    const cleanA = cleanSentenceForMatching(activeSentence);
+    if (!cleanC || !cleanA) return false;
+    return cleanC.includes(cleanA) || isSentenceActive(content, activeSentence);
   }, [isSpeaking, activeSentence, content]);
 
   const targetSentence =
-    isSpeaking && activeSentence && (enableTTSHighlight || isContentMatching)
+    isSpeaking && activeSentence && enableTTSHighlight && isContentMatching
       ? activeSentence
       : null;
 

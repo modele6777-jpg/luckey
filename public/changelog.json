@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.4.421",
+    "summary": "루시채팅 TTS 낭독 시 실제 발화 문장 외 비정상 문장 하이라이트 표시 오류 수정",
+    "builtAt": "2026-10-24T05:40:00.000Z",
+    "items": [
+      "isSentenceActive 문장 매칭 알고리즘 고도화: 길이 비율(ratio >= 0.70) 및 공통 접두사/토큰 일치율 검증을 엄격화하여 짧은 단어나 다른 문장의 오매칭 방지",
+      "단락 내 미매칭 시 전체 단락을 하이라이트로 감싸던 Fallback 제거하여 현재 낭독 중이지 않은 문장의 오표시 원천 차단",
+      "playTTS 실행 시 청크 전체 텍스트가 activeSentence를 덮어쓰던 문제를 방지하여 개별 문장 단위 실시간 추적 유지",
+      "다중 말풍선 메시지에서 현재 발화 중인 말풍선(isBubbleSpeaking)에만 enableTTSHighlight를 적용하고, playingMsgId 불일치 시 과거 메시지 하이라이트 번짐 방지",
+      "LucyStandalonePage 및 UnifiedChat, useTTSCurrentSentence에서 activeSentence가 없을 때 전체 텍스트(activeText)로 폴백되던 현상 수정"
+    ]
+  },
+  {
     "version": "1.4.420",
     "summary": "빅뱅버튼 더블탭(Double Tap) 시 루시 전체 채팅(/chat) 채널 즉시 도약 구현",
     "builtAt": "2026-10-24T05:20:00.000Z",
