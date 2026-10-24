@@ -1,11 +1,11 @@
 {
   "name": "luckey",
-  "version": "1.4.414",
-  "summary": "프롤로그 앱 좌우 화살표 23대 DApp 순환 네비게이션 및 세션 탭 동기화 오류 전면 수정",
-  "builtAt": "2026-10-24T03:56:00.000Z",
+  "version": "1.4.415",
+  "summary": "오렌지 앱에서 좌클릭(West 룬/화살표) 이동 시 유니버스 건너뜀 버그 수정 및 투두(/todo) 정상 순환 연동",
+  "builtAt": "2026-10-24T04:24:00.000Z",
   "items": [
-    "프롤로그(HubHome) 내 location 동기화에서 누락되었던 '/prologue' 경로 매칭을 추가하여 ECPR/투두에서 유니버스 허브로의 역방향 및 정방향 탭 전환이 즉각 반응하도록 정상화",
-    "HubHome에 prism-tab-change 및 nav-click-active 이벤트 리스너를 연동하여 빅뱅 컨트롤러 좌우 화살표 조작 시 화면 섹션이 실시간 일치하도록 동기화",
-    "BigBangCircularMeter의 findCurrentCycleStepIndex 및 activeTabOverride 동기화 로직을 보강하여, 이전 채널의 잔여 세션 탭 오염을 방지하고 프롤로그 3대 DApp(유니버스·ECPR·투두) 간의 왕복 순환이 부드럽게 이어지도록 개선"
+    "PrismRouteRegistry 내 라우트 정제기(resolveCanonicalPath)에서 '/todo'와 '/ecpr'가 prologue(hub)의 하위 alias로 잡혀 '/prologue'로 강제 리다이렉션되던 구조적 결함을 분리하여, 독자적인 'todo' 및 'ecpr' 정규 라우트로 등록",
+    "BigBangButton의 handleRuneNavigate에 targetTab 인자 전달 및 sessionStorage/prism-tab-change 연동을 추가하여, 순환 이동 시 타겟 댑의 탭 상태가 즉시 적용되도록 수정",
+    "BigBangCircularMeter의 location 변경 감지 훅에서 오렌지(/orange)를 비롯한 전체 채널 진입 시 탭 오버라이드가 이전 채널('universe')로 오염되지 않고 올바른 기본 탭으로 재설정되도록 동기화 보강"
   ]
 }

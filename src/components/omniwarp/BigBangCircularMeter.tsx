@@ -372,8 +372,8 @@ interface BigBangCircularMeterProps {
   isAborted?: boolean;
   /** 무한 반복 대기 사이클 타이밍 값 (선택적) */
   idleCycleProgress?: number;
-  /** 고대 룬 클릭 시 네비게이션 콜백 (선택적) */
-  onRuneNavigate?: (path: string, runeId?: string) => void;
+  /** 고대 룬 및 순환 사이클 클릭 시 네비게이션 콜백 (선택적) */
+  onRuneNavigate?: (path: string, tab?: string) => void;
   /** 🌌 더블탭 시 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 상태 */
   isCosmicSuction?: boolean;
 }
@@ -485,7 +485,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     return null;
   });
 
-  // 경로 변화 시(예: /prologue, /ecpr, /todo, /key, /), 탭 오버라이드를 경로 특성에 맞게 실시간 동기화
+  // 경로 변화 시(예: /prologue, /ecpr, /todo, /orange, ...), 탭 오버라이드를 경로 특성에 맞게 실시간 동기화
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const clean = location ? location.split('?')[0].toLowerCase() : '';
@@ -498,6 +498,28 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       setActiveTabOverride('todo');
     } else if (clean === '/prologue' || clean === '/universe') {
       setActiveTabOverride('universe');
+    } else if (clean === '/orange') {
+      const sTab = sessionStorage.getItem('prism_target_tab');
+      setActiveTabOverride(sTab === 'wishingWell' || sTab === 'synergy' ? sTab : 'secret');
+    } else if (clean === '/trinity') {
+      const sTab = sessionStorage.getItem('prism_target_tab');
+      setActiveTabOverride(sTab === 'tarot' || sTab === 'oracle' || sTab === 'synergy' ? sTab : 'destiny');
+    } else if (clean === '/heal') {
+      const sTab = sessionStorage.getItem('prism_target_tab');
+      setActiveTabOverride(sTab === 'oneMinute' || sTab === 'synergy' ? sTab : 'meditation');
+    } else if (clean === '/bluebird') {
+      const sTab = sessionStorage.getItem('prism_target_tab');
+      setActiveTabOverride(sTab === 'secretMessage' || sTab === 'synergy' ? sTab : 'daily');
+    } else if (clean === '/muse') {
+      const sTab = sessionStorage.getItem('prism_target_tab');
+      setActiveTabOverride(sTab === 'roleModel' || sTab === 'synergy' ? sTab : 'artRecommendation');
+    } else if (clean === '/epilogue') {
+      const sTab = sessionStorage.getItem('prism_target_tab');
+      setActiveTabOverride(sTab === 'chronicle' || sTab === 'profile' || sTab === 'synergy' ? sTab : 'diary');
+    } else if (clean === '/profile') {
+      setActiveTabOverride('profile');
+    } else if (clean === '/chronicle') {
+      setActiveTabOverride('chronicle');
     } else if (clean === '/' || clean === '/key') {
       setActiveTabOverride(null);
     }
@@ -527,11 +549,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
 
   const doNavigate = useCallback(
     (targetStep: BigBangCycleNavStep) => {
-      if (onRuneNavigate) {
-        onRuneNavigate(targetStep.path);
-        return;
-      }
-
       const isKeyTarget = targetStep.path === '/key' || targetStep.path.startsWith('/key');
       const isCurrentlyKey = typeof window !== 'undefined' && window.location.pathname.includes('key');
       if (isCurrentlyKey || isKeyTarget) {
@@ -551,13 +568,18 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         setActiveTabOverride(null);
       }
 
-      navigate(targetStep.path);
-      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetStep.path } }));
-      window.dispatchEvent(
-        new CustomEvent('nav-click-active', {
-          detail: { path: targetStep.path, tab: targetStep.tab },
-        })
-      );
+      if (onRuneNavigate) {
+        onRuneNavigate(targetStep.path, targetStep.tab);
+      } else {
+        navigate(targetStep.path);
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetStep.path } }));
+        window.dispatchEvent(
+          new CustomEvent('nav-click-active', {
+            detail: { path: targetStep.path, tab: targetStep.tab },
+          })
+        );
+      }
+
       if (targetStep.tab) {
         window.dispatchEvent(
           new CustomEvent('prism-tab-change', { detail: { tab: targetStep.tab } })

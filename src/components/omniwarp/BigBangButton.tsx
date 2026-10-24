@@ -957,19 +957,32 @@ export function BigBangButton() {
 
   // 🔮 4대 고대 룬 문자 클릭 시 다이렉트 차원 도약 핸들러
   const handleRuneNavigate = useCallback(
-    (targetPath: string) => {
+    (targetPath: string, targetTab?: string) => {
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = null;
       }
       lastTapTimeRef.current = 0;
 
+      if (targetTab) {
+        try {
+          sessionStorage.setItem('prism_target_tab', targetTab);
+        } catch (_) {}
+      } else if (!targetPath.includes('?tab=')) {
+        try {
+          sessionStorage.removeItem('prism_target_tab');
+        } catch (_) {}
+      }
+
       if (isKeySite) {
         window.location.href = targetPath;
       } else {
         navigate(targetPath);
         window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
-        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
+        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath, tab: targetTab } }));
+        if (targetTab) {
+          window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: targetTab } }));
+        }
       }
     },
     [isKeySite, navigate]
