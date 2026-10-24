@@ -1,12 +1,12 @@
 {
   "name": "luckey",
-  "version": "1.4.443",
-  "summary": "타로 오라클 화면 및 78장 타로 휠 모달의 상단 배너와 컨테이너를 화면 수평 정중앙으로 완벽 정렬하고 상단 컨트롤 겹침 해결",
-  "builtAt": "2026-10-24T13:16:00.000Z",
+  "version": "1.4.444",
+  "summary": "화면 크기가 커지거나 태블릿 모드일 때 유니버스 댑처럼 와이드 듀얼 분할(Dual-Pane Layout) 지원 확대 및 트리니티 타로 리딩 2열 뷰 고도화",
+  "builtAt": "2026-10-24T13:33:00.000Z",
   "items": [
-    "타로 스프레드(TarotSpread) 상단 헤더를 단일 flex 컨테이너로 통합하여 좌측 액션 버튼(덱 뒷면 변경, 실물 카드 입력) 및 우측 닫기 버튼과 중앙 인포 배너가 겹치지 않고 항상 완벽한 수평 정중앙에 배치되도록 개편",
-    "중앙 인포 배너의 비대칭 패딩(paddingLeft: 16px, paddingRight: 72px)을 제거하고 순수 justify-center 대칭 구조로 전환하여 왼쪽으로 몰리는 시각적 불균형 완전 해소",
-    "트리니티 앱(TrinityApp) 메인 스크롤 루트 및 타로 모드 래퍼에 items-center 및 self-center(align-self: center)를 명시하여 Flexbox 교차축에서 mx-auto가 무시되어 테두리 박스가 화면 왼쪽으로 쏠리던 브라우저 레이아웃 결함 원천 해결",
-    "타로 가상 모드(tarotVirtualMode) 컨테이너 및 모달 래퍼 전반의 수평 중앙 정렬(justify-center, items-center) 보강으로 카드 슬롯 및 78장 카드 휠의 시각적 안정감 극대화"
+    "태블릿 기기(너비 720px 이상, iPad 등) 및 큰 화면에서 듀얼 레이아웃(dual-pane-active)이 활성화되도록 perfMode 및 duo-split-grid 미디어 쿼리(min-width: 768px) 반응형 기준 최적화",
+    "유니버스 댑(HubHome): 대형 화면 및 태블릿에서 목표 진행률 대시보드와 실시간 우주 에너지 카드/일일 추천 가이드를 듀얼 2열 그리드로 나란히 배치하여 공간 낭비 해소 및 탐색력 극대화",
+    "트리니티 타로(TrinityApp): 컨테이너 최대 너비를 max-w-6xl로 확장하고, 질문 입력 단계(좌: 고민입력 및 리딩시작, 우: Cosmic Anchor 및 AI추천질문)와 결과 단계(좌: 3D 타로 카드 비주얼 고정, 우: AI 심층 리딩)를 유니버스댑 스타일의 직관적인 좌우 2열 분할로 대대적 개편",
+    "모든 주요 DApp(Orange, Heal, Muse, Bluebird, TrinityDestinyReportView)의 태블릿/데스크톱 뷰포트 최대 너비를 max-w-6xl로 확장하여 시원하고 몰입감 넘치는 와이드 경험 제공"
   ]
 }

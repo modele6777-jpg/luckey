@@ -2656,7 +2656,7 @@ export default function BluebirdApp() {
       </motion.nav>
 
       <main data-app-scroll-root {...bluebirdSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
-        <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
+        <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
            <AnimatePresence mode="wait">
              {activeMode === 'synergy' ? (
                <motion.div key="bluebird-synergy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pb-8 sm:pb-12">

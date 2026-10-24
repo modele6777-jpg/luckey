@@ -2753,12 +2753,18 @@ label {
   padding-right: max(var(--sar, 0px), 0.75rem);
 }
 
-/* Dual-Pane 2-Column Split Grid (1 col on portrait/tablet -> 2 cols on wide desktop >= 1120px or Dual-Screen Hinge) */
+/* Dual-Pane 2-Column Split Grid (1 col on mobile < 768px -> 2 cols on tablet >= 768px & dual-pane mode) */
 .duo-split-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   width: 100%;
+}
+
+html.dual-pane-active .duo-split-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--duo-hinge-gap, 1.25rem);
+  row-gap: 1.25rem;
 }
 
 html.dual-pane-active .duo-channel-grid {
@@ -2767,14 +2773,22 @@ html.dual-pane-active .duo-channel-grid {
   row-gap: 1rem !important;
 }
 
-@media (min-width: 1120px) {
-  html.dual-pane-active .duo-split-grid,
+@media (min-width: 768px) {
   .duo-split-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--duo-hinge-gap, 1.25rem);
+    row-gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .duo-split-grid {
     column-gap: var(--duo-hinge-gap, 1.5rem);
     row-gap: 1.5rem;
   }
+}
 
+@media (min-width: 1120px) {
   html.dual-pane-active:not([data-device="surface-duo"]) .duo-channel-grid,
   .duo-channel-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;

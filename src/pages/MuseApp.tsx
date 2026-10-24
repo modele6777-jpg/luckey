@@ -1562,7 +1562,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
 
 
       <main data-app-scroll-root {...museSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
-        <div className={`w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col ${activeMode === 'roleModel' ? 'max-w-6xl' : 'max-w-5xl'}`}>
+        <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
           <AnimatePresence mode="wait">
             {activeMode === 'synergy' ? (
               <motion.div

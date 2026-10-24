@@ -727,21 +727,25 @@ export default function HubHome() {
                 </motion.div>
               </div>
               
-              {/* User-Defined Goals Progress Ring Dashboard */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.04 }}
-              >
-                <GoalProgressRingDashboard />
-              </motion.div>
+              {/* Middle Dual-Pane Split: Left Pane (Goal Progress Ring) & Right Pane (Energy Pattern & App) */}
+              <div className="duo-split-grid items-stretch">
+                {/* User-Defined Goals Progress Ring Dashboard */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.04 }}
+                  className="flex flex-col h-full"
+                >
+                  <GoalProgressRingDashboard />
+                </motion.div>
 
-              {/* 에너지 패턴 추천앱 카드 */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className="glass prism-xs-hub-card p-5 sm:p-6 md:p-7 rounded-[28px] border border-white/15 shadow-2xl relative overflow-hidden group">
+                {/* 에너지 패턴 추천앱 카드 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col h-full"
+                >
+                  <div className="glass prism-xs-hub-card p-5 sm:p-6 md:p-7 rounded-[28px] border border-white/15 shadow-2xl relative overflow-hidden group h-full flex flex-col justify-between">
                   <div 
                     className="hidden md:block absolute -top-12 -right-12 w-72 h-72 rounded-full blur-[90px] opacity-15 pointer-events-none transition-transform duration-1000 group-hover:scale-110"
                     style={{ background: energyAppColor }} 
@@ -851,6 +855,7 @@ export default function HubHome() {
                   </div>
                 </div>
               </motion.div>
+            </div>
 
               {/* Universe 6-Channel DApp Section */}
               <div className="space-y-3.5 pb-4 md:pb-6">

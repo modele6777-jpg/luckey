@@ -3223,7 +3223,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
         className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col items-center relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none"
       >
-        <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col items-center min-w-0">
+        <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col items-center min-w-0">
           <AnimatePresence mode="wait">
             {activeMode === "oracle" || activeMode === "synergy" ? (
               <motion.div
@@ -3258,7 +3258,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 key="tarot"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-4xl mx-auto self-center space-y-8 pb-8 sm:pb-12"
+                className="w-full max-w-6xl mx-auto self-center space-y-8 pb-8 sm:pb-12"
               >
                 <div className={`glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
                   {/* Subtle starlight gold specular glow */}
@@ -3320,8 +3320,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         {!drawnCards &&
                         !tarotResult &&
                         !isTarotGenerating ? (
-                          <div className="space-y-4 flex-1 flex flex-col justify-between w-full">
-                            {/* 🌟 Cosmic Anchor Banner: Oracle-style Pre-Recommendation when not yet drawn, or Active Anchor Status when drawn */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 w-full items-start">
+                            {/* 🌟 1. 우측 상단(모바일 1순위): Cosmic Anchor Banner */}
+                            <div className="order-1 md:order-2 flex flex-col gap-3 w-full">
                             {!isDailyTarotChecked ? (
                               <motion.div
                                 initial={{ opacity: 0, y: -10 }}
@@ -3423,7 +3424,10 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </div>
                               </div>
                             ) : null}
+                            </div>
 
+                            {/* 📝 2. 좌측 상단(모바일 2순위): Your Concern 입력 폼 & 배열법 선택 */}
+                            <div className="order-2 md:order-1 flex flex-col gap-3 w-full">
                             <div className="space-y-3 text-left w-full overflow-hidden">
                               <div className="flex items-center justify-between pl-2">
                                 <label className="text-xs text-white/50 font-bold uppercase tracking-widest block">
@@ -3677,7 +3681,10 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </div>
                               </div>
                             </div>
+                            </div>
 
+                            {/* 💡 3. 우측 하단(모바일 3순위): AI 맞춤 질문 & 추천 질문 알약 */}
+                            <div className="order-3 md:order-4 flex flex-col gap-3 w-full">
                             {(smartTarotQuestions.length > 0 || isGeneratingQuestions) && (
                               <div className="space-y-2 mt-2 w-full text-left">
                                 <span className="text-[10px] text-yellow-400/90 font-bold uppercase tracking-wider pl-2 flex items-center gap-1">
@@ -3749,8 +3756,11 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </div>
                               </div>
                             )}
+                            </div>
 
-                            <div className="mt-4 flex flex-col gap-3 w-full">
+                            {/* 🚀 4. 좌측 하단(모바일 4순위): 타로 리딩 시작 액션 버튼들 */}
+                            <div className="order-4 md:order-3 flex flex-col gap-3 w-full">
+                            <div className="flex flex-col gap-3 w-full">
                               {isDailyTarotConcern(tarotConcern) && isTrinityDailyLockedToday() ? (
                                 <div className="flex flex-col sm:flex-row items-stretch gap-2.5 w-full">
                                   <button
@@ -3811,13 +3821,17 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </div>
                               )}
                             </div>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex-1 flex flex-col overflow-hidden relative w-full text-left">
-                            <div className="flex-1 overflow-y-auto no-scrollbar space-y-5 pb-6">
-                              {drawnCards && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 12 }}
+                            <div className="flex-1 overflow-y-auto no-scrollbar pb-6">
+                              <div className="duo-split-grid items-start gap-6 w-full">
+                                {/* Left Pane: Drawn 3D Cards Visualizer */}
+                                <div className="flex flex-col gap-4 w-full md:sticky md:top-2">
+                                  {drawnCards && (
+                                    <motion.div
+                                      initial={{ opacity: 0, y: 12 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                                   className="space-y-2.5"
@@ -3880,9 +3894,12 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   </motion.div>
                                 </motion.div>
                               )}
+                              </div>
 
-                              {(tarotResult || isTarotGenerating) && (
-                                <div className="glass p-5 rounded-2xl border border-yellow-500/30 shadow-2xl flex flex-col relative overflow-hidden">
+                                {/* Right Pane: Master's Deep Reading & Follow-up Actions */}
+                                <div className="flex flex-col gap-4 w-full">
+                                {(tarotResult || isTarotGenerating) && (
+                                  <div className="glass p-5 rounded-2xl border border-yellow-500/30 shadow-2xl flex flex-col relative overflow-hidden">
                                   <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 blur-[60px] pointer-events-none rounded-full" />
                                   <div className="flex justify-between items-center mb-4 shrink-0 relative z-10 w-full font-sans">
                                     <div className="flex items-center gap-2 text-yellow-400">
@@ -4192,7 +4209,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                               </div>
                             )}
                           </div>
-                        )}
+                        </div>
+                      </div>
+                    )}
                       </div>
                     </div>
                   </div>

@@ -1715,7 +1715,7 @@ export default function HealApp() {
         {...healSwipeHandlers}
         className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y"
       >
-        <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
+        <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
           {/* Mobile Swipe Guidance & Tab Dots Indicator */}
           <div className="md:hidden flex items-center justify-between px-2 pt-1 pb-3 select-none">
             <span className="text-[10px] text-slate-500 dark:text-white/45 font-medium tracking-wide flex items-center gap-1">

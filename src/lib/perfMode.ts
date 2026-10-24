@@ -137,7 +137,10 @@ export function isDualPaneLayout(): boolean {
   if (isSurfaceDuoOrDualScreen() && w >= 640) return true;
   if (isGalaxyFoldSeClass() && !isFoldCoverScreen()) return true;
 
-  // iPhone Landscape / Wide Dual-View (width > height and width >= 600px, or square-ish foldable >= 660px)
+  // Tablet / Desktop Wide View (iPad, Galaxy Tab, desktop window >= 720px)
+  if (w >= 720) return true;
+
+  // iPhone Landscape / Wide Dual-View (width > height and width >= 590px, or square-ish foldable >= 660px)
   if (w > h && w >= 590) return true;
   if (w >= 660 && w / Math.max(h, 1) >= 0.8) return true;
 

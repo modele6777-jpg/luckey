@@ -501,7 +501,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   } = saju;
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-8 text-left">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-8 text-left">
       {/* 1. 상단 인트로 배너 & 프로필 정보 바 */}
       <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1b1c22] via-[#14151a] to-[#101115] border border-amber-500/30 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
         <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
