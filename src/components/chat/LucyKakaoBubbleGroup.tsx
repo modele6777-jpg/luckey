@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Copy, Loader2, Volume2, VolumeX } from 'lucide-react';
 import { LucyProTypewriter } from '@/components/LucyProTypewriter';
 import { splitIntoKakaoBubbles, joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
-import { cleanSentenceForMatching } from '@/components/common/TTSHighlightedText';
+import { cleanSentenceForMatching, isSentenceActive } from '@/components/common/TTSHighlightedText';
 
 // 이미 순차 노출이 완료된 메시지 ID를 메모리에 기록해 리렌더 시 재애니메이션 방지
 const revealedMessageIds = new Set<string>();
@@ -25,6 +25,7 @@ interface LucyKakaoBubbleGroupProps {
     isSpeaking: boolean;
     isLoading: boolean;
     activeText: string | null;
+    activeSentence?: string | null;
   };
   copiedId?: string | null;
   onCopy?: (id: string, text: string) => void;
@@ -122,27 +123,50 @@ export function LucyKakaoBubbleGroup({
     }
   }, [visibleCount, onBubbleReveal]);
 
-  // 현재 TTS가 이 메시지 그룹을 읽고 있을 때 몇 번째 말풍선을 읽는 중인지 감지
-  const isThisMsgPlaying =
-    playingMsgId === msgId && Boolean(ttsInfo?.isSpeaking || ttsInfo?.isLoading);
+  // 현재 TTS가 이 메시지 그룹을 읽고 있을 때 감지 (ID 일치 또는 활성 발화문 포함 검사)
+  const isThisMsgPlaying = useMemo(() => {
+    const isSpeakingOrLoading = Boolean(ttsInfo?.isSpeaking || ttsInfo?.isLoading);
+    if (!isSpeakingOrLoading) return false;
+    if (playingMsgId && String(playingMsgId) === String(msgId)) return true;
+
+    // Fallback: playingMsgId가 비어있거나 불일치하더라도 현재 읽는 중인 텍스트가 이 메시지의 내용에 포함되어 있는지 확인
+    const activeCandidate = ttsInfo?.activeSentence || ttsInfo?.activeText;
+    if (activeCandidate && isSentenceActive(textContent, activeCandidate)) {
+      return true;
+    }
+    return false;
+  }, [playingMsgId, msgId, ttsInfo?.isSpeaking, ttsInfo?.isLoading, ttsInfo?.activeSentence, ttsInfo?.activeText, textContent]);
 
   const activeSpeakingBubbleIdx = useMemo(() => {
     if (!isThisMsgPlaying) return -1;
-    if (ttsInfo?.isLoading || !ttsInfo?.activeText) return 0;
-    const cleanActive = cleanSentenceForMatching(ttsInfo.activeText);
-    if (!cleanActive || cleanActive.length < 2) return 0;
+    if (bubbles.length <= 1) return 0;
+    if (ttsInfo?.isLoading) return 0;
 
+    const activeCandidate = ttsInfo?.activeSentence || ttsInfo?.activeText;
+    if (!activeCandidate) return 0;
+
+    // 1차: isSentenceActive로 말풍선 매칭
     for (let i = 0; i < bubbles.length; i++) {
-      const cleanBubble = cleanSentenceForMatching(bubbles[i]);
-      if (
-        cleanBubble.includes(cleanActive) ||
-        cleanActive.includes(cleanBubble.slice(0, Math.min(18, cleanBubble.length)))
-      ) {
+      if (isSentenceActive(bubbles[i], activeCandidate)) {
         return i;
       }
     }
+
+    // 2차: cleanSentenceForMatching 정규화 포함 관계
+    const cleanActive = cleanSentenceForMatching(activeCandidate);
+    if (cleanActive && cleanActive.length >= 2) {
+      for (let i = 0; i < bubbles.length; i++) {
+        const cleanBubble = cleanSentenceForMatching(bubbles[i]);
+        if (
+          cleanBubble.includes(cleanActive) ||
+          cleanActive.includes(cleanBubble.slice(0, Math.min(18, cleanBubble.length)))
+        ) {
+          return i;
+        }
+      }
+    }
     return 0;
-  }, [bubbles, isThisMsgPlaying, ttsInfo?.activeText, ttsInfo?.isLoading]);
+  }, [bubbles, isThisMsgPlaying, ttsInfo?.activeSentence, ttsInfo?.activeText, ttsInfo?.isLoading]);
 
   const displayedBubbles = shouldSkipStagger
     ? bubbles
@@ -159,7 +183,7 @@ export function LucyKakaoBubbleGroup({
         {displayedBubbles.map((bubbleText, bIdx) => {
           const isFirstBubble = bIdx === 0;
           const isLastBubble = bIdx === bubbles.length - 1;
-          const isBubbleSpeaking = isThisMsgPlaying && activeSpeakingBubbleIdx === bIdx;
+          const isBubbleSpeaking = isThisMsgPlaying && (bubbles.length === 1 || activeSpeakingBubbleIdx === bIdx);
           const bubbleCopyId = `${msgId}-b-${bIdx}`;
 
           const bubbleSurfaceClass =
@@ -219,7 +243,7 @@ export function LucyKakaoBubbleGroup({
                   isLatest={isLatest && isLastBubble}
                   isGenerating={false}
                   instantReveal={true}
-                  enableTTSHighlight={isBubbleSpeaking}
+                  enableTTSHighlight={isThisMsgPlaying}
                 />
 
                 {/* 전문 모드 추천 채널 & Key 실천 도약 바는 마지막 말풍선 하단에 1회만 깔끔하게 표시 */}

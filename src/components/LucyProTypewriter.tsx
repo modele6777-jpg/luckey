@@ -5,7 +5,7 @@ import { Download, Maximize2, X, ExternalLink, Image as ImageIcon, Loader2 } fro
 import { AnimatePresence, motion } from 'motion/react';
 import { isMobileDevice, isPerfReduced } from '@/lib/perfMode';
 import { useTTSCurrentSentence, renderWithSentenceHighlight } from '@/utils/ttsHighlight';
-import { cleanSentenceForMatching } from '@/components/common/TTSHighlightedText';
+import { cleanSentenceForMatching, isSentenceActive } from '@/components/common/TTSHighlightedText';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface LucyProTypewriterProps {
@@ -231,9 +231,20 @@ export function LucyProTypewriter({
     return content.slice(0, displayedLength);
   }, [content, displayedLength, shouldAnimate]);
 
-  const { isSpeaking, activeSentence } = useTTSCurrentSentence(enableTTSHighlight);
+  const { isSpeaking, activeSentence } = useTTSCurrentSentence(true);
 
-  const targetSentence = enableTTSHighlight && isSpeaking && activeSentence ? activeSentence : null;
+  const isContentMatching = useMemo(() => {
+    if (!isSpeaking || !activeSentence || !content) return false;
+    return (
+      isSentenceActive(content, activeSentence) ||
+      cleanSentenceForMatching(content).includes(cleanSentenceForMatching(activeSentence))
+    );
+  }, [isSpeaking, activeSentence, content]);
+
+  const targetSentence =
+    isSpeaking && activeSentence && (enableTTSHighlight || isContentMatching)
+      ? activeSentence
+      : null;
 
   const isTyping = isGenerating || (shouldAnimate && displayedLength < content.length);
 

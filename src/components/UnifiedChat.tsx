@@ -486,10 +486,16 @@ export function UnifiedChat() {
   }, [activePersona, getContextualPrompts]);
 
   const [drawerPlayingMsgId, setDrawerPlayingMsgId] = useState<string | null>(null);
-  const [drawerTtsInfo, setDrawerTtsInfo] = useState<{ isSpeaking: boolean; isLoading: boolean; activeText: string | null }>({
+  const [drawerTtsInfo, setDrawerTtsInfo] = useState<{
+    isSpeaking: boolean;
+    isLoading: boolean;
+    activeText: string | null;
+    activeSentence?: string | null;
+  }>({
     isSpeaking: false,
     isLoading: false,
     activeText: null,
+    activeSentence: null,
   });
   const [drawerCopiedId, setDrawerCopiedId] = useState<string | null>(null);
   const drawerMountedAtRef = useRef<number>(Date.now());
@@ -503,6 +509,7 @@ export function UnifiedChat() {
         isSpeaking: state.isSpeaking,
         isLoading: state.isLoading,
         activeText: state.activeText,
+        activeSentence: state.activeSentence || state.currentSentence || state.activeText,
       });
       if (!state.isSpeaking && !state.isLoading) {
         setDrawerPlayingMsgId(null);

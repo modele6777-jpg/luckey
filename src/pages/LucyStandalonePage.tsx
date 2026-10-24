@@ -706,7 +706,12 @@ export default function LucyStandalonePage() {
   const [modeSwitchToast, setModeSwitchToast] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
-  const [ttsInfo, setTtsInfo] = useState({ isSpeaking: false, isLoading: false, activeText: null as string | null });
+  const [ttsInfo, setTtsInfo] = useState({
+    isSpeaking: false,
+    isLoading: false,
+    activeText: null as string | null,
+    activeSentence: null as string | null,
+  });
   const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentGhostPromptRef = useRef<string>('');
@@ -1238,7 +1243,12 @@ export default function LucyStandalonePage() {
   // Subscribe to TTS state changes
   useEffect(() => {
     return subscribeTTS((state) => {
-      setTtsInfo({ isSpeaking: state.isSpeaking, isLoading: state.isLoading, activeText: state.activeText });
+      setTtsInfo({
+        isSpeaking: state.isSpeaking,
+        isLoading: state.isLoading,
+        activeText: state.activeText,
+        activeSentence: state.activeSentence || state.currentSentence || state.activeText,
+      });
       if (!state.isSpeaking && !state.isLoading) {
         setPlayingMsgId(null);
       }
@@ -1254,10 +1264,9 @@ export default function LucyStandalonePage() {
     if (msgId && lastAutoSpokenMsgIdRef.current === msgId) return;
     if (isAutoTtsBusyRef.current) return;
 
-    if (msgId) {
-      lastAutoSpokenMsgIdRef.current = msgId;
-      setPlayingMsgId(msgId);
-    }
+    const resolvedMsgId = msgId || String(lucyMessages.length - 1);
+    lastAutoSpokenMsgIdRef.current = resolvedMsgId;
+    setPlayingMsgId(resolvedMsgId);
     isAutoTtsBusyRef.current = true;
 
     try {
@@ -1279,7 +1288,7 @@ export default function LucyStandalonePage() {
       setPlayingMsgId(null);
       isAutoTtsBusyRef.current = false;
     }
-  }, []);
+  }, [lucyMessages.length]);
 
   // 🌸 매일 '처음' 루시채팅 진입 시에만 루시의 인사말 TTS 자동 재생 및 브라우저 Autoplay 언락 브릿지
   useEffect(() => {
@@ -1295,7 +1304,7 @@ export default function LucyStandalonePage() {
 
     if (!isGreetingMsg) return;
 
-    const greetingId = firstMsg.id || 'greet-main';
+    const greetingId = String(firstMsg.id || 0);
     const joinedGreeting = joinKakaoBubblesForTTS(firstMsg.content, 4) || firstMsg.content;
     const cleanGreeting = normalizeTextForSpeech(joinedGreeting);
     if (!cleanGreeting) return;
@@ -1354,7 +1363,8 @@ export default function LucyStandalonePage() {
   // 🔊 자동 음성 재생(Auto-TTS) 안전 백업 감시자: 새 어시스턴트 메시지 도착 시 바로재생 보장
   useEffect(() => {
     if (!isAutoTtsRef.current || isLucyGenerating || lucyMessages.length === 0 || isAutoTtsBusyRef.current) return;
-    const lastMsg = lucyMessages[lucyMessages.length - 1];
+    const lastMsgIndex = lucyMessages.length - 1;
+    const lastMsg = lucyMessages[lastMsgIndex];
     if (!lastMsg || lastMsg.role === 'user' || typeof lastMsg.content !== 'string' || !lastMsg.content.trim()) return;
 
     // 만약 첫 인사말 메시지라면 최초 진입 인사말 전용 핸들러에서 다루므로 스킵
@@ -1362,11 +1372,12 @@ export default function LucyStandalonePage() {
     if (isFirstGreetingOnly) return;
 
     // 방금 전송된 메시지이고 아직 음성 재생되지 않은 경우 바로 자동 재생
-    if (lastMsg.id && lastAutoSpokenMsgIdRef.current !== lastMsg.id && !ttsInfo.isSpeaking && !ttsInfo.isLoading) {
+    const targetId = String(lastMsg.id || lastMsgIndex);
+    if (targetId && lastAutoSpokenMsgIdRef.current !== targetId && !ttsInfo.isSpeaking && !ttsInfo.isLoading) {
       const msgTime = lastMsg.timestamp || 0;
       const isRecent = Date.now() - msgTime < 25000;
       if (isRecent) {
-        triggerAutoTts(lastMsg.content, lastMsg.id);
+        triggerAutoTts(lastMsg.content, targetId);
       }
     }
   }, [lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, ttsInfo.isLoading, triggerAutoTts]);

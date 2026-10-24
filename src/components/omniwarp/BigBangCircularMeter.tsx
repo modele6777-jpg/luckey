@@ -1,5 +1,5 @@
 import React, { useId, useCallback, useState, useEffect, useRef } from 'react';
-import { ChevronUp, ChevronDown, Menu, Music } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase } from '@/lib/omniWarp/types';
 import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
@@ -108,8 +108,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     window.dispatchEvent(new CustomEvent('prism:scroll_to_bottom'));
   }, [triggerDotPulse]);
 
-  // 🚀 좌(West) 점 탭 시 사이드 네비게이션 메뉴 열기/토글
-  const handleMenuClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  // 🚀 좌(West) 점 탭 시 이전 페이지로 이동 (뒤로 가기)
+  const handleNavigateBack = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -128,92 +128,16 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       } catch (_) {}
     }
 
-    window.dispatchEvent(new CustomEvent('prism:toggle_menu'));
+    try {
+      window.history.back();
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('prism:nav_back'));
   }, [triggerDotPulse]);
 
-  // 🎵 우(East) 점 배경음 상태 및 롱프레스(홀딩) 제어
-  const [isBgmPlaying, setIsBgmPlaying] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('prism_bgm_playing') === 'true';
-    } catch {
-      return false;
-    }
-  });
-  const [isBgmHolding, setIsBgmHolding] = useState(false);
-  const bgmHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isBgmHoldTriggeredRef = useRef(false);
-  const bgmHoldStartPosRef = useRef<{ x: number; y: number } | null>(null);
-
-  // 실시간 재생 상태 동기화
-  useEffect(() => {
-    const handleBgmState = (e: Event) => {
-      const customEvent = e as CustomEvent<{ isPlaying?: boolean }>;
-      if (typeof customEvent.detail?.isPlaying === 'boolean') {
-        setIsBgmPlaying(customEvent.detail.isPlaying);
-      }
-    };
-    window.addEventListener('prism:bgm_state_change', handleBgmState);
-    return () => {
-      window.removeEventListener('prism:bgm_state_change', handleBgmState);
-    };
-  }, []);
-
-  const handleBgmPointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
-    e.stopPropagation();
-    isBgmHoldTriggeredRef.current = false;
-    bgmHoldStartPosRef.current = { x: e.clientX, y: e.clientY };
-    setIsBgmHolding(true);
-
-    if (bgmHoldTimerRef.current) {
-      clearTimeout(bgmHoldTimerRef.current);
-    }
-
-    bgmHoldTimerRef.current = setTimeout(() => {
-      isBgmHoldTriggeredRef.current = true;
-      setIsBgmHolding(false);
-      bgmHoldTimerRef.current = null;
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        try {
-          navigator.vibrate(35);
-        } catch (_) {}
-      }
-      try {
-        playAudioHaptic('success');
-      } catch (_) {}
-      window.dispatchEvent(new CustomEvent('prism:open_bgm_menu'));
-    }, 400);
-  }, []);
-
-  const handleBgmPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!bgmHoldStartPosRef.current || !bgmHoldTimerRef.current) return;
-    const dx = Math.abs(e.clientX - bgmHoldStartPosRef.current.x);
-    const dy = Math.abs(e.clientY - bgmHoldStartPosRef.current.y);
-    if (dx > 10 || dy > 10) {
-      if (bgmHoldTimerRef.current) {
-        clearTimeout(bgmHoldTimerRef.current);
-        bgmHoldTimerRef.current = null;
-      }
-      setIsBgmHolding(false);
-    }
-  }, []);
-
-  const handleBgmPointerUp = useCallback((e: React.PointerEvent) => {
-    e.stopPropagation();
-    if (bgmHoldTimerRef.current) {
-      clearTimeout(bgmHoldTimerRef.current);
-      bgmHoldTimerRef.current = null;
-    }
-    setIsBgmHolding(false);
-  }, []);
-
-  const handleBgmClick = useCallback((e: React.MouseEvent) => {
+  // 🚀 우(East) 점 탭 시 다음 페이지로 이동 (앞으로 가기)
+  const handleNavigateForward = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isBgmHoldTriggeredRef.current) {
-      isBgmHoldTriggeredRef.current = false;
-      return;
-    }
 
     triggerDotPulse('east');
 
@@ -230,40 +154,16 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       } catch (_) {}
     }
 
-    window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
+    try {
+      window.history.forward();
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('prism:nav_forward'));
   }, [triggerDotPulse]);
 
-  const handleBgmContextMenu = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (bgmHoldTimerRef.current) {
-      clearTimeout(bgmHoldTimerRef.current);
-      bgmHoldTimerRef.current = null;
-    }
-    setIsBgmHolding(false);
-    window.dispatchEvent(new CustomEvent('prism:toggle_bgm_menu'));
-  }, []);
-
-  const handleBgmDoubleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (bgmHoldTimerRef.current) {
-      clearTimeout(bgmHoldTimerRef.current);
-      bgmHoldTimerRef.current = null;
-    }
-    setIsBgmHolding(false);
-    window.dispatchEvent(new CustomEvent('prism:next_bgm_track'));
-  }, []);
-
-  // 마우스 호버 해제 또는 다른 곳 클릭/터치 시 4방위 버튼 효과 및 홀딩 상태 즉시 해제
+  // 마우스 호버 해제 또는 다른 곳 클릭/터치 시 4방위 버튼 효과 즉시 해제
   useEffect(() => {
     if (!isHovered && !isPressing) {
       setImplodingDotId(null);
-      setIsBgmHolding(false);
-      if (bgmHoldTimerRef.current) {
-        clearTimeout(bgmHoldTimerRef.current);
-        bgmHoldTimerRef.current = null;
-      }
     }
   }, [isHovered, isPressing]);
 
@@ -272,11 +172,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       const target = e.target as Node | null;
       if (meterRootRef.current && target && !meterRootRef.current.contains(target)) {
         setImplodingDotId(null);
-        setIsBgmHolding(false);
-        if (bgmHoldTimerRef.current) {
-          clearTimeout(bgmHoldTimerRef.current);
-          bgmHoldTimerRef.current = null;
-        }
         if (document.activeElement && meterRootRef.current.contains(document.activeElement)) {
           (document.activeElement as HTMLElement).blur?.();
         }
@@ -703,7 +598,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           </motion.button>
         </div>
 
-        {/* ♪ 우(East) 고정 아이콘: 금빛 음표 · 배경음 제어 & 400ms 홀딩 메뉴 */}
+        {/* ▶ 우(East) 고정 아이콘: 금빛 쉐브론 화살표 · 다음 페이지(앞으로 가기) */}
         <div
           style={{
             left: `${center + 62}px`,
@@ -713,29 +608,23 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
         >
           <motion.button
             type="button"
-            onPointerDown={handleBgmPointerDown}
-            onPointerMove={handleBgmPointerMove}
-            onPointerUp={(e) => {
-              handleBgmPointerUp(e);
+            onClick={(e) => {
+              handleNavigateForward(e);
               e.currentTarget.blur();
             }}
-            onPointerCancel={handleBgmPointerUp}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => {
+              e.stopPropagation();
+              e.currentTarget.blur();
+            }}
             onPointerLeave={(e) => {
-              handleBgmPointerUp(e);
               setImplodingDotId((curr) => (curr === 'east' ? null : curr));
               e.currentTarget.blur();
             }}
             onMouseLeave={(e) => {
-              setIsBgmHolding(false);
               setImplodingDotId((curr) => (curr === 'east' ? null : curr));
               e.currentTarget.blur();
             }}
-            onClick={(e) => {
-              handleBgmClick(e);
-              e.currentTarget.blur();
-            }}
-            onContextMenu={handleBgmContextMenu}
-            onDoubleClick={handleBgmDoubleClick}
             onTouchStart={(e) => e.stopPropagation()}
             animate={
               isCosmicSuction
@@ -754,7 +643,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                     filter: ['brightness(1)', 'brightness(2.0)', 'brightness(1)'],
                   }
                 : {
-                    scale: isBgmHolding ? 0.9 : isHovered ? 1.12 : 1,
+                    scale: isHovered ? 1.12 : 1,
                     opacity: isHovered ? 1 : 0.9,
                   }
             }
@@ -766,11 +655,9 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 ? { duration: 0.2, ease: 'easeOut' }
                 : { duration: 0.18, ease: 'easeOut' }
             }
-            className={`pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40 ${
-              isBgmHolding ? 'scale-90' : ''
-            }`}
-            title={isBgmPlaying ? '배경음 일시정지' : '배경음 재생'}
-            aria-label="배경음 제어"
+            className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
+            title="다음 페이지 (앞으로 가기)"
+            aria-label="다음 페이지 이동"
           >
             {implodingDotId === 'east' && (
               <span
@@ -779,12 +666,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               />
             )}
 
-            <Music
-              className={`w-[15px] h-[15px] text-[#fbbf24] transition-all duration-200 stroke-[2.2] hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] ${
-                isBgmPlaying
-                  ? 'drop-shadow-[0_0_9px_rgba(251,191,36,0.95)]'
-                  : 'drop-shadow-[0_0_6px_rgba(251,191,36,0.75)]'
-              }`}
+            <ChevronRight
+              className="w-4 h-4 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.75)] transition-all duration-200 hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] stroke-[2.4]"
             />
           </motion.button>
         </div>
@@ -863,7 +746,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           </motion.button>
         </div>
 
-        {/* ☰ 좌(West) 고정 아이콘: 금빛 3선 메뉴 · 메뉴 열기 */}
+        {/* ◀ 좌(West) 고정 아이콘: 금빛 쉐브론 화살표 · 이전 페이지(뒤로 가기) */}
         <div
           style={{
             left: `${center - 62}px`,
@@ -874,7 +757,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
           <motion.button
             type="button"
             onClick={(e) => {
-              handleMenuClick(e);
+              handleNavigateBack(e);
               e.currentTarget.blur();
             }}
             onPointerDown={(e) => e.stopPropagation()}
@@ -921,8 +804,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { duration: 0.18, ease: 'easeOut' }
             }
             className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title="메뉴 열기"
-            aria-label="메뉴 열기"
+            title="이전 페이지 (뒤로 가기)"
+            aria-label="이전 페이지 이동"
           >
             {implodingDotId === 'west' && (
               <span
@@ -931,8 +814,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
               />
             )}
 
-            <Menu
-              className="w-[15px] h-[15px] text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.75)] transition-all duration-200 hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] stroke-[2.2]"
+            <ChevronLeft
+              className="w-4 h-4 text-[#fbbf24] drop-shadow-[0_0_6px_rgba(251,191,36,0.75)] transition-all duration-200 hover:text-[#fde68a] hover:drop-shadow-[0_0_11px_rgba(251,191,36,1)] stroke-[2.4]"
             />
           </motion.button>
         </div>

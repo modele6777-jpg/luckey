@@ -1122,22 +1122,28 @@ export default function LeftSidebarNav() {
             }}
             aria-label="좌측 끝 호버 또는 스와이프로 사이드바 열기"
             title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
-            className="fixed left-0 top-16 bottom-16 w-3 sm:w-3.5 z-[440] flex items-center justify-start cursor-pointer select-none group"
+            className="fixed left-0 top-0 bottom-0 w-3.5 sm:w-4 z-[440] cursor-pointer select-none group pointer-events-auto"
           >
-            {/* Subtle Prismatic Luminous Thread along the Far-Left Edge */}
-            <div
-              className={`w-[2.5px] sm:w-[3px] h-32 sm:h-40 rounded-r-full transition-all duration-300 ${
+            {/* 🌟 좌측 가장자리에 은은하게 위아래로 계속 유영하며 빛나는 빛 줄기 힌트 */}
+            <motion.div
+              animate={{
+                y: ['5vh', 'calc(95vh - 140px)', '5vh'],
+                opacity: [0.65, 0.95, 0.65],
+              }}
+              transition={{
+                duration: 6.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className={`w-[3px] sm:w-[3.5px] h-28 sm:h-36 rounded-r-full transition-all duration-300 ${
                 isEdgeHovering
-                  ? 'h-48 sm:h-56 w-[4px] opacity-100 scale-y-105'
-                  : 'opacity-55 group-hover:opacity-95 group-hover:h-44'
+                  ? 'w-[5px] h-36 sm:h-44 opacity-100 shadow-[0_0_20px_#fbbf24,0_0_35px_rgba(52,211,153,0.85)]'
+                  : 'shadow-[0_0_12px_rgba(251,191,36,0.55),0_0_24px_rgba(52,211,153,0.45)]'
               }`}
               style={{
                 background: isLight
-                  ? `linear-gradient(180deg, transparent 0%, ${activeItem?.color || '#f59e0b'} 30%, #10b981 70%, transparent 100%)`
-                  : `linear-gradient(180deg, transparent 0%, ${activeItem?.color || '#fbbf24'} 25%, #34d399 55%, #a855f7 80%, transparent 100%)`,
-                boxShadow: isEdgeHovering
-                  ? `0 0 14px ${activeItem?.color || '#fbbf24'}, 0 0 24px rgba(52, 211, 153, 0.65)`
-                  : `0 0 8px ${activeItem?.color || '#fbbf24'}66`,
+                  ? 'linear-gradient(180deg, transparent 0%, rgba(245,158,11,0.2) 15%, #f59e0b 50%, #10b981 85%, transparent 100%)'
+                  : 'linear-gradient(180deg, transparent 0%, rgba(251,191,36,0.3) 15%, #fbbf24 45%, #34d399 75%, #a855f7 90%, transparent 100%)',
               }}
             />
           </motion.div>
@@ -1509,21 +1515,6 @@ export default function LeftSidebarNav() {
                     v{APP_VERSION}
                   </span>
                 </div>
-
-                {/* Collapse Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer text-xs active:scale-90 ${
-                    isLight
-                      ? 'text-slate-500 hover:text-slate-900 hover:bg-amber-900/[0.08]'
-                      : 'text-neutral-400 hover:text-white hover:bg-white/[0.08]'
-                  }`}
-                  title="메뉴 닫기"
-                  aria-label="메뉴 닫기"
-                >
-                  <ChevronLeft size={16} />
-                </button>
               </div>
             </motion.aside>
           </>
