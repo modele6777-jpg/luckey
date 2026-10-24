@@ -551,24 +551,15 @@ export default function LeftSidebarNav() {
     };
   }, [isOpen, isInteractingWithSidebar]);
 
-  // Desktop right-edge mouse proximity & hover detection (Safe-Area Right aware)
+  // Desktop right-edge mouse proximity & hover detection
   useEffect(() => {
-    const getSafeRightPx = () => {
-      try {
-        return parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--sar')) || 0;
-      } catch {
-        return 0;
-      }
-    };
-
     const handleMouseMove = (e: MouseEvent) => {
       // Ignore synthetic mouse events from touch devices
       if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
         return;
       }
 
-      const sar = getSafeRightPx();
-      const distFromRight = window.innerWidth - sar - e.clientX;
+      const distFromRight = window.innerWidth - e.clientX;
 
       if (!isOpen) {
         // When cursor is within 24px of the right edge, trigger sidebar opening
@@ -587,8 +578,8 @@ export default function LeftSidebarNav() {
           setIsEdgeHovering(false);
         }
       } else {
-        // When open, keep isHoveringSidebar synced if cursor is within the rail + safe area
-        if (distFromRight <= 90 && distFromRight >= -20) {
+        // When open, keep isHoveringSidebar synced if cursor is within the rail + buffer
+        if (distFromRight <= 85 && distFromRight >= -20) {
           setIsHoveringSidebar(true);
         }
       }
@@ -1114,8 +1105,7 @@ export default function LeftSidebarNav() {
             }}
             aria-label="우측 끝 호버 또는 스와이프로 사이드바 열기"
             title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
-            style={{ right: 'var(--sar, 0px)' }}
-            className="fixed top-0 bottom-0 w-6 sm:w-8 z-[470] cursor-pointer select-none group pointer-events-auto overflow-visible"
+            className="fixed top-0 bottom-0 right-0 w-6 sm:w-8 z-[470] cursor-pointer select-none group pointer-events-auto overflow-visible"
           >
             {/* 🌌 레이어 1: 화면 안쪽으로 부드럽게 번져나가는 세로 전면 앰비언트 오로라 커튼 (Ambient Aurora Curtain) */}
             <motion.div
@@ -1242,8 +1232,7 @@ export default function LeftSidebarNav() {
               onTouchEnd={handleSidebarTouchEnd}
               onTouchCancel={handleSidebarTouchEnd}
               style={{
-                paddingRight: 'var(--sar, 0px)',
-                width: 'calc(70px + var(--sar, 0px))',
+                width: '70px',
               }}
               className={`fixed right-0 top-0 bottom-0 backdrop-blur-2xl border-l z-[480] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
