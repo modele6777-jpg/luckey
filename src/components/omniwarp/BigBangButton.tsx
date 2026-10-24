@@ -86,6 +86,7 @@ export function BigBangButton() {
   const [isQuickChatOpen, setIsQuickChatOpen] = useState(false);
   const [quickChatVoiceActive, setQuickChatVoiceActive] = useState(false);
   const [quickChatInitialPrompt, setQuickChatInitialPrompt] = useState('');
+  const [quickChatAutoSend, setQuickChatAutoSend] = useState(false);
 
   // 스크롤 중에는 추천 1순위나 HUD 칩이 미리 노출되지 않도록 감지
   useEffect(() => {
@@ -570,13 +571,13 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: isTextToss ? '루시 음성 피드백' : '루시 1:1 음성 대화 (PTT)',
+        title: isTextToss ? '루시 음성 답변' : '루시 1:1 음성 대화 (PTT)',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ 루시 음성 피드백`
+          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ 루시 음성 답변`
           : `[음성 PTT] 질문 말씀 중... (손을 떼면 즉시 답변)`,
         previewDescription: isTextToss
-          ? '손을 떼면 선택한 문장에 대한 루시의 음성 답변이 바로 출력됩니다'
+          ? '루시채팅으로 이동하지 않고 말풍선에서 선택한 문장에 대한 음성 답변을 바로 받습니다'
           : '버튼을 누른 채 질문을 말하고, 손을 떼면 즉각 루시의 음성 답변이 출력됩니다',
         destinationPath: location,
         themeColor: '#fde68a',
@@ -592,7 +593,9 @@ export function BigBangButton() {
         setIsQuickChatOpen(true);
         setQuickChatVoiceActive(true);
         if (textToToss) {
-          setQuickChatInitialPrompt(textToToss);
+          const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+          setQuickChatInitialPrompt(prompt);
+          setQuickChatAutoSend(true);
         }
       }
     } else {
@@ -604,15 +607,15 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: isTextToss ? '루시 채팅 피드백' : '홈 베이스캠프',
+        title: isTextToss ? '루시 말풍선 답변' : '홈 베이스캠프',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[탭] "${textToToss.slice(0, 16)}..." ➔ 루시 채팅 피드백`
+          ? `[탭] "${textToToss.slice(0, 16)}..." ➔ 루시 말풍선 즉시답변`
           : '가볍게 탭 ➔ 홈으로 이동',
         previewDescription: isTextToss
-          ? '선택한 문장에 대한 루시의 맞춤 피드백과 조언을 받습니다'
+          ? '루시채팅으로 이동하지 않고 버튼 위 말풍선에서 바로 답변을 받습니다'
           : '프롤로그 허브 메인으로 귀환합니다',
-        destinationPath: isTextToss ? '/chat' : '/',
+        destinationPath: location,
         themeColor: '#38bdf8',
         accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
@@ -1177,7 +1180,17 @@ export function BigBangButton() {
     if (isPttRecordingRef.current) {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
-      if (typeof window !== 'undefined') {
+      const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
+      if (textToToss) {
+        const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+        setQuickChatInitialPrompt(prompt);
+        setQuickChatAutoSend(true);
+        setQuickChatVoiceActive(true);
+        setIsQuickChatOpen(true);
+        if (typeof window !== 'undefined') {
+          window.getSelection()?.removeAllRanges();
+        }
+      } else if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('prism:quick_chat_commit_voice')
         );
@@ -1258,12 +1271,17 @@ export function BigBangButton() {
 
         // 🌟 텍스트 드래그(선택) 상태에서 탭: 페이지 이동 대신 버튼 위 퀵 말풍선을 열어 선택 문장으로 루시 질의!
         if (textToToss) {
-          setQuickChatInitialPrompt(textToToss);
+          const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+          setQuickChatInitialPrompt(prompt);
+          setQuickChatAutoSend(true);
           setQuickChatVoiceActive(false);
           setIsQuickChatOpen(true);
           lastValidSelectionRef.current = '';
           touchStartSelectionRef.current = '';
           clearPendingSelection();
+          if (typeof window !== 'undefined') {
+            window.getSelection()?.removeAllRanges();
+          }
           setActivePhase('idle');
           setGauge(0);
           setDurationMs(0);
@@ -1328,7 +1346,11 @@ export function BigBangButton() {
     // 🌟 텍스트 드래그(선택) 연동: 글자를 스크롤/선택한 상태에서 빅뱅 홀드 ➔ 음성 질의 프롬프트로 전달!
     let initialPrompt: string | undefined;
     if (textToToss) {
-      initialPrompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 음성으로 이야기해 줘.`;
+      initialPrompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+      setQuickChatAutoSend(true);
+      if (typeof window !== 'undefined') {
+        window.getSelection()?.removeAllRanges();
+      }
       savePendingSelection(textToToss, 'lucy', location);
       try {
         sessionStorage.setItem('lucy_injected_input_draft', textToToss);
@@ -1354,6 +1376,7 @@ export function BigBangButton() {
     setQuickChatVoiceActive(true);
     if (initialPrompt || textToToss) {
       setQuickChatInitialPrompt(initialPrompt || textToToss);
+      setQuickChatAutoSend(true);
     }
 
     touchStartSelectionRef.current = '';
@@ -1504,9 +1527,11 @@ export function BigBangButton() {
             setIsQuickChatOpen(false);
             setQuickChatVoiceActive(false);
             setQuickChatInitialPrompt('');
+            setQuickChatAutoSend(false);
           }}
           initialPrompt={quickChatInitialPrompt}
           initialVoiceActive={quickChatVoiceActive}
+          initialAutoSend={quickChatAutoSend}
         />
 
         <div
@@ -1596,11 +1621,11 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">✨</span>
-                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸루시 퀵대화</span>
+                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸말풍선 즉시답변</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸루시채팅</span>
                 <span className="text-slate-500">│</span>
-                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸음성 피드백</span>
+                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸음성 답변</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">{dynamicRecommendedLuckeyApp ? `▸${dynamicRecommendedLuckeyApp}` : '▸추천 1순위'}</span>
               </motion.div>
@@ -1778,10 +1803,10 @@ export function BigBangButton() {
                   ? 'inset 0 0 22px rgba(56, 189, 248, 0.35), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.45)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 퀵 대화 / 더블탭: 루시 채팅 / 홀드: 루시 음성 / 드래그: 럭키 1순위 추천)"
+              title="빅뱅 버튼 (탭: 말풍선 답변 / 더블탭: 루시 채팅 / 홀드: 음성 답변 / 드래그: 럭키 1순위 추천)"
               aria-label={
                 hasSelectionToss
-                  ? '빅뱅 버튼 · 선택 내용 토스 대기중'
+                  ? '빅뱅 버튼 · 문장 선택됨 (탭: 말풍선 즉시답변, 홀드: 음성 답변, 더블탭: 루시채팅)'
                   : '빅뱅 버튼 · 탭: 루시 퀵 대화, 더블탭: 루시 채팅, 홀드: 루시 음성, 드래그: 럭키 1순위 추천'
               }
             >

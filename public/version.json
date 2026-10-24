@@ -1,13 +1,12 @@
 {
   "name": "luckey",
-  "version": "1.4.421",
-  "summary": "루시채팅 TTS 낭독 시 실제 발화 문장 외 비정상 문장 하이라이트 표시 오류 수정",
-  "builtAt": "2026-10-24T05:40:00.000Z",
+  "version": "1.4.422",
+  "summary": "문장 드래그 후 빅뱅버튼 탭 또는 홀드 시 루시채팅 이동 없이 말풍선에서 즉시 답변 수신 기능 구현",
+  "builtAt": "2026-10-24T05:51:00.000Z",
   "items": [
-    "isSentenceActive 문장 매칭 알고리즘 고도화: 길이 비율(ratio >= 0.70) 및 공통 접두사/토큰 일치율 검증을 엄격화하여 짧은 단어나 다른 문장의 오매칭 방지",
-    "단락 내 미매칭 시 전체 단락을 하이라이트로 감싸던 Fallback 제거하여 현재 낭독 중이지 않은 문장의 오표시 원천 차단",
-    "playTTS 실행 시 청크 전체 텍스트가 activeSentence를 덮어쓰던 문제를 방지하여 개별 문장 단위 실시간 추적 유지",
-    "다중 말풍선 메시지에서 현재 발화 중인 말풍선(isBubbleSpeaking)에만 enableTTSHighlight를 적용하고, playingMsgId 불일치 시 과거 메시지 하이라이트 번짐 방지",
-    "LucyStandalonePage 및 UnifiedChat, useTTSCurrentSentence에서 activeSentence가 없을 때 전체 텍스트(activeText)로 폴백되던 현상 수정"
+    "앱 전반에서 문장 선택(드래그) 후 빅뱅버튼 탭 시, 전체 채팅 화면('/chat')으로 이동하지 않고 버튼 위 말풍선(LucyQuickChatBubble)에서 즉시 루시의 텍스트 답변이 스트리밍되도록 개선",
+    "문장 선택 후 빅뱅버튼 홀드 시에도 루시채팅으로 이동하지 않고 말풍선이 열리며 루시의 다정한 음성 답변(TTS)과 실시간 타이핑 답변을 바로 수신할 수 있도록 연동",
+    "LucyQuickChatBubble에 initialAutoSend 속성을 추가하여 선택 문장 프롬프트가 주입되는 즉시 자동 발송되도록 파이프라인 완성",
+    "HUD 제스처 팁 및 버튼 툴팁 안내를 '탭▸말풍선 즉시답변', '홀드▸음성 답변'으로 직관화"
   ]
 }

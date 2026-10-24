@@ -52,6 +52,7 @@ interface LucyQuickChatBubbleProps {
   onClose: () => void;
   initialPrompt?: string;
   initialVoiceActive?: boolean;
+  initialAutoSend?: boolean;
 }
 
 type VoiceState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
@@ -138,6 +139,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
   onClose,
   initialPrompt,
   initialVoiceActive = false,
+  initialAutoSend = false,
 }) => {
   const [, navigate] = useLocation();
   const { personaMessages, sendUnifiedMessage, isGenerating } = useApp();
@@ -413,8 +415,10 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       scrollToBottom(false);
       if (initialVoiceActive) {
         setIsVoiceMode(true);
+        isVoiceModeRef.current = true;
         setIsMuted(false);
         setVoiceState('listening');
+        voiceStateRef.current = 'listening';
         startListening();
       } else {
         setTimeout(() => {
@@ -435,10 +439,25 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
   // 🎙️ PTT (빅뱅버튼을 누르고 있다가 손을 뗀 순간) 즉시 전송 이벤트 수신
   useEffect(() => {
-    const handleCommitVoice = () => {
+    const handleCommitVoice = (e?: Event) => {
+      const customDetail = (e as CustomEvent)?.detail;
+      const selectedText = customDetail?.textToToss;
       const currentSpeech = speechTranscriptRef.current;
+
       if (currentSpeech && currentSpeech.trim().length >= 1) {
         handleSend(currentSpeech.trim());
+      } else if (selectedText && selectedText.trim().length >= 1) {
+        const prompt = `내가 선택한 문장이야:\n"${selectedText.trim()}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+        if (autoSentPromptRef.current !== prompt && !isLucyGenerating) {
+          autoSentPromptRef.current = prompt;
+          handleSend(prompt);
+        }
+      } else if (initialPrompt && initialPrompt.trim().length >= 1 && !isLucyGenerating) {
+        const prompt = initialPrompt.trim();
+        if (autoSentPromptRef.current !== prompt) {
+          autoSentPromptRef.current = prompt;
+          handleSend(prompt);
+        }
       }
     };
     const handleAbortVoice = () => {
@@ -454,7 +473,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       window.removeEventListener('prism:quick_chat_commit_voice', handleCommitVoice);
       window.removeEventListener('prism:abort_lucy_voice_ptt', handleAbortVoice);
     };
-  }, [handleSend, stopRecognition]);
+  }, [handleSend, stopRecognition, initialPrompt, isLucyGenerating]);
 
   // 메시지 업데이트 시 스크롤
   useEffect(() => {
@@ -463,12 +482,29 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     }
   }, [isOpen, lucyMessages.length, isLucyGenerating, scrollToBottom]);
 
-  // 초기 프롬프트 전달 시 입력창 자동 채움
+  const autoSentPromptRef = useRef<string | null>(null);
+
+  // 초기 프롬프트 전달 시 입력창 자동 채움 및 즉시 발송 (문장 드래그 토스 등)
   useEffect(() => {
-    if (initialPrompt && initialPrompt.trim()) {
+    if (!isOpen) {
+      autoSentPromptRef.current = null;
+      return;
+    }
+
+    if (isOpen && initialAutoSend && initialPrompt && initialPrompt.trim()) {
+      const promptToAutoSend = initialPrompt.trim();
+      if (autoSentPromptRef.current !== promptToAutoSend && !isLucyGenerating) {
+        autoSentPromptRef.current = promptToAutoSend;
+        setInput('');
+        const timer = setTimeout(() => {
+          handleSend(promptToAutoSend);
+        }, 80);
+        return () => clearTimeout(timer);
+      }
+    } else if (isOpen && initialPrompt && initialPrompt.trim()) {
       setInput(initialPrompt.trim());
     }
-  }, [initialPrompt]);
+  }, [isOpen, initialAutoSend, initialPrompt, isLucyGenerating, handleSend]);
 
   // 풀스크린 루시 채팅(/chat)으로 확장 도약
   const handleExpandToFullScreen = () => {
