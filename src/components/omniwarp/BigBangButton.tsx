@@ -82,8 +82,9 @@ export function BigBangButton() {
   const maxDragDistanceRef = useRef<number>(0);
   const touchStartedWhileScrollingRef = useRef<boolean>(false);
 
-  // 💬 루시 퀵 대화 말풍선 열림 여부 및 초기 프롬프트 상태
+  // 💬 루시 퀵 대화 말풍선 열림 여부, 음성모드 여부 및 초기 프롬프트 상태
   const [isQuickChatOpen, setIsQuickChatOpen] = useState(false);
+  const [quickChatVoiceActive, setQuickChatVoiceActive] = useState(false);
   const [quickChatInitialPrompt, setQuickChatInitialPrompt] = useState('');
 
   // 스크롤 중에는 추천 1순위나 HUD 칩이 미리 노출되지 않도록 감지
@@ -582,18 +583,16 @@ export function BigBangButton() {
         accentGlow: 'rgba(253, 230, 138, 0.85)',
       };
 
-      // 🎙️ [PTT] 250ms 이상 제자리 홀드 시 즉시 질문 음성 녹음 시작!
+      // 🎙️ [PTT] 250ms 이상 제자리 홀드 시 즉시 말풍선 오픈 + 음성 모드 가동!
       if (!metrics.isAborted && !isPttRecordingRef.current) {
         isPttRecordingRef.current = true;
         unlockAudioPlayback();
         primeTTSAudioElement();
         triggerHaptic('whitehole');
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('prism:start_lucy_voice_ptt', {
-              detail: { sourcePath: location, textToToss },
-            })
-          );
+        setIsQuickChatOpen(true);
+        setQuickChatVoiceActive(true);
+        if (textToToss) {
+          setQuickChatInitialPrompt(textToToss);
         }
       }
     } else {
@@ -1189,16 +1188,13 @@ export function BigBangButton() {
       return;
     }
 
-    // 🎙️ [PTT 완료] 제자리 홀드 상태에서 손을 뗀 경우 녹음 마감 및 무음 대기 없이 질문 발송!
+    // 🎙️ [PTT 완료] 제자리 홀드 상태에서 손을 뗀 경우 녹음 마감 및 질문 발송!
     if (isPttRecordingRef.current) {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
-      const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
-          new CustomEvent('prism:commit_lucy_voice_ptt', {
-            detail: { textToToss },
-          })
+          new CustomEvent('prism:quick_chat_commit_voice')
         );
       }
       lastValidSelectionRef.current = '';
@@ -1278,6 +1274,7 @@ export function BigBangButton() {
         // 🌟 텍스트 드래그(선택) 상태에서 탭: 페이지 이동 대신 버튼 위 퀵 말풍선을 열어 선택 문장으로 루시 질의!
         if (textToToss) {
           setQuickChatInitialPrompt(textToToss);
+          setQuickChatVoiceActive(false);
           setIsQuickChatOpen(true);
           lastValidSelectionRef.current = '';
           touchStartSelectionRef.current = '';
@@ -1289,6 +1286,7 @@ export function BigBangButton() {
         }
 
         // 💬 제자리 탭: 루시 채팅으로 페이지를 이동하지 않고 버튼 위에 '루시 퀵 대화 말풍선' 즉시 토글 오픈!
+        setQuickChatVoiceActive(false);
         setIsQuickChatOpen((prev) => !prev);
 
         if (typeof window !== 'undefined') {
@@ -1367,44 +1365,10 @@ export function BigBangButton() {
       }
     }
 
-    if (typeof window !== 'undefined') {
-      // 🎙️ 음성 모드가 이미 켜져 있다면 홀드 시 즉시 종료 토글
-      if (voiceModeInfo.isOpen) {
-        window.dispatchEvent(new CustomEvent('prism:close_lucy_voice'));
-        triggerHaptic('whitehole');
-        touchStartSelectionRef.current = '';
-        setActivePhase('idle');
-        setGauge(0);
-        setDurationMs(0);
-        return;
-      }
-
-      window.dispatchEvent(
-        new CustomEvent('prism:bigbang_commit', {
-          detail: {
-            phase: 'whitehole',
-            target: {
-              id: 'lucy_voice',
-              name: '루시 AI 음성 대화',
-              destinationPath: location,
-              themeColor: '#fde68a',
-              eventHorizonMode: 'whitehole',
-              previewLabel: '[홀드 소환] 루시 AI 음성 대화',
-              previewDescription: '마음의 안식처 루시와 나누는 따뜻한 1:1 음성 대화 (여성 목소리)',
-            },
-            context,
-            metrics: { ...metrics, phase: 'whitehole' },
-            timestamp: Date.now(),
-          },
-        })
-      );
-
-      // 🎙️ 전역 루시 AI 음성 모드 즉각 가동 (별도 팝업 없이 현재 화면 위에서 직접 가동)
-      window.dispatchEvent(
-        new CustomEvent('prism:open_lucy_voice', {
-          detail: { initialPrompt, sourcePath: location, textToToss },
-        })
-      );
+    setIsQuickChatOpen(true);
+    setQuickChatVoiceActive(true);
+    if (initialPrompt || textToToss) {
+      setQuickChatInitialPrompt(initialPrompt || textToToss);
     }
 
     touchStartSelectionRef.current = '';
@@ -1553,9 +1517,11 @@ export function BigBangButton() {
           isOpen={isQuickChatOpen}
           onClose={() => {
             setIsQuickChatOpen(false);
+            setQuickChatVoiceActive(false);
             setQuickChatInitialPrompt('');
           }}
           initialPrompt={quickChatInitialPrompt}
+          initialVoiceActive={quickChatVoiceActive}
         />
 
         <div
