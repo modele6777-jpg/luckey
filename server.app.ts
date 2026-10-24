@@ -2514,8 +2514,8 @@ self.addEventListener('activate', (e) => {
 
   // 🌿 CALM (40대 마음약방) Standalone Static & API Mounting
   const calmPublicPath = path.resolve(process.cwd(), "public", "calm");
-  app.use("/calm", express.static(calmPublicPath, { index: "index.html" }));
-  app.get(["/key", "/key/", "/orb", "/orb/", "/orb.html", "/gateway", "/crystal"], (_req, res) => res.redirect(302, "/calm/"));
+  app.use("/calm", express.static(calmPublicPath, { index: false }));
+  app.get(["/calm", "/calm/", "/orb", "/orb/", "/orb.html", "/gateway", "/crystal"], (_req, res) => res.redirect(302, "/key"));
   app.use(calmRouter);
 
   if (process.env.NODE_ENV !== "production") {

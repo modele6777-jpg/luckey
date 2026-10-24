@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.4.416",
+    "summary": "Key 채널(/key) 진입 시 서버 리다이렉션 탈출 버그 수정 및 빅뱅버튼/사이드바 상시 정상 표시 복구",
+    "builtAt": "2026-10-24T04:36:00.000Z",
+    "items": [
+      "server.app.ts에서 '/key' 요청 시 정적 HTML 경로(/calm/)로 302 강제 리다이렉션되던 라우트 규칙을 제거하고, 리액트 SPA 라우팅(CalmApp 컴포넌트)을 온전히 수용하도록 수정",
+      "BigBangCircularMeter 및 BigBangButton에서 Key 채널 이동 시 window.location.href 전체 페이지 새로고침 우회를 제거하고 순수 SPA navigate('/key')로 통일하여 컴포넌트 언마운트 방지",
+      "vite.config.ts의 PWA Workbox navigateFallbackDenylist에서 /key와 /orb를 제외하여 오프라인/새로고침 시에도 index.html SPA가 안정적으로 서빙되도록 연동"
+    ]
+  },
+  {
     "version": "1.4.415",
     "summary": "오렌지 앱에서 좌클릭(West 룬/화살표) 이동 시 유니버스 건너뜀 버그 수정 및 투두(/todo) 정상 순환 연동",
     "builtAt": "2026-10-24T04:24:00.000Z",

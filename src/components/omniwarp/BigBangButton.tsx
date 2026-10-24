@@ -812,27 +812,19 @@ export function BigBangButton() {
     setTimeout(() => {
       if (textToToss) {
         tossSelectionToMenu(textToToss, finalMenu, location, (targetPath) => {
-          if (isKeySite) {
-            window.location.href = targetPath;
-          } else {
-            navigate(targetPath);
-            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
-            window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
-          }
+          navigate(targetPath);
+          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
+          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
         });
       } else {
-        if (isKeySite) {
-          window.location.href = finalSafePath;
-        } else {
-          navigate(finalSafePath);
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: finalSafePath } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: finalSafePath } }));
-          if (finalSafePath.includes('?tab=')) {
-            const tabName = finalSafePath.split('?tab=')[1]?.split('&')[0];
-            if (tabName) {
-              sessionStorage.setItem('prism_target_tab', tabName);
-              window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: tabName } }));
-            }
+        navigate(finalSafePath);
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: finalSafePath } }));
+        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: finalSafePath } }));
+        if (finalSafePath.includes('?tab=')) {
+          const tabName = finalSafePath.split('?tab=')[1]?.split('&')[0];
+          if (tabName) {
+            sessionStorage.setItem('prism_target_tab', tabName);
+            window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: tabName } }));
           }
         }
       }
@@ -936,13 +928,9 @@ export function BigBangButton() {
         // Key 사이트로 도약
         const currentPath = location || '/';
         safeSessionStorage.setItem('prism_key_return_path', currentPath);
-        if (isKeySite) {
-          window.location.href = '/key';
-        } else {
-          navigate('/key');
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/key' } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
-        }
+        navigate('/key');
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/key' } }));
+        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
       }
     }, 160);
 
@@ -974,18 +962,14 @@ export function BigBangButton() {
         } catch (_) {}
       }
 
-      if (isKeySite) {
-        window.location.href = targetPath;
-      } else {
-        navigate(targetPath);
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
-        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath, tab: targetTab } }));
-        if (targetTab) {
-          window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: targetTab } }));
-        }
+      navigate(targetPath);
+      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
+      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath, tab: targetTab } }));
+      if (targetTab) {
+        window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: targetTab } }));
       }
     },
-    [isKeySite, navigate]
+    [navigate]
   );
 
   const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement> | PointerEvent) => {
@@ -1190,8 +1174,6 @@ export function BigBangButton() {
 
           if (isChatView) {
             // 이미 채팅 화면이면 추가 페이지 이동 없음
-          } else if (isKeySite) {
-            window.location.href = '/chat';
           } else {
             navigate('/chat');
             window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
@@ -1235,20 +1217,11 @@ export function BigBangButton() {
           }
         } else {
           // 다른 화면일 때는 홈('/')으로 즉시 이동
-          if (
-            typeof window !== 'undefined' &&
-            (window.location.pathname.includes('key') ||
-              window.location.pathname.includes('calm') ||
-              window.location.pathname.includes('orb'))
-          ) {
-            window.location.href = '/';
-          } else {
-            navigate('/');
-            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
-            window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/' } }));
-            if (typeof window !== 'undefined') {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+          navigate('/');
+          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
+          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/' } }));
+          if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }
       }, 240);

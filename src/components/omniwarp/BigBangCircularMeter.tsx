@@ -549,13 +549,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
 
   const doNavigate = useCallback(
     (targetStep: BigBangCycleNavStep) => {
-      const isKeyTarget = targetStep.path === '/key' || targetStep.path.startsWith('/key');
-      const isCurrentlyKey = typeof window !== 'undefined' && window.location.pathname.includes('key');
-      if (isCurrentlyKey || isKeyTarget) {
-        window.location.href = targetStep.path;
-        return;
-      }
-
       if (targetStep.tab) {
         try {
           sessionStorage.setItem('prism_target_tab', targetStep.tab);
