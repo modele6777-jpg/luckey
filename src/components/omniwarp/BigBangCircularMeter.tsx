@@ -1,6 +1,7 @@
-import React, { useId, useCallback, useState, useEffect, useRef } from 'react';
+import React, { useId, useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLocation } from 'wouter';
 import { WarpPhase } from '@/lib/omniWarp/types';
 import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
 import { playAudioHaptic } from '@/lib/audioHaptics';
@@ -8,6 +9,96 @@ import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
 // 12방위 외곽 룬 문자 각인 (Elder Futhark) - 아케인 서클 미세 글리프 유지
 const OUTER_MINI_RUNES = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ'];
+
+/**
+ * 🌀 빅뱅 좌우 화살표 전용 순환 네비게이션 시퀀스 (9대 핵심 공간 무한 순환)
+ * 순서: 루시채팅 -> KEY -> 럭키 7대 테마 DApp (프롤로그 -> 오렌지 -> 트리니티 -> 아우라 -> 블루버드 -> 뮤즈 -> 에필로그) -> 루시채팅...
+ */
+export interface BigBangCycleNavStep {
+  id: string;
+  name: string;
+  path: string;
+  aliases: string[];
+}
+
+export const BIGBANG_CYCLE_NAV_STEPS: BigBangCycleNavStep[] = [
+  {
+    id: 'lucy',
+    name: '루시 채팅',
+    path: '/',
+    aliases: ['/chat', '/lucy'],
+  },
+  {
+    id: 'key',
+    name: 'KEY (개운 리추얼)',
+    path: '/key',
+    aliases: ['/calm', '/orb', '/gateway', '/crystal', '/pharmacy'],
+  },
+  {
+    id: 'prologue',
+    name: '프롤로그 (PROLOGUE)',
+    path: '/prologue',
+    aliases: ['/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'],
+  },
+  {
+    id: 'orange',
+    name: '오렌지 (ORANGE)',
+    path: '/orange',
+    aliases: [],
+  },
+  {
+    id: 'trinity',
+    name: '트리니티 (TRINITY)',
+    path: '/trinity',
+    aliases: ['/oracle'],
+  },
+  {
+    id: 'heal',
+    name: '아우라 치유 (AURA)',
+    path: '/heal',
+    aliases: ['/aura', '/hoponopono', '/lettinggo'],
+  },
+  {
+    id: 'bluebird',
+    name: '파랑새 (BLUEBIRD)',
+    path: '/bluebird',
+    aliases: [],
+  },
+  {
+    id: 'muse',
+    name: '뮤즈 (MUSE)',
+    path: '/muse',
+    aliases: [],
+  },
+  {
+    id: 'epilogue',
+    name: '에필로그 (EPILOGUE)',
+    path: '/epilogue',
+    aliases: ['/profile', '/chronicle'],
+  },
+];
+
+export function findCurrentCycleStepIndex(currentPath: string): number {
+  if (!currentPath) return 0;
+  const clean = currentPath.split('?')[0].split('#')[0].toLowerCase();
+
+  // 1. 완전 일치 (path 또는 aliases)
+  const exact = BIGBANG_CYCLE_NAV_STEPS.findIndex(
+    (s) => s.path === clean || s.aliases.some((a) => a === clean)
+  );
+  if (exact !== -1) return exact;
+
+  // 2. 접두사 매칭 ('/' 제외)
+  const prefix = BIGBANG_CYCLE_NAV_STEPS.findIndex(
+    (s) =>
+      (s.path !== '/' && (clean.startsWith(s.path + '/') || clean === s.path)) ||
+      s.aliases.some((a) => a !== '/' && (clean.startsWith(a + '/') || clean === a))
+  );
+  if (prefix !== -1) return prefix;
+
+  // 기본값: 루시 채팅 (인덱스 0)
+  return 0;
+}
 
 interface BigBangCircularMeterProps {
   /** 사용자가 누르고 있는지 여부 */
@@ -25,7 +116,7 @@ interface BigBangCircularMeterProps {
   /** 무한 반복 대기 사이클 타이밍 값 (선택적) */
   idleCycleProgress?: number;
   /** 고대 룬 클릭 시 네비게이션 콜백 (선택적) */
-  onRuneNavigate?: (path: string, runeId: string) => void;
+  onRuneNavigate?: (path: string, runeId?: string) => void;
   /** 🌌 더블탭 시 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 상태 */
   isCosmicSuction?: boolean;
 }
@@ -108,57 +199,117 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     window.dispatchEvent(new CustomEvent('prism:scroll_to_bottom'));
   }, [triggerDotPulse]);
 
-  // 🚀 좌(West) 점 탭 시 이전 페이지로 이동 (뒤로 가기)
-  const handleNavigateBack = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    triggerDotPulse('west');
-
-    try {
-      playAudioHaptic('tap_impact');
-    } catch (_) {}
-    try {
-      triggerHaptic('wormhole');
-    } catch (_) {}
-
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      try {
-        navigator.vibrate(20);
-      } catch (_) {}
+  let location = '/';
+  let navigate = (to: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.href = to;
     }
+  };
 
-    try {
-      window.history.back();
-    } catch (_) {}
-    window.dispatchEvent(new CustomEvent('prism:nav_back'));
-  }, [triggerDotPulse]);
-
-  // 🚀 우(East) 점 탭 시 다음 페이지로 이동 (앞으로 가기)
-  const handleNavigateForward = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    triggerDotPulse('east');
-
-    try {
-      playAudioHaptic('tap_impact');
-    } catch (_) {}
-    try {
-      triggerHaptic('wormhole');
-    } catch (_) {}
-
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      try {
-        navigator.vibrate(20);
-      } catch (_) {}
+  try {
+    const [wouterLoc, wouterNav] = useLocation();
+    location = wouterLoc;
+    navigate = wouterNav;
+  } catch (_) {
+    if (typeof window !== 'undefined') {
+      location = window.location.pathname;
     }
+  }
 
-    try {
-      window.history.forward();
-    } catch (_) {}
-    window.dispatchEvent(new CustomEvent('prism:nav_forward'));
-  }, [triggerDotPulse]);
+  const currentIndex = useMemo(() => findCurrentCycleStepIndex(location), [location]);
+  const prevIndex = (currentIndex - 1 + BIGBANG_CYCLE_NAV_STEPS.length) % BIGBANG_CYCLE_NAV_STEPS.length;
+  const nextIndex = (currentIndex + 1) % BIGBANG_CYCLE_NAV_STEPS.length;
+  const prevStep = BIGBANG_CYCLE_NAV_STEPS[prevIndex];
+  const nextStep = BIGBANG_CYCLE_NAV_STEPS[nextIndex];
+
+  const doNavigate = useCallback(
+    (targetPath: string) => {
+      if (onRuneNavigate) {
+        onRuneNavigate(targetPath);
+      } else {
+        const isKeyTarget = targetPath === '/key' || targetPath.startsWith('/key');
+        const isCurrentlyKey = typeof window !== 'undefined' && window.location.pathname.includes('key');
+        if (isCurrentlyKey || isKeyTarget) {
+          window.location.href = targetPath;
+        } else {
+          navigate(targetPath);
+          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
+          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
+        }
+      }
+    },
+    [onRuneNavigate, navigate]
+  );
+
+  // 🚀 좌(West) 점 탭 시 이전 순환 채널(에필로그, 뮤즈, ... 루시, Key)로 순환 이동
+  const handleNavigateBack = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      triggerDotPulse('west');
+
+      try {
+        playAudioHaptic('tap_impact');
+      } catch (_) {}
+      try {
+        triggerHaptic('wormhole');
+      } catch (_) {}
+
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+          navigator.vibrate(20);
+        } catch (_) {}
+      }
+
+      const curIdx = findCurrentCycleStepIndex(location);
+      const targetIdx = (curIdx - 1 + BIGBANG_CYCLE_NAV_STEPS.length) % BIGBANG_CYCLE_NAV_STEPS.length;
+      const targetStep = BIGBANG_CYCLE_NAV_STEPS[targetIdx];
+
+      doNavigate(targetStep.path);
+      window.dispatchEvent(
+        new CustomEvent('prism:cycle_nav', {
+          detail: { target: targetStep, direction: 'backward' },
+        })
+      );
+    },
+    [triggerDotPulse, location, doNavigate]
+  );
+
+  // 🚀 우(East) 점 탭 시 다음 순환 채널(루시 -> Key -> 7대 럭키 DApp -> 루시)로 순환 이동
+  const handleNavigateForward = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      triggerDotPulse('east');
+
+      try {
+        playAudioHaptic('tap_impact');
+      } catch (_) {}
+      try {
+        triggerHaptic('wormhole');
+      } catch (_) {}
+
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+          navigator.vibrate(20);
+        } catch (_) {}
+      }
+
+      const curIdx = findCurrentCycleStepIndex(location);
+      const targetIdx = (curIdx + 1) % BIGBANG_CYCLE_NAV_STEPS.length;
+      const targetStep = BIGBANG_CYCLE_NAV_STEPS[targetIdx];
+
+      doNavigate(targetStep.path);
+      window.dispatchEvent(
+        new CustomEvent('prism:cycle_nav', {
+          detail: { target: targetStep, direction: 'forward' },
+        })
+      );
+    },
+    [triggerDotPulse, location, doNavigate]
+  );
 
   // 마우스 호버 해제 또는 다른 곳 클릭/터치 시 4방위 버튼 효과 즉시 해제
   useEffect(() => {
@@ -656,8 +807,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { duration: 0.18, ease: 'easeOut' }
             }
             className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title="다음 페이지 (앞으로 가기)"
-            aria-label="다음 페이지 이동"
+            title={`다음 채널: ${nextStep.name} 이동`}
+            aria-label={`다음 채널: ${nextStep.name} 이동`}
           >
             {implodingDotId === 'east' && (
               <span
@@ -804,8 +955,8 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
                 : { duration: 0.18, ease: 'easeOut' }
             }
             className="pointer-events-auto relative w-7 h-7 flex items-center justify-center rounded-full cursor-pointer select-none bg-transparent border-0 p-0 outline-none transition-transform duration-150 z-40"
-            title="이전 페이지 (뒤로 가기)"
-            aria-label="이전 페이지 이동"
+            title={`이전 채널: ${prevStep.name} 이동`}
+            aria-label={`이전 채널: ${prevStep.name} 이동`}
           >
             {implodingDotId === 'west' && (
               <span
