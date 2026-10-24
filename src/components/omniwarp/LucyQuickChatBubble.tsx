@@ -980,6 +980,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     if (isOpen && !isInLucyChatPage) {
       scrollToBottom(false);
       if (initialVoiceActive) {
+        unlockAudioPlayback();
+        primeTTSAudioElement();
         setIsVoiceMode(true);
         isVoiceModeRef.current = true;
         setIsMuted(false);
@@ -1093,7 +1095,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
         bubbleRef.current &&
         !bubbleRef.current.contains(target) &&
         !target.closest('#bigbang-omnibutton') &&
-        !target.closest('[data-bigbang="true"]')
+        !target.closest('[data-bigbang="true"]') &&
+        !target.closest('.bottom-safe-fab-center')
       ) {
         onClose();
       }

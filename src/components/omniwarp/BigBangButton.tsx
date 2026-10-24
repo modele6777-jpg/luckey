@@ -26,8 +26,8 @@ import { tossSelectionToMenu, PRISM_ALL_APP_DESTINATIONS } from '@/lib/selection
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
 import { PrismAppIcon } from './PrismAppIcon';
 import { LucyQuickChatBubble } from './LucyQuickChatBubble';
-// 🎯 미세 드래그 판정 임계값 (터치스크린 2~6px 노이즈 면역 + 1mm 미세 드래그 즉시 감지)
-const DRAG_RECOMMEND_THRESHOLD = 14;
+// 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
+const DRAG_RECOMMEND_THRESHOLD = 26;
 
 export function BigBangButton() {
   let location = '/';
@@ -71,10 +71,8 @@ export function BigBangButton() {
         document.body.classList.contains('in-lucy-chat') ||
         Boolean(document.querySelector('.lucy-chat-shell')));
     return (
-      cleanLoc === '/' ||
       cleanLoc === '/chat' ||
       cleanLoc === '/lucy' ||
-      winPath === '/' ||
       winPath === '/chat' ||
       winPath === '/lucy' ||
       winPath.includes('/chat') ||
@@ -498,9 +496,9 @@ export function BigBangButton() {
     const isDragGesture = maxDist >= DRAG_RECOMMEND_THRESHOLD;
 
     // 🎯 제스처 실시간 타깃 및 HUD 매핑:
-    // 1) 드래그 (dist >= 14px): 럭키 채널 안의 추천 1순위 앱 순환 도약 + 우주 흡입 워프 (홀드 중 드래그 시 PTT 즉시 취소)
-    // 2) 제자리 홀드 (dist < 14px, elapsed >= 250): 루시 AI PTT 실시간 음성 대화
-    // 3) 가볍게 탭 (dist < 14px, elapsed < 250): 홈 (/) 베이스캠프 복귀
+    // 1) 드래그 (dist >= 26px): 럭키 채널 안의 추천 1순위 앱 순환 도약 + 우주 흡입 워프 (홀드 중 드래그 시 PTT 즉시 취소)
+    // 2) 제자리 홀드 (dist < 26px, elapsed >= 220): 루시 AI 음성 모드 즉시 말풍선 오픈 (손을 떼도 음성 대화 유지)
+    // 3) 가볍게 탭 (dist < 26px, duration < 220): 루시 퀵 텍스트 말풍선 토글
     // 4) 더블탭: 루시 전체 채팅(/chat) 채널 즉시 도약 (문장 선택 시 루시 1:1 질문 토스)
     const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
@@ -587,7 +585,7 @@ export function BigBangButton() {
         accentGlow: 'rgba(56, 189, 248, 0.85)',
         cycleStats: stats,
       };
-    } else if (elapsed >= 250) {
+    } else if (elapsed >= 220) {
       currentHole = 'whitehole';
       const isTextToss = Boolean(textToToss);
       target = {
@@ -596,35 +594,31 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: isTextToss ? '루시 음성 답변' : '루시 1:1 음성 대화 (PTT)',
+        title: isTextToss ? '루시 음성 답변' : '루시 1:1 음성 대화',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
           ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ 루시 음성 답변`
-          : `[음성 PTT] 질문 말씀 중... (손을 떼면 즉시 답변)`,
+          : `[음성 모드] 루시가 경청 중입니다 (음성 대화)`,
         previewDescription: isTextToss
           ? '루시채팅으로 이동하지 않고 말풍선에서 선택한 문장에 대한 음성 답변을 바로 받습니다'
-          : '버튼을 누른 채 질문을 말하고, 손을 떼면 즉각 루시의 음성 답변이 출력됩니다',
+          : '버튼 위 말풍선에서 루시와 따뜻하고 친근한 실시간 음성 대화를 나눕니다',
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
       };
 
-      // 🎙️ [PTT] 250ms 이상 제자리 홀드 시: 루시채팅(/, /chat, /lucy) 외의 화면에서만 말풍선 오픈 + 음성 모드 가동!
+      // 🎙️ [홀드] 220ms 이상 제자리 홀드 시 즉시 루시 음성 지원 말풍선 오픈 + 음성 모드 가동!
       if (!metrics.isAborted && !isPttRecordingRef.current) {
         isPttRecordingRef.current = true;
         unlockAudioPlayback();
         primeTTSAudioElement();
         triggerHaptic('whitehole');
-        if (!isChatView && !checkIsInLucyChat()) {
-          setIsQuickChatOpen(true);
-          setQuickChatVoiceActive(true);
-          if (textToToss) {
-            const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
-            setQuickChatInitialPrompt(prompt);
-            setQuickChatAutoSend(true);
-          }
-        } else {
-          setIsQuickChatOpen(false);
+        setIsQuickChatOpen(true);
+        setQuickChatVoiceActive(true);
+        if (textToToss) {
+          const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+          setQuickChatInitialPrompt(prompt);
+          setQuickChatAutoSend(true);
         }
       }
     } else {
@@ -1207,7 +1201,7 @@ export function BigBangButton() {
     setIsAborted(false);
     const context = serializeCurrentView(location);
 
-    // 🌀 [드래그: dist >= 14px] ➔ 홀드 음성 PTT 즉시 취소 및 추천 1순위 채널(우주 흡입 워프) 도약 실행!
+    // 🌀 [드래그: dist >= 26px] ➔ 홀드 음성 PTT 즉시 취소 및 추천 1순위 채널(우주 흡입 워프) 도약 실행!
     if (isDragGesture) {
       if (isPttRecordingRef.current) {
         isPttRecordingRef.current = false;
@@ -1233,10 +1227,21 @@ export function BigBangButton() {
       return;
     }
 
-    // 🎙️ [PTT 완료] 제자리 홀드 상태에서 손을 뗀 경우 녹음 마감 및 질문 발송!
-    if (isPttRecordingRef.current) {
+    // 🎙️ [홀드 완료: duration >= 220ms 또는 isPttRecordingRef.current]
+    // 제자리 홀드 상태에서 손을 뗀 경우 루시 음성 지원 말풍선 확실하게 유지 + 발송
+    const isHoldGesture = isPttRecordingRef.current || duration >= 220;
+    if (isHoldGesture) {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
+      setIsQuickChatOpen(true);
+      setQuickChatVoiceActive(true);
+
+      if (singleTapTimerRef.current) {
+        clearTimeout(singleTapTimerRef.current);
+        singleTapTimerRef.current = null;
+      }
+      lastTapTimeRef.current = 0;
+
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
       if (isChatView || checkIsInLucyChat()) {
         setIsQuickChatOpen(false);
@@ -1252,8 +1257,6 @@ export function BigBangButton() {
         const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
         setQuickChatInitialPrompt(prompt);
         setQuickChatAutoSend(true);
-        setQuickChatVoiceActive(true);
-        setIsQuickChatOpen(true);
         if (typeof window !== 'undefined') {
           window.getSelection()?.removeAllRanges();
         }
@@ -1273,7 +1276,7 @@ export function BigBangButton() {
 
     // 🧭 [원뿔 방향 탭] 상하좌우 원뿔 각진 방향 클릭/터치 시 쉐브론 화살표 기능(스크롤 및 댑 순환 이동) 즉시 실행!
     const targetDir = hoverDirection !== 'none' ? hoverDirection : downDirectionRef.current;
-    if (!isDragGesture && duration < 450 && targetDir !== 'none') {
+    if (!isDragGesture && !isHoldGesture && duration < 220 && targetDir !== 'none') {
       setIsQuickChatOpen(false);
       downDirectionRef.current = 'none';
       setHoverDirection('none');
@@ -1307,8 +1310,8 @@ export function BigBangButton() {
       return dist <= 44;
     })();
 
-    // [1] 제자리 탭 (360ms 미만 및 제자리 영역 dist < 14px)
-    const isTapGesture = !isDragGesture && ((duration < 360 && dist < DRAG_RECOMMEND_THRESHOLD) || (duration < 320 && isWithinButton && maxDist < DRAG_RECOMMEND_THRESHOLD));
+    // [1] 제자리 탭 (220ms 미만 및 제자리 영역 dist < 26px)
+    const isTapGesture = !isDragGesture && !isHoldGesture && duration < 220 && dist < DRAG_RECOMMEND_THRESHOLD;
     if (isTapGesture) {
       const nowMs = performance.now();
       const timeSinceLastTap = nowMs - lastTapTimeRef.current;
@@ -1619,7 +1622,7 @@ export function BigBangButton() {
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
         className={`fixed bottom-safe-fab-center w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
-          voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
+          isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
       >
         {/* 💬 루시 퀵 대화 말풍선 (빅뱅 버튼 상단 앵커 - 루시채팅 화면에서는 렌더링 제외) */}
@@ -1869,6 +1872,10 @@ export function BigBangButton() {
               id="bigbang-omnibutton"
               data-bigbang="true"
               type="button"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
