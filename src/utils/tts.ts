@@ -718,7 +718,7 @@ export function splitSpeechIntoChunks(text: string, maxChunkLength = 240): strin
 }
 
 /**
- * Proactively prefetch the first few chunks of a speech text
+ * Proactively prefetch the first 5 chunks of a speech text (Zero-Lag Ultra Audio Streaming)
  */
 export function prefetchTTSChunks(
   text: string,
@@ -728,7 +728,7 @@ export function prefetchTTSChunks(
 ): void {
   try {
     const chunks = splitSpeechIntoChunks(text, maxChunkLength);
-    for (let k = 0; k < Math.min(3, chunks.length); k++) {
+    for (let k = 0; k < Math.min(5, chunks.length); k++) {
       prefetchTTS(chunks[k], voice, emotion).catch(() => {});
     }
   } catch (_) {}
@@ -831,8 +831,8 @@ export const playTTSInChunks = async (
       primeTTSAudioElement();
     } catch (_) {}
 
-    // Pre-fetch the upcoming 3 chunks ahead of playback so background playback never waits on network
-    for (let ahead = 1; ahead <= 3; ahead++) {
+    // Pre-fetch the upcoming 5 chunks ahead of playback so background playback never waits on network (Ultra Max Audio)
+    for (let ahead = 1; ahead <= 5; ahead++) {
       if (startChunkIndex + ahead < chunks.length) {
         prefetchTTS(chunks[startChunkIndex + ahead], voice, emotion).catch(() => {});
       }
@@ -870,8 +870,8 @@ export const playTTSInChunks = async (
         activeSessionId: sequenceSessionId,
       });
 
-      // Proactively pre-fetch next upcoming 3 chunks in advance
-      for (let ahead = 1; ahead <= 3; ahead++) {
+      // Proactively pre-fetch next upcoming 5 chunks in advance (Zero-delay continuous stream)
+      for (let ahead = 1; ahead <= 5; ahead++) {
         if (i + ahead < chunks.length) {
           prefetchTTS(chunks[i + ahead], voice, emotion).catch(() => {});
         }

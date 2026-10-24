@@ -2871,11 +2871,58 @@ html.perf-duo .prism-xs-subnav {
 }
 
 html.perf-duo .glass {
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
 }
 
 html.perf-duo .prism-aura-bg {
   contain: layout style paint;
   transform: translateZ(0);
 }
+
+/* ============================================================================
+   12. ⚡ iPhone Duo Ultra-Max 120Hz ProMotion & GPU Hardware Acceleration
+   ============================================================================ */
+html.perf-duo-ultra {
+  scroll-behavior: smooth;
+}
+
+html.perf-duo-ultra [data-app-scroll-root] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  transform: translate3d(0, 0, 0);
+  will-change: scroll-position;
+}
+
+html.perf-duo-ultra .fixed,
+html.perf-duo-ultra .prism-bottom-nav,
+html.perf-duo-ultra .prism-xs-subnav,
+html.perf-duo-ultra .prism-hub-header,
+html.perf-duo-ultra .bottom-safe-fab-center {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Maintain full crystal glass vibrancy with GPU backing on Duo Ultra */
+html.perf-duo-ultra .glass {
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  transform: translateZ(0);
+}
+
+/* Ultra-smooth 120fps Aura Background with composite layer isolation */
+html.perf-duo-ultra .prism-aura-bg {
+  contain: layout style paint;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+html.perf-duo-ultra .aura-orb-1,
+html.perf-duo-ultra .aura-orb-2,
+html.perf-duo-ultra .aura-orb-3 {
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+}
+

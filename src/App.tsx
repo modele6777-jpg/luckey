@@ -55,6 +55,44 @@ const LucyStandalonePage = lazyWithRetry(() => import("./pages/LucyStandalonePag
 const HandbookStandalonePage = lazyWithRetry(() => import("./pages/HandbookStandalonePage"));
 const OmniWarpPage = lazyWithRetry(() => import("./pages/OmniWarpPage"));
 const CalmApp = lazyWithRetry(() => import("./pages/CalmApp"));
+
+// ⚡ 0초 무지연 즉각 채널 전환을 위한 전체 채널 백그라운드 프리로더 (체감 로딩 0ms)
+const ALL_CHANNEL_LOADERS = [
+  () => import("./pages/LucyStandalonePage"),
+  () => import("./pages/CalmApp"),
+  () => import("./pages/HubHome"),
+  () => import("./pages/OrangeApp"),
+  () => import("./pages/TrinityApp"),
+  () => import("./pages/HealApp"),
+  () => import("./pages/BluebirdApp"),
+  () => import("./pages/MuseApp"),
+  () => import("./pages/EpilogueApp"),
+  () => import("./pages/HandbookStandalonePage"),
+  () => import("./pages/OmniWarpPage"),
+  () => import("./pages/LibraryPage"),
+  () => import("./pages/ProfilePage"),
+];
+
+let hasPreloadedChannels = false;
+export function preloadAllChannelChunks(): void {
+  if (hasPreloadedChannels || typeof window === 'undefined') return;
+  hasPreloadedChannels = true;
+
+  const preloadNext = (index: number) => {
+    if (index >= ALL_CHANNEL_LOADERS.length) return;
+    try {
+      ALL_CHANNEL_LOADERS[index]().catch(() => {});
+    } catch (_) {}
+    setTimeout(() => preloadNext(index + 1), 60);
+  };
+
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(() => preloadNext(0), { timeout: 1200 });
+  } else {
+    setTimeout(() => preloadNext(0), 150);
+  }
+}
+
 import { resetAppScroll } from "./utils/scrollToTop";
 import { useAutoPrismSync } from "./hooks/useAutoPrismSync";
 import { useUpdateNotice } from "./hooks/useUpdateNotice";
@@ -275,6 +313,7 @@ function AppContent() {
 
   React.useEffect(() => {
     initTTSAudioLifecycle();
+    preloadAllChannelChunks();
   }, []);
 
   // Unlock Web Audio from real user gesture once, and detach listeners immediately

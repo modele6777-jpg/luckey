@@ -273,11 +273,19 @@ function applyDuoAndViewportFlags(): void {
   const isDuo = isSurfaceDuoOrDualScreen();
   const dualPane = isDualPaneLayout();
   const isLandscape = window.innerWidth > window.innerHeight;
+  const isUltra = isDuo || dualPane;
 
-  document.documentElement.classList.toggle('perf-duo', isDuo || dualPane);
+  document.documentElement.classList.toggle('perf-duo', isUltra);
+  document.documentElement.classList.toggle('perf-duo-ultra', isUltra);
   document.documentElement.classList.toggle('dual-pane-active', dualPane);
   document.documentElement.dataset.dualScreen = dualPane ? 'true' : 'false';
   document.documentElement.dataset.orientation = isLandscape ? 'landscape' : 'portrait';
+
+  if (isUltra) {
+    // Unlock full 120Hz ProMotion & maximum visual/audio power
+    document.documentElement.classList.remove('perf-reduced');
+    document.documentElement.classList.remove('perf-legacy');
+  }
 
   if (isDuo) {
     document.documentElement.dataset.device = 'surface-duo';
@@ -298,13 +306,18 @@ export function initPerfMode(): PerfProfile {
   document.documentElement.dataset.perf = profile;
 
   const isMobile = isMobileDevice();
+  const isDuoOrDual = isSurfaceDuoOrDualScreen() || isDualPaneLayout();
   if (isMobile) {
     document.documentElement.classList.add('perf-mobile');
-    document.documentElement.classList.add('perf-reduced');
+    if (!isDuoOrDual && profile !== 'duo') {
+      document.documentElement.classList.add('perf-reduced');
+    }
   }
 
-  if (profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs' || profile === 'duo') {
-    document.documentElement.classList.add('perf-reduced');
+  if (profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs') {
+    if (!isDuoOrDual) {
+      document.documentElement.classList.add('perf-reduced');
+    }
   }
   if (profile === 'legacy' || profile === 'iphonexs') {
     document.documentElement.classList.add('perf-legacy');
@@ -331,9 +344,11 @@ export function getPerfProfile(): PerfProfile {
 }
 
 export function isPerfReduced(): boolean {
-  if (typeof window !== 'undefined' && isMobileDevice()) return true;
+  if (typeof window !== 'undefined') {
+    if (isSurfaceDuoOrDualScreen() || isDualPaneLayout()) return false;
+  }
   const profile = getPerfProfile();
-  return profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs' || profile === 'duo';
+  return profile === 'reduced' || profile === 'pwa' || profile === 'legacy' || profile === 'iphonexs';
 }
 
 export function isPwaStandalone(): boolean {
@@ -352,18 +367,18 @@ export function isGalaxyPerfProfile(): boolean {
 export function getMaxSynthVoices(): number {
   const profile = getPerfProfile();
   if (profile === 'iphonexs' || profile === 'legacy') return 4;
-  if (profile === 'duo') return 14;
-  if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 10 : 18;
-  if (isGalaxyS23Class()) return 12;
-  if (profile === 'pwa') return 6;
-  if (profile === 'reduced') return 10;
-  return 28;
+  if (profile === 'duo' || isSurfaceDuoOrDualScreen() || isDualPaneLayout()) return 32;
+  if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 10 : 24;
+  if (isGalaxyS23Class()) return 16;
+  if (profile === 'pwa') return 8;
+  if (profile === 'reduced') return 12;
+  return 32;
 }
 
 export function getAutoSyncIntervalMs(): number {
   const profile = getPerfProfile();
   if (profile === 'iphonexs' || profile === 'legacy') return 10 * 60 * 1000;
-  if (profile === 'duo') return 6 * 60 * 1000;
+  if (profile === 'duo' || isSurfaceDuoOrDualScreen() || isDualPaneLayout()) return 3 * 60 * 1000;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 7 * 60 * 1000 : 5 * 60 * 1000;
   if (isGalaxyS23Class()) return 6 * 60 * 1000;
   if (profile === 'pwa') return 8 * 60 * 1000;
@@ -372,7 +387,7 @@ export function getAutoSyncIntervalMs(): number {
 
 export function getHubMetricsIntervalMs(): number {
   if (isIPhoneXSClass() || isLegacyMobile()) return 120_000;
-  if (isSurfaceDuoOrDualScreen()) return 80_000;
+  if (isSurfaceDuoOrDualScreen() || isDualPaneLayout()) return 30_000;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 105_000 : 75_000;
   if (isGalaxyS23Class()) return 90_000;
   return 60_000;
@@ -380,7 +395,7 @@ export function getHubMetricsIntervalMs(): number {
 
 export function getSyncPendingPollMs(): number {
   if (isIPhoneXSClass() || isLegacyMobile()) return 10_000;
-  if (isSurfaceDuoOrDualScreen()) return 6_000;
+  if (isSurfaceDuoOrDualScreen() || isDualPaneLayout()) return 2_500;
   if (isGalaxyFoldSeClass()) return isFoldCoverScreen() ? 8_000 : 5_000;
   if (isGalaxyS23Class()) return 7_000;
   return 5_000;
@@ -404,7 +419,7 @@ export function shouldMountBgMusicPlayer(): boolean {
 }
 
 export function shouldPreloadBgmAudio(): boolean {
-  return !isIPhoneXSClass() && !isLegacyMobile();
+  return true;
 }
 
 const NARROW_PHONE_MAX_WIDTH = 390;
