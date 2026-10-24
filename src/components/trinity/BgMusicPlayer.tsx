@@ -198,17 +198,10 @@ export function BgMusicPlayer() {
     shuffleTrackIndices(buildInitialTrackLibrary().length),
   );
   const [queueIndex, setQueueIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(() => {
-    try {
-      const saved = localStorage.getItem('prism_bgm_playing');
-      if (saved !== null) return saved === 'true';
-      if (isMobileDevice() || isPerfReduced()) return false;
-      return true;
-    } catch {
-      return false;
-    }
-  });
-  const isPlayingRef = useRef(isPlaying);
+  // 🌟 앱 실행 시 외부 음악(멜론, 스포티파이, 유튜브 뮤직 등)이 중단되지 않도록 항상 일시정지(false)로 시작
+  // BGM을 듣고 싶을 때 사용자가 직접 LP 버튼을 눌러 재생할 수 있습니다.
+  const [isPlaying, setIsPlaying] = useState(false);
+  const isPlayingRef = useRef(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(() => {
     try {
@@ -1726,31 +1719,6 @@ export function BgMusicPlayer() {
     };
   }, [bgmPos.isDocked, handleCollapse]);
 
-  // --- AUTOPLAY UNLOCKER ---
-  useEffect(() => {
-    let unlocked = false;
-    const unlockAudioContext = () => {
-      if (unlocked) return;
-      try {
-        const ctx = getSharedAudioContext();
-        if (ctx.state === 'suspended') {
-          ctx.resume().catch(() => {});
-        }
-        unlocked = true;
-      } catch (_) {}
-    };
-
-    window.addEventListener("click", unlockAudioContext, { passive: true, once: true });
-    window.addEventListener("touchstart", unlockAudioContext, { passive: true, once: true });
-    window.addEventListener("keydown", unlockAudioContext, { passive: true, once: true });
-
-    return () => {
-      window.removeEventListener("click", unlockAudioContext);
-      window.removeEventListener("touchstart", unlockAudioContext);
-      window.removeEventListener("keydown", unlockAudioContext);
-    };
-  }, []);
-
   // --- REACTIVE AUDIO SYNC (Single source of truth for playback synchronization) ---
   useEffect(() => {
     const audio = audioRef.current;
@@ -1866,7 +1834,7 @@ export function BgMusicPlayer() {
         onWaiting={handleAudioWaiting}
         onPlaying={handleAudioPlaying}
         loop={repeatMode === "one"}
-        preload={shouldPreloadBgmAudio() ? "auto" : "none"}
+        preload={isPlaying && shouldPreloadBgmAudio() ? "auto" : "none"}
       />
 
       {/* Detailed Menu Modal Popup (LP판 홀드시 노출되는 프리미엄 LP 턴테이블 상세메뉴) */}

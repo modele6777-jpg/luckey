@@ -20,7 +20,7 @@ import { LucyAuraLoader } from "./components/LucyAuraLoader";
 import { KeyCosmicLoader } from "./components/KeyCosmicLoader";
 
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
-import { initTTSAudioLifecycle, unlockAudioPlayback, getSharedAudioContext } from "./lib/audio";
+import { initTTSAudioLifecycle } from "./lib/audio";
 import { shouldUsePageTransitions, shouldMountBgMusicPlayer } from "./lib/perfMode";
 import AuroraBackground from "./components/AuroraBackground";
 import HubHome from "./pages/HubHome";
@@ -342,30 +342,6 @@ function AppContent() {
   React.useEffect(() => {
     initTTSAudioLifecycle();
     preloadAllChannelChunks();
-  }, []);
-
-  // Unlock Web Audio from real user gesture once, and detach listeners immediately
-  React.useEffect(() => {
-    let unlocked = false;
-    const cleanupListeners = () => {
-      window.removeEventListener('pointerdown', handleUserGesture);
-      window.removeEventListener('touchstart', handleUserGesture);
-      window.removeEventListener('click', handleUserGesture);
-    };
-
-    const handleUserGesture = () => {
-      if (!unlocked) {
-        unlocked = true;
-        unlockAudioPlayback();
-        cleanupListeners();
-      }
-    };
-
-    window.addEventListener('pointerdown', handleUserGesture, { passive: true });
-    window.addEventListener('touchstart', handleUserGesture, { passive: true });
-    window.addEventListener('click', handleUserGesture, { passive: true });
-
-    return cleanupListeners;
   }, []);
 
   // 📱 모바일 화면 좌우 스와이프 페이지 변경 원천 차단 (빅뱅 버튼 및 명시적 버튼 조작만 허용)

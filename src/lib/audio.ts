@@ -31,6 +31,9 @@ export function getSharedAudioContext(): AudioContext {
     throw new Error('AudioContext is only available in a browser with Web Audio support');
   }
 
+  // 🌟 외부 음악(멜론, 스포티파이 등)과 믹싱 공존하도록 항상 ambient 세션 보장
+  configureAmbientAudioSession();
+
   if (!sharedAudioCtx) {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     try {
@@ -57,11 +60,6 @@ export function getSharedAudioContext(): AudioContext {
         }, 120);
       }
     });
-  }
-
-  const stateStr = sharedAudioCtx.state as string;
-  if (stateStr === 'suspended' || stateStr === 'interrupted') {
-    sharedAudioCtx.resume().catch(err => console.warn("[Audio] Failed to resume shared AudioContext:", err));
   }
 
   return sharedAudioCtx;
@@ -1442,25 +1440,29 @@ export function initTTSAudioLifecycle(): void {
 
   const handleVisibleResume = () => {
     if (document.visibilityState === 'hidden') return;
-    try {
-      const ctx = getSharedAudioContext();
-      const st = ctx.state as string;
-      if (st === 'suspended' || st === 'interrupted') {
-        ctx.resume().catch((error) => {
-          console.error('[AudioLifecycle] AudioContext resume after visibility change rejected:', error);
-        });
-      }
-    } catch (error) {
-      console.error('[AudioLifecycle] Failed to restore AudioContext:', error);
-    }
-
+    // 🌟 오직 TTS가 실제로 재생 중일 때만 AudioContext를 복원합니다.
+    // 재생 중이 아닐 때는 AudioContext를 깨우지 않아 외부 백그라운드 음악(멜론, 스포티파이 등)이 중단되지 않도록 보호합니다.
     if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
+      try {
+        const ctx = getSharedAudioContext();
+        const st = ctx.state as string;
+        if (st === 'suspended' || st === 'interrupted') {
+          ctx.resume().catch((error) => {
+            console.error('[AudioLifecycle] AudioContext resume after visibility change rejected:', error);
+          });
+        }
+      } catch (error) {
+        console.error('[AudioLifecycle] Failed to restore AudioContext:', error);
+      }
+
       configureSpeechAudioSession();
       // Only relaunch if the source node was explicitly detached with a saved non-zero offset.
       // When AudioContext resumes, an existing ttsActiveSource continues seamlessly from its exact sample position.
       if (ttsActiveBuffer && !ttsActiveSource && ttsPausedOffsetSec > 0 && ttsPausedOffsetSec < ttsActiveBuffer.duration - 0.05) {
         launchWebAudioTTSSource(ttsPlaybackId);
       }
+    } else {
+      configureAmbientAudioSession();
     }
   };
 

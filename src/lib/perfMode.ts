@@ -419,6 +419,7 @@ export function shouldMountBgMusicPlayer(): boolean {
 }
 
 export function shouldPreloadBgmAudio(): boolean {
+  if (isMobileDevice() || isLegacyMobile()) return false;
   return true;
 }
 
