@@ -755,6 +755,7 @@ export default function LucyStandalonePage() {
       const next = !prev;
       try {
         localStorage.setItem('lucy_chat_auto_tts', String(next));
+        window.dispatchEvent(new CustomEvent('prism:auto_tts_changed', { detail: next }));
       } catch (_) {}
       if (!next) {
         stopTTS();
@@ -765,6 +766,20 @@ export default function LucyStandalonePage() {
       return next;
     });
   };
+
+  // 말풍선 모드 등 외부에서 변경된 자동읽기 설정 실시간 동기화
+  useEffect(() => {
+    const handleAutoTtsSync = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (typeof detail === 'boolean') {
+        setIsAutoTts(detail);
+      }
+    };
+    window.addEventListener('prism:auto_tts_changed', handleAutoTtsSync);
+    return () => {
+      window.removeEventListener('prism:auto_tts_changed', handleAutoTtsSync);
+    };
+  }, []);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);

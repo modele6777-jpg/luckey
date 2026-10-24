@@ -183,6 +183,109 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
   const isLucyGenerating = !!isGenerating?.lucy;
 
+  // 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생) 상태 및 영구 설정 (기본값: ON, localStorage 및 루시채팅과 동기화)
+  const [isAutoRead, setIsAutoRead] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('lucy_chat_auto_tts');
+      return saved !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const isAutoReadRef = useRef<boolean>(isAutoRead);
+  useEffect(() => {
+    isAutoReadRef.current = isAutoRead;
+  }, [isAutoRead]);
+
+  const [autoReadToast, setAutoReadToast] = useState<string | null>(null);
+  const autoReadToastTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+
+  // 스토리지 및 루시채팅 등 타 뷰의 자동읽기 설정 변경 동기화 리스너
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'lucy_chat_auto_tts') {
+        setIsAutoRead(e.newValue !== 'false');
+      }
+    };
+    const handleCustom = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (typeof detail === 'boolean') {
+        setIsAutoRead(detail);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('prism:auto_tts_changed', handleCustom);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('prism:auto_tts_changed', handleCustom);
+      if (autoReadToastTimerRef.current) {
+        clearTimeout(autoReadToastTimerRef.current);
+      }
+    };
+  }, []);
+
+  // 🔊 자동 읽기 ON/OFF 토글 핸들러
+  const toggleAutoRead = useCallback(() => {
+    try {
+      playAudioHaptic('tap_impact');
+      triggerHaptic('whitehole');
+    } catch (_) {}
+
+    setIsAutoRead((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('lucy_chat_auto_tts', String(next));
+        window.dispatchEvent(new CustomEvent('prism:auto_tts_changed', { detail: next }));
+      } catch (_) {}
+      if (!next) {
+        stopTTS();
+        setPlayingMessageId(null);
+        setVoiceState((s) => (s === 'speaking' ? 'idle' : s));
+      }
+      if (autoReadToastTimerRef.current) clearTimeout(autoReadToastTimerRef.current);
+      setAutoReadToast(next ? '🔊 답변 자동 읽기 ON' : '🔇 답변 자동 읽기 OFF');
+      autoReadToastTimerRef.current = setTimeout(() => setAutoReadToast(null), 2200);
+      return next;
+    });
+  }, []);
+
+  // 🔊 개별 메시지 음성 듣기/멈춤 핸들러
+  const handlePlayMessageTTS = useCallback(async (msgId: string, content: string) => {
+    if (playingMessageId === msgId) {
+      stopTTS();
+      setPlayingMessageId(null);
+      setVoiceState((s) => (s === 'speaking' ? 'idle' : s));
+      return;
+    }
+    const spokenText = cleanTextForSpeech(content);
+    if (!spokenText) return;
+    try {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+      stopTTS();
+      setPlayingMessageId(msgId);
+      setVoiceState('speaking');
+      await playTTS(
+        spokenText,
+        'Aoede',
+        true,
+        'calm',
+        undefined,
+        false,
+        undefined,
+        undefined,
+        undefined,
+        { skipCompletionChime: true, isAutoPlay: false }
+      );
+    } catch (err) {
+      console.warn('[LucyQuickChatBubble] play individual message TTS error:', err);
+    } finally {
+      setPlayingMessageId((curr) => (curr === msgId ? null : curr));
+      setVoiceState((s) => (s === 'speaking' ? 'idle' : s));
+    }
+  }, [playingMessageId]);
+
   // 🎯 인사말 제외 필터링 (사용자 요구: "이때 인사말은 생략하고")
   const lucyMessages = useMemo(() => {
     const rawList = personaMessages?.lucy || [];
@@ -232,6 +335,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     try {
       playAudioHaptic('tap_impact');
       triggerHaptic('whitehole');
+      unlockAudioPlayback();
+      primeTTSAudioElement();
     } catch (_) {}
 
     const wasVoiceActive = isVoiceModeRef.current;
@@ -253,12 +358,14 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
         mode: 'casual',
         channels: [],
         extraSystemContext: voiceSystemContext,
-        onFinish: async (fullText) => {
-          if (!wasVoiceActive || !isVoiceModeRef.current) return;
+        onFinish: async (fullText, _sentText, replyMsgId) => {
+          const shouldSpeak = isVoiceModeRef.current || isAutoReadRef.current;
+          if (!shouldSpeak) return;
 
           const spokenText = cleanTextForSpeech(fullText);
           if (spokenText) {
             setVoiceState('speaking');
+            setPlayingMessageId(replyMsgId || 'latest');
             try {
               await playTTS(
                 spokenText,
@@ -270,20 +377,25 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                 undefined,
                 undefined,
                 undefined,
-                { skipCompletionChime: true }
+                { skipCompletionChime: true, isAutoPlay: true }
               );
             } catch (ttsErr) {
               console.warn('[LucyQuickChatBubble] playTTS error:', ttsErr);
             } finally {
+              setPlayingMessageId(null);
               if (isVoiceModeRef.current) {
                 setVoiceState('listening');
                 startListening();
+              } else {
+                setVoiceState('idle');
               }
             }
           } else {
             if (isVoiceModeRef.current) {
               setVoiceState('listening');
               startListening();
+            } else {
+              setVoiceState('idle');
             }
           }
         },
@@ -430,6 +542,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       // 닫힐 때 음성 정리
       stopRecognition();
       stopTTS();
+      setPlayingMessageId(null);
       setIsVoiceMode(false);
       setVoiceState('idle');
       setSpeechTranscript('');
@@ -576,7 +689,32 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              {/* 🔊 자동 읽기 (Auto-TTS) 설정 토글 버튼 */}
+              <button
+                type="button"
+                onClick={toggleAutoRead}
+                className={`flex items-center gap-1 px-2 py-1 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${
+                  isAutoRead
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-[0_0_10px_rgba(52,211,153,0.35)] hover:bg-emerald-500/30'
+                    : 'bg-white/5 text-slate-400 border-white/10 hover:text-white hover:bg-white/10'
+                }`}
+                title={isAutoRead ? '답변 자동 읽기 ON (답변 완료 시 즉시 낭독) - 클릭 시 끄기' : '답변 자동 읽기 OFF - 클릭 시 켜기'}
+                aria-label={isAutoRead ? '답변 자동 읽기 켜짐' : '답변 자동 읽기 꺼짐'}
+              >
+                {isAutoRead ? (
+                  <>
+                    <Volume2 size={13} className="text-emerald-400 animate-pulse shrink-0" />
+                    <span className="text-[10.5px]">자동읽기 ON</span>
+                  </>
+                ) : (
+                  <>
+                    <VolumeX size={13} className="opacity-70 shrink-0" />
+                    <span className="text-[10.5px]">자동읽기 OFF</span>
+                  </>
+                )}
+              </button>
+
               <button
                 type="button"
                 onClick={handleExpandToFullScreen}
@@ -597,6 +735,20 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
               </button>
             </div>
           </div>
+
+          {/* 🍞 자동읽기 토글 토스트 알림 */}
+          <AnimatePresence>
+            {autoReadToast && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.95 }}
+                className="absolute top-12 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-slate-900/95 border border-cyan-400/40 text-cyan-200 text-[11px] font-semibold shadow-lg backdrop-blur-md z-30 flex items-center gap-1.5 pointer-events-none"
+              >
+                <span>{autoReadToast}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 🎙️ 음성 모드 실시간 상태 HUD 배너 (음성 모드 활성 시 표출) */}
           {isVoiceMode && (
@@ -730,11 +882,40 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                       {isUser ? (
                         <div className="whitespace-pre-wrap break-words">{msgContent}</div>
                       ) : (
-                        <LucyTypewriterContent
-                          content={msgContent}
-                          isGenerating={isLatest && isLucyGenerating}
-                          onTypingStep={() => scrollToBottom(false)}
-                        />
+                        <div>
+                          <LucyTypewriterContent
+                            content={msgContent}
+                            isGenerating={isLatest && isLucyGenerating}
+                            onTypingStep={() => scrollToBottom(false)}
+                          />
+                          {!isLucyGenerating && (
+                            <div className="flex justify-end mt-1 pt-0.5 border-t border-cyan-500/10">
+                              <button
+                                type="button"
+                                onClick={() => handlePlayMessageTTS(String(msg.id || idx), msgContent)}
+                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
+                                  playingMessageId === String(msg.id || idx)
+                                    ? 'bg-amber-400/25 text-amber-300 border border-amber-400/40 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.4)]'
+                                    : 'text-cyan-300/60 hover:text-cyan-200 hover:bg-white/10'
+                                }`}
+                                title={playingMessageId === String(msg.id || idx) ? '음성 멈추기' : '음성으로 다시 듣기'}
+                                aria-label="음성 듣기"
+                              >
+                                {playingMessageId === String(msg.id || idx) ? (
+                                  <>
+                                    <VolumeX size={11} className="text-amber-300" />
+                                    <span>멈춤</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Volume2 size={11} />
+                                    <span>듣기</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
 
