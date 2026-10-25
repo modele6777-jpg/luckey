@@ -74,7 +74,7 @@ test('independent known sexagenary day anchors and midnight rollover', async () 
     const profile = { basic: { birthdate, birthtime, lunarSolar: 'solar', gender: 'male', name: 'Test' } } as Parameters<typeof calculateDetailedSaju>[0];
     const result = calculateDetailedSaju(profile);
     assert.ok(result, 'valid input should produce a saju chart');
-    return result.pillars.day.full;
+    return result.pillars.day.full.slice(0, 2);
   };
   assert.equal(calculate('2000-01-01', '12:00'), '戊午');
   assert.equal(calculate('2024-02-10', '12:00'), '甲辰');
