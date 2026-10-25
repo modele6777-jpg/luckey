@@ -556,10 +556,14 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const d = solarDate.day;
     let h = -1;
     let minute = 0;
-    if (basic.birthtime) {
-      const timeParts = basic.birthtime.split(':').map(Number);
-      if (!isNaN(timeParts[0])) h = timeParts[0];
-      if (timeParts.length > 1 && !isNaN(timeParts[1])) minute = timeParts[1];
+    if (basic.birthtime?.trim()) {
+      const timeParts = basic.birthtime.trim().split(':');
+      if (timeParts.length !== 2 || timeParts.some(part => part.length < 1 || part.length > 2 || !Array.from(part).every(ch => ch >= '0' && ch <= '9'))) {
+        throw new RangeError('출생시간은 HH:MM 형식으로 입력해 주세요.');
+      }
+      h = Number(timeParts[0]);
+      minute = Number(timeParts[1]);
+      if (h > 23 || minute > 59) throw new RangeError('올바른 출생시간을 입력해 주세요.');
     }
 
     const genderStr = basic.gender === 'male' ? '남성' : '여성';
