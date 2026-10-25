@@ -70,3 +70,17 @@ test('MCP art prescriptions return one of several curated artworks', async () =>
   }
   assert.ok(titles.size > 1, 'art prescription should not always return the same artwork');
 });
+
+test('MCP art prescription follows emotion and excludes recent titles', async () => {
+  const call = async (arguments_: Record<string, unknown>) => {
+    const response = await processMCPJsonRpc({ jsonrpc: '2.0', id: 99, method: 'tools/call', params: { name: 'get_art_prescription', arguments: arguments_ } });
+    assert.ok(!response.error, response.error?.message);
+    return JSON.parse(response.result.content[0].text);
+  };
+  const anxious = await call({ emotion: '불안' });
+  assert.ok(['수련 (Water Lilies)', '그랑드 자트 섬의 일요일 오후 (A Sunday Afternoon on the Island of La Grande Jatte)'].includes(anxious.artwork.title));
+  const love = await call({ emotion: '설렘', excludeTitles: ['키스 (The Kiss)'] });
+  assert.equal(love.artwork.title, '그랑드 자트 섬의 일요일 오후 (A Sunday Afternoon on the Island of La Grande Jatte)');
+  const curious = await call({ emotion: '호기심' });
+  assert.equal(curious.artwork.title, '진주 귀걸이를 한 소녀 (Girl with a Pearl Earring)');
+});
