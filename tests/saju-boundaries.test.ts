@@ -1,7 +1,23 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getAstronomicalSajuYear, getAstronomicalMonthBranch, getYearSolarTerms } from '../src/lib/astronomicalSolarTerms';
-import { resolveEffectiveSolarDate } from '../src/lib/lunarCalendar';
+import { convertSolarToLunar, resolveEffectiveSolarDate } from '../src/lib/lunarCalendar';
+
+test('solar to lunar preserves leap-month identity and round-trips', () => {
+  // Korean lunar calendar, not Chinese calendar; published reference example:
+  // https://github.com/usingsky/korean_lunar_calendar_js (2017-06-24 = leap 5/1).
+  // 2023 leap 2/1 is also the existing regression anchor below.
+  for (const [solar, year, month, day] of [
+    ['2017-06-24', 2017, 5, 1],
+    ['2023-03-22', 2023, 2, 1],
+  ] as const) {
+    const [sy, sm, sd] = solar.split('-').map(Number);
+    const lunar = convertSolarToLunar(sy, sm, sd);
+    assert.deepEqual(lunar, { year, month, day, isLeapMonth: true });
+    assert.equal(resolveEffectiveSolarDate(`${year}-${month}-${day}`, 'lunar', lunar.isLeapMonth).solarDateString, solar);
+  }
+  assert.equal(convertSolarToLunar(2023, 2, 20).isLeapMonth, false);
+});
 
 test('ipchun boundary changes saju year exactly at term', () => {
   const ipchun = getYearSolarTerms(2026).find(term => term.name === '입춘');
