@@ -49,3 +49,21 @@ test('birthdate validation handles leap years and calendar boundaries', () => {
   assert.throws(() => resolveEffectiveSolarDate('2026-00-10'), RangeError);
   assert.deepEqual(resolveEffectiveSolarDate('2000-02-29').solarDate, { year: 2000, month: 2, day: 29 });
 });
+
+test('known Korean lunar new year dates convert to Gregorian dates', () => {
+  const cases = [
+    { lunar: '2024-01-01', solar: '2024-02-10' },
+    { lunar: '2025-01-01', solar: '2025-01-29' },
+    { lunar: '2026-01-01', solar: '2026-02-17' },
+  ];
+  for (const { lunar, solar } of cases) {
+    assert.equal(resolveEffectiveSolarDate(lunar, 'lunar').solarDateString, solar);
+  }
+});
+
+test('2023 leap second lunar month is distinct from regular second month', () => {
+  const regular = resolveEffectiveSolarDate('2023-02-01', 'lunar', false);
+  const leap = resolveEffectiveSolarDate('2023-02-01', 'lunar', true);
+  assert.equal(leap.solarDateString, '2023-03-22');
+  assert.notEqual(regular.solarDateString, leap.solarDateString);
+});
