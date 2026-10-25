@@ -22,6 +22,17 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "types": ["vite-plugin-pwa/client"]
-  }
+    "types": [
+      "vite-plugin-pwa/client"
+    ]
+  },
+  "exclude": [
+    "dist",
+    "build",
+    "dev-dist",
+    "coverage",
+    "node_modules",
+    "node_modules.incomplete-sync-backup",
+    "tmp"
+  ]
 }

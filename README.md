@@ -26,3 +26,11 @@ View your app in AI Studio: https://ai.studio/apps/74fc4969-44a5-40f7-b5bd-e3b32
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## 기기 간 자동 동기화
+
+같은 Sites 주소에서 같은 ChatGPT 계정으로 접속하면 프로필·대화·기록이 약 1초 간격으로 양방향 반영됩니다. 창이 활성화된 동안 변경된 항목만 확인하고, 오프라인 변경은 재접속 시 전송합니다. Firebase 로그인이나 기기별 PIN 페어링에 의존하지 않습니다.
+
+Sites D1의 `DB` 바인딩을 사용하며 `drizzle/0000_sites_sync.sql`은 계정별 저장소와 버전 충돌 검사를 정의합니다. 테이블은 게시 시 마이그레이션으로 생성합니다. AI 요청은 기존 서버 연결을 유지합니다.
+
+검사: `node scripts/test-sites-sync.mjs`, `node scripts/test-batched-persistence.mjs`, `node scripts/test-bigbang-mobile.mjs`.

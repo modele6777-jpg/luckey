@@ -149,7 +149,7 @@ export default defineConfig(({mode}) => {
           ]
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg}'],
           navigateFallback: 'index.html',
           navigateFallbackDenylist: [/^\/chat/, /^\/lucy/, /^\/handbook/, /^\/rebible/, /^\/calm/],
           cleanupOutdatedCaches: true,

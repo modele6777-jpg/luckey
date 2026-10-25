@@ -3022,3 +3022,7 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
+/* The permanent rail occupies its own space and keeps its CSS aura alive. */
+.sites-pinned-main { padding-right: 70px; }
+.sites-pinned-sidebar { contain: layout style; }
+.sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }

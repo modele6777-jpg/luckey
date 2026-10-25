@@ -112,6 +112,11 @@ class SafeStorageWrapper implements Storage {
     this.fallback.removeItem(key);
   }
 
+  syncExternalChange(key: string, value: string | null): void {
+    if (value === null) this.fallback.removeItem(key);
+    else this.fallback.setItem(key, value);
+  }
+
   setItem(key: string, value: string): void {
     const valStr = String(value);
     try {
@@ -124,5 +129,19 @@ class SafeStorageWrapper implements Storage {
   }
 }
 
-export const safeLocalStorage: Storage = new SafeStorageWrapper(false);
-export const safeSessionStorage: Storage = new SafeStorageWrapper(true);
+const localWrapper = new SafeStorageWrapper(false);
+const sessionWrapper = new SafeStorageWrapper(true);
+export const safeLocalStorage: Storage = localWrapper;
+export const safeSessionStorage: Storage = sessionWrapper;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('prism:sites_storage_written', event => {
+    const detail = (event as CustomEvent<{ key: string; value: string | null; canonicalKey: string }>).detail;
+    if (!detail || typeof detail.key !== 'string') return;
+    localWrapper.syncExternalChange(detail.key, detail.value);
+    if (detail.canonicalKey === 'userProfile') {
+      if (detail.value === null) sessionWrapper.removeItem('prism_user_profile_session_vault');
+      else sessionWrapper.setItem('prism_user_profile_session_vault', detail.value);
+    }
+  });
+}

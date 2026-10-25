@@ -7,6 +7,7 @@ import { syncPrismAcrossDevices, type PrismSyncResult } from '../lib/prismSync';
 import { unpackAndHydrateLocalStorage, cleanFirestoreData, mergeSharedState, getSharedStateSignature, collectAllLocalActivities, getSharedStateUpdatedAt } from '../lib/sharedStateSync';
 import { pushToServerVault, pullFromServerVault, generatePairingCode, importWithPairingCode, pushToPairedVault, pullFromPairedVault, getPairedVaultId, setPairedVaultId, subscribeToPairedVault } from '../lib/serverSyncClient';
 import { safeLocalStorage, safeSessionStorage } from '../utils/safeStorage';
+import { createBatchedPersistence } from '../lib/batchedPersistence';
 import { invokeLLM, invokeLLMStream, PERSONAS, type Message, getCrossAppRecentDialogueContext, LUCY_CHAT_MODEL } from '../lib/ai';
 import { buildPrismOmniscientContext } from '../lib/prismOmniSync';
 import { calculateDetailedSaju } from '../lib/sajuAnalysis';
@@ -479,6 +480,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [firebaseUser?.uid, activePairedVaultId]);
 
+  // Sites uses its authenticated account independently of Firebase/PIN pairing.
+  // Storage has already been reconciled before this event; refresh mounted views
+  // without writing the received snapshot back to either cloud transport.
+  useEffect(() => {
+    const hydrateSitesState = (event: Event) => {
+      const keys = (event as CustomEvent<{ keys?: string[] }>).detail?.keys;
+      const cached = (firebaseUser?.uid ? loadFromLocal(firebaseUser.uid) : loadGuestState()) || {};
+      const incoming = { ...cached, ...collectAllLocalActivities(firebaseUser?.uid) } as SharedState;
+      // Explicit empty lists and removals must not fall back to an old cache.
+      const fields: Record<string, keyof SharedState> = {
+        epilogue_diary_history: 'epilogueHistory',
+        luckey_user_goals_v2: 'userGoals',
+        luckey_user_goals: 'userGoals',
+        prism_omni_feature_history: 'featureHistory',
+      };
+      for (const key of keys || []) {
+        if (!fields[key]) continue;
+        try { (incoming as any)[fields[key]] = JSON.parse(safeLocalStorage.getItem(key) || '[]'); } catch {}
+      }
+      if (keys?.includes('userProfile')) {
+        try { incoming.userProfile = JSON.parse(safeLocalStorage.getItem('userProfile') || '{}'); } catch {}
+      }
+      React.startTransition(() => setSharedState(incoming));
+      if (!keys || keys.some(key => key.startsWith('chat_history') || key === 'lucy_state')) {
+        const messages = loadSavedUnifiedMessages() as UnifiedMessage[];
+        setUnifiedMessages(prev => {
+          // Keep the local in-flight reply and accept the other device's messages.
+          if (Object.values(isGeneratingRef.current).some(Boolean)) return mergeUnifiedMessages(prev, messages) as UnifiedMessage[];
+          return messages;
+        });
+      }
+      window.dispatchEvent(new CustomEvent('prism:profile_updated', { detail: incoming.userProfile }));
+      window.dispatchEvent(new CustomEvent('prism:realtime_sync', { detail: incoming }));
+      window.dispatchEvent(new CustomEvent('prism:feature_updated', { detail: incoming }));
+      if (incoming.todayOracles) window.dispatchEvent(new CustomEvent('prism:daily_oracle_updated', { detail: incoming.todayOracles }));
+      if (incoming.userGoals) {
+        window.dispatchEvent(new CustomEvent('luckey-goals-sync', { detail: incoming.userGoals }));
+        window.dispatchEvent(new CustomEvent('luckey:goals_synced', { detail: incoming.userGoals }));
+      }
+      if (incoming.epilogueHistory) window.dispatchEvent(new CustomEvent('epilogue:diary_synced', { detail: { epilogueHistory: incoming.epilogueHistory } }));
+    };
+    const syncStatus = (event: Event) => setIsSyncing((event as CustomEvent).detail === 'syncing');
+    window.addEventListener('prism:sites_storage_applied', hydrateSitesState);
+    window.addEventListener('prism:sites_sync_status', syncStatus);
+    return () => {
+      window.removeEventListener('prism:sites_storage_applied', hydrateSitesState);
+      window.removeEventListener('prism:sites_sync_status', syncStatus);
+    };
+  }, [firebaseUser?.uid]);
+
   // Listen to cross-device chat sync events triggered by unpackAndHydrateLocalStorage
   useEffect(() => {
     const handleChatSynced = (e: Event) => {
@@ -499,22 +550,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Persist unified messages whenever they change locally & broadcast to other tabs/PWA windows & sync to Firestore
+  // Avoid serializing and writing the entire conversation on every streamed
+  // animation frame. Final answers and page exit still flush immediately.
+  const persistChatAction = useRef<(messages: UnifiedMessage[]) => void>(() => {});
+  persistChatAction.current = messages => {
+    saveUnifiedMessagesSafely(messages);
+    chatBroadcastRef.current?.postMessage({ messages, timestamp: Date.now() });
+    if (hasRealUserConversation(messages)) pushChatThreadsToFirestore(messages);
+  };
+  const chatPersistence = useRef<ReturnType<typeof createBatchedPersistence<UnifiedMessage[]>> | null>(null);
+  if (!chatPersistence.current) chatPersistence.current = createBatchedPersistence(messages => persistChatAction.current(messages));
   useEffect(() => {
-    if (Array.isArray(unifiedMessages)) {
-      saveUnifiedMessagesSafely(unifiedMessages);
-
-      // Broadcast to other open windows/PWA standalone instances
-      if (chatBroadcastRef.current) {
-        chatBroadcastRef.current.postMessage({ messages: unifiedMessages, timestamp: Date.now() });
-      }
-
-      // Automatically sync non-empty conversations to Firestore for real-time PC <-> Mobile continuity
-      if (hasRealUserConversation(unifiedMessages)) {
-        pushChatThreadsToFirestore(unifiedMessages);
-      }
-    }
-  }, [unifiedMessages, pushChatThreadsToFirestore]);
+    if (Array.isArray(unifiedMessages)) chatPersistence.current?.schedule(unifiedMessages, !Object.values(isGeneratingRef.current).some(Boolean));
+  }, [unifiedMessages]);
+  useEffect(() => {
+    const flush = () => chatPersistence.current?.flush();
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      flush();
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   // Automatic Midnight / Date Rollover Watcher (resets chat window daily even if tab stays open)
   useEffect(() => {

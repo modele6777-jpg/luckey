@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import {stripTypeScriptTypes} from 'node:module';
+let ticks=[];let nextId=0;const writes=[];
+const source=stripTypeScriptTypes(fs.readFileSync(new URL('../src/lib/batchedPersistence.ts',import.meta.url),'utf8')).replace('export function','function');
+const context={setTimeout:fn=>{ticks.push({id:++nextId,fn});return nextId;},clearTimeout:id=>{ticks=ticks.filter(t=>t.id!==id);}};
+vm.runInNewContext(source+';globalThis.make=createBatchedPersistence;',context);
+const batch=context.make(value=>writes.push(value));for(let i=0;i<100;i++)batch.schedule(i);assert.equal(ticks.length,1);ticks.shift().fn();assert.deepEqual(writes,[99]);
+batch.schedule('partial');batch.schedule('complete',true);assert.deepEqual(writes,[99,'complete']);assert.equal(ticks.length,0);
+batch.schedule('before-pagehide');batch.flush();assert.equal(writes.at(-1),'before-pagehide');assert.equal(ticks.length,0);
+console.log('Passed bounded streaming persistence: 100 updates → 1 write, final answer flush, page-exit flush.');

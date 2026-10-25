@@ -182,12 +182,13 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
-  const [isOpen, setIsOpen] = useState(false);
+  const isOpen = true;
   const [, setProfileVersion] = useState(0);
   const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();
+  const appContext = useApp();
   const [topRecommendation, setTopRecommendation] = useState<ContextNextMenuResult | null>(null);
 
   // Sidebar LP BGM Button State & Long-Press Handlers
@@ -342,7 +343,7 @@ export default function LeftSidebarNav() {
   let userNickname = '제제';
   let userAvatarUrl: string | undefined = undefined;
   try {
-    const { sharedState, firebaseUser } = useApp();
+    const { sharedState, firebaseUser } = appContext;
     const rawNick = sharedState?.userProfile?.basic?.nickname?.trim();
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
     const chosen = rawNick || fallbackNick;
@@ -355,22 +356,6 @@ export default function LeftSidebarNav() {
   }
 
   const isProfileActive = cleanPath === '/profile' || cleanPath.startsWith('/profile/');
-
-  // Global event listeners for opening/toggling menu from BigBang West button
-  useEffect(() => {
-    const handleOpen = () => setIsOpen(true);
-    const handleToggle = () => setIsOpen((prev) => !prev);
-    const handleClose = () => setIsOpen(false);
-
-    window.addEventListener('prism:open_menu', handleOpen);
-    window.addEventListener('prism:toggle_menu', handleToggle);
-    window.addEventListener('prism:close_menu', handleClose);
-    return () => {
-      window.removeEventListener('prism:open_menu', handleOpen);
-      window.removeEventListener('prism:toggle_menu', handleToggle);
-      window.removeEventListener('prism:close_menu', handleClose);
-    };
-  }, []);
 
   // Realtime event sync for profile edits across views
   useEffect(() => {
@@ -466,279 +451,10 @@ export default function LeftSidebarNav() {
 
   const ActiveNavIcon = activeItem?.icon || Clover;
 
-  // Close when pressing Escape key
-  // Close when pressing Escape key
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
-      }
-    },
-    [isOpen]
-  );
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
-
-  // --- AUTO-PEEK (LEFT EDGE HOVER & SWIPE) + 2.5S IDLE AUTO-COLLAPSE ---
-  const AUTO_COLLAPSE_DELAY_MS = 2500;
-  const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
-  const [isTouchingSidebar, setIsTouchingSidebar] = useState(false);
-  const [isBgmDetailOpen, setIsBgmDetailOpen] = useState(false);
-  const [isEdgeHovering, setIsEdgeHovering] = useState(false);
-  const [countdownCycle, setCountdownCycle] = useState(0);
-
-  const autoCollapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const edgeHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const edgeSwipeRef = useRef<{
-    startX: number;
-    startY: number;
-    triggered: boolean;
-    mode: 'open' | 'close';
-  } | null>(null);
-
-  // Sync LP detail modal open state so sidebar doesn't auto-collapse while LP settings popup is open
-  useEffect(() => {
-    const handleBgmDetailState = (e: Event) => {
-      const customEvent = e as CustomEvent<{ isOpen?: boolean }>;
-      if (typeof customEvent.detail?.isOpen === 'boolean') {
-        setIsBgmDetailOpen(customEvent.detail.isOpen);
-      }
-    };
-    const handleBgmMenuOpen = () => setIsBgmDetailOpen(true);
-
-    window.addEventListener('prism:bgm_detail_state', handleBgmDetailState);
-    window.addEventListener('prism:open_bgm_menu', handleBgmMenuOpen);
-    return () => {
-      window.removeEventListener('prism:bgm_detail_state', handleBgmDetailState);
-      window.removeEventListener('prism:open_bgm_menu', handleBgmMenuOpen);
-    };
-  }, []);
-
-  const isInteractingWithSidebar =
-    isHoveringSidebar || isTouchingSidebar || isBgmHolding || isBgmDetailOpen;
-  const isAutoCounting = isOpen && !isInteractingWithSidebar;
-
-  // Manage 2.5s auto-collapse timer when sidebar is open and user is not actively hovering/touching
-  useEffect(() => {
-    if (autoCollapseTimerRef.current) {
-      clearTimeout(autoCollapseTimerRef.current);
-      autoCollapseTimerRef.current = null;
-    }
-
-    if (!isOpen) {
-      setIsHoveringSidebar(false);
-      setIsTouchingSidebar(false);
-      setIsEdgeHovering(false);
-      return;
-    }
-
-    if (!isInteractingWithSidebar) {
-      setCountdownCycle((c) => c + 1);
-      autoCollapseTimerRef.current = setTimeout(() => {
-        setIsOpen(false);
-      }, AUTO_COLLAPSE_DELAY_MS);
-    }
-
-    return () => {
-      if (autoCollapseTimerRef.current) {
-        clearTimeout(autoCollapseTimerRef.current);
-        autoCollapseTimerRef.current = null;
-      }
-    };
-  }, [isOpen, isInteractingWithSidebar]);
-
-  // Desktop right-edge mouse proximity & hover detection
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      // Ignore synthetic mouse events from touch devices
-      if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        return;
-      }
-
-      const distFromRight = window.innerWidth - e.clientX;
-
-      if (!isOpen) {
-        // When cursor is within 24px of the right edge, trigger sidebar opening
-        if (distFromRight <= 24 && distFromRight >= -20) {
-          if (!edgeHoverTimerRef.current) {
-            setIsEdgeHovering(true);
-            edgeHoverTimerRef.current = setTimeout(() => {
-              edgeHoverTimerRef.current = null;
-              setIsHoveringSidebar(true);
-              setIsOpen(true);
-            }, 50);
-          }
-        } else if (distFromRight > 40 && edgeHoverTimerRef.current) {
-          clearTimeout(edgeHoverTimerRef.current);
-          edgeHoverTimerRef.current = null;
-          setIsEdgeHovering(false);
-        }
-      } else {
-        // When open, keep isHoveringSidebar synced if cursor is within the rail + buffer
-        if (distFromRight <= 85 && distFromRight >= -20) {
-          setIsHoveringSidebar(true);
-        }
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (edgeHoverTimerRef.current) {
-        clearTimeout(edgeHoverTimerRef.current);
-        edgeHoverTimerRef.current = null;
-      }
-    };
-  }, [isOpen]);
-
-  // Mobile leftward swipe to close when sidebar is already open (left-edge swipe-to-open disabled to prevent accidental mobile swipe navigation)
-  useEffect(() => {
-    const EDGE_SWIPE_OPEN_ZONE = 48; // Right edge trigger zone width in px
-    const EDGE_SWIPE_MIN_DX = 22; // Minimum travel distance to trigger
-
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      const touch = e.touches[0];
-
-      if (isOpen) {
-        // When drawer is open, swiping right (dx > 0) closes it
-        edgeSwipeRef.current = {
-          startX: touch.clientX,
-          startY: touch.clientY,
-          triggered: false,
-          mode: 'close',
-        };
-      } else {
-        // When drawer is closed, swiping left from the right edge zone (dx < 0) opens it
-        if (touch.clientX >= window.innerWidth - EDGE_SWIPE_OPEN_ZONE) {
-          edgeSwipeRef.current = {
-            startX: touch.clientX,
-            startY: touch.clientY,
-            triggered: false,
-            mode: 'open',
-          };
-        } else {
-          edgeSwipeRef.current = null;
-        }
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!edgeSwipeRef.current || edgeSwipeRef.current.triggered || e.touches.length !== 1) {
-        return;
-      }
-      const touch = e.touches[0];
-      const dx = touch.clientX - edgeSwipeRef.current.startX;
-      const dy = Math.abs(touch.clientY - edgeSwipeRef.current.startY);
-
-      // Dominant horizontal gesture filter
-      if (Math.abs(dx) <= dy * 0.8) return;
-
-      if (edgeSwipeRef.current.mode === 'close') {
-        if (dx >= EDGE_SWIPE_MIN_DX) {
-          edgeSwipeRef.current.triggered = true;
-          setIsTouchingSidebar(false);
-          setIsOpen(false);
-          triggerHaptic('mirrorhole');
-        }
-      } else if (edgeSwipeRef.current.mode === 'open') {
-        // Leftward swipe from right edge pulls the drawer in
-        if (dx <= -EDGE_SWIPE_MIN_DX) {
-          edgeSwipeRef.current.triggered = true;
-          setIsTouchingSidebar(true);
-          setIsOpen(true);
-          triggerHaptic('whitehole');
-        }
-      }
-    };
-
-    const handleTouchEnd = () => {
-      edgeSwipeRef.current = null;
-    };
-
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchcancel', handleTouchEnd);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    return () => {
-      if (touchReleaseTimerRef.current) {
-        clearTimeout(touchReleaseTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleEdgeTriggerMouseEnter = useCallback(() => {
-    setIsEdgeHovering(true);
-    if (edgeHoverTimerRef.current) {
-      clearTimeout(edgeHoverTimerRef.current);
-    }
-    edgeHoverTimerRef.current = setTimeout(() => {
-      edgeHoverTimerRef.current = null;
-      setIsHoveringSidebar(true);
-      setIsOpen(true);
-    }, 50);
-  }, []);
-
-  const handleEdgeTriggerMouseLeave = useCallback(() => {
-    setIsEdgeHovering(false);
-    if (edgeHoverTimerRef.current) {
-      clearTimeout(edgeHoverTimerRef.current);
-      edgeHoverTimerRef.current = null;
-    }
-  }, []);
-
-  const handleSidebarTouchStart = useCallback(() => {
-    if (touchReleaseTimerRef.current) {
-      clearTimeout(touchReleaseTimerRef.current);
-      touchReleaseTimerRef.current = null;
-    }
-    setIsTouchingSidebar(true);
-  }, []);
-
-  const handleSidebarTouchEnd = useCallback(() => {
-    if (touchReleaseTimerRef.current) {
-      clearTimeout(touchReleaseTimerRef.current);
-    }
-    touchReleaseTimerRef.current = setTimeout(() => {
-      setIsTouchingSidebar(false);
-    }, 100);
-  }, []);
-
   // Broadcast sidebar open/closed state so widgets like LP player can sync visibility
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('left-sidebar-state', { detail: { isOpen } }));
   }, [isOpen]);
-
-  // Support custom events for external triggers
-  useEffect(() => {
-    const handleOpen = () => setIsOpen(true);
-    const handleClose = () => setIsOpen(false);
-    const handleToggle = () => setIsOpen((prev) => !prev);
-
-    window.addEventListener('open-left-nav', handleOpen);
-    window.addEventListener('close-left-nav', handleClose);
-    window.addEventListener('toggle-left-nav', handleToggle);
-
-    return () => {
-      window.removeEventListener('open-left-nav', handleOpen);
-      window.removeEventListener('close-left-nav', handleClose);
-      window.removeEventListener('toggle-left-nav', handleToggle);
-    };
-  }, []);
 
   const handleNavigate = (path: string) => {
     const isTargetActive =
@@ -757,7 +473,6 @@ export default function LeftSidebarNav() {
       navigate(path);
     }
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
-    setIsOpen(false);
   };
 
   const isLight = resolvedTheme === 'light';
@@ -1112,200 +827,35 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {/* Collapsed State: Left-Edge Luminous Glow Hint & Hover/Swipe Trigger Zone */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.div
-            key="nav-edge-sensor"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onMouseEnter={handleEdgeTriggerMouseEnter}
-            onMouseLeave={handleEdgeTriggerMouseLeave}
-            onClick={() => {
-              triggerHaptic('whitehole');
-              setIsOpen(true);
-            }}
-            onTouchEnd={() => {
-              triggerHaptic('whitehole');
-              setIsOpen(true);
-            }}
-            aria-label="우측 끝 호버 또는 스와이프로 사이드바 열기"
-            title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
-            className="fixed top-0 bottom-0 right-0 w-8 sm:w-10 z-[470] cursor-pointer select-none group pointer-events-auto overflow-visible touch-pan-y"
-          >
-            {/* 🌌 레이어 1: 화면 안쪽으로 부드럽게 번져나가는 세로 전면 앰비언트 오로라 커튼 (Ambient Aurora Curtain) */}
-            <motion.div
-              animate={
-                isEdgeHovering
-                  ? {
-                      width: '44px',
-                      opacity: 0.88,
-                      filter: 'blur(10px) brightness(1.25)',
-                    }
-                  : {
-                      width: ['18px', '26px', '18px'],
-                      opacity: [0.38, 0.58, 0.38],
-                      filter: [
-                        'blur(12px) brightness(1)',
-                        'blur(16px) brightness(1.15)',
-                        'blur(12px) brightness(1)',
-                      ],
-                    }
-              }
-              transition={
-                isEdgeHovering
-                  ? { duration: 0.25, ease: 'easeOut' }
-                  : { duration: 5.5, repeat: Infinity, ease: 'easeInOut' }
-              }
-              className={`absolute right-0 top-0 bottom-0 h-full pointer-events-none transition-all duration-300 origin-right ${
-                isLight ? 'edge-aurora-veil-light' : 'edge-aurora-veil'
-              }`}
-              style={{
-                maskImage:
-                  'linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
-                WebkitMaskImage:
-                  'linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
-              }}
-            />
-
-            {/* 🌟 레이어 2: 세로 전면을 유려하게 관통하는 프리즘 빛의 파동 (Shimmer Ripple Beam) */}
-            <motion.div
-              animate={{
-                y: ['-100%', '100%'],
-                opacity: isEdgeHovering ? [0.6, 1, 0.6] : [0.3, 0.7, 0.3],
-              }}
-              transition={{
-                duration: isEdgeHovering ? 2.5 : 4.8,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-              className="absolute right-0 w-3.5 h-1/2 pointer-events-none blur-[4px]"
-              style={{
-                background: isLight
-                  ? 'linear-gradient(180deg, transparent 0%, rgba(245,158,11,0.6) 50%, transparent 100%)'
-                  : 'linear-gradient(180deg, transparent 0%, rgba(251,191,36,0.8) 30%, rgba(52,211,153,0.9) 50%, rgba(0,240,255,0.8) 70%, transparent 100%)',
-              }}
-            />
-
-            {/* ✨ 레이어 3: 화면 최우측 끝단 초정밀 네온 코어 빔 (Ultra-thin Precision Neon Edge) */}
-            <motion.div
-              animate={
-                isEdgeHovering
-                  ? {
-                      width: '3.5px',
-                      opacity: 1,
-                    }
-                  : {
-                      width: ['1.5px', '2.5px', '1.5px'],
-                      opacity: [0.75, 0.98, 0.75],
-                    }
-              }
-              transition={
-                isEdgeHovering
-                  ? { duration: 0.2, ease: 'easeOut' }
-                  : { duration: 3.8, repeat: Infinity, ease: 'easeInOut' }
-              }
-              className={`absolute right-0 top-0 bottom-0 h-full rounded-l-full pointer-events-none transition-all duration-300 ${
-                isLight
-                  ? isEdgeHovering
-                    ? 'shadow-[0_0_14px_#f59e0b,0_0_26px_rgba(16,185,129,0.85)]'
-                    : 'shadow-[0_0_8px_rgba(245,158,11,0.6),0_0_16px_rgba(16,185,129,0.4)]'
-                  : isEdgeHovering
-                  ? 'shadow-[0_0_18px_#fbbf24,0_0_30px_rgba(52,211,153,0.9),0_0_48px_rgba(168,85,247,0.7)]'
-                  : 'shadow-[0_0_10px_rgba(251,191,36,0.65),0_0_20px_rgba(52,211,153,0.55),0_0_32px_rgba(168,85,247,0.35)]'
-              }`}
-              style={{
-                background: isLight
-                  ? 'linear-gradient(180deg, #f59e0b 0%, #10b981 35%, #0ea5e9 70%, #f59e0b 100%)'
-                  : 'linear-gradient(180deg, #fbbf24 0%, #34d399 28%, #00f0ff 52%, #a855f7 78%, #f43f5e 100%)',
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Expanded State: Lightweight Overlay Scrim + Slide-in Slim Icon Rail Dock */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Lightweight Backdrop Scrim */}
-            <motion.div
-              key="nav-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsOpen(false)}
-              className={`fixed inset-0 backdrop-blur-[1.5px] z-[475] transition-colors duration-300 ${
-                isLight ? 'bg-amber-950/10' : 'bg-black/30'
-              }`}
-              aria-hidden="true"
-            />
-
             {/* Slide-in Right Slim Icon Rail */}
             <motion.aside
               key="nav-drawer"
               role="navigation"
               aria-label="사이드 네비게이션"
-              initial={{ x: '100%', opacity: 0.6 }}
+              initial={false}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 360, damping: 32 }}
-              onMouseEnter={() => setIsHoveringSidebar(true)}
-              onMouseLeave={() => setIsHoveringSidebar(false)}
-              onTouchStart={handleSidebarTouchStart}
-              onTouchMove={handleSidebarTouchStart}
-              onTouchEnd={handleSidebarTouchEnd}
-              onTouchCancel={handleSidebarTouchEnd}
               style={{
                 width: '70px',
               }}
-              className={`fixed right-0 top-0 bottom-0 backdrop-blur-2xl border-l z-[480] flex flex-col justify-between select-none transition-colors duration-300 ${
+              className={`sites-pinned-sidebar fixed right-0 top-0 bottom-0 backdrop-blur-md border-l z-[480] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
                   ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[-16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
                   : 'bg-neutral-950/95 border-white/10 shadow-[-16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
               }`}
             >
-              {/* Safe-Area Top Spacer & Auto-Collapse Progress Indicator */}
-              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex flex-col items-center shrink-0">
-                <div
-                  className={`relative w-8 h-1 rounded-full overflow-hidden transition-colors duration-300 ${
-                    isLight ? 'bg-amber-900/15' : 'bg-white/10'
-                  }`}
-                  title={
-                    isAutoCounting
-                      ? '2.5초 후 자동으로 접힙니다 (마우스 호버/터치 시 유지)'
-                      : '조작 중 — 열린 상태 유지'
-                  }
-                >
-                  {isAutoCounting ? (
-                    <motion.div
-                      key={`countdown-${countdownCycle}`}
-                      initial={{ scaleX: 1 }}
-                      animate={{ scaleX: 0 }}
-                      transition={{ duration: AUTO_COLLAPSE_DELAY_MS / 1000, ease: 'linear' }}
-                      style={{
-                        transformOrigin: 'left',
-                        backgroundColor: activeItem?.color || '#fbbf24',
-                      }}
-                      className="w-full h-full rounded-full opacity-85"
-                    />
-                  ) : (
-                    <div
-                      className="w-full h-full rounded-full transition-opacity duration-200 opacity-90"
-                      style={{
-                        backgroundColor: activeItem?.color || '#10b981',
-                        boxShadow: `0 0 6px ${activeItem?.color || '#10b981'}`,
-                      }}
-                    />
-                  )}
-                </div>
+              {/* Continuous accent; never resets when the pointer leaves. */}
+              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex justify-center shrink-0">
+                <div className="w-8 h-1 rounded-full rainbow-gradient-flow" aria-hidden="true" />
               </div>
 
               {/* Navigation Channel Items (Icon-Only Rail) */}
-              <div className="flex-1 overflow-y-auto sm:overflow-visible px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
+              <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
                 {/* 상단 1/3 빈 공간 (Spacer): 세로 화면 상단 1/3을 비우고 2/3 지점부터 아이콘 정렬 */}
                 <div className="w-full shrink-0 h-[30vh] sm:h-[33vh] pointer-events-none" aria-hidden="true" />
 

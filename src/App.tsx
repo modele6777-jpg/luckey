@@ -78,18 +78,27 @@ export function preloadAllChannelChunks(): void {
   if (hasPreloadedChannels || typeof window === 'undefined') return;
   hasPreloadedChannels = true;
 
-  const preloadNext = (index: number) => {
+  const preloadNext = async (index: number) => {
     if (index >= ALL_CHANNEL_LOADERS.length) return;
+    if (document.visibilityState === 'hidden') {
+      setTimeout(() => void preloadNext(index), 3000);
+      return;
+    }
     try {
-      ALL_CHANNEL_LOADERS[index]().catch(() => {});
+      // Wait for one chunk to finish before parsing another large channel.
+      await ALL_CHANNEL_LOADERS[index]();
     } catch (_) {}
-    setTimeout(() => preloadNext(index + 1), 60);
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(() => void preloadNext(index + 1), { timeout: 5000 });
+    } else {
+      setTimeout(() => void preloadNext(index + 1), 1000);
+    }
   };
 
   if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => preloadNext(0), { timeout: 1200 });
+    (window as any).requestIdleCallback(() => void preloadNext(0), { timeout: 5000 });
   } else {
-    setTimeout(() => preloadNext(0), 150);
+    setTimeout(() => void preloadNext(0), 1500);
   }
 }
 
@@ -536,7 +545,7 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <main className="flex-1 min-h-0 overflow-x-hidden flex flex-col relative w-full">
+      <main className="sites-pinned-main flex-1 min-h-0 overflow-x-hidden flex flex-col relative w-full">
         <motion.div
           key={location ? location.split('?')[0].split('#')[0] : '/'}
           initial={{ opacity: 0.88 }}
@@ -547,7 +556,7 @@ function AppContent() {
           <ActivePage loc={location} />
         </motion.div>
       </main>
-      {!isChatOpen && <LeftSidebarNav />}
+      <LeftSidebarNav />
       <BigBangButton />
       <BigBangExpansionOverlay />
 
