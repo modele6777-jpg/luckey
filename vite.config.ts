@@ -54,6 +54,9 @@ function prismVersionPlugin(version: string): Plugin {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
+  if (mode === 'sites') {
+    for (const key of ['GEMINI_API_KEY', 'AI_API_KEY', 'XAI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'VITE_GEMINI_API_KEY', 'VITE_AI_API_KEY']) delete env[key];
+  }
   return {
     plugins: [
       prismVersionPlugin(packageJson.version),
