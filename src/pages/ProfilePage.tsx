@@ -7,7 +7,7 @@ import {
   Camera, Upload, RotateCcw
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
-import { loadProfileFromAllVaults, saveProfileToAllVaults } from '@/lib/profileVault';
+import { loadProfileFromAllVaults, saveProfileToAllVaults, getPermanentAvatar, setPermanentAvatar, clearPermanentAvatar } from '@/lib/profileVault';
 import { type UserProfile, mergeUserProfiles } from '@/lib/sharedState';
 import { compressImageToDataUrl } from '@/utils/imageCompress';
 import { APP_VERSION, fetchDeployedAppVersion, compareVersions } from '@/lib/appVersion';
@@ -108,6 +108,8 @@ export default function ProfilePage() {
   const [pairingStatus, setPairingStatus] = useState<string | null>(null);
 
   const initialProfile = sharedState?.userProfile || getPersistentUserProfile();
+  const permAvatar = getPermanentAvatar();
+  const initAvatar = initialProfile?.basic?.avatarUrl || permAvatar || '';
 
   const rawInitName = initialProfile?.basic?.name || '';
   const initName = (rawInitName && rawInitName !== '여행자') ? rawInitName : '';
@@ -123,7 +125,7 @@ export default function ProfilePage() {
     gender: (initialProfile?.basic?.gender || '') as '' | 'male' | 'female' | 'other',
     birthCity: initialProfile?.basic?.birthCity || '',
     lunarSolar: (initialProfile?.basic?.lunarSolar || 'solar') as 'solar' | 'lunar',
-    avatarUrl: initialProfile?.basic?.avatarUrl || '',
+    avatarUrl: initAvatar,
   });
   const [fate, setFate] = useState({
     fateInterests: initialProfile?.fate?.fateInterests || [] as string[],
@@ -163,7 +165,12 @@ export default function ProfilePage() {
       if (!profile) return;
       if (profile.basic) {
         const cleanBasic = { ...profile.basic };
-        setBasic(b => ({ ...b, ...cleanBasic }));
+        setBasic(b => ({
+          ...b,
+          ...cleanBasic,
+          // 🛡️ 프로필 사진 보호: 새로 들어온 basic에 avatarUrl이 비어있으면 현재 사진 또는 영구 금고 사진 유지
+          avatarUrl: cleanBasic.avatarUrl || b.avatarUrl || getPermanentAvatar() || '',
+        }));
       }
       if (profile.fate) setFate(f => ({ ...f, ...profile.fate }));
       if (profile.music) setMusic(m => ({ ...m, ...profile.music }));
@@ -193,6 +200,9 @@ export default function ProfilePage() {
     try {
       setIsUploadingAvatar(true);
       const compressedDataUrl = await compressImageToDataUrl(file, 320, 0.85);
+      
+      // 🛡️ 영구 전용 금고에 즉시 저장
+      setPermanentAvatar(compressedDataUrl);
       setBasic(prev => ({ ...prev, avatarUrl: compressedDataUrl }));
 
       // Save immediately to ensure instant sidebar and vault sync
@@ -216,13 +226,19 @@ export default function ProfilePage() {
   };
 
   const handleRemoveAvatar = () => {
+    // 🛡️ 명시적 사진 삭제: 전용 금고 비우기 및 프로필 반영
+    clearPermanentAvatar();
     setBasic(prev => ({ ...prev, avatarUrl: '' }));
     const existingProfile = sharedState?.userProfile || getPersistentUserProfile() || {};
-    const updatedProfile = mergeUserProfiles(existingProfile, {
-      basic: { ...existingProfile.basic, avatarUrl: '' },
-    }, true);
-    if (!updatedProfile.basic) updatedProfile.basic = {};
-    updatedProfile.basic.avatarUrl = '';
+    const updatedProfile: UserProfile = {
+      ...existingProfile,
+      basic: {
+        ...existingProfile.basic,
+        avatarUrl: '',
+      },
+    };
+    (updatedProfile as any).__explicitRemoveAvatar = true;
+    (updatedProfile as any).__isAvatarAction = true;
     setPersistentUserProfile(updatedProfile);
     saveProfileToAllVaults(updatedProfile);
     updateSharedState({ userProfile: updatedProfile }, 'profile').catch(() => {});
@@ -250,9 +266,12 @@ export default function ProfilePage() {
         ? basic.nickname.trim()
         : '제제';
       profile.basic.nickname = safeNick;
-      if (typeof basic.avatarUrl === 'string') {
-        if (!profile.basic) profile.basic = {};
-        profile.basic.avatarUrl = basic.avatarUrl;
+      
+      // 🛡️ 프로필 사진 무손실 보존
+      const effectiveAvatar = basic.avatarUrl || getPermanentAvatar() || '';
+      if (effectiveAvatar) {
+        profile.basic.avatarUrl = effectiveAvatar;
+        setPermanentAvatar(effectiveAvatar);
       }
 
       setPersistentUserProfile(profile);

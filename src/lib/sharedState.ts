@@ -103,6 +103,27 @@ function mergeSectionSafely<T extends any>(baseSection?: T, incomingSection?: T,
   for (const k of allKeys) {
     const bVal = b[k];
     const iVal = i[k];
+
+    // 🛡️ 프로필 사진(avatarUrl) 전용 불변 보호: 유효한 사진이 빈 문자열이나 undefined로 덮어씌워지는 것 100% 방지
+    if (k === 'avatarUrl') {
+      const bHas = typeof bVal === 'string' && bVal.trim().length > 10;
+      const iHas = typeof iVal === 'string' && iVal.trim().length > 10;
+      if (bHas && !iHas) {
+        res[k] = bVal.trim();
+        continue;
+      }
+      if (!bHas && iHas) {
+        res[k] = iVal.trim();
+        continue;
+      }
+      if (bHas && iHas) {
+        res[k] = preferIncoming ? iVal.trim() : bVal.trim();
+        continue;
+      }
+      res[k] = '';
+      continue;
+    }
+
     const bEmpty = isProfilePlaceholder(bVal);
     const iEmpty = isProfilePlaceholder(iVal);
 

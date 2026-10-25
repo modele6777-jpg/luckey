@@ -1,5 +1,26 @@
 [
   {
+    "version": "1.4.463",
+    "summary": "사용자 프로필 사진(avatarUrl) 영구 보존 금고 및 초기화 방지 무손실 동기화 엔진 구축",
+    "builtAt": "2026-10-25T07:48:00.000Z",
+    "items": [
+      "프로필 사진 전용 영구 불변 금고(prism_user_avatar_permanent, prism_user_avatar_backup, session) 신설 및 자가 치유(Self-Healing) 알고리즘 적용",
+      "다중 볼트(profileVault) 및 클라우드/로컬 상태 무손실 병합 엔진(mergeSectionSafely, mergeProfileSection)에서 빈 문자열이나 undefined에 의한 사진 덮어쓰기/초기화 원천 차단",
+      "프로필 완성도 점수(profileCompleteness)에 사진 가중치(+5)를 부여하여 클라우드/기기간 동기화 시 사진이 누락된 프로필에 의해 덮어씌워지는 문제 해결",
+      "사이드바(LeftSidebarNav) 및 프로필 설정 화면(ProfilePage)에서 영구 사진 금고 연동을 통해 브라우저 캐시 초기화나 새로고침 후에도 사진 100% 영구 유지"
+    ]
+  },
+  {
+    "version": "1.4.462",
+    "summary": "루시채팅란 하단 과도한 여백 축소 및 입력창 레이아웃 최적화",
+    "builtAt": "2026-10-25T07:26:00.000Z",
+    "items": [
+      "루시채팅(LucyStandalonePage) 대화 메시지 목록 하단의 과도한 여백(기존 pb-28/pb-32 128px + h-28/h-32 128px 총 256px 공백)을 pb-2/pb-3 및 h-2/h-3으로 대폭 축소하여 대화와 입력창 사이 불필요한 빈 공간 제거",
+      "루시채팅 하단 입력바(footer) 패딩을 최적화하여 화면 하단 베젤과의 여백을 슬림하고 컴팩트하게 정렬",
+      "루시 퀵 대화 말풍선(LucyQuickChatBubble) 하단 오프셋 및 캡슐 패딩을 조정하여 한층 안정적이고 밀착된 대화창 뷰 제공"
+    ]
+  },
+  {
     "version": "1.4.461",
     "summary": "설치 버튼 제거·전체 오로라 및 빅뱅 중앙 정렬 우선순위 수정",
     "builtAt": "2026-10-25T06:24:02.520Z",

@@ -2592,7 +2592,7 @@ export default function LucyStandalonePage() {
         style={{ overflowX: 'hidden', touchAction: 'pan-y' }}
         className="lucy-chat-main flex-1 overflow-y-auto overflow-x-hidden overscroll-x-none touch-pan-y p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto min-w-0 select-text"
       >
-        <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-28 sm:pb-32 w-full max-w-full min-w-0 overflow-x-hidden">
+        <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-2 sm:pb-3 w-full max-w-full min-w-0 overflow-x-hidden">
           {filteredMessages.length === 0 && searchQuery.trim().length > 0 && (
             <div className="text-center py-12 px-4">
               <p className="text-xs sm:text-sm text-slate-500">
@@ -2899,7 +2899,7 @@ export default function LucyStandalonePage() {
             </div>
           )}
           
-          <div className="h-28 sm:h-32 w-full shrink-0" />
+          <div className="h-2 sm:h-3 w-full shrink-0" />
           <div ref={chatEndRef} />
         </div>
       </main>
@@ -2907,12 +2907,12 @@ export default function LucyStandalonePage() {
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
         style={{
-          paddingBottom: 'max(0.25rem, calc(var(--sab, 0px) + 0.15rem))',
+          paddingBottom: 'max(0.25rem, var(--sab, 0px))',
           backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
           color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',
         }}
-        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1.5 sm:pb-2 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
+        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-1 pb-1 sm:pt-1.5 sm:pb-1.5 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
           isLight
             ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_-2px_12px_rgba(180,140,90,0.06)]'
             : 'bg-slate-950/88 border-white/10 text-white'

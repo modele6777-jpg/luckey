@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
+import { getPermanentAvatar } from '@/lib/profileVault';
 import { useTheme } from '@/contexts/ThemeContext';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { APP_VERSION } from '@/lib/appVersion';
@@ -348,11 +349,13 @@ export default function LeftSidebarNav() {
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
     const chosen = rawNick || fallbackNick;
     userNickname = (chosen && chosen !== '여행자' && chosen !== '사용자' && chosen !== '박주형') ? chosen : '제제';
-    userAvatarUrl = sharedState?.userProfile?.basic?.avatarUrl || getPersistentUserProfile()?.basic?.avatarUrl || firebaseUser?.photoURL || undefined;
+    const permAvatar = getPermanentAvatar();
+    userAvatarUrl = sharedState?.userProfile?.basic?.avatarUrl || getPersistentUserProfile()?.basic?.avatarUrl || (permAvatar || undefined) || firebaseUser?.photoURL || undefined;
   } catch {
     const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
     userNickname = (fallbackNick && fallbackNick !== '여행자' && fallbackNick !== '사용자' && fallbackNick !== '박주형') ? fallbackNick : '제제';
-    userAvatarUrl = getPersistentUserProfile()?.basic?.avatarUrl || undefined;
+    const permAvatar = getPermanentAvatar();
+    userAvatarUrl = getPersistentUserProfile()?.basic?.avatarUrl || (permAvatar || undefined) || undefined;
   }
 
   const isProfileActive = cleanPath === '/profile' || cleanPath.startsWith('/profile/');

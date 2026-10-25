@@ -1120,7 +1120,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
           transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
           data-lucy-quick-chat="true"
           data-keep-dark="true"
-          className="lucy-cosmic-bubble keep-dark absolute bottom-[106px] sm:bottom-[116px] left-1/2 -translate-x-1/2 w-[calc(100vw-24px)] max-w-[432px] sm:max-w-[468px] z-50 overflow-visible pointer-events-auto select-none"
+          className="lucy-cosmic-bubble keep-dark absolute bottom-[96px] sm:bottom-[104px] left-1/2 -translate-x-1/2 w-[calc(100vw-24px)] max-w-[432px] sm:max-w-[468px] z-50 overflow-visible pointer-events-auto select-none"
           style={{
             touchAction: 'auto',
           }}
@@ -1567,7 +1567,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
               {/* ⌨️ 하단 코스믹 캡슐 입력 바 */}
               <div
-                className="p-3 border-t border-cyan-400/20 shrink-0"
+                className="p-2.5 sm:p-3 border-t border-cyan-400/20 shrink-0"
                 style={{
                   background:
                     'linear-gradient(180deg, rgba(10, 15, 34, 0.95) 0%, rgba(6, 9, 22, 0.98) 100%)',
@@ -1752,7 +1752,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                 </div>
 
                 <div
-                  className="lucy-cosmic-muted flex items-center justify-between mt-1.5 px-1.5 text-[11px] font-medium text-slate-400"
+                  className="lucy-cosmic-muted flex items-center justify-between mt-1 px-1 text-[11px] font-medium text-slate-400"
                   style={{ color: '#94a3b8' }}
                 >
                   <span className="flex items-center gap-1">

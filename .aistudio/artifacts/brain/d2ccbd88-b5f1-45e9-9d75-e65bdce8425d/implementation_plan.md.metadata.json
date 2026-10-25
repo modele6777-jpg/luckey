@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan for redesigning the Lucy quick chat bubble into a Dark Cosmic Glass Card with Aurora Neon Borders and replacing the tap/hold cloud burst effect with Arcane Energy Ripple Rings & Aurora Nebula Particle Dispersion matched to the BigBang button.",
-  "updatedAt":  "2026-10-24T11:21:01.068383185Z",
+  "summary":  "태블릿 가로 모드 및 대화면(1024px 이상)에서 6대 핵심 댑(Trinity, Orange, Heal, Bluebird, Muse, Epilogue)을 비롯해 Calm, Library, Profile 등 전체 댑에 유니버스댑 수준의 듀얼 분할(좌측 인터랙션/입력, 우측 결과/히스토리) 레이아웃을 구축하는 계획안입니다.",
+  "updatedAt":  "2026-10-25T07:53:09.215212261Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

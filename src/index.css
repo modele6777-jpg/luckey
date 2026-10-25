@@ -2788,6 +2788,23 @@ html.dual-pane-active .duo-channel-grid {
   }
 }
 
+/* Dual-Pane dApp Workspace (1 col < 1024px, 2 cols >= 1024px for tablet landscape & desktop) */
+.duo-dapp-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .duo-dapp-workspace {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--duo-hinge-gap, 1.5rem);
+    row-gap: 1.5rem;
+    align-items: start;
+  }
+}
+
 @media (min-width: 1120px) {
   html.dual-pane-active:not([data-device="surface-duo"]) .duo-channel-grid,
   .duo-channel-grid {

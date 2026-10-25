@@ -1,11 +1,12 @@
 {
   "name": "luckey",
-  "version": "1.4.461",
-  "summary": "설치 버튼 제거·전체 오로라 및 빅뱅 중앙 정렬 우선순위 수정",
-  "builtAt": "2026-10-25T06:24:02.520Z",
+  "version": "1.4.463",
+  "summary": "사용자 프로필 사진(avatarUrl) 영구 보존 금고 및 초기화 방지 무손실 동기화 엔진 구축",
+  "builtAt": "2026-10-25T07:48:00.000Z",
   "items": [
-    "사이드바 앱 설치 버튼 제거",
-    "오로라의 가장자리 마스크 제거 및 사이드바 전체 폭에 빛 파동 적용",
-    "우선 적용되던 기존 빅뱅 위치 규칙을 수정해 사이드바 제외 본문 정중앙에 배치"
+    "프로필 사진 전용 영구 불변 금고(prism_user_avatar_permanent, prism_user_avatar_backup, session) 신설 및 자가 치유(Self-Healing) 알고리즘 적용",
+    "다중 볼트(profileVault) 및 클라우드/로컬 상태 무손실 병합 엔진(mergeSectionSafely, mergeProfileSection)에서 빈 문자열이나 undefined에 의한 사진 덮어쓰기/초기화 원천 차단",
+    "프로필 완성도 점수(profileCompleteness)에 사진 가중치(+5)를 부여하여 클라우드/기기간 동기화 시 사진이 누락된 프로필에 의해 덮어씌워지는 문제 해결",
+    "사이드바(LeftSidebarNav) 및 프로필 설정 화면(ProfilePage)에서 영구 사진 금고 연동을 통해 브라우저 캐시 초기화나 새로고침 후에도 사진 100% 영구 유지"
   ]
 }

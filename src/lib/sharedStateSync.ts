@@ -75,6 +75,7 @@ function profileCompleteness(profile?: UserProfile): number {
   if (b?.birthtime?.trim() && !isPlaceholder(b.birthtime)) score += 2;
   if (b?.gender && !isPlaceholder(b.gender)) score += 1;
   if (b?.birthCity?.trim() && !isPlaceholder(b.birthCity)) score += 2;
+  if (b?.avatarUrl?.trim() && !isPlaceholder(b.avatarUrl)) score += 5;
   if (profile.fate?.fateInterests?.length) score += 2;
   if (profile.fate?.lifeGoal?.trim() && !isPlaceholder(profile.fate.lifeGoal)) score += 2;
   if (profile.fate?.currentWorry?.trim() && !isPlaceholder(profile.fate.currentWorry)) score += 2;
@@ -95,6 +96,26 @@ function mergeProfileSection<T extends any>(baseSection?: T, incomingSection?: T
   for (const key of allKeys) {
     const bVal = (baseSection as any)[key];
     const iVal = (incomingSection as any)[key];
+
+    // 🛡️ 프로필 사진(avatarUrl) 전용 불변 보호: 유효한 사진이 빈 문자열이나 undefined로 덮어씌워지는 것 100% 방지
+    if (key === 'avatarUrl') {
+      const bHas = typeof bVal === 'string' && bVal.trim().length > 10;
+      const iHas = typeof iVal === 'string' && iVal.trim().length > 10;
+      if (bHas && !iHas) {
+        result[key] = bVal.trim();
+        continue;
+      }
+      if (!bHas && iHas) {
+        result[key] = iVal.trim();
+        continue;
+      }
+      if (bHas && iHas) {
+        result[key] = preferIncoming ? iVal.trim() : bVal.trim();
+        continue;
+      }
+      result[key] = '';
+      continue;
+    }
 
     const bEmpty = isPlaceholder(bVal);
     const iEmpty = isPlaceholder(iVal);
