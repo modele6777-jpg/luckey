@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { TAROT_DECK } from '../../src/data/tarotData';
 import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle';
 import { handleTTS } from './ttsHandler';
+import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis';
 
 interface SseClient {
   id: string;
@@ -231,39 +232,40 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
       }
 
       if (name === 'get_saju_fortune') {
-        const today = new Date();
-        const year = args.year || today.getFullYear();
-        const month = args.month || today.getMonth() + 1;
-        const day = args.day || today.getDate();
-
-        // 2026 병오년(丙午年) 붉은 말의 해 기준 오행 흐름
+        const year = Number(args.year);
+        const month = Number(args.month);
+        const day = Number(args.day);
+        const validDate = Number.isInteger(year) && year >= 1900 && year <= 2050 &&
+          Number.isInteger(month) && month >= 1 && month <= 12 &&
+          Number.isInteger(day) && day >= 1 && day <= 31 &&
+          new Date(Date.UTC(year, month - 1, day)).getUTCMonth() === month - 1;
+        if (!validDate) {
+          throw new Error('유효한 출생 연도(1900~2050), 월, 일을 입력해 주세요.');
+        }
+        const birthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const saju = calculateDetailedSaju({
+          basic: { birthdate, lunarSolar: args.isLunar ? 'lunar' : 'solar', gender: 'other' },
+        });
+        if (!saju) throw new Error('사주 계산 결과를 생성하지 못했습니다.');
+        const pillar = (p: typeof saju.pillars.year) => `${p.ganKr}${p.zhiKr}(${p.gan}${p.zhi})`;
         return {
           jsonrpc: '2.0',
           id,
           result: {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-                    yearPillar: '병오(丙午) - 화(火)의 왕성한 추진력',
-                    elementBalance: {
-                      wood: '성장과 창의성',
-                      fire: '열정과 표현력',
-                      earth: '신뢰와 포용력',
-                      metal: '결단과 명확성',
-                      water: '유연함과 지혜',
-                    },
-                    dailyFortune: '오늘은 생각에 머물지 않고 첫 발을 내딛을 때 행운의 기운이 증폭되는 날입니다.',
-                    luckyColor: '골드 & 앰버',
-                    remedyAction: '중요한 결정 전 3번의 깊은 복식호흡으로 중심을 잡으세요.',
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                birthdate,
+                isLunar: Boolean(args.isLunar),
+                solarEquivalentDate: saju.solarEquivalentDate,
+                yearPillar: pillar(saju.pillars.year),
+                monthPillar: pillar(saju.pillars.month),
+                dayPillar: pillar(saju.pillars.day),
+                elementBalance: saju.elements.counts,
+                elementSummary: saju.elements.summary,
+                note: '출생시간이 입력되지 않아 시주는 산출하지 않았습니다. 운세 해석은 참고용입니다.',
+              }, null, 2),
+            }],
           },
         };
       }
