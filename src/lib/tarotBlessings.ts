@@ -4,7 +4,7 @@
  * 각 카드 고유의 상징, 4대 원소, 정/역방향에 깊이 밀착된 생생하고 감동적인 맞춤형 축복 메시지를 제공합니다.
  */
 
-import { getTarotCardDetails } from './dailyTarotOracle';
+import { getTarotCardDetails } from './dailyTarotOracle.ts';
 
 // 메이저 아르카나 22장 고유 축복 풀
 const MAJOR_SOUL_BLESSINGS: Record<number, { upright: string[]; reversed: string[] }> = {
