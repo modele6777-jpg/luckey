@@ -98,6 +98,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="./style.css?v=34.0">
+  <link rel="stylesheet" href="./dual-workspace.css">
   <style id="organic-balloon-breathing-css">
     /* Fluid Organic Balloon Breathing Sequence */
     .balloon-stage-area {
@@ -746,7 +747,7 @@
 
     <!-- TAB 1: 40 Exercises Studio Grid -->
     <section id="tab-exercises" class="tab-view-section active">
-      <div class="exercises-view-wrapper">
+      <div class="exercises-view-wrapper calm-workspace">
         <div class="exercises-filter-strip">
           <button class="filter-pill-btn active" data-chapter="all">전체 (40개 개운법)</button>
           <button class="filter-pill-btn" data-chapter="1">1장: 흉살·잡념 비우기 (1~12)</button>
@@ -785,6 +786,7 @@
           </div>
         </div>
 
+        <div class="calm-workspace"><div class="calm-input">
         <!-- 1-2. 40가지 연습 완주율 동그란 프로그레스 차트 카드 -->
         <div class="wb-circular-hero-card">
           <div class="wb-circular-chart-container">
@@ -904,10 +906,12 @@
           </div>
         </div>
 
+        </div><div class="calm-output">
         <!-- 4. 구조화된 워크북 피드 목록 -->
         <div class="workbook-entries-container" id="workbook-entries-container">
           <!-- Dynamically populated via JS -->
         </div>
+        </div></div>
       </div>
     </section>
 
@@ -920,6 +924,7 @@
           풍선이 부풀어 오를 때 코로 맑은 천기(天氣)와 행운의 기운을 깊게 들이쉬고, 줄어들 때 입으로 몸속에 맺힌 탁기(액운·잡념)를 천천히 내쉬어 보세요. 막힌 기혈을 풀고 오행의 균형을 회복합니다.
         </p>
 
+        <div class="calm-workspace"><div class="calm-input">
         <!-- 세션 목표 사이클 선택 바 -->
         <div class="breathing-goals-row" id="breathing-goals-row">
           <span class="breathing-goals-label">정화 목표:</span>
@@ -955,6 +960,7 @@
           </span>
         </div>
 
+        </div><div class="calm-output">
         <!-- 🔔 오디오 & 📳 햅틱 진동 알림 설정 패널 -->
         <div class="breathing-audio-panel" id="breathing-audio-panel">
           <div class="breathing-audio-header">
@@ -988,6 +994,7 @@
             <span>다시 호흡하기 ↻</span>
           </button>
         </div>
+        </div></div>
       </div>
     </section>
     <!-- TAB 4: Inner Pause Teachings (개운 3단계 비결 섹션) -->

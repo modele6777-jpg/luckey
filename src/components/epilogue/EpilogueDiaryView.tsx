@@ -723,9 +723,8 @@ export function EpilogueDiaryView() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md space-y-8 pb-16">
-      {/* 🌟 Header Banner */}
-      <motion.div
+    <div className="duo-split-workspace w-full max-w-6xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md pb-16">
+<div className="duo-workspace-header"><motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
@@ -827,26 +826,14 @@ export function EpilogueDiaryView() {
             })}
           </div>
         </div>
-      </motion.div>
-
-      {/* 🌟 Standing Hero: Epilogue Soul Achievement Dashboard Card */}
-      <EpilogueAchievementStatsCard
-        stats={achievementStats}
-        onOpenShareModal={(tab) => {
-          setShareModalTab(tab || 'card');
-          setIsShareModalOpen(true);
-        }}
-      />
-
-      {/* 🌟 Main Diary Form */}
-      <motion.div
+      </motion.div></div><section className="duo-workspace-input" aria-label="오늘의 기분과 성찰 일기 작성">
+<motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.05 }}
         className="glass p-6 sm:p-8 rounded-[36px] border border-white/10 shadow-2xl backdrop-blur-2xl space-y-6 relative overflow-hidden group"
       >
-        {/* Section 1: Mood & Energy Spectrum */}
-        <div className="space-y-3">
+<div className="space-y-3">
           <label className="block text-xs font-bold text-white/60 tracking-wider font-sans uppercase flex items-center gap-2">
             <Heart size={14} className="text-pink-400" />
             오늘 밤 나의 에너지 &amp; 마음 상태
@@ -878,9 +865,7 @@ export function EpilogueDiaryView() {
             })}
           </div>
         </div>
-
-        {/* Section 2: 3 Gratitudes */}
-        <div className="space-y-3 pt-4 border-t border-white/10">
+<div className="space-y-3 pt-4 border-t border-white/10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <label className="text-xs font-bold text-white/80 tracking-wider font-sans uppercase flex items-center gap-2">
               <Sparkles size={14} className="text-amber-400" />
@@ -955,10 +940,8 @@ export function EpilogueDiaryView() {
             </button>
           </div>
         </div>
-
-        {/* 🌟 Section 3: 오늘의 마음일기 (Today's Mind Diary) */}
-        <div className="space-y-4 pt-4 border-t border-white/10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div className="space-y-4 pt-4 border-t border-white/10">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <label className="block text-xs font-bold text-white/80 tracking-wider font-sans uppercase flex items-center gap-2">
                 <PenLine size={15} className="text-purple-400" />
@@ -988,9 +971,7 @@ export function EpilogueDiaryView() {
               )}
             </button>
           </div>
-
-          {/* User Raw Notes / Draft Input */}
-          <div className="space-y-2">
+<div className="space-y-2">
             <textarea
               rows={3}
               value={rawNotes}
@@ -1019,9 +1000,10 @@ export function EpilogueDiaryView() {
               ))}
             </div>
           </div>
-
-          {/* 🌟 AI Generated / Polished Mind Diary Display & Kore TTS Voice */}
-          <AnimatePresence>
+</div>
+</motion.div>
+</section><section className="duo-workspace-results" aria-label="완성된 일기와 성취 기록">
+<AnimatePresence>
             {mindDiary ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.98, y: 8 }}
@@ -1101,10 +1083,7 @@ export function EpilogueDiaryView() {
               </div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* Section 4: Lucy AI Midnight Whisper */}
-        <div className="space-y-3 pt-4 border-t border-white/10">
+<div className="space-y-3 pt-4 border-t border-white/10">
           <div className="flex items-center justify-between">
             <label className="block text-xs font-bold text-white/60 tracking-wider font-sans uppercase flex items-center gap-2">
               <Sparkles size={14} className="text-pink-400" />
@@ -1188,15 +1167,22 @@ export function EpilogueDiaryView() {
             </div>
           )}
         </div>
-      </motion.div>
-
-      {/* 🌟 Achievement Share Modal */}
-      <EpilogueAchievementShareModal
+<EpilogueAchievementStatsCard
+        stats={achievementStats}
+        onOpenShareModal={(tab) => {
+          setShareModalTab(tab || 'card');
+          setIsShareModalOpen(true);
+        }}
+      />
+    <div className="duo-workspace-history"><h3>나의 일기 타임라인</h3>
+      {entries.length === 0 ? <p>저장한 일기가 아직 없어요.</p> : [...entries].sort((a,b) => b.dateKey.localeCompare(a.dateKey)).slice(0,30).map(entry => <details key={entry.id} className="duo-workspace-record"><summary>{entry.dateKey} · {entry.moodEmoji} {entry.mood}</summary><p className="whitespace-pre-wrap break-words">{entry.mindDiary || entry.rawNotes || entry.gratitudes.join(' · ')}</p></details>)}
+    </div>
+</section><EpilogueAchievementShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         stats={achievementStats}
         initialTab={shareModalTab}
       />
-    </div>
+</div>
   );
 }

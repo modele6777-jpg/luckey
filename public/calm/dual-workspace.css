@@ -1,0 +1,14 @@
+/* The parent app supplies its 1024px breakpoint to this narrower iframe. */
+.calm-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; width: 100%; }
+.calm-workspace > *, .calm-input > *, .calm-output > * { min-width: 0; }
+.calm-input, .calm-output { display: flex; flex-direction: column; gap: 20px; }
+.calm-input .balloon-stage-area { width: 100%; }
+.calm-output .breathing-audio-panel { width: 100%; box-sizing: border-box; margin: 0; }
+.main-wrapper { max-width: 1152px; }
+.duo-parent-wide .calm-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 28px; }
+.duo-parent-wide .exercises-filter-strip { flex-direction: column; align-items: stretch; position: sticky; top: 24px; }
+.duo-parent-wide .calm-workspace .cards-gallery-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); }
+@media (min-width: 1024px) {
+  html:not(.duo-parent-managed) .calm-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 28px; }
+  html:not(.duo-parent-managed) .exercises-filter-strip { flex-direction: column; align-items: stretch; }
+}

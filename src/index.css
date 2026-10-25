@@ -3045,6 +3045,38 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 .sites-pinned-sidebar { contain: layout style; }
 .sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }
 
+/* Shared app workspace: one document flow, two equal panes from 1024px. */
+.duo-split-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+}
+.duo-split-workspace > * { min-width: 0; margin-block: 0 !important; }
+.duo-workspace-header { grid-column: 1 / -1; }
+.duo-workspace-input, .duo-workspace-results { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.duo-workspace-input > *, .duo-workspace-results > * { min-width: 0; max-width: 100%; margin-block: 0 !important; }
+.duo-workspace-history, .duo-workspace-empty { border: 1px solid rgb(168 139 250 / .2); border-radius: 1.5rem; background: rgb(148 163 184 / .05); padding: 1.25rem; overflow-wrap: anywhere; }
+.duo-workspace-history h3 { font-weight: 700; margin-bottom: .75rem; }
+.duo-workspace-record { border-top: 1px solid rgb(148 163 184 / .15); padding-block: .75rem; }
+.duo-workspace-record summary { cursor: pointer; font-size: .875rem; }
+.duo-workspace-record p { margin-top: .75rem; font-size: .875rem; line-height: 1.7; }
+.duo-workspace-action { border: 1px solid rgb(168 139 250 / .4); background: rgb(139 92 246 / .15); border-radius: 1rem; padding: 1rem; cursor: pointer; }
+.duo-workspace-action:hover { background: rgb(139 92 246 / .25); }
+.duo-workspace-empty { display: none; color: rgb(148 163 184); font-size: .875rem; line-height: 1.7; }
+.duo-profile-pane { display: contents; }
+.duo-profile-section { min-width: 0; border-radius: 1rem; padding: 1rem; border: 1px solid rgb(148 163 184 / .15); }
+.duo-profile-section:not(.is-active) { display: none; }
+@media (min-width: 1024px) {
+  .duo-split-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem; }
+  .duo-workspace-empty { display: block; }
+  .duo-profile-pane { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+  .duo-profile-section:not(.is-active) { display: block; }
+  .duo-profile-section.is-active { border-color: rgb(168 139 250 / .5); }
+}
+
 /* Base card columns on available content width beside the sidebar. */
 .universe-content { container-type: inline-size; container-name: universe; }
 .universe-content .duo-split-grid,

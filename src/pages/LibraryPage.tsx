@@ -262,8 +262,8 @@ export default function LibraryPage() {
   }, [records]);
 
   return (
-    <div className="min-h-screen bg-[#fdfaf5] dark:bg-[#070708] text-slate-900 dark:text-white/90 selection:bg-amber-500/20 dark:selection:bg-white/10 p-4 md:p-12 font-soft">
-      <div className="max-w-7xl mx-auto space-y-12">
+    <div data-app-scroll-root className="h-app-full min-w-0 overflow-y-auto bg-[#fdfaf5] dark:bg-[#070708] text-slate-900 dark:text-white/90 selection:bg-amber-500/20 dark:selection:bg-white/10 p-4 md:p-12 font-soft">
+      <div className="max-w-6xl mx-auto space-y-12">
         {/* Header */}
         <motion.header 
           initial={{ y: -12, opacity: 0.88 }}
@@ -290,7 +290,12 @@ export default function LibraryPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+
+        </motion.header>
+
+        <div className="duo-split-workspace">
+          {/* Sidebar Left: Stats & Charts */}
+          <aside className="duo-workspace-input" aria-label="기록 검색과 채널 필터"><div className="flex flex-wrap gap-2">
             {([
               { id: 'all', label: '전체 (All)' },
               { id: 'daily', label: '데일리 분석 (Daily Oracle)' },
@@ -319,11 +324,16 @@ export default function LibraryPage() {
               </button>
             )}
           </div>
-        </motion.header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Sidebar Left: Stats & Charts */}
-          <aside className="lg:col-span-4 space-y-8 order-2 lg:order-1">
+<div className="relative group">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-yellow-500/50 transition-colors" size={20} />
+              <input
+                type="text"
+                placeholder="과거의 기억을 검색해보세요..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-[32px] py-6 pl-16 pr-8 text-lg placeholder:text-white/10 focus:outline-none focus:border-white/30 focus:bg-white/[0.08] transition-all font-cute shadow-2xl"
+              />
+            </div>
              <div className="glass p-8 rounded-[48px] border border-white/10 shadow-2xl hover:border-white/20 transition-all duration-300 space-y-8">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em]">Soul Spectrum</h4>
@@ -381,17 +391,8 @@ export default function LibraryPage() {
           </aside>
 
           {/* Main Content */}
-          <div className="lg:col-span-8 space-y-8 order-1 lg:order-2">
-            <div className="relative group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-yellow-500/50 transition-colors" size={20} />
-              <input 
-                type="text"
-                placeholder="과거의 기억을 검색해보세요..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-[32px] py-6 pl-16 pr-8 text-lg placeholder:text-white/10 focus:outline-none focus:border-white/30 focus:bg-white/[0.08] transition-all font-cute shadow-2xl"
-              />
-            </div>
+          <div className="duo-workspace-results">
+
 
             <div className="space-y-6">
               {loading ? (

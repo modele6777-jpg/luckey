@@ -891,9 +891,8 @@ export default function BluebirdApp() {
 
   const renderDailyOracle = () => {
     return (
-      <div className="space-y-12 text-left animate-fade-in font-sans animate-fade-in">
-        {/* Divine Header Banner */}
-        <div className="text-center space-y-4">
+      <div className="duo-split-workspace text-left animate-fade-in font-sans animate-fade-in">
+<div className="duo-workspace-header"><div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-xs font-mono tracking-widest uppercase animate-pulse">
             <ShieldCheck size={14} />
             <span>HO'OPONOPONO SELF-CLEANSING · {todayKey}</span>
@@ -923,10 +922,8 @@ export default function BluebirdApp() {
               </button>
             </div>
           )}
-        </div>
-
-        {/* 1. Four Sacred Phrases Chanting Dashboard */}
-        <div className="space-y-4">
+        </div></div><section className="duo-workspace-input" aria-label="정화 기도와 고민 입력">
+<div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs text-sky-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
               <Compass size={14} /> 네 가지 신성한 정화 어구 (클릭하여 정화 반복)
@@ -1025,9 +1022,7 @@ export default function BluebirdApp() {
             </div>
           </div>
         </div>
-
-        {/* 2. Subconscious Cleansing Memo & AI Ritual Portal */}
-        <div className="rounded-[40px] bg-zinc-950/80 border border-emerald-500/10 p-8 md:p-12 space-y-6 relative overflow-hidden backdrop-blur-xl">
+<div className="rounded-[40px] bg-zinc-950/80 border border-emerald-500/10 p-8 md:p-12 space-y-6 relative overflow-hidden backdrop-blur-xl">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
           
           <div className="space-y-2 text-left">
@@ -1197,9 +1192,8 @@ export default function BluebirdApp() {
             </div>
           )}
         </div>
-
-        {/* 3. Deep Cleansing Oracle Message Card + Purification Tool */}
-        {cleansingResult && (
+</section><section className="duo-workspace-results" aria-label="정화 결과와 치유 처방">
+{cleansingResult && (
           <div className="w-full rounded-[40px] bg-[#090e13]/95 border border-emerald-500/20 p-8 md:p-12 space-y-8 relative overflow-hidden backdrop-blur-2xl animate-fade-in">
             <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-emerald-500/5 to-transparent pointer-events-none rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-sky-500/5 to-transparent pointer-events-none rounded-full blur-3xl" />
@@ -1427,8 +1421,9 @@ export default function BluebirdApp() {
               </motion.button>
             </div>
           </div>
-        )}
-      </div>
+        )}{!cleansingResult && (<div className="duo-workspace-empty"><p>고민을 정화하면 이곳에서 치유 메시지와 처방을 확인할 수 있어요.</p></div>)}
+</section>
+</div>
     );
   };
 

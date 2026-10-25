@@ -1526,8 +1526,8 @@ export function DailySecret() {
   }, [newGratitude, practice, gratitudeChecked, script, syncDailyProgress]);
 
   return (
-    <div className="space-y-6 sm:space-y-10 text-left w-full min-w-0">
-      <div className="text-center space-y-3 sm:space-y-4 px-1">
+    <div className="duo-split-workspace text-left w-full min-w-0">
+<div className="duo-workspace-header"><div className="text-center space-y-3 sm:space-y-4 px-1">
         <span className="text-[9px] sm:text-[10px] text-amber-400 font-extrabold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-mono block">
           DAILY
         </span>
@@ -1548,9 +1548,8 @@ export function DailySecret() {
           ))}
         </div>
 
-        </div>
-
-      {!data && (
+        </div></div><section className="duo-workspace-input" aria-label="소원 입력과 시크릿 연성">
+{!data && (
         <div className="w-full max-w-3xl mx-auto rounded-2xl border border-amber-500/25 bg-gradient-to-b from-amber-500/[0.06] via-amber-500/[0.02] to-transparent p-4 sm:p-6 space-y-4 shadow-xl shadow-amber-950/20">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 block flex items-center gap-1.5 font-mono">
@@ -1707,9 +1706,7 @@ export function DailySecret() {
           </div>
         </div>
       )}
-
-      {!data ? (
-        <motion.div
+{!data && (<motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-lg mx-auto"
@@ -1749,9 +1746,28 @@ export function DailySecret() {
               </div>
             </div>
           </button>
-        </motion.div>
-      ) : (
-        <motion.div
+        </motion.div>)}
+{!data && (
+        <div className="w-full max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { icon: Eye, title: '68초 시각화', desc: '이미 이루어진 장면을 느껴 보세요' },
+            { icon: Heart, title: '감사 자석', desc: '감사가 더 많은 좋은 일을 끌어당깁니다' },
+            { icon: PenLine, title: '스크립팅', desc: '현재형으로 미래를 기록하세요' },
+          ].map((tool) => (
+            <div
+              key={tool.title}
+              className="rounded-2xl border border-white/8 bg-white/[0.02] p-4 text-center space-y-2 opacity-70"
+            >
+              <tool.icon size={18} className="mx-auto text-amber-400/70" />
+              <p className="text-[11px] font-bold text-white/60">{tool.title}</p>
+              <p className="text-[10px] text-white/35 leading-relaxed">{tool.desc}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    {data && <button type="button" onClick={handleResetToNewSecret} className="duo-workspace-action">새 소원으로 시크릿 만들기</button>}
+</section><section className="duo-workspace-results" aria-label="맞춤 확언과 실천 도구">
+{data ? (<motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-3xl mx-auto space-y-5"
@@ -2121,29 +2137,8 @@ export function DailySecret() {
           <p className="text-[10px] text-white/40 font-mono text-center pt-1">
             언제든지 새로운 소망이나 고민으로 시크릿 키트를 자유롭게 다시 생성할 수 있습니다.
           </p>
-        </motion.div>
-      )}
-
-      {!data && (
-        <div className="w-full max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            { icon: Eye, title: '68초 시각화', desc: '이미 이루어진 장면을 느껴 보세요' },
-            { icon: Heart, title: '감사 자석', desc: '감사가 더 많은 좋은 일을 끌어당깁니다' },
-            { icon: PenLine, title: '스크립팅', desc: '현재형으로 미래를 기록하세요' },
-          ].map((tool) => (
-            <div
-              key={tool.title}
-              className="rounded-2xl border border-white/8 bg-white/[0.02] p-4 text-center space-y-2 opacity-70"
-            >
-              <tool.icon size={18} className="mx-auto text-amber-400/70" />
-              <p className="text-[11px] font-bold text-white/60">{tool.title}</p>
-              <p className="text-[10px] text-white/35 leading-relaxed">{tool.desc}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      
-    </div>
+        </motion.div>) : (<div className="duo-workspace-empty"><p>소원을 작성하면 맞춤 확언과 시각화 도구가 이곳에 나타나요.</p></div>)}
+</section>
+</div>
   );
 }

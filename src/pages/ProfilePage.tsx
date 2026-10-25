@@ -1,3 +1,4 @@
+import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
@@ -318,8 +319,9 @@ export default function ProfilePage() {
   const section = SECTIONS[currentSection];
   const SectionIcon = section.icon;
 
-  const renderSection = () => {
-    switch (currentSection) {
+  const isWideWorkspace = useWideWorkspace();
+  const renderSection = (sectionIndex = currentSection) => {
+    switch (sectionIndex) {
       case 0: // 기본 정보
         return (
           <div className="space-y-4">
@@ -558,7 +560,7 @@ export default function ProfilePage() {
 
   return (
     <div className="h-app-full bg-[#fdfaf5] dark:bg-[#080910] text-slate-900 dark:text-white relative overflow-x-hidden overflow-y-auto flex flex-col">
-      <div className="flex-1 w-full max-w-md mx-auto flex flex-col relative text-slate-900 dark:text-white">
+      <div className="flex-1 w-full max-w-6xl mx-auto flex flex-col relative text-slate-900 dark:text-white">
       <div className="relative z-10 px-4 pt-[calc(3rem+var(--sat))] pb-12">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
@@ -928,10 +930,14 @@ export default function ProfilePage() {
 
         {/* Section content */}
         <AnimatePresence mode="wait">
-          <motion.div key={currentSection}
+          <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="rounded-2xl p-5 mb-6 bg-[#121320] border border-white/10 shadow-xl">
-            {renderSection()}
+            <div className="duo-split-workspace duo-profile-workspace">
+  {[0,1].map(group => <div key={group} className="duo-profile-pane">{SECTIONS.map((item,index) => (isWideWorkspace || index === currentSection) && (group === 0 ? index < 2 : index >= 2) && <section key={item.id} className={`duo-profile-section ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
+    <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
+  </section>)}</div>)}
+</div>
           </motion.div>
         </AnimatePresence>
 

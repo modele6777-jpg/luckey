@@ -458,9 +458,8 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
   };
 
   return (
-    <div className="space-y-8 text-left animate-fade-in font-sans w-full max-w-5xl mx-auto px-2 sm:px-4 text-white">
-      {/* Header Banner */}
-      <div className="text-center space-y-3 pt-2 relative">
+    <div className="duo-split-workspace text-left animate-fade-in font-sans w-full max-w-6xl mx-auto px-2 sm:px-4 text-white">
+<div className="duo-workspace-header"><div className="text-center space-y-3 pt-2 relative">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-xs font-mono tracking-widest uppercase">
           <ShieldCheck size={14} />
           <span>DAVID HAWKINS &times; LESTER LEVENSON MASTER WORKSHOP</span>
@@ -523,10 +522,8 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
             <span>정화 일지 ({historyList.length})</span>
           </button>
         </div>
-      </div>
-
-      {/* TAB 1: 1-MINUTE SOS RAPID RELEASE */}
-      {activeTab === 'sos' && (
+      </div></div><section className="duo-workspace-input" aria-label="세도나 명상과 마음 점검">
+{activeTab === 'sos' && (
         <div className="w-full rounded-3xl bg-zinc-950/80 border border-amber-500/25 p-6 sm:p-10 backdrop-blur-2xl space-y-6 shadow-2xl">
           <div className="text-center space-y-2 max-w-xl mx-auto">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-bold">
@@ -565,12 +562,9 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
           </div>
         </div>
       )}
-
-      {/* TAB 2: 4-STEP MASTER WORKSHOP */}
-      {activeTab === 'workshop' && (
+{activeTab === 'workshop' && (
         <div className="w-full rounded-3xl bg-zinc-950/80 border border-emerald-500/25 p-5 sm:p-8 md:p-10 backdrop-blur-2xl space-y-8 shadow-2xl relative overflow-hidden">
-          {/* Step Progress Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+<div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold">
                 STEP {currentStep + 1} / 5
@@ -595,9 +589,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
               </button>
             )}
           </div>
-
-          {/* Step 1: Target & Emotion */}
-          {currentStep === 0 && (
+{currentStep === 0 && (
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-100 flex items-center gap-2">
@@ -699,9 +691,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
               </button>
             </motion.div>
           )}
-
-          {/* Step 2: Hawkins Somatic Surrender & Thought Stopping */}
-          {currentStep === 1 && (
+{currentStep === 1 && (
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
               {/* Header */}
               <div className="text-center space-y-2 max-w-xl mx-auto">
@@ -1027,9 +1017,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
               </button>
             </motion.div>
           )}
-
-          {/* Step 3: Sedona 4 Root Desires */}
-          {currentStep === 2 && (
+{currentStep === 2 && (
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
               <div className="text-center space-y-2 max-w-xl mx-auto">
                 <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -1104,9 +1092,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
               </button>
             </motion.div>
           )}
-
-          {/* Step 4: 4-Questions & Pen Drop Interactive Gesture */}
-          {currentStep === 3 && (
+{currentStep === 3 && (
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 text-center">
               <div className="space-y-2 max-w-xl mx-auto">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-bold">
@@ -1219,130 +1205,10 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                 </button>
               </div>
             </motion.div>
-          )}
-
-          {/* Step 5: Ascension Report & Result */}
-          {currentStep === 4 && (
-            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-pulse">
-                  <Sparkles size={32} />
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
-                  그렇게 마음은 가볍게 비워졌습니다.
-                </h3>
-                <p className="text-xs text-emerald-300 font-mono tracking-widest uppercase">
-                  SURRENDER &amp; SEDONA RELEASE COMPLETE
-                </p>
-              </div>
-
-              {/* SUDS Before/After Metric */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-3xl bg-white/[0.03] border border-white/5 text-center">
-                <div className="p-3 rounded-2xl bg-black/40">
-                  <span className="text-[10px] text-white/40 block">정화 대상</span>
-                  <span className="text-xs font-bold text-emerald-300 truncate block mt-1">
-                    {extractCleanConcernNoun(targetIssue.trim(), '마음의 억압')}
-                  </span>
-                </div>
-                <div className="p-3 rounded-2xl bg-black/40">
-                  <span className="text-[10px] text-white/40 block">해체된 감정 &amp; 욕구</span>
-                  <span className="text-xs font-bold text-white block mt-1">
-                    {selectedEmotion.nameKo.split(' ')[0]} &bull; {selectedDesire.nameKo.split(' ')[0]} 욕구
-                  </span>
-                </div>
-                <div className="p-3 rounded-2xl bg-black/40">
-                  <span className="text-[10px] text-white/40 block">고통 전압(SUDS)</span>
-                  <span className="text-xs font-bold text-amber-300 block mt-1 font-mono">
-                    {preSuds} &rarr; <span className="text-emerald-400">{postSuds}</span>
-                  </span>
-                </div>
-                <div className="p-3 rounded-2xl bg-black/40">
-                  <span className="text-[10px] text-white/40 block">의식의 도약</span>
-                  <span className="text-xs font-bold text-indigo-300 block mt-1 font-mono">
-                    Lv.{selectedEmotion.level} &rarr; Lv.500+
-                  </span>
-                </div>
-              </div>
-
-              {/* Peace & Liberation Affirmation Card */}
-              <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-950/40 via-zinc-900 to-teal-950/30 border border-emerald-500/30 text-center space-y-3 shadow-xl">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-bold">
-                    PEACE &amp; LIBERATION AFFIRMATION
-                  </span>
-                  <TTSButton
-                    text="감정은 지나가는 날씨일 뿐이며, 나는 그 구름 뒤에서 한 번도 빛을 잃지 않은 영원한 푸른 하늘입니다. 쥐고 있던 생각을 내려놓는 순간, 내 안의 무한한 평화와 자유가 가득 차오릅니다."
-                    voice="Kore"
-                    className="text-emerald-300 border-emerald-500/30 text-xs px-2.5 py-1"
-                  />
-                </div>
-                <p className="text-sm sm:text-base text-white/90 font-serif leading-relaxed italic max-w-xl mx-auto pt-1">
-                  "감정은 지나가는 날씨일 뿐이며, 나는 그 구름 뒤에서 한 번도 빛을 잃지 않은 영원한 푸른 하늘입니다. 쥐고 있던 생각을 내려놓는 순간, 내 안의 무한한 평화와 자유가 가득 차오릅니다."
-                </p>
-              </div>
-
-              {/* Lucy 1:1 Deep Insight Integration Banner */}
-              <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-950/20 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
-                <div className="space-y-1 text-left">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-emerald-400/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
-                      <Sparkles size={13} className="animate-pulse" />
-                    </div>
-                    <span className="text-sm font-bold text-emerald-200">루시와 1:1 심층 치유 상담 (Deep Insight)</span>
-                  </div>
-                  <p className="text-xs text-white/70 font-sans leading-relaxed">
-                    오늘 방하착한 [{selectedEmotion.nameKo.split(' ')[0]}]{getKoreanParticle(selectedEmotion.nameKo.split(' ')[0], '과/와')} [{selectedDesire.nameKo.split(' ')[0]} 욕구] 세션 데이터를 바탕으로, 루시와 함께 일상 속 평온을 온전히 뿌리내리세요.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void sendLettingGoSessionToLucy(
-                      {
-                        targetIssue: targetIssue.trim() || '무의식 방하착',
-                        emotion: selectedEmotion.nameKo,
-                        consciousnessLevel: selectedEmotion.level,
-                        somaticZone: selectedZone.name,
-                        rootDesire: selectedDesire.nameKo,
-                        preSuds,
-                        postSuds,
-                        hawkinsPrescription: prescription,
-                      },
-                      openLucyChat,
-                      sendUnifiedMessage
-                    );
-                  }}
-                  className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer shrink-0"
-                >
-                  <Sparkles size={14} />
-                  <span>루시와 심층 상담하기</span>
-                </button>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={resetWorkshop}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs transition-all cursor-pointer"
-                >
-                  다른 감정 흘려보내기 (새 세션)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('history')}
-                  className="px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all cursor-pointer shadow-lg"
-                >
-                  정화 일지 보러가기
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </div>
+          )}{currentStep === 4 && <button type="button" onClick={resetWorkshop} className="duo-workspace-action">새로운 마음 점검 시작하기</button>}
+</div>
       )}
-
-      {/* TAB 3: HAWKINS & SEDONA WISDOM CODEX */}
-      {activeTab === 'codex' && (
+{activeTab === 'codex' && (
         <div className="w-full rounded-3xl bg-zinc-950/80 border border-indigo-500/25 p-6 sm:p-10 backdrop-blur-2xl space-y-8 shadow-2xl">
           {/* Header with Master Kore Voice Narration */}
           <div className="text-center space-y-3 max-w-2xl mx-auto">
@@ -1582,11 +1448,125 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
             </div>
           )}
         </div>
-      )}
+      )}{activeTab === 'history' && <button type="button" onClick={() => setActiveTab('workshop')} className="duo-workspace-action">정화 워크숍 시작하기</button>}
+</section><section className="duo-workspace-results" aria-label="명상 결과와 정화 기록">
+{activeTab === 'workshop' && (<>{currentStep === 4 && (
+            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-pulse">
+                  <Sparkles size={32} />
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+                  그렇게 마음은 가볍게 비워졌습니다.
+                </h3>
+                <p className="text-xs text-emerald-300 font-mono tracking-widest uppercase">
+                  SURRENDER &amp; SEDONA RELEASE COMPLETE
+                </p>
+              </div>
 
-      {/* TAB 4: RELEASE JOURNAL & HISTORY */}
-      {activeTab === 'history' && (
-        <div className="w-full rounded-3xl bg-zinc-950/80 border border-teal-500/25 p-6 sm:p-10 backdrop-blur-2xl space-y-6 shadow-2xl">
+              {/* SUDS Before/After Metric */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-3xl bg-white/[0.03] border border-white/5 text-center">
+                <div className="p-3 rounded-2xl bg-black/40">
+                  <span className="text-[10px] text-white/40 block">정화 대상</span>
+                  <span className="text-xs font-bold text-emerald-300 truncate block mt-1">
+                    {extractCleanConcernNoun(targetIssue.trim(), '마음의 억압')}
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-black/40">
+                  <span className="text-[10px] text-white/40 block">해체된 감정 &amp; 욕구</span>
+                  <span className="text-xs font-bold text-white block mt-1">
+                    {selectedEmotion.nameKo.split(' ')[0]} &bull; {selectedDesire.nameKo.split(' ')[0]} 욕구
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-black/40">
+                  <span className="text-[10px] text-white/40 block">고통 전압(SUDS)</span>
+                  <span className="text-xs font-bold text-amber-300 block mt-1 font-mono">
+                    {preSuds} &rarr; <span className="text-emerald-400">{postSuds}</span>
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-black/40">
+                  <span className="text-[10px] text-white/40 block">의식의 도약</span>
+                  <span className="text-xs font-bold text-indigo-300 block mt-1 font-mono">
+                    Lv.{selectedEmotion.level} &rarr; Lv.500+
+                  </span>
+                </div>
+              </div>
+
+              {/* Peace & Liberation Affirmation Card */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-950/40 via-zinc-900 to-teal-950/30 border border-emerald-500/30 text-center space-y-3 shadow-xl">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-bold">
+                    PEACE &amp; LIBERATION AFFIRMATION
+                  </span>
+                  <TTSButton
+                    text="감정은 지나가는 날씨일 뿐이며, 나는 그 구름 뒤에서 한 번도 빛을 잃지 않은 영원한 푸른 하늘입니다. 쥐고 있던 생각을 내려놓는 순간, 내 안의 무한한 평화와 자유가 가득 차오릅니다."
+                    voice="Kore"
+                    className="text-emerald-300 border-emerald-500/30 text-xs px-2.5 py-1"
+                  />
+                </div>
+                <p className="text-sm sm:text-base text-white/90 font-serif leading-relaxed italic max-w-xl mx-auto pt-1">
+                  "감정은 지나가는 날씨일 뿐이며, 나는 그 구름 뒤에서 한 번도 빛을 잃지 않은 영원한 푸른 하늘입니다. 쥐고 있던 생각을 내려놓는 순간, 내 안의 무한한 평화와 자유가 가득 차오릅니다."
+                </p>
+              </div>
+
+              {/* Lucy 1:1 Deep Insight Integration Banner */}
+              <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-950/20 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+                <div className="space-y-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-400/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+                      <Sparkles size={13} className="animate-pulse" />
+                    </div>
+                    <span className="text-sm font-bold text-emerald-200">루시와 1:1 심층 치유 상담 (Deep Insight)</span>
+                  </div>
+                  <p className="text-xs text-white/70 font-sans leading-relaxed">
+                    오늘 방하착한 [{selectedEmotion.nameKo.split(' ')[0]}]{getKoreanParticle(selectedEmotion.nameKo.split(' ')[0], '과/와')} [{selectedDesire.nameKo.split(' ')[0]} 욕구] 세션 데이터를 바탕으로, 루시와 함께 일상 속 평온을 온전히 뿌리내리세요.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void sendLettingGoSessionToLucy(
+                      {
+                        targetIssue: targetIssue.trim() || '무의식 방하착',
+                        emotion: selectedEmotion.nameKo,
+                        consciousnessLevel: selectedEmotion.level,
+                        somaticZone: selectedZone.name,
+                        rootDesire: selectedDesire.nameKo,
+                        preSuds,
+                        postSuds,
+                        hawkinsPrescription: prescription,
+                      },
+                      openLucyChat,
+                      sendUnifiedMessage
+                    );
+                  }}
+                  className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer shrink-0"
+                >
+                  <Sparkles size={14} />
+                  <span>루시와 심층 상담하기</span>
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={resetWorkshop}
+                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs transition-all cursor-pointer"
+                >
+                  다른 감정 흘려보내기 (새 세션)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('history')}
+                  className="px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all cursor-pointer shadow-lg"
+                >
+                  정화 일지 보러가기
+                </button>
+              </div>
+            </motion.div>
+          )}</>)}
+<div className="w-full rounded-3xl bg-zinc-950/80 border border-teal-500/25 p-6 sm:p-10 backdrop-blur-2xl space-y-6 shadow-2xl">
           <div className="text-center space-y-2 max-w-xl mx-auto">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-bold">
               <History size={14} />
@@ -1645,7 +1625,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
             </div>
           )}
         </div>
-      )}
-    </div>
+</section>
+</div>
   );
 }

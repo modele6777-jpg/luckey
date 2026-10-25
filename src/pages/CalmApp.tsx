@@ -1,3 +1,4 @@
+import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { AnimatePresence, motion } from "motion/react";
@@ -245,12 +246,26 @@ export default function CalmApp() {
     };
   }, []);
 
+  const isWideWorkspace = useWideWorkspace();
+  useEffect(() => {
+    const frame = iframeRef.current;
+    const updateLayout = () => {
+      try {
+        const html = frame?.contentDocument?.documentElement;
+        html?.classList.add('duo-parent-managed');
+        html?.classList.toggle('duo-parent-wide', isWideWorkspace);
+      } catch { /* The iframe remains usable while its document is navigating. */ }
+    };
+    frame?.addEventListener('load', updateLayout);
+    updateLayout();
+    return () => frame?.removeEventListener('load', updateLayout);
+  }, [isWideWorkspace]);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
   const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=38.0' : '?v=38.0'}`;
 
   return (
     <div
-      className="fixed inset-0 w-full h-[100dvh] z-40 overflow-hidden flex flex-col transition-colors duration-300 bg-[#fcf9f5]"
+      className="relative w-full min-w-0 h-app-full z-40 overflow-hidden flex flex-col transition-colors duration-300 bg-[#fcf9f5]"
     >
       <AnimatePresence mode="wait">
         {isLoading && (

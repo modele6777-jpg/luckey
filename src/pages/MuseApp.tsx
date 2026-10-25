@@ -2411,7 +2411,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-3xl mx-auto flex-1 flex flex-col justify-start pt-1 sm:pt-4 pb-24 md:pb-28"
+                className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-start pt-1 sm:pt-4 pb-24 md:pb-28"
               >
                 <ArtRecommendationView />
               </motion.div>

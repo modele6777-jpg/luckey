@@ -2321,9 +2321,8 @@ export function ArtRecommendationView() {
   }, [recommendation]);
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6 sm:space-y-8 px-3 sm:px-4 py-2 sm:py-6 md:py-12 text-white">
-      {/* Intro Header */}
-      <motion.div
+    <div className="duo-split-workspace w-full max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-6 md:py-12 text-white">
+<div className="duo-workspace-header"><motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -2369,10 +2368,8 @@ export function ArtRecommendationView() {
             </span>
           </button>
         </div>
-      </motion.div>
-
-      {/* Prism Toss Pipeline Active Banner */}
-      {activeToss && (
+      </motion.div></div><section className="duo-workspace-input" aria-label="창작 주제와 고민 입력">
+{activeToss && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -2452,9 +2449,7 @@ export function ArtRecommendationView() {
           )}
         </motion.div>
       )}
-
-      {/* 🌟 Welcome & Instant Generate Hero Card (Clean art-focused hero when no recommendation yet) */}
-      {!recommendation && !loading && (
+{!recommendation && !loading && (
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -2523,74 +2518,7 @@ export function ArtRecommendationView() {
           </div>
         </motion.div>
       )}
-
-      {/* Loading Canvas */}
-      <AnimatePresence mode="wait">
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            className="p-6 sm:p-12 rounded-2xl sm:rounded-[32px] bg-white/[0.01] border border-white/5 flex flex-col items-center justify-center text-center space-y-4 sm:space-y-6 shadow-2xl backdrop-blur-3xl min-h-[220px] sm:min-h-[400px]"
-          >
-            <div className="relative">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-dashed border-blue-500/40 animate-spin absolute inset-0" />
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-t-blue-400 border-r-transparent animate-spin relative" />
-              <Palette className="w-4 h-4 sm:w-5 sm:h-5 absolute inset-x-0 mx-auto text-blue-400 top-1/2 -translate-y-1/2 animate-pulse" />
-            </div>
-            
-            <div className="space-y-1.5 sm:space-y-2 max-w-md">
-              <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-blue-400 font-mono animate-pulse">
-                [ ATTACHING ARTISTIC RESONANCE ]
-              </h4>
-              <p className="text-xs sm:text-sm text-white/70 leading-relaxed font-sans font-medium h-8 sm:h-12 transition-all">
-                {loadingMessages[loadingStep]}
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Art Result Panel with Smooth Fade-in & Card Zoom/Scale-up Animations */}
-        {!loading && recommendation && (
-          <motion.div
-            key={recommendation ? `${recommendation.title}_${recommendation.creator}_${recommendation.era || ''}` : 'art-panel'}
-            initial={{ opacity: 0, scale: 0.94, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: -20 }}
-            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-8"
-          >
-            {/* 💬 현재 고민 맞춤 처방 결과 표시 배너 (고민이 적용된 상태일 때) */}
-            {(recommendation as any)?.userConcern && (
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/15 to-purple-500/10 border border-blue-400/40 flex items-center justify-between gap-3 text-left shadow-md">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="text-lg shrink-0">💬</span>
-                  <div className="min-w-0">
-                    <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block font-mono">
-                      나의 고민 맞춤 예술 처방 적용 중
-                    </span>
-                    <p className="text-xs sm:text-sm text-white/95 font-medium truncate">
-                      "{(recommendation as any).userConcern}"
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomConcern("");
-                    localStorage.removeItem(ART_CACHE_KEYS.userConcern);
-                    void handleRecommendArt({ forceRefresh: false, userConcern: "" });
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-xs font-bold transition-all shrink-0 cursor-pointer active:scale-95"
-                  title="고민 설정 해제하고 오늘의 데일리아트 원본으로 복원"
-                >
-                  ✕ 원본 복원
-                </button>
-              </div>
-            )}
-
-            {/* ✍️ 고민 맞춤 예술 처방 섹션 (오늘의 데일리아트 확인 완료 시 활성화) */}
-            <motion.div
+{recommendation && (<motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               className="p-5 sm:p-7 rounded-[28px] bg-gradient-to-br from-blue-950/30 via-zinc-900/80 to-purple-950/20 border border-blue-500/30 shadow-xl backdrop-blur-xl space-y-4 text-left"
@@ -2668,9 +2596,71 @@ export function ArtRecommendationView() {
                   <span>{loading ? "맞춤 예술 처방 중..." : "🎨 고민 맞춤 예술 처방받기"}</span>
                 </button>
               </div>
-            </motion.div>
-            {/* 🌟 최상단 배치: 오늘의 예술 오디오 도슨트 (MUSE AUDIO DOCENT - 오늘의 명곡, 명시, 명화 통합 가이드) */}
-            {recommendation.famousPoem && recommendation.famousSong && (
+            </motion.div>)}
+</section><section className="duo-workspace-results" aria-label="예술 작품과 감상 결과">
+<AnimatePresence mode="wait">
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="p-6 sm:p-12 rounded-2xl sm:rounded-[32px] bg-white/[0.01] border border-white/5 flex flex-col items-center justify-center text-center space-y-4 sm:space-y-6 shadow-2xl backdrop-blur-3xl min-h-[220px] sm:min-h-[400px]"
+          >
+            <div className="relative">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-dashed border-blue-500/40 animate-spin absolute inset-0" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-t-blue-400 border-r-transparent animate-spin relative" />
+              <Palette className="w-4 h-4 sm:w-5 sm:h-5 absolute inset-x-0 mx-auto text-blue-400 top-1/2 -translate-y-1/2 animate-pulse" />
+            </div>
+
+            <div className="space-y-1.5 sm:space-y-2 max-w-md">
+              <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-blue-400 font-mono animate-pulse">
+                [ ATTACHING ARTISTIC RESONANCE ]
+              </h4>
+              <p className="text-xs sm:text-sm text-white/70 leading-relaxed font-sans font-medium h-8 sm:h-12 transition-all">
+                {loadingMessages[loadingStep]}
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Art Result Panel with Smooth Fade-in & Card Zoom/Scale-up Animations */}
+        {!loading && recommendation && (
+          <motion.div
+            key={recommendation ? `${recommendation.title}_${recommendation.creator}_${recommendation.era || ''}` : 'art-panel'}
+            initial={{ opacity: 0, scale: 0.94, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -20 }}
+            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-8"
+          >
+{(recommendation as any)?.userConcern && (
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/15 to-purple-500/10 border border-blue-400/40 flex items-center justify-between gap-3 text-left shadow-md">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-lg shrink-0">💬</span>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block font-mono">
+                      나의 고민 맞춤 예술 처방 적용 중
+                    </span>
+                    <p className="text-xs sm:text-sm text-white/95 font-medium truncate">
+                      "{(recommendation as any).userConcern}"
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomConcern("");
+                    localStorage.removeItem(ART_CACHE_KEYS.userConcern);
+                    void handleRecommendArt({ forceRefresh: false, userConcern: "" });
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-xs font-bold transition-all shrink-0 cursor-pointer active:scale-95"
+                  title="고민 설정 해제하고 오늘의 데일리아트 원본으로 복원"
+                >
+                  ✕ 원본 복원
+                </button>
+              </div>
+            )}
+{recommendation.famousPoem && recommendation.famousSong && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2715,9 +2705,7 @@ export function ArtRecommendationView() {
                 />
               </motion.div>
             )}
-
-            {/* 1. 오늘의 명곡 (Masterpiece Song) */}
-            {recommendation.famousSong && (
+{recommendation.famousSong && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.93, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2771,10 +2759,7 @@ export function ArtRecommendationView() {
                 </div>
               </motion.div>
             )}
-
-            
-{/* 2. 오늘의 명시 (Masterpiece Poem) */}
-            {recommendation.famousPoem && (
+{recommendation.famousPoem && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.93, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2863,10 +2848,7 @@ export function ArtRecommendationView() {
                 </div>
               </motion.div>
             )}
-
-            
-{/* 3. 오늘의 명화 (Masterpiece Painting) - 페이드인 및 카드 확대 애니메이션 */}
-            <motion.div
+<motion.div
               initial={{ opacity: 0, scale: 0.92, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -3175,9 +3157,7 @@ export function ArtRecommendationView() {
                 </div>
               </div>
             </motion.div>
-
-            {/* Micro Challenges / Mindful quests */}
-            <motion.div
+<motion.div
               initial={{ opacity: 0, scale: 0.94, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
@@ -3227,9 +3207,7 @@ export function ArtRecommendationView() {
                 })}
               </div>
             </motion.div>
-
-            {/* 🌟 루시와 1:1 심층 상담 (Deep Insight) Banner */}
-            <motion.div
+<motion.div
               initial={{ opacity: 0, scale: 0.94, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -3259,9 +3237,7 @@ export function ArtRecommendationView() {
                 <span>루시와 심층 상담하기</span>
               </button>
             </motion.div>
-
-            {/* Unlimited Re-generation Action Button */}
-            <motion.div
+<motion.div
               initial={{ opacity: 0, scale: 0.96, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
@@ -3284,13 +3260,14 @@ export function ArtRecommendationView() {
                 </span>
               </button>
             </motion.div>
-            <p className="text-[10px] text-white/40 font-mono text-center">
+<p className="text-[10px] text-white/40 font-mono text-center">
               언제든지 새로운 명곡·명시·명화를 즉시 추천받을 수 있습니다.
             </p>
-          </motion.div>
+</motion.div>
         )}
       </AnimatePresence>
-
-    </div>
+{!recommendation && !loading && (<div className="duo-workspace-empty"><p>오늘의 예술을 생성하면 명곡·명시·명화를 함께 감상할 수 있어요.</p></div>)}
+</section>
+</div>
   );
 }

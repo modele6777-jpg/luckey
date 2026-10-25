@@ -3826,7 +3826,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         ) : (
                           <div className="flex-1 flex flex-col overflow-hidden relative w-full text-left">
                             <div className="flex-1 overflow-y-auto no-scrollbar pb-6">
-                              <div className="duo-split-grid items-start gap-6 w-full">
+                              <div className="duo-split-workspace items-start gap-6 w-full">
                                 {/* Left Pane: Drawn 3D Cards Visualizer */}
                                 <div className="flex flex-col gap-4 w-full md:sticky md:top-2">
                                   {drawnCards && (

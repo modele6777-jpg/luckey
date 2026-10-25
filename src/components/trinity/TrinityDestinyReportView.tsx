@@ -501,9 +501,9 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   } = saju;
 
   return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-8 text-left">
-      {/* 1. 상단 인트로 배너 & 프로필 정보 바 */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1b1c22] via-[#14151a] to-[#101115] border border-amber-500/30 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+    <div className="duo-split-workspace max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 text-left">
+<section className="duo-workspace-input" aria-label="사주 정보와 명식">
+<div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1b1c22] via-[#14151a] to-[#101115] border border-amber-500/30 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
         <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -658,236 +658,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           )}
         </AnimatePresence>
       </div>
-
-      {/* 2. 오늘의 사주 & 일진(日辰) 리포트 배너 카드 */}
-      {todayReport && (
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-950/30 via-[#1c1b22] to-[#121318] border-2 border-amber-500/40 p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
-
-          <div className="relative z-10 space-y-4">
-            {/* 헤더 행: 뱃지, 날짜, 오디오 컨트롤 */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-amber-500/20">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-mono font-bold flex items-center gap-1.5 shadow-sm">
-                    <Sparkles size={13} className="text-amber-400 animate-pulse" />
-                    TODAY'S DESTINY • 오늘의 사주 리포트
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-amber-200 text-xs font-mono font-semibold">
-                    {todayReport.dateStr}
-                  </span>
-                </div>
-                <h3 className="text-lg sm:text-xl font-serif font-bold text-white flex items-center gap-2 pt-0.5">
-                  <span>오늘의 일진:</span>
-                  <span className="text-amber-300">{todayReport.dayPillar.full}</span>
-                </h3>
-              </div>
-
-              {/* 오디오 재생 버튼 */}
-              <button
-                onClick={handleToggleTTS}
-                className={`px-4 py-2.5 rounded-2xl border transition-all text-xs font-bold flex items-center gap-2 shadow-lg shrink-0 ${
-                  isTTSActive
-                    ? 'bg-amber-500 text-zinc-950 border-amber-300 shadow-amber-500/30 ring-2 ring-amber-400/50'
-                    : 'bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border-amber-400/50 text-amber-200 hover:text-white'
-                }`}
-              >
-                {isTTSActive ? (
-                  <>
-                    <VolumeX size={16} className="text-zinc-950" />
-                    <span>음성 리포트 중지</span>
-                    {/* 오디오 이퀄라이저 애니메이션 바 */}
-                    <div className="flex items-end gap-0.5 h-3 ml-1">
-                      <span className="w-1 bg-zinc-950 rounded-full animate-bounce [animation-delay:0ms] h-full" />
-                      <span className="w-1 bg-zinc-950 rounded-full animate-bounce [animation-delay:150ms] h-2/3" />
-                      <span className="w-1 bg-zinc-950 rounded-full animate-bounce [animation-delay:300ms] h-4/5" />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 size={16} className="text-amber-400" />
-                    <span>오늘의 사주 소리로 듣기</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* 본문 요약 그리드 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-              {/* 1. 오늘의 십신 기운 */}
-              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
-                <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1 font-mono">
-                  <span>⚡</span> 오늘의 십신(十神) 작용
-                </span>
-                <p className="text-sm font-serif font-bold text-white">
-                  {todayReport.todayTheme}
-                </p>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  {todayReport.todayAdvice}
-                </p>
-              </div>
-
-              {/* 2. 내 사주 본원과의 조화 */}
-              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
-                <span className="text-[11px] font-bold text-sky-400 flex items-center gap-1 font-mono">
-                  <span>🌊</span> 오행 조화 & 에너지 흐름
-                </span>
-                <p className="text-sm font-serif font-bold text-white">
-                  {saju.dayMaster.symbolName}와의 상호작용
-                </p>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  {todayReport.harmonySummary}
-                </p>
-              </div>
-
-              {/* 3. 오늘의 행운 보약 처방 (동적 맞춤 처방전) */}
-              <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 space-y-2.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 font-mono">
-                      <span>🌿</span> 오늘의 행운 보약 처방
-                    </span>
-                    {todayReport.remedy.prescriptionTitle && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">
-                        {todayReport.remedy.prescriptionTitle.split(' ')[0]}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* 다른 처방 보기 & 상세 해설 토글 */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={handleShuffleRemedy}
-                      title="오늘의 다른 보약 처방 보기"
-                      className="px-2 py-1 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-white/5 transition-all text-[10px] flex items-center gap-1 cursor-pointer active:scale-95"
-                    >
-                      <RefreshCw size={11} className={isRemedyShuffling ? "animate-spin text-emerald-400" : ""} />
-                      <span>다른 처방</span>
-                    </button>
-                    <button
-                      onClick={() => setShowRemedyDetail(!showRemedyDetail)}
-                      title="보약 처방 상세 해설"
-                      className={`px-1.5 py-1 rounded-lg border transition-all text-[10px] cursor-pointer ${
-                        showRemedyDetail ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-white/5 text-zinc-400 hover:text-zinc-200 border-white/5'
-                      }`}
-                    >
-                      {showRemedyDetail ? '접기' : '해설'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* 핵심 4대 맞춤 처방 (컬러, 보약 음식, 힐링 티, 개운 리추얼) */}
-                <div className="space-y-2 text-xs text-zinc-300">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-zinc-400 shrink-0">행운 컬러:</span>
-                    <span className="font-bold text-white px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 text-[11px]">
-                      {todayReport.remedy.luckyColor}
-                    </span>
-                  </div>
-
-                  <div className="space-y-0.5">
-                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
-                      <span>추천 보약 음식:</span>
-                      <span className="text-[10px] text-zinc-500">약선 식단</span>
-                    </div>
-                    <p className="font-medium text-white text-[11px] leading-snug bg-white/[0.03] p-2 rounded-lg border border-white/5 break-keep">
-                      🍲 {todayReport.remedy.luckyFood}
-                    </p>
-                  </div>
-
-                  {/* 추천 힐링 티 - 내용 전체가 잘림 없이 온전히 보이도록 구성 */}
-                  <div className="space-y-0.5">
-                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
-                      <span>추천 힐링 티:</span>
-                      <span className="text-[10px] text-emerald-400/80 font-mono">HEALING TEA</span>
-                    </div>
-                    <p className="font-medium text-emerald-200 text-[11px] leading-snug bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20 break-keep">
-                      🍵 {todayReport.remedy.luckyTea}
-                    </p>
-                  </div>
-
-                  <div className="space-y-0.5">
-                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
-                      <span>개운 실천 팁:</span>
-                      <span className="text-[10px] text-amber-400/80 font-mono">RITUAL</span>
-                    </div>
-                    <p className="font-medium text-amber-200 text-[11px] leading-snug bg-amber-500/10 p-2 rounded-lg border border-amber-500/20 break-keep">
-                      ✨ {todayReport.remedy.actionTip}
-                    </p>
-                  </div>
-
-                  {/* 길한 시간 (Golden Hour) */}
-                  <div className="pt-0.5">
-                    <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2 text-[11px]">
-                      <span className="text-zinc-400 flex items-center gap-1.5 shrink-0">
-                        <span>⏰</span> <span>길한 시간:</span>
-                      </span>
-                      <span className="text-zinc-200 font-medium text-right text-[10.5px] break-keep">
-                        {todayReport.remedy.luckyTime}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 상세 해설 토글 뷰 */}
-                  <AnimatePresence>
-                    {showRemedyDetail && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden pt-1"
-                      >
-                        <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] space-y-1.5 text-zinc-300">
-                          <div className="flex items-center gap-1 text-emerald-400 font-bold">
-                            <Sparkles size={12} />
-                            <span>{todayReport.remedy.prescriptionTitle}</span>
-                          </div>
-                          <p className="text-[10px] text-zinc-300 leading-relaxed">
-                            {todayReport.remedy.prescriptionReason}
-                          </p>
-                          <p className="text-[10px] text-emerald-300/80 leading-relaxed border-t border-emerald-500/20 pt-1">
-                            🍵 <strong>힐링 티 처방:</strong> {todayReport.remedy.luckyTea}
-                          </p>
-                          {todayReport.remedy.luckyColorDetail && (
-                            <p className="text-[10px] text-emerald-300/80 leading-relaxed border-t border-emerald-500/20 pt-1">
-                              💡 <strong>스타일링 팁:</strong> {todayReport.remedy.luckyColorDetail}
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
-
-            {/* 음성 재생 중 상태 알림 배너 */}
-            {isTTSActive && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-xs text-amber-200 flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
-                  <span className="font-medium">
-                    🎙️ 루시가 오늘의 사주 만세력 리포트를 들려드리고 있습니다...
-                  </span>
-                </div>
-                <button
-                  onClick={stopTTS}
-                  className="text-[11px] underline text-amber-300 hover:text-white shrink-0"
-                >
-                  멈추기
-                </button>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 3. 사주 4주 8자 만세력 원국표 (Four Pillars Matrix) */}
-      <div className="space-y-4">
+<div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
@@ -1152,9 +923,233 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       </div>
+</section><section className="duo-workspace-results" aria-label="일진 리포트와 운명 해설">
+{todayReport && (
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-950/30 via-[#1c1b22] to-[#121318] border-2 border-amber-500/40 p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
 
-      {/* 3-1. 정통 격국(格局) & 신강/신약(身强/身弱) 정밀 감명 */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1b1c24] via-[#14151a] to-[#121318] border border-amber-500/30 shadow-2xl space-y-6">
+          <div className="relative z-10 space-y-4">
+            {/* 헤더 행: 뱃지, 날짜, 오디오 컨트롤 */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-amber-500/20">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-mono font-bold flex items-center gap-1.5 shadow-sm">
+                    <Sparkles size={13} className="text-amber-400 animate-pulse" />
+                    TODAY'S DESTINY • 오늘의 사주 리포트
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-amber-200 text-xs font-mono font-semibold">
+                    {todayReport.dateStr}
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-serif font-bold text-white flex items-center gap-2 pt-0.5">
+                  <span>오늘의 일진:</span>
+                  <span className="text-amber-300">{todayReport.dayPillar.full}</span>
+                </h3>
+              </div>
+
+              {/* 오디오 재생 버튼 */}
+              <button
+                onClick={handleToggleTTS}
+                className={`px-4 py-2.5 rounded-2xl border transition-all text-xs font-bold flex items-center gap-2 shadow-lg shrink-0 ${
+                  isTTSActive
+                    ? 'bg-amber-500 text-zinc-950 border-amber-300 shadow-amber-500/30 ring-2 ring-amber-400/50'
+                    : 'bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border-amber-400/50 text-amber-200 hover:text-white'
+                }`}
+              >
+                {isTTSActive ? (
+                  <>
+                    <VolumeX size={16} className="text-zinc-950" />
+                    <span>음성 리포트 중지</span>
+                    {/* 오디오 이퀄라이저 애니메이션 바 */}
+                    <div className="flex items-end gap-0.5 h-3 ml-1">
+                      <span className="w-1 bg-zinc-950 rounded-full animate-bounce [animation-delay:0ms] h-full" />
+                      <span className="w-1 bg-zinc-950 rounded-full animate-bounce [animation-delay:150ms] h-2/3" />
+                      <span className="w-1 bg-zinc-950 rounded-full animate-bounce [animation-delay:300ms] h-4/5" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 size={16} className="text-amber-400" />
+                    <span>오늘의 사주 소리로 듣기</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* 본문 요약 그리드 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+              {/* 1. 오늘의 십신 기운 */}
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
+                <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1 font-mono">
+                  <span>⚡</span> 오늘의 십신(十神) 작용
+                </span>
+                <p className="text-sm font-serif font-bold text-white">
+                  {todayReport.todayTheme}
+                </p>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  {todayReport.todayAdvice}
+                </p>
+              </div>
+
+              {/* 2. 내 사주 본원과의 조화 */}
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
+                <span className="text-[11px] font-bold text-sky-400 flex items-center gap-1 font-mono">
+                  <span>🌊</span> 오행 조화 & 에너지 흐름
+                </span>
+                <p className="text-sm font-serif font-bold text-white">
+                  {saju.dayMaster.symbolName}와의 상호작용
+                </p>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  {todayReport.harmonySummary}
+                </p>
+              </div>
+
+              {/* 3. 오늘의 행운 보약 처방 (동적 맞춤 처방전) */}
+              <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 space-y-2.5 relative overflow-hidden group">
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 font-mono">
+                      <span>🌿</span> 오늘의 행운 보약 처방
+                    </span>
+                    {todayReport.remedy.prescriptionTitle && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">
+                        {todayReport.remedy.prescriptionTitle.split(' ')[0]}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 다른 처방 보기 & 상세 해설 토글 */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={handleShuffleRemedy}
+                      title="오늘의 다른 보약 처방 보기"
+                      className="px-2 py-1 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-white/5 transition-all text-[10px] flex items-center gap-1 cursor-pointer active:scale-95"
+                    >
+                      <RefreshCw size={11} className={isRemedyShuffling ? "animate-spin text-emerald-400" : ""} />
+                      <span>다른 처방</span>
+                    </button>
+                    <button
+                      onClick={() => setShowRemedyDetail(!showRemedyDetail)}
+                      title="보약 처방 상세 해설"
+                      className={`px-1.5 py-1 rounded-lg border transition-all text-[10px] cursor-pointer ${
+                        showRemedyDetail ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-white/5 text-zinc-400 hover:text-zinc-200 border-white/5'
+                      }`}
+                    >
+                      {showRemedyDetail ? '접기' : '해설'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 핵심 4대 맞춤 처방 (컬러, 보약 음식, 힐링 티, 개운 리추얼) */}
+                <div className="space-y-2 text-xs text-zinc-300">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-zinc-400 shrink-0">행운 컬러:</span>
+                    <span className="font-bold text-white px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 text-[11px]">
+                      {todayReport.remedy.luckyColor}
+                    </span>
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                      <span>추천 보약 음식:</span>
+                      <span className="text-[10px] text-zinc-500">약선 식단</span>
+                    </div>
+                    <p className="font-medium text-white text-[11px] leading-snug bg-white/[0.03] p-2 rounded-lg border border-white/5 break-keep">
+                      🍲 {todayReport.remedy.luckyFood}
+                    </p>
+                  </div>
+
+                  {/* 추천 힐링 티 - 내용 전체가 잘림 없이 온전히 보이도록 구성 */}
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                      <span>추천 힐링 티:</span>
+                      <span className="text-[10px] text-emerald-400/80 font-mono">HEALING TEA</span>
+                    </div>
+                    <p className="font-medium text-emerald-200 text-[11px] leading-snug bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20 break-keep">
+                      🍵 {todayReport.remedy.luckyTea}
+                    </p>
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                      <span>개운 실천 팁:</span>
+                      <span className="text-[10px] text-amber-400/80 font-mono">RITUAL</span>
+                    </div>
+                    <p className="font-medium text-amber-200 text-[11px] leading-snug bg-amber-500/10 p-2 rounded-lg border border-amber-500/20 break-keep">
+                      ✨ {todayReport.remedy.actionTip}
+                    </p>
+                  </div>
+
+                  {/* 길한 시간 (Golden Hour) */}
+                  <div className="pt-0.5">
+                    <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2 text-[11px]">
+                      <span className="text-zinc-400 flex items-center gap-1.5 shrink-0">
+                        <span>⏰</span> <span>길한 시간:</span>
+                      </span>
+                      <span className="text-zinc-200 font-medium text-right text-[10.5px] break-keep">
+                        {todayReport.remedy.luckyTime}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 상세 해설 토글 뷰 */}
+                  <AnimatePresence>
+                    {showRemedyDetail && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden pt-1"
+                      >
+                        <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] space-y-1.5 text-zinc-300">
+                          <div className="flex items-center gap-1 text-emerald-400 font-bold">
+                            <Sparkles size={12} />
+                            <span>{todayReport.remedy.prescriptionTitle}</span>
+                          </div>
+                          <p className="text-[10px] text-zinc-300 leading-relaxed">
+                            {todayReport.remedy.prescriptionReason}
+                          </p>
+                          <p className="text-[10px] text-emerald-300/80 leading-relaxed border-t border-emerald-500/20 pt-1">
+                            🍵 <strong>힐링 티 처방:</strong> {todayReport.remedy.luckyTea}
+                          </p>
+                          {todayReport.remedy.luckyColorDetail && (
+                            <p className="text-[10px] text-emerald-300/80 leading-relaxed border-t border-emerald-500/20 pt-1">
+                              💡 <strong>스타일링 팁:</strong> {todayReport.remedy.luckyColorDetail}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+
+            {/* 음성 재생 중 상태 알림 배너 */}
+            {isTTSActive && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-xs text-amber-200 flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+                  <span className="font-medium">
+                    🎙️ 루시가 오늘의 사주 만세력 리포트를 들려드리고 있습니다...
+                  </span>
+                </div>
+                <button
+                  onClick={stopTTS}
+                  className="text-[11px] underline text-amber-300 hover:text-white shrink-0"
+                >
+                  멈추기
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      )}
+<div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1b1c24] via-[#14151a] to-[#121318] border border-amber-500/30 shadow-2xl space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
@@ -1236,9 +1231,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </p>
         </div>
       </div>
-
-      {/* 3-2. 인생 10년 주기 대운(大運) 타임라인 & 정밀 대운수(大運數) */}
-      {daewunDetail && (
+{daewunDetail && (
         <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
             <div className="flex items-center gap-2.5">
@@ -1311,9 +1304,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       )}
-
-      {/* 3. 오행(木·火·土·金·水) 밸런스 & 맞춤 처방전 */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6">
+<div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
@@ -1442,9 +1433,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       </div>
-
-      {/* 4. 일간(본원) 심리 & 영적 아키타입 프로파일링 */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1d1b26] via-[#14151a] to-[#121318] border border-purple-500/20 shadow-2xl space-y-6">
+<div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1d1b26] via-[#14151a] to-[#121318] border border-purple-500/20 shadow-2xl space-y-6">
         <div className="flex items-center gap-2.5 pb-4 border-b border-white/10">
           <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300">
             <Star size={16} />
@@ -1516,9 +1505,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       </div>
-
-      {/* 5. 2026 병오년(丙午年) 세운(歲運)과의 조화 */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-amber-950/20 via-[#191512] to-[#121316] border border-amber-500/30 shadow-2xl space-y-5">
+<div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-amber-950/20 via-[#191512] to-[#121316] border border-amber-500/30 shadow-2xl space-y-5">
         <div className="flex items-center gap-2.5 pb-4 border-b border-white/10">
           <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
             <Sun size={16} />
@@ -1562,9 +1549,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       </div>
-
-      {/* 6. 핵심 신살 및 특수 격국 통찰 */}
-      {specialStructures.length > 0 && (
+{specialStructures.length > 0 && (
         <div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-white/10">
             <Star size={16} className="text-yellow-400" />
@@ -1588,9 +1573,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       )}
-
-      {/* 7. AI 명리 마스터 실시간 1:1 Q&A 상담 (인터랙티브 대화방) */}
-      <div
+<div
         data-no-swipe="true"
         className="no-swipe rounded-3xl overflow-hidden bg-[#18191c] border border-amber-400/30 shadow-2xl flex flex-col backdrop-blur-xl"
       >
@@ -1774,6 +1757,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </button>
         </form>
       </div>
-    </div>
+</section>
+</div>
   );
 }

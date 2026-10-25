@@ -3547,9 +3547,9 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-12 text-white">
-      {/* 1. Header & Segment Controller */}
-      <div className="glass relative p-5 sm:p-7 rounded-3xl bg-white/[0.04] border border-amber-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden">
+    <div className="duo-split-workspace w-full max-w-6xl mx-auto pb-12 text-white">
+<section className="duo-workspace-input" aria-label="오라클 질문과 카드 선택">
+<div className="glass relative p-5 sm:p-7 rounded-3xl bg-white/[0.04] border border-amber-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden">
         {/* Ambient cosmic glows */}
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[90px] pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-indigo-500/10 blur-[90px] pointer-events-none" />
@@ -3753,16 +3753,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           )}
         </div>
       </div>
-
-      {/* 🌟 오늘의 지배 카드 (Cosmic Anchor) 연동 & 사전 안내 배너 */}
-      {renderCosmicDominantCardBanner()}
-
-      {/* 2. Main Stage Area */}
-      <AnimatePresence mode="wait">
-        {!isModeChosen ? (
-          /* 🌟 사용자 요청: "오라클타로 모드직접선택 화면을 오라클타로 초기화면으로 수정"
-             진입 시 항상 모드 직접 선택 화면이 초기화면으로 표시됨 */
-          <motion.div
+{renderCosmicDominantCardBanner()}
+<AnimatePresence mode="wait">{!isModeChosen ? (<motion.div
             key="oracle-mode-gate-stage"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -3921,10 +3913,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </button>
               </div>
             </div>
-          </motion.div>
-        ) : stage === 'spread' || stage === 'intro' ? (
-          /* SPREAD CARD DRAW INTERACTION */
-          <motion.div
+          </motion.div>) : stage === 'spread' || stage === 'intro' ? (<motion.div
             key={`oracle-draw-stage-${oracleMode}`}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -4086,10 +4075,9 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </div>
               )}
             </div>
-          </motion.div>
-        ) : (
-          /* RESULT PRESENTATION AREA */
-          <motion.div
+          </motion.div>) : <div className="duo-workspace-history"><h3>현재 리딩 주제</h3><p>{inquiryText || '오늘의 오라클'}</p><p>위의 도구에서 모드를 선택해 다음 질문을 이어갈 수 있어요.</p></div>}</AnimatePresence>
+</section><section className="duo-workspace-results" aria-label="오라클 리딩과 후속 질문">
+<AnimatePresence mode="wait">{isModeChosen && stage === 'result' ? (<motion.div
             key="oracle-result-stage"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -4449,12 +4437,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </div>
               </div>
             ) : null}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* 3. Treasure Box Modal */}
-      <AnimatePresence>
+          </motion.div>) : (<div className="duo-workspace-empty"><p>카드를 선택하면 리딩과 후속 질문을 이곳에서 이어갈 수 있어요.</p></div>)}</AnimatePresence>
+</section><AnimatePresence>
         {showTreasureModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
@@ -4510,9 +4494,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           </div>
         )}
       </AnimatePresence>
-
-      {/* 4. Saju Profile Edit Modal */}
-      <AnimatePresence>
+<AnimatePresence>
         {showSajuModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
@@ -4603,23 +4585,17 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           </div>
         )}
       </AnimatePresence>
-
-      {/* Tarot Card Zoom Modal */}
-      <TarotCardZoomModal
+<TarotCardZoomModal
         isOpen={!!zoomedCard}
         onClose={() => setZoomedCard(null)}
         card={zoomedCard?.card ?? null}
         slotName={zoomedCard?.slotName}
       />
-
-      {/* 20종 타로 덱 뒷면 커스텀 모달 */}
-      <TarotCardBackCustomizerModal
+<TarotCardBackCustomizerModal
         isOpen={showCardBackModal}
         onClose={() => setShowCardBackModal(false)}
       />
-
-      {/* 🎡 오라클 잔여 덱 전용 360도 원형 휠 선택 모달 */}
-      {showOracleFollowUpWheelModal && (
+{showOracleFollowUpWheelModal && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4">
           <div className="relative w-full max-w-5xl h-[88vh] rounded-3xl bg-slate-950/95 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col">
             <TarotSpread
@@ -4636,6 +4612,6 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           </div>
         </div>
       )}
-    </div>
+</div>
   );
 }

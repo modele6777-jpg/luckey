@@ -1,3 +1,4 @@
+import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
@@ -673,8 +674,9 @@ export default function EpilogueApp() {
   const section = SECTIONS[currentSection];
   const SectionIcon = section.icon;
 
-  const renderSection = () => {
-    switch (currentSection) {
+  const isWideWorkspace = useWideWorkspace();
+  const renderSection = (sectionIndex = currentSection) => {
+    switch (sectionIndex) {
       case 0: { // 기본 정보
         const effectiveAvatarUrl = basic.avatarUrl || firebaseUser?.photoURL || '';
         const isUsingGoogleAvatar = !basic.avatarUrl && Boolean(firebaseUser?.photoURL);
@@ -1120,7 +1122,7 @@ export default function EpilogueApp() {
         ) : activeMode === 'diary' ? (
           <EpilogueDiaryView />
         ) : (
-          <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md space-y-6">
+          <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-home md:pt-home-md space-y-6">
             {/* Step Sub-Pills for Profile */}
             <div className="flex items-center justify-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
               {SECTIONS.map((item, idx) => {
@@ -1149,7 +1151,6 @@ export default function EpilogueApp() {
 
             {/* Section Form Card */}
             <motion.div
-              key={currentSection}
               initial={{ opacity: 0, scale: 0.98, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
@@ -1195,7 +1196,11 @@ export default function EpilogueApp() {
                 </div>
               </div>
 
-              <div className="relative z-10">{renderSection()}</div>
+              <div className="relative z-10"><div className="duo-split-workspace duo-profile-workspace">
+  {[0,1].map(group => <div key={group} className="duo-profile-pane">{SECTIONS.map((item,index) => (isWideWorkspace || index === currentSection) && (group === 0 ? index < 2 : index >= 2) && <section key={item.id} className={`duo-profile-section ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
+    <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
+  </section>)}</div>)}
+</div></div>
 
               {/* Bottom Step Actions */}
               <div className="flex justify-between items-center pt-4 border-t border-white/10 relative z-10">
