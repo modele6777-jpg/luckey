@@ -550,16 +550,20 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     if (!basic?.birthdate) return null;
 
     // 음력(lunar)인 경우 1900~2050 정밀 한국 천문역법에 따라 양력(solar) 일자로 정확히 변환
-    const { solarDate, isLunar, solarDateString } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar);
+    const { solarDate, isLunar, solarDateString } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar, basic.isLeapMonth ?? false);
     const y = solarDate.year;
     const m = solarDate.month;
     const d = solarDate.day;
     let h = -1;
     let minute = 0;
-    if (basic.birthtime) {
-      const timeParts = basic.birthtime.split(':').map(Number);
-      if (!isNaN(timeParts[0])) h = timeParts[0];
-      if (timeParts.length > 1 && !isNaN(timeParts[1])) minute = timeParts[1];
+    if (basic.birthtime?.trim()) {
+      const timeParts = basic.birthtime.trim().split(':');
+      if (timeParts.length !== 2 || timeParts.some(part => part.length < 1 || part.length > 2 || !Array.from(part).every(ch => ch >= '0' && ch <= '9'))) {
+        throw new RangeError('출생시간은 HH:MM 형식으로 입력해 주세요.');
+      }
+      h = Number(timeParts[0]);
+      minute = Number(timeParts[1]);
+      if (h > 23 || minute > 59) throw new RangeError('올바른 출생시간을 입력해 주세요.');
     }
 
     const genderStr = basic.gender === 'male' ? '남성' : '여성';
@@ -571,9 +575,10 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const name = preferredName;
     const nickname = preferredName;
 
-    // 한국 표준시(KST: UTC+9) 기준 생년월일시 Date 생성
+    // 절기 엔진은 KST 벽시계 시각을 UTC 필드에 담은 Date와 비교한다.
+    // 실제 UTC 순간으로 -9시간 변환하면 절기 경계가 9시간 어긋난다.
     const birthHour = h >= 0 ? h : 12;
-    const birthKstDate = new Date(Date.UTC(y, m - 1, d, birthHour, minute, 0) - 9 * 3600 * 1000);
+    const birthKstDate = new Date(Date.UTC(y, m - 1, d, birthHour, minute, 0));
 
     // 1. 천문학적 24절기 입춘(315°) 절입시각 기준 사주 년도(Saju Year) 및 년주 산출
     const { sajuYear } = getAstronomicalSajuYear(birthKstDate);
@@ -599,10 +604,11 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     let dayMonth = m;
     let dayDate = d;
     if (h === 23 && minute >= 30) {
-      const nextDay = new Date(y, m - 1, d + 1);
-      dayYear = nextDay.getFullYear();
-      dayMonth = nextDay.getMonth() + 1;
-      dayDate = nextDay.getDate();
+      // UTC 날짜 연산으로 실행 서버/브라우저의 로컬 시간대에 영향을 받지 않도록 한다.
+      const nextDay = new Date(Date.UTC(y, m - 1, d + 1));
+      dayYear = nextDay.getUTCFullYear();
+      dayMonth = nextDay.getUTCMonth() + 1;
+      dayDate = nextDay.getUTCDate();
     }
 
     const a = Math.floor((14 - dayMonth) / 12);

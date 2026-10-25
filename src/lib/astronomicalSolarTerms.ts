@@ -173,7 +173,7 @@ export function getYearSolarTerms(year: number): SolarTermEntry[] {
  * @param birthDate KST 기준 Date 객체
  */
 export function getAstronomicalSajuYear(birthDate: Date): { sajuYear: number; ipchunDate: Date; isBeforeIpchun: boolean } {
-  const calYear = birthDate.getFullYear();
+  const calYear = birthDate.getUTCFullYear();
   // 당해 연도의 입춘 절입시각 확인
   const terms = getYearSolarTerms(calYear);
   const ipchun = terms.find((t) => t.name === '입춘')!;
@@ -209,7 +209,7 @@ export function getAstronomicalMonthBranch(birthDate: Date): {
   currentTerm: SolarTermEntry;
   nextTerm: SolarTermEntry;
 } {
-  const calYear = birthDate.getFullYear();
+  const calYear = birthDate.getUTCFullYear();
   // 전년도, 당해년도, 익년도 절기 목록 통합 수집
   const prevTerms = getYearSolarTerms(calYear - 1);
   const currTerms = getYearSolarTerms(calYear);
@@ -235,14 +235,9 @@ export function getAstronomicalMonthBranch(birthDate: Date): {
     }
   }
 
-  // 기본 폴백 (경계선 방어)
-  const defaultTerm = currTerms.find((t) => t.name === '입춘')!;
-  const defaultNxt = currTerms.find((t) => t.name === '경칩')!;
-  return {
-    monthBranchIndex: 0,
-    currentTerm: defaultTerm,
-    nextTerm: defaultNxt,
-  };
+  // 절기 구간을 찾지 못했을 때 임의로 寅월을 반환하면 잘못된 사주가 정상 결과처럼 표시된다.
+  // 계산 범위 밖의 날짜나 절기 데이터 오류는 호출자에게 명시적으로 전달한다.
+  throw new RangeError('출생시각에 해당하는 절기 구간을 찾을 수 없습니다.');
 }
 
 /**
