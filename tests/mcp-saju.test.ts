@@ -42,3 +42,16 @@ test('MCP saju rejects invalid calendar dates', async () => {
   });
   assert.ok(response.error);
 });
+
+
+test('MCP daily tarot tool returns a card and reading', async () => {
+  const response = await processMCPJsonRpc({
+    jsonrpc: '2.0', id: 2, method: 'tools/call',
+    params: { name: 'get_daily_tarot', arguments: {} },
+  });
+  assert.ok(!response.error, response.error?.message);
+  assert.ok(response.result?.content?.[0]?.text);
+  const payload = JSON.parse(response.result.content[0].text);
+  assert.ok(payload.card?.id !== undefined);
+  assert.ok(payload.reading);
+});
