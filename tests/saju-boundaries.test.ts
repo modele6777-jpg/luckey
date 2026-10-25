@@ -67,3 +67,18 @@ test('2023 leap second lunar month is distinct from regular second month', () =>
   assert.equal(leap.solarDateString, '2023-03-22');
   assert.notEqual(regular.solarDateString, leap.solarDateString);
 });
+
+test('independent known sexagenary day anchors and midnight rollover', async () => {
+  const { calculateDetailedSaju } = await import('../src/lib/sajuAnalysis');
+  const calculate = (birthdate: string, birthtime: string) => {
+    const profile = { basic: { birthdate, birthtime, lunarSolar: 'solar', gender: 'male', name: 'Test' } } as Parameters<typeof calculateDetailedSaju>[0];
+    const result = calculateDetailedSaju(profile);
+    assert.ok(result, 'valid input should produce a saju chart');
+    return result.pillars.day.full;
+  };
+  assert.equal(calculate('2000-01-01', '12:00'), '戊午');
+  assert.equal(calculate('2024-02-10', '12:00'), '甲辰');
+  assert.equal(calculate('2000-01-01', '23:29'), '戊午');
+  assert.equal(calculate('2000-01-01', '23:30'), '己未');
+  assert.equal(calculate('2000-01-02', '00:00'), '己未');
+});
