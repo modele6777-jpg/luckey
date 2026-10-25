@@ -3026,3 +3026,23 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 .sites-pinned-main { padding-right: 70px; }
 .sites-pinned-sidebar { contain: layout style; }
 .sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }
+
+/* Base card columns on available content width beside the sidebar. */
+.universe-content { container-type: inline-size; container-name: universe; }
+.universe-content .duo-split-grid,
+.universe-content .duo-channel-grid { grid-template-columns: minmax(0, 1fr) !important; }
+.universe-content .duo-split-grid > *,
+.universe-content .duo-channel-grid > * { min-width: 0; }
+@container universe (min-width: 42rem) {
+ .universe-content .duo-channel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@container universe (min-width: 56rem) {
+ .universe-content .duo-split-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@container universe (min-width: 64rem) {
+ .universe-content .duo-channel-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
+ .universe-content .duo-split-grid,
+ .universe-content .duo-channel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}

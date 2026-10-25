@@ -537,7 +537,7 @@ export default function HubHome() {
 
 
   return (
-    <div className="h-app-full w-full flex flex-col relative font-sans bg-transparent">
+    <div className="universe-layout h-app-full w-full min-w-0 flex flex-col relative font-sans bg-transparent">
       {/* Header Info Bar - Always Fixed Outside Scroll Root */}
       <motion.div
         initial={{ y: -8, opacity: 0.88 }}
@@ -614,7 +614,7 @@ export default function HubHome() {
         })}
       </motion.nav>
 
-      <div data-app-scroll-root {...hubSwipeHandlers} className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56 px-safe">
+      <div data-app-scroll-root {...hubSwipeHandlers} className="flex-1 w-full min-w-0 overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
         {!legacy && <FloatingParticles count={narrow ? 4 : 14} />}
 
         {activeSection === 'ecpr' ? (
@@ -626,7 +626,7 @@ export default function HubHome() {
             </ErrorBoundary>
           </div>
         ) : (
-          <div className="flex-1 w-full max-w-6xl mx-auto flex flex-col relative text-slate-900 dark:text-white font-sans">
+          <div className="flex-1 w-full min-w-0 flex flex-col relative text-slate-900 dark:text-white font-sans">
             
             {/* 프로필 설정 유도 모달 */}
             <AnimatePresence>
@@ -696,7 +696,7 @@ export default function HubHome() {
               )}
             </AnimatePresence>
 
-            <div className="relative z-10 w-full px-3.5 sm:px-6 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col max-w-6xl mx-auto space-y-6 md:space-y-7">
+            <div className="universe-content relative z-10 w-full min-w-0 px-3 sm:px-6 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col max-w-6xl mx-auto space-y-6 md:space-y-7">
 
               {/* Dual-Pane Top Split: Left Pane (Today's Lucy Persona) & Right Pane (Universe Insight) */}
               <div className="duo-split-grid items-stretch">
@@ -859,7 +859,7 @@ export default function HubHome() {
 
               {/* Universe 6-Channel DApp Section */}
               <div className="space-y-3.5 pb-4 md:pb-6">
-                <div className="flex items-center justify-between px-1">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-1">
                   <div>
                     <div className="flex items-center gap-2">
                       <Compass size={15} className="text-cyan-400" />
