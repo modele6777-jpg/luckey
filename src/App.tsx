@@ -29,17 +29,18 @@ function lazyWithRetry<T extends React.ComponentType<any>>(
   componentImport: () => Promise<{ default: T }>
 ) {
   return React.lazy(async () => {
-    try {
-      return await componentImport();
-    } catch (error) {
+    const retryDelays = [0, 700, 1800];
+    for (let attempt = 0; attempt < retryDelays.length; attempt++) {
+      if (retryDelays[attempt]) await new Promise(resolve => setTimeout(resolve, retryDelays[attempt]));
       try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
         return await componentImport();
-      } catch (retryError) {
-        console.error("Failed to dynamically import module after retry:", retryError);
-        throw retryError;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const loadingFailure = /ChunkLoadError|Loading chunk|dynamically imported module|Importing a module script|Failed to fetch|module script/i.test(message);
+        if (!loadingFailure || attempt === retryDelays.length - 1) throw error;
       }
     }
+    throw new Error('화면 파일을 불러오지 못했습니다.');
   });
 }
 
@@ -148,6 +149,7 @@ const ROUTES_MAP = [
 function ActivePage({ loc }: { loc: string }) {
   const cleanLoc = loc ? loc.split('?')[0].split('#')[0] : '/';
   return (
+    <ErrorBoundary key={cleanLoc}>
     <React.Suspense fallback={<PageLoader />}>
       <Switch location={cleanLoc}>
         <Route path="/"><LucyStandalonePage /></Route>
@@ -180,6 +182,7 @@ function ActivePage({ loc }: { loc: string }) {
         <Route path="/key"><CalmApp /></Route>
       </Switch>
     </React.Suspense>
+    </ErrorBoundary>
   );
 }
 

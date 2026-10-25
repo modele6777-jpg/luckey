@@ -3023,7 +3023,8 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   will-change: transform;
 }
 /* The permanent rail occupies its own space and keeps its CSS aura alive. */
-.sites-pinned-main { padding-right: 70px; }
+:root { --sites-sidebar-width: 70px; }
+.sites-pinned-main { padding-right: var(--sites-sidebar-width); }
 .sites-pinned-sidebar { contain: layout style; }
 .sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }
 
@@ -3046,3 +3047,18 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
  .universe-content .duo-split-grid,
  .universe-content .duo-channel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
+
+/* Center the controller in the same available area as the main content. */
+.bottom-safe-fab-center { left: calc((100% - var(--sites-sidebar-width, 0px)) / 2) !important; }
+@media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
+ .bottom-safe-fab-center { left: calc(75% - var(--sites-sidebar-width, 0px) / 2) !important; }
+}
+
+/* Dialogs use the same available area as the main content. */
+.fixed.inset-0.flex.justify-center:is(.items-center, .items-end):not(.pointer-events-none),
+.fixed.inset-0.flex.justify-center:is(.items-center, .items-end):not(.pointer-events-none) > .fixed.inset-0 {
+ left: 0; right: auto;
+ width: calc(100vw - var(--sites-sidebar-width, 0px));
+ max-width: calc(100vw - var(--sites-sidebar-width, 0px));
+}
+.fixed.inset-0.flex.justify-center:is(.items-center, .items-end):not(.pointer-events-none) > * { min-width: 0; flex-shrink: 1; }
