@@ -9,6 +9,7 @@ on:
       - 'src/lib/astronomicalSolarTerms.ts'
       - 'src/lib/lunarCalendar.ts'
       - 'tests/saju-boundaries.test.ts'
+      - 'tests/mcp-saju.test.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/saju-checks.yml'
@@ -25,5 +26,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npx tsx --test tests/saju-boundaries.test.ts
+      - run: npx tsx --test tests/saju-boundaries.test.ts tests/mcp-saju.test.ts
       - run: npm run build
