@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis';
-import { TAROT_DECK } from '../../src/data/tarotData';
-import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle';
-import { handleTTS } from './ttsHandler';
+import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis.ts';
+import { TAROT_DECK } from '../../src/data/tarotData.ts';
+import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle.ts';
+import { handleTTS } from './ttsHandler.ts';
 
 interface SseClient {
   id: string;
