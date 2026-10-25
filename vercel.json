@@ -3,11 +3,11 @@
   "functions": {
     "api/index.ts": {
       "maxDuration": 60,
-      "includeFiles": "{server,src}/**"
+      "includeFiles": "{server/**,src/**,node_modules/node-edge-tts/**}"
     },
     "api/ai/tts.ts": {
       "maxDuration": 60,
-      "includeFiles": "server/**"
+      "includeFiles": "{server/**,node_modules/node-edge-tts/**}"
     },
     "api/ai/daily-bgm.ts": {
       "maxDuration": 60,
