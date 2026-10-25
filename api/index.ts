@@ -40,12 +40,25 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
     const ai = new GoogleGenAI({ apiKey: geminiApiKey });
     const model = req.body.model || "gemini-3.7-flash";
     const messages = req.body.messages || [];
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
-    const systemPrompt = messages.filter((m: any) => m.role === "system").map((m: any) => m.content).join("\n");
+    // Preserve the full conversational context instead of forwarding only the last user turn.
+    // The Gemini API uses "model" where OpenAI-compatible callers use "assistant".
+    const systemPrompt = messages
+      .filter((m: any) => m.role === "system" && typeof m.content === "string")
+      .map((m: any) => m.content)
+      .join("\n");
+    const contents = messages
+      .filter((m: any) => (m.role === "user" || m.role === "assistant" || m.role === "model") && typeof m.content === "string")
+      .map((m: any) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }]
+      }));
+    if (!contents.length || contents[contents.length - 1].role !== "user") {
+      return res.status(400).json({ error: "A final user message is required" });
+    }
 
     const response = await ai.models.generateContent({
-      model: model,
-      contents: lastUserMessage,
+      model,
+      contents,
       config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
     });
 
