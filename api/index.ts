@@ -269,12 +269,12 @@ app.post("/api/ai/daily-bgm", async (req, res) => {
 // 오늘의 예술: 검증된 카탈로그 기반 + AI는 해석 문구만 개인화
 app.post("/api/ai/recommend-art", async (req, res) => {
   try {
-    const { buildDailyArtRecommendation } = await import("../server/api-lib/recommendArt");
+    const { buildDailyArtRecommendation } = await import("../server/api-lib/recommendArt.ts");
     const result = await buildDailyArtRecommendation(req.body || {});
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("[recommend-art] error:", err);
-    const { buildVerifiedArtRecommendation } = await import("../server/api-lib/museArtCatalog");
+    const { buildVerifiedArtRecommendation } = await import("../server/api-lib/museArtCatalog.ts");
     const dateKey = String(req.body?.dateKey || new Date().toLocaleDateString("sv"));
     return res.status(200).json(
       buildVerifiedArtRecommendation(dateKey, String(req.body?.currentMood || ""), req.body?.moodId),
