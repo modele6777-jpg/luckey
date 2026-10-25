@@ -55,3 +55,18 @@ test('MCP daily tarot tool returns a card and reading', async () => {
   assert.ok(payload.card?.id !== undefined);
   assert.ok(payload.reading);
 });
+
+
+test('MCP art prescriptions return one of several curated artworks', async () => {
+  const titles = new Set<string>();
+  for (let i = 0; i < 30; i++) {
+    const response = await processMCPJsonRpc({ jsonrpc: '2.0', id: i + 10, method: 'tools/call', params: { name: 'get_art_prescription', arguments: {} } });
+    assert.ok(!response.error, response.error?.message);
+    const item = JSON.parse(response.result.content[0].text);
+    assert.ok(item.artwork?.title);
+    assert.ok(item.artwork?.artist);
+    assert.ok(item.prescription);
+    titles.add(item.artwork.title);
+  }
+  assert.ok(titles.size > 1, 'art prescription should not always return the same artwork');
+});
