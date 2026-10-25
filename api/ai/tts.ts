@@ -1,6 +1,6 @@
 import type { Response } from "express";
-import { applyCors } from "../../server/api-lib/cors";
-import { handleTTS } from "../../server/api-lib/ttsHandler";
+import { applyCors } from "../../server/api-lib/cors.ts";
+import { handleTTS } from "../../server/api-lib/ttsHandler.ts";
 
 export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
   applyCors(res);
