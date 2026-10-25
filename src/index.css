@@ -3067,3 +3067,13 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 @media (min-width: 768px) { .pwa-install-banner { left: calc((100% - var(--sites-sidebar-width, 0px)) / 2); right: auto; max-width: calc(100vw - var(--sites-sidebar-width, 0px) - 2rem); } }
 .pwa-installed .pwa-install-action { display: none; }
 @media (display-mode: standalone) { .pwa-install-action { display: none; } }
+
+/* Reuse the former edge hint's aurora inside the permanently open rail. */
+.sites-pinned-sidebar > :not(.sidebar-aurora) { position: relative; z-index: 1; }
+.sidebar-aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.sidebar-aurora-veil { position: absolute; inset: 0; mask-image: linear-gradient(to left, #000, #0009 65%, transparent); animation: edge-shimmer-flow 7s ease-in-out infinite; opacity: .52; }
+.sidebar-aurora-wave { position: absolute; right: 0; top: 0; width: 28px; height: 50%; background: linear-gradient(180deg, transparent, #fbbf2480 30%, #34d399a0 50%, #00f0ff90 70%, transparent); filter: blur(4px); animation: sidebar-aurora-travel 6s linear infinite; }
+.sidebar-aurora-core { position: absolute; inset: 0 0 0 auto; width: 2px; background: linear-gradient(180deg, #fbbf24, #34d399 28%, #00f0ff 52%, #a855f7 78%, #f43f5e); box-shadow: 0 0 10px #34d39999, 0 0 20px #a855f755; animation: sidebar-aurora-pulse 4s ease-in-out infinite; }
+@keyframes sidebar-aurora-travel { from { transform: translateY(-100%); } to { transform: translateY(200%); } }
+@keyframes sidebar-aurora-pulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sidebar-aurora > * { animation: none; } }

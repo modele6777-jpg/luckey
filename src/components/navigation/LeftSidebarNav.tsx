@@ -849,6 +849,11 @@ export default function LeftSidebarNav() {
                   : 'bg-neutral-950/95 border-white/10 shadow-[-16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
               }`}
             >
+              <div className="sidebar-aurora" aria-hidden="true">
+                <div className={isLight ? 'sidebar-aurora-veil edge-aurora-veil-light' : 'sidebar-aurora-veil edge-aurora-veil'} />
+                <div className="sidebar-aurora-wave" />
+                <div className="sidebar-aurora-core" />
+              </div>
               {/* Continuous accent; never resets when the pointer leaves. */}
               <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex justify-center shrink-0">
                 <div className="w-8 h-1 rounded-full rainbow-gradient-flow" aria-hidden="true" />
