@@ -96,7 +96,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
 });
 
 // TTS generation endpoint with resilient fallbacks (EdgeTTS -> Google TTS -> OpenAI TTS)
-import { handleTTS } from "../server/api-lib/ttsHandler";
+// Load TTS dependencies only when the TTS route is invoked.
 
 app.post("/api/ai/tts", async (req, res) => {
   const { text, voice = "Aoede", emotion, rate, speed, pitch } = req.body || {};
@@ -105,6 +105,7 @@ app.post("/api/ai/tts", async (req, res) => {
   }
 
   try {
+    const { handleTTS } = await import("../server/api-lib/ttsHandler");
     const result = await handleTTS({ text, voice, emotion, rate, speed, pitch });
     return res.status(200).json(result);
   } catch (err: any) {
