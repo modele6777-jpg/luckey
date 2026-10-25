@@ -550,7 +550,7 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     if (!basic?.birthdate) return null;
 
     // 음력(lunar)인 경우 1900~2050 정밀 한국 천문역법에 따라 양력(solar) 일자로 정확히 변환
-    const { solarDate, isLunar, solarDateString } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar);
+    const { solarDate, isLunar, solarDateString } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar, basic.isLeapMonth ?? false);
     const y = solarDate.year;
     const m = solarDate.month;
     const d = solarDate.day;
