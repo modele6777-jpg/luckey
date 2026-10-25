@@ -121,7 +121,7 @@ app.post("/api/ai/tts", async (req, res) => {
   }
 
   try {
-    const { handleTTS } = await import("../server/api-lib/ttsHandler");
+    const { handleTTS } = await import("../server/api-lib/ttsHandler.ts");
     const result = await handleTTS({ text, voice, emotion, rate, speed, pitch });
     return res.status(200).json(result);
   } catch (err: any) {
