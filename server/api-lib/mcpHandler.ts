@@ -24,7 +24,7 @@ setInterval(() => {
       sseClients.delete(id);
     }
   }
-}, 60000);
+}, 60000).unref();
 
 export const MCP_TOOLS = [
   {
