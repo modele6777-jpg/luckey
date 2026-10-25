@@ -173,7 +173,7 @@ export function getYearSolarTerms(year: number): SolarTermEntry[] {
  * @param birthDate KST 기준 Date 객체
  */
 export function getAstronomicalSajuYear(birthDate: Date): { sajuYear: number; ipchunDate: Date; isBeforeIpchun: boolean } {
-  const calYear = birthDate.getFullYear();
+  const calYear = birthDate.getUTCFullYear();
   // 당해 연도의 입춘 절입시각 확인
   const terms = getYearSolarTerms(calYear);
   const ipchun = terms.find((t) => t.name === '입춘')!;
@@ -209,7 +209,7 @@ export function getAstronomicalMonthBranch(birthDate: Date): {
   currentTerm: SolarTermEntry;
   nextTerm: SolarTermEntry;
 } {
-  const calYear = birthDate.getFullYear();
+  const calYear = birthDate.getUTCFullYear();
   // 전년도, 당해년도, 익년도 절기 목록 통합 수집
   const prevTerms = getYearSolarTerms(calYear - 1);
   const currTerms = getYearSolarTerms(calYear);
