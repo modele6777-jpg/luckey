@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis';
 import { TAROT_DECK } from '../../src/data/tarotData';
 import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle';
 import { handleTTS } from './ttsHandler';
@@ -53,6 +54,8 @@ export const MCP_TOOLS = [
         month: { type: 'number', description: '출생 월 (1~12)' },
         day: { type: 'number', description: '출생 일 (1~31)' },
         isLunar: { type: 'boolean', description: '음력 여부 (기본값: false)' },
+        isLeapMonth: { type: 'boolean', description: '윤달 여부' },
+        birthtime: { type: 'string', description: '출생 시각 HH:MM (선택)' },
       },
     },
   },
@@ -231,39 +234,47 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
       }
 
       if (name === 'get_saju_fortune') {
-        const today = new Date();
-        const year = args.year || today.getFullYear();
-        const month = args.month || today.getMonth() + 1;
-        const day = args.day || today.getDate();
+        const year = Number(args.year);
+        const month = Number(args.month);
+        const day = Number(args.day);
+        if (!Number.isInteger(year) || year < 1900 || year > 2050 ||
+            !Number.isInteger(month) || month < 1 || month > 12 ||
+            !Number.isInteger(day) || day < 1 || day > 31) {
+          throw new Error('출생 연월일을 1900~2050년 범위에서 정확히 입력해 주세요.');
+        }
+        const birthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const analysis = calculateDetailedSaju({
+          basic: {
+            birthdate,
+            birthtime: typeof args.birthtime === 'string' ? args.birthtime : undefined,
+            lunarSolar: args.isLunar ? 'lunar' : 'solar',
+            isLeapMonth: Boolean(args.isLeapMonth),
+          },
+        } as Parameters<typeof calculateDetailedSaju>[0]);
+        if (!analysis) throw new Error('사주 계산에 실패했습니다. 생년월일을 확인해 주세요.');
 
-        // 2026 병오년(丙午年) 붉은 말의 해 기준 오행 흐름
         return {
           jsonrpc: '2.0',
           id,
           result: {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-                    yearPillar: '병오(丙午) - 화(火)의 왕성한 추진력',
-                    elementBalance: {
-                      wood: '성장과 창의성',
-                      fire: '열정과 표현력',
-                      earth: '신뢰와 포용력',
-                      metal: '결단과 명확성',
-                      water: '유연함과 지혜',
-                    },
-                    dailyFortune: '오늘은 생각에 머물지 않고 첫 발을 내딛을 때 행운의 기운이 증폭되는 날입니다.',
-                    luckyColor: '골드 & 앰버',
-                    remedyAction: '중요한 결정 전 3번의 깊은 복식호흡으로 중심을 잡으세요.',
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                birthdate,
+                solarEquivalentDate: analysis.solarEquivalentDate,
+                isLunar: analysis.isLunar,
+                pillars: {
+                  year: analysis.pillars.year.full,
+                  month: analysis.pillars.month.full,
+                  day: analysis.pillars.day.full,
+                  hour: analysis.pillars.hour?.full ?? null,
+                },
+                elementBalance: analysis.elements.counts,
+                dayMaster: analysis.pillars.day.ganKr,
+                interpretation: analysis.elements.summary,
+                note: '사주 해석은 전통적 상징 해석이며 미래 사건을 확정적으로 예측하지 않습니다.',
+              }, null, 2),
+            }],
           },
         };
       }
