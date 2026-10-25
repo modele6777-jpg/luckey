@@ -442,7 +442,7 @@ export function BigBangButton() {
 
 
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const touchStartRef = useRef<{ time: number; x: number; y: number } | null>(null);
+  const touchStartRef = useRef<{ time: number; x: number; y: number; pointerType: string; direction: 'none' | 'north' | 'south' | 'west' | 'east' } | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastPhaseRef = useRef<WarpPhase>('idle');
   const lastEventHorizonModeRef = useRef<'whitehole' | 'mirrorhole' | 'blackhole' | undefined>(undefined);
@@ -585,7 +585,7 @@ export function BigBangButton() {
         accentGlow: 'rgba(56, 189, 248, 0.85)',
         cycleStats: stats,
       };
-    } else if (elapsed >= 220) {
+    } else if (elapsed >= 220 && !(start.pointerType === 'touch' && start.direction !== 'none')) {
       currentHole = 'whitehole';
       const isTextToss = Boolean(textToToss);
       target = {
@@ -730,8 +730,8 @@ export function BigBangButton() {
     rafRef.current = requestAnimationFrame(updateLoop);
   }, [location, isAborted]);
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
 
     const wasScrolling = (Date.now() - lastScrollTimeRef.current < 180) || isPageScrolling;
     touchStartedWhileScrollingRef.current = wasScrolling;
@@ -751,7 +751,9 @@ export function BigBangButton() {
           maxDragDistanceRef.current = d;
         }
         if (d < DRAG_RECOMMEND_THRESHOLD) {
-          const curDir = calculateCardinalDirection(ev.clientX, ev.clientY);
+          const curDir = touchStartRef.current.pointerType === 'touch'
+            ? touchStartRef.current.direction
+            : calculateCardinalDirection(ev.clientX, ev.clientY);
           setHoverDirection(curDir);
           downDirectionRef.current = curDir;
         } else {
@@ -779,13 +781,15 @@ export function BigBangButton() {
     window.addEventListener('pointerup', onGlobalUp);
 
     const now = performance.now();
+    const initialDir = calculateCardinalDirection(e.clientX, e.clientY);
     touchStartRef.current = {
       time: now,
       x: e.clientX,
       y: e.clientY,
+      pointerType: e.pointerType,
+      direction: initialDir,
     };
     currentPointerEventRef.current = e;
-    const initialDir = calculateCardinalDirection(e.clientX, e.clientY);
     downDirectionRef.current = initialDir;
     setHoverDirection(initialDir);
     const liveSel = getActiveSelectionText();
@@ -856,12 +860,14 @@ export function BigBangButton() {
     rafRef.current = requestAnimationFrame(updateLoop);
   };
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isPressing || !touchStartRef.current) return;
     currentPointerEventRef.current = e;
     const d = Math.hypot(e.clientX - touchStartRef.current.x, e.clientY - touchStartRef.current.y);
     if (d < DRAG_RECOMMEND_THRESHOLD) {
-      const curDir = calculateCardinalDirection(e.clientX, e.clientY);
+      const curDir = touchStartRef.current.pointerType === 'touch'
+        ? touchStartRef.current.direction
+        : calculateCardinalDirection(e.clientX, e.clientY);
       setHoverDirection(curDir);
       downDirectionRef.current = curDir;
     } else {
@@ -1129,7 +1135,7 @@ export function BigBangButton() {
     [navigate]
   );
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement> | PointerEvent) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement> | PointerEvent) => {
     cleanupGlobalPointerListeners();
     if (!touchStartRef.current) return;
 
@@ -1227,6 +1233,38 @@ export function BigBangButton() {
       return;
     }
 
+    // 🧭 [원뿔 방향 탭] 상하좌우 원뿔 각진 방향 클릭/터치 시 쉐브론 화살표 기능(스크롤 및 댑 순환 이동) 즉시 실행!
+    // Touch has no preceding hover; use the press snapshot instead of a render closure.
+    const targetDir = start.pointerType === 'touch'
+      ? start.direction
+      : downDirectionRef.current;
+    if (!isDragGesture && targetDir !== 'none' && (start.pointerType === 'touch' || duration < 220)) {
+      if (singleTapTimerRef.current) {
+        clearTimeout(singleTapTimerRef.current);
+        singleTapTimerRef.current = null;
+      }
+      lastTapTimeRef.current = 0;
+      setIsQuickChatOpen(false);
+      downDirectionRef.current = 'none';
+      setHoverDirection('none');
+      if (targetDir === 'north') {
+        cardinalActionsRef.current?.scrollToTop(e);
+      } else if (targetDir === 'south') {
+        cardinalActionsRef.current?.scrollToBottom(e);
+      } else if (targetDir === 'west') {
+        cardinalActionsRef.current?.navigateBack(e);
+      } else if (targetDir === 'east') {
+        cardinalActionsRef.current?.navigateForward(e);
+      }
+      lastValidSelectionRef.current = '';
+      touchStartSelectionRef.current = '';
+      clearPendingSelection();
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      return;
+    }
+
     // 🎙️ [홀드 완료: duration >= 220ms 또는 isPttRecordingRef.current]
     // 제자리 홀드 상태에서 손을 뗀 경우 루시 음성 지원 말풍선 확실하게 유지 + 발송
     const isHoldGesture = isPttRecordingRef.current || duration >= 220;
@@ -1264,30 +1302,6 @@ export function BigBangButton() {
         window.dispatchEvent(
           new CustomEvent('prism:quick_chat_commit_voice')
         );
-      }
-      lastValidSelectionRef.current = '';
-      touchStartSelectionRef.current = '';
-      clearPendingSelection();
-      setActivePhase('idle');
-      setGauge(0);
-      setDurationMs(0);
-      return;
-    }
-
-    // 🧭 [원뿔 방향 탭] 상하좌우 원뿔 각진 방향 클릭/터치 시 쉐브론 화살표 기능(스크롤 및 댑 순환 이동) 즉시 실행!
-    const targetDir = hoverDirection !== 'none' ? hoverDirection : downDirectionRef.current;
-    if (!isDragGesture && !isHoldGesture && duration < 220 && targetDir !== 'none') {
-      setIsQuickChatOpen(false);
-      downDirectionRef.current = 'none';
-      setHoverDirection('none');
-      if (targetDir === 'north') {
-        cardinalActionsRef.current?.scrollToTop(e);
-      } else if (targetDir === 'south') {
-        cardinalActionsRef.current?.scrollToBottom(e);
-      } else if (targetDir === 'west') {
-        cardinalActionsRef.current?.navigateBack(e);
-      } else if (targetDir === 'east') {
-        cardinalActionsRef.current?.navigateForward(e);
       }
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
@@ -1510,6 +1524,8 @@ export function BigBangButton() {
     setIsPressing(false);
     setIsHovered(false);
     setIsAborted(false);
+    downDirectionRef.current = 'none';
+    setHoverDirection('none');
     touchStartRef.current = null;
     currentPointerEventRef.current = null;
     cachedContextRef.current = null;
@@ -1643,7 +1659,11 @@ export function BigBangButton() {
 
         <div
           ref={hoverContainerRef}
-          className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center pointer-events-auto select-none shrink-0"
+          data-bigbang="true"
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+          className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center pointer-events-auto touch-none select-none shrink-0"
           onPointerEnter={(e) => {
             if (e.pointerType === 'mouse') {
               setIsHovered(true);
@@ -1652,6 +1672,7 @@ export function BigBangButton() {
             }
           }}
           onPointerMove={(e) => {
+            handlePointerMove(e);
             if (e.pointerType !== 'mouse' || isPressing) return;
             const dir = calculateCardinalDirection(e.clientX, e.clientY);
             setHoverDirection(dir);
@@ -1674,38 +1695,8 @@ export function BigBangButton() {
             buttonRef.current?.blur();
           }}
         >
-          {/* Keep directional controls independently tappable outside the central gesture button. */}
-          {([
-            { direction: 'north', label: '맨 위로 이동', icon: '⌃', x: 0, y: -60, action: 'scrollToTop' },
-            { direction: 'south', label: '맨 아래로 이동', icon: '⌄', x: 0, y: 60, action: 'scrollToBottom' },
-            { direction: 'west', label: '이전 채널', icon: '‹', x: -60, y: 0, action: 'navigateBack' },
-            { direction: 'east', label: '다음 채널', icon: '›', x: 60, y: 0, action: 'navigateForward' },
-          ] as const).map(({ direction, label, icon, x, y, action }) => (
-            <button
-              key={direction}
-              type="button"
-              data-bigbang="true"
-              aria-label={label}
-              title={label}
-              disabled={isPressing || isCosmicSuctionActive}
-              className="absolute left-1/2 top-1/2 z-40 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-400/30 bg-slate-950/90 text-2xl text-cyan-100 pointer-events-auto touch-manipulation select-none active:bg-cyan-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:pointer-events-none"
-              style={{ transform: 'translate(calc(-50% + ' + x + 'px), calc(-50% + ' + y + 'px))' }}
-              onPointerDown={(e) => e.stopPropagation()}
-              onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsQuickChatOpen(false);
-                setHoverDirection('none');
-                downDirectionRef.current = 'none';
-                cardinalActionsRef.current?.[action](e);
-              }}
-            >
-              <span aria-hidden="true">{icon}</span>
-            </button>
-          ))}
-
-          {/* Expanded radial hover hitbox to encompass 144px arcane circle & cardinal icons (desktop mouse only) */}
-          <div className="absolute -inset-7 rounded-full pointer-events-none sm:pointer-events-auto -z-10" />
+          {/* Existing radial hit area accepts touch as well as mouse input */}
+          <div className="absolute -inset-7 rounded-full pointer-events-auto touch-none -z-10" />
 
           {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 (루시채팅에서는 별도 말풍선 배지 제외) */}
           <AnimatePresence>
@@ -1911,10 +1902,6 @@ export function BigBangButton() {
                 e.preventDefault();
                 goToLucyChat();
               }}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerCancel}
               onPointerLeave={() => {
                 setIsHovered(false);
                 buttonRef.current?.blur();

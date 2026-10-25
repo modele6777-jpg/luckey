@@ -2847,7 +2847,7 @@ html.dual-pane-active .duo-channel-grid {
   }
 
   .bottom-safe-fab-center {
-    bottom: calc(var(--sab, 0px) + 3rem) !important;
+    bottom: calc(var(--sab, 0px) + 1.15rem) !important;
     width: 68px !important;
     height: 68px !important;
   }
