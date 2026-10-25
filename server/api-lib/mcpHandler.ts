@@ -112,6 +112,7 @@ export const MCP_TOOLS = [
           type: 'string',
           description: '현재 느끼는 감정 (불안, 피로, 번아웃, 설렘 등)',
         },
+        excludeTitles: { type: 'array', items: { type: 'string' }, description: '최근 추천받아 제외할 작품 제목 목록 (선택)' },
       },
     },
   },
@@ -391,7 +392,25 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
             prescription: '그림 속에서 가장 마음이 가는 인물을 한 명 찾아보세요.',
           },
         ];
-        const choice = artworks[Math.floor(Math.random() * artworks.length)];
+        // Keep recommendations stateless so concurrent users never share history.
+        // Optional excludeTitles allows clients to avoid their own recent suggestions.
+        const emotion = String(args.emotion || '').toLowerCase().trim();
+        const excludeTitles = Array.isArray(args.excludeTitles)
+          ? args.excludeTitles.filter((title: unknown): title is string => typeof title === 'string')
+          : [];
+        const excluded = new Set(excludeTitles.map((title: string) => title.trim().toLowerCase()));
+        const available = artworks.filter(({ artwork }) => !excluded.has(artwork.title.toLowerCase()));
+        const pool = available.length ? available : artworks;
+        const emotionGroups: { terms: string[]; titles: string[] }[] = [
+          { terms: ['불안', '초조', '걱정', '지침', '피로', '번아웃', 'stress', 'anxious', 'tired'], titles: ['수련 (Water Lilies)', '그랑드 자트 섬의 일요일 오후 (A Sunday Afternoon on the Island of La Grande Jatte)'] },
+          { terms: ['슬픔', '우울', '외로움', 'sad', 'lonely'], titles: ['별이 빛나는 밤 (The Starry Night)', '진주 귀걸이를 한 소녀 (Girl with a Pearl Earring)'] },
+          { terms: ['사랑', '설렘', '행복', '기쁨', 'love', 'happy'], titles: ['키스 (The Kiss)', '그랑드 자트 섬의 일요일 오후 (A Sunday Afternoon on the Island of La Grande Jatte)'] },
+          { terms: ['호기심', '궁금', '집중', 'curious'], titles: ['진주 귀걸이를 한 소녀 (Girl with a Pearl Earring)'] },
+        ];
+        const matched = emotionGroups.find(({ terms }) => terms.some((term) => emotion.includes(term)));
+        const preferred = matched ? pool.filter(({ artwork }) => matched.titles.includes(artwork.title)) : [];
+        const candidates = preferred.length ? preferred : pool;
+        const choice = candidates[Math.floor(Math.random() * candidates.length)];
         return {
           jsonrpc: '2.0',
           id,
