@@ -1,101 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Triangle, X, Download, Share, PlusSquare, Info, Sparkles } from 'lucide-react';
+interface InstallEvent extends Event { prompt(): Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>; }
 
 export default function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const promptRef = useRef<InstallEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isSamsung, setIsSamsung] = useState(false);
-
+  const [isDesktop, setIsDesktop] = useState(false);
   useEffect(() => {
-    // 1. Standalone check
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-    if (isStandalone) {
-      return;
-    }
-
-    // 2. Session check to prevent spamming
-    const isDismissed = sessionStorage.getItem('pwa_prompt_dismissed') === 'true';
-    if (isDismissed) {
-      return;
-    }
-
-    // 3. User agent checks
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone;
+    if (standalone) { document.documentElement.classList.add('pwa-installed'); return; }
     const ua = navigator.userAgent;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    const iosDevice = /iPhone|iPad|iPod/i.test(ua);
-    const samsungDevice = /SamsungBrowser/i.test(ua);
-    
-    setIsIOS(iosDevice);
-    setIsSamsung(samsungDevice);
-
-    let timer: any = null;
-    if (isMobile) {
-      timer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 3500);
-    }
-      
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setShowPrompt(true);
-      if (timer) clearTimeout(timer);
+    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    setIsDesktop(!mobile);
+    setIsIOS(/iPhone|iPad|iPod/i.test(ua));
+    setIsSamsung(/SamsungBrowser/i.test(ua));
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Dismissing the banner must never disable later manual installation.
+    if (mobile && sessionStorage.getItem('pwa_prompt_dismissed') !== 'true') timer = setTimeout(() => setShowPrompt(true), 3500);
+    const beforeInstall = (event: Event) => {
+      event.preventDefault(); promptRef.current = event as InstallEvent;
+      if (sessionStorage.getItem('pwa_prompt_dismissed') !== 'true') setShowPrompt(true);
+      clearTimeout(timer);
     };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => {
-      if (timer) clearTimeout(timer);
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    const installed = () => {
+      promptRef.current = null; setShowPrompt(false); setShowGuide(false);
+      clearTimeout(timer); document.documentElement.classList.add('pwa-installed');
     };
+    window.addEventListener('beforeinstallprompt', beforeInstall);
+    window.addEventListener('appinstalled', installed);
+    return () => { clearTimeout(timer); window.removeEventListener('beforeinstallprompt', beforeInstall); window.removeEventListener('appinstalled', installed); };
   }, []);
-
+  const handleInstallClick = useCallback(async () => {
+    const event = promptRef.current;
+    promptRef.current = null;
+    if (!event) { setShowGuide(true); return; }
+    try {
+      await event.prompt();
+      const { outcome } = await event.userChoice;
+      if (outcome === 'accepted') setShowPrompt(false);
+    } catch { setShowGuide(true); }
+  }, []);
   useEffect(() => {
-    const handleTrigger = () => {
-      // Clear standard dismissed flag so the banner and guides can be displayed
-      sessionStorage.removeItem('pwa_prompt_dismissed');
-      setShowPrompt(true);
-
-      if (deferredPrompt) {
-        // Native prompt works! Trigger it directly.
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(({ outcome }: any) => {
-          if (outcome === 'accepted') {
-            setShowPrompt(false);
-          }
-        });
-      } else {
-        // Fallback: display guide popup for manual addition
-        setShowGuide(true);
-      }
-    };
-
-    window.addEventListener('trigger-pwa-install', handleTrigger);
-    return () => {
-      window.removeEventListener('trigger-pwa-install', handleTrigger);
-    };
-  }, [deferredPrompt]);
-
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setShowPrompt(false);
-      }
-      setDeferredPrompt(null);
-    } else {
-      // No native prompt: show manual guide (especially useful for iOS)
-      setShowGuide(true);
-    }
-  };
-
-  const handleDismiss = () => {
-    sessionStorage.setItem('pwa_prompt_dismissed', 'true');
-    setShowPrompt(false);
-  };
+    const trigger = () => { void handleInstallClick(); };
+    window.addEventListener('trigger-pwa-install', trigger);
+    return () => window.removeEventListener('trigger-pwa-install', trigger);
+  }, [handleInstallClick]);
+  const handleDismiss = () => { sessionStorage.setItem('pwa_prompt_dismissed', 'true'); setShowPrompt(false); };
 
   if (!showPrompt && !showGuide) return null;
 
@@ -144,7 +98,7 @@ export default function InstallPrompt() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-[88px] left-4 right-4 md:left-[50%] md:right-auto md:w-[480px] md:-translate-x-1/2 z-[999] bg-[#08080c]/90 backdrop-blur-xl border border-white/10 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-4 text-white"
+            className="pwa-install-banner fixed bottom-[88px] left-4 right-4 md:left-[50%] md:right-auto md:w-[480px] md:-translate-x-1/2 z-[999] bg-[#08080c]/90 backdrop-blur-xl border border-white/10 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-4 text-white"
           >
             {/* Main prompt body */}
             <div className="flex gap-4 items-center">
@@ -300,7 +254,14 @@ export default function InstallPrompt() {
                   {appConfig.guideSubtitle}
                 </p>
                 
-                {isIOS ? (
+                {isDesktop ? (
+                  <div className="w-full space-y-3 text-left text-xs leading-relaxed text-white/75">
+                    <p>PC의 Chrome 또는 Microsoft Edge에서 <strong className="text-white">https://luckey.goldentuna10.chatgpt.site</strong>를 직접 열어 주세요.</p>
+                    <p>Chrome은 주소창의 설치 아이콘 또는 메뉴의 ‘전송, 저장, 공유’ → ‘앱으로 페이지 설치’를 선택하세요.</p>
+                    <p>Edge는 메뉴 → ‘앱’ → ‘이 사이트를 앱으로 설치’를 선택하세요. 설치 후 별도 앱 창으로 실행됩니다.</p>
+                    <p className="text-white/50">ChatGPT 안의 브라우저에서 설치 창이 뜨지 않으면 위 주소를 PC 브라우저에서 여세요. 설치 메뉴는 브라우저 버전에 따라 다를 수 있습니다.</p>
+                  </div>
+                ) : isIOS ? (
                   <div className="w-full space-y-3.5 text-left font-sans text-xs">
                     <div className="flex items-start gap-3 bg-white/[0.02] p-3 rounded-2xl border border-white/[0.04]">
                       <div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center shrink-0">

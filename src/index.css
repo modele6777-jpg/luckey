@@ -3062,3 +3062,8 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
  max-width: calc(100vw - var(--sites-sidebar-width, 0px));
 }
 .fixed.inset-0.flex.justify-center:is(.items-center, .items-end):not(.pointer-events-none) > * { min-width: 0; flex-shrink: 1; }
+
+.pwa-install-banner { right: calc(var(--sites-sidebar-width, 0px) + 1rem); }
+@media (min-width: 768px) { .pwa-install-banner { left: calc((100% - var(--sites-sidebar-width, 0px)) / 2); right: auto; max-width: calc(100vw - var(--sites-sidebar-width, 0px) - 2rem); } }
+.pwa-installed .pwa-install-action { display: none; }
+@media (display-mode: standalone) { .pwa-install-action { display: none; } }
