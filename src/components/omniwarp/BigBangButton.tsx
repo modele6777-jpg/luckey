@@ -1674,6 +1674,36 @@ export function BigBangButton() {
             buttonRef.current?.blur();
           }}
         >
+          {/* Keep directional controls independently tappable outside the central gesture button. */}
+          {([
+            { direction: 'north', label: '맨 위로 이동', icon: '⌃', x: 0, y: -60, action: 'scrollToTop' },
+            { direction: 'south', label: '맨 아래로 이동', icon: '⌄', x: 0, y: 60, action: 'scrollToBottom' },
+            { direction: 'west', label: '이전 채널', icon: '‹', x: -60, y: 0, action: 'navigateBack' },
+            { direction: 'east', label: '다음 채널', icon: '›', x: 60, y: 0, action: 'navigateForward' },
+          ] as const).map(({ direction, label, icon, x, y, action }) => (
+            <button
+              key={direction}
+              type="button"
+              data-bigbang="true"
+              aria-label={label}
+              title={label}
+              disabled={isPressing || isCosmicSuctionActive}
+              className="absolute left-1/2 top-1/2 z-40 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-400/30 bg-slate-950/90 text-2xl text-cyan-100 pointer-events-auto touch-manipulation select-none active:bg-cyan-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:pointer-events-none"
+              style={{ transform: 'translate(calc(-50% + ' + x + 'px), calc(-50% + ' + y + 'px))' }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsQuickChatOpen(false);
+                setHoverDirection('none');
+                downDirectionRef.current = 'none';
+                cardinalActionsRef.current?.[action](e);
+              }}
+            >
+              <span aria-hidden="true">{icon}</span>
+            </button>
+          ))}
+
           {/* Expanded radial hover hitbox to encompass 144px arcane circle & cardinal icons (desktop mouse only) */}
           <div className="absolute -inset-7 rounded-full pointer-events-none sm:pointer-events-auto -z-10" />
 
