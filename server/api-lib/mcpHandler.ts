@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis.ts';
 import { TAROT_DECK } from '../../src/data/tarotData.ts';
 import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle.ts';
