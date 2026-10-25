@@ -192,7 +192,7 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
         const isReversed = Math.random() < 0.25;
         const randomCard = { ...rawCard, reversed: isReversed };
         const oracle = buildSpecificTarotDailyOracle(randomCard, 'oracle');
-        const detail = (await import('../../src/lib/dailyTarotOracle')).TAROT_DETAILS[randomCard.id];
+        const detail = (await import('../../src/lib/dailyTarotOracle.ts')).TAROT_DETAILS[randomCard.id];
 
         return {
           jsonrpc: '2.0',
