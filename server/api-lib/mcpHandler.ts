@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis';
-import { TAROT_DECK } from '../../src/data/tarotData';
-import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle';
-import { handleTTS } from './ttsHandler';
+import type { Request, Response } from 'express';
+import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis.ts';
+import { TAROT_DECK } from '../../src/data/tarotData.ts';
+import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle.ts';
+// TTS is loaded only when the MCP TTS tool is called.
 
 interface SseClient {
   id: string;
@@ -337,6 +337,7 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
         if (!text) {
           throw new Error('TTS text parameter is required');
         }
+        const { handleTTS } = await import('./ttsHandler.ts');
         const ttsResult = await handleTTS({
           text,
           voice: args.voice || 'Kore',

@@ -16,8 +16,8 @@ import {
   getAstronomicalSajuYear,
   getAstronomicalMonthBranch,
   calculatePreciseDaewun,
-} from './astronomicalSolarTerms';
-import { resolveEffectiveSolarDate } from './lunarCalendar';
+} from './astronomicalSolarTerms.ts';
+import { resolveEffectiveSolarDate } from './lunarCalendar.ts';
 
 // 10간(Ten Heavenly Stems) & 12지(Twelve Earthly Branches)
 export const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'] as const;

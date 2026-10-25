@@ -26,6 +26,22 @@ app.use((req, _res, next) => {
   next();
 });
 
+// MCP routes are also needed in the Vercel entrypoint (not only server.app.ts).
+app.get(["/api/mcp", "/api/mcp/sse"], async (req, res) => {
+  const { handleMCPSseStream } = await import("../server/api-lib/mcpHandler.ts");
+  return handleMCPSseStream(req, res);
+});
+
+app.post(["/api/mcp", "/api/mcp/sse"], async (req, res) => {
+  const { handleMCPDirectPost } = await import("../server/api-lib/mcpHandler.ts");
+  return handleMCPDirectPost(req, res);
+});
+
+app.post("/api/mcp/messages", async (req, res) => {
+  const { handleMCPPostMessage } = await import("../server/api-lib/mcpHandler.ts");
+  return handleMCPPostMessage(req, res);
+});
+
 // Chat completions proxy using Gemini API
 import { GoogleGenAI } from "@google/genai";
 

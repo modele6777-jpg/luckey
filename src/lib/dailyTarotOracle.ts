@@ -1,6 +1,6 @@
-import { getTarotReversedData, getEffectiveTarotKeywords, getTarotCardCaution, type TarotCard } from '@/data/tarotData';
-import type { AuraThemeCard } from '@/lib/auraCards';
-import { getCardSoulBlessing } from '@/lib/tarotBlessings';
+import { getTarotReversedData, getEffectiveTarotKeywords, getTarotCardCaution, type TarotCard } from '../data/tarotData.ts';
+import type { AuraThemeCard } from './auraCards.ts';
+import { getCardSoulBlessing } from './tarotBlessings.ts';
 
 interface DailyOracleResult {
   diagnosis: string;

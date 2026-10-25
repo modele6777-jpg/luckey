@@ -3,7 +3,7 @@
   "functions": {
     "api/index.ts": {
       "maxDuration": 60,
-      "includeFiles": "server/**"
+      "includeFiles": "{server,src}/**"
     },
     "api/ai/tts.ts": {
       "maxDuration": 60,
