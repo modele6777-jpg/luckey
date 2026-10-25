@@ -3,6 +3,7 @@ name: Saju regression checks
 on:
   pull_request:
     paths:
+      - 'api/index.ts'
       - 'src/lib/sajuAnalysis.ts'
       - 'src/lib/astronomicalSolarTerms.ts'
       - 'src/lib/lunarCalendar.ts'
