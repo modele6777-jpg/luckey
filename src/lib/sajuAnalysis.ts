@@ -599,10 +599,11 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     let dayMonth = m;
     let dayDate = d;
     if (h === 23 && minute >= 30) {
-      const nextDay = new Date(y, m - 1, d + 1);
-      dayYear = nextDay.getFullYear();
-      dayMonth = nextDay.getMonth() + 1;
-      dayDate = nextDay.getDate();
+      // UTC 날짜 연산으로 실행 서버/브라우저의 로컬 시간대에 영향을 받지 않도록 한다.
+      const nextDay = new Date(Date.UTC(y, m - 1, d + 1));
+      dayYear = nextDay.getUTCFullYear();
+      dayMonth = nextDay.getUTCMonth() + 1;
+      dayDate = nextDay.getUTCDate();
     }
 
     const a = Math.floor((14 - dayMonth) / 12);
