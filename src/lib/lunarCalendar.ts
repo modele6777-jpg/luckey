@@ -22,7 +22,7 @@ function getCalendarInstance() {
 
 /**
  * Converts a Korean lunar date to a Gregorian solar date.
- * If input is invalid or conversion fails, safely falls back to the original date.
+ * Reject invalid dates instead of silently treating an unconverted lunar date as solar.
  */
 export function convertLunarToSolar(
   year: number,
@@ -40,9 +40,9 @@ export function convertLunarToSolar(
       }
     }
   } catch (err) {
-    console.warn('[LunarCalendar] Failed to convert lunar to solar:', err);
+    throw new RangeError('음력 날짜를 양력으로 변환하지 못했습니다.', { cause: err });
   }
-  return { year, month, day };
+  throw new RangeError('유효하지 않거나 지원되지 않는 음력 날짜입니다.');
 }
 
 /**
@@ -68,9 +68,9 @@ export function convertSolarToLunar(
       }
     }
   } catch (err) {
-    console.warn('[LunarCalendar] Failed to convert solar to lunar:', err);
+    throw new RangeError('양력 날짜를 음력으로 변환하지 못했습니다.', { cause: err });
   }
-  return { year, month, day, isLeapMonth: false };
+  throw new RangeError('유효하지 않거나 지원되지 않는 양력 날짜입니다.');
 }
 
 /**
@@ -110,13 +110,13 @@ export function resolveEffectiveSolarDate(
   const day = parts[2];
   const isLunar = lunarSolar === 'lunar';
 
-  if (!year || !month || !day || isNaN(year) || isNaN(month) || isNaN(day)) {
-    return {
-      solarDate: { year: 1995, month: 1, day: 1 },
-      originalDate: { year: 1995, month: 1, day: 1 },
-      isLunar: false,
-      solarDateString: '1995-01-01',
-    };
+  // 날짜 누락/오입력 시 1995-01-01을 사용하면 타인의 사주처럼 잘못된 결과가 나온다.
+  const validFormat = /^\\d{4}-\\d{1,2}-\\d{1,2}$/.test(birthdateStr);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (!validFormat || !Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day) ||
+      year < 1 || month < 1 || month > 12 || day < 1 || day > 31 ||
+      (!isLunar && (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day))) {
+    throw new RangeError('올바른 생년월일을 입력해 주세요.');
   }
 
   const originalDate = { year, month, day };
