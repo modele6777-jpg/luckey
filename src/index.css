@@ -482,7 +482,7 @@
   .bottom-safe-fab-center {
     position: fixed;
     bottom: calc(var(--sab) + 7.5rem);
-    left: 50% !important;
+    left: calc((100vw - var(--sites-sidebar-width, 70px)) / 2) !important;
     right: auto !important;
     transform: translateX(-50%) !important;
     width: 76px !important;
@@ -2819,7 +2819,7 @@ html.dual-pane-active .duo-channel-grid {
 
   /* Move center-floating BigBang button slightly onto the right thumb pane so it never straddles the physical hinge */
   .bottom-safe-fab-center {
-    left: 75% !important;
+    left: calc((100vw - var(--sites-sidebar-width, 70px)) / 2) !important;
   }
 }
 
@@ -3048,11 +3048,6 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
  .universe-content .duo-channel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
 
-/* Center the controller in the same available area as the main content. */
-.bottom-safe-fab-center { left: calc((100% - var(--sites-sidebar-width, 0px)) / 2) !important; }
-@media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
- .bottom-safe-fab-center { left: calc(75% - var(--sites-sidebar-width, 0px) / 2) !important; }
-}
 
 /* Dialogs use the same available area as the main content. */
 .fixed.inset-0.flex.justify-center:is(.items-center, .items-end):not(.pointer-events-none),
@@ -3065,14 +3060,12 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 
 .pwa-install-banner { right: calc(var(--sites-sidebar-width, 0px) + 1rem); }
 @media (min-width: 768px) { .pwa-install-banner { left: calc((100% - var(--sites-sidebar-width, 0px)) / 2); right: auto; max-width: calc(100vw - var(--sites-sidebar-width, 0px) - 2rem); } }
-.pwa-installed .pwa-install-action { display: none; }
-@media (display-mode: standalone) { .pwa-install-action { display: none; } }
 
 /* Reuse the former edge hint's aurora inside the permanently open rail. */
 .sites-pinned-sidebar > :not(.sidebar-aurora) { position: relative; z-index: 1; }
 .sidebar-aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
-.sidebar-aurora-veil { position: absolute; inset: 0; mask-image: linear-gradient(to left, #000, #0009 65%, transparent); animation: edge-shimmer-flow 7s ease-in-out infinite; opacity: .52; }
-.sidebar-aurora-wave { position: absolute; right: 0; top: 0; width: 28px; height: 50%; background: linear-gradient(180deg, transparent, #fbbf2480 30%, #34d399a0 50%, #00f0ff90 70%, transparent); filter: blur(4px); animation: sidebar-aurora-travel 6s linear infinite; }
+.sidebar-aurora-veil { position: absolute; inset: 0; animation: edge-shimmer-flow 7s ease-in-out infinite; opacity: .65; }
+.sidebar-aurora-wave { position: absolute; right: 0; top: 0; width: 100%; height: 50%; background: linear-gradient(180deg, transparent, #fbbf2480 30%, #34d399a0 50%, #00f0ff90 70%, transparent); filter: blur(4px); animation: sidebar-aurora-travel 6s linear infinite; }
 .sidebar-aurora-core { position: absolute; inset: 0 0 0 auto; width: 2px; background: linear-gradient(180deg, #fbbf24, #34d399 28%, #00f0ff 52%, #a855f7 78%, #f43f5e); box-shadow: 0 0 10px #34d39999, 0 0 20px #a855f755; animation: sidebar-aurora-pulse 4s ease-in-out infinite; }
 @keyframes sidebar-aurora-travel { from { transform: translateY(-100%); } to { transform: translateY(200%); } }
 @keyframes sidebar-aurora-pulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
