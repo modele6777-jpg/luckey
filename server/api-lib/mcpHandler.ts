@@ -369,29 +369,34 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
       }
 
       if (name === 'get_art_prescription') {
+        const artworks = [
+          {
+            artwork: { title: '수련 (Water Lilies)', artist: '클로드 모네 (Claude Monet)', year: '1916', theme: '평온과 깊은 치유', description: '물 위에 비친 빛과 색채가 잠시 시선을 쉬게 합니다.' },
+            prescription: '작품 속 빛이 머무는 지점을 천천히 찾아보세요.',
+          },
+          {
+            artwork: { title: '별이 빛나는 밤 (The Starry Night)', artist: '빈센트 반 고흐 (Vincent van Gogh)', year: '1889', theme: '변화와 감정', description: '소용돌이치는 밤하늘 아래 고요한 마을이 자리합니다.' },
+            prescription: '움직이는 하늘과 고요한 마을 중 지금 더 끌리는 쪽을 살펴보세요.',
+          },
+          {
+            artwork: { title: '키스 (The Kiss)', artist: '구스타프 클림트 (Gustav Klimt)', year: '1907–1908', theme: '관계와 온기', description: '금빛 무늬가 두 인물을 감싸는 작품입니다.' },
+            prescription: '작품 속 거리감과 온기가 어떤 인상을 주는지 적어보세요.',
+          },
+          {
+            artwork: { title: '진주 귀걸이를 한 소녀 (Girl with a Pearl Earring)', artist: '요하네스 페르메이르 (Johannes Vermeer)', year: 'c. 1665', theme: '시선과 호기심', description: '어두운 배경 속 돌아보는 인물의 표정이 시선을 붙듭니다.' },
+            prescription: '인물의 표정을 한 단어로 표현해 보세요.',
+          },
+          {
+            artwork: { title: '그랑드 자트 섬의 일요일 오후 (A Sunday Afternoon on the Island of La Grande Jatte)', artist: '조르주 쇠라 (Georges Seurat)', year: '1884–1886', theme: '일상과 관찰', description: '강가의 다양한 사람들이 작은 색점들로 표현됩니다.' },
+            prescription: '그림 속에서 가장 마음이 가는 인물을 한 명 찾아보세요.',
+          },
+        ];
+        const choice = artworks[Math.floor(Math.random() * artworks.length)];
         return {
           jsonrpc: '2.0',
           id,
           result: {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    artwork: {
-                      title: '수련 (Water Lilies)',
-                      artist: '클로드 모네 (Claude Monet)',
-                      year: '1916',
-                      theme: '평온과 깊은 치유',
-                      description: '잔잔한 수면 위에 피어난 수련과 빛의 반사가 마음의 소음을 지우고 고요한 평화를 선사합니다.',
-                    },
-                    prescription: '빛과 색채의 흐름을 바라보며 마음에 쉼을 선물하세요.',
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
+            content: [{ type: 'text', text: JSON.stringify(choice, null, 2) }],
           },
         };
       }
