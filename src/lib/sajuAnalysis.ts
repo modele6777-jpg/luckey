@@ -571,9 +571,10 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const name = preferredName;
     const nickname = preferredName;
 
-    // 한국 표준시(KST: UTC+9) 기준 생년월일시 Date 생성
+    // 절기 엔진은 KST 벽시계 시각을 UTC 필드에 담은 Date와 비교한다.
+    // 실제 UTC 순간으로 -9시간 변환하면 절기 경계가 9시간 어긋난다.
     const birthHour = h >= 0 ? h : 12;
-    const birthKstDate = new Date(Date.UTC(y, m - 1, d, birthHour, minute, 0) - 9 * 3600 * 1000);
+    const birthKstDate = new Date(Date.UTC(y, m - 1, d, birthHour, minute, 0));
 
     // 1. 천문학적 24절기 입춘(315°) 절입시각 기준 사주 년도(Saju Year) 및 년주 산출
     const { sajuYear } = getAstronomicalSajuYear(birthKstDate);
