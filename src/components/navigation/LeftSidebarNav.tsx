@@ -597,13 +597,15 @@ export default function LeftSidebarNav() {
 
   // Mobile leftward swipe to close when sidebar is already open (left-edge swipe-to-open disabled to prevent accidental mobile swipe navigation)
   useEffect(() => {
-    const EDGE_SWIPE_MIN_DX = 30;
+    const EDGE_SWIPE_OPEN_ZONE = 48; // Right edge trigger zone width in px
+    const EDGE_SWIPE_MIN_DX = 22; // Minimum travel distance to trigger
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
       const touch = e.touches[0];
 
       if (isOpen) {
+        // When drawer is open, swiping right (dx > 0) closes it
         edgeSwipeRef.current = {
           startX: touch.clientX,
           startY: touch.clientY,
@@ -611,7 +613,17 @@ export default function LeftSidebarNav() {
           mode: 'close',
         };
       } else {
-        edgeSwipeRef.current = null;
+        // When drawer is closed, swiping left from the right edge zone (dx < 0) opens it
+        if (touch.clientX >= window.innerWidth - EDGE_SWIPE_OPEN_ZONE) {
+          edgeSwipeRef.current = {
+            startX: touch.clientX,
+            startY: touch.clientY,
+            triggered: false,
+            mode: 'open',
+          };
+        } else {
+          edgeSwipeRef.current = null;
+        }
       }
     };
 
@@ -623,11 +635,23 @@ export default function LeftSidebarNav() {
       const dx = touch.clientX - edgeSwipeRef.current.startX;
       const dy = Math.abs(touch.clientY - edgeSwipeRef.current.startY);
 
+      // Dominant horizontal gesture filter
+      if (Math.abs(dx) <= dy * 0.8) return;
+
       if (edgeSwipeRef.current.mode === 'close') {
-        if (dx >= EDGE_SWIPE_MIN_DX && Math.abs(dx) > dy * 1.3) {
+        if (dx >= EDGE_SWIPE_MIN_DX) {
           edgeSwipeRef.current.triggered = true;
           setIsTouchingSidebar(false);
           setIsOpen(false);
+          triggerHaptic('mirrorhole');
+        }
+      } else if (edgeSwipeRef.current.mode === 'open') {
+        // Leftward swipe from right edge pulls the drawer in
+        if (dx <= -EDGE_SWIPE_MIN_DX) {
+          edgeSwipeRef.current.triggered = true;
+          setIsTouchingSidebar(true);
+          setIsOpen(true);
+          triggerHaptic('whitehole');
         }
       }
     };
@@ -1103,9 +1127,13 @@ export default function LeftSidebarNav() {
               triggerHaptic('whitehole');
               setIsOpen(true);
             }}
+            onTouchEnd={() => {
+              triggerHaptic('whitehole');
+              setIsOpen(true);
+            }}
             aria-label="우측 끝 호버 또는 스와이프로 사이드바 열기"
             title="마우스를 가져가거나 안쪽으로 스와이프하면 사이드바가 열립니다"
-            className="fixed top-0 bottom-0 right-0 w-6 sm:w-8 z-[470] cursor-pointer select-none group pointer-events-auto overflow-visible"
+            className="fixed top-0 bottom-0 right-0 w-8 sm:w-10 z-[470] cursor-pointer select-none group pointer-events-auto overflow-visible touch-pan-y"
           >
             {/* 🌌 레이어 1: 화면 안쪽으로 부드럽게 번져나가는 세로 전면 앰비언트 오로라 커튼 (Ambient Aurora Curtain) */}
             <motion.div
