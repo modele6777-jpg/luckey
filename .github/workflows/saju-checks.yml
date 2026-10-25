@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'api/index.ts'
+      - 'server/api-lib/mcpHandler.ts'
       - 'src/lib/sajuAnalysis.ts'
       - 'src/lib/astronomicalSolarTerms.ts'
       - 'src/lib/lunarCalendar.ts'
