@@ -1,4 +1,4 @@
-import { KOREAN_FAMOUS_POEMS } from "./koreanFamousPoems";
+import { KOREAN_FAMOUS_POEMS } from "./koreanFamousPoems.ts";
 
 export type MuseArtMoodId = "quiet" | "passion" | "refresh" | "planning" | "resurrection";
 

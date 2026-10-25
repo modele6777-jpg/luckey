@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 import {
   buildVerifiedArtRecommendation,
   type ArtRecommendationPayload,
-} from "./museArtCatalog";
+} from "./museArtCatalog.ts";
 
 export interface RecommendArtRequest {
   userContext?: string;
