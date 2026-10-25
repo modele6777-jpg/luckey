@@ -63,7 +63,7 @@ export function convertSolarToLunar(
           year: lunar.year,
           month: lunar.month,
           day: lunar.day,
-          isLeapMonth: Boolean(lunar.isLeapMonth),
+          isLeapMonth: Boolean(lunar.intercalation),
         };
       }
     }
