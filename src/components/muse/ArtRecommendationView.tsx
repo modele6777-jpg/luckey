@@ -20,6 +20,7 @@ import {
   ArrowUp,
   Lock,
 } from "lucide-react";
+import { safeLocalStorage } from '@/utils/safeStorage';
 import { resetAppScroll } from "@/utils/scrollToTop";
 import { ImageOutputActions, downloadImage } from "@/components/ImageOutputActions";
 import { auth, db, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "@/lib/firebase";
@@ -1660,6 +1661,7 @@ export function ArtRecommendationView() {
 
   const [imageFallbackIndex, setImageFallbackIndex] = useState(0);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [imageApiError, setImageApiError] = useState('');
 
   // Safety timer to prevent infinite image loading state (15s for high-res / AI generation)
   useEffect(() => {
@@ -1674,6 +1676,7 @@ export function ArtRecommendationView() {
   useEffect(() => {
     setImageFallbackIndex(0);
     setImageLoadError(false);
+    setImageApiError('');
   }, [recommendation?.catalogId, recommendation?.title]);
 
   const generateNanobananaImage = useCallback(async (
@@ -1683,6 +1686,7 @@ export function ArtRecommendationView() {
     if (isGeneratingImageRef.current) return;
     isGeneratingImageRef.current = true;
     setLoadingImage(true);
+    setImageApiError('');
     try {
       const { displayUrl, source } = await resolveArtworkImage(
         {
@@ -1701,8 +1705,8 @@ export function ArtRecommendationView() {
 
       setNanobananaImage(displayUrl);
       setArtworkImageSource(source);
-      localStorage.setItem(ART_CACHE_KEYS.image, displayUrl);
-      localStorage.setItem(ART_CACHE_KEYS.imageSource, source);
+      safeLocalStorage.setItem(ART_CACHE_KEYS.image, displayUrl);
+      safeLocalStorage.setItem(ART_CACHE_KEYS.imageSource, source);
 
       const today = getTodayDateKey();
       const currentArt = sharedState?.dailyArts?.[today];
@@ -1721,11 +1725,8 @@ export function ArtRecommendationView() {
       }
     } catch (e) {
       console.error("Failed to resolve artwork image:", e);
-      const fallbackUrl = buildPollinationsArtUrl(art);
-      setNanobananaImage(fallbackUrl);
-      setArtworkImageSource("pollinations");
-      localStorage.setItem(ART_CACHE_KEYS.image, fallbackUrl);
-      localStorage.setItem(ART_CACHE_KEYS.imageSource, "pollinations");
+      setImageApiError(e instanceof Error ? e.message : '작품 이미지를 불러오지 못했습니다. 다시 시도해 주세요.');
+      setImageLoadError(true);
     } finally {
       setLoadingImage(false);
       isGeneratingImageRef.current = false;
@@ -2981,6 +2982,7 @@ export function ArtRecommendationView() {
                       <p className="text-xs text-amber-200/70 font-medium mb-4">
                         {recommendation.creator} · {recommendation.era}
                       </p>
+                      {imageApiError && <p role="status" className="mb-4 max-w-sm text-xs text-amber-100/90">{imageApiError}</p>}
                       <div className="flex items-center gap-2">
                         <button
                           type="button"

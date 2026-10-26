@@ -1509,7 +1509,7 @@ export default function HealApp() {
       // Try fast dedicated server endpoint first
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 4000);
+        const timer = setTimeout(() => controller.abort(), 35000);
 
         const apiRes = await fetch('/api/ai/daily-sedona', {
           method: 'POST',

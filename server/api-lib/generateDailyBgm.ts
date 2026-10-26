@@ -117,7 +117,7 @@ function floatTo16BitPCM(float32: Float32Array): Int16Array {
   return out;
 }
 
-export function renderDailyBgmWav(recipe: DailyBgmRecipe, durationSec = 48, sampleRate = 44100): Buffer {
+export function renderDailyBgmBytes(recipe: DailyBgmRecipe, durationSec = 48, sampleRate = 44100): Uint8Array {
   const numSamples = Math.floor(sampleRate * durationSec);
   const rand = mulberry32(recipe.seed ^ 0x9e3779b9);
   const left = new Float32Array(numSamples);
@@ -203,7 +203,7 @@ export function renderDailyBgmWav(recipe: DailyBgmRecipe, durationSec = 48, samp
 
   const pcm = floatTo16BitPCM(interleaved);
   const dataSize = pcm.length * 2;
-  const buffer = Buffer.alloc(44 + dataSize);
+  const buffer = new Uint8Array(44 + dataSize);
   const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 
   writeAscii(view, 0, 'RIFF');
@@ -225,6 +225,10 @@ export function renderDailyBgmWav(recipe: DailyBgmRecipe, durationSec = 48, samp
   }
 
   return buffer;
+}
+
+export function renderDailyBgmWav(recipe: DailyBgmRecipe, durationSec = 48, sampleRate = 44100): Buffer {
+  return Buffer.from(renderDailyBgmBytes(recipe, durationSec, sampleRate));
 }
 
 export function generateDailyBgmBuffer(input: DailyBgmInput): {

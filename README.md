@@ -36,3 +36,9 @@ View your app in AI Studio: https://ai.studio/apps/74fc4969-44a5-40f7-b5bd-e3b32
 Sites D1의 `DB` 바인딩을 사용하며 `drizzle/0000_sites_sync.sql`은 계정별 저장소와 버전 충돌 검사를 정의합니다. 테이블은 게시 시 마이그레이션으로 생성합니다. AI 요청은 기존 서버 연결을 유지합니다.
 
 검사: `node scripts/test-sites-sync.mjs`, `node scripts/test-batched-persistence.mjs`, `node scripts/test-bigbang-mobile.mjs`.
+
+## Sites 내부 AI API (1.4.476)
+
+`server/sites-api.ts`를 Worker용으로 묶어 기존 API 경로를 직접 처리합니다. 기본 텍스트 모델은 `gemini-3.1-flash-lite`, 음성은 `gemini-2.5-flash-preview-tts`, 이미지는 `gemini-3.1-flash-lite-image`이며 각각 `GEMINI_MODEL`, `GEMINI_TTS_MODEL`, `GEMINI_IMAGE_MODEL`로 설정할 수 있습니다. 미디어 모델의 Google 권한·한도는 별도이며 이미지 생성 한도 오류를 성공으로 대체하지 않습니다.
+
+검사: `node --import tsx --test tests/sites-api.test.ts`, `node scripts/test-sites-gemini-chat.mjs`. `scripts/audit-sites-api.mjs`의 `--live-media`는 실제 음성·이미지 모델을 추가 호출하므로 사용량이 발생합니다. 키는 숨김 표준입력으로만 전달합니다.

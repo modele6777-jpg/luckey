@@ -283,7 +283,7 @@ const updateTTSState = (newState: Partial<TTSState>) => {
 
 export interface TTSAudioData {
   audioContent: string;
-  encoding: 'pcm' | 'mp3';
+  encoding: 'pcm' | 'mp3' | 'wav';
   sampleRate: number;
 }
 
@@ -329,7 +329,7 @@ export function prefetchTTS(text: string, voice?: string, emotion?: string, _rat
       if (data?.audioContent) {
         return {
           audioContent: data.audioContent,
-          encoding: data.encoding === 'pcm' ? 'pcm' : 'mp3',
+          encoding: data.encoding === 'pcm' ? 'pcm' : data.encoding === 'wav' ? 'wav' : 'mp3',
           sampleRate: data.sampleRate ?? 24000,
         };
       }
@@ -511,7 +511,7 @@ export const playTTS = async (
       if (rawData?.audioContent) {
         data = {
           audioContent: rawData.audioContent,
-          encoding: rawData.encoding === 'pcm' ? 'pcm' : 'mp3',
+          encoding: rawData.encoding === 'pcm' ? 'pcm' : rawData.encoding === 'wav' ? 'wav' : 'mp3',
           sampleRate: rawData.sampleRate ?? 24000,
         };
         ttsCache.set(cacheKey, Promise.resolve(data));
@@ -541,7 +541,7 @@ export const playTTS = async (
     setTTSSessionActive(isSequenceChunk ? (ttsState.activeSentence || cleanText) : speakingSubSentence);
 
     if (data?.audioContent) {
-      const encoding = data.encoding === 'pcm' ? 'pcm' : 'mp3';
+      const encoding = data.encoding === 'pcm' ? 'pcm' : data.encoding === 'wav' ? 'wav' : 'mp3';
       const playAudio = async () => {
         try {
           await playTTSAudio(
@@ -630,7 +630,7 @@ export const playTTS = async (
                 ...(fullTextReference ? { activeFullText: fullTextReference } : {}),
               });
               setTTSSessionActive(cleanText);
-              const encoding = retryData.encoding === 'pcm' ? 'pcm' : 'mp3';
+              const encoding = retryData.encoding === 'pcm' ? 'pcm' : retryData.encoding === 'wav' ? 'wav' : 'mp3';
               await playTTSAudio(retryData.audioContent, encoding, retryData.sampleRate ?? 24000, activeEmotion || cleanText, isSequenceChunk, 1.0);
               return;
             }

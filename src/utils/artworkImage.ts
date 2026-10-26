@@ -186,42 +186,25 @@ export async function resolveArtworkImage(
   art: ArtworkImageInput,
   options?: { forcePollinations?: boolean },
 ): Promise<ResolvedArtworkImage> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 65000);
+  let received = false;
   try {
-    const response = await fetch("/api/muse/artwork-image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...art, ...options }),
+    const response = await fetch('/api/muse/artwork-image', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...art, ...options }), signal: controller.signal,
     });
-
-    const raw = await response.text();
-    let data: { url?: string; displayUrl?: string; source?: ArtworkImageSource; error?: string } = {};
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      const fallbackUrl = buildPollinationsArtUrl(art, 1024, 768);
-      return { url: fallbackUrl, displayUrl: fallbackUrl, source: "pollinations" };
-    }
-
-    if (!response.ok || (!data.url && !data.displayUrl)) {
-      const fallbackUrl = buildPollinationsArtUrl(art, 1024, 768);
-      return { url: fallbackUrl, displayUrl: fallbackUrl, source: "pollinations" };
-    }
-
-    const resolvedUrl = data.url || "";
-    const resolvedDisplayUrl = data.displayUrl || data.url || "";
-    const resolvedSource = resolveArtworkSource(data.source, resolvedDisplayUrl || resolvedUrl);
-
-    return {
-      url: resolvedUrl,
-      displayUrl: resolvedDisplayUrl,
-      source: resolvedSource,
-    };
-  } catch {
-    const fallbackUrl = buildPollinationsArtUrl(art, 1024, 768);
-    return {
-      url: fallbackUrl,
-      displayUrl: fallbackUrl,
-      source: "pollinations",
-    };
-  }
+    received = true;
+    let data: { url?: string; displayUrl?: string; source?: ArtworkImageSource; error?: string };
+    try { data = await response.json(); }
+    catch { throw new Error('작품 이미지 응답을 읽지 못했습니다. 다시 시도해 주세요.'); }
+    if (!response.ok || (!data.url && !data.displayUrl)) throw new Error(data.error || '작품 이미지를 불러오지 못했습니다. 다시 시도해 주세요.');
+    const url = data.url || '';
+    const displayUrl = data.displayUrl || url;
+    return { url, displayUrl, source: resolveArtworkSource(data.source, displayUrl || url) };
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error('이미지 요청 시간이 초과되었습니다. 다시 시도해 주세요.');
+    if (!received) throw new Error('이미지 서버에 연결하지 못했습니다. 연결을 확인해 주세요.');
+    throw error;
+  } finally { clearTimeout(timer); }
 }
