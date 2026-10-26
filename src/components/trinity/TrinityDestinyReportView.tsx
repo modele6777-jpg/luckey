@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -501,7 +502,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   } = saju;
 
   return (
-    <div className="duo-split-workspace max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 text-left">
+    <DuoWorkspace className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 text-left">
 <section className="duo-workspace-input" aria-label="사주 정보와 명식">
 <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1b1c22] via-[#14151a] to-[#101115] border border-amber-500/30 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
         <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
@@ -659,7 +660,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
         </AnimatePresence>
       </div>
 <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="duo-workspace-actions flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
               <Layers size={16} />
@@ -723,7 +724,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
                 {/* 지장간 & 12운성 */}
                 <div className="pt-2 border-t border-white/10 space-y-1 text-[10px] font-mono text-zinc-400">
-                  <div className="flex justify-between items-center">
+                  <div className="duo-workspace-actions flex justify-between items-center">
                     <span className="text-zinc-500">지장간:</span>
                     <span className="text-zinc-300 font-serif">
                       {pillars.hour.hiddenStems ? (
@@ -733,7 +734,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                       ) : (JIJANGAN_MAP[pillars.hour.zhi] || []).join(' ')}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="duo-workspace-actions flex justify-between items-center">
                     <span className="text-zinc-500">12운성:</span>
                     <span className="text-amber-300 font-bold">{pillars.hour.twelveStage || getTwelveStage(pillars.hour.zhi)}</span>
                   </div>
@@ -792,7 +793,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
               {/* 지장간 & 12운성 */}
               <div className="pt-2 border-t border-amber-500/20 space-y-1 text-[10px] font-mono text-zinc-400">
-                <div className="flex justify-between items-center">
+                <div className="duo-workspace-actions flex justify-between items-center">
                   <span className="text-zinc-500">지장간:</span>
                   <span className="text-amber-200 font-serif font-medium">
                     {pillars.day.hiddenStems ? (
@@ -802,7 +803,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                     ) : (JIJANGAN_MAP[pillars.day.zhi] || []).join(' ')}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="duo-workspace-actions flex justify-between items-center">
                   <span className="text-zinc-500">12운성:</span>
                   <span className="text-amber-300 font-bold">{pillars.day.twelveStage || getTwelveStage(pillars.day.zhi)}</span>
                 </div>
@@ -848,7 +849,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
               {/* 지장간 & 12운성 */}
               <div className="pt-2 border-t border-white/10 space-y-1 text-[10px] font-mono text-zinc-400">
-                <div className="flex justify-between items-center">
+                <div className="duo-workspace-actions flex justify-between items-center">
                   <span className="text-zinc-500">지장간:</span>
                   <span className="text-zinc-300 font-serif">
                     {pillars.month.hiddenStems ? (
@@ -858,7 +859,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                     ) : (JIJANGAN_MAP[pillars.month.zhi] || []).join(' ')}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="duo-workspace-actions flex justify-between items-center">
                   <span className="text-zinc-500">12운성:</span>
                   <span className="text-amber-300 font-bold">{pillars.month.twelveStage || getTwelveStage(pillars.month.zhi)}</span>
                 </div>
@@ -904,7 +905,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
               {/* 지장간 & 12운성 */}
               <div className="pt-2 border-t border-white/10 space-y-1 text-[10px] font-mono text-zinc-400">
-                <div className="flex justify-between items-center">
+                <div className="duo-workspace-actions flex justify-between items-center">
                   <span className="text-zinc-500">지장간:</span>
                   <span className="text-zinc-300 font-serif">
                     {pillars.year.hiddenStems ? (
@@ -914,7 +915,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                     ) : (JIJANGAN_MAP[pillars.year.zhi] || []).join(' ')}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="duo-workspace-actions flex justify-between items-center">
                   <span className="text-zinc-500">12운성:</span>
                   <span className="text-amber-300 font-bold">{pillars.year.twelveStage || getTwelveStage(pillars.year.zhi)}</span>
                 </div>
@@ -1006,7 +1007,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
               {/* 3. 오늘의 행운 보약 처방 (동적 맞춤 처방전) */}
               <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 space-y-2.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between gap-1">
+                <div className="duo-workspace-actions flex items-center justify-between gap-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 font-mono">
                       <span>🌿</span> 오늘의 행운 보약 처방
@@ -1042,7 +1043,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
                 {/* 핵심 4대 맞춤 처방 (컬러, 보약 음식, 힐링 티, 개운 리추얼) */}
                 <div className="space-y-2 text-xs text-zinc-300">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="duo-workspace-actions flex items-center justify-between gap-2">
                     <span className="text-zinc-400 shrink-0">행운 컬러:</span>
                     <span className="font-bold text-white px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 text-[11px]">
                       {todayReport.remedy.luckyColor}
@@ -1050,7 +1051,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                   </div>
 
                   <div className="space-y-0.5">
-                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                    <div className="duo-workspace-actions flex items-center justify-between text-zinc-400 text-[11px]">
                       <span>추천 보약 음식:</span>
                       <span className="text-[10px] text-zinc-500">약선 식단</span>
                     </div>
@@ -1061,7 +1062,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
                   {/* 추천 힐링 티 - 내용 전체가 잘림 없이 온전히 보이도록 구성 */}
                   <div className="space-y-0.5">
-                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                    <div className="duo-workspace-actions flex items-center justify-between text-zinc-400 text-[11px]">
                       <span>추천 힐링 티:</span>
                       <span className="text-[10px] text-emerald-400/80 font-mono">HEALING TEA</span>
                     </div>
@@ -1071,7 +1072,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                   </div>
 
                   <div className="space-y-0.5">
-                    <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                    <div className="duo-workspace-actions flex items-center justify-between text-zinc-400 text-[11px]">
                       <span>개운 실천 팁:</span>
                       <span className="text-[10px] text-amber-400/80 font-mono">RITUAL</span>
                     </div>
@@ -1082,7 +1083,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
                   {/* 길한 시간 (Golden Hour) */}
                   <div className="pt-0.5">
-                    <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2 text-[11px]">
+                    <div className="duo-workspace-actions p-2 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2 text-[11px]">
                       <span className="text-zinc-400 flex items-center gap-1.5 shrink-0">
                         <span>⏰</span> <span>길한 시간:</span>
                       </span>
@@ -1130,7 +1131,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
               <motion.div
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-xs text-amber-200 flex items-center justify-between gap-3"
+                className="duo-workspace-actions px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-xs text-amber-200 flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
@@ -1149,7 +1150,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       )}
-<div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1b1c24] via-[#14151a] to-[#121318] border border-amber-500/30 shadow-2xl space-y-6">
+<div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1b1c24] via-[#14151a] to-[#121318] border border-amber-500/30 shadow-2xl space-y-6 duo-workspace-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
@@ -1177,7 +1178,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* 격국 설명 */}
           <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="duo-workspace-actions flex items-center justify-between">
               <span className="text-xs font-bold text-amber-400 flex items-center gap-1 font-serif">
                 <span>🏛️</span> 정통 격국: {geokguk.name}
               </span>
@@ -1192,7 +1193,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
           {/* 신강/신약 설명 및 득령/득지 뱃지 */}
           <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="duo-workspace-actions flex items-center justify-between">
               <span className="text-xs font-bold text-purple-400 flex items-center gap-1">
                 <span>⚖️</span> 본원 세력: {bodyStrength.level}
               </span>
@@ -1213,7 +1214,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
         {/* 용신·희신·기신 정통 3대 에너지 처방 */}
         <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent border border-amber-500/20 space-y-2">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="duo-workspace-actions flex items-center justify-between flex-wrap gap-2">
             <span className="text-xs font-bold text-amber-300 flex items-center gap-1">
               <Sparkles size={14} className="text-amber-400" />
               <span>정통 억부·조후 용신(用神) & 희신(喜神) 배합</span>
@@ -1304,7 +1305,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       )}
-<div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6">
+<div className="rounded-3xl p-6 sm:p-8 bg-[#18191e]/95 border border-white/10 shadow-2xl space-y-6 duo-workspace-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
@@ -1352,7 +1353,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                     : 'bg-white/[0.02] border-white/5'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="duo-workspace-actions flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
                     <ElIcon size={14} className={ELEMENT_COLORS[el].text} />
                     <span className="font-serif font-bold text-sm text-white">{detail.hanja} ({el})</span>
@@ -1372,7 +1373,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                   />
                 </div>
 
-                <div className="flex justify-between items-center text-[10px] text-zinc-400">
+                <div className="duo-workspace-actions flex justify-between items-center text-[10px] text-zinc-400">
                   <span>{detail.direction}</span>
                   {isDominant && (
                     <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold">
@@ -1561,7 +1562,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {specialStructures.map((struct, idx) => (
               <div key={idx} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
-                <div className="flex items-center justify-between">
+                <div className="duo-workspace-actions flex items-center justify-between">
                   <span className="text-xs font-bold text-amber-300">{struct.name}</span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-zinc-400">
                     {struct.category}
@@ -1578,7 +1579,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
         className="no-swipe rounded-3xl overflow-hidden bg-[#18191c] border border-amber-400/30 shadow-2xl flex flex-col backdrop-blur-xl"
       >
         {/* 헤더 */}
-        <div className="px-5 py-4 bg-gradient-to-r from-[#212328] via-[#1d1e22] to-[#212328] border-b border-white/10 flex items-center justify-between">
+        <div className="duo-workspace-actions px-5 py-4 bg-gradient-to-r from-[#212328] via-[#1d1e22] to-[#212328] border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 p-0.5 shadow-md">
               <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-lg">
@@ -1666,7 +1667,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                     📜
                   </div>
                   <div className="max-w-[88%] px-4 py-3 rounded-2xl rounded-tl-sm bg-[#24262b] border border-white/10 text-xs sm:text-sm text-zinc-100 leading-relaxed shadow-md">
-                    <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/5 text-[10px] text-amber-300/80 font-bold">
+                    <div className="duo-workspace-actions flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/5 text-[10px] text-amber-300/80 font-bold">
                       <div className="flex items-center gap-1.5">
                         <span>명리 마스터 루시</span>
                         <span className="text-zinc-500 font-mono">{item.time}</span>
@@ -1758,6 +1759,6 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
         </form>
       </div>
 </section>
-</div>
+</DuoWorkspace>
   );
 }

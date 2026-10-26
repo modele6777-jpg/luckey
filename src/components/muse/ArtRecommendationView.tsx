@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -2312,7 +2313,7 @@ export function ArtRecommendationView() {
   }, [recommendation]);
 
   return (
-    <div className="duo-split-workspace w-full max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-6 md:py-12 text-white">
+    <DuoWorkspace className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-6 md:py-12 text-white">
 <div className="duo-workspace-header"><motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -2406,7 +2407,7 @@ export function ArtRecommendationView() {
                       key={card.id || card.cardIndex || idx}
                       className="p-3 rounded-2xl bg-white/[0.04] border border-purple-400/20 flex flex-col gap-1 shadow-sm"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="duo-workspace-actions flex items-center justify-between">
                         <span className="text-[10px] font-mono text-amber-400 font-bold">CARD #{idx + 1}</span>
                         {cardKw && (
                           <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-200 font-medium">
@@ -2514,7 +2515,7 @@ export function ArtRecommendationView() {
               animate={{ opacity: 1, y: 0 }}
               className="p-5 sm:p-7 rounded-[28px] bg-gradient-to-br from-blue-950/30 via-zinc-900/80 to-purple-950/20 border border-blue-500/30 shadow-xl backdrop-blur-xl space-y-4 text-left"
             >
-              <div className="flex items-center justify-between gap-2 flex-wrap border-b border-white/10 pb-3">
+              <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300">
                     <Sparkles size={14} className="animate-pulse" />
@@ -2625,7 +2626,7 @@ export function ArtRecommendationView() {
             className="space-y-8"
           >
 {(recommendation as any)?.userConcern && (
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/15 to-purple-500/10 border border-blue-400/40 flex items-center justify-between gap-3 text-left shadow-md">
+              <div className="duo-workspace-actions p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/15 to-purple-500/10 border border-blue-400/40 flex items-center justify-between gap-3 text-left shadow-md">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="text-lg shrink-0">💬</span>
                   <div className="min-w-0">
@@ -2703,7 +2704,7 @@ export function ArtRecommendationView() {
                 transition={{ duration: 0.75, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                 className="p-6 md:p-8 rounded-[32px] bg-gradient-to-br from-rose-950/30 via-zinc-900 to-black border border-rose-500/20 space-y-5 shadow-2xl backdrop-blur-xl"
               >
-                <div className="flex items-center justify-between">
+                <div className="duo-workspace-actions flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300">
                       <Music size={18} />
@@ -2741,7 +2742,7 @@ export function ArtRecommendationView() {
                   youtubeVideoId={recommendation.famousSong.youtubeVideoId}
                 />
 
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
+                <div className="duo-workspace-actions flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
                   <p className="text-[10px] text-white/40 leading-relaxed">
                     <span className="font-black uppercase tracking-wider text-white/30">출처</span>
                     {" "}{recommendation.famousSong.songSourceName || "Apple Music Classical / YouTube"}
@@ -2757,7 +2758,7 @@ export function ArtRecommendationView() {
                 transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                 className="p-6 md:p-8 rounded-[32px] bg-gradient-to-br from-emerald-950/30 via-zinc-900 to-black border border-emerald-500/20 space-y-5 shadow-2xl backdrop-blur-xl"
               >
-                <div className="flex items-center justify-between">
+                <div className="duo-workspace-actions flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-300">
                       <BookOpen size={18} />
@@ -2800,7 +2801,7 @@ export function ArtRecommendationView() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
+                <div className="duo-workspace-actions flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
                   <p className="text-[10px] text-white/40 leading-relaxed">
                     <span className="font-black uppercase tracking-wider text-white/30">출처</span>
                     {" "}{recommendation.famousPoem.poemSourceName || "시요일 라이브러리"}
@@ -2850,7 +2851,7 @@ export function ArtRecommendationView() {
 
               <div className="relative z-10 space-y-8">
                 {/* Meta details */}
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/5 pb-5">
+                <div className="duo-workspace-actions flex flex-wrap items-center justify-between gap-4 border-b border-white/5 pb-5">
                   <div className="flex items-center gap-2.5">
                     <span className="px-3.5 py-1.5 rounded-xl bg-blue-500/15 border border-blue-400/30 text-[11px] font-black uppercase tracking-widest text-blue-300 flex items-center gap-1.5 shadow-sm">
                       <Palette size={13} />
@@ -3260,6 +3261,6 @@ export function ArtRecommendationView() {
       </AnimatePresence>
 {!recommendation && !loading && (<div className="duo-workspace-empty"><p>오늘의 예술을 생성하면 명곡·명시·명화를 함께 감상할 수 있어요.</p></div>)}
 </section>
-</div>
+</DuoWorkspace>
   );
 }

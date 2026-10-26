@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -458,7 +459,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
   };
 
   return (
-    <div className="duo-split-workspace text-left animate-fade-in font-sans w-full max-w-6xl mx-auto px-2 sm:px-4 text-white">
+    <DuoWorkspace className="text-left animate-fade-in font-sans w-full max-w-6xl mx-auto px-2 sm:px-4 text-white">
 <div className="duo-workspace-header"><div className="text-center space-y-3 pt-2 relative">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-xs font-mono tracking-widest uppercase">
           <ShieldCheck size={14} />
@@ -544,7 +545,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                 key={issue}
                 type="button"
                 onClick={() => startQuickSos(issue)}
-                className="p-4 rounded-2xl bg-white/[0.02] hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/30 text-left transition-all group cursor-pointer flex items-center justify-between"
+                className="duo-workspace-actions p-4 rounded-2xl bg-white/[0.02] hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/30 text-left transition-all group cursor-pointer flex items-center justify-between"
               >
                 <span className="text-xs font-medium text-white/80 group-hover:text-amber-200 leading-snug">{issue}</span>
                 <ArrowRight size={14} className="text-white/20 group-hover:text-amber-300 shrink-0 ml-2" />
@@ -564,7 +565,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
       )}
 {activeTab === 'workshop' && (
         <div className="w-full rounded-3xl bg-zinc-950/80 border border-emerald-500/25 p-5 sm:p-8 md:p-10 backdrop-blur-2xl space-y-8 shadow-2xl relative overflow-hidden">
-<div className="flex items-center justify-between border-b border-white/10 pb-4">
+<div className="duo-workspace-actions flex items-center justify-between border-b border-white/10 pb-4">
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold">
                 STEP {currentStep + 1} / 5
@@ -621,7 +622,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
 
               {/* Hawkins Consciousness Level Selection */}
               <div className="space-y-3 pt-4">
-                <div className="flex items-center justify-between">
+                <div className="duo-workspace-actions flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-100 flex items-center gap-2">
                     <Compass size={16} className="text-emerald-400" />
                     <span>호킨스 의식 스펙트럼 (고민 맞춤 자동 주파수)</span>
@@ -645,7 +646,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                             : 'border-white/5 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05]'
                         }`}
                       >
-                        <div className="flex justify-between items-center mb-1">
+                        <div className="duo-workspace-actions flex justify-between items-center mb-1">
                           <span className="text-xs font-bold text-white">{emo.nameKo.split(' ')[0]}</span>
                           <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/70">
                             {emo.level}
@@ -660,7 +661,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
 
               {/* Pre-SUDS Slider */}
               <div className="space-y-2 pt-2 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                <div className="flex justify-between items-center text-xs">
+                <div className="duo-workspace-actions flex justify-between items-center text-xs">
                   <span className="text-white/70 font-semibold">지금 이 감정의 고통 전압 (SUDS 지수: 0 ~ 10)</span>
                   <span className="font-mono text-emerald-400 font-bold text-sm">{preSuds} / 10</span>
                 </div>
@@ -672,7 +673,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                   onChange={(e) => setPreSuds(Number(e.target.value))}
                   className="w-full accent-emerald-400 cursor-pointer"
                 />
-                <div className="flex justify-between text-[9px] text-white/30 font-mono">
+                <div className="duo-workspace-actions flex justify-between text-[9px] text-white/30 font-mono">
                   <span>1 (미미함)</span>
                   <span>5 (답답함)</span>
                   <span>10 (숨 막히고 압도됨)</span>
@@ -709,7 +710,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
 
               {/* SECTION A: Thought-Stopping Protocol (생각 멈춤 실천 도구함) */}
               <div className="p-5 sm:p-6 rounded-3xl bg-zinc-900/70 border border-emerald-500/30 space-y-5 max-w-2xl mx-auto shadow-xl">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="duo-workspace-actions flex items-center justify-between border-b border-white/10 pb-3">
                   <div className="flex items-center gap-2">
                     <Brain size={18} className="text-emerald-400" />
                     <span className="text-xs sm:text-sm font-bold text-white">
@@ -1264,7 +1265,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
           {/* Section 1: Hawkins Canon Grid */}
           {(codexFilter === 'all' || codexFilter === 'hawkins') && (
             <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+              <div className="duo-workspace-actions flex items-center justify-between border-b border-emerald-500/20 pb-2">
                 <h4 className="text-sm font-bold text-emerald-300 uppercase tracking-widest font-mono flex items-center gap-2">
                   <ShieldCheck size={16} />
                   <span>1. 데이비드 호킨스의 4대 항복(Surrender) 원리</span>
@@ -1278,7 +1279,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                   return (
                     <div key={key} className="p-5 rounded-3xl bg-white/[0.02] border border-white/5 space-y-3 hover:border-emerald-500/30 transition-all flex flex-col justify-between">
                       <div className="space-y-2">
-                        <div className="flex justify-between items-start gap-2">
+                        <div className="duo-workspace-actions flex justify-between items-start gap-2">
                           <div>
                             <h5 className="text-xs sm:text-sm font-bold text-white">{item.title}</h5>
                             <span className="text-[9px] font-mono text-emerald-400/70">{item.englishTerm}</span>
@@ -1309,7 +1310,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
           {/* Section 2: Sedona Canon Grid */}
           {(codexFilter === 'all' || codexFilter === 'sedona') && (
             <div className="space-y-4 pt-4">
-              <div className="flex items-center justify-between border-b border-indigo-500/20 pb-2">
+              <div className="duo-workspace-actions flex items-center justify-between border-b border-indigo-500/20 pb-2">
                 <h4 className="text-sm font-bold text-indigo-300 uppercase tracking-widest font-mono flex items-center gap-2">
                   <Feather size={16} />
                   <span>2. 레스터 레븐슨의 세도나 4대 릴리즈 공식</span>
@@ -1323,7 +1324,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                   return (
                     <div key={key} className="p-5 rounded-3xl bg-white/[0.02] border border-white/5 space-y-3 hover:border-indigo-500/30 transition-all flex flex-col justify-between">
                       <div className="space-y-2">
-                        <div className="flex justify-between items-start gap-2">
+                        <div className="duo-workspace-actions flex justify-between items-start gap-2">
                           <div>
                             <h5 className="text-xs sm:text-sm font-bold text-white">{item.title}</h5>
                             <span className="text-[9px] font-mono text-indigo-400/70">{item.englishTerm}</span>
@@ -1354,7 +1355,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
           {/* Section 3: Hawkins Emotional Spectrum */}
           {(codexFilter === 'all' || codexFilter === 'spectrum') && (
             <div className="space-y-4 pt-4">
-              <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+              <div className="duo-workspace-actions flex items-center justify-between border-b border-amber-500/20 pb-2">
                 <h4 className="text-sm font-bold text-amber-300 uppercase tracking-widest font-mono flex items-center gap-2">
                   <Compass size={16} />
                   <span>3. 호킨스 의식 스펙트럼 8대 감정 주파수 (Scale of Consciousness)</span>
@@ -1370,7 +1371,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                       className="p-4 rounded-3xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-amber-500/30 transition-all flex flex-col justify-between"
                     >
                       <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
+                        <div className="duo-workspace-actions flex justify-between items-center">
                           <span className="text-xs font-bold text-white">{emo.nameKo}</span>
                           <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-amber-300 font-bold">
                             Lv.{emo.level}
@@ -1401,7 +1402,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
           {/* Section 4: Sedona 4 Root Desires */}
           {(codexFilter === 'all' || codexFilter === 'desires') && (
             <div className="space-y-4 pt-4">
-              <div className="flex items-center justify-between border-b border-teal-500/20 pb-2">
+              <div className="duo-workspace-actions flex items-center justify-between border-b border-teal-500/20 pb-2">
                 <h4 className="text-sm font-bold text-teal-300 uppercase tracking-widest font-mono flex items-center gap-2">
                   <Layers size={16} />
                   <span>4. 세도나 4대 근원 결핍 욕구 해체 가이드</span>
@@ -1417,7 +1418,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                       className="p-5 rounded-3xl bg-white/[0.02] border border-white/5 space-y-3 hover:border-teal-500/30 transition-all flex flex-col justify-between"
                     >
                       <div className="space-y-2">
-                        <div className="flex justify-between items-start">
+                        <div className="duo-workspace-actions flex justify-between items-start">
                           <div className="flex items-center gap-2">
                             <span className="text-2xl">{desire.icon}</span>
                             <div>
@@ -1494,7 +1495,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
 
               {/* Peace & Liberation Affirmation Card */}
               <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-950/40 via-zinc-900 to-teal-950/30 border border-emerald-500/30 text-center space-y-3 shadow-xl">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                <div className="duo-workspace-actions flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-bold">
                     PEACE &amp; LIBERATION AFFIRMATION
                   </span>
@@ -1626,6 +1627,6 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
           )}
         </div>
 </section>
-</div>
+</DuoWorkspace>
   );
 }

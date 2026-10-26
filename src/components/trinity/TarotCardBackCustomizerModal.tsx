@@ -1,3 +1,4 @@
+import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Check, X, Palette, RefreshCw, Eye, Star } from 'lucide-react';
@@ -52,7 +53,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[500] flex items-center justify-center p-3 sm:p-5 font-sans">
+      <WorkspacePortal onClose={onClose}><div role="dialog" aria-modal="true" aria-label="상세 보기" className="fixed inset-0 z-[500] flex items-center justify-center p-3 sm:p-5 font-sans">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -68,10 +69,10 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 16 }}
           transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-          className="relative w-full max-w-4xl max-h-[90vh] bg-zinc-950/95 border border-yellow-500/40 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.8),0_0_40px_rgba(234,179,8,0.2)] flex flex-col overflow-hidden text-white z-10"
+          className="relative w-full max-w-4xl max-h-[90vh] bg-zinc-950/95 border border-yellow-500/40 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.8),0_0_40px_rgba(234,179,8,0.2)] flex flex-col overflow-hidden text-white z-10 duo-dialog-panel"
         >
           {/* Top Header */}
-          <div className="relative flex items-center justify-between px-5 sm:px-7 py-4.5 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent">
+          <div className="relative flex items-center justify-between px-5 sm:px-7 py-4.5 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent duo-dialog-heading">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-yellow-300 shadow-[0_0_15px_rgba(234,179,8,0.3)]">
                 <Palette size={20} />
@@ -100,7 +101,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
           </div>
 
           {/* Main Body */}
-          <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-6 duo-dialog-body">
             {/* Top Interactive 3D Showcase & Live Details */}
             <div className="rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-zinc-900/90 via-black to-zinc-900/80 p-4 sm:p-5 flex flex-col md:flex-row items-center gap-5 shadow-inner">
               {/* 3D Flip Card Interactive Preview */}
@@ -317,7 +318,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
             </button>
           </div>
         </motion.div>
-      </div>
+      </div></WorkspacePortal>
     </AnimatePresence>
   );
 };

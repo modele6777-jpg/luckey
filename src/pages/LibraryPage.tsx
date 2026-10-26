@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -293,7 +294,7 @@ export default function LibraryPage() {
 
         </motion.header>
 
-        <div className="duo-split-workspace">
+        <DuoWorkspace className="">
           {/* Sidebar Left: Stats & Charts */}
           <aside className="duo-workspace-input" aria-label="기록 검색과 채널 필터"><div className="flex flex-wrap gap-2">
             {([
@@ -334,8 +335,8 @@ export default function LibraryPage() {
                 className="w-full bg-white/5 border border-white/10 rounded-[32px] py-6 pl-16 pr-8 text-lg placeholder:text-white/10 focus:outline-none focus:border-white/30 focus:bg-white/[0.08] transition-all font-cute shadow-2xl"
               />
             </div>
-             <div className="glass p-8 rounded-[48px] border border-white/10 shadow-2xl hover:border-white/20 transition-all duration-300 space-y-8">
-                <div className="flex items-center justify-between">
+             <div className="glass p-8 rounded-[48px] border border-white/10 shadow-2xl hover:border-white/20 transition-all duration-300 space-y-8 duo-workspace-card">
+                <div className="duo-workspace-actions flex items-center justify-between">
                   <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em]">Soul Spectrum</h4>
                   <PieChart size={14} className="text-white/20" />
                 </div>
@@ -372,12 +373,12 @@ export default function LibraryPage() {
                 </div>
              </div>
 
-             <CalendarView 
+             <div className="duo-workspace-card"><CalendarView
                 onDateSelect={setSelectedDate}
                 selectedDate={selectedDate}
                 highlightDates={records.map(r => r.timestamp)}
                 color="#facc15"
-              />
+              /></div>
 
               <div className="p-8 rounded-[48px] bg-yellow-500/5 border border-yellow-500/10 space-y-4">
                 <div className="flex items-center gap-3 text-yellow-500/60">
@@ -425,7 +426,7 @@ export default function LibraryPage() {
                           <Config.icon size={120} />
                         </div>
 
-                        <div className="flex items-start justify-between mb-8">
+                        <div className="duo-workspace-actions flex items-start justify-between mb-8">
                           <div className="flex items-center gap-4">
                             <div 
                               className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
@@ -501,7 +502,7 @@ export default function LibraryPage() {
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between gap-4 pt-8 border-t border-white/5">
+                        <div className="duo-workspace-actions flex items-center justify-between gap-4 pt-8 border-t border-white/5">
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] text-[9px] font-bold text-white/30 uppercase tracking-widest">
                               <Tag size={12} />
@@ -523,7 +524,7 @@ export default function LibraryPage() {
               )}
             </div>
           </div>
-        </div>
+        </DuoWorkspace>
       </div>
     </div>
   );

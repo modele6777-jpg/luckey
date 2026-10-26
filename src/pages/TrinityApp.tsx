@@ -1,3 +1,4 @@
+import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, {
   useState,
   useEffect,
@@ -482,7 +483,7 @@ function StatBar({
 }) {
   return (
     <div className="w-full min-w-0">
-      <div className="flex justify-between gap-2 text-[10px] mb-1.5 px-1 uppercase tracking-widest font-bold text-white/30">
+      <div className="duo-workspace-actions flex justify-between gap-2 text-[10px] mb-1.5 px-1 uppercase tracking-widest font-bold text-white/30">
         <span className="min-w-0 break-words">{label}</span>
         <span style={{ color }} className="shrink-0">{value}%</span>
       </div>
@@ -515,7 +516,7 @@ function Modal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <WorkspacePortal onClose={onClose}><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -526,10 +527,10 @@ function Modal({
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="w-full max-w-lg glass border border-white/10 rounded-[48px] overflow-hidden shadow-2xl"
+            className="w-full max-w-lg glass border border-white/10 rounded-[48px] overflow-hidden shadow-2xl duo-dialog-panel"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-8 py-6 border-b border-white/10 flex items-center justify-between">
+            <div className="duo-workspace-actions px-8 py-6 border-b border-white/10 flex items-center justify-between duo-dialog-heading">
               <h3 className="text-sm font-bold tracking-widest text-white/40 uppercase">
                 {title}
               </h3>
@@ -540,11 +541,11 @@ function Modal({
                 <X size={20} />
               </button>
             </div>
-            <div className="p-8 max-h-[70vh] overflow-y-auto no-scrollbar scroll-smooth">
+            <div className="p-8 max-h-[70vh] overflow-y-auto no-scrollbar scroll-smooth duo-dialog-body">
               {children}
             </div>
           </motion.div>
-        </motion.div>
+        </motion.div></WorkspacePortal>
       )}
     </AnimatePresence>
   );
@@ -613,13 +614,13 @@ function LucyRelationshipsModal({
             </span>
           </div>
           <div className="space-y-5 font-sans">
-            <div className="flex justify-between items-center text-xs">
+            <div className="duo-workspace-actions flex justify-between items-center text-xs">
               <span className="text-white/30">사주 오행 조화</span>
               <span className="text-indigo-400 font-bold">
                 {sajuData ? "동기화 완료" : "데이터 분석 중"}
               </span>
             </div>
-            <div className="flex justify-between items-center text-xs">
+            <div className="duo-workspace-actions flex justify-between items-center text-xs">
               <span className="text-white/30">점성학적 끌림</span>
               <span className="text-indigo-400 font-bold">
                 {astroCard ? "활성 상태" : "관찰 중"}
@@ -679,7 +680,7 @@ function LucyHistoryModal({
         />
 
         <div className="space-y-6">
-          <div className="flex items-center justify-between px-2">
+          <div className="duo-workspace-actions flex items-center justify-between px-2">
             <h4 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em]">
               {selectedDate
                 ? `${selectedDate.toLocaleDateString()} 기록`
@@ -705,7 +706,7 @@ function LucyHistoryModal({
                   key={h.id || `hist-${i}`}
                   className="p-6 rounded-[32px] bg-white/[0.03] border border-white/5 hover:border-yellow-500/20 transition-all"
                 >
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="duo-workspace-actions flex justify-between items-center mb-4">
                     <span className="text-[9px] font-black text-yellow-500/60 uppercase tracking-[0.2em] bg-yellow-500/5 px-2.5 py-1 rounded-lg border border-yellow-500/10">
                       {TYPE_LABELS[h.type] ||
                         h.type?.replace("_", " ") ||
@@ -3170,7 +3171,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
+        className={`duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
          <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
             <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/')}>
@@ -3182,10 +3183,10 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
       {/* Trinity Navigation Menu - Top Navigation */}
       <motion.nav
-        initial={{ y: -10, x: '-50%', opacity: 0.88 }}
-        animate={{ y: 0, x: '-50%', opacity: 1 }}
+        initial={{ y: -10, opacity: 0.88 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
+        className={`prism-xs-subnav duo-page-nav relative self-center shrink-0 mx-auto z-40 flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[calc(100%-2rem)] overflow-x-auto no-scrollbar md:max-w-fit  transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
         {[
           { id: "destiny", icon: Compass, label: "SAJU" },
@@ -3232,7 +3233,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         data-app-scroll-root
         {...trinitySwipeHandlers}
 
-        className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col items-center relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none"
+        className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col items-center relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none"
       >
         <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col items-center min-w-0">
           <AnimatePresence mode="wait">
@@ -3277,7 +3278,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                   <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none" />
 
                   {/* Header */}
-                  <div className="relative z-10 flex items-center justify-between pb-6 border-b border-white/10 mb-6 shrink-0 bg-white/[0.02] -mx-5 -mt-5 sm:-mx-8 sm:-mt-8 md:-mx-10 md:-mt-10 px-5 pt-5 sm:px-8 sm:pt-8 md:px-10 md:pt-8">
+                  <div className="duo-workspace-actions relative z-10 flex items-center justify-between pb-6 border-b border-white/10 mb-6 shrink-0 bg-white/[0.02] -mx-5 -mt-5 sm:-mx-8 sm:-mt-8 md:-mx-10 md:-mt-10 px-5 pt-5 sm:px-8 sm:pt-8 md:px-10 md:pt-8">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                         <TarotCardIcon size={20} className="text-yellow-400 animate-pulse" />
@@ -3392,7 +3393,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </div>
                               </motion.div>
                             ) : (dailyResult?.drawnCard || dailyDrawnCard) ? (
-                              <div className="rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-inner text-left">
+                              <div className="duo-workspace-actions rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-inner text-left">
                                 <div className="flex items-center gap-3 min-w-0">
                                   <div className="w-9 h-9 rounded-xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-yellow-300 shrink-0 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
                                     <Sparkles size={16} className="animate-pulse" />
@@ -3440,7 +3441,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                             {/* 📝 2. 좌측 상단(모바일 2순위): Your Concern 입력 폼 & 배열법 선택 */}
                             <div className="order-2 md:order-1 flex flex-col gap-3 w-full">
                             <div className="space-y-3 text-left w-full overflow-hidden">
-                              <div className="flex items-center justify-between pl-2">
+                              <div className="duo-workspace-actions flex items-center justify-between pl-2">
                                 <label className="text-xs text-white/50 font-bold uppercase tracking-widest block">
                                   Your Concern
                                 </label>
@@ -3608,7 +3609,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   {/* 감지된 핵심 의도 키워드 & 대안 배열법 원터치 전환 칩 */}
                                   {((tarotConcernAnalysis.detectedKeywords && tarotConcernAnalysis.detectedKeywords.length > 0) ||
                                     (tarotConcernAnalysis.alternativeSpreads && tarotConcernAnalysis.alternativeSpreads.length > 0)) && (
-                                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-yellow-500/20 text-[10px]">
+                                    <div className="duo-workspace-actions flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-yellow-500/20 text-[10px]">
                                       {tarotConcernAnalysis.detectedKeywords && tarotConcernAnalysis.detectedKeywords.length > 0 && (
                                         <div className="flex items-center gap-1 flex-wrap">
                                           <span className="text-white/50 font-medium">감지 키워드:</span>
@@ -3652,7 +3653,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 className="rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-black/40 to-yellow-500/5 hover:border-yellow-400/60 hover:bg-yellow-500/15 p-4 transition-all cursor-pointer group shadow-md active:scale-[0.99] relative overflow-hidden text-left"
                                 title="클릭하여 타로 배열법 직접 선택 / 변경하기"
                               >
-                                <div className="flex items-center justify-between gap-2 mb-1.5">
+                                <div className="duo-workspace-actions flex items-center justify-between gap-2 mb-1.5">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-400 font-mono flex items-center gap-1">
                                       <Sparkles size={11} className="text-yellow-400 animate-pulse" />
@@ -3733,7 +3734,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
                             {smartTarotQuestions.length === 0 && !isGeneratingQuestions && (
                               <div className="space-y-2 mt-2 w-full text-left">
-                                <div className="flex items-center justify-between pl-2 pr-1">
+                                <div className="duo-workspace-actions flex items-center justify-between pl-2 pr-1">
                                   <span className="text-[10px] text-yellow-500/80 font-bold uppercase tracking-wider flex items-center gap-1 font-sans">
                                     <Sparkles size={10} className="animate-pulse" /> 맞춤 고민 질문 예시
                                   </span>
@@ -3838,11 +3839,11 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                             </div>
                           </div>
                         ) : (
-                          <div className="flex-1 flex flex-col overflow-hidden relative w-full text-left">
-                            <div className="flex-1 overflow-y-auto no-scrollbar pb-6">
-                              <div className="duo-split-workspace items-start gap-6 w-full">
+                          <div className="duo-reading flex flex-col relative w-full text-left">
+                            <div className="duo-reading pb-6">
+                              <DuoWorkspace className="items-start gap-6 w-full">
                                 {/* Left Pane: Drawn 3D Cards Visualizer */}
-                                <div className="flex flex-col gap-4 w-full md:sticky md:top-2">
+                                <div className="duo-workspace-pair"><div className="flex flex-col gap-4 w-full md:sticky md:top-2">
                                   {drawnCards && (
                                     <motion.div
                                       initial={{ opacity: 0, y: 12 }}
@@ -3850,7 +3851,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                                   className="space-y-2.5"
                                 >
-                                  <div className="flex items-center justify-between gap-2 flex-wrap px-1 text-center">
+                                  <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap px-1 text-center">
                                     <p className="text-[10px] text-yellow-500/80 font-bold uppercase tracking-widest flex items-center gap-1.5">
                                       <Sparkles size={11} className="text-yellow-400 animate-pulse" />
                                       <span>{tarotSpreadRecommendation.name} ({drawnCards.length}장 스프레드)</span>
@@ -3909,13 +3910,29 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </motion.div>
                               )}
                               </div>
+{conciseSummaryBullets.length > 0 && tarotResult && (
+                                            <TarotSummaryGraphicCard
+                                              bullets={conciseSummaryBullets}
+                                              question={tarotConcern?.trim() || '오늘의 타로'}
+                                              readingText={displayTarotResult || tarotResult || ""}
+                                              isTTSActive={isSummaryTTSActive}
+                                              onToggleTTS={async () => {
+                                                if (isSummaryTTSActive) {
+                                                  stopTTS();
+                                                } else if (summarySpeechText) {
+                                                  await playTTSInChunks(summarySpeechText, 'Kore', 110);
+                                                }
+                                              }}
+                                            />
+                                          )}
+</div>
 
                                 {/* Right Pane: Master's Deep Reading & Follow-up Actions */}
                                 <div className="flex flex-col gap-4 w-full">
                                 {(tarotResult || isTarotGenerating) && (
                                   <div className="glass p-5 rounded-2xl border border-yellow-500/30 shadow-2xl flex flex-col relative overflow-hidden">
                                   <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 blur-[60px] pointer-events-none rounded-full" />
-                                  <div className="flex justify-between items-center mb-4 shrink-0 relative z-10 w-full font-sans">
+                                  <div className="duo-workspace-actions flex justify-between items-center mb-4 shrink-0 relative z-10 w-full font-sans">
                                     <div className="flex items-center gap-2 text-yellow-400">
                                       <Sparkles size={16} />
                                       <h4 className="text-xs font-bold tracking-widest uppercase">
@@ -3976,21 +3993,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                           )}
 
                                           {/* ✨ 핵심 3줄 요약 프리미엄 그래픽 카드 (내가 한 질문 포함 · 최상단 고정 & 원클릭 TTS) */}
-                                          {conciseSummaryBullets.length > 0 && tarotResult && (
-                                            <TarotSummaryGraphicCard
-                                              bullets={conciseSummaryBullets}
-                                              question={tarotConcern?.trim() || '오늘의 타로'}
-                                              readingText={displayTarotResult || tarotResult || ""}
-                                              isTTSActive={isSummaryTTSActive}
-                                              onToggleTTS={async () => {
-                                                if (isSummaryTTSActive) {
-                                                  stopTTS();
-                                                } else if (summarySpeechText) {
-                                                  await playTTSInChunks(summarySpeechText, 'Kore', 110);
-                                                }
-                                              }}
-                                            />
-                                          )}
+
 
                                           {/* ⚖️ 예/아니오 (YES or NO) 마스터 최종 판정 배너 */}
                                           {tarotYesNoVerdict && (
@@ -4054,7 +4057,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                                       key={`trinity-rev-caution-${c.id || idx}-${idx}`}
                                                       className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/55 via-rose-900/25 to-black/45 border border-rose-400/45 shadow-md space-y-1 text-xs"
                                                     >
-                                                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                      <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
                                                         <span className="font-bold text-rose-300 flex items-center gap-1.5">
                                                           <span>⚠️ [{c.nameKo || c.name} (역방향) 주의점 1가지]</span>
                                                           <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}</span>
@@ -4222,7 +4225,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 </div>
                               </div>
                             )}
-                          </div>
+                          </DuoWorkspace>
                         </div>
                       </div>
                     )}
@@ -4277,7 +4280,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         <button
                           key={q}
                           onClick={() => handleSend(q)}
-                          className="px-6 py-6 rounded-[28px] bg-white/5 hover:bg-white/15 border border-white/10 transition-all text-sm sm:text-base text-left text-white/80 hover:text-white flex items-start justify-between gap-3 group/btn font-sans font-bold shadow-xl backdrop-blur-md"
+                          className="duo-workspace-actions px-6 py-6 rounded-[28px] bg-white/5 hover:bg-white/15 border border-white/10 transition-all text-sm sm:text-base text-left text-white/80 hover:text-white flex items-start justify-between gap-3 group/btn font-sans font-bold shadow-xl backdrop-blur-md"
                         >
                           <span className="leading-tight">"{q}"</span>
                           <ChevronRight
@@ -4313,7 +4316,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
               >
                 {isEditingProfile ? (
                   <div className="max-w-2xl mx-auto glass p-12 rounded-[60px] border border-yellow-500/20 shadow-2xl space-y-10">
-                    <div className="flex items-center justify-between">
+                    <div className="duo-workspace-actions flex items-center justify-between">
                       <h3 className="text-2xl font-display text-white ">
                         Soul Profile Configuration
                       </h3>
@@ -4414,7 +4417,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                   </div>
                 ) : insightResult ? (
                   <div className="w-full max-w-4xl mx-auto glass p-10 mt-10 rounded-[60px] border border-yellow-500/30 shadow-[0_0_100px_rgba(234,179,8,0.1)]">
-                    <div className="flex items-center justify-between mb-10">
+                    <div className="duo-workspace-actions flex items-center justify-between mb-10">
                       <div className="flex items-center gap-3">
                         <Zap size={22} className="text-yellow-400" />
                         <span className="text-sm font-bold text-yellow-500 tracking-[0.4em] uppercase ">
@@ -4558,7 +4561,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
               >
 
                   <div className="glass p-10 rounded-[60px] border border-yellow-500/20 relative overflow-hidden">
-                  <div className="flex items-center justify-between mb-10">
+                  <div className="duo-workspace-actions flex items-center justify-between mb-10">
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 border border-yellow-500/20">
                         <Library size={28} />
@@ -4638,7 +4641,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                             key={h.id || i}
                             className="p-6 rounded-3xl glass border border-white/10 hover:border-yellow-400/40 shadow-2xl hover:bg-white/[0.08] transition-all text-left"
                           >
-                            <div className="flex justify-between items-center mb-3">
+                            <div className="duo-workspace-actions flex justify-between items-center mb-3">
                               <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">
                                 {TYPE_LABELS[h.type] || h.type || "RECORD"}
                               </span>
@@ -4669,7 +4672,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       {/* Loading & Status Overlays */}
       <AnimatePresence>
         {isMeasuringInsight && !insightResult && (
-          <motion.div
+          <WorkspacePortal><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
             key="loader"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -4711,7 +4714,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 Synching with the universal frequency...
               </p>
             </div>
-          </motion.div>
+          </motion.div></WorkspacePortal>
         )}
       </AnimatePresence>
 
@@ -4796,8 +4799,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
       {/* 🎡 잔여 덱 전용 360도 무결점 타로 휠 수동 선택 모달 */}
       {showFollowUpWheelModal && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4">
-          <div className="relative w-full max-w-5xl h-[88vh] rounded-3xl bg-slate-950/95 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col">
+        <WorkspacePortal onClose={() => setShowFollowUpWheelModal(false)}><div role="dialog" aria-modal="true" aria-label="상세 보기" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4">
+          <div className="relative w-full max-w-5xl h-[88vh] rounded-3xl bg-slate-950/95 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col duo-dialog-panel">
             <TarotSpread
               deckSource={remainingDeck}
               maxCards={1}
@@ -4808,7 +4811,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
               onCancel={() => setShowFollowUpWheelModal(false)}
             />
           </div>
-        </div>
+        </div></WorkspacePortal>
       )}
       {/* 📍 메인 전체 화면 스마트 스크롤 수동 조작 시 낭독 위치 즉시 복귀 플로팅 버튼 */}
       <SmartScrollResumeButton

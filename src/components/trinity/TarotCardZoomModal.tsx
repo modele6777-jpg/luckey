@@ -1,3 +1,4 @@
+import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -101,7 +102,7 @@ export function TarotCardZoomModal({
   return (
     <AnimatePresence>
       {isOpen && card && (
-        <motion.div
+        <WorkspacePortal onClose={onClose}><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
           key="tarot-zoom-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -117,9 +118,9 @@ export function TarotCardZoomModal({
             exit={{ opacity: 0, scale: 0.78, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full ${
+            className={"duo-dialog-panel " + (`relative w-full ${
               isEnlarged ? 'max-w-2xl' : 'max-w-md'
-            } max-w-[94vw] bg-[#0e0c18] border border-yellow-500/40 p-3.5 sm:p-6 rounded-[28px] sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[92vh] sm:max-h-[94vh] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4 transition-all duration-300`}
+            } max-w-[94vw] bg-[#0e0c18] border border-yellow-500/40 p-3.5 sm:p-6 rounded-[28px] sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[92vh] sm:max-h-[94vh] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4 transition-all duration-300`)}
           >
             {/* Subtle Ambient Cosmic Aura */}
             <motion.div
@@ -144,7 +145,7 @@ export function TarotCardZoomModal({
             />
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between gap-2.5 border-b border-white/10 pb-2.5 sm:pb-3 relative z-10">
+            <div className="flex items-center justify-between gap-2.5 border-b border-white/10 pb-2.5 sm:pb-3 relative z-10 duo-dialog-heading">
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-yellow-400 font-mono">
                   <Sparkles size={12} className="text-yellow-400 animate-pulse shrink-0" />
@@ -181,7 +182,7 @@ export function TarotCardZoomModal({
                   <X size={18} />
                 </button>
               </div>
-            </div>
+            </div><div className="duo-dialog-body">
 
             {/* Badges Bar: Slot Position + Upright/Reversed + Arcana Type */}
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 relative z-10">
@@ -357,7 +358,7 @@ export function TarotCardZoomModal({
             )}
 
             {/* Modal Bottom CTA */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-end">
+            </div><div className="pt-2 border-t border-white/10 flex items-center justify-end duo-dialog-actions">
               <button
                 type="button"
                 onClick={onClose}
@@ -367,7 +368,7 @@ export function TarotCardZoomModal({
               </button>
             </div>
           </motion.div>
-        </motion.div>
+        </motion.div></WorkspacePortal>
       )}
     </AnimatePresence>
   );

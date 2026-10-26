@@ -1,3 +1,4 @@
+import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -123,7 +124,7 @@ interface Message {
 function StatBar({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="w-full min-w-0">
-      <div className="flex justify-between gap-2 text-[10px] mb-1.5 px-1 uppercase tracking-widest font-bold text-white/30 font-sans">
+      <div className="duo-workspace-actions flex justify-between gap-2 text-[10px] mb-1.5 px-1 uppercase tracking-widest font-bold text-white/30 font-sans">
         <span className="min-w-0 break-words">{label}</span>
         <span style={{ color }} className="shrink-0">{value}%</span>
       </div>
@@ -891,7 +892,7 @@ export default function BluebirdApp() {
 
   const renderDailyOracle = () => {
     return (
-      <div className="duo-split-workspace text-left animate-fade-in font-sans animate-fade-in">
+      <DuoWorkspace className="text-left animate-fade-in font-sans animate-fade-in">
 <div className="duo-workspace-header"><div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-xs font-mono tracking-widest uppercase animate-pulse">
             <ShieldCheck size={14} />
@@ -923,8 +924,8 @@ export default function BluebirdApp() {
             </div>
           )}
         </div></div><section className="duo-workspace-input" aria-label="정화 기도와 고민 입력">
-<div className="space-y-4">
-          <div className="flex items-center justify-between">
+<div className="space-y-4 duo-workspace-card">
+          <div className="duo-workspace-actions flex items-center justify-between">
             <span className="text-xs text-sky-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
               <Compass size={14} /> 네 가지 신성한 정화 어구 (클릭하여 정화 반복)
             </span>
@@ -939,7 +940,7 @@ export default function BluebirdApp() {
               className="relative p-6 rounded-3xl bg-[#0d1512]/60 border border-emerald-500/10 text-left overflow-hidden cursor-pointer group hover:border-emerald-500/30 transition-all focus:outline-none"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-colors" />
-              <div className="flex items-start justify-between">
+              <div className="duo-workspace-actions flex items-start justify-between">
                 <div>
                   <span className="text-[10px] text-rose-400 font-bold font-mono uppercase tracking-widest">I'm Sorry</span>
                   <p className="text-base sm:text-xl font-bold text-white mt-1">미안합니다</p>
@@ -959,7 +960,7 @@ export default function BluebirdApp() {
               className="relative p-6 rounded-3xl bg-[#0d1512]/60 border border-emerald-500/10 text-left overflow-hidden cursor-pointer group hover:border-emerald-500/30 transition-all focus:outline-none"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-colors" />
-              <div className="flex items-start justify-between">
+              <div className="duo-workspace-actions flex items-start justify-between">
                 <div>
                   <span className="text-[10px] text-amber-400 font-bold font-mono uppercase tracking-widest">Please Forgive Me</span>
                   <p className="text-base sm:text-xl font-bold text-white mt-1">용서해 주세요</p>
@@ -979,7 +980,7 @@ export default function BluebirdApp() {
               className="relative p-6 rounded-3xl bg-[#0d1512]/60 border border-emerald-500/10 text-left overflow-hidden cursor-pointer group hover:border-emerald-500/30 transition-all focus:outline-none"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-2xl group-hover:bg-sky-500/10 transition-colors" />
-              <div className="flex items-start justify-between">
+              <div className="duo-workspace-actions flex items-start justify-between">
                 <div>
                   <span className="text-[10px] text-sky-400 font-bold font-mono uppercase tracking-widest">Thank You</span>
                   <p className="text-base sm:text-xl font-bold text-white mt-1">감사합니다</p>
@@ -999,7 +1000,7 @@ export default function BluebirdApp() {
               className="relative p-6 rounded-3xl bg-[#0d1512]/60 border border-emerald-500/10 text-left overflow-hidden cursor-pointer group hover:border-emerald-500/30 transition-all focus:outline-none"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors" />
-              <div className="flex items-start justify-between">
+              <div className="duo-workspace-actions flex items-start justify-between">
                 <div>
                   <span className="text-[10px] text-emerald-400 font-bold font-mono uppercase tracking-widest">I Love You</span>
                   <p className="text-base sm:text-xl font-bold text-white mt-1">사랑합니다</p>
@@ -1022,7 +1023,7 @@ export default function BluebirdApp() {
             </div>
           </div>
         </div>
-<div className="rounded-[40px] bg-zinc-950/80 border border-emerald-500/10 p-8 md:p-12 space-y-6 relative overflow-hidden backdrop-blur-xl">
+<div className="rounded-[40px] bg-zinc-950/80 border border-emerald-500/10 p-8 md:p-12 space-y-6 relative overflow-hidden backdrop-blur-xl duo-workspace-card">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
           
           <div className="space-y-2 text-left">
@@ -1128,7 +1129,7 @@ export default function BluebirdApp() {
 
             {isHoponoponoComplete && cleansingResult ? (
               <div className="space-y-3">
-                <div className="w-full py-4 px-4 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 text-emerald-300 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-between gap-2 font-sans flex-wrap">
+                <div className="duo-workspace-actions w-full py-4 px-4 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 text-emerald-300 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-between gap-2 font-sans flex-wrap">
                   <div className="flex items-center gap-2">
                     <Check size={16} className="text-emerald-400" />
                     <span>호오포노포노 정화 완료</span>
@@ -1173,7 +1174,7 @@ export default function BluebirdApp() {
           {/* Real-time Progressive Loading Animation */}
           {isCleansingLoading && (
             <div className="p-6 rounded-2xl bg-black/40 border border-emerald-500/15 space-y-4 animate-pulse text-left">
-              <div className="flex items-center justify-between text-xs font-mono">
+              <div className="duo-workspace-actions flex items-center justify-between text-xs font-mono">
                 <span className="text-emerald-400 flex items-center gap-1.5 font-sans">
                   <RefreshCw size={12} className="animate-spin" /> {cleansingLoadingMsg}
                 </span>
@@ -1249,7 +1250,7 @@ export default function BluebirdApp() {
 
                 {/* 정화 그림 (NanoBanana Purifying Canvas) */}
                 <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-950/40 to-black/60 border border-emerald-500/20 text-left space-y-4 animate-fade-in">
-                  <div className="flex items-center justify-between">
+                  <div className="duo-workspace-actions flex items-center justify-between">
                     <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wider font-sans flex items-center gap-1.5">
                       <Sparkles size={12} className="animate-pulse text-emerald-300" /> 수호 정화 원화 (Purifying Canvas)
                     </span>
@@ -1326,7 +1327,7 @@ export default function BluebirdApp() {
               <div className="lg:col-span-2 space-y-6">
                 {/* Greeting / Soul Message */}
                 <div className="p-6 md:p-8 rounded-3xl bg-white/[0.01] border border-white/5 text-left space-y-3 relative">
-                  <div className="flex items-center justify-between">
+                  <div className="duo-workspace-actions flex items-center justify-between">
                     <span className="text-[10px] font-black tracking-widest text-[#56dec0] uppercase font-mono block">
                       우니히피리의 안식 전언 (Unihipili Message)
                     </span>
@@ -1423,7 +1424,7 @@ export default function BluebirdApp() {
           </div>
         )}{!cleansingResult && (<div className="duo-workspace-empty"><p>고민을 정화하면 이곳에서 치유 메시지와 처방을 확인할 수 있어요.</p></div>)}
 </section>
-</div>
+</DuoWorkspace>
     );
   };
 
@@ -1494,7 +1495,7 @@ export default function BluebirdApp() {
                           <div className="absolute bottom-3 right-3 w-2 h-2 border-b border-r border-amber-500/40 pointer-events-none z-10" />
 
                           {/* Upper Roman Numeral & Sparkles */}
-                          <div className="flex justify-between items-center text-[9px] font-mono text-amber-400/80 font-sans z-10 tracking-[0.2em]">
+                          <div className="duo-workspace-actions flex justify-between items-center text-[9px] font-mono text-amber-400/80 font-sans z-10 tracking-[0.2em]">
                             <span>{(() => {
                               const cardIdx = BLUEBIRD_CARDS.findIndex(c => c.name === sessionCardDrawn.name);
                               const numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII"];
@@ -1723,7 +1724,7 @@ export default function BluebirdApp() {
                     <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-amber-500/40 pointer-events-none z-10" />
 
                     {/* Upper Roman Numeral & Sparkles */}
-                    <div className="flex justify-between items-center text-[8px] font-mono text-amber-400/80 font-sans z-10 tracking-[0.2em]">
+                    <div className="duo-workspace-actions flex justify-between items-center text-[8px] font-mono text-amber-400/80 font-sans z-10 tracking-[0.2em]">
                       <span>{(() => {
                         const cardIdx = BLUEBIRD_CARDS.findIndex(c => c.name === sessionCardDrawn.name);
                         const numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII"];
@@ -1765,7 +1766,7 @@ export default function BluebirdApp() {
               {/* Detail Grid Body */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2 space-y-6">
-                  <div className="flex items-center justify-between">
+                  <div className="duo-workspace-actions flex items-center justify-between">
                     <span className="text-xs uppercase tracking-wider text-sky-500 font-bold flex items-center gap-1 font-sans">
                       <Sparkles size={14} /> 심층 인과 관계식 비전 해독
                     </span>
@@ -2607,7 +2608,7 @@ export default function BluebirdApp() {
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
+        className={`duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
          <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
             <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/')}>
@@ -2619,10 +2620,10 @@ export default function BluebirdApp() {
 
 
       <motion.nav
-        initial={{ y: -10, x: '-50%', opacity: 0.88 }}
-        animate={{ y: 0, x: '-50%', opacity: 1 }}
+        initial={{ y: -10, opacity: 0.88 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
+        className={`prism-xs-subnav duo-page-nav relative self-center shrink-0 mx-auto z-40 flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[calc(100%-2rem)] overflow-x-auto no-scrollbar md:max-w-fit  transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
           {[
             { id: 'daily', icon: Layout, label: "Ho'oponopono" },
@@ -2650,7 +2651,7 @@ export default function BluebirdApp() {
          })}
       </motion.nav>
 
-      <main data-app-scroll-root {...bluebirdSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
+      <main data-app-scroll-root {...bluebirdSwipeHandlers} className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
         <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
            <AnimatePresence mode="wait">
              {activeMode === 'synergy' ? (
@@ -2672,7 +2673,7 @@ export default function BluebirdApp() {
                 <motion.div key="history" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pb-8 sm:pb-12">
 
                     <div className="glass p-5 md:p-10 rounded-[24px] md:rounded-[60px] border border-sky-500/20 relative overflow-hidden">
-                      <div className="flex items-center justify-between mb-10">
+                      <div className="duo-workspace-actions flex items-center justify-between mb-10">
                          <div className="flex items-center gap-4">
                            <div className="w-14 h-14 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20"><Library size={28} /></div>
                            <div><h3 className="text-2xl font-display text-white">Oracle Library</h3></div>
@@ -2712,7 +2713,7 @@ export default function BluebirdApp() {
                          {localHistory.filter((h: any) => (!selectedDate || new Date((h.timestamp || h.createdAt || Date.now())).toDateString() === selectedDate.toDateString()) && (categoryFilter === 'all' || (h.type || 'RECORD') === categoryFilter)).length > 0 ? (
                            localHistory.filter((h: any) => (!selectedDate || new Date((h.timestamp || h.createdAt || Date.now())).toDateString() === selectedDate.toDateString()) && (categoryFilter === 'all' || (h.type || 'RECORD') === categoryFilter)).map((h: any, i: number) => (
                              <div key={h.id || i} className="p-6 rounded-3xl glass border border-white/10 hover:border-sky-400/40 shadow-2xl hover:bg-white/[0.08] transition-all text-left">
-                                <div className="flex justify-between items-center mb-3">
+                                <div className="duo-workspace-actions flex justify-between items-center mb-3">
                                    <span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">{h.type || "RECORD"}</span>
                                    <span className="text-[10px] text-white/20 font-mono ">{new Date(h.timestamp || h.createdAt || Date.now()).toLocaleDateString()}</span>
                                 </div>
@@ -2734,7 +2735,7 @@ export default function BluebirdApp() {
                  <motion.div key="soul" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8 pb-8 sm:pb-12">
                     {isEditingProfile ? (
                       <div className="max-w-2xl mx-auto glass p-12 rounded-[60px] border border-sky-500/20 shadow-2xl space-y-10 text-white">
-                         <div className="flex items-center justify-between">
+                         <div className="duo-workspace-actions flex items-center justify-between">
                            <h3 className="text-2xl font-display text-white ">Soul Profile Configuration</h3>
                            <button onClick={() => setIsEditingProfile(false)} className="p-2 hover:bg-white/5 rounded-full text-white/20 hover:text-white"><X size={20}/></button>
                          </div>
@@ -2775,7 +2776,7 @@ export default function BluebirdApp() {
                     ) : insightResult ? (
                       <div className="max-w-4xl mx-auto space-y-10 px-6 mt-10">
                          <div className="w-full glass p-5 md:p-10 rounded-[28px] md:rounded-[60px] border border-sky-500/30 shadow-[0_0_100px_rgba(14,165,233,0.1)] text-white">
-                             <div className="flex items-center justify-between mb-10 text-left">
+                             <div className="duo-workspace-actions flex items-center justify-between mb-10 text-left">
                                <div className="flex items-center gap-3">
                                  <Zap size={22} className="text-sky-400" />
                                  <span className="text-sm font-bold text-sky-500 tracking-[0.4em] uppercase ">The Healing Decree</span>
@@ -2805,7 +2806,7 @@ export default function BluebirdApp() {
 
                              <div className="space-y-6 text-left relative z-10">
                                <div className="p-8 bg-sky-500/10 border border-sky-500/20 rounded-[48px] shadow-inner font-sans">
-                                 <div className="flex items-center justify-between mb-4">
+                                 <div className="duo-workspace-actions flex items-center justify-between mb-4">
                                    <div className="flex items-center gap-3">
                                       <Sparkles size={18} className="text-sky-400 animate-pulse" />
                                       <div className="flex flex-col text-left">
@@ -3144,7 +3145,7 @@ export default function BluebirdApp() {
                               >
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4" />
                                 
-                                <div className="flex flex-wrap items-end justify-between gap-6 relative z-10 border-b border-sky-500/10 pb-8">
+                                <div className="duo-workspace-actions flex flex-wrap items-end justify-between gap-6 relative z-10 border-b border-sky-500/10 pb-8">
                                    <div className="space-y-2 text-left">
                                      <div className="flex items-center gap-3 mb-4">
                                        <div className="px-3 py-1 rounded-full bg-sky-500/20 border border-sky-500/30 text-[10px] text-sky-300 font-bold uppercase tracking-widest">일일 진단 완료</div>
@@ -3211,7 +3212,7 @@ export default function BluebirdApp() {
                                <button 
                                  key={q} 
                                  onClick={() => { handleSend(q); setShowChat(true); }} 
-                                 className="px-6 py-6 rounded-[28px] bg-white/5 hover:bg-white/15 border border-white/10 transition-all text-sm sm:text-base text-left text-white/80 hover:text-white flex items-start justify-between gap-3 group/btn font-sans font-bold shadow-xl backdrop-blur-md"
+                                 className="duo-workspace-actions px-6 py-6 rounded-[28px] bg-white/5 hover:bg-white/15 border border-white/10 transition-all text-sm sm:text-base text-left text-white/80 hover:text-white flex items-start justify-between gap-3 group/btn font-sans font-bold shadow-xl backdrop-blur-md"
                                >
                                   <span className="leading-tight">"{q}"</span>
                                   <ChevronRight size={20} className="mt-0.5 shrink-0 opacity-0 group-hover/btn:opacity-100 transition-all -translate-x-3 group-hover/btn:translate-x-0 text-sky-400" />
@@ -3237,7 +3238,7 @@ export default function BluebirdApp() {
                   className="fixed inset-0 z-[140] bg-black/40 backdrop-blur-sm cursor-pointer"
                   onClick={() => { setShowChat(false); stopTTS(); }}
                />
-               <motion.div 
+               <WorkspacePortal onClose={() => setShowChat(false)}><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
                   initial={{ opacity: 0, y: 50, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -3248,7 +3249,7 @@ export default function BluebirdApp() {
                      onClick={(e) => e.stopPropagation()}
                   >
                   
-                  <div className="hidden flex items-center justify-between border-b border-white/10 p-6 shrink-0 bg-sky-900/10 relative z-10">
+                  <div className="duo-workspace-actions hidden flex items-center justify-between border-b border-white/10 p-6 shrink-0 bg-sky-900/10 relative z-10">
                      <div className="flex items-center gap-5">
                         <div className="w-14 h-14 rounded-[28px] bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
                            <Bird size={24} />
@@ -3313,7 +3314,7 @@ export default function BluebirdApp() {
                                                >
                                                  <div 
                                                    onClick={() => setIsInsightCollapsed(!isInsightCollapsed)}
-                                                   className="p-4 flex items-center justify-between cursor-pointer hover:bg-sky-500/5 active:bg-sky-500/10 transition-colors select-none"
+                                                   className="duo-workspace-actions p-4 flex items-center justify-between cursor-pointer hover:bg-sky-500/5 active:bg-sky-500/10 transition-colors select-none"
                                                  >
                                                    <div className="flex items-center gap-3">
                                                      <Sparkles size={16} className="text-sky-400 animate-pulse" />
@@ -3384,7 +3385,7 @@ export default function BluebirdApp() {
                      </div>
                   </div>
                </div>
-            </motion.div>
+            </motion.div></WorkspacePortal>
           </>
          )}
       </AnimatePresence>
@@ -3397,7 +3398,7 @@ export default function BluebirdApp() {
 
       <AnimatePresence>
         {limitModalInfo && limitModalInfo.open && (
-          <motion.div
+          <WorkspacePortal><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -3410,7 +3411,7 @@ export default function BluebirdApp() {
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 70, opacity: 0 }}
               transition={{ type: "spring", stiffness: 75, damping: 18 }}
-              className="glass p-8 max-w-md w-full rounded-[40px] border border-yellow-500/30 text-center space-y-6 shadow-2xl relative overflow-hidden"
+              className="glass p-8 max-w-md w-full rounded-[40px] border border-yellow-500/30 text-center space-y-6 shadow-2xl relative overflow-hidden duo-dialog-panel"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/4 animate-pulse" />
@@ -3444,7 +3445,7 @@ export default function BluebirdApp() {
                 Go to Epilogue 🧪
               </button>
             </motion.div>
-          </motion.div>
+          </motion.div></WorkspacePortal>
         )}
       </AnimatePresence>
 

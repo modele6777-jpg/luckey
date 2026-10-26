@@ -1,3 +1,4 @@
+import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -143,7 +144,7 @@ export function TodayTarotShareModal({ isOpen, onClose, data }: TodayTarotShareM
 
   return (
     <AnimatePresence>
-      <motion.div
+      <WorkspacePortal onClose={onClose}><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -156,7 +157,7 @@ export function TodayTarotShareModal({ isOpen, onClose, data }: TodayTarotShareM
           exit={{ opacity: 0, scale: 0.94, y: 15 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg bg-[#0e0c18] border border-yellow-500/35 p-5 sm:p-6 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.85)] text-white max-h-[92vh] overflow-y-auto custom-scrollbar flex flex-col space-y-4"
+          className="relative w-full max-w-lg bg-[#0e0c18] border border-yellow-500/35 p-5 sm:p-6 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.85)] text-white max-h-[92vh] overflow-y-auto custom-scrollbar flex flex-col space-y-4 duo-dialog-panel"
         >
           {/* Subtle Ambient Cosmic Glow */}
           <div
@@ -165,7 +166,7 @@ export function TodayTarotShareModal({ isOpen, onClose, data }: TodayTarotShareM
           />
 
           {/* Header Title & Close Button */}
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 duo-dialog-heading">
             <div className="flex flex-col justify-start gap-1 min-w-0">
               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-yellow-400 font-mono">
                 <Sparkles size={12} className="text-yellow-400 animate-pulse shrink-0" />
@@ -187,7 +188,7 @@ export function TodayTarotShareModal({ isOpen, onClose, data }: TodayTarotShareM
             >
               <X size={18} />
             </button>
-          </div>
+          </div><div className="duo-dialog-body">
 
           {/* Success Banner */}
           <AnimatePresence>
@@ -230,7 +231,24 @@ export function TodayTarotShareModal({ isOpen, onClose, data }: TodayTarotShareM
           </div>
 
           {/* Action Buttons Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+
+
+          {/* 3. 모바일 / SNS 네이티브 공유 버튼 (Web Share) */}
+          {hasNativeShare && (
+            <button
+              type="button"
+              onClick={handleNativeShare}
+              disabled={isSharing}
+              className="w-full px-4 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-400/40 text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-sans"
+            >
+              <Smartphone size={14} className="text-purple-300" />
+              <Share2 size={14} className="text-purple-300" />
+              <span>{isSharing ? '공유 창 여는 중...' : '카카오톡 · 인스타 · 모바일 공유'}</span>
+            </button>
+          )}
+
+          {/* Footer note */}
+          </div><div className="duo-dialog-actions grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             {/* 1. 이미지 카드로 저장 (PNG) */}
             <button
               type="button"
@@ -255,30 +273,13 @@ export function TodayTarotShareModal({ isOpen, onClose, data }: TodayTarotShareM
               {isCopied ? <Check size={15} className="text-emerald-400 shrink-0" /> : <Copy size={15} className="shrink-0" />}
               <span>{isCopied ? '복사 완료! ✨' : '텍스트로 전체 복사'}</span>
             </button>
-          </div>
-
-          {/* 3. 모바일 / SNS 네이티브 공유 버튼 (Web Share) */}
-          {hasNativeShare && (
-            <button
-              type="button"
-              onClick={handleNativeShare}
-              disabled={isSharing}
-              className="w-full px-4 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-400/40 text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-sans"
-            >
-              <Smartphone size={14} className="text-purple-300" />
-              <Share2 size={14} className="text-purple-300" />
-              <span>{isSharing ? '공유 창 여는 중...' : '카카오톡 · 인스타 · 모바일 공유'}</span>
-            </button>
-          )}
-
-          {/* Footer note */}
-          <div className="pt-2 border-t border-white/10 text-center">
+          </div><div className="pt-2 border-t border-white/10 text-center duo-dialog-actions">
             <p className="text-[11px] text-white/40 font-sans leading-relaxed">
               저장된 이미지는 인스타그램 스토리, 카카오톡 프로필, 스마트폰 배경화면으로 아름답게 활용하실 수 있습니다.
             </p>
           </div>
         </motion.div>
-      </motion.div>
+      </motion.div></WorkspacePortal>
     </AnimatePresence>
   );
 }

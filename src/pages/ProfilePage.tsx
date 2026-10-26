@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -319,7 +320,8 @@ export default function ProfilePage() {
   const section = SECTIONS[currentSection];
   const SectionIcon = section.icon;
 
-  const isWideWorkspace = useWideWorkspace();
+  const [workspaceElement, setWorkspaceElement] = useState<HTMLDivElement | null>(null);
+  const isWideWorkspace = useWideWorkspace(workspaceElement);
   const renderSection = (sectionIndex = currentSection) => {
     switch (sectionIndex) {
       case 0: // 기본 정보
@@ -620,7 +622,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-4 rounded-3xl p-5 border border-white/10 bg-[#121320] shadow-2xl hover:border-white/20 transition-all duration-300 flex flex-col gap-2.5"
         >
-          <div className="flex items-center justify-between gap-3">
+          <div className="duo-workspace-actions flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className={`w-3 h-3 rounded-full shrink-0 ${firebaseUser ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-amber-400 animate-pulse'}`} />
               <div className="min-w-0">
@@ -743,7 +745,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 rounded-3xl p-5 border border-white/10 bg-[#121320] shadow-2xl hover:border-white/20 transition-all duration-300 flex flex-col gap-3"
         >
-          <div className="flex items-center justify-between flex-wrap gap-1">
+          <div className="duo-workspace-actions flex items-center justify-between flex-wrap gap-1">
             <span className="text-xs font-bold text-white flex items-center gap-1.5">
               ⚡ 기기 실시간 즉시 연동 (6자리 핀코드)
             </span>
@@ -762,7 +764,7 @@ export default function ProfilePage() {
           </p>
 
           {getPairedVaultId() && (
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
+            <div className="duo-workspace-actions flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
               <div className="flex items-center gap-1.5 text-emerald-300 font-medium text-[11px]">
                 <Check size={13} className="text-emerald-400" />
                 <span>이 기기는 핀코드로 연동되어 실시간 자동 저장이 유지 중입니다.</span>
@@ -788,7 +790,7 @@ export default function ProfilePage() {
             <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-2">
               <span className="text-[11px] font-semibold text-white/70">1. 현재 기기에서 코드 생성</span>
               {generatedPairingCode ? (
-                <div className="flex items-center justify-between bg-black/40 px-3 py-2 rounded-lg border border-yellow-500/30">
+                <div className="duo-workspace-actions flex items-center justify-between bg-black/40 px-3 py-2 rounded-lg border border-yellow-500/30">
                   <span className="text-base font-black tracking-widest text-yellow-400 font-mono">{generatedPairingCode}</span>
                   <span className="text-[10px] text-white/40">1시간 유효</span>
                 </div>
@@ -874,7 +876,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 rounded-3xl p-5 border border-white/10 bg-[#121320] shadow-2xl hover:border-white/20 transition-all duration-300 flex flex-col gap-1"
         >
-          <div className="flex items-center justify-between gap-4">
+          <div className="duo-workspace-actions flex items-center justify-between gap-4">
             <div className="flex flex-col">
               <span className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-bold">System Engine</span>
               <span className="text-xs font-semibold text-white/80 mt-1">LUCY v{APP_VERSION}</span>
@@ -933,11 +935,13 @@ export default function ProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="rounded-2xl p-5 mb-6 bg-[#121320] border border-white/10 shadow-xl">
-            <div className="duo-split-workspace duo-profile-workspace">
-  {[0,1].map(group => <div key={group} className="duo-profile-pane">{SECTIONS.map((item,index) => (isWideWorkspace || index === currentSection) && (group === 0 ? index < 2 : index >= 2) && <section key={item.id} className={`duo-profile-section ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
-    <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
-  </section>)}</div>)}
-</div>
+            <DuoWorkspace ref={setWorkspaceElement} className="duo-profile-workspace">
+  {SECTIONS.map((item, index) => (isWideWorkspace || index === currentSection) && (
+    <section key={item.id} className={`duo-profile-section ${item.id === 'basic' || item.id === 'card' ? 'duo-workspace-full' : ''} ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
+      <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
+    </section>
+  ))}
+</DuoWorkspace>
           </motion.div>
         </AnimatePresence>
 

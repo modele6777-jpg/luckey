@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -674,7 +675,8 @@ export default function EpilogueApp() {
   const section = SECTIONS[currentSection];
   const SectionIcon = section.icon;
 
-  const isWideWorkspace = useWideWorkspace();
+  const [workspaceElement, setWorkspaceElement] = useState<HTMLDivElement | null>(null);
+  const isWideWorkspace = useWideWorkspace(workspaceElement);
   const renderSection = (sectionIndex = currentSection) => {
     switch (sectionIndex) {
       case 0: { // 기본 정보
@@ -1029,7 +1031,7 @@ export default function EpilogueApp() {
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className="prism-hub-header fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-opacity duration-300"
+        className="prism-hub-header duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300"
       >
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="cursor-pointer flex flex-col justify-center select-none pl-1 sm:pl-2" onClick={() => navigate('/')}>
@@ -1048,7 +1050,7 @@ export default function EpilogueApp() {
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-safe-2 right-2 sm:right-4 md:top-safe-4 md:right-6 pointer-events-auto z-[110] flex items-center gap-2"
+        className="duo-page-tools relative w-full shrink-0 px-4 py-2 justify-end pointer-events-auto z-40 flex items-center gap-2"
       >
         <button
           type="button"
@@ -1078,10 +1080,10 @@ export default function EpilogueApp() {
 
       {/* Navigation Subnav Menu (Epilogue: Diary / CHRONICLE / Profile) */}
       <motion.nav
-        initial={{ y: -10, x: '-50%', opacity: 0.88 }}
-        animate={{ y: 0, x: '-50%', opacity: 1 }}
+        initial={{ y: -10, opacity: 0.88 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
+        className={`prism-xs-subnav duo-page-nav relative self-center shrink-0 mx-auto z-40 flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[calc(100%-2rem)] overflow-x-auto no-scrollbar md:max-w-fit  transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
         {[
           { id: 'diary', icon: BookOpen, label: 'Diary', path: '/epilogue' },
@@ -1114,15 +1116,15 @@ export default function EpilogueApp() {
       </motion.nav>
 
       {/* Main Content Area */}
-      <div data-app-scroll-root {...epilogueSwipeHandlers} className="flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
+      <div data-app-scroll-root {...epilogueSwipeHandlers} className="min-h-0 flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
         {activeMode === 'synergy' ? (
-          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md space-y-6">
+          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-4 space-y-6">
             <EpilogueSynergySection />
           </div>
         ) : activeMode === 'diary' ? (
           <EpilogueDiaryView />
         ) : (
-          <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-home md:pt-home-md space-y-6">
+          <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 space-y-6">
             {/* Step Sub-Pills for Profile */}
             <div className="flex items-center justify-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
               {SECTIONS.map((item, idx) => {
@@ -1158,7 +1160,7 @@ export default function EpilogueApp() {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-              <div className="flex items-center justify-between border-b border-white/10 pb-4 relative z-10">
+              <div className="duo-workspace-actions flex items-center justify-between border-b border-white/10 pb-4 relative z-10">
                 <div className="flex items-center gap-3">
                   <div
                     className="w-10 h-10 rounded-2xl flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(192,132,252,0.2)]"
@@ -1196,14 +1198,16 @@ export default function EpilogueApp() {
                 </div>
               </div>
 
-              <div className="relative z-10"><div className="duo-split-workspace duo-profile-workspace">
-  {[0,1].map(group => <div key={group} className="duo-profile-pane">{SECTIONS.map((item,index) => (isWideWorkspace || index === currentSection) && (group === 0 ? index < 2 : index >= 2) && <section key={item.id} className={`duo-profile-section ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
-    <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
-  </section>)}</div>)}
-</div></div>
+              <div className="relative z-10"><DuoWorkspace ref={setWorkspaceElement} className="duo-profile-workspace">
+  {SECTIONS.map((item, index) => (isWideWorkspace || index === currentSection) && (
+    <section key={item.id} className={`duo-profile-section ${item.id === 'basic' || item.id === 'card' ? 'duo-workspace-full' : ''} ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
+      <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
+    </section>
+  ))}
+</DuoWorkspace></div>
 
               {/* Bottom Step Actions */}
-              <div className="flex justify-between items-center pt-4 border-t border-white/10 relative z-10">
+              <div className="duo-workspace-actions flex justify-between items-center pt-4 border-t border-white/10 relative z-10">
                 <button
                   type="button"
                   disabled={currentSection === 0}
@@ -1357,7 +1361,7 @@ export default function EpilogueApp() {
 
               {/* PC ⇄ 모바일 6자리 초고속 기기 연동 패널 */}
               <div className="pt-2 border-t border-white/10 relative z-10">
-                <div className="flex items-center justify-between">
+                <div className="duo-workspace-actions flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() => setShowPairingPanel(!showPairingPanel)}
@@ -1383,7 +1387,7 @@ export default function EpilogueApp() {
                       <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-2">
                         <span className="text-xs font-bold text-white/80">내 기기 데이터 내보내기</span>
                         {pairingGenCode ? (
-                          <div className="flex items-center justify-between bg-black/60 px-3 py-2 rounded-lg border border-amber-500/40">
+                          <div className="duo-workspace-actions flex items-center justify-between bg-black/60 px-3 py-2 rounded-lg border border-amber-500/40">
                             <span className="text-lg font-black tracking-widest text-amber-400 font-mono">{pairingGenCode}</span>
                             <span className="text-[10px] text-white/40">10분간 유효</span>
                           </div>
@@ -1462,7 +1466,7 @@ export default function EpilogueApp() {
 
               {/* Cloud User ID & Cloud Link Footer */}
               {firebaseUser && (
-                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] text-white/35 font-mono relative z-10">
+                <div className="duo-workspace-actions flex items-center justify-between pt-2 border-t border-white/5 text-[10px] text-white/35 font-mono relative z-10">
                   <span className="truncate max-w-xs">UID: {firebaseUser.uid}</span>
                   <span className="text-emerald-400/70 flex items-center gap-1 shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />

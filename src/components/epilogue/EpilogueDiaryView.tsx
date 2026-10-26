@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -724,7 +725,7 @@ export function EpilogueDiaryView() {
   };
 
   return (
-    <div className="duo-split-workspace w-full max-w-6xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md pb-16">
+    <DuoWorkspace className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md pb-16">
 <div className="duo-workspace-header"><motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -812,7 +813,7 @@ export function EpilogueDiaryView() {
                       : 'bg-white/[0.02] border-white/5 opacity-50'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="duo-workspace-actions flex items-center justify-between">
                     <span className="text-[10px] font-bold font-mono text-white/70">{fp.name}</span>
                     <Icon size={14} style={{ color: fp.color }} />
                   </div>
@@ -1085,7 +1086,7 @@ export function EpilogueDiaryView() {
             )}
           </AnimatePresence>
 <div className="space-y-3 pt-4 border-t border-white/10">
-          <div className="flex items-center justify-between">
+          <div className="duo-workspace-actions flex items-center justify-between">
             <label className="block text-xs font-bold text-white/60 tracking-wider font-sans uppercase flex items-center gap-2">
               <Sparkles size={14} className="text-pink-400" />
               루시 AI 자정의 속삭임 (Lucy's Midnight Whisper)
@@ -1121,7 +1122,7 @@ export function EpilogueDiaryView() {
               animate={{ opacity: 1, scale: 1 }}
               className="p-4 sm:p-5 rounded-2xl bg-purple-950/40 border border-purple-500/30 text-purple-100/90 text-xs sm:text-sm leading-relaxed font-sans relative shadow-inner space-y-3 backdrop-blur-md"
             >
-              <div className="flex items-center justify-between border-b border-purple-500/20 pb-2.5">
+              <div className="duo-workspace-actions flex items-center justify-between border-b border-purple-500/20 pb-2.5">
                 <div className="flex items-center gap-2 text-purple-300 font-bold text-xs">
                   <Moon size={15} className="text-purple-400 animate-pulse" />
                   <span>루시의 자정 메시지 (Midnight Whisper)</span>
@@ -1150,7 +1151,7 @@ export function EpilogueDiaryView() {
               <p className="whitespace-pre-line break-keep font-serif text-[13px] sm:text-[14px] leading-relaxed text-purple-100/95 tracking-wide pl-1">
                 {aiFeedback}
               </p>
-              <div className="flex items-center justify-between pt-2 border-t border-purple-500/15 text-[11px] text-purple-300/70 font-sans">
+              <div className="duo-workspace-actions flex items-center justify-between pt-2 border-t border-purple-500/15 text-[11px] text-purple-300/70 font-sans">
                 <span>🌙 오늘 하루의 고요한 쉼을 위한 루시의 자정 축복</span>
                 <button
                   type="button"
@@ -1184,6 +1185,6 @@ export function EpilogueDiaryView() {
         stats={achievementStats}
         initialTab={shareModalTab}
       />
-</div>
+</DuoWorkspace>
   );
 }

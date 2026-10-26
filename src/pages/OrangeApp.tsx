@@ -1322,7 +1322,7 @@ export default function OrangeApp() {
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
+        className={`duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
          <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
             <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/')}>
@@ -1334,10 +1334,10 @@ export default function OrangeApp() {
 
       {/* Orange Navigation Menu - Moved to Top */}
       <motion.nav
-        initial={{ y: -10, x: '-50%', opacity: 0.88 }}
-        animate={{ y: 0, x: '-50%', opacity: 1 }}
+        initial={{ y: -10, opacity: 0.88 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? SPECIAL_FEATURE_CHROME_HIDDEN_CLASS : 'opacity-100'}`}
+        className={`prism-xs-subnav duo-page-nav relative self-center shrink-0 mx-auto z-40 flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[calc(100%-2rem)] overflow-x-auto no-scrollbar md:max-w-fit  transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
         {[
           { id: 'secret', icon: KeyRound, label: 'Secret' },
@@ -1364,7 +1364,7 @@ export default function OrangeApp() {
         })}
       </motion.nav>
 
-      <main data-app-scroll-root {...orangeSwipeHandlers} className="flex-1 w-full pt-page pb-page md:pt-page-md md:pb-page-md flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
+      <main data-app-scroll-root {...orangeSwipeHandlers} className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
         <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">
           <AnimatePresence mode="wait">
               {activeMode === 'synergy' ? (

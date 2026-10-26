@@ -1,3 +1,4 @@
+import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toPng } from 'html-to-image';
@@ -247,7 +248,7 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats, initialT
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-5 overflow-y-auto no-scrollbar bg-black/85 backdrop-blur-xl">
+      <WorkspacePortal onClose={onClose}><div role="dialog" aria-modal="true" aria-label="상세 보기" className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-5 overflow-y-auto no-scrollbar bg-black/85 backdrop-blur-xl">
         {/* Safe off-screen render target for html-to-image */}
         <div
           style={{
@@ -269,10 +270,10 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats, initialT
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 15 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="w-full max-w-3xl max-h-[92dvh] flex flex-col rounded-[32px] border border-purple-500/30 bg-zinc-950/95 shadow-2xl relative overflow-hidden backdrop-blur-2xl text-white"
+          className="w-full max-w-3xl max-h-[92dvh] flex flex-col rounded-[32px] border border-purple-500/30 bg-zinc-950/95 shadow-2xl relative overflow-hidden backdrop-blur-2xl text-white duo-dialog-panel"
         >
           {/* Modal Header */}
-          <div className="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/[0.02]">
+          <div className="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/[0.02] duo-dialog-heading">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300 shadow-[0_0_15px_rgba(192,132,252,0.3)]">
                 <Award size={20} />
@@ -343,7 +344,7 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats, initialT
           </div>
 
           {/* Modal Scrollable Body */}
-          <div className="flex-1 overflow-y-auto p-5 sm:p-6 no-scrollbar space-y-6">
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 no-scrollbar space-y-6 duo-dialog-body">
             {activeTab === 'card' ? (
               <div className="space-y-6">
                 {/* 🖼️ Card Preview Display Area */}
@@ -611,7 +612,7 @@ export function EpilogueAchievementShareModal({ isOpen, onClose, stats, initialT
             )}
           </div>
         </motion.div>
-      </div>
+      </div></WorkspacePortal>
     </AnimatePresence>
   );
 }

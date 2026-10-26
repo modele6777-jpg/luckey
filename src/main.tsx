@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import App from './App.tsx';
 import './index.css';
+import './styles/duo-workspace.css';
 import { initPerfMode, initNarrowPhoneClass, getSwUpdateIntervalMs } from './lib/perfMode';
 import { initHorizontalWheelScroll } from './lib/horizontalWheelScroll';
 

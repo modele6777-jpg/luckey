@@ -1,3 +1,4 @@
+import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -545,7 +546,7 @@ function VisualizationTimer({ guide, onComplete }: { guide: string; onComplete?:
 
   return (
     <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] p-5 space-y-4 shadow-lg shadow-amber-950/20">
-      <div className="flex items-center justify-between gap-3">
+      <div className="duo-workspace-actions flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Eye size={14} className="text-amber-400" />
           <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400/80">
@@ -1526,7 +1527,7 @@ export function DailySecret() {
   }, [newGratitude, practice, gratitudeChecked, script, syncDailyProgress]);
 
   return (
-    <div className="duo-split-workspace text-left w-full min-w-0">
+    <DuoWorkspace className="text-left w-full min-w-0">
 <div className="duo-workspace-header"><div className="text-center space-y-3 sm:space-y-4 px-1">
         <span className="text-[9px] sm:text-[10px] text-amber-400 font-extrabold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-mono block">
           DAILY
@@ -1551,7 +1552,7 @@ export function DailySecret() {
         </div></div><section className="duo-workspace-input" aria-label="소원 입력과 시크릿 연성">
 {!data && (
         <div className="w-full max-w-3xl mx-auto rounded-2xl border border-amber-500/25 bg-gradient-to-b from-amber-500/[0.06] via-amber-500/[0.02] to-transparent p-4 sm:p-6 space-y-4 shadow-xl shadow-amber-950/20">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 block flex items-center gap-1.5 font-mono">
               <Sparkles size={13} className="text-amber-400 animate-pulse" />
               Ask · 오늘 우주에 보낼 맞춤 소원
@@ -1563,7 +1564,7 @@ export function DailySecret() {
 
           {/* 🌟 맞춤 소원 예시 카테고리 탭 및 선택 칩 (키트 생성 전 노출) */}
           <div className="space-y-2.5 pt-0.5">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
               <span className="text-[11px] font-bold text-amber-300/90 font-sans flex items-center gap-1">
                 <Sparkles size={12} className="text-amber-400" />
                 원클릭 맞춤 소원 예시
@@ -1886,7 +1887,7 @@ export function DailySecret() {
           </div>
 
           <div className="rounded-2xl border border-orange-500/20 bg-orange-500/[0.05] p-5 space-y-2">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400/80 block font-mono">
                 Ask · 오늘의 소원 선언 (Desire)
               </span>
@@ -1972,7 +1973,7 @@ export function DailySecret() {
               />
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
+                <div className="duo-workspace-actions flex items-center justify-between gap-3">
                   <p className="text-[10px] text-white/45">
                     이미 이루어진 것처럼 현재형으로 적어 보세요. 감정까지 생생하게 쓸수록 좋습니다.
                   </p>
@@ -1992,7 +1993,7 @@ export function DailySecret() {
                   placeholder={data.scriptingStarter}
                   className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/85 placeholder:text-white/25 resize-y focus:outline-none focus:border-violet-500/30 font-serif leading-relaxed"
                 />
-                <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                <div className="duo-workspace-actions flex items-center justify-between gap-2 pt-1 flex-wrap">
                   <span className="text-[10px] font-mono text-white/30">
                     {script.trim().length}자 작성됨
                   </span>
@@ -2037,7 +2038,7 @@ export function DailySecret() {
           </div>
 
           <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/40 via-zinc-950/60 to-purple-950/30 p-5 sm:p-6 space-y-3 shadow-lg shadow-indigo-950/20">
-            <div className="flex items-center justify-between gap-2">
+            <div className="duo-workspace-actions flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Moon size={15} className="text-indigo-400 animate-pulse" />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">
@@ -2072,7 +2073,7 @@ export function DailySecret() {
           </div>
 
           <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5 space-y-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="duo-workspace-actions flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <ListChecks size={14} className="text-emerald-400" />
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400/80">
@@ -2139,6 +2140,6 @@ export function DailySecret() {
           </p>
         </motion.div>) : (<div className="duo-workspace-empty"><p>소원을 작성하면 맞춤 확언과 시각화 도구가 이곳에 나타나요.</p></div>)}
 </section>
-</div>
+</DuoWorkspace>
   );
 }

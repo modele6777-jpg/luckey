@@ -1,3 +1,4 @@
+import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -2805,7 +2806,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
         {/* Master Verdict Quote Box */}
         {verdict && (
           <div className="p-4 sm:p-5 rounded-2xl bg-black/50 border border-yellow-400/35 relative z-10 shadow-inner">
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="duo-workspace-actions flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-mono text-yellow-400 uppercase tracking-widest flex items-center gap-1">
                 <span>{oracleMode === 'healing' ? '🔮' : oracleMode === 'miracle' ? '🕊️' : '⚡'}</span>
                 <span>
@@ -2943,7 +2944,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
 
         {/* User's Concern Display Pill (if inquiry was specified) */}
         {inquiryText && (
-          <div className="mb-4 px-4 py-2.5 rounded-2xl bg-black/40 border border-amber-400/25 flex items-center justify-between gap-3 relative z-10">
+          <div className="duo-workspace-actions mb-4 px-4 py-2.5 rounded-2xl bg-black/40 border border-amber-400/25 flex items-center justify-between gap-3 relative z-10">
             <div className="flex items-center gap-2 text-xs text-zinc-300 min-w-0">
               <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold shrink-0">
                 {isHealing ? '성찰 고민' : '돌파 과제'}
@@ -3029,7 +3030,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           </div>
 
           {/* 리딩 하단 액션 툴바 */}
-          <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="duo-workspace-actions pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               {oracleLetterSpeechText && (
                 <button
@@ -3349,7 +3350,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           <div className="space-y-3">
             {renderCardCard(currentCard, currentInsight, selectedCardIdx)}
             {/* Step navigation buttons */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="duo-workspace-actions flex items-center justify-between pt-2">
               <button
                 type="button"
                 disabled={selectedCardIdx === 0}
@@ -3547,7 +3548,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
   };
 
   return (
-    <div className="duo-split-workspace w-full max-w-6xl mx-auto pb-12 text-white">
+    <DuoWorkspace className="w-full max-w-6xl mx-auto pb-12 text-white">
 <section className="duo-workspace-input" aria-label="오라클 질문과 카드 선택">
 <div className="glass relative p-5 sm:p-7 rounded-3xl bg-white/[0.04] border border-amber-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden">
         {/* Ambient cosmic glows */}
@@ -3649,7 +3650,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
         </div>
 
         {/* Saju Alignment Status Bar */}
-        <div className="relative z-10 mt-4 pt-3.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+        <div className="duo-workspace-actions relative z-10 mt-4 pt-3.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 font-medium shadow-sm">
               <Compass size={13} className="text-amber-400" />
@@ -3680,7 +3681,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
         </div>
 
         {/* Quick Toolbar */}
-        <div className="relative z-10 mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-zinc-300 flex-wrap gap-2">
+        <div className="duo-workspace-actions relative z-10 mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-zinc-300 flex-wrap gap-2">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <button
               type="button"
@@ -3803,7 +3804,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="duo-workspace-actions flex items-center justify-between gap-2 mb-3">
                       <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center">
                         <Heart size={20} className="text-rose-400 group-hover:scale-110 transition-transform" />
                       </div>
@@ -3843,7 +3844,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="duo-workspace-actions flex items-center justify-between gap-2 mb-3">
                       <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center">
                         <Feather size={20} className="text-purple-300 group-hover:scale-110 transition-transform" />
                       </div>
@@ -3883,7 +3884,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="duo-workspace-actions flex items-center justify-between gap-2 mb-3">
                       <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center">
                         <Zap size={20} className="text-amber-400 group-hover:scale-110 transition-transform" />
                       </div>
@@ -4004,7 +4005,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </div>
 
                 {/* 🌌 오늘의 타로 결과 및 천문 일진 연동 배너 */}
-                <div className="max-w-xl mx-auto mt-3 mb-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex flex-wrap items-center justify-between gap-2.5 relative z-10 text-xs text-left">
+                <div className="duo-workspace-actions max-w-xl mx-auto mt-3 mb-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex flex-wrap items-center justify-between gap-2.5 relative z-10 text-xs text-left">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
                     <span className="font-mono text-[10px] text-amber-300 font-bold uppercase tracking-wider">
@@ -4098,8 +4099,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
             )}
 
             {/* 1. 3D Flipping Cards Spread Row (일반타로와 100% 동일한 상단 카드 펼침) */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2 flex-wrap px-1 text-center">
+            <div className="duo-workspace-pair"><div className="space-y-2">
+              <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap px-1 text-center">
                 <p className="text-[10px] text-yellow-500/80 font-bold uppercase tracking-widest flex items-center gap-1.5">
                   <Sparkles size={11} className="text-yellow-400 animate-pulse" />
                   <span>{oracleMode === 'healing' ? '사주 ✕ 타로 3카드 힐링 스프레드' : oracleMode === 'miracle' ? '기적수업 3카드 지각전환 스프레드' : '4원소 마인드셋 3카드 스프레드'}</span>
@@ -4166,6 +4167,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 })}
               </motion.div>
             </div>
+{oracleSummaryBullets.length > 0 && <div>{renderOracleSummaryCard()}</div>}
+</div>
 
             {/* Loading Indicator */}
             {isLoading ? (
@@ -4185,7 +4188,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] pointer-events-none rounded-full" />
 
                 {/* Header: Title + 전체 낭독 TTS Button */}
-                <div className="flex justify-between items-center pb-3 border-b border-white/10 shrink-0 relative z-10 w-full font-sans">
+                <div className="duo-workspace-actions flex justify-between items-center pb-3 border-b border-white/10 shrink-0 relative z-10 w-full font-sans">
                   <div className="flex items-center gap-2 text-yellow-400">
                     <Sparkles size={16} className="text-yellow-400 animate-pulse" />
                     <h4 className="text-xs sm:text-sm font-bold tracking-widest uppercase text-white font-serif">
@@ -4224,7 +4227,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
 
                 <div className="text-white/85 text-xs sm:text-sm leading-relaxed relative z-10 w-full font-sans space-y-4" style={{ wordBreak: 'keep-all' }}>
                   {/* ✨ 핵심 3줄 요약 카드 (항상 첫 칸에 고정: 상황 진단, 방향성, 실천 처방 & 원클릭 TTS) */}
-                  {renderOracleSummaryCard()}
+
 
                   {/* 🔮 오늘의 일일 타로 결과 연동 상태 배너 (오른쪽 리딩 내용 노출 숨김) */}
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-amber-500/5 border border-amber-400/30 flex items-center gap-2 flex-wrap text-xs shadow-sm">
@@ -4260,7 +4263,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                             key={`rev-caution-${c.id}-${idx}`}
                             className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/50 via-rose-900/25 to-black/40 border border-rose-400/40 shadow-md space-y-1 text-xs"
                           >
-                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
                               <span className="font-bold text-rose-300 flex items-center gap-1.5">
                                 <span>⚠️ [{c.nameKo || c.name} (역방향) 주의점 1가지]</span>
                                 <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}</span>
@@ -4286,7 +4289,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   {/* 🕊️ 기적수업 거룩한 선언 & 워크북 레슨 카드 (기적수업 모드 시) */}
                   {oracleMode === 'miracle' && miracleResult?.miracle_lesson && (
                     <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-violet-950/40 border border-violet-400/40 shadow-lg relative overflow-hidden space-y-2.5 my-3">
-                      <div className="flex items-center justify-between gap-2 border-b border-violet-400/20 pb-2">
+                      <div className="duo-workspace-actions flex items-center justify-between gap-2 border-b border-violet-400/20 pb-2">
                         <div className="flex items-center gap-2 text-violet-300 font-serif font-bold text-xs sm:text-sm">
                           <Sparkles size={14} className="text-violet-300 animate-pulse" />
                           <span>🕊️ 기적수업 거룩한 선언 & 워크북 레슨</span>
@@ -4378,7 +4381,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </div>
 
                 {/* 3. Bottom Actions: 1-per-day badge, Mode Switch, Share */}
-                <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-center sm:justify-between gap-2.5 relative z-10 w-full shrink-0">
+                <div className="duo-workspace-actions pt-3 border-t border-white/10 flex flex-wrap items-center justify-center sm:justify-between gap-2.5 relative z-10 w-full shrink-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="inline-flex items-center gap-1.5 py-2 px-3.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-medium">
                       <Check size={12} className="text-emerald-400" />
@@ -4440,14 +4443,14 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
           </motion.div>) : (<div className="duo-workspace-empty"><p>카드를 선택하면 리딩과 후속 질문을 이곳에서 이어갈 수 있어요.</p></div>)}</AnimatePresence>
 </section><AnimatePresence>
         {showTreasureModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <WorkspacePortal onClose={() => setShowTreasureModal(false)}><div role="dialog" aria-modal="true" aria-label="상세 보기" className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="glass w-full max-w-md p-6 rounded-3xl bg-zinc-950 border border-amber-400/30 shadow-2xl relative"
+              className="glass w-full max-w-md p-6 rounded-3xl bg-zinc-950 border border-amber-400/30 shadow-2xl relative duo-dialog-panel"
             >
-              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+              <div className="duo-workspace-actions flex items-center justify-between pb-4 border-b border-white/10 mb-4 duo-dialog-heading">
                 <div className="flex items-center gap-2">
                   <Sparkles size={18} className="text-amber-400" />
                   <h3 className="text-lg font-serif font-bold text-white">오라클 마음 보물상자</h3>
@@ -4458,7 +4461,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 >
                   닫기
                 </button>
-              </div>
+              </div><div className="duo-dialog-body">
 
               {treasures.length === 0 ? (
                 <div className="text-center py-12 text-zinc-400 text-xs">
@@ -4476,7 +4479,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                         ✨
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center justify-between">
+                        <div className="duo-workspace-actions flex items-center justify-between">
                           <h4 className="text-sm font-bold text-yellow-200">{t.name}</h4>
                           <span className="text-[10px] font-mono text-zinc-400">{t.date}</span>
                         </div>
@@ -4490,20 +4493,20 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   ))}
                 </div>
               )}
-            </motion.div>
-          </div>
+            </div></motion.div>
+          </div></WorkspacePortal>
         )}
       </AnimatePresence>
 <AnimatePresence>
         {showSajuModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <WorkspacePortal onClose={() => setShowSajuModal(false)}><div role="dialog" aria-modal="true" aria-label="상세 보기" className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="glass w-full max-w-md p-6 rounded-3xl bg-zinc-950 border border-amber-400/40 shadow-2xl relative"
+              className="glass w-full max-w-md p-6 rounded-3xl bg-zinc-950 border border-amber-400/40 shadow-2xl relative duo-dialog-panel"
             >
-              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+              <div className="duo-workspace-actions flex items-center justify-between pb-4 border-b border-white/10 mb-4 duo-dialog-heading">
                 <div className="flex items-center gap-2">
                   <Compass size={18} className="text-amber-400" />
                   <h3 className="text-lg font-serif font-bold text-white">사주 명식 정보 설정</h3>
@@ -4516,7 +4519,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </button>
               </div>
 
-              <form onSubmit={handleSaveSajuProfile} className="space-y-4 text-xs">
+              <form onSubmit={handleSaveSajuProfile} className="text-xs duo-dialog-form">
+                <div className="duo-dialog-body space-y-4">
                 <div>
                   <label className="block text-zinc-300 font-medium mb-1">성명 (호칭)</label>
                   <input
@@ -4565,7 +4569,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   💡 사주 정보를 변경하면 타로 카드 뽑기 시 사용자의 사주 일간(본원) 및 오행 구성, 용신 보약 데이터가 타로 해석에 실시간 자동 융합됩니다.
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2">
+                </div>
+                <div className="duo-dialog-actions flex flex-wrap items-center justify-end gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setShowSajuModal(false)}
@@ -4582,7 +4587,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </div>
               </form>
             </motion.div>
-          </div>
+          </div></WorkspacePortal>
         )}
       </AnimatePresence>
 <TarotCardZoomModal
@@ -4596,8 +4601,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
         onClose={() => setShowCardBackModal(false)}
       />
 {showOracleFollowUpWheelModal && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4">
-          <div className="relative w-full max-w-5xl h-[88vh] rounded-3xl bg-slate-950/95 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col">
+        <WorkspacePortal onClose={() => setShowOracleFollowUpWheelModal(false)}><div role="dialog" aria-modal="true" aria-label="상세 보기" className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4">
+          <div className="relative w-full max-w-5xl h-[88vh] rounded-3xl bg-slate-950/95 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col duo-dialog-panel">
             <TarotSpread
               deckSource={oracleRemainingDeck}
               maxCards={1}
@@ -4610,8 +4615,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
               onCancel={() => setShowOracleFollowUpWheelModal(false)}
             />
           </div>
-        </div>
+        </div></WorkspacePortal>
       )}
-</div>
+</DuoWorkspace>
   );
 }
