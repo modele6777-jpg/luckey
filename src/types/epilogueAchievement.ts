@@ -1,3 +1,4 @@
+import { normalizeEpilogueDiaryEntries } from '@/lib/epilogueDiaryRecords';
 import type { EpilogueDiaryEntry } from '@/components/epilogue/EpilogueDiaryView';
 import { getTodayDateKey } from '@/lib/dailyCache';
 
@@ -41,6 +42,7 @@ export function calculateEpilogueAchievementStats(
   userName = '빛나는 여행자',
   soulLevel = 'Mastery Level IX · 초월적 황금 의식'
 ): EpilogueAchievementStats {
+  entries = normalizeEpilogueDiaryEntries(entries);
   const totalDiaries = entries.length;
   const todayKey = getTodayDateKey();
 

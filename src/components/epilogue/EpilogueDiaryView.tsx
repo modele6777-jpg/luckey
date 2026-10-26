@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getTodayDateKey } from '@/lib/dailyCache';
+import { normalizeEpilogueDiaryEntries } from '@/lib/epilogueDiaryRecords';
 import { invokeEpilogueSummaryLLM, invokeMindDiaryLLM, invokeLucyMidnightWhisperLLM, createLucyMidnightWhisperFallback, isBrokenMidnightWhisper } from '@/lib/ai';
 import { TTSButton } from '@/components/TTSButton';
 import { EpilogueAchievementShareModal } from './EpilogueAchievementShareModal';
@@ -125,20 +126,20 @@ export function EpilogueDiaryView() {
       const cached = localStorage.getItem('epilogue_diary_history');
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) localList = parsed;
+        localList = normalizeEpilogueDiaryEntries(parsed);
       }
     } catch {
       // ignore
     }
-    const fromShared = sharedState?.epilogueHistory;
+    const fromShared = normalizeEpilogueDiaryEntries(sharedState?.epilogueHistory);
     if (Array.isArray(fromShared) && fromShared.length > 0) {
       const map = new Map<string, EpilogueDiaryEntry>();
-      localList.forEach((e) => { if (e?.dateKey) map.set(e.dateKey, e); });
+      localList.forEach((e) => { if (e) map.set(e.dateKey || e.id, e); });
       (fromShared as EpilogueDiaryEntry[]).forEach((e) => {
-        if (e?.dateKey) {
-          const existing = map.get(e.dateKey);
+        if (e) {
+          const existing = map.get(e.dateKey || e.id);
           if (!existing || (e.createdAt || 0) >= (existing.createdAt || 0)) {
-            map.set(e.dateKey, e);
+            map.set(e.dateKey || e.id, e);
           }
         }
       });
@@ -169,7 +170,7 @@ export function EpilogueDiaryView() {
   const cachedTodayDraft = useMemo(() => {
     try {
       const raw = localStorage.getItem(`epilogue_diary_draft_${todayKey}`);
-      if (raw) return JSON.parse(raw) as Partial<EpilogueDiaryEntry>;
+      if (raw) return normalizeEpilogueDiaryEntries([{ ...JSON.parse(raw), dateKey: todayKey }])[0] || null;
     } catch {}
     return null;
   }, [todayKey]);
@@ -220,20 +221,20 @@ export function EpilogueDiaryView() {
       if (!Array.isArray(incoming) || incoming.length === 0) return;
       setEntries((prev) => {
         const map = new Map<string, EpilogueDiaryEntry>();
-        prev.forEach((e) => { if (e?.dateKey) map.set(e.dateKey, e); });
+        prev.forEach((e) => { if (e) map.set(e.dateKey || e.id, e); });
         try {
           const cached = localStorage.getItem('epilogue_diary_history');
           if (cached) {
             const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed)) parsed.forEach((e: any) => { if (e?.dateKey) map.set(e.dateKey, e); });
+            normalizeEpilogueDiaryEntries(parsed).forEach((e) => { if (e) map.set(e.dateKey || e.id, e); });
           }
         } catch {}
 
-        incoming.forEach((e) => {
-          if (e?.dateKey) {
-            const existing = map.get(e.dateKey);
+        normalizeEpilogueDiaryEntries(incoming).forEach((e) => {
+          if (e) {
+            const existing = map.get(e.dateKey || e.id);
             if (!existing || (e.createdAt || 0) >= (existing.createdAt || 0)) {
-              map.set(e.dateKey, e);
+              map.set(e.dateKey || e.id, e);
             }
           }
         });
@@ -425,13 +426,13 @@ export function EpilogueDiaryView() {
           const cached = localStorage.getItem('epilogue_diary_history');
           if (cached) {
             const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed)) diskEntries = parsed;
+            diskEntries = normalizeEpilogueDiaryEntries(parsed);
           }
         } catch (_) {}
 
         const map = new Map<string, EpilogueDiaryEntry>();
-        diskEntries.forEach((e) => { if (e?.dateKey) map.set(e.dateKey, e); });
-        prev.forEach((e) => { if (e?.dateKey) map.set(e.dateKey, e); });
+        diskEntries.forEach((e) => { if (e) map.set(e.dateKey || e.id, e); });
+        prev.forEach((e) => { if (e) map.set(e.dateKey || e.id, e); });
         map.set(todayKey, newEntry);
 
         const merged = Array.from(map.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -666,13 +667,13 @@ export function EpilogueDiaryView() {
           const cached = localStorage.getItem('epilogue_diary_history');
           if (cached) {
             const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed)) diskEntries = parsed;
+            diskEntries = normalizeEpilogueDiaryEntries(parsed);
           }
         } catch (_) {}
 
         const map = new Map<string, EpilogueDiaryEntry>();
-        diskEntries.forEach((e) => { if (e?.dateKey) map.set(e.dateKey, e); });
-        prev.forEach((e) => { if (e?.dateKey) map.set(e.dateKey, e); });
+        diskEntries.forEach((e) => { if (e) map.set(e.dateKey || e.id, e); });
+        prev.forEach((e) => { if (e) map.set(e.dateKey || e.id, e); });
         map.set(todayKey, newEntry);
 
         const merged = Array.from(map.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -1175,7 +1176,7 @@ export function EpilogueDiaryView() {
         }}
       />
     <div className="duo-workspace-history"><h3>나의 일기 타임라인</h3>
-      {entries.length === 0 ? <p>저장한 일기가 아직 없어요.</p> : [...entries].sort((a,b) => b.dateKey.localeCompare(a.dateKey)).slice(0,30).map(entry => <details key={entry.id} className="duo-workspace-record"><summary>{entry.dateKey} · {entry.moodEmoji} {entry.mood}</summary><p className="whitespace-pre-wrap break-words">{entry.mindDiary || entry.rawNotes || entry.gratitudes.join(' · ')}</p></details>)}
+      {entries.length === 0 ? <p>저장한 일기가 아직 없어요.</p> : [...entries].sort((a,b) => b.dateKey.localeCompare(a.dateKey)).slice(0,30).map(entry => <details key={entry.id} className="duo-workspace-record"><summary>{entry.dateKey || '날짜 미상'} · {entry.moodEmoji} {entry.mood}</summary><p className="whitespace-pre-wrap break-words">{entry.mindDiary || entry.rawNotes || entry.gratitudes.join(' · ')}</p></details>)}
     </div>
 </section><EpilogueAchievementShareModal
         isOpen={isShareModalOpen}
