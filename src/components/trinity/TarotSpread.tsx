@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import {
   Sparkles, Eye, RefreshCw, Sun, Compass, Activity,
@@ -494,22 +495,23 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   // Responsive layout calibration
   useEffect(() => {
     const updateRadius = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
+      const bounds = containerRef.current?.getBoundingClientRect();
+      const w = bounds?.width || window.innerWidth;
+      const h = bounds?.height || window.innerHeight;
       if (w < 480) {
         // Calibrated for mobile to keep wheel cards completely visible & unoccluded
         setRadius(Math.max(280, Math.min(340, Math.round(h * 0.40))));
-        setYOffset(Math.max(300, Math.min(370, Math.round(h * 0.45))));
+        setYOffset(Math.max(270, Math.min(340, Math.round(h * 0.41))));
         setWheelCardWidth(64);
         setIsMobile(true);
       } else if (w < 768) {
         setRadius(460);
-        setYOffset(540);
+        setYOffset(500);
         setWheelCardWidth(w < 640 ? 64 : 80);
         setIsMobile(true);
       } else {
         setRadius(640);
-        setYOffset(740);
+        setYOffset(700);
         setWheelCardWidth(96);
         setIsMobile(false);
       }
@@ -522,6 +524,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       }
     };
     window.addEventListener('resize', onResize);
+    const observer = new ResizeObserver(onResize);
+    if (containerRef.current) observer.observe(containerRef.current);
     const timer = window.setTimeout(() => {
       updateRadius();
       setWheelReady(true);
@@ -529,6 +533,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
     return () => {
       window.removeEventListener('resize', onResize);
+      observer.disconnect();
       window.clearTimeout(timer);
       stopMomentum();
     };
@@ -928,12 +933,13 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     touchedCardIdRef.current = null;
   };
 
-  return (
+  return createPortal(
     <div
       ref={rootRef}
       id="tarot-stage-container"
       className="fixed inset-0 z-[300] bg-zinc-950 overflow-hidden flex flex-col items-center justify-between font-sans select-none touch-none overscroll-none tarot-spread-stage-root"
       style={{
+        right: 'var(--sites-sidebar-width, 0px)',
         touchAction: 'none',
         overscrollBehavior: 'none',
         paddingTop: 'env(safe-area-inset-top, 0px)',
@@ -946,7 +952,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       <div
         className="absolute top-0 left-0 right-0 z-[320] w-full pointer-events-none flex flex-col items-center"
         style={{
-          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 10px)',
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 6px)',
           paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 12px)',
           paddingRight: 'calc(env(safe-area-inset-right, 0px) + 12px)',
         }}
@@ -1272,6 +1278,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           onComplete(cards);
         }}
       />
-    </div>
+    </div>,
+    document.body,
   );
 };
