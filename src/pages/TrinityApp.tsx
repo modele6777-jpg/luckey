@@ -3459,11 +3459,14 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setTarotConcern("오늘의 타로");
-                                    setCustomSpread(null);
+                                    if (customSpread?.theme === 'daily') {
+                                      setCustomSpread(null);
+                                    } else {
+                                      setCustomSpread(buildSpreadForTheme('daily', { kind: 'open' }));
+                                    }
                                   }}
                                   className={`flex-none px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm ${
-                                    isDailyTarotConcern(tarotConcern)
+                                    (customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern))
                                       ? 'bg-yellow-500/25 border-yellow-400/60 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.3)]'
                                       : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
                                   }`}
@@ -3478,8 +3481,11 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       key={preset.theme}
                                       type="button"
                                       onClick={() => {
-                                        setTarotConcern(preset.defaultPrompt);
-                                        setCustomSpread(buildSpreadForTheme(preset.theme, { kind: 'open' }));
+                                        if (customSpread?.theme === preset.theme) {
+                                          setCustomSpread(null);
+                                        } else {
+                                          setCustomSpread(buildSpreadForTheme(preset.theme, { kind: 'open' }));
+                                        }
                                       }}
                                       className={`flex-none px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm ${
                                         isSelected
@@ -3499,9 +3505,6 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   value={tarotConcern}
                                   onChange={(e) => {
                                     setTarotConcern(e.target.value);
-                                    if (customSpread) {
-                                      setCustomSpread(null);
-                                    }
                                   }}
                                   onKeyDown={(e) => {
                                     if (e.key === "Tab" && !tarotConcern.trim() && activeTarotGhostPrompt) {

@@ -1,129 +1,106 @@
-# [전체 댑 대화면 및 태블릿 가로 모드 듀얼 분할 뷰(Dual-Pane) 레이아웃 아키텍처]
+# iPhone Duo Dual-Screen & 120Hz ProMotion Optimization
 
-유니버스 댑(HubHome)의 완성도 높은 2열 듀얼 분할 그리드(`duo-split-grid`) 구조를 6대 핵심 댑(TRINITY, ORANGE, AURA, BLUEBIRD, MUSE, EPILOGUE) 및 보조 댑(CALM, LIBRARY, PROFILE) 전체로 확장하여, 대화면(1024px 이상) 및 태블릿 가로 모드에서 좌측 인터랙션/입력과 우측 결과/히스토리가 한눈에 조망되는 프로덕션급 듀얼 워크스페이스를 구축합니다.
-
----
+Adaptive responsive engine and performance tuning tailored specifically for the iPhone Duo form factor (5.4-inch outer cover screen and 7.6-inch unfolded inner screen) with seamless single/dual workspace transitions and 120Hz ProMotion GPU acceleration.
 
 ### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> 사전 질의응답을 통해 확정된 사용자 요구사항을 100% 반영합니다.
+> The following user preferences were confirmed during the interactive interview and govern the implementation:
 
-- **적용 대상 범위**: 6대 핵심 댑(Trinity, Orange, Heal, Bluebird, Muse, Epilogue) + Calm, Library, Profile을 포함한 **모든 댑 페이지**
-- **듀얼 컬럼 배치 전략**: **좌측 인터랙션 및 조작/입력부**, **우측 결과 리포트 및 히스토리/아카이브**
-- **활성화 반응형 브레이크포인트**: **태블릿 가로 모드 및 데스크톱 (1024px / lg 이상)**. 모바일 및 세로 모드(1024px 미만)에서는 기존의 자연스러운 1열 세로 스크롤을 유지하여 시인성을 극대화합니다.
+- **Target Screens**: Both the folded 5.4-inch outer screen (1398 × 2034) and the unfolded 7.6-inch inner screen (1878 × 2670) will be dynamically supported and automatically detected.
+- **Inner Screen Layout**: When the 7.6-inch inner screen is active (or in landscape/unfolded state), the app automatically activates the 2-column dual split layout (`duo-dapp-workspace` with left interaction/input and right results/history).
+- **Motion & Refresh Rate**: 120Hz ProMotion GPU hardware acceleration (`translate3d`, `will-change`, touch response zero-latency) enabled for ultra-smooth fluid transitions and instantaneous tactile haptics.
 
 ---
 
 ### 1. Overview & Core Concept
 
-- **목적**: 대화면 및 태블릿 가로 환경에서 좌우 여백의 낭비를 없애고, 유니버스 댑처럼 입력과 결과를 동시에 확인하며 몰입감 있게 여정을 이어갈 수 있는 분할 뷰 제공.
-- **주요 가치**:
-  - 모바일에서는 세로 순차 탐색, 태블릿 가로 및 데스크톱에서는 듀얼 분할 뷰 자동 전환.
-  - 상호작용(카드 뽑기, 일기 작성, 호흡, 퀴즈, 프로필 수정 등)을 하면서 실시간으로 우측 피드백과 과거 기록을 비교 검토 가능.
+- **What It Does**: Optimizes the entire LucKey ecosystem for the iPhone Duo foldable dual-screen hardware. When folded on the 5.4-inch cover screen, it renders a sleek, thumb-friendly single-column view with touch targets $\ge 44\text{px}$. When unfolded to the 7.6-inch inner screen (aspect ratio ~1.05:1, 14cm × 13.3cm), it dynamically unlocks the dual-pane workspace across all 9 dApps.
+- **Target Audience / Device**: iPhone Duo users switching between on-the-go quick one-handed check-ins (outer display) and immersive multi-tasking sessions (unfolded inner display).
+- **Key Value**: Eradicates layout truncation, excessive vertical stacking on the wide inner screen, and sluggish touch latency, unlocking full 120Hz fluidity.
 
 ---
 
 ### 2. User Experience & Visual Design
 
-#### A. 댑별 듀얼 컬럼 구조 매핑
+#### A. 5.4-inch Outer Cover Screen (Compact Mobile Experience)
+- **Viewport Dimension**: ~466 × 678 CSS pixels (1398 × 2034 @3x DPR).
+- **Layout Rhythm**: Single-column continuous natural scroll (`max-w-md mx-auto`).
+- **Thumb-Zone Ergonomics**:
+  - Critical action CTAs pinned in the bottom 40% natural thumb reach zone.
+  - Sticky surface cap strictly maintained under 15% of viewport height.
+  - Generous touch hitboxes ($\ge 44\text{px}$) for all buttons, tabs, and Tarot wheel cards.
+- **Tarot Wheel Optimization**: Calibrated wheel radius (310px) and vertical offset to ensure the full 78-card arc and active cards remain unobstructed above the bottom bezel.
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      LUCKEY UNIVERSE DUAL-PANE WORKSPACE                    │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│       LEFT COLUMN (INTERACTION)      │        RIGHT COLUMN (RESULTS)        │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 1. TRINITY                           │                                      │
-│  - 사주/오라클 질의 & 타로 카드 스프레드 │  - 타로 리딩 상세 해설 & 퀘스트/부스트 │
-│  - 오늘의 운세 즉시 뽑기             │  - 최근 오라클 세션 히스토리          │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 2. ORANGE                            │                                      │
-│  - 감정 체크인 & 비밀 일기 에디터    │  - 탈리스만 가방(Chest) & 착용 부적  │
-│  - 오렌지 부적 연성 인터랙션         │  - 일기 아카이브 & 감정 공명 로그    │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 3. AURA (HEAL)                       │                                      │
-│  - 세도나 명상 타이머 & 호흡 서클    │  - 세도나 명상 카드 보물 & 기록      │
-│  - 바이탈 에너지 자가 진단 슬라이더  │  - 신체 활력 트렌드 리포트          │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 4. BLUEBIRD                          │                                      │
-│  - 4단계 호오포노포노 정화 기도 입력 │  - 정화 기록 아카이브 & 치유의 정원  │
-│  - 감정 방출(Release) 인터랙션       │  - 파랑새 공감 피드백 & 시적 처방   │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 5. MUSE                              │                                      │
-│  - 창작 영감 스튜디오 & 오늘의 테마  │  - 갤러리 쇼케이스 & 작품 상세 뷰    │
-│  - 시적 아이디어 생성/작문 에디터    │  - 창작 아카이브 모음                │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 6. EPILOGUE                          │                                      │
-│  - 하루 성찰 질문 & 종합 일기 작성   │  - 에필로그 다이어리 타임라인        │
-│  - 오늘의 기운/컨디션 최종 결산      │  - 6대 댑 종합 활동 성취 현황        │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 7. CALM (KEY)                        │                                      │
-│  - 크리스탈 오브 명상 & 힐링 사운드  │  - 게이트웨이 포털 & 공명 주파수 로그│
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 8. LIBRARY                           │                                      │
-│  - 채널/날짜/키워드 필터 & 검색 패널 │  - 아카이브 상세 리스트 & 뷰어      │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ 9. PROFILE                           │                                      │
-│  - 프로필 사진 업로드 & 기본/운명 정보 │  - 심리(MBTI)/예술 취향 & 관계 점성학│
-└──────────────────────────────────────┴──────────────────────────────────────┘
-```
+#### B. 7.6-inch Unfolded Inner Screen (Wide Dual-Pane Workspace)
+- **Viewport Dimension**: ~626 × 890 CSS pixels (or ~720–939px depending on scaling, 1878 × 2670 @ DPR).
+- **Automatic Dual-Split Activation**:
+  - Activates `.duo-dapp-workspace` via CSS rule: `html.dual-pane-active .duo-dapp-workspace`, `html.perf-duo .duo-dapp-workspace`, or `@media (min-width: 620px) and (min-aspect-ratio: 0.85/1)`.
+  - **Left Column**: Interactive controls, question input form, draw decks, breathing spheres, meditation timers.
+  - **Right Column**: Comprehensive AI readings, Lucy advice cards, historical logs, and reflection timelines.
+- **Hinge & Margin Balance**: Automatic optical hinge gap padding (`var(--duo-hinge-gap, 1.25rem)`) preventing content from colliding in the fold zone.
 
-#### B. 디자인 시스템 및 레이아웃 규칙
-
-1. **컨테이너 반응형 클래스 표준화**:
-   - `duo-split-workspace w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7 items-start`
-   - 각 컬럼 내 카드는 `flex flex-col gap-5`로 구성하여 시각적 리듬 유지.
-2. **반응형 패딩 및 헤더/네비와의 조화**:
-   - 상단 헤더 및 슬림 사이드바(70px)와의 여백을 완벽히 계산하여 좌우 쏠림 없이 대칭 배치.
-3. **높이 정렬 & 독립 스크롤(Sticky / Clean Scroll)**:
-   - 좌측 조작부가 고정된 상태에서도 우측 히스토리가 길어질 때 자연스럽게 전체 페이지 스크롤이 매끄럽게 흐르도록 설계.
+#### C. 120Hz ProMotion & Interaction Latency
+- Native 120fps hardware acceleration via compositor-only properties (`transform: translate3d(0,0,0)`, `opacity`, `will-change: transform`).
+- Removal of any 300ms mobile touch delay via `touch-action: manipulation`.
+- Elimination of iOS overscroll rubber-banding glitches during card picking and horizontal wheel drag.
 
 ---
 
 ### 3. Key Product Decisions & Trade-Offs
 
-- **결정 1: CSS Grid vs Flexbox 레이아웃**
-  - *선택*: CSS Grid 기반의 `lg:grid-cols-2` 구조 적용.
-  - *이유*: 좌우 컬럼의 너비를 정확히 50:50으로 유지하면서 카드의 정렬 선을 완벽하게 일치시킴.
-- **결정 2: 1024px(lg) 분기점 적용**
-  - *선택*: 사용자 선택에 따라 768px(md, 태블릿 세로)에서는 1열 집중형 모드를 유지하고, 1024px(lg, 태블릿 가로 및 데스크톱) 이상에서 2열 듀얼 뷰 활성화.
-  - *이유*: 768px 폭에서 복잡한 입력창과 긴 결과 카드가 2열로 쪼개질 경우 텍스트 줄바꿈이 빈번해져 답답해지는 현상을 방지.
+- **Decision 1: Breakpoint Strategy for Dual-Split Activation**
+  - *Chosen Approach*: Update `isDualPaneLayout()` in `src/lib/perfMode.ts` and `.duo-dapp-workspace` in `src/index.css` to trigger not just on `@media (min-width: 1024px)`, but also when `html.dual-pane-active` or `html.perf-duo` is present, or when viewport width is $\ge 620\text{px}$ with a foldable aspect ratio ($\ge 0.82$).
+  - *Why*: The iPhone Duo inner screen is 7.6 inches with 1878 × 2670 resolution, which yields a CSS width around 626px to 890px. A rigid `min-width: 1024px` check leaves this wide foldable screen stranded in a stretched single-column layout.
+  - *Alternatives Considered*: Manual user toggle only. (Rejected: automatic dynamic response on screen fold/unfold is far more seamless).
+
+- **Decision 2: Device Profile & 120Hz Unlocking**
+  - *Chosen Approach*: Treat iPhone Duo as a tier-1 high-performance device (`perf-duo-ultra`), stripping all legacy low-power throttling (`perf-reduced`, `perf-legacy`) and setting GPU compositing flags.
+  - *Why*: Both outer and inner screens feature 120Hz refresh rates and modern Apple silicon, capable of rendering rich 3D card flips and particles at native 120fps.
+
+- **Decision 3: Safe Area Insets & Top Bar Geometry**
+  - *Chosen Approach*: Dynamically clamp Safe Area Insets (`env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`) with max boundaries to avoid excessive blank headers on compact outer screen while keeping the notch/dynamic island clear.
 
 ---
 
-### 4. Technical Architecture & File Implementation Roadmap
+### 4. Technical Architecture & Data Strategy
 
 ```
-src/
-├── index.css                    # 공통 .duo-split-workspace 및 댑 듀얼 레이아웃 유틸리티
-├── pages/
-│   ├── TrinityApp.tsx           # 사주·타로 오라클 듀얼 분할
-│   ├── OrangeApp.tsx            # 탈리스만 & 비밀일기 듀얼 분할
-│   ├── HealApp.tsx              # AURA 신체 활력 & 세도나 명상 듀얼 분할
-│   ├── BluebirdApp.tsx          # 호오포노포노 & 치유의 정원 듀얼 분할
-│   ├── MuseApp.tsx              # 영감 창작소 & 갤러리 듀얼 분할
-│   ├── EpilogueApp.tsx          # 성찰 일기 & 다이어리 타임라인 듀얼 분할
-│   ├── CalmApp.tsx              # 명상 인터랙션 & 게이트웨이 듀얼 분할
-│   ├── LibraryPage.tsx          # 검색/필터 & 아카이브 뷰어 듀얼 분할
-│   └── ProfilePage.tsx          # 기본/사진 & 상세/취향 듀얼 분할
+┌────────────────────────────────────────────────────────────────────────┐
+│                        iPhone Duo Device Engine                        │
+│                                                                        │
+│   ┌─────────────────────────────┐    ┌─────────────────────────────┐   │
+│   │  5.4" Outer Screen (Folded) │    │  7.6" Inner Screen (Unfolded)│  │
+│   │   1398 × 2034 (~466px CSS)  │    │   1878 × 2670 (~626-890px)  │   │
+│   └──────────────┬──────────────┘    └──────────────┬──────────────┘   │
+│                  │                                  │                  │
+│                  ▼                                  ▼                  │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │              Responsive Detection (perfMode.ts)                │   │
+│   │  • isSurfaceDuoOrDualScreen() / isDualPaneLayout()             │   │
+│   │  • Fold aspect ratio & DPR calculation                         │   │
+│   │  • Unlocks 120Hz ProMotion (html.perf-duo-ultra)               │   │
+│   └──────────────────────────────┬─────────────────────────────────┘   │
+│                                  │                                     │
+│                  ┌───────────────┴───────────────┐                     │
+│                  ▼                               ▼                     │
+│   ┌─────────────────────────────┐ ┌─────────────────────────────┐     │
+│   │  Single-Column Mobile Flow  │ │   Dual-Pane Workspace Grid  │     │
+│   │   - 100% natural stack      │ │   - Left: Controls & Input  │     │
+│   │   - Thumb reach ergonomics  │ │   - Right: Insights & Feeds │     │
+│   │   - Optimized Tarot wheel   │ │   - Balanced 1:1 split      │     │
+│   └─────────────────────────────┘ └─────────────────────────────┘     │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-#### Step-by-Step 실행 계획
-
-1. **공통 듀얼 레이아웃 스타일 가이드 점검 (`src/index.css`)**
-   - 1024px 이상에서 매끄럽게 동작하는 `.duo-split-workspace` 및 컬럼 매칭 스타일 정비.
-2. **6대 핵심 댑 듀얼 분할 리팩토링**
-   - `TrinityApp.tsx`: 카드 선택/질의 섹션(좌) + 리딩 결과/행운 부스트/히스토리(우)
-   - `OrangeApp.tsx`: 감정 입력/부적 연성(좌) + 탈리스만 체스트/비밀로그(우)
-   - `HealApp.tsx`: 명상 타이머/호흡(좌) + 보물 기록/웰니스 차트(우)
-   - `BluebirdApp.tsx`: 4단계 정화 기도(좌) + 정화 아카이브/치유 노트(우)
-   - `MuseApp.tsx`: 시적 작문 스튜디오(좌) + 예술 갤러리/작품 컬렉션(우)
-   - `EpilogueApp.tsx`: 일기 작성/컨디션 결산(좌) + 타임라인/통합 결산 히스토리(우)
-3. **서브 페이지 듀얼 분할 리팩토링**
-   - `CalmApp.tsx`: 명상 인터랙션(좌) + 게이트웨이 상태(우)
-   - `LibraryPage.tsx`: 채널 필터/통계(좌) + 아카이브 목록(우)
-   - `ProfilePage.tsx`: 사진 및 기본/운명(좌) + 심리/예술/관계성(우)
-4. **검증 및 빌드**
-   - `package.json` 버전 패치 범프 (`1.4.464`), `version.json`, `changelog.json` 기록.
-   - `lint_applet` 및 `compile_applet` 실행하여 무결성 확인.
+#### Key Files to Modify:
+1. `src/lib/perfMode.ts`:
+   - Enhance `isSurfaceDuoOrDualScreen()` and `isDualPaneLayout()` to recognize iPhone Duo geometry (5.4" outer ~440–480px, 7.6" inner ~620–890px with aspect ratio $\ge 0.82$).
+   - Ensure dynamic resize/orientation change listeners update `html.dual-pane-active` and `html.perf-duo` in real time.
+2. `src/index.css`:
+   - Extend `.duo-dapp-workspace` so that `html.dual-pane-active .duo-dapp-workspace` and `html.perf-duo .duo-dapp-workspace` render 2 columns on $\ge 620\text{px}$ aspect ratio screens.
+   - Add 120Hz ProMotion GPU transform and touch-action optimization classes.
+3. `src/components/trinity/TarotSpread.tsx`:
+   - Fine-tune card wheel radius and offset for 5.4-inch outer screen vs 7.6-inch inner screen to prevent card slot collision and improve selection accuracy.
+4. Versioning & Changelog (per AGENTS.md rule):
+   - Bump version to `1.4.469` in `package.json`, update `public/version.json`, prepend `public/changelog.json`.

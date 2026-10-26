@@ -2788,7 +2788,7 @@ html.dual-pane-active .duo-channel-grid {
   }
 }
 
-/* Dual-Pane dApp Workspace (1 col < 1024px, 2 cols >= 1024px for tablet landscape & desktop) */
+/* Dual-Pane dApp Workspace (1 col on cover/narrow portrait, 2 cols on >= 1024px or inner landscape mode) */
 .duo-dapp-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -2803,6 +2803,54 @@ html.dual-pane-active .duo-channel-grid {
     row-gap: 1.5rem;
     align-items: start;
   }
+}
+
+/* iPhone Duo 7.6" Inner Screen in Landscape / Wide Dual-Pane Workspace */
+html.dual-pane-active:not([data-fold-cover="true"]) .duo-dapp-workspace,
+html.perf-duo-ultra:not([data-fold-cover="true"]) .duo-dapp-workspace,
+html[data-dual-screen="true"]:not([data-fold-cover="true"]) .duo-dapp-workspace,
+@media screen and (min-width: 600px) and (orientation: landscape) {
+  .duo-dapp-workspace {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: var(--duo-hinge-gap, 1.25rem) !important;
+    row-gap: 1.25rem !important;
+    align-items: start;
+  }
+}
+
+/* iPhone Duo 5.4" Outer Cover Screen in Portrait -> Strict Single Column */
+html[data-fold-cover="true"] .duo-dapp-workspace,
+@media screen and (max-width: 579px) and (orientation: portrait) {
+  .duo-dapp-workspace {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+/* iPhone Duo 120Hz ProMotion Hardware Acceleration & Zero-Delay Touch */
+html.perf-duo-ultra,
+html.perf-duo,
+html[data-device="iphone-duo"] {
+  -webkit-overflow-scrolling: touch;
+}
+
+html.perf-duo-ultra button,
+html.perf-duo-ultra a,
+html.perf-duo-ultra [role="button"],
+html.perf-duo-ultra input,
+html.perf-duo-ultra select,
+html.perf-duo-ultra textarea,
+html[data-device="iphone-duo"] button,
+html[data-device="iphone-duo"] a,
+html[data-device="iphone-duo"] [role="button"] {
+  touch-action: manipulation;
+}
+
+html.perf-duo-ultra .tarot-flick-card,
+html.perf-duo-ultra .duo-dapp-workspace > div,
+html[data-device="iphone-duo"] .duo-dapp-workspace > div {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 @media (min-width: 1120px) {

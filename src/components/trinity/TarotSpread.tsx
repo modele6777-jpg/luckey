@@ -498,12 +498,20 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       const bounds = containerRef.current?.getBoundingClientRect();
       const w = bounds?.width || window.innerWidth;
       const h = bounds?.height || window.innerHeight;
-      if (w < 480) {
-        // Calibrated for mobile to keep wheel cards completely visible & unoccluded
+      const isLandscape = w > h;
+
+      if (!isLandscape && w < 540) {
+        // iPhone Duo 5.4" Outer Cover Screen in Portrait (Compact vertical ergonomics)
         setRadius(Math.max(280, Math.min(340, Math.round(h * 0.40))));
         setYOffset(Math.max(270, Math.min(340, Math.round(h * 0.41))));
         setWheelCardWidth(64);
         setIsMobile(true);
+      } else if (isLandscape && w < 1000) {
+        // iPhone Duo 7.6" Inner Screen in Landscape (Wide dual-screen horizon)
+        setRadius(Math.max(380, Math.min(520, Math.round(h * 0.78))));
+        setYOffset(Math.max(370, Math.min(510, Math.round(h * 0.82))));
+        setWheelCardWidth(w < 720 ? 70 : 80);
+        setIsMobile(false);
       } else if (w < 768) {
         setRadius(460);
         setYOffset(500);

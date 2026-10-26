@@ -1,6 +1,6 @@
 {
-  "summary":  "태블릿 가로 모드 및 대화면(1024px 이상)에서 6대 핵심 댑(Trinity, Orange, Heal, Bluebird, Muse, Epilogue)을 비롯해 Calm, Library, Profile 등 전체 댑에 유니버스댑 수준의 듀얼 분할(좌측 인터랙션/입력, 우측 결과/히스토리) 레이아웃을 구축하는 계획안입니다.",
-  "updatedAt":  "2026-10-25T07:53:09.215212261Z",
+  "summary":  "iPhone Duo dual-screen optimization plan covering dynamic responsive detection for the 5.4-inch outer cover screen and 7.6-inch unfolded inner screen, enabling automatic dual-split workspace on the inner display, dedicated thumb ergonomics for the compact outer screen, and 120Hz ProMotion hardware acceleration.",
+  "updatedAt":  "2026-10-26T09:47:57.628321811Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

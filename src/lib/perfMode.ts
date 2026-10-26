@@ -81,7 +81,7 @@ export function isSurfaceDuoOrDualScreen(): boolean {
   if (typeof window === 'undefined') return false;
 
   const override = getDevicePerfOverride();
-  if (override === 'duo') {
+  if (override === 'duo' || override === 'iphoneduo') {
     cachedDuo = true;
     return true;
   }
@@ -99,30 +99,56 @@ export function isSurfaceDuoOrDualScreen(): boolean {
   } catch {}
 
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-  if (/Surface Duo|SurfaceDuo/i.test(ua)) {
+  if (/Surface Duo|SurfaceDuo|iPhone Duo|iPhone.*Duo/i.test(ua)) {
     cachedDuo = true;
     return true;
   }
 
   const w = window.innerWidth;
   const h = window.innerHeight;
+  const sw = window.screen?.width || w;
+  const sh = window.screen?.height || h;
+
   // Surface Duo 1 (540x720 single / 1114x720 spanned) & Surface Duo 2 (556x896 single / 1344x896 spanned)
   const isDuoGeometry =
     (w >= 1080 && w <= 1380 && h >= 660 && h <= 930) ||
     (w >= 525 && w <= 575 && h >= 680 && h <= 920);
 
-  cachedDuo = isDuoGeometry;
+  // iPhone Duo Outer (5.4" 1398x2034 ~466 CSS px) & Inner (7.6" 1878x2670 ~626-890 CSS px, ratio ~1.05:1)
+  const isIPhoneDuoGeometry =
+    (sw >= 430 && sw <= 490 && sh >= 640 && sh <= 740) ||
+    (sw >= 640 && sw <= 740 && sh >= 430 && sh <= 490) ||
+    (Math.min(w, h) >= 600 && Math.min(w, h) <= 920 && (Math.min(w, h) / Math.max(w, h)) >= 0.70);
+
+  cachedDuo = isDuoGeometry || isIPhoneDuoGeometry;
   return cachedDuo;
 }
 
 /**
+ * Checks if current viewport is iPhone Duo or Foldable outer cover screen in portrait
+ */
+export function isIPhoneDuoCoverScreen(): boolean {
+  if (typeof window === 'undefined') return false;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  return w < 580 && h >= w;
+}
+
+/**
  * Determines whether the current viewport should activate the 2-Column Dual-Pane Split layout
- * (Unfolded Foldable, Spanned Surface Duo, or Landscape / Wide iPhone Duo mode).
+ * (iPhone Duo 7.6" Inner Screen in Landscape/Wide mode, Unfolded Foldable, or Spanned Duo).
+ * Note: When in Portrait on the outer cover screen (5.4"), strictly remains single column.
  */
 export function isDualPaneLayout(): boolean {
   if (typeof window === 'undefined') return false;
   const w = window.innerWidth;
   const h = window.innerHeight;
+  const isLandscape = w > h;
+
+  // Outer cover screen in portrait mode is strictly single-column
+  if (w < 580 && !isLandscape) {
+    return false;
+  }
 
   try {
     if (
@@ -133,16 +159,20 @@ export function isDualPaneLayout(): boolean {
     }
   } catch {}
 
-  // Spanned Surface Duo or unfolded Galaxy Fold inner screen
-  if (isSurfaceDuoOrDualScreen() && w >= 640) return true;
+  // iPhone Duo / Foldable Inner Screen in Landscape or wide mode (>= 580px wide)
+  if (isLandscape && w >= 560) {
+    return true;
+  }
+
+  // Spanned Surface Duo or unfolded Galaxy Fold / iPhone Duo inner screen
+  if (isSurfaceDuoOrDualScreen() && (w >= 600 || isLandscape)) return true;
   if (isGalaxyFoldSeClass() && !isFoldCoverScreen()) return true;
 
   // Tablet / Desktop Wide View (iPad, Galaxy Tab, desktop window >= 720px)
   if (w >= 720) return true;
 
-  // iPhone Landscape / Wide Dual-View (width > height and width >= 590px, or square-ish foldable >= 660px)
-  if (w > h && w >= 590) return true;
-  if (w >= 660 && w / Math.max(h, 1) >= 0.8) return true;
+  // Square-ish unfolded foldable inner screen (aspect ratio >= 0.78 and width >= 620px)
+  if (w >= 620 && (Math.min(w, h) / Math.max(w, h)) >= 0.75) return true;
 
   return false;
 }
@@ -276,6 +306,7 @@ function applyDuoAndViewportFlags(): void {
   const isDuo = isSurfaceDuoOrDualScreen();
   const dualPane = isDualPaneLayout();
   const isLandscape = window.innerWidth > window.innerHeight;
+  const isCover = isIPhoneDuoCoverScreen() || isFoldCoverScreen();
   const isUltra = isDuo || dualPane;
 
   document.documentElement.classList.toggle('perf-duo', isUltra);
@@ -283,15 +314,22 @@ function applyDuoAndViewportFlags(): void {
   document.documentElement.classList.toggle('dual-pane-active', dualPane);
   document.documentElement.dataset.dualScreen = dualPane ? 'true' : 'false';
   document.documentElement.dataset.orientation = isLandscape ? 'landscape' : 'portrait';
+  document.documentElement.dataset.foldCover = isCover ? 'true' : 'false';
 
-  if (isUltra) {
+  if (isUltra || isDuo) {
     // Unlock full 120Hz ProMotion & maximum visual/audio power
     document.documentElement.classList.remove('perf-reduced');
     document.documentElement.classList.remove('perf-legacy');
   }
 
   if (isDuo) {
-    document.documentElement.dataset.device = 'surface-duo';
+    const isIOS = isIOSDevice();
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    if (isIOS || /iPhone/i.test(ua)) {
+      document.documentElement.dataset.device = 'iphone-duo';
+    } else {
+      document.documentElement.dataset.device = 'surface-duo';
+    }
   }
 
   const vvh = window.visualViewport?.height || window.innerHeight;
