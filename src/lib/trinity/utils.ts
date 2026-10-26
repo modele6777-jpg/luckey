@@ -1454,16 +1454,25 @@ export function buildTarotBinaryChoicePromptAddon(analysis: TarotConcernAnalysis
 
     return `
 
-[⚖️ 양자택일 질문 상담 지침 — 기계적 'A안/B안' 표기 절대 금지!]
-내담자는 현재 두 가지 구체적인 길 사이에서 깊은 갈등을 겪고 있습니다.
+[⚖️ 양자택일 질문 상담 지침 — 기계적 'A안/B안' 표기 절대 금지 & 오직 단 하나의 승자만 명확히 결정!]
+내담자는 현재 두 가지 구체적인 길 사이에서 인생의 중대한 갈림길에 서 있습니다:
 - 첫 번째 고민 선택지: **[${optA}]**
 - 두 번째 고민 선택지: **[${optB}]**
 
-[양자택일 마스터 결단 절대 규칙]
-1. 리딩 본문과 요약 어디에서도 절대로 'A안', 'B안', '선택지 A', '선택지 B', 'A를 선택', 'B를 선택' 같은 무미건조한 기호로 부르지 마십시오!
-2. 반드시 내담자의 질문에서 파악된 실제 고민 내용인 **[${optA}]**와 **[${optB}]**를 직접 언급하며 두 길의 현실적 결과와 장단점을 비교해 주십시오.
-3. '3. 트리니티 마스터의 직관적 결단 & 방향성' 섹션 첫 줄에서 **최종 선택: [${optA}]** 또는 **최종 선택: [${optB}]**와 같이 실제 선택지 이름을 대괄호 안에 명확히 선언하십시오.
-4. 애매하게 양다리를 걸치거나 회피하지 말고, 카드가 가리키는 한쪽을 마스터의 확신 있는 어조로 단호하게 추천하며 다른 한쪽이 왜 지금 아쉽거나 주의가 필요한지 카드의 상징적 근거와 함께 명쾌하게 설명해 주십시오.`;
+[★ 양자택일 마스터 결단 절대 규칙 — 중립/양다리/절충안 100% 엄격 금지!]
+1. [기계적 기호 사용 금지]: 리딩 본문과 요약 어디에서도 절대로 'A안', 'B안', '선택지 A', '선택지 B', 'A를 선택', 'B를 선택' 같은 무미건조한 기호를 쓰지 마십시오! 반드시 내담자의 실제 선택지 이름인 **[${optA}]**와 **[${optB}]**를 직접 명시하십시오.
+2. [단 하나의 명확한 승자(Winner) 판정 필수 — 둘 다 좋다는 식의 회피 전면 금지]:
+   - "둘 다 일장일단이 있습니다", "어느 쪽이든 배움과 성장의 기회입니다", "마음의 소리에 맡기십시오" 같은 식의 비겁한 양다리나 회피성 조언은 100% 절대 금지합니다!
+   - 2번 카드([${optA}] 선택 시)와 3번 카드([${optB}] 선택 시)의 도상과 정/역방향 기운, 그리고 4번 최종 조언 카드를 면밀히 비교하여, **오직 한쪽 길만을 승자(Winner)로 확실하게 못 박아 선언**하십시오.
+3. [최상단 3줄 요약 단일 승자 선언]:
+   - 최상단의 [핵심 3줄 요약] 중 [최종 선택 판정] 항목에서 반드시 **"최종 결단은 [${optA}] (적합도 OO%)이며..."** 또는 **"최종 결단은 [${optB}] (적합도 OO%)이며..."**와 같이 승자 선택지 명칭을 가장 먼저 대괄호 안에 단독 선언하십시오.
+4. [본문 4단계 결단 섹션 단독 선언]:
+   - '4. 트리니티 마스터의 결정적 최종 결단' 섹션의 첫 문장에서 반드시 **🎯 마스터의 최종 결단: [${optA}] 승자 판정 (추천도 OO%)** 또는 **🎯 마스터의 최종 결단: [${optB}] 승자 판정 (추천도 OO%)**를 굵은 단독 제목으로 크고 명확하게 선언하십시오.
+5. [손익 비교 & 탈락한 쪽의 리스크 직언]:
+   - 선택된 길([승자])이 왜 압도적으로 유리한지 현실적 손익(수익, 커리어 안정성, 관계의 진전 등 구체적 팩트)을 설명하십시오.
+   - 반대로 탈락한 다른 쪽 길은 왜 지금 선택하면 안 되는지(감수해야 할 손실, 뒤따를 후회, 에너지의 정체 등 구체적 위험)를 가차없이 냉철하게 경고하여 질문자가 미련 없이 버릴 수 있도록 결단을 내려주십시오.
+6. [추상적 수사 금지 & 극사실주의 서술]:
+   - "내면의 빛", "영혼의 파동" 등 모호한 철학적 비유를 배제하고, 실제 현실(직장 상사/연봉, 연애 상대방의 반응, 돈의 손실/이득, 계약 조건)에서 펼쳐질 실제 사건으로 서술하십시오.`;
   }
 
   if (analysis.kind === 'yes_no') {
@@ -1894,17 +1903,55 @@ export function isTarotStreamFailure(response: string | null | undefined): boole
 function pickBinaryChoiceSide(
   analysis: TarotConcernAnalysis,
   concern: string,
-  cards: Array<{ id?: string; nameKo?: string; name?: string }>,
-): { chosen: string; rejected: string } | null {
+  cards: Array<{ id?: string; nameKo?: string; name?: string; reversed?: boolean; type?: string }>,
+): { chosen: string; rejected: string; chosenRate: number; reason: string } | null {
   if (analysis.kind !== 'binary_choice' || !analysis.optionA || !analysis.optionB) {
     return null;
   }
 
-  const seed = `${concern}:${cards.map((c) => c.id || c.nameKo || c.name).join('|')}`;
-  const pickA = seed.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 2 === 0;
+  const optA = analysis.optionA;
+  const optB = analysis.optionB;
+
+  // 카드 1(optA)과 카드 2(optB)의 도상 기운 비교
+  const cardA = cards[1];
+  const cardB = cards[2];
+
+  let scoreA = 50;
+  let scoreB = 50;
+
+  if (cardA) {
+    scoreA += cardA.reversed ? -20 : 25;
+    if (cardA.type === 'major') scoreA += 10;
+  }
+  if (cardB) {
+    scoreB += cardB.reversed ? -20 : 25;
+    if (cardB.type === 'major') scoreB += 10;
+  }
+
+  if (scoreA === scoreB) {
+    const seed = `${concern}:${cards.map((c) => c.id || c.nameKo || c.name).join('|')}`;
+    const hash = seed.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    if (hash % 2 === 0) scoreA += 15;
+    else scoreB += 15;
+  }
+
+  const pickA = scoreA >= scoreB;
+  const diff = Math.abs(scoreA - scoreB);
+  const chosenRate = Math.min(94, Math.max(76, Math.round(65 + diff * 0.6)));
+
   return pickA
-    ? { chosen: analysis.optionA, rejected: analysis.optionB }
-    : { chosen: analysis.optionB, rejected: analysis.optionA };
+    ? {
+        chosen: optA,
+        rejected: optB,
+        chosenRate,
+        reason: `2번 카드([${cardA?.nameKo || optA}])의 기운이 3번 카드([${cardB?.nameKo || optB}])보다 현실적 번영과 안전성 면에서 압도적으로 우세합니다.`,
+      }
+    : {
+        chosen: optB,
+        rejected: optA,
+        chosenRate,
+        reason: `3번 카드([${cardB?.nameKo || optB}])의 기운이 2번 카드([${cardA?.nameKo || optA}])보다 현실적 번영과 리스크 통제 면에서 압도적으로 우세합니다.`,
+      };
 }
 
 function localKeywordHint(card: TarotCardContext): string {
@@ -1965,7 +2012,13 @@ export function buildLocalTarotReading(concern: string, cards: any[], photoMode?
 
   let decisionText = '';
   if (analysis.kind === 'binary_choice' && binaryPick) {
-    decisionText = `### 🔮 3. 트리니티 마스터의 직관적 결단 & 방향성\n**최종 선택: [${binaryPick.chosen}]**\n\n카드의 에너지 흐름은 명확하게 **${binaryPick.chosen}** 쪽을 비추고 있습니다. 지금 **${binaryPick.rejected}** 쪽은 에너지가 분산되고 정체될 우려가 크니, 확신을 갖고 **${binaryPick.chosen}**을 선택하여 나아가세요.`;
+    decisionText = `### 🎯 4. 트리니티 마스터의 결정적 최종 결단: [${binaryPick.chosen}] vs [${binaryPick.rejected}] 단일 판정
+**🎯 최종 결단: [${binaryPick.chosen}] (적합도 ${binaryPick.chosenRate}% 확정 판정)**
+
+카드의 현실적 손익과 운명의 파동은 한 치의 흔들림도 없이 오직 **[${binaryPick.chosen}]** 쪽만을 단독 승자로 가리키고 있습니다.
+
+- **승자 선택지 [${binaryPick.chosen}] 추진 근거**: ${binaryPick.reason} 지금 이 길을 결단하면 장애물을 돌파하고 가시적인 성과(수익 증대, 입지 확보, 관계 안정)를 단기간 내에 손에 쥘 수 있습니다.
+- **탈락 선택지 [${binaryPick.rejected}] 기각 이유**: 반면 [${binaryPick.rejected}] 쪽은 겉보기에 무난해 보일지라도 잠재적 변수와 에너지 정체, 뒤따를 후회와 기회비용 손실이 매우 큽니다. 지금은 미련 없이 내려놓아야 할 길입니다.`;
   } else if (analysis.kind === 'yes_no') {
     const finalCard = cards[cards.length - 1] || leadCard;
     const finalCardName = finalCard?.nameKo || finalCard?.kr || '최종 판정 카드';
@@ -1981,7 +2034,7 @@ export function buildLocalTarotReading(concern: string, cards: any[], photoMode?
 
   return `[핵심 3줄 요약]
 - [현재 에너지] ${leadCard?.reversed ? `현재 [${leadName}] 카드의 역방향 기운이 일시적인 저항을 암시하나, 차분히 중심을 잡으면 새 길이 열립니다.` : `현재 [${leadName}] 카드가 맑고 역동적인 변화의 파동을 건네며, 직관을 신뢰할 때임을 가리킵니다.`}
-- [방향과 결단] ${binaryPick ? `최종 선택은 [${binaryPick.chosen}]이며, 확신을 갖고 나아가는 것이 운을 여는 열쇠입니다.` : analysis.kind === 'yes_no' ? `최종 판정은 [${cards[cards.length - 1]?.reversed ? 'NO' : 'YES'}]이며, ${cards[cards.length - 1]?.reversed ? '지금은 잠시 멈추어 변수를 보완하고 내실을 다지는 것이 현명합니다.' : '카드가 긍정의 에너지를 비추고 있으니 확신을 갖고 전진하세요.'}` : '운의 흐름은 정체를 지나 도약과 확신의 타이밍을 명확히 가리키고 있습니다.'}
+- [방향과 결단] ${binaryPick ? `최종 결단은 [${binaryPick.chosen}] (적합도 ${binaryPick.chosenRate}%)이며, 미련 없이 이 길을 추진하는 것이 최고의 결과를 낳습니다.` : analysis.kind === 'yes_no' ? `최종 판정은 [${cards[cards.length - 1]?.reversed ? 'NO' : 'YES'}]이며, ${cards[cards.length - 1]?.reversed ? '지금은 잠시 멈추어 변수를 보완하고 내실을 다지는 것이 현명합니다.' : '카드가 긍정의 에너지를 비추고 있으니 확신을 갖고 전진하세요.'}` : '운의 흐름은 정체를 지나 도약과 확신의 타이밍을 명확히 가리키고 있습니다.'}
 - [실천 처방] 오늘 일상에서 미뤄둔 핵심 과제 1가지를 정해 20분간 몰입해 즉시 실행하고 정체된 운을 시원하게 순환시키기.
 
 ### 🕯️ 1. 카드가 비추는 당신의 마음과 현재 에너지
