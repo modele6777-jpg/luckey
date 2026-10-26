@@ -1,0 +1,140 @@
+html[data-lucy-theme='starlight'][data-theme],
+html[data-lucy-theme='starlight'][data-theme] body,
+html[data-lucy-theme='starlight'] #root,
+html[data-lucy-theme='starlight'] .prism-app-shell {
+  background-color: #070b20 !important;
+}
+
+.lucy-chat-shell.lucy-night {
+  isolation: isolate;
+  color-scheme: dark;
+  color: #f3f3ff;
+  background: #070b20;
+}
+
+.lucy-starfield {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  background:
+    radial-gradient(ellipse at 12% 15%, #49489f50, transparent 48%),
+    radial-gradient(ellipse at 93% 67%, #703ca53b, transparent 45%),
+    radial-gradient(ellipse at 46% 100%, #244d7552, transparent 56%),
+    linear-gradient(165deg, #070b20 10%, #11152e 55%, #080d23);
+}
+
+.lucy-stars {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+}
+
+.lucy-stars-distant {
+  opacity: .6;
+  background-image:
+    radial-gradient(1px 1px at 17px 29px, #d9e1ff 85%, transparent),
+    radial-gradient(1px 1px at 91px 113px, #c2baff 85%, transparent),
+    radial-gradient(1px 1px at 143px 67px, #fff 85%, transparent),
+    radial-gradient(.7px .7px at 63px 159px, #e0e9ff 85%, transparent);
+  background-size: 173px 197px, 211px 239px, 277px 251px, 131px 181px;
+}
+
+.lucy-stars-bright {
+  background-image:
+    radial-gradient(2px 2px at 39px 63px, #fff 10%, #c1cfff99 48%, transparent),
+    radial-gradient(1.5px 1.5px at 211px 153px, #e8daff 30%, #b7a0ee66 65%, transparent),
+    radial-gradient(2px 2px at 111px 259px, #e5f4ff 12%, #87bdf366 60%, transparent);
+  background-size: 317px 353px, 401px 419px, 467px 389px;
+  animation: lucy-starlight-twinkle 9s ease-in-out infinite alternate;
+}
+
+.lucy-starlight-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, #070b2059 30%, #070b2059 70%, transparent);
+}
+
+.lucy-night .lucy-chat-header,
+.lucy-night .lucy-chat-footer {
+  background: #0b1029dc;
+  border-color: #b3b9ef33;
+  box-shadow: 0 5px 32px #02041433;
+}
+
+.lucy-night .lucy-chat-main {
+  position: relative;
+  scrollbar-color: #777db566 transparent;
+}
+
+.lucy-night .lucy-starlight-assistant {
+  color: #f3f3ff;
+  background: linear-gradient(145deg, #1b2441ed, #10182ce8);
+  border-color: #b7bef14d;
+  box-shadow: 0 8px 28px #02051540, inset 0 1px 0 #ffffff08;
+}
+
+.lucy-night .lucy-starlight-user {
+  background: linear-gradient(135deg, #4b4d9fe8, #6652a8e8);
+  border-color: #d3c6ff70;
+  box-shadow: 0 6px 24px #05081744, inset 0 1px 0 #ffffff12;
+}
+
+.lucy-night .lucy-starlight-composer {
+  background: #151d37eb;
+  border-color: #bac2ff59;
+  box-shadow: inset 0 1px 0 #ffffff0a, 0 3px 18px #03061740;
+}
+
+.lucy-night .lucy-starlight-composer:focus-within {
+  border-color: #d5c8ff;
+  box-shadow: 0 0 0 2px #aa94ef2e, 0 0 24px #7064bb26;
+}
+
+.lucy-night :is(input, textarea)::placeholder {
+  color: #b2bad7;
+}
+
+.lucy-night :is(button, [role='button'], a, input, textarea):focus-visible {
+  outline: 2px solid #d4c5ff;
+  outline-offset: 3px;
+}
+
+.lucy-night :is(.text-amber-100, .text-amber-200, .text-amber-300, .text-amber-400, .text-amber-600, .text-amber-700) {
+  color: #d8caff;
+}
+
+.lucy-night .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) {
+  color: #e1d6ff;
+}
+
+.lucy-night .lucy-starlight-assistant blockquote {
+  border-color: #bba5fa;
+}
+
+.lucy-night .lucy-starlight-send {
+  background: linear-gradient(135deg, #7778d2, #9a7acb);
+  border-color: #d8cbff77;
+  color: #ffffff;
+}
+
+@keyframes lucy-starlight-twinkle {
+  from { opacity: .38; }
+  to { opacity: .88; }
+}
+
+@media (max-width: 640px) {
+  .lucy-stars-distant { opacity: .42; }
+  .lucy-stars-bright {
+    background-image:
+      radial-gradient(2px 2px at 39px 63px, #fff 10%, #c1cfff99 48%, transparent),
+      radial-gradient(1.5px 1.5px at 211px 153px, #e8daff 30%, #b7a0ee66 65%, transparent);
+    animation-duration: 12s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucy-stars-bright { animation: none; opacity: .65; }
+}

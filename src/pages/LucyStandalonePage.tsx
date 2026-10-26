@@ -51,6 +51,7 @@ import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
+import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -1729,7 +1730,7 @@ export default function LucyStandalonePage() {
     let statusBarStyleTag = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') as HTMLMetaElement | null;
     const prevStatusBarStyle = statusBarStyleTag ? statusBarStyleTag.getAttribute('content') : null;
     if (statusBarStyleTag) {
-      statusBarStyleTag.setAttribute('content', 'default');
+      statusBarStyleTag.setAttribute('content', 'black-translucent');
     }
 
     let themeColorTag = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
@@ -1741,17 +1742,19 @@ export default function LucyStandalonePage() {
       document.head.appendChild(themeColorTag);
       didCreateThemeTag = true;
     }
-    themeColorTag.setAttribute('content', '#FFFFFF');
+    themeColorTag.setAttribute('content', '#070b20');
+    const previousLucyTheme = document.documentElement.getAttribute('data-lucy-theme');
+    document.documentElement.setAttribute('data-lucy-theme', 'starlight');
 
     // 📱 앱(PWA) 모드에서 상하단 안전영역(노치/홈바)이 어두운 body 배경으로 비쳐 회색으로 보이는 현상 방지
     const prevHtmlBg = document.documentElement.style.background;
     const prevBodyBg = document.body.style.background;
     const prevHtmlBgColor = document.documentElement.style.backgroundColor;
     const prevBodyBgColor = document.body.style.backgroundColor;
-    document.documentElement.style.background = '#FFFFFF';
-    document.body.style.background = '#FFFFFF';
-    document.documentElement.style.backgroundColor = '#FFFFFF';
-    document.body.style.backgroundColor = '#FFFFFF';
+    document.documentElement.style.background = '#070b20';
+    document.body.style.background = '#070b20';
+    document.documentElement.style.backgroundColor = '#070b20';
+    document.body.style.backgroundColor = '#070b20';
 
     return () => {
       document.title = prevTitle;
@@ -1775,6 +1778,8 @@ export default function LucyStandalonePage() {
       document.body.style.background = prevBodyBg;
       document.documentElement.style.backgroundColor = prevHtmlBgColor;
       document.body.style.backgroundColor = prevBodyBgColor;
+      if (previousLucyTheme === null) document.documentElement.removeAttribute('data-lucy-theme');
+      else document.documentElement.setAttribute('data-lucy-theme', previousLucyTheme);
     };
   }, []);
 
@@ -2335,7 +2340,7 @@ export default function LucyStandalonePage() {
 
   return (
     <div
-      className={`lucy-chat-shell h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-300 ${
+      className={`lucy-chat-shell lucy-night h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-300 ${
         isLight ? 'bg-[#faf7f2] text-slate-800' : 'bg-transparent text-white'
       }`}
       style={{
@@ -2346,6 +2351,11 @@ export default function LucyStandalonePage() {
         touchAction: 'pan-y',
       }}
     >
+      <div className="lucy-starfield" aria-hidden="true">
+        <div className="lucy-stars lucy-stars-distant" />
+        <div className="lucy-stars lucy-stars-bright" />
+        <div className="lucy-starlight-veil" />
+      </div>
       {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>
         {(modeSwitchToast || autoTtsToast) && (
@@ -2769,7 +2779,7 @@ export default function LucyStandalonePage() {
                         className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-colors duration-300 ${
                           isLight
                             ? 'lucy-user-bubble bg-amber-100 border border-amber-300 text-slate-900 rounded-tr-xs font-sans shadow-xs'
-                            : 'bg-indigo-600/90 border border-indigo-400/30 text-white rounded-tr-xs font-sans shadow-sm'
+                            : 'lucy-starlight-user bg-indigo-600/90 border border-indigo-400/30 text-white rounded-tr-xs font-sans shadow-sm'
                         }`}
                         style={{
                           backgroundColor: isLight ? '#fef3c7' : undefined,
@@ -2837,6 +2847,7 @@ export default function LucyStandalonePage() {
                       }
                       isLight={isLight}
                       variant="standalone"
+                      theme="starlight"
                       playingMsgId={playingMsgId}
                       ttsInfo={ttsInfo}
                       copiedId={copiedId}
@@ -3254,7 +3265,7 @@ export default function LucyStandalonePage() {
           {/* 💬 Input Container */}
           <div
             style={{ backgroundColor: isLight ? '#ffffff' : undefined }}
-            className={`flex items-center gap-1 sm:gap-2 border focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs ${
+            className={`lucy-starlight-composer flex items-center gap-1 sm:gap-2 border focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs ${
               isLight
                 ? 'bg-white border-amber-300/70'
                 : 'bg-slate-900/90 border-white/15'
@@ -3379,7 +3390,7 @@ export default function LucyStandalonePage() {
                 type="button"
                 onClick={() => handleSend()}
                 disabled={!input.trim() && !attachedImage && (!activeGhostPrompt || isLucyGenerating)}
-                className={`w-6 h-6 sm:w-7 sm:h-7 p-0 font-bold rounded-lg sm:rounded-xl transition-all shadow-xs cursor-pointer shrink-0 active:scale-95 flex items-center justify-center ${
+                className={`lucy-starlight-send w-6 h-6 sm:w-7 sm:h-7 p-0 font-bold rounded-lg sm:rounded-xl transition-all shadow-xs cursor-pointer shrink-0 active:scale-95 flex items-center justify-center ${
                   input.trim() || attachedImage
                     ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-amber-500/20'
                     : activeGhostPrompt && !isLucyGenerating

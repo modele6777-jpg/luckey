@@ -20,6 +20,7 @@ interface LucyKakaoBubbleGroupProps {
   isHistorical: boolean;
   isLight: boolean;
   variant?: 'standalone' | 'drawer';
+  theme?: 'default' | 'starlight';
   playingMsgId?: string | null;
   ttsInfo?: {
     isSpeaking: boolean;
@@ -42,6 +43,7 @@ export function LucyKakaoBubbleGroup({
   isHistorical,
   isLight,
   variant = 'standalone',
+  theme = 'default',
   playingMsgId,
   ttsInfo,
   copiedId,
@@ -223,9 +225,9 @@ export function LucyKakaoBubbleGroup({
               className="flex items-end gap-1.5 min-w-0 max-w-full group/bubble"
             >
               <div
-                className={`p-3.5 sm:p-4.5 text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-all duration-300 ${bubbleSurfaceClass}`}
+                className={`p-3.5 sm:p-4.5 text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-all duration-300 ${bubbleSurfaceClass} ${theme === 'starlight' ? 'lucy-starlight-assistant' : ''}`}
                 style={
-                  variant === 'standalone'
+                  variant === 'standalone' && theme !== 'starlight'
                     ? {
                         backgroundColor: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.92)',
                         color: isLight ? '#1e293b' : '#ffffff',
