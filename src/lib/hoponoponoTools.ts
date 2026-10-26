@@ -508,9 +508,16 @@ export function getHoponoponoToolFallbackImageUrl(toolId: string): string {
   return pool[idx] || pool[0];
 }
 
-export function buildHoponoponoToolImageUrl(prompt: string): string {
-  const seed = Math.floor(Math.random() * 1_000_000);
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=600&seed=${seed}&nologo=true`;
+export async function buildHoponoponoToolImageUrl(prompt: string): Promise<string> {
+  const response = await fetch('/api/ai/image', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, aspectRatio: '4:3' }), signal: AbortSignal.timeout(65000),
+  });
+  const result = await response.json();
+  if (!response.ok || typeof result.imageUrl !== 'string' || !result.imageUrl) {
+    throw new Error(result.error || '도구 이미지를 생성하지 못했습니다.');
+  }
+  return result.imageUrl;
 }
 
 export const HOPONOPONO_TOOL_FALLBACKS: Record<
@@ -827,29 +834,30 @@ export async function generateHoponoponoTool(
   subject: string,
   userContext = '',
 ): Promise<SavedHoponoponoTool> {
-  const buildSaved = (recipe: HoponoponoToolRecipe): SavedHoponoponoTool => {
+  const buildSaved = async (recipe: HoponoponoToolRecipe): Promise<SavedHoponoponoTool> => {
     const imagePrompt = buildHoponoponoToolImagePrompt(recipe.toolId, recipe.toolName, subject);
     return {
       ...recipe,
       id: `tool_${Date.now()}`,
       createdAt: new Date().toISOString(),
       cleansingSubject: subject,
-      imageUrl: buildHoponoponoToolImageUrl(imagePrompt),
+      imageUrl: await buildHoponoponoToolImageUrl(imagePrompt),
     };
   };
 
+  let recipe: HoponoponoToolRecipe;
   try {
     const prompt = `${buildHoponoponoToolPrompt(toolId, subject, userContext)}\n${PRISM_VOICE_RULES}`;
-    const recipe = await invokeLLMStructured({
+    recipe = await invokeLLMStructured({
       messages: [{ role: 'user', content: prompt }],
       schema: HoponoponoToolRecipeSchema,
     });
-    return buildSaved(recipe);
   } catch (err) {
     console.warn('Hoponopono tool generation failed, using fallback.', err);
     const fallbackId = toolId === 'auto' ? inferBestHoponoponoTool(subject) : toolId;
-    return buildSaved(getHoponoponoToolFallback(fallbackId, subject));
+    recipe = getHoponoponoToolFallback(fallbackId, subject);
   }
+  return buildSaved(recipe);
 }
 
 export function persistHoponoponoTool(tool: SavedHoponoponoTool): void {

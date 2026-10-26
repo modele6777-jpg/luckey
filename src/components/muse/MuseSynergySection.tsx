@@ -12,7 +12,7 @@ import { playTTS, stopTTS, useTTSActive } from '@/utils/tts';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import {
   getSafeArtworkUrl,
-  buildPollinationsArtUrl,
+  resolveArtworkImage,
   isAiArtworkUrl,
   getArtworkImageBadgeInfo,
 } from '@/utils/artworkImage';
@@ -89,6 +89,16 @@ export function MuseSynergySection() {
   const [isArtImageOpen, setIsArtImageOpen] = useState<boolean>(false);
   const [customArtworkUrl, setCustomArtworkUrl] = useState<string>('');
   const [isAiGenerated, setIsAiGenerated] = useState<boolean>(false);
+  const [imageApiError, setImageApiError] = useState('');
+  const imageRequestId = useRef(0);
+
+  useEffect(() => {
+    imageRequestId.current++;
+    setCustomArtworkUrl('');
+    setImageApiError('');
+    setIsAiGenerated(false);
+    return () => { imageRequestId.current++; };
+  }, [selectedMaster.id, selectedArtwork?.id]);
 
   // 거장, 선택 작품 또는 대화 내용이 바뀔 때 이미지 로딩 및 상태 초기화
   useEffect(() => {
@@ -113,27 +123,6 @@ export function MuseSynergySection() {
       list.push(encodeURI(targetArtworkImg));
     }
 
-    // 3. 고화질 미학 AI 재현 URL (원작 로드 실패 또는 저작권 보호 시 자동 폴백)
-    const faithfulUrl = buildPollinationsArtUrl(
-      {
-        title: dialogueData.masterpieceName,
-        creator: dialogueData.masterName,
-        artworkType: dialogueData.masterpieceMedium || selectedArtwork?.medium || '명화 회화',
-        era: selectedArtwork?.originalMuseum || selectedMaster.title || '고전 명작',
-        description: dialogueData.masterpieceInsight || 'Masterpiece artwork',
-        aestheticTone: dialogueData.colorPalette?.join(', ') || 'classical museum fine art',
-      },
-      1024,
-      768
-    );
-    list.push(faithfulUrl);
-
-    // 4. 고호환성 초간단 명화 프롬프트
-    const simplePrompt = encodeURIComponent(
-      `Masterpiece museum fine art oil painting of "${dialogueData.masterpieceName}" by ${dialogueData.masterName}, museum photograph, ultra detailed canvas`
-    );
-    list.push(`https://image.pollinations.ai/prompt/${simplePrompt}?width=1024&height=768&nologo=true&seed=42`);
-
     return [...new Set(list.filter(Boolean))];
   }, [customArtworkUrl, selectedMaster, selectedArtwork, dialogueData]);
 
@@ -141,17 +130,31 @@ export function MuseSynergySection() {
   const artworkFilename = `masterpiece-${dialogueData.masterpieceName.replace(/[^a-zA-Z0-9가-힣]/g, '_')}-${dialogueData.masterName.replace(/[^a-zA-Z0-9가-힣]/g, '_')}`;
 
   // 수동 AI 이미지 재생성 요청
-  const handleRegenerateArtwork = () => {
+  const handleRegenerateArtwork = async () => {
+    const requestId = ++imageRequestId.current;
     setLoadingArtwork(true);
     setArtworkLoadError(false);
+    setImageApiError('');
     setImageFallbackIndex(0);
-    const seed = Math.floor(Math.random() * 900000) + 100000;
-    const prompt = encodeURIComponent(
-      `Faithful fine art museum reproduction of "${dialogueData.masterpieceName}" by ${dialogueData.masterName}, ${dialogueData.masterpieceMedium}, rich authentic brushwork, museum gallery lighting, ultra high resolution masterpiece`
-    );
-    const newUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=768&nologo=true&seed=${seed}&model=turbo`;
-    setCustomArtworkUrl(newUrl);
-    setIsAiGenerated(true);
+    try {
+      const result = await resolveArtworkImage({
+        title: dialogueData.masterpieceName,
+        creator: dialogueData.masterName,
+        artworkType: dialogueData.masterpieceMedium || selectedArtwork?.medium || '명화 회화',
+        era: selectedArtwork?.originalMuseum || selectedMaster.title || '고전 명작',
+        description: dialogueData.masterpieceInsight || 'Masterpiece artwork',
+        aestheticTone: dialogueData.colorPalette?.join(', ') || 'classical museum fine art',
+      }, { forcePollinations: true });
+      if (imageRequestId.current !== requestId) return;
+      setCustomArtworkUrl(result.displayUrl || result.url);
+      setIsAiGenerated(true);
+    } catch (error) {
+      if (imageRequestId.current !== requestId) return;
+      setImageApiError(error instanceof Error ? error.message : '작품 이미지를 생성하지 못했습니다.');
+      setArtworkLoadError(true);
+    } finally {
+      if (imageRequestId.current === requestId) setLoadingArtwork(false);
+    }
   };
 
   // 639Hz 솔페지오 주파수 사운드 합성
@@ -853,9 +856,7 @@ export function MuseSynergySection() {
                       onLoad={() => {
                         setLoadingArtwork(false);
                         setArtworkLoadError(false);
-                        if (isAiArtworkUrl(effectiveArtworkImage) || imageFallbackIndex >= 2) {
-                          setIsAiGenerated(true);
-                        }
+                        setIsAiGenerated(effectiveArtworkImage === customArtworkUrl || isAiArtworkUrl(effectiveArtworkImage));
                       }}
                       onError={() => {
                         // 원작 로드 실패 시에만 다음 단계(AI 미학 재현)로 자동 폴백
@@ -863,7 +864,7 @@ export function MuseSynergySection() {
                           const nextIndex = imageFallbackIndex + 1;
                           setImageFallbackIndex(nextIndex);
                           const nextUrl = fallbackUrls[nextIndex];
-                          if (isAiArtworkUrl(nextUrl) || nextIndex >= 2) {
+                          if (isAiArtworkUrl(nextUrl) || nextUrl === customArtworkUrl) {
                             setIsAiGenerated(true);
                           }
                         } else {
@@ -878,7 +879,7 @@ export function MuseSynergySection() {
                     />
                     {(() => {
                       const badge = getArtworkImageBadgeInfo(
-                        isAiGenerated ? 'pollinations' : ((selectedArtwork?.imageUrl || selectedMaster.imageUrl) ? 'wikimedia' : 'pollinations'),
+                        isAiGenerated ? 'ai_replica' : ((selectedArtwork?.imageUrl || selectedMaster.imageUrl) ? 'wikimedia' : 'pollinations'),
                         effectiveArtworkImage,
                         imageFallbackIndex
                       );
@@ -913,6 +914,9 @@ export function MuseSynergySection() {
                       <button
                         type="button"
                         onClick={() => {
+                          setCustomArtworkUrl('');
+                          setImageApiError('');
+                          setIsAiGenerated(false);
                           setImageFallbackIndex(0);
                           setArtworkLoadError(false);
                           setLoadingArtwork(true);
@@ -934,6 +938,8 @@ export function MuseSynergySection() {
                   </div>
                 )}
               </motion.div>
+
+              {imageApiError && <p role="status" className="text-sm text-amber-200 text-center">{imageApiError}</p>}
 
               {/* Action Bar & Buttons */}
               {effectiveArtworkImage && !loadingArtwork && (

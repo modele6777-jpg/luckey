@@ -33,7 +33,6 @@ import { MuseSongYouTubePlayer } from "@/components/muse/MuseSongYouTubePlayer";
 import { recordPrismFeature } from "@/lib/prismOmniSync";
 import {
   resolveArtworkImage,
-  buildPollinationsArtUrl,
   getSafeArtworkUrl,
   isAiArtworkUrl,
   isAiArtworkSource,
@@ -2287,15 +2286,6 @@ export function ArtRecommendationView() {
     if (nanobananaImage && nanobananaImage !== "null" && nanobananaImage !== "undefined") {
       list.push(getSafeArtworkUrl(nanobananaImage));
     }
-
-    // 3. 고화질 미학 AI 재현 (원작 로드 실패 / 저작권 보호 등으로 로드 불가 시에만 폴백)
-    list.push(buildPollinationsArtUrl(recommendation, 1024, 768));
-
-    // 4. Pollinations simple high-compatibility fallback
-    const title = recommendation.titleOriginal || extractOriginalLanguage(recommendation.title) || recommendation.title;
-    const creator = recommendation.creatorOriginal || extractOriginalLanguage(recommendation.creator) || recommendation.creator;
-    const simplePrompt = encodeURIComponent(`Masterpiece fine art oil painting of "${title}" by ${creator}, museum exhibition quality, highly detailed canvas`);
-    list.push(`https://image.pollinations.ai/prompt/${simplePrompt}?width=1024&height=768&nologo=true&seed=42`);
 
     return [...new Set(list.filter(Boolean))];
   }, [nanobananaImage, recommendation]);

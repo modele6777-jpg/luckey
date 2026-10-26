@@ -1,4 +1,3 @@
-import { getDateSeed } from "@/lib/dailyCache";
 import { extractOriginalLanguage } from "@/utils/artSearchQuery";
 
 export type ArtworkImageSource =
@@ -78,7 +77,7 @@ export function resolveArtworkSource(
   url?: string | null,
   fallbackIndex?: number,
 ): ArtworkImageSource {
-  if (isAiArtworkUrl(url) || (typeof fallbackIndex === "number" && fallbackIndex >= 2)) {
+  if (isAiArtworkUrl(url)) {
     return "pollinations";
   }
   if (source === "dailyart") return "dailyart";
@@ -121,7 +120,7 @@ export function getArtworkImageBadgeInfo(
   fallbackIndex?: number,
 ): ArtworkBadgeInfo {
   const effectiveSource = resolveArtworkSource(source, url, fallbackIndex);
-  const isAi = isAiArtworkSource(effectiveSource, url) || (typeof fallbackIndex === "number" && fallbackIndex >= 2);
+  const isAi = isAiArtworkSource(effectiveSource, url);
 
   if (isAi) {
     return {
@@ -170,16 +169,6 @@ export function getSafeArtworkUrl(url?: string | null): string {
   if (isAiArtworkUrl(trimmed)) return trimmed;
   // Proxy external museum / CDN archives (DailyArt, Wikimedia, Met, ArtIC) to bypass anti-hotlinking and CORS blocks
   return `/api/muse/artwork-image/proxy?url=${encodeURIComponent(trimmed)}`;
-}
-
-export function buildPollinationsArtUrl(
-  art: ArtworkImageInput,
-  width = 1024, height = 768,
-): string {
-  const prompt = buildFaithfulArtPrompt(art);
-  const seed = getDateSeed(`muse_art_${art.title}_${art.creator}`);
-  const trimmed = prompt.slice(0, 1400);
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(trimmed)}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=turbo`;
 }
 
 export async function resolveArtworkImage(
