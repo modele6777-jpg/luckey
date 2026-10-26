@@ -947,7 +947,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       id="tarot-stage-container"
       className="fixed inset-0 z-[300] bg-zinc-950 overflow-hidden flex flex-col items-center justify-between font-sans select-none touch-none overscroll-none tarot-spread-stage-root"
       style={{
-        right: 'var(--sites-sidebar-width, 0px)',
+        right: 0,
         touchAction: 'none',
         overscrollBehavior: 'none',
         paddingTop: 'env(safe-area-inset-top, 0px)',

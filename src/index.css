@@ -482,7 +482,7 @@
   .bottom-safe-fab-center {
     position: fixed;
     bottom: calc(var(--sab) + 7.5rem);
-    left: calc((100vw - var(--sites-sidebar-width, 70px)) / 2) !important;
+    left: calc((100vw - var(--sites-sidebar-width, 0px)) / 2) !important;
     right: auto !important;
     transform: translateX(-50%) !important;
     width: 76px !important;
@@ -2884,7 +2884,7 @@ html[data-device="iphone-duo"] .duo-dapp-workspace > div {
 
   /* Move center-floating BigBang button slightly onto the right thumb pane so it never straddles the physical hinge */
   .bottom-safe-fab-center {
-    left: calc((100vw - var(--sites-sidebar-width, 70px)) / 2) !important;
+    left: calc((100vw - var(--sites-sidebar-width, 0px)) / 2) !important;
   }
 }
 
@@ -3087,9 +3087,9 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
-/* The permanent rail occupies its own space and keeps its CSS aura alive. */
-:root { --sites-sidebar-width: 70px; }
-.sites-pinned-main { padding-right: var(--sites-sidebar-width); }
+/* Auto-hiding floating overlay sidebar: occupies 0px in normal document flow for 100% full-screen canvas. */
+:root { --sites-sidebar-width: 0px; }
+.sites-pinned-main { padding-right: 0px; }
 .sites-pinned-sidebar { contain: layout style; }
 .sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }
 

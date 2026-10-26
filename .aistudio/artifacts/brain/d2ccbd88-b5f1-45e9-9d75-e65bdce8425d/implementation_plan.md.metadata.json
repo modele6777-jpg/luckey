@@ -1,6 +1,6 @@
 {
-  "summary":  "iPhone Duo dual-screen optimization plan covering dynamic responsive detection for the 5.4-inch outer cover screen and 7.6-inch unfolded inner screen, enabling automatic dual-split workspace on the inner display, dedicated thumb ergonomics for the compact outer screen, and 120Hz ProMotion hardware acceleration.",
-  "updatedAt":  "2026-10-26T09:47:57.628321811Z",
+  "summary":  "Implementation plan for auto-hiding the navigation sidebar with hover/swipe peek, translucent right-edge handle, 3-second auto-collapse, floating overlay architecture, and full-screen 100% aspect ratio recalibration.",
+  "updatedAt":  "2026-10-26T11:01:06.104476575Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

@@ -1,106 +1,114 @@
-# iPhone Duo Dual-Screen & 120Hz ProMotion Optimization
+# Auto-Hiding Sidebar with Gesture/Hover Peek & Screen Ratio Recalibration
 
-Adaptive responsive engine and performance tuning tailored specifically for the iPhone Duo form factor (5.4-inch outer cover screen and 7.6-inch unfolded inner screen) with seamless single/dual workspace transitions and 120Hz ProMotion GPU acceleration.
+Enhance the navigation sidebar into an intelligent auto-hiding floating drawer that stays hidden during focused app interaction, smoothly slides in on edge hover or swipe gestures, displays a subtle translucent hint handle on the right edge, auto-collapses after 3 seconds of inactivity, and restores 100% full-screen canvas width across all viewports.
 
-### User Review & Critical Decisions
+---
+
+## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following user preferences were confirmed during the interactive interview and govern the implementation:
+> The following user preferences were confirmed during interactive clarification and serve as core requirements for this implementation:
 
-- **Target Screens**: Both the folded 5.4-inch outer screen (1398 × 2034) and the unfolded 7.6-inch inner screen (1878 × 2670) will be dynamically supported and automatically detected.
-- **Inner Screen Layout**: When the 7.6-inch inner screen is active (or in landscape/unfolded state), the app automatically activates the 2-column dual split layout (`duo-dapp-workspace` with left interaction/input and right results/history).
-- **Motion & Refresh Rate**: 120Hz ProMotion GPU hardware acceleration (`translate3d`, `will-change`, touch response zero-latency) enabled for ultra-smooth fluid transitions and instantaneous tactile haptics.
-
----
-
-### 1. Overview & Core Concept
-
-- **What It Does**: Optimizes the entire LucKey ecosystem for the iPhone Duo foldable dual-screen hardware. When folded on the 5.4-inch cover screen, it renders a sleek, thumb-friendly single-column view with touch targets $\ge 44\text{px}$. When unfolded to the 7.6-inch inner screen (aspect ratio ~1.05:1, 14cm × 13.3cm), it dynamically unlocks the dual-pane workspace across all 9 dApps.
-- **Target Audience / Device**: iPhone Duo users switching between on-the-go quick one-handed check-ins (outer display) and immersive multi-tasking sessions (unfolded inner display).
-- **Key Value**: Eradicates layout truncation, excessive vertical stacking on the wide inner screen, and sluggish touch latency, unlocking full 120Hz fluidity.
+- **Confirmed Decision 1 (Overlay & Ratio)**: The sidebar operates as a floating slim overlay (`z-[480]`) rather than pushing or shrinking main app content. Main content width expands to a true 100% (`padding-right: 0`), preventing canvas compression or asymmetrical shifts.
+- **Confirmed Decision 2 (Edge Indicator)**: When the sidebar is collapsed, a slim translucent vertical hint handle (`w-2.5` to `w-3` glass pill) remains visible along the right edge to afford discovery without obstructing UI elements.
+- **Confirmed Decision 3 (Interaction & Auto-Hide Timing)**: The sidebar automatically slides out upon hovering the right edge or swiping left from the edge. It automatically dismisses after **3 seconds of inactivity** or when the pointer moves outside the sidebar. Users can also swipe right or tap outside to collapse immediately.
 
 ---
 
-### 2. User Experience & Visual Design
+## 1. Overview & Core Concept
 
-#### A. 5.4-inch Outer Cover Screen (Compact Mobile Experience)
-- **Viewport Dimension**: ~466 × 678 CSS pixels (1398 × 2034 @3x DPR).
-- **Layout Rhythm**: Single-column continuous natural scroll (`max-w-md mx-auto`).
-- **Thumb-Zone Ergonomics**:
-  - Critical action CTAs pinned in the bottom 40% natural thumb reach zone.
-  - Sticky surface cap strictly maintained under 15% of viewport height.
-  - Generous touch hitboxes ($\ge 44\text{px}$) for all buttons, tabs, and Tarot wheel cards.
-- **Tarot Wheel Optimization**: Calibrated wheel radius (310px) and vertical offset to ensure the full 78-card arc and active cards remain unobstructed above the bottom bezel.
-
-#### B. 7.6-inch Unfolded Inner Screen (Wide Dual-Pane Workspace)
-- **Viewport Dimension**: ~626 × 890 CSS pixels (or ~720–939px depending on scaling, 1878 × 2670 @ DPR).
-- **Automatic Dual-Split Activation**:
-  - Activates `.duo-dapp-workspace` via CSS rule: `html.dual-pane-active .duo-dapp-workspace`, `html.perf-duo .duo-dapp-workspace`, or `@media (min-width: 620px) and (min-aspect-ratio: 0.85/1)`.
-  - **Left Column**: Interactive controls, question input form, draw decks, breathing spheres, meditation timers.
-  - **Right Column**: Comprehensive AI readings, Lucy advice cards, historical logs, and reflection timelines.
-- **Hinge & Margin Balance**: Automatic optical hinge gap padding (`var(--duo-hinge-gap, 1.25rem)`) preventing content from colliding in the fold zone.
-
-#### C. 120Hz ProMotion & Interaction Latency
-- Native 120fps hardware acceleration via compositor-only properties (`transform: translate3d(0,0,0)`, `opacity`, `will-change: transform`).
-- Removal of any 300ms mobile touch delay via `touch-action: manipulation`.
-- Elimination of iOS overscroll rubber-banding glitches during card picking and horizontal wheel drag.
+### What It Does
+1. **Intelligent Auto-Hiding**: Collapses the persistent 70px sidebar into a subtle edge tab by default, freeing up horizontal real estate on mobile devices (e.g., iPhone Duo cover and inner screens), tablets, and desktop displays.
+2. **Gesture & Pointer Peek**:
+   - **Desktop**: Hovering within 16px of the right edge (or hovering the handle) immediately expands the sidebar into view. Moving the mouse away or remaining idle for 3 seconds smoothly collapses it back.
+   - **Touch / Mobile**: Swiping leftwards from the right edge triggers the sidebar to slide in smoothly with tactile haptic feedback. Swiping rightwards or tapping the backdrop dismisses it.
+3. **Screen Aspect Ratio Recalibration**: Removes the hardcoded `--sites-sidebar-width: 70px` gutter from the main app layout (`sites-pinned-main`), allowing tarot wheels, dual-split columns, universe portals, and canvas charts to center themselves symmetrically across the true device viewport.
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
+## 2. User Experience & Visual Design
 
-- **Decision 1: Breakpoint Strategy for Dual-Split Activation**
-  - *Chosen Approach*: Update `isDualPaneLayout()` in `src/lib/perfMode.ts` and `.duo-dapp-workspace` in `src/index.css` to trigger not just on `@media (min-width: 1024px)`, but also when `html.dual-pane-active` or `html.perf-duo` is present, or when viewport width is $\ge 620\text{px}$ with a foldable aspect ratio ($\ge 0.82$).
-  - *Why*: The iPhone Duo inner screen is 7.6 inches with 1878 × 2670 resolution, which yields a CSS width around 626px to 890px. A rigid `min-width: 1024px` check leaves this wide foldable screen stranded in a stretched single-column layout.
-  - *Alternatives Considered*: Manual user toggle only. (Rejected: automatic dynamic response on screen fold/unfold is far more seamless).
+### Key User Flows
+```
++------------------------------------------------------------------+
+| Normal State (100% Full Viewport)                                |
+|                                                                  |
+| [ Main App Canvas / Dual Split DApp Workspace / Tarot Wheel ]    |
+|                                                                  |
+|                                                       [|] Edge   |
+|                                                           Handle |
++------------------------------------------------------------------+
+                                 │
+           (Hover right edge or swipe left from handle)
+                                 ▼
++------------------------------------------------------------------+
+| Peek State (Slim Floating Overlay)                               |
+|                                              +-----------------+ |
+| [ Main App Canvas remains 100% visible]      | 70px Floating   | |
+|                                              | Aurora Drawer   | |
+|                                              | [LUCY / KEY]    | |
+|                                              | [7 Channels]    | |
+|                                              | [LP Player]     | |
+|                                              +-----------------+ |
++------------------------------------------------------------------+
+                                 │
+     (3s inactivity / pointer leaves / swipe right / backdrop tap)
+                                 ▼
++------------------------------------------------------------------+
+| Returns smoothly to Collapsed State                              |
++------------------------------------------------------------------+
+```
 
-- **Decision 2: Device Profile & 120Hz Unlocking**
-  - *Chosen Approach*: Treat iPhone Duo as a tier-1 high-performance device (`perf-duo-ultra`), stripping all legacy low-power throttling (`perf-reduced`, `perf-legacy`) and setting GPU compositing flags.
-  - *Why*: Both outer and inner screens feature 120Hz refresh rates and modern Apple silicon, capable of rendering rich 3D card flips and particles at native 120fps.
-
-- **Decision 3: Safe Area Insets & Top Bar Geometry**
-  - *Chosen Approach*: Dynamically clamp Safe Area Insets (`env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`) with max boundaries to avoid excessive blank headers on compact outer screen while keeping the notch/dynamic island clear.
+### Visual Specifications
+- **Hint Handle**: `fixed right-0 top-1/2 -translate-y-1/2 h-20 w-3 rounded-l-xl bg-white/10 dark:bg-white/15 border border-r-0 border-white/20 backdrop-blur-md shadow-[-4px_0_16px_rgba(0,0,0,0.3)] flex items-center justify-center cursor-pointer transition-all hover:w-4 hover:bg-white/25 active:scale-95`.
+- **Sidebar Motion**: Framer Motion spring physics (`type: 'spring', stiffness: 380, damping: 32`) animating `x: 0` (visible) to `x: '100%'` (hidden) for zero-layout-shift 120Hz compositor-accelerated performance.
+- **Main Viewport Recalibration**:
+  - `--sites-sidebar-width: 0px` globally so `.sites-pinned-main` has `padding-right: 0`.
+  - Update `TarotSpread.tsx` and `.duo-dapp-workspace` centering calculations so that cards, dual panes, and control buttons align with true screen center (`left: 50% -translate-x-1/2`).
 
 ---
 
-### 4. Technical Architecture & Data Strategy
+## 3. Key Product Decisions & Trade-Offs
+
+- **Decision 1: Floating Overlay vs. Canvas Shift**
+  - *Chosen Approach*: Floating overlay with zero layout compression (`padding-right: 0`).
+  - *Why*: Shifting the main canvas on hover causes jarring layout reflows, re-measuring of card wheel geometry, and stutter. A hardware-accelerated overlay preserves layout stability.
+- **Decision 2: Edge Hover Trigger Zone & 3-Second Inactivity Timer**
+  - *Chosen Approach*: 18px invisible trigger zone on the right edge + visual handle, accompanied by a 3000ms idle timer reset on any interaction inside the sidebar.
+  - *Why*: Allows effortless desktop hover access without requiring pixel-perfect clicks, while touch users get an intuitive swipe target.
+
+---
+
+## 4. Technical Architecture & Component Interaction
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                        iPhone Duo Device Engine                        │
+│ DOM Viewport (100vw x 100dvh)                                          │
 │                                                                        │
-│   ┌─────────────────────────────┐    ┌─────────────────────────────┐   │
-│   │  5.4" Outer Screen (Folded) │    │  7.6" Inner Screen (Unfolded)│  │
-│   │   1398 × 2034 (~466px CSS)  │    │   1878 × 2670 (~626-890px)  │   │
-│   └──────────────┬──────────────┘    └──────────────┬──────────────┘   │
-│                  │                                  │                  │
-│                  ▼                                  ▼                  │
-│   ┌────────────────────────────────────────────────────────────────┐   │
-│   │              Responsive Detection (perfMode.ts)                │   │
-│   │  • isSurfaceDuoOrDualScreen() / isDualPaneLayout()             │   │
-│   │  • Fold aspect ratio & DPR calculation                         │   │
-│   │  • Unlocks 120Hz ProMotion (html.perf-duo-ultra)               │   │
-│   └──────────────────────────────┬─────────────────────────────────┘   │
-│                                  │                                     │
-│                  ┌───────────────┴───────────────┐                     │
-│                  ▼                               ▼                     │
-│   ┌─────────────────────────────┐ ┌─────────────────────────────┐     │
-│   │  Single-Column Mobile Flow  │ │   Dual-Pane Workspace Grid  │     │
-│   │   - 100% natural stack      │ │   - Left: Controls & Input  │     │
-│   │   - Thumb reach ergonomics  │ │   - Right: Insights & Feeds │     │
-│   │   - Optimized Tarot wheel   │ │   - Balanced 1:1 split      │     │
-│   └─────────────────────────────┘ └─────────────────────────────┘     │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ <main className="sites-pinned-main">                               │ │
+│ │   - Width: 100% (padding-right: 0px)                               │ │
+│ │   - Fully centered aspect ratios for 5.4" cover & 7.6" landscape   │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+│                                                                        │
+│ ┌──────────────────────┐   ┌─────────────────────────────────────────┐ │
+│ │ Edge Gesture Handler │──▶│ <LeftSidebarNav />                      │ │
+│ │ - Right 18px trigger │   │ - state: isSidebarVisible (boolean)     │ │
+│ │ - Visual hint handle │   │ - 3000ms auto-dismiss inactivity timer  │ │
+│ │ - Touch start/move   │   │ - motion.aside: x: 0 <-> x: '100%'      │ │
+│ └──────────────────────┘   └─────────────────────────────────────────┘ │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-#### Key Files to Modify:
-1. `src/lib/perfMode.ts`:
-   - Enhance `isSurfaceDuoOrDualScreen()` and `isDualPaneLayout()` to recognize iPhone Duo geometry (5.4" outer ~440–480px, 7.6" inner ~620–890px with aspect ratio $\ge 0.82$).
-   - Ensure dynamic resize/orientation change listeners update `html.dual-pane-active` and `html.perf-duo` in real time.
+### Affected Files & Scope
+1. `src/components/navigation/LeftSidebarNav.tsx`:
+   - Replace static `isOpen = true` with responsive visibility state (`isSidebarVisible`).
+   - Implement edge hover detector, touch swipe handler (`onTouchStart`, `onTouchMove`, `onTouchEnd`), and 3000ms inactivity timer with cleanup.
+   - Render the subtle translucent hint handle button when collapsed.
 2. `src/index.css`:
-   - Extend `.duo-dapp-workspace` so that `html.dual-pane-active .duo-dapp-workspace` and `html.perf-duo .duo-dapp-workspace` render 2 columns on $\ge 620\text{px}$ aspect ratio screens.
-   - Add 120Hz ProMotion GPU transform and touch-action optimization classes.
+   - Update `:root { --sites-sidebar-width: 0px; }` and `.sites-pinned-main { padding-right: 0; }`.
+   - Update dependent centered positioning rules (`calc((100vw - var(--sites-sidebar-width)) / 2)` -> `50%`).
 3. `src/components/trinity/TarotSpread.tsx`:
-   - Fine-tune card wheel radius and offset for 5.4-inch outer screen vs 7.6-inch inner screen to prevent card slot collision and improve selection accuracy.
-4. Versioning & Changelog (per AGENTS.md rule):
-   - Bump version to `1.4.469` in `package.json`, update `public/version.json`, prepend `public/changelog.json`.
+   - Ensure the card wheel container centers cleanly without subtracting sidebar width.
+4. `package.json`, `public/version.json`, `public/changelog.json`:
+   - Bump version to `v1.4.472` in compliance with `AGENTS.md`.
