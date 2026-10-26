@@ -7,6 +7,8 @@
 ## Sites 배포
 
 `npm run build:sites`는 기존 화면과 리소스를 Sites용 Worker로 묶습니다.
+채팅은 Sites 런타임 비밀 값 `gemini`(또는 `GEMINI_API_KEY`)를 서버에서만 읽어 Google Gemini API에 직접 연결합니다. `GEMINI_MODEL`로 모델을 지정할 수 있으며 기본값은 `gemini-3.1-flash-lite`입니다. 채팅에는 `LUCKEY_API_ORIGIN` 설정이 필요하지 않습니다.
+
 사이트 ID는 `.openai/hosting.json`에 보관하며 AI API 키는 번들에 포함하지 않습니다.
 Sites의 런타임 환경 변수 `LUCKEY_API_ORIGIN`을 `https://luckey.ai.studio`로 설정하면
 `/api/*` 요청을 기존 서버로 전달합니다. 기존 서버의 운영은 계속 필요합니다.

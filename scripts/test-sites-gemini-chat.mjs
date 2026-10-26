@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict';
+import { handleSitesGeminiChat } from './sites-gemini-chat.mjs';
+
+const url = 'https://example.chatgpt.site/api/openai/v1/chat/completions';
+const messages = [
+  { role: 'system', content: '한국어로 답하세요.' },
+  { role: 'user', content: '내 이름은 지수야.' },
+  { role: 'assistant', content: '안녕 지수!' },
+  { role: 'user', content: [{ type: 'text', text: '내 이름은?' }, { type: 'image_url', image_url: { url: 'data:image/png;base64,aGVsbG8=' } }] },
+];
+const request = body => new Request(url, { method: 'POST', body: JSON.stringify(body) });
+let calls = 0;
+const mockGoogle = async (target, options) => {
+  calls++;
+  assert.equal(target, 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+  assert.equal(options.headers.Authorization, 'Bearer test-secret');
+  assert.equal(options.headers.Cookie, undefined);
+  const payload = JSON.parse(options.body);
+  assert.deepEqual(payload.messages, messages);
+  assert.equal(payload.model, 'gemini-3.1-flash-lite');
+  assert.equal(payload.presence_penalty, undefined);
+  assert.equal(payload.thinking_level, undefined);
+  assert.equal(payload.reasoning_effort, 'low');
+  return new Response(payload.stream
+    ? 'data: {"choices":[{"delta":{"content":"지수"}}]}\n\ndata: [DONE]\n\n'
+    : JSON.stringify({ choices: [{ message: { content: '지수' } }] }));
+};
+for (const stream of [false, true]) {
+  const result = await handleSitesGeminiChat(request({ messages, stream, thinking_level: 'low', presence_penalty: 0.3 }), { gemini: 'test-secret' }, mockGoogle);
+  assert.equal(result.status, 200);
+  assert.equal(result.headers.get('cache-control'), 'no-store');
+  if (stream) {
+    assert.match(result.headers.get('content-type'), /text\/event-stream/);
+    assert.match(await result.text(), /data: \[DONE\]/);
+  } else assert.equal((await result.json()).choices[0].message.content, '지수');
+}
+assert.equal(calls, 2);
+assert.equal((await handleSitesGeminiChat(request({ messages }), {})).status, 503);
+assert.equal((await handleSitesGeminiChat(request({ messages: [] }), { gemini: 'test-secret' })).status, 400);
+assert.equal((await handleSitesGeminiChat(new Request(url, { method: 'POST', body: '{bad' }), { gemini: 'test-secret' })).status, 400);
+assert.equal((await handleSitesGeminiChat(new Request(url), { gemini: 'test-secret' })).status, 405);
+assert.equal(await handleSitesGeminiChat(new Request('https://example.chatgpt.site/api/ai/tts'), {}), null);
+for (const status of [400, 401, 403, 404, 429, 500]) {
+  const result = await handleSitesGeminiChat(request({ messages }), { gemini: 'test-secret' }, async () => new Response('test-secret', { status }));
+  assert.equal(result.status, status === 500 ? 502 : status);
+  assert.ok(!(await result.text()).includes('test-secret'));
+}
+assert.equal((await handleSitesGeminiChat(request({ messages }), { gemini: 'test-secret' }, async () => { throw new Error('test-secret'); })).status, 502);
+console.log('Sites Gemini chat: history, image content, JSON, SSE, validation and provider errors passed.');

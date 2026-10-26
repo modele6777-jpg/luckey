@@ -32,6 +32,7 @@ import {
   syncInsightsFromDailyMemories
 } from '@/lib/chatInsightsEngine';
 import { UnifiedMessage } from '@/lib/chatHistorySync';
+import { loadAllPermanentMemories, updatePermanentMemory, deletePermanentMemory, type DailyMemoryEntry } from '@/lib/chatMemoryArchive';
 import { playTTS, stopTTS, subscribeTTS } from '@/utils/tts';
 
 interface ChatInsightsBoardModalProps {
@@ -54,6 +55,10 @@ export function ChatInsightsBoardModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'today' | 'history'>('today');
+  const [memories, setMemories] = useState<DailyMemoryEntry[]>([]);
+  const [editingDate, setEditingDate] = useState<string | null>(null);
+  const [memoryDraft, setMemoryDraft] = useState('');
+  const [memoryNotice, setMemoryNotice] = useState('');
 
   const [ttsState, setTtsState] = useState<{ isSpeaking: boolean; activeText: string | null }>({
     isSpeaking: false,
@@ -81,6 +86,9 @@ export function ChatInsightsBoardModal({
   useEffect(() => {
     if (isOpen) {
       refreshInsights();
+      setMemories(loadAllPermanentMemories());
+      setEditingDate(null);
+      setMemoryNotice('');
     }
   }, [isOpen, refreshInsights]);
 
@@ -221,6 +229,54 @@ export function ChatInsightsBoardModal({
               </button>
             </div>
           </div>
+
+          <details className="shrink-0 border-b border-white/10 px-5 py-3 text-sm">
+            <summary className="cursor-pointer font-semibold text-amber-200">AI가 참고하는 기억 관리 ({memories.length}일)</summary>
+            <p className="mt-2 text-xs text-slate-400">
+              이 브라우저에 최대 90일분을 보관하고 최근 10개 날짜의 발언 일부를 대화에 참고합니다.
+              여기서 수정·삭제해도 현재 대화, 별도 인사이트 기록은 남습니다. 기기 간 자동 동기화는 지원하지 않습니다.
+            </p>
+            <div className="mt-3 max-h-52 overflow-y-auto space-y-3">
+              {memories.length === 0 && <p className="text-xs text-slate-400">아직 저장된 기억이 없어요. 날짜가 바뀌거나 대화를 초기화할 때 발언을 보관합니다.</p>}
+              {memories.map((memory) => (
+                <div key={memory.date} className="rounded-xl border border-white/10 p-3">
+                  <p className="font-semibold text-xs">{memory.date}</p>
+                  {editingDate === memory.date ? (
+                    <>
+                      <label className="mt-2 block text-xs" htmlFor="memory-draft">기억할 내용 (한 줄에 하나, 최대 50개·각 600자)</label>
+                      <textarea id="memory-draft" value={memoryDraft} onChange={(event) => setMemoryDraft(event.target.value)} rows={4} className="mt-1 w-full rounded-lg bg-slate-900 p-2 text-sm text-white border border-white/20" />
+                      <div className="mt-2 flex gap-3">
+                        <button type="button" disabled={!memoryDraft.trim()} className="text-amber-200 disabled:opacity-40" onClick={() => {
+                          updatePermanentMemory(memory.date, memoryDraft);
+                          setMemories(loadAllPermanentMemories());
+                          setEditingDate(null);
+                          setMemoryNotice('수정한 내용은 다음 대화부터 참고합니다.');
+                        }}>저장</button>
+                        <button type="button" onClick={() => setEditingDate(null)}>취소</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="my-2 whitespace-pre-wrap break-words text-xs text-slate-300">{memory.userTopics.join('\n')}</p>
+                      <div className="flex gap-3 text-xs">
+                        <button type="button" className="text-amber-200" onClick={() => {
+                          setEditingDate(memory.date);
+                          setMemoryDraft(memory.userTopics.join('\n'));
+                        }}>수정</button>
+                        <button type="button" className="text-rose-300" onClick={() => {
+                          if (!window.confirm(`${memory.date}의 AI 참고 기억을 삭제할까요? 현재 대화와 인사이트 기록은 남습니다.`)) return;
+                          deletePermanentMemory(memory.date);
+                          setMemories(loadAllPermanentMemories());
+                          setMemoryNotice('AI 참고 기억을 삭제했어요. 현재 대화나 별도 인사이트에는 같은 내용이 남아 있을 수 있습니다.');
+                        }}>기억 삭제</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p role="status" className="mt-2 text-xs text-amber-200">{memoryNotice}</p>
+          </details>
 
           {/* Body: Two columns (Sidebar list + Detail panel) */}
           <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">

@@ -27,6 +27,8 @@ export default {
   const url = new URL(request.url);
   const synced = await handleSitesSync(request, env);
   if (synced) return synced;
+  const chat = await handleSitesGeminiChat(request, env);
+  if (chat) return chat;
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
    if (!env.LUCKEY_API_ORIGIN) return Response.json({error:'AI 서버 연결이 아직 설정되지 않았습니다.'}, {status:503});
    const upstream = new URL(env.LUCKEY_API_ORIGIN);
@@ -50,6 +52,7 @@ export default {
 `;
 const shared = readFileSync('public/sites-sync-shared.mjs', 'utf8').replace(/^export /gm, '');
 const syncWorker = readFileSync('scripts/sites-sync-worker.mjs', 'utf8').replace(/^import .*;\r?\n/m, '').replace(/^export /gm, '');
-const output = `${shared}\n${syncWorker}\nconst assets=${JSON.stringify(assets)};\n${runtime}`;
+const geminiChat = readFileSync('scripts/sites-gemini-chat.mjs', 'utf8').replace(/^export /gm, '');
+const output = `${shared}\n${syncWorker}\n${geminiChat}\nconst assets=${JSON.stringify(assets)};\n${runtime}`;
 writeFileSync('dist/server/index.js', output);
 console.log(`Sites Worker: ${Object.keys(assets).length} assets, ${(Buffer.byteLength(output)/1024/1024).toFixed(2)} MB`);
