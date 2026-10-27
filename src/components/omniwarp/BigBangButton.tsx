@@ -1,3 +1,4 @@
+import { openNavigationMenu } from '@/lib/navigationMenu';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'motion/react';
@@ -781,7 +782,7 @@ export function BigBangButton() {
     window.addEventListener('pointerup', onGlobalUp);
 
     const now = performance.now();
-    const initialDir = calculateCardinalDirection(e.clientX, e.clientY);
+    const initialDir = (e.target as Element).closest('#bigbang-omnibutton') ? 'none' : calculateCardinalDirection(e.clientX, e.clientY);
     touchStartRef.current = {
       time: now,
       x: e.clientX,
@@ -1015,94 +1016,6 @@ export function BigBangButton() {
     }, 650);
   }, [location, navigate, getActiveSelectionText, isKeySite, isCosmicSuctionActive]);
 
-  // 💬 루시 채팅 도약 헬퍼 (더블탭/더블클릭 시 실행 - 텍스트 선택 시 루시 1:1 질문 토스 연동)
-  const goToLucyChat = useCallback((customContext?: any, customMetrics?: any) => {
-    setIsQuickChatOpen(false);
-    // 대기 중인 1회 탭(말풍선) 타이머 즉시 취소
-    if (singleTapTimerRef.current) {
-      clearTimeout(singleTapTimerRef.current);
-      singleTapTimerRef.current = null;
-    }
-    lastTapTimeRef.current = 0;
-
-    // 🌟 더블탭: 루시 채팅 도약 사운드 & 햅틱
-    omniWarpAudio.playDoubleTap();
-    triggerHaptic('whitehole');
-
-    const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
-
-    // 💬 텍스트 선택 연동: 글자를 선택한 상태에서 더블탭 ➔ 루시 질문으로 즉시 토스!
-    if (textToToss) {
-      savePendingSelection(textToToss, 'lucy', location);
-      try {
-        sessionStorage.setItem('lucy_injected_input_draft', textToToss);
-      } catch (_) {}
-      sendPrismToss({
-        sourceApp: location || 'bigbang_button',
-        targetApp: 'lucy',
-        actionType: 'smart_toss',
-        contextMessage: textToToss,
-        autoPrompt: textToToss,
-        tossedAt: Date.now(),
-      });
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('prism:selection_tossed', {
-            detail: { text: textToToss, target: 'lucy', sourcePath: location },
-          })
-        );
-        window.dispatchEvent(
-          new CustomEvent('prism:selection_saved', {
-            detail: { text: textToToss, target: 'lucy', sourcePath: location },
-          })
-        );
-      }
-    }
-
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('prism:bigbang_commit', {
-          detail: {
-            phase: 'whitehole',
-            target: {
-              id: 'lucy_chat',
-              name: '루시 채팅',
-              destinationPath: '/chat',
-              themeColor: '#38bdf8',
-              eventHorizonMode: 'whitehole',
-              previewLabel: textToToss
-                ? `[루시 질문 토스] "${textToToss.slice(0, 16)}..." ➔ 루시 1:1 채팅`
-                : '[더블탭 도약] 루시 전체 채팅',
-              previewDescription: '영혼의 안식처 루시와 나누는 따뜻하고 지혜로운 1:1 대화',
-            },
-            context: customContext || serializeCurrentView(location),
-            metrics: customMetrics || { phase: 'whitehole' },
-            timestamp: Date.now(),
-          },
-        })
-      );
-    }
-
-    setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-      }
-      navigate('/chat');
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
-        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
-      }
-    }, 160);
-
-    lastValidSelectionRef.current = '';
-    touchStartSelectionRef.current = '';
-    clearPendingSelection();
-    setActivePhase('idle');
-    setGauge(0);
-    setDurationMs(0);
-    resetActiveContextPeek();
-  }, [location, navigate, getActiveSelectionText]);
-
   // 🔮 4대 고대 룬 문자 클릭 시 다이렉트 차원 도약 핸들러
   const handleRuneNavigate = useCallback(
     (targetPath: string, targetTab?: string) => {
@@ -1324,101 +1237,20 @@ export function BigBangButton() {
       return dist <= 44;
     })();
 
-    // [1] 제자리 탭 (220ms 미만 및 제자리 영역 dist < 26px)
+    // A short center tap opens navigation immediately; hold and drag resolve above.
     const isTapGesture = !isDragGesture && !isHoldGesture && duration < 220 && dist < DRAG_RECOMMEND_THRESHOLD;
     if (isTapGesture) {
-      const nowMs = performance.now();
-      const timeSinceLastTap = nowMs - lastTapTimeRef.current;
-
-      // 🎯 더블탭 감지 (이전 탭 후 30ms ~ 380ms 이내 재탭 시): 루시 전체 채팅(/chat)으로 즉시 도약!
-      if (timeSinceLastTap > 30 && timeSinceLastTap < 380) {
-        goToLucyChat(context, metrics);
-        return;
-      }
-
-      // ☀️ 첫 번째 탭: 더블탭 입력 대기 (240ms) 후 싱글탭 실행
-      lastTapTimeRef.current = nowMs;
-      try {
-        sessionStorage.setItem('bigbang_recent_tap', String(Date.now()));
-      } catch (_) {}
-
-      if (singleTapTimerRef.current) {
-        clearTimeout(singleTapTimerRef.current);
-      }
-
-      const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
-
-      singleTapTimerRef.current = setTimeout(() => {
-        singleTapTimerRef.current = null;
-        triggerHaptic('whitehole');
-        omniWarpAudio.playWhiteHole();
-
-        // 🛡️ 루시채팅(/, /chat, /lucy) 화면에서는 별도로 퀵 말풍선을 절대 띄우지 않음!
-        if (isChatView || checkIsInLucyChat()) {
-          setIsQuickChatOpen(false);
-          if (textToToss && typeof window !== 'undefined') {
-            const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
-            window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt } }));
-            window.getSelection()?.removeAllRanges();
-            lastValidSelectionRef.current = '';
-            touchStartSelectionRef.current = '';
-            clearPendingSelection();
-          }
-          setActivePhase('idle');
-          setGauge(0);
-          setDurationMs(0);
-          return;
-        }
-
-        // 🌟 텍스트 드래그(선택) 상태에서 탭: 페이지 이동 대신 버튼 위 퀵 말풍선을 열어 선택 문장으로 루시 질의!
-        if (textToToss) {
-          const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
-          setQuickChatInitialPrompt(prompt);
-          setQuickChatAutoSend(true);
-          setQuickChatVoiceActive(false);
-          setIsQuickChatOpen(true);
-          lastValidSelectionRef.current = '';
-          touchStartSelectionRef.current = '';
-          clearPendingSelection();
-          if (typeof window !== 'undefined') {
-            window.getSelection()?.removeAllRanges();
-          }
-          setActivePhase('idle');
-          setGauge(0);
-          setDurationMs(0);
-          return;
-        }
-
-        // 💬 제자리 탭: 루시 채팅으로 페이지를 이동하지 않고 버튼 위에 '루시 퀵 대화 말풍선' 즉시 토글 오픈!
-        setQuickChatVoiceActive(false);
-        setIsQuickChatOpen((prev) => !prev);
-
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('prism:bigbang_commit', {
-              detail: {
-                phase: 'whitehole',
-                target: {
-                  id: 'lucy_quick_chat',
-                  name: '루시 퀵 대화',
-                  destinationPath: location,
-                  themeColor: '#38bdf8',
-                  eventHorizonMode: 'whitehole',
-                  previewLabel: '[탭] 루시 퀵 대화 말풍선',
-                  previewDescription: '버튼 위에서 즉시 루시와 나누는 따뜻한 대화',
-                },
-                context,
-                metrics: { ...metrics, phase: 'whitehole' },
-                timestamp: Date.now(),
-              },
-            })
-          );
-        }
-      }, 240);
-
+      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
+      lastTapTimeRef.current = 0;
+      setIsQuickChatOpen(false);
+      setQuickChatVoiceActive(false);
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
+      triggerHaptic('whitehole');
+      buttonRef.current?.focus({ preventScroll: true });
+      openNavigationMenu();
       return;
     }
 
@@ -1709,9 +1541,7 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">✨</span>
-                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸말풍선 즉시답변</span>
-                <span className="text-slate-500">│</span>
-                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸루시채팅</span>
+                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸네잎클로버 메뉴</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸음성 답변</span>
                 <span className="text-slate-500">│</span>
@@ -1897,11 +1727,15 @@ export function BigBangButton() {
                 e.preventDefault();
                 e.stopPropagation();
               }}
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                goToLucyChat();
+              onClick={(event) => {
+                // Pointer activation is handled on release; detail=0 covers keyboard/assistive activation.
+                if (event.detail === 0) {
+                  setIsQuickChatOpen(false);
+                  openNavigationMenu();
+                }
               }}
+              aria-haspopup="dialog"
+              aria-controls="luckey-menu-dialog"
               onPointerLeave={() => {
                 setIsHovered(false);
                 buttonRef.current?.blur();
@@ -1970,12 +1804,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 말풍선 답변 / 더블탭: 루시 채팅 / 홀드: 음성 답변 / 드래그: 럭키 1순위 추천)"
-              aria-label={
-                hasSelectionToss
-                  ? '빅뱅 버튼 · 문장 선택됨 (탭: 말풍선 즉시답변, 홀드: 음성 답변, 더블탭: 루시채팅)'
-                  : '빅뱅 버튼 · 탭: 루시 퀵 대화, 더블탭: 루시 채팅, 홀드: 루시 음성, 드래그: 럭키 1순위 추천'
-              }
+              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 홀드: 음성 답변 / 드래그: 럭키 1순위 추천)"
+              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 홀드: 루시 음성, 드래그: 럭키 1순위 추천"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

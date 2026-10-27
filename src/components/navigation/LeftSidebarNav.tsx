@@ -17,9 +17,8 @@ import {
   Compass,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { createPortal } from 'react-dom';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
-import { useFloatingMenu } from '@/hooks/useFloatingMenu';
+import { OPEN_NAVIGATION_MENU_EVENT, readMenuBounds } from '@/lib/navigationMenu';
 import { placeMenuPanel } from '@/lib/floatingMenuGeometry';
 import './floating-menu.css';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
@@ -193,12 +192,40 @@ export default function LeftSidebarNav() {
   const [isChannelsOpen, setIsChannelsOpen] = useState(true);
   const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
   const handleCloseDrawer = useCallback(() => setIsOpen(false), []);
-  const handleToggleOpen = useCallback(() => {
-    triggerHaptic('whitehole');
-    setIsOpen(open => !open);
+  const [bounds, setBounds] = useState(readMenuBounds);
+  const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 76, height: 76 });
+  useEffect(() => {
+    const update = () => {
+      setBounds(readMenuBounds());
+      const button = document.querySelector<HTMLElement>('[data-bigbang="true"]');
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        setAnchor({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+      }
+    };
+    let openingFrame = 0;
+    const open = () => {
+      update();
+      cancelAnimationFrame(openingFrame);
+      // Let the releasing pointer's compatibility click finish before mounting the backdrop.
+      openingFrame = requestAnimationFrame(() => setIsOpen(true));
+    };
+    window.addEventListener(OPEN_NAVIGATION_MENU_EVENT, open);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    window.visualViewport?.addEventListener('resize', update);
+    window.visualViewport?.addEventListener('scroll', update);
+    return () => {
+      cancelAnimationFrame(openingFrame);
+      window.removeEventListener(OPEN_NAVIGATION_MENU_EVENT, open);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+      window.visualViewport?.removeEventListener('resize', update);
+      window.visualViewport?.removeEventListener('scroll', update);
+    };
   }, []);
-  const floating = useFloatingMenu(handleToggleOpen, handleCloseDrawer);
   const panelRef = useRef<HTMLElement>(null);
+  const backdropPressedRef = useRef(false);
   const [panelSize, setPanelSize] = useState({ width: 350, height: 480 });
   useEffect(() => {
     if (!isOpen || !panelRef.current) return;
@@ -209,11 +236,9 @@ export default function LeftSidebarNav() {
     observer.observe(panel);
     return () => observer.disconnect();
   }, [isOpen]);
-  const panelHeight = Math.min(panelSize.height, Math.max(0, floating.bounds.height - 24));
-  const verticalSpace = Math.max(floating.position.y - floating.bounds.top - 24, floating.bounds.top + floating.bounds.height - floating.position.y - floating.size.height - 24);
-  const sideSpace = Math.max(floating.position.x - floating.bounds.left - 24, floating.bounds.left + floating.bounds.width - floating.position.x - floating.size.width - 24);
-  const panelWidth = Math.min(350, Math.max(0, floating.bounds.width - 24), panelHeight > verticalSpace && sideSpace >= 180 ? sideSpace : Infinity);
-  const panelPosition = placeMenuPanel(floating.position, floating.size, { width: panelWidth, height: panelHeight }, floating.bounds);
+  const panelHeight = Math.min(panelSize.height, Math.max(0, bounds.height - 24));
+  const panelWidth = Math.min(350, Math.max(0, bounds.width - 24));
+  const panelPosition = placeMenuPanel(anchor, anchor, { width: panelWidth, height: panelHeight }, bounds);
 
   const [, setProfileVersion] = useState(0);
   const [location, navigate] = useLocation();
@@ -473,37 +498,14 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {typeof document !== 'undefined' && createPortal(
-        <div
-          data-menu-drag="true"
-          data-floating-menu-anchor="true"
-          style={{ position: 'fixed', left: floating.position.x, top: floating.position.y, zIndex: 700, touchAction: 'none' }}
-        >
-          <motion.button
-            ref={floating.buttonRef}
-            type="button"
-            {...floating.handlers}
-            className={`luckey-fab ${floating.isDragging ? 'is-dragging' : ''} ${isOpen ? 'is-open' : ''}`}
-            data-theme={isLight ? 'light' : 'dark'}
-            data-menu-drag="true"
-            aria-label={isOpen ? '네잎클로버 메뉴 닫기' : '네잎클로버 메뉴 열기'}
-            aria-expanded={isOpen}
-            aria-controls="luckey-menu-dialog"
-            title="네잎클로버 메뉴 · 드래그하여 이동"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            onContextMenu={event => event.preventDefault()}
-          >
-            <span className="luckey-fab-shine" aria-hidden="true" />
-            <Clover className="luckey-fab-clover" size={29} strokeWidth={1.8} aria-hidden="true" />
-            <span className="luckey-fab-label">{floating.isDragging ? 'MOVE' : isOpen ? 'CLOSE' : 'MENU'}</span>
-            <span className="luckey-fab-spark" aria-hidden="true">✦</span>
-          </motion.button>
-        </div>, document.body,
-      )}
       {isOpen && (
         <WorkspacePortal onClose={handleCloseDrawer}>
-          <div className="fixed inset-0 luckey-menu-backdrop" onClick={handleCloseDrawer}>
+          <div className="fixed inset-0 luckey-menu-backdrop"
+            onPointerDown={event => { backdropPressedRef.current = event.target === event.currentTarget; }}
+            onClick={event => {
+              if (event.target === event.currentTarget && backdropPressedRef.current) handleCloseDrawer();
+              backdropPressedRef.current = false;
+            }}>
             <motion.section
               ref={panelRef}
               id="luckey-menu-dialog"
@@ -512,7 +514,7 @@ export default function LeftSidebarNav() {
               aria-labelledby="luckey-menu-title"
               data-theme={isLight ? 'light' : 'dark'}
               className="luckey-menu-panel"
-              style={{ position: 'fixed', left: panelPosition.x, top: panelPosition.y, width: panelWidth, maxHeight: Math.max(0, floating.bounds.height - 24) }}
+              style={{ position: 'fixed', left: panelPosition.x, top: panelPosition.y, width: panelWidth, maxHeight: Math.max(0, bounds.height - 24) }}
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.18 }}

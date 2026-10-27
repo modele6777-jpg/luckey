@@ -380,7 +380,7 @@ function AppContent() {
         startY = e.touches[0].clientY;
         const target = e.target as HTMLElement | null;
         isInsideBigBang = !!target?.closest(
-          '#bigbang-omnibutton, [data-bigbang="true"], [data-menu-drag="true"]'
+          '#bigbang-omnibutton, [data-bigbang="true"]'
         );
         isInsideHorizontalScroller = !!target?.closest(
           '.overflow-x-auto, .overflow-x-scroll, [data-allow-x-scroll], input[type="range"]'

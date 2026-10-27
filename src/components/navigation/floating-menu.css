@@ -1,20 +1,3 @@
-.luckey-fab {
-  width: 64px; height: 64px; min-height: 64px; padding: 7px 0 5px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  position: relative; overflow: hidden; border-radius: 22px; border: 1px solid #9ff3cc80;
-  background: linear-gradient(145deg, #24634e, #12352e 58%, #142726);
-  color: #c4ffdc; box-shadow: 0 7px 24px #001e2866, inset 0 1px 0 #ffffff40;
-  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
-  cursor: grab; isolation: isolate;
-}
-.luckey-fab[data-theme='light'] { background: linear-gradient(145deg, #fffdf5, #dbf8e9); color: #126349; border-color: #62c6a1b3; box-shadow: 0 7px 24px #1a71542e, inset 0 1px 0 white; }
-.luckey-fab.is-dragging { cursor: grabbing; box-shadow: 0 10px 32px #10b98166, 0 0 0 3px #86efac60; }
-.luckey-fab.is-open { border-color: #bef264; }
-.luckey-fab-shine { position: absolute; inset: 0; background: radial-gradient(ellipse at 25% 0%, #ffffff35, transparent 65%); pointer-events: none; }
-.luckey-fab-clover { fill: #76dfa529; filter: drop-shadow(0 1px 5px #6ee7b740); pointer-events: none; }
-.luckey-fab-label { font-size: 8px; font-weight: 800; letter-spacing: .2em; padding-left: .2em; pointer-events: none; }
-.luckey-fab-spark { position: absolute; top: 7px; right: 8px; font-size: 10px; color: #fde68a; pointer-events: none; }
-.luckey-fab:focus-visible, .luckey-menu-panel button:focus-visible { outline: 2px solid #34d399; outline-offset: 3px; }
 .luckey-menu-backdrop { background: #030b1259; backdrop-filter: blur(3px); }
 .luckey-menu-panel {
   --menu-surface: #101c1df5; --menu-text: #e7f3ed; --menu-muted: #a6b9b0; --menu-line: #b8e3cf24;
