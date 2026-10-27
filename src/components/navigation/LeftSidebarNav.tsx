@@ -853,38 +853,40 @@ export default function LeftSidebarNav() {
     hideSidebar();
   }, [cleanPath, hideSidebar]);
 
-  // Mobile edge touch swipe detection (swipe left from rightmost 32px of viewport to reveal)
+  // Open the original left rail only after a deliberate inward edge swipe.
   useEffect(() => {
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    const handleWindowTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
+    let start: { x: number; y: number } | null = null;
+    const reset = () => { start = null; };
+    const onStart = (event: TouchEvent) => {
+      reset();
+      if (isOpen || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      if (touch.clientX >= 0 && touch.clientX <= 32) start = { x: touch.clientX, y: touch.clientY };
     };
-
-    const handleWindowTouchMove = (e: TouchEvent) => {
-      if (isOpen) return;
-      if (touchStartX > 32) return;
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - touchStartX;
-      const deltaY = touch.clientY - touchStartY;
-      if (deltaX > 20 && Math.abs(deltaY) < 45) {
+    const onMove = (event: TouchEvent) => {
+      if (!start || event.touches.length !== 1) { reset(); return; }
+      const dx = event.touches[0].clientX - start.x;
+      const dy = Math.abs(event.touches[0].clientY - start.y);
+      if (dy > 24 || dx < -12) { reset(); return; }
+      if (dx >= 36 && dx > dy * 1.5) {
+        reset();
         showSidebar();
         triggerHaptic('mirrorhole');
       }
     };
-
-    window.addEventListener('touchstart', handleWindowTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleWindowTouchMove, { passive: true });
+    window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('touchend', reset);
+    window.addEventListener('touchcancel', reset);
     return () => {
-      window.removeEventListener('touchstart', handleWindowTouchStart);
-      window.removeEventListener('touchmove', handleWindowTouchMove);
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', reset);
+      window.removeEventListener('touchcancel', reset);
     };
   }, [isOpen, showSidebar]);
 
-  // Touch gesture handlers on the sidebar drawer itself (swipe right to dismiss)
+  // Touch gesture handlers on the sidebar drawer itself (swipe left to dismiss)
   const sidebarTouchStartXRef = useRef(0);
   const handleSidebarTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {

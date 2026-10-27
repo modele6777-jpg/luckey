@@ -1,8 +1,7 @@
 import { oneStopNavigationPath } from '@/lib/omniWarp/oneStopPages';
-import { toggleNavigationMenu } from '@/lib/navigationMenu';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { Menu, Clover } from 'lucide-react';
+import { Clover } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, RADIAL_WARP_APPS } from '@/lib/omniWarp/forceSensor';
@@ -12,7 +11,7 @@ import {
   getBlackholeRecommendedApp,
 } from '@/lib/omniWarp/wormholeSpectrum';
 import { getTossRule } from '@/lib/prismTossRegistry';
-import { resolveCanonicalPath, isValidPrismPath } from '@/lib/prismRouteRegistry';
+import { resolveCanonicalPath, isValidPrismPath, getActivePrismRoutes } from '@/lib/prismRouteRegistry';
 import { resetActiveWormholePeek } from '@/lib/omniWarp/wormholeShuffleEngine';
 import {
   peekNextRecommendedMenuByCycle,
@@ -1084,7 +1083,10 @@ export function BigBangButton() {
       } else if (targetDir === 'south') {
         cardinalActionsRef.current?.scrollToBottom(e);
       } else if (targetDir === 'west') {
-        toggleNavigationMenu();
+        const currentChannel = resolveCanonicalPath(location).split('?')[0];
+        const channels = getActivePrismRoutes().filter(route => !['/', '/key', currentChannel].includes(route.path));
+        const channel = channels[Math.floor(Math.random() * channels.length)];
+        if (channel) handleRuneNavigate(channel.path);
       } else if (targetDir === 'east') {
         goToNextRecommended(undefined, undefined, true);
       }
@@ -1619,8 +1621,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 더블탭: 원스탑 추천 워프 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 대화 / 드래그: KEY 채널)"
-              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 더블탭: 원스탑 추천 워프 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 대화, 드래그: KEY 채널"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 대화 / 드래그: 무작위 채널)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 대화, 드래그: 무작위 채널"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -1834,11 +1836,14 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
-              {/* 🎯 Big Bang Center: 왼쪽 호버 시 메뉴, 가운데 점 대신 네잎클로버 */}
+              {/* 🎯 Big Bang Center: 왼쪽 방향은 세잎클로버, 가운데 점 대신 네잎클로버 */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
-                  {isHovered && !isPressing && hoverDirection === 'west' ? (
-                    <Menu size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
+                  {hoverDirection === 'west' ? (
+                    <svg data-bigbang-shamrock="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true" className="rotate-[-45deg] text-emerald-200" style={{ filter: 'drop-shadow(0 0 6px #34d399)' }}>
+                      {[0, 120, 240].map(angle => <path key={angle} transform={`rotate(${angle} 12 12)`} d="M12 12C9 10 5 7 7 4C9 2 12 4 12 5C12 4 15 2 17 4C19 7 15 10 12 12Z" />)}
+                      <path d="M12 12C13 16 12 19 9 22" strokeLinecap="round" />
+                    </svg>
                   ) : (
                     <>
                       <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
