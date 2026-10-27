@@ -2,6 +2,7 @@ import { oneStopNavigationPath } from '@/lib/omniWarp/oneStopPages';
 import { openNavigationMenu } from '@/lib/navigationMenu';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
+import { Menu, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, RADIAL_WARP_APPS } from '@/lib/omniWarp/forceSensor';
@@ -1829,32 +1830,42 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
-              {/* 🎯 Big Bang Center: 순수 코스믹 싱귤래리티 코어 (아이콘 없이 순수 빛과 에너지 집중) */}
+              {/* 🎯 Big Bang Center: 좌우 호버 시 메뉴·음표, 기본 상태는 싱귤래리티 코어 */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
-                  <div
-                    className={`rounded-full transition-all duration-200 ${
-                      isPressing
-                        ? activePhase === 'wormhole'
-                          ? 'w-4 h-4 bg-cyan-200 blur-[0.5px] shadow-[0_0_14px_#38bdf8]'
-                          : isWhiteholeMode
-                          ? 'w-4 h-4 bg-white blur-[0.5px] shadow-[0_0_18px_#ffffff]'
-                          : isBlackholeMode
-                          ? 'w-3 h-3 bg-black border border-purple-400/60 shadow-[0_0_12px_#000000]'
-                          : 'w-3.5 h-3.5 bg-cyan-300/90 blur-[0.5px] shadow-[0_0_10px_#38bdf8]'
-                        : 'w-2.5 h-2.5 bg-cyan-300/80 blur-[1px] animate-pulse'
-                    }`}
-                  />
-                  <div
-                    className={`absolute rounded-full border border-cyan-400/30 transition-all duration-300 ${
-                      isPressing ? 'w-8 h-8 scale-110 opacity-70' : 'w-5 h-5 animate-ping opacity-40'
-                    }`}
-                  />
-                  <div
-                    className={`absolute rounded-full border border-purple-400/20 transition-all duration-300 ${
-                      isPressing ? 'w-12 h-12 scale-115 opacity-60' : 'w-8 h-8 animate-pulse opacity-30'
-                    }`}
-                  />
+                  {isHovered && !isPressing && (hoverDirection === 'west' || hoverDirection === 'east') ? (
+                    hoverDirection === 'west' ? (
+                      <Menu size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
+                    ) : (
+                      <Music size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
+                    )
+                  ) : (
+                    <>
+                      <div
+                        className={`rounded-full transition-all duration-200 ${
+                          isPressing
+                            ? activePhase === 'wormhole'
+                              ? 'w-4 h-4 bg-cyan-200 blur-[0.5px] shadow-[0_0_14px_#38bdf8]'
+                              : isWhiteholeMode
+                              ? 'w-4 h-4 bg-white blur-[0.5px] shadow-[0_0_18px_#ffffff]'
+                              : isBlackholeMode
+                              ? 'w-3 h-3 bg-black border border-purple-400/60 shadow-[0_0_12px_#000000]'
+                              : 'w-3.5 h-3.5 bg-cyan-300/90 blur-[0.5px] shadow-[0_0_10px_#38bdf8]'
+                            : 'w-2.5 h-2.5 bg-cyan-300/80 blur-[1px] animate-pulse'
+                        }`}
+                      />
+                      <div
+                        className={`absolute rounded-full border border-cyan-400/30 transition-all duration-300 ${
+                          isPressing ? 'w-8 h-8 scale-110 opacity-70' : 'w-5 h-5 animate-ping opacity-40'
+                        }`}
+                      />
+                      <div
+                        className={`absolute rounded-full border border-purple-400/20 transition-all duration-300 ${
+                          isPressing ? 'w-12 h-12 scale-115 opacity-60' : 'w-8 h-8 animate-pulse opacity-30'
+                        }`}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
             </motion.button>

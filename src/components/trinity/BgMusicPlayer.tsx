@@ -1131,25 +1131,21 @@ export function BgMusicPlayer() {
       return;
     }
 
+    const trackCount = tracksRef.current.length;
+    if (!trackCount) return;
+    const nextOrder = buildNextShuffleOrder(trackCount, activeTrackIndexRef.current);
+    isShuffleRef.current = true;
+    setIsShuffle(true);
+    shuffledIndicesRef.current = nextOrder;
+    setShuffledIndices(nextOrder);
+    queueIndexRef.current = 0;
+    setQueueIndex(0);
     isPlayingRef.current = true;
     setIsPlaying(true);
     try {
       localStorage.setItem('prism_bgm_playing', 'true');
     } catch (_) {}
-
-    const audio = audioRef.current;
-    const currentIdx = shuffledIndicesRef.current[queueIndexRef.current] ?? activeTrackIndexRef.current;
-    const track = tracksRef.current[currentIdx] || tracksRef.current[0];
-    if (audio && !isProceduralTrack(track.url) && audio.src && !audio.ended && audio.currentTime > 0) {
-      ensureHtmlAudioRouting();
-      setHtmlBgmGain(isMuted ? 0 : volume);
-      audio.play().catch(() => {
-        playTrackDirectly(currentIdx);
-      });
-      return;
-    }
-
-    playTrackDirectly(currentIdx);
+    playTrackDirectly(nextOrder[0]);
   };
 
   const handlePlayToggleRef = useRef(handlePlayToggle);
