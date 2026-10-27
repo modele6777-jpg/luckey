@@ -1,5 +1,5 @@
 import { oneStopNavigationPath } from '@/lib/omniWarp/oneStopPages';
-import { openNavigationMenu } from '@/lib/navigationMenu';
+import { toggleNavigationMenu } from '@/lib/navigationMenu';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { Menu, Music } from 'lucide-react';
@@ -1080,7 +1080,7 @@ export function BigBangButton() {
       } else if (targetDir === 'south') {
         cardinalActionsRef.current?.scrollToBottom(e);
       } else if (targetDir === 'west') {
-        openNavigationMenu();
+        toggleNavigationMenu();
       } else if (targetDir === 'east') {
         window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
       }

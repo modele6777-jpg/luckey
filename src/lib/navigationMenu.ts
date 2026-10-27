@@ -2,6 +2,11 @@ import type { MenuBounds } from './floatingMenuGeometry';
 
 export const OPEN_NAVIGATION_MENU_EVENT = 'prism:open_navigation_menu';
 
+export const TOGGLE_NAVIGATION_MENU_EVENT = 'prism:toggle_navigation_menu';
+export function toggleNavigationMenu() {
+  window.dispatchEvent(new Event(TOGGLE_NAVIGATION_MENU_EVENT));
+}
+
 export function openNavigationMenu() {
   window.dispatchEvent(new Event(OPEN_NAVIGATION_MENU_EVENT));
 }

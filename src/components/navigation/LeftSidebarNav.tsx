@@ -16,10 +16,9 @@ import {
   BookOpen,
   Compass,
 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
-import { OPEN_NAVIGATION_MENU_EVENT, readMenuBounds } from '@/lib/navigationMenu';
-import { placeMenuPanel } from '@/lib/floatingMenuGeometry';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { OPEN_NAVIGATION_MENU_EVENT, TOGGLE_NAVIGATION_MENU_EVENT, readMenuBounds } from '@/lib/navigationMenu';
 import './floating-menu.css';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { getPermanentAvatar } from '@/lib/profileVault';
@@ -187,15 +186,9 @@ export default function LeftSidebarNav() {
   const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
   const handleCloseDrawer = useCallback(() => setIsOpen(false), []);
   const [bounds, setBounds] = useState(readMenuBounds);
-  const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 76, height: 76 });
   useEffect(() => {
     const update = () => {
       setBounds(readMenuBounds());
-      const button = document.querySelector<HTMLElement>('[data-bigbang="true"]');
-      if (button) {
-        const rect = button.getBoundingClientRect();
-        setAnchor({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
-      }
     };
     let openingFrame = 0;
     const open = () => {
@@ -204,6 +197,16 @@ export default function LeftSidebarNav() {
       // Let the releasing pointer's compatibility click finish before mounting the backdrop.
       openingFrame = requestAnimationFrame(() => setIsOpen(true));
     };
+    const toggle = () => {
+      update();
+      cancelAnimationFrame(openingFrame);
+      openingFrame = requestAnimationFrame(() => setIsOpen(current => !current));
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener(TOGGLE_NAVIGATION_MENU_EVENT, toggle);
+    window.addEventListener('keydown', escape);
     window.addEventListener(OPEN_NAVIGATION_MENU_EVENT, open);
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
@@ -211,6 +214,8 @@ export default function LeftSidebarNav() {
     window.visualViewport?.addEventListener('scroll', update);
     return () => {
       cancelAnimationFrame(openingFrame);
+      window.removeEventListener(TOGGLE_NAVIGATION_MENU_EVENT, toggle);
+      window.removeEventListener('keydown', escape);
       window.removeEventListener(OPEN_NAVIGATION_MENU_EVENT, open);
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
@@ -219,21 +224,6 @@ export default function LeftSidebarNav() {
     };
   }, []);
   const panelRef = useRef<HTMLElement>(null);
-  const backdropPressedRef = useRef(false);
-  const [panelSize, setPanelSize] = useState({ width: 350, height: 480 });
-  useEffect(() => {
-    if (!isOpen || !panelRef.current) return;
-    const panel = panelRef.current;
-    const update = () => setPanelSize({ width: panel.offsetWidth, height: panel.offsetHeight });
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(panel);
-    return () => observer.disconnect();
-  }, [isOpen]);
-  const panelHeight = Math.min(panelSize.height, Math.max(0, bounds.height - 24));
-  const panelWidth = Math.min(350, Math.max(0, bounds.width - 24));
-  const panelPosition = placeMenuPanel(anchor, anchor, { width: panelWidth, height: panelHeight }, bounds);
-
   const [, setProfileVersion] = useState(0);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
@@ -486,44 +476,23 @@ export default function LeftSidebarNav() {
     );
   };
 
-  const renderFanChannel = (item: NavItemConfig, index: number) => {
-    const { path, icon: Icon, label, color, isPrologue } = item;
-    const isActive = isPrologue ? isPrologueActive : path === '/epilogue' ? isEpilogueActive : cleanPath === path;
-    const angle = (index < 4 ? [-54, -18, 18, 54][index] : [-54, 0, 54][index - 4]) * Math.PI / 180;
-    const radius = index < 4 ? 155 : 75;
-    const x = 160 + Math.sin(angle) * radius;
-    const y = 236 - Math.cos(angle) * radius;
-    return <button key={path} type="button"
-      className={`luckey-fan-channel ${isActive ? 'is-active' : ''}`}
-      style={{ left: `${x / 320 * 100}%`, top: `${(y - 46) / 220 * 100}%`, '--channel-color': color, '--fan-index': index } as React.CSSProperties}
-      aria-label={label} aria-current={isActive ? 'page' : undefined} title={item.subLabel}
-      onClick={() => handleNavigate(path)}>
-      <span className="luckey-fan-color"><Icon size={21} />{path === recommendedPrismPath && <span className="luckey-fan-recommended" aria-label="추천" />}</span>
-      <span className="luckey-fan-name">{label}</span>
-    </button>;
-  };
-
   return (
     <>
-      {isOpen && (
-        <WorkspacePortal onClose={handleCloseDrawer}>
-          <div className="fixed inset-0 luckey-menu-backdrop"
-            onPointerDown={event => { backdropPressedRef.current = event.target === event.currentTarget; }}
-            onClick={event => {
-              if (event.target === event.currentTarget && backdropPressedRef.current) handleCloseDrawer();
-              backdropPressedRef.current = false;
-            }}>
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
             <motion.section
               ref={panelRef}
               id="luckey-menu-dialog"
               role="dialog"
-              aria-modal="true"
+              aria-modal="false"
               aria-labelledby="luckey-menu-title"
               data-theme={isLight ? 'light' : 'dark'}
-              className="luckey-menu-panel luckey-bottom-menu-panel"
-              style={{ position: 'fixed', left: bounds.left + 12, top: bounds.top + bounds.height - 148, width: Math.max(0, bounds.width - 24), maxHeight: 140 }}
-              initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 14 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="luckey-menu-panel luckey-left-sidebar"
+              style={{ position: 'fixed', left: bounds.left, top: bounds.top, width: Math.min(300, Math.max(0, bounds.width - 96)), height: bounds.height }}
+              initial={reduceMotion ? false : { x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: reduceMotion ? 0 : '-100%', opacity: reduceMotion ? 0 : 1 }}
               transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
               onClick={event => event.stopPropagation()}
             >
@@ -532,19 +501,10 @@ export default function LeftSidebarNav() {
                 <div className="luckey-menu-heading-copy"><h2 id="luckey-menu-title">BIGBANG</h2><p>나의 우주를 고르는 팔레트</p></div>
                 <button type="button" className="luckey-menu-close" onClick={handleCloseDrawer} aria-label="메뉴 닫기"><X size={18} /></button>
               </header>
-              <nav aria-label="빅뱅 채널 메뉴" className="luckey-bottom-horizontal-nav">
-                {[...CORE_CHANNELS.filter(item => !item.isLuckey), ...PRISM_CHANNELS].map(item => {
-                  const Icon = item.icon;
-                  const active = cleanPath === item.path;
-                  return (
-                    <button key={item.path} type="button" className={`luckey-bottom-nav-item ${active ? 'is-active' : ''}`}
-                      style={{ '--channel-color': item.color } as React.CSSProperties}
-                      aria-label={item.label} aria-current={active ? 'page' : undefined}
-                      onClick={() => handleNavigate(item.path)}>
-                      <Icon size={20} /><span>{item.label}</span>
-                    </button>
-                  );
-                })}
+              <nav aria-label="빅뱅 채널 메뉴" className="luckey-menu-content luckey-sidebar-nav">
+                {CORE_CHANNELS.map(renderNavButton)}
+                {isChannelsOpen && <div id="luckey-prism-channels" className="luckey-sidebar-channels">{PRISM_CHANNELS.map(renderNavButton)}</div>}
+                {AUXILIARY_CHANNELS.filter(item => item.path !== '/bigbang').map(renderNavButton)}
               </nav>
               <footer className="luckey-menu-footer">
                 <div className="luckey-menu-tools">
@@ -559,8 +519,8 @@ export default function LeftSidebarNav() {
                 <div className="luckey-menu-signature"><span>작은 우주를 잇는 빅뱅</span><button type="button" onClick={() => { handleCloseDrawer(); setShowViewportDiagnostics(true); }} aria-label={`앱 버전 ${APP_VERSION}, 화면 영역 진단 열기`}>v{APP_VERSION}</button></div>
               </footer>
             </motion.section>
-          </div>
-        </WorkspacePortal>
+          )}
+        </AnimatePresence>, document.body
       )}
       {showViewportDiagnostics && <ViewportDiagnostics onClose={() => setShowViewportDiagnostics(false)} />}
     </>
