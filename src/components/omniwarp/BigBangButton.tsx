@@ -1054,7 +1054,9 @@ export function BigBangButton() {
         singleTapTimerRef.current = null;
       }
       lastTapTimeRef.current = 0;
-      goToKeyChannel();
+      const choices = RADIAL_WARP_APPS.filter(app => app.path !== location && app.path !== '/');
+      const chosen = choices[Math.floor(Math.random() * choices.length)];
+      if (chosen) handleRuneNavigate(chosen.path);
       return;
     }
 
@@ -1073,13 +1075,13 @@ export function BigBangButton() {
       downDirectionRef.current = 'none';
       setHoverDirection('none');
       if (targetDir === 'north') {
-        goToKeyChannel();
+        cardinalActionsRef.current?.scrollToTop(e);
       } else if (targetDir === 'south') {
-        openNavigationMenu();
+        cardinalActionsRef.current?.scrollToBottom(e);
       } else if (targetDir === 'west') {
-        if (window.history.length > 1) window.history.back(); else navigate('/');
+        openNavigationMenu();
       } else if (targetDir === 'east') {
-        cardinalActionsRef.current?.navigateForward(e);
+        window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
       }
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
@@ -1130,16 +1132,15 @@ export function BigBangButton() {
       setDurationMs(0);
       if (doubleTap) {
         lastTapTimeRef.current = 0;
-        goToNextRecommended(context, metrics);
+        goToKeyChannel();
       } else {
         lastTapTimeRef.current = now;
         singleTapTimerRef.current = setTimeout(() => {
           singleTapTimerRef.current = null;
           lastTapTimeRef.current = 0;
           triggerHaptic('whitehole');
-          buttonRef.current?.focus({ preventScroll: true });
-          openNavigationMenu();
-        }, 360);
+          handleRuneNavigate('/chat');
+        }, 250);
       }
       return;
     }
@@ -1540,7 +1541,7 @@ export function BigBangButton() {
                 // Pointer activation is handled on release; detail=0 covers keyboard/assistive activation.
                 if (event.detail === 0) {
                   setIsQuickChatOpen(false);
-                  openNavigationMenu();
+                  handleRuneNavigate('/chat');
                 }
               }}
               aria-haspopup="dialog"
