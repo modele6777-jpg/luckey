@@ -1437,13 +1437,6 @@ export function BigBangButton() {
               />
             </div>
 
-            {/* The right orbit marker identifies the existing recommendation hit area. */}
-            <span data-bigbang-recommendation-marker="true" aria-hidden="true"
-              className="absolute z-40 flex items-center justify-center rounded-full bg-slate-950/90 text-emerald-200 pointer-events-none"
-              style={{ left: 'calc(50% + 60px)', top: '50%', width: 20, height: 20, transform: 'translate(-50%, -50%)', filter: 'drop-shadow(0 0 5px #34d399)' }}>
-              <Clover size={16} strokeWidth={2} />
-            </span>
-
             {/* Ambient Gravitational Ripple Waves - active on hover to prevent continuous mobile composite thrashing */}
             {activePhase === 'idle' && isHovered && (
               <>
@@ -1841,26 +1834,16 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
-              {/* 🎯 Big Bang Center: 왼쪽 호버 시 메뉴, 기본 상태는 싱귤래리티 코어 */}
+              {/* 🎯 Big Bang Center: 왼쪽 호버 시 메뉴, 가운데 점 대신 네잎클로버 */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
                   {isHovered && !isPressing && hoverDirection === 'west' ? (
                     <Menu size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
                   ) : (
                     <>
-                      <div
-                        className={`rounded-full transition-all duration-200 ${
-                          isPressing
-                            ? activePhase === 'wormhole'
-                              ? 'w-4 h-4 bg-cyan-200 blur-[0.5px] shadow-[0_0_14px_#38bdf8]'
-                              : isWhiteholeMode
-                              ? 'w-4 h-4 bg-white blur-[0.5px] shadow-[0_0_18px_#ffffff]'
-                              : isBlackholeMode
-                              ? 'w-3 h-3 bg-black border border-purple-400/60 shadow-[0_0_12px_#000000]'
-                              : 'w-3.5 h-3.5 bg-cyan-300/90 blur-[0.5px] shadow-[0_0_10px_#38bdf8]'
-                            : 'w-2.5 h-2.5 bg-cyan-300/80 blur-[1px] animate-pulse'
-                        }`}
-                      />
+                      <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
+                        className={`rotate-[-45deg] text-emerald-200 transition-transform duration-200 ${isPressing ? 'scale-110' : ''}`}
+                        style={{ filter: 'drop-shadow(0 0 6px #34d399)' }} />
                       <div
                         className={`absolute rounded-full border border-cyan-400/30 transition-all duration-300 ${
                           isPressing ? 'w-8 h-8 scale-110 opacity-70' : 'w-5 h-5 animate-ping opacity-40'
