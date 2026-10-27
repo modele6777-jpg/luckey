@@ -1,0 +1,12 @@
+.bigbang-clover-breeze { position: absolute; inset: -65px; pointer-events: none; user-select: none; z-index: 40; }
+.bigbang-wind-clover { position: absolute; left: 50%; top: 50%; color: #6ee7b7; opacity: 0; filter: drop-shadow(0 0 3px #34d39966); animation: bigbang-clover-wind var(--leaf-duration) linear infinite; animation-delay: var(--leaf-delay); will-change: transform, opacity; }
+@keyframes bigbang-clover-wind {
+  0% { opacity: 0; transform: translate3d(-82px, var(--leaf-y), 0) rotate(-35deg) scale(.65); }
+  18% { opacity: .7; }
+  45% { transform: translate3d(-12px, calc(var(--leaf-y) - 18px), 0) rotate(65deg) scale(1); }
+  65% { opacity: .8; }
+  100% { opacity: 0; transform: translate3d(86px, calc(var(--leaf-y) - 48px), 0) rotate(160deg) scale(.7); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bigbang-wind-clover { animation: none; opacity: .25; transform: translate(var(--leaf-x), var(--leaf-y)); will-change: auto; }
+}
