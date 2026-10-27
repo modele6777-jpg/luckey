@@ -10,6 +10,7 @@ import {
   Moon,
   ChevronLeft,
   ChevronDown,
+  X,
   Clover,
   KeyRound,
   User,
@@ -185,9 +186,55 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
   const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Floating Draggable Position (Snap to Left or Right edge, persistent in localStorage)
+  const [fabPos, setFabPos] = useState<{ x: number; y: number }>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('prism_fab_pos');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (typeof parsed.x === 'number' && typeof parsed.y === 'number' && !isNaN(parsed.x) && !isNaN(parsed.y)) {
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+            return {
+              x: Math.max(16, Math.min(screenW - 110, parsed.x)),
+              y: Math.max(48, Math.min(screenH - 72, parsed.y)),
+            };
+          }
+        }
+      } catch (_) {}
+      return { x: 16, y: Math.max(48, window.innerHeight - 76) };
+    }
+    return { x: 16, y: 600 };
+  });
+
+  const isLeftEdge = typeof window !== 'undefined' ? fabPos.x <= window.innerWidth / 2 : true;
+  const [isDraggingActive, setIsDraggingActive] = useState(false);
+  const isPointerDownRef = useRef(false);
+  const hasDraggedRef = useRef(false);
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const fabStartRef = useRef<{ x: number; y: number } | null>(null);
+  const justFinishedDragRef = useRef(false);
+
+  // Resize listener to prevent button from getting stuck outside screen
+  useEffect(() => {
+    const handleResize = () => {
+      setFabPos((prev) => {
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+        const snapLeft = prev.x <= screenW / 2;
+        const newX = snapLeft ? 16 : Math.max(16, screenW - 110);
+        const newY = Math.max(48, Math.min(screenH - 72, prev.y));
+        return { x: newX, y: newY };
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const cancelAutoCloseTimer = useCallback(() => {
     if (autoCloseTimerRef.current) {
@@ -203,24 +250,111 @@ export default function LeftSidebarNav() {
     }, 3000);
   }, [cancelAutoCloseTimer]);
 
-  const handleOpenDock = useCallback(() => {
+  const handleOpenDrawer = useCallback(() => {
     setIsOpen(true);
     resetAutoCloseTimer();
   }, [resetAutoCloseTimer]);
 
-  const handleCloseDock = useCallback(() => {
+  const handleCloseDrawer = useCallback(() => {
     cancelAutoCloseTimer();
     setIsOpen(false);
   }, [cancelAutoCloseTimer]);
 
+  const handleToggleOpen = useCallback(() => {
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        triggerHaptic('whitehole');
+        resetAutoCloseTimer();
+      } else {
+        cancelAutoCloseTimer();
+      }
+      return next;
+    });
+  }, [resetAutoCloseTimer, cancelAutoCloseTimer]);
+
+  const handleFabPointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
+    isPointerDownRef.current = true;
+    hasDraggedRef.current = false;
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
+    fabStartRef.current = { x: fabPos.x, y: fabPos.y };
+    setIsDraggingActive(false);
+  }, [fabPos]);
+
+  const handleFabPointerMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!isPointerDownRef.current || !pointerStartRef.current || !fabStartRef.current) return;
+    const dx = e.clientX - pointerStartRef.current.x;
+    const dy = e.clientY - pointerStartRef.current.y;
+    if (!hasDraggedRef.current) {
+      if (Math.hypot(dx, dy) > 5) {
+        hasDraggedRef.current = true;
+        setIsDraggingActive(true);
+      } else {
+        return;
+      }
+    }
+
+    const screenW = typeof window !== 'undefined' ? window.innerWidth : 400;
+    const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
+
+    const newX = Math.max(8, Math.min(screenW - 100, fabStartRef.current.x + dx));
+    const newY = Math.max(16, Math.min(screenH - 60, fabStartRef.current.y + dy));
+    setFabPos({ x: newX, y: newY });
+  }, []);
+
+  const handleFabPointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!isPointerDownRef.current) return;
+    isPointerDownRef.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {}
+
+    if (hasDraggedRef.current) {
+      justFinishedDragRef.current = true;
+      setIsDraggingActive(false);
+
+      const screenW = typeof window !== 'undefined' ? window.innerWidth : 400;
+      const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
+
+      setFabPos((current) => {
+        const snapLeft = current.x + 50 <= screenW / 2;
+        const finalX = snapLeft ? 16 : Math.max(16, screenW - 110);
+        const finalY = Math.max(48, Math.min(screenH - 72, current.y));
+        try {
+          localStorage.setItem('prism_fab_pos', JSON.stringify({ x: finalX, y: finalY }));
+        } catch (_) {}
+        return { x: finalX, y: finalY };
+      });
+
+      triggerHaptic('whitehole');
+
+      setTimeout(() => {
+        justFinishedDragRef.current = false;
+        hasDraggedRef.current = false;
+      }, 100);
+    } else {
+      setIsDraggingActive(false);
+      hasDraggedRef.current = false;
+    }
+  }, []);
+
+  const handleFabClick = useCallback(() => {
+    if (justFinishedDragRef.current || hasDraggedRef.current) return;
+    triggerHaptic('whitehole');
+    handleToggleOpen();
+  }, [handleToggleOpen]);
+
   useEffect(() => {
-    resetAutoCloseTimer();
     return () => {
       if (autoCloseTimerRef.current) {
         clearTimeout(autoCloseTimerRef.current);
       }
     };
-  }, [resetAutoCloseTimer]);
+  }, []);
 
   const [, setProfileVersion] = useState(0);
   const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
@@ -498,7 +632,7 @@ export default function LeftSidebarNav() {
   }, [isOpen]);
 
   const handleNavigate = (path: string) => {
-    resetAutoCloseTimer();
+    handleCloseDrawer();
     const isTargetActive =
       path === '/'
         ? isLucyActive
@@ -569,7 +703,7 @@ export default function LeftSidebarNav() {
           {isActive && (
             <motion.div
               layoutId="active-nav-glow"
-              className="absolute -top-1.5 left-2.5 right-2.5 h-1 rounded-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)]"
+              className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)]"
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             />
           )}
@@ -635,7 +769,7 @@ export default function LeftSidebarNav() {
 
           {/* Floating Tooltip to the Left (facing screen center) */}
           <div
-            className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+            className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
               isLight
                 ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                 : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -749,7 +883,7 @@ export default function LeftSidebarNav() {
         {isActive && (
           <motion.div
             layoutId="active-nav-glow"
-            className="absolute -top-1.5 left-2.5 right-2.5 h-1 rounded-full"
+            className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full"
             style={{
               backgroundColor: color,
               boxShadow: `0 0 8px ${color}`,
@@ -802,7 +936,7 @@ export default function LeftSidebarNav() {
 
         {/* Floating Tooltip to the Left (facing screen center) with Theme Color Beacon */}
         <div
-          className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+          className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
             isLight
               ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
               : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -869,372 +1003,329 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {/* 1. Bottom hover detection zone for auto-show on mouse approach */}
-      {!isOpen && (
-        <div
-          className="fixed bottom-0 left-0 right-0 h-6 z-[470] cursor-pointer"
-          onMouseEnter={handleOpenDock}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* 2. Floating Bottom Aurora Hint Handle Tab when hidden */}
+      {/* 1. Collapsed State: Draggable Magnetic Pill FAB (Rainbow Pip + Clover + MENU Text) */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.button
-            key="bottom-dock-hint"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={{ duration: 0.2 }}
-            type="button"
-            onClick={() => {
-              triggerHaptic('whitehole');
-              handleOpenDock();
+          <div
+            style={{
+              position: 'fixed',
+              left: `${fabPos.x}px`,
+              top: `${fabPos.y}px`,
+              zIndex: 475,
+              touchAction: 'none',
+              transition: isDraggingActive
+                ? 'none'
+                : 'left 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2), top 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2)',
             }}
-            onMouseEnter={handleOpenDock}
-            aria-label="하단 메뉴 열기"
-            title="하단 메뉴 열기 (마우스 호버 · 탭)"
-            className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[475] flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-xl border border-amber-500/35 dark:border-white/20 bg-white/85 dark:bg-neutral-900/85 shadow-[0_4px_20px_rgba(0,0,0,0.3)] group transition-all duration-200 hover:bg-white/95 dark:hover:bg-neutral-900/95 active:scale-95 cursor-pointer"
+            className="select-none"
           >
-            <div className="w-5 h-1 rounded-full rainbow-gradient-flow opacity-80 group-hover:opacity-100 transition-opacity" />
-            <span
-              className={`text-[10px] font-black tracking-widest uppercase font-mono ${
-                isLight ? 'text-amber-800' : 'text-neutral-200'
+            <motion.button
+              key="magnetic-pill-fab-btn"
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              whileHover={{ scale: isDraggingActive ? 1.04 : 1.06 }}
+              whileTap={{ scale: 0.94 }}
+              type="button"
+              onPointerDown={handleFabPointerDown}
+              onPointerMove={handleFabPointerMove}
+              onPointerUp={handleFabPointerUp}
+              onPointerCancel={handleFabPointerUp}
+              onClick={handleFabClick}
+              aria-label="메뉴 열기"
+              title="메뉴 열기 (드래그하여 원하는 위치로 이동)"
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl backdrop-blur-xl border border-amber-500/35 dark:border-white/20 bg-white/90 dark:bg-neutral-900/90 shadow-[0_8px_24px_rgba(0,0,0,0.35)] group transition-all duration-200 select-none ${
+                isDraggingActive
+                  ? 'cursor-grabbing scale-105 shadow-[0_12px_28px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500/50'
+                  : 'cursor-grab active:scale-95'
               }`}
             >
-              MENU
-            </span>
-          </motion.button>
+              <div className="w-2.5 h-2.5 rounded-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)] pointer-events-none shrink-0" />
+              <Clover
+                size={18}
+                className={`text-emerald-500 transition-transform duration-300 pointer-events-none shrink-0 ${
+                  isDraggingActive ? 'rotate-12 scale-110' : 'group-hover:rotate-12'
+                }`}
+              />
+              <span
+                className={`text-xs font-black tracking-wider uppercase font-mono pointer-events-none ${
+                  isLight ? 'text-slate-800' : 'text-neutral-200'
+                }`}
+              >
+                MENU
+              </span>
+            </motion.button>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* 3. Floating Bottom Navigation Dock */}
+      {/* 2. Backdrop Overlay to close when clicking outside */}
       <AnimatePresence>
         {isOpen && (
-          <motion.nav
-            key="bottom-dock-nav"
+          <motion.div
+            key="drawer-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[478] bg-black/20 dark:bg-black/40 backdrop-blur-[1px]"
+            onClick={handleCloseDrawer}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 3. Horizontal Expandable Floating Bar */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.aside
+            key="horizontal-floating-bar"
             role="navigation"
-            aria-label="하단 플로팅 내비게이션"
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 60, opacity: 0 }}
+            aria-label="플로팅 메뉴 바"
+            initial={{
+              opacity: 0,
+              scale: 0.9,
+              x: isLeftEdge ? -24 : 24,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              x: 0,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.9,
+              x: isLeftEdge ? -24 : 24,
+            }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
             onMouseEnter={cancelAutoCloseTimer}
             onMouseMove={resetAutoCloseTimer}
             onMouseLeave={resetAutoCloseTimer}
             onTouchStart={resetAutoCloseTimer}
-            className={`sites-pinned-sidebar fixed bottom-3 left-1/2 -translate-x-1/2 z-[480] flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 rounded-2xl backdrop-blur-2xl border select-none shadow-[0_16px_48px_rgba(0,0,0,0.45)] max-w-[calc(100vw-1.5rem)] overflow-visible transition-colors duration-300 ${
+            style={{
+              top: Math.max(16, Math.min(typeof window !== 'undefined' ? window.innerHeight - 80 : 600, fabPos.y)),
+              left: isLeftEdge ? Math.max(12, fabPos.x) : undefined,
+              right: !isLeftEdge ? 16 : undefined,
+            }}
+            className={`fixed z-[480] flex items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl backdrop-blur-2xl border shadow-[0_12px_36px_rgba(0,0,0,0.45)] select-none max-w-[calc(100vw-24px)] overflow-x-auto no-scrollbar transition-colors duration-300 ${
+              isLeftEdge ? 'flex-row' : 'flex-row-reverse'
+            } ${
               isLight
-                ? 'bg-[#fffdf9]/95 border-amber-900/15 text-slate-800'
-                : 'bg-neutral-950/92 border-white/15 text-neutral-200'
+                ? 'bg-[#fdfaf5]/96 border-amber-900/20 text-slate-800'
+                : 'bg-neutral-950/96 border-white/15 text-neutral-200'
             }`}
           >
-            {/* Top Accent Rainbow Line */}
-            <div className="absolute -top-[1px] left-6 right-6 h-[2px] rounded-full rainbow-gradient-flow opacity-75 pointer-events-none" />
+            {/* Pure Clover Anchor / Collapse Button */}
+            <button
+              type="button"
+              onClick={handleCloseDrawer}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border transition-all cursor-pointer active:scale-90 ${
+                isLight
+                  ? 'border-emerald-600/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
+                  : 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25'
+              }`}
+              aria-label="메뉴 닫기"
+              title="메뉴 닫기"
+            >
+              <Clover size={20} className="hover:rotate-12 transition-transform duration-200" />
+            </button>
 
-            {/* 7 Prism Channels Popover Shelf above LUCKEY */}
-            <AnimatePresence>
-              {isChannelsOpen && (
-                <motion.div
-                  key="prism-channels-popover"
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                  onMouseEnter={handleChannelsMouseEnter}
-                  onMouseLeave={handleChannelsMouseLeave}
-                  className={`absolute bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl backdrop-blur-2xl border shadow-[0_12px_36px_rgba(0,0,0,0.5)] z-50 max-w-[calc(100vw-2rem)] overflow-x-auto no-scrollbar ${
-                    isLight
-                      ? 'bg-[#fffdf9]/96 border-amber-900/15'
-                      : 'bg-neutral-950/95 border-white/15'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    {PRISM_CHANNELS.map(renderNavButton)}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY */}
-            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Core Sanctuary Channels: LUCY, KEY, LUCKEY */}
+            <div className={`flex items-center gap-1 shrink-0 ${isLeftEdge ? 'flex-row' : 'flex-row-reverse'}`}>
               {CORE_CHANNELS.map(renderNavButton)}
             </div>
 
-            {/* Subtle Vertical Divider */}
-            <div
-              className={`w-[1px] h-6 my-auto shrink-0 ${
-                isLight ? 'bg-amber-900/15' : 'bg-white/10'
-              }`}
-            />
-                {/* LP Background Music Button (Click: Play/Pause, Long-Press: LP Player Detail Popup) */}
-                <div className="relative group w-10 h-10 shrink-0 flex items-center justify-center">
-                  {/* Soundwave Ripple & Floating Musical Notes when Playing */}
-                  <AnimatePresence>
-                    {bgmState.isPlaying && !bgmState.isBuffering && (
-                      <>
-                        {/* Soft expanding soundwave pulse ring */}
-                        <motion.span
-                          key="bgm-wave-ring"
-                          initial={{ scale: 0.9, opacity: 0.55 }}
-                          animate={{ scale: [0.95, 1.28, 1.38], opacity: [0.5, 0.22, 0] }}
-                          transition={{ duration: 2.1, repeat: Infinity, ease: 'easeOut' }}
-                          className="absolute inset-0 rounded-xl border border-amber-400/60 pointer-events-none"
-                        />
-                        {/* Floating Note 1 (♪) */}
-                        <motion.span
-                          key="bgm-note-1"
-                          initial={{ opacity: 0, y: 2, x: -6, scale: 0.7 }}
-                          animate={{
-                            opacity: [0, 0.95, 0],
-                            y: [2, -14, -22],
-                            x: [-5, -9, -6],
-                            scale: [0.75, 1, 0.85],
-                          }}
-                          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                          className={`absolute -top-1 left-1 text-[9px] font-bold pointer-events-none select-none z-20 ${
-                            isLight
-                              ? 'text-amber-600 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]'
-                              : 'text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.9)]'
-                          }`}
-                        >
-                          ♪
-                        </motion.span>
-                        {/* Floating Note 2 (♫) */}
-                        <motion.span
-                          key="bgm-note-2"
-                          initial={{ opacity: 0, y: 2, x: 6, scale: 0.7 }}
-                          animate={{
-                            opacity: [0, 0.9, 0],
-                            y: [2, -13, -21],
-                            x: [5, 9, 6],
-                            scale: [0.7, 0.95, 0.8],
-                          }}
-                          transition={{
-                            duration: 2.4,
-                            delay: 1.15,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                          }}
-                          className={`absolute -top-1 right-0.5 text-[8.5px] font-bold pointer-events-none select-none z-20 ${
-                            isLight
-                              ? 'text-rose-500 drop-shadow-[0_0_4px_rgba(244,63,94,0.45)]'
-                              : 'text-amber-200 drop-shadow-[0_0_6px_rgba(251,191,36,0.85)]'
-                          }`}
-                        >
-                          ♫
-                        </motion.span>
-                      </>
-                    )}
-                  </AnimatePresence>
+            {/* Subtle Divider */}
+            <div className={`w-[1px] h-6 shrink-0 ${isLight ? 'bg-amber-900/15' : 'bg-white/15'}`} />
 
-                  {/* Long-Press Hold Progress SVG Ring (450ms) */}
-                  {isBgmHolding && (
-                    <svg
-                      className="absolute -inset-1 w-12 h-12 -rotate-90 pointer-events-none z-30"
-                      viewBox="0 0 48 48"
-                    >
-                      <rect
-                        x="3"
-                        y="3"
-                        width="42"
-                        height="42"
-                        rx="13"
-                        fill="none"
-                        stroke="rgba(251, 191, 36, 0.95)"
-                        strokeWidth="2.5"
-                        strokeDasharray="145"
-                        className="animate-lp-hold drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]"
-                      />
-                    </svg>
-                  )}
+            {/* 7 Prism Journey Channels */}
+            <div className={`flex items-center gap-1 shrink-0 overflow-x-auto no-scrollbar py-0.5 ${isLeftEdge ? 'flex-row' : 'flex-row-reverse'}`}>
+              {PRISM_CHANNELS.map(renderNavButton)}
+            </div>
 
-                  <button
-                    type="button"
-                    onPointerDown={handleBgmPointerDown}
-                    onPointerMove={handleBgmPointerMove}
-                    onPointerUp={handleBgmPointerUp}
-                    onPointerLeave={handleBgmPointerUp}
-                    onPointerCancel={handleBgmPointerUp}
-                    onClick={handleBgmClick}
-                    onContextMenu={handleBgmContextMenu}
-                    aria-label={
+            {/* Subtle Divider */}
+            <div className={`w-[1px] h-6 shrink-0 ${isLight ? 'bg-amber-900/15' : 'bg-white/15'}`} />
+
+            {/* LP BGM Player Quick Action */}
+            <div className="relative group w-11 h-11 shrink-0 flex items-center justify-center">
+              {isBgmHolding && (
+                <svg
+                  className="absolute -inset-1 w-[52px] h-[52px] pointer-events-none z-20 -rotate-90"
+                  viewBox="0 0 48 48"
+                >
+                  <rect
+                    x="3"
+                    y="3"
+                    width="42"
+                    height="42"
+                    rx="13"
+                    fill="none"
+                    stroke="rgba(251, 191, 36, 0.95)"
+                    strokeWidth="2.5"
+                    strokeDasharray="145"
+                    className="animate-lp-hold drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]"
+                  />
+                </svg>
+              )}
+
+              <button
+                type="button"
+                onPointerDown={handleBgmPointerDown}
+                onPointerMove={handleBgmPointerMove}
+                onPointerUp={handleBgmPointerUp}
+                onPointerLeave={handleBgmPointerUp}
+                onPointerCancel={handleBgmPointerUp}
+                onClick={handleBgmClick}
+                onContextMenu={handleBgmContextMenu}
+                aria-label={
+                  bgmState.isPlaying
+                    ? '배경음 일시정지 (길게 누르면 LP 상세 설정)'
+                    : '배경음 재생 (길게 누르면 LP 상세 설정)'
+                }
+                title="클릭: 배경음 재생/일시정지 · 길게 누르기: LP 상세 설정"
+                className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer select-none overflow-hidden ${
+                  isBgmHolding ? 'scale-92' : 'hover:scale-105 active:scale-95'
+                } ${
+                  bgmState.isPlaying
+                    ? isLight
+                      ? 'bg-gradient-to-br from-amber-500/25 via-amber-400/15 to-rose-500/20 border-amber-500/80 shadow-[0_0_16px_rgba(245,158,11,0.38)]'
+                      : 'bg-gradient-to-br from-amber-500/25 via-neutral-900 to-rose-500/20 border-amber-400/75 shadow-[0_0_18px_rgba(251,191,36,0.45)]'
+                    : isLight
+                    ? 'bg-amber-900/[0.06] border-amber-900/20 hover:border-amber-600/50 hover:bg-amber-500/15'
+                    : 'bg-white/[0.05] border-white/15 hover:border-amber-400/50 hover:bg-white/[0.1]'
+                }`}
+              >
+                <LPRecordDisc
+                  isPlaying={bgmState.isPlaying}
+                  isBuffering={bgmState.isBuffering}
+                  size="sm"
+                  className="pointer-events-none"
+                />
+
+                <span
+                  className={`absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none transition-all duration-300 ${
+                    bgmState.isPlaying
+                      ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse'
+                      : isLight
+                      ? 'bg-slate-400/60'
+                      : 'bg-white/25'
+                  }`}
+                />
+              </button>
+
+              {/* LP Tooltip */}
+              <div
+                className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                  isLight
+                    ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
+                    : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${
                       bgmState.isPlaying
-                        ? '배경음 일시정지 (길게 누르면 LP 상세 설정)'
-                        : '배경음 재생 (길게 누르면 LP 상세 설정)'
-                    }
-                    title="클릭: 배경음 재생/일시정지 · 길게 누르기: LP 상세 설정"
-                    className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer select-none overflow-hidden ${
-                      isBgmHolding ? 'scale-92' : 'hover:scale-105 active:scale-95'
-                    } ${
+                        ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse'
+                        : 'bg-neutral-500'
+                    }`}
+                  />
+                  <span className={`text-xs font-extrabold tracking-wide ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
+                    LP 배경음 플레이어
+                  </span>
+                  <span
+                    className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
                       bgmState.isPlaying
                         ? isLight
-                          ? 'bg-gradient-to-br from-amber-500/25 via-amber-400/15 to-rose-500/20 border-amber-500/80 shadow-[0_0_16px_rgba(245,158,11,0.38)]'
-                          : 'bg-gradient-to-br from-amber-500/25 via-neutral-900 to-rose-500/20 border-amber-400/75 shadow-[0_0_18px_rgba(251,191,36,0.45)]'
+                          ? 'bg-amber-500/15 text-amber-800 border-amber-500/35'
+                          : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
                         : isLight
-                        ? 'bg-amber-900/[0.06] border-amber-900/20 hover:border-amber-600/50 hover:bg-amber-500/15'
-                        : 'bg-white/[0.05] border-white/15 hover:border-amber-400/50 hover:bg-white/[0.1]'
+                        ? 'bg-slate-200/70 text-slate-600 border-slate-300'
+                        : 'bg-white/10 text-neutral-400 border-white/10'
                     }`}
                   >
-                    {/* Mini LP Vinyl Disc Icon */}
-                    <LPRecordDisc
-                      isPlaying={bgmState.isPlaying}
-                      isBuffering={bgmState.isBuffering}
-                      size="sm"
-                      className="pointer-events-none"
-                    />
-
-                    {/* Playing Status Micro LED Dot */}
-                    <span
-                      className={`absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none transition-all duration-300 ${
-                        bgmState.isPlaying
-                          ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse'
-                          : isLight
-                          ? 'bg-slate-400/60'
-                          : 'bg-white/25'
-                      }`}
-                    />
-                  </button>
-
-                  {/* Desktop Hover Tooltip to Left */}
-                  <div
-                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                      isLight
-                        ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                        : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          bgmState.isPlaying
-                            ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse'
-                            : 'bg-neutral-500'
-                        }`}
-                      />
-                      <span
-                        className={`text-xs font-extrabold tracking-wide ${
-                          isLight ? 'text-amber-700' : 'text-amber-300'
-                        }`}
-                      >
-                        LP 배경음 플레이어
-                      </span>
-                      <span
-                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
-                          bgmState.isPlaying
-                            ? isLight
-                              ? 'bg-amber-500/15 text-amber-800 border-amber-500/35'
-                              : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                            : isLight
-                            ? 'bg-slate-200/70 text-slate-600 border-slate-300'
-                            : 'bg-white/10 text-neutral-400 border-white/10'
-                        }`}
-                      >
-                        {bgmState.isPlaying ? 'PLAYING' : 'PAUSED'}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[11px] font-medium max-w-[210px] truncate ${
-                        isLight ? 'text-slate-700' : 'text-neutral-200'
-                      }`}
-                    >
-                      {bgmState.trackName || '사운드스케이프 대기 중'}
-                    </span>
-                    <span
-                      className={`text-[9.5px] pt-0.5 border-t ${
-                        isLight
-                          ? 'border-amber-900/10 text-slate-500'
-                          : 'border-white/10 text-neutral-400'
-                      }`}
-                    >
-                      클릭: 재생/일시정지 · 꾹 누르기: LP 상세 설정
-                    </span>
-                  </div>
+                    {bgmState.isPlaying ? 'PLAYING' : 'PAUSED'}
+                  </span>
                 </div>
-                {/* User Profile Button -> Navigates to Epilogue Profile (/profile) */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="relative group w-10 h-10 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        try {
-                          sessionStorage.setItem('prism_target_tab', 'profile');
-                          window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
-                        } catch (_) {}
-                        handleNavigate('/profile');
-                      }}
-                      className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
-                        isProfileActive
-                          ? isLight
-                            ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
-                            : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
-                          : isLight
-                          ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
-                          : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
-                      }`}
-                      aria-label="내 프로필 및 사진 설정"
-                      title="내 프로필 및 사진 설정"
-                    >
-                      {userAvatarUrl ? (
-                        <img
-                          src={userAvatarUrl}
-                          alt={userNickname}
-                          className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <User size={16} className="group-hover:scale-110 transition-transform" />
-                      )}
-                    </button>
+                <span className={`text-[11px] font-medium max-w-[210px] truncate ${isLight ? 'text-slate-700' : 'text-neutral-200'}`}>
+                  {bgmState.trackName || '사운드스케이프 대기 중'}
+                </span>
+                <span className={`text-[9.5px] pt-0.5 border-t ${isLight ? 'border-amber-900/10 text-slate-500' : 'border-white/10 text-neutral-400'}`}>
+                  클릭: 재생/일시정지 · 꾹 누르기: LP 상세 설정
+                </span>
+              </div>
+            </div>
 
-                    {/* Desktop Hover Tooltip to Left */}
-                    <div
-                      className={`hidden sm:group-hover:flex items-center gap-2 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                        isLight
-                          ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                          : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                      }`}
-                    >
-                      {userAvatarUrl ? (
-                        <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
-                      ) : (
-                        <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      )}
-                      <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-                        {userNickname}
-                      </span>
-                      <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
-                        내 프로필 · 사진 설정
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowViewportDiagnostics(true)}
-                    style={{ minHeight: 0, padding: 0 }}
-                    className={`text-[8px] leading-none whitespace-nowrap ${isLight ? 'text-slate-500' : 'text-neutral-500'}`}
-                    aria-label={`앱 버전 ${APP_VERSION}, 화면 영역 진단 열기`}
-                    title="화면 영역 진단"
-                  >
-                    v{APP_VERSION}
-                  </button>
-                </div>
+            {/* Profile Button */}
+            <div className="relative group w-11 h-11 shrink-0 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem('prism_target_tab', 'profile');
+                    window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
+                  } catch (_) {}
+                  handleNavigate('/profile');
+                }}
+                className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
+                  isProfileActive
+                    ? isLight
+                      ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
+                      : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
+                    : isLight
+                    ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
+                    : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
+                }`}
+                aria-label="내 프로필 및 사진 설정"
+                title="내 프로필 및 사진 설정"
+              >
+                {userAvatarUrl ? (
+                  <img
+                    src={userAvatarUrl}
+                    alt={userNickname}
+                    className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <User size={16} className="group-hover:scale-110 transition-transform" />
+                )}
+              </button>
 
-            {/* Minimize / Hide Dock Button */}
+              {/* Profile Tooltip */}
+              <div
+                className={`hidden sm:group-hover:flex items-center gap-2 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                  isLight
+                    ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
+                    : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
+                }`}
+              >
+                {userAvatarUrl ? (
+                  <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
+                ) : (
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                )}
+                <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
+                  {userNickname}
+                </span>
+                <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
+                  내 프로필 · 사진 설정
+                </span>
+              </div>
+            </div>
+
+            {/* Close Button X */}
             <button
               type="button"
-              onClick={handleCloseDock}
-              className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer active:scale-90 shrink-0 ${
+              onClick={handleCloseDrawer}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all cursor-pointer active:scale-90 shrink-0 ${
                 isLight
                   ? 'border-amber-900/15 text-slate-500 hover:bg-slate-200/60 hover:text-slate-800'
                   : 'border-white/10 text-neutral-400 hover:bg-white/10 hover:text-white'
               }`}
-              aria-label="하단 메뉴 숨기기"
-              title="하단 메뉴 숨기기 (3초 후 자동 숨김)"
+              aria-label="메뉴 닫기"
+              title="메뉴 닫기"
             >
-              <ChevronDown size={15} />
+              <X size={16} />
             </button>
-          </motion.nav>
+          </motion.aside>
         )}
       </AnimatePresence>
       {showViewportDiagnostics && <ViewportDiagnostics onClose={() => setShowViewportDiagnostics(false)} />}

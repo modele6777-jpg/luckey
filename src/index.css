@@ -3047,7 +3047,7 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
-/* Navigation is a sleek bottom floating dock; main content occupies full 100% width with safe bottom clearance. */
+/* Main content occupies full 100% canvas with zero extra bottom margin. */
 :root { --sites-sidebar-width: 0px; }
 .sites-pinned-main {
   --sal: env(safe-area-inset-left, 0px);
@@ -3056,7 +3056,7 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   width: 100%;
   max-width: 100%;
   padding-right: 0;
-  padding-bottom: calc(var(--sab, 0px) + 4.25rem);
+  padding-bottom: 0;
 }
 /* Fixed page tabs center across main canvas */
 .sites-pinned-main .prism-xs-subnav:not(.duo-page-nav) {
