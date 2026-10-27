@@ -1437,6 +1437,13 @@ export function BigBangButton() {
               />
             </div>
 
+            {/* The right orbit marker identifies the existing recommendation hit area. */}
+            <span data-bigbang-recommendation-marker="true" aria-hidden="true"
+              className="absolute z-40 flex items-center justify-center rounded-full bg-slate-950/90 text-emerald-200 pointer-events-none"
+              style={{ left: 'calc(50% + 60px)', top: '50%', width: 20, height: 20, transform: 'translate(-50%, -50%)', filter: 'drop-shadow(0 0 5px #34d399)' }}>
+              <Clover size={16} strokeWidth={2} />
+            </span>
+
             {/* Ambient Gravitational Ripple Waves - active on hover to prevent continuous mobile composite thrashing */}
             {activePhase === 'idle' && isHovered && (
               <>
@@ -1834,15 +1841,11 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
-              {/* 🎯 Big Bang Center: 좌우 호버 시 메뉴·네잎클로버, 기본 상태는 싱귤래리티 코어 */}
+              {/* 🎯 Big Bang Center: 왼쪽 호버 시 메뉴, 기본 상태는 싱귤래리티 코어 */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
-                  {((isHovered && !isPressing && hoverDirection === 'west') || hoverDirection === 'east') ? (
-                    hoverDirection === 'west' ? (
-                      <Menu size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
-                    ) : (
-                      <Clover size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-emerald-200 drop-shadow-[0_0_8px_#34d399]" />
-                    )
+                  {isHovered && !isPressing && hoverDirection === 'west' ? (
+                    <Menu size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
                   ) : (
                     <>
                       <div
