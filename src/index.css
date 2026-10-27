@@ -3054,6 +3054,11 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   max-width: calc(100% - var(--sites-sidebar-width));
   padding-right: 0;
 }
+/* Fixed page tabs must use the content canvas, too. */
+.sites-pinned-main .prism-xs-subnav:not(.duo-page-nav) {
+  left: calc((100vw - var(--sites-sidebar-width)) / 2) !important;
+  max-width: calc(100vw - var(--sites-sidebar-width) - 1rem) !important;
+}
 .sites-pinned-sidebar { contain: layout style; }
 .sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }
 
