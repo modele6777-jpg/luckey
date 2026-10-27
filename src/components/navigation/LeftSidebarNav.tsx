@@ -9,6 +9,7 @@ import {
   Activity,
   Moon,
   ChevronLeft,
+  ChevronDown,
   Clover,
   KeyRound,
   User,
@@ -184,8 +185,42 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
-  const isOpen = true;
+  const [isOpen, setIsOpen] = useState(true);
   const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
+  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelAutoCloseTimer = useCallback(() => {
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const resetAutoCloseTimer = useCallback(() => {
+    cancelAutoCloseTimer();
+    autoCloseTimerRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 3000);
+  }, [cancelAutoCloseTimer]);
+
+  const handleOpenDock = useCallback(() => {
+    setIsOpen(true);
+    resetAutoCloseTimer();
+  }, [resetAutoCloseTimer]);
+
+  const handleCloseDock = useCallback(() => {
+    cancelAutoCloseTimer();
+    setIsOpen(false);
+  }, [cancelAutoCloseTimer]);
+
+  useEffect(() => {
+    resetAutoCloseTimer();
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+    };
+  }, [resetAutoCloseTimer]);
 
   const [, setProfileVersion] = useState(0);
   const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
@@ -463,6 +498,7 @@ export default function LeftSidebarNav() {
   }, [isOpen]);
 
   const handleNavigate = (path: string) => {
+    resetAutoCloseTimer();
     const isTargetActive =
       path === '/'
         ? isLucyActive
@@ -529,11 +565,11 @@ export default function LeftSidebarNav() {
             isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
           }`}
         >
-          {/* Active left indicator bar */}
+          {/* Active top indicator bar */}
           {isActive && (
             <motion.div
               layoutId="active-nav-glow"
-              className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)]"
+              className="absolute -top-1.5 left-2.5 right-2.5 h-1 rounded-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)]"
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             />
           )}
@@ -599,7 +635,7 @@ export default function LeftSidebarNav() {
 
           {/* Floating Tooltip to the Left (facing screen center) */}
           <div
-            className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+            className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
               isLight
                 ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                 : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -709,11 +745,11 @@ export default function LeftSidebarNav() {
             : undefined,
         }}
       >
-        {/* Active left indicator bar */}
+        {/* Active top indicator bar */}
         {isActive && (
           <motion.div
             layoutId="active-nav-glow"
-            className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full"
+            className="absolute -top-1.5 left-2.5 right-2.5 h-1 rounded-full"
             style={{
               backgroundColor: color,
               boxShadow: `0 0 8px ${color}`,
@@ -766,7 +802,7 @@ export default function LeftSidebarNav() {
 
         {/* Floating Tooltip to the Left (facing screen center) with Theme Color Beacon */}
         <div
-          className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+          className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
             isLight
               ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
               : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -833,71 +869,105 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {/* Permanent Left Sidebar Rail */}
-      <aside
-        role="navigation"
-        aria-label="사이드 네비게이션"
-        className={`sites-pinned-sidebar fixed left-0 top-0 bottom-0 w-[72px] backdrop-blur-xl border-r z-[480] flex flex-col justify-between select-none shadow-[16px_0_48px_rgba(0,0,0,0.35)] transition-colors duration-300 ${
-          isLight
-            ? 'bg-[#fdfaf5]/96 border-amber-900/15 text-slate-800'
-            : 'bg-neutral-950/96 border-white/10 text-neutral-200'
-        }`}
-      >
-              <div className="sidebar-aurora" aria-hidden="true">
-                <div className={isLight ? 'sidebar-aurora-veil edge-aurora-veil-light' : 'sidebar-aurora-veil edge-aurora-veil'} />
-                <div className="sidebar-aurora-wave" />
-                <div className="sidebar-aurora-core" />
-              </div>
-              {/* Continuous accent; never resets when the pointer leaves. */}
-              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex justify-center shrink-0">
-                <div className="w-8 h-1 rounded-full rainbow-gradient-flow" aria-hidden="true" />
-              </div>
+      {/* 1. Bottom hover detection zone for auto-show on mouse approach */}
+      {!isOpen && (
+        <div
+          className="fixed bottom-0 left-0 right-0 h-6 z-[470] cursor-pointer"
+          onMouseEnter={handleOpenDock}
+          aria-hidden="true"
+        />
+      )}
 
-              {/* Navigation Channel Items (Icon-Only Rail) */}
-              <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
-                {/* 상단 1/3 빈 공간 (Spacer): 세로 화면 상단 1/3을 비우고 2/3 지점부터 아이콘 정렬 */}
-                <div className="w-full shrink-0 h-[30vh] sm:h-[33vh] pointer-events-none" aria-hidden="true" />
+      {/* 2. Floating Bottom Aurora Hint Handle Tab when hidden */}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.button
+            key="bottom-dock-hint"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.2 }}
+            type="button"
+            onClick={() => {
+              triggerHaptic('whitehole');
+              handleOpenDock();
+            }}
+            onMouseEnter={handleOpenDock}
+            aria-label="하단 메뉴 열기"
+            title="하단 메뉴 열기 (마우스 호버 · 탭)"
+            className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[475] flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-xl border border-amber-500/35 dark:border-white/20 bg-white/85 dark:bg-neutral-900/85 shadow-[0_4px_20px_rgba(0,0,0,0.3)] group transition-all duration-200 hover:bg-white/95 dark:hover:bg-neutral-900/95 active:scale-95 cursor-pointer"
+          >
+            <div className="w-5 h-1 rounded-full rainbow-gradient-flow opacity-80 group-hover:opacity-100 transition-opacity" />
+            <span
+              className={`text-[10px] font-black tracking-widest uppercase font-mono ${
+                isLight ? 'text-amber-800' : 'text-neutral-200'
+              }`}
+            >
+              MENU
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
-                {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
-                <div className="flex flex-col items-center gap-2 w-full overflow-visible">
-                  {CORE_CHANNELS.map(renderNavButton)}
-                </div>
+      {/* 3. Floating Bottom Navigation Dock */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.nav
+            key="bottom-dock-nav"
+            role="navigation"
+            aria-label="하단 플로팅 내비게이션"
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 60, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            onMouseEnter={cancelAutoCloseTimer}
+            onMouseMove={resetAutoCloseTimer}
+            onMouseLeave={resetAutoCloseTimer}
+            onTouchStart={resetAutoCloseTimer}
+            className={`sites-pinned-sidebar fixed bottom-3 left-1/2 -translate-x-1/2 z-[480] flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 rounded-2xl backdrop-blur-2xl border select-none shadow-[0_16px_48px_rgba(0,0,0,0.45)] max-w-[calc(100vw-1.5rem)] overflow-visible transition-colors duration-300 ${
+              isLight
+                ? 'bg-[#fffdf9]/95 border-amber-900/15 text-slate-800'
+                : 'bg-neutral-950/92 border-white/15 text-neutral-200'
+            }`}
+          >
+            {/* Top Accent Rainbow Line */}
+            <div className="absolute -top-[1px] left-6 right-6 h-[2px] rounded-full rainbow-gradient-flow opacity-75 pointer-events-none" />
 
-                {/* 7 Prism Channels: Accordion Toggled by 3rd LUCKEY Icon */}
-                <AnimatePresence initial={false}>
-                  {isChannelsOpen && (
-                    <motion.div
-                      key="prism-channels-accordion"
-                      initial={{ opacity: 0, height: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                      exit={{ opacity: 0, height: 0, scale: 0.96 }}
-                      transition={{ duration: 0.24, ease: 'easeOut' }}
-                      onMouseEnter={handleChannelsMouseEnter}
-                      onMouseLeave={handleChannelsMouseLeave}
-                      className="w-full flex flex-col items-center overflow-visible"
-                    >
-                      {/* Prismatic Connection Accent Line */}
-                      <div className="w-full flex items-center justify-center my-1.5">
-                        <div className="w-5 h-[2px] rounded-full bg-gradient-to-r from-emerald-500/70 via-purple-500/70 to-pink-500/70 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                      </div>
+            {/* 7 Prism Channels Popover Shelf above LUCKEY */}
+            <AnimatePresence>
+              {isChannelsOpen && (
+                <motion.div
+                  key="prism-channels-popover"
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  onMouseEnter={handleChannelsMouseEnter}
+                  onMouseLeave={handleChannelsMouseLeave}
+                  className={`absolute bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl backdrop-blur-2xl border shadow-[0_12px_36px_rgba(0,0,0,0.5)] z-50 max-w-[calc(100vw-2rem)] overflow-x-auto no-scrollbar ${
+                    isLight
+                      ? 'bg-[#fffdf9]/96 border-amber-900/15'
+                      : 'bg-neutral-950/95 border-white/15'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    {PRISM_CHANNELS.map(renderNavButton)}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                      {/* 7 Prism Channels: PROLOGUE ~ EPILOGUE */}
-                      <div className="relative flex flex-col items-center gap-2 w-full py-1 overflow-visible">
-                        {/* Connecting vertical rainbow ambient thread */}
-                        <div className="absolute top-2 bottom-2 left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-red-500/60 via-amber-400/50 via-emerald-400/50 via-blue-500/50 to-purple-500/60 shadow-[0_0_8px_rgba(168,85,247,0.3)] pointer-events-none" />
-                        {PRISM_CHANNELS.map(renderNavButton)}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+            {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY */}
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+              {CORE_CHANNELS.map(renderNavButton)}
+            </div>
 
-              {/* Footer: LP BGM Button, User Profile Button & Collapse Button */}
-              <div
-                className={`pb-[calc(var(--sab)+0.75rem)] px-1.5 pt-2.5 border-t flex flex-col items-center gap-2.5 shrink-0 transition-colors duration-300 ${
-                  isLight ? 'border-amber-900/15' : 'border-white/10'
-                }`}
-              >
+            {/* Subtle Vertical Divider */}
+            <div
+              className={`w-[1px] h-6 my-auto shrink-0 ${
+                isLight ? 'bg-amber-900/15' : 'bg-white/10'
+              }`}
+            />
                 {/* LP Background Music Button (Click: Play/Pause, Long-Press: LP Player Detail Popup) */}
                 <div className="relative group w-10 h-10 shrink-0 flex items-center justify-center">
                   {/* Soundwave Ripple & Floating Musical Notes when Playing */}
@@ -1029,7 +1099,7 @@ export default function LeftSidebarNav() {
 
                   {/* Desktop Hover Tooltip to Left */}
                   <div
-                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
                       isLight
                         ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                         : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -1119,7 +1189,7 @@ export default function LeftSidebarNav() {
 
                     {/* Desktop Hover Tooltip to Left */}
                     <div
-                      className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                      className={`hidden sm:group-hover:flex items-center gap-2 absolute bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
                         isLight
                           ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                           : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -1149,8 +1219,24 @@ export default function LeftSidebarNav() {
                     v{APP_VERSION}
                   </button>
                 </div>
-              </div>
-      </aside>
+
+            {/* Minimize / Hide Dock Button */}
+            <button
+              type="button"
+              onClick={handleCloseDock}
+              className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer active:scale-90 shrink-0 ${
+                isLight
+                  ? 'border-amber-900/15 text-slate-500 hover:bg-slate-200/60 hover:text-slate-800'
+                  : 'border-white/10 text-neutral-400 hover:bg-white/10 hover:text-white'
+              }`}
+              aria-label="하단 메뉴 숨기기"
+              title="하단 메뉴 숨기기 (3초 후 자동 숨김)"
+            >
+              <ChevronDown size={15} />
+            </button>
+          </motion.nav>
+        )}
+      </AnimatePresence>
       {showViewportDiagnostics && <ViewportDiagnostics onClose={() => setShowViewportDiagnostics(false)} />}
     </>
   );

@@ -3047,20 +3047,21 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
-/* Sidebar is permanently pinned to the left (72px); main content occupies 100% of the remaining area with clean margin. */
-:root { --sites-sidebar-width: 72px; }
+/* Navigation is a sleek bottom floating dock; main content occupies full 100% width with safe bottom clearance. */
+:root { --sites-sidebar-width: 0px; }
 .sites-pinned-main {
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
-  margin-left: var(--sites-sidebar-width, 72px);
-  width: calc(100% - var(--sites-sidebar-width, 72px));
-  max-width: calc(100% - var(--sites-sidebar-width, 72px));
+  margin-left: 0;
+  width: 100%;
+  max-width: 100%;
   padding-right: 0;
+  padding-bottom: calc(var(--sab, 0px) + 4.25rem);
 }
 /* Fixed page tabs center across main canvas */
 .sites-pinned-main .prism-xs-subnav:not(.duo-page-nav) {
-  left: calc(var(--sites-sidebar-width, 72px) + (100vw - var(--sites-sidebar-width, 72px)) / 2) !important;
-  max-width: calc(100vw - var(--sites-sidebar-width, 72px) - 1rem) !important;
+  left: 50% !important;
+  max-width: calc(100vw - 1rem) !important;
   transform: translateX(-50%) !important;
 }
 .sites-pinned-sidebar { contain: layout style; }
@@ -3088,15 +3089,18 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 
 
 .pwa-install-banner {
-  left: calc(var(--sites-sidebar-width, 72px) + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
   right: auto;
+  max-width: calc(100vw - 2rem);
+  bottom: calc(var(--sab, 0px) + 5rem);
 }
 @media (min-width: 768px) {
   .pwa-install-banner {
-    left: calc(var(--sites-sidebar-width, 72px) + (100vw - var(--sites-sidebar-width, 72px)) / 2);
+    left: 50%;
     right: auto;
     transform: translateX(-50%);
-    max-width: calc(100vw - var(--sites-sidebar-width, 72px) - 2rem);
+    max-width: 28rem;
   }
 }
 
