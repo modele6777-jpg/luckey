@@ -380,7 +380,7 @@ function AppContent() {
         startY = e.touches[0].clientY;
         const target = e.target as HTMLElement | null;
         isInsideBigBang = !!target?.closest(
-          '#bigbang-omnibutton, [data-bigbang="true"]'
+          '#bigbang-omnibutton, [data-bigbang="true"], [data-menu-drag="true"]'
         );
         isInsideHorizontalScroller = !!target?.closest(
           '.overflow-x-auto, .overflow-x-scroll, [data-allow-x-scroll], input[type="range"]'
@@ -390,7 +390,7 @@ function AppContent() {
 
     const handleEdgeTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 1) {
-        // 빅뱅 버튼 직접 조작(드래그 워프 등)은 정상 허용
+        // 빅뱅·플로팅 메뉴의 직접 드래그는 화면 스와이프 차단과 분리한다.
         if (isInsideBigBang) return;
 
         const dx = e.touches[0].clientX - startX;

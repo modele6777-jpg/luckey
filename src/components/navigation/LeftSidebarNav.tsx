@@ -8,8 +8,6 @@ import {
   Bird,
   Activity,
   Moon,
-  ChevronLeft,
-  ChevronDown,
   X,
   Clover,
   KeyRound,
@@ -18,7 +16,12 @@ import {
   BookOpen,
   Compass,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
+import { useFloatingMenu } from '@/hooks/useFloatingMenu';
+import { placeMenuPanel } from '@/lib/floatingMenuGeometry';
+import './floating-menu.css';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { getPermanentAvatar } from '@/lib/profileVault';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -187,177 +190,32 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isChannelsOpen, setIsChannelsOpen] = useState(true);
   const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
-  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Floating Draggable Position (Snap to Left or Right edge, persistent in localStorage)
-  const [fabPos, setFabPos] = useState<{ x: number; y: number }>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('prism_fab_pos');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (typeof parsed.x === 'number' && typeof parsed.y === 'number' && !isNaN(parsed.x) && !isNaN(parsed.y)) {
-            const screenW = window.innerWidth;
-            const screenH = window.innerHeight;
-            return {
-              x: Math.max(16, Math.min(screenW - 110, parsed.x)),
-              y: Math.max(48, Math.min(screenH - 72, parsed.y)),
-            };
-          }
-        }
-      } catch (_) {}
-      return { x: 16, y: Math.max(48, window.innerHeight - 76) };
-    }
-    return { x: 16, y: 600 };
-  });
-
-  const isLeftEdge = typeof window !== 'undefined' ? fabPos.x <= window.innerWidth / 2 : true;
-  const [isDraggingActive, setIsDraggingActive] = useState(false);
-  const isPointerDownRef = useRef(false);
-  const hasDraggedRef = useRef(false);
-  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
-  const fabStartRef = useRef<{ x: number; y: number } | null>(null);
-  const justFinishedDragRef = useRef(false);
-
-  // Resize listener to prevent button from getting stuck outside screen
-  useEffect(() => {
-    const handleResize = () => {
-      setFabPos((prev) => {
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
-        const snapLeft = prev.x <= screenW / 2;
-        const newX = snapLeft ? 16 : Math.max(16, screenW - 110);
-        const newY = Math.max(48, Math.min(screenH - 72, prev.y));
-        return { x: newX, y: newY };
-      });
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const cancelAutoCloseTimer = useCallback(() => {
-    if (autoCloseTimerRef.current) {
-      clearTimeout(autoCloseTimerRef.current);
-      autoCloseTimerRef.current = null;
-    }
-  }, []);
-
-  const resetAutoCloseTimer = useCallback(() => {
-    cancelAutoCloseTimer();
-    autoCloseTimerRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 3000);
-  }, [cancelAutoCloseTimer]);
-
-  const handleOpenDrawer = useCallback(() => {
-    setIsOpen(true);
-    resetAutoCloseTimer();
-  }, [resetAutoCloseTimer]);
-
-  const handleCloseDrawer = useCallback(() => {
-    cancelAutoCloseTimer();
-    setIsOpen(false);
-  }, [cancelAutoCloseTimer]);
-
+  const handleCloseDrawer = useCallback(() => setIsOpen(false), []);
   const handleToggleOpen = useCallback(() => {
-    setIsOpen((prev) => {
-      const next = !prev;
-      if (next) {
-        triggerHaptic('whitehole');
-        resetAutoCloseTimer();
-      } else {
-        cancelAutoCloseTimer();
-      }
-      return next;
-    });
-  }, [resetAutoCloseTimer, cancelAutoCloseTimer]);
-
-  const handleFabPointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch (_) {}
-    isPointerDownRef.current = true;
-    hasDraggedRef.current = false;
-    pointerStartRef.current = { x: e.clientX, y: e.clientY };
-    fabStartRef.current = { x: fabPos.x, y: fabPos.y };
-    setIsDraggingActive(false);
-  }, [fabPos]);
-
-  const handleFabPointerMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    if (!isPointerDownRef.current || !pointerStartRef.current || !fabStartRef.current) return;
-    const dx = e.clientX - pointerStartRef.current.x;
-    const dy = e.clientY - pointerStartRef.current.y;
-    if (!hasDraggedRef.current) {
-      if (Math.hypot(dx, dy) > 5) {
-        hasDraggedRef.current = true;
-        setIsDraggingActive(true);
-      } else {
-        return;
-      }
-    }
-
-    const screenW = typeof window !== 'undefined' ? window.innerWidth : 400;
-    const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
-
-    const newX = Math.max(8, Math.min(screenW - 100, fabStartRef.current.x + dx));
-    const newY = Math.max(16, Math.min(screenH - 60, fabStartRef.current.y + dy));
-    setFabPos({ x: newX, y: newY });
-  }, []);
-
-  const handleFabPointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    if (!isPointerDownRef.current) return;
-    isPointerDownRef.current = false;
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch (_) {}
-
-    if (hasDraggedRef.current) {
-      justFinishedDragRef.current = true;
-      setIsDraggingActive(false);
-
-      const screenW = typeof window !== 'undefined' ? window.innerWidth : 400;
-      const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
-
-      setFabPos((current) => {
-        const snapLeft = current.x + 50 <= screenW / 2;
-        const finalX = snapLeft ? 16 : Math.max(16, screenW - 110);
-        const finalY = Math.max(48, Math.min(screenH - 72, current.y));
-        try {
-          localStorage.setItem('prism_fab_pos', JSON.stringify({ x: finalX, y: finalY }));
-        } catch (_) {}
-        return { x: finalX, y: finalY };
-      });
-
-      triggerHaptic('whitehole');
-
-      setTimeout(() => {
-        justFinishedDragRef.current = false;
-        hasDraggedRef.current = false;
-      }, 100);
-    } else {
-      setIsDraggingActive(false);
-      hasDraggedRef.current = false;
-    }
-  }, []);
-
-  const handleFabClick = useCallback(() => {
-    if (justFinishedDragRef.current || hasDraggedRef.current) return;
     triggerHaptic('whitehole');
-    handleToggleOpen();
-  }, [handleToggleOpen]);
-
-  useEffect(() => {
-    return () => {
-      if (autoCloseTimerRef.current) {
-        clearTimeout(autoCloseTimerRef.current);
-      }
-    };
+    setIsOpen(open => !open);
   }, []);
+  const floating = useFloatingMenu(handleToggleOpen, handleCloseDrawer);
+  const panelRef = useRef<HTMLElement>(null);
+  const [panelSize, setPanelSize] = useState({ width: 350, height: 480 });
+  useEffect(() => {
+    if (!isOpen || !panelRef.current) return;
+    const panel = panelRef.current;
+    const update = () => setPanelSize({ width: panel.offsetWidth, height: panel.offsetHeight });
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [isOpen]);
+  const panelHeight = Math.min(panelSize.height, Math.max(0, floating.bounds.height - 24));
+  const verticalSpace = Math.max(floating.position.y - floating.bounds.top - 24, floating.bounds.top + floating.bounds.height - floating.position.y - floating.size.height - 24);
+  const sideSpace = Math.max(floating.position.x - floating.bounds.left - 24, floating.bounds.left + floating.bounds.width - floating.position.x - floating.size.width - 24);
+  const panelWidth = Math.min(350, Math.max(0, floating.bounds.width - 24), panelHeight > verticalSpace && sideSpace >= 180 ? sideSpace : Infinity);
+  const panelPosition = placeMenuPanel(floating.position, floating.size, { width: panelWidth, height: panelHeight }, floating.bounds);
 
   const [, setProfileVersion] = useState(0);
-  const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();
@@ -509,9 +367,6 @@ export default function LeftSidebarNav() {
   const recommendedPrismPath = topRecommendation
     ? APP_ID_TO_PRISM_PATH[topRecommendation.stats.nextAppId] || '/trinity'
     : '/trinity';
-  const recommendedPrismChannel =
-    PRISM_CHANNELS.find((ch) => ch.path === recommendedPrismPath) || PRISM_CHANNELS[2];
-
   // Extract user profile / nickname and avatar URL for sidebar footer
   let userNickname = '제제';
   let userAvatarUrl: string | undefined = undefined;
@@ -565,67 +420,6 @@ export default function LeftSidebarNav() {
     (p) => cleanPath === p || cleanPath.startsWith(p + '/')
   );
 
-  // Check if any of the 7 PRISM channels are active
-  const isAnyPrismActive = PRISM_CHANNELS.some((item) => {
-    if (item.isPrologue) return isPrologueActive;
-    if (item.path === '/epilogue') return isEpilogueActive;
-    return cleanPath === item.path || cleanPath.startsWith(item.path + '/');
-  });
-
-  const [isChannelsOpen, setIsChannelsOpen] = useState(isAnyPrismActive);
-  const channelsCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleChannelsMouseEnter = useCallback(() => {
-    if (channelsCloseTimeoutRef.current) {
-      clearTimeout(channelsCloseTimeoutRef.current);
-      channelsCloseTimeoutRef.current = null;
-    }
-    setIsChannelsOpen(true);
-  }, []);
-
-  const handleChannelsMouseLeave = useCallback(() => {
-    if (isAnyPrismActive) return;
-    if (channelsCloseTimeoutRef.current) {
-      clearTimeout(channelsCloseTimeoutRef.current);
-    }
-    channelsCloseTimeoutRef.current = setTimeout(() => {
-      setIsChannelsOpen(false);
-    }, 300);
-  }, [isAnyPrismActive]);
-
-  useEffect(() => {
-    return () => {
-      if (channelsCloseTimeoutRef.current) {
-        clearTimeout(channelsCloseTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Automatically expand if navigating to any of the 7 prism channels
-  useEffect(() => {
-    if (isAnyPrismActive) {
-      setIsChannelsOpen(true);
-    }
-  }, [isAnyPrismActive]);
-
-  // Find the currently active nav item to highlight theme accent
-  const allNavItems = [...CORE_CHANNELS, ...PRISM_CHANNELS];
-  const activeItem =
-    allNavItems.find((item) => {
-      if (item.isMainChat) return isLucyActive;
-      if (item.isKey) return isKeyActive;
-      if (item.isLuckey) return false;
-      if (item.isPrologue) return isPrologueActive;
-      if (item.path === '/epilogue') return isEpilogueActive;
-      return cleanPath === item.path || cleanPath.startsWith(item.path + '/');
-    }) ||
-    AUXILIARY_CHANNELS.find(
-      (item) => cleanPath === item.path || cleanPath.startsWith(item.path + '/')
-    ) ||
-    CORE_CHANNELS[0];
-
-  const ActiveNavIcon = activeItem?.icon || Clover;
-
   // Broadcast sidebar open/closed state so widgets like LP player can sync visibility
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('left-sidebar-state', { detail: { isOpen } }));
@@ -655,679 +449,103 @@ export default function LeftSidebarNav() {
 
   const renderNavButton = (item: NavItemConfig) => {
     const { path, icon: Icon, label, subLabel, color, isMainChat, isKey, isPrologue, isLuckey } = item;
-    const isActive = isMainChat
-      ? isLucyActive
-      : isKey
-      ? isKeyActive
-      : isLuckey
-      ? Boolean(isAnyPrismActive || isChannelsOpen)
-      : isPrologue
-      ? isPrologueActive
-      : cleanPath === path || cleanPath.startsWith(path + '/');
-    const isRainbow = Boolean(isMainChat || isKey || isLuckey);
-    const isHovered = hoveredNavPath === path;
-    const isRecommendedTop1 = !isRainbow && path === recommendedPrismPath;
-
-    // 🌈 Special Rainbow Glowing Style for Core Sanctuary Channels (LUCY, KEY, LUCKEY)
-    if (isRainbow) {
-      return (
-        <button
-          key={path}
-          type="button"
-          onClick={() => {
-            if (isLuckey) {
-              setIsChannelsOpen((prev) => !prev);
-            } else {
-              handleNavigate(path);
-            }
-          }}
-          onMouseEnter={() => {
-            setHoveredNavPath(path);
-            if (isLuckey) handleChannelsMouseEnter();
-          }}
-          onMouseLeave={() => {
-            setHoveredNavPath(null);
-            if (isLuckey) handleChannelsMouseLeave();
-          }}
-          aria-label={
-            isLuckey
-              ? `${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'} (현재 추천 1순위: ${recommendedPrismChannel.label})`
-              : label
-          }
-          aria-expanded={isLuckey ? isChannelsOpen : undefined}
-          className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
-            isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
-          }`}
-        >
-          {/* Active top indicator bar */}
-          {isActive && (
-            <motion.div
-              layoutId="active-nav-glow"
-              className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)]"
-              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            />
-          )}
-
-          {/* Rainbow Conic Halo Border */}
-          <div
-            className={`relative w-full h-full rounded-xl overflow-hidden p-[1.5px] transition-shadow duration-300 ${
-              isActive
-                ? isLuckey
-                  ? 'shadow-[0_0_16px_rgba(52,211,153,0.6)]'
-                  : 'shadow-[0_0_16px_rgba(255,107,107,0.55)]'
-                : 'group-hover:shadow-[0_0_12px_rgba(255,107,107,0.35)]'
-            }`}
-          >
-            <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
-            <div
-              className={`relative w-full h-full rounded-[10px] flex items-center justify-center transition-colors duration-300 ${
-                isLight
-                  ? isActive
-                    ? isLuckey
-                      ? 'bg-[#fffdf9]/95 ring-1 ring-emerald-500/40'
-                      : 'bg-[#fffdf9]/95 ring-1 ring-amber-400/50'
-                    : 'bg-[#fdfaf5]/92 group-hover:bg-white'
-                  : isActive
-                  ? isLuckey
-                    ? 'bg-neutral-900/95 ring-1 ring-emerald-400/40'
-                    : 'bg-neutral-900/95 ring-1 ring-white/30'
-                  : 'bg-neutral-950/90 group-hover:bg-neutral-900/90'
-              }`}
-            >
-              <Icon
-                size={20}
-                className={`${
-                  isLuckey
-                    ? isLight
-                      ? 'text-emerald-600 drop-shadow-[0_0_6px_rgba(16,185,129,0.45)]'
-                      : 'text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)]'
-                    : isKey
-                    ? isLight
-                      ? 'text-teal-600 drop-shadow-[0_0_6px_rgba(20,184,166,0.45)]'
-                      : 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
-                    : isLight
-                    ? 'text-purple-600 drop-shadow-[0_0_6px_rgba(147,51,234,0.45)]'
-                    : 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
-                } transition-transform duration-300 group-hover:scale-110 ${isLuckey ? 'group-hover:rotate-12' : ''}`}
-              />
-            </div>
-          </div>
-
-          {/* For LUCKEY: Clean glowing theme-color circular dot in top-right corner */}
-          {isLuckey && recommendedPrismChannel && (
-            <span
-              className="absolute -top-1 -right-1 z-20 w-3 h-3 rounded-full pointer-events-none transition-transform duration-200 group-hover:scale-110"
-              style={{
-                backgroundColor: recommendedPrismChannel.color,
-                boxShadow: `0 0 8px ${recommendedPrismChannel.color}, 0 0 14px ${recommendedPrismChannel.color}90`,
-                border: isLight
-                  ? '1.5px solid rgba(255, 255, 255, 0.95)'
-                  : '1.5px solid rgba(15, 15, 20, 0.85)',
-              }}
-            />
-          )}
-
-          {/* Floating Tooltip to the Left (facing screen center) */}
-          <div
-            className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
-              isLight
-                ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-xs font-black uppercase tracking-wider ${
-                  isLuckey
-                    ? isLight
-                      ? 'text-emerald-600'
-                      : 'text-emerald-300'
-                    : 'rainbow-text-shimmer'
-                }`}
-              >
-                {label}
-              </span>
-              <span className={`text-[11px] ${isLight ? 'text-slate-600' : 'text-neutral-300'}`}>
-                {isLuckey ? (isChannelsOpen ? '7대 채널 접기' : '7대 채널 펼치기') : subLabel}
-              </span>
-              {isLuckey ? (
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
-                  {isChannelsOpen ? 'OPEN (7)' : '7 CHANNELS'}
-                </span>
-              ) : isActive ? (
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
-                  ACTIVE
-                </span>
-              ) : (
-                <span
-                  className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded border ${
-                    isLight
-                      ? 'bg-amber-500/10 text-amber-800 border-amber-500/25'
-                      : 'bg-white/10 text-neutral-300 border-white/10'
-                  }`}
-                >
-                  {isMainChat ? 'AI CORE' : 'HEALING'}
-                </span>
-              )}
-            </div>
-
-            {isLuckey && recommendedPrismChannel && (
-              <div
-                className={`flex items-center gap-1.5 pt-1 border-t text-[10px] ${
-                  isLight ? 'border-amber-900/10 text-slate-700' : 'border-white/10 text-neutral-200'
-                }`}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{
-                    backgroundColor: recommendedPrismChannel.color,
-                    boxShadow: `0 0 6px ${recommendedPrismChannel.color}`,
-                  }}
-                />
-                <span className="font-bold" style={{ color: recommendedPrismChannel.color }}>
-                  {recommendedPrismChannel.label}
-                </span>
-                <span className={isLight ? 'text-slate-600' : 'text-neutral-300'}>
-                  · {topRecommendation?.menu?.name || recommendedPrismChannel.subLabel}
-                </span>
-              </div>
-            )}
-          </div>
-        </button>
-      );
-    }
-
-    // Standard 7 Prism Journey Channels & Auxiliary Channels
+    const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isLuckey ? isChannelsOpen : isPrologue ? isPrologueActive : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
+    const isCore = Boolean(isMainChat || isKey || isLuckey);
+    const recommended = !isCore && path === recommendedPrismPath;
     return (
       <button
         key={path}
         type="button"
-        onClick={() => handleNavigate(path)}
-        onMouseEnter={() => setHoveredNavPath(path)}
-        onMouseLeave={() => setHoveredNavPath(null)}
-        aria-label={isRecommendedTop1 ? `${label} (현재 추천 1순위)` : label}
-        className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
-          isActive || isHovered ? 'scale-105' : 'hover:scale-105 active:scale-95'
-        }`}
-        style={{
-          backgroundColor: isActive
-            ? isLight
-              ? `${color}24`
-              : `${color}28`
-            : isHovered
-            ? isLight
-              ? `${color}16`
-              : `${color}18`
-            : isLight
-            ? 'rgba(255, 255, 255, 0.78)'
-            : 'rgba(255, 255, 255, 0.04)',
-          border: `${isActive ? '1.5px' : '1px'} solid ${
-            isActive
-              ? `${color}95`
-              : isHovered
-              ? `${color}65`
-              : isLight
-              ? 'rgba(180, 150, 115, 0.24)'
-              : 'rgba(255, 255, 255, 0.08)'
-          }`,
-          boxShadow: isActive
-            ? `0 0 16px ${color}45`
-            : isHovered
-            ? `0 0 14px ${color}30`
-            : isLight
-            ? '0 2px 8px rgba(140, 115, 85, 0.07)'
-            : undefined,
-        }}
+        className={`luckey-menu-card ${isCore ? 'luckey-menu-core' : ''} ${isActive ? 'is-active' : ''}`}
+        style={{ '--channel-color': color } as React.CSSProperties}
+        onClick={() => isLuckey ? setIsChannelsOpen(open => !open) : handleNavigate(path)}
+        aria-label={isLuckey ? 'LUCKEY 7개 채널' : label}
+        aria-current={!isLuckey && isActive ? 'page' : undefined}
+        aria-expanded={isLuckey ? isChannelsOpen : undefined}
+        aria-controls={isLuckey ? 'luckey-prism-channels' : undefined}
       >
-        {/* Active top indicator bar */}
-        {isActive && (
-          <motion.div
-            layoutId="active-nav-glow"
-            className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full"
-            style={{
-              backgroundColor: color,
-              boxShadow: `0 0 8px ${color}`,
-            }}
-            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-          />
-        )}
-
-        {/* Top-1 Recommended Clean Theme-Color Circular Dot on Top-Right Corner */}
-        {isRecommendedTop1 && (
-          <span
-            className="absolute -top-1 -right-1 z-20 w-3 h-3 rounded-full pointer-events-none transition-transform duration-200 group-hover:scale-110"
-            style={{
-              backgroundColor: color,
-              boxShadow: `0 0 8px ${color}, 0 0 14px ${color}95`,
-              border: isLight
-                ? '1.5px solid rgba(255, 255, 255, 0.95)'
-                : '1.5px solid rgba(15, 15, 20, 0.85)',
-            }}
-          />
-        )}
-
-        {/* Ambient Radial Theme Color Flare blooming behind & over glyph */}
-        <div
-          className="absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at center, ${color}35 0%, ${color}10 50%, transparent 75%)`,
-            opacity: isActive || isHovered ? 1 : 0,
-          }}
-        />
-
-        {/* Icon Glyph with Theme Color & Glowing Drop Shadow on Hover / Active */}
-        <Icon
-          size={20}
-          style={{
-            color: isActive || isHovered ? color : undefined,
-            filter:
-              isActive || isHovered
-                ? `drop-shadow(0 0 8px ${color})`
-                : undefined,
-          }}
-          className={`relative z-10 transition-all duration-200 ${
-            isActive || isHovered
-              ? 'scale-110'
-              : isLight
-              ? 'text-slate-600 group-hover:text-slate-900'
-              : 'text-neutral-400 group-hover:text-neutral-200'
-          }`}
-        />
-
-        {/* Floating Tooltip to the Left (facing screen center) with Theme Color Beacon */}
-        <div
-          className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
-            isLight
-              ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-              : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
-              style={{
-                backgroundColor: color,
-                boxShadow: `0 0 8px ${color}`,
-              }}
-            />
-            <span
-              className="text-xs font-bold uppercase tracking-wider font-sans"
-              style={{ color }}
-            >
-              {label}
-            </span>
-            <span className={`text-[11px] ${isLight ? 'text-slate-600' : 'text-neutral-300'}`}>
-              {subLabel}
-            </span>
-            {isRecommendedTop1 && (
-              <span
-                className="text-[9px] font-extrabold px-1.5 py-0.5 rounded text-white shadow-xs"
-                style={{
-                  backgroundColor: color,
-                  boxShadow: `0 0 8px ${color}80`,
-                }}
-              >
-                추천 1순위
-              </span>
-            )}
-            {isActive && (
-              <span
-                className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded"
-                style={{
-                  color,
-                  backgroundColor: `${color}20`,
-                  border: `1px solid ${color}40`,
-                }}
-              >
-                ACTIVE
-              </span>
-            )}
-          </div>
-
-          {isRecommendedTop1 && topRecommendation && (
-            <div
-              className={`flex items-center gap-1.5 pt-1 border-t text-[10px] ${
-                isLight ? 'border-amber-900/10 text-slate-600' : 'border-white/10 text-neutral-300'
-              }`}
-            >
-              <span className="font-bold" style={{ color }}>
-                {topRecommendation.menu.name}
-              </span>
-              <span>· {topRecommendation.reason}</span>
-            </div>
-          )}
-        </div>
+        <span className="luckey-menu-card-icon"><Icon size={isCore ? 22 : 20} /></span>
+        <span className="luckey-menu-card-copy"><span className="luckey-menu-card-name">{label}</span><span className="luckey-menu-card-description">{isLuckey ? '일곱 빛깔의 하루' : subLabel}</span></span>
+        {recommended && <span className="luckey-menu-recommended">추천</span>}
       </button>
     );
   };
 
   return (
     <>
-      {/* 1. Collapsed State: Draggable Magnetic Pill FAB (Rainbow Pip + Clover + MENU Text) */}
-      <AnimatePresence>
-        {!isOpen && (
-          <div
-            style={{
-              position: 'fixed',
-              left: `${fabPos.x}px`,
-              top: `${fabPos.y}px`,
-              zIndex: 475,
-              touchAction: 'none',
-              transition: isDraggingActive
-                ? 'none'
-                : 'left 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2), top 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2)',
-            }}
-            className="select-none"
+      {typeof document !== 'undefined' && createPortal(
+        <div
+          data-menu-drag="true"
+          data-floating-menu-anchor="true"
+          style={{ position: 'fixed', left: floating.position.x, top: floating.position.y, zIndex: 700, touchAction: 'none' }}
+        >
+          <motion.button
+            ref={floating.buttonRef}
+            type="button"
+            {...floating.handlers}
+            className={`luckey-fab ${floating.isDragging ? 'is-dragging' : ''} ${isOpen ? 'is-open' : ''}`}
+            data-theme={isLight ? 'light' : 'dark'}
+            data-menu-drag="true"
+            aria-label={isOpen ? '네잎클로버 메뉴 닫기' : '네잎클로버 메뉴 열기'}
+            aria-expanded={isOpen}
+            aria-controls="luckey-menu-dialog"
+            title="네잎클로버 메뉴 · 드래그하여 이동"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            onContextMenu={event => event.preventDefault()}
           >
-            <motion.button
-              key="magnetic-pill-fab-btn"
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.85, opacity: 0 }}
-              whileHover={{ scale: isDraggingActive ? 1.04 : 1.06 }}
-              whileTap={{ scale: 0.94 }}
-              type="button"
-              onPointerDown={handleFabPointerDown}
-              onPointerMove={handleFabPointerMove}
-              onPointerUp={handleFabPointerUp}
-              onPointerCancel={handleFabPointerUp}
-              onClick={handleFabClick}
-              aria-label="메뉴 열기"
-              title="메뉴 열기 (드래그하여 원하는 위치로 이동)"
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl backdrop-blur-xl border border-amber-500/35 dark:border-white/20 bg-white/90 dark:bg-neutral-900/90 shadow-[0_8px_24px_rgba(0,0,0,0.35)] group transition-all duration-200 select-none ${
-                isDraggingActive
-                  ? 'cursor-grabbing scale-105 shadow-[0_12px_28px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500/50'
-                  : 'cursor-grab active:scale-95'
-              }`}
+            <span className="luckey-fab-shine" aria-hidden="true" />
+            <Clover className="luckey-fab-clover" size={29} strokeWidth={1.8} aria-hidden="true" />
+            <span className="luckey-fab-label">{floating.isDragging ? 'MOVE' : isOpen ? 'CLOSE' : 'MENU'}</span>
+            <span className="luckey-fab-spark" aria-hidden="true">✦</span>
+          </motion.button>
+        </div>, document.body,
+      )}
+      {isOpen && (
+        <WorkspacePortal onClose={handleCloseDrawer}>
+          <div className="fixed inset-0 luckey-menu-backdrop" onClick={handleCloseDrawer}>
+            <motion.section
+              ref={panelRef}
+              id="luckey-menu-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="luckey-menu-title"
+              data-theme={isLight ? 'light' : 'dark'}
+              className="luckey-menu-panel"
+              style={{ position: 'fixed', left: panelPosition.x, top: panelPosition.y, width: panelWidth, maxHeight: Math.max(0, floating.bounds.height - 24) }}
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.18 }}
+              onClick={event => event.stopPropagation()}
             >
-              <div className="w-2.5 h-2.5 rounded-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)] pointer-events-none shrink-0" />
-              <Clover
-                size={18}
-                className={`text-emerald-500 transition-transform duration-300 pointer-events-none shrink-0 ${
-                  isDraggingActive ? 'rotate-12 scale-110' : 'group-hover:rotate-12'
-                }`}
-              />
-              <span
-                className={`text-xs font-black tracking-wider uppercase font-mono pointer-events-none ${
-                  isLight ? 'text-slate-800' : 'text-neutral-200'
-                }`}
-              >
-                MENU
-              </span>
-            </motion.button>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 2. Backdrop Overlay to close when clicking outside */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            key="drawer-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[478] bg-black/20 dark:bg-black/40 backdrop-blur-[1px]"
-            onClick={handleCloseDrawer}
-            aria-hidden="true"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* 3. Horizontal Expandable Floating Bar */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.aside
-            key="horizontal-floating-bar"
-            role="navigation"
-            aria-label="플로팅 메뉴 바"
-            initial={{
-              opacity: 0,
-              scale: 0.9,
-              x: isLeftEdge ? -24 : 24,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              x: 0,
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.9,
-              x: isLeftEdge ? -24 : 24,
-            }}
-            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-            onMouseEnter={cancelAutoCloseTimer}
-            onMouseMove={resetAutoCloseTimer}
-            onMouseLeave={resetAutoCloseTimer}
-            onTouchStart={resetAutoCloseTimer}
-            style={{
-              top: Math.max(16, Math.min(typeof window !== 'undefined' ? window.innerHeight - 80 : 600, fabPos.y)),
-              left: isLeftEdge ? Math.max(12, fabPos.x) : undefined,
-              right: !isLeftEdge ? 16 : undefined,
-            }}
-            className={`fixed z-[480] flex items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl backdrop-blur-2xl border shadow-[0_12px_36px_rgba(0,0,0,0.45)] select-none max-w-[calc(100vw-24px)] overflow-x-auto no-scrollbar transition-colors duration-300 ${
-              isLeftEdge ? 'flex-row' : 'flex-row-reverse'
-            } ${
-              isLight
-                ? 'bg-[#fdfaf5]/96 border-amber-900/20 text-slate-800'
-                : 'bg-neutral-950/96 border-white/15 text-neutral-200'
-            }`}
-          >
-            {/* Pure Clover Anchor / Collapse Button */}
-            <button
-              type="button"
-              onClick={handleCloseDrawer}
-              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border transition-all cursor-pointer active:scale-90 ${
-                isLight
-                  ? 'border-emerald-600/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
-                  : 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25'
-              }`}
-              aria-label="메뉴 닫기"
-              title="메뉴 닫기"
-            >
-              <Clover size={20} className="hover:rotate-12 transition-transform duration-200" />
-            </button>
-
-            {/* Core Sanctuary Channels: LUCY, KEY, LUCKEY */}
-            <div className={`flex items-center gap-1 shrink-0 ${isLeftEdge ? 'flex-row' : 'flex-row-reverse'}`}>
-              {CORE_CHANNELS.map(renderNavButton)}
-            </div>
-
-            {/* Subtle Divider */}
-            <div className={`w-[1px] h-6 shrink-0 ${isLight ? 'bg-amber-900/15' : 'bg-white/15'}`} />
-
-            {/* 7 Prism Journey Channels */}
-            <div className={`flex items-center gap-1 shrink-0 overflow-x-auto no-scrollbar py-0.5 ${isLeftEdge ? 'flex-row' : 'flex-row-reverse'}`}>
-              {PRISM_CHANNELS.map(renderNavButton)}
-            </div>
-
-            {/* Subtle Divider */}
-            <div className={`w-[1px] h-6 shrink-0 ${isLight ? 'bg-amber-900/15' : 'bg-white/15'}`} />
-
-            {/* LP BGM Player Quick Action */}
-            <div className="relative group w-11 h-11 shrink-0 flex items-center justify-center">
-              {isBgmHolding && (
-                <svg
-                  className="absolute -inset-1 w-[52px] h-[52px] pointer-events-none z-20 -rotate-90"
-                  viewBox="0 0 48 48"
-                >
-                  <rect
-                    x="3"
-                    y="3"
-                    width="42"
-                    height="42"
-                    rx="13"
-                    fill="none"
-                    stroke="rgba(251, 191, 36, 0.95)"
-                    strokeWidth="2.5"
-                    strokeDasharray="145"
-                    className="animate-lp-hold drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]"
-                  />
-                </svg>
-              )}
-
-              <button
-                type="button"
-                onPointerDown={handleBgmPointerDown}
-                onPointerMove={handleBgmPointerMove}
-                onPointerUp={handleBgmPointerUp}
-                onPointerLeave={handleBgmPointerUp}
-                onPointerCancel={handleBgmPointerUp}
-                onClick={handleBgmClick}
-                onContextMenu={handleBgmContextMenu}
-                aria-label={
-                  bgmState.isPlaying
-                    ? '배경음 일시정지 (길게 누르면 LP 상세 설정)'
-                    : '배경음 재생 (길게 누르면 LP 상세 설정)'
-                }
-                title="클릭: 배경음 재생/일시정지 · 길게 누르기: LP 상세 설정"
-                className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer select-none overflow-hidden ${
-                  isBgmHolding ? 'scale-92' : 'hover:scale-105 active:scale-95'
-                } ${
-                  bgmState.isPlaying
-                    ? isLight
-                      ? 'bg-gradient-to-br from-amber-500/25 via-amber-400/15 to-rose-500/20 border-amber-500/80 shadow-[0_0_16px_rgba(245,158,11,0.38)]'
-                      : 'bg-gradient-to-br from-amber-500/25 via-neutral-900 to-rose-500/20 border-amber-400/75 shadow-[0_0_18px_rgba(251,191,36,0.45)]'
-                    : isLight
-                    ? 'bg-amber-900/[0.06] border-amber-900/20 hover:border-amber-600/50 hover:bg-amber-500/15'
-                    : 'bg-white/[0.05] border-white/15 hover:border-amber-400/50 hover:bg-white/[0.1]'
-                }`}
-              >
-                <LPRecordDisc
-                  isPlaying={bgmState.isPlaying}
-                  isBuffering={bgmState.isBuffering}
-                  size="sm"
-                  className="pointer-events-none"
-                />
-
-                <span
-                  className={`absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none transition-all duration-300 ${
-                    bgmState.isPlaying
-                      ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse'
-                      : isLight
-                      ? 'bg-slate-400/60'
-                      : 'bg-white/25'
-                  }`}
-                />
-              </button>
-
-              {/* LP Tooltip */}
-              <div
-                className={`hidden sm:group-hover:flex flex-col gap-1 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                  isLight
-                    ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                    : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      bgmState.isPlaying
-                        ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse'
-                        : 'bg-neutral-500'
-                    }`}
-                  />
-                  <span className={`text-xs font-extrabold tracking-wide ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-                    LP 배경음 플레이어
-                  </span>
-                  <span
-                    className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
-                      bgmState.isPlaying
-                        ? isLight
-                          ? 'bg-amber-500/15 text-amber-800 border-amber-500/35'
-                          : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                        : isLight
-                        ? 'bg-slate-200/70 text-slate-600 border-slate-300'
-                        : 'bg-white/10 text-neutral-400 border-white/10'
-                    }`}
-                  >
-                    {bgmState.isPlaying ? 'PLAYING' : 'PAUSED'}
-                  </span>
+              <header className="luckey-menu-heading">
+                <span className="luckey-menu-emblem" aria-hidden="true"><Clover size={25} strokeWidth={1.7} /></span>
+                <div className="luckey-menu-heading-copy"><h2 id="luckey-menu-title">A little luck, for you.</h2><p>지금, 마음이 향하는 곳으로</p></div>
+                <button type="button" className="luckey-menu-close" onClick={handleCloseDrawer} aria-label="메뉴 닫기"><X size={18} /></button>
+              </header>
+              <nav aria-label="네잎클로버 채널 메뉴" className="luckey-menu-content">
+                <div className="luckey-menu-core-grid">{CORE_CHANNELS.map(renderNavButton)}</div>
+                {isChannelsOpen && <>
+                  <div className="luckey-menu-section-label"><span>YOUR SEVEN COLORS</span><span>7개의 작은 우주</span></div>
+                  <div id="luckey-prism-channels" className="luckey-menu-channel-grid">{PRISM_CHANNELS.map(renderNavButton)}</div>
+                </>}
+              </nav>
+              <footer className="luckey-menu-footer">
+                <div className="luckey-menu-tools">
+                  <button type="button" className="luckey-menu-tool" onPointerDown={handleBgmPointerDown} onPointerMove={handleBgmPointerMove} onPointerUp={handleBgmPointerUp} onPointerLeave={handleBgmPointerUp} onPointerCancel={handleBgmPointerUp} onClick={handleBgmClick} onContextMenu={handleBgmContextMenu} aria-label={bgmState.isPlaying ? '배경음 일시정지' : '배경음 재생'}>
+                    <LPRecordDisc isPlaying={bgmState.isPlaying} isBuffering={bgmState.isBuffering} size="sm" className="pointer-events-none" /><span>{isBgmHolding ? '설정 열기…' : '배경음'}</span>
+                  </button>
+                  <button type="button" className="luckey-menu-tool" onClick={() => handleNavigate('/library')}><Library size={19} /><span>보관함</span></button>
+                  <button type="button" className="luckey-menu-tool" aria-label={`${userNickname}의 프로필`} aria-current={isProfileActive ? 'page' : undefined} onClick={() => handleNavigate('/profile')}>
+                    {userAvatarUrl ? <img src={userAvatarUrl} alt="" className="luckey-menu-avatar" /> : <User size={19} />}<span>내 프로필</span>
+                  </button>
                 </div>
-                <span className={`text-[11px] font-medium max-w-[210px] truncate ${isLight ? 'text-slate-700' : 'text-neutral-200'}`}>
-                  {bgmState.trackName || '사운드스케이프 대기 중'}
-                </span>
-                <span className={`text-[9.5px] pt-0.5 border-t ${isLight ? 'border-amber-900/10 text-slate-500' : 'border-white/10 text-neutral-400'}`}>
-                  클릭: 재생/일시정지 · 꾹 누르기: LP 상세 설정
-                </span>
-              </div>
-            </div>
-
-            {/* Profile Button */}
-            <div className="relative group w-11 h-11 shrink-0 flex items-center justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  try {
-                    sessionStorage.setItem('prism_target_tab', 'profile');
-                    window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
-                  } catch (_) {}
-                  handleNavigate('/profile');
-                }}
-                className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
-                  isProfileActive
-                    ? isLight
-                      ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
-                      : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
-                    : isLight
-                    ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
-                    : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
-                }`}
-                aria-label="내 프로필 및 사진 설정"
-                title="내 프로필 및 사진 설정"
-              >
-                {userAvatarUrl ? (
-                  <img
-                    src={userAvatarUrl}
-                    alt={userNickname}
-                    className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
-                  />
-                ) : (
-                  <User size={16} className="group-hover:scale-110 transition-transform" />
-                )}
-              </button>
-
-              {/* Profile Tooltip */}
-              <div
-                className={`hidden sm:group-hover:flex items-center gap-2 absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                  isLight
-                    ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                    : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                }`}
-              >
-                {userAvatarUrl ? (
-                  <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
-                ) : (
-                  <span className="w-2 h-2 rounded-full bg-amber-400" />
-                )}
-                <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-                  {userNickname}
-                </span>
-                <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
-                  내 프로필 · 사진 설정
-                </span>
-              </div>
-            </div>
-
-            {/* Close Button X */}
-            <button
-              type="button"
-              onClick={handleCloseDrawer}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all cursor-pointer active:scale-90 shrink-0 ${
-                isLight
-                  ? 'border-amber-900/15 text-slate-500 hover:bg-slate-200/60 hover:text-slate-800'
-                  : 'border-white/10 text-neutral-400 hover:bg-white/10 hover:text-white'
-              }`}
-              aria-label="메뉴 닫기"
-              title="메뉴 닫기"
-            >
-              <X size={16} />
-            </button>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+                <div className="luckey-menu-signature"><span>작은 행운을 따라, LUCKEY</span><button type="button" onClick={() => { handleCloseDrawer(); setShowViewportDiagnostics(true); }} aria-label={`앱 버전 ${APP_VERSION}, 화면 영역 진단 열기`}>v{APP_VERSION}</button></div>
+              </footer>
+            </motion.section>
+          </div>
+        </WorkspacePortal>
+      )}
       {showViewportDiagnostics && <ViewportDiagnostics onClose={() => setShowViewportDiagnostics(false)} />}
     </>
   );
