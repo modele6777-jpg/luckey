@@ -22,6 +22,7 @@ import { getPermanentAvatar } from '@/lib/profileVault';
 import { useTheme } from '@/contexts/ThemeContext';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { APP_VERSION } from '@/lib/appVersion';
+import { ViewportDiagnostics } from './ViewportDiagnostics';
 import {
   peekNextRecommendedMenuByCycle,
   resetActiveContextPeek,
@@ -185,6 +186,7 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 export default function LeftSidebarNav() {
   // The navigation rail stays visible across routes and pointer/touch activity.
   const isOpen = true;
+  const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
 
   const [, setProfileVersion] = useState(0);
   const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
@@ -1145,15 +1147,20 @@ export default function LeftSidebarNav() {
                       </span>
                     </div>
                   </div>
-                  <span
+                  <button
+                    type="button"
+                    onClick={() => setShowViewportDiagnostics(true)}
+                    style={{ minHeight: 0, padding: 0 }}
                     className={`text-[8px] leading-none whitespace-nowrap ${isLight ? 'text-slate-500' : 'text-neutral-500'}`}
-                    aria-label={`앱 버전 ${APP_VERSION}`}
+                    aria-label={`앱 버전 ${APP_VERSION}, 화면 영역 진단 열기`}
+                    title="화면 영역 진단"
                   >
                     v{APP_VERSION}
-                  </span>
+                  </button>
                 </div>
               </div>
             </motion.aside>
+      {showViewportDiagnostics && <ViewportDiagnostics onClose={() => setShowViewportDiagnostics(false)} />}
     </>
   );
 }
