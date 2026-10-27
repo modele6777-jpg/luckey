@@ -25,7 +25,6 @@ import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { safeSessionStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
-import { LucyQuickChatBubble } from './LucyQuickChatBubble';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_CANCEL_THRESHOLD = 26;
 
@@ -289,24 +288,6 @@ export function BigBangButton() {
   const touchStartSelectionRef = useRef<string>('');
   const lastValidSelectionRef = useRef<string>('');
 
-  const holdTossDeliveredRef = useRef(false);
-  const deliverSelectionToLucy = useCallback((text: string) => {
-    if (!text.trim() || holdTossDeliveredRef.current) return;
-    holdTossDeliveredRef.current = true;
-    setQuickChatInitialPrompt(`내가 선택한 문장이야:\n"${text}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`);
-    setQuickChatAutoSend(true);
-    lastValidSelectionRef.current = '';
-    touchStartSelectionRef.current = '';
-    clearPendingSelection();
-    setHasSelectionToss(false);
-    setSelectionPreviewText('');
-    window.getSelection()?.removeAllRanges();
-    const input = document.activeElement;
-    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
-      try { input.setSelectionRange(input.selectionEnd, input.selectionEnd); } catch { /* Non-text input. */ }
-    }
-  }, []);
-
   useEffect(() => {
     clearPendingSelection();
     lastValidSelectionRef.current = '';
@@ -519,29 +500,21 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: isTextToss ? '루시 음성 답변' : '루시 1:1 음성 대화',
+        title: '루시 채팅 음성 모드',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
           ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ 루시 음성 답변`
           : `[음성 모드] 루시가 경청 중입니다 (음성 대화)`,
         previewDescription: isTextToss
-          ? '루시채팅으로 이동하지 않고 말풍선에서 선택한 문장에 대한 음성 답변을 바로 받습니다'
-          : '버튼 위 말풍선에서 루시와 따뜻하고 친근한 실시간 음성 대화를 나눕니다',
+          ? '루시 채팅 음성 모드에서 선택한 문장을 전달합니다'
+          : '루시 채팅으로 이동해 음성 대화를 시작합니다',
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
       };
 
-      // 🎙️ [홀드] 220ms 이상 제자리 홀드 시 즉시 루시 음성 지원 말풍선 오픈 + 음성 모드 가동!
-      if (!metrics.isAborted && !isPttRecordingRef.current) {
-        isPttRecordingRef.current = true;
-        unlockAudioPlayback();
-        primeTTSAudioElement();
-        triggerHaptic('whitehole');
-        setIsQuickChatOpen(true);
-        setQuickChatVoiceActive(true);
-        deliverSelectionToLucy(textToToss);
-      }
+      // Resolve the hold on release so dragging can still cancel it.
+      if (!metrics.isAborted) isPttRecordingRef.current = true;
     } else {
       currentHole = 'whitehole';
       target = {
@@ -637,7 +610,7 @@ export function BigBangButton() {
     }
 
     rafRef.current = requestAnimationFrame(updateLoop);
-  }, [location, isAborted, deliverSelectionToLucy]);
+  }, [location, isAborted ]);
 
   const cancelDraggedPress = () => {
     if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
@@ -655,7 +628,6 @@ export function BigBangButton() {
     // Keep the selected sentence intact while the button resolves the gesture.
     e.preventDefault();
     if (singleTapTimerRef.current) { clearTimeout(singleTapTimerRef.current); singleTapTimerRef.current = null; }
-    holdTossDeliveredRef.current = false;
     setQuickChatInitialPrompt('');
     setQuickChatAutoSend(false);
 
@@ -1080,22 +1052,31 @@ export function BigBangButton() {
     }
 
     // 🎙️ [홀드 완료: duration >= 220ms 또는 isPttRecordingRef.current]
-    // 손을 떼도 루시 말풍선과 음성 경청을 유지합니다.
+    // 홀드를 놓으면 루시 채팅의 음성 모드를 켭니다.
     const isHoldGesture = isPttRecordingRef.current || duration >= 220;
     if (isHoldGesture) {
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
-      setIsQuickChatOpen(true);
-      setQuickChatVoiceActive(true);
-
-      if (singleTapTimerRef.current) {
-        clearTimeout(singleTapTimerRef.current);
-        singleTapTimerRef.current = null;
-      }
+      setIsQuickChatOpen(false);
+      setQuickChatVoiceActive(false);
+      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
       lastTapTimeRef.current = 0;
-
+      unlockAudioPlayback();
+      primeTTSAudioElement();
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
-      deliverSelectionToLucy(textToToss);
+      const prompt = textToToss.trim() ? `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.` : '';
+      safeSessionStorage.setItem('lucy_chat_voice_requested', 'true');
+      if (prompt && !isChatView) {
+        safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
+        safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
+      }
+      (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+      if (!isChatView) navigate('/chat');
+      window.dispatchEvent(new Event('prism:enable_lucy_chat_voice'));
+      if (prompt && isChatView) window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['casual'] } }));
+      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
+      window.getSelection()?.removeAllRanges();
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
       clearPendingSelection();
@@ -1280,20 +1261,6 @@ export function BigBangButton() {
           isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
       >
-        {/* 💬 루시 퀵 대화 말풍선 (빅뱅 버튼 상단 앵커 - 모든 화면에서 사용 가능) */}
-        <LucyQuickChatBubble
-            isOpen={isQuickChatOpen}
-            onClose={() => {
-              setIsQuickChatOpen(false);
-              setQuickChatVoiceActive(false);
-              setQuickChatInitialPrompt('');
-              setQuickChatAutoSend(false);
-            }}
-            initialPrompt={quickChatInitialPrompt}
-            initialVoiceActive={quickChatVoiceActive}
-            initialAutoSend={quickChatAutoSend}
-          />
-
         <div
           ref={hoverContainerRef}
           data-bigbang="true"
@@ -1574,8 +1541,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 대화 / 드래그: 동작 없음)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 대화, 드래그: 동작 없음"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 채팅 음성 모드 / 드래그: 동작 없음)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 채팅 음성 모드, 드래그: 동작 없음"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

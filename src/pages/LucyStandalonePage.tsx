@@ -1148,6 +1148,28 @@ export default function LucyStandalonePage() {
     };
   }, [handleToggleVoiceMode]);
 
+  // A hold explicitly enables voice; repeating it must never toggle voice off.
+  useEffect(() => {
+    const enableVoice = () => {
+      safeSessionStorage.removeItem('lucy_chat_voice_requested');
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+      setIsVoiceMode(true);
+      isVoiceModeRef.current = true;
+      setIsVoiceMuted(false);
+      isVoiceMutedRef.current = false;
+      if (!['listening', 'thinking', 'speaking'].includes(voiceStateRef.current)) {
+        setVoiceState('listening');
+        voiceStateRef.current = 'listening';
+        setVoiceError(null);
+        startListening();
+      }
+    };
+    window.addEventListener('prism:enable_lucy_chat_voice', enableVoice);
+    if (safeSessionStorage.getItem('lucy_chat_voice_requested') === 'true') enableVoice();
+    return () => window.removeEventListener('prism:enable_lucy_chat_voice', enableVoice);
+  }, [startListening]);
+
   // AI 응답 생성 상태 변화에 따른 음성 모드 동기화
   useEffect(() => {
     isLucyGeneratingRef.current = isLucyGenerating;
