@@ -183,46 +183,8 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
-  const [isOpen, setIsOpen] = useState(false);
-  const autoHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearAutoHideTimer = useCallback(() => {
-    if (autoHideTimerRef.current) {
-      clearTimeout(autoHideTimerRef.current);
-      autoHideTimerRef.current = null;
-    }
-  }, []);
-
-  const startAutoHideTimer = useCallback((delay = 3000) => {
-    clearAutoHideTimer();
-    autoHideTimerRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, delay);
-  }, [clearAutoHideTimer]);
-
-  const showSidebar = useCallback(() => {
-    setIsOpen(true);
-    startAutoHideTimer(3000);
-  }, [startAutoHideTimer]);
-
-  const hideSidebar = useCallback(() => {
-    clearAutoHideTimer();
-    setIsOpen(false);
-  }, [clearAutoHideTimer]);
-
-  const handleSidebarPointerActivity = useCallback(() => {
-    startAutoHideTimer(3000);
-  }, [startAutoHideTimer]);
-
-  const handleSidebarMouseLeave = useCallback(() => {
-    startAutoHideTimer(800);
-  }, [startAutoHideTimer]);
-
-  useEffect(() => {
-    return () => {
-      clearAutoHideTimer();
-    };
-  }, [clearAutoHideTimer]);
+  // The navigation rail stays visible across routes and pointer/touch activity.
+  const isOpen = true;
 
   const [, setProfileVersion] = useState(0);
   const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
@@ -500,7 +462,6 @@ export default function LeftSidebarNav() {
   }, [isOpen]);
 
   const handleNavigate = (path: string) => {
-    hideSidebar();
     const isTargetActive =
       path === '/'
         ? isLucyActive
@@ -869,134 +830,19 @@ export default function LeftSidebarNav() {
     );
   };
 
-  // Auto-hide sidebar whenever route changes
-  useEffect(() => {
-    hideSidebar();
-  }, [cleanPath, hideSidebar]);
-
-  // Mobile edge touch swipe detection (swipe left from rightmost 32px of viewport to reveal)
-  useEffect(() => {
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    const handleWindowTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    };
-
-    const handleWindowTouchMove = (e: TouchEvent) => {
-      if (isOpen) return;
-      if (touchStartX < window.innerWidth - 32) return;
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - touchStartX;
-      const deltaY = touch.clientY - touchStartY;
-      if (deltaX < -20 && Math.abs(deltaY) < 45) {
-        showSidebar();
-        triggerHaptic('mirrorhole');
-      }
-    };
-
-    window.addEventListener('touchstart', handleWindowTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleWindowTouchMove, { passive: true });
-    return () => {
-      window.removeEventListener('touchstart', handleWindowTouchStart);
-      window.removeEventListener('touchmove', handleWindowTouchMove);
-    };
-  }, [isOpen, showSidebar]);
-
-  // Touch gesture handlers on the sidebar drawer itself (swipe right to dismiss)
-  const sidebarTouchStartXRef = useRef(0);
-  const handleSidebarTouchStart = (e: React.TouchEvent) => {
-    handleSidebarPointerActivity();
-    if (e.touches.length === 1) {
-      sidebarTouchStartXRef.current = e.touches[0].clientX;
-    }
-  };
-  const handleSidebarTouchMove = (e: React.TouchEvent) => {
-    handleSidebarPointerActivity();
-    if (e.touches.length === 1) {
-      const deltaX = e.touches[0].clientX - sidebarTouchStartXRef.current;
-      if (deltaX > 25) {
-        hideSidebar();
-        triggerHaptic('mirrorhole');
-      }
-    }
-  };
-
   return (
     <>
-      {/* 1. Desktop Right Edge Hover Sensor Zone */}
-      {!isOpen && (
-        <div
-          className="fixed right-0 top-0 bottom-0 w-4 z-[470] cursor-pointer hidden sm:block"
-          onMouseEnter={showSidebar}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* 2. Translucent Right-Edge Hint Handle Bar */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            key="sidebar-hint-handle"
-            type="button"
-            onClick={showSidebar}
-            onMouseEnter={showSidebar}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            transition={{ duration: 0.2 }}
-            aria-label="사이드바 네비게이션 열기"
-            className={`fixed right-0 top-1/2 -translate-y-1/2 z-[475] h-20 w-3 rounded-l-xl flex flex-col items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer group active:scale-95 shadow-[-4px_0_16px_rgba(0,0,0,0.35)] backdrop-blur-md ${
-              isLight
-                ? 'bg-amber-950/15 hover:bg-amber-950/25 border border-r-0 border-amber-900/20 text-amber-900/70 hover:text-amber-950 hover:w-4'
-                : 'bg-white/10 hover:bg-white/20 border border-r-0 border-white/20 text-white/70 hover:text-white hover:w-4'
-            }`}
-            title="사이드바 열기 (호버 또는 스와이프)"
-          >
-            <span className="w-1 h-3 rounded-full bg-current opacity-70 group-hover:opacity-100 group-hover:h-4 transition-all" />
-            <span className="w-1 h-1 rounded-full bg-current opacity-50 group-hover:opacity-90 transition-all" />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* 3. Backdrop Click-Away Dismiss Scrim */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            key="sidebar-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[478] bg-black/25 backdrop-blur-[1px] transition-opacity cursor-pointer"
-            onClick={hideSidebar}
-            aria-hidden="true"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* 4. Sliding Sidebar Drawer */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Slide-in Right Slim Icon Rail */}
+      {/* Permanent right navigation rail; the page reserves exactly its width. */}
             <motion.aside
               key="nav-drawer"
               role="navigation"
               aria-label="사이드 네비게이션"
-              initial={{ x: '100%', opacity: 0 }}
+              initial={false}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              onMouseEnter={clearAutoHideTimer}
-              onMouseMove={handleSidebarPointerActivity}
-              onMouseLeave={handleSidebarMouseLeave}
-              onTouchStart={handleSidebarTouchStart}
-              onTouchMove={handleSidebarTouchMove}
               style={{
-                width: '70px',
+                width: 'var(--sites-sidebar-width)',
               }}
               className={`sites-pinned-sidebar fixed right-0 top-0 bottom-0 backdrop-blur-md border-l z-[480] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
@@ -1308,9 +1154,6 @@ export default function LeftSidebarNav() {
                 </div>
               </div>
             </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
     </>
   );
 }

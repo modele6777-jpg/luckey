@@ -3047,9 +3047,13 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
-/* Auto-hiding floating overlay sidebar: occupies 0px in normal document flow for 100% full-screen canvas. */
-:root { --sites-sidebar-width: 0px; }
-.sites-pinned-main { padding-right: 0px; }
+/* Reserve the permanent rail once; page content fills the remaining width. */
+:root { --sites-sidebar-width: 70px; }
+.sites-pinned-main {
+  width: calc(100% - var(--sites-sidebar-width));
+  max-width: calc(100% - var(--sites-sidebar-width));
+  padding-right: 0;
+}
 .sites-pinned-sidebar { contain: layout style; }
 .sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }
 
