@@ -486,6 +486,23 @@ export default function LeftSidebarNav() {
     );
   };
 
+  const renderFanChannel = (item: NavItemConfig, index: number) => {
+    const { path, icon: Icon, label, color, isPrologue } = item;
+    const isActive = isPrologue ? isPrologueActive : path === '/epilogue' ? isEpilogueActive : cleanPath === path;
+    const angle = (index < 4 ? [-54, -18, 18, 54][index] : [-54, 0, 54][index - 4]) * Math.PI / 180;
+    const radius = index < 4 ? 155 : 75;
+    const x = 160 + Math.sin(angle) * radius;
+    const y = 236 - Math.cos(angle) * radius;
+    return <button key={path} type="button"
+      className={`luckey-fan-channel ${isActive ? 'is-active' : ''}`}
+      style={{ left: `${x / 320 * 100}%`, top: `${(y - 46) / 220 * 100}%`, '--channel-color': color, '--fan-index': index } as React.CSSProperties}
+      aria-label={label} aria-current={isActive ? 'page' : undefined} title={item.subLabel}
+      onClick={() => handleNavigate(path)}>
+      <span className="luckey-fan-color"><Icon size={21} />{path === recommendedPrismPath && <span className="luckey-fan-recommended" aria-label="추천" />}</span>
+      <span className="luckey-fan-name">{label}</span>
+    </button>;
+  };
+
   return (
     <>
       {isOpen && (
@@ -512,7 +529,7 @@ export default function LeftSidebarNav() {
             >
               <header className="luckey-menu-heading">
                 <span className="luckey-menu-emblem" aria-hidden="true"><span className="luckey-menu-orb-core" /></span>
-                <div className="luckey-menu-heading-copy"><h2 id="luckey-menu-title">BIGBANG</h2><p>당신의 우주를 펼쳐보세요</p></div>
+                <div className="luckey-menu-heading-copy"><h2 id="luckey-menu-title">BIGBANG</h2><p>나의 우주를 고르는 팔레트</p></div>
                 <button type="button" className="luckey-menu-close" onClick={handleCloseDrawer} aria-label="메뉴 닫기"><X size={18} /></button>
               </header>
               <nav aria-label="빅뱅 채널 메뉴" className="luckey-menu-content">
@@ -525,8 +542,22 @@ export default function LeftSidebarNav() {
                 </button>}
                 <div className="luckey-menu-core-grid">{CORE_CHANNELS.map(renderNavButton)}</div>
                 {isChannelsOpen && <>
-                  <div className="luckey-menu-section-label"><span>SEVEN UNIVERSES</span><span>7개의 작은 우주</span></div>
-                  <div id="luckey-prism-channels" className="luckey-menu-channel-grid">{PRISM_CHANNELS.map(renderNavButton)}</div>
+                  <div className="luckey-menu-section-label"><span>CHANNEL PALETTE</span><span>7개의 색, 하나의 우주</span></div>
+                  <div id="luckey-prism-channels" className="luckey-channel-fan">
+                    <svg className="luckey-fan-waves" viewBox="0 46 320 220" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="bigbang-fan-spectrum" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#fb7185"/><stop offset="32%" stopColor="#fbbf24"/><stop offset="60%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
+                        <radialGradient id="bigbang-fan-glow" cx="50%" cy="100%" r="90%"><stop stopColor="#22d3ee" stopOpacity=".18"/><stop offset="100%" stopColor="#818cf8" stopOpacity=".03"/></radialGradient>
+                      </defs>
+                      <path d="M160 236 L17 132 A177 177 0 0 1 303 132 Z" fill="url(#bigbang-fan-glow)" stroke="url(#bigbang-fan-spectrum)" strokeOpacity=".24"/>
+                      <path d="M35 145 A155 155 0 0 1 285 145" className="luckey-fan-wave"/>
+                      <path d="M69 170 A112 112 0 0 1 251 170" className="luckey-fan-wave luckey-fan-wave-dashed"/>
+                      <path d="M99 192 A75 75 0 0 1 221 192" className="luckey-fan-wave"/>
+                      <path d="M128 213 A40 40 0 0 1 192 213" className="luckey-fan-wave luckey-fan-wave-inner"/>
+                    </svg>
+                    {PRISM_CHANNELS.map(renderFanChannel)}
+                    <button type="button" className="luckey-fan-source" aria-label="빅뱅 메뉴 닫기" onClick={handleCloseDrawer}><span className="luckey-menu-orb-core" aria-hidden="true" /></button>
+                  </div>
                 </>}
               </nav>
               <footer className="luckey-menu-footer">

@@ -51,3 +51,25 @@
 .luckey-one-stop:hover { border-color: #67e8f9; box-shadow: 0 0 18px #22d3ee12; }
 .luckey-menu-panel button:focus-visible { outline: 2px solid #38bdf8; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .luckey-menu-card { transition: none; } }
+
+/* Channel palette: seven colors unfold along Wi-Fi-like orbital arcs. */
+.luckey-menu-panel { border-radius: 30px; }
+.luckey-menu-core { padding: 8px 4px; gap: 5px; border-radius: 18px; }
+.luckey-menu-core .luckey-menu-card-icon { width: 29px; height: 29px; }
+.luckey-menu-core .luckey-menu-card-description { display: none; }
+.luckey-menu-section-label { margin-top: 16px; margin-bottom: 0; }
+.luckey-one-stop { padding: 10px 12px; gap: 5px; }
+.luckey-channel-fan { position: relative; width: 100%; aspect-ratio: 320 / 220; isolation: isolate; margin-top: 3px; }
+.luckey-fan-waves { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.luckey-fan-wave { fill: none; stroke: url(#bigbang-fan-spectrum); stroke-width: 1; stroke-opacity: .38; }
+.luckey-fan-wave-dashed { stroke-dasharray: 2 6; stroke-opacity: .3; }
+.luckey-fan-wave-inner { stroke-width: 2; stroke-opacity: .65; }
+.luckey-fan-channel { position: absolute; width: 18.5%; min-width: 44px; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 6px; transform: translate(-50%, -35%); cursor: pointer; z-index: 1; border-radius: 14px; animation: luckey-fan-unfold .3s both; animation-delay: calc(var(--fan-index) * 25ms); }
+.luckey-fan-color { position: relative; display: grid; place-items: center; width: 74%; aspect-ratio: 1; border-radius: 50%; color: var(--channel-color); background: radial-gradient(circle at 32% 22%, color-mix(in srgb, var(--channel-color) 22%, transparent), transparent 80%), var(--menu-surface); border: 1px solid color-mix(in srgb, var(--channel-color) 55%, transparent); box-shadow: 0 5px 12px #00000030, inset 0 1px 0 #ffffff14; transition: box-shadow .18s, border-color .18s; }
+.luckey-fan-channel:hover .luckey-fan-color, .luckey-fan-channel.is-active .luckey-fan-color { border-color: var(--channel-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--channel-color) 12%, transparent), 0 0 18px color-mix(in srgb, var(--channel-color) 28%, transparent); }
+.luckey-fan-name { font-size: 8px; font-weight: 800; letter-spacing: .035em; line-height: 1.25; color: var(--menu-text); text-shadow: 0 1px 5px var(--menu-surface); }
+.luckey-fan-recommended { position: absolute; right: -2px; top: -1px; width: 7px; height: 7px; border-radius: 50%; background: #fcd34d; box-shadow: 0 0 8px #fbbf2480; border: 1px solid var(--menu-surface); }
+.luckey-fan-source { position: absolute; left: 50%; top: 88%; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid #67e8f966; background: #080e22; box-shadow: 0 0 0 5px #22d3ee08, 0 0 22px #22d3ee30; cursor: pointer; }
+.luckey-fan-source .luckey-menu-orb-core { inset: 6px; }
+@keyframes luckey-fan-unfold { from { opacity: 0; transform: translate(-50%, 8px) scale(.8); } to { opacity: 1; transform: translate(-50%, -35%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .luckey-fan-channel { animation: none; } .luckey-fan-color { transition: none; } }
