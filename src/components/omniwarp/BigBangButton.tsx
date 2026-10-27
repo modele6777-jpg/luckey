@@ -1073,11 +1073,11 @@ export function BigBangButton() {
       downDirectionRef.current = 'none';
       setHoverDirection('none');
       if (targetDir === 'north') {
-        cardinalActionsRef.current?.scrollToTop(e);
+        goToKeyChannel();
       } else if (targetDir === 'south') {
-        cardinalActionsRef.current?.scrollToBottom(e);
+        openNavigationMenu();
       } else if (targetDir === 'west') {
-        cardinalActionsRef.current?.navigateBack(e);
+        if (window.history.length > 1) window.history.back(); else navigate('/');
       } else if (targetDir === 'east') {
         cardinalActionsRef.current?.navigateForward(e);
       }

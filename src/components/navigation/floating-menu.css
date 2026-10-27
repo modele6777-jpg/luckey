@@ -73,3 +73,11 @@
 .luckey-fan-source .luckey-menu-orb-core { inset: 6px; }
 @keyframes luckey-fan-unfold { from { opacity: 0; transform: translate(-50%, 8px) scale(.8); } to { opacity: 1; transform: translate(-50%, -35%) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .luckey-fan-channel { animation: none; } .luckey-fan-color { transition: none; } }
+
+/* BigBang bottom channel strip */
+.luckey-bottom-menu-panel { display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; }
+.luckey-bottom-menu-panel .luckey-menu-heading,
+.luckey-bottom-menu-panel .luckey-menu-footer { display: none; }
+.luckey-bottom-horizontal-nav { display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 14px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; overscroll-behavior-x: contain; }
+.luckey-bottom-nav-item { flex: 0 0 auto; min-width: 82px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 10px 12px; color: var(--channel-color); border: 1px solid currentColor; border-radius: 14px; background: rgba(20,20,30,.65); font-size: 11px; font-weight: 700; }
+.luckey-bottom-nav-item.is-active { background: color-mix(in srgb, var(--channel-color) 20%, transparent); }

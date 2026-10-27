@@ -520,8 +520,8 @@ export default function LeftSidebarNav() {
               aria-modal="true"
               aria-labelledby="luckey-menu-title"
               data-theme={isLight ? 'light' : 'dark'}
-              className="luckey-menu-panel"
-              style={{ position: 'fixed', left: panelPosition.x, top: panelPosition.y, width: panelWidth, maxHeight: Math.max(0, bounds.height - 24) }}
+              className="luckey-menu-panel luckey-bottom-menu-panel"
+              style={{ position: 'fixed', left: bounds.x + 12, top: bounds.y + bounds.height - 148, width: Math.max(0, bounds.width - 24), maxHeight: 140 }}
               initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
@@ -532,33 +532,19 @@ export default function LeftSidebarNav() {
                 <div className="luckey-menu-heading-copy"><h2 id="luckey-menu-title">BIGBANG</h2><p>나의 우주를 고르는 팔레트</p></div>
                 <button type="button" className="luckey-menu-close" onClick={handleCloseDrawer} aria-label="메뉴 닫기"><X size={18} /></button>
               </header>
-              <nav aria-label="빅뱅 채널 메뉴" className="luckey-menu-content">
-                {topRecommendation && <button type="button" className="luckey-one-stop"
-                  onClick={() => { handleCloseDrawer(); window.dispatchEvent(new Event('prism:request_recommended_warp')); }}>
-                  <span className="luckey-one-stop-heading"><span>원스탑 추천경로</span><span>{cycleProgress.cycleIndex}회차 · {cycleProgress.visitedCount}/{cycleProgress.totalCount}</span></span>
-                  <strong>다음 → {topRecommendation.menu.name}</strong>
-                  <span className="luckey-one-stop-track" aria-hidden="true"><span style={{ width: `${cycleProgress.totalCount ? cycleProgress.visitedCount / cycleProgress.totalCount * 100 : 0}%` }} /></span>
-                  <span>빅뱅 더블탭으로 워프 · 완주 전 중복 없이</span>
-                </button>}
-                <div className="luckey-menu-core-grid">{CORE_CHANNELS.map(renderNavButton)}</div>
-                {isChannelsOpen && <>
-                  <div className="luckey-menu-section-label"><span>CHANNEL PALETTE</span><span>7개의 색, 하나의 우주</span></div>
-                  <div id="luckey-prism-channels" className="luckey-channel-fan">
-                    <svg className="luckey-fan-waves" viewBox="0 46 320 220" aria-hidden="true">
-                      <defs>
-                        <linearGradient id="bigbang-fan-spectrum" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#fb7185"/><stop offset="32%" stopColor="#fbbf24"/><stop offset="60%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-                        <radialGradient id="bigbang-fan-glow" cx="50%" cy="100%" r="90%"><stop stopColor="#22d3ee" stopOpacity=".18"/><stop offset="100%" stopColor="#818cf8" stopOpacity=".03"/></radialGradient>
-                      </defs>
-                      <path d="M160 236 L17 132 A177 177 0 0 1 303 132 Z" fill="url(#bigbang-fan-glow)" stroke="url(#bigbang-fan-spectrum)" strokeOpacity=".24"/>
-                      <path d="M35 145 A155 155 0 0 1 285 145" className="luckey-fan-wave"/>
-                      <path d="M69 170 A112 112 0 0 1 251 170" className="luckey-fan-wave luckey-fan-wave-dashed"/>
-                      <path d="M99 192 A75 75 0 0 1 221 192" className="luckey-fan-wave"/>
-                      <path d="M128 213 A40 40 0 0 1 192 213" className="luckey-fan-wave luckey-fan-wave-inner"/>
-                    </svg>
-                    {PRISM_CHANNELS.map(renderFanChannel)}
-                    <button type="button" className="luckey-fan-source" aria-label="빅뱅 메뉴 닫기" onClick={handleCloseDrawer}><span className="luckey-menu-orb-core" aria-hidden="true" /></button>
-                  </div>
-                </>}
+              <nav aria-label="빅뱅 채널 메뉴" className="luckey-bottom-horizontal-nav">
+                {[...CORE_CHANNELS.filter(item => !item.isLuckey), ...PRISM_CHANNELS].map(item => {
+                  const Icon = item.icon;
+                  const active = cleanPath === item.path;
+                  return (
+                    <button key={item.path} type="button" className={`luckey-bottom-nav-item ${active ? 'is-active' : ''}`}
+                      style={{ '--channel-color': item.color } as React.CSSProperties}
+                      aria-label={item.label} aria-current={active ? 'page' : undefined}
+                      onClick={() => handleNavigate(item.path)}>
+                      <Icon size={20} /><span>{item.label}</span>
+                    </button>
+                  );
+                })}
               </nav>
               <footer className="luckey-menu-footer">
                 <div className="luckey-menu-tools">
