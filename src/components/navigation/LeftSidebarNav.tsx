@@ -902,21 +902,336 @@ export default function LeftSidebarNav() {
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && <>
-        <motion.div key="nav-backdrop" className="fixed inset-0 z-[399] bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={hideSidebar} aria-hidden="true" />
-        <motion.aside key="nav-drawer" role="navigation" aria-label="상단 채널 메뉴" initial={{ y: -24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -24, opacity: 0 }}
-          className={`luckey-top-channel-menu fixed left-2 right-2 z-[400] flex items-center gap-2 overflow-x-auto rounded-2xl border p-3 shadow-xl backdrop-blur-md ${isLight ? 'bg-[#fdfaf5]/95 border-amber-900/15 text-slate-800' : 'bg-neutral-950/95 border-white/15 text-neutral-200'}`}
-          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 8px)', touchAction: 'pan-x' }} data-allow-x-scroll="true">
-          {[...CORE_CHANNELS.filter(item => !item.isLuckey), ...PRISM_CHANNELS, ...AUXILIARY_CHANNELS].map(item => {
-            const Icon = item.icon;
-            return <button key={item.path} type="button" onClick={() => handleNavigate(item.path)} aria-label={item.label} style={{ color: item.color }} aria-current={cleanPath === item.path ? 'page' : undefined} className="flex shrink-0 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 min-w-[56px] hover:bg-purple-500/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-400"><Icon size={22} /><span className="text-[9px] whitespace-nowrap">{item.label}</span></button>;
-          })}
-          <button type="button" className="flex shrink-0 flex-col items-center gap-1 p-2 min-w-[56px] rounded-xl" onPointerDown={handleBgmPointerDown} onPointerMove={handleBgmPointerMove} onPointerUp={handleBgmPointerUp} onPointerCancel={handleBgmPointerUp} onPointerLeave={handleBgmPointerUp} onClick={handleBgmClick} onContextMenu={handleBgmContextMenu} aria-label="배경음"><Music size={22} /><span className="text-[9px]">배경음</span></button>
-          <button type="button" onClick={() => handleNavigate('/profile')} aria-label="내 프로필" className="flex shrink-0 flex-col items-center gap-1 p-2 min-w-[56px] rounded-xl"><User size={22} /><span className="text-[9px]">내 프로필</span></button>
-          <button type="button" onClick={hideSidebar} aria-label="메뉴 닫기" className="shrink-0 min-w-11 min-h-11 rounded-xl text-xl">×</button>
-        </motion.aside>
-      </>}
-    </AnimatePresence>
+    <>
+      {/* 4. Sliding Sidebar Drawer */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <div key="nav-backdrop" className="fixed inset-0 z-[399]" onClick={hideSidebar} aria-hidden="true" />
+            {/* Original slim icon rail */}
+            <motion.aside
+              key="nav-drawer"
+              role="navigation"
+              aria-label="사이드 네비게이션"
+              initial={{ x: '-100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '-100%', opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              onTouchStart={handleSidebarTouchStart}
+              onTouchMove={handleSidebarTouchMove}
+              style={{
+                width: '70px',
+              }}
+              className={`sites-pinned-sidebar fixed left-0 top-0 bottom-0 backdrop-blur-md border-r z-[400] flex flex-col justify-between select-none transition-colors duration-300 ${
+                isLight
+                  ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[-16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
+                  : 'bg-neutral-950/95 border-white/10 shadow-[-16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
+              }`}
+            >
+              <div className="sidebar-aurora" aria-hidden="true">
+                <div className={isLight ? 'sidebar-aurora-veil edge-aurora-veil-light' : 'sidebar-aurora-veil edge-aurora-veil'} />
+                <div className="sidebar-aurora-wave" />
+                <div className="sidebar-aurora-core" />
+              </div>
+              {/* Continuous accent; never resets when the pointer leaves. */}
+              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex justify-center shrink-0">
+                <div className="w-8 h-1 rounded-full rainbow-gradient-flow" aria-hidden="true" />
+              </div>
+
+              {/* Navigation Channel Items (Icon-Only Rail) */}
+              <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
+                {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
+                <div className="flex flex-col items-center gap-2 w-full overflow-visible">
+                  {CORE_CHANNELS.map(renderNavButton)}
+                </div>
+
+                {/* 7 Prism Channels: Accordion Toggled by 3rd LUCKEY Icon */}
+                <AnimatePresence initial={false}>
+                  {isChannelsOpen && (
+                    <motion.div
+                      key="prism-channels-accordion"
+                      initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                      exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                      transition={{ duration: 0.24, ease: 'easeOut' }}
+                      onMouseEnter={handleChannelsMouseEnter}
+                      onMouseLeave={handleChannelsMouseLeave}
+                      className="w-full flex flex-col items-center overflow-visible"
+                    >
+                      {/* Prismatic Connection Accent Line */}
+                      <div className="w-full flex items-center justify-center my-1.5">
+                        <div className="w-5 h-[2px] rounded-full bg-gradient-to-r from-emerald-500/70 via-purple-500/70 to-pink-500/70 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                      </div>
+
+                      {/* 7 Prism Channels: PROLOGUE ~ EPILOGUE */}
+                      <div className="relative flex flex-col items-center gap-2 w-full py-1 overflow-visible">
+                        {/* Connecting vertical rainbow ambient thread */}
+                        <div className="absolute top-2 bottom-2 left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-red-500/60 via-amber-400/50 via-emerald-400/50 via-blue-500/50 to-purple-500/60 shadow-[0_0_8px_rgba(168,85,247,0.3)] pointer-events-none" />
+                        {PRISM_CHANNELS.map(renderNavButton)}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Footer: LP BGM Button, User Profile Button & Collapse Button */}
+              <div
+                className={`pb-[calc(var(--sab)+0.75rem)] px-1.5 pt-2.5 border-t flex flex-col items-center gap-2.5 shrink-0 transition-colors duration-300 ${
+                  isLight ? 'border-amber-900/15' : 'border-white/10'
+                }`}
+              >
+                {/* LP Background Music Button (Click: Play/Pause, Long-Press: LP Player Detail Popup) */}
+                <div className="relative group w-10 h-10 shrink-0 flex items-center justify-center">
+                  {/* Soundwave Ripple & Floating Musical Notes when Playing */}
+                  <AnimatePresence>
+                    {bgmState.isPlaying && !bgmState.isBuffering && (
+                      <>
+                        {/* Soft expanding soundwave pulse ring */}
+                        <motion.span
+                          key="bgm-wave-ring"
+                          initial={{ scale: 0.9, opacity: 0.55 }}
+                          animate={{ scale: [0.95, 1.28, 1.38], opacity: [0.5, 0.22, 0] }}
+                          transition={{ duration: 2.1, repeat: Infinity, ease: 'easeOut' }}
+                          className="absolute inset-0 rounded-xl border border-amber-400/60 pointer-events-none"
+                        />
+                        {/* Floating Note 1 (♪) */}
+                        <motion.span
+                          key="bgm-note-1"
+                          initial={{ opacity: 0, y: 2, x: -6, scale: 0.7 }}
+                          animate={{
+                            opacity: [0, 0.95, 0],
+                            y: [2, -14, -22],
+                            x: [-5, -9, -6],
+                            scale: [0.75, 1, 0.85],
+                          }}
+                          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                          className={`absolute -top-1 left-1 text-[9px] font-bold pointer-events-none select-none z-20 ${
+                            isLight
+                              ? 'text-amber-600 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]'
+                              : 'text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.9)]'
+                          }`}
+                        >
+                          ♪
+                        </motion.span>
+                        {/* Floating Note 2 (♫) */}
+                        <motion.span
+                          key="bgm-note-2"
+                          initial={{ opacity: 0, y: 2, x: 6, scale: 0.7 }}
+                          animate={{
+                            opacity: [0, 0.9, 0],
+                            y: [2, -13, -21],
+                            x: [5, 9, 6],
+                            scale: [0.7, 0.95, 0.8],
+                          }}
+                          transition={{
+                            duration: 2.4,
+                            delay: 1.15,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
+                          className={`absolute -top-1 right-0.5 text-[8.5px] font-bold pointer-events-none select-none z-20 ${
+                            isLight
+                              ? 'text-rose-500 drop-shadow-[0_0_4px_rgba(244,63,94,0.45)]'
+                              : 'text-amber-200 drop-shadow-[0_0_6px_rgba(251,191,36,0.85)]'
+                          }`}
+                        >
+                          ♫
+                        </motion.span>
+                      </>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Long-Press Hold Progress SVG Ring (450ms) */}
+                  {isBgmHolding && (
+                    <svg
+                      className="absolute -inset-1 w-12 h-12 -rotate-90 pointer-events-none z-30"
+                      viewBox="0 0 48 48"
+                    >
+                      <rect
+                        x="3"
+                        y="3"
+                        width="42"
+                        height="42"
+                        rx="13"
+                        fill="none"
+                        stroke="rgba(251, 191, 36, 0.95)"
+                        strokeWidth="2.5"
+                        strokeDasharray="145"
+                        className="animate-lp-hold drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]"
+                      />
+                    </svg>
+                  )}
+
+                  <button
+                    type="button"
+                    onPointerDown={handleBgmPointerDown}
+                    onPointerMove={handleBgmPointerMove}
+                    onPointerUp={handleBgmPointerUp}
+                    onPointerLeave={handleBgmPointerUp}
+                    onPointerCancel={handleBgmPointerUp}
+                    onClick={handleBgmClick}
+                    onContextMenu={handleBgmContextMenu}
+                    aria-label={
+                      bgmState.isPlaying
+                        ? '배경음 일시정지 (길게 누르면 LP 상세 설정)'
+                        : '배경음 재생 (길게 누르면 LP 상세 설정)'
+                    }
+                    title="클릭: 배경음 재생/일시정지 · 길게 누르기: LP 상세 설정"
+                    className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer select-none overflow-hidden ${
+                      isBgmHolding ? 'scale-92' : 'hover:scale-105 active:scale-95'
+                    } ${
+                      bgmState.isPlaying
+                        ? isLight
+                          ? 'bg-gradient-to-br from-amber-500/25 via-amber-400/15 to-rose-500/20 border-amber-500/80 shadow-[0_0_16px_rgba(245,158,11,0.38)]'
+                          : 'bg-gradient-to-br from-amber-500/25 via-neutral-900 to-rose-500/20 border-amber-400/75 shadow-[0_0_18px_rgba(251,191,36,0.45)]'
+                        : isLight
+                        ? 'bg-amber-900/[0.06] border-amber-900/20 hover:border-amber-600/50 hover:bg-amber-500/15'
+                        : 'bg-white/[0.05] border-white/15 hover:border-amber-400/50 hover:bg-white/[0.1]'
+                    }`}
+                  >
+                    {/* Mini LP Vinyl Disc Icon */}
+                    <LPRecordDisc
+                      isPlaying={bgmState.isPlaying}
+                      isBuffering={bgmState.isBuffering}
+                      size="sm"
+                      className="pointer-events-none"
+                    />
+
+                    {/* Playing Status Micro LED Dot */}
+                    <span
+                      className={`absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none transition-all duration-300 ${
+                        bgmState.isPlaying
+                          ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse'
+                          : isLight
+                          ? 'bg-slate-400/60'
+                          : 'bg-white/25'
+                      }`}
+                    />
+                  </button>
+
+                  {/* Desktop Hover Tooltip to Left */}
+                  <div
+                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                      isLight
+                        ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
+                        : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          bgmState.isPlaying
+                            ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse'
+                            : 'bg-neutral-500'
+                        }`}
+                      />
+                      <span
+                        className={`text-xs font-extrabold tracking-wide ${
+                          isLight ? 'text-amber-700' : 'text-amber-300'
+                        }`}
+                      >
+                        LP 배경음 플레이어
+                      </span>
+                      <span
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+                          bgmState.isPlaying
+                            ? isLight
+                              ? 'bg-amber-500/15 text-amber-800 border-amber-500/35'
+                              : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
+                            : isLight
+                            ? 'bg-slate-200/70 text-slate-600 border-slate-300'
+                            : 'bg-white/10 text-neutral-400 border-white/10'
+                        }`}
+                      >
+                        {bgmState.isPlaying ? 'PLAYING' : 'PAUSED'}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[11px] font-medium max-w-[210px] truncate ${
+                        isLight ? 'text-slate-700' : 'text-neutral-200'
+                      }`}
+                    >
+                      {bgmState.trackName || '사운드스케이프 대기 중'}
+                    </span>
+                    <span
+                      className={`text-[9.5px] pt-0.5 border-t ${
+                        isLight
+                          ? 'border-amber-900/10 text-slate-500'
+                          : 'border-white/10 text-neutral-400'
+                      }`}
+                    >
+                      클릭: 재생/일시정지 · 꾹 누르기: LP 상세 설정
+                    </span>
+                  </div>
+                </div>
+                {/* User Profile Button -> Navigates to Epilogue Profile (/profile) */}
+                <div className="flex flex-col items-center gap-1">
+                  <div className="relative group w-10 h-10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          sessionStorage.setItem('prism_target_tab', 'profile');
+                          window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
+                        } catch (_) {}
+                        handleNavigate('/profile');
+                      }}
+                      className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
+                        isProfileActive
+                          ? isLight
+                            ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
+                            : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
+                          : isLight
+                          ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
+                          : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
+                      }`}
+                      aria-label="내 프로필 및 사진 설정"
+                      title="내 프로필 및 사진 설정"
+                    >
+                      {userAvatarUrl ? (
+                        <img
+                          src={userAvatarUrl}
+                          alt={userNickname}
+                          className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <User size={16} className="group-hover:scale-110 transition-transform" />
+                      )}
+                    </button>
+
+                    {/* Desktop Hover Tooltip to Left */}
+                    <div
+                      className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                        isLight
+                          ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
+                          : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
+                      }`}
+                    >
+                      {userAvatarUrl ? (
+                        <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
+                      ) : (
+                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      )}
+                      <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
+                        {userNickname}
+                      </span>
+                      <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
+                        내 프로필 · 사진 설정
+                      </span>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-[8px] leading-none whitespace-nowrap ${isLight ? 'text-slate-500' : 'text-neutral-500'}`}
+                    aria-label={`앱 버전 ${APP_VERSION}`}
+                  >
+                    v{APP_VERSION}
+                  </span>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
