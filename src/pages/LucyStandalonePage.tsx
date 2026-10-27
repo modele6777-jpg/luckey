@@ -954,6 +954,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
+    if (pro) return false;
     try {
       return sessionStorage.getItem('lucy_chat_voice_mode') === 'true';
     } catch {
@@ -970,9 +971,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     isVoiceModeRef.current = isVoiceMode;
     try {
-      sessionStorage.setItem('lucy_chat_voice_mode', String(isVoiceMode));
+      sessionStorage.setItem(pro ? 'lucy_pro_chat_voice_mode' : 'lucy_chat_voice_mode', String(isVoiceMode));
     } catch (_) {}
-  }, [isVoiceMode]);
+  }, [isVoiceMode, pro]);
 
   const voiceStateRef = useRef<'idle' | 'listening' | 'thinking' | 'speaking' | 'error'>('idle');
   useEffect(() => {
@@ -1166,28 +1167,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
   }, [handleToggleVoiceMode]);
 
-  // A hold explicitly enables voice; repeating it must never toggle voice off.
-  useEffect(() => {
-    const enableVoice = () => {
-      safeSessionStorage.removeItem('lucy_chat_voice_requested');
-      unlockAudioPlayback();
-      primeTTSAudioElement();
-      setIsVoiceMode(true);
-      isVoiceModeRef.current = true;
-      setIsVoiceMuted(false);
-      isVoiceMutedRef.current = false;
-      if (!['listening', 'thinking', 'speaking'].includes(voiceStateRef.current)) {
-        setVoiceState('listening');
-        voiceStateRef.current = 'listening';
-        setVoiceError(null);
-        startListening();
-      }
-    };
-    window.addEventListener('prism:enable_lucy_chat_voice', enableVoice);
-    if (safeSessionStorage.getItem('lucy_chat_voice_requested') === 'true') enableVoice();
-    return () => window.removeEventListener('prism:enable_lucy_chat_voice', enableVoice);
-  }, [startListening]);
-
   // AI 응답 생성 상태 변화에 따른 음성 모드 동기화
   useEffect(() => {
     isLucyGeneratingRef.current = isLucyGenerating;
@@ -1203,6 +1182,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   // 페이지 언마운트 시 음성 인식 및 TTS 정리
   useEffect(() => {
     return () => {
+      // Prevent the outgoing chat's TTS listener from restarting its microphone.
+      isVoiceModeRef.current = false;
+      voiceStateRef.current = 'idle';
       stopRecognition();
       stopTTS();
     };

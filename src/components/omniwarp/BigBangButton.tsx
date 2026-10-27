@@ -501,14 +501,14 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: '루시 채팅 음성 모드',
+        title: '루시 채팅 프로',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
           ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ 루시 음성 답변`
-          : `[음성 모드] 루시가 경청 중입니다 (음성 대화)`,
+          : `[홀드] 루시 채팅 프로로 이동`,
         previewDescription: isTextToss
           ? '루시 채팅 음성 모드에서 선택한 문장을 전달합니다'
-          : '루시 채팅으로 이동해 음성 대화를 시작합니다',
+          : '항상 마스터 모드인 루시 채팅 프로로 이동합니다',
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
@@ -1053,7 +1053,7 @@ export function BigBangButton() {
     }
 
     // 🎙️ [홀드 완료: duration >= 220ms 또는 isPttRecordingRef.current]
-    // 홀드를 놓으면 루시 채팅의 음성 모드를 켭니다.
+    // 홀드를 놓으면 음성을 켜지 않고 프로 페이지로 이동합니다.
     const isHoldGesture = isPttRecordingRef.current || duration >= 220;
     if (isHoldGesture) {
       isPttRecordingRef.current = false;
@@ -1067,7 +1067,7 @@ export function BigBangButton() {
       primeTTSAudioElement();
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
       const prompt = textToToss.trim() ? `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.` : '';
-      safeSessionStorage.setItem('lucy_chat_voice_requested', 'true');
+      safeSessionStorage.removeItem('lucy_chat_voice_requested');
       const isProChat = location.split('?')[0] === LUCY_PRO_PATH;
       if (prompt && !isProChat) {
         safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
@@ -1075,7 +1075,6 @@ export function BigBangButton() {
       }
       (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
       if (!isProChat) navigate(LUCY_PRO_PATH);
-      else window.dispatchEvent(new Event('prism:enable_lucy_chat_voice'));
       if (prompt && isProChat) window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
       window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: LUCY_PRO_PATH } }));
       window.getSelection()?.removeAllRanges();
@@ -1543,8 +1542,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 프로 마스터 음성 모드 / 드래그: 동작 없음)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 프로 마스터 음성 모드, 드래그: 동작 없음"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 동작 없음)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 채팅 프로, 드래그: 동작 없음"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
