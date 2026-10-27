@@ -1321,13 +1321,13 @@ export function BigBangButton() {
           {/* 🎯 버튼 & 궤도 정밀 센터링 앵커 (대형 코스믹 아티팩트 규격 76~84px) */}
           <div className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center shrink-0">
 
-            <div className="bigbang-clover-breeze" aria-hidden="true" data-bigbang-clover-breeze="true">
+            {(isHovered || isPressing) && <div className="bigbang-clover-breeze" aria-hidden="true" data-bigbang-clover-breeze="true">
               {[-48, -26, -8, 18, 36, 52].map((height, index) => (
                 <span key={height} className="bigbang-wind-clover" style={{ '--leaf-y': `${height}px`, '--leaf-x': `${(index - 2.5) * 22}px`, '--leaf-delay': `${-index * 1.65}s`, '--leaf-duration': `${7 + index * .55}s` } as React.CSSProperties}>
                   <Clover size={index % 2 ? 13 : 17} strokeWidth={1.6} />
                 </span>
               ))}
-            </div>
+            </div>}
 
             {/* 🌈 은은하고 신비로운 코스믹 레인보우 아우라 (Subtle Lingering Rainbow Aura) */}
             <div
@@ -1766,9 +1766,9 @@ export function BigBangButton() {
                     </svg>
                   ) : (
                     <>
-                      <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
+                      {(isHovered || isPressing) ? <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
                         className={`rotate-[-45deg] text-emerald-200 transition-transform duration-200 ${isPressing ? 'scale-110' : ''}`}
-                        style={{ filter: 'drop-shadow(0 0 6px #34d399)' }} />
+                        style={{ filter: 'drop-shadow(0 0 6px #34d399)' }} /> : <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />}
                       <div
                         className={`absolute rounded-full border border-cyan-400/30 transition-all duration-300 ${
                           isPressing ? 'w-8 h-8 scale-110 opacity-70' : 'w-5 h-5 animate-ping opacity-40'
