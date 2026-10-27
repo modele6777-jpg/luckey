@@ -2,7 +2,7 @@ import { oneStopNavigationPath } from '@/lib/omniWarp/oneStopPages';
 import { toggleNavigationMenu } from '@/lib/navigationMenu';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { Menu, Music } from 'lucide-react';
+import { Menu, Clover } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, RADIAL_WARP_APPS } from '@/lib/omniWarp/forceSensor';
@@ -831,7 +831,7 @@ export function BigBangButton() {
   }, [navigate]);
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 또는 추천 카드에서 실행 - 룬 문자 사이 우주 흡입 워프 연출)
-  const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any) => {
+  const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any, immediate = false) => {
     setIsQuickChatOpen(false);
     // 🛡️ 이미 우주 흡입 워프 진행 중인 경우 중복 격발 방지
     if (recommendedWarpInFlightRef.current) return;
@@ -845,8 +845,10 @@ export function BigBangButton() {
     lastTapTimeRef.current = 0;
 
     // 🌌 추천 도약: 고대 룬 문자 사이 우주 흡입 워프 사운드 & 햅틱 발동!
-    setIsCosmicSuctionActive(true);
-    omniWarpAudio.playCosmicSuctionWarp();
+    if (!immediate) {
+      setIsCosmicSuctionActive(true);
+      omniWarpAudio.playCosmicSuctionWarp();
+    }
     triggerHaptic('wormhole');
 
     const { menu: targetMenu, reason, stats, safePath } = commitNextRecommendedMenuByCycle(location);
@@ -872,7 +874,7 @@ export function BigBangButton() {
         new CustomEvent('prism:bigbang_commit', {
           detail: {
             phase: 'wormhole',
-            isDoubleTapSuction: true,
+            isDoubleTapSuction: !immediate,
             target: {
               id: finalMenu.id,
               name: finalMenu.name,
@@ -892,7 +894,7 @@ export function BigBangButton() {
     }
 
     // 🚀 약 500ms 동안 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 연출 후 도약 실행!
-    setTimeout(() => {
+    const navigateToRecommendation = () => {
       if (typeof window !== 'undefined') {
         (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
       }
@@ -914,13 +916,15 @@ export function BigBangButton() {
       setGauge(0);
       setDurationMs(0);
       resetActiveContextPeek();
-    }, 500);
+    };
+    if (immediate) navigateToRecommendation();
+    else setTimeout(navigateToRecommendation, 500);
 
     // 650ms 시점에 흡입 애니메이션 상태 해제
     setTimeout(() => {
       recommendedWarpInFlightRef.current = false;
       setIsCosmicSuctionActive(false);
-    }, 650);
+    }, immediate ? 0 : 650);
   }, [location, navigate, getActiveSelectionText, isKeySite, isCosmicSuctionActive]);
 
   useEffect(() => {
@@ -1082,7 +1086,7 @@ export function BigBangButton() {
       } else if (targetDir === 'west') {
         toggleNavigationMenu();
       } else if (targetDir === 'east') {
-        window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
+        goToNextRecommended(undefined, undefined, true);
       }
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
@@ -1615,8 +1619,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 더블탭·오른쪽 버튼: 원스탑 추천 워프 / 길게 누름: 루시 대화 / 드래그: KEY 채널)"
-              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 더블탭·오른쪽 버튼: 원스탑 추천 워프, 길게 누름: 루시 대화, 드래그: KEY 채널"
+              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 더블탭: 원스탑 추천 워프 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 대화 / 드래그: KEY 채널)"
+              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 더블탭: 원스탑 추천 워프 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 대화, 드래그: KEY 채널"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -1830,14 +1834,14 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
-              {/* 🎯 Big Bang Center: 좌우 호버 시 메뉴·음표, 기본 상태는 싱귤래리티 코어 */}
+              {/* 🎯 Big Bang Center: 좌우 호버 시 메뉴·네잎클로버, 기본 상태는 싱귤래리티 코어 */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
-                  {isHovered && !isPressing && (hoverDirection === 'west' || hoverDirection === 'east') ? (
+                  {((isHovered && !isPressing && hoverDirection === 'west') || hoverDirection === 'east') ? (
                     hoverDirection === 'west' ? (
                       <Menu size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
                     ) : (
-                      <Music size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-cyan-200 drop-shadow-[0_0_8px_#38bdf8]" />
+                      <Clover size={24} strokeWidth={2} aria-hidden="true" className="rotate-[-45deg] text-emerald-200 drop-shadow-[0_0_8px_#34d399]" />
                     )
                   ) : (
                     <>
