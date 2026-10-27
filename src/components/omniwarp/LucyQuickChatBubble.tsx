@@ -373,35 +373,6 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
   const [isCompressingPhoto, setIsCompressingPhoto] = useState<boolean>(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-  // 🛡️ 루시채팅(/, /chat, /lucy) 페이지에서는 별도로 퀵 말풍선을 절대 띄우지 않음
-  const cleanLoc = (location || '').split('?')[0].split('#')[0] || '/';
-  const winPath =
-    typeof window !== 'undefined'
-      ? (window.location.pathname || '/').split('?')[0].split('#')[0]
-      : '/';
-  const isDomInLucyChat =
-    typeof document !== 'undefined' &&
-    (document.documentElement.classList.contains('in-lucy-chat') ||
-      document.body.classList.contains('in-lucy-chat') ||
-      Boolean(document.querySelector('.lucy-chat-shell')));
-
-  const isInLucyChatPage =
-    cleanLoc === '/' ||
-    cleanLoc === '/chat' ||
-    cleanLoc === '/lucy' ||
-    winPath === '/' ||
-    winPath === '/chat' ||
-    winPath === '/lucy' ||
-    winPath.includes('/chat') ||
-    winPath.includes('/lucy') ||
-    isDomInLucyChat;
-
-  useEffect(() => {
-    if (isInLucyChatPage && isOpen) {
-      onClose();
-    }
-  }, [isInLucyChatPage, isOpen, onClose]);
-
   // 🎙️ 음성 모드 (STT / TTS) 상태 관리
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(false);
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
@@ -592,7 +563,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
   // 말풍선 열림 시 1시간 비활성 검사 및 열려있는 동안 15초 주기 만료 체크
   useEffect(() => {
-    if (!isOpen || isInLucyChatPage) return;
+    if (!isOpen) return;
 
     bubbleMountedAtRef.current = Date.now();
     const currentNow = Date.now();
@@ -611,7 +582,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     }, 15000);
 
     return () => clearInterval(timer);
-  }, [isOpen, isInLucyChatPage]);
+  }, [isOpen]);
 
   // 🔄 말풍선 1시간 세션 수동 즉시 초기화 (새 대화 시작)
   const handleResetBubbleSession = useCallback(() => {
@@ -977,7 +948,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
   // 🌟 오픈 및 초기 음성 모드 연동
   useEffect(() => {
-    if (isOpen && !isInLucyChatPage) {
+    if (isOpen) {
       scrollToBottom(false);
       if (initialVoiceActive) {
         unlockAudioPlayback();
@@ -1003,11 +974,11 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       setSpeechInterim('');
       setVoiceError(null);
     }
-  }, [isOpen, isInLucyChatPage, initialVoiceActive, scrollToBottom, startListening, stopRecognition]);
+  }, [isOpen, initialVoiceActive, scrollToBottom, startListening, stopRecognition]);
 
-  // 🎙️ PTT (빅뱅버튼을 누르고 있다가 손을 뗀 순간) 즉시 전송 이벤트 수신
+  // Only an open bubble handles explicit voice-send and abort events.
   useEffect(() => {
-    if (isInLucyChatPage) return;
+    if (!isOpen) return;
     const handleCommitVoice = (e?: Event) => {
       const customDetail = (e as CustomEvent)?.detail;
       const selectedText = customDetail?.textToToss;
@@ -1042,20 +1013,20 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       window.removeEventListener('prism:quick_chat_commit_voice', handleCommitVoice);
       window.removeEventListener('prism:abort_lucy_voice_ptt', handleAbortVoice);
     };
-  }, [handleSend, stopRecognition, initialPrompt, isLucyGenerating, isInLucyChatPage]);
+  }, [isOpen, handleSend, stopRecognition, initialPrompt, isLucyGenerating]);
 
   // 메시지 업데이트 시 스크롤
   useEffect(() => {
-    if (isOpen && !isInLucyChatPage && lucyMessages.length > 0) {
+    if (isOpen && lucyMessages.length > 0) {
       scrollToBottom(true);
     }
-  }, [isOpen, isInLucyChatPage, lucyMessages.length, isLucyGenerating, scrollToBottom]);
+  }, [isOpen, lucyMessages.length, isLucyGenerating, scrollToBottom]);
 
   const autoSentPromptRef = useRef<string | null>(null);
 
   // 초기 프롬프트 전달 시 입력창 자동 채움 및 즉시 발송 (문장 드래그 토스 등)
   useEffect(() => {
-    if (!isOpen || isInLucyChatPage) {
+    if (!isOpen) {
       autoSentPromptRef.current = null;
       return;
     }
@@ -1073,7 +1044,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     } else if (isOpen && initialPrompt && initialPrompt.trim()) {
       setInput(initialPrompt.trim());
     }
-  }, [isOpen, isInLucyChatPage, initialAutoSend, initialPrompt, isLucyGenerating, handleSend]);
+  }, [isOpen, initialAutoSend, initialPrompt, isLucyGenerating, handleSend]);
 
   // 풀스크린 루시 채팅(/chat)으로 확장 도약
   const handleExpandToFullScreen = () => {
@@ -1088,7 +1059,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
   // 외부 클릭 시 닫기
   useEffect(() => {
-    if (!isOpen || isInLucyChatPage) return;
+    if (!isOpen) return;
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement;
       if (
@@ -1105,9 +1076,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     return () => {
       document.removeEventListener('pointerdown', handleOutsideClick, true);
     };
-  }, [isOpen, isInLucyChatPage, onClose]);
+  }, [isOpen, onClose]);
 
-  if (isInLucyChatPage) return null;
 
   return (
     <AnimatePresence>
@@ -1118,6 +1088,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 14 }}
           transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+          role="dialog"
+          aria-label="루시 빠른 대화"
           data-lucy-quick-chat="true"
           data-keep-dark="true"
           className="lucy-cosmic-bubble keep-dark absolute bottom-[96px] sm:bottom-[104px] left-1/2 -translate-x-1/2 w-[calc(100vw-24px)] max-w-[432px] sm:max-w-[468px] z-50 overflow-visible pointer-events-auto select-none"
@@ -1702,6 +1674,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                   {/* 입력 텍스트 영역 */}
                   <textarea
                     ref={textareaRef}
+                    aria-label="루시에게 보낼 메시지"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => {
