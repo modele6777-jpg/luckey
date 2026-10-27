@@ -1176,11 +1176,14 @@ export function BigBangButton() {
 
   const hoverContainerRef = useRef<HTMLDivElement>(null);
 
-  const handlePointerCancel = () => {
+  const handlePointerCancel = (event?: React.PointerEvent<HTMLDivElement>) => {
     cleanupGlobalPointerListeners();
+    // Native touch cancellation can follow a stationary long press. The visible
+    // conversation stays active; dragging or losing window focus still aborts it.
+    const keepConversation = Boolean(event && maxDragDistanceRef.current < DRAG_KEY_THRESHOLD);
     if (isPttRecordingRef.current) {
       isPttRecordingRef.current = false;
-      if (typeof window !== 'undefined') {
+      if (!keepConversation && typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
       }
     }
