@@ -1,3 +1,4 @@
+import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
 import './bigbang-clover-breeze.css';
 import { oneStopNavigationPath } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
@@ -1036,7 +1037,7 @@ export function BigBangButton() {
         cardinalActionsRef.current?.scrollToBottom(e);
       } else if (targetDir === 'west') {
         const currentChannel = resolveCanonicalPath(location).split('?')[0];
-        const channels = getActivePrismRoutes().filter(route => !['/', '/key', currentChannel].includes(route.path));
+        const channels = getActivePrismRoutes().filter(route => !['/', '/key', LUCY_PRO_PATH, currentChannel].includes(route.path));
         const channel = channels[Math.floor(Math.random() * channels.length)];
         if (channel) handleRuneNavigate(channel.path);
       } else if (targetDir === 'east') {
@@ -1067,15 +1068,16 @@ export function BigBangButton() {
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
       const prompt = textToToss.trim() ? `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.` : '';
       safeSessionStorage.setItem('lucy_chat_voice_requested', 'true');
-      if (prompt && !isChatView) {
+      const isProChat = location.split('?')[0] === LUCY_PRO_PATH;
+      if (prompt && !isProChat) {
         safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
-        safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
+        safeSessionStorage.setItem('lucy_pro_pending_channel', 'master');
       }
       (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-      if (!isChatView) navigate('/chat');
-      window.dispatchEvent(new Event('prism:enable_lucy_chat_voice'));
-      if (prompt && isChatView) window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['casual'] } }));
-      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
+      if (!isProChat) navigate(LUCY_PRO_PATH);
+      else window.dispatchEvent(new Event('prism:enable_lucy_chat_voice'));
+      if (prompt && isProChat) window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
+      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: LUCY_PRO_PATH } }));
       window.getSelection()?.removeAllRanges();
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
@@ -1541,8 +1543,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 채팅 음성 모드 / 드래그: 동작 없음)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 채팅 음성 모드, 드래그: 동작 없음"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 프로 마스터 음성 모드 / 드래그: 동작 없음)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 프로 마스터 음성 모드, 드래그: 동작 없음"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

@@ -53,6 +53,7 @@ const HealApp = lazyWithRetry(() => import("./pages/HealApp"));
 const ProfilePage = lazyWithRetry(() => import("./pages/ProfilePage"));
 const LibraryPage = lazyWithRetry(() => import("./pages/LibraryPage"));
 const EpilogueApp = lazyWithRetry(() => import("./pages/EpilogueApp"));
+const LucyProPage = lazyWithRetry(() => import("./pages/LucyProPage"));
 const LucyStandalonePage = lazyWithRetry(() => import("./pages/LucyStandalonePage"));
 const HandbookStandalonePage = lazyWithRetry(() => import("./pages/HandbookStandalonePage"));
 const OmniWarpPage = lazyWithRetry(() => import("./pages/OmniWarpPage"));
@@ -136,6 +137,7 @@ const ROUTES_MAP = [
   { path: "/chronicle", Component: EpilogueApp },
   { path: "/handbook", Component: HandbookStandalonePage },
   { path: "/rebible", Component: HandbookStandalonePage },
+  { path: "/chat/pro", Component: LucyProPage },
   { path: "/chat", Component: LucyStandalonePage },
   { path: "/lucy", Component: LucyStandalonePage },
   { path: "/omniwarp", Component: OmniWarpPage },
@@ -172,6 +174,7 @@ function ActivePage({ loc }: { loc: string }) {
         <Route path="/chronicle"><EpilogueApp /></Route>
         <Route path="/handbook"><HandbookStandalonePage /></Route>
         <Route path="/rebible"><HandbookStandalonePage /></Route>
+        <Route path="/chat/pro"><LucyProPage /></Route>
         <Route path="/chat"><LucyStandalonePage /></Route>
         <Route path="/lucy"><LucyStandalonePage /></Route>
         <Route path="/omniwarp"><OmniWarpPage /></Route>
@@ -478,7 +481,7 @@ function AppContent() {
     }
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
-  const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy';
+  const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
   const isKeyRoute = location === '/key' || location === '/calm';
   const isDistractionFreeRoute =
     location === '/handbook' ||

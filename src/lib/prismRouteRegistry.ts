@@ -43,6 +43,12 @@ export const INITIAL_PRISM_ROUTES: PrismRouteDefinition[] = [
     category: 'channel',
   },
   {
+    id: 'lucy-pro', name: '루시 채팅 프로', subName: '항상 마스터 모드',
+    path: '/chat/pro', aliases: [], icon: '👑', runeSymbol: 'ᛞ', runeName: 'Dagaz',
+    runeMeaning: '통합 지혜', description: '7대 채널 올인원 마스터 전용 루시 채팅',
+    themeColor: '#f59e0b', accentGlow: 'rgba(245,158,11,.6)', isActive: true, category: 'channel',
+  },
+  {
     id: 'hub',
     name: '프롤로그 허브',
     subName: '프리즘 우주의 중심',

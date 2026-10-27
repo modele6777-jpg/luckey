@@ -1,4 +1,4 @@
-import { SpecialChannel } from '@/pages/LucyStandalonePage';
+import type { SpecialChannel } from '@/pages/LucyStandalonePage';
 
 export interface LucyAutoDetectResult {
   channels: SpecialChannel[];
@@ -53,7 +53,7 @@ export function formatChannelsModeTitle(channels: SpecialChannel[]): string {
  * 7대 채널(프롤로그·오렌지·트리니티·아우라·블루버드·뮤즈·에필로그) 지원 및
  * 융합(Fusion) 시에도 7대 채널명으로 구성된 모드 타이틀 반환.
  */
-export function detectLucyChannelsFromText(text: string): LucyAutoDetectResult {
+export function detectLucyChannelsFromText(text: string, options: { allowMaster?: boolean } = {}): LucyAutoDetectResult {
   if (!text || !text.trim()) {
     return {
       channels: [],
@@ -88,7 +88,7 @@ export function detectLucyChannelsFromText(text: string): LucyAutoDetectResult {
     /마스터\s*모드/
   ];
 
-  if (masterPatterns.some((regex) => regex.test(clean))) {
+  if (options.allowMaster !== false && masterPatterns.some((regex) => regex.test(clean))) {
     return {
       channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'],
       isMaster: true,
@@ -192,7 +192,7 @@ export function detectLucyChannelsFromText(text: string): LucyAutoDetectResult {
     reasons.push('하루 마감·회고 (주역·베딕)');
   }
 
-  const channels = Array.from(matchedChannels);
+  const channels = options.allowMaster === false && matchedChannels.size === 7 ? [] : Array.from(matchedChannels);
   const isCasual = channels.length === 0;
 
   const modeTitle = formatChannelsModeTitle(channels);

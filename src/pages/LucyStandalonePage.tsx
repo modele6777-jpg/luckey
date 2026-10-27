@@ -1,3 +1,4 @@
+import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -533,6 +534,8 @@ function getCuratedPrompts(
   mode: LucyChatMode,
   channels: SpecialChannel[] = []
 ): string[] {
+  if (mode === 'master') return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
+
   // 0. 다자간(2인 이상) 프로필 활성화 시: 두 사람(구성원)의 이름을 반영한 궁합·연애·시너지 맞춤 질문
   if (profiles.length >= 2) {
     const multiPrompts = generateMultiProfilePrompts(profiles);
@@ -554,14 +557,14 @@ function getCuratedPrompts(
   }
 
   // 2. 단일 특화 채널 모드 선택 시 (channels[0] 또는 mode가 특정 채널)
-  const singleChannel = (channels.length === 1 ? channels[0] : (mode !== 'auto' && mode !== 'casual' && mode !== 'master' ? mode : null)) as SpecialChannel | null;
+  const singleChannel = (channels.length === 1 ? channels[0] : (mode !== 'auto' && mode !== 'casual' ? mode : null)) as SpecialChannel | null;
   if (singleChannel && CHANNEL_PROMPT_POOLS[singleChannel]) {
     const pool = CHANNEL_PROMPT_POOLS[singleChannel];
     return shuffle(pool).slice(0, 6);
   }
 
   // 3. 7대 채널 올인원 마스터 모드 (레거시 또는 7대 전체 활성)
-  if (mode === 'master' || channels.length === ALL_CHANNELS.length) {
+  if (channels.length === ALL_CHANNELS.length) {
     return shuffle(MASTER_PROMPT_POOL).slice(0, 6);
   }
 
@@ -585,7 +588,9 @@ function getCuratedPrompts(
   return shuffle(Array.from(new Set(diversePool))).slice(0, 6);
 }
 
-export default function LucyStandalonePage() {
+const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
+
+export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const [, navigate] = useLocation();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -612,21 +617,26 @@ export default function LucyStandalonePage() {
 
   // 🔒 모드 선택란 제거: 루시는 항상 AI 모드로 동작합니다.
   // 단일 채널 / N중 융합 / 7대 채널 마스터는 매 질문마다 AI가 맥락을 분석해 자동으로 결정합니다.
-  const selectedMode = 'auto' as LucyChatMode;
+  const selectedMode = (pro ? 'master' : 'auto') as LucyChatMode;
 
   // 🎛️ 현재 AI가 감지·가동 중인 채널 (기본: [] 일상 대화, 외부 명시 진입 시 pending 채널 1회 반영)
-  const [activeChannels, setActiveChannels] = useState<SpecialChannel[]>(() => {
+  const [activeChannels, setActiveChannelsState] = useState<SpecialChannel[]>(() => {
+    if (pro) return resolveLucyPageChannels([], true);
     try {
       // 이전 버전에서 저장된 수동 모드 선택값 정리
       safeLocalStorage.removeItem('lucy_selected_mode');
       const pending = safeSessionStorage.getItem('lucy_pro_pending_channel');
       if (pending) {
         safeSessionStorage.removeItem('lucy_pro_pending_channel');
-        return parsePendingChannels(pending);
+        return resolveLucyPageChannels(parsePendingChannels(pending), false);
       }
     } catch (_) {}
     return [];
   });
+
+  const setActiveChannels = useCallback((channels: SpecialChannel[]) => {
+    setActiveChannelsState(resolveLucyPageChannels(channels, pro));
+  }, [pro]);
 
   // 채널 변경 시 safeLocalStorage에 영구 동기화
   useEffect(() => {
@@ -637,7 +647,7 @@ export default function LucyStandalonePage() {
 
   const [input, setInput] = useState('');
   const isAutoDetect = selectedMode === 'auto';
-  const [autoDetectedTitle, setAutoDetectedTitle] = useState<string | null>(() => {
+  const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';
     if (selectedMode === 'master') return '7대 채널 올인원 마스터';
     if (selectedMode !== 'auto') {
@@ -647,7 +657,15 @@ export default function LucyStandalonePage() {
     return null;
   });
 
+  const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
+    setAutoDetectedTitleState(previous => {
+      const next = typeof value === 'function' ? value(previous) : value;
+      return pro ? '7대 채널 올인원 마스터' : next?.includes('마스터') ? 'AI 자동 상담' : next;
+    });
+  }, [pro]);
+
   const currentActiveModeConfig = useMemo(() => {
+    if (pro) return { ...LUCY_MODE_CONFIGS[0], label: '마스터', subLabel: '7대 채널 올인원', tagline: '7대 채널 마스터 지능 상시 가동' };
     if (activeChannels.length >= 2) {
       return {
         id: 'auto' as const,
@@ -661,7 +679,7 @@ export default function LucyStandalonePage() {
       };
     }
     return LUCY_MODE_CONFIGS.find((m) => m.id === selectedMode) || LUCY_MODE_CONFIGS[0];
-  }, [selectedMode, activeChannels]);
+  }, [selectedMode, activeChannels, pro]);
 
   // 📌 추천 질문 라이브러리 및 칩에서 지정된 모드를 보존하여 실시간 디바운스 임의 덮어쓰기 방지
   const presetModeRef = useRef<{
@@ -690,7 +708,7 @@ export default function LucyStandalonePage() {
     presetModeRef.current = null;
 
     const timer = setTimeout(() => {
-      const detected = detectLucyChannelsFromText(input);
+      const detected = detectPageChannels(input);
       const nextTitle = detected.isMaster || detected.channels.length > 0
         ? detected.modeTitle
         : '가벼운 일상 수다';
@@ -1451,7 +1469,8 @@ export default function LucyStandalonePage() {
 
   // 말풍선 배지 / 추천 카드 클릭 시: AI 모드를 유지한 채 해당 채널 조합(단일·융합·마스터)을 즉시 반영
   const handleActivateMessageMode = (targetChannels: SpecialChannel[], targetIsMaster: boolean, label?: string) => {
-    const nextChannels = targetIsMaster ? [...ALL_CHANNELS] : targetChannels;
+    if (targetIsMaster && !pro) { navigate(LUCY_PRO_PATH); return; }
+    const nextChannels = resolveLucyPageChannels(targetChannels, pro);
     setActiveChannels(nextChannels);
     setAutoDetectedTitle(label || formatChannelsModeTitle(nextChannels));
     setCurrentPrompts(getCuratedPrompts(activeProfiles, 'auto', nextChannels));
@@ -1720,7 +1739,7 @@ export default function LucyStandalonePage() {
   //  Dynamic PWA Manifest & iOS Home-screen Metadata Switcher
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = 'Lucy';
+    document.title = pro ? 'Lucy Pro' : 'Lucy';
 
     let manifestTag = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
     const prevManifestHref = manifestTag ? manifestTag.getAttribute('href') : null;
@@ -1745,7 +1764,7 @@ export default function LucyStandalonePage() {
     let appleTitleTag = document.querySelector('meta[name="apple-mobile-web-app-title"]') as HTMLMetaElement | null;
     const prevAppleTitle = appleTitleTag ? appleTitleTag.getAttribute('content') : null;
     if (appleTitleTag) {
-      appleTitleTag.setAttribute('content', 'Lucy');
+      appleTitleTag.setAttribute('content', pro ? 'Lucy Pro' : 'Lucy');
     }
 
     let statusBarStyleTag = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') as HTMLMetaElement | null;
@@ -1991,7 +2010,7 @@ export default function LucyStandalonePage() {
         title: formatChannelsModeTitle(effectiveForcedChannels),
       };
     } else if (isAutoDetect && forcedChannels === undefined && combinedContextText.length > 0) {
-      const detected = detectLucyChannelsFromText(combinedContextText);
+      const detected = detectPageChannels(combinedContextText);
       if (detected.isMaster) {
         channels = ALL_CHANNELS;
       } else {
@@ -2005,8 +2024,11 @@ export default function LucyStandalonePage() {
       setAutoDetectedTitle(formatChannelsModeTitle(forcedChannels));
     }
 
+    channels = resolveLucyPageChannels(channels, pro);
+    setActiveChannels(channels);
+    setAutoDetectedTitle(formatChannelsModeTitle(channels));
     const channelCount = channels.length;
-    const isMaster = channelCount === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => channels.includes(c));
+    const isMaster = pro && channelCount === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => channels.includes(c));
     const isCasual = channelCount === 0;
     const isSingle = channelCount === 1;
     const isSyn = channelCount >= 2 && !isMaster;
@@ -2091,7 +2113,7 @@ export default function LucyStandalonePage() {
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition]);
+  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition, pro]);
 
   useEffect(() => {
     handleSendRef.current = handleSend;
@@ -2109,7 +2131,7 @@ export default function LucyStandalonePage() {
       resolvedChannels = toolIds.filter((t) => ALL_CHANNELS.includes(t as SpecialChannel)) as SpecialChannel[];
     }
     if (resolvedChannels.length === 0) {
-      const detected = detectLucyChannelsFromText(promptText);
+      const detected = detectPageChannels(promptText);
       resolvedChannels = detected.isMaster ? ALL_CHANNELS : detected.channels;
     }
 
@@ -2191,7 +2213,7 @@ export default function LucyStandalonePage() {
     }
 
     // 4. 일반/융합 질문 풀 및 텍스트 자동 감지 폴백
-    const detected = detectLucyChannelsFromText(promptText);
+    const detected = detectPageChannels(promptText);
     const targetChannels = detected.isMaster ? ALL_CHANNELS : detected.channels;
     const modeTitle = detected.modeTitle || formatChannelsModeTitle(targetChannels);
     setActiveChannels(targetChannels);
@@ -2374,12 +2396,7 @@ export default function LucyStandalonePage() {
           {/* Brand Logo & Left empty space (상단 로고 왼쪽 아이콘 제거 및 빈 공간 유지) */}
           <div className="flex items-center min-w-0 flex-1 pl-1 sm:pl-3 overflow-hidden">
             <div
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 sm:gap-3 min-w-0 w-full cursor-pointer group select-none"
-              role="button"
-              tabIndex={0}
-              title="Lucy 메인 홈"
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/'); }}
+              className="flex items-center gap-2 sm:gap-3 min-w-0 w-full group select-none"
             >
               <div className="min-w-0 flex-1 overflow-hidden">
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
@@ -2389,12 +2406,13 @@ export default function LucyStandalonePage() {
                     }`}
                     style={{ color: isLight ? '#0f172a' : '#ffffff' }}
                   >
-                    Lucy
+                    <button type="button" onClick={() => navigate('/')} title="Lucy 메인 홈" className="cursor-pointer">{pro ? 'Lucy Pro' : 'Lucy'}</button>
                   </h1>
                   <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/20 text-indigo-600 dark:text-indigo-200 border border-indigo-200/60 dark:border-indigo-400/30 flex items-center gap-1 shrink-0">
                     <Sparkles size={10} className="text-indigo-500 dark:text-indigo-300 animate-spin" />
-                    AI 모드
+                    {pro ? '마스터 고정' : 'AI 모드'}
                   </span>
+                  <button type="button" onClick={() => navigate(pro ? '/chat' : LUCY_PRO_PATH)} className="rounded-full border border-amber-400/50 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300" aria-label={pro ? '일반 루시 채팅으로 이동' : '루시 채팅 프로로 이동'}>{pro ? '일반 채팅' : 'PRO'}</button>
                   {activeChannels.length === ALL_CHANNELS.length ? (
                     <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs truncate max-w-full">
                       <span>👑</span>
@@ -2419,7 +2437,7 @@ export default function LucyStandalonePage() {
                 >
                   {autoDetectedTitle
                     ? `${autoDetectedTitle} · 질문 맥락에 맞춰 최적 지능 자동 가동 중`
-                    : '질문 맥락에 맞춰 7대 채널·융합·마스터 지능이 자동 전환됩니다'}
+                    : '질문 맥락에 맞춰 단일 채널·융합 지능이 자동 전환됩니다'}
                 </p>
               </div>
             </div>
