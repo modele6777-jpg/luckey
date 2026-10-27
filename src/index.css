@@ -3047,18 +3047,20 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
-/* Sidebar is a slim auto-hiding overlay; main content occupies full 100% width without empty space. */
-:root { --sites-sidebar-width: 0px; }
+/* Sidebar is permanently pinned to the left (72px); main content occupies 100% of the remaining area with clean margin. */
+:root { --sites-sidebar-width: 72px; }
 .sites-pinned-main {
+  --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
-  width: 100%;
-  max-width: 100%;
+  margin-left: var(--sites-sidebar-width, 72px);
+  width: calc(100% - var(--sites-sidebar-width, 72px));
+  max-width: calc(100% - var(--sites-sidebar-width, 72px));
   padding-right: 0;
 }
-/* Fixed page tabs center across full canvas */
+/* Fixed page tabs center across main canvas */
 .sites-pinned-main .prism-xs-subnav:not(.duo-page-nav) {
-  left: 50% !important;
-  max-width: calc(100vw - 1rem) !important;
+  left: calc(var(--sites-sidebar-width, 72px) + (100vw - var(--sites-sidebar-width, 72px)) / 2) !important;
+  max-width: calc(100vw - var(--sites-sidebar-width, 72px) - 1rem) !important;
   transform: translateX(-50%) !important;
 }
 .sites-pinned-sidebar { contain: layout style; }
@@ -3085,8 +3087,18 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 }
 
 
-.pwa-install-banner { right: calc(var(--sites-sidebar-width, 0px) + 1rem); }
-@media (min-width: 768px) { .pwa-install-banner { left: calc((100% - var(--sites-sidebar-width, 0px)) / 2); right: auto; max-width: calc(100vw - var(--sites-sidebar-width, 0px) - 2rem); } }
+.pwa-install-banner {
+  left: calc(var(--sites-sidebar-width, 72px) + 1rem);
+  right: auto;
+}
+@media (min-width: 768px) {
+  .pwa-install-banner {
+    left: calc(var(--sites-sidebar-width, 72px) + (100vw - var(--sites-sidebar-width, 72px)) / 2);
+    right: auto;
+    transform: translateX(-50%);
+    max-width: calc(100vw - var(--sites-sidebar-width, 72px) - 2rem);
+  }
+}
 
 /* Reuse the former edge hint's aurora inside the permanently open rail. */
 .sites-pinned-sidebar > :not(.sidebar-aurora) { position: relative; z-index: 1; }
