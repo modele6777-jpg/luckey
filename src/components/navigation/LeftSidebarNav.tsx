@@ -16,7 +16,7 @@ import {
   BookOpen,
   Compass,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import { OPEN_NAVIGATION_MENU_EVENT, readMenuBounds } from '@/lib/navigationMenu';
 import { placeMenuPanel } from '@/lib/floatingMenuGeometry';
@@ -181,6 +181,7 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
+  const reduceMotion = useReducedMotion();
   const [isOpen, setIsOpen] = useState(false);
   const [isChannelsOpen, setIsChannelsOpen] = useState(true);
   const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
@@ -504,26 +505,27 @@ export default function LeftSidebarNav() {
               data-theme={isLight ? 'light' : 'dark'}
               className="luckey-menu-panel"
               style={{ position: 'fixed', left: panelPosition.x, top: panelPosition.y, width: panelWidth, maxHeight: Math.max(0, bounds.height - 24) }}
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.18 }}
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
               onClick={event => event.stopPropagation()}
             >
               <header className="luckey-menu-heading">
-                <span className="luckey-menu-emblem" aria-hidden="true"><Clover size={25} strokeWidth={1.7} /></span>
-                <div className="luckey-menu-heading-copy"><h2 id="luckey-menu-title">A little luck, for you.</h2><p>지금, 마음이 향하는 곳으로</p></div>
+                <span className="luckey-menu-emblem" aria-hidden="true"><span className="luckey-menu-orb-core" /></span>
+                <div className="luckey-menu-heading-copy"><h2 id="luckey-menu-title">BIGBANG</h2><p>당신의 우주를 펼쳐보세요</p></div>
                 <button type="button" className="luckey-menu-close" onClick={handleCloseDrawer} aria-label="메뉴 닫기"><X size={18} /></button>
               </header>
-              <nav aria-label="네잎클로버 채널 메뉴" className="luckey-menu-content">
+              <nav aria-label="빅뱅 채널 메뉴" className="luckey-menu-content">
                 {topRecommendation && <button type="button" className="luckey-one-stop"
                   onClick={() => { handleCloseDrawer(); window.dispatchEvent(new Event('prism:request_recommended_warp')); }}>
                   <span className="luckey-one-stop-heading"><span>원스탑 추천경로</span><span>{cycleProgress.cycleIndex}회차 · {cycleProgress.visitedCount}/{cycleProgress.totalCount}</span></span>
                   <strong>다음 → {topRecommendation.menu.name}</strong>
+                  <span className="luckey-one-stop-track" aria-hidden="true"><span style={{ width: `${cycleProgress.totalCount ? cycleProgress.visitedCount / cycleProgress.totalCount * 100 : 0}%` }} /></span>
                   <span>빅뱅 더블탭으로 워프 · 완주 전 중복 없이</span>
                 </button>}
                 <div className="luckey-menu-core-grid">{CORE_CHANNELS.map(renderNavButton)}</div>
                 {isChannelsOpen && <>
-                  <div className="luckey-menu-section-label"><span>YOUR SEVEN COLORS</span><span>7개의 작은 우주</span></div>
+                  <div className="luckey-menu-section-label"><span>SEVEN UNIVERSES</span><span>7개의 작은 우주</span></div>
                   <div id="luckey-prism-channels" className="luckey-menu-channel-grid">{PRISM_CHANNELS.map(renderNavButton)}</div>
                 </>}
               </nav>
@@ -537,7 +539,7 @@ export default function LeftSidebarNav() {
                     {userAvatarUrl ? <img src={userAvatarUrl} alt="" className="luckey-menu-avatar" /> : <User size={19} />}<span>내 프로필</span>
                   </button>
                 </div>
-                <div className="luckey-menu-signature"><span>작은 행운을 따라, LUCKEY</span><button type="button" onClick={() => { handleCloseDrawer(); setShowViewportDiagnostics(true); }} aria-label={`앱 버전 ${APP_VERSION}, 화면 영역 진단 열기`}>v{APP_VERSION}</button></div>
+                <div className="luckey-menu-signature"><span>작은 우주를 잇는 빅뱅</span><button type="button" onClick={() => { handleCloseDrawer(); setShowViewportDiagnostics(true); }} aria-label={`앱 버전 ${APP_VERSION}, 화면 영역 진단 열기`}>v{APP_VERSION}</button></div>
               </footer>
             </motion.section>
           </div>
