@@ -79,7 +79,7 @@ export const INITIAL_PRISM_ROUTES: PrismRouteDefinition[] = [
     name: '프롤로그 투두 & 데일리 미션',
     subName: '영혼의 일일 실천 미션',
     path: '/todo',
-    aliases: ['/mission', '/aegis'],
+    aliases: ['/mission', '/aegis', '/synergy'],
     icon: '📝',
     runeSymbol: 'ᚠ',
     runeName: 'Fehu',
@@ -257,7 +257,7 @@ export const INITIAL_PRISM_ROUTES: PrismRouteDefinition[] = [
     description: '모든 기록과 사유가 축적된 영혼의 도서관 아카이브',
     themeColor: '#6366f1',
     accentGlow: 'rgba(99, 102, 241, 0.9)',
-    isActive: false,
+    isActive: true,
     category: 'archive',
   },
   {

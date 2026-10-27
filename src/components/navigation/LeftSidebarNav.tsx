@@ -28,6 +28,7 @@ import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { APP_VERSION } from '@/lib/appVersion';
 import { ViewportDiagnostics } from './ViewportDiagnostics';
 import {
+  getContextCycleStats,
   peekNextRecommendedMenuByCycle,
   resetActiveContextPeek,
   type ContextNextMenuResult,
@@ -39,15 +40,7 @@ import {
 } from '@/components/trinity/BgMusicPlayer';
 import { unlockAudioPlayback } from '@/lib/audio';
 
-const APP_ID_TO_PRISM_PATH: Record<string, string> = {
-  hub: '/prologue',
-  orange: '/orange',
-  trinity: '/trinity',
-  heal: '/heal',
-  bluebird: '/bluebird',
-  muse: '/muse',
-  epilogue: '/epilogue',
-};
+
 
 export interface NavItemConfig {
   path: string;
@@ -389,8 +382,9 @@ export default function LeftSidebarNav() {
     };
   }, [isOpen, refreshTopRecommendation]);
 
+  const cycleProgress = getContextCycleStats(location + window.location.search);
   const recommendedPrismPath = topRecommendation
-    ? APP_ID_TO_PRISM_PATH[topRecommendation.stats.nextAppId] || '/trinity'
+    ? topRecommendation.menu.basePath
     : '/trinity';
   // Extract user profile / nickname and avatar URL for sidebar footer
   let userNickname = '제제';
@@ -526,6 +520,12 @@ export default function LeftSidebarNav() {
                 <button type="button" className="luckey-menu-close" onClick={handleCloseDrawer} aria-label="메뉴 닫기"><X size={18} /></button>
               </header>
               <nav aria-label="네잎클로버 채널 메뉴" className="luckey-menu-content">
+                {topRecommendation && <button type="button" className="luckey-one-stop"
+                  onClick={() => { handleCloseDrawer(); window.dispatchEvent(new Event('prism:request_recommended_warp')); }}>
+                  <span className="luckey-one-stop-heading"><span>원스탑 추천경로</span><span>{cycleProgress.cycleIndex}회차 · {cycleProgress.visitedCount}/{cycleProgress.totalCount}</span></span>
+                  <strong>다음 → {topRecommendation.menu.name}</strong>
+                  <span>빅뱅 더블탭으로 워프 · 완주 전 중복 없이</span>
+                </button>}
                 <div className="luckey-menu-core-grid">{CORE_CHANNELS.map(renderNavButton)}</div>
                 {isChannelsOpen && <>
                   <div className="luckey-menu-section-label"><span>YOUR SEVEN COLORS</span><span>7개의 작은 우주</span></div>

@@ -1,3 +1,4 @@
+import { oneStopNavigationPath } from '@/lib/omniWarp/oneStopPages';
 import { openNavigationMenu } from '@/lib/navigationMenu';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
@@ -87,6 +88,7 @@ export function BigBangButton() {
   const [isPressing, setIsPressing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isCosmicSuctionActive, setIsCosmicSuctionActive] = useState(false);
+  const recommendedWarpInFlightRef = useRef(false);
   const [activePhase, setActivePhase] = useState<WarpPhase>('idle');
   const [gauge, setGauge] = useState(0);
   const [durationMs, setDurationMs] = useState(0);
@@ -526,41 +528,8 @@ export function BigBangButton() {
         textToToss || undefined
       );
 
-      const isExcluded = (p: string, id: string) => {
-        const lower = `${p} ${id}`.toLowerCase();
-        return (
-          p === '/' ||
-          p === '/chat' ||
-          p === '/lucy' ||
-          p === '/key' ||
-          p === '/calm' ||
-          p === '/orb' ||
-          p === '/gateway' ||
-          p === '/crystal' ||
-          lower.includes('chat') ||
-          lower.includes('lucy') ||
-          lower.includes('key') ||
-          lower.includes('calm') ||
-          lower.includes('orb')
-        );
-      };
-
-      let finalSafePath = rawSafePath;
-      let finalMenu = rawMenu;
-
-      if (
-        !isValidPrismPath(finalSafePath) ||
-        isDisallowedWarpDestination(finalMenu.id) ||
-        isDisallowedWarpDestination(finalSafePath) ||
-        isExcluded(finalSafePath, finalMenu.id)
-      ) {
-        const fallback =
-          PRISM_ALL_APP_DESTINATIONS.find(
-            (d) => d.tossTargetId === 'trinity' || d.basePath === '/trinity'
-          ) || PRISM_ALL_APP_DESTINATIONS[0];
-        finalSafePath = fallback.path;
-        finalMenu = fallback;
-      }
+      const finalSafePath = oneStopNavigationPath(rawSafePath);
+      const finalMenu = { ...rawMenu, path: finalSafePath };
 
       const cycleLabel = stats.isFullCycleCompleted
         ? `새 순환 ${stats.cycleIndex}회차`
@@ -733,6 +702,7 @@ export function BigBangButton() {
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
+    if (singleTapTimerRef.current) { clearTimeout(singleTapTimerRef.current); singleTapTimerRef.current = null; }
 
     const wasScrolling = (Date.now() - lastScrollTimeRef.current < 180) || isPageScrolling;
     touchStartedWhileScrollingRef.current = wasScrolling;
@@ -881,7 +851,8 @@ export function BigBangButton() {
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any) => {
     setIsQuickChatOpen(false);
     // 🛡️ 이미 우주 흡입 워프 진행 중인 경우 중복 격발 방지
-    if (isCosmicSuctionActive) return;
+    if (recommendedWarpInFlightRef.current) return;
+    recommendedWarpInFlightRef.current = true;
 
     // 대기 중인 1회 탭(홈 이동) 타이머 즉시 취소
     if (singleTapTimerRef.current) {
@@ -902,41 +873,8 @@ export function BigBangButton() {
     );
 
     // 🛡️ 실존 페이지 및 워프 불가 목적지 검증 (루시/Key 엄격 제외 보장)
-    const isExcluded = (p: string, id: string) => {
-      const lower = `${p} ${id}`.toLowerCase();
-      return (
-        p === '/' ||
-        p === '/chat' ||
-        p === '/lucy' ||
-        p === '/key' ||
-        p === '/calm' ||
-        p === '/orb' ||
-        p === '/gateway' ||
-        p === '/crystal' ||
-        lower.includes('chat') ||
-        lower.includes('lucy') ||
-        lower.includes('key') ||
-        lower.includes('calm') ||
-        lower.includes('orb')
-      );
-    };
-
-    let finalSafePath = safePath;
-    let finalMenu = targetMenu;
-
-    if (
-      !isValidPrismPath(finalSafePath) ||
-      isDisallowedWarpDestination(finalMenu.id) ||
-      isDisallowedWarpDestination(finalSafePath) ||
-      isExcluded(finalSafePath, finalMenu.id)
-    ) {
-      console.warn(`[DragRecommend] Filtered restricted path: ${finalSafePath}`);
-      const fallback = PRISM_ALL_APP_DESTINATIONS.find(
-        (d) => d.tossTargetId === 'trinity' || d.basePath === '/trinity'
-      ) || PRISM_ALL_APP_DESTINATIONS[0];
-      finalSafePath = fallback.path;
-      finalMenu = fallback;
-    }
+    const finalSafePath = oneStopNavigationPath(safePath);
+    const finalMenu = { ...targetMenu, path: finalSafePath };
 
     const cycleLabel = stats.isFullCycleCompleted
       ? `새 순환 ${stats.cycleIndex}회차`
@@ -944,7 +882,7 @@ export function BigBangButton() {
 
     const previewLabel = textToToss
       ? `[럭키 추천 토스 · ${cycleLabel}] ${finalMenu.name}`
-      : `[드래그 도약 · ${cycleLabel}] ${finalMenu.name}`;
+      : `[원스탑 추천 워프 · ${cycleLabel}] ${finalMenu.name}`;
 
     const previewDescription = textToToss
       ? `"${textToToss.slice(0, 20)}..." ➔ ${finalMenu.name} 즉시 실행`
@@ -1012,9 +950,16 @@ export function BigBangButton() {
 
     // 650ms 시점에 흡입 애니메이션 상태 해제
     setTimeout(() => {
+      recommendedWarpInFlightRef.current = false;
       setIsCosmicSuctionActive(false);
     }, 650);
   }, [location, navigate, getActiveSelectionText, isKeySite, isCosmicSuctionActive]);
+
+  useEffect(() => {
+    const warp = () => goToNextRecommended();
+    window.addEventListener('prism:request_recommended_warp', warp);
+    return () => window.removeEventListener('prism:request_recommended_warp', warp);
+  }, [goToNextRecommended]);
 
   // 🔮 4대 고대 룬 문자 클릭 시 다이렉트 차원 도약 핸들러
   const handleRuneNavigate = useCallback(
@@ -1237,20 +1182,31 @@ export function BigBangButton() {
       return dist <= 44;
     })();
 
-    // A short center tap opens navigation immediately; hold and drag resolve above.
+    // Wait briefly for a second tap before opening the single-tap menu.
     const isTapGesture = !isDragGesture && !isHoldGesture && duration < 220 && dist < DRAG_RECOMMEND_THRESHOLD;
     if (isTapGesture) {
+      const now = performance.now();
+      const doubleTap = lastTapTimeRef.current > 0 && now - lastTapTimeRef.current <= 360;
       if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
       singleTapTimerRef.current = null;
-      lastTapTimeRef.current = 0;
       setIsQuickChatOpen(false);
       setQuickChatVoiceActive(false);
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
-      triggerHaptic('whitehole');
-      buttonRef.current?.focus({ preventScroll: true });
-      openNavigationMenu();
+      if (doubleTap) {
+        lastTapTimeRef.current = 0;
+        goToNextRecommended(context, metrics);
+      } else {
+        lastTapTimeRef.current = now;
+        singleTapTimerRef.current = setTimeout(() => {
+          singleTapTimerRef.current = null;
+          lastTapTimeRef.current = 0;
+          triggerHaptic('whitehole');
+          buttonRef.current?.focus({ preventScroll: true });
+          openNavigationMenu();
+        }, 360);
+      }
       return;
     }
 
@@ -1543,6 +1499,8 @@ export function BigBangButton() {
                 <span className="text-xs">✨</span>
                 <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸네잎클로버 메뉴</span>
                 <span className="text-slate-500">│</span>
+                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸추천 워프</span>
+                <span className="text-slate-500">│</span>
                 <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸음성 답변</span>
                 <span className="text-slate-500">│</span>
                 <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">{dynamicRecommendedLuckeyApp ? `▸${dynamicRecommendedLuckeyApp}` : '▸추천 1순위'}</span>
@@ -1804,8 +1762,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 홀드: 음성 답변 / 드래그: 럭키 1순위 추천)"
-              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 홀드: 루시 음성, 드래그: 럭키 1순위 추천"
+              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 더블탭: 원스탑 추천 워프 / 홀드: 음성 답변 / 드래그: 럭키 1순위 추천)"
+              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 더블탭: 원스탑 추천 워프, 홀드: 루시 음성, 드래그: 럭키 1순위 추천"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

@@ -38,3 +38,10 @@
 .luckey-menu-signature { display: flex; justify-content: space-between; align-items: center; color: var(--menu-muted); font-size: 8px; padding: 9px 3px 0; }
 .luckey-menu-signature button { min-height: 24px; cursor: pointer; padding-inline: 3px; }
 @media (prefers-reduced-motion: reduce) { .luckey-menu-card { transition: none; } }
+
+.luckey-one-stop { display: flex; flex-direction: column; gap: 7px; width: 100%; margin-bottom: 14px; padding: 13px; text-align: left; border: 1px solid #65dcb866; border-radius: 18px; background: linear-gradient(120deg, #34d3991a, #a78bfa14); color: inherit; }
+.luckey-one-stop-heading { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; opacity: .8; }
+.luckey-one-stop strong { font-size: 13px; }
+.luckey-one-stop > span:last-child { font-size: 10px; opacity: .65; }
+.luckey-one-stop:hover { border-color: #65dcb8; }
+.luckey-one-stop:focus-visible { outline: 2px solid #65dcb8; outline-offset: 3px; }

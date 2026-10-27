@@ -1,5 +1,6 @@
+import { recordOneStopPageVisit } from './lib/omniWarp/contextNavCycleEngine';
 import React from "react";
-import { Route, Switch, Redirect, useLocation } from "wouter";
+import { Route, Switch, Redirect, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
 import { AppProvider, useApp } from "./contexts/AppContext";
@@ -559,6 +560,7 @@ function AppContent() {
           <ActivePage loc={location} />
         </motion.div>
       </main>
+      <OneStopVisitTracker />
       <LeftSidebarNav />
       <BigBangButton />
       <BigBangExpansionOverlay />
@@ -595,3 +597,20 @@ export default function App() {
 }
 
 // Prism Universe dev auto-bump anchor
+
+function OneStopVisitTracker() {
+  const [location] = useLocation();
+  const search = useSearch();
+  React.useEffect(() => {
+    const params = new URLSearchParams(search);
+    const tab = params.get('tab') || sessionStorage.getItem('prism_target_tab');
+    recordOneStopPageVisit(location + (tab ? '?tab=' + encodeURIComponent(tab) : ''));
+    const onTab = (event: Event) => {
+      const tab = (event as CustomEvent<{ tab?: string }>).detail?.tab;
+      if (typeof tab === 'string') recordOneStopPageVisit(location + '?tab=' + encodeURIComponent(tab));
+    };
+    window.addEventListener('prism-tab-change', onTab);
+    return () => window.removeEventListener('prism-tab-change', onTab);
+  }, [location, search]);
+  return null;
+}

@@ -1,31 +1,15 @@
-/**
- * 🌀 contextNavCycleEngine.ts
- * =========================================================================
- * 🎯 빅뱅 버튼 드래그 전용 7대 정규 앱 엄격 순환(Non-Repeating Cycle) 추천 엔진
- * -------------------------------------------------------------------------
- * - 텍스트 선택 토스 또는 맥락 감지 드래그 시:
- *   프리즘의 7대 핵심 앱(오렌지, 트리니티, 아우라/힐, 블루버드, 뮤즈, 에필로그, 프롤로그/허브)을
- *   한 사이클 동안 '단 한 번씩만' 순환 방문하도록 엄격 보장합니다.
- * - [엄격한 사이클 순환 규칙 (Strict Non-Repeating App Cycle)]:
- *   1. 한 번 추천/방문된 앱은 남은 모든 다른 앱들을 전부 방문하기 전까지 절대로 재추천되지 않습니다.
- *      (오렌지 <-> 트리니티 간의 무한 핑퐁 왕복 원천 차단)
- *   2. 전체 7대 앱을 1바퀴 모두 순환(완주)하면 사이클 번호가 +1 증가하고,
- *      방문 이력이 리셋되어 다음 회차 사이클에서 새롭게 추천됩니다.
- *   3. 각 앱으로 이동할 때는 현재 화면/대화의 맥락(또는 선택된 텍스트)에 가장 부합하는
- *      세부 서브메뉴(39대 기능 중 최적 메뉴)를 선정하여 안내합니다.
- * =========================================================================
- */
+/** Context-ranked, persistent one-stop route: visit every destination before repeating. */
 
 import { safeLocalStorage } from '@/utils/safeStorage';
 import {
   PRISM_ALL_APP_DESTINATIONS,
   PrismMenuDestination,
-  isSameAppOrPage,
 } from '@/lib/selectionContextRecommender';
 import { serializeCurrentView } from './omniWarpEngine';
 import { extractLatestDialogueContext } from '@/lib/prismPersonaSync';
-import { isDisallowedWarpDestination } from './wormholeSpectrum';
-import { resolveCanonicalPath, isValidPrismPath } from '@/lib/prismRouteRegistry';
+import { resolveCanonicalPath, isValidPrismPath, getActivePrismRoutes } from '@/lib/prismRouteRegistry';
+import { normalizeOneStopPage, ONE_STOP_PAGE_TABS } from './oneStopPages';
+import { advanceOneStopCycle, normalizeOneStopState, type OneStopState } from './oneStopCycle';
 
 export const PRISM_CORE_APP_IDS = [
   'orange',
@@ -67,8 +51,7 @@ export interface ContextNextMenuResult {
   stats: ContextCycleStats;
 }
 
-const CONTEXT_CYCLE_STORAGE_KEY = 'prism_drag_context_cycle_state_v2';
-const LEGACY_STORAGE_KEY = 'prism_drag_context_cycle_state_v1';
+const CONTEXT_CYCLE_STORAGE_KEY = 'prism_one_stop_cycle_v3';
 
 /**
  * 🗺️ 경로로부터 7대 코어 앱 ID 도출
@@ -185,323 +168,113 @@ export function scoreMenuByContext(menu: PrismMenuDestination, contextText: stri
   return score;
 }
 
-/**
- * 💾 3. 사이클 방문 상태 영구 보존 및 로드
- */
-export function getContextCycleState(): ContextRecommendationCycleState {
-  try {
-    const raw = safeLocalStorage.getItem(CONTEXT_CYCLE_STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed.cycleIndex === 'number' && Array.isArray(parsed.visitedAppIds)) {
-        return {
-          cycleIndex: parsed.cycleIndex || 1,
-          visitedAppIds: parsed.visitedAppIds,
-          visitedSubmenuIds: Array.isArray(parsed.visitedSubmenuIds) ? parsed.visitedSubmenuIds : [],
-          lastVisitedAppId: parsed.lastVisitedAppId || null,
-          lastVisitedSubmenuId: parsed.lastVisitedSubmenuId || null,
-          lastJumpTime: parsed.lastJumpTime || 0,
-        };
-      }
+
+export function getOneStopDestinations(): PrismMenuDestination[] {
+  const destinations = new Map<string, PrismMenuDestination>();
+  for (const menu of PRISM_ALL_APP_DESTINATIONS) {
+    if (!isValidPrismPath(menu.path)) continue;
+    const raw = new URL(menu.path, 'https://luckey.local');
+    const tab = raw.searchParams.get('tab');
+    if (tab && !ONE_STOP_PAGE_TABS[raw.pathname]?.some(([id]) => id === tab)) continue;
+    const path = oneStopPageKey(menu.path);
+    if (!destinations.has(path)) destinations.set(path, { ...menu, path });
+  }
+  for (const route of getActivePrismRoutes()) {
+    const defaultMenu: PrismMenuDestination = {
+      id: route.id, name: route.name, subName: route.subName,
+      path: route.path, basePath: route.path, emoji: route.icon,
+      badge: '원스탑 추천경로', themeColor: route.themeColor,
+      buttonClass: '', textClass: '', borderClass: '',
+      keywords: [route.name, route.subName], intentRegex: /$^/,
+      contextReason: route.description, tossTargetId: route.id,
+    };
+    if (!destinations.has(route.path)) destinations.set(route.path, defaultMenu);
+    for (const [tab, name] of ONE_STOP_PAGE_TABS[route.path] || []) {
+      const path = oneStopPageKey(route.path + '?tab=' + tab);
+      if (!destinations.has(path)) destinations.set(path, { ...defaultMenu, id: route.id + '_' + tab, path, name, subName: name, keywords: [name] });
     }
+  }
+  return [...destinations.values()];
+}
 
-    // 마이그레이션: 구 버전 키 호환
-    const legacyRaw = safeLocalStorage.getItem(LEGACY_STORAGE_KEY);
-    if (legacyRaw) {
-      const parsedLegacy = JSON.parse(legacyRaw);
-      if (parsedLegacy && typeof parsedLegacy.cycleIndex === 'number') {
-        const legacyVisited = Array.isArray(parsedLegacy.visitedIds) ? parsedLegacy.visitedIds : [];
-        const migratedAppIds = Array.from(
-          new Set(
-            legacyVisited
-              .map((id: string) => {
-                const found = PRISM_ALL_APP_DESTINATIONS.find((d) => d.id === id);
-                return found ? getAppIdFromMenu(found) : null;
-              })
-              .filter(Boolean)
-          )
-        ) as string[];
+/** Ignore tracking/device parameters; aliases share a visit, distinct tabs do not. */
+export function oneStopPageKey(path: string): string {
+  const canonical = resolveCanonicalPath(path);
+  return normalizeOneStopPage(canonical);
+}
 
-        return {
-          cycleIndex: parsedLegacy.cycleIndex || 1,
-          visitedAppIds: migratedAppIds,
-          visitedSubmenuIds: legacyVisited,
-          lastVisitedAppId: null,
-          lastVisitedSubmenuId: parsedLegacy.lastVisitedId || null,
-          lastJumpTime: parsedLegacy.lastJumpTime || 0,
-        };
-      }
-    }
-  } catch (_) {}
-
+export function getContextCycleState(): ContextRecommendationCycleState & OneStopState {
+  let raw: unknown;
+  try { raw = JSON.parse(safeLocalStorage.getItem(CONTEXT_CYCLE_STORAGE_KEY) || 'null'); } catch { /* Recover invalid storage. */ }
+  const state = normalizeOneStopState(raw, getOneStopDestinations().map(menu => menu.path));
   return {
-    cycleIndex: 1,
-    visitedAppIds: [],
-    visitedSubmenuIds: [],
-    lastVisitedAppId: null,
-    lastVisitedSubmenuId: null,
-    lastJumpTime: 0,
+    ...state, visitedAppIds: state.visitedPaths, visitedSubmenuIds: state.visitedPaths,
+    lastVisitedAppId: null, lastVisitedSubmenuId: null, lastJumpTime: 0,
   };
 }
 
-export function saveContextCycleState(state: ContextRecommendationCycleState): void {
-  try {
-    safeLocalStorage.setItem(CONTEXT_CYCLE_STORAGE_KEY, JSON.stringify(state));
-  } catch (_) {}
+export function saveContextCycleState(state: OneStopState): void {
+  safeLocalStorage.setItem(CONTEXT_CYCLE_STORAGE_KEY, JSON.stringify(state));
 }
 
-/**
- * 🔒 터치 세션 동안 반복 I/O 및 프레임 흔들림 방지를 위한 활성 캐시
- */
-let activeSessionResult: ContextNextMenuResult | null = null;
+// Recommendations are recomputed against persisted progress, so selection/context changes cannot bypass history.
+export function resetActiveContextPeek(): void {}
 
-export function resetActiveContextPeek(): void {
-  activeSessionResult = null;
-}
+let lastRecordedPage = '';
 
-/**
- * 🔮 4. 다음 추천 1위 메뉴 미리보기 (Preview / Peek)
- * - 7대 앱 중 이번 사이클에서 아직 방문하지 않은 앱을 맥락 점수 1순위로 선별합니다.
- * - 이미 이번 사이클에서 방문한 앱은 절대 중복 추천되지 않습니다.
- * - 모든 7대 앱을 방문한 경우 이번 사이클 완주 처리 및 새 사이클 1순위를 안내합니다.
- */
-export function peekNextRecommendedMenuByCycle(
-  currentLocation?: string,
-  overrideContextText?: string
-): ContextNextMenuResult {
-  const curr = currentLocation || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/');
-
-  // 🌟 텍스트 선택(문장 드래그) 시에는 이전 캐시를 무효화하고 선택 텍스트에 기반한 새로운 추천 산출
-  if (overrideContextText && overrideContextText.trim().length >= 2) {
-    activeSessionResult = null;
-  } else if (activeSessionResult) {
-    if (
-      isSameAppOrPage(activeSessionResult.menu.path, curr) ||
-      isSameAppOrPage(activeSessionResult.menu.basePath, curr)
-    ) {
-      activeSessionResult = null;
-    } else {
-      return activeSessionResult;
-    }
-  }
-
-  const currentAppId = getAppIdFromPath(curr);
+export function recordOneStopPageVisit(path: string): void {
+  if (!isValidPrismPath(path)) return;
+  const key = oneStopPageKey(path);
+  lastRecordedPage = key;
   const state = getContextCycleState();
-  const contextText = overrideContextText || extractAutoContextText(curr);
-
-  // 현재 위치한 앱은 이번 사이클의 출발점/방문점으로 반드시 포함
-  let effectiveVisited = [...state.visitedAppIds];
-  if (!effectiveVisited.includes(currentAppId)) {
-    effectiveVisited.push(currentAppId);
+  if (getOneStopDestinations().some(menu => menu.path === key) && !state.visitedPaths.includes(key)) {
+    saveContextCycleState({ cycleIndex: state.cycleIndex, visitedPaths: [...state.visitedPaths, key] });
   }
+}
 
-  let isFullCycleCompleted = false;
-
-  // 1. 이번 사이클에서 아직 방문하지 않은 앱 후보군 (현재 앱 제외)
-  // 🌟 텍스트 드래그(선택) 시에는 텍스트 내용과 가장 가까운 최적 럭키 추천기능을 찾기 위해
-  //    방문 이력에 구애받지 않고 현재 앱을 제외한 전체 앱을 후보군으로 평가
-  const hasSelectedText = Boolean(overrideContextText && overrideContextText.trim().length >= 2);
-  let candidateAppIds = hasSelectedText
-    ? PRISM_CORE_APP_IDS.filter((appId) => appId !== currentAppId)
-    : PRISM_CORE_APP_IDS.filter((appId) => appId !== currentAppId && !effectiveVisited.includes(appId));
-
-  // 2. 만약 모든 앱을 이미 다 방문했다면 (7대 앱 1사이클 완주!)
-  //    -> 사이클 완료 플래그 활성화 및 현재 앱을 제외한 전체 앱을 다시 후보군으로 초기화
-  if (candidateAppIds.length === 0) {
-    isFullCycleCompleted = true;
-    effectiveVisited = [currentAppId];
-    candidateAppIds = PRISM_CORE_APP_IDS.filter((appId) => appId !== currentAppId);
-  }
-
-  // 3. 각 후보 앱별로 최적의 서브메뉴(39대 목적지 중) 선정 및 맥락 점수 산출
-  const scoredApps: Array<{
-    appId: PrismCoreAppId;
-    bestMenu: PrismMenuDestination;
-    score: number;
-    reason: string;
-    safePath: string;
-  }> = [];
-
-  for (const appId of candidateAppIds) {
-    const appMenus = PRISM_ALL_APP_DESTINATIONS.filter((menu) => {
-      if (isDisallowedWarpDestination(menu.id) || isDisallowedWarpDestination(menu.path)) {
-        return false;
-      }
-      if (menu.path === '/universe') return false;
-      // 🛡️ 루시(/, /chat, /lucy) 및 Key(/key, /calm, /orb 등)는 추천 후보에서 엄격 배제
-      const menuPathLower = (menu.path || '').toLowerCase();
-      const menuIdLower = (menu.id || '').toLowerCase();
-      const cleanPath = (menu.path || '').split('?')[0].split('#')[0];
-      if (
-        cleanPath === '/' ||
-        cleanPath === '/chat' ||
-        cleanPath === '/lucy' ||
-        cleanPath === '/key' ||
-        cleanPath === '/calm' ||
-        cleanPath === '/orb' ||
-        cleanPath === '/gateway' ||
-        cleanPath === '/crystal' ||
-        menuPathLower.includes('chat') ||
-        menuPathLower.includes('lucy') ||
-        menuPathLower.includes('key') ||
-        menuPathLower.includes('calm') ||
-        menuPathLower.includes('orb') ||
-        menuIdLower.includes('lucy') ||
-        menuIdLower.includes('key')
-      ) {
-        return false;
-      }
-      const targetApp = getAppIdFromMenu(menu);
-      return targetApp === appId;
-    });
-
-    if (appMenus.length === 0) continue;
-
-    // 해당 앱의 서브메뉴 채점 (아직 방문하지 않은 서브메뉴에 신선도 가산점 부여)
-    const scoredMenus = appMenus.map((menu) => {
-      let score = scoreMenuByContext(menu, contextText);
-      if (!state.visitedSubmenuIds.includes(menu.id)) {
-        score += 8; // 아직 안 가본 서브메뉴 우선 탐색 보너스
-      }
-      return {
-        menu,
-        score,
-        reason: menu.contextReason,
-        safePath: resolveCanonicalPath(menu.path),
-      };
-    });
-
-    scoredMenus.sort((a, b) => b.score - a.score);
-    const topMenu = scoredMenus[0];
-
-    scoredApps.push({
-      appId,
-      bestMenu: topMenu.menu,
-      score: topMenu.score,
-      reason: topMenu.reason,
-      safePath: topMenu.safePath,
-    });
-  }
-
-  // 점수가 가장 높은 후보 앱 1위 선택
-  scoredApps.sort((a, b) => b.score - a.score);
-  const chosen = scoredApps[0] || {
-    appId: candidateAppIds[0] || 'trinity',
-    bestMenu: PRISM_ALL_APP_DESTINATIONS[0],
-    score: 10,
-    reason: '새로운 차원으로 안내합니다.',
-    safePath: '/trinity',
-  };
-
-  const totalCount = PRISM_CORE_APP_IDS.length; // 7개 정규 앱
-  const visitedCount = isFullCycleCompleted ? 2 : effectiveVisited.length + 1;
-  const remainingCount = Math.max(0, totalCount - visitedCount);
-  const cycleIndex = state.cycleIndex + (isFullCycleCompleted ? 1 : 0);
-
-  const result: ContextNextMenuResult = {
-    menu: chosen.bestMenu,
-    reason: chosen.reason,
-    score: chosen.score,
-    safePath: chosen.safePath,
+export function peekNextRecommendedMenuByCycle(currentLocation?: string, overrideContextText?: string): ContextNextMenuResult {
+  const curr = currentLocation || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/');
+  let current = isValidPrismPath(curr) ? oneStopPageKey(curr) : '';
+  if (lastRecordedPage && lastRecordedPage.split('?')[0] === current.split('?')[0]) current = lastRecordedPage;
+  const menus = getOneStopDestinations();
+  const context = overrideContextText || extractAutoContextText(curr);
+  const ranked = menus.map(menu => ({ menu, score: scoreMenuByContext(menu, context) }))
+    .sort((a, b) => b.score - a.score);
+  const state = getContextCycleState();
+  const next = advanceOneStopCycle(state, menus.map(menu => menu.path), current, ranked.map(item => item.menu.path));
+  const chosen = ranked.find(item => item.menu.path === next.destination)!;
+  return {
+    menu: chosen.menu, reason: chosen.menu.contextReason, score: chosen.score, safePath: next.destination,
     stats: {
-      visitedCount: Math.min(visitedCount, totalCount),
-      totalCount,
-      remainingCount,
-      cycleIndex,
-      isFullCycleCompleted,
-      visitedAppIds: effectiveVisited,
-      currentAppId,
-      nextAppId: chosen.appId,
+      visitedCount: next.state.visitedPaths.length, totalCount: menus.length,
+      remainingCount: menus.length - next.state.visitedPaths.length,
+      cycleIndex: next.state.cycleIndex, isFullCycleCompleted: next.restarted,
+      visitedAppIds: next.state.visitedPaths,
+      currentAppId: getAppIdFromPath(curr), nextAppId: getAppIdFromMenu(chosen.menu),
     },
   };
-
-  activeSessionResult = result;
-  return result;
 }
 
-/**
- * 🚀 5. 다음 추천 1위 메뉴 도약 확정 및 사이클 방문 기록 (Commit & Advance)
- * - 사용자가 빅뱅 버튼을 드래그 후 뗐을 때 호출됩니다.
- * - 선택된 앱(및 세부 메뉴)을 이번 사이클의 방문 목록에 영구 기록합니다.
- * - 전체 7대 앱이 완주되면 사이클 번호를 올리고 방문 목록을 갱신합니다.
- */
-export function commitNextRecommendedMenuByCycle(
-  currentLocation?: string,
-  overrideContextText?: string
-): ContextNextMenuResult {
+export function commitNextRecommendedMenuByCycle(currentLocation?: string, overrideContextText?: string): ContextNextMenuResult {
   const result = peekNextRecommendedMenuByCycle(currentLocation, overrideContextText);
-  const state = getContextCycleState();
-  const currentAppId = result.stats.currentAppId;
-  const chosenAppId = result.stats.nextAppId;
-  const chosenMenuId = result.menu.id;
-
-  if (result.stats.isFullCycleCompleted) {
-    // 1바퀴 완주 후 새 사이클 진입
-    state.cycleIndex += 1;
-    state.visitedAppIds = [currentAppId, chosenAppId];
-    state.visitedSubmenuIds = [chosenMenuId];
-  } else {
-    if (!state.visitedAppIds.includes(currentAppId)) {
-      state.visitedAppIds.push(currentAppId);
-    }
-    if (!state.visitedAppIds.includes(chosenAppId)) {
-      state.visitedAppIds.push(chosenAppId);
-    }
-    if (!state.visitedSubmenuIds.includes(chosenMenuId)) {
-      state.visitedSubmenuIds.push(chosenMenuId);
-    }
-  }
-
-  state.lastVisitedAppId = chosenAppId;
-  state.lastVisitedSubmenuId = chosenMenuId;
-  state.lastJumpTime = Date.now();
-  saveContextCycleState(state);
-
-  // 글로벌 이벤트 브로드캐스트
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(
-      new CustomEvent('prism:context_cycle_jump', {
-        detail: {
-          destination: result.menu,
-          appId: chosenAppId,
-          visitedCount: result.stats.visitedCount,
-          totalCount: result.stats.totalCount,
-          cycleIndex: state.cycleIndex,
-          isFullCycleCompleted: result.stats.isFullCycleCompleted,
-        },
-      })
-    );
-  }
-
-  resetActiveContextPeek();
+  saveContextCycleState({ cycleIndex: result.stats.cycleIndex, visitedPaths: result.stats.visitedAppIds });
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:context_cycle_jump', {
+    detail: { destination: result.menu, ...result.stats },
+  }));
   return result;
 }
 
-/**
- * 📈 6. 현재 사이클 진행 통계 조회
- */
 export function getContextCycleStats(currentLocation?: string): ContextCycleStats {
   const state = getContextCycleState();
+  const menus = getOneStopDestinations();
   const curr = currentLocation || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/');
-  const currentAppId = getAppIdFromPath(curr);
-
-  let visitedAppIds = [...state.visitedAppIds];
-  if (!visitedAppIds.includes(currentAppId)) {
-    visitedAppIds.push(currentAppId);
-  }
-
-  const totalCount = PRISM_CORE_APP_IDS.length;
-  const visitedCount = Math.min(visitedAppIds.length, totalCount);
-  const remainingCount = Math.max(0, totalCount - visitedCount);
-
+  let key = isValidPrismPath(curr) ? oneStopPageKey(curr) : '';
+  if (lastRecordedPage && lastRecordedPage.split('?')[0] === key.split('?')[0]) key = lastRecordedPage;
+  const visited = new Set(state.visitedPaths);
+  if (menus.some(menu => menu.path === key)) visited.add(key);
   return {
-    visitedCount,
-    totalCount,
-    remainingCount,
-    cycleIndex: state.cycleIndex,
-    isFullCycleCompleted: visitedCount >= totalCount,
-    visitedAppIds,
-    currentAppId,
-    nextAppId: '',
+    visitedCount: visited.size, totalCount: menus.length, remainingCount: menus.length - visited.size,
+    cycleIndex: state.cycleIndex, isFullCycleCompleted: visited.size === menus.length,
+    visitedAppIds: [...visited], currentAppId: getAppIdFromPath(curr), nextAppId: '',
   };
 }
