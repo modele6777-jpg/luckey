@@ -3050,6 +3050,8 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 /* Reserve the permanent rail once; page content fills the remaining width. */
 :root { --sites-sidebar-width: 70px; }
 .sites-pinned-main {
+  /* The rail already covers this part of the device's right safe area. */
+  --sar: max(0px, calc(env(safe-area-inset-right, 0px) - var(--sites-sidebar-width)));
   width: calc(100% - var(--sites-sidebar-width));
   max-width: calc(100% - var(--sites-sidebar-width));
   padding-right: 0;

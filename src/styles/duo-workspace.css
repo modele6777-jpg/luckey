@@ -3,7 +3,7 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding-inline: max(.75rem, env(safe-area-inset-left, 0px)) max(.75rem, env(safe-area-inset-right, 0px));
+  padding-inline: max(.75rem, env(safe-area-inset-left, 0px)) max(.75rem, var(--sar, env(safe-area-inset-right, 0px)));
 }
 .duo-split-workspace {
   display: grid;
@@ -105,9 +105,15 @@
   max-width: none;
   margin-inline: 0;
   padding-left: max(.5rem, env(safe-area-inset-left, 0px)) !important;
-  padding-right: max(.5rem, env(safe-area-inset-right, 0px)) !important;
+  padding-right: max(.5rem, var(--sar, env(safe-area-inset-right, 0px))) !important;
 }
 .prism-page-content .prism-page-content,
 .prism-page-content .duo-workspace-container {
   padding-inline: 0 !important;
+}
+
+/* A page shell owns safe-area gutters, including in landscape. */
+.sites-pinned-main [data-app-scroll-root]:has(.prism-page-content) {
+  padding-left: 0;
+  padding-right: 0;
 }
