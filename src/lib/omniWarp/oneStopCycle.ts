@@ -1,11 +1,11 @@
 export interface OneStopState { cycleIndex: number; visitedPaths: string[] }
 
-export function normalizeOneStopState(raw: unknown, paths: string[]): OneStopState {
+export function normalizeOneStopState(raw: unknown, paths: string[], canonicalize: (path: string) => string = path => path): OneStopState {
   const data = raw as Partial<OneStopState> | null;
   const allowed = new Set(paths);
   return {
     cycleIndex: Number.isSafeInteger(data?.cycleIndex) && data!.cycleIndex! > 0 ? data!.cycleIndex! : 1,
-    visitedPaths: [...new Set(Array.isArray(data?.visitedPaths) ? data.visitedPaths.filter(path => allowed.has(path)) : [])],
+    visitedPaths: [...new Set(Array.isArray(data?.visitedPaths) ? data.visitedPaths.filter((path): path is string => typeof path === 'string').map(canonicalize).filter(path => allowed.has(path)) : [])],
   };
 }
 

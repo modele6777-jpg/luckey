@@ -69,3 +69,18 @@ test('warp URLs state the default tab explicitly instead of inheriting a previou
   assert.equal(path('/orange?tab=synergy'), '/orange?tab=synergy');
   assert.equal(path('/profile'), '/profile');
 });
+
+
+test('persisted aliases and explicit default tabs retain visits before the next recommendation', async () => {
+  const { normalizeOneStopPage } = await import('../src/lib/omniWarp/oneStopPages');
+  const destinations = ['/trinity', '/trinity?tab=tarot', '/trinity?tab=oracle', '/library'];
+  const state = normalizeOneStopState({ cycleIndex: 3, visitedPaths: ['/trinity?tab=destiny', '/trinity?tab=wealth', '/trinity?tab=tarot', 42] }, destinations, normalizeOneStopPage);
+  assert.deepEqual(state, { cycleIndex: 3, visitedPaths: ['/trinity', '/trinity?tab=tarot'] });
+  const next = advanceOneStopCycle(state, destinations, '/library', destinations);
+  assert.equal(next.destination, '/trinity?tab=oracle');
+  assert.equal(next.restarted, false);
+  assert.equal(next.state.visitedPaths.length, destinations.length);
+  const following = advanceOneStopCycle(next.state, destinations, next.destination, destinations);
+  assert.equal(following.restarted, true);
+  assert.equal(following.state.cycleIndex, 4);
+});

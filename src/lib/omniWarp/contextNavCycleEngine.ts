@@ -207,7 +207,7 @@ export function oneStopPageKey(path: string): string {
 export function getContextCycleState(): ContextRecommendationCycleState & OneStopState {
   let raw: unknown;
   try { raw = JSON.parse(safeLocalStorage.getItem(CONTEXT_CYCLE_STORAGE_KEY) || 'null'); } catch { /* Recover invalid storage. */ }
-  const state = normalizeOneStopState(raw, getOneStopDestinations().map(menu => menu.path));
+  const state = normalizeOneStopState(raw, getOneStopDestinations().map(menu => menu.path), path => isValidPrismPath(path) ? oneStopPageKey(path) : path);
   return {
     ...state, visitedAppIds: state.visitedPaths, visitedSubmenuIds: state.visitedPaths,
     lastVisitedAppId: null, lastVisitedSubmenuId: null, lastJumpTime: 0,
