@@ -521,7 +521,7 @@ export default function LeftSidebarNav() {
               aria-labelledby="luckey-menu-title"
               data-theme={isLight ? 'light' : 'dark'}
               className="luckey-menu-panel luckey-bottom-menu-panel"
-              style={{ position: 'fixed', left: bounds.x + 12, top: bounds.y + bounds.height - 148, width: Math.max(0, bounds.width - 24), maxHeight: 140 }}
+              style={{ position: 'fixed', left: bounds.left + 12, top: bounds.top + bounds.height - 148, width: Math.max(0, bounds.width - 24), maxHeight: 140 }}
               initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
