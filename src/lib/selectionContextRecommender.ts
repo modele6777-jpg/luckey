@@ -5,8 +5,6 @@
  * "상시 다른 추천경로": 맥락 가중치 + 동적 회전 해시를 통해 매번 신선하고 다채로운 경로를 제안
  */
 
-import { savePendingSelection } from './selectionBridge';
-import { sendPrismToss } from './prismToss';
 
 export interface PrismMenuDestination {
   id: string;
@@ -970,110 +968,5 @@ export function getRecommendedMenu(
     totalCandidates: topTier.length,
     top3: shuffledTop3,
   };
-}
-
-/**
-/**
- * 선택된 텍스트를 추천된 메뉴로 즉각 토스(Toss) & 해당 기능 바로 실행
- */
-export function tossSelectionToMenu(
-  text: string,
-  menu: PrismMenuDestination,
-  currentPath: string,
-  navigate: (path: string) => void
-): void {
-  if (!text || text.trim().length < 2) return;
-  const trimmed = text.trim();
-
-  try {
-    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate?.(45);
-    }
-  } catch (_) {}
-
-  // 1. 쿼리 파라미터에서 탭 및 모드 파싱
-  let targetTab: string | null = null;
-  let targetMode: string | null = null;
-  if (menu.path.includes('?')) {
-    try {
-      const url = new URL(menu.path, 'http://localhost');
-      targetTab = url.searchParams.get('tab');
-      targetMode = url.searchParams.get('mode');
-    } catch (_) {}
-  }
-  const effectiveTab = targetTab || targetMode || (menu.path.includes('/chat') ? 'chat' : null);
-
-  // 2. 세션 스토리지에 상세 토스 및 즉시 실행 플래그 보존
-  if (typeof window !== 'undefined') {
-    try {
-      if (effectiveTab) {
-        sessionStorage.setItem('prism_target_tab', effectiveTab);
-      }
-      sessionStorage.setItem('prism_auto_execute_text', trimmed);
-      sessionStorage.setItem('prism_auto_execute_target', menu.id);
-      sessionStorage.setItem('prism_auto_execute_path', menu.path);
-      sessionStorage.setItem('prism_auto_execute_timestamp', String(Date.now()));
-    } catch (_) {}
-  }
-
-  // 3. 세션 스토리지에 드래그 선택 컨텍스트 저장
-  savePendingSelection(trimmed, menu.id, currentPath, {
-    targetMenuId: menu.id,
-    targetPath: menu.path,
-    contextReason: menu.contextReason,
-  });
-
-  // 4. 통합 프리즘 토스 파이프라인 전송 (타깃 앱 수신 및 autoTrigger 즉시 실행)
-  sendPrismToss({
-    sourceApp: currentPath || 'selection_bridge',
-    targetApp: menu.tossTargetId,
-    actionType: 'smart_toss',
-    contextMessage: trimmed,
-    autoPrompt: trimmed,
-    autoTrigger: true,
-    tossedAt: Date.now(),
-  });
-
-  // 5. 브라우저 커스텀 이벤트 발행 (즉시 실행 및 탭 전환)
-  if (typeof window !== 'undefined') {
-    // 탭 변경 이벤트 먼저 발행
-    if (effectiveTab) {
-      window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: effectiveTab } }));
-    }
-
-    // 토스 이벤트 발행
-    window.dispatchEvent(
-      new CustomEvent('prism:selection_tossed', {
-        detail: {
-          text: trimmed,
-          targetMenu: menu,
-          sourcePath: currentPath,
-          tab: effectiveTab,
-          autoTrigger: true,
-        },
-      })
-    );
-
-    // 즉각 기능 실행 전용 이벤트 발행
-    window.dispatchEvent(
-      new CustomEvent('prism:selection_execute', {
-        detail: {
-          text: trimmed,
-          targetMenu: menu,
-          targetMenuId: menu.id,
-          targetPath: menu.path,
-          sourcePath: currentPath,
-          tab: effectiveTab,
-          autoTrigger: true,
-        },
-      })
-    );
-
-    window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: menu.path, tab: effectiveTab } }));
-    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: menu.path, tab: effectiveTab } }));
-  }
-
-  // 6. 목적지 경로로 즉각 이동 실행
-  navigate(menu.path);
 }
 

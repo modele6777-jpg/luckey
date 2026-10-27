@@ -346,12 +346,7 @@ export default function LeftSidebarNav() {
         if (forceResetCache) {
           resetActiveContextPeek();
         }
-        const selText =
-          typeof window !== 'undefined' ? window.getSelection()?.toString()?.trim() || '' : '';
-        const res = peekNextRecommendedMenuByCycle(
-          cleanPath,
-          selText.length >= 2 ? selText : undefined
-        );
+        const res = peekNextRecommendedMenuByCycle(cleanPath);
         setTopRecommendation(res);
       } catch (err) {
         console.warn('[LeftSidebarNav] Failed to compute top recommendation:', err);

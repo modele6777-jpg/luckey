@@ -5,12 +5,7 @@ interface SelectionBridgeToolbarProps {
   currentPath?: string;
 }
 
-/**
- * 🌟 SelectionBridgeToolbar (선택 텍스트 백그라운드 브릿지)
- * - 일반 본문 텍스트뿐만 아니라 input, textarea (빈칸 입력창) 및 모든 텍스트 선택(스크롤)을 포착하여
- *   빅뱅 버튼 토스 연동 파이프라인을 백그라운드에서 안전하게 구동합니다.
- * - 스크롤 취소/해제 시 clearPendingSelection()을 호출하여 대기 토스 모드를 안전하게 초기화합니다.
- */
+/** Captures selection for BigBang's long-press Lucy gesture only; never navigates or sends it. */
 export default function SelectionBridgeToolbar({ currentPath: _currentPath }: SelectionBridgeToolbarProps) {
 
   useEffect(() => {

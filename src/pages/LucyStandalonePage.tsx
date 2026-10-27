@@ -24,7 +24,6 @@ import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/c
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
-import { getAndClearPendingSelection } from '@/lib/selectionBridge';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
 import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
@@ -2199,9 +2198,6 @@ export default function LucyStandalonePage() {
       if (autoSendPrompt) {
         sessionStorage.removeItem('lucy_injected_auto_send');
         sessionStorage.removeItem('lucy_injected_input_draft');
-        try {
-          getAndClearPendingSelection();
-        } catch (_) {}
         // Determine channels based on pending channel or fallback to Master Mode
         const finalChannels: SpecialChannel[] = targetChannels !== null
           ? targetChannels
@@ -2219,27 +2215,10 @@ export default function LucyStandalonePage() {
         return;
       }
 
-      // 2. 🧠 텍스트 드래그(선택) 연동: 앱 어디서든 선택한 내용을 루시 채팅으로 전송한 경우 자동 처리
-      const pendingSelection = getAndClearPendingSelection();
-      if (pendingSelection && pendingSelection.text) {
-        const queryText = `[선택 내용 안내 요청]\n"${pendingSelection.text}"\n\n방금 내가 앱에서 선택한 이 내용에 대해 핵심과 의미, 유용한 조언을 자세히 안내해 줘.`;
-        const finalChannels: SpecialChannel[] = ALL_CHANNELS;
-        setActiveChannels(finalChannels);
-        const runSend = (attempt = 0) => {
-          if (handleSendRef.current) {
-            handleSendRef.current(queryText, finalChannels);
-          } else if (attempt < 15) {
-            setTimeout(() => runSend(attempt + 1), 100);
-          }
-        };
-        setTimeout(() => runSend(0), 150);
-        return;
-      } else {
-        const injectedDraft = sessionStorage.getItem('lucy_injected_input_draft');
-        if (injectedDraft) {
-          sessionStorage.removeItem('lucy_injected_input_draft');
-          setInput(injectedDraft);
-        }
+      const injectedDraft = sessionStorage.getItem('lucy_injected_input_draft');
+      if (injectedDraft) {
+        sessionStorage.removeItem('lucy_injected_input_draft');
+        setInput(injectedDraft);
       }
     } catch (_) {}
 
@@ -2258,25 +2237,9 @@ export default function LucyStandalonePage() {
       }
     };
 
-    const handleDynamicSelection = (e: Event) => {
-      const detail = (e as CustomEvent)?.detail;
-      if (detail?.text && detail?.target === 'lucy') {
-        const queryText = `[선택 내용 안내 요청]\n"${detail.text}"\n\n방금 내가 앱에서 선택한 이 내용에 대해 핵심과 의미, 유용한 조언을 자세히 안내해 줘.`;
-        const finalChannels: SpecialChannel[] = ALL_CHANNELS;
-        setActiveChannels(finalChannels);
-        setTimeout(() => {
-          if (handleSendRef.current) {
-            handleSendRef.current(queryText, finalChannels);
-          }
-        }, 150);
-      }
-    };
-
     window.addEventListener('lucy-inject-message', handleDynamicInject);
-    window.addEventListener('prism:selection_saved', handleDynamicSelection);
     return () => {
       window.removeEventListener('lucy-inject-message', handleDynamicInject);
-      window.removeEventListener('prism:selection_saved', handleDynamicSelection);
     };
   }, []);
 

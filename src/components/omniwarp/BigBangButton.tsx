@@ -22,9 +22,7 @@ import { omniWarpAudio } from '@/lib/omniWarp/omniWarpAudio';
 import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { safeSessionStorage } from '@/utils/safeStorage';
-import { peekPendingSelection, savePendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
-import { sendPrismToss } from '@/lib/prismToss';
-import { tossSelectionToMenu, PRISM_ALL_APP_DESTINATIONS } from '@/lib/selectionContextRecommender';
+import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
 import { PrismAppIcon } from './PrismAppIcon';
 import { LucyQuickChatBubble } from './LucyQuickChatBubble';
@@ -279,28 +277,43 @@ export function BigBangButton() {
 
     // 2. 버튼 클릭/터치 시 포커스 이동 등으로 selection이 방금 해제된 경우: 보존된 대기 스토리지 확인
     const pending = peekPendingSelection();
-    if (pending && pending.text && pending.text.trim().length >= 2) {
+    if (pending && pending.sourcePath && resolveCanonicalPath(pending.sourcePath) === resolveCanonicalPath(location) && !pending.target && pending.text && pending.text.trim().length >= 2) {
       return pending.text.trim();
     }
     return '';
-  }, []);
+  }, [location]);
 
-  // 🌟 텍스트 드래그(선택) 감지: 탭 시 루시 토스, 더블탭 시 루시 채팅 질문 토스, 드래그 시 럭키 추천 1순위 토스 지원
+  // Capture selected text exclusively for the long-press Lucy gesture.
   const [hasSelectionToss, setHasSelectionToss] = useState(false);
   const [selectionPreviewText, setSelectionPreviewText] = useState('');
   const touchStartSelectionRef = useRef<string>('');
   const lastValidSelectionRef = useRef<string>('');
 
-  // 🌟 문장 선택 시 맥락 엔진을 통해 럭키 1순위 추천 앱 이름 실시간 추출
-  const dynamicRecommendedLuckeyApp = useMemo(() => {
-    if (!hasSelectionToss || !selectionPreviewText) return '';
-    try {
-      const peek = peekNextRecommendedMenuByCycle(location, selectionPreviewText);
-      return peek?.menu?.name || '';
-    } catch (_) {
-      return '';
+  const holdTossDeliveredRef = useRef(false);
+  const deliverSelectionToLucy = useCallback((text: string) => {
+    if (!text.trim() || holdTossDeliveredRef.current) return;
+    holdTossDeliveredRef.current = true;
+    setQuickChatInitialPrompt(`내가 선택한 문장이야:\n"${text}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`);
+    setQuickChatAutoSend(true);
+    lastValidSelectionRef.current = '';
+    touchStartSelectionRef.current = '';
+    clearPendingSelection();
+    setHasSelectionToss(false);
+    setSelectionPreviewText('');
+    window.getSelection()?.removeAllRanges();
+    const input = document.activeElement;
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      try { input.setSelectionRange(input.selectionEnd, input.selectionEnd); } catch { /* Non-text input. */ }
     }
-  }, [hasSelectionToss, selectionPreviewText, location]);
+  }, []);
+
+  useEffect(() => {
+    clearPendingSelection();
+    lastValidSelectionRef.current = '';
+    touchStartSelectionRef.current = '';
+    setHasSelectionToss(false);
+    setSelectionPreviewText('');
+  }, [location]);
 
   useEffect(() => {
     const updateSelectionState = () => {
@@ -545,32 +558,16 @@ export function BigBangButton() {
         triggerHaptic('whitehole');
         setIsQuickChatOpen(true);
         setQuickChatVoiceActive(true);
-        if (textToToss) {
-          const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
-          setQuickChatInitialPrompt(prompt);
-          setQuickChatAutoSend(true);
-        }
+        deliverSelectionToLucy(textToToss);
       }
     } else {
       currentHole = 'whitehole';
-      const isTextToss = Boolean(textToToss);
       target = {
-        id: isTextToss ? 'lucy' : 'hub',
-        icon: isTextToss ? '💬' : '🏠',
-        phase: 'whitehole',
-        gauge: metrics.virtualForce,
-        aiTemperature: temp,
-        title: isTextToss ? '루시 말풍선 답변' : '홈 베이스캠프',
-        actionType: isTextToss ? 'smart_toss' : 'navigate',
-        previewLabel: isTextToss
-          ? `[탭] "${textToToss.slice(0, 16)}..." ➔ 루시 말풍선 즉시답변`
-          : '가볍게 탭 ➔ 홈으로 이동',
-        previewDescription: isTextToss
-          ? '루시채팅으로 이동하지 않고 버튼 위 말풍선에서 바로 답변을 받습니다'
-          : '프롤로그 허브 메인으로 귀환합니다',
-        destinationPath: location,
-        themeColor: '#38bdf8',
-        accentGlow: 'rgba(56, 189, 248, 0.85)',
+        id: 'menu', icon: '🍀', phase: 'whitehole', gauge: metrics.virtualForce,
+        aiTemperature: temp, title: '네잎클로버 메뉴', actionType: 'navigate',
+        previewLabel: '탭: 메뉴 · 더블탭: 추천 워프',
+        previewDescription: '선택 문장은 길게 누를 때만 루시에게 전달합니다',
+        destinationPath: location, themeColor: '#38bdf8', accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
     }
 
@@ -658,11 +655,16 @@ export function BigBangButton() {
     }
 
     rafRef.current = requestAnimationFrame(updateLoop);
-  }, [location, isAborted]);
+  }, [location, isAborted, deliverSelectionToLucy]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
+    // Keep the selected sentence intact while the button resolves the gesture.
+    e.preventDefault();
     if (singleTapTimerRef.current) { clearTimeout(singleTapTimerRef.current); singleTapTimerRef.current = null; }
+    holdTossDeliveredRef.current = false;
+    setQuickChatInitialPrompt('');
+    setQuickChatAutoSend(false);
 
     const wasScrolling = (Date.now() - lastScrollTimeRef.current < 180) || isPageScrolling;
     touchStartedWhileScrollingRef.current = wasScrolling;
@@ -733,9 +735,6 @@ export function BigBangButton() {
     }
     try {
       sessionStorage.setItem('bigbang_pressing', 'true');
-      if (initialSel) {
-        savePendingSelection(initialSel, undefined, location);
-      }
     } catch (_) {}
     lastPhaseRef.current = 'whitehole';
     lastEventHorizonModeRef.current = undefined;
@@ -811,6 +810,9 @@ export function BigBangButton() {
     if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
     singleTapTimerRef.current = null;
     lastTapTimeRef.current = 0;
+    clearPendingSelection();
+    lastValidSelectionRef.current = '';
+    touchStartSelectionRef.current = '';
     isPttRecordingRef.current = false;
     window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
     setIsQuickChatOpen(false);
@@ -846,12 +848,13 @@ export function BigBangButton() {
     omniWarpAudio.playCosmicSuctionWarp();
     triggerHaptic('wormhole');
 
-    const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
-    const { menu: targetMenu, reason, stats, safePath } = commitNextRecommendedMenuByCycle(
-      location,
-      textToToss || undefined
-    );
-
+    const { menu: targetMenu, reason, stats, safePath } = commitNextRecommendedMenuByCycle(location);
+    // Navigation never carries a selected sentence into another channel.
+    clearPendingSelection();
+    lastValidSelectionRef.current = '';
+    touchStartSelectionRef.current = '';
+    setQuickChatInitialPrompt('');
+    setQuickChatAutoSend(false);
     // 🛡️ 실존 페이지 및 워프 불가 목적지 검증 (루시/Key 엄격 제외 보장)
     const finalSafePath = oneStopNavigationPath(safePath);
     const finalMenu = { ...targetMenu, path: finalSafePath };
@@ -860,13 +863,8 @@ export function BigBangButton() {
       ? `새 순환 ${stats.cycleIndex}회차`
       : `순환 ${stats.visitedCount}/${stats.totalCount}`;
 
-    const previewLabel = textToToss
-      ? `[럭키 추천 토스 · ${cycleLabel}] ${finalMenu.name}`
-      : `[원스탑 추천 워프 · ${cycleLabel}] ${finalMenu.name}`;
-
-    const previewDescription = textToToss
-      ? `"${textToToss.slice(0, 20)}..." ➔ ${finalMenu.name} 즉시 실행`
-      : reason;
+    const previewLabel = `[원스탑 추천 워프 · ${cycleLabel}] ${finalMenu.name}`;
+    const previewDescription = reason;
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
@@ -897,25 +895,14 @@ export function BigBangButton() {
       if (typeof window !== 'undefined') {
         (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
       }
-      if (textToToss) {
-        tossSelectionToMenu(textToToss, finalMenu, location, (targetPath) => {
-          if (typeof window !== 'undefined') {
-            (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-          }
-          navigate(targetPath);
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetPath } }));
-          window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: targetPath } }));
-        });
-      } else {
-        navigate(finalSafePath);
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: finalSafePath } }));
-        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: finalSafePath } }));
-        if (finalSafePath.includes('?tab=')) {
-          const tabName = finalSafePath.split('?tab=')[1]?.split('&')[0];
-          if (tabName) {
-            sessionStorage.setItem('prism_target_tab', tabName);
-            window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: tabName } }));
-          }
+      navigate(finalSafePath);
+      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: finalSafePath } }));
+      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: finalSafePath } }));
+      if (finalSafePath.includes('?tab=')) {
+        const tabName = finalSafePath.split('?tab=')[1]?.split('&')[0];
+        if (tabName) {
+          sessionStorage.setItem('prism_target_tab', tabName);
+          window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: tabName } }));
         }
       }
 
@@ -1119,14 +1106,7 @@ export function BigBangButton() {
       lastTapTimeRef.current = 0;
 
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
-      if (textToToss) {
-        const prompt = `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
-        setQuickChatInitialPrompt(prompt);
-        setQuickChatAutoSend(true);
-        if (typeof window !== 'undefined') {
-          window.getSelection()?.removeAllRanges();
-        }
-      }
+      deliverSelectionToLucy(textToToss);
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
       clearPendingSelection();
@@ -1369,7 +1349,7 @@ export function BigBangButton() {
 
           {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 (루시채팅에서는 별도 말풍선 배지 제외) */}
           <AnimatePresence>
-            {hasSelectionToss && !isPressing && !isChatView && (
+            {hasSelectionToss && !isPressing && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.85, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1377,14 +1357,8 @@ export function BigBangButton() {
                 transition={{ duration: 0.15, ease: 'easeOut' }}
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
-                <span className="text-xs">✨</span>
-                <span className="text-sky-300 font-black">탭</span><span className="text-slate-300">▸네잎클로버 메뉴</span>
-                <span className="text-slate-500">│</span>
-                <span className="text-cyan-300 font-black">더블탭</span><span className="text-slate-300">▸추천 워프</span>
-                <span className="text-slate-500">│</span>
-                <span className="text-yellow-300 font-black">홀드</span><span className="text-slate-300">▸음성 답변</span>
-                <span className="text-slate-500">│</span>
-                <span className="text-purple-300 font-black">드래그</span><span className="text-slate-300">▸KEY 채널</span>
+                <span className="text-xs">💬</span>
+                <span>선택한 문장 · 길게 눌러 루시에게 전달</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1409,11 +1383,6 @@ export function BigBangButton() {
                   <span className="text-xs font-bold text-white tracking-tight">
                     {currentTarget.title || currentTarget.name}
                   </span>
-                  {(hasSelectionToss || touchStartSelectionRef.current || lastValidSelectionRef.current) && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/25 text-purple-200 border border-purple-400/40 animate-pulse">
-                      문장 스마트 토스
-                    </span>
-                  )}
                   {currentTarget.cycleStats ? (
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/25 text-cyan-300 border border-cyan-400/40">
                       {currentTarget.cycleStats.isFullCycleCompleted

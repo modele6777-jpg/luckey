@@ -1034,9 +1034,10 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
     if (isOpen && initialAutoSend && initialPrompt && initialPrompt.trim()) {
       const promptToAutoSend = initialPrompt.trim();
       if (autoSentPromptRef.current !== promptToAutoSend && !isLucyGenerating) {
-        autoSentPromptRef.current = promptToAutoSend;
-        setInput('');
         const timer = setTimeout(() => {
+          if (autoSentPromptRef.current === promptToAutoSend) return;
+          // A re-render may cancel this timer; only mark delivery once it actually starts.
+          autoSentPromptRef.current = promptToAutoSend;
           handleSend(promptToAutoSend);
         }, 80);
         return () => clearTimeout(timer);

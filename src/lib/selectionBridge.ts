@@ -99,26 +99,6 @@ export function savePendingSelection(
 }
 
 /**
- * 대기 중인 선택 텍스트를 가져오고 즉시 소모(삭제)
- */
-export function getAndClearPendingSelection(): DraggedSelectionContext | null {
-  try {
-    const raw = sessionStorage.getItem(SELECTION_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as DraggedSelectionContext;
-    sessionStorage.removeItem(SELECTION_STORAGE_KEY);
-
-    if (Date.now() - parsed.timestamp > MAX_VALIDITY_MS) {
-      return null;
-    }
-    return parsed;
-  } catch (e) {
-    console.warn('[SelectionBridge] Failed to get pending selection:', e);
-    return null;
-  }
-}
-
-/**
  * 현재 선택된 텍스트 가져오기 (소모하지 않음)
  */
 export function peekPendingSelection(): DraggedSelectionContext | null {
