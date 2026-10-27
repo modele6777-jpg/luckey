@@ -386,6 +386,8 @@ interface BigBangCircularMeterProps {
   isCosmicSuction?: boolean;
   /** 🧭 상하좌우 원뿔 모핑 액션 등록 콜백 */
   onRegisterActions?: (actions: BigBangCircularMeterActions) => void;
+  /** Right-hand control shares the double-tap one-stop recommendation. */
+  onRecommendedWarp: () => void;
 }
 
 /**
@@ -405,6 +407,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   onRuneNavigate,
   isCosmicSuction = false,
   onRegisterActions,
+  onRecommendedWarp,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
   const meterRootRef = useRef<HTMLDivElement | null>(null);
@@ -635,42 +638,15 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     [triggerDotPulse, location, activeTabOverride, doNavigate]
   );
 
-  // 🚀 우(East) 점 탭 시 다음 순환 DApp (럭키채널 23대 DApp)으로 순환 이동
+  // The right-hand control uses the same persisted recommendation cycle as double tap.
   const handleNavigateForward = useCallback(
-    (e: React.MouseEvent | React.TouchEvent | KeyboardEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
+    (e?: React.MouseEvent | React.TouchEvent | KeyboardEvent) => {
+      e?.preventDefault();
+      e?.stopPropagation();
       triggerDotPulse('east');
-
-      try {
-        playAudioHaptic('tap_impact');
-      } catch (_) {}
-      try {
-        triggerHaptic('wormhole');
-      } catch (_) {}
-
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        try {
-          navigator.vibrate(20);
-        } catch (_) {}
-      }
-
-      const currentFull = typeof window !== 'undefined'
-        ? `${window.location.pathname}${window.location.search || ''}`
-        : location;
-      const curIdx = findCurrentCycleStepIndex(currentFull, activeTabOverride);
-      const targetIdx = (curIdx + 1) % BIGBANG_CYCLE_NAV_STEPS.length;
-      const targetStep = BIGBANG_CYCLE_NAV_STEPS[targetIdx];
-
-      doNavigate(targetStep);
-      window.dispatchEvent(
-        new CustomEvent('prism:cycle_nav', {
-          detail: { target: targetStep, direction: 'forward' },
-        })
-      );
+      onRecommendedWarp();
     },
-    [triggerDotPulse, location, activeTabOverride, doNavigate]
+    [triggerDotPulse, onRecommendedWarp]
   );
 
   // ⌨️ 키보드 좌우 화살표 (ArrowLeft / ArrowRight) 전역 단축키로 댑 무한 순환 연동

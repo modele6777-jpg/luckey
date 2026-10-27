@@ -1427,6 +1427,7 @@ export function BigBangButton() {
                 onRuneNavigate={handleRuneNavigate}
                 isCosmicSuction={isCosmicSuctionActive}
                 onRegisterActions={handleRegisterActions}
+                onRecommendedWarp={goToNextRecommended}
               />
             </div>
 
@@ -1612,8 +1613,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 더블탭: 원스탑 추천 워프 / 길게 누름: 루시 대화 / 드래그: KEY 채널)"
-              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 더블탭: 원스탑 추천 워프, 길게 누름: 루시 대화, 드래그: KEY 채널"
+              title="빅뱅 버튼 (탭: 네잎클로버 메뉴 / 더블탭·오른쪽 버튼: 원스탑 추천 워프 / 길게 누름: 루시 대화 / 드래그: KEY 채널)"
+              aria-label="빅뱅 버튼 · 탭: 네잎클로버 메뉴, 더블탭·오른쪽 버튼: 원스탑 추천 워프, 길게 누름: 루시 대화, 드래그: KEY 채널"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
