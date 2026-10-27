@@ -1118,13 +1118,13 @@ export default function EpilogueApp() {
       {/* Main Content Area */}
       <div data-app-scroll-root {...epilogueSwipeHandlers} className="min-h-0 flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
         {activeMode === 'synergy' ? (
-          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-4 space-y-6">
+          <div className="prism-page-content w-full mx-auto px-4 sm:px-6 pt-4 space-y-6">
             <EpilogueSynergySection />
           </div>
         ) : activeMode === 'diary' ? (
           <EpilogueDiaryView />
         ) : (
-          <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 space-y-6">
+          <div className="prism-page-content w-full mx-auto px-3 sm:px-6 pt-4 space-y-6">
             {/* Step Sub-Pills for Profile */}
             <div className="flex items-center justify-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
               {SECTIONS.map((item, idx) => {

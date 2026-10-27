@@ -1365,7 +1365,7 @@ export default function OrangeApp() {
       </motion.nav>
 
       <main data-app-scroll-root {...orangeSwipeHandlers} className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
-        <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">
+        <div className="prism-page-content w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col min-w-0">
           <AnimatePresence mode="wait">
               {activeMode === 'synergy' ? (
                   <motion.div key="orange-synergy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full min-w-0 pb-6 flex flex-col items-stretch">

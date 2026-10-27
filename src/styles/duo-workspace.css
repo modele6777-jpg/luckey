@@ -3,7 +3,7 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding-inline: max(.75rem, env(safe-area-inset-left, 0px)) max(1.25rem, env(safe-area-inset-right, 0px));
+  padding-inline: max(.75rem, env(safe-area-inset-left, 0px)) max(.75rem, env(safe-area-inset-right, 0px));
 }
 .duo-split-workspace {
   display: grid;
@@ -95,4 +95,19 @@
 }
 @media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
   .duo-split-workspace { column-gap: var(--duo-hinge-gap, 1.5rem); }
+}
+
+/* Page shells use the available canvas; nested workspaces share one edge gutter. */
+.prism-page-content {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin-inline: 0;
+  padding-left: max(.5rem, env(safe-area-inset-left, 0px)) !important;
+  padding-right: max(.5rem, env(safe-area-inset-right, 0px)) !important;
+}
+.prism-page-content .prism-page-content,
+.prism-page-content .duo-workspace-container {
+  padding-inline: 0 !important;
 }

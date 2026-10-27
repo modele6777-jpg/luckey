@@ -1436,7 +1436,7 @@ export default function BluebirdApp() {
            <p className="text-[10px] text-sky-400 font-bold uppercase tracking-[0.4em] font-sans">내면 평정의 울림과 영혼 밸런스</p>
         </div>
 
-        <div className="w-full max-w-6xl mx-auto">
+        <div className="prism-page-content w-full mx-auto">
           {!dailyResult ? (
             <div className="space-y-8">
               {/* Unified Card Deck and Interactive Draw Frame */}
@@ -2652,7 +2652,7 @@ export default function BluebirdApp() {
       </motion.nav>
 
       <main data-app-scroll-root {...bluebirdSwipeHandlers} className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col bg-transparent relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
-        <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
+        <div className="prism-page-content w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
            <AnimatePresence mode="wait">
              {activeMode === 'synergy' ? (
                <motion.div key="bluebird-synergy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pb-8 sm:pb-12">
@@ -2873,7 +2873,7 @@ export default function BluebirdApp() {
                         <p className="text-[10px] text-sky-500 font-bold uppercase tracking-[0.4em] font-sans">평온의 전령과 치유의 배열</p>
                      </div>
                      
-                     <div className="w-full max-w-6xl mx-auto space-y-8 text-left">
+                     <div className="prism-page-content w-full mx-auto space-y-8 text-left">
                         <div className="space-y-12">
                           {false ? (
                             <div className="w-full rounded-[40px] bg-sky-950/20 border border-sky-500/10 p-8 md:p-12 text-center space-y-8 relative overflow-hidden backdrop-blur-md">

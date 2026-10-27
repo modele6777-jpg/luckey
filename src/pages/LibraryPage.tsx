@@ -263,8 +263,8 @@ export default function LibraryPage() {
   }, [records]);
 
   return (
-    <div data-app-scroll-root className="h-app-full min-w-0 overflow-y-auto bg-[#fdfaf5] dark:bg-[#070708] text-slate-900 dark:text-white/90 selection:bg-amber-500/20 dark:selection:bg-white/10 p-4 md:p-12 font-soft">
-      <div className="max-w-6xl mx-auto space-y-12">
+    <div data-app-scroll-root className="h-app-full min-w-0 overflow-y-auto bg-[#fdfaf5] dark:bg-[#070708] text-slate-900 dark:text-white/90 selection:bg-amber-500/20 dark:selection:bg-white/10 px-0 py-4 md:py-12 font-soft">
+      <div className="prism-page-content mx-auto space-y-12">
         {/* Header */}
         <motion.header 
           initial={{ y: -12, opacity: 0.88 }}

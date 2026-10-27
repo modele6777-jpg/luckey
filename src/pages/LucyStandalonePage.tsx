@@ -2600,7 +2600,7 @@ export default function LucyStandalonePage() {
         ref={messagesContainerRef}
         onScroll={handleScroll}
         style={{ overflowX: 'hidden', touchAction: 'pan-y' }}
-        className="lucy-chat-main flex-1 overflow-y-auto overflow-x-hidden overscroll-x-none touch-pan-y p-3 sm:p-5 lg:p-6 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto min-w-0 select-text"
+        className="prism-page-content lucy-chat-main flex-1 overflow-y-auto overflow-x-hidden overscroll-x-none touch-pan-y p-3 sm:p-5 lg:p-6 w-full mx-auto min-w-0 select-text"
       >
         <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-2 sm:pb-3 w-full max-w-full min-w-0 overflow-x-hidden">
           {filteredMessages.length === 0 && searchQuery.trim().length > 0 && (

@@ -1562,7 +1562,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
 
 
       <main data-app-scroll-root {...museSwipeHandlers} className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white">
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
+        <div className="prism-page-content w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
           <AnimatePresence mode="wait">
             {activeMode === 'synergy' ? (
               <motion.div
@@ -1571,7 +1571,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-5xl mx-auto flex-1 flex flex-col pt-3 sm:pt-5 pb-16 md:pb-24"
+                className="prism-page-content w-full mx-auto flex-1 flex flex-col pt-3 sm:pt-5 pb-16 md:pb-24"
               >
                 <MuseSynergySection />
               </motion.div>
@@ -1582,7 +1582,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-6xl mx-auto flex-1 flex flex-col pt-3 sm:pt-5 pb-16 md:pb-24"
+                className="prism-page-content w-full mx-auto flex-1 flex flex-col pt-3 sm:pt-5 pb-16 md:pb-24"
               >
                 <RoleModelModal
                   isOpen
@@ -1787,7 +1787,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                   </p>
                 </div>
 
-                <div className="w-full max-w-6xl mx-auto space-y-8 text-left">
+                <div className="prism-page-content w-full mx-auto space-y-8 text-left">
                   <div className="space-y-12">
                     {false ? (
                       <div className="w-full rounded-[40px] bg-violet-950/20 border border-violet-500/10 p-8 md:p-12 text-center space-y-8 relative overflow-hidden backdrop-blur-md">
@@ -2411,7 +2411,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-start pt-1 sm:pt-4 pb-24 md:pb-28"
+                className="prism-page-content w-full mx-auto flex-1 flex flex-col justify-start pt-1 sm:pt-4 pb-24 md:pb-28"
               >
                 <ArtRecommendationView />
               </motion.div>

@@ -511,7 +511,7 @@ function DailyOracleSection({
         <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-[0.4em] font-sans">사주와 만세력의 교차 연성 시공간 카드 가챠</p>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto pl-1 pr-1">
+      <div className="prism-page-content w-full mx-auto pl-1 pr-1">
         {/* STEP 1 & 2 & 3: Selection and Chemistry Board */}
         {gachaStep < 4 && (
           <div className="relative w-full rounded-[40px] bg-zinc-950/80 border border-emerald-500/20 p-8 md:p-12 text-center space-y-12 overflow-hidden min-h-[580px] flex flex-col justify-between backdrop-blur-xl">
@@ -1715,7 +1715,7 @@ export default function HealApp() {
         {...healSwipeHandlers}
         className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y"
       >
-        <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
+        <div className="prism-page-content w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col">
           {/* Mobile Swipe Guidance & Tab Dots Indicator */}
           <div className="md:hidden flex items-center justify-between px-2 pt-1 pb-3 select-none">
             <span className="text-[10px] text-slate-500 dark:text-white/45 font-medium tracking-wide flex items-center gap-1">

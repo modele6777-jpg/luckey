@@ -300,7 +300,7 @@ export default function HandbookStandalonePage() {
 
       {/* Main Content Layout with smooth scrolling */}
       <main data-app-scroll-root className="flex-1 w-full overflow-x-hidden overflow-y-auto no-scrollbar scroll-smooth relative z-10">
-        <div className="max-w-5xl w-full mx-auto px-3 sm:px-6 py-3 sm:py-4 space-y-4 pb-2 sm:pb-3">
+        <div className="prism-page-content w-full mx-auto px-3 sm:px-6 py-3 sm:py-4 space-y-4 pb-2 sm:pb-3">
           {/* Body View: Timeline vs Bookshelf */}
           {viewMode === 'timeline' ? (
             <ReBibleTimelineView

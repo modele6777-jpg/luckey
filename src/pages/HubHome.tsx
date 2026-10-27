@@ -620,7 +620,7 @@ export default function HubHome() {
         {activeSection === 'ecpr' ? (
           <PrologueECPRView />
         ) : activeSection === 'todo' ? (
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md">
+          <div className="prism-page-content w-full mx-auto px-4 sm:px-6 pt-home md:pt-home-md">
             <ErrorBoundary>
               <PrologueTodoSection />
             </ErrorBoundary>
@@ -696,7 +696,7 @@ export default function HubHome() {
               )}
             </AnimatePresence>
 
-            <div className="universe-content relative z-10 w-full min-w-0 px-3 sm:px-6 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col max-w-6xl mx-auto space-y-6 md:space-y-7">
+            <div className="prism-page-content universe-content relative z-10 w-full min-w-0 px-3 sm:px-6 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col mx-auto space-y-6 md:space-y-7">
 
               {/* Dual-Pane Top Split: Left Pane (Today's Lucy Persona) & Right Pane (Universe Insight) */}
               <div className="duo-split-grid items-stretch">
