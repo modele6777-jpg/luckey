@@ -1,114 +1,122 @@
-# Auto-Hiding Sidebar with Gesture/Hover Peek & Screen Ratio Recalibration
+# 전체화면 100% 확장 및 지능형 자동 숨김 슬림 오버레이 사이드바 구축 계획
 
-Enhance the navigation sidebar into an intelligent auto-hiding floating drawer that stays hidden during focused app interaction, smoothly slides in on edge hover or swipe gestures, displays a subtle translucent hint handle on the right edge, auto-collapses after 3 seconds of inactivity, and restores 100% full-screen canvas width across all viewports.
+우측 사이드바가 고정 점유하던 공간으로 인한 화면 공백을 완전히 제거하여 메인 캔버스를 100% 풀 와이드로 확장하고, 마우스 호버·터치 스와이프·힌트 탭 클릭을 통해 호출된 뒤 3초 후 자동으로 숨겨지는 비간섭형 슬림 오버레이 사이드바를 구축합니다.
 
 ---
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following user preferences were confirmed during interactive clarification and serve as core requirements for this implementation:
+> 사용자의 선택 사항이 모두 반영되었으며, 화면 레이아웃 폭과 사이드바 인터랙션 사양이 확정되었습니다.
 
-- **Confirmed Decision 1 (Overlay & Ratio)**: The sidebar operates as a floating slim overlay (`z-[480]`) rather than pushing or shrinking main app content. Main content width expands to a true 100% (`padding-right: 0`), preventing canvas compression or asymmetrical shifts.
-- **Confirmed Decision 2 (Edge Indicator)**: When the sidebar is collapsed, a slim translucent vertical hint handle (`w-2.5` to `w-3` glass pill) remains visible along the right edge to afford discovery without obstructing UI elements.
-- **Confirmed Decision 3 (Interaction & Auto-Hide Timing)**: The sidebar automatically slides out upon hovering the right edge or swiping left from the edge. It automatically dismisses after **3 seconds of inactivity** or when the pointer moves outside the sidebar. Users can also swipe right or tap outside to collapse immediately.
+- **메인 화면 비율**: 메인 영역 폭을 `100%`로 완전히 확장하여 사이드바 옆 빈 공간을 0으로 제거.
+- **사이드바 표출 방식**: 메인 화면 크기를 축소하거나 밀어내지 않고 화면 위에 가볍게 얹어지는 **슬림 오버레이(Slim Overlay, z-[480])** 방식.
+- **사이드바 호출(Trigger)**:
+  1. 화면 우측 끝 24px 호버 센서 영역 진입 시 호출
+  2. 화면 우측 끝에서 좌측으로 터치 스와이프 시 호출
+  3. 우측 중앙의 슬림 오로라 힌트 탭 핸들 클릭/터치 시 호출
+- **자동 숨김(Auto-Hide)**:
+  - 마우스 포인터가 사이드바 영역을 벗어나거나, 사용자의 조작이 멈춘 후 **3초 경과 시** 자동으로 슬라이드아웃 숨김.
+  - 사이드바 외부 메인 화면 클릭 또는 우측 스와이프 시 즉시 숨김.
 
 ---
 
 ## 1. Overview & Core Concept
 
-### What It Does
-1. **Intelligent Auto-Hiding**: Collapses the persistent 70px sidebar into a subtle edge tab by default, freeing up horizontal real estate on mobile devices (e.g., iPhone Duo cover and inner screens), tablets, and desktop displays.
-2. **Gesture & Pointer Peek**:
-   - **Desktop**: Hovering within 16px of the right edge (or hovering the handle) immediately expands the sidebar into view. Moving the mouse away or remaining idle for 3 seconds smoothly collapses it back.
-   - **Touch / Mobile**: Swiping leftwards from the right edge triggers the sidebar to slide in smoothly with tactile haptic feedback. Swiping rightwards or tapping the backdrop dismisses it.
-3. **Screen Aspect Ratio Recalibration**: Removes the hardcoded `--sites-sidebar-width: 70px` gutter from the main app layout (`sites-pinned-main`), allowing tarot wheels, dual-split columns, universe portals, and canvas charts to center themselves symmetrically across the true device viewport.
+- **What It Does**:
+  - 기존 `:root { --sites-sidebar-width: 70px; }` 및 `.sites-pinned-main`의 강제 너비 축소(`calc(100% - 70px)`)를 철폐하여, 모든 디바이스(세로/가로/듀얼 폴더블 화면)에서 메인 콘텐츠가 디스플레이 전체 폭(100%)을 시원하게 채우도록 만듭니다.
+  - 내비게이션 사이드바는 평상시 화면 밖(우측 100%)으로 매끄럽게 숨겨져 있으며, 우측 가장자리 힌트 탭, 마우스 호버, 모바일 스와이프 시 햅틱 피드백과 함께 부드러운 스프링 애니메이션으로 등장합니다.
+  - 3초 타이머 기반 자동 숨김 및 백드롭 오버레이 터치 시 닫힘 처리로 몰입감 있는 전체화면 경험을 제공합니다.
+- **Target Audience / Persona**:
+  - 갤럭시 Z 폴드, 서피스 듀오 및 일반 모바일·데스크톱 환경에서 시원한 가로/세로 전체화면을 원하는 모든 사용자.
+- **Key Value**:
+  - 불필요한 우측 공백 없이 화면을 100% 넓게 활용할 수 있으며, 내비게이션이 필요할 때만 즉각 손끝과 마우스로 부드럽게 불러올 수 있습니다.
 
 ---
 
 ## 2. User Experience & Visual Design
 
 ### Key User Flows
+
 ```
-+------------------------------------------------------------------+
-| Normal State (100% Full Viewport)                                |
-|                                                                  |
-| [ Main App Canvas / Dual Split DApp Workspace / Tarot Wheel ]    |
-|                                                                  |
-|                                                       [|] Edge   |
-|                                                           Handle |
-+------------------------------------------------------------------+
-                                 │
-           (Hover right edge or swipe left from handle)
-                                 ▼
-+------------------------------------------------------------------+
-| Peek State (Slim Floating Overlay)                               |
-|                                              +-----------------+ |
-| [ Main App Canvas remains 100% visible]      | 70px Floating   | |
-|                                              | Aurora Drawer   | |
-|                                              | [LUCY / KEY]    | |
-|                                              | [7 Channels]    | |
-|                                              | [LP Player]     | |
-|                                              +-----------------+ |
-+------------------------------------------------------------------+
-                                 │
-     (3s inactivity / pointer leaves / swipe right / backdrop tap)
-                                 ▼
-+------------------------------------------------------------------+
-| Returns smoothly to Collapsed State                              |
-+------------------------------------------------------------------+
+[평상시 전체화면 100%]
+  ┌────────────────────────────────────────────────────────┐ [힌트 핸들]
+  │ 메인 콘텐츠 (LUCY 채팅 / 타로 / 명상 / 다이어리 등)       │   │░│
+  │ 전체 폭 100% 가득 참 (여백 0px)                         │   │░│
+  └────────────────────────────────────────────────────────┘   │░│
+                           │
+      [우측 가장자리 호버 / 스와이프 / 힌트 탭 클릭]
+                           ▼
+[슬림 오버레이 사이드바 열림 (z-[480])]
+  ┌──────────────────────────────────────────────┬─────────┐
+  │ 메인 콘텐츠 (화면 폭 100% 그대로 유지)           │사이드바 │
+  │ (배경 본문 레이아웃 깨짐이나 밀림 전혀 없음)     │- LUCY   │
+  │                                              │- KEY    │
+  │                                              │- LUCKEY │
+  │                                              │- LP BGM │
+  └──────────────────────────────────────────────┴─────────┘
+                           │
+             [3초 무조작 / 마우스 이탈 / 외부 탭]
+                           ▼
+              [자동으로 부드럽게 우측 숨김 복귀]
 ```
 
-### Visual Specifications
-- **Hint Handle**: `fixed right-0 top-1/2 -translate-y-1/2 h-20 w-3 rounded-l-xl bg-white/10 dark:bg-white/15 border border-r-0 border-white/20 backdrop-blur-md shadow-[-4px_0_16px_rgba(0,0,0,0.3)] flex items-center justify-center cursor-pointer transition-all hover:w-4 hover:bg-white/25 active:scale-95`.
-- **Sidebar Motion**: Framer Motion spring physics (`type: 'spring', stiffness: 380, damping: 32`) animating `x: 0` (visible) to `x: '100%'` (hidden) for zero-layout-shift 120Hz compositor-accelerated performance.
-- **Main Viewport Recalibration**:
-  - `--sites-sidebar-width: 0px` globally so `.sites-pinned-main` has `padding-right: 0`.
-  - Update `TarotSpread.tsx` and `.duo-dapp-workspace` centering calculations so that cards, dual panes, and control buttons align with true screen center (`left: 50% -translate-x-1/2`).
+### Visual Identity & Theme
+- **오로라 힌트 핸들**: 우측 화면 중앙 높이에 위치한 반투명 유리 질감의 슬림 바(`w-1.5 h-16 rounded-full`), 은은한 무지개/오로라 그라데이션 광채로 시각적 방해 없이 사이드바 존재를 안내.
+- **슬림 오버레이**:
+  - 너비: `w-[72px]`
+  - 배경: 라이트 모드 `bg-[#fdfaf5]/94 backdrop-blur-xl border-l border-amber-900/15`, 다크 모드 `bg-neutral-950/94 backdrop-blur-xl border-l border-white/10`
+  - 그림자: `-16px 0 40px rgba(0,0,0,0.4)` 부드러운 깊이감 부여.
+- **모션 & 애니메이션**:
+  - `framer-motion` 스프링 애니메이션 (`stiffness: 380, damping: 32`) 적용.
+  - 열림/닫힘 프레임 드롭 없는 GPU 가속 레이아웃 (`transform: translate3d`).
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Floating Overlay vs. Canvas Shift**
-  - *Chosen Approach*: Floating overlay with zero layout compression (`padding-right: 0`).
-  - *Why*: Shifting the main canvas on hover causes jarring layout reflows, re-measuring of card wheel geometry, and stutter. A hardware-accelerated overlay preserves layout stability.
-- **Decision 2: Edge Hover Trigger Zone & 3-Second Inactivity Timer**
-  - *Chosen Approach*: 18px invisible trigger zone on the right edge + visual handle, accompanied by a 3000ms idle timer reset on any interaction inside the sidebar.
-  - *Why*: Allows effortless desktop hover access without requiring pixel-perfect clicks, while touch users get an intuitive swipe target.
+| 결정 사항 | 선택된 구현 방식 | 선택 이유 & 대안 비교 |
+| :--- | :--- | :--- |
+| **화면 폭 계산** | `width: 100%` (사이드바 폭 예약 0px) | 기존 `calc(100% - 70px)`는 화면 오른쪽에 부자연스러운 빈 공간을 남김. 100% 확장으로 완전한 화면 일체감 확보. |
+| **사이드바 표시 형태** | 비간섭형 슬림 오버레이 (`fixed right-0 z-[480]`) | 메인 콘텐츠를 리사이즈(Resize)하거나 리플로우(Reflow)하지 않아 화면 떨림 없이 60/120fps 부드러운 전환 유지. |
+| **호출 인터랙션** | 호버 센서 + 스와이프 제스처 + 탭 핸들 동시 지원 | 데스크톱 사용자는 우측 호버, 모바일 사용자는 우측 스와이프/탭 터치로 디바이스 최적화 경험 제공. |
+| **자동 숨김 조건** | 포인터 이탈 및 3초 타이머 (인터랙션 시 타이머 갱신) | 메뉴를 누르는 도중 갑자기 닫히는 오작동 방지 (버튼 터치 및 메뉴 이동 시 3초 타이머 리셋). |
 
 ---
 
-## 4. Technical Architecture & Component Interaction
+## 4. Technical Architecture & Data Strategy
+
+### Component & Style Hierarchy
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│ DOM Viewport (100vw x 100dvh)                                          │
-│                                                                        │
-│ ┌────────────────────────────────────────────────────────────────────┐ │
-│ │ <main className="sites-pinned-main">                               │ │
-│ │   - Width: 100% (padding-right: 0px)                               │ │
-│ │   - Fully centered aspect ratios for 5.4" cover & 7.6" landscape   │ │
-│ └────────────────────────────────────────────────────────────────────┘ │
-│                                                                        │
-│ ┌──────────────────────┐   ┌─────────────────────────────────────────┐ │
-│ │ Edge Gesture Handler │──▶│ <LeftSidebarNav />                      │ │
-│ │ - Right 18px trigger │   │ - state: isSidebarVisible (boolean)     │ │
-│ │ - Visual hint handle │   │ - 3000ms auto-dismiss inactivity timer  │ │
-│ │ - Touch start/move   │   │ - motion.aside: x: 0 <-> x: '100%'      │ │
-│ └──────────────────────┘   └─────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────────────────┘
+App.tsx
+├── <main className="sites-pinned-main w-full min-h-0 flex-1">
+│    └── <ActivePage loc={location} /> (100% 폭, 여백 제거)
+│
+└── <LeftSidebarNav />
+     ├── [우측 가장자리 24px 호버 센서 레이어]
+     ├── [우측 중앙 오로라 힌트 핸들 탭]
+     └── <motion.aside> (슬림 오버레이 드로어)
+          ├── 3초 무조작 자동 닫힘 타이머 (useRef + useEffect)
+          ├── 채널 내비게이션 (LUCY, KEY, LUCKEY 7대 프리즘)
+          ├── LP 레코드 배경음 플레이어 버튼
+          └── 프로필 아바타 & 뷰포트 진단
 ```
 
-### Affected Files & Scope
-1. `src/components/navigation/LeftSidebarNav.tsx`:
-   - Replace static `isOpen = true` with responsive visibility state (`isSidebarVisible`).
-   - Implement edge hover detector, touch swipe handler (`onTouchStart`, `onTouchMove`, `onTouchEnd`), and 3000ms inactivity timer with cleanup.
-   - Render the subtle translucent hint handle button when collapsed.
-2. `src/index.css`:
-   - Update `:root { --sites-sidebar-width: 0px; }` and `.sites-pinned-main { padding-right: 0; }`.
-   - Update dependent centered positioning rules (`calc((100vw - var(--sites-sidebar-width)) / 2)` -> `50%`).
-3. `src/components/trinity/TarotSpread.tsx`:
-   - Ensure the card wheel container centers cleanly without subtracting sidebar width.
-4. `package.json`, `public/version.json`, `public/changelog.json`:
-   - Bump version to `v1.4.472` in compliance with `AGENTS.md`.
+### Key Implementation Steps
+1. **`src/index.css` & `src/styles/duo-workspace.css` 수정**:
+   - `:root { --sites-sidebar-width: 0px; }`로 변경하고 `.sites-pinned-main`의 `calc(100% - var(--sites-sidebar-width))`를 `100%`로 변경.
+   - 여분의 우측 마진/패딩 제거하여 메인 콘텐츠가 디스플레이 우측 끝까지 꽉 차도록 설정.
+   - PWA 배너 및 서브 내비게이션의 우측 오프셋도 전체화면 100% 기준 중앙 및 우측 패딩으로 정돈.
+2. **`src/components/navigation/LeftSidebarNav.tsx` 수정**:
+   - 하드코딩된 `const isOpen = true;`를 상태 기반 `const [isOpen, setIsOpen] = useState(false);`로 전환.
+   - 3초 자동 닫힘 타이머 로직(`autoCloseTimerRef`) 구현 (마우스 오버나 클릭 시 3초 갱신, 마우스 이탈 시 1.5~3초 후 닫힘).
+   - 화면 우측 24px 호버 감지 센서(`onMouseEnter={() => setIsOpen(true)}`) 배치.
+   - 터치 스와이프 제스처 핸들러(우측 가장자리 `touchstart`, `touchmove`, `touchend`) 연결.
+   - 사이드바가 닫혀 있을 때 화면 우측 중앙에 표시되는 감각적인 반투명 오로라 힌트 핸들 탭 렌더링.
+   - 사이드바 오픈 시 `motion.aside`가 `x: '100%'`에서 `x: 0`으로 부드럽게 오버레이 슬라이드인.
+3. **규칙 및 품질 검증**:
+   - `RULE[AGENTS_md]`에 따라 `package.json` 패치 버전 업데이트 (`1.4.484`).
+   - `public/version.json` 및 `public/changelog.json` 업데이트.
+   - `npm run lint` 및 `npm run build` 컴파일 검증.
+   - Git commit 및 push 진행.

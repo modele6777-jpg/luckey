@@ -3047,19 +3047,19 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
-/* Reserve the permanent rail once; page content fills the remaining width. */
-:root { --sites-sidebar-width: 70px; }
+/* Sidebar is a slim auto-hiding overlay; main content occupies full 100% width without empty space. */
+:root { --sites-sidebar-width: 0px; }
 .sites-pinned-main {
-  /* The rail already covers this part of the device's right safe area. */
-  --sar: max(0px, calc(env(safe-area-inset-right, 0px) - var(--sites-sidebar-width)));
-  width: calc(100% - var(--sites-sidebar-width));
-  max-width: calc(100% - var(--sites-sidebar-width));
+  --sar: env(safe-area-inset-right, 0px);
+  width: 100%;
+  max-width: 100%;
   padding-right: 0;
 }
-/* Fixed page tabs must use the content canvas, too. */
+/* Fixed page tabs center across full canvas */
 .sites-pinned-main .prism-xs-subnav:not(.duo-page-nav) {
-  left: calc((100vw - var(--sites-sidebar-width)) / 2) !important;
-  max-width: calc(100vw - var(--sites-sidebar-width) - 1rem) !important;
+  left: 50% !important;
+  max-width: calc(100vw - 1rem) !important;
+  transform: translateX(-50%) !important;
 }
 .sites-pinned-sidebar { contain: layout style; }
 .sites-pinned-sidebar .rainbow-fab-halo { animation-duration: 12s; }

@@ -184,9 +184,78 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
-  // The navigation rail stays visible across routes and pointer/touch activity.
-  const isOpen = true;
+  const [isOpen, setIsOpen] = useState(false);
   const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
+  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelAutoCloseTimer = useCallback(() => {
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const resetAutoCloseTimer = useCallback(() => {
+    cancelAutoCloseTimer();
+    autoCloseTimerRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 3000);
+  }, [cancelAutoCloseTimer]);
+
+  const handleOpenSidebar = useCallback(() => {
+    setIsOpen(true);
+    resetAutoCloseTimer();
+  }, [resetAutoCloseTimer]);
+
+  const handleCloseSidebar = useCallback(() => {
+    cancelAutoCloseTimer();
+    setIsOpen(false);
+  }, [cancelAutoCloseTimer]);
+
+  // Clean up auto-close timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Swipe gesture detection (left from right edge to open, right to close)
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.changedTouches.length !== 1) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const dx = touchEndX - touchStartX;
+      const dy = touchEndY - touchStartY;
+
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+        if (!isOpen && touchStartX >= window.innerWidth - 44 && dx < -20) {
+          triggerHaptic('whitehole');
+          handleOpenSidebar();
+        } else if (isOpen && dx > 30) {
+          handleCloseSidebar();
+        }
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isOpen, handleOpenSidebar, handleCloseSidebar]);
 
   const [, setProfileVersion] = useState(0);
   const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
@@ -464,6 +533,7 @@ export default function LeftSidebarNav() {
   }, [isOpen]);
 
   const handleNavigate = (path: string) => {
+    handleCloseSidebar();
     const isTargetActive =
       path === '/'
         ? isLucyActive
@@ -834,24 +904,70 @@ export default function LeftSidebarNav() {
 
   return (
     <>
-      {/* Permanent right navigation rail; the page reserves exactly its width. */}
-            <motion.aside
-              key="nav-drawer"
-              role="navigation"
-              aria-label="사이드 네비게이션"
-              initial={false}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '100%', opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              style={{
-                width: 'var(--sites-sidebar-width)',
-              }}
-              className={`sites-pinned-sidebar fixed right-0 top-0 bottom-0 backdrop-blur-md border-l z-[480] flex flex-col justify-between select-none transition-colors duration-300 ${
-                isLight
-                  ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[-16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
-                  : 'bg-neutral-950/95 border-white/10 shadow-[-16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
-              }`}
-            >
+      {/* 1. Backdrop overlay to close when clicking outside */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="sidebar-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[478] bg-black/15 dark:bg-black/35 backdrop-blur-[1px]"
+            onClick={handleCloseSidebar}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 2. Right-edge hover detection zone for desktop */}
+      {!isOpen && (
+        <div
+          className="fixed right-0 top-0 bottom-0 w-6 z-[470] cursor-pointer"
+          onMouseEnter={handleOpenSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* 3. Semi-transparent Aurora Hint Handle Tab */}
+      {!isOpen && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            triggerHaptic('whitehole');
+            handleOpenSidebar();
+          }}
+          onMouseEnter={handleOpenSidebar}
+          aria-label="사이드바 메뉴 열기"
+          title="사이드바 메뉴 열기 (마우스 호버 · 터치 스와이프)"
+          className="fixed right-0 top-1/2 -translate-y-1/2 z-[475] flex items-center justify-center pl-1.5 pr-0.5 py-4 rounded-l-2xl backdrop-blur-xl border-l-0 border border-amber-500/35 dark:border-white/20 bg-white/80 dark:bg-neutral-900/80 shadow-[-4px_0_18px_rgba(0,0,0,0.22)] group transition-all duration-200 hover:pl-2.5 hover:bg-white/95 dark:hover:bg-neutral-900/95 active:scale-95 cursor-pointer"
+        >
+          <div className="w-1 h-8 rounded-full rainbow-gradient-flow opacity-80 group-hover:opacity-100 transition-opacity" />
+        </button>
+      )}
+
+      {/* 4. Sliding Sidebar Drawer */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.aside
+            key="nav-drawer"
+            role="navigation"
+            aria-label="사이드 네비게이션"
+            initial={{ x: '100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '100%', opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+            onMouseEnter={cancelAutoCloseTimer}
+            onMouseMove={resetAutoCloseTimer}
+            onMouseLeave={resetAutoCloseTimer}
+            onTouchStart={resetAutoCloseTimer}
+            className={`sites-pinned-sidebar fixed right-0 top-0 bottom-0 w-[72px] backdrop-blur-xl border-l z-[480] flex flex-col justify-between select-none shadow-[-16px_0_48px_rgba(0,0,0,0.4)] transition-colors duration-300 ${
+              isLight
+                ? 'bg-[#fdfaf5]/96 border-amber-900/15 text-slate-800'
+                : 'bg-neutral-950/96 border-white/10 text-neutral-200'
+            }`}
+          >
               <div className="sidebar-aurora" aria-hidden="true">
                 <div className={isLight ? 'sidebar-aurora-veil edge-aurora-veil-light' : 'sidebar-aurora-veil edge-aurora-veil'} />
                 <div className="sidebar-aurora-wave" />
@@ -1160,6 +1276,8 @@ export default function LeftSidebarNav() {
                 </div>
               </div>
             </motion.aside>
+        )}
+      </AnimatePresence>
       {showViewportDiagnostics && <ViewportDiagnostics onClose={() => setShowViewportDiagnostics(false)} />}
     </>
   );

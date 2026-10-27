@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan for auto-hiding the navigation sidebar with hover/swipe peek, translucent right-edge handle, 3-second auto-collapse, floating overlay architecture, and full-screen 100% aspect ratio recalibration.",
-  "updatedAt":  "2026-10-26T11:01:06.104476575Z",
+  "summary":  "사이드바 옆 빈 공간을 제거하여 메인 화면을 100% 전체 폭으로 채우고, 우측 호버·스와이프·힌트 탭 클릭 시 부드럽게 등장하며 3초 무조작 시 자동으로 숨겨지는 슬림 오버레이 사이드바 구현 계획입니다.",
+  "updatedAt":  "2026-10-27T08:27:52.767890878Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
