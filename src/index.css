@@ -482,17 +482,17 @@
   .bottom-safe-fab-center {
     position: fixed;
     bottom: calc(var(--sab) + 7.5rem);
-    left: calc((100vw - var(--sites-sidebar-width, 0px)) / 2) !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
     width: 76px !important;
     height: 76px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     pointer-events: none !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @media (min-width: 640px) {
@@ -2842,10 +2842,6 @@ html[data-device="iphone-duo"] .duo-dapp-workspace > div {
     column-gap: var(--duo-hinge-gap) !important;
   }
 
-  /* Move center-floating BigBang button slightly onto the right thumb pane so it never straddles the physical hinge */
-  .bottom-safe-fab-center {
-    left: calc((100vw - var(--sites-sidebar-width, 0px)) / 2) !important;
-  }
 }
 
 /* Landscape & Short-Height Viewport Ergonomics (15% Sticky Cap & Safe-Area Harmony) */

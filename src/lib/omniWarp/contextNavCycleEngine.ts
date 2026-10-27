@@ -194,7 +194,8 @@ export function getOneStopDestinations(): PrismMenuDestination[] {
       if (!destinations.has(path)) destinations.set(path, { ...defaultMenu, id: route.id + '_' + tab, path, name, subName: name, keywords: [name] });
     }
   }
-  return [...destinations.values()];
+  // Lucy and KEY remain available through their dedicated gestures, outside the recommendation cycle.
+  return [...destinations.values()].filter(menu => !['/', '/key'].includes(oneStopPageKey(menu.path).split('?')[0]));
 }
 
 /** Ignore tracking/device parameters; aliases share a visit, distinct tabs do not. */
