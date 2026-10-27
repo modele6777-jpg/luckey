@@ -1,4 +1,5 @@
 import React from "react";
+import { Clover } from "lucide-react";
 
 interface LucKeyLogoTextProps {
   className?: string;
@@ -41,6 +42,12 @@ export function LucKeyLogoText({
       <span className="bg-gradient-to-r from-emerald-400 via-green-400 to-teal-300 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(52,211,153,0.85)]">
         Y
       </span>
+      <Clover
+        aria-hidden="true"
+        className="luckey-logo-clover shrink-0 text-emerald-400"
+        style={{ width: "0.65em", height: "0.65em", marginLeft: "0.28em" }}
+        strokeWidth={1.8}
+      />
     </span>
   );
 }
