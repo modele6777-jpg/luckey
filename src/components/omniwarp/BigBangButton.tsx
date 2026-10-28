@@ -1,3 +1,5 @@
+import { createPortal } from 'react-dom';
+import { BigBangCloverWind } from './BigBangCloverWind';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
 import './bigbang-clover-breeze.css';
 import { oneStopNavigationPath, nextOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
@@ -6,7 +8,7 @@ import { useLocation } from 'wouter';
 import { Clover } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
-import { calculateWarpMetrics, forceToAiTemperature, RADIAL_WARP_APPS } from '@/lib/omniWarp/forceSensor';
+import { calculateWarpMetrics, forceToAiTemperature } from '@/lib/omniWarp/forceSensor';
 import { serializeCurrentView, synthesizeWarpTarget, isDisallowedWarpDestination } from '@/lib/omniWarp/omniWarpEngine';
 import {
   getWhiteholeRecommendedApp,
@@ -14,7 +16,7 @@ import {
 } from '@/lib/omniWarp/wormholeSpectrum';
 import { getTossRule } from '@/lib/prismTossRegistry';
 import { resolveCanonicalPath, isValidPrismPath } from '@/lib/prismRouteRegistry';
-import { resetActiveWormholePeek, commitShuffledWormholeDestination } from '@/lib/omniWarp/wormholeShuffleEngine';
+import { resetActiveWormholePeek } from '@/lib/omniWarp/wormholeShuffleEngine';
 import {
   getCurrentOneStopPage,
   peekNextRecommendedMenuByCycle,
@@ -96,8 +98,6 @@ export function BigBangButton() {
   const [isAborted, setIsAborted] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragDistance, setDragDistance] = useState(0);
-  const [dragAngleDeg, setDragAngleDeg] = useState(0);
-  const [radialSectorIndex, setRadialSectorIndex] = useState<number>(-1);
   const [isPageScrolling, setIsPageScrolling] = useState(false);
   const lastScrollTimeRef = useRef<number>(0);
   const maxDragDistanceRef = useRef<number>(0);
@@ -441,6 +441,44 @@ export function BigBangButton() {
   const globalPointerMoveRef = useRef<((e: PointerEvent) => void) | null>(null);
   const globalPointerUpRef = useRef<((e: PointerEvent) => void) | null>(null);
 
+  const [cloverWind, setCloverWind] = useState<'off' | 'blowing' | 'settling'>('off');
+  const cloverWindLayerRef = useRef<HTMLDivElement>(null);
+  const visualDragRef = useRef(false);
+  const windTailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activePointerIdRef = useRef<number | null>(null);
+  const blowCloverWind = (dx:number, dy:number) => {
+    if (!visualDragRef.current) {
+      visualDragRef.current = true;
+      if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current);
+      setCloverWind('blowing');
+      isPttRecordingRef.current = false;
+      setIsQuickChatOpen(false);
+      setHoverDirection('none');
+      downDirectionRef.current = 'none';
+      setActivePhase('idle');
+      setGauge(0);
+      setDragDistance(0);
+      setDragOffset({x:0,y:0});
+      stopBlackHoleContinuousHaptic();
+    }
+    const distance = Math.hypot(dx,dy);
+    if (distance > 2 && cloverWindLayerRef.current) {
+      cloverWindLayerRef.current.style.setProperty('--wind-x', `${dx/distance*window.innerWidth*1.25}px`);
+      cloverWindLayerRef.current.style.setProperty('--wind-y', `${dy/distance*window.innerHeight*1.25}px`);
+    }
+  };
+  const finishCloverWind = () => {
+    visualDragRef.current = false;
+    setCloverWind('settling');
+    if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current);
+    windTailTimerRef.current = setTimeout(() => setCloverWind('off'), 1200);
+  };
+  useEffect(() => {
+    setCloverWind('off');
+    visualDragRef.current = false;
+    return () => { if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current); };
+  }, [location]);
+
   const cleanupGlobalPointerListeners = useCallback(() => {
     if (globalPointerMoveRef.current) {
       window.removeEventListener('pointermove', globalPointerMoveRef.current);
@@ -459,6 +497,15 @@ export function BigBangButton() {
     const now = performance.now();
     const start = touchStartRef.current;
     const currentPointer = currentPointerEventRef.current;
+    const visualDx = currentPointer ? currentPointer.clientX - start.x : 0;
+    const visualDy = currentPointer ? currentPointer.clientY - start.y : 0;
+    maxDragDistanceRef.current = Math.max(maxDragDistanceRef.current, Math.hypot(visualDx, visualDy));
+    if (maxDragDistanceRef.current >= DRAG_ACTIVATION_THRESHOLD) {
+      blowCloverWind(visualDx, visualDy);
+      rafRef.current = requestAnimationFrame(updateLoop);
+      return;
+    }
+
 
     const metrics = calculateWarpMetrics(
       start.time,
@@ -481,24 +528,13 @@ export function BigBangButton() {
     if (dist > maxDragDistanceRef.current) {
       maxDragDistanceRef.current = dist;
     }
-    const maxDist = Math.max(dist, maxDragDistanceRef.current);
-    const isDragGesture = maxDist >= DRAG_ACTIVATION_THRESHOLD;
-
-    // Tap/hold stay in the center; dragging restores the full radial warp sensor.
+    // Tap/hold retain their actions; visual drags returned before warp metrics.
     const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
-    if (isDragGesture) {
-      isPttRecordingRef.current = false;
-      setIsQuickChatOpen(false);
-      currentHole = metrics.eventHorizonMode === 'blackhole' ? 'blackhole' : 'whitehole';
-      if (dist < DRAG_ACTIVATION_THRESHOLD) {
-        metrics.isAborted = true;
-        metrics.phase = 'aborted';
-      }
-    } else if (elapsed >= 220 && !(start.pointerType === 'touch' && start.direction !== 'none')) {
+    if (elapsed >= 220 && !(start.pointerType === 'touch' && start.direction !== 'none')) {
       currentHole = 'whitehole';
       const isTextToss = Boolean(textToToss);
       target = {
@@ -553,8 +589,6 @@ export function BigBangButton() {
       setIsAborted(metrics.isAborted);
       setDragOffset({ x: metrics.dragOffsetX || 0, y: metrics.dragOffsetY || 0 });
       setDragDistance(dist);
-      setDragAngleDeg(metrics.dragAngleDeg || 0);
-      setRadialSectorIndex(sectorIdx);
       setActiveHole(currentHole);
     }
 
@@ -619,19 +653,12 @@ export function BigBangButton() {
     rafRef.current = requestAnimationFrame(updateLoop);
   }, [location, isAborted ]);
 
-  const cancelDraggedPress = () => {
-    if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
-    singleTapTimerRef.current = null;
-    lastTapTimeRef.current = 0;
-    setIsQuickChatOpen(false);
-    setQuickChatVoiceActive(false);
-    handlePointerCancel();
-    lastValidSelectionRef.current = '';
-    clearPendingSelection();
-  };
-
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
+    activePointerIdRef.current = e.pointerId;
+    visualDragRef.current = false;
+    if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current);
+    setCloverWind('off');
     // Keep the selected sentence intact while the button resolves the gesture.
     e.preventDefault();
     if (singleTapTimerRef.current) { clearTimeout(singleTapTimerRef.current); singleTapTimerRef.current = null; }
@@ -649,6 +676,7 @@ export function BigBangButton() {
     } catch (_) {}
 
     const onGlobalMove = (ev: PointerEvent) => {
+      if (ev.pointerId !== activePointerIdRef.current) return;
       currentPointerEventRef.current = ev as any;
       if (touchStartRef.current) {
         const d = Math.hypot(ev.clientX - touchStartRef.current.x, ev.clientY - touchStartRef.current.y);
@@ -676,6 +704,7 @@ export function BigBangButton() {
       }
     };
     const onGlobalUp = (ev: PointerEvent) => {
+      if (ev.pointerId !== activePointerIdRef.current) return;
       cleanupGlobalPointerListeners();
       handlePointerUp(ev as any);
     };
@@ -726,8 +755,6 @@ export function BigBangButton() {
 
     setDragOffset({ x: 0, y: 0 });
     setDragDistance(0);
-    setDragAngleDeg(0);
-    setRadialSectorIndex(-1);
     setActiveHole('whitehole');
     setIsPressing(true);
     setIsAborted(false);
@@ -763,7 +790,7 @@ export function BigBangButton() {
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isPressing || !touchStartRef.current) return;
+    if (!isPressing || !touchStartRef.current || e.pointerId !== activePointerIdRef.current) return;
     currentPointerEventRef.current = e;
     const d = Math.hypot(e.clientX - touchStartRef.current.x, e.clientY - touchStartRef.current.y);
     maxDragDistanceRef.current = Math.max(maxDragDistanceRef.current, d);
@@ -949,6 +976,7 @@ export function BigBangButton() {
   }, [location, handleRuneNavigate]);
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement> | PointerEvent) => {
+    if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
     cleanupGlobalPointerListeners();
     if (!touchStartRef.current) return;
 
@@ -993,12 +1021,26 @@ export function BigBangButton() {
     stopBlackHoleContinuousHaptic();
     setDragOffset({ x: 0, y: 0 });
     setDragDistance(0);
-    setDragAngleDeg(0);
-    setRadialSectorIndex(-1);
     setHoverDirection('none');
     try {
       sessionStorage.removeItem('bigbang_pressing');
     } catch (_) {}
+
+    activePointerIdRef.current = null;
+    if (isDragGesture) {
+      if (!visualDragRef.current) blowCloverWind(deltaX,deltaY);
+      finishCloverWind();
+      isPttRecordingRef.current = false;
+      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
+      lastTapTimeRef.current = 0;
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      setIsAborted(false);
+      resetActiveWormholePeek();
+      return;
+    }
 
     if (metrics.isAborted) {
       if (isPttRecordingRef.current) {
@@ -1019,36 +1061,6 @@ export function BigBangButton() {
 
     setIsAborted(false);
     const context = serializeCurrentView(location);
-
-    // Release commits the current 360-degree aim; returning to center cancels.
-    if (isDragGesture) {
-      if (dist < DRAG_ACTIVATION_THRESHOLD) { cancelDraggedPress(); return; }
-      isPttRecordingRef.current = false;
-      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
-      singleTapTimerRef.current = null;
-      lastTapTimeRef.current = 0;
-      let target = synthesizeWarpTarget(context, metrics);
-      if (metrics.phase === 'wormhole') {
-        const { dest } = commitShuffledWormholeDestination(location);
-        target = { ...target, destinationPath: dest.path };
-      }
-      const destination = target.id === 'universe' && target.destinationPath === '/'
-        ? '/prologue' : target.destinationPath;
-      const path = oneStopNavigationPath(resolveCanonicalPath(destination));
-      const tab = new URL(path, 'https://luckey.local').searchParams.get('tab') || undefined;
-      clearPendingSelection();
-      lastValidSelectionRef.current = '';
-      touchStartSelectionRef.current = '';
-      setIsQuickChatOpen(false);
-      setQuickChatVoiceActive(false);
-      triggerHaptic('wormhole');
-      handleRuneNavigate(path, tab);
-      setActivePhase('idle');
-      setGauge(0);
-      setDurationMs(0);
-      resetActiveWormholePeek();
-      return;
-    }
 
     // 🧭 [원뿔 방향 탭] 상하좌우 원뿔 각진 방향 클릭/터치 시 쉐브론 화살표 기능(스크롤 및 댑 순환 이동) 즉시 실행!
     // Touch has no preceding hover; use the press snapshot instead of a render closure.
@@ -1157,6 +1169,10 @@ export function BigBangButton() {
   const hoverContainerRef = useRef<HTMLDivElement>(null);
 
   const handlePointerCancel = (event?: React.PointerEvent<HTMLDivElement>) => {
+    activePointerIdRef.current = null;
+    visualDragRef.current = false;
+    if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current);
+    setCloverWind('off');
     cleanupGlobalPointerListeners();
     // Native touch cancellation can follow a stationary long press. The visible
     // conversation stays active; dragging or losing window focus still aborts it.
@@ -1184,8 +1200,6 @@ export function BigBangButton() {
     lastSectorRef.current = -1;
     setDragOffset({ x: 0, y: 0 });
     setDragDistance(0);
-    setDragAngleDeg(0);
-    setRadialSectorIndex(-1);
     setActivePhase('idle');
     setGauge(0);
     setDurationMs(0);
@@ -1257,7 +1271,6 @@ export function BigBangButton() {
     // 🌀 웜홀 상태 (버튼영역내 제자리 제외): 옴니워프 유니버스 아이콘
     if (activePhase === 'wormhole') return 'key';
     // 🌌 사건의 지평선 상태 (조준 중): 해당 조준 채널의 아이콘을 최우선으로 표출!
-    if (radialSectorIndex >= 0) return RADIAL_WARP_APPS[radialSectorIndex]?.id || 'hub';
     // 🌀 드래그 시: 추천 1순위 채널
     if (dragDistance >= DRAG_ACTIVATION_THRESHOLD) return currentTarget?.id || 'omniwarp';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 홈 귀환
@@ -1271,11 +1284,7 @@ export function BigBangButton() {
     // 🌀 웜홀 상태: 추천 1순위 차원 도약
     if (activePhase === 'wormhole') return currentTarget?.title || currentTarget?.name || 'KEY 채널로 이동';
     // 🌌 사건의 지평선 상태 (조준 중): 해당 조준 채널 및 서브메뉴 명칭 표출
-    if (radialSectorIndex >= 0) {
-      const channel = RADIAL_WARP_APPS[radialSectorIndex];
-      const subTitle = currentTarget?.title || '';
-      return subTitle ? `${channel?.name || ''} · ${subTitle}` : (channel?.name || '');
-    }
+
     // 🌀 드래그 시: 추천 1순위 채널 도약
     if (dragDistance >= DRAG_ACTIVATION_THRESHOLD) return currentTarget?.title || currentTarget?.name || 'KEY 채널로 이동';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 귀환
@@ -1284,8 +1293,10 @@ export function BigBangButton() {
     return '루시 (1:1 음성 대화)';
   })();
 
-  return (
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     <>
+      {cloverWind !== 'off' && <BigBangCloverWind settling={cloverWind === 'settling'} layerRef={cloverWindLayerRef} />}
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
         className={`fixed bottom-safe-fab-center w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
@@ -1330,20 +1341,6 @@ export function BigBangButton() {
             buttonRef.current?.blur();
           }}
         >
-          {isPressing && dragDistance >= DRAG_ACTIVATION_THRESHOLD && <div className="absolute inset-0 pointer-events-none z-40" data-bigbang-radial="true" data-sector={radialSectorIndex}>
-            <div className="absolute left-1/2 top-1/2 h-36 w-36 rounded-full border border-cyan-300/30" style={{ transform: `translate(-50%, -50%) rotate(${dragAngleDeg}deg)` }}>
-              <span className="absolute left-1/2 -top-1 h-2 w-2 -translate-x-1/2 rounded-full bg-cyan-200 shadow-[0_0_12px_#67e8f9]" />
-            </div>
-            {RADIAL_WARP_APPS.map((app, index) => {
-              const angle = index * Math.PI * 2 / RADIAL_WARP_APPS.length;
-              return <span key={app.id} className={`absolute left-1/2 top-1/2 rounded-full border px-2 py-1 text-[9px] font-bold whitespace-nowrap backdrop-blur-xl ${radialSectorIndex === index && !isAborted ? 'bg-cyan-950/95 text-white border-cyan-200 shadow-[0_0_14px_#22d3ee88]' : 'bg-slate-950/90 text-slate-300 border-white/20'}`} style={{ transform: `translate(-50%, -50%) translate(${Math.sin(angle) * 78}px, ${-Math.cos(angle) * 78}px)` }}>{app.name}</span>;
-            })}
-            <div role="status" data-bigbang-drag-preview="true" data-destination={currentTarget?.destinationPath} className="absolute -top-36 left-1/2 -translate-x-1/2 rounded-2xl border border-cyan-300/40 bg-slate-950/95 px-4 py-2 text-center text-xs text-white shadow-xl whitespace-nowrap max-w-[90vw]">
-              <span className="block font-bold">{isAborted ? '중앙으로 되돌리거나 멀리 끌어 취소' : activeAppName}</span>
-              <span className="mt-1 block text-[10px] text-cyan-100/70">{isAborted ? '손을 놓으면 이동하지 않아요' : '손을 놓으면 이동해요'}</span>
-            </div>
-          </div>}
-
           {/* Existing radial hit area accepts touch as well as mouse input */}
           <div className="absolute -inset-7 rounded-full pointer-events-auto touch-none -z-10" />
 
@@ -1366,13 +1363,6 @@ export function BigBangButton() {
           {/* 🎯 버튼 & 궤도 정밀 센터링 앵커 (대형 코스믹 아티팩트 규격 76~84px) */}
           <div className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center shrink-0">
 
-            {(isHovered || isPressing) && <div className="bigbang-clover-breeze" aria-hidden="true" data-bigbang-clover-breeze="true">
-              {[-48, -26, -8, 18, 36, 52].map((height, index) => (
-                <span key={height} className="bigbang-wind-clover" style={{ '--leaf-y': `${height}px`, '--leaf-x': `${(index - 2.5) * 22}px`, '--leaf-delay': `${-index * 1.65}s`, '--leaf-duration': `${7 + index * .55}s` } as React.CSSProperties}>
-                  <Clover size={index % 2 ? 13 : 17} strokeWidth={1.6} />
-                </span>
-              ))}
-            </div>}
 
             {/* 🌈 은은하고 신비로운 코스믹 레인보우 아우라 (Subtle Lingering Rainbow Aura) */}
             <div
@@ -1586,8 +1576,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 360도 방향 조준 후 놓아 이동)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 360도 방향 조준 후 놓아 이동"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 화면 전체 네잎클로버 바람 효과)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 화면 전체 네잎클로버 바람 효과"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -1832,6 +1822,6 @@ export function BigBangButton() {
           </div>
         </div>
       </div>
-    </>
+    </>, document.body
   );
 }

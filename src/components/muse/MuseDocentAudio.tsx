@@ -209,7 +209,7 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
     setShowFullScript(false);
     setError(null);
     stopTTS();
-  }, [artwork.imageUrl, artwork.title, artwork.famousPoem?.title, artwork.famousSong?.title]);
+  }, [artwork.title, artwork.creator]);
 
   const startAudioPlayback = useCallback(async (narrationText: string) => {
     // 1. 기존 진행 중인 모든 재생을 정지하고 세션 초기화
@@ -291,9 +291,8 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
       return;
     }
 
-    if (phase === "paused" && audio.src) {
+    if (phase === "paused") {
       pausedRef.current = false;
-      audio.play().catch(() => {});
       resumeTTS();
       setPhase("speaking");
       return;

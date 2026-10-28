@@ -9,12 +9,13 @@ test('app entry, TTS priming, playback, pause and resume preserve a mixable sess
   let nativePlayers = 0;
   let mediaClaims = 0;
   let contexts = 0;
+  let contextInstance: any;
   const sources: any[] = [];
   const param = () => ({ value: 1, setValueAtTime() {} });
   const node = () => ({ connect() {}, disconnect() {}, gain: param(), threshold: param(), knee: param(), ratio: param(), attack: param(), release: param() });
   class Context {
     state = 'running'; currentTime = 0; sampleRate = 24000; destination = {};
-    constructor() { contexts++; }
+    constructor() { contexts++; contextInstance = this; }
     addEventListener() {}
     createGain = node;
     createDynamicsCompressor = node;
@@ -45,6 +46,11 @@ test('app entry, TTS priming, playback, pause and resume preserve a mixable sess
     assert(isTTSAudioPlaying(), 'compressed TTS also uses Web Audio');
     stopTTSAudio(); await compressed;
     assert(!isTTSAudioPlaying());
+    contextInstance.state = 'interrupted';
+    const sourceCount = sources.length;
+    await assert.rejects(playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm'), /음성 출력이 중단/);
+    assert.equal(sources.length, sourceCount, 'a blocked audio context must not silently start an inaudible source');
+    contextInstance.state = 'running';
     initTTSSessionHandlers(() => {}); setTTSSessionActive('test'); clearTTSSession();
     assert.equal(mediaClaims, 0, 'external music keeps OS media controls');
     assert.equal(nativePlayers, 0);

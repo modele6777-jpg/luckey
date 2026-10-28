@@ -2964,7 +2964,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         },
       });
 
-      const finalText = fullGenerated || currentText;
+      const finalText = String(fullGenerated || currentText).trim();
+      if (!finalText) throw new Error('추가 리딩 응답이 비어 있습니다.');
       setFollowUpEntries((prev) =>
         prev.map((e) =>
           e.id === newEntryId ? { ...e, reading: finalText, isGenerating: false } : e,
@@ -2973,13 +2974,11 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       playAudioHaptic('card_draw');
     } catch (err: any) {
       console.warn('[executeFollowUpReading] Streaming interrupted, applying robust master interpretation:', err);
-      const fallbackReading = isReversed
-        ? `[${cardNameKo} (역방향)] 카드는 정방향과는 달리 **${revData?.meaning || '내면의 정돈과 신중한 점검'}**을 가리키고 있습니다. 특히 이 카드와 관련하여 꼭 기억해야 할 주의점 한 가지는 **"${revCaution}"**입니다.\n\n⚠️ **[${cardNameKo} 역방향 주의점 1가지]**: ${revCaution}`
-        : `${cardNameKo} (정방향)의 에너지는 현재 상황의 이면에 잠재된 핵심 실마리를 드러내고 있습니다. 기존의 혼란스러운 생각에 매몰되기보다는, 카드가 일깨우는 본연의 지혜와 직관을 신뢰하며 명확하고 주체적인 선택을 내리시길 권합니다.`;
+      const fallbackReading = `추가 리딩 서버의 답변을 받지 못했습니다. 선택한 카드 [${cardNameKo} (${isReversed ? '역방향' : '정방향'})]는 유지됩니다. 잠시 후 추가 질문을 다시 보내 주세요.`;
       setFollowUpEntries((prev) =>
         prev.map((e) =>
           e.id === newEntryId
-            ? { ...e, reading: currentText.trim() ? currentText : fallbackReading, isGenerating: false }
+            ? { ...e, reading: currentText.trim() ? currentText + '\n\n[답변이 중단되었습니다. 추가 질문으로 이어서 요청해 주세요.]' : fallbackReading, isGenerating: false }
             : e,
         ),
       );
@@ -3879,7 +3878,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                         },
                                       },
                                     }}
-                                    className="flex gap-3.5 flex-wrap justify-center p-3 max-w-full relative"
+                                    className={`grid gap-2 sm:gap-3 w-full p-0.5 relative ${drawnCards.length === 1 ? "grid-cols-1 max-w-[240px] sm:max-w-[300px] mx-auto" : drawnCards.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}
                                     style={{ perspective: 1200 }}
                                   >
                                     {/* Cosmic Starlight Altar Ambient Shimmer Glow */}
@@ -3901,6 +3900,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                           key={`${c.id}-${i}-${cardFlipCycle}`}
                                           card={cardWithRev}
                                           index={i}
+                                          size="result"
                                           slotName={positionLabel}
                                           onClick={() => setZoomedCard({ card: cardWithRev, slotName: positionLabel })}
                                         />
@@ -4799,8 +4799,6 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
       {/* 🎡 잔여 덱 전용 360도 무결점 타로 휠 수동 선택 모달 */}
       {showFollowUpWheelModal && (
-        <WorkspacePortal onClose={() => setShowFollowUpWheelModal(false)}><div role="dialog" aria-modal="true" aria-label="상세 보기" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4">
-          <div className="relative w-full max-w-5xl h-[88vh] rounded-3xl bg-slate-950/95 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col duo-dialog-panel">
             <TarotSpread
               deckSource={remainingDeck}
               maxCards={1}
@@ -4810,8 +4808,6 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
               onComplete={handleFollowUpWheelComplete}
               onCancel={() => setShowFollowUpWheelModal(false)}
             />
-          </div>
-        </div></WorkspacePortal>
       )}
       {/* 📍 메인 전체 화면 스마트 스크롤 수동 조작 시 낭독 위치 즉시 복귀 플로팅 버튼 */}
       <SmartScrollResumeButton

@@ -167,7 +167,7 @@ export const FollowUpTarotTimeline: React.FC<FollowUpTarotTimelineProps> = ({
                     <button
                       type="button"
                       onClick={() => entry.card && onZoomCard({ card: entry.card, slotName: `추가 질문 #${index + 1}` })}
-                      className="relative shrink-0 w-16 h-24 sm:w-20 sm:h-30 rounded-lg overflow-hidden border border-amber-400/40 group/card shadow-md cursor-zoom-in hover:scale-105 active:scale-95 transition-transform"
+                      className="relative shrink-0 w-24 aspect-[2/3] sm:w-28 rounded-lg overflow-hidden border border-amber-400/40 group/card shadow-md cursor-zoom-in hover:scale-105 active:scale-95 transition-transform"
                       title="카드 크게 보기"
                     >
                       <img

@@ -1,0 +1,194 @@
+[
+  {
+    "route": "/trinity",
+    "errors": [],
+    "buttons": 8,
+    "blank": false
+  },
+  {
+    "route": "/trinity?tab=tarot",
+    "errors": [],
+    "buttons": 27,
+    "blank": false
+  },
+  {
+    "route": "/trinity?tab=oracle",
+    "errors": [],
+    "buttons": 17,
+    "blank": false
+  },
+  {
+    "route": "/trinity?tab=synergy",
+    "errors": [],
+    "buttons": 17,
+    "blank": false
+  },
+  {
+    "route": "/orange",
+    "errors": [],
+    "buttons": 19,
+    "blank": false
+  },
+  {
+    "route": "/orange?tab=wishingWell",
+    "errors": [],
+    "buttons": 20,
+    "blank": false
+  },
+  {
+    "route": "/orange?tab=synergy",
+    "errors": [],
+    "buttons": 19,
+    "blank": false
+  },
+  {
+    "route": "/heal",
+    "errors": [],
+    "buttons": 22,
+    "blank": false
+  },
+  {
+    "route": "/heal?tab=oneMinute",
+    "errors": [],
+    "buttons": 19,
+    "blank": false
+  },
+  {
+    "route": "/heal?tab=synergy",
+    "errors": [],
+    "buttons": 22,
+    "blank": false
+  },
+  {
+    "route": "/heal?tab=mission",
+    "errors": [],
+    "buttons": 19,
+    "blank": false
+  },
+  {
+    "route": "/bluebird",
+    "errors": [],
+    "buttons": 38,
+    "blank": false
+  },
+  {
+    "route": "/bluebird?tab=secretMessage",
+    "errors": [],
+    "buttons": 20,
+    "blank": false
+  },
+  {
+    "route": "/bluebird?tab=synergy",
+    "errors": [],
+    "buttons": 15,
+    "blank": false
+  },
+  {
+    "route": "/muse",
+    "errors": [],
+    "buttons": 20,
+    "blank": false
+  },
+  {
+    "route": "/muse?tab=roleModel",
+    "errors": [],
+    "buttons": 9,
+    "blank": false
+  },
+  {
+    "route": "/muse?tab=synergy",
+    "errors": [],
+    "buttons": 20,
+    "blank": false
+  },
+  {
+    "route": "/epilogue",
+    "errors": [],
+    "buttons": 18,
+    "blank": false
+  },
+  {
+    "route": "/profile",
+    "errors": [],
+    "buttons": 25,
+    "blank": false
+  },
+  {
+    "route": "/chronicle",
+    "errors": [],
+    "buttons": 18,
+    "blank": false
+  },
+  {
+    "route": "/prologue",
+    "errors": [],
+    "buttons": 41,
+    "blank": false
+  },
+  {
+    "route": "/ecpr",
+    "errors": [],
+    "buttons": 40,
+    "blank": false
+  },
+  {
+    "route": "/todo",
+    "errors": [],
+    "buttons": 37,
+    "blank": false
+  },
+  {
+    "route": "/chat",
+    "errors": [],
+    "buttons": 2,
+    "blank": false
+  },
+  {
+    "route": "/chat/pro",
+    "errors": [],
+    "buttons": 2,
+    "blank": false
+  },
+  {
+    "route": "/key",
+    "errors": [],
+    "buttons": 2,
+    "blank": false
+  },
+  {
+    "route": "/calm",
+    "errors": [],
+    "buttons": 2,
+    "blank": false
+  },
+  {
+    "route": "/orb",
+    "errors": [],
+    "buttons": 2,
+    "blank": false
+  },
+  {
+    "route": "/gateway",
+    "errors": [],
+    "buttons": 2,
+    "blank": false
+  },
+  {
+    "route": "/crystal",
+    "errors": [],
+    "buttons": 2,
+    "blank": false
+  },
+  {
+    "route": "/library",
+    "errors": [],
+    "buttons": 40,
+    "blank": false
+  },
+  {
+    "route": "/handbook",
+    "errors": [],
+    "buttons": 68,
+    "blank": false
+  }
+]

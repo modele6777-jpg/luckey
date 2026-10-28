@@ -27,13 +27,31 @@ export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
   if (input.response_format?.type === 'json_object') payload.response_format = { type: 'json_object' };
   const thinking = input.thinking_level || input.reasoning_effort;
   if (['minimal', 'low', 'medium', 'high'].includes(thinking)) payload.reasoning_effort = thinking;
+  const models = [...new Set([model, String(env.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash-lite').trim()])].filter(Boolean);
   try {
-    const upstream = await fetchApi('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+    let upstream;
+    for (let attempt = 0; attempt < models.length; attempt++) {
+      if (request.signal.aborted) throw new Error('Request aborted');
+      const attemptPayload = { ...payload, model: models[attempt] };
+      // The fallback may support different thinking controls; retain conversation and output format.
+      if (attempt > 0) delete attemptPayload.reasoning_effort;
+      try {
+        upstream = await fetchApi('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify(payload),
-      signal: request.signal,
+      body: JSON.stringify(attemptPayload),
+      signal: AbortSignal.any([request.signal, AbortSignal.timeout(25000)]),
     });
+      } catch (error) {
+        if (request.signal.aborted || attempt === models.length - 1) throw error;
+        continue;
+      }
+      if ((upstream.status >= 500 || upstream.status === 404) && attempt < models.length - 1) {
+        await upstream.body?.cancel();
+        continue;
+      }
+      break;
+    }
     if (!upstream.ok) {
       // Do not return Google's raw error, which may contain request details.
       await upstream.body?.cancel();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { normalizeTextForSpeech, playTTS, playTTSInChunks, splitSpeechIntoChunks, stopTTS, subscribeTTS, prefetchTTS } from '../utils/tts';
+import { normalizeTextForSpeech, playTTS, playTTSInChunks, splitSpeechIntoChunks, stopTTS, subscribeTTS } from '../utils/tts';
 
 interface TTSButtonProps {
   text: string;
@@ -18,23 +18,10 @@ interface TTSButtonProps {
 export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', className = "", onPlay, onClick, emotion, skipCompletionChime }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const textStr = typeof text === 'string' ? text : String(text || '');
   const cleanText = normalizeTextForSpeech(textStr);
-
-  // Background warm-up / prefetch audio as soon as TTSButton renders
-  useEffect(() => {
-    if (!cleanText || cleanText.length < 2) return;
-    const timer = setTimeout(() => {
-      if (cleanText.length > 130) {
-        const firstSentence = cleanText.match(/[^.!?。！？\n]+[.!?。！？\n]?/)?.[0] || cleanText.slice(0, 100);
-        prefetchTTS(firstSentence, voice, emotion);
-      } else {
-        prefetchTTS(cleanText, voice, emotion);
-      }
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [cleanText, voice, emotion]);
 
   useEffect(() => {
     const unsubscribe = subscribeTTS((state) => {
@@ -60,18 +47,25 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', clas
       console.warn('[TTSButton] onPlay/onClick error:', e);
     }
 
+    setError('');
+    try {
     // If text contains multiple sentences, stream sequentially sentence-by-sentence
     // for seamless real-time sentence highlighting and zero audio cutoffs.
     const sentences = splitSpeechIntoChunks(cleanText);
     if (sentences.length > 1) {
-      playTTSInChunks(cleanText, voice, 140, emotion, undefined, { skipCompletionChime });
+      await playTTSInChunks(cleanText, voice, 140, emotion, undefined, { skipCompletionChime });
     } else {
-      playTTS(cleanText, voice, false, emotion, undefined, false, undefined, undefined, undefined, { skipCompletionChime });
+      await playTTS(cleanText, voice, true, emotion, undefined, false, undefined, undefined, undefined, { skipCompletionChime });
+    }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '음성을 재생하지 못했습니다. 다시 눌러 주세요.');
     }
   };
 
   return (
+    <span className="inline-flex items-center gap-2">
     <motion.button
+      type="button"
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={handleSpeak}
@@ -86,5 +80,7 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', clas
         <Volume2 size={14} />
       )}
     </motion.button>
+    {error && <span role="alert" className="max-w-56 text-xs text-amber-500">{error}</span>}
+    </span>
   );
 };

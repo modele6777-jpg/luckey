@@ -60,7 +60,7 @@ export interface TarotFlippingCardProps {
   index?: number;
   onClick?: () => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'wide';
+  size?: 'sm' | 'md' | 'lg' | 'wide' | 'result';
   forceFlipped?: boolean;
   cardBackId?: string;
 }
@@ -106,7 +106,13 @@ export const TarotFlippingCard: React.FC<TarotFlippingCardProps> = ({
   let iconCircleSize = 'w-7 h-7';
   let iconSize = 14;
 
-  if (size === 'sm') {
+  if (size === 'result') {
+    containerDimensions = 'w-full aspect-[2/3] min-h-0';
+    imageTextSize = 'text-[11px] sm:text-xs';
+    subTextSize = 'text-[8px]';
+    iconCircleSize = 'w-9 h-9';
+    iconSize = 18;
+  } else if (size === 'sm') {
     containerDimensions = 'w-16 min-h-[6.2rem]';
     imageTextSize = 'text-[8px]';
     subTextSize = 'text-[5px]';
@@ -326,7 +332,7 @@ export const TarotFlippingCard: React.FC<TarotFlippingCardProps> = ({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-200/20 to-transparent skew-x-12 pointer-events-none z-20 tarot-card-shimmer-sweep" />
           <TarotCardBackFace
             cardBackId={effectiveCardBackId}
-            size={size}
+            size={size === 'result' ? 'lg' : size}
             isHovered={isClicked}
           />
         </div>

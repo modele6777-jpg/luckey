@@ -47,3 +47,23 @@ for (const status of [400, 401, 403, 404, 429, 500]) {
 }
 assert.equal((await handleSitesGeminiChat(request({ messages }), { gemini: 'test-secret' }, async () => { throw new Error('test-secret'); })).status, 502);
 console.log('Sites Gemini chat: history, image content, JSON, SSE, validation and provider errors passed.');
+for (const stream of [false, true]) {
+  const attempted = [];
+  const result = await handleSitesGeminiChat(request({ messages, stream, thinking_level: 'low' }), { gemini: 'test-secret' }, async (_, options) => {
+    const body = JSON.parse(options.body);
+    attempted.push(body.model);
+    assert.deepEqual(body.messages, messages);
+    if (attempted.length === 1) return new Response('overloaded', { status: 503 });
+    assert.equal(body.reasoning_effort, undefined);
+    return new Response(stream ? 'data: [DONE]\n\n' : '{"choices":[{"message":{"content":"복구"}}]}');
+  });
+  assert.equal(result.status, 200);
+  assert.deepEqual(attempted, ['gemini-3.1-flash-lite', 'gemini-3.5-flash-lite']);
+  assert.match(await result.text(), stream ? /DONE/ : /복구/);
+}
+for (const status of [400, 401, 403, 429]) {
+  let attempts = 0;
+  await handleSitesGeminiChat(request({ messages }), { gemini: 'test-secret' }, async () => { attempts++; return new Response('', { status }); });
+  assert.equal(attempts, 1);
+}
+console.log('Transient provider failover preserves JSON/SSE; authentication and quota are not retried.');

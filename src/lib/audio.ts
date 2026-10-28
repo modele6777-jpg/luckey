@@ -1169,9 +1169,13 @@ export async function playTTSAudio(
   // Keep TTS in the non-exclusive ambient mix with external music.
   configureSpeechAudioSession();
   const audioCtx = getSharedAudioContext();
-  if (audioCtx.state === 'suspended') {
-    await audioCtx.resume().catch(() => {});
+  if (['suspended', 'interrupted'].includes(audioCtx.state as string)) {
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([audioCtx.resume(), new Promise<void>((_, reject) => { resumeTimer = setTimeout(() => reject(new Error('음성 출력을 시작하지 못했습니다. 재생 버튼을 다시 눌러 주세요.')), 2500); })]);
+    } finally { if (resumeTimer) clearTimeout(resumeTimer); }
   }
+  if (audioCtx.state !== 'running') throw new Error('음성 출력이 중단되었습니다. 재생 버튼과 기기의 미디어 음량을 확인해 주세요.');
 
   // Stop any existing TTS source before starting the new buffer
   stopRawPCM();

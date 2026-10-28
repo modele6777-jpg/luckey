@@ -41,7 +41,10 @@ export function useTTSCurrentSentence(enabled: boolean = true) {
           prev.isLoading === state.isLoading &&
           prev.activeSentence === state.activeSentence &&
           prev.currentSentence === state.currentSentence &&
-          prev.activeText === state.activeText
+          prev.activeText === state.activeText &&
+          prev.activeFullText === state.activeFullText &&
+          prev.activeSessionId === state.activeSessionId &&
+          prev.activeSentenceIndex === state.activeSentenceIndex
         ) {
           return prev;
         }

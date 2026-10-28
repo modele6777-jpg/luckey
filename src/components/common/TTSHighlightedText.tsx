@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { useTTSState } from '@/utils/tts';
 import { prepareNaturalSpeechText } from '@/utils/speechText';
 
@@ -151,6 +151,29 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
 export const TTS_HIGHLIGHT_CLASS =
   'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] inline transition-all duration-300';
 
+// A sentence can be rendered in a list, a nested paragraph and an open dialog.
+// Give exactly one mounted candidate ownership instead of scrolling/highlighting all copies.
+const highlightCandidates = new Map<HTMLElement, (active: boolean) => void>();
+let highlightFrame = 0;
+function selectHighlightOwner() {
+  cancelAnimationFrame(highlightFrame);
+  highlightFrame = requestAnimationFrame(() => {
+    let owner: HTMLElement | null = null;
+    let best = -1;
+    for (const element of highlightCandidates.keys()) {
+      if (!element.isConnected || !element.getClientRects().length || element.closest('[aria-hidden="true"], [hidden]')) continue;
+      const rect = element.getBoundingClientRect();
+      const visible = rect.bottom > 0 && rect.top < window.innerHeight;
+      const score = (element.closest('[role="dialog"], dialog') ? 4 : 0) + (visible ? 2 : 0);
+      if (score > best || (score === best && owner?.contains(element))) {
+        owner = element;
+        best = score;
+      }
+    }
+    for (const [element, update] of highlightCandidates) update(element === owner);
+  });
+}
+
 /**
  * Active Sentence Mark element with auto-scroll into view
  */
@@ -163,29 +186,31 @@ export function TTSHighlightMark({
   className?: string;
   isLight?: boolean;
 }) {
-  const markRef = useRef<HTMLElement>(null);
-
+  const markRef = useRef<HTMLSpanElement>(null);
+  const [ownsHighlight, setOwnsHighlight] = useState(false);
   useEffect(() => {
-    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-    if (markRef.current) {
-      try {
-        markRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'nearest',
-        });
-      } catch (_) {}
-    }
+    const element = markRef.current;
+    if (!element) return;
+    highlightCandidates.set(element, setOwnsHighlight);
+    selectHighlightOwner();
+    return () => {
+      highlightCandidates.delete(element);
+      selectHighlightOwner();
+    };
   }, []);
+  useEffect(() => {
+    if (!ownsHighlight || document.visibilityState === 'hidden') return;
+    markRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+  }, [ownsHighlight]);
 
   const themeClass = isLight
     ? 'tts-active-sentence-highlight bg-amber-200/90 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-950 inline transition-all duration-300'
     : 'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-50 inline transition-all duration-300';
 
   return (
-    <mark ref={markRef} className={`${themeClass} ${className}`}>
+    <span ref={markRef} data-tts-highlight-candidate className={`${ownsHighlight ? themeClass : ''} ${className}`}>
       {children}
-    </mark>
+    </span>
   );
 }
 

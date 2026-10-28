@@ -29,6 +29,9 @@ export interface TTSPlaybackOptions {
   isUserToggleClick?: boolean;
 }
 
+let nativeSpeechSessionId: string | null = null;
+let nativeFallbackUntil = 0;
+
 // Pre-warm the browser's speechSynthesis engine to load premium voices asynchronously immediately on load
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.getVoices();
@@ -53,7 +56,7 @@ export function playNativeBrowserSpeech(
   options?: TTSPlaybackOptions,
 ): Promise<void> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    return Promise.resolve();
+    return Promise.reject(new Error('이 브라우저에서 음성 재생을 사용할 수 없습니다.'));
   }
 
   configureSpeechAudioSession();
@@ -186,7 +189,7 @@ export function playNativeBrowserSpeech(
   const startKeepAlive = () => {
     keepAliveInterval = setInterval(() => {
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        if (window.speechSynthesis.paused) {
+        if (ttsState.isSpeaking && window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
         }
       }
@@ -199,9 +202,9 @@ export function playNativeBrowserSpeech(
     }
   };
 
-  return new Promise<void>((resolve) => {
+  return new Promise<void>((resolve, reject) => {
     let isSettled = false;
-    const finish = (completedNaturally: boolean) => {
+    const finish = (completedNaturally: boolean, failure?: Error) => {
       if (isSettled) return;
       isSettled = true;
       activeUtterances.delete(utterance);
@@ -214,11 +217,14 @@ export function playNativeBrowserSpeech(
           } catch (_) {}
         }
       }
-      resolve();
+      if (failure) reject(failure); else resolve();
     };
 
     utterance.onend = () => finish(true);
-    utterance.onerror = () => finish(false);
+    utterance.onerror = (event) => {
+      if ((event.error === 'canceled' || event.error === 'interrupted') && sessionToVerify && ttsState.activeSessionId !== sessionToVerify) { finish(false); return; }
+      finish(false, new Error('음성을 재생하지 못했습니다. 미디어 음량과 기기의 음성 설정을 확인한 뒤 다시 눌러 주세요.'));
+    };
 
     startKeepAlive();
     window.speechSynthesis.speak(utterance);
@@ -299,7 +305,7 @@ export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string,
 
 export function prefetchTTS(text: string, voice?: string, emotion?: string, _rate?: string, _speed?: number): Promise<TTSAudioData | null> {
   const cleanText = normalizeTextForSpeech(text);
-  if (!cleanText) return Promise.resolve(null);
+  if (!cleanText || Date.now() < nativeFallbackUntil) return Promise.resolve(null);
 
   let activeEmotion = emotion;
   if (!activeEmotion) {
@@ -319,7 +325,7 @@ export function prefetchTTS(text: string, voice?: string, emotion?: string, _rat
       const response = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleanText, voice, emotion: activeEmotion, rate: '+0%', speed: 1.0 }),
+        body: JSON.stringify({ text: cleanText, voice: 'Aoede', emotion: activeEmotion, rate: '+0%', speed: 1.0 }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -466,6 +472,10 @@ export const playTTS = async (
   }
 
   const sessionToVerify = mySessionId;
+  if (nativeSpeechSessionId === mySessionId || Date.now() < nativeFallbackUntil) {
+    nativeSpeechSessionId = mySessionId;
+    return playNativeBrowserSpeech(cleanText, wait, sessionToVerify, isSequenceChunk, targetVoice, 1.0, options);
+  }
 
   // Auto-extract emotion tag if not explicitly provided
   let activeEmotion = emotion;
@@ -508,7 +518,7 @@ export const playTTS = async (
         return;
       }
 
-      if (!response.ok) throw new Error('Failed to generate TTS');
+      if (!response.ok) throw new Error(`음성 생성 요청 실패 (${response.status})`);
       const rawData = await response.json();
       if (rawData?.audioContent) {
         data = {
@@ -604,49 +614,9 @@ export const playTTS = async (
   } catch (error) {
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
 
-    if (sequenceSessionId || isSequenceChunk) {
-      // 🌟 단일 여성 표준 음성 일관성 유지 원칙:
-      // 시퀀스 낭독 도중 목소리가 임의로 바뀌는 현상을 막기 위해 브라우저 음성으로 교차 전환하지 않고,
-      // 동일 음성 엔드포인트(/api/ai/tts)로 최대 3회 재시도합니다.
-      for (let retryCount = 1; retryCount <= 3; retryCount++) {
-        if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
-        try {
-          await new Promise((r) => setTimeout(r, 200 * retryCount));
-          const retryController = new AbortController();
-          const retryTimeoutId = setTimeout(() => retryController.abort(), 6000);
-          const retryRes = await fetch('/api/ai/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: cleanText, voice: targetVoice, emotion: activeEmotion, rate: '+0%', speed: 1.0 }),
-            signal: retryController.signal,
-          });
-          clearTimeout(retryTimeoutId);
-          if (retryRes.ok) {
-            const retryData = await retryRes.json();
-            if (retryData?.audioContent) {
-              if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
-              updateTTSState({
-                isLoading: false,
-                isSpeaking: true,
-                activeText: cleanText,
-                ...(fullTextReference ? { activeFullText: fullTextReference } : {}),
-              });
-              setTTSSessionActive(cleanText);
-              const encoding = retryData.encoding === 'pcm' ? 'pcm' : retryData.encoding === 'wav' ? 'wav' : 'mp3';
-              await playTTSAudio(retryData.audioContent, encoding, retryData.sampleRate ?? 24000, activeEmotion || cleanText, isSequenceChunk, 1.0);
-              return;
-            }
-          }
-        } catch (retryErr) {
-          console.warn(`[TTS] Sequence chunk same-voice retry ${retryCount} error:`, retryErr);
-        }
-      }
-      // 동일 음성 3회 재시도 실패 시, 이질적인 브라우저 음색으로 교차 전환(Voice Hopping)하지 않고 조용히 청크를 스킵하여 음색 통일성을 엄격히 보호합니다.
-      console.warn('[TTS] Sequence chunk failed after 3 same-voice retries, skipping chunk without switching voices');
-      return;
-    }
-
-    console.warn('[TTS] Single-play API generation failed, falling back to Native Browser Speech...', error);
+    nativeFallbackUntil = Date.now() + 60000;
+    nativeSpeechSessionId = mySessionId;
+    console.warn('[TTS] Server audio failed; continuing with one browser voice for this session.', error);
     return playNativeBrowserSpeech(cleanText, wait, sessionToVerify, isSequenceChunk, targetVoice, 1.0, options);
   }
 };
@@ -720,7 +690,7 @@ export function splitSpeechIntoChunks(text: string, maxChunkLength = 240): strin
 }
 
 /**
- * Proactively prefetch the first 5 chunks of a speech text (Zero-Lag Ultra Audio Streaming)
+ * Proactively prefetch the first 2 chunks of a speech text (Zero-Lag Ultra Audio Streaming)
  */
 export function prefetchTTSChunks(
   text: string,
@@ -730,7 +700,7 @@ export function prefetchTTSChunks(
 ): void {
   try {
     const chunks = splitSpeechIntoChunks(text, maxChunkLength);
-    for (let k = 0; k < Math.min(5, chunks.length); k++) {
+    for (let k = 0; k < Math.min(2, chunks.length); k++) {
       prefetchTTS(chunks[k], voice, emotion).catch(() => {});
     }
   } catch (_) {}
@@ -834,7 +804,7 @@ export const playTTSInChunks = async (
     } catch (_) {}
 
     // Pre-fetch the upcoming 5 chunks ahead of playback so background playback never waits on network (Ultra Max Audio)
-    for (let ahead = 1; ahead <= 5; ahead++) {
+    for (let ahead = 1; ahead <= 1; ahead++) {
       if (startChunkIndex + ahead < chunks.length) {
         prefetchTTS(chunks[startChunkIndex + ahead], voice, emotion).catch(() => {});
       }
@@ -872,8 +842,8 @@ export const playTTSInChunks = async (
         activeSessionId: sequenceSessionId,
       });
 
-      // Proactively pre-fetch next upcoming 5 chunks in advance (Zero-delay continuous stream)
-      for (let ahead = 1; ahead <= 5; ahead++) {
+      // Proactively pre-fetch next upcoming chunk in advance (Zero-delay continuous stream)
+      for (let ahead = 1; ahead <= 1; ahead++) {
         if (i + ahead < chunks.length) {
           prefetchTTS(chunks[i + ahead], voice, emotion).catch(() => {});
         }
@@ -902,6 +872,8 @@ export const playTTSInChunks = async (
 
       const isLastChunk = i === chunks.length - 1;
       try {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
         await playTTS(
           currentChunkText,
           voice,
@@ -911,8 +883,15 @@ export const playTTSInChunks = async (
           true,
           cleanText,
         );
+            break;
+          } catch (error) {
+            if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
+            if (attempt === 1) throw error;
+          }
+        }
       } catch (chunkErr) {
-        console.warn(`[TTS] Sequence chunk ${i + 1}/${chunks.length} error, maintaining voice consistency:`, chunkErr);
+        console.warn(`[TTS] Sequence chunk ${i + 1}/${chunks.length} playback failed:`, chunkErr);
+        throw chunkErr;
       } finally {
         subTimers.forEach(clearTimeout);
       }
@@ -933,6 +912,7 @@ export const playTTSInChunks = async (
     }
   } catch (err) {
     console.error("[TTS] playTTSInChunks sequence error:", err);
+    throw err;
   } finally {
     if (ttsState.activeSessionId === sequenceSessionId) {
       isPlayingSequence = false;
