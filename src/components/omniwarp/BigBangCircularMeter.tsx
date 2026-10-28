@@ -386,8 +386,8 @@ interface BigBangCircularMeterProps {
   isCosmicSuction?: boolean;
   /** 🧭 상하좌우 원뿔 모핑 액션 등록 콜백 */
   onRegisterActions?: (actions: BigBangCircularMeterActions) => void;
-  /** Right-hand control shares the double-tap one-stop recommendation. */
-  onRecommendedWarp: () => void;
+  /** Right-hand control advances through every Luckey dapp in fixed order. */
+  onNextPage: () => void;
 }
 
 /**
@@ -407,7 +407,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   onRuneNavigate,
   isCosmicSuction = false,
   onRegisterActions,
-  onRecommendedWarp,
+  onNextPage,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
   const meterRootRef = useRef<HTMLDivElement | null>(null);
@@ -638,15 +638,15 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
     [triggerDotPulse, location, activeTabOverride, doNavigate]
   );
 
-  // The right-hand control uses the same persisted recommendation cycle as double tap.
+  // The right-hand control and ArrowRight use the same ordered dapp tour.
   const handleNavigateForward = useCallback(
     (e?: React.MouseEvent | React.TouchEvent | KeyboardEvent) => {
       e?.preventDefault();
       e?.stopPropagation();
       triggerDotPulse('east');
-      onRecommendedWarp();
+      onNextPage();
     },
-    [triggerDotPulse, onRecommendedWarp]
+    [triggerDotPulse, onNextPage]
   );
 
   // ⌨️ 키보드 좌우 화살표 (ArrowLeft / ArrowRight) 전역 단축키로 댑 무한 순환 연동

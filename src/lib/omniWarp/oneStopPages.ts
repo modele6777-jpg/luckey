@@ -37,3 +37,19 @@ export function getLuckeyPageKeys(): string[] {
     tabs.map(([tab]) => normalizeOneStopPage(path + '?tab=' + encodeURIComponent(tab)))
   ))];
 }
+
+/** Fixed channel/tab order for the right-hand Big Bang control. Profile ends the tour. */
+export function getOrderedLuckeyPageKeys(): string[] {
+  const channels = ['/prologue', '/orange', '/trinity', '/heal', '/bluebird', '/muse', '/epilogue'];
+  return channels.flatMap(path => {
+    const tabs = [...ONE_STOP_PAGE_TABS[path]];
+    if (path === '/epilogue') tabs.sort(([a], [b]) => Number(a === 'profile') - Number(b === 'profile'));
+    return tabs.map(([tab]) => normalizeOneStopPage(path + '?tab=' + encodeURIComponent(tab)));
+  });
+}
+
+export function nextOrderedLuckeyPage(current: string): string {
+  const pages = getOrderedLuckeyPageKeys();
+  const index = pages.indexOf(normalizeOneStopPage(current || '/'));
+  return oneStopNavigationPath(pages[(index + 1) % pages.length]);
+}
