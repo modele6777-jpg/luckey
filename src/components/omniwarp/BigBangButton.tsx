@@ -5,7 +5,7 @@ import './bigbang-clover-breeze.css';
 import { oneStopNavigationPath, nextOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { Clover } from 'lucide-react';
+import { ArrowUp, ArrowDown, Clover } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature } from '@/lib/omniWarp/forceSensor';
@@ -176,6 +176,18 @@ export function BigBangButton() {
   // 🧭 상하좌우 원뿔 모양 모핑 방향 ('none' | 'north' | 'south' | 'west' | 'east')
   const [hoverDirection, setHoverDirection] = useState<'none' | 'north' | 'south' | 'west' | 'east'>('none');
   const downDirectionRef = useRef<'none' | 'north' | 'south' | 'west' | 'east'>('none');
+  const [clickedDirection, setClickedDirection] = useState<typeof hoverDirection>('none');
+  const directionFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const centerDirection = isPressing ? hoverDirection : clickedDirection;
+  const showDirectionFeedback = (direction: typeof hoverDirection) => {
+    if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
+    setClickedDirection(direction);
+    directionFeedbackTimer.current = setTimeout(() => setClickedDirection('none'), 1000);
+  };
+  useEffect(() => () => {
+    if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
+  }, []);
+
   const cardinalActionsRef = useRef<BigBangCircularMeterActions | null>(null);
   const [cardinalInfo, setCardinalInfo] = useState<{ prevStepName?: string; nextStepName?: string }>({});
 
@@ -1076,6 +1088,7 @@ export function BigBangButton() {
       setIsQuickChatOpen(false);
       downDirectionRef.current = 'none';
       setHoverDirection('none');
+      showDirectionFeedback(targetDir);
       if (targetDir === 'north') {
         cardinalActionsRef.current?.scrollToTop(e);
       } else if (targetDir === 'south') {
@@ -1794,14 +1807,18 @@ export function BigBangButton() {
               {/* 🎯 Big Bang Center: 왼쪽 방향은 세잎클로버, 가운데 점 대신 네잎클로버 */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
-                  {hoverDirection === 'west' ? (
+                  {centerDirection === 'north' || centerDirection === 'south' ? (
+                    centerDirection === 'north'
+                      ? <ArrowUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                      : <ArrowDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                  ) : centerDirection === 'west' ? (
                     <svg data-bigbang-shamrock="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true" className="rotate-[-45deg] text-emerald-200" style={{ filter: 'drop-shadow(0 0 6px #34d399)' }}>
                       {[0, 120, 240].map(angle => <path key={angle} transform={`rotate(${angle} 12 12)`} d="M12 12C9 10 5 7 7 4C9 2 12 4 12 5C12 4 15 2 17 4C19 7 15 10 12 12Z" />)}
                       <path d="M12 12C13 16 12 19 9 22" strokeLinecap="round" />
                     </svg>
                   ) : (
                     <>
-                      {isPressing ? <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
+                      {centerDirection === 'east' ? <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
                         className={`rotate-[-45deg] text-emerald-200 transition-transform duration-200 ${isPressing ? 'scale-110' : ''}`}
                         style={{ filter: 'drop-shadow(0 0 6px #34d399)' }} /> : <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />}
                       <div
