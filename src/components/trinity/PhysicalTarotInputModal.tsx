@@ -1,3 +1,4 @@
+import { shuffleCardDeck } from '@/lib/cardShuffle';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -17,6 +18,7 @@ import {
   TAROT_DECK,
   TarotCard,
   getTarotCardImageUrl,
+  rollTarotReversed,
 } from '@/data/tarotData';
 import { SelectedTarotCardEntry } from './TarotSpread';
 import { playAudioHaptic } from '@/lib/audioHaptics';
@@ -184,7 +186,7 @@ export const PhysicalTarotInputModal: React.FC<PhysicalTarotInputModalProps> = (
     } catch (_) {}
 
     const usedIds = new Set(slots.filter((s) => s.card).map((s) => s.card!.id));
-    const available = TAROT_DECK.filter((c) => !usedIds.has(c.id));
+    const available = shuffleCardDeck(TAROT_DECK.filter((c) => !usedIds.has(c.id)));
     let availIdx = 0;
 
     setSlots((prev) =>
@@ -194,7 +196,7 @@ export const PhysicalTarotInputModal: React.FC<PhysicalTarotInputModalProps> = (
         return {
           ...s,
           card: randomCard || null,
-          reversed: Math.random() > 0.65,
+          reversed: rollTarotReversed(),
         };
       })
     );

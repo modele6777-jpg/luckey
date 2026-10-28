@@ -1,3 +1,5 @@
+import { Body, GeoVector, Ecliptic, SiderealTime, e_tilt, MakeTime } from 'astronomy-engine';
+import { parseBirthTime, birthTimeToUtc } from './birthDateTime';
 /**
  * =========================================================================
  * PRISM 서양 점성학(Western Astrology) & 출생 차트(Natal Chart) 엔진
@@ -204,8 +206,8 @@ export interface NatalPlacement {
 export interface NatalChartResult {
   sun: NatalPlacement;
   moon: NatalPlacement;
-  ascendant: NatalPlacement;
-  mc: NatalPlacement;
+  ascendant: NatalPlacement | null;
+  mc: NatalPlacement | null;
   mercury: NatalPlacement;
   venus: NatalPlacement;
   mars: NatalPlacement;
@@ -220,21 +222,11 @@ export interface NatalChartResult {
   };
   summaryText: string;
   psychologicalBlueprint: string;
-}
-
-/**
- * 율리우스일(Julian Day) 계산
- */
-function getJulianDate(year: number, month: number, day: number, hourFraction: number): number {
-  let y = year;
-  let m = month;
-  if (m <= 2) {
-    y -= 1;
-    m += 12;
-  }
-  const A = Math.floor(y / 100);
-  const B = 2 - A + Math.floor(A / 4);
-  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + hourFraction + B - 1524.5;
+  limitations: string[];
+  timeZone: string;
+  utcInstant: string;
+  timeKnown: boolean;
+  locationKnown: boolean;
 }
 
 /**
@@ -245,100 +237,53 @@ function longitudeToPlacement(lonDeg: number): NatalPlacement {
   const signIndex = Math.floor(normalized / 30);
   const degree = normalized % 30;
   const sign = ZODIAC_SIGNS[signIndex] || ZODIAC_SIGNS[0];
-  return { sign, degree: Math.round(degree * 10) / 10 };
+  return { sign, degree: Math.min(29.99, Math.round(degree * 100) / 100) };
 }
 
 /**
  * 생년월일시 및 출생 도시를 기반으로 서양 출생 차트(Natal Chart)를 정밀 계산합니다.
  */
-export function calculateNatalChart(profile?: UserProfile | null): NatalChartResult {
-  const basic = profile?.basic || {};
-  let year = 1995;
-  let month = 1;
-  let day = 1;
+const CITY_TIME_ZONES: Record<string, string> = { '도쿄': 'Asia/Tokyo', '뉴욕': 'America/New_York', '런던': 'Europe/London', '로스앤젤레스': 'America/Los_Angeles' };
 
-  if (basic.birthdate) {
-    const { solarDate } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar);
-    year = solarDate.year;
-    month = solarDate.month;
-    day = solarDate.day;
+export function calculateNatalChart(profile?: UserProfile | null): NatalChartResult | null {
+  const basic = profile?.basic;
+  if (!basic?.birthdate) return null;
+  try {
+  const { solarDate } = resolveEffectiveSolarDate(basic.birthdate, basic.lunarSolar, basic.isLeapMonth ?? false);
+  const birthTime = parseBirthTime(basic.birthtime);
+  const cityName = basic.birthCity?.trim() || '';
+  const matchedCoords = Object.entries(CITY_COORDINATES).find(([name]) => cityName.includes(name));
+  const locationKnown = !!matchedCoords;
+  const timeZone = matchedCoords ? CITY_TIME_ZONES[matchedCoords[0]] || 'Asia/Seoul' : 'Asia/Seoul';
+  const instant = birthTimeToUtc(solarDate, birthTime?.hour ?? 12, birthTime?.minute ?? 0, timeZone);
+  const limitations: string[] = [];
+  if (!birthTime) limitations.push('생시 미입력: 행성은 현지 정오 참고값이며 달·경계 별자리는 달라질 수 있습니다. 상승궁·MC는 계산하지 않습니다.');
+  if (!locationKnown) limitations.push('출생지 좌표·시간대 미확인: 한국 시간대를 가정한 참고값이며 상승궁·MC는 계산하지 않습니다.');
+  limitations.push('서양 열대황도·지구중심 차트입니다. 베딕 항성황도·다샤 또는 하우스 계산 결과가 아닙니다.');
+  const placement = (body: Body) => longitudeToPlacement(Ecliptic(GeoVector(body, instant, true)).elon);
+  const sunPlacement = placement(Body.Sun);
+  const moonPlacement = placement(Body.Moon);
+  const mercuryPlacement = placement(Body.Mercury);
+  const venusPlacement = placement(Body.Venus);
+  const marsPlacement = placement(Body.Mars);
+  const jupiterPlacement = placement(Body.Jupiter);
+  const saturnPlacement = placement(Body.Saturn);
+  let ascPlacement: NatalPlacement | null = null;
+  let mcPlacement: NatalPlacement | null = null;
+  if (birthTime && matchedCoords) {
+    const { lat, lng } = matchedCoords[1];
+    const ramc = (SiderealTime(instant) * 15 + lng) * Math.PI / 180;
+    const eps = e_tilt(MakeTime(instant)).tobl * Math.PI / 180;
+    const latitude = lat * Math.PI / 180;
+    ascPlacement = longitudeToPlacement(Math.atan2(Math.cos(ramc), -Math.sin(ramc) * Math.cos(eps) - Math.tan(latitude) * Math.sin(eps)) * 180 / Math.PI);
+    mcPlacement = longitudeToPlacement(Math.atan2(Math.sin(ramc), Math.cos(ramc) * Math.cos(eps)) * 180 / Math.PI);
   }
-
-  let hour = 12;
-  let minute = 0;
-  if (basic.birthtime) {
-    const timeParts = basic.birthtime.split(':').map(Number);
-    if (timeParts.length >= 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
-      hour = timeParts[0];
-      minute = timeParts[1];
-    }
-  }
-
-  // 출생 도시 좌표 (기본값 서울)
-  const cityName = basic.birthCity?.trim() || '서울';
-  const matchedCoords = Object.entries(CITY_COORDINATES).find(([k]) => cityName.includes(k));
-  const { lat, lng } = matchedCoords ? matchedCoords[1] : CITY_COORDINATES['서울'];
-
-  // 한국 표준시(UTC+9) 기준 UTC 시간 산출
-  const tzOffset = 9;
-  const utcHourFraction = (hour + minute / 60 - tzOffset) / 24;
-  const jd = getJulianDate(year, month, day, utcHourFraction);
-  const t = (jd - 2451545.0) / 36525.0; // J2000.0 세기 수
-
-  // 1. 태양 황경 (Sun longitude)
-  const sunMeanLongitude = (280.46646 + 36000.76983 * t) % 360;
-  const sunMeanAnomaly = (357.52911 + 35999.05029 * t) * (Math.PI / 180);
-  const sunEquationOfCenter = (1.914602 - 0.004817 * t) * Math.sin(sunMeanAnomaly) + 0.019993 * Math.sin(2 * sunMeanAnomaly);
-  const sunTrueLongitude = (sunMeanLongitude + sunEquationOfCenter + 360) % 360;
-  const sunPlacement = longitudeToPlacement(sunTrueLongitude);
-
-  // 2. 달 황경 (Moon longitude)
-  const moonMeanLongitude = (218.3165 + 481267.8813 * t) % 360;
-  const moonMeanAnomaly = (134.9634 + 477198.8675 * t) * (Math.PI / 180);
-  const moonElongation = (297.8502 + 445267.1114 * t) * (Math.PI / 180);
-  const moonEquation = 6.289 * Math.sin(moonMeanAnomaly) - 1.274 * Math.sin(moonMeanAnomaly - 2 * moonElongation);
-  const moonTrueLongitude = (moonMeanLongitude + moonEquation + 360) % 360;
-  const moonPlacement = longitudeToPlacement(moonTrueLongitude);
-
-  // 3. 상승궁 (Ascendant / Rising Sign)
-  // 그리니치 항성시(GMST)
-  const gmst0 = (280.46061837 + 360.98564736629 * (jd - 2451545.0)) % 360;
-  // 지방항성시(LST) = GMST + 경도
-  const lstDeg = ((gmst0 + lng) % 360 + 360) % 360;
-  const ramcRad = lstDeg * (Math.PI / 180);
-  const epsRad = (23.439291 - 0.0130042 * t) * (Math.PI / 180); // 황도경사각
-  const latRad = lat * (Math.PI / 180);
-
-  // Ascendant 공식 (구면천문학 표준: y = cos(RAMC), x = -sin(RAMC)*cos(eps) - tan(lat)*sin(eps))
-  const yAsc = Math.cos(ramcRad);
-  const xAsc = -Math.sin(ramcRad) * Math.cos(epsRad) - Math.tan(latRad) * Math.sin(epsRad);
-  let ascRad = Math.atan2(yAsc, xAsc);
-  let ascDeg = (ascRad * (180 / Math.PI) + 360) % 360;
-  const ascPlacement = longitudeToPlacement(ascDeg);
-
-  // 천정점 (MC / Midheaven: tan(MC) = tan(RAMC) / cos(eps))
-  const mcRad = Math.atan2(Math.sin(ramcRad), Math.cos(ramcRad) * Math.cos(epsRad));
-  const mcDeg = (mcRad * (180 / Math.PI) + 360) % 360;
-  const mcPlacement = longitudeToPlacement(mcDeg);
-
-  // 4. 주요 행성 배치 (수성, 금성, 화성, 목성, 토성 근사 궤도)
-  const mercuryLon = (sunTrueLongitude + 15 * Math.sin((jd * 0.07) % (2 * Math.PI)) + 360) % 360;
-  const venusLon = (sunTrueLongitude + 28 * Math.cos((jd * 0.03) % (2 * Math.PI)) + 360) % 360;
-  const marsLon = (355.43 + 191.4 * t + 10 * Math.sin((jd * 0.01) % (2 * Math.PI)) + 360) % 360;
-  const jupiterLon = (34.35 + 30.34 * t + 360) % 360;
-  const saturnLon = (50.07 + 12.22 * t + 360) % 360;
-
-  const mercuryPlacement = longitudeToPlacement(mercuryLon);
-  const venusPlacement = longitudeToPlacement(venusLon);
-  const marsPlacement = longitudeToPlacement(marsLon);
-  const jupiterPlacement = longitudeToPlacement(jupiterLon);
-  const saturnPlacement = longitudeToPlacement(saturnLon);
 
   // 5. 4원소 분포 계산
-  const allPlacements = [sunPlacement, moonPlacement, ascPlacement, mercuryPlacement, venusPlacement, marsPlacement];
+  const allPlacements = [sunPlacement, moonPlacement, ascPlacement, mercuryPlacement, venusPlacement, marsPlacement].filter((placement): placement is NatalPlacement => placement !== null);
   let fire = 0, earth = 0, air = 0, water = 0;
-  allPlacements.forEach((p, idx) => {
-    const weight = idx === 0 ? 3 : idx === 1 ? 2.5 : idx === 2 ? 2.5 : 1;
+  allPlacements.forEach(p => {
+    const weight = p === sunPlacement ? 3 : p === moonPlacement || p === ascPlacement ? 2.5 : 1;
     if (p.sign.element === '불') fire += weight;
     if (p.sign.element === '흙') earth += weight;
     if (p.sign.element === '공기') air += weight;
@@ -359,10 +304,8 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
   };
 
   // 6. 요약 텍스트
-  const summaryText = `태양 ${sunPlacement.sign.name} ${sunPlacement.sign.symbol}, 달 ${moonPlacement.sign.name} ${moonPlacement.sign.symbol}, 상승 ${ascPlacement.sign.name} ${ascPlacement.sign.symbol}, 천정점 ${mcPlacement.sign.name} ${mcPlacement.sign.symbol} (수성 ${mercuryPlacement.sign.name}, 금성 ${venusPlacement.sign.name}, 화성 ${marsPlacement.sign.name})`;
-
-  // 7. 심리 패턴 청사진
-  const psychologicalBlueprint = `${sunPlacement.sign.name}의 ${sunPlacement.sign.coreTrait}을 중심으로, 내면 무의식은 ${moonPlacement.sign.name}의 ${moonPlacement.sign.emotionalTendency} 흐름을 보입니다. 타인에게 첫인상으로 드러나는 외적 페르소나는 ${ascPlacement.sign.name}의 기운이 지배적입니다.`;
+  const summaryText = `서양 열대황도: 태양 ${sunPlacement.sign.name}, 달 ${moonPlacement.sign.name}${!birthTime || !locationKnown ? ' (시간·시간대 참고값·미확정)' : ''}${ascPlacement ? `, 상승 ${ascPlacement.sign.name}, MC ${mcPlacement!.sign.name}` : ', 상승궁·MC 계산 불가'} (수성 ${mercuryPlacement.sign.name}, 금성 ${venusPlacement.sign.name}, 화성 ${marsPlacement.sign.name}, 목성 ${jupiterPlacement.sign.name}, 토성 ${saturnPlacement.sign.name}). ${limitations.join(' ')}`;
+  const psychologicalBlueprint = `${sunPlacement.sign.name}의 ${sunPlacement.sign.coreTrait}을 상징적 성찰로 참고하세요.${birthTime && locationKnown ? ` 달 ${moonPlacement.sign.name}의 정서적 상징도 함께 살펴볼 수 있습니다.` : ' 출생시간·출생지가 확인되지 않아 달과 상승궁의 성향은 확정하지 않습니다.'}`;
 
   return {
     sun: sunPlacement,
@@ -376,8 +319,9 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
     saturn: saturnPlacement,
     elements,
     summaryText,
-    psychologicalBlueprint
+    psychologicalBlueprint, limitations, timeZone, utcInstant: instant.toISOString(), timeKnown: !!birthTime, locationKnown
   };
+  } catch { return null; }
 }
 
 /**
@@ -386,10 +330,10 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
  */
 export function buildUserNatalSummary(profile?: UserProfile | null): string {
   if (!profile?.basic?.birthdate) {
-    return '태양 물병자리, 달 전갈자리, 상승 사수자리 (기본 프리셋 별자리)';
+    return '출생정보 미입력: 개인 출생 차트 미계산. 별자리·상승궁·행성 배치를 임의로 지정하지 마세요.';
   }
   const chart = calculateNatalChart(profile);
-  return chart.summaryText;
+  return chart?.summaryText || '출생정보를 확인해 주세요. 유효한 생년월일·시간·역법을 확인하기 전에는 출생 차트를 계산한 것으로 해석하지 마세요.';
 }
 
 /**

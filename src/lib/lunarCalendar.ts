@@ -112,7 +112,9 @@ export function resolveEffectiveSolarDate(
 
   // 날짜 누락/오입력 시 1995-01-01을 사용하면 타인의 사주처럼 잘못된 결과가 나온다.
   const validFormat = /^\d{4}-\d{1,2}-\d{1,2}$/.test(birthdateStr);
-  const date = new Date(Date.UTC(year, month - 1, day));
+  const date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  date.setUTCHours(0, 0, 0, 0);
   if (!validFormat || !Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day) ||
       year < 1 || month < 1 || month > 12 || day < 1 || day > 31 ||
       (!isLunar && (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day))) {

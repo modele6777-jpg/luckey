@@ -41,6 +41,7 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
       animate={{ opacity: 1, y: 0 }}
       className={`p-6 rounded-[28px] bg-gradient-to-br from-[#0c0d19]/95 via-[#080911]/98 to-[#130f26]/95 border border-amber-500/20 shadow-2xl backdrop-blur-2xl text-left space-y-6 ${className}`}
     >
+      <p className="rounded-xl border border-amber-400/15 bg-amber-500/5 p-3 text-[11px] leading-relaxed text-white/65">한국 표준시와 30분 보정·23:30 일주 전환 관례 기준입니다. 출생지 진태양시는 별도 확인이 필요하며, 용신·신강약은 간이 추정입니다. 생시가 없으면 시주는 계산하지 않습니다.</p>
       {/* Title Header */}
       <div className="border-b border-white/10 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -313,10 +314,10 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
             <p className="text-[11px] text-white/60 font-sans leading-relaxed">{yongsin.actionTip}</p>
           </div>
 
-          {/* 2026 Flow */}
+          {/* Current solar-term year flow */}
           <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 space-y-1.5">
             <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider block">
-              🔥 2026 병오년(丙午年) 세운 흐름
+              {annual2026.yearName} 세운 흐름
             </span>
             <p className="text-white/90 font-medium font-sans">{annual2026.theme.split('—')[0]}</p>
             <p className="text-[11px] text-white/60 font-sans leading-relaxed">{annual2026.keyOpportunity}</p>

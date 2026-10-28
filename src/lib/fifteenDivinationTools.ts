@@ -1,3 +1,7 @@
+import { buildDivinationCapabilityPrompt } from './divinationCapabilities';
+import { resolveEffectiveSolarDate } from './lunarCalendar';
+import { parseBirthTime } from './birthDateTime';
+import { getAstronomicalSajuYear, getYearSolarTerms } from './astronomicalSolarTerms';
 import { UserProfile } from './sharedState';
 import { calculateDetailedSaju } from './sajuAnalysis';
 import { buildUserNatalSummary } from './astrologyAnalysis';
@@ -318,65 +322,41 @@ const KYUSEI_STARS = [
   '팔백토성(八白土星·산처럼 굳건한 전환과 축적)',
   '구자화성(九紫火星·태양 같은 통찰과 화려한 영감)',
 ];
-const SUKUYO_27_MANSIONS = [
-  '각숙(조화와 품격)', '항숙(신념과 정의)', '저숙(결단과 호탕함)', '방숙(풍요와 매력)', '심숙(통찰과 공감)',
-  '미숙(열정과 집중)', '기숙(자유와 개척)', '두숙(이상과 도약)', '여숙(치밀함과 성실)', '허숙(깊은 감수성과 직관)',
-  '위숙(순수함과 독창성)', '실숙(스케일과 추진력)', '벽숙(배움과 온화한 지혜)', '규숙(고결함과 예술성)', '루숙(재치와 다재다능)',
-  '위숙(생명력과 당당함)', '묘숙(지성과 우아한 미감)', '필숙(안정과 흔들림 없는 믿음)', '자숙(탐구심과 언변)', '삼숙(혁신과 번뜩이는 기지)',
-  '정숙(이성과 따뜻한 배려)', '귀숙(영감과 자유로운 영혼)', '류숙(집중력과 깊은 정)', '성숙(카리스마와 독창적 비전)', '장숙(매력과 리더십)',
-  '익숙(이상의 실현과 품위)', '진숙(치유력과 섬세한 조율)'
-];
-
 /**
  * 사용자의 생년월일시 프로필로부터 15대 운명학 도구가 즉시 활용할 수 있는 핵심 개인화 시드 지표를 계산합니다.
  */
 export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
-  if (!profile?.basic?.birthdate) {
-    return '[15대 운명학 개인화 차트 요약]: 아직 생년월일이 등록되지 않았으므로, 질문의 시점(점시·동시성)과 상징 중심으로 15대 도구를 유연하게 풀이할 것.';
+  if (!profile?.basic?.birthdate) return '[개인화 계산 미실시] 생년월일 미입력. 명반·본명성·요일·별자리를 임의 지정하지 말 것.';
+  try {
+    const { solarDate, solarDateString, isLunar } = resolveEffectiveSolarDate(profile.basic.birthdate.trim(), profile.basic.lunarSolar, profile.basic.isLeapMonth ?? false);
+    const { year, month, day } = solarDate;
+    const time = parseBirthTime(profile.basic.birthtime);
+    const civil = new Date(0);
+    civil.setUTCFullYear(year, month - 1, day);
+    civil.setUTCHours(time?.hour ?? 12, time?.minute ?? 0, 0, 0);
+    const dow = civil.getUTCDay();
+    const saju = calculateDetailedSaju(profile);
+    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간, 우세 오행: ${saju.elements.dominant.name}, 간이 용신 추정: ${saju.yongsin.name}` : '입력 확인 필요: 사주 미계산';
+    let animal = MAHABOTE_ANIMALS[dow];
+    if (dow === 3) animal = !time ? '수요일 오전/오후 구분은 생시 필요' : time.hour < 12 ? '수요일 오전·수성·엄니 코끼리' : '수요일 오후·라후·엄니 없는 코끼리';
+    const effectiveYear = getAstronomicalSajuYear(civil).sajuYear;
+    let sum = [...String(effectiveYear)].reduce((total, digit) => total + Number(digit), 0);
+    while (sum > 9) sum = [...String(sum)].reduce((total, digit) => total + Number(digit), 0);
+    const star = ((11 - sum) % 9 + 9) % 9 || 9;
+    const ipchun = getYearSolarTerms(year).find(term => term.name === '입춘')!.date;
+    const boundaryUnknown = !time && ipchun.getUTCMonth() === month - 1 && ipchun.getUTCDate() === day;
+    const colors = ['빨강', '노랑·크림', '분홍', '초록', '주황', '파랑', '보라'];
+    return `[개인화 계산 입력] ${solarDateString} 양력${isLunar ? ' (음력·윤달 설정 환산)' : ''}${time ? ` ${profile.basic.birthtime}` : ' · 생시 미입력'}
+- 사주명리: ${sajuBrief}. 자미두수·토정비결의 계산을 대신하지 않음.
+- 서양 점성술: ${buildUserNatalSummary(profile)}
+- 베딕: 항성황도·다샤 미계산. 위 서양 차트를 베딕 결과로 사용 금지.
+- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.
+- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.
+- 구성학 본명성 (한국 표준시 절입 기준): ${boundaryUnknown ? '입춘 당일 생시 미입력으로 전년/당년 본명성 미확정' : KYUSEI_STARS[star - 1]}. 방위반·길방위는 미계산.
+- 숙요·자미두수·육임·기문·토정·태을·주역 자동 작괘: 검증된 계산 결과 미제공. 구체적인 명반·괘·궁위를 만들지 말 것.`;
+  } catch {
+    return '[개인화 계산 중단] 생년월일·생시·양음력·윤달 입력을 확인해야 합니다. 잘못된 날짜를 다른 날짜로 자동 보정하거나 개인 차트를 생성하지 말 것.';
   }
-
-  const birthdate = profile.basic.birthdate.trim();
-  const match = birthdate.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
-  if (!match) {
-    return `[15대 운명학 개인화 차트 요약]: 생년월일(${birthdate}) 기반 맞춤 분석 가능.`;
-  }
-
-  const year = parseInt(match[1], 10);
-  const month = parseInt(match[2], 10);
-  const day = parseInt(match[3], 10);
-  const dateObj = new Date(year, month - 1, day);
-  const dow = isNaN(dateObj.getTime()) ? 0 : dateObj.getDay();
-
-  // 1. 사주 & 점성술 요약
-  const saju = calculateDetailedSaju(profile);
-  const sajuBrief = saju
-    ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 (${saju.dayMaster.symbolName}), 최강 오행: ${saju.elements.dominant.name}, 용신/보완 오행: ${saju.elements.lacking.name}`
-    : `${birthdate} 출생`;
-  const astroBrief = buildUserNatalSummary(profile);
-
-  // 2. 마하보테 & 태국점성술 (출생 요일 행성 및 동물 상징)
-  const weekdayLabel = KOR_WEEKDAYS[dow] || '일요일(태양)';
-  const mahaboteAnimal = MAHABOTE_ANIMALS[dow] || MAHABOTE_ANIMALS[0];
-
-  // 3. 구성학 본명성 계산 (입춘 이전 보정 근사 포함: 11 - (연도 각 자리 합 % 9))
-  const effectiveYear = (month === 1 || (month === 2 && day < 4)) ? year - 1 : year;
-  let digitSum = String(effectiveYear).split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
-  while (digitSum > 9) {
-    digitSum = String(digitSum).split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
-  }
-  let starIndex = (11 - digitSum) % 9;
-  if (starIndex <= 0) starIndex += 9;
-  const kyuseiStar = KYUSEI_STARS[starIndex - 1] || KYUSEI_STARS[0];
-
-  // 숙요 본명숙은 전통 역법에 따라 산출해야 한다. 임의의 월/일 나머지 연산으로 추정하지 않는다.
-  const sukuyoMansion = '전통 역법 기반 본명숙 계산 미구현 (임의 지정 금지)';
-
-  return `[사용자 15대 운명학 개인화 시드 지표]
-- 사주명리/자미두수/토정비결 본원: ${sajuBrief}
-- 서양 점성술/베딕 차트 요약: ${astroBrief}
-- 마하보테 & 태국점성술 출생 요일 기운: ${weekdayLabel} — 수호 상징: ${mahaboteAnimal}
-- 구성학(구궁기학) 본명성: ${kyuseiStar}
-- 숙요(27숙) 감성·인연 본명숙 지표: ${sukuyoMansion}`;
 }
 
 export interface SelectedDivinationToolsResult {
@@ -398,6 +378,7 @@ export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile): 
 동서양 15가지 운명학 도구의 관점을 7대 테마별로 소개하되, **실제 계산 결과가 전달된 도구만 계산 기반 풀이**를 해줘. 계산 결과가 없는 도구는 '상징적 관점' 또는 '계산 미실시'라고 명확히 표시하고, 구체적인 명반·괘·궁위·행성 배치·사과삼전·길방위를 만들어내지 마. 독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마.
 
 ${userDigest}
+${buildDivinationCapabilityPrompt(Object.keys(FIFTEEN_DIVINATION_TOOLS) as DivinationToolId[])}
 
 [★ 마스터 모드 필수 답변 구성 (반드시 아래 흐름으로 체계적이고 풍성하게 작성할 것)]
 
@@ -485,11 +466,13 @@ export function selectOptimalDivinationTools(
     }
   };
 
-  // 1순위: 사용자가 질문에서 직접 이름을 부른 운명학 도구 최우선 채택
-  for (const tool of Object.values(FIFTEEN_DIVINATION_TOOLS)) {
-    if (tool.explicitRegex.test(lower)) {
-      addTool(tool.id);
-    }
+  // Specific traditions take precedence over the generic word “astrology”.
+  const aliases: Partial<Record<DivinationToolId, RegExp>> = { saju: /bazi|four pillars/, astrology: /astrology|natal chart/, ziwei: /zi\s*wei/, tarot: /tarot/, sukuyo: /sukuyo/, vedic: /vedic/, liuren: /liu\s*ren/, qimen: /qi\s*men/, iching: /i[\s-]?ching|yi jing/, thai_astrology: /thai astrology/, tojeong: /tojeong/, kyusei: /kyusei|nine[\s-]?star/, taiyi: /tai\s*yi/ };
+  const explicit = Object.values(FIFTEEN_DIVINATION_TOOLS).filter(tool => tool.explicitRegex.test(lower) || aliases[tool.id]?.test(lower));
+  const qualifiedAstrology = explicit.some(tool => ['vedic', 'sukuyo', 'mahabote', 'thai_astrology'].includes(tool.id));
+  for (const tool of explicit) {
+    if (tool.id === 'astrology' && qualifiedAstrology && !/서양|western|네이탈|natal/.test(lower)) continue;
+    addTool(tool.id);
   }
 
   // 2순위: 질문의 의도/주제 키워드에 가장 잘 부합하는 핵심 도구 매칭
@@ -591,6 +574,7 @@ export function selectOptimalDivinationTools(
 - 이번 질문에 자동 선별된 핵심 도구 (1~3개 집중 활용): **${toolNames}**
 ${activeThemeDescriptions ? `\n[활성 테마 주력 도구 융합 원칙]\n${activeThemeDescriptions}\n` : ''}
 ${userDigest}
+${buildDivinationCapabilityPrompt(selectedTools.map(tool => tool.id))}
 
 [선별된 도구별 맞춤 풀이 가이드]
 ${toolGuides}
@@ -626,6 +610,6 @@ export function buildFifteenToolsMasterSystemCanon(): string {
 
 [15대 도구 모드별 운용 황금률]:
 - **일반 / 단일 테마 / 부분 융합 모드**: 질문과 현재 테마에 가장 잘 어울리는 **1~3개 핵심 도구만 자동 선별**해서 깊이 있고 입체적으로 융합해 쉽게 풀이해.
-- **올인원 마스터 모드 (7대 채널 풀가동)**: **15가지 운명학 도구를 전원 총동원**하여 **7대 테마별로 묶어 각 도구의 관점을 비교 분석**한 뒤, 15개 도구가 공통으로 가리키는 결론과 숨은 변수를 종합해 명쾌한 마스터 해답을 제시해.
+- **올인원 마스터 모드 (7대 채널 풀가동)**: **15가지 운명학 도구를 전원 총동원**하여 **7대 테마별로 묶어 각 도구의 관점을 비교 분석**한 뒤, 실제 계산·제공된 결과만 비교하고 나머지는 상징 관점임을 구분해 명쾌한 마스터 해답을 제시해.
 - 어떤 모드에서든 현학적인 한자어나 어려운 전문 용어를 설명 없이 나열하지 말고, 따뜻한 절친 반말(~어, ~야, ~지)로 술술 읽히게 풀어줘.`;
 }

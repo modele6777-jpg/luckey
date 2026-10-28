@@ -141,7 +141,7 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     element: "불 (Fire)",
     archetype: "부드러움으로 맹수를 다스리는 내면의 거인",
     uprightCore: "거친 폭력이 아닌 온유함과 인내, 흔들리지 않는 내면의 자비로 승리하는 참된 힘",
-    reversedCore: "자기 의심, 억누��� 수 없는 분노의 폭발, 나약함에 대한 굴복",
+    reversedCore: "자기 의심, 억누를 수 없는 분노의 폭발, 나약함에 대한 굴복",
     shadowWarning: "상황을 힘으로 억누르려 하거나 조급하게 성과를 재촉하지 마십시오.",
     actionGuidance: "부드러운 미소와 깊은 포용력으로 갈등을 어루만지고 차분히 설득하십시오.",
     luckyColor: "황금빛 엠버 옐로우 (Warm Amber)",
@@ -686,7 +686,7 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     luckyColor: "싱그러운 포레스트 에메랄드 그린"
   },
   indigo_sage: {
-    egoResistance: "꼬리를 무는 과도한 생���(오버띵킹), 모든 상황을 머리로 계산하고 통제하려는 지적 에고의 불안",
+    egoResistance: "꼬리를 무는 과도한 생각(오버띵킹), 모든 상황을 머리로 계산하고 통제하려는 지적 에고의 불안",
     allowPrompt: "머릿속에서 끊임없이 미래를 시뮬레이션하며 정답만을 찾으려던 팽팽한 뇌의 과열을 허용할 수 있습니까?",
     releasePrompt: "모든 것을 알아야만 안심하던 지적 통제욕과 복잡한 번뇌의 실타래를 고요한 심연으로 흘려보낼 수 있습니까?",
     surrenderAffirmation: "나는 생각의 소음에서 한 걸음 물러나, 깊고 고요한 남색의 심연 속에서 직관의 침묵을 신뢰합니다.",
@@ -771,7 +771,7 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "목과 턱의 긴장을 풀고 깊은 한숨과 함께 억눌린 음성을 작게 내뱉으며 목 차크라를 활짝 열어주기",
     remedyAction: "솔직한 내 생각이나 감정을 일기장에 여과 없이 단숨에 적어내려가며 표현의 숨통 틔우기",
     symbol: "자유로운 청록의 깃털 (Turquoise Feather)",
-    frequency: "741Hz 표현의 해방과 목 차���라 정렬",
+    frequency: "741Hz 표현의 해방과 목 차크라 정렬",
     playlist: "741Hz Ocean Flow & Free Expression",
     luckyNum: "5",
     luckyColor: "청량한 오션 터콰이즈 & 민트"

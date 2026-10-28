@@ -1,3 +1,4 @@
+import { parseBirthTime } from './birthDateTime';
 /**
  * =========================================================================
  * PRISM 사주명리학(四柱命理學) 정밀 분석 및 본원 에너지 통합 엔진
@@ -501,7 +502,7 @@ export interface SajuAnalysisResult {
     analysisNote: string;
   };
 
-  // 2026 병오년(丙午年) 운세 조화
+  // Legacy field name retained for stored data; value follows the current solar-term year.
   annual2026: {
     yearName: string;
     elementFlow: string;
@@ -554,19 +555,12 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const y = solarDate.year;
     const m = solarDate.month;
     const d = solarDate.day;
-    let h = -1;
-    let minute = 0;
-    if (basic.birthtime?.trim()) {
-      const timeParts = basic.birthtime.trim().split(':');
-      if (timeParts.length !== 2 || timeParts.some(part => part.length < 1 || part.length > 2 || !Array.from(part).every(ch => ch >= '0' && ch <= '9'))) {
-        throw new RangeError('출생시간은 HH:MM 형식으로 입력해 주세요.');
-      }
-      h = Number(timeParts[0]);
-      minute = Number(timeParts[1]);
-      if (h > 23 || minute > 59) throw new RangeError('올바른 출생시간을 입력해 주세요.');
-    }
+    const birthTime = parseBirthTime(basic.birthtime);
+    const h = birthTime?.hour ?? -1;
+    const minute = birthTime?.minute ?? 0;
 
-    const genderStr = basic.gender === 'male' ? '남성' : '여성';
+    const genderKnown = basic.gender === 'male' || basic.gender === 'female';
+    const genderStr = basic.gender === 'male' ? '남성' : basic.gender === 'female' ? '여성' : '미입력';
     const rawNickname = basic.nickname?.trim();
     const rawName = basic.name?.trim();
     const preferredName = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '박주형')
@@ -619,7 +613,7 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const dGan = HEAVENLY_STEMS[(di % 10 + 10) % 10];
     const dZhi = EARTHLY_BRANCHES[(di % 12 + 12) % 12];
 
-    // 4. 시주 (Hour Pillar - 한국 서울 진태양시 -30분 시차 및 시두법 적용)
+    // 4. 시주 (한국 시각에 일률 30분을 보정하는 유파 관례; 실제 출생지 진태양시 계산은 아님)
     let hGan: string | null = null;
     let hZhi: string | null = null;
     if (h >= 0) {
@@ -1035,25 +1029,31 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
       '전문성 구축',
     ];
 
-    // 14. 2026 병오년(丙午年) 세운 분석
+    // Current annual stem/branch follows the same KST Ipchun boundary as the natal year.
+    const currentKst = new Date(Date.now() + 9 * 3600000);
+    const annualYear = getAstronomicalSajuYear(currentKst).sajuYear;
+    const annualIndex = ((annualYear - 4) % 60 + 60) % 60;
+    const annualGan = HEAVENLY_STEMS[annualIndex % 10];
+    const annualZhi = EARTHLY_BRANCHES[annualIndex % 12];
+    const annualElement = STEM_ELEMENT[annualGan];
     let annualTheme = '';
     let annualOpp = '';
     let annualCaution = '';
 
-    if (dEl === '목') {
+    if (GENERATES_EL[dEl] === annualElement) {
       annualTheme = '식상(食傷) 만개의 해 — 창작과 표현의 꽃이 피어나는 도약기';
       annualOpp = '새로운 아이디어를 세상에 발표하고, 프로젝트나 예술적 작업을 과감히 추진하기에 최적입니다.';
-      annualCaution = '의욕이 앞서 에너지가 과열될 수 있으니 충분한 수분 섭취와 휴식으로 내실을 다지세요.';
-    } else if (dEl === '화') {
+      annualCaution = '새로운 일을 늘리기 전에 집중할 과제를 정하고 활동과 휴식의 균형을 점검하세요.';
+    } else if (dEl === annualElement) {
       annualTheme = '비겁(比劫) 공명의 해 — 강력한 주체성과 동료와의 연대';
       annualOpp = '자신감이 최고조에 달하며, 마음이 맞는 소중한 동반자나 팀원들과 큰 시너지를 낼 수 있습니다.';
       annualCaution = '고집이나 성급한 감정 표출을 경계하고, 타인의 입장을 한 번 더 헤아리는 지혜가 필요합니다.';
-    } else if (dEl === '토') {
+    } else if (GENERATES_EL[annualElement] === dEl) {
       annualTheme = '인성(印星) 조력의 해 — 든든한 후원과 학문/자격의 결실';
       annualOpp = '귀인의 도움을 받거나, 지식 습득, 자격 취득, 계약 등에서 안정적인 결실을 맺습니다.';
       annualCaution = '생각만 많아져 실행을 미루지 말고, 현실적인 한 걸음을 차근차근 내딛으세요.';
-    } else if (dEl === '금') {
-      annualTheme = '관성(官星) 제련의 해 — 담금질을 거쳐 명품 보석으로 거듭나는 성장';
+    } else if (CONTROLS_EL[annualElement] === dEl) {
+      annualTheme = '관성(官星) 흐름 — 책임과 기준을 점검하는 시기';
       annualOpp = '사회적 명예와 책임감이 커지며, 어려움을 돌파하여 커리어의 새로운 전기를 맞이합니다.';
       annualCaution = '압박감이나 과도한 책임감으로 인한 스트레스를 주의하고 세도나 방하착 명상을 적극 활용하세요.';
     } else {
@@ -1063,21 +1063,21 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     }
 
     const annual2026 = {
-      yearName: '2026 병오년(丙午年 - 붉은 말의 해)',
-      elementFlow: `강렬한 순수 화(火)의 불꽃 에너지와 ${name}님의 ${dayMaster.symbolName}의 상호작용`,
+      yearName: `${annualYear} ${STEM_KOREAN[annualGan]}${BRANCH_KOREAN[annualZhi]}년(${annualGan}${annualZhi})`,
+      elementFlow: `${annualElement} 기운과 ${name}님의 ${dayMaster.symbolName}의 상호작용`,
       theme: annualTheme,
       keyOpportunity: annualOpp,
       caution: annualCaution,
     };
 
     // 15. 정밀 대운수(大運數) 및 8대 대운 타임라인 산출
-    const daewunCalc = calculatePreciseDaewun(birthKstDate, genderStr as '남성' | '여성', yGan);
+    const daewunCalc = genderKnown ? calculatePreciseDaewun(birthKstDate, genderStr as '남성' | '여성', yGan) : { daewunNumber: 0, isForward: false, directionText: '성별 기준 미입력으로 순행·역행 미확정' };
     const daewunNumber = daewunCalc.daewunNumber;
     const isFwd = daewunCalc.isForward;
     const nowYear = new Date().getFullYear();
     const koreanAge = nowYear - y + 1;
 
-    const daewunTimeline = Array.from({ length: 8 }, (_, i) => {
+    const daewunTimeline = Array.from({ length: genderKnown ? 8 : 0 }, (_, i) => {
       const step = isFwd ? (i + 1) : -(i + 1);
       const dGanIndex = ((monthGanIdx + step) % 10 + 10) % 10;
       const dZhiIndex = ((mZhiIdx + step) % 12 + 12) % 12;
@@ -1103,14 +1103,14 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const curD = daewunTimeline.find(d => koreanAge >= d.startAge && koreanAge <= d.endAge);
     const nextD = daewunTimeline.find(d => d.startAge > koreanAge);
     const daeunInfo = {
-      current: curD ? `${curD.ganZhi}대운 (${curD.startAge}세 ~ ${curD.endAge}세)` : `${daewunNumber}세 대운 진입기`,
-      next: nextD ? `${nextD.ganZhi}대운 (${nextD.startAge}세~)` : '미래 대운',
+      current: !genderKnown ? '성별 기준 미입력: 대운 미확정' : curD ? `${curD.ganZhi}대운 (${curD.startAge}세 ~ ${curD.endAge}세)` : `${daewunNumber}세 대운 진입기`,
+      next: !genderKnown ? '대운 미확정' : nextD ? `${nextD.ganZhi}대운 (${nextD.startAge}세~)` : '미래 대운',
     };
 
     const daewunDetail = {
       daewunNumber,
       isForward: isFwd,
-      directionText: daewunCalc.directionText,
+      directionText: daewunCalc.directionText + (h < 0 ? ' · 생시 미입력으로 대운 시작 나이는 정오 기준 참고값' : ''),
       timeline: daewunTimeline,
     };
 
@@ -1121,7 +1121,8 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
       : `오행이 비교적 골고루 분포되어 유연하고 다채로운 잠재력을 발휘하는 안정적인 구조입니다.`;
 
     const systemPromptSummary = `
-[사주명리학(四柱命理) 정밀 본원 에너지 헌장]
+[사주명리학 계산 결과: 한국 표준시 기준]
+- 계산 한계: 생시 미입력 시 시주 제외·절기 경계는 정오 참고, 용신·신강약은 간이 해석이며 확정 판정이 아님. 해외 출생지·서머타임·진태양시는 별도 검증 필요.
 - 생년월일 기준: ${basic.birthdate} (${isLunar ? `음력 ➔ 정밀 환산 양력 ${solarDateString}` : '양력'})${basic.birthtime ? ` ${basic.birthtime}` : ' (생시 미입력)'}
 - 사주 4주 8자: 년주(${pillars.year.full} - ${pillars.year.tenGodGan.name}/${pillars.year.tenGodZhi.name}) | 월주(${pillars.month.full} - ${pillars.month.tenGodGan.name}/${pillars.month.tenGodZhi.name}) | 일주(${pillars.day.full} - ${pillars.day.tenGodGan.name}/${pillars.day.tenGodZhi.name})${pillars.hour ? ` | 시주(${pillars.hour.full} - ${pillars.hour.tenGodGan.name}/${pillars.hour.tenGodZhi.name})` : ' | 시주(생시 미입력)'}
 - 일간(Day Master) 본원: ${dayMaster.hanja}(${dayMaster.korean}) - ${dayMaster.symbolName}
@@ -1129,16 +1130,16 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
   * 핵심 기질: ${dayMaster.coreKeywords.join(', ')}
 - 격국(格局): ${geokguk.name} (${geokguk.description})
 - 신강/신약: ${bodyStrength.level} (${bodyStrength.score}점 / ${bodyStrength.summary})
-- 정통 용신: ${yongsin.name} (${yongsin.meaning}) | 희신: ${ELEMENT_DETAILS[heeshinEl].name} | 기신: ${ELEMENT_DETAILS[gisinEl].name}
-- 대운 흐름: ${daeunInfo.current} (대운수 ${daewunNumber}, ${daewunDetail.directionText})
-- 2026 병오년(丙午年) 세운: ${annual2026.theme}
+- 용신 간이 추정: ${yongsin.name} (${yongsin.meaning}) | 희신: ${ELEMENT_DETAILS[heeshinEl].name} | 기신: ${ELEMENT_DETAILS[gisinEl].name}
+- 대운 흐름: ${daeunInfo.current} (${genderKnown ? `대운수 ${daewunNumber}, ` : ''}${daewunDetail.directionText})
+- ${annual2026.yearName} 세운: ${annual2026.theme}
 - 핵심 신살 및 특수 구조:
 ${specialStrText || '• 안정적인 오행 순환 구조'}
 [사주 기반 AI 페르소나 지침]:
 사용자의 일간 본원(${dayMaster.symbolName}), 격국(${geokguk.name}), 신강신약(${bodyStrength.level}), 용신(${yongsin.name})을 완벽히 인지하여, 타고난 장점과 추진력은 적극 지지하고 결핍된 기운은 편안하게 채워주는 깊이 있는 상담을 제공하세요.
 `.trim();
 
-    const shortDigest = `${dayMaster.hanja} ${dayMaster.symbolName} · ${geokguk.name.split('(')[0]} · ${bodyStrength.level} · 대운수 ${daewunNumber} · 용신 ${yongsin.name.split('(')[0]}`;
+    const shortDigest = `${dayMaster.hanja} ${dayMaster.symbolName} · ${geokguk.name.split('(')[0]} · ${bodyStrength.level} · ${genderKnown ? `대운수 ${daewunNumber}` : '대운 미확정'} · 용신 ${yongsin.name.split('(')[0]}`;
 
     return {
       hasBirthInfo: true,
@@ -1473,11 +1474,13 @@ export function generateDailySajuReport(
   targetDate: Date = new Date(),
   seedOffset: number = 0
 ): DailySajuReport {
-  const y = targetDate.getFullYear();
-  const m = targetDate.getMonth() + 1;
-  const d = targetDate.getDate();
+  if (!Number.isFinite(targetDate.getTime())) throw new RangeError('올바른 리포트 날짜를 입력해 주세요.');
+  const kstDate = new Date(targetDate.getTime() + 9 * 3600000);
+  const y = kstDate.getUTCFullYear();
+  const m = kstDate.getUTCMonth() + 1;
+  const d = kstDate.getUTCDate();
   const days = ['일', '월', '화', '수', '목', '금', '토'];
-  const dayOfWeek = days[targetDate.getDay()];
+  const dayOfWeek = days[kstDate.getUTCDay()];
   const dateStr = `${y}년 ${m}월 ${d}일 (${dayOfWeek})`;
 
   // 율리우스 적일 기준 당일 일주(일진) 산출
@@ -1638,6 +1641,9 @@ export function generateSajuMasterConsultation(saju: SajuAnalysisResult, questio
   const lacking = saju.elements.lacking;
   const yongsin = saju.yongsin;
   const annual = saju.annual2026;
+  const requestedYear = /내년/.test(question) ? new Date(Date.now() + 9 * 3600000).getUTCFullYear() + 1 : Number(question.match(/(?:19|20)\d{2}/)?.[0] || 0);
+  if (requestedYear && requestedYear !== Number(annual.yearName.slice(0, 4))) return `현재 산출된 세운은 ${annual.yearName} 기준입니다. ${requestedYear}년의 간지와 절기 흐름은 별도 계산이 필요해, 현재 결과를 그 해의 운세로 바꾸어 해석하지 않겠습니다.`;
+
   const wealthScore = saju.webAppParameters.wealthAffinityScore;
   const driveScore = saju.webAppParameters.driveScore;
   const geokguk = saju.geokguk?.name || '정통 격국';
@@ -1651,7 +1657,7 @@ export function generateSajuMasterConsultation(saju: SajuAnalysisResult, questio
 
   // 2. 시험 / 합격 / 공부 / 자격증 / 취업 / 승진 관련 질문
   if (/(?:시험|합격|공부|자격증|취업|승진|면접|고시|임용|테스트)/.test(normQ)) {
-    return `사주 원국의 신강·신약 지수가 [${bodyStrength}]로 조화롭고 목표가 뚜렷할 때 발휘되는 집중력과 뚝심이 뛰어난 명식이라 합격운의 기운이 충분히 열려 있습니다. 시험 직전의 조급증과 체력 소진만 주의하시고, 본인의 호흡대로 우직하게 밀고 나가시면 분명한 합격의 결실을 맺습니다.`;
+    return `사주 원국의 신강·신약 지수가 [${bodyStrength}]로 조화롭고 목표가 뚜렷할 때 발휘되는 집중력과 뚝심이 뛰어난 명식이라 합격운의 기운이 충분히 열려 있습니다. 시험 직전의 조급증과 체력 소진만 주의하시고, 본인의 호흡대로 우직하게 밀고 나가시면 준비한 실력을 점검하는 데 도움이 됩니다. 합격 여부나 확률은 사주 계산으로 확인할 수 없습니다.`;
   }
 
   // 3. 직업 / 적성 / 진로 / 업무 스타일 / 일 관련 질문
@@ -1661,7 +1667,7 @@ export function generateSajuMasterConsultation(saju: SajuAnalysisResult, questio
 
   // 4. 재물 / 돈 / 금전 / 부자 / 자산 / 투자 / 주식 / 부동산 관련 질문
   if (/(?:재물|돈|금전|부자|부|자산|투자|주식|부동산|모으|소비|지출|재운|수익|코인|빚)/.test(normQ)) {
-    return `요행이나 단기 투기보다는 확실한 원칙을 세워 안정적으로 굴릴 때 자산이 가장 단단히 모이는 명식(재물 친화력 ${wealthScore}점, ${bodyStrength})입니다. 충동적인 지출을 경계하고 우량 자산 위주로 차곡차곡 축적하는 전략이 부를 지키는 열쇠입니다.`;
+    return `요행이나 단기 투기보다는 확실한 원칙을 세워 안정적으로 굴릴 때 자산이 가장 단단히 모이는 명식(상징적 참고 지수 ${wealthScore}점, ${bodyStrength} · 수익률이나 자산 예측 확률 아님)입니다. 충동적인 지출을 경계하고 우량 자산 위주로 차곡차곡 축적하는 전략이 부를 지키는 열쇠입니다.`;
   }
 
   // 5. 연애 / 사랑 / 결혼 / 이성 / 궁합 / 인연 / 재회 관련 질문
@@ -1671,12 +1677,12 @@ export function generateSajuMasterConsultation(saju: SajuAnalysisResult, questio
 
   // 6. 2026년 / 새해 / 세운 / 대운 / 기회 / 터닝포인트 관련 질문
   if (/(?:2026|새해|운세|터닝|포인트|기회|흐름|올해|내년|미래|대운|세운|병오)/.test(normQ)) {
-    return `2026년(${annual.theme})과 ${daewunNow}은 그동안 축적해 온 잠재력과 전문성이 세상 밖으로 드러나는 역동적인 기회의 시기입니다. 망설이던 도전이나 프로젝트가 있다면 용신(${yongsin.name})의 조력을 믿고 과감하게 실행에 옮기셔도 운의 강한 지지를 받습니다.`;
+    return `${annual.yearName}(${annual.theme})과 ${daewunNow}은 그동안 축적해 온 잠재력과 전문성이 세상 밖으로 드러나는 역동적인 기회의 시기입니다. 망설이던 도전이나 프로젝트가 있다면 간이 용신(${yongsin.name})을 상징적 성찰의 소재로 삼되, 준비 상태와 현실 조건을 점검하며 작게 시도해 보세요. 결과가 보장되는 예측은 아닙니다.`;
   }
 
   // 7. 건강 / 컨디션 / 피로 / 스트레스 / 멘탈 / 수면 관련 질문
   if (/(?:건강|피로|체력|힐링|컨디션|몸|스트레스|잠|불면|아프|우울|두통|소화)/.test(normQ)) {
-    return `중심 기운(${dominant.name})이 과도하게 쏠려 신경계의 긴장과 피로가 누적되기 쉬운 흐름입니다. 스스로에게 완벽을 강요하지 말고, 용신(${yongsin.name})의 추천 활동인 ${yongsin.actionTip}을 생활화하여 몸과 마음의 조화를 회복하는 것이 최우선입니다.`;
+    return `사주의 ${dominant.name}은 상징적 분류이며 신경계 상태나 피로·질환을 진단하는 지표가 아닙니다. 스스로에게 완벽을 강요하지 말고, 용신(${yongsin.name})의 추천 활동인 ${yongsin.actionTip}을 생활화하여 몸과 마음의 조화를 회복하는 것이 최우선입니다.`;
   }
 
   // 8. 인간관계 / 대인 / 친구 / 동료 / 가족 / 갈등 / 구설 관련 질문

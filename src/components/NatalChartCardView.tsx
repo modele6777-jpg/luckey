@@ -76,13 +76,17 @@ export function NatalChartCardView({ profile, onUpdateRelationships, className =
               <span>서양 점성학 출생 천궁도 (Natal Chart)</span>
             </h3>
             <p className="text-xs text-white/50 font-sans tracking-wide">
-              태양 {sun.sign.name} · 달 {moon.sign.name} · 상승 {ascendant.sign.name}{mc ? ` · MC ${mc.sign.name}` : ''} | 우세 원소: <strong className="text-purple-300">{elements.dominant}</strong>
+              태양 {sun.sign.name} · 달 {moon.sign.name} · 상승 {ascendant?.sign.name || '미확정'}{mc ? ` · MC ${mc.sign.name}` : ''} | 우세 원소: <strong className="text-purple-300">{elements.dominant}</strong>
             </p>
           </div>
           <div className="px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1.5">
             <span>✨ AI 절친 Bestie 연동</span>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-purple-400/20 bg-purple-500/5 p-3 text-[11px] leading-relaxed text-white/65">
+        {chart.limitations.map(note => <p key={note}>{note}</p>)}
       </div>
 
       {/* The Core Four (태양, 달, 상승궁, 천정점 MC) */}
@@ -127,11 +131,11 @@ export function NatalChartCardView({ profile, onUpdateRelationships, className =
             <span className="text-[11px] font-medium text-purple-300/80 flex items-center gap-1">
               <Compass size={13} className="text-purple-400" /> 상승궁 (Ascendant)
             </span>
-            <span className="text-lg">{ascendant.sign.symbol}</span>
+            <span className="text-lg">{ascendant?.sign.symbol || '—'}</span>
           </div>
           <div>
-            <div className="text-base font-bold text-purple-200">{ascendant.sign.name}</div>
-            <div className="text-[11px] text-white/50">{ascendant.degree}° ({ascendant.sign.element} / {ascendant.sign.modality})</div>
+            <div className="text-base font-bold text-purple-200">{ascendant?.sign.name || '출생시간·출생지 필요'}</div>
+            <div className="text-[11px] text-white/50">{ascendant ? `${ascendant.degree}° (${ascendant.sign.element} / ${ascendant.sign.modality})` : '입력 전에는 계산하지 않습니다'}</div>
           </div>
           <p className="text-[11px] text-white/70 font-sans leading-relaxed">
             세상을 처음 마주할 때 발현되는 고유의 분위기와 에너지 장막
