@@ -106,7 +106,7 @@ export class SitesSyncClient {
 
 export function startSitesSync(win) {
   // A same-origin embedded channel shares the parent storage and coordinator.
-  if (win.top && win.top !== win) return;
+  try { if (win.parent && win.parent !== win && win.parent.__sitesSyncStarted) return; } catch { /* Cross-origin previews need their own coordinator. */ }
   if (win.__sitesSyncStarted) return; win.__sitesSyncStarted = true;
   let storage; try {storage = win.localStorage;storage.getItem(META);} catch {return;}
   // The app's StorageShield can expose a plain-object facade instead of a

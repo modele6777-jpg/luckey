@@ -65,7 +65,7 @@ const w=new EventTarget();Object.assign(w,{localStorage:facade,Storage:MemorySto
 assert.equal(restored.storage.getItem('prism_user_avatar_permanent'),'data:image/jpeg;base64,PRIMARY_PHOTO');
 facade.setItem('prism_user_avatar_backup','data:image/jpeg;base64,PHOTO_FROM_PHONE');await browser.flush();await restored.client.poll();assert.equal(restored.storage.getItem('prism_user_avatar_permanent'),'data:image/jpeg;base64,PHOTO_FROM_PHONE');
 assert.equal(syncKey('prism_user_avatar_backup'),'prism_user_avatar_permanent');
-assert.equal(startSitesSync({top:{}}),undefined,'embedded Key channel must use its parent coordinator');
+assert.equal(startSitesSync({parent:{__sitesSyncStarted:true}}),undefined,'embedded Key channel must use its parent coordinator');
 // Remote removals must invalidate SafeStorage's in-memory fallback too.
 const {stripTypeScriptTypes}=await import('node:module');const vm=await import('node:vm');
 const mirroredWindow=new EventTarget();Object.assign(mirroredWindow,{localStorage:new MemoryStorage(),sessionStorage:new MemoryStorage()});
