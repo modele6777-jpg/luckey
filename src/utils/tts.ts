@@ -97,54 +97,49 @@ export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string,
   return `lucy_aoede_natural_v6_${clean}`;
 }
 
-export function prefetchTTS(text: string, voice?: string, emotion?: string, _rate?: string, _speed?: number): Promise<TTSAudioData | null> {
-  const cleanText = normalizeTextForSpeech(text);
-  if (!cleanText) return Promise.resolve(null);
-
-  let activeEmotion = emotion;
-  if (!activeEmotion) {
-    const emotionMatch = text.match(/\[EMOTION:\s*([^\]]+)\]/i);
-    if (emotionMatch) activeEmotion = emotionMatch[1].trim();
-  }
-
-  const key = getTTSCacheKey(text, voice, activeEmotion);
-  if (ttsCache.has(key)) {
-    return ttsCache.get(key)!;
-  }
-
-  const promise = (async (): Promise<TTSAudioData | null> => {
+class TTSAudioRequestError extends Error {
+  constructor(message: string, public status = 0) { super(message); }
+}
+let ttsRequestQueue: Promise<unknown> = Promise.resolve();
+let ttsRateLimitUntil = 0;
+function requestAIAudio(text: string, emotion?: string): Promise<TTSAudioData> {
+  const key = getTTSCacheKey(text);
+  const existing = ttsCache.get(key);
+  if (existing) return existing as Promise<TTSAudioData>;
+  const pending = ttsRequestQueue.catch(() => {}).then(async () => {
+    if (Date.now() < ttsRateLimitUntil) throw new TTSAudioRequestError('AI 음성 요청 한도에 도달했습니다. 1분 뒤 다시 눌러 주세요.', 429);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 65000);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 65000);
       const response = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleanText, voice: 'Aoede', emotion: activeEmotion, rate: '+0%', speed: 1.0 }),
-        signal: controller.signal,
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: normalizeTextForSpeech(text), voice: 'Aoede', emotion }), signal: controller.signal,
       });
-      clearTimeout(timeoutId);
       if (!response.ok) {
-        ttsCache.delete(key);
-        return null;
+        if (response.status === 429) {
+          const seconds = Number(response.headers.get('Retry-After'));
+          ttsRateLimitUntil = Date.now() + Math.max(60, Number.isFinite(seconds) ? seconds : 60) * 1000;
+        }
+        throw new TTSAudioRequestError(response.status === 429
+          ? 'AI 음성 요청 한도에 도달했습니다. 1분 뒤 다시 눌러 주세요.'
+          : 'AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status);
       }
       const data = await response.json();
-      if (data?.audioContent) {
-        return {
-          audioContent: data.audioContent,
-          encoding: data.encoding === 'pcm' ? 'pcm' : data.encoding === 'wav' ? 'wav' : 'mp3',
-          sampleRate: data.sampleRate ?? 24000,
-        };
-      }
-      ttsCache.delete(key);
-      return null;
-    } catch {
-      ttsCache.delete(key);
-      return null;
-    }
-  })();
-
-  ttsCache.set(key, promise);
-  return promise;
+      if (!data?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);
+      return { audioContent: data.audioContent, encoding: data.encoding === 'pcm' ? 'pcm' as const : data.encoding === 'wav' ? 'wav' as const : 'mp3' as const, sampleRate: data.sampleRate ?? 24000 };
+    } finally { clearTimeout(timer); }
+  });
+  ttsRequestQueue = pending.catch(() => {});
+  ttsCache.set(key, pending);
+  pending.catch(() => { if (ttsCache.get(key) === pending) ttsCache.delete(key); });
+  // Bound retained base64 audio in long-lived mobile sessions.
+  if (ttsCache.size > 24) ttsCache.delete(ttsCache.keys().next().value!);
+  return pending;
+}
+export function prefetchTTS(text: string, _voice?: string, emotion?: string, _rate?: string, _speed?: number): Promise<TTSAudioData | null> {
+  // Generating voices for unopened/idle content consumed the small TTS quota.
+  // Playback requests own generation; no speculative provider requests.
+  return ttsCache.get(getTTSCacheKey(text)) || Promise.resolve(null);
 }
 
 let isPlayingSequence = false;
@@ -283,41 +278,7 @@ export const playTTS = async (
       console.warn("[TTS] Failed to warm up audio systems:", e);
     }
 
-    const cacheKey = getTTSCacheKey(text, targetVoice, activeEmotion);
-    let data: TTSAudioData | null = null;
-    if (ttsCache.has(cacheKey)) {
-      data = await ttsCache.get(cacheKey)!;
-    }
-
-    if (!data) {
-      const chunkTimeout = 65000; // AI audio generation may take up to the server's 60s budget.
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), chunkTimeout);
-      const response = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleanText, voice: targetVoice, emotion: activeEmotion, rate: '+0%', speed: 1.0 }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-
-      // CRITICAL ABORT CHECK after async action
-      if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) {
-        console.log("[TTS] Playback aborted as active session changed mid-download.");
-        return;
-      }
-
-      if (!response.ok) throw new Error(`음성 생성 요청 실패 (${response.status})`);
-      const rawData = await response.json();
-      if (rawData?.audioContent) {
-        data = {
-          audioContent: rawData.audioContent,
-          encoding: rawData.encoding === 'pcm' ? 'pcm' : rawData.encoding === 'wav' ? 'wav' : 'mp3',
-          sampleRate: rawData.sampleRate ?? 24000,
-        };
-        ttsCache.set(cacheKey, Promise.resolve(data));
-      }
-    }
+    const data = await requestAIAudio(text, activeEmotion);
 
     // CRITICAL ABORT CHECK after JSON parse
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) {
@@ -379,7 +340,7 @@ export const playTTS = async (
 
     if (!isSequenceChunk) stopTTS();
     console.warn('[TTS] AI audio unavailable; device speech is disabled.', error);
-    throw new Error('자연스러운 AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.');
+    throw error instanceof TTSAudioRequestError ? error : new Error('AI 음성을 재생하지 못했습니다. 잠시 후 다시 눌러 주세요.');
   }
 };
 
@@ -648,7 +609,7 @@ export const playTTSInChunks = async (
             break;
           } catch (error) {
             if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
-            if (attempt === 1) throw error;
+            if (attempt === 1 || (error instanceof TTSAudioRequestError && [400, 401, 403, 404, 429].includes(error.status))) throw error;
           }
         }
       } catch (chunkErr) {
