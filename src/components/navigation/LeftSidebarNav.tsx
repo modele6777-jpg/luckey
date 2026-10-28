@@ -186,6 +186,7 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const menuLeafGradientId = React.useId();
   const showSidebar = useCallback(() => setIsOpen(true), []);
   const hideSidebar = useCallback(() => setIsOpen(false), []);
 
@@ -874,21 +875,29 @@ export default function LeftSidebarNav() {
   return (
     <>
       {!isOpen && <button type="button" onClick={showSidebar} aria-label="메뉴 열기" aria-controls="main-sidebar-navigation" aria-expanded={false}
-        className={`page-menu-button fixed z-[398] flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur-xl transition-colors active:scale-95 ${isLight ? 'border-amber-200 bg-white/95 text-slate-700 hover:bg-amber-50' : 'border-white/15 bg-slate-950/90 text-white hover:bg-slate-900'}`}>
+        data-theme={isLight ? 'light' : 'dark'}
+        className="page-menu-button fixed z-[398] flex h-10 w-10 items-center justify-center rounded-[14px] border backdrop-blur-xl active:scale-95">
         <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true" className={isLight ? 'text-emerald-600 drop-shadow-[0_1px_2px_#10b98133]' : 'text-emerald-400 drop-shadow-[0_0_5px_#34d39955]'}>
+          <defs>
+            <linearGradient id={menuLeafGradientId} x1="4" y1="3" x2="22" y2="23" gradientUnits="userSpaceOnUse">
+              <stop stopColor={isLight ? '#6ee7b7' : '#a7f3d0'} />
+              <stop offset="0.45" stopColor="#10b981" />
+              <stop offset="1" stopColor={isLight ? '#047857' : '#059669'} />
+            </linearGradient>
+          </defs>
           <path d="M13 14c.4 3.8 1.7 6.3 4 8" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <g fill="currentColor" stroke="currentColor" strokeWidth="0.5" strokeLinejoin="round">
+          <g fill={`url(#${menuLeafGradientId})`} stroke={isLight ? '#059669' : '#a7f3d0'} strokeOpacity="0.55" strokeWidth="0.5" strokeLinejoin="round">
             <path d="M13 14C4 8 8 1 13 5C18 1 22 8 13 14Z" />
             <path d="M13 14C4 8 8 1 13 5C18 1 22 8 13 14Z" transform="rotate(120 13 14)" opacity="0.9" />
             <path d="M13 14C4 8 8 1 13 5C18 1 22 8 13 14Z" transform="rotate(240 13 14)" opacity="0.8" />
           </g>
+          <circle cx="13" cy="14" r="1.1" fill="#fde68a" />
           <path d="M13 7v5m-6 5 4-2m7 2-3-2" fill="none" stroke="white" strokeOpacity="0.35" strokeWidth="0.8" strokeLinecap="round" />
         </svg>
       </button>}
       {!isOpen && <div className="sidebar-edge-hint" data-sidebar-edge-hint="true" data-theme={isLight ? 'light' : 'dark'} aria-hidden="true">
         <span className="sidebar-edge-hint-mist" />
         <span className="sidebar-edge-hint-line" />
-        <span className="sidebar-edge-hint-grip" />
       </div>}
       {/* 4. Sliding Sidebar Drawer */}
       <AnimatePresence>
