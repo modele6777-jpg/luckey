@@ -2395,7 +2395,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <Sparkles size={10} className="text-indigo-500 dark:text-indigo-300 animate-spin" />
                     {pro ? '마스터 고정' : 'AI 모드'}
                   </span>
-                  <button type="button" onClick={() => navigate(pro ? '/chat' : LUCY_PRO_PATH)} className="rounded-full border border-amber-400/50 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300" aria-label={pro ? '일반 루시 채팅으로 이동' : '루시 채팅 프로로 이동'}>{pro ? '일반 채팅' : 'PRO'}</button>
                   {activeChannels.length === ALL_CHANNELS.length ? (
                     <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs truncate max-w-full">
                       <span>👑</span>
