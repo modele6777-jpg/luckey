@@ -418,7 +418,8 @@ function shuffle<T>(array: T[]): T[] {
 export function resolveMessageModeAndChannels(
   msg: any,
   filteredMessages?: any[],
-  index?: number
+  index?: number,
+  allowMaster = true
 ): {
   mode: string;
   channels: SpecialChannel[];
@@ -428,8 +429,9 @@ export function resolveMessageModeAndChannels(
   badgeColor: string;
   badgeIcon: string;
 } {
-  if (msg && typeof msg === 'object' && (msg as any)._cachedModeInfo) {
-    return (msg as any)._cachedModeInfo;
+  const cacheKey = allowMaster ? '_cachedModeInfo' : '_cachedRegularModeInfo';
+  if (msg && typeof msg === 'object' && (msg as any)[cacheKey]) {
+    return (msg as any)[cacheKey];
   }
 
   let rawChannels: string[] = Array.isArray(msg?.channels) ? msg.channels : [];
@@ -460,7 +462,7 @@ export function resolveMessageModeAndChannels(
     const text = typeof msg?.content === 'string' 
       ? msg.content 
       : (Array.isArray(msg?.content) ? (msg.content[0]?.text || '') : '');
-    const detected = detectLucyChannelsFromText(text);
+    const detected = detectLucyChannelsFromText(text, { allowMaster });
     if (detected.isMaster) {
       rawChannels = ALL_CHANNELS;
       rawMode = 'master';
@@ -473,11 +475,10 @@ export function resolveMessageModeAndChannels(
     }
   }
 
-  const validChannels: SpecialChannel[] = rawChannels.filter((c: any) =>
-    ALL_CHANNELS.includes(c)
-  ) as SpecialChannel[];
-
-  const isMaster = rawMode === 'master' || validChannels.length === ALL_CHANNELS.length;
+  const filteredChannels = rawChannels.filter((c: any) => ALL_CHANNELS.includes(c)) as SpecialChannel[];
+  const validChannels = allowMaster ? filteredChannels : resolveLucyPageChannels(filteredChannels, false);
+  if (!allowMaster && rawMode === 'master') rawMode = validChannels.length ? 'synergy' : 'casual';
+  const isMaster = allowMaster && (rawMode === 'master' || validChannels.length === ALL_CHANNELS.length);
   const isCasual = (rawMode === 'casual' || validChannels.length === 0) && !isMaster;
 
   let badgeLabel = '수다 모드';
@@ -521,7 +522,7 @@ export function resolveMessageModeAndChannels(
 
   if (msg && typeof msg === 'object') {
     try {
-      (msg as any)._cachedModeInfo = result;
+      (msg as any)[cacheKey] = result;
     } catch (_) {}
   }
 
@@ -1452,13 +1453,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   // 말풍선 배지 / 추천 카드 클릭 시: AI 모드를 유지한 채 해당 채널 조합(단일·융합·마스터)을 즉시 반영
   const handleActivateMessageMode = (targetChannels: SpecialChannel[], targetIsMaster: boolean, label?: string) => {
-    if (targetIsMaster && !pro) { navigate(LUCY_PRO_PATH); return; }
     const nextChannels = resolveLucyPageChannels(targetChannels, pro);
+    const modeLabel = !pro && (targetIsMaster || label?.includes('마스터')) ? formatChannelsModeTitle(nextChannels) : label || formatChannelsModeTitle(nextChannels);
     setActiveChannels(nextChannels);
-    setAutoDetectedTitle(label || formatChannelsModeTitle(nextChannels));
+    setAutoDetectedTitle(modeLabel);
     setCurrentPrompts(getCuratedPrompts(activeProfiles, 'auto', nextChannels));
     if (label) {
-      setModeSwitchToast(`⚡ AI 모드 · [${label}] 가동`);
+      setModeSwitchToast(`⚡ AI 모드 · [${modeLabel}] 가동`);
       setTimeout(() => setModeSwitchToast(null), 2500);
     }
   };
@@ -2056,7 +2057,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
     const divinationSelection = isCasual
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
-      : selectOptimalDivinationTools(combinedContextText, channels, counselingUserProfile, isMaster);
+      : selectOptimalDivinationTools(combinedContextText, channels, counselingUserProfile, isMaster, { allowMaster: pro });
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
@@ -2611,7 +2612,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             if (!isUser && !textContent.trim() && !imageUrl) {
               return null;
             }
-            const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index);
+            const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index, pro);
 
             // 루시의 인사말인지 여부 정밀 판별
             const isGreeting = (() => {
@@ -2702,7 +2703,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       : [];
                     if (resolvedTools.length === 0) return null;
 
-                    if (msgModeInfo.isMaster || resolvedTools.length >= 15) {
+                    if (pro && (msgModeInfo.isMaster || resolvedTools.length >= 15)) {
                       return (
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${

@@ -20,3 +20,14 @@ test('regular auto detection ignores master requests while retaining the request
   assert.deepEqual(normal.channels, ['trinity']);
   assert.equal(detectLucyChannelsFromText('마스터 모드로 타로를 봐줘').isMaster, true);
 });
+
+
+test('regular tool selection cannot escalate from master keywords or forced channel metadata', async () => {
+  const { selectOptimalDivinationTools } = await import('../src/lib/fifteenDivinationTools');
+  const regular = selectOptimalDivinationTools('마스터 모드로 15대 도구 총동원해서 타로를 봐줘', [...LUCY_MASTER_CHANNELS], undefined, true, { allowMaster: false });
+  assert.equal(regular.isMasterMobilization, false);
+  assert(regular.selectedTools.length < 15);
+  const pro = selectOptimalDivinationTools('안녕', [...LUCY_MASTER_CHANNELS], undefined, true, { allowMaster: true });
+  assert.equal(pro.isMasterMobilization, true);
+  assert.equal(pro.selectedTools.length, 15);
+});

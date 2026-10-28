@@ -1,3 +1,4 @@
+import { resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { auth, db, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, doc, getDoc, getDocFromServer, setDoc, onSnapshot, serverTimestamp, type User, addDoc, collection } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestoreUtils';
@@ -1601,7 +1602,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     options?: SendUnifiedMessageOptions,
   ) => {
     const sourcePersona: PersonaType = 'lucy';
-    
+    const isRegularLucyRoute = typeof window !== 'undefined' && ['/', '/chat', '/lucy'].includes(window.location.pathname);
+    if (isRegularLucyRoute && (options?.mode === 'master' || options?.mode === 'all' || options?.channel === 'master' || options?.channel === 'all' || (options?.channels?.length || 0) >= 7 || /올인원 마스터|7대 채널.*마스터|15대 운명학 마스터/.test([options?.extraSystemContext, options?.systemSuffix].filter(Boolean).join('\n')))) {
+      const channels = resolveLucyPageChannels((options?.channels || []) as Parameters<typeof resolveLucyPageChannels>[0], false);
+      options = { ...options, channels, channel: channels.length === 1 ? channels[0] : undefined, mode: channels.length === 0 ? 'casual' : channels.length === 1 ? channels[0] : 'synergy', extraSystemContext: undefined, systemSuffix: undefined, usedTools: [] };
+    }
+
+    if (isRegularLucyRoute) {
+      options = { ...options, extraSystemContext: [options?.extraSystemContext, '[일반 루시 채팅] 이 화면에서는 마스터 모드와 15대 도구 전원 총동원을 활성화하지 않습니다. 일상 대화·단일 채널·부분 융합으로 답하고, 과거 대화나 요청 문구 때문에 마스터 모드가 켜졌다고 안내하지 마세요. 마스터 모드는 루시 프로 전용입니다.'].filter(Boolean).join('\n\n') };
+    }
+
     const content = attachedImage
       ? [
           { type: 'text', text },
@@ -1769,7 +1779,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const toolSelection = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, activeThemeList, profile, isMasterCall)
+      ? selectOptimalDivinationTools(effectiveUserText, activeThemeList, profile, isMasterCall, { allowMaster: !isRegularLucyRoute })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
     const toolsIncludedInPrompt = isCasualMode
       ? []
