@@ -1,4 +1,3 @@
-import { useDraggableBigBang } from '@/hooks/useDraggableBigBang';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
 import './bigbang-clover-breeze.css';
 import { oneStopNavigationPath, nextOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
@@ -15,7 +14,7 @@ import {
 } from '@/lib/omniWarp/wormholeSpectrum';
 import { getTossRule } from '@/lib/prismTossRegistry';
 import { resolveCanonicalPath, isValidPrismPath } from '@/lib/prismRouteRegistry';
-import { resetActiveWormholePeek } from '@/lib/omniWarp/wormholeShuffleEngine';
+import { resetActiveWormholePeek, commitShuffledWormholeDestination } from '@/lib/omniWarp/wormholeShuffleEngine';
 import {
   getCurrentOneStopPage,
   peekNextRecommendedMenuByCycle,
@@ -29,7 +28,7 @@ import { safeSessionStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
-const DRAG_CANCEL_THRESHOLD = 26;
+const DRAG_ACTIVATION_THRESHOLD = 26;
 
 export function BigBangButton() {
   let location = '/';
@@ -223,7 +222,7 @@ export function BigBangButton() {
   // 정사각형 외피를 +45° 고정 회전한 상태에서 각 꼭짓점(tl=상, tr=우, br=하, bl=좌)의 곡률만 뾰족하게 조여
   // 별도의 외부 도형 없이 검은 동그라미 자체가 해당 방향으로 물방울처럼 살짝 뾰족히 올라오도록 구현
   const morphStyles = useMemo(() => {
-    if (dragDistance >= DRAG_CANCEL_THRESHOLD) {
+    if (dragDistance >= DRAG_ACTIVATION_THRESHOLD) {
       return {
         borderRadius: '50% 50% 50% 50%',
         x: isPressing
@@ -483,17 +482,22 @@ export function BigBangButton() {
       maxDragDistanceRef.current = dist;
     }
     const maxDist = Math.max(dist, maxDragDistanceRef.current);
-    const isDragGesture = maxDist >= DRAG_CANCEL_THRESHOLD;
+    const isDragGesture = maxDist >= DRAG_ACTIVATION_THRESHOLD;
 
-    // Tap: Lucy; double tap: KEY; hold: Lucy bubble; dragging cancels the press.
+    // Tap/hold stay in the center; dragging restores the full radial warp sensor.
     const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
     if (isDragGesture) {
-      cancelDraggedPress();
-      return;
+      isPttRecordingRef.current = false;
+      setIsQuickChatOpen(false);
+      currentHole = metrics.eventHorizonMode === 'blackhole' ? 'blackhole' : 'whitehole';
+      if (dist < DRAG_ACTIVATION_THRESHOLD) {
+        metrics.isAborted = true;
+        metrics.phase = 'aborted';
+      }
     } else if (elapsed >= 220 && !(start.pointerType === 'touch' && start.direction !== 'none')) {
       currentHole = 'whitehole';
       const isTextToss = Boolean(textToToss);
@@ -626,8 +630,6 @@ export function BigBangButton() {
     clearPendingSelection();
   };
 
-  const floatingButton = useDraggableBigBang(cancelDraggedPress);
-
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
     // Keep the selected sentence intact while the button resolves the gesture.
@@ -653,11 +655,7 @@ export function BigBangButton() {
         if (d > maxDragDistanceRef.current) {
           maxDragDistanceRef.current = d;
         }
-        if (maxDragDistanceRef.current >= DRAG_CANCEL_THRESHOLD) {
-          cancelDraggedPress();
-          return;
-        }
-        if (d < DRAG_CANCEL_THRESHOLD) {
+        if (d < DRAG_ACTIVATION_THRESHOLD) {
           const curDir = touchStartRef.current.pointerType === 'touch'
             ? touchStartRef.current.direction
             : calculateCardinalDirection(ev.clientX, ev.clientY);
@@ -668,7 +666,7 @@ export function BigBangButton() {
           downDirectionRef.current = 'none';
         }
         // 🛑 홀드 중 조금이라도 드래그(14px 이상) 발생 시 0ms 즉각 PTT 취소 이벤트 발송!
-        if (d >= DRAG_CANCEL_THRESHOLD && isPttRecordingRef.current) {
+        if (d >= DRAG_ACTIVATION_THRESHOLD && isPttRecordingRef.current) {
           isPttRecordingRef.current = false;
           triggerHaptic('abort');
           if (typeof window !== 'undefined') {
@@ -768,12 +766,8 @@ export function BigBangButton() {
     if (!isPressing || !touchStartRef.current) return;
     currentPointerEventRef.current = e;
     const d = Math.hypot(e.clientX - touchStartRef.current.x, e.clientY - touchStartRef.current.y);
-    if (d >= DRAG_CANCEL_THRESHOLD) {
-      maxDragDistanceRef.current = Math.max(maxDragDistanceRef.current, d);
-      cancelDraggedPress();
-      return;
-    }
-    if (d < DRAG_CANCEL_THRESHOLD) {
+    maxDragDistanceRef.current = Math.max(maxDragDistanceRef.current, d);
+    if (d < DRAG_ACTIVATION_THRESHOLD) {
       const curDir = touchStartRef.current.pointerType === 'touch'
         ? touchStartRef.current.direction
         : calculateCardinalDirection(e.clientX, e.clientY);
@@ -976,7 +970,7 @@ export function BigBangButton() {
     const deltaY = e.clientY - start.y;
     const dist = Math.hypot(deltaX, deltaY);
     const maxDist = Math.max(dist, maxDragDistanceRef.current);
-    const isDragGesture = maxDist >= DRAG_CANCEL_THRESHOLD;
+    const isDragGesture = maxDist >= DRAG_ACTIVATION_THRESHOLD;
 
     const metrics = calculateWarpMetrics(
       start.time,
@@ -1006,7 +1000,7 @@ export function BigBangButton() {
       sessionStorage.removeItem('bigbang_pressing');
     } catch (_) {}
 
-    if (metrics.isAborted || isAborted) {
+    if (metrics.isAborted) {
       if (isPttRecordingRef.current) {
         isPttRecordingRef.current = false;
         if (typeof window !== 'undefined') {
@@ -1026,9 +1020,33 @@ export function BigBangButton() {
     setIsAborted(false);
     const context = serializeCurrentView(location);
 
-    // A drag cancels this gesture and never navigates on release.
+    // Release commits the current 360-degree aim; returning to center cancels.
     if (isDragGesture) {
-      cancelDraggedPress();
+      if (dist < DRAG_ACTIVATION_THRESHOLD) { cancelDraggedPress(); return; }
+      isPttRecordingRef.current = false;
+      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
+      lastTapTimeRef.current = 0;
+      let target = synthesizeWarpTarget(context, metrics);
+      if (metrics.phase === 'wormhole') {
+        const { dest } = commitShuffledWormholeDestination(location);
+        target = { ...target, destinationPath: dest.path };
+      }
+      const destination = target.id === 'universe' && target.destinationPath === '/'
+        ? '/prologue' : target.destinationPath;
+      const path = oneStopNavigationPath(resolveCanonicalPath(destination));
+      const tab = new URL(path, 'https://luckey.local').searchParams.get('tab') || undefined;
+      clearPendingSelection();
+      lastValidSelectionRef.current = '';
+      touchStartSelectionRef.current = '';
+      setIsQuickChatOpen(false);
+      setQuickChatVoiceActive(false);
+      triggerHaptic('wormhole');
+      handleRuneNavigate(path, tab);
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      resetActiveWormholePeek();
       return;
     }
 
@@ -1100,7 +1118,7 @@ export function BigBangButton() {
     }
 
     // Wait briefly for a second tap before opening the single-tap menu.
-    const isTapGesture = !isDragGesture && !isHoldGesture && duration < 220 && dist < DRAG_CANCEL_THRESHOLD;
+    const isTapGesture = !isDragGesture && !isHoldGesture && duration < 220 && dist < DRAG_ACTIVATION_THRESHOLD;
     if (isTapGesture) {
       const now = performance.now();
       const doubleTap = lastTapTimeRef.current > 0 && now - lastTapTimeRef.current <= 360;
@@ -1142,7 +1160,7 @@ export function BigBangButton() {
     cleanupGlobalPointerListeners();
     // Native touch cancellation can follow a stationary long press. The visible
     // conversation stays active; dragging or losing window focus still aborts it.
-    const keepConversation = Boolean(event && maxDragDistanceRef.current < DRAG_CANCEL_THRESHOLD);
+    const keepConversation = Boolean(event && maxDragDistanceRef.current < DRAG_ACTIVATION_THRESHOLD);
     if (isPttRecordingRef.current) {
       isPttRecordingRef.current = false;
       if (!keepConversation && typeof window !== 'undefined') {
@@ -1241,7 +1259,7 @@ export function BigBangButton() {
     // 🌌 사건의 지평선 상태 (조준 중): 해당 조준 채널의 아이콘을 최우선으로 표출!
     if (radialSectorIndex >= 0) return RADIAL_WARP_APPS[radialSectorIndex]?.id || 'hub';
     // 🌀 드래그 시: 추천 1순위 채널
-    if (dragDistance >= DRAG_CANCEL_THRESHOLD) return currentTarget?.id || 'omniwarp';
+    if (dragDistance >= DRAG_ACTIVATION_THRESHOLD) return currentTarget?.id || 'omniwarp';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 홈 귀환
     if (isChatView) return 'lucy';
     // 💬 제자리 홀드 - 일반 화면에서는 루시 1:1 대화
@@ -1259,7 +1277,7 @@ export function BigBangButton() {
       return subTitle ? `${channel?.name || ''} · ${subTitle}` : (channel?.name || '');
     }
     // 🌀 드래그 시: 추천 1순위 채널 도약
-    if (dragDistance >= DRAG_CANCEL_THRESHOLD) return currentTarget?.title || currentTarget?.name || 'KEY 채널로 이동';
+    if (dragDistance >= DRAG_ACTIVATION_THRESHOLD) return currentTarget?.title || currentTarget?.name || 'KEY 채널로 이동';
     // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 귀환
     if (isChatView) return '루시 (1:1 음성 대화)';
     // 💬 제자리 홀드 - 일반 화면에서는 루시 음성 대화
@@ -1270,11 +1288,7 @@ export function BigBangButton() {
     <>
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
-        ref={floatingButton.rootRef}
-        style={floatingButton.style}
-        onPointerDownCapture={floatingButton.onPointerDownCapture}
-        onClickCapture={floatingButton.onClickCapture}
-        className={`fixed ${floatingButton.positioned ? '' : 'bottom-safe-fab-center'} w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
+        className={`fixed bottom-safe-fab-center w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
           isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
       >
@@ -1316,6 +1330,20 @@ export function BigBangButton() {
             buttonRef.current?.blur();
           }}
         >
+          {isPressing && dragDistance >= DRAG_ACTIVATION_THRESHOLD && <div className="absolute inset-0 pointer-events-none z-40" data-bigbang-radial="true" data-sector={radialSectorIndex}>
+            <div className="absolute left-1/2 top-1/2 h-36 w-36 rounded-full border border-cyan-300/30" style={{ transform: `translate(-50%, -50%) rotate(${dragAngleDeg}deg)` }}>
+              <span className="absolute left-1/2 -top-1 h-2 w-2 -translate-x-1/2 rounded-full bg-cyan-200 shadow-[0_0_12px_#67e8f9]" />
+            </div>
+            {RADIAL_WARP_APPS.map((app, index) => {
+              const angle = index * Math.PI * 2 / RADIAL_WARP_APPS.length;
+              return <span key={app.id} className={`absolute left-1/2 top-1/2 rounded-full border px-2 py-1 text-[9px] font-bold whitespace-nowrap backdrop-blur-xl ${radialSectorIndex === index && !isAborted ? 'bg-cyan-950/95 text-white border-cyan-200 shadow-[0_0_14px_#22d3ee88]' : 'bg-slate-950/90 text-slate-300 border-white/20'}`} style={{ transform: `translate(-50%, -50%) translate(${Math.sin(angle) * 78}px, ${-Math.cos(angle) * 78}px)` }}>{app.name}</span>;
+            })}
+            <div role="status" data-bigbang-drag-preview="true" data-destination={currentTarget?.destinationPath} className="absolute -top-36 left-1/2 -translate-x-1/2 rounded-2xl border border-cyan-300/40 bg-slate-950/95 px-4 py-2 text-center text-xs text-white shadow-xl whitespace-nowrap max-w-[90vw]">
+              <span className="block font-bold">{isAborted ? '중앙으로 되돌리거나 멀리 끌어 취소' : activeAppName}</span>
+              <span className="mt-1 block text-[10px] text-cyan-100/70">{isAborted ? '손을 놓으면 이동하지 않아요' : '손을 놓으면 이동해요'}</span>
+            </div>
+          </div>}
+
           {/* Existing radial hit area accepts touch as well as mouse input */}
           <div className="absolute -inset-7 rounded-full pointer-events-auto touch-none -z-10" />
 
@@ -1558,8 +1586,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 버튼 위치 이동)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 버튼 위치 이동"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 360도 방향 조준 후 놓아 이동)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 360도 방향 조준 후 놓아 이동"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
