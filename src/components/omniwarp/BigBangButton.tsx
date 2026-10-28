@@ -16,7 +16,6 @@ import { getTossRule } from '@/lib/prismTossRegistry';
 import { resolveCanonicalPath, isValidPrismPath } from '@/lib/prismRouteRegistry';
 import { resetActiveWormholePeek } from '@/lib/omniWarp/wormholeShuffleEngine';
 import {
-  getOneStopDestinations,
   getCurrentOneStopPage,
   peekNextRecommendedMenuByCycle,
   commitNextRecommendedMenuByCycle,
@@ -941,6 +940,10 @@ export function BigBangButton() {
     [navigate]
   );
 
+  const goToLiveRecommendedDapp = useCallback(() => {
+    goToNextRecommended(undefined, undefined, true);
+  }, [goToNextRecommended]);
+
   const goToNextDapp = useCallback(() => {
     const nextPath = nextOrderedLuckeyPage(getCurrentOneStopPage(location));
     const tab = new URL(nextPath, 'https://luckey.local').searchParams.get('tab') || undefined;
@@ -1045,10 +1048,7 @@ export function BigBangButton() {
       } else if (targetDir === 'south') {
         cardinalActionsRef.current?.scrollToBottom(e);
       } else if (targetDir === 'west') {
-        const currentPage = getCurrentOneStopPage(location);
-        const destinations = getOneStopDestinations().filter(menu => menu.path !== currentPage);
-        const destination = destinations[Math.floor(Math.random() * destinations.length)];
-        if (destination) handleRuneNavigate(oneStopNavigationPath(destination.path));
+        goToLiveRecommendedDapp();
       } else if (targetDir === 'east') {
         goToNextDapp();
       }
@@ -1362,10 +1362,10 @@ export function BigBangButton() {
                 durationMs={durationMs}
                 activePhase={activePhase}
                 isAborted={isAborted}
-                onRuneNavigate={handleRuneNavigate}
                 isCosmicSuction={isCosmicSuctionActive}
                 onRegisterActions={handleRegisterActions}
                 onNextPage={goToNextDapp}
+                onRecommendedPage={goToLiveRecommendedDapp}
               />
             </div>
 
@@ -1551,8 +1551,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 럭키 앱·댑 무작위 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 동작 없음)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 럭키 앱·댑 무작위 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 동작 없음"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 동작 없음)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 동작 없음"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

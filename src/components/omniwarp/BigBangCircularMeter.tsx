@@ -380,14 +380,14 @@ interface BigBangCircularMeterProps {
   isAborted?: boolean;
   /** 무한 반복 대기 사이클 타이밍 값 (선택적) */
   idleCycleProgress?: number;
-  /** 고대 룬 및 순환 사이클 클릭 시 네비게이션 콜백 (선택적) */
-  onRuneNavigate?: (path: string, tab?: string) => void;
   /** 🌌 더블탭 시 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 상태 */
   isCosmicSuction?: boolean;
   /** 🧭 상하좌우 원뿔 모핑 액션 등록 콜백 */
   onRegisterActions?: (actions: BigBangCircularMeterActions) => void;
   /** Right-hand control advances through every Luckey dapp in fixed order. */
   onNextPage: () => void;
+  /** Left-hand control jumps immediately to the current recommendation. */
+  onRecommendedPage: () => void;
 }
 
 /**
@@ -404,10 +404,10 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   durationMs = 0,
   activePhase = 'idle',
   isAborted = false,
-  onRuneNavigate,
   isCosmicSuction = false,
   onRegisterActions,
   onNextPage,
+  onRecommendedPage,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
   const meterRootRef = useRef<HTMLDivElement | null>(null);
@@ -561,81 +561,15 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   const prevStep = BIGBANG_CYCLE_NAV_STEPS[prevIndex];
   const nextStep = BIGBANG_CYCLE_NAV_STEPS[nextIndex];
 
-  const doNavigate = useCallback(
-    (targetStep: BigBangCycleNavStep) => {
-      if (targetStep.tab) {
-        try {
-          sessionStorage.setItem('prism_target_tab', targetStep.tab);
-        } catch (_) {}
-        setActiveTabOverride(targetStep.tab);
-      } else {
-        try {
-          sessionStorage.removeItem('prism_target_tab');
-        } catch (_) {}
-        setActiveTabOverride(null);
-      }
-
-      if (typeof window !== 'undefined') {
-        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-      }
-
-      if (onRuneNavigate) {
-        onRuneNavigate(targetStep.path, targetStep.tab);
-      } else {
-        navigate(targetStep.path);
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: targetStep.path } }));
-        window.dispatchEvent(
-          new CustomEvent('nav-click-active', {
-            detail: { path: targetStep.path, tab: targetStep.tab },
-          })
-        );
-      }
-
-      if (targetStep.tab) {
-        window.dispatchEvent(
-          new CustomEvent('prism-tab-change', { detail: { tab: targetStep.tab } })
-        );
-      }
-    },
-    [onRuneNavigate, navigate]
-  );
-
-  // 🚀 좌(West) 점 탭 시 이전 순환 DApp (럭키채널 23대 DApp)으로 순환 이동
+  // Left touch and ArrowLeft share the live, non-repeating recommendation.
   const handleNavigateBack = useCallback(
     (e: React.MouseEvent | React.TouchEvent | KeyboardEvent) => {
       e.preventDefault();
       e.stopPropagation();
-
       triggerDotPulse('west');
-
-      try {
-        playAudioHaptic('tap_impact');
-      } catch (_) {}
-      try {
-        triggerHaptic('wormhole');
-      } catch (_) {}
-
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        try {
-          navigator.vibrate(20);
-        } catch (_) {}
-      }
-
-      const currentFull = typeof window !== 'undefined'
-        ? `${window.location.pathname}${window.location.search || ''}`
-        : location;
-      const curIdx = findCurrentCycleStepIndex(currentFull, activeTabOverride);
-      const targetIdx = (curIdx - 1 + BIGBANG_CYCLE_NAV_STEPS.length) % BIGBANG_CYCLE_NAV_STEPS.length;
-      const targetStep = BIGBANG_CYCLE_NAV_STEPS[targetIdx];
-
-      doNavigate(targetStep);
-      window.dispatchEvent(
-        new CustomEvent('prism:cycle_nav', {
-          detail: { target: targetStep, direction: 'backward' },
-        })
-      );
+      onRecommendedPage();
     },
-    [triggerDotPulse, location, activeTabOverride, doNavigate]
+    [triggerDotPulse, onRecommendedPage]
   );
 
   // The right-hand control and ArrowRight use the same ordered dapp tour.
