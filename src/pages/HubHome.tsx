@@ -540,6 +540,7 @@ export default function HubHome() {
     <div className="universe-layout h-app-full w-full min-w-0 flex flex-col relative font-sans bg-transparent">
       {/* Header Info Bar - Always Fixed Outside Scroll Root */}
       <motion.div
+        data-page-brand="true"
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}

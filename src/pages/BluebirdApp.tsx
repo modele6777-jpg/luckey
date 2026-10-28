@@ -2605,6 +2605,7 @@ export default function BluebirdApp() {
   return (
     <div className="h-app-full w-full flex flex-col relative overflow-hidden font-sans bg-transparent">
       <motion.div
+        data-page-brand="true"
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}

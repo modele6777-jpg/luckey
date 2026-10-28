@@ -3168,6 +3168,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
       {/* Top Left Branding */}
       <motion.div
+        data-page-brand="true"
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}

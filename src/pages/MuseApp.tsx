@@ -1504,6 +1504,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
     >
 
       <motion.div
+        data-page-brand="true"
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}

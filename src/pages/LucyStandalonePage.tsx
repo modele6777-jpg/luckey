@@ -1,11 +1,10 @@
-import { openNavigationMenu } from '@/lib/navigationMenu';
 import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
 import { ChatBubbleForward } from '@/components/chat/ChatBubbleForward';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Menu, Send, Trash2, Search, X, Check, Volume2, VolumeX, Square,
+  Send, Trash2, Search, X, Check, Volume2, VolumeX, Square,
   Download, User, Plus, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked, Mic, MicOff, MessageSquare
 } from 'lucide-react';
@@ -2402,10 +2401,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         }`}
       >
         <div className="flex items-center justify-between gap-2 min-w-0 w-full max-w-full">
-          <button type="button" onClick={openNavigationMenu} aria-label="메뉴 열기" aria-controls="main-sidebar-navigation"
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors active:scale-95 ${isLight ? 'border-amber-200 bg-white text-slate-700 hover:bg-amber-50' : 'border-white/15 bg-white/5 text-white hover:bg-white/10'}`}>
-            <Menu size={21} />
-          </button>
+          <span className="h-10 w-10 shrink-0" aria-hidden="true" />
           {/* Brand logo stays within the current chat page. */}
           <div className="flex items-center min-w-0 flex-1 pl-1 sm:pl-3 overflow-hidden">
             <div
