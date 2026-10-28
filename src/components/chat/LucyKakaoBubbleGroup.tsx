@@ -231,6 +231,7 @@ export function LucyKakaoBubbleGroup({
             >
               <ChatBubbleForward text={bubbleText} targetLabel={forwardTargetLabel} onForward={onForward} disabled={isGenerating}>
               <div
+                data-forward-bubble
                 className={`p-3.5 sm:p-4.5 text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-all duration-300 ${bubbleSurfaceClass} ${theme === 'starlight' ? 'lucy-starlight-assistant' : ''}`}
                 style={
                   variant === 'standalone' && theme !== 'starlight'

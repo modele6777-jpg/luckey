@@ -17,17 +17,29 @@ export function ChatBubbleForward({ children, text, targetLabel, onForward, disa
     return () => { if (previous?.isConnected) previous.focus(); };
   }, [open]);
   const show = () => { if (!disabled && onForward && text.trim()) setOpen(true); };
-  return <div className="contents" style={{ WebkitTouchCallout: onForward ? 'none' : undefined }}
+  const isBubblePadding = (target: EventTarget, x: number, y: number) => {
+    if (!(target instanceof Element) || target.closest('button,a,input,textarea,select')) return false;
+    const bubble = target.closest<HTMLElement>('[data-forward-bubble]');
+    if (!bubble) return false;
+    const rect = bubble.getBoundingClientRect();
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return false;
+    const style = getComputedStyle(bubble);
+    const left = rect.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+    const right = rect.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight);
+    const top = rect.top + parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
+    const bottom = rect.bottom - parseFloat(style.borderBottomWidth) - parseFloat(style.paddingBottom);
+    return x < left || x > right || y < top || y > bottom;
+  };
+  return <div className="contents"
     onPointerDown={event => {
-      if (!onForward || disabled || !event.isPrimary || event.button !== 0 || (event.target as Element).closest('button,a,input,textarea,select')) return;
+      if (!onForward || disabled || !event.isPrimary || event.button !== 0 || !isBubblePadding(event.target, event.clientX, event.clientY)) return;
       clear(); start.current = { x: event.clientX, y: event.clientY };
       timer.current = setTimeout(() => { clear(); show(); }, 500);
     }}
-    onPointerMove={event => { if (start.current && Math.hypot(event.clientX - start.current.x, event.clientY - start.current.y) > 10) clear(); }}
+    onPointerMove={event => { if (start.current && (!isBubblePadding(event.target, event.clientX, event.clientY) || Math.hypot(event.clientX - start.current.x, event.clientY - start.current.y) > 10)) clear(); }}
     onPointerUp={clear} onPointerCancel={clear} onPointerLeave={clear}
-    onContextMenu={event => { if (onForward && !disabled) { event.preventDefault(); clear(); show(); } }}>
+    onContextMenu={event => { if (onForward && !disabled && isBubblePadding(event.target, event.clientX, event.clientY)) { event.preventDefault(); clear(); show(); } }}>
     {children}
-    {onForward && !disabled && <button type="button" className="sr-only focus:not-sr-only" onClick={show}>이 말풍선을 {targetLabel}로 전달</button>}
     {open && typeof document !== 'undefined' && createPortal(
       <div className="fixed inset-0 z-[10030] flex items-center justify-center bg-black/35 p-5" onPointerDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
         <section role="dialog" aria-modal="true" aria-label="말풍선 전달" className="w-full max-w-sm rounded-3xl border border-emerald-200 bg-white p-5 text-slate-800 shadow-2xl" onKeyDown={event => {

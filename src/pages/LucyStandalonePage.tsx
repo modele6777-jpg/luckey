@@ -2787,6 +2787,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <>
                       <ChatBubbleForward text={textContent} targetLabel={pro ? '일반 루시' : '루시 프로'} onForward={forwardBubble}>
                       <div
+                        data-forward-bubble
                         className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-colors duration-300 ${
                           isLight
                             ? 'lucy-user-bubble bg-amber-100 border border-amber-300 text-slate-900 rounded-tr-xs font-sans shadow-xs'
