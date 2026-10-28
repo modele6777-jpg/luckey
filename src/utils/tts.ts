@@ -56,6 +56,8 @@ export function playNativeBrowserSpeech(
     return Promise.resolve();
   }
 
+  configureSpeechAudioSession();
+
   // Ensure speech synthesis engine is active and not paused by browser
   try {
     if (window.speechSynthesis.paused) {
@@ -269,7 +271,7 @@ const updateTTSState = (newState: Partial<TTSState>) => {
   const nextActive = ttsState.isSpeaking || ttsState.isLoading;
 
   if (!prevActive && nextActive) {
-    // 외부 음악 앱은 멈추지 않고 살짝 덕킹(iOS 17+), 앱 BGM은 부드럽게 60%로
+    // Keep external music in the ambient mix; only lower the app’s own BGM.
     configureSpeechAudioSession();
     duckAmbientAudio(true, 0.6);
   } else if (prevActive && !nextActive) {

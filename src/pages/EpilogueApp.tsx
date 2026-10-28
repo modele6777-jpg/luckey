@@ -1043,39 +1043,6 @@ export default function EpilogueApp() {
         </div>
       </motion.div>
 
-      {/* Top Right Cloud Sync Status Indicator */}
-      <motion.div
-        initial={{ y: -8, opacity: 0.88 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className="duo-page-tools relative w-full shrink-0 px-4 py-2 justify-end pointer-events-auto z-40 flex items-center gap-2"
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setActiveMode('profile');
-            setCurrentSection(0);
-            if (location !== '/profile') navigate('/profile');
-          }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-sans font-bold backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 ${
-            firebaseUser
-              ? 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300 hover:bg-emerald-500/20'
-              : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-          }`}
-          title={firebaseUser ? `${firebaseUser.displayName || '구글 사용자'} 계정으로 실시간 동기화 중 (클릭 시 프로필 설정 이동)` : '게스트 모드 (클릭하여 계정 연동 및 프로필 설정)'}
-        >
-          <span
-            className={`w-2 h-2 rounded-full ${
-              firebaseUser
-                ? 'bg-emerald-400 animate-pulse ring-2 ring-emerald-400/40'
-                : 'bg-amber-400 ring-2 ring-amber-400/40'
-            }`}
-          />
-          <span className="hidden sm:inline">{firebaseUser ? (syncingDevices ? '동기화 중...' : '클라우드 동기화') : '게스트 (동기화 설정)'}</span>
-          <span className="sm:hidden">{firebaseUser ? (syncingDevices ? '동기화...' : '동기화됨') : '게스트'}</span>
-        </button>
-      </motion.div>
-
       {/* Navigation Subnav Menu (Epilogue: Diary / CHRONICLE / Profile) */}
       <motion.nav
         initial={{ y: -10, opacity: 0.88 }}
