@@ -1,3 +1,4 @@
+import './sidebar-edge-hint.css';
 import { OPEN_NAVIGATION_MENU_EVENT, TOGGLE_NAVIGATION_MENU_EVENT } from '@/lib/navigationMenu';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
@@ -905,6 +906,11 @@ export default function LeftSidebarNav() {
 
   return (
     <>
+      {!isOpen && <div className="sidebar-edge-hint" data-sidebar-edge-hint="true" data-theme={isLight ? 'light' : 'dark'} aria-hidden="true">
+        <span className="sidebar-edge-hint-mist" />
+        <span className="sidebar-edge-hint-line" />
+        <span className="sidebar-edge-hint-grip" />
+      </div>}
       {/* 4. Sliding Sidebar Drawer */}
       <AnimatePresence>
         {isOpen && (
