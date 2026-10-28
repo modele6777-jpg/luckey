@@ -1801,7 +1801,7 @@ export function BigBangButton() {
                     </svg>
                   ) : (
                     <>
-                      {(isHovered || isPressing) ? <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
+                      {isPressing ? <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
                         className={`rotate-[-45deg] text-emerald-200 transition-transform duration-200 ${isPressing ? 'scale-110' : ''}`}
                         style={{ filter: 'drop-shadow(0 0 6px #34d399)' }} /> : <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />}
                       <div
