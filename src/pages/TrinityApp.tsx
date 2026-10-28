@@ -1,3 +1,4 @@
+const DivinationLab = React.lazy(() => import('@/components/trinity/DivinationLab'));
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, {
   useState,
@@ -3236,6 +3237,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col items-center relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none"
       >
         <div className="prism-page-content w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col items-center min-w-0">
+          <React.Suspense fallback={<p className="text-sm opacity-60">계산실 준비 중…</p>}><DivinationLab /></React.Suspense>
           <AnimatePresence mode="wait">
             {activeMode === "oracle" || activeMode === "synergy" ? (
               <motion.div

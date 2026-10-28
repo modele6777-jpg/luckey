@@ -1,3 +1,4 @@
+import { buildAdditionalBirthDigest } from './divination/birthDigest';
 import { buildDivinationCapabilityPrompt } from './divinationCapabilities';
 import { resolveEffectiveSolarDate } from './lunarCalendar';
 import { parseBirthTime } from './birthDateTime';
@@ -349,11 +350,11 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     return `[개인화 계산 입력] ${solarDateString} 양력${isLunar ? ' (음력·윤달 설정 환산)' : ''}${time ? ` ${profile.basic.birthtime}` : ' · 생시 미입력'}
 - 사주명리: ${sajuBrief}. 자미두수·토정비결의 계산을 대신하지 않음.
 - 서양 점성술: ${buildUserNatalSummary(profile)}
-- 베딕: 항성황도·다샤 미계산. 위 서양 차트를 베딕 결과로 사용 금지.
+${buildAdditionalBirthDigest(profile)}
 - 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.
 - 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.
 - 구성학 본명성 (한국 표준시 절입 기준): ${boundaryUnknown ? '입춘 당일 생시 미입력으로 전년/당년 본명성 미확정' : KYUSEI_STARS[star - 1]}. 방위반·길방위는 미계산.
-- 숙요·자미두수·육임·기문·토정·태을·주역 자동 작괘: 검증된 계산 결과 미제공. 구체적인 명반·괘·궁위를 만들지 말 것.`;
+- 육임·일반 기문·주역: 트리니티 계산실에서 사용자가 생성한 결과가 제공된 경우만 해석. 현재 대화에 결과가 없으면 임의 포국·작괘 금지. 토정비결·홍국기문 수리·태을 포국은 미구현.`;
   } catch {
     return '[개인화 계산 중단] 생년월일·생시·양음력·윤달 입력을 확인해야 합니다. 잘못된 날짜를 다른 날짜로 자동 보정하거나 개인 차트를 생성하지 말 것.';
   }
