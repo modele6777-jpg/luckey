@@ -1,3 +1,4 @@
+import { buildLucySharedBackground } from '../lib/lucySharedBackground';
 import { buildFullProfilePrompt } from '../lib/divination/profileContext';
 import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
 import { useLucyProConversation } from '@/hooks/useLucyProConversation';
@@ -1607,8 +1608,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [firebaseUser?.uid, unifiedMessages, abortGenerating]);
 
-  const regularRuntimeRef = useRef({ messages: unifiedMessages, setMessages: setUnifiedMessages, load: loadSavedUnifiedMessages, save: saveUnifiedMessagesSafely, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions, chatBroadcastRef, pushChatThreadsToFirestore, updateSharedState });
-  regularRuntimeRef.current = { messages: unifiedMessages, setMessages: setUnifiedMessages, load: loadSavedUnifiedMessages, save: saveUnifiedMessagesSafely, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions, chatBroadcastRef, pushChatThreadsToFirestore, updateSharedState };
+  const backgroundAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
+  const regularRuntimeRef = useRef({ account: backgroundAccount, messages: unifiedMessages, setMessages: setUnifiedMessages, load: loadSavedUnifiedMessages, save: saveUnifiedMessagesSafely, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions, chatBroadcastRef, pushChatThreadsToFirestore, updateSharedState });
+  regularRuntimeRef.current = { account: backgroundAccount, messages: unifiedMessages, setMessages: setUnifiedMessages, load: loadSavedUnifiedMessages, save: saveUnifiedMessagesSafely, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions, chatBroadcastRef, pushChatThreadsToFirestore, updateSharedState };
   const proRuntimeRef = useRef(proChat.runtime);
   proRuntimeRef.current = proChat.runtime;
 
@@ -1957,6 +1959,16 @@ ${responseProfile.rule}`;
       systemPrompt += `\n\n[수다모드 도구 비활성화]\n이번 대화는 가벼운 수다 모드야. 운세·타로·사주 등 운명학 도구를 고르거나 분석에 적용하지 말고, 관련 도구 사용 여부나 결과 배지도 만들지 마. 사용자의 질문에 일상 대화처럼 직접 답해줘.`;
     }
 
+    // Read the opposite runtime without merging, saving or broadcasting its messages.
+    const oppositeRuntime = isProConversation ? regularRuntimeRef.current : proRuntimeRef.current;
+    const sharedLucyBackground = buildLucySharedBackground({
+      target: isProConversation ? 'lucy-pro' : 'lucy',
+      sourceAccount: oppositeRuntime.account,
+      currentAccount: runtime.account,
+      messages: mergeUnifiedMessages(oppositeRuntime.messages, oppositeRuntime.load()),
+      question: text,
+    });
+    if (sharedLucyBackground) systemPrompt += `\n\n${sharedLucyBackground}`;
     const fullProfileContext = buildFullProfilePrompt(profile);
     systemPrompt += `\n\n${fullProfileContext}`;
     const fatePreviewContext = !isCasualMode ? buildFatePreviewPrompt(sajuObj) : '';
@@ -2315,7 +2327,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}\n${sharedLucyBackground}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
