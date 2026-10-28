@@ -132,7 +132,7 @@ export function detectLucyChannelsFromText(text: string, options: { allowMaster?
     /타로|스프레드|오라클|카드|메이저|마이너|아르카나/,
     /천을귀인|용신|희신|기신|십신|삼재|개운|액땜|부적/,
     /운명|하늘의\s*타이밍|우주의\s*타이밍|동시성|영적\s*나침반/,
-    /점성|별자리|점성술|탄생차트|네이탈|자미두수|자미성|명반|부처궁|재백궁|관록궁|사화/
+    /운명\s*프리뷰|운명\s*카드|점성|별자리|점성술|탄생차트|네이탈|자미두수|자미성|명반|부처궁|재백궁|관록궁|사화/
   ];
   if (trinityPatterns.some((regex) => regex.test(clean))) {
     matchedChannels.add('trinity');
@@ -185,7 +185,7 @@ export function detectLucyChannelsFromText(text: string, options: { allowMaster?
   const epiloguePatterns = [
     /에필로그|밤의\s*서재|하루\s*마감|마무리|회고|결산|일기|저널|기록|감사\s*일기|감사\s*노트/,
     /오늘\s*하루|오늘\s*있었던|수고했어|하루\s*끝|퇴근|취침\s*전|잠들기\s*전|밤하늘|지혜의\s*서|하루를\s*돌아/,
-    /주역|역경|64괘|팔괘|괘상|효사|건위천|곤위지|수화기제|화수미제/
+    /(?:저장된|저장한).*?(?:괘|점술|포국|계산)|계산실.*결과|주역|역경|64괘|팔괘|괘상|효사|건위천|곤위지|수화기제|화수미제/
   ];
   if (epiloguePatterns.some((regex) => regex.test(clean))) {
     matchedChannels.add('epilogue');
@@ -299,7 +299,7 @@ export function detectSeptagramChannelsFromText(text: string): SeptagramAutoDete
     /타로|스프레드|오라클|카드|메이저|마이너|아르카나|예견/,
     /천을귀인|용신|희신|기신|십신|삼재|개운|액땜|부적|귀인/,
     /운명|하늘의\s*타이밍|우주의\s*타이밍|동시성|영적\s*나침반|무의식/,
-    /점성|별자리|점성술|탄생차트|네이탈|자미두수|자미성|명반|부처궁|재백궁|관록궁|사화/
+    /운명\s*프리뷰|운명\s*카드|점성|별자리|점성술|탄생차트|네이탈|자미두수|자미성|명반|부처궁|재백궁|관록궁|사화/
   ];
   if (trinityPatterns.some((regex) => regex.test(clean))) {
     matchedChannels.add('trinity');
@@ -352,7 +352,7 @@ export function detectSeptagramChannelsFromText(text: string): SeptagramAutoDete
   const epiloguePatterns = [
     /에필로그|밤의\s*서재|하루\s*마감|마무리|회고|결산|일기|저널|기록|감사\s*일기|감사\s*노트/,
     /오늘\s*하루|오늘\s*있었던|수고했어|하루\s*끝|퇴근|취침\s*전|잠들기\s*전|밤하늘|지혜의\s*서|하루를\s*돌아/,
-    /주역|역경|64괘|팔괘|괘상|효사|건위천|곤위지|수화기제|화수미제/
+    /(?:저장된|저장한).*?(?:괘|점술|포국|계산)|계산실.*결과|주역|역경|64괘|팔괘|괘상|효사|건위천|곤위지|수화기제|화수미제/
   ];
   if (epiloguePatterns.some((regex) => regex.test(clean))) {
     matchedChannels.add('epilogue');

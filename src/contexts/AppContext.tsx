@@ -1,3 +1,5 @@
+import { buildFullProfilePrompt } from '../lib/divination/profileContext';
+import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
 import { useLucyProConversation } from '@/hooks/useLucyProConversation';
 import { resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -14,7 +16,7 @@ import { invokeLLM, invokeLLMStream, PERSONAS, type Message, getCrossAppRecentDi
 import { buildPrismOmniscientContext } from '../lib/prismOmniSync';
 import { calculateDetailedSaju } from '../lib/sajuAnalysis';
 import { buildUserNatalSummary, formatRelationshipsContext } from '../lib/astrologyAnalysis';
-import { selectOptimalDivinationTools, type SevenThemeChannel } from '../lib/fifteenDivinationTools';
+import { selectOptimalDivinationTools, FIFTEEN_DIVINATION_TOOLS, type SevenThemeChannel } from '../lib/fifteenDivinationTools';
 // Heavy wisdom engines are dynamically imported on first chat use to reduce initial bundle parse time
 // import { buildEarlyBuddhismSystemPrompt } from '../lib/earlyBuddhismWisdom';
 // import { buildGnosticSystemPrompt } from '../lib/gnosticWisdom';
@@ -50,6 +52,7 @@ export interface UnifiedMessage {
   mode?: string;
   keyExerciseIndex?: number;
   usedTools?: string[];
+  divinationContext?: string;
 }
 
 export interface SendUnifiedMessageOptions {
@@ -1954,6 +1957,31 @@ ${responseProfile.rule}`;
       systemPrompt += `\n\n[수다모드 도구 비활성화]\n이번 대화는 가벼운 수다 모드야. 운세·타로·사주 등 운명학 도구를 고르거나 분석에 적용하지 말고, 관련 도구 사용 여부나 결과 배지도 만들지 마. 사용자의 질문에 일상 대화처럼 직접 답해줘.`;
     }
 
+    const fullProfileContext = buildFullProfilePrompt(profile);
+    systemPrompt += `\n\n${fullProfileContext}`;
+    const fatePreviewContext = !isCasualMode ? buildFatePreviewPrompt(sajuObj) : '';
+    if (fatePreviewContext) systemPrompt += `\n\n${fatePreviewContext}`;
+    let chatDivinationContext: string | undefined;
+    // Calculate once per submitted turn in the shared send path used by Lucy and Pro.
+    // Stream retries below reuse systemPrompt, so a retry cannot draw a different hexagram.
+    if (!isCasualMode && toolsIncludedInPrompt.length > 0) {
+      try {
+        const { buildChatDivinationContext, CHAT_DIVINATION_MARKER } = await import('../lib/divination/chatContext');
+        const selected = Object.values(FIFTEEN_DIVINATION_TOOLS)
+          .filter(tool => toolsIncludedInPrompt.includes(tool.koName)).map(tool => tool.id);
+        const { buildSavedDivinationPrompt } = await import('../lib/divination/savedResults');
+        const saved = buildSavedDivinationPrompt(sharedState?.featureHistory, profile, selected, text);
+        if (saved.prompt && !saved.reuse) systemPrompt += `\n\n${saved.prompt}`;
+        const actual = saved.reuse ? {prompt:CHAT_DIVINATION_MARKER+'\n'+saved.prompt,results:[]} : buildChatDivinationContext({ text, selected, previous: [...nextCommitted].reverse().find(m => m.role === 'model' || m.role === 'assistant')?.divinationContext });
+        if (actual.prompt) {
+          chatDivinationContext = actual.prompt;
+          systemPrompt += `\n\n${actual.prompt}`;
+        }
+      } catch (_) {
+        systemPrompt += '\n[채팅 점술 계산 실패] 이번 메시지의 새 포국·작괘를 계산했다고 말하지 말고 계산실 이용을 안내해.';
+      }
+    }
+
     const _isPerfReduced = isPerfReduced() || isStandalonePWA();
     
     // Format conversation properly for the API (only user/assistant roles after system)
@@ -2133,6 +2161,7 @@ ${responseProfile.rule}`;
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
                   usedTools: toolsIncludedInPrompt,
+                  divinationContext: chatDivinationContext,
                   keyExerciseIndex: resolvedKeyExIndex ?? m.keyExerciseIndex
                 };
               }
@@ -2149,6 +2178,7 @@ ${responseProfile.rule}`;
                 channels: options?.channels,
                 mode: options?.mode,
                 usedTools: toolsIncludedInPrompt,
+                  divinationContext: chatDivinationContext,
                 keyExerciseIndex: resolvedKeyExIndex
               });
             }
@@ -2285,7 +2315,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
@@ -2310,7 +2340,8 @@ ${responseProfile.rule}`;
                   channel: options?.channel || m.channel,
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
-                  usedTools: [],
+                  usedTools: chatDivinationContext ? toolsIncludedInPrompt : [],
+                  divinationContext: chatDivinationContext,
                 };
               }
               return m;
@@ -2325,7 +2356,8 @@ ${responseProfile.rule}`;
                 channel: options?.channel,
                 channels: options?.channels,
                 mode: options?.mode,
-                usedTools: [],
+                usedTools: chatDivinationContext ? toolsIncludedInPrompt : [],
+                divinationContext: chatDivinationContext,
               });
             }
             saveUnifiedMessagesSafely(updated);

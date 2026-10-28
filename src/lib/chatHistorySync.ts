@@ -22,6 +22,7 @@ export interface UnifiedMessage {
   channels?: string[];
   mode?: string;
   usedTools?: string[];
+  divinationContext?: string;
 }
 
 export const STORAGE_KEYS = {
@@ -274,6 +275,7 @@ export function mergeUnifiedMessages(
         persona: msg.persona || existing.persona,
         role: existing.role || msg.role,
         usedTools: msg.usedTools || existing.usedTools,
+        divinationContext: msg.divinationContext || existing.divinationContext,
       });
     }
   });

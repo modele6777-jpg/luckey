@@ -2051,7 +2051,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     } else if (isMaster) {
       const masterContext = `[7대 채널 올인원 PRO 마스터 풀가동 — 15대 운명학 도구 전원 총동원 & 비교 분석 모드]
 - 7대 테마에 배정된 동서양 15가지 운명학 도구(프롤로그[태을신수·토정비결], 오렌지[홍국기문·육임·구성학], 트리니티[사주·점성술·자미두수·타로], 아우라[마하보테·태국점성술], 블루버드[숙요·베딕], 뮤즈[카발라·타로], 에필로그[주역·베딕])를 단 하나도 빠짐없이 전원 총동원합니다.
-- 7대 테마별로 묶어 15개 도구의 관점을 각각 비교 분석한 뒤, 15개 도구가 만장일치로 가리키는 공통 결론과 특이 변수를 도출해 명쾌한 마스터 해답을 제공해 줘.`;
+- 7대 테마별로 묶어 15개 도구의 관점을 각각 비교 분석한 뒤, 실제 계산값이 제공된 도구들의 공통점과 차이를 비교해 줘. 미산출 도구를 계산했다고 하거나 15개 도구가 만장일치했다고 주장하지 마.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
       targetPersona = 'lucy';
     } else if (isSyn) {

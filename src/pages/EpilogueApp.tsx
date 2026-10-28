@@ -1,3 +1,4 @@
+const DivinationLab = React.lazy(() => import('@/components/trinity/DivinationLab'));
 import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
@@ -1000,7 +1001,7 @@ export default function EpilogueApp() {
           <div className="space-y-4 animate-in fade-in duration-300">
             <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-200/90 font-sans leading-relaxed flex items-center gap-2.5">
               <Sparkles size={16} className="text-yellow-400 shrink-0" />
-              <span>입력하신 생년월일과 시간을 기반으로 산출된 실시간 천문 사주 카드입니다.</span>
+              <span>입력하신 생년월일과 시간을 기반으로 산출됩니다. 저장된 프로필의 같은 계산 자료를 루시·루시프로 상담에서도 활용합니다.</span>
             </div>
             <SajuCardView
               profile={{
@@ -1093,6 +1094,7 @@ export default function EpilogueApp() {
           <EpilogueDiaryView />
         ) : (
           <div className="prism-page-content w-full mx-auto px-3 sm:px-6 pt-4 space-y-6">
+            <React.Suspense fallback={<p className="text-sm opacity-60">계산실 준비 중…</p>}><DivinationLab profile={{basic:{...basic,gender:basic.gender||undefined},fate,music,psych,art}} /></React.Suspense>
             {/* Step Sub-Pills for Profile */}
             <div className="flex items-center justify-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
               {SECTIONS.map((item, idx) => {
