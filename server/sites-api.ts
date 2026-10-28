@@ -1,3 +1,4 @@
+import { stripInternalSpeechDirectives } from '../src/utils/speechText';
 import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm';
 import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog';
 import { handleSitesGeminiChat } from '../scripts/sites-gemini-chat.mjs';
@@ -185,10 +186,11 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
       return json({ audioContent: bytesToBase64(bytes), encoding: 'wav', sampleRate: 22050, durationSec: 48, trackKey: input.trackKey });
     }
     if (route === '/api/ai/tts') {
-      const speech = required(body.text, '낭독할 문장', 4000);
+      const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
       const voice = ['Kore', 'Aoede', 'Puck', 'Charon', 'Fenrir', 'Leda', 'Zephyr'].includes(body.voice) ? body.voice : 'Kore';
       const media = await generateMedia(request, env, fetchApi, env.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts', {
-        contents: [{ parts: [{ text: `다음 텍스트만 자연스러운 한국어 대화체로 읽어 주세요. 따뜻하고 편안한 성인 여성의 목소리로, 과장된 애교나 연극조 없이 말하세요. 문장과 문장 사이에는 짧게 쉬고, 낱말을 하나씩 끊거나 음높이를 인위적으로 높이지 마세요. 원문을 생략하거나 설명을 덧붙이지 마세요.\n${speech}` }] }],
+        // Pass only the utterance: instructions in the text part can themselves be spoken.
+        contents: [{ parts: [{ text: speech }] }],
         generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
       });
       if (/^audio\/(?:x-)?wav(?:;|$)/i.test(media.mimeType)) {

@@ -8,9 +8,19 @@
  *  4. Markdown/Symbol/Unit/Acronym phonetization for smooth listening
  */
 
+/** Remove explicit internal control blocks, without deleting ordinary discussion of prompts. */
+export function stripInternalSpeechDirectives(text: string): string {
+  return String(text || '')
+    .replace(/<(think|analysis|system|developer|internal|instructions)(?:\s[^>]*)?>[\s\S]*?(?:<\/\1\s*>|$)/gi, ' ')
+    .replace(/```(?:system|developer|prompt|instructions|internal|analysis)\s*\n[\s\S]*?(?:```|$)/gi, ' ')
+    .replace(/\[(SYSTEM|DEVELOPER|INTERNAL|PROMPT|INSTRUCTIONS|ANALYSIS)\]([\s\S]*?)(?:\[\/\1\]|$)/gi, ' ')
+    .replace(/\[(?:SYSTEM|DEVELOPER|INTERNAL|PROMPT|INSTRUCTIONS|ANALYSIS|EMOTION|SUGGESTIONS|TOOL|IMAGE|STAGE|SOUL_UPDATE|CARD_DRAWN|YOUTUBE)\s*:[\s\S]*?(?:\]|$)/gi, ' ')
+    .trim();
+}
+
 export function prepareNaturalSpeechText(text: string): string {
   if (!text) return "";
-  let clean = String(text);
+  let clean = stripInternalSpeechDirectives(text);
 
   // 1. Remove [SUGGESTIONS: ...] blocks (including unclosed trailing blocks) and system/media directives
   clean = clean.replace(/\[SUGGESTIONS\s*:[\s\S]*?(?:\]|$)/gi, "");

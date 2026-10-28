@@ -35,6 +35,7 @@ test('TTS wraps PCM in a playable WAV for both narration engines', async () => {
   const response = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요', voice: 'Aoede' }), env, (async (_url, options) => {
     const payload = JSON.parse(options.body);
     assert.equal(payload.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Aoede');
+    assert.deepEqual(payload.contents, [{ parts: [{ text: '안녕하세요' }] }], 'only the literal reply is sent to the voice model, no spoken instruction prefix');
     return Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;codec=pcm;rate=24000', data: 'AAAAAA==' } }] } }] });
   }) as any);
   const result: any = await response!.json();
@@ -159,4 +160,17 @@ test('TTS accepts the actual packaged WAV response from the current model unchan
   assert.deepEqual(Buffer.from(result.audioContent, 'base64'), wav);
   const bad = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요' }), env, (async () => Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/wav', data: 'AAAAAA==' } }] } }] })) as any);
   assert.equal(bad?.status, 502);
+});
+
+
+test('TTS removes explicit internal instructions server-side before calling the provider', async () => {
+  let called = 0;
+  const fetcher = async (_url: any, options: any) => {
+    called++;
+    assert.equal(JSON.parse(options.body).contents[0].parts[0].text, '안녕하세요.');
+    return Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;rate=24000', data: 'AAAAAA==' } }] } }] });
+  };
+  assert.equal((await handleSitesApi(request('/api/ai/tts', { text: '<system>명령문</system>안녕하세요.' }), env, fetcher as any))?.status, 200);
+  assert.equal((await handleSitesApi(request('/api/ai/tts', { text: '<system>명령문만</system>' }), env, fetcher as any))?.status, 400);
+  assert.equal(called, 1, 'instruction-only text must not create provider audio');
 });
