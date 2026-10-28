@@ -14,7 +14,7 @@ const routes = new Set([
   '/api/muse/artwork-image/proxy', '/api/health',
 ]);
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
-class ApiError extends Error { constructor(public status: number, message: string) { super(message); } }
+class ApiError extends Error { constructor(public status: number, message: string, public retryAfterSeconds?: number, public code?: string) { super(message); } }
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 const keyFor = (env: Runtime) => text(env.gemini || env.GEMINI_API_KEY || env.GOOGLE_GENAI_API_KEY);
 const required = (value: unknown, label: string, max = 12000) => {
@@ -90,8 +90,24 @@ async function generateMedia(request: Request, env: Runtime, fetchApi: Fetcher, 
     });
   } catch { throw new ApiError(504, '미디어 생성 연결 시간이 초과되었습니다. 다시 시도해 주세요.'); }
   if (!response.ok) {
-    await response.body?.cancel();
     const status = response.status;
+    if (status === 429) {
+      let provider: any = null;
+      try { provider = await response.json(); } catch (_) {}
+      const details = Array.isArray(provider?.error?.details) ? provider.error.details : [];
+      const retry = details.find((item: any) => String(item?.['@type'] || '').endsWith('RetryInfo'));
+      const duration = /^([0-9]+(?:\.[0-9]+)?)s$/.exec(String(retry?.retryDelay || ''));
+      const header = response.headers.get('Retry-After');
+      const seconds = header && /^\d+(?:\.\d+)?$/.test(header) ? Number(header)
+        : header && Number.isFinite(Date.parse(header)) ? (Date.parse(header) - Date.now()) / 1000
+        : duration ? Number(duration[1]) : 15;
+      const violations = details.flatMap((item: any) => Array.isArray(item?.violations) ? item.violations : []);
+      const exhausted = violations.some((item: any) => /per.?day|daily/i.test(String(item?.quotaId || item?.quotaMetric || '')) || String(item?.quotaValue) === '0');
+      if (exhausted) throw new ApiError(429, 'AI 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정 확인이 필요합니다.', undefined, 'MEDIA_QUOTA_EXHAUSTED');
+      const retryAfter = Math.max(1, Math.min(86400, Math.ceil(seconds)));
+      throw new ApiError(429, `AI 생성 요청이 일시적으로 제한됐습니다. 약 ${retryAfter}초 뒤 다시 눌러 주세요.`, retryAfter, 'MEDIA_RATE_LIMIT');
+    }
+    await response.body?.cancel();
     throw new ApiError([400, 401, 403, 404, 429].includes(status) ? status : 502,
       status === 429 ? '미디어 생성 사용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.'
         : status === 401 || status === 403 ? 'Gemini 미디어 모델 사용 권한을 확인해 주세요.'
@@ -278,7 +294,11 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     const answer = await chat(request, env, fetchApi, messages, Boolean(body.responseSchema));
     return json({ text: typeof answer === 'string' ? answer : JSON.stringify(answer) });
   } catch (error) {
-    if (error instanceof ApiError) return json({ error: error.message }, error.status);
+    if (error instanceof ApiError) {
+      const response = json({ error: error.message, ...(error.code ? { code: error.code } : {}), ...(error.retryAfterSeconds ? { retryAfterSeconds: error.retryAfterSeconds } : {}) }, error.status);
+      if (error.retryAfterSeconds) response.headers.set('Retry-After', String(error.retryAfterSeconds));
+      return response;
+    }
     return json({ error: '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.' }, 502);
   }
 }

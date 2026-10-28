@@ -1615,6 +1615,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     if (isAutoTtsBusyRef.current) return;
 
     const resolvedMsgId = msgId || String(lucyMessages.length - 1);
+    setTtsError('');
     lastAutoSpokenMsgIdRef.current = resolvedMsgId;
     setPlayingMsgId(resolvedMsgId);
     isAutoTtsBusyRef.current = true;

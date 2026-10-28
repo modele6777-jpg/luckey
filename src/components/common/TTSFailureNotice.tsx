@@ -9,8 +9,13 @@ export function TTSFailureNotice() {
       const detail = (event as CustomEvent<{ message?: string }>).detail;
       if (typeof detail?.message === 'string') setMessage(detail.message);
     };
+    const onRecovered = () => setMessage('');
+    window.addEventListener('prism:tts-recovered', onRecovered);
     window.addEventListener('prism:tts-error', onError);
-    return () => window.removeEventListener('prism:tts-error', onError);
+    return () => {
+      window.removeEventListener('prism:tts-error', onError);
+      window.removeEventListener('prism:tts-recovered', onRecovered);
+    };
   }, []);
   if (!message) return null;
   return createPortal(

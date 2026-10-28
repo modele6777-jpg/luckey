@@ -174,3 +174,22 @@ test('TTS removes explicit internal instructions server-side before calling the 
   assert.equal((await handleSitesApi(request('/api/ai/tts', { text: '<system>명령문만</system>' }), env, fetcher as any))?.status, 400);
   assert.equal(called, 1, 'instruction-only text must not create provider audio');
 });
+
+test('voice rate limits preserve provider RetryInfo instead of inventing a minute', async () => {
+  let calls = 0;
+  const response = await handleSitesApi(request('/api/ai/tts', { text: '음성 한도 검증' }), env, (async () => {
+    calls++;
+    return Response.json({ error: { details: [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '7.2s' }] } }, { status: 429 });
+  }) as any);
+  assert.equal(response?.status, 429);
+  assert.equal(response?.headers.get('Retry-After'), '8');
+  assert.equal((await response!.json() as any).code, 'MEDIA_RATE_LIMIT');
+  assert.equal(calls, 1);
+});
+test('daily and zero provider quota errors do not promise recovery after a minute', async () => {
+  const response = await handleSitesApi(request('/api/ai/tts', { text: '음성 할당량 검증' }), env, (async () => Response.json({ error: { details: [{ '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaId: 'GenerateRequestsPerDay', quotaValue: '0' }] }] } }, { status: 429 })) as any);
+  assert.equal(response?.headers.get('Retry-After'), null);
+  const body = await response!.json() as any;
+  assert.equal(body.code, 'MEDIA_QUOTA_EXHAUSTED');
+  assert.match(body.error, /결제·한도/);
+});

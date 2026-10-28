@@ -107,7 +107,7 @@ function requestAIAudio(text: string, emotion?: string): Promise<TTSAudioData> {
   const existing = ttsCache.get(key);
   if (existing) return existing as Promise<TTSAudioData>;
   const pending = ttsRequestQueue.catch(() => {}).then(async () => {
-    if (Date.now() < ttsRateLimitUntil) throw new TTSAudioRequestError('AI 음성 요청 한도에 도달했습니다. 1분 뒤 다시 눌러 주세요.', 429);
+    if (Date.now() < ttsRateLimitUntil) throw new TTSAudioRequestError(`AI 음성 요청이 일시적으로 제한됐습니다. 약 ${Math.ceil((ttsRateLimitUntil - Date.now()) / 1000)}초 뒤 다시 눌러 주세요.`, 429);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 65000);
     try {
@@ -116,13 +116,18 @@ function requestAIAudio(text: string, emotion?: string): Promise<TTSAudioData> {
         body: JSON.stringify({ text: normalizeTextForSpeech(text), voice: 'Aoede', emotion }), signal: controller.signal,
       });
       if (!response.ok) {
+        const failure = await response.json().catch(() => null);
         if (response.status === 429) {
-          const seconds = Number(response.headers.get('Retry-After'));
-          ttsRateLimitUntil = Date.now() + Math.max(60, Number.isFinite(seconds) ? seconds : 60) * 1000;
+          if (failure?.code === 'MEDIA_QUOTA_EXHAUSTED') {
+            throw new TTSAudioRequestError('AI 음성 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정 확인이 필요합니다.', 429);
+          }
+          const header = response.headers.get('Retry-After');
+          const supplied = header ? (/^\d+(?:\.\d+)?$/.test(header) ? Number(header) : (Date.parse(header) - Date.now()) / 1000) : Number(failure?.retryAfterSeconds);
+          const seconds = Math.max(1, Math.min(86400, Math.ceil(Number.isFinite(supplied) && supplied > 0 ? supplied : 15)));
+          ttsRateLimitUntil = Date.now() + seconds * 1000;
+          throw new TTSAudioRequestError(`AI 음성 요청이 일시적으로 제한됐습니다. 약 ${seconds}초 뒤 다시 눌러 주세요.`, 429);
         }
-        throw new TTSAudioRequestError(response.status === 429
-          ? 'AI 음성 요청 한도에 도달했습니다. 1분 뒤 다시 눌러 주세요.'
-          : 'AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status);
+        throw new TTSAudioRequestError('AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status);
       }
       const data = await response.json();
       if (!data?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);
@@ -313,6 +318,7 @@ export const playTTS = async (
           }),
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}),
     });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('prism:tts-recovered'));
     setTTSSessionActive(isSequenceChunk ? (ttsState.activeSentence || cleanText) : speakingSubSentence);
 
     if (data?.audioContent) {
