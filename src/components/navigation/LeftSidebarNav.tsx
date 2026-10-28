@@ -3,7 +3,6 @@ import { OPEN_NAVIGATION_MENU_EVENT, TOGGLE_NAVIGATION_MENU_EVENT } from '@/lib/
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
-  Menu,
   Sun,
   Sparkles,
   Music,
@@ -876,7 +875,7 @@ export default function LeftSidebarNav() {
     <>
       {!isOpen && <button type="button" onClick={showSidebar} aria-label="메뉴 열기" aria-controls="main-sidebar-navigation" aria-expanded={false}
         className={`page-menu-button fixed z-[398] flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur-xl transition-colors active:scale-95 ${isLight ? 'border-amber-200 bg-white/95 text-slate-700 hover:bg-amber-50' : 'border-white/15 bg-slate-950/90 text-white hover:bg-slate-900'}`}>
-        <Menu size={21} />
+        <Clover size={23} strokeWidth={1.8} aria-hidden="true" className={isLight ? 'text-emerald-600' : 'text-emerald-400'} />
       </button>}
       {!isOpen && <div className="sidebar-edge-hint" data-sidebar-edge-hint="true" data-theme={isLight ? 'light' : 'dark'} aria-hidden="true">
         <span className="sidebar-edge-hint-mist" />
