@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 
 interface LucyAuraLoaderProps {
@@ -18,17 +19,19 @@ export function LucyAuraLoader({
   fullScreen = false,
   compact = false,
 }: LucyAuraLoaderProps) {
-  return (
+  const content = (
     <div
+      data-fullscreen-loader={fullScreen || undefined}
       role="status"
       aria-label={message}
       className={`flex flex-col items-center justify-center select-none text-slate-100 overflow-hidden ${
         fullScreen
-          ? 'fixed inset-0 z-[9999] bg-[#050806] min-h-[100dvh] w-screen px-4 pt-safe pb-safe'
+          ? 'fixed inset-0 z-[9999] bg-[#050806] h-[100dvh] w-full px-4'
           : compact
           ? 'relative py-8 px-4 w-full'
           : 'relative min-h-[42vh] py-12 px-4 w-full'
       }`}
+      style={fullScreen ? { boxSizing: 'border-box', minHeight: 0, margin: 0, paddingTop: 'max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))', paddingBottom: 'max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))' } : undefined}
     >
       {/* Soft Ambient Emerald Glow */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -131,6 +134,7 @@ export function LucyAuraLoader({
       </div>
     </div>
   );
+  return fullScreen && typeof document !== 'undefined' ? createPortal(content, document.body) : content;
 }
 
 export default LucyAuraLoader;
