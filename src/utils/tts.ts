@@ -504,7 +504,7 @@ export const playTTSInChunks = async (
   setTTSSessionActive(initialSentence);
   updateTTSState({
     isLoading: true,
-    isSpeaking: true,
+    isSpeaking: false,
     activeText: chunks[startChunkIndex] || cleanText.slice(0, 50),
     currentSentence: initialSentence,
     activeSentence: initialSentence,
@@ -554,8 +554,8 @@ export const playTTSInChunks = async (
 
       // Single consolidated state update per chunk start (avoids duplicate back-to-back React renders)
       updateTTSState({
-        isLoading: false,
-        isSpeaking: true,
+        isLoading: true,
+        isSpeaking: false,
         activeText: currentChunkText,
         currentSentence: firstSub,
         activeSentence: firstSub,

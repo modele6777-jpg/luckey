@@ -741,6 +741,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const [modeSwitchToast, setModeSwitchToast] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
+  const [ttsError, setTtsError] = useState('');
+  const manualTtsRunRef = useRef(0);
+  const manualTtsActiveRef = useRef(false);
   const [ttsInfo, setTtsInfo] = useState({
     isSpeaking: false,
     isLoading: false,
@@ -1606,6 +1609,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const pageMountedAtRef = useRef<number>(Date.now());
 
   const triggerAutoTts = useCallback(async (textToSpeak: string, msgId?: string) => {
+    if (manualTtsActiveRef.current) return;
     if ((!isAutoTtsRef.current && !isVoiceModeRef.current) || !textToSpeak || !textToSpeak.trim()) return;
     if (msgId && lastAutoSpokenMsgIdRef.current === msgId) return;
     if (isAutoTtsBusyRef.current) return;
@@ -1630,8 +1634,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       }
     } catch (ttsErr) {
       console.warn('[Auto-TTS] Voice playback error:', ttsErr);
+      setTtsError(ttsErr instanceof Error ? ttsErr.message : 'AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.');
     } finally {
-      setPlayingMsgId(null);
+      if (!manualTtsActiveRef.current) setPlayingMsgId(null);
       isAutoTtsBusyRef.current = false;
     }
   }, [lucyMessages.length]);
@@ -1678,7 +1683,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         hasGreetingSpokenRef.current = false;
         setIsGreetingPendingTap(true);
       } finally {
-        if (!isDisposed) {
+        if (!isDisposed && !manualTtsActiveRef.current) {
           setPlayingMsgId(null);
         }
       }
@@ -2298,18 +2303,33 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     setTimeout(() => setCopiedId(null), 1500);
   };
 
-  const handleVoicePlay = (id: string, text: string, _voice?: string) => {
+  const handleVoicePlay = async (id: string, text: string, _voice?: string) => {
     unlockAudioPlayback();
     primeTTSAudioElement();
+    const run = ++manualTtsRunRef.current;
+    setTtsError('');
     lastAutoSpokenMsgIdRef.current = id;
     const clean = normalizeTextForSpeech(text);
     if (playingMsgId === id && (ttsInfo.isSpeaking || ttsInfo.isLoading)) {
+      manualTtsActiveRef.current = false;
       stopTTS();
       setPlayingMsgId(null);
-    } else {
-      stopTTS();
+      return;
+    }
+    manualTtsActiveRef.current = true;
+    stopTTS();
+    try {
+      // Starting a sequence emits an idle reset first. Assign its owner after that reset.
+      const playback = playTTSInChunks(clean, 'Aoede', 220, undefined, undefined, { skipCompletionChime: true });
       setPlayingMsgId(id);
-      playTTSInChunks(clean, 'Aoede', 110, undefined, undefined, { skipCompletionChime: true, isUserToggleClick: true });
+      await playback;
+    } catch (error) {
+      if (manualTtsRunRef.current === run) setTtsError(error instanceof Error ? error.message : 'AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.');
+    } finally {
+      if (manualTtsRunRef.current === run) {
+        manualTtsActiveRef.current = false;
+        setPlayingMsgId(null);
+      }
     }
   };
 
@@ -2949,6 +2969,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {ttsError && <div role="alert" className="flex items-center justify-between gap-2 rounded-lg border border-amber-400/40 bg-amber-100 px-3 py-2 text-xs text-amber-950">
+            <span>{ttsError}</span>
+            <button type="button" aria-label="음성 오류 안내 닫기" onClick={() => setTtsError('')}>닫기</button>
+          </div>}
 
           {/* 🔊 실시간 루시 음성 재생 바 (현재 말하는 중일 때 즉시 멈춤 지원) */}
           <AnimatePresence>

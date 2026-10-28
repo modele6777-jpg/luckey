@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { configureAmbientAudioSession, configureSpeechAudioSession, configurePlaybackAudioSession, initTTSAudioLifecycle, primeTTSAudioElement, playTTSAudio, pauseTTSAudio, resumeTTSAudio, stopTTSAudio, isTTSAudioPlaying } from '../src/lib/audio';
+import { getSharedAudioContext, configureAmbientAudioSession, configureSpeechAudioSession, configurePlaybackAudioSession, initTTSAudioLifecycle, primeTTSAudioElement, playTTSAudio, pauseTTSAudio, resumeTTSAudio, stopTTSAudio, isTTSAudioPlaying } from '../src/lib/audio';
 import { initTTSSessionHandlers, setTTSSessionActive, clearTTSSession } from '../src/lib/ttsMediaSession';
 
 test('app entry, TTS priming, playback, pause and resume preserve a mixable session without native media playback', async () => {
@@ -51,6 +51,10 @@ test('app entry, TTS priming, playback, pause and resume preserve a mixable sess
     await assert.rejects(playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm'), /음성 출력이 중단/);
     assert.equal(sources.length, sourceCount, 'a blocked audio context must not silently start an inaudible source');
     contextInstance.state = 'running';
+    contextInstance.state = 'closed';
+    const recovered = getSharedAudioContext();
+    assert.equal(contexts, 2, 'a closed browser audio context must be recreated for later speech');
+    assert.equal(recovered.state, 'running');
     initTTSSessionHandlers(() => {}); setTTSSessionActive('test'); clearTTSSession();
     assert.equal(mediaClaims, 0, 'external music keeps OS media controls');
     assert.equal(nativePlayers, 0);

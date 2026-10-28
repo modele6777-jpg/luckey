@@ -34,7 +34,7 @@ export function getSharedAudioContext(): AudioContext {
   // 🌟 외부 음악(멜론, 스포티파이 등)과 믹싱 공존하도록 항상 ambient 세션 보장
   configureAmbientAudioSession();
 
-  if (!sharedAudioCtx) {
+  if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     try {
       sharedAudioCtx = new AudioContextClass({ latencyHint: 'playback' });
