@@ -1328,7 +1328,6 @@ export default function OrangeApp() {
          <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
             <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/')}>
                <h1><LucKeyLogoText /></h1>
-               <p className="text-[8px] md:text-[9px] text-white/40 uppercase tracking-widest font-bold font-sans leading-none mt-0.5">ORANGE • IDEA SANCTUARY</p>
             </div>
          </div>
       </motion.div>

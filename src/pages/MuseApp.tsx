@@ -1515,9 +1515,6 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
             <h1>
               <LucKeyLogoText />
             </h1>
-            <p className="text-[8px] md:text-[9px] text-white/40 uppercase tracking-widest font-bold font-sans leading-none mt-0.5">
-              MUSE • CREATIVE SANCTUARY
-            </p>
           </div>
         </div>
       </motion.div>

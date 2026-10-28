@@ -1039,9 +1039,6 @@ export default function EpilogueApp() {
             <h1>
               <LucKeyLogoText />
             </h1>
-            <p className="text-[8px] md:text-[9px] text-purple-300/60 uppercase tracking-widest font-bold font-sans leading-none mt-0.5">
-              EPILOGUE • SOUL SANCTUARY
-            </p>
           </div>
         </div>
       </motion.div>

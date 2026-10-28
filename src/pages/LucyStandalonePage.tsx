@@ -2413,9 +2413,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                   >
                     <button type="button" onClick={() => navigate(pro ? LUCY_PRO_PATH : '/')} title={pro ? 'Lucy Pro' : 'Lucy 메인 홈'} className="cursor-pointer">{pro ? 'Lucy Pro' : 'Lucy'}</button>
                   </h1>
+                  {!pro && <>
                   <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/20 text-indigo-600 dark:text-indigo-200 border border-indigo-200/60 dark:border-indigo-400/30 flex items-center gap-1 shrink-0">
                     <Sparkles size={10} className="text-indigo-500 dark:text-indigo-300 animate-spin" />
-                    {pro ? '마스터 고정' : 'AI 모드'}
+                    AI 모드
                   </span>
                   {activeChannels.length === ALL_CHANNELS.length ? (
                     <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs truncate max-w-full">
@@ -2432,17 +2433,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       {autoDetectedTitle}
                     </span>
                   ) : null}
+                  </>}
                 </div>
-                <p
-                  className={`text-[10px] sm:text-[11px] font-medium truncate ${
-                    isLight ? 'text-slate-500' : 'text-white/80'
-                  }`}
-                  style={{ color: isLight ? '#64748b' : 'rgba(255, 255, 255, 0.82)' }}
-                >
-                  {autoDetectedTitle
-                    ? `${autoDetectedTitle} · 질문 맥락에 맞춰 최적 지능 자동 가동 중`
-                    : '질문 맥락에 맞춰 단일 채널·융합 지능이 자동 전환됩니다'}
-                </p>
+
               </div>
             </div>
           </div>

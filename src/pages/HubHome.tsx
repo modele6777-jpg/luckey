@@ -551,9 +551,6 @@ export default function HubHome() {
             <h1>
               <LucKeyLogoText />
             </h1>
-            <p className="text-[8px] md:text-[9px] text-slate-500 dark:text-white/50 uppercase tracking-widest font-bold font-sans leading-none mt-0.5">
-              PROLOGUE • INTEGRATED HUB
-            </p>
           </div>
         </div>
       </motion.div>
