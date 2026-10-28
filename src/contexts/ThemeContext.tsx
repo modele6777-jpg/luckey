@@ -24,6 +24,8 @@ export function resolveChannelThemeFromPath(pathname?: string): ResolvedTheme {
   const raw = pathname ?? (typeof window !== "undefined" ? window.location.pathname : "/");
   const clean = (raw || "/").split("?")[0].split("#")[0].toLowerCase();
 
+  if (clean === "/chat/pro") return "light";
+
   if (
     clean === "/key" ||
     clean.startsWith("/key/") ||

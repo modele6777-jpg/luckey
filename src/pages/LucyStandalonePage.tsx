@@ -1764,19 +1764,20 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       document.head.appendChild(themeColorTag);
       didCreateThemeTag = true;
     }
-    themeColorTag.setAttribute('content', '#070b20');
+    const chatBackground = pro ? '#ffffff' : '#070b20';
+    themeColorTag.setAttribute('content', chatBackground);
     const previousLucyTheme = document.documentElement.getAttribute('data-lucy-theme');
-    document.documentElement.setAttribute('data-lucy-theme', 'starlight');
+    document.documentElement.setAttribute('data-lucy-theme', pro ? 'white' : 'starlight');
 
     // 📱 앱(PWA) 모드에서 상하단 안전영역(노치/홈바)이 어두운 body 배경으로 비쳐 회색으로 보이는 현상 방지
     const prevHtmlBg = document.documentElement.style.background;
     const prevBodyBg = document.body.style.background;
     const prevHtmlBgColor = document.documentElement.style.backgroundColor;
     const prevBodyBgColor = document.body.style.backgroundColor;
-    document.documentElement.style.background = '#070b20';
-    document.body.style.background = '#070b20';
-    document.documentElement.style.backgroundColor = '#070b20';
-    document.body.style.backgroundColor = '#070b20';
+    document.documentElement.style.background = chatBackground;
+    document.body.style.background = chatBackground;
+    document.documentElement.style.backgroundColor = chatBackground;
+    document.body.style.backgroundColor = chatBackground;
 
     return () => {
       document.title = prevTitle;
@@ -2329,22 +2330,22 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   return (
     <div
-      className={`lucy-chat-shell lucy-night h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-300 ${
+      className={`lucy-chat-shell ${pro ? 'lucy-pro-white' : 'lucy-night'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-300 ${
         isLight ? 'bg-[#faf7f2] text-slate-800' : 'bg-transparent text-white'
       }`}
       style={{
-        backgroundColor: isLight ? '#faf7f2' : undefined,
+        backgroundColor: pro ? '#ffffff' : isLight ? '#faf7f2' : undefined,
         color: isLight ? '#1e293b' : '#ffffff',
         overflowX: 'hidden',
         maxWidth: '100vw',
         touchAction: 'pan-y',
       }}
     >
-      <div className="lucy-starfield" aria-hidden="true">
+      {!pro && <div className="lucy-starfield" aria-hidden="true">
         <div className="lucy-stars lucy-stars-distant" />
         <div className="lucy-stars lucy-stars-bright" />
         <div className="lucy-starlight-veil" />
-      </div>
+      </div>}
       {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>
         {(modeSwitchToast || autoTtsToast) && (
@@ -2767,7 +2768,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                             : 'lucy-starlight-user bg-indigo-600/90 border border-indigo-400/30 text-white rounded-tr-xs font-sans shadow-sm'
                         }`}
                         style={{
-                          backgroundColor: isLight ? '#fef3c7' : undefined,
+                          backgroundColor: pro ? '#f1f5f9' : isLight ? '#fef3c7' : undefined,
                           color: isLight ? '#0f172a' : '#ffffff',
                         }}
                       >
@@ -2832,7 +2833,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       }
                       isLight={isLight}
                       variant="standalone"
-                      theme="starlight"
+                      theme={pro ? 'default' : 'starlight'}
                       playingMsgId={playingMsgId}
                       ttsInfo={ttsInfo}
                       copiedId={copiedId}

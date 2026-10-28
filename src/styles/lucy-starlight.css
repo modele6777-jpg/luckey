@@ -138,3 +138,18 @@ html[data-lucy-theme='starlight'] .prism-app-shell {
 @media (prefers-reduced-motion: reduce) {
   .lucy-stars-bright { animation: none; opacity: .65; }
 }
+
+html[data-lucy-theme='white'] { --lucy-page-background: #fff; }
+
+/* Lucy Pro overrides the legacy warm-light rules only on its own route. */
+html.light.in-lucy-chat[data-lucy-theme='white'],
+html.light[data-lucy-theme='white'] body.in-lucy-chat,
+html.light.in-lucy-chat[data-lucy-theme='white'] #root,
+html.light.in-lucy-chat[data-lucy-theme='white'] .prism-app-shell { background: #fff !important; background-color: #fff !important; }
+html.light .lucy-chat-shell.lucy-pro-white { isolation: isolate; color-scheme: light; color: #0f172a; background: #fff !important; }
+html.light .lucy-pro-white .lucy-chat-header,
+html.light .lucy-pro-white .lucy-chat-footer { background: #fffffff5 !important; border-color: #e2e8f0 !important; box-shadow: 0 2px 14px #0f172a06; }
+html.light .lucy-pro-white .lucy-assistant-bubble { border-color: #e2e8f0 !important; box-shadow: 0 4px 18px #0f172a08; }
+html.light .lucy-pro-white .lucy-user-bubble { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+html.light .lucy-pro-white .lucy-starlight-composer { background: #fff; border-color: #cbd5e1; }
+.lucy-pro-white :is(input, textarea)::placeholder { color: #64748b; }

@@ -557,8 +557,8 @@
   html.light body.in-lucy-chat,
   html.light.in-lucy-chat #root,
   html.light.in-lucy-chat .prism-app-shell {
-    background: #faf6f0 !important;
-    background-color: #faf6f0 !important;
+    background: var(--lucy-page-background, #faf6f0) !important;
+    background-color: var(--lucy-page-background, #faf6f0) !important;
   }
 
   html.dark.in-lucy-chat,
