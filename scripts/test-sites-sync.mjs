@@ -24,6 +24,25 @@ pc.edit('userProfile',{basic:{nickname:'PC 수정',birthCity:'Seoul'}});mobile.e
 pc.edit('chat_history_unified_v3',[{id:'pc-message',content:'PC',timestamp:1}]);mobile.edit('chat_history_unified_v3',[{id:'mobile-message',content:'Mobile',timestamp:2}]);await pc.client.flush();await mobile.client.flush();await settle(pc,mobile);assert.deepEqual(pc.read('chat_history_unified_v3').map(m=>m.id),['pc-message','mobile-message']);
 mobile.edit('chat_history_unified_v3',[{id:'mobile-message',content:'Mobile',timestamp:2}]);await settle(pc,mobile);assert.deepEqual(pc.read('chat_history_unified_v3').map(m=>m.id),['mobile-message']);
 pc.edit('luckey_user_goals_v2',[{id:'goal-1',title:'운동'}]);await settle(pc,mobile);pc.edit('luckey_user_goals_v2',[]);await settle(pc,mobile);assert.deepEqual(mobile.read('luckey_user_goals_v2'),[]);
+// Pro records and drafts travel independently of regular Lucy, including guest/device keys.
+const proKey='lucy_pro_history_v1:device';
+pc.edit(proKey,{day:'2026-10-28',messages:[{id:'pro-pc',content:'Pro PC',timestamp:3}]});await settle(pc,mobile);
+assert.equal(mobile.read(proKey).messages[0].content,'Pro PC');
+assert.equal(mobile.read('chat_history_unified_v3')[0].content,'Mobile');
+mobile.edit(proKey,{day:'2026-10-28',messages:[...mobile.read(proKey).messages,{id:'pro-mobile',content:'Pro Mobile',timestamp:4}]});await settle(pc,mobile);
+assert.equal(pc.read(proKey).messages.length,2);
+for(const key of ['lucy_chat_draft_v1:lucy:device','lucy_chat_draft_v1:lucy-pro:device','aura_one_minute_meditation_history_guest','art_history','secret_messages','letting_go_history','resonance_trinity_last_data','prism_trinity_oracle_session_healing_2026-10-28']) {
+  assert.equal(syncKey(key),key);mobile.edit(key,{text:key});await settle(pc,mobile);assert.equal(pc.read(key).text,key);
+}
+for(const key of ['lucy_injected_auto_send','prism_pending_handbook_theme','prism_active_toss_payload'])assert.equal(syncKey(key),null);
+// A rejected oversized record must not block smaller records behind it.
+pc.edit('art_large_record',{text:'x'.repeat(1500001)});pc.edit('art_small_record',{text:'keep saving'});await pc.client.flush();
+assert.equal(pc.client.pending.has('art_large_record'),true);assert.equal(pc.client.pending.has('art_small_record'),false);
+await mobile.client.poll();assert.equal(mobile.read('art_small_record').text,'keep saving');
+pc.edit('art_large_record',{text:'resized'});await settle(pc,mobile);assert.equal(mobile.read('art_large_record').text,'resized');
+// Closing a page can flush small writes while keeping large ones in the outbox.
+let keepalive=false;const ordinaryFetcher=pc.client.fetcher;pc.client.fetcher=(url,options)=>{keepalive=options.keepalive===true;return ordinaryFetcher(url,options);};
+pc.edit('art_unload_record',{text:'leaving'});await pc.client.flush({keepalive:true});assert(keepalive);pc.client.fetcher=ordinaryFetcher;
 mobile.edit('userProfile',null);await settle(pc,mobile);assert.equal(pc.read('userProfile'),null);
 mobile.online=false;mobile.edit('epilogue_diary_history',[{id:'offline',text:'오프라인 메모'}]);await mobile.client.flush();assert.ok(mobile.client.pending.size);const restored=device('same-account',mobile.storage);await settle(pc,restored);assert.equal(pc.read('epilogue_diary_history')[0].text,'오프라인 메모');assert.equal(restored.client.pending.size,0);
 const stranger=device('another-account');await settle(stranger);assert.equal(stranger.read('epilogue_diary_history'),null);
@@ -41,7 +60,12 @@ pc.account='another-account';await pc.client.poll();assert.ok(pc.client.blocked)
 // The app's actual HTML exposes a plain-object StorageShield facade.
 class FakeEvent extends Event {constructor(type,options={}){super(type);Object.assign(this,options);}}
 const native=new MemoryStorage(),facade={get length(){return native.length;},key:i=>native.key(i),getItem:k=>native.getItem(k),setItem:(k,v)=>native.setItem(k,v),removeItem:k=>native.removeItem(k)};
+native.setItem('prism_user_avatar_permanent','data:image/jpeg;base64,PRIMARY_PHOTO');native.setItem('prism_user_avatar_backup','data:image/jpeg;base64,STALE_BACKUP');
 const w=new EventTarget();Object.assign(w,{localStorage:facade,Storage:MemoryStorage,StorageEvent:FakeEvent,CustomEvent:FakeEvent,fetch:restored.fetcher,navigator:{onLine:true},document:Object.assign(new EventTarget(),{visibilityState:'visible'}),setInterval:()=>0,setTimeout:()=>0});const browser=startSitesSync(w);for(let attempt=0;!browser.ready&&attempt<100;attempt++)await new Promise(setImmediate);assert.ok(browser.ready,"browser sync did not initialize");facade.setItem('userProfile','{"basic":{"nickname":"StorageShield"}}');await browser.flush();await restored.client.poll();assert.equal(restored.read('userProfile').basic.nickname,'StorageShield');
+assert.equal(restored.storage.getItem('prism_user_avatar_permanent'),'data:image/jpeg;base64,PRIMARY_PHOTO');
+facade.setItem('prism_user_avatar_backup','data:image/jpeg;base64,PHOTO_FROM_PHONE');await browser.flush();await restored.client.poll();assert.equal(restored.storage.getItem('prism_user_avatar_permanent'),'data:image/jpeg;base64,PHOTO_FROM_PHONE');
+assert.equal(syncKey('prism_user_avatar_backup'),'prism_user_avatar_permanent');
+assert.equal(startSitesSync({top:{}}),undefined,'embedded Key channel must use its parent coordinator');
 // Remote removals must invalidate SafeStorage's in-memory fallback too.
 const {stripTypeScriptTypes}=await import('node:module');const vm=await import('node:vm');
 const mirroredWindow=new EventTarget();Object.assign(mirroredWindow,{localStorage:new MemoryStorage(),sessionStorage:new MemoryStorage()});
@@ -49,4 +73,6 @@ const safeCode=stripTypeScriptTypes(fs.readFileSync(new URL('../src/utils/safeSt
 const sandbox={window:mirroredWindow};vm.runInNewContext(safeCode+';globalThis.safe=safeLocalStorage;',sandbox);
 sandbox.safe.setItem('userProfile','old cached profile');mirroredWindow.localStorage.removeItem('userProfile');
 mirroredWindow.dispatchEvent(new FakeEvent('prism:sites_storage_written',{detail:{key:'userProfile',value:null,canonicalKey:'userProfile'}}));assert.equal(sandbox.safe.getItem('userProfile'),null);
-console.log('Passed: PC↔mobile updates, concurrent profile edits, chat append/delete, empty lists, tombstones, offline reload, in-flight edits, account isolation, origin/auth validation, incremental polling and StorageShield integration.');
+mirroredWindow.dispatchEvent(new FakeEvent('prism:sites_storage_written',{detail:{key:'prism_user_avatar_permanent',value:'new remote photo',canonicalKey:'prism_user_avatar_permanent'}}));assert.equal(mirroredWindow.sessionStorage.getItem('prism_user_avatar_session'),'new remote photo');
+mirroredWindow.dispatchEvent(new FakeEvent('prism:sites_storage_written',{detail:{key:'prism_user_avatar_permanent',value:null,canonicalKey:'prism_user_avatar_permanent'}}));assert.equal(mirroredWindow.sessionStorage.getItem('prism_user_avatar_session'),null);
+console.log('Passed: Pro/regular isolation and drafts, meditation/art/oracle coverage, avatar aliases, unload delivery, oversized-record isolation,  PC↔mobile updates, concurrent profile edits, chat append/delete, empty lists, tombstones, offline reload, in-flight edits, account isolation, origin/auth validation, incremental polling and StorageShield integration.');

@@ -317,6 +317,21 @@ export default function ProfilePage() {
     }
   };
 
+  // Save edits immediately on this device; debounce the shared-state transport.
+  const autoSaveSignature = React.useRef(JSON.stringify({ basic, fate, music, psych, art, relationships }));
+  useEffect(() => {
+    const fields = { basic, fate, music, psych, art, relationships };
+    const signature = JSON.stringify(fields);
+    if (signature === autoSaveSignature.current) return;
+    autoSaveSignature.current = signature;
+    const profile = mergeUserProfiles(getPersistentUserProfile() || sharedState?.userProfile, fields as UserProfile, true);
+    saveProfileToAllVaults(profile);
+    const timer = window.setTimeout(() => {
+      void updateSharedState({ userProfile: profile }, 'profile').catch(() => {});
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [basic, fate, music, psych, art, relationships, sharedState?.userProfile, updateSharedState]);
+
   const section = SECTIONS[currentSection];
   const SectionIcon = section.icon;
 

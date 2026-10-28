@@ -139,6 +139,10 @@ if (typeof window !== 'undefined') {
     const detail = (event as CustomEvent<{ key: string; value: string | null; canonicalKey: string }>).detail;
     if (!detail || typeof detail.key !== 'string') return;
     localWrapper.syncExternalChange(detail.key, detail.value);
+    if (detail.canonicalKey === 'prism_user_avatar_permanent') {
+      if (detail.value === null) sessionWrapper.removeItem('prism_user_avatar_session');
+      else sessionWrapper.setItem('prism_user_avatar_session', detail.value);
+    }
     if (detail.canonicalKey === 'userProfile') {
       if (detail.value === null) sessionWrapper.removeItem('prism_user_profile_session_vault');
       else sessionWrapper.setItem('prism_user_profile_session_vault', detail.value);

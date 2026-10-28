@@ -24,7 +24,7 @@ export class SitesSyncClient {
   }
   queue(key, value) {
     const current = this.pending.get(key);
-    if (current) current.value = value;
+    if (current) {current.value = value;delete current.rejected;}
     else {const base = this.cloud.get(key) || {value:null,revision:0};this.pending.set(key,{base:base.value,revision:base.revision,value});}
     this.persist();
   }
@@ -76,14 +76,18 @@ export class SitesSyncClient {
     } catch {this.status('offline');return false;}
     finally {this.reading = false;}
   }
-  async flush() {
+  async flush({keepalive = false} = {}) {
     if (!this.ready || this.busy || this.blocked) return; this.busy = true;
     try {
       // Bound work per cycle so another device's writes are regularly received.
-      for (const [key,pending] of [...this.pending].slice(0,20)) {
+      for (const [key,pending] of [...this.pending].filter(([,pending])=>!pending.rejected).slice(0,20)) {
         const sent = {...pending};
-        const response = await this.request({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,value:sent.value,revision:sent.revision})});
-        if (response.status !== 409 && !response.ok) {this.status(response.status === 413 ? 'record_too_large' : 'offline');break;}
+        const body = JSON.stringify({key,value:sent.value,revision:sent.revision});
+        // Browsers cap unload keepalive payloads. Large records stay in the
+        // durable outbox and resume on the next connection/open.
+        if (keepalive && new TextEncoder().encode(body).length > 60000) continue;
+        const response = await this.request({method:'POST',headers:{'Content-Type':'application/json'},body,...(keepalive ? {keepalive:true} : {})});
+        if (response.status !== 409 && !response.ok) {this.status(response.status === 413 ? 'record_too_large' : 'offline');if(response.status===413){pending.rejected=true;this.persist();continue;}break;}
         const {entry} = await response.json();
         if (!entry || entry.key !== key) throw new Error('Invalid sync acknowledgment');
         if (response.status === 409) {this.accept(entry);continue;}
@@ -101,6 +105,8 @@ export class SitesSyncClient {
 }
 
 export function startSitesSync(win) {
+  // A same-origin embedded channel shares the parent storage and coordinator.
+  if (win.top && win.top !== win) return;
   if (win.__sitesSyncStarted) return; win.__sitesSyncStarted = true;
   let storage; try {storage = win.localStorage;storage.getItem(META);} catch {return;}
   // The app's StorageShield can expose a plain-object facade instead of a
@@ -120,7 +126,8 @@ export function startSitesSync(win) {
     const values = new Map(); let newest = -1, newestProfile = -1;
     for (let i=0;i<storage.length;i++) {
       const rawKey=storage.key(i),key=syncKey(rawKey);if(!key)continue;
-      const value=storage.getItem(rawKey);if(value===null)continue;
+      let value=storage.getItem(rawKey);if(value===null)continue;
+      if(key==='prism_user_avatar_permanent') value=storage.getItem('prism_user_avatar_permanent') || value;
       if(key==='lucy_state') {let ts=0;try{ts=Number(JSON.parse(value).clientUpdatedAt)||0;}catch{}if(ts<newest)continue;newest=ts;}
       if(key==='userProfile') {let ts=0;try{const p=JSON.parse(value);ts=Number(p.updatedAt||p.completedAt)||0;}catch{}if(ts<newestProfile)continue;newestProfile=ts;}
       values.set(key,value);
@@ -128,7 +135,7 @@ export function startSitesSync(win) {
     return values;
   };
   const apply = (key,value) => {
-    const keys = key === 'lucy_state' ? [...new Set(['lucy_state_guest',...Array.from({length:storage.length},(_,i)=>storage.key(i)).filter(k=>k?.startsWith('lucy_state_'))])] : key==='userProfile' ? PROFILE_SYNC_KEYS : [key];
+    const keys = key === 'lucy_state' ? [...new Set(['lucy_state_guest',...Array.from({length:storage.length},(_,i)=>storage.key(i)).filter(k=>k?.startsWith('lucy_state_'))])] : key==='userProfile' ? PROFILE_SYNC_KEYS : key==='prism_user_avatar_permanent' ? ['prism_user_avatar_permanent','prism_user_avatar_backup'] : [key];
     let changed=false;applying=true;
     try {for(const localKey of keys) {const oldValue=storage.getItem(localKey);if(oldValue===value)continue;value===null?nativeRemove(localKey):nativeSet(localKey,value);changed=true;win.dispatchEvent(new win.CustomEvent('prism:sites_storage_written',{detail:{key:localKey,value,canonicalKey:key}}));win.dispatchEvent(new win.StorageEvent('storage',{key:localKey,oldValue,newValue:value,...(nativeStorage?{storageArea:storage}:{})}));}}
     catch {status('storage_full');}
@@ -148,6 +155,7 @@ export function startSitesSync(win) {
   win.addEventListener('storage',event=>{if((!nativeStorage||event.storageArea===storage)&&!applying&&event.key){client.changed(event.key,event.newValue);schedule();}});
   const tick = async () => {if(win.document.visibilityState==='hidden'||win.navigator.onLine===false)return;await client.poll();await client.flush();};
   win.setInterval(()=>void tick(),1000);
+  win.addEventListener('pagehide',()=>void client.flush({keepalive:true}));
   win.addEventListener('online',()=>void tick());win.addEventListener('pageshow',()=>void tick());
   win.document.addEventListener('visibilitychange',()=>{if(win.document.visibilityState==='visible')void tick();});
   void tick();

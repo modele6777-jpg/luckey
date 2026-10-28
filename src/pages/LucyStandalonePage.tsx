@@ -1,3 +1,4 @@
+import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
 import { ChatBubbleForward } from '@/components/chat/ChatBubbleForward';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
@@ -660,7 +661,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     } catch (_) {}
   }, [activeChannels]);
 
-  const [input, setInput] = useState('');
+  const [input, setInput] = useSyncedChatDraft(chatAccount, chatScope);
   const isAutoDetect = selectedMode === 'auto';
   const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';

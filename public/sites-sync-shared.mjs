@@ -3,9 +3,17 @@ export const PROFILE_SYNC_KEYS = ['userProfile','user_profile','lucy_user_profil
 export function syncKey(key) {
   if (typeof key !== 'string' || key.length > 200) return null;
   if (PROFILE_SYNC_KEYS.includes(key)) return 'userProfile';
+  if (key === 'prism_user_avatar_permanent' || key === 'prism_user_avatar_backup') return 'prism_user_avatar_permanent';
+  // These are durable conversations/results, even though their names contain
+  // device/session. Keep Pro's account-specific key separate from regular chat.
+  if (/^lucy_pro_history_v1:[^:]+(?::previous)?$/.test(key)) return key;
+  if (/^lucy_chat_draft_v1:(?:lucy|lucy-pro):[^:]+$/.test(key)) return key;
+  if (key === 'lucy_chat_session_date_v1') return key;
+  if (/^(?:prism_trinity_oracle_session_|trinity_oracle_session_)/.test(key)) return key;
   if (key === 'lucy_state' || key.startsWith('lucy_state_')) return 'lucy_state';
+  if (/(?:^|_)(?:injected|pending|target|active_toss|active_omniwarp|dragged_selection|pressing|recent_tap)(?:_|$)/i.test(key)) return null;
   if (forbidden.test(key)) return null;
-  return /^(?:userProfile$|user_profile|prism_|lucy_|luckey_|trinity_|orange_|bluebird_|heal_|muse_|epilogue_|sedona_|chat_history|calm_|rebible_|prologue_|hoponopono_|daily_|soul_)/.test(key) ? key : null;
+  return /^(?:userProfile$|user_profile|prism_|lucy_|luckey_|trinity_|orange_|bluebird_|heal_|muse_|epilogue_|sedona_|chat_history|calm_|rebible_|prologue_|hoponopono_|daily_|soul_|aura_|art_|resonance_|letting_go_|secret_)/.test(key) ? key : null;
 }
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);

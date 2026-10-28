@@ -1432,6 +1432,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const wbSearchInput = document.getElementById('wb-search-input');
   const wbFilterPills = document.querySelectorAll('.wb-pill');
 
+  // The parent sync coordinator applies PC/mobile journal updates to this origin.
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'calm_journal_records') renderWorkbook();
+  });
+
   function savePracticeToJournal() {
     if (!activePractice) return;
     const journal = JSON.parse(localStorage.getItem('calm_journal_records') || '[]');

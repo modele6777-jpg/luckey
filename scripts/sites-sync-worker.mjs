@@ -34,7 +34,8 @@ export async function handleSitesSync(request, env) {
     input = JSON.parse(new TextDecoder().decode(bytes));
   } catch {return syncJson({error:'잘못된 동기화 요청입니다.'},400);}
   const {key,value,revision} = input || {};
-  if (!key || syncKey(key) !== key || !(value === null || typeof value === 'string') || (typeof value === 'string' && new TextEncoder().encode(value).length > 1500000) || !Number.isSafeInteger(revision) || revision < 0) return syncJson({error:'잘못된 동기화 데이터입니다.'},400);
+  if (typeof value === 'string' && new TextEncoder().encode(value).length > 1500000) return syncJson({error:'개별 저장 항목이 너무 큽니다.'},413);
+  if (!key || syncKey(key) !== key || !(value === null || typeof value === 'string') || !Number.isSafeInteger(revision) || revision < 0) return syncJson({error:'잘못된 동기화 데이터입니다.'},400);
   const changed = revision === 0
     ? await env.DB.prepare('INSERT INTO sites_sync_entries (owner_id, storage_key, value, revision) VALUES (?, ?, ?, 1) ON CONFLICT (owner_id, storage_key) DO NOTHING RETURNING storage_key AS key, value, revision').bind(account,key,value).first()
     : await env.DB.prepare('UPDATE sites_sync_entries SET value = ?, revision = revision + 1 WHERE owner_id = ? AND storage_key = ? AND revision = ? RETURNING storage_key AS key, value, revision').bind(value,account,key,revision).first();
