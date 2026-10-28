@@ -1,3 +1,5 @@
+import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
+import { ChatBubbleForward } from '@/components/chat/ChatBubbleForward';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -592,6 +594,7 @@ function getCuratedPrompts(
 const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
 
 export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
+  const chatScope = pro ? 'lucy-pro' : 'lucy';
   const [, navigate] = useLocation();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -604,11 +607,23 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     personaMessages, 
     setPersonaMessages,
     isGenerating,
-    abortGenerating,
+    abortGenerating: abortNormalGenerating,
+    lucyProMessages,
+    isLucyProGenerating,
+    abortLucyProGenerating,
+    clearLucyProMessages,
     sharedState,
     updateSharedState,
     clearPersonaMessages
   } = useApp();
+
+  const abortGenerating = pro ? abortLucyProGenerating : abortNormalGenerating;
+  const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
+  const forwardBubble = useCallback((text: string) => {
+    const payload = queueChatForward(chatAccount, chatScope, text);
+    (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    navigate(payload.to === 'lucy-pro' ? LUCY_PRO_PATH : '/chat');
+  }, [chatAccount, chatScope, navigate]);
 
   const handleAbortGeneration = useCallback(() => {
     try {
@@ -756,15 +771,15 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const [autoTtsToast, setAutoTtsToast] = useState<string | null>(null);
   const lastAutoSpokenMsgIdRef = useRef<string | null>(null);
-  const hasGreetingSpokenRef = useRef<boolean>(hasSpokenDailyGreetingToday());
+  const hasGreetingSpokenRef = useRef<boolean>(hasSpokenDailyGreetingToday(chatScope));
   const [isGreetingPendingTap, setIsGreetingPendingTap] = useState(false);
 
   // 🌟 매일 '처음' 루시채팅에 들어갈 때만 인사말을 표시·낭독하기 위한 일일 최초 진입 판별
   const visitDateKeyRef = useRef<string>(getTodayDateKey());
   const isFirstVisitTodayRef = useRef<boolean>((() => {
-    const alreadyEntered = hasEnteredLucyChatToday();
+    const alreadyEntered = hasEnteredLucyChatToday(chatScope);
     if (!alreadyEntered) {
-      markLucyChatEnteredToday();
+      markLucyChatEnteredToday(chatScope);
       return true;
     }
     return false;
@@ -951,8 +966,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   // Detailed Saju Info for Soul Profile View (상담 대상자 기준으로 자동 동기화)
   const sajuInfo = useMemo(() => calculateDetailedSaju(counselingUserProfile), [counselingUserProfile]);
 
-  const lucyMessages = personaMessages?.lucy || [];
-  const isLucyGenerating = isGenerating?.lucy || false;
+  const lucyMessages = pro ? lucyProMessages : personaMessages?.lucy || [];
+  const isLucyGenerating = pro ? isLucyProGenerating : isGenerating?.lucy || false;
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
@@ -1186,6 +1201,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     return () => {
       // Prevent the outgoing chat's TTS listener from restarting its microphone.
       isVoiceModeRef.current = false;
+      isAutoTtsRef.current = false;
       voiceStateRef.current = 'idle';
       stopRecognition();
       stopTTS();
@@ -1202,10 +1218,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       visitDateKeyRef.current = todayKey;
       isFirstVisitTodayRef.current = true;
       hasGreetingSpokenRef.current = false;
-      markLucyChatEnteredToday();
+      markLucyChatEnteredToday(chatScope);
     }
 
-    setPersonaMessages((prevRecord) => {
+    if (!pro) setPersonaMessages((prevRecord) => {
       const existing = prevRecord.lucy || [];
       const stored = loadSavedUnifiedMessages();
       const currentList = mergeUnifiedMessages(existing, stored);
@@ -1218,7 +1234,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       }
 
       if (!isFirstVisitTodayRef.current) {
-        markFirstLucyVisitCompletedToday();
+        markFirstLucyVisitCompletedToday(chatScope);
       }
 
       if (JSON.stringify(existing) !== JSON.stringify(nextList)) {
@@ -1236,18 +1252,18 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     });
 
     const handleBeforeUnload = () => {
-      markFirstLucyVisitCompletedToday();
+      markFirstLucyVisitCompletedToday(chatScope);
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [setPersonaMessages, userDisplayName]);
+  }, [setPersonaMessages, userDisplayName, pro, chatScope]);
 
   // 루시 채팅에서 벗어날 때(언마운트 시) 오늘 첫 방문 완료 처리 (인사말은 제거하지 않고 유지)
   useEffect(() => {
     return () => {
-      markFirstLucyVisitCompletedToday();
+      markFirstLucyVisitCompletedToday(chatScope);
       hasUserCustomizedProfilesRef.current = false;
       try {
         sessionStorage.removeItem('lucy_chat_extra_profiles');
@@ -1626,7 +1642,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   // 🌸 매일 '처음' 루시채팅 진입 시에만 루시의 인사말 TTS 자동 재생 및 브라우저 Autoplay 언락 브릿지
   useEffect(() => {
     if (!isLucyReady || !isAutoTtsRef.current) return;
-    if (!isFirstVisitTodayRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
+    if (!isFirstVisitTodayRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday(chatScope)) return;
     if (lucyMessages.length === 0) return;
 
     // 대화 내역 중 실제 사용자 발화가 있는지 확인 (사용자 발화가 하나도 없다면 환영/인사말 상태)
@@ -1648,13 +1664,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     let isDisposed = false;
 
     const playGreetingAudio = async () => {
-      if (isDisposed || !isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
+      if (isDisposed || !isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday(chatScope)) return;
       try {
         unlockAudioPlayback();
         primeTTSAudioElement();
         setPlayingMsgId(greetingId);
         hasGreetingSpokenRef.current = true;
-        markDailyGreetingSpokenToday();
+        markDailyGreetingSpokenToday(chatScope);
         setIsGreetingPendingTap(false);
         await playTTSInChunks(cleanGreeting, 'Aoede', 110, undefined, undefined, {
           skipCompletionChime: true,
@@ -1681,7 +1697,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         hasGreetingSpokenRef.current = true;
         return;
       }
-      if (!isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday()) return;
+      if (!isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday(chatScope)) return;
       unlockAudioPlayback();
       primeTTSAudioElement();
       playGreetingAudio();
@@ -2086,6 +2102,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
+      conversationId: chatScope,
       extraSystemContext,
       customUserProfile: counselingUserProfile,
       channels: channels,
@@ -2271,6 +2288,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       window.removeEventListener('lucy-inject-message', handleDynamicInject);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isLucyReady) return;
+    const payload = takeChatForward(chatAccount, chatScope);
+    if (payload) void handleSendRef.current(forwardedChatPrompt(payload), pro ? [...ALL_CHANNELS] : undefined);
+  }, [chatAccount, chatScope, isLucyReady, pro]);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -2762,6 +2785,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                   {/* Message Bubble(s) */}
                   {isUser ? (
                     <>
+                      <ChatBubbleForward text={textContent} targetLabel={pro ? '일반 루시' : '루시 프로'} onForward={forwardBubble}>
                       <div
                         className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-colors duration-300 ${
                           isLight
@@ -2782,6 +2806,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       </div>
 
                       {/* User Action buttons: Copy & TTS */}
+                      </ChatBubbleForward>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap justify-end pr-1">
                         <button
                           onClick={() => handleCopy(msgId, textContent)}
@@ -2823,6 +2848,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     </>
                   ) : (
                     <LucyKakaoBubbleGroup
+                      onForward={forwardBubble}
+                      forwardTargetLabel={pro ? '일반 루시' : '루시 프로'}
                       msgId={msgId}
                       textContent={textContent}
                       isLatest={index === filteredMessages.length - 1}
@@ -3500,7 +3527,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 isLight ? 'bg-slate-50 border-slate-200/80 text-slate-600' : 'bg-slate-800/80 border-white/10 text-white/90'
               }`}>
                 <p>
-                  지금까지 나눈 소중한 대화 내역은 루시의 <span className="font-bold text-indigo-600 dark:text-indigo-300">영구 기억(Soul Memory) 아카이브</span>에 안전하게 요약 보존됩니다.
+                  {pro ? '루시 프로의 대화창만 비웁니다. 일반 루시의 대화 내역은 바뀌지 않습니다.' : <>일반 루시의 대화만 영구 기억 아카이브에 요약 보존한 뒤 초기화합니다. 루시 프로의 대화는 바뀌지 않습니다.</>}
                 </p>
                 <p className={isLight ? 'text-slate-500' : 'text-white/75'}>
                   대화창을 깨끗한 새 화면으로 초기화할까요?
@@ -3522,7 +3549,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                   onClick={() => {
                     abortGenerating('lucy');
                     stopTTS();
-                    clearPersonaMessages('lucy');
+                    if (pro) clearLucyProMessages();
+                    else clearPersonaMessages('lucy');
                     setIsResetConfirmOpen(false);
                     setResetToast('대화가 깨끗하게 초기화되었습니다.');
                     setTimeout(() => setResetToast(null), 3000);

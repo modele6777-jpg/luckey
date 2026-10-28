@@ -49,9 +49,11 @@ function getSavedNickname(): string {
 /**
  * 오늘 이미 루시채팅에 처음 진입했는지 여부 확인
  */
-export function hasEnteredLucyChatToday(): boolean {
+const dailyScopeKey = (key: string, scope: 'lucy' | 'lucy-pro') => scope === 'lucy-pro' ? `${key}:pro` : key;
+
+export function hasEnteredLucyChatToday(scope: 'lucy' | 'lucy-pro' = 'lucy'): boolean {
   try {
-    return safeLocalStorage.getItem(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE) === getTodayDateKey();
+    return safeLocalStorage.getItem(dailyScopeKey(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE, scope)) === getTodayDateKey();
   } catch (_) {
     return false;
   }
@@ -60,18 +62,18 @@ export function hasEnteredLucyChatToday(): boolean {
 /**
  * 오늘 루시채팅 첫 진입 기록
  */
-export function markLucyChatEnteredToday(): void {
+export function markLucyChatEnteredToday(scope: 'lucy' | 'lucy-pro' = 'lucy'): void {
   try {
-    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE, getTodayDateKey());
+    safeLocalStorage.setItem(dailyScopeKey(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE, scope), getTodayDateKey());
   } catch (_) {}
 }
 
 /**
  * 오늘 루시채팅의 첫 방문(인사말 노출 세션)이 이미 완료되었는지 여부
  */
-export function hasCompletedFirstLucyVisitToday(): boolean {
+export function hasCompletedFirstLucyVisitToday(scope: 'lucy' | 'lucy-pro' = 'lucy'): boolean {
   try {
-    return safeLocalStorage.getItem(STORAGE_KEYS.DAILY_FIRST_VISIT_DONE_DATE) === getTodayDateKey();
+    return safeLocalStorage.getItem(dailyScopeKey(STORAGE_KEYS.DAILY_FIRST_VISIT_DONE_DATE, scope)) === getTodayDateKey();
   } catch (_) {
     return false;
   }
@@ -80,20 +82,20 @@ export function hasCompletedFirstLucyVisitToday(): boolean {
 /**
  * 오늘 루시채팅 첫 방문 완료 기록 (이후 재진입 시 인사말 미노출)
  */
-export function markFirstLucyVisitCompletedToday(): void {
+export function markFirstLucyVisitCompletedToday(scope: 'lucy' | 'lucy-pro' = 'lucy'): void {
   try {
     const today = getTodayDateKey();
-    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE, today);
-    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_FIRST_VISIT_DONE_DATE, today);
+    safeLocalStorage.setItem(dailyScopeKey(STORAGE_KEYS.DAILY_FIRST_ENTRY_DATE, scope), today);
+    safeLocalStorage.setItem(dailyScopeKey(STORAGE_KEYS.DAILY_FIRST_VISIT_DONE_DATE, scope), today);
   } catch (_) {}
 }
 
 /**
  * 오늘 인사말 TTS가 이미 재생되었는지 여부
  */
-export function hasSpokenDailyGreetingToday(): boolean {
+export function hasSpokenDailyGreetingToday(scope: 'lucy' | 'lucy-pro' = 'lucy'): boolean {
   try {
-    return safeLocalStorage.getItem(STORAGE_KEYS.DAILY_GREETING_SPOKEN_DATE) === getTodayDateKey();
+    return safeLocalStorage.getItem(dailyScopeKey(STORAGE_KEYS.DAILY_GREETING_SPOKEN_DATE, scope)) === getTodayDateKey();
   } catch (_) {
     return false;
   }
@@ -102,9 +104,9 @@ export function hasSpokenDailyGreetingToday(): boolean {
 /**
  * 오늘 인사말 TTS 재생 완료 기록
  */
-export function markDailyGreetingSpokenToday(): void {
+export function markDailyGreetingSpokenToday(scope: 'lucy' | 'lucy-pro' = 'lucy'): void {
   try {
-    safeLocalStorage.setItem(STORAGE_KEYS.DAILY_GREETING_SPOKEN_DATE, getTodayDateKey());
+    safeLocalStorage.setItem(dailyScopeKey(STORAGE_KEYS.DAILY_GREETING_SPOKEN_DATE, scope), getTodayDateKey());
   } catch (_) {}
 }
 

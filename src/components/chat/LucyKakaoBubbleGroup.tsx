@@ -1,3 +1,4 @@
+import { ChatBubbleForward } from './ChatBubbleForward';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Copy, Loader2, Volume2, VolumeX } from 'lucide-react';
@@ -13,6 +14,8 @@ export function markMessageBubblesRevealed(msgId: string) {
 }
 
 interface LucyKakaoBubbleGroupProps {
+  onForward?: (text: string) => void;
+  forwardTargetLabel?: string;
   msgId: string;
   textContent: string;
   isLatest: boolean;
@@ -38,6 +41,8 @@ interface LucyKakaoBubbleGroupProps {
 export function LucyKakaoBubbleGroup({
   msgId,
   textContent,
+  onForward,
+  forwardTargetLabel = '다른 채팅',
   isLatest,
   isGenerating,
   isHistorical,
@@ -224,6 +229,7 @@ export function LucyKakaoBubbleGroup({
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               className="flex items-end gap-1.5 min-w-0 max-w-full group/bubble"
             >
+              <ChatBubbleForward text={bubbleText} targetLabel={forwardTargetLabel} onForward={onForward} disabled={isGenerating}>
               <div
                 className={`p-3.5 sm:p-4.5 text-sm sm:text-[15px] lg:text-base leading-relaxed select-text min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] transition-all duration-300 ${bubbleSurfaceClass} ${theme === 'starlight' ? 'lucy-starlight-assistant' : ''}`}
                 style={
@@ -259,6 +265,7 @@ export function LucyKakaoBubbleGroup({
                 )}
               </div>
 
+              </ChatBubbleForward>
               {/* 다중 말풍선일 때 각 말풍선 우측에 카톡 스타일 순번/개별 복사·이어듣기 미니 버튼 제공 */}
               {bubbles.length > 1 && onVoicePlay && onCopy && (
                 <div className="flex flex-col items-start gap-0.5 shrink-0 pb-0.5 opacity-60 group-hover/bubble:opacity-100 transition-opacity">

@@ -1,3 +1,4 @@
+import { useLucyProConversation } from '@/hooks/useLucyProConversation';
 import { resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { auth, db, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, doc, getDoc, getDocFromServer, setDoc, onSnapshot, serverTimestamp, type User, addDoc, collection } from '../lib/firebase';
@@ -52,6 +53,7 @@ export interface UnifiedMessage {
 }
 
 export interface SendUnifiedMessageOptions {
+  conversationId?: 'lucy' | 'lucy-pro';
   extraSystemContext?: string;
   systemSuffix?: string;
   onFinish?: (fullText: string, sentText: string, messageId?: string) => void | Promise<void>;
@@ -83,6 +85,10 @@ interface AppContextValue {
   setIsChatOpen: React.Dispatch<React.SetStateAction<boolean>>;
   activePersona: PersonaType;
   setActivePersona: (persona: PersonaType) => void;
+  lucyProMessages: UnifiedMessage[];
+  isLucyProGenerating: boolean;
+  abortLucyProGenerating: () => void;
+  clearLucyProMessages: () => void;
   personaMessages: Record<PersonaType, UnifiedMessage[]>;
   setPersonaMessages: React.Dispatch<React.SetStateAction<Record<PersonaType, UnifiedMessage[]>>>;
   isGenerating: Record<PersonaType, boolean>;
@@ -370,6 +376,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return result.lucy || Object.values(result)[0] || prev;
     });
   }, []);
+
+  const proChat = useLucyProConversation(firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device');
 
   const [isGenerating, setIsGenerating] = useState<Record<PersonaType, boolean>>({
     lucy: false, orange: false, trinity: false, aura: false, bluebird: false, muse: false
@@ -1559,6 +1567,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const clearPersonaMessages = useCallback((persona?: PersonaType) => {
     const target = persona || 'lucy';
+    abortGenerating(target);
     const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
     const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
     const initialGreet = archiveAndResetChat(unifiedMessages, nick, target);
@@ -1593,7 +1602,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.warn('[ChatThreads] Failed to reset in Firestore:', e);
       }
     }
-  }, [firebaseUser?.uid, unifiedMessages]);
+  }, [firebaseUser?.uid, unifiedMessages, abortGenerating]);
+
+  const regularRuntimeRef = useRef({ messages: unifiedMessages, setMessages: setUnifiedMessages, load: loadSavedUnifiedMessages, save: saveUnifiedMessagesSafely, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions, chatBroadcastRef, pushChatThreadsToFirestore, updateSharedState });
+  regularRuntimeRef.current = { messages: unifiedMessages, setMessages: setUnifiedMessages, load: loadSavedUnifiedMessages, save: saveUnifiedMessagesSafely, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions, chatBroadcastRef, pushChatThreadsToFirestore, updateSharedState };
+  const proRuntimeRef = useRef(proChat.runtime);
+  proRuntimeRef.current = proChat.runtime;
 
   const sendUnifiedMessage = useCallback(async (
     text: string,
@@ -1602,7 +1616,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     options?: SendUnifiedMessageOptions,
   ) => {
     const sourcePersona: PersonaType = 'lucy';
-    const isRegularLucyRoute = typeof window !== 'undefined' && ['/', '/chat', '/lucy'].includes(window.location.pathname);
+    const isProConversation = options?.conversationId === 'lucy-pro' || (!options?.conversationId && typeof window !== 'undefined' && window.location.pathname === '/chat/pro');
+    const runtime = isProConversation ? proRuntimeRef.current : regularRuntimeRef.current;
+    const requestDay = getTodayDateKey();
+    const requestProAccount = isProConversation ? proRuntimeRef.current.account : undefined;
+    const canWriteConversation = () => getTodayDateKey() === requestDay && (!isProConversation || proRuntimeRef.current.account === requestProAccount);
+    const { messages: unifiedMessages, load: loadSavedUnifiedMessages, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions } = runtime;
+    const setUnifiedMessages: React.Dispatch<React.SetStateAction<UnifiedMessage[]>> = action => {
+      if (canWriteConversation()) runtime.setMessages(action);
+    };
+    const saveUnifiedMessagesSafely = (list: UnifiedMessage[]) => { if (canWriteConversation()) runtime.save(list); };
+    const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;
+    const pushChatThreadsToFirestore = isProConversation ? (_messages: UnifiedMessage[], _immediate?: boolean) => {} : regularRuntimeRef.current.pushChatThreadsToFirestore;
+    const updateSharedState = isProConversation ? async (_state: Partial<SharedState>, _source: string) => {} : regularRuntimeRef.current.updateSharedState;
+    const isRegularLucyRoute = !isProConversation && (options?.conversationId === 'lucy' || (typeof window !== 'undefined' && ['/', '/chat', '/lucy'].includes(window.location.pathname)));
     if (isRegularLucyRoute && (options?.mode === 'master' || options?.mode === 'all' || options?.channel === 'master' || options?.channel === 'all' || (options?.channels?.length || 0) >= 7 || /올인원 마스터|7대 채널.*마스터|15대 운명학 마스터/.test([options?.extraSystemContext, options?.systemSuffix].filter(Boolean).join('\n')))) {
       const channels = resolveLucyPageChannels((options?.channels || []) as Parameters<typeof resolveLucyPageChannels>[0], false);
       options = { ...options, channels, channel: channels.length === 1 ? channels[0] : undefined, mode: channels.length === 0 ? 'casual' : channels.length === 1 ? channels[0] : 'synergy', extraSystemContext: undefined, systemSuffix: undefined, usedTools: [] };
@@ -1728,7 +1755,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const memory = profile?.fate?.currentWorry || "특별한 고민 없음";
     const currentVibe = sharedState?.currentVibe || "통상적인 기운";
     const preferences = profile?.psych?.aiPreference || "정보 없음";
-    const globalMemory = sharedState?.globalMemory || "";
+    const globalMemory = isProConversation ? "" : sharedState?.globalMemory || "";
     const deepCoreInfo = `사용자 MBTI: ${mbti}, 선호 스타일: ${profile?.psych?.counselingStyle || "기본"}${sajuObj ? `, 사주 본원: ${sajuObj.shortDigest}` : ''}`;
     
     // 모드별 답변 길이 및 사고 깊이 프로필 (수다모드: 짧게 1~3문장 / 7대채널: 보통 4~7문장 / 마스터: 길게 10문장+)
@@ -1850,13 +1877,13 @@ ${responseProfile.rule}`;
       }
 
       // Append cross-app real-time remembrance
-      systemPrompt += getCrossAppRecentDialogueContext();
+      if (!isProConversation) systemPrompt += getCrossAppRecentDialogueContext();
 
       // Safari PWA / reduced 성능 기기 / 일상 수다모드(short)에서는 무거운 지식 엔진을 생략하여 지연 및 멈춤 방지
       const _isPerfReduced = isPerfReduced() || isStandalonePWA();
 
       // Append full PRISM omniscient ecosystem feature results
-      systemPrompt += buildPrismOmniscientContext(sharedState, firebaseUser?.uid || null);
+      if (!isProConversation) systemPrompt += buildPrismOmniscientContext(sharedState, firebaseUser?.uid || null);
 
       const needsDeepWisdomCanon =
         !_isPerfReduced &&
@@ -1890,7 +1917,7 @@ ${responseProfile.rule}`;
       }
 
       // 📖 Append Permanent Background Memory & Long-term Episodic Archive
-      systemPrompt += `\n\n${buildPermanentMemoryPromptContext()}`;
+      if (!isProConversation) systemPrompt += `\n\n${buildPermanentMemoryPromptContext()}`;
 
       // 🔮 15대 운명학 도구 자동 선별 주입
       if (!hasDivinationInjection && !toolSelection.isCasualMessage && toolSelection.promptInjection) {
@@ -1993,7 +2020,7 @@ ${responseProfile.rule}`;
     let pendingRaf: number | null = null;
     let latestCleanReply = '';
 
-    const isSuperseded = () =>
+    const isSuperseded = () => !canWriteConversation() ||
       supersededControllersRef.current.has(currentAbortController) ||
       activeAssistMsgIdRef.current[sourcePersona] !== assistMsgId;
 
@@ -2138,7 +2165,7 @@ ${responseProfile.rule}`;
 
           // Save firestore history in background without awaiting to eliminate latency for onFinish / TTS
           const fUser = auth.currentUser;
-          if (fUser && safeLocalStorage.getItem('developer_bypass') !== 'true') {
+          if (!isProConversation && fUser && safeLocalStorage.getItem('developer_bypass') !== 'true') {
             const targets = [
               { collectionName: 'lucy_history', logType: 'chat_sync', logTitle: '루시 마스터 대화' },
               { collectionName: 'orange_history', logType: 'chat_sync', logTitle: '오렌지 다이어리 교감' },
@@ -2397,6 +2424,7 @@ ${responseProfile.rule}`;
       sharedState, updateSharedState, syncPrismDevices, isSyncing,
       isChatOpen, setIsChatOpen,
       activePersona, setActivePersona,
+      lucyProMessages: proChat.messages, isLucyProGenerating: proChat.generating, abortLucyProGenerating: proChat.abort, clearLucyProMessages: proChat.reset,
       personaMessages, setPersonaMessages,
       isGenerating, abortGenerating, sendUnifiedMessage, chatSuggestions, openLucyChat,
       openHandbook, clearPersonaMessages,
