@@ -1,20 +1,20 @@
 .sidebar-edge-hint {
-  position: fixed; left: 0; top: env(safe-area-inset-top, 0px); bottom: env(safe-area-inset-bottom, 0px);
+  position: fixed; right: 0; top: env(safe-area-inset-top, 0px); bottom: env(safe-area-inset-bottom, 0px);
   width: 18px; z-index: 398; pointer-events: none; user-select: none; overflow: hidden;
 }
 .sidebar-edge-hint-line {
-  position: absolute; inset: 0 auto 0 0; width: 2px; border-radius: 0 999px 999px 0;
+  position: absolute; inset: 0 0 0 auto; width: 2px; border-radius: 999px 0 0 999px;
   background: linear-gradient(180deg, transparent, #34d399 20%, #22d3ee 48%, #a78bfa 72%, transparent);
   box-shadow: 0 0 7px #22d3ee88, 0 0 15px #a78bfa55;
   animation: sidebar-edge-hint-breathe 4.5s ease-in-out infinite;
 }
 .sidebar-edge-hint-mist {
-  position: absolute; left: -8px; top: -45%; width: 22px; height: 45%; border-radius: 50%;
+  position: absolute; right: -8px; top: -45%; width: 22px; height: 45%; border-radius: 50%;
   background: linear-gradient(180deg, transparent, #34d39977, #22d3ee99, #a78bfa88, transparent);
   filter: blur(5px); animation: sidebar-edge-hint-flow 8s linear infinite;
 }
 .sidebar-edge-hint-grip {
-  position: absolute; left: 1px; top: 50%; width: 3px; height: 38px; transform: translateY(-50%); border-radius: 999px;
+  position: absolute; right: 1px; top: 50%; width: 3px; height: 38px; transform: translateY(-50%); border-radius: 999px;
   background: linear-gradient(#6ee7b7, #67e8f9, #c4b5fd); box-shadow: 0 0 9px #22d3ee99; opacity: .8;
 }
 .sidebar-edge-hint[data-theme='light'] .sidebar-edge-hint-line { background: linear-gradient(180deg, transparent, #059669 20%, #0891b2 48%, #8b5cf6 72%, transparent); }

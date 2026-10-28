@@ -617,7 +617,7 @@ export default function LeftSidebarNav() {
 
           {/* Floating Tooltip to the Left (facing screen center) */}
           <div
-            className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+            className={`hidden sm:group-hover:flex flex-col gap-1 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
               isLight
                 ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                 : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -784,7 +784,7 @@ export default function LeftSidebarNav() {
 
         {/* Floating Tooltip to the Left (facing screen center) with Theme Color Beacon */}
         <div
-          className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
+          className={`hidden sm:group-hover:flex flex-col gap-1 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
             isLight
               ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
               : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -854,7 +854,7 @@ export default function LeftSidebarNav() {
     hideSidebar();
   }, [cleanPath, hideSidebar]);
 
-  // Open the original left rail only after a deliberate inward edge swipe.
+  // Open the right rail only after a deliberate inward edge swipe.
   useEffect(() => {
     let start: { x: number; y: number } | null = null;
     const reset = () => { start = null; };
@@ -862,11 +862,11 @@ export default function LeftSidebarNav() {
       reset();
       if (isOpen || event.touches.length !== 1) return;
       const touch = event.touches[0];
-      if (touch.clientX >= 0 && touch.clientX <= 32) start = { x: touch.clientX, y: touch.clientY };
+      if (touch.clientX >= window.innerWidth - 32 && touch.clientX <= window.innerWidth) start = { x: touch.clientX, y: touch.clientY };
     };
     const onMove = (event: TouchEvent) => {
       if (!start || event.touches.length !== 1) { reset(); return; }
-      const dx = event.touches[0].clientX - start.x;
+      const dx = start.x - event.touches[0].clientX;
       const dy = Math.abs(event.touches[0].clientY - start.y);
       if (dy > 24 || dx < -12) { reset(); return; }
       if (dx >= 36 && dx > dy * 1.5) {
@@ -887,7 +887,7 @@ export default function LeftSidebarNav() {
     };
   }, [isOpen, showSidebar]);
 
-  // Touch gesture handlers on the sidebar drawer itself (swipe left to dismiss)
+  // Touch gesture handlers on the sidebar drawer itself (swipe right to dismiss)
   const sidebarTouchStartXRef = useRef(0);
   const handleSidebarTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
@@ -897,7 +897,7 @@ export default function LeftSidebarNav() {
   const handleSidebarTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
       const deltaX = e.touches[0].clientX - sidebarTouchStartXRef.current;
-      if (deltaX < -25) {
+      if (deltaX > 25) {
         hideSidebar();
         triggerHaptic('mirrorhole');
       }
@@ -921,16 +921,16 @@ export default function LeftSidebarNav() {
               key="nav-drawer"
               role="navigation"
               aria-label="사이드 네비게이션"
-              initial={{ x: '-100%', opacity: 0 }}
+              initial={{ x: '100%', opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '-100%', opacity: 0 }}
+              exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 380, damping: 32 }}
               onTouchStart={handleSidebarTouchStart}
               onTouchMove={handleSidebarTouchMove}
               style={{
                 width: '70px',
               }}
-              className={`sites-pinned-sidebar fixed left-0 top-0 bottom-0 backdrop-blur-md border-r z-[400] flex flex-col justify-between select-none transition-colors duration-300 ${
+              className={`sites-pinned-sidebar fixed right-0 top-0 bottom-0 backdrop-blur-md border-l z-[400] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
                   ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[-16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
                   : 'bg-neutral-950/95 border-white/10 shadow-[-16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
@@ -1119,7 +1119,7 @@ export default function LeftSidebarNav() {
 
                   {/* Desktop Hover Tooltip to Left */}
                   <div
-                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
                       isLight
                         ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                         : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
@@ -1209,7 +1209,7 @@ export default function LeftSidebarNav() {
 
                     {/* Desktop Hover Tooltip to Left */}
                     <div
-                      className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
+                      className={`hidden sm:group-hover:flex items-center gap-2 absolute right-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
                         isLight
                           ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
                           : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
