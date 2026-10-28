@@ -90,6 +90,7 @@ const SECTIONS = [
   { id: 'psych', label: '심리 · 결정', icon: Brain, color: 'oklch(0.72 0.18 55)', desc: 'MBTI · AI 상담 스타일' },
   { id: 'art', label: '예술 감성', icon: Palette, color: 'oklch(0.65 0.18 240)', desc: '화풍 · 색감 · 선호 시인' },
   { id: 'card', label: '운명 프리뷰', icon: Sparkles, color: 'oklch(0.80 0.20 320)', desc: '실시간 천문 사주 카드' },
+  { id: 'divination', label: '점술 계산실', icon: Compass, color: 'oklch(0.75 0.18 285)', desc: '명반 · 포국 · 주역과 나의 저장 자료' },
 ];
 
 const FATE_INTERESTS = ['사주', '타로', '별자리', '꿈해몽', '수비학', '관상', '기적수업', '동양철학'];
@@ -1014,6 +1015,8 @@ export default function EpilogueApp() {
             />
           </div>
         );
+      case 6:
+        return <React.Suspense fallback={<p className="text-sm opacity-60">계산실 준비 중…</p>}><DivinationLab profile={{basic:{...basic,gender:basic.gender||undefined},fate,music,psych,art}} /></React.Suspense>;
       default:
         return null;
     }
@@ -1094,7 +1097,6 @@ export default function EpilogueApp() {
           <EpilogueDiaryView />
         ) : (
           <div className="prism-page-content w-full mx-auto px-3 sm:px-6 pt-4 space-y-6">
-            <React.Suspense fallback={<p className="text-sm opacity-60">계산실 준비 중…</p>}><DivinationLab profile={{basic:{...basic,gender:basic.gender||undefined},fate,music,psych,art}} /></React.Suspense>
             {/* Step Sub-Pills for Profile */}
             <div className="flex items-center justify-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
               {SECTIONS.map((item, idx) => {
@@ -1170,8 +1172,8 @@ export default function EpilogueApp() {
 
               <div className="relative z-10"><DuoWorkspace ref={setWorkspaceElement} className="duo-profile-workspace">
   {SECTIONS.map((item, index) => (isWideWorkspace || index === currentSection) && (
-    <section key={item.id} className={`duo-profile-section ${item.id === 'basic' || item.id === 'card' ? 'duo-workspace-full' : ''} ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
-      <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
+    <section key={item.id} className={`duo-profile-section ${item.id === 'basic' || item.id === 'card' || item.id === 'divination' ? 'duo-workspace-full' : ''} ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label} style={item.id === 'divination' ? {padding:0,border:0} : undefined}>
+      {item.id !== 'divination' && <h3 className="text-sm font-bold mb-4">{item.label}</h3>}{renderSection(index)}
     </section>
   ))}
 </DuoWorkspace></div>

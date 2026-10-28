@@ -1,3 +1,4 @@
+import { mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature } from './lucyLongTermMemory';
 import { db, doc, getDoc, getDocFromServer, setDoc, serverTimestamp, collection, getDocs, query, orderBy, limit } from './firebase';
 import type { SharedState, UserProfile } from './sharedState';
 import { safeLocalStorage } from '../utils/safeStorage';
@@ -250,6 +251,8 @@ export function collectAllLocalActivities(uid?: string | null): Partial<SharedSt
   const result: Partial<SharedState> = {};
   const todayKey = getTodayDateKey();
   const effectiveUid = uid || 'guest';
+
+  result.lucyLongTermMemory = readLucyMemory(uid || 'device');
 
   // 1. Collect all local profile vaults
   const localVaultProfile = loadProfileFromAllVaults();
@@ -695,7 +698,7 @@ export function getSharedStateSignature(s: SharedState | null | undefined): stri
 
   const hLen = `${s.featureHistory?.length || 0}_${s.orangeHistory?.length || 0}_${s.museHistory?.length || 0}_${s.bluebirdHistory?.length || 0}_${s.favoriteInsightIds?.length || 0}_${s.rebibleVerses?.length || 0}_${(s as any).epilogueHistory?.length || 0}_${s.userGoals?.length || 0}`;
 
-  return `${clientTs}_${serverTs}|${profStr}|${s.themeColor || ''}|${s.currentVibe || ''}|${todayOracleSummary}|${secretSummary}|${luckySummary}|${hopoSummary}|${artSummary}|${chatSummary}|${rebibleSummary}|${featSummary}|${todoSummary}|${ecprSummary}|${oracleSummary}|${treasureSummary}|${talismanSummary}|${epilogueSummary}|${goalSummary}|${hLen}`;
+  return `${lucyMemorySignature(s.lucyLongTermMemory)}|${clientTs}_${serverTs}|${profStr}|${s.themeColor || ''}|${s.currentVibe || ''}|${todayOracleSummary}|${secretSummary}|${luckySummary}|${hopoSummary}|${artSummary}|${chatSummary}|${rebibleSummary}|${featSummary}|${todoSummary}|${ecprSummary}|${oracleSummary}|${treasureSummary}|${talismanSummary}|${epilogueSummary}|${goalSummary}|${hLen}`;
 }
 
 let lastHydratedSignature = '';
@@ -714,6 +717,8 @@ export function unpackAndHydrateLocalStorage(uid: string | null | undefined, sta
 
   const todayKey = getTodayDateKey();
   const effectiveUid = uid || 'guest';
+
+  if (state.lucyLongTermMemory) writeLucyMemory(uid || 'device', mergeLucyMemory(readLucyMemory(uid || 'device'), state.lucyLongTermMemory.filter(entry => entry.account === (uid || 'device'))));
 
   // 1. Hydrate User Profile to all 10 local vaults
   if (state.userProfile && Object.keys(state.userProfile).length > 0) {
@@ -1184,6 +1189,8 @@ export function mergeSharedState(
   const merged: SharedState = newerIsLocal
     ? { ...remote, ...local }
     : { ...local, ...remote };
+
+  merged.lucyLongTermMemory = mergeLucyMemory(local.lucyLongTermMemory, remote.lucyLongTermMemory);
 
   // 1. Lossless User Profile Merge
   merged.userProfile = mergeUserProfile(

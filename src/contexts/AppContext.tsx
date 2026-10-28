@@ -1,3 +1,4 @@
+import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, buildLucyLongTermPrompt } from '../lib/lucyLongTermMemory';
 import { buildLucySharedBackground } from '../lib/lucySharedBackground';
 import { buildFullProfilePrompt } from '../lib/divination/profileContext';
 import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
@@ -1623,6 +1624,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const sourcePersona: PersonaType = 'lucy';
     const isProConversation = options?.conversationId === 'lucy-pro' || (!options?.conversationId && typeof window !== 'undefined' && window.location.pathname === '/chat/pro');
     const runtime = isProConversation ? proRuntimeRef.current : regularRuntimeRef.current;
+    const memoryAccount = runtime.account;
+    const rememberConversation = (messages: readonly UnifiedMessage[], scope: 'lucy' | 'lucy-pro') => {
+      if (regularRuntimeRef.current.account !== memoryAccount || proRuntimeRef.current.account !== memoryAccount) return;
+      const before = mergeLucyMemory(readLucyMemory(memoryAccount), (sharedStateRef.current?.lucyLongTermMemory || []).filter(entry => entry.account === memoryAccount));
+      const after = mergeLucyMemory(before, memoryFromMessages(memoryAccount, scope, messages));
+      if (lucyMemorySignature(before) === lucyMemorySignature(after)) return;
+      writeLucyMemory(memoryAccount, after);
+      // Intentionally share only memory, even for Pro; its visible chat history stays isolated.
+      void regularRuntimeRef.current.updateSharedState({ lucyLongTermMemory: after }, 'lucy-memory').catch(() => {});
+    };
     const requestDay = getTodayDateKey();
     const requestProAccount = isProConversation ? proRuntimeRef.current.account : undefined;
     const canWriteConversation = () => getTodayDateKey() === requestDay && (!isProConversation || proRuntimeRef.current.account === requestProAccount);
@@ -1692,6 +1703,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     const nextCommitted = mergeUnifiedMessages(cleanPrior, [userMsg]);
     saveUnifiedMessagesSafely(nextCommitted);
+    rememberConversation(nextCommitted, isProConversation ? 'lucy-pro' : 'lucy');
 
     // Append both user message and assistant placeholder directly to unified timeline immediately
     setUnifiedMessages([
@@ -1961,14 +1973,18 @@ ${responseProfile.rule}`;
 
     // Read the opposite runtime without merging, saving or broadcasting its messages.
     const oppositeRuntime = isProConversation ? regularRuntimeRef.current : proRuntimeRef.current;
+    const oppositeMessages = mergeUnifiedMessages(oppositeRuntime.messages, oppositeRuntime.load());
+    if (oppositeRuntime.account === memoryAccount) rememberConversation(oppositeMessages, isProConversation ? 'lucy' : 'lucy-pro');
     const sharedLucyBackground = buildLucySharedBackground({
       target: isProConversation ? 'lucy-pro' : 'lucy',
       sourceAccount: oppositeRuntime.account,
       currentAccount: runtime.account,
-      messages: mergeUnifiedMessages(oppositeRuntime.messages, oppositeRuntime.load()),
+      messages: oppositeMessages,
       question: text,
     });
     if (sharedLucyBackground) systemPrompt += `\n\n${sharedLucyBackground}`;
+    const longTermContext = buildLucyLongTermPrompt(memoryAccount, [...readLucyMemory(memoryAccount), ...(sharedStateRef.current?.lucyLongTermMemory || [])], text, [`${isProConversation ? 'lucy-pro' : 'lucy'}:${userMsg.id}`]);
+    if (longTermContext) systemPrompt += `\n\n${longTermContext}`;
     const fullProfileContext = buildFullProfilePrompt(profile);
     systemPrompt += `\n\n${fullProfileContext}`;
     const fatePreviewContext = !isCasualMode ? buildFatePreviewPrompt(sajuObj) : '';
@@ -2157,6 +2173,7 @@ ${responseProfile.rule}`;
             }));
           }
 
+          rememberConversation([userMsg, { id: assistMsgId, role: 'model', content: cleanFullText, timestamp: Date.now() }], isProConversation ? 'lucy-pro' : 'lucy');
           const verifiedEx = validateAndExtractKeyExercise(cleanFullText, effectiveUserText, options?.keyExerciseIndex);
           const resolvedKeyExIndex = verifiedEx.isValid ? verifiedEx.exercise.globalIndex : options?.keyExerciseIndex;
 
@@ -2327,7 +2344,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}\n${sharedLucyBackground}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
@@ -2338,6 +2355,7 @@ ${responseProfile.rule}`;
         });
         const recoveredClean = cleanChatDisplayText(String(recoveredRaw || '').trim());
         if (recoveredClean && recoveredClean.length > 0) {
+          rememberConversation([userMsg, { id: assistMsgId, role: 'model', content: recoveredClean, timestamp: Date.now() }], isProConversation ? 'lucy-pro' : 'lucy');
           isGeneratingRef.current[sourcePersona] = false;
           setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
           setUnifiedMessages(prev => {

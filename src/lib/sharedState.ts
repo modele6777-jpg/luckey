@@ -1,3 +1,4 @@
+import type { LucyMemoryEntry } from './lucyLongTermMemory';
 import { useEffect, useState, useCallback } from 'react';
 import { auth, db, doc, setDoc, onSnapshot, serverTimestamp, handleFirestoreError, OperationType } from './firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
@@ -216,6 +217,7 @@ export function mergeUserProfiles(base?: UserProfile, incoming?: UserProfile, pr
 }
 
 export interface SharedState {
+  lucyLongTermMemory?: LucyMemoryEntry[];
   uid?: string;
   userProfile?: UserProfile;
   healthMetrics?: HealthMetrics;
