@@ -1,3 +1,4 @@
+import { useDraggableBigBang } from '@/hooks/useDraggableBigBang';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
 import './bigbang-clover-breeze.css';
 import { oneStopNavigationPath, nextOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
@@ -624,6 +625,8 @@ export function BigBangButton() {
     lastValidSelectionRef.current = '';
     clearPendingSelection();
   };
+
+  const floatingButton = useDraggableBigBang(cancelDraggedPress);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
@@ -1267,7 +1270,11 @@ export function BigBangButton() {
     <>
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
-        className={`fixed bottom-safe-fab-center w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
+        ref={floatingButton.rootRef}
+        style={floatingButton.style}
+        onPointerDownCapture={floatingButton.onPointerDownCapture}
+        onClickCapture={floatingButton.onClickCapture}
+        className={`fixed ${floatingButton.positioned ? '' : 'bottom-safe-fab-center'} w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
           isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
       >
@@ -1551,8 +1558,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 동작 없음)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 동작 없음"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 버튼 위치 이동)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 버튼 위치 이동"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
