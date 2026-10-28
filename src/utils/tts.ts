@@ -1,4 +1,3 @@
-import { scoreSpeechVoice } from './speechVoice';
 import { useState, useEffect } from 'react';
 import {
   getSharedAudioContext,
@@ -28,140 +27,6 @@ export interface TTSPlaybackOptions {
   isAutoPlay?: boolean;
   isAutoPlayback?: boolean;
   isUserToggleClick?: boolean;
-}
-
-let nativeSpeechSessionId: string | null = null;
-let nativeFallbackUntil = 0;
-
-// Pre-warm the browser's speechSynthesis engine to load premium voices asynchronously immediately on load
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  window.speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-  };
-}
-
-// Global reference set to protect against Chromium/WebKit SpeechSynthesisUtterance garbage collection cutoff bug
-const activeUtterances = new Set<SpeechSynthesisUtterance>();
-if (typeof window !== 'undefined') {
-  (window as any).__prismActiveUtterances = activeUtterances;
-}
-
-export function playNativeBrowserSpeech(
-  cleanText: string,
-  wait: boolean = false,
-  sessionToVerify?: string | null,
-  isSequenceChunk: boolean = false,
-  voiceNameOrType: string = 'Aoede',
-  speed?: number,
-  options?: TTSPlaybackOptions,
-): Promise<void> {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    return Promise.reject(new Error('이 브라우저에서 음성 재생을 사용할 수 없습니다.'));
-  }
-
-  configureSpeechAudioSession();
-
-  // Ensure speech synthesis engine is active and not paused by browser
-  try {
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-    }
-  } catch (_) {}
-
-  // Cancel any existing speech only if not in a sequence chunk
-  if (!isSequenceChunk) {
-    try {
-      stopTTSPlayback();
-      window.speechSynthesis.cancel();
-    } catch (_) {}
-  }
-
-  const isKorean = /[가-힣]/.test(cleanText);
-  const utterance = new SpeechSynthesisUtterance(cleanText);
-  activeUtterances.add(utterance);
-  utterance.lang = isKorean ? 'ko-KR' : 'en-US';
-
-  // 🌟 모든 음성 낭독을 유니버스 인사이트 명언과 동일한 1.0 배속 표준 속도로 고정
-  utterance.rate = 1.0;
-  utterance.pitch = 1.0;
-
-  const voicesList = window.speechSynthesis.getVoices();
-  const langCode = isKorean ? 'ko' : 'en';
-  const langVoices = voicesList.filter((v) => v.lang.toLowerCase().startsWith(langCode));
-
-  if (langVoices.length > 0) {
-    const sorted = [...langVoices].sort((a, b) => scoreSpeechVoice(b) - scoreSpeechVoice(a));
-    if (sorted.length > 0 && scoreSpeechVoice(sorted[0]) > -500) utterance.voice = sorted[0];
-  }
-  // Pitch shifting makes fallback speech sound synthetic; preserve the voice's timbre.
-  utterance.pitch = 1.0;
-
-  const firstSub = splitSpeechIntoSentences(cleanText)[0] || cleanText;
-  updateTTSState({
-    isLoading: false,
-    isSpeaking: true,
-    activeText: cleanText,
-    ...(isSequenceChunk
-      ? {}
-      : {
-          currentSentence: firstSub,
-          activeSentence: firstSub,
-        }),
-    activeSentenceIndex: 0,
-    totalSentences: 1,
-  });
-  setTTSSessionActive(isSequenceChunk ? (ttsState.activeSentence || cleanText) : firstSub);
-
-  // Resume-only keepalive timer (never call pause() mid-utterance, which causes mobile TTS to restart from 0s)
-  let keepAliveInterval: any = null;
-  const startKeepAlive = () => {
-    keepAliveInterval = setInterval(() => {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        if (ttsState.isSpeaking && window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
-        }
-      }
-    }, 4000);
-  };
-  const clearKeepAlive = () => {
-    if (keepAliveInterval) {
-      clearInterval(keepAliveInterval);
-      keepAliveInterval = null;
-    }
-  };
-
-  return new Promise<void>((resolve, reject) => {
-    let isSettled = false;
-    const finish = (completedNaturally: boolean, failure?: Error) => {
-      if (isSettled) return;
-      isSettled = true;
-      activeUtterances.delete(utterance);
-      clearKeepAlive();
-      if (sessionToVerify && ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
-        stopTTS();
-        if (completedNaturally && !options?.skipCompletionChime) {
-          try {
-            playAiResultNotification();
-          } catch (_) {}
-        }
-      }
-      if (failure) reject(failure); else resolve();
-    };
-
-    utterance.onend = () => finish(true);
-    utterance.onerror = (event) => {
-      if ((event.error === 'canceled' || event.error === 'interrupted') && sessionToVerify && ttsState.activeSessionId !== sessionToVerify) { finish(false); return; }
-      finish(false, new Error('음성을 재생하지 못했습니다. 미디어 음량과 기기의 음성 설정을 확인한 뒤 다시 눌러 주세요.'));
-    };
-
-    startKeepAlive();
-    window.speechSynthesis.speak(utterance);
-
-    if (!wait) {
-      resolve();
-    }
-  });
 }
 
 export interface TTSState {
@@ -234,7 +99,7 @@ export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string,
 
 export function prefetchTTS(text: string, voice?: string, emotion?: string, _rate?: string, _speed?: number): Promise<TTSAudioData | null> {
   const cleanText = normalizeTextForSpeech(text);
-  if (!cleanText || Date.now() < nativeFallbackUntil) return Promise.resolve(null);
+  if (!cleanText) return Promise.resolve(null);
 
   let activeEmotion = emotion;
   if (!activeEmotion) {
@@ -250,7 +115,7 @@ export function prefetchTTS(text: string, voice?: string, emotion?: string, _rat
   const promise = (async (): Promise<TTSAudioData | null> => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 25000);
+      const timeoutId = setTimeout(() => controller.abort(), 65000);
       const response = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -312,7 +177,6 @@ export const resumeTTS = (): void => {
 
 export const stopTTS = () => {
   isPlayingSequence = false;
-  activeUtterances.clear();
   updateTTSState({
     isSpeaking: false,
     isLoading: false,
@@ -401,10 +265,6 @@ export const playTTS = async (
   }
 
   const sessionToVerify = mySessionId;
-  if (nativeSpeechSessionId === mySessionId || Date.now() < nativeFallbackUntil) {
-    nativeSpeechSessionId = mySessionId;
-    return playNativeBrowserSpeech(cleanText, wait, sessionToVerify, isSequenceChunk, targetVoice, 1.0, options);
-  }
 
   // Auto-extract emotion tag if not explicitly provided
   let activeEmotion = emotion;
@@ -430,7 +290,7 @@ export const playTTS = async (
     }
 
     if (!data) {
-      const chunkTimeout = isSequenceChunk ? 12000 : (cleanText.length > 250 ? 25000 : 15000);
+      const chunkTimeout = 65000; // AI audio generation may take up to the server's 60s budget.
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), chunkTimeout);
       const response = await fetch('/api/ai/tts', {
@@ -504,38 +364,12 @@ export const playTTS = async (
         }
       };
 
-      if (wait) {
-        try {
-          await playAudio();
-        } finally {
-          if (sessionToVerify && ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
-            stopTTS();
-            if (!options?.skipCompletionChime) {
-              try {
-                playAiResultNotification();
-              } catch (_) {}
-            }
-          }
+      await playAudio();
+      if (ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
+        stopTTS();
+        if (!options?.skipCompletionChime) {
+          try { playAiResultNotification(); } catch (_) {}
         }
-      } else {
-        if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
-        playAudio()
-          .then(() => {
-            if (sessionToVerify && ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
-              stopTTS();
-              if (!options?.skipCompletionChime) {
-                try {
-                  playAiResultNotification();
-                } catch (_) {}
-              }
-            }
-          })
-          .catch((err) => {
-            console.warn('playTTS silent failure:', err);
-            if (sessionToVerify && ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
-              stopTTS();
-            }
-          });
       }
       return;
     }
@@ -543,10 +377,9 @@ export const playTTS = async (
   } catch (error) {
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
 
-    nativeFallbackUntil = Date.now() + 60000;
-    nativeSpeechSessionId = mySessionId;
-    console.warn('[TTS] Server audio failed; continuing with one browser voice for this session.', error);
-    return playNativeBrowserSpeech(cleanText, wait, sessionToVerify, isSequenceChunk, targetVoice, 1.0, options);
+    if (!isSequenceChunk) stopTTS();
+    console.warn('[TTS] AI audio unavailable; device speech is disabled.', error);
+    throw new Error('자연스러운 AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.');
   }
 };
 
