@@ -194,6 +194,7 @@ function AppContent() {
   const { firebaseUser, isAuthReady, logout, signInWithGoogle, sharedState, isUnlocked, unlock, isChatOpen, syncPrismDevices } = useApp();
   const { resolvedTheme } = useTheme();
   const [location, navigate] = useLocation();
+  const locationSearch = useSearch();
 
   const isFirstMount = React.useRef(true);
 
@@ -233,7 +234,7 @@ function AppContent() {
     if (typeof window !== 'undefined') {
       lockedFullUrlRef.current = `${window.location.pathname}${window.location.search || ''}${window.location.hash || ''}`;
     }
-  }, [location]);
+  }, [location, locationSearch]);
 
   React.useEffect(() => {
     const markIntentionalNav = () => {
@@ -366,6 +367,11 @@ function AppContent() {
     let startY = 0;
     let isInsideHorizontalScroller = false;
     let isInsideBigBang = false;
+    let touchActive = false;
+    let touchMoved = false;
+    let suppressTouchClickUntil = 0;
+    let gestureLockedUrl = '';
+    const clearGestureLock = () => { gestureLockedUrl = ''; };
 
     const getSafeInsets = () => {
       try {
@@ -379,7 +385,14 @@ function AppContent() {
     };
 
     const handleEdgeTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
+      touchActive = e.touches.length === 1;
+      touchMoved = false;
+      suppressTouchClickUntil = 0;
+      // Capture the address before native history moves, even during a lazy route transition.
+      gestureLockedUrl = window.location.pathname + window.location.search + window.location.hash;
+      // A previous button click must not authorize a new browser swipe.
+      (window as any).__prismAllowRouteChangeUntil = 0;
+      if (touchActive) {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         const target = e.target as HTMLElement | null;
@@ -393,14 +406,16 @@ function AppContent() {
     };
 
     const handleEdgeTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        // 빅뱅·플로팅 메뉴의 직접 드래그는 화면 스와이프 차단과 분리한다.
-        if (isInsideBigBang) return;
-
+      if (touchActive && e.touches.length === 1) {
         const dx = e.touches[0].clientX - startX;
         const dy = e.touches[0].clientY - startY;
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
+        if (Math.hypot(dx, dy) >= 12) {
+          touchMoved = true;
+          suppressTouchClickUntil = Date.now() + 800;
+        }
+        if (isInsideBigBang) return;
 
         const { sal, sar } = getSafeInsets();
         const leftGuard = Math.max(52, sal + 44);
@@ -425,10 +440,37 @@ function AppContent() {
       }
     };
 
+    const handleTouchEnd = () => {
+      touchActive = false;
+      if (touchMoved) suppressTouchClickUntil = Date.now() + 800;
+    };
+    const handleTouchCancel = () => {
+      touchActive = false;
+      suppressTouchClickUntil = Date.now() + 800;
+      (window as any).__prismLastScreenSwipeAt = Date.now();
+      (window as any).__prismAllowRouteChangeUntil = 0;
+    };
+    const handleHorizontalWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) < 8 || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      gestureLockedUrl = window.location.pathname + window.location.search + window.location.hash;
+      (window as any).__prismLastScreenSwipeAt = Date.now();
+      (window as any).__prismAllowRouteChangeUntil = 0;
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest('.overflow-x-auto, .overflow-x-scroll, [data-allow-x-scroll], input[type="range"]') && e.cancelable) e.preventDefault();
+    };
+
     // 3. 명시적인 UI 버튼/링크 클릭 시에는 라우트 변경 허용 타임스탬프 갱신
     const handleExplicitClickCapture = (e: MouseEvent) => {
+      const pointerType = (e as PointerEvent).pointerType;
+      const touchGenerated = pointerType === 'touch' || pointerType === 'pen' || (!pointerType && e.detail > 0 && (e as any).sourceCapabilities?.firesTouchEvents !== false);
+      if (touchGenerated && Date.now() < suppressTouchClickUntil) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
       const target = e.target as HTMLElement | null;
       if (target?.closest('button, a, [role="button"], [data-bigbang="true"]')) {
+        clearGestureLock();
         (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
       }
     };
@@ -446,23 +488,32 @@ function AppContent() {
       // 모바일/터치 환경에서 빅뱅 버튼이나 명시적 버튼 클릭 없이 발생한 스와이프성 popstate는 즉시 차단하고 현재 페이지 유지
       if ((isTouchDevice || now - lastSwipeAt < 2500) && now > allowUntil) {
         e.stopImmediatePropagation();
-        const lockedUrl = lockedFullUrlRef.current || lockedLocationRef.current || '/';
+        const lockedUrl = gestureLockedUrl || lockedFullUrlRef.current || lockedLocationRef.current || '/';
         try {
           window.history.pushState(null, '', lockedUrl);
         } catch (_) {}
-        navigate(lockedLocationRef.current || '/', { replace: true });
+        navigate(lockedUrl, { replace: true });
       }
     };
 
-    window.addEventListener('touchstart', handleEdgeTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleEdgeTouchMove, { passive: false });
+    window.addEventListener('touchstart', handleEdgeTouchStart, { passive: true, capture: true });
+    window.addEventListener('touchmove', handleEdgeTouchMove, { passive: false, capture: true });
+    window.addEventListener('touchend', handleTouchEnd, true);
+    window.addEventListener('touchcancel', handleTouchCancel, true);
+    window.addEventListener('wheel', handleHorizontalWheel, { passive: false, capture: true });
     window.addEventListener('click', handleExplicitClickCapture, true);
     window.addEventListener('popstate', handlePopStateCapture, true);
+    const navigationEvents = ['prism-navigate', 'nav-click-active', 'prism:bigbang_commit', 'prism:cycle_nav'];
+    navigationEvents.forEach(name => window.addEventListener(name, clearGestureLock));
     return () => {
-      window.removeEventListener('touchstart', handleEdgeTouchStart);
-      window.removeEventListener('touchmove', handleEdgeTouchMove);
+      window.removeEventListener('touchstart', handleEdgeTouchStart, true);
+      window.removeEventListener('touchmove', handleEdgeTouchMove, true);
+      window.removeEventListener('touchend', handleTouchEnd, true);
+      window.removeEventListener('touchcancel', handleTouchCancel, true);
+      window.removeEventListener('wheel', handleHorizontalWheel, true);
       window.removeEventListener('click', handleExplicitClickCapture, true);
       window.removeEventListener('popstate', handlePopStateCapture, true);
+      navigationEvents.forEach(name => window.removeEventListener(name, clearGestureLock));
     };
   }, [navigate]);
 
