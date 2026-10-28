@@ -1,3 +1,4 @@
+import { TTSFailureNotice } from './components/common/TTSFailureNotice';
 import { recordOneStopPageVisit } from './lib/omniWarp/contextNavCycleEngine';
 import React from "react";
 import { Route, Switch, Redirect, useLocation, useSearch } from "wouter";
@@ -623,6 +624,7 @@ function AppContent() {
       <InstallPrompt />
       <ChannelIntroModal />
       <GlobalHandbookAudioWidget />
+      <TTSFailureNotice />
       <LucyVoiceModeModal />
       <SelectionBridgeToolbar />
       <UpdateNoticeModal

@@ -218,6 +218,7 @@ export function AuraSynergySection() {
       setChamberTimer(60);
       setIsChamberActive(true);
       lastSpokenPhaseRef.current = null;
+      stopTTS();
       const sessId = `sanctuary_${Date.now()}`;
       chamberSessionIdRef.current = sessId;
 

@@ -209,6 +209,16 @@ export const playTTS = async (
   ensureTTSLifecycle();
   const cleanText = normalizeTextForSpeech(text);
   if (!cleanText) return;
+  // Legacy book, report and insight readers call this entrypoint directly.
+  if (!sequenceSessionId && cleanText.length > 1000) {
+    try {
+      return await playTTSInChunks(cleanText, voice, 240, emotion, _speed, options);
+    } catch (error) {
+      if (wait) throw error;
+      window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: error instanceof Error ? error.message : 'AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.' } }));
+      return;
+    }
+  }
 
   // 🌟 모든 TTS 재생은 엄격하게 맑은 여성 음성(Aoede / SunHi / Heami)만 사용
   const targetVoice = 'Aoede';
@@ -243,7 +253,10 @@ export const playTTS = async (
       activeSessionId: mySessionId,
     });
   } else {
-    // External caller provided a sequenceSessionId directly.
+    // A new standalone guide step owns a fresh token. A stale chunk must never
+    // take ownership back from a newer manual playback session.
+    if (ttsState.activeSessionId !== mySessionId && !isSequenceChunk) stopTTS();
+    if (ttsState.activeSessionId && ttsState.activeSessionId !== mySessionId) return;
     if (!ttsState.activeSessionId) {
       updateTTSState({
         isLoading: true,
@@ -340,6 +353,11 @@ export const playTTS = async (
 
     if (!isSequenceChunk) stopTTS();
     console.warn('[TTS] AI audio unavailable; device speech is disabled.', error);
+    if (!wait && typeof window !== 'undefined') {
+      const message = error instanceof TTSAudioRequestError ? error.message : 'AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.';
+      window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message } }));
+      return;
+    }
     throw error instanceof TTSAudioRequestError ? error : new Error('AI 음성을 재생하지 못했습니다. 잠시 후 다시 눌러 주세요.');
   }
 };
@@ -387,29 +405,29 @@ export function splitSpeechIntoSentences(text: string): string[] {
 }
 
 export function splitSpeechIntoChunks(text: string, maxChunkLength = 240): string[] {
-  const sentences = splitSpeechIntoSentences(text);
-  if (sentences.length <= 1) return sentences;
-
-  const targetMax = Math.max(180, maxChunkLength);
-  const groupedChunks: string[] = [];
-  let currentGroup = '';
-
-  for (const s of sentences) {
-    const trimmed = s.trim();
-    if (!trimmed) continue;
-    if (!currentGroup) {
-      currentGroup = trimmed;
-    } else if (currentGroup.length + 1 + trimmed.length <= targetMax) {
-      currentGroup = `${currentGroup} ${trimmed}`;
-    } else {
-      groupedChunks.push(currentGroup);
-      currentGroup = trimmed;
+  const targetMax = Math.max(180, Math.min(1000, maxChunkLength));
+  const sentences = splitSpeechIntoSentences(text).flatMap(sentence => {
+    const parts: string[] = [];
+    let remaining = sentence.trim();
+    while (remaining.length > targetMax) {
+      const space = remaining.lastIndexOf(' ', targetMax);
+      const end = space >= targetMax / 2 ? space : targetMax;
+      parts.push(remaining.slice(0, end).trim());
+      remaining = remaining.slice(end).trim();
     }
+    if (remaining) parts.push(remaining);
+    return parts;
+  });
+  const chunks: string[] = [];
+  let current = '';
+  for (const sentence of sentences) {
+    if (current && current.length + sentence.length + 1 > targetMax) {
+      chunks.push(current);
+      current = sentence;
+    } else current = current ? `${current} ${sentence}` : sentence;
   }
-  if (currentGroup) {
-    groupedChunks.push(currentGroup);
-  }
-  return groupedChunks.length > 0 ? groupedChunks : sentences;
+  if (current) chunks.push(current);
+  return chunks;
 }
 
 /**

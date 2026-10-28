@@ -414,7 +414,8 @@ export function PrologueECPRView() {
   // EFT Auto Cycle Tapping & Kore Voice Auto-Play Effect (Wait for full speech to finish)
   useEffect(() => {
     if (!isEFTActive) {
-      stopTTS();
+      // The active effect's cleanup already stops its own run. An idle panel
+      // must not stop another channel's narration when its protocol changes.
       return;
     }
 
