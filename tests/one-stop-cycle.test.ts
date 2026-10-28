@@ -84,3 +84,12 @@ test('persisted aliases and explicit default tabs retain visits before the next 
   assert.equal(following.restarted, true);
   assert.equal(following.state.cycleIndex, 4);
 });
+
+
+test('Luckey destinations contain only seven apps and their internal dapps, including route-backed tabs', async () => {
+  const { getLuckeyPageKeys, normalizeOneStopPage } = await import('../src/lib/omniWarp/oneStopPages');
+  const allowed = getLuckeyPageKeys();
+  assert.equal(allowed.length, 23);
+  for (const path of ['/prologue', '/orange', '/trinity', '/heal', '/bluebird', '/muse', '/epilogue', '/ecpr', '/todo', '/profile', '/chronicle', '/trinity?tab=tarot', '/orange?tab=wishingWell']) assert(allowed.includes(normalizeOneStopPage(path)), path);
+  for (const path of ['/', '/chat', '/chat/pro', '/key', '/library', '/handbook', '/omniwarp']) assert(!allowed.includes(path), path);
+});

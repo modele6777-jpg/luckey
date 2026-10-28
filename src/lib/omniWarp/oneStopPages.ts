@@ -30,3 +30,10 @@ export function oneStopNavigationPath(page: string): string {
   const defaultTab = ONE_STOP_PAGE_TABS[url.pathname]?.[0]?.[0];
   return !url.search && defaultTab ? page + '?tab=' + defaultTab : page;
 }
+
+/** The seven Luckey apps and their actual URL-addressable internal dapps. */
+export function getLuckeyPageKeys(): string[] {
+  return [...new Set(Object.entries(ONE_STOP_PAGE_TABS).flatMap(([path, tabs]) =>
+    tabs.map(([tab]) => normalizeOneStopPage(path + '?tab=' + encodeURIComponent(tab)))
+  ))];
+}

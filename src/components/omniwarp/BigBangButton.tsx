@@ -13,9 +13,11 @@ import {
   getBlackholeRecommendedApp,
 } from '@/lib/omniWarp/wormholeSpectrum';
 import { getTossRule } from '@/lib/prismTossRegistry';
-import { resolveCanonicalPath, isValidPrismPath, getActivePrismRoutes } from '@/lib/prismRouteRegistry';
+import { resolveCanonicalPath, isValidPrismPath } from '@/lib/prismRouteRegistry';
 import { resetActiveWormholePeek } from '@/lib/omniWarp/wormholeShuffleEngine';
 import {
+  getOneStopDestinations,
+  getCurrentOneStopPage,
   peekNextRecommendedMenuByCycle,
   commitNextRecommendedMenuByCycle,
   resetActiveContextPeek,
@@ -1036,10 +1038,10 @@ export function BigBangButton() {
       } else if (targetDir === 'south') {
         cardinalActionsRef.current?.scrollToBottom(e);
       } else if (targetDir === 'west') {
-        const currentChannel = resolveCanonicalPath(location).split('?')[0];
-        const channels = getActivePrismRoutes().filter(route => !['/', '/key', LUCY_PRO_PATH, currentChannel].includes(route.path));
-        const channel = channels[Math.floor(Math.random() * channels.length)];
-        if (channel) handleRuneNavigate(channel.path);
+        const currentPage = getCurrentOneStopPage(location);
+        const destinations = getOneStopDestinations().filter(menu => menu.path !== currentPage);
+        const destination = destinations[Math.floor(Math.random() * destinations.length)];
+        if (destination) handleRuneNavigate(oneStopNavigationPath(destination.path));
       } else if (targetDir === 'east') {
         goToNextRecommended(undefined, undefined, true);
       }
@@ -1542,8 +1544,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 동작 없음)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 루시·KEY 제외 무작위 채널 / 오른쪽 네잎클로버: 루시·KEY 제외 추천 1순위 즉시 이동, 길게 누름: 루시 채팅 프로, 드래그: 동작 없음"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 럭키 앱·댑 무작위 이동 / 오른쪽 네잎클로버: 럭키 앱·댑 추천 1순위 즉시 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 동작 없음)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 럭키 앱·댑 무작위 이동 / 오른쪽 네잎클로버: 럭키 앱·댑 추천 1순위 즉시 이동, 길게 누름: 루시 채팅 프로, 드래그: 동작 없음"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

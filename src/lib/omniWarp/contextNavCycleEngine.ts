@@ -8,7 +8,7 @@ import {
 import { serializeCurrentView } from './omniWarpEngine';
 import { extractLatestDialogueContext } from '@/lib/prismPersonaSync';
 import { resolveCanonicalPath, isValidPrismPath, getActivePrismRoutes } from '@/lib/prismRouteRegistry';
-import { normalizeOneStopPage, ONE_STOP_PAGE_TABS } from './oneStopPages';
+import { normalizeOneStopPage, ONE_STOP_PAGE_TABS, getLuckeyPageKeys } from './oneStopPages';
 import { advanceOneStopCycle, normalizeOneStopState, type OneStopState } from './oneStopCycle';
 
 export const PRISM_CORE_APP_IDS = [
@@ -194,8 +194,8 @@ export function getOneStopDestinations(): PrismMenuDestination[] {
       if (!destinations.has(path)) destinations.set(path, { ...defaultMenu, id: route.id + '_' + tab, path, name, subName: name, keywords: [name] });
     }
   }
-  // Lucy and KEY remain available through their dedicated gestures, outside the recommendation cycle.
-  return [...destinations.values()].filter(menu => !['/', '/key', '/chat/pro'].includes(oneStopPageKey(menu.path).split('?')[0]));
+  const luckeyPages = new Set(getLuckeyPageKeys());
+  return [...destinations.values()].filter(menu => luckeyPages.has(oneStopPageKey(menu.path)));
 }
 
 /** Ignore tracking/device parameters; aliases share a visit, distinct tabs do not. */
@@ -223,6 +223,12 @@ export function resetActiveContextPeek(): void {}
 
 let lastRecordedPage = '';
 
+export function getCurrentOneStopPage(path: string): string {
+  const key = isValidPrismPath(path) ? oneStopPageKey(path) : '';
+  return lastRecordedPage && lastRecordedPage.split('?')[0] === key.split('?')[0] ? lastRecordedPage : key;
+}
+
+
 export function recordOneStopPageVisit(path: string): void {
   if (!isValidPrismPath(path)) return;
   const key = oneStopPageKey(path);
@@ -235,8 +241,7 @@ export function recordOneStopPageVisit(path: string): void {
 
 export function peekNextRecommendedMenuByCycle(currentLocation?: string, overrideContextText?: string): ContextNextMenuResult {
   const curr = currentLocation || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/');
-  let current = isValidPrismPath(curr) ? oneStopPageKey(curr) : '';
-  if (lastRecordedPage && lastRecordedPage.split('?')[0] === current.split('?')[0]) current = lastRecordedPage;
+  const current = getCurrentOneStopPage(curr);
   const menus = getOneStopDestinations();
   const context = overrideContextText || extractAutoContextText(curr);
   const ranked = menus.map(menu => ({ menu, score: scoreMenuByContext(menu, context) }))
@@ -269,8 +274,7 @@ export function getContextCycleStats(currentLocation?: string): ContextCycleStat
   const state = getContextCycleState();
   const menus = getOneStopDestinations();
   const curr = currentLocation || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/');
-  let key = isValidPrismPath(curr) ? oneStopPageKey(curr) : '';
-  if (lastRecordedPage && lastRecordedPage.split('?')[0] === key.split('?')[0]) key = lastRecordedPage;
+  const key = getCurrentOneStopPage(curr);
   const visited = new Set(state.visitedPaths);
   if (menus.some(menu => menu.path === key)) visited.add(key);
   return {
