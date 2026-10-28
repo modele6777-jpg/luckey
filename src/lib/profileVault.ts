@@ -159,14 +159,11 @@ export function loadProfileFromAllVaults(): UserProfile | undefined {
 
   if (!merged.basic) merged.basic = {};
 
-  // 🛡️ 프로필 사진 자가 치유(Self-Healing): 금고에 사진이 비어있으면 영구 전용 금고에서 복원
-  if (!merged.basic.avatarUrl || merged.basic.avatarUrl.trim().length === 0) {
-    if (permAvatar) {
-      merged.basic.avatarUrl = permAvatar;
-    }
-  } else if (merged.basic.avatarUrl && merged.basic.avatarUrl.trim().length > 10) {
-    setPermanentAvatar(merged.basic.avatarUrl);
-  }
+  // The dedicated upload is authoritative; stale profile backups must not roll it back.
+  if (permAvatar) merged.basic.avatarUrl = permAvatar;
+  else if (merged.basic.avatarUrl?.trim().length > 10) setPermanentAvatar(merged.basic.avatarUrl);
+  delete (merged as any).__explicitRemoveAvatar;
+  delete (merged as any).__isAvatarAction;
 
   // 🛡️ 닉네임 불변 원칙: 실명('박주형'), '여행자', '사용자' 또는 공백으로 오염된 경우 무조건 '제제'로 자가 치유
   const loadedNick = merged.basic.nickname?.trim();
@@ -208,27 +205,22 @@ export function saveProfileToAllVaults(profile: UserProfile | undefined): void {
     }
 
     // 🛡️ 프로필 사진(avatarUrl) 영구 보존 및 명시적 삭제 구분
-    const isExplicitRemoval = (profile as any)?.__explicitRemoveAvatar === true || 
-      (profile.basic && profile.basic.avatarUrl === '' && (profile as any)?.__isAvatarAction === true);
-    
+    const incomingAvatar = profile.basic?.avatarUrl?.trim();
+    const isExplicitRemoval = !incomingAvatar && ((profile as any).__explicitRemoveAvatar === true ||
+      (profile.basic?.avatarUrl === '' && (profile as any).__isAvatarAction === true));
     if (isExplicitRemoval) {
       finalMerged.basic.avatarUrl = '';
       clearPermanentAvatar();
     } else {
-      const incomingAvatar = profile.basic?.avatarUrl?.trim();
-      const existingAvatar = existing?.basic?.avatarUrl?.trim();
-      const permAvatar = getPermanentAvatar();
-
-      if (incomingAvatar && incomingAvatar.length > 10) {
-        finalMerged.basic.avatarUrl = incomingAvatar;
-        setPermanentAvatar(incomingAvatar);
-      } else if (existingAvatar && existingAvatar.length > 10) {
-        finalMerged.basic.avatarUrl = existingAvatar;
-        setPermanentAvatar(existingAvatar);
-      } else if (permAvatar && permAvatar.length > 10) {
-        finalMerged.basic.avatarUrl = permAvatar;
+      const avatar = getPermanentAvatar() || incomingAvatar || existing?.basic?.avatarUrl?.trim();
+      if (avatar && avatar.length > 10) {
+        finalMerged.basic.avatarUrl = avatar;
+        setPermanentAvatar(avatar);
       }
     }
+    // Removal is a one-time UI command, never persistent profile data.
+    delete (finalMerged as any).__explicitRemoveAvatar;
+    delete (finalMerged as any).__isAvatarAction;
 
     const nowTs = Date.now();
     finalMerged.completedAt = nowTs;

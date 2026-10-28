@@ -111,7 +111,7 @@ export default function ProfilePage() {
 
   const initialProfile = sharedState?.userProfile || getPersistentUserProfile();
   const permAvatar = getPermanentAvatar();
-  const initAvatar = initialProfile?.basic?.avatarUrl || permAvatar || '';
+  const initAvatar = permAvatar || initialProfile?.basic?.avatarUrl || '';
 
   const rawInitName = initialProfile?.basic?.name || '';
   const initName = (rawInitName && rawInitName !== '여행자') ? rawInitName : '';
@@ -171,7 +171,7 @@ export default function ProfilePage() {
           ...b,
           ...cleanBasic,
           // 🛡️ 프로필 사진 보호: 새로 들어온 basic에 avatarUrl이 비어있으면 현재 사진 또는 영구 금고 사진 유지
-          avatarUrl: cleanBasic.avatarUrl || b.avatarUrl || getPermanentAvatar() || '',
+          avatarUrl: getPermanentAvatar() || cleanBasic.avatarUrl || b.avatarUrl || '',
         }));
       }
       if (profile.fate) setFate(f => ({ ...f, ...profile.fate }));

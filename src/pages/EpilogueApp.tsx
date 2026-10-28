@@ -33,7 +33,7 @@ import { useBinauralBeat } from '@/hooks/useBinauralBeat';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { useScrollToTopOnChange } from '@/hooks/useScrollToTopOnChange';
 import { useSpecialFeatureChromeHidden, SPECIAL_FEATURE_CHROME_HIDDEN_CLASS } from '@/components/SpecialFeaturePanel';
-import { loadProfileFromAllVaults, saveProfileToAllVaults } from '@/lib/profileVault';
+import { loadProfileFromAllVaults, saveProfileToAllVaults, getPermanentAvatar, setPermanentAvatar } from '@/lib/profileVault';
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
 import { type UserProfile, mergeUserProfiles } from '@/lib/sharedState';
 import { cleanFirestoreData } from '@/lib/sharedStateSync';
@@ -375,7 +375,7 @@ export default function EpilogueApp() {
     gender: (initialProfile?.basic?.gender || '') as '' | 'male' | 'female' | 'other',
     birthCity: initialProfile?.basic?.birthCity || '',
     lunarSolar: (initialProfile?.basic?.lunarSolar || 'solar') as 'solar' | 'lunar',
-    avatarUrl: initialProfile?.basic?.avatarUrl || '',
+    avatarUrl: getPermanentAvatar() || initialProfile?.basic?.avatarUrl || '',
   });
   const [fate, setFate] = useState({
     fateInterests: initialProfile?.fate?.fateInterests || ([] as string[]),
@@ -411,6 +411,7 @@ export default function EpilogueApp() {
     try {
       setIsUploadingAvatar(true);
       const compressedDataUrl = await compressImageToDataUrl(file, 320, 0.85);
+      setPermanentAvatar(compressedDataUrl);
       setBasic((prev) => ({ ...prev, avatarUrl: compressedDataUrl }));
 
       const existingProfile = sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile() || {};
@@ -463,6 +464,8 @@ export default function EpilogueApp() {
     if (!updatedProfile.basic) updatedProfile.basic = {};
     updatedProfile.basic.avatarUrl = '';
 
+    (updatedProfile as any).__explicitRemoveAvatar = true;
+    (updatedProfile as any).__isAvatarAction = true;
     saveProfileToAllVaults(updatedProfile);
     setPersistentUserProfile(updatedProfile);
     updateSharedState({ userProfile: updatedProfile }, 'profile').catch(() => {});
@@ -497,7 +500,7 @@ export default function EpilogueApp() {
       if (!profile) return;
       if (profile.basic) {
         const cleanBasic = { ...profile.basic };
-        setBasic((b) => ({ ...b, ...cleanBasic }));
+        setBasic((b) => ({ ...b, ...cleanBasic, avatarUrl: getPermanentAvatar() || cleanBasic.avatarUrl || b.avatarUrl || '' }));
       }
       if (profile.fate) setFate((f) => ({ ...f, ...profile.fate }));
       if (profile.music) setMusic((m) => ({ ...m, ...profile.music }));
