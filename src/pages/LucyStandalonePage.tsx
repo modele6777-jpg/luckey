@@ -4,7 +4,7 @@ import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Trash2, Search, X, Check, Volume2, VolumeX, Square,
+  Send, Search, X, Check, Volume2, VolumeX, Square,
   Download, User, Plus, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked, Mic, MicOff, MessageSquare
 } from 'lucide-react';
@@ -611,10 +611,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     lucyProMessages,
     isLucyProGenerating,
     abortLucyProGenerating,
-    clearLucyProMessages,
     sharedState,
-    updateSharedState,
-    clearPersonaMessages
+    updateSharedState
   } = useApp();
 
   const abortGenerating = pro ? abortLucyProGenerating : abortNormalGenerating;
@@ -739,8 +737,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
-  const [resetToast, setResetToast] = useState<string | null>(null);
   const [modeSwitchToast, setModeSwitchToast] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
@@ -2451,7 +2447,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             </div>
           </div>
 
-          {/* Right Action Tools: 1. 검색 -> 2. 자동 읽기 -> 3. 초기화 */}
+          {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* 1. 검색 (Search Toggle) */}
             <button
@@ -2515,23 +2511,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 </>
               )}
             </button>
-
-            {/* 초기화 (Clear / Reset Chat) */}
-            {lucyMessages.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setIsResetConfirmOpen(true)}
-                className={`p-2 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 border ${
-                  isLight
-                    ? 'bg-amber-50/80 hover:bg-rose-50 hover:text-rose-600 text-slate-500 border-amber-900/10'
-                    : 'bg-white/10 hover:bg-rose-950/60 hover:text-rose-300 text-white border-white/15'
-                }`}
-                title="대화 초기화 (새 대화 시작)"
-                aria-label="대화 초기화"
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
 
             {/*  Export Chat */}
             {lucyMessages.length > 0 && (
@@ -3499,86 +3478,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
-
-      {/* ️ 대화 초기화 확인 모달 */}
-      <AnimatePresence>
-        {isResetConfirmOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border space-y-4 ${
-                isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-slate-900 border-white/15 text-white'
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-500/30 text-rose-600 dark:text-rose-300 flex items-center justify-center shrink-0">
-                  <Trash2 size={22} />
-                </div>
-                <div>
-                  <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>대화 초기화 & 새 대화 시작</h3>
-                  <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-white/75'}`}>대화창을 비우고 상쾌하게 새로 시작합니다</p>
-                </div>
-              </div>
-
-              <div className={`border rounded-2xl p-4 space-y-2 text-xs leading-relaxed ${
-                isLight ? 'bg-slate-50 border-slate-200/80 text-slate-600' : 'bg-slate-800/80 border-white/10 text-white/90'
-              }`}>
-                <p>
-                  {pro ? '루시 프로의 대화창만 비웁니다. 일반 루시의 대화 내역은 바뀌지 않습니다.' : <>일반 루시의 대화만 영구 기억 아카이브에 요약 보존한 뒤 초기화합니다. 루시 프로의 대화는 바뀌지 않습니다.</>}
-                </p>
-                <p className={isLight ? 'text-slate-500' : 'text-white/75'}>
-                  대화창을 깨끗한 새 화면으로 초기화할까요?
-                </p>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsResetConfirmOpen(false)}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                    isLight ? 'text-slate-600 hover:bg-slate-100' : 'text-white/85 hover:bg-white/10'
-                  }`}
-                >
-                  취소
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    abortGenerating('lucy');
-                    stopTTS();
-                    if (pro) clearLucyProMessages();
-                    else clearPersonaMessages('lucy');
-                    setIsResetConfirmOpen(false);
-                    setResetToast('대화가 깨끗하게 초기화되었습니다.');
-                    setTimeout(() => setResetToast(null), 3000);
-                  }}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
-                >
-                  <Trash2 size={14} />
-                  <span>초기화하기</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/*  Reset Feedback Toast */}
-      <AnimatePresence>
-        {resetToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-slate-900/90 text-white text-xs font-medium shadow-xl backdrop-blur-md flex items-center gap-2 border border-white/10"
-          >
-            <span>{resetToast}</span>
-          </motion.div>
         )}
       </AnimatePresence>
 
