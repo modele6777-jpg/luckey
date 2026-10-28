@@ -1809,8 +1809,8 @@ export function BigBangButton() {
                 <div className="relative flex items-center justify-center pointer-events-none">
                   {centerDirection === 'north' || centerDirection === 'south' ? (
                     centerDirection === 'north'
-                      ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
-                      : <ChevronDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                      ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                      : <ChevronDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerDirection === 'west' ? (
                     <svg data-bigbang-shamrock="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true" className="rotate-[-45deg] text-emerald-200" style={{ filter: 'drop-shadow(0 0 6px #34d399)' }}>
                       {[0, 120, 240].map(angle => <path key={angle} transform={`rotate(${angle} 12 12)`} d="M12 12C9 10 5 7 7 4C9 2 12 4 12 5C12 4 15 2 17 4C19 7 15 10 12 12Z" />)}
