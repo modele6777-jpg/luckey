@@ -1,3 +1,4 @@
+import { scoreSpeechVoice } from './speechVoice';
 import { useState, useEffect } from 'react';
 import {
   getSharedAudioContext,
@@ -90,83 +91,11 @@ export function playNativeBrowserSpeech(
   const langVoices = voicesList.filter((v) => v.lang.toLowerCase().startsWith(langCode));
 
   if (langVoices.length > 0) {
-    const getVoiceScore = (voiceItem: SpeechSynthesisVoice) => {
-      const name = voiceItem.name.toLowerCase();
-      const isMaleVoiceName =
-        name.includes('google 한국의') ||
-        name.includes('google korean') ||
-        name.includes('korean male') ||
-        name.includes('injoon') ||
-        name.includes('minsu') ||
-        name.includes('david') ||
-        name.includes('guy') ||
-        name.includes('mark') ||
-        name.includes('george') ||
-        name.includes('male') ||
-        name.includes('남성') ||
-        name.includes('ism'); // Android Google TTS male voice (ko-kr-x-ism)
-
-      const isFemaleVoiceName =
-        name.includes('sunhi') ||
-        name.includes('heami') ||
-        name.includes('yuna') ||
-        name.includes('narae') ||
-        name.includes('seoyeon') ||
-        name.includes('sohee') ||
-        name.includes('jiwon') ||
-        name.includes('siri') ||
-        name.includes('female') ||
-        name.includes('여성') ||
-        name.includes('aoede') ||
-        name.includes('kore') ||
-        name.includes('clara') ||
-        name.includes('aria') ||
-        name.includes('zira') ||
-        name.includes('kfb'); // Android Google TTS female voice (ko-kr-x-kfb)
-
-      // 🌟 모든 TTS 낭독은 무조건 여성 음성만 나오도록 철저 제한 (남성 음성 원천 차단)
-      if (isMaleVoiceName) return -10000;
-      if (isFemaleVoiceName) {
-        if (
-          name.includes('heami') ||
-          name.includes('sunhi') ||
-          name.includes('yuna') ||
-          name.includes('seoyeon') ||
-          name.includes('narae') ||
-          name.includes('siri') ||
-          name.includes('aria') ||
-          name.includes('kfb') ||
-          name.includes('aoede')
-        ) return 200;
-        return 120;
-      }
-      return 10;
-    };
-
-    const sorted = langVoices.sort((a, b) => getVoiceScore(b) - getVoiceScore(a));
-    if (sorted.length > 0 && getVoiceScore(sorted[0]) > -500) {
-      utterance.voice = sorted[0];
-      const chosenName = sorted[0].name.toLowerCase();
-      const isKnownFemale =
-        chosenName.includes('sunhi') ||
-        chosenName.includes('heami') ||
-        chosenName.includes('yuna') ||
-        chosenName.includes('narae') ||
-        chosenName.includes('seoyeon') ||
-        chosenName.includes('siri') ||
-        chosenName.includes('female') ||
-        chosenName.includes('여성') ||
-        chosenName.includes('aria') ||
-        chosenName.includes('kfb') ||
-        chosenName.includes('aoede');
-      // 🌟 여성 음색 보장: 맑고 자연스러운 여성 음조 (1.05 ~ 1.15)
-      utterance.pitch = isKnownFemale ? 1.05 : 1.15;
-    } else {
-      utterance.pitch = 1.15;
-    }
-  } else {
-    utterance.pitch = 1.15;
+    const sorted = [...langVoices].sort((a, b) => scoreSpeechVoice(b) - scoreSpeechVoice(a));
+    if (sorted.length > 0 && scoreSpeechVoice(sorted[0]) > -500) utterance.voice = sorted[0];
   }
+  // Pitch shifting makes fallback speech sound synthetic; preserve the voice's timbre.
+  utterance.pitch = 1.0;
 
   const firstSub = splitSpeechIntoSentences(cleanText)[0] || cleanText;
   updateTTSState({
@@ -300,7 +229,7 @@ const ttsCache = new Map<string, Promise<TTSAudioData | null>>();
 export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string, _rate?: string, _speed?: number): string {
   const clean = normalizeTextForSpeech(text);
   // 🌟 모든 TTS 재생 및 캐시는 유니버스 인사이트 명언의 단일 여성 표준 음성(Gemini Kore Female v5) 1.0 배속 표준 속도로 영구 고정
-  return `universe_kore_female_v5_${clean}`;
+  return `lucy_aoede_natural_v6_${clean}`;
 }
 
 export function prefetchTTS(text: string, voice?: string, emotion?: string, _rate?: string, _speed?: number): Promise<TTSAudioData | null> {
