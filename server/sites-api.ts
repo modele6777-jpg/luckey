@@ -191,6 +191,16 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
         contents: [{ parts: [{ text: `다음 텍스트만 자연스러운 한국어 대화체로 읽어 주세요. 따뜻하고 편안한 성인 여성의 목소리로, 과장된 애교나 연극조 없이 말하세요. 문장과 문장 사이에는 짧게 쉬고, 낱말을 하나씩 끊거나 음높이를 인위적으로 높이지 마세요. 원문을 생략하거나 설명을 덧붙이지 마세요.\n${speech}` }] }],
         generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
       });
+      if (/^audio\/(?:x-)?wav(?:;|$)/i.test(media.mimeType)) {
+        const wav = Uint8Array.from(atob(media.data), char => char.charCodeAt(0));
+        const signature = (offset: number, length: number) => String.fromCharCode(...wav.subarray(offset, offset + length));
+        if (wav.length < 44 || signature(0, 4) !== 'RIFF' || signature(8, 4) !== 'WAVE') throw new ApiError(502, 'WAV 음성 데이터를 확인하지 못했습니다.');
+        const view = new DataView(wav.buffer);
+        const sampleRate = view.getUint32(24, true);
+        if (sampleRate < 8000 || sampleRate > 96000) throw new ApiError(502, '음성 샘플 주파수를 확인하지 못했습니다.');
+        // Newer TTS models already return a WAV container; never wrap its header as PCM.
+        return json({ audioContent: media.data, encoding: 'wav', sampleRate, voice });
+      }
       if (!/^audio\/(L16|pcm)/i.test(media.mimeType)) throw new ApiError(502, '음성 형식을 확인하지 못했습니다.');
       const sampleRate = Number(/rate=(\d+)/i.exec(media.mimeType)?.[1] || 24000);
       return json({ audioContent: bytesToBase64(pcmToWav(media.data, sampleRate)), encoding: 'wav', sampleRate, voice });

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { handleSitesApi, allowedArtworkUrl } from '../server/sites-api';
+import { handleSitesApi, allowedArtworkUrl, pcmToWav } from '../server/sites-api';
 import { MUSE_ART_CATALOG } from '../server/api-lib/museArtCatalog';
 import { resolveArtworkImage } from '../src/utils/artworkImage';
 
@@ -146,4 +146,17 @@ test('image client exposes a quota error instead of inventing a fallback URL', a
   try {
     await assert.rejects(() => resolveArtworkImage({ title: '꽃', creator: '테스트', artworkType: '그림', era: '현대', description: '파란 꽃', aestheticTone: '파랑' }), /이미지 생성 한도/);
   } finally { globalThis.fetch = original; }
+});
+
+
+test('TTS accepts the actual packaged WAV response from the current model unchanged', async () => {
+  const wav = Buffer.from(pcmToWav('AAAAAA==', 24000));
+  const response = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요', voice: 'Aoede' }), env, (async () => Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/wav', data: wav.toString('base64') } }] } }] })) as any);
+  assert.equal(response?.status, 200);
+  const result = await response!.json() as any;
+  assert.equal(result.encoding, 'wav');
+  assert.equal(result.sampleRate, 24000);
+  assert.deepEqual(Buffer.from(result.audioContent, 'base64'), wav);
+  const bad = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요' }), env, (async () => Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/wav', data: 'AAAAAA==' } }] } }] })) as any);
+  assert.equal(bad?.status, 502);
 });
