@@ -2555,41 +2555,14 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       )}
                     </button>
                   </h1>
-                  {isPlusMode ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 flex items-center gap-1 shrink-0">
-                      <Sparkles size={10} className="text-indigo-400" />
-                      마스터 모드
-                    </span>
-                  ) : (
-                    <>
-                      <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 flex items-center gap-1 shrink-0">
-                        <Sparkles size={10} className="text-indigo-400 animate-spin" />
-                        AI 모드
-                      </span>
-                      {activeChannels.length === ALL_CHANNELS.length ? (
-                        <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs truncate max-w-full">
-                          <span>👑</span>
-                          <span className="truncate">7대 채널 올인원 마스터</span>
-                        </span>
-                      ) : activeChannels.length >= 2 ? (
-                        <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-300 flex items-center gap-1 shadow-xs truncate max-w-full">
-                          <span>⚡</span>
-                          <span className="truncate">{activeChannels.length}중 융합 가동 중</span>
-                        </span>
-                      ) : autoDetectedTitle ? (
-                        <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-950/60 text-violet-100 border border-violet-500/30 truncate max-w-full">
-                          {autoDetectedTitle}
-                        </span>
-                      ) : null}
-                    </>
-                  )}
+                  <span className="lucy-mode-badge">{isPlusMode ? '마스터 모드' : 'AI 모드'}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* 1. 검색 (Search Toggle) */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -2606,23 +2579,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               <Search size={16} />
             </button>
 
-
-            {/* 🎙️ 1:1 실시간 음성 모드 토글 버튼 */}
-            <button
-              type="button"
-              onClick={handleToggleVoiceMode}
-              className={`p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center justify-center border ${
-                isVoiceMode
-                  ? 'bg-gradient-to-r from-amber-500/25 to-yellow-500/30 text-amber-300 border-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.35)] animate-pulse'
-                  : isLight
-                  ? 'bg-amber-50/80 hover:bg-amber-100/80 text-slate-600 border-amber-900/10'
-                  : 'bg-white/10 hover:bg-white/15 text-white/85 border border-white/15'
-              }`}
-              title={isVoiceMode ? '음성 모드 켜짐 (클릭 시 끄기)' : '루시 1:1 음성 대화 모드 켜기'}
-              aria-label={isVoiceMode ? '음성 모드 켜짐' : '음성 모드 켜기'}
-            >
-              <Mic size={16} className={isVoiceMode ? 'text-amber-300 animate-pulse' : 'text-amber-500 dark:text-amber-400'} />
-            </button>
 
             {/* 🔊 루시 답변 자동 음성 읽기 (Auto-TTS 바로재생 토글 버튼: 한 번 더 누르면 즉시 끄기) */}
             <button
@@ -2803,7 +2759,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex flex-col w-full max-w-full min-w-0 overflow-x-hidden ${isUser ? 'items-end' : 'items-start'}`}
               >
-                {/* Speaker Label, Mode Badge Pill (Clickable) & Timestamp */}
+                {/* Speaker label, passive mode badge and timestamp */}
                 <div className="flex items-center gap-1.5 mb-1.5 px-1 text-[11px] flex-wrap max-w-full min-w-0">
                   {!isUser ? (
                     <span
@@ -2823,20 +2779,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     </span>
                   )}
 
-                  {/* Clickable Mode Badge Pill */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleActivateMessageMode(msgModeInfo.channels, msgModeInfo.isMaster, msgModeInfo.badgeLabel);
-                    }}
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 ${msgModeInfo.badgeColor}`}
-                    title={`클릭 시 [${msgModeInfo.badgeLabel}] 모드로 즉각 전환됩니다.`}
-                  >
-                    <span>{msgModeInfo.badgeIcon}</span>
+                  <span data-message-mode-badge="true"
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${msgModeInfo.badgeColor}`}>
+                    <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
                     <span>{msgModeInfo.badgeLabel}</span>
-                    <span className="text-[9px] opacity-75 font-normal">모드 ON</span>
-                  </button>
+                  </span>
 
                   {/* 🔮 루시 답장에 15가지 운명학 도구 중 어떤 도구들이 쓰였는지 모드 옆에 표시 */}
                   {!isUser && !isGreeting && !msgModeInfo.isCasual && (() => {
@@ -3065,7 +3012,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             : 'bg-slate-950/88 border-white/10 text-white'
         }`}
       >
-        <div className="w-full min-w-0 max-w-lg sm:max-w-xl mx-auto flex flex-col gap-0.5 sm:gap-1 overflow-x-hidden">
+        <div className="lucy-input-stack w-full min-w-0 max-w-lg sm:max-w-xl mx-auto flex flex-col gap-0.5 sm:gap-1 overflow-x-hidden">
           {/* Image Attachment Preview */}
           {attachedImage && (
             <div className="flex items-center gap-1.5 bg-amber-50/90 dark:bg-slate-900 p-1 rounded-xl w-fit border border-amber-200 dark:border-white/15">
@@ -3109,7 +3056,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
-                className="flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 dark:border-amber-500/40 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 dark:text-white shadow-xs"
+                className="lucy-voice-status flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 dark:border-amber-500/40 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 dark:text-white shadow-xs"
               >
                 <div className="flex items-center gap-1.5 min-w-0">
                   {ttsInfo.isLoading ? (
@@ -3307,7 +3254,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           )}
 
           {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 버튼 (+ 1인 모드 시 슬림 프로필 칩 통합) */}
-          <div className="w-full flex items-center gap-1 sm:gap-1.5 py-0 overflow-x-auto no-scrollbar scroll-smooth">
+          <div className="lucy-suggestion-toolbar w-full flex items-center gap-1 sm:gap-1.5 py-0 overflow-x-auto no-scrollbar scroll-smooth">
             {/* 1인 점괘 모드일 때: 별도 세로줄을 차지하지 않고 한 줄에 초슬림하게 통합 */}
             {activeProfiles.length <= 1 && (
               <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
@@ -3430,28 +3377,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                   ? 'text-slate-400 hover:text-amber-700 hover:bg-amber-50'
                   : 'text-white/75 hover:text-amber-300 hover:bg-white/10'
               }`}
-              title="사진/이미지 첨부 (멀티모달 비전 분석)"
+              title="사진/이미지 첨부"
+              aria-label="사진 첨부"
             >
               <Camera size={14} className="sm:w-4 sm:h-4" />
-            </button>
-
-            {/* 🔊 Auto-TTS Quick Toggle Button (입력창 바로 옆 원클릭 토글: 한 번 더 누르면 즉시 끄기) */}
-            <button
-              type="button"
-              data-auto-tts-toggle="true"
-              onClick={toggleAutoTts}
-              className={`p-0.5 sm:p-1.5 rounded-md transition-all cursor-pointer shrink-0 active:scale-95 ${
-                isAutoTts
-                  ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs'
-                  : isLight
-                  ? 'text-slate-400 hover:text-slate-600 hover:bg-amber-50'
-                  : 'text-white/75 hover:text-white hover:bg-white/10'
-              }`}
-              title={isAutoTts ? '자동읽기 ON (한 번 더 누르면 즉시 끄기)' : '자동읽기 OFF (누르면 켜기)'}
-              aria-pressed={isAutoTts}
-              aria-label={isAutoTts ? '음성 자동 연속 읽기 켜짐 (눌러서 끄기)' : '음성 자동 읽기 꺼짐 (눌러서 켜기)'}
-            >
-              {isAutoTts ? <Volume2 size={14} className="sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" /> : <VolumeX size={14} className="sm:w-4 sm:h-4" />}
             </button>
 
             {/* 🎙️ Voice Mode / STT Microphone Button */}

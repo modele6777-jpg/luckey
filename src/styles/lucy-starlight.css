@@ -35,11 +35,11 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
 .lucy-clover-orbit { position: absolute; animation: lucy-clover-float 32s ease-in-out infinite alternate; animation-play-state: paused; }
 .lucy-clover-field.is-visible .lucy-clover-orbit { animation-play-state: running; }
 .lucy-clover-particle {
-  display: block; width: 100%; height: auto; color: #dce3f4; opacity: .38;
+  display: block; width: 100%; height: auto; color: #b7df80; opacity: .38;
   filter: none;
   animation: lucy-clover-twinkle 8s ease-in-out infinite;
 }
-.lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #e6d49d; filter: none; }
+.lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #78bf8e; filter: none; }
 .lucy-night .lucy-chat-header,
 .lucy-night .lucy-chat-footer { background: var(--lucy-chrome); border-color: var(--lucy-border); box-shadow: none; backdrop-filter: none; }
 .lucy-night .lucy-chat-main { position: relative; scrollbar-color: #63758a transparent; }
@@ -110,8 +110,8 @@ html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode .lucy-star
 html.light[data-lucy-period] .lucy-cosmic-wash { background: radial-gradient(ellipse at 80% 5%, #ffffffb0, transparent 60%); }
 html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }
 html.light[data-lucy-period] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
-html.light[data-lucy-period] .lucy-clover-particle { color: #8197b4; filter: none; }
-html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #aa8b54; }
+html.light[data-lucy-period] .lucy-clover-particle { color: #5d9442; filter: none; }
+html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #34835a; }
 html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #faf7f0 !important; }
 html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
 
@@ -173,3 +173,40 @@ html[data-lucy-period='night'] .lucy-shooting-star { animation-play-state: runni
   100% { opacity: 0; transform: translate3d(-44vw, 30.8vw, 0); }
 }
 @media (prefers-reduced-motion: reduce) { .lucy-meteor-field { display: none; } }
+
+/* Refined chat chrome: spacing and typography replace decorative borders. */
+.lucy-night .lucy-chat-header { padding-bottom: 14px; box-shadow: none; }
+.lucy-night .lucy-chat-header h1 { font-size: 21px; font-weight: 720; letter-spacing: -.8px; }
+.lucy-night .lucy-chat-header h1 span { font-weight: inherit; letter-spacing: inherit; }
+.lucy-mode-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; line-height: 20px; padding: 0 7px; border-radius: 6px; color: #aab9cc; background: #ffffff08; white-space: nowrap; }
+.lucy-mode-badge::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #92ac9c; }
+html.light .lucy-mode-badge { color: #647487; background: #253d5610; }
+html[data-lucy-theme='starlight'] .lucy-night .lucy-header-actions > button { min-width: 36px; height: 36px; padding: 7px; border: 0 !important; border-radius: 11px; background: transparent !important; color: inherit !important; box-shadow: none; }
+.lucy-header-actions > button:hover { opacity: .7; }
+.lucy-header-actions > button span { display: none; }
+.lucy-header-actions [aria-pressed='true'] { outline: 1px solid #789f8b66; outline-offset: -2px; }
+.lucy-header-actions svg { width: 17px; height: 17px; animation: none !important; }
+.lucy-night .lucy-chat-main > div { max-width: 820px; margin-inline: auto; }
+.lucy-night .lucy-starlight-assistant { border-radius: 20px 20px 20px 6px; box-shadow: 0 2px 8px #00000008; padding: 18px 20px; }
+.lucy-night .lucy-starlight-user { border-radius: 20px 20px 6px 20px; padding: 16px 20px; }
+.lucy-night .lucy-chat-footer { padding: 10px 14px max(10px, env(safe-area-inset-bottom)); border-top-color: #8793a01f; }
+.lucy-night .lucy-input-stack { max-width: 820px; gap: 9px; }
+html[data-lucy-theme='starlight'] .lucy-night .lucy-suggestion-toolbar button { min-height: 28px; padding: 4px 9px; border: 0; background: #8793a010; font-size: 10px; box-shadow: none; }
+.lucy-night .lucy-suggestion-toolbar svg { width: 12px; height: 12px; }
+.lucy-night .lucy-starlight-composer { min-height: 58px; padding: 8px; gap: 7px; border-radius: 22px; box-shadow: 0 3px 16px #00000005; }
+.lucy-night .lucy-starlight-composer > button { width: 36px; height: 36px; border: 0; border-radius: 12px; display: grid; place-items: center; }
+.lucy-night .lucy-starlight-composer > button svg { width: 19px; height: 19px; }
+.lucy-night .lucy-starlight-composer textarea { min-height: 28px; padding-block: 3px; }
+.lucy-night .lucy-starlight-send { width: 40px !important; height: 40px !important; border-radius: 14px !important; }
+@media (max-width: 420px) {
+  .lucy-night .lucy-chat-header { padding-inline: 14px; }
+  .lucy-night .lucy-chat-header h1 { font-size: 20px; }
+  .lucy-header-actions { gap: 1px; }
+  html[data-lucy-theme='starlight'] .lucy-night .lucy-header-actions > button { min-width: 32px; padding-inline: 6px; }
+  .lucy-night .lucy-starlight-assistant { padding: 16px; }
+}
+
+.lucy-night [data-message-mode-badge] { border: 0; box-shadow: none; padding: 3px 7px; font-weight: 500; }
+
+html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #8793a010; border: 0; padding: 7px 9px; border-radius: 10px; box-shadow: none; }
+.lucy-voice-status > button { background: #73869b30; color: inherit; box-shadow: none; min-height: 26px; padding: 4px 8px; }

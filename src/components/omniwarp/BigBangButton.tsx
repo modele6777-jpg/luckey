@@ -1,8 +1,8 @@
 import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
-import { BigBangCloverWind } from './BigBangCloverWind';
+import { BigBangAurora } from './BigBangAurora';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
-import './bigbang-clover-breeze.css';
+import './bigbang-aurora.css';
 import { oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
@@ -1395,7 +1395,7 @@ export function BigBangButton() {
   if (typeof document === 'undefined') return null;
   return createPortal(
     <>
-      {cloverWind !== 'off' && <BigBangCloverWind settling={cloverWind === 'settling'} layerRef={cloverWindLayerRef} />}
+      {cloverWind !== 'off' && <BigBangAurora settling={cloverWind === 'settling'} layerRef={cloverWindLayerRef} />}
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
         className={`fixed bottom-safe-fab-center w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
@@ -1675,8 +1675,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 화면 전체 네잎클로버 바람 효과)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 화면 전체 네잎클로버 바람 효과"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 은은한 오로라 효과)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 은은한 오로라 효과"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

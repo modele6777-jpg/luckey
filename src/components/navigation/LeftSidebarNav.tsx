@@ -1,4 +1,6 @@
+import { createPortal } from 'react-dom';
 import './sidebar-edge-hint.css';
+import './menu-refined.css';
 import { CHANNEL_MENU_ICONS } from '@/lib/channelMenuIcons';
 import { OPEN_NAVIGATION_MENU_EVENT, TOGGLE_NAVIGATION_MENU_EVENT } from '@/lib/navigationMenu';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -65,7 +67,7 @@ export const CORE_CHANNELS: NavItemConfig[] = [
     path: '/',
     icon: Sparkles,
     label: 'Lucy',
-    subLabel: '루시 AI · 영혼의 대화',
+    subLabel: '나를 이해하는 대화',
     color: 'oklch(0.70 0.20 300)',
     isMainChat: true,
   },
@@ -187,7 +189,6 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
-  const menuLeafGradientId = React.useId();
   const showSidebar = useCallback(() => setIsOpen(true), []);
   const hideSidebar = useCallback(() => setIsOpen(false), []);
 
@@ -504,349 +505,20 @@ export default function LeftSidebarNav() {
   const isLight = resolvedTheme === 'light';
 
   const renderNavButton = (item: NavItemConfig) => {
-    const { path, icon: Icon, label, subLabel, color, isMainChat, isKey, isPrologue, isLuckey } = item;
-    const isActive = isMainChat
-      ? isLucyActive
-      : isKey
-      ? isKeyActive
-      : isLuckey
-      ? Boolean(isAnyPrismActive || isChannelsOpen)
-      : isPrologue
-      ? isPrologueActive
+    const { path, icon: Icon, label, subLabel, isMainChat, isKey, isPrologue, isLuckey } = item;
+    const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isLuckey
+      ? Boolean(isAnyPrismActive || isChannelsOpen) : isPrologue ? isPrologueActive
       : cleanPath === path || cleanPath.startsWith(path + '/');
-    const isRainbow = Boolean(isMainChat || isKey || isLuckey);
-    const isHovered = hoveredNavPath === path;
-    const isRecommendedTop1 = !isRainbow && path === recommendedPrismPath;
-
-    // 🌈 Special Rainbow Glowing Style for Core Sanctuary Channels (LUCY, KEY, LUCKEY)
-    if (isRainbow) {
-      return (
-        <button
-          key={path}
-          type="button"
-          onClick={() => {
-            if (isLuckey) {
-              setIsChannelsOpen((prev) => !prev);
-            } else {
-              handleNavigate(path);
-            }
-          }}
-          onMouseEnter={() => {
-            setHoveredNavPath(path);
-            if (isLuckey) handleChannelsMouseEnter();
-          }}
-          onMouseLeave={() => {
-            setHoveredNavPath(null);
-            if (isLuckey) handleChannelsMouseLeave();
-          }}
-          aria-label={
-            isLuckey
-              ? `${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'} (현재 추천 1순위: ${recommendedPrismChannel.label})`
-              : label
-          }
-          aria-expanded={isLuckey ? isChannelsOpen : undefined}
-          className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
-            isActive ? 'scale-105' : 'hover:scale-105 active:scale-95'
-          }`}
-        >
-          {/* Active left indicator bar */}
-          {isActive && (
-            <motion.div
-              layoutId="active-nav-glow"
-              className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full rainbow-gradient-flow shadow-[0_0_8px_rgba(255,160,120,0.8)]"
-              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            />
-          )}
-
-          {/* Rainbow Conic Halo Border */}
-          <div
-            className={`relative w-full h-full rounded-xl overflow-hidden p-[1.5px] transition-shadow duration-300 ${
-              isActive
-                ? isLuckey
-                  ? 'shadow-[0_0_16px_rgba(52,211,153,0.6)]'
-                  : 'shadow-[0_0_16px_rgba(255,107,107,0.55)]'
-                : 'group-hover:shadow-[0_0_12px_rgba(255,107,107,0.35)]'
-            }`}
-          >
-            <div className="absolute inset-0 rainbow-fab-halo blur-[0.5px]" />
-            <div
-              className={`relative w-full h-full rounded-[10px] flex items-center justify-center transition-colors duration-300 ${
-                isLight
-                  ? isActive
-                    ? isLuckey
-                      ? 'bg-[#fffdf9]/95 ring-1 ring-emerald-500/40'
-                      : 'bg-[#fffdf9]/95 ring-1 ring-amber-400/50'
-                    : 'bg-[#fdfaf5]/92 group-hover:bg-white'
-                  : isActive
-                  ? isLuckey
-                    ? 'bg-neutral-900/95 ring-1 ring-emerald-400/40'
-                    : 'bg-neutral-900/95 ring-1 ring-white/30'
-                  : 'bg-neutral-950/90 group-hover:bg-neutral-900/90'
-              }`}
-            >
-              <Icon
-                size={20}
-                className={`${
-                  isLuckey
-                    ? isLight
-                      ? 'text-emerald-600 drop-shadow-[0_0_6px_rgba(16,185,129,0.45)]'
-                      : 'text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)]'
-                    : isKey
-                    ? isLight
-                      ? 'text-teal-600 drop-shadow-[0_0_6px_rgba(20,184,166,0.45)]'
-                      : 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
-                    : isLight
-                    ? 'text-purple-600 drop-shadow-[0_0_6px_rgba(147,51,234,0.45)]'
-                    : 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]'
-                } transition-transform duration-300 group-hover:scale-110 ${isLuckey ? 'group-hover:rotate-12' : ''}`}
-              />
-            </div>
-          </div>
-
-          {/* For LUCKEY: Clean glowing theme-color circular dot in top-right corner */}
-          {isLuckey && recommendedPrismChannel && (
-            <span
-              className="absolute -top-1 -right-1 z-20 w-3 h-3 rounded-full pointer-events-none transition-transform duration-200 group-hover:scale-110"
-              style={{
-                backgroundColor: recommendedPrismChannel.color,
-                boxShadow: `0 0 8px ${recommendedPrismChannel.color}, 0 0 14px ${recommendedPrismChannel.color}90`,
-                border: isLight
-                  ? '1.5px solid rgba(255, 255, 255, 0.95)'
-                  : '1.5px solid rgba(15, 15, 20, 0.85)',
-              }}
-            />
-          )}
-
-          {/* Floating Tooltip to the Right (facing screen center) */}
-          <div
-            className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
-              isLight
-                ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-xs font-black uppercase tracking-wider ${
-                  isLuckey
-                    ? isLight
-                      ? 'text-emerald-600'
-                      : 'text-emerald-300'
-                    : 'rainbow-text-shimmer'
-                }`}
-              >
-                {label}
-              </span>
-              <span className={`text-[11px] ${isLight ? 'text-slate-600' : 'text-neutral-300'}`}>
-                {isLuckey ? (isChannelsOpen ? '7대 채널 접기' : '7대 채널 펼치기') : subLabel}
-              </span>
-              {isLuckey ? (
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
-                  {isChannelsOpen ? 'OPEN (7)' : '7 CHANNELS'}
-                </span>
-              ) : isActive ? (
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded rainbow-gradient-flow text-white shadow-sm">
-                  ACTIVE
-                </span>
-              ) : (
-                <span
-                  className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded border ${
-                    isLight
-                      ? 'bg-amber-500/10 text-amber-800 border-amber-500/25'
-                      : 'bg-white/10 text-neutral-300 border-white/10'
-                  }`}
-                >
-                  {isMainChat ? 'AI CORE' : 'HEALING'}
-                </span>
-              )}
-            </div>
-
-            {isLuckey && recommendedPrismChannel && (
-              <div
-                className={`flex items-center gap-1.5 pt-1 border-t text-[10px] ${
-                  isLight ? 'border-amber-900/10 text-slate-700' : 'border-white/10 text-neutral-200'
-                }`}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{
-                    backgroundColor: recommendedPrismChannel.color,
-                    boxShadow: `0 0 6px ${recommendedPrismChannel.color}`,
-                  }}
-                />
-                <span className="font-bold" style={{ color: recommendedPrismChannel.color }}>
-                  {recommendedPrismChannel.label}
-                </span>
-                <span className={isLight ? 'text-slate-600' : 'text-neutral-300'}>
-                  · {topRecommendation?.menu?.name || recommendedPrismChannel.subLabel}
-                </span>
-              </div>
-            )}
-          </div>
-        </button>
-      );
-    }
-
-    // Standard 7 Prism Journey Channels & Auxiliary Channels
     return (
-      <button
-        key={path}
-        type="button"
-        onClick={() => handleNavigate(path)}
-        onMouseEnter={() => setHoveredNavPath(path)}
-        onMouseLeave={() => setHoveredNavPath(null)}
-        aria-label={isRecommendedTop1 ? `${label} (현재 추천 1순위)` : label}
-        className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group shrink-0 ${
-          isActive || isHovered ? 'scale-105' : 'hover:scale-105 active:scale-95'
-        }`}
-        style={{
-          backgroundColor: isActive
-            ? isLight
-              ? `${color}24`
-              : `${color}28`
-            : isHovered
-            ? isLight
-              ? `${color}16`
-              : `${color}18`
-            : isLight
-            ? 'rgba(255, 255, 255, 0.78)'
-            : 'rgba(255, 255, 255, 0.04)',
-          border: `${isActive ? '1.5px' : '1px'} solid ${
-            isActive
-              ? `${color}95`
-              : isHovered
-              ? `${color}65`
-              : isLight
-              ? 'rgba(180, 150, 115, 0.24)'
-              : 'rgba(255, 255, 255, 0.08)'
-          }`,
-          boxShadow: isActive
-            ? `0 0 16px ${color}45`
-            : isHovered
-            ? `0 0 14px ${color}30`
-            : isLight
-            ? '0 2px 8px rgba(140, 115, 85, 0.07)'
-            : undefined,
-        }}
-      >
-        {/* Active left indicator bar */}
-        {isActive && (
-          <motion.div
-            layoutId="active-nav-glow"
-            className="absolute -left-2 top-2.5 bottom-2.5 w-1 rounded-r-full"
-            style={{
-              backgroundColor: color,
-              boxShadow: `0 0 8px ${color}`,
-            }}
-            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-          />
-        )}
-
-        {/* Top-1 Recommended Clean Theme-Color Circular Dot on Top-Right Corner */}
-        {isRecommendedTop1 && (
-          <span
-            className="absolute -top-1 -right-1 z-20 w-3 h-3 rounded-full pointer-events-none transition-transform duration-200 group-hover:scale-110"
-            style={{
-              backgroundColor: color,
-              boxShadow: `0 0 8px ${color}, 0 0 14px ${color}95`,
-              border: isLight
-                ? '1.5px solid rgba(255, 255, 255, 0.95)'
-                : '1.5px solid rgba(15, 15, 20, 0.85)',
-            }}
-          />
-        )}
-
-        {/* Ambient Radial Theme Color Flare blooming behind & over glyph */}
-        <div
-          className="absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at center, ${color}35 0%, ${color}10 50%, transparent 75%)`,
-            opacity: isActive || isHovered ? 1 : 0,
-          }}
-        />
-
-        {/* Icon Glyph with Theme Color & Glowing Drop Shadow on Hover / Active */}
-        <Icon
-          size={20}
-          style={{
-            color: isActive || isHovered ? color : undefined,
-            filter:
-              isActive || isHovered
-                ? `drop-shadow(0 0 8px ${color})`
-                : undefined,
-          }}
-          className={`relative z-10 transition-all duration-200 ${
-            isActive || isHovered
-              ? 'scale-110'
-              : isLight
-              ? 'text-slate-600 group-hover:text-slate-900'
-              : 'text-neutral-400 group-hover:text-neutral-200'
-          }`}
-        />
-
-        {/* Floating Tooltip to the Right (facing screen center) with Theme Color Beacon */}
-        <div
-          className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 transition-all ${
-            isLight
-              ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-              : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
-              style={{
-                backgroundColor: color,
-                boxShadow: `0 0 8px ${color}`,
-              }}
-            />
-            <span
-              className="text-xs font-bold uppercase tracking-wider font-sans"
-              style={{ color }}
-            >
-              {label}
-            </span>
-            <span className={`text-[11px] ${isLight ? 'text-slate-600' : 'text-neutral-300'}`}>
-              {subLabel}
-            </span>
-            {isRecommendedTop1 && (
-              <span
-                className="text-[9px] font-extrabold px-1.5 py-0.5 rounded text-white shadow-xs"
-                style={{
-                  backgroundColor: color,
-                  boxShadow: `0 0 8px ${color}80`,
-                }}
-              >
-                추천 1순위
-              </span>
-            )}
-            {isActive && (
-              <span
-                className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded"
-                style={{
-                  color,
-                  backgroundColor: `${color}20`,
-                  border: `1px solid ${color}40`,
-                }}
-              >
-                ACTIVE
-              </span>
-            )}
-          </div>
-
-          {isRecommendedTop1 && topRecommendation && (
-            <div
-              className={`flex items-center gap-1.5 pt-1 border-t text-[10px] ${
-                isLight ? 'border-amber-900/10 text-slate-600' : 'border-white/10 text-neutral-300'
-              }`}
-            >
-              <span className="font-bold" style={{ color }}>
-                {topRecommendation.menu.name}
-              </span>
-              <span>· {topRecommendation.reason}</span>
-            </div>
-          )}
-        </div>
+      <button key={path} type="button" className="refined-nav-item" data-active={isActive}
+        aria-label={isLuckey ? `${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'}` : label}
+        aria-current={!isLuckey && isActive ? 'page' : undefined}
+        aria-expanded={isLuckey ? isChannelsOpen : undefined}
+        onClick={() => isLuckey ? setIsChannelsOpen(prev => !prev) : handleNavigate(path)}>
+        <span className="refined-nav-icon"><Icon size={20} /></span>
+        <span className="refined-nav-copy"><span>{label}</span><small>{subLabel}</small></span>
+        {isLuckey && <ChevronLeft size={15} className={isChannelsOpen ? '-rotate-90' : 'rotate-180'} />}
+        {!isLuckey && isActive && <span className="refined-active-dot" aria-hidden="true" />}
       </button>
     );
   };
@@ -873,27 +545,16 @@ export default function LeftSidebarNav() {
     }
   };
 
-  return (
+  return createPortal(
     <>
       {!isOpen && <button type="button" onClick={showSidebar} aria-label="메뉴 열기" aria-controls="main-sidebar-navigation" aria-expanded={false}
         data-theme={isLight ? 'light' : 'dark'}
         className="page-menu-button fixed z-[398] flex h-10 w-10 items-center justify-center rounded-[14px] border backdrop-blur-xl active:scale-95">
-        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true" className={isLight ? 'text-emerald-600 drop-shadow-[0_1px_2px_#10b98133]' : 'text-emerald-400 drop-shadow-[0_0_5px_#34d39955]'}>
-          <defs>
-            <linearGradient id={menuLeafGradientId} x1="4" y1="3" x2="22" y2="23" gradientUnits="userSpaceOnUse">
-              <stop stopColor={isLight ? '#6ee7b7' : '#a7f3d0'} />
-              <stop offset="0.45" stopColor="#10b981" />
-              <stop offset="1" stopColor={isLight ? '#047857' : '#059669'} />
-            </linearGradient>
-          </defs>
-          <path d="M13 13c1 4 1 7-2 10" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <g data-menu-four-leaf-clover="true" fill={`url(#${menuLeafGradientId})`} stroke={isLight ? '#059669' : '#a7f3d0'} strokeOpacity="0.5" strokeWidth="0.5" strokeLinejoin="round">
-            {[0, 90, 180, 270].map((angle) => (
-              <path key={angle} d="M13 13C9 12 4 9 5 6C6 2 10 3 11 5C12 2 16 3 17 6C18 9 15 12 13 13Z" transform={`rotate(${angle} 13 13)`} />
-            ))}
+        <svg data-menu-four-leaf-clover="true" width="26" height="28" viewBox="0 0 40 44" aria-hidden="true">
+          <g fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round">
+            {[0, 90, 180, 270].map(angle => <path key={angle} data-menu-leaf="true" d="M20 20C17 17 10 13 11 8C12 3 18 3 20 7C22 3 28 3 29 8C30 13 23 17 20 20Z" transform={`rotate(${angle} 20 20)`} />)}
           </g>
-          <circle cx="13" cy="13" r="1.3" fill="#fff3b0" />
-          <path d="M8 6l2 2m8 0-2 2" fill="none" stroke="white" strokeOpacity="0.6" strokeWidth="1" strokeLinecap="round" />
+          <path d="M20 20Q29 34 20 42" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
         </svg>
       </button>}
       {!isOpen && <div className="sidebar-edge-hint" data-sidebar-edge-hint="true" data-theme={isLight ? 'light' : 'dark'} aria-hidden="true">
@@ -904,13 +565,14 @@ export default function LeftSidebarNav() {
       <AnimatePresence>
         {isOpen && (
           <>
-            <div key="nav-backdrop" className="fixed inset-0 z-[399]" onClick={hideSidebar} aria-hidden="true" />
+            <div key="nav-backdrop" className="fixed inset-0 z-[10020] bg-slate-950/25 backdrop-blur-[2px]" onClick={hideSidebar} aria-hidden="true" />
             {/* Original slim icon rail */}
             <motion.aside
               key="nav-drawer"
               id="main-sidebar-navigation"
               role="navigation"
               aria-label="사이드 네비게이션"
+              data-theme={isLight ? 'light' : 'dark'}
               initial={{ x: '-100%', opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '-100%', opacity: 0 }}
@@ -918,28 +580,23 @@ export default function LeftSidebarNav() {
               onTouchStart={handleSidebarTouchStart}
               onTouchMove={handleSidebarTouchMove}
               style={{
-                width: '70px',
+                width: 'min(284px, calc(100vw - 48px))',
               }}
-              className={`sites-pinned-sidebar fixed left-0 top-0 bottom-0 backdrop-blur-md border-r z-[400] flex flex-col justify-between select-none transition-colors duration-300 ${
+              className={`sites-pinned-sidebar fixed left-0 top-0 bottom-0 backdrop-blur-md border-r z-[10021] flex flex-col justify-between select-none transition-colors duration-300 ${
                 isLight
                   ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
                   : 'bg-neutral-950/95 border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
               }`}
             >
-              <div className="sidebar-aurora" aria-hidden="true">
-                <div className={isLight ? 'sidebar-aurora-veil edge-aurora-veil-light' : 'sidebar-aurora-veil edge-aurora-veil'} />
-                <div className="sidebar-aurora-wave" />
-                <div className="sidebar-aurora-core" />
-              </div>
-              {/* Continuous accent; never resets when the pointer leaves. */}
-              <div className="pt-[calc(var(--sat)+0.85rem)] px-2 pb-2 flex justify-center shrink-0">
-                <div className="w-8 h-1 rounded-full rainbow-gradient-flow" aria-hidden="true" />
+              <div className="refined-menu-heading">
+                <div><strong>Luckey</strong><span>나만의 작은 우주</span></div>
+                <button type="button" onClick={hideSidebar} aria-label="메뉴 닫기"><ChevronLeft size={20} /></button>
               </div>
 
               {/* Navigation Channel Items (Icon-Only Rail) */}
-              <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar flex flex-col items-center w-full">
+              <div className="refined-menu-list flex-1 overflow-y-auto no-scrollbar">
                 {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
-                <div className="flex flex-col items-center gap-2 w-full overflow-visible">
+                <div className="flex flex-col gap-1 w-full">
                   {CORE_CHANNELS.map(renderNavButton)}
                 </div>
 
@@ -956,15 +613,8 @@ export default function LeftSidebarNav() {
                       onMouseLeave={handleChannelsMouseLeave}
                       className="w-full flex flex-col items-center overflow-visible"
                     >
-                      {/* Prismatic Connection Accent Line */}
-                      <div className="w-full flex items-center justify-center my-1.5">
-                        <div className="w-5 h-[2px] rounded-full bg-gradient-to-r from-emerald-500/70 via-purple-500/70 to-pink-500/70 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                      </div>
-
-                      {/* 7 Prism Channels: PROLOGUE ~ EPILOGUE */}
-                      <div className="relative flex flex-col items-center gap-2 w-full py-1 overflow-visible">
-                        {/* Connecting vertical rainbow ambient thread */}
-                        <div className="absolute top-2 bottom-2 left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-red-500/60 via-amber-400/50 via-emerald-400/50 via-blue-500/50 to-purple-500/60 shadow-[0_0_8px_rgba(168,85,247,0.3)] pointer-events-none" />
+                      <div className="refined-menu-section-label">EXPLORE · 7 CHANNELS</div>
+                      <div className="flex flex-col gap-1 w-full">
                         {PRISM_CHANNELS.map(renderNavButton)}
                       </div>
                     </motion.div>
@@ -974,7 +624,7 @@ export default function LeftSidebarNav() {
 
               {/* Footer: LP BGM Button, User Profile Button & Collapse Button */}
               <div
-                className={`pb-[calc(var(--sab)+0.75rem)] px-1.5 pt-2.5 border-t flex flex-col items-center gap-2.5 shrink-0 transition-colors duration-300 ${
+                className={`refined-menu-footer pb-[calc(var(--sab)+0.75rem)] px-1.5 pt-2.5 border-t flex items-center gap-2.5 shrink-0 transition-colors duration-300 ${
                   isLight ? 'border-amber-900/15' : 'border-white/10'
                 }`}
               >
@@ -1230,6 +880,6 @@ export default function LeftSidebarNav() {
           </>
         )}
       </AnimatePresence>
-    </>
+    </>, document.body
   );
 }
