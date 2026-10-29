@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.4.569",
+    "builtAt": "2026-10-29T09:13:15.779196+00:00",
+    "summary": "등록된 OpenAI 키로 채팅·AI 음성 연결",
+    "items": [
+      "기존 open ai 비밀 환경변수와 OPENAI_API_KEY 인식, OpenAI/Gemini 서버 라우팅 분리",
+      "Lucy AI·Lucy + 및 공통 텍스트 생성 경로를 OpenAI 채팅 API에 연결",
+      "OpenAI 음성 생성 연결: 사용자 남성 cedar·루시 여성 marin, 본문과 지시문 분리",
+      "OpenAI 인증·한도 오류 안내 및 AI 생성 음성 표시 추가"
+    ]
+  },
+  {
     "version": "1.4.568",
     "builtAt": "2026-10-29T08:55:09.628127+00:00",
     "summary": "GitHub Lucy AI·Lucy + 통합 업데이트 적용 및 배포 정합성 보정",

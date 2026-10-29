@@ -67,3 +67,30 @@ for (const status of [400, 401, 403, 429]) {
   assert.equal(attempts, 1);
 }
 console.log('Transient provider failover preserves JSON/SSE; authentication and quota are not retried.');
+for (const stream of [false, true]) {
+  let calls = 0;
+  const result = await handleSitesGeminiChat(request({ messages, stream, max_tokens: 256, temperature: 0.5, thinking_level: 'minimal' }), { 'open ai': 'openai-test-secret' }, async (url, options) => {
+    calls++;
+    assert.equal(url, 'https://api.openai.com/v1/chat/completions');
+    assert.equal(options.headers.Authorization, 'Bearer openai-test-secret');
+    const body = JSON.parse(options.body);
+    assert.equal(body.model, 'gpt-5.4-mini');
+    assert.equal(body.max_completion_tokens, 256);
+    assert.equal(body.max_tokens, undefined);
+    assert.equal(body.temperature, undefined);
+    assert.equal(body.reasoning_effort, 'low');
+    assert.deepEqual(body.messages, messages);
+    return new Response(stream ? 'data: {"choices":[{"delta":{"content":"정상"}}]}\n\ndata: [DONE]\n\n' : '{"choices":[{"message":{"content":"정상"}}]}');
+  });
+  assert.equal(calls, 1);
+  assert.equal(result.status, 200);
+  assert.equal(result.headers.get('X-AI-Provider'), 'openai');
+  assert.match(await result.text(), stream ? /DONE/ : /정상/);
+}
+let quotaCalls = 0;
+const quotaResult = await handleSitesGeminiChat(request({ messages }), { OPENAI_API_KEY: 'openai-test-secret' }, async () => { quotaCalls++; return Response.json({ error: { code: 'insufficient_quota', message: 'openai-test-secret' } }, { status: 429 }); });
+assert.equal(quotaCalls, 1);
+const quotaBody = await quotaResult.text();
+assert.match(quotaBody, /잔액/);
+assert.ok(!quotaBody.includes('openai-test-secret'));
+console.log('OpenAI secret alias, endpoint, reasoning payload, JSON/SSE and quota handling passed.');

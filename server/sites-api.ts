@@ -1,3 +1,4 @@
+import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
 import { stripInternalSpeechDirectives } from '../src/utils/speechText';
 import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm';
 import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog';
@@ -176,7 +177,7 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
   const method = route === '/api/health' || route.endsWith('/proxy') ? 'GET' : 'POST';
   if (request.method !== method) return Response.json({ error: `${method} 요청을 사용해 주세요.` }, { status: 405, headers: { Allow: method, 'Cache-Control': 'no-store' } });
   try {
-    if (route === '/api/health') return json({ status: 'ok', aiConfigured: Boolean(keyFor(env)), runtime: 'sites' });
+    if (route === '/api/health') return json({ status: 'ok', aiConfigured: Boolean(getSitesAIConfig(env).key), provider: getSitesAIConfig(env).provider, speechConfigured: Boolean(getSitesAIConfig(env).key), runtime: 'sites' });
     if (route.endsWith('/proxy')) return await proxyImage(request, fetchApi);
     const limit = 8 * 1024 * 1024;
     if (Number(request.headers.get('Content-Length')) > limit) throw new ApiError(413, '요청이 너무 큽니다.');
@@ -204,6 +205,35 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     if (route === '/api/ai/tts') {
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
       const voice = ['Kore', 'Aoede', 'Puck', 'Charon', 'Fenrir', 'Leda', 'Zephyr'].includes(body.voice) ? body.voice : 'Kore';
+      const config = getSitesAIConfig(env);
+      if (config.provider === 'openai') {
+        if (!config.key) throw new ApiError(503, 'OpenAI API 키가 설정되지 않았습니다.');
+        const male = voice === 'Charon';
+        const openaiVoice = male ? 'cedar' : 'marin';
+        let audio: Response;
+        try {
+          audio = await fetchApi('https://api.openai.com/v1/audio/speech', {
+            method: 'POST', headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: env.OPENAI_TTS_MODEL || 'gpt-4o-mini-tts', voice: openaiVoice, input: speech, response_format: 'mp3', instructions: 'Read the input text exactly as written in natural, warm Korean. Do not add explanations, answer questions, or read these instructions aloud.' }),
+            signal: AbortSignal.any([request.signal, AbortSignal.timeout(60000)]),
+          });
+        } catch { throw new ApiError(504, 'OpenAI 음성 생성 연결이 중단되었습니다. 다시 눌러 주세요.'); }
+        if (!audio.ok) {
+          let failure: any = null;
+          try { failure = await audio.json(); } catch (_) {}
+          if (audio.status === 429 && failure?.error?.code === 'insufficient_quota') throw new ApiError(429, 'OpenAI API 잔액 또는 프로젝트 사용 한도를 확인해 주세요.', undefined, 'MEDIA_QUOTA_EXHAUSTED');
+          if (audio.status === 429) {
+            const seconds = Number(audio.headers.get('Retry-After'));
+            throw new ApiError(429, 'OpenAI 음성 요청이 일시적으로 제한됐습니다. 잠시 후 다시 눌러 주세요.', Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : 15, 'MEDIA_RATE_LIMIT');
+          }
+          if ([401, 403].includes(audio.status)) throw new ApiError(audio.status, 'OpenAI 키의 음성 생성 권한을 확인해 주세요.');
+          if ([400, 404].includes(audio.status)) throw new ApiError(audio.status, 'OpenAI 음성 모델 또는 요청 설정을 확인해 주세요.');
+          throw new ApiError(502, 'OpenAI 음성 생성에 일시적인 오류가 발생했습니다.');
+        }
+        const bytes = new Uint8Array(await audio.arrayBuffer());
+        if (bytes.length < 4) throw new ApiError(502, 'OpenAI 음성 응답이 비어 있습니다.');
+        return json({ audioContent: bytesToBase64(bytes), encoding: 'mp3', sampleRate: 24000, voice, provider: 'openai' });
+      }
       const media = await generateMedia(request, env, fetchApi, env.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts', {
         // Pass only the utterance: instructions in the text part can themselves be spoken.
         contents: [{ parts: [{ text: speech }] }],
