@@ -2556,21 +2556,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     </button>
                   </h1>
                   {isPlusMode ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsPlusMode(false);
-                        safeSessionStorage.removeItem('lucy_plus_active');
-                        setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
-                        setTimeout(() => setModeSwitchToast(null), 2000);
-                      }}
-                      title="클릭 시 일반 모드로 복귀 (빅뱅 버튼 1회 탭으로도 복귀 가능)"
-                      className="text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-amber-500/20 text-amber-300 border border-amber-400/50 flex items-center gap-1 shadow-[0_0_12px_rgba(245,158,11,0.25)] hover:scale-105 active:scale-95 transition-transform cursor-pointer"
-                    >
-                      <span>👑</span>
-                      <span>7대 채널 마스터</span>
-                      <span className="text-[8px] text-emerald-300/80 ml-0.5 opacity-80">(탭: 복귀)</span>
-                    </button>
+                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 flex items-center gap-1 shrink-0">
+                      <Sparkles size={10} className="text-indigo-400" />
+                      마스터 모드
+                    </span>
                   ) : (
                     <>
                       <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 flex items-center gap-1 shrink-0">
