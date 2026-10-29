@@ -696,7 +696,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     updateSharedState
   } = useApp();
 
-  const abortGenerating = (pro || isPlusMode) ? abortLucyProGenerating : abortNormalGenerating;
+  // Both modes now send to conversationId 'lucy', so abort the same runtime.
+  const abortGenerating = abortNormalGenerating;
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
   const forwardBubble = useCallback((text: string) => {
     const payload = queueChatForward(chatAccount, chatScope, text);
