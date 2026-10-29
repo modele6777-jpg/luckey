@@ -154,3 +154,22 @@ html[data-lucy-period='morning'] .lucy-morning-light { opacity: 1; }
 html[data-lucy-period='night'] .lucy-night-moon { opacity: .78; }
 @keyframes lucy-sun-breathe { from { opacity: .65; transform: scale(.97); } to { opacity: 1; transform: scale(1.04); } }
 @keyframes lucy-rays-sway { from { transform: rotate(-5deg); opacity: .65; } to { transform: rotate(6deg); opacity: 1; } }
+
+/* Occasional shooting stars: brief flights with long, staggered quiet intervals. */
+.lucy-meteor-field { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1s ease; }
+html[data-lucy-period='night'] .lucy-meteor-field { opacity: 1; }
+.lucy-shooting-star { position: absolute; width: clamp(70px, 12vw, 150px); height: 2px; opacity: 0; animation: lucy-meteor-flight 17s linear infinite; animation-play-state: paused; }
+html[data-lucy-period='night'] .lucy-shooting-star { animation-play-state: running; }
+.lucy-shooting-star-0 { left: 78%; top: 24%; animation-delay: -1s; }
+.lucy-shooting-star-1 { left: 94%; top: 47%; animation-duration: 23s; animation-delay: -9s; }
+.lucy-shooting-star-2 { left: 58%; top: 63%; animation-duration: 29s; animation-delay: -18s; }
+.lucy-meteor-trail { position: absolute; inset: 0; transform: rotate(-35deg); transform-origin: left center; background: linear-gradient(90deg, #f3f7ff, #bed4f580 25%, transparent); border-radius: 50%; }
+.lucy-meteor-trail::before { content: ''; position: absolute; left: 0; top: -1px; width: 4px; height: 4px; border-radius: 50%; background: #f5f8ff; box-shadow: 0 0 6px 2px #c7ddf566; }
+@keyframes lucy-meteor-flight {
+  0% { opacity: 0; transform: translate3d(0, 0, 0); }
+  1% { opacity: .7; }
+  9% { opacity: .5; }
+  12% { opacity: 0; transform: translate3d(-44vw, 30.8vw, 0); }
+  100% { opacity: 0; transform: translate3d(-44vw, 30.8vw, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .lucy-meteor-field { display: none; } }

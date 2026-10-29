@@ -12,6 +12,13 @@ export function LucyCosmicBackground({ isPlusMode }: LucyCosmicBackgroundProps) 
         <div className="lucy-sun-rays" />
         <div className="lucy-sun-disc" />
       </div>
+      <div className="lucy-meteor-field">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className={`lucy-shooting-star lucy-shooting-star-${i}`}>
+            <span className="lucy-meteor-trail" />
+          </div>
+        ))}
+      </div>
       <div className="lucy-night-moon">
         <svg viewBox="0 0 100 100" focusable="false">
           <path d="M73 10A42 42 0 1 0 86 77A40 40 0 0 1 73 10Z" fill="currentColor" />
