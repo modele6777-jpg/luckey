@@ -37,12 +37,14 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
   background-size: 289px 331px, 347px 293px;
   animation: lucy-twinkle 7s ease-in-out infinite alternate;
 }
+.lucy-clover-orbit { position: absolute; animation: lucy-clover-float 32s ease-in-out infinite alternate; animation-play-state: paused; }
+.lucy-clover-field.is-visible .lucy-clover-orbit { animation-play-state: running; }
 .lucy-clover-particle {
-  position: absolute; height: auto; color: #b4e4cc; opacity: .38;
+  display: block; width: 100%; height: auto; color: #b4e4cc; opacity: .38;
   filter: drop-shadow(0 0 3px #8ed9b766);
   animation: lucy-clover-twinkle 8s ease-in-out infinite;
 }
-.lucy-clover-particle:nth-child(3n) { color: #e6d49d; filter: drop-shadow(0 0 3px #d6be8066); }
+.lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #e6d49d; filter: drop-shadow(0 0 3px #d6be8066); }
 .lucy-night .lucy-chat-header,
 .lucy-night .lucy-chat-footer { background: var(--lucy-chrome); border-color: var(--lucy-border); box-shadow: none; backdrop-filter: none; }
 .lucy-night .lucy-chat-main { position: relative; scrollbar-color: #63758a transparent; }
@@ -114,18 +116,34 @@ html.light[data-lucy-period] .lucy-cosmic-wash { background: radial-gradient(ell
 html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }
 html.light[data-lucy-period] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
 html.light[data-lucy-period] .lucy-clover-particle { color: #328263; filter: none; }
-html.light[data-lucy-period] .lucy-clover-particle:nth-child(3n) { color: #98722d; }
+html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #98722d; }
 html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #faf7f0 !important; }
 html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
 
 /* Soft clouds belong only to the blue daytime sky. */
 .lucy-day-clouds { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1.2s ease; }
 html[data-lucy-period='day'] .lucy-day-clouds { opacity: 1; }
-.lucy-day-cloud { position: absolute; color: #ffffff; opacity: .65; width: clamp(150px, 28vw, 380px); animation: lucy-cloud-glide 48s ease-in-out infinite alternate; animation-play-state: paused; }
+.lucy-day-cloud { position: absolute; color: #ffffff; opacity: .65; width: clamp(150px, 28vw, 380px); animation: lucy-cloud-glide 70s linear infinite; animation-play-state: paused; }
 html[data-lucy-period='day'] .lucy-day-cloud { animation-play-state: running; }
 .lucy-day-cloud svg { display: block; width: 100%; height: auto; }
-.lucy-day-cloud-0 { top: 15%; left: -8%; }
-.lucy-day-cloud-1 { top: 39%; right: -10%; width: clamp(190px, 35vw, 460px); opacity: .48; animation-delay: -19s; animation-duration: 61s; }
-.lucy-day-cloud-2 { top: 64%; left: 12%; width: clamp(120px, 22vw, 300px); opacity: .42; animation-delay: -31s; animation-duration: 55s; }
-.lucy-day-cloud-3 { top: 82%; right: -4%; opacity: .52; animation-delay: -11s; animation-duration: 68s; }
-@keyframes lucy-cloud-glide { from { transform: translate3d(-18px, 0, 0); } to { transform: translate3d(34px, -8px, 0); } }
+.lucy-day-cloud-0 { top: 15%; left: 0; animation-delay: -14s; }
+.lucy-day-cloud-1 { top: 39%; left: 0; width: clamp(190px, 35vw, 460px); opacity: .48; animation-delay: -19s; animation-duration: 61s; }
+.lucy-day-cloud-2 { top: 64%; left: 0; width: clamp(120px, 22vw, 300px); opacity: .42; animation-delay: -31s; animation-duration: 55s; }
+.lucy-day-cloud-3 { top: 82%; left: 0; opacity: .52; animation-delay: -11s; animation-duration: 68s; }
+@keyframes lucy-cloud-glide {
+  from { transform: translate3d(-100%, 0, 0); }
+  to { transform: translate3d(100vw, -10px, 0); }
+}
+@keyframes lucy-clover-float {
+  0% { transform: translate3d(-24px, 24px, 0) rotate(-14deg); }
+  50% { transform: translate3d(28px, -18px, 0) rotate(8deg); }
+  100% { transform: translate3d(-8px, -64px, 0) rotate(22deg); }
+}
+/* Nighttime Plus combines distant starlight with floating clovers. */
+html[data-lucy-period='night'] .is-plus-mode .lucy-star-field { opacity: .5; }
+@media (prefers-reduced-motion: reduce) {
+  .lucy-day-cloud-0 { left: -8%; }
+  .lucy-day-cloud-1 { left: auto; right: -10%; }
+  .lucy-day-cloud-2 { left: 12%; }
+  .lucy-day-cloud-3 { left: auto; right: -4%; }
+}
