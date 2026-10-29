@@ -210,3 +210,12 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-suggestion-toolbar button { 
 
 html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #8793a010; border: 0; padding: 7px 9px; border-radius: 10px; box-shadow: none; }
 .lucy-voice-status > button { background: #73869b30; color: inherit; box-shadow: none; min-height: 26px; padding: 4px 8px; }
+
+.lucy-mode-transition { position: fixed; inset: 0; z-index: 10050; display: grid; place-items: center; background: #101722ed; color: #edf3fb; backdrop-filter: blur(8px); }
+html.light .lucy-mode-transition { background: #f5f9fdf2; color: #243448; }
+.lucy-mode-transition-card { display: flex; flex-direction: column; align-items: center; gap: 13px; text-align: center; padding: 32px; }
+.lucy-mode-transition-card strong { font-size: 28px; letter-spacing: -1px; }
+.lucy-mode-transition-card > span:last-child { font-size: 13px; opacity: .75; }
+.lucy-mode-transition-ring { display: block; width: 40px; height: 40px; margin-bottom: 8px; border-radius: 50%; border: 2px solid #8da5bd30; border-top-color: #8da5bd; animation: lucy-mode-loading 900ms linear infinite; }
+@keyframes lucy-mode-loading { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .lucy-mode-transition-ring { animation: none; } }

@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import './prompt-library.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Search, Sparkles, MessageSquare, ChevronLeft, ChevronRight, 
@@ -95,15 +97,16 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <div 
         id="hori-prompt-library-modal-backdrop"
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-md"
+        className="fixed inset-0 z-[10030] flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-md"
         onClick={onClose}
       >
         <motion.div
           id="hori-prompt-library-dialog"
+          role="dialog" aria-modal="true" aria-label="추천 질문 라이브러리"
           initial={{ opacity: 0, scale: 0.95, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 16 }}
@@ -114,7 +117,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
           {/* Header */}
           <div className="px-5 sm:px-7 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-gradient-to-r from-amber-500/5 via-purple-500/5 to-blue-500/5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 dark:from-amber-600 dark:to-yellow-500 text-slate-950 flex items-center justify-center shadow-md">
+              <div className="prompt-library-heading-icon w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 dark:from-amber-600 dark:to-yellow-500 text-slate-950 flex items-center justify-center shadow-md">
                 <Sparkles size={20} className="text-slate-950" />
               </div>
               <div>
@@ -172,6 +175,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleCategoryChange('all')}
+                data-active={selectedCategory === 'all'}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                   selectedCategory === 'all'
                     ? 'bg-slate-900 text-white dark:bg-amber-500 dark:text-slate-950 shadow-sm'
@@ -192,6 +196,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                     key={catKey}
                     type="button"
                     onClick={() => handleCategoryChange(catKey)}
+                    data-active={isSelected}
                     className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                       isSelected
                         ? 'text-white shadow-sm'
@@ -232,6 +237,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                     key={tKey}
                     type="button"
                     onClick={() => handleToolChange(isSelected ? 'all' : tKey)}
+                    data-active={isSelected}
                     className={`px-2 py-0.5 rounded-lg font-semibold shrink-0 transition-all border ${
                       isSelected
                         ? 'border-transparent text-white'
@@ -268,7 +274,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                   return (
                     <div
                       key={prompt.id}
-                      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 hover:border-amber-400/80 dark:hover:border-amber-500/80 transition-all shadow-xs hover:shadow-md flex flex-col justify-between group"
+                      className="prompt-library-card p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 hover:border-amber-400/80 dark:hover:border-amber-500/80 transition-all shadow-xs hover:shadow-md flex flex-col justify-between group"
                     >
                       <div 
                         className="space-y-2.5 cursor-pointer"
@@ -325,7 +331,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                         <button
                           type="button"
                           onClick={() => handlePromptAction(prompt, false)}
-                          className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-1.5 active:scale-95"
+                          className="prompt-library-action w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-1.5 active:scale-95"
                           title="대화 입력창에 질문을 입력하고 필요 시 내용을 수정하여 보냅니다."
                         >
                           <Edit3 size={13} />
@@ -375,6 +381,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
                   key={pageNum}
                   type="button"
                   onClick={() => setCurrentPage(pageNum)}
+                  data-active={currentPage === pageNum}
                   className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
                     currentPage === pageNum
                       ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm'
@@ -410,6 +417,6 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>, document.body
   );
 };

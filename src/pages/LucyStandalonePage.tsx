@@ -1,3 +1,4 @@
+import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
 import { ChatBubbleForward } from '@/components/chat/ChatBubbleForward';
@@ -609,6 +610,17 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       return false;
     }
   });
+
+  const previousPlusMode = useRef(isPlusMode);
+  const [modeTransition, setModeTransition] = useState<'lucy' | 'plus' | null>(null);
+  useEffect(() => {
+    if (previousPlusMode.current === isPlusMode) return;
+    previousPlusMode.current = isPlusMode;
+    setModeTransition(isPlusMode ? 'plus' : 'lucy');
+    setModeSwitchToast(null);
+    const timer = window.setTimeout(() => setModeTransition(null), 750);
+    return () => window.clearTimeout(timer);
+  }, [isPlusMode]);
 
   const chatScope = (pro || isPlusMode) ? 'lucy' : 'lucy';
   const [, navigate] = useLocation();
@@ -2485,6 +2497,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     >
       {/* 🌌 Animated Cosmic Background: Night Sky Starlight (Lucy) <-> Clover Aura (Lucy +) */}
       <LucyCosmicBackground isPlusMode={isPlusMode} />
+      {modeTransition && <LucyModeTransition target={modeTransition} />}
 
       {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>

@@ -1,13 +1,12 @@
-/* Four translucent light curtains follow the drag without covering controls. */
 .bigbang-aurora-screen { --wind-x: 0px; --wind-y: 0px; position: fixed; inset: 0; overflow: hidden; pointer-events: none; user-select: none; z-index: 10010; opacity: 1; transition: opacity 1.1s ease-out; contain: strict; }
 .bigbang-aurora-screen.is-settling { opacity: 0; }
-.bigbang-aurora-ribbon { position: absolute; width: 140%; height: 65%; left: -20%; top: 5%; border-radius: 45% 55% 60% 40%; background: linear-gradient(115deg, transparent 15%, #7ce5cd1c 35%, #83cfee35 47%, #b4a3ee26 58%, transparent 76%); filter: blur(24px); transform: translate3d(calc(var(--wind-x) * .06), calc(var(--wind-y) * .06), 0); animation: bigbang-aurora-flow 8s ease-in-out infinite alternate; }
-.bigbang-aurora-ribbon-1 { top: 20%; left: -35%; width: 160%; background: linear-gradient(75deg, transparent 22%, #83dcbf24 40%, #a9baff26 52%, transparent 72%); animation-delay: -3s; animation-duration: 11s; }
-.bigbang-aurora-ribbon-2 { top: 42%; left: -10%; height: 55%; background: linear-gradient(105deg, transparent 15%, #adc4f22b 38%, #c3a8eb24 52%, transparent 78%); animation-delay: -5s; animation-duration: 13s; }
-.bigbang-aurora-ribbon-3 { top: -10%; height: 110%; width: 65%; left: 30%; background: linear-gradient(160deg, transparent 18%, #82e5cf20 40%, #a6b5ef2b 58%, transparent 80%); animation-delay: -2s; animation-duration: 10s; }
-@keyframes bigbang-aurora-flow {
-  from { opacity: .4; transform: translate3d(calc(var(--wind-x) * .04 - 3vw), calc(var(--wind-y) * .04 + 3vh), 0) rotate(-9deg) scale(.96); }
-  to { opacity: .85; transform: translate3d(calc(var(--wind-x) * .08 + 3vw), calc(var(--wind-y) * .08 - 3vh), 0) rotate(8deg) scale(1.07); }
+.bigbang-aurora-curtain { position: absolute; inset: -12%; opacity: .7; animation: bigbang-aurora-fold 9s ease-in-out infinite alternate; mix-blend-mode: screen; }
+.bigbang-aurora-curtain svg { display: block; width: 100%; height: 100%; }
+.bigbang-aurora-curtain-1 { animation-delay: -4s; animation-duration: 12s; opacity: .5; }
+.bigbang-aurora-curtain-2 { animation-delay: -7s; animation-duration: 15s; opacity: .4; }
+html.light .bigbang-aurora-curtain { mix-blend-mode: multiply; }
+@keyframes bigbang-aurora-fold {
+  from { transform: translate3d(calc(var(--wind-x) * .035 - 2vw), calc(var(--wind-y) * .035 + 2vh), 0) skewY(-3deg) scaleY(.94); }
+  to { transform: translate3d(calc(var(--wind-x) * .065 + 2vw), calc(var(--wind-y) * .065 - 2vh), 0) skewY(4deg) scaleY(1.06); }
 }
-@media (max-width: 640px) { .bigbang-aurora-ribbon { filter: blur(16px); } }
-@media (prefers-reduced-motion: reduce) { .bigbang-aurora-ribbon { animation: none; opacity: .45; } .bigbang-aurora-screen { transition-duration: .2s; } }
+@media (prefers-reduced-motion: reduce) { .bigbang-aurora-curtain { animation: none; opacity: .35; } .bigbang-aurora-screen { transition-duration: .2s; } }
