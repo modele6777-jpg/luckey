@@ -74,3 +74,11 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
 @media (prefers-reduced-motion: reduce) {
   .lucy-night *, .lucy-night *::before, .lucy-night *::after { animation: none !important; transition: none !important; }
 }
+
+/* Device blur fallbacks must not replace the chat's opaque reading surfaces. */
+html[data-lucy-theme='starlight'] .lucy-chat-shell.lucy-night :is(.lucy-chat-header, .lucy-chat-footer) {
+  background-color: var(--lucy-chrome) !important;
+}
+html[data-lucy-theme='starlight'] .lucy-chat-shell.lucy-night .lucy-starlight-assistant {
+  background-color: var(--lucy-surface) !important;
+}

@@ -16,7 +16,7 @@ export interface ThemeContextType {
 
 /**
  * 채널별 고정 단일 테마 판별:
- * - 루시프로 (/chat/pro) -> 밤하늘 다크 테마 ('dark')
+ * - Lucy AI / Lucy + (/, /chat, /lucy, /chat/pro) -> 밤하늘 다크 테마 ('dark')
  * - 키채널 (/key, /calm, /orb, /gateway, /crystal) -> 라이트 테마 ('light')
  * - 럭키채널 (7대 프리즘 채널, 허브, 핸드북, 옴니워프 등 기타 모든 경로) -> 다크 테마 ('dark')
  */
@@ -24,8 +24,7 @@ export function resolveChannelThemeFromPath(pathname?: string): ResolvedTheme {
   const raw = pathname ?? (typeof window !== "undefined" ? window.location.pathname : "/");
   const clean = (raw || "/").split("?")[0].split("#")[0].toLowerCase();
 
-  if (clean === "/chat/pro") return "dark";
-  if (["/", "/chat", "/lucy"].includes(clean)) return "light";
+  if (["/", "/chat", "/lucy", "/chat/pro"].includes(clean)) return "dark";
 
   if (
     clean === "/key" ||
