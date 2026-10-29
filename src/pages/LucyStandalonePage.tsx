@@ -2321,7 +2321,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     stopTTS();
     try {
       // Starting a sequence emits an idle reset first. Assign its owner after that reset.
-      const playback = playTTSInChunks(clean, 'Aoede', 220, undefined, undefined, { skipCompletionChime: true });
+      const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, { skipCompletionChime: true });
       setPlayingMsgId(id);
       await playback;
     } catch (error) {
@@ -2816,7 +2816,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                           {copiedId === msgId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                         </button>
                         <button
-                          onClick={() => handleVoicePlay(msgId, textContent, 'Aoede')}
+                          onClick={() => handleVoicePlay(msgId, textContent, 'Charon')}
                           className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                             playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
                               ? 'text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60'

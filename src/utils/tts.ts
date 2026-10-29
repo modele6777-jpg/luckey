@@ -93,8 +93,8 @@ const ttsCache = new Map<string, Promise<TTSAudioData | null>>();
 
 export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string, _rate?: string, _speed?: number): string {
   const clean = normalizeTextForSpeech(text);
-  // 🌟 모든 TTS 재생 및 캐시는 유니버스 인사이트 명언의 단일 여성 표준 음성(Gemini Kore Female v5) 1.0 배속 표준 속도로 영구 고정
-  return `lucy_aoede_natural_v6_${clean}`;
+  const voice = _voice === 'Charon' ? 'Charon' : 'Aoede';
+  return `lucy_natural_v7_${voice}_${clean}`;
 }
 
 class TTSAudioRequestError extends Error {
@@ -102,8 +102,8 @@ class TTSAudioRequestError extends Error {
 }
 let ttsRequestQueue: Promise<unknown> = Promise.resolve();
 let ttsRateLimitUntil = 0;
-function requestAIAudio(text: string, emotion?: string): Promise<TTSAudioData> {
-  const key = getTTSCacheKey(text);
+function requestAIAudio(text: string, emotion?: string, voice = 'Aoede'): Promise<TTSAudioData> {
+  const key = getTTSCacheKey(text, voice);
   const existing = ttsCache.get(key);
   if (existing) return existing as Promise<TTSAudioData>;
   const pending = ttsRequestQueue.catch(() => {}).then(async () => {
@@ -113,7 +113,7 @@ function requestAIAudio(text: string, emotion?: string): Promise<TTSAudioData> {
     try {
       const response = await fetch('/api/ai/tts', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: normalizeTextForSpeech(text), voice: 'Aoede', emotion }), signal: controller.signal,
+        body: JSON.stringify({ text: normalizeTextForSpeech(text), voice, emotion }), signal: controller.signal,
       });
       if (!response.ok) {
         const failure = await response.json().catch(() => null);
@@ -144,7 +144,7 @@ function requestAIAudio(text: string, emotion?: string): Promise<TTSAudioData> {
 export function prefetchTTS(text: string, _voice?: string, emotion?: string, _rate?: string, _speed?: number): Promise<TTSAudioData | null> {
   // Generating voices for unopened/idle content consumed the small TTS quota.
   // Playback requests own generation; no speculative provider requests.
-  return ttsCache.get(getTTSCacheKey(text)) || Promise.resolve(null);
+  return ttsCache.get(getTTSCacheKey(text, _voice)) || Promise.resolve(null);
 }
 
 let isPlayingSequence = false;
@@ -225,8 +225,8 @@ export const playTTS = async (
     }
   }
 
-  // 🌟 모든 TTS 재생은 엄격하게 맑은 여성 음성(Aoede / SunHi / Heami)만 사용
-  const targetVoice = 'Aoede';
+  // Lucy uses Aoede; explicit Charon requests read the user's chat messages.
+  const targetVoice = voice === 'Charon' ? 'Charon' : 'Aoede';
 
   // If we are calling playTTS standalone (without sequence) and something is already loading/speaking for this exact text:
   if (!sequenceSessionId && (ttsState.isSpeaking || ttsState.isLoading) && (ttsState.activeText === cleanText || ttsState.activeFullText === cleanText)) {
@@ -296,7 +296,7 @@ export const playTTS = async (
       console.warn("[TTS] Failed to warm up audio systems:", e);
     }
 
-    const data = await requestAIAudio(text, activeEmotion);
+    const data = await requestAIAudio(text, activeEmotion, targetVoice);
 
     // CRITICAL ABORT CHECK after JSON parse
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) {
