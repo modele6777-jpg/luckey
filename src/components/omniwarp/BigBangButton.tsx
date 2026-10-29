@@ -74,8 +74,10 @@ export function BigBangButton() {
         document.body.classList.contains('in-lucy-chat') ||
         Boolean(document.querySelector('.lucy-chat-shell')));
     return (
+      cleanLoc === '/' ||
       cleanLoc === '/chat' ||
       cleanLoc === '/lucy' ||
+      winPath === '/' ||
       winPath === '/chat' ||
       winPath === '/lucy' ||
       winPath.includes('/chat') ||
@@ -551,18 +553,18 @@ export function BigBangButton() {
       const isTextToss = Boolean(textToToss);
       target = {
         id: 'lucy',
-        icon: '🎙️',
+        icon: '🍀',
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: '루시 채팅 프로',
+        title: 'Lucy + 마스터 진화',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ 루시 음성 답변`
-          : `[홀드] 루시 채팅 프로로 이동`,
+          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ Lucy + 전달`
+          : `[홀드] Lucy + 7대 채널 마스터 진화`,
         previewDescription: isTextToss
-          ? '루시 채팅 음성 모드에서 선택한 문장을 전달합니다'
-          : '항상 마스터 모드인 루시 채팅 프로로 이동합니다',
+          ? '선택한 문장을 Lucy + 7대 채널 올인원 마스터 모드로 전달합니다'
+          : 'Lucy AI를 Lucy +로 진화시키며 7대 채널 마스터 모드를 엽니다',
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
@@ -1108,7 +1110,7 @@ export function BigBangButton() {
     }
 
     // 🎙️ [홀드 완료: duration >= 220ms 또는 isPttRecordingRef.current]
-    // 홀드를 놓으면 음성을 켜지 않고 프로 페이지로 이동합니다.
+    // 홀드를 놓으면 프로 페이지로 이동하지 않고, Lucy AI를 그 자리에서 Lucy +로 진화시킵니다!
     const isHoldGesture = isPttRecordingRef.current || duration >= 220;
     if (isHoldGesture) {
       isPttRecordingRef.current = false;
@@ -1123,15 +1125,30 @@ export function BigBangButton() {
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
       const prompt = textToToss.trim() ? `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.` : '';
       safeSessionStorage.removeItem('lucy_chat_voice_requested');
-      const isProChat = location.split('?')[0] === LUCY_PRO_PATH;
-      if (prompt && !isProChat) {
-        safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
-        safeSessionStorage.setItem('lucy_pro_pending_channel', 'master');
+      
+      const inLucyChat = checkIsInLucyChat();
+      safeSessionStorage.setItem('lucy_plus_active', 'true');
+
+      if (inLucyChat) {
+        // 🌟 현재 Lucy AI 화면 내에서 즉각 Lucy +로 진화! (페이지 이동 없이 인플레이스 진화)
+        window.dispatchEvent(new CustomEvent('prism:evolve_lucy_plus', { detail: { prompt } }));
+        if (prompt) {
+          window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
+        }
+      } else {
+        // 🌟 외부 화면인 경우 Lucy AI(/chat)로 이동하면서 Lucy +로 진화!
+        if (prompt) {
+          safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
+        }
+        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+        navigate('/chat');
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
+        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('prism:evolve_lucy_plus', { detail: { prompt } }));
+        }, 100);
       }
-      (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-      if (!isProChat) navigate(LUCY_PRO_PATH);
-      if (prompt && isProChat) window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
-      window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: LUCY_PRO_PATH } }));
+
       window.getSelection()?.removeAllRanges();
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
@@ -1163,6 +1180,20 @@ export function BigBangButton() {
           singleTapTimerRef.current = null;
           lastTapTimeRef.current = 0;
           triggerHaptic('whitehole');
+
+          // 🌟 Lucy + 상태에서 빅뱅 버튼을 1회 탭하면 일반 Lucy AI 모드로 복귀!
+          const isLucyPlusActive = safeSessionStorage.getItem('lucy_plus_active') === 'true' ||
+            (typeof document !== 'undefined' && (
+              document.documentElement.classList.contains('lucy-plus-active') ||
+              document.body.classList.contains('lucy-plus-active')
+            ));
+
+          if (checkIsInLucyChat() && isLucyPlusActive) {
+            safeSessionStorage.removeItem('lucy_plus_active');
+            window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
+            return;
+          }
+
           handleRuneNavigate('/chat');
         }, 250);
       }

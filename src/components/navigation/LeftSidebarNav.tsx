@@ -63,7 +63,7 @@ export const CORE_CHANNELS: NavItemConfig[] = [
   {
     path: '/',
     icon: Sparkles,
-    label: 'LUCY',
+    label: 'LUCY AI',
     subLabel: '루시 AI · 영혼의 대화',
     color: 'oklch(0.70 0.20 300)',
     isMainChat: true,

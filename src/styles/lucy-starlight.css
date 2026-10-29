@@ -138,27 +138,43 @@ html[data-lucy-theme='starlight'] .prism-app-shell {
 @media (prefers-reduced-motion: reduce) {
   .lucy-stars-bright { animation: none; opacity: .65; }
 }
-
-html[data-lucy-theme='white'] { --lucy-page-background: #fff; }
-
-/* The white clover theme overrides the legacy warm-light rules only on the regular chat routes. */
-html.light.in-lucy-chat[data-lucy-theme='white'],
-html.light[data-lucy-theme='white'] body.in-lucy-chat,
-html.light.in-lucy-chat[data-lucy-theme='white'] #root,
-html.light.in-lucy-chat[data-lucy-theme='white'] .prism-app-shell { background: #fff !important; background-color: #fff !important; }
-html.light .lucy-chat-shell.lucy-clover-white { isolation: isolate; color-scheme: light; color: #0f172a; background: #fff !important; }
-html.light .lucy-clover-white .lucy-chat-header,
-html.light .lucy-clover-white .lucy-chat-footer { background: #fffffff5 !important; border-color: #e2e8f0 !important; box-shadow: 0 2px 14px #0f172a06; }
-html.light .lucy-clover-white .lucy-assistant-bubble { border-color: #e2e8f0 !important; box-shadow: 0 4px 18px #0f172a08; }
-html.light .lucy-clover-white .lucy-user-bubble { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
-html.light .lucy-clover-white .lucy-starlight-composer { background: #fff; border-color: #cbd5e1; }
-.lucy-clover-white :is(input, textarea)::placeholder { color: #64748b; }
-
-/* Alternating four-leaf and three-leaf clovers on the regular chat white canvas. */
-.lucy-chat-shell.lucy-clover-white::before {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22144%22%20height%3D%22144%22%20viewBox%3D%220%200%20144%20144%22%20fill%3D%22%23ecf5ee%22%20stroke%3D%22%236e9e7b%22%20stroke-width%3D%221.3%22%3E%3Cdefs%3E%3Cg%20id%3D%22four%22%3E%3Cpath%20d%3D%22M12%2012C9%2010%205%207%207%204C9%202%2012%204%2012%205C12%204%2015%202%2017%204C19%207%2015%2010%2012%2012Z%22%20transform%3D%22rotate%280%2012%2012%29%22%2F%3E%3Cpath%20d%3D%22M12%2012C9%2010%205%207%207%204C9%202%2012%204%2012%205C12%204%2015%202%2017%204C19%207%2015%2010%2012%2012Z%22%20transform%3D%22rotate%2890%2012%2012%29%22%2F%3E%3Cpath%20d%3D%22M12%2012C9%2010%205%207%207%204C9%202%2012%204%2012%205C12%204%2015%202%2017%204C19%207%2015%2010%2012%2012Z%22%20transform%3D%22rotate%28180%2012%2012%29%22%2F%3E%3Cpath%20d%3D%22M12%2012C9%2010%205%207%207%204C9%202%2012%204%2012%205C12%204%2015%202%2017%204C19%207%2015%2010%2012%2012Z%22%20transform%3D%22rotate%28270%2012%2012%29%22%2F%3E%3Cpath%20d%3D%22M12%2012Q15%2020%2010%2025%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22three%22%3E%3Cpath%20d%3D%22M12%2012C9%2010%205%207%207%204C9%202%2012%204%2012%205C12%204%2015%202%2017%204C19%207%2015%2010%2012%2012Z%22%20transform%3D%22rotate%280%2012%2012%29%22%2F%3E%3Cpath%20d%3D%22M12%2012C9%2010%205%207%207%204C9%202%2012%204%2012%205C12%204%2015%202%2017%204C19%207%2015%2010%2012%2012Z%22%20transform%3D%22rotate%28120%2012%2012%29%22%2F%3E%3Cpath%20d%3D%22M12%2012C9%2010%205%207%207%204C9%202%2012%204%2012%205C12%204%2015%202%2017%204C19%207%2015%2010%2012%2012Z%22%20transform%3D%22rotate%28240%2012%2012%29%22%2F%3E%3Cpath%20d%3D%22M12%2012Q15%2020%2010%2025%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fdefs%3E%3Cg%20opacity%3D%22.28%22%3E%3Cuse%20href%3D%22%23four%22%20x%3D%2224%22%20y%3D%2224%22%2F%3E%3Cuse%20href%3D%22%23three%22%20x%3D%2296%22%20y%3D%2224%22%2F%3E%3Cuse%20href%3D%22%23three%22%20x%3D%2224%22%20y%3D%2296%22%2F%3E%3Cuse%20href%3D%22%23four%22%20x%3D%2296%22%20y%3D%2296%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  background-repeat: repeat; background-size: 144px 144px;
+/* Lucy + Emerald & Gold Clover Theme Styles */
+.lucy-chat-shell.is-plus-mode .lucy-chat-header {
+  background: rgba(8, 26, 36, 0.88) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 5px 32px rgba(245, 158, 11, 0.15) !important;
 }
-html.light .lucy-clover-white .lucy-assistant-bubble { border-color: #dce9df !important; }
-html.light .lucy-clover-white .lucy-starlight-composer { border-color: #bdd5c4; }
+
+.lucy-chat-shell.is-plus-mode .lucy-chat-footer {
+  background: rgba(8, 26, 36, 0.92) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+.lucy-chat-shell.is-plus-mode .lucy-starlight-assistant {
+  background: linear-gradient(145deg, rgba(15, 43, 47, 0.93), rgba(10, 28, 34, 0.91)) !important;
+  border-color: rgba(52, 211, 153, 0.45) !important;
+  box-shadow: 0 8px 28px rgba(5, 150, 105, 0.18), inset 0 1px 0 rgba(251, 191, 36, 0.25) !important;
+}
+
+.lucy-chat-shell.is-plus-mode .lucy-starlight-user {
+  background: linear-gradient(135deg, rgba(13, 95, 71, 0.92), rgba(21, 128, 61, 0.92)) !important;
+  border-color: rgba(110, 231, 183, 0.6) !important;
+}
+
+.lucy-chat-shell.is-plus-mode .lucy-starlight-composer {
+  background: rgba(13, 33, 40, 0.92) !important;
+  border-color: rgba(52, 211, 153, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(251, 191, 36, 0.15), 0 3px 18px rgba(5, 150, 105, 0.22) !important;
+}
+
+.lucy-chat-shell.is-plus-mode .lucy-starlight-composer:focus-within {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25), 0 0 24px rgba(16, 185, 129, 0.25) !important;
+}
+
+.lucy-chat-shell.is-plus-mode .lucy-starlight-send {
+  background: linear-gradient(135deg, #10b981, #d97706) !important;
+  border-color: rgba(253, 230, 138, 0.7) !important;
+  color: #ffffff !important;
+}
+

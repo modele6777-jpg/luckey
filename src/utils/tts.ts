@@ -671,7 +671,7 @@ export const playTTSInChunks = async (
 export const playConversation = async (
   messages: { role: string; content: string; id?: string }[],
   aiVoice: string = 'Aoede',
-  userVoice: string = 'Aoede',
+  userVoice: string = 'Charon',
   onMessageStart?: (index: number, msg: { role: string; content: string; id?: string }) => void,
   options?: TTSPlaybackOptions,
 ) => {
@@ -687,9 +687,9 @@ export const playConversation = async (
   isPlayingSequence = true;
   acquireScreenWakeLock().catch(() => {});
 
-  // 🌟 모든 대화 참여자의 음성은 밝고 부드러운 여성 보이스(Aoede / SunHi)로 일원화
-  const resolvedAiVoice = 'Aoede';
-  const resolvedUserVoice = 'Aoede';
+  // 🌟 사용자 발화는 남성 보이스 Charon, 루시 답변은 여성 보이스 Aoede 분리 적용
+  const resolvedAiVoice = aiVoice || 'Aoede';
+  const resolvedUserVoice = userVoice || 'Charon';
 
   try {
     for (let i = 0; i < messages.length; i++) {
@@ -727,15 +727,15 @@ export interface QAndAMessageItem {
 }
 
 /**
- * 🎙️ 질문 ➔ 루시 답변 자동 연속 음성 재생 (모두 부드럽고 맑은 여성 음성)
- * - 질문자의 질문을 차분한 여성 보이스(Kore / SunHi)로 먼저 낭독
+ * 🎙️ 질문 ➔ 루시 답변 자동 연속 음성 재생
+ * - 질문자의 질문을 차분한 남성 보이스(Charon)로 먼저 낭독
  * - 자연스러운 호흡 텀(360ms) 후
- * - 루시의 답변을 따뜻하고 다정한 여성 보이스(Kore / SunHi)로 청크 단위 연속 낭독
+ * - 루시의 답변을 따뜻하고 다정한 여성 보이스(Aoede)로 청크 단위 연속 낭독
  */
 export const playQAndATTS = async (
   question: QAndAMessageItem,
   answer: QAndAMessageItem,
-  userVoice: string = 'Aoede',
+  userVoice: string = 'Charon',
   aiVoice: string = 'Aoede',
   onSpeakerChange?: (speaker: 'user' | 'assistant', msg: QAndAMessageItem) => void,
 ): Promise<void> => {

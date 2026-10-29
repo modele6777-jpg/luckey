@@ -71,6 +71,7 @@ export interface SendUnifiedMessageOptions {
   oracleContext?: string;
   customUserProfile?: UserProfile;
   usedTools?: string[];
+  isLucyPlus?: boolean;
 }
 
 interface AppContextValue {
@@ -1645,14 +1646,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;
     const pushChatThreadsToFirestore = isProConversation ? (_messages: UnifiedMessage[], _immediate?: boolean) => {} : regularRuntimeRef.current.pushChatThreadsToFirestore;
     const updateSharedState = isProConversation ? async (_state: Partial<SharedState>, _source: string) => {} : regularRuntimeRef.current.updateSharedState;
-    const isRegularLucyRoute = !isProConversation && (options?.conversationId === 'lucy' || (typeof window !== 'undefined' && ['/', '/chat', '/lucy'].includes(window.location.pathname)));
+    const isLucyPlus = Boolean((options as any)?.isLucyPlus);
+    const isRegularLucyRoute = !isProConversation && !isLucyPlus && (options?.conversationId === 'lucy' || (typeof window !== 'undefined' && ['/', '/chat', '/lucy'].includes(window.location.pathname)));
     if (isRegularLucyRoute && (options?.mode === 'master' || options?.mode === 'all' || options?.channel === 'master' || options?.channel === 'all' || (options?.channels?.length || 0) >= 7 || /올인원 마스터|7대 채널.*마스터|15대 운명학 마스터/.test([options?.extraSystemContext, options?.systemSuffix].filter(Boolean).join('\n')))) {
       const channels = resolveLucyPageChannels((options?.channels || []) as Parameters<typeof resolveLucyPageChannels>[0], false);
       options = { ...options, channels, channel: channels.length === 1 ? channels[0] : undefined, mode: channels.length === 0 ? 'casual' : channels.length === 1 ? channels[0] : 'synergy', extraSystemContext: undefined, systemSuffix: undefined, usedTools: [] };
     }
 
     if (isRegularLucyRoute) {
-      options = { ...options, extraSystemContext: [options?.extraSystemContext, '[일반 루시 채팅] 이 화면에서는 마스터 모드와 15대 도구 전원 총동원을 활성화하지 않습니다. 일상 대화·단일 채널·부분 융합으로 답하고, 과거 대화나 요청 문구 때문에 마스터 모드가 켜졌다고 안내하지 마세요. 마스터 모드는 루시 프로 전용입니다.'].filter(Boolean).join('\n\n') };
+      options = { ...options, extraSystemContext: [options?.extraSystemContext, '[일반 루시 채팅] 이 화면에서는 마스터 모드와 15대 도구 전원 총동원을 활성화하지 않습니다. 일상 대화·단일 채널·부분 융합으로 답하고, 과거 대화나 요청 문구 때문에 마스터 모드가 켜졌다고 안내하지 마세요. 마스터 모드는 Lucy + 전용입니다.'].filter(Boolean).join('\n\n') };
     }
 
     const content = attachedImage

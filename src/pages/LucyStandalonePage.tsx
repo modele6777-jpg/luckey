@@ -54,6 +54,7 @@ import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
+import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -595,11 +596,90 @@ function getCuratedPrompts(
 const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
 
 export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
-  const chatScope = pro ? 'lucy-pro' : 'lucy';
+  // 🌟 Lucy + 진화 상태 머신: 빅뱅 버튼 홀드 시 true로 진화, 1회 탭 시 false로 복귀
+  const [isPlusMode, setIsPlusMode] = useState<boolean>(() => {
+    if (pro) return true;
+    try {
+      if (typeof window !== 'undefined') {
+        const search = window.location.search || '';
+        if (search.includes('mode=plus') || search.includes('mode=pro')) return true;
+      }
+      return safeSessionStorage.getItem('lucy_plus_active') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const chatScope = (pro || isPlusMode) ? 'lucy' : 'lucy';
   const [, navigate] = useLocation();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
-  const useWhiteTheme = !pro;
+  const useWhiteTheme = false;
+
+  useEffect(() => {
+    const handleEvolve = () => {
+      safeSessionStorage.setItem('lucy_plus_active', 'true');
+      setIsPlusMode(true);
+      triggerHaptic('whitehole');
+      try {
+        playAudioHaptic('milestone_success');
+      } catch (_) {}
+      setModeSwitchToast('👑 Lucy + 진화! 7대 채널 올인원 마스터 모드가 가동되었습니다');
+      setTimeout(() => setModeSwitchToast(null), 2500);
+    };
+
+    const handleRevert = () => {
+      safeSessionStorage.removeItem('lucy_plus_active');
+      setIsPlusMode(false);
+      triggerHaptic('whitehole');
+      setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
+      setTimeout(() => setModeSwitchToast(null), 2000);
+    };
+
+    const handleToggle = () => {
+      setIsPlusMode((prev) => {
+        const next = !prev;
+        if (next) {
+          safeSessionStorage.setItem('lucy_plus_active', 'true');
+          triggerHaptic('whitehole');
+          try {
+            playAudioHaptic('milestone_success');
+          } catch (_) {}
+          setModeSwitchToast('👑 Lucy + 진화! 7대 채널 올인원 마스터 모드가 가동되었습니다');
+        } else {
+          safeSessionStorage.removeItem('lucy_plus_active');
+          triggerHaptic('whitehole');
+          setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
+        }
+        setTimeout(() => setModeSwitchToast(null), 2200);
+        return next;
+      });
+    };
+
+    window.addEventListener('prism:evolve_lucy_plus', handleEvolve);
+    window.addEventListener('prism:revert_lucy_ai', handleRevert);
+    window.addEventListener('prism:toggle_lucy_plus', handleToggle);
+
+    return () => {
+      window.removeEventListener('prism:evolve_lucy_plus', handleEvolve);
+      window.removeEventListener('prism:revert_lucy_ai', handleRevert);
+      window.removeEventListener('prism:toggle_lucy_plus', handleToggle);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isPlusMode) {
+      document.documentElement.classList.add('lucy-plus-active');
+      document.body.classList.add('lucy-plus-active');
+    } else {
+      document.documentElement.classList.remove('lucy-plus-active');
+      document.body.classList.remove('lucy-plus-active');
+    }
+    return () => {
+      document.documentElement.classList.remove('lucy-plus-active');
+      document.body.classList.remove('lucy-plus-active');
+    };
+  }, [isPlusMode]);
 
   const { 
     firebaseUser, 
@@ -616,12 +696,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     updateSharedState
   } = useApp();
 
-  const abortGenerating = pro ? abortLucyProGenerating : abortNormalGenerating;
+  const abortGenerating = (pro || isPlusMode) ? abortLucyProGenerating : abortNormalGenerating;
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
   const forwardBubble = useCallback((text: string) => {
     const payload = queueChatForward(chatAccount, chatScope, text);
     (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-    navigate(payload.to === 'lucy-pro' ? LUCY_PRO_PATH : '/chat');
+    navigate(payload.to === 'lucy-pro' ? '/chat?mode=plus' : '/chat');
   }, [chatAccount, chatScope, navigate]);
 
   const handleAbortGeneration = useCallback(() => {
@@ -631,15 +711,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     } catch (_) {}
   }, [abortGenerating]);
 
-  // 🔒 모드 선택란 제거: 루시는 항상 AI 모드로 동작합니다.
-  // 단일 채널 / N중 융합 / 7대 채널 마스터는 매 질문마다 AI가 맥락을 분석해 자동으로 결정합니다.
-  const selectedMode = (pro ? 'master' : 'auto') as LucyChatMode;
+  // 🔒 모드 선택: Lucy + 상태일 때는 7대 채널 마스터 상시 가동, 일반 Lucy AI일 때는 자동 감지 모드
+  const selectedMode = (pro || isPlusMode ? 'master' : 'auto') as LucyChatMode;
 
-  // 🎛️ 현재 AI가 감지·가동 중인 채널 (기본: [] 일상 대화, 외부 명시 진입 시 pending 채널 1회 반영)
+  // 🎛️ 현재 AI가 감지·가동 중인 채널 (Lucy +일 때는 ALL_CHANNELS, 일반일 때는 자동/동적)
   const [activeChannels, setActiveChannelsState] = useState<SpecialChannel[]>(() => {
-    if (pro) return resolveLucyPageChannels([], true);
+    if (pro || isPlusMode) return resolveLucyPageChannels([], true);
     try {
-      // 이전 버전에서 저장된 수동 모드 선택값 정리
       safeLocalStorage.removeItem('lucy_selected_mode');
       const pending = safeSessionStorage.getItem('lucy_pro_pending_channel');
       if (pending) {
@@ -651,8 +729,18 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   });
 
   const setActiveChannels = useCallback((channels: SpecialChannel[]) => {
-    setActiveChannelsState(resolveLucyPageChannels(channels, pro));
-  }, [pro]);
+    setActiveChannelsState(resolveLucyPageChannels(channels, pro || isPlusMode));
+  }, [pro, isPlusMode]);
+
+  useEffect(() => {
+    if (isPlusMode) {
+      setActiveChannelsState(ALL_CHANNELS);
+      setAutoDetectedTitleState('7대 채널 올인원 마스터');
+    } else if (!pro) {
+      setActiveChannelsState([]);
+      setAutoDetectedTitleState(null);
+    }
+  }, [isPlusMode, pro]);
 
   // 채널 변경 시 safeLocalStorage에 영구 동기화
   useEffect(() => {
@@ -966,8 +1054,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   // Detailed Saju Info for Soul Profile View (상담 대상자 기준으로 자동 동기화)
   const sajuInfo = useMemo(() => calculateDetailedSaju(counselingUserProfile), [counselingUserProfile]);
 
-  const lucyMessages = pro ? lucyProMessages : personaMessages?.lucy || [];
-  const isLucyGenerating = pro ? isLucyProGenerating : isGenerating?.lucy || false;
+  const baseLucyMessages = personaMessages?.lucy || [];
+  const lucyMessages = (baseLucyMessages.length > 0 || !pro) ? baseLucyMessages : lucyProMessages;
+  const isLucyGenerating = isPlusMode ? (Boolean(isGenerating?.lucy) || Boolean(isLucyProGenerating)) : (Boolean(isGenerating?.lucy));
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
@@ -2028,14 +2117,14 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       setAutoDetectedTitle(formatChannelsModeTitle(forcedChannels));
     }
 
-    channels = resolveLucyPageChannels(channels, pro);
+    channels = resolveLucyPageChannels(channels, pro || isPlusMode);
     setActiveChannels(channels);
     setAutoDetectedTitle(formatChannelsModeTitle(channels));
     const channelCount = channels.length;
-    const isMaster = pro && channelCount === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => channels.includes(c));
-    const isCasual = channelCount === 0;
-    const isSingle = channelCount === 1;
-    const isSyn = channelCount >= 2 && !isMaster;
+    const isMaster = isPlusMode || (pro && channelCount === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => channels.includes(c)));
+    const isCasual = !isMaster && channelCount === 0;
+    const isSingle = !isMaster && channelCount === 1;
+    const isSyn = !isMaster && channelCount >= 2;
 
     let targetPersona: PersonaType = 'lucy';
     let extraSystemContext: string | undefined = undefined;
@@ -2055,7 +2144,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 - ${chCfg ? `이 테마의 주력 운명학 도구: ${chCfg.fusionPhilosophy}` : `${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`}`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${singleContext}` : singleContext;
     } else if (isMaster) {
-      const masterContext = `[7대 채널 올인원 PRO 마스터 풀가동 — 15대 운명학 도구 전원 총동원 & 비교 분석 모드]
+      const masterContext = `[7대 채널 올인원 Lucy + 마스터 풀가동 — 15대 운명학 도구 전원 총동원 & 비교 분석 모드]
 - 7대 테마에 배정된 동서양 15가지 운명학 도구(프롤로그[태을신수·토정비결], 오렌지[홍국기문·육임·구성학], 트리니티[사주·점성술·자미두수·타로], 아우라[마하보테·태국점성술], 블루버드[숙요·베딕], 뮤즈[카발라·타로], 에필로그[주역·베딕])를 단 하나도 빠짐없이 전원 총동원합니다.
 - 7대 테마별로 묶어 15개 도구의 관점을 각각 비교 분석한 뒤, 실제 계산값이 제공된 도구들의 공통점과 차이를 비교해 줘. 미산출 도구를 계산했다고 하거나 15개 도구가 만장일치했다고 주장하지 마.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
@@ -2076,7 +2165,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
     const divinationSelection = isCasual
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
-      : selectOptimalDivinationTools(combinedContextText, channels, counselingUserProfile, isMaster, { allowMaster: pro });
+      : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: pro || isPlusMode });
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
@@ -2105,10 +2194,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
-      conversationId: chatScope,
+      conversationId: 'lucy',
+      isLucyPlus: isPlusMode,
       extraSystemContext,
       customUserProfile: counselingUserProfile,
-      channels: channels,
+      channels: isMaster ? ALL_CHANNELS : channels,
       mode: isMaster ? 'master' : (isCasual ? 'casual' : (isSingle ? channels[0] : 'synergy')),
       channel: isSingle ? channels[0] : undefined,
       usedTools: usedToolNames,
@@ -2118,7 +2208,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         }
       }
     });
-  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition, pro]);
+  }, [input, attachedImage, isLucyGenerating, lucyMessages, activeChannels, isAutoDetect, sendUnifiedMessage, activeProfiles, activeProfileId, counselingUserProfile, triggerAutoTts, activeGhostPrompt, dynamicGhostPrompts, stopRecognition, pro, isPlusMode]);
 
   useEffect(() => {
     handleSendRef.current = handleSend;
@@ -2373,22 +2463,16 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   return (
     <div
-      className={`lucy-chat-shell ${useWhiteTheme ? 'lucy-clover-white' : 'lucy-night'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-300 ${
-        isLight ? 'bg-[#faf7f2] text-slate-800' : 'bg-transparent text-white'
-      }`}
+      className={`lucy-chat-shell ${isPlusMode ? 'is-plus-mode' : ''} lucy-night h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
       style={{
-        backgroundColor: useWhiteTheme ? '#ffffff' : isLight ? '#faf7f2' : undefined,
-        color: isLight ? '#1e293b' : '#ffffff',
         overflowX: 'hidden',
         maxWidth: '100vw',
         touchAction: 'pan-y',
       }}
     >
-      {!useWhiteTheme && <div className="lucy-starfield" aria-hidden="true">
-        <div className="lucy-stars lucy-stars-distant" />
-        <div className="lucy-stars lucy-stars-bright" />
-        <div className="lucy-starlight-veil" />
-      </div>}
+      {/* 🌌 Animated Cosmic Background: Night Sky Starlight (Lucy AI) <-> Clover Aura (Lucy +) */}
+      <LucyCosmicBackground isPlusMode={isPlusMode} />
+
       {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>
         {(modeSwitchToast || autoTtsToast) && (
@@ -2396,7 +2480,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             initial={{ opacity: 0, y: -30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -30, scale: 0.95 }}
-            className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full bg-slate-900/95 text-white shadow-xl border border-amber-400/40 flex items-center gap-2 font-sans text-xs sm:text-sm backdrop-blur-md font-bold max-w-[92vw] truncate pointer-events-none"
+            className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full text-white shadow-2xl border flex items-center gap-2 font-sans text-xs sm:text-sm backdrop-blur-md font-bold max-w-[92vw] truncate pointer-events-none ${
+              isPlusMode
+                ? 'bg-emerald-950/90 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.35)]'
+                : 'bg-slate-900/95 border-amber-400/40'
+            }`}
           >
             <Sparkles size={14} className="text-amber-400 animate-spin shrink-0" />
             <span className="truncate">{autoTtsToast || modeSwitchToast}</span>
@@ -2408,13 +2496,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       <header 
         style={{
           paddingTop: 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
-          backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
-          color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',
         }}
-        className={`lucy-chat-header w-full max-w-full overflow-x-hidden px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-300 ${
-          isLight
-            ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_2px_12px_rgba(180,140,90,0.08)]'
+        className={`lucy-chat-header w-full max-w-full overflow-x-hidden px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-500 ${
+          isPlusMode
+            ? 'bg-slate-950/85 border-amber-500/30 text-white shadow-[0_4px_24px_rgba(245,158,11,0.1)]'
             : 'bg-slate-950/80 border-white/10 text-white'
         }`}
       >
@@ -2428,36 +2514,76 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               <div className="min-w-0 flex-1 overflow-hidden">
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
                   <h1
-                    className={`text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 shrink-0 ${
-                      isLight ? 'text-slate-900' : 'text-white'
-                    }`}
-                    style={{ color: isLight ? '#0f172a' : '#ffffff' }}
+                    className="text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 shrink-0 text-white"
                   >
-                    <button type="button" onClick={() => navigate(pro ? LUCY_PRO_PATH : '/')} title={pro ? 'Lucy Pro' : 'Lucy 메인 홈'} className="cursor-pointer">{pro ? 'Lucy Pro' : 'Lucy'}</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isPlusMode) {
+                          setIsPlusMode(false);
+                          safeSessionStorage.removeItem('lucy_plus_active');
+                          setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
+                          setTimeout(() => setModeSwitchToast(null), 2000);
+                        } else {
+                          navigate('/');
+                        }
+                      }}
+                      title={isPlusMode ? '클릭 시 일반 Lucy AI로 복귀' : 'Lucy AI 홈'}
+                      className="cursor-pointer flex items-center gap-1.5"
+                    >
+                      {isPlusMode ? (
+                        <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]">
+                          <span className="text-base">🍀</span>
+                          Lucy +
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1.5 font-black text-white">
+                          <Sparkles size={18} className="text-indigo-400" />
+                          Lucy AI
+                        </span>
+                      )}
+                    </button>
                   </h1>
-                  {!pro && <>
-                  <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/20 text-indigo-600 dark:text-indigo-200 border border-indigo-200/60 dark:border-indigo-400/30 flex items-center gap-1 shrink-0">
-                    <Sparkles size={10} className="text-indigo-500 dark:text-indigo-300 animate-spin" />
-                    AI 모드
-                  </span>
-                  {activeChannels.length === ALL_CHANNELS.length ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs truncate max-w-full">
+                  {isPlusMode ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsPlusMode(false);
+                        safeSessionStorage.removeItem('lucy_plus_active');
+                        setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
+                        setTimeout(() => setModeSwitchToast(null), 2000);
+                      }}
+                      title="클릭 시 일반 모드로 복귀 (빅뱅 버튼 1회 탭으로도 복귀 가능)"
+                      className="text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-amber-500/20 text-amber-300 border border-amber-400/50 flex items-center gap-1 shadow-[0_0_12px_rgba(245,158,11,0.25)] hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+                    >
                       <span>👑</span>
-                      <span className="truncate">7대 채널 올인원 마스터</span>
-                    </span>
-                  ) : activeChannels.length >= 2 ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-300 flex items-center gap-1 shadow-xs truncate max-w-full">
-                      <span>⚡</span>
-                      <span className="truncate">{activeChannels.length}중 융합 가동 중</span>
-                    </span>
-                  ) : autoDetectedTitle ? (
-                    <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-900 dark:text-violet-100 border border-violet-200/80 dark:border-violet-500/30 truncate max-w-full">
-                      {autoDetectedTitle}
-                    </span>
-                  ) : null}
-                  </>}
+                      <span>7대 채널 마스터</span>
+                      <span className="text-[8px] text-emerald-300/80 ml-0.5 opacity-80">(탭: 복귀)</span>
+                    </button>
+                  ) : (
+                    <>
+                      <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 flex items-center gap-1 shrink-0">
+                        <Sparkles size={10} className="text-indigo-400 animate-spin" />
+                        AI 모드
+                      </span>
+                      {activeChannels.length === ALL_CHANNELS.length ? (
+                        <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-300 flex items-center gap-1 shadow-xs truncate max-w-full">
+                          <span>👑</span>
+                          <span className="truncate">7대 채널 올인원 마스터</span>
+                        </span>
+                      ) : activeChannels.length >= 2 ? (
+                        <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-300 flex items-center gap-1 shadow-xs truncate max-w-full">
+                          <span>⚡</span>
+                          <span className="truncate">{activeChannels.length}중 융합 가동 중</span>
+                        </span>
+                      ) : autoDetectedTitle ? (
+                        <span className="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-950/60 text-violet-100 border border-violet-500/30 truncate max-w-full">
+                          {autoDetectedTitle}
+                        </span>
+                      ) : null}
+                    </>
+                  )}
                 </div>
-
               </div>
             </div>
           </div>

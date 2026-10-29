@@ -357,7 +357,7 @@ export function LucyKakaoBubbleGroup({
               onVoicePlay(
                 msgId,
                 fullJoinedSpeechText,
-                variant === 'drawer' ? 'Kore' : 'Aoede'
+                'Aoede'
               )
             }
             className={`px-2 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-medium ${

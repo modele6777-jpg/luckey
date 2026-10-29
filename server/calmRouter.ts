@@ -299,10 +299,10 @@ calmRouter.post("/api/tts", async (req: Request, res: Response) => {
   }
 
   try {
-    const geminiVoice = "Kore";
+    const geminiVoice = voice === "Charon" ? "Charon" : "Aoede";
     const ai = new GoogleGenAI({ apiKey: geminiKey });
     const response: any = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.8-flash-lite-tts",
       contents: [{ role: "user", parts: [{ text: cleanText }] }],
       config: {
         responseModalities: ["AUDIO" as any],
