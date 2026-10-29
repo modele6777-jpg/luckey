@@ -1,11 +1,9 @@
 {
-  "version": "1.4.569",
-  "builtAt": "2026-10-29T09:13:15.779196+00:00",
-  "summary": "등록된 OpenAI 키로 채팅·AI 음성 연결",
+  "version": "1.4.570",
+  "builtAt": "2026-10-29T09:25:46.721212+00:00",
+  "summary": "OpenAI 실제 제한 응답 진단 보강",
   "items": [
-    "기존 open ai 비밀 환경변수와 OPENAI_API_KEY 인식, OpenAI/Gemini 서버 라우팅 분리",
-    "Lucy AI·Lucy + 및 공통 텍스트 생성 경로를 OpenAI 채팅 API에 연결",
-    "OpenAI 음성 생성 연결: 사용자 남성 cedar·루시 여성 marin, 본문과 지시문 분리",
-    "OpenAI 인증·한도 오류 안내 및 AI 생성 음성 표시 추가"
+    "키·원문 오류를 노출하지 않고 OpenAI 오류 코드·제한 항목만 전달",
+    "프로젝트의 모델 한도 0과 일시 제한 구분, 실제 요청·토큰 재시도 시간 반영"
   ]
 }

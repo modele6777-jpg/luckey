@@ -1,4 +1,4 @@
-import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
+import { getSitesAIConfig, describeOpenAIFailure } from '../scripts/sites-ai-provider.mjs';
 import { stripInternalSpeechDirectives } from '../src/utils/speechText';
 import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm';
 import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog';
@@ -15,7 +15,7 @@ const routes = new Set([
   '/api/muse/artwork-image/proxy', '/api/health',
 ]);
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
-class ApiError extends Error { constructor(public status: number, message: string, public retryAfterSeconds?: number, public code?: string) { super(message); } }
+class ApiError extends Error { constructor(public status: number, message: string, public retryAfterSeconds?: number, public code?: string, public providerDetails?: { providerCode: string; limitKind?: string; limit?: number }) { super(message); } }
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 const keyFor = (env: Runtime) => text(env.gemini || env.GEMINI_API_KEY || env.GOOGLE_GENAI_API_KEY);
 const required = (value: unknown, label: string, max = 12000) => {
@@ -221,11 +221,10 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
         if (!audio.ok) {
           let failure: any = null;
           try { failure = await audio.json(); } catch (_) {}
-          if (audio.status === 429 && failure?.error?.code === 'insufficient_quota') throw new ApiError(429, 'OpenAI API 잔액 또는 프로젝트 사용 한도를 확인해 주세요.', undefined, 'MEDIA_QUOTA_EXHAUSTED');
-          if (audio.status === 429) {
-            const seconds = Number(audio.headers.get('Retry-After'));
-            throw new ApiError(429, 'OpenAI 음성 요청이 일시적으로 제한됐습니다. 잠시 후 다시 눌러 주세요.', Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : 15, 'MEDIA_RATE_LIMIT');
-          }
+          const diagnosis = describeOpenAIFailure(audio, failure);
+          const details = { providerCode: diagnosis.code, ...(diagnosis.kind ? { limitKind: diagnosis.kind } : {}), ...(diagnosis.limit !== undefined ? { limit: diagnosis.limit } : {}) };
+          if (audio.status === 429 && (diagnosis.quota || diagnosis.zeroLimit)) throw new ApiError(429, 'OpenAI API 잔액 또는 프로젝트 사용 한도를 확인해 주세요.', undefined, 'MEDIA_QUOTA_EXHAUSTED', details);
+          if (audio.status === 429) throw new ApiError(429, 'OpenAI 음성 요청이 일시적으로 제한됐습니다. 잠시 후 다시 눌러 주세요.', diagnosis.retryAfterSeconds, 'MEDIA_RATE_LIMIT', details);
           if ([401, 403].includes(audio.status)) throw new ApiError(audio.status, 'OpenAI 키의 음성 생성 권한을 확인해 주세요.');
           if ([400, 404].includes(audio.status)) throw new ApiError(audio.status, 'OpenAI 음성 모델 또는 요청 설정을 확인해 주세요.');
           throw new ApiError(502, 'OpenAI 음성 생성에 일시적인 오류가 발생했습니다.');
@@ -325,7 +324,7 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     return json({ text: typeof answer === 'string' ? answer : JSON.stringify(answer) });
   } catch (error) {
     if (error instanceof ApiError) {
-      const response = json({ error: error.message, ...(error.code ? { code: error.code } : {}), ...(error.retryAfterSeconds ? { retryAfterSeconds: error.retryAfterSeconds } : {}) }, error.status);
+      const response = json({ error: error.message, ...error.providerDetails, ...(error.code ? { code: error.code } : {}), ...(error.retryAfterSeconds ? { retryAfterSeconds: error.retryAfterSeconds } : {}) }, error.status);
       if (error.retryAfterSeconds) response.headers.set('Retry-After', String(error.retryAfterSeconds));
       return response;
     }

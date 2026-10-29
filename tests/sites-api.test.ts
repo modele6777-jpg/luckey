@@ -231,3 +231,14 @@ test('OpenAI voice quota and permission failures never echo upstream secrets or 
     if (status === 429) assert.match(body, /MEDIA_QUOTA_EXHAUSTED/);
   }
 });
+
+test('OpenAI model limit metadata distinguishes zero allocation without leaking account details', async () => {
+  const response = await handleSitesApi(request('/api/ai/tts', { text: '제한 진단' }), { OPENAI_API_KEY: 'not-exposed' }, (async () => Response.json({ error: { code: 'rate_limit_exceeded', message: 'Rate limit for org-private on requests per min (RPM): Limit 0, Used 0. key not-exposed' } }, { status: 429 })) as any);
+  const body = await response!.json() as any;
+  assert.equal(body.code, 'MEDIA_QUOTA_EXHAUSTED');
+  assert.equal(body.providerCode, 'rate_limit_exceeded');
+  assert.equal(body.limit, 0);
+  assert.equal(body.limitKind, 'requests_per_minute');
+  assert.ok(!JSON.stringify(body).includes('org-private'));
+  assert.ok(!JSON.stringify(body).includes('not-exposed'));
+});

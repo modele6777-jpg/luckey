@@ -1,4 +1,4 @@
-import { getSitesAIConfig } from './sites-ai-provider.mjs';
+import { getSitesAIConfig, describeOpenAIFailure } from './sites-ai-provider.mjs';
 // Server-only adapter: use Google's OpenAI-compatible API so conversation
 // history, image parts and SSE keep the format expected by the chat client.
 export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
@@ -61,14 +61,15 @@ export async function handleSitesGeminiChat(request, env, fetchApi = fetch) {
       // Never echo raw provider messages or secret/request details.
       let failure;
       try { failure = await upstream.json(); } catch (_) {}
-      const quotaExhausted = isOpenAI && failure?.error?.code === 'insufficient_quota';
+      const diagnosis = isOpenAI ? describeOpenAIFailure(upstream, failure) : null;
+      const quotaExhausted = diagnosis?.quota || diagnosis?.zeroLimit;
       const status = upstream.status;
       const error = status === 429 ? (quotaExhausted ? 'OpenAI API 잔액 또는 프로젝트 사용 한도를 확인해 주세요.' : `${providerName} 요청이 일시적으로 제한됐습니다. 잠시 후 다시 시도해 주세요.`)
         : status === 401 || status === 403 ? `등록된 ${providerName} API 키의 유효성과 사용 권한을 확인해 주세요.`
         : status === 404 ? `설정된 ${providerName} 모델을 사용할 수 없습니다.`
         : status === 400 ? `${providerName}가 요청을 처리하지 못했습니다. 대화 내용을 확인해 주세요.`
         : `${providerName} 서버에 일시적인 오류가 발생했습니다. 다시 시도해 주세요.`;
-      return Response.json({ error }, { status: [400, 401, 403, 404, 429].includes(status) ? status : 502 });
+      return Response.json({ error, ...(diagnosis ? { providerCode: diagnosis.code, ...(diagnosis.kind ? { limitKind: diagnosis.kind } : {}), ...(diagnosis.limit !== undefined ? { limit: diagnosis.limit } : {}) } : {}) }, { status: [400, 401, 403, 404, 429].includes(status) ? status : 502, headers: status === 429 && !quotaExhausted && diagnosis ? { 'Retry-After': String(diagnosis.retryAfterSeconds) } : {} });
     }
     return new Response(upstream.body, {
       headers: {
