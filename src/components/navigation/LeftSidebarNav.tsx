@@ -14,6 +14,7 @@ import {
   Activity,
   Moon,
   ChevronLeft,
+  Menu,
   Clover,
   KeyRound,
   User,
@@ -550,12 +551,7 @@ export default function LeftSidebarNav() {
       {!isOpen && <button type="button" onClick={showSidebar} aria-label="메뉴 열기" aria-controls="main-sidebar-navigation" aria-expanded={false}
         data-theme={isLight ? 'light' : 'dark'}
         className="page-menu-button fixed z-[398] flex h-10 w-10 items-center justify-center rounded-[14px] border backdrop-blur-xl active:scale-95">
-        <svg data-menu-four-leaf-clover="true" width="26" height="28" viewBox="0 0 40 44" aria-hidden="true">
-          <g fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round">
-            {[0, 90, 180, 270].map(angle => <path key={angle} data-menu-leaf="true" d="M20 20C17 17 10 13 11 8C12 3 18 3 20 7C22 3 28 3 29 8C30 13 23 17 20 20Z" transform={`rotate(${angle} 20 20)`} />)}
-          </g>
-          <path d="M20 20Q29 34 20 42" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-        </svg>
+        <Menu size={21} strokeWidth={1.8} aria-hidden="true" />
       </button>}
       {!isOpen && <div className="sidebar-edge-hint" data-sidebar-edge-hint="true" data-theme={isLight ? 'light' : 'dark'} aria-hidden="true">
         <span className="sidebar-edge-hint-mist" />

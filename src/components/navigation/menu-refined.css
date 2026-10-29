@@ -18,8 +18,8 @@
 .refined-menu-footer { justify-content: space-around; padding: 14px 16px max(14px, env(safe-area-inset-bottom)); border-color: var(--menu-line) !important; }
 .refined-menu-footer > * { flex-shrink: 0; }
 .refined-menu-heading button:focus-visible, .refined-nav-item:focus-visible { outline: 2px solid #85a8cb; outline-offset: 2px; }
-.page-menu-button[data-theme] { color: #25835d; background: #f5faf6 !important; border-color: #ccdcd2; box-shadow: none; }
-.page-menu-button[data-theme='dark'] { color: #99cba5; background: #202d28 !important; border-color: #3b4c43; }
+.page-menu-button[data-theme] { color: #425269; background: #ffffff90 !important; border-color: #1c304418; box-shadow: none; }
+.page-menu-button[data-theme='dark'] { color: #d0dae7; background: #ffffff08 !important; border-color: #ffffff18; }
 .page-menu-button > svg { transform: none; filter: none; }
 
 .sites-pinned-sidebar[data-theme] .refined-menu-footer button { background: var(--menu-selected) !important; color: var(--menu-text) !important; border-color: var(--menu-line) !important; box-shadow: none; }
