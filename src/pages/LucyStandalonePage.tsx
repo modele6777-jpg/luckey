@@ -2546,12 +2546,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     >
                       {isPlusMode ? (
                         <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]">
-                          <span className="text-base">🍀</span>
                           Lucy +
                         </span>
                       ) : (
                         <span className="flex items-center gap-1.5 font-black text-white">
-                          <Sparkles size={18} className="text-indigo-400" />
                           Lucy AI
                         </span>
                       )}
