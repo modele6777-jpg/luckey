@@ -12,16 +12,11 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
   isolation: isolate; color-scheme: dark; color: #f1f5fa; background: var(--lucy-bg);
 }
 .lucy-chat-shell.lucy-night.is-plus-mode {
-  --lucy-bg: #101d1b;
-  --lucy-surface: #1c302b;
-  --lucy-chrome: #142520;
-  --lucy-border: #3b594e;
   --lucy-accent: #d9c692;
-  --lucy-user: #305448;
 }
 .lucy-cosmic-bg-container { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none; }
 .lucy-cosmic-wash { position: absolute; inset: 0; background: radial-gradient(ellipse at 85% 8%, #6e8cb818, transparent 55%); transition: background 800ms; }
-.is-plus-mode .lucy-cosmic-wash { background: radial-gradient(ellipse at 85% 8%, #80ac7b18, transparent 55%); }
+.is-plus-mode .lucy-cosmic-wash { background: radial-gradient(ellipse at 85% 8%, #c6b5e014, transparent 55%); }
 /* Crossfade whole fields so twinkle opacity cannot leak stars into Plus. */
 .lucy-star-field, .lucy-clover-field { position: absolute; inset: 0; opacity: 0; transition: opacity 900ms ease; }
 .lucy-star-field.is-visible, .lucy-clover-field.is-visible { opacity: 1; }
@@ -40,8 +35,8 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
 .lucy-clover-orbit { position: absolute; animation: lucy-clover-float 32s ease-in-out infinite alternate; animation-play-state: paused; }
 .lucy-clover-field.is-visible .lucy-clover-orbit { animation-play-state: running; }
 .lucy-clover-particle {
-  display: block; width: 100%; height: auto; color: #b4e4cc; opacity: .38;
-  filter: drop-shadow(0 0 3px #8ed9b766);
+  display: block; width: 100%; height: auto; color: #dce3f4; opacity: .38;
+  filter: drop-shadow(0 0 3px #ccd7f04d);
   animation: lucy-clover-twinkle 8s ease-in-out infinite;
 }
 .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #e6d49d; filter: drop-shadow(0 0 3px #d6be8066); }
@@ -65,7 +60,7 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
 .lucy-night .lucy-starlight-assistant blockquote { color: #d4deea; border-color: var(--lucy-accent); }
 .lucy-night .lucy-starlight-assistant :is(pre, code) { background-color: #101b26; color: #e0eafb; }
 .lucy-night .lucy-starlight-send { background: #c2d5ff; color: #17263d; border: 0; width: 36px; height: 36px; box-shadow: none; }
-.lucy-night.is-plus-mode .lucy-starlight-send { background: #d9c692; color: #22372e; }
+.lucy-night.is-plus-mode .lucy-starlight-send { background: #d9c692; color: #302b24; }
 .lucy-night .lucy-chat-header h1 button > span { color: #f1f5fa; background: none; filter: none; }
 @keyframes lucy-twinkle { from { opacity: .2; } to { opacity: .65; } }
 @keyframes lucy-twinkle-distant { from { opacity: .18; } to { opacity: .4; } }
@@ -95,7 +90,7 @@ html[data-lucy-period='day'] .lucy-chat-shell.lucy-night {
   --lucy-border: #b9d4ea; --lucy-accent: #175d92; --lucy-user: #cce7ff;
 }
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode {
-  --lucy-accent: #24614b;
+  --lucy-accent: #79623d;
 }
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night {
   color-scheme: light; color: #243449; background: var(--lucy-bg) !important;
@@ -111,12 +106,12 @@ html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-chat-header h1 bu
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) { color: var(--lucy-accent) !important; }
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(pre, code) { background: #eef3f8; color: #243449; }
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-send { background: #175d92 !important; color: #ffffff !important; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode .lucy-starlight-send { background: #24614b !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode .lucy-starlight-send { background: #79623d !important; }
 html.light[data-lucy-period] .lucy-cosmic-wash { background: radial-gradient(ellipse at 80% 5%, #ffffffb0, transparent 60%); }
 html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }
 html.light[data-lucy-period] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
-html.light[data-lucy-period] .lucy-clover-particle { color: #328263; filter: none; }
-html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #98722d; }
+html.light[data-lucy-period] .lucy-clover-particle { color: #8197b4; filter: none; }
+html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #aa8b54; }
 html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #faf7f0 !important; }
 html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
 
