@@ -387,7 +387,7 @@ interface BigBangCircularMeterProps {
   /** Right-hand control advances through every Luckey dapp in fixed order. */
   onNextPage: () => void;
   /** Left-hand control jumps immediately to the current recommendation. */
-  onRecommendedPage: () => void;
+  onPreviousPage: () => void;
 }
 
 /**
@@ -407,7 +407,7 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   isCosmicSuction = false,
   onRegisterActions,
   onNextPage,
-  onRecommendedPage,
+  onPreviousPage,
 }: BigBangCircularMeterProps) {
   const gradientId = useId();
   const meterRootRef = useRef<HTMLDivElement | null>(null);
@@ -561,15 +561,15 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   const prevStep = BIGBANG_CYCLE_NAV_STEPS[prevIndex];
   const nextStep = BIGBANG_CYCLE_NAV_STEPS[nextIndex];
 
-  // Left touch and ArrowLeft share the live, non-repeating recommendation.
+  // Left touch and ArrowLeft reverse the same ordered dapp tour.
   const handleNavigateBack = useCallback(
     (e: React.MouseEvent | React.TouchEvent | KeyboardEvent) => {
       e.preventDefault();
       e.stopPropagation();
       triggerDotPulse('west');
-      onRecommendedPage();
+      onPreviousPage();
     },
-    [triggerDotPulse, onRecommendedPage]
+    [triggerDotPulse, onPreviousPage]
   );
 
   // The right-hand control and ArrowRight use the same ordered dapp tour.

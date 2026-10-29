@@ -9,7 +9,6 @@ import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { invokeLLM } from '@/lib/ai';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
 import { playTTS, stopTTS, useTTSActive } from '@/utils/tts';
-import { getTodayDateKey } from '@/lib/dailyCache';
 import {
   getSafeArtworkUrl,
   resolveArtworkImage,
@@ -47,27 +46,6 @@ export function MuseSynergySection() {
 
   const [userCreativeDilemma, setUserCreativeDilemma] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  // 🌟 오늘의 데일리아트 필수 확인 여부 감지 (고민 입력 및 결과 수신 전제 조건)
-  const [isDailyArtConfirmed, setIsDailyArtConfirmed] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(`prism_daily_art_confirmed_${getTodayDateKey()}`) === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  useEffect(() => {
-    const handleDailyArtConfirmed = () => {
-      try {
-        setIsDailyArtConfirmed(localStorage.getItem(`prism_daily_art_confirmed_${getTodayDateKey()}`) === 'true');
-      } catch {
-        setIsDailyArtConfirmed(false);
-      }
-    };
-    window.addEventListener('prism:daily_art_confirmed', handleDailyArtConfirmed);
-    return () => window.removeEventListener('prism:daily_art_confirmed', handleDailyArtConfirmed);
-  }, []);
 
   // 2. 동적 마스터클래스 대화 데이터 (초기값도 거장별/작품별/날짜별 동적 계산)
   const initialDialogue = useMemo(() => {
@@ -263,12 +241,6 @@ export function MuseSynergySection() {
 
   // 거장의 1:1 심층 마스터클래스 AI 생성 시작 (선택된 세부 작품 반영)
   const handleStartMasterclass = async () => {
-    // 🌟 오늘의 데일리아트 필수 확인 가드: 미확인 시 데일리아트 탭으로 안내
-    if (!isDailyArtConfirmed) {
-      window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'artRecommendation' } }));
-      return;
-    }
-
     setIsLoading(true);
 
     const rawNick = userProfile?.basic?.nickname?.trim() || userProfile?.basic?.name?.trim();
@@ -534,29 +506,9 @@ export function MuseSynergySection() {
           </div>
         </div>
 
-        {!isDailyArtConfirmed ? (
-          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-950/60 via-indigo-950/40 to-black border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-bold text-blue-300">
-                <Sparkles size={14} className="text-yellow-400 shrink-0" />
-                <span>오늘의 데일리아트 필수 확인 필요</span>
-              </div>
-              <p className="text-[11px] text-white/70 leading-relaxed font-sans">
-                거장에게 창작 고민을 입력하고 1:1 맞춤 조언을 받으시려면, 먼저 오늘 큐레이션된 <strong>오늘의 데일리아트(명곡·명시·명화)</strong>를 확인해 주세요.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'artRecommendation' } }));
-              }}
-              className="shrink-0 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-900/30 cursor-pointer active:scale-95 transition-all"
-            >
-              <Sparkles size={13} className="text-yellow-300" />
-              <span>오늘의 데일리아트 확인하러 가기</span>
-            </button>
-          </div>
-        ) : (
+        <p className="text-xs text-white/65 leading-relaxed">
+          창작 영감이 필요하다면 오늘의 데일리아트도 추천해요. 확인 여부와 관계없이 바로 대화를 시작할 수 있어요.
+        </p>
           <div>
             <label className="block text-[11px] text-white/50 mb-2 font-medium">
               거장에게 조언받고 싶은 현재의 창작 고민이나 인생의 막막함을 적어주세요 (선택):
@@ -569,7 +521,6 @@ export function MuseSynergySection() {
               className="w-full px-4 py-3.5 rounded-2xl bg-black/40 border border-white/10 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-blue-400/60 font-sans"
             />
           </div>
-        )}
 
         <button
           onClick={handleStartMasterclass}
@@ -583,11 +534,6 @@ export function MuseSynergySection() {
                 <span className="sm:hidden">1:1 마스터클래스 대화 생성 중...</span>
                 <span className="hidden sm:inline">〈{selectedArtwork?.piece?.split('(')[0]?.trim() || selectedMaster.name.split('(')[0]}〉 1:1 맞춤 영감 마스터클래스 생성 중...</span>
               </span>
-            </>
-          ) : !isDailyArtConfirmed ? (
-            <>
-              <Sparkles size={16} className="text-yellow-300 shrink-0" />
-              <span>오늘의 데일리아트 먼저 확인하고 마스터클래스 시작하기</span>
             </>
           ) : (
             <>

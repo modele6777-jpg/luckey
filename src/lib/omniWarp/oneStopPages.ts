@@ -53,3 +53,10 @@ export function nextOrderedLuckeyPage(current: string): string {
   const index = pages.indexOf(normalizeOneStopPage(current || '/'));
   return oneStopNavigationPath(pages[(index + 1) % pages.length]);
 }
+
+/** Reverse the same tour; entering from outside Luckey starts at Epilogue Profile. */
+export function previousOrderedLuckeyPage(current: string): string {
+  const pages = getOrderedLuckeyPageKeys();
+  const index = pages.indexOf(normalizeOneStopPage(current || '/'));
+  return oneStopNavigationPath(pages[index < 0 ? pages.length - 1 : (index - 1 + pages.length) % pages.length]);
+}

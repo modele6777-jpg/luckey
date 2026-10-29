@@ -63,7 +63,7 @@ export const CORE_CHANNELS: NavItemConfig[] = [
   {
     path: '/',
     icon: Sparkles,
-    label: 'LUCY AI',
+    label: 'Lucy',
     subLabel: '루시 AI · 영혼의 대화',
     color: 'oklch(0.70 0.20 300)',
     isMainChat: true,
@@ -885,14 +885,14 @@ export default function LeftSidebarNav() {
               <stop offset="1" stopColor={isLight ? '#047857' : '#059669'} />
             </linearGradient>
           </defs>
-          <path d="M13 14c.4 3.8 1.7 6.3 4 8" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <g fill={`url(#${menuLeafGradientId})`} stroke={isLight ? '#059669' : '#a7f3d0'} strokeOpacity="0.55" strokeWidth="0.5" strokeLinejoin="round">
-            <path d="M13 14C4 8 8 1 13 5C18 1 22 8 13 14Z" />
-            <path d="M13 14C4 8 8 1 13 5C18 1 22 8 13 14Z" transform="rotate(120 13 14)" opacity="0.9" />
-            <path d="M13 14C4 8 8 1 13 5C18 1 22 8 13 14Z" transform="rotate(240 13 14)" opacity="0.8" />
+          <path d="M13 13c1 4 1 7-2 10" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          <g data-menu-four-leaf-clover="true" fill={`url(#${menuLeafGradientId})`} stroke={isLight ? '#059669' : '#a7f3d0'} strokeOpacity="0.5" strokeWidth="0.5" strokeLinejoin="round">
+            {[0, 90, 180, 270].map((angle) => (
+              <path key={angle} d="M13 13C9 12 4 9 5 6C6 2 10 3 11 5C12 2 16 3 17 6C18 9 15 12 13 13Z" transform={`rotate(${angle} 13 13)`} />
+            ))}
           </g>
-          <circle cx="13" cy="14" r="1.1" fill="#fde68a" />
-          <path d="M13 7v5m-6 5 4-2m7 2-3-2" fill="none" stroke="white" strokeOpacity="0.35" strokeWidth="0.8" strokeLinecap="round" />
+          <circle cx="13" cy="13" r="1.3" fill="#fff3b0" />
+          <path d="M8 6l2 2m8 0-2 2" fill="none" stroke="white" strokeOpacity="0.6" strokeWidth="1" strokeLinecap="round" />
         </svg>
       </button>}
       {!isOpen && <div className="sidebar-edge-hint" data-sidebar-edge-hint="true" data-theme={isLight ? 'light' : 'dark'} aria-hidden="true">

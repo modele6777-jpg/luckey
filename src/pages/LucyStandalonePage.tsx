@@ -632,7 +632,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeSessionStorage.removeItem('lucy_plus_active');
       setIsPlusMode(false);
       triggerHaptic('whitehole');
-      setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
+      setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
       setTimeout(() => setModeSwitchToast(null), 2000);
     };
 
@@ -649,7 +649,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         } else {
           safeSessionStorage.removeItem('lucy_plus_active');
           triggerHaptic('whitehole');
-          setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
+          setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
         }
         setTimeout(() => setModeSwitchToast(null), 2200);
         return next;
@@ -712,7 +712,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     } catch (_) {}
   }, [abortGenerating]);
 
-  // 🔒 모드 선택: Lucy + 상태일 때는 7대 채널 마스터 상시 가동, 일반 Lucy AI일 때는 자동 감지 모드
+  // 🔒 모드 선택: Lucy + 상태일 때는 7대 채널 마스터 상시 가동, 일반 Lucy일 때는 자동 감지 모드
   const selectedMode = (pro || isPlusMode ? 'master' : 'auto') as LucyChatMode;
 
   // 🎛️ 현재 AI가 감지·가동 중인 채널 (Lucy +일 때는 ALL_CHANNELS, 일반일 때는 자동/동적)
@@ -2483,7 +2483,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         touchAction: 'pan-y',
       }}
     >
-      {/* 🌌 Animated Cosmic Background: Night Sky Starlight (Lucy AI) <-> Clover Aura (Lucy +) */}
+      {/* 🌌 Animated Cosmic Background: Night Sky Starlight (Lucy) <-> Clover Aura (Lucy +) */}
       <LucyCosmicBackground isPlusMode={isPlusMode} />
 
       {/* Mode Switch & Auto-TTS Toast */}
@@ -2535,13 +2535,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         if (isPlusMode) {
                           setIsPlusMode(false);
                           safeSessionStorage.removeItem('lucy_plus_active');
-                          setModeSwitchToast('✨ 일반 Lucy AI 모드로 복귀했습니다');
+                          setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
                           setTimeout(() => setModeSwitchToast(null), 2000);
                         } else {
                           navigate('/');
                         }
                       }}
-                      title={isPlusMode ? '클릭 시 일반 Lucy AI로 복귀' : 'Lucy AI 홈'}
+                      title={isPlusMode ? '클릭 시 일반 Lucy로 복귀' : 'Lucy 홈'}
                       className="cursor-pointer flex items-center gap-1.5"
                     >
                       {isPlusMode ? (
@@ -2550,7 +2550,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         </span>
                       ) : (
                         <span className="flex items-center gap-1.5 font-black text-white">
-                          Lucy AI
+                          Lucy
                         </span>
                       )}
                     </button>

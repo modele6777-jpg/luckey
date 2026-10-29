@@ -37,7 +37,7 @@ const PERSONA_CONFIG: Record<PersonaType, {
   prompts: string[] 
 }> = {
   lucy: {
-    name: "루시 AI (Lucy AI)",
+    name: "루시 (Lucy)",
     title: "우주적인 모든 가호가 싱크된 멀티버스 마스터 가이드",
     emoji: "✨",
     color: "text-purple-400 border-purple-500/20 bg-purple-500/5",
@@ -87,7 +87,7 @@ const PERSONA_CONFIG: Record<PersonaType, {
     ]
   },
   orange: {
-    name: "루시 AI (Lucy AI)",
+    name: "루시 (Lucy)",
     title: "루시의 마음치유 채널 (내면아이 보듬기 & 성찰)",
     emoji: "🍊",
     color: "text-orange-400 border-orange-500/20 bg-orange-500/5",
@@ -135,7 +135,7 @@ const PERSONA_CONFIG: Record<PersonaType, {
     ]
   },
   trinity: {
-    name: "루시 AI (Lucy AI)",
+    name: "루시 (Lucy)",
     title: "루시의 트리니티 오라클 (사주·점성술·타로 데이터 분석)",
     emoji: "🌌",
     color: "text-yellow-400 border-yellow-500/20 bg-yellow-500/5",
@@ -182,7 +182,7 @@ const PERSONA_CONFIG: Record<PersonaType, {
     ]
   },
   aura: {
-    name: "루시 AI (Lucy AI)",
+    name: "루시 (Lucy)",
     title: "루시의 아우라 바디웰니스 (신체 활력 & 차크라 호흡)",
     emoji: "🌿",
     color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/5",
@@ -226,7 +226,7 @@ const PERSONA_CONFIG: Record<PersonaType, {
     ]
   },
   bluebird: {
-    name: "루시 AI (Lucy AI)",
+    name: "루시 (Lucy)",
     title: "루시의 블루버드 예술정서 (예술 소리치유 & 시적 교감)",
     emoji: "🐦",
     color: "text-cyan-400 border-cyan-500/20 bg-cyan-500/5",
@@ -270,7 +270,7 @@ const PERSONA_CONFIG: Record<PersonaType, {
     ]
   },
   muse: {
-    name: "루시 AI (Lucy AI)",
+    name: "루시 (Lucy)",
     title: "루시의 뮤즈 창조성 (영감 자극 & 창작 장애물 구출)",
     emoji: "🎨",
     color: "text-blue-400 border-blue-500/20 bg-blue-500/5",

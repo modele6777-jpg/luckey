@@ -2302,15 +2302,6 @@ export function ArtRecommendationView() {
     }
   }, [recommendation, nanobananaImage, generateNanobananaImage]);
 
-  // 🌟 오늘의 데일리아트 필수 확인 연동: 데일리아트를 확인한 기록을 저장하여 마스터클래스 고민 입력 시 자격 활성화
-  useEffect(() => {
-    if (recommendation) {
-      try {
-        localStorage.setItem(`prism_daily_art_confirmed_${getTodayDateKey()}`, 'true');
-        window.dispatchEvent(new CustomEvent('prism:daily_art_confirmed'));
-      } catch (_) {}
-    }
-  }, [recommendation]);
 
   return (
     <DuoWorkspace className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-6 md:py-12 text-white">

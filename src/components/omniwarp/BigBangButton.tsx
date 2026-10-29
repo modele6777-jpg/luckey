@@ -2,10 +2,10 @@ import { createPortal } from 'react-dom';
 import { BigBangCloverWind } from './BigBangCloverWind';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
 import './bigbang-clover-breeze.css';
-import { oneStopNavigationPath, nextOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
+import { oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronUp, ChevronDown, Clover } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature } from '@/lib/omniWarp/forceSensor';
@@ -298,7 +298,7 @@ export function BigBangButton() {
     return '';
   }, [location]);
 
-  // Capture selected text exclusively for the long-press Lucy gesture.
+  // Capture selected text for tap-to-Lucy and hold-to-Plus.
   const [hasSelectionToss, setHasSelectionToss] = useState(false);
   const [selectionPreviewText, setSelectionPreviewText] = useState('');
   const touchStartSelectionRef = useRef<string>('');
@@ -564,7 +564,7 @@ export function BigBangButton() {
           : `[홀드] Lucy + 7대 채널 마스터 진화`,
         previewDescription: isTextToss
           ? '선택한 문장을 Lucy + 7대 채널 올인원 마스터 모드로 전달합니다'
-          : 'Lucy AI를 Lucy +로 진화시키며 7대 채널 마스터 모드를 엽니다',
+          : 'Lucy를 Lucy +로 진화시키며 7대 채널 마스터 모드를 엽니다',
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
@@ -578,7 +578,7 @@ export function BigBangButton() {
         id: 'menu', icon: '🍀', phase: 'whitehole', gauge: metrics.virtualForce,
         aiTemperature: temp, title: '네잎클로버 메뉴', actionType: 'navigate',
         previewLabel: '탭: 메뉴 · 더블탭: 추천 워프',
-        previewDescription: '선택 문장은 길게 누를 때만 루시에게 전달합니다',
+        previewDescription: '선택 문장 · 탭: Lucy 전달 · 홀드: Lucy + 전달',
         destinationPath: location, themeColor: '#38bdf8', accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
     }
@@ -729,7 +729,7 @@ export function BigBangButton() {
     window.addEventListener('pointerup', onGlobalUp);
 
     const now = performance.now();
-    const initialDir = (e.target as Element).closest('#bigbang-omnibutton') ? 'none' : calculateCardinalDirection(e.clientX, e.clientY);
+    const initialDir = calculateCardinalDirection(e.clientX, e.clientY);
     touchStartRef.current = {
       time: now,
       x: e.clientX,
@@ -978,9 +978,12 @@ export function BigBangButton() {
     [navigate]
   );
 
-  const goToLiveRecommendedDapp = useCallback(() => {
-    goToNextRecommended(undefined, undefined, true);
-  }, [goToNextRecommended]);
+  const goToPreviousDapp = useCallback(() => {
+    const previousPath = previousOrderedLuckeyPage(getCurrentOneStopPage(location));
+    const tab = new URL(previousPath, 'https://luckey.local').searchParams.get('tab') || undefined;
+    triggerHaptic('wormhole');
+    handleRuneNavigate(previousPath, tab);
+  }, [location, handleRuneNavigate]);
 
   const goToNextDapp = useCallback(() => {
     const nextPath = nextOrderedLuckeyPage(getCurrentOneStopPage(location));
@@ -1096,7 +1099,7 @@ export function BigBangButton() {
       } else if (targetDir === 'south') {
         cardinalActionsRef.current?.scrollToBottom(e);
       } else if (targetDir === 'west') {
-        goToLiveRecommendedDapp();
+        goToPreviousDapp();
       } else if (targetDir === 'east') {
         goToNextDapp();
       }
@@ -1110,7 +1113,7 @@ export function BigBangButton() {
     }
 
     // 🎙️ [홀드 완료: duration >= 220ms 또는 isPttRecordingRef.current]
-    // 홀드를 놓으면 프로 페이지로 이동하지 않고, Lucy AI를 그 자리에서 Lucy +로 진화시킵니다!
+    // 홀드를 놓으면 프로 페이지로 이동하지 않고, Lucy를 그 자리에서 Lucy +로 진화시킵니다!
     const isHoldGesture = isPttRecordingRef.current || duration >= 220;
     if (isHoldGesture) {
       isPttRecordingRef.current = false;
@@ -1130,13 +1133,13 @@ export function BigBangButton() {
       safeSessionStorage.setItem('lucy_plus_active', 'true');
 
       if (inLucyChat) {
-        // 🌟 현재 Lucy AI 화면 내에서 즉각 Lucy +로 진화! (페이지 이동 없이 인플레이스 진화)
+        // 🌟 현재 Lucy 화면 내에서 즉각 Lucy +로 진화! (페이지 이동 없이 인플레이스 진화)
         window.dispatchEvent(new CustomEvent('prism:evolve_lucy_plus', { detail: { prompt } }));
         if (prompt) {
           window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
         }
       } else {
-        // 🌟 외부 화면인 경우 Lucy AI(/chat)로 이동하면서 Lucy +로 진화!
+        // 🌟 외부 화면인 경우 Lucy(/chat)로 이동하면서 Lucy +로 진화!
         if (prompt) {
           safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
         }
@@ -1162,6 +1165,35 @@ export function BigBangButton() {
     // Wait briefly for a second tap before opening the single-tap menu.
     const isTapGesture = !isDragGesture && !isHoldGesture && duration < 220 && dist < DRAG_ACTIVATION_THRESHOLD;
     if (isTapGesture) {
+      const selectedText = (touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText()).trim();
+      if (selectedText) {
+        const prompt = `내가 선택한 문장이야:\n"${selectedText}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+        if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+        singleTapTimerRef.current = null;
+        lastTapTimeRef.current = 0;
+        safeSessionStorage.removeItem('lucy_plus_active');
+        safeSessionStorage.removeItem('lucy_chat_voice_requested');
+        triggerHaptic('whitehole');
+        if (checkIsInLucyChat()) {
+          window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
+          window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: [] } }));
+        } else {
+          safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
+          safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
+          handleRuneNavigate('/chat');
+        }
+        window.getSelection()?.removeAllRanges();
+        lastValidSelectionRef.current = '';
+        touchStartSelectionRef.current = '';
+        clearPendingSelection();
+        setHasSelectionToss(false);
+        setSelectionPreviewText('');
+        setIsQuickChatOpen(false);
+        setActivePhase('idle');
+        setGauge(0);
+        setDurationMs(0);
+        return;
+      }
       const now = performance.now();
       const doubleTap = lastTapTimeRef.current > 0 && now - lastTapTimeRef.current <= 360;
       if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
@@ -1181,7 +1213,7 @@ export function BigBangButton() {
           lastTapTimeRef.current = 0;
           triggerHaptic('whitehole');
 
-          // 🌟 Lucy + 상태에서 빅뱅 버튼을 1회 탭하면 일반 Lucy AI 모드로 복귀!
+          // 🌟 Lucy + 상태에서 빅뱅 버튼을 1회 탭하면 일반 Lucy 모드로 복귀!
           const isLucyPlusActive = safeSessionStorage.getItem('lucy_plus_active') === 'true' ||
             (typeof document !== 'undefined' && (
               document.documentElement.classList.contains('lucy-plus-active') ||
@@ -1399,7 +1431,7 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">💬</span>
-                <span>선택한 문장 · 길게 눌러 루시에게 전달</span>
+                <span>선택한 문장 · 탭: Lucy · 홀드: Lucy +</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1434,7 +1466,7 @@ export function BigBangButton() {
                 isCosmicSuction={isCosmicSuctionActive}
                 onRegisterActions={handleRegisterActions}
                 onNextPage={goToNextDapp}
-                onRecommendedPage={goToLiveRecommendedDapp}
+                onPreviousPage={goToPreviousDapp}
               />
             </div>
 
@@ -1620,8 +1652,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 화면 전체 네잎클로버 바람 효과)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 세잎클로버: 실시간 추천 1순위 댑으로 바로 이동 / 오른쪽 네잎클로버: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 화면 전체 네잎클로버 바람 효과"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 화살표: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 화살표: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 화면 전체 네잎클로버 바람 효과)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 화살표: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 화살표: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 화면 전체 네잎클로버 바람 효과"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -1835,7 +1867,7 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
-              {/* 🎯 Big Bang Center: 왼쪽 방향은 세잎클로버, 가운데 점 대신 네잎클로버 */}
+              {/* Big Bang center: directional chevrons on activation, dot while idle */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
                   {centerDirection === 'north' || centerDirection === 'south' ? (
@@ -1843,15 +1875,12 @@ export function BigBangButton() {
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                       : <ChevronDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerDirection === 'west' ? (
-                    <svg data-bigbang-shamrock="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true" className="rotate-[-45deg] text-emerald-200" style={{ filter: 'drop-shadow(0 0 6px #34d399)' }}>
-                      {[0, 120, 240].map(angle => <path key={angle} transform={`rotate(${angle} 12 12)`} d="M12 12C9 10 5 7 7 4C9 2 12 4 12 5C12 4 15 2 17 4C19 7 15 10 12 12Z" />)}
-                      <path d="M12 12C13 16 12 19 9 22" strokeLinecap="round" />
-                    </svg>
+                    <ChevronLeft data-bigbang-center-arrow="west" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                  ) : centerDirection === 'east' ? (
+                    <ChevronRight data-bigbang-center-arrow="east" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : (
                     <>
-                      {centerDirection === 'east' ? <Clover data-bigbang-center-clover="true" size={22} strokeWidth={2} aria-hidden="true"
-                        className={`rotate-[-45deg] text-emerald-200 transition-transform duration-200 ${isPressing ? 'scale-110' : ''}`}
-                        style={{ filter: 'drop-shadow(0 0 6px #34d399)' }} /> : <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />}
+                      <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />
                       <div
                         className={`absolute rounded-full border border-cyan-400/30 transition-all duration-300 ${
                           isPressing ? 'w-8 h-8 scale-110 opacity-70' : 'w-5 h-5 animate-ping opacity-40'
