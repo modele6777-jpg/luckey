@@ -82,3 +82,38 @@ html[data-lucy-theme='starlight'] .lucy-chat-shell.lucy-night :is(.lucy-chat-hea
 html[data-lucy-theme='starlight'] .lucy-chat-shell.lucy-night .lucy-starlight-assistant {
   background-color: var(--lucy-surface) !important;
 }
+
+/* Daylight palettes are scoped to Lucy; the rest of the app keeps its channel theme. */
+html[data-lucy-period='morning'] .lucy-chat-shell.lucy-night {
+  --lucy-bg: #faf7f0; --lucy-surface: #ffffff; --lucy-chrome: #fffdf8;
+  --lucy-border: #d9d1c3; --lucy-accent: #775530; --lucy-user: #eee4d4;
+}
+html[data-lucy-period='day'] .lucy-chat-shell.lucy-night {
+  --lucy-bg: #e6f3ff; --lucy-surface: #ffffff; --lucy-chrome: #f3faff;
+  --lucy-border: #b9d4ea; --lucy-accent: #175d92; --lucy-user: #cce7ff;
+}
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode {
+  --lucy-accent: #24614b;
+}
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night {
+  color-scheme: light; color: #243449; background: var(--lucy-bg) !important;
+}
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(.lucy-starlight-assistant, .lucy-starlight-user, .lucy-user-bubble, .lucy-starlight-composer) {
+  color: #243449 !important; border-color: var(--lucy-border) !important;
+}
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(.lucy-starlight-user, .lucy-user-bubble) { background: var(--lucy-user) !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-composer { background: var(--lucy-surface) !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(.lucy-starlight-composer textarea, .lucy-starlight-composer input) { color: #243449 !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(input, textarea)::placeholder { color: #5a6e82 !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-chat-header h1 button > span { color: #243449 !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) { color: var(--lucy-accent) !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(pre, code) { background: #eef3f8; color: #243449; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-send { background: #175d92 !important; color: #ffffff !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode .lucy-starlight-send { background: #24614b !important; }
+html.light[data-lucy-period] .lucy-cosmic-wash { background: radial-gradient(ellipse at 80% 5%, #ffffffb0, transparent 60%); }
+html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }
+html.light[data-lucy-period] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
+html.light[data-lucy-period] .lucy-clover-particle { color: #328263; filter: none; }
+html.light[data-lucy-period] .lucy-clover-particle:nth-child(3n) { color: #98722d; }
+html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #faf7f0 !important; }
+html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }

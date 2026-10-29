@@ -612,7 +612,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const chatScope = (pro || isPlusMode) ? 'lucy' : 'lucy';
   const [, navigate] = useLocation();
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, lucyDayPeriod } = useTheme();
   const isLight = resolvedTheme === 'light';
   const useWhiteTheme = false;
 
@@ -1916,6 +1916,18 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       else document.documentElement.setAttribute('data-lucy-theme', previousLucyTheme);
     };
   }, []);
+
+  useEffect(() => {
+    const color = lucyDayPeriod === 'morning' ? '#faf7f0' : lucyDayPeriod === 'day' ? '#e6f3ff' : '#101722';
+    document.documentElement.style.setProperty('--lucy-page-background', color);
+    const tag = document.querySelector('meta[name="theme-color"]');
+    const previous = tag?.getAttribute('content');
+    tag?.setAttribute('content', color);
+    return () => {
+      document.documentElement.style.removeProperty('--lucy-page-background');
+      if (previous != null) tag?.setAttribute('content', previous);
+    };
+  }, [lucyDayPeriod]);
 
   const isAutoScrollingRef = useRef(false);
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);

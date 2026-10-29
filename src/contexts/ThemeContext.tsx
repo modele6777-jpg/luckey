@@ -2,10 +2,13 @@ import React, { createContext, useContext, useEffect, useLayoutEffect, useState,
 import { useLocation } from "wouter";
 import { safeLocalStorage } from "../utils/safeStorage";
 
+import { getLucyDayPeriod, isLucyThemeRoute, type LucyDayPeriod } from "../lib/lucyDayTheme";
+
 export type ThemeMode = "light" | "dark" | "auto";
 export type ResolvedTheme = "light" | "dark";
 
 export interface ThemeContextType {
+  lucyDayPeriod: LucyDayPeriod;
   theme: ResolvedTheme;
   themeMode: ThemeMode;
   resolvedTheme: ResolvedTheme;
@@ -16,15 +19,15 @@ export interface ThemeContextType {
 
 /**
  * 채널별 고정 단일 테마 판별:
- * - Lucy AI / Lucy + (/, /chat, /lucy, /chat/pro) -> 밤하늘 다크 테마 ('dark')
+ * - Lucy AI / Lucy + (/, /chat, /lucy, /chat/pro) -> 기기 현지 시간에 따라 아침·낮·밤 자동 테마
  * - 키채널 (/key, /calm, /orb, /gateway, /crystal) -> 라이트 테마 ('light')
  * - 럭키채널 (7대 프리즘 채널, 허브, 핸드북, 옴니워프 등 기타 모든 경로) -> 다크 테마 ('dark')
  */
-export function resolveChannelThemeFromPath(pathname?: string): ResolvedTheme {
+export function resolveChannelThemeFromPath(pathname?: string, date = new Date()): ResolvedTheme {
   const raw = pathname ?? (typeof window !== "undefined" ? window.location.pathname : "/");
   const clean = (raw || "/").split("?")[0].split("#")[0].toLowerCase();
 
-  if (["/", "/chat", "/lucy", "/chat/pro"].includes(clean)) return "dark";
+  if (isLucyThemeRoute(clean)) return getLucyDayPeriod(date) === "night" ? "dark" : "light";
 
   if (
     clean === "/key" ||
@@ -61,6 +64,7 @@ function applyThemeToDocument(resolvedTheme: ResolvedTheme) {
 }
 
 const defaultThemeContext: ThemeContextType = {
+  lucyDayPeriod: getLucyDayPeriod(),
   theme: "light",
   themeMode: "light",
   resolvedTheme: "light",
@@ -79,6 +83,20 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [location] = useLocation();
+  const [lucyDayPeriod, setLucyDayPeriod] = useState(() => getLucyDayPeriod());
+  useEffect(() => {
+    const refresh = () => setLucyDayPeriod(getLucyDayPeriod());
+    const timer = window.setInterval(refresh, 1000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('pageshow', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('pageshow', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, []);
   const [windowPath, setWindowPath] = useState<string>(() =>
     typeof window !== "undefined" ? window.location.pathname : "/"
   );
@@ -115,13 +133,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const activePath = location || windowPath || "/";
   const resolvedTheme: ResolvedTheme = useMemo(
-    () => resolveChannelThemeFromPath(activePath),
-    [activePath]
+    () => isLucyThemeRoute(activePath) ? (lucyDayPeriod === "night" ? "dark" : "light") : resolveChannelThemeFromPath(activePath),
+    [activePath, lucyDayPeriod]
   );
 
   // Synchronously apply theme class before paint on route transitions
   useLayoutEffect(() => {
     applyThemeToDocument(resolvedTheme);
+    if (isLucyThemeRoute(activePath)) document.documentElement.dataset.lucyPeriod = lucyDayPeriod;
+    else delete document.documentElement.dataset.lucyPeriod;
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(
@@ -130,7 +150,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         })
       );
     }
-  }, [resolvedTheme]);
+  }, [resolvedTheme, lucyDayPeriod, activePath]);
 
   // No-op setters since theme is strictly bound per channel
   const setThemeMode = useCallback((_mode: ThemeMode) => {}, []);
@@ -138,6 +158,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const value = useMemo<ThemeContextType>(
     () => ({
+      lucyDayPeriod,
       theme: resolvedTheme,
       themeMode: resolvedTheme,
       resolvedTheme,
@@ -145,7 +166,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       toggleTheme,
       switchable: false,
     }),
-    [resolvedTheme, setThemeMode, toggleTheme]
+    [resolvedTheme, lucyDayPeriod, setThemeMode, toggleTheme]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
