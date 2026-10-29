@@ -50,3 +50,14 @@ test('reverse and forward are exact inverses, including aliased tabs and channel
   assert.equal(previousOrderedLuckeyPage('/epilogue?tab=diary'), '/muse?tab=synergy');
   assert.equal(previousOrderedLuckeyPage('/chat/pro'), '/profile');
 });
+
+test('route-backed tabs show the same destination channel identity as the menu', async () => {
+  const { getDestinationChannel, CHANNEL_MENU_ICONS } = await import('../src/lib/channelMenuIcons');
+  for (const path of ['/profile', '/chronicle', '/epilogue?tab=diary']) {
+    assert.equal(getDestinationChannel(path).icon, CHANNEL_MENU_ICONS.epilogue);
+  }
+  for (const path of ['/ecpr', '/todo', '/prologue?tab=universe']) {
+    assert.equal(getDestinationChannel(path).icon, CHANNEL_MENU_ICONS.prologue);
+  }
+  assert.equal(getDestinationChannel('/muse?tab=roleModel').icon, CHANNEL_MENU_ICONS.muse);
+});

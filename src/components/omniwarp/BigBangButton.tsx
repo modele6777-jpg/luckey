@@ -1,3 +1,4 @@
+import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
 import { BigBangCloverWind } from './BigBangCloverWind';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
@@ -5,7 +6,7 @@ import './bigbang-clover-breeze.css';
 import { oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clover, KeyRound } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature } from '@/lib/omniWarp/forceSensor';
@@ -181,13 +182,29 @@ export function BigBangButton() {
   const [clickedDirection, setClickedDirection] = useState<typeof hoverDirection>('none');
   const directionFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const centerDirection = isPressing ? hoverDirection : clickedDirection;
-  const showDirectionFeedback = (direction: typeof hoverDirection) => {
+  const [feedbackChannel, setFeedbackChannel] = useState<ReturnType<typeof getDestinationChannel> | null>(null);
+  const DestinationIcon = feedbackChannel?.icon;
+  const [gestureFeedback, setGestureFeedback] = useState<'tap' | 'hold' | 'double' | null>(null);
+  const gestureFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const centerGesture = isPressing && durationMs >= 220 && hoverDirection === 'none' ? 'hold' : gestureFeedback;
+  const showGestureFeedback = (gesture: 'tap' | 'hold' | 'double') => {
+    if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
+    if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
+    setClickedDirection('none');
+    setGestureFeedback(gesture);
+    gestureFeedbackTimer.current = setTimeout(() => setGestureFeedback(null), 1200);
+  };
+  const showDirectionFeedback = (direction: typeof hoverDirection, destination?: string) => {
+    setFeedbackChannel(destination ? getDestinationChannel(destination) : null);
+    setGestureFeedback(null);
+    if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
     setClickedDirection(direction);
     directionFeedbackTimer.current = setTimeout(() => setClickedDirection('none'), 1000);
   };
   useEffect(() => () => {
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
+    if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
   }, []);
 
   const cardinalActionsRef = useRef<BigBangCircularMeterActions | null>(null);
@@ -980,6 +997,7 @@ export function BigBangButton() {
 
   const goToPreviousDapp = useCallback(() => {
     const previousPath = previousOrderedLuckeyPage(getCurrentOneStopPage(location));
+    showDirectionFeedback('west', previousPath);
     const tab = new URL(previousPath, 'https://luckey.local').searchParams.get('tab') || undefined;
     triggerHaptic('wormhole');
     handleRuneNavigate(previousPath, tab);
@@ -987,6 +1005,7 @@ export function BigBangButton() {
 
   const goToNextDapp = useCallback(() => {
     const nextPath = nextOrderedLuckeyPage(getCurrentOneStopPage(location));
+    showDirectionFeedback('east', nextPath);
     const tab = new URL(nextPath, 'https://luckey.local').searchParams.get('tab') || undefined;
     triggerHaptic('wormhole');
     handleRuneNavigate(nextPath, tab);
@@ -1116,6 +1135,7 @@ export function BigBangButton() {
     // 홀드를 놓으면 프로 페이지로 이동하지 않고, Lucy를 그 자리에서 Lucy +로 진화시킵니다!
     const isHoldGesture = isPttRecordingRef.current || duration >= 220;
     if (isHoldGesture) {
+      showGestureFeedback('hold');
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
       setIsQuickChatOpen(false);
@@ -1167,6 +1187,7 @@ export function BigBangButton() {
     if (isTapGesture) {
       const selectedText = (touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText()).trim();
       if (selectedText) {
+        showGestureFeedback('tap');
         const prompt = `내가 선택한 문장이야:\n"${selectedText}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
         if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = null;
@@ -1204,6 +1225,7 @@ export function BigBangButton() {
       setGauge(0);
       setDurationMs(0);
       if (doubleTap) {
+        showGestureFeedback('double');
         lastTapTimeRef.current = 0;
         goToKeyChannel();
       } else {
@@ -1212,6 +1234,7 @@ export function BigBangButton() {
           singleTapTimerRef.current = null;
           lastTapTimeRef.current = 0;
           triggerHaptic('whitehole');
+          showGestureFeedback('tap');
 
           // 🌟 Lucy + 상태에서 빅뱅 버튼을 1회 탭하면 일반 Lucy 모드로 복귀!
           const isLucyPlusActive = safeSessionStorage.getItem('lucy_plus_active') === 'true' ||
@@ -1652,8 +1675,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 화살표: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 화살표: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 화면 전체 네잎클로버 바람 효과)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 화살표: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 화살표: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 화면 전체 네잎클로버 바람 효과"
+              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 화면 전체 네잎클로버 바람 효과)"
+              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 화면 전체 네잎클로버 바람 효과"
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -1874,10 +1897,17 @@ export function BigBangButton() {
                     centerDirection === 'north'
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                       : <ChevronDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
-                  ) : centerDirection === 'west' ? (
-                    <ChevronLeft data-bigbang-center-arrow="west" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
-                  ) : centerDirection === 'east' ? (
-                    <ChevronRight data-bigbang-center-arrow="east" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                  ) : (centerDirection === 'west' || centerDirection === 'east') && DestinationIcon ? (
+                    <DestinationIcon data-bigbang-center-channel={feedbackChannel?.id} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                  ) : centerGesture === 'tap' ? (
+                    <svg data-bigbang-center-gesture="tap" width="25" height="25" viewBox="0 0 26 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="-rotate-45 text-cyan-200" aria-hidden="true">
+                      {[0, 120, 240].map(angle => <path key={angle} d="M13 14C9 12 5 8 7 5C9 2 12 4 13 6C14 4 17 2 19 5C21 8 17 12 13 14Z" transform={`rotate(${angle} 13 14)`} fill="currentColor" fillOpacity="0.18" />)}
+                      <path d="M13 14Q17 23 11 26" strokeLinecap="round" />
+                    </svg>
+                  ) : centerGesture === 'hold' ? (
+                    <Clover data-bigbang-center-gesture="hold" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
+                  ) : centerGesture === 'double' ? (
+                    <KeyRound data-bigbang-center-gesture="double" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
                   ) : (
                     <>
                       <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />

@@ -1,4 +1,5 @@
 import './sidebar-edge-hint.css';
+import { CHANNEL_MENU_ICONS } from '@/lib/channelMenuIcons';
 import { OPEN_NAVIGATION_MENU_EVENT, TOGGLE_NAVIGATION_MENU_EVENT } from '@/lib/navigationMenu';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
@@ -90,7 +91,7 @@ export const CORE_CHANNELS: NavItemConfig[] = [
 export const PRISM_CHANNELS: NavItemConfig[] = [
   {
     path: '/prologue',
-    icon: Sun,
+    icon: CHANNEL_MENU_ICONS.prologue,
     label: 'PROLOGUE',
     subLabel: '서막 · 비전의 시작',
     color: '#ef4444',
@@ -98,42 +99,42 @@ export const PRISM_CHANNELS: NavItemConfig[] = [
   },
   {
     path: '/orange',
-    icon: TreeDeciduous,
+    icon: CHANNEL_MENU_ICONS.orange,
     label: 'ORANGE',
     subLabel: '마음챙김 & 소원부적',
     color: '#f97316',
   },
   {
     path: '/trinity',
-    icon: Sparkles,
+    icon: CHANNEL_MENU_ICONS.trinity,
     label: 'TRINITY',
     subLabel: '트리니티 오라클 타로',
     color: '#fbbf24',
   },
   {
     path: '/heal',
-    icon: Activity,
+    icon: CHANNEL_MENU_ICONS.heal,
     label: 'AURA',
     subLabel: '세도나 치유 & 명상',
     color: '#10b981',
   },
   {
     path: '/bluebird',
-    icon: Bird,
+    icon: CHANNEL_MENU_ICONS.bluebird,
     label: 'BLUEBIRD',
     subLabel: '파랑새 호오포노포노',
     color: '#0ea5e9',
   },
   {
     path: '/muse',
-    icon: Music,
+    icon: CHANNEL_MENU_ICONS.muse,
     label: 'MUSE',
     subLabel: '시와 예술 갤러리',
     color: '#6366f1',
   },
   {
     path: '/epilogue',
-    icon: Moon,
+    icon: CHANNEL_MENU_ICONS.epilogue,
     label: 'EPILOGUE',
     subLabel: '에필로그 & 통합 일기',
     color: '#a855f7',
