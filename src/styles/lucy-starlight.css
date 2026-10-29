@@ -117,3 +117,15 @@ html.light[data-lucy-period] .lucy-clover-particle { color: #328263; filter: non
 html.light[data-lucy-period] .lucy-clover-particle:nth-child(3n) { color: #98722d; }
 html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #faf7f0 !important; }
 html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
+
+/* Soft clouds belong only to the blue daytime sky. */
+.lucy-day-clouds { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1.2s ease; }
+html[data-lucy-period='day'] .lucy-day-clouds { opacity: 1; }
+.lucy-day-cloud { position: absolute; color: #ffffff; opacity: .65; width: clamp(150px, 28vw, 380px); animation: lucy-cloud-glide 48s ease-in-out infinite alternate; animation-play-state: paused; }
+html[data-lucy-period='day'] .lucy-day-cloud { animation-play-state: running; }
+.lucy-day-cloud svg { display: block; width: 100%; height: auto; }
+.lucy-day-cloud-0 { top: 15%; left: -8%; }
+.lucy-day-cloud-1 { top: 39%; right: -10%; width: clamp(190px, 35vw, 460px); opacity: .48; animation-delay: -19s; animation-duration: 61s; }
+.lucy-day-cloud-2 { top: 64%; left: 12%; width: clamp(120px, 22vw, 300px); opacity: .42; animation-delay: -31s; animation-duration: 55s; }
+.lucy-day-cloud-3 { top: 82%; right: -4%; opacity: .52; animation-delay: -11s; animation-duration: 68s; }
+@keyframes lucy-cloud-glide { from { transform: translate3d(-18px, 0, 0); } to { transform: translate3d(34px, -8px, 0); } }
