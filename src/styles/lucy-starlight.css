@@ -219,3 +219,16 @@ html.light .lucy-mode-transition { background: #f5f9fdf2; color: #243448; }
 .lucy-mode-transition-ring { display: block; width: 40px; height: 40px; margin-bottom: 8px; border-radius: 50%; border: 2px solid #8da5bd30; border-top-color: #8da5bd; animation: lucy-mode-loading 900ms linear infinite; }
 @keyframes lucy-mode-loading { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .lucy-mode-transition-ring { animation: none; } }
+
+/* Keep the name stationary while only the mode's plus sign crossfades. */
+.lucy-transition-wordmark { display: inline-flex; align-items: baseline; gap: .18em; }
+.lucy-transition-plus { display: inline-block; width: .65em; text-align: center; }
+[data-lucy-mode-transition='plus'] .lucy-transition-plus { animation: lucy-plus-appear 850ms ease-in-out 70ms both; }
+[data-lucy-mode-transition='lucy'] .lucy-transition-plus { animation: lucy-plus-disappear 850ms ease-in-out 70ms both; }
+@keyframes lucy-plus-appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lucy-plus-disappear { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .lucy-mode-transition .lucy-transition-plus { animation: none; }
+  [data-lucy-mode-transition='plus'] .lucy-transition-plus { opacity: 1; }
+  [data-lucy-mode-transition='lucy'] .lucy-transition-plus { opacity: 0; }
+}

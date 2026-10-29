@@ -618,7 +618,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     previousPlusMode.current = isPlusMode;
     setModeTransition(isPlusMode ? 'plus' : 'lucy');
     setModeSwitchToast(null);
-    const timer = window.setTimeout(() => setModeTransition(null), 750);
+    const timer = window.setTimeout(() => setModeTransition(null), 1100);
     return () => window.clearTimeout(timer);
   }, [isPlusMode]);
 
