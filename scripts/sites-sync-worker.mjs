@@ -1,3 +1,4 @@
+import {applyConfiguredProfileImport} from './sites-profile-import.mjs';
 import {syncKey} from '../public/sites-sync-shared.mjs';
 const syncJson = (value, status = 200, headers = {}) => Response.json(value, {status, headers: {'Cache-Control':'private, no-store', ...headers}});
 export async function handleSitesSync(request, env) {
@@ -7,6 +8,7 @@ export async function handleSitesSync(request, env) {
   if (!account) return syncJson({error:'ChatGPT 로그인이 필요합니다.'}, 401);
   if (!env.DB) return syncJson({error:'동기화 저장소를 준비 중입니다.'}, 503);
   if (request.method === 'GET') {
+    await applyConfiguredProfileImport(account, env);
     const metadata = await env.DB.prepare('SELECT storage_key, revision FROM sites_sync_entries WHERE owner_id = ? ORDER BY storage_key').bind(account).all();
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify({account,entries:metadata.results})));
     const etag = '"' + [...new Uint8Array(digest)].map(v => v.toString(16).padStart(2,'0')).join('') + '"';

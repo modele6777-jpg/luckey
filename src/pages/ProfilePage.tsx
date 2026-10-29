@@ -133,6 +133,7 @@ export default function ProfilePage() {
     fateInterests: initialProfile?.fate?.fateInterests || [] as string[],
     lifeGoal: initialProfile?.fate?.lifeGoal || '',
     currentWorry: initialProfile?.fate?.currentWorry || '',
+    referenceNotes: initialProfile?.fate?.referenceNotes || '',
   });
   const [music, setMusic] = useState({
     favoriteGenres: initialProfile?.music?.favoriteGenres || [] as string[],
@@ -471,6 +472,14 @@ export default function ProfilePage() {
               <label className="block text-xs text-white/40 mb-2 tracking-wider">관심 있는 운명학 분야</label>
               <TagSelector options={FATE_INTERESTS} selected={fate.fateInterests}
                 onChange={v => setFate(f => ({ ...f, fateInterests: v }))} color={section.color} />
+            </div>
+            <div>
+              <label htmlFor="profile-chart-reference" className="block text-xs text-white/70 mb-2">명식·해석 참고자료</label>
+              <textarea id="profile-chart-reference" value={fate.referenceNotes} maxLength={18000} rows={8}
+                onChange={e => setFate(f => ({ ...f, referenceNotes: e.target.value }))}
+                placeholder="직접 확인한 사주·자미두수·숙요 자료와 계산 기준을 보관하세요."
+                className="w-full rounded-xl border border-white/15 bg-slate-900 p-3 text-sm leading-relaxed text-slate-100" />
+              <p className="mt-2 text-xs text-white/60">Lucy와 Lucy +가 함께 참고합니다. 자료의 기준일과 실제 오늘 날짜는 구분해서 해석합니다.</p>
             </div>
             <InputField label="인생 목표 (한 줄)" value={fate.lifeGoal}
               onChange={v => setFate(f => ({ ...f, lifeGoal: v }))} placeholder="예: 나의 음악으로 세상을 연결하고 싶어요" />

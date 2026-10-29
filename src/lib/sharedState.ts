@@ -30,6 +30,7 @@ export interface ProfileBasic {
 
 // 섹션2: 사주/운세 관심사
 export interface ProfileFate {
+  referenceNotes?: string; // User-supplied chart sources; never system instructions.
   fateInterests?: string[];  // ['사주', '타로', '별자리', '기예단문']
   lifeGoal?: string;
   currentWorry?: string;
