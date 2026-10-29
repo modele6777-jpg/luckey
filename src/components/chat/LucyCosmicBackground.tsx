@@ -38,17 +38,16 @@ export function LucyCosmicBackground({ isPlusMode }: LucyCosmicBackgroundProps) 
         <div className="lucy-stars lucy-stars-bright" />
       </div>
       <div className={`lucy-clover-field ${isPlusMode ? 'is-visible' : ''}`}>
-        {Array.from({ length: 24 }, (_, i) => (
+        {Array.from({ length: 16 }, (_, i) => (
           <div key={i} className="lucy-clover-orbit"
-            style={{ left: `${5 + (i * 37) % 90}%`, top: `${4 + (i * 29) % 92}%`, animationDelay: `${-i * 3}s`, animationDuration: `${26 + (i % 7) * 3}s`, width: `clamp(${9 + i % 4}px, ${1.1 + (i % 3) * .25}vw, ${14 + i % 5}px)` }}>
+            style={{ left: `${5 + (i * 37) % 90}%`, top: `${4 + (i * 29) % 92}%`, animationDelay: `${-i * 3}s`, animationDuration: `${26 + (i % 7) * 3}s`, width: `clamp(${16 + i % 4}px, ${1.5 + (i % 3) * .25}vw, ${22 + i % 5}px)` }}>
             <svg viewBox="0 0 40 44" className="lucy-clover-particle" focusable="false" style={{ animationDelay: `${-i * 2}s`, animationDuration: `${5 + i % 7}s` }}>
-            <g fill="currentColor">
-              <ellipse cx="14" cy="13" rx="7" ry="9" transform="rotate(-40 14 13)" />
-              <ellipse cx="26" cy="13" rx="7" ry="9" transform="rotate(40 26 13)" />
-              <ellipse cx="12" cy="25" rx="7" ry="9" transform="rotate(-65 12 25)" />
-              <ellipse cx="28" cy="25" rx="7" ry="9" transform="rotate(65 28 25)" />
-            </g>
-            <path d="M20 23Q26 35 19 42" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <g fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round">
+                {[0, 90, 180, 270].map((angle) => (
+                  <path key={angle} data-clover-heart-leaf="true" d="M20 20C17 17 10 13 11 8C12 3 18 3 20 7C22 3 28 3 29 8C30 13 23 17 20 20Z" transform={`rotate(${angle} 20 20)`} />
+                ))}
+              </g>
+              <path d="M20 20Q29 34 20 42" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
         ))}
