@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -26,7 +27,7 @@ const runtime = `
 export default {
  async fetch(request, env) {
   const url = new URL(request.url);
-  const synced = await handleSitesSync(request, env);
+  const synced = await sitesSyncApi.handleSitesSync(request, env);
   if (synced) return synced;
   const chat = await sitesNativeApi.handleSitesGeminiChat(request, env);
   if (chat) return chat;
@@ -53,11 +54,11 @@ export default {
  }
 };
 `;
-const shared = readFileSync('public/sites-sync-shared.mjs', 'utf8').replace(/^export /gm, '');
-const syncWorker = readFileSync('scripts/sites-sync-worker.mjs', 'utf8').replace(/^import .*;\r?\n/m, '').replace(/^export /gm, '');
+const syncBundle = await build({ entryPoints: ['scripts/sites-sync-worker.mjs'], bundle: true, write: false, platform: 'browser', format: 'iife', globalName: 'sitesSyncApi', target: 'es2022' });
 const apiBundle = await build({ entryPoints: ['server/sites-api.ts'], bundle: true, write: false, platform: 'browser', format: 'iife', globalName: 'sitesNativeApi', target: 'es2022' });
 const nativeApi = apiBundle.outputFiles[0].text;
 if (/\bBuffer\.|\bprocess\.env|require\(["']node:/.test(nativeApi)) throw new Error('Sites API bundle contains a Node-only runtime dependency.');
-const output = `${shared}\n${syncWorker}\n${nativeApi}\nconst assets=${JSON.stringify(assets)};\n${runtime}`;
+const output = `${syncBundle.outputFiles[0].text}\n${nativeApi}\nconst assets=${JSON.stringify(assets)};\n${runtime}`;
 writeFileSync('dist/server/index.js', output);
+execFileSync(process.execPath, ['--check', 'dist/server/index.js'], { stdio: 'pipe' });
 console.log(`Sites Worker: ${Object.keys(assets).length} assets, ${(Buffer.byteLength(output)/1024/1024).toFixed(2)} MB`);
