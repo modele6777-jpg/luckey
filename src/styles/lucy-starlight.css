@@ -147,3 +147,15 @@ html[data-lucy-period='night'] .is-plus-mode .lucy-star-field { opacity: .5; }
   .lucy-day-cloud-2 { left: 12%; }
   .lucy-day-cloud-3 { left: auto; right: -4%; }
 }
+
+/* Time-specific celestial light stays behind every reading surface. */
+.lucy-morning-light { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease; }
+html[data-lucy-period='morning'] .lucy-morning-light { opacity: 1; }
+.lucy-sun-halo { position: absolute; width: clamp(300px, 65vw, 850px); aspect-ratio: 1; right: -15%; top: -16%; background: radial-gradient(circle, #ffdb8b66 0%, #ffe8a938 30%, transparent 68%); animation: lucy-sun-breathe 12s ease-in-out infinite alternate; }
+.lucy-sun-disc { position: absolute; right: 11%; top: 15%; width: clamp(42px, 6vw, 80px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fffdf0, #ffe4a1); box-shadow: 0 0 32px 14px #ffd98a35, 0 0 80px 30px #ffdf9d20; }
+.lucy-sun-rays { position: absolute; width: 150%; height: 150%; right: -60%; top: -48%; transform-origin: 65% 30%; background: repeating-conic-gradient(from 15deg at 65% 30%, transparent 0deg 20deg, #ffd88812 25deg, transparent 35deg 50deg); mask-image: radial-gradient(ellipse at 65% 30%, #0006, transparent 65%); -webkit-mask-image: radial-gradient(ellipse at 65% 30%, #0006, transparent 65%); animation: lucy-rays-sway 24s ease-in-out infinite alternate; }
+.lucy-night-moon { position: absolute; right: 9%; top: 17%; width: clamp(40px, 6vw, 76px); color: #f4e9c6; opacity: 0; filter: drop-shadow(0 0 10px #e9e2bd55); transition: opacity 1.2s ease; }
+.lucy-night-moon svg { display: block; width: 100%; height: auto; }
+html[data-lucy-period='night'] .lucy-night-moon { opacity: .78; }
+@keyframes lucy-sun-breathe { from { opacity: .65; transform: scale(.97); } to { opacity: 1; transform: scale(1.04); } }
+@keyframes lucy-rays-sway { from { transform: rotate(-5deg); opacity: .65; } to { transform: rotate(6deg); opacity: 1; } }

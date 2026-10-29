@@ -7,6 +7,16 @@ export function LucyCosmicBackground({ isPlusMode }: LucyCosmicBackgroundProps) 
   return (
     <div className="lucy-cosmic-bg-container" aria-hidden="true">
       <div className="lucy-cosmic-wash" />
+      <div className="lucy-morning-light">
+        <div className="lucy-sun-halo" />
+        <div className="lucy-sun-rays" />
+        <div className="lucy-sun-disc" />
+      </div>
+      <div className="lucy-night-moon">
+        <svg viewBox="0 0 100 100" focusable="false">
+          <path d="M73 10A42 42 0 1 0 86 77A40 40 0 0 1 73 10Z" fill="currentColor" />
+        </svg>
+      </div>
       <div className="lucy-day-clouds">
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className={`lucy-day-cloud lucy-day-cloud-${i}`}>
