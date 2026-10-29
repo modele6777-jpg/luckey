@@ -22,14 +22,27 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
 .lucy-cosmic-bg-container { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none; }
 .lucy-cosmic-wash { position: absolute; inset: 0; background: radial-gradient(ellipse at 85% 8%, #6e8cb818, transparent 55%); transition: background 800ms; }
 .is-plus-mode .lucy-cosmic-wash { background: radial-gradient(ellipse at 85% 8%, #80ac7b18, transparent 55%); }
-.lucy-stars { position: absolute; inset: 0; background-repeat: repeat; transition: opacity 800ms; }
-.lucy-stars-distant { opacity: .22; background-image: radial-gradient(1px 1px at 29px 43px, #dce8ff 85%, transparent), radial-gradient(1px 1px at 143px 167px, #dce8ff 85%, transparent); background-size: 251px 283px, 347px 359px; }
-.lucy-stars-bright { opacity: .3; background-image: radial-gradient(1.5px 1.5px at 111px 89px, #e2ebff 40%, transparent); background-size: 389px 431px; animation: lucy-twinkle 9s ease-in-out infinite alternate; }
-.is-plus-mode .lucy-stars { opacity: .08; }
-.lucy-clover-field { position: absolute; inset: 0; opacity: 0; transition: opacity 900ms ease; }
-.lucy-clover-field.is-visible { opacity: 1; }
-.lucy-clover-particle { position: absolute; height: auto; color: #8bc8ad; opacity: .18; animation: lucy-clover-drift 30s ease-in-out infinite alternate; }
-.lucy-clover-particle:nth-child(3n) { color: #d6be80; }
+/* Crossfade whole fields so twinkle opacity cannot leak stars into Plus. */
+.lucy-star-field, .lucy-clover-field { position: absolute; inset: 0; opacity: 0; transition: opacity 900ms ease; }
+.lucy-star-field.is-visible, .lucy-clover-field.is-visible { opacity: 1; }
+.lucy-stars { position: absolute; inset: 0; background-repeat: repeat; }
+.lucy-stars-distant {
+  opacity: .32;
+  background-image: radial-gradient(1px 1px at 29px 43px, #dce8ff 85%, transparent), radial-gradient(1px 1px at 143px 167px, #dce8ff 85%, transparent);
+  background-size: 151px 183px, 247px 259px;
+  animation: lucy-twinkle-distant 11s ease-in-out -4s infinite alternate;
+}
+.lucy-stars-bright {
+  background-image: radial-gradient(2px 2px at 111px 89px, #f0f5ff 25%, #b9d0ff66 55%, transparent), radial-gradient(1.5px 1.5px at 41px 207px, #e5e0ff 35%, transparent);
+  background-size: 289px 331px, 347px 293px;
+  animation: lucy-twinkle 7s ease-in-out infinite alternate;
+}
+.lucy-clover-particle {
+  position: absolute; height: auto; color: #b4e4cc; opacity: .38;
+  filter: drop-shadow(0 0 3px #8ed9b766);
+  animation: lucy-clover-twinkle 8s ease-in-out infinite;
+}
+.lucy-clover-particle:nth-child(3n) { color: #e6d49d; filter: drop-shadow(0 0 3px #d6be8066); }
 .lucy-night .lucy-chat-header,
 .lucy-night .lucy-chat-footer { background: var(--lucy-chrome); border-color: var(--lucy-border); box-shadow: none; backdrop-filter: none; }
 .lucy-night .lucy-chat-main { position: relative; scrollbar-color: #63758a transparent; }
@@ -52,8 +65,12 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
 .lucy-night .lucy-starlight-send { background: #c2d5ff; color: #17263d; border: 0; width: 36px; height: 36px; box-shadow: none; }
 .lucy-night.is-plus-mode .lucy-starlight-send { background: #d9c692; color: #22372e; }
 .lucy-night .lucy-chat-header h1 button > span { color: #f1f5fa; background: none; filter: none; }
-@keyframes lucy-twinkle { from { opacity: .15; } to { opacity: .35; } }
-@keyframes lucy-clover-drift { from { transform: translate3d(-8px, 10px, 0) rotate(-10deg); } to { transform: translate3d(14px, -25px, 0) rotate(16deg); } }
+@keyframes lucy-twinkle { from { opacity: .2; } to { opacity: .65; } }
+@keyframes lucy-twinkle-distant { from { opacity: .18; } to { opacity: .4; } }
+@keyframes lucy-clover-twinkle {
+  0%, 100% { opacity: .2; transform: scale(.94); }
+  50% { opacity: .65; transform: scale(1.04); }
+}
 @media (prefers-reduced-motion: reduce) {
   .lucy-night *, .lucy-night *::before, .lucy-night *::after { animation: none !important; transition: none !important; }
 }
