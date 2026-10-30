@@ -37,11 +37,15 @@ export function placeRingCards(ids: readonly string[], pickedIds: ReadonlySet<st
 }
 
 /**
- * Landscape fan: the slot strip sits above this box, so the arc starts
- * near the top of the wheel. The circle's center stays below the box
- * so it cannot cover the control buttons.
+ * Landscape fan: the slot strip and spread banner sit above this box.
+ * `arcTop` is the card *center*. md wheel cards are 160px tall and the
+ * front card lifts 20px, so the center has to sit far enough down that
+ * the card face does not cover the spread. The circle center stays below
+ * the wheel so the glow does not cover the shuffle buttons.
  */
-export function landscapeFanMetrics(containerHeight: number, arcTop = 64): {
+export const LANDSCAPE_ARC_TOP = 100;
+
+export function landscapeFanMetrics(containerHeight: number, arcTop = LANDSCAPE_ARC_TOP): {
   radius: number;
   yOffset: number;
   arcTop: number;

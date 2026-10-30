@@ -8,7 +8,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { placeRingCards, ringNeighborGaps, landscapeFanMetrics } = await import(
+const { placeRingCards, ringNeighborGaps, landscapeFanMetrics, LANDSCAPE_ARC_TOP } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -62,8 +62,8 @@ const orderAfter = ids
 assert.deepEqual(orderAfter, orderBefore, 'drawing does not reshuffle');
 
 for (const height of [220, 360, 520]) {
-  const fan = landscapeFanMetrics(height, 20);
-  assert.equal(fan.arcTopY, 20, `arc starts below the slot strip at h=${height}`);
+  const fan = landscapeFanMetrics(height, LANDSCAPE_ARC_TOP);
+  assert.equal(fan.arcTopY, LANDSCAPE_ARC_TOP, `arc starts below the spread at h=${height}`);
   assert.ok(fan.originY >= height + fan.hubClearance - 1, `glow center stays below the buttons at h=${height}`);
 }
 
