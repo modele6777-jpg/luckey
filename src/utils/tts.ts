@@ -165,10 +165,14 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
     });
     try {
       return await Promise.race([deadline, timeoutPromise, (async () => {
-      for (let attempt = 0; attempt < TTS_RATE_LIMIT_ATTEMPTS; attempt++) {
+      // 전체 낭독 (playTTSInChunks, session seq_*) is the path that fires one
+      // request per chunk. Only that reading waits out a short 429 and retries.
+      const fullReading = Boolean(session?.startsWith('seq_'));
+      const attempts = fullReading ? TTS_RATE_LIMIT_ATTEMPTS : 1;
+      for (let attempt = 0; attempt < attempts; attempt++) {
         if (session && ttsState.activeSessionId !== session) throw new Error('음성 요청이 취소되었습니다.');
-        const rateWait = Math.max(0, ttsRateLimitUntil - Date.now());
-        const gapWait = Math.max(0, TTS_MIN_REQUEST_GAP_MS - (Date.now() - lastTTSProviderRequestAt));
+        const rateWait = fullReading ? Math.max(0, ttsRateLimitUntil - Date.now()) : 0;
+        const gapWait = fullReading ? Math.max(0, TTS_MIN_REQUEST_GAP_MS - (Date.now() - lastTTSProviderRequestAt)) : 0;
         await pauseForTTSSlot(Math.max(rateWait, gapWait), session, controller.signal);
         lastTTSProviderRequestAt = Date.now();
         const response = await fetch('/api/ai/tts', {
@@ -185,7 +189,7 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
             }
             const waitMs = rateLimitWaitMs(response, failure);
             ttsRateLimitUntil = Date.now() + waitMs;
-            if (attempt < TTS_RATE_LIMIT_ATTEMPTS - 1) continue;
+            if (fullReading && attempt < attempts - 1) continue;
             const waitSec = Math.max(1, Math.ceil(waitMs / 1000));
             throw new TTSAudioRequestError(`음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 ${waitSec}초 뒤 다시 눌러 주세요.`, 429, 'MEDIA_RATE_LIMIT');
           }
