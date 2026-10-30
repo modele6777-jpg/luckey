@@ -935,10 +935,28 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
               isLight ? 'bg-slate-50/90 border-slate-200/90 shadow-xs' : 'bg-[#141522] border-white/10'
             }`}>
               <div className="flex items-center justify-between gap-4">
-                <div className="flex flex-col">
-                  <span className={`text-[10px] uppercase tracking-widest ${isLight ? 'text-slate-500' : 'text-white/40'}`}>System Engine</span>
-                  <span className={`text-xs font-semibold ${isLight ? 'text-slate-800' : 'text-white/70'}`}>LUCY v{APP_VERSION}</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent('prism:open_icon_preview'))}
+                  className="flex items-center gap-3 text-left group cursor-pointer focus:outline-none"
+                  title="앱 아이콘 크게 보기"
+                >
+                  <img
+                    src="/app-icon.png"
+                    alt="LucKey Prism App Icon"
+                    className="w-10 h-10 rounded-xl shadow-[0_0_12px_rgba(52,211,153,0.35)] border border-emerald-400/30 object-cover shrink-0 group-hover:scale-105 group-hover:border-emerald-300 transition-transform"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="flex flex-col">
+                    <span className={`text-[10px] uppercase tracking-widest ${isLight ? 'text-slate-500' : 'text-white/40'} flex items-center gap-1`}>
+                      System Engine
+                      <span className="text-[9px] text-emerald-400 underline font-normal">미리보기</span>
+                    </span>
+                    <span className={`text-xs font-semibold ${isLight ? 'text-slate-800' : 'text-white/70'} group-hover:text-emerald-400 transition-colors`}>
+                      LucKey · Lucy v{APP_VERSION}
+                    </span>
+                  </div>
+                </button>
                 <button
                   type="button"
                   onClick={async () => {

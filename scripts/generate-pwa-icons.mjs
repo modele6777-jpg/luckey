@@ -6,9 +6,12 @@ import sharp from 'sharp';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, '../public');
 
-// 1. LucKey / Prism Icon Targets (from public/icon.svg)
-const prismSource = path.join(publicDir, 'icon.svg');
+// 1. LucKey / Prism Icon Targets (from generated high-fidelity asset or public/icon.svg)
+const generatedIconSource = path.resolve(__dirname, '../src/assets/images/app_icon_prism_1793349636974.jpg');
+const prismSource = fs.existsSync(generatedIconSource) ? generatedIconSource : path.join(publicDir, 'icon.svg');
 const prismTargets = [
+  { name: 'app-icon.png', size: 512 },
+  { name: 'app-icon-192.png', size: 192 },
   { name: 'icon-512.png', size: 512 },
   { name: 'icon-512-v2.png', size: 512 },
   { name: 'icon-192.png', size: 192 },
