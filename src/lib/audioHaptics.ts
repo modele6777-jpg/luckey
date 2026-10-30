@@ -12,6 +12,7 @@
  */
 
 import { getSharedAudioContext, getMasterAudioBus } from './audio';
+import { playCompletionBowl } from './completionBowl';
 
 export type HapticCategory =
   | 'success'      // Sharp pulse confirmation & triumphant achievements
@@ -28,7 +29,7 @@ export type AudioHapticType =
   | 'save_success'       // Saved confirmation with radiant double-chime + sharp double pulse
   | 'save_auto'          // Discrete water droplet bell ping for auto-saves
   | 'milestone_success'  // Triumphant multi-stage sharp ripple pulse & golden chord flourish
-  | 'ai_result_chime'    // 은은하고 맑은 약한 종소리 (AI 결과물 생성 완료 알림, 대화 제외)
+  | 'ai_result_chime'    // 또렷한 싱잉볼 완료 알림 (대화 제외)
 
   // --- Breathing category (soft, rhythmic vibration & respiratory bio-harmonics) ---
   | 'breathe_inhale'     // Gentle swelling rhythmic wave [25, 75, 40, 75, 55] + 432Hz breath expansion
@@ -97,7 +98,7 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
     vibration: [18, 35, 22],
     category: 'success',
     label: 'TTS 및 작업 완료 싱잉볼',
-    description: '1.5~2초 내외의 짧고 담백한 싱잉볼 배음 울림과 부드러운 공명 진동 (루시 채팅 제외)',
+    description: '또렷한 중음역 타종과 2.3초의 부드러운 여운이 있는 싱잉볼 (대화 제외)',
   },
 
   // Breathing (Soft Rhythmic)
@@ -524,50 +525,7 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       }
 
       case 'ai_result_chime': {
-        // 짧고 담백한 싱잉볼 타종 사운드 (1.5~1.85초 내외의 깔끔한 여운, 루시 채팅 제외)
-        // 1) 부드러운 우드 말렛 타격 트랜지언트 (Warm Mallet Strike)
-        const strikeNoise = ctx.createBufferSource();
-        strikeNoise.buffer = getNoiseBuffer(ctx);
-        const strikeFilter = ctx.createBiquadFilter();
-        strikeFilter.type = 'bandpass';
-        strikeFilter.frequency.setValueAtTime(680, now);
-        strikeFilter.Q.setValueAtTime(2.2, now);
-
-        const strikeGain = ctx.createGain();
-        strikeGain.gain.setValueAtTime(0.0001, now);
-        strikeGain.gain.linearRampToValueAtTime(0.065 * volScale, now + 0.006);
-        strikeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
-
-        strikeNoise.connect(strikeFilter);
-        strikeFilter.connect(strikeGain);
-        strikeGain.connect(bus);
-        strikeNoise.start(now);
-        strikeNoise.stop(now + 0.042);
-
-        // 2) 싱잉볼 고유 배음 구조 (264Hz 바디 + 528Hz 기저음 + 529.3Hz 미세 맥놀이 + 1056Hz 배음 + 1457.28Hz(2.76x) 싱잉볼 배음)
-        const bowlPartials = [
-          { freq: 264.0, gain: 0.085, attack: 0.016, decay: 1.45 },
-          { freq: 528.0, gain: 0.15, attack: 0.014, decay: 1.85 },
-          { freq: 529.3, gain: 0.065, attack: 0.022, decay: 1.65 },
-          { freq: 1056.0, gain: 0.048, attack: 0.012, decay: 1.25 },
-          { freq: 1457.28, gain: 0.026, attack: 0.01, decay: 0.95 },
-        ];
-
-        bowlPartials.forEach(({ freq, gain: baseG, attack, decay }) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now);
-
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(baseG * volScale, now + attack);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
-
-          osc.connect(gain);
-          gain.connect(bus);
-          osc.start(now);
-          osc.stop(now + decay + 0.04);
-        });
+        playCompletionBowl(ctx, bus, volScale);
         break;
       }
 
@@ -999,11 +957,11 @@ export function playCardHaptic(
 }
 
 /**
- * 🔔 AI 결과물 생성 완료 시 은은하고 맑은 약한 종소리 알림 (대화/채팅 제외)
+ * 🔔 AI 결과물·낭독 완료 시 또렷한 싱잉볼 알림 (대화/채팅 제외)
  */
 export function playAiResultNotification(options?: AudioHapticOptions): void {
   try {
-    playAudioHaptic('ai_result_chime', { volume: 0.75, ...options });
+    playAudioHaptic('ai_result_chime', { volume: 1, ...options });
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('prism:ai_result_created'));
     }

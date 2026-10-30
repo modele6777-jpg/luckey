@@ -760,7 +760,7 @@ export const playConversation = async (
         text: nextMessage.content,
         voice: nextMessage.role === 'user' ? resolvedUserVoice : resolvedAiVoice,
       } : undefined);
-      await playTTS(m.content, voice, true, undefined, mySessionId, !isLastMsg, undefined, undefined, undefined, options);
+      await playTTS(m.content, voice, true, undefined, mySessionId, !isLastMsg, undefined, undefined, undefined, { ...options, skipCompletionChime: true });
       if (ttsState.activeSessionId !== mySessionId) break;
 
       // Natural pause between speaker turns

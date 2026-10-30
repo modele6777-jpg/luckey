@@ -49,7 +49,7 @@ const calls = [], events = [], spoken = []; let failures = 0, plays = 0, cancelO
 globalThis.__ttsTest = {calls, audio: async text => {spoken.push(text);plays++; if(cancelOnPlay) tts.stopTTS();}};
 globalThis.window = {dispatchEvent: e => {events.push(e); return true;}};
 const stubAudio = `export const getSharedAudioContext=()=>({state:'running'}); export const playTTSAudio=async(text)=>globalThis.__ttsTest.audio(text); export const getTTSPlaybackProgress=()=>null; export const isTTSAudioPlaying=()=>false;\n` + ['unlockAudioPlayback','playCompressedAudio','playRawPCM','primeTTSAudioElement','pauseTTSAudio','resumeTTSAudio','stopTTSPlayback','initTTSAudioLifecycle','analyzeTextEmotion','duckAmbientAudio','configureSpeechAudioSession','configureAmbientAudioSession'].map(n=>`export const ${n}=()=>{};`).join('\n');
-const bundle = await build({entryPoints:['src/utils/tts.ts'],bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'stubs',setup(b){b.onResolve({filter:/^(react|.*\/(audio|audioHaptics|ttsMediaSession|wakeLock|perfMode))$/},a=>({path:a.path,namespace:'stub'}));b.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:a.path.endsWith('/audio')?stubAudio:a.path==='react'?'export const useState=()=>{};export const useEffect=()=>{};':a.path.endsWith('/ttsMediaSession')?['setTTSSessionActive','clearTTSSession','initTTSSessionHandlers','pauseTTSSession','resumeTTSSession'].map(n=>`export const ${n}=()=>{};`).join('\n'):a.path.endsWith('/wakeLock')?'export const acquireScreenWakeLock=async()=>{};export const releaseScreenWakeLock=async()=>{};':a.path.endsWith('/perfMode')?'export const isIOSDevice=()=>false;':'export const playAiResultNotification=()=>{};'}));}}]});
+const bundle = await build({entryPoints:['src/utils/tts.ts'],bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'stubs',setup(b){b.onResolve({filter:/^(react|.*\/(audio|audioHaptics|ttsMediaSession|wakeLock|perfMode))$/},a=>({path:a.path,namespace:'stub'}));b.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:a.path.endsWith('/audio')?stubAudio:a.path==='react'?'export const useState=()=>{};export const useEffect=()=>{};':a.path.endsWith('/ttsMediaSession')?['setTTSSessionActive','clearTTSSession','initTTSSessionHandlers','pauseTTSSession','resumeTTSSession'].map(n=>`export const ${n}=()=>{};`).join('\n'):a.path.endsWith('/wakeLock')?'export const acquireScreenWakeLock=async()=>{};export const releaseScreenWakeLock=async()=>{};':a.path.endsWith('/perfMode')?'export const isIOSDevice=()=>false;':'export const playAiResultNotification=()=>{globalThis.__ttsTest.chimes=(globalThis.__ttsTest.chimes||0)+1;};'}));}}]});
 const tts = await import('data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64'));
 globalThis.fetch = async (_url, options) => {const text = JSON.parse(options.body).text;calls.push(text);if(failures-->0)return new Response('{}',{status:503});return Response.json({audioContent:text,encoding:'mp3'});};
 const long = '긴 문장을 빠짐없이 끝까지 읽습니다 '.repeat(45).trim();
@@ -123,3 +123,18 @@ globalThis.__ttsTest.audio=normalAudio;const replayStart=spoken.length;
 await tts.playTTSInChunks(long,'Charon',480);
 assert.equal(spoken.slice(replayStart).join(' ').replace(/[^가-힣a-zA-Z0-9]/g,''),tts.normalizeTextForSpeech(long).replace(/[^가-힣a-zA-Z0-9]/g,''));
 console.log('Cache eviction and chunk/voice-specific resume bookmarks passed.');
+
+// One completion bowl per successful non-chat reading; never on chat, stop or error.
+const chimeBefore=globalThis.__ttsTest.chimes||0;
+await tts.playTTSInChunks('대화가 아닌 긴 결과를 끝까지 듣습니다. '.repeat(15),'Aoede',240);
+assert.equal(globalThis.__ttsTest.chimes,chimeBefore+1);
+await tts.playConversation([{role:'assistant',content:'대화에서는 완료 알림을 울리지 않습니다.'}]);
+assert.equal(globalThis.__ttsTest.chimes,chimeBefore+1);
+await tts.playTTS('대화 말풍선 읽기는 완료 알림을 제외합니다.','Aoede',true,undefined,undefined,false,undefined,undefined,undefined,{skipCompletionChime:true});
+assert.equal(globalThis.__ttsTest.chimes,chimeBefore+1);
+cancelOnPlay=true;await tts.playTTSInChunks('사용자가 중지하면 완료 알림을 내지 않습니다. '.repeat(15),'Aoede',240);cancelOnPlay=false;
+assert.equal(globalThis.__ttsTest.chimes,chimeBefore+1);
+globalThis.fetch=async()=>Response.json({error:'API 키 미설정',code:'TTS_NOT_CONFIGURED'},{status:503});
+await assert.rejects(tts.playTTSInChunks('실패한 낭독에 완료 알림을 내지 않습니다.','Aoede',240));
+assert.equal(globalThis.__ttsTest.chimes,chimeBefore+1);globalThis.fetch=realFetch;
+console.log('Completion cue: one per completed reading, excluded from conversation, cancelled and failed playback.');
