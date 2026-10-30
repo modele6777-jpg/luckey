@@ -1,6 +1,6 @@
 import { MoneyRuleTarot } from './MoneyRuleTarot';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -903,8 +903,11 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 
   const [zoomedCard, setZoomedCard] = useState<{ card: TarotCard; slotName?: string } | null>(null);
 
+  const freshOracleDrawRef = useRef(false);
+  const oracleAnalysisInFlightRef = useRef(false);
+
   // Track whether the user has explicitly selected a mode or needs to choose
-  // 🌟 1일 1회 이미 완료된 세션이 오늘 존재하면 즉시 결과 화면(isModeChosen = true, stage = 'result')으로 진입
+  // Previously saved readings can still be reopened on entry.
   const [isModeChosen, setIsModeChosen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -923,10 +926,10 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   });
 
   const handleResetToModeSelection = useCallback(() => {
-    const todayS = findAnyTodayOracleSession(todayDateKey, sharedState);
-    if (!todayS) {
-      setIsModeChosen(false);
-    }
+    if (oracleAnalysisInFlightRef.current) return;
+    freshOracleDrawRef.current = true;
+    setIsModeChosen(false);
+    setStage('spread');
     setSelectedCardIdx(0);
     stopTTS();
   }, [todayDateKey, sharedState]);
@@ -950,7 +953,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   const [isSummaryCopied, setIsSummaryCopied] = useState<boolean>(false);
 
   // 2. Card Draw Stage State ('intro' | 'spread' | 'result')
-  // 🌟 1일 1회 원칙: 당일 완료된 세션이 존재하면 항상 'result'로 즉시 복원
+  // Initial saved-result restoration.
   const [stage, setStage] = useState<'intro' | 'spread' | 'result'>(() => {
     if (typeof window !== 'undefined') {
       const todayS = findAnyTodayOracleSession(getTodayDateKey());
@@ -1051,7 +1054,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     ];
   }, [oracleMode]);
 
-  // 🌟 오늘의 오라클 당일 1회 세션 및 복원 상태 (힐링/자기계발/기적수업 모두 1일 1회 엄격 적용)
+  // Latest saved readings for today.
   const [todayDailySession, setTodayDailySession] = useState<SavedDailyOracleSession | null>(() => {
     if (typeof window !== 'undefined') {
       return findAnyTodayOracleSession(getTodayDateKey());
@@ -1072,9 +1075,10 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     [todayDateKey, syncTick, sharedState]
   );
 
-  // 모드 변경 또는 마운트 시 당일 저장된 오라클 세션 동기화 (1일 1회 완료된 경우 결과 자동 복원)
+  // Restore saved results on entry, but never replace an explicitly started reading.
   useEffect(() => {
-    const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
+    if (freshOracleDrawRef.current) return;
+    const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState);
     if (saved && (saved.healingResult || saved.growthResult || saved.miracleResult)) {
       setTodayDailySession(saved);
       if (saved.drawnCards && saved.drawnCards.length > 0) setDrawnCards(saved.drawnCards);
@@ -1145,7 +1149,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
       const saved = directSession || loadTodayOracleSession(oracleMode, todayDateKey, sharedState);
       if (saved) {
         setTodayDailySession(saved);
-        if (saved.drawnCards && saved.drawnCards.length > 0) {
+        if (!freshOracleDrawRef.current && saved.drawnCards && saved.drawnCards.length > 0) {
           setDrawnCards(saved.drawnCards);
           if (saved.healingResult && oracleMode === 'healing') setHealingResult(saved.healingResult);
           if (saved.growthResult && oracleMode === 'growth') setGrowthResult(saved.growthResult);
@@ -1177,10 +1181,12 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 
   // 오늘 결과 보기 핸들러
   const handleRestoreTodayOracle = useCallback((targetMode?: OracleMode) => {
+    if (oracleAnalysisInFlightRef.current) return;
     const todayAny = findAnyTodayOracleSession(todayDateKey, sharedState);
     const mode = targetMode || todayAny?.mode || oracleMode;
     const saved = loadTodayOracleSession(mode, todayDateKey, sharedState) || todayAny || todayDailySession;
     if (!saved) return;
+    freshOracleDrawRef.current = false;
     if (saved.drawnCards && saved.drawnCards.length > 0) {
       setDrawnCards(saved.drawnCards);
     }
@@ -1198,16 +1204,6 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     setIsModeChosen(true);
     setStage('result');
   }, [oracleMode, todayDateKey, sharedState, todayDailySession]);
-
-  // 🌟 당일 완료된 결과가 있는 경우 카드뽑기 화면(spread)을 건너뛰고 즉시 결과 화면으로 자동 전환
-  useEffect(() => {
-    if (stage === 'spread') {
-      const saved = loadTodayOracleSession(oracleMode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
-      if (saved && (saved.healingResult || saved.growthResult || saved.miracleResult)) {
-        handleRestoreTodayOracle(saved.mode);
-      }
-    }
-  }, [stage, oracleMode, todayDateKey, sharedState, handleRestoreTodayOracle]);
 
   // 🚪 오라클 카드 선택창 닫기 핸들러: 기존 저장된 세션이 있으면 결과창으로, 없으면 모드 선택창으로 안전하게 복귀
   const handleCancelOracleSpread = useCallback(() => {
@@ -1613,42 +1609,28 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     executeOracleFollowUpReading(q, card, reversed);
   }, [pendingOracleFollowUpQuestion, executeOracleFollowUpReading]);
 
-  // Handle mode switch with persistent saving and daily session restore (1일 1회 원칙: 이미 완료된 경우 결과 즉시 복원)
+  // Every explicit mode selection opens a fresh draw; saved results remain available.
   const handleModeSwitch = (mode: OracleMode) => {
+    if (oracleAnalysisInFlightRef.current) return;
+    freshOracleDrawRef.current = true;
     setOracleMode(mode);
     setIsModeChosen(true);
     try {
       localStorage.setItem(STORAGE_ORACLE_MODE, mode);
       localStorage.setItem(STORAGE_ORACLE_MODE_SELECTED, 'true');
     } catch (_) {}
-
-    const saved = loadTodayOracleSession(mode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
-    setTodayDailySession(saved);
+    setTodayDailySession(loadTodayOracleSession(mode, todayDateKey, sharedState));
     stopTTS();
     setSelectedCardIdx(0);
     setShowAllCardsTogether(true);
-
-    if (saved && (saved.healingResult || saved.growthResult || saved.miracleResult)) {
-      if (saved.drawnCards && saved.drawnCards.length > 0) {
-        setDrawnCards(saved.drawnCards);
-      }
-      const effectiveMode = saved.mode || mode;
-      setOracleMode(effectiveMode);
-      if (effectiveMode === 'healing' && saved.healingResult) setHealingResult(saved.healingResult);
-      if (effectiveMode === 'growth' && saved.growthResult) setGrowthResult(saved.growthResult);
-      if (effectiveMode === 'miracle' && saved.miracleResult) setMiracleResult(saved.miracleResult);
-      if (saved.inquiryText) setInquiryText(saved.inquiryText);
-      setStage('result');
-    } else {
-      setStage('spread');
-      setDrawnCards([]);
-      setHealingResult(null);
-      setGrowthResult(null);
-      setMiracleResult(null);
-      setIsHealingCompleted(false);
-      setIsGrowthCompleted(false);
-      setIsMiracleCompleted(false);
-    }
+    setStage('spread');
+    setDrawnCards([]);
+    setHealingResult(null);
+    setGrowthResult(null);
+    setMiracleResult(null);
+    setIsHealingCompleted(false);
+    setIsGrowthCompleted(false);
+    setIsMiracleCompleted(false);
   };
 
   // 🎯 토스된 글자 자동 수신 및 3장 오라클 즉시 실행
@@ -1681,17 +1663,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         localStorage.setItem(STORAGE_ORACLE_MODE_SELECTED, 'true');
       } catch (_) {}
 
-      const existing = loadTodayOracleSession(targetMode, todayDateKey, sharedState) || findAnyTodayOracleSession(todayDateKey, sharedState);
-      if (existing && (existing.healingResult || existing.growthResult || existing.miracleResult)) {
-        if (existing.drawnCards && existing.drawnCards.length > 0) setDrawnCards(existing.drawnCards);
-        const effMode = existing.mode || targetMode;
-        setOracleMode(effMode);
-        if (effMode === 'healing' && existing.healingResult) setHealingResult(existing.healingResult);
-        if (effMode === 'growth' && existing.growthResult) setGrowthResult(existing.growthResult);
-        if (effMode === 'miracle' && existing.miracleResult) setMiracleResult(existing.miracleResult);
-        setStage('result');
-        return;
-      }
+      if (oracleAnalysisInFlightRef.current) return;
+      freshOracleDrawRef.current = true;
 
       const deck = TAROT_DECK;
       const seedNum = trimmed.split('').reduce((acc, char, idx) => acc + char.charCodeAt(0) * (idx + 1), 0);
@@ -1730,12 +1703,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
   // Run AI analysis after 3 cards are drawn (Preserve reversed orientation for both reading and zoom modal)
   const handleCardsComplete = async (cards: SelectedTarotCardEntry[], queryInquiry?: string) => {
-    // 🛡️ 1일 1회 엄격 가드: 이미 당일 완료된 세션이 있는 경우 다시 뽑기/재분석 차단 및 기존 결과 복원
-    const existing = loadTodayOracleSession(oracleMode, todayDateKey, sharedState);
-    if (existing && (existing.healingResult || existing.growthResult || existing.miracleResult)) {
-      handleRestoreTodayOracle();
-      return;
-    }
+    if (oracleAnalysisInFlightRef.current) return;
+    oracleAnalysisInFlightRef.current = true;
+    freshOracleDrawRef.current = true;
 
     const effectiveInquiry = queryInquiry !== undefined ? queryInquiry : inquiryText;
     if (effectiveInquiry && effectiveInquiry !== inquiryText) {
@@ -2588,6 +2558,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
         setTodayDailySession(fbGrowthSession);
       }
     } finally {
+      oracleAnalysisInFlightRef.current = false;
       setIsLoading(false);
     }
   };
@@ -3073,7 +3044,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
 
             <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-medium">
               <Check size={13} className="text-emerald-400" />
-              <span>오늘의 오라클 1일 1회 완료</span>
+              <span>오라클 리딩 완료</span>
             </div>
           </div>
         </div>
@@ -3544,7 +3515,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
               <span>오늘의 타로 결과 보기</span>
             </button>
             <span className="text-[10px] text-emerald-300/90 text-center md:text-right flex items-center gap-1 justify-center md:justify-end">
-              <span>✓ 1일 1회 일일 타로 연동 완료</span>
+              <span>✓ 일일 타로 연동 완료</span>
             </span>
           </div>
         </div>
@@ -3695,14 +3666,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
             <button
               type="button"
               onClick={() => {
-                const todaySession = findAnyTodayOracleSession(todayDateKey, sharedState);
-                if (todaySession) {
-                  handleRestoreTodayOracle(todaySession.mode);
-                } else {
-                  setIsModeChosen(false);
-                  setDrawnCards([]);
-                  setStage('spread');
-                }
+                handleResetToModeSelection();
                 stopTTS();
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-300 hover:text-white transition-colors cursor-pointer"
@@ -3757,7 +3721,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-medium">
                 <Check size={12} className="text-emerald-400" />
-                <span>1일 1회 완료 (내일 00시 리셋)</span>
+                <span>리딩 저장 완료</span>
               </span>
             </div>
           )}
@@ -3818,7 +3782,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                         <Heart size={20} className="text-rose-400 group-hover:scale-110 transition-transform" />
                       </div>
                       <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/30">
-                        {healingTodaySession?.healingResult ? '✓ 오늘 1일 1회 완료' : '78장 풀덱 (1일 1회)'}
+                        78장 풀덱 · 횟수 제한 없음
                       </span>
                     </div>
 
@@ -3838,7 +3802,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   </div>
 
                   <div className="mt-5 w-full py-2.5 rounded-xl bg-rose-500/20 group-hover:bg-rose-500/30 border border-rose-400/40 text-rose-200 text-xs font-bold text-center transition-colors">
-                    {healingTodaySession?.healingResult ? '✨ 힐링 타로 당일 결과 보기' : '🌿 78장 힐링 타로 덱 펼치기 (1일 1회)'}
+                    🌿 힐링 타로 새로 뽑기
                   </div>
                 </button>
 
@@ -3858,7 +3822,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                         <Feather size={20} className="text-purple-300 group-hover:scale-110 transition-transform" />
                       </div>
                       <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
-                        {miracleTodaySession?.miracleResult ? '✓ 오늘 1일 1회 완료' : '78장 풀덱 (1일 1회)'}
+                        78장 풀덱 · 횟수 제한 없음
                       </span>
                     </div>
 
@@ -3878,7 +3842,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   </div>
 
                   <div className="mt-5 w-full py-2.5 rounded-xl bg-purple-500/20 group-hover:bg-purple-500/30 border border-purple-400/40 text-purple-200 text-xs font-bold text-center transition-colors">
-                    {miracleTodaySession?.miracleResult ? '✨ 기적수업 타로 당일 결과 보기' : '🕊️ 78장 기적수업 덱 펼치기 (1일 1회)'}
+                    🕊️ 기적수업 타로 새로 뽑기
                   </div>
                 </button>
 
@@ -3898,7 +3862,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                         <Zap size={20} className="text-amber-400 group-hover:scale-110 transition-transform" />
                       </div>
                       <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                        {growthTodaySession?.growthResult ? '✓ 오늘 1일 1회 완료' : '78장 풀덱 (1일 1회)'}
+                        78장 풀덱 · 횟수 제한 없음
                       </span>
                     </div>
 
@@ -3918,7 +3882,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   </div>
 
                   <div className="mt-5 w-full py-2.5 rounded-xl bg-amber-500/20 group-hover:bg-amber-500/30 border border-amber-400/40 text-amber-200 text-xs font-bold text-center transition-colors">
-                    {growthTodaySession?.growthResult ? '✨ 자기계발 타로 당일 결과 보기' : '⚡ 자기계발 타로 덱 펼치기 (1일 1회)'}
+                    ⚡ 자기계발 타로 새로 뽑기
                   </div>
                 </button>
               </div>
@@ -4047,29 +4011,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </div>
               </div>
 
-              {/* Native TarotSpread Component Integration (1일 1회 완료 시 안내 카드 표시, 미완료 시에만 덱 펼치기) */}
-              {todayDailySession && (todayDailySession.healingResult || todayDailySession.growthResult || todayDailySession.miracleResult) ? (
-                <div className="my-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-amber-950/30 via-zinc-900/60 to-black border border-amber-400/30 text-center max-w-lg mx-auto shadow-xl">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center mx-auto mb-4">
-                    <Check size={28} className="text-emerald-400" />
-                  </div>
-                  <h4 className="text-lg font-bold text-white mb-2">
-                    오늘의 {oracleMode === 'healing' ? '힐링 타로' : oracleMode === 'miracle' ? '기적수업 타로' : '자기계발 타로'} 1일 1회 완료
-                  </h4>
-                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-6">
-                    오늘 뽑으신 3장의 오라클 카드가 안전하게 보존되어 있습니다.<br />
-                    오라클 타로는 깊은 성찰을 위해 하루 1회만 제공됩니다. (내일 00시 리셋)
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => handleRestoreTodayOracle()}
-                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <Sparkles size={16} />
-                    <span>✨ 오늘 오라클 결과 바로 확인하기</span>
-                  </button>
-                </div>
-              ) : (
+              {/* Completed readings never block another draw. */}
                 <div className="w-full min-h-[440px] md:min-h-[480px] relative">
                   <TarotSpread
                     key={`oracle-spread-${oracleMode}-${oracleCardBackId}`}
@@ -4083,7 +4025,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                     onCancel={handleCancelOracleSpread}
                   />
                 </div>
-              )}
+
             </div>
           </motion.div>) : <div className="duo-workspace-history"><h3>현재 리딩 주제</h3><p>{inquiryText || '오늘의 오라클'}</p><p>위의 도구에서 모드를 선택해 다음 질문을 이어갈 수 있어요.</p></div>}</AnimatePresence>
 </section><section className="duo-workspace-results" aria-label="오라클 리딩과 후속 질문">
@@ -4389,14 +4331,15 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   </div>
                 </div>
 
-                {/* 3. Bottom Actions: 1-per-day badge, Mode Switch, Share */}
+                {/* Reading actions */}
                 <div className="duo-workspace-actions pt-3 border-t border-white/10 flex flex-wrap items-center justify-center sm:justify-between gap-2.5 relative z-10 w-full shrink-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="inline-flex items-center gap-1.5 py-2 px-3.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-medium">
                       <Check size={12} className="text-emerald-400" />
-                      <span>오늘의 {oracleMode === 'healing' ? '힐링' : oracleMode === 'miracle' ? '기적수업' : '자기계발'} 오라클 완료 (1일 1회)</span>
+                      <span>오늘의 {oracleMode === 'healing' ? '힐링' : oracleMode === 'miracle' ? '기적수업' : '자기계발'} 오라클 완료</span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
+                      <button type="button" disabled={isLoading} onClick={() => handleModeSwitch(oracleMode)} className="rounded-full border border-amber-300/40 bg-amber-400/15 px-4 py-2 text-xs font-bold text-amber-200 disabled:opacity-40">같은 모드로 다시 뽑기</button>
                       {oracleMode !== 'healing' && (
                         <button
                           type="button"
