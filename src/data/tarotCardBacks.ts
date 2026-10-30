@@ -243,6 +243,7 @@ export const TAROT_CARD_BACKS: TarotCardBackTheme[] = [
 ];
 
 const ORACLE_CARD_BACK_THEMES: TarotCardBackTheme[] = [
+  { id: 'oracle_money', nameKo: '머니룰 시크릿 골드', nameEn: 'Money Rule Secret Gold', category: 'sacred', categoryLabelKo: '오라클 전용', badge: '풍요', description: '에메랄드와 금빛 동전으로 여는 풍요의 문', accentColor: '#eac57e', borderClass: 'border-amber-300/50', artworkUrl: '/tarot-backs/oracle_money.svg' },
   {
     id: 'oracle_healing',
     nameKo: '마음의 정원',

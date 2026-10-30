@@ -1,3 +1,4 @@
+import { MoneyRuleTarot } from './MoneyRuleTarot';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'wouter';
@@ -857,6 +858,11 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     saveProfileToAllVaults(updatedProfile);
     setShowSajuModal(false);
   };
+
+  const [moneyRuleOpen, setMoneyRuleOpen] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get('mode') === 'money' || sessionStorage.getItem('luckey_oracle_money_open') === 'true'; } catch { return false; }
+  });
+  const openMoneyRule = () => { stopTTS(); setMoneyRuleOpen(true); try { sessionStorage.setItem('luckey_oracle_money_open', 'true'); } catch {} };
 
   // 1. Triple Mode State ('healing' | 'growth' | 'miracle') with persistence and URL/session support
   const [oracleMode, setOracleMode] = useState<OracleMode>(() => {
@@ -3546,6 +3552,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
     );
   };
 
+  if (moneyRuleOpen) return <MoneyRuleTarot onBack={() => { setMoneyRuleOpen(false); try { sessionStorage.removeItem('luckey_oracle_money_open'); const url = new URL(window.location.href); if (url.searchParams.get('mode') === 'money') { url.searchParams.delete('mode'); window.history.replaceState(null, '', url); } } catch {} }} />;
+
   return (
     <DuoWorkspace className="w-full max-w-6xl mx-auto pb-12 text-white">
 <section className="duo-workspace-input" aria-label="오라클 질문과 카드 선택">
@@ -3573,6 +3581,8 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 : '역량 강화와 실질적 성장을 위해 사주 추진력과 78장 타로 4원소가 전하는 자기계발 오라클'}
             </p>
           </div>
+
+          <button type="button" onClick={openMoneyRule} className="flex items-center gap-2 rounded-2xl border border-amber-300/40 bg-gradient-to-r from-emerald-900 to-[#19342a] px-5 py-3 text-sm font-bold text-amber-100 shadow-lg hover:brightness-110"><Coins size={18} />머니룰 타로<span className="text-[10px] text-amber-300">SECRET</span></button>
 
           {/* Dual Mode Switcher & Mode Change Button */}
           <div className="flex items-center gap-2 flex-wrap justify-center md:justify-end">
