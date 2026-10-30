@@ -1,0 +1,1432 @@
+[
+  {
+    "mode": "healing",
+    "id": "major_0",
+    "imageUrl": "/oracle-decks/healing/major_0.webp",
+    "title": "File:RWS1909 - 00 Fool.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_00_Fool.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6e/RWS1909_-_00_Fool.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_1",
+    "imageUrl": "/oracle-decks/healing/major_1.webp",
+    "title": "File:RWS1909 - 01 Magician.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_01_Magician.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b0/RWS1909_-_01_Magician.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_2",
+    "imageUrl": "/oracle-decks/healing/major_2.webp",
+    "title": "File:RWS1909 - 02 High Priestess.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_02_High_Priestess.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/26/RWS1909_-_02_High_Priestess.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_3",
+    "imageUrl": "/oracle-decks/healing/major_3.webp",
+    "title": "File:RWS1909 - 03 Empress.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_03_Empress.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/RWS1909_-_03_Empress.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_4",
+    "imageUrl": "/oracle-decks/healing/major_4.webp",
+    "title": "File:RWS1909 - 04 Emperor.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_04_Emperor.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b4/RWS1909_-_04_Emperor.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_5",
+    "imageUrl": "/oracle-decks/healing/major_5.webp",
+    "title": "File:RWS1909 - 05 Hierophant.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_05_Hierophant.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/RWS1909_-_05_Hierophant.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_6",
+    "imageUrl": "/oracle-decks/healing/major_6.webp",
+    "title": "File:RWS1909 - 06 Lovers.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_06_Lovers.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/87/RWS1909_-_06_Lovers.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_7",
+    "imageUrl": "/oracle-decks/healing/major_7.webp",
+    "title": "File:RWS1909 - 07 Chariot.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_07_Chariot.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/aa/RWS1909_-_07_Chariot.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_8",
+    "imageUrl": "/oracle-decks/healing/major_8.webp",
+    "title": "File:RWS1909 - 08 Strength.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_08_Strength.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/29/RWS1909_-_08_Strength.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_9",
+    "imageUrl": "/oracle-decks/healing/major_9.webp",
+    "title": "File:RWS1909 - 09 Hermit.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_09_Hermit.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/28/RWS1909_-_09_Hermit.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_10",
+    "imageUrl": "/oracle-decks/healing/major_10.webp",
+    "title": "File:RWS1909 - 10 Wheel of Fortune.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_10_Wheel_of_Fortune.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8a/RWS1909_-_10_Wheel_of_Fortune.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_11",
+    "imageUrl": "/oracle-decks/healing/major_11.webp",
+    "title": "File:RWS1909 - 11 Justice.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_11_Justice.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4f/RWS1909_-_11_Justice.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_12",
+    "imageUrl": "/oracle-decks/healing/major_12.webp",
+    "title": "File:RWS1909 - 12 Hanged Man.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_12_Hanged_Man.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ab/RWS1909_-_12_Hanged_Man.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_13",
+    "imageUrl": "/oracle-decks/healing/major_13.webp",
+    "title": "File:RWS1909 - 13 Death.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_13_Death.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e9/RWS1909_-_13_Death.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_14",
+    "imageUrl": "/oracle-decks/healing/major_14.webp",
+    "title": "File:RWS1909 - 14 Temperance.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_14_Temperance.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9e/RWS1909_-_14_Temperance.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_15",
+    "imageUrl": "/oracle-decks/healing/major_15.webp",
+    "title": "File:RWS1909 - 15 Devil.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_15_Devil.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/26/RWS1909_-_15_Devil.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_16",
+    "imageUrl": "/oracle-decks/healing/major_16.webp",
+    "title": "File:RWS1909 - 16 Tower.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_16_Tower.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2a/RWS1909_-_16_Tower.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_17",
+    "imageUrl": "/oracle-decks/healing/major_17.webp",
+    "title": "File:RWS1909 - 17 Star.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_17_Star.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/44/RWS1909_-_17_Star.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_18",
+    "imageUrl": "/oracle-decks/healing/major_18.webp",
+    "title": "File:RWS1909 - 18 Moon.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_18_Moon.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3d/RWS1909_-_18_Moon.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_19",
+    "imageUrl": "/oracle-decks/healing/major_19.webp",
+    "title": "File:RWS1909 - 19 Sun.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_19_Sun.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/RWS1909_-_19_Sun.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_20",
+    "imageUrl": "/oracle-decks/healing/major_20.webp",
+    "title": "File:RWS1909 - 20 Judgement.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_20_Judgement.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8b/RWS1909_-_20_Judgement.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "major_21",
+    "imageUrl": "/oracle-decks/healing/major_21.webp",
+    "title": "File:RWS1909 - 21 World.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_21_World.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a4/RWS1909_-_21_World.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_1",
+    "imageUrl": "/oracle-decks/healing/cups_1.webp",
+    "title": "File:RWS1909 - Cups 01.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_01.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/92/RWS1909_-_Cups_01.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_2",
+    "imageUrl": "/oracle-decks/healing/cups_2.webp",
+    "title": "File:RWS1909 - Cups 02.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_02.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/47/RWS1909_-_Cups_02.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_3",
+    "imageUrl": "/oracle-decks/healing/cups_3.webp",
+    "title": "File:RWS1909 - Cups 03.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_03.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/01/RWS1909_-_Cups_03.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_4",
+    "imageUrl": "/oracle-decks/healing/cups_4.webp",
+    "title": "File:RWS1909 - Cups 04.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_04.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a6/RWS1909_-_Cups_04.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_5",
+    "imageUrl": "/oracle-decks/healing/cups_5.webp",
+    "title": "File:RWS1909 - Cups 05.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_05.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/15/RWS1909_-_Cups_05.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_6",
+    "imageUrl": "/oracle-decks/healing/cups_6.webp",
+    "title": "File:RWS1909 - Cups 06.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_06.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/68/RWS1909_-_Cups_06.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_7",
+    "imageUrl": "/oracle-decks/healing/cups_7.webp",
+    "title": "File:RWS1909 - Cups 07.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_07.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bb/RWS1909_-_Cups_07.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_8",
+    "imageUrl": "/oracle-decks/healing/cups_8.webp",
+    "title": "File:RWS1909 - Cups 08.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_08.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/RWS1909_-_Cups_08.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_9",
+    "imageUrl": "/oracle-decks/healing/cups_9.webp",
+    "title": "File:RWS1909 - Cups 09.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_09.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/df/RWS1909_-_Cups_09.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_10",
+    "imageUrl": "/oracle-decks/healing/cups_10.webp",
+    "title": "File:RWS1909 - Cups 10.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_10.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0b/RWS1909_-_Cups_10.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_11",
+    "imageUrl": "/oracle-decks/healing/cups_11.webp",
+    "title": "File:RWS1909 - Cups 11.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_11.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d4/RWS1909_-_Cups_11.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_12",
+    "imageUrl": "/oracle-decks/healing/cups_12.webp",
+    "title": "File:RWS1909 - Cups 12.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_12.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/06/RWS1909_-_Cups_12.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_13",
+    "imageUrl": "/oracle-decks/healing/cups_13.webp",
+    "title": "File:RWS1909 - Cups 13.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_13.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/91/RWS1909_-_Cups_13.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "cups_14",
+    "imageUrl": "/oracle-decks/healing/cups_14.webp",
+    "title": "File:RWS1909 - Cups 14.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Cups_14.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/be/RWS1909_-_Cups_14.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_1",
+    "imageUrl": "/oracle-decks/healing/pent_1.webp",
+    "title": "File:RWS1909 - Pentacles 01.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_01.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a9/RWS1909_-_Pentacles_01.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_2",
+    "imageUrl": "/oracle-decks/healing/pent_2.webp",
+    "title": "File:RWS1909 - Pentacles 02.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_02.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c2/RWS1909_-_Pentacles_02.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_3",
+    "imageUrl": "/oracle-decks/healing/pent_3.webp",
+    "title": "File:RWS1909 - Pentacles 03.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_03.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5e/RWS1909_-_Pentacles_03.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_4",
+    "imageUrl": "/oracle-decks/healing/pent_4.webp",
+    "title": "File:RWS1909 - Pentacles 04.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_04.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/RWS1909_-_Pentacles_04.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_5",
+    "imageUrl": "/oracle-decks/healing/pent_5.webp",
+    "title": "File:RWS1909 - Pentacles 05.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_05.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7d/RWS1909_-_Pentacles_05.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_6",
+    "imageUrl": "/oracle-decks/healing/pent_6.webp",
+    "title": "File:RWS1909 - Pentacles 06.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_06.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1a/RWS1909_-_Pentacles_06.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_7",
+    "imageUrl": "/oracle-decks/healing/pent_7.webp",
+    "title": "File:RWS1909 - Pentacles 07.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_07.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/51/RWS1909_-_Pentacles_07.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_8",
+    "imageUrl": "/oracle-decks/healing/pent_8.webp",
+    "title": "File:RWS1909 - Pentacles 08.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_08.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e6/RWS1909_-_Pentacles_08.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_9",
+    "imageUrl": "/oracle-decks/healing/pent_9.webp",
+    "title": "File:RWS1909 - Pentacles 09.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_09.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5e/RWS1909_-_Pentacles_09.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_10",
+    "imageUrl": "/oracle-decks/healing/pent_10.webp",
+    "title": "File:RWS1909 - Pentacles 10.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_10.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bb/RWS1909_-_Pentacles_10.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_11",
+    "imageUrl": "/oracle-decks/healing/pent_11.webp",
+    "title": "File:RWS1909 - Pentacles 11.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_11.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/RWS1909_-_Pentacles_11.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_12",
+    "imageUrl": "/oracle-decks/healing/pent_12.webp",
+    "title": "File:RWS1909 - Pentacles 12.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_12.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/03/RWS1909_-_Pentacles_12.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_13",
+    "imageUrl": "/oracle-decks/healing/pent_13.webp",
+    "title": "File:RWS1909 - Pentacles 13.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_13.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/RWS1909_-_Pentacles_13.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "pent_14",
+    "imageUrl": "/oracle-decks/healing/pent_14.webp",
+    "title": "File:RWS1909 - Pentacles 14.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Pentacles_14.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ed/RWS1909_-_Pentacles_14.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_1",
+    "imageUrl": "/oracle-decks/healing/swords_1.webp",
+    "title": "File:RWS1909 - Swords 01.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_01.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/87/RWS1909_-_Swords_01.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_2",
+    "imageUrl": "/oracle-decks/healing/swords_2.webp",
+    "title": "File:RWS1909 - Swords 02.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_02.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/RWS1909_-_Swords_02.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_3",
+    "imageUrl": "/oracle-decks/healing/swords_3.webp",
+    "title": "File:RWS1909 - Swords 03.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_03.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/01/RWS1909_-_Swords_03.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_4",
+    "imageUrl": "/oracle-decks/healing/swords_4.webp",
+    "title": "File:RWS1909 - Swords 04.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_04.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d9/RWS1909_-_Swords_04.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_5",
+    "imageUrl": "/oracle-decks/healing/swords_5.webp",
+    "title": "File:RWS1909 - Swords 05.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_05.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bb/RWS1909_-_Swords_05.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_6",
+    "imageUrl": "/oracle-decks/healing/swords_6.webp",
+    "title": "File:RWS1909 - Swords 06.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_06.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a6/RWS1909_-_Swords_06.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_7",
+    "imageUrl": "/oracle-decks/healing/swords_7.webp",
+    "title": "File:RWS1909 - Swords 07.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_07.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/26/RWS1909_-_Swords_07.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_8",
+    "imageUrl": "/oracle-decks/healing/swords_8.webp",
+    "title": "File:RWS1909 - Swords 08.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_08.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f7/RWS1909_-_Swords_08.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_9",
+    "imageUrl": "/oracle-decks/healing/swords_9.webp",
+    "title": "File:RWS1909 - Swords 09.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_09.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a5/RWS1909_-_Swords_09.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_10",
+    "imageUrl": "/oracle-decks/healing/swords_10.webp",
+    "title": "File:RWS1909 - Swords 10.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_10.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/eb/RWS1909_-_Swords_10.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_11",
+    "imageUrl": "/oracle-decks/healing/swords_11.webp",
+    "title": "File:RWS1909 - Swords 11.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_11.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0b/RWS1909_-_Swords_11.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_12",
+    "imageUrl": "/oracle-decks/healing/swords_12.webp",
+    "title": "File:RWS1909 - Swords 12.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_12.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d3/RWS1909_-_Swords_12.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_13",
+    "imageUrl": "/oracle-decks/healing/swords_13.webp",
+    "title": "File:RWS1909 - Swords 13.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_13.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fd/RWS1909_-_Swords_13.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "swords_14",
+    "imageUrl": "/oracle-decks/healing/swords_14.webp",
+    "title": "File:RWS1909 - Swords 14.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Swords_14.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f4/RWS1909_-_Swords_14.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_1",
+    "imageUrl": "/oracle-decks/healing/wands_1.webp",
+    "title": "File:RWS1909 - Wands 01.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_01.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ee/RWS1909_-_Wands_01.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_2",
+    "imageUrl": "/oracle-decks/healing/wands_2.webp",
+    "title": "File:RWS1909 - Wands 02.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_02.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/06/RWS1909_-_Wands_02.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_3",
+    "imageUrl": "/oracle-decks/healing/wands_3.webp",
+    "title": "File:RWS1909 - Wands 03.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_03.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/50/RWS1909_-_Wands_03.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_4",
+    "imageUrl": "/oracle-decks/healing/wands_4.webp",
+    "title": "File:RWS1909 - Wands 04.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_04.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b5/RWS1909_-_Wands_04.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_5",
+    "imageUrl": "/oracle-decks/healing/wands_5.webp",
+    "title": "File:RWS1909 - Wands 05.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_05.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/79/RWS1909_-_Wands_05.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_6",
+    "imageUrl": "/oracle-decks/healing/wands_6.webp",
+    "title": "File:RWS1909 - Wands 06.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_06.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2c/RWS1909_-_Wands_06.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_7",
+    "imageUrl": "/oracle-decks/healing/wands_7.webp",
+    "title": "File:RWS1909 - Wands 07.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_07.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/18/RWS1909_-_Wands_07.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_8",
+    "imageUrl": "/oracle-decks/healing/wands_8.webp",
+    "title": "File:RWS1909 - Wands 08.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_08.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7e/RWS1909_-_Wands_08.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_9",
+    "imageUrl": "/oracle-decks/healing/wands_9.webp",
+    "title": "File:RWS1909 - Wands 09.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_09.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/55/RWS1909_-_Wands_09.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_10",
+    "imageUrl": "/oracle-decks/healing/wands_10.webp",
+    "title": "File:RWS1909 - Wands 10.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_10.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/80/RWS1909_-_Wands_10.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_11",
+    "imageUrl": "/oracle-decks/healing/wands_11.webp",
+    "title": "File:RWS1909 - Wands 11.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_11.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bd/RWS1909_-_Wands_11.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_12",
+    "imageUrl": "/oracle-decks/healing/wands_12.webp",
+    "title": "File:RWS1909 - Wands 12.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_12.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/77/RWS1909_-_Wands_12.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_13",
+    "imageUrl": "/oracle-decks/healing/wands_13.webp",
+    "title": "File:RWS1909 - Wands 13.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_13.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/50/RWS1909_-_Wands_13.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "healing",
+    "id": "wands_14",
+    "imageUrl": "/oracle-decks/healing/wands_14.webp",
+    "title": "File:RWS1909 - Wands 14.jpeg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RWS1909_-_Wands_14.jpeg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/62/RWS1909_-_Wands_14.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Pamela Colman Smith"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_0",
+    "imageUrl": "/oracle-decks/miracle/major_0.webp",
+    "title": "File:00 Le Fou, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:00_Le_Fou,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2a/00_Le_Fou%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_1",
+    "imageUrl": "/oracle-decks/miracle/major_1.webp",
+    "title": "File:01 Le Bateleur, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:01_Le_Bateleur,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c3/01_Le_Bateleur%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_2",
+    "imageUrl": "/oracle-decks/miracle/major_2.webp",
+    "title": "File:02 La Papesse, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:02_La_Papesse,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a8/02_La_Papesse%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_3",
+    "imageUrl": "/oracle-decks/miracle/major_3.webp",
+    "title": "File:03 L'Imperatrice, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:03_L%27Imperatrice,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1a/03_L%27Imperatrice%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_4",
+    "imageUrl": "/oracle-decks/miracle/major_4.webp",
+    "title": "File:04 L'Empereur, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:04_L%27Empereur,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/61/04_L%27Empereur%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_5",
+    "imageUrl": "/oracle-decks/miracle/major_5.webp",
+    "title": "File:05 Le Pape, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:05_Le_Pape,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/90/05_Le_Pape%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_6",
+    "imageUrl": "/oracle-decks/miracle/major_6.webp",
+    "title": "File:06 L'Amoureux, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:06_L%27Amoureux,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/73/06_L%27Amoureux%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_7",
+    "imageUrl": "/oracle-decks/miracle/major_7.webp",
+    "title": "File:07 Le Chariot, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:07_Le_Chariot,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a3/07_Le_Chariot%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_11",
+    "imageUrl": "/oracle-decks/miracle/major_11.webp",
+    "title": "File:08 La Justice, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:08_La_Justice,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bf/08_La_Justice%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_9",
+    "imageUrl": "/oracle-decks/miracle/major_9.webp",
+    "title": "File:09 L'Ermite, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:09_L%27Ermite,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d0/09_L%27Ermite%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_10",
+    "imageUrl": "/oracle-decks/miracle/major_10.webp",
+    "title": "File:10 La Roue de Fortune, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:10_La_Roue_de_Fortune,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b7/10_La_Roue_de_Fortune%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_8",
+    "imageUrl": "/oracle-decks/miracle/major_8.webp",
+    "title": "File:11 La Force, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:11_La_Force,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/05/11_La_Force%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_12",
+    "imageUrl": "/oracle-decks/miracle/major_12.webp",
+    "title": "File:12 Le Pendu, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:12_Le_Pendu,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/77/12_Le_Pendu%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_13",
+    "imageUrl": "/oracle-decks/miracle/major_13.webp",
+    "title": "File:13 La Mort, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:13_La_Mort,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4f/13_La_Mort%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_14",
+    "imageUrl": "/oracle-decks/miracle/major_14.webp",
+    "title": "File:14 La Temperance, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:14_La_Temperance,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c4/14_La_Temperance%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_15",
+    "imageUrl": "/oracle-decks/miracle/major_15.webp",
+    "title": "File:15 Le Diable, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:15_Le_Diable,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fb/15_Le_Diable%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_16",
+    "imageUrl": "/oracle-decks/miracle/major_16.webp",
+    "title": "File:16 Le Feu du Ciel, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:16_Le_Feu_du_Ciel,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/27/16_Le_Feu_du_Ciel%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_17",
+    "imageUrl": "/oracle-decks/miracle/major_17.webp",
+    "title": "File:17 Les Etoiles, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:17_Les_Etoiles,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b7/17_Les_Etoiles%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_18",
+    "imageUrl": "/oracle-decks/miracle/major_18.webp",
+    "title": "File:18 La Lune, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:18_La_Lune,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/04/18_La_Lune%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_19",
+    "imageUrl": "/oracle-decks/miracle/major_19.webp",
+    "title": "File:19 Le Soleil, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:19_Le_Soleil,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/79/19_Le_Soleil%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_20",
+    "imageUrl": "/oracle-decks/miracle/major_20.webp",
+    "title": "File:20 Le Jugement, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:20_Le_Jugement,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d7/20_Le_Jugement%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "miracle",
+    "id": "major_21",
+    "imageUrl": "/oracle-decks/miracle/major_21.webp",
+    "title": "File:21 Le Monde, Oswald Wirth Tarot Deck 1889 BnF.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:21_Le_Monde,_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2e/21_Le_Monde%2C_Oswald_Wirth_Tarot_Deck_1889_BnF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Oswald Wirth"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_1",
+    "imageUrl": "/oracle-decks/money/etteilla_1.webp",
+    "title": "File:01 Le Chaos - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:01_Le_Chaos_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0a/01_Le_Chaos_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_2",
+    "imageUrl": "/oracle-decks/money/etteilla_2.webp",
+    "title": "File:02 La Lumière - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:02_La_Lumi%C3%A8re_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/61/02_La_Lumi%C3%A8re_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_3",
+    "imageUrl": "/oracle-decks/money/etteilla_3.webp",
+    "title": "File:03 Les Plantes - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:03_Les_Plantes_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ec/03_Les_Plantes_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_4",
+    "imageUrl": "/oracle-decks/money/etteilla_4.webp",
+    "title": "File:04 Le Ciel - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:04_Le_Ciel_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d9/04_Le_Ciel_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_5",
+    "imageUrl": "/oracle-decks/money/etteilla_5.webp",
+    "title": "File:05 L'Homme et Les Quadrupedes - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:05_L%27Homme_et_Les_Quadrupedes_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/84/05_L%27Homme_et_Les_Quadrupedes_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_6",
+    "imageUrl": "/oracle-decks/money/etteilla_6.webp",
+    "title": "File:06 Les Astres - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:06_Les_Astres_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8f/06_Les_Astres_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_7",
+    "imageUrl": "/oracle-decks/money/etteilla_7.webp",
+    "title": "File:07 Les Oiseaux et les Poissons - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:07_Les_Oiseaux_et_les_Poissons_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8d/07_Les_Oiseaux_et_les_Poissons_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_8",
+    "imageUrl": "/oracle-decks/money/etteilla_8.webp",
+    "title": "File:08 Repos - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:08_Repos_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e3/08_Repos_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_9",
+    "imageUrl": "/oracle-decks/money/etteilla_9.webp",
+    "title": "File:09 La Justice - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:09_La_Justice_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b1/09_La_Justice_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_10",
+    "imageUrl": "/oracle-decks/money/etteilla_10.webp",
+    "title": "File:10 La Temperance - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:10_La_Temperance_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fd/10_La_Temperance_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_11",
+    "imageUrl": "/oracle-decks/money/etteilla_11.webp",
+    "title": "File:11 La Force - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:11_La_Force_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bc/11_La_Force_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_12",
+    "imageUrl": "/oracle-decks/money/etteilla_12.webp",
+    "title": "File:12 La Prudence - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:12_La_Prudence_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a1/12_La_Prudence_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_13",
+    "imageUrl": "/oracle-decks/money/etteilla_13.webp",
+    "title": "File:13 Le Grand Pretre - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:13_Le_Grand_Pretre_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/22/13_Le_Grand_Pretre_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_14",
+    "imageUrl": "/oracle-decks/money/etteilla_14.webp",
+    "title": "File:14 Le Diable - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:14_Le_Diable_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7b/14_Le_Diable_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_15",
+    "imageUrl": "/oracle-decks/money/etteilla_15.webp",
+    "title": "File:15 Le Magicien ou le Bateleur - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:15_Le_Magicien_ou_le_Bateleur_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1e/15_Le_Magicien_ou_le_Bateleur_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_16",
+    "imageUrl": "/oracle-decks/money/etteilla_16.webp",
+    "title": "File:16 Le Judement Dernier - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:16_Le_Judement_Dernier_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/84/16_Le_Judement_Dernier_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_17",
+    "imageUrl": "/oracle-decks/money/etteilla_17.webp",
+    "title": "File:17 La Mort- H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:17_La_Mort-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e2/17_La_Mort-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_18",
+    "imageUrl": "/oracle-decks/money/etteilla_18.webp",
+    "title": "File:18 Le Capucin - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:18_Le_Capucin_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/28/18_Le_Capucin_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_19",
+    "imageUrl": "/oracle-decks/money/etteilla_19.webp",
+    "title": "File:19 Le Temple Foudroye - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:19_Le_Temple_Foudroye_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6d/19_Le_Temple_Foudroye_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_20",
+    "imageUrl": "/oracle-decks/money/etteilla_20.webp",
+    "title": "File:20 La Roue de Fortune - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:20_La_Roue_de_Fortune_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3a/20_La_Roue_de_Fortune_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "money",
+    "id": "etteilla_21",
+    "imageUrl": "/oracle-decks/money/etteilla_21.webp",
+    "title": "File:21 Le Despote Africain - H. Pussey Grand Etteilla Tarot Deck.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:21_Le_Despote_Africain_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/ba/21_Le_Despote_Africain_-_H._Pussey_Grand_Etteilla_Tarot_Deck.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Etteilla"
+  },
+  {
+    "mode": "growth",
+    "id": "major_0",
+    "imageUrl": "/oracle-decks/growth/major_0.webp",
+    "title": "File:Jean Dodal M00.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M00.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Jean_Dodal_M00.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_1",
+    "imageUrl": "/oracle-decks/growth/major_1.webp",
+    "title": "File:Jean Dodal M01.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M01.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Jean_Dodal_M01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_2",
+    "imageUrl": "/oracle-decks/growth/major_2.webp",
+    "title": "File:Jean Dodal M02.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M02.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/67/Jean_Dodal_M02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_3",
+    "imageUrl": "/oracle-decks/growth/major_3.webp",
+    "title": "File:Jean Dodal M03.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M03.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Jean_Dodal_M03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_4",
+    "imageUrl": "/oracle-decks/growth/major_4.webp",
+    "title": "File:Jean Dodal M04.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M04.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/11/Jean_Dodal_M04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_5",
+    "imageUrl": "/oracle-decks/growth/major_5.webp",
+    "title": "File:Jean Dodal M05.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M05.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Jean_Dodal_M05.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_6",
+    "imageUrl": "/oracle-decks/growth/major_6.webp",
+    "title": "File:Jean Dodal M06.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M06.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Jean_Dodal_M06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_7",
+    "imageUrl": "/oracle-decks/growth/major_7.webp",
+    "title": "File:Jean Dodal M07.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M07.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Jean_Dodal_M07.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_11",
+    "imageUrl": "/oracle-decks/growth/major_11.webp",
+    "title": "File:Jean Dodal M08.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M08.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/63/Jean_Dodal_M08.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_9",
+    "imageUrl": "/oracle-decks/growth/major_9.webp",
+    "title": "File:Jean Dodal M09.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M09.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Jean_Dodal_M09.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_10",
+    "imageUrl": "/oracle-decks/growth/major_10.webp",
+    "title": "File:Jean Dodal M10.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M10.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/54/Jean_Dodal_M10.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_8",
+    "imageUrl": "/oracle-decks/growth/major_8.webp",
+    "title": "File:Jean Dodal M11.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M11.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Jean_Dodal_M11.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_12",
+    "imageUrl": "/oracle-decks/growth/major_12.webp",
+    "title": "File:Jean Dodal M12.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M12.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Jean_Dodal_M12.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_13",
+    "imageUrl": "/oracle-decks/growth/major_13.webp",
+    "title": "File:Jean Dodal M13.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M13.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Jean_Dodal_M13.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_14",
+    "imageUrl": "/oracle-decks/growth/major_14.webp",
+    "title": "File:Jean Dodal M14.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M14.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Jean_Dodal_M14.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_15",
+    "imageUrl": "/oracle-decks/growth/major_15.webp",
+    "title": "File:Jean Dodal M15.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M15.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Jean_Dodal_M15.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_16",
+    "imageUrl": "/oracle-decks/growth/major_16.webp",
+    "title": "File:Jean Dodal M16.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M16.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Jean_Dodal_M16.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_17",
+    "imageUrl": "/oracle-decks/growth/major_17.webp",
+    "title": "File:Jean Dodal M17.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M17.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Jean_Dodal_M17.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_18",
+    "imageUrl": "/oracle-decks/growth/major_18.webp",
+    "title": "File:Jean Dodal M18.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M18.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Jean_Dodal_M18.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_19",
+    "imageUrl": "/oracle-decks/growth/major_19.webp",
+    "title": "File:Jean Dodal M19.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M19.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Jean_Dodal_M19.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_20",
+    "imageUrl": "/oracle-decks/growth/major_20.webp",
+    "title": "File:Jean Dodal M20.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M20.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/36/Jean_Dodal_M20.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  },
+  {
+    "mode": "growth",
+    "id": "major_21",
+    "imageUrl": "/oracle-decks/growth/major_21.webp",
+    "title": "File:Jean Dodal M21.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jean_Dodal_M21.jpg",
+    "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Jean_Dodal_M21.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "license": "Public domain",
+    "artist": "Jean Dodal (c. 1701), BnF scan"
+  }
+]

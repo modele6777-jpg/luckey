@@ -1,3 +1,4 @@
+import { ORACLE_DECKS, oracleDeckPrompt } from '@/data/oracleDecks';
 import { MoneyRuleTarot } from './MoneyRuleTarot';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -641,7 +642,7 @@ ${effectiveInquiry ? `특히 "${effectiveInquiry}" 사안에 대해 ` : ''}당�
 
 일상에서 실천할 수 있는 단 하나의 작은 기적의 의식으로, "${actionStr}"을(를) 조용히 행해 보십시오. 숨을 들이쉬며 하나님의 평화를 받아들이고, 숨을 내쉬며 세상에 대한 모든 판단과 원한을 성령께 온전히 넘겨주십시오.
 
-당신은 죄를 지을 수도 없고, 잃어버릴 수도 없으며, 실패할 수도 없는 영원한 생명의 빛입니다. 오늘 마주치는 모든 사람과 상황을 향해 마음속으로 조용히 축복을 건네십시오: "형제여, 당신 안에서 나는 하나님의 거룩함을 봅니다. 당신을 용서함으로 나 자신을 용서합니다." 기적수업의 순결한 진리와 78장 오라클의 자비로운 인도가 당신의 모든 순간을 완전한 평화와 기쁨으로 가득 채우기를 간절히 기도합니다. 샬롬.`;
+당신은 죄를 지을 수도 없고, 잃어버릴 수도 없으며, 실패할 수도 없는 영원한 생명의 빛입니다. 오늘 마주치는 모든 사람과 상황을 향해 마음속으로 조용히 축복을 건네십시오: "형제여, 당신 안에서 나는 하나님의 거룩함을 봅니다. 당신을 용서함으로 나 자신을 용서합니다." 기적수업의 순결한 진리와 오라클의 자비로운 인도가 당신의 모든 순간을 완전한 평화와 기쁨으로 가득 채우기를 간절히 기도합니다. 샬롬.`;
 
   return `### 🕊️ 1. 2026 오늘의 일일 타로 [${todayCard.nameKo}]와 성령의 거룩한 초대 (지각의 전환)
 ${stage1Text}
@@ -1238,9 +1239,8 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     }
   }, []);
 
-  // 78-card full deck for all modes
-  const fullDeck = useMemo(() => TAROT_DECK, []);
-  const activeDeckSource = fullDeck;
+  const oracleDeck = ORACLE_DECKS[oracleMode];
+  const activeDeckSource = oracleDeck.cards;
 
   const slotPositions = useMemo(() => {
     if (oracleMode === 'healing') {
@@ -1480,8 +1480,9 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   }, [drawnCards, oracleFollowUpEntries]);
 
   const oracleRemainingDeck = useMemo(() => {
-    return TAROT_DECK.filter((c) => !oracleDrawnCardIds.has(c.id));
-  }, [oracleDrawnCardIds]);
+    const readingDeck = drawnCards.length && !drawnCards[0].deckId ? TAROT_DECK : activeDeckSource;
+    return readingDeck.filter((c) => !oracleDrawnCardIds.has(c.id));
+  }, [oracleDrawnCardIds, activeDeckSource, drawnCards]);
 
   // 🔮 오라클 연속 심층 리딩 실행기 (사주 + 모드별 특화 LLM 스트리밍)
   const executeOracleFollowUpReading = useCallback(async (
@@ -1491,7 +1492,8 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   ) => {
     if (isOracleFollowUpGenerating) return;
 
-    const safeCard = chosenCard || TAROT_DECK[Math.floor(Math.random() * TAROT_DECK.length)];
+    const safeCard = chosenCard || oracleRemainingDeck[Math.floor(Math.random() * oracleRemainingDeck.length)];
+    if (!safeCard) return;
     const cardWithRev = { ...safeCard, reversed: isReversed };
     const cardNameKo = safeCard.nameKo || safeCard.name || '타로 카드';
     const cardNameEn = safeCard.name || cardNameKo;
@@ -1530,7 +1532,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
       const messagesForLLM = [
         {
           role: 'system',
-          content: `당신은 사주 명리학과 78장 타로, 오라클 심층 성찰을 융합하는 '트리니티 오라클 마스터'입니다. 질문자가 ${modeKorean}(3카드 스프레드) 리딩을 마친 후, 이미 뽑힌 카드를 제외하고 남은 잔여 덱에서 새로운 카드를 추가로 뽑아 심층 연속 질문을 던졌습니다.${sajuContext}
+          content: `${oracleDeckPrompt(oracleMode, drawnCards)}\n당신은 사주 명리학과 타로, 오라클 심층 성찰을 융합하는 '트리니티 오라클 마스터'입니다. 질문자가 ${modeKorean}(3카드 스프레드) 리딩을 마친 후, 이미 뽑힌 카드를 제외하고 남은 잔여 덱에서 새로운 카드를 추가로 뽑아 심층 연속 질문을 던졌습니다.${sajuContext}
 
 [답변 규정]
 1. 질문자의 구체적인 추가 질문에 대하여, 새로 뽑힌 잔여 덱 추가 카드의 도상 상징과 정/역방향 에너지를 직관적으로 관통하여 날카롭고 똑부러지게 답변하십시오.
@@ -1582,7 +1584,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     } finally {
       setIsOracleFollowUpGenerating(false);
     }
-  }, [oracleMode, drawnCards, saju, inquiryText, displayFullReadingText, oracleFollowUpEntries, isOracleFollowUpGenerating]);
+  }, [oracleMode, drawnCards, saju, inquiryText, displayFullReadingText, oracleFollowUpEntries, isOracleFollowUpGenerating, oracleRemainingDeck]);
 
   const handleOracleDirectFollowUpDraw = useCallback((questionText: string) => {
     setPendingOracleFollowUpQuestion(questionText);
@@ -1666,7 +1668,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       if (oracleAnalysisInFlightRef.current) return;
       freshOracleDrawRef.current = true;
 
-      const deck = TAROT_DECK;
+      const deck = ORACLE_DECKS[targetMode].cards;
       const seedNum = trimmed.split('').reduce((acc, char, idx) => acc + char.charCodeAt(0) * (idx + 1), 0);
       const shuffled = [...deck].sort((a, b) => {
         const hashA = (a.id.charCodeAt(0) * 31 + seedNum) % 1000;
@@ -1712,6 +1714,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       setInquiryText(effectiveInquiry);
     }
     setDrawnCards(cards);
+    setOracleFollowUpEntries([]);
+    setShowOracleFollowUpWheelModal(false);
     setStage('result');
     setIsLoading(true);
     stopTTS();
@@ -1722,9 +1726,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     const lackElStr = saju?.elements?.lacking?.name || '결핍 오행';
     const yongsinStr = saju?.yongsin?.name || '용신 보약';
 
-    const cardDescriptions = cards
+    const cardDescriptions = oracleDeckPrompt(oracleMode, cards) + '\n' + cards
       .map((c, i) => {
-        const d = getTarotCardDetails(c);
+        const d = !c.deckId || c.deckId === 'healing' ? getTarotCardDetails(c) : null;
         const effKws = getEffectiveTarotKeywords(c);
         const revData = c.reversed ? getTarotReversedData(c) : null;
         const caution = c.reversed ? getTarotCardCaution(c) : '';
@@ -2002,7 +2006,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
           ? `\n\n# [최우선 필수 집중 화두] 질문자가 호소한 구체적인 삶의 갈등/두려움/고민:\n"${effectiveInquiry}"\n★ 절대 지침: 기적수업(ACIM) 오라클 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 정중앙에 두고 풀이해야 합니다. 일반적인 세속적 타로 점술이나 막연한 조언을 배제하고, 질문자가 겪고 있는 고통의 본질을 에고의 두려움/죄책감/투사 관점에서 밝히 드러내며, 성령의 지각 전환(Shift in Perception)과 거룩한 순간(Holy Instant), 그리고 참된 용서를 통해 온전한 하나님의 평화로 귀환하는 영적 길을 2500~3500자 이상의 대서사로 인도하십시오.\n`
           : `\n\n# 질문자의 영적 화두:\n세상의 복잡한 갈등과 에고의 불안 속에서, 마음의 눈을 성령의 시선으로 전환하여 하나님의 온전한 평화와 참된 용서의 기적을 체험하도록 이끌어 주십시오.\n`;
 
-        const systemPrompt = `당신은 『기적수업(A Course in Miracles, ACIM)』의 심원한 비이원론(Non-duality) 형이상학과 내면의 거룩한 평화를 78장 타로 및 사주 명리와 정교하게 융합하는 '기적수업 지각전환 영적 오라클 마스터'입니다.
+        const systemPrompt = `당신은 『기적수업(A Course in Miracles, ACIM)』의 심원한 비이원론(Non-duality) 형이상학과 내면의 거룩한 평화를 비르트 22장 타로 및 사주 명리와 정교하게 융합하는 '기적수업 지각전환 영적 오라클 마스터'입니다.
 
 # 핵심 사명 (Core ACIM Oracle Mission):
 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 대서사를 제공하는 최상위 오라클입니다.
@@ -3549,7 +3553,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 ? '지친 마음의 치유와 안식을 위해 사주 본원과 78장 풀덱 타로가 전하는 따뜻한 힐링 오라클'
                 : oracleMode === 'miracle'
                 ? '에고의 두려움을 걷어내고 거룩한 순간과 참된 용서를 통해 온전한 평화를 찾는 기적수업 오라클'
-                : '역량 강화와 실질적 성장을 위해 사주 추진력과 78장 타로 4원소가 전하는 자기계발 오라클'}
+                : '역량 강화와 실질적 성장을 위해 사주 추진력과 마르세유 메이저 타로가 전하는 자기계발 오라클'}
             </p>
           </div>
 
@@ -3604,7 +3608,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   />
                 )}
                 <Feather size={14} className="relative z-10 text-purple-300" />
-                <span className="relative z-10">기적수업 (78장)</span>
+                <span className="relative z-10">기적수업 (22장)</span>
               </button>
 
               <button
@@ -3623,10 +3627,16 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   />
                 )}
                 <Zap size={14} className="relative z-10 text-amber-400" />
-                <span className="relative z-10">자기계발 (78장)</span>
+                <span className="relative z-10">자기계발 (22장)</span>
               </button>
             </div>
           </div>
+        </div>
+
+        <div className="relative z-10 mt-4 rounded-xl border border-amber-200/15 bg-black/20 p-3 text-xs leading-6 text-zinc-300">
+          <strong className="text-amber-200">선정 덱 · {oracleDeck.name} ({activeDeckSource.length}장)</strong><p>{oracleDeck.reason}</p>
+          <a href={oracleDeck.source} target="_blank" rel="noreferrer" className="underline underline-offset-2 text-zinc-400">공개 원본 출처 · Wikimedia Commons</a>
+          <span className="ml-2 text-zinc-400">기존 저장 리딩은 당시 덱을 유지합니다.</span>
         </div>
 
         {/* Saju Alignment Status Bar */}
@@ -3746,7 +3756,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 mt-2 max-w-xl mx-auto leading-relaxed">
                 사주 원국과 공명하는 3가지 특화 타로 모드(🌿 힐링 · 🕊️ 기적수업 · ⚡ 자기계발) 중 원하시는 방식을 선택하세요.<br className="hidden sm:inline" />
-                선택하신 모드는 자동으로 저장되어 다음번에도 그대로 유지됩니다. 각 모드는 고유한 카드 뒷면을 사용합니다.
+                각 모드는 서로 다른 고전 원본 덱과 전용 카드 뒷면을 사용합니다. 같은 날에도 다시 뽑을 수 있습니다.
               </p>
 
               {/* Standard tarot customization remains separate from the oracle-specific backs. */}
@@ -3762,7 +3772,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </button>
               </div>
               <p className="mt-2 text-[11px] text-zinc-500">
-                힐링 · 마음의 정원　|　자기계발 · 새벽의 도약　|　기적수업 · 평화의 연꽃
+                힐링 · 웨이트 1909　|　기적수업 · 비르트　|　자기계발 · 마르세유　|　머니룰 · 에테이야
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-6 max-w-4xl mx-auto text-left">
@@ -3782,10 +3792,11 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                         <Heart size={20} className="text-rose-400 group-hover:scale-110 transition-transform" />
                       </div>
                       <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/30">
-                        78장 풀덱 · 횟수 제한 없음
+                        {ORACLE_DECKS.healing.cards.length}장 · 횟수 제한 없음
                       </span>
                     </div>
 
+                    <div className="mb-3 flex items-center gap-3"><img src={ORACLE_DECKS.healing.cards[0].imageUrl} alt="" loading="lazy" className="h-20 w-12 rounded object-contain" /><p className="text-xs leading-5 text-zinc-300">{ORACLE_DECKS.healing.name}<br /><span className="text-zinc-400">{ORACLE_DECKS.healing.edition}</span></p></div>
                     <h4 className="text-base sm:text-lg font-bold text-white group-hover:text-rose-200 transition-colors flex items-center gap-1.5">
                       <span>🌿 힐링 타로</span>
                       <span className="text-xs font-normal text-rose-300/80">(사주 ✕ 타로)</span>
@@ -3822,10 +3833,11 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                         <Feather size={20} className="text-purple-300 group-hover:scale-110 transition-transform" />
                       </div>
                       <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
-                        78장 풀덱 · 횟수 제한 없음
+                        {ORACLE_DECKS.miracle.cards.length}장 · 횟수 제한 없음
                       </span>
                     </div>
 
+                    <div className="mb-3 flex items-center gap-3"><img src={ORACLE_DECKS.miracle.cards[0].imageUrl} alt="" loading="lazy" className="h-20 w-12 rounded object-contain" /><p className="text-xs leading-5 text-zinc-300">{ORACLE_DECKS.miracle.name}<br /><span className="text-zinc-400">{ORACLE_DECKS.miracle.edition}</span></p></div>
                     <h4 className="text-base sm:text-lg font-bold text-white group-hover:text-purple-200 transition-colors flex items-center gap-1.5">
                       <span>🕊️ 기적수업 타로</span>
                       <span className="text-xs font-normal text-purple-300/80">(ACIM 지각전환)</span>
@@ -3862,10 +3874,11 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                         <Zap size={20} className="text-amber-400 group-hover:scale-110 transition-transform" />
                       </div>
                       <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                        78장 풀덱 · 횟수 제한 없음
+                        {ORACLE_DECKS.growth.cards.length}장 · 횟수 제한 없음
                       </span>
                     </div>
 
+                    <div className="mb-3 flex items-center gap-3"><img src={ORACLE_DECKS.growth.cards[0].imageUrl} alt="" loading="lazy" className="h-20 w-12 rounded object-contain" /><p className="text-xs leading-5 text-zinc-300">{ORACLE_DECKS.growth.name}<br /><span className="text-zinc-400">{ORACLE_DECKS.growth.edition}</span></p></div>
                     <h4 className="text-base sm:text-lg font-bold text-white group-hover:text-amber-200 transition-colors flex items-center gap-1.5">
                       <span>⚡ 자기계발 타로</span>
                       <span className="text-xs font-normal text-amber-300/80">(마인드셋 & 실행)</span>
@@ -3898,7 +3911,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
               <div className="text-center mb-2">
                 <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
                   <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-amber-400/80">
-                    {oracleMode === 'healing' ? 'Inner Child Oracle • 78 Full Deck' : oracleMode === 'miracle' ? 'A Course in Miracles • 78 Full Deck' : 'Mindset Toolkit • 78 Full Deck'}
+                    {oracleDeck.name} · {activeDeckSource.length}장
                   </span>
                   <button
                     type="button"
@@ -4129,7 +4142,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   {oracleMode === 'healing'
                     ? '사주 원국과 78장 타로를 융합하여 심층 오라클 리딩을 작성 중입니다...'
                     : oracleMode === 'miracle'
-                    ? '기적수업의 거룩한 순간과 78장 타로를 융합하여 지각전환의 평화 리딩을 작성 중입니다...'
+                    ? '기적수업의 거룩한 순간과 비르트 22장 타로를 융합하여 지각전환의 평화 리딩을 작성 중입니다...'
                     : '4원소 마인드셋과 질문자의 과제를 융합하여 실행 편지를 작성 중입니다...'}
                 </p>
               </div>

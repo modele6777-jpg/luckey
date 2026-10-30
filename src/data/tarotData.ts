@@ -6,6 +6,11 @@ export interface TarotCard {
   keywords: string[];
   /** 정/역방향 — 카드 뽑기 시 할당 */
   reversed?: boolean;
+  deckId?: 'healing' | 'miracle' | 'growth' | 'money';
+  imageUrl?: string;
+  sourceUrl?: string;
+  historicalTitle?: string;
+  readingHint?: string;
 }
 
 /** 약 40% 확률로 역방향 (drawCards와 동일 비율) */
@@ -689,6 +694,7 @@ export function getTarotCardCaution(
 
 export const getTarotCardImageUrl = (card: TarotCard | null | undefined): string => {
   if (!card || !card.id) return "";
+  if (card.imageUrl?.startsWith('/oracle-decks/')) return card.imageUrl;
   
   let suitLetter = "";
   let numStr = "";

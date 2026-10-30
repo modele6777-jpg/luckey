@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Coins, Sparkles, Volume2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { TAROT_DECK } from '@/data/tarotData';
+import { ORACLE_DECKS } from '@/data/oracleDecks';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { MONEY_RULE_POSITIONS, isMoneyRuleSession, moneyRuleReading, moneyRuleNarration, type MoneyRuleSession } from '@/lib/moneyRuleTarot';
 import { playTTSInChunks, stopTTS, useTTSActive } from '@/utils/tts';
@@ -43,10 +43,11 @@ export function MoneyRuleTarot({ onBack }: { onBack: () => void }) {
       <span className="text-xs tracking-[.25em] text-amber-300">THE SECRET OF ABUNDANCE</span>
       <h2 className="mt-3 flex items-center gap-3 text-3xl font-serif text-amber-100"><Coins />머니룰 타로</h2>
       <p className="mt-3 max-w-xl text-sm leading-7 text-amber-50/85">돈복과 재물운을 초대하는 나만의 시크릿 리추얼.<br />카드를 볼 때마다 풍요의 가능성을 발견하고, 나만의 머니룰을 쌓아가세요.</p>
+      <p className="mt-4 text-xs leading-6 text-amber-100/70">선정 덱 · {ORACLE_DECKS.money.name} · {ORACLE_DECKS.money.cards.length}장<br />{ORACLE_DECKS.money.edition} · <a href={ORACLE_DECKS.money.source} target="_blank" rel="noreferrer" className="underline">공개 원본 출처</a></p>
       <div className="mt-5 flex flex-wrap gap-2 text-xs text-amber-200">{MONEY_RULE_POSITIONS.map(p => <span key={p} className="rounded-full border border-amber-200/20 px-3 py-2">{p}</span>)}</div>
     </header>
     {drawing ? <div className="rounded-3xl border border-amber-300/20 bg-black/25 p-3 sm:p-5">
-      <TarotSpread maxCards={3} positions={MONEY_RULE_POSITIONS} concern={question} deckSource={TAROT_DECK} cardBackId="oracle_money" allowReversed spreadName="풍요를 여는 머니룰 스프레드" onCancel={() => setDrawing(false)} onComplete={cards => {
+      <TarotSpread maxCards={3} positions={MONEY_RULE_POSITIONS} concern={question} deckSource={ORACLE_DECKS.money.cards} cardBackId="oracle_money" allowReversed spreadName="풍요를 여는 머니룰 스프레드" onCancel={() => setDrawing(false)} onComplete={cards => {
         const value: MoneyRuleSession = { version: 1, createdAt: Date.now(), question: question.trim(), cards: cards.map(c => ({ ...c, reversed: Boolean(c.reversed) })) };
         setSession(value); setDrawing(false); void save(value);
       }} />
