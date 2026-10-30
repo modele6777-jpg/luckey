@@ -28,7 +28,7 @@ console.log('Audio lifecycle: recover remaining audio, ignore stale/paused event
 const entry = audio.slice(audio.indexOf('export async function playTTSAudio'), audio.indexOf('let ttsLifecycleInitialized'));
 const entryJS = await transform(entry.replace('export async function','async function'), {loader: 'ts'});
 const ctx = {state:'suspended', async resume() {this.state='running'; race.ttsPlaybackId++;}};
-const race = {window:{}, ttsPlaybackId:1, speechContextNeedsReset:false, recoverSpeechContext, replaceSpeechAudioContext:()=>{throw Error("must not replace cancelled context")}, configureSpeechAudioSession() {}, getSharedAudioContext:()=>ctx, setTimeout, clearTimeout};
+const race = {window:{}, ttsPlaybackId:1, speechContextNeedsReset:false, ttsShouldBePlaying:false, speechSessionActive:false, recoverSpeechContext, replaceSpeechAudioContext:()=>{throw Error("must not replace cancelled context")}, configureSpeechAudioSession() {}, configureAmbientAudioSession() {}, getSharedAudioContext:()=>ctx, stopRawPCM() {}, stopActiveWebAudioTTSSource() {}, base64ToBytes:()=>new Uint8Array(), detectAudioFormat:()=>'mp3', playSpeechMedia:async()=>{}, releaseScreenWakeLock:async()=>{}, setTimeout, clearTimeout};
 vm.createContext(race);vm.runInContext(entryJS.code, race);
 await race.playTTSAudio('unused');
 assert.equal(race.ttsPlaybackId, 2);
@@ -60,6 +60,27 @@ failures=2;const count=plays;await tts.playQAndATTS({text:''},{text:'실패를 �
 failures=0;cancelOnPlay=true;const start=plays;await tts.playConversation([{role:'assistant',content:long}]);assert.equal(plays,start+1);
 console.log('Readers: complete long text, bounded chunks, transient retry, visible failure, explicit stop.');
 
+const savedFetch = globalThis.fetch;
+let rateLimitsLeft = 2;
+globalThis.fetch = async (_url, options) => {
+  const body = JSON.parse(options.body).text;
+  calls.push(body);
+  if (rateLimitsLeft-- > 0) {
+    return new Response(JSON.stringify({ code: 'MEDIA_RATE_LIMIT', retryAfterSeconds: 0.05 }), {
+      status: 429,
+      headers: { 'Retry-After': '0.05', 'Content-Type': 'application/json' },
+    });
+  }
+  return Response.json({ audioContent: body, encoding: 'mp3' });
+};
+events.length = 0;
+const beforeRate = plays;
+await tts.playTTSInChunks('첫째 문장을 읽습니다. 둘째 문장도 이어서 읽습니다. 셋째 문장까지 멈추지 않습니다.');
+assert.equal(plays, beforeRate + 1);
+assert(!events.some(event => event.type === 'prism:tts-error'), 'transient 429 is retried inside the reading');
+globalThis.fetch = savedFetch;
+console.log('Full reading waits through a short rate limit and finishes without asking the user to retry.');
+
 cancelOnPlay=false;
 const realFetch=globalThis.fetch;
 globalThis.fetch=()=>new Promise(()=>{});
@@ -78,7 +99,15 @@ let completeRequest;
 globalThis.fetch=()=>new Promise(resolve=>{completeRequest=resolve;});
 const beforePause=plays;
 const loading=tts.playTTS('생성 중 일시정지 검증 문장','Aoede',true);
-await new Promise(resolve=>setTimeout(resolve,0));
+await new Promise((resolve, reject) => {
+  const started = Date.now();
+  const tick = () => {
+    if (typeof completeRequest === 'function') return resolve();
+    if (Date.now() - started > 5000) return reject(new Error('TTS request did not start'));
+    setTimeout(tick, 20);
+  };
+  tick();
+});
 tts.pauseTTS();
 completeRequest(Response.json({audioContent:'paused response',encoding:'mp3'}));
 await new Promise(resolve=>setTimeout(resolve,0));
@@ -95,7 +124,15 @@ assert.equal(plays,retiredCount);
 const originalAudio=globalThis.__ttsTest.audio;let finishManual;
 globalThis.__ttsTest.audio=async()=>{plays++;await new Promise(resolve=>{finishManual=resolve;});};
 const manual=tts.playTTS('수동으로 듣는 문장','Aoede',true);
-await new Promise(resolve=>setTimeout(resolve,0));
+await new Promise((resolve, reject) => {
+  const started = Date.now();
+  const tick = () => {
+    if (typeof finishManual === 'function') return resolve();
+    if (Date.now() - started > 5000) return reject(new Error('manual playback did not start'));
+    setTimeout(tick, 20);
+  };
+  tick();
+});
 const activeSession=tts.getCurrentTTSState().activeSessionId;
 await tts.playTTSInChunks('자동으로 끼어들면 안 되는 문장','Aoede',240,undefined,undefined,{isAutoPlay:true});
 assert.equal(tts.getCurrentTTSState().activeSessionId,activeSession);

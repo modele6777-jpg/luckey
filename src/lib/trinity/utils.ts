@@ -5,7 +5,7 @@
 
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
 import type { UserProfile } from '@/lib/sharedState';
-import { extractConciseSummary, stripSummaryFromTarotText } from '@/lib/tarotSummaryUtils';
+import { extractConciseSummary, groundTarotSummaryParts, stripSummaryFromTarotText } from '@/lib/tarotSummaryUtils';
 import { getTarotCardDetails } from '@/lib/dailyTarotOracle';
 import { getCardSoulBlessing } from '@/lib/tarotBlessings';
 import { getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from '@/data/tarotData';
@@ -2032,10 +2032,17 @@ export function buildLocalTarotReading(concern: string, cards: any[], photoMode?
     decisionText = `### 🔮 3. 트리니티 마스터의 직관적 결단 & 방향성\n**마스터의 핵심 선언: [도약과 확신의 타이밍]**\n\n지금 당신을 둘러싼 흐름은 정체를 지나 변화의 물꼬를 트고 있습니다. 두려움에 머무르지 말고 직관을 믿고 나아가세요.`;
   }
 
+  const groundedSummary = groundTarotSummaryParts(cards, concern);
+  const decisionSummary = binaryPick
+    ? `최종 결단은 [${binaryPick.chosen}] (적합도 ${binaryPick.chosenRate}%)입니다. ${binaryPick.reason}`
+    : analysis.kind === 'yes_no'
+      ? `최종 판정은 [${cards[cards.length - 1]?.reversed ? 'NO' : 'YES'}]이며, ${cards[cards.length - 1]?.reversed ? '지금은 숨은 변수를 점검하고 내실을 다진 뒤에 다시 판단하세요.' : '확인된 준비를 바탕으로 오늘 한 걸음 실행하세요.'}`
+      : groundedSummary.decision;
+
   return `[핵심 3줄 요약]
-- [현재 에너지] ${leadCard?.reversed ? `현재 [${leadName}] 카드의 역방향 기운이 일시적인 저항을 암시하나, 차분히 중심을 잡으면 새 길이 열립니다.` : `현재 [${leadName}] 카드가 맑고 역동적인 변화의 파동을 건네며, 직관을 신뢰할 때임을 가리킵니다.`}
-- [방향과 결단] ${binaryPick ? `최종 결단은 [${binaryPick.chosen}] (적합도 ${binaryPick.chosenRate}%)이며, 미련 없이 이 길을 추진하는 것이 최고의 결과를 낳습니다.` : analysis.kind === 'yes_no' ? `최종 판정은 [${cards[cards.length - 1]?.reversed ? 'NO' : 'YES'}]이며, ${cards[cards.length - 1]?.reversed ? '지금은 잠시 멈추어 변수를 보완하고 내실을 다지는 것이 현명합니다.' : '카드가 긍정의 에너지를 비추고 있으니 확신을 갖고 전진하세요.'}` : '운의 흐름은 정체를 지나 도약과 확신의 타이밍을 명확히 가리키고 있습니다.'}
-- [실천 처방] 오늘 일상에서 미뤄둔 핵심 과제 1가지를 정해 20분간 몰입해 즉시 실행하고 정체된 운을 시원하게 순환시키기.
+- [현재 에너지] ${groundedSummary.energy}
+- [방향과 결단] ${decisionSummary}
+- [실천 행동] ${groundedSummary.action}
 
 ### 🕯️ 1. 카드가 비추는 당신의 마음과 현재 에너지
 어서 오세요. 카드를 조용히 마주하니, 당신께서 가슴속에 품고 계신 **"${concern}"**에 대한 깊은 고민과 복잡한 마음결이 그대로 느껴집니다.

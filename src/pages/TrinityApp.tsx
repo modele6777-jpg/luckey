@@ -1632,7 +1632,7 @@ function playDailyCardChimeAsync() {
     return TAROT_DECK.filter((card) => !drawnCardIds.includes(card.id));
   }, [drawnCardIds]);
 
-  // Auto concise 3-bullet summary for tarot readings (카드 상징과 사주를 결합한 50~70자 명확한 3개 불릿 보장)
+  // Auto concise 3-bullet summary for tarot readings (현재 에너지·방향과 주의점·실천 행동, 각 줄 완결)
   const conciseSummaryBullets = useMemo(() => {
     if (!tarotResult || tarotResult.trim().length < 40) return [];
     const profile = sharedState?.userProfile || getPersistentUserProfile();
@@ -2615,14 +2615,14 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
 [핵심 3줄 요약 작성 규칙 — 아래 규칙을 요약에 우선 적용]
 질문: ${tarotConcern}
 주제: ${getTarotThemeMeta(concernAnalysis.theme).label}
-리딩 맨 앞에 [핵심 3줄 요약]과 다음 세 줄을 작성하세요.
-- [현재 상황] 질문의 대상·문제와 뽑힌 카드의 뜻을 연결한 핵심 상황 한 문장.
-- [방향과 결단] 질문에 직접 답하는 판단과 본문에 제시한 근거 한 문장.
-- [실천 행동] 이 질문을 위해 실행할 구체적인 행동 한 문장.
-각 줄은 다른 내용을 담고 본문 해석과 일치해야 합니다. 짧아도 좋으니 문장을 완결하세요.
+리딩 맨 앞에 [핵심 3줄 요약]과 다음 세 줄을 작성하세요. 각 줄은 앞 문장을 보지 않아도 뜻이 끝나는 완결 문장으로, 70~130자 안에 쓰세요. 글자 수를 맞추려고 주의점이나 행동을 빼지 마세요.
+- [현재 에너지] 질문자가 지금 어떤 마음·에너지·상황에 있는지를 카드의 본래 뜻과 연결해 한 문장으로 적으세요. 카드 그림 묘사(인물, 성배, 대칭, "~를 의미합니다")만 쓰지 마세요.
+- [방향과 결단] 질문에 대한 판단과, 구체적으로 무엇을 조심해야 하는지를 같은 문장에 적으세요. "주의할 점은 있습니다"처럼 주의 내용이 빠진 문장은 금지입니다. 양자택일이면 승자 이름을, 예/아니오이면 YES 또는 NO를 이 줄에 남기세요.
+- [실천 행동] 오늘 할 행동을 하나 적으세요. 무엇을 할지가 그 문장 안에 있어야 합니다. "이 작은 행동", "이 실천", "첫 단추"처럼 행동을 가리키기만 하는 말, 그리고 사주 세운 덕담으로 행동을 대신하는 말은 금지입니다.
+각 줄은 서로 다른 내용이고 본문과 모순되지 않아야 합니다. 근거가 부족한 점은 명시하세요.
 연애는 관계·연락·상대와의 소통, 진로는 이직·지원·시험·업무, 금전은 비용·수익·위험 등 실제 질문의 맥락을 유지하세요.
 물 한 잔, 기운 순환, 내면의 빛 등 모든 주제에 통용되는 장식 문구로 채우지 마세요.
-본문에 없는 사건·금액·연락 날짜·합격 여부·확정 수익을 요약에서 새로 만들지 마세요. 근거가 부족한 점은 명시하세요.
+본문에 없는 사건·금액·연락 날짜·합격 여부·확정 수익을 요약에서 새로 만들지 마세요.
 `;
         let finalResponse = "";
         const isOneCardDaily = concernAnalysis.spread.cardCount === 1 || isDailyTarotConcern(tarotConcern);
@@ -3284,7 +3284,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 animate={{ opacity: 1, y: 0 }}
                 className="prism-page-content w-full mx-auto self-center space-y-8 pb-8 sm:pb-12"
               >
-                <div className={`glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
+                <div className={`glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "tarot-virtual-stage" : ""}`}>
                   {/* Subtle starlight gold specular glow */}
                   <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-yellow-500/10 blur-[100px] pointer-events-none" />
                   <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none" />

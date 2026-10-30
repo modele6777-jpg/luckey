@@ -37,11 +37,27 @@ export function isMoneyRuleSession(value: unknown): value is MoneyRuleSession {
   const s = value as MoneyRuleSession | null;
   return Boolean(s && s.version === 1 && Number.isFinite(s.createdAt) && typeof s.question === 'string' && Array.isArray(s.cards) && s.cards.length === 3 && s.cards.every(c => c && [...TAROT_DECK, ...ORACLE_DECKS.money.cards, ...LEGACY_ORACLE_DECKS.money.cards].some(d => d.id === c.id && d.type === c.type && d.nameKo === c.nameKo) && typeof c.reversed === 'boolean') && new Set(s.cards.map(c => c.id)).size === 3);
 }
-export function moneyRuleReading(card: TarotCard, index: number) {
-  const keywords = (card.deckId?.startsWith('money') ? card.keywords : getEffectiveTarotKeywords(card)).slice(0, 3).join(' · ');
+function moneyRuleParts(card: TarotCard) {
+  const keywords = (card.deckId?.startsWith('money') ? card.keywords : getEffectiveTarotKeywords(card)).slice(0, 3);
   const action = card.readingHint || (card.type === 'major' ? majorActions[Number(card.id.split('_')[1])] : suitActions[card.type]);
+  return { keywords: keywords.join(' · '), action };
+}
+
+export function moneyRuleReading(card: TarotCard, index: number) {
+  const { keywords, action } = moneyRuleParts(card);
   const lens = ['돈에 대한 현재의 믿음을 알아차리는 자리입니다.', '내가 가진 가치와 현실의 기회를 연결하는 자리입니다.', '들어온 돈을 지키고 꾸준히 쌓는 기준을 만드는 자리입니다.'][index];
   return `${lens} ${card.nameKo}의 ${keywords} 상징을 살펴보세요. ${card.reversed ? '역방향은 이 주제가 막히거나 지나쳐 있지 않은지 점검하라는 관점으로 읽습니다. ' : ''}${action}`;
+}
+
+export function moneyRuleSummaryLines(session: MoneyRuleSession): string[] {
+  return session.cards.map((card, index) => {
+    const { keywords, action } = moneyRuleParts(card);
+    const facing = card.reversed ? '역방향' : '정방향';
+    const stance = card.reversed
+      ? '이 상징이 막히거나 지나치지 않았는지 함께 점검합니다.'
+      : '이 상징을 지금의 금전 습관에 바로 적용합니다.';
+    return `[${MONEY_RULE_POSITIONS[index]}] ${card.nameKo} ${facing}은 ${keywords}의 상징입니다. ${stance} ${action}`;
+  });
 }
 export function moneyRuleNarration(session: MoneyRuleSession) {
   return `머니룰 타로. ${session.question ? `나의 질문. ${session.question}. ` : ''}${session.cards.map((card, i) => `${MONEY_RULE_POSITIONS[i]}. ${card.nameKo}. ${moneyRuleReading(card, i)}`).join('\n')}\n오늘의 풍요 선언. 나는 내가 만드는 가치를 존중하고, 기회를 살피며, 들어온 돈을 지혜롭게 관리합니다.`;

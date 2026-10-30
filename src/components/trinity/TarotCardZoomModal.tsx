@@ -1,11 +1,9 @@
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
   Sparkles,
-  ZoomIn,
-  ZoomOut,
   Tag,
   Compass,
 } from 'lucide-react';
@@ -35,15 +33,6 @@ export function TarotCardZoomModal({
   card,
   slotName,
 }: TarotCardZoomModalProps) {
-  const [isEnlarged, setIsEnlarged] = useState(false);
-
-  // Reset zoom state whenever modal opens or card changes
-  useEffect(() => {
-    if (isOpen) {
-      setIsEnlarged(false);
-    }
-  }, [isOpen, card]);
-
   // Handle ESC key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,11 +43,6 @@ export function TarotCardZoomModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
-
-  const toggleZoom = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEnlarged((prev) => !prev);
-  }, []);
 
   const cardImageUrl = card
     ? ('imageUrl' in card && card.imageUrl
@@ -118,9 +102,7 @@ export function TarotCardZoomModal({
             exit={{ opacity: 0, scale: 0.78, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
-            className={"duo-dialog-panel " + (`relative w-full ${
-              isEnlarged ? 'max-w-2xl' : 'max-w-md'
-            } max-w-[94vw] bg-[#0e0c18] border border-yellow-500/40 p-3.5 sm:p-6 rounded-[28px] sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[92vh] sm:max-h-[94vh] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4 transition-all duration-300`)}
+            className="duo-dialog-panel relative w-full max-w-md max-w-[94vw] bg-[#0e0c18] border border-yellow-500/40 p-3.5 sm:p-6 rounded-[28px] sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[92vh] sm:max-h-[94vh] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4"
           >
             {/* Subtle Ambient Cosmic Aura */}
             <motion.div
@@ -162,16 +144,6 @@ export function TarotCardZoomModal({
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
-                {/* Zoom Scale Toggle Button */}
-                <button
-                  type="button"
-                  onClick={toggleZoom}
-                  className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white/80 hover:text-white transition-all cursor-pointer hover:scale-105 active:scale-95"
-                  title={isEnlarged ? '표준 크기로 축소' : '화면 가득 확대 보기'}
-                >
-                  {isEnlarged ? <ZoomOut size={15} /> : <ZoomIn size={15} />}
-                </button>
-
                 {/* Close Button */}
                 <button
                   type="button"
@@ -215,7 +187,7 @@ export function TarotCardZoomModal({
               <motion.div
                 initial={{ scale: 0.65, opacity: 0, y: 20 }}
                 animate={{
-                  scale: isEnlarged ? 1.03 : 1,
+                  scale: 1,
                   opacity: 1,
                   y: 0,
                 }}
@@ -226,14 +198,12 @@ export function TarotCardZoomModal({
                   stiffness: 280,
                   delay: 0.05,
                 }}
-                className={`relative rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-b from-yellow-400/60 via-amber-600/35 to-purple-600/45 shadow-[0_10px_50px_rgba(234,179,8,0.35)] transition-all duration-300 ${
-                  isEnlarged ? 'w-56 sm:w-72 md:w-80' : 'w-44 sm:w-56'
-                }`}
+                className="relative w-44 sm:w-56 rounded-2xl sm:rounded-3xl p-1.5 bg-gradient-to-b from-yellow-400/60 via-amber-600/35 to-purple-600/45 shadow-[0_10px_50px_rgba(234,179,8,0.35)]"
               >
                 {/* Glowing halo behind card */}
                 <div className="absolute -inset-1 rounded-2xl sm:rounded-3xl bg-yellow-400/20 blur-md pointer-events-none" />
 
-                <div className="relative aspect-[9/15] max-h-[52vh] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-950 border border-yellow-400/40 flex items-center justify-center shadow-inner group">
+                <div className="relative aspect-[9/15] max-h-[52vh] rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-950 border border-yellow-400/40 flex items-center justify-center shadow-inner">
                   {cardImageUrl ? (
                     <div
                       className="w-full h-full flex items-center justify-center transition-transform duration-500 ease-out"
@@ -245,7 +215,7 @@ export function TarotCardZoomModal({
                       <img
                         src={cardImageUrl}
                         alt={nameKo}
-                        className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}

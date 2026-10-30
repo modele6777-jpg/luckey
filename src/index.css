@@ -21,11 +21,27 @@
     --duo-hinge-gap: 1.25rem;
     --nav-bar-h: 2.1rem;
     --nav-total-h: calc(var(--nav-bar-h) + var(--sab));
+    /* Visual viewport box. JS replaces these with measured pixels; dvh covers the first paint. */
+    --vv-top: 0px;
+    --vv-left: 0px;
+    --vv-bottom: 0px;
+    --vv-bleed-left: 0px;
+    --vv-bleed-right: 0px;
+    --vvw: 100%;
+    --vvh: 100vh;
+    --visual-vh: 100vh;
+  }
+
+  @supports (height: 100dvh) {
+    :root {
+      --vvh: 100dvh;
+      --visual-vh: 100dvh;
+    }
   }
 
   html {
-    height: 100%;
-    height: -webkit-fill-available;
+    width: 100%;
+    height: var(--vvh, 100vh);
     -webkit-text-size-adjust: 100%;
   }
 
@@ -41,16 +57,23 @@
   html,
   body {
     margin: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
     background: oklch(0.035 0.03 275);
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-x: none !important;
     overscroll-behavior-y: auto;
     touch-action: pan-y;
+  }
+
+  /* Visible screen. Explicit size so top and bottom are not also fighting a percentage height after rotation. */
+  body {
+    position: fixed;
+    top: var(--vv-top, 0px);
+    left: calc(-1 * var(--vv-bleed-left, 0px));
+    right: auto;
+    width: max(100%, var(--vvw, 100%));
+    height: var(--vvh, 100vh);
+    min-height: 0;
   }
 
   html.light,
@@ -65,12 +88,10 @@
     color: #f8fafc;
   }
 
-  #root,
-  .prism-app-shell {
+  #root {
     width: 100%;
     height: 100%;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    min-height: 0;
     overflow: hidden;
     overscroll-behavior-x: none !important;
   }
@@ -315,14 +336,13 @@
 @layer utilities {
   .prism-app-shell {
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    inset: 0;
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100%;
+    min-height: 0;
+    max-height: 100%;
     overflow: hidden;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
@@ -358,6 +378,7 @@
   .h-screen-dvh,
   .h-app-full {
     height: 100%;
+    max-height: 100%;
     min-height: 0;
   }
 
@@ -464,24 +485,24 @@
   }
 
   .bottom-safe-fab {
-    bottom: calc(var(--sab) + 1.25rem);
+    bottom: calc(var(--sab) + 1.25rem + var(--vv-bottom, 0px));
   }
 
   .bottom-safe-nav-fab {
-    bottom: calc(var(--sab) + 4.75rem);
+    bottom: calc(var(--sab) + 4.75rem + var(--vv-bottom, 0px));
     left: calc(var(--sal) + 0.875rem);
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @media (min-width: 640px) {
     .bottom-safe-nav-fab {
-      bottom: calc(var(--sab) + 6.0rem);
+      bottom: calc(var(--sab) + 6.0rem + var(--vv-bottom, 0px));
       left: calc(var(--sal) + 1.5rem);
     }
   }
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: calc(var(--sab) + 7.5rem);
+    bottom: calc(var(--sab) + 7.5rem + var(--vv-bottom, 0px));
     left: 0 !important;
     right: 0 !important;
     transform: none !important;
@@ -497,14 +518,14 @@
   }
   @media (min-width: 640px) {
     .bottom-safe-fab-center {
-      bottom: calc(var(--sab) + 8.75rem);
+      bottom: calc(var(--sab) + 8.75rem + var(--vv-bottom, 0px));
       width: 84px !important;
       height: 84px !important;
     }
   }
 
   .bottom-safe-fab-right {
-    bottom: calc(var(--sab) + 1.25rem);
+    bottom: calc(var(--sab) + 1.25rem + var(--vv-bottom, 0px));
     right: calc(var(--sar) + 0.875rem);
   }
   @media (min-width: 640px) {
@@ -514,25 +535,25 @@
   }
 
   .bottom-safe-music {
-    bottom: calc(var(--sab) + 4.75rem);
+    bottom: calc(var(--sab) + 4.75rem + var(--vv-bottom, 0px));
     left: calc(var(--sal) + 4.5rem);
   }
 
   .bottom-safe-music-lp {
-    bottom: calc(var(--sab) + 4.75rem);
+    bottom: calc(var(--sab) + 4.75rem + var(--vv-bottom, 0px));
     right: calc(var(--sar) + 0.875rem);
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (min-width: 640px) {
     .bottom-safe-music-lp {
-      bottom: calc(var(--sab) + 6.0rem);
+      bottom: calc(var(--sab) + 6.0rem + var(--vv-bottom, 0px));
       right: calc(var(--sar) + 1.5rem);
     }
   }
 
   .bottom-safe-music-menu {
-    bottom: calc(var(--sab) + 5.5rem);
+    bottom: calc(var(--sab) + 5.5rem + var(--vv-bottom, 0px));
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
@@ -541,13 +562,13 @@
 
   @media (min-width: 640px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 6.5rem);
+      bottom: calc(var(--sab) + 6.5rem + var(--vv-bottom, 0px));
     }
   }
 
   @media (max-height: 720px) {
     .bottom-safe-music-menu {
-      bottom: calc(var(--sab) + 5.0rem);
+      bottom: calc(var(--sab) + 5.0rem + var(--vv-bottom, 0px));
     }
   }
 
@@ -646,7 +667,7 @@
 
   .prism-app-shell {
     width: 100%;
-    max-width: 100vw;
+    max-width: 100%;
     /* overflow-x:clip is safe here — doesn't create scroll container */
     overflow-x: clip;
     @supports not (overflow: clip) {
@@ -1055,6 +1076,25 @@ html.pwa-standalone * {
   [class*="backdrop-blur"] {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Home-screen web app (standalone + black-translucent) covers the screen.
+   100dvh can stay short after unlock; the large viewport matches the web view
+   until JS writes the measured height. Safe-area insets stay on the content. */
+@media (display-mode: standalone) {
+  :root {
+    --vvh: 100vh;
+  }
+}
+@supports (height: 100lvh) {
+  @media (display-mode: standalone) {
+    :root {
+      --vvh: 100lvh;
+    }
+  }
+  html.pwa-standalone {
+    --vvh: 100lvh;
   }
 }
 
@@ -2868,7 +2908,7 @@ html[data-device="iphone-duo"] .duo-dapp-workspace > div {
   }
 
   .bottom-safe-fab-center {
-    bottom: calc(var(--sab, 0px) + 1.15rem) !important;
+    bottom: calc(var(--sab, 0px) + 1.15rem + var(--vv-bottom, 0px)) !important;
     width: 68px !important;
     height: 68px !important;
   }
@@ -3043,6 +3083,44 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
+/* Phone portrait keeps 720px. Tablet portrait keeps 800px.
+   Landscape must not force a panel taller than a short iPad (the old sm:min-h-[800px] did). */
+.tarot-virtual-stage {
+  min-height: 720px;
+}
+@media (min-width: 640px) and (orientation: portrait) {
+  .tarot-virtual-stage {
+    min-height: 800px;
+  }
+}
+@media (orientation: landscape) {
+  .tarot-virtual-stage {
+    min-height: 0;
+  }
+}
+
+/* Full-screen layers use the measured visual box, not inset:0 of a stale layout viewport. */
+.prism-app-shell,
+.prism-aura-bg,
+.tarot-spread-stage-root {
+  top: var(--vv-top, 0px);
+  left: calc(-1 * var(--vv-bleed-left, 0px));
+  right: auto;
+  bottom: auto;
+  width: max(100%, var(--vvw, 100%));
+  max-width: none;
+  height: var(--vvh, 100dvh);
+  min-height: 0;
+  max-height: var(--vvh, 100dvh);
+}
+
+.sites-pinned-sidebar {
+  top: var(--vv-top, 0px);
+  bottom: auto;
+  height: var(--vvh, 100dvh);
+  max-height: var(--vvh, 100dvh);
+}
+
 /* Main content occupies full 100% canvas with zero extra bottom margin. */
 :root { --sites-sidebar-width: 0px; }
 .sites-pinned-main {
@@ -3089,7 +3167,7 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   transform: translateX(-50%);
   right: auto;
   max-width: calc(100vw - 2rem);
-  bottom: calc(var(--sab, 0px) + 5rem);
+  bottom: calc(var(--sab, 0px) + 5rem + var(--vv-bottom, 0px));
 }
 @media (min-width: 768px) {
   .pwa-install-banner {
