@@ -1076,6 +1076,25 @@ html.pwa-standalone * {
   }
 }
 
+/* Home-screen web app (standalone + black-translucent) covers the screen.
+   100dvh can stay short after unlock; the large viewport matches the web view
+   until JS writes the measured height. Safe-area insets stay on the content. */
+@media (display-mode: standalone) {
+  :root {
+    --vvh: 100vh;
+  }
+}
+@supports (height: 100lvh) {
+  @media (display-mode: standalone) {
+    :root {
+      --vvh: 100lvh;
+    }
+  }
+  html.pwa-standalone {
+    --vvh: 100lvh;
+  }
+}
+
 /* iPhone XS / legacy mobile: A12-class device performance budget */
 html.perf-legacy {
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.4.618",
+    "builtAt": "2026-10-30T20:22:15.000Z",
+    "summary": "아이패드 홈 화면 앱이 다시 열릴 때 화면 전체를 채움",
+    "items": [
+      "홈 화면(standalone)에서는 잠금·앱 전환 뒤 innerHeight와 visualViewport가 같이 줄어듦",
+      "그 경우 화면 높이로 셸을 채우고, 안전 영역은 내용 여백으로만 둠",
+      "상태 표시줄은 반투명(black-translucent), 매니페스트는 standalone, viewport-fit=cover를 유지"
+    ]
+  },
+  {
     "version": "1.4.617",
     "builtAt": "2026-10-30T20:18:30.000Z",
     "summary": "아이패드에서 다시 돌아오면 화면 높이를 다시 맞춤",

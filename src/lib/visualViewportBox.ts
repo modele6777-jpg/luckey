@@ -17,6 +17,9 @@ export const VIEWPORT_SYNC_RETRY_MS = [80, 280, 700];
 /** iPad reports a stale short visual viewport for a while after unlock or app switch. */
 export const VIEWPORT_RESUME_RETRY_MS = [50, 160, 400, 800, 1400, 2200];
 export const VIEWPORT_RESUME_FILL_MS = 2600;
+/** Home-screen web app: inner and visual shrink by the same amount, short of the screen. */
+export const STANDALONE_EQUAL_SHRINK_PX = 24;
+export const STANDALONE_MAX_SHRINK_RATIO = 0.35;
 
 export type ViewportResolveOptions = {
   /**
@@ -29,6 +32,14 @@ export type ViewportResolveOptions = {
 export type ViewportSnapshot = {
   innerWidth: number;
   innerHeight: number;
+  /**
+   * iPad home-screen web app (standalone + black-translucent). After resume,
+   * innerHeight and visualViewport.height shrink together while the web view
+   * still covers the screen.
+   */
+  iosStandalone?: boolean;
+  screenWidth?: number;
+  screenHeight?: number;
   visual?: {
     width: number;
     height: number;
@@ -101,6 +112,9 @@ export function resolveViewportBox(
     };
   }
 
+  const standaloneFill = standaloneResumeBox(snapshot);
+  if (standaloneFill) return standaloneFill;
+
   const tablet = Math.min(layoutWidth, layoutHeight) >= TABLET_SHORT_SIDE_PX;
   if (
     options.fillLayoutGap &&
@@ -162,7 +176,105 @@ export function viewportNeedsResumeFill(
   ) {
     return true;
   }
+  if (standaloneResumeBox(snapshot)) return true;
   return false;
+}
+
+export function orientedScreenSize(
+  screenWidth: number,
+  screenHeight: number,
+  viewportWidth: number,
+  viewportHeight: number,
+): { width: number; height: number } {
+  const screenLandscape = screenWidth > screenHeight;
+  const viewLandscape = viewportWidth > viewportHeight;
+  if (screenLandscape === viewLandscape) return { width: screenWidth, height: screenHeight };
+  return { width: screenHeight, height: screenWidth };
+}
+
+/**
+ * Standalone iPad: a resumed web view often reports innerHeight and
+ * visualViewport.height equally short of screen.height (status bar / home
+ * indicator subtracted twice, or a stale frame). Fill the screen. A keyboard
+ * drops the visual height far below the layout height, and a very large
+ * equal shrink stays untouched. Offsets are cleared because a non-zero
+ * visualViewport.offsetTop after resume is a phantom scroll.
+ */
+export function standaloneResumeBox(snapshot: ViewportSnapshot): ViewportBox | null {
+  if (!snapshot.iosStandalone) return null;
+  const screenWidth = positive(snapshot.screenWidth);
+  const screenHeight = positive(snapshot.screenHeight);
+  const innerWidth = positive(snapshot.innerWidth);
+  const innerHeight = positive(snapshot.innerHeight);
+  const visualWidth = positive(snapshot.visual?.width);
+  const visualHeight = positive(snapshot.visual?.height);
+  const layoutWidth = innerWidth ?? visualWidth;
+  const layoutHeight = innerHeight ?? visualHeight;
+  if (screenWidth == null || screenHeight == null || layoutWidth == null || layoutHeight == null) return null;
+  if (Math.min(layoutWidth, layoutHeight) < TABLET_SHORT_SIDE_PX) return null;
+  if (visualHeight != null && Math.abs(layoutHeight - visualHeight) > STANDALONE_EQUAL_SHRINK_PX) return null;
+
+  const screen = orientedScreenSize(screenWidth, screenHeight, layoutWidth, layoutHeight);
+  const widthGap = Math.min(
+    Math.abs(screen.width - layoutWidth),
+    visualWidth == null ? Number.POSITIVE_INFINITY : Math.abs(screen.width - visualWidth),
+  );
+  if (widthGap >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) return null;
+
+  const current = Math.max(layoutHeight, visualHeight ?? layoutHeight);
+  const shortfall = screen.height - current;
+  if (shortfall <= 1) return null;
+  if (shortfall / screen.height > STANDALONE_MAX_SHRINK_RATIO) return null;
+
+  return {
+    width: roundPx(layoutWidth),
+    height: roundPx(screen.height),
+    offsetTop: 0,
+    offsetLeft: 0,
+    bottomGap: 0,
+  };
+}
+
+export function isIosStandaloneWindow(win: Window): boolean {
+  const nav = win.navigator as Navigator & { standalone?: boolean; userAgent?: string; platform?: string; maxTouchPoints?: number };
+  const ua = nav.userAgent || '';
+  const ios = /iPad|iPhone|iPod/.test(ua) || (nav.platform === 'MacIntel' && (nav.maxTouchPoints || 0) > 1);
+  if (!ios) return false;
+  return nav.standalone === true
+    || win.matchMedia('(display-mode: standalone)').matches
+    || win.matchMedia('(display-mode: fullscreen)').matches;
+}
+
+export function readSafeAreaInsets(doc: Document): { top: number; right: number; bottom: number; left: number } {
+  const probe = doc.createElement('div');
+  probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+  (doc.body ?? doc.documentElement).appendChild(probe);
+  const style = doc.defaultView?.getComputedStyle(probe);
+  const read = (value: string | undefined) => {
+    const parsed = parseFloat(value || '0');
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  };
+  const insets = {
+    top: read(style?.paddingTop),
+    right: read(style?.paddingRight),
+    bottom: read(style?.paddingBottom),
+    left: read(style?.paddingLeft),
+  };
+  probe.remove();
+  return insets;
+}
+
+function applySafeAreaVars(doc: Document): void {
+  const insets = readSafeAreaInsets(doc);
+  const root = doc.documentElement;
+  const set = (name: string, value: number) => {
+    if (value > 0) root.style.setProperty(name, `${roundPx(value)}px`);
+    else root.style.removeProperty(name);
+  };
+  set('--sat', insets.top);
+  set('--sab', insets.bottom);
+  set('--sal', insets.left);
+  set('--sar', insets.right);
 }
 
 export function readViewportSnapshot(win: Window): ViewportSnapshot {
@@ -170,6 +282,9 @@ export function readViewportSnapshot(win: Window): ViewportSnapshot {
   return {
     innerWidth: win.innerWidth,
     innerHeight: win.innerHeight,
+    iosStandalone: isIosStandaloneWindow(win),
+    screenWidth: win.screen?.width,
+    screenHeight: win.screen?.height,
     visual: visual
       ? {
           width: visual.width,
@@ -234,6 +349,7 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   const box = resolveViewportBox(readViewportSnapshot(win), { fillLayoutGap: fillArmed() });
   if (!box) return null;
   applyVisualViewportBox(box, document.documentElement);
+  applySafeAreaVars(document);
   rememberStable(box);
   return box;
 }
@@ -269,6 +385,7 @@ export function bindVisualViewportLifecycle(win: Window = window): void {
     sawHidden = false;
     if (!force && !fromBackground && !needsFill) return;
     if (needsFill) armViewportResumeFill();
+    if (isIosStandaloneWindow(win)) win.scrollTo(0, 0);
     scheduleVisualViewportSync(win);
   };
 

@@ -100,16 +100,78 @@ const rotatedResume = {
 };
 assert.equal(viewportNeedsResumeFill(rotatedResume, true, null), false);
 
+const standaloneShrink = {
+  innerWidth: 1180,
+  innerHeight: 740,
+  iosStandalone: true,
+  screenWidth: 1180,
+  screenHeight: 820,
+  visual: { width: 1180, height: 740, offsetTop: 24, offsetLeft: 0 },
+};
+assert.deepEqual(resolveViewportBox(standaloneShrink), {
+  width: 1180,
+  height: 820,
+  offsetTop: 0,
+  offsetLeft: 0,
+  bottomGap: 0,
+});
+assert.equal(viewportNeedsResumeFill(standaloneShrink, true, null), true);
+
+const standalonePortraitScreen = {
+  innerWidth: 1180,
+  innerHeight: 740,
+  iosStandalone: true,
+  screenWidth: 820,
+  screenHeight: 1180,
+  visual: { width: 1180, height: 740, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(standalonePortraitScreen).height, 820);
+
+const safariTab = { ...standaloneShrink, iosStandalone: false };
+assert.equal(resolveViewportBox(safariTab).height, 740);
+assert.equal(resolveViewportBox(safariTab).offsetTop, 24);
+
+const phoneStandalone = {
+  innerWidth: 390,
+  innerHeight: 800,
+  iosStandalone: true,
+  screenWidth: 390,
+  screenHeight: 844,
+  visual: { width: 390, height: 800, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(phoneStandalone).height, 800);
+
+const standaloneKeyboardSized = {
+  innerWidth: 1180,
+  innerHeight: 400,
+  iosStandalone: true,
+  screenWidth: 1180,
+  screenHeight: 820,
+  visual: { width: 1180, height: 400, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(standaloneKeyboardSized).height, 400);
+
 const lifecycle = readFileSync('src/lib/visualViewportBox.ts', 'utf8');
 assert.match(lifecycle, /visibilitychange/);
 assert.match(lifecycle, /pageshow/);
 assert.match(lifecycle, /addEventListener\('focus'/);
 assert.match(lifecycle, /addEventListener\('resume'/);
 assert.match(lifecycle, /visibilityState === 'hidden'/);
+assert.match(lifecycle, /scrollTo\(0, 0\)/);
+assert.match(lifecycle, /iosStandalone/);
+
+const html = readFileSync('index.html', 'utf8');
+assert.match(html, /viewport-fit=cover/);
+assert.match(html, /name="mobile-web-app-capable" content="yes"/);
+assert.match(html, /name="apple-mobile-web-app-status-bar-style" content="black-translucent"/);
+const manifest = readFileSync('public/manifest.json', 'utf8');
+assert.match(manifest, /"display": "standalone"/);
 
 const css = readFileSync('src/index.css', 'utf8');
 assert.equal(css.includes('-webkit-fill-available'), false);
 assert.match(css, /--vvh:\s*100dvh/);
+assert.match(css, /display-mode:\s*standalone/);
+assert.match(css, /--vvh:\s*100lvh/);
 assert.match(css, /\.tarot-virtual-stage[\s\S]*min-height:\s*720px/);
 assert.match(css, /orientation:\s*portrait\)[\s\S]*min-height:\s*800px/);
 assert.match(css, /orientation:\s*landscape\)[\s\S]*\.tarot-virtual-stage[\s\S]*min-height:\s*0/);
