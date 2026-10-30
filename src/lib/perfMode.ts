@@ -1,3 +1,5 @@
+import { scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
+
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
 let cachedProfile: PerfProfile | null = null;
@@ -332,8 +334,7 @@ function applyDuoAndViewportFlags(): void {
     }
   }
 
-  const vvh = window.visualViewport?.height || window.innerHeight;
-  document.documentElement.style.setProperty('--visual-vh', `${vvh}px`);
+  syncVisualViewportBox(window);
 }
 
 export function initPerfMode(): PerfProfile {
@@ -544,9 +545,19 @@ export function initNarrowPhoneClass(): void {
 
   if (!narrowPhoneListenerAttached) {
     narrowPhoneListenerAttached = true;
-    window.addEventListener('resize', apply, { passive: true });
-    window.addEventListener('orientationchange', apply, { passive: true });
-    window.visualViewport?.addEventListener('resize', apply, { passive: true });
+    const applySoon = () => {
+      apply();
+      // orientationchange and toolbar show/hide report a stale height for a few frames.
+      scheduleVisualViewportSync(window);
+    };
+    window.addEventListener('resize', applySoon, { passive: true });
+    window.addEventListener('orientationchange', applySoon, { passive: true });
+    window.addEventListener('pageshow', applySoon);
+    window.visualViewport?.addEventListener('resize', applySoon, { passive: true });
+    window.visualViewport?.addEventListener('scroll', () => {
+      syncVisualViewportBox(window);
+    }, { passive: true });
+    scheduleVisualViewportSync(window);
   }
 }
 

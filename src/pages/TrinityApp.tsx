@@ -3284,7 +3284,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 animate={{ opacity: 1, y: 0 }}
                 className="prism-page-content w-full mx-auto self-center space-y-8 pb-8 sm:pb-12"
               >
-                <div className={`glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
+                <div className={`glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "tarot-virtual-stage" : ""}`}>
                   {/* Subtle starlight gold specular glow */}
                   <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-yellow-500/10 blur-[100px] pointer-events-none" />
                   <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none" />
