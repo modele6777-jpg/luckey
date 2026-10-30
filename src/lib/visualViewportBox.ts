@@ -1,12 +1,7 @@
 /**
- * The app shell used to combine `position: fixed; inset: 0` with
- * `height: 100%` and `min-height: -webkit-fill-available`. On iPad those
- * three sizes disagree after rotation and when the browser chrome shows or
- * hides: the used height is then shorter than the visible screen (gap) or
- * taller (bottom clipped). Pin one box to the visual viewport instead.
- *
- * A large drop in height with a stable width is the on-screen keyboard.
- * Keep the layout viewport in that case so phone portrait does not squash.
+ * Screen height stays on the layout viewport (100% / fill-available).
+ * This module only widens the shell for the foldable side status column.
+ * A short visual viewport must not resize the page.
  */
 
 export const VIEWPORT_KEYBOARD_MIN_DELTA_PX = 160;
@@ -75,7 +70,7 @@ function roundPx(value: number): number {
 
 export function resolveViewportBox(
   snapshot: ViewportSnapshot,
-  options: ViewportResolveOptions = {},
+  _options: ViewportResolveOptions = {},
 ): ViewportBox | null {
   const innerWidth = positive(snapshot.innerWidth);
   const innerHeight = positive(snapshot.innerHeight);
@@ -96,62 +91,12 @@ export function resolveViewportBox(
 
   const layoutWidth = innerWidth ?? visualWidth;
   const layoutHeight = innerHeight ?? visualHeight;
-  const heightDelta = layoutHeight - visualHeight;
-  const widthDelta = Math.abs(visualWidth - layoutWidth);
-  const keyboard =
-    widthDelta < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX &&
-    heightDelta > VIEWPORT_KEYBOARD_MIN_DELTA_PX &&
-    layoutHeight > 0 &&
-    heightDelta / layoutHeight > VIEWPORT_KEYBOARD_MIN_RATIO;
-
-  if (keyboard) {
-    return coverScreenEdges(snapshot, {
-      width: roundPx(layoutWidth),
-      height: roundPx(layoutHeight),
-      offsetTop: 0,
-      offsetLeft: 0,
-      bottomGap: 0,
-    });
-  }
-
-  const standaloneFill = standaloneResumeBox(snapshot);
-  if (standaloneFill) return coverScreenEdges(snapshot, standaloneFill);
-
-  if (layoutOutgrewVisual(snapshot)) {
-    return coverScreenEdges(snapshot, {
-      width: roundPx(layoutWidth),
-      height: roundPx(layoutHeight),
-      offsetTop: 0,
-      offsetLeft: 0,
-      bottomGap: 0,
-    });
-  }
-
-  const tablet = Math.min(layoutWidth, layoutHeight) >= TABLET_SHORT_SIDE_PX;
-  if (
-    options.fillLayoutGap &&
-    tablet &&
-    !keyboard &&
-    widthDelta < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX &&
-    visualHeight + 1 < layoutHeight
-  ) {
-    return coverScreenEdges(snapshot, {
-      width: roundPx(layoutWidth),
-      height: roundPx(layoutHeight),
-      offsetTop: 0,
-      offsetLeft: 0,
-      bottomGap: 0,
-    });
-  }
-
-  const offsetTop = nonNegative(visual?.offsetTop);
-  const offsetLeft = nonNegative(visual?.offsetLeft);
   return coverScreenEdges(snapshot, {
-    width: roundPx(visualWidth),
-    height: roundPx(visualHeight),
-    offsetTop: roundPx(offsetTop),
-    offsetLeft: roundPx(offsetLeft),
-    bottomGap: roundPx(Math.max(0, layoutHeight - offsetTop - visualHeight)),
+    width: roundPx(layoutWidth),
+    height: roundPx(layoutHeight),
+    offsetTop: 0,
+    offsetLeft: 0,
+    bottomGap: 0,
   });
 }
 
