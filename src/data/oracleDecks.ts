@@ -62,7 +62,7 @@ export const ORACLE_DECKS = {
   healing: { name: '라이더–웨이트–스미스 1909', edition: 'Roses & Lilies 원본 · 78장 풀덱', cards: makeDeck('healing'), reason: '감정과 관계를 표현한 장면을 통해 마음을 돌아보는 힐링', source: 'https://commons.wikimedia.org/wiki/Category:Rider-Waite_tarot_deck_(Roses_%26_Lilies)' },
   miracle: { name: '자크 비에빌', edition: '약 1650년 · 78장 풀덱', cards: makeDeck('miracle_vieville'), reason: '삶의 다양한 장면과 고전 상징을 통해 내면을 성찰하고 평화로 관점을 바꾸는 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Vi%C3%A9ville_tarot' },
   growth: { name: '장 도달 마르세유', edition: '약 1701년 · 78장 풀덱', cards: makeDeck('growth'), reason: '메이저의 선택·의지와 네 수트의 현실 과제를 오늘의 실행으로 연결하는 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Tarot_de_Marseille_-_Jean_Dodal' },
-  money: { name: '그랑 에테이야 I', edition: '그리모 판본 · 78장 풀덱', cards: makeDeck('money_grimaud'), reason: '고전 점술의 78가지 상징을 풍요의 관점과 현실적인 금전 습관으로 읽는 머니룰', source: 'https://commons.wikimedia.org/wiki/Category:Jeu_de_tarot_divinatoire_dit_%22Grand_Etteilla%22_ou_%22tarot_%C3%A9gyptien%22_-_jeu_de_cartes,_estampe_-_btv1b10543181f' },
+  money: { name: '그랑 에테이야 I', edition: '그리모 원화를 그림 카드로 재단 · 78장', cards: makeDeck('money_grimaud'), reason: '고전 점술의 78가지 상징을 풍요의 관점과 현실적인 금전 습관으로 읽는 머니룰', source: 'https://commons.wikimedia.org/wiki/Category:Jeu_de_tarot_divinatoire_dit_%22Grand_Etteilla%22_ou_%22tarot_%C3%A9gyptien%22_-_jeu_de_cartes,_estampe_-_btv1b10543181f' },
 };
 
 export const LEGACY_ORACLE_DECKS = {
