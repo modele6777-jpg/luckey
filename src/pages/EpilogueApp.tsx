@@ -1,6 +1,5 @@
 const DivinationLab = React.lazy(() => import('@/components/trinity/DivinationLab'));
 import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
-import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
@@ -681,8 +680,6 @@ export default function EpilogueApp() {
   const section = SECTIONS[currentSection];
   const SectionIcon = section.icon;
 
-  const [workspaceElement, setWorkspaceElement] = useState<HTMLDivElement | null>(null);
-  const isWideWorkspace = useWideWorkspace(workspaceElement);
   const renderSection = (sectionIndex = currentSection) => {
     switch (sectionIndex) {
       case 0: { // 기본 정보
@@ -1180,9 +1177,9 @@ export default function EpilogueApp() {
                 </div>
               </div>
 
-              <div className="relative z-10"><DuoWorkspace ref={setWorkspaceElement} className="duo-profile-workspace">
-  {SECTIONS.map((item, index) => (isWideWorkspace || index === currentSection) && (
-    <section key={item.id} className={`duo-profile-section ${item.id === 'basic' || item.id === 'card' || item.id === 'divination' ? 'duo-workspace-full' : ''} ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label} style={item.id === 'divination' ? {padding:0,border:0} : undefined}>
+              <div className="relative z-10"><DuoWorkspace className="duo-profile-workspace">
+  {SECTIONS.map((item, index) => index === currentSection && (
+    <section key={item.id} className={`duo-profile-section duo-workspace-full ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label} style={item.id === 'divination' ? {padding:0,border:0} : undefined}>
       {item.id !== 'divination' && <h3 className="text-sm font-bold mb-4">{item.label}</h3>}{renderSection(index)}
     </section>
   ))}
