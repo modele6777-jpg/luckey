@@ -6,9 +6,12 @@ import { transform, build } from 'esbuild';
 const audio = fs.readFileSync('src/lib/audio.ts', 'utf8');
 const launch = audio.slice(audio.indexOf('function launchWebAudioTTSSource'), audio.indexOf('/** Position in the decoded buffer'));
 const compiled = await transform(launch, {loader: 'ts'});
+const recoveryBundle = await build({entryPoints:['src/lib/audioRecovery.ts'],bundle:true,write:false,platform:'node',format:'esm'});
+const { recoverSpeechContext } = await import('data:text/javascript;base64,' + Buffer.from(recoveryBundle.outputFiles[0].text).toString('base64'));
 function harness() {
+  const timers = [];
   const nodes = [], clock = {currentTime: 0, state: 'running', resume: async () => {}, createBufferSource: () => { const n = {playbackRate: {}, connect() {}, start(_when, offset) {this.offset = offset;}}; nodes.push(n); return n; }};
-  const state = {clock, nodes, resolved: 0, rejected: 0, ttsActiveBuffer: {duration: 10}, ttsPlaybackId: 1, ttsActiveSource: null, ttsPausedOffsetSec: 0, ttsActiveRate: 1, ttsStartedAtCtxTime: 0, ttsStoppingForPause: false, ttsUserExplicitlyPaused: false, ttsEarlyEndRetries: 0, ttsShouldBePlaying: true, ttsSafetyTimer: null, activeTTSSources: new Set(), getSharedAudioContext: () => clock, getTTSVoiceBus: () => ({}), clearTTSSafetyTimer() {}, stopActiveWebAudioTTSSource() {state.ttsActiveSource = null;}, stopAndDisconnectTTSSourceNode() {}, stopTTSKeepAlive() {}, releaseScreenWakeLock: async () => {}, setTimeout: () => 1};
+  const state = {clock, nodes, timers, activeClock: clock, recovered: 0, speechContextNeedsReset: false, ttsContextRecoveryAttempts: 0, recoverSpeechContext, resolved: 0, rejected: 0, ttsActiveBuffer: {duration: 10}, ttsPlaybackId: 1, ttsActiveSource: null, ttsPausedOffsetSec: 0, ttsActiveRate: 1, ttsStartedAtCtxTime: 0, ttsStoppingForPause: false, ttsUserExplicitlyPaused: false, ttsEarlyEndRetries: 0, ttsShouldBePlaying: true, ttsSafetyTimer: null, activeTTSSources: new Set(), getSharedAudioContext: () => state.activeClock, replaceSpeechAudioContext() {state.recovered++; state.activeClock={...clock,currentTime:0};return state.activeClock;}, getTTSVoiceBus: () => ({}), clearTTSSafetyTimer() {}, stopActiveWebAudioTTSSource() {state.ttsActiveSource = null;}, stopAndDisconnectTTSSourceNode() {}, stopTTSKeepAlive() {}, releaseScreenWakeLock: async () => {}, setTimeout: fn => {timers.push(fn);return timers.length;}};
   state.ttsActiveFinishResolver = () => state.resolved++;
   state.ttsActiveReject = () => state.rejected++;
   vm.createContext(state);vm.runInContext(compiled.code, state);
@@ -25,11 +28,20 @@ console.log('Audio lifecycle: recover remaining audio, ignore stale/paused event
 const entry = audio.slice(audio.indexOf('export async function playTTSAudio'), audio.indexOf('let ttsLifecycleInitialized'));
 const entryJS = await transform(entry.replace('export async function','async function'), {loader: 'ts'});
 const ctx = {state:'suspended', async resume() {this.state='running'; race.ttsPlaybackId++;}};
-const race = {window:{}, ttsPlaybackId:1, configureSpeechAudioSession() {}, getSharedAudioContext:()=>ctx, setTimeout, clearTimeout};
+const race = {window:{}, ttsPlaybackId:1, speechContextNeedsReset:false, recoverSpeechContext, replaceSpeechAudioContext:()=>{throw Error("must not replace cancelled context")}, configureSpeechAudioSession() {}, getSharedAudioContext:()=>ctx, setTimeout, clearTimeout};
 vm.createContext(race);vm.runInContext(entryJS.code, race);
 await race.playTTSAudio('unused');
 assert.equal(race.ttsPlaybackId, 2);
 console.log('A stop during asynchronous context resume cancels the pending playback.');
+h = harness();
+for(let i=0;i<3;i++) h.timers.shift()();
+await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(h.recovered,1); assert.equal(h.nodes.length,2); assert.equal(h.resolved,0);
+// A second frozen clock fails visibly instead of looping or requiring restart.
+for(let i=0;i<3;i++) h.timers.shift()();
+assert.equal(h.rejected,1);assert.equal(h.speechContextNeedsReset,true);
+console.log('Frozen running audio clock: one automatic context rebuild, then bounded failure.');
+
 
 // Bundle the actual readers with audio/network stand-ins; exercise long messages,
 // request retries, failure propagation, and explicit cancellation without API costs.
@@ -47,3 +59,16 @@ const before = plays;failures=1;await tts.playTTS('일시 연결 실패 재시�
 failures=2;const count=plays;await tts.playQAndATTS({text:''},{text:'실패를 조용히 넘기지 않습니다. 다음 문장은 읽지 않아야 합니다.'});assert.equal(plays,count);assert(events.some(e=>e.type==='prism:tts-error'));
 failures=0;cancelOnPlay=true;const start=plays;await tts.playConversation([{role:'assistant',content:long}]);assert.equal(plays,start+1);
 console.log('Readers: complete long text, bounded chunks, transient retry, visible failure, explicit stop.');
+
+cancelOnPlay=false;
+const realFetch=globalThis.fetch;
+globalThis.fetch=()=>new Promise(()=>{});
+const hung=tts.playTTS('이 요청은 브라우저에서 영원히 멈춥니다','Aoede',true);
+await new Promise(resolve=>setTimeout(resolve,0));
+tts.stopTTS();
+await hung;
+globalThis.fetch=realFetch;
+const next=plays;
+await tts.playTTS('재시작 없이 다음 음성을 읽습니다','Aoede',true);
+assert.equal(plays,next+1);
+console.log('Stopped hung fetch releases request queue; next playback works without restart.');

@@ -103,6 +103,7 @@ class TTSAudioRequestError extends Error {
   constructor(message: string, public status = 0) { super(message); }
 }
 let ttsRequestQueue: Promise<unknown> = Promise.resolve();
+let activeTTSRequest: { controller: AbortController; cancel: () => void; key: string } | null = null;
 let ttsRateLimitUntil = 0;
 function requestAIAudio(text: string, emotion?: string, voice = 'Aoede'): Promise<TTSAudioData> {
   const key = getTTSCacheKey(text, voice);
@@ -111,14 +112,25 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede'): Promis
   const pending = ttsRequestQueue.catch(() => {}).then(async () => {
     if (Date.now() < ttsRateLimitUntil) throw new TTSAudioRequestError(`AI 음성 요청이 일시적으로 제한됐습니다. 약 ${Math.ceil((ttsRateLimitUntil - Date.now()) / 1000)}초 뒤 다시 눌러 주세요.`, 429);
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 65000);
+    let cancelRequest: () => void = () => {};
+    const deadline = new Promise<never>((_, reject) => {
+      cancelRequest = () => { controller.abort(); reject(new Error('음성 요청이 취소되었습니다.')); };
+    });
+    activeTTSRequest = { controller, cancel: cancelRequest, key };
+    let timeout: ReturnType<typeof setTimeout>;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => { controller.abort(); reject(new TTSAudioRequestError('음성 생성 응답이 지연되고 있습니다. 다시 눌러 주세요.', 504)); }, 65000);
+    });
     try {
+      return await Promise.race([deadline, timeoutPromise, (async () => {
       const response = await fetch('/api/ai/tts', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: normalizeTextForSpeech(text), voice, emotion }), signal: controller.signal,
       });
+      if (controller.signal.aborted) throw new Error('음성 요청이 취소되었습니다.');
       if (!response.ok) {
         const failure = await response.json().catch(() => null);
+        if (controller.signal.aborted) throw new Error('음성 요청이 취소되었습니다.');
         if (response.status === 429) {
           if (failure?.code === 'MEDIA_QUOTA_EXHAUSTED') {
             throw new TTSAudioRequestError('AI 음성 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정 확인이 필요합니다.', 429);
@@ -134,7 +146,11 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede'): Promis
       const data = await response.json();
       if (!data?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);
       return { audioContent: data.audioContent, encoding: data.encoding === 'pcm' ? 'pcm' as const : data.encoding === 'wav' ? 'wav' as const : 'mp3' as const, sampleRate: data.sampleRate ?? 24000 };
-    } finally { clearTimeout(timer); }
+      })()]);
+    } finally {
+      clearTimeout(timeout!);
+      if (activeTTSRequest?.controller === controller) activeTTSRequest = null;
+    }
   });
   ttsRequestQueue = pending.catch(() => {});
   ttsCache.set(key, pending);
@@ -178,6 +194,13 @@ export const resumeTTS = (): void => {
 };
 
 export const stopTTS = () => {
+  const request = activeTTSRequest;
+  activeTTSRequest = null;
+  if (request) {
+    ttsCache.delete(request.key);
+    request.cancel();
+    ttsRequestQueue = Promise.resolve();
+  }
   isPlayingSequence = false;
   updateTTSState({
     isSpeaking: false,
@@ -350,7 +373,7 @@ export const playTTS = async (
           );
         } catch (err) {
           if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
-          if ((err as any)?.code === 'TTS_INTERRUPTED') throw err;
+          if (['TTS_INTERRUPTED', 'TTS_CONTEXT_STALLED', 'TTS_DECODE_TIMEOUT'].includes((err as any)?.code)) throw err;
           console.warn('[TTS] playTTSAudio failed, applying WebAudio direct buffer fallback:', err);
           updateTTSState({ isLoading: false, isSpeaking: true, currentSentence: speakingSentences[0] || cleanText, activeSentence: speakingSentences[0] || cleanText });
           if (encoding === 'pcm') {

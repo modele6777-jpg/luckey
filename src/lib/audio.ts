@@ -1,6 +1,8 @@
 import { acquireScreenWakeLock, releaseScreenWakeLock } from './wakeLock';
+import { recoverSpeechContext } from './audioRecovery';
 
 let sharedAudioCtx: AudioContext | null = null;
+let speechContextNeedsReset = false;
 let masterBusInput: GainNode | null = null;
 let masterBusLimiter: DynamicsCompressorNode | null = null;
 let ambientBusInput: GainNode | null = null;
@@ -47,7 +49,7 @@ export function getSharedAudioContext(): AudioContext {
     const ctxInstance = sharedAudioCtx;
     ctxInstance.addEventListener('statechange', () => {
       const st = ctxInstance.state as string;
-      if ((st === 'suspended' || st === 'interrupted') && ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
+      if (sharedAudioCtx === ctxInstance && (st === 'suspended' || st === 'interrupted') && ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
         ctxInstance.resume().catch(() => {});
         setTimeout(() => {
           if (
@@ -403,14 +405,22 @@ export async function safeDecodeAudioData(
 ): Promise<AudioBuffer> {
   return new Promise((resolve, reject) => {
     let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      speechContextNeedsReset = true;
+      reject(Object.assign(new Error('음성 디코딩이 중단되었습니다. 재생 버튼을 다시 눌러 주세요.'), { code: 'TTS_DECODE_TIMEOUT' }));
+    }, 8000);
     const onSuccess = (decoded: AudioBuffer) => {
       if (settled) return;
       settled = true;
+      clearTimeout(timer);
       resolve(decoded);
     };
     const onError = (err: any) => {
       if (settled) return;
       settled = true;
+      clearTimeout(timer);
       reject(err || new Error('decodeAudioData failed'));
     };
 
@@ -560,6 +570,7 @@ let ttsStoppingForPause = false;
 let ttsActiveFinishResolver: (() => void) | null = null;
 let ttsActiveReject: ((error: Error) => void) | null = null;
 let ttsEarlyEndRetries = 0;
+let ttsContextRecoveryAttempts = 0;
 let ttsSafetyTimer: ReturnType<typeof setTimeout> | null = null;
 
 function getTTSVoiceBus(ctx: AudioContext): GainNode {
@@ -650,11 +661,22 @@ export function getTTSAudioElement(): HTMLAudioElement {
 /**
  * Unlock Web Audio output from a user gesture.
  */
+function replaceSpeechAudioContext(context: AudioContext): AudioContext {
+  if (sharedAudioCtx === context) {
+    sharedAudioCtx = null;
+    // Do not await close(): broken WebKit contexts may never settle it either.
+    try { context.close().catch(() => {}); } catch { /* already closed */ }
+  }
+  speechContextNeedsReset = false;
+  return getSharedAudioContext();
+}
+
 export function unlockAudioPlayback(): void {
   if (typeof window === 'undefined') return;
   try {
     configureAmbientAudioSession();
-    const audioCtx = getSharedAudioContext();
+    let audioCtx = getSharedAudioContext();
+    if (speechContextNeedsReset) audioCtx = replaceSpeechAudioContext(audioCtx);
     const unlockSource = audioCtx.createBufferSource();
     unlockSource.buffer = audioCtx.createBuffer(1, Math.max(1, Math.ceil(audioCtx.sampleRate * 0.001)), audioCtx.sampleRate);
     unlockSource.connect(masterBusInput ?? audioCtx.destination);
@@ -767,6 +789,35 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
 
   source.onended = onSourceEnded;
 
+  let lastClock = sourceStartCtxTime;
+  let stalledChecks = 0;
+  const recoverStalledOutput = () => {
+    ended = true;
+    const elapsed = Math.max(0, audioCtx.currentTime - sourceStartCtxTime);
+    ttsPausedOffsetSec += elapsed * ttsActiveRate;
+    stopActiveWebAudioTTSSource(false);
+    const fail = () => {
+      if (activePlaybackId !== ttsPlaybackId) return;
+      speechContextNeedsReset = true;
+      const reject = ttsActiveReject;
+      ttsActiveReject = null;
+      ttsActiveFinishResolver = null;
+      ttsActiveBuffer = null;
+      ttsShouldBePlaying = false;
+      stopTTSKeepAlive();
+      releaseScreenWakeLock().catch(() => {});
+      reject?.(Object.assign(new Error('음성 출력을 복구하지 못했습니다. 재생 버튼을 다시 눌러 주세요.'), { code: 'TTS_CONTEXT_STALLED' }));
+    };
+    if (++ttsContextRecoveryAttempts > 1) { fail(); return; }
+    try {
+      const fresh = replaceSpeechAudioContext(audioCtx);
+      recoverSpeechContext(() => fresh, replaceSpeechAudioContext,
+        () => activePlaybackId === ttsPlaybackId).then(context => {
+          if (context && activePlaybackId === ttsPlaybackId && !ttsUserExplicitlyPaused) launchWebAudioTTSSource(activePlaybackId);
+        }).catch(fail);
+    } catch { fail(); }
+  };
+
   const scheduleSafetyCheck = (delayMs: number) => {
     clearTTSSafetyTimer();
     ttsSafetyTimer = setTimeout(() => {
@@ -776,18 +827,23 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
         return;
       }
 
-      // If the OS briefly suspended/interrupted the AudioContext during screen lock,
-      // resume it and wait for actual audio playback time instead of prematurely ending the chunk!
+      // A running-but-frozen clock or a permanently interrupted context used
+      // to wait forever. Recover once while visible; hidden tabs may be throttled.
+      const clock = audioCtx.currentTime;
+      const visible = typeof document === 'undefined' || document.visibilityState !== 'hidden';
+      stalledChecks = visible && clock <= lastClock + 0.001 ? stalledChecks + 1 : 0;
+      lastClock = clock;
+      if (stalledChecks >= 3) { recoverStalledOutput(); return; }
       if ((audioCtx.state as string) !== 'running') {
         audioCtx.resume().catch(() => {});
-        scheduleSafetyCheck(300);
+        scheduleSafetyCheck(1000);
         return;
       }
 
       const elapsedCtxSec = Math.max(0, audioCtx.currentTime - sourceStartCtxTime);
       const remainingCtxSec = expectedDurationSec - elapsedCtxSec;
       if (remainingCtxSec > 0.06) {
-        scheduleSafetyCheck(Math.ceil(remainingCtxSec * 1000) + 180);
+        scheduleSafetyCheck(Math.min(1000, Math.ceil(remainingCtxSec * 1000) + 180));
         return;
       }
 
@@ -796,7 +852,7 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
   };
 
   const initialDurationMs = Math.ceil(expectedDurationSec * 1000) + 250;
-  scheduleSafetyCheck(initialDurationMs);
+  scheduleSafetyCheck(Math.min(1000, initialDurationMs));
 
   source.start(0, ttsPausedOffsetSec);
 }
@@ -1213,15 +1269,18 @@ export async function playTTSAudio(
   const requestedPlaybackId = ttsPlaybackId;
   // Keep TTS in the non-exclusive ambient mix with external music.
   configureSpeechAudioSession();
-  const audioCtx = getSharedAudioContext();
-  if (['suspended', 'interrupted'].includes(audioCtx.state as string)) {
-    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
-    try {
-      await Promise.race([audioCtx.resume(), new Promise<void>((_, reject) => { resumeTimer = setTimeout(() => reject(new Error('음성 출력을 시작하지 못했습니다. 재생 버튼을 다시 눌러 주세요.')), 2500); })]);
-    } finally { if (resumeTimer) clearTimeout(resumeTimer); }
+  let audioCtx: AudioContext | null;
+  try {
+    audioCtx = await recoverSpeechContext(
+      () => { const context = getSharedAudioContext(); return speechContextNeedsReset ? replaceSpeechAudioContext(context) : context; },
+      replaceSpeechAudioContext,
+      () => requestedPlaybackId === ttsPlaybackId,
+    );
+  } catch (error) {
+    speechContextNeedsReset = true;
+    throw error;
   }
-  if (requestedPlaybackId !== ttsPlaybackId) return;
-  if (audioCtx.state !== 'running') throw new Error('음성 출력이 중단되었습니다. 재생 버튼과 기기의 미디어 음량을 확인해 주세요.');
+  if (!audioCtx || requestedPlaybackId !== ttsPlaybackId) return;
 
   // Stop any existing TTS source before starting the new buffer
   stopRawPCM();
@@ -1260,6 +1319,7 @@ export async function playTTSAudio(
   ttsPausedOffsetSec = 0;
   ttsActiveRate = 1.0;
   ttsEarlyEndRetries = 0;
+  ttsContextRecoveryAttempts = 0;
   startTTSKeepAlive();
 
   // Web Audio stays in the mixable ambient session instead of taking native media focus.
