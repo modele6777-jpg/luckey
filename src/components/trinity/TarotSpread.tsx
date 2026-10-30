@@ -972,7 +972,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               type="button"
               onClick={() => setShowCardBackModal(true)}
               className="p-2 sm:px-3.5 sm:py-2 min-h-[38px] sm:min-h-[44px] rounded-full border border-yellow-500/40 bg-zinc-900/95 text-xs font-bold text-yellow-300 hover:text-yellow-200 hover:border-yellow-400/70 active:scale-95 transition-transform flex items-center gap-1.5 cursor-pointer shadow-lg backdrop-blur-md"
-              title="Quin 스타일 20종 타로 카드 뒷면 변경"
+              title="타로 카드 뒷면 컬렉션 변경"
               aria-label="덱 뒷면 변경"
             >
               <Palette size={14} />

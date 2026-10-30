@@ -26,7 +26,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
   const [isTestCardFlipped, setIsTestCardFlipped] = useState(false);
 
   const categories = [
-    { key: 'all', label: '전체 (20)' },
+    { key: 'all', label: `전체 (${TAROT_CARD_BACKS.length})` },
     { key: 'sacred', label: '신성기하학' },
     { key: 'cosmic', label: '심우주 성운' },
     { key: 'mystic', label: '오컬트·미스틱' },
@@ -83,7 +83,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
                     타로 덱 뒷면(Card Back) 커스텀 컬렉션
                   </h3>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-400/30">
-                    Quin 스타일 20종
+                    일러스트 컬렉션 {TAROT_CARD_BACKS.length}종
                   </span>
                 </div>
                 <p className="text-xs text-white/60">
@@ -235,7 +235,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
               ))}
             </div>
 
-            {/* Decks Grid (20 Designs) */}
+            {/* Deck collection */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {filteredDecks.map((deck, idx) => {
                 const isCurrentActive = deck.id === activeId;

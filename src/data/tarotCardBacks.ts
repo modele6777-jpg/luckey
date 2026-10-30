@@ -8,6 +8,7 @@ export interface TarotCardBackTheme {
   description: string;
   accentColor: string;
   borderClass: string;
+  artworkUrl?: string;
 }
 
 export const TAROT_CARD_BACKS: TarotCardBackTheme[] = [
@@ -231,6 +232,14 @@ export const TAROT_CARD_BACKS: TarotCardBackTheme[] = [
     accentColor: '#fb7185',
     borderClass: 'border-rose-300/50',
   },
+  {"id": "lucky_clover", "nameKo": "럭키 클로버", "nameEn": "Lucky Clover", "category": "nature", "categoryLabelKo": "자연·치유", "badge": "행운의 정원", "description": "럭키 클로버 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#a7efb0", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/lucky_clover.svg"},
+  {"id": "sakura_silk", "nameKo": "벚꽃 실크", "nameEn": "Sakura Silk", "category": "nature", "categoryLabelKo": "자연·치유", "badge": "봄의 편지", "description": "벚꽃 실크 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#9c536d", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/sakura_silk.svg"},
+  {"id": "ocean_whale", "nameKo": "달빛 고래", "nameEn": "Moonlit Whale", "category": "cosmic", "categoryLabelKo": "심우주 성운", "badge": "푸른 항해", "description": "달빛 고래 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#9ce5e8", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/ocean_whale.svg"},
+  {"id": "lunar_moth", "nameKo": "달의 나비", "nameEn": "Lunar Moth", "category": "mystic", "categoryLabelKo": "오컬트·미스틱", "badge": "꿈의 날개", "description": "달의 나비 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#e1c7ed", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/lunar_moth.svg"},
+  {"id": "art_deco_sun", "nameKo": "아르데코 태양", "nameEn": "Art Deco Sun", "category": "classic", "categoryLabelKo": "정통 클래식", "badge": "황금의 시대", "description": "아르데코 태양 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#eac57e", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/art_deco_sun.svg"},
+  {"id": "prism_cathedral", "nameKo": "프리즘 성당", "nameEn": "Prism Cathedral", "category": "sacred", "categoryLabelKo": "신성기하학", "badge": "빛의 조각", "description": "프리즘 성당 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#f2daba", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/prism_cathedral.svg"},
+  {"id": "porcelain_cranes", "nameKo": "청화 학", "nameEn": "Porcelain Cranes", "category": "classic", "categoryLabelKo": "정통 클래식", "badge": "고요한 청화", "description": "청화 학 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#31577d", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/porcelain_cranes.svg"},
+  {"id": "desert_mirage", "nameKo": "사막의 신기루", "nameEn": "Desert Mirage", "category": "modern", "categoryLabelKo": "미래·모던", "badge": "모래와 별", "description": "사막의 신기루 문양과 섬세한 테두리가 어우러진 일러스트 덱", "accentColor": "#f2c49d", "borderClass": "border-white/30", "artworkUrl": "/tarot-backs/desert_mirage.svg"},
 ];
 
 const ORACLE_CARD_BACK_THEMES: TarotCardBackTheme[] = [

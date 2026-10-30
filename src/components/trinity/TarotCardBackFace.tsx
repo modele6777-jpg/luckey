@@ -321,6 +321,14 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
   };
   const isOracleBack = theme.id.startsWith('oracle_');
 
+  if (theme.artworkUrl) {
+    return <div data-tarot-back={theme.id} className={`absolute inset-0 overflow-hidden rounded-lg sm:rounded-xl select-none pointer-events-none ${className}`}
+      style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', boxShadow: isHovered ? 'inset 0 0 0 2px white, 0 0 16px #ffffff55' : undefined }}>
+      <img src={theme.artworkUrl} alt="" draggable={false} decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+      {isHovered && <div className="absolute inset-0 rounded-[inherit] border-2 border-white/90" />}
+    </div>;
+  }
+
   // 🌟 78장 휠 카드 전용 초경량 단일 레이어 렌더링 (중첩 DOM·SVG 800여 개 제거 -> 60~120fps 무저항 스핀)
   if (isWheelFast) {
     return (
