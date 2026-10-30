@@ -3,11 +3,11 @@
   "functions": {
     "api/index.ts": {
       "maxDuration": 60,
-      "includeFiles": "{server/**,src/**,node_modules/node-edge-tts/**}"
+      "includeFiles": "{server/**,src/**,scripts/sites-ai-provider.mjs,scripts/sites-gemini-chat.mjs}"
     },
     "api/ai/tts.ts": {
       "maxDuration": 60,
-      "includeFiles": "{server/**,node_modules/node-edge-tts/**}"
+      "includeFiles": "{server/**,src/utils/speechText.ts,scripts/sites-ai-provider.mjs,scripts/sites-gemini-chat.mjs}"
     },
     "api/ai/daily-bgm.ts": {
       "maxDuration": 60,

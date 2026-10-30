@@ -25,33 +25,6 @@ try {
   console.warn("[calmRouter] Warning reading book files:", e);
 }
 
-// 16-bit PCM to WAV helper
-function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, numChannels = 1, bitDepth = 16) {
-  const byteRate = sampleRate * numChannels * (bitDepth / 8);
-  const blockAlign = numChannels * (bitDepth / 8);
-  const dataSize = pcmBuffer.length;
-  const buffer = Buffer.alloc(44 + dataSize);
-
-  buffer.write("RIFF", 0);
-  buffer.writeUInt32LE(36 + dataSize, 4);
-  buffer.write("WAVE", 8);
-
-  buffer.write("fmt ", 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20);
-  buffer.writeUInt16LE(numChannels, 22);
-  buffer.writeUInt32LE(sampleRate, 24);
-  buffer.writeUInt32LE(byteRate, 28);
-  buffer.writeUInt16LE(blockAlign, 32);
-  buffer.writeUInt16LE(bitDepth, 34);
-
-  buffer.write("data", 36);
-  buffer.writeUInt32LE(dataSize, 40);
-
-  pcmBuffer.copy(buffer, 44);
-  return buffer;
-}
-
 // In-memory TTS Cache
 const ttsCache = new Map<string, string>();
 
@@ -262,24 +235,24 @@ ${exercisesContext}
 
 // 4. POST /api/tts
 calmRouter.post("/api/tts", async (req: Request, res: Response) => {
-  const { text, voice = "ko-KR-SunHiNeural" } = req.body;
+  const { text, voice = "Aoede" } = req.body;
   if (!text || typeof text !== "string") {
     return res.status(400).json({ error: "음성으로 변환할 텍스트를 입력해주세요." });
   }
 
   const cleanText = text.trim();
-  const cacheKey = `${voice}:${cleanText}`;
+  const cacheKey = `natural_ai_v1:${voice}:${cleanText}`;
 
   if (ttsCache.has(cacheKey)) {
     return res.json({ audio: ttsCache.get(cacheKey), cached: true });
   }
 
-  // 1. First attempt: Use high-fidelity handleTTS (EdgeTTS / GoogleTTS / Gemini)
+  // Generative AI speech only. Failure never enables a device/standard voice.
   try {
     const { handleTTS } = await import("./api-lib/ttsHandler");
     const result = await handleTTS({ text: cleanText, voice });
     if (result && result.audioContent) {
-      const mimeType = result.encoding === "pcm" ? "audio/wav" : "audio/mp3";
+      const mimeType = result.encoding === "mp3" ? "audio/mpeg" : "audio/wav";
       const audioDataUrl = `data:${mimeType};base64,${result.audioContent}`;
       if (ttsCache.size > 100) {
         const firstKey = ttsCache.keys().next().value;
@@ -289,48 +262,10 @@ calmRouter.post("/api/tts", async (req: Request, res: Response) => {
       return res.json({ audio: audioDataUrl, cached: false });
     }
   } catch (err: any) {
-    console.warn("[calmRouter /api/tts] handleTTS attempt error:", err?.message || err);
-  }
-
-  // 2. Second attempt: Gemini Audio direct fallback
-  const geminiKey = getGeminiApiKey();
-  if (!geminiKey) {
-    return res.json({ fallback: true, message: "API 키 부재로 브라우저 Web Speech로 대체합니다." });
-  }
-
-  try {
-    const geminiVoice = voice === "Charon" ? "Charon" : "Aoede";
-    const ai = new GoogleGenAI({ apiKey: geminiKey });
-    const response: any = await ai.models.generateContent({
-      model: "gemini-3.8-flash-lite-tts",
-      contents: [{ role: "user", parts: [{ text: cleanText }] }],
-      config: {
-        responseModalities: ["AUDIO" as any],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: geminiVoice }
-          }
-        }
-      }
+    return res.status(err?.status || 502).json({
+      error: err?.message || "AI 자연 음성을 생성하지 못했습니다.",
+      ...(err?.code ? { code: err.code } : {}),
     });
-
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (!base64Audio) {
-      throw new Error("TTS 오디오 데이터가 생성되지 않았습니다.");
-    }
-
-    const pcmBuf = Buffer.from(base64Audio, "base64");
-    const wavBuf = pcmToWav(pcmBuf, 24000, 1, 16);
-    const audioDataUrl = `data:audio/wav;base64,${wavBuf.toString("base64")}`;
-
-    if (ttsCache.size > 100) {
-      const firstKey = ttsCache.keys().next().value;
-      if (firstKey) ttsCache.delete(firstKey);
-    }
-    ttsCache.set(cacheKey, audioDataUrl);
-
-    return res.json({ audio: audioDataUrl, cached: false });
-  } catch (err: any) {
-    return res.json({ fallback: true, error: err?.message || "TTS error" });
   }
+  return res.status(502).json({ error: "AI 자연 음성을 생성하지 못했습니다." });
 });

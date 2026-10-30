@@ -1549,7 +1549,7 @@ ${content}
     });
   });
 
-  // TTS - 고품질 Edge Neural TTS + Google TTS 다중 엔진 통합 엔드포인트
+  // TTS - generative AI speech only, without standard/device voice substitution
   app.post("/api/ai/tts", async (req, res) => {
     const { text, voice = 'Aoede', emotion, rate, speed, pitch, language } = req.body || {};
 
@@ -1559,7 +1559,7 @@ ${content}
       return res.status(200).json(result);
     } catch (error: any) {
       console.error("TTS generation error:", error);
-      return res.status(500).json({ error: error?.message || "TTS generation failed" });
+      return res.status(error?.status || 500).json({ error: error?.message || "TTS generation failed", ...(error?.code ? { code: error.code } : {}) });
     }
   });
 

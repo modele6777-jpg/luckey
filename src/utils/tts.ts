@@ -99,7 +99,7 @@ const ttsCache = new Map<string, Promise<TTSAudioData | null>>();
 export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string, _rate?: string, _speed?: number): string {
   const clean = normalizeTextForSpeech(text);
   const voice = _voice === 'Charon' ? 'Charon' : 'Aoede';
-  return `lucy_natural_v7_${voice}_${clean}`;
+  return `lucy_natural_v9_${voice}_${clean}`;
 }
 
 class TTSAudioRequestError extends Error {

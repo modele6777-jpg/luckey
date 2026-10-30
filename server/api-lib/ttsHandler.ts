@@ -1,19 +1,4 @@
-import { prepareNaturalSpeechText } from "./speechText.ts";
-import * as os from "os";
-import * as fs from "fs";
-import * as path from "path";
-import * as googleTTS from "google-tts-api";
-import { EdgeTTS } from "node-edge-tts";
-
-const fsPromises = fs.promises;
-
-interface TTSCacheEntry {
-  base64: string;
-  encoding: "mp3" | "pcm";
-  sampleRate: number;
-  timestamp: number;
-}
-const ttsServerCache = new Map<string, TTSCacheEntry>();
+import { handleSitesApi } from "../sites-api.ts";
 
 export interface TTSHandlerOptions {
   text: string;
@@ -24,199 +9,25 @@ export interface TTSHandlerOptions {
   speed?: number;
   language?: string;
 }
-
 export interface TTSHandlerResult {
   audioContent: string;
-  encoding: "mp3" | "pcm";
+  encoding: "mp3" | "pcm" | "wav";
   sampleRate?: number;
 }
 
+/** All runtimes use the same generative speech policy. Never substitute browser,
+ * translation or standard synthetic speech when AI generation is unavailable. */
 export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerResult> {
-  const { text, voice = "Aoede", emotion, speed } = options;
-  if (!text) {
-    throw new Error("Empty speech text");
-  }
-
-  const cleanText = prepareNaturalSpeechText(String(text || ""));
-  if (!cleanText) {
-    throw new Error("Empty speech text");
-  }
-
-  const resolvedVoiceKey = voice === "Charon" ? "Charon" : "Aoede";
-
-  const isKorean = /[가-힣]/.test(cleanText);
-
-  let voiceName = resolvedVoiceKey === "Charon" ? "ko-KR-InJoonNeural" : "ko-KR-SunHiNeural";
-  let lang = "ko-KR";
-  let rate = "+0%";
-  let pitch = "+0Hz";
-
-  if (!isKorean) {
-    lang = "en-US";
-    voiceName = resolvedVoiceKey === "Charon" ? "en-US-GuyNeural" : "en-US-AriaNeural";
-  }
-
-  const cacheKey = `universe_${resolvedVoiceKey.toLowerCase()}_v7_${cleanText}`;
-
-  // Check in-memory cache
-  const cached = ttsServerCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < 3600000) {
-    return {
-      audioContent: cached.base64,
-      encoding: cached.encoding,
-      sampleRate: cached.sampleRate,
-    };
-  }
-
-function stripID3Header(buf: Buffer): Buffer {
-  if (buf.length >= 10 && buf[0] === 0x49 && buf[1] === 0x44 && buf[2] === 0x33) { // 'ID3'
-    const size = ((buf[6] & 0x7f) << 21) | ((buf[7] & 0x7f) << 14) | ((buf[8] & 0x7f) << 7) | (buf[9] & 0x7f);
-    const totalHeaderLen = 10 + size;
-    if (buf.length > totalHeaderLen) {
-      return buf.subarray(totalHeaderLen);
-    }
-  }
-  return buf;
-}
-
-  // Helper to generate speech using Google Standard Female Voice
-  async function generateGoogleTTS(textToSpeak: string, koreanLang: boolean): Promise<Buffer> {
-    const lang = koreanLang ? "ko" : "en";
-    
-    // Attempt A: google-tts-api
-    try {
-      const results = await googleTTS.getAllAudioBase64(textToSpeak, {
-        lang,
-        slow: false,
-        host: "https://translate.google.com",
-        splitPunct: ",.?!;:\n",
-      });
-
-      const buffers = results.map((r: any, idx: number) => {
-        const b = Buffer.from(r.base64, "base64");
-        return idx === 0 ? b : stripID3Header(b);
-      });
-      const combined = Buffer.concat(buffers);
-      if (combined.length > 200) {
-        return combined;
-      }
-    } catch (e: any) {
-      console.warn("[TTS] google-tts-api attempt failed, trying direct HTTP stream:", e?.message);
-    }
-
-    // Attempt B: Direct HTTP stream chunks
-    const chunks = textToSpeak.match(/.{1,180}(\s|$)|.+/g) || [textToSpeak];
-    const bufferPromises = chunks.map(async (chunk) => {
-      const trimmed = chunk.trim();
-      if (!trimmed) return Buffer.alloc(0);
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(trimmed)}&tl=${lang}&client=tw-ob`;
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          'Referer': 'https://translate.google.com/'
-        }
-      });
-      if (!res.ok) throw new Error(`Google TTS status ${res.status}`);
-      const ab = await res.arrayBuffer();
-      return Buffer.from(ab);
-    });
-
-    const fetchedBuffers = await Promise.all(bufferPromises);
-    const validBuffers = fetchedBuffers.filter((b) => b.length > 0);
-    const strippedBuffers = validBuffers.map((b, idx) => (idx === 0 ? b : stripID3Header(b)));
-    const combined = Buffer.concat(strippedBuffers);
-    if (combined.length > 200) {
-      return combined;
-    }
-
-    throw new Error("Google TTS generated empty audio buffer");
-  }
-
-  // 1. Google AI Studio Gemini Voice Engine (for Charon male voice, or Aoede female voice)
-  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.AI_API_KEY;
-  if (geminiApiKey) {
-    try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-      const selectedVoice = resolvedVoiceKey === "Charon" ? "Charon" : "Aoede";
-
-      const ttsModels = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts"];
-      for (const modelName of ttsModels) {
-        try {
-          const geminiResponse = await Promise.race([
-            ai.models.generateContent({
-              model: modelName,
-              contents: [{ parts: [{ text: cleanText }] }],
-              config: {
-                responseModalities: ["AUDIO"],
-                speechConfig: {
-                  voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName: selectedVoice },
-                  },
-                },
-              },
-            }),
-            new Promise<any>((_, reject) => setTimeout(() => reject(new Error(`Gemini TTS timeout (${modelName})`)), 7000)),
-          ]);
-
-          const candidate = geminiResponse?.candidates?.[0];
-          const audioPart = candidate?.content?.parts?.find((p: any) => p.inlineData?.mimeType?.startsWith("audio/"));
-          if (audioPart?.inlineData?.data) {
-            const base64 = audioPart.inlineData.data;
-            const mimeType = String(audioPart.inlineData.mimeType || "").toLowerCase();
-            let encoding: "pcm" | "mp3" = "mp3";
-            let sampleRate = 24000;
-            if (mimeType.includes("rate=")) {
-              const match = mimeType.match(/rate=(\d+)/);
-              if (match) sampleRate = parseInt(match[1], 10);
-            }
-
-            if (ttsServerCache.size > 500) {
-              const oldestKey = ttsServerCache.keys().next().value;
-              if (oldestKey) ttsServerCache.delete(oldestKey);
-            }
-            ttsServerCache.set(cacheKey, { base64, encoding, sampleRate, timestamp: Date.now() });
-            return {
-              audioContent: base64,
-              encoding,
-              sampleRate,
-            };
-          }
-        } catch (mErr: any) {
-          console.warn(`[TTS] ${modelName} voice (${selectedVoice}) attempt notice:`, mErr?.message || mErr);
-        }
-      }
-    } catch (geminiErr: any) {
-      console.warn("[TTS] Gemini AI Studio voice fallback notice:", geminiErr?.message || geminiErr);
-    }
-  }
-
-  // 2. Google Standard Warm Female Voice (Fallback for Aoede)
-  if (resolvedVoiceKey !== "Charon") {
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const audioBuffer = await generateGoogleTTS(cleanText, isKorean);
-        const base64 = audioBuffer.toString("base64");
-
-        if (ttsServerCache.size > 500) {
-          const oldestKey = ttsServerCache.keys().next().value;
-          if (oldestKey) ttsServerCache.delete(oldestKey);
-        }
-        ttsServerCache.set(cacheKey, { base64, encoding: "mp3", sampleRate: 24000, timestamp: Date.now() });
-
-        return {
-          audioContent: base64,
-          encoding: "mp3",
-          sampleRate: 24000,
-        };
-      } catch (err: any) {
-        console.warn(`[TTS] Google TTS fallback attempt ${attempt} notice:`, err?.message || err);
-        if (attempt < 3) {
-          await new Promise((r) => setTimeout(r, 120));
-        }
-      }
-    }
-  }
-
-  throw new Error("TTS generation failed after retries.");
+  const request = new Request("https://luckey.internal/api/ai/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...options, voice: options.voice === "Charon" || /InJoon|GuyNeural/.test(options.voice || "") ? "Charon" : "Aoede" }),
+  });
+  const response = await handleSitesApi(request, { ...process.env, GEMINI_API_KEY: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.AI_API_KEY });
+  if (!response) throw new Error("AI 음성 요청을 처리하지 못했습니다.");
+  const data = await response.json();
+  if (!response.ok) throw Object.assign(new Error(data.error || "AI 자연 음성을 생성하지 못했습니다."), {
+    status: response.status, code: data.code,
+  });
+  return data as TTSHandlerResult;
 }

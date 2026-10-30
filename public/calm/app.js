@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+  function naturalVoiceUrl(data) {
+    if (!data?.audioContent || !['mp3', 'wav'].includes(data.encoding)) return null;
+    return `data:${data.encoding === 'wav' ? 'audio/wav' : 'audio/mpeg'};base64,${data.audioContent}`;
+  }
+
   // =========================================================
   // Shared Module State (전역 스코프 호이스팅 안전 관리)
   // =========================================================
@@ -2441,65 +2446,51 @@ document.addEventListener('DOMContentLoaded', () => {
       card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    const finishPlayback = () => {
+    const finishPlayback = (completed = true) => {
       activeOracleAudio = null;
       activeOracleUtterance = null;
       activeOracleStage = null;
       resetOracleStageButtons();
       restoreSoundscapeVolume();
-      if (typeof onEndedCallback === 'function') {
+      if (completed !== false && typeof onEndedCallback === 'function') {
         onEndedCallback();
       }
     };
 
-    const playWithBrowserSpeech = (text) => {
-      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-        finishPlayback();
-        return;
-      }
-      try {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ko-KR';
-        utterance.rate = 0.90;
-        utterance.pitch = 1.0;
-
-        const voices = window.speechSynthesis.getVoices();
-        const koVoice = voices.find(v => v.lang && (v.lang.startsWith('ko') || v.lang.includes('KR')));
-        if (koVoice) utterance.voice = koVoice;
-
-        activeOracleUtterance = utterance;
-        utterance.onend = finishPlayback;
-        utterance.onerror = finishPlayback;
-        window.speechSynthesis.speak(utterance);
-      } catch (e) {
-        finishPlayback();
+    const reportNaturalVoiceUnavailable = () => {
+      finishPlayback(false);
+      stopOracleTeachingAudio();
+      if (btn) {
+        btn.title = 'AI 자연 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.';
+        const label = btn.querySelector('.stage-voice-text');
+        if (label) label.textContent = 'AI 음성 재시도';
       }
     };
 
     // 1. 서버 고품질 음성 API 요청
-    fetch('/api/tts', {
+    fetch('/api/ai/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: script, voice: ttsVoice })
     })
       .then(res => res.json())
       .then(data => {
-        if (data.audio) {
-          const audio = new Audio(data.audio);
+        const audioUrl = naturalVoiceUrl(data);
+        if (audioUrl) {
+          const audio = new Audio(audioUrl);
           activeOracleAudio = audio;
           audio.onended = finishPlayback;
-          audio.onerror = () => playWithBrowserSpeech(script);
+          audio.onerror = () => reportNaturalVoiceUnavailable();
           const p = audio.play();
           if (p !== undefined) {
-            p.catch(() => playWithBrowserSpeech(script));
+            p.catch(() => reportNaturalVoiceUnavailable());
           }
         } else {
-          playWithBrowserSpeech(script);
+          reportNaturalVoiceUnavailable();
         }
       })
       .catch(() => {
-        playWithBrowserSpeech(script);
+        reportNaturalVoiceUnavailable();
       });
   }
 
@@ -2674,7 +2665,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let ritualStage = 1;
   let ritualSecondsLeft = 60;
   let ttsEnabled = true;
-  let ttsVoice = 'ko-KR-SunHiNeural';
+  let ttsVoice = 'Aoede';
   let activeTtsAudio = null;
   let activeUtterance = null;
   const clientTtsCache = new Map();
@@ -2829,64 +2820,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1400);
   }
 
-  // 브라우저 Web Speech API 로컬 발화 (오프라인 / fallback)
-  function playBrowserTts(text, stageKey) {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      setVoiceIndicatorStatus('completed', '💡 브라우저 음성 미지원 환경 (타이머로 자동 전환)');
-      restoreSoundscapeVolume();
-      triggerAutoAdvanceOnPlaybackEnd(stageKey);
-      return;
-    }
-
-    try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ko-KR';
-      utterance.rate = 0.90; // 명상 특화 템포
-      utterance.pitch = 1.0;
-
-      const voices = window.speechSynthesis.getVoices();
-      const koVoice = voices.find(v => v.lang && (v.lang.startsWith('ko') || v.lang.includes('KR')));
-      if (koVoice) utterance.voice = koVoice;
-
-      activeUtterance = utterance;
-      setVoiceIndicatorStatus('speaking', '🎙️ 브라우저 음성 가이드 진행 중...');
-
-      // 음성 길이 추정하여 프로그레스 바 연동
-      const estimatedSec = Math.max(16, Math.round(text.length * 0.28));
-      let elapsedSec = 0;
-      updateMeditationProgress(0, estimatedSec);
-
-      if (browserTtsInterval) clearInterval(browserTtsInterval);
-      browserTtsInterval = setInterval(() => {
-        elapsedSec += 0.25;
-        if (elapsedSec < estimatedSec) {
-          updateMeditationProgress(elapsedSec, estimatedSec);
-        }
-      }, 250);
-
-      utterance.onend = () => {
-        if (browserTtsInterval) clearInterval(browserTtsInterval);
-        activeUtterance = null;
-        updateMeditationProgress(estimatedSec, estimatedSec);
-        restoreSoundscapeVolume();
-        triggerAutoAdvanceOnPlaybackEnd(stageKey);
-      };
-
-      utterance.onerror = () => {
-        if (browserTtsInterval) clearInterval(browserTtsInterval);
-        activeUtterance = null;
-        restoreSoundscapeVolume();
-        triggerAutoAdvanceOnPlaybackEnd(stageKey);
-      };
-
-      window.speechSynthesis.speak(utterance);
-    } catch (err) {
-      console.warn('Browser TTS 오류:', err);
-      if (browserTtsInterval) clearInterval(browserTtsInterval);
-      restoreSoundscapeVolume();
-      triggerAutoAdvanceOnPlaybackEnd(stageKey);
-    }
+  // AI speech failure stays visible; never read with an OS/default voice.
+  function reportNaturalVoiceUnavailable(_text, _stageKey) {
+    stopActiveTts();
+    if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+    setVoiceIndicatorStatus('idle', 'AI 자연 음성을 생성하지 못했습니다. 다시 재생해 주세요.');
+    restoreSoundscapeVolume();
   }
 
   // Audio URL(Base64 WAV/MP3) 재생 및 실시간 진행률 연동
@@ -2920,18 +2859,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       audio.onerror = () => {
         activeTtsAudio = null;
-        playBrowserTts(fallbackScript, stageKey);
+        reportNaturalVoiceUnavailable(fallbackScript, stageKey);
       };
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(e => {
           console.warn('Audio 자동 재생 차단 또는 오류:', e);
-          playBrowserTts(fallbackScript, stageKey);
+          reportNaturalVoiceUnavailable(fallbackScript, stageKey);
         });
       }
     } catch (e) {
-      playBrowserTts(fallbackScript, stageKey);
+      reportNaturalVoiceUnavailable(fallbackScript, stageKey);
     }
   }
 
@@ -2968,11 +2907,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     duckSoundscapeVolume(0.15);
 
-    if (ttsVoice === 'browser') {
-      playBrowserTts(script, stageKey);
-      return;
-    }
-
     const cacheKey = `${ttsVoice}:${script}`;
     if (clientTtsCache.has(cacheKey)) {
       playAudioUrl(clientTtsCache.get(cacheKey), script, stageKey);
@@ -2981,45 +2915,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setVoiceIndicatorStatus('loading');
 
-    fetch('/api/tts', {
+    fetch('/api/ai/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: script, voice: ttsVoice })
     })
       .then(res => res.json())
       .then(data => {
-        if (data.audio) {
-          clientTtsCache.set(cacheKey, data.audio);
-          playAudioUrl(data.audio, script, stageKey);
+        const audioUrl = naturalVoiceUrl(data);
+        if (audioUrl) {
+          clientTtsCache.set(cacheKey, audioUrl);
+          playAudioUrl(audioUrl, script, stageKey);
         } else {
-          playBrowserTts(script, stageKey);
+          reportNaturalVoiceUnavailable(script, stageKey);
         }
       })
       .catch(err => {
-        console.warn('TTS API 호출 실패, 브라우저 음성으로 대체:', err);
-        playBrowserTts(script, stageKey);
+        console.warn('AI 자연 음성 요청 실패:', err);
+        reportNaturalVoiceUnavailable(script, stageKey);
       });
-  }
-
-  // 다음 단계 TTS 오디오 백그라운드 프리로딩 (무지연 재생 보장)
-  function preloadRitualTts() {
-    if (!ttsEnabled || ttsVoice === 'browser') return;
-    [1, 2, 3, 'done'].forEach(key => {
-      const script = getActiveRitualScript(key);
-      const cacheKey = `${ttsVoice}:${script}`;
-      if (!clientTtsCache.has(cacheKey)) {
-        fetch('/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: script, voice: ttsVoice })
-        })
-          .then(r => r.json())
-          .then(d => {
-            if (d.audio) clientTtsCache.set(cacheKey, d.audio);
-          })
-          .catch(() => {});
-      }
-    });
   }
 
   function updateRitualUI() {
@@ -3079,7 +2993,7 @@ document.addEventListener('DOMContentLoaded', () => {
       speakRitualScript(1);
     }, 600);
 
-    preloadRitualTts();
+    // Generate speech only when playback is requested, preserving the AI quota.
   }
 
   function advanceRitualStage() {

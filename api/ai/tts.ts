@@ -41,6 +41,7 @@ export default async function handler(req: { method?: string; body?: unknown }, 
   } catch (err: unknown) {
     console.error("[ai/tts] Vercel error:", err);
     const message = err instanceof Error ? err.message : "TTS generation failed";
-    return res.status(500).json({ error: message });
+    const failure = err as { status?: number; code?: string };
+    return res.status(failure?.status || 500).json({ error: message, ...(failure?.code ? { code: failure.code } : {}) });
   }
 }
