@@ -103,6 +103,24 @@ const getWheelLayout = (totalCards: number, _radius: number, _cardWidth: number)
   };
 };
 
+/** Local angle that sits at the top of the screen for a given wheel rotation. */
+function frontLocalAngle(rotationDeg: number): number {
+  let front = (-Math.PI / 2 - (rotationDeg * Math.PI) / 180) % (2 * Math.PI);
+  if (front < 0) front += 2 * Math.PI;
+  return front;
+}
+
+/**
+ * Stack by distance from the card at the front of the ring.
+ * Index order puts every card on the right under its neighbor (a smear) and every
+ * card on the left on top of its neighbor. Distance-from-front is symmetric, so
+ * both sides show the same overlap while the ring rotates.
+ */
+function stackZForAngle(localAngle: number, frontAngle: number): number {
+  const delta = Math.atan2(Math.sin(localAngle - frontAngle), Math.cos(localAngle - frontAngle));
+  return 3000 - Math.round(Math.abs(delta) * 400);
+}
+
 type DeckWheelCardProps = {
   card: TarotCard;
   originalIdx: number;
@@ -113,11 +131,11 @@ type DeckWheelCardProps = {
   totalCards: number;
   isPicked: boolean;
   isHovered: boolean;
-  isClosureCard?: boolean;
+  stackZ: number;
   cardBackId?: string;
 };
 
-// Ultra-lightweight card memoization: Fixed base slot + smooth inner radial lift + Escher single-overlap closure
+// Fixed slot on the circle. Overlap is even because z-order follows distance from the front, not deck index.
 const DeckWheelCard = React.memo(
   function DeckWheelCard({
     card,
@@ -129,7 +147,7 @@ const DeckWheelCard = React.memo(
     totalCards = TOTAL_WHEEL_SLOTS,
     isPicked = false,
     isHovered = false,
-    isClosureCard = false,
+    stackZ,
     cardBackId,
   }: DeckWheelCardProps) {
     const { angleStep } = getWheelLayout(totalCards, radius, cardWidth);
@@ -140,7 +158,6 @@ const DeckWheelCard = React.memo(
     const y = Math.round(radius * Math.sin(localAngle) * 10) / 10;
     const baseTransform = `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, 0) rotate(${cardRotate}deg)`;
     const innerTransform = `translate3d(0, ${-liftAmount}px, 0) scale(${isHovered ? 1.035 : 1})`;
-    const showEscherSplit = isClosureCard && !isPicked && !isHovered;
 
     return (
       <>
@@ -151,17 +168,14 @@ const DeckWheelCard = React.memo(
             isPicked
               ? 'hidden pointer-events-none'
               : isHovered
-              ? 'pointer-events-auto cursor-pointer z-[5000]'
+              ? 'pointer-events-auto cursor-pointer'
               : 'pointer-events-auto cursor-pointer'
           }`}
           style={{
             transform: baseTransform,
             transformOrigin: 'center center',
             transition: 'transform 360ms cubic-bezier(0.22, 1, 0.36, 1)',
-            zIndex: isHovered ? 5000 : totalCards - originalIdx,
-            clipPath: showEscherSplit
-              ? 'polygon(-30% -20%, 50.5% -20%, 50.5% 120%, -30% 120%)'
-              : undefined,
+            zIndex: isHovered ? 5000 : stackZ,
           }}
         >
           {!isPicked && (
@@ -181,34 +195,6 @@ const DeckWheelCard = React.memo(
             </div>
           )}
         </div>
-
-        {showEscherSplit && (
-          <div
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 w-16 h-28 sm:w-20 sm:h-34 md:w-24 md:h-40 rounded-lg sm:rounded-xl flex items-center justify-center select-none pointer-events-none"
-            style={{
-              transform: baseTransform,
-              transformOrigin: 'center center',
-              transition: 'transform 360ms cubic-bezier(0.22, 1, 0.36, 1)',
-              zIndex: totalCards + 2,
-              clipPath: 'polygon(49.5% -20%, 130% -20%, 130% 120%, 49.5% 120%)',
-            }}
-          >
-            <div
-              className="relative w-full h-full rounded-lg sm:rounded-xl pointer-events-none"
-              style={{
-                transform: innerTransform,
-                transition: 'transform 340ms cubic-bezier(0.22, 1, 0.36, 1)',
-              }}
-            >
-              <TarotCardBackFace
-                cardBackId={cardBackId}
-                size={isMobile ? 'sm' : 'wheel'}
-                isHovered={false}
-              />
-            </div>
-          </div>
-        )}
       </>
     );
   },
@@ -224,7 +210,7 @@ const DeckWheelCard = React.memo(
       prev.totalCards === next.totalCards &&
       prev.isPicked === next.isPicked &&
       prev.isHovered === next.isHovered &&
-      prev.isClosureCard === next.isClosureCard
+      prev.stackZ === next.stackZ
     );
   }
 );
@@ -313,67 +299,34 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     [deck, selectedIdSet],
   );
 
-  // Identify the closure card (last unpicked card in the ring that bridges over the first unpicked card)
-  const closureCardId = useMemo(() => {
-    for (let i = deck.length - 1; i >= 0; i--) {
-      if (!selectedIdSet.has(deck[i].id)) {
-        return deck[i].id;
-      }
-    }
-    return null;
-  }, [deck, selectedIdSet]);
-
   const wheelLayout = useMemo(
     () => getWheelLayout(deck.length, radius, wheelCardWidth),
     [deck.length, radius, wheelCardWidth],
   );
 
-  // 🌟 나머지 카드는 순서를 그대로 유지하되 빈자리만 인접 카드가 원형으로 부드럽게 메우는 오프셋 계산:
-  // 전체 78장 중 뽑힌 카드 양옆 이웃 카드들이 원형 경계(0 ↔ N-1)를 포함해 빈자리 쪽으로 당겨져 간격을 메웁니다.
+  // After a draw, spread the cards that are still in the deck evenly around the circle.
+  // Nudging only the nearest neighbors bunched one side and left a gap on the other.
   const localGapOffsets = useMemo(() => {
     const n = deck.length;
     const offsets = new Float64Array(n);
     if (n === 0 || selectedIdSet.size === 0) return offsets;
 
-    const step = getWheelLayout(n, radius, wheelCardWidth).angleStep;
+    const active: number[] = [];
     for (let i = 0; i < n; i++) {
-      if (!selectedIdSet.has(deck[i].id)) continue;
-
-      // Find nearest unpicked counter-clockwise (left) neighbor across the circular ring
-      for (let d = 1; d <= 4; d++) {
-        const leftIdx = (i - d + n) % n;
-        if (!selectedIdSet.has(deck[leftIdx].id)) {
-          offsets[leftIdx] += step * (d === 1 ? 0.46 : d === 2 ? 0.28 : 0.16);
-          const leftIdx2 = (leftIdx - 1 + n) % n;
-          if (!selectedIdSet.has(deck[leftIdx2].id)) {
-            offsets[leftIdx2] += step * 0.18;
-          }
-          break;
-        }
-      }
-
-      // Find nearest unpicked clockwise (right) neighbor across the circular ring
-      for (let d = 1; d <= 4; d++) {
-        const rightIdx = (i + d) % n;
-        if (!selectedIdSet.has(deck[rightIdx].id)) {
-          offsets[rightIdx] -= step * (d === 1 ? 0.46 : d === 2 ? 0.28 : 0.16);
-          const rightIdx2 = (rightIdx + 1) % n;
-          if (!selectedIdSet.has(deck[rightIdx2].id)) {
-            offsets[rightIdx2] -= step * 0.18;
-          }
-          break;
-        }
-      }
+      if (!selectedIdSet.has(deck[i].id)) active.push(i);
     }
+    const m = active.length;
+    if (m === 0 || m === n) return offsets;
 
-    // Round to 4 decimal places for stable React.memo equality checks
-    for (let i = 0; i < n; i++) {
-      if (offsets[i] !== 0) {
-        offsets[i] = Math.round(offsets[i] * 10000) / 10000;
-      }
+    const fullStep = (2 * Math.PI) / n;
+    const evenStep = (2 * Math.PI) / m;
+    const anchor = active[0] * fullStep;
+    for (let k = 0; k < m; k++) {
+      const idx = active[k];
+      offsets[idx] = Math.round((anchor + k * evenStep - idx * fullStep) * 10000) / 10000;
     }
     return offsets;
-  }, [deck, radius, selectedIdSet, wheelCardWidth]);
+  }, [deck, selectedIdSet]);
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const hoveredCardIdRef = useRef<string | null>(null);
   const [centerCardId, setCenterCardId] = useState<string | null>(null);
@@ -450,15 +403,33 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
   // 🌟 Zero-Reflow O(1) GPU Wheel Rotation:
   // 부모 휠 레이어의 단일 transform만 변경하며, 중앙 카드 ID가 바뀔 때만 최소한의 상태 갱신을 수행합니다.
+  const syncRingStack = useCallback((deg: number) => {
+    const layer = wheelLayerRef.current;
+    if (!layer) return;
+    const front = frontLocalAngle(deg);
+    const hovered = hoveredCardIdRef.current;
+    layer.querySelectorAll<HTMLElement>('[data-card-local-angle]').forEach((el) => {
+      const id = el.getAttribute('data-card-id');
+      if (id && id === hovered) {
+        el.style.zIndex = '5000';
+        return;
+      }
+      const localAngle = Number(el.getAttribute('data-card-local-angle'));
+      if (!Number.isFinite(localAngle)) return;
+      el.style.zIndex = String(stackZForAngle(localAngle, front));
+    });
+  }, []);
+
   const applyRotation = useCallback(
     (deg: number) => {
       rotationRef.current = deg;
       if (wheelLayerRef.current) {
         wheelLayerRef.current.style.transform = buildWheelTransform(deg);
       }
+      syncRingStack(deg);
       updateCenterCardForRotation(deg);
     },
-    [buildWheelTransform, updateCenterCardForRotation],
+    [buildWheelTransform, syncRingStack, updateCenterCardForRotation],
   );
 
   // Stop any active inertia loop
@@ -1054,7 +1025,10 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
             opacity: wheelReady ? 1 : 0,
           }}
         >
-          {deck.map((card, originalIdx) => (
+          {deck.map((card, originalIdx) => {
+            const localAngle = originalIdx * wheelLayout.angleStep + (localGapOffsets[originalIdx] || 0);
+            const isHovered = activeHighlightCardId === card.id;
+            return (
             <DeckWheelCard
               key={card.id}
               card={card}
@@ -1065,11 +1039,12 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               isMobile={isMobile}
               totalCards={deck.length}
               isPicked={selectedIdSet.has(card.id)}
-              isHovered={activeHighlightCardId === card.id}
-              isClosureCard={closureCardId === card.id}
+              isHovered={isHovered}
+              stackZ={stackZForAngle(localAngle, frontLocalAngle(rotationRef.current))}
               cardBackId={effectiveCardBackId}
             />
-          ))}
+            );
+          })}
         </div>
 
         {/* Selected card slots with a brief burst when a card is drawn. */}
