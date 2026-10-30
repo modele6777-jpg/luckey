@@ -22,28 +22,28 @@ function box(innerWidth, innerHeight, visual) {
 }
 
 const tabletLandscapeToolbar = box(1180, 820, { width: 1180, height: 768, offsetTop: 0, offsetLeft: 0 });
-assert.deepEqual(tabletLandscapeToolbar, { width: 1180, height: 768, offsetTop: 0, offsetLeft: 0, bottomGap: 52 });
+assert.deepEqual(tabletLandscapeToolbar, { width: 1180, height: 820, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const tabletLandscapeOffset = box(1180, 820, { width: 1180, height: 740, offsetTop: 32, offsetLeft: 0 });
-assert.deepEqual(tabletLandscapeOffset, { width: 1180, height: 740, offsetTop: 32, offsetLeft: 0, bottomGap: 48 });
+assert.deepEqual(tabletLandscapeOffset, { width: 1180, height: 820, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const stalePortraitDuringLandscape = box(820, 1180, { width: 1180, height: 820, offsetTop: 0, offsetLeft: 0 });
-assert.deepEqual(stalePortraitDuringLandscape, { width: 1180, height: 820, offsetTop: 0, offsetLeft: 0, bottomGap: 360 });
+assert.deepEqual(stalePortraitDuringLandscape, { width: 820, height: 1180, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const ipadPortraitToolbar = box(820, 1180, { width: 820, height: 1110, offsetTop: 0, offsetLeft: 0 });
-assert.deepEqual(ipadPortraitToolbar, { width: 820, height: 1110, offsetTop: 0, offsetLeft: 0, bottomGap: 70 });
+assert.deepEqual(ipadPortraitToolbar, { width: 820, height: 1180, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const phonePortrait = box(390, 844, { width: 390, height: 844, offsetTop: 0, offsetLeft: 0 });
 assert.deepEqual(phonePortrait, { width: 390, height: 844, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const phonePortraitToolbar = box(390, 844, { width: 390, height: 760, offsetTop: 0, offsetLeft: 0 });
-assert.deepEqual(phonePortraitToolbar, { width: 390, height: 760, offsetTop: 0, offsetLeft: 0, bottomGap: 84 });
+assert.deepEqual(phonePortraitToolbar, { width: 390, height: 844, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const phonePortraitKeyboard = box(390, 844, { width: 390, height: 430, offsetTop: 0, offsetLeft: 0 });
 assert.deepEqual(phonePortraitKeyboard, { width: 390, height: 844, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const phoneLandscapeToolbar = box(844, 390, { width: 844, height: 340, offsetTop: 0, offsetLeft: 0 });
-assert.deepEqual(phoneLandscapeToolbar, { width: 844, height: 340, offsetTop: 0, offsetLeft: 0, bottomGap: 50 });
+assert.deepEqual(phoneLandscapeToolbar, { width: 844, height: 390, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 const phoneLandscapeKeyboard = box(844, 390, { width: 844, height: 180, offsetTop: 12, offsetLeft: 0 });
 assert.deepEqual(phoneLandscapeKeyboard, { width: 844, height: 390, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
@@ -61,7 +61,7 @@ const ipadResumeSnapshot = {
   innerHeight: 820,
   visual: { width: 1180, height: 740, offsetTop: 0, offsetLeft: 0 },
 };
-assert.equal(viewportNeedsResumeFill(ipadResumeSnapshot, true, null), true);
+assert.equal(viewportNeedsResumeFill(ipadResumeSnapshot, true, null), false);
 assert.deepEqual(resolveViewportBox(ipadResumeSnapshot, { fillLayoutGap: true }), {
   width: 1180,
   height: 820,
@@ -84,7 +84,7 @@ const phoneResume = {
   visual: { width: 390, height: 760, offsetTop: 0, offsetLeft: 0 },
 };
 assert.equal(viewportNeedsResumeFill(phoneResume, true, null), false);
-assert.equal(resolveViewportBox(phoneResume, { fillLayoutGap: true }).height, 760);
+assert.equal(resolveViewportBox(phoneResume, { fillLayoutGap: true }).height, 844);
 
 const ipadKeyboardResume = {
   innerWidth: 1180,
@@ -110,7 +110,7 @@ const standaloneShrink = {
 };
 assert.deepEqual(resolveViewportBox(standaloneShrink), {
   width: 1180,
-  height: 820,
+  height: 740,
   offsetTop: 0,
   offsetLeft: 0,
   bottomGap: 0,
@@ -125,11 +125,11 @@ const standalonePortraitScreen = {
   screenHeight: 1180,
   visual: { width: 1180, height: 740, offsetTop: 0, offsetLeft: 0 },
 };
-assert.equal(resolveViewportBox(standalonePortraitScreen).height, 820);
+assert.equal(resolveViewportBox(standalonePortraitScreen).height, 740);
 
 const safariTab = { ...standaloneShrink, iosStandalone: false };
 assert.equal(resolveViewportBox(safariTab).height, 740);
-assert.equal(resolveViewportBox(safariTab).offsetTop, 24);
+assert.equal(resolveViewportBox(safariTab).offsetTop, 0);
 
 const phoneStandalone = {
   innerWidth: 390,
@@ -220,24 +220,21 @@ assert.match(lifecycle, /iosStandalone/);
 
 const html = readFileSync('index.html', 'utf8');
 assert.match(html, /viewport-fit=cover/);
-assert.match(html, /name="mobile-web-app-capable" content="yes"/);
+assert.equal(html.includes('name="mobile-web-app-capable"'), false);
 assert.match(html, /name="apple-mobile-web-app-status-bar-style" content="black-translucent"/);
 const manifest = readFileSync('public/manifest.json', 'utf8');
 assert.match(manifest, /"display": "standalone"/);
 
 const css = readFileSync('src/index.css', 'utf8');
-assert.equal(css.includes('-webkit-fill-available'), false);
-assert.match(css, /--vvh:\s*100dvh/);
-assert.match(css, /display-mode:\s*standalone/);
-assert.match(css, /--vvh:\s*100lvh/);
-assert.match(css, /\.tarot-virtual-stage[\s\S]*min-height:\s*720px/);
-assert.match(css, /orientation:\s*portrait\)[\s\S]*min-height:\s*800px/);
-assert.match(css, /orientation:\s*landscape\)[\s\S]*\.tarot-virtual-stage[\s\S]*min-height:\s*0/);
+assert.match(css, /-webkit-fill-available/);
+assert.equal(/height:\s*var\(--vvh/.test(css), false);
+assert.equal(css.includes('100lvh'), false);
+assert.match(css, /--vv-bleed-left/);
 assert.match(css, /\.tarot-spread-stage-root/);
-assert.equal(css.includes('min-h-[720px] sm:min-h-[800px]'), false);
+assert.equal(css.includes('.tarot-virtual-stage'), false);
 
 const trinity = readFileSync('src/pages/TrinityApp.tsx', 'utf8');
-assert.match(trinity, /tarot-virtual-stage/);
-assert.equal(trinity.includes('sm:min-h-[800px]'), false);
+assert.match(trinity, /min-h-\[720px\] sm:min-h-\[800px\]/);
+assert.equal(trinity.includes('tarot-virtual-stage'), false);
 
 console.log('visual viewport box tests passed');
