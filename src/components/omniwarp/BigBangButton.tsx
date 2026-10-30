@@ -1,11 +1,11 @@
 import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
-import { BigBangStarTrail } from './BigBangStarTrail';
+import { BigBangLuckyBreeze } from './BigBangLuckyBreeze';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
 import { oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronUp, ChevronDown, Clover, KeyRound } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clover, KeyRound, CircleHelp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature } from '@/lib/omniWarp/forceSensor';
@@ -679,7 +679,7 @@ export function BigBangButton() {
   }, [location, isAborted ]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
+    if (recommendedWarpInFlightRef.current || !e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
     activePointerIdRef.current = e.pointerId;
     visualDragRef.current = false;
     if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current);
@@ -855,7 +855,7 @@ export function BigBangButton() {
   }, [navigate]);
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 또는 추천 카드에서 실행 - 룬 문자 사이 우주 흡입 워프 연출)
-  const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any, immediate = false) => {
+  const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any, immediate = false, luckyDrag = false) => {
     setIsQuickChatOpen(false);
     // 🛡️ 이미 우주 흡입 워프 진행 중인 경우 중복 격발 방지
     if (recommendedWarpInFlightRef.current) return;
@@ -869,7 +869,7 @@ export function BigBangButton() {
     lastTapTimeRef.current = 0;
 
     // 🌌 추천 도약: 고대 룬 문자 사이 우주 흡입 워프 사운드 & 햅틱 발동!
-    if (!immediate) {
+    if (!immediate && !luckyDrag) {
       setIsCosmicSuctionActive(true);
       omniWarpAudio.playCosmicSuctionWarp();
     }
@@ -898,7 +898,7 @@ export function BigBangButton() {
         new CustomEvent('prism:bigbang_commit', {
           detail: {
             phase: 'wormhole',
-            isDoubleTapSuction: !immediate,
+            isDoubleTapSuction: !immediate && !luckyDrag,
             target: {
               id: finalMenu.id,
               name: finalMenu.name,
@@ -942,7 +942,7 @@ export function BigBangButton() {
       resetActiveContextPeek();
     };
     if (immediate) navigateToRecommendation();
-    else setTimeout(navigateToRecommendation, 500);
+    else setTimeout(navigateToRecommendation, luckyDrag ? 450 : 500);
 
     // 650ms 시점에 흡입 애니메이션 상태 해제
     setTimeout(() => {
@@ -1069,6 +1069,7 @@ export function BigBangButton() {
       setDurationMs(0);
       setIsAborted(false);
       resetActiveWormholePeek();
+      goToNextRecommended(undefined, undefined, false, true);
       return;
     }
 
@@ -1389,7 +1390,7 @@ export function BigBangButton() {
   if (typeof document === 'undefined') return null;
   return createPortal(
     <>
-      {cloverWind !== 'off' && <BigBangStarTrail settling={cloverWind === 'settling'} pointerRef={currentPointerEventRef} originRef={touchStartRef} />}
+      {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
         className={`fixed bottom-safe-fab-center w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
@@ -1887,7 +1888,9 @@ export function BigBangButton() {
               {/* Big Bang center: directional chevrons on activation, dot while idle */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
-                  {centerDirection === 'north' || centerDirection === 'south' ? (
+                  {cloverWind !== 'off' ? (
+                    <CircleHelp data-bigbang-center-gesture="recommend" size={26} strokeWidth={1.8} className="-rotate-45 text-emerald-100 drop-shadow-[0_0_8px_#6ee7b7]" aria-hidden="true" />
+                  ) : centerDirection === 'north' || centerDirection === 'south' ? (
                     centerDirection === 'north'
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                       : <ChevronDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
