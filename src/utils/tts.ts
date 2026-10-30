@@ -3,6 +3,7 @@ import {
   getSharedAudioContext,
   unlockAudioPlayback,
   playTTSAudio,
+  getTTSPlaybackProgress,
   playCompressedAudio,
   playRawPCM,
   primeTTSAudioElement,
@@ -20,6 +21,7 @@ import { setTTSSessionActive, clearTTSSession, initTTSSessionHandlers, pauseTTSS
 import { acquireScreenWakeLock, releaseScreenWakeLock } from '../lib/wakeLock';
 import { prepareNaturalSpeechText } from './speechText';
 export { prepareNaturalSpeechText };
+import { trackSpeechHighlight } from '../lib/speechHighlightTiming';
 import { isIOSDevice } from '../lib/perfMode';
 
 export interface TTSPlaybackOptions {
@@ -296,6 +298,9 @@ export const playTTS = async (
       console.warn("[TTS] Failed to warm up audio systems:", e);
     }
 
+    updateTTSState({ isLoading: true, isSpeaking: false, activeText: cleanText,
+      currentSentence: initialSubSentence, activeSentence: initialSubSentence,
+      ...(fullTextReference ? { activeFullText: fullTextReference } : {}) });
     const data = await requestAIAudio(text, activeEmotion, targetVoice);
 
     // CRITICAL ABORT CHECK after JSON parse
@@ -304,23 +309,9 @@ export const playTTS = async (
       return;
     }
 
-    // Now transition state from loading to speaking
-    const speakingSubSentence = splitSpeechIntoSentences(cleanText)[0] || cleanText;
-    updateTTSState({
-      isLoading: false,
-      isSpeaking: true,
-      activeText: cleanText,
-      ...(isSequenceChunk
-        ? {}
-        : {
-            currentSentence: speakingSubSentence,
-            activeSentence: speakingSubSentence,
-          }),
-      ...(fullTextReference ? { activeFullText: fullTextReference } : {}),
-    });
-    if (typeof window !== 'undefined') window.dispatchEvent(new Event('prism:tts-recovered'));
-    setTTSSessionActive(isSequenceChunk ? (ttsState.activeSentence || cleanText) : speakingSubSentence);
-
+    // Decoding and network time are not playback time. Publish highlights only
+    // when the audio clock reports a live source, for every entrypoint/reader.
+    const speakingSentences = splitSpeechIntoSentences(cleanText);
     if (data?.audioContent) {
       const encoding = data.encoding === 'pcm' ? 'pcm' : data.encoding === 'wav' ? 'wav' : 'mp3';
       const playAudio = async () => {
@@ -336,6 +327,7 @@ export const playTTS = async (
         } catch (err) {
           if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
           console.warn('[TTS] playTTSAudio failed, applying WebAudio direct buffer fallback:', err);
+          updateTTSState({ isLoading: false, isSpeaking: true, currentSentence: speakingSentences[0] || cleanText, activeSentence: speakingSentences[0] || cleanText });
           if (encoding === 'pcm') {
             await playRawPCM(data!.audioContent, data!.sampleRate ?? 24000);
           } else {
@@ -344,7 +336,26 @@ export const playTTS = async (
         }
       };
 
-      await playAudio();
+      let announcedPlayback = false;
+      const stopHighlightTracking = trackSpeechHighlight(
+        speakingSentences,
+        getTTSPlaybackProgress,
+        () => ttsState.activeSessionId === sessionToVerify,
+        (sentence) => {
+          updateTTSState({ isLoading: false, isSpeaking: true, currentSentence: sentence, activeSentence: sentence });
+          setTTSSessionActive(sentence);
+          if (!announcedPlayback && typeof window !== 'undefined') {
+            announcedPlayback = true;
+            window.dispatchEvent(new Event('prism:tts-recovered'));
+          }
+        },
+      );
+      try {
+        await playAudio();
+        if (typeof window !== 'undefined' && ttsState.activeSessionId === sessionToVerify) window.dispatchEvent(new Event('prism:tts-recovered'));
+      } finally {
+        stopHighlightTracking();
+      }
       if (ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
         stopTTS();
         if (!options?.skipCompletionChime) {
@@ -471,7 +482,7 @@ export function resetTTSProgress(text?: string): void {
 /**
  * Splits any long reading into optimal multi-sentence chunks and streams them with active prefetching.
  * - Grouping 2~3 sentences per chunk reduces network round-trips by 70%, preventing mobile OS background timer throttling when the screen is off.
- * - While the screen is visible, proportionally advances `currentSentence` across the sentences inside the chunk so real-time sentence highlighting stays smooth and accurate without causing UI lag.
+ * - Sentence highlights follow actual decoded audio duration and playback position, including pause/resume.
  */
 export const playTTSInChunks = async (
   text: string,
@@ -596,27 +607,6 @@ export const playTTSInChunks = async (
         }
       }
 
-      // If this chunk contains multiple sentences and the screen is visible,
-      // schedule lightweight sentence highlight transitions proportional to character count (~155ms/char Korean TTS pace)
-      const subTimers: ReturnType<typeof setTimeout>[] = [];
-      if (subSentences.length > 1) {
-        let cumulativeChars = 0;
-        for (let sIdx = 1; sIdx < subSentences.length; sIdx++) {
-          cumulativeChars += subSentences[sIdx - 1].length;
-          const delayMs = Math.max(900, Math.round(cumulativeChars * 155));
-          const targetSub = subSentences[sIdx];
-          const timer = setTimeout(() => {
-            if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) return;
-            if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-            updateTTSState({
-              currentSentence: targetSub,
-              activeSentence: targetSub,
-            });
-          }, delayMs);
-          subTimers.push(timer);
-        }
-      }
-
       const isLastChunk = i === chunks.length - 1;
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -639,8 +629,6 @@ export const playTTSInChunks = async (
       } catch (chunkErr) {
         console.warn(`[TTS] Sequence chunk ${i + 1}/${chunks.length} playback failed:`, chunkErr);
         throw chunkErr;
-      } finally {
-        subTimers.forEach(clearTimeout);
       }
 
       if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) {

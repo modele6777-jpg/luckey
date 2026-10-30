@@ -771,6 +771,19 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
   source.start(0, ttsPausedOffsetSec);
 }
 
+/** Position in the decoded buffer, driven by the audio clock rather than wall time. */
+export function getTTSPlaybackProgress(): { elapsed: number; duration: number; paused: boolean } | null {
+  if (!ttsActiveBuffer || (!ttsActiveSource && !ttsUserExplicitlyPaused)) return null;
+  const ctx = getSharedAudioContext();
+  const advancing = !!ttsActiveSource && !ttsUserExplicitlyPaused;
+  const elapsed = ttsPausedOffsetSec + (advancing ? Math.max(0, ctx.currentTime - ttsStartedAtCtxTime) * ttsActiveRate : 0);
+  return {
+    elapsed: Math.min(ttsActiveBuffer.duration, elapsed),
+    duration: ttsActiveBuffer.duration,
+    paused: ttsUserExplicitlyPaused || ctx.state !== 'running',
+  };
+}
+
 export function pauseTTSAudio(): void {
   ttsUserExplicitlyPaused = true;
   stopTTSKeepAlive();
