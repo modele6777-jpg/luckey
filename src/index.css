@@ -21,10 +21,6 @@
     --duo-hinge-gap: 1.25rem;
     --nav-bar-h: 2.1rem;
     --nav-total-h: calc(var(--nav-bar-h) + var(--sab));
-    /* Width only: the foldable side column sits outside the reported viewport. Height stays on the layout viewport. */
-    --vv-bleed-left: 0px;
-    --vv-bleed-right: 0px;
-    --vvw: 100%;
   }
 
   html {
@@ -3047,16 +3043,6 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   animation: arcane-conduit-pulse 2.6s ease-in-out infinite;
   will-change: transform;
 }
-/* Foldable side column only. Height stays pinned by top/bottom, not a measured dvh. */
-.prism-app-shell,
-.prism-aura-bg,
-.tarot-spread-stage-root {
-  left: calc(-1 * var(--vv-bleed-left, 0px));
-  right: auto;
-  width: max(100%, var(--vvw, 100%));
-  max-width: none;
-}
-
 /* Main content occupies full 100% canvas with zero extra bottom margin. */
 :root { --sites-sidebar-width: 0px; }
 .sites-pinned-main {
