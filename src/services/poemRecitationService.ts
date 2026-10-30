@@ -85,7 +85,7 @@ class PoemRecitationService {
 
       // Synchronize with global TTS state
       subscribeTTS((tts: TTSState) => {
-        const active = tts.isSpeaking || tts.isLoading;
+        const active = tts.isSpeaking || tts.isLoading || Boolean(tts.isPaused);
         if (!active && (this.state.isSpeaking || this.state.isLoading)) {
           this.currentSessionId = null;
           this.updateState({
@@ -209,7 +209,7 @@ class PoemRecitationService {
 
     // Prepare speech text
     const textToRecite = formatPoemRecitationText(poem, targetInsight);
-    const voiceApiName = "Kore";
+    const voiceApiName = targetVoice === "male" ? "Charon" : "Aoede";
 
     try {
       // Chunked streaming recitation with prefetching for seamless listening

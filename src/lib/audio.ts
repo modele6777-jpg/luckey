@@ -1267,6 +1267,7 @@ export async function playTTSAudio(
 
   // A stop/new reader during an asynchronous context resume must win.
   const requestedPlaybackId = ttsPlaybackId;
+  ttsUserExplicitlyPaused = false;
   // Keep TTS in the non-exclusive ambient mix with external music.
   configureSpeechAudioSession();
   let audioCtx: AudioContext | null;
@@ -1314,7 +1315,6 @@ export async function playTTSAudio(
   if (activePlaybackId !== ttsPlaybackId) return;
 
   ttsShouldBePlaying = true;
-  ttsUserExplicitlyPaused = false;
   ttsActiveBuffer = decodedBuffer;
   ttsPausedOffsetSec = 0;
   ttsActiveRate = 1.0;
@@ -1335,7 +1335,7 @@ export async function playTTSAudio(
       resolve();
     };
     try {
-      launchWebAudioTTSSource(activePlaybackId);
+      if (!ttsUserExplicitlyPaused) launchWebAudioTTSSource(activePlaybackId);
     } catch (error) {
       ttsActiveReject = null;
       ttsActiveFinishResolver = null;

@@ -503,15 +503,15 @@ export function UnifiedChat() {
   // Subscribe to global TTS state to determine if conversation mode or bubble TTS is active
   useEffect(() => {
     const unsubscribe = subscribeTTS((state) => {
-      setIsReadingAll(state.isSpeaking && state.activeText === '__CONVERSATION__');
-      setIsReadingAllLoading(state.isLoading && state.activeText === '__CONVERSATION__');
+      setIsReadingAll(Boolean(state.activeSessionId?.startsWith('conversation_')) && (state.isSpeaking || Boolean(state.isPaused)));
+      setIsReadingAllLoading(Boolean(state.activeSessionId?.startsWith('conversation_')) && state.isLoading);
       setDrawerTtsInfo({
         isSpeaking: state.isSpeaking,
         isLoading: state.isLoading,
         activeText: state.activeText,
         activeSentence: state.activeSentence || state.currentSentence || null,
       });
-      if (!state.isSpeaking && !state.isLoading) {
+      if (!state.isSpeaking && !state.isLoading && !state.isPaused && !state.activeSessionId) {
         setDrawerPlayingMsgId(null);
       }
     });

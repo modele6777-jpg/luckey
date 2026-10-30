@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+const load=async file=>{const result=await build({entryPoints:[file],bundle:true,write:false,platform:'node',format:'esm'});return import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64'));};
+const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navigator');
+const requests=[];
+Object.defineProperty(globalThis,'navigator',{configurable:true,value:{wakeLock:{request:()=>new Promise(resolve=>requests.push(resolve))}}});
+const locks=await load('src/lib/wakeLock.ts');
+const sentinel=()=>({released:false,listeners:[],addEventListener(_e,fn){this.listeners.push(fn);},async release(){this.released=true;for(const fn of this.listeners)fn();}});
+try {
+ const first=locks.acquireScreenWakeLock();const second=locks.acquireScreenWakeLock();
+ assert.equal(requests.length,1);const old=sentinel();requests[0](old);assert.equal(await first,true);assert.equal(await second,true);
+ await locks.releaseScreenWakeLock();assert.equal(old.released,true);
+ const next=locks.acquireScreenWakeLock();const fresh=sentinel();requests[1](fresh);await next;
+ for(const callback of old.listeners)callback();assert.equal(await locks.acquireScreenWakeLock(),true);assert.equal(requests.length,2);
+ await locks.releaseScreenWakeLock();
+ const late=locks.acquireScreenWakeLock();await locks.releaseScreenWakeLock();
+ const replacement=locks.acquireScreenWakeLock();const obsolete=sentinel();requests[2](obsolete);
+ assert.equal(await late,false);await new Promise(resolve=>setTimeout(resolve,0));assert.equal(obsolete.released,true);assert.equal(requests.length,4);
+ requests[3](sentinel());assert.equal(await replacement,true);await locks.releaseScreenWakeLock();
+} finally {if(descriptor)Object.defineProperty(globalThis,'navigator',descriptor);else delete globalThis.navigator;}
+console.log('Wake lock: shared acquisition, late release/acquisition, replacement and stop races passed.');
+const calls=[],pending=[];let fail=false;
+globalThis.__handbookTest={play: text=>{calls.push(text);return fail?Promise.reject(Error('expected API failure')):new Promise(resolve=>pending.push(resolve));}};
+const bundle=await build({entryPoints:['src/services/handbookAudioService.ts'],bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'stubs',setup(b){b.onResolve({filter:/^@\//},a=>({path:a.path,namespace:'stub'}));b.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:a.path.endsWith('/tts')?'export const playTTS=text=>globalThis.__handbookTest.play(text);export const stopTTS=()=>{};export const pauseTTS=()=>{};export const resumeTTS=()=>{};export const subscribeTTS=()=>()=>{};':a.path.endsWith('/wakeLock')?'export const acquireScreenWakeLock=async()=>true;export const releaseScreenWakeLock=async()=>{};':'export const buildDetailedChapterSegments=()=>[];export const buildChannelSegments=()=>[];export const buildAllChannelsSegments=()=>[];'}));}}]});
+const {handbookAudioService: service}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].text).toString('base64'));
+await service.playSegments([{id:'one',text:'첫 구간'},{id:'two',text:'다음 구간'}]);
+assert.deepEqual(calls,['첫 구간']);service.skipNext();await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(calls,['첫 구간','다음 구간']);
+service.stop();for(const finish of pending)finish();await new Promise(resolve=>setTimeout(resolve,600));assert.equal(service.getState().isPlaying,false);
+fail=true;await service.playSegments([{id:'failed',text:'실패한 구간'},{id:'skip',text:'건너뛰면 안 되는 구간'}]);await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(service.getState().isPaused,true);assert.equal(service.getState().currentIndex,0);assert(!calls.includes('건너뛰면 안 되는 구간'));
+fail=false;service.resume();assert.equal(calls.at(-1),'실패한 구간');service.stop();pending.at(-1)();
+console.log('Handbook: rapid skip starts new session, failed segment remains available to retry, explicit stop stays stopped.');

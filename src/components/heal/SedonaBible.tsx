@@ -317,7 +317,7 @@ export const SedonaBible: React.FC<{
   // TTS 상태 구독으로 재생 완료 자동 감지
   useEffect(() => {
     const unsubscribe = subscribeTTS((state) => {
-      if (!state.isSpeaking && !state.isLoading) {
+      if (!state.isSpeaking && !state.isLoading && !state.isPaused && !state.activeSessionId) {
         setIsPlayingFull(false);
         setIsPausedFull(false);
         setCurrentNarratingChapter(null);

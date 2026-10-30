@@ -199,8 +199,13 @@ export function TTSHighlightMark({
     };
   }, []);
   useEffect(() => {
-    if (!ownsHighlight || document.visibilityState === 'hidden') return;
-    markRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    if (!ownsHighlight) return;
+    const centerVisibleSentence = () => {
+      if (document.visibilityState !== 'hidden') markRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    };
+    centerVisibleSentence();
+    document.addEventListener('visibilitychange', centerVisibleSentence);
+    return () => document.removeEventListener('visibilitychange', centerVisibleSentence);
   }, [ownsHighlight]);
 
   const themeClass = isLight

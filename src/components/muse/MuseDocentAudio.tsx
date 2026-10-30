@@ -15,7 +15,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { getTodayDateKey } from "@/lib/dailyCache";
-import { playTTS, playTTSInChunks, stopTTS, pauseTTS, resumeTTS, subscribeTTS, prefetchTTS, prefetchTTSChunks } from "@/utils/tts";
+import { playTTS, playTTSInChunks, stopTTS, pauseTTS, resumeTTS, subscribeTTS, getCurrentTTSState, normalizeTextForSpeech, prefetchTTS, prefetchTTSChunks } from "@/utils/tts";
 import { getTTSAudioElement, isTTSAudioPlaying } from "@/lib/audio";
 
 type PlayerPhase = "idle" | "preparing" | "speaking" | "paused" | "done" | "error";
@@ -192,7 +192,7 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
     return subscribeTTS((state) => {
       setIsSpeaking(state.isSpeaking);
       setIsLoadingTts(state.isLoading);
-      if (!state.isSpeaking && !state.isLoading && phase === "speaking" && !pausedRef.current) {
+      if (!state.isSpeaking && !state.isLoading && !state.isPaused && !state.activeSessionId && phase === "speaking" && !pausedRef.current) {
         setPhase("done");
       }
     });
@@ -208,7 +208,7 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
     setParagraphs([]);
     setShowFullScript(false);
     setError(null);
-    stopTTS();
+    if (script.trim() && getCurrentTTSState().activeFullText === normalizeTextForSpeech(script)) stopTTS();
   }, [artwork.title, artwork.creator]);
 
   const startAudioPlayback = useCallback(async (narrationText: string) => {

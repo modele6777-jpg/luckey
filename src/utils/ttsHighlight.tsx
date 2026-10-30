@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { subscribeTTS, TTSState } from './tts';
+import { subscribeTTS, getCurrentTTSState, TTSState } from './tts';
 import {
   cleanSentenceForMatching,
   isSentenceActive,
@@ -31,7 +31,7 @@ export function useTTSCurrentSentence(enabled: boolean = true) {
       setTtsState((prev) => (prev.isSpeaking || prev.isLoading ? INACTIVE_TTS_STATE : prev));
       return;
     }
-    return subscribeTTS((state) => {
+    const unsubscribe = subscribeTTS((state) => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden' && state.isSpeaking) {
         return;
       }
@@ -51,6 +51,14 @@ export function useTTSCurrentSentence(enabled: boolean = true) {
         return state;
       });
     });
+    const syncVisible = () => {
+      if (document.visibilityState === 'visible') setTtsState(getCurrentTTSState());
+    };
+    document.addEventListener('visibilitychange', syncVisible);
+    return () => {
+      unsubscribe();
+      document.removeEventListener('visibilitychange', syncVisible);
+    };
   }, [enabled]);
 
   if (!enabled) {

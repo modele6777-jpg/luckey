@@ -1690,7 +1690,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         activeText: state.activeText,
         activeSentence: state.activeSentence || state.currentSentence || null,
       });
-      if (!state.isSpeaking && !state.isLoading) {
+      if (!state.isSpeaking && !state.isLoading && !state.isPaused && !state.activeSessionId) {
         setPlayingMsgId(null);
         if (isVoiceModeRef.current && !isLucyGeneratingRef.current) {
           // 루시 음성 종료 시 자동으로 듣기(STT) 상태로 전환하여 연속 대화 연결

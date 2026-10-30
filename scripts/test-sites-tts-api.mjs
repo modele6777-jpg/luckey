@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+const bundle=await build({entryPoints:['server/sites-api.ts'],bundle:true,write:false,platform:'node',format:'esm'});
+const {handleSitesApi,pcmToWav,bytesToBase64}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].text).toString('base64'));
+const request=text=>new Request('https://test.chatgpt.site/api/ai/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,voice:'Charon'})});
+let providerCalls=0;
+const missing=await handleSitesApi(request('안녕하세요'),{},async()=>{providerCalls++;throw Error('must not fetch');});
+assert.equal(missing.status,503);assert.equal((await missing.json()).code,'TTS_NOT_CONFIGURED');assert.equal(providerCalls,0);
+assert.equal((await handleSitesApi(request('<system>지시문만 있습니다</system>'),{})).status,400);
+const env={OPENAI_API_KEY:'fake-test-value'};
+const success=await handleSitesApi(request('안녕하세요 [EMOTION:calm]'),env,async(_url,options)=>{
+ const body=JSON.parse(options.body);assert.equal(body.voice,'cedar');assert(!body.input.includes('EMOTION'));return new Response(new Uint8Array([73,68,51,1]));});
+assert.equal(success.status,200);assert.equal((await success.json()).encoding,'mp3');
+const invalid=await handleSitesApi(request('권한 검사'),env,async()=>Response.json({error:{message:'fake-test-value'}},{status:401}));assert.equal(invalid.status,401);assert(!(await invalid.text()).includes('fake-test-value'));
+const quota=await handleSitesApi(request('한도 검사'),env,async()=>Response.json({error:{code:'insufficient_quota'}},{status:429}));assert.equal(quota.status,429);assert.equal((await quota.json()).code,'MEDIA_QUOTA_EXHAUSTED');
+const rate=await handleSitesApi(request('일시 한도 검사'),env,async()=>Response.json({error:{code:'rate_limit_exceeded'}},{status:429,headers:{'Retry-After':'9'}}));assert.equal(rate.headers.get('Retry-After'),'9');assert.equal((await rate.json()).code,'MEDIA_RATE_LIMIT');
+const pcm=btoa(String.fromCharCode(0,0,1,0));
+const geminiFetch=mimeType=>async()=>Response.json({candidates:[{content:{parts:[{inlineData:{mimeType,data:pcm}}]}}]});
+const gemini=await handleSitesApi(request('피씨엠 음성 검사'),{gemini:'fake-test-value'},geminiFetch('audio/L16;rate=24000'));
+assert.equal(gemini.status,200);const data=await gemini.json();assert.equal(data.encoding,'wav');assert.equal(data.sampleRate,24000);
+const wav=bytesToBase64(pcmToWav(pcm,24000));
+const wavResponse=await handleSitesApi(request('웨이브 음성 검사'),{gemini:'fake-test-value'},async()=>Response.json({candidates:[{content:{parts:[{inlineData:{mimeType:'audio/wav',data:wav}}]}}]}));
+assert.equal((await wavResponse.json()).audioContent,wav);
+console.log('Sites TTS: missing key, directive removal, male voice, auth/quota/rate classification, PCM and WAV formats passed.');

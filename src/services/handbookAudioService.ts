@@ -35,7 +35,7 @@ class HandbookAudioService {
 
   private listeners: Set<HandbookAudioListener> = new Set();
   private playbackSessionId: string = '';
-  private isProcessingQueue: boolean = false;
+  private processingSessionId: string | null = null;
   private ttsUnsubscribe: (() => void) | null = null;
   private isTtsSpeakingOrLoading: boolean = false;
 
@@ -82,7 +82,8 @@ class HandbookAudioService {
     this.playbackSessionId = sessionId;
 
     stopTTS();
-    await acquireScreenWakeLock();
+    void acquireScreenWakeLock();
+    if (this.playbackSessionId !== sessionId) return;
 
     this.state = {
       ...this.state,
@@ -118,8 +119,8 @@ class HandbookAudioService {
   }
 
   private async runPlaybackLoop(sessionId: string): Promise<void> {
-    if (this.isProcessingQueue) return;
-    this.isProcessingQueue = true;
+    if (this.processingSessionId === sessionId) return;
+    this.processingSessionId = sessionId;
 
     try {
       while (
@@ -148,6 +149,11 @@ class HandbookAudioService {
           await playTTS(seg.text, 'Kore', true);
         } catch (ttsErr) {
           console.warn('[HandbookAudioService] Segment TTS error:', ttsErr);
+          if (this.playbackSessionId === sessionId) {
+            this.state.isPaused = true;
+            this.notify();
+          }
+          break;
         }
 
         // Check if session was stopped/cancelled during speech
@@ -166,11 +172,11 @@ class HandbookAudioService {
       }
 
       // Reached the end of the playlist naturally
-      if (this.playbackSessionId === sessionId && this.state.isPlaying) {
+      if (this.playbackSessionId === sessionId && this.state.isPlaying && this.state.currentIndex >= this.state.playlist.length) {
         this.stop();
       }
     } finally {
-      this.isProcessingQueue = false;
+      if (this.processingSessionId === sessionId) this.processingSessionId = null;
     }
   }
 
@@ -186,6 +192,7 @@ class HandbookAudioService {
     this.state.isPaused = false;
     resumeTTS();
     this.notify();
+    if (!this.processingSessionId && this.playbackSessionId) void this.runPlaybackLoop(this.playbackSessionId);
   }
 
   public togglePlayPause(): void {

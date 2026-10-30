@@ -4,8 +4,7 @@ import {
   unlockAudioPlayback,
   playTTSAudio,
   getTTSPlaybackProgress,
-  playCompressedAudio,
-  playRawPCM,
+  isTTSAudioPlaying,
   primeTTSAudioElement,
   pauseTTSAudio,
   resumeTTSAudio,
@@ -34,6 +33,7 @@ export interface TTSPlaybackOptions {
 export interface TTSState {
   isSpeaking: boolean;
   isLoading: boolean;
+  isPaused?: boolean;
   activeText: string | null;
   activeFullText?: string | null;
   activeSessionId: string | null;
@@ -46,6 +46,7 @@ export interface TTSState {
 let ttsState: TTSState = {
   isSpeaking: false,
   isLoading: false,
+  isPaused: false,
   activeText: null,
   activeFullText: null,
   activeSessionId: null,
@@ -55,13 +56,15 @@ let ttsState: TTSState = {
   totalSentences: 0,
 };
 
+export const getCurrentTTSState = (): Readonly<TTSState> => ttsState;
+
 type TTSListener = (state: TTSState) => void;
 const listeners = new Set<TTSListener>();
 
 export const subscribeTTS = (listener: TTSListener) => {
   listeners.add(listener);
   // Emit current state immediately
-  listener(ttsState);
+  try { listener(ttsState); } catch (error) { console.warn("[TTS] State listener failed", error); }
   return () => {
     listeners.delete(listener);
   };
@@ -82,7 +85,7 @@ const updateTTSState = (newState: Partial<TTSState>) => {
     configureAmbientAudioSession();
   }
 
-  listeners.forEach((l) => l(ttsState));
+  listeners.forEach(listener => { try { listener(ttsState); } catch (error) { console.warn("[TTS] State listener failed", error); } });
 };
 
 export interface TTSAudioData {
@@ -100,7 +103,7 @@ export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string,
 }
 
 class TTSAudioRequestError extends Error {
-  constructor(message: string, public status = 0) { super(message); }
+  constructor(message: string, public status = 0, public code = '') { super(message); }
 }
 let ttsRequestQueue: Promise<unknown> = Promise.resolve();
 let activeTTSRequest: { controller: AbortController; cancel: () => void; key: string } | null = null;
@@ -141,7 +144,10 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede'): Promis
           ttsRateLimitUntil = Date.now() + seconds * 1000;
           throw new TTSAudioRequestError(`AI 음성 요청이 일시적으로 제한됐습니다. 약 ${seconds}초 뒤 다시 눌러 주세요.`, 429);
         }
-        throw new TTSAudioRequestError('AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status);
+        if (response.status === 503 && (failure?.code === 'TTS_NOT_CONFIGURED' || /API.*키|키.*설정/.test(String(failure?.error || '')))) {
+          throw new TTSAudioRequestError('AI 음성 API 키가 설정되지 않았습니다. 사이트의 API 설정을 확인해 주세요.', 503, 'TTS_NOT_CONFIGURED');
+        }
+        throw new TTSAudioRequestError(response.status === 401 || response.status === 403 ? 'AI 음성 API 인증·권한을 확인해 주세요.' : 'AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status);
       }
       const data = await response.json();
       if (!data?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);
@@ -175,25 +181,40 @@ function ensureTTSLifecycle() {
   initTTSSessionHandlers(stopTTS, pauseTTS, resumeTTS);
 }
 
+const retiredTTSSessions = new Set<string>();
+function waitForTTSResume(session: string): Promise<boolean> {
+  if (ttsState.activeSessionId !== session) return Promise.resolve(false);
+  if (!ttsState.isPaused) return Promise.resolve(true);
+  return new Promise(resolve => {
+    const unsubscribe = subscribeTTS(state => {
+      if (state.activeSessionId !== session || !state.isPaused) {
+        unsubscribe();
+        resolve(state.activeSessionId === session);
+      }
+    });
+  });
+}
+
 export const pauseTTS = (): void => {
-  updateTTSState({ isSpeaking: false, isLoading: false });
+  if (!ttsState.activeSessionId || ttsState.isPaused) return;
+  updateTTSState({ isSpeaking: false, isLoading: false, isPaused: true });
   pauseTTSAudio();
   pauseTTSSession();
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.speaking) {
-    window.speechSynthesis.pause();
-  }
 };
 
 export const resumeTTS = (): void => {
-  updateTTSState({ isSpeaking: true, isLoading: false });
+  if (!ttsState.activeSessionId || !ttsState.isPaused) return;
   resumeTTSAudio();
+  const speaking = isTTSAudioPlaying();
+  updateTTSState({ isPaused: false, isSpeaking: speaking, isLoading: !speaking });
   resumeTTSSession();
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.paused) {
-    window.speechSynthesis.resume();
-  }
 };
 
 export const stopTTS = () => {
+  if (ttsState.activeSessionId) {
+    retiredTTSSessions.add(ttsState.activeSessionId);
+    if (retiredTTSSessions.size > 256) retiredTTSSessions.delete(retiredTTSSessions.values().next().value!);
+  }
   const request = activeTTSRequest;
   activeTTSRequest = null;
   if (request) {
@@ -205,6 +226,7 @@ export const stopTTS = () => {
   updateTTSState({
     isSpeaking: false,
     isLoading: false,
+    isPaused: false,
     activeText: null,
     activeFullText: null,
     activeSessionId: null,
@@ -238,7 +260,7 @@ export const playTTS = async (
 ): Promise<void> => {
   ensureTTSLifecycle();
   const cleanText = normalizeTextForSpeech(text);
-  if (!cleanText) return;
+  if (!cleanText || (sequenceSessionId && retiredTTSSessions.has(sequenceSessionId))) return;
   // Legacy book, report and insight readers call this entrypoint directly.
   if (!sequenceSessionId && cleanText.length > 260) {
     try {
@@ -335,7 +357,7 @@ export const playTTS = async (
       console.warn("[TTS] Failed to warm up audio systems:", e);
     }
 
-    updateTTSState({ isLoading: true, isSpeaking: false, activeText: cleanText,
+    updateTTSState({ isLoading: !ttsState.isPaused, isSpeaking: false, activeText: cleanText,
       currentSentence: initialSubSentence, activeSentence: initialSubSentence,
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}) });
     let data: TTSAudioData | undefined;
@@ -345,7 +367,7 @@ export const playTTS = async (
         data = await requestAIAudio(cleanText, activeEmotion, targetVoice);
         break;
       } catch (error) {
-        if (attempt || (error instanceof TTSAudioRequestError && error.status < 500)) throw error;
+        if (attempt || (error instanceof TTSAudioRequestError && (error.status < 500 || error.code === 'TTS_NOT_CONFIGURED'))) throw error;
         await new Promise(resolve => setTimeout(resolve, 600));
       }
     }
@@ -356,31 +378,24 @@ export const playTTS = async (
       return;
     }
 
+    if (!await waitForTTSResume(sessionToVerify!)) return;
+
     // Decoding and network time are not playback time. Publish highlights only
     // when the audio clock reports a live source, for every entrypoint/reader.
     const speakingSentences = splitSpeechIntoSentences(cleanText);
     if (data?.audioContent) {
       const encoding = data.encoding === 'pcm' ? 'pcm' : data.encoding === 'wav' ? 'wav' : 'mp3';
+      // One playback engine owns pause, recovery, cancellation and timing.
+      // Replaying through the legacy PCM path bypassed all four safeguards.
       const playAudio = async () => {
         try {
-          await playTTSAudio(
-            data!.audioContent,
-            encoding,
-            data!.sampleRate ?? 24000,
-            activeEmotion || cleanText,
-            isSequenceChunk,
-            1.0,
-          );
-        } catch (err) {
-          if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
-          if (['TTS_INTERRUPTED', 'TTS_CONTEXT_STALLED', 'TTS_DECODE_TIMEOUT'].includes((err as any)?.code)) throw err;
-          console.warn('[TTS] playTTSAudio failed, applying WebAudio direct buffer fallback:', err);
-          updateTTSState({ isLoading: false, isSpeaking: true, currentSentence: speakingSentences[0] || cleanText, activeSentence: speakingSentences[0] || cleanText });
-          if (encoding === 'pcm') {
-            await playRawPCM(data!.audioContent, data!.sampleRate ?? 24000);
-          } else {
-            await playCompressedAudio(data!.audioContent, 1.0);
+          await playTTSAudio(data!.audioContent, encoding,
+            data!.sampleRate ?? 24000, activeEmotion || cleanText, isSequenceChunk, 1.0);
+        } catch (error) {
+          if (!['TTS_CONTEXT_STALLED', 'TTS_DECODE_TIMEOUT', 'TTS_INTERRUPTED'].includes((error as any)?.code)) {
+            ttsCache.delete(getTTSCacheKey(cleanText, targetVoice));
           }
+          throw error;
         }
       };
 
@@ -416,14 +431,11 @@ export const playTTS = async (
   } catch (error) {
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
 
-    if (!isSequenceChunk) stopTTS();
+    stopTTS();
     console.warn('[TTS] AI audio unavailable; device speech is disabled.', error);
-    if (!wait && typeof window !== 'undefined') {
-      const message = error instanceof TTSAudioRequestError ? error.message : 'AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.';
-      window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message } }));
-      return;
-    }
-    throw error instanceof TTSAudioRequestError ? error : new Error('AI 음성을 재생하지 못했습니다. 잠시 후 다시 눌러 주세요.');
+    const failure = error instanceof Error ? error : new Error('AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: failure.message } }));
+    if (wait) throw failure;
   }
 };
 
@@ -517,6 +529,8 @@ interface TTSChunkProgress {
   fullText: string;
   chunkIndex: number;
   totalChunks: number;
+  chunks: string[];
+  voice: string;
   updatedAt: number;
 }
 let lastTTSProgress: TTSChunkProgress | null = null;
@@ -542,6 +556,7 @@ export const playTTSInChunks = async (
 ): Promise<void> => {
   const cleanText = prepareNaturalSpeechText(text);
   if (!cleanText) return;
+  if ((options?.isAutoPlay || options?.isAutoPlayback) && ttsState.activeSessionId) return;
 
   // If already speaking or loading this exact sequence:
   if (
@@ -570,6 +585,9 @@ export const playTTSInChunks = async (
   if (
     lastTTSProgress &&
     lastTTSProgress.fullText === cleanText &&
+    lastTTSProgress.voice === (voice === 'Charon' ? 'Charon' : 'Aoede') &&
+    lastTTSProgress.chunks.length === chunks.length &&
+    lastTTSProgress.chunks.every((chunk, index) => chunk === chunks[index]) &&
     lastTTSProgress.chunkIndex > 0 &&
     lastTTSProgress.chunkIndex < chunks.length &&
     Date.now() - lastTTSProgress.updatedAt < 15 * 60 * 1000
@@ -621,6 +639,7 @@ export const playTTSInChunks = async (
         break;
       }
 
+      if (!await waitForTTSResume(sequenceSessionId)) break;
       const currentChunkText = chunks[i];
       const subSentences = splitSpeechIntoSentences(currentChunkText);
       const firstSub = subSentences[0] || currentChunkText;
@@ -630,6 +649,8 @@ export const playTTSInChunks = async (
         fullText: cleanText,
         chunkIndex: i,
         totalChunks: chunks.length,
+        chunks,
+        voice: voice === 'Charon' ? 'Charon' : 'Aoede',
         updatedAt: Date.now(),
       };
 
@@ -703,7 +724,7 @@ export const playConversation = async (
   }
 
   stopTTS();
-  const mySessionId = Math.random().toString();
+  const mySessionId = `conversation_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   updateTTSState({ isLoading: true, isSpeaking: false, activeText: '__CONVERSATION__', activeSessionId: mySessionId });
   isPlayingSequence = true;
   acquireScreenWakeLock().catch(() => {});
@@ -877,7 +898,7 @@ export const useTTSActive = () => {
   const [active, setActive] = useState(false);
   useEffect(() => {
     return subscribeTTS((state) => {
-      setActive(state.isSpeaking || state.isLoading);
+      setActive(state.isSpeaking || state.isLoading || Boolean(state.isPaused));
     });
   }, []);
   return active;

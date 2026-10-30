@@ -206,6 +206,7 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
       const voice = ['Kore', 'Aoede', 'Puck', 'Charon', 'Fenrir', 'Leda', 'Zephyr'].includes(body.voice) ? body.voice : 'Kore';
       const config = getSitesAIConfig(env);
+      if (!config.key) throw new ApiError(503, 'AI 음성 API 키가 설정되지 않았습니다.', undefined, 'TTS_NOT_CONFIGURED');
       if (config.provider === 'openai') {
         if (!config.key) throw new ApiError(503, 'OpenAI API 키가 설정되지 않았습니다.');
         const male = voice === 'Charon';
