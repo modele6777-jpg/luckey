@@ -95,6 +95,21 @@ export interface TTSAudioData {
 }
 
 const ttsCache = new Map<string, Promise<TTSAudioData | null>>();
+interface SpeechLookahead { text: string; voice?: string; emotion?: string }
+const playbackLookahead = new Map<string, SpeechLookahead>();
+function prepareNextSpeech(session: string): void {
+  if (ttsState.activeSessionId !== session || ttsState.isPaused) return;
+  const next = playbackLookahead.get(session);
+  if (!next) return;
+  // Match the next actual request even when a legacy reader supplies a long chunk.
+  const clean = normalizeTextForSpeech(next.text);
+  const first = clean.length > 260 ? splitSpeechIntoChunks(clean, 240)[0] : clean;
+  if (first) void requestAIAudio(first, next.emotion, next.voice === 'Charon' ? 'Charon' : 'Aoede', session).catch(() => {});
+}
+function setSpeechLookahead(session: string, next?: SpeechLookahead): void {
+  if (next) playbackLookahead.set(session, next);
+  else playbackLookahead.delete(session);
+}
 
 export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string, _rate?: string, _speed?: number): string {
   const clean = normalizeTextForSpeech(text);
@@ -108,11 +123,12 @@ class TTSAudioRequestError extends Error {
 let ttsRequestQueue: Promise<unknown> = Promise.resolve();
 let activeTTSRequest: { controller: AbortController; cancel: () => void; key: string } | null = null;
 let ttsRateLimitUntil = 0;
-function requestAIAudio(text: string, emotion?: string, voice = 'Aoede'): Promise<TTSAudioData> {
+function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session?: string): Promise<TTSAudioData> {
   const key = getTTSCacheKey(text, voice);
   const existing = ttsCache.get(key);
   if (existing) return existing as Promise<TTSAudioData>;
   const pending = ttsRequestQueue.catch(() => {}).then(async () => {
+    if (session && ttsState.activeSessionId !== session) throw new Error('음성 요청이 취소되었습니다.');
     if (Date.now() < ttsRateLimitUntil) throw new TTSAudioRequestError(`AI 음성 요청이 일시적으로 제한됐습니다. 약 ${Math.ceil((ttsRateLimitUntil - Date.now()) / 1000)}초 뒤 다시 눌러 주세요.`, 429);
     const controller = new AbortController();
     let cancelRequest: () => void = () => {};
@@ -211,6 +227,7 @@ export const resumeTTS = (): void => {
 };
 
 export const stopTTS = () => {
+  playbackLookahead.clear();
   if (ttsState.activeSessionId) {
     retiredTTSSessions.add(ttsState.activeSessionId);
     if (retiredTTSSessions.size > 256) retiredTTSSessions.delete(retiredTTSSessions.values().next().value!);
@@ -276,8 +293,11 @@ export const playTTS = async (
   // stopping that session, and only let the final part finish its parent turn.
   if (sequenceSessionId && cleanText.length > 260) {
     const parts = splitSpeechIntoChunks(cleanText, 240);
+    const parentNext = playbackLookahead.get(sequenceSessionId);
     for (let index = 0; index < parts.length; index++) {
       if (ttsState.activeSessionId && ttsState.activeSessionId !== sequenceSessionId) return;
+      setSpeechLookahead(sequenceSessionId, index + 1 < parts.length
+        ? { text: parts[index + 1], voice, emotion } : parentNext);
       await playTTS(parts[index], voice, true, emotion, sequenceSessionId,
         isSequenceChunk || index < parts.length - 1, fullTextReference || cleanText,
         _rate, _speed, options);
@@ -364,7 +384,7 @@ export const playTTS = async (
     for (let attempt = 0; attempt < 2; attempt++) {
       if (ttsState.activeSessionId !== sessionToVerify) return;
       try {
-        data = await requestAIAudio(cleanText, activeEmotion, targetVoice);
+        data = await requestAIAudio(cleanText, activeEmotion, targetVoice, sessionToVerify);
         break;
       } catch (error) {
         if (attempt || (error instanceof TTSAudioRequestError && (error.status < 500 || error.code === 'TTS_NOT_CONFIGURED'))) throw error;
@@ -409,6 +429,7 @@ export const playTTS = async (
           setTTSSessionActive(sentence);
           if (!announcedPlayback && typeof window !== 'undefined') {
             announcedPlayback = true;
+            prepareNextSpeech(sessionToVerify!);
             window.dispatchEvent(new Event('prism:tts-recovered'));
           }
         },
@@ -627,13 +648,6 @@ export const playTTSInChunks = async (
       primeTTSAudioElement();
     } catch (_) {}
 
-    // Pre-fetch the upcoming 5 chunks ahead of playback so background playback never waits on network (Ultra Max Audio)
-    for (let ahead = 1; ahead <= 1; ahead++) {
-      if (startChunkIndex + ahead < chunks.length) {
-        prefetchTTS(chunks[startChunkIndex + ahead], voice, emotion).catch(() => {});
-      }
-    }
-
     for (let i = startChunkIndex; i < chunks.length; i++) {
       if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) {
         break;
@@ -669,12 +683,8 @@ export const playTTSInChunks = async (
         activeSessionId: sequenceSessionId,
       });
 
-      // Proactively pre-fetch next upcoming chunk in advance (Zero-delay continuous stream)
-      for (let ahead = 1; ahead <= 1; ahead++) {
-        if (i + ahead < chunks.length) {
-          prefetchTTS(chunks[i + ahead], voice, emotion).catch(() => {});
-        }
-      }
+      setSpeechLookahead(sequenceSessionId, i + 1 < chunks.length
+        ? { text: chunks[i + 1], voice, emotion } : undefined);
 
       const isLastChunk = i === chunks.length - 1;
       try {
@@ -745,6 +755,11 @@ export const playConversation = async (
       }
 
       const isLastMsg = i === messages.length - 1;
+      const nextMessage = messages[i + 1];
+      setSpeechLookahead(mySessionId, nextMessage ? {
+        text: nextMessage.content,
+        voice: nextMessage.role === 'user' ? resolvedUserVoice : resolvedAiVoice,
+      } : undefined);
       await playTTS(m.content, voice, true, undefined, mySessionId, !isLastMsg, undefined, undefined, undefined, options);
       if (ttsState.activeSessionId !== mySessionId) break;
 
@@ -825,10 +840,10 @@ export const playQAndATTS = async (
           activeFullText: cleanQuestion,
           activeSessionId: sequenceSessionId,
         });
+        setSpeechLookahead(sequenceSessionId, i + 1 < qChunks.length
+          ? { text: qChunks[i + 1], voice: userVoice }
+          : cleanAnswer ? { text: splitSpeechIntoChunks(cleanAnswer, 240)[0], voice: aiVoice, emotion: '다정' } : undefined);
         await playTTS(qChunks[i], userVoice, true, undefined, sequenceSessionId, true, cleanQuestion);
-        if (i < qChunks.length - 1) {
-          await new Promise((r) => setTimeout(r, 60));
-        }
       }
 
       // 질문과 답변 사이 자연스러운 턴 전환 침묵 (360ms)
@@ -852,8 +867,6 @@ export const playQAndATTS = async (
         primeTTSAudioElement();
       } catch (_) {}
 
-      if (aChunks.length > 1) prefetchTTS(aChunks[1], aiVoice, '다정').catch(() => {});
-      if (aChunks.length > 2) prefetchTTS(aChunks[2], aiVoice, '다정').catch(() => {});
 
       for (let i = 0; i < aChunks.length; i++) {
         if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
@@ -867,8 +880,8 @@ export const playQAndATTS = async (
           activeFullText: cleanAnswer,
           activeSessionId: sequenceSessionId,
         });
-        if (i + 1 < aChunks.length) prefetchTTS(aChunks[i + 1], aiVoice, '다정').catch(() => {});
-        if (i + 2 < aChunks.length) prefetchTTS(aChunks[i + 2], aiVoice, '다정').catch(() => {});
+        setSpeechLookahead(sequenceSessionId, i + 1 < aChunks.length
+          ? { text: aChunks[i + 1], voice: aiVoice, emotion: '다정' } : undefined);
 
         const isLastChunk = i === aChunks.length - 1;
         try {
@@ -878,9 +891,6 @@ export const playQAndATTS = async (
         }
 
         if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
-        if (!isLastChunk) {
-          await new Promise((r) => setTimeout(r, 60));
-        }
       }
     }
   } catch (err) {
