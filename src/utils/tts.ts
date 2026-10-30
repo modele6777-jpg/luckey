@@ -410,7 +410,7 @@ export const playTTS = async (
       const playAudio = async () => {
         try {
           await playTTSAudio(data!.audioContent, encoding,
-            data!.sampleRate ?? 24000, activeEmotion || cleanText, isSequenceChunk, 1.0);
+            data!.sampleRate ?? 24000, activeEmotion || cleanText, isSequenceChunk, 1.0, () => prepareNextSpeech(sessionToVerify!));
         } catch (error) {
           if (!['TTS_CONTEXT_STALLED', 'TTS_DECODE_TIMEOUT', 'TTS_INTERRUPTED'].includes((error as any)?.code)) {
             ttsCache.delete(getTTSCacheKey(cleanText, targetVoice));

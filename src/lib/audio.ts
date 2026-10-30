@@ -1,3 +1,4 @@
+import { getSpeechMediaElement, primeSpeechMedia, stopSpeechMedia, speechMediaProgress, isSpeechMediaPlaying, pauseSpeechMedia, resumeSpeechMedia, playSpeechMedia } from './speechMedia';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from './wakeLock';
 import { recoverSpeechContext } from './audioRecovery';
 
@@ -33,7 +34,7 @@ export function getSharedAudioContext(): AudioContext {
     throw new Error('AudioContext is only available in a browser with Web Audio support');
   }
 
-  // 🌟 외부 음악(멜론, 스포티파이 등)과 믹싱 공존하도록 항상 ambient 세션 보장
+  // Preserve the playback session while TTS owns audio; otherwise use ambient.
   configureAmbientAudioSession();
 
   if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
@@ -627,35 +628,28 @@ function stopActiveWebAudioTTSSource(forPause: boolean = false) {
 }
 
 // Never start a silent HTML media element: it can claim OS audio focus.
-function startTTSKeepAlive() { configureAmbientAudioSession(); }
+function startTTSKeepAlive() { configureSpeechAudioSession(); }
 function stopTTSKeepAlive() { configureAmbientAudioSession(); }
 
+let speechSessionActive = false;
 export function configureAmbientAudioSession(): void {
   if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
     try {
       const session = (navigator as any).audioSession;
-      if (session.type !== 'ambient') session.type = 'ambient';
+      const type = speechSessionActive ? 'playback' : 'ambient';
+      if (session.type !== type) session.type = type;
     } catch (_) { /* Older browsers may not support a mixable audio session. */ }
   }
 }
 
-/** All app audio, including speech, shares a non-exclusive ambient session. */
+/** Speech needs a playback session for screen-lock/background playback. */
 export function configureTransientDuckingAudioSession(): void { configureAmbientAudioSession(); }
 export function configurePlaybackAudioSession(): void { configureAmbientAudioSession(); }
-export function configureSpeechAudioSession(): void { configureAmbientAudioSession(); }
+export function configureSpeechAudioSession(): void { speechSessionActive = true; configureAmbientAudioSession(); if (typeof window !== 'undefined') primeSpeechMedia(); }
 
 export function getTTSAudioElement(): HTMLAudioElement {
-  if (typeof window === 'undefined') {
-    throw new Error('HTMLAudioElement is only available in the browser');
-  }
-  if (!ttsAudioEl) {
-    ttsAudioEl = new Audio();
-    ttsAudioEl.preload = 'auto';
-    ttsAudioEl.setAttribute('playsinline', 'true');
-    ttsAudioEl.setAttribute('webkit-playsinline', 'true');
-  }
-  configureSpeechAudioSession();
-  return ttsAudioEl;
+  if (typeof window === 'undefined') throw new Error('HTMLAudioElement is only available in the browser');
+  return getSpeechMediaElement();
 }
 
 /**
@@ -693,14 +687,15 @@ export function unlockAudioPlayback(): void {
 
 /** Call synchronously during a user gesture before async TTS fetch. */
 export function primeTTSAudioElement(): void {
-  // Unlock only Web Audio; priming must not start a native media player.
+  configureSpeechAudioSession();
+  primeSpeechMedia();
   unlockAudioPlayback();
 }
 
 let ttsUserExplicitlyPaused = false;
 
 export function isTTSAudioPlaying(): boolean {
-  return ttsShouldBePlaying && !ttsUserExplicitlyPaused && !!ttsActiveSource;
+  return isSpeechMediaPlaying() || (ttsShouldBePlaying && !ttsUserExplicitlyPaused && !!ttsActiveSource);
 }
 
 function launchWebAudioTTSSource(activePlaybackId: number): void {
@@ -859,6 +854,8 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
 
 /** Position in the decoded buffer, driven by the audio clock rather than wall time. */
 export function getTTSPlaybackProgress(): { elapsed: number; duration: number; paused: boolean } | null {
+  const media = speechMediaProgress();
+  if (media) return media;
   if (!ttsActiveBuffer || (!ttsActiveSource && !ttsUserExplicitlyPaused)) return null;
   const ctx = getSharedAudioContext();
   const advancing = !!ttsActiveSource && !ttsUserExplicitlyPaused;
@@ -871,6 +868,7 @@ export function getTTSPlaybackProgress(): { elapsed: number; duration: number; p
 }
 
 export function pauseTTSAudio(): void {
+  pauseSpeechMedia();
   ttsUserExplicitlyPaused = true;
   stopTTSKeepAlive();
   releaseScreenWakeLock().catch(() => {});
@@ -895,6 +893,8 @@ export function pauseTTSAudio(): void {
 }
 
 export function resumeTTSAudio(): void {
+  configureSpeechAudioSession();
+  resumeSpeechMedia();
   ttsUserExplicitlyPaused = false;
   ttsShouldBePlaying = true;
   try {
@@ -919,6 +919,8 @@ export function resumeTTSAudio(): void {
 }
 
 export function stopTTSAudio(): void {
+  stopSpeechMedia();
+  speechSessionActive = false;
   ttsPlaybackId++;
   ttsShouldBePlaying = false;
   ttsUserExplicitlyPaused = false;
@@ -1260,93 +1262,30 @@ export async function playTTSAudio(
   _emotionOrText?: string | TTSEmotionProfile,
   isSequenceChunk: boolean = false,
   _playbackRateOverride?: number,
+  onPlaying?: () => void,
 ): Promise<void> {
   if (typeof window === 'undefined') {
     throw new Error('TTS playback is only available in the browser');
   }
 
-  // A stop/new reader during an asynchronous context resume must win.
-  const requestedPlaybackId = ttsPlaybackId;
+  const activePlaybackId = ++ttsPlaybackId;
   ttsUserExplicitlyPaused = false;
-  // Keep TTS in the non-exclusive ambient mix with external music.
   configureSpeechAudioSession();
-  let audioCtx: AudioContext | null;
-  try {
-    audioCtx = await recoverSpeechContext(
-      () => { const context = getSharedAudioContext(); return speechContextNeedsReset ? replaceSpeechAudioContext(context) : context; },
-      replaceSpeechAudioContext,
-      () => requestedPlaybackId === ttsPlaybackId,
-    );
-  } catch (error) {
-    speechContextNeedsReset = true;
-    throw error;
-  }
-  if (!audioCtx || requestedPlaybackId !== ttsPlaybackId) return;
-
-  // Stop any existing TTS source before starting the new buffer
   stopRawPCM();
   stopActiveWebAudioTTSSource(false);
-  const prevResolver = ttsActiveFinishResolver;
-  ttsActiveFinishResolver = null;
-  prevResolver?.();
-
-  ttsPlaybackId++;
-  const activePlaybackId = ttsPlaybackId;
-
-  acquireScreenWakeLock().catch(() => {});
-
-  const bytes = base64ToBytes(base64);
-  const detectedFormat = detectAudioFormat(bytes);
-  const isRawPcm = detectedFormat === 'pcm' && encoding === 'pcm';
-
-  let decodedBuffer: AudioBuffer;
-  if (isRawPcm) {
-    const int16Array = new Int16Array(bytes.buffer, bytes.byteOffset, Math.floor(bytes.byteLength / 2));
-    const float32Array = new Float32Array(int16Array.length);
-    for (let i = 0; i < int16Array.length; i++) {
-      float32Array[i] = int16Array[i] / 32768.0;
-    }
-    decodedBuffer = audioCtx.createBuffer(1, float32Array.length, sampleRate);
-    decodedBuffer.getChannelData(0).set(float32Array);
-  } else {
-    decodedBuffer = await safeDecodeAudioData(audioCtx, bytes.buffer.slice(0) as ArrayBuffer);
-  }
-
-  if (activePlaybackId !== ttsPlaybackId) return;
-
   ttsShouldBePlaying = true;
-  ttsActiveBuffer = decodedBuffer;
-  ttsPausedOffsetSec = 0;
-  ttsActiveRate = 1.0;
-  ttsEarlyEndRetries = 0;
-  ttsContextRecoveryAttempts = 0;
-  startTTSKeepAlive();
-
-  // Web Audio stays in the mixable ambient session instead of taking native media focus.
-  await new Promise<void>((resolve, reject) => {
-    ttsActiveReject = reject;
-    ttsActiveFinishResolver = () => {
-      ttsActiveReject = null;
-      if (activePlaybackId === ttsPlaybackId && !isSequenceChunk) {
-        ttsShouldBePlaying = false;
-        stopTTSKeepAlive();
-        releaseScreenWakeLock().catch(() => {});
-      }
-      resolve();
-    };
-    try {
-      if (!ttsUserExplicitlyPaused) launchWebAudioTTSSource(activePlaybackId);
-    } catch (error) {
-      ttsActiveReject = null;
-      ttsActiveFinishResolver = null;
+  const bytes = base64ToBytes(base64);
+  const format = detectAudioFormat(bytes);
+  try {
+    await playSpeechMedia(bytes, format === 'pcm' ? encoding : format, sampleRate, onPlaying);
+  } finally {
+    if (activePlaybackId === ttsPlaybackId && !isSequenceChunk) {
       ttsShouldBePlaying = false;
-      ttsActiveBuffer = null;
-      stopTTSKeepAlive();
+      speechSessionActive = false;
+      configureAmbientAudioSession();
       releaseScreenWakeLock().catch(() => {});
-      stopActiveWebAudioTTSSource(false);
-      reject(error);
     }
-  });
+  }
 }
 
 let ttsLifecycleInitialized = false;
@@ -1357,7 +1296,7 @@ export function initTTSAudioLifecycle(): void {
   configureAmbientAudioSession();
 
   const ensureAudioContextRunningForTTS = () => {
-    if (!ttsShouldBePlaying || ttsUserExplicitlyPaused) return;
+    if (!ttsShouldBePlaying || ttsUserExplicitlyPaused || speechMediaProgress()) return;
     try {
       const ctx = getSharedAudioContext();
       const st = ctx.state as string;
@@ -1371,6 +1310,7 @@ export function initTTSAudioLifecycle(): void {
 
   const handleVisibleResume = () => {
     if (document.visibilityState === 'hidden') return;
+    if (speechMediaProgress()) { configureSpeechAudioSession(); return; }
     // 🌟 오직 TTS가 실제로 재생 중일 때만 AudioContext를 복원합니다.
     // 재생 중이 아닐 때는 AudioContext를 깨우지 않아 외부 백그라운드 음악(멜론, 스포티파이 등)이 중단되지 않도록 보호합니다.
     if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
