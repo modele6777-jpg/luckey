@@ -6,7 +6,7 @@ export interface TarotCard {
   keywords: string[];
   /** 정/역방향 — 카드 뽑기 시 할당 */
   reversed?: boolean;
-  deckId?: 'healing' | 'miracle' | 'growth' | 'money';
+  deckId?: 'healing' | 'miracle' | 'growth' | 'money' | 'miracle_vieville' | 'money_grimaud';
   imageUrl?: string;
   sourceUrl?: string;
   historicalTitle?: string;

@@ -1,4 +1,4 @@
-import { ORACLE_DECKS, oracleDeckPrompt } from '@/data/oracleDecks';
+import { ORACLE_DECKS, oracleDeckPrompt, getOracleReadingDeck } from '@/data/oracleDecks';
 import { MoneyRuleTarot } from './MoneyRuleTarot';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -1480,9 +1480,9 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
   }, [drawnCards, oracleFollowUpEntries]);
 
   const oracleRemainingDeck = useMemo(() => {
-    const readingDeck = drawnCards.length && !drawnCards[0].deckId ? TAROT_DECK : activeDeckSource;
+    const readingDeck = getOracleReadingDeck(oracleMode, drawnCards).cards;
     return readingDeck.filter((c) => !oracleDrawnCardIds.has(c.id));
-  }, [oracleDrawnCardIds, activeDeckSource, drawnCards]);
+  }, [oracleDrawnCardIds, activeDeckSource, drawnCards, oracleMode]);
 
   // 🔮 오라클 연속 심층 리딩 실행기 (사주 + 모드별 특화 LLM 스트리밍)
   const executeOracleFollowUpReading = useCallback(async (
@@ -2006,7 +2006,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
           ? `\n\n# [최우선 필수 집중 화두] 질문자가 호소한 구체적인 삶의 갈등/두려움/고민:\n"${effectiveInquiry}"\n★ 절대 지침: 기적수업(ACIM) 오라클 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 정중앙에 두고 풀이해야 합니다. 일반적인 세속적 타로 점술이나 막연한 조언을 배제하고, 질문자가 겪고 있는 고통의 본질을 에고의 두려움/죄책감/투사 관점에서 밝히 드러내며, 성령의 지각 전환(Shift in Perception)과 거룩한 순간(Holy Instant), 그리고 참된 용서를 통해 온전한 하나님의 평화로 귀환하는 영적 길을 2500~3500자 이상의 대서사로 인도하십시오.\n`
           : `\n\n# 질문자의 영적 화두:\n세상의 복잡한 갈등과 에고의 불안 속에서, 마음의 눈을 성령의 시선으로 전환하여 하나님의 온전한 평화와 참된 용서의 기적을 체험하도록 이끌어 주십시오.\n`;
 
-        const systemPrompt = `당신은 『기적수업(A Course in Miracles, ACIM)』의 심원한 비이원론(Non-duality) 형이상학과 내면의 거룩한 평화를 비르트 22장 타로 및 사주 명리와 정교하게 융합하는 '기적수업 지각전환 영적 오라클 마스터'입니다.
+        const systemPrompt = `당신은 『기적수업(A Course in Miracles, ACIM)』의 심원한 비이원론(Non-duality) 형이상학과 내면의 거룩한 평화를 비에빌 78장 타로 및 사주 명리와 정교하게 융합하는 '기적수업 지각전환 영적 오라클 마스터'입니다.
 
 # 핵심 사명 (Core ACIM Oracle Mission):
 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 대서사를 제공하는 최상위 오라클입니다.
@@ -3608,7 +3608,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   />
                 )}
                 <Feather size={14} className="relative z-10 text-purple-300" />
-                <span className="relative z-10">기적수업 (22장)</span>
+                <span className="relative z-10">기적수업 (78장)</span>
               </button>
 
               <button
@@ -3627,7 +3627,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   />
                 )}
                 <Zap size={14} className="relative z-10 text-amber-400" />
-                <span className="relative z-10">자기계발 (22장)</span>
+                <span className="relative z-10">자기계발 (78장)</span>
               </button>
             </div>
           </div>
@@ -3772,7 +3772,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 </button>
               </div>
               <p className="mt-2 text-[11px] text-zinc-500">
-                힐링 · 웨이트 1909　|　기적수업 · 비르트　|　자기계발 · 마르세유　|　머니룰 · 에테이야
+                힐링 · 웨이트 1909　|　기적수업 · 비에빌　|　자기계발 · 마르세유　|　머니룰 · 에테이야
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-6 max-w-4xl mx-auto text-left">
@@ -4142,7 +4142,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   {oracleMode === 'healing'
                     ? '사주 원국과 78장 타로를 융합하여 심층 오라클 리딩을 작성 중입니다...'
                     : oracleMode === 'miracle'
-                    ? '기적수업의 거룩한 순간과 비르트 22장 타로를 융합하여 지각전환의 평화 리딩을 작성 중입니다...'
+                    ? '기적수업의 거룩한 순간과 비에빌 78장 타로를 융합하여 지각전환의 평화 리딩을 작성 중입니다...'
                     : '4원소 마인드셋과 질문자의 과제를 융합하여 실행 편지를 작성 중입니다...'}
                 </p>
               </div>

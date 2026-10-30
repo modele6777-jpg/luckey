@@ -26,29 +26,60 @@ const moneySymbols: [string, string[], string][] = [
   ['지배자', ['권한', '통제', '경계'], '돈의 주도권을 점검하고 불공정한 요구에는 분명한 경계를 세우세요.'],
 ];
 
-function makeDeck(mode: OracleDeckMode): TarotCard[] {
-  return assets.filter(a => a.mode === mode).map(asset => {
+function etteillaBase(number: number): TarotCard {
+  if (number <= 21) {
+    const symbol = moneySymbols[number - 1];
+    return { id: `etteilla_${number}`, name: `Etteilla ${number}`, nameKo: symbol[0], type: 'major', keywords: symbol[1], readingHint: symbol[2] };
+  }
+  if (number === 78) return { ...TAROT_DECK[0], id: 'etteilla_78', name: 'La Folie', nameKo: '광기', keywords: ['자유', '무모함', '출발'], readingHint: '새로운 시도를 하되 확인 없이 돈을 걸거나 충동적으로 지출하지 마세요.' };
+  const suitIndex = Math.floor((number - 22) / 14);
+  const position = (number - 22) % 14;
+  const rank = position < 4 ? [14, 13, 12, 11][position] : 14 - position;
+  const prefix = ['wands', 'cups', 'swords', 'pent'][suitIndex];
+  const original = TAROT_DECK.find(c => c.id === `${prefix}_${rank}`)!;
+  const hint = [
+    '아이디어를 수입으로 연결할 작은 실험을 정하고 시간과 비용의 상한을 지키세요.',
+    '관계와 감정에 따른 소비를 돌아보고 서로 편안한 금전 경계를 세우세요.',
+    '계약·수수료·기한을 문서로 확인하고 불명확한 조건을 먼저 질문하세요.',
+    '현금 흐름과 저축·생활비를 기록하고 유지할 수 있는 관리 습관을 정하세요.',
+  ][suitIndex];
+  return { ...original, id: `etteilla_${number}`, name: `Etteilla ${number} · ${original.name}`, readingHint: `${original.keywords.slice(0, 2).join('·')}의 관점에서 ${hint}` };
+}
+
+function makeDeck(deckId: NonNullable<TarotCard['deckId']>): TarotCard[] {
+  return assets.filter(a => a.mode === deckId).map(asset => {
     const number = Number(asset.id.split('_')[1]);
-    const symbol = mode === 'money' ? moneySymbols[number - 1] : null;
-    const original = mode === 'money' ? null : TAROT_DECK.find(c => c.id === asset.id);
-    if (!symbol && !original) throw new Error(`Unknown historical card ${asset.id}`);
+    const original = deckId.startsWith('money') ? etteillaBase(number) : TAROT_DECK.find(c => c.id === asset.id);
+    if (!original) throw new Error(`Unknown historical card ${asset.id}`);
     return {
-      ...(original || { id: asset.id, name: asset.title.replace(/^File:\d+ /, '').split(' - ')[0], nameKo: symbol![0], type: 'major' as const, keywords: symbol![1] }),
-      deckId: mode, imageUrl: asset.imageUrl, sourceUrl: asset.sourceUrl,
-      historicalTitle: asset.title.replace(/^File:/, ''),
-      ...(symbol ? { readingHint: symbol[2] } : {}),
+      ...original, deckId, imageUrl: asset.imageUrl, sourceUrl: asset.sourceUrl,
+      historicalTitle: ('label' in asset ? `${asset.label} · ` : '') + asset.title.replace(/^File:/, ''),
     };
   });
 }
 
 export const ORACLE_DECKS = {
-  healing: { name: '라이더–웨이트–스미스 1909', edition: 'Roses & Lilies 원본', cards: makeDeck('healing'), reason: '감정과 관계를 표현한 장면을 통해 마음을 돌아보는 힐링', source: 'https://commons.wikimedia.org/wiki/Category:Rider-Waite_tarot_deck_(Roses_%26_Lilies)' },
-  miracle: { name: '오스왈드 비르트 1889', edition: '메이저 아르카나 22장', cards: makeDeck('miracle'), reason: '상징을 통해 내면을 성찰하고 두려움에서 평화로 관점을 바꾸는 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Oswald_Wirth_tarot_deck' },
-  growth: { name: '장 도달 마르세유', edition: '약 1701년 · 메이저 22장', cards: makeDeck('growth'), reason: '선택·의지·균형·변화의 원형을 오늘의 실행으로 연결하는 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Tarot_de_Marseille_-_Jean_Dodal' },
-  money: { name: '그랑 에테이야 I', edition: 'H. Pussey 판본 · 주요 카드 21장', cards: makeDeck('money'), reason: '오래된 점술 상징을 풍요의 관점과 현실적인 금전 습관으로 읽는 머니룰', source: 'https://commons.wikimedia.org/wiki/Category:Etteilla_I_tarot_deck' },
+  healing: { name: '라이더–웨이트–스미스 1909', edition: 'Roses & Lilies 원본 · 78장 풀덱', cards: makeDeck('healing'), reason: '감정과 관계를 표현한 장면을 통해 마음을 돌아보는 힐링', source: 'https://commons.wikimedia.org/wiki/Category:Rider-Waite_tarot_deck_(Roses_%26_Lilies)' },
+  miracle: { name: '자크 비에빌', edition: '약 1650년 · 78장 풀덱', cards: makeDeck('miracle_vieville'), reason: '삶의 다양한 장면과 고전 상징을 통해 내면을 성찰하고 평화로 관점을 바꾸는 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Vi%C3%A9ville_tarot' },
+  growth: { name: '장 도달 마르세유', edition: '약 1701년 · 78장 풀덱', cards: makeDeck('growth'), reason: '메이저의 선택·의지와 네 수트의 현실 과제를 오늘의 실행으로 연결하는 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Tarot_de_Marseille_-_Jean_Dodal' },
+  money: { name: '그랑 에테이야 I', edition: '그리모 판본 · 78장 풀덱', cards: makeDeck('money_grimaud'), reason: '고전 점술의 78가지 상징을 풍요의 관점과 현실적인 금전 습관으로 읽는 머니룰', source: 'https://commons.wikimedia.org/wiki/Category:Jeu_de_tarot_divinatoire_dit_%22Grand_Etteilla%22_ou_%22tarot_%C3%A9gyptien%22_-_jeu_de_cartes,_estampe_-_btv1b10543181f' },
 };
 
+export const LEGACY_ORACLE_DECKS = {
+  miracle: { name: '오스왈드 비르트 1889', edition: '이전 리딩 · 메이저 22장', cards: makeDeck('miracle'), reason: '이전에 저장된 비르트 원본 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Oswald_Wirth_tarot_deck' },
+  money: { name: '그랑 에테이야 I', edition: '이전 H. Pussey 주요 카드 21장', cards: makeDeck('money'), reason: '이전에 저장된 에테이야 선택 덱 리딩', source: 'https://commons.wikimedia.org/wiki/Category:Etteilla_I_tarot_deck' },
+};
+
+export function getOracleReadingDeck(mode: OracleDeckMode, cards?: readonly TarotCard[]) {
+  if (cards?.length) {
+    if (!cards[0].deckId) return { ...ORACLE_DECKS.healing, name: '기존 웨이트', cards: TAROT_DECK };
+    if (cards[0].deckId === 'miracle') return LEGACY_ORACLE_DECKS.miracle;
+    if (cards[0].deckId === 'money') return LEGACY_ORACLE_DECKS.money;
+  }
+  return ORACLE_DECKS[mode];
+}
+
 export function oracleDeckPrompt(mode: OracleDeckMode, cards?: readonly TarotCard[]): string {
-  const d = cards?.length && !cards[0].deckId ? ORACLE_DECKS.healing : ORACLE_DECKS[mode];
-  return `[사용 덱] ${d.name}, ${d.edition}, ${d.cards.length}장. ${d.reason}. 이 덱은 해당 상담 모드에 맞춰 현대적으로 해석한 것으로 원래부터 해당 모드 전용으로 제작된 덱이 아니다. 그림을 본 것처럼 도상을 지어내지 말고 카드명과 제공된 상징을 중심으로 해석한다. 마르세유·비르트는 정의 VIII / 힘 XI이며 내부 카드 ID는 의미 기준으로 매핑되어 있다. 오늘의 별도 데일리 카드와 이번 오라클 덱을 혼동하지 않는다.`;
+  const d = getOracleReadingDeck(mode, cards);
+  return `[사용 덱] ${d.name}, ${d.edition}, ${d.cards.length}장. ${d.reason}. 이 덱은 상담 모드에 맞춰 현대적으로 해석한 것으로 원래부터 해당 모드 전용으로 제작된 덱이 아니다. 그림을 본 것처럼 도상을 지어내지 말고 카드명과 제공된 상징을 중심으로 해석한다. 덱마다 인쇄 순서가 다르며 내부 카드 ID는 의미 기준으로 매핑되어 있다. 비에빌은 정의 VII, 전차 VIII, 힘 IX, 은둔자 XI이다. 오늘의 별도 데일리 카드와 이번 오라클 덱을 혼동하지 않는다.`;
 }

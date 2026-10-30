@@ -1,4 +1,31 @@
-# Oracle historical decks — v1.4.609
+# Oracle historical decks — v1.4.610
+
+All four current oracle modes now use **complete 78-card decks** (22 major + 14 in each of four suits).
+
+| Mode | Current deck | Cards |
+| --- | --- | ---: |
+| Healing | Rider–Waite–Smith 1909, Roses & Lilies | 78 |
+| Miracle | Jacques Viéville, c.1650, BnF btv1b10510963k | 78 |
+| Growth | Jean Dodal, c.1701, BnF majors plus B/C/D/E minor scans | 78 |
+| Money Rule | Grand Etteilla I, B. P. Grimaud, BnF btv1b10543181f | 78 |
+
+The original Wirth deck has only 22 majors; do not invent 56 minors or mix unrelated images and call it an original full deck. Its 22 images and the prior H. Pussey selection of 21 are retained for saved readings. `getOracleReadingDeck` resolves old Wirth follow-ups to that same old pool. Current cards have edition-specific deck IDs (`miracle_vieville`, `money_grimaud`) and routes, so old records keep their original edition.
+
+**Grimaud scan order audit:** pages are not in card-number order. Odd scan fronts 1–60 map to printed cards 1–60; scans 61–70 map to cards 69–78; scans 71 and 72 are plain card backs and are excluded; scans 73–80 map to cards 61–68. Every printed number 1–78 occurs exactly once. The original page, `sourceScan`, and `printedNumber` are recorded. Card 49 is the cup ace, 63 the sword ace, 67 the coin page, 68 the coin ten, and 78 Folie. OCR was checked against a visual contact sheet before assignment.
+
+Viéville numbering is **VII Justice, VIII Chariot, IX Strength, XI Hermit**, mapped by meaning to standard interpretation IDs. Other majors and all minor suits/ranks are mapped by meaning. Artwork descriptions from Waite are not reused as assertions about the other historical images. Minor suit interpretations and Money Rule hints are modern app adaptations, not quotations from antique guidebooks.
+
+Assets are optimized at up to 320px width, WebP quality 55 for mobile/PC card sizes. There are 312 current fronts and 43 legacy fronts. Every file has a Commons source page, original URL, and checked public-domain mark in `src/data/oracleDeckAssets.json`. No artwork was generated or redrawn. Full-deck tests verify all suit counts, image files, metadata, numbering and legacy compatibility.
+
+Current additional sources:
+- https://commons.wikimedia.org/wiki/Category:Vi%C3%A9ville_tarot
+- https://commons.wikimedia.org/wiki/Category:Jeu_de_tarot_divinatoire_dit_%22Grand_Etteilla%22_ou_%22tarot_%C3%A9gyptien%22_-_jeu_de_cartes,_estampe_-_btv1b10543181f
+
+The Worker embeds all images. Package only `.openai/hosting.json` and `dist/server/`, then verify the embedded image routes byte-for-byte before publication.
+
+---
+
+## Previous selection — v1.4.609
 
 These are reproductions of existing historical artworks, not generated illustrations. The assignment to healing, ACIM, growth, or Money Rule is a modern application choice, not a claim that the historic artists created decks for these practices.
 
