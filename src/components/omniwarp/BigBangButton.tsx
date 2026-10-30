@@ -8,7 +8,7 @@ import { useLocation } from 'wouter';
 import { ChevronUp, ChevronDown, Clover, KeyRound, CircleHelp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
-import { calculateWarpMetrics, forceToAiTemperature } from '@/lib/omniWarp/forceSensor';
+import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
 import { serializeCurrentView, synthesizeWarpTarget, isDisallowedWarpDestination } from '@/lib/omniWarp/omniWarpEngine';
 import {
   getWhiteholeRecommendedApp,
@@ -530,6 +530,10 @@ export function BigBangButton() {
     const visualDx = currentPointer ? currentPointer.clientX - start.x : 0;
     const visualDy = currentPointer ? currentPointer.clientY - start.y : 0;
     maxDragDistanceRef.current = Math.max(maxDragDistanceRef.current, Math.hypot(visualDx, visualDy));
+    if (maxDragDistanceRef.current > WARP_ABORT_DISTANCE) {
+      cancelOutOfRangeDrag();
+      return;
+    }
     if (maxDragDistanceRef.current >= DRAG_ACTIVATION_THRESHOLD) {
       blowCloverWind(visualDx, visualDy);
       rafRef.current = requestAnimationFrame(updateLoop);
@@ -713,6 +717,10 @@ export function BigBangButton() {
         if (d > maxDragDistanceRef.current) {
           maxDragDistanceRef.current = d;
         }
+        if (d > WARP_ABORT_DISTANCE) {
+          cancelOutOfRangeDrag();
+          return;
+        }
         if (d < DRAG_ACTIVATION_THRESHOLD) {
           const curDir = touchStartRef.current.pointerType === 'touch'
             ? touchStartRef.current.direction
@@ -824,6 +832,10 @@ export function BigBangButton() {
     currentPointerEventRef.current = e;
     const d = Math.hypot(e.clientX - touchStartRef.current.x, e.clientY - touchStartRef.current.y);
     maxDragDistanceRef.current = Math.max(maxDragDistanceRef.current, d);
+    if (d > WARP_ABORT_DISTANCE) {
+      cancelOutOfRangeDrag();
+      return;
+    }
     if (d < DRAG_ACTIVATION_THRESHOLD) {
       const curDir = touchStartRef.current.pointerType === 'touch'
         ? touchStartRef.current.direction
@@ -1062,6 +1074,11 @@ export function BigBangButton() {
     } catch (_) {}
 
     activePointerIdRef.current = null;
+    // Check cancellation before the visual-drag branch can commit a recommendation.
+    if (maxDist > WARP_ABORT_DISTANCE) {
+      cancelOutOfRangeDrag();
+      return;
+    }
     if (isDragGesture) {
       if (!visualDragRef.current) blowCloverWind(deltaX,deltaY);
       finishCloverWind();
@@ -1307,6 +1324,15 @@ export function BigBangButton() {
     try {
       sessionStorage.removeItem('bigbang_pressing');
     } catch (_) {}
+  };
+
+  const cancelOutOfRangeDrag = () => {
+    handlePointerCancel();
+    if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+    singleTapTimerRef.current = null;
+    lastTapTimeRef.current = 0;
+    omniWarpAudio.playAbort();
+    triggerHaptic('abort');
   };
 
   useEffect(() => {
