@@ -24,4 +24,69 @@ assert(!/\[YES\]|\[NO\]/.test(noVerdict.join(' ')));
 const verdict=extractConciseSummary('[핵심 3줄 요약]\n- [현재 상황] 이직 준비가 부족합니다.\n- [방향과 결단] 최종 판정은 [NO]이며 준비를 먼저 보완하세요.\n- [실천 행동] 지원 조건을 점검하세요.',{theme:'career',concern:'이직할까요?',kind:'yes_no'});
 assert(verdict[1].includes('[NO]'));assert(!verdict[1].includes('[YES]'));
 assert.deepEqual(extractConciseSummary('아직 생성 중'),[]);
-console.log('Tarot summaries: career/love/money, short answers, body grounding, duplicate filtering and verdict preservation passed.');
+
+const before = [
+  '카드 속 두 인물이 서로의 성배를 마주 보며 건네는 모습은 완벽한 대칭과 균형을 의미합니다.',
+  '컵 2 카드가 주는 평온함 속에서도 주의할 점은 있습니다.',
+  '이 작은 행동이 제제님의 2026년 병오년 관성 운을 긍정적인 방향으로 이끄는 첫 단추가 될 것입니다.',
+];
+const hollowReading = `[핵심 3줄 요약]
+- [현재 상황] ${before[0]}
+- [방향과 결단] ${before[1]}
+- [실천 행동] ${before[2]}
+
+### 1. 마음과 현재 에너지
+컵 2 역방향은 두 사람의 호흡이 어긋나 한쪽만 애쓰는 불균형입니다. 재회를 원한다면 침묵으로 마음을 시험하지 마세요.
+
+### 3. 방향과 결단
+재회는 서두르지 말고, 상대가 알아주길 바라며 입을 닫거나 자존심 싸움으로 거리를 벌리지 않도록 주의하세요.
+
+### 4. 실천 처방
+오늘 저녁 상대에게 안부를 묻는 짧은 메시지 한 통을 보내 서로의 마음을 확인해 보세요.`;
+const repaired = extractConciseSummary(hollowReading, {
+  theme: 'love',
+  concern: '재회해도 될까요?',
+  cards: [{ id: 'cups_2', nameKo: '컵 2', type: 'cups', reversed: true, keywords: ['결합', '파트너십'] }],
+});
+assert.equal(repaired.length, 3);
+assert(!/완벽한\s*대칭과\s*균형|주의할\s*점은\s*있습니다|이\s*작은\s*행동|첫\s*단추/.test(repaired.join(' ')), repaired.join('\n'));
+assert(/호흡|불균형|재회|침묵/.test(repaired[0]), repaired[0]);
+assert(/입을\s*닫|자존심/.test(repaired[1]), repaired[1]);
+assert(/메시지/.test(repaired[2]), repaired[2]);
+assert(!/이\s*작은\s*행동/.test(repaired[2]));
+repaired.forEach((row) => {
+  assert(row.length <= 180, row);
+  assert(/[.!?]$/.test(row.replace(/^\[[^\]]+\]\s*/, '')), row);
+});
+
+const teaser = '이직을 앞두고 컵 2가 주는 평온함 속에서도 주의할 점은 있습니다.';
+const payload = '제안받은 연봉과 업무 강도를 비교하기 전에는 사표를 내지 말고, 근무 조건이 적힌 제안서를 받기 전에는 퇴사 일정을 확정하지 마세요. 확인된 조건만 보고 결정하세요.';
+assert(teaser.length > 35 && `${teaser} ${payload}`.length > 125);
+const truncated = extractConciseSummary(`[핵심 3줄 요약]
+- [현재 상황] 현재 직장의 업무 부담이 커져 이직을 저울질하는 상태입니다.
+- [방향과 결단] ${teaser} ${payload}
+- [실천 행동] 지원할 회사의 채용 공고에서 경력 조건을 먼저 확인해 보세요.
+### 1. 현재 상황
+현재 직장의 업무 부담이 커져 이직을 저울질하는 상태입니다.`, { theme: 'career', concern: '이직할까요?' });
+assert(/연봉|사표|제안서/.test(truncated[1]), truncated[1]);
+assert(!/주의할\s*점은\s*있습니다/.test(truncated[1]), truncated[1]);
+assert(/확인/.test(truncated[2]), truncated[2]);
+
+const cardOnly = extractConciseSummary(`[핵심 3줄 요약]
+- [현재 상황] ${before[0]}
+- [방향과 결단] ${before[1]}
+- [실천 행동] ${before[2]}
+### 1. 현재 상황
+${before[0]}`, {
+  theme: 'love',
+  concern: '재회해도 될까요?',
+  cards: [{ id: 'cups_2', nameKo: '컵 2', type: 'cups', reversed: true, keywords: ['결합'] }],
+});
+assert(/관계\s*불균형|오해|호흡|불균형/.test(cardOnly[0]), cardOnly[0]);
+assert(/입을\s*닫|자존심/.test(cardOnly[1]), cardOnly[1]);
+assert(/대화|확인/.test(cardOnly[2]) && !/이\s*작은\s*행동|첫\s*단추/.test(cardOnly[2]), cardOnly[2]);
+
+console.log('BEFORE\n' + before.map((line, i) => `${i + 1}. ${line}`).join('\n'));
+console.log('AFTER reading-grounded\n' + repaired.map((line, i) => `${i + 1}. ${line}`).join('\n'));
+console.log('AFTER card-grounded\n' + cardOnly.map((line, i) => `${i + 1}. ${line}`).join('\n'));
+console.log('Tarot summaries: career/love/money, short answers, body grounding, duplicate filtering, verdict preservation, and hollow-line repair passed.');

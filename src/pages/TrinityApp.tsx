@@ -1632,7 +1632,7 @@ function playDailyCardChimeAsync() {
     return TAROT_DECK.filter((card) => !drawnCardIds.includes(card.id));
   }, [drawnCardIds]);
 
-  // Auto concise 3-bullet summary for tarot readings (카드 상징과 사주를 결합한 50~70자 명확한 3개 불릿 보장)
+  // Auto concise 3-bullet summary for tarot readings (카드 뜻·주의점·행동명이 각 줄에 완결되도록)
   const conciseSummaryBullets = useMemo(() => {
     if (!tarotResult || tarotResult.trim().length < 40) return [];
     const profile = sharedState?.userProfile || getPersistentUserProfile();
@@ -2612,16 +2612,16 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
         }
 
         systemPrompt += `
-[핵심 3줄 요약 작성 규칙 — 아래 규칙을 요약에 우선 적용]
+[핵심 3줄 요약 작성 규칙 — 아래 규칙을 앞의 50~70자·도상 묘사 지시보다 우선 적용]
 질문: ${tarotConcern}
 주제: ${getTarotThemeMeta(concernAnalysis.theme).label}
-리딩 맨 앞에 [핵심 3줄 요약]과 다음 세 줄을 작성하세요.
-- [현재 상황] 질문의 대상·문제와 뽑힌 카드의 뜻을 연결한 핵심 상황 한 문장.
-- [방향과 결단] 질문에 직접 답하는 판단과 본문에 제시한 근거 한 문장.
-- [실천 행동] 이 질문을 위해 실행할 구체적인 행동 한 문장.
-각 줄은 다른 내용을 담고 본문 해석과 일치해야 합니다. 짧아도 좋으니 문장을 완결하세요.
+리딩 맨 앞에 [핵심 3줄 요약]과 다음 세 줄을 작성하세요. 각 줄은 앞뒤 없이 혼자 읽어도 끝나는 문장이고, 공백 포함 70~130자입니다.
+- [현재 상황] 카드 이름과 그 뜻이 이 질문에 무엇을 의미하는지 한 문장. 카드 그림(인물, 성배, 대칭)만 설명하지 마세요.
+- [방향과 결단] 질문에 대한 판단과, 무엇을 주의해야 하는지를 같은 줄에 쓰세요. "주의할 점은 있습니다"로 끝내지 마세요.
+- [실천 행동] 오늘 할 행동 하나를 대상과 동사까지 적으세요. "이 작은 행동", "첫 단추"처럼 행동을 숨긴 말로 끝내지 마세요.
+각 줄은 서로 다른 내용이고 본문과 같아야 합니다. 요약이 본문보다 먼저여도, 뒤에 쓸 내용을 가리키지 말고 그 줄에 직접 적으세요.
 연애는 관계·연락·상대와의 소통, 진로는 이직·지원·시험·업무, 금전은 비용·수익·위험 등 실제 질문의 맥락을 유지하세요.
-물 한 잔, 기운 순환, 내면의 빛 등 모든 주제에 통용되는 장식 문구로 채우지 마세요.
+물 한 잔, 기운 순환, 내면의 빛, 병오년·관성만 언급하고 결론을 빼는 문장으로 채우지 마세요.
 본문에 없는 사건·금액·연락 날짜·합격 여부·확정 수익을 요약에서 새로 만들지 마세요. 근거가 부족한 점은 명시하세요.
 `;
         let finalResponse = "";

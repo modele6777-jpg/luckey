@@ -597,12 +597,12 @@ export function buildSpecificTarotDailyOracle(card: TarotCard, mode: string = "o
     : `밝고 진솔한 태도로 주변 사람들에게 온기를 건네보세요. 긍정적인 감정 교류가 당신의 운을 더욱 크고 환하게 열어줍니다.`;
 
   const actionPrescription = luckyAction && luckyAction.length >= 2
-    ? `오늘 일상에서 "${luckyAction}"을(를) 정성껏 실천하여 내면의 에너지를 순환시키고 긍정 운을 활짝 열기.`
-    : '오늘 일상에서 미뤄둔 핵심 과제 1가지를 정해 20분간 몰입해 완수하고 맑은 운의 파동을 일으키기.';
+    ? luckyAction
+    : '오늘 확인할 사실 한 가지를 적고, 그 항목부터 직접 처리해 보세요.';
 
   const diagnosis = `[핵심 3줄 요약]
-- [현재 에너지] ${isReversed ? `[${cardName}] 카드의 역방향 에너지(${keywords})가 발현되어, ${cardMeaning}` : `[${cardName}] 카드의 정방향 에너지로 활기찬 생명력과 긍정적인 파동이 충만한 하루입니다.`}
-- [방향과 결단] ${isReversed ? `⚠️ [역방향 주의점 1가지] ${specificCaution}` : '내면의 직관과 잠재력을 믿고 자신감 있게 적극적인 행동을 취할 때입니다.'}
+- [현재 에너지] ${isReversed ? `[${cardName}] 역방향은 ${keywords}의 흐름입니다. ${cardMeaning}` : `[${cardName}]의 핵심 뜻은 ${keywords}입니다. 오늘 이 의미가 일과 관계에서 어떻게 드러나는지가 포인트입니다.`}
+- [방향과 결단] ${isReversed ? specificCaution : shadowWarn}
 - [실천 처방] ${actionPrescription}
 
 ### 🕯️ 1. 카드가 비추는 당신의 마음과 현재 에너지
