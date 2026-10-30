@@ -12,7 +12,19 @@
 export const VIEWPORT_KEYBOARD_MIN_DELTA_PX = 160;
 export const VIEWPORT_KEYBOARD_MIN_RATIO = 0.22;
 export const VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX = 24;
+export const TABLET_SHORT_SIDE_PX = 600;
 export const VIEWPORT_SYNC_RETRY_MS = [80, 280, 700];
+/** iPad reports a stale short visual viewport for a while after unlock or app switch. */
+export const VIEWPORT_RESUME_RETRY_MS = [50, 160, 400, 800, 1400, 2200];
+export const VIEWPORT_RESUME_FILL_MS = 2600;
+
+export type ViewportResolveOptions = {
+  /**
+   * Tablet returning from background: a shorter visual viewport is the stale
+   * reading that leaves a gap. Fill the layout viewport instead.
+   */
+  fillLayoutGap?: boolean;
+};
 
 export type ViewportSnapshot = {
   innerWidth: number;
@@ -48,7 +60,10 @@ function roundPx(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-export function resolveViewportBox(snapshot: ViewportSnapshot): ViewportBox | null {
+export function resolveViewportBox(
+  snapshot: ViewportSnapshot,
+  options: ViewportResolveOptions = {},
+): ViewportBox | null {
   const innerWidth = positive(snapshot.innerWidth);
   const innerHeight = positive(snapshot.innerHeight);
   const visual = snapshot.visual;
@@ -86,6 +101,23 @@ export function resolveViewportBox(snapshot: ViewportSnapshot): ViewportBox | nu
     };
   }
 
+  const tablet = Math.min(layoutWidth, layoutHeight) >= TABLET_SHORT_SIDE_PX;
+  if (
+    options.fillLayoutGap &&
+    tablet &&
+    !keyboard &&
+    widthDelta < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX &&
+    visualHeight + 1 < layoutHeight
+  ) {
+    return {
+      width: roundPx(layoutWidth),
+      height: roundPx(layoutHeight),
+      offsetTop: 0,
+      offsetLeft: 0,
+      bottomGap: 0,
+    };
+  }
+
   const offsetTop = nonNegative(visual?.offsetTop);
   const offsetLeft = nonNegative(visual?.offsetLeft);
   return {
@@ -95,6 +127,42 @@ export function resolveViewportBox(snapshot: ViewportSnapshot): ViewportBox | nu
     offsetLeft: roundPx(offsetLeft),
     bottomGap: roundPx(Math.max(0, layoutHeight - offsetTop - visualHeight)),
   };
+}
+
+export function viewportNeedsResumeFill(
+  snapshot: ViewportSnapshot,
+  fromBackground: boolean,
+  applied: Pick<ViewportBox, 'width' | 'height'> | null,
+): boolean {
+  const innerWidth = positive(snapshot.innerWidth);
+  const innerHeight = positive(snapshot.innerHeight);
+  const visualWidth = positive(snapshot.visual?.width);
+  const visualHeight = positive(snapshot.visual?.height);
+  if (innerWidth == null || innerHeight == null) return false;
+  if (Math.min(innerWidth, innerHeight) < TABLET_SHORT_SIDE_PX) return false;
+  if (visualWidth != null && Math.abs(visualWidth - innerWidth) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) {
+    return false;
+  }
+
+  const comparedHeight = visualHeight ?? innerHeight;
+  const heightDelta = innerHeight - comparedHeight;
+  const keyboard =
+    heightDelta > VIEWPORT_KEYBOARD_MIN_DELTA_PX &&
+    innerHeight > 0 &&
+    heightDelta / innerHeight > VIEWPORT_KEYBOARD_MIN_RATIO;
+  if (keyboard) return false;
+
+  const settled = resolveViewportBox(snapshot);
+  if (fromBackground && settled != null && settled.height + 1 < innerHeight) return true;
+  if (
+    applied != null &&
+    Math.abs(applied.width - innerWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX &&
+    settled != null &&
+    applied.height + 1 < Math.min(settled.height, innerHeight)
+  ) {
+    return true;
+  }
+  return false;
 }
 
 export function readViewportSnapshot(win: Window): ViewportSnapshot {
@@ -118,11 +186,17 @@ function px(value: number): string {
 }
 
 let appliedSignature = '';
+let lastAppliedBox: ViewportBox | null = null;
+let stableBox: ViewportBox | null = null;
+let sawHidden = false;
+let fillUntil = 0;
+let lifecycleBound = false;
 
 export function applyVisualViewportBox(box: ViewportBox, root: HTMLElement): void {
   const signature = `${box.width}|${box.height}|${box.offsetTop}|${box.offsetLeft}|${box.bottomGap}`;
   if (signature === appliedSignature) return;
   appliedSignature = signature;
+  lastAppliedBox = box;
   root.style.setProperty('--vvw', px(box.width));
   root.style.setProperty('--vvh', px(box.height));
   root.style.setProperty('--vv-top', px(box.offsetTop));
@@ -131,11 +205,36 @@ export function applyVisualViewportBox(box: ViewportBox, root: HTMLElement): voi
   root.style.setProperty('--visual-vh', px(box.height));
 }
 
+function rememberStable(box: ViewportBox): void {
+  if (
+    !stableBox ||
+    Math.abs(stableBox.width - box.width) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX ||
+    box.height >= stableBox.height - 1
+  ) {
+    stableBox = box;
+  }
+}
+
+function restoreStableBox(): void {
+  if (!stableBox || typeof document === 'undefined') return;
+  applyVisualViewportBox(stableBox, document.documentElement);
+}
+
+export function armViewportResumeFill(now = Date.now()): void {
+  fillUntil = now + VIEWPORT_RESUME_FILL_MS;
+}
+
+function fillArmed(now = Date.now()): boolean {
+  return now < fillUntil;
+}
+
 export function syncVisualViewportBox(win: Window = window): ViewportBox | null {
   if (typeof document === 'undefined') return null;
-  const box = resolveViewportBox(readViewportSnapshot(win));
+  if (document.visibilityState === 'hidden') return null;
+  const box = resolveViewportBox(readViewportSnapshot(win), { fillLayoutGap: fillArmed() });
   if (!box) return null;
   applyVisualViewportBox(box, document.documentElement);
+  rememberStable(box);
   return box;
 }
 
@@ -147,13 +246,54 @@ export function scheduleVisualViewportSync(win: Window = window): void {
   for (const timer of retryTimers) win.clearTimeout(timer);
   retryTimers = [];
 
+  const delays = fillArmed() ? VIEWPORT_RESUME_RETRY_MS : VIEWPORT_SYNC_RETRY_MS;
   retryFrame = win.requestAnimationFrame(() => {
     retryFrame = 0;
     syncVisualViewportBox(win);
   });
-  retryTimers = VIEWPORT_SYNC_RETRY_MS.map((delay) =>
+  retryTimers = delays.map((delay) =>
     win.setTimeout(() => {
       syncVisualViewportBox(win);
     }, delay),
   );
+}
+
+export function bindVisualViewportLifecycle(win: Window = window): void {
+  if (lifecycleBound) return;
+  lifecycleBound = true;
+  const doc = win.document;
+
+  const resume = (force: boolean) => {
+    const fromBackground = sawHidden;
+    const needsFill = viewportNeedsResumeFill(readViewportSnapshot(win), fromBackground, lastAppliedBox);
+    sawHidden = false;
+    if (!force && !fromBackground && !needsFill) return;
+    if (needsFill) armViewportResumeFill();
+    scheduleVisualViewportSync(win);
+  };
+
+  doc.addEventListener('visibilitychange', () => {
+    if (doc.visibilityState === 'hidden') {
+      sawHidden = true;
+      restoreStableBox();
+      return;
+    }
+    resume(true);
+  });
+
+  win.addEventListener('pageshow', (event: PageTransitionEvent) => {
+    if (!event.persisted) return;
+    sawHidden = true;
+    resume(true);
+  });
+
+  win.addEventListener('focus', () => {
+    if (doc.visibilityState === 'hidden') return;
+    resume(false);
+  });
+
+  doc.addEventListener('resume', () => {
+    sawHidden = true;
+    resume(true);
+  });
 }

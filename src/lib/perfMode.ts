@@ -1,4 +1,4 @@
-import { scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
+import { bindVisualViewportLifecycle, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -557,6 +557,7 @@ export function initNarrowPhoneClass(): void {
     window.visualViewport?.addEventListener('scroll', () => {
       syncVisualViewportBox(window);
     }, { passive: true });
+    bindVisualViewportLifecycle(window);
     scheduleVisualViewportSync(window);
   }
 }

@@ -9,7 +9,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { resolveViewportBox } = await import(
+const { resolveViewportBox, viewportNeedsResumeFill } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -55,6 +55,57 @@ const invalidVisual = box(1024, 768, { width: Number.NaN, height: -1, offsetTop:
 assert.deepEqual(invalidVisual, { width: 1024, height: 768, offsetTop: 0, offsetLeft: 0, bottomGap: 0 });
 
 assert.equal(box(0, 0, null), null);
+
+const ipadResumeSnapshot = {
+  innerWidth: 1180,
+  innerHeight: 820,
+  visual: { width: 1180, height: 740, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(viewportNeedsResumeFill(ipadResumeSnapshot, true, null), true);
+assert.deepEqual(resolveViewportBox(ipadResumeSnapshot, { fillLayoutGap: true }), {
+  width: 1180,
+  height: 820,
+  offsetTop: 0,
+  offsetLeft: 0,
+  bottomGap: 0,
+});
+assert.equal(viewportNeedsResumeFill(ipadResumeSnapshot, false, null), false);
+
+const stalePixels = {
+  innerWidth: 1180,
+  innerHeight: 820,
+  visual: { width: 1180, height: 820, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(viewportNeedsResumeFill(stalePixels, false, { width: 1180, height: 700 }), true);
+
+const phoneResume = {
+  innerWidth: 390,
+  innerHeight: 844,
+  visual: { width: 390, height: 760, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(viewportNeedsResumeFill(phoneResume, true, null), false);
+assert.equal(resolveViewportBox(phoneResume, { fillLayoutGap: true }).height, 760);
+
+const ipadKeyboardResume = {
+  innerWidth: 1180,
+  innerHeight: 820,
+  visual: { width: 1180, height: 400, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(viewportNeedsResumeFill(ipadKeyboardResume, true, null), false);
+
+const rotatedResume = {
+  innerWidth: 820,
+  innerHeight: 1180,
+  visual: { width: 1180, height: 820, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(viewportNeedsResumeFill(rotatedResume, true, null), false);
+
+const lifecycle = readFileSync('src/lib/visualViewportBox.ts', 'utf8');
+assert.match(lifecycle, /visibilitychange/);
+assert.match(lifecycle, /pageshow/);
+assert.match(lifecycle, /addEventListener\('focus'/);
+assert.match(lifecycle, /addEventListener\('resume'/);
+assert.match(lifecycle, /visibilityState === 'hidden'/);
 
 const css = readFileSync('src/index.css', 'utf8');
 assert.equal(css.includes('-webkit-fill-available'), false);
