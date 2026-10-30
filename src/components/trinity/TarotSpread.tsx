@@ -15,6 +15,7 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
+import { placeRingCards } from './tarotRingLayout';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -92,17 +93,6 @@ const getTarotCardVisual = (card: TarotCard | null | undefined) => {
 // 78-card complete circular wheel
 export const TOTAL_WHEEL_SLOTS = 78;
 
-const getWheelLayout = (totalCards: number, _radius: number, _cardWidth: number) => {
-  if (totalCards <= 1) {
-    return { angleStep: 2 * Math.PI, seamAngle: 0 };
-  }
-
-  return {
-    angleStep: (2 * Math.PI) / totalCards,
-    seamAngle: 0,
-  };
-};
-
 /** Local angle that sits at the top of the screen for a given wheel rotation. */
 function frontLocalAngle(rotationDeg: number): number {
   let front = (-Math.PI / 2 - (rotationDeg * Math.PI) / 180) % (2 * Math.PI);
@@ -123,12 +113,9 @@ function stackZForAngle(localAngle: number, frontAngle: number): number {
 
 type DeckWheelCardProps = {
   card: TarotCard;
-  originalIdx: number;
   radius: number;
-  cardWidth: number;
-  gapAngleOffset: number;
+  localAngle: number;
   isMobile: boolean;
-  totalCards: number;
   isPicked: boolean;
   isHovered: boolean;
   stackZ: number;
@@ -139,19 +126,14 @@ type DeckWheelCardProps = {
 const DeckWheelCard = React.memo(
   function DeckWheelCard({
     card,
-    originalIdx,
     radius,
-    cardWidth,
-    gapAngleOffset,
+    localAngle,
     isMobile,
-    totalCards = TOTAL_WHEEL_SLOTS,
     isPicked = false,
     isHovered = false,
     stackZ,
     cardBackId,
   }: DeckWheelCardProps) {
-    const { angleStep } = getWheelLayout(totalCards, radius, cardWidth);
-    const localAngle = originalIdx * angleStep + gapAngleOffset;
     const liftAmount = isHovered ? (isMobile ? 14 : 20) : 0;
     const cardRotate = Math.round(((localAngle * 180) / Math.PI + 90) * 10) / 10;
     const x = Math.round(radius * Math.cos(localAngle) * 10) / 10;
@@ -166,7 +148,7 @@ const DeckWheelCard = React.memo(
           data-card-local-angle={localAngle}
           className={`absolute left-1/2 top-1/2 w-16 h-28 sm:w-20 sm:h-34 md:w-24 md:h-40 rounded-lg sm:rounded-xl flex items-center justify-center select-none ${
             isPicked
-              ? 'hidden pointer-events-none'
+              ? 'pointer-events-none'
               : isHovered
               ? 'pointer-events-auto cursor-pointer'
               : 'pointer-events-auto cursor-pointer'
@@ -174,8 +156,10 @@ const DeckWheelCard = React.memo(
           style={{
             transform: baseTransform,
             transformOrigin: 'center center',
-            transition: 'transform 360ms cubic-bezier(0.22, 1, 0.36, 1)',
+            transition: 'transform 680ms cubic-bezier(0.22, 1, 0.36, 1)',
             zIndex: isHovered ? 5000 : stackZ,
+            opacity: isPicked ? 0 : 1,
+            visibility: isPicked ? 'hidden' : 'visible',
           }}
         >
           {!isPicked && (
@@ -202,12 +186,9 @@ const DeckWheelCard = React.memo(
     return (
       prev.card.id === next.card.id &&
       prev.cardBackId === next.cardBackId &&
-      prev.originalIdx === next.originalIdx &&
-      prev.cardWidth === next.cardWidth &&
-      prev.gapAngleOffset === next.gapAngleOffset &&
+      prev.localAngle === next.localAngle &&
       prev.radius === next.radius &&
       prev.isMobile === next.isMobile &&
-      prev.totalCards === next.totalCards &&
       prev.isPicked === next.isPicked &&
       prev.isHovered === next.isHovered &&
       prev.stackZ === next.stackZ
@@ -285,7 +266,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const touchStartTimeRef = useRef<number>(0);
   const [radius, setRadius] = useState(600);
   const [yOffset, setYOffset] = useState(580);
-  const [wheelCardWidth, setWheelCardWidth] = useState(96);
 
   const selectedIds = useMemo(
     () => selectedEntries.map((entry) => entry.card.id),
@@ -299,34 +279,13 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     [deck, selectedIdSet],
   );
 
-  const wheelLayout = useMemo(
-    () => getWheelLayout(deck.length, radius, wheelCardWidth),
-    [deck.length, radius, wheelCardWidth],
+  // Drawn cards leave the ring; the rest keep their order and slide into even spacing.
+  const ringAngles = useMemo(
+    () => placeRingCards(deck.map((card) => card.id), selectedIdSet),
+    [deck, selectedIdSet],
   );
-
-  // After a draw, spread the cards that are still in the deck evenly around the circle.
-  // Nudging only the nearest neighbors bunched one side and left a gap on the other.
-  const localGapOffsets = useMemo(() => {
-    const n = deck.length;
-    const offsets = new Float64Array(n);
-    if (n === 0 || selectedIdSet.size === 0) return offsets;
-
-    const active: number[] = [];
-    for (let i = 0; i < n; i++) {
-      if (!selectedIdSet.has(deck[i].id)) active.push(i);
-    }
-    const m = active.length;
-    if (m === 0 || m === n) return offsets;
-
-    const fullStep = (2 * Math.PI) / n;
-    const evenStep = (2 * Math.PI) / m;
-    const anchor = active[0] * fullStep;
-    for (let k = 0; k < m; k++) {
-      const idx = active[k];
-      offsets[idx] = Math.round((anchor + k * evenStep - idx * fullStep) * 10000) / 10000;
-    }
-    return offsets;
-  }, [deck, selectedIdSet]);
+  const ringAnglesRef = useRef(ringAngles);
+  ringAnglesRef.current = ringAngles;
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const hoveredCardIdRef = useRef<string | null>(null);
   const [centerCardId, setCenterCardId] = useState<string | null>(null);
@@ -373,14 +332,14 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       let targetAngle = (-Math.PI / 2 - rotationRad) % (2 * Math.PI);
       if (targetAngle < 0) targetAngle += 2 * Math.PI;
 
-      const { angleStep } = wheelLayout;
       let bestId: string | null = null;
       let bestDiff = Infinity;
+      const angles = ringAnglesRef.current;
 
       for (let i = 0; i < total; i++) {
         const card = deck[i];
         if (!card || selectedIdSet.has(card.id)) continue;
-        const cardAngle = i * angleStep + (localGapOffsets[i] || 0);
+        const cardAngle = angles[i] ?? 0;
         const diff = Math.abs(Math.atan2(Math.sin(cardAngle - targetAngle), Math.cos(cardAngle - targetAngle)));
         if (diff < bestDiff) {
           bestDiff = diff;
@@ -393,7 +352,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         setCenterCardId(bestId);
       }
     },
-    [deck, localGapOffsets, selectedIdSet, wheelLayout],
+    [deck, selectedIdSet],
   );
 
   const buildWheelTransform = useCallback(
@@ -475,23 +434,19 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         // iPhone Duo 5.4" Outer Cover Screen in Portrait (Compact vertical ergonomics)
         setRadius(Math.max(280, Math.min(340, Math.round(h * 0.40))));
         setYOffset(Math.max(270, Math.min(340, Math.round(h * 0.41))));
-        setWheelCardWidth(64);
         setIsMobile(true);
       } else if (isLandscape && w < 1000) {
         // iPhone Duo 7.6" Inner Screen in Landscape (Wide dual-screen horizon)
         setRadius(Math.max(380, Math.min(520, Math.round(h * 0.78))));
         setYOffset(Math.max(370, Math.min(510, Math.round(h * 0.82))));
-        setWheelCardWidth(w < 720 ? 70 : 80);
         setIsMobile(false);
       } else if (w < 768) {
         setRadius(460);
         setYOffset(500);
-        setWheelCardWidth(w < 640 ? 64 : 80);
         setIsMobile(true);
       } else {
         setRadius(640);
         setYOffset(700);
-        setWheelCardWidth(96);
         setIsMobile(false);
       }
     };
@@ -518,15 +473,17 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     };
   }, [stopMomentum]);
 
-  // Synchronize initial wheel position & recalculate center card when deck or picked cards change
+  // Synchronize initial wheel position & recalculate center card when deck or picked cards change.
+  // After a draw, restack against the new even angles so the closing motion stays symmetric.
   useEffect(() => {
     hoveredCardIdRef.current = hoveredCardId;
     if (wheelReady) {
       applyRotation(rotationRef.current);
     } else {
       updateCenterCardForRotation(rotationRef.current);
+      syncRingStack(rotationRef.current);
     }
-  }, [wheelReady, hoveredCardId, applyRotation, updateCenterCardForRotation]);
+  }, [wheelReady, hoveredCardId, selectedIds, deck, applyRotation, updateCenterCardForRotation, syncRingStack]);
 
   // Handle ESC key to cancel/close the card spread window
   useEffect(() => {
@@ -659,28 +616,20 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       const currentRelativeAngle = pointerAngle - rotationRad;
 
       const total = deck.length || TOTAL_WHEEL_SLOTS;
-      const { angleStep } = wheelLayout;
+      const angles = ringAnglesRef.current;
+      const neighbor = total > 1 ? (2 * Math.PI) / Math.max(1, total - selectedIdSet.size) : Math.PI;
 
       // Normalize currentRelativeAngle to [0, 2*PI)
       let norm = currentRelativeAngle % (2 * Math.PI);
       if (norm < 0) norm += 2 * Math.PI;
 
-      const centerIdx = ((Math.round(norm / angleStep) % total) + total) % total;
-
-      // Seamless 360-degree circular ring: wrap candidate indices across 0 and total - 1
-      const candidateIndices = Array.from(
-        { length: 9 },
-        (_, offset) => (((centerIdx + offset - 4) % total) + total) % total,
-      );
-
       let bestCard: TarotCard | null = null;
       let bestDiff = Infinity;
 
-      for (const idx of candidateIndices) {
+      for (let idx = 0; idx < deck.length; idx++) {
         const card = deck[idx];
         if (!card || selectedIdSet.has(card.id)) continue;
-
-        const cardAngle = idx * angleStep + (localGapOffsets[idx] || 0);
+        const cardAngle = angles[idx] ?? 0;
         const diff = Math.abs(Math.atan2(Math.sin(norm - cardAngle), Math.cos(norm - cardAngle)));
         if (diff < bestDiff) {
           bestDiff = diff;
@@ -688,9 +637,9 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         }
       }
 
-      return bestDiff < Math.max(0.12, angleStep * 1.5) ? bestCard : null;
+      return bestDiff < Math.max(0.12, neighbor * 1.5) ? bestCard : null;
     },
-    [activeWheelCards, deck, isMobile, localGapOffsets, radius, selectedIdSet, wheelLayout, yOffset],
+    [activeWheelCards, deck, isMobile, radius, selectedIdSet, yOffset],
   );
 
   const handleSelect = useCallback(
@@ -1026,18 +975,15 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           }}
         >
           {deck.map((card, originalIdx) => {
-            const localAngle = originalIdx * wheelLayout.angleStep + (localGapOffsets[originalIdx] || 0);
+            const localAngle = ringAngles[originalIdx] ?? 0;
             const isHovered = activeHighlightCardId === card.id;
             return (
             <DeckWheelCard
               key={card.id}
               card={card}
-              originalIdx={originalIdx}
               radius={radius}
-              cardWidth={wheelCardWidth}
-              gapAngleOffset={localGapOffsets[originalIdx] || 0}
+              localAngle={localAngle}
               isMobile={isMobile}
-              totalCards={deck.length}
               isPicked={selectedIdSet.has(card.id)}
               isHovered={isHovered}
               stackZ={stackZForAngle(localAngle, frontLocalAngle(rotationRef.current))}
