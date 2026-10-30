@@ -4137,7 +4137,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                     },
                   },
                 }}
-                className={`grid gap-2 sm:gap-3 w-full p-0.5 ${drawnCards.length === 1 ? "grid-cols-1 max-w-[240px] sm:max-w-[300px] mx-auto" : drawnCards.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}
+                className="flex gap-2.5 sm:gap-4 flex-wrap justify-center p-2 sm:p-3 max-w-full"
                 style={{ perspective: 1200 }}
               >
                 {drawnCards.map((card, idx) => {
@@ -4158,7 +4158,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                       card={cardWithRev}
                       slotName={positionLabel}
                       index={idx}
-                      size="result"
+                      size="md"
                       cardBackId={oracleCardBackId}
                       onClick={() => setZoomedCard({ card: cardWithRev, slotName: `#${idx + 1} ${positionLabel}` })}
                     />

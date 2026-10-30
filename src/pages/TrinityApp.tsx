@@ -3878,7 +3878,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                         },
                                       },
                                     }}
-                                    className={`grid gap-2 sm:gap-3 w-full p-0.5 relative ${drawnCards.length === 1 ? "grid-cols-1 max-w-[240px] sm:max-w-[300px] mx-auto" : drawnCards.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}
+                                    className="flex gap-3.5 flex-wrap justify-center p-3 max-w-full relative"
                                     style={{ perspective: 1200 }}
                                   >
                                     {/* Cosmic Starlight Altar Ambient Shimmer Glow */}
@@ -3900,7 +3900,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                           key={`${c.id}-${i}-${cardFlipCycle}`}
                                           card={cardWithRev}
                                           index={i}
-                                          size="result"
+                                          size="md"
                                           slotName={positionLabel}
                                           onClick={() => setZoomedCard({ card: cardWithRev, slotName: positionLabel })}
                                         />
