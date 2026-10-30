@@ -151,6 +151,34 @@ const standaloneKeyboardSized = {
 };
 assert.equal(resolveViewportBox(standaloneKeyboardSized).height, 400);
 
+const duoSideColumn = {
+  innerWidth: 466,
+  innerHeight: 678,
+  screenWidth: 466,
+  screenHeight: 678,
+  visual: { width: 382, height: 678, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(duoSideColumn).width, 466);
+assert.equal(resolveViewportBox(duoSideColumn).offsetLeft, 0);
+
+const duoScreenWider = {
+  innerWidth: 382,
+  innerHeight: 678,
+  screenWidth: 466,
+  screenHeight: 678,
+  visual: { width: 382, height: 678, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(duoScreenWider).width, 466);
+
+const splitView = {
+  innerWidth: 512,
+  innerHeight: 768,
+  screenWidth: 1024,
+  screenHeight: 768,
+  visual: { width: 512, height: 768, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(splitView).width, 512);
+
 const lifecycle = readFileSync('src/lib/visualViewportBox.ts', 'utf8');
 assert.match(lifecycle, /visibilitychange/);
 assert.match(lifecycle, /pageshow/);

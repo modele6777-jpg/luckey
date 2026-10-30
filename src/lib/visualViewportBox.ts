@@ -20,6 +20,8 @@ export const VIEWPORT_RESUME_FILL_MS = 2600;
 /** Home-screen web app: inner and visual shrink by the same amount, short of the screen. */
 export const STANDALONE_EQUAL_SHRINK_PX = 24;
 export const STANDALONE_MAX_SHRINK_RATIO = 0.35;
+/** Side status column on this device. Wider than this is Split View, not a safe area. */
+export const SIDE_STRIP_MAX_RATIO = 0.22;
 
 export type ViewportResolveOptions = {
   /**
@@ -83,13 +85,13 @@ export function resolveViewportBox(
 
   if (visualWidth == null || visualHeight == null) {
     if (innerWidth == null || innerHeight == null) return null;
-    return {
+    return coverScreenEdges(snapshot, {
       width: roundPx(innerWidth),
       height: roundPx(innerHeight),
       offsetTop: 0,
       offsetLeft: 0,
       bottomGap: 0,
-    };
+    });
   }
 
   const layoutWidth = innerWidth ?? visualWidth;
@@ -103,17 +105,17 @@ export function resolveViewportBox(
     heightDelta / layoutHeight > VIEWPORT_KEYBOARD_MIN_RATIO;
 
   if (keyboard) {
-    return {
+    return coverScreenEdges(snapshot, {
       width: roundPx(layoutWidth),
       height: roundPx(layoutHeight),
       offsetTop: 0,
       offsetLeft: 0,
       bottomGap: 0,
-    };
+    });
   }
 
   const standaloneFill = standaloneResumeBox(snapshot);
-  if (standaloneFill) return standaloneFill;
+  if (standaloneFill) return coverScreenEdges(snapshot, standaloneFill);
 
   const tablet = Math.min(layoutWidth, layoutHeight) >= TABLET_SHORT_SIDE_PX;
   if (
@@ -123,24 +125,53 @@ export function resolveViewportBox(
     widthDelta < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX &&
     visualHeight + 1 < layoutHeight
   ) {
-    return {
+    return coverScreenEdges(snapshot, {
       width: roundPx(layoutWidth),
       height: roundPx(layoutHeight),
       offsetTop: 0,
       offsetLeft: 0,
       bottomGap: 0,
-    };
+    });
   }
 
   const offsetTop = nonNegative(visual?.offsetTop);
   const offsetLeft = nonNegative(visual?.offsetLeft);
-  return {
+  return coverScreenEdges(snapshot, {
     width: roundPx(visualWidth),
     height: roundPx(visualHeight),
     offsetTop: roundPx(offsetTop),
     offsetLeft: roundPx(offsetLeft),
     bottomGap: roundPx(Math.max(0, layoutHeight - offsetTop - visualHeight)),
-  };
+  });
+}
+
+/**
+ * The iPhone Duo / iPad side column is inside the layout viewport. visualViewport
+ * width skips it, so a shell sized to that width stops early and the page
+ * background shows through under the status icons. Grow to the layout width,
+ * and to the screen width when the missing slice is only that column.
+ * A Split View pane (about a third of the screen or more) is left alone.
+ */
+export function coverScreenEdges(snapshot: ViewportSnapshot, box: ViewportBox): ViewportBox {
+  let width = box.width;
+  let offsetLeft = box.offsetLeft;
+  const innerWidth = positive(snapshot.innerWidth);
+  if (innerWidth != null && innerWidth > width + 1 && (innerWidth - width) / innerWidth < SIDE_STRIP_MAX_RATIO) {
+    width = innerWidth;
+    offsetLeft = 0;
+  }
+  const screenWidth = positive(snapshot.screenWidth);
+  const screenHeight = positive(snapshot.screenHeight);
+  if (screenWidth != null && screenHeight != null) {
+    const screen = orientedScreenSize(screenWidth, screenHeight, width, box.height);
+    const shortfall = screen.width - width;
+    if (shortfall > 1 && shortfall / screen.width < SIDE_STRIP_MAX_RATIO) {
+      width = screen.width;
+      offsetLeft = 0;
+    }
+  }
+  if (width === box.width && offsetLeft === box.offsetLeft) return box;
+  return { ...box, width: roundPx(width), offsetLeft: roundPx(offsetLeft) };
 }
 
 export function viewportNeedsResumeFill(
