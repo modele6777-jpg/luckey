@@ -3548,7 +3548,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
             </h2>
             <p className="text-xs sm:text-sm text-zinc-300/80 mt-1 font-sans">
               {!isModeChosen
-                ? '원하시는 모드(🌿 힐링 치유 · 🕊️ 기적수업 지각전환 · ⚡ 자기계발 실행)를 선택하여 시작해 주세요.'
+                ? '힐링, 기적수업, 자기계발, 머니룰 중 오늘의 오라클을 골라 주세요.'
                 : oracleMode === 'healing'
                 ? '지친 마음의 치유와 안식을 위해 사주 본원과 78장 풀덱 타로가 전하는 따뜻한 힐링 오라클'
                 : oracleMode === 'miracle'
@@ -3556,8 +3556,6 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 : '역량 강화와 실질적 성장을 위해 사주 추진력과 마르세유 메이저 타로가 전하는 자기계발 오라클'}
             </p>
           </div>
-
-          <button type="button" onClick={openMoneyRule} className="flex items-center gap-2 rounded-2xl border border-amber-300/40 bg-gradient-to-r from-emerald-900 to-[#19342a] px-5 py-3 text-sm font-bold text-amber-100 shadow-lg hover:brightness-110"><Coins size={18} />머니룰 타로<span className="text-[10px] text-amber-300">SECRET</span></button>
 
           {/* Dual Mode Switcher & Mode Change Button */}
           <div className="flex items-center gap-2 flex-wrap justify-center md:justify-end">
@@ -3628,6 +3626,15 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 )}
                 <Zap size={14} className="relative z-10 text-amber-400" />
                 <span className="relative z-10">자기계발 (78장)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openMoneyRule}
+                className="relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-zinc-400 hover:text-white transition-all duration-300 cursor-pointer"
+              >
+                <Coins size={14} className="relative z-10 text-emerald-300" />
+                <span className="relative z-10">머니룰 (78장)</span>
               </button>
             </div>
           </div>
@@ -3755,7 +3762,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 오라클 타로 모드를 선택해 주세요
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 mt-2 max-w-xl mx-auto leading-relaxed">
-                사주 원국과 공명하는 3가지 특화 타로 모드(🌿 힐링 · 🕊️ 기적수업 · ⚡ 자기계발) 중 원하시는 방식을 선택하세요.<br className="hidden sm:inline" />
+                사주 원국과 같은 자리의 4가지 오라클(🌿 힐링 · 🕊️ 기적수업 · ⚡ 자기계발 · 🪙 머니룰) 중 하나를 고르세요.<br className="hidden sm:inline" />
                 각 모드는 서로 다른 고전 원본 덱과 전용 카드 뒷면을 사용합니다. 같은 날에도 다시 뽑을 수 있습니다.
               </p>
 
@@ -3775,7 +3782,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                 힐링 · 웨이트 1909　|　기적수업 · 비에빌　|　자기계발 · 마르세유　|　머니룰 · 에테이야
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-6 max-w-4xl mx-auto text-left">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mt-6 max-w-6xl mx-auto text-left">
                 {/* 🌿 Healing Mode Option Card */}
                 <button
                   type="button"
@@ -3896,6 +3903,42 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
 
                   <div className="mt-5 w-full py-2.5 rounded-xl bg-amber-500/20 group-hover:bg-amber-500/30 border border-amber-400/40 text-amber-200 text-xs font-bold text-center transition-colors">
                     ⚡ 자기계발 타로 새로 뽑기
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={openMoneyRule}
+                  className="group relative p-5 sm:p-6 rounded-2xl border transition-all duration-300 flex flex-col justify-between cursor-pointer active:scale-[0.98] bg-zinc-900/60 hover:bg-zinc-900/90 border-white/10 hover:border-emerald-400/40"
+                >
+                  <div>
+                    <div className="duo-workspace-actions flex items-center justify-between gap-2 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center">
+                        <Coins size={20} className="text-emerald-300 group-hover:scale-110 transition-transform" />
+                      </div>
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                        {ORACLE_DECKS.money.cards.length}장 · 횟수 제한 없음
+                      </span>
+                    </div>
+
+                    <div className="mb-3 flex items-center gap-3"><img src={ORACLE_DECKS.money.cards[0].imageUrl} alt="" loading="lazy" className="h-20 w-12 rounded object-contain" /><p className="text-xs leading-5 text-zinc-300">{ORACLE_DECKS.money.name}<br /><span className="text-zinc-400">{ORACLE_DECKS.money.edition}</span></p></div>
+                    <h4 className="text-base sm:text-lg font-bold text-white group-hover:text-emerald-200 transition-colors flex items-center gap-1.5">
+                      <span>🪙 머니룰 타로</span>
+                      <span className="text-xs font-normal text-emerald-300/80">(풍요의 습관)</span>
+                    </h4>
+                    <p className="text-xs text-zinc-300/90 mt-2 leading-relaxed">
+                      가치와 기회, 들어온 돈을 지키는 기준을 살피는 리딩.<br />
+                      믿음·연결·관리 세 자리와 바로 할 수 있는 한 가지.
+                    </p>
+
+                    <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-2 text-[11px] text-zinc-400">
+                      <Coins size={13} className="text-emerald-400" />
+                      <span>가치 존중 · 기회 살피기 · 돈 관리</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 w-full py-2.5 rounded-xl bg-emerald-500/20 group-hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-bold text-center transition-colors">
+                    🪙 머니룰 타로 새로 뽑기
                   </div>
                 </button>
               </div>
