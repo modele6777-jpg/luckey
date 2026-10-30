@@ -196,6 +196,24 @@ export function coverScreenEdges(snapshot: ViewportSnapshot, box: ViewportBox): 
   return { ...box, width: roundPx(width), offsetLeft: roundPx(offsetLeft) };
 }
 
+/**
+ * Folded and unfolded both keep a side status column outside the reported
+ * viewport width. Portrait screenshots put it on the right; landscape puts
+ * it on the left. The shell shifts by that amount so the page background
+ * is not the only thing under the clock.
+ */
+export function sideColumnBleed(
+  snapshot: ViewportSnapshot,
+  width: number,
+): { left: number; right: number } {
+  const innerWidth = positive(snapshot.innerWidth) ?? width;
+  const extra = Math.max(0, roundPx(width - innerWidth));
+  if (extra <= 1) return { left: 0, right: 0 };
+  const innerHeight = positive(snapshot.innerHeight) ?? positive(snapshot.visual?.height) ?? innerWidth;
+  if (innerHeight >= innerWidth) return { left: 0, right: extra };
+  return { left: extra, right: 0 };
+}
+
 export function viewportNeedsResumeFill(
   snapshot: ViewportSnapshot,
   fromBackground: boolean,
@@ -360,8 +378,13 @@ let sawHidden = false;
 let fillUntil = 0;
 let lifecycleBound = false;
 
-export function applyVisualViewportBox(box: ViewportBox, root: HTMLElement): void {
-  const signature = `${box.width}|${box.height}|${box.offsetTop}|${box.offsetLeft}|${box.bottomGap}`;
+export function applyVisualViewportBox(
+  box: ViewportBox,
+  root: HTMLElement,
+  snapshot?: ViewportSnapshot,
+): void {
+  const bleed = snapshot ? sideColumnBleed(snapshot, box.width) : { left: 0, right: 0 };
+  const signature = `${box.width}|${box.height}|${box.offsetTop}|${box.offsetLeft}|${box.bottomGap}|${bleed.left}|${bleed.right}`;
   if (signature === appliedSignature) return;
   appliedSignature = signature;
   lastAppliedBox = box;
@@ -370,6 +393,8 @@ export function applyVisualViewportBox(box: ViewportBox, root: HTMLElement): voi
   root.style.setProperty('--vv-top', px(box.offsetTop));
   root.style.setProperty('--vv-left', px(box.offsetLeft));
   root.style.setProperty('--vv-bottom', px(box.bottomGap));
+  root.style.setProperty('--vv-bleed-left', px(bleed.left));
+  root.style.setProperty('--vv-bleed-right', px(bleed.right));
   root.style.setProperty('--visual-vh', px(box.height));
 }
 
@@ -399,9 +424,10 @@ function fillArmed(now = Date.now()): boolean {
 export function syncVisualViewportBox(win: Window = window): ViewportBox | null {
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
-  const box = resolveViewportBox(readViewportSnapshot(win), { fillLayoutGap: fillArmed() });
+  const snapshot = readViewportSnapshot(win);
+  const box = resolveViewportBox(snapshot, { fillLayoutGap: fillArmed() });
   if (!box) return null;
-  applyVisualViewportBox(box, document.documentElement);
+  applyVisualViewportBox(box, document.documentElement, snapshot);
   applySafeAreaVars(document);
   rememberStable(box);
   return box;

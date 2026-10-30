@@ -25,6 +25,8 @@
     --vv-top: 0px;
     --vv-left: 0px;
     --vv-bottom: 0px;
+    --vv-bleed-left: 0px;
+    --vv-bleed-right: 0px;
     --vvw: 100%;
     --vvh: 100vh;
     --visual-vh: 100vh;
@@ -67,9 +69,9 @@
   body {
     position: fixed;
     top: var(--vv-top, 0px);
-    left: 0;
-    right: 0;
-    width: auto;
+    left: calc(-1 * var(--vv-bleed-left, 0px));
+    right: auto;
+    width: max(100%, var(--vvw, 100%));
     height: var(--vvh, 100vh);
     min-height: 0;
   }
@@ -3102,10 +3104,10 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 .prism-aura-bg,
 .tarot-spread-stage-root {
   top: var(--vv-top, 0px);
-  left: 0;
-  right: 0;
+  left: calc(-1 * var(--vv-bleed-left, 0px));
+  right: auto;
   bottom: auto;
-  width: auto;
+  width: max(100%, var(--vvw, 100%));
   max-width: none;
   height: var(--vvh, 100dvh);
   min-height: 0;

@@ -9,7 +9,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { resolveViewportBox, viewportNeedsResumeFill } = await import(
+const { resolveViewportBox, viewportNeedsResumeFill, sideColumnBleed } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -169,6 +169,26 @@ const duoScreenWider = {
   visual: { width: 382, height: 678, offsetTop: 0, offsetLeft: 0 },
 };
 assert.equal(resolveViewportBox(duoScreenWider).width, 466);
+
+const foldedPortrait = {
+  innerWidth: 382,
+  innerHeight: 678,
+  screenWidth: 466,
+  screenHeight: 678,
+  visual: { width: 382, height: 678, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(foldedPortrait).width, 466);
+assert.deepEqual(sideColumnBleed(foldedPortrait, 466), { left: 0, right: 84 });
+
+const foldedLandscape = {
+  innerWidth: 594,
+  innerHeight: 466,
+  screenWidth: 678,
+  screenHeight: 466,
+  visual: { width: 594, height: 466, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(foldedLandscape).width, 678);
+assert.deepEqual(sideColumnBleed(foldedLandscape, 678), { left: 84, right: 0 });
 
 const unfolded = {
   innerWidth: 890,
