@@ -100,6 +100,13 @@ function frontLocalAngle(rotationDeg: number): number {
   return front;
 }
 
+function compactSlotLabel(label: string, index: number): string {
+  const named = label.match(/년주|월주|일주|시주/);
+  if (named) return named[0];
+  const stripped = label.replace(/^\s*\d+\s*[.·]\s*/, '').split(/[([]/)[0].trim();
+  return stripped || String(index + 1);
+}
+
 /**
  * Stack by distance from the card at the front of the ring.
  * Index order puts every card on the right under its neighbor (a smear) and every
@@ -233,18 +240,14 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   );
 
   const compactSlots = maxCards >= 4 || isMobile;
-  const slotClass = isLandscapeLayout
-    ? 'shrink-0 w-[5.6rem] h-12 rounded-xl'
-    : isMobile
+  const slotClass = isMobile
     ? compactSlots
       ? 'w-12 h-18 sm:w-14 sm:h-21'
       : 'w-15 h-23 sm:w-18 sm:h-28'
     : compactSlots
       ? 'w-16 h-24 sm:w-20 sm:h-30 md:w-24 md:h-36'
       : 'w-22 h-34 md:w-30 md:h-46';
-  const slotsWrapClass = isLandscapeLayout
-    ? 'flex flex-nowrap items-stretch justify-center gap-1.5 w-full min-w-0 overflow-x-auto'
-    : isMobile
+  const slotsWrapClass = isMobile
     ? 'flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-[96vw]'
     : compactSlots
       ? 'flex flex-wrap items-end justify-center gap-2 sm:gap-3 max-w-[92vw]'
@@ -273,7 +276,6 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const touchStartTimeRef = useRef<number>(0);
   const [radius, setRadius] = useState(600);
   const [yOffset, setYOffset] = useState(580);
-  const [landscapeArcTop, setLandscapeArcTop] = useState(168);
 
   const selectedIds = useMemo(
     () => selectedEntries.map((entry) => entry.card.id),
@@ -440,19 +442,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       setIsLandscapeLayout(isLandscape);
 
       if (isLandscape) {
-        let sat = 0;
-        if (typeof document !== 'undefined') {
-          const probe = document.createElement('div');
-          probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px)';
-          document.body.appendChild(probe);
-          sat = Number.parseFloat(getComputedStyle(probe).paddingTop) || 0;
-          probe.remove();
-        }
-        const headerPx = (hasConcern || hasSpreadMeta) ? 118 : 52;
-        const stripPx = 56;
-        const arcTop = Math.min(sat + headerPx + stripPx, Math.max(stripPx + 16, Math.round(h * 0.46)));
-        const fan = landscapeFanMetrics(h, arcTop);
-        setLandscapeArcTop(arcTop);
+        const fan = landscapeFanMetrics(h, 20);
         setRadius(fan.radius);
         setYOffset(fan.yOffset);
         setIsMobile(w < 700);
@@ -492,7 +482,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       window.clearTimeout(timer);
       stopMomentum();
     };
-  }, [stopMomentum, hasConcern, hasSpreadMeta]);
+  }, [stopMomentum]);
 
   // Synchronize initial wheel position & recalculate center card when deck or picked cards change.
   // After a draw, restack against the new even angles so the closing motion stays symmetric.
@@ -972,6 +962,53 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         )}
       </div>
 
+      {isLandscapeLayout && (
+        <div
+          className="relative z-[120] shrink-0 w-full px-3 pb-1.5 pointer-events-none"
+          style={{
+            paddingTop: hasConcern || hasSpreadMeta
+              ? 'calc(env(safe-area-inset-top, 0px) + 6.75rem)'
+              : 'calc(env(safe-area-inset-top, 0px) + 3.1rem)',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+              {Array.from({ length: maxCards }).map((_, i) => {
+                const entry = selectedEntries[i];
+                const fullLabel = positions[i] || `Card ${i + 1}`;
+                const shortLabel = compactSlotLabel(fullLabel, i);
+                return (
+                  <div
+                    key={`land-slot-${i}`}
+                    title={entry ? `${fullLabel} · ${entry.card.nameKo}` : fullLabel}
+                    className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-yellow-500/40 bg-zinc-950 px-2.5"
+                  >
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-500/20 px-1 text-xs font-black leading-none text-yellow-100">
+                      {i + 1}
+                    </span>
+                    <span className="text-xs font-bold leading-none text-yellow-50">{shortLabel}</span>
+                    {entry && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setZoomedCard({ card: { ...entry.card, reversed: entry.reversed }, slotName: fullLabel });
+                        }}
+                        className="pointer-events-auto max-w-[7rem] truncate text-xs font-semibold text-yellow-300"
+                      >
+                        {entry.card.nameKo}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <span className="shrink-0 text-xs font-bold text-yellow-200">
+              {selectedEntries.length}/{maxCards}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Main Interactive Stage (Zero 3D perspective & Zero backdrop-blur) */}
       <div
         ref={containerRef}
@@ -1014,12 +1051,11 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         </div>
 
         {/* Selected card slots with a brief burst when a card is drawn. */}
+        {!isLandscapeLayout && (
         <div
-          className={`absolute z-[95] pointer-events-none w-full px-2 ${isLandscapeLayout ? 'left-0 right-0' : 'flex flex-col items-center justify-center gap-1.5 sm:gap-4 md:gap-6'}`}
+          className="absolute z-[95] pointer-events-none flex w-full flex-col items-center justify-center gap-1.5 px-2 sm:gap-4 md:gap-6"
           style={{
-            top: isLandscapeLayout
-              ? Math.max(4, landscapeArcTop - 56)
-              : isMobile
+            top: isMobile
                 ? hasConcern || hasSpreadMeta
                   ? 'calc(env(safe-area-inset-top, 0px) + 6.2rem)'
                   : 'calc(env(safe-area-inset-top, 0px) + 3.0rem)'
@@ -1030,42 +1066,12 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                   : 'calc(env(safe-area-inset-top, 0px) + 4.5rem)',
           }}
         >
-          <div className={isLandscapeLayout ? 'flex items-center gap-2 w-full' : 'contents'}>
           <div className={slotsWrapClass}>
             {Array.from({ length: maxCards }).map((_, i) => {
               const entry = selectedEntries[i];
               const hasCard = entry !== undefined;
               const drawnCard = hasCard ? entry.card : null;
               const positionLabel = positions[i] || `Card ${i + 1}`;
-              if (isLandscapeLayout) {
-                return (
-                  <div
-                    key={`slot-${i}`}
-                    className={`${slotClass} bg-zinc-900 border border-yellow-500/30 flex items-center justify-center relative overflow-hidden`}
-                  >
-                    {!hasCard ? (
-                      <div className="flex items-center gap-1 px-1.5 w-full h-full text-yellow-500/70">
-                        <div className="w-5 h-5 shrink-0 rounded-full border border-yellow-500/30 flex items-center justify-center bg-yellow-500/10">
-                          <span className="text-[9px] font-serif font-black text-yellow-500/80">{i + 1}</span>
-                        </div>
-                        <span className="text-[8px] font-bold leading-tight line-clamp-2 break-keep">{positionLabel}</span>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
-                        }}
-                        className="w-full h-full px-1.5 text-left pointer-events-auto cursor-zoom-in"
-                        title={`${drawnCard!.nameKo} 카드 크게 보기`}
-                      >
-                        <span className="block text-[8px] text-yellow-500/60 truncate">{positionLabel}</span>
-                        <span className="block text-[11px] font-bold text-yellow-200 truncate">{drawnCard!.nameKo}</span>
-                      </button>
-                    )}
-                  </div>
-                );
-              }
               return (
                 <div
                   key={`slot-${i}`}
@@ -1168,15 +1174,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               );
             })}
           </div>
-          {isLandscapeLayout && (
-            <div className="shrink-0 rounded-full border border-yellow-500/30 bg-zinc-950 px-2.5 py-1 text-[10px] font-bold text-yellow-300">
-              {selectedEntries.length}/{maxCards}
-            </div>
-          )}
-          </div>
 
           {/* Selection Instruction and Help */}
-          {!isLandscapeLayout && (
           <div className="text-center pointer-events-none flex flex-col items-center gap-1.5 px-4 w-full select-none">
             <div className="flex items-center gap-2">
               <span className="text-yellow-400 font-bold tracking-[0.15em] text-xs sm:text-[13px] md:text-sm font-sans">
@@ -1187,8 +1186,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               </span>
             </div>
           </div>
-          )}
         </div>
+        )}
       </div>
 
       {/* Bottom Quick Control Bar (Opaque surface, zero backdrop-blur) */}

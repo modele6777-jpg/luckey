@@ -37,9 +37,9 @@ export function placeRingCards(ids: readonly string[], pickedIds: ReadonlySet<st
 }
 
 /**
- * Landscape fan: the front of the arc sits below a compact slot strip,
- * and the circle's center (the glow) is below the wheel box so it cannot
- * cover the control buttons.
+ * Landscape fan: the slot strip sits above this box, so the arc starts
+ * near the top of the wheel. The circle's center stays below the box
+ * so it cannot cover the control buttons.
  */
 export function landscapeFanMetrics(containerHeight: number, arcTop = 64): {
   radius: number;
