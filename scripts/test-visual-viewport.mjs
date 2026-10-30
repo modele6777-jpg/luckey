@@ -168,7 +168,7 @@ const duoScreenWider = {
   screenHeight: 678,
   visual: { width: 382, height: 678, offsetTop: 0, offsetLeft: 0 },
 };
-assert.equal(resolveViewportBox(duoScreenWider).width, 466);
+assert.equal(resolveViewportBox(duoScreenWider).width, 382);
 
 const foldedPortrait = {
   innerWidth: 382,
@@ -177,8 +177,8 @@ const foldedPortrait = {
   screenHeight: 678,
   visual: { width: 382, height: 678, offsetTop: 0, offsetLeft: 0 },
 };
-assert.equal(resolveViewportBox(foldedPortrait).width, 466);
-assert.deepEqual(sideColumnBleed(foldedPortrait, 466), { left: 0, right: 84 });
+assert.equal(resolveViewportBox(foldedPortrait).width, 382);
+assert.deepEqual(sideColumnBleed(foldedPortrait, 466), { left: 0, right: 0 });
 
 const foldedLandscape = {
   innerWidth: 594,
@@ -187,8 +187,8 @@ const foldedLandscape = {
   screenHeight: 466,
   visual: { width: 594, height: 466, offsetTop: 0, offsetLeft: 0 },
 };
-assert.equal(resolveViewportBox(foldedLandscape).width, 678);
-assert.deepEqual(sideColumnBleed(foldedLandscape, 678), { left: 84, right: 0 });
+assert.equal(resolveViewportBox(foldedLandscape).width, 594);
+assert.deepEqual(sideColumnBleed(foldedLandscape, 678), { left: 0, right: 0 });
 
 const unfolded = {
   innerWidth: 890,
@@ -229,8 +229,8 @@ const css = readFileSync('src/index.css', 'utf8');
 assert.match(css, /-webkit-fill-available/);
 assert.equal(/height:\s*var\(--vvh/.test(css), false);
 assert.equal(css.includes('100lvh'), false);
-assert.match(css, /--vv-bleed-left/);
-assert.match(css, /\.tarot-spread-stage-root/);
+assert.equal(css.includes('--vv-bleed-left'), false);
+assert.equal(css.includes('max(100%, var(--vvw'), false);
 assert.equal(css.includes('.tarot-virtual-stage'), false);
 
 const trinity = readFileSync('src/pages/TrinityApp.tsx', 'utf8');

@@ -1,7 +1,6 @@
 /**
- * Screen height stays on the layout viewport (100% / fill-available).
- * This module only widens the shell for the foldable side status column.
- * A short visual viewport must not resize the page.
+ * Screen height and width stay on the layout viewport.
+ * A short visual viewport, or a screen wider than the window, does not resize the page.
  */
 
 export const VIEWPORT_KEYBOARD_MIN_DELTA_PX = 160;
@@ -15,8 +14,6 @@ export const VIEWPORT_RESUME_FILL_MS = 2600;
 /** Home-screen web app: inner and visual shrink by the same amount, short of the screen. */
 export const STANDALONE_EQUAL_SHRINK_PX = 24;
 export const STANDALONE_MAX_SHRINK_RATIO = 0.35;
-/** Side status column on this device. Wider than this is Split View, not a safe area. */
-export const SIDE_STRIP_MAX_RATIO = 0.22;
 
 export type ViewportResolveOptions = {
   /**
@@ -112,51 +109,17 @@ export function layoutOutgrewVisual(snapshot: ViewportSnapshot): boolean {
   return innerWidth > visualWidth * 1.08;
 }
 
-/**
- * Unfolded foldable: the side status column is inside the layout viewport.
- * visualViewport.width skips it, so a shell sized to that width stops early
- * and the page background shows under the clock. Always paint at least the
- * layout width. Grow to the screen only for a small side strip. A Split View
- * pane (about a third of the screen or more) stays at the window width.
- */
-export function coverScreenEdges(snapshot: ViewportSnapshot, box: ViewportBox): ViewportBox {
-  let width = box.width;
-  let offsetLeft = box.offsetLeft;
-  const innerWidth = positive(snapshot.innerWidth);
-  if (innerWidth != null && innerWidth > width + 1) {
-    width = innerWidth;
-    offsetLeft = 0;
-  }
-  const screenWidth = positive(snapshot.screenWidth);
-  const screenHeight = positive(snapshot.screenHeight);
-  if (screenWidth != null && screenHeight != null) {
-    const screen = orientedScreenSize(screenWidth, screenHeight, width, box.height);
-    const shortfall = screen.width - width;
-    if (shortfall > 1 && shortfall / screen.width < SIDE_STRIP_MAX_RATIO) {
-      width = screen.width;
-      offsetLeft = 0;
-    }
-  }
-  if (width === box.width && offsetLeft === box.offsetLeft) return box;
-  return { ...box, width: roundPx(width), offsetLeft: roundPx(offsetLeft) };
+/** The window width is the page width. A wider screen does not stretch the shell. */
+export function coverScreenEdges(_snapshot: ViewportSnapshot, box: ViewportBox): ViewportBox {
+  return box;
 }
 
-/**
- * Folded and unfolded both keep a side status column outside the reported
- * viewport width. Portrait screenshots put it on the right; landscape puts
- * it on the left. The shell shifts by that amount so the page background
- * is not the only thing under the clock.
- */
+/** Side status column is not filled or shifted. */
 export function sideColumnBleed(
-  snapshot: ViewportSnapshot,
-  width: number,
+  _snapshot: ViewportSnapshot,
+  _width: number,
 ): { left: number; right: number } {
-  const innerWidth = positive(snapshot.innerWidth) ?? width;
-  const extra = Math.max(0, roundPx(width - innerWidth));
-  if (extra <= 1) return { left: 0, right: 0 };
-  const innerHeight = positive(snapshot.innerHeight) ?? positive(snapshot.visual?.height) ?? innerWidth;
-  if (innerHeight >= innerWidth) return { left: 0, right: extra };
-  return { left: extra, right: 0 };
+  return { left: 0, right: 0 };
 }
 
 export function viewportNeedsResumeFill(
