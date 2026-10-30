@@ -200,7 +200,7 @@ export function TTSHighlightMark({
   }, []);
   useEffect(() => {
     if (!ownsHighlight || document.visibilityState === 'hidden') return;
-    markRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    markRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center', inline: 'nearest' });
   }, [ownsHighlight]);
 
   const themeClass = isLight
