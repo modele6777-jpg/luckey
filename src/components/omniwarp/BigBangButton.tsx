@@ -475,7 +475,14 @@ export function BigBangButton() {
   const visualDragRef = useRef(false);
   const windTailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
-  const blowCloverWind = (_dx:number, _dy:number) => {
+  const blowCloverWind = (dx: number, dy: number) => {
+    // Keep the existing spring-driven center motion alive during visual drags.
+    const now = performance.now();
+    if (!visualDragRef.current || now - lastStateUpdateTimeRef.current >= 32) {
+      lastStateUpdateTimeRef.current = now;
+      setDragDistance(Math.hypot(dx, dy));
+      setDragOffset({ x: dx, y: dy });
+    }
     if (!visualDragRef.current) {
       visualDragRef.current = true;
       if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current);
@@ -486,8 +493,6 @@ export function BigBangButton() {
       downDirectionRef.current = 'none';
       setActivePhase('idle');
       setGauge(0);
-      setDragDistance(0);
-      setDragOffset({x:0,y:0});
       stopBlackHoleContinuousHaptic();
     }
 
