@@ -8,7 +8,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { placeRingCards, ringNeighborGaps } = await import(
+const { placeRingCards, ringNeighborGaps, landscapeFanMetrics } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -60,5 +60,11 @@ const orderAfter = ids
   .sort((a, b) => a.angle - b.angle)
   .map((item) => item.id);
 assert.deepEqual(orderAfter, orderBefore, 'drawing does not reshuffle');
+
+for (const height of [220, 360, 520]) {
+  const fan = landscapeFanMetrics(height, 120);
+  assert.equal(fan.arcTopY, 120, `arc starts below the slot strip at h=${height}`);
+  assert.ok(fan.originY >= height + fan.hubClearance - 1, `glow center stays below the buttons at h=${height}`);
+}
 
 console.log('Tarot ring gap: even spacing, preserved order, and seam closure passed for 78 down to fewer cards.');

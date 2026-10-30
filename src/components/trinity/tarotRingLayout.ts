@@ -36,6 +36,27 @@ export function placeRingCards(ids: readonly string[], pickedIds: ReadonlySet<st
   return angles;
 }
 
+/**
+ * Landscape fan: the front of the arc sits below a compact slot strip,
+ * and the circle's center (the glow) is below the wheel box so it cannot
+ * cover the control buttons.
+ */
+export function landscapeFanMetrics(containerHeight: number, arcTop = 64): {
+  radius: number;
+  yOffset: number;
+  arcTop: number;
+  hubClearance: number;
+  originY: number;
+  arcTopY: number;
+} {
+  const height = Math.max(160, containerHeight);
+  const hubClearance = 96;
+  const yOffset = Math.round(height / 2 + hubClearance);
+  const radius = Math.round(height / 2 + yOffset - arcTop);
+  const originY = height / 2 + yOffset;
+  return { radius, yOffset, arcTop, hubClearance, originY, arcTopY: originY - radius };
+}
+
 /** Neighbor gaps around the circle, including the wrap from the last card back to the first. */
 export function ringNeighborGaps(angles: ArrayLike<number>, activeIndices: readonly number[]): number[] {
   const gaps: number[] = [];

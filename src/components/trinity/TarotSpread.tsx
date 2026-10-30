@@ -15,7 +15,7 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
-import { placeRingCards } from './tarotRingLayout';
+import { landscapeFanMetrics, placeRingCards } from './tarotRingLayout';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -228,16 +228,23 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const hasSpreadMeta = spreadName.trim().length > 0;
 
   const [isMobile, setIsMobile] = useState(false);
+  const [isLandscapeLayout, setIsLandscapeLayout] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth > window.innerHeight,
+  );
 
   const compactSlots = maxCards >= 4 || isMobile;
-  const slotClass = isMobile
+  const slotClass = isLandscapeLayout
+    ? 'shrink-0 w-[5.6rem] h-12 rounded-xl'
+    : isMobile
     ? compactSlots
       ? 'w-12 h-18 sm:w-14 sm:h-21'
       : 'w-15 h-23 sm:w-18 sm:h-28'
     : compactSlots
       ? 'w-16 h-24 sm:w-20 sm:h-30 md:w-24 md:h-36'
       : 'w-22 h-34 md:w-30 md:h-46';
-  const slotsWrapClass = isMobile
+  const slotsWrapClass = isLandscapeLayout
+    ? 'flex flex-nowrap items-stretch justify-center gap-1.5 w-full min-w-0 overflow-x-auto'
+    : isMobile
     ? 'flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-[96vw]'
     : compactSlots
       ? 'flex flex-wrap items-end justify-center gap-2 sm:gap-3 max-w-[92vw]'
@@ -266,6 +273,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const touchStartTimeRef = useRef<number>(0);
   const [radius, setRadius] = useState(600);
   const [yOffset, setYOffset] = useState(580);
+  const [landscapeArcTop, setLandscapeArcTop] = useState(168);
 
   const selectedIds = useMemo(
     () => selectedEntries.map((entry) => entry.card.id),
@@ -429,17 +437,30 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       const w = bounds?.width || window.innerWidth;
       const h = bounds?.height || window.innerHeight;
       const isLandscape = w > h;
+      setIsLandscapeLayout(isLandscape);
 
-      if (!isLandscape && w < 540) {
+      if (isLandscape) {
+        let sat = 0;
+        if (typeof document !== 'undefined') {
+          const probe = document.createElement('div');
+          probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px)';
+          document.body.appendChild(probe);
+          sat = Number.parseFloat(getComputedStyle(probe).paddingTop) || 0;
+          probe.remove();
+        }
+        const headerPx = (hasConcern || hasSpreadMeta) ? 118 : 52;
+        const stripPx = 56;
+        const arcTop = Math.min(sat + headerPx + stripPx, Math.max(stripPx + 16, Math.round(h * 0.46)));
+        const fan = landscapeFanMetrics(h, arcTop);
+        setLandscapeArcTop(arcTop);
+        setRadius(fan.radius);
+        setYOffset(fan.yOffset);
+        setIsMobile(w < 700);
+      } else if (w < 540) {
         // iPhone Duo 5.4" Outer Cover Screen in Portrait (Compact vertical ergonomics)
         setRadius(Math.max(280, Math.min(340, Math.round(h * 0.40))));
         setYOffset(Math.max(270, Math.min(340, Math.round(h * 0.41))));
         setIsMobile(true);
-      } else if (isLandscape && w < 1000) {
-        // iPhone Duo 7.6" Inner Screen in Landscape (Wide dual-screen horizon)
-        setRadius(Math.max(380, Math.min(520, Math.round(h * 0.78))));
-        setYOffset(Math.max(370, Math.min(510, Math.round(h * 0.82))));
-        setIsMobile(false);
       } else if (w < 768) {
         setRadius(460);
         setYOffset(500);
@@ -471,7 +492,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       window.clearTimeout(timer);
       stopMomentum();
     };
-  }, [stopMomentum]);
+  }, [stopMomentum, hasConcern, hasSpreadMeta]);
 
   // Synchronize initial wheel position & recalculate center card when deck or picked cards change.
   // After a draw, restack against the new even angles so the closing motion stays symmetric.
@@ -994,25 +1015,57 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
         {/* Selected card slots with a brief burst when a card is drawn. */}
         <div
-          className="absolute flex flex-col items-center justify-center gap-1.5 sm:gap-4 md:gap-6 z-[95] pointer-events-none w-full px-2"
+          className={`absolute z-[95] pointer-events-none w-full px-2 ${isLandscapeLayout ? 'left-0 right-0' : 'flex flex-col items-center justify-center gap-1.5 sm:gap-4 md:gap-6'}`}
           style={{
-            top: isMobile
-              ? hasConcern || hasSpreadMeta
-                ? 'calc(env(safe-area-inset-top, 0px) + 6.2rem)'
-                : 'calc(env(safe-area-inset-top, 0px) + 3.0rem)'
-              : hasConcern || hasSpreadMeta
-                ? compactSlots
-                  ? 'calc(env(safe-area-inset-top, 0px) + 9.5rem)'
-                  : 'calc(env(safe-area-inset-top, 0px) + 8.5rem)'
-                : 'calc(env(safe-area-inset-top, 0px) + 4.5rem)',
+            top: isLandscapeLayout
+              ? Math.max(4, landscapeArcTop - 56)
+              : isMobile
+                ? hasConcern || hasSpreadMeta
+                  ? 'calc(env(safe-area-inset-top, 0px) + 6.2rem)'
+                  : 'calc(env(safe-area-inset-top, 0px) + 3.0rem)'
+                : hasConcern || hasSpreadMeta
+                  ? compactSlots
+                    ? 'calc(env(safe-area-inset-top, 0px) + 9.5rem)'
+                    : 'calc(env(safe-area-inset-top, 0px) + 8.5rem)'
+                  : 'calc(env(safe-area-inset-top, 0px) + 4.5rem)',
           }}
         >
+          <div className={isLandscapeLayout ? 'flex items-center gap-2 w-full' : 'contents'}>
           <div className={slotsWrapClass}>
             {Array.from({ length: maxCards }).map((_, i) => {
               const entry = selectedEntries[i];
               const hasCard = entry !== undefined;
               const drawnCard = hasCard ? entry.card : null;
               const positionLabel = positions[i] || `Card ${i + 1}`;
+              if (isLandscapeLayout) {
+                return (
+                  <div
+                    key={`slot-${i}`}
+                    className={`${slotClass} bg-zinc-900 border border-yellow-500/30 flex items-center justify-center relative overflow-hidden`}
+                  >
+                    {!hasCard ? (
+                      <div className="flex items-center gap-1 px-1.5 w-full h-full text-yellow-500/70">
+                        <div className="w-5 h-5 shrink-0 rounded-full border border-yellow-500/30 flex items-center justify-center bg-yellow-500/10">
+                          <span className="text-[9px] font-serif font-black text-yellow-500/80">{i + 1}</span>
+                        </div>
+                        <span className="text-[8px] font-bold leading-tight line-clamp-2 break-keep">{positionLabel}</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setZoomedCard({ card: { ...drawnCard!, reversed: entry.reversed }, slotName: positionLabel });
+                        }}
+                        className="w-full h-full px-1.5 text-left pointer-events-auto cursor-zoom-in"
+                        title={`${drawnCard!.nameKo} 카드 크게 보기`}
+                      >
+                        <span className="block text-[8px] text-yellow-500/60 truncate">{positionLabel}</span>
+                        <span className="block text-[11px] font-bold text-yellow-200 truncate">{drawnCard!.nameKo}</span>
+                      </button>
+                    )}
+                  </div>
+                );
+              }
               return (
                 <div
                   key={`slot-${i}`}
@@ -1115,8 +1168,15 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               );
             })}
           </div>
+          {isLandscapeLayout && (
+            <div className="shrink-0 rounded-full border border-yellow-500/30 bg-zinc-950 px-2.5 py-1 text-[10px] font-bold text-yellow-300">
+              {selectedEntries.length}/{maxCards}
+            </div>
+          )}
+          </div>
 
           {/* Selection Instruction and Help */}
+          {!isLandscapeLayout && (
           <div className="text-center pointer-events-none flex flex-col items-center gap-1.5 px-4 w-full select-none">
             <div className="flex items-center gap-2">
               <span className="text-yellow-400 font-bold tracking-[0.15em] text-xs sm:text-[13px] md:text-sm font-sans">
@@ -1127,12 +1187,13 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
               </span>
             </div>
           </div>
+          )}
         </div>
       </div>
 
       {/* Bottom Quick Control Bar (Opaque surface, zero backdrop-blur) */}
       <div
-        className="relative z-[310] flex items-center justify-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 sm:py-3 bg-zinc-950 border-t border-yellow-500/20 w-full touch-none select-none overscroll-none"
+        className="relative z-[320] isolate flex items-center justify-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 sm:py-3 bg-zinc-950 border-t border-yellow-500/20 w-full touch-none select-none overscroll-none"
         style={{
           touchAction: 'none',
           overscrollBehavior: 'none',
