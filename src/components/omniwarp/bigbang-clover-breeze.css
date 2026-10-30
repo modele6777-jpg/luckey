@@ -1,0 +1,38 @@
+.bigbang-clover-wind-screen {
+  --wind-x: 100vw;
+  --wind-y: -45vh;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  z-index: 10020;
+  opacity: 1;
+  transition: opacity 1.1s ease-out;
+  contain: strict;
+}
+.bigbang-clover-wind-screen.is-settling { opacity: 0; }
+.bigbang-clover-wind-leaf {
+  position: absolute;
+  width: var(--leaf-size);
+  height: var(--leaf-size);
+  opacity: 0;
+  animation: bigbang-fullscreen-clover-wind var(--leaf-duration) linear infinite;
+  animation-delay: var(--leaf-delay);
+  will-change: transform, opacity;
+}
+.bigbang-clover-wind-leaf svg { overflow: visible; }
+@keyframes bigbang-fullscreen-clover-wind {
+  0% { opacity: 0; transform: translate3d(calc(var(--wind-x) * -.65), calc(var(--wind-y) * -.65), 0) rotate(var(--leaf-tilt)) scale(.55); }
+  18% { opacity: .7; }
+  50% { opacity: .85; transform: translate3d(0, -16px, 0) rotate(calc(var(--leaf-tilt) + var(--leaf-turn) * .45)) scale(1); }
+  80% { opacity: .5; }
+  100% { opacity: 0; transform: translate3d(calc(var(--wind-x) * .65), calc(var(--wind-y) * .65), 0) rotate(calc(var(--leaf-tilt) + var(--leaf-turn))) scale(.65); }
+}
+@media (max-width: 640px) { .bigbang-clover-wind-leaf:nth-child(n+41) { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .bigbang-clover-wind-leaf { animation: none; opacity: .3; transform: rotate(var(--leaf-tilt)); will-change: auto; }
+  .bigbang-clover-wind-screen { transition-duration: .25s; }
+}

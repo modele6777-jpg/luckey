@@ -395,9 +395,25 @@ async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, con
   throw lastError || new Error("All Gemini content models exhausted");
 }
 
+function resolveServerPort(): number {
+  const portArgIndex = process.argv.findIndex((arg) => arg === "--port" || arg === "-p");
+  if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+    const parsed = Number.parseInt(process.argv[portArgIndex + 1], 10);
+    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+  }
+  if (process.env.NODE_ENV !== "production") {
+    if (process.env.PORT && process.env.PORT !== "8080") {
+      const parsed = Number.parseInt(process.env.PORT, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+    }
+    return 3000;
+  }
+  return Number.parseInt(process.env.PORT || "3000", 10) || 3000;
+}
+
 async function startServer() {
   const app = express();
-  const PORT = Number.parseInt(process.env.PORT || "3000", 10) || 3000;
+  const PORT = resolveServerPort();
 
   app.use(express.json({ limit: '50mb' }));
 
@@ -2599,26 +2615,42 @@ self.addEventListener('activate', (e) => {
   });
 
   server.on("error", (error: NodeJS.ErrnoException) => {
-  if (error.code !== "EADDRINUSE") {
-  console.error("[server] Failed to start:", error);
-  return;
-  }
+    if (error.code !== "EADDRINUSE") {
+      console.error("[server] Failed to start:", error);
+      return;
+    }
 
-  console.warn(`[server] Port ${PORT} is already in use; retrying on an ephemeral port.`);
-  server.close(() => {
-  const fallbackServer = app.listen(0, "0.0.0.0", () => {
-  fallbackServer.keepAliveTimeout = 120000;
-  fallbackServer.headersTimeout = 125000;
-  fallbackServer.timeout = 240000;
-  const address = fallbackServer.address();
-  const activePort = typeof address === "object" && address ? address.port : 0;
-  console.log(`Server running on http://localhost:${activePort} | AI_TYPE = ${process.env.AI_TYPE || 'grok'}`);
-  });
+    if (process.env.NODE_ENV !== "production") {
+      console.error(`[server] Port ${PORT} is in use; waiting and retrying on port 3000...`);
+      setTimeout(() => {
+        try {
+          server.close();
+        } catch (_) {}
+        const retryServer = app.listen(3000, "0.0.0.0", () => {
+          retryServer.keepAliveTimeout = 120000;
+          retryServer.headersTimeout = 125000;
+          retryServer.timeout = 240000;
+          console.log(`Server running on http://localhost:3000 | AI_TYPE = ${process.env.AI_TYPE || 'grok'}`);
+        });
+      }, 1000);
+      return;
+    }
 
-  fallbackServer.on("error", (fallbackError) => {
-  console.error("[server] Failed to start on fallback port:", fallbackError);
-  });
-  });
+    console.warn(`[server] Port ${PORT} is already in use; retrying on an ephemeral port.`);
+    server.close(() => {
+      const fallbackServer = app.listen(0, "0.0.0.0", () => {
+        fallbackServer.keepAliveTimeout = 120000;
+        fallbackServer.headersTimeout = 125000;
+        fallbackServer.timeout = 240000;
+        const address = fallbackServer.address();
+        const activePort = typeof address === "object" && address ? address.port : 0;
+        console.log(`Server running on http://localhost:${activePort} | AI_TYPE = ${process.env.AI_TYPE || 'grok'}`);
+      });
+
+      fallbackServer.on("error", (fallbackError) => {
+        console.error("[server] Failed to start on fallback port:", fallbackError);
+      });
+    });
   });
 }
 

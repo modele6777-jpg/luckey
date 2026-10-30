@@ -13,6 +13,7 @@ import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionO
 import ErrorBoundary from "./components/ErrorBoundary";
 import ReloadPrompt from "./components/ReloadPrompt";
 import InstallPrompt from "./components/InstallPrompt";
+import AppIconPreviewModal from "./components/AppIconPreviewModal";
 import { GlobalHandbookAudioWidget } from "./components/GlobalHandbookAudioWidget";
 import { ChannelIntroModal } from "./components/common/ChannelIntroModal";
 import { LucyVoiceModeModal } from "./components/lucy/LucyVoiceModeModal";
@@ -627,6 +628,7 @@ function AppContent() {
       <TTSFailureNotice />
       <LucyVoiceModeModal />
       <SelectionBridgeToolbar />
+      <AppIconPreviewModal />
       <UpdateNoticeModal
         key={updateNoticeKey}
         isOpen={isUpdateNoticeOpen}

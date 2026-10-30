@@ -901,10 +901,28 @@ export default function ProfilePage() {
           className="mb-8 rounded-3xl p-5 border border-white/10 bg-[#121320] shadow-2xl hover:border-white/20 transition-all duration-300 flex flex-col gap-1"
         >
           <div className="duo-workspace-actions flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-bold">System Engine</span>
-              <span className="text-xs font-semibold text-white/80 mt-1">LUCY v{APP_VERSION}</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('prism:open_icon_preview'))}
+              className="flex items-center gap-3 text-left group cursor-pointer focus:outline-none"
+              title="앱 아이콘 크게 보기"
+            >
+              <img
+                src="/app-icon.png"
+                alt="LucKey Prism App Icon"
+                className="w-10 h-10 rounded-xl shadow-[0_0_12px_rgba(52,211,153,0.35)] border border-emerald-400/30 object-cover shrink-0 group-hover:scale-105 group-hover:border-emerald-300 transition-transform"
+                referrerPolicy="no-referrer"
+              />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-bold flex items-center gap-1.5">
+                  System Engine
+                  <span className="text-[9px] text-emerald-400 font-normal underline">미리보기</span>
+                </span>
+                <span className="text-xs font-semibold text-white/80 mt-1 group-hover:text-emerald-400 transition-colors">
+                  LucKey · Lucy v{APP_VERSION}
+                </span>
+              </div>
+            </button>
             <button
               type="button"
               onClick={async () => {
