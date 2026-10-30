@@ -1,5 +1,10 @@
 # Oracle historical decks — v1.4.610
 
+## Money Rule picture cards — v1.4.631
+
+The Grimaud scans stay the artwork. Each of the 78 faces is the inner illustration only, scaled to fill a tarot card the way the healing, miracle, and growth decks already do. A shared ink border, index, and Korean title plate (the names the reading already uses) replace the wide cream margin and French captions. No new illustration was generated. Saved 21-card Pussey readings still use `oracle-decks/money/`.
+
+
 All four current oracle modes now use **complete 78-card decks** (22 major + 14 in each of four suits).
 
 | Mode | Current deck | Cards |
