@@ -15,7 +15,7 @@ import { PhysicalTarotInputModal } from './PhysicalTarotInputModal';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { triggerTarotScreenVibration } from '@/utils/tarotEffects';
-import { landscapeFanMetrics, placeRingCards } from './tarotRingLayout';
+import { LANDSCAPE_ARC_TOP, landscapeFanMetrics, placeRingCards } from './tarotRingLayout';
 
 export interface SelectedTarotCardEntry extends TarotCard {
   touchMetadata?: any | null;
@@ -442,7 +442,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
       setIsLandscapeLayout(isLandscape);
 
       if (isLandscape) {
-        const fan = landscapeFanMetrics(h, 20);
+        const fan = landscapeFanMetrics(h, LANDSCAPE_ARC_TOP);
         setRadius(fan.radius);
         setYOffset(fan.yOffset);
         setIsMobile(w < 700);
