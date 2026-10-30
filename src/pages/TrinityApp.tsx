@@ -2611,6 +2611,19 @@ function playDailyCardChimeAsync() {
 ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${contextPromptAddon}`;
         }
 
+        systemPrompt += `
+[핵심 3줄 요약 작성 규칙 — 아래 규칙을 요약에 우선 적용]
+질문: ${tarotConcern}
+주제: ${getTarotThemeMeta(concernAnalysis.theme).label}
+리딩 맨 앞에 [핵심 3줄 요약]과 다음 세 줄을 작성하세요.
+- [현재 상황] 질문의 대상·문제와 뽑힌 카드의 뜻을 연결한 핵심 상황 한 문장.
+- [방향과 결단] 질문에 직접 답하는 판단과 본문에 제시한 근거 한 문장.
+- [실천 행동] 이 질문을 위해 실행할 구체적인 행동 한 문장.
+각 줄은 다른 내용을 담고 본문 해석과 일치해야 합니다. 짧아도 좋으니 문장을 완결하세요.
+연애는 관계·연락·상대와의 소통, 진로는 이직·지원·시험·업무, 금전은 비용·수익·위험 등 실제 질문의 맥락을 유지하세요.
+물 한 잔, 기운 순환, 내면의 빛 등 모든 주제에 통용되는 장식 문구로 채우지 마세요.
+본문에 없는 사건·금액·연락 날짜·합격 여부·확정 수익을 요약에서 새로 만들지 마세요. 근거가 부족한 점은 명시하세요.
+`;
         let finalResponse = "";
         const isOneCardDaily = concernAnalysis.spread.cardCount === 1 || isDailyTarotConcern(tarotConcern);
         const maxOutputTokens = isOneCardDaily ? 3500 : 4096;
@@ -2679,7 +2692,7 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
           const card = selectedCards[0];
           const today = getTodayDateKey();
           const uid = firebaseUser?.uid || "guest";
-          const quickSummary = extractConciseSummary(finalResponse).join(' ') || `${card.nameKo} 카드가 전하는 오늘의 영험한 비전입니다.`;
+          const quickSummary = extractConciseSummary(finalResponse, { concern: tarotConcern, theme: concernAnalysis.theme, kind: concernAnalysis.kind, cards: selectedCards }).join(' ') || `${card.nameKo} 카드가 전하는 오늘의 영험한 비전입니다.`;
           const updatedDaily = {
             drawnCard: card,
             diagnosis: finalResponse,
