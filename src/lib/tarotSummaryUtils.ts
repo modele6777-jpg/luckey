@@ -1,6 +1,8 @@
 /**
  * 타로 리딩 핵심 3줄 요약 추출 및 하단 중복 요약 블록 분리 유틸리티
  */
+import { getTarotCardDetails, getTarotLuckyAction } from './dailyTarotOracle.ts';
+import { getEffectiveTarotKeywords, getTarotCardCaution, getTarotReversedData } from '../data/tarotData.ts';
 
 /**
  * 🔮 트리니티 마스터 직관적 결단 섹션 및 리딩에서 YES / NO 보존 (예·아니오 타로의 핵심 지표)
@@ -154,6 +156,157 @@ export interface TarotSummaryContext {
   nameKo?: string;
 }
 
+type SummaryRole = 'energy' | 'decision' | 'action';
+
+/** 본문과 무관한 상투 문구. 더 구체적인 문장이 있으면 요약에서 빼 둔다. */
+const GENERIC_SUMMARY = /직관의\s*나침반|고유한\s*직관|기운을\s*순환|맑고\s*역동적인.*파동|마음의\s*중심|내면의\s*빛|운을\s*활짝|활기찬\s*생명력과\s*긍정/;
+
+function splitSummarySentences(text: string): string[] {
+  return text
+    .replace(/\s+/g, ' ')
+    .split(/(?<=[.!?。])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 8);
+}
+
+function isPictureOnly(sentence: string): boolean {
+  const s = sentence.trim();
+  const aboutQuerent = /당신|질문자|[가-힣]{2,5}님|마음|지금|현재|오늘|에너지|상태|부담|준비|관계|상황/.test(s);
+  const definesPicture = /(?:의미합니다|상징합니다|뜻합니다)\s*\.?$/.test(s)
+    && /카드|도상|인물|성배|지팡이|검|펜타클|그림|대칭|모습/.test(s);
+  if (definesPicture && !aboutQuerent) return true;
+  if (/^(?:카드\s*속|그림\s*속|도상\s*속)/.test(s) && /(?:의미합니다|상징합니다|뜻합니다)\s*\.?$/.test(s)) return true;
+  return false;
+}
+
+function hasNamedCaution(sentence: string): boolean {
+  return /(?:하지\s*마|마세요|마십시오|삼가|피하|오해|자존심|입을\s*닫|단정\s*짓|짐작|서두르지|미루지|말실수|과소비|집착|억누르|상처|불균형|거리를\s*벌|휘둘|경계를\s*지키|주의하세요|유의하세요)/.test(sentence);
+}
+
+/** "주의할 점은 있습니다"처럼 주의의 내용을 말하지 않는 예고문. */
+function isCautionTeaser(sentence: string): boolean {
+  const s = sentence.trim();
+  if (hasNamedCaution(s) && !/주의할\s*점(?:이|은)?\s*있습니다\s*\.?$/.test(s)) return false;
+  return /(?:주의|조심|유의)(?:할|해야\s*할|해야\s*하는)\s*(?:점|것|부분)(?:이|은)?\s*(?:분명히\s*|아직\s*|하나\s*|꼭\s*)?(?:기억해야\s*할\s*)?있(?:습니다|어요|네요|다)\s*\.?$/.test(s);
+}
+
+function hasConcreteAction(sentence: string): boolean {
+  return /(?:보내|적어|적고|전하|전해|말해|말하|물어|확인|점검|비교|정리|정돈|마시|음미|걸어|연락|작성|내려놓|나눠|기록|인사|골라|멈춰|멈추|씻|환기|선언|매듭|메시지|문자|전화|메모|심호흡|스트레칭|공고|지원서|우선순위|조건을\s*확인|한\s*줄로)/.test(sentence);
+}
+
+/** "이 작은 행동", "첫 단추"처럼 행동을 가리키기만 하고 무엇을 할지는 없는 문장. */
+function isDanglingAction(sentence: string): boolean {
+  const pointsElsewhere = /이\s*작은\s*행동|이러한\s*(?:작은\s*)?(?:행동|실천)|이런\s*(?:작은\s*)?행동|그\s*(?:작은\s*)?(?:행동|실천)|위의\s*(?:행동|실천)|앞서\s*(?:말한|적은|의)?\s*(?:작은\s*)?(?:행동|실천)|첫\s*단추|이\s*실천|이러한\s*실천|이\s*한\s*걸음이/;
+  if (!pointsElsewhere.test(sentence)) return false;
+  return !hasConcreteAction(sentence);
+}
+
+function classifySummarySentence(sentence: string, role: SummaryRole): 'good' | 'skip' {
+  const s = sentence.trim();
+  if (s.length < 8) return 'skip';
+  if (GENERIC_SUMMARY.test(s) || isPictureOnly(s)) return 'skip';
+  if (isCautionTeaser(s) || isDanglingAction(s)) return 'skip';
+  if (role === 'action' && !hasConcreteAction(s)) return 'skip';
+  return 'good';
+}
+
+function finishKoreanSentence(text: string): string {
+  let s = text.replace(/[\s.…·,]+$/g, '').trim();
+  if (!s) return s;
+  if (!/[.!?]$/.test(s)) s += '.';
+  return s;
+}
+
+function keywordPhrase(card: any): string {
+  const kws = getEffectiveTarotKeywords(card).slice(0, 2).filter(Boolean);
+  if (kws.length === 0) return '본래 뜻';
+  if (kws.length === 1) return kws[0];
+  const glue = hasKoreanJongseong(kws[0]) ? '과' : '와';
+  return `${kws[0]}${glue} ${kws[1]}`;
+}
+
+function concreteCardAction(card: any): string {
+  if (!card) return '';
+  const details = getTarotCardDetails(card);
+  const stripped = (details.actionGuidance || '')
+    .replace(/^키워드\s*['"][^'"]+['"]\s*(?:를|을)?\s*되새기며,?\s*/u, '')
+    .trim();
+  if (stripped && hasConcreteAction(stripped) && !GENERIC_SUMMARY.test(stripped) && !isDanglingAction(stripped)) {
+    return finishKoreanSentence(stripped);
+  }
+  try {
+    const lucky = getTarotLuckyAction(card, !!card.reversed);
+    if (lucky && hasConcreteAction(lucky) && !GENERIC_SUMMARY.test(lucky) && !isDanglingAction(lucky)) {
+      return finishKoreanSentence(lucky);
+    }
+  } catch {
+    /* 카드 정보가 부족하면 아래 조언으로 넘어간다 */
+  }
+  const advice = getTarotReversedData(card).advice || '';
+  if (advice && hasConcreteAction(advice) && !isDanglingAction(advice)) return finishKoreanSentence(advice);
+  return '';
+}
+
+export function groundTarotSummaryParts(
+  cards: any[] | undefined,
+  _concern?: string,
+): { energy: string; decision: string; action: string } {
+  const list = Array.isArray(cards) ? cards.filter(Boolean) : [];
+  const seen = new Set<string>();
+  const unique = list.filter((card) => {
+    const key = `${card?.id || card?.nameKo || card?.name || ''}:${card?.reversed ? 'r' : 'u'}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const lead = unique[0];
+  const adviceCard = unique[unique.length - 1] || lead;
+  if (!lead) {
+    return {
+      energy: '지금 마음의 상태를 카드 뜻과 연결해 짚을 만큼 리딩이 구체적이지 않습니다.',
+      decision: '방향은 카드만으로 단정하지 말고, 아직 확인하지 않은 조건을 먼저 점검하세요.',
+      action: '오늘 확인할 사실 한 가지를 메모하고, 그 항목을 직접 확인한 뒤에 결정하세요.',
+    };
+  }
+
+  const name = lead.nameKo || lead.name || '뽑힌 카드';
+  const reversed = !!lead.reversed;
+  const details = getTarotCardDetails(lead);
+  const kws = keywordPhrase(lead);
+  const particle = hasKoreanJongseong(name) ? '은' : '는';
+  const energy = reversed
+    ? finishKoreanSentence(getTarotReversedData(lead).meaning || `지금 당신의 상태는 ${name} 역방향의 ${kws}처럼 흐름이 어긋나 있습니다`)
+    : finishKoreanSentence(`지금 당신의 에너지는 ${name}의 ${kws} 흐름 위에 있습니다`);
+
+  const cautionRaw = (reversed ? getTarotCardCaution(lead) : details.shadowWarning || '').replace(/[.!?]\s*$/g, '').trim();
+  const direction = reversed
+    ? `${name}${particle} 서두르기보다 어긋난 부분을 먼저 맞출 방향을 가리킵니다`
+    : `${name}${particle} ${kws} 쪽으로 한 걸음 나아갈 방향을 가리킵니다`;
+  let decision = cautionRaw
+    ? finishKoreanSentence(`${direction}. 다만 ${cautionRaw}`)
+    : finishKoreanSentence(direction);
+  if (decision.length > 170 && cautionRaw) decision = finishKoreanSentence(cautionRaw);
+
+  const action = concreteCardAction(adviceCard) || concreteCardAction(lead)
+    || '오늘 바로 할 수 있는 일 하나를 정해 10분 안에 손을 대고, 끝낸 뒤 결과를 한 줄로 적으세요.';
+
+  return { energy, decision, action };
+}
+
+function salvageRoleText(raw: string, role: SummaryRole): string {
+  const good = splitSummarySentences(raw).filter((s) => classifySummarySentence(s, role) === 'good');
+  if (!good.length) return '';
+  if (role !== 'decision') return good[0];
+  const withCaution = good.find((s) => hasNamedCaution(s));
+  const direction = good.find((s) => !isCautionTeaser(s)) || good[0];
+  if (withCaution && direction && withCaution !== direction) {
+    const joined = `${direction.replace(/[.!?]\s*$/g, '')}. ${withCaution}`;
+    if (joined.length <= 170) return joined;
+    return withCaution;
+  }
+  return withCaution || direction;
+}
+
 export function extractConciseSummary(text: string, cardContext?: any): string[] {
   if (!text || text.trim().length < 40) return [];
 
@@ -185,20 +338,14 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     );
   };
 
-  // 명사형/미완결형 어미를 자연스러운 완결형 한국어 문장으로 다듬는 헬퍼
+  // 명사형/미완결형 어미를 자연스러운 완결형 한국어 문장으로 다듬는 헬퍼.
+  // 125자에서 첫 문장만 남기면 "주의할 점은 있습니다", "이 작은 행동" 같은 예고문만 남고
+  // 바로 뒤의 주의점·행동이 잘리므로, 문장 절단은 하지 않는다.
   const ensureNaturalKoreanSentence = (str: string, rowIdx: number): string => {
     let s = str.trim().replace(/[\s.…·,-]+$/, '');
     if (!s) return s;
 
-    // 1. 다중 문장이면서 너무 긴 경우(125자 초과) 첫 번째 완결된 문장까지만 자연스럽게 보존 (단어 중간 절단 절대 금지)
-    if (s.length > 125) {
-      const sentenceEndMatch = s.slice(35, 125).match(/[.!?](?=\s|$)/);
-      if (sentenceEndMatch && sentenceEndMatch.index !== undefined) {
-        s = s.slice(0, 35 + sentenceEndMatch.index).trim();
-      }
-    }
-
-    // 2. 어색한 명사형 종결(~하기, ~시키기, ~열기, ~다지기, ~갖기, ~세우기, ~만들기, ~전환하기 등)을 자연스러운 서술형 문장으로 변환
+    // 어색한 명사형 종결(~하기, ~시키기, ~열기, ~다지기, ~갖기, ~세우기, ~만들기, ~전환하기 등)을 자연스러운 서술형 문장으로 변환
     s = s
       .replace(/순환시키고\s*긍정\s*운을\s*활짝\s*열기$/, '순환시키고 긍정적인 운의 흐름을 활짝 열어 보세요')
       .replace(/파동을\s*일으키기$/, '파동을 힘차게 일으켜 보세요')
@@ -432,33 +579,61 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     .filter(word => word.length >= 2 && !/^(오늘|타로|운세|어떻게|궁금|알려|좋을|지금|이번)/.test(word));
   const terms = [...new Set([...(domain?.terms || []), ...concernTerms])];
   const relevance = (line: string) => terms.reduce((score, term) => score + (line.includes(term) ? 1 : 0), 0);
-  const generic = /직관의\s*나침반|고유한\s*직관|기운을\s*순환|물\s*한\s*잔|맑고\s*역동적인.*파동|마음의\s*중심|내면의\s*빛|운을\s*활짝/;
   const normalizeCandidate = (line: string) => line.replace(/^\[(?!YES\b|NO\b|조건부\s*YES)[^\]]+\]\s*/i, '').trim();
   const pool = allSentences.map(normalizeCandidate).filter(line => line.length >= 8 && !/^\[.*요약\]$/.test(line));
+  const cardList = [
+    ...(Array.isArray(cardContext?.cards) ? cardContext.cards : []),
+    ...(cardContext?.card ? [cardContext.card] : []),
+  ];
+  const grounded = groundTarotSummaryParts(cardList, concern);
   const used = new Set<string>();
-  const pick = (preferredLines: string[], role: RegExp) => {
-    const preferred = preferredLines.map(normalizeCandidate).find(line => line && !used.has(line) && !generic.test(line)
-      && (!terms.length || relevance(line) > 0 || /\b(?:YES|NO)\b/i.test(line))) || '';
-    if (preferred) { used.add(preferred); return preferred; }
-    const candidates = [...new Set([preferred, ...pool].filter(Boolean))]
-      .filter(line => !used.has(line) && !generic.test(line))
-      .map((line, index) => ({ line, index, relevant: relevance(line), score: relevance(line) * 5 + (role.test(line) ? 3 : 0) + (line === preferred ? 2 : 0) }))
-      .filter(item => !terms.length || item.relevant > 0)
-      .sort((a, b) => b.score - a.score || a.index - b.index);
-    const chosen = candidates[0]?.line || '';
-    if (chosen) used.add(chosen);
+  const pick = (summaryLines: string[], sectionLines: string[], role: SummaryRole, roleRe: RegExp) => {
+    const expand = (line: string) => splitSummarySentences(normalizeCandidate(line))
+      .filter((s) => classifySummarySentence(s, role) === 'good' && !used.has(s));
+    const fromSummary = [...new Set(summaryLines.flatMap(expand))];
+    const fromSection = [...new Set(sectionLines.flatMap(expand))].filter((s) => !fromSummary.includes(s));
+    const fromPool = pool.filter((line) => classifySummarySentence(line, role) === 'good' && !used.has(line) && !fromSummary.includes(line) && !fromSection.includes(line));
+    const isRelevant = (line: string) => !terms.length || relevance(line) > 0 || /\b(?:YES|NO)\b/i.test(line);
+    const score = (line: string) =>
+      relevance(line) * 5
+      + (roleRe.test(line) ? 3 : 0)
+      + (role === 'decision' && hasNamedCaution(line) ? 4 : 0)
+      + (role === 'action' && hasConcreteAction(line) ? 2 : 0);
+    const best = (lines: string[]) => [...lines].sort((a, b) => score(b) - score(a) || a.length - b.length)[0] || '';
+    const tier = (lines: string[]) => {
+      const relevant = lines.filter(isRelevant);
+      return relevant.length ? relevant : [];
+    };
+    // 비어 있지 않은 요약 문장을 본문보다 먼저 쓴다. 요약이 그림 설명·예고문이라면 본문에서 다시 고른다.
+    let chosen = best(tier(fromSummary)) || best(tier(fromSection)) || best(tier(fromPool))
+      || best(fromSummary) || best(fromSection) || best(fromPool);
+    if (role === 'decision' && chosen && !hasNamedCaution(chosen)) {
+      const extra = [...fromSummary, ...fromSection, ...fromPool].find((s) => s !== chosen && hasNamedCaution(s) && !isCautionTeaser(s) && !used.has(s));
+      if (extra) {
+        const joined = `${chosen.replace(/[.!?]\s*$/g, '')}. ${extra}`;
+        if (joined.length <= 170) chosen = joined;
+      }
+    }
+    if (chosen) {
+      splitSummarySentences(chosen).forEach((s) => used.add(s));
+      used.add(chosen);
+    }
     return chosen;
   };
   const subject = concern ? `「${concern.length > 80 ? concern.slice(0, 80) + '…' : concern}」` : '질문한 주제';
-  const current = pick([p1Current, secCurrent], /현재|상황|지금|상태|원인|카드|역방향/)
+  const current = pick([p1Current], [secCurrent], 'energy', /현재|상황|지금|상태|원인|마음|에너지|부담|준비/)
+    || salvageRoleText(grounded.energy, 'energy')
     || `${subject}에 관한 구체적인 상황 진단이 리딩에 충분히 제시되지 않았습니다.`;
-  const decision = pick([p1Decision, secDecision], /최종|판정|YES|NO|선택|결단|방향|가능|주의|위험|비교/i)
+  const decision = pick([p1Decision], [secDecision], 'decision', /최종|판정|YES|NO|선택|결단|방향|가능|주의|위험|비교|확인|나아가|한\s*걸음/i)
+    || salvageRoleText(grounded.decision, 'decision')
     || `${subject}의 결론을 확정할 근거가 부족하므로, 카드만으로 결과를 단정하지 마세요.`;
-  const action = pick([p1Action, secAction], /하세요|보세요|확인|점검|비교|준비|보완|정하|실천|행동|조언/)
-    || domain?.action || `${subject}에서 확인된 사실과 아직 모르는 조건을 나누고, 결정 전에 확인할 항목 하나를 정해 보세요.`;
+  const action = pick([p1Action], [secAction], 'action', /하세요|보십시오|보세요|확인|점검|비교|준비|보완|정하|실천|보내|전하|적어/)
+    || (domain?.action && !GENERIC_SUMMARY.test(domain.action) ? domain.action : '')
+    || salvageRoleText(grounded.action, 'action')
+    || `${subject}에서 확인된 사실과 아직 모르는 조건을 나누고, 결정 전에 확인할 항목 하나를 정해 보세요.`;
 
   return [
-    formatSummaryLine(tag1 || '현재 상황', current, 0),
+    formatSummaryLine(tag1 || '현재 에너지', current, 0),
     formatSummaryLine(tag2 || '방향과 결단', decision, 1),
     formatSummaryLine(tag3 || '실천 행동', action, 2),
   ];
