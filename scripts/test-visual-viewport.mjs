@@ -170,6 +170,16 @@ const duoScreenWider = {
 };
 assert.equal(resolveViewportBox(duoScreenWider).width, 466);
 
+const unfolded = {
+  innerWidth: 890,
+  innerHeight: 840,
+  screenWidth: 890,
+  screenHeight: 840,
+  visual: { width: 466, height: 678, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveViewportBox(unfolded).width, 890);
+assert.equal(resolveViewportBox(unfolded).height, 840);
+
 const splitView = {
   innerWidth: 512,
   innerHeight: 768,

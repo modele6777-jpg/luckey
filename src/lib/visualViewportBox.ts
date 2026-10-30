@@ -117,6 +117,16 @@ export function resolveViewportBox(
   const standaloneFill = standaloneResumeBox(snapshot);
   if (standaloneFill) return coverScreenEdges(snapshot, standaloneFill);
 
+  if (layoutOutgrewVisual(snapshot)) {
+    return coverScreenEdges(snapshot, {
+      width: roundPx(layoutWidth),
+      height: roundPx(layoutHeight),
+      offsetTop: 0,
+      offsetLeft: 0,
+      bottomGap: 0,
+    });
+  }
+
   const tablet = Math.min(layoutWidth, layoutHeight) >= TABLET_SHORT_SIDE_PX;
   if (
     options.fillLayoutGap &&
@@ -146,17 +156,29 @@ export function resolveViewportBox(
 }
 
 /**
- * The iPhone Duo / iPad side column is inside the layout viewport. visualViewport
- * width skips it, so a shell sized to that width stops early and the page
- * background shows through under the status icons. Grow to the layout width,
- * and to the screen width when the missing slice is only that column.
- * A Split View pane (about a third of the screen or more) is left alone.
+ * Unfold: the layout viewport is already the wide inner screen while
+ * visualViewport is still the narrower cover size. A rotation where the
+ * visual viewport is the newer, wider one is not this case.
+ */
+export function layoutOutgrewVisual(snapshot: ViewportSnapshot): boolean {
+  const innerWidth = positive(snapshot.innerWidth);
+  const visualWidth = positive(snapshot.visual?.width);
+  if (innerWidth == null || visualWidth == null) return false;
+  return innerWidth > visualWidth * 1.08;
+}
+
+/**
+ * Unfolded foldable: the side status column is inside the layout viewport.
+ * visualViewport.width skips it, so a shell sized to that width stops early
+ * and the page background shows under the clock. Always paint at least the
+ * layout width. Grow to the screen only for a small side strip. A Split View
+ * pane (about a third of the screen or more) stays at the window width.
  */
 export function coverScreenEdges(snapshot: ViewportSnapshot, box: ViewportBox): ViewportBox {
   let width = box.width;
   let offsetLeft = box.offsetLeft;
   const innerWidth = positive(snapshot.innerWidth);
-  if (innerWidth != null && innerWidth > width + 1 && (innerWidth - width) / innerWidth < SIDE_STRIP_MAX_RATIO) {
+  if (innerWidth != null && innerWidth > width + 1) {
     width = innerWidth;
     offsetLeft = 0;
   }
@@ -438,6 +460,10 @@ export function bindVisualViewportLifecycle(win: Window = window): void {
   win.addEventListener('focus', () => {
     if (doc.visibilityState === 'hidden') return;
     resume(false);
+  });
+
+  win.screen?.orientation?.addEventListener?.('change', () => {
+    scheduleVisualViewportSync(win);
   });
 
   doc.addEventListener('resume', () => {
