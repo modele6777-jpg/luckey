@@ -1575,7 +1575,10 @@ ${content}
       return res.status(200).json(result);
     } catch (error: any) {
       console.error("TTS generation error:", error);
-      return res.status(error?.status || 500).json({ error: error?.message || "TTS generation failed", ...(error?.code ? { code: error.code } : {}) });
+      const retryAfter = Number(error?.retryAfterSeconds);
+      const hasRetry = Number.isFinite(retryAfter) && retryAfter > 0;
+      if (hasRetry) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
+      return res.status(error?.status || 500).json({ error: error?.message || "TTS generation failed", ...(error?.code ? { code: error.code } : {}), ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}) });
     }
   });
 
