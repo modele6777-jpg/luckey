@@ -103,7 +103,9 @@ async function generateMedia(request: Request, env: Runtime, fetchApi: Fetcher, 
         : header && Number.isFinite(Date.parse(header)) ? (Date.parse(header) - Date.now()) / 1000
         : duration ? Number(duration[1]) : 15;
       const violations = details.flatMap((item: any) => Array.isArray(item?.violations) ? item.violations : []);
-      const exhausted = violations.some((item: any) => /per.?day|daily/i.test(String(item?.quotaId || item?.quotaMetric || '')) || String(item?.quotaValue) === '0');
+      const isDailyViolation = violations.some((item: any) => /per.?day|daily/i.test(String(item?.quotaId || item?.quotaMetric || item?.description || '')) || String(item?.quotaValue) === '0');
+      const isDailyExhausted = /per.?day|daily/i.test(String(provider?.error?.message || ''));
+      const exhausted = !retry && (isDailyViolation || isDailyExhausted);
       if (exhausted) throw new ApiError(429, 'AI 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정 확인이 필요합니다.', undefined, 'MEDIA_QUOTA_EXHAUSTED');
       const retryAfter = Math.max(1, Math.min(86400, Math.ceil(seconds)));
       throw new ApiError(429, `AI 생성 요청이 일시적으로 제한됐습니다. 약 ${retryAfter}초 뒤 다시 눌러 주세요.`, retryAfter, 'MEDIA_RATE_LIMIT');
@@ -234,11 +236,33 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
         if (bytes.length < 4) throw new ApiError(502, 'OpenAI 음성 응답이 비어 있습니다.');
         return json({ audioContent: bytesToBase64(bytes), encoding: 'mp3', sampleRate: 24000, voice, provider: 'openai' });
       }
-      const media = await generateMedia(request, env, fetchApi, env.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts', {
-        // Pass only the utterance: instructions in the text part can themselves be spoken.
-        contents: [{ parts: [{ text: speech }] }],
-        generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
-      });
+      const candidateModels = Array.from(new Set([
+        env.GEMINI_TTS_MODEL,
+        'gemini-3.8-flash-lite-tts',
+        'gemini-3.1-flash-tts-preview',
+        'gemini-3.8-flash-tts',
+      ].filter(Boolean))) as string[];
+      let media: any;
+      let lastErr: any;
+      for (const model of candidateModels) {
+        try {
+          media = await generateMedia(request, env, fetchApi, model, {
+            // Pass only the utterance: instructions in the text part can themselves be spoken.
+            contents: [{ parts: [{ text: speech }] }],
+            generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
+          });
+          if (media) break;
+        } catch (err: any) {
+          lastErr = err;
+          // If transient short rate-limit with small Retry-After (<= 60s), do not burn candidate quota
+          if (err?.retryAfterSeconds && err.retryAfterSeconds <= 60 && err?.code === 'MEDIA_RATE_LIMIT') {
+            throw err;
+          }
+          // Otherwise (daily quota exhaustion, long wait, model 404/503), try next available TTS model
+          continue;
+        }
+      }
+      if (!media) throw lastErr || new ApiError(502, '미디어를 생성하지 못했습니다.');
       if (/^audio\/(?:x-)?wav(?:;|$)/i.test(media.mimeType)) {
         const wav = Uint8Array.from(atob(media.data), char => char.charCodeAt(0));
         const signature = (offset: number, length: number) => String.fromCharCode(...wav.subarray(offset, offset + length));

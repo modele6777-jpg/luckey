@@ -129,7 +129,10 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
   if (existing) return existing as Promise<TTSAudioData>;
   const pending = ttsRequestQueue.catch(() => {}).then(async () => {
     if (session && ttsState.activeSessionId !== session) throw new Error('음성 요청이 취소되었습니다.');
-    if (Date.now() < ttsRateLimitUntil) throw new TTSAudioRequestError(`AI 음성 요청이 일시적으로 제한됐습니다. 약 ${Math.ceil((ttsRateLimitUntil - Date.now()) / 1000)}초 뒤 다시 눌러 주세요.`, 429);
+    if (Date.now() < ttsRateLimitUntil) {
+      const waitSec = Math.ceil((ttsRateLimitUntil - Date.now()) / 1000);
+      if (waitSec > 0) throw new TTSAudioRequestError(`음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 ${waitSec}초 뒤 다시 눌러 주세요.`, 429, 'MEDIA_RATE_LIMIT');
+    }
     const controller = new AbortController();
     let cancelRequest: () => void = () => {};
     const deadline = new Promise<never>((_, reject) => {
@@ -152,13 +155,13 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
         if (controller.signal.aborted) throw new Error('음성 요청이 취소되었습니다.');
         if (response.status === 429) {
           if (failure?.code === 'MEDIA_QUOTA_EXHAUSTED') {
-            throw new TTSAudioRequestError('AI 음성 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정 확인이 필요합니다.', 429);
+            throw new TTSAudioRequestError('AI 음성 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정 확인이 필요합니다.', 429, 'MEDIA_QUOTA_EXHAUSTED');
           }
           const header = response.headers.get('Retry-After');
           const supplied = header ? (/^\d+(?:\.\d+)?$/.test(header) ? Number(header) : (Date.parse(header) - Date.now()) / 1000) : Number(failure?.retryAfterSeconds);
-          const seconds = Math.max(1, Math.min(86400, Math.ceil(Number.isFinite(supplied) && supplied > 0 ? supplied : 15)));
+          const seconds = Math.max(1, Math.min(86400, Math.ceil(Number.isFinite(supplied) && supplied > 0 ? supplied : 3)));
           ttsRateLimitUntil = Date.now() + seconds * 1000;
-          throw new TTSAudioRequestError(`AI 음성 요청이 일시적으로 제한됐습니다. 약 ${seconds}초 뒤 다시 눌러 주세요.`, 429);
+          throw new TTSAudioRequestError(`음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 ${seconds}초 뒤 다시 눌러 주세요.`, 429, 'MEDIA_RATE_LIMIT');
         }
         if (response.status === 503 && (failure?.code === 'TTS_NOT_CONFIGURED' || /API.*키|키.*설정/.test(String(failure?.error || '')))) {
           throw new TTSAudioRequestError('AI 음성 API 키가 설정되지 않았습니다. 사이트의 API 설정을 확인해 주세요.', 503, 'TTS_NOT_CONFIGURED');
