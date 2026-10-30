@@ -558,6 +558,8 @@ let ttsPausedOffsetSec = 0;
 let ttsActiveRate = 1.0;
 let ttsStoppingForPause = false;
 let ttsActiveFinishResolver: (() => void) | null = null;
+let ttsActiveReject: ((error: Error) => void) | null = null;
+let ttsEarlyEndRetries = 0;
 let ttsSafetyTimer: ReturnType<typeof setTimeout> | null = null;
 
 function getTTSVoiceBus(ctx: AudioContext): GainNode {
@@ -718,8 +720,36 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
   const onSourceEnded = () => {
     if (ended) return;
     if (ttsStoppingForPause || ttsUserExplicitlyPaused) return;
-    if (activePlaybackId !== ttsPlaybackId) {
+    if (activePlaybackId !== ttsPlaybackId || ttsActiveSource !== source) {
       stopAndDisconnectTTSSourceNode(source);
+      return;
+    }
+    const elapsed = Math.max(0, audioCtx.currentTime - sourceStartCtxTime);
+    if (elapsed < expectedDurationSec - 0.12) {
+      // An interrupted node ending is not successful completion of its buffer.
+      ended = true;
+      clearTTSSafetyTimer();
+      stopAndDisconnectTTSSourceNode(source);
+      ttsActiveSource = null;
+      ttsPausedOffsetSec = Math.min(ttsActiveBuffer?.duration || 0,
+        ttsPausedOffsetSec + elapsed * ttsActiveRate);
+      const failInterruptedPlayback = () => {
+        const reject = ttsActiveReject;
+        ttsActiveReject = null;
+        ttsActiveFinishResolver = null;
+        ttsActiveBuffer = null;
+        ttsShouldBePlaying = false;
+        stopActiveWebAudioTTSSource(false);
+        stopTTSKeepAlive();
+        releaseScreenWakeLock().catch(() => {});
+        reject?.(Object.assign(new Error('음성 출력이 반복해서 중단되었습니다. 다시 듣기를 눌러 주세요.'), { code: 'TTS_INTERRUPTED' }));
+      };
+      if (++ttsEarlyEndRetries <= 2) {
+        try { launchWebAudioTTSSource(activePlaybackId); }
+        catch { failInterruptedPlayback(); }
+      } else {
+        failInterruptedPlayback();
+      }
       return;
     }
     ended = true;
@@ -1179,6 +1209,8 @@ export async function playTTSAudio(
     throw new Error('TTS playback is only available in the browser');
   }
 
+  // A stop/new reader during an asynchronous context resume must win.
+  const requestedPlaybackId = ttsPlaybackId;
   // Keep TTS in the non-exclusive ambient mix with external music.
   configureSpeechAudioSession();
   const audioCtx = getSharedAudioContext();
@@ -1188,6 +1220,7 @@ export async function playTTSAudio(
       await Promise.race([audioCtx.resume(), new Promise<void>((_, reject) => { resumeTimer = setTimeout(() => reject(new Error('음성 출력을 시작하지 못했습니다. 재생 버튼을 다시 눌러 주세요.')), 2500); })]);
     } finally { if (resumeTimer) clearTimeout(resumeTimer); }
   }
+  if (requestedPlaybackId !== ttsPlaybackId) return;
   if (audioCtx.state !== 'running') throw new Error('음성 출력이 중단되었습니다. 재생 버튼과 기기의 미디어 음량을 확인해 주세요.');
 
   // Stop any existing TTS source before starting the new buffer
@@ -1226,11 +1259,14 @@ export async function playTTSAudio(
   ttsActiveBuffer = decodedBuffer;
   ttsPausedOffsetSec = 0;
   ttsActiveRate = 1.0;
+  ttsEarlyEndRetries = 0;
   startTTSKeepAlive();
 
   // Web Audio stays in the mixable ambient session instead of taking native media focus.
   await new Promise<void>((resolve, reject) => {
+    ttsActiveReject = reject;
     ttsActiveFinishResolver = () => {
+      ttsActiveReject = null;
       if (activePlaybackId === ttsPlaybackId && !isSequenceChunk) {
         ttsShouldBePlaying = false;
         stopTTSKeepAlive();
@@ -1241,6 +1277,7 @@ export async function playTTSAudio(
     try {
       launchWebAudioTTSSource(activePlaybackId);
     } catch (error) {
+      ttsActiveReject = null;
       ttsActiveFinishResolver = null;
       ttsShouldBePlaying = false;
       ttsActiveBuffer = null;

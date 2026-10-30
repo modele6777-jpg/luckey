@@ -217,7 +217,7 @@ export const playTTS = async (
   const cleanText = normalizeTextForSpeech(text);
   if (!cleanText) return;
   // Legacy book, report and insight readers call this entrypoint directly.
-  if (!sequenceSessionId && cleanText.length > 1000) {
+  if (!sequenceSessionId && cleanText.length > 260) {
     try {
       return await playTTSInChunks(cleanText, voice, 240, emotion, _speed, options);
     } catch (error) {
@@ -225,6 +225,20 @@ export const playTTS = async (
       window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: error instanceof Error ? error.message : 'AI 음성을 재생하지 못했습니다. 다시 눌러 주세요.' } }));
       return;
     }
+  }
+
+  // Conversation readers already own their session; split without creating or
+  // stopping that session, and only let the final part finish its parent turn.
+  if (sequenceSessionId && cleanText.length > 260) {
+    const parts = splitSpeechIntoChunks(cleanText, 240);
+    for (let index = 0; index < parts.length; index++) {
+      if (ttsState.activeSessionId && ttsState.activeSessionId !== sequenceSessionId) return;
+      await playTTS(parts[index], voice, true, emotion, sequenceSessionId,
+        isSequenceChunk || index < parts.length - 1, fullTextReference || cleanText,
+        _rate, _speed, options);
+      if (ttsState.activeSessionId !== sequenceSessionId) return;
+    }
+    return;
   }
 
   // Lucy uses Aoede; explicit Charon requests read the user's chat messages.
@@ -301,7 +315,17 @@ export const playTTS = async (
     updateTTSState({ isLoading: true, isSpeaking: false, activeText: cleanText,
       currentSentence: initialSubSentence, activeSentence: initialSubSentence,
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}) });
-    const data = await requestAIAudio(text, activeEmotion, targetVoice);
+    let data: TTSAudioData | undefined;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (ttsState.activeSessionId !== sessionToVerify) return;
+      try {
+        data = await requestAIAudio(cleanText, activeEmotion, targetVoice);
+        break;
+      } catch (error) {
+        if (attempt || (error instanceof TTSAudioRequestError && error.status < 500)) throw error;
+        await new Promise(resolve => setTimeout(resolve, 600));
+      }
+    }
 
     // CRITICAL ABORT CHECK after JSON parse
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) {
@@ -326,6 +350,7 @@ export const playTTS = async (
           );
         } catch (err) {
           if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
+          if ((err as any)?.code === 'TTS_INTERRUPTED') throw err;
           console.warn('[TTS] playTTSAudio failed, applying WebAudio direct buffer fallback:', err);
           updateTTSState({ isLoading: false, isSpeaking: true, currentSentence: speakingSentences[0] || cleanText, activeSentence: speakingSentences[0] || cleanText });
           if (encoding === 'pcm') {
@@ -609,23 +634,8 @@ export const playTTSInChunks = async (
 
       const isLastChunk = i === chunks.length - 1;
       try {
-        for (let attempt = 0; attempt < 2; attempt++) {
-          try {
-        await playTTS(
-          currentChunkText,
-          voice,
-          true,
-          emotion,
-          sequenceSessionId,
-          true,
-          cleanText,
-        );
-            break;
-          } catch (error) {
-            if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
-            if (attempt === 1 || (error instanceof TTSAudioRequestError && [400, 401, 403, 404, 429].includes(error.status))) throw error;
-          }
-        }
+        await playTTS(currentChunkText, voice, true, emotion,
+          sequenceSessionId, true, cleanText);
       } catch (chunkErr) {
         console.warn(`[TTS] Sequence chunk ${i + 1}/${chunks.length} playback failed:`, chunkErr);
         throw chunkErr;
@@ -701,6 +711,7 @@ export const playConversation = async (
     }
   } catch (err) {
     console.error("[TTS] playConversation error:", err);
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: err instanceof Error ? err.message : '연속 듣기가 중단되었습니다. 다시 눌러 주세요.' } }));
   } finally {
     if (ttsState.activeSessionId === mySessionId) {
       isPlayingSequence = false;
@@ -756,7 +767,7 @@ export const playQAndATTS = async (
       }
 
       // 질문 텍스트 문장 단위 분할
-      const qChunks = splitSpeechIntoSentences(cleanQuestion);
+      const qChunks = splitSpeechIntoChunks(cleanQuestion, 240);
 
       for (let i = 0; i < qChunks.length; i++) {
         if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
@@ -788,7 +799,7 @@ export const playQAndATTS = async (
         onSpeakerChange('assistant', { text: cleanAnswer, id: answer.id });
       }
 
-      const aChunks = splitSpeechIntoSentences(cleanAnswer);
+      const aChunks = splitSpeechIntoChunks(cleanAnswer, 240);
 
       // Pre-warm audio and prefetch
       try {
@@ -819,7 +830,7 @@ export const playQAndATTS = async (
         try {
           await playTTS(aChunks[i], aiVoice, true, '다정', sequenceSessionId, !isLastChunk, cleanAnswer, undefined, undefined, { skipCompletionChime: true });
         } catch (chunkErr) {
-          console.warn(`[TTS] QA chunk ${i + 1}/${aChunks.length} error, maintaining voice consistency:`, chunkErr);
+          throw chunkErr;
         }
 
         if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
@@ -830,6 +841,7 @@ export const playQAndATTS = async (
     }
   } catch (err) {
     console.error("[TTS] playQAndATTS error:", err);
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: err instanceof Error ? err.message : '음성이 중단되었습니다. 다시 듣기를 눌러 주세요.' } }));
   } finally {
     if (ttsState.activeSessionId === sequenceSessionId) {
       isPlayingSequence = false;
