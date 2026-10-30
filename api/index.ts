@@ -126,7 +126,10 @@ app.post("/api/ai/tts", async (req, res) => {
     return res.status(200).json(result);
   } catch (err: any) {
     console.error("Vercel TTS generation error:", err);
-    return res.status(err?.status || 500).json({ error: err.message || "Failed to generate TTS", ...(err?.code ? { code: err.code } : {}) });
+    const retryAfter = Number(err?.retryAfterSeconds);
+    const hasRetry = Number.isFinite(retryAfter) && retryAfter > 0;
+    if (hasRetry) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
+    return res.status(err?.status || 500).json({ error: err.message || "Failed to generate TTS", ...(err?.code ? { code: err.code } : {}), ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}) });
   }
 });
 

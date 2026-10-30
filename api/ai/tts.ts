@@ -41,7 +41,14 @@ export default async function handler(req: { method?: string; body?: unknown }, 
   } catch (err: unknown) {
     console.error("[ai/tts] Vercel error:", err);
     const message = err instanceof Error ? err.message : "TTS generation failed";
-    const failure = err as { status?: number; code?: string };
-    return res.status(failure?.status || 500).json({ error: message, ...(failure?.code ? { code: failure.code } : {}) });
+    const failure = err as { status?: number; code?: string; retryAfterSeconds?: number };
+    const retryAfter = Number(failure?.retryAfterSeconds);
+    const hasRetry = Number.isFinite(retryAfter) && retryAfter > 0;
+    if (hasRetry) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
+    return res.status(failure?.status || 500).json({
+      error: message,
+      ...(failure?.code ? { code: failure.code } : {}),
+      ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}),
+    });
   }
 }

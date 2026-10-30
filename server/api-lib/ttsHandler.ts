@@ -27,7 +27,7 @@ export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerR
   if (!response) throw new Error("AI 음성 요청을 처리하지 못했습니다.");
   const data = await response.json();
   if (!response.ok) throw Object.assign(new Error(data.error || "AI 자연 음성을 생성하지 못했습니다."), {
-    status: response.status, code: data.code,
+    status: response.status, code: data.code, retryAfterSeconds: data.retryAfterSeconds,
   });
   return data as TTSHandlerResult;
 }

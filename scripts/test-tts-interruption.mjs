@@ -78,6 +78,12 @@ const beforeRate = plays;
 await tts.playTTSInChunks('첫째 문장을 읽습니다. 둘째 문장도 이어서 읽습니다. 셋째 문장까지 멈추지 않습니다.');
 assert.equal(plays, beforeRate + 1);
 assert(!events.some(event => event.type === 'prism:tts-error'), 'transient 429 is retried inside the reading');
+rateLimitsLeft = 1;
+events.length = 0;
+const singleBefore = plays;
+await tts.playTTS('한 문장도 짧은 제한은 기다렸다가 읽습니다', 'Aoede', true);
+assert.equal(plays, singleBefore + 1);
+assert(!events.some(event => event.type === 'prism:tts-error'), 'a single reading also waits out a short 429');
 globalThis.fetch = savedFetch;
 console.log('Full reading waits through a short rate limit and finishes without asking the user to retry.');
 
