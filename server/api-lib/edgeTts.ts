@@ -63,7 +63,7 @@ const EDGE_UA =
  * Edge TTS 엔드포인트가 요구하는 Sec-MS-GEC (DRM 토큰)를 만듭니다.
  * Windows FILETIME 틱을 5분 단위로 내림한 값 + 신뢰 토큰의 SHA-256 대문자 hex입니다.
  */
-function secMsGec(versionOverride?: string): { gec: string; version: string } {
+function secMsGec(): { gec: string; version: string } {
   const WIN_EPOCH = 11644473600;
   let seconds = Math.floor(Date.now() / 1000) + WIN_EPOCH;
   seconds -= seconds % 300;
@@ -72,7 +72,7 @@ function secMsGec(versionOverride?: string): { gec: string; version: string } {
     .update(`${ticks}${TRUSTED_CLIENT_TOKEN}`, 'ascii')
     .digest('hex')
     .toUpperCase();
-  return { gec, version: versionOverride || '1-130.0.2849.68' };
+  return { gec, version: '1-130.0.2849.68' };
 }
 
 /**
@@ -157,8 +157,8 @@ function parseWsFrames(buffer: Buffer): { frames: WsFrame[]; rest: Buffer } {
  * Edge TTS 서버로 TLS 연결을 맺고 HTTP/1.1 WebSocket 업그레이드 핸드셰이크를 완료합니다.
  * 성공하면 업그레이드된 소켓과, 핸드셰이크 응답 말미에 이미 도착한 데이터를 돌려줍니다.
  */
-function openEdgeTtsSocket(timeoutMs: number, versionOverride?: string, uaOverride?: string): Promise<{ socket: TLSSocket; rest: Buffer; statusLine: string; bodySnippet: string }> {
-  const { gec, version } = secMsGec(versionOverride);
+function openEdgeTtsSocket(timeoutMs: number): Promise<{ socket: TLSSocket; rest: Buffer }> {
+  const { gec, version } = secMsGec();
   const connectionId = randomBytes(16).toString('hex');
   const requestLine =
     `GET ${EDGE_SPEECH_PATH}?TrustedClientToken=${TRUSTED_CLIENT_TOKEN}` +
@@ -172,7 +172,7 @@ function openEdgeTtsSocket(timeoutMs: number, versionOverride?: string, uaOverri
     'Cache-Control: no-cache\r\n' +
     'Origin: chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold\r\n' +
     'Accept-Language: ko-KR,ko;q=0.9,en;q=0.8\r\n' +
-    `User-Agent: ${uaOverride || EDGE_UA}\r\n\r\n`;
+    `User-Agent: ${EDGE_UA}\r\n\r\n`;
 
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -193,10 +193,8 @@ function openEdgeTtsSocket(timeoutMs: number, versionOverride?: string, uaOverri
       socket.setNoDelay(true);
       socket.write(requestLine);
       let head = '';
-      let bodyTail = '';
       const onHead = (chunk: Buffer) => {
         head += chunk.toString('latin1');
-        bodyTail = head.slice(head.indexOf('\r\n\r\n') + 4);
         const end = head.indexOf('\r\n\r\n');
         if (end === -1) return;
         socket.removeListener('data', onHead);
@@ -204,22 +202,14 @@ function openEdgeTtsSocket(timeoutMs: number, versionOverride?: string, uaOverri
         if (/^HTTP\/1\.1 101/.test(statusLine)) {
           settled = true;
           clear();
-          resolve({ socket: socket as TLSSocket, rest: Buffer.from(head.slice(end + 4), 'latin1'), statusLine, bodySnippet: '' });
+          resolve({ socket: socket as TLSSocket, rest: Buffer.from(head.slice(end + 4), 'latin1') });
         } else {
-          // 거부 본문(사유 JSON)을 더 받아 진단에 쓸 수 있게 남겨둡니다.
-          const onBodyTail = (tail: Buffer) => {
-            bodyTail += tail.toString('utf-8');
-            if (bodyTail.length > 500) socket.removeListener('data', onBodyTail);
-          };
-          socket.on('data', onBodyTail);
-          setTimeout(() => {
-            try { socket.destroy(); } catch (_) {}
-            const status = Number(statusLine.split(' ')[1]) || 502;
-            settleReject(Object.assign(
-              new Error(`Edge 신경망 TTS 연결이 거부되었습니다 (${statusLine || 'no status'}).`),
-              { status: status === 401 || status === 403 ? 403 : status, bodySnippet: bodyTail.slice(0, 300) },
-            ));
-          }, 400);
+          socket.destroy();
+          const status = Number(statusLine.split(' ')[1]) || 502;
+          settleReject(Object.assign(
+            new Error(`Edge 신경망 TTS 연결이 거부되었습니다 (${statusLine || 'no status'}).`),
+            { status: status === 401 || status === 403 ? 403 : status },
+          ));
         }
       };
       socket.on('data', onHead);
@@ -249,10 +239,8 @@ function synthesizeChunkWithEdgeNeural(
   voice: string,
   lang: string,
   timeoutMs = CHUNK_TIMEOUT_MS,
-  versionOverride?: string,
-  uaOverride?: string,
 ): Promise<Buffer> {
-  return openEdgeTtsSocket(timeoutMs, versionOverride, uaOverride).then(({ socket, rest }) => new Promise<Buffer>((resolve, reject) => {
+  return openEdgeTtsSocket(timeoutMs).then(({ socket, rest }) => new Promise<Buffer>((resolve, reject) => {
     const audioParts: Buffer[] = [];
     let receiveBuffer = rest;
     let fragmentOpcode = 0;
@@ -453,41 +441,6 @@ async function synthesizeChunk(chunk: string, voice: string, lang: string): Prom
 }
 
 /**
-<<<<<<< HEAD
- * 🔧 진단용: 버전 후보 여러 개를 한 번에 대보고 각각의 응답을 요약합니다. (프로브 전용)
- */
-export async function probeEdgeNeuralVariants(
-  speech: string,
-  timeoutMs = 6000,
-): Promise<Array<{ version: string; ok: boolean; status: string; body: string; elapsedMs: number }>> {
-  const candidates: Array<{ version: string; edgeMajor: string }> = [
-    { version: '1-130.0.2849.68', edgeMajor: '130' },
-    { version: '1-131.0.2903.112', edgeMajor: '131' },
-    { version: '1-135.0.3179.85', edgeMajor: '135' },
-    { version: '1-138.0.3351.121', edgeMajor: '138' },
-    { version: '1-140.0.3485.66', edgeMajor: '140' },
-    { version: '1-143.0.3650.80', edgeMajor: '143' },
-    { version: '1-146.0.3856.86', edgeMajor: '146' },
-  ];
-  const results: Array<{ version: string; ok: boolean; status: string; body: string; elapsedMs: number }> = [];
-  for (const candidate of candidates) {
-    const started = Date.now();
-    const ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${candidate.edgeMajor}.0.0.0 Safari/537.36 Edg/${candidate.edgeMajor}.0.0.0`;
-    try {
-      const audio = await synthesizeChunkWithEdgeNeural(String(speech || '진단'), 'ko-KR-SunHiNeural', 'ko-KR', timeoutMs, candidate.version, ua);
-      results.push({ version: candidate.version, ok: audio.length > 2 && audio[0] === 0xff, status: '101 upgraded', body: '', elapsedMs: Date.now() - started });
-    } catch (error) {
-      results.push({
-        version: candidate.version,
-        ok: false,
-        status: error instanceof Error ? error.message : String(error),
-        body: String((error as { bodySnippet?: string })?.bodySnippet || ''),
-        elapsedMs: Date.now() - started,
-      });
-    }
-  }
-  return results;
-=======
  * 🔧 진단용: 신경망 합성 1회만 단독 실행해 어느 단계에서 막히는지 확인합니다. (프로브 전용)
  */
 export async function probeEdgeNeuralOnce(
@@ -508,7 +461,6 @@ export async function probeEdgeNeuralOnce(
       elapsedMs: Date.now() - started,
     };
   }
->>>>>>> origin/main
 }
 
 /** 신경망 TTS로 mp3 음성을 합성합니다. 실패 시 예외를 던지므로 호출부가 적절히 안내할 수 있습니다. */
