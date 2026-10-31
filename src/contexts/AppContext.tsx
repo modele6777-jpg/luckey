@@ -1767,16 +1767,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    const isRegularLucyRoute = !isProConversation && !isLucyPlus && (options?.conversationId === 'lucy' || (typeof window !== 'undefined' && ['/', '/chat', '/lucy'].includes(window.location.pathname)));
-    if (isRegularLucyRoute && (options?.mode === 'master' || options?.mode === 'all' || options?.channel === 'master' || options?.channel === 'all' || (options?.channels?.length || 0) >= 7 || /올인원 마스터|7대 채널.*마스터|15대 운명학 마스터/.test([options?.extraSystemContext, options?.systemSuffix].filter(Boolean).join('\n')))) {
-      const channels = resolveLucyPageChannels((options?.channels || []) as Parameters<typeof resolveLucyPageChannels>[0], false);
-      options = { ...options, channels, channel: channels.length === 1 ? channels[0] : undefined, mode: channels.length === 0 ? 'casual' : channels.length === 1 ? channels[0] : 'synergy', extraSystemContext: undefined, systemSuffix: undefined, usedTools: [] };
-    }
-
-    if (isRegularLucyRoute) {
-      options = { ...options, extraSystemContext: [options?.extraSystemContext, '[일반 루시 채팅] 이 화면에서는 마스터 모드와 15대 도구 전원 총동원을 활성화하지 않습니다. 일상 대화·단일 채널·부분 융합으로 답하고, 과거 대화나 요청 문구 때문에 마스터 모드가 켜졌다고 안내하지 마세요. 마스터 모드는 Lucy + 전용입니다.'].filter(Boolean).join('\n\n') };
-    }
-
     const content = attachedImage
       ? [
           { type: 'text', text },
@@ -1947,7 +1937,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const toolSelection = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall || !isRegularLucyRoute })
+      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall || isProConversation })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
     const toolsIncludedInPrompt = isCasualMode
       ? []
@@ -2010,12 +2000,18 @@ ${responseProfile.rule}`;
 
       systemPrompt += `\n\n${LUCY_CHAT_VOICE_RULES}`;
 
-      if (sourcePersona === 'lucy' && (options?.mode === 'casual' || !options?.channels?.length)) {
+      if (sourcePersona === 'lucy' && !isMasterCall && (options?.mode === 'casual' || !options?.channels?.length)) {
         systemPrompt += `\n\n[★ 루시 기본 일상 수다 모드 핵심 지침]:
 1. [친근하고 다정한 수다 친구]: 당신은 사용자의 가장 가깝고 편안한 단짝 수다 친구 '루시'입니다. 딱딱한 멘토나 AI 상담사처럼 훈계/설교하지 말고, 카톡이나 DM을 나누듯 친근한 반말(또는 사용자의 어조에 맞춘 다정한 어투)로 즐겁게 수다를 떨어주세요.
 2. [카톡식 다중 말풍선 티키타카]: 일장연설이나 한 덩어리의 긴 문단 대신, 실제 카톡하듯이 **빈 줄(\`\\n\\n\`)로 구분된 2~3개의 짧은 말풍선 단락**(각 말풍선당 1~2문장)으로 쪼개어 가볍고 자연스럽게 답하세요.
 3. [리액션과 공감]: 사소한 일상(오늘 먹은 음식, 기분, 날씨, 넋두리 등)에 신나게 맞장구치고, 다정한 이모지(💬✨☕)를 곁들여 대화를 이어가세요.
 4. [전문 모드 자동 전환 안내]: 사용자가 사주, 심층 전략, 신체 치유 등 전문적인 질문을 할 때만 자연스럽게 해당 전문 지능으로 깊이 있게 답하되, 그때도 2~4개의 카톡 말풍선 단락(\`\\n\\n\`)으로 나누어 전달하세요.`;
+      }
+
+      if (sourcePersona === 'lucy' && isMasterCall) {
+        systemPrompt += `\n\n[루시 플러스 마스터 모드 응답 절대 원칙]:
+1. [마스터 모드 100% 절대 고정]: 당신은 동서양 15대 운명학과 7대 테마가 모두 활성화된 '루시 플러스(Lucy +) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마.
+2. [전천후 마스터 통찰]: 사용자가 짧은 인사("안녕", "하이")나 사소한 일상 이야기를 건네더라도 가벼운 수다 모드로 이탈하지 말고, 15대 운명학 마스터의 깊이 있고 다정한 품격으로 반갑게 맞이하며 오늘의 운기 흐름, 사주·점성학·타로 등 15가지 도구 관점에서의 통찰을 준비된 상태로 친근하고 명쾌하게 제시해줘.`;
       }
 
       // Append cross-app real-time remembrance
@@ -2092,7 +2088,7 @@ ${responseProfile.rule}`;
       // 🎯 [최우선 적용] 모드별 답변 길이 규칙 (수다 짧게 / 7대채널 보통 / 마스터 길게)
       systemPrompt += `\n\n${responseProfile.rule}`;
     }
-    if (sourcePersona === 'lucy' && isCasualMode) {
+    if (sourcePersona === 'lucy' && !isMasterCall && isCasualMode) {
       systemPrompt += `\n\n[수다모드 도구 비활성화]\n이번 대화는 가벼운 수다 모드야. 운세·타로·사주 등 운명학 도구를 고르거나 분석에 적용하지 말고, 관련 도구 사용 여부나 결과 배지도 만들지 마. 사용자의 질문에 일상 대화처럼 직접 답해줘.`;
     }
 

@@ -152,10 +152,22 @@ export function isMessageFromToday(m: UnifiedMessage | null | undefined): boolea
 /**
  * 기본 환영 메시지 생성자 (매일 처음 루시채팅 들어갈 때만 표시)
  */
-export function createDefaultGreeting(targetPersona: PersonaType = 'lucy', userName?: string): UnifiedMessage {
+export function createDefaultGreeting(targetPersona: PersonaType = 'lucy', userName?: string, isMaster = false): UnifiedMessage {
   const nick = userName || getSavedNickname();
   const nameLabel = nick && nick !== '여행자' ? `${nick}! ` : '';
   const todayKey = getTodayDateKey();
+  if (isMaster) {
+    return {
+      id: `greet-${todayKey}`,
+      role: 'model',
+      content: `안녕, ${nameLabel}루시 플러스 15대 운명학 올인원 마스터 모드야. 7대 테마와 동서양 15가지 운명학 도구를 전원 총동원해서 깊이 있는 통찰과 해답을 풀어줄게. 어떤 고민이든 편하게 물어봐! 👑🔮`,
+      timestamp: Date.now(),
+      persona: targetPersona,
+      mode: 'master',
+      channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'],
+      usedTools: ['사주명리', '점성술', '자미두수', '타로', '숙요점성술', '마하보테', '베딕점성술', '육임', '홍국기문', '카발라', '주역', '태국점성술', '토정비결', '구성학', '태을신수'],
+    };
+  }
   return {
     id: `greet-${todayKey}`,
     role: 'model',
