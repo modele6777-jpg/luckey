@@ -193,12 +193,21 @@ export function saveProfileToAllVaults(profile: UserProfile | undefined): void {
       ? inputNick 
       : '제제';
 
-    // 🛡️ 태어난 시간(birthtime) 등 사용자가 직접 수정한 필드는 빈 문자열이나 새 값 모두 100% 반영
+    // 🛡️ 태어난 시간(birthtime), 실명(name), 성별(gender), 출생도시(birthCity) 등 사용자가 직접 수정한 필드는 새 값 모두 100% 반영
+    if (profile.basic && typeof profile.basic.name === 'string' && profile.basic.name.trim()) {
+      finalMerged.basic.name = profile.basic.name.trim();
+    }
     if (profile.basic && typeof profile.basic.birthtime === 'string') {
       finalMerged.basic.birthtime = profile.basic.birthtime;
     }
     if (profile.basic && typeof profile.basic.birthdate === 'string' && profile.basic.birthdate) {
       finalMerged.basic.birthdate = profile.basic.birthdate;
+    }
+    if (profile.basic && profile.basic.gender) {
+      finalMerged.basic.gender = profile.basic.gender;
+    }
+    if (profile.basic && typeof profile.basic.birthCity === 'string' && profile.basic.birthCity.trim()) {
+      finalMerged.basic.birthCity = profile.basic.birthCity.trim();
     }
     if (profile.basic && profile.basic.lunarSolar) {
       finalMerged.basic.lunarSolar = profile.basic.lunarSolar;

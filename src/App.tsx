@@ -118,6 +118,7 @@ import { UPDATE_ACK_KEY } from "./lib/updateNotice";
 import { applyServiceWorkerUpdate, forceAppUpgradeAndReload } from "./lib/prismSync";
 import { safeLocalStorage, safeSessionStorage } from "./utils/safeStorage";
 import { usePinScreenLock } from "./hooks/usePinScreenLock";
+import { useViewportScrollLock } from "./hooks/useViewportScrollLock";
 import { resolveCanonicalPath } from "./lib/prismRouteRegistry";
 
 const ROUTES_MAP = [
@@ -213,6 +214,7 @@ function AppContent() {
 
   const pinScreenActive = !isUnlocked;
   usePinScreenLock(pinScreenActive);
+  useViewportScrollLock();
 
   // 📱 세로/가로(Portrait & Landscape) 자유 회전 지원: 기존 방향 잠금 해제
   React.useEffect(() => {
