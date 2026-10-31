@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { invokeLLMStructured } from '@/lib/ai';
 import { auth, db, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc } from '@/lib/firebase';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 
 export interface MissionCategory {
   id: 'body' | 'mindful' | 'digital' | 'nature' | 'compassion' | 'breath';
@@ -307,10 +306,6 @@ export async function generateHealingMissionRecommendation(
     // Save to Firestore & LocalStorage
     saveMissionToLocal(uid, mission);
     void saveMissionToFirestore(uid, mission);
-
-    try {
-      playAiResultNotification();
-    } catch (_) {}
 
     // Omni Sync
     recordPrismFeature({

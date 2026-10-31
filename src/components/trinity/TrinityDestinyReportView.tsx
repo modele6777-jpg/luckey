@@ -48,7 +48,6 @@ import {
 } from '@/lib/sajuAnalysis';
 import { invokeLLM } from '@/lib/ai';
 import { playTTS, playTTSInChunks, stopTTS, useTTSActive } from '@/utils/tts';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 
 // 지장간(支藏干: 각 지지에 숨겨진 천간 기운)
 const JIJANGAN_MAP: Record<string, string[]> = {
@@ -360,9 +359,6 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
         )
       );
 
-      try {
-        playAiResultNotification();
-      } catch (_) {}
 
       // 🔊 대답이 나올 때 자동으로 내 질문과 대답 낭독
       if (isAutoTtsEnabled && fallbackText) {

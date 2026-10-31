@@ -144,12 +144,15 @@ export function ChatInsightsBoardModal({
     setTimeout(() => setCopiedField(null), 1800);
   };
 
-  // TTS helper
+  // TTS helper (채팅 인사이트 낭독 시 싱잉볼 완료음 생략)
   const handlePlayTTS = (text: string) => {
     if (ttsState.isSpeaking && ttsState.activeText === text) {
       stopTTS();
     } else {
-      playTTS(text, 'Kore');
+      playTTS(text, 'Kore', false, undefined, undefined, false, undefined, undefined, undefined, {
+        skipCompletionChime: true,
+        isChatMode: true,
+      });
     }
   };
 

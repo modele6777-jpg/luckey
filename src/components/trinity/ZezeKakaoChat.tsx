@@ -460,12 +460,15 @@ ${growthResult?.dominant_element ? `(주요 역량 영역: ${growthResult.domina
     }
   };
 
-  // Play individual message TTS
+  // Play individual message TTS (채팅 대화는 싱잉볼 완료음 생략)
   const handleMessageTTS = (text: string) => {
     if (isTTSActive) {
       stopTTS();
     } else {
-      playTTS(text);
+      playTTS(text, 'Aoede', false, undefined, undefined, false, undefined, undefined, undefined, {
+        skipCompletionChime: true,
+        isChatMode: true,
+      });
     }
   };
 

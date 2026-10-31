@@ -539,7 +539,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
         110,
         undefined,
         undefined,
-        { skipCompletionChime: true, isAutoPlay: false, isUserToggleClick: true }
+        { skipCompletionChime: true, isChatMode: true, isAutoPlay: false, isUserToggleClick: true }
       );
     } catch (err) {
       console.warn('[LucyQuickChatBubble] play individual message TTS error:', err);
@@ -800,7 +800,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                 110,
                 undefined,
                 undefined,
-                { skipCompletionChime: true, isAutoPlay: true }
+                { skipCompletionChime: true, isChatMode: true, isAutoPlay: true }
               );
             } catch (ttsErr) {
               console.warn('[LucyQuickChatBubble] playTTSInChunks error:', ttsErr);

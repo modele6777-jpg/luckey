@@ -1732,6 +1732,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       if (cleanAnswer) {
         await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, {
           skipCompletionChime: true,
+          isChatMode: true,
           isAutoPlay: true,
         });
       }
@@ -1779,6 +1780,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         setIsGreetingPendingTap(false);
         await playTTSInChunks(cleanGreeting, 'Aoede', 110, undefined, undefined, {
           skipCompletionChime: true,
+          isChatMode: true,
           isAutoPlay: true,
         });
       } catch (err: any) {
@@ -2436,7 +2438,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     stopTTS();
     try {
       // Starting a sequence emits an idle reset first. Assign its owner after that reset.
-      const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, { skipCompletionChime: true });
+      const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, { skipCompletionChime: true, isChatMode: true });
       setPlayingMsgId(id);
       await playback;
     } catch (error) {

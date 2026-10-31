@@ -26,7 +26,6 @@ import {
   loadWishesHistory,
   deduplicateWishes,
 } from '@/lib/wishingWell';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 import { WishingWellSecretRecommendations } from '@/components/orange/WishingWellSecretRecommendations';
 
 interface WishingWellModalProps {
@@ -135,9 +134,6 @@ export function WishingWellModal({
         '가슴속 간절한 소망이 밤하늘 별빛처럼 밝게 실현되길 기원합니다.';
       const result = await castWishIntoWell(uid, effectiveWish, targetCategory);
       setLatestResult(result);
-      try {
-        playAiResultNotification();
-      } catch (_) {}
       setWishesHistory((prev) => deduplicateWishes([result, ...prev]));
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('prism:wish_cast', { detail: { wish: result } }));

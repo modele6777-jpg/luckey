@@ -22,7 +22,6 @@ import { LucKeyLogoText } from '@/components/LucKeyLogoText';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { GoalProgressRingDashboard } from '@/components/goals/GoalProgressRingDashboard';
 import { TodayLucyPersonaCard } from '@/components/TodayLucyPersonaCard';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
 import { DailyCosmicRoutineCard } from '@/components/hub/DailyCosmicRoutineCard';
 
@@ -437,9 +436,6 @@ export default function HubHome() {
       }));
 
       setGlobalData(data as any);
-      try {
-        playAiResultNotification();
-      } catch (_) {}
       localStorage.setItem("trinity_cached_global_data", JSON.stringify(data));
       localStorage.setItem("trinity_cached_global_data_time", String(Date.now()));
       sessionStorage.removeItem('lastSyncError');
