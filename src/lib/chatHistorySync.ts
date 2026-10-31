@@ -286,6 +286,9 @@ export function mergeUnifiedMessages(
         timestamp: existing.timestamp || msg.timestamp,
         persona: msg.persona || existing.persona,
         role: existing.role || msg.role,
+        channel: msg.channel || existing.channel,
+        channels: (Array.isArray(msg.channels) && msg.channels.length > 0) ? msg.channels : existing.channels,
+        mode: msg.mode || existing.mode,
         usedTools: msg.usedTools || existing.usedTools,
         divinationContext: msg.divinationContext || existing.divinationContext,
       });
