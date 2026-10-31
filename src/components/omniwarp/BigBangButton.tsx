@@ -1168,6 +1168,7 @@ export function BigBangButton() {
       
       const inLucyChat = checkIsInLucyChat();
       safeSessionStorage.setItem('lucy_plus_active', 'true');
+      safeLocalStorage.setItem('lucy_plus_active', 'true');
 
       if (inLucyChat) {
         // 🌟 현재 Lucy 화면 내에서 즉각 Lucy +로 진화! (페이지 이동 없이 인플레이스 진화)
@@ -1210,6 +1211,7 @@ export function BigBangButton() {
         singleTapTimerRef.current = null;
         lastTapTimeRef.current = 0;
         safeSessionStorage.removeItem('lucy_plus_active');
+        safeLocalStorage.removeItem('lucy_plus_active');
         safeSessionStorage.removeItem('lucy_chat_voice_requested');
         triggerHaptic('whitehole');
         if (checkIsInLucyChat()) {
@@ -1262,6 +1264,7 @@ export function BigBangButton() {
 
           if (checkIsInLucyChat() && isLucyPlusActive) {
             safeSessionStorage.removeItem('lucy_plus_active');
+            safeLocalStorage.removeItem('lucy_plus_active');
             window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
             return;
           }

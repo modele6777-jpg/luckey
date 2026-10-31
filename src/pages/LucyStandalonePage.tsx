@@ -442,11 +442,16 @@ export function resolveMessageModeAndChannels(
   let rawChannels: string[] = Array.isArray(msg?.channels) ? msg.channels : [];
   let rawMode: string = msg?.mode || msg?.channel || '';
 
-  // 0. 환영 및 일일 인사말 메시지인 경우 100% 수다 모드로 고정
+  // 0. 환영 및 일일 인사말 메시지인 경우
   const msgId = String(msg?.id || '');
   if (msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.includes('greet')) {
-    rawChannels = [];
-    rawMode = 'casual';
+    if (allowMaster) {
+      rawChannels = ALL_CHANNELS;
+      rawMode = 'master';
+    } else {
+      rawChannels = [];
+      rawMode = 'casual';
+    }
   }
 
   // 1. 모델 메시지에 채널이 비어 있다면 직전 사용자 메시지의 채널 확인
@@ -481,10 +486,14 @@ export function resolveMessageModeAndChannels(
   }
 
   const filteredChannels = rawChannels.filter((c: any) => ALL_CHANNELS.includes(c)) as SpecialChannel[];
-  const validChannels = allowMaster ? filteredChannels : resolveLucyPageChannels(filteredChannels, false);
-  if (!allowMaster && rawMode === 'master') rawMode = validChannels.length ? 'synergy' : 'casual';
-  const isMaster = allowMaster && (rawMode === 'master' || validChannels.length === ALL_CHANNELS.length);
-  const isCasual = (rawMode === 'casual' || validChannels.length === 0) && !isMaster;
+  const isMaster = Boolean(
+    allowMaster ||
+    rawMode === 'master' ||
+    msg?.mode === 'master' ||
+    filteredChannels.length === ALL_CHANNELS.length
+  );
+  const validChannels = isMaster ? ALL_CHANNELS : resolveLucyPageChannels(filteredChannels, false);
+  const isCasual = !isMaster && (rawMode === 'casual' || validChannels.length === 0);
 
   let badgeLabel = '수다 모드';
   let badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white border-slate-200 dark:border-white/20';
@@ -1692,7 +1701,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   // Filter messages by search query if search is active (대화 기록이 비어있다면 기본 루시 인사말 표시 보장)
   const filteredMessages = useMemo(() => {
-    const baseList = lucyMessages.length > 0 ? lucyMessages : [createDefaultGreeting('lucy', userDisplayName)];
+    const isMasterGreeting = isPlusMode || pro;
+    const baseList = lucyMessages.length > 0
+      ? (lucyMessages.length === 1 && isGreetingMessage(lucyMessages[0]) && isMasterGreeting
+          ? [createDefaultGreeting('lucy', userDisplayName, true)]
+          : lucyMessages)
+      : [createDefaultGreeting('lucy', userDisplayName, isMasterGreeting)];
     if (!searchQuery.trim()) return baseList;
     const q = searchQuery.toLowerCase();
     return baseList.filter((m) => {
@@ -1700,7 +1714,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       const txt = m.role === 'user' ? rawText : cleanAssistantMessageDisplay(rawText);
       return txt.toLowerCase().includes(q);
     });
-  }, [lucyMessages, searchQuery, userDisplayName]);
+  }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro]);
 
   // Background Auto-Prefetch latest Lucy message for 0ms instant TTS playback
   useEffect(() => {
@@ -2216,7 +2230,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     } else if (isMaster) {
       const masterContext = `[7대 채널 올인원 Lucy + 마스터 풀가동 — 15대 운명학 도구 전원 총동원 & 비교 분석 모드]
 - 7대 테마에 배정된 동서양 15가지 운명학 도구(프롤로그[태을신수·토정비결], 오렌지[홍국기문·육임·구성학], 트리니티[사주·점성술·자미두수·타로], 아우라[마하보테·태국점성술], 블루버드[숙요·베딕], 뮤즈[카발라·타로], 에필로그[주역·베딕])를 단 하나도 빠짐없이 전원 총동원합니다.
-- 7대 테마별로 묶어 15개 도구의 관점을 각각 비교 분석한 뒤, 실제 계산값이 제공된 도구들의 공통점과 차이를 비교해 줘. 미산출 도구를 계산했다고 하거나 15개 도구가 만장일치했다고 주장하지 마.`;
+- 7대 테마별로 묶어 15개 도구의 관점을 각각 비교 분석한 뒤, 실제 계산값이 제공된 도구들의 공통점과 차이를 비교해 줘. 미산출 도구를 계산했다고 하거나 15개 도구가 만장일치했다고 주장하지 마.
+- [마스터 절대 원칙]: 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드 대사를 하지 말고, 어떤 질문이든 15대 운명학 마스터의 깊이 있는 통찰과 해답으로 안내해.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
       targetPersona = 'lucy';
     } else if (isSyn) {
@@ -2804,7 +2819,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             if (!isUser && !textContent.trim() && !imageUrl) {
               return null;
             }
-            const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index, pro);
+            const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index, pro || isPlusMode);
 
             // 루시의 인사말인지 여부 정밀 판별
             const isGreeting = (() => {

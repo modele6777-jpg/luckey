@@ -428,7 +428,7 @@ export function selectOptimalDivinationTools(
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();
 
-  const isMasterDetected = policy.allowMaster !== false && (
+  const isMasterDetected = (
     Boolean(isMasterMode) ||
     activeChannels.length === 7 ||
     /마스터\s*모드|올인원|15개\s*도구|15대\s*도구|15가지\s*도구|총동원|전부\s*비교|종합\s*비교/.test(lower)
