@@ -240,6 +240,19 @@ const MASTER_VAULT_ID = 'master_modele6777';
 const isMasterVaultAccount = (user: { uid?: string; email?: string | null } | null, bypass: boolean): boolean =>
   bypass || Boolean(user?.email && user.email.toLowerCase() === 'modele6777@gmail.com');
 
+/**
+ * 🍀 실시간 대화 동기화 전용 고유 채널 ID:
+ * 박주형 님의 계정(구글 로그인 modele6777@gmail.com, 마스터 볼트, 원클릭 모바일, PIN 1202)은
+ * 무조건 하나의 고유 마스터 채널(`master_modele6777`)을 바라보게 하여,
+ * PC와 모바일에서 동시에 채팅을 입력해도 0.1초 만에 양방향 실시간으로 즉시 표시됩니다.
+ */
+const getActiveChatDocId = (user: { uid?: string; email?: string | null } | null): string => {
+  if (isMasterVaultAccount(user, safeLocalStorage.getItem('developer_bypass') === 'true')) {
+    return MASTER_VAULT_ID;
+  }
+  return user?.uid || getPairedVaultId() || MASTER_VAULT_ID;
+};
+
 /** 🍀 전역 토스트: 로그인 상태 전환 등 중요 순간을 앱 어디에서든 눈에 띄게 알립니다. */
 export function showLucyToast(message: string, durationMs = 4200): void {
   if (typeof document === 'undefined') return;
@@ -500,7 +513,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     messagesToPush: UnifiedMessage[] | Record<PersonaType, UnifiedMessage[]>,
     immediate = false
   ) => {
-    const currentUid = auth.currentUser?.uid || firebaseUser?.uid || activePairedVaultId || getPairedVaultId();
+    const currentUid = getActiveChatDocId(firebaseUser);
     if (!currentUid) return;
 
     if (pushChatThreadsTimerRef.current) {
@@ -519,6 +532,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           messages: cleanList,
           unified: cleanList,
           updatedAt: serverTimestamp(),
+          clientUpdatedAt: Date.now(),
         }, { merge: true }).catch((err) => {
           console.warn('[ChatThreads] Firestore sync notice (cached locally):', err?.message || err);
         });
@@ -530,9 +544,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (immediate) {
       executePush();
     } else {
-      pushChatThreadsTimerRef.current = setTimeout(executePush, 600);
+      pushChatThreadsTimerRef.current = setTimeout(executePush, 200);
     }
-  }, [firebaseUser?.uid, activePairedVaultId]);
+  }, [firebaseUser]);
 
   // Sites uses its authenticated account independently of Firebase/PIN pairing.
   // Storage has already been reconciled before this event; refresh mounted views
@@ -742,7 +756,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Real-time Chat Threads Listener across devices (PC <-> Mobile)
   useEffect(() => {
-    const effectiveChatId = firebaseUser?.uid || activePairedVaultId || getPairedVaultId();
+    const effectiveChatId = getActiveChatDocId(firebaseUser);
     if (!effectiveChatId) return;
 
     const chatDocRef = doc(db, 'chatThreads', effectiveChatId);
@@ -781,7 +795,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (archivalResult.wasArchived) {
               saveUnifiedMessagesSafely(archivalResult.messages);
               setUnifiedMessages(archivalResult.messages);
-              pushChatThreadsToFirestore(archivalResult.messages);
+              pushChatThreadsToFirestore(archivalResult.messages, true);
               return;
             }
 
@@ -801,19 +815,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsub;
-  }, [firebaseUser?.uid, activePairedVaultId]);
+  }, [firebaseUser, activePairedVaultId]);
 
   useEffect(() => {
     if (!firebaseUser) {
-      unlockMemoryFlag = false;
-      setIsUnlocked(false);
+      if (hasUnlockedPinToday()) {
+        unlockMemoryFlag = true;
+        setIsUnlocked(true);
+        // 🍀 PIN 1202가 이미 해제된 상태면 마스터 볼트(master_modele6777)로 즉시 자동 연동
+        signInAsDeveloper(true);
+      } else {
+        unlockMemoryFlag = false;
+        setIsUnlocked(false);
+      }
       return;
     }
     if (hasUnlockedPinToday()) {
       unlockMemoryFlag = true;
       setIsUnlocked(true);
     }
-  }, [firebaseUser?.uid]);
+  }, [firebaseUser?.uid, signInAsDeveloper]);
 
   // Handle redirect result on page load
   useEffect(() => {
@@ -1226,10 +1247,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unlockMemoryFlag = true;
       setIsUnlocked(true);
       writeDailyUnlock();
+      // 🍀 PIN 1202 해제 시 박주형 님의 마스터 볼트(master_modele6777)로 즉시 자동 로그인/연동
+      if (!firebaseUser || firebaseUser.uid !== MASTER_VAULT_ID) {
+        signInAsDeveloper(true);
+      }
       return true;
     }
     return false;
-  }, []);
+  }, [firebaseUser, signInAsDeveloper]);
 
   const signInAsDeveloper = useCallback((silentToast = false) => {
     // ⚡ 원클릭 계정 연동: 박주형 님의 마스터 볼트(master_modele6777)로 즉시 로그인·잠금 해제합니다.
@@ -1546,9 +1571,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Also trigger chat messages synchronization across devices safely with timeout
-      if (firebaseUser?.uid) {
+      const activeChatId = getActiveChatDocId(firebaseUser);
+      if (activeChatId) {
         try {
-          const chatDocPromise = getDoc(doc(db, 'chatThreads', firebaseUser.uid));
+          const chatDocPromise = getDoc(doc(db, 'chatThreads', activeChatId));
           const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000));
           const chatDocSnap = await Promise.race([chatDocPromise, timeoutPromise]).catch(() => null);
           if (chatDocSnap && chatDocSnap.exists()) {
@@ -1670,7 +1696,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       muse: [],
     });
 
-    const currentUid = auth.currentUser?.uid || firebaseUser?.uid;
+    const currentUid = getActiveChatDocId(firebaseUser);
     if (currentUid) {
       try {
         const chatDocRef = doc(db, 'chatThreads', currentUid);
@@ -1804,7 +1830,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (chatBroadcastRef.current) {
       chatBroadcastRef.current.postMessage({ messages: nextCommitted, timestamp: Date.now() });
     }
-    pushChatThreadsToFirestore(nextCommitted, false);
+    pushChatThreadsToFirestore(nextCommitted, true);
     void updateSharedState({
       chatHistory: nextCommitted.slice(-150)
     }, 'lucy');
@@ -2298,7 +2324,7 @@ ${responseProfile.rule}`;
             void updateSharedState({
               chatHistory: updated.slice(-150)
             }, 'lucy');
-            pushChatThreadsToFirestore(updated);
+            pushChatThreadsToFirestore(updated, true);
             return updated;
           });
 
@@ -2382,7 +2408,7 @@ ${responseProfile.rule}`;
             void updateSharedState({
               chatHistory: updated.slice(-150)
             }, 'lucy');
-            pushChatThreadsToFirestore(updated);
+            pushChatThreadsToFirestore(updated, true);
             return updated;
           });
         } else {
@@ -2415,7 +2441,7 @@ ${responseProfile.rule}`;
           void updateSharedState({
             chatHistory: updated.slice(-150)
           }, 'lucy');
-          pushChatThreadsToFirestore(updated);
+          pushChatThreadsToFirestore(updated, true);
           return updated;
         });
         return;
@@ -2477,7 +2503,7 @@ ${responseProfile.rule}`;
             void updateSharedState({
               chatHistory: updated.slice(-150)
             }, 'lucy');
-            pushChatThreadsToFirestore(updated);
+            pushChatThreadsToFirestore(updated, true);
             return updated;
           });
           if (options?.onFinish) {
@@ -2545,7 +2571,7 @@ ${responseProfile.rule}`;
         void updateSharedState({
           chatHistory: updated.slice(-150)
         }, 'lucy');
-        pushChatThreadsToFirestore(updated);
+        pushChatThreadsToFirestore(updated, true);
         return updated;
       });
     } finally {
