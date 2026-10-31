@@ -597,7 +597,7 @@ function getCuratedPrompts(
 const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
 
 export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
-  // 🌟 Lucy + 진화 상태 머신: 빅뱅 버튼 홀드 시 true로 진화, 1회 탭 시 false로 복귀
+  // 🌟 Lucy + 진화 상태 머신: 빅뱅 버튼 홀드 또는 헤더 탭 시 true로 진화, 1회 탭 시 false로 복귀
   const [isPlusMode, setIsPlusMode] = useState<boolean>(() => {
     if (pro) return true;
     try {
@@ -605,7 +605,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         const search = window.location.search || '';
         if (search.includes('mode=plus') || search.includes('mode=pro')) return true;
       }
-      return safeSessionStorage.getItem('lucy_plus_active') === 'true';
+      return safeLocalStorage.getItem('lucy_plus_active') === 'true' || safeSessionStorage.getItem('lucy_plus_active') === 'true';
     } catch {
       return false;
     }
@@ -630,6 +630,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   useEffect(() => {
     const handleEvolve = () => {
+      safeLocalStorage.setItem('lucy_plus_active', 'true');
       safeSessionStorage.setItem('lucy_plus_active', 'true');
       setIsPlusMode(true);
       triggerHaptic('whitehole');
@@ -641,6 +642,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
 
     const handleRevert = () => {
+      safeLocalStorage.removeItem('lucy_plus_active');
       safeSessionStorage.removeItem('lucy_plus_active');
       setIsPlusMode(false);
       triggerHaptic('whitehole');
@@ -652,6 +654,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       setIsPlusMode((prev) => {
         const next = !prev;
         if (next) {
+          safeLocalStorage.setItem('lucy_plus_active', 'true');
           safeSessionStorage.setItem('lucy_plus_active', 'true');
           triggerHaptic('whitehole');
           try {
@@ -659,6 +662,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           } catch (_) {}
           setModeSwitchToast('👑 Lucy + 진화! 7대 채널 올인원 마스터 모드가 가동되었습니다');
         } else {
+          safeLocalStorage.removeItem('lucy_plus_active');
           safeSessionStorage.removeItem('lucy_plus_active');
           triggerHaptic('whitehole');
           setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
@@ -2154,7 +2158,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
 
     let channels = effectiveForcedChannels !== undefined ? effectiveForcedChannels : activeChannels;
-    if (effectiveForcedChannels !== undefined) {
+    if (isPlusMode || pro) {
+      // 👑 Lucy + 마스터 모드 절대 원칙: 7대 채널 올인원 + 15대 운명학 도구 전원 총동원 고정
+      channels = ALL_CHANNELS;
+      setActiveChannels(ALL_CHANNELS);
+      setAutoDetectedTitle('7대 채널 올인원 마스터');
+    } else if (effectiveForcedChannels !== undefined) {
       channels = effectiveForcedChannels;
       setActiveChannels(effectiveForcedChannels);
       setAutoDetectedTitle(formatChannelsModeTitle(effectiveForcedChannels));
@@ -2178,11 +2187,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       setAutoDetectedTitle(formatChannelsModeTitle(forcedChannels));
     }
 
-    channels = resolveLucyPageChannels(channels, pro || isPlusMode);
+    channels = (isPlusMode || pro) ? ALL_CHANNELS : resolveLucyPageChannels(channels, false);
     setActiveChannels(channels);
     setAutoDetectedTitle(formatChannelsModeTitle(channels));
     const channelCount = channels.length;
-    const isMaster = isPlusMode || (pro && channelCount === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => channels.includes(c)));
+    const isMaster = isPlusMode || pro || (channelCount === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => channels.includes(c)));
     const isCasual = !isMaster && channelCount === 0;
     const isSingle = !isMaster && channelCount === 1;
     const isSyn = !isMaster && channelCount >= 2;
@@ -2581,16 +2590,25 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <button
                       type="button"
                       onClick={() => {
-                        if (isPlusMode) {
-                          setIsPlusMode(false);
-                          safeSessionStorage.removeItem('lucy_plus_active');
-                          setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
-                          setTimeout(() => setModeSwitchToast(null), 2000);
+                        const next = !isPlusMode;
+                        setIsPlusMode(next);
+                        if (next) {
+                          safeLocalStorage.setItem('lucy_plus_active', 'true');
+                          safeSessionStorage.setItem('lucy_plus_active', 'true');
+                          triggerHaptic('whitehole');
+                          try {
+                            playAudioHaptic('milestone_success');
+                          } catch (_) {}
+                          setModeSwitchToast('👑 Lucy + 진화! 15대 운명학 올인원 마스터 모드가 가동되었습니다');
                         } else {
-                          navigate('/');
+                          safeLocalStorage.removeItem('lucy_plus_active');
+                          safeSessionStorage.removeItem('lucy_plus_active');
+                          triggerHaptic('whitehole');
+                          setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
                         }
+                        setTimeout(() => setModeSwitchToast(null), 2200);
                       }}
-                      title={isPlusMode ? '클릭 시 일반 Lucy로 복귀' : 'Lucy 홈'}
+                      title={isPlusMode ? '클릭 시 일반 Lucy 모드로 전환' : '클릭 시 15대 도구 올인원 Lucy + 마스터로 진화'}
                       className="cursor-pointer flex items-center gap-1.5"
                     >
                       {isPlusMode ? (
@@ -2604,7 +2622,32 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       )}
                     </button>
                   </h1>
-                  <span className="lucy-mode-badge">{isPlusMode ? '마스터 모드' : 'AI 모드'}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !isPlusMode;
+                      setIsPlusMode(next);
+                      if (next) {
+                        safeLocalStorage.setItem('lucy_plus_active', 'true');
+                        safeSessionStorage.setItem('lucy_plus_active', 'true');
+                        triggerHaptic('whitehole');
+                        try {
+                          playAudioHaptic('milestone_success');
+                        } catch (_) {}
+                        setModeSwitchToast('👑 Lucy + 진화! 15대 운명학 올인원 마스터 모드가 가동되었습니다');
+                      } else {
+                        safeLocalStorage.removeItem('lucy_plus_active');
+                        safeSessionStorage.removeItem('lucy_plus_active');
+                        triggerHaptic('whitehole');
+                        setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
+                      }
+                      setTimeout(() => setModeSwitchToast(null), 2200);
+                    }}
+                    className="lucy-mode-badge cursor-pointer hover:opacity-85 transition-opacity"
+                    title="클릭 시 마스터 모드 토글"
+                  >
+                    {isPlusMode ? '마스터 모드' : 'AI 모드'}
+                  </button>
                 </div>
               </div>
             </div>
