@@ -7,6 +7,7 @@ import { UserProfile } from './sharedState';
 import { calculateDetailedSaju } from './sajuAnalysis';
 import { buildUserNatalSummary } from './astrologyAnalysis';
 import { runDeterministicEngine, formatDeterministicEnginePrompt } from './divination/deterministicEngine';
+import { routeAndExecute } from './divination/smartAgentRouter';
 
 export type DivinationToolId =
   | 'saju'           // 1. 사주 (四柱命理)
@@ -440,7 +441,26 @@ export function selectOptimalDivinationTools(
     /마스터\s*모드|올인원|15개\s*도구|15대\s*도구|15가지\s*도구|총동원|전부\s*비교|종합\s*비교/.test(lower)
   );
 
-  if (isMasterDetected) {
+  // 🧭 스마트 에이전트 라우터 가동: 질문 의도 분석 및 최적 도구 선별 & 수리 엔진 실행
+  const routed = routeAndExecute({
+    text: clean,
+    profile,
+    isMasterRequested: isMasterDetected,
+  });
+
+  // 0. 가벼운 일상 인사/단순 맞장구일 때 (활성 채널이 없는 경우)
+  if (routed.routePlan.isCasual && activeChannels.length === 0) {
+    return {
+      selectedTools: [],
+      isCasualMessage: true,
+      isMasterMobilization: false,
+      selectionReason: '가벼운 일상 인사',
+      promptInjection: ''
+    };
+  }
+
+  // 1. 올인원 마스터 모드 풀가동 (15개 도구 총동원)
+  if (isMasterDetected || routed.routePlan.isMasterMobilization) {
     const allTools = Object.values(FIFTEEN_DIVINATION_TOOLS);
     return {
       selectedTools: allTools,
@@ -451,152 +471,31 @@ export function selectOptimalDivinationTools(
     };
   }
 
-  // 0. 아주 짧은 일상 인사/단순 맞장구인지 판별 (예: "안녕", "고마워", "ㅋㅋㅋ", "반가워")
-  const isVeryShortGreeting =
-    clean.length <= 12 &&
-    /^(안녕|하이|루시야|반가워|고마워|땡큐|ㅋㅋ+|ㅎㅎ+|응|그래|맞아|좋아|오케이|잘\s*자|굿모닝|좋은\s*아침)[.!~?\s]*$/i.test(clean);
+  // 2. 스마트 에이전트 라우터가 선별한 2~3개 타깃 도구 매핑
+  const selectedTools = routed.routePlan.targetTools
+    .map((id) => FIFTEEN_DIVINATION_TOOLS[id])
+    .filter(Boolean);
 
-  if (isVeryShortGreeting && activeChannels.length === 0) {
-    return {
-      selectedTools: [],
-      isCasualMessage: true,
-      isMasterMobilization: false,
-      selectionReason: '가벼운 일상 인사',
-      promptInjection: ''
-    };
-  }
-
-  const pickedIds: DivinationToolId[] = [];
-  const addTool = (id: DivinationToolId) => {
-    if (!pickedIds.includes(id) && pickedIds.length < 3) {
-      pickedIds.push(id);
-    }
-  };
-
-  // Specific traditions take precedence over the generic word “astrology”.
-  const aliases: Partial<Record<DivinationToolId, RegExp>> = { saju: /bazi|four pillars/, astrology: /astrology|natal chart/, ziwei: /zi\s*wei/, tarot: /tarot/, sukuyo: /sukuyo/, vedic: /vedic/, liuren: /liu\s*ren/, qimen: /qi\s*men/, iching: /i[\s-]?ching|yi jing/, thai_astrology: /thai astrology/, tojeong: /tojeong/, kyusei: /kyusei|nine[\s-]?star/, taiyi: /tai\s*yi/ };
-  const explicit = Object.values(FIFTEEN_DIVINATION_TOOLS).filter(tool => tool.explicitRegex.test(lower) || aliases[tool.id]?.test(lower));
-  const qualifiedAstrology = explicit.some(tool => ['vedic', 'sukuyo', 'mahabote', 'thai_astrology'].includes(tool.id));
-  for (const tool of explicit) {
-    if (tool.id === 'astrology' && qualifiedAstrology && !/서양|western|네이탈|natal/.test(lower)) continue;
-    addTool(tool.id);
-  }
-
-  // 2순위: 질문의 의도/주제 키워드에 가장 잘 부합하는 핵심 도구 매칭
-  if (pickedIds.length < 3) {
-    // 타이밍·승부·계약·이직·방향 → 홍국기문, 육임, 구성학
-    if (/이직|퇴사|취업|면접|사업|창업|계약|협상|승진|투자|매매|돌파구|전략|승부/.test(lower)) {
-      addTool('qimen');
-      addTool('liuren');
-    }
-    // 이사·방위·여행·이동·공간 → 구성학, 홍국기문
-    if (/이사|방위|방향|여행|출장|이동|자리|풍수|공간/.test(lower)) {
-      addTool('kyusei');
-      addTool('qimen');
-    }
-    // 연애·궁합·인연·인간관계·속마음 → 숙요, 타로, 자미두수, 점성술
-    if (/연애|사랑|궁합|속마음|썸|재회|이별|짝사랑|결혼|배우자|인연|관계|갈등|친구|동료/.test(lower)) {
-      addTool('sukuyo');
-      addTool('tarot');
-      addTool('astrology');
-    }
-    // 신체·컨디션·활력·수면·요일 리듬·개운 컬러 → 마하보테, 태국점성술
-    if (/건강|컨디션|체력|피로|번아웃|수면|잠|호흡|생기|활력|바이오리듬|컬러|색깔|요일/.test(lower)) {
-      addTool('mahabote');
-      addTool('thai_astrology');
-    }
-    // 깊은 상처·트라우마·반복되는 아픔·마음 위로·영혼 → 베딕, 숙요
-    if (/우울|슬픔|상처|트라우마|눈물|외로움|불안|괴로움|왜\s*나만|업보|카르마|위로|용서/.test(lower)) {
-      addTool('vedic');
-      addTool('sukuyo');
-    }
-    // 창작·영감·아이디어·예술·글쓰기·시·기획 → 카발라, 타로
-    if (/창작|영감|아이디어|글쓰기|시|소설|카피|디자인|예술|작품|뮤즈|슬럼프|브레인스토밍/.test(lower)) {
-      addTool('kabbalah');
-      addTool('tarot');
-    }
-    // 하루 마감·회고·성찰·변화의 이치·나아갈 때와 멈출 때 → 주역, 베딕
-    if (/하루\s*마감|회고|일기|성찰|돌아보|교훈|깨달음|순리|기다려야|나아가야|이치/.test(lower)) {
-      addTool('iching');
-      addTool('vedic');
-    }
-    // 새해·올해·이달·장기 비전·서막·대세 → 태을신수, 토정비결, 사주
-    if (/새해|신년|올해|이번\s*달|이달|서막|새로운\s*시작|비전|10년|장기|대세|총운/.test(lower)) {
-      addTool('tojeong');
-      addTool('taiyi');
-      addTool('saju');
-    }
-    // 전반적인 타고난 운명·재물·사주·인생 흐름 → 사주, 자미두수, 점성술
-    if (/운세|운명|재물|돈|금전|타고난|내\s*운|인생|길흉|복/.test(lower)) {
-      addTool('saju');
-      addTool('ziwei');
-      addTool('astrology');
-    }
-  }
-
-  // 3순위: 현재 활성화된 7대 테마(채널)의 주력 도구로 보완하여 테마 정체성 강화
-  if (activeChannels.length > 0 && pickedIds.length < 3) {
+  // 활성 채널이 단일/부분 융합으로 설정된 경우 보강
+  if (activeChannels.length > 0 && selectedTools.length < 3) {
     for (const ch of activeChannels) {
       const themeCfg = THEME_PRIMARY_DIVINATION_TOOLS[ch];
       if (themeCfg) {
         for (const tId of themeCfg.primaryTools) {
-          addTool(tId);
-          if (pickedIds.length >= 3) break;
+          if (!selectedTools.some(t => t.id === tId) && selectedTools.length < 3) {
+            selectedTools.push(FIFTEEN_DIVINATION_TOOLS[tId]);
+          }
         }
       }
-      if (pickedIds.length >= 3) break;
     }
   }
-
-  // 4순위: 그래도 선택된 도구가 없다면 질문 성격에 따라 기본 핵심 도구(사주·타로·주역 중 1~2개) 배정
-  if (pickedIds.length === 0) {
-    addTool('saju');
-    addTool('tarot');
-  }
-
-  const selectedTools = pickedIds.map((id) => FIFTEEN_DIVINATION_TOOLS[id]);
-  const toolNames = selectedTools.map((t) => `${t.koName}(${t.hanjaOrEng})`).join(' + ');
-
-  const activeThemeDescriptions = activeChannels.length > 0 && activeChannels.length < 7
-    ? activeChannels
-        .map((ch) => {
-          const cfg = THEME_PRIMARY_DIVINATION_TOOLS[ch];
-          return cfg ? `- [${cfg.themeKoName}]: ${cfg.fusionPhilosophy}` : '';
-        })
-        .filter(Boolean)
-        .join('\n')
-    : '';
-
-  const toolGuides = selectedTools
-    .map(
-      (t, idx) =>
-        `${idx + 1}. **${t.koName} (${t.hanjaOrEng})**:\n   - 핵심 관점: ${t.coreEssence}\n   - 쉬운 풀이 지침: ${t.easyLanguageGuide}`
-    )
-    .join('\n');
-
-  const userDigest = buildUserFifteenToolsDigest(profile);
-
-  const promptInjection = `[🌟 루시 15대 운명학 — 이번 질문 맞춤 핵심 도구 선별 & 융합 지침]
-[계산 신뢰성 규칙] 실제로 제공된 계산 결과만 구체적으로 해석해. 계산 결과가 없는 도구는 전통의 상징적 관점으로만 설명하고, 계산한 것처럼 명반·괘·궁위·별의 배치를 만들어내지 마. 점술 해석을 확정적인 미래 예측이나 건강·재정 판단의 근거로 제시하지 마.
-- 이번 질문에 자동 선별된 핵심 도구 (1~3개 집중 활용): **${toolNames}**
-${activeThemeDescriptions ? `\n[활성 테마 주력 도구 융합 원칙]\n${activeThemeDescriptions}\n` : ''}
-${userDigest}
-${buildDivinationCapabilityPrompt(selectedTools.map(tool => tool.id))}
-
-[선별된 도구별 맞춤 풀이 가이드]
-${toolGuides}
-
-[★ 15대 도구 활용 핵심 수칙 (반드시 준수)]
-1. 일반·단일·부분 융합 모드에서는 15가지 도구를 한꺼번에 나열하지 말고, 위에서 선별된 **${selectedTools.map((t) => t.koName).join(', ')}** (1~3개 핵심 도구)만 자연스럽게 융합해서 깊이 있고 명쾌하게 풀어줘.
-2. 어려운 한자나 생소한 전문 용어를 그대로 던지지 말고, 친구에게 이야기하듯 쉽고 직관적인 일상 비유와 **100% 다정한 반말 구어체**로 설명해줘.
-3. 만약 사용자의 질문이 단순한 일상 수다나 가벼운 안부라면 운명학 도구를 억지로 길게 설명하지 말고 친구처럼 편안하게 대화하고, 고민·선택·운세·마음·전략·창작·회고 상담일 때는 위 선별된 도구의 통찰을 빛나게 녹여내줘.`;
 
   return {
     selectedTools,
     isCasualMessage: false,
     isMasterMobilization: false,
-    selectionReason: `${toolNames} 맞춤 선별`,
-    promptInjection
+    selectionReason: `${routed.routePlan.intentKoName} (${routed.toolsForBadge.join(' + ')})`,
+    promptInjection: routed.promptInjection
   };
 }
 
