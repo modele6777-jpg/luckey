@@ -1,6 +1,6 @@
 import type { Response } from "express";
 
-export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
+export default async function handler(req: { method?: string; body?: unknown; query?: Record<string, unknown> }, res: Response) {
   try {
     // 정적 import 대신 지연 import를 쓰면, 의존 모듈 초기화 실패가 함수 전체의
     // FUNCTION_INVOCATION_FAILED(빈 500)로 변하지 않고 JSON 오류로 잡힙니다.
@@ -8,6 +8,31 @@ export default async function handler(req: { method?: string; body?: unknown }, 
     applyCors(res);
     if (req.method === "OPTIONS") {
       return res.status(200).end();
+    }
+    // 🔧 임시 진단 프로브 (배포 확인 후 제거 예정): GET ?probe=juhyeong-tts-probe
+    if (req.method === "GET" && req.query?.probe === "juhyeong-tts-probe") {
+      const probeText = String(req.query.text || "안녕하세요, 신경망 음성 진단 프로브입니다.");
+      const probeVoice = req.query.voice ? String(req.query.voice) : undefined;
+      const started = Date.now();
+      try {
+        const { synthesizeWithEdgeTTS } = await import("../../server/api-lib/edgeTts.ts");
+        const result = await synthesizeWithEdgeTTS(probeText, probeVoice);
+        return res.status(200).json({
+          probe: "ok",
+          provider: result.provider,
+          voice: result.voice,
+          audioBytes: Buffer.from(result.audioContent, "base64").length,
+          elapsedMs: Date.now() - started,
+        });
+      } catch (probeErr: unknown) {
+        return res.status(200).json({
+          probe: "failed",
+          error: probeErr instanceof Error ? probeErr.message : String(probeErr),
+          detail: String((probeErr as { detail?: string })?.detail || ""),
+          stack: String((probeErr as Error)?.stack || "").slice(0, 800),
+          elapsedMs: Date.now() - started,
+        });
+      }
     }
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Method not allowed" });
