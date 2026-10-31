@@ -46,8 +46,8 @@ export function BigBangLuckyBreeze({ settling }: BigBangLuckyBreezeProps) {
       const opacityMax = isForeground ? 0.95 : isBackground ? 0.55 : 0.85;
 
       const startX = (i * 23 + 7) % 100;
-      // 화면 하단부 및 중심부에서 넓게 피어나며 위로 솟구치도록 시작 Y 분포
-      const startY = 70 + (i * 17) % 35; // 70vh ~ 105vh
+      // 화면 상단 및 하늘에서 사뿐사뿐 흩날려 아래로 내려오도록 시작 Y 분포
+      const startY = -20 + ((i * 13) % 35); // -20vh ~ 15vh (화면 상단 및 상공)
 
       const duration = 2.8 + (i % 9) * 0.28;
       const delay = -((i % 16) * 0.22); // 음수 딜레이로 렌더링 즉시 화면 전체에 클로버가 흩날리는 상태 제공
@@ -116,9 +116,9 @@ export function BigBangLuckyBreeze({ settling }: BigBangLuckyBreezeProps) {
               reduced
                 ? { opacity: settling ? 0 : c.opacityMax * 0.6 }
                 : {
-                    // 자연스러운 바람 궤적: S자 곡선으로 좌우로 휘날리며 화면 상단(-115vh) 너머로 솟아오름
-                    x: [0, c.swayAmount * 0.6, -c.swayAmount * 0.4, c.swayAmount * 0.9],
-                    y: [0, -350, -700, -1100],
+                    // 자연스러운 바람 궤적: S자 곡선으로 좌우로 휘날리며 화면 아래(+115vh)로 부드럽게 낙하
+                    x: [0, c.swayAmount * 0.6, -c.swayAmount * 0.4, c.swayAmount * 0.8],
+                    y: [0, 350, 700, 1150],
                     opacity: [0, c.opacityMax, c.opacityMax * 0.9, 0],
                     scale: [c.scale * 0.75, c.scale * 1.05, c.scale, c.scale * 0.8],
                     rotate: [c.initialRotate, c.initialRotate + c.spinTotal * 0.5, c.initialRotate + c.spinTotal],
