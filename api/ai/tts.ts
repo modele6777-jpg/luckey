@@ -13,22 +13,16 @@ export default async function handler(req: { method?: string; body?: unknown; qu
     if (req.method === "GET" && req.query?.probe === "juhyeong-tts-probe") {
       const probeText = String(req.query.text || "안녕하세요, 신경망 음성 진단 프로브입니다.");
       const probeVoice = req.query.voice ? String(req.query.voice) : undefined;
+      const probeTimeout = Math.max(3000, Math.min(20000, Number(req.query.timeout) || 8000));
       const started = Date.now();
       try {
-        const { synthesizeWithEdgeTTS } = await import("../../server/api-lib/edgeTts.ts");
-        const result = await synthesizeWithEdgeTTS(probeText, probeVoice);
-        return res.status(200).json({
-          probe: "ok",
-          provider: result.provider,
-          voice: result.voice,
-          audioBytes: Buffer.from(result.audioContent, "base64").length,
-          elapsedMs: Date.now() - started,
-        });
+        const { probeEdgeNeuralOnce } = await import("../../server/api-lib/edgeTts.ts");
+        const result = await probeEdgeNeuralOnce(probeText, probeVoice, probeTimeout);
+        return res.status(200).json({ ...result, probe: result.ok ? "ok" : "failed" });
       } catch (probeErr: unknown) {
         return res.status(200).json({
           probe: "failed",
           error: probeErr instanceof Error ? probeErr.message : String(probeErr),
-          detail: String((probeErr as { detail?: string })?.detail || ""),
           stack: String((probeErr as Error)?.stack || "").slice(0, 800),
           elapsedMs: Date.now() - started,
         });
