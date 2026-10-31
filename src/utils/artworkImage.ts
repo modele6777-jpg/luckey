@@ -161,39 +161,82 @@ export function getArtworkImageBadgeInfo(
   };
 }
 
+/**
+ * ✨ 최종 안전망: Pollinations AI 명화 재현 URL을 즉시 합성합니다.
+ * 서버 API·원작 직링이 모두 실패해도 이 URL은 항상 그림을 만들어 냅니다.
+ */
+export function buildPollinationsArtworkUrl(art: ArtworkImageInput): string {
+  const prompt = encodeURIComponent(
+    `Masterpiece oil painting of "${art.title}" by ${art.creator}, ${art.era || ''}, fine art museum gallery quality`,
+  );
+  return `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=768&nologo=true&model=turbo`;
+}
+
+/** 위키미디어 썸네일 URL을 원본 풀 해상도 URL로 변환합니다. (항링크·리사이즈 제한 회피) */
+export function getWikimediaFullResUrl(url: string): string {
+  const match = url.match(
+    /^https?:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|[^/]+)\/thumb\/[0-9a-f]\/[0-9a-f]{2}\/([^/]+)\/[^/]+$/,
+  );
+  if (!match) return "";
+  return `https://upload.wikimedia.org/wikipedia/${match[1]}/${match[2]}`;
+}
+
+/** 위키미디어 파일을 Special:FilePath 리졸버로 안전하게 다시 요청하는 URL을 만듭니다. */
+export function getWikimediaFilePathUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!/(^|\.)wikimedia\.org$|(^|\.)wikipedia\.org$/i.test(parsed.hostname)) return "";
+    const filename = decodeURIComponent(parsed.pathname.split("/").pop() || "");
+    if (!filename) return "";
+    return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=1600`;
+  } catch (_) {
+    return "";
+  }
+}
+
 export function getSafeArtworkUrl(url?: string | null): string {
   if (!url) return "";
   const trimmed = url.trim();
   if (!trimmed || trimmed === "null" || trimmed === "undefined") return "";
   if (trimmed.startsWith("/") || trimmed.startsWith("data:") || trimmed.startsWith("blob:")) return trimmed;
-  if (isAiArtworkUrl(trimmed)) return trimmed;
-  // Proxy external museum / CDN archives (DailyArt, Wikimedia, Met, ArtIC) to bypass anti-hotlinking and CORS blocks
-  return `/api/muse/artwork-image/proxy?url=${encodeURIComponent(trimmed)}`;
+  // 원본 미술관/위키미디어 CDN 직링을 그대로 사용합니다.
+  // (서버리스 프록시 경로는 런타임 크래시와 첫 로드 실패의 원인이었으므로 더 이상 거치지 않습니다.)
+  return trimmed;
 }
 
 export async function resolveArtworkImage(
   art: ArtworkImageInput,
   options?: { forcePollinations?: boolean },
 ): Promise<ResolvedArtworkImage> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 65000);
-  let received = false;
+  // 절대로 throw하지 않습니다: 서버 API가 실패해도 즉시 AI 명화 재현 URL로 응답해
+  // "AI 명화 재현" 버튼이 항상 성공하도록 보장합니다.
+  const fallback: ResolvedArtworkImage = {
+    url: buildPollinationsArtworkUrl(art),
+    displayUrl: buildPollinationsArtworkUrl(art),
+    source: "pollinations",
+  };
   try {
-    const response = await fetch('/api/muse/artwork-image', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...art, ...options }), signal: controller.signal,
-    });
-    received = true;
-    let data: { url?: string; displayUrl?: string; source?: ArtworkImageSource; error?: string };
-    try { data = await response.json(); }
-    catch { throw new Error('작품 이미지 응답을 읽지 못했습니다. 다시 시도해 주세요.'); }
-    if (!response.ok || (!data.url && !data.displayUrl)) throw new Error(data.error || '작품 이미지를 불러오지 못했습니다. 다시 시도해 주세요.');
-    const url = data.url || '';
-    const displayUrl = data.displayUrl || url;
-    return { url, displayUrl, source: resolveArtworkSource(data.source, displayUrl || url) };
-  } catch (error) {
-    if (controller.signal.aborted) throw new Error('이미지 요청 시간이 초과되었습니다. 다시 시도해 주세요.');
-    if (!received) throw new Error('이미지 서버에 연결하지 못했습니다. 연결을 확인해 주세요.');
-    throw error;
-  } finally { clearTimeout(timer); }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    let received = false;
+    try {
+      const response = await fetch('/api/muse/artwork-image', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...art, ...options }), signal: controller.signal,
+      });
+      received = true;
+      let data: { url?: string; displayUrl?: string; source?: ArtworkImageSource; error?: string };
+      try { data = await response.json(); }
+      catch { return fallback; }
+      if (!response.ok || (!data.url && !data.displayUrl)) return fallback;
+      const url = data.url || '';
+      const displayUrl = data.displayUrl || url;
+      if (!displayUrl) return fallback;
+      return { url, displayUrl, source: resolveArtworkSource(data.source, displayUrl || url) };
+    } catch (error) {
+      return fallback;
+    } finally { clearTimeout(timer); }
+  } catch (_) {
+    return fallback;
+  }
 }

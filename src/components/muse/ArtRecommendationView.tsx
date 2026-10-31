@@ -34,7 +34,9 @@ import { MuseSongAppleMusicPlayer, ensureAppleMusicClassicalUrl } from "@/compon
 import { recordPrismFeature } from "@/lib/prismOmniSync";
 import {
   resolveArtworkImage,
-  getSafeArtworkUrl,
+  buildPollinationsArtworkUrl,
+  getWikimediaFullResUrl,
+  getWikimediaFilePathUrl,
   isAiArtworkUrl,
   isAiArtworkSource,
   resolveArtworkSource,
@@ -2518,16 +2520,28 @@ export function ArtRecommendationView() {
     if (!recommendation) return [];
     const list: string[] = [];
 
-    // 1. [★ 최우선 대원칙] 미술관 공식 소장본 원작 스캔 (프록시 + 원본 직링)
+    // 1. [★ 최우선 대원칙] 미술관 공식 소장본 원작 스캔 — 서버리스 프록시를 거치지 않는 직링 4단 계단식 폴백
     if (recommendation.imageUrl && !isAiArtworkUrl(recommendation.imageUrl)) {
-      list.push(getSafeArtworkUrl(recommendation.imageUrl));
-      list.push(encodeURI(recommendation.imageUrl));
+      const raw = recommendation.imageUrl.trim();
+      // 1순위: 원본 직링 (CDN 즉시 로드)
+      list.push(raw);
+      // 2순위: 인코딩된 원본 직링 (유니코드 파일명 대응)
+      list.push(encodeURI(raw));
+      // 3순위: 위키미디어 원본 풀 해상도 URL (썸네일 경로 제거)
+      const fullRes = getWikimediaFullResUrl(raw);
+      if (fullRes) list.push(fullRes);
+      // 4순위: 위키미디어 Special:FilePath 리졸버 (파일명으로 재요청)
+      const filePath = getWikimediaFilePathUrl(raw);
+      if (filePath) list.push(filePath);
     }
 
-    // 2. Saved/resolved nanobananaImage (if valid and not duplicate)
+    // 5. Saved/resolved nanobananaImage (if valid and not duplicate)
     if (nanobananaImage && nanobananaImage !== "null" && nanobananaImage !== "undefined") {
-      list.push(getSafeArtworkUrl(nanobananaImage));
+      list.push(nanobananaImage);
     }
+
+    // 6. [최종 안전망] AI 명화 재현 (Pollinations) — 원작을 불러올 수 없는 작품도 반드시 표시
+    list.push(buildPollinationsArtworkUrl(recommendation));
 
     return [...new Set(list.filter(Boolean))];
   }, [nanobananaImage, recommendation]);
@@ -2554,60 +2568,6 @@ export function ArtRecommendationView() {
     () => (recommendation?.famousPoem ? resolvePoemFullText(recommendation.famousPoem) : ""),
     [recommendation?.famousPoem],
   );
-
-  // 🎲 다른 명작 탐색하기 — 명화만 따로 도는 것이 아니라 그 명화에 어울리는
-  // 명시·명곡 세트가 유기적으로 함께 전환됩니다.
-  const handleExploreAnotherMasterpiece = useCallback(() => {
-    const currentTitle = recommendation?.title;
-    const currentCatalogId = recommendation?.catalogId;
-    const pool = ALL_ART_FALLBACKS.filter((art) => {
-      if (currentCatalogId && art.catalogId && art.catalogId === currentCatalogId) return false;
-      return art.title.toLowerCase() !== (currentTitle || "").toLowerCase();
-    });
-    const usablePool = pool.length > 0 ? pool : ALL_ART_FALLBACKS;
-    const picked = usablePool[Math.floor(Math.random() * usablePool.length)];
-    if (!picked) return;
-
-    const randomOffset = Math.floor(Math.random() * 100000);
-    const catalogEntry = picked.catalogId
-      ? MUSE_ART_CATALOG.find((entry) => entry.id === picked.catalogId)
-      : undefined;
-    const fallbackPair = getDailyPoemSongFallback(randomOffset);
-    const famousPoem = catalogEntry?.famousPoem || fallbackPair.famousPoem;
-    const famousSong = ensureAppleMusicClassicalUrl(catalogEntry?.famousSong || fallbackPair.famousSong);
-
-    const next: ArtRecommendation = {
-      ...picked,
-      sourceName: picked.sourceName || "세계 명작 미술관 아카이브",
-      challenges: picked.challenges?.length ? picked.challenges : [],
-      famousPoem,
-      famousSong,
-    };
-
-    setRecommendation(next);
-    setCompletedChallenges({});
-    touchArtCacheDate();
-    localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(next));
-    recordArtworkHistory(next);
-
-    try {
-      const today = getTodayDateKey();
-      void updateSharedState({
-        dailyArts: {
-          ...(sharedState?.dailyArts || {}),
-          [today]: {
-            recommendation: next,
-            moodLabel: currentMoodLabel,
-            userConcern: customConcern,
-            timestamp: Date.now(),
-          },
-        },
-        lastMuseDailySync: Date.now(),
-      }, 'MUSE');
-    } catch (_) {}
-
-    void generateNanobananaImage(next);
-  }, [currentMoodLabel, customConcern, generateNanobananaImage, recommendation, sharedState?.dailyArts, updateSharedState]);
 
 
   return (
@@ -3220,24 +3180,6 @@ export function ArtRecommendationView() {
                   <p className="text-sm md:text-base text-blue-400 font-sans font-bold flex items-center gap-1.5">
                     <Feather size={14} />
                     {recommendation.creator}
-                  </p>
-                </div>
-
-                {/* 🎲 다른 명작 탐색 — 하루 1점에 갇히지 않고 DailyArt 컬렉션의 다양한 명작을 넘겨보기
-                    (명화와 어울리는 명시·명곡 세트가 함께 유기적으로 전환됩니다) */}
-                <div className="flex flex-col items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={handleExploreAnotherMasterpiece}
-                    disabled={loadingImage}
-                    className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-indigo-400/40 text-indigo-100 text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer active:scale-95 transition-all shadow-lg disabled:opacity-50"
-                    title="다양한 명작을 넘겨보기 — 명시와 명곡도 함께 전환됩니다"
-                  >
-                    <Sparkles size={14} className="text-yellow-300 animate-pulse" />
-                    <span>🎲 다른 명작 탐색하기</span>
-                  </button>
-                  <p className="text-[10px] text-white/40 font-sans">
-                    명화와 어울리는 명시·명곡 세트가 함께 전환됩니다
                   </p>
                 </div>
 

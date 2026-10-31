@@ -309,41 +309,109 @@ export const stopTTS = () => {
 // 🔊 /api/ai/tts 장애 시에도 낭독이 끊기지 않도록 브라우저 내장 한국어 음성으로 우회합니다.
 let deviceSpeechSession: string | null = null;
 
+/**
+ * 🎙️ 기기에 설치된 한국어 보이스를 전수 검사해 가장 고화질인 보이스를 고릅니다.
+ * Siri(아이폰/Mac), Natural, Neural, Premium/Enhanced, Google 고음질 순으로 우선합니다.
+ */
+function pickBestKoreanDeviceVoice(synth: SpeechSynthesis): SpeechSynthesisVoice | null {
+  try {
+    const voices = synth.getVoices().filter(voice => /^ko/i.test(voice?.lang || ''));
+    if (!voices.length) return null;
+    const score = (voice: SpeechSynthesisVoice): number => {
+      const name = String(voice?.name || '');
+      let value = 0;
+      if (/natural/i.test(name)) value += 100;        // Microsoft Natural / iOS 17+ Natural
+      if (/neural/i.test(name)) value += 90;           // 신경망 보이스
+      if (/siri/i.test(name)) value += 85;             // Siri 보이스
+      if (/premium|enhanced|고품질|고화질/i.test(name)) value += 75; // Siri 다운로드 보이스 (Yuna 등)
+      if (/google/i.test(name)) value += 65;           // Google 고음질
+      if (voice?.localService) value += 12;            // 오프라인 내장 보이스 (네트워크 끊김 없음)
+      if (/^ko-KR$/i.test(String(voice?.lang || ''))) value += 6;
+      if (/yuna|suan|kangmi|seora|hyunsu|sunhi|injoon|gyeongmin|jimin/i.test(name)) value += 20; // 알려진 한국어 고화질 보이스
+      return value;
+    };
+    return voices.sort((a, b) => score(b) - score(a))[0] || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/** iOS 등에서는 getVoices()가 비동기로 채워지므로, 비어 있으면 짧게 기다립니다. */
+function waitForDeviceVoices(synth: SpeechSynthesis, waitMs = 600): Promise<SpeechSynthesisVoice[]> {
+  try {
+    const voices = synth.getVoices();
+    if (voices.length) return Promise.resolve(voices);
+  } catch (_) {}
+  return new Promise(resolve => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      try { synth.removeEventListener?.('voiceschanged', finish); } catch (_) {}
+      try { resolve(synth.getVoices()); } catch (_) { resolve([]); }
+    };
+    try { synth.addEventListener?.('voiceschanged', finish); } catch (_) {}
+    setTimeout(finish, waitMs);
+  });
+}
+
 function speakWithDeviceSpeech(text: string, session: string | undefined, isSequenceChunk: boolean, options?: TTSPlaybackOptions): boolean {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return false;
   try {
     const synth = window.speechSynthesis;
     if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return false;
     synth.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ko-KR';
-    try {
-      const korean = synth.getVoices().find(voice => /^ko/i.test(voice?.lang || ''));
-      if (korean) utterance.voice = korean;
-    } catch (_) {}
-    utterance.rate = 1.0;
-    utterance.onend = () => {
-      if (session && ttsState.activeSessionId !== session) return;
-      deviceSpeechSession = null;
-      if (!isSequenceChunk) {
-        stopTTS();
-        if (!options?.skipCompletionChime) {
-          try { playAiResultNotification(); } catch (_) {}
+
+    const sessionId = session || 'device';
+    const sentences = splitSpeechIntoSentences(text);
+    const units = sentences.length > 1 ? sentences : [text];
+
+    const speakUnit = (unit: string, voice: SpeechSynthesisVoice | null, index: number, isLast: boolean) => {
+      if (deviceSpeechSession !== sessionId || (session && ttsState.activeSessionId !== session)) return;
+      const utterance = new SpeechSynthesisUtterance(unit);
+      utterance.lang = 'ko-KR';
+      if (voice) utterance.voice = voice;
+      // 차분하고 지적인 도슨트/오라클 리딩 톤: 살짝 느린 속도 + 기본 피치로 정밀 조율.
+      utterance.rate = 0.97;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      utterance.onend = () => {
+        if (deviceSpeechSession !== sessionId || (session && ttsState.activeSessionId !== session)) return;
+        if (index < units.length - 1) {
+          // 끊김 없는 문장 단위 호흡: 다음 문장을 자연스러운 숨으로 이어낭독합니다.
+          updateTTSState({ isLoading: false, isSpeaking: true });
+          setTimeout(() => speakUnit(units[index + 1], voice, index + 1, isLast && index + 1 === units.length - 1), 140);
+        } else {
+          deviceSpeechSession = null;
+          if (!isSequenceChunk) {
+            stopTTS();
+            if (!options?.skipCompletionChime) {
+              try { playAiResultNotification(); } catch (_) {}
+            }
+          } else {
+            updateTTSState({ isSpeaking: false, isLoading: false });
+          }
         }
-      } else {
-        updateTTSState({ isSpeaking: false, isLoading: false });
-      }
+      };
+      utterance.onerror = () => {
+        if (deviceSpeechSession !== sessionId || (session && ttsState.activeSessionId !== session)) return;
+        deviceSpeechSession = null;
+        stopTTS();
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: '음성 재생이 중단되었습니다. 다시 눌러 주세요.' } }));
+      };
+      synth.speak(utterance);
     };
-    utterance.onerror = () => {
-      if (session && ttsState.activeSessionId !== session) return;
-      deviceSpeechSession = null;
-      stopTTS();
-      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: '음성 재생이 중단되었습니다. 다시 눌러 주세요.' } }));
-    };
-    deviceSpeechSession = session || 'device';
-    setTTSSessionActive(splitSpeechIntoSentences(text)[0] || text);
+
+    deviceSpeechSession = sessionId;
+    setTTSSessionActive(units[0] || text);
     updateTTSState({ isLoading: false, isSpeaking: true });
-    synth.speak(utterance);
+
+    // 보이스 목록이 비어 있으면(iOS 첫 호출) 짧게 기다린 뒤 최고 품질 보이스로 낭독합니다.
+    void waitForDeviceVoices(synth).then(voices => {
+      if (deviceSpeechSession !== sessionId) return;
+      const best = pickBestKoreanDeviceVoice({ getVoices: () => voices } as unknown as SpeechSynthesis);
+      speakUnit(units[0], best, 0, units.length === 1);
+    });
     return true;
   } catch (_) {
     deviceSpeechSession = null;

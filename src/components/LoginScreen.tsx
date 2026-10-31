@@ -111,8 +111,24 @@ export function LoginScreen() {
           </p>
         </div>
 
-        {/* Login button */}
+        {/* Login buttons — 모바일에서 구글 팝업/리다이렉트가 막혀도 1초 만에 들어올 수 있도록 원클릭 연동을 최상단에 배치 */}
         <div className="w-full flex flex-col gap-3.5">
+          <motion.button
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => { setLoading(true); try { signInAsDeveloper(); } finally { setLoading(false); } }}
+            disabled={loading}
+            className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, oklch(0.82 0.15 85), oklch(0.78 0.14 160))',
+              color: 'oklch(0.12 0.02 270)',
+              boxShadow: '0 10px 34px rgba(245, 185, 66, 0.35), inset 0 1px 1px rgba(255,255,255,0.35)',
+            }}
+          >
+            <span className="text-xl leading-none">🍀</span>
+            <span className="text-center leading-snug">박주형 님 원클릭 계정 연동<br className="sm:hidden" /><span className="hidden sm:inline"> </span>(Google 승인 불필요)</span>
+          </motion.button>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -143,24 +159,13 @@ export function LoginScreen() {
             ✨ 같은 Google 계정으로 로그인 시 PC와 모바일의 모든 정보가 실시간 자동 동기화됩니다.
           </p>
 
-          {/* Developer mode / Instant preview bypass button across all environments */}
-          <motion.button
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={signInAsDeveloper}
-            disabled={loading}
-            className="w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 border border-white/10 hover:border-white/20 text-white/80 hover:text-white transition-all bg-white/5 backdrop-blur-md hover:bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] cursor-pointer"
-          >
-            개발자/프리뷰 모드로 즉시 시작하기 (기기 자동 연동)
-          </motion.button>
-
           {/* 6-digit Device Pairing Option */}
           <div className="w-full">
             {!showPairingInput ? (
               <button
                 type="button"
                 onClick={() => setShowPairingInput(true)}
-                className="w-full py-2.5 rounded-xl text-xs font-semibold text-amber-300/80 hover:text-amber-200 border border-amber-500/20 hover:border-amber-500/40 bg-amber-500/5 hover:bg-amber-500/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-3 rounded-xl text-sm font-bold text-amber-300/90 hover:text-amber-200 border border-amber-500/25 hover:border-amber-500/45 bg-amber-500/5 hover:bg-amber-500/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <span>⚡ PC ⇄ 모바일 6자리 코드로 연동하기</span>
               </button>
@@ -206,6 +211,11 @@ export function LoginScreen() {
               </motion.div>
             )}
           </div>
+
+          <p className="text-[11px] text-center text-white/40 leading-relaxed">
+            📱 모바일에서 Google 로그인이 안 될 때는 위의 <b className="text-amber-300/90">🍀 원클릭 계정 연동</b>으로 들어오거나,<br />
+            PC에서 발급한 <b className="text-amber-300/90">6자리 연동 코드</b>로 PC 데이터를 그대로 가져올 수 있어요.
+          </p>
 
           {error && (
             <p className="text-center text-sm text-red-400 whitespace-pre-line">{error}</p>
