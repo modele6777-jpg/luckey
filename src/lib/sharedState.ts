@@ -133,8 +133,10 @@ function mergeSectionSafely<T extends any>(baseSection?: T, incomingSection?: T,
       res[k] = !bEmpty ? bVal : (!iEmpty ? iVal : (preferIncoming ? iVal : (bVal || iVal)));
       continue;
     }
+    // 🛡️ 핵심 무손실 보호: 기존(base)에 이미 유효한 데이터가 존재하는데 새로 들어온 값(incoming)이
+    // 비어있거나 placeholder인 경우, preferIncoming 설정과 무관하게 절대 빈 값으로 덮어쓰지 않고 기존 유효값을 보존합니다.
     if (!bEmpty && iEmpty) {
-      res[k] = preferIncoming ? iVal : bVal;
+      res[k] = bVal;
       continue;
     }
     if (bEmpty && !iEmpty) {

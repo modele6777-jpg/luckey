@@ -364,7 +364,7 @@ export default function EpilogueApp() {
   );
 
   const rawInitName = initialProfile?.basic?.name || '';
-  const initName = (rawInitName && rawInitName !== '여행자') ? rawInitName : '';
+  const initName = (rawInitName && rawInitName !== '여행자') ? rawInitName : '박주형';
   const rawInitNick = initialProfile?.basic?.nickname?.trim();
   const initNick = (rawInitNick && rawInitNick !== '여행자' && rawInitNick !== '사용자' && rawInitNick !== '박주형') ? rawInitNick : '제제';
 
@@ -502,7 +502,16 @@ export default function EpilogueApp() {
       if (!profile) return;
       if (profile.basic) {
         const cleanBasic = { ...profile.basic };
-        setBasic((b) => ({ ...b, ...cleanBasic, avatarUrl: getPermanentAvatar() || cleanBasic.avatarUrl || b.avatarUrl || '' }));
+        setBasic((b) => ({
+          name: cleanBasic.name?.trim() ? cleanBasic.name.trim() : b.name,
+          nickname: (cleanBasic.nickname?.trim() && cleanBasic.nickname !== '여행자' && cleanBasic.nickname !== '사용자' && cleanBasic.nickname !== '박주형') ? cleanBasic.nickname.trim() : b.nickname,
+          birthdate: cleanBasic.birthdate || b.birthdate,
+          birthtime: cleanBasic.birthtime !== undefined ? cleanBasic.birthtime : b.birthtime,
+          gender: cleanBasic.gender || b.gender,
+          birthCity: cleanBasic.birthCity || b.birthCity,
+          lunarSolar: cleanBasic.lunarSolar || b.lunarSolar,
+          avatarUrl: getPermanentAvatar() || cleanBasic.avatarUrl || b.avatarUrl || '',
+        }));
       }
       if (profile.fate) setFate((f) => ({ ...f, ...profile.fate }));
       if (profile.music) setMusic((m) => ({ ...m, ...profile.music }));

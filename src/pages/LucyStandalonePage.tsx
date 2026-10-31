@@ -1001,12 +1001,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     : '제제';
 
   // 👥 대화창 내 다자간 프로필 (최대 4인) 상태 관리
-  // 새로고침 또는 재진입 시에는 항상 '내 프로필' 1인만 나오도록 초기화됩니다.
-  const [activeProfiles, setActiveProfiles] = useState<ChatTargetProfile[]>(() => {
-    try {
-      sessionStorage.removeItem('lucy_chat_extra_profiles');
-    } catch (_) {}
+  // 🛡️ 영구 보존: 새로고침 또는 재진입 시에도 사용자가 설정한 다자간 프로필 및 본인 사주 정보가 절대 초기화되지 않도록 로컬스토리지에 영구 보존합니다.
+  const CHAT_PROFILES_STORAGE_KEY = 'lucy_chat_active_profiles_permanent';
 
+  const [activeProfiles, setActiveProfiles] = useState<ChatTargetProfile[]>(() => {
     const persistentBasic = getPersistentUserProfile()?.basic;
     const sharedBasic = sharedState?.userProfile?.basic;
     const basic = {
@@ -1015,17 +1013,46 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       birthtime: persistentBasic?.birthtime ?? sharedBasic?.birthtime,
       birthdate: persistentBasic?.birthdate || sharedBasic?.birthdate,
       lunarSolar: persistentBasic?.lunarSolar || sharedBasic?.lunarSolar,
+      gender: persistentBasic?.gender || sharedBasic?.gender,
+      birthCity: persistentBasic?.birthCity || sharedBasic?.birthCity,
     };
     // 🌟 사용자 요청: 프로필 추가/상담 창 및 독 칩에서는 닉네임 대신 본명(실명)으로 표시
     const rawRealName = basic?.name?.trim();
     const myRealName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
       ? rawRealName
       : (persistentBasic?.name?.trim() || '박주형');
+
+    // 1. 이전에 저장된 다자간 프로필 리스트가 있으면 최우선 복원
+    try {
+      const saved = safeLocalStorage.getItem(CHAT_PROFILES_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as ChatTargetProfile[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((p) => {
+            if (p.isMe || p.relationship === '본인') {
+              return {
+                ...p,
+                name: myRealName,
+                birthdate: basic?.birthdate || p.birthdate || '1994-01-24',
+                birthtime: basic?.birthtime ?? p.birthtime ?? '12:00',
+                gender: basic?.gender || p.gender || 'male',
+                birthCity: basic?.birthCity || p.birthCity || '서울',
+                lunarSolar: basic?.lunarSolar || p.lunarSolar || 'solar',
+                relationship: '본인',
+                isMe: true,
+              };
+            }
+            return p;
+          });
+        }
+      }
+    } catch (_) {}
+
     const myProfile: ChatTargetProfile = {
       id: 'my-profile',
       isMe: true,
       name: myRealName,
-      birthdate: basic?.birthdate || '1995-01-01',
+      birthdate: basic?.birthdate || '1994-01-24',
       birthtime: basic?.birthtime ?? '12:00',
       gender: basic?.gender || 'male',
       birthCity: basic?.birthCity || '서울',
@@ -1362,14 +1389,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
   }, [setPersonaMessages, userDisplayName, pro, chatScope]);
 
-  // 루시 채팅에서 벗어날 때(언마운트 시) 오늘 첫 방문 완료 처리 (인사말은 제거하지 않고 유지)
+  // 루시 채팅에서 벗어날 때(언마운트 시) 오늘 첫 방문 완료 처리 (인사말과 다자간 프로필은 영구 보존)
   useEffect(() => {
     return () => {
       markFirstLucyVisitCompletedToday(chatScope);
-      hasUserCustomizedProfilesRef.current = false;
-      try {
-        sessionStorage.removeItem('lucy_chat_extra_profiles');
-      } catch (_) {}
+      // 🛡️ 다자간 프로필 영구 보존: 세션/로컬 삭제 금지
     };
   }, []);
 
@@ -1411,7 +1435,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         ) {
           return prev;
         }
-        return prev.map((p) =>
+        const next = prev.map((p) =>
           p.isMe
             ? {
                 ...p,
@@ -1424,6 +1448,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               }
             : p
         );
+        try {
+          safeLocalStorage.setItem(CHAT_PROFILES_STORAGE_KEY, JSON.stringify(next));
+        } catch (_) {}
+        return next;
       });
     }
   }, [sharedState?.userProfile?.basic]);
@@ -1523,6 +1551,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       }
 
       setCurrentPrompts(getCuratedPrompts(updated, selectedMode, activeChannels));
+      try {
+        safeLocalStorage.setItem(CHAT_PROFILES_STORAGE_KEY, JSON.stringify(updated));
+      } catch (_) {}
       return updated;
     });
   }, [selectedMode, activeChannels]);
@@ -1560,6 +1591,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         setActiveProfileId(remaining[0].id);
       }
       setCurrentPrompts(getCuratedPrompts(remaining, selectedMode, activeChannels));
+      try {
+        safeLocalStorage.setItem(CHAT_PROFILES_STORAGE_KEY, JSON.stringify(remaining));
+      } catch (_) {}
       return remaining;
     });
   }, [selectedMode, activeChannels, activeProfileId]);
@@ -3445,6 +3479,26 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     e.preventDefault();
                     handleSend();
                   }
+                }}
+                onFocus={() => {
+                  window.scrollTo(0, 0);
+                  document.documentElement.scrollTop = 0;
+                  document.body.scrollTop = 0;
+                  setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    scrollToBottom(false, false);
+                  }, 50);
+                }}
+                onBlur={() => {
+                  window.scrollTo(0, 0);
+                  document.documentElement.scrollTop = 0;
+                  document.body.scrollTop = 0;
+                  setTimeout(() => {
+                    window.scrollTo(0, 0);
+                  }, 50);
+                  setTimeout(() => {
+                    window.scrollTo(0, 0);
+                  }, 180);
                 }}
                 placeholder={
                   isLucyGenerating

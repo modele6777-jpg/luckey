@@ -183,7 +183,15 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
       if (!profile) return;
       if (profile.basic) {
         const cleanBasic = { ...profile.basic };
-        setBasic((b) => ({ ...b, ...cleanBasic }));
+        setBasic((b) => ({
+          name: cleanBasic.name?.trim() ? cleanBasic.name.trim() : b.name,
+          nickname: (cleanBasic.nickname?.trim() && cleanBasic.nickname !== '여행자' && cleanBasic.nickname !== '사용자' && cleanBasic.nickname !== '박주형') ? cleanBasic.nickname.trim() : b.nickname,
+          birthdate: cleanBasic.birthdate || b.birthdate,
+          birthtime: cleanBasic.birthtime !== undefined ? cleanBasic.birthtime : b.birthtime,
+          gender: cleanBasic.gender || b.gender,
+          birthCity: cleanBasic.birthCity || b.birthCity,
+          lunarSolar: cleanBasic.lunarSolar || b.lunarSolar,
+        }));
       }
       if (profile.fate) setFate((f) => ({ ...f, ...profile.fate }));
       if (profile.music) setMusic((m) => ({ ...m, ...profile.music }));

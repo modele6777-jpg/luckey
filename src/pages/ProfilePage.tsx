@@ -169,9 +169,13 @@ export default function ProfilePage() {
       if (profile.basic) {
         const cleanBasic = { ...profile.basic };
         setBasic(b => ({
-          ...b,
-          ...cleanBasic,
-          // 🛡️ 프로필 사진 보호: 새로 들어온 basic에 avatarUrl이 비어있으면 현재 사진 또는 영구 금고 사진 유지
+          name: cleanBasic.name?.trim() ? cleanBasic.name.trim() : b.name,
+          nickname: (cleanBasic.nickname?.trim() && cleanBasic.nickname !== '여행자' && cleanBasic.nickname !== '사용자' && cleanBasic.nickname !== '박주형') ? cleanBasic.nickname.trim() : b.nickname,
+          birthdate: cleanBasic.birthdate || b.birthdate,
+          birthtime: cleanBasic.birthtime !== undefined ? cleanBasic.birthtime : b.birthtime,
+          gender: cleanBasic.gender || b.gender,
+          birthCity: cleanBasic.birthCity || b.birthCity,
+          lunarSolar: cleanBasic.lunarSolar || b.lunarSolar,
           avatarUrl: getPermanentAvatar() || cleanBasic.avatarUrl || b.avatarUrl || '',
         }));
       }

@@ -61,13 +61,14 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
         effectiveName = persistentProfile?.name?.trim() || '박주형';
       }
       setName(effectiveName);
-      setBirthdate(initialProfile.birthdate || '1996-01-01');
-      setLunarSolar(initialProfile.lunarSolar || 'solar');
+      setBirthdate(initialProfile.birthdate || (isSelf ? persistentProfile?.birthdate : '') || '1994-01-24');
+      setLunarSolar(initialProfile.lunarSolar || (isSelf ? persistentProfile?.lunarSolar : undefined) || 'solar');
       setIsLeapMonth(Boolean(initialProfile.isLeapMonth));
-      setBirthtime(initialProfile.birthtime || '');
-      setIsTimeUnknown(!initialProfile.birthtime);
-      setGender(initialProfile.gender || 'female');
-      setBirthCity(initialProfile.birthCity || '서울');
+      const effectiveBirthtime = initialProfile.birthtime !== undefined ? initialProfile.birthtime : (isSelf ? (persistentProfile?.birthtime ?? '12:00') : '12:00');
+      setBirthtime(effectiveBirthtime || '');
+      setIsTimeUnknown(!effectiveBirthtime);
+      setGender(initialProfile.gender || (isSelf ? persistentProfile?.gender : undefined) || (isSelf ? 'male' : 'female'));
+      setBirthCity(initialProfile.birthCity || (isSelf ? persistentProfile?.birthCity : undefined) || '서울');
       
       // 👥 기존 프로필 수정 시: 1명만 남은 경우 무조건 '본인'으로 강제
       let defaultRel = initialProfile.relationship || (initialProfile.isMe ? '본인' : '연인');
@@ -84,20 +85,22 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
       if (isSelf) {
         setName(persistentProfile?.name?.trim() || userRealName || '박주형');
         setRelationship('본인');
-        setBirthdate('1995-01-01');
-        setBirthtime('12:00');
-        setGender('male');
+        setBirthdate(persistentProfile?.birthdate || '1994-01-24');
+        setBirthtime(persistentProfile?.birthtime ?? '12:00');
+        setGender(persistentProfile?.gender || 'male');
+        setBirthCity(persistentProfile?.birthCity || '서울');
+        setLunarSolar(persistentProfile?.lunarSolar || 'solar');
       } else {
         setName('');
         setRelationship('연인');
         setBirthdate('1996-05-15');
         setBirthtime('12:00');
         setGender('female');
+        setBirthCity('서울');
+        setLunarSolar('solar');
       }
-      setLunarSolar('solar');
       setIsLeapMonth(false);
       setIsTimeUnknown(false);
-      setBirthCity('서울');
     }
     setErrorMessage(null);
   }, [initialProfile, isOpen, totalProfilesCount, hasExistingSelf, isOnlyOneProfile, userRealName]);
