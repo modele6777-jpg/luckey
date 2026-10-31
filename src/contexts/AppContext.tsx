@@ -1750,7 +1750,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;
     const pushChatThreadsToFirestore = isProConversation ? (_messages: UnifiedMessage[], _immediate?: boolean) => {} : regularRuntimeRef.current.pushChatThreadsToFirestore;
     const updateSharedState = isProConversation ? async (_state: Partial<SharedState>, _source: string) => {} : regularRuntimeRef.current.updateSharedState;
-    const isLucyPlus = Boolean((options as any)?.isLucyPlus);
+    const isLucyPlus = Boolean(
+      (options as any)?.isLucyPlus ||
+      options?.mode === 'master' ||
+      safeLocalStorage.getItem('lucy_plus_active') === 'true' ||
+      safeSessionStorage.getItem('lucy_plus_active') === 'true'
+    );
+
+    if (isLucyPlus) {
+      // 👑 Lucy + 마스터 모드 절대 고정: 수다 모드로 이탈하지 않고 15대 운명학 도구 전원 총동원 유지
+      options = {
+        ...options,
+        isLucyPlus: true,
+        mode: 'master',
+        channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'],
+      };
+    }
+
     const isRegularLucyRoute = !isProConversation && !isLucyPlus && (options?.conversationId === 'lucy' || (typeof window !== 'undefined' && ['/', '/chat', '/lucy'].includes(window.location.pathname)));
     if (isRegularLucyRoute && (options?.mode === 'master' || options?.mode === 'all' || options?.channel === 'master' || options?.channel === 'all' || (options?.channels?.length || 0) >= 7 || /올인원 마스터|7대 채널.*마스터|15대 운명학 마스터/.test([options?.extraSystemContext, options?.systemSuffix].filter(Boolean).join('\n')))) {
       const channels = resolveLucyPageChannels((options?.channels || []) as Parameters<typeof resolveLucyPageChannels>[0], false);
@@ -1922,14 +1938,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
       options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
-    const isMasterCall = options?.mode === 'master' || activeThemeList.length === 7;
+    const isMasterCall = isLucyPlus || options?.mode === 'master' || activeThemeList.length === 7;
     const isCasualMode =
-      options?.mode === 'casual' ||
-      (!options?.mode && responseLength === 'short' && activeThemeList.length === 0);
+      !isMasterCall && (
+        options?.mode === 'casual' ||
+        (!options?.mode && responseLength === 'short' && activeThemeList.length === 0)
+      );
     const toolSelection = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, activeThemeList, profile, isMasterCall, { allowMaster: !isRegularLucyRoute })
+      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall || !isRegularLucyRoute })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
     const toolsIncludedInPrompt = isCasualMode
       ? []
@@ -1939,6 +1957,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ? options?.usedTools || []
       : [];
     const isFastCasualPath =
+      !isMasterCall &&
       sourcePersona === 'lucy' &&
       responseLength === 'short' &&
       toolSelection.isCasualMessage &&
