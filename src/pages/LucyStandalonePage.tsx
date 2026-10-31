@@ -3075,6 +3075,26 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <>
                       <VisualFortuneChartWidget
                         profile={counselingUserProfile || sharedState?.userProfile}
+                        secondaryProfile={
+                          activeProfiles.length > 1
+                            ? (() => {
+                                const other = activeProfiles.find((p) => p.id !== activeProfileId) || activeProfiles[1];
+                                return other
+                                  ? {
+                                      basic: {
+                                        name: other.name,
+                                        birthdate: other.birthdate,
+                                        birthtime: other.birthtime,
+                                        gender: other.gender,
+                                        birthCity: other.birthCity,
+                                        lunarSolar: other.lunarSolar,
+                                        isLeapMonth: other.isLeapMonth,
+                                      },
+                                    }
+                                  : null;
+                              })()
+                            : null
+                        }
                         usedTools={Array.isArray(msg.usedTools) ? msg.usedTools : []}
                         isLight={isLight}
                       />
