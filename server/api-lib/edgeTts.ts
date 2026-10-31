@@ -453,6 +453,7 @@ async function synthesizeChunk(chunk: string, voice: string, lang: string): Prom
 }
 
 /**
+<<<<<<< HEAD
  * 🔧 진단용: 버전 후보 여러 개를 한 번에 대보고 각각의 응답을 요약합니다. (프로브 전용)
  */
 export async function probeEdgeNeuralVariants(
@@ -486,6 +487,28 @@ export async function probeEdgeNeuralVariants(
     }
   }
   return results;
+=======
+ * 🔧 진단용: 신경망 합성 1회만 단독 실행해 어느 단계에서 막히는지 확인합니다. (프로브 전용)
+ */
+export async function probeEdgeNeuralOnce(
+  speech: string,
+  voice?: string,
+  timeoutMs = 8000,
+): Promise<{ ok: boolean; bytes?: number; stage: string; error?: string; elapsedMs: number }> {
+  const started = Date.now();
+  const resolved = resolveEdgeTtsVoice(voice);
+  try {
+    const audio = await synthesizeChunkWithEdgeNeural(String(speech || '진단'), resolved.voice, resolved.lang, timeoutMs);
+    return { ok: audio.length > 2 && audio[0] === 0xff, bytes: audio.length, stage: 'synthesized', elapsedMs: Date.now() - started };
+  } catch (error) {
+    return {
+      ok: false,
+      stage: 'single-attempt',
+      error: error instanceof Error ? error.message : String(error),
+      elapsedMs: Date.now() - started,
+    };
+  }
+>>>>>>> origin/main
 }
 
 /** 신경망 TTS로 mp3 음성을 합성합니다. 실패 시 예외를 던지므로 호출부가 적절히 안내할 수 있습니다. */

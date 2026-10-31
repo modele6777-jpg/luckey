@@ -12,11 +12,21 @@ export default async function handler(req: { method?: string; body?: unknown; qu
     // 🔧 임시 진단 프로브 (배포 확인 후 제거 예정): GET ?probe=juhyeong-tts-probe
     if (req.method === "GET" && req.query?.probe === "juhyeong-tts-probe") {
       const probeText = String(req.query.text || "안녕하세요, 신경망 음성 진단 프로브입니다.");
+<<<<<<< HEAD
       const probeTimeout = Math.max(3000, Math.min(20000, Number(req.query.timeout) || 6000));
       try {
         const { probeEdgeNeuralVariants } = await import("../../server/api-lib/edgeTts.ts");
         const variants = await probeEdgeNeuralVariants(probeText, probeTimeout);
         return res.status(200).json({ probe: "done", variants });
+=======
+      const probeVoice = req.query.voice ? String(req.query.voice) : undefined;
+      const probeTimeout = Math.max(3000, Math.min(20000, Number(req.query.timeout) || 8000));
+      const started = Date.now();
+      try {
+        const { probeEdgeNeuralOnce } = await import("../../server/api-lib/edgeTts.ts");
+        const result = await probeEdgeNeuralOnce(probeText, probeVoice, probeTimeout);
+        return res.status(200).json({ ...result, probe: result.ok ? "ok" : "failed" });
+>>>>>>> origin/main
       } catch (probeErr: unknown) {
         return res.status(200).json({
           probe: "failed",
