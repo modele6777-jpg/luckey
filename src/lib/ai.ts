@@ -54,17 +54,26 @@ const resolvedPrimaryGeminiModel =
   !rawEnvModel ||
   rawEnvModel === "gemini-4-argon" ||
   rawEnvModel === "gemini-3.8-flash" ||
-  rawEnvModel === "gemini-3.7-flash"
-    ? "gemini-3.1-flash-lite"
+  rawEnvModel === "gemini-3.7-flash" ||
+  rawEnvModel === "gemini-3.1-flash-lite"
+    ? "gemini-flash-lite-latest"
     : rawEnvModel;
 
 export const modelName = aiType === "grok" ? "grok-4.3" : resolvedPrimaryGeminiModel;
 
-/** 루시 채팅 전용 초고속 모델 (TTFT ~0.8s). 유료 전용/지연 모델(argon, 3.8-flash) 선행 호출로 인한 15~45초 무응답 원천 차단 */
-export const LUCY_CHAT_MODEL = "gemini-3.1-flash-lite";
+/** 루시 채팅 전용 초고속 모델 (TTFT ~0.8s). 구글 서버 503 일시 장애 모델 배제 및 활성 모델 우선 */
+export const LUCY_CHAT_MODEL = "gemini-flash-lite-latest";
 
 /** 주력 모델 일시 지연 시 자동 폴백 순서 */
-export const LUCY_CHAT_FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-flash-latest"];
+export const LUCY_CHAT_FALLBACK_MODELS = [
+  "gemini-3.5-flash-lite",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-flash-lite-latest",
+  "gemini-3.1-flash-lite",
+  "gemini-3.8-flash",
+  "gemini-flash-latest"
+];
 
 const clientModelCooldownMap = new Map<string, number>();
 
