@@ -1,4 +1,5 @@
-import { getSitesAIConfig, describeOpenAIFailure } from '../scripts/sites-ai-provider.mjs';
+import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
+import { synthesizeWithEdgeTTS } from './api-lib/edgeTts';
 import { stripInternalSpeechDirectives } from '../src/utils/speechText';
 import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm';
 import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog';
@@ -34,19 +35,6 @@ export function bytesToBase64(bytes: Uint8Array): string {
   let binary = '';
   for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
   return btoa(binary);
-}
-
-export function pcmToWav(base64: string, sampleRate: number): Uint8Array {
-  const pcm = Uint8Array.from(atob(base64), char => char.charCodeAt(0));
-  if (!pcm.length || pcm.length % 2 || !Number.isFinite(sampleRate) || sampleRate < 8000 || sampleRate > 96000) throw new ApiError(502, '음성 데이터를 확인하지 못했습니다.');
-  const wav = new Uint8Array(44 + pcm.length);
-  const view = new DataView(wav.buffer);
-  for (const [offset, word] of [[0, 'RIFF'], [8, 'WAVE'], [12, 'fmt '], [36, 'data']] as const) for (let i = 0; i < word.length; i++) wav[offset + i] = word.charCodeAt(i);
-  view.setUint32(4, 36 + pcm.length, true); view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true); view.setUint16(34, 16, true); view.setUint32(40, pcm.length, true);
-  wav.set(pcm, 44); return wav;
 }
 
 async function chat(request: Request, env: Runtime, fetchApi: Fetcher, messages: any[], structured = false, maxTokens = 4096) {
@@ -179,7 +167,8 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
   const method = route === '/api/health' || route.endsWith('/proxy') ? 'GET' : 'POST';
   if (request.method !== method) return Response.json({ error: `${method} 요청을 사용해 주세요.` }, { status: 405, headers: { Allow: method, 'Cache-Control': 'no-store' } });
   try {
-    if (route === '/api/health') return json({ status: 'ok', aiConfigured: Boolean(getSitesAIConfig(env).key), provider: getSitesAIConfig(env).provider, speechConfigured: Boolean(getSitesAIConfig(env).key), runtime: 'sites' });
+    // TTS는 무료·무제한 Edge TTS로 전면 교체되어 API 키가 전혀 필요 없습니다.
+    if (route === '/api/health') return json({ status: 'ok', aiConfigured: Boolean(getSitesAIConfig(env).key), provider: getSitesAIConfig(env).provider, speechConfigured: true, speechProvider: 'edge', runtime: 'sites' });
     if (route.endsWith('/proxy')) return await proxyImage(request, fetchApi);
     const limit = 8 * 1024 * 1024;
     if (Number(request.headers.get('Content-Length')) > limit) throw new ApiError(413, '요청이 너무 큽니다.');
@@ -206,76 +195,16 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     }
     if (route === '/api/ai/tts') {
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
-      const voice = ['Kore', 'Aoede', 'Puck', 'Charon', 'Fenrir', 'Leda', 'Zephyr'].includes(body.voice) ? body.voice : 'Kore';
-      const config = getSitesAIConfig(env);
-      if (!config.key) throw new ApiError(503, 'AI 음성 API 키가 설정되지 않았습니다.', undefined, 'TTS_NOT_CONFIGURED');
-      if (config.provider === 'openai') {
-        if (!config.key) throw new ApiError(503, 'OpenAI API 키가 설정되지 않았습니다.');
-        const male = voice === 'Charon';
-        const openaiVoice = male ? 'cedar' : 'marin';
-        let audio: Response;
-        try {
-          audio = await fetchApi('https://api.openai.com/v1/audio/speech', {
-            method: 'POST', headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: env.OPENAI_TTS_MODEL || 'gpt-4o-mini-tts', voice: openaiVoice, input: speech, response_format: 'mp3', instructions: 'Read the input text exactly as written in natural, warm Korean. Do not add explanations, answer questions, or read these instructions aloud.' }),
-            signal: AbortSignal.any([request.signal, AbortSignal.timeout(60000)]),
-          });
-        } catch { throw new ApiError(504, 'OpenAI 음성 생성 연결이 중단되었습니다. 다시 눌러 주세요.'); }
-        if (!audio.ok) {
-          let failure: any = null;
-          try { failure = await audio.json(); } catch (_) {}
-          const diagnosis = describeOpenAIFailure(audio, failure);
-          const details = { providerCode: diagnosis.code, ...(diagnosis.kind ? { limitKind: diagnosis.kind } : {}), ...(diagnosis.limit !== undefined ? { limit: diagnosis.limit } : {}) };
-          if (audio.status === 429 && (diagnosis.quota || diagnosis.zeroLimit)) throw new ApiError(429, 'OpenAI API 잔액 또는 프로젝트 사용 한도를 확인해 주세요.', undefined, 'MEDIA_QUOTA_EXHAUSTED', details);
-          if (audio.status === 429) throw new ApiError(429, 'OpenAI 음성 요청이 일시적으로 제한됐습니다. 잠시 후 다시 눌러 주세요.', diagnosis.retryAfterSeconds, 'MEDIA_RATE_LIMIT', details);
-          if ([401, 403].includes(audio.status)) throw new ApiError(audio.status, 'OpenAI 키의 음성 생성 권한을 확인해 주세요.');
-          if ([400, 404].includes(audio.status)) throw new ApiError(audio.status, 'OpenAI 음성 모델 또는 요청 설정을 확인해 주세요.');
-          throw new ApiError(502, 'OpenAI 음성 생성에 일시적인 오류가 발생했습니다.');
-        }
-        const bytes = new Uint8Array(await audio.arrayBuffer());
-        if (bytes.length < 4) throw new ApiError(502, 'OpenAI 음성 응답이 비어 있습니다.');
-        return json({ audioContent: bytesToBase64(bytes), encoding: 'mp3', sampleRate: 24000, voice, provider: 'openai' });
+      // 🔊 무료·무제한 Edge TTS 전면 교체: 유료 OpenAI/Gemini 키나 쿼터 없이
+      // 모든 낭독(오디오 도슨트, 타로·사주 리딩, 명시, Calm 가이드 등)이 항상 재생됩니다.
+      try {
+        const edge = await synthesizeWithEdgeTTS(speech, body.voice);
+        return json(edge);
+      } catch (edgeError) {
+        if (request.signal.aborted) throw new ApiError(504, '음성 생성 요청이 취소되었습니다. 다시 눌러 주세요.');
+        console.error('[tts] Edge TTS synthesis failed:', edgeError);
+        throw new ApiError(502, '음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.');
       }
-      const candidateModels = Array.from(new Set([
-        env.GEMINI_TTS_MODEL,
-        'gemini-3.8-flash-lite-tts',
-        'gemini-3.1-flash-tts-preview',
-        'gemini-3.8-flash-tts',
-      ].filter(Boolean))) as string[];
-      let media: any;
-      let lastErr: any;
-      for (const model of candidateModels) {
-        try {
-          media = await generateMedia(request, env, fetchApi, model, {
-            // Pass only the utterance: instructions in the text part can themselves be spoken.
-            contents: [{ parts: [{ text: speech }] }],
-            generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
-          });
-          if (media) break;
-        } catch (err: any) {
-          lastErr = err;
-          // If transient short rate-limit with small Retry-After (<= 60s), do not burn candidate quota
-          if (err?.retryAfterSeconds && err.retryAfterSeconds <= 60 && err?.code === 'MEDIA_RATE_LIMIT') {
-            throw err;
-          }
-          // Otherwise (daily quota exhaustion, long wait, model 404/503), try next available TTS model
-          continue;
-        }
-      }
-      if (!media) throw lastErr || new ApiError(502, '미디어를 생성하지 못했습니다.');
-      if (/^audio\/(?:x-)?wav(?:;|$)/i.test(media.mimeType)) {
-        const wav = Uint8Array.from(atob(media.data), char => char.charCodeAt(0));
-        const signature = (offset: number, length: number) => String.fromCharCode(...wav.subarray(offset, offset + length));
-        if (wav.length < 44 || signature(0, 4) !== 'RIFF' || signature(8, 4) !== 'WAVE') throw new ApiError(502, 'WAV 음성 데이터를 확인하지 못했습니다.');
-        const view = new DataView(wav.buffer);
-        const sampleRate = view.getUint32(24, true);
-        if (sampleRate < 8000 || sampleRate > 96000) throw new ApiError(502, '음성 샘플 주파수를 확인하지 못했습니다.');
-        // Newer TTS models already return a WAV container; never wrap its header as PCM.
-        return json({ audioContent: media.data, encoding: 'wav', sampleRate, voice });
-      }
-      if (!/^audio\/(L16|pcm)/i.test(media.mimeType)) throw new ApiError(502, '음성 형식을 확인하지 못했습니다.');
-      const sampleRate = Number(/rate=(\d+)/i.exec(media.mimeType)?.[1] || 24000);
-      return json({ audioContent: bytesToBase64(pcmToWav(media.data, sampleRate)), encoding: 'wav', sampleRate, voice });
     }
     if (route === '/api/ai/image') return json({ imageUrl: await makeImage(request, env, fetchApi, required(body.prompt, '이미지 설명', 8000), body.aspectRatio) });
     if (route === '/api/muse/artwork-image') {
