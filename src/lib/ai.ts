@@ -480,43 +480,21 @@ export async function invokeLLM(params: {
 }
 
 export async function textToSpeech(text: string, _voice: string = 'Kore') {
-  const selectedVoice = 'Kore';
-  const voiceInstruction = `Read the following Korean text aloud with a warm, gentle, clear female voice (여성 목소리) without adding any commentary:\n\n${text}`;
-
-  if (genAI) {
-    try {
-      const response = await genAI.models.generateContent({
-        model: "gemini-3.1-flash-tts-preview",
-        contents: [{ parts: [{ text: voiceInstruction }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: selectedVoice },
-            },
-          },
-        },
-      }) as any;
-
-      const audioData = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData?.mimeType?.startsWith('audio/'))?.inlineData?.data;
-      if (audioData) return audioData;
-    } catch (error) {
-      console.warn("[textToSpeech] Direct Gemini AI Studio TTS failed, falling back to server endpoint:", error);
-    }
-  }
-
+  // 🔊 무료·무제한 Edge TTS 전면 교체: 서버(/api/ai/tts)가 ko-KR-SunHiNeural 등
+  // 무료 신경망 음성으로 항상 응답합니다. 유료 Gemini/OpenAI TTS는 사용하지 않습니다.
   try {
     const res = await fetch(`${getApiBaseUrl()}/api/ai/tts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice: selectedVoice }),
+      body: JSON.stringify({ text, voice: 'Kore' }),
     });
     if (res.ok) {
       const data = await res.json();
       return data.audioContent || "";
     }
+    console.error("[textToSpeech] Edge TTS server request failed:", res.status);
   } catch (serverErr) {
-    console.error("[textToSpeech] Server TTS fallback failed:", serverErr);
+    console.error("[textToSpeech] Edge TTS server request failed:", serverErr);
   }
   return "";
 }

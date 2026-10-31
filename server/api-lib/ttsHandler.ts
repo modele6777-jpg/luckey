@@ -1,4 +1,5 @@
-import { handleSitesApi } from "../sites-api.ts";
+import { synthesizeWithEdgeTTS } from './edgeTts.ts';
+import { stripInternalSpeechDirectives } from '../../src/utils/speechText';
 
 export interface TTSHandlerOptions {
   text: string;
@@ -13,21 +14,22 @@ export interface TTSHandlerResult {
   audioContent: string;
   encoding: "mp3" | "pcm" | "wav";
   sampleRate?: number;
+  voice?: string;
+  provider?: string;
 }
 
-/** All runtimes use the same generative speech policy. Never substitute browser,
- * translation or standard synthetic speech when AI generation is unavailable. */
+/**
+ * 🔊 무료·무제한 Edge TTS 전면 교체 (ko-KR-SunHiNeural / ko-KR-InJoonNeural).
+ * 유료 OpenAI·Gemini 키나 쿼터와 완전히 무관하게, 모든 TTS 요청
+ * (오디오 도슨트, 타로 리딩, 사주 리딩, 명시 낭독, Calm 가이드 등)이
+ * 항상 무료 mp3 음성으로 낭독됩니다. 유료 API 폴백은 사용하지 않습니다.
+ */
 export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerResult> {
-  const request = new Request("https://luckey.internal/api/ai/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...options, voice: options.voice === "Charon" || /InJoon|GuyNeural/.test(options.voice || "") ? "Charon" : "Aoede" }),
-  });
-  const response = await handleSitesApi(request, { ...process.env, GEMINI_API_KEY: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.AI_API_KEY });
-  if (!response) throw new Error("AI 음성 요청을 처리하지 못했습니다.");
-  const data = await response.json();
-  if (!response.ok) throw Object.assign(new Error(data.error || "AI 자연 음성을 생성하지 못했습니다."), {
-    status: response.status, code: data.code, retryAfterSeconds: data.retryAfterSeconds,
-  });
-  return data as TTSHandlerResult;
+  const speech = stripInternalSpeechDirectives(String(options.text || '')).trim();
+  try {
+    return await synthesizeWithEdgeTTS(speech, options.voice);
+  } catch (error) {
+    console.error('[tts] Edge TTS synthesis failed:', error);
+    throw Object.assign(new Error('음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.'), { status: 502 });
+  }
 }
