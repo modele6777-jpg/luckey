@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ChevronDown, ChevronUp, Compass, Flame, Shield, Star, Activity, Eye } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Compass, Flame, Shield, Star, Activity, Eye, Music, Bell, Key, Check } from 'lucide-react';
 import { calculateDetailedSaju, type SajuAnalysisResult, type FiveElement } from '@/lib/sajuAnalysis';
 import { calculateNatalChart, type NatalChartResult } from '@/lib/astrologyAnalysis';
 import { calculateZiwei } from '@/lib/divination/birthCharts';
+import { playAudioHaptic } from '@/lib/audioHaptics';
+import { useLocation } from 'wouter';
 import type { UserProfile } from '@/lib/sharedState';
 
 interface VisualFortuneChartWidgetProps {
@@ -20,6 +22,17 @@ export function VisualFortuneChartWidget({
   className = '',
 }: VisualFortuneChartWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isRinging, setIsRinging] = useState(false);
+  const [, navigate] = useLocation();
+
+  const handlePlayBowl = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      playAudioHaptic('meditation_bell');
+      setIsRinging(true);
+      setTimeout(() => setIsRinging(false), 2600);
+    } catch (_) {}
+  };
 
   // 프로필 생년월일이 없으면 미표시
   if (!profile?.basic?.birthdate) return null;
@@ -202,6 +215,60 @@ export function VisualFortuneChartWidget({
                   <span>자미두수 명궁/신궁:</span>
                 </span>
                 <span>명궁(命宮) {ziweiData.soulPalace}궁 · 신궁(身宮) {ziweiData.bodyPalace}궁 ({ziweiData.fiveElementsClass})</span>
+              </div>
+            )}
+
+            {/* 4. 오감 감성 케어 & 오행 개운 처방 (Sensory Care & Key Ritual) */}
+            {saju && (
+              <div className="pt-2.5 border-t border-white/10 space-y-2 text-xs">
+                <div className="flex items-center justify-between text-xs font-bold text-amber-300">
+                  <span className="flex items-center gap-1">
+                    <Music size={13} className="text-amber-400" />
+                    <span>오감 에너지 파동 & 개운 처방 (Sensory Wellness)</span>
+                  </span>
+                  <span className="text-[11px] text-emerald-400">보약 오행: {saju.yongsin.name}</span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] text-white/90 font-medium">
+                      {saju.yongsin.name.includes('목') && '🌿 숲의 피톤치드와 생명력을 깨우는 432Hz 녹색 파동'}
+                      {saju.yongsin.name.includes('화') && '🔥 가슴속 열정과 추진력을 지피는 528Hz 솔페지오 사랑 파동'}
+                      {saju.yongsin.name.includes('토') && '⛰️ 잡념을 가라앉히고 터를 잡는 136.1Hz 옴(Om) 그라운딩 파동'}
+                      {saju.yongsin.name.includes('금') && '⚔️ 번뇌와 스트레스를 맑게 비워내는 587Hz 티베탄 정화 싱잉볼'}
+                      {saju.yongsin.name.includes('수') && '🌊 깊은 내면의 직관과 평화를 회복하는 밤의 힐링 심포니'}
+                      {!['목', '화', '토', '금', '수'].some(el => saju.yongsin.name.includes(el)) && '✨ 부족한 기운을 조화롭게 채우는 528Hz 평온의 솔페지오 파동'}
+                    </p>
+                    <p className="text-[10px] text-white/50">
+                      추천 개운 행동: <strong className="text-amber-200/90">{saju.yongsin.actionTip || '가벼운 스트레칭과 심호흡'}</strong>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap shrink-0">
+                    <button
+                      onClick={handlePlayBowl}
+                      disabled={isRinging}
+                      className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-all ${
+                        isRinging
+                          ? 'bg-amber-400/20 border-amber-400/60 text-amber-200'
+                          : 'bg-white/5 hover:bg-white/10 border-white/15 text-white/80 hover:text-white'
+                      }`}
+                      title="528Hz 정화 싱잉볼 사운드를 울려 기운을 정화합니다."
+                    >
+                      {isRinging ? <Check size={12} className="text-emerald-400 animate-bounce" /> : <Bell size={12} className="text-amber-400" />}
+                      <span>{isRinging ? '정화 완료 🔔' : '싱잉볼 정화 울림'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => navigate('/key')}
+                      className="px-2.5 py-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-all"
+                      title="40가지 개운 성전 리추얼로 이동합니다."
+                    >
+                      <Key size={12} className="text-sky-300" />
+                      <span>개운 리추얼</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </motion.div>
