@@ -150,7 +150,7 @@ test('image client exposes a quota error instead of inventing a fallback URL', a
 });
 
 
-est('TTS removes explicit internal instructions server-side before calling the provider', async () => {
+test('TTS removes explicit internal instructions server-side before calling the provider', async () => {
   let called = 0;
   const fetcher = async (_url: any, options: any) => {
     called++;
