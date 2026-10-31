@@ -11,10 +11,12 @@ import {
   BookOpen,
   Music,
   FileText,
+  ExternalLink,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
 import { getTodayDateKey } from "@/lib/dailyCache";
+import { buildAppleMusicClassicalSearchUrl } from "@/components/muse/MuseSongAppleMusicPlayer";
 import { playTTS, playTTSInChunks, stopTTS, pauseTTS, resumeTTS, subscribeTTS, getCurrentTTSState, normalizeTextForSpeech, prefetchTTS, prefetchTTSChunks } from "@/utils/tts";
 import { getTTSAudioElement, isTTSAudioPlaying } from "@/lib/audio";
 
@@ -44,6 +46,7 @@ export interface MuseDocentArtwork {
     artist: string;
     artistOriginal?: string;
     listeningGuide?: string;
+    appleMusicClassicalUrl?: string;
   };
 }
 
@@ -416,7 +419,24 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
                 <div className="rounded-xl bg-rose-500/10 border border-rose-500/15 px-3 py-2.5 text-center min-w-0">
                   <Music size={12} className="mx-auto text-rose-300 mb-1" />
                   <p className="text-[8px] font-mono text-rose-300/70 mb-0.5">1단계 · 명곡</p>
-                  <p className="text-[9px] font-bold text-rose-200/90 break-words leading-snug">{artwork.famousSong?.title}</p>
+                  {(() => {
+                    const song = artwork.famousSong;
+                    if (!song?.title) return null;
+                    const songOpenUrl = song.appleMusicClassicalUrl?.trim()
+                      || buildAppleMusicClassicalSearchUrl(song.title, song.artistOriginal || song.artist);
+                    return (
+                      <a
+                        href={songOpenUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1 w-full text-[9px] font-bold text-rose-200/90 hover:text-white break-words leading-snug transition-colors cursor-pointer"
+                        title="Apple Music Classical에서 열기"
+                      >
+                        <span className="break-words">{song.title}</span>
+                        <ExternalLink size={9} className="shrink-0 text-rose-300/80" />
+                      </a>
+                    );
+                  })()}
                 </div>
                 <div className="rounded-xl bg-indigo-500/10 border border-indigo-500/15 px-3 py-2.5 text-center min-w-0">
                   <BookOpen size={12} className="mx-auto text-indigo-300 mb-1" />
