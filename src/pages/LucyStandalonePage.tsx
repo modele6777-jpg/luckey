@@ -33,7 +33,6 @@ import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendat
 import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
-import { VisualFortuneChartWidget } from '@/components/chat/VisualFortuneChartWidget';
 import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
 import type { UserProfile } from '@/lib/sharedState';
@@ -3073,31 +3072,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     </>
                   ) : (
                     <>
-                      <VisualFortuneChartWidget
-                        profile={counselingUserProfile || sharedState?.userProfile}
-                        secondaryProfile={
-                          activeProfiles.length > 1
-                            ? (() => {
-                                const other = activeProfiles.find((p) => p.id !== activeProfileId) || activeProfiles[1];
-                                return other
-                                  ? {
-                                      basic: {
-                                        name: other.name,
-                                        birthdate: other.birthdate,
-                                        birthtime: other.birthtime,
-                                        gender: other.gender,
-                                        birthCity: other.birthCity,
-                                        lunarSolar: other.lunarSolar,
-                                        isLeapMonth: other.isLeapMonth,
-                                      },
-                                    }
-                                  : null;
-                              })()
-                            : null
-                        }
-                        usedTools={Array.isArray(msg.usedTools) ? msg.usedTools : []}
-                        isLight={isLight}
-                      />
                       <LucyKakaoBubbleGroup
                         onForward={forwardBubble}
                       forwardTargetLabel={pro ? '일반 루시' : '루시 프로'}
