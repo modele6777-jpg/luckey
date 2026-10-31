@@ -25,6 +25,7 @@ import { isIOSDevice } from '../lib/perfMode';
 
 export interface TTSPlaybackOptions {
   skipCompletionChime?: boolean;
+  isChatMode?: boolean; // 채팅 대화 낭독 시 싱잉볼 완료음 생략 플래그
   isAutoPlay?: boolean;
   isAutoPlayback?: boolean;
   isUserToggleClick?: boolean;
@@ -385,7 +386,7 @@ function speakWithDeviceSpeech(text: string, session: string | undefined, isSequ
           deviceSpeechSession = null;
           if (!isSequenceChunk) {
             stopTTS();
-            if (!options?.skipCompletionChime) {
+            if (!options?.skipCompletionChime && !options?.isChatMode) {
               try { playAiResultNotification(); } catch (_) {}
             }
           } else {
@@ -601,7 +602,7 @@ export const playTTS = async (
       }
       if (ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
         stopTTS();
-        if (!options?.skipCompletionChime) {
+        if (!options?.skipCompletionChime && !options?.isChatMode) {
           try { playAiResultNotification(); } catch (_) {}
         }
       }
@@ -865,10 +866,10 @@ export const playTTSInChunks = async (
         break;
       }
 
-      // 완독 성공 시 저장된 위치 초기화 및 완료 종소리 재생
+      // 완독 성공 시 저장된 위치 초기화 및 완료 싱잉볼 종소리 재생 (채팅 대화는 제외)
       if (isLastChunk) {
         lastTTSProgress = null;
-        if (!options?.skipCompletionChime) {
+        if (!options?.skipCompletionChime && !options?.isChatMode) {
           try {
             playAiResultNotification();
           } catch (_) {}

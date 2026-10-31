@@ -27,7 +27,6 @@ import { db, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from '@/lib/fire
 import { calculateDetailedSaju, type SajuAnalysisResult } from '@/lib/sajuAnalysis';
 import { invokeLLMStructured } from '@/lib/ai';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 import { TTSButton } from '@/components/TTSButton';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { sendDailyLuckyToLucy } from '@/lib/oracleDeepInsight';
@@ -624,9 +623,6 @@ export function TrinityDailyLuckyView({ onConsult }: TrinityDailyLuckyViewProps)
 
         if (res && res.luckScore) {
           setLuckyData(res);
-          try {
-            playAiResultNotification();
-          } catch (_) {}
           try {
             localStorage.setItem(storageKey, JSON.stringify(res));
           } catch (_) {}

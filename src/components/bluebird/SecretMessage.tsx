@@ -29,7 +29,6 @@ import {
 import { useApp } from '@/contexts/AppContext';
 import { invokeLLMStructured } from '@/lib/ai';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 import { sendSecretNoteToLucy } from '@/lib/oracleDeepInsight';
 import { TTSButton } from '@/components/TTSButton';
 import { z } from 'zod';
@@ -461,9 +460,6 @@ export function SecretMessage({ isOpen, onClose, isModal }: SecretMessageProps =
           return nextNotes;
         });
 
-        try {
-          playAiResultNotification();
-        } catch (_) {}
     } finally {
       setIsGeneratingBlessing(false);
     }

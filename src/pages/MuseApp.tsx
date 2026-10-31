@@ -146,7 +146,6 @@ import {
   useSpecialFeatureChromeHidden,
 } from "@/components/SpecialFeaturePanel";
 
-import { playAiResultNotification } from "@/lib/audioHaptics";
 import { useSwipeableTabs } from "@/hooks/useSwipeableTabs";
 
 const MUSE_SWIPE_TABS = ['artRecommendation', 'roleModel', 'synergy'] as const;
@@ -1325,10 +1324,6 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
         setShowDailyModal(true);
         markOracleModalSeen("muse");
 
-        try {
-          playAiResultNotification();
-        } catch (_) {}
-
         recordDailyOracleResult({
           app: 'muse',
           featureName: '오늘의 창작 영감 오라클',
@@ -1462,9 +1457,6 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
         schema: EnergyAnalysisSchema,
       });
       setInsightResult(data);
-      try {
-        playAiResultNotification();
-      } catch (_) {}
       await updateSharedState(
         { lastMuseSoulSync: Date.now(), lastMuseSync: Date.now() },
         "MUSE",

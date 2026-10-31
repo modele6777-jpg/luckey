@@ -957,7 +957,7 @@ export function playCardHaptic(
 }
 
 /**
- * 🔔 AI 결과물·낭독 완료 시 또렷한 싱잉볼 알림 (대화/채팅 제외)
+ * 🔔 오직 TTS 음성 낭독 완독 시에만 울리는 영롱한 티베트 싱잉볼 알림 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
  */
 export function playAiResultNotification(options?: AudioHapticOptions): void {
   try {

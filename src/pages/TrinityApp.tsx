@@ -106,7 +106,7 @@ import { useSwipeableTabs } from "@/hooks/useSwipeableTabs";
 const TRINITY_SWIPE_TABS = ['destiny', 'tarot', 'oracle'] as const;
 type TrinitySwipeTab = typeof TRINITY_SWIPE_TABS[number];
 
-import { playAudioHaptic, playAiResultNotification } from "@/lib/audioHaptics";
+import { playAudioHaptic } from "@/lib/audioHaptics";
 import { TodayTarotNarrationModal } from "@/components/trinity/TodayTarotNarrationModal";
 import { LucyTarotAdviceCard } from "@/components/trinity/LucyTarotAdviceCard";
 import { TarotSummaryGraphicCard } from "@/components/trinity/TarotSummaryGraphicCard";
@@ -2726,10 +2726,6 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
             },
           });
         }
-
-        try {
-          playAiResultNotification();
-        } catch (_) {}
 
         if (firebaseUser && finalResponse.trim() && localStorage.getItem('developer_bypass') !== 'true') {
           void addDoc(

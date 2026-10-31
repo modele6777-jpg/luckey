@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { invokeLLMStructured } from '@/lib/ai';
 import { PRISM_VOICE_RULES } from '@/lib/copyTone';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 
 export const HOPONOPONO_LAST_TOOL_KEY = 'hoponopono_last_tool';
 
@@ -863,10 +862,6 @@ export async function generateHoponoponoTool(
 export function persistHoponoponoTool(tool: SavedHoponoponoTool): void {
   localStorage.setItem(HOPONOPONO_LAST_TOOL_KEY, JSON.stringify(tool));
   saveHoponoponoTool(tool);
-
-  try {
-    playAiResultNotification();
-  } catch (_) {}
 
   recordPrismFeature({
     app: 'bluebird',

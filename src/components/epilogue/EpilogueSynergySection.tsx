@@ -26,7 +26,6 @@ import {
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { invokeLLM } from '@/lib/ai';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
-import { playAiResultNotification } from '@/lib/audioHaptics';
 import { playTTS, stopTTS, useTTSActive } from '@/utils/tts';
 import { EpilogueAchievementShareModal } from './EpilogueAchievementShareModal';
 import { EpilogueAchievementStatsCard } from './EpilogueAchievementStatsCard';
@@ -232,9 +231,6 @@ export function EpilogueSynergySection() {
       const result = await Promise.race([runAI(), safetyTimeout]);
       setChronicleData(result);
       setIsSynthesized(true);
-      try {
-        playAiResultNotification();
-      } catch (_) {}
 
       // 아카이브에 영구 저장 및 갱신
       const updatedArchive = saveChronicleToArchive(result);
