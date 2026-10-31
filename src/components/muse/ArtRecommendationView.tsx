@@ -28,7 +28,7 @@ import { auth, db, collection, addDoc, serverTimestamp, query, orderBy, limit, g
 import { getTodayDateKey, getDateSeed, isSameDayString, pickDailySeededItem } from "@/lib/dailyCache";
 import { MuseDocentAudio } from "@/components/muse/MuseDocentAudio";
 import { TTSButton } from "@/components/TTSButton";
-import { buildPoemGoogleArtsAndCultureSearchUrl, buildArtworkGoogleArtsAndCultureSearchUrl, buildPoemFullTextSearchQuery, buildPoemGoogleAiSearchUrl, extractOriginalLanguage } from "@/utils/artSearchQuery";
+import { buildArtworkGoogleArtsAndCultureSearchUrl } from "@/utils/artSearchQuery";
 import { lookupCatalogDailyArtUrl, resolveArtworkDailyArtUrl, MUSE_ART_CATALOG } from "@/lib/museDailyArt";
 import { MuseSongAppleMusicPlayer, ensureAppleMusicClassicalUrl } from "@/components/muse/MuseSongAppleMusicPlayer";
 import { recordPrismFeature } from "@/lib/prismOmniSync";
@@ -52,6 +52,8 @@ interface FamousPoem {
   poet: string;
   poetOriginal?: string;
   excerpt: string;
+  /** 시 전문(全文) — 행과 연이 온전히 살아있는 본문 (없으면 excerpt를 연 형태로 재구성해 표출) */
+  fullText?: string;
   whyRecommended: string;
   siyoilUrl?: string;
   poemSourceName?: string;
@@ -90,6 +92,90 @@ interface ArtRecommendation {
   docentInsight?: string;
   famousPoem?: FamousPoem;
   famousSong?: FamousSong;
+}
+
+/**
+ * 시 전문(全文) 표출을 위한 정규화 키 — 제목의 괄호 부제·기호를 걷어내고 비교합니다.
+ */
+function normalizePoemMatchKey(value: string): string {
+  return (value || "")
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const poemFullTextCache = new Map<string, string>();
+
+function commonPrefixLength(a: string, b: string): number {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
+  return i;
+}
+
+/**
+ * 명시 전문(全文) 해석기 — 외부 딥링크 없이 화면 안에서 시집처럼 읽도록
+ * 온전한 행과 연을 만들어 줍니다.
+ *
+ * 1. 데이터에 fullText가 있으면 그대로 사용 (시집 같은 연 구성)
+ * 2. KOREAN_FAMOUS_POEMS 라이브러리(시요일 라이브러리 전문 보유)에서
+ *    제목·시인 매칭 시 전문을 가져옵니다.
+ * 3. 둘 다 없으면 excerpt의 ' / ' 행 구분자를 줄바꿈으로 세밀하게 펴서
+ *    최소한 행이 살아있는 시의 형태로 표현합니다.
+ */
+export function resolvePoemFullText(poem: FamousPoem): string {
+  if (poem.fullText && poem.fullText.trim()) return poem.fullText.trim();
+
+  const titleKey = normalizePoemMatchKey(poem.title);
+  const poetKey = normalizePoemMatchKey(poem.poetOriginal || poem.poet);
+  const poetKeys = [normalizePoemMatchKey(poem.poet), poetKey].filter(Boolean);
+  const cacheKey = `${titleKey}|${poetKey}`;
+  const cached = poemFullTextCache.get(cacheKey);
+  if (cached) return cached;
+
+  let best: string | null = null;
+  const titleSquish = titleKey.replace(/\s+/g, "");
+  const poetSquish = poetKey.replace(/\s+/g, "");
+  if (titleSquish) {
+    for (const entry of KOREAN_FAMOUS_POEMS) {
+      const libTitle = normalizePoemMatchKey(entry.title);
+      if (!libTitle) continue;
+      const libTitleSquish = libTitle.replace(/\s+/g, "");
+      // 한 글자 제목(《꽃》,《봄》,《풀》)은 정확히 일치할 때만, 그 외에는
+      // 부분 일치로 매칭하여 잘못된 전문을 긁어오는 일을 막습니다.
+      const titleMatched = titleSquish.length >= 2
+        ? libTitle.includes(titleKey) ||
+          titleKey.includes(libTitle) ||
+          libTitleSquish.includes(titleSquish) ||
+          titleSquish.includes(libTitleSquish) ||
+          (commonPrefixLength(titleSquish, libTitleSquish) >= 5 &&
+            poetSquish.length > 0 && libTitleSquish.length > 0)
+        : libTitleSquish === titleSquish;
+      if (!titleMatched) continue;
+      const libPoetKeys = [normalizePoemMatchKey(entry.poet), normalizePoemMatchKey(entry.poetOriginal || "")].filter(Boolean);
+      const poetMatched =
+        !poetSquish ||
+        poetKeys.some((pk) =>
+          libPoetKeys.some(
+            (lk) => lk.includes(pk) || pk.includes(lk) || (!!pk && pk.length >= 3 && lk.includes(pk.slice(0, 3))),
+          ),
+        );
+      if (!poetMatched) continue;
+      if (!best || entry.excerpt.length > best.length) best = entry.excerpt;
+    }
+  }
+
+  const formatted =
+    best ||
+    (poem.excerpt.includes(" / ")
+      ? poem.excerpt
+          .split(/\s*\/\s*/)
+          .join("\n")
+          .trim()
+      : poem.excerpt.trim());
+  poemFullTextCache.set(cacheKey, formatted);
+  return formatted;
 }
 
 const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: FamousSong }> = [
@@ -1083,6 +1169,200 @@ const DAILY_ART_FALLBACKS: ArtFallbackEntry[] = [
     dailyArtUrl: "https://www.koreanart21.com/artworld/heritage/view?id=125",
   }
 ];
+
+/**
+ * 🌌 Trio Resonance Suite — 명곡(애플뮤직 클래식)·명시(시요일)·명화(DailyArt)가
+ * 하나의 테마와 감성으로 공명하는 공명 테마(Resonance Theme) 카탈로그입니다.
+ */
+interface ResonanceTheme {
+  id: string;
+  icon: string;
+  label: string;
+  /** 세 작품을 관통하는 공통 서사 */
+  narrative: string;
+  /** 명곡·명시·명화 전반에서 탐지할 공명 키워드 */
+  keywords: string[];
+  /** 3위 일체 몰입형 감상 가이드 (소리 → 언어 → 이미지) */
+  immersion: { song: string; poem: string; art: string };
+}
+
+const RESONANCE_THEMES: ResonanceTheme[] = [
+  {
+    id: "impressionist_light",
+    icon: "🌿",
+    label: "인상주의의 빛과 고요한 물결",
+    narrative: "빛의 변화를 쫓던 붓질, 물결 위로 번지는 화음, 잔잔한 수면 위 시구 — 세 작품이 같은 호숫가에서 태어났습니다.",
+    keywords: ["인상", "수련", "모네", "호수", "물", "물결", "빛", "강", "연못", "드뷔시", "짐노페디", "잔잔", "수면", "파리", "일요일", "점묘", "쇠라"],
+    immersion: {
+      song: "눈을 감고 첫 소리가 어디서 번져 나오는지 따라가며 물의 잔향을 느껴보세요.",
+      poem: "한 행씩 천천히 읽으며 빛이 언어 위로 떠오르는 순간을 기다려 보세요.",
+      art: "가장 가까운 붓질에서 멀리 물러나 색의 온도가 바뀌는 지점을 찾아보세요.",
+    },
+  },
+  {
+    id: "starry_soul",
+    icon: "🌌",
+    label: "밤하늘의 고독과 순수한 영혼",
+    narrative: "어두운 밤에도 각자의 별을 향해 있는 세 개의 영혼 — 고독은 여기서 침몰이 아니라 빛나는 방향입니다.",
+    keywords: ["별", "밤", "밤하늘", "고흐", "고독", "영혼", "순수", "달", "은하", "녹턴", "초혼", "저녁", "야경", "별빛"],
+    immersion: {
+      song: "밤의 첫 화음 위에 자신의 마음을 한 점 얹어 보세요.",
+      poem: "가장 오래 남은 한 행을 소리 없이 되뇌며 그 별의 이름을 지어보세요.",
+      art: "작품 속 가장 밝은 점을 찾아 10초간 응시한 뒤 눈을 감아 보세요.",
+    },
+  },
+  {
+    id: "inner_fire",
+    icon: "🔥",
+    label: "가슴을 태우는 열정과 카타르시스",
+    narrative: "참을 수 없는 에너지가 소리·언어·이미지로 분출되는 순간 — 억누르지 않고 온전히 흘려보내는 통로입니다.",
+    keywords: ["열정", "불", "절규", "비명", "격정", "카타르시스", "태우", "불꽃", "붉", "빨", "해바라기", "해돋이", "자극", "폭발"],
+    immersion: {
+      song: "점층적으로 고조되는 강주법(포르티시모)에 호흡을 맡겨 보세요.",
+      poem: "가장 격한 감탄과 종지부를 찍는 행의 온도 차이를 느껴보세요.",
+      art: "화면에서 가장 뜨거운 색 하나를 골라 그 열이 어디로 번지는지 따라가세요.",
+    },
+  },
+  {
+    id: "golden_love",
+    icon: "💛",
+    label: "사랑과 그리움의 황금빛 순간",
+    narrative: "이루어졌든 이루어지지 않았든, 사랑이 세 작품 위에 남긴 황금빛 자국은 같은 온기로 울립니다.",
+    keywords: ["사랑", "그리움", "황금", "연인", "키스", "클림트", "꽃", "진달래", "엘가", "살루트", "입맞", "부드", "다정", "애틋"],
+    immersion: {
+      song: "선율이 감미롭게 접히는 지점에서 가장 그리운 사람을 떠올려 보세요.",
+      poem: "호칭(너, 그대, 당신)이 바뀌는 행에서 감정의 이동을 읽어보세요.",
+      art: "두 형상이 만나는 경계선을 따라 손끝으로 그려보세요.",
+    },
+  },
+  {
+    id: "field_wind",
+    icon: "🍃",
+    label: "바람과 들의 자유로운 숨결",
+    narrative: "길 위, 들판 위, 바람결 위 — 세 작품은 같은 바람을 맞고 걷습니다. 놓아도 흘러가지 않는 가벼움.",
+    keywords: ["바람", "들", "풀", "들판", "길", "걷", "나그네", "산책", "자유", "숨", "가벼", "맑", "환기", "여름", "파라솔"],
+    immersion: {
+      song: "반복되는 리듬을 걸음걸이에 맞추며 조용한 산책을 떠나보세요.",
+      poem: "행과 행 사이의 숨을 실제 호흡만큼 길게 남겨두고 읽어보세요.",
+      art: "화면의 지평선에서 가장 시원한 지점을 찾아 시선을 먼 곳까지 보내보세요.",
+    },
+  },
+  {
+    id: "fate_courage",
+    icon: "🌊",
+    label: "운명과 시련을 가르는 용기",
+    narrative: "무너짐의 굴복이 아니라 시련을 가르는 힘 — 세 작품은 모두 무너지는 듯한 지점에서 다시 일어서는 법을 보여줍니다.",
+    keywords: ["운명", "시련", "극복", "용기", "부활", "베토벤", "파도", "거대", "웅장", "암흑", "밤의 매", "흰 소", "투쟁", "자유를", "다리"],
+    immersion: {
+      song: "어두운 주제가 밝은 조성으로 넘어가는 순간을 표시해 두세요.",
+      poem: "절망의 어휘가 되돌림법으로 희망으로 접히는 행을 찾아보세요.",
+      art: "인물이 마주한 방향을 따라가며 나아가는 시선의 끝을 확인해 보세요.",
+    },
+  },
+  {
+    id: "dream_surreal",
+    icon: "🌙",
+    label: "꿈과 몽환의 자유로운 유영",
+    narrative: "논리가 잠든 시간에 세 작품이 나란히 떠 있습니다. 현실의 무게가 가장 가벼워지는 몽환의 밀도.",
+    keywords: ["꿈", "몽환", "초현실", "샤갈", "달리", "기억", "유영", "공중", "떠", "마젠타", "악몽", "환상", "녹아"],
+    immersion: {
+      song: "박자가 흐트러지는 듯한 프레이에서 시간감각을 내려놓아 보세요.",
+      poem: "비현실적 이미지가 연결되는 행을 따라 나만의 꿈의 지도를 그려보세요.",
+      art: "현실에서는 불가능한 디테일 하나를 찾아 그 앞에서 웃어보세요.",
+    },
+  },
+  {
+    id: "seasons_hope",
+    icon: "🌸",
+    label: "계절이 주는 기다림과 희망",
+    narrative: "겨울을 지나 봄을 세는 세 작품 — 기다림이 결핍이 아니라 성실한 계절의 언어임을 보여줍니다.",
+    keywords: ["봄", "여름", "가을", "겨울", "눈", "꽃 필", "계절", "기다림", "희망", "아침", "새벽", "눈꽃", "알몬드", "개화"],
+    immersion: {
+      song: "계절의 문이 열리는 첫 프레이즈에서 이 계절의 이름을 적어보세요.",
+      poem: "시간의 부사(이미, 드디어, 아직)에 밑줄치며 계절의 속도를 느껴보세요.",
+      art: "작품 속 계절을 정하고, 그 계절의 하루를 살아본 적 있는 장소를 떠올려 보세요.",
+    },
+  },
+  {
+    id: "quiet_gaze",
+    icon: "🕯️",
+    label: "일상의 찰나를 비추는 고요한 성찰",
+    narrative: "아무 일도 일어나지 않는 찰나가 세 작품 안에서 가장 오래 머뭅니다. 성찰은 특별한 순간이 아니라 지금의 조용한 시선입니다.",
+    keywords: ["성찰", "자아", "거울", "일상", "정적", "조용", "고요", "창가", "호써", "카페", "자화상", "우물", "명상", "평온", "방"],
+    immersion: {
+      song: "반복되는 선율의 미세한 변화 하나만 골라 집중해 보세요.",
+      poem: "한 행을 읽고, 그 행이 자신의 어제와 닮은 지점을 마음에 적어보세요.",
+      art: "작품 속 인물의 시선이 향하는 곳에 자신을 놓아보세요.",
+    },
+  },
+  {
+    id: "classical_elegance",
+    icon: "🏮",
+    label: "고전의 품격과 세월 속 풍류",
+    narrative: "수백 년을 건너도 퇴색하지 않는 격조 — 세 작품은 각자의 시대에서 같은 절제와 여유를 담았습니다.",
+    keywords: ["고전", "조선", "풍류", "가야금", "시가", "바로크", "바흐", "모차르트", "클래식", "격조", "우아", "품격", "고궁", "풍속", "단오"],
+    immersion: {
+      song: "장식음 하나하나의 절제된 우아함을 따라가 보세요.",
+      poem: "옛말의 운율을 소리 내어 읽으며 세월의 결을 느껴보세요.",
+      art: "화면 속 의복과 소도구에서 그 시대의 취향을 세 가지 찾아보세요.",
+    },
+  },
+];
+
+function hashResonanceKey(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * 세 작품(명곡·명시·명화)의 텍스트 전반에서 공명 테마를 점수화해 가장 깊이
+ * 울리는 하나의 서사로 묶어 줍니다. 점수가 동률이면 추천 자체의 결정론적
+ * 해시로 균등하게 분배합니다.
+ */
+function resolveResonanceTheme(recommendation: ArtRecommendation | null): ResonanceTheme | null {
+  if (!recommendation?.famousPoem || !recommendation.famousSong) return null;
+
+  const artCorpus = [recommendation.title, recommendation.titleOriginal, recommendation.description, recommendation.aestheticTone, recommendation.era].filter(Boolean).join(" ").toLowerCase();
+  const poemCorpus = [recommendation.famousPoem.title, recommendation.famousPoem.titleOriginal, recommendation.famousPoem.excerpt, recommendation.famousPoem.whyRecommended].filter(Boolean).join(" ").toLowerCase();
+  const songCorpus = [recommendation.famousSong.title, recommendation.famousSong.titleOriginal, recommendation.famousSong.artist, recommendation.famousSong.listeningGuide].filter(Boolean).join(" ").toLowerCase();
+
+  let bestTheme: ResonanceTheme | null = null;
+  let bestScore = 0;
+  let bestArtScore = 0;
+  const tieBreak = hashResonanceKey(`${recommendation.title}_${recommendation.famousPoem.title}`);
+
+  for (const theme of RESONANCE_THEMES) {
+    let artHits = 0;
+    let poemHits = 0;
+    let songHits = 0;
+    for (const keyword of theme.keywords) {
+      const kw = keyword.toLowerCase();
+      if (artCorpus.includes(kw)) artHits += 1;
+      if (poemCorpus.includes(kw)) poemHits += 1;
+      if (songCorpus.includes(kw)) songHits += 1;
+    }
+    // 명화가 테마의 중심 — 명화 적중에 2배 가중치를 두고 명시·명곡은 보조 공명으로 계산
+    const score = artHits * 2 + poemHits + songHits;
+    const better =
+      score > bestScore ||
+      (score === bestScore && score > 0 && (artHits > bestArtScore || (artHits === bestArtScore && hashResonanceKey(theme.id) > tieBreak)));
+    if (better) {
+      bestTheme = theme;
+      bestScore = score;
+      bestArtScore = artHits;
+    }
+  }
+
+  if (bestTheme && bestScore > 0) return bestTheme;
+
+  // 어떤 키워드도 걸리지 않으면 작품 해시로 조용한 성찰 테마를 기본 브릿지로 사용
+  const defaultTheme = RESONANCE_THEMES[hashResonanceKey(recommendation.title) % RESONANCE_THEMES.length];
+  return defaultTheme;
+}
 
 function getValid30DayHistory<T extends { shownAt: string }>(storageKey: string): T[] {
   try {
@@ -2263,6 +2543,72 @@ export function ArtRecommendationView() {
     }
   }, [recommendation, nanobananaImage, generateNanobananaImage]);
 
+  // 🌌 Trio Resonance — 세 작품을 관통하는 공명 테마
+  const resonanceTheme = useMemo(
+    () => resolveResonanceTheme(recommendation),
+    [recommendation?.title, recommendation?.catalogId, recommendation?.famousPoem?.title, recommendation?.famousSong?.title],
+  );
+
+  // 📖 명시 전문(全文) — 외부 이동 없이 화면 안에서 시집처럼 읽히도록 항상 전문을 준비
+  const poemFullText = useMemo(
+    () => (recommendation?.famousPoem ? resolvePoemFullText(recommendation.famousPoem) : ""),
+    [recommendation?.famousPoem],
+  );
+
+  // 🎲 다른 명작 탐색하기 — 명화만 따로 도는 것이 아니라 그 명화에 어울리는
+  // 명시·명곡 세트가 유기적으로 함께 전환됩니다.
+  const handleExploreAnotherMasterpiece = useCallback(() => {
+    const currentTitle = recommendation?.title;
+    const currentCatalogId = recommendation?.catalogId;
+    const pool = ALL_ART_FALLBACKS.filter((art) => {
+      if (currentCatalogId && art.catalogId && art.catalogId === currentCatalogId) return false;
+      return art.title.toLowerCase() !== (currentTitle || "").toLowerCase();
+    });
+    const usablePool = pool.length > 0 ? pool : ALL_ART_FALLBACKS;
+    const picked = usablePool[Math.floor(Math.random() * usablePool.length)];
+    if (!picked) return;
+
+    const randomOffset = Math.floor(Math.random() * 100000);
+    const catalogEntry = picked.catalogId
+      ? MUSE_ART_CATALOG.find((entry) => entry.id === picked.catalogId)
+      : undefined;
+    const fallbackPair = getDailyPoemSongFallback(randomOffset);
+    const famousPoem = catalogEntry?.famousPoem || fallbackPair.famousPoem;
+    const famousSong = ensureAppleMusicClassicalUrl(catalogEntry?.famousSong || fallbackPair.famousSong);
+
+    const next: ArtRecommendation = {
+      ...picked,
+      sourceName: picked.sourceName || "세계 명작 미술관 아카이브",
+      challenges: picked.challenges?.length ? picked.challenges : [],
+      famousPoem,
+      famousSong,
+    };
+
+    setRecommendation(next);
+    setCompletedChallenges({});
+    touchArtCacheDate();
+    localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(next));
+    recordArtworkHistory(next);
+
+    try {
+      const today = getTodayDateKey();
+      void updateSharedState({
+        dailyArts: {
+          ...(sharedState?.dailyArts || {}),
+          [today]: {
+            recommendation: next,
+            moodLabel: currentMoodLabel,
+            userConcern: customConcern,
+            timestamp: Date.now(),
+          },
+        },
+        lastMuseDailySync: Date.now(),
+      }, 'MUSE');
+    } catch (_) {}
+
+    void generateNanobananaImage(next);
+  }, [currentMoodLabel, customConcern, generateNanobananaImage, recommendation, sharedState?.dailyArts, updateSharedState]);
+
 
   return (
     <DuoWorkspace className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-6 md:py-12 text-white">
@@ -2281,7 +2627,7 @@ export function ArtRecommendationView() {
         </h2>
         <p className="text-xs sm:text-sm text-white/50 max-w-xl mx-auto leading-relaxed font-sans px-2">
           당신의 마음에 잠재된 영적 에너지를 깨우기 위해 뮤즈가 큐레이션하는 고전을 만나보세요. 
-          오늘의 명곡·명시·명화가 매일 자동으로 추천됩니다.
+          오늘의 명곡·명시·명화가 매일 자동으로 추천되고, 🎲 버튼으로 다양한 명작을 언제든 넘겨볼 수 있습니다.
         </p>
         <p className="text-[10px] text-white/30 font-mono tracking-wider">
           매일 자정 이후 새로운 명작이 자동으로 큐레이션됩니다 · {getTodayDateKey()}
@@ -2577,6 +2923,70 @@ export function ArtRecommendationView() {
             transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-8"
           >
+{recommendation.famousPoem && recommendation.famousSong && resonanceTheme && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.02, ease: [0.16, 1, 0.3, 1] }}
+                className="relative overflow-hidden p-6 md:p-8 rounded-[32px] bg-gradient-to-br from-indigo-950/50 via-blue-950/30 to-emerald-950/30 border border-indigo-400/30 shadow-2xl backdrop-blur-xl space-y-4"
+              >
+                <div className="absolute -top-16 -right-16 w-56 h-56 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-indigo-500/25 text-indigo-200">
+                      <span className="text-lg leading-none">{resonanceTheme.icon}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300 block font-mono">
+                        TRIO RESONANCE · 3위 일체 공명 테마
+                      </span>
+                      <h3 className="text-lg md:text-2xl font-bold text-white leading-snug">
+                        {resonanceTheme.label}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed border-l-2 border-indigo-400/50 pl-3">
+                    {resonanceTheme.narrative}
+                  </p>
+
+                  {/* 세 작품이 하나의 테마로 이어지는 몰입형 감상 가이드 */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className="p-3 rounded-2xl bg-rose-500/[0.07] border border-rose-400/20 space-y-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-rose-300 font-mono">🎵 소리 · 명곡</span>
+                      <p className="text-[11px] text-white/70 leading-relaxed">{resonanceTheme.immersion.song}</p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-emerald-500/[0.07] border border-emerald-400/20 space-y-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-emerald-300 font-mono">📖 언어 · 명시</span>
+                      <p className="text-[11px] text-white/70 leading-relaxed">{resonanceTheme.immersion.poem}</p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-blue-500/[0.07] border border-blue-400/20 space-y-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-blue-300 font-mono">🖼 이미지 · 명화</span>
+                      <p className="text-[11px] text-white/70 leading-relaxed">{resonanceTheme.immersion.art}</p>
+                    </div>
+                  </div>
+
+                  {/* 오늘 공명하는 세 작품 */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    {recommendation.famousSong && (
+                      <span className="px-2.5 py-1 rounded-xl bg-rose-500/10 border border-rose-400/20 text-[10px] text-rose-200/90 font-medium">
+                        🎵 {recommendation.famousSong.title}
+                      </span>
+                    )}
+                    <span className="text-white/25 text-[10px]">→</span>
+                    {recommendation.famousPoem && (
+                      <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-400/20 text-[10px] text-emerald-200/90 font-medium">
+                        📖 {recommendation.famousPoem.title}
+                      </span>
+                    )}
+                    <span className="text-white/25 text-[10px]">→</span>
+                    <span className="px-2.5 py-1 rounded-xl bg-blue-500/10 border border-blue-400/20 text-[10px] text-blue-200/90 font-medium">
+                      🖼 {recommendation.title}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 {(recommendation as any)?.userConcern && (
               <div className="duo-workspace-actions p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/15 to-purple-500/10 border border-blue-400/40 flex items-center justify-between gap-3 text-left shadow-md">
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -2726,7 +3136,7 @@ export function ArtRecommendationView() {
                   </div>
                   <div className="flex items-center gap-2">
                     <TTSButton
-                      text={`${recommendation.famousPoem.poet}의 시, ${recommendation.famousPoem.title}.\n\n${recommendation.famousPoem.excerpt}`}
+                      text={`${recommendation.famousPoem.poet}의 시, ${recommendation.famousPoem.title}.\n\n${poemFullText || recommendation.famousPoem.excerpt}`}
                       voice="Kore"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-emerald-200 text-[11px] font-bold active:scale-95 transition-all shadow-sm cursor-pointer"
                     />
@@ -2738,9 +3148,15 @@ export function ArtRecommendationView() {
                   {recommendation.famousPoem.poet}
                 </p>
 
-                <div className="p-4 md:p-5 rounded-2xl bg-white/[0.03] border-l-4 border-emerald-400/80 pl-5 space-y-2">
-                  <p className="text-sm md:text-base text-white/90 italic font-serif leading-relaxed whitespace-pre-line">
-                    "{recommendation.famousPoem.excerpt}"
+                <div className="p-5 md:p-7 rounded-2xl bg-white/[0.03] border-l-4 border-emerald-400/80 pl-5 md:pl-7 space-y-3">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-300/80 font-mono">
+                    시 전문(全文) · 시집 감상
+                  </span>
+                  <p className="text-[15px] md:text-lg text-white/90 font-serif leading-[1.9] md:leading-[2.0] tracking-wide whitespace-pre-line pl-1">
+                    {poemFullText || recommendation.famousPoem.excerpt}
+                  </p>
+                  <p className="text-xs md:text-sm text-white/40 font-serif text-right pr-1">
+                    — {recommendation.famousPoem.poet}, 《{recommendation.famousPoem.title}》
                   </p>
                 </div>
 
@@ -2759,35 +3175,9 @@ export function ArtRecommendationView() {
                     {" "}{recommendation.famousPoem.poemSourceName || "시요일 라이브러리"}
                     {" · "}{recommendation.famousPoem.poet}
                   </p>
-                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                    <a
-                      href={buildPoemGoogleAiSearchUrl(
-                        recommendation.famousPoem.title,
-                        recommendation.famousPoem.poet,
-                        recommendation.famousPoem.titleOriginal,
-                        recommendation.famousPoem.poetOriginal,
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-200/90 hover:text-white transition-colors cursor-pointer"
-                    >
-                      원작 감상하기
-                      <ChevronRight size={12} />
-                    </a>
-                    <a
-                      href={buildPoemGoogleArtsAndCultureSearchUrl(
-                        recommendation.famousPoem.title,
-                        recommendation.famousPoem.poet,
-                        recommendation.famousPoem.titleOriginal,
-                        recommendation.famousPoem.poetOriginal,
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-indigo-200/90 hover:text-white transition-colors"
-                    >
-                      Google Arts & Culture 검색
-                      <ChevronRight size={12} />
-                    </a>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 size={12} className="text-emerald-400" />
+                    <span className="text-[10px] text-white/50">시 전문이 이 화면 안에서 바로 표시됩니다</span>
                   </div>
                 </div>
               </motion.div>
@@ -2830,6 +3220,24 @@ export function ArtRecommendationView() {
                   <p className="text-sm md:text-base text-blue-400 font-sans font-bold flex items-center gap-1.5">
                     <Feather size={14} />
                     {recommendation.creator}
+                  </p>
+                </div>
+
+                {/* 🎲 다른 명작 탐색 — 하루 1점에 갇히지 않고 DailyArt 컬렉션의 다양한 명작을 넘겨보기
+                    (명화와 어울리는 명시·명곡 세트가 함께 유기적으로 전환됩니다) */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleExploreAnotherMasterpiece}
+                    disabled={loadingImage}
+                    className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-indigo-400/40 text-indigo-100 text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer active:scale-95 transition-all shadow-lg disabled:opacity-50"
+                    title="다양한 명작을 넘겨보기 — 명시와 명곡도 함께 전환됩니다"
+                  >
+                    <Sparkles size={14} className="text-yellow-300 animate-pulse" />
+                    <span>🎲 다른 명작 탐색하기</span>
+                  </button>
+                  <p className="text-[10px] text-white/40 font-sans">
+                    명화와 어울리는 명시·명곡 세트가 함께 전환됩니다
                   </p>
                 </div>
 
