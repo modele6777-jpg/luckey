@@ -360,8 +360,28 @@ function AppContent() {
   }, [location, navigate]);
 
   React.useEffect(() => {
-    initTTSAudioLifecycle();
-    preloadAllChannelChunks();
+    // 🎧 오디오 세션 불변칙: 앱 첫 마운트에서 오디오를 절대 점유하지 않습니다.
+    // initTTSAudioLifecycle()은 AudioContext를 만지거나 세션을 점유할 수 있으므로,
+    // 외부 음악(멜론·스포티파이·애플뮤직)이 켜져 있어도 그대로 흐르도록
+    // 첫 사용자 상호작용(탭/키 입력)이 있을 때까지 미룹니다.
+    let initialized = false;
+    const initOnce = () => {
+      if (initialized) return;
+      initialized = true;
+      try { initTTSAudioLifecycle(); } catch (_) {}
+      try { preloadAllChannelChunks(); } catch (_) {}
+      window.removeEventListener('pointerdown', initOnce);
+      window.removeEventListener('keydown', initOnce);
+      window.removeEventListener('touchstart', initOnce);
+    };
+    window.addEventListener('pointerdown', initOnce, { passive: true });
+    window.addEventListener('keydown', initOnce);
+    window.addEventListener('touchstart', initOnce, { passive: true });
+    return () => {
+      window.removeEventListener('pointerdown', initOnce);
+      window.removeEventListener('keydown', initOnce);
+      window.removeEventListener('touchstart', initOnce);
+    };
   }, []);
 
   // 📱 모바일 화면 좌우 스와이프 페이지 변경 원천 차단 (빅뱅 버튼 및 명시적 버튼 조작만 허용)
