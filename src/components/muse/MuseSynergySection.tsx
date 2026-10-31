@@ -16,7 +16,7 @@ import {
   getArtworkImageBadgeInfo,
 } from '@/utils/artworkImage';
 import { ImageOutputActions, downloadImage } from '@/components/ImageOutputActions';
-import { MuseSongYouTubePlayer } from '@/components/muse/MuseSongYouTubePlayer';
+import { MuseSongAppleMusicPlayer } from '@/components/muse/MuseSongAppleMusicPlayer';
 import {
   MASTERS_CATALOG,
   type MasterItem,
@@ -306,6 +306,7 @@ export function MuseSynergySection() {
             ...parsed,
             category: selectedMaster.category,
             musicVideoId: selectedArtwork?.musicVideoId || selectedMaster.musicVideoId,
+            appleMusicClassicalUrl: selectedArtwork?.appleMusicClassicalUrl || selectedMaster.appleMusicClassicalUrl,
             musicArtist: selectedArtwork?.musicArtist || selectedMaster.musicArtist,
             musicListeningGuide: selectedArtwork?.musicListeningGuide || selectedMaster.musicListeningGuide,
             poemText: selectedArtwork?.poemText || selectedMaster.poemText,
@@ -639,12 +640,12 @@ export function MuseSynergySection() {
                 )}
               </div>
 
-              {/* 실제 음악 재생 플레이어 (YouTube) */}
+              {/* 실제 음악 재생 플레이어 (Apple Music Classical) */}
               <div className="rounded-2xl overflow-hidden border border-rose-500/20 bg-black/60 p-2">
-                <MuseSongYouTubePlayer
+                <MuseSongAppleMusicPlayer
                   title={dialogueData.masterpieceName}
                   artist={dialogueData.musicArtist || dialogueData.masterName}
-                  youtubeVideoId={dialogueData.musicVideoId}
+                  appleMusicClassicalUrl={dialogueData.appleMusicClassicalUrl}
                 />
               </div>
             </motion.div>

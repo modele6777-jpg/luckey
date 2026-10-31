@@ -30,7 +30,7 @@ import { MuseDocentAudio } from "@/components/muse/MuseDocentAudio";
 import { TTSButton } from "@/components/TTSButton";
 import { buildPoemGoogleArtsAndCultureSearchUrl, buildArtworkGoogleArtsAndCultureSearchUrl, buildPoemFullTextSearchQuery, buildPoemGoogleAiSearchUrl, extractOriginalLanguage } from "@/utils/artSearchQuery";
 import { lookupCatalogDailyArtUrl, resolveArtworkDailyArtUrl, MUSE_ART_CATALOG } from "@/lib/museDailyArt";
-import { MuseSongYouTubePlayer } from "@/components/muse/MuseSongYouTubePlayer";
+import { MuseSongAppleMusicPlayer, ensureAppleMusicClassicalUrl } from "@/components/muse/MuseSongAppleMusicPlayer";
 import { recordPrismFeature } from "@/lib/prismOmniSync";
 import {
   resolveArtworkImage,
@@ -63,7 +63,6 @@ interface FamousSong {
   artist: string;
   artistOriginal?: string;
   listeningGuide: string;
-  youtubeVideoId?: string;
   appleMusicClassicalUrl?: string;
   songSourceName?: string;
 }
@@ -111,7 +110,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "클로드 드뷔시",
       artistOriginal: "Claude Debussy",
       listeningGuide: "물결처럼 번지는 피아노의 여백과 잔향에 집중해 보세요.",
-      youtubeVideoId: "WNcsUNKlAKw",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1358340973",
       songSourceName: "Apple Music Classical",
     },
@@ -133,7 +131,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "루트비히 판 베토벤",
       artistOriginal: "Ludwig van Beethoven",
       listeningGuide: "운명 동기가 절망을 뚫고 승리의 리듬으로 변화하는 과정을 따라가 보세요.",
-      youtubeVideoId: "_4IRnGS1l48",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1499288492",
       songSourceName: "Apple Music Classical",
     },
@@ -155,7 +152,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "요한 제바스티안 바흐",
       artistOriginal: "Johann Sebastian Bach",
       listeningGuide: "한 줄의 선율이 질서와 자유를 동시에 만들어내는 흐름에 집중해 보세요.",
-      youtubeVideoId: "1prwe0WcGY8",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1398580507",
       songSourceName: "Apple Music Classical",
     },
@@ -177,7 +173,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "루트비히 판 베토벤",
       artistOriginal: "Ludwig van Beethoven",
       listeningGuide: "섬세하게 이어지는 멜로디의 선율 속에 흐르는 마음의 정서를 느껴보세요.",
-      youtubeVideoId: "yAsDLGjMhFI",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -199,7 +194,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "요한 제바스티안 바흐",
       artistOriginal: "Johann Sebastian Bach",
       listeningGuide: "장엄하고도 깊은 울림의 첼로 선율에 맞춰 조용히 호흡해 보세요.",
-      youtubeVideoId: "FZ_E_vL-Pj4",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1545642456",
       songSourceName: "Apple Music Classical",
     },
@@ -221,7 +215,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "에드워드 엘가",
       artistOriginal: "Edward Elgar",
       listeningGuide: "감미롭고 따뜻한 바이올린의 서정적인 선율에 귀 기울여 보세요.",
-      youtubeVideoId: "MreT_U00zI8",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -243,7 +236,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "요한 파헬벨",
       artistOriginal: "Johann Pachelbel",
       listeningGuide: "반복되고 점층적으로 확장되는 캐논의 평화로운 선율을 따라가 보세요.",
-      youtubeVideoId: "H10vY9PZpx8",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -265,7 +257,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "프레데리크 쇼팽",
       artistOriginal: "Frédéric Chopin",
       listeningGuide: "밤의 감성을 깨우는 서정적이고 감미로운 피아노 선율에 몰입해 보세요.",
-      youtubeVideoId: "9E6b3swgX-g",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -287,7 +278,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "로베르트 슈만",
       artistOriginal: "Robert Schumann",
       listeningGuide: "꿈결 같고 부드러운 슈만의 멜로디에 맞춰 마음을 차분히 내려놓으세요.",
-      youtubeVideoId: "6z82w0p6_M8",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -309,7 +299,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "가브리엘 포레",
       artistOriginal: "Gabriel Fauré",
       listeningGuide: "우아하면서도 아련하게 번지는 플루트 선율과 피치카토 리듬에 마음을 맡겨보세요.",
-      youtubeVideoId: "mpgyEl4G9iU",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -331,7 +320,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "세르게이 라흐마니노프",
       artistOriginal: "Sergei Rachmaninoff",
       listeningGuide: "안개를 뚫고 아침 햇살이 비치듯 서서히 고조되는 낭만적인 피아노의 온기를 느껴보세요.",
-      youtubeVideoId: "bAK2J05Ts68",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -353,7 +341,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "에릭 사티",
       artistOriginal: "Erik Satie",
       listeningGuide: "절제된 세 음의 화음이 만드는 공간감 속에서 시적 영감의 순간을 기다려보세요.",
-      youtubeVideoId: "S-Xm7s9eGxU",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -375,7 +362,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "루트비히 판 베토벤",
       artistOriginal: "Ludwig van Beethoven",
       listeningGuide: "영혼의 가장 깊은 곳을 어루만지는 베토벤의 서정적 잔향에 귀 기울여 보세요.",
-      youtubeVideoId: "4Tr0otuiQuU",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -397,7 +383,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "세르게이 라흐마니노프",
       artistOriginal: "Sergei Rachmaninoff",
       listeningGuide: "가사 없이 오직 음성/선율만으로 슬픔을 기쁨으로 승화하는 애절한 멜로디입니다.",
-      youtubeVideoId: "SVnJvH7T7Q8",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -419,7 +404,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "프란츠 슈베르트",
       artistOriginal: "Franz Schubert",
       listeningGuide: "영혼의 번뇌를 씻어내리는 맑고 숭고한 기도의 멜로디에 귀를 기울여 보세요.",
-      youtubeVideoId: "2bosouX_d8Y",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -441,7 +425,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "카미유 생상스",
       artistOriginal: "Camille Saint-Saëns",
       listeningGuide: "물결 위를 우아하고 고결하게 미끄러져 나아가는 첼로의 유려한 선율을 음미해 보세요.",
-      youtubeVideoId: "3qrKj5L67eI",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -463,7 +446,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "안토닌 드보르자크",
       artistOriginal: "Antonín Dvořák",
       listeningGuide: "잉글리시 호른이 전하는 그리움과 광활한 대지의 호흡을 가슴 깊이 느껴보세요.",
-      youtubeVideoId: "ASlch7R1wvo",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -485,7 +467,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "안토니오 비발디",
       artistOriginal: "Antonio Vivaldi",
       listeningGuide: "새들의 지저귐과 시냇물의 속삭임처럼 다시 피어나는 생명의 약동을 느껴보세요.",
-      youtubeVideoId: "l-dYNttdgl0",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -507,7 +488,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "구스타프 말러",
       artistOriginal: "Gustav Mahler",
       listeningGuide: "현악기와 하프가 빚어내는 무한하고 애틋한 사랑의 고백에 깊이 빠져들어 보세요.",
-      youtubeVideoId: "Les39aIKbzE",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -529,7 +509,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "에릭 사티",
       artistOriginal: "Erik Satie",
       listeningGuide: "정형화된 박자를 벗어나 공중에 흩어지는 몽환적인 음표들의 자유를 함께 유영해 보세요.",
-      youtubeVideoId: "PLFVGwGQyo0",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -551,7 +530,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "루트비히 판 베토벤",
       artistOriginal: "Ludwig van Beethoven",
       listeningGuide: "장엄하면서도 한없이 온화한 피아노의 찬가 선율이 마음의 상처를 따뜻하게 감싸 안아줍니다.",
-      youtubeVideoId: "d9z_j0d3V00",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -573,7 +551,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "볼프강 아마데우스 모차르트",
       artistOriginal: "Wolfgang Amadeus Mozart",
       listeningGuide: "천상의 평화를 닮은 클라리넷의 청아하고 온화한 음색이 영혼의 깊은 휴식을 선사합니다.",
-      youtubeVideoId: "Bx10UfJ_D5w",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -595,7 +572,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "프레데리크 쇼팽",
       artistOriginal: "Frédéric Chopin",
       listeningGuide: "규칙적으로 떨어지는 빗방울처럼 반복되는 A-플랫 음 위에 얹힌 애틋한 멜로디에 빠져보세요.",
-      youtubeVideoId: "6gV9gU4W_5w",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -617,7 +593,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "프레데리크 쇼팽",
       artistOriginal: "Frédéric Chopin",
       listeningGuide: "쇼팽 스스로가 '내 평생 이렇게 아름다운 멜로디는 쓴 적이 없다'고 고백한 서정의 절정을 느껴보세요.",
-      youtubeVideoId: "3Xj_xV34X9Y",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -639,7 +614,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "세르게이 라흐마니노프",
       artistOriginal: "Sergei Rachmaninoff",
       listeningGuide: "밤하늘의 은하수가 천천히 밀려오듯 벅차오르는 감동과 애수를 플루트와 피아노로 음미하세요.",
-      youtubeVideoId: "rEGOihjqO9w",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -661,7 +635,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "요한 제바스티안 바흐",
       artistOriginal: "Johann Sebastian Bach",
       listeningGuide: "모든 기교와 군더더기를 털어낸 순결한 건반의 터치 속에서 절대적인 영혼의 평화를 맛보세요.",
-      youtubeVideoId: "15ezpwCHtWA",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -683,7 +656,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "표트르 일리치 차이콥스키",
       artistOriginal: "Pyotr Ilyich Tchaikovsky",
       listeningGuide: "하프 카덴차 뒤에 이어지는 화려한 호른과 현악기의 우아한 춤사위에 몸을 맡겨보세요.",
-      youtubeVideoId: "QxHkLdQy5f0",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -705,7 +677,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "클로드 드뷔시",
       artistOriginal: "Claude Debussy",
       listeningGuide: "물결처럼 유려하게 흘러내리는 피아노 음표들이 마음의 모서리를 부드럽게 둥글려 줍니다.",
-      youtubeVideoId: "Yh36Pa439bE",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -727,7 +698,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "모리스 라벨",
       artistOriginal: "Maurice Ravel",
       listeningGuide: "호른의 고즈넉한 솔로와 현악기의 우아한 물결이 빚어내는 옛 궁정의 아련한 추억을 음미하세요.",
-      youtubeVideoId: "GKkeDqJBlK8",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -749,7 +719,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "에드바르 그리그",
       artistOriginal: "Edvard Grieg",
       listeningGuide: "새벽 햇살이 온 대지를 물들이며 피어오르는 플루트와 오보에의 싱그러운 아침을 만끽하세요.",
-      youtubeVideoId: "kzTQ9bh445E",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -771,7 +740,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "안토니오 비발디",
       artistOriginal: "Antonio Vivaldi",
       listeningGuide: "풍성한 가을 들판의 수확과 기쁨을 축하하는 경쾌한 현악기의 활기찬 리듬에 젖어보세요.",
-      youtubeVideoId: "H7hGiZ579cs",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -793,7 +761,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "안토니오 비발디",
       artistOriginal: "Antonio Vivaldi",
       listeningGuide: "창밖에 눈비가 내려도 벽난로 옆에서 따뜻한 차 한 잔을 마시는 듯한 안락한 평화를 선사합니다.",
-      youtubeVideoId: "nGdFHJXciAQ",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -815,7 +782,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "요하네스 브람스",
       artistOriginal: "Johannes Brahms",
       listeningGuide: "브람스가 만년에 남긴 가장 다정하고 눈물겨운 피아노의 따스한 속삭임에 귀 기울여 보세요.",
-      youtubeVideoId: "43mFlMwhm0M",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -837,7 +803,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "가브리엘 포레",
       artistOriginal: "Gabriel Fauré",
       listeningGuide: "물결 위를 노 젓듯 흔들리는 첼로와 피아노의 서정적인 멜로디에 기대어 옛 추억에 젖어보세요.",
-      youtubeVideoId: "9vH6Uv9yV1k",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -859,7 +824,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "펠릭스 멘델스존",
       artistOriginal: "Felix Mendelssohn",
       listeningGuide: "천상의 노래처럼 부드럽고 따스하게 노래하는 바이올린 독주의 서정성에 온전히 빠져보세요.",
-      youtubeVideoId: "o1dBselZS20",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -881,7 +845,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "프란츠 리스트",
       artistOriginal: "Franz Liszt",
       listeningGuide: "꿈결 같은 하프 소리처럼 가슴속 깊은 사랑을 일깨우는 낭만적인 피아노의 절창을 느껴보세요.",
-      youtubeVideoId: "KpOtuoHL45Y",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -903,7 +866,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "황병기",
       artistOriginal: "Hwang Byungki",
       listeningGuide: "신라의 향기가 피어오르듯 신비롭고 아득한 가야금 선율이 마음의 소음을 정화해 줍니다.",
-      youtubeVideoId: "v7n4m17Kz08",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1545642456",
       songSourceName: "한국 전통 창작음악 아카이브",
     },
@@ -925,7 +887,6 @@ const DAILY_POEM_SONG_FALLBACKS: Array<{ famousPoem: FamousPoem; famousSong: Fam
       artist: "클로드 드뷔시",
       artistOriginal: "Claude Debussy",
       listeningGuide: "여름 숲속에 은은히 퍼지는 플루트의 신비롭고 감미로운 음률에 몸을 맡겨보세요.",
-      youtubeVideoId: "9_7loz-HWUM",
       appleMusicClassicalUrl: "https://classical.music.apple.com/kr/album/1440843236",
       songSourceName: "Apple Music Classical",
     },
@@ -1362,7 +1323,6 @@ function sanitizeArtRecommendation(raw: ArtRecommendation, offset?: number): Art
       artist: currentPoem.poet,
       artistOriginal: currentPoem.poetOriginal,
       listeningGuide: currentPoem.excerpt || "영혼을 정화하는 멜로디입니다.",
-      youtubeVideoId: fallbackPair.famousSong.youtubeVideoId,
       appleMusicClassicalUrl: fallbackPair.famousSong.appleMusicClassicalUrl,
       songSourceName: "Apple Music Classical",
     };
@@ -1389,7 +1349,6 @@ function sanitizeArtRecommendation(raw: ArtRecommendation, offset?: number): Art
         artist: currentPoem.poet,
         artistOriginal: currentPoem.poetOriginal,
         listeningGuide: currentPoem.excerpt || "영혼을 어루만지는 선율입니다.",
-        youtubeVideoId: fallbackPair.famousSong.youtubeVideoId,
         appleMusicClassicalUrl: fallbackPair.famousSong.appleMusicClassicalUrl,
         songSourceName: "Apple Music Classical",
       };
@@ -1421,7 +1380,7 @@ function sanitizeArtRecommendation(raw: ArtRecommendation, offset?: number): Art
   }
 
   rec.famousPoem = currentPoem;
-  rec.famousSong = currentSong;
+  rec.famousSong = ensureAppleMusicClassicalUrl(currentSong);
   return rec;
 }
 
@@ -1532,7 +1491,9 @@ function enrichRecommendation(rec: ArtRecommendation, randomOffset?: number): Ar
     ...rec,
     dailyArtUrl,
     famousPoem: rec.famousPoem?.title ? rec.famousPoem : fallback.famousPoem,
-    famousSong: rec.famousSong?.title ? rec.famousSong : fallback.famousSong,
+    famousSong: rec.famousSong?.title
+      ? ensureAppleMusicClassicalUrl(rec.famousSong)
+      : fallback.famousSong,
   };
 }
 
@@ -2724,19 +2685,19 @@ export function ArtRecommendationView() {
                   </p>
                 </div>
 
-                <MuseSongYouTubePlayer
-                  key={recommendation.famousSong.youtubeVideoId || recommendation.famousSong.title}
+                <MuseSongAppleMusicPlayer
+                  key={recommendation.famousSong.appleMusicClassicalUrl || recommendation.famousSong.title}
                   title={recommendation.famousSong.title}
                   titleOriginal={recommendation.famousSong.titleOriginal}
                   artist={recommendation.famousSong.artist}
                   artistOriginal={recommendation.famousSong.artistOriginal}
-                  youtubeVideoId={recommendation.famousSong.youtubeVideoId}
+                  appleMusicClassicalUrl={recommendation.famousSong.appleMusicClassicalUrl}
                 />
 
                 <div className="duo-workspace-actions flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
                   <p className="text-[10px] text-white/40 leading-relaxed">
                     <span className="font-black uppercase tracking-wider text-white/30">출처</span>
-                    {" "}{recommendation.famousSong.songSourceName || "Apple Music Classical / YouTube"}
+                    {" "}{recommendation.famousSong.songSourceName || "Apple Music Classical"}
                     {recommendation.famousSong.artist ? ` · ${recommendation.famousSong.artist}` : ""}
                   </p>
                 </div>

@@ -18,6 +18,7 @@ export interface MasterArtwork {
   inspirationAffirmation?: string;
   // Category specific payloads
   musicVideoId?: string;
+  appleMusicClassicalUrl?: string;
   musicArtist?: string;
   musicListeningGuide?: string;
   poemText?: string;
@@ -37,6 +38,7 @@ export interface MasterItem {
   imageUrl?: string;
   originalMuseum?: string;
   musicVideoId?: string;
+  appleMusicClassicalUrl?: string;
   musicArtist?: string;
   musicListeningGuide?: string;
   poemText?: string;
@@ -65,6 +67,7 @@ export interface MasterpieceDialogueData {
   inspirationAffirmation: string;
   // Category specific payloads
   musicVideoId?: string;
+  appleMusicClassicalUrl?: string;
   musicArtist?: string;
   musicListeningGuide?: string;
   poemText?: string;
