@@ -174,6 +174,37 @@ export default defineConfig(({mode}) => {
                 networkTimeoutSeconds: 3,
               },
             },
+            {
+              // 오프라인 복원력: 데일리아트 명화 이미지 등 외부 이미지를
+              // 한 번 본 뒤에는 오프라인에서도 다시 보여준다 (Stale-While-Revalidate)
+              urlPattern: ({ request }) => request.destination === 'image',
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'prism-external-images',
+                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 14 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              // Google Fonts 스타일시트 — 오프라인에서도 폰트가 깨지지 않도록
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'prism-google-fonts-css',
+                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [200] },
+              },
+            },
+            {
+              // Google Fonts 폰트 파일 — 1년 캐시
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'prism-google-fonts-files',
+                expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [200] },
+              },
+            },
           ],
         }
       })

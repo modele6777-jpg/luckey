@@ -24,6 +24,7 @@ import { GoalProgressRingDashboard } from '@/components/goals/GoalProgressRingDa
 import { TodayLucyPersonaCard } from '@/components/TodayLucyPersonaCard';
 import { playAiResultNotification } from '@/lib/audioHaptics';
 import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
+import { DailyCosmicRoutineCard } from '@/components/hub/DailyCosmicRoutineCard';
 
 const HUB_SWIPE_TABS = ['universe', 'ecpr', 'todo'] as const;
 type HubSwipeTab = typeof HUB_SWIPE_TABS[number];
@@ -695,6 +696,11 @@ export default function HubHome() {
             </AnimatePresence>
 
             <div className="prism-page-content universe-content relative z-10 w-full min-w-0 px-3 sm:px-6 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col mx-auto space-y-6 md:space-y-7">
+
+              {/* ✨ 데일리 코스믹 모닝 루틴 허브 — 앱을 켜자마자 원클릭으로 하루를 여는 3분 루틴 */}
+              <ErrorBoundary>
+                <DailyCosmicRoutineCard />
+              </ErrorBoundary>
 
               {/* Dual-Pane Top Split: Left Pane (Today's Lucy Persona) & Right Pane (Universe Insight) */}
               <div className="duo-split-grid items-stretch">

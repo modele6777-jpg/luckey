@@ -13,6 +13,7 @@ import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionO
 import ErrorBoundary from "./components/ErrorBoundary";
 import ReloadPrompt from "./components/ReloadPrompt";
 import InstallPrompt from "./components/InstallPrompt";
+import OfflineGuideBanner from "./components/OfflineGuideBanner";
 import AppIconPreviewModal from "./components/AppIconPreviewModal";
 import { GlobalHandbookAudioWidget } from "./components/GlobalHandbookAudioWidget";
 import { ChannelIntroModal } from "./components/common/ChannelIntroModal";
@@ -623,6 +624,7 @@ function AppContent() {
 
       <ReloadPrompt />
       <InstallPrompt />
+      <OfflineGuideBanner />
       <ChannelIntroModal />
       <GlobalHandbookAudioWidget />
       <TTSFailureNotice />
