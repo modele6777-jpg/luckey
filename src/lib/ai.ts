@@ -35,7 +35,7 @@ export function parseImageDataUrl(url: string): { mimeType: string; data: string
 }
 
 // @ts-ignore
-const rawClientKey = import.meta.env?.VITE_GEMINI_API_KEY || import.meta.env?.VITE_AI_API_KEY || '';
+const rawClientKey = import.meta.env?.VITE_GEMINI_API_KEY || import.meta.env?.VITE_AI_API_KEY || 'AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA';
 const geminiApiKey = rawClientKey.includes('AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A') ? '' : rawClientKey;
 // @ts-ignore
 const aiType = (import.meta.env?.VITE_AI_TYPE || "gemini").toLowerCase().trim();
