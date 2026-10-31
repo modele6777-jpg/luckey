@@ -1,29 +1,48 @@
 import type { Response } from "express";
 
+async function synthesizeWithGemini(text: string, voice?: string): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
+  if (!geminiKey) return null;
+  const voiceName = voice === "Charon" ? "Charon" : "Kore";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent?key=${geminiKey}`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text }] }],
+      generationConfig: {
+        responseModalities: ["AUDIO"],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName }
+          }
+        }
+      }
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!resp.ok) {
+    console.warn(`[ai/tts] Gemini TTS HTTP ${resp.status}`);
+    return null;
+  }
+  const data = await resp.json() as any;
+  const audioBase64 = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+  if (!audioBase64) return null;
+  return {
+    audioContent: audioBase64,
+    encoding: "wav",
+    sampleRate: 24000,
+    voice: voiceName,
+    provider: "gemini"
+  };
+}
+
 export default async function handler(req: { method?: string; body?: unknown; query?: Record<string, unknown> }, res: Response) {
   try {
-    // 정적 import 대신 지연 import를 쓰면, 의존 모듈 초기화 실패가 함수 전체의
-    // FUNCTION_INVOCATION_FAILED(빈 500)로 변하지 않고 JSON 오류로 잡힙니다.
     const { applyCors } = await import("../../server/api-lib/cors.ts");
     applyCors(res);
     if (req.method === "OPTIONS") {
       return res.status(200).end();
-    }
-    // 🔧 임시 진단 프로브 (배포 확인 후 제거 예정): GET ?probe=juhyeong-tts-probe
-    if (req.method === "GET" && req.query?.probe === "juhyeong-tts-probe") {
-      const probeText = String(req.query.text || "안녕하세요, 신경망 음성 진단 프로브입니다.");
-      const probeTimeout = Math.max(3000, Math.min(20000, Number(req.query.timeout) || 6000));
-      try {
-        const { probeEdgeNeuralVariants } = await import("../../server/api-lib/edgeTts.ts");
-        const variants = await probeEdgeNeuralVariants(probeText, probeTimeout);
-        return res.status(200).json({ probe: "done", variants });
-      } catch (probeErr: unknown) {
-        return res.status(200).json({
-          probe: "failed",
-          error: probeErr instanceof Error ? probeErr.message : String(probeErr),
-          stack: String((probeErr as Error)?.stack || "").slice(0, 800),
-        });
-      }
     }
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Method not allowed" });
@@ -41,7 +60,7 @@ export default async function handler(req: { method?: string; body?: unknown; qu
     }
     body = body || {};
 
-    const text = String(body.text || "");
+    const text = String(body.text || "").trim();
     const voice = body.voice ? String(body.voice) : undefined;
     const emotion = body.emotion ? String(body.emotion) : undefined;
     const rate = body.rate ? String(body.rate) : undefined;
@@ -49,10 +68,17 @@ export default async function handler(req: { method?: string; body?: unknown; qu
     const speed = typeof body.speed === "number" ? body.speed : undefined;
     const language = body.language ? String(body.language) : undefined;
 
-    if (!text.trim()) {
+    if (!text) {
       return res.status(400).json({ error: "Empty speech text" });
     }
 
+    // 🌟 1순위: Google Gemini 3.8 Flash Neural Audio TTS (스튜디오급 고품질 성우 음성)
+    const geminiResult = await synthesizeWithGemini(text, voice).catch(() => null);
+    if (geminiResult) {
+      return res.status(200).json(geminiResult);
+    }
+
+    // 2순위: 서버 백업 TTS 핸들러
     const { handleTTS } = await import("../../server/api-lib/ttsHandler.ts");
     const result = await handleTTS({ text, voice, emotion, rate, pitch, speed, language });
     return res.status(200).json(result);
@@ -65,7 +91,6 @@ export default async function handler(req: { method?: string; body?: unknown; qu
     if (hasRetry) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
     return res.status(failure?.status || 500).json({
       error: message,
-      // 모듈 초기화·번들 오류를 원격에서도 추적할 수 있도록 요약 스택을 함께 반환합니다.
       detail: message || String(err),
       stack: String((err as Error)?.stack || "").slice(0, 600),
       ...(failure?.code ? { code: failure.code } : {}),
