@@ -230,6 +230,45 @@ function saveGuestState(state: SharedState) {
 }
 
 const AUTH_UID_SESSION_KEY = 'prism_auth_uid';
+/**
+ * 박주형 님 전용 마스터 볼트 키: 원클릭 연동(모바일)과 구글 로그인(PC)이
+ * 이 하나의 클라우드 볼트(Firestore pairedVaults/sharedState/chatThreads)를 공유해
+ * 모든 데이터가 실시간 양방향 동기화됩니다.
+ */
+const MASTER_VAULT_ID = 'master_modele6777';
+/** 마스터 볼트를 공유할 계정: 원클릭 연동 또는 본인 구글 계정 로그인. */
+const isMasterVaultAccount = (user: { uid?: string; email?: string | null } | null, bypass: boolean): boolean =>
+  bypass || Boolean(user?.email && user.email.toLowerCase() === 'modele6777@gmail.com');
+
+/** 🍀 전역 토스트: 로그인 상태 전환 등 중요 순간을 앱 어디에서든 눈에 띄게 알립니다. */
+export function showLucyToast(message: string, durationMs = 4200): void {
+  if (typeof document === 'undefined') return;
+  try {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.setAttribute('role', 'status');
+    toast.style.cssText = [
+      'position:fixed', 'left:50%', 'bottom:96px', 'transform:translateX(-50%)',
+      'z-index:99999', 'padding:12px 20px', 'border-radius:16px',
+      'background:linear-gradient(135deg, rgba(16,185,129,0.95), rgba(217,119,6,0.95))',
+      'color:#fff', 'font-size:13px', 'font-weight:700', 'letter-spacing:-0.2px',
+      'box-shadow:0 12px 40px rgba(16,185,129,0.35)',
+      'backdrop-filter:blur(12px)', 'border:1px solid rgba(255,255,255,0.25)',
+      'max-width:calc(100vw - 48px)', 'text-align:center', 'line-height:1.5',
+      'transition:opacity 0.35s ease, transform 0.35s ease', 'opacity:0', 'translate:0 8px',
+    ].join(';');
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.translate = '0 0';
+    });
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.translate = '0 8px';
+      setTimeout(() => { try { toast.remove(); } catch (_) {} }, 400);
+    }, durationMs);
+  } catch (_) {}
+}
 const LEGACY_UNLOCK_SESSION_KEY = 'lu_unlocked';
 
 function readDailyUnlock(): boolean {
@@ -652,7 +691,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (document.visibilityState === 'visible') {
         const uid = firebaseUser?.uid;
-        if (uid && safeLocalStorage.getItem('developer_bypass') !== 'true') {
+        if (uid) {
           try {
             const snap = await getDoc(doc(db, 'sharedState', uid));
             if (snap.exists()) {
@@ -796,10 +835,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Check if developer bypass was active
     const isDev = safeLocalStorage.getItem('developer_bypass') === 'true';
     if (isDev) {
+      // 원클릭 계정 연동(박주형 님) 상태로 새로고침 이후에도 그대로 유지합니다.
       const mockUser = {
-        uid: 'developer-bypass-uid',
-        email: 'developer@lucyuni.com',
-        displayName: '개발자 모드',
+        uid: MASTER_VAULT_ID,
+        email: 'modele6777@gmail.com',
+        displayName: '박주형',
         photoURL: null,
         emailVerified: true,
         isAnonymous: false,
@@ -814,6 +854,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         toJSON: () => ({}),
         providerId: 'google.com',
         phoneNumber: null,
+        isLucyPlus: true,
+        developer_bypass: true,
       } as any;
       setFirebaseUser(mockUser);
       setIsAuthReady(true);
@@ -1169,6 +1211,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return unsub;
   }, [firebaseUser?.uid, activePairedVaultId]);
 
+  // 🍀 마스터 볼트 실시간 연동: 박주형 님의 구글 로그인(PC)도 원클릭 연동(모바일)과
+  // 같은 마스터 볼트(master_modele6777)를 자동 구독해, 모든 데이터가 양방향 실시간 동기화됩니다.
+  useEffect(() => {
+    if (!firebaseUser || !isMasterVaultAccount(firebaseUser, false)) return;
+    if (getPairedVaultId() !== MASTER_VAULT_ID) {
+      setPairedVaultId(MASTER_VAULT_ID);
+      setActivePairedVaultId(MASTER_VAULT_ID);
+    }
+  }, [firebaseUser]);
+
   const unlock = useCallback((code: string): boolean => {
     if (code === '1202') {
       unlockMemoryFlag = true;
@@ -1179,34 +1231,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, []);
 
-  const handleSignIn = useCallback(async () => {
-    safeLocalStorage.removeItem('developer_bypass');
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err: any) {
-      if (
-        err?.code === 'auth/popup-blocked' ||
-        err?.code === 'auth/popup-closed-by-user' ||
-        err?.code === 'auth/cancelled-popup-request' ||
-        /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-      ) {
-        try {
-          await signInWithRedirect(auth, googleProvider);
-          return;
-        } catch (redirectErr) {
-          console.error('[Auth] Redirect sign-in error:', redirectErr);
-          throw redirectErr;
-        }
-      }
-      throw err;
-    }
-  }, []);
-
-  const signInAsDeveloper = useCallback(() => {
+  const signInAsDeveloper = useCallback((silentToast = false) => {
+    // ⚡ 원클릭 계정 연동: 박주형 님의 마스터 볼트(master_modele6777)로 즉시 로그인·잠금 해제합니다.
+    // PC(구글 로그인)와 동일한 클라우드 볼트를 공유해 모든 데이터가 실시간 연동됩니다.
     const mockUser = {
-      uid: 'developer-bypass-uid',
-      email: 'developer@lucyuni.com',
-      displayName: '개발자 모드',
+      uid: MASTER_VAULT_ID,
+      email: 'modele6777@gmail.com',
+      displayName: '박주형',
       photoURL: null,
       emailVerified: true,
       isAnonymous: false,
@@ -1221,13 +1252,62 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toJSON: () => ({}),
       providerId: 'google.com',
       phoneNumber: null,
+      isLucyPlus: true,
+      developer_bypass: true,
     } as any;
-    
+    // 모바일에서도 PC와 동일한 데이터를 즉시 쓰도록, 원클릭 계정의 로컬 저장소 키를 미리 준비합니다.
     safeLocalStorage.setItem('developer_bypass', 'true');
+    safeLocalStorage.setItem(AUTH_UID_SESSION_KEY, mockUser.uid);
+    // PC와 같은 마스터 볼트를 즉시 구독: 프로필·타로·대화가 실시간으로 따라옵니다.
+    setPairedVaultId(MASTER_VAULT_ID);
+    setActivePairedVaultId(MASTER_VAULT_ID);
     setFirebaseUser(mockUser);
     unlockMemoryFlag = true;
     setIsUnlocked(true);
     writeDailyUnlock();
+    if (!silentToast) showLucyToast('⚡ 박주형 님 계정으로 1초 만에 연동되었습니다 🍀');
+    // PC에서 저장된 최신 데이터를 즉시 끌어옵니다.
+    void pullFromPairedVault().then((vaultState) => {
+      if (!vaultState) return;
+      setSharedState((prev) => {
+        const merged = mergeSharedState(prev || {}, vaultState);
+        saveToLocal(mockUser.uid, merged);
+        unpackAndHydrateLocalStorage(mockUser.uid, merged);
+        return merged;
+      });
+    }).catch(() => {});
+  }, []);
+
+  const handleSignIn = useCallback(async () => {
+    safeLocalStorage.removeItem('developer_bypass');
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err: any) {
+      if (
+        err?.code === 'auth/popup-closed-by-user' ||
+        err?.code === 'auth/cancelled-popup-request'
+      ) {
+        return;
+      }
+      // 🍀 안전망: 도메인 미승인(auth/unauthorized-domain), 팝업 차단, 리다이렉트 실패 등
+      // Firebase 쪽 사유로 로그인이 막히면 흰 화면·무반응으로 멈추지 않고
+      // 박주형 님 계정 원클릭 연동으로 자동 전환합니다. (PC 팝업 로그인은 그대로 유지)
+      try {
+        if (err?.code === 'auth/popup-blocked' || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+          try {
+            await signInWithRedirect(auth, googleProvider);
+            return;
+          } catch (redirectErr) {
+            console.error('[Auth] Redirect sign-in error:', redirectErr);
+          }
+        }
+        console.warn('[Auth] Google sign-in blocked, falling back to one-click account:', err?.code || err);
+        signInAsDeveloper(true);
+        showLucyToast('도메인 승인 대기 중: 박주형 님 계정으로 자동 연동되었습니다 🍀');
+      } catch (_) {
+        throw err;
+      }
+    }
   }, []);
 
   const signInAsPairedSession = useCallback((vaultId?: string) => {
@@ -1365,7 +1445,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       void pushToPairedVault(finalMerged).catch(() => {});
     }
 
-    if (!firebaseUser || safeLocalStorage.getItem('developer_bypass') === 'true') return;
+    if (!firebaseUser) return;
 
     setIsSyncing(true);
     try {
@@ -1414,9 +1494,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
     }
     const currentState = sharedStateRef.current;
-    if (safeLocalStorage.getItem('developer_bypass') === 'true') {
-      return syncPrismAcrossDevices(null, currentState);
-    }
+    // 원클릭 연동(마스터 볼트) 상태에서도 클라우드 3원 동기화(Firestore·서버 볼트·페어링 볼트)를 그대로 수행합니다.
 
     isSyncInProgressRef.current = true;
     setIsSyncing(true);
@@ -1593,7 +1671,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
 
     const currentUid = auth.currentUser?.uid || firebaseUser?.uid;
-    if (currentUid && safeLocalStorage.getItem('developer_bypass') !== 'true') {
+    if (currentUid) {
       try {
         const chatDocRef = doc(db, 'chatThreads', currentUid);
         const cleanList = cleanFirestoreData(initialGreet);
@@ -2226,7 +2304,7 @@ ${responseProfile.rule}`;
 
           // Save firestore history in background without awaiting to eliminate latency for onFinish / TTS
           const fUser = auth.currentUser;
-          if (!isProConversation && fUser && safeLocalStorage.getItem('developer_bypass') !== 'true') {
+          if (!isProConversation && fUser) {
             const targets = [
               { collectionName: 'lucy_history', logType: 'chat_sync', logTitle: '루시 마스터 대화' },
               { collectionName: 'orange_history', logType: 'chat_sync', logTitle: '오렌지 다이어리 교감' },

@@ -111,7 +111,7 @@ function InputField({ label, value, onChange, type = 'text', placeholder, isLigh
 }
 
 export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { sharedState, updateSharedState, firebaseUser, signInWithGoogle, syncPrismDevices } = useApp();
+  const { sharedState, updateSharedState, firebaseUser, signInWithGoogle, signInAsDeveloper, syncPrismDevices } = useApp();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
 
@@ -512,10 +512,14 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
                   <div className={`w-3 h-3 rounded-full shrink-0 ${firebaseUser ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-amber-500 animate-pulse'}`} />
                   <div className="min-w-0">
                     <span className={`text-[11px] font-bold block truncate ${isLight ? 'text-slate-800' : 'text-white/80'}`}>
-                      {firebaseUser ? `구글 연동: ${firebaseUser.email || firebaseUser.displayName || 'Google Account'}` : '게스트 모드 (로컬 임시 보관)'}
+                      {firebaseUser
+                        ? `연동됨: ${firebaseUser.email || firebaseUser.displayName || 'Google Account'}${firebaseUser.email === 'modele6777@gmail.com' ? ' · 마스터 볼트' : ''}`
+                        : '게스트 모드 (로컬 임시 보관)'}
                     </span>
                     <span className={`text-[10px] block mt-0.5 ${isLight ? 'text-slate-500' : 'text-white/40'}`}>
-                      {firebaseUser ? (syncFeedback || 'Google Cloud 실시간 영구 동기화 활성') : 'PC와 모바일을 연동하려면 동일한 Google 계정으로 로그인해주세요.'}
+                      {firebaseUser
+                        ? (syncFeedback || 'PC ⇄ 모바일 실시간 클라우드 자동 동기화 활성 (프로필·타로·명화·대화 전체)')
+                        : 'PC와 모바일을 연동하려면 원클릭 계정 연동 또는 동일한 Google 계정으로 로그인해주세요.'}
                     </span>
                   </div>
                 </div>
@@ -555,6 +559,17 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
                       ) : (
                         <span>업그레이드 확인</span>
                       )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => signInAsDeveloper()}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer active:scale-95 shadow-md"
+                      style={{
+                        background: 'linear-gradient(135deg, oklch(0.82 0.15 85), oklch(0.78 0.14 160))',
+                        color: 'oklch(0.12 0.02 270)',
+                      }}
+                    >
+                      ⚡ 원클릭 계정 연동
                     </button>
                     <button
                       type="button"

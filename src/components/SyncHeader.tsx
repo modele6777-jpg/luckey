@@ -43,7 +43,7 @@ export function SyncHeader({
   onLoginSuccess,
   onLogoutSuccess,
 }: SyncHeaderProps) {
-  const { firebaseUser, signInWithGoogle, logout, syncPrismDevices, sharedState } = useApp();
+  const { firebaseUser, signInWithGoogle, signInAsDeveloper, logout, syncPrismDevices, sharedState } = useApp();
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -132,6 +132,21 @@ export function SyncHeader({
               transition={{ duration: 0.2 }}
               className="flex items-center gap-2"
             >
+              <button
+                id="btn-oneclick-login"
+                className="group relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                type="button"
+                onClick={() => { signInAsDeveloper(); onLoginSuccess?.(); }}
+                disabled={loading}
+                style={{
+                  background: 'linear-gradient(135deg, oklch(0.82 0.15 85), oklch(0.78 0.14 160))',
+                  color: 'oklch(0.12 0.02 270)',
+                  boxShadow: '0 6px 22px rgba(245, 185, 66, 0.3)',
+                }}
+              >
+                <span className="text-base leading-none">⚡</span>
+                <span className="font-bold tracking-tight">원클릭 계정 연동</span>
+              </button>
               <button
                 id="btn-google-login"
                 className="google-login-btn group relative flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-800 hover:bg-slate-50 active:scale-95 transition-all shadow-[0_4px_14px_rgba(0,0,0,0.25)] border border-white/60 cursor-pointer disabled:opacity-50"
