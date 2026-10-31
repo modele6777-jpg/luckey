@@ -817,6 +817,67 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return unsub;
   }, [firebaseUser, activePairedVaultId]);
 
+  const signInAsDeveloper = useCallback((silentToast = false) => {
+    // ⚡ 원클릭 계정 연동: 박주형 님의 마스터 볼트(master_modele6777)로 즉시 로그인·잠금 해제합니다.
+    // PC(구글 로그인)와 동일한 클라우드 볼트를 공유해 모든 데이터가 실시간 연동됩니다.
+    const mockUser = {
+      uid: MASTER_VAULT_ID,
+      email: 'modele6777@gmail.com',
+      displayName: '박주형',
+      photoURL: null,
+      emailVerified: true,
+      isAnonymous: false,
+      metadata: {},
+      providerData: [],
+      refreshToken: '',
+      tenantId: null,
+      delete: async () => {},
+      getIdToken: async () => 'mock-token',
+      getIdTokenResult: async () => ({} as any),
+      reload: async () => {},
+      toJSON: () => ({}),
+      providerId: 'google.com',
+      phoneNumber: null,
+      isLucyPlus: true,
+      developer_bypass: true,
+    } as any;
+    // 모바일에서도 PC와 동일한 데이터를 즉시 쓰도록, 원클릭 계정의 로컬 저장소 키를 미리 준비합니다.
+    safeLocalStorage.setItem('developer_bypass', 'true');
+    safeLocalStorage.setItem(AUTH_UID_SESSION_KEY, mockUser.uid);
+    // PC와 같은 마스터 볼트를 즉시 구독: 프로필·타로·대화가 실시간으로 따라옵니다.
+    setPairedVaultId(MASTER_VAULT_ID);
+    setActivePairedVaultId(MASTER_VAULT_ID);
+    setFirebaseUser(mockUser);
+    unlockMemoryFlag = true;
+    setIsUnlocked(true);
+    writeDailyUnlock();
+    if (!silentToast) showLucyToast('⚡ 박주형 님 계정으로 1초 만에 연동되었습니다 🍀');
+    // PC에서 저장된 최신 데이터를 즉시 끌어옵니다.
+    void pullFromPairedVault().then((vaultState) => {
+      if (!vaultState) return;
+      setSharedState((prev) => {
+        const merged = mergeSharedState(prev || {}, vaultState);
+        saveToLocal(mockUser.uid, merged);
+        unpackAndHydrateLocalStorage(mockUser.uid, merged);
+        return merged;
+      });
+    }).catch(() => {});
+  }, []);
+
+  const unlock = useCallback((code: string): boolean => {
+    if (code === '1202') {
+      unlockMemoryFlag = true;
+      setIsUnlocked(true);
+      writeDailyUnlock();
+      // 🍀 PIN 1202 해제 시 박주형 님의 마스터 볼트(master_modele6777)로 즉시 자동 로그인/연동
+      if (!firebaseUser || firebaseUser.uid !== MASTER_VAULT_ID) {
+        signInAsDeveloper(true);
+      }
+      return true;
+    }
+    return false;
+  }, [firebaseUser, signInAsDeveloper]);
+
   useEffect(() => {
     if (!firebaseUser) {
       if (hasUnlockedPinToday()) {
@@ -1241,67 +1302,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setActivePairedVaultId(MASTER_VAULT_ID);
     }
   }, [firebaseUser]);
-
-  const unlock = useCallback((code: string): boolean => {
-    if (code === '1202') {
-      unlockMemoryFlag = true;
-      setIsUnlocked(true);
-      writeDailyUnlock();
-      // 🍀 PIN 1202 해제 시 박주형 님의 마스터 볼트(master_modele6777)로 즉시 자동 로그인/연동
-      if (!firebaseUser || firebaseUser.uid !== MASTER_VAULT_ID) {
-        signInAsDeveloper(true);
-      }
-      return true;
-    }
-    return false;
-  }, [firebaseUser, signInAsDeveloper]);
-
-  const signInAsDeveloper = useCallback((silentToast = false) => {
-    // ⚡ 원클릭 계정 연동: 박주형 님의 마스터 볼트(master_modele6777)로 즉시 로그인·잠금 해제합니다.
-    // PC(구글 로그인)와 동일한 클라우드 볼트를 공유해 모든 데이터가 실시간 연동됩니다.
-    const mockUser = {
-      uid: MASTER_VAULT_ID,
-      email: 'modele6777@gmail.com',
-      displayName: '박주형',
-      photoURL: null,
-      emailVerified: true,
-      isAnonymous: false,
-      metadata: {},
-      providerData: [],
-      refreshToken: '',
-      tenantId: null,
-      delete: async () => {},
-      getIdToken: async () => 'mock-token',
-      getIdTokenResult: async () => ({} as any),
-      reload: async () => {},
-      toJSON: () => ({}),
-      providerId: 'google.com',
-      phoneNumber: null,
-      isLucyPlus: true,
-      developer_bypass: true,
-    } as any;
-    // 모바일에서도 PC와 동일한 데이터를 즉시 쓰도록, 원클릭 계정의 로컬 저장소 키를 미리 준비합니다.
-    safeLocalStorage.setItem('developer_bypass', 'true');
-    safeLocalStorage.setItem(AUTH_UID_SESSION_KEY, mockUser.uid);
-    // PC와 같은 마스터 볼트를 즉시 구독: 프로필·타로·대화가 실시간으로 따라옵니다.
-    setPairedVaultId(MASTER_VAULT_ID);
-    setActivePairedVaultId(MASTER_VAULT_ID);
-    setFirebaseUser(mockUser);
-    unlockMemoryFlag = true;
-    setIsUnlocked(true);
-    writeDailyUnlock();
-    if (!silentToast) showLucyToast('⚡ 박주형 님 계정으로 1초 만에 연동되었습니다 🍀');
-    // PC에서 저장된 최신 데이터를 즉시 끌어옵니다.
-    void pullFromPairedVault().then((vaultState) => {
-      if (!vaultState) return;
-      setSharedState((prev) => {
-        const merged = mergeSharedState(prev || {}, vaultState);
-        saveToLocal(mockUser.uid, merged);
-        unpackAndHydrateLocalStorage(mockUser.uid, merged);
-        return merged;
-      });
-    }).catch(() => {});
-  }, []);
 
   const handleSignIn = useCallback(async () => {
     safeLocalStorage.removeItem('developer_bypass');
