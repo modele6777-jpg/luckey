@@ -6,6 +6,7 @@ import { getAstronomicalSajuYear, getYearSolarTerms } from './astronomicalSolarT
 import { UserProfile } from './sharedState';
 import { calculateDetailedSaju } from './sajuAnalysis';
 import { buildUserNatalSummary } from './astrologyAnalysis';
+import { runDeterministicEngine, formatDeterministicEnginePrompt } from './divination/deterministicEngine';
 
 export type DivinationToolId =
   | 'saju'           // 1. 사주 (四柱命理)
@@ -370,13 +371,18 @@ export interface SelectedDivinationToolsResult {
 
 /**
  * 마스터 모드 전용: 15대 운명학 도구 전원 총동원 & 7대 테마별 비교 분석 프롬프트 생성기
+ * 결정론적 자체 계산 엔진(Deterministic Engine)의 실측 데이터(JSON)를 우선 바인딩합니다.
  */
-export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile): string {
+export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile, questionText?: string): string {
   const userDigest = buildUserFifteenToolsDigest(profile);
+  const engineReport = runDeterministicEngine({ profile, question: questionText, forceAllTools: true });
+  const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport);
 
-  return `[👑 루시 올인원 마스터 모드 — 15대 운명학 도구 비교 지침 (최우선 적용)]
+  return `${deterministicDataBlock}
+
+[👑 루시 올인원 마스터 모드 — 15대 운명학 도구 비교 지침 (최우선 적용)]
 지금은 **올인원 마스터 모드(7대 채널 풀가동)**야!
-동서양 15가지 운명학 도구의 관점을 7대 테마별로 소개하되, **실제 계산 결과가 전달된 도구만 계산 기반 풀이**를 해줘. 계산 결과가 없는 도구는 '상징적 관점' 또는 '계산 미실시'라고 명확히 표시하고, 구체적인 명반·괘·궁위·행성 배치·사과삼전·길방위를 만들어내지 마. 독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마.
+위 [결정론적 자체 계산 엔진 실측 데이터]에 수치가 제공된 도구만 실제 계산 기반으로 해석해줘. 계산 결과가 없는 도구는 '상징적 관점' 또는 '계산 미실시'라고 명확히 표시하고, 구체적인 명반·괘·궁위·행성 배치·사과삼전·길방위를 만들어내지 마. 독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마.
 
 ${userDigest}
 ${buildDivinationCapabilityPrompt(Object.keys(FIFTEEN_DIVINATION_TOOLS) as DivinationToolId[])}
@@ -441,7 +447,7 @@ export function selectOptimalDivinationTools(
       isCasualMessage: false,
       isMasterMobilization: true,
       selectionReason: '마스터 모드 15대 운명학 도구 전원 총동원 & 7대 테마별 비교 분석',
-      promptInjection: buildMasterFifteenToolsComparisonPrompt(profile)
+      promptInjection: buildMasterFifteenToolsComparisonPrompt(profile, clean)
     };
   }
 
