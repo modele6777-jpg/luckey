@@ -1,17 +1,18 @@
 import type { Response } from "express";
-import { applyCors } from "../../server/api-lib/cors.ts";
-import { handleTTS } from "../../server/api-lib/ttsHandler.ts";
 
 export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
-  applyCors(res);
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   try {
+    // 정적 import 대신 지연 import를 쓰면, 의존 모듈 초기화 실패가 함수 전체의
+    // FUNCTION_INVOCATION_FAILED(빈 500)로 변하지 않고 JSON 오류로 잡힙니다.
+    const { applyCors } = await import("../../server/api-lib/cors.ts");
+    applyCors(res);
+    if (req.method === "OPTIONS") {
+      return res.status(200).end();
+    }
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
     let body = req.body as any;
     if (typeof body === "string") {
       try {
@@ -36,6 +37,7 @@ export default async function handler(req: { method?: string; body?: unknown }, 
       return res.status(400).json({ error: "Empty speech text" });
     }
 
+    const { handleTTS } = await import("../../server/api-lib/ttsHandler.ts");
     const result = await handleTTS({ text, voice, emotion, rate, pitch, speed, language });
     return res.status(200).json(result);
   } catch (err: unknown) {
@@ -47,6 +49,9 @@ export default async function handler(req: { method?: string; body?: unknown }, 
     if (hasRetry) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
     return res.status(failure?.status || 500).json({
       error: message,
+      // 모듈 초기화·번들 오류를 원격에서도 추적할 수 있도록 요약 스택을 함께 반환합니다.
+      detail: message || String(err),
+      stack: String((err as Error)?.stack || "").slice(0, 600),
       ...(failure?.code ? { code: failure.code } : {}),
       ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}),
     });
