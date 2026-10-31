@@ -1,5 +1,4 @@
 import { synthesizeWithEdgeTTS } from './edgeTts.ts';
-import { stripInternalSpeechDirectives } from '../../src/utils/speechText';
 
 export interface TTSHandlerOptions {
   text: string;
@@ -19,7 +18,22 @@ export interface TTSHandlerResult {
 }
 
 /**
- * 🔊 무료·무제한 Edge TTS 전면 교체 (ko-KR-SunHiNeural / ko-KR-InJoonNeural).
+ * 내부 제어 지시문(frontend src/ 의존성 없이 서버 자체 완결)을 제거합니다.
+ * 이전에는 src/utils/speechText를 import했는데, Vercel 서버리스 런타임 번들에
+ * 프론트엔드 경로가 존재하지 않아 `Cannot find module '/var/task/src/utils/speechText'`
+ * 로 함수 전체가 크래시했습니다. 그래서 필요한 정규식 처리를 여기에 인라인으로 옮겼습니다.
+ */
+function stripInternalSpeechDirectives(text: string): string {
+  return String(text || '')
+    .replace(/<(think|analysis|system|developer|internal|instructions)(?:\s[^>]*)?>[\s\S]*?(?:<\/\1\s*>|$)/gi, ' ')
+    .replace(/```(?:system|developer|prompt|instructions|internal|analysis)\s*\n[\s\S]*?(?:```|$)/gi, ' ')
+    .replace(/\[(SYSTEM|DEVELOPER|INTERNAL|PROMPT|INSTRUCTIONS|ANALYSIS)\]([\s\S]*?)(?:\[\/\1\]|$)/gi, ' ')
+    .replace(/\[(?:SYSTEM|DEVELOPER|INTERNAL|PROMPT|INSTRUCTIONS|ANALYSIS|EMOTION|SUGGESTIONS|TOOL|IMAGE|STAGE|SOUL_UPDATE|CARD_DRAWN|YOUTUBE)\s*:[\s\S]*?(?:\]|$)/gi, ' ')
+    .trim();
+}
+
+/**
+ * 🔊 무료·무제한 제로 의존성 무료 음성 합성.
  * 유료 OpenAI·Gemini 키나 쿼터와 완전히 무관하게, 모든 TTS 요청
  * (오디오 도슨트, 타로 리딩, 사주 리딩, 명시 낭독, Calm 가이드 등)이
  * 항상 무료 mp3 음성으로 낭독됩니다. 유료 API 폴백은 사용하지 않습니다.
@@ -29,7 +43,7 @@ export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerR
   try {
     return await synthesizeWithEdgeTTS(speech, options.voice);
   } catch (error) {
-    console.error('[tts] Edge TTS synthesis failed:', error);
+    console.error('[tts] Free TTS synthesis failed:', error);
     throw Object.assign(new Error('음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.'), { status: 502 });
   }
 }

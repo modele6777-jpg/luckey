@@ -7,7 +7,7 @@
     },
     "api/ai/tts.ts": {
       "maxDuration": 60,
-      "includeFiles": "{server/**,src/utils/speechText.ts,scripts/sites-ai-provider.mjs,scripts/sites-gemini-chat.mjs}"
+      "includeFiles": "{server/**,scripts/sites-ai-provider.mjs,scripts/sites-gemini-chat.mjs}"
     },
     "api/ai/daily-bgm.ts": {
       "maxDuration": 60,
