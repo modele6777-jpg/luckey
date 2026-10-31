@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ChevronDown, ChevronUp, Compass, Flame, Shield, Star, Activity, Eye, Music, Bell, Key, Check, Download, Camera } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Compass, Flame, Shield, Star, Activity, Eye, Music, Bell, Key, Check, Download, Camera, Heart, Users } from 'lucide-react';
 import { calculateDetailedSaju, type SajuAnalysisResult, type FiveElement } from '@/lib/sajuAnalysis';
 import { calculateNatalChart, type NatalChartResult } from '@/lib/astrologyAnalysis';
 import { calculateZiwei } from '@/lib/divination/birthCharts';
+import { calculateDeterministicCompatibility, type CompatibilityAnalysisResult } from '@/lib/divination/deterministicCompatibility';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { useLocation } from 'wouter';
 import { toPng } from 'html-to-image';
@@ -11,6 +12,7 @@ import type { UserProfile } from '@/lib/sharedState';
 
 interface VisualFortuneChartWidgetProps {
   profile?: UserProfile | null;
+  secondaryProfile?: UserProfile | null;
   usedTools?: string[];
   isLight?: boolean;
   className?: string;
@@ -18,15 +20,26 @@ interface VisualFortuneChartWidgetProps {
 
 export function VisualFortuneChartWidget({
   profile,
+  secondaryProfile = null,
   usedTools = [],
   isLight = false,
   className = '',
 }: VisualFortuneChartWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'my' | 'compat'>('my');
   const [isRinging, setIsRinging] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
+
+  const compatData: CompatibilityAnalysisResult | null = useMemo(() => {
+    if (!profile || !secondaryProfile) return null;
+    try {
+      return calculateDeterministicCompatibility(profile, secondaryProfile);
+    } catch (_) {
+      return null;
+    }
+  }, [profile, secondaryProfile]);
 
   const handleExportImage = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -106,7 +119,10 @@ export function VisualFortuneChartWidget({
         title="AI 답변의 기반이 된 실제 수리·천문 계산 차트를 열어봅니다."
       >
         <Sparkles size={13} className="text-emerald-400 animate-pulse" />
-        <span>실측 계산 차트 ({saju?.dayMaster?.hanja || '사주'} · {astro?.sun?.sign?.name || '별자리'})</span>
+        <span>
+          실측 계산 차트 ({saju?.dayMaster?.hanja || '사주'} · {astro?.sun?.sign?.name || '별자리'}
+          {compatData ? ` · 궁합 ${compatData.score}점` : ''})
+        </span>
         {isOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
       </button>
 
@@ -144,6 +160,132 @@ export function VisualFortuneChartWidget({
                 </button>
               </div>
             </div>
+
+            {/* 탭 전환 (다자간 프로필 연동 시 내 원국표 vs 듀얼 궁합 매트릭스) */}
+            {compatData && (
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10 w-fit text-xs font-semibold">
+                <button
+                  onClick={() => setActiveTab('my')}
+                  className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === 'my'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-xs'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <Compass size={12} />
+                  <span>내 원국표</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('compat')}
+                  className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === 'compat'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-xs'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <Heart size={12} className="text-rose-400 fill-rose-400" />
+                  <span>듀얼 궁합 매트릭스 ({compatData.score}점 · {compatData.grade})</span>
+                </button>
+              </div>
+            )}
+
+            {/* 👥 듀얼 궁합 매트릭스 탭 내용 */}
+            {activeTab === 'compat' && compatData ? (
+              <div className="space-y-3.5">
+                {/* 1. 종합 시너지 스코어 & 인연 등급 헤더 */}
+                <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-r from-rose-950/40 via-amber-950/30 to-emerald-950/40 border border-rose-500/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-amber-200 to-emerald-300">
+                        {compatData.score}점
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                        {compatData.grade}
+                      </span>
+                    </div>
+                    <span className="text-xs text-white/60 font-medium">
+                      {compatData.saju.personA.name} ✕ {compatData.saju.personB.name}
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-amber-200">{compatData.title}</p>
+                  <p className="text-[11px] text-white/80 leading-relaxed">{compatData.summary}</p>
+                </div>
+
+                {/* 2. 사주 천간합 & 지지 결합 대조 */}
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-amber-300">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-3 bg-amber-400 rounded-full" />
+                      <span>사주 천간·지지 결합 분석</span>
+                    </span>
+                    <span className="text-[11px] text-white/50">일간(日干) & 일지(日支)</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                      <div className="text-[10px] text-white/40 mb-0.5">{compatData.saju.personA.name}</div>
+                      <div className="font-bold text-emerald-300">{compatData.saju.personA.dayMaster} 일간</div>
+                      <div className="text-[11px] text-white/60">일지: {compatData.saju.personA.dayBranch}</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                      <div className="text-[10px] text-white/40 mb-0.5">{compatData.saju.personB.name}</div>
+                      <div className="font-bold text-sky-300">{compatData.saju.personB.dayMaster} 일간</div>
+                      <div className="text-[11px] text-white/60">일지: {compatData.saju.personB.dayBranch}</div>
+                    </div>
+                  </div>
+
+                  {/* 천간/지지 관계 설명 */}
+                  <div className="space-y-1.5 text-[11px]">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-200">
+                      <strong>천간 관계:</strong> {compatData.saju.stemRelation.name} — {compatData.saju.stemRelation.desc}
+                    </div>
+                    <div className="p-2 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-200">
+                      <strong>일지 관계:</strong> {compatData.saju.branchRelation.name} — {compatData.saju.branchRelation.desc}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. 숙요 27숙 인연 역학 (6대 관계) */}
+                <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-purple-300">
+                    <span className="flex items-center gap-1">
+                      <Sparkles size={13} className="text-purple-400" />
+                      <span>숙요 27숙 인연 역학 (密敎 宿曜經)</span>
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-500/20 text-purple-200 border border-purple-500/30">
+                      {compatData.sukuyo.relationName}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-white/70 px-1">
+                    <span>{compatData.saju.personA.name}: <strong className="text-purple-200">{compatData.sukuyo.mansionA}</strong></span>
+                    <span className="text-purple-400 font-bold">↔</span>
+                    <span>{compatData.saju.personB.name}: <strong className="text-purple-200">{compatData.sukuyo.mansionB}</strong></span>
+                  </div>
+                  <p className="text-[11px] text-white/80 leading-relaxed bg-black/20 p-2 rounded-lg">
+                    {compatData.sukuyo.meaning}
+                  </p>
+                </div>
+
+                {/* 4. 점성술 원소 시나스트리 */}
+                <div className="p-3 rounded-xl bg-sky-500/5 border border-sky-500/20 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between text-xs font-bold text-sky-300">
+                    <span className="flex items-center gap-1">
+                      <Star size={13} className="text-sky-400" />
+                      <span>서양 점성술 시나스트리 (Sun Signs & Elements)</span>
+                    </span>
+                    <span className="text-[11px] text-white/60">{compatData.astrology.aspect}</span>
+                  </div>
+                  <p className="text-[11px] text-white/80">
+                    {compatData.saju.personA.name}({compatData.astrology.sunA} · {compatData.astrology.elementA}) ✕ {compatData.saju.personB.name}({compatData.astrology.sunB} · {compatData.astrology.elementB})
+                  </p>
+                  <p className="text-[11px] text-white/70 bg-black/20 p-2 rounded-lg leading-relaxed">
+                    {compatData.astrology.harmonyDesc}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* 1인 단일 원국표 렌더링 시작 */}
 
             {/* 1. 사주 4주 8자 원국 칩 (Saju Four Pillars Matrix) */}
             {saju && (
@@ -308,6 +450,8 @@ export function VisualFortuneChartWidget({
                   </div>
                 </div>
               </div>
+            )}
+              </>
             )}
 
             {/* Footer Watermark for Exported Cards */}
