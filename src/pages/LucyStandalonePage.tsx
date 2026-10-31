@@ -33,6 +33,7 @@ import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendat
 import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
+import { VisualFortuneChartWidget } from '@/components/chat/VisualFortuneChartWidget';
 import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
 import type { UserProfile } from '@/lib/sharedState';
@@ -3071,8 +3072,14 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       </div>
                     </>
                   ) : (
-                    <LucyKakaoBubbleGroup
-                      onForward={forwardBubble}
+                    <>
+                      <VisualFortuneChartWidget
+                        profile={counselingUserProfile || sharedState?.userProfile}
+                        usedTools={Array.isArray(msg.usedTools) ? msg.usedTools : []}
+                        isLight={isLight}
+                      />
+                      <LucyKakaoBubbleGroup
+                        onForward={forwardBubble}
                       forwardTargetLabel={pro ? '일반 루시' : '루시 프로'}
                       msgId={msgId}
                       textContent={textContent}
@@ -3121,6 +3128,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         );
                       }}
                     />
+                    </>
                   )}
                 </div>
               </motion.div>
