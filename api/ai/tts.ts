@@ -37,7 +37,7 @@ async function synthesizeWithGemini(text: string, voice?: string): Promise<{ aud
   };
 }
 
-export default async function handler(req: { method?: string; body?: unknown; query?: Record<string, unknown> }, res: Response) {
+export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
   try {
     const { applyCors } = await import("../../server/api-lib/cors.ts");
     applyCors(res);
