@@ -1,141 +1,103 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
   <defs>
-    <!-- Deep Cosmic Sanctuary Background (100% Opaque for iOS & Android PWA) -->
-    <radialGradient id="lkBg" cx="50%" cy="44%" r="74%">
-      <stop offset="0%" stop-color="#0c141a" />
-      <stop offset="55%" stop-color="#070a10" />
-      <stop offset="100%" stop-color="#040508" />
+    <!-- Deep Obsidian Sanctuary Background -->
+    <radialGradient id="bgGrad" cx="50%" cy="46%" r="68%">
+      <stop offset="0%" stop-color="#0c1015" />
+      <stop offset="60%" stop-color="#06080b" />
+      <stop offset="100%" stop-color="#030406" />
     </radialGradient>
 
-    <!-- Ambient Emerald & Amber Halos -->
-    <radialGradient id="emeraldHalo" cx="46%" cy="42%" r="50%">
-      <stop offset="0%" stop-color="#10b981" stop-opacity="0.26" />
-      <stop offset="55%" stop-color="#10b981" stop-opacity="0.08" />
+    <!-- Subtle Ambient Emerald Glow Behind Clover -->
+    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.22" />
+      <stop offset="45%" stop-color="#059669" stop-opacity="0.08" />
       <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
     </radialGradient>
-    <radialGradient id="amberHalo" cx="55%" cy="58%" r="46%">
-      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2" />
-      <stop offset="55%" stop-color="#f59e0b" stop-opacity="0.06" />
+
+    <!-- Vibrant Emerald-to-Mint Petal Gradients -->
+    <linearGradient id="petalTop" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="65%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#6ee7b7" />
+    </linearGradient>
+    <linearGradient id="petalRight" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="65%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#6ee7b7" />
+    </linearGradient>
+    <linearGradient id="petalBottom" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="65%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#6ee7b7" />
+    </linearGradient>
+    <linearGradient id="petalLeft" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="65%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#6ee7b7" />
+    </linearGradient>
+
+    <!-- Golden Keyhole Core Accent -->
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.3" />
       <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
-    </radialGradient>
-
-    <!-- Clover Aura Glow -->
-    <radialGradient id="cloverGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#34d399" stop-opacity="0.4" />
-      <stop offset="55%" stop-color="#34d399" stop-opacity="0.12" />
-      <stop offset="100%" stop-color="#34d399" stop-opacity="0" />
-    </radialGradient>
-
-    <!-- Emerald Clover Leaf Gradients -->
-    <linearGradient id="leafGradTop" x1="30%" y1="100%" x2="70%" y2="0%">
-      <stop offset="0%" stop-color="#059669" />
-      <stop offset="55%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#6ee7b7" />
-    </linearGradient>
-    <linearGradient id="leafGradBottom" x1="70%" y1="0%" x2="30%" y2="100%">
-      <stop offset="0%" stop-color="#059669" />
-      <stop offset="55%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#6ee7b7" />
-    </linearGradient>
-    <linearGradient id="leafGradRight" x1="0%" y1="30%" x2="100%" y2="70%">
-      <stop offset="0%" stop-color="#059669" />
-      <stop offset="55%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#6ee7b7" />
-    </linearGradient>
-    <linearGradient id="leafGradLeft" x1="100%" y1="70%" x2="0%" y2="30%">
-      <stop offset="0%" stop-color="#059669" />
-      <stop offset="55%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#6ee7b7" />
-    </linearGradient>
-
-    <!-- Golden Celestial Key Gradient -->
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fef3c7" />
-      <stop offset="45%" stop-color="#fbbf24" />
-      <stop offset="100%" stop-color="#d97706" />
-    </linearGradient>
-
-    <radialGradient id="keyGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#fde047" stop-opacity="0.5" />
-      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.14" />
-      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
-    </radialGradient>
-
-    <radialGradient id="topStarGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#fde047" stop-opacity="0.9" />
-      <stop offset="45%" stop-color="#fbbf24" stop-opacity="0.35" />
-      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
     </radialGradient>
   </defs>
 
-  <!-- 1. Full-Bleed Opaque Base Canvas -->
-  <rect width="512" height="512" fill="url(#lkBg)" />
+  <!-- 1. Pure Opaque Minimal Background Canvas -->
+  <rect width="512" height="512" fill="url(#bgGrad)" rx="112" />
 
-  <!-- 2. Ambient Emerald & Golden Vignette Glows -->
-  <circle cx="240" cy="222" r="225" fill="url(#emeraldHalo)" />
-  <circle cx="278" cy="290" r="205" fill="url(#amberHalo)" />
+  <!-- 2. Ambient Soft Glow -->
+  <circle cx="256" cy="246" r="180" fill="url(#centerGlow)" />
 
-  <!-- 3. Celestial Orbit Rings & Top Star -->
-  <circle cx="256" cy="256" r="206" stroke="#34d399" stroke-opacity="0.28" stroke-width="2.2" />
-  <circle cx="256" cy="256" r="180" stroke="#fbbf24" stroke-opacity="0.26" stroke-width="2" stroke-dasharray="7 9" />
-  <circle cx="256" cy="76" r="16" fill="url(#topStarGlow)" />
-  <circle cx="256" cy="76" r="5.5" fill="#fde047" />
+  <!-- 3. Minimalist Iconic Clover -->
+  <g transform="translate(256, 246)">
+    <!-- 4 Symmetrical Modern Heart-Shaped Petals -->
+    <!-- Top Petal -->
+    <path d="M 0 -8
+             C -22 -32, -62 -48, -62 -92
+             C -62 -132, -26 -146, 0 -114
+             C 26 -146, 62 -132, 62 -92
+             C 62 -48, 22 -32, 0 -8 Z"
+          fill="url(#petalTop)" />
 
-  <!-- Lucky Spark Dots -->
-  <circle cx="160" cy="146" r="3" fill="#fbbf24" fill-opacity="0.75" />
-  <circle cx="356" cy="182" r="2.4" fill="#6ee7b7" fill-opacity="0.7" />
-  <circle cx="348" cy="336" r="2.6" fill="#fbbf24" fill-opacity="0.65" />
-  <circle cx="164" cy="326" r="2.2" fill="#6ee7b7" fill-opacity="0.6" />
+    <!-- Right Petal -->
+    <path d="M 0 -8
+             C -22 -32, -62 -48, -62 -92
+             C -62 -132, -26 -146, 0 -114
+             C 26 -146, 62 -132, 62 -92
+             C 62 -48, 22 -32, 0 -8 Z"
+          transform="rotate(90)"
+          fill="url(#petalRight)" />
 
-  <!-- 4. Emerald Four-Leaf Clover with Golden Celestial Key -->
-  <g transform="translate(256, 264)">
-    <!-- Clover Aura -->
-    <circle cx="0" cy="0" r="152" fill="url(#cloverGlow)" />
+    <!-- Bottom Petal -->
+    <path d="M 0 -8
+             C -22 -32, -62 -48, -62 -92
+             C -62 -132, -26 -146, 0 -114
+             C 26 -146, 62 -132, 62 -92
+             C 62 -48, 22 -32, 0 -8 Z"
+          transform="rotate(180)"
+          fill="url(#petalBottom)" />
 
-    <!-- Four Heart-Shaped Leaflets (tip toward the center) -->
-    <g stroke="#a7f3d0" stroke-opacity="0.55" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <!-- Top Leaf -->
-      <path d="M0 0 C -10 -18, -52 -22, -52 -56 C -52 -84, -22 -92, 0 -64 C 22 -92, 52 -84, 52 -56 C 52 -22, 10 -18, 0 0 Z"
-        fill="url(#leafGradTop)" />
-      <!-- Right Leaf -->
-      <path d="M0 0 C -10 -18, -52 -22, -52 -56 C -52 -84, -22 -92, 0 -64 C 22 -92, 52 -84, 52 -56 C 52 -22, 10 -18, 0 0 Z"
-        transform="rotate(90)" fill="url(#leafGradRight)" />
-      <!-- Bottom Leaf -->
-      <path d="M0 0 C -10 -18, -52 -22, -52 -56 C -52 -84, -22 -92, 0 -64 C 22 -92, 52 -84, 52 -56 C 52 -22, 10 -18, 0 0 Z"
-        transform="rotate(180)" fill="url(#leafGradBottom)" />
-      <!-- Left Leaf -->
-      <path d="M0 0 C -10 -18, -52 -22, -52 -56 C -52 -84, -22 -92, 0 -64 C 22 -92, 52 -84, 52 -56 C 52 -22, 10 -18, 0 0 Z"
-        transform="rotate(-90)" fill="url(#leafGradLeft)" />
-    </g>
+    <!-- Left Petal -->
+    <path d="M 0 -8
+             C -22 -32, -62 -48, -62 -92
+             C -62 -132, -26 -146, 0 -114
+             C 26 -146, 62 -132, 62 -92
+             C 62 -48, 22 -32, 0 -8 Z"
+          transform="rotate(270)"
+          fill="url(#petalLeft)" />
 
-    <!-- Leaf Vein Highlights -->
-    <g stroke="#d1fae5" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round">
-      <path d="M0 -14 L0 -52" />
-      <path d="M14 0 L52 0" />
-      <path d="M0 14 L0 52" />
-      <path d="M-14 0 L-52 0" />
-    </g>
+    <!-- Minimal Elegant Stem -->
+    <path d="M 0 12 Q 18 80, -8 132"
+          stroke="#10b981"
+          stroke-width="5"
+          stroke-linecap="round"
+          fill="none"
+          opacity="0.85" />
 
-    <!-- Golden Celestial Key (dark under-stroke for contrast, then gold) -->
-    <circle cx="0" cy="-14" r="112" fill="url(#keyGlow)" opacity="0.55" />
-    <g stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <!-- Contrast Under-Stroke -->
-      <g stroke="#0b0a05" stroke-opacity="0.8" stroke-width="14">
-        <circle cx="0" cy="-58" r="25" />
-        <path d="M0 -33 L0 92" />
-        <path d="M0 70 L22 70" />
-        <path d="M0 88 L28 88" />
-      </g>
-      <!-- Golden Key -->
-      <g stroke="url(#goldGrad)" stroke-width="6.5">
-        <circle cx="0" cy="-58" r="25" />
-        <path d="M0 -33 L0 92" />
-        <path d="M0 70 L22 70" />
-        <path d="M0 88 L28 88" />
-      </g>
-      <!-- Bow Jewel -->
-      <circle cx="0" cy="-58" r="9" fill="#fde047" stroke="none" />
-      <path d="M-10 -72 A 17 17 0 0 1 10 -72" stroke="#fef9c3" stroke-width="3" stroke-opacity="0.85" />
-    </g>
+    <!-- Subtle Inner Star / LucKey Sparkle at Center -->
+    <circle cx="0" cy="-8" r="16" fill="url(#coreGlow)" />
+    <circle cx="0" cy="-8" r="4" fill="#fef08a" />
   </g>
 </svg>

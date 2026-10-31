@@ -1,19 +1,34 @@
 /**
- * PIN 잠금 화면 — cosmic glassmorphism 리디자인 (cosmic-1202)
- * PIN 코드는 1202 (src/contexts/AppContext.tsx).
- * 은은한 앰비언트 글로우 + 황금빛 브랜딩 + 글래스 키패드 + 스프링 인디케이터 + 오류 쉐이크.
- * 🔇 오디오 불변칙: PIN 화면에서는 AudioContext를 절대 만들거나 깨우지 않습니다.
- *    (생성·resume 시 iOS가 외부 음악(멜론·스포티파이·애플뮤직)을 강제 일시정지시키므로)
+ * PIN 잠금 화면 — 미니멀 럭셔리 옵시디언 & 에메랄드 글래스모피즘
+ * PIN 코드: 1202 (src/contexts/AppContext.tsx)
+ * 
+ * 🔇 [오디오 불변 원칙]:
+ *   PIN 화면에서는 AudioContext를 절대 생성하거나 resume하지 않습니다.
+ *   (멜론, 스포티파이, 애플뮤직 등 외부 음악이 멈추지 않도록 무소음 보안 가드 유지)
  */
 import React from 'react';
-import { motion } from 'motion/react';
-import { Delete, KeyRound } from 'lucide-react';
-import { APP_VERSION } from '@/lib/appVersion';
+import { motion, AnimatePresence } from 'motion/react';
+import { Delete, Clover } from 'lucide-react';
 
-export const PIN_SCREEN_SPEC = 'cosmic-1202' as const;
+export const PIN_SCREEN_SPEC = 'minimal-emerald-1202' as const;
 
-const PIN_BG = 'oklch(0.07 0.02 280)';
-const PIN_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '←'] as const;
+const PIN_BG = '#07080b';
+
+// 키패드 숫자 및 iOS 스타일 영문 서브 라벨 (미니멀 럭셔리 감성)
+const KEYPAD_BUTTONS = [
+  { digit: '1', sub: '' },
+  { digit: '2', sub: 'ABC' },
+  { digit: '3', sub: 'DEF' },
+  { digit: '4', sub: 'GHI' },
+  { digit: '5', sub: 'JKL' },
+  { digit: '6', sub: 'MNO' },
+  { digit: '7', sub: 'PQRS' },
+  { digit: '8', sub: 'TUV' },
+  { digit: '9', sub: 'WXYZ' },
+  { digit: '', sub: '' },
+  { digit: '0', sub: '+' },
+  { digit: 'backspace', sub: '' },
+] as const;
 
 type PinLockScreenProps = {
   onUnlock: (code: string) => boolean;
@@ -25,31 +40,37 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
   const pinRef = React.useRef(pin);
   pinRef.current = pin;
 
-  const submitPin = React.useCallback((nextPin: string) => {
-    if (nextPin.length !== 4) return;
-    if (onUnlock(nextPin)) {
-      setPin('');
-      setPinError(false);
-      return;
-    }
-    setPinError(true);
-    window.setTimeout(() => {
-      setPin('');
-      setPinError(false);
-    }, 650);
-  }, [onUnlock]);
-
-  const appendPinDigit = React.useCallback((digit: string) => {
-    setPin((prev) => {
-      if (prev.length >= 4) return prev;
-      const nextPin = `${prev}${digit}`;
-      if (nextPin.length === 4) {
-        window.setTimeout(() => submitPin(nextPin), 0);
+  const submitPin = React.useCallback(
+    (nextPin: string) => {
+      if (nextPin.length !== 4) return;
+      if (onUnlock(nextPin)) {
+        setPin('');
+        setPinError(false);
+        return;
       }
-      return nextPin;
-    });
-    setPinError(false);
-  }, [submitPin]);
+      setPinError(true);
+      window.setTimeout(() => {
+        setPin('');
+        setPinError(false);
+      }, 650);
+    },
+    [onUnlock]
+  );
+
+  const appendPinDigit = React.useCallback(
+    (digit: string) => {
+      setPin((prev) => {
+        if (prev.length >= 4) return prev;
+        const nextPin = `${prev}${digit}`;
+        if (nextPin.length === 4) {
+          window.setTimeout(() => submitPin(nextPin), 10);
+        }
+        return nextPin;
+      });
+      setPinError(false);
+    },
+    [submitPin]
+  );
 
   const backspacePin = React.useCallback(() => {
     setPin((prev) => prev.slice(0, -1));
@@ -58,7 +79,7 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
 
   React.useEffect(() => {
     document.body.style.backgroundColor = PIN_BG;
-    document.body.style.transition = 'background-color 0.2s ease';
+    document.body.style.transition = 'background-color 0.3s ease';
   }, []);
 
   React.useEffect(() => {
@@ -87,142 +108,144 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
   return (
     <div
       data-pin-screen={PIN_SCREEN_SPEC}
-      className="relative h-dvh flex flex-col items-center justify-center overflow-hidden px-6 pt-safe pb-safe"
+      className="relative h-dvh w-full flex flex-col items-center justify-between overflow-hidden px-6 pt-safe pb-safe select-none"
       style={{ backgroundColor: PIN_BG }}
     >
-      {/* 은은한 앰비언트 글로우 — 황금빛 오라와 코스믹 블루 */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      {/* 🌌 은은한 에메랄드 & 딥 옵시디언 앰비언트 글로우 */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
-          className="absolute -top-32 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.45) 0%, rgba(251,191,36,0.08) 55%, transparent 75%)' }}
+          className="absolute -top-24 left-1/2 h-[450px] w-[450px] -translate-x-1/2 rounded-full opacity-20 blur-3xl pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(5,150,105,0.15) 50%, transparent 75%)',
+          }}
         />
         <div
-          className="absolute -bottom-40 -left-24 h-[380px] w-[380px] rounded-full opacity-25 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.5) 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute -right-24 top-1/3 h-[340px] w-[340px] rounded-full opacity-20 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.45) 0%, transparent 70%)' }}
+          className="absolute bottom-10 left-1/2 h-[350px] w-[350px] -translate-x-1/2 rounded-full opacity-10 blur-3xl pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(52,211,153,0.4) 0%, transparent 70%)',
+          }}
         />
       </div>
 
-      {/* 브랜딩 — 황금빛 열쇠 */}
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: 'easeOut' }}
-        className="relative z-10 flex flex-col items-center text-center"
-      >
+      {/* 상단 브랜딩 & 로고 */}
+      <div className="relative z-10 flex flex-col items-center text-center mt-12 sm:mt-16">
+        {/* 미니멀 네잎클로버 엠블럼 */}
         <motion.div
-          initial={{ scale: 0.85, opacity: 0 }}
+          initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.15, type: 'spring', stiffness: 160, damping: 14 }}
-          className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-amber-300/25 bg-white/[0.04] shadow-[0_0_45px_rgba(251,191,36,0.22),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl"
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-400/25 bg-emerald-500/[0.06] shadow-[0_0_35px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
         >
-          <KeyRound
-            className="h-9 w-9 text-amber-300"
-            style={{ filter: 'drop-shadow(0 0 12px rgba(251,191,36,0.65))' }}
-            strokeWidth={1.6}
+          <Clover
+            className="h-8 w-8 text-emerald-300"
+            style={{ filter: 'drop-shadow(0 0 10px rgba(52,211,153,0.5))' }}
+            strokeWidth={1.5}
           />
         </motion.div>
 
-        <h1
-          className="font-display text-3xl font-semibold tracking-[0.42em] sm:text-4xl"
-          style={{
-            color: 'transparent',
-            backgroundImage: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 45%, #fbbf24 100%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            textShadow: '0 0 30px rgba(251,191,36,0.25)',
-          }}
-        >
-          LUCKEY ARCHIVE
+        <h1 className="font-light text-2xl tracking-[0.38em] text-white/90 uppercase pl-1">
+          LucKey
         </h1>
-        <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.45em] text-white/35">
-          Private Access
+        <p className="mt-2 text-[11px] font-medium tracking-[0.32em] text-white/40 uppercase">
+          보안 잠금 해제
         </p>
-      </motion.div>
 
-      {/* PIN 인디케이터 — 스프링 점 + 오류 쉐이크 */}
-      <motion.div
-        aria-hidden="true"
-        animate={pinError ? { x: [0, -12, 12, -7, 7, -2, 0] } : { x: 0 }}
-        transition={pinError ? { duration: 0.5, ease: 'easeInOut' } : { type: 'spring' }}
-        className="relative z-10 mb-12 mt-12 flex gap-5"
-      >
-        {[0, 1, 2, 3].map((index) => {
-          const filled = pin.length > index;
-          return (
-            <motion.div
-              key={index}
-              animate={{
-                scale: filled ? 1.18 : 1,
-                backgroundColor: filled ? 'rgba(251,191,36,0.95)' : 'rgba(255,255,255,0.05)',
-                borderColor: filled ? 'rgba(251,191,36,0.85)' : 'rgba(255,255,255,0.18)',
-                boxShadow: filled
-                  ? '0 0 18px rgba(251,191,36,0.55), 0 0 4px rgba(251,191,36,0.7)'
-                  : '0 0 0px rgba(0,0,0,0)',
-              }}
-              transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-              className="h-3.5 w-3.5 rounded-full border backdrop-blur-sm"
-            />
-          );
-        })}
-      </motion.div>
+        {/* 4자리 PIN 인디케이터 — 미니멀 에메랄드 펄 */}
+        <motion.div
+          aria-hidden="true"
+          animate={pinError ? { x: [0, -14, 14, -8, 8, -3, 0] } : { x: 0 }}
+          transition={pinError ? { duration: 0.45, ease: 'easeInOut' } : { type: 'spring' }}
+          className="mt-8 flex items-center gap-5"
+        >
+          {[0, 1, 2, 3].map((index) => {
+            const filled = pin.length > index;
+            return (
+              <motion.div
+                key={index}
+                animate={{
+                  scale: filled ? 1.25 : 1,
+                  backgroundColor: filled ? '#34d399' : 'rgba(255, 255, 255, 0.04)',
+                  borderColor: filled ? '#6ee7b7' : 'rgba(255, 255, 255, 0.22)',
+                  boxShadow: filled
+                    ? '0 0 16px rgba(52,211,153,0.7), 0 0 3px rgba(110,231,183,0.9)'
+                    : '0 0 0px rgba(0,0,0,0)',
+                }}
+                transition={{ type: 'spring', stiffness: 500, damping: 24 }}
+                className="h-3 w-3 rounded-full border backdrop-blur-sm"
+              />
+            );
+          })}
+        </motion.div>
 
-      {/* 글래스 서큘러 키패드 */}
+        {/* 오류 메시지 영역 (높이 고정으로 레이아웃 흔들림 방지) */}
+        <div className="mt-4 h-5 flex items-center justify-center">
+          <AnimatePresence>
+            {pinError && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="text-[11px] font-medium tracking-[0.2em] text-red-400"
+              >
+                비밀번호가 올바르지 않습니다
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* 중앙/하단 미니멀 글래스 키패드 */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.6, ease: 'easeOut' }}
-        className="relative z-10 grid w-full max-w-[300px] grid-cols-3 gap-x-6 gap-y-5 place-items-center"
+        transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
+        className="relative z-10 grid w-full max-w-[290px] grid-cols-3 gap-x-5 gap-y-4 place-items-center mb-10 sm:mb-14"
       >
-        {PIN_KEYS.map((btn, index) => {
-          const isEmpty = btn === '';
-          const isBackspace = btn === '←';
+        {KEYPAD_BUTTONS.map((btn, index) => {
+          const isEmpty = btn.digit === '';
+          const isBackspace = btn.digit === 'backspace';
+
+          if (isEmpty) {
+            return <div key={`empty-${index}`} className="h-[68px] w-[68px]" />;
+          }
+
+          if (isBackspace) {
+            return (
+              <motion.button
+                key="keypad-backspace"
+                type="button"
+                aria-label="한 글자 지우기"
+                onClick={backspacePin}
+                whileTap={{ scale: 0.88 }}
+                className="flex h-[68px] w-[68px] items-center justify-center rounded-full text-white/50 hover:text-white/80 active:text-white transition-colors duration-150 touch-manipulation focus:outline-none"
+              >
+                <Delete className="h-6 w-6" strokeWidth={1.5} />
+              </motion.button>
+            );
+          }
+
           return (
             <motion.button
-              key={`pin-key-${index}`}
+              key={`pin-${btn.digit}`}
               type="button"
-              disabled={isEmpty}
-              aria-label={isBackspace ? '지우기' : isEmpty ? undefined : `숫자 ${btn}`}
-              onClick={() => {
-                if (isBackspace) backspacePin();
-                else if (!isEmpty) appendPinDigit(String(btn));
-              }}
-              whileTap={isEmpty ? undefined : { scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 26 }}
-              className={`flex h-[68px] w-[68px] items-center justify-center rounded-full border text-[22px] font-medium backdrop-blur-xl transition-colors duration-200 touch-manipulation
-                ${isEmpty ? 'pointer-events-none border-transparent bg-transparent' : 'cursor-pointer border-white/10 bg-white/[0.05] text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_24px_rgba(0,0,0,0.35)] hover:border-white/20 hover:bg-white/[0.1] hover:text-white'}
-                ${isBackspace ? 'text-white/60' : ''}
-                ${pinError && !isBackspace && !isEmpty ? 'text-red-400/80' : ''}
-              `}
-              style={isBackspace ? { background: 'rgba(255,255,255,0.03)' } : undefined}
+              aria-label={`숫자 ${btn.digit}`}
+              onClick={() => appendPinDigit(btn.digit)}
+              whileTap={{ scale: 0.92, backgroundColor: 'rgba(255, 255, 255, 0.16)' }}
+              transition={{ type: 'spring', stiffness: 600, damping: 30 }}
+              className="flex h-[68px] w-[68px] flex-col items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_20px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-all duration-150 hover:border-white/20 hover:bg-white/[0.08] active:border-white/30 touch-manipulation focus:outline-none"
             >
-              {isBackspace ? <Delete className="h-6 w-6" strokeWidth={1.6} /> : btn}
+              <span className="text-[25px] font-light leading-none tracking-normal">
+                {btn.digit}
+              </span>
+              {btn.sub ? (
+                <span className="text-[9px] font-medium tracking-[0.16em] text-white/35 mt-0.5 leading-none">
+                  {btn.sub}
+                </span>
+              ) : null}
             </motion.button>
           );
         })}
       </motion.div>
-
-      {/* 오류 피드백 */}
-      <div className="relative z-10 mt-8 h-5">
-        {pinError && (
-          <motion.p
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="text-xs font-bold uppercase tracking-[0.3em] text-red-400/90"
-            style={{ textShadow: '0 0 14px rgba(248,113,113,0.4)' }}
-          >
-            PIN이 올바르지 않습니다
-          </motion.p>
-        )}
-      </div>
-
-      <p className="relative z-10 mt-8 text-[10px] tracking-[0.3em] text-white/20">
-        v{APP_VERSION} · {PIN_SCREEN_SPEC}
-      </p>
     </div>
   );
 }
