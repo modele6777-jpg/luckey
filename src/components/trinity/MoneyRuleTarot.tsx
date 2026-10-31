@@ -22,7 +22,7 @@ export function MoneyRuleTarot({ onBack }: { onBack: () => void }) {
     try { const value = JSON.parse(localStorage.getItem(STORAGE) || 'null'); return isMoneyRuleSession(value) ? value : null; } catch { return null; }
   });
   const [question, setQuestion] = useState('');
-  const [drawing, setDrawing] = useState(false);
+  const [drawing, setDrawing] = useState(true);
   const [saveError, setSaveError] = useState(false);
   const [zoomed, setZoomed] = useState<{ card: TarotCard; slotName: string } | null>(null);
   const latest = useRef(sharedState);
