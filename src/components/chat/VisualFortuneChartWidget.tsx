@@ -106,24 +106,24 @@ export function VisualFortuneChartWidget({
 
   return (
     <div className={`mt-2 mb-2 w-full max-w-full overflow-hidden ${className}`}>
-      {/* 🔮 인터랙티브 토글 버튼 */}
+      {/* 🔮 인터랙티브 토글 버튼: 초슬림 미니멀 캡슐 */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-300 cursor-pointer shadow-xs border ${
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-200 cursor-pointer border ${
           isOpen
-            ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300 shadow-emerald-500/10'
+            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-xs'
             : isLight
-            ? 'bg-amber-50/90 border-amber-300/80 text-amber-900 hover:bg-amber-100/90'
-            : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-200 hover:bg-emerald-900/50 hover:border-emerald-400/50'
+            ? 'bg-amber-50/80 border-amber-300/60 text-amber-900 hover:bg-amber-100/70'
+            : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/10 hover:border-emerald-500/30'
         }`}
         title="AI 답변의 기반이 된 실제 수리·천문 계산 차트를 열어봅니다."
       >
-        <Sparkles size={13} className="text-emerald-400 animate-pulse" />
+        <Sparkles size={11} className="text-emerald-400" />
         <span>
-          실측 계산 차트 ({saju?.dayMaster?.hanja || '사주'} · {astro?.sun?.sign?.name || '별자리'}
+          실측 차트 ({saju?.dayMaster?.hanja || '사주'} · {astro?.sun?.sign?.name || '별자리'}
           {compatData ? ` · 궁합 ${compatData.score}점` : ''})
         </span>
-        {isOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        {isOpen ? <ChevronUp size={11} className="opacity-60" /> : <ChevronDown size={11} className="opacity-60" />}
       </button>
 
       {/* 📊 펼쳐지는 미니멀 비주얼 차트 패널 */}
@@ -131,31 +131,31 @@ export function VisualFortuneChartWidget({
         {isOpen && (
           <motion.div
             ref={chartRef}
-            initial={{ opacity: 0, height: 0, y: -6 }}
+            initial={{ opacity: 0, height: 0, y: -4 }}
             animate={{ opacity: 1, height: 'auto', y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -6 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className={`mt-2.5 p-4 sm:p-5 rounded-2xl border text-left space-y-4 shadow-xl backdrop-blur-xl overflow-hidden ${
+            exit={{ opacity: 0, height: 0, y: -4 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className={`mt-2 p-3.5 sm:p-4 rounded-xl border text-left space-y-3.5 shadow-lg backdrop-blur-md overflow-hidden ${
               isLight
-                ? 'bg-amber-50/95 border-amber-300/60 text-slate-900'
-                : 'bg-[#090d13]/95 border-emerald-500/30 text-slate-100 shadow-emerald-950/30'
+                ? 'bg-amber-50/95 border-amber-300/50 text-slate-900'
+                : 'bg-[#090d13]/90 border-white/10 text-slate-100 shadow-emerald-950/20'
             }`}
           >
             {/* Header: 계산 정보 & 이미지 저장 */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5 text-xs text-white/50">
-              <span className="font-medium text-emerald-400 flex items-center gap-1">
-                <Compass size={13} />
-                <span>결정론적 자체 계산 엔진 실측 데이터 (Deterministic Core)</span>
+            <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-white/10 pb-2 text-[11px] text-white/45">
+              <span className="font-medium text-emerald-400/90 flex items-center gap-1">
+                <Compass size={12} />
+                <span>결정론적 자체 계산 실측 데이터</span>
               </span>
               <div className="flex items-center gap-2">
                 <span>{profile.basic.birthdate} {profile.basic.birthtime || ''}</span>
                 <button
                   onClick={handleExportImage}
                   disabled={isExporting}
-                  className="px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold flex items-center gap-1 cursor-pointer transition-all"
+                  className="px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-medium flex items-center gap-1 cursor-pointer transition-all"
                   title="이 실측 계산 차트를 고화질 이미지(PNG)로 저장합니다."
                 >
-                  {isExporting ? <Check size={11} className="text-emerald-400 animate-spin" /> : <Camera size={11} />}
+                  {isExporting ? <Check size={10} className="text-emerald-400 animate-spin" /> : <Camera size={10} />}
                   <span>{isExporting ? '저장 중...' : '카드 저장'}</span>
                 </button>
               </div>
@@ -387,67 +387,37 @@ export function VisualFortuneChartWidget({
               </div>
             )}
 
-            {/* 3. 자미두수 명반 핵심 (선택적) */}
-            {ziweiData && (
-              <div className="pt-2 border-t border-white/10 text-xs flex items-center justify-between text-white/70">
-                <span className="text-emerald-300 font-medium flex items-center gap-1">
-                  <Star size={12} />
-                  <span>자미두수 명궁/신궁:</span>
-                </span>
-                <span>명궁(命宮) {ziweiData.soulPalace}궁 · 신궁(身宮) {ziweiData.bodyPalace}궁 ({ziweiData.fiveElementsClass})</span>
-              </div>
-            )}
-
-            {/* 4. 오감 감성 케어 & 오행 개운 처방 (Sensory Care & Key Ritual) */}
+            {/* 3. 오행 맞춤 케어 (슬림 원라인) */}
             {saju && (
-              <div className="pt-2.5 border-t border-white/10 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-xs font-bold text-amber-300">
-                  <span className="flex items-center gap-1">
-                    <Music size={13} className="text-amber-400" />
-                    <span>오감 에너지 파동 & 개운 처방 (Sensory Wellness)</span>
-                  </span>
-                  <span className="text-[11px] text-emerald-400">보약 오행: {saju.yongsin.name}</span>
-                </div>
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2 text-[11px] flex-wrap">
+                <span className="text-white/60 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>보약 오행: <strong className="text-emerald-300 font-semibold">{saju.yongsin.name}</strong></span>
+                </span>
 
-                <div className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-                  <div className="space-y-0.5">
-                    <p className="text-[11px] text-white/90 font-medium">
-                      {saju.yongsin.name.includes('목') && '🌿 숲의 피톤치드와 생명력을 깨우는 432Hz 녹색 파동'}
-                      {saju.yongsin.name.includes('화') && '🔥 가슴속 열정과 추진력을 지피는 528Hz 솔페지오 사랑 파동'}
-                      {saju.yongsin.name.includes('토') && '⛰️ 잡념을 가라앉히고 터를 잡는 136.1Hz 옴(Om) 그라운딩 파동'}
-                      {saju.yongsin.name.includes('금') && '⚔️ 번뇌와 스트레스를 맑게 비워내는 587Hz 티베탄 정화 싱잉볼'}
-                      {saju.yongsin.name.includes('수') && '🌊 깊은 내면의 직관과 평화를 회복하는 밤의 힐링 심포니'}
-                      {!['목', '화', '토', '금', '수'].some(el => saju.yongsin.name.includes(el)) && '✨ 부족한 기운을 조화롭게 채우는 528Hz 평온의 솔페지오 파동'}
-                    </p>
-                    <p className="text-[10px] text-white/50">
-                      추천 개운 행동: <strong className="text-amber-200/90">{saju.yongsin.actionTip || '가벼운 스트레칭과 심호흡'}</strong>
-                    </p>
-                  </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handlePlayBowl}
+                    disabled={isRinging}
+                    className={`px-2 py-0.5 rounded border text-[10px] font-medium flex items-center gap-1 cursor-pointer transition-all ${
+                      isRinging
+                        ? 'bg-amber-400/20 border-amber-400/50 text-amber-200'
+                        : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
+                    }`}
+                    title="528Hz 정화 싱잉볼을 가볍게 울립니다."
+                  >
+                    {isRinging ? <Check size={10} className="text-emerald-400" /> : <Bell size={10} className="text-amber-400" />}
+                    <span>{isRinging ? '정화 🔔' : '싱잉볼'}</span>
+                  </button>
 
-                  <div className="flex items-center gap-1.5 flex-wrap shrink-0">
-                    <button
-                      onClick={handlePlayBowl}
-                      disabled={isRinging}
-                      className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-all ${
-                        isRinging
-                          ? 'bg-amber-400/20 border-amber-400/60 text-amber-200'
-                          : 'bg-white/5 hover:bg-white/10 border-white/15 text-white/80 hover:text-white'
-                      }`}
-                      title="528Hz 정화 싱잉볼 사운드를 울려 기운을 정화합니다."
-                    >
-                      {isRinging ? <Check size={12} className="text-emerald-400 animate-bounce" /> : <Bell size={12} className="text-amber-400" />}
-                      <span>{isRinging ? '정화 완료 🔔' : '싱잉볼 정화 울림'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => navigate('/key')}
-                      className="px-2.5 py-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-all"
-                      title="40가지 개운 성전 리추얼로 이동합니다."
-                    >
-                      <Key size={12} className="text-sky-300" />
-                      <span>개운 리추얼</span>
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => navigate('/key')}
+                    className="px-2 py-0.5 rounded border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 text-[10px] font-medium flex items-center gap-1 cursor-pointer transition-all"
+                    title="40가지 개운 성전 리추얼로 이동합니다."
+                  >
+                    <Key size={10} className="text-sky-300" />
+                    <span>개운법</span>
+                  </button>
                 </div>
               </div>
             )}
