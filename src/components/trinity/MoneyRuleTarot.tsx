@@ -22,7 +22,8 @@ export function MoneyRuleTarot({ onBack }: { onBack: () => void }) {
     try { const value = JSON.parse(localStorage.getItem(STORAGE) || 'null'); return isMoneyRuleSession(value) ? value : null; } catch { return null; }
   });
   const [question, setQuestion] = useState('');
-  const [drawing, setDrawing] = useState(true);
+  // 저장된 리딩이 있으면 뽑기를 자동으로 다시 열지 않고 결과를 바로 보여줍니다.
+  const [drawing, setDrawing] = useState(() => !session);
   const [saveError, setSaveError] = useState(false);
   const [zoomed, setZoomed] = useState<{ card: TarotCard; slotName: string } | null>(null);
   const latest = useRef(sharedState);
@@ -66,11 +67,11 @@ export function MoneyRuleTarot({ onBack }: { onBack: () => void }) {
       <p className="mt-3 text-xs leading-6 text-amber-100/70">선정 덱 · {ORACLE_DECKS.money.name} · {ORACLE_DECKS.money.cards.length}장<br />{ORACLE_DECKS.money.edition} · <a href={ORACLE_DECKS.money.source} target="_blank" rel="noreferrer" className="underline">공개 원본 출처</a></p>
     </header>
 
-    <div className="rounded-3xl border border-amber-200/15 bg-[#14251f] p-5">
+    {session && <div className="rounded-3xl border border-amber-200/15 bg-[#14251f] p-5">
       <label htmlFor="money-rule-question" className="text-sm text-amber-100">지금 열고 싶은 풍요의 문</label>
       <input id="money-rule-question" value={question} maxLength={300} onChange={e => setQuestion(e.target.value)} placeholder="예: 내 가치를 수입으로 연결하려면 무엇을 바꿀까?" className="mt-3 w-full rounded-xl border border-amber-100/20 bg-black/25 p-3 text-sm text-white placeholder:text-zinc-400" />
       <button onClick={() => { stopTTS(); setDrawing(true); }} className="mt-4 flex items-center gap-2 rounded-xl bg-amber-200 px-5 py-3 font-bold text-[#153128]"><Sparkles size={16} />{session ? '새로운 머니룰 카드 뽑기' : '78장 링에서 카드 뽑기'}</button>
-    </div>
+    </div>}
 
     {drawing && <TarotSpread
       maxCards={3}
@@ -82,7 +83,8 @@ export function MoneyRuleTarot({ onBack }: { onBack: () => void }) {
       allowReversed
       spreadName="풍요를 여는 머니룰 스프레드"
       spreadReason={ORACLE_DECKS.money.reason}
-      onCancel={() => setDrawing(false)}
+      // 뽑기를 닫으면 중간 페이지로 돌지 않고 바로 오라클 타로 메뉴로 빠져나갑니다.
+      onCancel={() => { stopTTS(); onBack(); }}
       onComplete={cards => {
         const value: MoneyRuleSession = { version: 1, createdAt: Date.now(), question: question.trim(), cards: cards.map(c => ({ ...c, reversed: Boolean(c.reversed) })) };
         setSession(value);
