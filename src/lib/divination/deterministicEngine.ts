@@ -167,16 +167,14 @@ export function runDeterministicEngine(params: {
           method: '24절기 천문 절입 시각 기준 한국 만세력 수리 엔진',
           data: {
             dayMaster: sajuRes.dayMaster,
-            fourPillars: sajuRes.fourPillars,
+            pillars: sajuRes.pillars,
             elements: sajuRes.elements,
             bodyStrength: sajuRes.bodyStrength,
             geokguk: sajuRes.geokguk,
             yongsin: sajuRes.yongsin,
-            heesin: sajuRes.heesin,
-            tenGods: sajuRes.tenGods,
             daeun: sajuRes.daeun,
             annual2026: sajuRes.annual2026,
-            specialStars: sajuRes.specialStars,
+            specialStructures: sajuRes.specialStructures,
           },
           limitations: ['진태양시 보정은 기본 한국 표준시(KST) 기준입니다.', '해외 출생자의 경우 출생지 경도 시차가 반영될 수 있습니다.']
         };
