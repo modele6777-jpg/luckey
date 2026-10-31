@@ -2,13 +2,13 @@
  * PIN 잠금 화면 — cosmic glassmorphism 리디자인 (cosmic-1202)
  * PIN 코드는 1202 (src/contexts/AppContext.tsx).
  * 은은한 앰비언트 글로우 + 황금빛 브랜딩 + 글래스 키패드 + 스프링 인디케이터 + 오류 쉐이크.
- * 키보드 입력(0-9, Backspace, Enter)과 오디오 컨텍스트 잠금 해제(ensureAudioUnlocked)는 유지.
+ * 🔇 오디오 불변칙: PIN 화면에서는 AudioContext를 절대 만들거나 깨우지 않습니다.
+ *    (생성·resume 시 iOS가 외부 음악(멜론·스포티파이·애플뮤직)을 강제 일시정지시키므로)
  */
 import React from 'react';
 import { motion } from 'motion/react';
 import { Delete, KeyRound } from 'lucide-react';
 import { APP_VERSION } from '@/lib/appVersion';
-import { getSharedAudioContext } from '@/lib/audio';
 
 export const PIN_SCREEN_SPEC = 'cosmic-1202' as const;
 
@@ -25,17 +25,7 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
   const pinRef = React.useRef(pin);
   pinRef.current = pin;
 
-  const ensureAudioUnlocked = () => {
-    try {
-      const ctx = getSharedAudioContext();
-      if (ctx.state === 'suspended') {
-        ctx.resume().catch(() => {});
-      }
-    } catch (_) {}
-  };
-
   const submitPin = React.useCallback((nextPin: string) => {
-    ensureAudioUnlocked();
     if (nextPin.length !== 4) return;
     if (onUnlock(nextPin)) {
       setPin('');
@@ -50,7 +40,6 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
   }, [onUnlock]);
 
   const appendPinDigit = React.useCallback((digit: string) => {
-    ensureAudioUnlocked();
     setPin((prev) => {
       if (prev.length >= 4) return prev;
       const nextPin = `${prev}${digit}`;
@@ -63,7 +52,6 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
   }, [submitPin]);
 
   const backspacePin = React.useCallback(() => {
-    ensureAudioUnlocked();
     setPin((prev) => prev.slice(0, -1));
     setPinError(false);
   }, []);
