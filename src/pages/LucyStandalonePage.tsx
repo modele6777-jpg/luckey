@@ -419,12 +419,14 @@ function shuffle<T>(array: T[]): T[] {
 
 /**
  * 말풍선 메시지의 고유 모드 및 채널들을 정확하게 분석/추출하는 헬퍼 함수
+ * - 각 메시지가 실제로 작성/사용되었던 모드(수다 모드, 단일 채널, 융합 시너지, 올인원 마스터)를 온전히 보존
+ * - 현재 화면이 일반 루시인지 루시 플러스인지에 관계없이 과거 대화가 임의로 덧씌워지지 않고 원래 모드로 표기됩니다.
  */
 export function resolveMessageModeAndChannels(
   msg: any,
   filteredMessages?: any[],
   index?: number,
-  allowMaster = true
+  _allowMaster?: boolean
 ): {
   mode: string;
   channels: SpecialChannel[];
@@ -434,19 +436,30 @@ export function resolveMessageModeAndChannels(
   badgeColor: string;
   badgeIcon: string;
 } {
-  const cacheKey = allowMaster ? '_cachedModeInfo' : '_cachedRegularModeInfo';
-  if (msg && typeof msg === 'object' && (msg as any)[cacheKey]) {
-    return (msg as any)[cacheKey];
+  // 메시지 객체별 실제 모드 캐시 (화면 모드 전환 시에도 기존 메시지 모드가 변질되지 않도록 영구 보존)
+  if (msg && typeof msg === 'object' && (msg as any)._msgActualModeInfo_v4) {
+    return (msg as any)._msgActualModeInfo_v4;
   }
 
-  let rawChannels: string[] = Array.isArray(msg?.channels) ? msg.channels : [];
+  let rawChannels: string[] = Array.isArray(msg?.channels) ? [...msg.channels] : [];
   let rawMode: string = msg?.mode || msg?.channel || '';
 
-  // 0. 환영 및 일일 인사말 메시지인 경우
   const msgId = String(msg?.id || '');
-  if (msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.includes('greet')) {
-    if (allowMaster) {
-      rawChannels = ALL_CHANNELS;
+  const rawTextContent = typeof msg?.content === 'string' 
+    ? msg.content 
+    : (Array.isArray(msg?.content) ? (msg.content.find((item: any) => item.type === 'text')?.text || '') : '');
+  const cleanText = rawTextContent.trim();
+
+  // 0. 환영 및 일일 인사말 메시지인 경우: 인사말 고유의 모드/내용을 통해 실제 모드 추출
+  const isGreet = msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.includes('greet') || isGreetingMessage(msg);
+  if (isGreet) {
+    const isMasterGreetingText = 
+      cleanText.includes('15대 운명학') || 
+      cleanText.includes('올인원 마스터') || 
+      cleanText.includes('루시 프로') ||
+      cleanText.includes('7대 테마');
+    if (rawMode === 'master' || isMasterGreetingText) {
+      rawChannels = [...ALL_CHANNELS];
       rawMode = 'master';
     } else {
       rawChannels = [];
@@ -454,30 +467,64 @@ export function resolveMessageModeAndChannels(
     }
   }
 
-  // 1. 모델 메시지에 채널이 비어 있다면 직전 사용자 메시지의 채널 확인
-  if (rawChannels.length === 0 && !rawMode && filteredMessages && typeof index === 'number' && index > 0) {
-    const prev = filteredMessages[index - 1];
-    if (prev && prev.role === 'user') {
-      if (Array.isArray(prev.channels) && prev.channels.length > 0) {
-        rawChannels = prev.channels;
+  // 0-1. 메시지 본문이 명백한 일상 수다 대화인 경우 (수다 권유, 일상 안부 등 운명학 도구 분석이 없는 대화)
+  const isExplicitCasualChatText = 
+    (cleanText.includes('일상 수다가 필요해') || 
+     cleanText.includes('가벼운 일상 수다') || 
+     cleanText.includes('수다 떨 준비되어 있어') || 
+     cleanText.includes('나랑 가볍게 수다 떨자') ||
+     cleanText.includes('도란도란 이야기 나눌 준비가 되어 있으니까')) &&
+    !cleanText.includes('15대 운명학') &&
+    !cleanText.includes('올인원 마스터') &&
+    !cleanText.includes('사주명리');
+
+  if (isExplicitCasualChatText) {
+    rawMode = 'casual';
+    rawChannels = [];
+  }
+
+  // 1. 모델/사용자 메시지에 모드 및 채널이 비어 있는 경우 이전/다음 메시지로부터 상속 확인
+  if (rawChannels.length === 0 && !rawMode && filteredMessages && typeof index === 'number') {
+    // 1-1. 모델 메시지인 경우 직전 사용자 메시지 확인
+    if (index > 0) {
+      const prev = filteredMessages[index - 1];
+      if (prev && prev.role === 'user') {
+        if (Array.isArray(prev.channels) && prev.channels.length > 0) {
+          rawChannels = [...prev.channels];
+        }
+        if (prev.mode) {
+          rawMode = prev.mode;
+        }
       }
-      if (prev.mode) {
-        rawMode = prev.mode;
+    }
+    // 1-2. 사용자 메시지인 경우 직후 모델 메시지 확인
+    if (rawChannels.length === 0 && !rawMode && index < filteredMessages.length - 1) {
+      const next = filteredMessages[index + 1];
+      if (next && next.role !== 'user') {
+        if (Array.isArray(next.channels) && next.channels.length > 0) {
+          rawChannels = [...next.channels];
+        }
+        if (next.mode) {
+          rawMode = next.mode;
+        }
       }
     }
   }
 
-  // 2. 여전히 비어 있다면 본문 텍스트의 키워드 및 의도 분석
+  // 2. 메시지에 14개 이상의 운명학 도구(usedTools)가 사용된 모델 메시지인 경우 마스터 모드
+  if (rawChannels.length === 0 && !rawMode && Array.isArray(msg?.usedTools) && msg.usedTools.length >= 14) {
+    rawChannels = [...ALL_CHANNELS];
+    rawMode = 'master';
+  }
+
+  // 3. 여전히 비어 있다면 본문 텍스트의 키워드 및 의도 분석
   if (rawChannels.length === 0 && !rawMode) {
-    const text = typeof msg?.content === 'string' 
-      ? msg.content 
-      : (Array.isArray(msg?.content) ? (msg.content[0]?.text || '') : '');
-    const detected = detectLucyChannelsFromText(text, { allowMaster });
+    const detected = detectLucyChannelsFromText(cleanText, { allowMaster: true });
     if (detected.isMaster) {
-      rawChannels = ALL_CHANNELS;
+      rawChannels = [...ALL_CHANNELS];
       rawMode = 'master';
     } else if (detected.channels.length > 0) {
-      rawChannels = detected.channels;
+      rawChannels = [...detected.channels];
       rawMode = detected.channels.length === 1 ? detected.channels[0] : 'synergy';
     } else {
       rawChannels = [];
@@ -486,14 +533,15 @@ export function resolveMessageModeAndChannels(
   }
 
   const filteredChannels = rawChannels.filter((c: any) => ALL_CHANNELS.includes(c)) as SpecialChannel[];
+  const isAllChannels = filteredChannels.length === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => filteredChannels.includes(c));
+
   const isMaster = Boolean(
-    allowMaster ||
     rawMode === 'master' ||
     msg?.mode === 'master' ||
-    filteredChannels.length === ALL_CHANNELS.length
+    isAllChannels
   );
-  const validChannels = isMaster ? ALL_CHANNELS : resolveLucyPageChannels(filteredChannels, false);
-  const isCasual = !isMaster && (rawMode === 'casual' || validChannels.length === 0);
+  const validChannels = isMaster ? [...ALL_CHANNELS] : filteredChannels;
+  const isCasual = !isMaster && (rawMode === 'casual' || (validChannels.length === 0 && rawMode !== 'synergy'));
 
   let badgeLabel = '수다 모드';
   let badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white border-slate-200 dark:border-white/20';
@@ -526,7 +574,7 @@ export function resolveMessageModeAndChannels(
     badgeIcon: string;
   } = {
     mode: isMaster ? 'master' : (isCasual ? 'casual' : (validChannels.length === 1 ? validChannels[0] : 'synergy')),
-    channels: isMaster ? ALL_CHANNELS : validChannels,
+    channels: isMaster ? [...ALL_CHANNELS] : validChannels,
     isMaster,
     isCasual,
     badgeLabel,
@@ -536,7 +584,7 @@ export function resolveMessageModeAndChannels(
 
   if (msg && typeof msg === 'object') {
     try {
-      (msg as any)[cacheKey] = result;
+      (msg as any)._msgActualModeInfo_v4 = result;
     } catch (_) {}
   }
 
@@ -2819,7 +2867,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             if (!isUser && !textContent.trim() && !imageUrl) {
               return null;
             }
-            const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index, pro || isPlusMode);
+            const msgModeInfo = resolveMessageModeAndChannels(msg, filteredMessages, index);
 
             // 루시의 인사말인지 여부 정밀 판별
             const isGreeting = (() => {
@@ -2901,7 +2949,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       : [];
                     if (resolvedTools.length === 0) return null;
 
-                    if (pro && (msgModeInfo.isMaster || resolvedTools.length >= 15)) {
+                    if (msgModeInfo.isMaster || resolvedTools.length >= 15) {
                       return (
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
