@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ChevronDown, ChevronUp, Compass, Flame, Shield, Star, Activity, Eye, Music, Bell, Key, Check } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Compass, Flame, Shield, Star, Activity, Eye, Music, Bell, Key, Check, Download, Camera } from 'lucide-react';
 import { calculateDetailedSaju, type SajuAnalysisResult, type FiveElement } from '@/lib/sajuAnalysis';
 import { calculateNatalChart, type NatalChartResult } from '@/lib/astrologyAnalysis';
 import { calculateZiwei } from '@/lib/divination/birthCharts';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { useLocation } from 'wouter';
+import { toPng } from 'html-to-image';
 import type { UserProfile } from '@/lib/sharedState';
 
 interface VisualFortuneChartWidgetProps {
@@ -23,7 +24,32 @@ export function VisualFortuneChartWidget({
 }: VisualFortuneChartWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isRinging, setIsRinging] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
+
+  const handleExportImage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!chartRef.current || isExporting) return;
+    try {
+      setIsExporting(true);
+      playAudioHaptic('save_auto');
+      const dataUrl = await toPng(chartRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: '#070a0e',
+      });
+      const link = document.createElement('a');
+      link.download = `luckey-fortune-chart-${profile?.basic?.birthdate || 'my'}.png`;
+      link.href = dataUrl;
+      link.click();
+      playAudioHaptic('save_success');
+    } catch (_) {
+      // 이미지 내보내기 오류 안전 무시
+    } finally {
+      setTimeout(() => setIsExporting(false), 800);
+    }
+  };
 
   const handlePlayBowl = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -88,6 +114,7 @@ export function VisualFortuneChartWidget({
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={chartRef}
             initial={{ opacity: 0, height: 0, y: -6 }}
             animate={{ opacity: 1, height: 'auto', y: 0 }}
             exit={{ opacity: 0, height: 0, y: -6 }}
@@ -98,13 +125,24 @@ export function VisualFortuneChartWidget({
                 : 'bg-[#090d13]/95 border-emerald-500/30 text-slate-100 shadow-emerald-950/30'
             }`}
           >
-            {/* Header: 계산 정보 */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-2.5 text-xs text-white/50">
+            {/* Header: 계산 정보 & 이미지 저장 */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5 text-xs text-white/50">
               <span className="font-medium text-emerald-400 flex items-center gap-1">
                 <Compass size={13} />
                 <span>결정론적 자체 계산 엔진 실측 데이터 (Deterministic Core)</span>
               </span>
-              <span>{profile.basic.birthdate} {profile.basic.birthtime || ''}</span>
+              <div className="flex items-center gap-2">
+                <span>{profile.basic.birthdate} {profile.basic.birthtime || ''}</span>
+                <button
+                  onClick={handleExportImage}
+                  disabled={isExporting}
+                  className="px-2 py-0.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold flex items-center gap-1 cursor-pointer transition-all"
+                  title="이 실측 계산 차트를 고화질 이미지(PNG)로 저장합니다."
+                >
+                  {isExporting ? <Check size={11} className="text-emerald-400 animate-spin" /> : <Camera size={11} />}
+                  <span>{isExporting ? '저장 중...' : '카드 저장'}</span>
+                </button>
+              </div>
             </div>
 
             {/* 1. 사주 4주 8자 원국 칩 (Saju Four Pillars Matrix) */}
@@ -271,6 +309,12 @@ export function VisualFortuneChartWidget({
                 </div>
               </div>
             )}
+
+            {/* Footer Watermark for Exported Cards */}
+            <div className="pt-1 flex items-center justify-between text-[9px] text-white/30 uppercase tracking-widest font-mono">
+              <span>LUCKEY ARCHIVE · DETERMINISTIC FORTUNE TECH</span>
+              <span>CONFIDENTIAL PERSONAL BLUEPRINT</span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
