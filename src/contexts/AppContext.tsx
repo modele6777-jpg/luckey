@@ -1937,7 +1937,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const toolSelection = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall || !isRegularLucyRoute })
+      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall || isProConversation })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
     const toolsIncludedInPrompt = isCasualMode
       ? []
