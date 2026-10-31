@@ -129,8 +129,8 @@ export function calculateDeterministicCompatibility(
   // 1. 사주 분석
   const stemA = sajuA?.dayMaster?.korean || '갑';
   const stemB = sajuB?.dayMaster?.korean || '기';
-  const branchA = sajuA?.pillars?.day?.earthlyBranch?.korean || '자';
-  const branchB = sajuB?.pillars?.day?.earthlyBranch?.korean || '축';
+  const branchA = sajuA?.pillars?.day?.zhiKr || '자';
+  const branchB = sajuB?.pillars?.day?.zhiKr || '축';
 
   let stemScore = 15;
   let stemRelation = { isHarmonious: false, name: '일간 조화', desc: '서로 다른 개성으로 균형을 이루는 관계' };
@@ -151,7 +151,11 @@ export function calculateDeterministicCompatibility(
   }
 
   let branchScore = 15;
-  let branchRelation = { type: '평이' as const, name: '일지 평이', desc: '평온하고 일상적인 조화' };
+  let branchRelation: { type: '합' | '충' | '원진' | '평이'; name: string; desc: string } = {
+    type: '평이',
+    name: '일지 평이',
+    desc: '평온하고 일상적인 조화',
+  };
   if (BRANCH_SIX_HARMONY[branchA]?.partner === branchB) {
     branchScore = 25;
     branchRelation = {
@@ -176,8 +180,8 @@ export function calculateDeterministicCompatibility(
   }
 
   // 오행 상호 보완성
-  const elementsA = sajuA?.elementDistribution || { 목: 2, 화: 2, 토: 2, 금: 1, 수: 1 };
-  const elementsB = sajuB?.elementDistribution || { 목: 1, 화: 1, 토: 2, 금: 2, 수: 2 };
+  const elementsA = sajuA?.elements?.counts || { 목: 2, 화: 2, 토: 2, 금: 1, 수: 1 };
+  const elementsB = sajuB?.elements?.counts || { 목: 1, 화: 1, 토: 2, 금: 2, 수: 2 };
   const aNeedsFromB: string[] = [];
   const bNeedsFromA: string[] = [];
   (['목', '화', '토', '금', '수'] as FiveElement[]).forEach((el) => {
@@ -285,13 +289,13 @@ export function calculateDeterministicCompatibility(
         name: nameA,
         dayMaster: `${sajuA?.dayMaster?.hanja || ''} ${stemA}`,
         dayBranch: branchA,
-        dominantElement: sajuA?.dayMaster?.fiveElement || '목',
+        dominantElement: sajuA?.dayMaster?.element || '목',
       },
       personB: {
         name: nameB,
         dayMaster: `${sajuB?.dayMaster?.hanja || ''} ${stemB}`,
         dayBranch: branchB,
-        dominantElement: sajuB?.dayMaster?.fiveElement || '금',
+        dominantElement: sajuB?.dayMaster?.element || '금',
       },
       stemRelation,
       branchRelation,
