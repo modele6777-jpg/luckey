@@ -250,12 +250,21 @@ function waitForTTSResume(session: string): Promise<boolean> {
 export const pauseTTS = (): void => {
   if (!ttsState.activeSessionId || ttsState.isPaused) return;
   updateTTSState({ isSpeaking: false, isLoading: false, isPaused: true });
+  if (deviceSpeechSession) {
+    try { window.speechSynthesis?.pause(); } catch (_) {}
+  }
   pauseTTSAudio();
   pauseTTSSession();
 };
 
 export const resumeTTS = (): void => {
   if (!ttsState.activeSessionId || !ttsState.isPaused) return;
+  if (deviceSpeechSession) {
+    try { window.speechSynthesis?.resume(); } catch (_) {}
+    updateTTSState({ isPaused: false, isSpeaking: true, isLoading: false });
+    resumeTTSSession();
+    return;
+  }
   resumeTTSAudio();
   const speaking = isTTSAudioPlaying();
   updateTTSState({ isPaused: false, isSpeaking: speaking, isLoading: !speaking });
@@ -290,11 +299,57 @@ export const stopTTS = () => {
   });
   stopTTSPlayback();
   clearTTSSession();
+  deviceSpeechSession = null;
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
 };
 
+
+// 🔊 /api/ai/tts 장애 시에도 낭독이 끊기지 않도록 브라우저 내장 한국어 음성으로 우회합니다.
+let deviceSpeechSession: string | null = null;
+
+function speakWithDeviceSpeech(text: string, session: string | undefined, isSequenceChunk: boolean, options?: TTSPlaybackOptions): boolean {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return false;
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return false;
+    synth.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    try {
+      const korean = synth.getVoices().find(voice => /^ko/i.test(voice?.lang || ''));
+      if (korean) utterance.voice = korean;
+    } catch (_) {}
+    utterance.rate = 1.0;
+    utterance.onend = () => {
+      if (session && ttsState.activeSessionId !== session) return;
+      deviceSpeechSession = null;
+      if (!isSequenceChunk) {
+        stopTTS();
+        if (!options?.skipCompletionChime) {
+          try { playAiResultNotification(); } catch (_) {}
+        }
+      } else {
+        updateTTSState({ isSpeaking: false, isLoading: false });
+      }
+    };
+    utterance.onerror = () => {
+      if (session && ttsState.activeSessionId !== session) return;
+      deviceSpeechSession = null;
+      stopTTS();
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: '음성 재생이 중단되었습니다. 다시 눌러 주세요.' } }));
+    };
+    deviceSpeechSession = session || 'device';
+    setTTSSessionActive(splitSpeechIntoSentences(text)[0] || text);
+    updateTTSState({ isLoading: false, isSpeaking: true });
+    synth.speak(utterance);
+    return true;
+  } catch (_) {
+    deviceSpeechSession = null;
+    return false;
+  }
+}
 export function normalizeTextForSpeech(text: string): string {
   return prepareNaturalSpeechText(text);
 }
@@ -487,6 +542,13 @@ export const playTTS = async (
     throw new Error('No audio content returned');
   } catch (error) {
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
+
+    // 🔊 /api/ai/tts 실패(네트워크 오류, 5xx 등) 시에도 소리가 끊기지 않도록
+    // 브라우저 내장 한국어 음성(speechSynthesis)으로 우회 낭독합니다.
+    if (speakWithDeviceSpeech(cleanText, sessionToVerify, isSequenceChunk, options)) {
+      console.warn('[TTS] AI audio unavailable; falling back to device speech.', error);
+      return;
+    }
 
     stopTTS();
     console.warn('[TTS] AI audio unavailable; device speech is disabled.', error);
