@@ -529,23 +529,6 @@ export default function LeftSidebarNav() {
     hideSidebar();
   }, [cleanPath, hideSidebar]);
 
-  // Touch gesture handlers on the sidebar drawer itself (swipe left to dismiss)
-  const sidebarTouchStartXRef = useRef(0);
-  const handleSidebarTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      sidebarTouchStartXRef.current = e.touches[0].clientX;
-    }
-  };
-  const handleSidebarTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      const deltaX = e.touches[0].clientX - sidebarTouchStartXRef.current;
-      if (deltaX < -25) {
-        hideSidebar();
-        triggerHaptic('mirrorhole');
-      }
-    }
-  };
-
   return createPortal(
     <>
       {!isOpen && <button type="button" onClick={showSidebar} aria-label="메뉴 열기" aria-controls="main-sidebar-navigation" aria-expanded={false}
@@ -573,8 +556,6 @@ export default function LeftSidebarNav() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '-100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              onTouchStart={handleSidebarTouchStart}
-              onTouchMove={handleSidebarTouchMove}
               style={{
                 width: 'min(284px, calc(100vw - 48px))',
               }}

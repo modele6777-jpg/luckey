@@ -1,40 +1,89 @@
 import type { Response } from "express";
 
+function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSample = 16): Buffer {
+  const byteRate = sampleRate * channels * (bitsPerSample / 8);
+  const blockAlign = channels * (bitsPerSample / 8);
+  const dataSize = pcmBuffer.length;
+  const header = Buffer.alloc(44);
+  header.write("RIFF", 0);
+  header.writeUInt32LE(36 + dataSize, 4);
+  header.write("WAVE", 8);
+  header.write("fmt ", 12);
+  header.writeUInt32LE(16, 16);
+  header.writeUInt16LE(1, 20); // PCM format
+  header.writeUInt16LE(channels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write("data", 36);
+  header.writeUInt32LE(dataSize, 40);
+  return Buffer.concat([header, pcmBuffer]);
+}
+
 async function synthesizeWithGemini(text: string, voice?: string): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
   if (!geminiKey) return null;
   const voiceName = voice === "Charon" ? "Charon" : "Kore";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent?key=${geminiKey}`;
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text }] }],
-      generationConfig: {
-        responseModalities: ["AUDIO"],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName }
+
+  const models = [
+    "gemini-3.8-flash-lite-tts",
+    "gemini-3.1-flash-tts-preview",
+    "gemini-3.8-flash-tts",
+  ];
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text }] }],
+          generationConfig: {
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName }
+              }
+            }
           }
-        }
+        }),
+        signal: AbortSignal.timeout(12000),
+      });
+
+      if (!resp.ok) {
+        console.warn(`[ai/tts] Gemini model ${model} HTTP ${resp.status}`);
+        continue;
       }
-    }),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!resp.ok) {
-    console.warn(`[ai/tts] Gemini TTS HTTP ${resp.status}`);
-    return null;
+
+      const data = await resp.json() as any;
+      const part = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+      if (!part?.data) continue;
+
+      let rawBase64 = part.data;
+      const mime = String(part.mimeType || "");
+
+      // If PCM (e.g. audio/l16), wrap with standard WAV header so browser audio can play seamlessly
+      if (mime.includes("l16") || mime.includes("pcm")) {
+        const pcmBuf = Buffer.from(rawBase64, "base64");
+        const wavBuf = pcmToWav(pcmBuf, 24000, 1, 16);
+        rawBase64 = wavBuf.toString("base64");
+      }
+
+      return {
+        audioContent: rawBase64,
+        encoding: "wav",
+        sampleRate: 24000,
+        voice: voiceName,
+        provider: "gemini"
+      };
+    } catch (e) {
+      console.warn(`[ai/tts] Gemini model ${model} failed:`, e);
+    }
   }
-  const data = await resp.json() as any;
-  const audioBase64 = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  if (!audioBase64) return null;
-  return {
-    audioContent: audioBase64,
-    encoding: "wav",
-    sampleRate: 24000,
-    voice: voiceName,
-    provider: "gemini"
-  };
+
+  return null;
 }
 
 export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
@@ -72,7 +121,7 @@ export default async function handler(req: { method?: string; body?: unknown }, 
       return res.status(400).json({ error: "Empty speech text" });
     }
 
-    // 🌟 1순위: Google Gemini 3.8 Flash Neural Audio TTS (스튜디오급 고품질 성우 음성)
+    // 🌟 1순위: Google Gemini Neural Audio TTS (다중 모델 자동 페일오버)
     const geminiResult = await synthesizeWithGemini(text, voice).catch(() => null);
     if (geminiResult) {
       return res.status(200).json(geminiResult);

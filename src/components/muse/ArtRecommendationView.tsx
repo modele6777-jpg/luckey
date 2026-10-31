@@ -68,6 +68,7 @@ interface FamousSong {
   artistOriginal?: string;
   listeningGuide: string;
   appleMusicClassicalUrl?: string;
+  youtubeVideoId?: string;
   songSourceName?: string;
 }
 
@@ -2847,7 +2848,7 @@ export function ArtRecommendationView() {
                 </button>
               </div>
             </motion.div>)}
-</section><section className="duo-workspace-results" aria-label="예술 작품과 감상 결과">
+</section><section className="duo-workspace-results pb-32 md:pb-40" aria-label="예술 작품과 감상 결과">
 <AnimatePresence mode="wait">
         {loading && (
           <motion.div
@@ -3062,6 +3063,7 @@ export function ArtRecommendationView() {
                   artist={recommendation.famousSong.artist}
                   artistOriginal={recommendation.famousSong.artistOriginal}
                   appleMusicClassicalUrl={recommendation.famousSong.appleMusicClassicalUrl}
+                  youtubeVideoId={recommendation.famousSong.youtubeVideoId}
                 />
 
                 <div className="duo-workspace-actions flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
