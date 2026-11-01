@@ -138,16 +138,16 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     };
   }
 
-  // 4. 연애 / 결혼 / 궁합 / 인연 / 재회
-  const loveRegex = /연애|사랑|결혼|궁합|남친|여친|남자친구|여자친구|배우자|이성|썸|짝사랑|재회|이별|차였|헤어|호감|속마음|인연/;
+  // 4. 연애 / 결혼 / 궁합 / 인연 / 재회 / 대화 속 인연 자동 감지
+  const loveRegex = /연애|사랑|결혼|궁합|남친|여친|남자친구|여자친구|배우자|이성|썸|짝사랑|재회|이별|차였|헤어|호감|속마음|인연|와이프|아내|남편|그\s*사람|그녀|동업자|파트너|시나스트리|듀얼\s*매트릭스/;
   if (loveRegex.test(lower)) {
     return {
       intent: 'relationship_love',
-      intentKoName: '연애·궁합·인연 역학',
-      confidence: 0.95,
-      targetTools: ['sukuyo', 'astrology', 'ziwei'],
-      routingReason: '숙요경(27숙)의 깊은 전생 인연 관계(안괴/영친)와 점성술(금성/달)의 정서적 애착 패턴, 자미두수 부처궁 융합',
-      suggestedFocusPrompt: '두 사람 사이의 감정 파동과 서로에게 끌리는 본질적 이유, 관계에서 부딪히기 쉬운 숨은 심리 역학을 다정하고 명쾌하게 풀어줘.',
+      intentKoName: '연애·궁합·대화 속 인연 듀얼 매트릭스',
+      confidence: 0.96,
+      targetTools: ['saju', 'sukuyo', 'astrology'],
+      routingReason: '사주 일간 천간합·지지육합·오행보완도 × 숙요경 27숙 6대 카르마(영친/안괴/업태) × 점성술 시나스트리 듀얼 매트릭스 백그라운드 융합',
+      suggestedFocusPrompt: '두 사람 사이의 천간합·지지육합과 오행 상호 보완도, 숙요경 27숙 인연 관계와 점성술 원소 호환성을 바탕으로 끌림의 본질과 관계 발전의 지혜를 입체적으로 풀어줘.',
       isMasterMobilization: false,
       isCasual: false,
     };
