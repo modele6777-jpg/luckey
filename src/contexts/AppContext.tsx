@@ -33,7 +33,7 @@ import {
   parseSuggestions,
   cleanChatDisplayText,
 } from '../utils/suggestions';
-import { hasUnlockedPinToday, markPinUnlockedToday, getTodayDateKey } from '../lib/dailyCache';
+import { hasUnlockedPinToday, markPinUnlockedToday, clearPinUnlockedToday, getTodayDateKey } from '../lib/dailyCache';
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
@@ -1381,9 +1381,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     safeLocalStorage.removeItem('developer_bypass');
     setPairedVaultId('');
     unlockMemoryFlag = false;
+    clearPinUnlockedToday();
     try {
       safeSessionStorage.removeItem(AUTH_UID_SESSION_KEY);
       safeLocalStorage.removeItem(AUTH_UID_SESSION_KEY);
+      safeSessionStorage.removeItem('prism_auth_uid');
+      safeLocalStorage.removeItem('prism_auth_uid');
     } catch {
       // ignore
     }

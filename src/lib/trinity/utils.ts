@@ -2107,7 +2107,14 @@ export function ensureCompleteTarotReading(
       cleaned = cleaned.slice(0, step5Idx).trim();
     }
     const dynamicBlessing = getCardSoulBlessing(leadCard, concern);
-    cleaned += `\n\n### ✨ 5. 당신의 길을 축복하는 영혼의 한마디\n> _"${dynamicBlessing}"_`;
+    const isDaily = isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern));
+    const step5Header = isDaily
+      ? '### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언'
+      : '### ✨ 5. 당신의 길을 축복하는 영혼의 한마디';
+    const affirmationText = isDaily
+      ? `\n- **오늘의 황금빛 확언**: "나는 오늘 어떤 상황 속에서도 평온한 내면의 중심을 지키며, 나에게 찾아오는 모든 밝은 기회와 은총을 기쁘게 누립니다."`
+      : '';
+    cleaned += `\n\n${step5Header}\n> _"${dynamicBlessing}"_${affirmationText}`;
   }
 
   // 3. 미완성 마크다운 서식 닫기

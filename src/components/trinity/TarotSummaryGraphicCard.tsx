@@ -63,7 +63,14 @@ export function TarotSummaryGraphicCard({
   const rows: ParsedSummaryRow[] = bullets.slice(0, 3).map((bullet, idx) => {
     const match = bullet.match(/^\[([^\]]+)\]\s*(.*)$/);
     const rawTag = match ? match[1].trim() : (idx === 0 ? '현재 에너지' : idx === 1 ? '방향과 결단' : '실천 처방');
-    const rawContent = match ? match[2].trim() : bullet.trim();
+    let rawContent = match ? match[2].trim() : bullet.trim();
+
+    // 불필요한 콜론(:) 및 카드 호명 안내 서두 제거
+    rawContent = rawContent.replace(/^[:：—\-–~·•*]+\s*/, '').trim();
+    const strippedIntro = rawContent.replace(/^(?:(?:친애하는\s*)?(?:질문자|내담자|[가-힣a-zA-Z0-9]+)님[,\s~!]*)?(?:오늘\s*당신의\s*하루를\s*(?:지배|이끄|비추)는\s*카드는\s*[^.]+입니다[.\s]*)?/i, '').trim();
+    if (strippedIntro.length >= 8) {
+      rawContent = strippedIntro.replace(/^[:：—\-–~·•*]+\s*/, '').trim();
+    }
 
     // YES / NO 감지
     let highlightBadge: { text: string; color: string } | null = null;

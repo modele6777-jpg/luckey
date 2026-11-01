@@ -474,7 +474,7 @@
 
   .md\:pb-page-md {
     @media (width >= 48rem) {
-      padding-bottom: calc(var(--sab) + 14.5rem);
+      padding-bottom: calc(var(--sab) + 6.5rem);
     }
   }
 

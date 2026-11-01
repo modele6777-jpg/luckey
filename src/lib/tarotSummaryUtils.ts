@@ -394,6 +394,7 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     let cleaned = stripGreetingFromText(content);
     cleaned = cleaned.replace(/^\[(?!YES\b|NO\b|조건부\s*YES)[^\]]+\]\s*(:|-|—)?\s*/i, '');
     cleaned = cleaned.replace(/^(?:현재\s*에너지|방향과\s*결단|실천\s*처방|개운\s*처방|행동\s*처방|실천\s*가이드|개운\s*가이드|상황\s*진단)\s*[:—\-]\s*/, '');
+    cleaned = cleaned.replace(/^[:：—\-–~·•*]+\s*/, '');
     cleaned = cleanSentence(cleaned);
 
     // A short, specific answer is better than unrelated spiritual padding.
