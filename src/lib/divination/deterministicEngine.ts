@@ -23,6 +23,7 @@ import { parseBirthTime } from '../birthDateTime';
 import { getAstronomicalSajuYear, getYearSolarTerms } from '../astronomicalSolarTerms';
 import { calculateChronoTransit, formatChronoTransitPrompt, type ChronoTransitResult } from './chronoTransitEngine';
 import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, type LifeSeasonTimingResult } from './lifeSeasonTimingEngine';
+import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, type EnergeticPrescriptionResult } from './energeticPrescriptionEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -65,6 +66,7 @@ export interface DeterministicEngineReport {
   };
   chronoTransit?: ChronoTransitResult;
   lifeSeasonTiming?: LifeSeasonTimingResult | null;
+  energeticPrescription?: EnergeticPrescriptionResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -501,6 +503,7 @@ export function runDeterministicEngine(params: {
 
   const chronoTransitResult = calculateChronoTransit({ profile, targetDate: now });
   const lifeSeasonTimingResult = calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() });
+  const energeticPrescriptionResult = calculateEnergeticPrescription({ profile, currentDate: now });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -530,6 +533,7 @@ export function runDeterministicEngine(params: {
     },
     chronoTransit: chronoTransitResult,
     lifeSeasonTiming: lifeSeasonTimingResult,
+    energeticPrescription: energeticPrescriptionResult,
     tools: toolsMap,
   };
 }
@@ -565,5 +569,6 @@ ${JSON.stringify(calculatedDataSummary, null, 2)}
 \`\`\`
 ======================================================================
 ${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}
-${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}`;
+${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}
+${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}`;
 }
