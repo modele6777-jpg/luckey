@@ -25,6 +25,7 @@ import { calculateChronoTransit, formatChronoTransitPrompt, type ChronoTransitRe
 import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, type LifeSeasonTimingResult } from './lifeSeasonTimingEngine';
 import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, type EnergeticPrescriptionResult } from './energeticPrescriptionEngine';
 import { calculateContextualSynastry, formatContextualSynastryPrompt, type ContextualSynastryResult } from './contextualSynastryEngine';
+import { calculateInstantDecision, formatInstantDecisionPrompt, type InstantDecisionResult } from './instantDecisionEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -69,6 +70,7 @@ export interface DeterministicEngineReport {
   lifeSeasonTiming?: LifeSeasonTimingResult | null;
   energeticPrescription?: EnergeticPrescriptionResult | null;
   contextualSynastry?: ContextualSynastryResult | null;
+  instantDecision?: InstantDecisionResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -507,6 +509,7 @@ export function runDeterministicEngine(params: {
   const lifeSeasonTimingResult = calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() });
   const energeticPrescriptionResult = calculateEnergeticPrescription({ profile, currentDate: now });
   const contextualSynastryResult = calculateContextualSynastry({ questionText: question, myProfile: profile });
+  const instantDecisionResult = calculateInstantDecision({ instant: now, questionText: question });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -538,6 +541,7 @@ export function runDeterministicEngine(params: {
     lifeSeasonTiming: lifeSeasonTimingResult,
     energeticPrescription: energeticPrescriptionResult,
     contextualSynastry: contextualSynastryResult,
+    instantDecision: instantDecisionResult,
     tools: toolsMap,
   };
 }
@@ -575,5 +579,6 @@ ${JSON.stringify(calculatedDataSummary, null, 2)}
 ${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}
 ${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}
 ${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}
-${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}`;
+${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}
+${report.instantDecision ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}`;
 }

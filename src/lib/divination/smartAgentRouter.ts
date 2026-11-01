@@ -153,16 +153,16 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     };
   }
 
-  // 5. 즉시 결단 / 양자택일 / 오늘의 승부수 / 점
-  const decisionRegex = /선택|결정|어떻게\s*할까|갈까\s*말까|할까\s*말까|점|점괘|뽑아\s*줘|작괘|타로\s*한\s*장|오늘의\s*선택|승부수|결과\s*예측/;
+  // 5. 즉시 결단 / 양자택일 / 오늘의 승부수 / 점 / 매화역수 & 기문둔갑
+  const decisionRegex = /선택|결정|어떻게\s*할까|갈까\s*말까|할까\s*말까|점|점괘|뽑아\s*줘|작괘|타로\s*한\s*장|오늘의\s*선택|승부수|결과\s*예측|매화역수|기문둔갑|팔문|길흉|지금\s*할까/;
   if (decisionRegex.test(lower)) {
     return {
       intent: 'immediate_decision',
-      intentKoName: '즉시 결단·타이밍 점술',
-      confidence: 0.93,
-      targetTools: ['iching', 'liuren'],
-      routingReason: '주역 64괘의 음양 변화 시중(時中) 이치와 대육임 점시 기준 사건 진행(초전→중전→말전) 정밀 포국',
-      suggestedFocusPrompt: '주역 괘상의 핵심 조언과 육임의 사건 진행 흐름을 통해, 지금 나아가야 할 때인지 멈춰야 할 때인지 명확한 행동 지침을 제시해 줘.',
+      intentKoName: '즉시 결단·매화역수 & 기문둔갑 시가팔문',
+      confidence: 0.95,
+      targetTools: ['iching', 'qimen', 'liuren'],
+      routingReason: '소강절 매화역수 시간작괘(본괘·호괘·변괘 체용 생극) × 기문둔갑 시가 8문(생문·개문·휴문 등) 실시간 수리 연산',
+      suggestedFocusPrompt: '실시간 타임스탬프로 도출된 매화역수 본괘·호괘·변괘의 체용 생극과 기문둔갑 시가팔문의 문턱을 근거로, 지금 밀어붙여야 할지(Strong Go) 멈추고 조율해야 할지(Wait) 명쾌하고 단호한 행동 지침을 제시해 줘.',
       isMasterMobilization: false,
       isCasual: false,
     };
