@@ -327,9 +327,9 @@ export function calculateChronoTransit(params: {
   const sajuInteractions: SajuInteraction[] = [];
 
   if (sajuUser) {
-    const userDayGan = sajuUser.dayPillar.gan;
-    const userDayZhi = sajuUser.dayPillar.zhi;
-    const userYearZhi = sajuUser.yearPillar.zhi;
+    const userDayGan = sajuUser.pillars.day.gan;
+    const userDayZhi = sajuUser.pillars.day.zhi;
+    const userYearZhi = sajuUser.pillars.year.zhi;
 
     // 오늘의 십신
     const dayTenGod = calculateTenGod(userDayGan, dGan, false);
