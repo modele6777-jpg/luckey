@@ -22,6 +22,7 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { getAstronomicalSajuYear, getYearSolarTerms } from '../astronomicalSolarTerms';
 import { calculateChronoTransit, formatChronoTransitPrompt, type ChronoTransitResult } from './chronoTransitEngine';
+import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, type LifeSeasonTimingResult } from './lifeSeasonTimingEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -63,6 +64,7 @@ export interface DeterministicEngineReport {
     toolsNotImplemented: number;
   };
   chronoTransit?: ChronoTransitResult;
+  lifeSeasonTiming?: LifeSeasonTimingResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -498,6 +500,7 @@ export function runDeterministicEngine(params: {
   const notImplementedCount = allTools.filter(t => t.status === 'not_implemented').length;
 
   const chronoTransitResult = calculateChronoTransit({ profile, targetDate: now });
+  const lifeSeasonTimingResult = calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -526,6 +529,7 @@ export function runDeterministicEngine(params: {
       toolsNotImplemented: notImplementedCount,
     },
     chronoTransit: chronoTransitResult,
+    lifeSeasonTiming: lifeSeasonTimingResult,
     tools: toolsMap,
   };
 }
@@ -560,5 +564,6 @@ export function formatDeterministicEnginePrompt(report: DeterministicEngineRepor
 ${JSON.stringify(calculatedDataSummary, null, 2)}
 \`\`\`
 ======================================================================
-${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}`;
+${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}
+${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}`;
 }
