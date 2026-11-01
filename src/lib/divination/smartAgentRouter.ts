@@ -23,6 +23,7 @@ export type QuestionIntentCategory =
   | 'relationship_love'   // 연애, 결혼, 궁합, 재회, 썸, 이별, 대인관계
   | 'immediate_decision'  // 오늘/지금 결단, 양자택일, 길흉 판단, 타이밍
   | 'daily_timing_transit' // 오늘 운세, 일진, 행성 트랜짓, 지금 흐름, 시간대별 타이밍
+  | 'life_season_timing'  // 10년 대운, 세운, 교운기, 인생의 계절, 장기 사이클
   | 'vitality_wellness'   // 건강, 피로, 수면, 바이오리듬, 일상 개운
   | 'creative_mind'       // 창작, 영감, 글쓰기, 예술, 아이디어
   | 'life_reflection'     // 하루 회고, 감사, 성찰, 마음 정리
@@ -177,6 +178,21 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
       targetTools: ['saju', 'astrology'],
       routingReason: '오늘의 만세력 일진(십신·지지합충)과 실시간 하늘의 행성 트랜짓(달 위상·주요 아스펙트) 동시 동기화',
       suggestedFocusPrompt: '오늘 현재의 살아있는 일진 간지와 하늘의 행성 배치를 출생 차트와 실시간 대조하여, 오늘 지금 이 순간 가장 유리한 흐름과 주의점을 명쾌하게 짚어 줘.',
+      isMasterMobilization: false,
+      isCasual: false,
+    };
+  }
+
+  // 5-2. 10년 대운 & 세운·교운기 타이밍 / 인생의 계절 / 장기 사이클
+  const lifeSeasonRegex = /대운|세운|교운기|10년\s*운|인생의\s*계절|장기\s*사이클|인생\s*타이밍|시기|대운수|환절기|언제쯤|몇\s*살\s*부터|운의\s*흐름/;
+  if (lifeSeasonRegex.test(lower)) {
+    return {
+      intent: 'life_season_timing',
+      intentKoName: '10년 대운·세운·교운기 타이밍',
+      confidence: 0.96,
+      targetTools: ['saju', 'ziwei', 'astrology'],
+      routingReason: '10년 대운의 주기 흐름과 교운기(인생의 환절기), 올해 세운과의 복합 작용 정밀 타이밍 분석',
+      suggestedFocusPrompt: '현재 몇 번째 대운의 몇 년 차를 지나고 있는지, 인생의 어떤 계절(봄/여름/가을/겨울)에 와 있는지, 교운기 진입 여부와 다가올 최적의 도약 타이밍을 입체적으로 풀어줘.',
       isMasterMobilization: false,
       isCasual: false,
     };
