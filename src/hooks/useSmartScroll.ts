@@ -4,7 +4,7 @@ import { useTTSState } from '@/utils/tts';
 export interface UseSmartScrollOptions {
   /**
    * Ref to a scrollable HTML element (e.g., modal body with overflow-y-auto).
-   * If omitted or null, the global window scroll is targeted.
+   * If omitted or null, the nearest scroll container or [data-app-scroll-root] is targeted.
    */
   containerRef?: React.RefObject<HTMLElement | null>;
   /**
@@ -93,16 +93,39 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
   // Find active element in container or document
   const getActiveElement = useCallback((): HTMLElement | null => {
-    const root = containerRef.current || document;
-    let elem = root.querySelector<HTMLElement>(selector);
-    if (!elem && containerRef.current) {
-      const docElem = document.querySelector<HTMLElement>(selector);
-      if (docElem && containerRef.current.contains(docElem)) {
-        elem = docElem;
-      }
+    if (containerRef.current) {
+      const el = containerRef.current.querySelector<HTMLElement>(selector);
+      if (el) return el;
+    }
+    let elem = document.querySelector<HTMLElement>(selector);
+    if (!elem) {
+      elem = document.querySelector<HTMLElement>('[data-tts-active="true"], .tts-active-sentence-highlight');
     }
     return elem;
   }, [containerRef, selector]);
+
+  // Resolve scrollable parent container for any target element
+  const resolveScrollContainer = useCallback((target: HTMLElement | null): HTMLElement | null => {
+    if (containerRef.current) return containerRef.current;
+    if (!target) {
+      return document.querySelector<HTMLElement>('[data-app-scroll-root], main.overflow-y-auto, .overflow-y-auto');
+    }
+
+    let cur: HTMLElement | null = target.parentElement;
+    while (cur && cur !== document.body && cur !== document.documentElement) {
+      if (cur.hasAttribute('data-app-scroll-root')) {
+        return cur;
+      }
+      const style = window.getComputedStyle(cur);
+      const overflowY = style.overflowY;
+      if ((overflowY === 'auto' || overflowY === 'scroll') && cur.scrollHeight > cur.clientHeight + 10) {
+        return cur;
+      }
+      cur = cur.parentElement;
+    }
+
+    return document.querySelector<HTMLElement>('[data-app-scroll-root], main.overflow-y-auto, .overflow-y-auto');
+  }, [containerRef]);
 
   // Viewport centering math
   const scrollToActiveSentence = useCallback(
@@ -117,9 +140,10 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
       setHasActiveHighlight(true);
       lastTargetElemRef.current = target;
 
-      const container = containerRef.current;
+      const container = resolveScrollContainer(target);
+      if (!container) return false;
 
-      // Flag this as programmatic to prevent race conditions
+      // Flag this as programmatic to prevent user-scroll override triggering
       isProgrammaticScrollingRef.current = true;
       if (programmaticScrollResetTimerRef.current) {
         clearTimeout(programmaticScrollResetTimerRef.current);
@@ -128,71 +152,46 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
         isProgrammaticScrollingRef.current = false;
       }, 700);
 
-      if (container) {
-        // Container scroll (e.g. Modal)
-        const containerRect = container.getBoundingClientRect();
-        const targetRect = target.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
 
-        // Calculate target relative to container's content area
-        const currentScroll = container.scrollTop;
-        const targetOffsetTop = currentScroll + (targetRect.top - containerRect.top);
+      // If target has no dimensions (not laid out yet), retry on next frame
+      if (targetRect.height === 0 && targetRect.width === 0) {
+        return false;
+      }
 
-        // Center calculation: place target's midpoint in container's vertical center
-        const targetHeight = targetRect.height || 24;
-        const containerHeight = container.clientHeight;
-        const desiredScrollTop =
-          targetOffsetTop - containerHeight / 2 + targetHeight / 2 + centerOffset;
+      // Calculate target relative to container's scroll content area
+      const currentScroll = container.scrollTop;
+      const targetRelativeTop = targetRect.top - containerRect.top;
+      const targetAbsoluteTop = currentScroll + targetRelativeTop;
 
-        const maxScroll = Math.max(0, container.scrollHeight - containerHeight);
-        const finalTop = Math.max(0, Math.min(maxScroll, desiredScrollTop));
+      // Center calculation: place target's midpoint in container's vertical center
+      const targetHeight = targetRect.height || 26;
+      const containerHeight = container.clientHeight;
+      const desiredScrollTop = Math.round(
+        targetAbsoluteTop - (containerHeight / 2) + (targetHeight / 2) + centerOffset
+      );
 
-        // Skip micro-adjustments if already centered within 20px (unless forced)
-        if (!force && Math.abs(currentScroll - finalTop) < 20) {
-          return true;
-        }
+      const maxScroll = Math.max(0, container.scrollHeight - containerHeight);
+      const finalTop = Math.max(0, Math.min(maxScroll, desiredScrollTop));
 
-        try {
-          container.scrollTo({
-            top: finalTop,
-            behavior: 'smooth',
-          });
-        } catch (_) {
-          container.scrollTop = finalTop;
-        }
-      } else {
-        // Window scroll (Main page)
-        const targetRect = target.getBoundingClientRect();
-        const currentScroll = window.scrollY || window.pageYOffset || 0;
-        const targetOffsetTop = currentScroll + targetRect.top;
+      // Skip micro-adjustments if already centered within 20px (unless forced)
+      if (!force && Math.abs(currentScroll - finalTop) < 20) {
+        return true;
+      }
 
-        const targetHeight = targetRect.height || 24;
-        const viewportHeight = window.innerHeight;
-        const desiredScrollTop =
-          targetOffsetTop - viewportHeight / 2 + targetHeight / 2 + centerOffset;
-
-        const maxScroll = Math.max(
-          0,
-          document.documentElement.scrollHeight - viewportHeight
-        );
-        const finalTop = Math.max(0, Math.min(maxScroll, desiredScrollTop));
-
-        if (!force && Math.abs(currentScroll - finalTop) < 20) {
-          return true;
-        }
-
-        try {
-          window.scrollTo({
-            top: finalTop,
-            behavior: 'smooth',
-          });
-        } catch (_) {
-          document.documentElement.scrollTop = finalTop;
-        }
+      try {
+        container.scrollTo({
+          top: finalTop,
+          behavior: 'smooth',
+        });
+      } catch (_) {
+        container.scrollTop = finalTop;
       }
 
       return true;
     },
-    [enabled, getActiveElement, containerRef, centerOffset]
+    [enabled, getActiveElement, resolveScrollContainer, centerOffset]
   );
 
   // Resume auto-scroll action (called by user click or 3s timeout)
@@ -291,7 +290,6 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
     // If user is currently looking at another section, do NOT hijack the screen!
     if (isUserOverridingRef.current) {
-      // Just check if highlight exists
       const elem = getActiveElement();
       setHasActiveHighlight(!!elem);
       return;

@@ -3929,7 +3929,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                                 if (isSummaryTTSActive) {
                                                   stopTTS();
                                                 } else if (summarySpeechText) {
-                                                  await playTTSInChunks(summarySpeechText, 'Kore', 110);
+                                                  await playTTSInChunks(summarySpeechText, 'Kore', 110, undefined, undefined, { isUserToggleClick: true });
                                                 }
                                               }}
                                             />
@@ -3955,7 +3955,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                           if (isFullReadingTTSActive) {
                                             stopTTS();
                                           } else if (tarotSpeechReadingText) {
-                                            await playTTSInChunks(tarotSpeechReadingText, 'Kore', 110);
+                                            await playTTSInChunks(tarotSpeechReadingText, 'Kore', 110, undefined, undefined, { isUserToggleClick: true });
                                           }
                                         }}
                                         className={`px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
