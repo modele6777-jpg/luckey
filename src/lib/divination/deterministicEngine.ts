@@ -24,6 +24,7 @@ import { getAstronomicalSajuYear, getYearSolarTerms } from '../astronomicalSolar
 import { calculateChronoTransit, formatChronoTransitPrompt, type ChronoTransitResult } from './chronoTransitEngine';
 import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, type LifeSeasonTimingResult } from './lifeSeasonTimingEngine';
 import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, type EnergeticPrescriptionResult } from './energeticPrescriptionEngine';
+import { calculateContextualSynastry, formatContextualSynastryPrompt, type ContextualSynastryResult } from './contextualSynastryEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -67,6 +68,7 @@ export interface DeterministicEngineReport {
   chronoTransit?: ChronoTransitResult;
   lifeSeasonTiming?: LifeSeasonTimingResult | null;
   energeticPrescription?: EnergeticPrescriptionResult | null;
+  contextualSynastry?: ContextualSynastryResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -504,6 +506,7 @@ export function runDeterministicEngine(params: {
   const chronoTransitResult = calculateChronoTransit({ profile, targetDate: now });
   const lifeSeasonTimingResult = calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() });
   const energeticPrescriptionResult = calculateEnergeticPrescription({ profile, currentDate: now });
+  const contextualSynastryResult = calculateContextualSynastry({ questionText: question, myProfile: profile });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -534,6 +537,7 @@ export function runDeterministicEngine(params: {
     chronoTransit: chronoTransitResult,
     lifeSeasonTiming: lifeSeasonTimingResult,
     energeticPrescription: energeticPrescriptionResult,
+    contextualSynastry: contextualSynastryResult,
     tools: toolsMap,
   };
 }
@@ -570,5 +574,6 @@ ${JSON.stringify(calculatedDataSummary, null, 2)}
 ======================================================================
 ${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}
 ${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}
-${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}`;
+${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}
+${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}`;
 }
