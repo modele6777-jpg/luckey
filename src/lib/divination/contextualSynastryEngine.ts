@@ -197,9 +197,8 @@ export function targetProfileToUserProfile(target: ChatTargetProfile): UserProfi
       isLeapMonth: target.isLeapMonth || false,
       nickname: target.name || '상대방',
     },
-    preferences: {
-      interests: ['궁합', '사주'],
-      preferredDivination: ['사주', '숙요', '점성술'],
+    fate: {
+      fateInterests: ['사주', '숙요', '별자리'],
     },
   };
 }
