@@ -26,6 +26,7 @@ import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, type LifeSeaso
 import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, type EnergeticPrescriptionResult } from './energeticPrescriptionEngine';
 import { calculateContextualSynastry, formatContextualSynastryPrompt, type ContextualSynastryResult } from './contextualSynastryEngine';
 import { calculateInstantDecision, formatInstantDecisionPrompt, type InstantDecisionResult } from './instantDecisionEngine';
+import { calculateZiweiFlyingStars, formatZiweiFlyingStarsPrompt, type ZiweiFlyingStarsResult } from './ziweiFlyingStarsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -71,6 +72,7 @@ export interface DeterministicEngineReport {
   energeticPrescription?: EnergeticPrescriptionResult | null;
   contextualSynastry?: ContextualSynastryResult | null;
   instantDecision?: InstantDecisionResult | null;
+  ziweiFlyingStars?: ZiweiFlyingStarsResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -510,6 +512,7 @@ export function runDeterministicEngine(params: {
   const energeticPrescriptionResult = calculateEnergeticPrescription({ profile, currentDate: now });
   const contextualSynastryResult = calculateContextualSynastry({ questionText: question, myProfile: profile });
   const instantDecisionResult = calculateInstantDecision({ instant: now, questionText: question });
+  const ziweiFlyingStarsResult = calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -542,6 +545,7 @@ export function runDeterministicEngine(params: {
     energeticPrescription: energeticPrescriptionResult,
     contextualSynastry: contextualSynastryResult,
     instantDecision: instantDecisionResult,
+    ziweiFlyingStars: ziweiFlyingStarsResult,
     tools: toolsMap,
   };
 }
@@ -580,5 +584,6 @@ ${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) 
 ${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}
 ${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}
 ${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}
-${report.instantDecision ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}`;
+${report.instantDecision ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}
+${report.ziweiFlyingStars ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyingStars) : ''}`;
 }
