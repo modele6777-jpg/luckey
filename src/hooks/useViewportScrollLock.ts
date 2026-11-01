@@ -14,6 +14,9 @@ export function useViewportScrollLock() {
     if (typeof window === 'undefined') return;
 
     const lockWindowScroll = () => {
+      // 🌟 입력창 활성화 상태에서는 window.scrollTo를 호출하지 않음 (키보드 즉시 닫힘/튕김 방지)
+      if (isInputActive()) return;
+
       if (window.scrollY !== 0 || window.scrollX !== 0) {
         window.scrollTo(0, 0);
       }
@@ -49,17 +52,18 @@ export function useViewportScrollLock() {
       };
     };
 
-    const isTabletOrIpad = (): boolean => {
+    const isIosOrTablet = (): boolean => {
+      if (typeof navigator === 'undefined') return false;
       const ua = navigator.userAgent || '';
       const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      const minDim = Math.min(window.innerWidth, window.innerHeight);
-      return (isIos && minDim >= 600) || /iPad|Tablet/i.test(ua);
+      return isIos || /Tablet|Android/i.test(ua);
     };
 
     const isStandaloneMode = (): boolean => {
+      if (typeof window === 'undefined') return false;
       const nav = window.navigator as any;
-      return (
-        nav.standalone === true ||
+      return Boolean(
+        nav?.standalone === true ||
         window.matchMedia('(display-mode: standalone)').matches ||
         window.matchMedia('(display-mode: fullscreen)').matches ||
         document.documentElement.classList.contains('pwa-standalone')
@@ -100,14 +104,13 @@ export function useViewportScrollLock() {
         }
       } else {
         const oriented = getOrientedScreenSize();
-        const isPwa = isStandaloneMode();
-        const isTablet = isTabletOrIpad();
+        const isCandidate = isIosOrTablet() || isStandaloneMode();
         const shortfall = oriented.height - innerH;
 
         // 🌟 핵심 해결: iPad / 태블릿 PWA 홈 화면 앱에서 WebKit이 상/하단 바를 중복 차감하여
         // innerHeight가 실제 하드웨어 화면보다 60~120px 짧게 보고되는 고질적 버그 대응
         // 키보드가 없을 때 실제 화면 높이(oriented.height)로 100% 가득 채워 하단 검은 여백을 원천 제거합니다.
-        if ((isPwa || isTablet) && shortfall > 15 && shortfall < oriented.height * 0.35) {
+        if (isCandidate && shortfall > 10 && shortfall < oriented.height * 0.45) {
           const fullScreenH = Math.round(oriented.height);
           document.documentElement.style.setProperty('--app-height', `${fullScreenH}px`);
           document.documentElement.style.setProperty('--vvh', `${fullScreenH}px`);
@@ -157,34 +160,19 @@ export function useViewportScrollLock() {
     };
 
     const handleFocusIn = (e: FocusEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
-        lockWindowScroll();
-        // 다단계 강제 락: iOS WebKit의 기본 auto-scroll-to-input 동작으로 인한 window scroll 방지
-        requestAnimationFrame(() => {
-          lockWindowScroll();
-          updateAppViewportHeight();
-        });
-        setTimeout(() => {
-          lockWindowScroll();
-          updateAppViewportHeight();
-        }, 50);
-        setTimeout(() => {
-          lockWindowScroll();
-          updateAppViewportHeight();
-        }, 150);
-        setTimeout(() => {
-          lockWindowScroll();
-          updateAppViewportHeight();
-        }, 300);
-      }
+      // 포커스 진입 시 인위적인 window.scrollTo나 레이아웃 흔들림을 막아 키보드가 튕겨 닫히는 현상 원천 차단
     };
 
     const handleFocusOut = (e: FocusEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
-        lockWindowScroll();
-        scheduleSync([0, 50, 150, 300, 500]);
+        setTimeout(() => {
+          if (!isInputActive()) {
+            lockWindowScroll();
+            updateAppViewportHeight();
+            scheduleSync([50, 150, 300]);
+          }
+        }, 80);
       }
     };
 

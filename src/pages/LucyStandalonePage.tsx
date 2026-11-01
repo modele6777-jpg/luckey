@@ -3597,18 +3597,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     handleSend();
                   }
                 }}
-                onTouchStart={(e) => {
-                  e.currentTarget.focus({ preventScroll: true });
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.focus({ preventScroll: true });
-                }}
-                onFocus={() => {
-                  // 채팅란 클릭 시 화면 요동침 없이 자연스럽게 포커스 유지
-                  if (window.scrollY !== 0) window.scrollTo(0, 0);
-                  if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
-                  if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
-                }}
                 onBlur={() => {
                   if (window.scrollY !== 0) window.scrollTo(0, 0);
                   if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
