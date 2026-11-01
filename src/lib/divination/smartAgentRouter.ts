@@ -183,16 +183,16 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     };
   }
 
-  // 5-2. 10년 대운 & 세운·교운기 타이밍 / 인생의 계절 / 장기 사이클
-  const lifeSeasonRegex = /대운|세운|교운기|10년\s*운|인생의\s*계절|장기\s*사이클|인생\s*타이밍|시기|대운수|환절기|언제쯤|몇\s*살\s*부터|운의\s*흐름/;
+  // 5-2. 10년 대운 & 세운·교운기 타이밍 / 12개월 월운 & 분기 흐름
+  const lifeSeasonRegex = /대운|세운|교운기|10년\s*운|인생의\s*계절|장기\s*사이클|인생\s*타이밍|시기|대운수|환절기|언제쯤|몇\s*살\s*부터|운의\s*흐름|월운|몇\s*월|상반기|하반기|분기|12개월|달별/;
   if (lifeSeasonRegex.test(lower)) {
     return {
       intent: 'life_season_timing',
-      intentKoName: '10년 대운·세운·교운기 타이밍',
+      intentKoName: '10년 대운·12개월 월운 타이밍',
       confidence: 0.96,
       targetTools: ['saju', 'ziwei', 'astrology'],
-      routingReason: '10년 대운의 주기 흐름과 교운기(인생의 환절기), 올해 세운과의 복합 작용 정밀 타이밍 분석',
-      suggestedFocusPrompt: '현재 몇 번째 대운의 몇 년 차를 지나고 있는지, 인생의 어떤 계절(봄/여름/가을/겨울)에 와 있는지, 교운기 진입 여부와 다가올 최적의 도약 타이밍을 입체적으로 풀어줘.',
+      routingReason: '10년 대운 주기와 올해 세운, 그리고 12개월 절기월(월운) 타임라인 및 4대 분기 골든 먼스 정밀 분석',
+      suggestedFocusPrompt: '현재 대운의 인생 계절(봄/여름/가을/겨울)과 함께, 올해 12달 중 언제가 가장 운이 좋은 골든 먼스(이직/계약/수익)인지와 조심해야 할 달을 명쾌한 타임라인으로 풀어줘.',
       isMasterMobilization: false,
       isCasual: false,
     };
