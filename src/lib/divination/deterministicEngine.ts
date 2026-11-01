@@ -21,6 +21,7 @@ import { calculateLiuren, calculateQimen, eventInstant } from './eventCharts';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { getAstronomicalSajuYear, getYearSolarTerms } from '../astronomicalSolarTerms';
+import { calculateChronoTransit, formatChronoTransitPrompt, type ChronoTransitResult } from './chronoTransitEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -61,6 +62,7 @@ export interface DeterministicEngineReport {
     toolsPartialOrSymbolic: number;
     toolsNotImplemented: number;
   };
+  chronoTransit?: ChronoTransitResult;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -495,8 +497,10 @@ export function runDeterministicEngine(params: {
   const partialOrSymbolicCount = allTools.filter(t => t.status === 'partial' || t.status === 'symbolic').length;
   const notImplementedCount = allTools.filter(t => t.status === 'not_implemented').length;
 
+  const chronoTransitResult = calculateChronoTransit({ profile, targetDate: now });
+
   return {
-    engineVersion: 'LUCKEY-DCE-v1.0.0',
+    engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
@@ -521,6 +525,7 @@ export function runDeterministicEngine(params: {
       toolsPartialOrSymbolic: partialOrSymbolicCount,
       toolsNotImplemented: notImplementedCount,
     },
+    chronoTransit: chronoTransitResult,
     tools: toolsMap,
   };
 }
@@ -554,5 +559,6 @@ export function formatDeterministicEnginePrompt(report: DeterministicEngineRepor
 \`\`\`json
 ${JSON.stringify(calculatedDataSummary, null, 2)}
 \`\`\`
-======================================================================`;
+======================================================================
+${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}`;
 }

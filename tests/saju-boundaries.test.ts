@@ -98,3 +98,44 @@ test('independent known sexagenary day anchors and midnight rollover', async () 
   assert.equal(calculate('2000-01-01', '23:30'), '己未');
   assert.equal(calculate('2000-01-02', '00:00'), '己未');
 });
+
+test('calculateChronoTransit produces valid pillars, transits, and prompt', async () => {
+  const { calculateChronoTransit, formatChronoTransitPrompt } = await import('../src/lib/divination/chronoTransitEngine');
+  
+  // 2026-11-01 03:00:00 UTC = 2026-11-01 12:00:00 KST
+  const testDate = new Date('2026-11-01T03:00:00Z');
+  const mockProfile = {
+    basic: {
+      birthdate: '1994-01-24',
+      birthtime: '08:30',
+      lunarSolar: 'solar',
+      gender: 'male',
+      name: '제제',
+      birthCity: '서울'
+    }
+  } as any;
+
+  const result = calculateChronoTransit({ profile: mockProfile, targetDate: testDate });
+  assert.ok(result);
+  assert.equal(result.engineVersion, 'LUCKEY-CHRONO-TRANSIT-v1.0.0');
+
+  // 동양 만세력 검증
+  assert.equal(result.easternPillars.year.gan, '丙');
+  assert.equal(result.easternPillars.year.zhi, '午');
+  assert.equal(result.easternPillars.month.zhi, '戌');
+  assert.ok(result.easternPillars.day.gan);
+  assert.ok(result.easternPillars.day.zhi);
+  assert.equal(result.easternPillars.hour.zhi, '午'); // 12:00 KST = 낮 오시
+
+  // 서양 트랜짓 검증 (10개 천체)
+  assert.equal(result.westernTransits.transits.length, 10);
+  assert.ok(result.westernTransits.moonPhase.name);
+  assert.ok(result.westernTransits.dailyAstroTheme);
+
+  // 프롬프트 포맷팅 검증
+  const prompt = formatChronoTransitPrompt(result);
+  assert.ok(prompt.includes('실시간 일진(日辰) & 행성 트랜짓(Transit)'));
+  assert.ok(prompt.includes('오늘의 사주 4주 만세력 실측'));
+  assert.ok(prompt.includes('하늘의 실시간 행성 트랜짓 실측'));
+});
+
