@@ -196,7 +196,6 @@ export function targetProfileToUserProfile(target: ChatTargetProfile): UserProfi
       lunarSolar: target.lunarSolar || 'solar',
       isLeapMonth: target.isLeapMonth || false,
       nickname: target.name || '상대방',
-      occupation: target.relationship || '인연',
     },
     preferences: {
       interests: ['궁합', '사주'],
