@@ -400,6 +400,10 @@ export function bindVisualViewportLifecycle(win: Window = window): void {
     scheduleVisualViewportSync(win);
   });
 
+  win.addEventListener('orientationchange', () => {
+    scheduleVisualViewportSync(win);
+  }, { passive: true });
+
   doc.addEventListener('resume', () => {
     sawHidden = true;
     resume(true);
