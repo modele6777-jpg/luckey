@@ -39,7 +39,10 @@ export function useViewportScrollLock() {
     const getOrientedScreenSize = (): { width: number; height: number } => {
       const sw = window.screen?.width || window.innerWidth;
       const sh = window.screen?.height || window.innerHeight;
-      const isLandscape = window.innerWidth > window.innerHeight;
+      const isLandscape =
+        window.screen?.orientation?.type?.startsWith('landscape') ||
+        Math.abs(Number((window as any).orientation || 0)) === 90 ||
+        window.innerWidth > window.innerHeight;
       return {
         width: isLandscape ? Math.max(sw, sh) : Math.min(sw, sh),
         height: isLandscape ? Math.min(sw, sh) : Math.max(sw, sh),
@@ -93,7 +96,7 @@ export function useViewportScrollLock() {
         const root = document.getElementById('root');
         if (root) {
           root.style.height = `${keyboardSafeHeight}px`;
-          root.style.minHeight = `${keyboardSafeHeight}px`;
+          root.style.minHeight = '0px'; // 절대 minHeight로 인해 축소가 막히지 않도록 0px 지정
         }
       } else {
         const oriented = getOrientedScreenSize();
@@ -158,11 +161,22 @@ export function useViewportScrollLock() {
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         lockWindowScroll();
         // 다단계 강제 락: iOS WebKit의 기본 auto-scroll-to-input 동작으로 인한 window scroll 방지
-        requestAnimationFrame(lockWindowScroll);
-        setTimeout(lockWindowScroll, 30);
-        setTimeout(lockWindowScroll, 100);
-        setTimeout(lockWindowScroll, 250);
-        scheduleSync([50, 150, 300, 500]);
+        requestAnimationFrame(() => {
+          lockWindowScroll();
+          updateAppViewportHeight();
+        });
+        setTimeout(() => {
+          lockWindowScroll();
+          updateAppViewportHeight();
+        }, 50);
+        setTimeout(() => {
+          lockWindowScroll();
+          updateAppViewportHeight();
+        }, 150);
+        setTimeout(() => {
+          lockWindowScroll();
+          updateAppViewportHeight();
+        }, 300);
       }
     };
 
