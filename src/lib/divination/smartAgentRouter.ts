@@ -198,16 +198,16 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     };
   }
 
-  // 6. 신체 활력 / 수면 / 피로 / 번아웃 / 결핍 오행 & 바이오 에너지 처방
-  const wellnessRegex = /피로|피곤|체력|방전|번아웃|지침|수면|잠|불면|몸|아파|스트레스|두통|결림|호흡|명상|웰니스|개운\s*법|개운|오행|결핍|바이오|주파수|솔페지오|에너지\s*처방|맞춤\s*처방/;
+  // 6. 신체 활력 / 수면 / 피로 / 결핍 오행 처방 / 공간 풍수 길방위
+  const wellnessRegex = /피로|피곤|체력|방전|번아웃|지침|수면|잠|불면|몸|아파|스트레스|두통|결림|호흡|명상|웰니스|개운\s*법|개운|오행|결핍|바이오|주파수|솔페지오|에너지\s*처방|맞춤\s*처방|방위|방향|풍수|이사|여행|자리|카페\s*위치|명당|책상/;
   if (wellnessRegex.test(lower)) {
     return {
       intent: 'vitality_wellness',
-      intentKoName: '결핍 오행·바이오 에너지 맞춤 처방',
+      intentKoName: '결핍 오행 처방 & 아스트로-풍수 공간 길방위',
       confidence: 0.95,
-      targetTools: ['saju', 'mahabote', 'thai_astrology'],
-      routingReason: '사주 결핍 오행 수리 연산 × 장부·차크라 진단 × 솔페지오 주파수 및 1분 마이크로 개운 행동 3중 처방',
-      suggestedFocusPrompt: '사주 4주 8자의 결핍 오행과 취약 장부·차크라를 짚어주고, 전용 솔페지오 주파수 파동과 즉각 실천 가능한 1분 마이크로 개운 행동, 럭키 컬러 및 오미 식이를 현대적 바이오웰니스 언어로 다정하게 처방해 줘.',
+      targetTools: ['saju', 'qimen', 'mahabote'],
+      routingReason: '사주 결핍 오행 수리 연산 × 솔페지오 주파수 × 기문둔갑 3대 길문(생문/개문/휴문) & 점성술 행성 라인 공간 길방위 융합',
+      suggestedFocusPrompt: '사주 결핍 오행 보약 처방(솔페지오 주파수·1분 개운 행동)과 함께, 기문둔갑과 점성술 행성 라인을 결합하여 코딩 작업, 재물 계약, 데이트, 휴식에 최적화된 공간 길방위 및 책상 배치 명당 팁을 다정하게 안내해 줘.',
       isMasterMobilization: false,
       isCasual: false,
     };

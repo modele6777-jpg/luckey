@@ -29,6 +29,7 @@ import { calculateInstantDecision, formatInstantDecisionPrompt, type InstantDeci
 import { calculateZiweiFlyingStars, formatZiweiFlyingStarsPrompt, type ZiweiFlyingStarsResult } from './ziweiFlyingStarsEngine';
 import { calculateSpecialStarsMatrix, formatSpecialStarsPrompt, type SpecialStarsResult } from './specialStarsEngine';
 import { calculateMonthlyFlow, formatMonthlyFlowPrompt, type MonthlyFlowResult } from './monthlyFlowEngine';
+import { calculateSpatialFengshui, formatSpatialFengshuiPrompt, type SpatialFengshuiResult } from './spatialFengshuiEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -77,6 +78,7 @@ export interface DeterministicEngineReport {
   ziweiFlyingStars?: ZiweiFlyingStarsResult | null;
   specialStarsMatrix?: SpecialStarsResult | null;
   monthlyFlow?: MonthlyFlowResult | null;
+  spatialFengshui?: SpatialFengshuiResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -519,6 +521,7 @@ export function runDeterministicEngine(params: {
   const ziweiFlyingStarsResult = calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() });
   const specialStarsResult = calculateSpecialStarsMatrix({ profile });
   const monthlyFlowResult = calculateMonthlyFlow({ profile, targetYear: now.getFullYear() });
+  const spatialFengshuiResult = calculateSpatialFengshui({ profile });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -554,6 +557,7 @@ export function runDeterministicEngine(params: {
     ziweiFlyingStars: ziweiFlyingStarsResult,
     specialStarsMatrix: specialStarsResult,
     monthlyFlow: monthlyFlowResult,
+    spatialFengshui: spatialFengshuiResult,
     tools: toolsMap,
   };
 }
@@ -595,5 +599,6 @@ ${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.conte
 ${report.instantDecision ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}
 ${report.ziweiFlyingStars ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyingStars) : ''}
 ${report.specialStarsMatrix ? '\n' + formatSpecialStarsPrompt(report.specialStarsMatrix) : ''}
-${report.monthlyFlow ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}`;
+${report.monthlyFlow ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}
+${report.spatialFengshui ? '\n' + formatSpatialFengshuiPrompt(report.spatialFengshui) : ''}`;
 }
