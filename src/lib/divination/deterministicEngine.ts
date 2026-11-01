@@ -28,6 +28,7 @@ import { calculateContextualSynastry, formatContextualSynastryPrompt, type Conte
 import { calculateInstantDecision, formatInstantDecisionPrompt, type InstantDecisionResult } from './instantDecisionEngine';
 import { calculateZiweiFlyingStars, formatZiweiFlyingStarsPrompt, type ZiweiFlyingStarsResult } from './ziweiFlyingStarsEngine';
 import { calculateSpecialStarsMatrix, formatSpecialStarsPrompt, type SpecialStarsResult } from './specialStarsEngine';
+import { calculateMonthlyFlow, formatMonthlyFlowPrompt, type MonthlyFlowResult } from './monthlyFlowEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -75,6 +76,7 @@ export interface DeterministicEngineReport {
   instantDecision?: InstantDecisionResult | null;
   ziweiFlyingStars?: ZiweiFlyingStarsResult | null;
   specialStarsMatrix?: SpecialStarsResult | null;
+  monthlyFlow?: MonthlyFlowResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -516,6 +518,7 @@ export function runDeterministicEngine(params: {
   const instantDecisionResult = calculateInstantDecision({ instant: now, questionText: question });
   const ziweiFlyingStarsResult = calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() });
   const specialStarsResult = calculateSpecialStarsMatrix({ profile });
+  const monthlyFlowResult = calculateMonthlyFlow({ profile, targetYear: now.getFullYear() });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -550,6 +553,7 @@ export function runDeterministicEngine(params: {
     instantDecision: instantDecisionResult,
     ziweiFlyingStars: ziweiFlyingStarsResult,
     specialStarsMatrix: specialStarsResult,
+    monthlyFlow: monthlyFlowResult,
     tools: toolsMap,
   };
 }
@@ -590,5 +594,6 @@ ${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report
 ${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}
 ${report.instantDecision ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}
 ${report.ziweiFlyingStars ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyingStars) : ''}
-${report.specialStarsMatrix ? '\n' + formatSpecialStarsPrompt(report.specialStarsMatrix) : ''}`;
+${report.specialStarsMatrix ? '\n' + formatSpecialStarsPrompt(report.specialStarsMatrix) : ''}
+${report.monthlyFlow ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}`;
 }
