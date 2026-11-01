@@ -108,16 +108,16 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     };
   }
 
-  // 2. 이직 / 진로 / 커리어 / 시험 전략 / 자미두수 사화
-  const careerRegex = /이직|퇴사|취업|구직|면접|연봉|직무|승진|진로|커리어|시험|합격|고시|자격증|회사\s*생활|업무|부서|상사|자미두수|사화|화록|화권|화과|화기|비성/;
+  // 2. 이직 / 진로 / 커리어 / 시험 전략 / 자미두수 사화 / 15대 신살 슈퍼파워
+  const careerRegex = /이직|퇴사|취업|구직|면접|연봉|직무|승진|진로|커리어|시험|합격|고시|자격증|회사\s*생활|업무|부서|상사|자미두수|사화|화록|화권|화과|화기|비성|신살|괴강|백호|양인|도화|역마|화개|천을귀인|문창귀인|귀문관살|슈퍼파워|재능/;
   if (careerRegex.test(lower)) {
     return {
       intent: 'career_strategy',
-      intentKoName: '이직·커리어 돌파 & 자미두수 사화 비성',
+      intentKoName: '이직·커리어 돌파 & 15대 신살 슈퍼파워',
       confidence: 0.94,
-      targetTools: ['ziwei', 'saju', 'qimen'],
-      routingReason: '자미두수 유년 사화(화록/화권/화과/화기) 동적 비성 낙궁 × 사주 관성·대운 × 기문둔갑 개문/생문 융합',
-      suggestedFocusPrompt: '올해 자미두수 유년 사화가 내 12궁 중 어느 자리에 떨어졌는지(화록의 기회, 화권의 주도권, 화과의 인정, 화기의 주의점)를 짚어주고, 커리어와 이직에서의 최적 승부수를 날카롭게 처방해 줘.',
+      targetTools: ['saju', 'ziwei', 'qimen'],
+      routingReason: '15대 신살(천을귀인/괴강/백호/도화 등) 위치별 현대적 슈퍼파워 × 자미두수 유년 사화 비성 × 기문둔갑 개문 융합',
+      suggestedFocusPrompt: '사주 4개 기둥(년/월/일/시)에 포진한 신살을 고전적 흉살이 아닌 독점적 전문성과 천재적 직업 무기(슈퍼파워)로 승화하여, 커리어와 비즈니스에서 압도적 우위를 점할 수 있는 실천 전략을 명쾌하게 처방해 줘.',
       isMasterMobilization: false,
       isCasual: false,
     };
