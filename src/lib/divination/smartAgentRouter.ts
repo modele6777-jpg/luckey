@@ -108,16 +108,16 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     };
   }
 
-  // 2. 이직 / 진로 / 커리어 / 시험 전략
-  const careerRegex = /이직|퇴사|취업|구직|면접|연봉|직무|승진|진로|커리어|시험|합격|고시|자격증|회사\s*생활|업무|부서|상사/;
+  // 2. 이직 / 진로 / 커리어 / 시험 전략 / 자미두수 사화
+  const careerRegex = /이직|퇴사|취업|구직|면접|연봉|직무|승진|진로|커리어|시험|합격|고시|자격증|회사\s*생활|업무|부서|상사|자미두수|사화|화록|화권|화과|화기|비성/;
   if (careerRegex.test(lower)) {
     return {
       intent: 'career_strategy',
-      intentKoName: '이직·커리어 돌파 전략',
-      confidence: 0.92,
-      targetTools: ['saju', 'qimen', 'ziwei'],
-      routingReason: '사주의 대운·관성(직업운)과 기문둔갑의 돌파구(개문/생문), 자미두수 관록궁 명반 융합',
-      suggestedFocusPrompt: '사주 원국의 직무 적성과 대운의 기회 시점을 짚고, 기문둔갑으로 지금 결행해야 할 최적의 타이밍과 전략을 날카롭게 처방해 줘.',
+      intentKoName: '이직·커리어 돌파 & 자미두수 사화 비성',
+      confidence: 0.94,
+      targetTools: ['ziwei', 'saju', 'qimen'],
+      routingReason: '자미두수 유년 사화(화록/화권/화과/화기) 동적 비성 낙궁 × 사주 관성·대운 × 기문둔갑 개문/생문 융합',
+      suggestedFocusPrompt: '올해 자미두수 유년 사화가 내 12궁 중 어느 자리에 떨어졌는지(화록의 기회, 화권의 주도권, 화과의 인정, 화기의 주의점)를 짚어주고, 커리어와 이직에서의 최적 승부수를 날카롭게 처방해 줘.',
       isMasterMobilization: false,
       isCasual: false,
     };
