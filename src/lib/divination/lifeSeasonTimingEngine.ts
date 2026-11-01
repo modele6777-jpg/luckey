@@ -264,8 +264,8 @@ export function calculateLifeSeasonTiming(params: {
 
   // 용신/희신 부합도 평가
   const yongsinEl = saju.yongsin?.element;
-  const heeshinEl = saju.yongsin?.heeshin;
-  const gisinEl = saju.yongsin?.gisin;
+  const heeshinEl = saju.yongsinDetails?.heeshin;
+  const gisinEl = saju.yongsinDetails?.gisin;
 
   let elementAffinity: LifeSeasonTimingResult['currentDaewoon']['elementAffinity'] = '중화운 (평온·균형)';
   let affinityDescription = '극단적인 부침 없이 일상의 균형과 꾸준한 성실함이 빛나는 평온한 운세 흐름입니다.';
