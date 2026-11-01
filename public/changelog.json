@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.7",
+    "builtAt": "2026-11-01T13:10:00.000Z",
+    "summary": "iPad 및 태블릿 PWA 홈 화면 앱 회전 및 복귀 시 하단 검은 여백 버그 완벽 해결",
+    "items": [
+      "WebKit의 iPad PWA standalone 모드 상하단 바 중복 차감(shortfall) 감지 및 물리 화면 높이(oriented screen height) 100% 강제 확장",
+      "html, body, #root, .prism-app-shell 전체 레이어에 하드웨어 높이와 100vh 자동 채움 적용",
+      "회전(가로/세로) 및 백그라운드 복귀 시 다단계 재측정으로 검은 여백 원천 박멸"
+    ]
+  },
+  {
     "version": "1.7.6",
     "builtAt": "2026-11-01T12:50:00.000Z",
     "summary": "앱 복귀 및 화면 회전 시 하단 빈 여백 발생 오류 근본 해결",

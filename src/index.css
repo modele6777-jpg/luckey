@@ -90,6 +90,15 @@
     overscroll-behavior-y: none !important;
   }
 
+  html.pwa-standalone,
+  html.pwa-standalone body,
+  html.pwa-standalone #root,
+  html.pwa-standalone .prism-app-shell {
+    height: var(--app-height, 100vh);
+    min-height: 100%;
+    min-height: -webkit-fill-available;
+  }
+
   [data-app-scroll-root] {
     overscroll-behavior-x: none !important;
   }
