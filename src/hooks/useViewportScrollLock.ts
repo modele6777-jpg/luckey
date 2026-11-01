@@ -13,9 +13,20 @@ export function useViewportScrollLock() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // 가상 키보드가 실제로 올라와 있는지 판별 (updateAppViewportHeight의 hasKeyboard 판정과 동일 기준)
+    const hasKeyboardNow = (): boolean => {
+      const visual = window.visualViewport;
+      const innerH = window.innerHeight;
+      const visualH = visual ? visual.height : innerH;
+      return isInputActive() && visual != null && (innerH - visualH > 100);
+    };
+
     const lockWindowScroll = () => {
-      // 🌟 입력창 활성화 상태에서는 window.scrollTo를 호출하지 않음 (키보드 즉시 닫힘/튕김 방지)
-      if (isInputActive()) return;
+      // 🌟 키보드가 실제로 올라와 있는(hasKeyboard) 상태에서는 WebKit이 기본으로 window.scrollY를
+      //    300~350px 위로 밀어 올린다. 이 상태에서는 visualViewport resize/scroll 시점마다
+      //    window.scrollY를 0으로 동기화해 #root가 뷰포트 위로 튕겨 나가는 화면 쏠림(Double Shift)을 막는다.
+      //    반면 포커스 인순간(키보드 미전개, isInputActive만 true)에는 호출하지 않아 키보드 즉시 닫힘을 방지한다.
+      if (isInputActive() && !hasKeyboardNow()) return;
 
       if (window.scrollY !== 0 || window.scrollX !== 0) {
         window.scrollTo(0, 0);
@@ -100,9 +111,22 @@ export function useViewportScrollLock() {
         const root = document.getElementById('root');
         if (root) {
           root.style.height = `${keyboardSafeHeight}px`;
-          root.style.minHeight = '0px'; // 절대 minHeight로 인해 축소가 막히지 않도록 0px 지정
+          root.style.minHeight = '0px'; // 절대 minHeight으로 인해 축소가 막히지 않도록 0px 지정
+        }
+        // CSS min-height(100lvh)로 인해 키보드 위 가시 영역으로 축소가 막히지 않도록 셸도 함께 해제
+        const shell = root?.querySelector<HTMLElement>('.prism-app-shell') || null;
+        if (shell) {
+          shell.style.height = `${keyboardSafeHeight}px`;
+          shell.style.minHeight = '0px';
         }
       } else {
+        const resetShell = () => {
+          const shell = document.getElementById('root')?.querySelector<HTMLElement>('.prism-app-shell') || null;
+          if (shell) {
+            shell.style.height = '';
+            shell.style.minHeight = '';
+          }
+        };
         const oriented = getOrientedScreenSize();
         const isCandidate = isIosOrTablet() || isStandaloneMode();
         const shortfall = oriented.height - innerH;
@@ -126,6 +150,7 @@ export function useViewportScrollLock() {
             root.style.height = `${fullScreenH}px`;
             root.style.minHeight = `${fullScreenH}px`;
           }
+          resetShell();
         } else {
           document.documentElement.style.setProperty('--app-height', '100%');
           document.documentElement.style.height = '';
@@ -139,6 +164,7 @@ export function useViewportScrollLock() {
             root.style.height = '';
             root.style.minHeight = '';
           }
+          resetShell();
         }
       }
     };
