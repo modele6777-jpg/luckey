@@ -67,7 +67,7 @@ function roundPx(value: number): number {
 
 export function resolveViewportBox(
   snapshot: ViewportSnapshot,
-  _options: ViewportResolveOptions = {},
+  options: ViewportResolveOptions = {},
 ): ViewportBox | null {
   const innerWidth = positive(snapshot.innerWidth);
   const innerHeight = positive(snapshot.innerHeight);
