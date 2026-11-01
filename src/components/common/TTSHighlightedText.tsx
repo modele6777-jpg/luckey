@@ -102,39 +102,37 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
   // 1. Direct equality
   if (cleanS === cleanA) return true;
 
+  // 2. High-confidence containment (e.g. multi-clause sentences or multi-sentence chunks)
+  // If active clause/sentence has >= 4 chars and is contained in the target sentence, or vice versa
+  if (cleanA.includes(cleanS) && cleanS.length >= 4) {
+    return true;
+  }
+  if (cleanS.includes(cleanA) && cleanA.length >= 4) {
+    return true;
+  }
+
   const minLen = Math.min(cleanS.length, cleanA.length);
   const maxLen = Math.max(cleanS.length, cleanA.length);
   const ratio = minLen / maxLen;
 
-  // 2. High-confidence containment (ratio >= 0.70 or minimal diff <= 5 chars)
-  // Prevents long unrelated sentences or full chunks from falsely matching short sentences
-  if (cleanA.includes(cleanS) || cleanS.includes(cleanA)) {
-    if (ratio >= 0.70 || maxLen - minLen <= 5) {
-      return true;
-    }
-  }
-
-  // Reject drastically different lengths
-  if (ratio < 0.65) return false;
-
   // 3. Substantial prefix alignment with close lengths
   const prefixLen = getCommonPrefixLength(cleanS, cleanA);
-  if (prefixLen >= 6 && prefixLen / minLen >= 0.75) {
+  if (prefixLen >= 6 && prefixLen / minLen >= 0.65) {
     return true;
   }
 
-  // 4. Key phrase token overlap with length ratio constraint
-  if (minLen >= 6 && ratio >= 0.70) {
+  // 4. Key phrase token overlap
+  if (minLen >= 4) {
     const tokensS = getCleanedTokens(sentence);
     const tokensA = getCleanedTokens(activeText);
-    if (tokensS.length >= 2 && tokensA.length >= 2) {
+    if (tokensS.length >= 1 && tokensA.length >= 1) {
       let matchedCount = 0;
       for (const tok of tokensS) {
-        if (tokensA.some((tA) => tA.includes(tok) || tok.includes(tA))) {
+        if (tok.length >= 2 && tokensA.some((tA) => tA.includes(tok) || tok.includes(tA))) {
           matchedCount += 1;
         }
       }
-      if (matchedCount / Math.max(tokensS.length, tokensA.length) >= 0.75) {
+      if (matchedCount >= 1 && (matchedCount / Math.min(tokensS.length, tokensA.length) >= 0.5)) {
         return true;
       }
     }
@@ -161,13 +159,22 @@ function selectHighlightOwner() {
     let owner: HTMLElement | null = null;
     let best = -1;
     for (const element of highlightCandidates.keys()) {
-      if (!element.isConnected || !element.getClientRects().length || element.closest('[aria-hidden="true"], [hidden]')) continue;
+      if (!element.isConnected || element.closest('[aria-hidden="true"], [hidden]')) continue;
       const rect = element.getBoundingClientRect();
       const visible = rect.bottom > 0 && rect.top < window.innerHeight;
-      const score = (element.closest('[role="dialog"], dialog') ? 4 : 0) + (visible ? 2 : 0);
+      const score = (element.closest('[role="dialog"], dialog') ? 4 : 0) + (visible ? 2 : 1);
       if (score > best || (score === best && owner?.contains(element))) {
         owner = element;
         best = score;
+      }
+    }
+    // If no candidate was within the viewport, select the first valid candidate so highlight is never lost
+    if (!owner) {
+      for (const element of highlightCandidates.keys()) {
+        if (element.isConnected && !element.closest('[aria-hidden="true"], [hidden]')) {
+          owner = element;
+          break;
+        }
       }
     }
     for (const [element, update] of highlightCandidates) update(element === owner);

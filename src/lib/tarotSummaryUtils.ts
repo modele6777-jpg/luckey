@@ -112,8 +112,8 @@ export function stripSummaryFromTarotText(text: string): string {
   }
 
   // 2. 후행 핵심 3줄 요약 블록 완전 분리 및 영구 제거
-  // 본문에서 1단계 헤더 이후 출현하는 어떠한 형태의 요약 헤더도 즉시 하단 절단
-  const trailingSummaryHeaderRegex = /(?:\r?\n|^)\s*(?:[-*•·\d.]+\s*)?(?:#{1,6}\s*)?(?:\*{1,2}|_{1,2})?\s*(?:[✨🌟🔮📌💡📋💎⚡🌿🎯■]\s*)*\s*(?:[\[【(])?\s*(?:[✨🌟🔮📌💡📋💎⚡🌿🎯■]\s*)*\s*(?:핵심\s*(?:3줄|세줄|3대)?\s*요약|3줄\s*(?:핵심\s*)?요약|세줄\s*(?:핵심\s*)?요약|핵심\s*요약|오늘의\s*(?:3줄|세줄)?\s*요약|Quick\s*Summary|Executive\s*Summary|3-Line\s*Summary)[^\]】)\r\n]*(?:[\]】)])?\s*(?:\*{1,2}|_{1,2})?\s*(?:[:—\-–~]|—[^\r\n]*)?(?:\r?\n|$)/i;
+  // 본문에서 독립된 마크다운 헤더 형태로 출현하는 후행 요약 블록만 정밀 절단 (본문 일반 문장에 포함된 '핵심 요약' 단어 절단 절대 금지)
+  const trailingSummaryHeaderRegex = /(?:\r?\n)\s*(?:#{1,6}\s*|\*{2}\s*)(?:[✨🌟🔮📌💡📋💎⚡🌿🎯■]\s*)*(?:\[\s*)?(?:핵심\s*(?:3줄|세줄|3대)?\s*요약|3줄\s*(?:핵심\s*)?요약|세줄\s*(?:핵심\s*)?요약|오늘의\s*(?:3줄|세줄)?\s*요약|Quick\s*Summary|Executive\s*Summary|3-Line\s*Summary)(?:\])?(?:\s*\*{2})?\s*[:：]?(?:\r?\n)/i;
 
   const headerIdx = cleaned.search(trailingSummaryHeaderRegex);
   if (headerIdx !== -1) {

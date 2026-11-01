@@ -2,19 +2,23 @@ import { useEffect } from 'react';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
- * 1. iPad/태블릿 PWA 홈 화면 앱에서 WebKit이 상단 상태바/하단 홈바 영역을 중복 감산하여
- *    innerHeight가 실제 하드웨어 화면보다 60~120px 짧게 보고되며 하단에 거대한 검은 빈 여백이 남는 고질적 버그를 완벽히 해결합니다.
- * 2. 화면 회전(orientationchange/resize) 및 백그라운드 복귀(visibilitychange/pageshow/focus) 시
- *    지연 측정으로 인한 뷰포트 축소를 방지하고 물리적 화면 높이(oriented screen height)로 100% 즉시 채웁니다.
- * 3. 가상 키보드가 활성화된 입력 상태에서만 뷰포트를 축소하고, 키보드 해제 시 즉시 전체 화면으로 복원합니다.
+ * 1. 채팅 입력창(input/textarea) 터치 시 화면이 점점 위로 밀려 올라가며 하단에 검은 여백이 남는 WebKit auto-scroll 버그 완벽 차단.
+ * 2. iPad/태블릿 PWA 홈 화면 앱에서 WebKit이 상단 상태바/하단 홈바 영역을 중복 감산하여
+ *    innerHeight가 실제 하드웨어 화면보다 60~120px 짧게 보고되는 고질적 shortfall 버그를 감지하고 물리적 화면 높이(oriented screen height)로 100% 즉시 채움.
+ * 3. 화면 회전(orientationchange/resize) 및 백그라운드 복귀(visibilitychange/pageshow/focus) 시
+ *    지연 측정으로 인한 뷰포트 축소를 방지하고 물리적 화면 높이로 100% 즉시 채움.
+ * 4. 가상 키보드가 활성화된 입력 상태에서 html/body를 축소하지 않고 #root 영역만 키보드 가시 영역에 맞춰 화면 밀림 방지.
  */
 export function useViewportScrollLock() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const lockWindowScroll = () => {
-      if (window.scrollY !== 0) {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
         window.scrollTo(0, 0);
+      }
+      if (document.scrollingElement && document.scrollingElement.scrollTop !== 0) {
+        document.scrollingElement.scrollTop = 0;
       }
       if (document.documentElement && document.documentElement.scrollTop !== 0) {
         document.documentElement.scrollTop = 0;
@@ -75,13 +79,21 @@ export function useViewportScrollLock() {
 
       if (hasKeyboard) {
         // 키보드가 활성화된 상태: 키보드 위 가시 영역에 맞춤
+        // 주의: html, body의 인라인 height를 축소하면 WebKit이 window scroll을 유발하므로 --app-height와 #root만 축소
         const keyboardSafeHeight = Math.round(visualH);
         document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
-        document.documentElement.style.height = `${keyboardSafeHeight}px`;
-        document.documentElement.style.minHeight = `${keyboardSafeHeight}px`;
+        document.documentElement.style.setProperty('--vvh', `${keyboardSafeHeight}px`);
+        document.documentElement.style.setProperty('--visual-vh', `${keyboardSafeHeight}px`);
+        document.documentElement.style.height = '100%';
+        document.documentElement.style.minHeight = '100%';
         if (document.body) {
-          document.body.style.height = `${keyboardSafeHeight}px`;
-          document.body.style.minHeight = `${keyboardSafeHeight}px`;
+          document.body.style.height = '100%';
+          document.body.style.minHeight = '100%';
+        }
+        const root = document.getElementById('root');
+        if (root) {
+          root.style.height = `${keyboardSafeHeight}px`;
+          root.style.minHeight = `${keyboardSafeHeight}px`;
         }
       } else {
         const oriented = getOrientedScreenSize();
@@ -144,6 +156,12 @@ export function useViewportScrollLock() {
     const handleFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        lockWindowScroll();
+        // 다단계 강제 락: iOS WebKit의 기본 auto-scroll-to-input 동작으로 인한 window scroll 방지
+        requestAnimationFrame(lockWindowScroll);
+        setTimeout(lockWindowScroll, 30);
+        setTimeout(lockWindowScroll, 100);
+        setTimeout(lockWindowScroll, 250);
         scheduleSync([50, 150, 300, 500]);
       }
     };

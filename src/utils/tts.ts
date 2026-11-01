@@ -771,6 +771,7 @@ export const playTTSInChunks = async (
   // 알림이나 일시정지로 인해 중간에 끊겼던 경우, 처음부터 다시 듣지 않고 중단 지점부터 이어듣기
   let startChunkIndex = 0;
   if (
+    !options?.isUserToggleClick &&
     lastTTSProgress &&
     lastTTSProgress.fullText === cleanText &&
     lastTTSProgress.voice === (voice === 'Charon' ? 'Charon' : 'Aoede') &&
