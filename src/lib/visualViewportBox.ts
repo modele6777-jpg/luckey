@@ -88,6 +88,12 @@ export function resolveViewportBox(
 
   const layoutWidth = innerWidth ?? visualWidth;
   const layoutHeight = innerHeight ?? visualHeight;
+
+  if (options.fillLayoutGap) {
+    const standaloneFill = standaloneResumeBox(snapshot);
+    if (standaloneFill) return coverScreenEdges(snapshot, standaloneFill);
+  }
+
   return coverScreenEdges(snapshot, {
     width: roundPx(layoutWidth),
     height: roundPx(layoutHeight),
@@ -304,6 +310,20 @@ export function applyVisualViewportBox(
   root.style.setProperty('--vv-bleed-left', px(bleed.left));
   root.style.setProperty('--vv-bleed-right', px(bleed.right));
   root.style.setProperty('--visual-vh', px(box.height));
+  if (snapshot?.iosStandalone && box.height > (snapshot.innerHeight || 0)) {
+    root.style.setProperty('--app-height', px(box.height));
+    root.style.height = px(box.height);
+    root.style.minHeight = px(box.height);
+    if (document.body) {
+      document.body.style.height = px(box.height);
+      document.body.style.minHeight = px(box.height);
+    }
+    const appRoot = document.getElementById('root');
+    if (appRoot) {
+      appRoot.style.height = px(box.height);
+      appRoot.style.minHeight = px(box.height);
+    }
+  }
 }
 
 function rememberStable(box: ViewportBox): void {
@@ -333,7 +353,7 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
   const snapshot = readViewportSnapshot(win);
-  const box = resolveViewportBox(snapshot, { fillLayoutGap: fillArmed() });
+  const box = resolveViewportBox(snapshot, { fillLayoutGap: fillArmed() || Boolean(snapshot.iosStandalone) });
   if (!box) return null;
   applyVisualViewportBox(box, document.documentElement, snapshot);
   applySafeAreaVars(document);

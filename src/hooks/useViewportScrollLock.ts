@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
- * 1. 앱을 나갔다 들어왔을 때(visibilitychange/pageshow/focus) 또는 기기 회전(orientationchange/resize) 시
- *    visualViewport의 지연/왜곡된 일시적 측정값으로 인해 앱 높이가 축소되어 하단에 거대한 빈 여백이 남는 현상을 원천 차단합니다.
- * 2. 가상 키보드가 실제로 활성화되어 입력 중일 때만 키보드 가시 높이에 맞추고,
- *    그 외의 모든 상태(일반 탐색, 회전, 백그라운드 복귀, 키보드 해제)에서는 100% 전체 높이로 즉시 복원합니다.
- * 3. 스와이프 제스처나 회전 후 최상단 window가 위로 스크롤되어 하단 여백이 노출되는 phantom scroll 현상을 원천 방지합니다.
+ * 1. iPad/태블릿 PWA 홈 화면 앱에서 WebKit이 상단 상태바/하단 홈바 영역을 중복 감산하여
+ *    innerHeight가 실제 하드웨어 화면보다 60~120px 짧게 보고되며 하단에 거대한 검은 빈 여백이 남는 고질적 버그를 완벽히 해결합니다.
+ * 2. 화면 회전(orientationchange/resize) 및 백그라운드 복귀(visibilitychange/pageshow/focus) 시
+ *    지연 측정으로 인한 뷰포트 축소를 방지하고 물리적 화면 높이(oriented screen height)로 100% 즉시 채웁니다.
+ * 3. 가상 키보드가 활성화된 입력 상태에서만 뷰포트를 축소하고, 키보드 해제 시 즉시 전체 화면으로 복원합니다.
  */
 export function useViewportScrollLock() {
   useEffect(() => {
@@ -32,6 +32,33 @@ export function useViewportScrollLock() {
       return tag === 'INPUT' || tag === 'TEXTAREA' || (active as HTMLElement).isContentEditable;
     };
 
+    const getOrientedScreenSize = (): { width: number; height: number } => {
+      const sw = window.screen?.width || window.innerWidth;
+      const sh = window.screen?.height || window.innerHeight;
+      const isLandscape = window.innerWidth > window.innerHeight;
+      return {
+        width: isLandscape ? Math.max(sw, sh) : Math.min(sw, sh),
+        height: isLandscape ? Math.min(sw, sh) : Math.max(sw, sh),
+      };
+    };
+
+    const isTabletOrIpad = (): boolean => {
+      const ua = navigator.userAgent || '';
+      const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const minDim = Math.min(window.innerWidth, window.innerHeight);
+      return (isIos && minDim >= 600) || /iPad|Tablet/i.test(ua);
+    };
+
+    const isStandaloneMode = (): boolean => {
+      const nav = window.navigator as any;
+      return (
+        nav.standalone === true ||
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        document.documentElement.classList.contains('pwa-standalone')
+      );
+    };
+
     const updateAppViewportHeight = () => {
       if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
@@ -50,10 +77,51 @@ export function useViewportScrollLock() {
         // 키보드가 활성화된 상태: 키보드 위 가시 영역에 맞춤
         const keyboardSafeHeight = Math.round(visualH);
         document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
+        document.documentElement.style.height = `${keyboardSafeHeight}px`;
+        document.documentElement.style.minHeight = `${keyboardSafeHeight}px`;
+        if (document.body) {
+          document.body.style.height = `${keyboardSafeHeight}px`;
+          document.body.style.minHeight = `${keyboardSafeHeight}px`;
+        }
       } else {
-        // 키보드가 없는 일반 상태 (화면 회전, 앱 백그라운드 복귀, 키보드 해제 등):
-        // 100% 가득 채워 하단 빈 여백을 원천 제거
-        document.documentElement.style.setProperty('--app-height', '100%');
+        const oriented = getOrientedScreenSize();
+        const isPwa = isStandaloneMode();
+        const isTablet = isTabletOrIpad();
+        const shortfall = oriented.height - innerH;
+
+        // 🌟 핵심 해결: iPad / 태블릿 PWA 홈 화면 앱에서 WebKit이 상/하단 바를 중복 차감하여
+        // innerHeight가 실제 하드웨어 화면보다 60~120px 짧게 보고되는 고질적 버그 대응
+        // 키보드가 없을 때 실제 화면 높이(oriented.height)로 100% 가득 채워 하단 검은 여백을 원천 제거합니다.
+        if ((isPwa || isTablet) && shortfall > 15 && shortfall < oriented.height * 0.35) {
+          const fullScreenH = Math.round(oriented.height);
+          document.documentElement.style.setProperty('--app-height', `${fullScreenH}px`);
+          document.documentElement.style.setProperty('--vvh', `${fullScreenH}px`);
+          document.documentElement.style.setProperty('--visual-vh', `${fullScreenH}px`);
+          document.documentElement.style.height = `${fullScreenH}px`;
+          document.documentElement.style.minHeight = `${fullScreenH}px`;
+          if (document.body) {
+            document.body.style.height = `${fullScreenH}px`;
+            document.body.style.minHeight = `${fullScreenH}px`;
+          }
+          const root = document.getElementById('root');
+          if (root) {
+            root.style.height = `${fullScreenH}px`;
+            root.style.minHeight = `${fullScreenH}px`;
+          }
+        } else {
+          document.documentElement.style.setProperty('--app-height', '100%');
+          document.documentElement.style.height = '';
+          document.documentElement.style.minHeight = '';
+          if (document.body) {
+            document.body.style.height = '';
+            document.body.style.minHeight = '';
+          }
+          const root = document.getElementById('root');
+          if (root) {
+            root.style.height = '';
+            root.style.minHeight = '';
+          }
+        }
       }
     };
 
