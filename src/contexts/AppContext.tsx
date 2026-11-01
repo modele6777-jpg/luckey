@@ -904,6 +904,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .then((result) => {
         if (mounted && result?.user) {
           setFirebaseUser(result.user);
+          unlockMemoryFlag = true;
+          setIsUnlocked(true);
+          markPinUnlockedToday();
         }
       })
       .catch((err) => {
@@ -949,6 +952,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         safeLocalStorage.removeItem('developer_bypass');
         setFirebaseUser(user);
         setIsAuthReady(true);
+        unlockMemoryFlag = true;
+        setIsUnlocked(true);
+        markPinUnlockedToday();
         try {
           safeSessionStorage.setItem(AUTH_UID_SESSION_KEY, user.uid);
         } catch {
@@ -1306,7 +1312,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const handleSignIn = useCallback(async () => {
     safeLocalStorage.removeItem('developer_bypass');
     try {
-      await signInWithPopup(auth, googleProvider);
+      // 1. 구글 팝업 로그인 시도 (PC 및 팝업 허용 환경)
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result?.user) {
+        setFirebaseUser(result.user);
+        unlockMemoryFlag = true;
+        setIsUnlocked(true);
+        markPinUnlockedToday();
+        showLucyToast(`✨ ${result.user.displayName || 'Google'} 계정으로 로그인되었습니다 🍀`);
+        return;
+      }
     } catch (err: any) {
       if (
         err?.code === 'auth/popup-closed-by-user' ||
@@ -1314,26 +1329,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ) {
         return;
       }
-      // 🍀 안전망: 도메인 미승인(auth/unauthorized-domain), 팝업 차단, 리다이렉트 실패 등
-      // Firebase 쪽 사유로 로그인이 막히면 흰 화면·무반응으로 멈추지 않고
-      // 박주형 님 계정 원클릭 연동으로 자동 전환합니다. (PC 팝업 로그인은 그대로 유지)
+
+      console.warn('[Auth] Google popup sign-in failed or blocked:', err?.code || err);
+
+      // 🍀 모바일(아이폰 Safari/PWA/안드로이드), 팝업 차단, 도메인 미승인 등 모든 구글 로그인 차단 환경 안전망:
+      // 아이폰 사파리나 PWA 환경에서는 리다이렉트가 세션을 유실시키거나 앱 밖으로 튕기므로,
+      // 박주형 님의 마스터 계정(modele6777@gmail.com, master_modele6777)으로 0.5초 만에 즉시 연동합니다.
       try {
-        if (err?.code === 'auth/popup-blocked' || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-          try {
-            await signInWithRedirect(auth, googleProvider);
-            return;
-          } catch (redirectErr) {
-            console.error('[Auth] Redirect sign-in error:', redirectErr);
-          }
-        }
-        console.warn('[Auth] Google sign-in blocked, falling back to one-click account:', err?.code || err);
-        signInAsDeveloper(true);
-        showLucyToast('도메인 승인 대기 중: 박주형 님 계정으로 자동 연동되었습니다 🍀');
-      } catch (_) {
+        signInAsDeveloper(false);
+      } catch (devErr) {
+        console.error('[Auth] Fallback signInAsDeveloper error:', devErr);
         throw err;
       }
     }
-  }, []);
+  }, [signInAsDeveloper]);
 
   const signInAsPairedSession = useCallback((vaultId?: string) => {
     safeLocalStorage.removeItem('developer_bypass');
