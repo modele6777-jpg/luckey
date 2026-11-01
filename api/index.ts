@@ -46,7 +46,7 @@ app.post("/api/mcp/messages", async (req, res) => {
 import { GoogleGenAI } from "@google/genai";
 
 app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/v1/chat/completions"], async (req, res) => {
-  const rawKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || "";
+  const rawKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
   const geminiApiKey = rawKey.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A") ? "" : rawKey;
   if (!geminiApiKey) {
     return res.status(500).json({ error: "GEMINI_API_KEY not configured or invalid" });
@@ -54,20 +54,30 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
 
   try {
     const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-    const model = req.body.model || "gemini-3.7-flash";
+    const model = req.body.model || "gemini-flash-lite-latest";
     const messages = req.body.messages || [];
     // Preserve the full conversational context instead of forwarding only the last user turn.
     // The Gemini API uses "model" where OpenAI-compatible callers use "assistant".
+    const extractText = (c: any) => {
+      if (typeof c === "string") return c;
+      if (Array.isArray(c)) {
+        return c.map((p: any) => (typeof p === "string" ? p : p?.text || "")).join(" ");
+      }
+      return "";
+    };
+
     const systemPrompt = messages
-      .filter((m: any) => m.role === "system" && typeof m.content === "string")
-      .map((m: any) => m.content)
+      .filter((m: any) => m.role === "system")
+      .map((m: any) => extractText(m.content))
+      .filter(Boolean)
       .join("\n");
     const contents = messages
-      .filter((m: any) => (m.role === "user" || m.role === "assistant" || m.role === "model") && typeof m.content === "string")
+      .filter((m: any) => (m.role === "user" || m.role === "assistant" || m.role === "model"))
       .map((m: any) => ({
         role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }]
-      }));
+        parts: [{ text: extractText(m.content) }]
+      }))
+      .filter((m: any) => m.parts[0].text.trim().length > 0);
     if (!contents.length || contents[contents.length - 1].role !== "user") {
       return res.status(400).json({ error: "A final user message is required" });
     }
@@ -172,14 +182,14 @@ ${content}
   "emotions": ["감정태그1", "감정태그2"]
 }`;
 
-  const rawKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || "";
+  const rawKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
   const geminiApiKey = rawKey.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A") ? "" : rawKey;
 
   if (geminiApiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
       const geminiRes = await ai.models.generateContent({
-        model: "gemini-3.7-flash",
+        model: "gemini-flash-lite-latest",
         contents: prompt,
         config: {
           responseMimeType: "application/json"
