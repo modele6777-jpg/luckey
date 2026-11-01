@@ -22,6 +22,7 @@ export type QuestionIntentCategory =
   | 'business_money'      // 사업, 창업, 투자, 재물, 금전, 부동산
   | 'relationship_love'   // 연애, 결혼, 궁합, 재회, 썸, 이별, 대인관계
   | 'immediate_decision'  // 오늘/지금 결단, 양자택일, 길흉 판단, 타이밍
+  | 'daily_timing_transit' // 오늘 운세, 일진, 행성 트랜짓, 지금 흐름, 시간대별 타이밍
   | 'vitality_wellness'   // 건강, 피로, 수면, 바이오리듬, 일상 개운
   | 'creative_mind'       // 창작, 영감, 글쓰기, 예술, 아이디어
   | 'life_reflection'     // 하루 회고, 감사, 성찰, 마음 정리
@@ -161,6 +162,21 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
       targetTools: ['iching', 'liuren'],
       routingReason: '주역 64괘의 음양 변화 시중(時中) 이치와 대육임 점시 기준 사건 진행(초전→중전→말전) 정밀 포국',
       suggestedFocusPrompt: '주역 괘상의 핵심 조언과 육임의 사건 진행 흐름을 통해, 지금 나아가야 할 때인지 멈춰야 할 때인지 명확한 행동 지침을 제시해 줘.',
+      isMasterMobilization: false,
+      isCasual: false,
+    };
+  }
+
+  // 5-1. 실시간 일진 & 행성 트랜짓 / 오늘 운세 / 지금 흐름
+  const dailyTransitRegex = /오늘|일진|트랜짓|행성\s*위치|지금\s*운세|오늘\s*운세|당일\s*운|시간대|골든\s*타임|하늘\s*배치|지금\s*기운|지금\s*흐름/;
+  if (dailyTransitRegex.test(lower)) {
+    return {
+      intent: 'daily_timing_transit',
+      intentKoName: '실시간 일진·행성 트랜짓 동기화',
+      confidence: 0.94,
+      targetTools: ['saju', 'astrology'],
+      routingReason: '오늘의 만세력 일진(십신·지지합충)과 실시간 하늘의 행성 트랜짓(달 위상·주요 아스펙트) 동시 동기화',
+      suggestedFocusPrompt: '오늘 현재의 살아있는 일진 간지와 하늘의 행성 배치를 출생 차트와 실시간 대조하여, 오늘 지금 이 순간 가장 유리한 흐름과 주의점을 명쾌하게 짚어 줘.',
       isMasterMobilization: false,
       isCasual: false,
     };
