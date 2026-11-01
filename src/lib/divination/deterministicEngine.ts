@@ -27,6 +27,7 @@ import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, type
 import { calculateContextualSynastry, formatContextualSynastryPrompt, type ContextualSynastryResult } from './contextualSynastryEngine';
 import { calculateInstantDecision, formatInstantDecisionPrompt, type InstantDecisionResult } from './instantDecisionEngine';
 import { calculateZiweiFlyingStars, formatZiweiFlyingStarsPrompt, type ZiweiFlyingStarsResult } from './ziweiFlyingStarsEngine';
+import { calculateSpecialStarsMatrix, formatSpecialStarsPrompt, type SpecialStarsResult } from './specialStarsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -73,6 +74,7 @@ export interface DeterministicEngineReport {
   contextualSynastry?: ContextualSynastryResult | null;
   instantDecision?: InstantDecisionResult | null;
   ziweiFlyingStars?: ZiweiFlyingStarsResult | null;
+  specialStarsMatrix?: SpecialStarsResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -513,6 +515,7 @@ export function runDeterministicEngine(params: {
   const contextualSynastryResult = calculateContextualSynastry({ questionText: question, myProfile: profile });
   const instantDecisionResult = calculateInstantDecision({ instant: now, questionText: question });
   const ziweiFlyingStarsResult = calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() });
+  const specialStarsResult = calculateSpecialStarsMatrix({ profile });
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -546,6 +549,7 @@ export function runDeterministicEngine(params: {
     contextualSynastry: contextualSynastryResult,
     instantDecision: instantDecisionResult,
     ziweiFlyingStars: ziweiFlyingStarsResult,
+    specialStarsMatrix: specialStarsResult,
     tools: toolsMap,
   };
 }
@@ -585,5 +589,6 @@ ${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeaso
 ${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}
 ${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}
 ${report.instantDecision ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}
-${report.ziweiFlyingStars ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyingStars) : ''}`;
+${report.ziweiFlyingStars ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyingStars) : ''}
+${report.specialStarsMatrix ? '\n' + formatSpecialStarsPrompt(report.specialStarsMatrix) : ''}`;
 }
