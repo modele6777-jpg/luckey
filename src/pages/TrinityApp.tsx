@@ -3848,7 +3848,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                           </div>
                         ) : (
                           <div className="duo-reading flex flex-col relative w-full text-left">
-                            <div className="duo-reading pb-6">
+                            <div className="duo-reading pb-32 sm:pb-36">
                               <DuoWorkspace className="items-start gap-6 w-full">
                                 {/* Left Pane: Drawn 3D Cards Visualizer */}
                                 <div className="duo-workspace-pair"><div className="flex flex-col gap-4 w-full md:sticky md:top-2">

@@ -725,7 +725,7 @@ export function EpilogueDiaryView() {
   };
 
   return (
-    <DuoWorkspace className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md pb-16">
+    <DuoWorkspace className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-2 sm:pt-4 pb-16">
 <div className="duo-workspace-header"><motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}

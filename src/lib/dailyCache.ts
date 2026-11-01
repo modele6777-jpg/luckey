@@ -31,6 +31,17 @@ export function markPinUnlockedToday(): void {
   }
 }
 
+export function clearPinUnlockedToday(): void {
+  try {
+    localStorage.removeItem(PIN_UNLOCK_DATE_KEY);
+    localStorage.removeItem('lu_unlocked_date_v2');
+    sessionStorage.removeItem('lu_unlocked');
+    sessionStorage.removeItem('lu_unlocked_date');
+  } catch (e) {
+    console.error("Error clearing daily PIN unlock:", e);
+  }
+}
+
 export function isSameDayString(dateStr: string | null | undefined): boolean {
   if (!dateStr) return false;
   return dateStr === getTodayDateKey();

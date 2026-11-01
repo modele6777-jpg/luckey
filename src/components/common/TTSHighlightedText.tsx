@@ -198,22 +198,18 @@ export function TTSHighlightMark({
       selectHighlightOwner();
     };
   }, []);
-  useEffect(() => {
-    if (!ownsHighlight) return;
-    const centerVisibleSentence = () => {
-      if (document.visibilityState !== 'hidden') markRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-    };
-    centerVisibleSentence();
-    document.addEventListener('visibilitychange', centerVisibleSentence);
-    return () => document.removeEventListener('visibilitychange', centerVisibleSentence);
-  }, [ownsHighlight]);
 
   const themeClass = isLight
     ? 'tts-active-sentence-highlight bg-amber-200/90 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-950 inline transition-all duration-300'
     : 'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-50 inline transition-all duration-300';
 
   return (
-    <span ref={markRef} data-tts-highlight-candidate className={`${ownsHighlight ? themeClass : ''} ${className}`}>
+    <span
+      ref={markRef}
+      data-tts-active={ownsHighlight ? 'true' : 'false'}
+      data-tts-highlight-candidate
+      className={`${ownsHighlight ? themeClass : ''} ${className}`}
+    >
       {children}
     </span>
   );

@@ -1104,7 +1104,7 @@ export default function EpilogueApp() {
       </motion.nav>
 
       {/* Main Content Area */}
-      <div data-app-scroll-root {...epilogueSwipeHandlers} className="min-h-0 flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
+      <div data-app-scroll-root {...epilogueSwipeHandlers} className="min-h-0 flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-32 sm:pb-36 md:pb-20">
         {activeMode === 'synergy' ? (
           <div className="prism-page-content w-full mx-auto px-4 sm:px-6 pt-4 space-y-6">
             <EpilogueSynergySection />

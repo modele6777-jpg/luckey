@@ -1083,7 +1083,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       ? rawRealName
       : (persistentBasic?.name?.trim() || '박주형');
 
-    // 1. 이전에 저장된 다자간 프로필 리스트가 있으면 최우선 복원
+    // 1. 이전에 저장된 다자간 프로필 리스트가 있으면 최우선 복원 (사용자가 수정한 값이 덮어써지지 않도록 영구 보존)
     try {
       const saved = safeLocalStorage.getItem(CHAT_PROFILES_STORAGE_KEY);
       if (saved) {
@@ -1093,12 +1093,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             if (p.isMe || p.relationship === '본인') {
               return {
                 ...p,
-                name: myRealName,
-                birthdate: basic?.birthdate || p.birthdate || '1994-01-24',
-                birthtime: basic?.birthtime ?? p.birthtime ?? '12:00',
-                gender: basic?.gender || p.gender || 'male',
-                birthCity: basic?.birthCity || p.birthCity || '서울',
-                lunarSolar: basic?.lunarSolar || p.lunarSolar || 'solar',
+                name: (p.name && p.name !== '제제' && p.name !== '여행자') ? p.name : myRealName,
+                birthdate: p.birthdate || basic?.birthdate || '1994-01-24',
+                birthtime: p.birthtime !== undefined ? p.birthtime : (basic?.birthtime ?? '12:00'),
+                gender: p.gender || basic?.gender || 'male',
+                birthCity: p.birthCity || basic?.birthCity || '서울',
+                lunarSolar: p.lunarSolar || basic?.lunarSolar || 'solar',
                 relationship: '본인',
                 isMe: true,
               };
@@ -1399,7 +1399,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   }, [stopRecognition]);
 
   // 사용자가 대화창에서 프로필을 직접 변경/수정한 경우 플래그 (새로고침 또는 페이지 재진입 전까지 프로필 원복 방지)
-  const hasUserCustomizedProfilesRef = useRef(false);
+  const hasUserCustomizedProfilesRef = useRef<boolean>((() => {
+    try {
+      return safeLocalStorage.getItem('lucy_user_customized_profiles') === 'true';
+    } catch {
+      return false;
+    }
+  })());
 
   // 루시 채팅 진입 시 일일 초기화 점검 및 대화 기록이 없을 때 기본 루시 인사말 보장
   useEffect(() => {
@@ -1533,6 +1539,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const handleSaveChatProfile = useCallback((profile: ChatTargetProfile) => {
     hasUserCustomizedProfilesRef.current = true;
+    try {
+      safeLocalStorage.setItem('lucy_user_customized_profiles', 'true');
+    } catch (_) {}
     setActiveProfiles((prev) => {
       const existsIndex = prev.findIndex((p) => p.id === profile.id);
       
@@ -3589,24 +3598,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                   }
                 }}
                 onFocus={() => {
-                  window.scrollTo(0, 0);
-                  document.documentElement.scrollTop = 0;
-                  document.body.scrollTop = 0;
-                  setTimeout(() => {
-                    window.scrollTo(0, 0);
-                    scrollToBottom(false, false);
-                  }, 50);
+                  // 채팅란 클릭 시 화면 요동침 없이 자연스럽게 포커스 유지
+                  if (window.scrollY !== 0) window.scrollTo(0, 0);
                 }}
                 onBlur={() => {
-                  window.scrollTo(0, 0);
-                  document.documentElement.scrollTop = 0;
-                  document.body.scrollTop = 0;
-                  setTimeout(() => {
-                    window.scrollTo(0, 0);
-                  }, 50);
-                  setTimeout(() => {
-                    window.scrollTo(0, 0);
-                  }, 180);
+                  if (window.scrollY !== 0) window.scrollTo(0, 0);
                 }}
                 placeholder={
                   isLucyGenerating

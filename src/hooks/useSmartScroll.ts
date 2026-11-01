@@ -94,7 +94,13 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
   // Find active element in container or document
   const getActiveElement = useCallback((): HTMLElement | null => {
     const root = containerRef.current || document;
-    const elem = root.querySelector<HTMLElement>(selector);
+    let elem = root.querySelector<HTMLElement>(selector);
+    if (!elem && containerRef.current) {
+      const docElem = document.querySelector<HTMLElement>(selector);
+      if (docElem && containerRef.current.contains(docElem)) {
+        elem = docElem;
+      }
+    }
     return elem;
   }, [containerRef, selector]);
 

@@ -8,6 +8,8 @@
  *  4. Markdown/Symbol/Unit/Acronym phonetization for smooth listening
  */
 
+import { convertHanjaToHangul } from './hanjaTable';
+
 /** Remove explicit internal control blocks, without deleting ordinary discussion of prompts. */
 export function stripInternalSpeechDirectives(text: string): string {
   return String(text || '')
@@ -35,19 +37,20 @@ export function prepareNaturalSpeechText(text: string): string {
   // 4. Strip raw markdown links [Anchor](url) -> Anchor
   clean = clean.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 
-  // 4.5. Clean Hanja (CJK Ideographs) annotations so TTS does not double-read or break sentence highlighting:
-  // (a) Brackets containing ONLY Hanja and punctuation, e.g. 갑목(甲木), 개운(開運), [大吉] -> remove bracket completely
+  // 4.5. Phonetize & normalize Hanja (CJK Ideographs) for seamless, natural Korean TTS:
+  // (a) Brackets immediately following Korean text with no space: e.g. 갑목(甲木), 대운(大運) -> strip duplicate Hanja annotation
   clean = clean.replace(
-    /([\(\[（［\{｛【<《〈「『])\s*[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\s,·:：\-/]+\s*([\)\]）］\}｝】>》〉」』])/g,
-    ""
+    /([가-힣]{2,10})([\(\[（［\{｛【<《〈「『])\s*[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\s,·:：\-/]+\s*([\)\]）］\}｝】>》〉」』])/g,
+    "$1"
   );
   // (b) Brackets starting with Hanja followed by separator and Korean explanation, e.g. (一白水星·지혜와 유연한 스승) -> (지혜와 유연한 스승)
   clean = clean.replace(
     /([\(\[（［\{｛【<《〈「『])\s*[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\s]+\s*[·:：\-/,]\s*([^\)\]）］\}｝】>》〉」』]+)([\)\]）］\}｝】>》〉」』])/g,
     "$1$2$3"
   );
-  // (c) Strip any remaining CJK Ideographs inside or outside brackets so Korean pronunciation and UI matching stay 100% aligned
-  clean = clean.replace(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]+/g, " ");
+  // (c) Convert ALL standalone and bracketed Hanja to authentic Korean phonetic readings so TTS never skips Chinese characters:
+  // e.g. 甲木의 기운 -> 갑목의 기운, 丙午년 -> 병오년, [大吉] -> [대길], 子午沖 -> 자오충
+  clean = convertHanjaToHangul(clean);
 
   // 5. Remove all emojis, pictographs, special symbols, and surrogate pairs
   try {
