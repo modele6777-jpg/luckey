@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.41",
+  "version": "1.7.42",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -48,7 +48,7 @@
     "html-to-image": "^1.11.13",
     "http-proxy-middleware": "^4.0.0",
     "iztro": "2.6.3",
-    "korean-lunar-calendar": "^4.0.0",
+    "korean-lunar-calendar": "^0.4.0",
     "liuren-ts-lib": "3.1.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",

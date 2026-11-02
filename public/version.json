@@ -1,5 +1,5 @@
 {
-  "version": "1.7.41",
-  "builtAt": "2026-11-02T14:34:00.000Z",
-  "summary": "타로 리딩 모달 구문 오류 복구 및 Vercel 빌드 정상화"
+  "version": "1.7.42",
+  "builtAt": "2026-11-02T14:47:00.000Z",
+  "summary": "korean-lunar-calendar 패키지 오타 수정 및 Vercel 빌드/배포 정상화"
 }
