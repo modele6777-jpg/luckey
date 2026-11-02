@@ -37,8 +37,8 @@ test('KST timestamps are explicit; invalid or ambiguous requested times are neve
   const r=build({text,selected:['liuren'],now});assert.equal(r.results.length,0);assert.match(r.prompt,/계산 보류/);
  }
 });
-test('Hongguk-specific requests retain the unsupported-school boundary',()=>{
- const r=build({text:'홍국기문 포국해줘',selected:['qimen'],now});assert.equal(r.results.length,0);assert.match(r.prompt,/홍국기문 별도 수리는 미지원/);
+test('Hongguk-specific requests are never fulfilled by the instant Chabop chart',()=>{
+ const r=build({text:'홍국기문 포국해줘',selected:['qimen'],now});assert.equal(r.results.length,0);assert.match(r.prompt,/홍국기문 4주 수리 포국은 생년월일시가 필요해/);assert.match(r.prompt,/차보법으로 바꿔서 계산하지는 않아/);
 });
 
 test('chat storage merging retains computed results when a partial copy arrives',async()=>{

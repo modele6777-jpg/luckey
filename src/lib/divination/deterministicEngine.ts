@@ -42,6 +42,7 @@ import { calculateSukuyoAdvanced, formatSukuyoPrompt, type SukuyoResult } from '
 import { calculateVedicAdvanced, formatVedicPrompt, type VedicResult } from './vedicEngine';
 import { calculateKabbalah, formatKabbalahPrompt, type KabbalahResult, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD } from './kabbalahEngine';
 import { calculateThaiHorasat, formatThaiHorasatPrompt, type ThaiHorasatResult, THAI_HORASAT_METHOD } from './thaiHorasatEngine';
+import { calculateHonggukQimen, formatHonggukQimenPrompt, type HonggukQimenResult, HONGGUK_QIMEN_ENGINE_VERSION, HONGGUK_QIMEN_METHOD } from './honggukQimenEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -104,6 +105,7 @@ export interface DeterministicEngineReport {
   vedicAdvancedResult?: VedicResult | null;
   kabbalahResult?: KabbalahResult | null;
   thaiHorasatResult?: ThaiHorasatResult | null;
+  honggukQimenResult?: HonggukQimenResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -460,25 +462,44 @@ export function runDeterministicEngine(params: {
     liurenEnvelope = { toolId: 'liuren', toolKoName: '육임', status: 'error', note: err?.message || '육임 포국 실패' };
   }
 
-  // 11. 기문둔갑 (奇門遁甲) - 차보법(拆補) 포국
+  // 11. 기문둔갑 (奇門遁甲) - 조선 정통 홍국기문 4주 9궁 수리 포국 엔진 + 차보법(拆補) 점시 포국
+  //     생년월일이 있으면 홍국기문 수리 포국(세효·응효·중궁·삼형·통기·팔문)이 계산되어 바인딩되고,
+  //     점시 기반 차보법 포국은 전략/결단 질문일 때 보조로 병행된다.
   let qimenEnvelope: ToolCalculationEnvelope<unknown>;
+  let honggukQimenResult: HonggukQimenResult | null = null;
+  try {
+    honggukQimenResult = calculateHonggukQimen({ profile, targetYear: now.getFullYear() });
+  } catch (err: any) {
+    honggukQimenResult = {
+      status: 'error',
+      engineVersion: HONGGUK_QIMEN_ENGINE_VERSION,
+      method: HONGGUK_QIMEN_METHOD,
+      note: err?.message || '홍국기문 9궁 수리 포국 실패',
+    };
+  }
+  const honggukCalculated = honggukQimenResult.status === 'calculated';
   try {
     if (isDivinationQuery) {
       const qimenRes = calculateQimen(now);
+      const data: Record<string, unknown> = {};
+      if (honggukCalculated) data.honggukQimen = honggukQimenResult;
+      data.chabopPointChart = qimenRes;
       qimenEnvelope = {
         toolId: 'qimen',
         toolKoName: '홍국기문/기문둔갑',
         status: 'calculated',
-        method: qimenRes.method,
-        data: qimenRes,
-        limitations: qimenRes.limitations
+        method: honggukCalculated ? HONGGUK_QIMEN_METHOD : qimenRes.method,
+        data,
+        limitations: honggukCalculated ? undefined : qimenRes.limitations
       };
     } else {
       qimenEnvelope = {
         toolId: 'qimen',
         toolKoName: '홍국기문/기문둔갑',
-        status: 'skipped',
-        note: '전략/결단 질문 시 자동 포국됩니다.'
+        status: honggukCalculated ? 'calculated' : 'skipped',
+        method: honggukCalculated ? HONGGUK_QIMEN_METHOD : undefined,
+        data: honggukCalculated ? { honggukQimen: honggukQimenResult } : undefined,
+        note: honggukCalculated ? '생년월일 프로필 기반 홍국기문 4주 9궁 수리 포국' : '전략/결단 질문 시 점시 포국이 실행되고, 생년월일 등록 시 홍국기문 수리 포국이 계산됩니다.'
       };
     }
   } catch (err: any) {
@@ -727,6 +748,7 @@ export function runDeterministicEngine(params: {
     vedicAdvancedResult,
     kabbalahResult,
     thaiHorasatResult,
+    honggukQimenResult,
     tools: toolsMap,
   };
 }
@@ -782,5 +804,6 @@ ${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : '
 ${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}
 ${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}
 ${report.kabbalahResult ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}
-${report.thaiHorasatResult ? '\n' + formatThaiHorasatPrompt(report.thaiHorasatResult) : ''}`;
+${report.thaiHorasatResult ? '\n' + formatThaiHorasatPrompt(report.thaiHorasatResult) : ''}
+${report.honggukQimenResult ? '\n' + formatHonggukQimenPrompt(report.honggukQimenResult) : ''}`;
 }
