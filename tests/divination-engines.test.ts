@@ -705,3 +705,167 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
 });
 
 
+
+import { calculateVedicAdvanced, formatVedicPrompt, VEDIC_ENGINE_VERSION, VEDIC_METHOD, vedicNakshatraByIndex, nakshatraFromSiderealLongitude, buildVimshottariTimeline, lahiriAyanamsaAt, siderealLongitude } from '../src/lib/divination/vedicEngine';
+import { Body } from 'astronomy-engine';
+
+const VEDIC_LORD_CYCLE = ['케투', '금성', '태양', '달', '화성', '라후', '목성', '토성', '수성'];
+const NAK_WIDTH = 360 / 27;
+
+test('Vedic 27 nakshatras: full data table, lords cycle, gana/tattva groups and navamsa pada lords', () => {
+  for (let i = 0; i < 27; i++) {
+    const n = vedicNakshatraByIndex(i);
+    assert.equal(n.number, i + 1);
+    assert.equal(n.lord, VEDIC_LORD_CYCLE[i % 9]); // 지배 행성은 빔쇼타리 순환
+    assert(n.deity.length > 0 && n.symbol.length > 0 && n.meaning.length > 0);
+    assert.equal(n.spanDegrees.start, i * NAK_WIDTH);
+    assert(Math.abs(n.spanDegrees.end - (i + 1) * NAK_WIDTH) < 1e-9);
+  }
+  assert.deepEqual(vedicNakshatraByIndex(0), { ...vedicNakshatraByIndex(0), name: '아슈비니', deity: '아슈비니 쿠마라(쌍둥이 의신)', symbol: '말 머리', gana: '신성(Deva)', tattva: '지(土·Prithvi)' });
+  // 군(Gana): 신/인/마 각 9개
+  const ganas = Array.from({ length: 27 }, (_, i) => vedicNakshatraByIndex(i).gana);
+  for (const g of ['신성(Deva)', '인간(Manushya)', '마성(Rakshasa)']) assert.equal(ganas.filter((x) => x === g).length, 9);
+  // 원소(Tattva): 지(0~4) 수(5~10) 화(11~16) 풍(17~21) 공(22~26)
+  const tattvaBands = ['지(土·Prithvi)', '수(水·Apas)', '화(火·Tejas)', '풍(風·Vayu)', '공(空·Akasha)'];
+  const bandSizes = [5, 6, 6, 5, 5];
+  let cursor = 0;
+  tattvaBands.forEach((t, b) => {
+    for (let k = 0; k < bandSizes[b]; k++) assert.equal(vedicNakshatraByIndex(cursor + k).tattva, t);
+    cursor += bandSizes[b];
+  });
+  assert.equal(cursor, 27);
+  // 나바암사 파다 주인: 푸르바팔구니=태양/수성/금성/화성, 레바티=목성/토성/토성/목성 (고전표)
+  assert.deepEqual(vedicNakshatraByIndex(10).padaLords, ['태양', '수성', '금성', '화성']);
+  assert.deepEqual(vedicNakshatraByIndex(26).padaLords, ['목성', '토성', '토성', '목성']);
+  assert.throws(() => vedicNakshatraByIndex(27), RangeError);
+  assert.throws(() => vedicNakshatraByIndex(0, 5), RangeError);
+});
+
+test('Vedic pada mapping: 108 padas of 3°20\' wrap the whole sidereal zodiac', () => {
+  assert.deepEqual(nakshatraFromSiderealLongitude(0), { index: 0, pada: 1, fractionIntoNakshatra: 0 });
+  assert.equal(nakshatraFromSiderealLongitude(NAK_WIDTH - 0.0001).pada, 4); // 아슈비니 끝자락
+  const b = nakshatraFromSiderealLongitude(NAK_WIDTH + 0.0001);
+  assert.equal(b.index, 1); assert.equal(b.pada, 1); // 바라니 시작
+  const t = nakshatraFromSiderealLongitude(359.999);
+  assert.equal(t.index, 26); assert.equal(t.pada, 4); // 레바티 끝자락
+  assert.deepEqual(nakshatraFromSiderealLongitude(360.5), { index: 0, pada: 1, fractionIntoNakshatra: 0.0375 }); // 360° 순환
+  for (const s of [0, 90, 180, 269.9, 305.79]) {
+    const r = nakshatraFromSiderealLongitude(s);
+    assert(r.fractionIntoNakshatra >= 0 && r.fractionIntoNakshatra < 1);
+    assert(r.pada >= 1 && r.pada <= 4);
+  }
+});
+
+test('Vimshottari: 7+20+6+10+7+18+16+19+17 = 120-year total, 81 antardasha intervals, contiguity', () => {
+  assert.equal(VEDIC_LORD_CYCLE.reduce((a, _, i) => a + [7, 20, 6, 10, 7, 18, 16, 19, 17][i], 0), 120);
+  const birthMs = Date.parse('2000-01-01T00:00:00Z');
+  const tl = buildVimshottariTimeline(0, 7, birthMs); // 케투 만생(잔여 7년 전체)
+  assert.equal(tl.antardashaCount, 81); // 마하다샤 9 × 안타르다샤 9
+  assert.equal(tl.mahadashas.length, 9);
+  const spanSum = tl.mahadashas.reduce((s, m) => s + (m.endYearsAfterBirth - m.startYearsAfterBirth), 0);
+  assert(Math.abs(spanSum - 120) < 1e-9);
+  tl.mahadashas.forEach((m, i) => {
+    assert.equal(m.lord, VEDIC_LORD_CYCLE[(0 + i) % 9]);
+    assert.equal(m.antardashas.length, 9);
+    const subSum = m.antardashas.reduce((s, a) => s + a.years, 0);
+    assert(Math.abs(subSum - (m.endYearsAfterBirth - m.startYearsAfterBirth)) < 1e-9);
+    if (i > 0) assert.equal(m.startYearsAfterBirth, tl.mahadashas[i - 1].endYearsAfterBirth); // 연속성
+    m.antardashas.forEach((a, j) => {
+      assert.equal(a.lord, VEDIC_LORD_CYCLE[(i + j) % 9]); // 안타르다샤는 모 주인부터 같은 순서
+      if (j > 0) assert.equal(a.startYearsAfterBirth, m.antardashas[j - 1].endYearsAfterBirth);
+    });
+  });
+  // 고전 안타르다샤 수리: 케투 마하다샤 내 케투-케투 7×7/120, 케투-금성 7×20/120
+  assert(Math.abs(tl.mahadashas[0].antardashas[0].years - 49 / 120) < 1e-9);
+  assert(Math.abs(tl.mahadashas[0].antardashas[1].years - 140 / 120) < 1e-9);
+  assert.throws(() => buildVimshottariTimeline(0, 0, birthMs), RangeError);
+  assert.throws(() => buildVimshottariTimeline(0, 7.1, birthMs), RangeError);
+  assert.throws(() => buildVimshottariTimeline(9, 7, birthMs), RangeError);
+});
+
+test('Vedic engine fixtures: moon sidereal positions match independent panchang records', () => {
+  // J2000 기준 라히리 아얀암사 23°51'11"
+  assert(Math.abs(lahiriAyanamsaAt(new Date('2000-01-01T12:00:00Z')) - 23.8531) < 1e-4);
+  // 카리기리 나이야나 에페메리스 16.08.2000: 아얀암사 23°51'54", 달 305°32' (0시 IST)
+  const sid0800 = siderealLongitude(Body.Moon, new Date('2000-08-15T18:30:00Z'));
+  assert(Math.abs(sid0800 - 305.5336) < 0.1);
+  const profile1 = { basic: { birthdate: '2000-08-16', birthtime: '04:00', gender: 'female' as const, birthCity: '서울' } };
+  const r1 = calculateVedicAdvanced({ profile: profile1, targetDate: new Date('2026-11-02T00:00:00Z') });
+  assert.equal(r1.status, 'calculated');
+  assert.equal(r1.engineVersion, VEDIC_ENGINE_VERSION);
+  // 04:00 KST(=00:30 IST)는 다니슈타 4파다 (샤타비샤 개시는 그날 새벽 뒤 — Jaipur 판창·카리기리 상호 일치)
+  assert.equal(r1.nakshatra!.name, '다니슈타');
+  assert.equal(r1.nakshatra!.pada, 4);
+  assert.equal(r1.nakshatra!.lord, '화성');
+  assert.equal(r1.rashi!.chandra.name, '쿰바'); // 항성황도 달 305.79° → 쿰바 (Jaipur 판창 Moonsign 일치)
+  assert(Math.abs(r1.dashaBalance!.years - 7 * (1 - 0.9342785256829406)) < 1e-3); // 화성 잔여 다샤
+  assert.equal(r1.antardashaCount, 81);
+  assert.equal(r1.birthInstant!.assumedNoon, false);
+  const profile2 = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r2 = calculateVedicAdvanced({ profile: profile2, targetDate: new Date('2026-11-02T00:00:00Z') });
+  // askoracle 1995-03-25 판창: 찬드라 उत्तराषाढ़ा 1(우타라아샤다 파다1, 태양) — 05:30Z 기준 일치
+  assert.equal(r2.nakshatra!.name, '우타라아샤다');
+  assert.equal(r2.nakshatra!.pada, 1);
+  assert.equal(r2.nakshatra!.lord, '태양');
+  assert(Math.abs(r2.dashaBalance!.years - 6 * (1 - 0.12636674978685872)) < 1e-3);
+  assert.equal(r2.rashi!.chandra.name, '다누'); // 268.35° → 다누(人馬)
+  assert.equal(r2.rashi!.surya.name, '미나'); // 3월 말 항성황도 태양은 미나(雙魚)
+  assert(r2.rashi!.lagna !== null); // 생시+지원 도시 → 라그나 라시 산출
+  assert(r2.rashi!.lagna!.index >= 0 && r2.rashi!.lagna!.index <= 11);
+});
+
+test('Vedic current dasha: 1995-03-25 birth at 2026-11-02 falls in Rahu-Sukra antardasha', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r = calculateVedicAdvanced({ profile, targetDate: new Date('2026-11-02T00:00:00Z') });
+  // 잔여 태양 5.24y → 달 10y → 화성 7y 후 라후 18y(22.24y~); 라후-수성 30.19y~32.74y
+  assert.equal(r.currentDasha!.mahadasha.lord, '라후');
+  assert.equal(r.currentDasha!.antardasha.lord, '수성');
+  assert(r.currentDasha!.ageYears > 30 && r.currentDasha!.ageYears < 33);
+  // targetYear로도 같은 결정론 식별 (2026년 중간 기준점)
+  const byYear = calculateVedicAdvanced({ profile, targetYear: 2026 });
+  assert.equal(byYear.currentDasha!.mahadasha.lord, '라후');
+});
+
+test('Vedic engine: determinism, null-safe noon fallback, safe skip and prompt formatting', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const fixed = new Date('2026-11-02T00:00:00Z');
+  const r1 = calculateVedicAdvanced({ profile, targetDate: fixed });
+  const r2 = calculateVedicAdvanced({ profile, targetDate: fixed });
+  assert.deepEqual(r1, r2); // 동일 입력 동일 출력
+
+  // 생시 없음 → 정오(12:00) 기준 null-safe 산출, 라그나는 미산출
+  const noon = calculateVedicAdvanced({ profile: { basic: { birthdate: '1995-03-25', gender: 'male' as const } } });
+  assert.equal(noon.status, 'calculated');
+  assert.equal(noon.birthInstant!.assumedNoon, true);
+  assert(noon.nakshatra!.name.length > 0);
+  assert.equal(noon.rashi!.lagna, null);
+
+  // 프로필 누락 시 safe fallback
+  const skipped = calculateVedicAdvanced({ profile: null });
+  assert.equal(skipped.status, 'skipped');
+  const bad = calculateVedicAdvanced({ profile: { basic: { birthdate: '1800-01-01' } } });
+  assert(bad.status === 'error' || bad.status === 'skipped');
+
+  // 프롬프트 포맷터
+  const prompt = formatVedicPrompt(r1);
+  assert(prompt.includes('LUCKEY-VD-v1.0.0'));
+  assert(prompt.includes('빔쇼타리'));
+  assert(prompt.includes('나크샤트라'));
+  assert(prompt.includes('안타르다샤'));
+  assert(prompt.includes('라후-수성'));
+  assert.equal(formatVedicPrompt(skipped), '');
+  assert(VEDIC_METHOD.length > 0);
+});
+
+test('Vedic engine binds into the deterministic engine report and prompt', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const report = runDeterministicEngine({ profile, question: '내 베딕 다샤 알려줘' });
+  assert(report.vedicAdvancedResult !== null && report.vedicAdvancedResult !== undefined);
+  assert.equal(report.vedicAdvancedResult!.status, 'calculated');
+  assert.equal(report.vedicAdvancedResult!.nakshatra!.name, '우타라아샤다');
+  assert.equal(report.tools.vedic.status, 'calculated');
+  const prompt = formatDeterministicEnginePrompt(report);
+  assert(prompt.includes('LUCKEY-VD-v1.0.0'));
+  const noProfile = runDeterministicEngine({ profile: null });
+  assert(noProfile.vedicAdvancedResult?.status === 'skipped');
+});
