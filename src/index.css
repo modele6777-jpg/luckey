@@ -75,8 +75,8 @@
        절대 bottom: 0을 주지 말 것 — 가상 키보드 가시 영역으로의 높이 축소가 차단된다. */
     position: fixed;
     top: var(--vv-top, 0px);
-    left: var(--vv-left, 0px);
-    right: 0;
+    left: 0px !important;
+    right: 0px !important;
     width: 100%;
     height: var(--app-height, 100lvh);
     min-height: var(--app-height, 100lvh);
@@ -115,8 +115,8 @@
   html.pwa-standalone #root {
     position: fixed;
     top: var(--vv-top, 0px);
-    left: var(--vv-left, 0px);
-    right: 0;
+    left: 0px !important;
+    right: 0px !important;
     height: var(--app-height, 100lvh);
     min-height: var(--app-height, 100lvh);
   }
@@ -390,8 +390,8 @@
   body.keyboard-open #root {
     position: fixed !important;
     top: var(--vv-top, 0px) !important;
-    left: var(--vv-left, 0px) !important;
-    right: auto !important;
+    left: 0px !important;
+    right: 0px !important;
     bottom: auto !important;
     width: 100% !important;
     height: var(--app-height, 100%) !important;
@@ -592,6 +592,28 @@
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
+  }
+
+  /* 🌟 가로 회전 시(Landscape) 채팅 입력창 및 추천 칩 가림 완벽 방지 */
+  @media (orientation: landscape) and (max-height: 600px) {
+    html.in-lucy-chat .bottom-safe-fab-center,
+    body.in-lucy-chat .bottom-safe-fab-center,
+    .in-lucy-chat .bottom-safe-fab-center,
+    [data-bigbang="true"].in-lucy-chat {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* 일반 화면에서는 가로 모드 시 우측 안전 영역으로 이동하여 중앙 콘텐츠 방해 차단 */
+    .bottom-safe-fab-center {
+      bottom: calc(var(--sab, 0px) + 0.75rem) !important;
+      right: calc(var(--sar, 0px) + 1.25rem) !important;
+      left: auto !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
   }
 
   .bottom-safe-fab-right {

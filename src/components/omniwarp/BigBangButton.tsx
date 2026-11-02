@@ -88,6 +88,33 @@ export function BigBangButton() {
 
   const isChatView = checkIsInLucyChat();
 
+  const [isLandscapeCompact, setIsLandscapeCompact] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const checkLandscape = () => {
+      const isLandscape =
+        window.innerWidth > window.innerHeight ||
+        window.screen?.orientation?.type?.startsWith('landscape') ||
+        Math.abs(Number((window as any).orientation || 0)) === 90;
+      const isCompactHeight = window.innerHeight < 600;
+      setIsLandscapeCompact(Boolean(isLandscape && isCompactHeight));
+    };
+    checkLandscape();
+    window.addEventListener('resize', checkLandscape, { passive: true });
+    window.addEventListener('orientationchange', checkLandscape, { passive: true });
+    if (window.screen?.orientation) {
+      window.screen.orientation.addEventListener('change', checkLandscape);
+    }
+    return () => {
+      window.removeEventListener('resize', checkLandscape);
+      window.removeEventListener('orientationchange', checkLandscape);
+      if (window.screen?.orientation) {
+        window.screen.orientation.removeEventListener('change', checkLandscape);
+      }
+    };
+  }, []);
+
   const [isPressing, setIsPressing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isCosmicSuctionActive, setIsCosmicSuctionActive] = useState(false);
@@ -1440,7 +1467,7 @@ export function BigBangButton() {
     return '루시 (1:1 음성 대화)';
   })();
 
-  if (typeof document === 'undefined' || isKeyboardOpen) return null;
+  if (typeof document === 'undefined' || isKeyboardOpen || (isChatView && isLandscapeCompact)) return null;
   return createPortal(
     <>
       {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}

@@ -22,14 +22,30 @@ export function useViewportScrollLock() {
     };
 
     const lockWindowScroll = () => {
+      // 🌟 가상 키보드 및 기기 회전/펼침 시 수평 오프셋(scrollX) 탈출 완벽 차단:
+      // 모바일 웹앱에서는 수평 스크롤이 발생할 이유가 없으므로, 입력 활성 상태 여부와 관계없이
+      // scrollX / scrollLeft가 0이 아니면 즉시 0으로 강제 리셋하여 화면이 좌측 바깥으로 밀려나는 현상을 방지한다.
+      if (window.scrollX !== 0) {
+        window.scrollTo(0, window.scrollY);
+      }
+      if (document.scrollingElement && document.scrollingElement.scrollLeft !== 0) {
+        document.scrollingElement.scrollLeft = 0;
+      }
+      if (document.documentElement && document.documentElement.scrollLeft !== 0) {
+        document.documentElement.scrollLeft = 0;
+      }
+      if (document.body && document.body.scrollLeft !== 0) {
+        document.body.scrollLeft = 0;
+      }
+
       // 🌟 키보드 튕김(닫힘) 완벽 차단:
       // 활성 입력창(input/textarea/contenteditable)에 포커스가 있는 동안에는 어떤 경우에도
-      // window.scrollTo나 document/body scrollTop을 호출하지 않는다.
+      // 수직 window.scrollTo(0, 0)나 document/body scrollTop을 호출하지 않는다.
       // iOS WebKit은 가상 키보드 전개 중 또는 입력 중에 프로그래밍 방식의 스크롤 조작이 들어오면
       // 사용자가 화면을 터치해 스크롤한 것으로 오인하여 키보드를 즉시 닫고 튕겨내기 때문.
       if (isInputActive()) return;
 
-      if (window.scrollY !== 0 || window.scrollX !== 0) {
+      if (window.scrollY !== 0) {
         window.scrollTo(0, 0);
       }
       if (document.scrollingElement && document.scrollingElement.scrollTop !== 0) {
@@ -95,7 +111,6 @@ export function useViewportScrollLock() {
       const innerH = window.innerHeight;
       const visualH = visual ? visual.height : innerH;
       const visualTop = visual ? Math.max(0, Math.round(visual.offsetTop)) : 0;
-      const visualLeft = visual ? Math.max(0, Math.round(visual.offsetLeft)) : 0;
 
       const oriented = getOrientedScreenSize();
       // 가상 키보드가 실제로 올라와 있는지 정밀 판별:
@@ -122,7 +137,7 @@ export function useViewportScrollLock() {
         }
 
         document.documentElement.style.setProperty('--vv-top', `${visualTop}px`);
-        document.documentElement.style.setProperty('--vv-left', `${visualLeft}px`);
+        document.documentElement.style.setProperty('--vv-left', '0px');
         document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--vvh', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--visual-vh', `${keyboardSafeHeight}px`);
@@ -131,8 +146,8 @@ export function useViewportScrollLock() {
         if (root) {
           root.style.setProperty('position', 'fixed', 'important');
           root.style.setProperty('top', `${visualTop}px`, 'important');
-          root.style.setProperty('left', `${visualLeft}px`, 'important');
-          root.style.setProperty('right', 'auto', 'important');
+          root.style.setProperty('left', '0px', 'important');
+          root.style.setProperty('right', '0px', 'important');
           root.style.setProperty('width', '100%', 'important');
           root.style.setProperty('height', `${keyboardSafeHeight}px`, 'important');
           root.style.setProperty('min-height', '0px', 'important');
