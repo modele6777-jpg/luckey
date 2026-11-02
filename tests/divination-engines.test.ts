@@ -443,3 +443,90 @@ test('Geokguk engine: Zipyeong Jinjeon 10-geok judgment, seong/pa/gueung, determ
   assert(report.geokgukResult?.monthCommand !== null && report.geokgukResult?.monthCommand !== undefined);
 });
 
+import { calculateTwentyEightMansions, formatTwentyEightMansionsPrompt, TWENTY_EIGHT_MANSIONS_ENGINE_VERSION } from '../src/lib/divination/twentyEightMansionsEngine';
+
+test('28 Mansions: deterministic day-star with weekday-luminary 7-cycle alignment and reference fixtures', () => {
+  const at = (iso: string) => calculateTwentyEightMansions({ targetDate: new Date(iso) });
+
+  // 정통 실측표 픽스처: 2026-11-01(일) 묘수·흉, 2026-11-02(월) 필수·길, 기원점 1685-02-04(일) 성수
+  const r1102 = at('2026-11-02T00:00:00+09:00');
+  assert.equal(r1102.mansion.name, '필');
+  assert.equal(r1102.mansion.hanja, '畢');
+  assert.equal(r1102.mansion.group, '서방백호(西方白虎)');
+  assert.equal(r1102.mansion.luminary, '월(月)');
+  assert.equal(r1102.mansion.element, '수(水)'); // 월요 수는 태음진수
+  assert.equal(r1102.weekday, '월요일');
+  assert.equal(r1102.weekdayLuminary, '월(月)');
+  assert.equal(r1102.luminaryWeekdayAligned, true); // 7원 4주기: 직성 칠요 = 요일 칠요
+  assert.equal(r1102.dayGanZhi, '경진');
+  const r1101 = at('2026-11-01T00:00:00+09:00');
+  assert.equal(r1101.mansion.name, '묘');
+  assert.equal(r1101.mansion.grade, '흉(凶)');
+  assert.equal(r1101.mansion.luminary, '일(日)');
+  const anchor = at('1685-02-04T00:00:00+09:00');
+  assert.equal(anchor.mansion.name, '성');
+  assert.equal(anchor.mansion.hanja, '星');
+  assert.equal(anchor.julianDayNumber, 2336529);
+
+  // 결정론: 동일 날짜 → 동일 직성·점수
+  assert.deepEqual(r1102, at('2026-11-02T00:00:00+09:00'));
+  // UTC 입력도 KST 일자로 정규화 (UTC 00:00 = KST 09:00 → 같은 날)
+  assert.equal(at('2026-11-01T00:00:00Z').mansion.name, '묘');
+  assert.equal(at('2026-11-01T15:00:00Z').mansion.name, '필'); // KST로 이미 다음 날
+
+  // 28일 주기 순환: 28일 후 같은 직성이며 요일·칠요 일치는 84일(7원) 연속 성립
+  for (const iso of ['2026-01-15', '2026-06-20', '2027-02-28']) {
+    const t = at(iso + 'T00:00:00+09:00');
+    const t28 = at(new Date(new Date(iso + 'T00:00:00+09:00').getTime() + 28 * 86400000).toISOString());
+    assert.equal(t28.mansion.name, t.mansion.name);
+    assert.equal(t28.mansion.index, t.mansion.index);
+  }
+  let base = new Date('2026-01-01T00:00:00+09:00').getTime();
+  for (let k = 0; k < 84; k++) {
+    const r = calculateTwentyEightMansions({ targetDate: new Date(base + k * 86400000) });
+    assert.equal(r.luminaryWeekdayAligned, true, `day ${k}`);
+    assert.equal(r.mansion.index, (r.julianDayNumber + 11) % 28);
+  }
+});
+
+test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection, prompt and engine binding', () => {
+  const r = calculateTwentyEightMansions({ targetDate: new Date('2026-11-02T00:00:00+09:00') });
+  assert.equal(r.status, 'calculated');
+  assert.equal(r.engineVersion, TWENTY_EIGHT_MANSIONS_ENGINE_VERSION);
+
+  // 6대 영역 스코어링 정합성
+  assert.equal(r.domainScores.length, 6);
+  assert.deepEqual(r.domainScores.map((s) => s.domain), ['contract', 'businessLaunch', 'travel', 'finance', 'relationship', 'healing']);
+  for (const s of r.domainScores) {
+    assert(s.score >= 5 && s.score <= 98, `${s.domain} score ${s.score}`);
+    assert(['대길', '길', '평', '흉', '대흉'].includes(s.grade));
+    assert.equal(s.grade, s.score >= 85 ? '대길' : s.score >= 70 ? '길' : s.score >= 55 ? '평' : s.score >= 40 ? '흉' : '대흉');
+    assert(s.reason.includes('결정론 수리'));
+    assert(s.actionGuide.length > 30);
+    assert(s.bestDates.length === 3);
+    for (const b of s.bestDates) {
+      assert(/^\d{4}-\d{2}-\d{2}$/.test(b.date));
+      assert(b.score >= 5 && b.score <= 98);
+      assert(/.+\(.\)$/.test(b.mansionName));
+    }
+    // 최적 후보일은 점수 내림차순
+    assert(s.bestDates[0].score >= s.bestDates[1].score && s.bestDates[1].score >= s.bestDates[2].score);
+  }
+  assert(r.overallVerdict.includes('직성') && r.overallVerdict.includes('7원 4주기'));
+  assert(r.overallGuide.length > 30);
+
+  // 프롬프트 포맷터에 엔진 버전·핵심 수어 포함
+  const prompt = formatTwentyEightMansionsPrompt(r);
+  assert(prompt.includes('LUCKEY-TM-v1.0.0'));
+  assert(prompt.includes('천상열차분야지도') && prompt.includes('28수 직성'));
+  assert(prompt.includes('필월오(畢月烏)') && prompt.includes('계약·협상') && prompt.includes('휴식·치유·내실'));
+
+  // 결정론 엔진 통합 바인딩 (생년월일 무관 당일 일진 기준 산출)
+  const report = runDeterministicEngine({ profile: { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } }, question: '이사 날짜 알려줘' });
+  assert(report.twentyEightMansionsResult !== null && report.twentyEightMansionsResult !== undefined);
+  assert.equal(report.twentyEightMansionsResult?.status, 'calculated');
+  assert(report.twentyEightMansionsResult?.luminaryWeekdayAligned === true);
+  const noProfileReport = runDeterministicEngine({ profile: null });
+  assert(noProfileReport.twentyEightMansionsResult?.status === 'calculated'); // 프로필 없이도 일진 산출
+});
+
