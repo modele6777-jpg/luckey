@@ -575,12 +575,12 @@ function tenGodShiftGuide(from: string, to: string): { riskNarrative: string; cu
   if (from === to) {
     return {
       riskNarrative: '같은 십성 계열의 대운으로 이어지며 큰 급변은 없지만, 10년의 관성이 조용히 교체됩니다.',
-      cushion: '기존 방식을 유지하되 다음 대운을 준비하는 관측을 병행하세요.',
+      cushionGuide: '기존 방식을 유지하되 다음 대운을 준비하는 관측을 병행하세요.',
     };
   }
   return {
     riskNarrative: `${from}에서 ${to}로 기운의 결이 바뀌며 익숙한 방식이 통하지 않을 수 있습니다.`,
-    cushion: '변화의 첫 신호를 기록하고, 판단은 한 템포 늦게 실행하세요.',
+    cushionGuide: '변화의 첫 신호를 기록하고, 판단은 한 템포 늦게 실행하세요.',
   };
 }
 
