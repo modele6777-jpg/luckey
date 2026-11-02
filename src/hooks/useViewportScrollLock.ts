@@ -103,11 +103,18 @@ export function useViewportScrollLock() {
       const hasKeyboard = isInputActive() && visual != null && (innerH - visualH > 100);
 
       if (hasKeyboard) {
+        document.documentElement.classList.add('keyboard-open');
+        if (document.body) document.body.classList.add('keyboard-open');
+
         // 키보드가 활성화된 상태: 키보드 위 가시 영역에 맞춤
-        // 주의: html, body의 인라인 height를 축소하면 WebKit이 window scroll을 유발하므로 --app-height와 #root만 축소
         const keyboardSafeHeight = Math.round(visualH);
-        document.documentElement.style.setProperty('--vv-top', `${visualTop}px`);
-        document.documentElement.style.setProperty('--vv-left', `${visualLeft}px`);
+        // WebKit 뷰포트 오프셋 동기화: visualViewport.offsetTop과 window.scrollY를 모두 합산하여
+        // WebKit의 윈도우 스크롤과 visualViewport 패닝 양쪽을 오차 0px로 완벽 보정
+        const effectiveTop = Math.round((visual?.offsetTop || 0) + (window.scrollY || 0));
+        const effectiveLeft = Math.round((visual?.offsetLeft || 0) + (window.scrollX || 0));
+
+        document.documentElement.style.setProperty('--vv-top', `${effectiveTop}px`);
+        document.documentElement.style.setProperty('--vv-left', `${effectiveLeft}px`);
         document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--vvh', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--visual-vh', `${keyboardSafeHeight}px`);
@@ -119,11 +126,9 @@ export function useViewportScrollLock() {
         }
         const root = document.getElementById('root');
         if (root) {
-          // 🌟 WebKit 뷰포트 오프셋 동기화: WebKit이 visualViewport를 위로 패닝할 때
-          // #root의 top 좌표를 visual.offsetTop으로 맞춰 상단 잘림과 하단 빈 공간(250px)을 0px로 완벽 밀착
           root.style.position = 'fixed';
-          root.style.top = `${visualTop}px`;
-          root.style.left = `${visualLeft}px`;
+          root.style.top = `${effectiveTop}px`;
+          root.style.left = `${effectiveLeft}px`;
           root.style.right = '0px';
           root.style.height = `${keyboardSafeHeight}px`;
           root.style.minHeight = `${keyboardSafeHeight}px`;
@@ -135,6 +140,8 @@ export function useViewportScrollLock() {
           shell.style.minHeight = '0px';
         }
       } else {
+        document.documentElement.classList.remove('keyboard-open');
+        if (document.body) document.body.classList.remove('keyboard-open');
         document.documentElement.style.setProperty('--vv-top', '0px');
         document.documentElement.style.setProperty('--vv-left', '0px');
         const resetShell = () => {

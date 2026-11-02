@@ -16,7 +16,7 @@ export const DIVINATION_CAPABILITIES: Record<DivinationToolId, { state: 'availab
   thai_astrology: { state: 'partial', scope: '출생 요일의 행성·전통 색상만 제공. 정밀 호라삿 차트·신체 상태 진단 미산출.', required: '양력 환산 생년월일, 정밀 차트는 생시·위치·역법' },
   tojeong: { state: 'available', scope: '이지함 토정비결 수리 산법(태세수·월건수·일진수 작괘)으로 당해 연도 144괘 코드와 본괘·총론·12개월 괘상을 직접 산출. 1900~2100년 음력 역법 지원이며 사주 간지로 괘문을 대체하지 않음.', required: '양/음력·윤달 생년월일(생시 불요), 대상 연도 기본값은 현재 연도' },
   kyusei: { state: 'available', scope: '입춘 절입 연성 수리 본명성, 절월 월성 월명성, 동지·하지 근접 갑자일 일성 순행 비성으로 연·월·일 3반 9궁 포국과 오황살·암검살·세파살·월파살·본명살·본명적살, 본명성 오행 기준 상생·비화 길방위를 직접 산출. 일성 구성학 윤달(九星置閏) 예외 구간은 미지원이며 방위 이외의 택일(시간 선택)은 별도 산법.', required: '양/음력·윤달 생년월일(입춘 당일은 생시), 대상 기준일 기본값은 현재 시각' },
-  taiyi: { state: 'not_implemented', scope: '태을신수 국수·16궁·주객 산법 미구현. 시대·개인 길흉을 계산한 것으로 주장하지 않음.', required: '점시·적용 역법·국수 산법·검증된 포국' },
+  taiyi: { state: 'available', scope: '태을신수 정통 16궁 연국 적년 수리 산법(당 개원 12년 기산 5원 6기 360년 대주기, 72국 순환, 태을 8정궁 3년 주기 순행, 문창·시격 성위, 주산·객산 수리, 주객 승부 판정, 삼기 대세 지수 및 오복 길성)을 결정론 엔진(taiyiResult)으로 직접 산출. 시국(時局) 단위 초미시 천문 관측치는 연국 거시 지표와 별도.', required: '양/음력·윤달 생년월일, 대상 연도 기본값은 현재 연도' },
 };
 
 export function buildDivinationCapabilityPrompt(ids: readonly DivinationToolId[]): string {

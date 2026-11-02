@@ -558,6 +558,17 @@
     }
   }
 
+  /* 🛡️ 가상 키보드 전개 시 FAB 버튼 완전 은닉 */
+  html.keyboard-open .bottom-safe-fab-center,
+  body.keyboard-open .bottom-safe-fab-center,
+  html.keyboard-open [data-bigbang="true"],
+  body.keyboard-open [data-bigbang="true"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
   .bottom-safe-fab-right {
     bottom: calc(var(--sab) + 1.25rem);
     right: calc(var(--sar) + 0.875rem);
