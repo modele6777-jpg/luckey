@@ -261,3 +261,34 @@ test('Samjae/GyoUn skips without birthdate, degrades without gender, and renders
   assert(noGender.samjae.isSamjaeYear===false||noGender.samjae.isSamjaeYear===true);
   assert.equal(noGender.gyoUn.isGyoUnPeriod,false);assert.match(noGender.gyoUn.note||'',/성별/);
 });
+
+import { calculateAuspiciousStars, formatAuspiciousStarsPrompt, AUSPICIOUS_STARS_ENGINE_VERSION } from '../src/lib/divination/auspiciousStarsEngine';
+const asProfile={basic:{birthdate:'2000-01-01',birthtime:'12:00',gender:'female' as const,birthCity:'서울'}}; // 戊午日 丙子月 己卯年 戊午時 (입춘 전)
+test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interference, noble timing',()=>{
+  const r=calculateAuspiciousStars({profile:asProfile,targetYear:2026});
+  assert.equal(r.status,'calculated');assert.equal(r.engineVersion,AUSPICIOUS_STARS_ENGINE_VERSION);
+  const eul=r.nobleMatrix.cheonEul!;
+  assert.equal(eul.foundChar,'子');assert.equal(eul.foundPillars[0].pillar,'월주');
+  const types=eul.interference.map(i=>i.type);
+  assert(types.some(t=>t.includes('공망'))&&types.some(t=>t.includes('충'))&&types.some(t=>t.includes('형')));
+  assert(eul.strengthLevel>=1&&eul.strengthLevel<5);
+  assert.equal(r.nobleMatrix.munChang,null);assert.equal(r.nobleMatrix.hakDang,null);
+  assert.equal(r.nobleMatrix.munGok,null);assert.equal(r.nobleMatrix.cheonDeok,null);assert.equal(r.nobleMatrix.wolDeok,null);
+  assert.equal(r.totalNoblesFound,1);
+  const t=r.timing!;
+  assert.equal(t.targetYearGanZhi,'丙午');assert.deepEqual(t.thisYearNobles,[]);
+  assert.equal(t.upcomingYears[0].year,2027);assert.equal(t.upcomingYears[0].ganZhi,'丁未');
+  assert(t.upcomingYears[0].arrivedNobles.includes('천을귀인'));
+  const prompt=formatAuspiciousStarsPrompt(r);
+  assert(prompt.includes('LUCKEY-AS-v1.0.0')&&prompt.includes('천을귀인')&&prompt.includes('공망'));
+});
+test('Auspicious stars: resonance detects when the partner holds my noble branch; skips without profile',()=>{
+  const r=calculateAuspiciousStars({profile:asProfile,targetYear:2026,partnerProfile:asProfile});
+  assert(r.resonance&&r.resonance.partnerHoldsMyNoble&&!r.resonance.mutual);
+  assert.equal(r.resonance.resonanceScore,70);assert(r.resonance.foundDetails.length>0);
+  const skipped=calculateAuspiciousStars({profile:null,targetYear:2026});
+  assert.equal(skipped.status,'skipped');assert.match(skipped.note||'',/생년월일/);
+  const a=calculateAuspiciousStars({profile:asProfile,targetYear:2030});
+  const b=calculateAuspiciousStars({profile:asProfile,targetYear:2030});
+  assert.deepEqual(a.nobleMatrix,b.nobleMatrix);assert.deepEqual(a.timing&&a.timing.upcomingYears,b.timing&&b.timing.upcomingYears);
+});

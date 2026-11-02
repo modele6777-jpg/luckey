@@ -33,6 +33,7 @@ import { calculateVitalityCurve, formatVitalityCurvePrompt, type VitalityCurveRe
 import { calculateTojeong, formatTojeongPrompt, type TojeongResult } from './tojeongEngine';
 import { calculateKyusei, formatKyuseiPrompt, type KyuseiResult } from './kyuseiEngine';
 import { calculateSamjaeGyoUn, formatSamjaeGyoUnPrompt, type SamjaeGyoUnResult } from './samjaeGyoUnEngine';
+import { calculateAuspiciousStars, formatAuspiciousStarsPrompt, type AuspiciousStarsResult } from './auspiciousStarsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -86,6 +87,7 @@ export interface DeterministicEngineReport {
   tojeongResult?: TojeongResult | null;
   kyuseiResult?: KyuseiResult | null;
   samjaeGyoUnResult?: SamjaeGyoUnResult | null;
+  auspiciousStarsResult?: AuspiciousStarsResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -564,6 +566,16 @@ export function runDeterministicEngine(params: {
         }
       })()
     : null;
+  const auspiciousStarsResult = birthdateStr && profile
+    ? (() => {
+        try {
+          const res = calculateAuspiciousStars({ profile, targetYear: now.getFullYear() });
+          return res.status === 'calculated' ? res : null;
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -604,6 +616,7 @@ export function runDeterministicEngine(params: {
     tojeongResult,
     kyuseiResult,
     samjaeGyoUnResult,
+    auspiciousStarsResult,
     tools: toolsMap,
   };
 }
@@ -650,5 +663,6 @@ ${report.spatialFengshui ? '\n' + formatSpatialFengshuiPrompt(report.spatialFeng
 ${report.vitalityCurve ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) : ''}
 ${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}
 ${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}
-${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}`;
+${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}
+${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}`;
 }
