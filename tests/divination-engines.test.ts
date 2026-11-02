@@ -530,3 +530,47 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   assert(noProfileReport.twentyEightMansionsResult?.status === 'calculated'); // 프로필 없이도 일진 산출
 });
 
+import { calculateMahabote, formatMahabotePrompt, MAHABOTE_ENGINE_VERSION } from '../src/lib/divination/mahaboteEngine';
+
+test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu branching, determinism and prompt formatting', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r1 = calculateMahabote({ profile, targetYear: 2026 });
+  assert.equal(r1.status, 'calculated');
+  assert.equal(r1.engineVersion, MAHABOTE_ENGINE_VERSION);
+  assert.equal(r1.myanmarEra, 1357);
+  assert.equal(r1.remainder, 6);
+  assert.equal(r1.houses.length, 7);
+  assert(r1.rootHouse !== null);
+  assert(r1.houses.some((h) => h.isBirthRootHouse));
+  assert(r1.currentAgeTransit !== null);
+  assert(r1.remedies !== null);
+
+  // Determinism check
+  const r2 = calculateMahabote({ profile, targetYear: 2026 });
+  assert.deepEqual(r1, r2);
+
+  // Wednesday afternoon Rahu test (1995-03-22 was Wednesday)
+  const wedMorning = calculateMahabote({ profile: { basic: { birthdate: '1995-03-22', birthtime: '09:00' } } });
+  assert.equal(wedMorning.birthPlanet.planet, '수성(Mercury)');
+  const wedAfternoon = calculateMahabote({ profile: { basic: { birthdate: '1995-03-22', birthtime: '15:00' } } });
+  assert.equal(wedAfternoon.birthPlanet.planet, '라후(Rahu)');
+
+  // Prompt formatting
+  const prompt = formatMahabotePrompt(r1);
+  assert(prompt.includes('LUCKEY-MB-v1.0.0'));
+  assert(prompt.includes('마하보테'));
+  assert(prompt.includes('본명궁'));
+
+  // Skipped without birthdate
+  const skipped = calculateMahabote({ profile: null });
+  assert.equal(skipped.status, 'skipped');
+  assert.equal(formatMahabotePrompt(skipped), '[마하보테: 사용자 생년월일이 입력되지 않아 마하보테 7궁 명반 계산을 건너뜁니다.]');
+
+  // Integration in runDeterministicEngine
+  const report = runDeterministicEngine({ profile, question: '내 인생 본명궁과 마하보테 운세' });
+  assert(report.mahaboteResult !== null && report.mahaboteResult !== undefined);
+  assert.equal(report.mahaboteResult?.status, 'calculated');
+  assert.equal(report.tools.mahabote.status, 'calculated');
+});
+
+
