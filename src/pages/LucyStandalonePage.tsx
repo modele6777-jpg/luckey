@@ -3586,6 +3586,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onFocus={() => {
+                  setTimeout(() => {
+                    if (messagesContainerRef.current) {
+                      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+                    }
+                  }, 80);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Tab' && !input && currentGhostPromptRef.current) {
                     e.preventDefault();

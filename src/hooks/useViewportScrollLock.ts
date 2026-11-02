@@ -97,47 +97,48 @@ export function useViewportScrollLock() {
       const visualTop = visual ? Math.max(0, Math.round(visual.offsetTop)) : 0;
       const visualLeft = visual ? Math.max(0, Math.round(visual.offsetLeft)) : 0;
 
+      const oriented = getOrientedScreenSize();
       // 가상 키보드가 실제로 올라와 있는지 정밀 판별:
-      // 1. 활성 입력창(input/textarea/contenteditable)이 실제로 포커스되어 있어야 함
-      // 2. visualViewport 높이가 layout viewport(innerHeight)보다 키보드 높이(최소 100px 이상)만큼 확연히 작아야 함
-      const hasKeyboard = isInputActive() && visual != null && (innerH - visualH > 100);
+      // 1. 활성 입력창(input/textarea/contenteditable)이 포커스되어 있고 visualH가 화면 높이보다 100px 이상 작을 때 (PWA standalone 대응)
+      // 2. 또는 visualViewport 높이가 innerHeight보다 100px 이상 작을 때 (Safari 브라우저 대응)
+      const hasKeyboard =
+        (isInputActive() && visual != null && visualH < oriented.height - 100) ||
+        (visual != null && innerH - visualH > 100);
 
       if (hasKeyboard) {
         document.documentElement.classList.add('keyboard-open');
         if (document.body) document.body.classList.add('keyboard-open');
 
-        // 키보드가 활성화된 상태: 키보드 위 가시 영역에 맞춤
+        // 키보드가 활성화된 상태: 키보드 위 가시 영역에 100% 맞춤 (top은 항상 0px 고정)
         const keyboardSafeHeight = Math.round(visualH);
-        // WebKit 뷰포트 오프셋 동기화: visualViewport.offsetTop과 window.scrollY를 모두 합산하여
-        // WebKit의 윈도우 스크롤과 visualViewport 패닝 양쪽을 오차 0px로 완벽 보정
-        const effectiveTop = Math.round((visual?.offsetTop || 0) + (window.scrollY || 0));
-        const effectiveLeft = Math.round((visual?.offsetLeft || 0) + (window.scrollX || 0));
 
-        document.documentElement.style.setProperty('--vv-top', `${effectiveTop}px`);
-        document.documentElement.style.setProperty('--vv-left', `${effectiveLeft}px`);
+        document.documentElement.style.setProperty('--vv-top', '0px');
+        document.documentElement.style.setProperty('--vv-left', '0px');
         document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--vvh', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--visual-vh', `${keyboardSafeHeight}px`);
-        document.documentElement.style.height = '100%';
-        document.documentElement.style.minHeight = '100%';
+        document.documentElement.style.height = `${keyboardSafeHeight}px`;
+        document.documentElement.style.minHeight = `${keyboardSafeHeight}px`;
         if (document.body) {
-          document.body.style.height = '100%';
-          document.body.style.minHeight = '100%';
+          document.body.style.height = `${keyboardSafeHeight}px`;
+          document.body.style.minHeight = `${keyboardSafeHeight}px`;
         }
         const root = document.getElementById('root');
         if (root) {
           root.style.position = 'fixed';
-          root.style.top = `${effectiveTop}px`;
-          root.style.left = `${effectiveLeft}px`;
+          root.style.top = '0px';
+          root.style.left = '0px';
           root.style.right = '0px';
           root.style.height = `${keyboardSafeHeight}px`;
           root.style.minHeight = `${keyboardSafeHeight}px`;
+          root.style.maxHeight = `${keyboardSafeHeight}px`;
         }
         // CSS min-height(100lvh)로 인해 키보드 위 가시 영역으로 축소가 막히지 않도록 셸도 함께 해제
         const shell = root?.querySelector<HTMLElement>('.prism-app-shell') || null;
         if (shell) {
-          shell.style.height = '100%';
+          shell.style.height = `${keyboardSafeHeight}px`;
           shell.style.minHeight = '0px';
+          shell.style.maxHeight = `${keyboardSafeHeight}px`;
         }
       } else {
         document.documentElement.classList.remove('keyboard-open');
@@ -151,7 +152,6 @@ export function useViewportScrollLock() {
             shell.style.minHeight = '';
           }
         };
-        const oriented = getOrientedScreenSize();
         const isCandidate = isIosOrTablet() || isStandaloneMode();
         const shortfall = oriented.height - innerH;
 
@@ -218,7 +218,10 @@ export function useViewportScrollLock() {
     };
 
     const handleFocusIn = (e: FocusEvent) => {
-      // 포커스 진입 시 인위적인 window.scrollTo나 레이아웃 흔들림을 막아 키보드가 튕겨 닫히는 현상 원천 차단
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        scheduleSync([0, 50, 100, 200, 350, 500]);
+      }
     };
 
     const handleFocusOut = (e: FocusEvent) => {

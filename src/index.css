@@ -383,6 +383,28 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* 🌟 가상 키보드 활성화 시 #root와 .prism-app-shell을 키보드 위 가시 영역에 100% 강제 고정하여 입력창 밀림 원천 방지 */
+  html.keyboard-open #root,
+  body.keyboard-open #root {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    height: var(--app-height, 100%) !important;
+    min-height: 0 !important;
+    max-height: var(--app-height, 100%) !important;
+    overflow: hidden !important;
+  }
+
+  html.keyboard-open .prism-app-shell,
+  body.keyboard-open .prism-app-shell {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+
   /* iOS Safari GPU-accelerated smooth scrolling for active scroll roots */
   [data-app-scroll-root],
   .overflow-y-auto {
