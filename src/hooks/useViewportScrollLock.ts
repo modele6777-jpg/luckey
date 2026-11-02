@@ -109,31 +109,35 @@ export function useViewportScrollLock() {
         document.documentElement.classList.add('keyboard-open');
         if (document.body) document.body.classList.add('keyboard-open');
 
-        // 키보드가 활성화된 상태: 키보드 위 가시 영역에 100% 맞춤 (top은 항상 0px 고정)
+        // iOS는 키보드가 열릴 때 visualViewport를 위로 패닝(offsetTop)한다.
+        // 여기서 html/body 높이까지 줄이면 그 패닝과 겹쳐 화면이 키보드보다 더 위로 올라간다.
+        // 문서 높이는 그대로 두고, #root만 지금 보이는 사각형(offset + visual height)에 붙인다.
         const keyboardSafeHeight = Math.round(visualH);
 
-        document.documentElement.style.setProperty('--vv-top', '0px');
-        document.documentElement.style.setProperty('--vv-left', '0px');
+        document.documentElement.style.removeProperty('height');
+        document.documentElement.style.removeProperty('min-height');
+        if (document.body) {
+          document.body.style.removeProperty('height');
+          document.body.style.removeProperty('min-height');
+        }
+
+        document.documentElement.style.setProperty('--vv-top', `${visualTop}px`);
+        document.documentElement.style.setProperty('--vv-left', `${visualLeft}px`);
         document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--vvh', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--visual-vh', `${keyboardSafeHeight}px`);
-        document.documentElement.style.height = `${keyboardSafeHeight}px`;
-        document.documentElement.style.minHeight = `${keyboardSafeHeight}px`;
-        if (document.body) {
-          document.body.style.height = `${keyboardSafeHeight}px`;
-          document.body.style.minHeight = `${keyboardSafeHeight}px`;
-        }
+
         const root = document.getElementById('root');
         if (root) {
-          root.style.position = 'fixed';
-          root.style.top = '0px';
-          root.style.left = '0px';
-          root.style.right = '0px';
-          root.style.height = `${keyboardSafeHeight}px`;
-          root.style.minHeight = `${keyboardSafeHeight}px`;
-          root.style.maxHeight = `${keyboardSafeHeight}px`;
+          root.style.setProperty('position', 'fixed', 'important');
+          root.style.setProperty('top', `${visualTop}px`, 'important');
+          root.style.setProperty('left', `${visualLeft}px`, 'important');
+          root.style.setProperty('right', 'auto', 'important');
+          root.style.setProperty('width', '100%', 'important');
+          root.style.setProperty('height', `${keyboardSafeHeight}px`, 'important');
+          root.style.setProperty('min-height', '0px', 'important');
+          root.style.setProperty('max-height', `${keyboardSafeHeight}px`, 'important');
         }
-        // CSS min-height(100lvh)로 인해 키보드 위 가시 영역으로 축소가 막히지 않도록 셸도 함께 해제
         const shell = root?.querySelector<HTMLElement>('.prism-app-shell') || null;
         if (shell) {
           shell.style.height = `${keyboardSafeHeight}px`;
@@ -150,8 +154,20 @@ export function useViewportScrollLock() {
           if (shell) {
             shell.style.height = '';
             shell.style.minHeight = '';
+            shell.style.maxHeight = '';
           }
         };
+        const rootEl = document.getElementById('root');
+        if (rootEl) {
+          rootEl.style.removeProperty('position');
+          rootEl.style.removeProperty('top');
+          rootEl.style.removeProperty('left');
+          rootEl.style.removeProperty('right');
+          rootEl.style.removeProperty('width');
+          rootEl.style.removeProperty('height');
+          rootEl.style.removeProperty('min-height');
+          rootEl.style.removeProperty('max-height');
+        }
         const isCandidate = isIosOrTablet() || isStandaloneMode();
         const shortfall = oriented.height - innerH;
 

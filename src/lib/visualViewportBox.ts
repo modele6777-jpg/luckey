@@ -353,6 +353,14 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
   const snapshot = readViewportSnapshot(win);
+  const visualHeight = snapshot.visual?.height ?? 0;
+  const innerHeight = snapshot.innerHeight;
+  // 키보드가 열린 동안 --vv-top / --app-height는 useViewportScrollLock이 소유한다.
+  // 여기서 offsetTop을 0으로 덮어쓰면 셸이 레이아웃 맨 위에 고정되어 화면이 과도하게 올라간다.
+  if (visualHeight > 0 && innerHeight - visualHeight > 100) {
+    applySafeAreaVars(document);
+    return null;
+  }
   const box = resolveViewportBox(snapshot, { fillLayoutGap: fillArmed() || Boolean(snapshot.iosStandalone) });
   if (!box) return null;
   applyVisualViewportBox(box, document.documentElement, snapshot);
