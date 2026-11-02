@@ -36,6 +36,7 @@ import { calculateSamjaeGyoUn, formatSamjaeGyoUnPrompt, type SamjaeGyoUnResult }
 import { calculateAuspiciousStars, formatAuspiciousStarsPrompt, type AuspiciousStarsResult } from './auspiciousStarsEngine';
 import { calculateTaiyi, formatTaiyiPrompt, type TaiyiResult, TAIYI_ENGINE_VERSION, TAIYI_METHOD } from './taiyiEngine';
 import { calculateGeokguk, formatGeokgukPrompt, type GeokgukResult } from './geokgukEngine';
+import { calculateTwentyEightMansions, formatTwentyEightMansionsPrompt, type TwentyEightMansionsResult } from './twentyEightMansionsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -92,6 +93,7 @@ export interface DeterministicEngineReport {
   auspiciousStarsResult?: AuspiciousStarsResult | null;
   taiyiResult?: TaiyiResult | null;
   geokgukResult?: GeokgukResult | null;
+  twentyEightMansionsResult?: TwentyEightMansionsResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -613,6 +615,14 @@ export function runDeterministicEngine(params: {
         }
       })()
     : null;
+  // 17. 천상열차분야지도 28수 일진·택일 엔진 (생년월일 무관 당일 일진 기준)
+  const twentyEightMansionsResult = (() => {
+    try {
+      return calculateTwentyEightMansions({ targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -656,6 +666,7 @@ export function runDeterministicEngine(params: {
     auspiciousStarsResult,
     taiyiResult,
     geokgukResult,
+    twentyEightMansionsResult,
     tools: toolsMap,
   };
 }
@@ -705,5 +716,6 @@ ${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}
 ${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}
 ${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}
 ${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}
-${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}`;
+${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}
+${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}`;
 }
