@@ -37,6 +37,7 @@ import { calculateAuspiciousStars, formatAuspiciousStarsPrompt, type AuspiciousS
 import { calculateTaiyi, formatTaiyiPrompt, type TaiyiResult, TAIYI_ENGINE_VERSION, TAIYI_METHOD } from './taiyiEngine';
 import { calculateGeokguk, formatGeokgukPrompt, type GeokgukResult } from './geokgukEngine';
 import { calculateTwentyEightMansions, formatTwentyEightMansionsPrompt, type TwentyEightMansionsResult } from './twentyEightMansionsEngine';
+import { calculateMahabote, formatMahabotePrompt, type MahaboteResult, MAHABOTE_ENGINE_VERSION, MAHABOTE_METHOD } from './mahaboteEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -94,6 +95,7 @@ export interface DeterministicEngineReport {
   taiyiResult?: TaiyiResult | null;
   geokgukResult?: GeokgukResult | null;
   twentyEightMansionsResult?: TwentyEightMansionsResult | null;
+  mahaboteResult?: MahaboteResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -320,29 +322,34 @@ export function runDeterministicEngine(params: {
     vedicEnvelope = { toolId: 'vedic', toolKoName: '베딕 점성술', status: 'partial', note: err?.message || '베딕 정밀 계산 요건 미충족' };
   }
 
-  // 6. 마하보테 (미얀마 8요일 점성술)
-  let mahaboteEnvelope: ToolCalculationEnvelope<unknown>;
-  if (birthdateStr) {
-    let animal = MAHABOTE_ANIMALS[dayOfWeek];
-    if (dayOfWeek === 3) {
-      animal = !parsedBirthTime
-        ? '수요일 오전/오후 구분 필요(생시 미입력)'
-        : parsedBirthTime.hour < 12
-        ? '수요일 오전·수성·엄니 코끼리'
-        : '수요일 오후·라후·엄니 없는 코끼리';
+  // 6. 마하보테 (미얀마 7궁 명반 및 8요일 성좌 엔진)
+  let mahaboteEnvelope: ToolCalculationEnvelope<MahaboteResult>;
+  let mahaboteResult: MahaboteResult | null = null;
+  try {
+    mahaboteResult = calculateMahabote({ profile, targetYear: now.getFullYear() });
+    if (mahaboteResult.status === 'calculated') {
+      mahaboteEnvelope = {
+        toolId: 'mahabote',
+        toolKoName: '마하보테',
+        status: 'calculated',
+        method: MAHABOTE_METHOD,
+        data: mahaboteResult,
+      };
+    } else {
+      mahaboteEnvelope = {
+        toolId: 'mahabote',
+        toolKoName: '마하보테',
+        status: 'skipped',
+        note: mahaboteResult.note || '생년월일 미입력',
+      };
     }
+  } catch (err: any) {
     mahaboteEnvelope = {
       toolId: 'mahabote',
       toolKoName: '마하보테',
-      status: 'calculated',
-      method: '미얀마 8요일 역법 기준 요일 수호 동물 및 행성 에너지 매핑',
-      data: {
-        weekday: KOR_WEEKDAYS[dayOfWeek],
-        animalSymbol: animal
-      }
+      status: 'error',
+      note: err?.message || '마하보테 7궁 명반 산출 실패',
     };
-  } else {
-    mahaboteEnvelope = { toolId: 'mahabote', toolKoName: '마하보테', status: 'skipped', note: '생년월일 미입력' };
   }
 
   // 7. 구성학 (九星氣學 - 입춘 본명성·월명성·일성과 9궁 연·월·일반 포국, 길흉방위)
@@ -667,6 +674,7 @@ export function runDeterministicEngine(params: {
     taiyiResult,
     geokgukResult,
     twentyEightMansionsResult,
+    mahaboteResult,
     tools: toolsMap,
   };
 }
@@ -717,5 +725,6 @@ ${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnRe
 ${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}
 ${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}
 ${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}
-${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}`;
+${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}
+${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}`;
 }
