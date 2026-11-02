@@ -19,6 +19,9 @@ import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, PYTHAG
 import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, ASTRO_DECAN_SABIAN_VERSION } from '../src/lib/divination/astrologicalDecanSabianEngine';
 import { calculateMedicalBioMatrix, formatMedicalBioMatrixPrompt, MEDICAL_BIO_MATRIX_VERSION } from '../src/lib/divination/medicalBioMatrixEngine';
 import { calculateWealthPipeline, formatWealthPipelinePrompt, WEALTH_PIPELINE_VERSION } from '../src/lib/divination/wealthPipelineEngine';
+import { calculateKarmicNodes, formatKarmicNodesPrompt, KARMIC_NODES_ENGINE_VERSION } from '../src/lib/divination/karmicNodesEngine';
+import { calculateMentalResilience, formatMentalResiliencePrompt, MENTAL_RESILIENCE_VERSION } from '../src/lib/divination/mentalResilienceEngine';
+import { calculateNobleNetwork, formatNobleNetworkPrompt, NOBLE_NETWORK_VERSION } from '../src/lib/divination/nobleNetworkEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1665,6 +1668,47 @@ test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 �
   assert(prompt.includes('골든 윈도우'));
 });
 
+test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증', () => {
+  const res = calculateKarmicNodes({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, KARMIC_NODES_ENGINE_VERSION);
+  assert(res.nodeAxis.northSign.length > 0);
+  assert(res.nodeAxis.soulQuest.length > 0);
+  assert(res.evolutionReadinessScore >= 0 && res.evolutionReadinessScore <= 100);
+  assert(res.chiron.healerGift.length > 0);
+  assert(res.lilith.rawPower.length > 0);
+  const prompt = formatKarmicNodesPrompt(res);
+  assert(prompt.includes(KARMIC_NODES_ENGINE_VERSION));
+  assert(prompt.includes('카르믹 노드 축'));
+  assert(prompt.includes('키론'));
+});
+
+test('Mental Resilience Engine: 위기 돌파 슈퍼파워 및 주역 난괘 탈출 검증', () => {
+  const res = calculateMentalResilience({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, MENTAL_RESILIENCE_VERSION);
+  assert(res.resilienceScore >= 0 && res.resilienceScore <= 100);
+  assert(res.primaryBreakthroughPower.breakthroughGift.length > 0);
+  assert(res.hexagramWisdom.escapeRoute.length > 0);
+  assert(res.mentalShield.step1Detachment.length > 0);
+  const prompt = formatMentalResiliencePrompt(res);
+  assert(prompt.includes(MENTAL_RESILIENCE_VERSION));
+  assert(prompt.includes('위기 돌파 슈퍼파워'));
+  assert(prompt.includes('멘탈 쉴드'));
+});
+
+test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증', () => {
+  const res = calculateNobleNetwork({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, NOBLE_NETWORK_VERSION);
+  assert(['catalyst', 'anchor', 'amplifier'].includes(res.primaryArchetype.type));
+  assert(res.networkSynergyScore >= 0 && res.networkSynergyScore <= 100);
+  assert(res.synergyZodiacAnimals.sixHarmony.length > 0);
+  assert(res.synergyZodiacAnimals.tripleHarmony.length > 0);
+  assert(res.nobleStars.heavenlyNoble.beneficialAnimals.length > 0);
+  const prompt = formatNobleNetworkPrompt(res);
+  assert(prompt.includes(NOBLE_NETWORK_VERSION));
+  assert(prompt.includes('1순위 귀인 아키타입'));
+  assert(prompt.includes('천을귀인'));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1677,6 +1721,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.astrologicalDecanSabianResult !== null && report.astrologicalDecanSabianResult !== undefined);
   assert(report.medicalBioMatrixResult !== null && report.medicalBioMatrixResult !== undefined);
   assert(report.wealthPipelineResult !== null && report.wealthPipelineResult !== undefined);
+  assert(report.karmicNodesResult !== null && report.karmicNodesResult !== undefined);
+  assert(report.mentalResilienceResult !== null && report.mentalResilienceResult !== undefined);
+  assert(report.nobleNetworkResult !== null && report.nobleNetworkResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1691,4 +1738,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(ASTRO_DECAN_SABIAN_VERSION));
   assert(enginePrompt.includes(MEDICAL_BIO_MATRIX_VERSION));
   assert(enginePrompt.includes(WEALTH_PIPELINE_VERSION));
+  assert(enginePrompt.includes(KARMIC_NODES_ENGINE_VERSION));
+  assert(enginePrompt.includes(MENTAL_RESILIENCE_VERSION));
+  assert(enginePrompt.includes(NOBLE_NETWORK_VERSION));
 });
