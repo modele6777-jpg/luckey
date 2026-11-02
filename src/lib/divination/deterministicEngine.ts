@@ -811,7 +811,7 @@ export function runDeterministicEngine(params: {
   const karmicNodesResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateKarmicNodes({ profile, saju, natalChart, targetDate: now });
+          return calculateKarmicNodes({ profile, targetDate: now });
         } catch (_) {
           return null;
         }
@@ -822,7 +822,7 @@ export function runDeterministicEngine(params: {
   const mentalResilienceResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateMentalResilience({ profile, saju, targetDate: now });
+          return calculateMentalResilience({ profile, targetDate: now });
         } catch (_) {
           return null;
         }
@@ -833,7 +833,7 @@ export function runDeterministicEngine(params: {
   const nobleNetworkResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateNobleNetwork({ profile, saju, targetDate: now });
+          return calculateNobleNetwork({ profile, targetDate: now });
         } catch (_) {
           return null;
         }
