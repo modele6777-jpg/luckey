@@ -294,7 +294,7 @@ test('Auspicious stars: resonance detects when the partner holds my noble branch
 });
 
 import { calculateTaiyi, formatTaiyiPrompt, TAIYI_ENGINE_VERSION } from '../src/lib/divination/taiyiEngine';
-import { runDeterministicEngine } from '../src/lib/divination/deterministicEngine';
+import { runDeterministicEngine, formatDeterministicEnginePrompt } from '../src/lib/divination/deterministicEngine';
 
 test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt formatting', () => {
   const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
@@ -1380,4 +1380,119 @@ test('Hongguk Qimen engine binds into the deterministic engine report and prompt
   // 프로필 없이도 4주 수리는 skipped, 도구 상태는 점시 포국으로 calculated 유지
   const noProfile = runDeterministicEngine({ profile: null, question: '홍국기문으로 내 판세를 봐줘' });
   assert(noProfile.honggukQimenResult?.status === 'skipped');
+});
+
+// ─── 5대 운명학 융합 궁합 마스터 엔진 (LUCKEY-CS-v1.0.0) ───
+import { calculateDeterministicCompatibility, formatCompatibilityPrompt, COMPATIBILITY_ENGINE_VERSION } from '../src/lib/divination/deterministicCompatibility';
+import { CHEON_EUL_MAP } from '../src/lib/divination/auspiciousStarsEngine';
+import { calculateDetailedSaju } from '../src/lib/sajuAnalysis';
+import { buildChatDivinationContext } from '../src/lib/divination/chatContext';
+
+const csA = { basic: { birthdate: '1990-05-15', birthtime: '10:30', gender: 'male' as const, birthCity: '서울', name: '민준' } };
+const csB = { basic: { birthdate: '1992-11-03', birthtime: '14:00', gender: 'female' as const, birthCity: '서울', name: '서연' } };
+const GRADES = ['천생연분', '상생길연', '화합동반', '보완노력', '자극성장'] as const;
+const SUKUYO_TYPES = ['영친', '안괴', '우쇠', '성위', '업태', '명'] as const;
+
+test('Unified Synastry: 5대 융합 궁합(천간합·천을귀인·숙요·점성술·3대 영역)이 전 차원 정상 산출된다', () => {
+  const r = calculateDeterministicCompatibility(csA, csB);
+  assert.equal(r.engineVersion, 'LUCKEY-CS-v1.0.0');
+  assert.equal(r.engineVersion, COMPATIBILITY_ENGINE_VERSION);
+  assert(Number.isInteger(r.score) && r.score >= 0 && r.score <= 100);
+  assert(GRADES.includes(r.grade));
+  // 1) 사주 원국 결합
+  assert(r.saju.personA.dayMaster.length > 0 && r.saju.personA.dayBranch.length > 0);
+  assert(r.saju.personB.dayMaster.length > 0 && r.saju.personB.dayBranch.length > 0);
+  assert(r.saju.stemRelation.name.length > 0 && r.saju.branchRelation.name.length > 0);
+  assert(r.saju.elementComplement.score >= 0 && r.saju.elementComplement.score <= 100);
+  assert(r.saju.combinedScore >= 0 && r.saju.combinedScore <= 100);
+  // 2) 천을귀인 매칭
+  assert(r.mutualNobleman.aNobleBranches.length > 0 && r.mutualNobleman.bNobleBranches.length > 0);
+  assert(r.mutualNobleman.score >= 0 && r.mutualNobleman.score <= 100);
+  // 3) 숙요 27숙
+  assert(SUKUYO_TYPES.includes(r.sukuyo.relationType));
+  if (r.sukuyo.compatibilityScore !== null) assert(r.sukuyo.compatibilityScore >= 0 && r.sukuyo.compatibilityScore <= 100);
+  assert(['근거리', '중거리', '원거리'].includes(r.sukuyo.distanceText));
+  // 4) 점성술 시나스트리
+  assert(['동원소', '상생', '갈등', '중립'].includes(r.astrology.elementRelation));
+  assert(r.astrology.sunAspect.name.length > 0 && r.astrology.moonAspect.name.length > 0);
+  assert(r.astrology.combinedScore >= 0 && r.astrology.combinedScore <= 100);
+  // 5) 3대 영역 처방
+  for (const d of [r.dimensions.romantic, r.dimensions.business, r.dimensions.friendship]) {
+    assert(d.score >= 0 && d.score <= 100);
+    assert(d.headline.length > 0 && d.detail.length > 0);
+  }
+  // 가중 브레이크다운
+  for (const v of Object.values(r.breakdown)) assert(v >= 0 && v <= 100);
+});
+
+test('Unified Synastry: 천을귀인 상호 인연 성립 케이스 (庚辰×癸未) 원국 대조 픽스처', () => {
+  const r = calculateDeterministicCompatibility(csA, csB);
+  // 고전 천을귀인 규칙 대조: 庚→丑未, 癸→巳卯
+  assert(CHEON_EUL_MAP['庚']!.includes('未'));
+  assert(CHEON_EUL_MAP['癸']!.includes('巳'));
+  const sajuA = calculateDetailedSaju(csA);
+  const sajuB = calculateDetailedSaju(csB);
+  const zhiOf = (s: ReturnType<typeof calculateDetailedSaju>) =>
+    ['year', 'month', 'day', 'hour'].map((k) => (s!.pillars as any)[k]?.zhi).filter(Boolean);
+  // A의 귀인 글자(未)가 B의 4주에, B의 귀인 글자(巳)가 A의 4주에 존재
+  assert(zhiOf(sajuB).includes('未'));
+  assert(zhiOf(sajuA).includes('巳'));
+  assert(r.mutualNobleman.mutual === true);
+  assert(r.mutualNobleman.aIsBNoble === true && r.mutualNobleman.bIsANoble === true);
+  assert(r.mutualNobleman.score === 100);
+  assert(r.mutualNobleman.aNobleInB.some((s) => s.startsWith('未')));
+  assert(r.mutualNobleman.bNobleInA.some((s) => s.startsWith('巳')));
+  // 대칭성: 인자 순서를 바꾸면 상호 귀인 판정은 동일해야 한다
+  const rev = calculateDeterministicCompatibility(csB, csA);
+  assert.equal(rev.mutualNobleman.mutual, true);
+});
+
+test('Unified Synastry: 태양 트라인 판정과 27숙 호환 지수·종합 점수 0~100 범위', () => {
+  // 게자리×전갈자리(물 원소 동일 원소군) 120° 트라인 픽스처
+  const tri = calculateDeterministicCompatibility(
+    { basic: { birthdate: '1996-07-08', birthtime: '06:00', gender: 'male' as const, birthCity: '서울', name: '지훈' } },
+    { basic: { birthdate: '1991-11-11', birthtime: '03:00', gender: 'female' as const, birthCity: '서울', name: '하은' } }
+  );
+  assert(tri.astrology.sunAspect.name.includes('트라인'));
+  assert(tri.astrology.sunAspect.angle === 120);
+  assert(tri.astrology.sunA === '게자리' && tri.astrology.sunB === '전갈자리');
+  assert(tri.score >= 0 && tri.score <= 100);
+  if (tri.sukuyo.compatibilityScore !== null) assert(tri.sukuyo.compatibilityScore >= 0 && tri.sukuyo.compatibilityScore <= 100);
+  // 스퀘어(긴장) 픽스처: 양자리×게자리 90° 근방
+  const sq = calculateDeterministicCompatibility(
+    { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'female' as const, birthCity: '서울', name: '수아' } },
+    { basic: { birthdate: '1996-07-08', birthtime: '06:00', gender: 'male' as const, birthCity: '서울', name: '지훈' } }
+  );
+  assert(sq.astrology.moonAspect.name.includes('스퀘어') || sq.astrology.sunAspect.name.includes('스퀘어'));
+});
+
+test('chatContext: 미구현 안내 문구가 프롬프트에서 완전히 제거되고 15대 운명학 정합 문구로 교정됐다', () => {
+  const now = new Date('2026-11-02T08:00:00Z');
+  const r = buildChatDivinationContext({ text: '주역으로 이직운 봐줘', selected: ['iching', 'liuren', 'qimen'], now });
+  assert(r.prompt.length > 0);
+  assert(!r.prompt.includes('미구현'));
+  assert(r.prompt.includes('15대 운명학 도구의 계산된 결과'));
+  assert(r.prompt.includes('추정 금지'));
+  assert(r.prompt.includes('난수 동전법 작괘 존중'));
+});
+
+test('Unified Synastry: 결정론성(동일 입력 동일 출력)과 프롬프트 포맷터·결정론 엔진 바인딩', () => {
+  const r1 = calculateDeterministicCompatibility(csA, csB);
+  const r2 = calculateDeterministicCompatibility(csA, csB);
+  assert.equal(JSON.stringify(r1), JSON.stringify(r2));
+  const prompt = formatCompatibilityPrompt(r1);
+  assert(prompt.includes('LUCKEY-CS-v1.0.0'));
+  assert(prompt.includes('천을귀인'));
+  assert(prompt.includes(`${r1.score}점`));
+  assert(prompt.includes('연인·결혼') && prompt.includes('비즈니스·파트너십') && prompt.includes('소울메이트·우정'));
+  // 결정론 엔진 바인딩: partnerProfile이 있을 때 compatibilityResult 바인딩 + 포맷터 연결
+  const report = runDeterministicEngine({ profile: csA, partnerProfile: csB, question: '우리 궁합 봐줘' });
+  assert(report.compatibilityResult !== null && report.compatibilityResult !== undefined);
+  assert.equal(report.compatibilityResult!.engineVersion, 'LUCKEY-CS-v1.0.0');
+  const enginePrompt = formatDeterministicEnginePrompt(report);
+  assert(enginePrompt.includes('LUCKEY-CS-v1.0.0'));
+  assert(enginePrompt.includes('5대 운명학 융합 궁합 리포트'));
+  // partnerProfile이 없으면 미바인딩
+  const solo = runDeterministicEngine({ profile: csA, question: '내 운세 봐줘' });
+  assert(!solo.compatibilityResult);
 });
