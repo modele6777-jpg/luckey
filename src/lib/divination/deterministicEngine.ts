@@ -57,6 +57,9 @@ import { calculateWealthPipeline, formatWealthPipelinePrompt, type WealthPipelin
 import { calculateKarmicNodes, formatKarmicNodesPrompt, type KarmicNodesResult } from './karmicNodesEngine';
 import { calculateMentalResilience, formatMentalResiliencePrompt, type MentalResilienceResult } from './mentalResilienceEngine';
 import { calculateNobleNetwork, formatNobleNetworkPrompt, type NobleNetworkResult } from './nobleNetworkEngine';
+import { calculateVoicePersona, formatVoicePersonaPrompt, type VoicePersonaResult } from './voicePersonaEngine';
+import { calculateContractShield, formatContractShieldPrompt, type ContractShieldResult } from './contractShieldEngine';
+import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, type LifeDomainWheelResult } from './lifeDomainWheelEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -134,6 +137,9 @@ export interface DeterministicEngineReport {
   karmicNodesResult?: KarmicNodesResult | null;
   mentalResilienceResult?: MentalResilienceResult | null;
   nobleNetworkResult?: NobleNetworkResult | null;
+  voicePersonaResult?: VoicePersonaResult | null;
+  contractShieldResult?: ContractShieldResult | null;
+  lifeDomainWheelResult?: LifeDomainWheelResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -840,6 +846,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 29. 스피치 & 커뮤니케이션 페르소나 엔진
+  const voicePersonaResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateVoicePersona({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 30. 계약·분쟁 방어 & 관재구설 쉴드 엔진
+  const contractShieldResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateContractShield({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 31. 라이프 12궁 밸런스 휠 엔진
+  const lifeDomainWheelResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateLifeDomainWheel({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -903,6 +942,9 @@ export function runDeterministicEngine(params: {
     karmicNodesResult,
     mentalResilienceResult,
     nobleNetworkResult,
+    voicePersonaResult,
+    contractShieldResult,
+    lifeDomainWheelResult,
     tools: toolsMap,
   };
 }
@@ -973,5 +1015,8 @@ ${report.medicalBioMatrixResult ? '\n' + formatMedicalBioMatrixPrompt(report.med
 ${report.wealthPipelineResult ? '\n' + formatWealthPipelinePrompt(report.wealthPipelineResult) : ''}
 ${report.karmicNodesResult ? '\n' + formatKarmicNodesPrompt(report.karmicNodesResult) : ''}
 ${report.mentalResilienceResult ? '\n' + formatMentalResiliencePrompt(report.mentalResilienceResult) : ''}
-${report.nobleNetworkResult ? '\n' + formatNobleNetworkPrompt(report.nobleNetworkResult) : ''}`;
+${report.nobleNetworkResult ? '\n' + formatNobleNetworkPrompt(report.nobleNetworkResult) : ''}
+${report.voicePersonaResult ? '\n' + formatVoicePersonaPrompt(report.voicePersonaResult) : ''}
+${report.contractShieldResult ? '\n' + formatContractShieldPrompt(report.contractShieldResult) : ''}
+${report.lifeDomainWheelResult ? '\n' + formatLifeDomainWheelPrompt(report.lifeDomainWheelResult) : ''}`;
 }
