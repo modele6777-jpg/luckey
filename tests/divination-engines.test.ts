@@ -6,6 +6,7 @@ import { calculateLiuren, calculateQimen, eventInstant } from '../src/lib/divina
 import { getLiuRenByYueJiang } from 'liuren-ts-lib';
 import { SearchSunLongitude } from 'astronomy-engine';
 import { buildUserFifteenToolsDigest } from '../src/lib/fifteenDivinationTools';
+import { calculateTojeong, formatTojeongPrompt } from '../src/lib/divination/tojeongEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -94,4 +95,32 @@ test('chat receives actual birth outputs and no fake event casting',()=>{
 test('Qimen refuses minute-level results after a solar-term transition within the hour',()=>{
   const t=SearchSunLongitude(315,new Date('2026-02-01T00:00:00Z'),10)!.date;
   assert.throws(()=>calculateQimen(new Date(t.getTime()+120000)),/분 단위/);
+});
+
+test('Tojeong reference example: lunar 1990-05-20 birth viewed in 丙午 2026 casts 551 with taese 16, wolgeon 18, iljin 17',()=>{
+  const r=calculateTojeong({profile:{basic:{birthdate:'1990-05-20',lunarSolar:'lunar' as const}},targetYear:2026});
+  assert.equal(r.status,'calculated');
+  assert.equal(r.targetYearGanZhi,'병오');assert.equal(r.taeseCount,16);
+  assert.equal(r.birthMonthGanZhi,'갑오');assert.equal(r.wolgeonCount,18);assert.equal(r.birthMonthLength,29);
+  assert.equal(r.birthdayGanZhi,'기묘');assert.equal(r.iljinCount,17);
+  assert.equal(r.ageKorean,37);
+  assert.equal(r.upperGua,5);assert.equal(r.middleGua,5);assert.equal(r.lowerGua,1);
+  assert.equal(r.hexagramCode,'551');assert.equal(r.hexagramName,'손위풍');
+  assert.equal(r.monthlyFortunes.length,12);
+  assert(r.monthlyFortunes.every(m=>m.fortune.length>10&&m.tip.length>5));
+  assert(formatTojeongPrompt(r).includes('551괘'));
+  const again=calculateTojeong({profile:{basic:{birthdate:'1990-05-20',lunarSolar:'lunar' as const}},targetYear:2026});
+  assert.equal(again.hexagramCode,r.hexagramCode);assert.equal(again.annualSummary,r.annualSummary);
+});
+
+test('Tojeong converts solar births to lunar, clamps a 30th-day birthday missing in the target year, and skips without birthdate',()=>{
+  // 양력 2000-01-01 = 음력 1999-11-25, 2023 계묘년 → 세는나이 25·태세수 15·월건수 18(갑자월·작은달)·일진수 16(기사일)
+  const r=calculateTojeong({profile:{basic:{birthdate:'2000-01-01',lunarSolar:'solar' as const}},targetYear:2023});
+  assert.deepEqual(r.lunarBirth,{year:1999,month:11,day:25,isLeapMonth:false});
+  assert.equal(r.ageKorean,25);assert.equal(r.taeseCount,15);
+  assert.equal(r.birthMonthGanZhi,'갑자');assert.equal(r.wolgeonCount,18);assert.equal(r.birthMonthLength,29);
+  assert.equal(r.upperGua,8);assert.equal(r.middleGua,5);assert.equal(r.lowerGua,2);
+  assert.equal(r.hexagramCode,'852');assert.equal(r.hexagramName,'지풍승');
+  const skipped=calculateTojeong({profile:null,targetYear:2026});
+  assert.equal(skipped.status,'skipped');assert.match(skipped.note||'',/생년월일/);
 });
