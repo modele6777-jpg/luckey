@@ -1050,7 +1050,7 @@ test('Kabbalah engine binds into the deterministic engine report and prompt', ()
   const report = runDeterministicEngine({ profile, question: '내 카발라 생명나무 알려줘' });
   assert(report.kabbalahResult !== null && report.kabbalahResult !== undefined);
   assert.equal(report.kabbalahResult!.status, 'calculated');
-  assert.equal(report.kabbalahResult!.lifePathSephirah.name, '게부라');
+  assert.equal(report.kabbalahResult!.numerology!.lifePathSephirah.name, '게부라');
   assert.equal(report.tools.kabbalah.status, 'calculated'); // symbolic → calculated 승격
   const prompt = formatDeterministicEnginePrompt(report);
   assert(prompt.includes('LUCKEY-KB-v1.0.0'));
