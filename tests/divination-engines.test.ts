@@ -871,6 +871,209 @@ test('Vedic engine binds into the deterministic engine report and prompt', () =>
 });
 
 
+import { calculateThaiHorasat, formatThaiHorasatPrompt, THAI_HORASAT_ENGINE_VERSION, THAI_HORASAT_METHOD, THAI_DAY_PLANETS_8, THAI_THAATS_4, THAI_DASHA_ATTRIBUTES_8, MAHA_THAKSA_ORDER, MAHA_THAKSA_TOTAL_YEARS, buildMahaThaksaTimeline, birthDayPlanetId, thaiDayPlanetById, thaiPlanetRelation, decideThaiDashaAttribute, thaatByMonth, thaatById } from '../src/lib/divination/thaiHorasatEngine';
+
+test('Thai Horasat 8 planetary days: full guardian table and Wednesday day/night (Rahu) branching', () => {
+  assert.equal(THAI_DAY_PLANETS_8.length, 8);
+  const byId = (id: string) => thaiDayPlanetById(id as any);
+  // 정통 8요일 전수: 행성·연수·색상·영수·방위 고정
+  assert.equal(byId('sun').thaiName, '프라 아팃');
+  assert.equal(byId('sun').planet, '태양');
+  assert.deepEqual(byId('sun').colors, ['붉은색']);
+  assert.equal(byId('sun').animal, '가루다(Garuda · 황금 날개의 신조)');
+  assert.equal(byId('sun').direction, '북동');
+  assert.equal(byId('moon').cycleYears, 15);
+  assert.equal(byId('mars').planet, '화성');
+  assert.equal(byId('mercury').colors.join(','), '녹색');
+  assert.equal(byId('rahu').planet, '라후(암흑의 달)');
+  assert.deepEqual(byId('rahu').colors, ['검은색', '회색']);
+  assert.equal(byId('rahu').animal, '상아 없는 코끼리(Tuskless Elephant)');
+  assert.equal(byId('jupiter').cycleYears, 19);
+  assert.equal(byId('venus').cycleYears, 21);
+  assert.equal(byId('saturn').cycleYears, 10);
+  assert.equal(byId('saturn').animal, '나기·뱀(Nagi · 용왕의 여신)');
+  // 수요일 분기: 낮 06:00~17:59 수성, 밤 18:00~05:59 라후, 생시 없으면 주간 fallback
+  assert.equal(birthDayPlanetId(3, 6).id, 'mercury');
+  assert.equal(birthDayPlanetId(3, 17).id, 'mercury');
+  assert.equal(birthDayPlanetId(3, 18).id, 'rahu');
+  assert.equal(birthDayPlanetId(3, 0).id, 'rahu');
+  assert.equal(birthDayPlanetId(3, 5).id, 'rahu');
+  assert.equal(birthDayPlanetId(3, null).id, 'mercury');
+  assert.equal(birthDayPlanetId(3, null).usedFallback, true);
+  assert.equal(birthDayPlanetId(3, 14).usedFallback, false);
+  // 수요일 이외 요일은 생시와 무관하게 고정
+  for (const [wd, id] of [[0, 'sun'], [1, 'moon'], [2, 'mars'], [4, 'jupiter'], [5, 'venus'], [6, 'saturn']] as const) {
+    assert.equal(birthDayPlanetId(wd, null).id, id);
+    assert.equal(birthDayPlanetId(wd, 23).id, id);
+  }
+  assert.throws(() => birthDayPlanetId(7, null), RangeError);
+  assert.throws(() => birthDayPlanetId(-1, null), RangeError);
+});
+
+test('Maha Thaksa cycle: 8 lords sum to 108 years, birth-lord pivot rotation, current dasha and 8-attribute grading', () => {
+  // 6+15+8+17+10+19+12+21 = 108
+  assert.equal(MAHA_THAKSA_TOTAL_YEARS, 108);
+  assert.equal(MAHA_THAKSA_ORDER.reduce((s, p) => s + p.years, 0), 108);
+  assert.deepEqual(MAHA_THAKSA_ORDER.map((p) => p.id), ['sun', 'moon', 'mars', 'mercury', 'saturn', 'jupiter', 'rahu', 'venus']);
+  assert.deepEqual(MAHA_THAKSA_ORDER.map((p) => p.years), [6, 15, 8, 17, 10, 19, 12, 21]);
+
+  // 출생 행성 기점 순환: 월요일(달) 출생은 달로 시작해 태양으로 회귀
+  const moonTimeline = buildMahaThaksaTimeline('moon');
+  assert.deepEqual(moonTimeline.map((s) => s.planetId), ['moon', 'mars', 'mercury', 'saturn', 'jupiter', 'rahu', 'venus', 'sun']);
+  assert.deepEqual(moonTimeline.map((s) => [s.startAge, s.endAge]), [[1, 15], [16, 23], [24, 40], [41, 50], [51, 69], [70, 81], [82, 102], [103, 108]]);
+  assert.equal(moonTimeline.reduce((s, x) => s + x.years, 0), 108);
+
+  // 현재 다샤: 남희 실측 프로필 (1967-08-25 금요일 출생 → 금성 기점)
+  const r = calculateThaiHorasat({ profile: { basic: { birthdate: '1967-08-25' } }, targetYear: 2026, targetDate: new Date('2026-11-02T00:00:00+09:00') });
+  assert.equal(r.status, 'calculated');
+  assert.equal(r.engineVersion, THAI_HORASAT_ENGINE_VERSION);
+  assert.equal(r.birthDayPlanet!.id, 'venus'); // 1967-08-25는 금요일 → 프라 숙(금성)
+  assert.equal(r.birthInput!.weekday, '금요일');
+  const m = r.mahaThaksa!;
+  assert.equal(m.birthPlanetId, 'venus');
+  assert.equal(m.totalYears, 108);
+  assert.equal(m.ageCounting, 2026 - 1967 + 1); // 세는 나이 60
+  // 금성 기점: 금성(21) → 태양(6) → 달(15) → 화성(8) → 수성(17) → 토성(10) → 목성(19) → 라후(12)
+  assert.deepEqual(m.sequence.map((s) => s.planetId), ['venus', 'sun', 'moon', 'mars', 'mercury', 'saturn', 'jupiter', 'rahu']);
+  assert.deepEqual(m.sequence.map((s) => [s.startAge, s.endAge]), [[1, 21], [22, 27], [28, 42], [43, 50], [51, 67], [68, 77], [78, 89], [90, 108]]);
+  // 60세는 수성(51~67세) 구간, 출생 금성 기준 수성은 친화 → 데차(위광)
+  assert.equal(m.current.planetId, 'mercury');
+  assert.equal(m.current.startAge, 51);
+  assert.equal(m.current.endAge, 67);
+  assert.equal(m.current.yearsLeft, 7);
+  assert.equal(m.current.attribute, THAI_DASHA_ATTRIBUTES_8.decha); // 51 % 3 = 0 → 데차
+  assert(m.current.verdict.includes('데차') || m.current.verdict.includes('수성'));
+  // 8대 속성 관계 판정 수리
+  assert.equal(thaiPlanetRelation('rahu', 'rahu'), 'self');
+  assert.equal(thaiPlanetRelation('rahu', 'venus'), 'friend');
+  assert.equal(thaiPlanetRelation('rahu', 'sun'), 'enemy');
+  assert.equal(thaiPlanetRelation('sun', 'moon'), 'friend');
+  assert.equal(thaiPlanetRelation('moon', 'sun'), 'friend');
+  assert.equal(thaiPlanetRelation('jupiter', 'mercury'), 'enemy');
+  assert.equal(thaiPlanetRelation('venus', 'mars'), 'neutral');
+  // 자기 행성 → 라차(왕), 친화 3종 순환, 적대 2종 순환 (결정론 규약)
+  assert.equal(decideThaiDashaAttribute('rahu', 'rahu', 1).key, 'racha');
+  assert.equal(decideThaiDashaAttribute('sun', 'moon', 1).key, 'si'); // 1 % 3 = 1 → 두 번째
+  assert.equal(decideThaiDashaAttribute('sun', 'moon', 2).key, 'montri');
+  assert.equal(decideThaiDashaAttribute('sun', 'moon', 3).key, 'decha');
+  assert.equal(decideThaiDashaAttribute('rahu', 'sun', 1).key, 'kalakini');
+  assert.equal(decideThaiDashaAttribute('rahu', 'sun', 2).key, 'satru');
+  assert.equal(decideThaiDashaAttribute('venus', 'mars', 1).key, 'ussaha');
+  assert.equal(decideThaiDashaAttribute('venus', 'mars', 2).key, 'mula');
+  // 대운 속성 점수 경계
+  for (const attr of Object.values(THAI_DASHA_ATTRIBUTES_8)) {
+    assert(attr.score >= 0 && attr.score <= 100);
+    assert(attr.meaning.length > 5);
+  }
+  // 108세 초과는 주기 재순환
+  const r2 = calculateThaiHorasat({ profile: { basic: { birthdate: '1910-01-01' } }, targetYear: 2026 });
+  assert.equal(r2.status, 'calculated');
+  assert.equal(r2.mahaThaksa!.ageCounting, 117);
+  assert(r2.mahaThaksa!.sequence.some((s) => s.startAge <= 10)); // 두 번째 주기도 같은 시간표
+});
+
+test('Thai 4 Thaat elements: month mapping, body systems, balance pairs and vitality index', () => {
+  // 월 매핑 전수: 흙 10·11·12, 물 7·8·9, 바람 4·5·6, 불 1·2·3
+  assert.deepEqual(THAI_THAATS_4.map((t) => t.id), ['din', 'nam', 'lom', 'fai']);
+  assert.deepEqual(THAI_THAATS_4.map((t) => t.months), [[10, 11, 12], [7, 8, 9], [4, 5, 6], [1, 2, 3]]);
+  for (let m = 1; m <= 12; m++) assert(thaatByMonth(m).id.length > 0, `month ${m}`);
+  assert.equal(thaatByMonth(12).id, 'din');
+  assert.equal(thaatByMonth(9).id, 'nam');
+  assert.equal(thaatByMonth(6).id, 'lom');
+  assert.equal(thaatByMonth(3).id, 'fai');
+  assert.throws(() => thaatByMonth(0), RangeError);
+  assert.throws(() => thaatByMonth(13), RangeError);
+  // 신체 체계·과도 증상·상생 균형쌍 (흙↔물, 불↔바람)
+  assert.equal(thaatById('din').bodySystems, '뼈·근육·소화기계');
+  assert(thaatById('din').excessSigns.includes('피로'));
+  assert.equal(thaatById('nam').bodySystems, '혈액·림프·신장·비뇨기계');
+  assert(thaatById('nam').excessSigns.includes('부종'));
+  assert.equal(thaatById('lom').bodySystems, '신경계·호흡기·관절');
+  assert(thaatById('lom').excessSigns.includes('불안'));
+  assert.equal(thaatById('fai').bodySystems, '체온·심장·혈압·염증');
+  assert(thaatById('fai').excessSigns.includes('스트레스'));
+  assert.equal(thaatById('din').balancedBy, 'nam');
+  assert.equal(thaatById('nam').balancedBy, 'din');
+  assert.equal(thaatById('lom').balancedBy, 'fai');
+  assert.equal(thaatById('fai').balancedBy, 'lom');
+  for (const t of THAI_THAATS_4) {
+    assert(t.diet.length > 10 && t.herbs.length > 10 && t.rest.length > 10);
+  }
+  // 활력 지수: 같은 원소 계절은 -6, 상생 계절은 +8, 무관 계절은 보정 없음
+  const nov = calculateThaiHorasat({ profile: { basic: { birthdate: '1967-08-25' } }, targetYear: 2026, targetDate: new Date('2026-11-02T00:00:00+09:00') });
+  assert.equal(nov.fourElements!.birthThaat.id, 'nam'); // 8월 출생 = 물
+  assert.equal(nov.fourElements!.currentThaat.id, 'din'); // 11월 = 흙 (물의 상생쌍)
+  assert.equal(nov.fourElements!.vitalityIndex, 86); // 72 + 8 (상생 계절) + 6 (데차 대운 보정)
+  assert(nov.fourElements!.balanceNote.includes('상생'));
+  const dec = calculateThaiHorasat({ profile: { basic: { birthdate: '1995-03-25' } }, targetYear: 2026, targetDate: new Date('2026-12-15T00:00:00+09:00') });
+  assert.equal(dec.fourElements!.currentThaat.id, 'din'); // 12월 = 흙
+  assert(dec.fourElements!.vitalityIndex >= 5 && dec.fourElements!.vitalityIndex <= 100);
+  // 상생 계절 + 길한 대운에서 활력 지수 상승 확인
+  const friendly = calculateThaiHorasat({ profile: { basic: { birthdate: '1995-03-25' } }, targetYear: 2026, targetDate: new Date('2026-08-15T00:00:00+09:00') });
+  const fe = friendly.fourElements!;
+  assert.equal(fe.birthThaat.id, 'fai'); // 3월 = 불
+  assert.equal(fe.currentThaat.id, 'nam'); // 8월 = 물 (불과 무관)
+  assert(fe.vitalityIndex >= 5 && fe.vitalityIndex <= 100);
+});
+
+test('Thai Horasat engine: determinism, safe fallback, Wednesday-night note and prompt formatting', () => {
+  const profile = { basic: { birthdate: '1967-08-25', birthtime: '21:40' } };
+  const r1 = calculateThaiHorasat({ profile, targetYear: 2026, targetDate: new Date('2026-11-02T00:00:00+09:00') });
+  const r2 = calculateThaiHorasat({ profile, targetYear: 2026, targetDate: new Date('2026-11-02T00:00:00+09:00') });
+  assert.deepEqual(r1, r2); // 동일 입력 동일 출력
+
+  // 수요일 낮 출생 (10:00) — fallback 없음 (1995-03-22은 수요일)
+  const day = calculateThaiHorasat({ profile: { basic: { birthdate: '1995-03-22', birthtime: '10:00' } }, targetYear: 2026 });
+  assert.equal(day.mahaThaksa!.birthPlanetId, 'mercury');
+  assert.equal(day.note, undefined);
+  // 수요일 밤 출생 (23:00) — 라후
+  const night = calculateThaiHorasat({ profile: { basic: { birthdate: '1995-03-22', birthtime: '23:00' } }, targetYear: 2026 });
+  assert.equal(night.mahaThaksa!.birthPlanetId, 'rahu');
+  // 수요일 생시 없음 — 주간 수성 fallback + 안내 노트
+  const noTime = calculateThaiHorasat({ profile: { basic: { birthdate: '1995-03-22' } }, targetYear: 2026 });
+  assert.equal(noTime.mahaThaksa!.birthPlanetId, 'mercury');
+  assert(noTime.note!.includes('fallback') || noTime.note!.includes('생시'));
+  assert(noTime.note!.includes('프라 라후'));
+
+  // 프로필 누락 시 safe fallback
+  const skipped = calculateThaiHorasat({ profile: null });
+  assert.equal(skipped.status, 'skipped');
+  assert.match(skipped.note || '', /생년월일/);
+  const empty = calculateThaiHorasat({ profile: { basic: { birthdate: '' } } });
+  assert.equal(empty.status, 'skipped');
+  const malformed = calculateThaiHorasat({ profile: { basic: { birthdate: 'not-a-date' } } });
+  assert(malformed.status === 'error' || malformed.status === 'skipped');
+
+  // 프롬프트 포맷터: 버전·수호신·대운·원소 포함
+  const prompt = formatThaiHorasatPrompt(r1);
+  assert(prompt.includes('LUCKEY-TH-v1.0.0'));
+  assert(prompt.includes('호라삿') && prompt.includes('마하탁사') && prompt.includes('4대 원소'));
+  assert(prompt.includes('프라 숙'));
+  assert(prompt.includes('108년'));
+  assert(prompt.includes('데차'));
+  assert(prompt.includes('물(Nam)'));
+  assert(prompt.includes('AI 해석 절대 지침'));
+  assert(THAI_HORASAT_METHOD.length > 0);
+  assert.equal(formatThaiHorasatPrompt(skipped), '');
+});
+
+test('Thai Horasat engine binds into the deterministic engine report and prompt', () => {
+  const profile = { basic: { birthdate: '1967-08-25', birthtime: '21:40', gender: 'male' as const, birthCity: '서울' } };
+  const report = runDeterministicEngine({ profile, question: '내 태국 호라삿 대운 알려줘' });
+  assert(report.thaiHorasatResult !== null && report.thaiHorasatResult !== undefined);
+  assert.equal(report.thaiHorasatResult!.status, 'calculated');
+  assert.equal(report.thaiHorasatResult!.mahaThaksa!.totalYears, 108);
+  assert.equal(report.thaiHorasatResult!.mahaThaksa!.birthPlanetId, 'venus');
+  assert.equal(report.tools.thai_astrology.status, 'calculated'); // partial → calculated 승격
+  const prompt = formatDeterministicEnginePrompt(report);
+  assert(prompt.includes('LUCKEY-TH-v1.0.0'));
+  const noProfile = runDeterministicEngine({ profile: null });
+  assert(noProfile.thaiHorasatResult?.status === 'skipped');
+  assert.equal(noProfile.tools.thai_astrology.status, 'skipped');
+  // 프로필이 있으면 15개 도구 전부 calculated 이상 (not_implemented 0 유지)
+  assert.equal(Object.values(report.tools).filter((t) => t.status === 'not_implemented').length, 0);
+});
+
 import { calculateKabbalah, formatKabbalahPrompt, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD, SEPHIROTH_10, PATHS_22, FOUR_WORLDS, THREE_PILLARS, DAATH, kabbalahSephirahByNumber, kabbalahPathByNumber, reduceGematria, digitSum, soulPathNumberToPath } from '../src/lib/divination/kabbalahEngine';
 
 test('Kabbalah 10 sephiroth: full table, 3-pillar classification and hidden Daath', () => {
