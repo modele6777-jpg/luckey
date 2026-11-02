@@ -38,6 +38,7 @@ import { calculateTaiyi, formatTaiyiPrompt, type TaiyiResult, TAIYI_ENGINE_VERSI
 import { calculateGeokguk, formatGeokgukPrompt, type GeokgukResult } from './geokgukEngine';
 import { calculateTwentyEightMansions, formatTwentyEightMansionsPrompt, type TwentyEightMansionsResult } from './twentyEightMansionsEngine';
 import { calculateMahabote, formatMahabotePrompt, type MahaboteResult, MAHABOTE_ENGINE_VERSION, MAHABOTE_METHOD } from './mahaboteEngine';
+import { calculateSukuyoAdvanced, formatSukuyoPrompt, type SukuyoResult } from './sukuyoEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -96,6 +97,7 @@ export interface DeterministicEngineReport {
   geokgukResult?: GeokgukResult | null;
   twentyEightMansionsResult?: TwentyEightMansionsResult | null;
   mahaboteResult?: MahaboteResult | null;
+  sukuyoAdvancedResult?: SukuyoResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -285,12 +287,13 @@ export function runDeterministicEngine(params: {
       sukuyoEnvelope = { toolId: 'sukuyo', toolKoName: '숙요경', status: 'skipped', note: '생년월일 미입력으로 계산 생략' };
     } else {
       const sukuyoRes = calculateSukuyo(profile);
+      const sukuyoAdvanced = calculateSukuyoAdvanced({ profile });
       sukuyoEnvelope = {
         toolId: 'sukuyo',
         toolKoName: '숙요경',
         status: 'calculated',
         method: sukuyoRes.method,
-        data: sukuyoRes
+        data: { ...sukuyoRes, advanced: sukuyoAdvanced }
       };
     }
   } catch (err: any) {
@@ -630,6 +633,14 @@ export function runDeterministicEngine(params: {
       return null;
     }
   })();
+  // 18. 정통 밀교 숙요경 27숙 본명숙 & 6대 관계성 3거리 매트릭스 엔진
+  const sukuyoAdvancedResult = (() => {
+    try {
+      return calculateSukuyoAdvanced({ profile });
+    } catch (_) {
+      return null;
+    }
+  })();
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -675,6 +686,7 @@ export function runDeterministicEngine(params: {
     geokgukResult,
     twentyEightMansionsResult,
     mahaboteResult,
+    sukuyoAdvancedResult,
     tools: toolsMap,
   };
 }
@@ -726,5 +738,6 @@ ${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspi
 ${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}
 ${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}
 ${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}
-${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}`;
+${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}
+${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}`;
 }
