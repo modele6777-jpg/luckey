@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.41",
+    "builtAt": "2026-11-02T14:34:00.000Z",
+    "summary": "타로 리딩 모달 구문 오류 복구 및 Vercel 빌드 정상화",
+    "items": [
+      "TodayTarotNarrationModal.tsx 이전 커밋에서 누락/잘린 문자열 구문 복구",
+      "Vercel TypeScript 빌드 컴파일 실패 에러 해결 및 정상 배포 복구"
+    ]
+  },
+  {
     "version": "1.7.40",
     "builtAt": "2026-11-02T14:21:00.000Z",
     "summary": "TTS 하이라이트 및 스마트 스크롤 안정화 패치 (보수적 문장 매칭 및 뷰포트 중심 단일 하이라이트 계산)",

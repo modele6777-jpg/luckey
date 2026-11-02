@@ -153,14 +153,14 @@ export function TodayTarotNarrationModal({
         .filter((e) => e && e.card && e.reading && !e.isGenerating)
         .map(
           (e, idx) =>
-            `[추가 질문 #${idx + 1}] "${e.question || '추가 질문'}"\n[뽑힌 카드] ${e.card?.nameKo || e.card?.name || '타로 카드'} (${e.reversed ? '역방향' : '정방향'})\n[해[...]
+            `[추가 질문 #${idx + 1}] "${e.question || '추가 질문'}"\n[뽑힌 카드] ${e.card?.nameKo || e.card?.name || '타로 카드'} (${e.reversed ? '역방향' : '정방향'})\n[해설] ${(e.reading || '').slice(0, 250)}`,
         )
         .join('\n\n');
 
       const messagesForLLM = [
         {
           role: 'system',
-          content: `당신은 78장 타로 마스터 '트리니티'입니다. 질문자가 오늘 뽑은 데일리 타로 카드(${cardName})에 이어, 이미 뽑힌 카드를 제외하고 남��[...]
+          content: `당신은 78장 타로 마스터 '트리니티'입니다. 질문자가 오늘 뽑은 데일리 타로 카드(${cardName})에 이어, 이미 뽑힌 카드를 제외하고 남은 77장의 잔여 덱에서 새로운 카드를 추가로 뽑아 오늘 하루의 운과 흐름에 대해 심층 연속 질문을 던졌습니다.
 
 [답변 규정]
 1. 오늘 뽑힌 데일리 타로의 거시적 흐름과 새로 뽑힌 추가 카드의 정/역방향 상징을 관통하여 직관적이고 똑부러지게 답변하십시오.
@@ -196,7 +196,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       playAudioHaptic('card_draw');
     } catch (err: any) {
       console.warn('[executeDailyFollowUpReading] Streaming interrupted, applying fallback interpretation:', err);
-      const fallbackReading = `오늘 뽑힌 ${cardNameKo} (${isReversed ? '역방향' : '정방향'})의 에너지는 당신의 직관과 행동을 조화롭게 이끌어 줄 것입니다. 외��[...]
+      const fallbackReading = `오늘 뽑힌 ${cardNameKo} (${isReversed ? '역방향' : '정방향'})의 에너지는 당신의 직관과 행동을 조화롭게 이끌어 줄 것입니다. 외부 상황의 변화에 흔들리지 마시고 중심을 지키며 오늘 하루를 보내세요.`;
       setDailyFollowUpEntries((prev) =>
         prev.map((e) =>
           e.id === newEntryId
@@ -303,7 +303,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       summaryText +
       `■ 마스터 심층 비전 리딩\n${narrationData.cleanDiagnosis || narrationData.rawDiagnosis}\n\n` +
       (narrationData.rawBlessing
-        ? `■ 행운의 파동과 축복\n주파수: ${narrationData.frequency} · 행운수: ${narrationData.luckyNumber} · 행운색: ${narrationData.luckyColor}\n"${narrationData.rawBlessing[...]
+        ? `■ 행운의 파동과 축복\n주파수: ${narrationData.frequency} · 행운수: ${narrationData.luckyNumber} · 행운색: ${narrationData.luckyColor}\n"${narrationData.rawBlessing}"\n`
         : '') +
       `- PRISM TRINITY ORACLE`;
     navigator.clipboard.writeText(textToCopy).catch(() => {});
@@ -317,7 +317,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     const orientation = narrationData.card.reversed ? '역방향' : '정방향';
     const diag = narrationData.cleanDiagnosis || narrationData.rawDiagnosis || '';
     const summary = narrationData.conciseSummaryBullets.join(' ') || '';
-    const context = `[🔮 오늘의 타로 데일리 연계]\n- 뽑은 카드: ${cardName} (${orientation})\n${summary ? `- 핵심 요약: ${summary}\n` : ''}- 마스터 비전 리딩:\n${diag.s[...]
+    const context = `[🔮 오늘의 타로 데일리 연계]\n- 뽑은 카드: ${cardName} (${orientation})\n${summary ? `- 핵심 요약: ${summary}\n` : ''}- 마스터 비전 리딩:\n${diag.slice(0, 600)}`;
     handleClose();
     onConsultLucy(context);
   }, [onConsultLucy, narrationData, handleClose]);
@@ -363,7 +363,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-5xl bg-[#0c0c12] border border-yellow-500/35 p-5 sm:p-7 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.8)] text-white max-h-[90vh] overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-5xl bg-[#0c0c12] border border-yellow-500/35 p-5 sm:p-7 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.8)] text-white max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col space-y-5"
         >
           {/* Subtle Ambient Cosmic Glow */}
           <div
@@ -426,7 +426,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                     handleClose();
                     onGoToTarotWheel();
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-bold text-xs flex items-center justify-center gap-2 mx-auto shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-bold text-xs flex items-center justify-center gap-2 mx-auto shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
                   <Sparkles size={14} />
                   <span>오늘의 타로 1장 뽑기 (DRAW 1 CARD)</span>
@@ -464,7 +464,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                   <button
                     type="button"
                     onClick={() => setIsCardZoomOpen(true)}
-                    className="px-2 py-0.5 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/30 text-yellow-300 text-[10px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-2 py-0.5 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/30 text-yellow-300 text-[10px] font-medium flex items-center gap-1 transition-all cursor-pointer hover:scale-105 active:scale-95"
                     title="카드 크게 보기"
                   >
                     <ZoomIn size={11} />
@@ -649,7 +649,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                   <span>타로 성찰 주의사항 (맹목적 믿음 지양)</span>
                 </div>
                 <p className="leading-relaxed text-white/70 break-keep text-[11px] sm:text-xs">
-                  타로는 미래를 결정짓는 절대적 예언이 아니라, 자신의 내면을 성찰하고 더 나은 선택을 돕는 지혜의 나침반입니다. 맹목적인 믿음을[...]
+                  타로는 미래를 결정짓는 절대적 예언이 아니라, 자신의 내면을 성찰하고 더 나은 선택을 돕는 지혜의 나침반입니다. 맹목적인 믿음을 지양하고, 모든 운명의 결정권과 최종 열쇠는 언제나 당신 자신의 주체적인 의지와 지혜에 있습니다.
                 </p>
               </div>
 
@@ -684,9 +684,10 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
             </div>
           )}
 
+          
           {/* 이동 버튼 제거: 자동 스크롤/하이라이트는 유지, 수동 클릭 버튼은 숨김 */}
 
-          {/* Action Footer Buttons — 새로운 타로 뽑기 방지 및 1일 1회 완료 보호 */}
+{/* Action Footer Buttons — 새로운 타로 뽑기 방지 및 1일 1회 완료 보호 */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-white/10">
             {/* Left: 1-per-day status or other tarot inquiry */}
             {card ? (
