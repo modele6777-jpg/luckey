@@ -44,6 +44,10 @@ import { calculateKabbalah, formatKabbalahPrompt, type KabbalahResult, KABBALAH_
 import { calculateThaiHorasat, formatThaiHorasatPrompt, type ThaiHorasatResult, THAI_HORASAT_METHOD } from './thaiHorasatEngine';
 import { calculateHonggukQimen, formatHonggukQimenPrompt, type HonggukQimenResult, HONGGUK_QIMEN_ENGINE_VERSION, HONGGUK_QIMEN_METHOD } from './honggukQimenEngine';
 import { calculateDeterministicCompatibility, formatCompatibilityPrompt, type CompatibilityAnalysisResult } from './deterministicCompatibility';
+import { calculateLiurenMaster, formatLiurenMasterPrompt, type LiurenMasterResult, LIUREN_MASTER_ENGINE_VERSION, LIUREN_MASTER_METHOD } from './liurenMasterEngine';
+import { calculateIchingMaster, formatIchingMasterPrompt, type IchingMasterResult, ICHING_MASTER_ENGINE_VERSION, ICHING_MASTER_METHOD } from './ichingMasterEngine';
+import { calculateTarotMaster, formatTarotMasterPrompt, type TarotMasterResult, TAROT_MASTER_ENGINE_VERSION, TAROT_MASTER_METHOD } from './tarotMasterEngine';
+import { calculateHeLuoLiShu, formatHeLuoLiShuPrompt, type HeLuoLiShuResult, HELUOLISHU_ENGINE_VERSION, HELUOLISHU_METHOD } from './heLuoLiShuEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -108,6 +112,10 @@ export interface DeterministicEngineReport {
   thaiHorasatResult?: ThaiHorasatResult | null;
   honggukQimenResult?: HonggukQimenResult | null;
   compatibilityResult?: CompatibilityAnalysisResult | null;
+  liurenMasterResult?: LiurenMasterResult | null;
+  ichingMasterResult?: IchingMasterResult | null;
+  tarotMasterResult?: TarotMasterResult | null;
+  heLuoLiShuResult?: HeLuoLiShuResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -416,51 +424,34 @@ export function runDeterministicEngine(params: {
     };
   }
 
-  // 9. 주역 (周易 64괘) - 암호학적 난수 동전법 작괘
+  // 9. 주역 (周易) - 64괘 384효 4대 대칭 괘상 및 체용 결단 마스터 엔진
   let ichingEnvelope: ToolCalculationEnvelope<unknown>;
+  let ichingMasterResult: IchingMasterResult | null = null;
   try {
-    if (isDivinationQuery) {
-      const ichingRes = castIching();
-      ichingEnvelope = {
-        toolId: 'iching',
-        toolKoName: '주역',
-        status: 'calculated',
-        method: 'Web Crypto API 암호학적 난수 기반 3동전법 6효 정밀 작괘',
-        data: ichingRes
-      };
-    } else {
-      ichingEnvelope = {
-        toolId: 'iching',
-        toolKoName: '주역',
-        status: 'skipped',
-        note: '운세·상담·전망 질문 시 자동 작괘가 실행됩니다.'
-      };
-    }
+    ichingMasterResult = calculateIchingMaster(now);
+    ichingEnvelope = {
+      toolId: 'iching',
+      toolKoName: '주역',
+      status: 'calculated',
+      method: ichingMasterResult.method,
+      data: ichingMasterResult
+    };
   } catch (err: any) {
     ichingEnvelope = { toolId: 'iching', toolKoName: '주역', status: 'error', note: err?.message || '주역 작괘 실패' };
   }
 
-  // 10. 대육임 (大六壬) - 점시 기준 천지반·사과삼전 포국
+  // 10. 대육임 (大六壬) - 점시 기준 사과·삼전·12천장 결단 마스터 엔진
   let liurenEnvelope: ToolCalculationEnvelope<unknown>;
+  let liurenMasterResult: LiurenMasterResult | null = null;
   try {
-    if (isDivinationQuery) {
-      const liurenRes = calculateLiuren(now);
-      liurenEnvelope = {
-        toolId: 'liuren',
-        toolKoName: '육임',
-        status: 'calculated',
-        method: liurenRes.method,
-        data: liurenRes,
-        limitations: liurenRes.limitations
-      };
-    } else {
-      liurenEnvelope = {
-        toolId: 'liuren',
-        toolKoName: '육임',
-        status: 'skipped',
-        note: '구체적 사안 질문 시 메시지 전송 시각(KST) 기준으로 자동 포국됩니다.'
-      };
-    }
+    liurenMasterResult = calculateLiurenMaster(now);
+    liurenEnvelope = {
+      toolId: 'liuren',
+      toolKoName: '육임',
+      status: 'calculated',
+      method: liurenMasterResult.method,
+      data: liurenMasterResult,
+    };
   } catch (err: any) {
     liurenEnvelope = { toolId: 'liuren', toolKoName: '육임', status: 'error', note: err?.message || '육임 포국 실패' };
   }
@@ -509,14 +500,21 @@ export function runDeterministicEngine(params: {
     qimenEnvelope = { toolId: 'qimen', toolKoName: '홍국기문/기문둔갑', status: 'error', note: err?.message || '기문둔갑 포국 실패' };
   }
 
-  // 12. 타로 (상징적 원형)
-  const tarotEnvelope: ToolCalculationEnvelope<unknown> = {
-    toolId: 'tarot',
-    toolKoName: '타로',
-    status: 'symbolic',
-    method: '78장 아르카나 무의식 투영 심리 분석 원형',
-    note: '직접 카드를 드로우하지 않은 상태이므로 원형적 상징 관점으로 상담을 진행합니다.'
-  };
+  // 12. 타로 (78장 아르카나 수비학·원소 시나스트리 및 소울·퍼스널리티·연간 성장 카드 엔진)
+  let tarotEnvelope: ToolCalculationEnvelope<unknown>;
+  let tarotMasterResult: TarotMasterResult | null = null;
+  try {
+    tarotMasterResult = calculateTarotMaster({ profile, now });
+    tarotEnvelope = {
+      toolId: 'tarot',
+      toolKoName: '타로',
+      status: 'calculated',
+      method: tarotMasterResult.method,
+      data: tarotMasterResult
+    };
+  } catch (err: any) {
+    tarotEnvelope = { toolId: 'tarot', toolKoName: '타로', status: 'error', note: err?.message || '타로 계산 실패' };
+  }
 
   // 13. 카발라 (정통 생명나무 10 세피로트 · 3대 기둥 · 4개 세계 · 22 경로 & 생년월일 게마트리아 수리)
   let kabbalahEnvelope: ToolCalculationEnvelope<KabbalahResult>;
@@ -714,6 +712,17 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 19. 하락이수(河洛理數) 사주·주역 융합 선천괘·후천괘·원당효 엔진
+  const heLuoLiShuResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateHeLuoLiShu({ profile });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -764,6 +773,10 @@ export function runDeterministicEngine(params: {
     thaiHorasatResult,
     honggukQimenResult,
     compatibilityResult,
+    liurenMasterResult,
+    ichingMasterResult,
+    tarotMasterResult,
+    heLuoLiShuResult,
     tools: toolsMap,
   };
 }
@@ -821,5 +834,9 @@ ${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResu
 ${report.kabbalahResult ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}
 ${report.thaiHorasatResult ? '\n' + formatThaiHorasatPrompt(report.thaiHorasatResult) : ''}
 ${report.honggukQimenResult ? '\n' + formatHonggukQimenPrompt(report.honggukQimenResult) : ''}
-${report.compatibilityResult ? '\n' + formatCompatibilityPrompt(report.compatibilityResult) : ''}`;
+${report.compatibilityResult ? '\n' + formatCompatibilityPrompt(report.compatibilityResult) : ''}
+${report.liurenMasterResult ? '\n' + formatLiurenMasterPrompt(report.liurenMasterResult) : ''}
+${report.ichingMasterResult ? '\n' + formatIchingMasterPrompt(report.ichingMasterResult) : ''}
+${report.tarotMasterResult ? '\n' + formatTarotMasterPrompt(report.tarotMasterResult) : ''}
+${report.heLuoLiShuResult ? '\n' + formatHeLuoLiShuPrompt(report.heLuoLiShuResult) : ''}`;
 }
