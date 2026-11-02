@@ -17,6 +17,8 @@ import { calculateDynamicClashTrigger, formatDynamicClashPrompt, DYNAMIC_CLASH_E
 import { calculateTwelveSpiritsCycle, formatTwelveSpiritsPrompt, TWELVE_SPIRITS_ENGINE_VERSION } from '../src/lib/divination/twelveSpiritsCycleEngine';
 import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, PYTHAGOREAN_LIFECYCLE_VERSION } from '../src/lib/divination/pythagoreanLifecycleEngine';
 import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, ASTRO_DECAN_SABIAN_VERSION } from '../src/lib/divination/astrologicalDecanSabianEngine';
+import { calculateMedicalBioMatrix, formatMedicalBioMatrixPrompt, MEDICAL_BIO_MATRIX_VERSION } from '../src/lib/divination/medicalBioMatrixEngine';
+import { calculateWealthPipeline, formatWealthPipelinePrompt, WEALTH_PIPELINE_VERSION } from '../src/lib/divination/wealthPipelineEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1636,6 +1638,33 @@ test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼
   assert(prompt.includes('데칸 배속'));
 });
 
+test('Medical Bio-Matrix Engine: 오행 한난조습 및 메디컬 점성술 장부 취약도 검증', () => {
+  const res = calculateMedicalBioMatrix({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  assert.equal(res.engineVersion, MEDICAL_BIO_MATRIX_VERSION);
+  assert(res.temperament.coldScore >= 0 && res.temperament.coldScore <= 100);
+  assert(res.temperament.heatScore >= 0 && res.temperament.heatScore <= 100);
+  assert(res.vulnerableOrgans.length > 0);
+  assert(res.vitalityScore >= 0 && res.vitalityScore <= 100);
+  assert(res.prescriptions.recommendedFoods.length > 0);
+  const prompt = formatMedicalBioMatrixPrompt(res);
+  assert(prompt.includes(MEDICAL_BIO_MATRIX_VERSION));
+  assert(prompt.includes('체질 기후 진단'));
+  assert(prompt.includes('취약 장부'));
+});
+
+test('Wealth Pipeline Engine: 재물 창출 아키타입 및 골든 윈도우 타이밍 검증', () => {
+  const res = calculateWealthPipeline({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  assert.equal(res.engineVersion, WEALTH_PIPELINE_VERSION);
+  assert(['builder', 'scaler', 'investor', 'optimizer'].includes(res.archetype.type));
+  assert(res.timing.annualWealthScore >= 0 && res.timing.annualWealthScore <= 100);
+  assert(res.timing.monthlyCashFlowScore >= 0 && res.timing.monthlyCashFlowScore <= 100);
+  assert(res.actionGuide.immediatePriority.length > 0);
+  const prompt = formatWealthPipelinePrompt(res);
+  assert(prompt.includes(WEALTH_PIPELINE_VERSION));
+  assert(prompt.includes('재물 아키타입'));
+  assert(prompt.includes('골든 윈도우'));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1646,6 +1675,8 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.twelveSpiritsResult !== null && report.twelveSpiritsResult !== undefined);
   assert(report.pythagoreanLifecycleResult !== null && report.pythagoreanLifecycleResult !== undefined);
   assert(report.astrologicalDecanSabianResult !== null && report.astrologicalDecanSabianResult !== undefined);
+  assert(report.medicalBioMatrixResult !== null && report.medicalBioMatrixResult !== undefined);
+  assert(report.wealthPipelineResult !== null && report.wealthPipelineResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1658,4 +1689,6 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(TWELVE_SPIRITS_ENGINE_VERSION));
   assert(enginePrompt.includes(PYTHAGOREAN_LIFECYCLE_VERSION));
   assert(enginePrompt.includes(ASTRO_DECAN_SABIAN_VERSION));
+  assert(enginePrompt.includes(MEDICAL_BIO_MATRIX_VERSION));
+  assert(enginePrompt.includes(WEALTH_PIPELINE_VERSION));
 });
