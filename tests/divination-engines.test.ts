@@ -337,3 +337,109 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   assert(report.taiyiResult !== null && report.taiyiResult !== undefined);
 });
 
+import { calculateGeokguk, formatGeokgukPrompt, GEOKGUK_ENGINE_VERSION, decideGeokgukFromPillars } from '../src/lib/divination/geokgukEngine';
+
+test('Geokguk engine: Zipyeong Jinjeon 10-geok judgment, seong/pa/gueung, determinism and prompt formatting', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r1 = calculateGeokguk({ profile });
+  assert.equal(r1.status, 'calculated');
+  assert.equal(r1.engineVersion, GEOKGUK_ENGINE_VERSION);
+  assert(r1.monthCommand !== null);
+  assert.match(r1.monthCommand.branch, /[子丑寅卯辰巳午未申酉戌亥]/);
+  assert(r1.monthCommand.stem.length >= 1);
+  assert.match(r1.geokgukType, /格\)$/);
+  assert(['성격(成格)', '구응(救應) 성공 · 성격(成格) 회복', '파격(破格)', '원격(原格) 성립'].includes(r1.verdict));
+  assert(r1.yongMethod.length > 0);
+
+  // 성격/파격/구응 판정 일관성
+  if (r1.paGyeok.length > 0 && r1.guEung.length > 0) {
+    assert.equal(r1.verdict, '구응(救應) 성공 · 성격(成格) 회복');
+  } else if (r1.paGyeok.length > 0) {
+    assert.equal(r1.verdict, '파격(破格)');
+    assert.equal(r1.sangSin, null);
+  } else if (r1.seongGyeok?.achieved) {
+    assert.equal(r1.verdict, '성격(成格)');
+    assert(r1.sangSin !== null);
+  } else {
+    assert.equal(r1.verdict, '원격(原格) 성립');
+  }
+  assert(r1.careerReport !== null && r1.careerReport.archetype.length > 0);
+  assert(r1.careerReport.careers.length >= 3);
+
+  // 대표 명식 수리: 성격(成格) — 정관격 재생관
+  const seong = decideGeokgukFromPillars({ dayStem: '辛', monthBranch: '巳', stems: ['甲', '丙', '乙'], bodyLevel: '중화' });
+  assert.equal(seong.geokgukName, '정관격');
+  assert.equal(seong.verdict, '성격(成格)');
+  assert.equal(seong.shinsalClass, '길신(善神) · 순용(順용)');
+  assert(seong.seongGyeok !== null && seong.seongGyeok.title.includes('재생관'));
+
+  // 대표 명식 수리: 파격(破格) + 구응(救應) — 상관견관을 인성제상으로 회복
+  const gueung = decideGeokgukFromPillars({ dayStem: '辛', monthBranch: '巳', stems: ['壬', '丙', '戊'], bodyLevel: '중화' });
+  assert.equal(gueung.geokgukName, '정관격');
+  assert.equal(gueung.verdict, '구응(救應) 성공 · 성격(成格) 회복');
+  assert(gueung.paGyeok.some((p) => p.type.includes('상관견관')));
+  assert(gueung.guEung.some((g) => g.title.includes('인성제상')));
+
+  // 대표 명식 수리: 파격(破格) — 상관견관 무구응
+  const pa = decideGeokgukFromPillars({ dayStem: '辛', monthBranch: '巳', stems: ['壬', '丙', '丁'], bodyLevel: '중화' });
+  assert.equal(pa.verdict, '파격(破格)');
+  assert.equal(pa.guEung.length, 0);
+
+  // 대표 명식 수리: 군겁쟁재 + 식상통관 구응
+  const gun = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '丑', stems: ['乙', '乙', '丙'], bodyLevel: '중화' });
+  assert.equal(gun.geokgukName, '정재격');
+  assert.equal(gun.verdict, '구응(救應) 성공 · 성격(成格) 회복');
+
+  // 대표 명식 수리: 도식(梟神奪食) + 재성제인 구응
+  const tosik = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '巳', stems: ['壬', '丙', '戊'], bodyLevel: '중화' });
+  assert.equal(tosik.geokgukName, '식신격');
+  assert.equal(tosik.verdict, '구응(救應) 성공 · 성격(成格) 회복');
+
+  // 대표 명식 수리: 신약살왕 무구응 파격 vs 살인상생 구원
+  const sinYak = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '申', stems: ['庚', '庚', '辛'], bodyLevel: '극신약' });
+  assert.equal(sinYak.geokgukName, '칠살격');
+  assert.equal(sinYak.verdict, '파격(破格)');
+  const salIn = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '申', stems: ['庚', '庚', '壬'], bodyLevel: '신약' });
+  assert.equal(salIn.verdict, '성격(成格)');
+  assert(salIn.seongGyeok !== null && salIn.seongGyeok.title.includes('살인상생'));
+
+  // 월령 성립 원천: 건록/양인 직취
+  const geonrok = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '寅', stems: ['癸', '丙', '癸'], bodyLevel: '신강' });
+  assert.equal(geonrok.geokgukName, '건록격');
+  const yangIn = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '卯', stems: ['辛', '癸', '辛'], bodyLevel: '신강' });
+  assert.equal(yangIn.geokgukName, '양인격');
+  assert.equal(yangIn.shinsalClass, '흉신(惡神) · 역용(逆用)');
+
+  // 관살혼잡 구응: 합살류관(정관격)·재화상(상관격) 및 파격 시 상신 부재
+  const ryuGwan = decideGeokgukFromPillars({ dayStem: '辛', monthBranch: '巳', stems: ['丙', '丁', '庚'], bodyLevel: '중화' });
+  assert.equal(ryuGwan.verdict, '구응(救應) 성공 · 성격(成格) 회복');
+  assert(ryuGwan.guEung.some((g) => g.title.includes('합살류관')));
+  const jaeHwa = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '午', stems: ['己', '丁', '辛'], bodyLevel: '중화' });
+  assert.equal(jaeHwa.verdict, '구응(救應) 성공 · 성격(成格) 회복');
+  assert(jaeHwa.guEung.some((g) => g.title.includes('재화상')));
+  const holJap = decideGeokgukFromPillars({ dayStem: '甲', monthBranch: '申', stems: ['辛', '庚', '壬'], bodyLevel: '신약' });
+  assert.equal(holJap.verdict, '파격(破格)');
+  assert.equal(holJap.sangSin, null);
+
+  // 결정론성(동일 입력 동일 출력)
+  const r2 = calculateGeokguk({ profile });
+  assert.deepEqual(r1, r2);
+
+  // 프롬프트 포맷터에 엔진 버전 포함
+  const prompt = formatGeokgukPrompt(r1);
+  assert(prompt.includes('LUCKEY-GG-v1.0.0'));
+  assert(prompt.includes('격국'));
+  assert(prompt.includes('상신(相神)') || r1.sangSin === null);
+
+  // 프로필 누락 시 skipped 처리
+  const skipped = calculateGeokguk({ profile: null });
+  assert.equal(skipped.status, 'skipped');
+  assert.match(skipped.note || '', /생년월일/);
+
+  // 결정론 엔진 통합 바인딩
+  const report = runDeterministicEngine({ profile, question: '내 격국과 적성 알려줘' });
+  assert(report.geokgukResult !== null && report.geokgukResult !== undefined);
+  assert.equal(report.geokgukResult?.status, 'calculated');
+  assert(report.geokgukResult?.monthCommand !== null && report.geokgukResult?.monthCommand !== undefined);
+});
+

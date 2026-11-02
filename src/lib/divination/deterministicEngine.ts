@@ -35,6 +35,7 @@ import { calculateKyusei, formatKyuseiPrompt, type KyuseiResult } from './kyusei
 import { calculateSamjaeGyoUn, formatSamjaeGyoUnPrompt, type SamjaeGyoUnResult } from './samjaeGyoUnEngine';
 import { calculateAuspiciousStars, formatAuspiciousStarsPrompt, type AuspiciousStarsResult } from './auspiciousStarsEngine';
 import { calculateTaiyi, formatTaiyiPrompt, type TaiyiResult, TAIYI_ENGINE_VERSION, TAIYI_METHOD } from './taiyiEngine';
+import { calculateGeokguk, formatGeokgukPrompt, type GeokgukResult } from './geokgukEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -90,6 +91,7 @@ export interface DeterministicEngineReport {
   samjaeGyoUnResult?: SamjaeGyoUnResult | null;
   auspiciousStarsResult?: AuspiciousStarsResult | null;
   taiyiResult?: TaiyiResult | null;
+  geokgukResult?: GeokgukResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -600,6 +602,17 @@ export function runDeterministicEngine(params: {
         }
       })()
     : null;
+  // 16. 정통 격국 성격·파격 수리 판정 엔진 (자평진전 월령 사령·투간 수리)
+  const geokgukResult = birthdateStr && profile
+    ? (() => {
+        try {
+          const res = calculateGeokguk({ profile });
+          return res.status === 'calculated' ? res : null;
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -642,6 +655,7 @@ export function runDeterministicEngine(params: {
     samjaeGyoUnResult,
     auspiciousStarsResult,
     taiyiResult,
+    geokgukResult,
     tools: toolsMap,
   };
 }
@@ -690,5 +704,6 @@ ${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}
 ${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}
 ${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}
 ${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}
-${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}`;
+${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}
+${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}`;
 }
