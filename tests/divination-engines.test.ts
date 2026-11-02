@@ -13,6 +13,10 @@ import { calculateLiurenMaster, formatLiurenMasterPrompt, LIUREN_MASTER_ENGINE_V
 import { calculateIchingMaster, formatIchingMasterPrompt, ICHING_MASTER_ENGINE_VERSION } from '../src/lib/divination/ichingMasterEngine';
 import { calculateTarotMaster, formatTarotMasterPrompt, TAROT_MASTER_ENGINE_VERSION } from '../src/lib/divination/tarotMasterEngine';
 import { calculateHeLuoLiShu, formatHeLuoLiShuPrompt, HELUOLISHU_ENGINE_VERSION } from '../src/lib/divination/heLuoLiShuEngine';
+import { calculateDynamicClashTrigger, formatDynamicClashPrompt, DYNAMIC_CLASH_ENGINE_VERSION } from '../src/lib/divination/dynamicClashTriggerEngine';
+import { calculateTwelveSpiritsCycle, formatTwelveSpiritsPrompt, TWELVE_SPIRITS_ENGINE_VERSION } from '../src/lib/divination/twelveSpiritsCycleEngine';
+import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, PYTHAGOREAN_LIFECYCLE_VERSION } from '../src/lib/divination/pythagoreanLifecycleEngine';
+import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, ASTRO_DECAN_SABIAN_VERSION } from '../src/lib/divination/astrologicalDecanSabianEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1577,12 +1581,71 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(prompt.includes('후천변괘'));
 });
 
-test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 4대 마스터 엔진 바인딩 검증', () => {
+test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격발 및 에너지 승화 검증', () => {
+  const res = calculateDynamicClashTrigger({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  assert.equal(res.engineVersion, DYNAMIC_CLASH_ENGINE_VERSION);
+  assert(res.volatilityScore >= 0 && res.volatilityScore <= 100);
+  assert(res.harmonyScore >= 0 && res.harmonyScore <= 100);
+  assert(['explosive_change', 'high_tension', 'balanced_movement', 'peaceful_flow'].includes(res.netStatus));
+  assert(res.todayActionMatrix.doNow.length > 0);
+  assert(res.todayActionMatrix.avoidNow.length > 0);
+  const prompt = formatDynamicClashPrompt(res);
+  assert(prompt.includes(DYNAMIC_CLASH_ENGINE_VERSION));
+  assert(prompt.includes('오늘 일진'));
+});
+
+test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일진 페르소나 검증', () => {
+  const res = calculateTwelveSpiritsCycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  assert.equal(res.engineVersion, TWELVE_SPIRITS_ENGINE_VERSION);
+  assert(res.todayDaySpirit.dayBase.name.length > 0);
+  assert(res.todayDaySpirit.yearBase.name.length > 0);
+  assert(res.todayStrategy.recommendedPersona.length > 0);
+  assert(res.todayStrategy.superpowerToUse.length > 0);
+  const prompt = formatTwelveSpiritsPrompt(res);
+  assert(prompt.includes(TWELVE_SPIRITS_ENGINE_VERSION));
+  assert(prompt.includes('오늘 일진'));
+  assert(prompt.includes('추천 페르소나'));
+});
+
+test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 생애 주기 검증', () => {
+  const res = calculatePythagoreanLifecycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  assert.equal(res.engineVersion, PYTHAGOREAN_LIFECYCLE_VERSION);
+  assert.equal(res.pinnacles.length, 4);
+  assert.equal(res.challenges.length, 4);
+  assert(res.currentPersonalYear.yearNumber >= 1 && res.currentPersonalYear.yearNumber <= 9);
+  assert(res.currentPinnacle.number >= 1 && res.currentPinnacle.number <= 9);
+  assert(res.currentChallenge.number >= 0 && res.currentChallenge.number <= 8);
+  const prompt = formatPythagoreanLifecyclePrompt(res);
+  assert(prompt.includes(PYTHAGOREAN_LIFECYCLE_VERSION));
+  assert(prompt.includes('4대 피너클'));
+  assert(prompt.includes('4대 챌린지'));
+  assert(prompt.includes('개인년도'));
+});
+
+test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼 360° 영혼 메타포 검증', () => {
+  const res = calculateAstrologicalDecanSabian({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00') });
+  assert.equal(res.engineVersion, ASTRO_DECAN_SABIAN_VERSION);
+  assert(res.sun.decan.decanIndex >= 1 && res.sun.decan.decanIndex <= 3);
+  assert(res.sun.sabian.degreeNumber >= 1 && res.sun.sabian.degreeNumber <= 30);
+  assert(res.moon.decan.decanIndex >= 1 && res.moon.decan.decanIndex <= 3);
+  assert(res.moon.sabian.degreeNumber >= 1 && res.moon.sabian.degreeNumber <= 30);
+  assert(res.soulPoetics.coreIdentityMetaphor.length > 0);
+  const prompt = formatAstrologicalDecanSabianPrompt(res);
+  assert(prompt.includes(ASTRO_DECAN_SABIAN_VERSION));
+  assert(prompt.includes('사비안 심볼'));
+  assert(prompt.includes('데칸 배속'));
+});
+
+test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
   assert(report.ichingMasterResult !== null && report.ichingMasterResult !== undefined);
   assert(report.tarotMasterResult !== null && report.tarotMasterResult !== undefined);
   assert(report.heLuoLiShuResult !== null && report.heLuoLiShuResult !== undefined);
+  assert(report.dynamicClashResult !== null && report.dynamicClashResult !== undefined);
+  assert(report.twelveSpiritsResult !== null && report.twelveSpiritsResult !== undefined);
+  assert(report.pythagoreanLifecycleResult !== null && report.pythagoreanLifecycleResult !== undefined);
+  assert(report.astrologicalDecanSabianResult !== null && report.astrologicalDecanSabianResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1591,4 +1654,8 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(ICHING_MASTER_ENGINE_VERSION));
   assert(enginePrompt.includes(TAROT_MASTER_ENGINE_VERSION));
   assert(enginePrompt.includes(HELUOLISHU_ENGINE_VERSION));
+  assert(enginePrompt.includes(DYNAMIC_CLASH_ENGINE_VERSION));
+  assert(enginePrompt.includes(TWELVE_SPIRITS_ENGINE_VERSION));
+  assert(enginePrompt.includes(PYTHAGOREAN_LIFECYCLE_VERSION));
+  assert(enginePrompt.includes(ASTRO_DECAN_SABIAN_VERSION));
 });
