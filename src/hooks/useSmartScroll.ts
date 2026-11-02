@@ -62,6 +62,11 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
     centerOffset = 0,
   } = options;
 
+  // The "move to current reading position" behavior is intentionally disabled.
+  // This hook remains available for compatibility, but it never performs
+  // automatic scrolling or highlight centering.
+  const autoScrollFeatureEnabled = false;
+
   const fallbackRef = useRef<HTMLElement | null>(null);
   const containerRef = externalContainerRef || fallbackRef;
 
@@ -93,6 +98,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
   // Find active element in container or document
   const getActiveElement = useCallback((): HTMLElement | null => {
+    if (!autoScrollFeatureEnabled) return null;
     if (containerRef.current) {
       const el = containerRef.current.querySelector<HTMLElement>(selector);
       if (el) return el;
@@ -106,6 +112,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
   // Resolve scrollable parent container for any target element
   const resolveScrollContainer = useCallback((target: HTMLElement | null): HTMLElement | null => {
+    if (!autoScrollFeatureEnabled) return null;
     if (containerRef.current) return containerRef.current;
     if (!target) {
       return document.querySelector<HTMLElement>('[data-app-scroll-root], main.overflow-y-auto, .overflow-y-auto');
@@ -130,7 +137,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
   // Viewport centering math
   const scrollToActiveSentence = useCallback(
     (force: boolean = false): boolean => {
-      if (!enabled) return false;
+      if (!enabled || !autoScrollFeatureEnabled) return false;
       const target = getActiveElement();
       if (!target) {
         setHasActiveHighlight(false);
@@ -200,7 +207,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
     isUserOverridingRef.current = false;
     setIsUserOverriding(false);
     setRemainingSeconds(0);
-    // Smoothly scroll to active highlight
+    if (!autoScrollFeatureEnabled) return;
     requestAnimationFrame(() => {
       scrollToActiveSentence(true);
     });
@@ -208,7 +215,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
   // User gesture detection: wheel, touchmove, touchstart, scrollbar drag
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !autoScrollFeatureEnabled) return;
 
     const handleUserGesture = (e: Event) => {
       // If TTS isn't speaking, manual gestures don't trigger override state
@@ -286,7 +293,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
   // When active sentence changes, auto-scroll to center if not overriding
   useEffect(() => {
-    if (!enabled || !isSpeaking || !currentSentenceKey) return;
+    if (!enabled || !isSpeaking || !currentSentenceKey || !autoScrollFeatureEnabled) return;
 
     // If user is currently looking at another section, do NOT hijack the screen!
     if (isUserOverridingRef.current) {
