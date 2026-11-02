@@ -8,6 +8,7 @@ import { SearchSunLongitude } from 'astronomy-engine';
 import { buildUserFifteenToolsDigest } from '../src/lib/fifteenDivinationTools';
 import { calculateTojeong, formatTojeongPrompt } from '../src/lib/divination/tojeongEngine';
 import { calculateKyusei, formatKyuseiPrompt, KYUSEI_ENGINE_VERSION } from '../src/lib/divination/kyuseiEngine';
+import { calculateSamjaeGyoUn, formatSamjaeGyoUnPrompt, SAMJAE_GYOUN_ENGINE_VERSION } from '../src/lib/divination/samjaeGyoUnEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -186,4 +187,77 @@ test('Kyusei keeps the Ipchun-day boundary honest and skips without birthdate',(
   assert.notEqual(before.honmyosei.star,after.honmyosei.star);
   const skipped=calculateKyusei({profile:null});
   assert.equal(skipped.status,'skipped');assert.match(skipped.note||'',/생년월일/);
+});
+
+const sgProfile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
+
+test('Samjae phases follow the published triple-harmony table (들·눌·날 per anchor group)',()=>{
+  const sg=(d:string,y:number)=>calculateSamjaeGyoUn({profile:{basic:{birthdate:d,gender:'female' as const}},targetYear:y}).samjae;
+  // 신자진군: 쥐(1996 병자)·원숭이(1992 임신)·용(1988 무진)띠 — 2022 임인년 들삼재, 2024 갑진년 날삼재
+  assert.equal(sg('1996-05-01',2022).phase,'들삼재(入三災)');
+  assert.equal(sg('1992-05-01',2022).phase,'들삼재(入三災)');
+  assert.equal(sg('1988-05-01',2024).phase,'날삼재(出三災)');
+  assert.equal(sg('1996-05-01',2023).phase,'눌삼재(臥三災)');
+  assert.equal(sg('1996-05-01',2026).isSamjaeYear,false);
+  // 인오술군: 말(1990 경오)띠 — 2028 무신년 들삼재
+  assert.equal(sg('1990-05-01',2028).phase,'들삼재(入三災)');
+  // 해묘미군: 돼지(1995 을해)띠 — 2025 을사년 들삼재, 2027 정미년 날삼재
+  assert.equal(sg('1995-05-01',2025).phase,'들삼재(入三災)');
+  assert.equal(sg('1995-05-01',2027).phase,'날삼재(出三災)');
+  // 사유축군: 닭(1993 계유)띠 — 2021 신축년 날삼재
+  assert.equal(sg('1993-05-01',2021).phase,'날삼재(出三災)');
+  // 3개년 궤적은 들→눌→날 순서로 고정되고 당해년도에 표식이 찍힌다
+  const arc=sg('1996-05-01',2022).threeYearArc;
+  assert.deepEqual(arc.map(a=>a.year),[2022,2023,2024]);
+  assert.deepEqual(arc.map(a=>a.phase),['들삼재(入三災)','눌삼재(臥三災)','날삼재(出三災)']);
+  assert.equal(arc[0].year===2022,arc[0].phase==='들삼재(入三災)');
+});
+
+test('Samjae grading is deterministic, bounded, and carries 원국 interaction details',()=>{
+  const a=calculateSamjaeGyoUn({profile:sgProfile,targetYear:2022});
+  const b=calculateSamjaeGyoUn({profile:sgProfile,targetYear:2022});
+  assert.equal(JSON.stringify(a.samjae),JSON.stringify(b.samjae));
+  assert(a.samjae.isSamjaeYear); // 2000 경진 용띠 → 2022 임인년 들삼재
+  assert(['복삼재(福三災)','평삼재(平三災)','악삼재(惡三災)'].includes(a.samjae.grade!));
+  assert(a.samjae.gradeReason.length>5);
+  assert(a.samjae.interactions.every(i=>i.detail.length>5));
+  assert(a.samjae.wellnessPrescription!.foods.length>=3);
+  // 삼재가 아닌 해는 처방이 비고 등급이 null
+  const off=calculateSamjaeGyoUn({profile:sgProfile,targetYear:2026}).samjae;
+  assert.equal(off.isSamjaeYear,false);assert.equal(off.grade,null);assert.equal(off.wellnessPrescription,null);
+});
+
+test('GyoUn detection brackets the daewoon switch within 2 years and reports remaining months to Ipchun',()=>{
+  const at=(y:number)=>calculateSamjaeGyoUn({profile:sgProfile,targetYear:y}).gyoUn;
+  const cur=at(2026);
+  assert(cur.currentDaewoon&&cur.nextDaewoon);
+  assert.equal(cur.isGyoUnPeriod,false);
+  const switchYear=cur.nextDaewoon!.startYear;
+  const d2=at(switchYear-2);
+  assert.equal(d2.isGyoUnPeriod,true);assert.equal(d2.windowType,'교체 전 조정기 (D-2)');
+  assert.equal(d2.yearsUntilSwitch,2);
+  assert(d2.monthsUntilSwitch!==null&&d2.monthsUntilSwitch>24&&d2.monthsUntilSwitch<26.5);
+  const peak=at(switchYear);
+  assert.equal(peak.isGyoUnPeriod,true);assert.equal(peak.windowType,'교체 당해년도 (대환절기·판도 대전환)');
+  assert(peak.monthsUntilSwitch!==null&&peak.monthsUntilSwitch>0&&peak.monthsUntilSwitch<2);
+  const after=at(switchYear+1);
+  assert.equal(after.isGyoUnPeriod,true);assert.equal(after.windowType,'교체 직후 안착기 (+1)');
+  assert.equal(after.monthsUntilSwitch,0);
+  assert(d2.tenGodShift!.cushionGuide.length>10);
+  assert(d2.seasonShift!==null);
+  assert(d2.riskBufferAdvice.length>10&&d2.opportunityTiming.length>10);
+});
+
+test('Samjae/GyoUn skips without birthdate, degrades without gender, and renders the full prompt',()=>{
+  const skipped=calculateSamjaeGyoUn({profile:null,targetYear:2026});
+  assert.equal(skipped.status,'skipped');assert.match(skipped.note||'',/생년월일/);
+  const r=calculateSamjaeGyoUn({profile:sgProfile,targetYear:2026});
+  assert.equal(r.status,'calculated');assert.equal(r.engineVersion,SAMJAE_GYOUN_ENGINE_VERSION);
+  const prompt=formatSamjaeGyoUnPrompt(r);
+  assert(prompt.includes('LUCKEY-SG-v1.0.0')&&prompt.includes('삼재')&&prompt.includes('교운기')&&prompt.includes('바이오웰니스'));
+  assert.equal(formatSamjaeGyoUnPrompt(skipped),'');
+  const noGender=calculateSamjaeGyoUn({profile:{basic:{birthdate:'2000-08-16'}},targetYear:2026});
+  assert.equal(noGender.status,'calculated');
+  assert(noGender.samjae.isSamjaeYear===false||noGender.samjae.isSamjaeYear===true);
+  assert.equal(noGender.gyoUn.isGyoUnPeriod,false);assert.match(noGender.gyoUn.note||'',/성별/);
 });

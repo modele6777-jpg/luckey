@@ -32,6 +32,7 @@ import { calculateSpatialFengshui, formatSpatialFengshuiPrompt, type SpatialFeng
 import { calculateVitalityCurve, formatVitalityCurvePrompt, type VitalityCurveResult } from './vitalityCurveEngine';
 import { calculateTojeong, formatTojeongPrompt, type TojeongResult } from './tojeongEngine';
 import { calculateKyusei, formatKyuseiPrompt, type KyuseiResult } from './kyuseiEngine';
+import { calculateSamjaeGyoUn, formatSamjaeGyoUnPrompt, type SamjaeGyoUnResult } from './samjaeGyoUnEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -84,6 +85,7 @@ export interface DeterministicEngineReport {
   vitalityCurve?: VitalityCurveResult | null;
   tojeongResult?: TojeongResult | null;
   kyuseiResult?: KyuseiResult | null;
+  samjaeGyoUnResult?: SamjaeGyoUnResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -552,6 +554,16 @@ export function runDeterministicEngine(params: {
         }
       })()
     : null;
+  const samjaeGyoUnResult = birthdateStr && profile
+    ? (() => {
+        try {
+          const res = calculateSamjaeGyoUn({ profile, targetYear: now.getFullYear() });
+          return res.status === 'calculated' ? res : null;
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -591,6 +603,7 @@ export function runDeterministicEngine(params: {
     vitalityCurve: vitalityCurveResult,
     tojeongResult,
     kyuseiResult,
+    samjaeGyoUnResult,
     tools: toolsMap,
   };
 }
@@ -636,5 +649,6 @@ ${report.monthlyFlow ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}
 ${report.spatialFengshui ? '\n' + formatSpatialFengshuiPrompt(report.spatialFengshui) : ''}
 ${report.vitalityCurve ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) : ''}
 ${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}
-${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}`;
+${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}
+${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}`;
 }
