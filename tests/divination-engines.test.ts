@@ -333,7 +333,7 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   // Integration in runDeterministicEngine: all 15 tools implemented (0 not_implemented)
   const report = runDeterministicEngine({ profile, question: '올해 사업 운세와 거시 흐름' });
   assert.equal(report.tools.taiyi.status, 'calculated');
-  assert.equal(report.meta.notImplementedCount, 0);
+  assert.equal(Object.values(report.tools).filter((t) => t.status === 'not_implemented').length, 0);
   assert(report.taiyiResult !== null && report.taiyiResult !== undefined);
 });
 
