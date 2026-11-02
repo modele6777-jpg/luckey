@@ -3586,16 +3586,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onPointerDown={(e) => {
-                  if (document.activeElement !== e.currentTarget) {
-                    e.currentTarget.focus({ preventScroll: true });
-                  }
-                }}
-                onTouchStart={(e) => {
-                  if (document.activeElement !== e.currentTarget) {
-                    e.currentTarget.focus({ preventScroll: true });
-                  }
-                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Tab' && !input && currentGhostPromptRef.current) {
                     e.preventDefault();
