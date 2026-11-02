@@ -54,7 +54,10 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
 
   try {
     const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-    const model = req.body.model || "gemini-flash-lite-latest";
+    const rawRequestedModel = req.body.model || "gemini-flash-lite-latest";
+    const model = (rawRequestedModel === "gemini-4-argon" || rawRequestedModel.includes("argon") || rawRequestedModel.includes("2.5") || rawRequestedModel.includes("2.0"))
+      ? "gemini-flash-lite-latest"
+      : rawRequestedModel;
     const messages = req.body.messages || [];
     // Preserve the full conversational context instead of forwarding only the last user turn.
     // The Gemini API uses "model" where OpenAI-compatible callers use "assistant".
@@ -82,11 +85,21 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
       return res.status(400).json({ error: "A final user message is required" });
     }
 
-    const response = await ai.models.generateContent({
-      model,
-      contents,
-      config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
-    });
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model,
+        contents,
+        config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
+      });
+    } catch (modelErr: any) {
+      console.warn(`[Proxy] Model ${model} failed, falling back to gemini-flash-lite-latest:`, modelErr?.message || modelErr);
+      response = await ai.models.generateContent({
+        model: "gemini-flash-lite-latest",
+        contents,
+        config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
+      });
+    }
 
     const replyText = response.text || "";
 
