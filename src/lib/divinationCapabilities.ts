@@ -6,7 +6,7 @@ export const DIVINATION_CAPABILITIES: Record<DivinationToolId, { state: 'availab
   astrology: { state: 'available', scope: '천문력 기반 서양 열대황도 행성 위치. 상승궁·MC는 확인된 생시·도시가 있을 때만 제공. 12하우스·트랜짓 미산출.', required: '생년월일·역법, 생시·출생도시·시간대' },
   ziwei: { state: 'available', scope: 'iztro 2.6.3 통행식의 12궁·주성·보성·사화·대한 계산. 중국 음력·윤달 보정·23시 익일 기준을 명시하며 유년·진태양시 미산출.', required: '출생일·현지 출생시간·전통 성별 기준' },
   tarot: { state: 'partial', scope: '실제 뽑거나 입력한 78장 카드와 정·역방향 해석 지원. 제공되지 않은 카드·배열을 뽑았다고 말하지 않음.', required: '선택 카드·방향·스프레드 위치·질문' },
-  sukuyo: { state: 'partial', scope: '27숙 월별 기숙표에 한국 음력 생일을 적용한 본명숙과 두 숙의 방향별 관계 계산. 일본 구력과 차이 가능; 윤달은 계산 보류.', required: '생년월일·양음력, 관계 계산은 두 사람 정보' },
+  sukuyo: { state: 'available', scope: '27숙 정통 밀교 숙요경 결정론 엔진(sukuyoAdvancedResult): 월별 기숙표에 한국 음력 생일을 적용한 본명숙 산출, 7대 숙격(안중·화선·급맹·악해·독현·경질·강유) 분류, 4방신(청룡·현무·백호·주작) 소속 및 칠요 배속, 6대 관계성(명·업태·영쇠·안위·성괴·우친) 방향별 판정, 3거리(근거리 1~4숙·중거리 5~13숙·원거리 14~26숙) 매트릭스와 상대 프로필이 있을 때 27숙 양방향 궁합을 직접 산출. 일본 구력과 차이 가능; 윤달은 계산 보류.', required: '생년월일·양음력, 관계·궁합 매트릭스는 두 사람 정보' },
   mahabote: { state: 'available', scope: '미얀마 정통 마하보테(Mahabote) 소수력(ME=서기-638) 7제 잉여수 기반 7대 하우스(빙가·아타·야자·아디파디·마라나·띠케·푸티) 포국, 8요일 행성·영수(靈獸) 입궁, 본명궁(Root House) 3대 길흉 판정, 당해 연도 나이 다샤(Age Transit) 및 방위·색상 개운 처방을 결정론 엔진(mahaboteResult)으로 직접 산출.', required: '양/음력·윤달 생년월일(수요일은 생시 필요)' },
   vedic: { state: 'partial', scope: '평균 세차율 기반 항성황도 참고값·나크샤트라·파다·빔쇼타리 주기 계산. 정밀 Lahiri 천문력 아님; 경계 결과 확정 금지.', required: '지원 도시·생일·생시·역법' },
   liuren: { state: 'available', scope: '프로필 계산실·채팅 엔진에서 UTC+8 점시·천문 중기 환장에 따른 천지반·사과삼전 산출. 결과가 대화에 제공된 경우만 해석.', required: '점시·시간대·질문 및 사용자가 생성한 포국' },

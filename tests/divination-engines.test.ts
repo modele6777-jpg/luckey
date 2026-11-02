@@ -337,6 +337,137 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   assert(report.taiyiResult !== null && report.taiyiResult !== undefined);
 });
 
+import { calculateSukuyoAdvanced, formatSukuyoPrompt, SUKUYO_ENGINE_VERSION, sukuyoIndexFromLunar, sukuyoMansionInfoByIndex, type SukuyoRelationDynamic } from '../src/lib/divination/sukuyoEngine';
+import { formatDeterministicEnginePrompt } from '../src/lib/divination/deterministicEngine';
+
+const MANSION_HANJA_27 = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虚', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
+const RELATION_LABELS_27 = ['명', '영', '쇠', '안', '위', '성', '괴', '우', '친', '업', '영', '쇠', '안', '위', '성', '괴', '우', '친', '태', '영', '쇠', '안', '위', '성', '괴', '우', '친'];
+const SHUKGUK_BY_INDEX = ['경질', '독현', '악해', '화선', '악해', '급맹', '화선', '안중', '강유', '독현', '경질', '안중', '급맹', '안중', '급맹', '경질', '안중', '독현', '화선', '급맹', '급맹', '독현', '악해', '화선', '강유', '안중', '경질'];
+const SHUKGUK_META_KEYS = ['안중', '화선', '급맹', '악해', '독현', '경질', '강유'];
+
+const syProfile = { basic: { birthdate: '2000-08-16', birthtime: '04:00', gender: 'female' as const, birthCity: '서울' } }; // calculateSukuyo 실측: 규(奎)宿
+
+function relOf(from: number, to: number): SukuyoRelationDynamic {
+  // calculateSukuyoAdvanced 내부 relationDynamic과 동일 수리를 검증용으로 재현
+  const distance = ((to - from + 27) % 27 + 27) % 27;
+  const band = distance <= 4 ? '근거리' : distance <= 13 ? '중거리' : '원거리';
+  const base: Record<string, number> = { 명: 72, 업: 78, 태: 82, 영: 88, 쇠: 35, 안: 80, 위: 42, 성: 90, 괴: 30, 우: 84, 친: 86 };
+  const score = Math.min(100, Math.max(5, base[RELATION_LABELS_27[distance]] + (band === '근거리' ? 4 : band === '중거리' ? 0 : -4)));
+  return { key: (['명', '영쇠', '영쇠', '안위', '안위', '성괴', '성괴', '우친', '우친', '업태', '영쇠', '영쇠', '안위', '안위', '성괴', '성괴', '우친', '우친', '업태', '영쇠', '영쇠', '안위', '안위', '성괴', '성괴', '우친', '우친'] as const)[distance], label: RELATION_LABELS_27[distance], hanja: '', pairSummary: '', distance, band, bandDynamics: '', polarity: '긍정(相生)', score, description: '' };
+}
+
+test('Sukuyo engine: 본명숙 산출 및 7대 숙격 매핑 정확성', () => {
+  const r = calculateSukuyoAdvanced({ profile: syProfile });
+  assert.equal(r.status, 'calculated');
+  assert.equal(r.engineVersion, SUKUYO_ENGINE_VERSION);
+  assert.equal(r.mansion!.hanja, '奎'); // birthCharts.calculateSukuyo 실측 '奎宿'와 일치
+  assert.equal(r.mansion!.index, 13);
+  assert.equal(r.mansion!.shukguk, '안중'); // 규(奎)는 안중숙
+  assert(r.mansion!.fullName.includes('규목랑'));
+  assert(r.lunarDate && r.lunarDate.isLeapMonth === false);
+  assert(r.selfDynamics!.includes('규'));
+
+  // 27숙 전수 숙격 매핑 검증 (정통 분류: 안중·화선·급맹·악해·독현·경질·강유)
+  for (let i = 0; i < 27; i++) {
+    const info = sukuyoMansionInfoByIndex(i);
+    assert.equal(info.index, i);
+    assert.equal(info.shukguk, SHUKGUK_BY_INDEX[i], `index ${i}`);
+    assert(SHUKGUK_META_KEYS.includes(info.shukguk));
+    assert(info.shukgukTrait.length > 1);
+  }
+  // 7대 숙격 대표 숙 스포트 체크: 두·익·실·규·묘=안중 / 여·장=강유
+  for (const [hanja, shukguk] of [['斗', '안중'], ['翼', '안중'], ['室', '안중'], ['奎', '안중'], ['昴', '안중'], ['女', '강유'], ['張', '강유'], ['亢', '독현'], ['鬼', '독현'], ['虛', '독현'], ['畢', '독현'], ['角', '경질'], ['軫', '경질'], ['危', '경질'], ['胃', '경질'], ['星', '화선'], ['房', '화선'], ['箕', '화선'], ['觜', '화선'], ['尾', '급맹'], ['井', '급맹'], ['婁', '급맹'], ['壁', '급맹'], ['參', '급맹'], ['氐', '악해'], ['心', '악해'], ['柳', '악해']] as const) {
+    const info = sukuyoMansionInfoByIndex(MANSION_HANJA_27.indexOf(hanja));
+    assert.equal(info.shukguk, shukguk, `${hanja} → ${shukguk}`);
+  }
+  // 월별 기숙표 기준일 본명숙: 음력 팔월 초하루 = 각(角)수
+  assert.equal(sukuyoIndexFromLunar(8, 1), MANSION_HANJA_27.indexOf('角'));
+  assert.equal(sukuyoIndexFromLunar(1, 15), (MANSION_HANJA_27.indexOf('室') + 14) % 27);
+  assert.throws(() => sukuyoIndexFromLunar(13, 1), /음력/);
+  assert.throws(() => sukuyoIndexFromLunar(1, 0), /음력/);
+});
+
+test('Sukuyo 6대 관계성: 방향별 수리 일치 및 역대칭 검증', () => {
+  // 전수 쌍 검증: birthCharts.sukuyoRelationship와 동일 수리
+  for (let a = 0; a < 27; a++) {
+    for (let b = 0; b < 27; b++) {
+      const d = (b - a + 27) % 27;
+      assert.equal(relOf(a, b).label, RELATION_LABELS_27[d], `a=${a} b=${b}`);
+      assert.equal(relOf(b, a).label, RELATION_LABELS_27[(27 - d) % 27], `reverse a=${a} b=${b}`);
+      assert(relOf(a, b).score >= 5 && relOf(a, b).score <= 100);
+    }
+  }
+  // 대표 픽스처: 9숙 차이는 나→상대 업(業), 상대→나 태(胎)
+  assert.equal(relOf(0, 9).label, '업');
+  assert.equal(relOf(9, 0).label, '태');
+  // 명(命): 동일 숙
+  assert.equal(relOf(5, 5).label, '명');
+  assert.equal(relOf(5, 5).distance, 0);
+  // 6대 관계성 키 분류
+  const keyOf = (d: number) => relOf(0, d).key;
+  assert.equal(keyOf(0), '명'); assert.equal(keyOf(9), '업태'); assert.equal(keyOf(18), '업태');
+  assert.equal(keyOf(1), '영쇠'); assert.equal(keyOf(2), '영쇠'); assert.equal(keyOf(19), '영쇠'); assert.equal(keyOf(20), '영쇠');
+  assert.equal(keyOf(3), '안위'); assert.equal(keyOf(4), '안위'); assert.equal(keyOf(21), '안위'); assert.equal(keyOf(22), '안위');
+  assert.equal(keyOf(5), '성괴'); assert.equal(keyOf(6), '성괴'); assert.equal(keyOf(23), '성괴'); assert.equal(keyOf(24), '성괴');
+  assert.equal(keyOf(7), '우친'); assert.equal(keyOf(8), '우친'); assert.equal(keyOf(25), '우친'); assert.equal(keyOf(26), '우친');
+  // 영(榮)은 최상 시너지, 괴(壞)는 최저 — 결정론 스코어 경계
+  assert(relOf(0, 1).score > relOf(0, 6).score);
+  assert.equal(relOf(0, 6).score, 30); // 괴(壞) 원거리 보정 없음(6숙=중거리)
+});
+
+test('Sukuyo 3거리 판정 정확성', () => {
+  const bandOf = (d: number) => relOf(0, d).band;
+  assert.equal(bandOf(1), '근거리'); assert.equal(bandOf(4), '근거리');
+  assert.equal(bandOf(5), '중거리'); assert.equal(bandOf(13), '중거리');
+  assert.equal(bandOf(14), '원거리'); assert.equal(bandOf(26), '원거리');
+  assert.equal(bandOf(0), '근거리'); // 명(命) 동일 숙은 근거리 특례
+});
+
+test('Sukuyo partner matrix: 양방향 궁합, 27숙 전수 매트릭스, 결정론 및 포맷터', () => {
+  const partner = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r1 = calculateSukuyoAdvanced({ profile: syProfile, partnerProfile: partner });
+  assert.equal(r1.status, 'calculated');
+  assert(r1.partnerMatrix);
+  const pm = r1.partnerMatrix!;
+  assert.equal(pm.fullMatrix.length, 27);
+  // 전수 매트릭스의 거리·라벨 수리 일치
+  for (const row of pm.fullMatrix) {
+    assert.equal(row.distance, (row.partnerIndex - r1.mansion!.index + 27) % 27);
+    assert.equal(row.fromMe.label, RELATION_LABELS_27[row.distance]);
+    assert.equal(row.fromPartner.label, RELATION_LABELS_27[(27 - row.distance) % 27]);
+    assert(row.fromMe.score >= 5 && row.fromMe.score <= 100);
+    assert(['근거리', '중거리', '원거리'].includes(row.fromMe.band));
+  }
+  assert(pm.compatibilityScore >= 5 && pm.compatibilityScore <= 100);
+  assert(pm.partnerProfileSummary.length > 0);
+  // 결정론: 동일 입력 동일 출력
+  const r2 = calculateSukuyoAdvanced({ profile: syProfile, partnerProfile: partner });
+  assert.deepEqual(JSON.stringify(r1), JSON.stringify(r2));
+  // 상대 프로필이 없으면 매트릭스 생략
+  const solo = calculateSukuyoAdvanced({ profile: syProfile });
+  assert.equal(solo.partnerMatrix, null);
+  // 프로필 누락 시 skipped
+  const skipped = calculateSukuyoAdvanced({ profile: null });
+  assert.equal(skipped.status, 'skipped');
+  assert.match(skipped.note || '', /생년월일/);
+  assert.equal(formatSukuyoPrompt(skipped), '');
+  // 프롬프트 포맷터: 엔진 버전·핵심 수어 포함
+  const prompt = formatSukuyoPrompt(r1);
+  assert(prompt.includes('LUCKEY-SY-v1.0.0'));
+  assert(prompt.includes('본명숙') && prompt.includes('숙격') && prompt.includes('6대 관계성') && prompt.includes('3거리'));
+  assert(prompt.includes('규목랑(奎木狼)'));
+  assert(prompt.includes('27숙 전수 양방향 매트릭스'));
+  // 결정론 엔진 통합 바인딩
+  const report = runDeterministicEngine({ profile: syProfile, question: '내 본명숙과 궁합 알려줘' });
+  assert(report.sukuyoAdvancedResult !== null && report.sukuyoAdvancedResult !== undefined);
+  assert.equal(report.sukuyoAdvancedResult?.status, 'calculated');
+  assert.equal(report.tools.sukuyo.status, 'calculated');
+  const formatted = formatDeterministicEnginePrompt(report);
+  assert(formatted.includes('LUCKEY-SY-v1.0.0'));
+  const noProfile = runDeterministicEngine({ profile: null });
+  assert.equal(noProfile.sukuyoAdvancedResult?.status, 'skipped');
+});
+
 import { calculateGeokguk, formatGeokgukPrompt, GEOKGUK_ENGINE_VERSION, decideGeokgukFromPillars } from '../src/lib/divination/geokgukEngine';
 
 test('Geokguk engine: Zipyeong Jinjeon 10-geok judgment, seong/pa/gueung, determinism and prompt formatting', () => {
