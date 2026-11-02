@@ -31,6 +31,7 @@ import { calculateSpecialStarsMatrix, formatSpecialStarsPrompt, type SpecialStar
 import { calculateMonthlyFlow, formatMonthlyFlowPrompt, type MonthlyFlowResult } from './monthlyFlowEngine';
 import { calculateSpatialFengshui, formatSpatialFengshuiPrompt, type SpatialFengshuiResult } from './spatialFengshuiEngine';
 import { calculateVitalityCurve, formatVitalityCurvePrompt, type VitalityCurveResult } from './vitalityCurveEngine';
+import { calculateTojeong, formatTojeongPrompt, type TojeongResult } from './tojeongEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -81,6 +82,7 @@ export interface DeterministicEngineReport {
   monthlyFlow?: MonthlyFlowResult | null;
   spatialFengshui?: SpatialFengshuiResult | null;
   vitalityCurve?: VitalityCurveResult | null;
+  tojeongResult?: TojeongResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -476,13 +478,28 @@ export function runDeterministicEngine(params: {
     note: '수학적 게마트리아 수리 계산이 아닌 철학적·원형적 상징으로 상담을 지원합니다.'
   };
 
-  // 14. 토정비결 (미구현 상태 투명 표기)
-  const tojeongEnvelope: ToolCalculationEnvelope<unknown> = {
-    toolId: 'tojeong',
-    toolKoName: '토정비결',
-    status: 'not_implemented',
-    note: '정통 괘문 수리 계산 엔진이 현재 미구현 상태입니다. 사주 간지로 임의 조작하지 않습니다.'
-  };
+  // 14. 토정비결 (조선 정통 이지함 144괘문 수리 산법)
+  let tojeongEnvelope: ToolCalculationEnvelope<unknown>;
+  try {
+    if (!profile || !birthdateStr) {
+      tojeongEnvelope = { toolId: 'tojeong', toolKoName: '토정비결', status: 'skipped', note: '생년월일 미입력으로 계산 생략' };
+    } else {
+      const tojeongRes = calculateTojeong({ profile, targetYear: now.getFullYear() });
+      if (tojeongRes.status === 'calculated') {
+        tojeongEnvelope = {
+          toolId: 'tojeong',
+          toolKoName: '토정비결',
+          status: 'calculated',
+          method: tojeongRes.method,
+          data: tojeongRes
+        };
+      } else {
+        tojeongEnvelope = { toolId: 'tojeong', toolKoName: '토정비결', status: 'skipped', note: tojeongRes.note || '생년월일 미입력' };
+      }
+    }
+  } catch (err: any) {
+    tojeongEnvelope = { toolId: 'tojeong', toolKoName: '토정비결', status: 'error', note: err?.message || '토정비결 작괘 실패' };
+  }
 
   // 15. 태을신수 (미구현 상태 투명 표기)
   const taiyiEnvelope: ToolCalculationEnvelope<unknown> = {
@@ -525,6 +542,16 @@ export function runDeterministicEngine(params: {
   const monthlyFlowResult = calculateMonthlyFlow({ profile, targetYear: now.getFullYear() });
   const spatialFengshuiResult = calculateSpatialFengshui({ profile });
   const vitalityCurveResult = calculateVitalityCurve({ profile });
+  const tojeongResult = birthdateStr && profile
+    ? (() => {
+        try {
+          const res = calculateTojeong({ profile, targetYear: now.getFullYear() });
+          return res.status === 'calculated' ? res : null;
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -562,6 +589,7 @@ export function runDeterministicEngine(params: {
     monthlyFlow: monthlyFlowResult,
     spatialFengshui: spatialFengshuiResult,
     vitalityCurve: vitalityCurveResult,
+    tojeongResult,
     tools: toolsMap,
   };
 }
@@ -605,5 +633,6 @@ ${report.ziweiFlyingStars ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyi
 ${report.specialStarsMatrix ? '\n' + formatSpecialStarsPrompt(report.specialStarsMatrix) : ''}
 ${report.monthlyFlow ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}
 ${report.spatialFengshui ? '\n' + formatSpatialFengshuiPrompt(report.spatialFengshui) : ''}
-${report.vitalityCurve ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) : ''}`;
+${report.vitalityCurve ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) : ''}
+${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}`;
 }

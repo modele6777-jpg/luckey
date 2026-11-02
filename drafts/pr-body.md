@@ -1,40 +1,27 @@
-## 문제
+## 📋 요약
+`deterministicEngine.ts`에서 유일하게 `not_implemented`로 남아 있던 **토정비결(土亭秘訣)**을 100% 순수 수리 결정론적 정규 엔진으로 승격시킵니다. (v1.7.13)
 
-`luckey-flame.vercel.app`에서 AI 음성(TTS)이 항상 실패했습니다.
+## 🔮 신규: `src/lib/divination/tojeongEngine.ts`
+- **조선 정통 이지함 작괘 산법 완전 구현**
+  - 세는나이 = 대상 연도 − 음력 출생 연도 + 1
+  - 태세수(太歲數)·월건수(月建數)·일진수(日辰數) 표준 조견 분해표 적용
+  - 오호둔월법(五虎遁月法)으로 당해 연도 음력 생월의 월건 산출
+  - 일진(日辰)은 JDN 기반 검증식(2000-01-01=무오일·1900-01-01=갑술일 이중 앵커)으로 산출
+  - 당해 연도 음력 생월의 큰달/작은달(30/29) 판정, 윤달 출생은 평달 계산 전통 준수
+  - 상괘 = (나이+태세수)%8, 중괘 = (달 날수+월건수)%6, 하괘 = (음력 생일+일진수)%3 (나머지 0은 나눈 수)
+  - 상괘 8 × 중괘 6 × 하괘 3 = **144개 고유 괘문 코드**("111"~"863")
+- **48본괘 문헌 × 3동효 = 144괘 풀이 탑재**: 괘코드·주역 상응 괘명(64괘 주문왕 대응표)·총론 격(格) 서술·길흉 등급(대길/길/평/주의/흉)·1~12월 월별 괘상과 실천 조언
+- `calculateTojeong()` / `formatTojeongPrompt()` / `TojeongResult` 인터페이스 내보내기
+- 생년월일 누락 시 `status: 'skipped'`로 투명하게 생략 (사주 간지로 괘문 대체 금지)
 
-- `POST /api/ai/tts` → **HTTP 500 `FUNCTION_INVOCATION_FAILED`** (직접 확인)
-- 원인: `server/api-lib/edgeTts.ts`가 `node-edge-tts`를 import하는데, 이 패키지가
-  필요로 하는 `ws` 모듈이 Vercel 서버리스 번들에서 누락되어
-  (`Cannot find module './lib/stream'`) 람다가 실행 전에 크래시했습니다.
-- `node-edge-tts`는 WebSocket 연결 + OS 임시 디렉터리 파일 기록이라 서버리스에
-  근본적으로 취약한 구조였습니다.
+## 🔌 연동
+- `deterministicEngine.ts`: `tojeongEnvelope`을 `not_implemented` → `calculated`로 승격, `DeterministicEngineReport.tojeongResult` 필드 추가, `formatDeterministicEnginePrompt`에 토정비결 섹션 주입
+- `divinationCapabilities.ts`: tojeong `not_implemented` → `available` (1900~2100년 역법 지원 명시)
+- 감사 테스트의 미구현 도구 수 2 → 1 갱신
 
-## 해결
+## ✅ 수리 검증
+- 공개된 작괘 예시(2026 병오년, 음력 1990-05-20생): 태세수 16·월건수 18(갑오월·작은달 29)·일진수 17(기묘일) → **괘 551 손위풍** 완전 일치
+- 64괘 인덱스 표 ↔ 괘명 상·하괘 구성 전수 일치 검증, 144괘 코드 완전성 검증
 
-### 1. 제로 의존성 무료 음성 합성 (`server/api-lib/edgeTts.ts`)
-
-- `node-edge-tts`, `ws`, 임시 파일 기록을 전부 제거하고 **순수 `node:https`만으로**
-  무료 TTS를 합성합니다. 외부 패키지가 하나도 없어 번들 누락 문제가 원천 차단됩니다.
-- 낭독 문장을 문장·절(쉼표 등) 경계를 존중해 150자 이하 청크로 나눈 뒤,
-  각 청크의 mp3를 내려받아 `Buffer.concat`으로 병합하고 base64로 반환합니다.
-- 응답은 기존과 동일한 형식(`audioContent`, `encoding: 'mp3'`,
-  `sampleRate: 24000`, `provider: 'free-neural'`)이라 호출부(`ttsHandler.ts`,
-  `sites-api.ts`) 변경이 없습니다. 보이스 매핑(`resolveEdgeTtsVoice`)도 유지됩니다.
-- 청크당 15초 제한 시간, 1회 재시도, 요청 간 250ms 간격으로 안정성을 확보했습니다.
-- `node-edge-tts` 의존성을 package.json / package-lock.json / bun.lock에서 완전히 제거하고
-  타입 선언 파일(`server/types/node-edge-tts.d.ts`)을 삭제했습니다.
-
-### 2. 브라우저 내장 음성 폴백 (`src/utils/tts.ts`)
-
-- `/api/ai/tts` 요청이 실패하거나 200이 아닌 응답을 받으면,
-  브라우저 내장 `speechSynthesis`(Web Speech API)로 한국어(`ko-KR`, 가능하면 한국어
-  보이스 선택) 낭독을 즉시 시작합니다.
-- 사용자는 **더 이상 'AI 음성을 생성하지 못했습니다'를 보지 않고 항상 소리를 듣습니다.**
-- 폴백 낭독도 기존 세션과 맞물려 일시정지·재개·중지·연속 낭독(청크)·완료 종소리가 그대로 동작합니다.
-
-## 검증
-
-- 무료 TTS 제공자 엔드포인트에서 한국어 문장 200자급 연속 요청 2건: 모두
-  HTTP 200, 유효한 MPEG layer III 24kHz mp3 반환 확인.
-- 병합 오디오는 base64 mp3로 기존 클라이언트 재생 경로와 동일.
-- CI(saju-checks: npm ci + tsc + 빌드)가 package.json 변경으로 실행되어 전체 타입·빌드 검증을 수행합니다.
+## 🚀 배포
+- `package.json` 1.7.12 → **1.7.13**

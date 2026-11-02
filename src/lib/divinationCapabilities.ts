@@ -14,7 +14,7 @@ export const DIVINATION_CAPABILITIES: Record<DivinationToolId, { state: 'availab
   kabbalah: { state: 'symbolic', scope: '생명나무·세피로트의 철학적 상징 해석. 수리·이름 변환 계산이나 예측 결과로 주장하지 않음.', required: '질문·선택한 상징, 수리 계산에는 원문·변환 규칙' },
   iching: { state: 'available', scope: '프로필 계산실·채팅에서 암호학적 난수 동전법 또는 실제 6효 입력으로 본괘·변효·지괘 산출. 사용자 작괘 없이 임의 생성 금지.', required: '질문과 사용자가 생성·입력한 아래→위 6효' },
   thai_astrology: { state: 'partial', scope: '출생 요일의 행성·전통 색상만 제공. 정밀 호라삿 차트·신체 상태 진단 미산출.', required: '양력 환산 생년월일, 정밀 차트는 생시·위치·역법' },
-  tojeong: { state: 'not_implemented', scope: '토정비결 수리·괘문 계산 미구현. 사주 일간으로 연·월별 괘문을 대체하지 않음.', required: '적용 연도·음력 생일·전통 나이·유파별 수리와 괘문표' },
+  tojeong: { state: 'available', scope: '이지함 토정비결 수리 산법(태세수·월건수·일진수 작괘)으로 당해 연도 144괘 코드와 본괘·총론·12개월 괘상을 직접 산출. 1900~2100년 음력 역법 지원이며 사주 간지로 괘문을 대체하지 않음.', required: '양/음력·윤달 생년월일(생시 불요), 대상 연도 기본값은 현재 연도' },
   kyusei: { state: 'partial', scope: '입춘 절입 기준 본명성만 산출. 월명성·방위반·오황살·암검살·길방위 미산출.', required: '양력 환산 생년월일, 입춘 당일은 생시' },
   taiyi: { state: 'not_implemented', scope: '태을신수 국수·16궁·주객 산법 미구현. 시대·개인 길흉을 계산한 것으로 주장하지 않음.', required: '점시·적용 역법·국수 산법·검증된 포국' },
 };
