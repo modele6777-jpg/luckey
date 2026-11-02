@@ -92,47 +92,40 @@ function getCommonPrefixLength(a: string, b: string): number {
 
 /**
  * Tests whether a given sentence or heading matches the currently active TTS sentence/chunk.
+ * Conservative matching: only the current spoken sentence is considered active.
  */
 export function isSentenceActive(sentence: string, activeText: string | null | undefined): boolean {
   if (!activeText || !sentence) return false;
+
   const cleanS = cleanSentenceForMatching(sentence);
   const cleanA = cleanSentenceForMatching(activeText);
   if (cleanS.length < 2 || cleanA.length < 2) return false;
 
-  // 1. Direct equality
   if (cleanS === cleanA) return true;
 
-  // 2. High-confidence containment (e.g. multi-clause sentences or multi-sentence chunks)
-  // If active clause/sentence has >= 4 chars and is contained in the target sentence, or vice versa
-  if (cleanA.includes(cleanS) && cleanS.length >= 4) {
-    return true;
-  }
-  if (cleanS.includes(cleanA) && cleanA.length >= 4) {
-    return true;
+  const longer = cleanS.length >= cleanA.length ? cleanS : cleanA;
+  const shorter = longer === cleanS ? cleanA : cleanS;
+
+  const inclusionDelta = longer.length - shorter.length;
+  if (shorter.length >= 8 && (longer.includes(shorter) || shorter.includes(longer))) {
+    if (inclusionDelta <= 12 || shorter.length / longer.length >= 0.7) {
+      return true;
+    }
   }
 
-  const minLen = Math.min(cleanS.length, cleanA.length);
-  const maxLen = Math.max(cleanS.length, cleanA.length);
-  const ratio = minLen / maxLen;
-
-  // 3. Substantial prefix alignment with close lengths
   const prefixLen = getCommonPrefixLength(cleanS, cleanA);
-  if (prefixLen >= 6 && prefixLen / minLen >= 0.65) {
+  const maxLen = Math.max(cleanS.length, cleanA.length);
+  if (prefixLen >= 12 && prefixLen / maxLen >= 0.78) {
     return true;
   }
 
-  // 4. Key phrase token overlap
-  if (minLen >= 4) {
+  if (shorter.length >= 8) {
     const tokensS = getCleanedTokens(sentence);
     const tokensA = getCleanedTokens(activeText);
     if (tokensS.length >= 1 && tokensA.length >= 1) {
-      let matchedCount = 0;
-      for (const tok of tokensS) {
-        if (tok.length >= 2 && tokensA.some((tA) => tA.includes(tok) || tok.includes(tA))) {
-          matchedCount += 1;
-        }
-      }
-      if (matchedCount >= 1 && (matchedCount / Math.min(tokensS.length, tokensA.length) >= 0.5)) {
+      const tokenSetA = new Set(tokensA);
+      const shared = Array.from(new Set(tokensS.filter((tok) => tok.length >= 2 && tokenSetA.has(tok))));
+      if (shared.length >= 2 && shared.length / Math.min(tokensS.length, tokensA.length) >= 0.5) {
         return true;
       }
     }
@@ -147,7 +140,7 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
  * preserving parent font weight and size (crucial for h1~h6 headings and <strong> bold text).
  */
 export const TTS_HIGHLIGHT_CLASS =
-  'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] inline transition-all duration-300';
+  'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] [line-height:inherit]';
 
 // A sentence can be rendered in a list, a nested paragraph and an open dialog.
 // Give exactly one mounted candidate ownership instead of scrolling/highlighting all copies.
@@ -156,28 +149,31 @@ let highlightFrame = 0;
 function selectHighlightOwner() {
   cancelAnimationFrame(highlightFrame);
   highlightFrame = requestAnimationFrame(() => {
-    let owner: HTMLElement | null = null;
-    let best = -1;
-    for (const element of highlightCandidates.keys()) {
-      if (!element.isConnected || element.closest('[aria-hidden="true"], [hidden]')) continue;
+    const candidates = [...highlightCandidates.keys()].filter((element) => {
+      if (!element.isConnected) return false;
+      if (element.closest('[aria-hidden="true"], [hidden]')) return false;
+      return true;
+    });
+
+    if (!candidates.length) return;
+
+    const viewportCenter = window.innerHeight / 2;
+    let owner: HTMLElement | null = candidates[0];
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (const element of candidates) {
       const rect = element.getBoundingClientRect();
-      const visible = rect.bottom > 0 && rect.top < window.innerHeight;
-      const score = (element.closest('[role="dialog"], dialog') ? 4 : 0) + (visible ? 2 : 1);
-      if (score > best || (score === best && owner?.contains(element))) {
+      const center = rect.top + rect.height / 2;
+      const distance = Math.abs(center - viewportCenter);
+      if (rect.bottom > 0 && rect.top < window.innerHeight && distance < bestDistance) {
         owner = element;
-        best = score;
+        bestDistance = distance;
       }
     }
-    // If no candidate was within the viewport, select the first valid candidate so highlight is never lost
-    if (!owner) {
-      for (const element of highlightCandidates.keys()) {
-        if (element.isConnected && !element.closest('[aria-hidden="true"], [hidden]')) {
-          owner = element;
-          break;
-        }
-      }
+
+    for (const [element, update] of highlightCandidates) {
+      update(element === owner);
     }
-    for (const [element, update] of highlightCandidates) update(element === owner);
   });
 }
 
@@ -207,8 +203,8 @@ export function TTSHighlightMark({
   }, []);
 
   const themeClass = isLight
-    ? 'tts-active-sentence-highlight bg-amber-200/90 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-950 inline transition-all duration-300'
-    : 'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] [&_strong]:text-amber-50 inline transition-all duration-300';
+    ? 'tts-active-sentence-highlight bg-amber-200/90 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] [font-weight:inherit] [font-size:inherit] [line-height:inherit]'
+    : 'tts-active-sentence-highlight bg-amber-400/35 text-amber-100 px-1.5 py-0.5 rounded border-b-2 border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.4)] [font-weight:inherit] [font-size:inherit] [line-height:inherit]';
 
   return (
     <span
