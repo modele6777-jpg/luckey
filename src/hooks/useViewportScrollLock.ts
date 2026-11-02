@@ -110,13 +110,19 @@ export function useViewportScrollLock() {
         }
         const root = document.getElementById('root');
         if (root) {
+          // 🌟 Double Shift 근본 해결: #root를 fixed top-0로 못 박아 키보드 전개 시
+          // WebKit의 window 스크롤로 인해 상단이 뷰포트 위로 붕뜨는 것을 차단
+          root.style.position = 'fixed';
+          root.style.top = '0px';
+          root.style.left = '0px';
+          root.style.right = '0px';
           root.style.height = `${keyboardSafeHeight}px`;
-          root.style.minHeight = '0px'; // 절대 minHeight으로 인해 축소가 막히지 않도록 0px 지정
+          root.style.minHeight = `${keyboardSafeHeight}px`;
         }
         // CSS min-height(100lvh)로 인해 키보드 위 가시 영역으로 축소가 막히지 않도록 셸도 함께 해제
         const shell = root?.querySelector<HTMLElement>('.prism-app-shell') || null;
         if (shell) {
-          shell.style.height = `${keyboardSafeHeight}px`;
+          shell.style.height = '100%';
           shell.style.minHeight = '0px';
         }
       } else {
@@ -147,6 +153,10 @@ export function useViewportScrollLock() {
           }
           const root = document.getElementById('root');
           if (root) {
+            root.style.position = 'fixed';
+            root.style.top = '0px';
+            root.style.left = '0px';
+            root.style.right = '0px';
             root.style.height = `${fullScreenH}px`;
             root.style.minHeight = `${fullScreenH}px`;
           }
@@ -161,8 +171,12 @@ export function useViewportScrollLock() {
           }
           const root = document.getElementById('root');
           if (root) {
-            root.style.height = '';
-            root.style.minHeight = '';
+            root.style.position = 'fixed';
+            root.style.top = '0px';
+            root.style.left = '0px';
+            root.style.right = '0px';
+            root.style.height = '100lvh';
+            root.style.minHeight = '100lvh';
           }
           resetShell();
         }
