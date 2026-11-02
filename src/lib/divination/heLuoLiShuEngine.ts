@@ -97,8 +97,8 @@ export function calculateHeLuoLiShu(params?: {
 
   pillars.forEach((pillar) => {
     if (!pillar) return;
-    const sChar = pillar.stem.char;
-    const bChar = pillar.branch.char;
+    const sChar = pillar.gan;
+    const bChar = pillar.zhi;
     const sNum = STEM_NUMBERS[sChar] || 7;
     const bNum = BRANCH_NUMBERS[bChar] || 6;
 
