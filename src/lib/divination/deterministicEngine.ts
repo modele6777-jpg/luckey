@@ -43,6 +43,7 @@ import { calculateVedicAdvanced, formatVedicPrompt, type VedicResult } from './v
 import { calculateKabbalah, formatKabbalahPrompt, type KabbalahResult, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD } from './kabbalahEngine';
 import { calculateThaiHorasat, formatThaiHorasatPrompt, type ThaiHorasatResult, THAI_HORASAT_METHOD } from './thaiHorasatEngine';
 import { calculateHonggukQimen, formatHonggukQimenPrompt, type HonggukQimenResult, HONGGUK_QIMEN_ENGINE_VERSION, HONGGUK_QIMEN_METHOD } from './honggukQimenEngine';
+import { calculateDeterministicCompatibility, formatCompatibilityPrompt, type CompatibilityAnalysisResult } from './deterministicCompatibility';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -106,6 +107,7 @@ export interface DeterministicEngineReport {
   kabbalahResult?: KabbalahResult | null;
   thaiHorasatResult?: ThaiHorasatResult | null;
   honggukQimenResult?: HonggukQimenResult | null;
+  compatibilityResult?: CompatibilityAnalysisResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -131,6 +133,7 @@ export interface DeterministicEngineReport {
  */
 export function runDeterministicEngine(params: {
   profile?: UserProfile | null;
+  partnerProfile?: UserProfile | null;
   question?: string;
   forceAllTools?: boolean;
 }): DeterministicEngineReport {
@@ -700,6 +703,17 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 19. 5대 운명학 융합 궁합 마스터 엔진 (상대 프로필이 있을 때만 결정론 계산)
+  const compatibilityResult = params.partnerProfile && profile && birthdateStr
+    ? (() => {
+        try {
+          return calculateDeterministicCompatibility(profile, params.partnerProfile);
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -749,6 +763,7 @@ export function runDeterministicEngine(params: {
     kabbalahResult,
     thaiHorasatResult,
     honggukQimenResult,
+    compatibilityResult,
     tools: toolsMap,
   };
 }
@@ -805,5 +820,6 @@ ${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedR
 ${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}
 ${report.kabbalahResult ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}
 ${report.thaiHorasatResult ? '\n' + formatThaiHorasatPrompt(report.thaiHorasatResult) : ''}
-${report.honggukQimenResult ? '\n' + formatHonggukQimenPrompt(report.honggukQimenResult) : ''}`;
+${report.honggukQimenResult ? '\n' + formatHonggukQimenPrompt(report.honggukQimenResult) : ''}
+${report.compatibilityResult ? '\n' + formatCompatibilityPrompt(report.compatibilityResult) : ''}`;
 }
