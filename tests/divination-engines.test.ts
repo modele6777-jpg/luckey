@@ -7,6 +7,7 @@ import { getLiuRenByYueJiang } from 'liuren-ts-lib';
 import { SearchSunLongitude } from 'astronomy-engine';
 import { buildUserFifteenToolsDigest } from '../src/lib/fifteenDivinationTools';
 import { calculateTojeong, formatTojeongPrompt } from '../src/lib/divination/tojeongEngine';
+import { calculateKyusei, formatKyuseiPrompt, KYUSEI_ENGINE_VERSION } from '../src/lib/divination/kyuseiEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -122,5 +123,67 @@ test('Tojeong converts solar births to lunar, clamps a 30th-day birthday missing
   assert.equal(r.upperGua,8);assert.equal(r.middleGua,5);assert.equal(r.lowerGua,2);
   assert.equal(r.hexagramCode,'852');assert.equal(r.hexagramName,'지풍승');
   const skipped=calculateTojeong({profile:null,targetYear:2026});
+  assert.equal(skipped.status,'skipped');assert.match(skipped.note||'',/생년월일/);
+});
+
+test('Kyusei reference example: 1990-05-17 solar birth is 一白水星 with 五黄 巳-month moon star in 丙午 2026',()=>{
+  const r=calculateKyusei({profile:{basic:{birthdate:'1990-05-17',gender:'female' as const,birthCity:'서울'}},targetDate:new Date('2026-11-02T00:00:00Z')});
+  assert.equal(r.status,'calculated');assert.equal(r.engineVersion,KYUSEI_ENGINE_VERSION);
+  assert.equal(r.honmyosei.star,1);assert.equal(r.honmyosei.name,'일백수성(一白水星)');
+  assert.equal(r.getmyosei.star,5);assert.equal(r.getmyosei.monthBranch,'사');
+  assert.equal(r.targetYearGanZhi,'병오');
+  // 연반 2026: 일백 입중궁 순행 비성 (오황=남, 암검·세파=북)
+  assert.deepEqual(Object.fromEntries(r.annualChart.palaces.map(p=>[p.direction,p.star])),{북:6,북동:4,동:8,남동:9,남:5,남서:7,서:3,북서:2});
+  // 월반 2026-11 (술월): 구자 입중궁
+  assert.equal(r.monthlyChart.centerStar,9);
+  assert.deepEqual(Object.fromEntries(r.monthlyChart.palaces.map(p=>[p.direction,p.star])),{북:5,북동:3,동:7,남동:8,남:4,남서:6,서:2,북서:1});
+  const hz=Object.fromEntries(r.hazards.map(h=>[h.name,h.direction]));
+  assert.equal(hz['오황살(五黃煞)'],'남');assert.equal(hz['암검살(暗劍煞)'],'북');
+  assert.equal(hz['세파살(歲破煞)'],'북');assert.equal(hz['월파살(月破煞)'],'남동');
+  // 본명성 일백은 연반 중궁이라 본명살 방위가 없다
+  assert.ok(!('본명살(本命煞)' in hz));
+  // 상생입(금생수) 방위 중 흉살 없는 남서가 최길
+  assert.equal(r.topFortuneDirection!.direction,'남서');
+  assert.ok(r.fortuneDirections.find(f=>f.direction==='북')!.clean===false);
+  assert.equal(r.usageScenarios.length,3);
+  const again=calculateKyusei({profile:{basic:{birthdate:'1990-05-17',gender:'female' as const}},targetDate:new Date('2026-11-02T00:00:00Z')});
+  assert.equal(JSON.stringify(again.annualChart),JSON.stringify(r.annualChart));
+  const prompt=formatKyuseiPrompt(r);
+  assert(prompt.includes('LUCKEY-KS-v1.0.0')&&prompt.includes('오황살')&&prompt.includes('일백수성'));
+  assert.equal(formatKyuseiPrompt(calculateKyusei({profile:null})),'');
+});
+
+test('Kyusei year stars descend through the published table (2024 三碧 → 2026 一白) and 월반 재현',()=>{
+  const starOf=(d:string)=>calculateKyusei({profile:{basic:{birthdate:d,gender:'female' as const}},targetDate:new Date('2026-11-02T00:00:00Z')}).honmyosei.star;
+  assert.equal(starOf('2024-06-01'),3);assert.equal(starOf('2025-06-01'),2);assert.equal(starOf('2026-06-01'),1);
+  assert.equal(starOf('2000-06-01'),9);assert.equal(starOf('1995-06-01'),5);
+  // 삼벽(목) 사람: 상생입 별(일백)은 중궁 → 비화 사록 북동이 최길
+  const sam=calculateKyusei({profile:{basic:{birthdate:'2024-06-01',gender:'female' as const}},targetDate:new Date('2026-11-02T00:00:00Z')});
+  assert.equal(sam.topFortuneDirection!.direction,'북동');
+});
+
+test('Kyusei day star matches published 九星暦 tables including the leap-period (九星置閭) switch days',()=>{
+  const dayStar=(date:string)=>calculateKyusei({profile:{basic:{birthdate:'1990-05-17',gender:'female' as const}},targetDate:new Date(date+'T00:00:00Z')}).ilmyosei;
+  // 2014-12 kyusei.co3 실측표: 陰遁 끝에서 갑자일에 一白 이연 후 陽遁
+  assert.equal(dayStar('2014-12-16').star,3);assert.equal(dayStar('2014-12-17').star,2);
+  assert.equal(dayStar('2014-12-18').star,1);assert.equal(dayStar('2014-12-19').star,1);assert.equal(dayStar('2014-12-20').star,2);
+  // 2015-06 하지 직전 구자 이연 후 음遁
+  assert.equal(dayStar('2015-06-16').star,9);assert.equal(dayStar('2015-06-17').star,9);assert.equal(dayStar('2015-06-18').star,8);
+  // 2008-12-31: 윤달 갑오일(12-20) 七赤 陽遁 시작 → 12-31 九紫
+  assert.equal(dayStar('2008-12-31').star,9);
+  // 2019-11-23 갑자 一白 陽遁 시작(윤달 보정), 2020-06-20 갑오 三碧 陰遁, 2031-12-20 갑오 七赤 陽遁
+  assert.equal(dayStar('2019-11-23').star,1);assert.equal(dayStar('2020-06-20').star,3);assert.equal(dayStar('2031-12-20').star,7);
+  // 일진: 2000-01-01 = 무오일, 2014-12-19 = 갑자일
+  assert.equal(dayStar('2000-01-01').dayGanZhi,'무오');assert.equal(dayStar('2014-12-19').dayGanZhi,'갑자');
+});
+
+test('Kyusei keeps the Ipchun-day boundary honest and skips without birthdate',()=>{
+  const skippedDay=calculateKyusei({profile:{basic:{birthdate:'2026-02-04',gender:'female' as const}},targetDate:new Date('2026-11-02T00:00:00Z')});
+  assert.equal(skippedDay.status,'skipped');assert.match(skippedDay.note||'',/입춘 당일 생시 미입력/);
+  const before=calculateKyusei({profile:{basic:{birthdate:'2026-02-04',birthtime:'00:30',gender:'female' as const}},targetDate:new Date('2026-11-02T00:00:00Z')});
+  const after=calculateKyusei({profile:{basic:{birthdate:'2026-02-04',birthtime:'23:30',gender:'female' as const}},targetDate:new Date('2026-11-02T00:00:00Z')});
+  assert.equal(before.status,'calculated');assert.equal(after.status,'calculated');
+  assert.notEqual(before.honmyosei.star,after.honmyosei.star);
+  const skipped=calculateKyusei({profile:null});
   assert.equal(skipped.status,'skipped');assert.match(skipped.note||'',/생년월일/);
 });

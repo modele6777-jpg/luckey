@@ -20,7 +20,6 @@ import { castIching, calculateIching } from './iching';
 import { calculateLiuren, calculateQimen, eventInstant } from './eventCharts';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
-import { getAstronomicalSajuYear, getYearSolarTerms } from '../astronomicalSolarTerms';
 import { calculateChronoTransit, formatChronoTransitPrompt, type ChronoTransitResult } from './chronoTransitEngine';
 import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, type LifeSeasonTimingResult } from './lifeSeasonTimingEngine';
 import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, type EnergeticPrescriptionResult } from './energeticPrescriptionEngine';
@@ -32,6 +31,7 @@ import { calculateMonthlyFlow, formatMonthlyFlowPrompt, type MonthlyFlowResult }
 import { calculateSpatialFengshui, formatSpatialFengshuiPrompt, type SpatialFengshuiResult } from './spatialFengshuiEngine';
 import { calculateVitalityCurve, formatVitalityCurvePrompt, type VitalityCurveResult } from './vitalityCurveEngine';
 import { calculateTojeong, formatTojeongPrompt, type TojeongResult } from './tojeongEngine';
+import { calculateKyusei, formatKyuseiPrompt, type KyuseiResult } from './kyuseiEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -83,6 +83,7 @@ export interface DeterministicEngineReport {
   spatialFengshui?: SpatialFengshuiResult | null;
   vitalityCurve?: VitalityCurveResult | null;
   tojeongResult?: TojeongResult | null;
+  kyuseiResult?: KyuseiResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -112,17 +113,6 @@ const MAHABOTE_ANIMALS = [
   '기니피그(금요일·금성·예술과 공감)',
   '나가 용(토요일·토성·인내와 깊은 내공)'
 ];
-const KYUSEI_STARS = [
-  '일백수성(一白水星·지혜와 유연한 스며듦)',
-  '이흑토성(二黑土星·포용과 대지의 성실함)',
-  '삼벽목성(三碧木星·약동하는 새싹과 개척)',
-  '사록목성(四綠木星·바람 같은 조화와 인연)',
-  '오황토성(五黃土星·중심의 제왕적 돌파력)',
-  '육백금성(六白金星·하늘의 품격과 결단력)',
-  '칠적금성(七赤金星·기쁨과 언변·풍요)',
-  '팔백토성(八白土星·산처럼 굳건한 전환과 축적)',
-  '구자화성(九紫火星·태양 같은 통찰과 화려한 영감)'
-];
 const THAI_DAY_COLORS = ['빨강(태양)', '노랑/크림(달)', '분홍(화성)', '초록(수성)', '주황(목성)', '파랑(금성)', '보라(토성)'];
 
 /**
@@ -151,7 +141,6 @@ export function runDeterministicEngine(params: {
   let isLunar = false;
   let parsedBirthTime: { hour: number; minute: number } | null = null;
   let dayOfWeek = 0;
-  let effectiveSajuYear = now.getUTCFullYear();
 
   if (birthdateStr) {
     try {
@@ -164,7 +153,6 @@ export function runDeterministicEngine(params: {
       civil.setUTCFullYear(resolved.solarDate.year, resolved.solarDate.month - 1, resolved.solarDate.day);
       civil.setUTCHours(parsedBirthTime?.hour ?? 12, parsedBirthTime?.minute ?? 0, 0, 0);
       dayOfWeek = civil.getUTCDay();
-      effectiveSajuYear = getAstronomicalSajuYear(civil).sajuYear;
     } catch (_) {
       // 날짜 파싱 오류 안전 복구
     }
@@ -347,25 +335,27 @@ export function runDeterministicEngine(params: {
     mahaboteEnvelope = { toolId: 'mahabote', toolKoName: '마하보테', status: 'skipped', note: '생년월일 미입력' };
   }
 
-  // 7. 구성학 (九星氣學 - 입춘 기준 본명성)
+  // 7. 구성학 (九星氣學 - 입춘 본명성·월명성·일성과 9궁 연·월·일반 포국, 길흉방위)
   let kyuseiEnvelope: ToolCalculationEnvelope<unknown>;
-  if (birthdateStr) {
-    let sum = [...String(effectiveSajuYear)].reduce((total, digit) => total + Number(digit), 0);
-    while (sum > 9) sum = [...String(sum)].reduce((total, digit) => total + Number(digit), 0);
-    const star = ((11 - sum) % 9 + 9) % 9 || 9;
-    kyuseiEnvelope = {
-      toolId: 'kyusei',
-      toolKoName: '구성학',
-      status: 'calculated',
-      method: '입춘(立春) 절입 기준 연도 수리 합산 본명성 산출',
-      data: {
-        effectiveYear: effectiveSajuYear,
-        honmeisei: KYUSEI_STARS[star - 1]
-      },
-      limitations: ['월명성 및 방위반(오황살·암검살·길방위)은 미산출 상태입니다.']
-    };
-  } else {
-    kyuseiEnvelope = { toolId: 'kyusei', toolKoName: '구성학', status: 'skipped', note: '생년월일 미입력' };
+  try {
+    if (!profile || !birthdateStr) {
+      kyuseiEnvelope = { toolId: 'kyusei', toolKoName: '구성학', status: 'skipped', note: '생년월일 미입력' };
+    } else {
+      const kyuseiRes = calculateKyusei({ profile, targetDate: now });
+      if (kyuseiRes.status === 'calculated') {
+        kyuseiEnvelope = {
+          toolId: 'kyusei',
+          toolKoName: '구성학',
+          status: 'calculated',
+          method: kyuseiRes.method,
+          data: kyuseiRes
+        };
+      } else {
+        kyuseiEnvelope = { toolId: 'kyusei', toolKoName: '구성학', status: kyuseiRes.status, note: kyuseiRes.note || '생년월일 미입력' };
+      }
+    }
+  } catch (err: any) {
+    kyuseiEnvelope = { toolId: 'kyusei', toolKoName: '구성학', status: 'error', note: err?.message || '구성학 9궁 포국 실패' };
   }
 
   // 8. 태국 점성술 (호라삿 요일 상징)
@@ -552,6 +542,16 @@ export function runDeterministicEngine(params: {
         }
       })()
     : null;
+  const kyuseiResult = birthdateStr && profile
+    ? (() => {
+        try {
+          const res = calculateKyusei({ profile, targetDate: now });
+          return res.status === 'calculated' ? res : null;
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
@@ -590,6 +590,7 @@ export function runDeterministicEngine(params: {
     spatialFengshui: spatialFengshuiResult,
     vitalityCurve: vitalityCurveResult,
     tojeongResult,
+    kyuseiResult,
     tools: toolsMap,
   };
 }
@@ -634,5 +635,6 @@ ${report.specialStarsMatrix ? '\n' + formatSpecialStarsPrompt(report.specialStar
 ${report.monthlyFlow ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}
 ${report.spatialFengshui ? '\n' + formatSpatialFengshuiPrompt(report.spatialFengshui) : ''}
 ${report.vitalityCurve ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) : ''}
-${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}`;
+${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}
+${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}`;
 }
