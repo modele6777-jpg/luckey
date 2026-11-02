@@ -25,6 +25,9 @@ import { calculateNobleNetwork, formatNobleNetworkPrompt, NOBLE_NETWORK_VERSION 
 import { calculateVoicePersona, formatVoicePersonaPrompt, VOICE_PERSONA_VERSION } from '../src/lib/divination/voicePersonaEngine';
 import { calculateContractShield, formatContractShieldPrompt, CONTRACT_SHIELD_VERSION } from '../src/lib/divination/contractShieldEngine';
 import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, LIFE_DOMAIN_WHEEL_VERSION } from '../src/lib/divination/lifeDomainWheelEngine';
+import { calculateDeepWorkFlow, formatDeepWorkFlowPrompt, DEEP_WORK_FLOW_VERSION } from '../src/lib/divination/deepWorkFlowEngine';
+import { calculateSleepSubconscious, formatSleepSubconsciousPrompt, SLEEP_SUBCONSCIOUS_VERSION } from '../src/lib/divination/sleepSubconsciousEngine';
+import { calculateQuantumLeapTiming, formatQuantumLeapPrompt, QUANTUM_LEAP_VERSION } from '../src/lib/divination/quantumLeapTimingEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1750,6 +1753,44 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   assert(prompt.includes('1순위 돌파 도메인'));
 });
 
+test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매트릭스 검증', () => {
+  const res = calculateDeepWorkFlow({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, DEEP_WORK_FLOW_VERSION);
+  assert(res.archetype.title.length > 0);
+  assert(res.flowFocusScore >= 0 && res.flowFocusScore <= 100);
+  assert(res.environment.soundFrequency.length > 0);
+  assert(res.archetype.optimalSprintMinutes > 0);
+  const prompt = formatDeepWorkFlowPrompt(res);
+  assert(prompt.includes(DEEP_WORK_FLOW_VERSION));
+  assert(prompt.includes('1순위 몰입 아키타입'));
+  assert(prompt.includes('최적 환경 매트릭스'));
+});
+
+test('Sleep Subconscious Engine: 수면 뇌파 및 3단계 나이트 리셋 검증', () => {
+  const res = calculateSleepSubconscious({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, SLEEP_SUBCONSCIOUS_VERSION);
+  assert(res.sleepRecoveryScore >= 0 && res.sleepRecoveryScore <= 100);
+  assert(res.soundWaveProtocol.frequencyHz.length > 0);
+  assert(res.nightRitual.step1BrainDump.length > 0);
+  assert(res.dreamDecoding.subconsciousMessage.length > 0);
+  const prompt = formatSleepSubconsciousPrompt(res);
+  assert(prompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
+  assert(prompt.includes('수면 회복 잠재력'));
+  assert(prompt.includes('나이트 리셋 리추얼'));
+});
+
+test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 검증', () => {
+  const res = calculateQuantumLeapTiming({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, QUANTUM_LEAP_VERSION);
+  assert(res.leapReadinessScore >= 0 && res.leapReadinessScore <= 100);
+  assert(res.currentPhase.titleKo.length > 0);
+  assert(res.goldenWindow.bestTimingDesc.length > 0);
+  const prompt = formatQuantumLeapPrompt(res);
+  assert(prompt.includes(QUANTUM_LEAP_VERSION));
+  assert(prompt.includes('퀀텀 점프 준비도'));
+  assert(prompt.includes('골든 모멘텀'));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1768,6 +1809,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.voicePersonaResult !== null && report.voicePersonaResult !== undefined);
   assert(report.contractShieldResult !== null && report.contractShieldResult !== undefined);
   assert(report.lifeDomainWheelResult !== null && report.lifeDomainWheelResult !== undefined);
+  assert(report.deepWorkFlowResult !== null && report.deepWorkFlowResult !== undefined);
+  assert(report.sleepSubconsciousResult !== null && report.sleepSubconsciousResult !== undefined);
+  assert(report.quantumLeapResult !== null && report.quantumLeapResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1788,4 +1832,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(VOICE_PERSONA_VERSION));
   assert(enginePrompt.includes(CONTRACT_SHIELD_VERSION));
   assert(enginePrompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
+  assert(enginePrompt.includes(DEEP_WORK_FLOW_VERSION));
+  assert(enginePrompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
+  assert(enginePrompt.includes(QUANTUM_LEAP_VERSION));
 });

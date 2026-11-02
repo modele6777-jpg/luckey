@@ -60,6 +60,9 @@ import { calculateNobleNetwork, formatNobleNetworkPrompt, type NobleNetworkResul
 import { calculateVoicePersona, formatVoicePersonaPrompt, type VoicePersonaResult } from './voicePersonaEngine';
 import { calculateContractShield, formatContractShieldPrompt, type ContractShieldResult } from './contractShieldEngine';
 import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, type LifeDomainWheelResult } from './lifeDomainWheelEngine';
+import { calculateDeepWorkFlow, formatDeepWorkFlowPrompt, type DeepWorkFlowResult } from './deepWorkFlowEngine';
+import { calculateSleepSubconscious, formatSleepSubconsciousPrompt, type SleepSubconsciousResult } from './sleepSubconsciousEngine';
+import { calculateQuantumLeapTiming, formatQuantumLeapPrompt, type QuantumLeapResult } from './quantumLeapTimingEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -140,6 +143,9 @@ export interface DeterministicEngineReport {
   voicePersonaResult?: VoicePersonaResult | null;
   contractShieldResult?: ContractShieldResult | null;
   lifeDomainWheelResult?: LifeDomainWheelResult | null;
+  deepWorkFlowResult?: DeepWorkFlowResult | null;
+  sleepSubconsciousResult?: SleepSubconsciousResult | null;
+  quantumLeapResult?: QuantumLeapResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -879,6 +885,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 32. 창작 아우라 & 딥워크 몰입 엔진
+  const deepWorkFlowResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateDeepWorkFlow({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 33. 수면 뇌파 & 무의식 직관 디코딩 엔진
+  const sleepSubconsciousResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSleepSubconscious({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 34. 퀀텀 점프 & 승부수 모멘텀 타이밍 엔진
+  const quantumLeapResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateQuantumLeapTiming({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -945,6 +984,9 @@ export function runDeterministicEngine(params: {
     voicePersonaResult,
     contractShieldResult,
     lifeDomainWheelResult,
+    deepWorkFlowResult,
+    sleepSubconsciousResult,
+    quantumLeapResult,
     tools: toolsMap,
   };
 }
@@ -1018,5 +1060,8 @@ ${report.mentalResilienceResult ? '\n' + formatMentalResiliencePrompt(report.men
 ${report.nobleNetworkResult ? '\n' + formatNobleNetworkPrompt(report.nobleNetworkResult) : ''}
 ${report.voicePersonaResult ? '\n' + formatVoicePersonaPrompt(report.voicePersonaResult) : ''}
 ${report.contractShieldResult ? '\n' + formatContractShieldPrompt(report.contractShieldResult) : ''}
-${report.lifeDomainWheelResult ? '\n' + formatLifeDomainWheelPrompt(report.lifeDomainWheelResult) : ''}`;
+${report.lifeDomainWheelResult ? '\n' + formatLifeDomainWheelPrompt(report.lifeDomainWheelResult) : ''}
+${report.deepWorkFlowResult ? '\n' + formatDeepWorkFlowPrompt(report.deepWorkFlowResult) : ''}
+${report.sleepSubconsciousResult ? '\n' + formatSleepSubconsciousPrompt(report.sleepSubconsciousResult) : ''}
+${report.quantumLeapResult ? '\n' + formatQuantumLeapPrompt(report.quantumLeapResult) : ''}`;
 }
