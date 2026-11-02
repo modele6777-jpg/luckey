@@ -1390,7 +1390,7 @@ async function invokeLLMStreamInner(params: {
           : [{ text: String(m.content || '') }],
       }));
 
-      for (const currentModel of modelsToTry) {
+      directGeminiModelLoop: for (const currentModel of modelsToTry) {
         if (hasEmittedToCaller || params.signal?.aborted) break;
 
         for (const omitThinking of [false, true]) {
@@ -1399,8 +1399,8 @@ async function invokeLLMStreamInner(params: {
             const resolvedThinking = omitThinking ? undefined : resolveModelThinkingLevel(currentModel, params.thinkingLevel);
             const firstTokenDeadlineMs =
               params.thinkingLevel === "MEDIUM" || params.thinkingLevel === "HIGH"
-                ? 18000
-                : 15000;
+                ? 10000
+                : 8000;
 
             const responseStream = await Promise.race([
               genAI.models.generateContentStream({
@@ -1473,6 +1473,11 @@ async function invokeLLMStreamInner(params: {
             }
             markClientModelThrottled(currentModel, 120000);
             console.warn(`[invokeLLMStream] Gemini stream model ${currentModel} error/timeout:`, streamModelErr?.message || streamModelErr);
+            const errMsg = String(streamModelErr?.message || streamModelErr);
+            if (errMsg.includes("timeout") || errMsg.includes("Timeout") || errMsg.includes("fetch") || errMsg.includes("Network") || errMsg.includes("Failed")) {
+              console.warn(`[invokeLLMStream] Direct client SDK network/timeout blocked (${currentModel}). Immediately falling back to server proxy.`);
+              break directGeminiModelLoop;
+            }
             break;
           }
         }
