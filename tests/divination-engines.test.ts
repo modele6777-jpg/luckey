@@ -9,6 +9,10 @@ import { buildUserFifteenToolsDigest } from '../src/lib/fifteenDivinationTools';
 import { calculateTojeong, formatTojeongPrompt } from '../src/lib/divination/tojeongEngine';
 import { calculateKyusei, formatKyuseiPrompt, KYUSEI_ENGINE_VERSION } from '../src/lib/divination/kyuseiEngine';
 import { calculateSamjaeGyoUn, formatSamjaeGyoUnPrompt, SAMJAE_GYOUN_ENGINE_VERSION } from '../src/lib/divination/samjaeGyoUnEngine';
+import { calculateLiurenMaster, formatLiurenMasterPrompt, LIUREN_MASTER_ENGINE_VERSION } from '../src/lib/divination/liurenMasterEngine';
+import { calculateIchingMaster, formatIchingMasterPrompt, ICHING_MASTER_ENGINE_VERSION } from '../src/lib/divination/ichingMasterEngine';
+import { calculateTarotMaster, formatTarotMasterPrompt, TAROT_MASTER_ENGINE_VERSION } from '../src/lib/divination/tarotMasterEngine';
+import { calculateHeLuoLiShu, formatHeLuoLiShuPrompt, HELUOLISHU_ENGINE_VERSION } from '../src/lib/divination/heLuoLiShuEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1495,4 +1499,96 @@ test('Unified Synastry: 결정론성(동일 입력 동일 출력)과 프롬프�
   // partnerProfile이 없으면 미바인딩
   const solo = runDeterministicEngine({ profile: csA, question: '내 운세 봐줘' });
   assert(!solo.compatibilityResult);
+});
+
+test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 프롬프트 포맷터 검증', () => {
+  const instant = new Date('2026-11-02T10:00:00Z');
+  const res = calculateLiurenMaster(instant);
+  assert.equal(res.status, 'calculated');
+  assert.equal(res.engineVersion, LIUREN_MASTER_ENGINE_VERSION);
+  assert.equal(res.fourLessons.length, 4);
+  assert(res.fourLessons[0].upper.length > 0 && res.fourLessons[0].lower.length > 0);
+  assert.equal(res.threeTransmissions.length, 3);
+  assert(res.threeTransmissions[0].stage.includes('초전'));
+  assert(res.decisionScore >= 0 && res.decisionScore <= 100);
+  assert(res.primaryGeneral.name.length > 0);
+  const prompt = formatLiurenMasterPrompt(res);
+  assert(prompt.includes(LIUREN_MASTER_ENGINE_VERSION));
+  assert(prompt.includes('사과(四課) 포국'));
+  assert(prompt.includes('삼전(三傳) 타임라인'));
+  assert(prompt.includes('결단 스코어'));
+});
+
+test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) 및 체용 생극제화 검증', () => {
+  const res = calculateIchingMaster([7, 8, 9, 8, 7, 8]); // 3효 양동효
+  assert.equal(res.status, 'calculated');
+  assert.equal(res.engineVersion, ICHING_MASTER_ENGINE_VERSION);
+  assert.deepEqual(res.movingLines, [3]);
+  assert(res.primary.number >= 1 && res.primary.number <= 64);
+  assert(res.changed.number >= 1 && res.changed.number <= 64);
+  assert(res.nuclear.number >= 1 && res.nuclear.number <= 64);
+  assert(res.opposite.number >= 1 && res.opposite.number <= 64);
+  assert(res.reversed.number >= 1 && res.reversed.number <= 64);
+  assert(res.decisionScore >= 0 && res.decisionScore <= 100);
+  assert(res.tiYong.relationship.length > 0);
+  const prompt = formatIchingMasterPrompt(res);
+  assert(prompt.includes(ICHING_MASTER_ENGINE_VERSION));
+  assert(prompt.includes('본괘(本卦)'));
+  assert(prompt.includes('지괘(之卦/변괘)'));
+  assert(prompt.includes('호괘(互卦/잠재)'));
+  assert(prompt.includes('착괘(錯卦/그림자)'));
+  assert(prompt.includes('종괘(綜卦/상대관점)'));
+  assert(prompt.includes('체용(體用) 생극제화'));
+});
+
+test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·연간 카드 및 4원소 밸런스 검증', () => {
+  const res = calculateTarotMaster({ profile, targetYear: 2026 });
+  assert.equal(res.status, 'calculated');
+  assert.equal(res.engineVersion, TAROT_MASTER_ENGINE_VERSION);
+  assert(res.soulCard.number >= 1 && res.soulCard.number <= 9);
+  assert(res.personalityCard.number >= 1 && res.personalityCard.number <= 21);
+  assert(res.yearCard.number >= 1 && res.yearCard.number <= 21);
+  assert.equal(res.timelineCards.length, 3);
+  const totalPct = res.elementalBalance.fire + res.elementalBalance.water + res.elementalBalance.air + res.elementalBalance.earth;
+  assert.equal(totalPct, 100);
+  assert(res.tarotVitalityScore >= 0 && res.tarotVitalityScore <= 100);
+  const prompt = formatTarotMasterPrompt(res);
+  assert(prompt.includes(TAROT_MASTER_ENGINE_VERSION));
+  assert(prompt.includes('생애 소울 카드'));
+  assert(prompt.includes('생애 퍼스널리티 카드'));
+  assert(prompt.includes('올해의 성장 카드'));
+  assert(prompt.includes('3카드 타임라인 스프레드'));
+});
+
+test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 일생 마스터플랜 검증', () => {
+  const res = calculateHeLuoLiShu({ profile });
+  assert.equal(res.status, 'calculated');
+  assert.equal(res.engineVersion, HELUOLISHU_ENGINE_VERSION);
+  assert(res.heavenNumber > 0 && res.earthNumber > 0);
+  assert(res.innateHexagram.number >= 1 && res.innateHexagram.number <= 64);
+  assert(res.acquiredHexagram.number >= 1 && res.acquiredHexagram.number <= 64);
+  assert(res.yuanTangYao >= 1 && res.yuanTangYao <= 6);
+  assert(res.lifeCycleBalance.earlyLifeScore >= 0 && res.lifeCycleBalance.earlyLifeScore <= 100);
+  assert(res.lifeCycleBalance.matureLifeScore >= 0 && res.lifeCycleBalance.matureLifeScore <= 100);
+  const prompt = formatHeLuoLiShuPrompt(res);
+  assert(prompt.includes(HELUOLISHU_ENGINE_VERSION));
+  assert(prompt.includes('선천본괘'));
+  assert(prompt.includes('원당효'));
+  assert(prompt.includes('후천변괘'));
+});
+
+test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 4대 마스터 엔진 바인딩 검증', () => {
+  const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
+  assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
+  assert(report.ichingMasterResult !== null && report.ichingMasterResult !== undefined);
+  assert(report.tarotMasterResult !== null && report.tarotMasterResult !== undefined);
+  assert(report.heLuoLiShuResult !== null && report.heLuoLiShuResult !== undefined);
+  assert.equal(report.tools.liuren.status, 'calculated');
+  assert.equal(report.tools.iching.status, 'calculated');
+  assert.equal(report.tools.tarot.status, 'calculated');
+  const enginePrompt = formatDeterministicEnginePrompt(report);
+  assert(enginePrompt.includes(LIUREN_MASTER_ENGINE_VERSION));
+  assert(enginePrompt.includes(ICHING_MASTER_ENGINE_VERSION));
+  assert(enginePrompt.includes(TAROT_MASTER_ENGINE_VERSION));
+  assert(enginePrompt.includes(HELUOLISHU_ENGINE_VERSION));
 });
