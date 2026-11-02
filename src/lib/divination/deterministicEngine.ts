@@ -39,6 +39,7 @@ import { calculateGeokguk, formatGeokgukPrompt, type GeokgukResult } from './geo
 import { calculateTwentyEightMansions, formatTwentyEightMansionsPrompt, type TwentyEightMansionsResult } from './twentyEightMansionsEngine';
 import { calculateMahabote, formatMahabotePrompt, type MahaboteResult, MAHABOTE_ENGINE_VERSION, MAHABOTE_METHOD } from './mahaboteEngine';
 import { calculateSukuyoAdvanced, formatSukuyoPrompt, type SukuyoResult } from './sukuyoEngine';
+import { calculateVedicAdvanced, formatVedicPrompt, type VedicResult } from './vedicEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -98,6 +99,7 @@ export interface DeterministicEngineReport {
   twentyEightMansionsResult?: TwentyEightMansionsResult | null;
   mahaboteResult?: MahaboteResult | null;
   sukuyoAdvancedResult?: SukuyoResult | null;
+  vedicAdvancedResult?: VedicResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -301,6 +303,14 @@ export function runDeterministicEngine(params: {
   }
 
   // 5. 베딕 점성술 (Vedic Jyotish, J2000 Lahiri 항성황도 & 빔쇼타리 다샤)
+  // 정통 27 나크샤트라 & 120년 빔쇼타리 다샤 확장 수리 (생시 없으면 정오 기준 null-safe)
+  const vedicAdvancedResult = (() => {
+    try {
+      return calculateVedicAdvanced({ profile });
+    } catch (_) {
+      return null;
+    }
+  })();
   let vedicEnvelope: ToolCalculationEnvelope<unknown>;
   try {
     if (!profile || !birthdateStr || !birthtimeStr || !birthCityStr) {
@@ -317,8 +327,8 @@ export function runDeterministicEngine(params: {
         toolKoName: '베딕 점성술',
         status: 'calculated',
         method: vedicRes.method,
-        data: vedicRes,
-        limitations: vedicRes.limitations
+        data: { ...vedicRes, advanced: vedicAdvancedResult },
+        limitations: [...vedicRes.limitations, '나크샤트라·다샤 확장 수리는 vedicAdvancedResult(vedicEngine)가 별도 산출합니다.'],
       };
     }
   } catch (err: any) {
@@ -687,6 +697,7 @@ export function runDeterministicEngine(params: {
     twentyEightMansionsResult,
     mahaboteResult,
     sukuyoAdvancedResult,
+    vedicAdvancedResult,
     tools: toolsMap,
   };
 }
@@ -739,5 +750,6 @@ ${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}
 ${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}
 ${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}
 ${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}
-${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}`;
+${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}
+${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}`;
 }
