@@ -48,6 +48,10 @@ import { calculateLiurenMaster, formatLiurenMasterPrompt, type LiurenMasterResul
 import { calculateIchingMaster, formatIchingMasterPrompt, type IchingMasterResult, ICHING_MASTER_ENGINE_VERSION, ICHING_MASTER_METHOD } from './ichingMasterEngine';
 import { calculateTarotMaster, formatTarotMasterPrompt, type TarotMasterResult, TAROT_MASTER_ENGINE_VERSION, TAROT_MASTER_METHOD } from './tarotMasterEngine';
 import { calculateHeLuoLiShu, formatHeLuoLiShuPrompt, type HeLuoLiShuResult, HELUOLISHU_ENGINE_VERSION, HELUOLISHU_METHOD } from './heLuoLiShuEngine';
+import { calculateDynamicClashTrigger, formatDynamicClashPrompt, type DynamicClashResult } from './dynamicClashTriggerEngine';
+import { calculateTwelveSpiritsCycle, formatTwelveSpiritsPrompt, type TwelveSpiritsResult } from './twelveSpiritsCycleEngine';
+import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, type PythagoreanLifecycleResult } from './pythagoreanLifecycleEngine';
+import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, type AstrologicalDecanSabianResult } from './astrologicalDecanSabianEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -116,6 +120,10 @@ export interface DeterministicEngineReport {
   ichingMasterResult?: IchingMasterResult | null;
   tarotMasterResult?: TarotMasterResult | null;
   heLuoLiShuResult?: HeLuoLiShuResult | null;
+  dynamicClashResult?: DynamicClashResult | null;
+  twelveSpiritsResult?: TwelveSpiritsResult | null;
+  pythagoreanLifecycleResult?: PythagoreanLifecycleResult | null;
+  astrologicalDecanSabianResult?: AstrologicalDecanSabianResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -723,6 +731,50 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 20. 실시간 삼형·육충·파해 동적 트리거 엔진
+  const dynamicClashResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateDynamicClashTrigger({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 21. 사주 12신살(겁재천지년월망장반역육화) 완전 순환 엔진
+  const twelveSpiritsResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateTwelveSpiritsCycle({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 22. 피타고라스 4대 피너클 & 챌린지 생애 주기 엔진
+  const pythagoreanLifecycleResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculatePythagoreanLifecycle({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 23. 점성술 36 데칸 & 사비안 심볼 360° 엔진
+  const astrologicalDecanSabianResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateAstrologicalDecanSabian({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -777,6 +829,10 @@ export function runDeterministicEngine(params: {
     ichingMasterResult,
     tarotMasterResult,
     heLuoLiShuResult,
+    dynamicClashResult,
+    twelveSpiritsResult,
+    pythagoreanLifecycleResult,
+    astrologicalDecanSabianResult,
     tools: toolsMap,
   };
 }
@@ -838,5 +894,9 @@ ${report.compatibilityResult ? '\n' + formatCompatibilityPrompt(report.compatibi
 ${report.liurenMasterResult ? '\n' + formatLiurenMasterPrompt(report.liurenMasterResult) : ''}
 ${report.ichingMasterResult ? '\n' + formatIchingMasterPrompt(report.ichingMasterResult) : ''}
 ${report.tarotMasterResult ? '\n' + formatTarotMasterPrompt(report.tarotMasterResult) : ''}
-${report.heLuoLiShuResult ? '\n' + formatHeLuoLiShuPrompt(report.heLuoLiShuResult) : ''}`;
+${report.heLuoLiShuResult ? '\n' + formatHeLuoLiShuPrompt(report.heLuoLiShuResult) : ''}
+${report.dynamicClashResult ? '\n' + formatDynamicClashPrompt(report.dynamicClashResult) : ''}
+${report.twelveSpiritsResult ? '\n' + formatTwelveSpiritsPrompt(report.twelveSpiritsResult) : ''}
+${report.pythagoreanLifecycleResult ? '\n' + formatPythagoreanLifecyclePrompt(report.pythagoreanLifecycleResult) : ''}
+${report.astrologicalDecanSabianResult ? '\n' + formatAstrologicalDecanSabianPrompt(report.astrologicalDecanSabianResult) : ''}`;
 }
