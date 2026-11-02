@@ -89,6 +89,8 @@ export function useViewportScrollLock() {
       const visual = window.visualViewport;
       const innerH = window.innerHeight;
       const visualH = visual ? visual.height : innerH;
+      const visualTop = visual ? Math.max(0, Math.round(visual.offsetTop)) : 0;
+      const visualLeft = visual ? Math.max(0, Math.round(visual.offsetLeft)) : 0;
 
       // 가상 키보드가 실제로 올라와 있는지 정밀 판별:
       // 1. 활성 입력창(input/textarea/contenteditable)이 실제로 포커스되어 있어야 함
@@ -99,6 +101,8 @@ export function useViewportScrollLock() {
         // 키보드가 활성화된 상태: 키보드 위 가시 영역에 맞춤
         // 주의: html, body의 인라인 height를 축소하면 WebKit이 window scroll을 유발하므로 --app-height와 #root만 축소
         const keyboardSafeHeight = Math.round(visualH);
+        document.documentElement.style.setProperty('--vv-top', `${visualTop}px`);
+        document.documentElement.style.setProperty('--vv-left', `${visualLeft}px`);
         document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--vvh', `${keyboardSafeHeight}px`);
         document.documentElement.style.setProperty('--visual-vh', `${keyboardSafeHeight}px`);
@@ -110,11 +114,11 @@ export function useViewportScrollLock() {
         }
         const root = document.getElementById('root');
         if (root) {
-          // 🌟 Double Shift 근본 해결: #root를 fixed top-0로 못 박아 키보드 전개 시
-          // WebKit의 window 스크롤로 인해 상단이 뷰포트 위로 붕뜨는 것을 차단
+          // 🌟 WebKit 뷰포트 오프셋 동기화: WebKit이 visualViewport를 위로 패닝할 때
+          // #root의 top 좌표를 visual.offsetTop으로 맞춰 상단 잘림과 하단 빈 공간(250px)을 0px로 완벽 밀착
           root.style.position = 'fixed';
-          root.style.top = '0px';
-          root.style.left = '0px';
+          root.style.top = `${visualTop}px`;
+          root.style.left = `${visualLeft}px`;
           root.style.right = '0px';
           root.style.height = `${keyboardSafeHeight}px`;
           root.style.minHeight = `${keyboardSafeHeight}px`;
@@ -126,6 +130,8 @@ export function useViewportScrollLock() {
           shell.style.minHeight = '0px';
         }
       } else {
+        document.documentElement.style.setProperty('--vv-top', '0px');
+        document.documentElement.style.setProperty('--vv-left', '0px');
         const resetShell = () => {
           const shell = document.getElementById('root')?.querySelector<HTMLElement>('.prism-app-shell') || null;
           if (shell) {
@@ -259,7 +265,7 @@ export function useViewportScrollLock() {
     const visual = window.visualViewport;
     if (visual) {
       visual.addEventListener('resize', handleResize, { passive: true });
-      visual.addEventListener('scroll', lockWindowScroll, { passive: true });
+      visual.addEventListener('scroll', handleResize, { passive: true });
     }
 
     return () => {
@@ -278,7 +284,7 @@ export function useViewportScrollLock() {
       }
       if (visual) {
         visual.removeEventListener('resize', handleResize);
-        visual.removeEventListener('scroll', lockWindowScroll);
+        visual.removeEventListener('scroll', handleResize);
       }
     };
   }, []);

@@ -69,12 +69,13 @@
   }
 
   #root {
-    /* 🌟 키보드 붕뜸(Double Shift) 근본 해결: #root를 fixed top-0로 못 박아
-       WebKit이 키보드 전개 시 window를 위로 스크롤해도 #root의 상단이 뷰포트 위로
-       밀려 올라가지 않게 한다. 절대 bottom: 0을 주지 말 것 — 높이 축소가 막힌다. */
+    /* 🌟 키보드 붕뜸 및 화면 잘림 근본 해결:
+       WebKit(iOS Safari/PWA)이 키보드 전개 시 뷰포트를 위로 패닝(visualViewport.offsetTop)할 때
+       #root를 visualViewport.offsetTop(--vv-top)과 동기화해 상단 잘림과 하단 250px 빈 공간을 0px로 완벽 밀착한다.
+       절대 bottom: 0을 주지 말 것 — 가상 키보드 가시 영역으로의 높이 축소가 차단된다. */
     position: fixed;
-    top: 0;
-    left: 0;
+    top: var(--vv-top, 0px);
+    left: var(--vv-left, 0px);
     right: 0;
     width: 100%;
     height: var(--app-height, 100lvh);
@@ -113,8 +114,8 @@
 
   html.pwa-standalone #root {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: var(--vv-top, 0px);
+    left: var(--vv-left, 0px);
     right: 0;
     height: var(--app-height, 100lvh);
     min-height: var(--app-height, 100lvh);
