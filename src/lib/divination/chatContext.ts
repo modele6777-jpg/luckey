@@ -47,8 +47,9 @@ export function buildChatDivinationContext(input: {
         results.push({tool:id,value:manual?calculateIching(manual[1].split(/[\s,]+/).map(Number)):castIching()});
       } else {
         if (timeError) throw new RangeError(timeError);
-        // A request for Hongguk specifically is not fulfilled by a different Qimen school.
-        if (id==='qimen'&&/홍국/.test(text)) throw new RangeError('홍국기문 별도 수리는 미지원이야. 일반 기문둔갑 차보법으로 바꿨다고 가장하지 마.');
+        // Hongguk-specific casting is a birth-chart-based numerical casting (4주 수리),
+        // never substituted by the instant-based Chabop chart.
+        if (id==='qimen'&&/홍국/.test(text)) throw new RangeError('홍국기문 4주 수리 포국은 생년월일시가 필요해. 프로필을 등록하면 결정론 엔진(honggukQimenResult)에서 세효·응효·중궁 9궁 포국이 계산돼. 점시 기반 일반 기문둔갑 차보법으로 바꿔서 계산하지는 않아.');
         results.push({tool:id,value:id==='liuren'?calculateLiuren(instant):calculateQimen(instant)});
       }
     } catch(e) {notes.push(`${id} 계산 보류: ${e instanceof Error?e.message:'계산할 수 없어.'}`);}

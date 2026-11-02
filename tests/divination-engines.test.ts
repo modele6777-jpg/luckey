@@ -1261,3 +1261,123 @@ test('Kabbalah engine binds into the deterministic engine report and prompt', ()
   assert(noProfile.kabbalahResult?.status === 'skipped');
   assert.equal(noProfile.tools.kabbalah.status, 'skipped');
 });
+
+import { calculateHonggukQimen, formatHonggukQimenPrompt, HONGGUK_QIMEN_ENGINE_VERSION, HONGGUK_QIMEN_METHOD, HONGGUK_NINE_PALACES, HONGGUK_EIGHT_GATES, HONGGUK_TONGGI_CYCLES, STEM_NUMBERS, BRANCH_NUMBERS } from '../src/lib/divination/honggukQimenEngine';
+
+test('Hongguk Qimen: 4-pillar numeral casting, 9-palace flight, key points, determinism and prompt formatting', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r1 = calculateHonggukQimen({ profile, targetYear: 2026 });
+  assert.equal(r1.status, 'calculated');
+  assert.equal(r1.engineVersion, HONGGUK_QIMEN_ENGINE_VERSION);
+  assert.equal(r1.method, HONGGUK_QIMEN_METHOD);
+  // 4주 수리: 하도 생성수(甲1~癸10)·후천 12진수(子1~亥12) 및 1~9 구성환원 궁수
+  assert.equal(r1.numerals!.length, 4); // 생시 있음 → 4주
+  assert(r1.fourPillars!.timeKnown);
+  for (const n of r1.numerals!) {
+    assert.equal(n.ganNumber, STEM_NUMBERS[n.gan]);
+    assert.equal(n.zhiNumber, BRANCH_NUMBERS[n.zhi]);
+    assert(n.ganPalace >= 1 && n.ganPalace <= 9);
+    assert(n.zhiPalace >= 1 && n.zhiPalace <= 9);
+  }
+  // 지반수·천반수 중궁은 4주 궁수 합의 구성환원 (결정론 재계산 대조)
+  const earthSum = r1.numerals!.reduce((s, n) => s + n.zhiPalace, 0);
+  const heavenSum = r1.numerals!.reduce((s, n) => s + n.ganPalace, 0);
+  assert.equal(r1.earthCenterNumber, ((earthSum - 1) % 9) + 1);
+  assert.equal(r1.heavenCenterNumber, ((heavenSum - 1) % 9) + 1);
+  // 9궁 포국: 9궁 전수, 비행 경로 상 인접 궁의 천반수는 정확히 1씩 역행
+  assert.equal(r1.palaces!.length, 9);
+  const byPalace = new Map(r1.palaces!.map((p) => [p.palace, p]));
+  const path = [5, 6, 7, 8, 9, 1, 2, 3, 4];
+  for (let i = 0; i < 8; i++) {
+    const diff = (byPalace.get(path[i + 1])!.heavenStarNumber - byPalace.get(path[i])!.heavenStarNumber + 9) % 9;
+    assert.equal(diff, 8, `비행 경로 ${path[i]}→${path[i+1]} 역행 1칸`);
+  }
+  // 중궁(5궁)에는 천반수 중궁이 그대로 입하고, 기궁 사문 표기 유지
+  assert.equal(byPalace.get(5)!.heavenStarNumber, r1.heavenCenterNumber);
+  assert.match(byPalace.get(5)!.gate || '', /기궁/);
+  for (const p of r1.palaces!) {
+    assert(p.heavenStarNumber >= 1 && p.heavenStarNumber <= 9);
+    assert(p.earthStarNumber >= 1 && p.earthStarNumber <= 9);
+    assert(HONGGUK_NINE_PALACES.some((b) => b.palace === p.palace && b.name === p.name));
+  }
+  // 3대 거점: 세효·응효·중궁 위치와 상생상극 3조 대조
+  assert(r1.keyPoints!.seYao.palace >= 1 && r1.keyPoints!.seYao.palace <= 9);
+  assert(r1.keyPoints!.eungYao.palace >= 1 && r1.keyPoints!.eungYao.palace <= 9);
+  assert.equal(r1.keyPoints!.jungGung.palace, 5);
+  assert.equal(r1.keyPointRelations!.length, 3);
+  for (const rel of r1.keyPointRelations!) {
+    assert(['상생', '상극', '비화'].includes(rel.relation));
+    assert(rel.note.length > 0);
+  }
+  // 삼형·통기: 지수 범위와 간선 완전성
+  assert(r1.samhyeong!.riskIndex >= 0 && r1.samhyeong!.riskIndex <= 100);
+  assert(r1.tonggi!.score >= 0 && r1.tonggi!.score <= 100);
+  assert.equal(r1.tonggi!.score, r1.tonggi!.activeCycles.length * 20);
+  assert.equal(r1.tonggi!.activeCycles.length + r1.tonggi!.missingCycles.length, HONGGUK_TONGGI_CYCLES.length);
+  assert.equal(Object.values(r1.tonggi!.elementCounts).reduce((s, c) => s + c, 0), 8); // 4주 8자 오행 분포
+  // 8문 판정과 득문 일관성
+  assert(r1.eightGatesVerdict!.pattern.length > 0);
+  assert.equal(r1.eightGatesVerdict!.deukMun, r1.keyPoints!.seYao.deukMun);
+
+  // 결정론성: 동일 입력 동일 출력
+  const r2 = calculateHonggukQimen({ profile, targetYear: 2026 });
+  assert.deepEqual(r1, r2);
+
+  // 프롬프트 포맷터
+  const prompt = formatHonggukQimenPrompt(r1);
+  assert(prompt.includes('LUCKEY-HQ-v1.0.0'));
+  assert(prompt.includes('세효(世爻'));
+  assert(prompt.includes('응효(應爻'));
+  assert(prompt.includes('중궁(中宮'));
+  assert(prompt.includes('파극 위험도'));
+  assert(prompt.includes('통기(通氣'));
+  assert(prompt.includes(r1.eightGatesVerdict!.pattern));
+
+  // 생시 없이도 산출 (3주 수리 safe fallback)
+  const noTime = calculateHonggukQimen({ profile: { basic: { birthdate: '1995-03-25', gender: 'male' as const } } });
+  assert.equal(noTime.status, 'calculated');
+  assert.equal(noTime.fourPillars!.hour, null);
+  assert(!noTime.fourPillars!.timeKnown);
+  assert.equal(noTime.numerals!.length, 3);
+  assert.equal(Object.values(noTime.tonggi!.elementCounts).reduce((s, c) => s + c, 0), 6);
+  assert.match(formatHonggukQimenPrompt(noTime), /생시/);
+
+  // 프로필 누락 시 safe fallback
+  const skipped = calculateHonggukQimen({ profile: null });
+  assert.equal(skipped.status, 'skipped');
+  const empty = calculateHonggukQimen({ profile: { basic: { birthdate: '' } } });
+  assert.equal(empty.status, 'skipped');
+});
+
+test('Hongguk Qimen: 삼형 살표와 통기 지수가 실제 지지 구성을 정확히 반영한다', () => {
+  // 1995-03-25 14:30 원국의 지지로 삼형 성립 여부 재검증 (결정론 대조)
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r = calculateHonggukQimen({ profile });
+  const zhis = r.numerals!.map((n) => n.zhi);
+  const insasin = ['寅', '巳', '申'].filter((b) => zhis.includes(b)).length;
+  const chukSulMi = ['丑', '戌', '未'].filter((b) => zhis.includes(b)).length;
+  if (insasin === 3 || chukSulMi === 3) {
+    assert(r.samhyeong!.formed);
+    assert(r.samhyeong!.type !== null);
+    assert(r.samhyeong!.riskIndex >= 70);
+  } else {
+    assert(!r.samhyeong!.formed);
+    assert.equal(r.samhyeong!.riskIndex >= 70, false);
+  }
+  assert.equal(r.samhyeong!.partial, insasin === 2 || chukSulMi === 2);
+});
+
+test('Hongguk Qimen engine binds into the deterministic engine report and prompt (qimen calculated 승격)', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const report = runDeterministicEngine({ profile, question: '홍국기문으로 내 판세를 봐줘' });
+  assert(report.honggukQimenResult !== null && report.honggukQimenResult !== undefined);
+  assert.equal(report.honggukQimenResult!.status, 'calculated');
+  assert.equal(report.honggukQimenResult!.engineVersion, HONGGUK_QIMEN_ENGINE_VERSION);
+  assert.equal(report.tools.qimen.status, 'calculated'); // partial → calculated 승격
+  const prompt = formatDeterministicEnginePrompt(report);
+  assert(prompt.includes('LUCKEY-HQ-v1.0.0'));
+  assert(prompt.includes('세효(世爻'));
+  // 프로필 없이도 4주 수리는 skipped, 도구 상태는 점시 포국으로 calculated 유지
+  const noProfile = runDeterministicEngine({ profile: null, question: '홍국기문으로 내 판세를 봐줘' });
+  assert(noProfile.honggukQimenResult?.status === 'skipped');
+});
