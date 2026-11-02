@@ -2,7 +2,7 @@ import type { DivinationToolId } from './fifteenDivinationTools';
 
 /** Audited implementation boundaries, not claims about predictive validity. */
 export const DIVINATION_CAPABILITIES: Record<DivinationToolId, { state: 'available' | 'partial' | 'symbolic' | 'not_implemented'; scope: string; required: string }> = {
-  saju: { state: 'available', scope: '한국 표준시·절기 기반 사주. 용신·신강약은 간이 추정이며 해외 시간·진태양시 별도 검증 필요. 삼합 묘지 앵커 삼재(들·눌·날 3개년·복평악 등급화)와 대운수 기반 교운기(교체 전후 1~2년) 감지는 결정론 삼재·교운기 엔진(samjaeGyoUnResult)으로 직접 산출. 천을·문창·학당·문곡·천덕·월덕 6대 길신 매트릭스(공망·충형 길력 보정 포함), 세운·대운 지지 귀인 도래 타이밍, 상대 원국과의 천을귀인 인연 매칭은 결정론 길신 엔진(auspiciousStarsResult)으로 직접 산출.', required: '양/음력·윤달·생년월일, 시주는 생시, 대운 방향은 전통 계산의 성별 기준' },
+  saju: { state: 'available', scope: '한국 표준시·절기 기반 사주. 용신·신강약은 간이 추정이며 해외 시간·진태양시 별도 검증 필요. 삼합 묘지 앵커 삼재(들·눌·날 3개년·복평악 등급화)와 대운수 기반 교운기(교체 전후 1~2년) 감지는 결정론 삼재·교운기 엔진(samjaeGyoUnResult)으로 직접 산출. 천을·문창·학당·문곡·천덕·월덕 6대 길신 매트릭스(공망·충형 길력 보정 포함), 세운·대운 지지 귀인 도래 타이밍, 상대 원국과의 천을귀인 인연 매칭은 결정론 길신 엔진(auspiciousStarsResult)으로 직접 산출. 자평진전 월령 본기·중기·초기 사령 투간 대조 기반 정통 10대 격국 판정(건록·양인 직취 포함), 4길신 순용·4흉신 역용 성격(成格) 검증, 상관견관·군겁쟁재·도식·신약살왕 등 파격(破格)·구응(救應) 검출, 상신(相神) 식별 및 격국별 직업·적성 리포트는 결정론 격국 엔진(geokgukResult)으로 직접 산출.', required: '양/음력·윤달·생년월일, 시주는 생시, 대운 방향은 전통 계산의 성별 기준' },
   astrology: { state: 'available', scope: '천문력 기반 서양 열대황도 행성 위치. 상승궁·MC는 확인된 생시·도시가 있을 때만 제공. 12하우스·트랜짓 미산출.', required: '생년월일·역법, 생시·출생도시·시간대' },
   ziwei: { state: 'available', scope: 'iztro 2.6.3 통행식의 12궁·주성·보성·사화·대한 계산. 중국 음력·윤달 보정·23시 익일 기준을 명시하며 유년·진태양시 미산출.', required: '출생일·현지 출생시간·전통 성별 기준' },
   tarot: { state: 'partial', scope: '실제 뽑거나 입력한 78장 카드와 정·역방향 해석 지원. 제공되지 않은 카드·배열을 뽑았다고 말하지 않음.', required: '선택 카드·방향·스프레드 위치·질문' },
