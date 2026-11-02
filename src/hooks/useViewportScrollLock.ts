@@ -22,11 +22,12 @@ export function useViewportScrollLock() {
     };
 
     const lockWindowScroll = () => {
-      // 🌟 키보드가 실제로 올라와 있는(hasKeyboard) 상태에서는 WebKit이 기본으로 window.scrollY를
-      //    300~350px 위로 밀어 올린다. 이 상태에서는 visualViewport resize/scroll 시점마다
-      //    window.scrollY를 0으로 동기화해 #root가 뷰포트 위로 튕겨 나가는 화면 쏠림(Double Shift)을 막는다.
-      //    반면 포커스 인순간(키보드 미전개, isInputActive만 true)에는 호출하지 않아 키보드 즉시 닫힘을 방지한다.
-      if (isInputActive() && !hasKeyboardNow()) return;
+      // 🌟 키보드 튕김(닫힘) 완벽 차단:
+      // 활성 입력창(input/textarea/contenteditable)에 포커스가 있는 동안에는 어떤 경우에도
+      // window.scrollTo나 document/body scrollTop을 호출하지 않는다.
+      // iOS WebKit은 가상 키보드 전개 중 또는 입력 중에 프로그래밍 방식의 스크롤 조작이 들어오면
+      // 사용자가 화면을 터치해 스크롤한 것으로 오인하여 키보드를 즉시 닫고 튕겨내기 때문.
+      if (isInputActive()) return;
 
       if (window.scrollY !== 0 || window.scrollX !== 0) {
         window.scrollTo(0, 0);
@@ -51,8 +52,12 @@ export function useViewportScrollLock() {
     };
 
     const getOrientedScreenSize = (): { width: number; height: number } => {
-      const sw = window.screen?.width || window.innerWidth;
-      const sh = window.screen?.height || window.innerHeight;
+      // 🌟 폴더블 기기(아이폰 듀오/갤럭시 폴드) 커버 화면 대응:
+      // 접힌 상태(커버 화면, 폭 580px 미만 세로)에서는 window.screen이 펼쳐진 대화면 기준 물리 해상도(예: 2048px)를
+      // 반환하므로, window.innerWidth/innerHeight를 우선하여 실제 활성 디스플레이 영역에 정확히 맞춘다.
+      const isFoldedCover = window.innerWidth < 580 && window.innerHeight >= window.innerWidth;
+      const sw = isFoldedCover ? window.innerWidth : (window.screen?.width || window.innerWidth);
+      const sh = isFoldedCover ? window.innerHeight : (window.screen?.height || window.innerHeight);
       const isLandscape =
         window.screen?.orientation?.type?.startsWith('landscape') ||
         Math.abs(Number((window as any).orientation || 0)) === 90 ||
