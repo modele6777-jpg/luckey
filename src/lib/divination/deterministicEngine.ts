@@ -54,6 +54,9 @@ import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, type P
 import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, type AstrologicalDecanSabianResult } from './astrologicalDecanSabianEngine';
 import { calculateMedicalBioMatrix, formatMedicalBioMatrixPrompt, type MedicalBioMatrixResult } from './medicalBioMatrixEngine';
 import { calculateWealthPipeline, formatWealthPipelinePrompt, type WealthPipelineResult } from './wealthPipelineEngine';
+import { calculateKarmicNodes, formatKarmicNodesPrompt, type KarmicNodesResult } from './karmicNodesEngine';
+import { calculateMentalResilience, formatMentalResiliencePrompt, type MentalResilienceResult } from './mentalResilienceEngine';
+import { calculateNobleNetwork, formatNobleNetworkPrompt, type NobleNetworkResult } from './nobleNetworkEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -128,6 +131,9 @@ export interface DeterministicEngineReport {
   astrologicalDecanSabianResult?: AstrologicalDecanSabianResult | null;
   medicalBioMatrixResult?: MedicalBioMatrixResult | null;
   wealthPipelineResult?: WealthPipelineResult | null;
+  karmicNodesResult?: KarmicNodesResult | null;
+  mentalResilienceResult?: MentalResilienceResult | null;
+  nobleNetworkResult?: NobleNetworkResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -801,6 +807,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 26. 카르믹 노드 & 영혼 진화 궤적 엔진
+  const karmicNodesResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateKarmicNodes({ profile, saju, natalChart, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 27. 위기 돌파 & 멘탈 리질리언스 지수 엔진
+  const mentalResilienceResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateMentalResilience({ profile, saju, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 28. 4대 귀인 & 인연 네트워크 시너지 엔진
+  const nobleNetworkResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateNobleNetwork({ profile, saju, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -861,6 +900,9 @@ export function runDeterministicEngine(params: {
     astrologicalDecanSabianResult,
     medicalBioMatrixResult,
     wealthPipelineResult,
+    karmicNodesResult,
+    mentalResilienceResult,
+    nobleNetworkResult,
     tools: toolsMap,
   };
 }
@@ -928,5 +970,8 @@ ${report.twelveSpiritsResult ? '\n' + formatTwelveSpiritsPrompt(report.twelveSpi
 ${report.pythagoreanLifecycleResult ? '\n' + formatPythagoreanLifecyclePrompt(report.pythagoreanLifecycleResult) : ''}
 ${report.astrologicalDecanSabianResult ? '\n' + formatAstrologicalDecanSabianPrompt(report.astrologicalDecanSabianResult) : ''}
 ${report.medicalBioMatrixResult ? '\n' + formatMedicalBioMatrixPrompt(report.medicalBioMatrixResult) : ''}
-${report.wealthPipelineResult ? '\n' + formatWealthPipelinePrompt(report.wealthPipelineResult) : ''}`;
+${report.wealthPipelineResult ? '\n' + formatWealthPipelinePrompt(report.wealthPipelineResult) : ''}
+${report.karmicNodesResult ? '\n' + formatKarmicNodesPrompt(report.karmicNodesResult) : ''}
+${report.mentalResilienceResult ? '\n' + formatMentalResiliencePrompt(report.mentalResilienceResult) : ''}
+${report.nobleNetworkResult ? '\n' + formatNobleNetworkPrompt(report.nobleNetworkResult) : ''}`;
 }
