@@ -294,7 +294,7 @@ test('Auspicious stars: resonance detects when the partner holds my noble branch
 });
 
 import { calculateTaiyi, formatTaiyiPrompt, TAIYI_ENGINE_VERSION } from '../src/lib/divination/taiyiEngine';
-import { runDeterministicEngine, formatDeterministicEnginePrompt } from '../src/lib/divination/deterministicEngine';
+import { runDeterministicEngine } from '../src/lib/divination/deterministicEngine';
 
 test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt formatting', () => {
   const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
