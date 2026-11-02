@@ -78,7 +78,7 @@ test('Liuren month general changes at the astronomical middle term, not at civil
 test('Qimen upstream winter/summer/hour fixtures retain their school and timezone metadata',()=>{
   const a=calculateQimen(eventInstant('2024-01-15','11:00','Asia/Seoul'));
   assert.equal(a.chart['節氣'],'小寒');assert.equal(a.chart['三元'],'中元');assert.equal(a.chart['局數'],8);assert.equal(a.chart['陰陽'],'陽');
-  assert.equal(a.calculatedUTC8Hour,'2024-01-15T10:00');assert.match(a.method,/홍국기문 수리 아님/);
+  assert.equal(a.calculatedUTC8Hour,'2024-01-15T10:00');assert.match(a.method,/홍국기문 4주 수리 포국과는 별개의 점시 포국/);
   const b=calculateQimen(eventInstant('2024-07-08','15:00','Asia/Seoul'));assert.equal(b.chart['陰陽'],'陰');
   assert.equal((a.chart['天盤'] as string[]).length,9);
 });
