@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.38",
+  "version": "1.7.39",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -48,12 +48,12 @@
     "html-to-image": "^1.11.13",
     "http-proxy-middleware": "^4.0.0",
     "iztro": "2.6.3",
-    "korean-lunar-calendar": "^0.4.0",
+    "korean-lunar-calendar": "^4.0.0",
     "liuren-ts-lib": "3.1.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "openai": "^6.34.0",
-    "qimen-dunjia": "3.1.0",
+    "qimen-dunjia": "^3.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
