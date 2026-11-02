@@ -22,7 +22,7 @@ for (const tool of Object.values(FIFTEEN_DIVINATION_TOOLS)) {
 }
 test('all 15 capabilities are present; unimplemented traditions cannot borrow another chart', () => {
   assert.equal(Object.keys(DIVINATION_CAPABILITIES).length, 15);
-  assert.equal(Object.values(DIVINATION_CAPABILITIES).filter(tool => tool.state === 'not_implemented').length, 1);
+  assert.equal(Object.values(DIVINATION_CAPABILITIES).filter(tool => tool.state === 'not_implemented').length, 0);
   const master = buildMasterFifteenToolsComparisonPrompt(profile('1990-05-17'));
   for (const tool of Object.values(DIVINATION_CAPABILITIES)) assert(master.includes(tool.scope));
   assert(master.includes('독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마'));

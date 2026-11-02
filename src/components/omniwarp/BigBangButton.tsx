@@ -176,6 +176,25 @@ export function BigBangButton() {
   }, []);
 
   // 🧭 상하좌우 원뿔 모양 모핑 방향 ('none' | 'north' | 'south' | 'west' | 'east')
+  // 🛡️ 가상 키보드 활성화 시 FAB 버튼을 완전히 숨겨 화면 가림 및 스크롤 충돌 방지
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const check = () => {
+      const open =
+        document.documentElement.classList.contains('keyboard-open') ||
+        document.body.classList.contains('keyboard-open');
+      setIsKeyboardOpen(open);
+    };
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    if (document.body) {
+      obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
+    return () => obs.disconnect();
+  }, []);
+
   const [hoverDirection, setHoverDirection] = useState<'none' | 'north' | 'south' | 'west' | 'east'>('none');
   const downDirectionRef = useRef<'none' | 'north' | 'south' | 'west' | 'east'>('none');
   const [clickedDirection, setClickedDirection] = useState<typeof hoverDirection>('none');
@@ -1421,7 +1440,7 @@ export function BigBangButton() {
     return '루시 (1:1 음성 대화)';
   })();
 
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined' || isKeyboardOpen) return null;
   return createPortal(
     <>
       {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}
@@ -1474,7 +1493,7 @@ export function BigBangButton() {
 
           {/* 🌟 텍스트 선택(스크롤) 시 4대 토스 경로 안내 뱃지 표출 (루시채팅에서는 별도 말풍선 배지 제외) */}
           <AnimatePresence>
-            {hasSelectionToss && !isPressing && (
+            {hasSelectionToss && !isPressing && !(location === '/' || location.startsWith('/chat') || location.startsWith('/lucy')) && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.85, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}

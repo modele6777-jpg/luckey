@@ -34,6 +34,7 @@ import { calculateTojeong, formatTojeongPrompt, type TojeongResult } from './toj
 import { calculateKyusei, formatKyuseiPrompt, type KyuseiResult } from './kyuseiEngine';
 import { calculateSamjaeGyoUn, formatSamjaeGyoUnPrompt, type SamjaeGyoUnResult } from './samjaeGyoUnEngine';
 import { calculateAuspiciousStars, formatAuspiciousStarsPrompt, type AuspiciousStarsResult } from './auspiciousStarsEngine';
+import { calculateTaiyi, formatTaiyiPrompt, type TaiyiResult, TAIYI_ENGINE_VERSION, TAIYI_METHOD } from './taiyiEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -88,6 +89,7 @@ export interface DeterministicEngineReport {
   kyuseiResult?: KyuseiResult | null;
   samjaeGyoUnResult?: SamjaeGyoUnResult | null;
   auspiciousStarsResult?: AuspiciousStarsResult | null;
+  taiyiResult?: TaiyiResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -495,13 +497,35 @@ export function runDeterministicEngine(params: {
     tojeongEnvelope = { toolId: 'tojeong', toolKoName: '토정비결', status: 'error', note: err?.message || '토정비결 작괘 실패' };
   }
 
-  // 15. 태을신수 (미구현 상태 투명 표기)
-  const taiyiEnvelope: ToolCalculationEnvelope<unknown> = {
-    toolId: 'taiyi',
-    toolKoName: '태을신수',
-    status: 'not_implemented',
-    note: '태을 16궁 국수 산법이 현재 미구현 상태입니다. 거시적 시대 흐름에 대한 철학적 성찰로 대체됩니다.'
-  };
+  // 15. 태을신수 (태을 16궁 연국 적년 수리 산법 엔진)
+  let taiyiEnvelope: ToolCalculationEnvelope<TaiyiResult>;
+  let taiyiResult: TaiyiResult | null = null;
+  try {
+    taiyiResult = calculateTaiyi({ profile, targetYear: now.getFullYear(), targetDate: now });
+    if (taiyiResult.status === 'calculated') {
+      taiyiEnvelope = {
+        toolId: 'taiyi',
+        toolKoName: '태을신수',
+        status: 'calculated',
+        method: TAIYI_METHOD,
+        data: taiyiResult,
+      };
+    } else {
+      taiyiEnvelope = {
+        toolId: 'taiyi',
+        toolKoName: '태을신수',
+        status: 'skipped',
+        note: taiyiResult.note || '생년월일 미입력',
+      };
+    }
+  } catch (err: any) {
+    taiyiEnvelope = {
+      toolId: 'taiyi',
+      toolKoName: '태을신수',
+      status: 'error',
+      note: err?.message || '태을신수 16궁 계산 실패',
+    };
+  }
 
   const toolsMap = {
     saju: sajuEnvelope,
@@ -617,6 +641,7 @@ export function runDeterministicEngine(params: {
     kyuseiResult,
     samjaeGyoUnResult,
     auspiciousStarsResult,
+    taiyiResult,
     tools: toolsMap,
   };
 }
@@ -664,5 +689,6 @@ ${report.vitalityCurve ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) 
 ${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}
 ${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}
 ${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}
-${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}`;
+${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}
+${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}`;
 }

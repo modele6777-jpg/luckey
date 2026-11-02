@@ -292,3 +292,48 @@ test('Auspicious stars: resonance detects when the partner holds my noble branch
   const b=calculateAuspiciousStars({profile:asProfile,targetYear:2030});
   assert.deepEqual(a.nobleMatrix,b.nobleMatrix);assert.deepEqual(a.timing&&a.timing.upcomingYears,b.timing&&b.timing.upcomingYears);
 });
+
+import { calculateTaiyi, formatTaiyiPrompt, TAIYI_ENGINE_VERSION } from '../src/lib/divination/taiyiEngine';
+import { runDeterministicEngine } from '../src/lib/divination/deterministicEngine';
+
+test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt formatting', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r1 = calculateTaiyi({ profile, targetYear: 2026 });
+  assert.equal(r1.status, 'calculated');
+  assert.equal(r1.engineVersion, TAIYI_ENGINE_VERSION);
+  assert.equal(r1.targetYear, 2026);
+  assert.equal(r1.targetYearGanZhi, '병오');
+  assert(r1.calculation !== null);
+  assert(r1.calculation.juNumber >= 1 && r1.calculation.juNumber <= 72);
+  assert(r1.calculation.taiyiPalace >= 1 && r1.calculation.taiyiPalace <= 16);
+  assert(r1.calculation.wenChangPalace >= 1 && r1.calculation.wenChangPalace <= 16);
+  assert(r1.calculation.shiJiPalace >= 1 && r1.calculation.shiJiPalace <= 16);
+  assert(r1.calculation.juSan > 0);
+  assert(r1.calculation.gaekSan > 0);
+  assert(r1.palaces.length === 16);
+  assert(r1.threeGi !== null);
+  assert(r1.fiveBlessings !== null);
+
+  // Determinism check
+  const r2 = calculateTaiyi({ profile, targetYear: 2026 });
+  assert.deepEqual(r1, r2);
+
+  // Prompt formatting
+  const prompt = formatTaiyiPrompt(r1);
+  assert(prompt.includes('LUCKEY-TY-v1.0.0'));
+  assert(prompt.includes('태을신수'));
+  assert(prompt.includes('주산'));
+  assert(prompt.includes('객산'));
+
+  // Skipped without birthdate
+  const skipped = calculateTaiyi({ profile: null, targetYear: 2026 });
+  assert.equal(skipped.status, 'skipped');
+  assert.equal(formatTaiyiPrompt(skipped), '[태을신수: 사용자 생년월일이 입력되지 않아 태을신수 개인화 감응 계산을 건너뜁니다.]');
+
+  // Integration in runDeterministicEngine: all 15 tools implemented (0 not_implemented)
+  const report = runDeterministicEngine({ profile, question: '올해 사업 운세와 거시 흐름' });
+  assert.equal(report.tools.taiyi.status, 'calculated');
+  assert.equal(Object.values(report.tools).filter((t) => t.status === 'not_implemented').length, 0);
+  assert(report.taiyiResult !== null && report.taiyiResult !== undefined);
+});
+
