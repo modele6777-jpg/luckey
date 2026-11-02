@@ -69,12 +69,16 @@
   }
 
   #root {
-    position: relative;
+    /* 🌟 키보드 붕뜸(Double Shift) 근본 해결: #root를 fixed top-0로 못 박아
+       WebKit이 키보드 전개 시 window를 위로 스크롤해도 #root의 상단이 뷰포트 위로
+       밀려 올라가지 않게 한다. 절대 bottom: 0을 주지 말 것 — 높이 축소가 막힌다. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     height: var(--app-height, 100lvh);
-    min-height: 100%;
-    min-height: 100vh;
-    min-height: 100lvh;
+    min-height: var(--app-height, 100lvh);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -108,10 +112,12 @@
   }
 
   html.pwa-standalone #root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     height: var(--app-height, 100lvh);
-    min-height: 100%;
-    min-height: 100vh;
-    min-height: 100lvh;
+    min-height: var(--app-height, 100lvh);
   }
 
   html.pwa-standalone .prism-app-shell {
