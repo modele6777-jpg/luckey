@@ -226,7 +226,7 @@ export function calculatePythagoreanLifecycle(params?: {
   targetDate?: Date;
 }): PythagoreanLifecycleResult {
   const now = params?.targetDate || new Date();
-  const birthdateStr = params?.profile?.birthdate || '1994-01-24';
+  const birthdateStr = params?.profile?.basic?.birthdate || '1994-01-24';
   const parts = birthdateStr.split('-').map(p => parseInt(p, 10));
   const birthY = parts[0] || 1994;
   const birthM = parts[1] || 1;

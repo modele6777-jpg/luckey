@@ -735,7 +735,7 @@ export function runDeterministicEngine(params: {
   const dynamicClashResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateDynamicClashTrigger({ profile, saju: sajuRes, targetDate: now });
+          return calculateDynamicClashTrigger({ profile, targetDate: now });
         } catch (_) {
           return null;
         }
@@ -746,7 +746,7 @@ export function runDeterministicEngine(params: {
   const twelveSpiritsResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateTwelveSpiritsCycle({ profile, saju: sajuRes, targetDate: now });
+          return calculateTwelveSpiritsCycle({ profile, targetDate: now });
         } catch (_) {
           return null;
         }
