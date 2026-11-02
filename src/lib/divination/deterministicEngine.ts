@@ -52,6 +52,8 @@ import { calculateDynamicClashTrigger, formatDynamicClashPrompt, type DynamicCla
 import { calculateTwelveSpiritsCycle, formatTwelveSpiritsPrompt, type TwelveSpiritsResult } from './twelveSpiritsCycleEngine';
 import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, type PythagoreanLifecycleResult } from './pythagoreanLifecycleEngine';
 import { calculateAstrologicalDecanSabian, formatAstrologicalDecanSabianPrompt, type AstrologicalDecanSabianResult } from './astrologicalDecanSabianEngine';
+import { calculateMedicalBioMatrix, formatMedicalBioMatrixPrompt, type MedicalBioMatrixResult } from './medicalBioMatrixEngine';
+import { calculateWealthPipeline, formatWealthPipelinePrompt, type WealthPipelineResult } from './wealthPipelineEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -124,6 +126,8 @@ export interface DeterministicEngineReport {
   twelveSpiritsResult?: TwelveSpiritsResult | null;
   pythagoreanLifecycleResult?: PythagoreanLifecycleResult | null;
   astrologicalDecanSabianResult?: AstrologicalDecanSabianResult | null;
+  medicalBioMatrixResult?: MedicalBioMatrixResult | null;
+  wealthPipelineResult?: WealthPipelineResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -775,6 +779,28 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 24. 오행 한난조습 & 메디컬 점성술 바이오 매트릭스 엔진
+  const medicalBioMatrixResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateMedicalBioMatrix({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 25. 재물·비즈니스 포춘 파이프라인 엔진
+  const wealthPipelineResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateWealthPipeline({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -833,6 +859,8 @@ export function runDeterministicEngine(params: {
     twelveSpiritsResult,
     pythagoreanLifecycleResult,
     astrologicalDecanSabianResult,
+    medicalBioMatrixResult,
+    wealthPipelineResult,
     tools: toolsMap,
   };
 }
@@ -898,5 +926,7 @@ ${report.heLuoLiShuResult ? '\n' + formatHeLuoLiShuPrompt(report.heLuoLiShuResul
 ${report.dynamicClashResult ? '\n' + formatDynamicClashPrompt(report.dynamicClashResult) : ''}
 ${report.twelveSpiritsResult ? '\n' + formatTwelveSpiritsPrompt(report.twelveSpiritsResult) : ''}
 ${report.pythagoreanLifecycleResult ? '\n' + formatPythagoreanLifecyclePrompt(report.pythagoreanLifecycleResult) : ''}
-${report.astrologicalDecanSabianResult ? '\n' + formatAstrologicalDecanSabianPrompt(report.astrologicalDecanSabianResult) : ''}`;
+${report.astrologicalDecanSabianResult ? '\n' + formatAstrologicalDecanSabianPrompt(report.astrologicalDecanSabianResult) : ''}
+${report.medicalBioMatrixResult ? '\n' + formatMedicalBioMatrixPrompt(report.medicalBioMatrixResult) : ''}
+${report.wealthPipelineResult ? '\n' + formatWealthPipelinePrompt(report.wealthPipelineResult) : ''}`;
 }
