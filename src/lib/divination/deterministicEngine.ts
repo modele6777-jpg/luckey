@@ -8,7 +8,7 @@
  * 2. 동일한 생년월일시 입력에 대해 항상 100% 오차 없이 동일한 정밀 JSON 산출
  * 3. 7대 핵심 운명학 엔진(사주, 서양 점성술, 자미두수, 숙요, 베딕, 주역, 육임/기문)과
  *    요일/수리 점성술(마하보테, 구성학, 태국점성술)을 통합 오케스트레이션
- * 4. 미구현/상징적 도구(토정비결, 태을신수, 카발라 등)는 명확히 상태를 분리 표기하여
+ * 4. 미구현/상징적 도구(타로 등)는 명확히 상태를 분리 표기하여
  *    확률적 환각(Hallucination) 및 바넘 효과를 원천 방지
  */
 
@@ -40,6 +40,7 @@ import { calculateTwentyEightMansions, formatTwentyEightMansionsPrompt, type Twe
 import { calculateMahabote, formatMahabotePrompt, type MahaboteResult, MAHABOTE_ENGINE_VERSION, MAHABOTE_METHOD } from './mahaboteEngine';
 import { calculateSukuyoAdvanced, formatSukuyoPrompt, type SukuyoResult } from './sukuyoEngine';
 import { calculateVedicAdvanced, formatVedicPrompt, type VedicResult } from './vedicEngine';
+import { calculateKabbalah, formatKabbalahPrompt, type KabbalahResult, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD } from './kabbalahEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -100,6 +101,7 @@ export interface DeterministicEngineReport {
   mahaboteResult?: MahaboteResult | null;
   sukuyoAdvancedResult?: SukuyoResult | null;
   vedicAdvancedResult?: VedicResult | null;
+  kabbalahResult?: KabbalahResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -489,14 +491,36 @@ export function runDeterministicEngine(params: {
     note: '직접 카드를 드로우하지 않은 상태이므로 원형적 상징 관점으로 상담을 진행합니다.'
   };
 
-  // 13. 카발라 (세피로트 생명나무)
-  const kabbalahEnvelope: ToolCalculationEnvelope<unknown> = {
-    toolId: 'kabbalah',
-    toolKoName: '카발라',
-    status: 'symbolic',
-    method: '세피로트 10대 세피라 및 22개 경로 상징 체계',
-    note: '수학적 게마트리아 수리 계산이 아닌 철학적·원형적 상징으로 상담을 지원합니다.'
-  };
+  // 13. 카발라 (정통 생명나무 10 세피로트 · 3대 기둥 · 4개 세계 · 22 경로 & 생년월일 게마트리아 수리)
+  let kabbalahEnvelope: ToolCalculationEnvelope<KabbalahResult>;
+  let kabbalahResult: KabbalahResult | null = null;
+  try {
+    kabbalahResult = calculateKabbalah({ profile });
+    if (kabbalahResult.status === 'calculated') {
+      kabbalahEnvelope = {
+        toolId: 'kabbalah',
+        toolKoName: '카발라',
+        status: 'calculated',
+        method: KABBALAH_METHOD,
+        data: kabbalahResult,
+      };
+    } else {
+      kabbalahEnvelope = {
+        toolId: 'kabbalah',
+        toolKoName: '카발라',
+        status: 'skipped',
+        method: KABBALAH_METHOD,
+        note: kabbalahResult.note || '생년월일 미입력으로 게마트리아 계산 생략',
+      };
+    }
+  } catch (err: any) {
+    kabbalahEnvelope = {
+      toolId: 'kabbalah',
+      toolKoName: '카발라',
+      status: 'error',
+      note: err?.message || '카발라 생명나무 계산 실패',
+    };
+  }
 
   // 14. 토정비결 (조선 정통 이지함 144괘문 수리 산법)
   let tojeongEnvelope: ToolCalculationEnvelope<unknown>;
@@ -564,7 +588,7 @@ export function runDeterministicEngine(params: {
     liuren: liurenEnvelope,
     qimen: qimenEnvelope,
     tarot: tarotEnvelope,
-    kabbalah: kabbalahEnvelope,
+    kabbalah: kabbalahEnvelope as ToolCalculationEnvelope<unknown>,
     tojeong: tojeongEnvelope,
     taiyi: taiyiEnvelope,
   };
@@ -698,6 +722,7 @@ export function runDeterministicEngine(params: {
     mahaboteResult,
     sukuyoAdvancedResult,
     vedicAdvancedResult,
+    kabbalahResult,
     tools: toolsMap,
   };
 }
@@ -751,5 +776,6 @@ ${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}
 ${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}
 ${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}
 ${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}
-${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}`;
+${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}
+${report.kabbalahResult ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}`;
 }

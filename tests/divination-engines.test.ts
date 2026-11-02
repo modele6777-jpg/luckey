@@ -869,3 +869,192 @@ test('Vedic engine binds into the deterministic engine report and prompt', () =>
   const noProfile = runDeterministicEngine({ profile: null });
   assert(noProfile.vedicAdvancedResult?.status === 'skipped');
 });
+
+
+import { calculateKabbalah, formatKabbalahPrompt, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD, SEPHIROTH_10, PATHS_22, FOUR_WORLDS, THREE_PILLARS, DAATH, kabbalahSephirahByNumber, kabbalahPathByNumber, reduceGematria, digitSum, soulPathNumberToPath } from '../src/lib/divination/kabbalahEngine';
+
+test('Kabbalah 10 sephiroth: full table, 3-pillar classification and hidden Daath', () => {
+  assert.equal(SEPHIROTH_10.length, 10);
+  const expectedPillars = [
+    '균형의 기둥', '자비의 기둥', '엄격의 기둥', // 1~3
+    '자비의 기둥', '엄격의 기둥', '균형의 기둥', // 4~6
+    '자비의 기둥', '엄격의 기둥', '균형의 기둥', // 7~9
+    '균형의 기둥', // 10
+  ];
+  SEPHIROTH_10.forEach((s, i) => {
+    assert.equal(s.number, i + 1);
+    assert.equal(s.pillar, expectedPillars[i]);
+    assert(s.name.length > 0 && s.hebrew.length > 0 && s.translit.length > 0 && s.title.length > 0 && s.planet.length > 0);
+  });
+  // 3대 기둥 전수 분류: 10 세피로트가 각각 정확히 하나의 기둥에 속한다
+  const assignments = THREE_PILLARS.flatMap((p) => p.sephiroth).sort((a, b) => a - b);
+  assert.deepEqual(assignments, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(THREE_PILLARS.find((p) => p.id === 'mercy')!.sephiroth.join(','), '2,4,7'); // 호크마·헤세드·네차크
+  assert.equal(THREE_PILLARS.find((p) => p.id === 'severity')!.sephiroth.join(','), '3,5,8'); // 비나·게부라·호드
+  assert.equal(THREE_PILLARS.find((p) => p.id === 'mildness')!.sephiroth.join(','), '1,6,9,10'); // 케테르·티페레트·예소드·말쿠트
+  // 숨겨진 세피라 다트는 어느 기둥에도 속하지 않는다
+  assert.equal(DAATH.number, 0);
+  assert.equal(DAATH.name, '다트');
+  // 4개 세계 전수
+  assert.equal(FOUR_WORLDS.length, 4);
+  assert.deepEqual(FOUR_WORLDS.map((w) => w.name), ['아칠루트', '베리아', '예치라', '아시야']);
+  assert.deepEqual(FOUR_WORLDS.map((w) => w.element), ['불', '물', '바람', '흙']);
+  assert.throws(() => kabbalahSephirahByNumber(0), RangeError);
+  assert.throws(() => kabbalahSephirahByNumber(11), RangeError);
+  assert.throws(() => kabbalahPathByNumber(10), RangeError);
+  assert.throws(() => kabbalahPathByNumber(33), RangeError);
+});
+
+test('Kabbalah 22 paths: connectivity, hebrew letters, Golden Dawn attributions and tarot majors', () => {
+  assert.equal(PATHS_22.length, 22);
+  // 11번 알레프(케테르↔호크마, 바보) ~ 32번 타브(예소드↔말쿠트, 세계)
+  const first = PATHS_22[0];
+  const last = PATHS_22[21];
+  assert.equal(first.number, 11);
+  assert.equal(first.letterName, '알레프');
+  assert.equal(first.hebrewLetter, 'א');
+  assert.deepEqual([first.from, first.to].sort((a, b) => a - b), [1, 2]);
+  assert.equal(first.tarotNumber, 0);
+  assert.equal(first.tarotName, '바보');
+  assert.equal(last.number, 32);
+  assert.equal(last.letterName, '타브');
+  assert.equal(last.hebrewLetter, 'ת');
+  assert.deepEqual([last.from, last.to].sort((a, b) => a - b), [9, 10]);
+  assert.equal(last.tarotNumber, 21);
+  assert.equal(last.tarotName, '세계');
+  // 히브리 22문자 순서(알레프→타브)와 타로 메이저 0~21 일대일 배속
+  PATHS_22.forEach((p, i) => {
+    assert.equal(p.number, i + 11);
+    assert.equal(p.tarotNumber, i);
+    [p.from, p.to].forEach((n) => {
+      assert(n >= 1 && n <= 10, '경로는 1~10 세피로트만 연결해야 한다');
+      assert.notEqual(p.from, p.to);
+    });
+    assert(p.hebrewLetter.length > 0 && p.letterName.length > 0 && p.spiritualTheme.length > 0);
+    assert(['원소', '행성', '별자리'].includes(p.attribution.kind));
+  });
+  assert.equal(new Set(PATHS_22.map((p) => p.hebrewLetter)).size, 22); // 22문자 전부 상이
+  assert.equal(new Set(PATHS_22.map((p) => `${p.from}-${p.to}`)).size, 22); // 연결 중복 없음
+  assert.equal(new Set(PATHS_22.map((p) => p.tarotNumber)).size, 22); // 메이저 22장 일대일
+  // 원소 3개(알레프=바람, 멤=물, 신=불), 행성 7개, 별자리 12개 = 22
+  const byKind = { 원소: 0, 행성: 0, 별자리: 0 } as Record<string, number>;
+  PATHS_22.forEach((p) => { byKind[p.attribution.kind] += 1; });
+  assert.deepEqual(byKind, { 원소: 3, 행성: 7, 별자리: 12 });
+  assert.equal(PATHS_22.find((p) => p.letterName === '멤')!.attribution.value, '물(Water)');
+  assert.equal(PATHS_22.find((p) => p.letterName === '신')!.attribution.value, '불(Fire)');
+  assert.equal(PATHS_22.find((p) => p.letterName === '알레프')!.attribution.value, '바람(Air)');
+  assert.equal(PATHS_22.find((p) => p.letterName === '라메드')!.tarotName, '정의'); // 11 정의
+});
+
+test('Kabbalah gematria: digit sums, reduction to 1-10, master numbers 11/22/33 and boundaries', () => {
+  assert.equal(digitSum(19950325), 34);
+  assert.equal(digitSum(20220808), 22);
+  // 1~10 축약 경계값
+  assert.equal(reduceGematria(9, { keepMasters: true }), 9);
+  assert.equal(reduceGematria(10, { keepMasters: true }), 10);
+  assert.equal(reduceGematria(11, { keepMasters: true }), 11); // 마스터 보존
+  assert.equal(reduceGematria(22, { keepMasters: true }), 22);
+  assert.equal(reduceGematria(33, { keepMasters: true }), 33);
+  assert.equal(reduceGematria(38, { keepMasters: true }), 11); // 38 → 11 (마스터 멈춤)
+  assert.equal(reduceGematria(34, { keepMasters: true }), 7);
+  // 마스터 미보존(퍼스널리티용): 10 이하로 계속 축약
+  assert.equal(reduceGematria(11, { keepMasters: false, floor: 10 }), 2);
+  assert.equal(reduceGematria(22, { keepMasters: false, floor: 10 }), 4);
+  assert.equal(reduceGematria(33, { keepMasters: false, floor: 10 }), 6);
+  assert.equal(reduceGematria(25, { keepMasters: false, floor: 10 }), 7);
+  // 소울 패스 1~22 축약 및 경로 대응
+  assert.equal(reduceGematria(34, { keepMasters: false, floor: 22 }), 7);
+  assert.equal(reduceGematria(22, { keepMasters: false, floor: 22 }), 22);
+  assert.equal(soulPathNumberToPath(1), 11);
+  assert.equal(soulPathNumberToPath(22), 32);
+  assert.throws(() => soulPathNumberToPath(0), RangeError);
+  assert.throws(() => soulPathNumberToPath(23), RangeError);
+});
+
+test('Kabbalah engine fixtures: life path / personality / soul path and pillar balance', () => {
+  const profile = { basic: { birthdate: '1995-03-25', gender: 'male' as const } };
+  const r = calculateKabbalah({ profile });
+  assert.equal(r.status, 'calculated');
+  assert.equal(r.engineVersion, KABBALAH_ENGINE_VERSION);
+  const n = r.numerology!;
+  assert.equal(n.rawDigitSum, 34);
+  assert.equal(n.lifePathNumber, 7);
+  assert.equal(n.lifePathIsMaster, false);
+  assert.equal(n.lifePathSephirah.name, '게부라'); // 7 = 엄격·심판
+  assert.equal(n.personalityNumber, 7); // 25 → 7
+  assert.equal(n.personalitySephirah.name, '네차크');
+  assert.equal(n.soulPathNumber, 7);
+  assert.equal(n.soulPath.number, 17); // 7번째 경로 = 17번 (자인)
+  assert.equal(n.soulPath.tarotName, '연인');
+  // 활성 세피로트 4개(7·7·3·6): 자비 2, 엄격 1, 균형 1 → 50/25/25
+  assert.deepEqual(n.pillarBalance, { mercy: 50, severity: 25, mildness: 25 });
+  assert.equal(n.dominantWorld.name, '베리아'); // 게부라(5)는 창조계
+  // 마스터 넘버 11 → 케테르 특별 해석 (1987-11-29 = 38 → 11)
+  const r11 = calculateKabbalah({ profile: { basic: { birthdate: '1987-11-29', gender: 'female' as const } } });
+  assert.equal(r11.numerology!.lifePathNumber, 11);
+  assert.equal(r11.numerology!.lifePathIsMaster, true);
+  assert.equal(r11.numerology!.lifePathSephirah.name, '케테르');
+  assert(r11.numerology!.lifePathInterpretation.includes('케테르'));
+  // 마스터 넘버 22 → 다트 특별 해석 (2022-08-08 = 22)
+  const r22 = calculateKabbalah({ profile: { basic: { birthdate: '2022-08-08' } } });
+  assert.equal(r22.numerology!.lifePathNumber, 22);
+  assert.equal(r22.numerology!.lifePathIsMaster, true);
+  assert.equal(r22.numerology!.lifePathSephirah.number, 0);
+  assert.equal(r22.numerology!.lifePathSephirah.name, '다트');
+  assert(r22.numerology!.lifePathInterpretation.includes('다트'));
+  assert.equal(r22.numerology!.soulPathNumber, 22);
+  assert.equal(r22.numerology!.soulPath.number, 32); // 타브 예소드↔말쿠트
+  // 다트는 기둥 없음 → 퍼스널리티(호드) + 경로 양끝(예소드·말쿠트)만 집계: 엄격 1, 균형 2
+  assert.deepEqual(r22.numerology!.pillarBalance, { mercy: 0, severity: 33, mildness: 67 });
+  // 마스터 넘버 33 → 케테르 전 나무 통합 해석 (1999-12-20 = 33)
+  const r33 = calculateKabbalah({ profile: { basic: { birthdate: '1999-12-20' } } });
+  assert.equal(r33.numerology!.rawDigitSum, 33);
+  assert.equal(r33.numerology!.lifePathNumber, 33);
+  assert.equal(r33.numerology!.lifePathSephirah.name, '케테르');
+  assert(r33.numerology!.lifePathInterpretation.includes('전 나무'));
+  // 음력 생일도 양력 환산 날짜로 결정론 계산
+  const lunar = calculateKabbalah({ profile: { basic: { birthdate: '1995-03-25', lunarSolar: 'lunar' } } });
+  assert.equal(lunar.status, 'calculated');
+  assert.equal(lunar.birthInput!.isLunar, true);
+  assert.notEqual(lunar.numerology!.rawDigitSum, 34);
+});
+
+test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', () => {
+  const profile = { basic: { birthdate: '1995-03-25', gender: 'male' as const } };
+  const r1 = calculateKabbalah({ profile });
+  const r2 = calculateKabbalah({ profile });
+  assert.deepEqual(r1, r2); // 동일 입력 동일 출력
+  // 프로필 누락 시 safe fallback
+  const skipped = calculateKabbalah({ profile: null });
+  assert.equal(skipped.status, 'skipped');
+  const bad = calculateKabbalah({ profile: { basic: { birthdate: '' } } });
+  assert.equal(bad.status, 'skipped');
+  const malformed = calculateKabbalah({ profile: { basic: { birthdate: 'not-a-date' } } });
+  assert(malformed.status === 'error' || malformed.status === 'skipped');
+  // 프롬프트 포맷터
+  const prompt = formatKabbalahPrompt(r1);
+  assert(prompt.includes('LUCKEY-KB-v1.0.0'));
+  assert(prompt.includes('게부라'));
+  assert(prompt.includes('네차크'));
+  assert(prompt.includes('제17경로'));
+  assert(prompt.includes('연인'));
+  assert(prompt.includes('자비(확장) 50%'));
+  assert(prompt.includes('베리아'));
+  assert(prompt.includes('생년월일 게마트리아 수리로 산출된 100% 확정 배속'));
+  assert.equal(formatKabbalahPrompt(skipped), '');
+  assert(KABBALAH_METHOD.length > 0);
+});
+
+test('Kabbalah engine binds into the deterministic engine report and prompt', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const report = runDeterministicEngine({ profile, question: '내 카발라 생명나무 알려줘' });
+  assert(report.kabbalahResult !== null && report.kabbalahResult !== undefined);
+  assert.equal(report.kabbalahResult!.status, 'calculated');
+  assert.equal(report.kabbalahResult!.numerology!.lifePathSephirah.name, '게부라');
+  assert.equal(report.tools.kabbalah.status, 'calculated'); // symbolic → calculated 승격
+  const prompt = formatDeterministicEnginePrompt(report);
+  assert(prompt.includes('LUCKEY-KB-v1.0.0'));
+  const noProfile = runDeterministicEngine({ profile: null });
+  assert(noProfile.kabbalahResult?.status === 'skipped');
+  assert.equal(noProfile.tools.kabbalah.status, 'skipped');
+});
