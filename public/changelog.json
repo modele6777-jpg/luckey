@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.7.32",
+    "builtAt": "2026-11-02T09:45:00.000Z",
+    "summary": "그록(Grok) 뷰포트 패치(visualViewport offsetTop 추적 및 interactive-widget 메타) 온전 적용 및 삭제된 빌드 필수 파일 복원",
+    "items": [
+      "iOS 키보드 전개 시 visualViewport.offsetTop 추적 및 #root 뷰포트 가시 사각형 밀착 동기화 (그록 패치)",
+      "index.html 뷰포트 메타에 interactive-widget=resizes-content 적용",
+      "삭제되었던 vite.config.ts, tsconfig.json, vercel.json 빌드 설정 및 tts.ts 등 필수 소스 전면 복원",
+      "package-lock.json 및 의존성 무결성 정상화"
+    ]
+  },
+  {
     "version": "1.7.31",
     "builtAt": "2026-11-02T09:30:00.000Z",
     "summary": "5대 운명학 융합 궁합(Unified Multi-Dimensional Synastry) 결정론 마스터 엔진 구축 및 chatContext 잔존 모순 문구 정합성 패치",
