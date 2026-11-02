@@ -99,7 +99,7 @@ export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterR
   const nowKstIso = new Date(instant.getTime() + 9 * 3600000).toISOString().replace('Z', '+09:00');
 
   // 사과 (四課) 추출
-  const rawLessons = (raw.lessons as any[]) || [];
+  const rawLessons = (raw.lessons as unknown as any[]) || [];
   const lessonTitles: Array<{ id: LiurenLessonId; name: string; hanja: string; meaning: string }> = [
     { id: 'first', name: '제1과 일간상신', hanja: '日干上神', meaning: '나의 현재 처지, 대외적 역량과 주도권' },
     { id: 'second', name: '제2과 일간음신', hanja: '日干陰神', meaning: '나의 내면 심리, 숨겨진 배경과 잠재 파급력' },
@@ -122,7 +122,7 @@ export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterR
   });
 
   // 삼전 (三傳) 추출
-  const rawTrans = (raw.transmissions as any[]) || [];
+  const rawTrans = (raw.transmissions as unknown as any[]) || [];
   const transStages: Array<{ stage: '초전(初傳/發用)' | '중전(中傳)' | '말전(末傳)'; role: string }> = [
     { stage: '초전(初傳/發用)', role: '일의 발단, 시작 국면의 동력과 촉발 계기' },
     { stage: '중전(中傳)', role: '일의 진행 과정, 마주칠 전환점과 고비' },

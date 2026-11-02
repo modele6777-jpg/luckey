@@ -716,7 +716,7 @@ export function runDeterministicEngine(params: {
   const heLuoLiShuResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateHeLuoLiShu({ profile, saju: sajuRes });
+          return calculateHeLuoLiShu({ profile });
         } catch (_) {
           return null;
         }

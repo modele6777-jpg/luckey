@@ -24,7 +24,8 @@
 
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, SajuAnalysisResult } from '../sajuAnalysis';
-import { hexagram, HexagramView } from './ichingMasterEngine';
+import { hexagram } from './iching';
+import type { HexagramView } from './ichingMasterEngine';
 
 export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v1.0.0';
 
@@ -89,13 +90,15 @@ export function calculateHeLuoLiShu(params?: {
 }): HeLuoLiShuResult {
   const saju = params?.saju || calculateDetailedSaju(params?.profile || null);
 
-  const pillars = [saju.year, saju.month, saju.day, saju.hour];
+  const p = saju.pillars;
+  const pillars = [p.year, p.month, p.day, p.hour].filter(Boolean);
   let heavenSum = 0; // 홀수(기수) 합
   let earthSum = 0; // 짝수(우수) 합
 
-  pillars.forEach((p) => {
-    const sChar = p.stem.char;
-    const bChar = p.branch.char;
+  pillars.forEach((pillar) => {
+    if (!pillar) return;
+    const sChar = pillar.stem.char;
+    const bChar = pillar.branch.char;
     const sNum = STEM_NUMBERS[sChar] || 7;
     const bNum = BRANCH_NUMBERS[bChar] || 6;
 
