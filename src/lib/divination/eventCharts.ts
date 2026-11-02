@@ -38,5 +38,5 @@ export function calculateQimen(instant: Date) {
   const sector=(d:Date)=>Math.floor(((Ecliptic(GeoVector(Body.Sun,d,true)).elon%360+360)%360)/15);
   if (sector(exactHour)!==sector(instant)) throw new RangeError('절기가 교체된 시간의 분 단위 포국은 현재 지원하지 않습니다. 정밀 엔진이 필요합니다.');
   const chart=chartToObject(generateChartByDatetime(hour,{'定局法':'拆補','夜子時':'次日'}));
-  return {method:'일반 기문둔갑 · 차보법(拆補) · UTC+8 정시 기준 · 23시 익일 · 홍국기문 수리 아님',utcInstant:instant.toISOString(),calculatedUTC8Hour:clock.toISOString().slice(0,13)+':00',chart,limitations:['엔진 입력이 1시간 단위이므로 절기 교체가 포함된 시간의 분 단위 결과는 지원하지 않습니다.','홍국기문의 별도 수리·포국은 미구현입니다. 일반 기문과 혼동하지 마세요.','진태양시·출생지별 경도 보정을 적용하지 않습니다.']};
+  return {method:'일반 기문둔갑 · 차보법(拆補) · UTC+8 정시 기준 · 23시 익일 · 홍국기문 4주 수리 포국과는 별개의 점시 포국',utcInstant:instant.toISOString(),calculatedUTC8Hour:clock.toISOString().slice(0,13)+':00',chart,limitations:['엔진 입력이 1시간 단위이므로 절기 교체가 포함된 시간의 분 단위 결과는 지원하지 않습니다.','이 차보법 포국은 점시 기반이며 홍국기문 4주 수리 포국(세효·응효·중궁)이 아니다. 생년월일시 기반 홍국기문은 결정론 엔진(honggukQimenResult)에서 별도 산출된다.','진태양시·출생지별 경도 보정을 적용하지 않습니다.']};
 }

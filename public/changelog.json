@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.30",
+    "builtAt": "2026-11-02T08:25:00.000Z",
+    "summary": "홍국기문 차보법 포국 안내 문구를 4주 수리 포국 엔진과 정합하도록 정리 (v1.7.30 후속 정합성 패치)",
+    "items": [
+      "점시 차보법 calculateQimen의 method·limitations를 \"홍국기문 미구현\"에서 \"홍국기문 4주 수리 포국(honggukQimenResult)과 별개의 점시 포국\" 안내로 갱신해 LLM 프롬프트 모순 제거",
+      "대응 단위 테스트 검증 문구 갱신"
+    ]
+  },
+  {
     "version": "1.7.29",
     "builtAt": "2026-11-02T08:03:05.000Z",
     "summary": "조선 정통 홍국기문 9궁 수리 포국 & 세효·응효·중궁·삼형·통기 결정론 엔진 구축 (qimen partial → available 승격)",
