@@ -305,7 +305,7 @@ export function applyVisualViewportBox(
   root.style.setProperty('--vvw', px(box.width));
   root.style.setProperty('--vvh', px(box.height));
   root.style.setProperty('--vv-top', px(box.offsetTop));
-  root.style.setProperty('--vv-left', px(box.offsetLeft));
+  root.style.setProperty('--vv-left', '0px');
   root.style.setProperty('--vv-bottom', px(box.bottomGap));
   root.style.setProperty('--vv-bleed-left', px(bleed.left));
   root.style.setProperty('--vv-bleed-right', px(bleed.right));

@@ -1,11 +1,11 @@
 {
-  "version": "1.7.32",
-  "builtAt": "2026-11-02T09:45:00.000Z",
-  "summary": "그록(Grok) 뷰포트 패치(visualViewport offsetTop 추적 및 interactive-widget 메타) 온전 적용 및 삭제된 빌드 필수 파일 복원",
+  "version": "1.7.33",
+  "builtAt": "2026-11-02T10:05:00.000Z",
+  "summary": "키보드 전개 회전 시 수평 오프셋(scrollX) 탈출 방지 및 가로 모드 중앙 FAB 버튼 가림 결함 수복",
   "items": [
-    "iOS 키보드 전개 시 visualViewport.offsetTop 추적 및 #root 뷰포트 가시 사각형 밀착 동기화 (그록 패치)",
-    "index.html 뷰포트 메타에 interactive-widget=resizes-content 적용",
-    "삭제되었던 vite.config.ts, tsconfig.json, vercel.json 빌드 설정 및 tts.ts 등 필수 소스 전면 복원",
-    "package-lock.json 및 의존성 무결성 정상화"
+    "키보드가 열린 상태에서 기기 회전/펼침 시 iOS WebKit의 수평 스크롤(scrollX/scrollLeft)을 0px로 즉각 강제 리셋하여 화면 이탈 결함 차단",
+    "#root의 left/right를 0px에 고정하고 --vv-left 오프셋 누적을 제거하여 채팅창이 화면 좌측 바깥으로 밀려나는 현상 원천 해결",
+    "가로 모드(Landscape) 채팅창에서 76px 중앙 빅뱅(OmniWarp) 버튼이 입력창과 추천 질문 칩을 덮지 않도록 자동 은닉 처리",
+    "가로 모드 일반 화면에서는 중앙 버튼을 우측 하단 안전 영역으로 정렬 이동하여 콘텐츠 방해 방지"
   ]
 }
