@@ -22,6 +22,9 @@ import { calculateWealthPipeline, formatWealthPipelinePrompt, WEALTH_PIPELINE_VE
 import { calculateKarmicNodes, formatKarmicNodesPrompt, KARMIC_NODES_ENGINE_VERSION } from '../src/lib/divination/karmicNodesEngine';
 import { calculateMentalResilience, formatMentalResiliencePrompt, MENTAL_RESILIENCE_VERSION } from '../src/lib/divination/mentalResilienceEngine';
 import { calculateNobleNetwork, formatNobleNetworkPrompt, NOBLE_NETWORK_VERSION } from '../src/lib/divination/nobleNetworkEngine';
+import { calculateVoicePersona, formatVoicePersonaPrompt, VOICE_PERSONA_VERSION } from '../src/lib/divination/voicePersonaEngine';
+import { calculateContractShield, formatContractShieldPrompt, CONTRACT_SHIELD_VERSION } from '../src/lib/divination/contractShieldEngine';
+import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, LIFE_DOMAIN_WHEEL_VERSION } from '../src/lib/divination/lifeDomainWheelEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1709,6 +1712,44 @@ test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증
   assert(prompt.includes('천을귀인'));
 });
 
+test('Voice Persona Engine: 스피치 페르소나 및 설득력 치트키 검증', () => {
+  const res = calculateVoicePersona({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, VOICE_PERSONA_VERSION);
+  assert(res.persona.title.length > 0);
+  assert(res.persuasionScore >= 0 && res.persuasionScore <= 100);
+  assert(res.cheatsheet.negotiation.length > 0);
+  assert(res.cheatsheet.presentation.length > 0);
+  const prompt = formatVoicePersonaPrompt(res);
+  assert(prompt.includes(VOICE_PERSONA_VERSION));
+  assert(prompt.includes('1순위 화법 페르소나'));
+  assert(prompt.includes('실전 스피치 치트키'));
+});
+
+test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리스트 검증', () => {
+  const res = calculateContractShield({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, CONTRACT_SHIELD_VERSION);
+  assert(res.disputeRiskScore >= 0 && res.disputeRiskScore <= 100);
+  assert(res.shieldChecklist.length === 5);
+  assert(res.ichingSongWisdom.hexagram.length > 0);
+  const prompt = formatContractShieldPrompt(res);
+  assert(prompt.includes(CONTRACT_SHIELD_VERSION));
+  assert(prompt.includes('분쟁 리스크 지수'));
+  assert(prompt.includes('5대 계약 쉴드 체크리스트'));
+});
+
+test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 검증', () => {
+  const res = calculateLifeDomainWheel({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, LIFE_DOMAIN_WHEEL_VERSION);
+  assert(res.wheelBalanceScore >= 0 && res.wheelBalanceScore <= 100);
+  assert(res.primaryBreakthroughDomain.titleKo.length > 0);
+  assert(res.rechargeDomain.titleKo.length > 0);
+  assert(Object.keys(res.domains).length === 6);
+  const prompt = formatLifeDomainWheelPrompt(res);
+  assert(prompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
+  assert(prompt.includes('라이프 휠 균형도'));
+  assert(prompt.includes('1순위 돌파 도메인'));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1724,6 +1765,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.karmicNodesResult !== null && report.karmicNodesResult !== undefined);
   assert(report.mentalResilienceResult !== null && report.mentalResilienceResult !== undefined);
   assert(report.nobleNetworkResult !== null && report.nobleNetworkResult !== undefined);
+  assert(report.voicePersonaResult !== null && report.voicePersonaResult !== undefined);
+  assert(report.contractShieldResult !== null && report.contractShieldResult !== undefined);
+  assert(report.lifeDomainWheelResult !== null && report.lifeDomainWheelResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1741,4 +1785,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(KARMIC_NODES_ENGINE_VERSION));
   assert(enginePrompt.includes(MENTAL_RESILIENCE_VERSION));
   assert(enginePrompt.includes(NOBLE_NETWORK_VERSION));
+  assert(enginePrompt.includes(VOICE_PERSONA_VERSION));
+  assert(enginePrompt.includes(CONTRACT_SHIELD_VERSION));
+  assert(enginePrompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
 });
