@@ -41,6 +41,7 @@ import { calculateMahabote, formatMahabotePrompt, type MahaboteResult, MAHABOTE_
 import { calculateSukuyoAdvanced, formatSukuyoPrompt, type SukuyoResult } from './sukuyoEngine';
 import { calculateVedicAdvanced, formatVedicPrompt, type VedicResult } from './vedicEngine';
 import { calculateKabbalah, formatKabbalahPrompt, type KabbalahResult, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD } from './kabbalahEngine';
+import { calculateThaiHorasat, formatThaiHorasatPrompt, type ThaiHorasatResult, THAI_HORASAT_METHOD } from './thaiHorasatEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -102,6 +103,7 @@ export interface DeterministicEngineReport {
   sukuyoAdvancedResult?: SukuyoResult | null;
   vedicAdvancedResult?: VedicResult | null;
   kabbalahResult?: KabbalahResult | null;
+  thaiHorasatResult?: ThaiHorasatResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -120,18 +122,6 @@ export interface DeterministicEngineReport {
     taiyi: ToolCalculationEnvelope<unknown>;
   };
 }
-
-const KOR_WEEKDAYS = ['일요일(태양)', '월요일(달)', '화요일(화성)', '수요일(수성)', '목요일(목성)', '금요일(금성)', '토요일(토성)'];
-const MAHABOTE_ANIMALS = [
-  '가루다(일요일·태양·명예와 비상)',
-  '호랑이(월요일·달·섬세한 매력)',
-  '사자(화요일·화성·용기와 추진력)',
-  '엄니 코끼리(수요일·수성·소통과 지혜)',
-  '쥐(목요일·목성·통찰과 성찰)',
-  '기니피그(금요일·금성·예술과 공감)',
-  '나가 용(토요일·토성·인내와 깊은 내공)'
-];
-const THAI_DAY_COLORS = ['빨강(태양)', '노랑/크림(달)', '분홍(화성)', '초록(수성)', '주황(목성)', '파랑(금성)', '보라(토성)'];
 
 /**
  * 사용자 프로필과 질문 맥락을 입력받아 순수 수학·천문·역법 수리 엔진을 일괄 실행하고
@@ -390,22 +380,35 @@ export function runDeterministicEngine(params: {
     kyuseiEnvelope = { toolId: 'kyusei', toolKoName: '구성학', status: 'error', note: err?.message || '구성학 9궁 포국 실패' };
   }
 
-  // 8. 태국 점성술 (호라삿 요일 상징)
-  let thaiEnvelope: ToolCalculationEnvelope<unknown>;
-  if (birthdateStr) {
+  // 8. 태국 점성술 (정통 호라삿 8요일 · 마하탁사 대운 · 4원소 신체 활력 엔진)
+  let thaiEnvelope: ToolCalculationEnvelope<ThaiHorasatResult>;
+  let thaiHorasatResult: ThaiHorasatResult | null = null;
+  try {
+    thaiHorasatResult = calculateThaiHorasat({ profile, targetYear: now.getFullYear(), targetDate: now });
+    if (thaiHorasatResult.status === 'calculated') {
+      thaiEnvelope = {
+        toolId: 'thai_astrology',
+        toolKoName: '태국점성술',
+        status: 'calculated',
+        method: THAI_HORASAT_METHOD,
+        data: thaiHorasatResult,
+      };
+    } else {
+      thaiEnvelope = {
+        toolId: 'thai_astrology',
+        toolKoName: '태국점성술',
+        status: 'skipped',
+        method: THAI_HORASAT_METHOD,
+        note: thaiHorasatResult.note || '생년월일 미입력으로 호라삿 계산 생략',
+      };
+    }
+  } catch (err: any) {
     thaiEnvelope = {
       toolId: 'thai_astrology',
       toolKoName: '태국점성술',
-      status: 'partial',
-      method: '태국 전통 호라삿 요일 상징 및 행운 컬러 매핑',
-      data: {
-        weekday: KOR_WEEKDAYS[dayOfWeek],
-        luckyColor: THAI_DAY_COLORS[dayOfWeek]
-      },
-      limitations: ['정밀 호라삿 차트 및 신체 부위별 바이오리듬 차트는 미산출입니다.']
+      status: 'error',
+      note: err?.message || '호라삿 8요일 계산 실패',
     };
-  } else {
-    thaiEnvelope = { toolId: 'thai_astrology', toolKoName: '태국점성술', status: 'skipped', note: '생년월일 미입력' };
   }
 
   // 9. 주역 (周易 64괘) - 암호학적 난수 동전법 작괘
@@ -723,6 +726,7 @@ export function runDeterministicEngine(params: {
     sukuyoAdvancedResult,
     vedicAdvancedResult,
     kabbalahResult,
+    thaiHorasatResult,
     tools: toolsMap,
   };
 }
@@ -777,5 +781,6 @@ ${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(repo
 ${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}
 ${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}
 ${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}
-${report.kabbalahResult ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}`;
+${report.kabbalahResult ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}
+${report.thaiHorasatResult ? '\n' + formatThaiHorasatPrompt(report.thaiHorasatResult) : ''}`;
 }
