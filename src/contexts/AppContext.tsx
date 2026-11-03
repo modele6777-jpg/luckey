@@ -2039,7 +2039,8 @@ ${responseProfile.rule}`;
         !_isPerfReduced &&
         responseLength !== 'short' &&
         (options?.mode === 'master' ||
-          /방하착|초기불교|니까야|영지주의|노시스|기적수업|세도나|호킨스|놓아버림|거리두기|무아|사성제/.test(text));
+          options?.mode === 'trinity' ||
+          /방하착|초기불교|니까야|영지주의|노시스|그노시스|기적수업|ACIM|acim|세도나|호킨스|놓아버림|거리두기|무아|사성제|용서|거룩한\s*순간|속죄|원한|죄책감|두려움|화살|붓다|불교|신성한\s*불꽃|플레로마|소피아|데미우르고스|마음공부|영적|깨달음|명상/i.test(text));
 
       if (needsDeepWisdomCanon) {
         const [

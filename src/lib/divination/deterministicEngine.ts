@@ -84,6 +84,7 @@ import { calculateHeroMythMonomyth, formatHeroMythMonomythPrompt, type HeroMythM
 import { calculateAkashicRecordsOracle, formatAkashicRecordsOraclePrompt, type AkashicRecordsOracleResult } from './akashicRecordsOracleEngine';
 import { calculateQuantumProbabilisticTimeline, formatQuantumProbabilisticTimelinePrompt, type QuantumProbabilisticTimelineResult } from './quantumProbabilisticTimelineEngine';
 import { calculateSomaticBodyArmoring, formatSomaticBodyArmoringPrompt, type SomaticBodyArmoringResult } from './somaticBodyArmoringEngine';
+import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, type SupremeWisdomTrinityResult } from './supremeWisdomTrinityEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -188,6 +189,7 @@ export interface DeterministicEngineReport {
   akashicRecordsOracleResult?: AkashicRecordsOracleResult | null;
   quantumProbabilisticTimelineResult?: QuantumProbabilisticTimelineResult | null;
   somaticBodyArmoringResult?: SomaticBodyArmoringResult | null;
+  supremeWisdomTrinityResult?: SupremeWisdomTrinityResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1191,6 +1193,17 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 56. 궁극의 영적 3위1체 마스터 지혜 엔진 (기적수업 × 초기불교 × 영지주의)
+  const supremeWisdomTrinityResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSupremeWisdomTrinity({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1281,6 +1294,7 @@ export function runDeterministicEngine(params: {
     akashicRecordsOracleResult,
     quantumProbabilisticTimelineResult,
     somaticBodyArmoringResult,
+    supremeWisdomTrinityResult,
     tools: toolsMap,
   };
 }
@@ -1378,5 +1392,6 @@ ${report.shamanicAnimalTotemResult ? '\n' + formatShamanicAnimalTotemPrompt(repo
 ${report.heroMythMonomythResult ? '\n' + formatHeroMythMonomythPrompt(report.heroMythMonomythResult) : ''}
 ${report.akashicRecordsOracleResult ? '\n' + formatAkashicRecordsOraclePrompt(report.akashicRecordsOracleResult) : ''}
 ${report.quantumProbabilisticTimelineResult ? '\n' + formatQuantumProbabilisticTimelinePrompt(report.quantumProbabilisticTimelineResult) : ''}
-${report.somaticBodyArmoringResult ? '\n' + formatSomaticBodyArmoringPrompt(report.somaticBodyArmoringResult) : ''}`;
+${report.somaticBodyArmoringResult ? '\n' + formatSomaticBodyArmoringPrompt(report.somaticBodyArmoringResult) : ''}
+${report.supremeWisdomTrinityResult ? '\n' + formatSupremeWisdomTrinityPrompt(report.supremeWisdomTrinityResult) : ''}`;
 }
