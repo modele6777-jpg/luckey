@@ -43,6 +43,9 @@ import { calculateSerendipitySynchronicity, formatSerendipitySynchronicityPrompt
 import { calculateHumanDesignBodyGraph, formatHumanDesignBodyGraphPrompt, HUMAN_DESIGN_BODYGRAPH_VERSION } from '../src/lib/divination/humanDesignBodyGraphEngine';
 import { calculateChakraVibrationAlignment, formatChakraVibrationAlignmentPrompt, CHAKRA_ALIGNMENT_VERSION } from '../src/lib/divination/chakraVibrationAlignmentEngine';
 import { calculateEnneagramSoulIntegration, formatEnneagramSoulIntegrationPrompt, ENNEAGRAM_INTEGRATION_VERSION } from '../src/lib/divination/enneagramSoulIntegrationEngine';
+import { calculateAncestralEpigeneticKarma, formatAncestralEpigeneticKarmaPrompt, ANCESTRAL_KARMA_VERSION } from '../src/lib/divination/ancestralEpigeneticKarmaEngine';
+import { calculateShamanicAnimalTotem, formatShamanicAnimalTotemPrompt, SHAMANIC_ANIMAL_TOTEM_VERSION } from '../src/lib/divination/shamanicAnimalTotemEngine';
+import { calculateHeroMythMonomyth, formatHeroMythMonomythPrompt, HERO_MONOMYTH_VERSION } from '../src/lib/divination/heroMythMonomythEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1984,6 +1987,42 @@ test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 �
   assert(prompt.includes(res.soulType.koreanTitle));
 });
 
+test('Ancestral Epigenetic Karma Engine: 조상 혈통 업력 & 후성유전학적 카르마 정화 검증', () => {
+  const res = calculateAncestralEpigeneticKarma({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, ANCESTRAL_KARMA_VERSION);
+  assert(res.lineageArchetype.length > 0);
+  assert(res.ancestralImprint.clearingDegreePercent >= 0 && res.ancestralImprint.clearingDegreePercent <= 100);
+  assert(res.generationalChainToBreak.length > 0);
+  assert(res.liberationAffirmation.length > 0);
+  const prompt = formatAncestralEpigeneticKarmaPrompt(res);
+  assert(prompt.includes('LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화'));
+  assert(prompt.includes(res.lineageArchetype));
+});
+
+test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 검증', () => {
+  const res = calculateShamanicAnimalTotem({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, SHAMANIC_ANIMAL_TOTEM_VERSION);
+  assert(res.primaryTotem.animalName.length > 0);
+  assert(res.totemicResonanceScore >= 0 && res.totemicResonanceScore <= 100);
+  assert(res.callOfTheWildRitual.length > 0);
+  assert(res.tabooWarning.length > 0);
+  const prompt = formatShamanicAnimalTotemPrompt(res);
+  assert(prompt.includes('LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템'));
+  assert(prompt.includes(res.primaryTotem.animalName));
+});
+
+test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운명 돌파 검증', () => {
+  const res = calculateHeroMythMonomyth({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, HERO_MONOMYTH_VERSION);
+  assert(res.currentStage.stepNumber >= 1 && res.currentStage.stepNumber <= 12);
+  assert(res.theUltimateOrdeal.length > 0);
+  assert(res.theSacredElixir.length > 0);
+  assert(res.heroicBreakthroughAction.length > 0);
+  const prompt = formatHeroMythMonomythPrompt(res);
+  assert(prompt.includes('LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스'));
+  assert(prompt.includes(res.heroicArchetype));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -2020,6 +2059,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.humanDesignBodyGraphResult !== null && report.humanDesignBodyGraphResult !== undefined);
   assert(report.chakraVibrationAlignmentResult !== null && report.chakraVibrationAlignmentResult !== undefined);
   assert(report.enneagramSoulIntegrationResult !== null && report.enneagramSoulIntegrationResult !== undefined);
+  assert(report.ancestralEpigeneticKarmaResult !== null && report.ancestralEpigeneticKarmaResult !== undefined);
+  assert(report.shamanicAnimalTotemResult !== null && report.shamanicAnimalTotemResult !== undefined);
+  assert(report.heroMythMonomythResult !== null && report.heroMythMonomythResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -2058,4 +2100,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(HUMAN_DESIGN_BODYGRAPH_VERSION));
   assert(enginePrompt.includes(CHAKRA_ALIGNMENT_VERSION));
   assert(enginePrompt.includes(ENNEAGRAM_INTEGRATION_VERSION));
+  assert(enginePrompt.includes(ANCESTRAL_KARMA_VERSION));
+  assert(enginePrompt.includes(SHAMANIC_ANIMAL_TOTEM_VERSION));
+  assert(enginePrompt.includes(HERO_MONOMYTH_VERSION));
 });
