@@ -49,6 +49,7 @@ import { calculateHeroMythMonomyth, formatHeroMythMonomythPrompt, HERO_MONOMYTH_
 import { calculateAkashicRecordsOracle, formatAkashicRecordsOraclePrompt, AKASHIC_RECORDS_VERSION } from '../src/lib/divination/akashicRecordsOracleEngine';
 import { calculateQuantumProbabilisticTimeline, formatQuantumProbabilisticTimelinePrompt, QUANTUM_TIMELINE_VERSION } from '../src/lib/divination/quantumProbabilisticTimelineEngine';
 import { calculateSomaticBodyArmoring, formatSomaticBodyArmoringPrompt, SOMATIC_ARMORING_VERSION } from '../src/lib/divination/somaticBodyArmoringEngine';
+import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, SUPREME_WISDOM_TRINITY_VERSION } from '../src/lib/divination/supremeWisdomTrinityEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -2061,6 +2062,21 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   assert(prompt.includes(res.primaryArmorSegment.segmentName));
 });
 
+test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주의 3대 지혜 융합 검증', () => {
+  const res = calculateSupremeWisdomTrinity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, SUPREME_WISDOM_TRINITY_VERSION);
+  assert(res.trinitySynthesisCore.length > 0);
+  assert(res.acim.workbookLessonQuote.length > 0);
+  assert(res.acim.holyInstantShift.length > 0);
+  assert(res.buddhism.nikayaQuote.length > 0);
+  assert(res.buddhism.secondArrowStop.length > 0);
+  assert(res.gnosis.divineSparkPneuma.length > 0);
+  assert(res.gnosis.nagHammadiQuote.length > 0);
+  const prompt = formatSupremeWisdomTrinityPrompt(res);
+  assert(prompt.includes('LUCKEY 궁극의 영적 3위1체 마스터 지혜'));
+  assert(prompt.includes(res.trinitySynthesisCore));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -2103,6 +2119,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.akashicRecordsOracleResult !== null && report.akashicRecordsOracleResult !== undefined);
   assert(report.quantumProbabilisticTimelineResult !== null && report.quantumProbabilisticTimelineResult !== undefined);
   assert(report.somaticBodyArmoringResult !== null && report.somaticBodyArmoringResult !== undefined);
+  assert(report.supremeWisdomTrinityResult !== null && report.supremeWisdomTrinityResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -2147,4 +2164,5 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(AKASHIC_RECORDS_VERSION));
   assert(enginePrompt.includes(QUANTUM_TIMELINE_VERSION));
   assert(enginePrompt.includes(SOMATIC_ARMORING_VERSION));
+  assert(enginePrompt.includes(SUPREME_WISDOM_TRINITY_VERSION));
 });
