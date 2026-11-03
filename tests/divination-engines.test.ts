@@ -40,6 +40,9 @@ import { calculateDestinySynastryEcho, formatDestinySynastryEchoPrompt, DESTINY_
 import { calculateMicroHabitKarma, formatMicroHabitKarmaPrompt, MICRO_HABIT_KARMA_VERSION } from '../src/lib/divination/microHabitKarmaEngine';
 import { calculateIkigaiDestinyCompass, formatIkigaiDestinyCompassPrompt, IKIGAI_DESTINY_COMPASS_VERSION } from '../src/lib/divination/ikigaiDestinyCompassEngine';
 import { calculateSerendipitySynchronicity, formatSerendipitySynchronicityPrompt, SERENDIPITY_SYNCHRONICITY_VERSION } from '../src/lib/divination/serendipitySynchronicityEngine';
+import { calculateHumanDesignBodyGraph, formatHumanDesignBodyGraphPrompt, HUMAN_DESIGN_BODYGRAPH_VERSION } from '../src/lib/divination/humanDesignBodyGraphEngine';
+import { calculateChakraVibrationAlignment, formatChakraVibrationAlignmentPrompt, CHAKRA_ALIGNMENT_VERSION } from '../src/lib/divination/chakraVibrationAlignmentEngine';
+import { calculateEnneagramSoulIntegration, formatEnneagramSoulIntegrationPrompt, ENNEAGRAM_INTEGRATION_VERSION } from '../src/lib/divination/enneagramSoulIntegrationEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1943,6 +1946,44 @@ test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행�
   assert(prompt.includes(res.activeLuckyPortal));
 });
 
+test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 오라 검증', () => {
+  const res = calculateHumanDesignBodyGraph({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, HUMAN_DESIGN_BODYGRAPH_VERSION);
+  assert(res.designType.type.length > 0);
+  assert(res.strategy.length > 0);
+  assert(res.innerAuthority.length > 0);
+  assert(res.centers.sacral !== undefined);
+  assert(res.deconditioningAdvice.length > 0);
+  const prompt = formatHumanDesignBodyGraphPrompt(res);
+  assert(prompt.includes('LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라'));
+  assert(prompt.includes(res.designType.koreanLabel));
+});
+
+test('Chakra Vibration Alignment Engine: 7대 차크라 파동 정렬 및 퀀텀 밸런싱 검증', () => {
+  const res = calculateChakraVibrationAlignment({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, CHAKRA_ALIGNMENT_VERSION);
+  assert.equal(res.chakras.length, 7);
+  assert(res.overallChakraBalanceScore >= 0 && res.overallChakraBalanceScore <= 100);
+  assert(res.primaryFocusChakra.frequencyHz > 0);
+  assert(res.kundaliniBreathingPrescription.instruction.length > 0);
+  const prompt = formatChakraVibrationAlignmentPrompt(res);
+  assert(prompt.includes('LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱'));
+  assert(prompt.includes(res.primaryFocusChakra.name));
+});
+
+test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 및 의식 진화 검증', () => {
+  const res = calculateEnneagramSoulIntegration({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, ENNEAGRAM_INTEGRATION_VERSION);
+  assert(res.soulType.coreNumber >= 1 && res.soulType.coreNumber <= 9);
+  assert(res.integrationScore >= 0 && res.integrationScore <= 100);
+  assert(res.egoFixation.length > 0);
+  assert(res.virtueAscension.length > 0);
+  assert(res.soulLiberationTask.length > 0);
+  const prompt = formatEnneagramSoulIntegrationPrompt(res);
+  assert(prompt.includes('LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화'));
+  assert(prompt.includes(res.soulType.koreanTitle));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1976,6 +2017,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.microHabitKarmaResult !== null && report.microHabitKarmaResult !== undefined);
   assert(report.ikigaiDestinyCompassResult !== null && report.ikigaiDestinyCompassResult !== undefined);
   assert(report.serendipitySynchronicityResult !== null && report.serendipitySynchronicityResult !== undefined);
+  assert(report.humanDesignBodyGraphResult !== null && report.humanDesignBodyGraphResult !== undefined);
+  assert(report.chakraVibrationAlignmentResult !== null && report.chakraVibrationAlignmentResult !== undefined);
+  assert(report.enneagramSoulIntegrationResult !== null && report.enneagramSoulIntegrationResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -2011,4 +2055,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(MICRO_HABIT_KARMA_VERSION));
   assert(enginePrompt.includes(IKIGAI_DESTINY_COMPASS_VERSION));
   assert(enginePrompt.includes(SERENDIPITY_SYNCHRONICITY_VERSION));
+  assert(enginePrompt.includes(HUMAN_DESIGN_BODYGRAPH_VERSION));
+  assert(enginePrompt.includes(CHAKRA_ALIGNMENT_VERSION));
+  assert(enginePrompt.includes(ENNEAGRAM_INTEGRATION_VERSION));
 });
