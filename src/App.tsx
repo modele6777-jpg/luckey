@@ -116,6 +116,7 @@ import SelectionBridgeToolbar from "./components/SelectionBridgeToolbar";
 import { PinLockScreen } from "./components/PinLockScreen";
 import { UPDATE_ACK_KEY } from "./lib/updateNotice";
 import { applyServiceWorkerUpdate, forceAppUpgradeAndReload } from "./lib/prismSync";
+import { APP_VERSION, fetchDeployedAppVersion, compareVersions } from "./lib/appVersion";
 import { safeLocalStorage, safeSessionStorage } from "./utils/safeStorage";
 import { usePinScreenLock } from "./hooks/usePinScreenLock";
 import { useViewportScrollLock } from "./hooks/useViewportScrollLock";
@@ -360,6 +361,15 @@ function AppContent() {
       navigate('/key');
     }
   }, [location, navigate]);
+
+  // 🔄 최신 배포 버전 자동 감지 및 즉시 캐시 갱신 반영
+  React.useEffect(() => {
+    fetchDeployedAppVersion().then((deployed) => {
+      if (deployed && compareVersions(deployed, APP_VERSION) > 0) {
+        void forceAppUpgradeAndReload();
+      }
+    }).catch(() => {});
+  }, []);
 
   React.useEffect(() => {
     // 🎧 오디오 세션 불변칙: 앱 첫 마운트에서 오디오를 절대 점유하지 않습니다.

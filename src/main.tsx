@@ -39,8 +39,11 @@ initHorizontalWheelScroll();
 const SW_UPDATE_INTERVAL_MS = getSwUpdateIntervalMs();
 
 if (import.meta.env.PROD) {
-  registerSW({
+  const updateSW = registerSW({
     immediate: true,
+    onNeedRefresh() {
+      void updateSW(true);
+    },
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
       window.setInterval(() => {
@@ -48,6 +51,7 @@ if (import.meta.env.PROD) {
       }, SW_UPDATE_INTERVAL_MS);
     },
   });
+}
 } else {
   // In development mode, safely unregister any residual ServiceWorkers to prevent MIME type & stale cache conflicts
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
