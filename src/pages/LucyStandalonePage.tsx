@@ -3179,7 +3179,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             : 'bg-slate-950/88 border-white/10 text-white'
         }`}
       >
-        <div className="lucy-input-stack w-full min-w-0 max-w-lg sm:max-w-xl mx-auto flex flex-col gap-0.5 sm:gap-1 overflow-x-hidden">
+        <div className="lucy-input-stack w-full min-w-0 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto flex flex-col gap-0.5 sm:gap-1 overflow-x-hidden">
           {/* Image Attachment Preview */}
           {attachedImage && (
             <div className="flex items-center gap-1.5 bg-amber-50/90 dark:bg-slate-900 p-1 rounded-xl w-fit border border-amber-200 dark:border-white/15">
