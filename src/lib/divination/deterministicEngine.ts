@@ -66,6 +66,9 @@ import { calculateQuantumLeapTiming, formatQuantumLeapPrompt, type QuantumLeapRe
 import { calculateElementalResonance, formatElementalResonancePrompt, type ElementalResonanceResult } from './elementalResonanceEngine';
 import { calculateYinYangPolarity, formatYinYangPolarityPrompt, type YinYangPolarityResult } from './yinYangPolarityEngine';
 import { calculateRuneMatrix, formatRuneMatrixPrompt, type RuneMatrixResult } from './runeMatrixEngine';
+import { calculateSoulJourneyTarot, formatSoulJourneyTarotPrompt, type SoulJourneyTarotResult } from './soulJourneyTarotEngine';
+import { calculateTranscendentalMeditation, formatTranscendentalMeditationPrompt, type TranscendentalMeditationResult } from './transcendentalMeditationEngine';
+import { calculateStrategicLeverage, formatStrategicLeveragePrompt, type StrategicLeverageResult } from './strategicLeverageEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -152,6 +155,9 @@ export interface DeterministicEngineReport {
   elementalResonanceResult?: ElementalResonanceResult | null;
   yinYangPolarityResult?: YinYangPolarityResult | null;
   runeMatrixResult?: RuneMatrixResult | null;
+  soulJourneyTarotResult?: SoulJourneyTarotResult | null;
+  transcendentalMeditationResult?: TranscendentalMeditationResult | null;
+  strategicLeverageResult?: StrategicLeverageResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -957,6 +963,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 38. 영혼의 타로 여정 & 4원소 연금술 엔진
+  const soulJourneyTarotResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSoulJourneyTarot({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 39. 초월 명상 & 브레인웨이브 동조 엔진
+  const transcendentalMeditationResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateTranscendentalMeditation({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 40. 전략적 협상 & 손자병법 기문 레버리지 엔진
+  const strategicLeverageResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateStrategicLeverage({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1029,6 +1068,9 @@ export function runDeterministicEngine(params: {
     elementalResonanceResult,
     yinYangPolarityResult,
     runeMatrixResult,
+    soulJourneyTarotResult,
+    transcendentalMeditationResult,
+    strategicLeverageResult,
     tools: toolsMap,
   };
 }
@@ -1108,5 +1150,8 @@ ${report.sleepSubconsciousResult ? '\n' + formatSleepSubconsciousPrompt(report.s
 ${report.quantumLeapResult ? '\n' + formatQuantumLeapPrompt(report.quantumLeapResult) : ''}
 ${report.elementalResonanceResult ? '\n' + formatElementalResonancePrompt(report.elementalResonanceResult) : ''}
 ${report.yinYangPolarityResult ? '\n' + formatYinYangPolarityPrompt(report.yinYangPolarityResult) : ''}
-${report.runeMatrixResult ? '\n' + formatRuneMatrixPrompt(report.runeMatrixResult) : ''}`;
+${report.runeMatrixResult ? '\n' + formatRuneMatrixPrompt(report.runeMatrixResult) : ''}
+${report.soulJourneyTarotResult ? '\n' + formatSoulJourneyTarotPrompt(report.soulJourneyTarotResult) : ''}
+${report.transcendentalMeditationResult ? '\n' + formatTranscendentalMeditationPrompt(report.transcendentalMeditationResult) : ''}
+${report.strategicLeverageResult ? '\n' + formatStrategicLeveragePrompt(report.strategicLeverageResult) : ''}`;
 }
