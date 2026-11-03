@@ -78,6 +78,9 @@ import { calculateSerendipitySynchronicity, formatSerendipitySynchronicityPrompt
 import { calculateHumanDesignBodyGraph, formatHumanDesignBodyGraphPrompt, type HumanDesignBodyGraphResult } from './humanDesignBodyGraphEngine';
 import { calculateChakraVibrationAlignment, formatChakraVibrationAlignmentPrompt, type ChakraVibrationAlignmentResult } from './chakraVibrationAlignmentEngine';
 import { calculateEnneagramSoulIntegration, formatEnneagramSoulIntegrationPrompt, type EnneagramSoulIntegrationResult } from './enneagramSoulIntegrationEngine';
+import { calculateAncestralEpigeneticKarma, formatAncestralEpigeneticKarmaPrompt, type AncestralEpigeneticKarmaResult } from './ancestralEpigeneticKarmaEngine';
+import { calculateShamanicAnimalTotem, formatShamanicAnimalTotemPrompt, type ShamanicAnimalTotemResult } from './shamanicAnimalTotemEngine';
+import { calculateHeroMythMonomyth, formatHeroMythMonomythPrompt, type HeroMythMonomythResult } from './heroMythMonomythEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -176,6 +179,9 @@ export interface DeterministicEngineReport {
   humanDesignBodyGraphResult?: HumanDesignBodyGraphResult | null;
   chakraVibrationAlignmentResult?: ChakraVibrationAlignmentResult | null;
   enneagramSoulIntegrationResult?: EnneagramSoulIntegrationResult | null;
+  ancestralEpigeneticKarmaResult?: AncestralEpigeneticKarmaResult | null;
+  shamanicAnimalTotemResult?: ShamanicAnimalTotemResult | null;
+  heroMythMonomythResult?: HeroMythMonomythResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1113,6 +1119,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 50. 조상 혈통 업력 & 후성유전학적 카르마 정화 엔진
+  const ancestralEpigeneticKarmaResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateAncestralEpigeneticKarma({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 51. 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 가이드 엔진
+  const shamanicAnimalTotemResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateShamanicAnimalTotem({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 52. 조셉 캠벨 영웅의 여정 12단계 & 운명 돌파 엔진
+  const heroMythMonomythResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateHeroMythMonomyth({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1197,6 +1236,9 @@ export function runDeterministicEngine(params: {
     humanDesignBodyGraphResult,
     chakraVibrationAlignmentResult,
     enneagramSoulIntegrationResult,
+    ancestralEpigeneticKarmaResult,
+    shamanicAnimalTotemResult,
+    heroMythMonomythResult,
     tools: toolsMap,
   };
 }
@@ -1288,5 +1330,8 @@ ${report.ikigaiDestinyCompassResult ? '\n' + formatIkigaiDestinyCompassPrompt(re
 ${report.serendipitySynchronicityResult ? '\n' + formatSerendipitySynchronicityPrompt(report.serendipitySynchronicityResult) : ''}
 ${report.humanDesignBodyGraphResult ? '\n' + formatHumanDesignBodyGraphPrompt(report.humanDesignBodyGraphResult) : ''}
 ${report.chakraVibrationAlignmentResult ? '\n' + formatChakraVibrationAlignmentPrompt(report.chakraVibrationAlignmentResult) : ''}
-${report.enneagramSoulIntegrationResult ? '\n' + formatEnneagramSoulIntegrationPrompt(report.enneagramSoulIntegrationResult) : ''}`;
+${report.enneagramSoulIntegrationResult ? '\n' + formatEnneagramSoulIntegrationPrompt(report.enneagramSoulIntegrationResult) : ''}
+${report.ancestralEpigeneticKarmaResult ? '\n' + formatAncestralEpigeneticKarmaPrompt(report.ancestralEpigeneticKarmaResult) : ''}
+${report.shamanicAnimalTotemResult ? '\n' + formatShamanicAnimalTotemPrompt(report.shamanicAnimalTotemResult) : ''}
+${report.heroMythMonomythResult ? '\n' + formatHeroMythMonomythPrompt(report.heroMythMonomythResult) : ''}`;
 }
