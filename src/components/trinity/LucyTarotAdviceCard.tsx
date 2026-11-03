@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
@@ -23,7 +23,7 @@ import {
   getEnhancedLucyTarotAdvice,
 } from '@/lib/lucyTarotAdvice';
 import { playTTSInChunks, stopTTS, useTTSActive, subscribeTTS } from '@/utils/tts';
-import { TTSHighlightedText } from '@/components/common/TTSHighlightedText';
+import { TTSHighlightedText, cleanSentenceForMatching } from '@/components/common/TTSHighlightedText';
 
 export interface LucyTarotAdviceCardProps {
   cards?: any[] | null;
