@@ -34,6 +34,9 @@ import { calculateRuneMatrix, formatRuneMatrixPrompt, RUNE_MATRIX_VERSION } from
 import { calculateSoulJourneyTarot, formatSoulJourneyTarotPrompt, SOUL_JOURNEY_TAROT_VERSION } from '../src/lib/divination/soulJourneyTarotEngine';
 import { calculateTranscendentalMeditation, formatTranscendentalMeditationPrompt, TRANSCENDENTAL_MEDITATION_VERSION } from '../src/lib/divination/transcendentalMeditationEngine';
 import { calculateStrategicLeverage, formatStrategicLeveragePrompt, STRATEGIC_LEVERAGE_VERSION } from '../src/lib/divination/strategicLeverageEngine';
+import { calculateShadowArchetype, formatShadowArchetypePrompt, SHADOW_ARCHETYPE_VERSION } from '../src/lib/divination/shadowArchetypeEngine';
+import { calculateBiorhythmPeakFlow, formatBiorhythmPeakFlowPrompt, BIORHYTHM_PEAK_FLOW_VERSION } from '../src/lib/divination/biorhythmPeakFlowEngine';
+import { calculateDestinySynastryEcho, formatDestinySynastryEchoPrompt, DESTINY_SYNASTRY_ECHO_VERSION } from '../src/lib/divination/destinySynastryEchoEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1864,6 +1867,43 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   assert(prompt.includes('LUCKEY 전략 협상 & 손자병법 기문 레버리지'));
 });
 
+test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우 연금술 검증', () => {
+  const res = calculateShadowArchetype({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, SHADOW_ARCHETYPE_VERSION);
+  assert(res.shadowIntegrationScore >= 0 && res.shadowIntegrationScore <= 100);
+  assert(res.subconsciousDepth >= 0 && res.subconsciousDepth <= 100);
+  assert(res.primaryShadow.coreWound.length > 0);
+  assert(res.goldenShadow.goldenGift.length > 0);
+  const prompt = formatShadowArchetypePrompt(res);
+  assert(prompt.includes('LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술'));
+  assert(prompt.includes(res.primaryShadow.archetype));
+});
+
+test('Biorhythm Peak Flow Engine: 3대 생체 바이오리듬 & 크로노타입 황금 피크 검증', () => {
+  const res = calculateBiorhythmPeakFlow({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, BIORHYTHM_PEAK_FLOW_VERSION);
+  assert(res.biorhythm.physical >= -100 && res.biorhythm.physical <= 100);
+  assert(res.biorhythm.emotional >= -100 && res.biorhythm.emotional <= 100);
+  assert(res.biorhythm.intellectual >= -100 && res.biorhythm.intellectual <= 100);
+  assert(res.biorhythm.compositeVitality >= 0 && res.biorhythm.compositeVitality <= 100);
+  assert(res.goldenWindows.deepWorkPeak.length > 0);
+  const prompt = formatBiorhythmPeakFlowPrompt(res);
+  assert(prompt.includes('LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크'));
+  assert(prompt.includes(res.chronotype));
+});
+
+test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마적 인연 중력 검증', () => {
+  const res = calculateDestinySynastryEcho({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, DESTINY_SYNASTRY_ECHO_VERSION);
+  assert(res.karmicEchoScore >= 0 && res.karmicEchoScore <= 100);
+  assert(res.soulConnectionDepth >= 0 && res.soulConnectionDepth <= 100);
+  assert(res.relationshipDynamics.magneticPullFactor.length > 0);
+  assert(res.goldenCommunicationCode.mindOpeningKeyword.length > 0);
+  const prompt = formatDestinySynastryEchoPrompt(res);
+  assert(prompt.includes('LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력'));
+  assert(prompt.includes(res.gravityType));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1891,6 +1931,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.soulJourneyTarotResult !== null && report.soulJourneyTarotResult !== undefined);
   assert(report.transcendentalMeditationResult !== null && report.transcendentalMeditationResult !== undefined);
   assert(report.strategicLeverageResult !== null && report.strategicLeverageResult !== undefined);
+  assert(report.shadowArchetypeResult !== null && report.shadowArchetypeResult !== undefined);
+  assert(report.biorhythmPeakFlowResult !== null && report.biorhythmPeakFlowResult !== undefined);
+  assert(report.destinySynastryEchoResult !== null && report.destinySynastryEchoResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1920,4 +1963,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(SOUL_JOURNEY_TAROT_VERSION));
   assert(enginePrompt.includes(TRANSCENDENTAL_MEDITATION_VERSION));
   assert(enginePrompt.includes(STRATEGIC_LEVERAGE_VERSION));
+  assert(enginePrompt.includes(SHADOW_ARCHETYPE_VERSION));
+  assert(enginePrompt.includes(BIORHYTHM_PEAK_FLOW_VERSION));
+  assert(enginePrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
 });

@@ -69,6 +69,9 @@ import { calculateRuneMatrix, formatRuneMatrixPrompt, type RuneMatrixResult } fr
 import { calculateSoulJourneyTarot, formatSoulJourneyTarotPrompt, type SoulJourneyTarotResult } from './soulJourneyTarotEngine';
 import { calculateTranscendentalMeditation, formatTranscendentalMeditationPrompt, type TranscendentalMeditationResult } from './transcendentalMeditationEngine';
 import { calculateStrategicLeverage, formatStrategicLeveragePrompt, type StrategicLeverageResult } from './strategicLeverageEngine';
+import { calculateShadowArchetype, formatShadowArchetypePrompt, type ShadowArchetypeResult } from './shadowArchetypeEngine';
+import { calculateBiorhythmPeakFlow, formatBiorhythmPeakFlowPrompt, type BiorhythmPeakFlowResult } from './biorhythmPeakFlowEngine';
+import { calculateDestinySynastryEcho, formatDestinySynastryEchoPrompt, type DestinySynastryEchoResult } from './destinySynastryEchoEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -158,6 +161,9 @@ export interface DeterministicEngineReport {
   soulJourneyTarotResult?: SoulJourneyTarotResult | null;
   transcendentalMeditationResult?: TranscendentalMeditationResult | null;
   strategicLeverageResult?: StrategicLeverageResult | null;
+  shadowArchetypeResult?: ShadowArchetypeResult | null;
+  biorhythmPeakFlowResult?: BiorhythmPeakFlowResult | null;
+  destinySynastryEchoResult?: DestinySynastryEchoResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -996,6 +1002,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 41. 융 심리학 그림자 자아 & 골든 섀도우 연금술 엔진
+  const shadowArchetypeResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateShadowArchetype({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 42. 3대 생체 바이오리듬 & 크로노타입 황금 피크 엔진
+  const biorhythmPeakFlowResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateBiorhythmPeakFlow({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 43. 다차원 운명 공명 에코 & 카르마적 인연 중력 엔진
+  const destinySynastryEchoResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateDestinySynastryEcho({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1071,6 +1110,9 @@ export function runDeterministicEngine(params: {
     soulJourneyTarotResult,
     transcendentalMeditationResult,
     strategicLeverageResult,
+    shadowArchetypeResult,
+    biorhythmPeakFlowResult,
+    destinySynastryEchoResult,
     tools: toolsMap,
   };
 }
@@ -1153,5 +1195,8 @@ ${report.yinYangPolarityResult ? '\n' + formatYinYangPolarityPrompt(report.yinYa
 ${report.runeMatrixResult ? '\n' + formatRuneMatrixPrompt(report.runeMatrixResult) : ''}
 ${report.soulJourneyTarotResult ? '\n' + formatSoulJourneyTarotPrompt(report.soulJourneyTarotResult) : ''}
 ${report.transcendentalMeditationResult ? '\n' + formatTranscendentalMeditationPrompt(report.transcendentalMeditationResult) : ''}
-${report.strategicLeverageResult ? '\n' + formatStrategicLeveragePrompt(report.strategicLeverageResult) : ''}`;
+${report.strategicLeverageResult ? '\n' + formatStrategicLeveragePrompt(report.strategicLeverageResult) : ''}
+${report.shadowArchetypeResult ? '\n' + formatShadowArchetypePrompt(report.shadowArchetypeResult) : ''}
+${report.biorhythmPeakFlowResult ? '\n' + formatBiorhythmPeakFlowPrompt(report.biorhythmPeakFlowResult) : ''}
+${report.destinySynastryEchoResult ? '\n' + formatDestinySynastryEchoPrompt(report.destinySynastryEchoResult) : ''}`;
 }
