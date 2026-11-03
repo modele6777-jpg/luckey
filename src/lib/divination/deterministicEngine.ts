@@ -925,10 +925,10 @@ export function runDeterministicEngine(params: {
     : null;
 
   // 35. 오행 생극 공명 & 순환 루프 증폭 엔진
-  const elementalResonanceResult = (birthdateStr && profile) || sajuRes
+  const elementalResonanceResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateElementalResonance({ profile, saju: sajuRes, targetDate: now });
+          return calculateElementalResonance({ profile, targetDate: now });
         } catch (_) {
           return null;
         }
@@ -936,10 +936,10 @@ export function runDeterministicEngine(params: {
     : null;
 
   // 36. 음양 극성 밸런스 & 바이폴라 리듬 엔진
-  const yinYangPolarityResult = (birthdateStr && profile) || sajuRes
+  const yinYangPolarityResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateYinYangPolarity({ profile, saju: sajuRes, targetDate: now });
+          return calculateYinYangPolarity({ profile, targetDate: now });
         } catch (_) {
           return null;
         }
@@ -947,10 +947,10 @@ export function runDeterministicEngine(params: {
     : null;
 
   // 37. 고대 노르딕 룬 동시성 매트릭스 엔진
-  const runeMatrixResult = (birthdateStr && profile) || sajuRes
+  const runeMatrixResult = birthdateStr && profile
     ? (() => {
         try {
-          return calculateRuneMatrix({ profile, saju: sajuRes, targetDate: now });
+          return calculateRuneMatrix({ profile, targetDate: now });
         } catch (_) {
           return null;
         }

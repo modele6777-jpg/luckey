@@ -152,13 +152,13 @@ export function calculateElementalResonance(params?: {
   let minCount = 99;
   let stagnantTarget: ElementName = '수';
 
-  elementOrder.forEach(el => {
+  for (const el of elementOrder) {
     const c = rawCounts[el] || 0;
     if (c < minCount) {
       minCount = c;
       stagnantTarget = el;
     }
-  });
+  }
 
   const stagnantPair = `${stagnantTarget} 기운 정체구간 (${stagnantTarget === '목' ? '기획·도전' : stagnantTarget === '화' ? '표현·발열' : stagnantTarget === '토' ? '안정·수렴' : stagnantTarget === '금' ? '결단·완성' : '지혜·유연'} 에너지 보충 요망)`;
 
