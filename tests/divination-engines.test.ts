@@ -28,6 +28,9 @@ import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, LIFE_DOMAIN_WHEE
 import { calculateDeepWorkFlow, formatDeepWorkFlowPrompt, DEEP_WORK_FLOW_VERSION } from '../src/lib/divination/deepWorkFlowEngine';
 import { calculateSleepSubconscious, formatSleepSubconsciousPrompt, SLEEP_SUBCONSCIOUS_VERSION } from '../src/lib/divination/sleepSubconsciousEngine';
 import { calculateQuantumLeapTiming, formatQuantumLeapPrompt, QUANTUM_LEAP_VERSION } from '../src/lib/divination/quantumLeapTimingEngine';
+import { calculateElementalResonance, formatElementalResonancePrompt, ELEMENTAL_RESONANCE_VERSION } from '../src/lib/divination/elementalResonanceEngine';
+import { calculateYinYangPolarity, formatYinYangPolarityPrompt, YIN_YANG_POLARITY_VERSION } from '../src/lib/divination/yinYangPolarityEngine';
+import { calculateRuneMatrix, formatRuneMatrixPrompt, RUNE_MATRIX_VERSION } from '../src/lib/divination/runeMatrixEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1791,6 +1794,41 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
   assert(prompt.includes('골든 모멘텀'));
 });
 
+test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 검증', () => {
+  const res = calculateElementalResonance({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, ELEMENTAL_RESONANCE_VERSION);
+  assert(res.overallResonanceScore >= 0 && res.overallResonanceScore <= 100);
+  assert(res.amplifier.primeElement.length > 0);
+  assert(res.amplifier.amplifierColor.length > 0);
+  const prompt = formatElementalResonancePrompt(res);
+  assert(prompt.includes(ELEMENTAL_RESONANCE_VERSION));
+  assert(prompt.includes('오행 생극제화'));
+});
+
+test('Yin-Yang Polarity Engine: 음양 수리 분포 및 24시간 바이폴라 윈도우 검증', () => {
+  const res = calculateYinYangPolarity({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, YIN_YANG_POLARITY_VERSION);
+  assert.equal(res.distribution.yangCount + res.distribution.yinCount, 8);
+  assert(res.balanceScore >= 0 && res.balanceScore <= 100);
+  assert(res.timeSlots.yangActionWindow.length > 0);
+  assert(res.timeSlots.yinFocusWindow.length > 0);
+  const prompt = formatYinYangPolarityPrompt(res);
+  assert(prompt.includes(YIN_YANG_POLARITY_VERSION));
+  assert(prompt.includes('음양 극성 밸런스'));
+});
+
+test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검증', () => {
+  const res = calculateRuneMatrix({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
+  assert.equal(res.engineVersion, RUNE_MATRIX_VERSION);
+  assert(res.runePowerScore >= 0 && res.runePowerScore <= 100);
+  assert(res.spread.originRune.name.length > 0);
+  assert(res.spread.challengeRune.name.length > 0);
+  assert(res.spread.horizonRune.name.length > 0);
+  const prompt = formatRuneMatrixPrompt(res);
+  assert(prompt.includes(RUNE_MATRIX_VERSION));
+  assert(prompt.includes('고대 노르딕 룬 동시성 매트릭스'));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1812,6 +1850,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.deepWorkFlowResult !== null && report.deepWorkFlowResult !== undefined);
   assert(report.sleepSubconsciousResult !== null && report.sleepSubconsciousResult !== undefined);
   assert(report.quantumLeapResult !== null && report.quantumLeapResult !== undefined);
+  assert(report.elementalResonanceResult !== null && report.elementalResonanceResult !== undefined);
+  assert(report.yinYangPolarityResult !== null && report.yinYangPolarityResult !== undefined);
+  assert(report.runeMatrixResult !== null && report.runeMatrixResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1835,4 +1876,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(DEEP_WORK_FLOW_VERSION));
   assert(enginePrompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
   assert(enginePrompt.includes(QUANTUM_LEAP_VERSION));
+  assert(enginePrompt.includes(ELEMENTAL_RESONANCE_VERSION));
+  assert(enginePrompt.includes(YIN_YANG_POLARITY_VERSION));
+  assert(enginePrompt.includes(RUNE_MATRIX_VERSION));
 });

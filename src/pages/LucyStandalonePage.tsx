@@ -824,6 +824,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   }, [activeChannels]);
 
   const [input, setInput] = useSyncedChatDraft(chatAccount, chatScope);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const isAutoDetect = selectedMode === 'auto';
   const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';
@@ -3172,7 +3173,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',
         }}
-        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-1 pb-1 sm:pt-1.5 sm:pb-1.5 backdrop-blur-xl border-t shadow-xs shrink-0 z-30 relative transition-colors duration-300 ${
+        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-1 pb-1 sm:pt-1.5 sm:pb-1.5 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 ${
           isLight
             ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_-2px_12px_rgba(180,140,90,0.06)]'
             : 'bg-slate-950/88 border-white/10 text-white'
@@ -3519,7 +3520,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           {/* 💬 Input Container */}
           <div
             style={{ backgroundColor: isLight ? '#ffffff' : undefined }}
-            className={`lucy-starlight-composer flex items-center gap-1 sm:gap-2 border focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs ${
+            onClick={(e) => {
+              if (e.target !== fileInputRef.current && !(e.target as HTMLElement)?.closest('button')) {
+                textareaRef.current?.focus();
+              }
+            }}
+            className={`lucy-starlight-composer cursor-text flex items-center gap-1 sm:gap-2 border focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/20 rounded-xl sm:rounded-2xl px-1.5 sm:px-3 py-0.5 min-h-[30px] sm:min-h-[38px] transition-all shadow-2xs ${
               isLight
                 ? 'bg-white border-amber-300/70'
                 : 'bg-slate-900/90 border-white/15'
@@ -3571,7 +3577,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               {/* 옅은색 동적 예시 고민 타이프라이터 플레이스홀더 (호리 스타일) */}
               <DynamicGhostInputPlaceholder
                 prompts={dynamicGhostPrompts}
-                isVisible={!input && !isLucyGenerating}
+                isVisible={!input && !isLucyGenerating && !isInputFocused}
                 pauseDuration={12000}
                 typingSpeed={45}
                 deletingSpeed={20}
@@ -3587,6 +3593,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onFocus={() => {
+                  setIsInputFocused(true);
                   setTimeout(() => {
                     if (messagesContainerRef.current) {
                       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -3605,6 +3612,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                   }
                 }}
                 onBlur={() => {
+                  setIsInputFocused(false);
                   if (window.scrollY !== 0) window.scrollTo(0, 0);
                   if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
                   if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
@@ -3612,7 +3620,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 placeholder={
                   isLucyGenerating
                     ? '추가로 할 말을 입력하면 이어서 한 번에 답변해 드려요...'
-                    : ''
+                    : (isInputFocused ? '메시지를 입력하세요 (Shift+Enter 줄바꿈, Enter 전송)...' : '')
                 }
                 rows={1}
                 className={`w-full bg-transparent text-xs sm:text-sm resize-none outline-none leading-tight sm:leading-snug min-h-[22px] sm:min-h-[28px] max-h-[88px] py-0.5 z-10 ${

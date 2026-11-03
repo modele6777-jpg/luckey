@@ -63,6 +63,9 @@ import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, type LifeDomainW
 import { calculateDeepWorkFlow, formatDeepWorkFlowPrompt, type DeepWorkFlowResult } from './deepWorkFlowEngine';
 import { calculateSleepSubconscious, formatSleepSubconsciousPrompt, type SleepSubconsciousResult } from './sleepSubconsciousEngine';
 import { calculateQuantumLeapTiming, formatQuantumLeapPrompt, type QuantumLeapResult } from './quantumLeapTimingEngine';
+import { calculateElementalResonance, formatElementalResonancePrompt, type ElementalResonanceResult } from './elementalResonanceEngine';
+import { calculateYinYangPolarity, formatYinYangPolarityPrompt, type YinYangPolarityResult } from './yinYangPolarityEngine';
+import { calculateRuneMatrix, formatRuneMatrixPrompt, type RuneMatrixResult } from './runeMatrixEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -146,6 +149,9 @@ export interface DeterministicEngineReport {
   deepWorkFlowResult?: DeepWorkFlowResult | null;
   sleepSubconsciousResult?: SleepSubconsciousResult | null;
   quantumLeapResult?: QuantumLeapResult | null;
+  elementalResonanceResult?: ElementalResonanceResult | null;
+  yinYangPolarityResult?: YinYangPolarityResult | null;
+  runeMatrixResult?: RuneMatrixResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -918,6 +924,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 35. 오행 생극 공명 & 순환 루프 증폭 엔진
+  const elementalResonanceResult = (birthdateStr && profile) || sajuRes
+    ? (() => {
+        try {
+          return calculateElementalResonance({ profile, saju: sajuRes, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 36. 음양 극성 밸런스 & 바이폴라 리듬 엔진
+  const yinYangPolarityResult = (birthdateStr && profile) || sajuRes
+    ? (() => {
+        try {
+          return calculateYinYangPolarity({ profile, saju: sajuRes, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 37. 고대 노르딕 룬 동시성 매트릭스 엔진
+  const runeMatrixResult = (birthdateStr && profile) || sajuRes
+    ? (() => {
+        try {
+          return calculateRuneMatrix({ profile, saju: sajuRes, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -987,6 +1026,9 @@ export function runDeterministicEngine(params: {
     deepWorkFlowResult,
     sleepSubconsciousResult,
     quantumLeapResult,
+    elementalResonanceResult,
+    yinYangPolarityResult,
+    runeMatrixResult,
     tools: toolsMap,
   };
 }
@@ -1063,5 +1105,8 @@ ${report.contractShieldResult ? '\n' + formatContractShieldPrompt(report.contrac
 ${report.lifeDomainWheelResult ? '\n' + formatLifeDomainWheelPrompt(report.lifeDomainWheelResult) : ''}
 ${report.deepWorkFlowResult ? '\n' + formatDeepWorkFlowPrompt(report.deepWorkFlowResult) : ''}
 ${report.sleepSubconsciousResult ? '\n' + formatSleepSubconsciousPrompt(report.sleepSubconsciousResult) : ''}
-${report.quantumLeapResult ? '\n' + formatQuantumLeapPrompt(report.quantumLeapResult) : ''}`;
+${report.quantumLeapResult ? '\n' + formatQuantumLeapPrompt(report.quantumLeapResult) : ''}
+${report.elementalResonanceResult ? '\n' + formatElementalResonancePrompt(report.elementalResonanceResult) : ''}
+${report.yinYangPolarityResult ? '\n' + formatYinYangPolarityPrompt(report.yinYangPolarityResult) : ''}
+${report.runeMatrixResult ? '\n' + formatRuneMatrixPrompt(report.runeMatrixResult) : ''}`;
 }

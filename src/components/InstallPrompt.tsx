@@ -23,7 +23,8 @@ export default function InstallPrompt() {
     if (mobile && sessionStorage.getItem('pwa_prompt_dismissed') !== 'true') timer = setTimeout(() => setShowPrompt(true), 3500);
     const beforeInstall = (event: Event) => {
       event.preventDefault(); promptRef.current = event as InstallEvent;
-      if (sessionStorage.getItem('pwa_prompt_dismissed') !== 'true') setShowPrompt(true);
+      // 🌟 PC 데스크톱 환경에서는 하단 입력창(채팅란)을 가리지 않도록 모바일에서만 자동 배너 팝업을 허용
+      if (mobile && sessionStorage.getItem('pwa_prompt_dismissed') !== 'true') setShowPrompt(true);
       clearTimeout(timer);
     };
     const installed = () => {
@@ -51,7 +52,7 @@ export default function InstallPrompt() {
   }, [handleInstallClick]);
   const handleDismiss = () => { sessionStorage.setItem('pwa_prompt_dismissed', 'true'); setShowPrompt(false); };
 
-  if (!showPrompt && !showGuide) return null;
+  if ((!showPrompt && !showGuide) || (isDesktop && !showGuide)) return null;
 
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const isOrbSite =
