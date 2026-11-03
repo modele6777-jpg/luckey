@@ -75,6 +75,9 @@ import { calculateDestinySynastryEcho, formatDestinySynastryEchoPrompt, type Des
 import { calculateMicroHabitKarma, formatMicroHabitKarmaPrompt, type MicroHabitKarmaResult } from './microHabitKarmaEngine';
 import { calculateIkigaiDestinyCompass, formatIkigaiDestinyCompassPrompt, type IkigaiDestinyCompassResult } from './ikigaiDestinyCompassEngine';
 import { calculateSerendipitySynchronicity, formatSerendipitySynchronicityPrompt, type SerendipitySynchronicityResult } from './serendipitySynchronicityEngine';
+import { calculateHumanDesignBodyGraph, formatHumanDesignBodyGraphPrompt, type HumanDesignBodyGraphResult } from './humanDesignBodyGraphEngine';
+import { calculateChakraVibrationAlignment, formatChakraVibrationAlignmentPrompt, type ChakraVibrationAlignmentResult } from './chakraVibrationAlignmentEngine';
+import { calculateEnneagramSoulIntegration, formatEnneagramSoulIntegrationPrompt, type EnneagramSoulIntegrationResult } from './enneagramSoulIntegrationEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -170,6 +173,9 @@ export interface DeterministicEngineReport {
   microHabitKarmaResult?: MicroHabitKarmaResult | null;
   ikigaiDestinyCompassResult?: IkigaiDestinyCompassResult | null;
   serendipitySynchronicityResult?: SerendipitySynchronicityResult | null;
+  humanDesignBodyGraphResult?: HumanDesignBodyGraphResult | null;
+  chakraVibrationAlignmentResult?: ChakraVibrationAlignmentResult | null;
+  enneagramSoulIntegrationResult?: EnneagramSoulIntegrationResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1074,6 +1080,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 47. 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라 엔진
+  const humanDesignBodyGraphResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateHumanDesignBodyGraph({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 48. 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱 엔진
+  const chakraVibrationAlignmentResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateChakraVibrationAlignment({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 49. 에니어그램 영혼 성격 통합 & 의식 진화 엔진
+  const enneagramSoulIntegrationResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateEnneagramSoulIntegration({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1155,6 +1194,9 @@ export function runDeterministicEngine(params: {
     microHabitKarmaResult,
     ikigaiDestinyCompassResult,
     serendipitySynchronicityResult,
+    humanDesignBodyGraphResult,
+    chakraVibrationAlignmentResult,
+    enneagramSoulIntegrationResult,
     tools: toolsMap,
   };
 }
@@ -1243,5 +1285,8 @@ ${report.biorhythmPeakFlowResult ? '\n' + formatBiorhythmPeakFlowPrompt(report.b
 ${report.destinySynastryEchoResult ? '\n' + formatDestinySynastryEchoPrompt(report.destinySynastryEchoResult) : ''}
 ${report.microHabitKarmaResult ? '\n' + formatMicroHabitKarmaPrompt(report.microHabitKarmaResult) : ''}
 ${report.ikigaiDestinyCompassResult ? '\n' + formatIkigaiDestinyCompassPrompt(report.ikigaiDestinyCompassResult) : ''}
-${report.serendipitySynchronicityResult ? '\n' + formatSerendipitySynchronicityPrompt(report.serendipitySynchronicityResult) : ''}`;
+${report.serendipitySynchronicityResult ? '\n' + formatSerendipitySynchronicityPrompt(report.serendipitySynchronicityResult) : ''}
+${report.humanDesignBodyGraphResult ? '\n' + formatHumanDesignBodyGraphPrompt(report.humanDesignBodyGraphResult) : ''}
+${report.chakraVibrationAlignmentResult ? '\n' + formatChakraVibrationAlignmentPrompt(report.chakraVibrationAlignmentResult) : ''}
+${report.enneagramSoulIntegrationResult ? '\n' + formatEnneagramSoulIntegrationPrompt(report.enneagramSoulIntegrationResult) : ''}`;
 }
