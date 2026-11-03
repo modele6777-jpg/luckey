@@ -176,9 +176,13 @@ export const TTSHighlightText: React.FC<{
     const cleanText = cleanSentenceForMatching(text);
     const cleanActive = cleanSentenceForMatching(activeSentence);
     if (!cleanText || !cleanActive) return false;
+    // Disallow false substring matching when text is short
+    if (cleanText.length < 8 && cleanText !== cleanActive) {
+      return false;
+    }
     return (
+      cleanText === cleanActive ||
       cleanText.includes(cleanActive) ||
-      cleanActive.includes(cleanText) ||
       isSentenceActive(text, activeSentence)
     );
   }, [enabled, isSpeaking, activeSentence, text]);

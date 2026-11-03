@@ -65,6 +65,7 @@ export function LucyTarotAdviceCard({
   const [isCopied, setIsCopied] = useState(false);
   const [isPlayingMyTTS, setIsPlayingMyTTS] = useState(false);
   const isGlobalTTSActive = useTTSActive();
+  const myPlaybackSessionRef = useRef<boolean>(false);
 
   // Async background enhancement when parameters change
   useEffect(() => {
@@ -86,31 +87,48 @@ export function LucyTarotAdviceCard({
   // Subscribe to TTS state to track active playback
   useEffect(() => {
     const unsub = subscribeTTS((state) => {
-      if (!state.isSpeaking) {
+      if (!state.isSpeaking && !state.isLoading && !state.isPaused) {
+        myPlaybackSessionRef.current = false;
         setIsPlayingMyTTS(false);
         return;
       }
       const activeText = state.activeText || state.activeFullText || '';
-      if (advice.speechText && activeText.includes(advice.headline.slice(0, 10))) {
+      const cleanHeadline = cleanSentenceForMatching(advice.headline || '');
+      const cleanSpeech = cleanSentenceForMatching(advice.speechText || '');
+
+      const matchesMyAdvice =
+        (cleanHeadline.length >= 3 && activeText.includes(cleanHeadline.slice(0, 8))) ||
+        (cleanSpeech.length >= 10 && activeText.includes(cleanSpeech.slice(0, 15))) ||
+        (myPlaybackSessionRef.current && (state.isSpeaking || state.isLoading));
+
+      if (matchesMyAdvice) {
         setIsPlayingMyTTS(true);
       } else {
+        myPlaybackSessionRef.current = false;
         setIsPlayingMyTTS(false);
       }
     });
     return unsub;
   }, [advice.speechText, advice.headline]);
 
-  // TTS Toggle Handler
+  // TTS Toggle Handler - Instant responsive single-tap toggle
   const handleToggleTTS = useCallback(async () => {
-    if (isPlayingMyTTS && isGlobalTTSActive) {
+    if (isPlayingMyTTS || myPlaybackSessionRef.current || (isGlobalTTSActive && myPlaybackSessionRef.current)) {
+      myPlaybackSessionRef.current = false;
       stopTTS();
       setIsPlayingMyTTS(false);
       return;
     }
 
     if (!advice.speechText) return;
+    myPlaybackSessionRef.current = true;
     setIsPlayingMyTTS(true);
-    await playTTSInChunks(advice.speechText, 'Kore', 110);
+    try {
+      await playTTSInChunks(advice.speechText, 'Kore', 110, undefined, undefined, { isUserToggleClick: true });
+    } catch (_) {
+      myPlaybackSessionRef.current = false;
+      setIsPlayingMyTTS(false);
+    }
   }, [isPlayingMyTTS, isGlobalTTSActive, advice.speechText]);
 
   // Copy advice to clipboard

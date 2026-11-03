@@ -365,3 +365,36 @@ export function getCardSoulBlessing(card: any, concern?: string): string {
   ];
   return uprightBlessings[Math.floor(Math.random() * uprightBlessings.length)];
 }
+
+/**
+ * 🌟 카드 객체와 고민을 바탕으로 오늘 하루 마음에 품을 황금빛 확언 생성
+ */
+export function getCardDailyAffirmation(card: any, concern?: string): string {
+  if (!card) {
+    return '나는 오늘 어떤 상황 속에서도 평온한 내면의 중심을 지키며, 나에게 찾아오는 모든 밝은 기회와 은총을 기쁘게 누립니다.';
+  }
+
+  const cardName = card.nameKo || card.name || '운명의 카드';
+  const isReversed = Boolean(card.reversed === true || card.reversed === 'true');
+  const details = getTarotCardDetails(card);
+  const keywords = (card.keywords || []).slice(0, 2).join(', ') || '직관과 균형';
+
+  if (isReversed) {
+    const reversedAffirmations = [
+      `나는 오늘 조급함을 내려놓고 [${cardName}] 카드의 지혜처럼 마음의 평온을 먼저 지키며, 내 안의 흔들리지 않는 중심을 단단히 세웁니다.`,
+      `나는 외부의 소음이나 일시적인 불안에 휘둘리지 않고, [${cardName}] 역방향 카드가 일깨워 준 신중함으로 매 순간 현명한 선택을 내립니다.`,
+      `나는 오늘 나 자신을 온전히 신뢰하며, 한 템포 쉬어가는 여유 속에서 더 큰 성장의 도약을 차분히 준비합니다.`,
+    ];
+    const hash = Math.abs((cardName.length * 5 + (concern ? concern.length : 3)) % reversedAffirmations.length);
+    return reversedAffirmations[hash];
+  }
+
+  const uprightAffirmations = [
+    `나는 오늘 [${cardName}] 카드가 비추는 ${keywords}의 에너지를 온전히 신뢰하며, 내 발걸음마다 환하게 열리는 우주의 밝은 기운을 당당히 누립니다.`,
+    `나는 오늘 내 가슴속 깊은 직관과 용기를 믿으며, 나에게 다가오는 모든 순간을 감사와 기쁨으로 마주합니다.`,
+    `나는 오늘 [${cardName}] 카드의 성스러운 기운과 공명하여, 깊은 내면의 평온과 눈부신 조화를 일상 속에서 풍요롭게 꽃피웁니다.`,
+  ];
+  const hash = Math.abs((cardName.length * 7 + (concern ? concern.length : 1)) % uprightAffirmations.length);
+  return uprightAffirmations[hash];
+}
+

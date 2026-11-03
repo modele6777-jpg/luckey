@@ -91,17 +91,19 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
     }
   }, []);
 
-  // Find active element in container or document
+  // Find active element in container or document - prioritize [data-tts-active="true"]
   const getActiveElement = useCallback((): HTMLElement | null => {
     if (containerRef.current) {
+      const activeTrue = containerRef.current.querySelector<HTMLElement>('[data-tts-active="true"]');
+      if (activeTrue) return activeTrue;
+
       const el = containerRef.current.querySelector<HTMLElement>(selector);
       if (el) return el;
     }
-    let elem = document.querySelector<HTMLElement>(selector);
-    if (!elem) {
-      elem = document.querySelector<HTMLElement>('[data-tts-active="true"], .tts-active-sentence-highlight');
-    }
-    return elem;
+    const docActive = document.querySelector<HTMLElement>('[data-tts-active="true"]');
+    if (docActive) return docActive;
+
+    return document.querySelector<HTMLElement>(selector);
   }, [containerRef, selector]);
 
   // Resolve scrollable parent container for any target element
@@ -160,23 +162,34 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
         return false;
       }
 
-      // Calculate target relative to container's scroll content area
+      // Current position and target metrics relative to container
       const currentScroll = container.scrollTop;
       const targetRelativeTop = targetRect.top - containerRect.top;
-      const targetAbsoluteTop = currentScroll + targetRelativeTop;
-
-      // Center calculation: place target's midpoint in container's vertical center
       const targetHeight = targetRect.height || 26;
       const containerHeight = container.clientHeight;
+
+      // 🎯 Comfortable reading window:
+      // If the target sentence is already comfortably in view (between 18% and 75% of container height),
+      // keep the scroll completely steady and still! This eliminates annoying bouncing between consecutive sentences.
+      const isComfortablyVisible =
+        targetRelativeTop >= containerHeight * 0.18 &&
+        targetRelativeTop + targetHeight <= containerHeight * 0.75;
+
+      if (!force && isComfortablyVisible) {
+        return true;
+      }
+
+      // Smoothly place the active sentence at a comfortable baseline (~35% from the top of the container)
+      const targetAbsoluteTop = currentScroll + targetRelativeTop;
       const desiredScrollTop = Math.round(
-        targetAbsoluteTop - (containerHeight / 2) + (targetHeight / 2) + centerOffset
+        targetAbsoluteTop - (containerHeight * 0.35) + centerOffset
       );
 
       const maxScroll = Math.max(0, container.scrollHeight - containerHeight);
       const finalTop = Math.max(0, Math.min(maxScroll, desiredScrollTop));
 
-      // Skip micro-adjustments if already centered within 20px (unless forced)
-      if (!force && Math.abs(currentScroll - finalTop) < 20) {
+      // Skip micro-adjustments if already aligned within 25px (unless forced)
+      if (!force && Math.abs(currentScroll - finalTop) < 25) {
         return true;
       }
 
