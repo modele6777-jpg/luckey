@@ -72,6 +72,9 @@ import { calculateStrategicLeverage, formatStrategicLeveragePrompt, type Strateg
 import { calculateShadowArchetype, formatShadowArchetypePrompt, type ShadowArchetypeResult } from './shadowArchetypeEngine';
 import { calculateBiorhythmPeakFlow, formatBiorhythmPeakFlowPrompt, type BiorhythmPeakFlowResult } from './biorhythmPeakFlowEngine';
 import { calculateDestinySynastryEcho, formatDestinySynastryEchoPrompt, type DestinySynastryEchoResult } from './destinySynastryEchoEngine';
+import { calculateMicroHabitKarma, formatMicroHabitKarmaPrompt, type MicroHabitKarmaResult } from './microHabitKarmaEngine';
+import { calculateIkigaiDestinyCompass, formatIkigaiDestinyCompassPrompt, type IkigaiDestinyCompassResult } from './ikigaiDestinyCompassEngine';
+import { calculateSerendipitySynchronicity, formatSerendipitySynchronicityPrompt, type SerendipitySynchronicityResult } from './serendipitySynchronicityEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -164,6 +167,9 @@ export interface DeterministicEngineReport {
   shadowArchetypeResult?: ShadowArchetypeResult | null;
   biorhythmPeakFlowResult?: BiorhythmPeakFlowResult | null;
   destinySynastryEchoResult?: DestinySynastryEchoResult | null;
+  microHabitKarmaResult?: MicroHabitKarmaResult | null;
+  ikigaiDestinyCompassResult?: IkigaiDestinyCompassResult | null;
+  serendipitySynchronicityResult?: SerendipitySynchronicityResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1035,6 +1041,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 44. 21일 카르마 리셋 & 오행 마이크로 해빗 엔진
+  const microHabitKarmaResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateMicroHabitKarma({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 45. 이키가이 천직 4대 교집합 & 소명 나침반 엔진
+  const ikigaiDestinyCompassResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateIkigaiDestinyCompass({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 46. 양자 동시성 & 세렌디피티 행운 가속 엔진
+  const serendipitySynchronicityResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSerendipitySynchronicity({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1113,6 +1152,9 @@ export function runDeterministicEngine(params: {
     shadowArchetypeResult,
     biorhythmPeakFlowResult,
     destinySynastryEchoResult,
+    microHabitKarmaResult,
+    ikigaiDestinyCompassResult,
+    serendipitySynchronicityResult,
     tools: toolsMap,
   };
 }
@@ -1198,5 +1240,8 @@ ${report.transcendentalMeditationResult ? '\n' + formatTranscendentalMeditationP
 ${report.strategicLeverageResult ? '\n' + formatStrategicLeveragePrompt(report.strategicLeverageResult) : ''}
 ${report.shadowArchetypeResult ? '\n' + formatShadowArchetypePrompt(report.shadowArchetypeResult) : ''}
 ${report.biorhythmPeakFlowResult ? '\n' + formatBiorhythmPeakFlowPrompt(report.biorhythmPeakFlowResult) : ''}
-${report.destinySynastryEchoResult ? '\n' + formatDestinySynastryEchoPrompt(report.destinySynastryEchoResult) : ''}`;
+${report.destinySynastryEchoResult ? '\n' + formatDestinySynastryEchoPrompt(report.destinySynastryEchoResult) : ''}
+${report.microHabitKarmaResult ? '\n' + formatMicroHabitKarmaPrompt(report.microHabitKarmaResult) : ''}
+${report.ikigaiDestinyCompassResult ? '\n' + formatIkigaiDestinyCompassPrompt(report.ikigaiDestinyCompassResult) : ''}
+${report.serendipitySynchronicityResult ? '\n' + formatSerendipitySynchronicityPrompt(report.serendipitySynchronicityResult) : ''}`;
 }
