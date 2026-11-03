@@ -1,109 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
-  <defs>
-    <!-- Soft Light Green (연두) Ambient Glow -->
-    <radialGradient id="centerGlow" cx="50%" cy="47%" r="50%">
-      <stop offset="0%" stop-color="#84cc16" stop-opacity="0.22" />
-      <stop offset="50%" stop-color="#a3e635" stop-opacity="0.08" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-    </radialGradient>
-
-    <!-- Vibrant Refreshing Light Green (연두) Petal Gradients -->
-    <linearGradient id="petalTop" x1="50%" y1="100%" x2="50%" y2="0%">
-      <stop offset="0%" stop-color="#4d7c0f" />
-      <stop offset="40%" stop-color="#65a30d" />
-      <stop offset="75%" stop-color="#84cc16" />
-      <stop offset="100%" stop-color="#bef264" />
-    </linearGradient>
-
-    <linearGradient id="petalRight" x1="0%" y1="50%" x2="100%" y2="50%">
-      <stop offset="0%" stop-color="#4d7c0f" />
-      <stop offset="40%" stop-color="#65a30d" />
-      <stop offset="75%" stop-color="#84cc16" />
-      <stop offset="100%" stop-color="#bef264" />
-    </linearGradient>
-
-    <linearGradient id="petalBottom" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%" stop-color="#4d7c0f" />
-      <stop offset="40%" stop-color="#65a30d" />
-      <stop offset="75%" stop-color="#84cc16" />
-      <stop offset="100%" stop-color="#bef264" />
-    </linearGradient>
-
-    <linearGradient id="petalLeft" x1="100%" y1="50%" x2="0%" y2="50%">
-      <stop offset="0%" stop-color="#4d7c0f" />
-      <stop offset="40%" stop-color="#65a30d" />
-      <stop offset="75%" stop-color="#84cc16" />
-      <stop offset="100%" stop-color="#bef264" />
-    </linearGradient>
-
-    <!-- Golden Core Sparkle Accent -->
-    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.95" />
-      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.45" />
-      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
-    </radialGradient>
-  </defs>
-
-  <!-- 1. Pure Crisp Solid White Canvas (100% Opaque for iOS Apple Touch Icon & Android PWA) -->
+  <!-- 1. Pure Solid White Opaque Canvas -->
   <rect width="512" height="512" fill="#ffffff" />
 
-  <!-- 2. Ambient Soft Spring Light-Green Glow -->
-  <circle cx="256" cy="246" r="185" fill="url(#centerGlow)" />
+  <!-- 2. Ultra-Minimal Symmetrical Four-Leaf Clover in Spring Light Green (#b4e77c) -->
+  <g transform="translate(256, 256)" fill="#b4e77c">
+    <!-- Top Heart Petal -->
+    <path d="M 0 -14
+             C -24 -46, -74 -64, -74 -112
+             C -74 -152, -32 -166, 0 -130
+             C 32 -166, 74 -152, 74 -112
+             C 74 -64, 24 -46, 0 -14 Z" />
 
-  <!-- 3. Minimalist Iconic Four-Leaf Clover in Spring Light Green -->
-  <g transform="translate(256, 246)">
-    <!-- 4 Symmetrical Modern Heart-Shaped Petals -->
-    <!-- Top Petal -->
-    <path d="M 0 -8
-             C -22 -32, -62 -48, -62 -92
-             C -62 -132, -26 -146, 0 -114
-             C 26 -146, 62 -132, 62 -92
-             C 62 -48, 22 -32, 0 -8 Z"
-          fill="url(#petalTop)" />
+    <!-- Right Heart Petal -->
+    <path d="M 0 -14
+             C -24 -46, -74 -64, -74 -112
+             C -74 -152, -32 -166, 0 -130
+             C 32 -166, 74 -152, 74 -112
+             C 74 -64, 24 -46, 0 -14 Z"
+          transform="rotate(90)" />
 
-    <!-- Right Petal -->
-    <path d="M 0 -8
-             C -22 -32, -62 -48, -62 -92
-             C -62 -132, -26 -146, 0 -114
-             C 26 -146, 62 -132, 62 -92
-             C 62 -48, 22 -32, 0 -8 Z"
-          transform="rotate(90)"
-          fill="url(#petalRight)" />
+    <!-- Bottom Heart Petal -->
+    <path d="M 0 -14
+             C -24 -46, -74 -64, -74 -112
+             C -74 -152, -32 -166, 0 -130
+             C 32 -166, 74 -152, 74 -112
+             C 74 -64, 24 -46, 0 -14 Z"
+          transform="rotate(180)" />
 
-    <!-- Bottom Petal -->
-    <path d="M 0 -8
-             C -22 -32, -62 -48, -62 -92
-             C -62 -132, -26 -146, 0 -114
-             C 26 -146, 62 -132, 62 -92
-             C 62 -48, 22 -32, 0 -8 Z"
-          transform="rotate(180)"
-          fill="url(#petalBottom)" />
-
-    <!-- Left Petal -->
-    <path d="M 0 -8
-             C -22 -32, -62 -48, -62 -92
-             C -62 -132, -26 -146, 0 -114
-             C 26 -146, 62 -132, 62 -92
-             C 62 -48, 22 -32, 0 -8 Z"
-          transform="rotate(270)"
-          fill="url(#petalLeft)" />
-
-    <!-- Delicate Petal Vein Highlighting -->
-    <path d="M 0 -16 L 0 -84" stroke="#ecfccb" stroke-width="2" stroke-linecap="round" opacity="0.55" />
-    <path d="M 16 0 L 84 0" stroke="#ecfccb" stroke-width="2" stroke-linecap="round" opacity="0.55" />
-    <path d="M 0 16 L 0 84" stroke="#ecfccb" stroke-width="2" stroke-linecap="round" opacity="0.55" />
-    <path d="M -16 0 L -84 0" stroke="#ecfccb" stroke-width="2" stroke-linecap="round" opacity="0.55" />
-
-    <!-- Minimal Elegant Stem -->
-    <path d="M 0 12 Q 18 80, -8 132"
-          stroke="#4d7c0f"
-          stroke-width="5.5"
-          stroke-linecap="round"
-          fill="none"
-          opacity="0.95" />
-
-    <!-- Subtle Golden LucKey Sparkle at Center -->
-    <circle cx="0" cy="-8" r="16" fill="url(#coreGlow)" />
-    <circle cx="0" cy="-8" r="4.5" fill="#fef08a" />
+    <!-- Left Heart Petal -->
+    <path d="M 0 -14
+             C -24 -46, -74 -64, -74 -112
+             C -74 -152, -32 -166, 0 -130
+             C 32 -166, 74 -152, 74 -112
+             C 74 -64, 24 -46, 0 -14 Z"
+          transform="rotate(270)" />
   </g>
 </svg>
