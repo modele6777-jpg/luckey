@@ -7,7 +7,7 @@ import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
 import type { UserProfile } from '@/lib/sharedState';
 import { extractConciseSummary, groundTarotSummaryParts, stripSummaryFromTarotText } from '@/lib/tarotSummaryUtils';
 import { getTarotCardDetails } from '@/lib/dailyTarotOracle';
-import { getCardSoulBlessing } from '@/lib/tarotBlessings';
+import { getCardSoulBlessing, getCardDailyAffirmation } from '@/lib/tarotBlessings';
 import { getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from '@/data/tarotData';
 
 // ✨ Constants
@@ -2060,8 +2060,8 @@ ${decisionText}
 - **마음의 정돈**: 오늘 하루만큼은 타인의 시선이나 과거의 후회에 얽매이지 말고, 당신 자신의 직관에 집중해 보세요.
 - **실천 한 걸음**: 가슴속으로만 맴돌던 생각을 밖으로 꺼내어 작은 실천(메모, 가벼운 대화, 정리 정돈)으로 연결해 보세요. 작은 파동이 큰 대운을 불러옵니다.
 
-### ✨ 5. 당신의 길을 축복하는 영혼의 한마디
-> _"${getCardSoulBlessing(cards[cards.length - 1] || leadCard, concern)}"_${photoMode ? '\n\n*(비전 포털 — 인식된 카드의 신비로운 에너지가 함께 투영되었습니다)*' : ''}`;
+${isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern)) ? '### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언' : '### ✨ 5. 당신의 길을 축복하는 영혼의 한마디'}
+> _"${getCardSoulBlessing(cards[cards.length - 1] || leadCard, concern)}"_${photoMode ? '\n\n*(비전 포털 — 인식된 카드의 신비로운 에너지가 함께 투영되었습니다)*' : ''}${isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern)) ? `\n\n- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(cards[cards.length - 1] || leadCard, concern)}"` : ''}`;
 }
 
 /**
@@ -2112,9 +2112,17 @@ export function ensureCompleteTarotReading(
       ? '### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언'
       : '### ✨ 5. 당신의 길을 축복하는 영혼의 한마디';
     const affirmationText = isDaily
-      ? `\n- **오늘의 황금빛 확언**: "나는 오늘 어떤 상황 속에서도 평온한 내면의 중심을 지키며, 나에게 찾아오는 모든 밝은 기회와 은총을 기쁘게 누립니다."`
+      ? `\n\n- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(leadCard, concern)}"`
       : '';
     cleaned += `\n\n${step5Header}\n> _"${dynamicBlessing}"_${affirmationText}`;
+  } else if (isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern))) {
+    // 이미 5단계가 있는 경우, 데일리 타로 전용 규격 헤더 및 확언 누락 보완
+    if (/당신의\s*길을\s*축복하는\s*영혼의\s*한마디/.test(cleaned)) {
+      cleaned = cleaned.replace(/###\s*[✨👑💎🌟⚡🏆💰🌅💌☯️🛤️🕯️☀️🧭\s]*5[\.\s][^\r\n]*당신의\s*길을\s*축복하는\s*영혼의\s*한마디/g, '### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언');
+    }
+    if (!/오늘의\s*황금빛\s*확언|황금빛\s*확언/.test(cleaned)) {
+      cleaned += `\n\n- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(leadCard, concern)}"`;
+    }
   }
 
   // 3. 미완성 마크다운 서식 닫기

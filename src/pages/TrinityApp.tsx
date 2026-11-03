@@ -172,7 +172,7 @@ const EnergyAnalysisSchema = z.object({
 });
 
 import { buildSpecificTarotDailyOracle, getTarotCardDetails } from '@/lib/dailyTarotOracle';
-import { getCardSoulBlessing } from '@/lib/tarotBlessings';
+import { getCardSoulBlessing, getCardDailyAffirmation } from '@/lib/tarotBlessings';
 
 function buildLocalTrinityDailyOracle(card: any, mode: string = "oracle") {
   if (card && (card.id || card.nameKo || card.name)) {
@@ -199,8 +199,10 @@ ${isReversed ? '지금은 서두르기보다 주변 상황을 면밀히 살피�
 - **오늘의 핵심 실천**: 물 한 잔을 마시며 깊은 심호흡 3번으로 머릿속을 맑게 비우고 마음의 중심 잡기
 - **주의할 점**: 사소한 일이나 타인의 말에 감정을 소모하지 않기
 
-### ✨ 5. 당신의 길을 축복하는 영혼의 한마디
-> _"${getCardSoulBlessing(card)}"_`;
+### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언
+> _"${getCardSoulBlessing(card)}"_
+
+- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(card)}"`;
 
   return {
     diagnosis,

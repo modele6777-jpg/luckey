@@ -1,6 +1,6 @@
 import { getTarotReversedData, getEffectiveTarotKeywords, getTarotCardCaution, type TarotCard } from '../data/tarotData.ts';
 import type { AuraThemeCard } from './auraCards.ts';
-import { getCardSoulBlessing } from './tarotBlessings.ts';
+import { getCardSoulBlessing, getCardDailyAffirmation } from './tarotBlessings.ts';
 
 interface DailyOracleResult {
   diagnosis: string;
@@ -631,8 +631,10 @@ ${isReversed ? `${revData?.advice || '지금은 억지로 결과를 서두르기
 - **오늘의 핵심 실천**: ${luckyAction}
 - **추천 사운드 & 공명 주파수**: **${details.frequency}**의 공명 주파수를 의식하며, 가슴 한가운데 손을 얹고 깊은 복식호흡 3회를 진행해 보세요.
 
-### ✨ 5. 당신의 길을 축복하는 영혼의 한마디
-> _"${getCardSoulBlessing(card)}"_`;
+### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언
+> _"${getCardSoulBlessing(card)}"_
+
+- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(card)}"`;
 
   return {
     diagnosis,
