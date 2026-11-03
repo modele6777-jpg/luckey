@@ -81,6 +81,9 @@ import { calculateEnneagramSoulIntegration, formatEnneagramSoulIntegrationPrompt
 import { calculateAncestralEpigeneticKarma, formatAncestralEpigeneticKarmaPrompt, type AncestralEpigeneticKarmaResult } from './ancestralEpigeneticKarmaEngine';
 import { calculateShamanicAnimalTotem, formatShamanicAnimalTotemPrompt, type ShamanicAnimalTotemResult } from './shamanicAnimalTotemEngine';
 import { calculateHeroMythMonomyth, formatHeroMythMonomythPrompt, type HeroMythMonomythResult } from './heroMythMonomythEngine';
+import { calculateAkashicRecordsOracle, formatAkashicRecordsOraclePrompt, type AkashicRecordsOracleResult } from './akashicRecordsOracleEngine';
+import { calculateQuantumProbabilisticTimeline, formatQuantumProbabilisticTimelinePrompt, type QuantumProbabilisticTimelineResult } from './quantumProbabilisticTimelineEngine';
+import { calculateSomaticBodyArmoring, formatSomaticBodyArmoringPrompt, type SomaticBodyArmoringResult } from './somaticBodyArmoringEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -182,6 +185,9 @@ export interface DeterministicEngineReport {
   ancestralEpigeneticKarmaResult?: AncestralEpigeneticKarmaResult | null;
   shamanicAnimalTotemResult?: ShamanicAnimalTotemResult | null;
   heroMythMonomythResult?: HeroMythMonomythResult | null;
+  akashicRecordsOracleResult?: AkashicRecordsOracleResult | null;
+  quantumProbabilisticTimelineResult?: QuantumProbabilisticTimelineResult | null;
+  somaticBodyArmoringResult?: SomaticBodyArmoringResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1152,6 +1158,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 53. 아카식 레코드 영혼 서약 & 카르믹 청사진 엔진
+  const akashicRecordsOracleResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateAkashicRecordsOracle({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 54. 양자 다중우주 타임라인 분기 & 퀀텀 점프 엔진
+  const quantumProbabilisticTimelineResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateQuantumProbabilisticTimeline({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 55. 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 엔진
+  const somaticBodyArmoringResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSomaticBodyArmoring({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1239,6 +1278,9 @@ export function runDeterministicEngine(params: {
     ancestralEpigeneticKarmaResult,
     shamanicAnimalTotemResult,
     heroMythMonomythResult,
+    akashicRecordsOracleResult,
+    quantumProbabilisticTimelineResult,
+    somaticBodyArmoringResult,
     tools: toolsMap,
   };
 }
@@ -1333,5 +1375,8 @@ ${report.chakraVibrationAlignmentResult ? '\n' + formatChakraVibrationAlignmentP
 ${report.enneagramSoulIntegrationResult ? '\n' + formatEnneagramSoulIntegrationPrompt(report.enneagramSoulIntegrationResult) : ''}
 ${report.ancestralEpigeneticKarmaResult ? '\n' + formatAncestralEpigeneticKarmaPrompt(report.ancestralEpigeneticKarmaResult) : ''}
 ${report.shamanicAnimalTotemResult ? '\n' + formatShamanicAnimalTotemPrompt(report.shamanicAnimalTotemResult) : ''}
-${report.heroMythMonomythResult ? '\n' + formatHeroMythMonomythPrompt(report.heroMythMonomythResult) : ''}`;
+${report.heroMythMonomythResult ? '\n' + formatHeroMythMonomythPrompt(report.heroMythMonomythResult) : ''}
+${report.akashicRecordsOracleResult ? '\n' + formatAkashicRecordsOraclePrompt(report.akashicRecordsOracleResult) : ''}
+${report.quantumProbabilisticTimelineResult ? '\n' + formatQuantumProbabilisticTimelinePrompt(report.quantumProbabilisticTimelineResult) : ''}
+${report.somaticBodyArmoringResult ? '\n' + formatSomaticBodyArmoringPrompt(report.somaticBodyArmoringResult) : ''}`;
 }
