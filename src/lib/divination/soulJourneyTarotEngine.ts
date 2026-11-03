@@ -260,7 +260,7 @@ export function runSoulJourneyTarotEngine(
   profile?: UserProfile,
   targetDate: Date = new Date()
 ): SoulJourneyTarotReport {
-  const sajuRes = calculateDetailedSaju(profile, targetDate);
+  const sajuRes = calculateDetailedSaju(profile || null);
 
   let birthSum = 0;
   if (profile?.basic?.birthdate) {
@@ -286,7 +286,7 @@ export function runSoulJourneyTarotEngine(
   };
 
   // 4원소 마이너 균형 연산
-  const elementCounts = sajuRes?.elementCount || { '목': 1, '화': 1, '토': 2, '금': 2, '수': 2 };
+  const elementCounts = sajuRes?.elements?.counts || { '목': 1, '화': 1, '토': 2, '금': 2, '수': 2 };
   
   // Wands(불-화/목), Cups(물-수), Swords(바람-금), Pentacles(흙-토)
   const wandsRaw = ((elementCounts['화'] || 0) * 35 + (elementCounts['목'] || 0) * 15 + targetDate.getDate() * 2) % 100;

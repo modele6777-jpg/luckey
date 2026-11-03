@@ -59,7 +59,7 @@ export function runTranscendentalMeditationEngine(
   profile?: UserProfile,
   targetDate: Date = new Date()
 ): TranscendentalMeditationReport {
-  const sajuRes = calculateDetailedSaju(profile, targetDate);
+  const sajuRes = calculateDetailedSaju(profile || null);
 
   const element = sajuRes?.dayMaster?.element || '금';
 
@@ -130,16 +130,16 @@ export function runTranscendentalMeditationEngine(
   const stressReleasePotential = 80 + ((targetDate.getDay() * 11 + targetDate.getHours() * 3) % 19); // 80~98
 
   // 주역 젠 상태
-  let ichingZenState = {
+  let ichingZenState: TranscendentalMeditationReport['ichingZenState'] = {
     hexagramName: '제2괘 곤위지 (坤爲地)',
-    stateQuality: '순수한 수용과 비움 (곤위지)' as const,
+    stateQuality: '순수한 수용과 비움 (곤위지)',
     mantraText: '대지처럼 모든 것을 묵묵히 받아들이고 품을 때, 세상의 모든 긴장은 저절로 녹아내린다.'
   };
 
   if (targetDate.getDate() % 2 === 0) {
     ichingZenState = {
       hexagramName: '제1괘 건위천 (乾爲天)',
-      stateQuality: '강력한 영감과 창조성 (건위천)' as const,
+      stateQuality: '강력한 영감과 창조성 (건위천)',
       mantraText: '텅 빈 고요 속에서 순수한 우주적 생명력이 솟아나 내 안의 위대한 잠재력을 깨운다.'
     };
   }

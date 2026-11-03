@@ -53,10 +53,10 @@ export function runStrategicLeverageEngine(
   profile?: UserProfile,
   targetDate: Date = new Date()
 ): StrategicLeverageReport {
-  const sajuRes = calculateDetailedSaju(profile, targetDate);
+  const sajuRes = calculateDetailedSaju(profile || null);
 
-  const dayMaster = sajuRes?.dayMaster?.gan || '경';
-  const dayBranch = sajuRes?.dayMaster?.zhi || '술';
+  const dayMaster = sajuRes?.pillars?.day?.gan || '경';
+  const dayBranch = sajuRes?.pillars?.day?.zhi || '술';
   const element = sajuRes?.dayMaster?.element || '금';
 
   // 일간 및 기문 수리 연산
