@@ -37,6 +37,9 @@ import { calculateStrategicLeverage, formatStrategicLeveragePrompt, STRATEGIC_LE
 import { calculateShadowArchetype, formatShadowArchetypePrompt, SHADOW_ARCHETYPE_VERSION } from '../src/lib/divination/shadowArchetypeEngine';
 import { calculateBiorhythmPeakFlow, formatBiorhythmPeakFlowPrompt, BIORHYTHM_PEAK_FLOW_VERSION } from '../src/lib/divination/biorhythmPeakFlowEngine';
 import { calculateDestinySynastryEcho, formatDestinySynastryEchoPrompt, DESTINY_SYNASTRY_ECHO_VERSION } from '../src/lib/divination/destinySynastryEchoEngine';
+import { calculateMicroHabitKarma, formatMicroHabitKarmaPrompt, MICRO_HABIT_KARMA_VERSION } from '../src/lib/divination/microHabitKarmaEngine';
+import { calculateIkigaiDestinyCompass, formatIkigaiDestinyCompassPrompt, IKIGAI_DESTINY_COMPASS_VERSION } from '../src/lib/divination/ikigaiDestinyCompassEngine';
+import { calculateSerendipitySynchronicity, formatSerendipitySynchronicityPrompt, SERENDIPITY_SYNCHRONICITY_VERSION } from '../src/lib/divination/serendipitySynchronicityEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -1904,6 +1907,42 @@ test('Destiny Synastry Echo Engine: 다차원 운명 공명 에코 & 카르마�
   assert(prompt.includes(res.gravityType));
 });
 
+test('Micro-Habit Karma Engine: 21일 카르마 리셋 & 오행 마이크로 해빗 검증', () => {
+  const res = calculateMicroHabitKarma({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, MICRO_HABIT_KARMA_VERSION);
+  assert(res.neuroplasticityScore >= 0 && res.neuroplasticityScore <= 100);
+  assert(res.karmaStreakIndex >= 0 && res.karmaStreakIndex <= 100);
+  assert(res.microHabit.twoMinuteAction.length > 0);
+  assert(res.twentyOneDayMilestone.days1to7.length > 0);
+  const prompt = formatMicroHabitKarmaPrompt(res);
+  assert(prompt.includes('LUCKEY 21일 카르마 리셋 & 오행 마이크로 해빗'));
+  assert(prompt.includes(res.archetype));
+});
+
+test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명 나침반 검증', () => {
+  const res = calculateIkigaiDestinyCompass({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, IKIGAI_DESTINY_COMPASS_VERSION);
+  assert(res.ikigaiAlignmentScore >= 0 && res.ikigaiAlignmentScore <= 100);
+  assert(res.quadrants.passion.score >= 0 && res.quadrants.passion.score <= 100);
+  assert(res.soulCallingTitle.length > 0);
+  assert(res.monetizationPath.phase1Validation.length > 0);
+  const prompt = formatIkigaiDestinyCompassPrompt(res);
+  assert(prompt.includes('LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반'));
+  assert(prompt.includes(res.soulCallingTitle));
+});
+
+test('Serendipity Synchronicity Engine: 양자 동시성 & 세렌디피티 행운 가속 검증', () => {
+  const res = calculateSerendipitySynchronicity({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
+  assert.equal(res.engineVersion, SERENDIPITY_SYNCHRONICITY_VERSION);
+  assert(res.synchronicityScore >= 0 && res.synchronicityScore <= 100);
+  assert(res.serendipityVelocity >= 0 && res.serendipityVelocity <= 100);
+  assert(res.angelNumberSign.numberCode.length > 0);
+  assert(res.catalystAction.microShiftAction.length > 0);
+  const prompt = formatSerendipitySynchronicityPrompt(res);
+  assert(prompt.includes('LUCKEY 양자 동시성 & 세렌디피티 행운 가속'));
+  assert(prompt.includes(res.activeLuckyPortal));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -1934,6 +1973,9 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(report.shadowArchetypeResult !== null && report.shadowArchetypeResult !== undefined);
   assert(report.biorhythmPeakFlowResult !== null && report.biorhythmPeakFlowResult !== undefined);
   assert(report.destinySynastryEchoResult !== null && report.destinySynastryEchoResult !== undefined);
+  assert(report.microHabitKarmaResult !== null && report.microHabitKarmaResult !== undefined);
+  assert(report.ikigaiDestinyCompassResult !== null && report.ikigaiDestinyCompassResult !== undefined);
+  assert(report.serendipitySynchronicityResult !== null && report.serendipitySynchronicityResult !== undefined);
   assert.equal(report.tools.liuren.status, 'calculated');
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
@@ -1966,4 +2008,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(SHADOW_ARCHETYPE_VERSION));
   assert(enginePrompt.includes(BIORHYTHM_PEAK_FLOW_VERSION));
   assert(enginePrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
+  assert(enginePrompt.includes(MICRO_HABIT_KARMA_VERSION));
+  assert(enginePrompt.includes(IKIGAI_DESTINY_COMPASS_VERSION));
+  assert(enginePrompt.includes(SERENDIPITY_SYNCHRONICITY_VERSION));
 });
