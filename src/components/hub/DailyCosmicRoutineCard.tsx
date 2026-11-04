@@ -90,9 +90,11 @@ export function DailyCosmicRoutineCard() {
       song?.appleMusicClassicalUrl?.trim() ||
       buildAppleMusicClassicalSearchUrl(song?.title || entry.title, song?.artistOriginal || song?.artist);
     const embedUrl = resolveAppleMusicClassicalEmbedUrl(musicUrl);
-    const ytQuery = [entry.creator, entry.title].filter(Boolean).join(' ');
-    const ytArtworkSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery)}`;
-    return { entry, song, musicUrl, embedUrl, ytArtworkSearchUrl };
+    const songQuery = song
+      ? [song.artistOriginal || song.artist, song.titleOriginal || song.title].filter(Boolean).join(' ')
+      : [entry.creator, entry.title].filter(Boolean).join(' ');
+    const ytSongSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(songQuery)}`;
+    return { entry, song, musicUrl, embedUrl, ytSongSearchUrl };
   }, []);
 
   const affirmation = useMemo(
@@ -307,28 +309,26 @@ export function DailyCosmicRoutineCard() {
             <p className="text-[11px] font-semibold text-indigo-300/90">{art.entry.creator} · {art.entry.era}</p>
             <p className="text-[13px] leading-relaxed text-white/85 font-medium break-keep line-clamp-3">{art.entry.description}</p>
             <p className="text-[11px] italic text-white/55 leading-relaxed break-keep">"{art.entry.quote}"</p>
-            <div className="pt-2 space-y-2">
-              {art.song ? (
+            {art.song ? (
+              <div className="pt-2 space-y-2">
                 <div className="flex items-center gap-1.5 text-[11px] font-semibold text-white/70">
                   <Music size={12} className="text-indigo-400" />
                   <span>{art.song.titleOriginal || art.song.title} · {art.song.artist}</span>
                 </div>
-              ) : null}
-              <div className="flex flex-wrap items-center gap-2">
-                {/* 🔴 YouTube 해당 작품 검색 연동 버튼 */}
-                <a
-                  href={art.ytArtworkSearchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 border border-red-500/40 text-[11px] font-bold text-red-200 hover:bg-red-600/30 transition-all cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.2)] active:scale-95"
-                  title={`${art.entry.creator} - ${art.entry.title} YouTube에서 검색`}
-                >
-                  <YoutubeIcon size={13} />
-                  YouTube에서 작품 검색 ↗
-                </a>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* 🔴 YouTube 해당 명곡 검색 연동 버튼 */}
+                  <a
+                    href={art.ytSongSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 border border-red-500/40 text-[11px] font-bold text-red-200 hover:bg-red-600/30 transition-all cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.2)] active:scale-95"
+                    title={`${art.song.artist} - ${art.song.title} YouTube 검색`}
+                  >
+                    <YoutubeIcon size={13} />
+                    YouTube에서 명곡 검색 ↗
+                  </a>
 
-                {/* 🍎 Apple Music Classical 연동 버튼 */}
-                {art.song ? (
+                  {/* 🍎 Apple Music Classical 연동 버튼 */}
                   <a
                     href={art.embedUrl || art.musicUrl}
                     target="_blank"
@@ -336,11 +336,11 @@ export function DailyCosmicRoutineCard() {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 border border-rose-400/30 text-[11px] font-bold text-rose-200 hover:bg-rose-500/25 transition-all cursor-pointer active:scale-95"
                   >
                     <Music size={12} />
-                    명곡 Apple Music ↗
+                    Apple Music Classical ↗
                   </a>
-                ) : null}
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
         </div>
       );
