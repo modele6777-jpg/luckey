@@ -53,6 +53,10 @@ import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, SUPREM
 import { calculateSacredVortexGeometry, formatSacredVortexGeometryPrompt, SACRED_VORTEX_VERSION } from '../src/lib/divination/sacredVortexGeometryEngine';
 import { calculateTaoistNeidanMeridian, formatTaoistNeidanMeridianPrompt, TAOIST_NEIDAN_VERSION } from '../src/lib/divination/taoistNeidanMeridianEngine';
 import { calculateSynchronicityOmen, formatSynchronicityOmenPrompt, SYNCHRONICITY_OMEN_VERSION } from '../src/lib/divination/synchronicityOmenEngine';
+import { calculateSolfeggioHarmonic, formatSolfeggioHarmonicPrompt, SOLFEGGIO_HARMONIC_VERSION } from '../src/lib/divination/solfeggioHarmonicResonanceEngine';
+import { calculateEthericAuraBiofield, formatEthericAuraBiofieldPrompt, ETHERIC_AURA_VERSION } from '../src/lib/divination/ethericAuraBiofieldEngine';
+import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, SAJU_CLASSIC_YONGSHIN_VERSION } from '../src/lib/divination/sajuClassicYongshinPrescriptionEngine';
+import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, TAROT_KABBALAH_SHADOW_VERSION } from '../src/lib/divination/tarotTreeOfLifeShadowEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -2119,6 +2123,56 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   assert(prompt.includes(res.dominantOmenTheme));
 });
 
+test('Solfeggio Harmonic Resonance Engine: 솔페지오 주파수 사운드 힐링 & 뇌파 동조 검증', () => {
+  const res = calculateSolfeggioHarmonic({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
+  assert.equal(res.engineVersion, SOLFEGGIO_HARMONIC_VERSION);
+  assert(res.harmonicTitle.length > 0);
+  assert(res.primaryFrequency.frequencyHz > 0);
+  assert(res.brainwaveTuning.targetFrequencyHz > 0);
+  assert(res.resonanceAffirmation.length > 0);
+  const prompt = formatSolfeggioHarmonicPrompt(res);
+  assert(prompt.includes('LUCKEY 솔페지오 주파수 & 뇌파 동조'));
+  assert(prompt.includes(String(res.primaryFrequency.frequencyHz)));
+});
+
+test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 검증', () => {
+  const res = calculateEthericAuraBiofield({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
+  assert.equal(res.engineVersion, ETHERIC_AURA_VERSION);
+  assert(res.auraBiofieldTitle.length > 0);
+  assert(res.spectrum.primaryColor.length > 0);
+  assert(res.shielding.integrityScore >= 0 && res.shielding.integrityScore <= 100);
+  assert(res.shielding.vulnerableZone.length > 0);
+  const prompt = formatEthericAuraBiofieldPrompt(res);
+  assert(prompt.includes('LUCKEY 에테르 오라 생체장 & 쉴딩'));
+  assert(prompt.includes(res.spectrum.primaryColor));
+});
+
+test('Saju Classic Yongshin Prescription Engine: 사주 정통 3대 원전 용신·격국·조후 검증', () => {
+  const res = calculateSajuClassicYongshin({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
+  assert.equal(res.engineVersion, SAJU_CLASSIC_YONGSHIN_VERSION);
+  assert(res.yongshinMasterTitle.length > 0);
+  assert(res.geokguk.geokgukName.length > 0);
+  assert(['성격 (成格)', '파격 (破格)', '패중유성 (敗中有成)'].includes(res.geokguk.formationStatus));
+  assert(res.johuClimate.vitalityClimateScore >= 0 && res.johuClimate.vitalityClimateScore <= 100);
+  assert(res.prescription.luckyColors.length > 0);
+  const prompt = formatSajuClassicYongshinPrompt(res);
+  assert(prompt.includes('LUCKEY 정통 사주 3대 원전 용신·격국·조후 심층'));
+  assert(prompt.includes(res.geokguk.geokgukName));
+});
+
+test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 & 섀도우 미러 검증', () => {
+  const res = calculateTarotTreeOfLifeShadow({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
+  assert.equal(res.engineVersion, TAROT_KABBALAH_SHADOW_VERSION);
+  assert(res.tarotEsotericTitle.length > 0);
+  assert(res.ascensionPath.pathNumber >= 11 && res.ascensionPath.pathNumber <= 32);
+  assert(res.shadowMirror.consciousLightCard.length > 0);
+  assert(res.shadowMirror.shadowBlindSpotCard.length > 0);
+  assert(res.shadowMirror.transmutedSuperpower.length > 0);
+  const prompt = formatTarotTreeOfLifeShadowPrompt(res);
+  assert(prompt.includes('LUCKEY 타로 카발라 생명나무 & 섀도우 미러 심층'));
+  assert(prompt.includes(res.shadowMirror.consciousLightCard));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -2210,4 +2264,8 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(SACRED_VORTEX_VERSION));
   assert(enginePrompt.includes(TAOIST_NEIDAN_VERSION));
   assert(enginePrompt.includes(SYNCHRONICITY_OMEN_VERSION));
+  assert(enginePrompt.includes(SOLFEGGIO_HARMONIC_VERSION));
+  assert(enginePrompt.includes(ETHERIC_AURA_VERSION));
+  assert(enginePrompt.includes(SAJU_CLASSIC_YONGSHIN_VERSION));
+  assert(enginePrompt.includes(TAROT_KABBALAH_SHADOW_VERSION));
 });

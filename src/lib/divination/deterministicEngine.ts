@@ -88,6 +88,10 @@ import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, type S
 import { calculateSacredVortexGeometry, formatSacredVortexGeometryPrompt, type SacredVortexGeometryResult } from './sacredVortexGeometryEngine';
 import { calculateTaoistNeidanMeridian, formatTaoistNeidanMeridianPrompt, type TaoistNeidanMeridianResult } from './taoistNeidanMeridianEngine';
 import { calculateSynchronicityOmen, formatSynchronicityOmenPrompt, type SynchronicityOmenResult } from './synchronicityOmenEngine';
+import { calculateSolfeggioHarmonic, formatSolfeggioHarmonicPrompt, type SolfeggioHarmonicResult } from './solfeggioHarmonicResonanceEngine';
+import { calculateEthericAuraBiofield, formatEthericAuraBiofieldPrompt, type EthericAuraBiofieldResult } from './ethericAuraBiofieldEngine';
+import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, type SajuClassicYongshinResult } from './sajuClassicYongshinPrescriptionEngine';
+import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, type TarotTreeOfLifeShadowResult } from './tarotTreeOfLifeShadowEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -196,6 +200,10 @@ export interface DeterministicEngineReport {
   sacredVortexGeometryResult?: SacredVortexGeometryResult | null;
   taoistNeidanMeridianResult?: TaoistNeidanMeridianResult | null;
   synchronicityOmenResult?: SynchronicityOmenResult | null;
+  solfeggioHarmonicResult?: SolfeggioHarmonicResult | null;
+  ethericAuraBiofieldResult?: EthericAuraBiofieldResult | null;
+  sajuClassicYongshinResult?: SajuClassicYongshinResult | null;
+  tarotTreeOfLifeShadowResult?: TarotTreeOfLifeShadowResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1243,6 +1251,50 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 60. 솔페지오 주파수 사운드 힐링 & 뇌파 동조 엔진
+  const solfeggioHarmonicResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSolfeggioHarmonic({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 61. 에테르 오라 생체장 & 쉴딩 엔진
+  const ethericAuraBiofieldResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateEthericAuraBiofield({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 62. 사주 정통 3대 원전(자평진전·궁통보감·적천수) 용신·조후·억부 심층 처방 엔진
+  const sajuClassicYongshinResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSajuClassicYongshin({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 63. 타로 카발라 생명나무 22경로 & 섀도우 미러 심층 엔진
+  const tarotTreeOfLifeShadowResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateTarotTreeOfLifeShadow({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1337,6 +1389,10 @@ export function runDeterministicEngine(params: {
     sacredVortexGeometryResult,
     taoistNeidanMeridianResult,
     synchronicityOmenResult,
+    solfeggioHarmonicResult,
+    ethericAuraBiofieldResult,
+    sajuClassicYongshinResult,
+    tarotTreeOfLifeShadowResult,
     tools: toolsMap,
   };
 }
@@ -1438,5 +1494,9 @@ ${report.somaticBodyArmoringResult ? '\n' + formatSomaticBodyArmoringPrompt(repo
 ${report.supremeWisdomTrinityResult ? '\n' + formatSupremeWisdomTrinityPrompt(report.supremeWisdomTrinityResult) : ''}
 ${report.sacredVortexGeometryResult ? '\n' + formatSacredVortexGeometryPrompt(report.sacredVortexGeometryResult) : ''}
 ${report.taoistNeidanMeridianResult ? '\n' + formatTaoistNeidanMeridianPrompt(report.taoistNeidanMeridianResult) : ''}
-${report.synchronicityOmenResult ? '\n' + formatSynchronicityOmenPrompt(report.synchronicityOmenResult) : ''}`;
+${report.synchronicityOmenResult ? '\n' + formatSynchronicityOmenPrompt(report.synchronicityOmenResult) : ''}
+${report.solfeggioHarmonicResult ? '\n' + formatSolfeggioHarmonicPrompt(report.solfeggioHarmonicResult) : ''}
+${report.ethericAuraBiofieldResult ? '\n' + formatEthericAuraBiofieldPrompt(report.ethericAuraBiofieldResult) : ''}
+${report.sajuClassicYongshinResult ? '\n' + formatSajuClassicYongshinPrompt(report.sajuClassicYongshinResult) : ''}
+${report.tarotTreeOfLifeShadowResult ? '\n' + formatTarotTreeOfLifeShadowPrompt(report.tarotTreeOfLifeShadowResult) : ''}`;
 }
