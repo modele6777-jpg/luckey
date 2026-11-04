@@ -33,6 +33,7 @@ import { calculateYinYangPolarity, formatYinYangPolarityPrompt, YIN_YANG_POLARIT
 import { calculateRuneMatrix, formatRuneMatrixPrompt, RUNE_MATRIX_VERSION } from '../src/lib/divination/runeMatrixEngine';
 import { calculateSoulJourneyTarot, formatSoulJourneyTarotPrompt, SOUL_JOURNEY_TAROT_VERSION } from '../src/lib/divination/soulJourneyTarotEngine';
 import { calculateTranscendentalMeditation, formatTranscendentalMeditationPrompt, TRANSCENDENTAL_MEDITATION_VERSION } from '../src/lib/divination/transcendentalMeditationEngine';
+import { formatSajuDestinyShareText, type SajuDestinyStoryData } from '../src/utils/sajuDestinyExporter';
 import { calculateStrategicLeverage, formatStrategicLeveragePrompt, STRATEGIC_LEVERAGE_VERSION } from '../src/lib/divination/strategicLeverageEngine';
 import { calculateShadowArchetype, formatShadowArchetypePrompt, SHADOW_ARCHETYPE_VERSION } from '../src/lib/divination/shadowArchetypeEngine';
 import { calculateBiorhythmPeakFlow, formatBiorhythmPeakFlowPrompt, BIORHYTHM_PEAK_FLOW_VERSION } from '../src/lib/divination/biorhythmPeakFlowEngine';
@@ -2365,4 +2366,49 @@ test('Lucy Episodic Memory Engine: extracts active threads, key people, and open
 
   const prompt = buildLucyEpisodicMemoryPrompt('testAccount', '제제');
   assert(typeof prompt === 'string');
+});
+
+test('Saju Destiny Exporter: formats 9:16 Instagram Story viral caption correctly', () => {
+  const dummyData: SajuDestinyStoryData = {
+    name: '제제',
+    birthdate: '1994-01-24',
+    gender: 'male',
+    pillars: {
+      year: { gan: '甲', zhi: '戌', ganKr: '갑', zhiKr: '술', elGan: '목', elZhi: '토', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '비견' } as any, tenGodZhi: { name: '편재' } as any, animal: '개' },
+      month: { gan: '丁', zhi: '丑', ganKr: '정', zhiKr: '축', elGan: '화', elZhi: '토', yinYangGan: '음', yinYangZhi: '음', tenGodGan: { name: '상관' } as any, tenGodZhi: { name: '정재' } as any, animal: '소' },
+      day: { gan: '庚', zhi: '申', ganKr: '경', zhiKr: '신', elGan: '금', elZhi: '금', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '본원' } as any, tenGodZhi: { name: '비견' } as any, animal: '원숭이' },
+      hour: { gan: '丙', zhi: '子', ganKr: '병', zhiKr: '자', elGan: '화', elZhi: '수', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '편관' } as any, tenGodZhi: { name: '상관' } as any, animal: '쥐' },
+    },
+    dayMaster: {
+      symbolName: '경금(庚金)',
+      archetypeTitle: '단단한 강철의 혁신가',
+      personalityEssence: '결단력과 강직한 의지',
+      coreKeywords: ['결단', '혁신', '추진'],
+      spiritualMission: '세상의 혼란을 정돈하고 새로운 틀을 세우는 사명',
+      element: '금',
+      hanja: '庚',
+      korean: '경',
+      mindsetAdvice: '스스로에게 지나치게 엄격하지 않기',
+      wellnessFocus: '호흡기와 대장 웰니스',
+    },
+    elements: {
+      counts: { 목: 1, 화: 2, 토: 2, 금: 2, 수: 1 },
+      percentages: { 목: 12, 화: 25, 토: 25, 금: 25, 수: 13 },
+      dominant: { element: '화', count: 2, name: '화(火)', advice: '열정을 지혜롭게 다스리세요.' },
+      lacking: { element: '수', count: 1, name: '수(水)', remedy: '충분한 수분 섭취', luckyColor: '블랙/네이비', luckyFood: '해조류', luckyPlace: '물가/바다' },
+      summary: '오행이 비교적 고르게 분포되어 조화를 이룹니다.',
+    },
+    prescription: {
+      luckyColor: '네이비 블루',
+      luckyFood: '따뜻한 둥굴레차',
+      breakthroughAction: '결정한 일을 주저 없이 행동으로 옮기기',
+    },
+  };
+
+  const text = formatSajuDestinyShareText(dummyData);
+  assert(text.includes('제제님의 사주 만세력 운명 설계도'));
+  assert(text.includes('경금(庚金)'));
+  assert(text.includes('단단한 강철의 혁신가'));
+  assert(text.includes('네이비 블루'));
+  assert(text.includes('luckey.app'));
 });
