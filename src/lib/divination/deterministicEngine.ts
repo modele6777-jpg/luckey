@@ -1397,16 +1397,145 @@ export function runDeterministicEngine(params: {
   };
 }
 
+export interface FormatDeterministicEngineOptions {
+  focusTools?: string[];
+  intent?: string;
+  isMasterMobilization?: boolean;
+}
+
+const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
+  career_strategy: [
+    'sajuClassicYongshin',
+    'geokguk',
+    'ziweiFlyingStars',
+    'specialStarsMatrix',
+    'wealthPipeline',
+    'contractShield',
+    'strategicLeverage',
+    'instantDecision',
+    'honggukQimen',
+    'ikigaiDestinyCompass',
+  ],
+  business_money: [
+    'wealthPipeline',
+    'sajuClassicYongshin',
+    'geokguk',
+    'ziweiFlyingStars',
+    'contractShield',
+    'strategicLeverage',
+    'kyusei',
+    'honggukQimen',
+    'instantDecision',
+  ],
+  relationship_love: [
+    'contextualSynastry',
+    'destinySynastryEcho',
+    'compatibility',
+    'sukuyoAdvanced',
+    'tarotMaster',
+    'tarotTreeOfLifeShadow',
+    'soulJourneyTarot',
+    'shadowArchetype',
+  ],
+  immediate_decision: [
+    'instantDecision',
+    'ichingMaster',
+    'liurenMaster',
+    'synchronicityOmen',
+    'quantumProbabilisticTimeline',
+    'honggukQimen',
+  ],
+  daily_timing_transit: [
+    'chronoTransit',
+    'vitalityCurve',
+    'biorhythmPeakFlow',
+    'synchronicityOmen',
+    'specialStarsMatrix',
+    'sajuClassicYongshin',
+    'taoistNeidanMeridian',
+  ],
+  life_season_timing: [
+    'lifeSeasonTiming',
+    'monthlyFlow',
+    'samjaeGyoUn',
+    'pythagoreanLifecycle',
+    'astrologicalDecanSabian',
+    'sajuClassicYongshin',
+  ],
+  vitality_wellness: [
+    'energeticPrescription',
+    'vitalityCurve',
+    'medicalBioMatrix',
+    'chakraVibrationAlignment',
+    'somaticBodyArmoring',
+    'taoistNeidanMeridian',
+    'solfeggioHarmonic',
+    'ethericAuraBiofield',
+    'biorhythmPeakFlow',
+  ],
+  creative_mind: [
+    'kabbalah',
+    'tarotMaster',
+    'tarotTreeOfLifeShadow',
+    'sacredVortexGeometry',
+    'akashicRecordsOracle',
+    'soulJourneyTarot',
+  ],
+  life_reflection: [
+    'supremeWisdomTrinity',
+    'ichingMaster',
+    'heLuoLiShu',
+    'vedicAdvanced',
+    'karmicNodes',
+    'heroMythMonomyth',
+    'ancestralEpigeneticKarma',
+  ],
+};
+
+function shouldIncludeEngine(engineKey: string, options?: FormatDeterministicEngineOptions): boolean {
+  if (!options || options.isMasterMobilization !== false) {
+    return true;
+  }
+  if (engineKey === 'chronoTransit') return true;
+
+  const intent = options.intent;
+  const allowedForIntent = intent ? INTENT_SPECIALIZED_ENGINES[intent] : undefined;
+  if (allowedForIntent) {
+    return allowedForIntent.includes(engineKey);
+  }
+
+  if (options.focusTools && options.focusTools.length > 0) {
+    const focus = options.focusTools;
+    if (focus.includes('saju') && ['sajuClassicYongshin', 'geokguk', 'specialStarsMatrix', 'vitalityCurve'].includes(engineKey)) return true;
+    if (focus.includes('tarot') && ['tarotMaster', 'tarotTreeOfLifeShadow', 'soulJourneyTarot'].includes(engineKey)) return true;
+    if (focus.includes('iching') && ['ichingMaster', 'instantDecision'].includes(engineKey)) return true;
+    if (focus.includes('qimen') && ['honggukQimen', 'instantDecision'].includes(engineKey)) return true;
+    if (focus.includes('ziwei') && ['ziweiFlyingStars'].includes(engineKey)) return true;
+    if (focus.includes('sukuyo') && ['sukuyoAdvanced', 'destinySynastryEcho'].includes(engineKey)) return true;
+    if (focus.includes('astrology') && ['astrologicalDecanSabian', 'contextualSynastry'].includes(engineKey)) return true;
+  }
+
+  return ['chronoTransit', 'sajuClassicYongshin', 'tarotTreeOfLifeShadow', 'supremeWisdomTrinity', 'vitalityCurve'].includes(engineKey);
+}
+
 /**
  * 결정론적 계산 엔진 리포트를 LLM 프롬프트에 주입하기 위해
  * 명확하고 가독성 높은 구조화된 텍스트 및 JSON 블록으로 변환합니다.
  */
-export function formatDeterministicEnginePrompt(report: DeterministicEngineReport): string {
+export function formatDeterministicEnginePrompt(
+  report: DeterministicEngineReport,
+  options?: FormatDeterministicEngineOptions
+): string {
+  const isSelective = options?.isMasterMobilization === false;
+  const focusSet = new Set(options?.focusTools || []);
+
   const calculatedDataSummary: Record<string, unknown> = {};
 
   Object.entries(report.tools).forEach(([id, envelope]) => {
     if (envelope.status === 'calculated' && envelope.data) {
-      calculatedDataSummary[id] = envelope.data;
+      if (!isSelective || focusSet.size === 0 || focusSet.has(id) || id === 'saju' || id === 'astrology') {
+        calculatedDataSummary[id] = envelope.data;
+      }
     }
   });
 
@@ -1416,7 +1545,7 @@ export function formatDeterministicEnginePrompt(report: DeterministicEngineRepor
 기준 시각: ${report.calculatedAtKst} (한국 표준시)
 프로필 입력: ${report.inputProfile.solarDateString || '생년월일 미입력'} ${report.inputProfile.birthtime || '(생시 미입력)'} | 출생지: ${report.inputProfile.birthCity || '미확인'}
 실측 계산 성공 도구: ${report.summary.toolsCalculated}개 | 상징/부분 도구: ${report.summary.toolsPartialOrSymbolic}개 | 미구현 도구: ${report.summary.toolsNotImplemented}개
-======================================================================
+${isSelective ? `[스마트 집중 모드 가동]: ${options?.intent ? `분석 의도 '${options.intent}'에 맞춘 ` : ''}핵심 특화 엔진 선별 주입 완료\n` : ''}======================================================================
 
 [★ AI 환각 원천 차단 절대 지침 (Anti-Hallucination Guard)]:
 1. 아래 제공된 JSON 데이터는 순수 천문·수리 알고리즘으로 직접 산출된 100% 확정 수치입니다.
@@ -1427,76 +1556,76 @@ export function formatDeterministicEnginePrompt(report: DeterministicEngineRepor
 ${JSON.stringify(calculatedDataSummary, null, 2)}
 \`\`\`
 ======================================================================
-${report.chronoTransit ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}
-${report.lifeSeasonTiming ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}
-${report.energeticPrescription ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}
-${report.contextualSynastry ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}
-${report.instantDecision ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}
-${report.ziweiFlyingStars ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyingStars) : ''}
-${report.specialStarsMatrix ? '\n' + formatSpecialStarsPrompt(report.specialStarsMatrix) : ''}
-${report.monthlyFlow ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}
-${report.spatialFengshui ? '\n' + formatSpatialFengshuiPrompt(report.spatialFengshui) : ''}
-${report.vitalityCurve ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) : ''}
-${report.tojeongResult ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}
-${report.kyuseiResult ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}
-${report.samjaeGyoUnResult ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}
-${report.auspiciousStarsResult ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}
-${report.taiyiResult ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}
-${report.geokgukResult ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}
-${report.twentyEightMansionsResult ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}
-${report.mahaboteResult ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}
-${report.sukuyoAdvancedResult ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}
-${report.vedicAdvancedResult ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}
-${report.kabbalahResult ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}
-${report.thaiHorasatResult ? '\n' + formatThaiHorasatPrompt(report.thaiHorasatResult) : ''}
-${report.honggukQimenResult ? '\n' + formatHonggukQimenPrompt(report.honggukQimenResult) : ''}
-${report.compatibilityResult ? '\n' + formatCompatibilityPrompt(report.compatibilityResult) : ''}
-${report.liurenMasterResult ? '\n' + formatLiurenMasterPrompt(report.liurenMasterResult) : ''}
-${report.ichingMasterResult ? '\n' + formatIchingMasterPrompt(report.ichingMasterResult) : ''}
-${report.tarotMasterResult ? '\n' + formatTarotMasterPrompt(report.tarotMasterResult) : ''}
-${report.heLuoLiShuResult ? '\n' + formatHeLuoLiShuPrompt(report.heLuoLiShuResult) : ''}
-${report.dynamicClashResult ? '\n' + formatDynamicClashPrompt(report.dynamicClashResult) : ''}
-${report.twelveSpiritsResult ? '\n' + formatTwelveSpiritsPrompt(report.twelveSpiritsResult) : ''}
-${report.pythagoreanLifecycleResult ? '\n' + formatPythagoreanLifecyclePrompt(report.pythagoreanLifecycleResult) : ''}
-${report.astrologicalDecanSabianResult ? '\n' + formatAstrologicalDecanSabianPrompt(report.astrologicalDecanSabianResult) : ''}
-${report.medicalBioMatrixResult ? '\n' + formatMedicalBioMatrixPrompt(report.medicalBioMatrixResult) : ''}
-${report.wealthPipelineResult ? '\n' + formatWealthPipelinePrompt(report.wealthPipelineResult) : ''}
-${report.karmicNodesResult ? '\n' + formatKarmicNodesPrompt(report.karmicNodesResult) : ''}
-${report.mentalResilienceResult ? '\n' + formatMentalResiliencePrompt(report.mentalResilienceResult) : ''}
-${report.nobleNetworkResult ? '\n' + formatNobleNetworkPrompt(report.nobleNetworkResult) : ''}
-${report.voicePersonaResult ? '\n' + formatVoicePersonaPrompt(report.voicePersonaResult) : ''}
-${report.contractShieldResult ? '\n' + formatContractShieldPrompt(report.contractShieldResult) : ''}
-${report.lifeDomainWheelResult ? '\n' + formatLifeDomainWheelPrompt(report.lifeDomainWheelResult) : ''}
-${report.deepWorkFlowResult ? '\n' + formatDeepWorkFlowPrompt(report.deepWorkFlowResult) : ''}
-${report.sleepSubconsciousResult ? '\n' + formatSleepSubconsciousPrompt(report.sleepSubconsciousResult) : ''}
-${report.quantumLeapResult ? '\n' + formatQuantumLeapPrompt(report.quantumLeapResult) : ''}
-${report.elementalResonanceResult ? '\n' + formatElementalResonancePrompt(report.elementalResonanceResult) : ''}
-${report.yinYangPolarityResult ? '\n' + formatYinYangPolarityPrompt(report.yinYangPolarityResult) : ''}
-${report.runeMatrixResult ? '\n' + formatRuneMatrixPrompt(report.runeMatrixResult) : ''}
-${report.soulJourneyTarotResult ? '\n' + formatSoulJourneyTarotPrompt(report.soulJourneyTarotResult) : ''}
-${report.transcendentalMeditationResult ? '\n' + formatTranscendentalMeditationPrompt(report.transcendentalMeditationResult) : ''}
-${report.strategicLeverageResult ? '\n' + formatStrategicLeveragePrompt(report.strategicLeverageResult) : ''}
-${report.shadowArchetypeResult ? '\n' + formatShadowArchetypePrompt(report.shadowArchetypeResult) : ''}
-${report.biorhythmPeakFlowResult ? '\n' + formatBiorhythmPeakFlowPrompt(report.biorhythmPeakFlowResult) : ''}
-${report.destinySynastryEchoResult ? '\n' + formatDestinySynastryEchoPrompt(report.destinySynastryEchoResult) : ''}
-${report.microHabitKarmaResult ? '\n' + formatMicroHabitKarmaPrompt(report.microHabitKarmaResult) : ''}
-${report.ikigaiDestinyCompassResult ? '\n' + formatIkigaiDestinyCompassPrompt(report.ikigaiDestinyCompassResult) : ''}
-${report.serendipitySynchronicityResult ? '\n' + formatSerendipitySynchronicityPrompt(report.serendipitySynchronicityResult) : ''}
-${report.humanDesignBodyGraphResult ? '\n' + formatHumanDesignBodyGraphPrompt(report.humanDesignBodyGraphResult) : ''}
-${report.chakraVibrationAlignmentResult ? '\n' + formatChakraVibrationAlignmentPrompt(report.chakraVibrationAlignmentResult) : ''}
-${report.enneagramSoulIntegrationResult ? '\n' + formatEnneagramSoulIntegrationPrompt(report.enneagramSoulIntegrationResult) : ''}
-${report.ancestralEpigeneticKarmaResult ? '\n' + formatAncestralEpigeneticKarmaPrompt(report.ancestralEpigeneticKarmaResult) : ''}
-${report.shamanicAnimalTotemResult ? '\n' + formatShamanicAnimalTotemPrompt(report.shamanicAnimalTotemResult) : ''}
-${report.heroMythMonomythResult ? '\n' + formatHeroMythMonomythPrompt(report.heroMythMonomythResult) : ''}
-${report.akashicRecordsOracleResult ? '\n' + formatAkashicRecordsOraclePrompt(report.akashicRecordsOracleResult) : ''}
-${report.quantumProbabilisticTimelineResult ? '\n' + formatQuantumProbabilisticTimelinePrompt(report.quantumProbabilisticTimelineResult) : ''}
-${report.somaticBodyArmoringResult ? '\n' + formatSomaticBodyArmoringPrompt(report.somaticBodyArmoringResult) : ''}
-${report.supremeWisdomTrinityResult ? '\n' + formatSupremeWisdomTrinityPrompt(report.supremeWisdomTrinityResult) : ''}
-${report.sacredVortexGeometryResult ? '\n' + formatSacredVortexGeometryPrompt(report.sacredVortexGeometryResult) : ''}
-${report.taoistNeidanMeridianResult ? '\n' + formatTaoistNeidanMeridianPrompt(report.taoistNeidanMeridianResult) : ''}
-${report.synchronicityOmenResult ? '\n' + formatSynchronicityOmenPrompt(report.synchronicityOmenResult) : ''}
-${report.solfeggioHarmonicResult ? '\n' + formatSolfeggioHarmonicPrompt(report.solfeggioHarmonicResult) : ''}
-${report.ethericAuraBiofieldResult ? '\n' + formatEthericAuraBiofieldPrompt(report.ethericAuraBiofieldResult) : ''}
-${report.sajuClassicYongshinResult ? '\n' + formatSajuClassicYongshinPrompt(report.sajuClassicYongshinResult) : ''}
-${report.tarotTreeOfLifeShadowResult ? '\n' + formatTarotTreeOfLifeShadowPrompt(report.tarotTreeOfLifeShadowResult) : ''}`;
+${report.chronoTransit && shouldIncludeEngine('chronoTransit', options) ? '\n' + formatChronoTransitPrompt(report.chronoTransit) : ''}
+${report.lifeSeasonTiming && shouldIncludeEngine('lifeSeasonTiming', options) ? '\n' + formatLifeSeasonTimingPrompt(report.lifeSeasonTiming) : ''}
+${report.energeticPrescription && shouldIncludeEngine('energeticPrescription', options) ? '\n' + formatEnergeticPrescriptionPrompt(report.energeticPrescription) : ''}
+${report.contextualSynastry && shouldIncludeEngine('contextualSynastry', options) ? '\n' + formatContextualSynastryPrompt(report.contextualSynastry) : ''}
+${report.instantDecision && shouldIncludeEngine('instantDecision', options) ? '\n' + formatInstantDecisionPrompt(report.instantDecision) : ''}
+${report.ziweiFlyingStars && shouldIncludeEngine('ziweiFlyingStars', options) ? '\n' + formatZiweiFlyingStarsPrompt(report.ziweiFlyingStars) : ''}
+${report.specialStarsMatrix && shouldIncludeEngine('specialStarsMatrix', options) ? '\n' + formatSpecialStarsPrompt(report.specialStarsMatrix) : ''}
+${report.monthlyFlow && shouldIncludeEngine('monthlyFlow', options) ? '\n' + formatMonthlyFlowPrompt(report.monthlyFlow) : ''}
+${report.spatialFengshui && shouldIncludeEngine('spatialFengshui', options) ? '\n' + formatSpatialFengshuiPrompt(report.spatialFengshui) : ''}
+${report.vitalityCurve && shouldIncludeEngine('vitalityCurve', options) ? '\n' + formatVitalityCurvePrompt(report.vitalityCurve) : ''}
+${report.tojeongResult && shouldIncludeEngine('tojeong', options) ? '\n' + formatTojeongPrompt(report.tojeongResult) : ''}
+${report.kyuseiResult && shouldIncludeEngine('kyusei', options) ? '\n' + formatKyuseiPrompt(report.kyuseiResult) : ''}
+${report.samjaeGyoUnResult && shouldIncludeEngine('samjaeGyoUn', options) ? '\n' + formatSamjaeGyoUnPrompt(report.samjaeGyoUnResult) : ''}
+${report.auspiciousStarsResult && shouldIncludeEngine('auspiciousStars', options) ? '\n' + formatAuspiciousStarsPrompt(report.auspiciousStarsResult) : ''}
+${report.taiyiResult && shouldIncludeEngine('taiyi', options) ? '\n' + formatTaiyiPrompt(report.taiyiResult) : ''}
+${report.geokgukResult && shouldIncludeEngine('geokguk', options) ? '\n' + formatGeokgukPrompt(report.geokgukResult) : ''}
+${report.twentyEightMansionsResult && shouldIncludeEngine('twentyEightMansions', options) ? '\n' + formatTwentyEightMansionsPrompt(report.twentyEightMansionsResult) : ''}
+${report.mahaboteResult && shouldIncludeEngine('mahabote', options) ? '\n' + formatMahabotePrompt(report.mahaboteResult) : ''}
+${report.sukuyoAdvancedResult && shouldIncludeEngine('sukuyoAdvanced', options) ? '\n' + formatSukuyoPrompt(report.sukuyoAdvancedResult) : ''}
+${report.vedicAdvancedResult && shouldIncludeEngine('vedicAdvanced', options) ? '\n' + formatVedicPrompt(report.vedicAdvancedResult) : ''}
+${report.kabbalahResult && shouldIncludeEngine('kabbalah', options) ? '\n' + formatKabbalahPrompt(report.kabbalahResult) : ''}
+${report.thaiHorasatResult && shouldIncludeEngine('thaiHorasat', options) ? '\n' + formatThaiHorasatPrompt(report.thaiHorasatResult) : ''}
+${report.honggukQimenResult && shouldIncludeEngine('honggukQimen', options) ? '\n' + formatHonggukQimenPrompt(report.honggukQimenResult) : ''}
+${report.compatibilityResult && shouldIncludeEngine('compatibility', options) ? '\n' + formatCompatibilityPrompt(report.compatibilityResult) : ''}
+${report.liurenMasterResult && shouldIncludeEngine('liurenMaster', options) ? '\n' + formatLiurenMasterPrompt(report.liurenMasterResult) : ''}
+${report.ichingMasterResult && shouldIncludeEngine('ichingMaster', options) ? '\n' + formatIchingMasterPrompt(report.ichingMasterResult) : ''}
+${report.tarotMasterResult && shouldIncludeEngine('tarotMaster', options) ? '\n' + formatTarotMasterPrompt(report.tarotMasterResult) : ''}
+${report.heLuoLiShuResult && shouldIncludeEngine('heLuoLiShu', options) ? '\n' + formatHeLuoLiShuPrompt(report.heLuoLiShuResult) : ''}
+${report.dynamicClashResult && shouldIncludeEngine('dynamicClash', options) ? '\n' + formatDynamicClashPrompt(report.dynamicClashResult) : ''}
+${report.twelveSpiritsResult && shouldIncludeEngine('twelveSpirits', options) ? '\n' + formatTwelveSpiritsPrompt(report.twelveSpiritsResult) : ''}
+${report.pythagoreanLifecycleResult && shouldIncludeEngine('pythagoreanLifecycle', options) ? '\n' + formatPythagoreanLifecyclePrompt(report.pythagoreanLifecycleResult) : ''}
+${report.astrologicalDecanSabianResult && shouldIncludeEngine('astrologicalDecanSabian', options) ? '\n' + formatAstrologicalDecanSabianPrompt(report.astrologicalDecanSabianResult) : ''}
+${report.medicalBioMatrixResult && shouldIncludeEngine('medicalBioMatrix', options) ? '\n' + formatMedicalBioMatrixPrompt(report.medicalBioMatrixResult) : ''}
+${report.wealthPipelineResult && shouldIncludeEngine('wealthPipeline', options) ? '\n' + formatWealthPipelinePrompt(report.wealthPipelineResult) : ''}
+${report.karmicNodesResult && shouldIncludeEngine('karmicNodes', options) ? '\n' + formatKarmicNodesPrompt(report.karmicNodesResult) : ''}
+${report.mentalResilienceResult && shouldIncludeEngine('mentalResilience', options) ? '\n' + formatMentalResiliencePrompt(report.mentalResilienceResult) : ''}
+${report.nobleNetworkResult && shouldIncludeEngine('nobleNetwork', options) ? '\n' + formatNobleNetworkPrompt(report.nobleNetworkResult) : ''}
+${report.voicePersonaResult && shouldIncludeEngine('voicePersona', options) ? '\n' + formatVoicePersonaPrompt(report.voicePersonaResult) : ''}
+${report.contractShieldResult && shouldIncludeEngine('contractShield', options) ? '\n' + formatContractShieldPrompt(report.contractShieldResult) : ''}
+${report.lifeDomainWheelResult && shouldIncludeEngine('lifeDomainWheel', options) ? '\n' + formatLifeDomainWheelPrompt(report.lifeDomainWheelResult) : ''}
+${report.deepWorkFlowResult && shouldIncludeEngine('deepWorkFlow', options) ? '\n' + formatDeepWorkFlowPrompt(report.deepWorkFlowResult) : ''}
+${report.sleepSubconsciousResult && shouldIncludeEngine('sleepSubconscious', options) ? '\n' + formatSleepSubconsciousPrompt(report.sleepSubconsciousResult) : ''}
+${report.quantumLeapResult && shouldIncludeEngine('quantumLeap', options) ? '\n' + formatQuantumLeapPrompt(report.quantumLeapResult) : ''}
+${report.elementalResonanceResult && shouldIncludeEngine('elementalResonance', options) ? '\n' + formatElementalResonancePrompt(report.elementalResonanceResult) : ''}
+${report.yinYangPolarityResult && shouldIncludeEngine('yinYangPolarity', options) ? '\n' + formatYinYangPolarityPrompt(report.yinYangPolarityResult) : ''}
+${report.runeMatrixResult && shouldIncludeEngine('runeMatrix', options) ? '\n' + formatRuneMatrixPrompt(report.runeMatrixResult) : ''}
+${report.soulJourneyTarotResult && shouldIncludeEngine('soulJourneyTarot', options) ? '\n' + formatSoulJourneyTarotPrompt(report.soulJourneyTarotResult) : ''}
+${report.transcendentalMeditationResult && shouldIncludeEngine('transcendentalMeditation', options) ? '\n' + formatTranscendentalMeditationPrompt(report.transcendentalMeditationResult) : ''}
+${report.strategicLeverageResult && shouldIncludeEngine('strategicLeverage', options) ? '\n' + formatStrategicLeveragePrompt(report.strategicLeverageResult) : ''}
+${report.shadowArchetypeResult && shouldIncludeEngine('shadowArchetype', options) ? '\n' + formatShadowArchetypePrompt(report.shadowArchetypeResult) : ''}
+${report.biorhythmPeakFlowResult && shouldIncludeEngine('biorhythmPeakFlow', options) ? '\n' + formatBiorhythmPeakFlowPrompt(report.biorhythmPeakFlowResult) : ''}
+${report.destinySynastryEchoResult && shouldIncludeEngine('destinySynastryEcho', options) ? '\n' + formatDestinySynastryEchoPrompt(report.destinySynastryEchoResult) : ''}
+${report.microHabitKarmaResult && shouldIncludeEngine('microHabitKarma', options) ? '\n' + formatMicroHabitKarmaPrompt(report.microHabitKarmaResult) : ''}
+${report.ikigaiDestinyCompassResult && shouldIncludeEngine('ikigaiDestinyCompass', options) ? '\n' + formatIkigaiDestinyCompassPrompt(report.ikigaiDestinyCompassResult) : ''}
+${report.serendipitySynchronicityResult && shouldIncludeEngine('serendipitySynchronicity', options) ? '\n' + formatSerendipitySynchronicityPrompt(report.serendipitySynchronicityResult) : ''}
+${report.humanDesignBodyGraphResult && shouldIncludeEngine('humanDesignBodyGraph', options) ? '\n' + formatHumanDesignBodyGraphPrompt(report.humanDesignBodyGraphResult) : ''}
+${report.chakraVibrationAlignmentResult && shouldIncludeEngine('chakraVibrationAlignment', options) ? '\n' + formatChakraVibrationAlignmentPrompt(report.chakraVibrationAlignmentResult) : ''}
+${report.enneagramSoulIntegrationResult && shouldIncludeEngine('enneagramSoulIntegration', options) ? '\n' + formatEnneagramSoulIntegrationPrompt(report.enneagramSoulIntegrationResult) : ''}
+${report.ancestralEpigeneticKarmaResult && shouldIncludeEngine('ancestralEpigeneticKarma', options) ? '\n' + formatAncestralEpigeneticKarmaPrompt(report.ancestralEpigeneticKarmaResult) : ''}
+${report.shamanicAnimalTotemResult && shouldIncludeEngine('shamanicAnimalTotem', options) ? '\n' + formatShamanicAnimalTotemPrompt(report.shamanicAnimalTotemResult) : ''}
+${report.heroMythMonomythResult && shouldIncludeEngine('heroMythMonomyth', options) ? '\n' + formatHeroMythMonomythPrompt(report.heroMythMonomythResult) : ''}
+${report.akashicRecordsOracleResult && shouldIncludeEngine('akashicRecordsOracle', options) ? '\n' + formatAkashicRecordsOraclePrompt(report.akashicRecordsOracleResult) : ''}
+${report.quantumProbabilisticTimelineResult && shouldIncludeEngine('quantumProbabilisticTimeline', options) ? '\n' + formatQuantumProbabilisticTimelinePrompt(report.quantumProbabilisticTimelineResult) : ''}
+${report.somaticBodyArmoringResult && shouldIncludeEngine('somaticBodyArmoring', options) ? '\n' + formatSomaticBodyArmoringPrompt(report.somaticBodyArmoringResult) : ''}
+${report.supremeWisdomTrinityResult && shouldIncludeEngine('supremeWisdomTrinity', options) ? '\n' + formatSupremeWisdomTrinityPrompt(report.supremeWisdomTrinityResult) : ''}
+${report.sacredVortexGeometryResult && shouldIncludeEngine('sacredVortexGeometry', options) ? '\n' + formatSacredVortexGeometryPrompt(report.sacredVortexGeometryResult) : ''}
+${report.taoistNeidanMeridianResult && shouldIncludeEngine('taoistNeidanMeridian', options) ? '\n' + formatTaoistNeidanMeridianPrompt(report.taoistNeidanMeridianResult) : ''}
+${report.synchronicityOmenResult && shouldIncludeEngine('synchronicityOmen', options) ? '\n' + formatSynchronicityOmenPrompt(report.synchronicityOmenResult) : ''}
+${report.solfeggioHarmonicResult && shouldIncludeEngine('solfeggioHarmonic', options) ? '\n' + formatSolfeggioHarmonicPrompt(report.solfeggioHarmonicResult) : ''}
+${report.ethericAuraBiofieldResult && shouldIncludeEngine('ethericAuraBiofield', options) ? '\n' + formatEthericAuraBiofieldPrompt(report.ethericAuraBiofieldResult) : ''}
+${report.sajuClassicYongshinResult && shouldIncludeEngine('sajuClassicYongshin', options) ? '\n' + formatSajuClassicYongshinPrompt(report.sajuClassicYongshinResult) : ''}
+${report.tarotTreeOfLifeShadowResult && shouldIncludeEngine('tarotTreeOfLifeShadow', options) ? '\n' + formatTarotTreeOfLifeShadowPrompt(report.tarotTreeOfLifeShadowResult) : ''}`;
 }

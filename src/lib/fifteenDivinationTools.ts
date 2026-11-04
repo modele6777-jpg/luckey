@@ -369,7 +369,7 @@ export interface SelectedDivinationToolsResult {
 export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile, questionText?: string): string {
   const userDigest = buildUserFifteenToolsDigest(profile);
   const engineReport = runDeterministicEngine({ profile, question: questionText, forceAllTools: true });
-  const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport);
+  const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport, { isMasterMobilization: true });
 
   return `${deterministicDataBlock}
 

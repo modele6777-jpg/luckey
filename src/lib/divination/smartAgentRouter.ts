@@ -282,19 +282,25 @@ export function routeAndExecute(params: {
     forceAllTools: routePlan.isMasterMobilization,
   });
 
-  const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport);
+  const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport, {
+    focusTools: routePlan.targetTools,
+    intent: routePlan.intent,
+    isMasterMobilization: routePlan.isMasterMobilization,
+  });
   const toolsForBadge = routePlan.targetTools.map((id) => TOOL_KO_NAMES[id] || id);
 
   const promptInjection = `${deterministicDataBlock}
 
-[🎯 스마트 에이전트 라우터(Agent Router) 전략 배정 안내]
+[🎯 스마트 에이전트 라우터(Agent Router) 정밀 지능 가이드]
 ======================================================================
 - 분석된 질문 의도: **[${routePlan.intentKoName}]**
 - 스마트 라우팅 도구: **${toolsForBadge.join(' + ')}**
 - 라우팅 선정 사유: ${routePlan.routingReason}
 - 중점 답변 가이드: ${routePlan.suggestedFocusPrompt}
 ======================================================================
-위 선정된 도구들의 실제 계산 데이터(JSON)를 중심으로, 사용자의 질문에 가장 날카롭고 깊이 있는 맞춤형 솔루션을 100% 친근하고 다정한 반말 구어체로 작성해 줘.`;
+[루시 답변 필수 지침]:
+1. 위 라우팅된 도구의 실제 계산 데이터(JSON)를 최우선 근거로 삼되, 지식을 나열하지 말고 질문자의 현실 상황과 마음에 딱 들어맞는 살아있는 비유로 풀어줘.
+2. 서론 없이 첫 문장부터 질문자의 속마음을 꿰뚫으며 시작하고, 당장 실천할 구체적 행동 팁과 깊은 영적 위로를 카톡식 다중 말풍선(\`\\n\\n\`)으로 전해줘.`;
 
   return {
     routePlan,
