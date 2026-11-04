@@ -82,7 +82,7 @@ export function runTarotTreeOfLifeShadowEngine(
 
   // 섀도우 미러 카드 도출 (상보적 반대편 축)
   const shadowCardNum = (pathInfo.majorCard + 11) % 22;
-  const shadowCardMap: Record<number, { name: string; defense: string; superpower: string; ritual: string }> = {
+  const shadowCardMap: Record<number, { name: string; defense: string; defenseMechanism: string; superpower: string; ritual: string }> = {
     11: { name: '정의 (Justice)', defense: '완벽주의와 타인에 대한 냉혹한 잣대로 상처받지 않으려는 방어', defenseMechanism: '지적 합리화와 감정 차단', superpower: '어떤 혼란 속에서도 객관적 진실과 균형을 꿰뚫어 보는 절대 분별력', ritual: '마음속 법정에 세워둔 타인과 자신을 향해 "모든 것은 제자리에 있다"고 선언하기' },
     12: { name: '매달린 사람 (The Hanged Man)', defense: '주도권을 뺏길까 봐 상황을 통제하려 안달하는 저항', defenseMechanism: '통제 강박과 조급증', superpower: '기꺼이 에고의 고집을 내려놓을 때 쏟아져 들어오는 퀀텀적 발상의 전환', ritual: '바닥에 등을 대고 누워 5분간 아무것도 통제하지 않는 항복(Surrender) 명상' },
     13: { name: '죽음 (Death)', defense: '익숙한 과거와 낡은 관계를 잃을까 두려워 썩어가는 잔해를 붙잡는 미련', defenseMechanism: '변화에 대한 회피와 집착', superpower: '끝난 것을 담담하게 털어내고 새로운 우주를 시작시키는 불사조의 재생력', ritual: '더 이상 나를 키우지 못하는 낡은 습관 한 가지를 오늘부로 공식 파기하기' },
@@ -126,7 +126,7 @@ export function runTarotTreeOfLifeShadowEngine(
     shadowMirror: {
       consciousLightCard: pathInfo.cardName,
       shadowBlindSpotCard: shadowData.name,
-      blindSpotDefenseMechanism: shadowData.defense,
+      blindSpotDefenseMechanism: shadowData.defenseMechanism,
       transmutedSuperpower: shadowData.superpower,
       shadowIntegrationRitual: shadowData.ritual
     },
