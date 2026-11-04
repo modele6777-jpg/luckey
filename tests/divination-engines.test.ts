@@ -66,6 +66,9 @@ import { calculateKarmicSynastry, formatKarmicSynastryPrompt, KARMIC_SYNASTRY_VE
 import { calculateFiveEmotionsPulse, formatFiveEmotionsPulsePrompt, FIVE_EMOTIONS_PULSE_VERSION } from '../src/lib/divination/fiveEmotionsPulseEngine';
 import { calculateHermeticKybalion, formatHermeticKybalionPrompt, HERMETIC_KYBALION_VERSION } from '../src/lib/divination/hermeticKybalionEngine';
 import { calculateVibrationalSoulQuest, formatVibrationalSoulQuestPrompt, VIBRATIONAL_SOUL_QUEST_VERSION } from '../src/lib/divination/vibrationalSoulQuestEngine';
+import { calculateAlchemicalTransmutation, formatAlchemicalTransmutationPrompt, ALCHEMICAL_TRANSMUTATION_VERSION } from '../src/lib/divination/alchemicalTransmutationEngine';
+import { calculateZiweiHuaJiTransformation, formatZiweiHuaJiTransformationPrompt, ZIWEI_HUAJI_VERSION } from '../src/lib/divination/ziweiHuaJiTransformationEngine';
+import { calculateCelticTreeOgham, formatCelticTreeOghamPrompt, CELTIC_OGHAM_VERSION } from '../src/lib/divination/celticTreeOghamEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2484,4 +2487,38 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   const prompt = formatVibrationalSoulQuestPrompt(rep);
   assert(prompt.includes('고대 수비학 차크라 솔 울림'));
   assert(prompt.includes(rep.questArchetype));
+});
+
+test('Alchemical Transmutation Engine: calculates 7 stages and 4 opus phases', () => {
+  const rep = calculateAlchemicalTransmutation(profile);
+  assert.equal(rep.engineVersion, ALCHEMICAL_TRANSMUTATION_VERSION);
+  assert(rep.currentStage.stageNumber >= 1 && rep.currentStage.stageNumber <= 7);
+  assert(rep.transmutationPower >= 0 && rep.transmutationPower <= 100);
+  assert(rep.primaMateria.length > 0);
+  assert(rep.lapisPhilosophorum.length > 0);
+  const prompt = formatAlchemicalTransmutationPrompt(rep);
+  assert(prompt.includes('연금술 7단계 영혼 변환'));
+  assert(prompt.includes(rep.currentStage.nameKo));
+});
+
+test('Ziwei HuaJi Transformation Engine: maps stem hua-ji and breakthrough gift', () => {
+  const rep = calculateZiweiHuaJiTransformation(profile);
+  assert.equal(rep.engineVersion, ZIWEI_HUAJI_VERSION);
+  assert(rep.huaJiStar.starNameKo.length > 0);
+  assert(rep.resilienceIndex >= 0 && rep.resilienceIndex <= 100);
+  assert(rep.transmutationStrategy.length > 0);
+  const prompt = formatZiweiHuaJiTransformationPrompt(rep);
+  assert(prompt.includes('자미두수 화기'));
+  assert(prompt.includes(rep.huaJiStar.starNameKo));
+});
+
+test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle', () => {
+  const rep = calculateCelticTreeOgham(profile);
+  assert.equal(rep.engineVersion, CELTIC_OGHAM_VERSION);
+  assert(rep.birthGuardianTree.nameTreeKo.length > 0);
+  assert(rep.druidWisdomScore >= 0 && rep.druidWisdomScore <= 100);
+  assert(rep.treeMedicinePrescription.length > 0);
+  const prompt = formatCelticTreeOghamPrompt(rep);
+  assert(prompt.includes('켈트 오검'));
+  assert(prompt.includes(rep.birthGuardianTree.nameTreeKo));
 });
