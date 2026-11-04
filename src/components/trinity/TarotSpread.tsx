@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Sparkles, Eye, RefreshCw, Sun, Compass, Activity,
   Flame, Heart, Wind, Coins, ShieldCheck, BookOpen, Zap, Star, Moon,
@@ -271,6 +271,16 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
   const [selectedEntries, setSelectedEntries] = useState<Array<{ card: TarotCard; reversed: boolean }>>([]);
   const [isFinishing, setIsFinishing] = useState(false);
+  const [shuffleStatus, setShuffleStatus] = useState<'shuffling' | 'done' | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!shuffleStatus) return;
+    const timer = window.setTimeout(() => {
+      setShuffleStatus(shuffleStatus === 'shuffling' ? 'done' : null);
+    }, shuffleStatus === 'shuffling' ? 700 : 1000);
+    return () => window.clearTimeout(timer);
+  }, [shuffleStatus]);
   const hasCompletedRef = useRef(false);
   const touchedCardIdRef = useRef<string | null>(null);
   const touchStartTimeRef = useRef<number>(0);
@@ -695,10 +705,15 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   };
 
   const handleShuffleDeck = () => {
+    if (shuffleStatus === 'shuffling' || activeWheelCards.length < 2) return;
     playAudioHaptic('card_shuffle');
     stopMomentum();
-    setDeck((prevDeck) => shuffleArray(prevDeck));
-    startMomentum((Math.random() - 0.5) * 12);
+    setShuffleStatus('shuffling');
+    setDeck((prevDeck) => {
+      const remaining = shuffleArray(prevDeck.filter((card) => !selectedIdSet.has(card.id)));
+      let next = 0;
+      return prevDeck.map((card) => selectedIdSet.has(card.id) ? card : remaining[next++]);
+    });
   };
 
   const handleAutoPick = () => {
@@ -1051,6 +1066,34 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           })}
         </div>
 
+
+        {shuffleStatus && (
+          <div role="status" className="pointer-events-none absolute inset-x-0 top-1/2 z-[110] flex -translate-y-1/2 flex-col items-center">
+            {shuffleStatus === 'shuffling' && !reduceMotion && (
+              <div className="relative h-32 w-40" aria-hidden="true">
+                {[-1, 0, 1].map((side) => (
+                  <motion.div
+                    key={side}
+                    className="absolute left-[3.25rem] top-2 h-24 w-14 rounded-lg shadow-xl"
+                    initial={{ x: side * 32, y: 10, rotate: side * 14 }}
+                    animate={{
+                      x: [side * 32, side * 45, -side * 14, 0, side * 24],
+                      y: [10, -12, side * 10, 0, 10],
+                      rotate: [side * 14, side * 23, -side * 12, 0, side * 10],
+                    }}
+                    transition={{ duration: 0.7, ease: 'easeInOut' }}
+                  >
+                    <TarotCardBackFace cardBackId={effectiveCardBackId} size="sm" />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            <span className="rounded-full border border-yellow-400/40 bg-zinc-950 px-4 py-2 text-xs font-bold text-yellow-200 shadow-lg">
+              {shuffleStatus === 'shuffling' ? '카드 섞는 중…' : '셔플 완료'}
+            </span>
+          </div>
+        )}
+
         {/* Selected card slots with a brief burst when a card is drawn. */}
         {!isLandscapeLayout && (
         <div
@@ -1213,11 +1256,12 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={handleShuffleDeck}
+          disabled={shuffleStatus === 'shuffling' || activeWheelCards.length < 2}
           className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/40 hover:border-yellow-400 text-yellow-200 text-xs font-bold flex items-center gap-1 sm:gap-1.5 active:scale-95 transition-transform cursor-pointer shrink"
           title={`현재 남은 ${activeWheelCards.length}장의 덱을 셔플합니다 (이미 뽑은 카드는 덱에 다시 들어가지 않습니다)`}
         >
           <Shuffle size={13} className="text-yellow-400 shrink-0" />
-          <span className="truncate">셔플 ({activeWheelCards.length})</span>
+          <span className="truncate">{shuffleStatus === 'shuffling' ? '섞는 중…' : '셔플 (' + activeWheelCards.length + ')'}</span>
         </button>
 
         <button
