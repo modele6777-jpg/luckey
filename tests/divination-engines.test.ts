@@ -60,6 +60,9 @@ import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, SAJU_CLA
 import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, TAROT_KABBALAH_SHADOW_VERSION } from '../src/lib/divination/tarotTreeOfLifeShadowEngine';
 import { calculateHellenisticLots, formatHellenisticLotsPrompt, HELLENISTIC_LOTS_ENGINE_VERSION } from '../src/lib/divination/hellenisticLotsEngine';
 import { calculateIching384Yao, formatIching384YaoPrompt, ICHING_384YAO_ENGINE_VERSION } from '../src/lib/divination/iching384YaoEngine';
+import { calculateSajuTwelveStagesTomb, formatSajuTwelveStagesTombPrompt, SAJU_12STAGES_TOMB_VERSION } from '../src/lib/divination/sajuTwelveStagesTombUnlockEngine';
+import { calculateTarotElementalCourt, formatTarotElementalCourtPrompt, TAROT_ELEMENTAL_COURT_VERSION } from '../src/lib/divination/tarotElementalCourtPersonaEngine';
+import { calculateKarmicSynastry, formatKarmicSynastryPrompt, KARMIC_SYNASTRY_VERSION } from '../src/lib/divination/karmicSynastryResonanceEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2413,4 +2416,36 @@ test('Saju Destiny Exporter: formats 9:16 Instagram Story viral caption correctl
   assert(text.includes('단단한 강철의 혁신가'));
   assert(text.includes('네이비 블루'));
   assert(text.includes('luckey.app'));
+});
+
+test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and tomb storages', () => {
+  const rep = calculateSajuTwelveStagesTomb(profile);
+  assert.equal(rep.engineVersion, SAJU_12STAGES_TOMB_VERSION);
+  assert(rep.pillarsVitality.length === 4);
+  assert(rep.peakVitalityStage.length > 0);
+  const prompt = formatSajuTwelveStagesTombPrompt(rep);
+  assert(prompt.includes(peakVitalityStage => peakVitalityStage.length > 0) || prompt.includes('사주 12운성'));
+  assert(prompt.includes('2026 병오년'));
+});
+
+test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental balance', () => {
+  const rep = calculateTarotElementalCourt(profile, '커리어 이직과 결단');
+  assert.equal(rep.engineVersion, TAROT_ELEMENTAL_COURT_VERSION);
+  assert(rep.activePersonaCourt.nameKo.length > 0);
+  assert(rep.subconsciousShadowCourt.nameKo.length > 0);
+  assert(rep.elementalBalance.firePercentage >= 0);
+  const prompt = formatTarotElementalCourtPrompt(rep);
+  assert(prompt.includes('타로 4대 원소'));
+  assert(prompt.includes(rep.activePersonaCourt.nameKo));
+});
+
+test('Karmic Synastry Resonance Engine: calculates interpersonal bond score and soul contract', () => {
+  const rep = calculateKarmicSynastry(profile, null, '인연과 동반자');
+  assert.equal(rep.engineVersion, KARMIC_SYNASTRY_VERSION);
+  assert(rep.soulContractScore >= 0 && rep.soulContractScore <= 100);
+  assert(rep.relationshipArchetype.length > 0);
+  assert(rep.karmicSoulMission.length > 0);
+  const prompt = formatKarmicSynastryPrompt(rep);
+  assert(prompt.includes('카르믹 시나스트리'));
+  assert(prompt.includes(rep.relationshipArchetype));
 });
