@@ -29,8 +29,13 @@ import {
   Heart,
   Briefcase,
   Coins,
-  Sun
+  Sun,
+  Share2
 } from 'lucide-react';
+import { SajuDestinyShareModal } from './SajuDestinyShareModal';
+import { SajuVisualInteractiveCharts } from './SajuVisualInteractiveCharts';
+import { type SajuDestinyStoryData } from '@/utils/sajuDestinyExporter';
+import { playAudioHaptic } from '@/lib/audioHaptics';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { saveProfileToAllVaults } from '@/lib/profileVault';
 import {
@@ -98,6 +103,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   const [editBirthtime, setEditBirthtime] = useState(profile?.basic?.birthtime || '12:00');
   const [editGender, setEditGender] = useState<'male' | 'female'>(profile?.basic?.gender === 'female' ? 'female' : 'male');
   const [copied, setCopied] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // AI 질의응답 상태
   const [questionInput, setQuestionInput] = useState('');
@@ -239,6 +245,38 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
     if (!saju) return null;
     return generateDailySajuReport(saju, new Date(), remedySeedOffset);
   }, [saju, remedySeedOffset]);
+
+  const storyShareData: SajuDestinyStoryData = useMemo(() => {
+    if (!saju) {
+      return {
+        name: '제제',
+        birthdate: '1995-05-15',
+        gender: 'male',
+        pillars: {} as any,
+        dayMaster: {} as any,
+        elements: {} as any,
+      };
+    }
+    return {
+      name: saju.name || '제제',
+      birthdate: saju.birthdate,
+      birthtime: saju.birthtime,
+      gender: saju.gender,
+      koreanAge: saju.koreanAge,
+      pillars: saju.pillars,
+      dayMaster: saju.dayMaster,
+      elements: saju.elements,
+      yongsin: saju.yongsin,
+      annual2026: saju.annual2026,
+      prescription: {
+        luckyColor: todayReport?.remedy?.luckyColor || saju.elements?.lacking?.luckyColor,
+        luckyFood: todayReport?.remedy?.luckyFood || saju.elements?.lacking?.luckyFood,
+        luckyDirections: saju.elements?.lacking?.luckyPlace,
+        breakthroughAction: todayReport?.remedy?.actionTip,
+      },
+      johuSummary: todayReport?.harmonySummary,
+    };
+  }, [saju, todayReport]);
 
   const handleShuffleRemedy = () => {
     setIsRemedyShuffling(true);
@@ -524,8 +562,21 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
             </p>
           </div>
 
-          {/* 컨트롤 버튼 그룹: 복사, TTS, 프로필 수정 */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* 컨트롤 버튼 그룹: 인스타 공유, 복사, TTS, 프로필 수정 */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+            <button
+              onClick={() => {
+                setIsShareModalOpen(true);
+                playAudioHaptic('save_auto');
+              }}
+              className="p-2.5 rounded-2xl bg-gradient-to-r from-amber-500/25 via-yellow-500/20 to-amber-600/25 hover:from-amber-500/35 hover:to-yellow-500/35 border border-amber-400/50 text-amber-200 hover:text-white transition-all text-xs font-bold flex items-center gap-1.5 shadow-md shadow-amber-500/10 active:scale-95 cursor-pointer"
+              title="9:16 인스타 스토리 및 SNS 공유 카드 열기"
+            >
+              <Share2 size={15} className="text-amber-400" />
+              <span className="hidden sm:inline">인스타 공유 카드</span>
+              <span className="sm:hidden">공유</span>
+            </button>
+
             <button
               onClick={handleToggleTTS}
               className={`p-2.5 rounded-2xl border transition-all text-xs font-medium flex items-center gap-1.5 ${
@@ -1430,6 +1481,14 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           </div>
         </div>
       </div>
+
+      {/* 🌟 사주 인터랙티브 비주얼 차트 (오행 펜타곤 레이더 · 궁통보감 기후 온도계 · 자오유주 24h 생체 바이오리듬) */}
+      <SajuVisualInteractiveCharts
+        profile={profile}
+        saju={saju}
+        className="my-6"
+      />
+
 <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1d1b26] via-[#14151a] to-[#121318] border border-purple-500/20 shadow-2xl space-y-6">
         <div className="flex items-center gap-2.5 pb-4 border-b border-white/10">
           <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300">
@@ -1755,6 +1814,13 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
         </form>
       </div>
 </section>
+
+      {/* 📸 9:16 사주 만세력 인스타그램 스토리 & SNS 공유 모달 */}
+      <SajuDestinyShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        data={storyShareData}
+      />
 </DuoWorkspace>
   );
 }
