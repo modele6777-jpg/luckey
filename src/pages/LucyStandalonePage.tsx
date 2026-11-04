@@ -1999,7 +1999,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       document.head.appendChild(themeColorTag);
       didCreateThemeTag = true;
     }
-    const chatBackground = useWhiteTheme ? '#ffffff' : '#070b20';
+    const chatBackground = useWhiteTheme ? '#ffffff' : '#101722';
     themeColorTag.setAttribute('content', chatBackground);
     const previousLucyTheme = document.documentElement.getAttribute('data-lucy-theme');
     document.documentElement.setAttribute('data-lucy-theme', useWhiteTheme ? 'white' : 'starlight');

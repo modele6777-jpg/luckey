@@ -1,4 +1,7 @@
 /* Quiet night / botanical night: shared, opaque reading surfaces. */
+html[data-lucy-theme='starlight'] {
+  background: var(--lucy-page-background, #101722) !important;
+}
 html[data-lucy-theme='starlight'] body,
 html[data-lucy-theme='starlight'] #root,
 html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !important; }
