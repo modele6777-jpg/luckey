@@ -9,7 +9,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { resolveViewportBox, viewportNeedsResumeFill, sideColumnBleed, canUseKeyboardViewport } = await import(
+const { resolveViewportBox, viewportNeedsResumeFill, sideColumnBleed, canUseKeyboardViewport, orientedScreenSize } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -203,6 +203,9 @@ assert.equal(canUseKeyboardViewport(unfolded, true), false);
 const matchingKeyboard = { ...unfolded, visual: { ...unfolded.visual, width: 890 } };
 assert.equal(canUseKeyboardViewport(matchingKeyboard, false), false);
 assert.equal(canUseKeyboardViewport(matchingKeyboard, true), true);
+
+// The layout has rotated to portrait while screen dimensions still describe landscape.
+assert.deepEqual(orientedScreenSize(952, 669, 669, 869), { width: 669, height: 952 });
 
 const splitView = {
   innerWidth: 512,

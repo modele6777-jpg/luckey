@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { canUseKeyboardViewport, layoutOutgrewVisual, readViewportSnapshot } from '@/lib/visualViewportBox';
+import { canUseKeyboardViewport, layoutOutgrewVisual, orientedScreenSize, readViewportSnapshot } from '@/lib/visualViewportBox';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
@@ -67,14 +67,8 @@ export function useViewportScrollLock() {
       const isFoldedCover = window.innerWidth < 580 && window.innerHeight >= window.innerWidth;
       const sw = isFoldedCover ? window.innerWidth : (window.screen?.width || window.innerWidth);
       const sh = isFoldedCover ? window.innerHeight : (window.screen?.height || window.innerHeight);
-      const isLandscape =
-        window.screen?.orientation?.type?.startsWith('landscape') ||
-        Math.abs(Number((window as any).orientation || 0)) === 90 ||
-        window.innerWidth > window.innerHeight;
-      return {
-        width: isLandscape ? Math.max(sw, sh) : Math.min(sw, sh),
-        height: isLandscape ? Math.min(sw, sh) : Math.max(sw, sh),
-      };
+      // Orientation events can arrive before the screen orientation flag updates.
+      return orientedScreenSize(sw, sh, window.innerWidth, window.innerHeight);
     };
 
     const isIosOrTablet = (): boolean => {
@@ -205,7 +199,9 @@ export function useViewportScrollLock() {
           }
           resetShell();
         } else {
-          const layoutHeight = unfolding ? `${Math.round(innerH)}px` : '100dvh';
+          const measuredHeight = `${Math.round(innerH)}px`;
+          const layoutHeight = unfolding ? measuredHeight
+            : snapshot.iosStandalone ? `max(100dvh, ${measuredHeight})` : '100dvh';
           document.documentElement.style.setProperty('--app-height', layoutHeight);
           document.documentElement.style.setProperty('--vvh', layoutHeight);
           document.documentElement.style.setProperty('--visual-vh', layoutHeight);
