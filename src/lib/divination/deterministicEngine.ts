@@ -85,6 +85,9 @@ import { calculateAkashicRecordsOracle, formatAkashicRecordsOraclePrompt, type A
 import { calculateQuantumProbabilisticTimeline, formatQuantumProbabilisticTimelinePrompt, type QuantumProbabilisticTimelineResult } from './quantumProbabilisticTimelineEngine';
 import { calculateSomaticBodyArmoring, formatSomaticBodyArmoringPrompt, type SomaticBodyArmoringResult } from './somaticBodyArmoringEngine';
 import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, type SupremeWisdomTrinityResult } from './supremeWisdomTrinityEngine';
+import { calculateSacredVortexGeometry, formatSacredVortexGeometryPrompt, type SacredVortexGeometryResult } from './sacredVortexGeometryEngine';
+import { calculateTaoistNeidanMeridian, formatTaoistNeidanMeridianPrompt, type TaoistNeidanMeridianResult } from './taoistNeidanMeridianEngine';
+import { calculateSynchronicityOmen, formatSynchronicityOmenPrompt, type SynchronicityOmenResult } from './synchronicityOmenEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -190,6 +193,9 @@ export interface DeterministicEngineReport {
   quantumProbabilisticTimelineResult?: QuantumProbabilisticTimelineResult | null;
   somaticBodyArmoringResult?: SomaticBodyArmoringResult | null;
   supremeWisdomTrinityResult?: SupremeWisdomTrinityResult | null;
+  sacredVortexGeometryResult?: SacredVortexGeometryResult | null;
+  taoistNeidanMeridianResult?: TaoistNeidanMeridianResult | null;
+  synchronicityOmenResult?: SynchronicityOmenResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1204,6 +1210,39 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 57. 황금비 영혼 수비학 & 보텍스 기하학 엔진
+  const sacredVortexGeometryResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSacredVortexGeometry({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 58. 도교 내단 양생 & 진기 순환 경락 시계 엔진
+  const taoistNeidanMeridianResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateTaoistNeidanMeridian({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 59. 칼 융 동시성 징조 해독 & 오멘 매트릭스 엔진
+  const synchronicityOmenResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateSynchronicityOmen({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1295,6 +1334,9 @@ export function runDeterministicEngine(params: {
     quantumProbabilisticTimelineResult,
     somaticBodyArmoringResult,
     supremeWisdomTrinityResult,
+    sacredVortexGeometryResult,
+    taoistNeidanMeridianResult,
+    synchronicityOmenResult,
     tools: toolsMap,
   };
 }
@@ -1393,5 +1435,8 @@ ${report.heroMythMonomythResult ? '\n' + formatHeroMythMonomythPrompt(report.her
 ${report.akashicRecordsOracleResult ? '\n' + formatAkashicRecordsOraclePrompt(report.akashicRecordsOracleResult) : ''}
 ${report.quantumProbabilisticTimelineResult ? '\n' + formatQuantumProbabilisticTimelinePrompt(report.quantumProbabilisticTimelineResult) : ''}
 ${report.somaticBodyArmoringResult ? '\n' + formatSomaticBodyArmoringPrompt(report.somaticBodyArmoringResult) : ''}
-${report.supremeWisdomTrinityResult ? '\n' + formatSupremeWisdomTrinityPrompt(report.supremeWisdomTrinityResult) : ''}`;
+${report.supremeWisdomTrinityResult ? '\n' + formatSupremeWisdomTrinityPrompt(report.supremeWisdomTrinityResult) : ''}
+${report.sacredVortexGeometryResult ? '\n' + formatSacredVortexGeometryPrompt(report.sacredVortexGeometryResult) : ''}
+${report.taoistNeidanMeridianResult ? '\n' + formatTaoistNeidanMeridianPrompt(report.taoistNeidanMeridianResult) : ''}
+${report.synchronicityOmenResult ? '\n' + formatSynchronicityOmenPrompt(report.synchronicityOmenResult) : ''}`;
 }

@@ -50,6 +50,9 @@ import { calculateAkashicRecordsOracle, formatAkashicRecordsOraclePrompt, AKASHI
 import { calculateQuantumProbabilisticTimeline, formatQuantumProbabilisticTimelinePrompt, QUANTUM_TIMELINE_VERSION } from '../src/lib/divination/quantumProbabilisticTimelineEngine';
 import { calculateSomaticBodyArmoring, formatSomaticBodyArmoringPrompt, SOMATIC_ARMORING_VERSION } from '../src/lib/divination/somaticBodyArmoringEngine';
 import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, SUPREME_WISDOM_TRINITY_VERSION } from '../src/lib/divination/supremeWisdomTrinityEngine';
+import { calculateSacredVortexGeometry, formatSacredVortexGeometryPrompt, SACRED_VORTEX_VERSION } from '../src/lib/divination/sacredVortexGeometryEngine';
+import { calculateTaoistNeidanMeridian, formatTaoistNeidanMeridianPrompt, TAOIST_NEIDAN_VERSION } from '../src/lib/divination/taoistNeidanMeridianEngine';
+import { calculateSynchronicityOmen, formatSynchronicityOmenPrompt, SYNCHRONICITY_OMEN_VERSION } from '../src/lib/divination/synchronicityOmenEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -2077,6 +2080,45 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   assert(prompt.includes(res.trinitySynthesisCore));
 });
 
+test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기하학 검증', () => {
+  const res = calculateSacredVortexGeometry({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00') });
+  assert.equal(res.engineVersion, SACRED_VORTEX_VERSION);
+  assert(res.soulGeometryTitle.length > 0);
+  assert(res.platonicSolid.solidName.length > 0);
+  assert(res.platonicSolid.geometricFrequencyHz > 0);
+  assert(res.vortexDynamics.phiRatioAlignmentScore >= 0 && res.vortexDynamics.phiRatioAlignmentScore <= 100);
+  const prompt = formatSacredVortexGeometryPrompt(res);
+  assert(prompt.includes('LUCKEY 황금비 영혼 수비학 & 보텍스 기하학'));
+  assert(prompt.includes(res.platonicSolid.solidName));
+});
+
+test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락 시계 검증', () => {
+  const res = calculateTaoistNeidanMeridian({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00') });
+  assert.equal(res.engineVersion, TAOIST_NEIDAN_VERSION);
+  assert(res.dantianArchetype.length > 0);
+  assert(res.threeTreasures.jingLevelScore >= 0 && res.threeTreasures.jingLevelScore <= 100);
+  assert(res.threeTreasures.qiLevelScore >= 0 && res.threeTreasures.qiLevelScore <= 100);
+  assert(res.threeTreasures.shenLevelScore >= 0 && res.threeTreasures.shenLevelScore <= 100);
+  assert(res.meridianCirculation.activeMeridianName.length > 0);
+  assert(res.neidanBreathingPrescription.practiceSteps.length > 0);
+  const prompt = formatTaoistNeidanMeridianPrompt(res);
+  assert(prompt.includes('LUCKEY 도교 내단 양생 & 진기 순환 경락 시계'));
+  assert(prompt.includes(res.dantianArchetype));
+});
+
+test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트릭스 검증', () => {
+  const res = calculateSynchronicityOmen({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00') });
+  assert.equal(res.engineVersion, SYNCHRONICITY_OMEN_VERSION);
+  assert(res.dominantOmenTheme.length > 0);
+  assert(res.synchronicityChannel.primaryChannelName.length > 0);
+  assert(['GREEN_ACCELERATE', 'AMBER_PAUSE_OBSERVE', 'GOLDEN_QUANTUM_LEAP'].includes(res.synchronicityChannel.manifestationSignal));
+  assert(res.twentyFourHourWatchSymbols.length === 3);
+  assert(res.synchronicityCaptureRitual.actionStep.length > 0);
+  const prompt = formatSynchronicityOmenPrompt(res);
+  assert(prompt.includes('LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스'));
+  assert(prompt.includes(res.dominantOmenTheme));
+});
+
 test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 신설 마스터 엔진 바인딩 검증', () => {
   const report = runDeterministicEngine({ profile, question: '내 인생 전체 종합 운세 봐줘' });
   assert(report.liurenMasterResult !== null && report.liurenMasterResult !== undefined);
@@ -2165,4 +2207,7 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(QUANTUM_TIMELINE_VERSION));
   assert(enginePrompt.includes(SOMATIC_ARMORING_VERSION));
   assert(enginePrompt.includes(SUPREME_WISDOM_TRINITY_VERSION));
+  assert(enginePrompt.includes(SACRED_VORTEX_VERSION));
+  assert(enginePrompt.includes(TAOIST_NEIDAN_VERSION));
+  assert(enginePrompt.includes(SYNCHRONICITY_OMEN_VERSION));
 });
