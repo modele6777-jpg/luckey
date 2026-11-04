@@ -92,6 +92,8 @@ import { calculateSolfeggioHarmonic, formatSolfeggioHarmonicPrompt, type Solfegg
 import { calculateEthericAuraBiofield, formatEthericAuraBiofieldPrompt, type EthericAuraBiofieldResult } from './ethericAuraBiofieldEngine';
 import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, type SajuClassicYongshinResult } from './sajuClassicYongshinPrescriptionEngine';
 import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, type TarotTreeOfLifeShadowResult } from './tarotTreeOfLifeShadowEngine';
+import { calculateHellenisticLots, formatHellenisticLotsPrompt, type HellenisticLotsReport, HELLENISTIC_LOTS_ENGINE_VERSION } from './hellenisticLotsEngine';
+import { calculateIching384Yao, formatIching384YaoPrompt, type Iching384YaoReport, ICHING_384YAO_ENGINE_VERSION } from './iching384YaoEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -204,6 +206,8 @@ export interface DeterministicEngineReport {
   ethericAuraBiofieldResult?: EthericAuraBiofieldResult | null;
   sajuClassicYongshinResult?: SajuClassicYongshinResult | null;
   tarotTreeOfLifeShadowResult?: TarotTreeOfLifeShadowResult | null;
+  hellenisticLotsResult?: HellenisticLotsReport | null;
+  iching384YaoResult?: Iching384YaoReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1295,6 +1299,26 @@ export function runDeterministicEngine(params: {
       })()
     : null;
 
+  // 64. 고대 헬레니즘 아라빅 랏 & 조디악 릴리싱 엔진
+  const hellenisticLotsResult = birthdateStr && profile
+    ? (() => {
+        try {
+          return calculateHellenisticLots({ profile, targetDate: now });
+        } catch (_) {
+          return null;
+        }
+      })()
+    : null;
+
+  // 65. 주역 384효 동효 & 착종복잡 4대 변괘 엔진
+  const iching384YaoResult = (() => {
+    try {
+      return calculateIching384Yao({ profile, question, targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1393,6 +1417,8 @@ export function runDeterministicEngine(params: {
     ethericAuraBiofieldResult,
     sajuClassicYongshinResult,
     tarotTreeOfLifeShadowResult,
+    hellenisticLotsResult,
+    iching384YaoResult,
     tools: toolsMap,
   };
 }
@@ -1415,6 +1441,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'instantDecision',
     'honggukQimen',
     'ikigaiDestinyCompass',
+    'hellenisticLots',
+    'iching384Yao',
   ],
   business_money: [
     'wealthPipeline',
@@ -1440,6 +1468,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   immediate_decision: [
     'instantDecision',
     'ichingMaster',
+    'iching384Yao',
     'liurenMaster',
     'synchronicityOmen',
     'quantumProbabilisticTimeline',
@@ -1627,5 +1656,7 @@ ${report.synchronicityOmenResult && shouldIncludeEngine('synchronicityOmen', opt
 ${report.solfeggioHarmonicResult && shouldIncludeEngine('solfeggioHarmonic', options) ? '\n' + formatSolfeggioHarmonicPrompt(report.solfeggioHarmonicResult) : ''}
 ${report.ethericAuraBiofieldResult && shouldIncludeEngine('ethericAuraBiofield', options) ? '\n' + formatEthericAuraBiofieldPrompt(report.ethericAuraBiofieldResult) : ''}
 ${report.sajuClassicYongshinResult && shouldIncludeEngine('sajuClassicYongshin', options) ? '\n' + formatSajuClassicYongshinPrompt(report.sajuClassicYongshinResult) : ''}
-${report.tarotTreeOfLifeShadowResult && shouldIncludeEngine('tarotTreeOfLifeShadow', options) ? '\n' + formatTarotTreeOfLifeShadowPrompt(report.tarotTreeOfLifeShadowResult) : ''}`;
+${report.tarotTreeOfLifeShadowResult && shouldIncludeEngine('tarotTreeOfLifeShadow', options) ? '\n' + formatTarotTreeOfLifeShadowPrompt(report.tarotTreeOfLifeShadowResult) : ''}
+${report.hellenisticLotsResult && shouldIncludeEngine('hellenisticLots', options) ? '\n' + formatHellenisticLotsPrompt(report.hellenisticLotsResult) : ''}
+${report.iching384YaoResult && shouldIncludeEngine('iching384Yao', options) ? '\n' + formatIching384YaoPrompt(report.iching384YaoResult) : ''}`;
 }
