@@ -23,6 +23,7 @@ import {
   getEnhancedLucyTarotAdvice,
 } from '@/lib/lucyTarotAdvice';
 import { playTTSInChunks, prepareNaturalSpeechText, stopTTS, useTTSState } from '@/utils/tts';
+import { TTSHighlightedText } from '@/components/common/TTSHighlightedText';
 
 export interface LucyTarotAdviceCardProps {
   cards?: any[] | null;
