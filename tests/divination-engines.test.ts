@@ -63,6 +63,9 @@ import { calculateIching384Yao, formatIching384YaoPrompt, ICHING_384YAO_ENGINE_V
 import { calculateSajuTwelveStagesTomb, formatSajuTwelveStagesTombPrompt, SAJU_12STAGES_TOMB_VERSION } from '../src/lib/divination/sajuTwelveStagesTombUnlockEngine';
 import { calculateTarotElementalCourt, formatTarotElementalCourtPrompt, TAROT_ELEMENTAL_COURT_VERSION } from '../src/lib/divination/tarotElementalCourtPersonaEngine';
 import { calculateKarmicSynastry, formatKarmicSynastryPrompt, KARMIC_SYNASTRY_VERSION } from '../src/lib/divination/karmicSynastryResonanceEngine';
+import { calculateFiveEmotionsPulse, formatFiveEmotionsPulsePrompt, FIVE_EMOTIONS_PULSE_VERSION } from '../src/lib/divination/fiveEmotionsPulseEngine';
+import { calculateHermeticKybalion, formatHermeticKybalionPrompt, HERMETIC_KYBALION_VERSION } from '../src/lib/divination/hermeticKybalionEngine';
+import { calculateVibrationalSoulQuest, formatVibrationalSoulQuestPrompt, VIBRATIONAL_SOUL_QUEST_VERSION } from '../src/lib/divination/vibrationalSoulQuestEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2448,4 +2451,37 @@ test('Karmic Synastry Resonance Engine: calculates interpersonal bond score and 
   const prompt = formatKarmicSynastryPrompt(rep);
   assert(prompt.includes('카르믹 시나스트리'));
   assert(prompt.includes(rep.relationshipArchetype));
+});
+
+test('Five Emotions Pulse Engine: calculates five elements emotional harmony and prescriptions', () => {
+  const rep = calculateFiveEmotionsPulse(profile);
+  assert.equal(rep.engineVersion, FIVE_EMOTIONS_PULSE_VERSION);
+  assert(rep.emotionPulses.length === 5);
+  assert(rep.harmonyScore >= 0 && rep.harmonyScore <= 100);
+  assert(rep.vulnerableOrgan.length > 0);
+  const prompt = formatFiveEmotionsPulsePrompt(rep);
+  assert(prompt.includes('오행 칠정'));
+  assert(prompt.includes(rep.dominantEmotion));
+});
+
+test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', () => {
+  const rep = calculateHermeticKybalion(profile);
+  assert.equal(rep.engineVersion, HERMETIC_KYBALION_VERSION);
+  assert(rep.cosmicPrinciples.length === 7);
+  assert(rep.vibrationFrequencyLevel >= 100);
+  assert(rep.masterPrinciple.nameKo.length > 0);
+  const prompt = formatHermeticKybalionPrompt(rep);
+  assert(prompt.includes('헤르메스 카이발리온'));
+  assert(prompt.includes(rep.masterPrinciple.nameKo));
+});
+
+test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal year quest', () => {
+  const rep = calculateVibrationalSoulQuest(profile);
+  assert.equal(rep.engineVersion, VIBRATIONAL_SOUL_QUEST_VERSION);
+  assert(rep.soulNumbers.lifePathNumber >= 1);
+  assert(rep.soulNumbers.personalYear >= 1 && rep.soulNumbers.personalYear <= 9);
+  assert(rep.questArchetype.length > 0);
+  const prompt = formatVibrationalSoulQuestPrompt(rep);
+  assert(prompt.includes('고대 수비학 차크라 솔 울림'));
+  assert(prompt.includes(rep.questArchetype));
 });
