@@ -110,3 +110,12 @@ console.log('--- after (card grounded, no usable body) ---');
 fromCard.forEach((row, i) => console.log(`0${i + 1}`, row));
 
 console.log('Tarot summaries: career/love/money, short answers, body grounding, duplicate filtering, verdict preservation, and hollow-line repair passed.');
+
+const currentEnergy = extractConciseSummary(`[핵심 3줄 요약]
+- [현재 에너지] 이직은 새로운 기회가 될 것입니다.
+- [방향과 결단] 이직은 조건을 비교한 뒤 결정하세요.
+- [실천 행동] 채용 공고의 업무 범위를 확인하세요.
+### 1. 현재 상황
+지금은 이직을 준비해야 합니다.
+이직하고 싶지만 새 직장의 업무 범위가 불분명해 망설이고 있습니다.`, { theme: 'career', concern: '이직할까요?' });
+assert.match(currentEnergy[0], /업무 범위가 불분명해 망설이고 있습니다/);

@@ -206,6 +206,7 @@ function classifySummarySentence(sentence: string, role: SummaryRole): 'good' | 
   if (s.length < 8) return 'skip';
   if (GENERIC_SUMMARY.test(s) || isPictureOnly(s)) return 'skip';
   if (isCautionTeaser(s) || isDanglingAction(s)) return 'skip';
+  if (role === 'energy' && /(?:하세요|보세요|십시오|마세요|해야\s*합니다|할\s*때입니다|될\s*것입니다|할\s*것입니다|전환점에\s*서\s*있습니다)\s*[.!?]?$/u.test(s)) return 'skip';
   if (role === 'action' && !hasConcreteAction(s)) return 'skip';
   return 'good';
 }
@@ -469,7 +470,7 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
 
   // Priority 2: Structured section parsing (Section 1: 현재 에너지 / Section 3: 결단 및 방향성 / Section 4: 실천 처방)
   const sections = text.split(/(?=^###\s+)/m);
-  let secCurrent = '';
+  let secCurrent: string[] = [];
   let secDecision = '';
   let secAction = '';
 
@@ -479,7 +480,7 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
 
     // Section 1 / 2: 마음과 현재 에너지, 카드 상징
     if (
-      !secCurrent &&
+      !secCurrent.length &&
       (headerLine.includes('1.') ||
         headerLine.includes('마음') ||
         headerLine.includes('현재') ||
@@ -492,10 +493,7 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
         .map(stripGreetingFromText)
         .filter((s) => s.length >= 15 && !isGreetingOrMeta(s));
 
-      const scored = sentences.find((s) =>
-        /현재|에너지|상황|마음|갈림길|파동|상징|지금|내면|모습/.test(s)
-      );
-      secCurrent = scored || sentences[0] || '';
+      secCurrent = sentences;
     }
 
     // Section 3: 트리니티 마스터의 직관적 결단 & 방향성
@@ -622,7 +620,7 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
     return chosen;
   };
   const subject = concern ? `「${concern.length > 80 ? concern.slice(0, 80) + '…' : concern}」` : '질문한 주제';
-  const current = pick([p1Current], [secCurrent], 'energy', /현재|상황|지금|상태|원인|마음|에너지|부담|준비/)
+  const current = pick([p1Current], secCurrent, 'energy', /현재|상황|지금|상태|원인|마음|에너지|부담|준비/)
     || salvageRoleText(grounded.energy, 'energy')
     || `${subject}에 관한 구체적인 상황 진단이 리딩에 충분히 제시되지 않았습니다.`;
   const decision = pick([p1Decision], [secDecision], 'decision', /최종|판정|YES|NO|선택|결단|방향|가능|주의|위험|비교|확인|나아가|한\s*걸음/i)
