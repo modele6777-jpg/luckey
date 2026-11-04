@@ -273,14 +273,13 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const [isFinishing, setIsFinishing] = useState(false);
   const [shuffleStatus, setShuffleStatus] = useState<'shuffling' | 'done' | null>(null);
   const reduceMotion = useReducedMotion();
+  const shufflePointerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!shuffleStatus) return;
-    const timer = window.setTimeout(() => {
-      setShuffleStatus(shuffleStatus === 'shuffling' ? 'done' : null);
-    }, shuffleStatus === 'shuffling' ? (reduceMotion ? 350 : 1050) : 900);
+    if (shuffleStatus !== 'done') return;
+    const timer = window.setTimeout(() => setShuffleStatus(null), 900);
     return () => window.clearTimeout(timer);
-  }, [shuffleStatus, reduceMotion]);
+  }, [shuffleStatus]);
   const hasCompletedRef = useRef(false);
   const touchedCardIdRef = useRef<string | null>(null);
   const touchStartTimeRef = useRef<number>(0);
@@ -705,15 +704,32 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   };
 
   const handleShuffleDeck = () => {
-    if (shuffleStatus === 'shuffling' || activeWheelCards.length < 2) return;
-    playAudioHaptic('card_shuffle');
-    stopMomentum();
-    setShuffleStatus('shuffling');
+    if (activeWheelCards.length < 2) {
+      setShuffleStatus(null);
+      return;
+    }
+    setShuffleStatus('done');
     setDeck((prevDeck) => {
       const remaining = shuffleArray(prevDeck.filter((card) => !selectedIdSet.has(card.id)));
       let next = 0;
       return prevDeck.map((card) => selectedIdSet.has(card.id) ? card : remaining[next++]);
     });
+  };
+
+  const handleShufflePress = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (!event.isPrimary || event.button !== 0 || shufflePointerRef.current !== null || activeWheelCards.length < 2) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    shufflePointerRef.current = event.pointerId;
+    playAudioHaptic('card_shuffle');
+    stopMomentum();
+    setShuffleStatus('shuffling');
+  };
+
+  const endShufflePress = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (shufflePointerRef.current !== event.pointerId) return;
+    shufflePointerRef.current = null;
+    if (event.type === 'pointerup') handleShuffleDeck();
+    else setShuffleStatus(null);
   };
 
   const handleAutoPick = () => {
@@ -729,6 +745,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
   // High performance Pointer & Mobile Touch handling
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (shufflePointerRef.current !== null) return;
     if (isFinishing) return;
     stopMomentum();
     if (!containerRef.current) return;
@@ -1074,8 +1091,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                 aria-hidden="true"
                 className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_center,#21152bf2_0%,#090811d9_45%,transparent_75%)]"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 1, 1, 0] }}
-                transition={{ duration: 1.05, times: [0, 0.16, 0.8, 1] }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.16 }}
               >
                 <div className="relative h-32 w-20" style={{ perspective: 600 }}>
                   {Array.from({ length: 8 }, (_, index) => {
@@ -1097,6 +1114,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
                         }}
                         transition={{
                           duration: 0.94,
+                          repeat: Infinity,
                           delay: index * 0.013,
                           times: [0, 0.25, 0.46, 0.63, 0.82, 1],
                           ease: 'easeInOut',
@@ -1279,8 +1297,17 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
         <button
           type="button"
-          onClick={handleShuffleDeck}
-          disabled={shuffleStatus === 'shuffling' || activeWheelCards.length < 2}
+          onPointerDown={handleShufflePress}
+          onPointerUp={endShufflePress}
+          onPointerCancel={endShufflePress}
+          onLostPointerCapture={endShufflePress}
+          onClick={(event) => {
+            if (event.detail !== 0 || shufflePointerRef.current !== null) return;
+            playAudioHaptic('card_shuffle');
+            stopMomentum();
+            handleShuffleDeck();
+          }}
+          disabled={activeWheelCards.length < 2}
           className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/40 hover:border-yellow-400 text-yellow-200 text-xs font-bold flex items-center gap-1 sm:gap-1.5 active:scale-95 transition-transform cursor-pointer shrink"
           title={`현재 남은 ${activeWheelCards.length}장의 덱을 셔플합니다 (이미 뽑은 카드는 덱에 다시 들어가지 않습니다)`}
         >
@@ -1291,7 +1318,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
         <button
           type="button"
           onClick={handleAutoPick}
-          disabled={selectedEntries.length >= maxCards}
+          disabled={shuffleStatus === 'shuffling' || selectedEntries.length >= maxCards}
           className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-yellow-500 text-zinc-950 font-bold text-xs flex items-center gap-1 sm:gap-1.5 hover:bg-yellow-400 active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none cursor-pointer shrink-0"
         >
           <Sparkles size={13} />
