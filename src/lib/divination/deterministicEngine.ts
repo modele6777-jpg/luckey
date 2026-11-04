@@ -100,6 +100,9 @@ import { calculateKarmicSynastry, formatKarmicSynastryPrompt, type KarmicSynastr
 import { calculateFiveEmotionsPulse, formatFiveEmotionsPulsePrompt, type FiveEmotionsPulseReport, FIVE_EMOTIONS_PULSE_VERSION } from './fiveEmotionsPulseEngine';
 import { calculateHermeticKybalion, formatHermeticKybalionPrompt, type HermeticKybalionReport, HERMETIC_KYBALION_VERSION } from './hermeticKybalionEngine';
 import { calculateVibrationalSoulQuest, formatVibrationalSoulQuestPrompt, type SoulQuestReport, VIBRATIONAL_SOUL_QUEST_VERSION } from './vibrationalSoulQuestEngine';
+import { calculateAlchemicalTransmutation, formatAlchemicalTransmutationPrompt, type AlchemicalTransmutationReport, ALCHEMICAL_TRANSMUTATION_VERSION } from './alchemicalTransmutationEngine';
+import { calculateZiweiHuaJiTransformation, formatZiweiHuaJiTransformationPrompt, type ZiweiHuaJiReport, ZIWEI_HUAJI_VERSION } from './ziweiHuaJiTransformationEngine';
+import { calculateCelticTreeOgham, formatCelticTreeOghamPrompt, type CelticTreeOghamReport, CELTIC_OGHAM_VERSION } from './celticTreeOghamEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -220,6 +223,9 @@ export interface DeterministicEngineReport {
   fiveEmotionsPulseResult?: FiveEmotionsPulseReport | null;
   hermeticKybalionResult?: HermeticKybalionReport | null;
   vibrationalSoulQuestResult?: SoulQuestReport | null;
+  alchemicalTransmutationResult?: AlchemicalTransmutationReport | null;
+  ziweiHuaJiResult?: ZiweiHuaJiReport | null;
+  celticTreeOghamResult?: CelticTreeOghamReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1386,6 +1392,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 72. 서양 정통 연금술 7단계 영혼 변환 & 심리적 승화 엔진
+  const alchemicalTransmutationResult = (() => {
+    try {
+      return calculateAlchemicalTransmutation(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 73. 도교 자미두수 화기(化忌)·살성 정화 & 전화위복 해원 엔진
+  const ziweiHuaJiResult = (() => {
+    try {
+      return calculateZiweiHuaJiTransformation(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 74. 고대 켈트 오검(Ogham) 수목 신성 지혜 & 수호목 오라클 엔진
+  const celticTreeOghamResult = (() => {
+    try {
+      return calculateCelticTreeOgham(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1492,6 +1525,9 @@ export function runDeterministicEngine(params: {
     fiveEmotionsPulseResult,
     hermeticKybalionResult,
     vibrationalSoulQuestResult,
+    alchemicalTransmutationResult,
+    ziweiHuaJiResult,
+    celticTreeOghamResult,
     tools: toolsMap,
   };
 }
@@ -1743,5 +1779,8 @@ ${report.tarotElementalCourtResult && shouldIncludeEngine('tarotElementalCourt',
 ${report.karmicSynastryResult && shouldIncludeEngine('karmicSynastry', options) ? '\n' + formatKarmicSynastryPrompt(report.karmicSynastryResult) : ''}
 ${report.fiveEmotionsPulseResult && shouldIncludeEngine('fiveEmotionsPulse', options) ? '\n' + formatFiveEmotionsPulsePrompt(report.fiveEmotionsPulseResult) : ''}
 ${report.hermeticKybalionResult && shouldIncludeEngine('hermeticKybalion', options) ? '\n' + formatHermeticKybalionPrompt(report.hermeticKybalionResult) : ''}
-${report.vibrationalSoulQuestResult && shouldIncludeEngine('vibrationalSoulQuest', options) ? '\n' + formatVibrationalSoulQuestPrompt(report.vibrationalSoulQuestResult) : ''}`;
+${report.vibrationalSoulQuestResult && shouldIncludeEngine('vibrationalSoulQuest', options) ? '\n' + formatVibrationalSoulQuestPrompt(report.vibrationalSoulQuestResult) : ''}
+${report.alchemicalTransmutationResult && shouldIncludeEngine('alchemicalTransmutation', options) ? '\n' + formatAlchemicalTransmutationPrompt(report.alchemicalTransmutationResult) : ''}
+${report.ziweiHuaJiResult && shouldIncludeEngine('ziweiHuaJi', options) ? '\n' + formatZiweiHuaJiTransformationPrompt(report.ziweiHuaJiResult) : ''}
+${report.celticTreeOghamResult && shouldIncludeEngine('celticTreeOgham', options) ? '\n' + formatCelticTreeOghamPrompt(report.celticTreeOghamResult) : ''}`;
 }

@@ -1855,80 +1855,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
   }, [lucyMessages.length]);
 
-  // 🌸 매일 '처음' 루시채팅 진입 시에만 루시의 인사말 TTS 자동 재생 및 브라우저 Autoplay 언락 브릿지
+  // 🌸 사용자 요청: 루시 및 루시프로 진입 시 인사말 자동 TTS 낭독 비활성화 (수동 스피커 탭 시에만 재생)
   useEffect(() => {
-    if (!isLucyReady || !isAutoTtsRef.current) return;
-    if (!isFirstVisitTodayRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday(chatScope)) return;
-    if (lucyMessages.length === 0) return;
-
-    // 대화 내역 중 실제 사용자 발화가 있는지 확인 (사용자 발화가 하나도 없다면 환영/인사말 상태)
-    const hasUser = lucyMessages.some((m) => m.role === 'user' && !!m.content);
-    const firstMsg = lucyMessages[0];
-    if (typeof firstMsg.content !== 'string' || !firstMsg.content.trim()) return;
-    const isGreetingMsg = !hasUser && firstMsg.role !== 'user' && isGreetingMessage(firstMsg);
-
-    if (!isGreetingMsg) return;
-
-    const greetingId = String(firstMsg.id || 0);
-    const joinedGreeting = joinKakaoBubblesForTTS(firstMsg.content, 4) || firstMsg.content;
-    const cleanGreeting = normalizeTextForSpeech(joinedGreeting);
-    if (!cleanGreeting) return;
-
-    // 인사말 청크들을 즉시 사전 프리페치
-    prefetchTTSChunks(cleanGreeting, 'Aoede');
-
-    let isDisposed = false;
-
-    const playGreetingAudio = async () => {
-      if (isDisposed || !isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday(chatScope)) return;
-      try {
-        unlockAudioPlayback();
-        primeTTSAudioElement();
-        setPlayingMsgId(greetingId);
-        hasGreetingSpokenRef.current = true;
-        markDailyGreetingSpokenToday(chatScope);
-        setIsGreetingPendingTap(false);
-        await playTTSInChunks(cleanGreeting, 'Aoede', 110, undefined, undefined, {
-          skipCompletionChime: true,
-          isChatMode: true,
-          isAutoPlay: true,
-        });
-      } catch (err: any) {
-        console.warn('[Greeting-TTS] Autoplay blocked or interrupted:', err);
-        hasGreetingSpokenRef.current = false;
-        setIsGreetingPendingTap(true);
-      } finally {
-        if (!isDisposed && !manualTtsActiveRef.current) {
-          setPlayingMsgId(null);
-        }
-      }
-    };
-
-    // 1차: 진입 즉시 재생 시도 (인앱 네비게이션 또는 브라우저 권한 허용 환경)
-    playGreetingAudio();
-
-    // 2차: 브라우저 차단 시 사용자의 첫 화면 터치/클릭 즉시 언락 & 인사말 재생 (단, 자동읽기 토글 버튼 클릭 시에는 제외)
-    const handleFirstUserInteraction = (ev?: Event) => {
-      const targetEl = ev?.target as HTMLElement | null;
-      if (targetEl?.closest?.('[data-auto-tts-toggle="true"]')) {
-        hasGreetingSpokenRef.current = true;
-        return;
-      }
-      if (!isAutoTtsRef.current || hasGreetingSpokenRef.current || hasSpokenDailyGreetingToday(chatScope)) return;
-      unlockAudioPlayback();
-      primeTTSAudioElement();
-      playGreetingAudio();
-    };
-
-    window.addEventListener('pointerdown', handleFirstUserInteraction, { once: true, passive: true });
-    window.addEventListener('keydown', handleFirstUserInteraction, { once: true, passive: true });
-
-    return () => {
-      isDisposed = true;
-      window.removeEventListener('pointerdown', handleFirstUserInteraction);
-      window.removeEventListener('keydown', handleFirstUserInteraction);
-    };
-  }, [isLucyReady, lucyMessages]);
+    hasGreetingSpokenRef.current = true;
+  }, []);
 
   // 🔊 자동 음성 재생(Auto-TTS) 안전 백업 감시자: 새 어시스턴트 메시지 도착 시 바로재생 보장
   useEffect(() => {
@@ -1937,9 +1867,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     const lastMsg = lucyMessages[lastMsgIndex];
     if (!lastMsg || lastMsg.role === 'user' || typeof lastMsg.content !== 'string' || !lastMsg.content.trim()) return;
 
-    // 만약 첫 인사말 메시지라면 최초 진입 인사말 전용 핸들러에서 다루므로 스킵
-    const isFirstGreetingOnly = lucyMessages.length === 1 && (lastMsg.id?.startsWith('greet') || !lucyMessages.some(m => m.role === 'user'));
-    if (isFirstGreetingOnly) return;
+    // 만약 사용자 발화가 아직 없는 환영/인사말 상태라면 자동 낭독하지 않음
+    const hasUser = lucyMessages.some((m) => m.role === 'user' && !!m.content);
+    if (!hasUser || lastMsg.id?.startsWith('greet') || isGreetingMessage(lastMsg)) return;
 
     // 방금 전송된 메시지이고 아직 음성 재생되지 않은 경우 바로 자동 재생
     const targetId = String(lastMsg.id || lastMsgIndex);
