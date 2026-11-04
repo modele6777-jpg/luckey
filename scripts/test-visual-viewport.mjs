@@ -226,6 +226,10 @@ const html = readFileSync('index.html', 'utf8');
 assert.match(html, /viewport-fit=cover/);
 assert.equal(html.includes('name="mobile-web-app-capable"'), false);
 assert.match(html, /name="apple-mobile-web-app-status-bar-style" content="black-translucent"/);
+const chatHtml = readFileSync('chat.html', 'utf8');
+assert.match(chatHtml, /viewport-fit=cover/);
+assert.match(chatHtml, /name="apple-mobile-web-app-status-bar-style" content="black-translucent"/);
+
 const manifest = readFileSync('public/manifest.json', 'utf8');
 assert.match(manifest, /"display": "standalone"/);
 
