@@ -2062,8 +2062,28 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     if (!messagesContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-    const isUp = distanceFromBottom > 220;
+    const isUp = distanceFromBottom > 40;
     isUserScrolledUpRef.current = isUp;
+  }, []);
+
+  // 🌟 PC 데스크톱 마우스 휠 및 트랙패드 스크롤 시 자동 스크롤과 충돌 없이 즉각 반응
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY < -2) {
+        // 위로 휠 스크롤 시 즉시 사용자 수동 조작 모드로 전환하여 하단 끌어당김 방지
+        isUserScrolledUpRef.current = true;
+      } else if (e.deltaY > 2) {
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        const dist = scrollHeight - (scrollTop + clientHeight);
+        if (dist <= 30) {
+          isUserScrolledUpRef.current = false;
+        }
+      }
+    };
+    container.addEventListener('wheel', onWheel, { passive: true });
+    return () => container.removeEventListener('wheel', onWheel);
   }, []);
 
   const scrollToBottom = useCallback((force = false, smooth = true) => {

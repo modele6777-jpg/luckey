@@ -249,6 +249,7 @@ export function runDeterministicEngine(params: {
   const nowUtcIso = now.toISOString();
 
   const profile = params.profile;
+  const partnerProfile = params.partnerProfile;
   const basic = profile?.basic;
   const birthdateStr = basic?.birthdate?.trim() || '';
   const birthtimeStr = basic?.birthtime?.trim() || '';
