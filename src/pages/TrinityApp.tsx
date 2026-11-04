@@ -3173,6 +3173,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     }
   };
 
+  const rulingCard: TarotCard | null = dailyResult?.drawnCard || dailyDrawnCard;
+
   return (
     <div className="h-app-full w-full flex flex-col relative overflow-hidden font-sans bg-transparent">
 
@@ -3402,49 +3404,68 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   </div>
                                 </div>
                               </motion.div>
-                            ) : (dailyResult?.drawnCard || dailyDrawnCard) ? (
-                              <div className="duo-workspace-actions rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-inner text-left">
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="w-9 h-9 rounded-xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-yellow-300 shrink-0 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-                                    <Sparkles size={16} className="animate-pulse" />
-                                  </div>
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400">
-                                        오늘의 지배 카드 (Cosmic Anchor)
-                                      </span>
-                                      <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                                        ✓ 배경 에너지 연동 활성화
-                                      </span>
+                            ) : rulingCard ? (
+                              <>
+                                <div className="duo-workspace-actions rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-inner text-left">
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-9 h-9 rounded-xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-yellow-300 shrink-0 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+                                      <Sparkles size={16} className="animate-pulse" />
                                     </div>
-                                    <p className="text-xs text-white/90 font-medium break-keep break-words mt-0.5">
-                                      ✨ {(dailyResult?.drawnCard || dailyDrawnCard)?.nameKo} ({(dailyResult?.drawnCard || dailyDrawnCard)?.name}) {(dailyResult?.drawnCard || dailyDrawnCard)?.reversed ? "· 역방향" : "· 정방향"}
-                                    </p>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400">
+                                          오늘의 지배 카드 (Cosmic Anchor)
+                                        </span>
+                                        <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                          ✓ 배경 에너지 연동 활성화
+                                        </span>
+                                      </div>
+                                      <p className="text-xs text-white/90 font-medium break-keep break-words mt-0.5">
+                                        ✨ {rulingCard.nameKo} ({rulingCard.name}) {rulingCard.reversed ? "· 역방향" : "· 정방향"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        restoreTodayDailyResult();
+                                        const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
+                                        if (targetCard) {
+                                          setTarotConcern("오늘의 타로");
+                                          setDrawnCards([targetCard]);
+                                          setTarotResult(dailyResult?.diagnosis || dailyResult?.summary || "");
+                                          setHideTarotPopup(false);
+                                        } else {
+                                          setShowDailyModal(true);
+                                        }
+                                      }}
+                                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500/25 to-amber-500/20 hover:from-yellow-500/35 hover:to-amber-500/30 border border-yellow-400/40 text-[11px] text-yellow-200 font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                                      title="오늘의 타로 결과 및 음성 낭독 보기"
+                                    >
+                                      <Sparkles size={12} className="text-yellow-400" />
+                                      <span>오늘의 타로 결과 보기</span>
+                                    </button>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      restoreTodayDailyResult();
-                                      const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
-                                      if (targetCard) {
-                                        setTarotConcern("오늘의 타로");
-                                        setDrawnCards([targetCard]);
-                                        setTarotResult(dailyResult?.diagnosis || dailyResult?.summary || "");
-                                        setHideTarotPopup(false);
-                                      } else {
-                                        setShowDailyModal(true);
-                                      }
-                                    }}
-                                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500/25 to-amber-500/20 hover:from-yellow-500/35 hover:to-amber-500/30 border border-yellow-400/40 text-[11px] text-yellow-200 font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
-                                    title="오늘의 타로 결과 및 음성 낭독 보기"
-                                  >
-                                    <Sparkles size={12} className="text-yellow-400" />
-                                    <span>오늘의 타로 결과 보기</span>
-                                  </button>
-                                </div>
-                              </div>
+                                <figure className="flex items-center gap-4 rounded-2xl border border-yellow-500/20 bg-black/20 p-3.5 sm:p-4 text-left">
+                                  <img
+                                    src={getTarotCardImageUrl(rulingCard)}
+                                    alt={rulingCard.nameKo + " 타로 카드"}
+                                    loading="lazy"
+                                    className={"w-16 sm:w-20 aspect-[2/3] shrink-0 rounded-lg object-contain " + (rulingCard.reversed ? "rotate-180" : "")}
+                                  />
+                                  <figcaption className="min-w-0 space-y-1">
+                                    <span className="text-xs font-bold text-yellow-300">카드의 의미</span>
+                                    <p className="text-sm leading-relaxed text-zinc-200">
+                                      {getEffectiveTarotKeywords(rulingCard).slice(0, 3).join(" · ")}
+                                    </p>
+                                    {rulingCard.reversed && (
+                                      <p className="text-xs leading-relaxed text-zinc-300">{getTarotCardCaution(rulingCard)}</p>
+                                    )}
+                                  </figcaption>
+                                </figure>
+                              </>
                             ) : null}
                             </div>
 
