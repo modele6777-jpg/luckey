@@ -10,6 +10,8 @@ import {
   resolveAppleMusicClassicalEmbedUrl,
 } from '@/components/muse/MuseSongAppleMusicPlayer';
 import { COSMIC_MORNING_AFFIRMATIONS } from '@/data/cosmicMorningAffirmations';
+import { TarotCardBackFace } from '@/components/trinity/TarotCardBackFace';
+import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 
 type RoutineStepId = 'fortune' | 'art' | 'affirm';
 
@@ -100,10 +102,24 @@ export function DailyCosmicRoutineCard() {
   const [openStep, setOpenStep] = useState<RoutineStepId | null>(null);
   const allDone = done.length >= STEPS.length;
 
+  const { cardBackId } = useTarotCardBack();
+  const [isFortuneFlipped, setIsFortuneFlipped] = useState(false);
+  const [isCardHovered, setIsCardHovered] = useState(false);
+
+  const handleCardFlip = useCallback(() => {
+    setIsFortuneFlipped((prev) => {
+      const next = !prev;
+      if (next) {
+        markDone('fortune');
+      }
+      return next;
+    });
+  }, [markDone]);
+
   const toggleStep = (id: RoutineStepId) => {
     const next = openStep === id ? null : id;
     setOpenStep(next);
-    if (next) markDone(id);
+    if (next && id !== 'fortune') markDone(id);
   };
 
   // 이미지 로드 실패(오프라인 등) 시 그라디언트 폴백
@@ -114,39 +130,140 @@ export function DailyCosmicRoutineCard() {
   const stepPanel = (id: RoutineStepId) => {
     if (id === 'fortune') {
       return (
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch">
-          <div className="relative w-24 h-40 sm:w-28 sm:h-44 mx-auto sm:mx-0 shrink-0 rounded-2xl overflow-hidden border border-amber-300/25 bg-gradient-to-b from-amber-500/15 to-indigo-950/40 shadow-[0_0_24px_rgba(245,158,11,0.15)]">
-            {!cardImageFailed && fortune.imageUrl ? (
-              <img
-                key={imageRetryTick}
-                src={fortune.imageUrl}
-                alt={fortune.card.nameKo}
-                className="w-full h-full object-cover"
-                onError={() => setCardImageFailed(true)}
-                loading="lazy"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Sparkles size={28} className="text-amber-300/80" />
-              </div>
-            )}
+        <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-stretch">
+          {/* 🌟 3D 뒤집기 카드 (처음에는 뒷면만 노출, 탭 시 3D 회전하며 앞면 공개) */}
+          <div className="flex flex-col items-center shrink-0">
+            <div
+              style={{ perspective: 1000 }}
+              className="relative w-28 h-44 sm:w-32 sm:h-52 cursor-pointer select-none"
+              onClick={handleCardFlip}
+              onMouseEnter={() => setIsCardHovered(true)}
+              onMouseLeave={() => setIsCardHovered(false)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCardFlip();
+                }
+              }}
+              title={isFortuneFlipped ? '카드를 다시 덮으려면 터치하세요' : '터치하여 오늘의 운세 카드를 뒤집으세요'}
+            >
+              <motion.div
+                animate={{ rotateY: isFortuneFlipped ? 180 : 0 }}
+                transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  transformStyle: 'preserve-3d',
+                  WebkitTransformStyle: 'preserve-3d',
+                }}
+                className="w-full h-full relative rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.45)] hover:shadow-[0_0_25px_rgba(245,158,11,0.35)] transition-shadow duration-300"
+              >
+                {/* ── CARD BACK (처음 노출되는 뒷면, rotateY: 0deg) ── */}
+                <div
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'rotateY(0deg)',
+                  }}
+                  className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden border border-amber-400/30 bg-zinc-950"
+                >
+                  <TarotCardBackFace cardBackId={cardBackId} isHovered={isCardHovered} size="md" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+                </div>
+
+                {/* ── CARD FRONT (뒤집혔을 때 노출되는 앞면, rotateY: 180deg) ── */}
+                <div
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)',
+                  }}
+                  className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden border border-amber-300/35 bg-gradient-to-b from-amber-500/15 to-indigo-950/40 shadow-[0_0_24px_rgba(245,158,11,0.2)]"
+                >
+                  {!cardImageFailed && fortune.imageUrl ? (
+                    <img
+                      key={imageRetryTick}
+                      src={fortune.imageUrl}
+                      alt={fortune.card.nameKo}
+                      className={`w-full h-full object-cover ${fortune.card.reversed ? 'rotate-180' : ''}`}
+                      onError={() => setCardImageFailed(true)}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Sparkles size={28} className="text-amber-300/80" />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* 카드 탭 안내 힌트 */}
+            <button
+              type="button"
+              onClick={handleCardFlip}
+              className="mt-2 text-[11px] font-medium text-amber-300/80 hover:text-amber-200 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Sparkles size={11} className={isFortuneFlipped ? '' : 'animate-spin'} />
+              {isFortuneFlipped ? '다시 덮기' : '탭하여 카드 뒤집기 👆'}
+            </button>
           </div>
-          <div className="flex-1 min-w-0 space-y-2.5 text-left">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-base font-extrabold text-amber-200 tracking-wide">{fortune.card.nameKo}</span>
-              <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider">{fortune.card.name}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${fortune.card.reversed ? 'text-rose-300 border-rose-400/30 bg-rose-500/10' : 'text-emerald-300 border-emerald-400/30 bg-emerald-500/10'}`}>
-                {fortune.card.reversed ? '역방향' : '정방향'}
-              </span>
-            </div>
-            <p className="text-[11px] font-semibold text-indigo-300/90">{fortune.keywords}</p>
-            <p className="text-[13px] leading-relaxed text-white/85 font-medium break-keep">{fortune.meaning}</p>
-            <div className="rounded-xl bg-amber-500/10 border border-amber-400/20 px-3 py-2">
-              <p className="text-[12px] leading-relaxed text-amber-200/95 font-medium break-keep">
-                <Sun size={11} className="inline mr-1 -mt-0.5 text-amber-400" />
-                {fortune.action}
-              </p>
-            </div>
+
+          {/* ── 운세 설명 영역 ── */}
+          <div className="flex-1 min-w-0 flex flex-col justify-center text-left">
+            {!isFortuneFlipped ? (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-3 py-1"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30 tracking-wider">
+                    STEP 1 · CARD REVEAL
+                  </span>
+                </div>
+                <h4 className="text-base sm:text-lg font-bold text-white tracking-tight break-keep">
+                  오늘 하루를 인도할 코스믹 카드가 도착했습니다 ✨
+                </h4>
+                <p className="text-[12px] leading-relaxed text-white/65 break-keep">
+                  카드를 직접 터치해 뒤집어 보세요. 오늘 당신의 의식과 공명하는 데일리 타로의 핵심 키워드와 행운의 행동 지침이 공개됩니다.
+                </p>
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleCardFlip}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/25 to-yellow-500/20 border border-amber-400/40 text-amber-200 text-[12px] font-bold hover:bg-amber-500/35 active:scale-95 transition-all shadow-[0_0_16px_rgba(245,158,11,0.2)] cursor-pointer"
+                  >
+                    <Sparkles size={13} className="text-amber-300" />
+                    카드 뒤집어서 확인하기 ↗
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-2.5"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-base sm:text-lg font-extrabold text-amber-200 tracking-wide">{fortune.card.nameKo}</span>
+                  <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider">{fortune.card.name}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${fortune.card.reversed ? 'text-rose-300 border-rose-400/30 bg-rose-500/10' : 'text-emerald-300 border-emerald-400/30 bg-emerald-500/10'}`}>
+                    {fortune.card.reversed ? '역방향' : '정방향'}
+                  </span>
+                </div>
+                <p className="text-[11px] font-semibold text-indigo-300/90">{fortune.keywords}</p>
+                <p className="text-[13px] leading-relaxed text-white/85 font-medium break-keep">{fortune.meaning}</p>
+                <div className="rounded-xl bg-amber-500/10 border border-amber-400/20 px-3 py-2">
+                  <p className="text-[12px] leading-relaxed text-amber-200/95 font-medium break-keep">
+                    <Sun size={11} className="inline mr-1 -mt-0.5 text-amber-400" />
+                    {fortune.action}
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
       );
@@ -342,6 +459,7 @@ export function DailyCosmicRoutineCard() {
             onClick={() => {
               setDone([]);
               setOpenStep(null);
+              setIsFortuneFlipped(false);
               setImageRetryTick((t) => t + 1);
             }}
             className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/40 hover:text-white/70 transition-colors cursor-pointer"
