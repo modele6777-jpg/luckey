@@ -383,6 +383,11 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  .prism-app-shell.in-lucy-chat {
+    min-height: 0;
+    max-height: 100dvh;
+  }
+
   /* 키보드가 열리면 #root를 레이아웃 맨 위(top:0)에 두면
      iOS 패닝(offsetTop)만큼 화면이 한 번 더 위로 밀린다.
      --vv-top은 visualViewport.offsetTop이다. */
@@ -583,27 +588,6 @@
     }
   }
 
-  /* 🌟 PC 데스크톱 및 대화창(in-lucy-chat) 환경에서 중앙 채팅란/추천질문 칩을 가리지 않도록 FAB 위치 및 여백 보정 */
-  @media (min-width: 768px) {
-    .in-lucy-chat .bottom-safe-fab-center,
-    body.in-lucy-chat .bottom-safe-fab-center,
-    html.in-lucy-chat .bottom-safe-fab-center {
-      left: auto !important;
-      right: max(var(--sar, 0px), 1.5rem) !important;
-      bottom: max(var(--sab, 0px), 1.25rem) !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
-      transform: none !important;
-      width: 64px !important;
-      height: 64px !important;
-    }
-    .in-lucy-chat .bottom-safe-fab-center > div,
-    body.in-lucy-chat .bottom-safe-fab-center > div,
-    html.in-lucy-chat .bottom-safe-fab-center > div {
-      width: 64px !important;
-      height: 64px !important;
-    }
-  }
   /* 🛡️ 가상 키보드 전개 시 FAB 버튼 완전 은닉 */
   html.keyboard-open .bottom-safe-fab-center,
   body.keyboard-open .bottom-safe-fab-center,
