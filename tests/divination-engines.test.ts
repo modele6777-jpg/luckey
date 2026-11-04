@@ -2424,7 +2424,7 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
   assert(rep.pillarsVitality.length === 4);
   assert(rep.peakVitalityStage.length > 0);
   const prompt = formatSajuTwelveStagesTombPrompt(rep);
-  assert(prompt.includes(peakVitalityStage => peakVitalityStage.length > 0) || prompt.includes('사주 12운성'));
+  assert(prompt.includes(rep.peakVitalityStage) || prompt.includes('사주 12운성'));
   assert(prompt.includes('2026 병오년'));
 });
 

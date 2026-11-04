@@ -1346,7 +1346,7 @@ export function runDeterministicEngine(params: {
   // 68. 카르믹 시나스트리 & 인연 성간 공명 엔진
   const karmicSynastryResult = (() => {
     try {
-      return calculateKarmicSynastry(profile, secondaryProfile, question);
+      return calculateKarmicSynastry(profile, partnerProfile, question);
     } catch (_) {
       return null;
     }
