@@ -11,7 +11,7 @@ function measureViewport() {
     const style = getComputedStyle(element);
     return {
       left: round(bounds.left), right: round(bounds.right), width: round(bounds.width),
-      height: round(bounds.height), paddingRight: style.paddingRight,
+      top: round(bounds.top), bottom: round(bounds.bottom), height: round(bounds.height), paddingRight: style.paddingRight,
       backgroundColor: style.backgroundColor, transform: style.transform,
     };
   };
@@ -33,7 +33,8 @@ function measureViewport() {
     viewport: { innerWidth, innerHeight, clientWidth: document.documentElement.clientWidth, clientHeight: document.documentElement.clientHeight },
     visualViewport: visual ? { width: round(visual.width), height: round(visual.height), offsetLeft: round(visual.offsetLeft), offsetTop: round(visual.offsetTop), scale: visual.scale } : null,
     safeArea,
-    elements: { root: rect('#root'), shell: rect('.prism-app-shell'), main: rect('.sites-pinned-main'), sidebar: rect('.sites-pinned-sidebar'), tarot: rect('.tarot-spread-stage-root') },
+    keyboardOpen: document.documentElement.classList.contains('keyboard-open'),
+    elements: { root: rect('#root'), shell: rect('.prism-app-shell'), main: rect('.sites-pinned-main'), footer: rect('.lucy-chat-footer'), sidebar: rect('.sites-pinned-sidebar'), tarot: rect('.tarot-spread-stage-root') },
     visualBox: {
       width: document.documentElement.style.getPropertyValue('--vvw').trim(),
       height: document.documentElement.style.getPropertyValue('--vvh').trim(),
@@ -69,14 +70,14 @@ export function ViewportDiagnostics({ onClose }: { onClose: () => void }) {
   };
   return (
     <WorkspacePortal onClose={onClose}>
-      <div className="fixed inset-0 flex items-center justify-center bg-black/85" style={{ borderRight: '4px solid #22d3ee' }}>
+      <div className="fixed inset-0 flex items-center justify-center bg-black/85" style={{ borderBottom: '4px solid #22d3ee' }}>
         <section role="dialog" aria-modal="true" aria-labelledby="viewport-diagnostics-title" className="w-full max-w-xl max-h-[90dvh] overflow-y-auto rounded-2xl border border-white/20 bg-slate-950 text-white p-4 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <h2 id="viewport-diagnostics-title" className="font-bold">화면 영역 진단</h2>
             <button type="button" onClick={onClose} className="px-3 py-2 rounded-lg border border-white/30">닫기</button>
           </div>
-          <p className="text-sm leading-relaxed">커버 화면과 내부 화면에서 각각 결과를 복사해 보내주세요. 접기·펼치기와 회전 시 값이 자동 갱신됩니다.</p>
-          <p className="text-sm leading-relaxed">오른쪽 파란 선이 시계 옆 검은 영역까지 닿는지도 확인해 주세요. 이 기능은 화면 정보만 읽으며 설정이나 저장 데이터를 변경하지 않습니다.</p>
+          <p className="text-sm leading-relaxed">하단 여백이 보일 때 결과를 복사해 보내주세요. 회전 시 값이 자동 갱신됩니다.</p>
+          <p className="text-sm leading-relaxed">하단 파란 선 아래에도 검은 여백이 남는지 확인해 주세요. 이 기능은 화면 정보만 읽으며 설정이나 저장 데이터를 변경하지 않습니다.</p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={refresh} className="px-3 py-2 rounded-lg border border-white/30">다시 측정</button>
             <button type="button" onClick={copy} className="px-3 py-2 rounded-lg bg-cyan-700">결과 복사</button>

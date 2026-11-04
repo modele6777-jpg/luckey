@@ -1,3 +1,4 @@
+import { ViewportDiagnostics } from './ViewportDiagnostics';
 import { createPortal } from 'react-dom';
 import './sidebar-edge-hint.css';
 import './menu-refined.css';
@@ -190,6 +191,7 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showViewportDiagnostics, setShowViewportDiagnostics] = useState(false);
   const showSidebar = useCallback(() => setIsOpen(true), []);
   const hideSidebar = useCallback(() => setIsOpen(false), []);
 
@@ -540,6 +542,7 @@ export default function LeftSidebarNav() {
         <span className="sidebar-edge-hint-mist" />
         <span className="sidebar-edge-hint-line" />
       </div>}
+      {showViewportDiagnostics && <ViewportDiagnostics onClose={() => setShowViewportDiagnostics(false)} />}
       {/* 4. Sliding Sidebar Drawer */}
       <AnimatePresence>
         {isOpen && (
@@ -575,6 +578,7 @@ export default function LeftSidebarNav() {
                 {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
                 <div className="flex flex-col gap-1 w-full">
                   {CORE_CHANNELS.map(renderNavButton)}
+                  <button type="button" className="px-3 py-2 text-left text-xs" onClick={() => { hideSidebar(); setShowViewportDiagnostics(true); }}>화면 영역 진단</button>
                 </div>
 
                 {/* 7 Prism Channels: Accordion Toggled by 3rd LUCKEY Icon */}
