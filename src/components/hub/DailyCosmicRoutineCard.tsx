@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Sun, Palette, Quote, ChevronDown, Check, RefreshCw, Music, X } from 'lucide-react';
+import { Sparkles, Sun, Palette, Quote, ChevronDown, Check, Music, X } from 'lucide-react';
 import { pickDailySeededItem, getDateSeed, getTodayDateKey } from '@/lib/dailyCache';
 import { TAROT_DECK, getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import { getTarotCardDetails, getTarotLuckyAction } from '@/lib/dailyTarotOracle';
@@ -16,6 +16,14 @@ import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 type RoutineStepId = 'fortune' | 'art' | 'affirm';
 
 const DONE_STORAGE_KEY = 'cosmic_morning_routine_done';
+
+const YoutubeMusicIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="shrink-0">
+    <circle cx="12" cy="12" r="10" fill="#FF0000" />
+    <circle cx="12" cy="12" r="6" stroke="#FFFFFF" strokeWidth="1.5" />
+    <polygon points="10,8 16,12 10,16" fill="#FFFFFF" />
+  </svg>
+);
 
 function readTodayDone(): RoutineStepId[] {
   try {
@@ -81,7 +89,18 @@ export function DailyCosmicRoutineCard() {
       song?.appleMusicClassicalUrl?.trim() ||
       buildAppleMusicClassicalSearchUrl(song?.title || entry.title, song?.artistOriginal || song?.artist);
     const embedUrl = resolveAppleMusicClassicalEmbedUrl(musicUrl);
-    return { entry, song, musicUrl, embedUrl };
+    let ytMusicUrl = '';
+    if (song) {
+      if (song.youtubeVideoId) {
+        ytMusicUrl = `https://music.youtube.com/watch?v=${song.youtubeVideoId}`;
+      } else {
+        const query = [song.artistOriginal || song.artist, song.titleOriginal || song.title]
+          .filter(Boolean)
+          .join(' ');
+        ytMusicUrl = `https://music.youtube.com/search?q=${encodeURIComponent(query)}`;
+      }
+    }
+    return { entry, song, musicUrl, embedUrl, ytMusicUrl };
   }, []);
 
   const affirmation = useMemo(
@@ -297,17 +316,34 @@ export function DailyCosmicRoutineCard() {
             <p className="text-[13px] leading-relaxed text-white/85 font-medium break-keep line-clamp-3">{art.entry.description}</p>
             <p className="text-[11px] italic text-white/55 leading-relaxed break-keep">"{art.entry.quote}"</p>
             {art.song ? (
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <a
-                  href={art.embedUrl || art.musicUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 border border-rose-400/30 text-[11px] font-bold text-rose-200 hover:bg-rose-500/25 transition-colors cursor-pointer"
-                >
-                  <Music size={12} />
-                  {art.song.titleOriginal || art.song.title} · Apple Music Classical에서 재생 ↗
-                </a>
-                <span className="text-[10px] text-white/45">{art.song.artist}</span>
+              <div className="pt-2 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-white/70">
+                  <Music size={12} className="text-indigo-400" />
+                  <span>{art.song.titleOriginal || art.song.title} · {art.song.artist}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* 🔴 YouTube Music 연동 버튼 */}
+                  <a
+                    href={art.ytMusicUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 border border-red-500/40 text-[11px] font-bold text-red-200 hover:bg-red-600/30 transition-all cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.2)] active:scale-95"
+                  >
+                    <YoutubeMusicIcon size={12} />
+                    YouTube Music에서 듣기 ↗
+                  </a>
+
+                  {/* 🍎 Apple Music Classical 연동 버튼 */}
+                  <a
+                    href={art.embedUrl || art.musicUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 border border-rose-400/30 text-[11px] font-bold text-rose-200 hover:bg-rose-500/25 transition-all cursor-pointer active:scale-95"
+                  >
+                    <Music size={12} />
+                    Apple Music Classical ↗
+                  </a>
+                </div>
               </div>
             ) : null}
           </div>
@@ -454,19 +490,6 @@ export function DailyCosmicRoutineCard() {
           <span className="text-[10px] text-white/40 font-mono tracking-wider">
             {getTodayDateKey()} · {done.length}/3 COMPLETE
           </span>
-          <button
-            type="button"
-            onClick={() => {
-              setDone([]);
-              setOpenStep(null);
-              setIsFortuneFlipped(false);
-              setImageRetryTick((t) => t + 1);
-            }}
-            className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/40 hover:text-white/70 transition-colors cursor-pointer"
-          >
-            <RefreshCw size={10} />
-            루틴 초기화
-          </button>
         </div>
       </div>
     </motion.div>
