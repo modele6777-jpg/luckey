@@ -2269,3 +2269,37 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(SAJU_CLASSIC_YONGSHIN_VERSION));
   assert(enginePrompt.includes(TAROT_KABBALAH_SHADOW_VERSION));
 });
+
+test('Deterministic Engine: smart selective routing prunes prompt and focuses on intent engines', () => {
+  const profile = {
+    basic: { birthdate: '1990-05-15', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' }
+  };
+  const report = runDeterministicEngine({ profile, question: '그 사람 속마음과 우리 인연이 궁금해', forceAllTools: true });
+
+  // 1. 연애/인연 의도 selective prompt 테스트
+  const lovePrompt = formatDeterministicEnginePrompt(report, {
+    isMasterMobilization: false,
+    intent: 'relationship_love',
+    focusTools: ['saju', 'sukuyo', 'astrology']
+  });
+
+  assert(lovePrompt.includes('스마트 집중 모드 가동'));
+  assert(lovePrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
+  assert(lovePrompt.includes(TAROT_KABBALAH_SHADOW_VERSION));
+  // 연애 의도와 무관한 엔진은 선별 제외되어 프롬프트 비대화 방지
+  assert(!lovePrompt.includes(CONTRACT_SHIELD_VERSION));
+  assert(!lovePrompt.includes(WEALTH_PIPELINE_VERSION));
+  assert(!lovePrompt.includes(TAOIST_NEIDAN_VERSION));
+
+  // 2. 비즈니스/재물 의도 selective prompt 테스트
+  const businessPrompt = formatDeterministicEnginePrompt(report, {
+    isMasterMobilization: false,
+    intent: 'business_money',
+    focusTools: ['saju', 'ziwei', 'kyusei']
+  });
+  assert(businessPrompt.includes('스마트 집중 모드 가동'));
+  assert(businessPrompt.includes(WEALTH_PIPELINE_VERSION));
+  assert(businessPrompt.includes(SAJU_CLASSIC_YONGSHIN_VERSION));
+  assert(!businessPrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
+  assert(!businessPrompt.includes(SOMATIC_ARMORING_VERSION));
+});
