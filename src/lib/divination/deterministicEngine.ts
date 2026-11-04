@@ -97,6 +97,9 @@ import { calculateIching384Yao, formatIching384YaoPrompt, type Iching384YaoRepor
 import { calculateSajuTwelveStagesTomb, formatSajuTwelveStagesTombPrompt, type SajuTwelveStagesTombReport, SAJU_12STAGES_TOMB_VERSION } from './sajuTwelveStagesTombUnlockEngine';
 import { calculateTarotElementalCourt, formatTarotElementalCourtPrompt, type TarotElementalCourtReport, TAROT_ELEMENTAL_COURT_VERSION } from './tarotElementalCourtPersonaEngine';
 import { calculateKarmicSynastry, formatKarmicSynastryPrompt, type KarmicSynastryReport, KARMIC_SYNASTRY_VERSION } from './karmicSynastryResonanceEngine';
+import { calculateFiveEmotionsPulse, formatFiveEmotionsPulsePrompt, type FiveEmotionsPulseReport, FIVE_EMOTIONS_PULSE_VERSION } from './fiveEmotionsPulseEngine';
+import { calculateHermeticKybalion, formatHermeticKybalionPrompt, type HermeticKybalionReport, HERMETIC_KYBALION_VERSION } from './hermeticKybalionEngine';
+import { calculateVibrationalSoulQuest, formatVibrationalSoulQuestPrompt, type SoulQuestReport, VIBRATIONAL_SOUL_QUEST_VERSION } from './vibrationalSoulQuestEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -214,6 +217,9 @@ export interface DeterministicEngineReport {
   sajuTwelveStagesTombResult?: SajuTwelveStagesTombReport | null;
   tarotElementalCourtResult?: TarotElementalCourtReport | null;
   karmicSynastryResult?: KarmicSynastryReport | null;
+  fiveEmotionsPulseResult?: FiveEmotionsPulseReport | null;
+  hermeticKybalionResult?: HermeticKybalionReport | null;
+  vibrationalSoulQuestResult?: SoulQuestReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1353,6 +1359,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 69. 오행 칠정(七情) 심신 맥파 & 기혈 조화 엔진
+  const fiveEmotionsPulseResult = (() => {
+    try {
+      return calculateFiveEmotionsPulse(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 70. 헤르메스 카이발리온 7대 우주 불변 법칙 진동 엔진
+  const hermeticKybalionResult = (() => {
+    try {
+      return calculateHermeticKybalion(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 71. 고대 수비학 차크라 솔 울림 & 퍼스널 라이프 퀘스트 나침반 엔진
+  const vibrationalSoulQuestResult = (() => {
+    try {
+      return calculateVibrationalSoulQuest(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1456,6 +1489,9 @@ export function runDeterministicEngine(params: {
     sajuTwelveStagesTombResult,
     tarotElementalCourtResult,
     karmicSynastryResult,
+    fiveEmotionsPulseResult,
+    hermeticKybalionResult,
+    vibrationalSoulQuestResult,
     tools: toolsMap,
   };
 }
@@ -1704,5 +1740,8 @@ ${report.hellenisticLotsResult && shouldIncludeEngine('hellenisticLots', options
 ${report.iching384YaoResult && shouldIncludeEngine('iching384Yao', options) ? '\n' + formatIching384YaoPrompt(report.iching384YaoResult) : ''}
 ${report.sajuTwelveStagesTombResult && shouldIncludeEngine('sajuTwelveStagesTomb', options) ? '\n' + formatSajuTwelveStagesTombPrompt(report.sajuTwelveStagesTombResult) : ''}
 ${report.tarotElementalCourtResult && shouldIncludeEngine('tarotElementalCourt', options) ? '\n' + formatTarotElementalCourtPrompt(report.tarotElementalCourtResult) : ''}
-${report.karmicSynastryResult && shouldIncludeEngine('karmicSynastry', options) ? '\n' + formatKarmicSynastryPrompt(report.karmicSynastryResult) : ''}`;
+${report.karmicSynastryResult && shouldIncludeEngine('karmicSynastry', options) ? '\n' + formatKarmicSynastryPrompt(report.karmicSynastryResult) : ''}
+${report.fiveEmotionsPulseResult && shouldIncludeEngine('fiveEmotionsPulse', options) ? '\n' + formatFiveEmotionsPulsePrompt(report.fiveEmotionsPulseResult) : ''}
+${report.hermeticKybalionResult && shouldIncludeEngine('hermeticKybalion', options) ? '\n' + formatHermeticKybalionPrompt(report.hermeticKybalionResult) : ''}
+${report.vibrationalSoulQuestResult && shouldIncludeEngine('vibrationalSoulQuest', options) ? '\n' + formatVibrationalSoulQuestPrompt(report.vibrationalSoulQuestResult) : ''}`;
 }
