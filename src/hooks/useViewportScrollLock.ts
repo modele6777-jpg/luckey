@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { canUseKeyboardViewport, layoutOutgrewVisual, readViewportSnapshot } from '@/lib/visualViewportBox';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
@@ -12,14 +13,6 @@ import { useEffect } from 'react';
 export function useViewportScrollLock() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    // 가상 키보드가 실제로 올라와 있는지 판별 (updateAppViewportHeight의 hasKeyboard 판정과 동일 기준)
-    const hasKeyboardNow = (): boolean => {
-      const visual = window.visualViewport;
-      const innerH = window.innerHeight;
-      const visualH = visual ? visual.height : innerH;
-      return isInputActive() && visual != null && (innerH - visualH > 100);
-    };
 
     const lockWindowScroll = () => {
       // 🌟 가상 키보드 및 기기 회전/펼침 시 수평 오프셋(scrollX) 탈출 완벽 차단:
@@ -112,13 +105,14 @@ export function useViewportScrollLock() {
       const visualH = visual ? visual.height : innerH;
       const visualTop = visual ? Math.max(0, Math.round(visual.offsetTop)) : 0;
 
+      const snapshot = readViewportSnapshot(window);
+      const unfolding = layoutOutgrewVisual(snapshot);
       const oriented = getOrientedScreenSize();
       // 가상 키보드가 실제로 올라와 있는지 정밀 판별:
       // 1. 활성 입력창(input/textarea/contenteditable)이 포커스되어 있고 visualH가 화면 높이보다 100px 이상 작을 때 (PWA standalone 대응)
       // 2. 또는 visualViewport 높이가 innerHeight보다 100px 이상 작을 때 (Safari 브라우저 대응)
-      const hasKeyboard =
-        (isInputActive() && visual != null && visualH < oriented.height - 100) ||
-        (visual != null && innerH - visualH > 100);
+      const hasKeyboard = canUseKeyboardViewport(snapshot, isInputActive())
+        && (visualH < oriented.height - 100 || innerH - visualH > 100);
 
       if (hasKeyboard) {
         document.documentElement.classList.add('keyboard-open');
@@ -189,7 +183,7 @@ export function useViewportScrollLock() {
         // 🌟 핵심 해결: iPad / 태블릿 PWA 홈 화면 앱에서 WebKit이 상/하단 바를 중복 차감하여
         // innerHeight가 실제 하드웨어 화면보다 60~120px 짧게 보고되는 고질적 버그 대응
         // 키보드가 없을 때 실제 화면 높이(oriented.height)로 100% 가득 채워 하단 검은 여백을 원천 제거합니다.
-        if (isCandidate && shortfall > 10 && shortfall < oriented.height * 0.45) {
+        if (!unfolding && isCandidate && shortfall > 10 && shortfall < oriented.height * 0.45) {
           const fullScreenH = Math.round(oriented.height);
           document.documentElement.style.setProperty('--app-height', `${fullScreenH}px`);
           document.documentElement.style.setProperty('--vvh', `${fullScreenH}px`);
@@ -211,7 +205,10 @@ export function useViewportScrollLock() {
           }
           resetShell();
         } else {
-          document.documentElement.style.setProperty('--app-height', '100%');
+          const layoutHeight = unfolding ? `${Math.round(innerH)}px` : '100dvh';
+          document.documentElement.style.setProperty('--app-height', layoutHeight);
+          document.documentElement.style.setProperty('--vvh', layoutHeight);
+          document.documentElement.style.setProperty('--visual-vh', layoutHeight);
           document.documentElement.style.height = '';
           document.documentElement.style.minHeight = '';
           if (document.body) {
@@ -224,8 +221,8 @@ export function useViewportScrollLock() {
             root.style.top = '0px';
             root.style.left = '0px';
             root.style.right = '0px';
-            root.style.height = '100lvh';
-            root.style.minHeight = '100lvh';
+            root.style.height = layoutHeight;
+            root.style.minHeight = layoutHeight;
           }
           resetShell();
         }
@@ -234,6 +231,8 @@ export function useViewportScrollLock() {
 
     let timers: ReturnType<typeof setTimeout>[] = [];
     const scheduleSync = (delays: number[] = [0, 50, 150, 300, 500, 800, 1200]) => {
+      timers.forEach(clearTimeout);
+      timers = [];
       for (const delay of delays) {
         if (delay === 0) {
           window.requestAnimationFrame(() => {
@@ -287,7 +286,7 @@ export function useViewportScrollLock() {
 
     const handleResize = () => {
       updateAppViewportHeight();
-      scheduleSync([50, 150, 300]);
+      scheduleSync([50, 150, 300, 800, 1200]);
     };
 
     // 초기 높이 및 스크롤 고정

@@ -9,7 +9,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { resolveViewportBox, viewportNeedsResumeFill, sideColumnBleed } = await import(
+const { resolveViewportBox, viewportNeedsResumeFill, sideColumnBleed, canUseKeyboardViewport } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -199,6 +199,10 @@ const unfolded = {
 };
 assert.equal(resolveViewportBox(unfolded).width, 890);
 assert.equal(resolveViewportBox(unfolded).height, 840);
+assert.equal(canUseKeyboardViewport(unfolded, true), false);
+const matchingKeyboard = { ...unfolded, visual: { ...unfolded.visual, width: 890 } };
+assert.equal(canUseKeyboardViewport(matchingKeyboard, false), false);
+assert.equal(canUseKeyboardViewport(matchingKeyboard, true), true);
 
 const splitView = {
   innerWidth: 512,

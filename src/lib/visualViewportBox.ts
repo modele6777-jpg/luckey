@@ -115,6 +115,14 @@ export function layoutOutgrewVisual(snapshot: ViewportSnapshot): boolean {
   return innerWidth > visualWidth * 1.08;
 }
 
+export function canUseKeyboardViewport(snapshot: ViewportSnapshot, inputActive: boolean): boolean {
+  const innerWidth = positive(snapshot.innerWidth);
+  const visualWidth = positive(snapshot.visual?.width);
+  const visualHeight = positive(snapshot.visual?.height);
+  return inputActive && innerWidth != null && visualWidth != null && visualHeight != null
+    && Math.abs(innerWidth - visualWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
+}
+
 /** The window width is the page width. A wider screen does not stretch the shell. */
 export function coverScreenEdges(_snapshot: ViewportSnapshot, box: ViewportBox): ViewportBox {
   return box;

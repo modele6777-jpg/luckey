@@ -21,7 +21,7 @@
     --duo-hinge-gap: 1.25rem;
     --nav-bar-h: 2.1rem;
     --nav-total-h: calc(var(--nav-bar-h) + var(--sab));
-    --app-height: 100lvh;
+    --app-height: 100dvh;
   }
 
   html {
@@ -47,7 +47,7 @@
     height: 100%;
     min-height: 100%;
     min-height: 100vh;
-    min-height: 100lvh;
+    min-height: 100dvh;
     background: oklch(0.035 0.03 275);
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
@@ -78,8 +78,8 @@
     left: 0px !important;
     right: 0px !important;
     width: 100%;
-    height: var(--app-height, 100lvh);
-    min-height: var(--app-height, 100lvh);
+    height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -95,7 +95,7 @@
     flex: 1;
     min-height: 100%;
     min-height: 100vh;
-    min-height: 100lvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -109,7 +109,7 @@
     height: 100%;
     min-height: 100%;
     min-height: 100vh;
-    min-height: 100lvh;
+    min-height: 100dvh;
   }
 
   html.pwa-standalone #root {
@@ -117,15 +117,15 @@
     top: var(--vv-top, 0px);
     left: 0px !important;
     right: 0px !important;
-    height: var(--app-height, 100lvh);
-    min-height: var(--app-height, 100lvh);
+    height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
   }
 
   html.pwa-standalone .prism-app-shell {
     height: 100%;
     min-height: 100%;
     min-height: 100vh;
-    min-height: 100lvh;
+    min-height: 100dvh;
   }
 
   [data-app-scroll-root] {
@@ -377,7 +377,7 @@
        키보드 활성 시에는 useViewportScrollLock이 인라인으로 0px로 해제한다. */
     min-height: 100%;
     min-height: 100vh;
-    min-height: 100lvh;
+    min-height: 100dvh;
     overflow: hidden;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
@@ -385,7 +385,7 @@
 
   .prism-app-shell.in-lucy-chat {
     min-height: 0;
-    max-height: 100dvh;
+    max-height: 100%;
   }
 
   /* 키보드가 열리면 #root를 레이아웃 맨 위(top:0)에 두면
