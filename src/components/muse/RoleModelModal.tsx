@@ -389,7 +389,7 @@ export function RoleModelModal({ isOpen = true, onClose, isInline = false }: Rol
   if (!isOpen) return null;
 
   const renderContent = () => (
-    <div className="w-full flex flex-col relative text-white font-sans bg-[#0c0d18] border border-purple-500/30 rounded-[28px] sm:rounded-[36px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden h-[84vh] min-h-[660px] max-h-[920px]">
+    <div className={`w-full flex flex-col relative text-white font-sans bg-[#0c0d18] border border-purple-500/30 rounded-[28px] sm:rounded-[36px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] ${isInline ? 'shrink-0 overflow-clip' : 'overflow-hidden h-[84vh] min-h-[660px] max-h-[920px]'}`}>
       
       {/* Background ambient lighting */}
       <div 
@@ -474,10 +474,10 @@ export function RoleModelModal({ isOpen = true, onClose, isInline = false }: Rol
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-[460px] max-h-[680px] relative overflow-hidden bg-black/40">
+      <div className={`flex flex-col relative bg-black/40 ${isInline ? 'min-w-0' : 'flex-1 min-h-[460px] max-h-[680px] overflow-hidden'}`}>
         {!selectedModel ? (
           /* 4-Card Selection Screen with Real Photos */
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 no-scrollbar">
+          <div className={`p-4 sm:p-6 md:p-8 ${isInline ? '' : 'flex-1 overflow-y-auto no-scrollbar'}`}>
             <div className="text-center mb-6 sm:mb-8 space-y-2 pt-2">
               <div className="mx-auto w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-xl">
                 <MessageCircle size={24} className="animate-pulse" />
@@ -545,12 +545,12 @@ export function RoleModelModal({ isOpen = true, onClose, isInline = false }: Rol
           </div>
         ) : (
           /* Active Chat Screen */
-          <div className="flex-1 flex flex-col h-full min-h-0 relative">
+          <div className={`flex flex-col relative ${isInline ? '' : 'flex-1 h-full min-h-0'}`}>
             
             {/* Messages Scroll Area */}
             <div 
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 no-scrollbar select-text"
+              className={`p-4 sm:p-6 space-y-4 select-text ${isInline ? '' : 'flex-1 overflow-y-auto no-scrollbar'}`}
             >
               {activeMessages.map((m) => {
                 const isUser = m.role === 'user';
