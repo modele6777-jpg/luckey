@@ -66,14 +66,13 @@ export function calculateFiveEmotionsPulse(
   let metal = 20;
   let water = 20;
 
-  if (sajuRes && sajuRes.fiveElements) {
-    const fe = sajuRes.fiveElements;
-    const total = Math.max(1, (fe.wood || 0) + (fe.fire || 0) + (fe.earth || 0) + (fe.metal || 0) + (fe.water || 0));
-    wood = Math.round(((fe.wood || 0) / total) * 100);
-    fire = Math.round(((fe.fire || 0) / total) * 100);
-    earth = Math.round(((fe.earth || 0) / total) * 100);
-    metal = Math.round(((fe.metal || 0) / total) * 100);
-    water = Math.round(((fe.water || 0) / total) * 100);
+  if (sajuRes && sajuRes.elements) {
+    const p = sajuRes.elements.percentages || { 목: 20, 화: 20, 토: 20, 금: 20, 수: 20 };
+    wood = p['목'] ?? 20;
+    fire = p['화'] ?? 20;
+    earth = p['토'] ?? 20;
+    metal = p['금'] ?? 20;
+    water = p['수'] ?? 20;
   }
 
   // 타겟 일자의 오행 기운 보정 (일진 간지 주기 반영)

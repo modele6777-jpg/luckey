@@ -62,8 +62,8 @@ export function calculateVibrationalSoulQuest(
   let m = 5;
   let d = 15;
 
-  if (profile?.birthDate) {
-    const parts = profile.birthDate.split(/[-./]/).map(p => parseInt(p, 10)).filter(n => !isNaN(n));
+  if (profile?.basic?.birthdate) {
+    const parts = profile.basic.birthdate.split(/[-./]/).map(p => parseInt(p, 10)).filter(n => !isNaN(n));
     if (parts.length >= 3) {
       y = parts[0];
       m = parts[1];
@@ -84,7 +84,8 @@ export function calculateVibrationalSoulQuest(
   if (personalYear > 9) personalYear = (personalYear % 9) || 9;
 
   // 3. Destiny, Soul Urge, Personality 수비학 합성 (이름 또는 생일 파동 기반)
-  const seed = (profile?.name ? profile.name.length * 7 : 21) + d;
+  const nameStr = profile?.basic?.name || '';
+  const seed = (nameStr ? nameStr.length * 7 : 21) + d;
   const destinyNumber = reduceToSingleOrMaster(seed + lifePathNumber);
   const soulUrgeNumber = reduceToSingleOrMaster((seed * 3) % 9 || 9);
   const personalityNumber = reduceToSingleOrMaster((seed * 5) % 9 || 9);

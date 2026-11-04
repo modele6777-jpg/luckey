@@ -57,8 +57,8 @@ export function calculateHermeticKybalion(
   let month = 5;
   let day = 15;
 
-  if (profile?.birthDate) {
-    const parts = profile.birthDate.split(/[-./]/).map(p => parseInt(p, 10)).filter(n => !isNaN(n));
+  if (profile?.basic?.birthdate) {
+    const parts = profile.basic.birthdate.split(/[-./]/).map(p => parseInt(p, 10)).filter(n => !isNaN(n));
     if (parts.length >= 3) {
       year = parts[0];
       month = parts[1];
