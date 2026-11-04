@@ -278,9 +278,9 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     if (!shuffleStatus) return;
     const timer = window.setTimeout(() => {
       setShuffleStatus(shuffleStatus === 'shuffling' ? 'done' : null);
-    }, shuffleStatus === 'shuffling' ? 700 : 1000);
+    }, shuffleStatus === 'shuffling' ? (reduceMotion ? 350 : 1050) : 900);
     return () => window.clearTimeout(timer);
-  }, [shuffleStatus]);
+  }, [shuffleStatus, reduceMotion]);
   const hasCompletedRef = useRef(false);
   const touchedCardIdRef = useRef<string | null>(null);
   const touchStartTimeRef = useRef<number>(0);
@@ -1068,29 +1068,53 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
 
 
         {shuffleStatus && (
-          <div role="status" className="pointer-events-none absolute inset-x-0 top-1/2 z-[110] flex -translate-y-1/2 flex-col items-center">
+          <div className="pointer-events-none absolute inset-0 z-[110] grid place-items-center">
             {shuffleStatus === 'shuffling' && !reduceMotion && (
-              <div className="relative h-32 w-40" aria-hidden="true">
-                {[-1, 0, 1].map((side) => (
-                  <motion.div
-                    key={side}
-                    className="absolute left-[3.25rem] top-2 h-24 w-14 rounded-lg shadow-xl"
-                    initial={{ x: side * 32, y: 10, rotate: side * 14 }}
-                    animate={{
-                      x: [side * 32, side * 45, -side * 14, 0, side * 24],
-                      y: [10, -12, side * 10, 0, 10],
-                      rotate: [side * 14, side * 23, -side * 12, 0, side * 10],
-                    }}
-                    transition={{ duration: 0.7, ease: 'easeInOut' }}
-                  >
-                    <TarotCardBackFace cardBackId={effectiveCardBackId} size="sm" />
-                  </motion.div>
-                ))}
-              </div>
+              <motion.div
+                aria-hidden="true"
+                className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_center,#21152bf2_0%,#090811d9_45%,transparent_75%)]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 1, 0] }}
+                transition={{ duration: 1.05, times: [0, 0.16, 0.8, 1] }}
+              >
+                <div className="relative h-32 w-20" style={{ perspective: 600 }}>
+                  {Array.from({ length: 8 }, (_, index) => {
+                    const side = index % 2 === 0 ? -1 : 1;
+                    const layer = Math.floor(index / 2);
+                    const lift = layer * 3;
+
+                    return (
+                      <motion.div
+                        key={index}
+                        className="absolute inset-0 origin-bottom rounded-xl shadow-[0_8px_20px_#0009]"
+                        initial={{ x: 0, y: 30 - lift, rotateZ: 0, rotateY: 0, scale: 0.84 }}
+                        animate={{
+                          x: [0, side * (58 + lift), side * 26, side * 7, 0, 0],
+                          y: [30 - lift, -lift, -18 - lift, -8 - lift, -lift, 34 - lift],
+                          rotateZ: [0, side * 17, side * 9, -side * 4, 0, 0],
+                          rotateY: [0, -side * 24, -side * 12, 0, 0, 0],
+                          scale: [0.84, 1, 1, 1, 1, 0.84],
+                        }}
+                        transition={{
+                          duration: 0.94,
+                          delay: index * 0.013,
+                          times: [0, 0.25, 0.46, 0.63, 0.82, 1],
+                          ease: 'easeInOut',
+                        }}
+                      >
+                        <TarotCardBackFace cardBackId={effectiveCardBackId} size="sm" />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
             )}
-            <span className="rounded-full border border-yellow-400/40 bg-zinc-950 px-4 py-2 text-xs font-bold text-yellow-200 shadow-lg">
-              {shuffleStatus === 'shuffling' ? '카드 섞는 중…' : '셔플 완료'}
-            </span>
+            <div role="status" className="absolute inset-x-0 top-[calc(50%+5rem)] text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-400/30 bg-zinc-950/95 px-3 py-1.5 text-xs font-semibold text-yellow-200 shadow-lg">
+                {shuffleStatus === 'done' && <Sparkles size={12} aria-hidden="true" />}
+                {shuffleStatus === 'shuffling' ? '카드 섞는 중…' : '셔플 완료'}
+              </span>
+            </div>
           </div>
         )}
 
