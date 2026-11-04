@@ -94,6 +94,9 @@ import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, type Saj
 import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, type TarotTreeOfLifeShadowResult } from './tarotTreeOfLifeShadowEngine';
 import { calculateHellenisticLots, formatHellenisticLotsPrompt, type HellenisticLotsReport, HELLENISTIC_LOTS_ENGINE_VERSION } from './hellenisticLotsEngine';
 import { calculateIching384Yao, formatIching384YaoPrompt, type Iching384YaoReport, ICHING_384YAO_ENGINE_VERSION } from './iching384YaoEngine';
+import { calculateSajuTwelveStagesTomb, formatSajuTwelveStagesTombPrompt, type SajuTwelveStagesTombReport, SAJU_12STAGES_TOMB_VERSION } from './sajuTwelveStagesTombUnlockEngine';
+import { calculateTarotElementalCourt, formatTarotElementalCourtPrompt, type TarotElementalCourtReport, TAROT_ELEMENTAL_COURT_VERSION } from './tarotElementalCourtPersonaEngine';
+import { calculateKarmicSynastry, formatKarmicSynastryPrompt, type KarmicSynastryReport, KARMIC_SYNASTRY_VERSION } from './karmicSynastryResonanceEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -208,6 +211,9 @@ export interface DeterministicEngineReport {
   tarotTreeOfLifeShadowResult?: TarotTreeOfLifeShadowResult | null;
   hellenisticLotsResult?: HellenisticLotsReport | null;
   iching384YaoResult?: Iching384YaoReport | null;
+  sajuTwelveStagesTombResult?: SajuTwelveStagesTombReport | null;
+  tarotElementalCourtResult?: TarotElementalCourtReport | null;
+  karmicSynastryResult?: KarmicSynastryReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -243,6 +249,7 @@ export function runDeterministicEngine(params: {
   const nowUtcIso = now.toISOString();
 
   const profile = params.profile;
+  const partnerProfile = params.partnerProfile;
   const basic = profile?.basic;
   const birthdateStr = basic?.birthdate?.trim() || '';
   const birthtimeStr = basic?.birthtime?.trim() || '';
@@ -1319,6 +1326,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 66. 사주 12운성 포태법 & 4대 묘고지 개고 엔진
+  const sajuTwelveStagesTombResult = (() => {
+    try {
+      return calculateSajuTwelveStagesTomb(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 67. 타로 4대 원소 & 16대 궁정 카드(Court Cards) 페르소나 엔진
+  const tarotElementalCourtResult = (() => {
+    try {
+      return calculateTarotElementalCourt(profile, question);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 68. 카르믹 시나스트리 & 인연 성간 공명 엔진
+  const karmicSynastryResult = (() => {
+    try {
+      return calculateKarmicSynastry(profile, partnerProfile, question);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1419,6 +1453,9 @@ export function runDeterministicEngine(params: {
     tarotTreeOfLifeShadowResult,
     hellenisticLotsResult,
     iching384YaoResult,
+    sajuTwelveStagesTombResult,
+    tarotElementalCourtResult,
+    karmicSynastryResult,
     tools: toolsMap,
   };
 }
@@ -1432,6 +1469,8 @@ export interface FormatDeterministicEngineOptions {
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
     'sajuClassicYongshin',
+    'sajuTwelveStagesTomb',
+    'tarotElementalCourt',
     'geokguk',
     'ziweiFlyingStars',
     'specialStarsMatrix',
@@ -1447,6 +1486,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   business_money: [
     'wealthPipeline',
     'sajuClassicYongshin',
+    'sajuTwelveStagesTomb',
     'geokguk',
     'ziweiFlyingStars',
     'contractShield',
@@ -1456,9 +1496,11 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'instantDecision',
   ],
   relationship_love: [
+    'karmicSynastry',
     'contextualSynastry',
     'destinySynastryEcho',
     'compatibility',
+    'tarotElementalCourt',
     'sukuyoAdvanced',
     'tarotMaster',
     'tarotTreeOfLifeShadow',
@@ -1467,6 +1509,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   ],
   immediate_decision: [
     'instantDecision',
+    'tarotElementalCourt',
     'ichingMaster',
     'iching384Yao',
     'liurenMaster',
@@ -1658,5 +1701,8 @@ ${report.ethericAuraBiofieldResult && shouldIncludeEngine('ethericAuraBiofield',
 ${report.sajuClassicYongshinResult && shouldIncludeEngine('sajuClassicYongshin', options) ? '\n' + formatSajuClassicYongshinPrompt(report.sajuClassicYongshinResult) : ''}
 ${report.tarotTreeOfLifeShadowResult && shouldIncludeEngine('tarotTreeOfLifeShadow', options) ? '\n' + formatTarotTreeOfLifeShadowPrompt(report.tarotTreeOfLifeShadowResult) : ''}
 ${report.hellenisticLotsResult && shouldIncludeEngine('hellenisticLots', options) ? '\n' + formatHellenisticLotsPrompt(report.hellenisticLotsResult) : ''}
-${report.iching384YaoResult && shouldIncludeEngine('iching384Yao', options) ? '\n' + formatIching384YaoPrompt(report.iching384YaoResult) : ''}`;
+${report.iching384YaoResult && shouldIncludeEngine('iching384Yao', options) ? '\n' + formatIching384YaoPrompt(report.iching384YaoResult) : ''}
+${report.sajuTwelveStagesTombResult && shouldIncludeEngine('sajuTwelveStagesTomb', options) ? '\n' + formatSajuTwelveStagesTombPrompt(report.sajuTwelveStagesTombResult) : ''}
+${report.tarotElementalCourtResult && shouldIncludeEngine('tarotElementalCourt', options) ? '\n' + formatTarotElementalCourtPrompt(report.tarotElementalCourtResult) : ''}
+${report.karmicSynastryResult && shouldIncludeEngine('karmicSynastry', options) ? '\n' + formatKarmicSynastryPrompt(report.karmicSynastryResult) : ''}`;
 }
