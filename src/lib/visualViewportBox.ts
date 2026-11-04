@@ -128,12 +128,18 @@ export function coverScreenEdges(_snapshot: ViewportSnapshot, box: ViewportBox):
   return box;
 }
 
-/** Side status column is not filled or shifted. */
+/** Extra canvas width for a standalone iOS portrait cover screen. */
 export function sideColumnBleed(
-  _snapshot: ViewportSnapshot,
-  _width: number,
+  snapshot: ViewportSnapshot,
+  width: number,
 ): { left: number; right: number } {
-  return { left: 0, right: 0 };
+  const screenWidth = positive(snapshot.screenWidth);
+  const screenHeight = positive(snapshot.screenHeight);
+  if (!snapshot.iosStandalone || screenWidth == null || screenHeight == null) return { left: 0, right: 0 };
+  const gap = screenWidth - width;
+  const coverPortrait = screenWidth < TABLET_SHORT_SIDE_PX && screenHeight > screenWidth
+    && Math.abs(snapshot.innerHeight - screenHeight) <= 2 && gap >= 40 && gap <= 100;
+  return { left: 0, right: coverPortrait ? roundPx(gap) : 0 };
 }
 
 export function viewportNeedsResumeFill(
@@ -317,6 +323,7 @@ export function applyVisualViewportBox(
   root.style.setProperty('--vv-bottom', px(box.bottomGap));
   root.style.setProperty('--vv-bleed-left', px(bleed.left));
   root.style.setProperty('--vv-bleed-right', px(bleed.right));
+  root.toggleAttribute('data-lucy-wide-cover', bleed.right > 0);
   root.style.setProperty('--visual-vh', px(box.height));
   if (snapshot?.iosStandalone && box.height > (snapshot.innerHeight || 0)) {
     root.style.setProperty('--app-height', px(box.height));

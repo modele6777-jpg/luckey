@@ -235,3 +235,21 @@ html.light .lucy-mode-transition { background: #f5f9fdf2; color: #243448; }
   [data-lucy-mode-transition='plus'] .lucy-transition-plus { opacity: 1; }
   [data-lucy-mode-transition='lucy'] .lucy-transition-plus { opacity: 0; }
 }
+
+/* Extend the chat canvas toward the cover screen edge while keeping controls in the visible viewport. */
+@media (orientation: portrait) {
+  html[data-lucy-wide-cover].in-lucy-chat:not(.keyboard-open) :is(#root, .prism-app-shell, .sites-pinned-main) {
+    overflow: visible;
+  }
+  html[data-lucy-wide-cover]:not(.keyboard-open) .lucy-chat-shell {
+    width: calc(100% + var(--vv-bleed-right, 0px));
+    max-width: calc(100vw + var(--vv-bleed-right, 0px)) !important;
+  }
+  html[data-lucy-wide-cover]:not(.keyboard-open) .lucy-chat-main {
+    max-width: calc(100vw + var(--vv-bleed-right, 0px)) !important;
+  }
+  html[data-lucy-wide-cover]:not(.keyboard-open) .lucy-chat-main > div {
+    width: calc(100% - var(--vv-bleed-right, 0px));
+    margin-inline: 0 auto;
+  }
+}

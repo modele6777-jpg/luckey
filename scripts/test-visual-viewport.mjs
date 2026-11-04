@@ -179,6 +179,7 @@ const foldedPortrait = {
 };
 assert.equal(resolveViewportBox(foldedPortrait).width, 382);
 assert.deepEqual(sideColumnBleed(foldedPortrait, 466), { left: 0, right: 0 });
+assert.deepEqual(sideColumnBleed({ ...foldedPortrait, iosStandalone: true }, 382), { left: 0, right: 84 });
 
 const foldedLandscape = {
   innerWidth: 594,
