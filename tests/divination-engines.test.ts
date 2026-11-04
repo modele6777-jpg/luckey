@@ -69,6 +69,9 @@ import { calculateVibrationalSoulQuest, formatVibrationalSoulQuestPrompt, VIBRAT
 import { calculateAlchemicalTransmutation, formatAlchemicalTransmutationPrompt, ALCHEMICAL_TRANSMUTATION_VERSION } from '../src/lib/divination/alchemicalTransmutationEngine';
 import { calculateZiweiHuaJiTransformation, formatZiweiHuaJiTransformationPrompt, ZIWEI_HUAJI_VERSION } from '../src/lib/divination/ziweiHuaJiTransformationEngine';
 import { calculateCelticTreeOgham, formatCelticTreeOghamPrompt, CELTIC_OGHAM_VERSION } from '../src/lib/divination/celticTreeOghamEngine';
+import { calculateTaoistSanbaoInnerAlchemy, formatTaoistSanbaoInnerAlchemyPrompt, TAOIST_SANBAO_VERSION } from '../src/lib/divination/taoistSanbaoInnerAlchemyEngine';
+import { calculateTibetanBardoNavigation, formatTibetanBardoNavigationPrompt, TIBETAN_BARDO_VERSION } from '../src/lib/divination/tibetanBardoNavigationEngine';
+import { calculateMesopotamianSevenGates, formatMesopotamianSevenGatesPrompt, MESOPOTAMIAN_GATES_VERSION } from '../src/lib/divination/mesopotamianSevenGatesEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2521,4 +2524,38 @@ test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle'
   const prompt = formatCelticTreeOghamPrompt(rep);
   assert(prompt.includes('켈트 오검'));
   assert(prompt.includes(rep.birthGuardianTree.nameTreeKo));
+});
+
+test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy phase', () => {
+  const rep = calculateTaoistSanbaoInnerAlchemy(profile);
+  assert.equal(rep.engineVersion, TAOIST_SANBAO_VERSION);
+  assert(rep.energyLevels.jing >= 0 && rep.energyLevels.jing <= 100);
+  assert(rep.energyLevels.qi >= 0 && rep.energyLevels.qi <= 100);
+  assert(rep.energyLevels.shen >= 0 && rep.energyLevels.shen <= 100);
+  assert(rep.overallHarmonyScore >= 0 && rep.overallHarmonyScore <= 100);
+  const prompt = formatTaoistSanbaoInnerAlchemyPrompt(rep);
+  assert(prompt.includes('도교 내단학'));
+  assert(prompt.includes(rep.dominantTreasure));
+});
+
+test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insight', () => {
+  const rep = calculateTibetanBardoNavigation(profile);
+  assert.equal(rep.engineVersion, TIBETAN_BARDO_VERSION);
+  assert(rep.currentBardoState.stateNo >= 1 && rep.currentBardoState.stateNo <= 6);
+  assert(rep.awarenessClarityScore >= 0 && rep.awarenessClarityScore <= 100);
+  assert(rep.clearLightRecognition.length > 0);
+  const prompt = formatTibetanBardoNavigationPrompt(rep);
+  assert(prompt.includes('티베트 불교 바르도'));
+  assert(prompt.includes(rep.currentBardoState.nameKo));
+});
+
+test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrection power', () => {
+  const rep = calculateMesopotamianSevenGates(profile);
+  assert.equal(rep.engineVersion, MESOPOTAMIAN_GATES_VERSION);
+  assert(rep.activeGate.gateNumber >= 1 && rep.activeGate.gateNumber <= 7);
+  assert(rep.sovereigntyResurrectionPower >= 0 && rep.sovereigntyResurrectionPower <= 100);
+  assert(rep.liberationTask.length > 0);
+  const prompt = formatMesopotamianSevenGatesPrompt(rep);
+  assert(prompt.includes('고대 메소포타미아 7대 행성 관문'));
+  assert(prompt.includes(rep.activeGate.gateNameAkkadian));
 });

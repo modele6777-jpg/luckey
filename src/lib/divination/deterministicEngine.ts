@@ -103,6 +103,9 @@ import { calculateVibrationalSoulQuest, formatVibrationalSoulQuestPrompt, type S
 import { calculateAlchemicalTransmutation, formatAlchemicalTransmutationPrompt, type AlchemicalTransmutationReport, ALCHEMICAL_TRANSMUTATION_VERSION } from './alchemicalTransmutationEngine';
 import { calculateZiweiHuaJiTransformation, formatZiweiHuaJiTransformationPrompt, type ZiweiHuaJiReport, ZIWEI_HUAJI_VERSION } from './ziweiHuaJiTransformationEngine';
 import { calculateCelticTreeOgham, formatCelticTreeOghamPrompt, type CelticTreeOghamReport, CELTIC_OGHAM_VERSION } from './celticTreeOghamEngine';
+import { calculateTaoistSanbaoInnerAlchemy, formatTaoistSanbaoInnerAlchemyPrompt, type TaoistSanbaoReport, TAOIST_SANBAO_VERSION } from './taoistSanbaoInnerAlchemyEngine';
+import { calculateTibetanBardoNavigation, formatTibetanBardoNavigationPrompt, type TibetanBardoReport, TIBETAN_BARDO_VERSION } from './tibetanBardoNavigationEngine';
+import { calculateMesopotamianSevenGates, formatMesopotamianSevenGatesPrompt, type MesopotamianSevenGatesReport, MESOPOTAMIAN_GATES_VERSION } from './mesopotamianSevenGatesEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -226,6 +229,9 @@ export interface DeterministicEngineReport {
   alchemicalTransmutationResult?: AlchemicalTransmutationReport | null;
   ziweiHuaJiResult?: ZiweiHuaJiReport | null;
   celticTreeOghamResult?: CelticTreeOghamReport | null;
+  taoistSanbaoResult?: TaoistSanbaoReport | null;
+  tibetanBardoResult?: TibetanBardoReport | null;
+  mesopotamianSevenGatesResult?: MesopotamianSevenGatesReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1419,6 +1425,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 75. 도교 내단학 삼보(정·기·신) 생체 에너지 순환 & 연정화기 엔진
+  const taoistSanbaoResult = (() => {
+    try {
+      return calculateTaoistSanbaoInnerAlchemy(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 76. 티베트 불교 바르도 6대 환생 상태 & 전환기 의식 항해 엔진
+  const tibetanBardoResult = (() => {
+    try {
+      return calculateTibetanBardoNavigation(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 77. 고대 메소포타미아 7대 행성 관문 & 이슈타르 지하세계 하강·부활 엔진
+  const mesopotamianSevenGatesResult = (() => {
+    try {
+      return calculateMesopotamianSevenGates(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1528,6 +1561,9 @@ export function runDeterministicEngine(params: {
     alchemicalTransmutationResult,
     ziweiHuaJiResult,
     celticTreeOghamResult,
+    taoistSanbaoResult,
+    tibetanBardoResult,
+    mesopotamianSevenGatesResult,
     tools: toolsMap,
   };
 }
@@ -1782,5 +1818,8 @@ ${report.hermeticKybalionResult && shouldIncludeEngine('hermeticKybalion', optio
 ${report.vibrationalSoulQuestResult && shouldIncludeEngine('vibrationalSoulQuest', options) ? '\n' + formatVibrationalSoulQuestPrompt(report.vibrationalSoulQuestResult) : ''}
 ${report.alchemicalTransmutationResult && shouldIncludeEngine('alchemicalTransmutation', options) ? '\n' + formatAlchemicalTransmutationPrompt(report.alchemicalTransmutationResult) : ''}
 ${report.ziweiHuaJiResult && shouldIncludeEngine('ziweiHuaJi', options) ? '\n' + formatZiweiHuaJiTransformationPrompt(report.ziweiHuaJiResult) : ''}
-${report.celticTreeOghamResult && shouldIncludeEngine('celticTreeOgham', options) ? '\n' + formatCelticTreeOghamPrompt(report.celticTreeOghamResult) : ''}`;
+${report.celticTreeOghamResult && shouldIncludeEngine('celticTreeOgham', options) ? '\n' + formatCelticTreeOghamPrompt(report.celticTreeOghamResult) : ''}
+${report.taoistSanbaoResult && shouldIncludeEngine('taoistSanbao', options) ? '\n' + formatTaoistSanbaoInnerAlchemyPrompt(report.taoistSanbaoResult) : ''}
+${report.tibetanBardoResult && shouldIncludeEngine('tibetanBardo', options) ? '\n' + formatTibetanBardoNavigationPrompt(report.tibetanBardoResult) : ''}
+${report.mesopotamianSevenGatesResult && shouldIncludeEngine('mesopotamianSevenGates', options) ? '\n' + formatMesopotamianSevenGatesPrompt(report.mesopotamianSevenGatesResult) : ''}`;
 }
