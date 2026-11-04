@@ -2374,12 +2374,14 @@ test('Saju Destiny Exporter: formats 9:16 Instagram Story viral caption correctl
     birthdate: '1994-01-24',
     gender: 'male',
     pillars: {
-      year: { gan: '甲', zhi: '戌', ganKr: '갑', zhiKr: '술', elGan: '목', elZhi: '토', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '비견' } as any, tenGodZhi: { name: '편재' } as any, animal: '개' },
-      month: { gan: '丁', zhi: '丑', ganKr: '정', zhiKr: '축', elGan: '화', elZhi: '토', yinYangGan: '음', yinYangZhi: '음', tenGodGan: { name: '상관' } as any, tenGodZhi: { name: '정재' } as any, animal: '소' },
-      day: { gan: '庚', zhi: '申', ganKr: '경', zhiKr: '신', elGan: '금', elZhi: '금', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '본원' } as any, tenGodZhi: { name: '비견' } as any, animal: '원숭이' },
-      hour: { gan: '丙', zhi: '子', ganKr: '병', zhiKr: '자', elGan: '화', elZhi: '수', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '편관' } as any, tenGodZhi: { name: '상관' } as any, animal: '쥐' },
+      year: { gan: '甲', zhi: '戌', full: '甲戌', twelveStage: '양', ganKr: '갑', zhiKr: '술', elGan: '목', elZhi: '토', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '비견' } as any, tenGodZhi: { name: '편재' } as any, animal: '개' },
+      month: { gan: '丁', zhi: '丑', full: '丁丑', twelveStage: '묘', ganKr: '정', zhiKr: '축', elGan: '화', elZhi: '토', yinYangGan: '음', yinYangZhi: '음', tenGodGan: { name: '상관' } as any, tenGodZhi: { name: '정재' } as any, animal: '소' },
+      day: { gan: '庚', zhi: '申', full: '庚申', twelveStage: '건록', ganKr: '경', zhiKr: '신', elGan: '금', elZhi: '금', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '본원' } as any, tenGodZhi: { name: '비견' } as any, animal: '원숭이' },
+      hour: { gan: '丙', zhi: '子', full: '丙子', twelveStage: '사', ganKr: '병', zhiKr: '자', elGan: '화', elZhi: '수', yinYangGan: '양', yinYangZhi: '양', tenGodGan: { name: '편관' } as any, tenGodZhi: { name: '상관' } as any, animal: '쥐' },
     },
     dayMaster: {
+      gan: '庚',
+      yinYang: '양',
       symbolName: '경금(庚金)',
       archetypeTitle: '단단한 강철의 혁신가',
       personalityEssence: '결단력과 강직한 의지',

@@ -35,6 +35,7 @@ import {
 import { SajuDestinyShareModal } from './SajuDestinyShareModal';
 import { SajuVisualInteractiveCharts } from './SajuVisualInteractiveCharts';
 import { type SajuDestinyStoryData } from '@/utils/sajuDestinyExporter';
+import { playAudioHaptic } from '@/lib/audioHaptics';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { saveProfileToAllVaults } from '@/lib/profileVault';
 import {
