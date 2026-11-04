@@ -689,7 +689,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
   const handleQuickSpin = (direction: 'left' | 'right') => {
     playAudioHaptic('card_draw', { volume: 0.65 });
     stopMomentum();
-    const impulse = direction === 'left' ? -6 : 6;
+    // The arrow points toward the cards to bring into the visible top of the wheel.
+    const impulse = direction === 'left' ? 6 : -6;
     startMomentum(impulse);
   };
 
@@ -1203,7 +1204,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           type="button"
           onClick={() => handleQuickSpin('left')}
           className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer shrink-0"
-          title="왼쪽으로 회전"
+          title="왼쪽 카드들을 가운데로 이동"
         >
           <ChevronLeft size={14} />
           <span className="hidden min-[380px]:inline">좌회전</span>
@@ -1233,7 +1234,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           type="button"
           onClick={() => handleQuickSpin('right')}
           className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-zinc-900 border border-yellow-500/25 hover:border-yellow-400 text-yellow-300 text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer shrink-0"
-          title="오른쪽으로 회전"
+          title="오른쪽 카드들을 가운데로 이동"
         >
           <span className="hidden min-[380px]:inline">우회전</span>
           <ChevronRight size={14} />
