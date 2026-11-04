@@ -273,7 +273,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     if (!narrationData.fullSpeech) return;
 
     setActiveSpeechType('full');
-    await playTTSInChunks(narrationData.fullSpeech, selectedVoice || 'Kore', 110, undefined, undefined, { isUserToggleClick: true });
+    await playTTSInChunks(narrationData.fullSpeech, selectedVoice || 'Kore', 110);
   }, [isTTSActive, activeSpeechType, narrationData.fullSpeech, selectedVoice]);
 
   // Summary TTS Playback
@@ -286,7 +286,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     if (!narrationData.summarySpeechText) return;
 
     setActiveSpeechType('summary');
-    await playTTSInChunks(narrationData.summarySpeechText, selectedVoice || 'Kore', 110, undefined, undefined, { isUserToggleClick: true });
+    await playTTSInChunks(narrationData.summarySpeechText, selectedVoice || 'Kore', 110);
   }, [isTTSActive, activeSpeechType, narrationData.summarySpeechText, selectedVoice]);
 
   const handleCopyText = useCallback(() => {

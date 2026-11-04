@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
@@ -22,8 +22,7 @@ import {
   buildDeterministicLucyAdvice,
   getEnhancedLucyTarotAdvice,
 } from '@/lib/lucyTarotAdvice';
-import { playTTSInChunks, stopTTS, useTTSActive, subscribeTTS } from '@/utils/tts';
-import { TTSHighlightedText, cleanSentenceForMatching } from '@/components/common/TTSHighlightedText';
+import { playTTSInChunks, prepareNaturalSpeechText, stopTTS, useTTSState } from '@/utils/tts';
 
 export interface LucyTarotAdviceCardProps {
   cards?: any[] | null;
@@ -63,9 +62,7 @@ export function LucyTarotAdviceCard({
   // Initial instant deterministic advice
   const [advice, setAdvice] = useState<LucyTarotAdvice>(() => buildDeterministicLucyAdvice(params));
   const [isCopied, setIsCopied] = useState(false);
-  const [isPlayingMyTTS, setIsPlayingMyTTS] = useState(false);
-  const isGlobalTTSActive = useTTSActive();
-  const myPlaybackSessionRef = useRef<boolean>(false);
+  const tts = useTTSState();
 
   // Async background enhancement when parameters change
   useEffect(() => {
@@ -84,52 +81,30 @@ export function LucyTarotAdviceCard({
     };
   }, [params]);
 
-  // Subscribe to TTS state to track active playback
-  useEffect(() => {
-    const unsub = subscribeTTS((state) => {
-      if (!state.isSpeaking && !state.isLoading && !state.isPaused) {
-        myPlaybackSessionRef.current = false;
-        setIsPlayingMyTTS(false);
-        return;
-      }
-      const activeText = state.activeText || state.activeFullText || '';
-      const cleanHeadline = cleanSentenceForMatching(advice.headline || '');
-      const cleanSpeech = cleanSentenceForMatching(advice.speechText || '');
-
-      const matchesMyAdvice =
-        (cleanHeadline.length >= 3 && activeText.includes(cleanHeadline.slice(0, 8))) ||
-        (cleanSpeech.length >= 10 && activeText.includes(cleanSpeech.slice(0, 15))) ||
-        (myPlaybackSessionRef.current && (state.isSpeaking || state.isLoading));
-
-      if (matchesMyAdvice) {
-        setIsPlayingMyTTS(true);
-      } else {
-        myPlaybackSessionRef.current = false;
-        setIsPlayingMyTTS(false);
-      }
-    });
-    return unsub;
-  }, [advice.speechText, advice.headline]);
+  // Track if this card's specific advice is currently playing/loading
+  const isPlayingMyTTS = useMemo(() => {
+    if (!advice?.speechText) return false;
+    if (!tts.isSpeaking && !tts.isLoading) return false;
+    const cleanSpeech = prepareNaturalSpeechText(advice.speechText);
+    const activeFull = tts.activeFullText || '';
+    const activeText = tts.activeText || '';
+    return (
+      activeFull === cleanSpeech ||
+      (cleanSpeech.length > 15 && activeFull.includes(cleanSpeech.slice(0, 20))) ||
+      (activeText && cleanSpeech.includes(activeText))
+    );
+  }, [tts.isSpeaking, tts.isLoading, tts.activeFullText, tts.activeText, advice?.speechText]);
 
   // TTS Toggle Handler - Instant responsive single-tap toggle
   const handleToggleTTS = useCallback(async () => {
-    if (isPlayingMyTTS || myPlaybackSessionRef.current || (isGlobalTTSActive && myPlaybackSessionRef.current)) {
-      myPlaybackSessionRef.current = false;
+    if (isPlayingMyTTS) {
       stopTTS();
-      setIsPlayingMyTTS(false);
       return;
     }
 
-    if (!advice.speechText) return;
-    myPlaybackSessionRef.current = true;
-    setIsPlayingMyTTS(true);
-    try {
-      await playTTSInChunks(advice.speechText, 'Kore', 110, undefined, undefined, { isUserToggleClick: true });
-    } catch (_) {
-      myPlaybackSessionRef.current = false;
-      setIsPlayingMyTTS(false);
-    }
-  }, [isPlayingMyTTS, isGlobalTTSActive, advice.speechText]);
+    if (!advice?.speechText) return;
+    await playTTSInChunks(advice.speechText, 'Kore', 110);
+  }, [isPlayingMyTTS, advice?.speechText]);
 
   // Copy advice to clipboard
   const handleCopy = useCallback(() => {
