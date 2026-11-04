@@ -57,6 +57,9 @@ import { calculateSolfeggioHarmonic, formatSolfeggioHarmonicPrompt, SOLFEGGIO_HA
 import { calculateEthericAuraBiofield, formatEthericAuraBiofieldPrompt, ETHERIC_AURA_VERSION } from '../src/lib/divination/ethericAuraBiofieldEngine';
 import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, SAJU_CLASSIC_YONGSHIN_VERSION } from '../src/lib/divination/sajuClassicYongshinPrescriptionEngine';
 import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, TAROT_KABBALAH_SHADOW_VERSION } from '../src/lib/divination/tarotTreeOfLifeShadowEngine';
+import { calculateHellenisticLots, formatHellenisticLotsPrompt, HELLENISTIC_LOTS_ENGINE_VERSION } from '../src/lib/divination/hellenisticLotsEngine';
+import { calculateIching384Yao, formatIching384YaoPrompt, ICHING_384YAO_ENGINE_VERSION } from '../src/lib/divination/iching384YaoEngine';
+import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
   const numbers=Array.from({length:64},(_,n)=>hexagram(Array.from({length:6},(_,i)=>(n>>i)&1)).number);
@@ -2268,6 +2271,8 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert(enginePrompt.includes(ETHERIC_AURA_VERSION));
   assert(enginePrompt.includes(SAJU_CLASSIC_YONGSHIN_VERSION));
   assert(enginePrompt.includes(TAROT_KABBALAH_SHADOW_VERSION));
+  assert(enginePrompt.includes(HELLENISTIC_LOTS_ENGINE_VERSION));
+  assert(enginePrompt.includes(ICHING_384YAO_ENGINE_VERSION));
 });
 
 test('Deterministic Engine: smart selective routing prunes prompt and focuses on intent engines', () => {
@@ -2302,4 +2307,62 @@ test('Deterministic Engine: smart selective routing prunes prompt and focuses on
   assert(businessPrompt.includes(SAJU_CLASSIC_YONGSHIN_VERSION));
   assert(!businessPrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
   assert(!businessPrompt.includes(SOMATIC_ARMORING_VERSION));
+});
+
+test('Hellenistic Lots Engine: calculates Fortune, Spirit, Eros, Nemesis lots deterministically', () => {
+  const p = { basic: { birthdate: '1995-05-15', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const rep = calculateHellenisticLots({ profile: p });
+  assert.equal(rep.engineVersion, HELLENISTIC_LOTS_ENGINE_VERSION);
+  assert.equal(rep.isDayChart, true);
+  assert(rep.lots.fortune.degree >= 0 && rep.lots.fortune.degree <= 360);
+  assert(rep.lots.spirit.degree >= 0 && rep.lots.spirit.degree <= 360);
+  assert(rep.lots.eros.degree >= 0 && rep.lots.eros.degree <= 360);
+  assert(rep.lots.nemesis.degree >= 0 && rep.lots.nemesis.degree <= 360);
+  const prompt = formatHellenisticLotsPrompt(rep);
+  assert(prompt.includes(HELLENISTIC_LOTS_ENGINE_VERSION));
+  assert(prompt.includes('포르투나의 랏'));
+  assert(prompt.includes('스피릿의 랏'));
+});
+
+test('I Ching 384 Yao Engine: calculates changing yao and quad-transformation hexagrams', () => {
+  const rep = calculateIching384Yao({ question: '새로운 프로젝트 이직 타이밍 어떨까' });
+  assert.equal(rep.engineVersion, ICHING_384YAO_ENGINE_VERSION);
+  assert(rep.changingYao.yaoPosition >= 1 && rep.changingYao.yaoPosition <= 6);
+  assert(rep.originalHexagram.nameKo.length > 0);
+  assert(rep.transformedHexagram.nameKo.length > 0);
+  assert(rep.inverseHexagram.nameKo.length > 0);
+  assert(rep.reversedHexagram.nameKo.length > 0);
+  assert(rep.nuclearHexagram.nameKo.length > 0);
+  const prompt = formatIching384YaoPrompt(rep);
+  assert(prompt.includes(ICHING_384YAO_ENGINE_VERSION));
+  assert(prompt.includes('지괘'));
+  assert(prompt.includes('착괘'));
+  assert(prompt.includes('종괘'));
+  assert(prompt.includes('호괘'));
+});
+
+test('Lucy Episodic Memory Engine: extracts active threads, key people, and open follow-ups', () => {
+  const sampleMemories = [
+    {
+      date: '2026-11-02',
+      timestamp: Date.now() - 172800000,
+      dialogueCount: 5,
+      summary: '이직과 프로젝트 고민',
+      userTopics: [
+        '다음 주에 팀장님이랑 면접 결과 나오면 퇴사 면담 할까 봐',
+        '그 사람한테 주말에 먼저 연락해볼까 고민 중이야',
+        '요즘 너무 피곤해서 번아웃 온 것 같아'
+      ]
+    }
+  ];
+
+  const ledger = extractEpisodicMemoryLedger(sampleMemories);
+  assert.equal(ledger.version, LUCY_EPISODIC_MEMORY_ENGINE_VERSION);
+  assert(ledger.activeThreads.some(t => t.category === 'career_project'));
+  assert(ledger.activeThreads.some(t => t.category === 'relationship_love'));
+  assert(ledger.keyPeople.some(p => p.nameOrRole === '팀장님/직장상사'));
+  assert(ledger.openFollowUps.length > 0);
+
+  const prompt = buildLucyEpisodicMemoryPrompt('testAccount', '제제');
+  assert(typeof prompt === 'string');
 });

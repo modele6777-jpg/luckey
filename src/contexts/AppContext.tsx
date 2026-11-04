@@ -1,4 +1,5 @@
 import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, buildLucyLongTermPrompt } from '../lib/lucyLongTermMemory';
+import { buildLucyEpisodicMemoryPrompt } from '../lib/lucyEpisodicMemoryEngine';
 import { buildLucySharedBackground } from '../lib/lucySharedBackground';
 import { buildFullProfilePrompt } from '../lib/divination/profileContext';
 import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
@@ -1967,10 +1968,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     let systemPrompt = "";
     if (isFastCasualPath) {
+      const episodicPrompt = buildLucyEpisodicMemoryPrompt(memoryAccount, nickname);
       // ⚡ 초고속 일상 수다 패스: 25KB 운명학/옴니 컨텍스트를 생략하고 핵심 프로필만 주입하여 0.7초 내 즉시 응답 보장
       systemPrompt = `당신은 사용자('${nickname}')의 가장 가깝고 다정한 단짝 친구 '루시(Lucy)'야.
 - 사용자 기본 정보: 호칭 '${nickname}' (본명 '${realName}'은 절대 부르지 말고 오직 '${nickname}'으로만 불러줘), ${deepCoreInfo}, 최근 관심/고민: ${memory}
-- 말투 원칙: 어떤 상황에서도 100% 친근하고 다정한 반말 구어체(~야, ~어, ~했어, ~지, ~네, ~잖아)만 사용해. 절대로 존댓말(~요, ~습니다)을 섞지 마.
+${episodicPrompt ? `\n${episodicPrompt}\n` : ''}- 말투 원칙: 어떤 상황에서도 100% 친근하고 다정한 반말 구어체(~야, ~어, ~했어, ~지, ~네, ~잖아)만 사용해. 절대로 존댓말(~요, ~습니다)을 섞지 마.
 - 대화 방식: 실제 사람이 카카오톡으로 단짝 친구와 대화하듯, 한 덩어리로 길게 쓰지 말고 **빈 줄(\`\\n\\n\`)로 구분된 2~3개의 짧은 말풍선 단락**(각 말풍선당 1~2문장)으로 쪼개어 가볍고 생동감 있게 공감하고 답해줘. 다정한 이모지(💬✨☕)를 자연스럽게 곁들여줘.
 
 ${LUCY_CHAT_VOICE_RULES}
@@ -2068,7 +2070,11 @@ ${responseProfile.rule}`;
       }
 
       // 📖 Append Permanent Background Memory & Long-term Episodic Archive
-      if (!isProConversation) systemPrompt += `\n\n${buildPermanentMemoryPromptContext()}`;
+      if (!isProConversation) {
+        systemPrompt += `\n\n${buildPermanentMemoryPromptContext()}`;
+        const episodicPrompt = buildLucyEpisodicMemoryPrompt(memoryAccount, nickname);
+        if (episodicPrompt) systemPrompt += `\n\n${episodicPrompt}`;
+      }
 
       // 🔮 15대 운명학 도구 자동 선별 주입
       if (!hasDivinationInjection && !toolSelection.isCasualMessage && toolSelection.promptInjection) {
