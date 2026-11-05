@@ -4,6 +4,8 @@ import { prepareNaturalSpeechText } from '@/utils/speechText';
 import { extractConciseSummary, stripSummaryFromTarotText, deduplicateReadingText } from '@/lib/tarotSummaryUtils';
 import { ensureCompleteTarotReading } from '@/lib/trinity/utils';
 
+export const DAILY_TAROT_CAUTION = '타로는 미래를 결정짓는 절대적 예언이 아니라, 자신의 내면을 성찰하고 더 나은 선택을 돕는 지혜의 나침반입니다. 맹목적인 믿음을 지양하고, 모든 운명의 결정권과 최종 열쇠는 언제나 당신 자신의 주체적인 의지와 지혜에 있습니다.';
+
 export interface TarotNarrationChapter {
   id: 'card_anchor' | 'summary' | 'master_diagnosis' | 'action_remedy' | 'blessing_frequency';
   title: string;
@@ -236,11 +238,9 @@ export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData
     },
   ];
 
-  const cautionSpeech = "주의사항을 전해드립니다. 타로는 정해진 미래를 맹목적으로 따르기 위한 것이 아니며, 현재의 마음을 비추고 현명한 선택을 돕는 내면의 성찰 도구입니다. 맹목적인 믿음을 지양하고, 모든 운명의 결정권과 최종 열쇠는 언제나 당신 자신의 주체적인 지혜와 용기에 있음을 기억하세요.";
-
   // Full unified narration flow
   const fullSpeech = prepareNaturalSpeechText(
-    `${ch1Speech} ${chSummarySpeech ? `핵심 요약입니다. ${chSummarySpeech}. ` : ''}전체 심층 리딩입니다. ${ch3Speech} ${ch4Speech} ${cautionSpeech}`
+    `${ch1Speech} ${chSummarySpeech ? `핵심 요약입니다. ${chSummarySpeech}. ` : ''}전체 심층 리딩입니다. ${ch3Speech} ${ch4Speech} 주의사항을 전해드립니다. ${DAILY_TAROT_CAUTION}`
   );
 
   return {

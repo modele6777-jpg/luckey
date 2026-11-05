@@ -22,6 +22,7 @@ import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts
 import { TTSHighlightText } from '@/utils/ttsHighlight';
 import {
   buildTarotNarrationContent,
+  DAILY_TAROT_CAUTION,
   type TarotNarrationChapter,
 } from '@/lib/todayTarotNarration';
 import { LucyTarotAdviceCard } from './LucyTarotAdviceCard';
@@ -30,7 +31,6 @@ import { TodayTarotShareButton } from './TodayTarotShareModal';
 import { TarotCardZoomModal } from './TarotCardZoomModal';
 import { TarotFlippingCard } from './TarotFlippingCard';
 import { type TodayTarotShareData } from '@/utils/todayTarotExporter';
-import { stripSummaryFromTarotText } from '@/lib/tarotSummaryUtils';
 import { TAROT_DECK, TarotCard } from '@/data/tarotData';
 import { TarotSpread } from './TarotSpread';
 import { FollowUpTarotTimeline, FollowUpTarotEntry } from './FollowUpTarotTimeline';
@@ -609,7 +609,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 className="text-white/85 text-sm leading-relaxed relative z-10 w-full font-sans"
                 style={{ wordBreak: 'keep-all' }}
               >
-                <Streamdown immediate enableTTSHighlight={isFullPlaying}>{stripSummaryFromTarotText(narrationData.cleanDiagnosis || narrationData.rawDiagnosis || "")}</Streamdown>
+                <Streamdown immediate enableTTSHighlight={isFullPlaying}>{narrationData.cleanDiagnosis}</Streamdown>
               </div>
 
               {/* Planetary / Frequency Harmony Section */}
@@ -627,7 +627,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 </div>
                 {narrationData.rawBlessing && (
                   <p className="text-xs text-stone-300 font-sans italic leading-relaxed">
-                    &quot;{narrationData.rawBlessing}&quot;
+                    &quot;<TTSHighlightText text={narrationData.rawBlessing} enabled={isFullPlaying} />&quot;
                   </p>
                 )}
               </div>
@@ -649,7 +649,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                   <span>타로 성찰 주의사항 (맹목적 믿음 지양)</span>
                 </div>
                 <p className="leading-relaxed text-white/70 break-keep text-[11px] sm:text-xs">
-                  타로는 미래를 결정짓는 절대적 예언이 아니라, 자신의 내면을 성찰하고 더 나은 선택을 돕는 지혜의 나침반입니다. 맹목적인 믿음을 지양하고, 모든 운명의 결정권과 최종 열쇠는 언제나 당신 자신의 주체적인 의지와 지혜에 있습니다.
+                  <TTSHighlightText text={DAILY_TAROT_CAUTION} enabled={isFullPlaying} />
                 </p>
               </div>
 

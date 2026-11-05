@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTTSState } from '@/utils/tts';
 
+const managedContainers = new WeakSet<HTMLElement>();
+
 export interface UseSmartScrollOptions {
   /**
    * Ref to a scrollable HTML element (e.g., modal body with overflow-y-auto).
@@ -75,7 +77,6 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
   const isUserOverridingRef = useRef(false);
   const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const lastTargetElemRef = useRef<Element | null>(null);
   const isProgrammaticScrollingRef = useRef(false);
   const programmaticScrollResetTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -91,14 +92,23 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
     }
   }, []);
 
-  // Find active element strictly inside container to avoid document-level false targets
-  const getActiveElement = useCallback((): HTMLElement | null => {
-    if (!containerRef.current) return null;
-    const activeTrue = containerRef.current.querySelector<HTMLElement>('[data-tts-active="true"]');
-    if (activeTrue) return activeTrue;
+  useEffect(() => {
+    const container = externalContainerRef?.current;
+    if (!enabled || !container) return;
+    managedContainers.add(container);
+    return () => { managedContainers.delete(container); };
+  }, [enabled, externalContainerRef, isSpeaking]);
 
-    return containerRef.current.querySelector<HTMLElement>(selector);
-  }, [containerRef, selector]);
+  const getActiveElement = useCallback((): HTMLElement | null => {
+    if (externalContainerRef && !externalContainerRef.current) return null;
+    const root = externalContainerRef?.current || document;
+    const target = root.querySelector<HTMLElement>('[data-tts-active="true"]') || root.querySelector<HTMLElement>(selector);
+    if (!target || externalContainerRef) return target;
+    for (let element = target.parentElement; element; element = element.parentElement) {
+      if (managedContainers.has(element)) return null;
+    }
+    return target;
+  }, [externalContainerRef, selector]);
 
   // Resolve scrollable parent container for any target element
   const resolveScrollContainer = useCallback((target: HTMLElement | null): HTMLElement | null => {
@@ -120,7 +130,7 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
       cur = cur.parentElement;
     }
 
-    return document.querySelector<HTMLElement>('[data-app-scroll-root], main.overflow-y-auto, .overflow-y-auto');
+    return document.scrollingElement as HTMLElement | null;
   }, [containerRef]);
 
   // Viewport centering math
@@ -134,19 +144,8 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
       }
 
       setHasActiveHighlight(true);
-      lastTargetElemRef.current = target;
-
       const container = resolveScrollContainer(target);
       if (!container) return false;
-
-      // Flag this as programmatic to prevent user-scroll override triggering
-      isProgrammaticScrollingRef.current = true;
-      if (programmaticScrollResetTimerRef.current) {
-        clearTimeout(programmaticScrollResetTimerRef.current);
-      }
-      programmaticScrollResetTimerRef.current = setTimeout(() => {
-        isProgrammaticScrollingRef.current = false;
-      }, 700);
 
       const containerRect = container.getBoundingClientRect();
       const targetRect = target.getBoundingClientRect();
@@ -158,34 +157,28 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
       // Current position and target metrics relative to container
       const currentScroll = container.scrollTop;
-      const targetRelativeTop = targetRect.top - containerRect.top;
-      const targetHeight = targetRect.height || 26;
+      const viewportTop = container === document.scrollingElement ? 0 : containerRect.top + container.clientTop;
+      const targetRelativeTop = targetRect.top - viewportTop;
       const containerHeight = container.clientHeight;
 
-      // 🎯 Comfortable reading window:
-      // 사용자가 보고 있는 현재 화면 영역(0% ~ 82%) 안에 하이라이트 문장이 이미 보이고 있다면
-      // 절대 화면을 멋대로 움직이지 않고 가만히 고정합니다! (재생 시작 시 화면 강제 하향 점프 원천 방지)
-      const isComfortablyVisible =
-        targetRelativeTop >= containerHeight * 0.05 &&
-        targetRelativeTop + targetHeight <= containerHeight * 0.82;
-
-      if (!force && isComfortablyVisible) {
-        return true;
-      }
-
-      // 화면 밖(아래 또는 위)으로 벗어날 때만 편안한 시야 영역(~30%)으로 부드럽게 유도
-      const targetAbsoluteTop = currentScroll + targetRelativeTop;
       const desiredScrollTop = Math.round(
-        targetAbsoluteTop - (containerHeight * 0.30) + centerOffset
+        currentScroll + targetRelativeTop + (targetRect.height - containerHeight) / 2 + centerOffset
       );
 
       const maxScroll = Math.max(0, container.scrollHeight - containerHeight);
       const finalTop = Math.max(0, Math.min(maxScroll, desiredScrollTop));
 
-      // Skip micro-adjustments if already aligned within 12px (unless forced)
-      if (!force && Math.abs(currentScroll - finalTop) < 12) {
+      if (!force && Math.abs(currentScroll - finalTop) <= 1) {
         return true;
       }
+
+      isProgrammaticScrollingRef.current = true;
+      if (programmaticScrollResetTimerRef.current) {
+        clearTimeout(programmaticScrollResetTimerRef.current);
+      }
+      programmaticScrollResetTimerRef.current = setTimeout(() => {
+        isProgrammaticScrollingRef.current = false;
+      }, 700);
 
       try {
         container.scrollTo({

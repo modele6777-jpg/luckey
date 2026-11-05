@@ -102,6 +102,8 @@ export function isSentenceActive(sentence: string, activeText: string | null | u
   if (cleanS.length < 2 || cleanA.length < 2) return false;
 
   if (cleanS === cleanA) return true;
+  // Long quoted text can be split across several audio chunks.
+  if (cleanA.length >= 18 && cleanS.includes(cleanA)) return true;
 
   const longer = cleanS.length >= cleanA.length ? cleanS : cleanA;
   const shorter = longer === cleanS ? cleanA : cleanS;

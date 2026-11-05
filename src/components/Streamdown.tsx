@@ -231,7 +231,7 @@ export function Streamdown({
       ),
       blockquote: ({ children }: any) => (
         <blockquote className="border-l-4 border-yellow-500/50 pl-4 py-1 my-3 bg-white/[0.03] rounded-r-lg italic">
-          {highlightSentencesInChildren(children, activeTarget, false)}
+          {children}
         </blockquote>
       ),
       h1: ({ children }: any) => (

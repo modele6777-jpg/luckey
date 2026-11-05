@@ -7,6 +7,7 @@ import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCirc
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { LoginScreen } from "./components/LoginScreen";
+import { useSmartScroll } from "./hooks/useSmartScroll";
 import LeftSidebarNav from "./components/navigation/LeftSidebarNav";
 import { BigBangButton } from "./components/omniwarp/BigBangButton";
 import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionOverlay";
@@ -193,6 +194,11 @@ function ActivePage({ loc }: { loc: string }) {
     </React.Suspense>
     </ErrorBoundary>
   );
+}
+
+function GlobalTTSScroll() {
+  useSmartScroll();
+  return null;
 }
 
 function AppContent() {
@@ -681,6 +687,7 @@ export default function App() {
       <ThemeProvider>
         <AuroraBackground />
         <AppProvider>
+          <GlobalTTSScroll />
           <AppContent />
         </AppProvider>
       </ThemeProvider>
