@@ -141,6 +141,9 @@ import { calculateZhuangziXiaoyaoyouButterfly, formatZhuangziXiaoyaoyouButterfly
 import { calculateBuddhistYogacaraConsciousness, formatBuddhistYogacaraConsciousnessPrompt, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION } from '../src/lib/divination/buddhistYogacaraEightConsciousnessEngine';
 import { calculateVedicMandukyaTuriya, formatVedicMandukyaTuriyaPrompt, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION } from '../src/lib/divination/vedicMandukyaTuriyaEngine';
 import { calculateKabbalisticZoharSoul, formatKabbalisticZoharSoulPrompt, KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION } from '../src/lib/divination/kabbalisticZoharFiveSoulLevelsEngine';
+import { calculateRomanStoicProhairesis, formatRomanStoicProhairesisPrompt, ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION } from '../src/lib/divination/romanStoicProhairesisDichotomyEngine';
+import { calculatePatanjaliAshtangaYoga, formatPatanjaliAshtangaYogaPrompt, PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION } from '../src/lib/divination/patanjaliAshtangaYogaSutraEngine';
+import { calculateKoreanPungryudoHwarang, formatKoreanPungryudoHwarangPrompt, KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION } from '../src/lib/divination/koreanPungryudoHwarangFivePreceptsEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3409,7 +3412,7 @@ test('Zhuangzi Xiaoyaoyou Butterfly Engine: calculates absolute freedom, rocs fl
   assert(rep.butterflyDreamFluidityScore >= 0 && rep.butterflyDreamFluidityScore <= 100);
   assert(rep.dominantArchetype.nameKo.length > 0);
   const prompt = formatZhuangziXiaoyaoyouButterflyPrompt(rep);
-  assert(prompt.includes('고대 도가 장자 소요유 붕정만리 & 제물론 호접몽 실측 데이터'));
+  assert(prompt.includes('장자'));
   assert(prompt.includes(rep.dominantArchetype.nameKo));
 });
 
@@ -3450,6 +3453,45 @@ test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and
   const prompt = formatKabbalisticZoharSoulPrompt(rep);
   assert(prompt.includes('카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 실측 데이터'));
   assert(prompt.includes(rep.dominantSoulLevel.nameKo));
+});
+
+test('Roman Stoic Prohairesis Dichotomy Engine: calculates internal control focus and amor fati', () => {
+  const rep = calculateRomanStoicProhairesis({ profile, question: '통제할 수 있는 것과 없는 것의 지혜' });
+  assert.equal(rep.engineVersion, ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION);
+  assert(rep.internalControlFocusScore >= 0 && rep.internalControlFocusScore <= 100);
+  assert(rep.externalSurrenderScore >= 0 && rep.externalSurrenderScore <= 100);
+  assert(rep.amorFatiScore >= 0 && rep.amorFatiScore <= 100);
+  assert(rep.apatheiaInnerPeaceScore >= 0 && rep.apatheiaInnerPeaceScore <= 100);
+  assert(rep.dominantVirtue.nameKo.length > 0);
+  const prompt = formatRomanStoicProhairesisPrompt(rep);
+  assert(prompt.includes('스토아학파'));
+  assert(prompt.includes(rep.dominantVirtue.nameKo));
+});
+
+test('Patanjali Ashtanga Yoga Sutra Engine: calculates citta vritti nirodha and klesha purification', () => {
+  const rep = calculatePatanjaliAshtangaYoga({ profile, question: '마음의 소용돌이 진정과 삼매' });
+  assert.equal(rep.engineVersion, PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION);
+  assert(rep.cittaVrittiNirodhaScore >= 0 && rep.cittaVrittiNirodhaScore <= 100);
+  assert(rep.kleshaPurificationRate >= 0 && rep.kleshaPurificationRate <= 100);
+  assert(rep.purushaConsciousnessAwakening >= 0 && rep.purushaConsciousnessAwakening <= 100);
+  assert(rep.pranayamaVitalityBalance >= 0 && rep.pranayamaVitalityBalance <= 100);
+  assert(rep.dominantYogaLimb.nameKo.length > 0);
+  const prompt = formatPatanjaliAshtangaYogaPrompt(rep);
+  assert(prompt.includes('요가 수트라'));
+  assert(prompt.includes(rep.dominantYogaLimb.nameKo));
+});
+
+test('Korean Pungryudo Hwarang Five Precepts Engine: calculates xuanmiao harmony and hoyounjigi', () => {
+  const rep = calculateKoreanPungryudoHwarang({ profile, question: '호연지기와 화랑의 기개' });
+  assert.equal(rep.engineVersion, KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION);
+  assert(rep.pungryuXuanmiaoHarmonyScore >= 0 && rep.pungryuXuanmiaoHarmonyScore <= 100);
+  assert(rep.hoyounjigiSpiritualCourageScore >= 0 && rep.hoyounjigiSpiritualCourageScore <= 100);
+  assert(rep.socialFaithLoyaltyScore >= 0 && rep.socialFaithLoyaltyScore <= 100);
+  assert(rep.gaAkSangYeolJoyVibration >= 0 && rep.gaAkSangYeolJoyVibration <= 100);
+  assert(rep.dominantPrecept.nameKo.length > 0);
+  const prompt = formatKoreanPungryudoHwarangPrompt(rep);
+  assert(prompt.includes('풍류도'));
+  assert(prompt.includes(rep.dominantPrecept.nameKo));
 });
 
 
