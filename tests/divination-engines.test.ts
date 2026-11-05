@@ -120,6 +120,9 @@ import { calculateOrpheicMysteries, formatOrpheicMysteriesPrompt, ORPHEIC_MYSTER
 import { calculatePopolVuhHeroTwins, formatPopolVuhHeroTwinsPrompt, MESOAMERICAN_POPOL_VUH_ENGINE_VERSION } from '../src/lib/divination/mesoamericanPopolVuhHeroTwinsEngine';
 import { calculateAncientYarrowProbability, formatAncientYarrowProbabilityPrompt, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION } from '../src/lib/divination/ancientChineseYarrowIchingProbabilityEngine';
 import { calculateVedicPanchaKosha, formatVedicPanchaKoshaPrompt, VEDIC_PANCHA_KOSHA_ENGINE_VERSION } from '../src/lib/divination/vedicPanchaKoshaAlignmentEngine';
+import { calculateRomanJanus, formatRomanJanusPrompt, ROMAN_JANUS_ENGINE_VERSION } from '../src/lib/divination/romanJanusThresholdTransitionsEngine';
+import { calculateBaopuziElixirs, formatBaopuziElixirsPrompt, BAOPUZI_ELIXIRS_ENGINE_VERSION } from '../src/lib/divination/ancientChineseBaopuziNineElixirsEngine';
+import { calculateVedicMahavakya, formatVedicMahavakyaPrompt, VEDIC_MAHAVAKYA_ENGINE_VERSION } from '../src/lib/divination/vedicMahavakyaConsciousnessEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3174,5 +3177,39 @@ test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realiza
   assert(prompt.includes('고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 실측 데이터'));
   assert(prompt.includes(rep.lowestAlignedLayer.koshaNameKo));
 });
+
+test('Roman Janus Engine: calculates threshold balance and active gateway', () => {
+  const rep = calculateRomanJanus({ profile });
+  assert.equal(rep.engineVersion, ROMAN_JANUS_ENGINE_VERSION);
+  assert(rep.pastClosureScore >= 0 && rep.pastClosureScore <= 100);
+  assert(rep.futureReadinessScore >= 0 && rep.futureReadinessScore <= 100);
+  assert(rep.activeJanusGateway.gatewayNumber >= 1 && rep.activeJanusGateway.gatewayNumber <= 4);
+  const prompt = formatRomanJanusPrompt(rep);
+  assert(prompt.includes('고대 로마 야누스(Janus) 2대 얼굴 시공간 문턱 & 새출발 실측 데이터'));
+  assert(prompt.includes(rep.activeJanusGateway.gatewayNameKo));
+});
+
+test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vitality', () => {
+  const rep = calculateBaopuziElixirs({ profile });
+  assert.equal(rep.engineVersion, BAOPUZI_ELIXIRS_ENGINE_VERSION);
+  assert(rep.alchemicalRefinementLevel >= 1 && rep.alchemicalRefinementLevel <= 9);
+  assert(rep.vitalityPreservationScore >= 0 && rep.vitalityPreservationScore <= 100);
+  assert(rep.activeElixirPhase.elixirNameKo.length > 0);
+  const prompt = formatBaopuziElixirsPrompt(rep);
+  assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 실측 데이터'));
+  assert(prompt.includes(rep.activeElixirPhase.elixirNameKo));
+});
+
+test('Vedic Mahavakya Consciousness Engine: calculates Brahman realization and Soham resonance', () => {
+  const rep = calculateVedicMahavakya({ profile });
+  assert.equal(rep.engineVersion, VEDIC_MAHAVAKYA_ENGINE_VERSION);
+  assert(rep.brahmanRealizationScore >= 0 && rep.brahmanRealizationScore <= 100);
+  assert(rep.innerSohamResonance >= 0 && rep.innerSohamResonance <= 100);
+  assert(rep.activeMahavakya.sanskritPhrase.length > 0);
+  const prompt = formatVedicMahavakyaPrompt(rep);
+  assert(prompt.includes('고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터'));
+  assert(prompt.includes(rep.activeMahavakya.sanskritPhrase));
+});
+
 
 

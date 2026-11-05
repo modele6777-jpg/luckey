@@ -154,6 +154,9 @@ import { calculateOrpheicMysteries, formatOrpheicMysteriesPrompt, type OrphicMys
 import { calculatePopolVuhHeroTwins, formatPopolVuhHeroTwinsPrompt, type PopolVuhReport, MESOAMERICAN_POPOL_VUH_ENGINE_VERSION } from './mesoamericanPopolVuhHeroTwinsEngine';
 import { calculateAncientYarrowProbability, formatAncientYarrowProbabilityPrompt, type YarrowProbabilityReport, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION } from './ancientChineseYarrowIchingProbabilityEngine';
 import { calculateVedicPanchaKosha, formatVedicPanchaKoshaPrompt, type PanchaKoshaReport, VEDIC_PANCHA_KOSHA_ENGINE_VERSION } from './vedicPanchaKoshaAlignmentEngine';
+import { calculateRomanJanus, formatRomanJanusPrompt, type RomanJanusReport, ROMAN_JANUS_ENGINE_VERSION } from './romanJanusThresholdTransitionsEngine';
+import { calculateBaopuziElixirs, formatBaopuziElixirsPrompt, type BaopuziElixirsReport, BAOPUZI_ELIXIRS_ENGINE_VERSION } from './ancientChineseBaopuziNineElixirsEngine';
+import { calculateVedicMahavakya, formatVedicMahavakyaPrompt, type VedicMahavakyaReport, VEDIC_MAHAVAKYA_ENGINE_VERSION } from './vedicMahavakyaConsciousnessEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -328,6 +331,9 @@ export interface DeterministicEngineReport {
   popolVuhHeroTwinsResult?: PopolVuhReport | null;
   ancientYarrowProbabilityResult?: YarrowProbabilityReport | null;
   vedicPanchaKoshaResult?: PanchaKoshaReport | null;
+  romanJanusResult?: RomanJanusReport | null;
+  baopuziElixirsResult?: BaopuziElixirsReport | null;
+  vedicMahavakyaResult?: VedicMahavakyaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1980,6 +1986,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 126. 고대 로마 야누스(Janus) 2대 얼굴 시공간 문턱 & 새출발 돌파 엔진
+  const romanJanusResult = (() => {
+    try {
+      return calculateRomanJanus({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 127. 고대 동양 도교 포박자(抱朴子) 갈홍 내편 구전환단(九轉還丹) 무병장수 선도 엔진
+  const baopuziElixirsResult = (() => {
+    try {
+      return calculateBaopuziElixirs({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 128. 고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 의식 각성 엔진
+  const vedicMahavakyaResult = (() => {
+    try {
+      return calculateVedicMahavakya({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2140,6 +2173,9 @@ export function runDeterministicEngine(params: {
     popolVuhHeroTwinsResult,
     ancientYarrowProbabilityResult,
     vedicPanchaKoshaResult,
+    romanJanusResult,
+    baopuziElixirsResult,
+    vedicMahavakyaResult,
     tools: toolsMap,
   };
 }
@@ -2729,5 +2765,8 @@ ${report.persianMithraicSpheresResult && shouldIncludeEngine('persianMithraicSph
 ${report.orpheicMysteriesResult && shouldIncludeEngine('orpheicMysteries', options) ? '\n' + formatOrpheicMysteriesPrompt(report.orpheicMysteriesResult) : ''}
 ${report.popolVuhHeroTwinsResult && shouldIncludeEngine('popolVuhHeroTwins', options) ? '\n' + formatPopolVuhHeroTwinsPrompt(report.popolVuhHeroTwinsResult) : ''}
 ${report.ancientYarrowProbabilityResult && shouldIncludeEngine('ancientYarrowProbability', options) ? '\n' + formatAncientYarrowProbabilityPrompt(report.ancientYarrowProbabilityResult) : ''}
-${report.vedicPanchaKoshaResult && shouldIncludeEngine('vedicPanchaKosha', options) ? '\n' + formatVedicPanchaKoshaPrompt(report.vedicPanchaKoshaResult) : ''}`;
+${report.vedicPanchaKoshaResult && shouldIncludeEngine('vedicPanchaKosha', options) ? '\n' + formatVedicPanchaKoshaPrompt(report.vedicPanchaKoshaResult) : ''}
+${report.romanJanusResult && shouldIncludeEngine('romanJanus', options) ? '\n' + formatRomanJanusPrompt(report.romanJanusResult) : ''}
+${report.baopuziElixirsResult && shouldIncludeEngine('baopuziElixirs', options) ? '\n' + formatBaopuziElixirsPrompt(report.baopuziElixirsResult) : ''}
+${report.vedicMahavakyaResult && shouldIncludeEngine('vedicMahavakya', options) ? '\n' + formatVedicMahavakyaPrompt(report.vedicMahavakyaResult) : ''}`;
 }

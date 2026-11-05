@@ -696,29 +696,8 @@ export const getTarotCardImageUrl = (card: TarotCard | null | undefined): string
   if (!card || !card.id) return "";
   if (card.imageUrl?.startsWith('/oracle-decks/')) return card.imageUrl;
   
-  let suitLetter = "";
-  let numStr = "";
-  
-  if (card.id.startsWith("major_")) {
-    suitLetter = "m";
-    numStr = card.id.split("_")[1].padStart(2, '0');
-  } else if (card.id.startsWith("wands_")) {
-    suitLetter = "w";
-    numStr = card.id.split("_")[1].padStart(2, '0');
-  } else if (card.id.startsWith("cups_")) {
-    suitLetter = "c";
-    numStr = card.id.split("_")[1].padStart(2, '0');
-  } else if (card.id.startsWith("swords_")) {
-    suitLetter = "s";
-    numStr = card.id.split("_")[1].padStart(2, '0');
-  } else if (card.id.startsWith("pent_")) {
-    suitLetter = "p";
-    numStr = card.id.split("_")[1].padStart(2, '0');
-  } else {
-    return "";
-  }
-  
-  return `https://raw.githubusercontent.com/metabismuth/tarot-json/master/cards/${suitLetter}${numStr}.jpg`;
+  // 로컬 78장 고화질 webp 에셋 우선 반환
+  return `/oracle-decks/healing/${card.id}.webp`;
 };
 
 

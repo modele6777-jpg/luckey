@@ -91,19 +91,13 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
     }
   }, []);
 
-  // Find active element in container or document - prioritize [data-tts-active="true"]
+  // Find active element strictly inside container to avoid document-level false targets
   const getActiveElement = useCallback((): HTMLElement | null => {
-    if (containerRef.current) {
-      const activeTrue = containerRef.current.querySelector<HTMLElement>('[data-tts-active="true"]');
-      if (activeTrue) return activeTrue;
+    if (!containerRef.current) return null;
+    const activeTrue = containerRef.current.querySelector<HTMLElement>('[data-tts-active="true"]');
+    if (activeTrue) return activeTrue;
 
-      const el = containerRef.current.querySelector<HTMLElement>(selector);
-      if (el) return el;
-    }
-    const docActive = document.querySelector<HTMLElement>('[data-tts-active="true"]');
-    if (docActive) return docActive;
-
-    return document.querySelector<HTMLElement>(selector);
+    return containerRef.current.querySelector<HTMLElement>(selector);
   }, [containerRef, selector]);
 
   // Resolve scrollable parent container for any target element
@@ -169,22 +163,20 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
       const containerHeight = container.clientHeight;
 
       // 🎯 Comfortable reading window:
-      // If the target sentence is already comfortably in the center zone (between 38% and 62% of container height),
-      // keep the scroll steady. Otherwise smoothly glide it back to the exact vertical center!
+      // 사용자가 보고 있는 현재 화면 영역(0% ~ 82%) 안에 하이라이트 문장이 이미 보이고 있다면
+      // 절대 화면을 멋대로 움직이지 않고 가만히 고정합니다! (재생 시작 시 화면 강제 하향 점프 원천 방지)
       const isComfortablyVisible =
-        targetRelativeTop >= containerHeight * 0.38 &&
-        targetRelativeTop + targetHeight <= containerHeight * 0.62;
+        targetRelativeTop >= containerHeight * 0.05 &&
+        targetRelativeTop + targetHeight <= containerHeight * 0.82;
 
       if (!force && isComfortablyVisible) {
         return true;
       }
 
-      // 🎯 정확한 화면 수직 중앙(50%) 정렬:
-      // 하이라이트 문장의 중심축이 스크롤 뷰포트의 정중앙에 위치하도록 계산
+      // 화면 밖(아래 또는 위)으로 벗어날 때만 편안한 시야 영역(~30%)으로 부드럽게 유도
       const targetAbsoluteTop = currentScroll + targetRelativeTop;
-      const targetCenter = targetAbsoluteTop + (targetHeight / 2);
       const desiredScrollTop = Math.round(
-        targetCenter - (containerHeight / 2) + centerOffset
+        targetAbsoluteTop - (containerHeight * 0.30) + centerOffset
       );
 
       const maxScroll = Math.max(0, container.scrollHeight - containerHeight);

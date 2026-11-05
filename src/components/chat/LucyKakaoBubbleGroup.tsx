@@ -5,6 +5,8 @@ import { Check, Copy, Loader2, Volume2, VolumeX } from 'lucide-react';
 import { LucyProTypewriter } from '@/components/LucyProTypewriter';
 import { splitIntoKakaoBubbles, joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { cleanSentenceForMatching, isSentenceActive } from '@/components/common/TTSHighlightedText';
+import { detectTarotCardsFromText, stripTarotMarkers } from '@/utils/tarotDetector';
+import { LucyTarotCardView } from './LucyTarotCardView';
 
 // 이미 순차 노출이 완료된 메시지 ID를 메모리에 기록해 리렌더 시 재애니메이션 방지
 const revealedMessageIds = new Set<string>();
@@ -57,8 +59,10 @@ export function LucyKakaoBubbleGroup({
   onBubbleReveal,
   renderRecommendationFooter,
 }: LucyKakaoBubbleGroupProps) {
-  const bubbles = useMemo(() => splitIntoKakaoBubbles(textContent, 4), [textContent]);
-  const fullJoinedSpeechText = useMemo(() => joinKakaoBubblesForTTS(textContent, 4), [textContent]);
+  const cleanedTextContent = useMemo(() => stripTarotMarkers(textContent), [textContent]);
+  const detectedTarotCards = useMemo(() => detectTarotCardsFromText(textContent), [textContent]);
+  const bubbles = useMemo(() => splitIntoKakaoBubbles(cleanedTextContent, 4), [cleanedTextContent]);
+  const fullJoinedSpeechText = useMemo(() => joinKakaoBubblesForTTS(cleanedTextContent, 4), [cleanedTextContent]);
 
   // 과거 메시지이거나 이미 노출 완료된 메시지는 즉시 전체 말풍선 표시
   const shouldSkipStagger = isHistorical || !isLatest || revealedMessageIds.has(msgId);
@@ -323,6 +327,11 @@ export function LucyKakaoBubbleGroup({
             루시가 이어서 카톡을 입력하고 있어... ({displayedBubbles.length}/{Math.max(2, bubbles.length)})
           </span>
         </motion.div>
+      )}
+
+      {/* 🔮 타로 카드가 감지된 경우 실제 카드 비주얼 이미지 카드 노출 */}
+      {detectedTarotCards.length > 0 && !isStaggeringMoreBubbles && (
+        <LucyTarotCardView cards={detectedTarotCards} isLight={isLight} />
       )}
 
       {/* 하단 통합 액션 바: 전체 말풍선 복사 & 전체 말풍선 한 번에 연속 듣기 */}
