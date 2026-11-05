@@ -169,6 +169,9 @@ import { calculateChaldeanMulApinAstrology, formatChaldeanMulApinAstrologyPrompt
 import { calculateToltecNagualDreaming, formatToltecNagualDreamingPrompt, type ToltecNagualDreamingReport, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION } from './toltecNagualDreamingEngine';
 import { calculateShugendoYamabushiTenRealms, formatShugendoYamabushiTenRealmsPrompt, type ShugendoYamabushiTenRealmsReport, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION } from './shugendoYamabushiTenRealmsEngine';
 import { calculateGnosticPistisSophiaPleroma, formatGnosticPistisSophiaPleromaPrompt, type GnosticPistisSophiaPleromaReport, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION } from './gnosticPistisSophiaPleromaEngine';
+import { calculateSumerianInannaUnderworldDescent, formatSumerianInannaUnderworldDescentPrompt, type SumerianInannaUnderworldDescentReport, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION } from './sumerianInannaUnderworldDescentEngine';
+import { calculateNorseVolvaSeidrNineRealms, formatNorseVolvaSeidrNineRealmsPrompt, type NorseVolvaSeidrNineRealmsReport, NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION } from './norseVolvaSeidrNineRealmsEngine';
+import { calculateZhuangziXiaoyaoyouButterfly, formatZhuangziXiaoyaoyouButterflyPrompt, type ZhuangziXiaoyaoyouButterflyReport, ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION } from './zhuangziXiaoyaoyouButterflyEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -358,6 +361,9 @@ export interface DeterministicEngineReport {
   toltecNagualDreamingResult?: ToltecNagualDreamingReport | null;
   shugendoYamabushiTenRealmsResult?: ShugendoYamabushiTenRealmsReport | null;
   gnosticPistisSophiaPleromaResult?: GnosticPistisSophiaPleromaReport | null;
+  sumerianInannaUnderworldDescentResult?: SumerianInannaUnderworldDescentReport | null;
+  norseVolvaSeidrNineRealmsResult?: NorseVolvaSeidrNineRealmsReport | null;
+  zhuangziXiaoyaoyouButterflyResult?: ZhuangziXiaoyaoyouButterflyReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2145,6 +2151,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 141. 고대 수메르 이난나(Inanna) 명계 하강 7대 관문 & 영혼 부활 엔진
+  const sumerianInannaUnderworldDescentResult = (() => {
+    try {
+      return calculateSumerianInannaUnderworldDescent({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 142. 고대 북유럽 볼바(Völva) 세이드(Seiðr) 직관 & 위그드라실 9대 세계 예언 엔진
+  const norseVolvaSeidrNineRealmsResult = (() => {
+    try {
+      return calculateNorseVolvaSeidrNineRealms({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 143. 고대 중국 도가 장자(莊子) 소요유(逍遙遊) 붕정만리 & 제물론(齊物論) 호접몽 초월 엔진
+  const zhuangziXiaoyaoyouButterflyResult = (() => {
+    try {
+      return calculateZhuangziXiaoyaoyouButterfly({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2320,6 +2353,9 @@ export function runDeterministicEngine(params: {
     toltecNagualDreamingResult,
     shugendoYamabushiTenRealmsResult,
     gnosticPistisSophiaPleromaResult,
+    sumerianInannaUnderworldDescentResult,
+    norseVolvaSeidrNineRealmsResult,
+    zhuangziXiaoyaoyouButterflyResult,
     tools: toolsMap,
   };
 }
@@ -2488,6 +2524,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master' },
   { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master' },
   { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master' },
+  { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master' },
+  { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master' },
+  { key: 'zhuangziXiaoyaoyouButterfly', nameKo: '도가 장자 소요유 호접몽', icon: '🦋', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2598,6 +2637,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'sumerianInannaUnderworldDescent',
     'toltecNagualDreaming',
     'greekMoiraiAnankeFate',
     'egyptianSphinxDreamOracle',
@@ -2621,6 +2661,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   daily_timing_transit: [
+    'norseVolvaSeidrNineRealms',
     'chaldeanMulApinAstrology',
     'zhongLuAlchemy',
     'druidMoonTrees',
@@ -2681,6 +2722,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'zhuangziXiaoyaoyouButterfly',
     'egyptianSphinxDreamOracle',
     'eleusinianMysteries',
     'druidMoonTrees',
@@ -2700,6 +2742,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'zhuangziXiaoyaoyouButterfly',
+    'norseVolvaSeidrNineRealms',
+    'sumerianInannaUnderworldDescent',
     'gnosticPistisSophiaPleroma',
     'shugendoYamabushiTenRealms',
     'toltecNagualDreaming',
@@ -2974,5 +3019,8 @@ ${report.egyptianSphinxDreamOracleResult && shouldIncludeEngine('egyptianSphinxD
 ${report.chaldeanMulApinAstrologyResult && shouldIncludeEngine('chaldeanMulApinAstrology', options) ? '\n' + formatChaldeanMulApinAstrologyPrompt(report.chaldeanMulApinAstrologyResult) : ''}
 ${report.toltecNagualDreamingResult && shouldIncludeEngine('toltecNagualDreaming', options) ? '\n' + formatToltecNagualDreamingPrompt(report.toltecNagualDreamingResult) : ''}
 ${report.shugendoYamabushiTenRealmsResult && shouldIncludeEngine('shugendoYamabushiTenRealms', options) ? '\n' + formatShugendoYamabushiTenRealmsPrompt(report.shugendoYamabushiTenRealmsResult) : ''}
-${report.gnosticPistisSophiaPleromaResult && shouldIncludeEngine('gnosticPistisSophiaPleroma', options) ? '\n' + formatGnosticPistisSophiaPleromaPrompt(report.gnosticPistisSophiaPleromaResult) : ''}`;
+${report.gnosticPistisSophiaPleromaResult && shouldIncludeEngine('gnosticPistisSophiaPleroma', options) ? '\n' + formatGnosticPistisSophiaPleromaPrompt(report.gnosticPistisSophiaPleromaResult) : ''}
+${report.sumerianInannaUnderworldDescentResult && shouldIncludeEngine('sumerianInannaUnderworldDescent', options) ? '\n' + formatSumerianInannaUnderworldDescentPrompt(report.sumerianInannaUnderworldDescentResult) : ''}
+${report.norseVolvaSeidrNineRealmsResult && shouldIncludeEngine('norseVolvaSeidrNineRealms', options) ? '\n' + formatNorseVolvaSeidrNineRealmsPrompt(report.norseVolvaSeidrNineRealmsResult) : ''}
+${report.zhuangziXiaoyaoyouButterflyResult && shouldIncludeEngine('zhuangziXiaoyaoyouButterfly', options) ? '\n' + formatZhuangziXiaoyaoyouButterflyPrompt(report.zhuangziXiaoyaoyouButterflyResult) : ''}`;
 }
