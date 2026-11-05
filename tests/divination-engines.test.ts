@@ -117,6 +117,9 @@ import { calculateNordicYggdrasilRealms, formatNordicYggdrasilRealmsPrompt, NORD
 import { calculateEgyptianMaatFeatherHeart, formatEgyptianMaatFeatherHeartPrompt, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION } from '../src/lib/divination/egyptianMaatFeatherHeartEngine';
 import { calculatePersianMithraicSpheres, formatPersianMithraicSpheresPrompt, PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION } from '../src/lib/divination/persianMithraicSevenSpheresEngine';
 import { calculateOrpheicMysteries, formatOrpheicMysteriesPrompt, ORPHEIC_MYSTERIES_ENGINE_VERSION } from '../src/lib/divination/orpheicMysteriesDionysianEngine';
+import { calculatePopolVuhHeroTwins, formatPopolVuhHeroTwinsPrompt, MESOAMERICAN_POPOL_VUH_ENGINE_VERSION } from '../src/lib/divination/mesoamericanPopolVuhHeroTwinsEngine';
+import { calculateAncientYarrowProbability, formatAncientYarrowProbabilityPrompt, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION } from '../src/lib/divination/ancientChineseYarrowIchingProbabilityEngine';
+import { calculateVedicPanchaKosha, formatVedicPanchaKoshaPrompt, VEDIC_PANCHA_KOSHA_ENGINE_VERSION } from '../src/lib/divination/vedicPanchaKoshaAlignmentEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3138,4 +3141,38 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(prompt.includes('고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터'));
   assert(prompt.includes(rep.goldTabletPassportCode));
 });
+
+test('Popol Vuh Hero Twins Engine: calculates active trial house and trickster resilience', () => {
+  const rep = calculatePopolVuhHeroTwins({ profile });
+  assert.equal(rep.engineVersion, MESOAMERICAN_POPOL_VUH_ENGINE_VERSION);
+  assert(rep.tricksterResilienceScore >= 0 && rep.tricksterResilienceScore <= 100);
+  assert(rep.activeTrialHouse.houseNumber >= 1 && rep.activeTrialHouse.houseNumber <= 6);
+  assert(rep.activeTrialHouse.houseNameKo.length > 0);
+  const prompt = formatPopolVuhHeroTwinsPrompt(rep);
+  assert(prompt.includes('고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터'));
+  assert(prompt.includes(rep.activeTrialHouse.houseNameKo));
+});
+
+test('Ancient Yarrow I Ching Probability Engine: calculates dominant yao and Dayan alignment score', () => {
+  const rep = calculateAncientYarrowProbability({ profile });
+  assert.equal(rep.engineVersion, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION);
+  assert([6, 7, 8, 9].includes(rep.dominantYaoValue));
+  assert(rep.dayanAlignmentScore >= 0 && rep.dayanAlignmentScore <= 100);
+  assert(rep.yaoNameKo.length > 0);
+  const prompt = formatAncientYarrowProbabilityPrompt(rep);
+  assert(prompt.includes('고대 중국 주역 대연지수 49책 시초점 확률 실측 데이터'));
+  assert(prompt.includes(rep.yaoNameKo));
+});
+
+test('Vedic Pancha Kosha Engine: calculates 5 layers alignment and Atman realization index', () => {
+  const rep = calculateVedicPanchaKosha({ profile });
+  assert.equal(rep.engineVersion, VEDIC_PANCHA_KOSHA_ENGINE_VERSION);
+  assert.equal(rep.layers.length, 5);
+  assert(rep.atmanRealizationIndex >= 0 && rep.atmanRealizationIndex <= 100);
+  assert(rep.lowestAlignedLayer.layerIndex >= 1 && rep.lowestAlignedLayer.layerIndex <= 5);
+  const prompt = formatVedicPanchaKoshaPrompt(rep);
+  assert(prompt.includes('고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 실측 데이터'));
+  assert(prompt.includes(rep.lowestAlignedLayer.koshaNameKo));
+});
+
 

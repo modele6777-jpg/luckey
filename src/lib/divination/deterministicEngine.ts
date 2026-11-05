@@ -151,6 +151,9 @@ import { calculateNordicYggdrasilRealms, formatNordicYggdrasilRealmsPrompt, type
 import { calculateEgyptianMaatFeatherHeart, formatEgyptianMaatFeatherHeartPrompt, type MaatWeighingReport, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION } from './egyptianMaatFeatherHeartEngine';
 import { calculatePersianMithraicSpheres, formatPersianMithraicSpheresPrompt, type MithraicSpheresReport, PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION } from './persianMithraicSevenSpheresEngine';
 import { calculateOrpheicMysteries, formatOrpheicMysteriesPrompt, type OrphicMysteriesReport, ORPHEIC_MYSTERIES_ENGINE_VERSION } from './orpheicMysteriesDionysianEngine';
+import { calculatePopolVuhHeroTwins, formatPopolVuhHeroTwinsPrompt, type PopolVuhReport, MESOAMERICAN_POPOL_VUH_ENGINE_VERSION } from './mesoamericanPopolVuhHeroTwinsEngine';
+import { calculateAncientYarrowProbability, formatAncientYarrowProbabilityPrompt, type YarrowProbabilityReport, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION } from './ancientChineseYarrowIchingProbabilityEngine';
+import { calculateVedicPanchaKosha, formatVedicPanchaKoshaPrompt, type PanchaKoshaReport, VEDIC_PANCHA_KOSHA_ENGINE_VERSION } from './vedicPanchaKoshaAlignmentEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -322,6 +325,9 @@ export interface DeterministicEngineReport {
   egyptianMaatFeatherHeartResult?: MaatWeighingReport | null;
   persianMithraicSpheresResult?: MithraicSpheresReport | null;
   orpheicMysteriesResult?: OrphicMysteriesReport | null;
+  popolVuhHeroTwinsResult?: PopolVuhReport | null;
+  ancientYarrowProbabilityResult?: YarrowProbabilityReport | null;
+  vedicPanchaKoshaResult?: PanchaKoshaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1947,6 +1953,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 123. 고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 엔진
+  const popolVuhHeroTwinsResult = (() => {
+    try {
+      return calculatePopolVuhHeroTwins({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 124. 고대 중국 주역 대연지수(大衍之數) 49책 시초점 확률 수리 엔진
+  const ancientYarrowProbabilityResult = (() => {
+    try {
+      return calculateAncientYarrowProbability({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 125. 고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 & 아트만 해방 엔진
+  const vedicPanchaKoshaResult = (() => {
+    try {
+      return calculateVedicPanchaKosha({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2104,6 +2137,9 @@ export function runDeterministicEngine(params: {
     egyptianMaatFeatherHeartResult,
     persianMithraicSpheresResult,
     orpheicMysteriesResult,
+    popolVuhHeroTwinsResult,
+    ancientYarrowProbabilityResult,
+    vedicPanchaKoshaResult,
     tools: toolsMap,
   };
 }
@@ -2690,5 +2726,8 @@ ${report.hawaiianKahunaThreeSelvesResult && shouldIncludeEngine('hawaiianKahunaT
 ${report.nordicYggdrasilRealmsResult && shouldIncludeEngine('nordicYggdrasilRealms', options) ? '\n' + formatNordicYggdrasilRealmsPrompt(report.nordicYggdrasilRealmsResult) : ''}
 ${report.egyptianMaatFeatherHeartResult && shouldIncludeEngine('egyptianMaatFeatherHeart', options) ? '\n' + formatEgyptianMaatFeatherHeartPrompt(report.egyptianMaatFeatherHeartResult) : ''}
 ${report.persianMithraicSpheresResult && shouldIncludeEngine('persianMithraicSpheres', options) ? '\n' + formatPersianMithraicSpheresPrompt(report.persianMithraicSpheresResult) : ''}
-${report.orpheicMysteriesResult && shouldIncludeEngine('orpheicMysteries', options) ? '\n' + formatOrpheicMysteriesPrompt(report.orpheicMysteriesResult) : ''}`;
+${report.orpheicMysteriesResult && shouldIncludeEngine('orpheicMysteries', options) ? '\n' + formatOrpheicMysteriesPrompt(report.orpheicMysteriesResult) : ''}
+${report.popolVuhHeroTwinsResult && shouldIncludeEngine('popolVuhHeroTwins', options) ? '\n' + formatPopolVuhHeroTwinsPrompt(report.popolVuhHeroTwinsResult) : ''}
+${report.ancientYarrowProbabilityResult && shouldIncludeEngine('ancientYarrowProbability', options) ? '\n' + formatAncientYarrowProbabilityPrompt(report.ancientYarrowProbabilityResult) : ''}
+${report.vedicPanchaKoshaResult && shouldIncludeEngine('vedicPanchaKosha', options) ? '\n' + formatVedicPanchaKoshaPrompt(report.vedicPanchaKoshaResult) : ''}`;
 }
