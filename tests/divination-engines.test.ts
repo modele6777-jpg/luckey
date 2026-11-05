@@ -3005,3 +3005,27 @@ test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phas
   assert(prompt.includes('고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터'));
   assert(prompt.includes(rep.activeMetamorphosis.animalTotem));
 });
+
+test('Tarot Yes/No Verdict: correctly identifies NO when reading content is NO despite heading options', () => {
+  const sampleReading = `[핵심 3줄 요약]
+- [현재 에너지] 중요한 갈림길에 서 있으며 신중한 검토가 필요합니다.
+- [방향과 결단] 최종 판정은 [NO]이며, 무리한 진행보다 변수 점검과 호흡 조율이 필요합니다.
+- [실천 행동] 오늘 할 일을 목록으로 정리하고 우선순위를 다시 세우세요.
+
+### 🎯 3. 트리니티 마스터의 직관적 결단과 최종 판정
+**최종 판정: [NO]**
+3번 카드는 역방향으로 놓여 있어 지금은 서두르지 말고 잠시 멈추어야 함을 가리킵니다.`;
+
+  const lines = sampleReading.split('\n');
+  const explicitVerdictRegex = /(?:최종\s*판정|마스터의\s*최종\s*결단|마스터의\s*최종\s*판정|방향과\s*결단)\s*(?:은|는|이|가|[:—\-])?\s*(?:\*\*)?\s*\[?\s*(조건부\s*YES|확실한\s*YES|YES|단호한\s*NO|NO)\s*\]?(?!\s*[\/|또는|or])/i;
+  const matches: string[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('#') && (trimmed.includes('/') || trimmed.includes('또는') || trimmed.includes(' or '))) continue;
+    const m = trimmed.match(explicitVerdictRegex);
+    if (m && m[1]) matches.push(m[1].trim().toUpperCase());
+  }
+
+  assert(matches.includes('NO'), 'Must detect NO in explicit declarations');
+  assert(!matches.includes('YES'), 'Must NOT detect YES when content is NO');
+});
