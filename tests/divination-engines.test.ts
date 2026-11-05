@@ -87,6 +87,9 @@ import { calculateSlavicSvarogCircle, formatSlavicSvarogCirclePrompt, SLAVIC_SVA
 import { calculateEsseneCommunion, formatEsseneCommunionPrompt, ESSENE_COMMUNION_VERSION } from '../src/lib/divination/esseneCommunionTreeEngine';
 import { calculateHuangdiFiveMovementsSixQi, formatHuangdiFiveMovementsSixQiPrompt, HUANGDI_YUNQI_VERSION } from '../src/lib/divination/huangdiFiveMovementsSixQiEngine';
 import { calculatePythagoreanTetraktys, formatPythagoreanTetraktysPrompt, PYTHAGOREAN_TETRAKTYS_VERSION } from '../src/lib/divination/pythagoreanTetraktysGematriaEngine';
+import { calculateBabylonianEnumaElish, formatBabylonianEnumaElishPrompt, BABYLONIAN_ENUMA_ELISH_VERSION } from '../src/lib/divination/babylonianEnumaElishEngine';
+import { calculateTaoistHuangtingJing, formatTaoistHuangtingJingPrompt, TAOIST_HUANGTING_VERSION } from '../src/lib/divination/taoistHuangtingJingEngine';
+import { calculatePersianAmeshaSpenta, formatPersianAmeshaSpentaPrompt, PERSIAN_AMESHA_SPENTA_VERSION } from '../src/lib/divination/persianAmeshaSpentaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2760,4 +2763,37 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
   const prompt = formatPythagoreanTetraktysPrompt(rep);
   assert(prompt.includes('피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진'));
   assert(prompt.includes(rep.harmonicSignature.sacredRatioName));
+});
+
+test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deity, edict and ordering index', () => {
+  const rep = calculateBabylonianEnumaElish(profile);
+  assert.equal(rep.engineVersion, BABYLONIAN_ENUMA_ELISH_VERSION);
+  assert(rep.patronDeity.koreanName.length > 0);
+  assert(rep.destinyEdict.soulSovereigntyScore >= 0 && rep.destinyEdict.soulSovereigntyScore <= 100);
+  assert(rep.orderingIndex >= 0 && rep.orderingIndex <= 100);
+  const prompt = formatBabylonianEnumaElishPrompt(rep);
+  assert(prompt.includes('고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 천체 엔진'));
+  assert(prompt.includes(rep.patronDeity.koreanName));
+});
+
+test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardian spirit and prescription', () => {
+  const rep = calculateTaoistHuangtingJing(profile);
+  assert.equal(rep.engineVersion, TAOIST_HUANGTING_VERSION);
+  assert(rep.palaces.dominantPalace.length > 0);
+  assert(rep.guardianSpirit.spiritName.length > 0);
+  assert(rep.illuminationScore >= 0 && rep.illuminationScore <= 100);
+  const prompt = formatTaoistHuangtingJingPrompt(rep);
+  assert(prompt.includes('도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진'));
+  assert(prompt.includes(rep.guardianSpirit.spiritName));
+});
+
+test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman scores and avestan guidance', () => {
+  const rep = calculatePersianAmeshaSpenta(profile);
+  assert.equal(rep.engineVersion, PERSIAN_AMESHA_SPENTA_VERSION);
+  assert(rep.patronImmortal.koreanName.length > 0);
+  assert(rep.totalRadianceScore >= 0 && rep.totalRadianceScore <= 100);
+  assert(rep.baresman.twigsHarmonicState.length > 0);
+  const prompt = formatPersianAmeshaSpentaPrompt(rep);
+  assert(prompt.includes('고대 페르시아 바르숨 & 6대 아메샤 스펜타 조화 엔진'));
+  assert(prompt.includes(rep.patronImmortal.koreanName));
 });
