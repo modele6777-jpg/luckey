@@ -132,6 +132,9 @@ import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, 
 import { calculateGreekMoiraiAnankeFate, formatGreekMoiraiAnankeFatePrompt, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION } from '../src/lib/divination/greekMoiraiAnankeFateEngine';
 import { calculateEgyptianSphinxDreamOracle, formatEgyptianSphinxDreamOraclePrompt, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION } from '../src/lib/divination/egyptianSphinxDreamOracleEngine';
 import { calculateChaldeanMulApinAstrology, formatChaldeanMulApinAstrologyPrompt, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION } from '../src/lib/divination/chaldeanMulApinAstrologyEngine';
+import { calculateToltecNagualDreaming, formatToltecNagualDreamingPrompt, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION } from '../src/lib/divination/toltecNagualDreamingEngine';
+import { calculateShugendoYamabushiTenRealms, formatShugendoYamabushiTenRealmsPrompt, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION } from '../src/lib/divination/shugendoYamabushiTenRealmsEngine';
+import { calculateGnosticPistisSophiaPleroma, formatGnosticPistisSophiaPleromaPrompt, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION } from '../src/lib/divination/gnosticPistisSophiaPleromaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3324,6 +3327,45 @@ test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling pla
   const prompt = formatChaldeanMulApinAstrologyPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN)'));
   assert(prompt.includes(rep.rulingPlanet.nameKo));
+});
+
+test('Toltec Nagual Dreaming Engine: calculates four agreements and second attention', () => {
+  const rep = calculateToltecNagualDreaming({ profile });
+  assert.equal(rep.engineVersion, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION);
+  assert.equal(rep.agreements.length, 4);
+  assert(rep.secondAttentionIndex >= 0 && rep.secondAttentionIndex <= 100);
+  assert(rep.mitoteClarityScore >= 0 && rep.mitoteClarityScore <= 100);
+  assert(rep.tonalRatio + rep.nagualRatio === 100);
+  assert(rep.primaryAgreement.nameKo.length > 0);
+  const prompt = formatToltecNagualDreamingPrompt(rep);
+  assert(prompt.includes('고대 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 실측 데이터'));
+  assert(prompt.includes(rep.primaryAgreement.nameKo));
+});
+
+test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification and symbolic rebirth', () => {
+  const rep = calculateShugendoYamabushiTenRealms({ profile });
+  assert.equal(rep.engineVersion, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION);
+  assert(rep.symbolicRebirthScore >= 0 && rep.symbolicRebirthScore <= 100);
+  assert(rep.sixRootsPurificationScore >= 0 && rep.sixRootsPurificationScore <= 100);
+  assert(rep.kujiKiriWardDefenseScore >= 0 && rep.kujiKiriWardDefenseScore <= 100);
+  assert(rep.horagaiResonanceFrequency > 0);
+  assert(rep.currentInitiationRealm.nameKo.length > 0);
+  const prompt = formatShugendoYamabushiTenRealmsPrompt(rep);
+  assert(prompt.includes('고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터'));
+  assert(prompt.includes(rep.currentInitiationRealm.nameKo));
+});
+
+test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance and pneuma spark', () => {
+  const rep = calculateGnosticPistisSophiaPleroma({ profile });
+  assert.equal(rep.engineVersion, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION);
+  assert(rep.pneumaSpiritualSparkScore >= 0 && rep.pneumaSpiritualSparkScore <= 100);
+  assert(rep.gnosisLiberationIndex >= 0 && rep.gnosisLiberationIndex <= 100);
+  assert(rep.archonMatrixDissolutionRate >= 0 && rep.archonMatrixDissolutionRate <= 100);
+  assert(rep.pleromaLightFullnessScore >= 0 && rep.pleromaLightFullnessScore <= 100);
+  assert(rep.primaryAeon.nameKo.length > 0);
+  const prompt = formatGnosticPistisSophiaPleromaPrompt(rep);
+  assert(prompt.includes('고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 실측 데이터'));
+  assert(prompt.includes(rep.primaryAeon.nameKo));
 });
 
 
