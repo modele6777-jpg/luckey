@@ -465,9 +465,9 @@ export const THEME_STRUCTURES: Record<TarotConcernTheme, (spread: TarotSpreadRec
       {
         stepNumber: 3,
         emoji: '🎯',
-        title: '트리니티 마스터의 최종 판정: [YES / NO / 조건부 YES]',
+        title: '트리니티 마스터의 직관적 결단과 최종 판정',
         subtitle: '3번 카드: 명쾌하고 단호한 결정',
-        instruction: '반드시 첫 줄에 **최종 판정: [YES]** 또는 **최종 판정: [NO]** (또는 **최종 판정: [조건부 YES]**)를 대괄호 안에 굵게 선언하고, 카드의 뜻을 근거로 그 이유를 들려주십시오.',
+        instruction: '반드시 첫 줄에 **최종 판정: [YES]** 또는 **최종 판정: [NO]** (또는 **최종 판정: [조건부 YES]**)를 대괄호 안에 굵게 단독 선언하고, 카드의 뜻을 근거로 그 이유를 들려주십시오.',
       },
       {
         stepNumber: 4,

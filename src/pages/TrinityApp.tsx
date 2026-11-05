@@ -1661,40 +1661,95 @@ function playDailyCardChimeAsync() {
       tarotConcernAnalysis.theme === 'yes_no' ||
       tarotSpreadRecommendation.theme === 'yes_no';
 
-    const cleanResult = tarotResult.toUpperCase();
+    // 1. 텍스트 라인별 정밀 분석: [YES / NO] 옵션 나열 헤더를 배제하고 실제 선언된 최종 판정 추출
+    const lines = tarotResult.split('\n');
 
-    // 1. 명시적 대괄호 판정 탐색 (최종 판정: [YES] 또는 [NO] 등)
-    const yesMatch = tarotResult.match(/최종\s*판정\s*[:—\-]?\s*\[?\s*(확실한\s*YES|조건부\s*YES|YES)\s*\]?/i) ||
-      (isYesNoContext && tarotResult.match(/\[\s*(확실한\s*YES|조건부\s*YES|YES)\s*\]/i));
-    const noMatch = tarotResult.match(/최종\s*판정\s*[:—\-]?\s*\[?\s*(단호한\s*NO|NO)\s*\]?/i) ||
-      (isYesNoContext && tarotResult.match(/\[\s*(단호한\s*NO|NO)\s*\]/i));
+    // 명시적 최종 판정 패턴: "최종 판정: [NO]", "**최종 판정: [NO]**", "최종 판정은 [NO]이며", "최종 판정: [조건부 YES]" 등
+    // (뒤에 / 나 '또는', 'or' 등이 붙어 선택지를 나열하는 헤더나 안내문은 엄격히 배제)
+    const explicitVerdictRegex = /(?:최종\s*판정|마스터의\s*최종\s*결단|마스터의\s*최종\s*판정|방향과\s*결단)\s*(?:은|는|이|가|[:—\-])?\s*(?:\*\*)?\s*\[?\s*(조건부\s*YES|확실한\s*YES|YES|단호한\s*NO|NO)\s*\]?(?!\s*[\/|또는|or])/i;
 
-    if (yesMatch) {
-      const raw = yesMatch[1];
-      const isConditional = raw.includes('조건부');
-      return {
-        type: isConditional ? 'CONDITIONAL_YES' : 'YES',
-        label: isConditional ? '조건부 YES' : 'YES',
-        badgeText: isConditional ? '준비와 보완을 거친 후 적극 전진 권장' : '우주와 카드가 비추는 확실한 긍정과 기회',
-      };
-    }
-    if (noMatch) {
-      return {
-        type: 'NO',
-        label: 'NO',
-        badgeText: '지금은 무리한 추진보다 숨은 변수 점검과 호흡 조율 필요',
-      };
+    const explicitMatches: string[] = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // 옵션 목록이나 마크다운 헤더(예: ### ... [YES / NO / 조건부 YES])는 판정 선언이 아니므로 건너뜀
+      if (trimmed.startsWith('#') && (trimmed.includes('/') || trimmed.includes('또는') || trimmed.includes(' or '))) {
+        continue;
+      }
+      const match = trimmed.match(explicitVerdictRegex);
+      if (match && match[1]) {
+        explicitMatches.push(match[1].trim().toUpperCase());
+      }
     }
 
-    // 2. 예/아니오 맥락에서 단독 단어 기반 탐색
-    if (isYesNoContext) {
-      if (/\bYES\b/i.test(cleanResult) && !/\bNO\b/i.test(cleanResult)) {
+    // 2. 단독 대괄호 판정 패턴: "[NO]", "[단호한 NO]", "[조건부 YES]", "[YES]" 등
+    const standaloneBracketRegex = /\[\s*(조건부\s*YES|확실한\s*YES|YES|단호한\s*NO|NO)\s*\](?!\s*[\/|또는|or])/i;
+    const bracketMatches: string[] = [];
+    if (explicitMatches.length === 0 && isYesNoContext) {
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#') && (trimmed.includes('/') || trimmed.includes('또는') || trimmed.includes(' or '))) {
+          continue;
+        }
+        const match = trimmed.match(standaloneBracketRegex);
+        if (match && match[1]) {
+          bracketMatches.push(match[1].trim().toUpperCase());
+        }
+      }
+    }
+
+    const detectedVerdicts = explicitMatches.length > 0 ? explicitMatches : bracketMatches;
+
+    if (detectedVerdicts.length > 0) {
+      // NO 또는 단호한 NO가 하나라도 선언되어 있으면 판정은 확실하게 NO
+      const hasNo = detectedVerdicts.some((v) => v.includes('NO'));
+      const hasConditionalYes = detectedVerdicts.some((v) => v.includes('조건부'));
+      const hasYes = detectedVerdicts.some((v) => v === 'YES' || v.includes('확실한 YES'));
+
+      if (hasNo) {
+        return {
+          type: 'NO',
+          label: 'NO',
+          badgeText: '지금은 무리한 추진보다 숨은 변수 점검과 호흡 조율 필요',
+        };
+      }
+      if (hasConditionalYes) {
+        return {
+          type: 'CONDITIONAL_YES',
+          label: '조건부 YES',
+          badgeText: '준비와 보완을 거친 후 적극 전진 권장',
+        };
+      }
+      if (hasYes) {
         return {
           type: 'YES',
           label: 'YES',
-          badgeText: '카드가 가리키는 긍정의 확신',
+          badgeText: '우주와 카드가 비추는 확실한 긍정과 기회',
         };
       }
+    }
+
+    // 3. 예/아니오 맥락에서 3번째 카드(최종 판정 자리)의 실제 정/역방향 상태 연동
+    if (isYesNoContext && Array.isArray(drawnCards) && drawnCards.length >= 3) {
+      const finalCard = drawnCards[2];
+      if (finalCard?.reversed) {
+        return {
+          type: 'NO',
+          label: 'NO',
+          badgeText: '3번 최종 판정 카드가 역방향을 가리키며 호흡 조율을 권고',
+        };
+      }
+      if (finalCard && !finalCard.reversed) {
+        return {
+          type: 'YES',
+          label: 'YES',
+          badgeText: '3번 최종 판정 카드가 정방향의 맑은 흐름을 제시',
+        };
+      }
+    }
+
+    // 4. 예/아니오 맥락에서 단독 단어 기반 탐색
+    if (isYesNoContext) {
+      const cleanResult = tarotResult.toUpperCase();
       if (/\bNO\b/i.test(cleanResult) && !/\bYES\b/i.test(cleanResult)) {
         return {
           type: 'NO',
@@ -1702,10 +1757,17 @@ function playDailyCardChimeAsync() {
           badgeText: '신중한 검토와 페이스 조절 필요',
         };
       }
+      if (/\bYES\b/i.test(cleanResult) && !/\bNO\b/i.test(cleanResult)) {
+        return {
+          type: 'YES',
+          label: 'YES',
+          badgeText: '카드가 가리키는 긍정의 확신',
+        };
+      }
     }
 
     return null;
-  }, [tarotResult, tarotConcernAnalysis, tarotSpreadRecommendation]);
+  }, [tarotResult, tarotConcernAnalysis, tarotSpreadRecommendation, drawnCards]);
 
   const displayTarotResult = useMemo(() => {
     // 타로 결과 상단에 별도의 핵심 3줄 요약 카드가 렌더링되므로, 하단 본문에서는 중복된 후행 요약 블록을 깔끔히 제거

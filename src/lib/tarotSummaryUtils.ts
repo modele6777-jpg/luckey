@@ -520,7 +520,7 @@ export function extractConciseSummary(text: string, cardContext?: any): string[]
         (s) =>
           s !== verdictLine &&
           s.length >= 15 &&
-          /긍정|결단|방향|흐름|추진|타이밍|선택|나아가|기회|결실|성취|신뢰|열어/.test(
+          /긍정|결단|방향|흐름|추진|타이밍|선택|나아가|기회|결실|성취|신뢰|열어|주의|위험|멈춤|보완|변수|리스크|정체|내실/.test(
             s
           )
       );

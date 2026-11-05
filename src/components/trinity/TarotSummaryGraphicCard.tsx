@@ -72,14 +72,14 @@ export function TarotSummaryGraphicCard({
       rawContent = strippedIntro.replace(/^[:：—\-–~·•*]+\s*/, '').trim();
     }
 
-    // YES / NO 감지
+    // YES / NO 감지 (NO 및 조건부 판정을 우선 판별하여 긍정 오인 방지)
     let highlightBadge: { text: string; color: string } | null = null;
-    if (/\[YES\]|최종\s*판정[:\s]*YES/i.test(rawContent)) {
-      highlightBadge = { text: '✨ YES', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40' };
-    } else if (/\[NO\]|최종\s*판정[:\s]*NO/i.test(rawContent)) {
+    if (/\[\s*(?:단호한\s*)?NO\s*\](?!\s*[\/|또는|or])|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*NO\b/i.test(rawContent)) {
       highlightBadge = { text: '🛑 NO', color: 'bg-rose-500/20 text-rose-300 border-rose-400/40' };
-    } else if (/조건부\s*YES/i.test(rawContent)) {
+    } else if (/\[\s*조건부\s*YES\s*\]|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*조건부\s*YES\b|조건부\s*YES/i.test(rawContent)) {
       highlightBadge = { text: '⚡ 조건부 YES', color: 'bg-amber-500/20 text-amber-300 border-amber-400/40' };
+    } else if (/\[\s*(?:확실한\s*|단독\s*)?YES\s*\](?!\s*[\/|또는|or])|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*YES\b/i.test(rawContent)) {
+      highlightBadge = { text: '✨ YES', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40' };
     }
 
     if (idx === 0 || /현재|에너지|상황|진단/i.test(rawTag)) {
