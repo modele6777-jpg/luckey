@@ -184,6 +184,9 @@ import { calculateKashmirShaivismSpanda, formatKashmirShaivismSpandaPrompt, type
 import { calculateSumerianEnumaElishFiftyNames, formatSumerianEnumaElishFiftyNamesPrompt, type SumerianEnumaElishFiftyNamesReport, ENUMA_ELISH_ENGINE_VERSION } from './sumerianEnumaElishFiftyNamesEngine';
 import { calculateAlexandrianDecanThirtySixGods, formatAlexandrianDecanThirtySixGodsPrompt, type AlexandrianDecanThirtySixGodsReport, ALEXANDRIAN_DECAN_ENGINE_VERSION } from './alexandrianDecanThirtySixGodsEngine';
 import { calculateTaoistLieziWindRiding, formatTaoistLieziWindRidingPrompt, type TaoistLieziWindRidingReport, TAOIST_LIEZI_ENGINE_VERSION } from './taoistLieziWindRidingEngine';
+import { calculateSamkhyaTwentyFiveTattvas, formatSamkhyaTwentyFiveTattvasPrompt, type SamkhyaTwentyFiveTattvasReport, SAMKHYA_TATTVAS_ENGINE_VERSION } from './samkhyaTwentyFiveTattvasEngine';
+import { calculateNeoConfucianFourSevenLiQi, formatNeoConfucianFourSevenLiQiPrompt, type NeoConfucianFourSevenLiQiReport, NEO_CONFUCIAN_LIQI_ENGINE_VERSION } from './neoConfucianFourSevenLiQiEngine';
+import { calculateEtruscanAugurSixteenSky, formatEtruscanAugurSixteenSkyPrompt, type EtruscanAugurSixteenSkyReport, ETRUSCAN_AUGUR_ENGINE_VERSION } from './etruscanAugurSixteenSkyDivinationEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -388,6 +391,9 @@ export interface DeterministicEngineReport {
   sumerianEnumaElishFiftyNamesResult?: SumerianEnumaElishFiftyNamesReport | null;
   alexandrianDecanThirtySixGodsResult?: AlexandrianDecanThirtySixGodsReport | null;
   taoistLieziWindRidingResult?: TaoistLieziWindRidingReport | null;
+  samkhyaTwentyFiveTattvasResult?: SamkhyaTwentyFiveTattvasReport | null;
+  neoConfucianFourSevenLiQiResult?: NeoConfucianFourSevenLiQiReport | null;
+  etruscanAugurSixteenSkyResult?: EtruscanAugurSixteenSkyReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2310,6 +2316,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 156. 고대 인도 상키야 철학 25타트바 & 푸루샤-프라크리티 분별지 해탈 엔진
+  const samkhyaTwentyFiveTattvasResult = (() => {
+    try {
+      return calculateSamkhyaTwentyFiveTattvas({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 157. 동양 유학 정통 성리학 사칠이기 & 거경궁리 주일무적 수양 엔진
+  const neoConfucianFourSevenLiQiResult = (() => {
+    try {
+      return calculateNeoConfucianFourSevenLiQi({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 158. 고대 에트루리아 16천궁 분할 & 로마 아우구르 조점 신탁 엔진
+  const etruscanAugurSixteenSkyResult = (() => {
+    try {
+      return calculateEtruscanAugurSixteenSky({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2500,6 +2533,9 @@ export function runDeterministicEngine(params: {
     sumerianEnumaElishFiftyNamesResult,
     alexandrianDecanThirtySixGodsResult,
     taoistLieziWindRidingResult,
+    samkhyaTwentyFiveTattvasResult,
+    neoConfucianFourSevenLiQiResult,
+    etruscanAugurSixteenSkyResult,
     tools: toolsMap,
   };
 }
@@ -2683,6 +2719,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },
   { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master' },
   { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master' },
+  { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master' },
+  { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master' },
+  { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2793,6 +2832,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'etruscanAugurSixteenSky',
     'sumerianEnumaElishFiftyNames',
     'alexandrianDecanThirtySixGods',
     'romanStoicProhairesis',
@@ -2821,6 +2861,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   daily_timing_transit: [
+    'etruscanAugurSixteenSky',
     'alexandrianDecanThirtySixGods',
     'taoistLieziWindRiding',
     'patanjaliAshtangaYoga',
@@ -2885,6 +2926,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'samkhyaTwentyFiveTattvas',
+    'etruscanAugurSixteenSky',
     'sumerianEnumaElishFiftyNames',
     'taoistLieziWindRiding',
     'persianAttarSevenValleys',
@@ -2914,6 +2957,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'samkhyaTwentyFiveTattvas',
+    'neoConfucianFourSevenLiQi',
     'sumerianEnumaElishFiftyNames',
     'alexandrianDecanThirtySixGods',
     'taoistLieziWindRiding',
@@ -3218,5 +3263,8 @@ ${report.hermeticPoimandresResult && shouldIncludeEngine('hermeticPoimandres', o
 ${report.kashmirShaivismSpandaResult && shouldIncludeEngine('kashmirShaivismSpanda', options) ? '\n' + formatKashmirShaivismSpandaPrompt(report.kashmirShaivismSpandaResult) : ''}
 ${report.sumerianEnumaElishFiftyNamesResult && shouldIncludeEngine('sumerianEnumaElishFiftyNames', options) ? '\n' + formatSumerianEnumaElishFiftyNamesPrompt(report.sumerianEnumaElishFiftyNamesResult) : ''}
 ${report.alexandrianDecanThirtySixGodsResult && shouldIncludeEngine('alexandrianDecanThirtySixGods', options) ? '\n' + formatAlexandrianDecanThirtySixGodsPrompt(report.alexandrianDecanThirtySixGodsResult) : ''}
-${report.taoistLieziWindRidingResult && shouldIncludeEngine('taoistLieziWindRiding', options) ? '\n' + formatTaoistLieziWindRidingPrompt(report.taoistLieziWindRidingResult) : ''}`;
+${report.taoistLieziWindRidingResult && shouldIncludeEngine('taoistLieziWindRiding', options) ? '\n' + formatTaoistLieziWindRidingPrompt(report.taoistLieziWindRidingResult) : ''}
+${report.samkhyaTwentyFiveTattvasResult && shouldIncludeEngine('samkhyaTwentyFiveTattvas', options) ? '\n' + formatSamkhyaTwentyFiveTattvasPrompt(report.samkhyaTwentyFiveTattvasResult) : ''}
+${report.neoConfucianFourSevenLiQiResult && shouldIncludeEngine('neoConfucianFourSevenLiQi', options) ? '\n' + formatNeoConfucianFourSevenLiQiPrompt(report.neoConfucianFourSevenLiQiResult) : ''}
+${report.etruscanAugurSixteenSkyResult && shouldIncludeEngine('etruscanAugurSixteenSky', options) ? '\n' + formatEtruscanAugurSixteenSkyPrompt(report.etruscanAugurSixteenSkyResult) : ''}`;
 }

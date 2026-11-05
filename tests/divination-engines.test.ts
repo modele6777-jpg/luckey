@@ -150,6 +150,9 @@ import { calculateKashmirShaivismSpanda, formatKashmirShaivismSpandaPrompt, KASH
 import { calculateSumerianEnumaElishFiftyNames, formatSumerianEnumaElishFiftyNamesPrompt, ENUMA_ELISH_ENGINE_VERSION } from '../src/lib/divination/sumerianEnumaElishFiftyNamesEngine';
 import { calculateAlexandrianDecanThirtySixGods, formatAlexandrianDecanThirtySixGodsPrompt, ALEXANDRIAN_DECAN_ENGINE_VERSION } from '../src/lib/divination/alexandrianDecanThirtySixGodsEngine';
 import { calculateTaoistLieziWindRiding, formatTaoistLieziWindRidingPrompt, TAOIST_LIEZI_ENGINE_VERSION } from '../src/lib/divination/taoistLieziWindRidingEngine';
+import { calculateSamkhyaTwentyFiveTattvas, formatSamkhyaTwentyFiveTattvasPrompt, SAMKHYA_TATTVAS_ENGINE_VERSION } from '../src/lib/divination/samkhyaTwentyFiveTattvasEngine';
+import { calculateNeoConfucianFourSevenLiQi, formatNeoConfucianFourSevenLiQiPrompt, NEO_CONFUCIAN_LIQI_ENGINE_VERSION } from '../src/lib/divination/neoConfucianFourSevenLiQiEngine';
+import { calculateEtruscanAugurSixteenSky, formatEtruscanAugurSixteenSkyPrompt, ETRUSCAN_AUGUR_ENGINE_VERSION } from '../src/lib/divination/etruscanAugurSixteenSkyDivinationEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3578,6 +3581,48 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
   assert(prompt.includes('도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.nameKo));
 });
+
+test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna balance and Kaivalya liberation index', () => {
+  const rep = calculateSamkhyaTwentyFiveTattvas({ profile, question: '상키야 25타트바 분별지' });
+  assert.equal(rep.engineVersion, SAMKHYA_TATTVAS_ENGINE_VERSION);
+  assert(rep.vivekaDiscernmentScore >= 0 && rep.vivekaDiscernmentScore <= 100);
+  assert(rep.kaivalyaLiberationIndex >= 0 && rep.kaivalyaLiberationIndex <= 100);
+  assert(rep.purushaWitnessPower >= 0 && rep.purushaWitnessPower <= 100);
+  assert(rep.prakritiEntanglementRisk >= 0 && rep.prakritiEntanglementRisk <= 100);
+  assert.equal(rep.gunaBalance.sattva + rep.gunaBalance.rajas + rep.gunaBalance.tamas, 100);
+  assert(rep.dominantTattva.nameKo.length > 0);
+  const prompt = formatSamkhyaTwentyFiveTattvasPrompt(rep);
+  assert(prompt.includes('고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트'));
+  assert(prompt.includes(rep.dominantTattva.nameKo));
+});
+
+test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeong balance and Geogyeong concentration', () => {
+  const rep = calculateNeoConfucianFourSevenLiQi({ profile, question: '성리학 사칠이기 거경궁리' });
+  assert.equal(rep.engineVersion, NEO_CONFUCIAN_LIQI_ENGINE_VERSION);
+  assert(rep.sadanAlignmentScore >= 0 && rep.sadanAlignmentScore <= 100);
+  assert(rep.chiljeongBalanceScore >= 0 && rep.chiljeongBalanceScore <= 100);
+  assert(rep.liQiHarmonyIndex >= 0 && rep.liQiHarmonyIndex <= 100);
+  assert(rep.originalNaturePurityScore >= 0 && rep.originalNaturePurityScore <= 100);
+  assert(rep.geogyeongConcentrationIndex >= 0 && rep.geogyeongConcentrationIndex <= 100);
+  assert(rep.dominantSadan.nameKo.length > 0);
+  const prompt = formatNeoConfucianFourSevenLiQiPrompt(rep);
+  assert(prompt.includes('성리학 사칠이기(四七理氣) & 거경궁리 주일무적 수양 실측 리포트'));
+  assert(prompt.includes(rep.dominantSadan.nameKo));
+});
+
+test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice score, 16 Templum region and Admissio approval', () => {
+  const rep = calculateEtruscanAugurSixteenSky({ profile, question: '에트루리아 16천궁 아우구르 조점' });
+  assert.equal(rep.engineVersion, ETRUSCAN_AUGUR_ENGINE_VERSION);
+  assert(rep.faustusScore >= 0 && rep.faustusScore <= 100);
+  assert(rep.lituusClarityIndex >= 0 && rep.lituusClarityIndex <= 100);
+  assert(rep.cosmicSanctionStrength >= 0 && rep.cosmicSanctionStrength <= 100);
+  assert(rep.activeRegion.regionNumber >= 1 && rep.activeRegion.regionNumber <= 16);
+  assert(rep.augurSign.sacredSymbol.length > 0);
+  const prompt = formatEtruscanAugurSixteenSkyPrompt(rep);
+  assert(prompt.includes('고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 실측 리포트'));
+  assert(prompt.includes(rep.activeRegion.quadrantKo));
+});
+
 
 
 
