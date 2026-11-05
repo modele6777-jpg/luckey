@@ -133,6 +133,9 @@ import { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt, type Ele
 import { calculateVedicNakshatra108Pada, formatVedicNakshatra108PadaPrompt, type VedicNakshatra108PadaReport, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION } from './vedicNakshatra108PadaEngine';
 import { calculateEgyptianHermeticCartouche, formatEgyptianHermeticCartouchePrompt, type EgyptianHermeticCartoucheReport, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION } from './egyptianHermeticCartoucheEngine';
 import { calculateTaoistGongGuoGeKarma, formatTaoistGongGuoGeKarmaPrompt, type TaoistGongGuoGeKarmaReport, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION } from './taoistGongGuoGeKarmaEngine';
+import { calculateYorubaIfaOdu, formatYorubaIfaOduPrompt, type YorubaIfaOduReport, YORUBA_IFA_ODU_ENGINE_VERSION } from './yorubaIfaOduEngine';
+import { calculateArabicIlmAlRaml, formatArabicIlmAlRamlPrompt, type ArabicIlmAlRamlReport, ARABIC_ILM_AL_RAML_ENGINE_VERSION } from './arabicIlmAlRamlEngine';
+import { calculateHinduNadiAgastyaPalmLeaf, formatHinduNadiAgastyaPalmLeafPrompt, type HinduNadiAgastyaPalmLeafReport, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION } from './hinduNadiAgastyaPalmLeafEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -286,6 +289,9 @@ export interface DeterministicEngineReport {
   vedicNakshatra108PadaResult?: VedicNakshatra108PadaReport | null;
   egyptianHermeticCartoucheResult?: EgyptianHermeticCartoucheReport | null;
   taoistGongGuoGeKarmaResult?: TaoistGongGuoGeKarmaReport | null;
+  yorubaIfaOduResult?: YorubaIfaOduReport | null;
+  arabicIlmAlRamlResult?: ArabicIlmAlRamlReport | null;
+  hinduNadiAgastyaPalmLeafResult?: HinduNadiAgastyaPalmLeafReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1749,6 +1755,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 105. 서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 엔진
+  const yorubaIfaOduResult = (() => {
+    try {
+      return calculateYorubaIfaOdu({ profile, targetDate: now, question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 106. 고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 엔진
+  const arabicIlmAlRamlResult = (() => {
+    try {
+      return calculateArabicIlmAlRaml({ profile, targetDate: now, question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 107. 남인도 정통 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 카르마 신탁 엔진
+  const hinduNadiAgastyaPalmLeafResult = (() => {
+    try {
+      return calculateHinduNadiAgastyaPalmLeaf({ profile, targetDate: now, question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1888,6 +1921,9 @@ export function runDeterministicEngine(params: {
     vedicNakshatra108PadaResult,
     egyptianHermeticCartoucheResult,
     taoistGongGuoGeKarmaResult,
+    yorubaIfaOduResult,
+    arabicIlmAlRamlResult,
+    hinduNadiAgastyaPalmLeafResult,
     tools: toolsMap,
   };
 }
@@ -2020,6 +2056,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master' },
   { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master' },
   { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
+  { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master' },
+  { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
+  { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2053,6 +2092,9 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'yorubaIfaOdu',
+    'arabicIlmAlRaml',
+    'hinduNadiAgastyaPalmLeaf',
     'vedicNakshatra108Pada',
     'tiebanShenshu',
     'sumerianFiftyMes',
@@ -2210,6 +2252,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'yorubaIfaOdu',
+    'arabicIlmAlRaml',
+    'hinduNadiAgastyaPalmLeaf',
     'vedicNakshatra108Pada',
     'egyptianHermeticCartouche',
     'taoistGongGuoGeKarma',
@@ -2421,5 +2466,8 @@ ${report.tibetanBonResult && shouldIncludeEngine('tibetanBonNineWays', options) 
 ${report.eleusinianMysteriesResult && shouldIncludeEngine('eleusinianMysteries', options) ? '\n' + formatEleusinianMysteriesPrompt(report.eleusinianMysteriesResult) : ''}
 ${report.vedicNakshatra108PadaResult && shouldIncludeEngine('vedicNakshatra108Pada', options) ? '\n' + formatVedicNakshatra108PadaPrompt(report.vedicNakshatra108PadaResult) : ''}
 ${report.egyptianHermeticCartoucheResult && shouldIncludeEngine('egyptianHermeticCartouche', options) ? '\n' + formatEgyptianHermeticCartouchePrompt(report.egyptianHermeticCartoucheResult) : ''}
-${report.taoistGongGuoGeKarmaResult && shouldIncludeEngine('taoistGongGuoGeKarma', options) ? '\n' + formatTaoistGongGuoGeKarmaPrompt(report.taoistGongGuoGeKarmaResult) : ''}`;
+${report.taoistGongGuoGeKarmaResult && shouldIncludeEngine('taoistGongGuoGeKarma', options) ? '\n' + formatTaoistGongGuoGeKarmaPrompt(report.taoistGongGuoGeKarmaResult) : ''}
+${report.yorubaIfaOduResult && shouldIncludeEngine('yorubaIfaOdu', options) ? '\n' + formatYorubaIfaOduPrompt(report.yorubaIfaOduResult) : ''}
+${report.arabicIlmAlRamlResult && shouldIncludeEngine('arabicIlmAlRaml', options) ? '\n' + formatArabicIlmAlRamlPrompt(report.arabicIlmAlRamlResult) : ''}
+${report.hinduNadiAgastyaPalmLeafResult && shouldIncludeEngine('hinduNadiAgastyaPalmLeaf', options) ? '\n' + formatHinduNadiAgastyaPalmLeafPrompt(report.hinduNadiAgastyaPalmLeafResult) : ''}`;
 }
