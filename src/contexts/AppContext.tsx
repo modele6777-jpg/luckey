@@ -246,18 +246,9 @@ const MASTER_VAULT_ID = 'master_modele6777';
 const isMasterVaultAccount = (user: { uid?: string; email?: string | null } | null, bypass: boolean): boolean =>
   bypass || Boolean(user?.email && user.email.toLowerCase() === 'modele6777@gmail.com');
 
-/**
- * 🍀 실시간 대화 동기화 전용 고유 채널 ID:
- * 박주형 님의 계정(구글 로그인 modele6777@gmail.com, 마스터 볼트, 원클릭 모바일, PIN 1202)은
- * 무조건 하나의 고유 마스터 채널(`master_modele6777`)을 바라보게 하여,
- * PC와 모바일에서 동시에 채팅을 입력해도 0.1초 만에 양방향 실시간으로 즉시 표시됩니다.
- */
-const getActiveChatDocId = (user: { uid?: string; email?: string | null } | null): string => {
-  if (isMasterVaultAccount(user, safeLocalStorage.getItem('developer_bypass') === 'true')) {
-    return MASTER_VAULT_ID;
-  }
-  return user?.uid || getPairedVaultId() || MASTER_VAULT_ID;
-};
+// PIN-linked devices receive chatHistory through the paired state listener.
+const getActiveChatDocId = (user: User | null): string | undefined =>
+  user?.uid === auth.currentUser?.uid ? user?.uid : undefined;
 
 /** 🍀 전역 토스트: 로그인 상태 전환 등 중요 순간을 앱 어디에서든 눈에 띄게 알립니다. */
 export function showLucyToast(message: string, durationMs = 4200): void {
@@ -319,7 +310,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(() => unlockMemoryFlag || readDailyUnlock());
-  const [sharedState, setSharedState] = useState<SharedState | null>(() => {
+  const [sharedState, renderSharedState] = useState<SharedState | null>(() => {
     const persistentProfile = getPersistentUserProfile();
     const guestState = loadGuestState();
     const initialProfile = mergeUserProfiles(persistentProfile, guestState?.userProfile);
@@ -329,7 +320,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   });
   const sharedStateRef = useRef(sharedState);
-  sharedStateRef.current = sharedState;
+  const setSharedState = useCallback((next: React.SetStateAction<SharedState | null>) => {
+    const value = typeof next === 'function' ? next(sharedStateRef.current) : next;
+    sharedStateRef.current = value;
+    renderSharedState(value);
+  }, []);
   const [isSyncing, setIsSyncing] = useState(false);
   const isSyncInProgressRef = useRef(false);
   const [activePairedVaultId, setActivePairedVaultId] = useState<string | null>(() => getPairedVaultId());
@@ -605,24 +600,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [firebaseUser?.uid]);
 
   // Listen to cross-device chat sync events triggered by unpackAndHydrateLocalStorage
+  const mergeIncomingChat = useCallback((previous: UnifiedMessage[], incoming: UnifiedMessage[]) => {
+    const activeIds = Object.values(activeAssistMsgIdRef.current);
+    const merged = mergeUnifiedMessages(previous, incoming);
+    // Keep the local streaming bubble even while it has no text yet.
+    for (const message of previous) {
+      if (activeIds.includes(message.id) && !merged.some(item => item.id === message.id)) {
+        merged.push(message);
+      }
+    }
+    return merged;
+  }, []);
+
   useEffect(() => {
     const handleChatSynced = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (Array.isArray(customEvent.detail)) {
-        const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
-        if (!isAnyGenerating) {
-          const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
-          const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
-          const archived = processDailyChatArchival(customEvent.detail, nick);
-          setUnifiedMessages((prev) => mergeUnifiedMessages(prev, archived.messages));
-        }
+        const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
+        const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
+        const archived = processDailyChatArchival(customEvent.detail, nick);
+        setUnifiedMessages((prev) => {
+          const merged = mergeIncomingChat(prev, archived.messages);
+          return JSON.stringify(prev) === JSON.stringify(merged) ? prev : merged;
+        });
       }
     };
     window.addEventListener('prism:chat_synced', handleChatSynced);
     return () => {
       window.removeEventListener('prism:chat_synced', handleChatSynced);
     };
-  }, []);
+  }, [mergeIncomingChat]);
 
   // Avoid serializing and writing the entire conversation on every streamed
   // animation frame. Final answers and page exit still flush immediately.
@@ -728,24 +735,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             }
           } catch (_) {}
         }
-        const vaultId = getPairedVaultId();
-        if (vaultId) {
-          try {
-            const paired = await pullFromPairedVault();
-            if (paired) {
-              const localCached = firebaseUser ? loadFromLocal(firebaseUser.uid) : loadGuestState();
-              const currentSig = getSharedStateSignature(localCached);
-              const pairedSig = getSharedStateSignature(paired);
-              if (currentSig !== pairedSig) {
-                const merged = mergeSharedState(localCached || {}, paired);
-                setSharedState(merged);
-                if (firebaseUser?.uid) saveToLocal(firebaseUser.uid, merged);
-                else saveGuestState(merged);
-                unpackAndHydrateLocalStorage(firebaseUser?.uid, merged, true);
-              }
-            }
-          } catch (_) {}
-        }
       }
     };
 
@@ -766,7 +755,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!effectiveChatId) return;
 
     const chatDocRef = doc(db, 'chatThreads', effectiveChatId);
-    const unsub = onSnapshot(chatDocRef, (snap) => {
+    const unsub = onSnapshot(chatDocRef, { includeMetadataChanges: true }, (snap) => {
       // Skip local write echoes to avoid re-entrant update cycles
       if (snap.metadata.hasPendingWrites) {
         return;
@@ -776,10 +765,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const data = snap.data();
         const raw = data?.unified || data?.messages;
         if (raw) {
-          // If generating, don't clobber local streaming
-          const isAnyGenerating = Object.values(isGeneratingRef.current).some(Boolean);
-          if (isAnyGenerating) return;
-
           let remoteList: UnifiedMessage[] = [];
           if (Array.isArray(raw)) {
             remoteList = raw.filter((m: UnifiedMessage) => !isLegacyAIErrorMessage(m));
@@ -798,7 +783,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             const rawNick = sharedStateRef.current?.userProfile?.basic?.nickname?.trim();
             const nick = (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제';
             const archivalResult = processDailyChatArchival(remoteList, nick);
-            if (archivalResult.wasArchived) {
+            if (archivalResult.wasArchived && !Object.values(isGeneratingRef.current).some(Boolean)) {
               saveUnifiedMessagesSafely(archivalResult.messages);
               setUnifiedMessages(archivalResult.messages);
               pushChatThreadsToFirestore(archivalResult.messages, true);
@@ -806,7 +791,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             }
 
             setUnifiedMessages((prev) => {
-              const merged = mergeUnifiedMessages(prev, remoteList);
+              const merged = mergeIncomingChat(prev, archivalResult.messages);
               if (JSON.stringify(prev) !== JSON.stringify(merged)) {
                 saveUnifiedMessagesSafely(merged);
                 return merged;
@@ -821,7 +806,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsub;
-  }, [firebaseUser, activePairedVaultId]);
+  }, [firebaseUser, mergeIncomingChat, pushChatThreadsToFirestore]);
 
   const signInAsDeveloper = useCallback((silentToast = false) => {
     // ⚡ 원클릭 계정 연동: 박주형 님의 마스터 볼트(master_modele6777)로 즉시 로그인·잠금 해제합니다.
@@ -1267,7 +1252,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const incomingSig = getSharedStateSignature(incomingState);
       if (currentSig && incomingSig && currentSig === incomingSig) return;
 
-      const localCached = firebaseUser ? loadFromLocal(firebaseUser.uid) : loadGuestState();
+      const localCached = sharedStateRef.current;
       const persistentProfile = getPersistentUserProfile();
       const mergedProfile = mergeUserProfiles(
         mergeUserProfiles(persistentProfile, localCached?.userProfile),
@@ -1278,7 +1263,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localCached || {},
         incomingState,
         0,
-        Date.now()
+        getSharedStateUpdatedAt(incomingState) || 1
       );
       if (mergedProfile && Object.keys(mergedProfile).length > 0) {
         mergedData.userProfile = mergedProfile;
@@ -1420,9 +1405,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     updates: Partial<SharedState>,
     sourceApp: string
   ) => {
-    let finalMerged: SharedState | null = null;
-    
-    setSharedState(prev => {
+    const finalMerged = (() => {
+      const prev = sharedStateRef.current;
       const persistentProfile = getPersistentUserProfile();
       const existingProfile = mergeUserProfiles(
         prev?.userProfile,
@@ -1449,7 +1433,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         (updatedProfile as any).updatedAt = nowTs;
       }
 
-      finalMerged = mergeSharedState(
+      const finalMerged = mergeSharedState(
         prev || {},
         {
           ...updates,
@@ -1480,22 +1464,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         saveToLocal(firebaseUser.uid, finalMerged);
       }
       return finalMerged;
-    });
-
-    if (finalMerged) {
-      unpackAndHydrateLocalStorage(firebaseUser?.uid, finalMerged);
-      // Continuous Real-Time Auto-Save to Paired Vault (for PIN-code synced devices)
-      void pushToPairedVault(finalMerged).catch(() => {});
-    }
+    })();
+    setSharedState(finalMerged);
+    unpackAndHydrateLocalStorage(firebaseUser?.uid, finalMerged);
+    void pushToPairedVault(finalMerged).catch(() => {});
 
     if (!firebaseUser) return;
 
     setIsSyncing(true);
     try {
       const ref = doc(db, 'sharedState', firebaseUser.uid);
-      const payload = finalMerged || updates;
-      const toPersist: any = cleanFirestoreData({ 
-        ...payload, 
+      const toPersist: any = cleanFirestoreData({
+        ...finalMerged,
         sourceApp, 
         updatedAt: serverTimestamp(),
         lastAppSyncAt: Date.now(),
@@ -1512,14 +1492,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setDoc(ref, toPersist, { merge: true }),
         syncTimeoutPromise,
       ]);
-      if (finalMerged) {
-        pushToServerVault(firebaseUser.uid, finalMerged);
-      }
+      void pushToServerVault(firebaseUser.uid, finalMerged);
     } catch (err: any) {
       console.warn('[SharedState] Firestore sync notice, retained in local cache & server vault:', err?.message || err);
-      if (finalMerged) {
-        pushToServerVault(firebaseUser.uid, finalMerged);
-      }
+      void pushToServerVault(firebaseUser.uid, finalMerged);
     } finally {
       setIsSyncing(false);
     }

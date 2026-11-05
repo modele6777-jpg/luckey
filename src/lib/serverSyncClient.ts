@@ -122,27 +122,30 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
 
   let isDestroyed = false;
   let lastReceivedTs = 0;
+  let firestoreConnected = false;
+  let polling = false;
+  let lastPayload = '';
+
+  const deliver = (state: SharedState) => {
+    const payload = JSON.stringify(state);
+    if (payload === lastPayload) return;
+    lastPayload = payload;
+    lastReceivedTs = Math.max(lastReceivedTs, state.clientUpdatedAt || 0);
+    onUpdate(state);
+  };
 
   // 1. Real-time Firestore onSnapshot Listener
   let unsubFirestore: (() => void) | null = null;
-  let lastDataSnapshotHash = '';
   try {
     const docRef = doc(db, 'pairedVaults', vaultId);
-    unsubFirestore = onSnapshot(docRef, (snap) => {
-      if (isDestroyed || !snap.exists()) return;
+    unsubFirestore = onSnapshot(docRef, { includeMetadataChanges: true }, (snap) => {
+      if (isDestroyed) return;
+      firestoreConnected = !snap.metadata.fromCache && snap.exists();
+      if (!snap.exists()) return;
       if (snap.metadata.hasPendingWrites) return;
-      const data = snap.data() as SharedState;
-      const snapHash = JSON.stringify({
-        prof: data.userProfile,
-        vibe: data.currentVibe,
-        oracles: data.todayOracles,
-        feats: (data.featureHistory || []).slice(0, 5),
-        clientTs: data.clientUpdatedAt,
-      });
-      if (snapHash === lastDataSnapshotHash) return;
-      lastDataSnapshotHash = snapHash;
-      onUpdate(data);
+      deliver(snap.data() as SharedState);
     }, (err) => {
+      firestoreConnected = false;
       console.warn('[PairedVault] onSnapshot notice (falling back to continuous sync):', err?.message || err);
     });
   } catch (_) {}
@@ -155,7 +158,7 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
       bc.onmessage = (event) => {
         if (isDestroyed) return;
         if (event?.data?.type === 'PRISM_PAIRED_STATE_UPDATE' && event?.data?.vaultId === vaultId && event?.data?.state) {
-          onUpdate(event.data.state);
+          deliver(event.data.state);
         }
       };
     }
@@ -163,18 +166,18 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
 
   // 3. Continuous Background Polling & Visibility wakeup trigger
   const pollServerVault = async () => {
-    if (isDestroyed) return;
+    if (isDestroyed || firestoreConnected || polling) return;
     if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+    polling = true;
     try {
       const serverState = await pullFromServerVault(vaultId);
-      if (serverState && !isDestroyed) {
+      if (serverState && !isDestroyed && !firestoreConnected) {
         const ts = serverState.clientUpdatedAt || 0;
-        if (ts > lastReceivedTs) {
-          lastReceivedTs = ts;
-          onUpdate(serverState);
-        }
+        if (ts > lastReceivedTs) deliver(serverState);
       }
-    } catch (_) {}
+    } finally {
+      polling = false;
+    }
   };
 
   const pollInterval = window.setInterval(pollServerVault, 15000);
@@ -186,6 +189,7 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
   };
   document.addEventListener('visibilitychange', handleWakeup);
   window.addEventListener('focus', handleWakeup);
+  window.addEventListener('online', handleWakeup);
 
   return () => {
     isDestroyed = true;
@@ -194,6 +198,7 @@ export function subscribeToPairedVault(onUpdate: (state: SharedState) => void): 
     window.clearInterval(pollInterval);
     document.removeEventListener('visibilitychange', handleWakeup);
     window.removeEventListener('focus', handleWakeup);
+    window.removeEventListener('online', handleWakeup);
   };
 }
 
