@@ -59,6 +59,7 @@ export interface UnifiedMessage {
 }
 
 export interface SendUnifiedMessageOptions {
+  tarotCardMarkers?: string;
   conversationId?: 'lucy' | 'lucy-pro';
   extraSystemContext?: string;
   systemSuffix?: string;
@@ -1757,7 +1758,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const canWriteConversation = () => getTodayDateKey() === requestDay && (!isProConversation || proRuntimeRef.current.account === requestProAccount);
     const { messages: unifiedMessages, load: loadSavedUnifiedMessages, isGeneratingRef, abortControllersRef, activeAssistMsgIdRef, setIsGenerating, setChatSuggestions } = runtime;
     const setUnifiedMessages: React.Dispatch<React.SetStateAction<UnifiedMessage[]>> = action => {
-      if (canWriteConversation()) runtime.setMessages(action);
+      if (canWriteConversation()) runtime.setMessages(prev => {
+        const next = typeof action === 'function' ? action(prev) : action;
+        if (!options?.tarotCardMarkers) return next;
+        return next.map(message => {
+          if (message.id !== assistMsgId || typeof message.content !== 'string') return message;
+          // Keep the actual draw visible before the first AI token and throughout streaming.
+          const reading = message.content.replace(/\[TAROT:[a-zA-Z0-9_]+(?::(?:upright|reversed|정방향|역방향))?\]\s*/gi, '').trimStart();
+          return { ...message, content: `${options.tarotCardMarkers}\n\n${reading}` };
+        });
+      });
     };
     const saveUnifiedMessagesSafely = (list: UnifiedMessage[]) => { if (canWriteConversation()) runtime.save(list); };
     const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;

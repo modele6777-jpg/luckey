@@ -1117,7 +1117,7 @@ export function UnifiedChat() {
                 }
 
                 const rawAssistantText = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
-                const cleanAssistantText = cleanAssistantMessageDisplay(rawAssistantText);
+                const cleanAssistantText = cleanAssistantMessageDisplay(rawAssistantText, true);
                 if (!cleanAssistantText.trim()) return null;
 
                 return (

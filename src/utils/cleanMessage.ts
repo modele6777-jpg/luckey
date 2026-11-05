@@ -16,7 +16,7 @@ export function cleanUserMessageDisplay(text: string | null | undefined): string
     .trimStart();
 }
 
-export function cleanAssistantMessageDisplay(text: string | null | undefined): string {
+export function cleanAssistantMessageDisplay(text: string | null | undefined, preserveTarotMarkers = false): string {
   if (!text || typeof text !== 'string') return '';
   let cleaned = text;
 
@@ -35,5 +35,6 @@ export function cleanAssistantMessageDisplay(text: string | null | undefined): s
     } catch {}
   }
 
+  if (preserveTarotMarkers) return cleaned.trim();
   return cleaned.replace(/\[TAROT:[a-zA-Z0-9_]+(?::(?:upright|reversed|정방향|역방향))?\]\s*/gi, '').trim();
 }

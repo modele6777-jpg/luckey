@@ -2315,10 +2315,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     // 🔮 타로 질문 의도 감지 시 실제 운명의 타로 카드를 즉시 드로우하여 루시 프롬프트에 주입 (이미지 비주얼 연동)
     const isTarotIntent = /타로|카드.*뽑|뽑.*카드|타로카드|점괘|스프레드|타로점/i.test(combinedContextText);
+    let tarotCardMarkers: string | undefined;
     if (isTarotIntent) {
       const isThreeCards = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
       const drawnCards = drawLucyTarotCards(isThreeCards ? 3 : 1);
       const cardMarkers = drawnCards.map((c) => formatTarotMarker(c)).join(' ');
+      tarotCardMarkers = cardMarkers;
       const cardDescriptions = drawnCards.map((c, i) => `- [${i + 1}번 카드] ${c.nameKo} (${c.name}, ${c.orientationKo}) — 키워드: ${c.keywords.join(', ')}`).join('\n');
       const tarotInstruction = `[🔮 운명의 타로 카드 드로우 결과 (실제 뽑힌 카드)]\n${cardMarkers}\n${cardDescriptions}\n- [루시 타로 리딩 절대 지침]:\n  1. 위에서 실제로 뽑힌 타로 카드의 상징과 의미를 질문자의 고민과 연결하여 현실적이고 깊이 있게 풀이해줘.\n  2. 답변 첫머리나 카드를 소개하는 문장에 ${cardMarkers} 태그를 그대로 포함해줘. 시스템이 이 태그를 인식해 실제 고화질 타로 카드 이미지를 대화창에 띄워줍니다.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${tarotInstruction}` : tarotInstruction;
@@ -2348,6 +2350,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
+      tarotCardMarkers,
       conversationId: 'lucy',
       isLucyPlus: isPlusMode,
       extraSystemContext,
@@ -2885,7 +2888,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             const rawTextContent = Array.isArray(msg.content) ? (msg.content as any[]).find((item: any) => item.type === 'text')?.text || '' : rawContent;
             const textContent = isUser
               ? cleanUserMessageDisplay(rawTextContent)
-              : cleanAssistantMessageDisplay(rawTextContent);
+              : cleanAssistantMessageDisplay(rawTextContent, true);
             if (!isUser && !textContent.trim() && !imageUrl) {
               return null;
             }

@@ -191,7 +191,7 @@ export function LucyKakaoBubbleGroup({
   const isStaggeringMoreBubbles =
     !shouldSkipStagger && (isGenerating || visibleCount < bubbles.length);
 
-  if (bubbles.length === 0) return null;
+  if (bubbles.length === 0 && detectedTarotCards.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-2 sm:gap-2.5 w-full min-w-0 max-w-full">

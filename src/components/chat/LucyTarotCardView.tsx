@@ -59,7 +59,8 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
                   <img
                     src={card.imageUrl}
                     alt={card.displayTitle}
-                    loading="lazy"
+                    loading="eager"
+                    fetchPriority="high"
                     className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
                       isReversed ? 'rotate-180' : ''
                     }`}
