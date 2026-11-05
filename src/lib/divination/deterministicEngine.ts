@@ -130,6 +130,9 @@ import { calculateDruidMoonTrees, formatDruidMoonTreesPrompt, type DruidMoonTree
 import { calculateTiebanShenshu, formatTiebanShenshuPrompt, type TiebanReport, TIEBAN_SHENSHU_VERSION } from './tiebanShenshuEngine';
 import { calculateTibetanBonNineWays, formatTibetanBonNineWaysPrompt, type TibetanBonReport, TIBETAN_BON_NINE_WAYS_VERSION } from './tibetanBonNineWaysEngine';
 import { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt, type EleusinianReport, ELEUSINIAN_MYSTERIES_VERSION } from './eleusinianMysteriesEngine';
+import { calculateVedicNakshatra108Pada, formatVedicNakshatra108PadaPrompt, type VedicNakshatra108PadaReport, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION } from './vedicNakshatra108PadaEngine';
+import { calculateEgyptianHermeticCartouche, formatEgyptianHermeticCartouchePrompt, type EgyptianHermeticCartoucheReport, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION } from './egyptianHermeticCartoucheEngine';
+import { calculateTaoistGongGuoGeKarma, formatTaoistGongGuoGeKarmaPrompt, type TaoistGongGuoGeKarmaReport, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION } from './taoistGongGuoGeKarmaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -280,6 +283,9 @@ export interface DeterministicEngineReport {
   tiebanShenshuResult?: TiebanReport | null;
   tibetanBonResult?: TibetanBonReport | null;
   eleusinianMysteriesResult?: EleusinianReport | null;
+  vedicNakshatra108PadaResult?: VedicNakshatra108PadaReport | null;
+  egyptianHermeticCartoucheResult?: EgyptianHermeticCartoucheReport | null;
+  taoistGongGuoGeKarmaResult?: TaoistGongGuoGeKarmaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1716,6 +1722,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 102. 인도 베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 엔진
+  const vedicNakshatra108PadaResult = (() => {
+    try {
+      return calculateVedicNakshatra108Pada(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 103. 고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 엔진
+  const egyptianHermeticCartoucheResult = (() => {
+    try {
+      return calculateEgyptianHermeticCartouche(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 104. 도교 태상감응편 & 공과격 선악 카르마 적선개운 엔진
+  const taoistGongGuoGeKarmaResult = (() => {
+    try {
+      return calculateTaoistGongGuoGeKarma(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1852,6 +1885,9 @@ export function runDeterministicEngine(params: {
     tiebanShenshuResult,
     tibetanBonResult,
     eleusinianMysteriesResult,
+    vedicNakshatra108PadaResult,
+    egyptianHermeticCartoucheResult,
+    taoistGongGuoGeKarmaResult,
     tools: toolsMap,
   };
 }
@@ -1981,6 +2017,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
   { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master' },
   { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master' },
+  { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master' },
+  { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master' },
+  { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2014,6 +2053,7 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'vedicNakshatra108Pada',
     'tiebanShenshu',
     'sumerianFiftyMes',
     'babylonianEnumaElish',
@@ -2057,6 +2097,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'egyptianHermeticCartouche',
     'tiebanShenshu',
     'druidMoonTrees',
     'persianAmeshaSpenta',
@@ -2169,6 +2210,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'vedicNakshatra108Pada',
+    'egyptianHermeticCartouche',
+    'taoistGongGuoGeKarma',
     'tiebanShenshu',
     'tibetanBonNineWays',
     'eleusinianMysteries',
@@ -2374,5 +2418,8 @@ ${report.zhongLuAlchemyResult && shouldIncludeEngine('zhongLuAlchemy', options) 
 ${report.druidMoonTreesResult && shouldIncludeEngine('druidMoonTrees', options) ? '\n' + formatDruidMoonTreesPrompt(report.druidMoonTreesResult) : ''}
 ${report.tiebanShenshuResult && shouldIncludeEngine('tiebanShenshu', options) ? '\n' + formatTiebanShenshuPrompt(report.tiebanShenshuResult) : ''}
 ${report.tibetanBonResult && shouldIncludeEngine('tibetanBonNineWays', options) ? '\n' + formatTibetanBonNineWaysPrompt(report.tibetanBonResult) : ''}
-${report.eleusinianMysteriesResult && shouldIncludeEngine('eleusinianMysteries', options) ? '\n' + formatEleusinianMysteriesPrompt(report.eleusinianMysteriesResult) : ''}`;
+${report.eleusinianMysteriesResult && shouldIncludeEngine('eleusinianMysteries', options) ? '\n' + formatEleusinianMysteriesPrompt(report.eleusinianMysteriesResult) : ''}
+${report.vedicNakshatra108PadaResult && shouldIncludeEngine('vedicNakshatra108Pada', options) ? '\n' + formatVedicNakshatra108PadaPrompt(report.vedicNakshatra108PadaResult) : ''}
+${report.egyptianHermeticCartoucheResult && shouldIncludeEngine('egyptianHermeticCartouche', options) ? '\n' + formatEgyptianHermeticCartouchePrompt(report.egyptianHermeticCartoucheResult) : ''}
+${report.taoistGongGuoGeKarmaResult && shouldIncludeEngine('taoistGongGuoGeKarma', options) ? '\n' + formatTaoistGongGuoGeKarmaPrompt(report.taoistGongGuoGeKarmaResult) : ''}`;
 }

@@ -96,6 +96,9 @@ import { calculateDruidMoonTrees, formatDruidMoonTreesPrompt, DRUID_MOON_TREES_V
 import { calculateTiebanShenshu, formatTiebanShenshuPrompt, TIEBAN_SHENSHU_VERSION } from '../src/lib/divination/tiebanShenshuEngine';
 import { calculateTibetanBonNineWays, formatTibetanBonNineWaysPrompt, TIBETAN_BON_NINE_WAYS_VERSION } from '../src/lib/divination/tibetanBonNineWaysEngine';
 import { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt, ELEUSINIAN_MYSTERIES_VERSION } from '../src/lib/divination/eleusinianMysteriesEngine';
+import { calculateVedicNakshatra108Pada, formatVedicNakshatra108PadaPrompt, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION } from '../src/lib/divination/vedicNakshatra108PadaEngine';
+import { calculateEgyptianHermeticCartouche, formatEgyptianHermeticCartouchePrompt, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION } from '../src/lib/divination/egyptianHermeticCartoucheEngine';
+import { calculateTaoistGongGuoGeKarma, formatTaoistGongGuoGeKarmaPrompt, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION } from '../src/lib/divination/taoistGongGuoGeKarmaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2867,4 +2870,39 @@ test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, statio
   const prompt = formatEleusinianMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진'));
   assert(prompt.includes(rep.currentGrade.gradeTitle));
+});
+
+test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma path score', () => {
+  const rep = calculateVedicNakshatra108Pada(profile);
+  assert.equal(rep.engineVersion, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION);
+  assert(rep.nakshatraIndex >= 1 && rep.nakshatraIndex <= 27);
+  assert(rep.pada >= 1 && rep.pada <= 4);
+  assert(rep.totalPadaIndex >= 1 && rep.totalPadaIndex <= 108);
+  assert(rep.dharmaPathScore >= 0 && rep.dharmaPathScore <= 100);
+  const prompt = formatVedicNakshatra108PadaPrompt(rep);
+  assert(prompt.includes('베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 실측 데이터'));
+  assert(prompt.includes(rep.nakshatraNameKo));
+});
+
+test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and soul triad', () => {
+  const rep = calculateEgyptianHermeticCartouche(profile);
+  assert.equal(rep.engineVersion, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION);
+  assert(rep.primaryCartoucheName.length > 0);
+  assert(rep.soulTriad.kaVitalityIndex >= 0 && rep.soulTriad.kaVitalityIndex <= 100);
+  assert(rep.soulTriad.baIndividualityIndex >= 0 && rep.soulTriad.baIndividualityIndex <= 100);
+  assert(rep.soulTriad.akhLuminousPurity >= 0 && rep.soulTriad.akhLuminousPurity <= 100);
+  const prompt = formatEgyptianHermeticCartouchePrompt(rep);
+  assert(prompt.includes('고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 실측 데이터'));
+  assert(prompt.includes(rep.primaryCartoucheName));
+});
+
+test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and shielding index', () => {
+  const rep = calculateTaoistGongGuoGeKarma(profile);
+  assert.equal(rep.engineVersion, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION);
+  assert(rep.meritDomain.length > 0);
+  assert(rep.netMeritScore >= 0);
+  assert(rep.karmicShieldingIndex >= 0 && rep.karmicShieldingIndex <= 100);
+  const prompt = formatTaoistGongGuoGeKarmaPrompt(rep);
+  assert(prompt.includes('도교 태상감응편(太上感應篇) & 공과격(功過格) 선악 카르마 적선개운 실측 데이터'));
+  assert(prompt.includes(rep.meritDomain));
 });
