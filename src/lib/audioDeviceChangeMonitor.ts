@@ -4,10 +4,10 @@
  * 사용자가 이어폰(에어팟, 블루투스 이어폰/헤드폰, 유선 이어폰 등)을 착용하고 음성을 듣다가
  * 이어폰 연결이 끊기거나 오디오 출력이 스피커로 전환되는 순간을 감지하여,
  * 조용한 도서관이나 대중교통 등 공공장소에서 스피커로 소리가 갑자기 울려 퍼지지 않도록
- * TTS 재생을 즉각 자동 정지(Auto-Stop)합니다.
+ * TTS 재생을 즉각 안전하게 자동 정지(Auto-Stop)합니다.
  */
 
-export type AudioDeviceChangeCallback = (reason: 'devicechange' | 'audio_route_changed' | 'hardware_pause') => void;
+export type AudioDeviceChangeCallback = (reason: 'devicechange' | 'audio_route_changed') => void;
 
 let isMonitoringInitialized = false;
 let listeners: AudioDeviceChangeCallback[] = [];
@@ -53,7 +53,7 @@ export function registerAudioDeviceChangeListener(callback: AudioDeviceChangeCal
 /**
  * 등록된 모든 리스너에게 장치 변경 통보
  */
-export function notifyAudioDeviceChanged(reason: 'devicechange' | 'audio_route_changed' | 'hardware_pause' = 'devicechange'): void {
+export function notifyAudioDeviceChanged(reason: 'devicechange' | 'audio_route_changed' = 'devicechange'): void {
   listeners.forEach(cb => {
     try {
       cb(reason);
@@ -81,10 +81,12 @@ export function initAudioDeviceChangeMonitor(): void {
   // 2. W3C 표준 navigator.mediaDevices.ondevicechange 이벤트 감지
   if (navigator.mediaDevices?.addEventListener) {
     navigator.mediaDevices.addEventListener('devicechange', async () => {
-      console.warn('[AudioDeviceMonitor] W3C devicechange event detected (earphones disconnected/switched).');
-      notifyAudioDeviceChanged('devicechange');
-      // 변경 사항 캐시 업데이트
-      await detectAudioDeviceChange().catch(() => {});
+      // 실제 오디오 장치 목록(이어폰 등)이 변경되었을 때만 안전 정지 통보
+      const hasRealChange = await detectAudioDeviceChange().catch(() => false);
+      if (hasRealChange) {
+        console.warn('[AudioDeviceMonitor] Audio output device change confirmed (earphones disconnected/switched).');
+        notifyAudioDeviceChanged('devicechange');
+      }
     });
   }
 }

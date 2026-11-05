@@ -169,27 +169,29 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
       const containerHeight = container.clientHeight;
 
       // 🎯 Comfortable reading window:
-      // If the target sentence is already comfortably in view (between 18% and 75% of container height),
-      // keep the scroll completely steady and still! This eliminates annoying bouncing between consecutive sentences.
+      // If the target sentence is already comfortably in the center zone (between 38% and 62% of container height),
+      // keep the scroll steady. Otherwise smoothly glide it back to the exact vertical center!
       const isComfortablyVisible =
-        targetRelativeTop >= containerHeight * 0.18 &&
-        targetRelativeTop + targetHeight <= containerHeight * 0.75;
+        targetRelativeTop >= containerHeight * 0.38 &&
+        targetRelativeTop + targetHeight <= containerHeight * 0.62;
 
       if (!force && isComfortablyVisible) {
         return true;
       }
 
-      // Smoothly place the active sentence at a comfortable baseline (~35% from the top of the container)
+      // 🎯 정확한 화면 수직 중앙(50%) 정렬:
+      // 하이라이트 문장의 중심축이 스크롤 뷰포트의 정중앙에 위치하도록 계산
       const targetAbsoluteTop = currentScroll + targetRelativeTop;
+      const targetCenter = targetAbsoluteTop + (targetHeight / 2);
       const desiredScrollTop = Math.round(
-        targetAbsoluteTop - (containerHeight * 0.35) + centerOffset
+        targetCenter - (containerHeight / 2) + centerOffset
       );
 
       const maxScroll = Math.max(0, container.scrollHeight - containerHeight);
       const finalTop = Math.max(0, Math.min(maxScroll, desiredScrollTop));
 
-      // Skip micro-adjustments if already aligned within 25px (unless forced)
-      if (!force && Math.abs(currentScroll - finalTop) < 25) {
+      // Skip micro-adjustments if already aligned within 12px (unless forced)
+      if (!force && Math.abs(currentScroll - finalTop) < 12) {
         return true;
       }
 
@@ -314,6 +316,22 @@ export function useSmartScroll(options: UseSmartScrollOptions = {}): UseSmartScr
 
     return () => clearTimeout(timer);
   }, [enabled, isSpeaking, currentSentenceKey, getActiveElement, scrollToActiveSentence]);
+
+  // Listen for immediate highlight render event
+  useEffect(() => {
+    if (!enabled || !isSpeaking) return;
+    const handleHighlightRender = () => {
+      if (!isUserOverridingRef.current) {
+        requestAnimationFrame(() => {
+          scrollToActiveSentence(false);
+        });
+      }
+    };
+    window.addEventListener('prism:tts-sentence-highlighted', handleHighlightRender);
+    return () => {
+      window.removeEventListener('prism:tts-sentence-highlighted', handleHighlightRender);
+    };
+  }, [enabled, isSpeaking, scrollToActiveSentence]);
 
   // Clean up on unmount
   useEffect(() => {

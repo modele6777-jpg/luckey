@@ -190,12 +190,15 @@ export function TTSHighlightMark({
   isLight?: boolean;
 }) {
   const markRef = useRef<HTMLSpanElement>(null);
-  const [ownsHighlight, setOwnsHighlight] = useState(false);
+  const [ownsHighlight, setOwnsHighlight] = useState(true);
   useEffect(() => {
     const element = markRef.current;
     if (!element) return;
     highlightCandidates.set(element, setOwnsHighlight);
     selectHighlightOwner();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('prism:tts-sentence-highlighted', { detail: { element } }));
+    }
     return () => {
       highlightCandidates.delete(element);
       selectHighlightOwner();

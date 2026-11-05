@@ -15,8 +15,8 @@ test('Audio Device Change Monitor: registers listener and receives notifications
   notifyAudioDeviceChanged('devicechange');
   assert.equal(receivedReason, 'devicechange');
 
-  notifyAudioDeviceChanged('hardware_pause');
-  assert.equal(receivedReason, 'hardware_pause');
+  notifyAudioDeviceChanged('audio_route_changed');
+  assert.equal(receivedReason, 'audio_route_changed');
 
   unsubscribe();
   receivedReason = null;
