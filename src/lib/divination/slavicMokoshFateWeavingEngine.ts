@@ -11,7 +11,7 @@
  * 내담자의 현실적 대지 풍요 지수와 얽힌 운명의 매듭을 푸는 처방을 100% 결정론적으로 도출합니다.
  */
 
-import { UserProfile } from '../../types';
+import type { UserProfile } from '../sharedState';
 
 export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '1.0.0';
 

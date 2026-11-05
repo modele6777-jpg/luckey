@@ -1857,7 +1857,7 @@ export function runDeterministicEngine(params: {
   // 114. 고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 엔진
   const koreanDangunCheonbuinResult = (() => {
     try {
-      return calculateKoreanDangunCheonbuin({ profile, question: rawQuestion });
+      return calculateKoreanDangunCheonbuin({ profile, question });
     } catch (_) {
       return null;
     }
@@ -1866,7 +1866,7 @@ export function runDeterministicEngine(params: {
   // 115. 고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 영혼 수호 엔진
   const maoriMauriHauoraResult = (() => {
     try {
-      return calculateMaoriMauriHauora({ profile, question: rawQuestion });
+      return calculateMaoriMauriHauora({ profile, question });
     } catch (_) {
       return null;
     }
@@ -1875,7 +1875,7 @@ export function runDeterministicEngine(params: {
   // 116. 고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 직관 엔진
   const slavicMokoshFateWeavingResult = (() => {
     try {
-      return calculateSlavicMokoshFateWeaving({ profile, question: rawQuestion });
+      return calculateSlavicMokoshFateWeaving({ profile, question });
     } catch (_) {
       return null;
     }

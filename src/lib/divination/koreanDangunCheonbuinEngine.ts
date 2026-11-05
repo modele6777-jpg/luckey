@@ -11,7 +11,7 @@
  * 내담자의 현실적 번영 지수와 세상과의 상생 조화도를 100% 결정론적으로 도출합니다.
  */
 
-import { UserProfile } from '../../types';
+import type { UserProfile } from '../sharedState';
 
 export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '1.0.0';
 

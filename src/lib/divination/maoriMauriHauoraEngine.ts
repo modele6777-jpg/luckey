@@ -12,7 +12,7 @@
  * 내담자의 현실적 생명력 지수와 대지 수호(Kaitiakitanga) 처방을 100% 결정론적으로 도출합니다.
  */
 
-import { UserProfile } from '../../types';
+import type { UserProfile } from '../sharedState';
 
 export const MAORI_MAURI_HAUORA_ENGINE_VERSION = '1.0.0';
 
