@@ -19,7 +19,7 @@ import { invokeLLM, invokeLLMStream, PERSONAS, type Message, getCrossAppRecentDi
 import { buildPrismOmniscientContext } from '../lib/prismOmniSync';
 import { calculateDetailedSaju } from '../lib/sajuAnalysis';
 import { buildUserNatalSummary, formatRelationshipsContext } from '../lib/astrologyAnalysis';
-import { selectOptimalDivinationTools, FIFTEEN_DIVINATION_TOOLS, type SevenThemeChannel } from '../lib/fifteenDivinationTools';
+import { selectOptimalDivinationTools, FIFTEEN_DIVINATION_TOOLS, type SevenThemeChannel, type SelectedDivinationToolsResult } from '../lib/fifteenDivinationTools';
 // Heavy wisdom engines are dynamically imported on first chat use to reduce initial bundle parse time
 // import { buildEarlyBuddhismSystemPrompt } from '../lib/earlyBuddhismWisdom';
 // import { buildGnosticSystemPrompt } from '../lib/gnosticWisdom';
@@ -1947,11 +1947,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         options?.mode === 'casual' ||
         (!options?.mode && responseLength === 'short' && activeThemeList.length === 0)
       );
-    const toolSelection = isCasualMode
-      ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
+    const toolSelection: SelectedDivinationToolsResult = isCasualMode
+      ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : !hasDivinationInjection
       ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall || isProConversation })
-      : { isCasualMessage: false, selectedTools: [], promptInjection: '' };
+      : { isCasualMessage: false, selectedTools: [], promptInjection: '', selectionReason: '', firedEngineBadges: [] };
     const toolsIncludedInPrompt = isCasualMode
       ? []
       : toolSelection.promptInjection

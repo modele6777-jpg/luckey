@@ -27,7 +27,7 @@ import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
-import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS } from '@/lib/fifteenDivinationTools';
+import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
 import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
@@ -2256,8 +2256,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
 
     // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
-    const divinationSelection = isCasual
-      ? { isCasualMessage: true, selectedTools: [], promptInjection: '' }
+    const divinationSelection: SelectedDivinationToolsResult = isCasual
+      ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: pro || isPlusMode });
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
