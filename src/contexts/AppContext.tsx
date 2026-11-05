@@ -436,7 +436,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const proChat = useLucyProConversation(firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device');
+  const proChat = useLucyProConversation(firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device', getActiveChatDocId(firebaseUser));
 
   const [isGenerating, setIsGenerating] = useState<Record<PersonaType, boolean>>({
     lucy: false, orange: false, trinity: false, aura: false, bluebird: false, muse: false
@@ -861,8 +861,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setIsUnlocked(true);
       writeDailyUnlock();
       // 🍀 PIN 1202 해제 시 박주형 님의 마스터 볼트(master_modele6777)로 즉시 자동 로그인/연동
-      if (!firebaseUser || firebaseUser.uid !== MASTER_VAULT_ID) {
-        signInAsDeveloper(true);
+      if (!firebaseUser) {
+        void auth.authStateReady().then(() => {
+          if (!auth.currentUser) signInAsDeveloper(true);
+        });
       }
       return true;
     }
@@ -870,12 +872,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [firebaseUser, signInAsDeveloper]);
 
   useEffect(() => {
+    if (!isAuthReady) return;
     if (!firebaseUser) {
       if (hasUnlockedPinToday()) {
         unlockMemoryFlag = true;
         setIsUnlocked(true);
-        // 🍀 PIN 1202가 이미 해제된 상태면 마스터 볼트(master_modele6777)로 즉시 자동 연동
-        signInAsDeveloper(true);
       } else {
         unlockMemoryFlag = false;
         setIsUnlocked(false);
@@ -886,7 +887,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unlockMemoryFlag = true;
       setIsUnlocked(true);
     }
-  }, [firebaseUser?.uid, signInAsDeveloper]);
+  }, [firebaseUser?.uid, isAuthReady]);
 
   // Handle redirect result on page load
   useEffect(() => {
@@ -902,42 +903,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       })
       .catch((err) => {
         console.error('[Auth] Redirect result error:', err);
+        showLucyToast('Google 로그인에 실패했습니다. 계정 로그인 상태를 확인해 주세요.');
       });
     return () => { mounted = false; };
   }, []);
 
   // Firebase auth listener
   useEffect(() => {
-    // Check if developer bypass was active
-    const isDev = safeLocalStorage.getItem('developer_bypass') === 'true';
-    if (isDev) {
-      // 원클릭 계정 연동(박주형 님) 상태로 새로고침 이후에도 그대로 유지합니다.
-      const mockUser = {
-        uid: MASTER_VAULT_ID,
-        email: 'modele6777@gmail.com',
-        displayName: '박주형',
-        photoURL: null,
-        emailVerified: true,
-        isAnonymous: false,
-        metadata: {},
-        providerData: [],
-        refreshToken: '',
-        tenantId: null,
-        delete: async () => {},
-        getIdToken: async () => 'mock-token',
-        getIdTokenResult: async () => ({} as any),
-        reload: async () => {},
-        toJSON: () => ({}),
-        providerId: 'google.com',
-        phoneNumber: null,
-        isLucyPlus: true,
-        developer_bypass: true,
-      } as any;
-      setFirebaseUser(mockUser);
-      setIsAuthReady(true);
-      return;
-    }
-
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user?.uid) {
         safeLocalStorage.removeItem('developer_bypass');
@@ -1049,7 +1021,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         const pairedVaultId = getPairedVaultId();
-        if (pairedVaultId && safeLocalStorage.getItem('developer_bypass') !== 'true') {
+        if (safeLocalStorage.getItem('developer_bypass') === 'true' || (!pairedVaultId && hasUnlockedPinToday())) {
+          signInAsDeveloper(true);
+        } else if (pairedVaultId) {
           // Auto restore paired device session
           const pairedUser = {
             uid: pairedVaultId,
@@ -1076,7 +1050,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           writeDailyUnlock();
           safeLocalStorage.setItem(AUTH_UID_SESSION_KEY, pairedVaultId);
           safeSessionStorage.setItem(AUTH_UID_SESSION_KEY, pairedVaultId);
-        } else if (safeLocalStorage.getItem('developer_bypass') !== 'true') {
+        } else {
           setFirebaseUser(null);
           try {
             safeSessionStorage.removeItem(AUTH_UID_SESSION_KEY);
@@ -1104,7 +1078,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unsub();
       clearTimeout(timer);
     };
-  }, []);
+  }, [signInAsDeveloper]);
 
   // sharedState realtime listener
   useEffect(() => {
@@ -1323,17 +1297,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       console.warn('[Auth] Google popup sign-in failed or blocked:', err?.code || err);
 
-      // 🍀 모바일(아이폰 Safari/PWA/안드로이드), 팝업 차단, 도메인 미승인 등 모든 구글 로그인 차단 환경 안전망:
-      // 아이폰 사파리나 PWA 환경에서는 리다이렉트가 세션을 유실시키거나 앱 밖으로 튕기므로,
-      // 박주형 님의 마스터 계정(modele6777@gmail.com, master_modele6777)으로 0.5초 만에 즉시 연동합니다.
-      try {
-        signInAsDeveloper(false);
-      } catch (devErr) {
-        console.error('[Auth] Fallback signInAsDeveloper error:', devErr);
-        throw err;
+      if (err?.code === 'auth/popup-blocked' || err?.code === 'auth/operation-not-supported-in-this-environment') {
+        try {
+          await signInWithRedirect(auth, googleProvider);
+          return;
+        } catch (redirectError) {
+          console.warn('[Auth] Google redirect sign-in failed:', redirectError);
+        }
       }
+      showLucyToast('Google 로그인에 실패했습니다. 두 기기에서 같은 계정으로 다시 로그인해 주세요.');
     }
-  }, [signInAsDeveloper]);
+  }, []);
 
   const signInAsPairedSession = useCallback((vaultId?: string) => {
     safeLocalStorage.removeItem('developer_bypass');
@@ -1699,7 +1673,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           messages: cleanList,
           unified: cleanList,
           updatedAt: serverTimestamp(),
-        }).catch((err) => {
+        }, { merge: true }).catch((err) => {
           console.warn('[ChatThreads] Firestore reset notice:', err?.message || err);
         });
       } catch (e) {
@@ -1767,7 +1741,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     const saveUnifiedMessagesSafely = (list: UnifiedMessage[]) => { if (canWriteConversation()) runtime.save(list); };
     const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;
-    const pushChatThreadsToFirestore = isProConversation ? (_messages: UnifiedMessage[], _immediate?: boolean) => {} : regularRuntimeRef.current.pushChatThreadsToFirestore;
+    const pushChatThreadsToFirestore = isProConversation ? proRuntimeRef.current.push : regularRuntimeRef.current.pushChatThreadsToFirestore;
     const updateSharedState = isProConversation ? async (_state: Partial<SharedState>, _source: string) => {} : regularRuntimeRef.current.updateSharedState;
     const isLucyPlus = Boolean(
       (options as any)?.isLucyPlus ||
