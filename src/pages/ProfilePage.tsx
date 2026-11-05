@@ -17,7 +17,7 @@ import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { SajuCardView } from '@/components/SajuCardView';
 import { NatalChartCardView } from '@/components/NatalChartCardView';
 import type { RelationshipEntry } from '@/lib/sharedState';
-import { db, doc, setDoc, serverTimestamp } from '@/lib/firebase';
+import { auth, db, doc, getDocFromServer, setDoc, serverTimestamp } from '@/lib/firebase';
 import { cleanFirestoreData, unpackAndHydrateLocalStorage } from '@/lib/sharedStateSync';
 import { generatePairingCode, importWithPairingCode, getPairedVaultId, setPairedVaultId } from '@/lib/serverSyncClient';
 
@@ -99,6 +99,7 @@ function InputField({ label, value, onChange, type = 'text', placeholder }: {
 export default function ProfilePage() {
   const [, navigate] = useLocation();
   const { sharedState, updateSharedState, firebaseUser, signInWithGoogle, syncPrismDevices } = useApp();
+  const googleUser = auth.currentUser?.uid === firebaseUser?.uid ? auth.currentUser : null;
   const [currentSection, setCurrentSection] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -652,17 +653,17 @@ export default function ProfilePage() {
         >
           <div className="duo-workspace-actions flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className={`w-3 h-3 rounded-full shrink-0 ${firebaseUser ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-amber-400 animate-pulse'}`} />
+              <div className={`w-3 h-3 rounded-full shrink-0 ${googleUser ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-amber-400 animate-pulse'}`} />
               <div className="min-w-0">
                 <span className="text-xs font-bold text-white/80 block truncate">
-                  {firebaseUser ? `구글 연동 계정: ${firebaseUser.email || firebaseUser.displayName || 'Google Account'}` : '게스트 모드 (로컬 임시 보관)'}
+                  {googleUser ? `구글 연동 계정: ${googleUser.email || googleUser.displayName || 'Google Account'}` : firebaseUser ? 'PIN 또는 기기 연동 상태' : '게스트 모드 (로컬 임시 보관)'}
                 </span>
                 <span className="text-[11px] text-white/40 block mt-0.5">
-                  {firebaseUser ? (syncFeedback || 'Google Cloud Firestore에 안전하게 실시간 영구 동기화 중') : '구글 계정으로 로그인하면 기기가 바뀌거나 캐시가 삭제되어도 프로필이 영구 보관됩니다.'}
+                  {syncFeedback || (googleUser ? '동기화 버튼으로 루시 대화 서버 연결을 확인할 수 있습니다.' : '루시 대화를 다른 기기와 동기화하려면 같은 Google 계정으로 연동해 주세요.')}
                 </span>
               </div>
             </div>
-            {!firebaseUser ? (
+            {!googleUser ? (
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
@@ -713,13 +714,19 @@ export default function ProfilePage() {
                   if (syncingDevices) return;
                   setSyncingDevices(true);
                   setSyncFeedback('클라우드 동기화 및 최신 업그레이드 확인 중...');
+                  let chatFeedback: string | null = null;
                   try {
                     const syncTimeout = new Promise<[null, null]>((resolve) =>
                       setTimeout(() => resolve([null, null]), 5500)
                     );
+                    const checkChat = getDocFromServer(doc(db, 'chatThreads', googleUser.uid)).then(
+                      snapshot => { chatFeedback = snapshot.exists() ? '루시 대화 서버 읽기 성공' : '루시 대화 서버 연결 성공 · 저장된 대화 없음'; },
+                      (error: { code?: string }) => { chatFeedback = `루시 대화 서버 연결 실패 (${error.code || 'unknown'})`; },
+                    );
                     const syncOperation = Promise.all([
                       syncPrismDevices(),
                       fetchDeployedAppVersion().catch(() => null),
+                      checkChat,
                     ]);
                     const [res, serverVer] = await Promise.race([syncOperation, syncTimeout]);
                     const updatedProfile = res?.mergedState?.userProfile || sharedState?.userProfile || loadProfileFromAllVaults() || getPersistentUserProfile();
@@ -744,12 +751,11 @@ export default function ProfilePage() {
                       return;
                     }
 
-                    setSyncFeedback(res?.message || `v${APP_VERSION} 기기 동기화 및 최신 상태 유지 완료!`);
+                    setSyncFeedback(chatFeedback || '동기화 응답 시간이 초과되었습니다.');
                   } catch {
-                    setSyncFeedback(`v${APP_VERSION} 동기화 완료`);
+                    setSyncFeedback('동기화 확인 중 오류가 발생했습니다.');
                   } finally {
                     setSyncingDevices(false);
-                    setTimeout(() => setSyncFeedback(null), 3500);
                   }
                 }}
                 className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-md active:scale-95 flex items-center gap-1.5"
