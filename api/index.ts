@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import firebaseConfig from "../firebase-applet-config.json";
 
 const app = express();
 
@@ -308,12 +309,34 @@ app.post("/api/ai/recommend-art", async (req, res) => {
   }
 });
 
+async function canAccessServerVault(authorization: string | undefined, uid: string): Promise<boolean> {
+  const token = authorization?.match(/^Bearer (\S+)$/i)?.[1];
+  if (!token) return false;
+  const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseConfig.apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken: token }),
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) return false;
+  const { users } = await response.json();
+  const user = users?.[0];
+  if (!user?.localId || user.disabled) return false;
+  return user.localId === uid || (
+    uid === "master_modele6777" && user.emailVerified === true && user.email?.toLowerCase() === "modele6777@gmail.com"
+  );
+}
+
 // Universal Cloud Sync & Pairing Code Relay Endpoints
 app.post("/api/sync/vault/push", async (req, res) => {
+  res.set("Cache-Control", "private, no-store");
   try {
     const { uid, payload } = req.body || {};
-    if (!uid || !payload) return res.status(400).json({ error: "Missing uid or payload" });
-    const { saveVaultData } = await import("../server/api-lib/syncRelay");
+    if (typeof uid !== "string" || !uid || !payload) return res.status(400).json({ error: "Missing uid or payload" });
+    if (!(await canAccessServerVault(req.get("Authorization"), uid))) {
+      return res.status(401).json({ error: "Vault authentication required" });
+    }
+    const { saveVaultData } = await import("../server/api-lib/syncRelay.ts");
     const result = saveVaultData(uid, payload);
     return res.status(200).json(result);
   } catch (e: any) {
@@ -322,9 +345,13 @@ app.post("/api/sync/vault/push", async (req, res) => {
 });
 
 app.get("/api/sync/vault/pull/:uid", async (req, res) => {
+  res.set("Cache-Control", "private, no-store");
   try {
     const { uid } = req.params;
-    const { getVaultData } = await import("../server/api-lib/syncRelay");
+    if (!(await canAccessServerVault(req.get("Authorization"), uid))) {
+      return res.status(401).json({ error: "Vault authentication required" });
+    }
+    const { getVaultData } = await import("../server/api-lib/syncRelay.ts");
     const result = getVaultData(uid);
     return res.status(200).json(result);
   } catch (e: any) {

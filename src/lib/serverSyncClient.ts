@@ -35,9 +35,10 @@ function fetchWithTimeout(url: string, options: RequestInit = {}, ms = 8000): Pr
 export async function pushToServerVault(uid: string, state: SharedState): Promise<boolean> {
   if (!uid) return false;
   try {
+    const token = await auth.currentUser?.getIdToken();
     const res = await fetchWithTimeout('/api/sync/vault/push', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ uid, payload: state }),
     }, 8000);
     return res.ok;
@@ -50,7 +51,10 @@ export async function pushToServerVault(uid: string, state: SharedState): Promis
 export async function pullFromServerVault(uid: string): Promise<SharedState | null> {
   if (!uid) return null;
   try {
-    const res = await fetchWithTimeout('/api/sync/vault/pull/' + encodeURIComponent(uid), {}, 8000);
+    const token = await auth.currentUser?.getIdToken();
+    const res = await fetchWithTimeout('/api/sync/vault/pull/' + encodeURIComponent(uid), {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }, 8000);
     if (!res.ok) return null;
     const json = await res.json();
     if (json?.success && json?.data) {
@@ -63,7 +67,7 @@ export async function pullFromServerVault(uid: string): Promise<SharedState | nu
   }
 }
 
-import { db, doc, setDoc, getDoc, onSnapshot, serverTimestamp } from './firebase';
+import { auth, db, doc, setDoc, getDoc, onSnapshot, serverTimestamp } from './firebase';
 import { cleanFirestoreData } from './sharedStateSync';
 
 export async function pushToPairedVault(state: SharedState): Promise<boolean> {
