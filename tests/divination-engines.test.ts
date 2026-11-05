@@ -84,6 +84,9 @@ import { calculateZoroastrianAshaTruth, formatZoroastrianAshaTruthPrompt, ZOROAS
 import { calculateHinduTantricKundalini, formatHinduTantricKundaliniPrompt, HINDU_KUNDALINI_VERSION } from '../src/lib/divination/hinduTantricKundaliniEngine';
 import { calculateGuiguziLiangtouqian, formatGuiguziLiangtouqianPrompt, GUIGUZI_VERSION } from '../src/lib/divination/guiguziLiangtouqianEngine';
 import { calculateSlavicSvarogCircle, formatSlavicSvarogCirclePrompt, SLAVIC_SVAROG_VERSION } from '../src/lib/divination/slavicSvarogCircleEngine';
+import { calculateEsseneCommunion, formatEsseneCommunionPrompt, ESSENE_COMMUNION_VERSION } from '../src/lib/divination/esseneCommunionTreeEngine';
+import { calculateHuangdiFiveMovementsSixQi, formatHuangdiFiveMovementsSixQiPrompt, HUANGDI_YUNQI_VERSION } from '../src/lib/divination/huangdiFiveMovementsSixQiEngine';
+import { calculatePythagoreanTetraktys, formatPythagoreanTetraktysPrompt, PYTHAGOREAN_TETRAKTYS_VERSION } from '../src/lib/divination/pythagoreanTetraktysGematriaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2724,4 +2727,37 @@ test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall,
   const prompt = formatSlavicSvarogCirclePrompt(rep);
   assert(prompt.includes('고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진'));
   assert(prompt.includes(rep.svarogHall.koreanName));
+});
+
+test('Essene Communion Tree Engine: calculates morning/evening angels, tree trinity and guidance', () => {
+  const rep = calculateEsseneCommunion(profile);
+  assert.equal(rep.engineVersion, ESSENE_COMMUNION_VERSION);
+  assert(rep.morningEarthlyAngel.koreanName.length > 0);
+  assert(rep.eveningHeavenlyAngel.koreanName.length > 0);
+  assert(rep.communionVibrationalScore >= 0 && rep.communionVibrationalScore <= 100);
+  const prompt = formatEsseneCommunionPrompt(rep);
+  assert(prompt.includes('에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진'));
+  assert(prompt.includes(rep.morningEarthlyAngel.koreanName));
+});
+
+test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth rulers and medicine rx', () => {
+  const rep = calculateHuangdiFiveMovementsSixQi(profile);
+  assert.equal(rep.engineVersion, HUANGDI_YUNQI_VERSION);
+  assert(rep.fiveMovement.movementName.length > 0);
+  assert(rep.sixQi.heavenRulerSiTian.length > 0);
+  assert(rep.medicineRx.susceptibleOrgans.length > 0);
+  const prompt = formatHuangdiFiveMovementsSixQiPrompt(rep);
+  assert(prompt.includes('황제명리(黃帝命理) & 오운육기(五運六氣) 천기 기상의학 엔진'));
+  assert(prompt.includes(rep.birthYearGanZhi));
+});
+
+test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tiers and manifestation index', () => {
+  const rep = calculatePythagoreanTetraktys(profile);
+  assert.equal(rep.engineVersion, PYTHAGOREAN_TETRAKTYS_VERSION);
+  assert(rep.harmonicSignature.soulRootNumber >= 1);
+  assert(rep.realityManifestationIndex >= 0 && rep.realityManifestationIndex <= 100);
+  assert(rep.tetraktysDistribution.dominantTier.length > 0);
+  const prompt = formatPythagoreanTetraktysPrompt(rep);
+  assert(prompt.includes('피타고라스 테트락티스 10대 신성기하 & 게마트리아 엔진'));
+  assert(prompt.includes(rep.harmonicSignature.sacredRatioName));
 });
