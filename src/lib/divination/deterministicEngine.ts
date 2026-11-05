@@ -2243,10 +2243,6 @@ export function runDeterministicEngine(params: {
       return null;
     }
   })();
-    } catch (_) {
-      return null;
-    }
-  })();
 
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
