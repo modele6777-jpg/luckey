@@ -160,6 +160,9 @@ import { calculateVedicMahavakya, formatVedicMahavakyaPrompt, type VedicMahavaky
 import { calculateSumerianApkalluWisdom, formatSumerianApkalluWisdomPrompt, type SumerianApkalluWisdomReport, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION } from './sumerianApkalluWisdomEngine';
 import { calculateCelticTuathaFourTreasures, formatCelticTuathaFourTreasuresPrompt, type CelticTuathaFourTreasuresReport, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION } from './celticTuathaFourTreasuresEngine';
 import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyFourSpiritsPrompt, type TaoistShangqingTwentyFourSpiritsReport, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION } from './taoistShangqingTwentyFourSpiritsEngine';
+import { calculateTibetanPhowaRainbowBody, formatTibetanPhowaRainbowBodyPrompt, type TibetanPhowaRainbowBodyReport, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION } from './tibetanPhowaRainbowBodyEngine';
+import { calculatePythagoreanHarmoniaSpheres, formatPythagoreanHarmoniaSpheresPrompt, type PythagoreanHarmoniaSpheresReport, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION } from './pythagoreanHarmoniaSpheresEngine';
+import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, type PlumBlossomMeihuaReport, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION } from './plumBlossomMeihuaOracleEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -340,6 +343,9 @@ export interface DeterministicEngineReport {
   sumerianApkalluWisdomResult?: SumerianApkalluWisdomReport | null;
   celticTuathaFourTreasuresResult?: CelticTuathaFourTreasuresReport | null;
   taoistShangqingTwentyFourSpiritsResult?: TaoistShangqingTwentyFourSpiritsReport | null;
+  tibetanPhowaRainbowBodyResult?: TibetanPhowaRainbowBodyReport | null;
+  pythagoreanHarmoniaSpheresResult?: PythagoreanHarmoniaSpheresReport | null;
+  plumBlossomMeihuaOracleResult?: PlumBlossomMeihuaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2046,6 +2052,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 132. 티베트 밀교 족첸(Dzogchen) 릭파(Rigpa) 본각 & 포와(Phowa) 의식 전이 & 5대 지혜 무지개체(Jalü) 정렬 엔진
+  const tibetanPhowaRainbowBodyResult = (() => {
+    try {
+      return calculateTibetanPhowaRainbowBody({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 133. 고대 그리스 피타고라스 천구의 조화(Musica Universalis) & 테트라코드 7대 행성 주파수 공명 엔진
+  const pythagoreanHarmoniaSpheresResult = (() => {
+    try {
+      return calculatePythagoreanHarmoniaSpheres({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 134. 송대 소강절 선생의 매화역수(梅花易數) 심역(心易) 선천 작괘 & 체용생극(體用生克) 5대 동태 진단 엔진
+  const plumBlossomMeihuaOracleResult = (() => {
+    try {
+      return calculatePlumBlossomMeihuaOracle({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2212,6 +2245,9 @@ export function runDeterministicEngine(params: {
     sumerianApkalluWisdomResult,
     celticTuathaFourTreasuresResult,
     taoistShangqingTwentyFourSpiritsResult,
+    tibetanPhowaRainbowBodyResult,
+    pythagoreanHarmoniaSpheresResult,
+    plumBlossomMeihuaOracleResult,
     tools: toolsMap,
   };
 }
@@ -2371,6 +2407,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master' },
   { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
   { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master' },
+  { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master' },
+  { key: 'pythagoreanHarmoniaSpheres', nameKo: '피타고라스 천구의 조화 주파수', icon: '🪐', category: 'deep_master' },
+  { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2481,6 +2520,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'plumBlossomMeihuaOracle',
     'sumerianFiftyMes',
     'babylonianEnumaElish',
     'instantDecision',
@@ -2529,6 +2569,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'tibetanPhowaRainbowBody',
+    'pythagoreanHarmoniaSpheres',
     'taoistShangqingTwentyFourSpirits',
     'baopuziElixirs',
     'tibetanBonNineWays',
@@ -2574,6 +2616,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'plumBlossomMeihuaOracle',
+    'pythagoreanHarmoniaSpheres',
+    'tibetanPhowaRainbowBody',
     'celticTuathaFourTreasures',
     'sumerianApkalluWisdom',
     'taoistShangqingTwentyFourSpirits',
@@ -2830,5 +2875,8 @@ ${report.baopuziElixirsResult && shouldIncludeEngine('baopuziElixirs', options) 
 ${report.vedicMahavakyaResult && shouldIncludeEngine('vedicMahavakya', options) ? '\n' + formatVedicMahavakyaPrompt(report.vedicMahavakyaResult) : ''}
 ${report.sumerianApkalluWisdomResult && shouldIncludeEngine('sumerianApkalluWisdom', options) ? '\n' + formatSumerianApkalluWisdomPrompt(report.sumerianApkalluWisdomResult) : ''}
 ${report.celticTuathaFourTreasuresResult && shouldIncludeEngine('celticTuathaFourTreasures', options) ? '\n' + formatCelticTuathaFourTreasuresPrompt(report.celticTuathaFourTreasuresResult) : ''}
-${report.taoistShangqingTwentyFourSpiritsResult && shouldIncludeEngine('taoistShangqingTwentyFourSpirits', options) ? '\n' + formatTaoistShangqingTwentyFourSpiritsPrompt(report.taoistShangqingTwentyFourSpiritsResult) : ''}`;
+${report.taoistShangqingTwentyFourSpiritsResult && shouldIncludeEngine('taoistShangqingTwentyFourSpirits', options) ? '\n' + formatTaoistShangqingTwentyFourSpiritsPrompt(report.taoistShangqingTwentyFourSpiritsResult) : ''}
+${report.tibetanPhowaRainbowBodyResult && shouldIncludeEngine('tibetanPhowaRainbowBody', options) ? '\n' + formatTibetanPhowaRainbowBodyPrompt(report.tibetanPhowaRainbowBodyResult) : ''}
+${report.pythagoreanHarmoniaSpheresResult && shouldIncludeEngine('pythagoreanHarmoniaSpheres', options) ? '\n' + formatPythagoreanHarmoniaSpheresPrompt(report.pythagoreanHarmoniaSpheresResult) : ''}
+${report.plumBlossomMeihuaOracleResult && shouldIncludeEngine('plumBlossomMeihuaOracle', options) ? '\n' + formatPlumBlossomMeihuaOraclePrompt(report.plumBlossomMeihuaOracleResult) : ''}`;
 }
