@@ -106,6 +106,9 @@ import { calculateCelticTreeOgham, formatCelticTreeOghamPrompt, type CelticTreeO
 import { calculateTaoistSanbaoInnerAlchemy, formatTaoistSanbaoInnerAlchemyPrompt, type TaoistSanbaoReport, TAOIST_SANBAO_VERSION } from './taoistSanbaoInnerAlchemyEngine';
 import { calculateTibetanBardoNavigation, formatTibetanBardoNavigationPrompt, type TibetanBardoReport, TIBETAN_BARDO_VERSION } from './tibetanBardoNavigationEngine';
 import { calculateMesopotamianSevenGates, formatMesopotamianSevenGatesPrompt, type MesopotamianSevenGatesReport, MESOPOTAMIAN_GATES_VERSION } from './mesopotamianSevenGatesEngine';
+import { calculateEgyptianThirtySixDecans, formatEgyptianThirtySixDecansPrompt, type EgyptianThirtySixDecansReport, EGYPTIAN_DECANS_VERSION } from './egyptianThirtySixDecansEngine';
+import { calculateSufiLataifSoulAscension, formatSufiLataifSoulAscensionPrompt, type SufiLataifReport, SUFI_LATAIF_VERSION } from './sufiLataifSoulAscensionEngine';
+import { calculateMayanTzolkinSacredCalendar, formatMayanTzolkinSacredCalendarPrompt, type MayanTzolkinReport, MAYAN_TZOLKIN_VERSION } from './mayanTzolkinSacredCalendarEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -232,6 +235,9 @@ export interface DeterministicEngineReport {
   taoistSanbaoResult?: TaoistSanbaoReport | null;
   tibetanBardoResult?: TibetanBardoReport | null;
   mesopotamianSevenGatesResult?: MesopotamianSevenGatesReport | null;
+  egyptianDecansResult?: EgyptianThirtySixDecansReport | null;
+  sufiLataifResult?: SufiLataifReport | null;
+  mayanTzolkinResult?: MayanTzolkinReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1452,6 +1458,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 78. 고대 이집트 36 데칸 별자리 수호신 & 누트 천구 항해 엔진
+  const egyptianDecansResult = (() => {
+    try {
+      return calculateEgyptianThirtySixDecans({ profile, targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 79. 정통 수피즘 심장의 7대 라타이프 영혼 정화 & 미크라즈 상승 엔진
+  const sufiLataifResult = (() => {
+    try {
+      return calculateSufiLataifSoulAscension({ profile, targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 80. 고대 마야 촐킨 260일 신성력 20 나왈 & 13 은하 톤 엔진
+  const mayanTzolkinResult = (() => {
+    try {
+      return calculateMayanTzolkinSacredCalendar({ profile, targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1564,6 +1597,9 @@ export function runDeterministicEngine(params: {
     taoistSanbaoResult,
     tibetanBardoResult,
     mesopotamianSevenGatesResult,
+    egyptianDecansResult,
+    sufiLataifResult,
+    mayanTzolkinResult,
     tools: toolsMap,
   };
 }
@@ -1590,6 +1626,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ikigaiDestinyCompass',
     'hellenisticLots',
     'iching384Yao',
+    'mesopotamianSevenGates',
+    'egyptianDecans',
+    'quantumLeap',
   ],
   business_money: [
     'wealthPipeline',
@@ -1602,6 +1641,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'kyusei',
     'honggukQimen',
     'instantDecision',
+    'quantumLeap',
+    'hermeticKybalion',
+    'mayanTzolkin',
   ],
   relationship_love: [
     'karmicSynastry',
@@ -1614,6 +1656,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'tarotTreeOfLifeShadow',
     'soulJourneyTarot',
     'shadowArchetype',
+    'ziweiHuaJi',
+    'celticTreeOgham',
+    'sufiLataif',
   ],
   immediate_decision: [
     'instantDecision',
@@ -1624,6 +1669,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'synchronicityOmen',
     'quantumProbabilisticTimeline',
     'honggukQimen',
+    'mesopotamianSevenGates',
+    'celticTreeOgham',
+    'vibrationalSoulQuest',
   ],
   daily_timing_transit: [
     'chronoTransit',
@@ -1633,6 +1681,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'specialStarsMatrix',
     'sajuClassicYongshin',
     'taoistNeidanMeridian',
+    'fiveEmotionsPulse',
+    'mayanTzolkin',
+    'egyptianDecans',
   ],
   life_season_timing: [
     'lifeSeasonTiming',
@@ -1641,6 +1692,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'pythagoreanLifecycle',
     'astrologicalDecanSabian',
     'sajuClassicYongshin',
+    'tibetanBardo',
+    'egyptianDecans',
+    'mayanTzolkin',
   ],
   vitality_wellness: [
     'energeticPrescription',
@@ -1652,6 +1706,10 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'solfeggioHarmonic',
     'ethericAuraBiofield',
     'biorhythmPeakFlow',
+    'taoistSanbao',
+    'fiveEmotionsPulse',
+    'sufiLataif',
+    'alchemicalTransmutation',
   ],
   creative_mind: [
     'kabbalah',
@@ -1660,6 +1718,10 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sacredVortexGeometry',
     'akashicRecordsOracle',
     'soulJourneyTarot',
+    'alchemicalTransmutation',
+    'hermeticKybalion',
+    'celticTreeOgham',
+    'mayanTzolkin',
   ],
   life_reflection: [
     'supremeWisdomTrinity',
@@ -1669,6 +1731,10 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'karmicNodes',
     'heroMythMonomyth',
     'ancestralEpigeneticKarma',
+    'tibetanBardo',
+    'sufiLataif',
+    'taoistSanbao',
+    'alchemicalTransmutation',
   ],
 };
 
@@ -1821,5 +1887,8 @@ ${report.ziweiHuaJiResult && shouldIncludeEngine('ziweiHuaJi', options) ? '\n' +
 ${report.celticTreeOghamResult && shouldIncludeEngine('celticTreeOgham', options) ? '\n' + formatCelticTreeOghamPrompt(report.celticTreeOghamResult) : ''}
 ${report.taoistSanbaoResult && shouldIncludeEngine('taoistSanbao', options) ? '\n' + formatTaoistSanbaoInnerAlchemyPrompt(report.taoistSanbaoResult) : ''}
 ${report.tibetanBardoResult && shouldIncludeEngine('tibetanBardo', options) ? '\n' + formatTibetanBardoNavigationPrompt(report.tibetanBardoResult) : ''}
-${report.mesopotamianSevenGatesResult && shouldIncludeEngine('mesopotamianSevenGates', options) ? '\n' + formatMesopotamianSevenGatesPrompt(report.mesopotamianSevenGatesResult) : ''}`;
+${report.mesopotamianSevenGatesResult && shouldIncludeEngine('mesopotamianSevenGates', options) ? '\n' + formatMesopotamianSevenGatesPrompt(report.mesopotamianSevenGatesResult) : ''}
+${report.egyptianDecansResult && shouldIncludeEngine('egyptianDecans', options) ? '\n' + formatEgyptianThirtySixDecansPrompt(report.egyptianDecansResult) : ''}
+${report.sufiLataifResult && shouldIncludeEngine('sufiLataif', options) ? '\n' + formatSufiLataifSoulAscensionPrompt(report.sufiLataifResult) : ''}
+${report.mayanTzolkinResult && shouldIncludeEngine('mayanTzolkin', options) ? '\n' + formatMayanTzolkinSacredCalendarPrompt(report.mayanTzolkinResult) : ''}`;
 }
