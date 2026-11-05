@@ -121,6 +121,9 @@ import { calculateSlavicSvarogCircle, formatSlavicSvarogCirclePrompt, type Slavi
 import { calculateEsseneCommunion, formatEsseneCommunionPrompt, type EsseneCommunionReport, ESSENE_COMMUNION_VERSION } from './esseneCommunionTreeEngine';
 import { calculateHuangdiFiveMovementsSixQi, formatHuangdiFiveMovementsSixQiPrompt, type HuangdiFiveMovementsSixQiReport, HUANGDI_YUNQI_VERSION } from './huangdiFiveMovementsSixQiEngine';
 import { calculatePythagoreanTetraktys, formatPythagoreanTetraktysPrompt, type PythagoreanTetraktysReport, PYTHAGOREAN_TETRAKTYS_VERSION } from './pythagoreanTetraktysGematriaEngine';
+import { calculateBabylonianEnumaElish, formatBabylonianEnumaElishPrompt, type BabylonianEnumaElishReport, BABYLONIAN_ENUMA_ELISH_VERSION } from './babylonianEnumaElishEngine';
+import { calculateTaoistHuangtingJing, formatTaoistHuangtingJingPrompt, type TaoistHuangtingJingReport, TAOIST_HUANGTING_VERSION } from './taoistHuangtingJingEngine';
+import { calculatePersianAmeshaSpenta, formatPersianAmeshaSpentaPrompt, type PersianAmeshaSpentaReport, PERSIAN_AMESHA_SPENTA_VERSION } from './persianAmeshaSpentaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -262,6 +265,9 @@ export interface DeterministicEngineReport {
   esseneCommunionResult?: EsseneCommunionReport | null;
   huangdiFiveMovementsSixQiResult?: HuangdiFiveMovementsSixQiReport | null;
   pythagoreanTetraktysResult?: PythagoreanTetraktysReport | null;
+  babylonianEnumaElishResult?: BabylonianEnumaElishReport | null;
+  taoistHuangtingJingResult?: TaoistHuangtingJingReport | null;
+  persianAmeshaSpentaResult?: PersianAmeshaSpentaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1617,6 +1623,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 93. 고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 천체 엔진
+  const babylonianEnumaElishResult = (() => {
+    try {
+      return calculateBabylonianEnumaElish(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 94. 도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사(存思) 내경 엔진
+  const taoistHuangtingJingResult = (() => {
+    try {
+      return calculateTaoistHuangtingJing(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 95. 고대 페르시아 바르숨(Baresman) & 6대 아메샤 스펜타 조화 엔진
+  const persianAmeshaSpentaResult = (() => {
+    try {
+      return calculatePersianAmeshaSpenta(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1744,6 +1777,9 @@ export function runDeterministicEngine(params: {
     esseneCommunionResult,
     huangdiFiveMovementsSixQiResult,
     pythagoreanTetraktysResult,
+    babylonianEnumaElishResult,
+    taoistHuangtingJingResult,
+    persianAmeshaSpentaResult,
     tools: toolsMap,
   };
 }
@@ -1864,6 +1900,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master' },
   { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master' },
   { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master' },
+  { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master' },
+  { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
+  { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -1897,6 +1936,7 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'babylonianEnumaElish',
     'pythagoreanTetraktys',
     'sajuClassicYongshin',
     'sajuTwelveStagesTomb',
@@ -1937,6 +1977,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'persianAmeshaSpenta',
     'esseneCommunion',
     'karmicSynastry',
     'contextualSynastry',
@@ -1955,6 +1996,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'babylonianEnumaElish',
     'instantDecision',
     'tarotElementalCourt',
     'ichingMaster',
@@ -1972,6 +2014,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   daily_timing_transit: [
+    'taoistHuangtingJing',
     'huangdiFiveMovementsSixQi',
     'chronoTransit',
     'vitalityCurve',
@@ -1998,6 +2041,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'taoistHuangtingJing',
     'huangdiFiveMovementsSixQi',
     'esseneCommunion',
     'energeticPrescription',
@@ -2019,6 +2063,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'persianAmeshaSpenta',
     'pythagoreanTetraktys',
     'kabbalah',
     'tarotMaster',
@@ -2034,6 +2079,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'babylonianEnumaElish',
+    'taoistHuangtingJing',
+    'persianAmeshaSpenta',
     'esseneCommunion',
     'huangdiFiveMovementsSixQi',
     'pythagoreanTetraktys',
@@ -2221,5 +2269,8 @@ ${report.guiguziLiangtouqianResult && shouldIncludeEngine('guiguziLiangtouqian',
 ${report.slavicSvarogResult && shouldIncludeEngine('slavicSvarog', options) ? '\n' + formatSlavicSvarogCirclePrompt(report.slavicSvarogResult) : ''}
 ${report.esseneCommunionResult && shouldIncludeEngine('esseneCommunion', options) ? '\n' + formatEsseneCommunionPrompt(report.esseneCommunionResult) : ''}
 ${report.huangdiFiveMovementsSixQiResult && shouldIncludeEngine('huangdiFiveMovementsSixQi', options) ? '\n' + formatHuangdiFiveMovementsSixQiPrompt(report.huangdiFiveMovementsSixQiResult) : ''}
-${report.pythagoreanTetraktysResult && shouldIncludeEngine('pythagoreanTetraktys', options) ? '\n' + formatPythagoreanTetraktysPrompt(report.pythagoreanTetraktysResult) : ''}`;
+${report.pythagoreanTetraktysResult && shouldIncludeEngine('pythagoreanTetraktys', options) ? '\n' + formatPythagoreanTetraktysPrompt(report.pythagoreanTetraktysResult) : ''}
+${report.babylonianEnumaElishResult && shouldIncludeEngine('babylonianEnumaElish', options) ? '\n' + formatBabylonianEnumaElishPrompt(report.babylonianEnumaElishResult) : ''}
+${report.taoistHuangtingJingResult && shouldIncludeEngine('taoistHuangtingJing', options) ? '\n' + formatTaoistHuangtingJingPrompt(report.taoistHuangtingJingResult) : ''}
+${report.persianAmeshaSpentaResult && shouldIncludeEngine('persianAmeshaSpenta', options) ? '\n' + formatPersianAmeshaSpentaPrompt(report.persianAmeshaSpentaResult) : ''}`;
 }
