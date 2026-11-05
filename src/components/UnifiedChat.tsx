@@ -1125,6 +1125,7 @@ export function UnifiedChat() {
                     <div className="max-w-[88%] min-w-0">
                       <LucyKakaoBubbleGroup
                         msgId={msgId}
+                        verifiedTarotMarkers={m.tarotDraw?.source === 'app-random' ? m.tarotDraw.markers : undefined}
                         textContent={cleanAssistantText}
                         isLatest={i === currentMessages.length - 1}
                         isGenerating={currentGenerating && i === currentMessages.length - 1}

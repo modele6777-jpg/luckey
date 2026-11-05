@@ -6,9 +6,10 @@ import { DetectedTarotCard } from '@/utils/tarotDetector';
 interface LucyTarotCardViewProps {
   cards: DetectedTarotCard[];
   isLight?: boolean;
+  verifiedDraw?: boolean;
 }
 
-export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isLight = false }) => {
+export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isLight = false, verifiedDraw = false }) => {
   const [zoomedCard, setZoomedCard] = useState<DetectedTarotCard | null>(null);
 
   if (!cards || cards.length === 0) return null;
@@ -18,7 +19,7 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
       <div className="w-full my-2.5">
         <div className="flex items-center gap-1.5 mb-2 px-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
           <Sparkles size={13} className="animate-spin text-amber-500" />
-          <span>루시가 뽑은 운명의 타로 카드 ({cards.length}장)</span>
+          <span>{verifiedDraw ? '앱에서 무작위 추첨한 카드' : '답변에 언급된 참고 카드 · 추첨 기록 없음'} ({cards.length}장)</span>
         </div>
 
         <div className={`flex gap-3 overflow-x-auto pb-2 pt-1 px-1 scrollbar-thin ${

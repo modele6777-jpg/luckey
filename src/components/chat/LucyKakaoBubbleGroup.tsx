@@ -20,6 +20,7 @@ interface LucyKakaoBubbleGroupProps {
   forwardTargetLabel?: string;
   msgId: string;
   textContent: string;
+  verifiedTarotMarkers?: string;
   isLatest: boolean;
   isGenerating: boolean;
   isHistorical: boolean;
@@ -43,6 +44,7 @@ interface LucyKakaoBubbleGroupProps {
 export function LucyKakaoBubbleGroup({
   msgId,
   textContent,
+  verifiedTarotMarkers,
   onForward,
   forwardTargetLabel = '다른 채팅',
   isLatest,
@@ -60,7 +62,7 @@ export function LucyKakaoBubbleGroup({
   renderRecommendationFooter,
 }: LucyKakaoBubbleGroupProps) {
   const cleanedTextContent = useMemo(() => stripTarotMarkers(textContent), [textContent]);
-  const detectedTarotCards = useMemo(() => detectTarotCardsFromText(textContent), [textContent]);
+  const detectedTarotCards = useMemo(() => detectTarotCardsFromText(verifiedTarotMarkers || textContent), [verifiedTarotMarkers, textContent]);
   const bubbles = useMemo(() => splitIntoKakaoBubbles(cleanedTextContent, 4), [cleanedTextContent]);
   const fullJoinedSpeechText = useMemo(() => joinKakaoBubblesForTTS(cleanedTextContent, 4), [cleanedTextContent]);
 
@@ -197,7 +199,7 @@ export function LucyKakaoBubbleGroup({
     <div className="flex flex-col gap-2 sm:gap-2.5 w-full min-w-0 max-w-full">
       {/* Show drawn cards before the reading, including while text is streaming. */}
       {detectedTarotCards.length > 0 && (
-        <LucyTarotCardView cards={detectedTarotCards} isLight={isLight} />
+        <LucyTarotCardView cards={detectedTarotCards} isLight={isLight} verifiedDraw={Boolean(verifiedTarotMarkers)} />
       )}
       <AnimatePresence initial={false}>
         {displayedBubbles.map((bubbleText, bIdx) => {

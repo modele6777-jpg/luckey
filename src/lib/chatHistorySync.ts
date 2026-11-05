@@ -1,3 +1,4 @@
+import { type LucyTarotDraw } from './lucyTarotIntegrity';
 /**
  * =========================================================================
  * PRISM & LUCY PRO: 통합 대화 기록 동기화 & 일일 초기화 엔진 (Smart Chat Sync)
@@ -13,6 +14,7 @@ import { getTodayDateKey, isTimestampToday } from './dailyCache';
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
 export interface UnifiedMessage {
+  tarotDraw?: LucyTarotDraw;
   id?: string;
   role: 'system' | 'user' | 'model' | 'assistant';
   content: string | any[];

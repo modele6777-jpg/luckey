@@ -1,4 +1,6 @@
-import { LUCY_TAROT_RESPONSE_PROFILE } from '../lib/lucyTarotReading';
+import { TAROT_NO_DRAW_RULE, verifyLucyTarotReply, isLucyTarotDrawRequest, type LucyTarotDraw } from '../lib/lucyTarotIntegrity';
+import { drawLucyTarotCards, formatTarotMarker } from '../utils/tarotDetector';
+import { buildLucyTarotReadingPrompt, LUCY_TAROT_RESPONSE_PROFILE } from '../lib/lucyTarotReading';
 import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, buildLucyLongTermPrompt } from '../lib/lucyLongTermMemory';
 import { buildLucyEpisodicMemoryPrompt } from '../lib/lucyEpisodicMemoryEngine';
 import { buildLucySharedBackground } from '../lib/lucySharedBackground';
@@ -40,12 +42,12 @@ import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLuc
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { unlockAudioPlayback, primeTTSAudioElement } from '../lib/audio';
-import { prefetchTTS } from '../utils/tts';
 import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
 export interface UnifiedMessage {
+  tarotDraw?: LucyTarotDraw;
   id?: string;
   role: 'system' | 'user' | 'model' | 'assistant';
   content: string | any[];
@@ -1741,6 +1743,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     attachedImage?: string,
     options?: SendUnifiedMessageOptions,
   ) => {
+    // Cover drawer and other callers as well as the standalone chat.
+    if (!options?.tarotCardMarkers && isLucyTarotDrawRequest(text)) {
+      const cards = drawLucyTarotCards(/3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(text) ? 3 : 1);
+      options = { ...options, tarotCardMarkers: cards.map(formatTarotMarker).join(' '),
+        extraSystemContext: `${options?.extraSystemContext || ''}\n${buildLucyTarotReadingPrompt(cards, text)}` };
+    }
+    const tarotDraw: LucyTarotDraw | undefined = options?.tarotCardMarkers ? { source: 'app-random', id: crypto.randomUUID(), drawnAt: Date.now(), markers: options.tarotCardMarkers } : undefined;
     const sourcePersona: PersonaType = 'lucy';
     const isProConversation = options?.conversationId === 'lucy-pro' || (!options?.conversationId && typeof window !== 'undefined' && window.location.pathname === '/chat/pro');
     const runtime = isProConversation ? proRuntimeRef.current : regularRuntimeRef.current;
@@ -1766,7 +1775,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (message.id !== assistMsgId || typeof message.content !== 'string') return message;
           // Keep the actual draw visible before the first AI token and throughout streaming.
           const reading = message.content.replace(/\[TAROT:[a-zA-Z0-9_]+(?::(?:upright|reversed|정방향|역방향))?\]\s*/gi, '').trimStart();
-          return { ...message, content: `${options.tarotCardMarkers}\n\n${reading}` };
+          return { ...message, tarotDraw, content: `${options.tarotCardMarkers}\n\n${reading}` };
         });
       });
     };
@@ -1811,7 +1820,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Create assistant message placeholder ID upfront and register as active
     const assistMsgId = 'reply-' + Math.random().toString(36).substring(2, 9);
     activeAssistMsgIdRef.current[sourcePersona] = assistMsgId;
-    let replyText = "";
 
     isGeneratingRef.current[sourcePersona] = true;
     setIsGenerating(prev => ({ ...prev, [sourcePersona]: true }));
@@ -2126,6 +2134,8 @@ ${responseProfile.rule}`;
       systemPrompt += `\n\n[수다모드 도구 비활성화]\n이번 대화는 가벼운 수다 모드야. 운세·타로·사주 등 운명학 도구를 고르거나 분석에 적용하지 말고, 관련 도구 사용 여부나 결과 배지도 만들지 마. 사용자의 질문에 일상 대화처럼 직접 답해줘.`;
     }
 
+    systemPrompt += `\n\n${TAROT_NO_DRAW_RULE}`;
+
     // Read the opposite runtime without merging, saving or broadcasting its messages.
     const oppositeRuntime = isProConversation ? regularRuntimeRef.current : proRuntimeRef.current;
     const oppositeMessages = mergeUnifiedMessages(oppositeRuntime.messages, oppositeRuntime.load());
@@ -2228,33 +2238,10 @@ ${responseProfile.rule}`;
       })
     ];
     
-    let pendingRaf: number | null = null;
-    let latestCleanReply = '';
 
     const isSuperseded = () => !canWriteConversation() ||
       supersededControllersRef.current.has(currentAbortController) ||
       activeAssistMsgIdRef.current[sourcePersona] !== assistMsgId;
-
-    const flushChunk = () => {
-      pendingRaf = null;
-      if (isSuperseded()) return;
-      setUnifiedMessages(prev => {
-        let found = false;
-        const updated = prev.map(m => {
-          if (m.id === assistMsgId) {
-            found = true;
-            return { ...m, content: latestCleanReply, persona: sourcePersona };
-          }
-          return m;
-        });
-        if (!found) {
-          updated.push({ id: assistMsgId, role: 'model' as const, content: latestCleanReply, timestamp: Date.now(), persona: sourcePersona });
-        }
-        return updated;
-      });
-    };
-
-    let hasPrefetchedFirstSentence = false;
 
     try {
       await invokeLLMStream({
@@ -2265,27 +2252,9 @@ ${responseProfile.rule}`;
         maxOutputTokens: responseProfile.maxOutputTokens,
         thinkingLevel: responseProfile.thinkingLevel,
         preferBuffered: false,
-        onChunk: (chunk: string) => {
+        onChunk: () => {
           resetWatchdog();
-          replyText += chunk;
-          latestCleanReply = cleanChatDisplayText(replyText);
-          if (pendingRaf === null) {
-            pendingRaf = requestAnimationFrame(flushChunk);
-          }
-
-          // 🔊 첫 문장 완성 즉시 사전 음성 변환 프리페치 가동 (0ms 즉시 재생 보장)
-          if (!hasPrefetchedFirstSentence && replyText.length >= 15) {
-            const sentenceEndMatch = replyText.match(/([^\n.!?]+[.!?\n])/);
-            if (sentenceEndMatch && sentenceEndMatch[1]) {
-              const firstSentence = sentenceEndMatch[1].trim();
-              if (firstSentence.length >= 10) {
-                hasPrefetchedFirstSentence = true;
-                try {
-                  prefetchTTS(firstSentence, 'Aoede');
-                } catch (_) {}
-              }
-            }
-          }
+          // Do not display, persist, or prefetch speech for an unverified partial reply.
         },
         onFinish: async (fullText: string) => {
           if (isSuperseded()) {
@@ -2293,15 +2262,11 @@ ${responseProfile.rule}`;
               clearTimeout(watchdogTimer);
               watchdogTimer = null;
             }
-            if (pendingRaf !== null) {
-              cancelAnimationFrame(pendingRaf);
-              pendingRaf = null;
-            }
             setUnifiedMessages(prev => prev.filter(m => m.id !== assistMsgId));
             return;
           }
 
-          const cleanFullText = cleanChatDisplayText(fullText);
+          const cleanFullText = verifyLucyTarotReply(cleanChatDisplayText(fullText), tarotDraw, effectiveUserText);
           if (!cleanFullText || cleanFullText.trim().length === 0) {
             throw new Error("Empty cleaned reply in onFinish");
           }
@@ -2309,10 +2274,6 @@ ${responseProfile.rule}`;
           if (watchdogTimer) {
             clearTimeout(watchdogTimer);
             watchdogTimer = null;
-          }
-          if (pendingRaf !== null) {
-            cancelAnimationFrame(pendingRaf);
-            pendingRaf = null;
           }
           if (abortControllersRef.current[sourcePersona] === currentAbortController) {
             activeAssistMsgIdRef.current[sourcePersona] = null;
@@ -2419,10 +2380,6 @@ ${responseProfile.rule}`;
         clearTimeout(watchdogTimer);
         watchdogTimer = null;
       }
-      if (pendingRaf !== null) {
-        cancelAnimationFrame(pendingRaf);
-        pendingRaf = null;
-      }
 
       // If this request was superseded by a newer consecutive user message, silently remove its placeholder and let the new request handle generation
       if (isSuperseded()) {
@@ -2437,69 +2394,15 @@ ${responseProfile.rule}`;
           isGeneratingRef.current[sourcePersona] = false;
           setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
         }
-        if (latestCleanReply.trim().length > 0) {
-          setUnifiedMessages(prev => {
-            let found = false;
-            const updated = prev.map(m => {
-              if (m.id === assistMsgId) {
-                found = true;
-                return { ...m, content: latestCleanReply, persona: sourcePersona };
-              }
-              return m;
-            });
-            if (!found) {
-              updated.push({ id: assistMsgId, role: 'model' as const, content: latestCleanReply, timestamp: Date.now(), persona: sourcePersona });
-            }
-            saveUnifiedMessagesSafely(updated);
-            if (chatBroadcastRef.current) {
-              chatBroadcastRef.current.postMessage({ messages: updated, timestamp: Date.now() });
-            }
-            void updateSharedState({
-              chatHistory: updated.slice(-150)
-            }, 'lucy');
-            pushChatThreadsToFirestore(updated, true);
-            return updated;
-          });
-        } else {
-          // Remove empty placeholder if user manually aborted before any tokens arrived
-          setUnifiedMessages(prev => prev.filter(m => m.id !== assistMsgId));
-        }
-        return;
-      }
-
-      // If we already received streamed content, preserve and finalize it instead of overwriting with an error
-      if (latestCleanReply.trim().length > 0) {
-        isGeneratingRef.current[sourcePersona] = false;
-        setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
-        setUnifiedMessages(prev => {
-          let found = false;
-          const updated = prev.map(m => {
-            if (m.id === assistMsgId) {
-              found = true;
-              return { ...m, content: latestCleanReply, persona: sourcePersona };
-            }
-            return m;
-          });
-          if (!found) {
-            updated.push({ id: assistMsgId, role: 'model' as const, content: latestCleanReply, timestamp: Date.now(), persona: sourcePersona });
-          }
-          saveUnifiedMessagesSafely(updated);
-          if (chatBroadcastRef.current) {
-            chatBroadcastRef.current.postMessage({ messages: updated, timestamp: Date.now() });
-          }
-          void updateSharedState({
-            chatHistory: updated.slice(-150)
-          }, 'lucy');
-          pushChatThreadsToFirestore(updated, true);
-          return updated;
-        });
+        // Never preserve an unverified partial reply after cancellation.
+        setUnifiedMessages(prev => prev.filter(m => m.id !== assistMsgId));
         return;
       }
 
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}${options?.tarotCardMarkers && options.extraSystemContext ? '\n' + options.extraSystemContext : ''}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${responseProfile.rule}${options?.tarotCardMarkers && options.extraSystemContext ? '\n' + options.extraSystemContext : ''}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
@@ -2508,7 +2411,7 @@ ${responseProfile.rule}`;
           messages: compactMessages,
           timeoutMs: 30000,
         });
-        const recoveredClean = cleanChatDisplayText(String(recoveredRaw || '').trim());
+        const recoveredClean = verifyLucyTarotReply(cleanChatDisplayText(String(recoveredRaw || '').trim()), tarotDraw, effectiveUserText);
         if (recoveredClean && recoveredClean.length > 0) {
           rememberConversation([userMsg, { id: assistMsgId, role: 'model', content: recoveredClean, timestamp: Date.now() }], isProConversation ? 'lucy-pro' : 'lucy');
           isGeneratingRef.current[sourcePersona] = false;

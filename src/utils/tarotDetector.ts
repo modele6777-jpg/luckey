@@ -1,4 +1,4 @@
-import { TAROT_DECK, TarotCard, getTarotCardImageUrl, rollTarotReversed } from '../data/tarotData';
+import { TAROT_DECK, TarotCard, getTarotCardImageUrl } from '../data/tarotData';
 
 export interface DetectedTarotCard extends TarotCard {
   reversed: boolean;
@@ -151,11 +151,15 @@ export function detectTarotCardsFromText(text: string): DetectedTarotCard[] {
  * 78장 덱에서 무작위 또는 사용자 시드 기반으로 타로 카드를 드로우합니다.
  */
 export function drawLucyTarotCards(count: number = 1): DetectedTarotCard[] {
-  const shuffled = [...TAROT_DECK].sort(() => Math.random() - 0.5);
+  const shuffled = [...TAROT_DECK];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = secureTarotIndex(i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   const selected = shuffled.slice(0, Math.max(1, Math.min(count, 3)));
 
   return selected.map((card) => {
-    const reversed = rollTarotReversed();
+    const reversed = secureTarotIndex(10) >= 6;
     return {
       ...card,
       reversed,
@@ -180,4 +184,11 @@ export function stripTarotMarkers(text: string): string {
 export function formatTarotMarker(card: TarotCard | DetectedTarotCard): string {
   const orientation = card.reversed ? 'reversed' : 'upright';
   return `[TAROT:${card.id}:${orientation}]`;
+}
+
+function secureTarotIndex(limit: number): number {
+  const values = new Uint32Array(1);
+  const upper = Math.floor(0x100000000 / limit) * limit;
+  do { globalThis.crypto.getRandomValues(values); } while (values[0] >= upper);
+  return values[0] % limit;
 }

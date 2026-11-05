@@ -1,3 +1,4 @@
+import { isLucyTarotDrawRequest } from '@/lib/lucyTarotIntegrity';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
@@ -2315,7 +2316,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
 
     // 🔮 타로 질문 의도 감지 시 실제 운명의 타로 카드를 즉시 드로우하여 루시 프롬프트에 주입 (이미지 비주얼 연동)
-    const isTarotIntent = /타로|카드.*뽑|뽑.*카드|타로카드|점괘|스프레드|타로점/i.test(combinedContextText);
+    const isTarotIntent = isLucyTarotDrawRequest(combinedContextText);
     let tarotCardMarkers: string | undefined;
     if (isTarotIntent) {
       const isThreeCards = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
@@ -3117,6 +3118,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         onForward={forwardBubble}
                       forwardTargetLabel={pro ? '일반 루시' : '루시 프로'}
                       msgId={msgId}
+                      verifiedTarotMarkers={msg.tarotDraw?.source === 'app-random' ? msg.tarotDraw.markers : undefined}
                       textContent={textContent}
                       isLatest={index === filteredMessages.length - 1}
                       isGenerating={isLucyGenerating && index === filteredMessages.length - 1}
