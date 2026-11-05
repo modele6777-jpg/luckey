@@ -1955,7 +1955,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const toolsIncludedInPrompt = isCasualMode
       ? []
       : toolSelection.promptInjection
-      ? toolSelection.selectedTools.map((tool) => tool.koName)
+      ? (toolSelection.firedEngineBadges && toolSelection.firedEngineBadges.length > 0
+          ? toolSelection.firedEngineBadges
+          : toolSelection.selectedTools.map((tool) => tool.koName))
       : hasDivinationInjection
       ? options?.usedTools || []
       : [];

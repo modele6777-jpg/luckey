@@ -15,7 +15,7 @@
 
 import type { DivinationToolId } from '../fifteenDivinationTools';
 import type { UserProfile } from '../sharedState';
-import { runDeterministicEngine, formatDeterministicEnginePrompt, type DeterministicEngineReport } from './deterministicEngine';
+import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, type DeterministicEngineReport } from './deterministicEngine';
 
 export type QuestionIntentCategory =
   | 'career_strategy'     // 이직, 퇴사, 승진, 진로, 커리어, 시험
@@ -287,7 +287,11 @@ export function routeAndExecute(params: {
     intent: routePlan.intent,
     isMasterMobilization: routePlan.isMasterMobilization,
   });
-  const toolsForBadge = routePlan.targetTools.map((id) => TOOL_KO_NAMES[id] || id);
+  const toolsForBadge = getFiredEngineBadges(engineReport, {
+    focusTools: routePlan.targetTools,
+    intent: routePlan.intent,
+    isMasterMobilization: routePlan.isMasterMobilization,
+  });
 
   const promptInjection = `${deterministicDataBlock}
 

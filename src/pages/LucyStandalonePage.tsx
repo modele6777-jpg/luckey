@@ -2266,7 +2266,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
     const usedToolNames =
       !divinationSelection.isCasualMessage && divinationSelection.promptInjection
-        ? divinationSelection.selectedTools.map((tool) => tool.koName)
+        ? (divinationSelection.firedEngineBadges && divinationSelection.firedEngineBadges.length > 0
+            ? divinationSelection.firedEngineBadges
+            : divinationSelection.selectedTools.map((tool) => tool.koName))
         : [];
 
     setInput('');
@@ -2900,7 +2902,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <span>{msgModeInfo.badgeLabel}</span>
                   </span>
 
-                  {/* 🔮 루시 답장에 15가지 운명학 도구 중 어떤 도구들이 쓰였는지 모드 옆에 표시 */}
+                  {/* 🔮 루시 답장에 발동된 운명학 엔진 배지 표시 (마스터 모드 및 선별 발동 엔진) */}
                   {!isUser && !isGreeting && !msgModeInfo.isCasual && (() => {
                     const resolvedTools: string[] = Array.isArray(msg.usedTools)
                       ? msg.usedTools.filter((toolName: unknown): toolName is string =>
@@ -2909,7 +2911,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       : [];
                     if (resolvedTools.length === 0) return null;
 
-                    if (msgModeInfo.isMaster || resolvedTools.length >= 15) {
+                    const isMaster = msgModeInfo.isMaster || resolvedTools.length >= 15;
+                    if (isMaster) {
                       return (
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
@@ -2917,17 +2920,20 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                               ? 'bg-purple-50 text-purple-900 border-purple-300/80'
                               : 'bg-purple-950/70 text-purple-200 border-purple-500/40'
                           }`}
-                          title={`사용된 15대 운명학 도구: ${resolvedTools.join(', ')}`}
+                          title={`발동된 전체 마스터 엔진 (${resolvedTools.length}대 전원 총동원): ${resolvedTools.join(', ')}`}
                         >
-                          <span>🔮</span>
-                          <span>15대 도구 총동원 ({resolvedTools.slice(0, 4).join('·')} 외 11종)</span>
+                          <span>👑</span>
+                          <span>{resolvedTools.length}대 마스터 엔진 총동원 ({resolvedTools.slice(0, 3).join('·')} 외 {resolvedTools.length - 3}종)</span>
                         </span>
                       );
                     }
 
+                    const displayTools = resolvedTools.slice(0, 4);
+                    const remainingCount = resolvedTools.length - 4;
+
                     return (
                       <div className="inline-flex items-center gap-1 flex-wrap">
-                        {resolvedTools.map((toolName) => (
+                        {displayTools.map((toolName) => (
                           <span
                             key={toolName}
                             className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
@@ -2935,12 +2941,24 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                                 ? 'bg-amber-50/95 text-amber-900 border-amber-300/80'
                                 : 'bg-amber-950/60 text-amber-200 border-amber-500/35'
                             }`}
-                            title={`이 답변에 활용된 15대 운명학 도구: ${toolName}`}
+                            title={`이 답변에 발동된 엔진: ${toolName}`}
                           >
                             <span>🔮</span>
                             <span>{toolName}</span>
                           </span>
                         ))}
+                        {remainingCount > 0 && (
+                          <span
+                            className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
+                              isLight
+                                ? 'bg-indigo-50 text-indigo-900 border-indigo-200'
+                                : 'bg-indigo-950/60 text-indigo-200 border-indigo-500/40'
+                            }`}
+                            title={`추가 발동된 심층 엔진: ${resolvedTools.slice(4).join(', ')}`}
+                          >
+                            <span>+{remainingCount}개 심층</span>
+                          </span>
+                        )}
                       </div>
                     );
                   })()}
