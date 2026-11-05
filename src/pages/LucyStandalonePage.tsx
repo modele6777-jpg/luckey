@@ -2030,9 +2030,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     return () => container.removeEventListener('wheel', onWheel);
   }, []);
 
+  // Keep the callback stable: playback changes must not rerun the mount scroll effect.
+  const ttsBlocksAutoScrollRef = useRef(false);
+  ttsBlocksAutoScrollRef.current = ttsInfo.isSpeaking || ttsInfo.isLoading;
+
   const scrollToBottom = useCallback((force = false, smooth = true) => {
     if (!messagesContainerRef.current) return;
-    if (!force && (isUserScrolledUpRef.current || ttsInfo.isSpeaking || ttsInfo.isLoading || manualTtsActiveRef.current)) return;
+    if (!force && (isUserScrolledUpRef.current || ttsBlocksAutoScrollRef.current || manualTtsActiveRef.current)) return;
 
     isAutoScrollingRef.current = true;
     if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
@@ -2045,7 +2049,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       top: container.scrollHeight,
       behavior: smooth ? 'smooth' : 'auto',
     });
-  }, [ttsInfo.isSpeaking, ttsInfo.isLoading]);
+  }, []);
 
   // Continuous height & image layout observer for smooth uncropped scrolling
   useEffect(() => {

@@ -195,6 +195,10 @@ export function LucyKakaoBubbleGroup({
 
   return (
     <div className="flex flex-col gap-2 sm:gap-2.5 w-full min-w-0 max-w-full">
+      {/* Show drawn cards before the reading, including while text is streaming. */}
+      {detectedTarotCards.length > 0 && (
+        <LucyTarotCardView cards={detectedTarotCards} isLight={isLight} />
+      )}
       <AnimatePresence initial={false}>
         {displayedBubbles.map((bubbleText, bIdx) => {
           const isFirstBubble = bIdx === 0;
@@ -327,11 +331,6 @@ export function LucyKakaoBubbleGroup({
             루시가 이어서 카톡을 입력하고 있어... ({displayedBubbles.length}/{Math.max(2, bubbles.length)})
           </span>
         </motion.div>
-      )}
-
-      {/* 🔮 타로 카드가 감지된 경우 실제 카드 비주얼 이미지 카드 노출 */}
-      {detectedTarotCards.length > 0 && !isStaggeringMoreBubbles && (
-        <LucyTarotCardView cards={detectedTarotCards} isLight={isLight} />
       )}
 
       {/* 하단 통합 액션 바: 전체 말풍선 복사 & 전체 말풍선 한 번에 연속 듣기 */}
