@@ -141,6 +141,9 @@ import { calculateZhuangziXiaoyaoyouButterfly, formatZhuangziXiaoyaoyouButterfly
 import { calculateBuddhistYogacaraConsciousness, formatBuddhistYogacaraConsciousnessPrompt, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION } from '../src/lib/divination/buddhistYogacaraEightConsciousnessEngine';
 import { calculateVedicMandukyaTuriya, formatVedicMandukyaTuriyaPrompt, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION } from '../src/lib/divination/vedicMandukyaTuriyaEngine';
 import { calculateKabbalisticZoharSoul, formatKabbalisticZoharSoulPrompt, KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION } from '../src/lib/divination/kabbalisticZoharFiveSoulLevelsEngine';
+import { calculatePersianAttarSevenValleys, formatPersianAttarSevenValleysPrompt, ATTAR_SEVEN_VALLEYS_ENGINE_VERSION } from '../src/lib/divination/persianAttarSevenValleysEngine';
+import { calculateHermeticPoimandres, formatHermeticPoimandresPrompt, HERMETIC_POIMANDRES_ENGINE_VERSION } from '../src/lib/divination/hermeticPoimandresAscensionEngine';
+import { calculateKashmirShaivismSpanda, formatKashmirShaivismSpandaPrompt, KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION } from '../src/lib/divination/kashmirShaivismSpandaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3450,6 +3453,45 @@ test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and
   const prompt = formatKabbalisticZoharSoulPrompt(rep);
   assert(prompt.includes('카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 실측 데이터'));
   assert(prompt.includes(rep.dominantSoulLevel.nameKo));
+});
+
+test('Persian Attar Seven Valleys Engine: calculates seven valleys passage, Simurgh mirror and Fana/Baqa', () => {
+  const rep = calculatePersianAttarSevenValleys({ profile, question: '시무르그와 7대 계곡' });
+  assert.equal(rep.engineVersion, ATTAR_SEVEN_VALLEYS_ENGINE_VERSION);
+  assert(rep.simurghMirrorResonanceScore >= 0 && rep.simurghMirrorResonanceScore <= 100);
+  assert(rep.sevenValleysPassageProgress >= 0 && rep.sevenValleysPassageProgress <= 100);
+  assert(rep.fanaEgoDissolutionRate >= 0 && rep.fanaEgoDissolutionRate <= 100);
+  assert(rep.baqaDivinePermanenceIndex >= 0 && rep.baqaDivinePermanenceIndex <= 100);
+  assert(rep.dominantValley.nameKo.length > 0);
+  const prompt = formatPersianAttarSevenValleysPrompt(rep);
+  assert(prompt.includes('페르시아 수피즘 아타르 \'새들의 회의\' 7대 계곡 & 시무르그 실측 데이터'));
+  assert(prompt.includes(rep.dominantValley.nameKo));
+});
+
+test('Hermetic Poimandres Ascension Engine: calculates seven spheres passions purification and Ogdoad Nous', () => {
+  const rep = calculateHermeticPoimandres({ profile, question: '포이만드레스와 누스' });
+  assert.equal(rep.engineVersion, HERMETIC_POIMANDRES_ENGINE_VERSION);
+  assert(rep.nousDivineIntellectResonanceScore >= 0 && rep.nousDivineIntellectResonanceScore <= 100);
+  assert(rep.planetaryPassionsPurificationRate >= 0 && rep.planetaryPassionsPurificationRate <= 100);
+  assert(rep.ogdoadAscensionReadinessIndex >= 0 && rep.ogdoadAscensionReadinessIndex <= 100);
+  assert(rep.theosisDivineUnityScore >= 0 && rep.theosisDivineUnityScore <= 100);
+  assert(rep.dominantSphere.nameKo.length > 0);
+  const prompt = formatHermeticPoimandresPrompt(rep);
+  assert(prompt.includes('고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 각성 실측 데이터'));
+  assert(prompt.includes(rep.dominantSphere.nameKo));
+});
+
+test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna self-recognition and Prakasha-Vimarsha', () => {
+  const rep = calculateKashmirShaivismSpanda({ profile, question: '스판다 신성 맥동' });
+  assert.equal(rep.engineVersion, KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION);
+  assert(rep.spandaCosmicPulsationScore >= 0 && rep.spandaCosmicPulsationScore <= 100);
+  assert(rep.pratyabhijnaSelfRecognitionIndex >= 0 && rep.pratyabhijnaSelfRecognitionIndex <= 100);
+  assert(rep.prakashaVimarshaUnityScore >= 0 && rep.prakashaVimarshaUnityScore <= 100);
+  assert(rep.threeMalasPurificationRate >= 0 && rep.threeMalasPurificationRate <= 100);
+  assert(rep.dominantTattva.nameKo.length > 0);
+  const prompt = formatKashmirShaivismSpandaPrompt(rep);
+  assert(prompt.includes('카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 재인식 실측 데이터'));
+  assert(prompt.includes(rep.dominantTattva.nameKo));
 });
 
 

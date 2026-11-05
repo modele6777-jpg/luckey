@@ -175,6 +175,9 @@ import { calculateZhuangziXiaoyaoyouButterfly, formatZhuangziXiaoyaoyouButterfly
 import { calculateBuddhistYogacaraConsciousness, formatBuddhistYogacaraConsciousnessPrompt, type BuddhistYogacaraConsciousnessReport, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION } from './buddhistYogacaraEightConsciousnessEngine';
 import { calculateVedicMandukyaTuriya, formatVedicMandukyaTuriyaPrompt, type VedicMandukyaTuriyaReport, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION } from './vedicMandukyaTuriyaEngine';
 import { calculateKabbalisticZoharSoul, formatKabbalisticZoharSoulPrompt, type KabbalisticZoharSoulReport, KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION } from './kabbalisticZoharFiveSoulLevelsEngine';
+import { calculatePersianAttarSevenValleys, formatPersianAttarSevenValleysPrompt, type PersianAttarSevenValleysReport, ATTAR_SEVEN_VALLEYS_ENGINE_VERSION } from './persianAttarSevenValleysEngine';
+import { calculateHermeticPoimandres, formatHermeticPoimandresPrompt, type HermeticPoimandresAscensionReport, HERMETIC_POIMANDRES_ENGINE_VERSION } from './hermeticPoimandresAscensionEngine';
+import { calculateKashmirShaivismSpanda, formatKashmirShaivismSpandaPrompt, type KashmirShaivismSpandaReport, KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION } from './kashmirShaivismSpandaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -370,6 +373,9 @@ export interface DeterministicEngineReport {
   buddhistYogacaraConsciousnessResult?: BuddhistYogacaraConsciousnessReport | null;
   vedicMandukyaTuriyaResult?: VedicMandukyaTuriyaReport | null;
   kabbalisticZoharSoulResult?: KabbalisticZoharSoulReport | null;
+  persianAttarSevenValleysResult?: PersianAttarSevenValleysReport | null;
+  hermeticPoimandresResult?: HermeticPoimandresAscensionReport | null;
+  kashmirShaivismSpandaResult?: KashmirShaivismSpandaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2211,6 +2217,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 147. 페르시아 수피즘 아타르 7대 계곡 & 시무르그 신성 자아 엔진
+  const persianAttarSevenValleysResult = (() => {
+    try {
+      return calculatePersianAttarSevenValleys({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 148. 고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 누스 각성 엔진
+  const hermeticPoimandresResult = (() => {
+    try {
+      return calculateHermeticPoimandres({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 149. 카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 본성 재인식 엔진
+  const kashmirShaivismSpandaResult = (() => {
+    try {
+      return calculateKashmirShaivismSpanda({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2392,6 +2425,9 @@ export function runDeterministicEngine(params: {
     buddhistYogacaraConsciousnessResult,
     vedicMandukyaTuriyaResult,
     kabbalisticZoharSoulResult,
+    persianAttarSevenValleysResult,
+    hermeticPoimandresResult,
+    kashmirShaivismSpandaResult,
     tools: toolsMap,
   };
 }
@@ -2566,6 +2602,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master' },
   { key: 'vedicMandukyaTuriya', nameKo: '만두키야 우파니샤드 투리야 순수의식', icon: '🕉️', category: 'deep_master' },
   { key: 'kabbalisticZoharSoul', nameKo: '카발라 조하르 5대 영혼 층위', icon: '🕎', category: 'deep_master' },
+  { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master' },
+  { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master' },
+  { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2761,6 +2800,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'persianAttarSevenValleys',
+    'hermeticPoimandres',
+    'kashmirShaivismSpanda',
     'buddhistYogacaraConsciousness',
     'vedicMandukyaTuriya',
     'kabbalisticZoharSoul',
@@ -2784,6 +2826,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'persianAttarSevenValleys',
+    'hermeticPoimandres',
+    'kashmirShaivismSpanda',
     'buddhistYogacaraConsciousness',
     'vedicMandukyaTuriya',
     'kabbalisticZoharSoul',
@@ -3070,5 +3115,8 @@ ${report.norseVolvaSeidrNineRealmsResult && shouldIncludeEngine('norseVolvaSeidr
 ${report.zhuangziXiaoyaoyouButterflyResult && shouldIncludeEngine('zhuangziXiaoyaoyouButterfly', options) ? '\n' + formatZhuangziXiaoyaoyouButterflyPrompt(report.zhuangziXiaoyaoyouButterflyResult) : ''}
 ${report.buddhistYogacaraConsciousnessResult && shouldIncludeEngine('buddhistYogacaraConsciousness', options) ? '\n' + formatBuddhistYogacaraConsciousnessPrompt(report.buddhistYogacaraConsciousnessResult) : ''}
 ${report.vedicMandukyaTuriyaResult && shouldIncludeEngine('vedicMandukyaTuriya', options) ? '\n' + formatVedicMandukyaTuriyaPrompt(report.vedicMandukyaTuriyaResult) : ''}
-${report.kabbalisticZoharSoulResult && shouldIncludeEngine('kabbalisticZoharSoul', options) ? '\n' + formatKabbalisticZoharSoulPrompt(report.kabbalisticZoharSoulResult) : ''}`;
+${report.kabbalisticZoharSoulResult && shouldIncludeEngine('kabbalisticZoharSoul', options) ? '\n' + formatKabbalisticZoharSoulPrompt(report.kabbalisticZoharSoulResult) : ''}
+${report.persianAttarSevenValleysResult && shouldIncludeEngine('persianAttarSevenValleys', options) ? '\n' + formatPersianAttarSevenValleysPrompt(report.persianAttarSevenValleysResult) : ''}
+${report.hermeticPoimandresResult && shouldIncludeEngine('hermeticPoimandres', options) ? '\n' + formatHermeticPoimandresPrompt(report.hermeticPoimandresResult) : ''}
+${report.kashmirShaivismSpandaResult && shouldIncludeEngine('kashmirShaivismSpanda', options) ? '\n' + formatKashmirShaivismSpandaPrompt(report.kashmirShaivismSpandaResult) : ''}`;
 }
