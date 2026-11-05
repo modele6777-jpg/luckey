@@ -90,6 +90,9 @@ import { calculatePythagoreanTetraktys, formatPythagoreanTetraktysPrompt, PYTHAG
 import { calculateBabylonianEnumaElish, formatBabylonianEnumaElishPrompt, BABYLONIAN_ENUMA_ELISH_VERSION } from '../src/lib/divination/babylonianEnumaElishEngine';
 import { calculateTaoistHuangtingJing, formatTaoistHuangtingJingPrompt, TAOIST_HUANGTING_VERSION } from '../src/lib/divination/taoistHuangtingJingEngine';
 import { calculatePersianAmeshaSpenta, formatPersianAmeshaSpentaPrompt, PERSIAN_AMESHA_SPENTA_VERSION } from '../src/lib/divination/persianAmeshaSpentaEngine';
+import { calculateSumerianFiftyMes, formatSumerianFiftyMesPrompt, SUMERIAN_FIFTY_MES_VERSION } from '../src/lib/divination/sumerianFiftyMesEngine';
+import { calculateZhongLuInnerAlchemy, formatZhongLuInnerAlchemyPrompt, ZHONG_LU_INNER_ALCHEMY_VERSION } from '../src/lib/divination/zhongLuInnerAlchemyEngine';
+import { calculateDruidMoonTrees, formatDruidMoonTreesPrompt, DRUID_MOON_TREES_VERSION } from '../src/lib/divination/druidThirteenMoonTreesEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2796,4 +2799,35 @@ test('Persian Amesha Spenta & Baresman Engine: calculates immortal, baresman sco
   const prompt = formatPersianAmeshaSpentaPrompt(rep);
   assert(prompt.includes('고대 페르시아 바르숨 & 6대 아메샤 스펜타 조화 엔진'));
   assert(prompt.includes(rep.patronImmortal.koreanName));
+});
+
+test('Sumerian Fifty Mes & Civilization Engine: calculates primary me, creation index and decree', () => {
+  const rep = calculateSumerianFiftyMes(profile);
+  assert.equal(rep.engineVersion, SUMERIAN_FIFTY_MES_VERSION);
+  assert(rep.primaryMe.koreanName.length > 0);
+  assert(rep.creationIndex >= 0 && rep.creationIndex <= 100);
+  const prompt = formatSumerianFiftyMesPrompt(rep);
+  assert(prompt.includes('고대 수메르 에리두 50대 메(Me) 신성 문명 규범 엔진'));
+  assert(prompt.includes(rep.primaryMe.koreanName));
+});
+
+test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier and kan-li harmony', () => {
+  const rep = calculateZhongLuInnerAlchemy(profile);
+  assert.equal(rep.engineVersion, ZHONG_LU_INNER_ALCHEMY_VERSION);
+  assert(rep.immortalityTier.koreanTitle.length > 0);
+  assert(rep.kanLiHarmonyScore >= 0 && rep.kanLiHarmonyScore <= 100);
+  const prompt = formatZhongLuInnerAlchemyPrompt(rep);
+  assert(prompt.includes('도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진'));
+  assert(prompt.includes(rep.immortalityTier.koreanTitle));
+});
+
+test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tree and resonance', () => {
+  const rep = calculateDruidMoonTrees(profile);
+  assert.equal(rep.engineVersion, DRUID_MOON_TREES_VERSION);
+  assert(rep.birthTree.koreanName.length > 0);
+  assert(rep.activeCycleTree.koreanName.length > 0);
+  assert(rep.resonanceScore >= 0 && rep.resonanceScore <= 100);
+  const prompt = formatDruidMoonTreesPrompt(rep);
+  assert(prompt.includes('켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진'));
+  assert(prompt.includes(rep.birthTree.koreanName));
 });
