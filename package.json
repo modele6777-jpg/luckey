@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.87",
+  "version": "1.7.88",
   "engines": {
     "node": ">=20.0.0"
   },

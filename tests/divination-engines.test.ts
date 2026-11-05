@@ -75,6 +75,9 @@ import { calculateMesopotamianSevenGates, formatMesopotamianSevenGatesPrompt, ME
 import { calculateEgyptianThirtySixDecans, formatEgyptianThirtySixDecansPrompt, EGYPTIAN_DECANS_VERSION } from '../src/lib/divination/egyptianThirtySixDecansEngine';
 import { calculateSufiLataifSoulAscension, formatSufiLataifSoulAscensionPrompt, SUFI_LATAIF_VERSION } from '../src/lib/divination/sufiLataifSoulAscensionEngine';
 import { calculateMayanTzolkinSacredCalendar, formatMayanTzolkinSacredCalendarPrompt, MAYAN_TZOLKIN_VERSION } from '../src/lib/divination/mayanTzolkinSacredCalendarEngine';
+import { calculateNordicElderFutharkRunes, formatNordicElderFutharkRunesPrompt, NORDIC_RUNES_VERSION } from '../src/lib/divination/nordicElderFutharkRunesEngine';
+import { calculateDelphicMaximsOracle, formatDelphicMaximsOraclePrompt, DELPHIC_MAXIMS_VERSION } from '../src/lib/divination/delphicMaximsOracleEngine';
+import { calculateAyurvedicTridoshaPrana, formatAyurvedicTridoshaPranaPrompt, AYURVEDIC_TRIDOSHA_VERSION } from '../src/lib/divination/ayurvedicTridoshaPranaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2594,4 +2597,42 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   const prompt = formatMayanTzolkinSacredCalendarPrompt(rep);
   assert(prompt.includes('고대 마야 촐킨'));
   assert(prompt.includes(rep.todayKin.kinFullName));
+});
+
+test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and bindrune', () => {
+  const rep = calculateNordicElderFutharkRunes({ profile });
+  assert.equal(rep.engineVersion, NORDIC_RUNES_VERSION);
+  assert(rep.birthRune.runeNumber >= 1 && rep.birthRune.runeNumber <= 24);
+  assert(rep.nornsTrio.urdPast.runeNumber >= 1 && rep.nornsTrio.urdPast.runeNumber <= 24);
+  assert(rep.nornsTrio.verdandiPresent.runeNumber >= 1 && rep.nornsTrio.verdandiPresent.runeNumber <= 24);
+  assert(rep.nornsTrio.skuldFuture.runeNumber >= 1 && rep.nornsTrio.skuldFuture.runeNumber <= 24);
+  assert(rep.cosmicWyrdResonanceScore >= 0 && rep.cosmicWyrdResonanceScore <= 100);
+  assert(rep.bindruneTalisman.combinedRunes.length >= 2);
+  const prompt = formatNordicElderFutharkRunesPrompt(rep);
+  assert(prompt.includes('북유럽 24 엘더 푸사르크 룬'));
+  assert(prompt.includes(rep.birthRune.koreanName));
+});
+
+test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle and clarity', () => {
+  const rep = calculateDelphicMaximsOracle({ profile });
+  assert.equal(rep.engineVersion, DELPHIC_MAXIMS_VERSION);
+  assert(rep.coreSoulMaxim.maximIndex >= 1);
+  assert(rep.situationalOracleMaxim.maximIndex >= 1);
+  assert(rep.apollonianClarityScore >= 0 && rep.apollonianClarityScore <= 100);
+  assert(rep.pythianOracleInsight.length > 0);
+  const prompt = formatDelphicMaximsOraclePrompt(rep);
+  assert(prompt.includes('고대 그리스 델포이 아폴론 신탁'));
+  assert(prompt.includes(rep.coreSoulMaxim.greekText));
+});
+
+test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle energies', () => {
+  const rep = calculateAyurvedicTridoshaPrana({ profile });
+  assert.equal(rep.engineVersion, AYURVEDIC_TRIDOSHA_VERSION);
+  assert(rep.prakritiConstitution.vata >= 0 && rep.prakritiConstitution.pitta >= 0 && rep.prakritiConstitution.kapha >= 0);
+  assert.equal(rep.prakritiConstitution.vata + rep.prakritiConstitution.pitta + rep.prakritiConstitution.kapha, 100);
+  assert(rep.subtleEnergies.pranaScore >= 0 && rep.subtleEnergies.tejasScore >= 0 && rep.subtleEnergies.ojasScore >= 0);
+  assert(rep.dinacharya.pranayamaBreathing.length > 0);
+  const prompt = formatAyurvedicTridoshaPranaPrompt(rep);
+  assert(prompt.includes('인도 정통 아유르베다 3대 도샤'));
+  assert(prompt.includes(rep.prakritiConstitution.dominantDosha));
 });
