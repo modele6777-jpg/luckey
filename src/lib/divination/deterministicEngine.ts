@@ -109,6 +109,9 @@ import { calculateMesopotamianSevenGates, formatMesopotamianSevenGatesPrompt, ty
 import { calculateEgyptianThirtySixDecans, formatEgyptianThirtySixDecansPrompt, type EgyptianThirtySixDecansReport, EGYPTIAN_DECANS_VERSION } from './egyptianThirtySixDecansEngine';
 import { calculateSufiLataifSoulAscension, formatSufiLataifSoulAscensionPrompt, type SufiLataifReport, SUFI_LATAIF_VERSION } from './sufiLataifSoulAscensionEngine';
 import { calculateMayanTzolkinSacredCalendar, formatMayanTzolkinSacredCalendarPrompt, type MayanTzolkinReport, MAYAN_TZOLKIN_VERSION } from './mayanTzolkinSacredCalendarEngine';
+import { calculateNordicElderFutharkRunes, formatNordicElderFutharkRunesPrompt, type NordicElderFutharkRunesReport, NORDIC_RUNES_VERSION } from './nordicElderFutharkRunesEngine';
+import { calculateDelphicMaximsOracle, formatDelphicMaximsOraclePrompt, type DelphicMaximsOracleReport, DELPHIC_MAXIMS_VERSION } from './delphicMaximsOracleEngine';
+import { calculateAyurvedicTridoshaPrana, formatAyurvedicTridoshaPranaPrompt, type AyurvedicTridoshaReport, AYURVEDIC_TRIDOSHA_VERSION } from './ayurvedicTridoshaPranaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -238,6 +241,9 @@ export interface DeterministicEngineReport {
   egyptianDecansResult?: EgyptianThirtySixDecansReport | null;
   sufiLataifResult?: SufiLataifReport | null;
   mayanTzolkinResult?: MayanTzolkinReport | null;
+  nordicRunesResult?: NordicElderFutharkRunesReport | null;
+  delphicMaximsResult?: DelphicMaximsOracleReport | null;
+  ayurvedicTridoshaResult?: AyurvedicTridoshaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1485,6 +1491,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 81. 북유럽 24 엘더 푸사르크 룬 문자 & 노른 운명 직조 엔진
+  const nordicRunesResult = (() => {
+    try {
+      return calculateNordicElderFutharkRunes({ profile, targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 82. 고대 그리스 델포이 아폴론 신탁 & 147 델포이 잠언 신성 지혜 엔진
+  const delphicMaximsResult = (() => {
+    try {
+      return calculateDelphicMaximsOracle({ profile, targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 83. 인도 정통 아유르베다 3대 도샤(트리도샤) 체질 & 프라나 생명력 엔진
+  const ayurvedicTridoshaResult = (() => {
+    try {
+      return calculateAyurvedicTridoshaPrana({ profile, targetDate: now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1600,6 +1633,9 @@ export function runDeterministicEngine(params: {
     egyptianDecansResult,
     sufiLataifResult,
     mayanTzolkinResult,
+    nordicRunesResult,
+    delphicMaximsResult,
+    ayurvedicTridoshaResult,
     tools: toolsMap,
   };
 }
@@ -1629,6 +1665,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'mesopotamianSevenGates',
     'egyptianDecans',
     'quantumLeap',
+    'nordicRunes',
+    'delphicMaxims',
   ],
   business_money: [
     'wealthPipeline',
@@ -1672,6 +1710,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'mesopotamianSevenGates',
     'celticTreeOgham',
     'vibrationalSoulQuest',
+    'nordicRunes',
+    'delphicMaxims',
   ],
   daily_timing_transit: [
     'chronoTransit',
@@ -1684,6 +1724,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'fiveEmotionsPulse',
     'mayanTzolkin',
     'egyptianDecans',
+    'ayurvedicTridosha',
   ],
   life_season_timing: [
     'lifeSeasonTiming',
@@ -1710,6 +1751,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'fiveEmotionsPulse',
     'sufiLataif',
     'alchemicalTransmutation',
+    'ayurvedicTridosha',
   ],
   creative_mind: [
     'kabbalah',
@@ -1722,6 +1764,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hermeticKybalion',
     'celticTreeOgham',
     'mayanTzolkin',
+    'nordicRunes',
   ],
   life_reflection: [
     'supremeWisdomTrinity',
@@ -1735,6 +1778,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sufiLataif',
     'taoistSanbao',
     'alchemicalTransmutation',
+    'delphicMaxims',
+    'ayurvedicTridosha',
   ],
 };
 
@@ -1890,5 +1935,8 @@ ${report.tibetanBardoResult && shouldIncludeEngine('tibetanBardo', options) ? '\
 ${report.mesopotamianSevenGatesResult && shouldIncludeEngine('mesopotamianSevenGates', options) ? '\n' + formatMesopotamianSevenGatesPrompt(report.mesopotamianSevenGatesResult) : ''}
 ${report.egyptianDecansResult && shouldIncludeEngine('egyptianDecans', options) ? '\n' + formatEgyptianThirtySixDecansPrompt(report.egyptianDecansResult) : ''}
 ${report.sufiLataifResult && shouldIncludeEngine('sufiLataif', options) ? '\n' + formatSufiLataifSoulAscensionPrompt(report.sufiLataifResult) : ''}
-${report.mayanTzolkinResult && shouldIncludeEngine('mayanTzolkin', options) ? '\n' + formatMayanTzolkinSacredCalendarPrompt(report.mayanTzolkinResult) : ''}`;
+${report.mayanTzolkinResult && shouldIncludeEngine('mayanTzolkin', options) ? '\n' + formatMayanTzolkinSacredCalendarPrompt(report.mayanTzolkinResult) : ''}
+${report.nordicRunesResult && shouldIncludeEngine('nordicRunes', options) ? '\n' + formatNordicElderFutharkRunesPrompt(report.nordicRunesResult) : ''}
+${report.delphicMaximsResult && shouldIncludeEngine('delphicMaxims', options) ? '\n' + formatDelphicMaximsOraclePrompt(report.delphicMaximsResult) : ''}
+${report.ayurvedicTridoshaResult && shouldIncludeEngine('ayurvedicTridosha', options) ? '\n' + formatAyurvedicTridoshaPranaPrompt(report.ayurvedicTridoshaResult) : ''}`;
 }
