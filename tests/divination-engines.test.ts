@@ -135,6 +135,9 @@ import { calculateChaldeanMulApinAstrology, formatChaldeanMulApinAstrologyPrompt
 import { calculateToltecNagualDreaming, formatToltecNagualDreamingPrompt, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION } from '../src/lib/divination/toltecNagualDreamingEngine';
 import { calculateShugendoYamabushiTenRealms, formatShugendoYamabushiTenRealmsPrompt, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION } from '../src/lib/divination/shugendoYamabushiTenRealmsEngine';
 import { calculateGnosticPistisSophiaPleroma, formatGnosticPistisSophiaPleromaPrompt, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION } from '../src/lib/divination/gnosticPistisSophiaPleromaEngine';
+import { calculateSumerianInannaUnderworldDescent, formatSumerianInannaUnderworldDescentPrompt, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION } from '../src/lib/divination/sumerianInannaUnderworldDescentEngine';
+import { calculateNorseVolvaSeidrNineRealms, formatNorseVolvaSeidrNineRealmsPrompt, NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION } from '../src/lib/divination/norseVolvaSeidrNineRealmsEngine';
+import { calculateZhuangziXiaoyaoyouButterfly, formatZhuangziXiaoyaoyouButterflyPrompt, ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION } from '../src/lib/divination/zhuangziXiaoyaoyouButterflyEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3366,6 +3369,45 @@ test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance an
   const prompt = formatGnosticPistisSophiaPleromaPrompt(rep);
   assert(prompt.includes('고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 실측 데이터'));
   assert(prompt.includes(rep.primaryAeon.nameKo));
+});
+
+test('Sumerian Inanna Underworld Descent Engine: calculates seven gates stripping and resurrection vitality', () => {
+  const rep = calculateSumerianInannaUnderworldDescent({ profile, question: '그림자와 영혼의 부활' });
+  assert.equal(rep.engineVersion, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION);
+  assert.equal(rep.gates.length, 7);
+  assert(rep.underworldSevenGatesPassRate >= 0 && rep.underworldSevenGatesPassRate <= 100);
+  assert(rep.spiritualResurrectionVitality >= 0 && rep.spiritualResurrectionVitality <= 100);
+  assert(rep.ereshkigalShadowReconciliation >= 0 && rep.ereshkigalShadowReconciliation <= 100);
+  assert(rep.currentCrucialGate.gateName.length > 0);
+  const prompt = formatSumerianInannaUnderworldDescentPrompt(rep);
+  assert(prompt.includes('고대 수메르 이난나 명계 하강 7대 관문 & 부활 실측 데이터'));
+  assert(prompt.includes(rep.currentCrucialGate.gateName));
+});
+
+test('Norse Volva Seidr Nine Realms Engine: calculates nine realms resonance and huginn/munin scores', () => {
+  const rep = calculateNorseVolvaSeidrNineRealms({ profile, question: '세계수의 운명과 예언' });
+  assert.equal(rep.engineVersion, NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION);
+  assert(rep.seidrIntuitionClarity >= 0 && rep.seidrIntuitionClarity <= 100);
+  assert(rep.huginnThoughtScore >= 0 && rep.huginnThoughtScore <= 100);
+  assert(rep.muninMemoryScore >= 0 && rep.muninMemoryScore <= 100);
+  assert(rep.yggdrasilSapShieldPower >= 0 && rep.yggdrasilSapShieldPower <= 100);
+  assert(rep.dominantRealm.nameKo.length > 0);
+  const prompt = formatNorseVolvaSeidrNineRealmsPrompt(rep);
+  assert(prompt.includes('고대 북유럽 볼바 세이드 직관 & 위그드라실 9대 세계 실측 데이터'));
+  assert(prompt.includes(rep.dominantRealm.nameKo));
+});
+
+test('Zhuangzi Xiaoyaoyou Butterfly Engine: calculates absolute freedom, rocs flight and butterfly dream', () => {
+  const rep = calculateZhuangziXiaoyaoyouButterfly({ profile, question: '붕정만리와 자유' });
+  assert.equal(rep.engineVersion, ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION);
+  assert(rep.xiaoyaoyouAbsoluteFreedomScore >= 0 && rep.xiaoyaoyouAbsoluteFreedomScore <= 100);
+  assert(rep.rocAscendingWindResonance >= 0 && rep.rocAscendingWindResonance <= 100);
+  assert(rep.qiwulunTranscendenceIndex >= 0 && rep.qiwulunTranscendenceIndex <= 100);
+  assert(rep.butterflyDreamFluidityScore >= 0 && rep.butterflyDreamFluidityScore <= 100);
+  assert(rep.dominantArchetype.nameKo.length > 0);
+  const prompt = formatZhuangziXiaoyaoyouButterflyPrompt(rep);
+  assert(prompt.includes('고대 도가 장자 소요유 붕정만리 & 제물론 호접몽 실측 데이터'));
+  assert(prompt.includes(rep.dominantArchetype.nameKo));
 });
 
 
