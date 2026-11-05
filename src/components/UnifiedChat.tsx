@@ -1,3 +1,4 @@
+import { isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { 
@@ -321,7 +322,7 @@ export function UnifiedChat() {
     isChatOpen, setIsChatOpen, 
     activePersona, setActivePersona, 
     personaMessages, isGenerating, 
-    sendUnifiedMessage, chatSuggestions, clearPersonaMessages,
+    sendUnifiedMessage, revealLucyTarotCard, chatSuggestions, clearPersonaMessages,
     sharedState
   } = useApp();
 
@@ -995,7 +996,7 @@ export function UnifiedChat() {
                         stopTTS();
                       } else {
                         const talkMessages = currentMessages
-                          .filter(m => typeof m.content === "string")
+                          .filter(m => typeof m.content === "string" && isLucyTarotDrawOpen(m.tarotDraw))
                           .map(m => ({
                             role: m.role,
                             content: m.role === "user" ? cleanUserMessageDisplay(m.content as string) : (m.content as string)
@@ -1126,6 +1127,8 @@ export function UnifiedChat() {
                       <LucyKakaoBubbleGroup
                         msgId={msgId}
                         verifiedTarotMarkers={m.tarotDraw?.source === 'app-random' ? m.tarotDraw.markers : undefined}
+                        revealedTarotCardIds={m.tarotDraw?.revealedCardIds}
+                        onRevealTarotCard={cardId => revealLucyTarotCard(msgId, cardId)}
                         textContent={cleanAssistantText}
                         isLatest={i === currentMessages.length - 1}
                         isGenerating={currentGenerating && i === currentMessages.length - 1}

@@ -5,6 +5,7 @@ export interface LucyTarotDraw {
   id: string;
   drawnAt: number;
   markers: string;
+  revealedCardIds?: string[];
 }
 
 export const TAROT_NO_DRAW_RULE = `[타로 추첨 사실성 — 다른 도구·비유 지침보다 우선]
@@ -47,4 +48,22 @@ function hasExplicitOrientation(text: string, card: DetectedTarotCard): boolean 
 export function isLucyTarotDrawRequest(text: string): boolean {
   return /타로|카드|스프레드/i.test(text)
     && /뽑아|뽑아줘|뽑아봐|뽑기|추첨해|리딩해|리딩을?\s*해|봐줘|봐줄|한\s*장|세\s*장|[123]\s*장|쓰리카드|과거\s*현재\s*미래/i.test(text);
+}
+
+export function isLucyTarotDrawOpen(draw?: LucyTarotDraw): boolean {
+  if (!draw) return true;
+  const cards = detectTarotCardsFromText(draw.markers);
+  return cards.length > 0 && cards.every(card => draw.revealedCardIds?.includes(card.id));
+}
+
+export function revealLucyTarotDrawCard(draw: LucyTarotDraw, cardId: string): LucyTarotDraw {
+  if (!detectTarotCardsFromText(draw.markers).some(card => card.id === cardId)
+    || draw.revealedCardIds?.includes(cardId)) return draw;
+  return { ...draw, revealedCardIds: [...(draw.revealedCardIds || []), cardId] };
+}
+
+export function mergeLucyTarotDraw(existing?: LucyTarotDraw, incoming?: LucyTarotDraw): LucyTarotDraw | undefined {
+  if (!existing) return incoming;
+  if (!incoming || existing.id !== incoming.id || existing.markers !== incoming.markers) return existing;
+  return { ...existing, revealedCardIds: [...new Set([...(existing.revealedCardIds || []), ...(incoming.revealedCardIds || [])])] };
 }

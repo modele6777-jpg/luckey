@@ -21,6 +21,8 @@ interface LucyKakaoBubbleGroupProps {
   msgId: string;
   textContent: string;
   verifiedTarotMarkers?: string;
+  revealedTarotCardIds?: string[];
+  onRevealTarotCard?: (cardId: string) => void;
   isLatest: boolean;
   isGenerating: boolean;
   isHistorical: boolean;
@@ -45,6 +47,8 @@ export function LucyKakaoBubbleGroup({
   msgId,
   textContent,
   verifiedTarotMarkers,
+  revealedTarotCardIds,
+  onRevealTarotCard,
   onForward,
   forwardTargetLabel = '다른 채팅',
   isLatest,
@@ -186,7 +190,8 @@ export function LucyKakaoBubbleGroup({
     return 0;
   }, [bubbles, isThisMsgPlaying, ttsInfo?.activeSentence, ttsInfo?.activeText, ttsInfo?.isLoading]);
 
-  const displayedBubbles = shouldSkipStagger
+  const isTarotLocked = Boolean(verifiedTarotMarkers) && detectedTarotCards.some(card => !revealedTarotCardIds?.includes(card.id));
+  const displayedBubbles = isTarotLocked ? [] : shouldSkipStagger
     ? bubbles
     : bubbles.slice(0, Math.min(visibleCount, bubbles.length));
 
@@ -199,8 +204,9 @@ export function LucyKakaoBubbleGroup({
     <div className="flex flex-col gap-2 sm:gap-2.5 w-full min-w-0 max-w-full">
       {/* Show drawn cards before the reading, including while text is streaming. */}
       {detectedTarotCards.length > 0 && (
-        <LucyTarotCardView cards={detectedTarotCards} isLight={isLight} verifiedDraw={Boolean(verifiedTarotMarkers)} />
+        <LucyTarotCardView cards={detectedTarotCards} isLight={isLight} verifiedDraw={Boolean(verifiedTarotMarkers)} revealedCardIds={revealedTarotCardIds} onRevealCard={onRevealTarotCard} />
       )}
+      {isTarotLocked && <p className={`text-xs px-1 ${isLight ? 'text-slate-600' : 'text-white/70'}`} role="status">카드를 모두 열면 루시의 해설이 나타나요.</p>}
       <AnimatePresence initial={false}>
         {displayedBubbles.map((bubbleText, bIdx) => {
           const isFirstBubble = bIdx === 0;
@@ -336,7 +342,7 @@ export function LucyKakaoBubbleGroup({
       )}
 
       {/* 하단 통합 액션 바: 전체 말풍선 복사 & 전체 말풍선 한 번에 연속 듣기 */}
-      {!isStaggeringMoreBubbles && onCopy && onVoicePlay && (
+      {!isTarotLocked && !isStaggeringMoreBubbles && onCopy && onVoicePlay && (
         <div className="flex items-center gap-1.5 mt-0.5 pl-1 flex-wrap">
           <button
             type="button"

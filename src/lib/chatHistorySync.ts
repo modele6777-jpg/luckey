@@ -1,4 +1,4 @@
-import { type LucyTarotDraw } from './lucyTarotIntegrity';
+import { mergeLucyTarotDraw, type LucyTarotDraw } from './lucyTarotIntegrity';
 /**
  * =========================================================================
  * PRISM & LUCY PRO: 통합 대화 기록 동기화 & 일일 초기화 엔진 (Smart Chat Sync)
@@ -284,6 +284,7 @@ export function mergeUnifiedMessages(
         ...existing,
         ...msg,
         content: preferredContent,
+        tarotDraw: mergeLucyTarotDraw(existing.tarotDraw, msg.tarotDraw),
         id: existing.id || msg.id,
         timestamp: existing.timestamp || msg.timestamp,
         persona: msg.persona || existing.persona,

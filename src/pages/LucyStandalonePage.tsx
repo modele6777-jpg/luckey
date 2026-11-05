@@ -1,4 +1,4 @@
-import { isLucyTarotDrawRequest } from '@/lib/lucyTarotIntegrity';
+import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
@@ -761,7 +761,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const { 
     firebaseUser, 
     signInWithGoogle, 
-    sendUnifiedMessage, 
+    sendUnifiedMessage,
+    revealLucyTarotCard,
     personaMessages, 
     setPersonaMessages,
     isGenerating,
@@ -1834,6 +1835,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const triggerAutoTts = useCallback(async (textToSpeak: string, msgId?: string) => {
     if (manualTtsActiveRef.current) return;
+    if (msgId && !isLucyTarotDrawOpen(lucyMessages.find(message => message.id === msgId)?.tarotDraw)) return;
     if ((!isAutoTtsRef.current && !isVoiceModeRef.current) || !textToSpeak || !textToSpeak.trim()) return;
     if (msgId && lastAutoSpokenMsgIdRef.current === msgId) return;
     if (isAutoTtsBusyRef.current) return;
@@ -1865,7 +1867,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       if (!manualTtsActiveRef.current) setPlayingMsgId(null);
       isAutoTtsBusyRef.current = false;
     }
-  }, [lucyMessages.length]);
+  }, [lucyMessages]);
 
   // 🌸 사용자 요청: 루시 및 루시프로 진입 시 인사말 자동 TTS 낭독 비활성화 (수동 스피커 탭 시에만 재생)
   useEffect(() => {
@@ -2361,7 +2363,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       channel: isSingle ? channels[0] : undefined,
       usedTools: usedToolNames,
       onFinish: async (fullText, _sentText, replyMsgId) => {
-        if ((isAutoTtsRef.current || isVoiceModeRef.current) && fullText && fullText.trim()) {
+        if (!tarotCardMarkers && (isAutoTtsRef.current || isVoiceModeRef.current) && fullText && fullText.trim()) {
           void triggerAutoTts(fullText, replyMsgId);
         }
       }
@@ -2553,6 +2555,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   };
 
   const handleVoicePlay = async (id: string, text: string, _voice?: string) => {
+    if (!isLucyTarotDrawOpen(lucyMessages.find(message => message.id === id)?.tarotDraw)) return;
     isUserScrolledUpRef.current = true; // 수동 음성 재생 클릭 시 하단 끌어당김 절대 차단
     unlockAudioPlayback();
     primeTTSAudioElement();
@@ -3119,6 +3122,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       forwardTargetLabel={pro ? '일반 루시' : '루시 프로'}
                       msgId={msgId}
                       verifiedTarotMarkers={msg.tarotDraw?.source === 'app-random' ? msg.tarotDraw.markers : undefined}
+                      revealedTarotCardIds={msg.tarotDraw?.revealedCardIds}
+                      onRevealTarotCard={cardId => revealLucyTarotCard(msgId, cardId, pro ? 'lucy-pro' : 'lucy')}
                       textContent={textContent}
                       isLatest={index === filteredMessages.length - 1}
                       isGenerating={isLucyGenerating && index === filteredMessages.length - 1}

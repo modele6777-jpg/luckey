@@ -1,5 +1,7 @@
+import { TarotCardBackFace } from '@/components/trinity/TarotCardBackFace';
+import { useTarotCardBack } from '@/hooks/useTarotCardBack';
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Sparkles, ZoomIn, X, RotateCcw } from 'lucide-react';
 import { DetectedTarotCard } from '@/utils/tarotDetector';
 
@@ -7,9 +9,13 @@ interface LucyTarotCardViewProps {
   cards: DetectedTarotCard[];
   isLight?: boolean;
   verifiedDraw?: boolean;
+  revealedCardIds?: string[];
+  onRevealCard?: (cardId: string) => void;
 }
 
-export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isLight = false, verifiedDraw = false }) => {
+export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isLight = false, verifiedDraw = false, revealedCardIds = [], onRevealCard }) => {
+  const { cardBackId } = useTarotCardBack();
+  const reducedMotion = useReducedMotion();
   const [zoomedCard, setZoomedCard] = useState<DetectedTarotCard | null>(null);
 
   if (!cards || cards.length === 0) return null;
@@ -27,8 +33,11 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
         }`}>
           {cards.map((card, idx) => {
             const isReversed = Boolean(card.reversed);
+            const isOpen = !verifiedDraw || revealedCardIds.includes(card.id);
             return (
-              <motion.div
+              <motion.button
+                type="button"
+                aria-label={isOpen ? `${card.nameKo} ${card.orientationKo} 크게 보기` : `${idx + 1}번째 타로 카드 열기`}
                 key={`${card.id}-${idx}`}
                 initial={{ opacity: 0, scale: 0.9, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -38,8 +47,10 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
                     ? 'bg-amber-50/70 border-amber-200/90 text-slate-800 hover:border-amber-400'
                     : 'bg-slate-900/80 border-amber-500/30 text-white hover:border-amber-400/60'
                 }`}
-                onClick={() => setZoomedCard(card)}
+                onClick={() => isOpen ? setZoomedCard(card) : onRevealCard?.(card.id)}
               >
+                {isOpen ? (
+                  <motion.div key="front" initial={reducedMotion ? false : { rotateY: -90 }} animate={{ rotateY: 0 }} transition={{ duration: 0.3 }} className="flex flex-col items-center w-full">
                 {/* 정/역방향 뱃지 */}
                 <div className="w-full flex items-center justify-between mb-1.5 px-0.5">
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${
@@ -102,7 +113,17 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
                     ))}
                   </div>
                 )}
-              </motion.div>
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col items-center w-full gap-2 py-1">
+                    <span className="text-xs font-semibold">{idx + 1}번째 카드</span>
+                    <div className="relative w-28 sm:w-32 aspect-[3/5] rounded-lg overflow-hidden">
+                      <TarotCardBackFace cardBackId={cardBackId} size="sm" className="w-full h-full" />
+                    </div>
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-300">눌러서 카드 열기</span>
+                  </div>
+                )}
+              </motion.button>
             );
           })}
         </div>

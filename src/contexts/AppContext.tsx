@@ -1,4 +1,4 @@
-import { TAROT_NO_DRAW_RULE, verifyLucyTarotReply, isLucyTarotDrawRequest, type LucyTarotDraw } from '../lib/lucyTarotIntegrity';
+import { TAROT_NO_DRAW_RULE, verifyLucyTarotReply, isLucyTarotDrawRequest, revealLucyTarotDrawCard, type LucyTarotDraw } from '../lib/lucyTarotIntegrity';
 import { drawLucyTarotCards, formatTarotMarker } from '../utils/tarotDetector';
 import { buildLucyTarotReadingPrompt, LUCY_TAROT_RESPONSE_PROFILE } from '../lib/lucyTarotReading';
 import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, buildLucyLongTermPrompt } from '../lib/lucyLongTermMemory';
@@ -104,6 +104,7 @@ interface AppContextValue {
   setPersonaMessages: React.Dispatch<React.SetStateAction<Record<PersonaType, UnifiedMessage[]>>>;
   isGenerating: Record<PersonaType, boolean>;
   abortGenerating: (persona?: PersonaType) => void;
+  revealLucyTarotCard: (messageId: string, cardId: string, conversationId?: 'lucy' | 'lucy-pro') => void;
   sendUnifiedMessage: (
     text: string,
     forcePersona?: PersonaType,
@@ -1737,6 +1738,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const proRuntimeRef = useRef(proChat.runtime);
   proRuntimeRef.current = proChat.runtime;
 
+  const revealLucyTarotCard = useCallback((messageId: string, cardId: string, conversationId: 'lucy' | 'lucy-pro' = 'lucy') => {
+    const runtime = conversationId === 'lucy-pro' ? proRuntimeRef.current : regularRuntimeRef.current;
+    runtime.setMessages(previous => previous.map(message => {
+      if (message.id !== messageId || message.tarotDraw?.source !== 'app-random') return message;
+      const tarotDraw = revealLucyTarotDrawCard(message.tarotDraw, cardId);
+      return tarotDraw === message.tarotDraw ? message : { ...message, tarotDraw };
+    }));
+  }, []);
+
   const sendUnifiedMessage = useCallback(async (
     text: string,
     _forcePersona?: PersonaType,
@@ -1775,7 +1785,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (message.id !== assistMsgId || typeof message.content !== 'string') return message;
           // Keep the actual draw visible before the first AI token and throughout streaming.
           const reading = message.content.replace(/\[TAROT:[a-zA-Z0-9_]+(?::(?:upright|reversed|정방향|역방향))?\]\s*/gi, '').trimStart();
-          return { ...message, tarotDraw, content: `${options.tarotCardMarkers}\n\n${reading}` };
+          return { ...message, tarotDraw: { ...tarotDraw!, revealedCardIds: message.tarotDraw?.revealedCardIds || [] }, content: `${options.tarotCardMarkers}\n\n${reading}` };
         });
       });
     };
@@ -2546,7 +2556,7 @@ ${responseProfile.rule}`;
       activePersona, setActivePersona,
       lucyProMessages: proChat.messages, isLucyProGenerating: proChat.generating, abortLucyProGenerating: proChat.abort, clearLucyProMessages: proChat.reset,
       personaMessages, setPersonaMessages,
-      isGenerating, abortGenerating, sendUnifiedMessage, chatSuggestions, openLucyChat,
+      isGenerating, abortGenerating, sendUnifiedMessage, revealLucyTarotCard, chatSuggestions, openLucyChat,
       openHandbook, clearPersonaMessages,
       generateDevicePairingCode, importDevicePairingCode,
     }}>
