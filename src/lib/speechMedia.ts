@@ -5,23 +5,21 @@ let finish: (() => void) | null = null;
 let active = false;
 let paused = false;
 export function getSpeechMediaElement(): HTMLAudioElement {
-  if (!player) { player = new Audio(); player.preload = 'auto'; player.setAttribute('playsinline', 'true'); }
+  if (!player) {
+    player = new Audio();
+    player.preload = 'auto';
+    player.setAttribute('playsinline', 'true');
+    // iOS 사파리에서 오디오 믹싱 허용 속성
+    (player as any).preservesPitch = true;
+  }
   return player;
 }
 export function primeSpeechMedia(): void {
-  const audio = getSpeechMediaElement();
-  if (active || audio.src) return;
-  // Unlock this same element in the click handler before the voice request.
-  const wav = new Uint8Array(46);
-  const view = new DataView(wav.buffer);
-  const text = (offset: number, value: string) => [...value].forEach((c, i) => view.setUint8(offset + i, c.charCodeAt(0)));
-  text(0, 'RIFF'); view.setUint32(4, 38, true); text(8, 'WAVE'); text(12, 'fmt ');
-  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-  view.setUint32(24, 24000, true); view.setUint32(28, 48000, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
-  text(36, 'data'); view.setUint32(40, 2, true);
-  objectUrl = URL.createObjectURL(new Blob([wav], { type: 'audio/wav' }));
-  audio.src = objectUrl;
-  void audio.play().catch(() => {});
+  // 🌟 무음 더미 오디오 재생 금지:
+  // 더미 wav 버퍼를 빈 Audio에 play()하는 순간 iOS 미디어 세션이 오디오 포커스를 독점하여
+  // 실행 중인 멜론, 애플뮤직 등 외부 음악이 즉시 일시정지되는 현상이 발생합니다.
+  // 따라서 더미 오디오 프라이밍을 제거하고 실제 TTS 음성 데이터가 로드되었을 때만 재생합니다.
+  getSpeechMediaElement();
 }
 export function stopSpeechMedia(): void {
   active = false; paused = false;

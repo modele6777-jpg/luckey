@@ -636,16 +636,24 @@ export function configureAmbientAudioSession(): void {
   if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
     try {
       const session = (navigator as any).audioSession;
-      const type = speechSessionActive ? 'playback' : 'ambient';
-      if (session.type !== type) session.type = type;
-    } catch (_) { /* Older browsers may not support a mixable audio session. */ }
+      // 🌟 외부 음악(멜론, 애플뮤직, 스포티파이 등) 절대 중단 방지:
+      // iOS 사파리 및 WebKit 오디오 세션을 항상 'ambient' 또는 'transient-solo'가 아닌
+      // 다른 앱의 오디오 재생을 가로채지 않고 함께 믹싱되는 모드로 고정합니다.
+      if (session.type !== 'ambient') {
+        session.type = 'ambient';
+      }
+    } catch (_) { /* Older browsers may not support audioSession */ }
   }
 }
 
-/** Speech needs a playback session for screen-lock/background playback. */
+/** Speech needs a playback session for screen-lock/background playback, but must NEVER interrupt background music. */
 export function configureTransientDuckingAudioSession(): void { configureAmbientAudioSession(); }
 export function configurePlaybackAudioSession(): void { configureAmbientAudioSession(); }
-export function configureSpeechAudioSession(): void { speechSessionActive = true; configureAmbientAudioSession(); if (typeof window !== 'undefined') primeSpeechMedia(); }
+export function configureSpeechAudioSession(): void {
+  speechSessionActive = true;
+  configureAmbientAudioSession();
+  if (typeof window !== 'undefined') primeSpeechMedia();
+}
 
 export function getTTSAudioElement(): HTMLAudioElement {
   if (typeof window === 'undefined') throw new Error('HTMLAudioElement is only available in the browser');
