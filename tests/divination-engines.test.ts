@@ -111,6 +111,9 @@ import { calculateCelticAwenTaliesin, formatCelticAwenTaliesinPrompt, CELTIC_AWE
 import { calculateKoreanDangunCheonbuin, formatKoreanDangunCheonbuinPrompt, KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION } from '../src/lib/divination/koreanDangunCheonbuinEngine';
 import { calculateMaoriMauriHauora, formatMaoriMauriHauoraPrompt, MAORI_MAURI_HAUORA_ENGINE_VERSION } from '../src/lib/divination/maoriMauriHauoraEngine';
 import { calculateSlavicMokoshFateWeaving, formatSlavicMokoshFateWeavingPrompt, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION } from '../src/lib/divination/slavicMokoshFateWeavingEngine';
+import { calculateSumerianGilgameshTrials, formatSumerianGilgameshTrialsPrompt, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION } from '../src/lib/divination/sumerianGilgameshTwelveTrialsEngine';
+import { calculateHawaiianKahunaThreeSelves, formatHawaiianKahunaThreeSelvesPrompt, HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION } from '../src/lib/divination/hawaiianKahunaThreeSelvesManaEngine';
+import { calculateNordicYggdrasilRealms, formatNordicYggdrasilRealmsPrompt, NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION } from '../src/lib/divination/nordicYggdrasilNineRealmsEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3064,4 +3067,38 @@ test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads a
   const prompt = formatSlavicMokoshFateWeavingPrompt(rep);
   assert(prompt.includes('고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터'));
   assert(prompt.includes(rep.threads.dolya.nameKo));
+});
+
+test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilience score', () => {
+  const rep = calculateSumerianGilgameshTrials({ profile });
+  assert.equal(rep.engineVersion, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION);
+  assert(rep.heroicResilienceScore >= 0 && rep.heroicResilienceScore <= 100);
+  assert(rep.immortalityWisdomIndex >= 0 && rep.immortalityWisdomIndex <= 100);
+  assert(rep.activeTrial.nameKo.length > 0);
+  const prompt = formatSumerianGilgameshTrialsPrompt(rep);
+  assert(prompt.includes('고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 실측 데이터'));
+  assert(prompt.includes(rep.activeTrial.nameKo));
+});
+
+test('Hawaiian Kahuna Three Selves Engine: calculates 3 selves harmony and mana resonance score', () => {
+  const rep = calculateHawaiianKahunaThreeSelves({ profile });
+  assert.equal(rep.engineVersion, HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION);
+  assert(rep.manaResonanceScore >= 0 && rep.manaResonanceScore <= 100);
+  assert(rep.unihipili.currentVitality > 0);
+  assert(rep.uhane.currentVitality > 0);
+  assert(rep.aumakua.currentVitality > 0);
+  const prompt = formatHawaiianKahunaThreeSelvesPrompt(rep);
+  assert(prompt.includes('고대 하와이 카후나 3대 자아 & 마나 공명 실측 데이터'));
+  assert(prompt.includes(rep.unihipili.dominantNeedOrBlock));
+});
+
+test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost clearance', () => {
+  const rep = calculateNordicYggdrasilRealms({ profile });
+  assert.equal(rep.engineVersion, NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION);
+  assert(rep.yggdrasilAxisAlignmentScore >= 0 && rep.yggdrasilAxisAlignmentScore <= 100);
+  assert(rep.bifrostBridgeClearance >= 0 && rep.bifrostBridgeClearance <= 100);
+  assert(rep.dominantRealm.nameKo.length > 0);
+  const prompt = formatNordicYggdrasilRealmsPrompt(rep);
+  assert(prompt.includes('고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 실측 데이터'));
+  assert(prompt.includes(rep.dominantRealm.nameKo));
 });
