@@ -1540,9 +1540,13 @@ export function generateDailySajuReport(
   // ==========================================
   // 🌿 오늘의 동적 행운 보약 처방 산출 엔진
   // ==========================================
-  // 날짜(y, m, d), 당일 60갑자 일진 인덱스(di), 사용자 이름, 그리고 새로고침 시드(seedOffset)를 융합한 일일 난수 시드
-  const nameHash = (saju.name || '여행자').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const daySeed = Math.abs((di * 137 + (y * 372 + m * 31 + d) * 19 + nameHash * 7 + seedOffset * 53) % 10000);
+  // Use a monotonically increasing KST day, not a seed whose daily increment
+  // is divisible by the 3/4-item pools (which froze teas and colors).
+  const profileKey = [saju.name, saju.birthdate, saju.birthtime, saju.dayMaster.gan,
+    saju.elements.lacking.element, saju.yongsin.element].join('|');
+  const profileHash = Array.from(profileKey).reduce((hash, char) => (Math.imul(hash, 31) + char.charCodeAt(0)) >>> 0, 0);
+  const offset = Number.isFinite(seedOffset) ? Math.trunc(seedOffset) : 0;
+  const pickIndex = (length: number, salt: number) => ((jd + profileHash + salt + offset) % length + length) % length;
 
   // 오늘의 집중 보약 오행 결정
   // 1순위: 오늘 하늘 기운이 사주 결핍/용신 기운일 때 즉시 그 기운을 강화
@@ -1553,19 +1557,21 @@ export function generateDailySajuReport(
     todayElGan,
     todayElZhi
   ];
-  const targetElement: FiveElement = candidateElements[(daySeed + seedOffset) % candidateElements.length] || saju.elements.lacking.element;
+  const targetElement: FiveElement = candidateElements[pickIndex(candidateElements.length, 0)] || saju.elements.lacking.element;
   const elementDataset = DYNAMIC_REMEDY_DATA[targetElement] || DYNAMIC_REMEDY_DATA.목;
 
-  // 동적 처방 요소 선택 (모듈러 연산으로 매일 달라지고, 새로고침 시 즉시 다음 처방으로 회전)
-  const titleIndex = (daySeed + seedOffset) % elementDataset.titles.length;
-  const colorIndex = (daySeed + seedOffset) % elementDataset.colors.length;
-  const foodIndex = (daySeed + seedOffset * 2) % elementDataset.foods.length;
-  const teaIndex = (daySeed + seedOffset) % elementDataset.teas.length;
+  // Independent salts keep each category personalized; one day or one click
+  // advances each pool by one, so it cannot stay on the same entry.
+  const titleIndex = pickIndex(elementDataset.titles.length, 11);
+  const colorIndex = pickIndex(elementDataset.colors.length, 23);
+  const foodIndex = pickIndex(elementDataset.foods.length, 37);
+  const teaIndex = pickIndex(elementDataset.teas.length, 47);
+  const activityIndex = pickIndex(elementDataset.activities.length, 59);
   const selectedColorObj = elementDataset.colors[colorIndex];
   
   // 십신 기반 실천 팁 선택
   const ritualPool = TEN_GOD_RITUALS[tenGodGan.category] || elementDataset.activities;
-  const ritualIndex = (daySeed + seedOffset) % ritualPool.length;
+  const ritualIndex = pickIndex(ritualPool.length, 71);
   const actionTip = ritualPool[ritualIndex];
 
   // 길한 시간대 (당일 지지 및 육합/삼합 기운 고려)
@@ -1579,7 +1585,7 @@ export function generateDailySajuReport(
     luckyColor: selectedColorObj.name,
     luckyColorDetail: selectedColorObj.detail,
     luckyFood: elementDataset.foods[foodIndex],
-    luckyActivity: elementDataset.activities[foodIndex % elementDataset.activities.length],
+    luckyActivity: elementDataset.activities[activityIndex],
     actionTip,
     luckyTea: elementDataset.teas[teaIndex],
     luckyTime,

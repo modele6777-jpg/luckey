@@ -1,3 +1,4 @@
+import { useKstDay, KST_DAY_MS } from '@/hooks/useKstDay';
 import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -237,14 +238,17 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   };
 
   // 오늘의 사주 일진 및 운세 리포트 계산 (매일 날짜 및 시드 기반 동적 계산)
+  const kstDay = useKstDay();
   const [remedySeedOffset, setRemedySeedOffset] = useState<number>(0);
   const [isRemedyShuffling, setIsRemedyShuffling] = useState<boolean>(false);
   const [showRemedyDetail, setShowRemedyDetail] = useState<boolean>(false);
 
+  useEffect(() => { setRemedySeedOffset(0); }, [kstDay, saju]);
+
   const todayReport = useMemo(() => {
     if (!saju) return null;
-    return generateDailySajuReport(saju, new Date(), remedySeedOffset);
-  }, [saju, remedySeedOffset]);
+    return generateDailySajuReport(saju, new Date(kstDay * KST_DAY_MS), remedySeedOffset);
+  }, [saju, kstDay, remedySeedOffset]);
 
   const storyShareData: SajuDestinyStoryData = useMemo(() => {
     if (!saju) {
