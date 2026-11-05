@@ -93,6 +93,9 @@ import { calculatePersianAmeshaSpenta, formatPersianAmeshaSpentaPrompt, PERSIAN_
 import { calculateSumerianFiftyMes, formatSumerianFiftyMesPrompt, SUMERIAN_FIFTY_MES_VERSION } from '../src/lib/divination/sumerianFiftyMesEngine';
 import { calculateZhongLuInnerAlchemy, formatZhongLuInnerAlchemyPrompt, ZHONG_LU_INNER_ALCHEMY_VERSION } from '../src/lib/divination/zhongLuInnerAlchemyEngine';
 import { calculateDruidMoonTrees, formatDruidMoonTreesPrompt, DRUID_MOON_TREES_VERSION } from '../src/lib/divination/druidThirteenMoonTreesEngine';
+import { calculateTiebanShenshu, formatTiebanShenshuPrompt, TIEBAN_SHENSHU_VERSION } from '../src/lib/divination/tiebanShenshuEngine';
+import { calculateTibetanBonNineWays, formatTibetanBonNineWaysPrompt, TIBETAN_BON_NINE_WAYS_VERSION } from '../src/lib/divination/tibetanBonNineWaysEngine';
+import { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt, ELEUSINIAN_MYSTERIES_VERSION } from '../src/lib/divination/eleusinianMysteriesEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2830,4 +2833,38 @@ test('Druid Thirteen Moon Trees & Ogham Engine: calculates birth tree, active tr
   const prompt = formatDruidMoonTreesPrompt(rep);
   assert(prompt.includes('켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진'));
   assert(prompt.includes(rep.birthTree.koreanName));
+});
+
+test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, affinity clause and accord', () => {
+  const rep = calculateTiebanShenshu(profile);
+  assert.equal(rep.engineVersion, TIEBAN_SHENSHU_VERSION);
+  assert(rep.inherentPrimeNumber > 0);
+  assert(rep.kuaName.length > 0);
+  assert(rep.inherentClause.clauseNumber >= 1 && rep.inherentClause.clauseNumber <= 12000);
+  assert(rep.heavenlyAccordIndex >= 0 && rep.heavenlyAccordIndex <= 100);
+  const prompt = formatTiebanShenshuPrompt(rep);
+  assert(prompt.includes('고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진'));
+  assert(prompt.includes(rep.kuaName));
+});
+
+test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way, vitalities and mantra', () => {
+  const rep = calculateTibetanBonNineWays(profile);
+  assert.equal(rep.engineVersion, TIBETAN_BON_NINE_WAYS_VERSION);
+  assert(rep.activeWay.tibetanName.length > 0);
+  assert.equal(rep.vitalities.length, 5);
+  assert(rep.primordialPurityIndex >= 0 && rep.primordialPurityIndex <= 100);
+  const prompt = formatTibetanBonNineWaysPrompt(rep);
+  assert(prompt.includes('티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진'));
+  assert(prompt.includes(rep.activeWay.koreanName));
+});
+
+test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, station and rebirth score', () => {
+  const rep = calculateEleusinianMysteries(profile);
+  assert.equal(rep.engineVersion, ELEUSINIAN_MYSTERIES_VERSION);
+  assert(rep.currentGrade.gradeTitle.length > 0);
+  assert(rep.activeStation.stationName.length > 0);
+  assert(rep.epoptiaRebirthScore >= 0 && rep.epoptiaRebirthScore <= 100);
+  const prompt = formatEleusinianMysteriesPrompt(rep);
+  assert(prompt.includes('고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진'));
+  assert(prompt.includes(rep.currentGrade.gradeTitle));
 });
