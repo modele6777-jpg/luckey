@@ -21,21 +21,24 @@ function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSa
   return Buffer.concat([header, pcmBuffer]);
 }
 
-async function synthesizeWithGemini(text: string, voice?: string): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
-  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
-  if (!geminiKey) return null;
+let geminiUnavailableUntil = 0;
+
+export async function synthesizeWithGemini(text: string, voice?: string, dependencies?: { apiKey?: string; request?: typeof fetch; models?: string[] }): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
+  const geminiKey = dependencies ? dependencies.apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  if (!geminiKey || Date.now() < geminiUnavailableUntil) return null;
+  const request = dependencies?.request || fetch;
   const voiceName = voice === "Charon" ? "Charon" : "Kore";
 
-  const models = [
+  const models = dependencies?.models || (process.env.GEMINI_TTS_MODEL ? [process.env.GEMINI_TTS_MODEL] : [
     "gemini-3.8-flash-lite-tts",
     "gemini-3.1-flash-tts-preview",
     "gemini-3.8-flash-tts",
-  ];
+  ]);
 
   for (const model of models) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-      const resp = await fetch(url, {
+      const resp = await request(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -49,11 +52,17 @@ async function synthesizeWithGemini(text: string, voice?: string): Promise<{ aud
             }
           }
         }),
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(8000),
       });
 
       if (!resp.ok) {
         console.warn(`[ai/tts] Gemini model ${model} HTTP ${resp.status}`);
+        // Auth/quota/network failures affect the account, not just this model.
+        // Retrying three models adds delay and more rate-limited requests.
+        if (resp.status !== 404) {
+          if ([401, 403, 429].includes(resp.status)) geminiUnavailableUntil = Date.now() + 60000;
+          return null;
+        }
         continue;
       }
 
@@ -79,7 +88,9 @@ async function synthesizeWithGemini(text: string, voice?: string): Promise<{ aud
         provider: "gemini"
       };
     } catch (e) {
-      console.warn(`[ai/tts] Gemini model ${model} failed:`, e);
+      console.warn(`[ai/tts] Gemini model ${model} failed:`, e instanceof Error ? e.name : 'request failed');
+      geminiUnavailableUntil = Date.now() + 15000;
+      return null;
     }
   }
 

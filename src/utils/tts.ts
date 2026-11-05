@@ -99,8 +99,10 @@ export interface TTSAudioData {
 const ttsCache = new Map<string, Promise<TTSAudioData | null>>();
 interface SpeechLookahead { text: string; voice?: string; emotion?: string }
 const playbackLookahead = new Map<string, SpeechLookahead>();
+const deviceFallbackSessions = new Set<string>();
+let finishDeviceSpeech: ((completed: boolean) => void) | null = null;
 function prepareNextSpeech(session: string): void {
-  if (ttsState.activeSessionId !== session || ttsState.isPaused) return;
+  if (ttsState.activeSessionId !== session || ttsState.isPaused || deviceFallbackSessions.has(session)) return;
   const next = playbackLookahead.get(session);
   if (!next) return;
   // Match the next actual request even when a legacy reader supplies a long chunk.
@@ -196,6 +198,9 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
             const waitSec = Math.max(1, Math.ceil(waitMs / 1000));
             throw new TTSAudioRequestError(`음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 ${waitSec}초 뒤 다시 눌러 주세요.`, 429, 'MEDIA_RATE_LIMIT');
           }
+          if (failure?.code === 'TTS_PROVIDER_UNAVAILABLE') {
+            throw new TTSAudioRequestError('서버 음성 연결을 사용할 수 없어 기기 음성으로 전환합니다.', response.status, 'TTS_PROVIDER_UNAVAILABLE');
+          }
           if (response.status === 503 && (failure?.code === 'TTS_NOT_CONFIGURED' || /API.*키|키.*설정/.test(String(failure?.error || '')))) {
             throw new TTSAudioRequestError('AI 음성 API 키가 설정되지 않았습니다. 사이트의 API 설정을 확인해 주세요.', 503, 'TTS_NOT_CONFIGURED');
           }
@@ -282,6 +287,9 @@ export const resumeTTS = (): void => {
 
 export const stopTTS = () => {
   playbackLookahead.clear();
+  finishDeviceSpeech?.(false);
+  finishDeviceSpeech = null;
+  deviceFallbackSessions.clear();
   if (ttsState.activeSessionId) {
     retiredTTSSessions.add(ttsState.activeSessionId);
     if (retiredTTSSessions.size > 256) retiredTTSSessions.delete(retiredTTSSessions.values().next().value!);
@@ -364,68 +372,62 @@ function waitForDeviceVoices(synth: SpeechSynthesis, waitMs = 600): Promise<Spee
   });
 }
 
-function speakWithDeviceSpeech(text: string, session: string | undefined, isSequenceChunk: boolean, options?: TTSPlaybackOptions): boolean {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return false;
-  try {
-    const synth = window.speechSynthesis;
-    if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return false;
-    synth.cancel();
-
-    const sessionId = session || 'device';
-    const sentences = splitSpeechIntoSentences(text);
-    const units = sentences.length > 1 ? sentences : [text];
-
-    const speakUnit = (unit: string, voice: SpeechSynthesisVoice | null, index: number, isLast: boolean) => {
-      if (deviceSpeechSession !== sessionId || (session && ttsState.activeSessionId !== session)) return;
-      const utterance = new SpeechSynthesisUtterance(unit);
+function speakWithDeviceSpeech(text: string, session: string | undefined, isSequenceChunk: boolean, options?: TTSPlaybackOptions): Promise<boolean> {
+  if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return Promise.resolve(false);
+  const synth = window.speechSynthesis;
+  finishDeviceSpeech?.(false);
+  synth.cancel();
+  const sessionId = session || 'device';
+  const sentences = splitSpeechIntoSentences(text);
+  const units = sentences.length ? sentences : [text];
+  deviceSpeechSession = sessionId;
+  return new Promise(resolve => {
+    let settled = false;
+    const isCurrent = () => !settled && deviceSpeechSession === sessionId && (!session || ttsState.activeSessionId === session);
+    const finish = (completed: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (finishDeviceSpeech === finish) finishDeviceSpeech = null;
+      if (deviceSpeechSession === sessionId) deviceSpeechSession = null;
+      resolve(completed);
+    };
+    finishDeviceSpeech = finish;
+    const speakUnit = (index: number, voice: SpeechSynthesisVoice | null) => {
+      if (!isCurrent()) { finish(false); return; }
+      updateTTSState({ isLoading: false, isSpeaking: true, currentSentence: units[index], activeSentence: units[index] });
+      setTTSSessionActive(units[index]);
+      const utterance = new SpeechSynthesisUtterance(units[index]);
       utterance.lang = 'ko-KR';
       if (voice) utterance.voice = voice;
-      // 차분하고 지적인 도슨트/오라클 리딩 톤: 살짝 느린 속도 + 기본 피치로 정밀 조율.
-      utterance.rate = 0.97;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+      utterance.rate = 0.97; utterance.pitch = 1; utterance.volume = 1;
       utterance.onend = () => {
-        if (deviceSpeechSession !== sessionId || (session && ttsState.activeSessionId !== session)) return;
-        if (index < units.length - 1) {
-          // 끊김 없는 문장 단위 호흡: 다음 문장을 자연스러운 숨으로 이어낭독합니다.
-          updateTTSState({ isLoading: false, isSpeaking: true });
-          setTimeout(() => speakUnit(units[index + 1], voice, index + 1, isLast && index + 1 === units.length - 1), 140);
+        if (!isCurrent()) { finish(false); return; }
+        if (index + 1 < units.length) {
+          // The utterance end event, not a timer, advances device speech.
+          void waitForTTSResume(sessionId).then(resumed => resumed ? speakUnit(index + 1, voice) : finish(false));
         } else {
-          deviceSpeechSession = null;
-          if (!isSequenceChunk) {
+          finish(true);
+          if (isSequenceChunk) updateTTSState({ isSpeaking: false, isLoading: false });
+          else {
             stopTTS();
             if (!options?.skipCompletionChime && !options?.isChatMode) {
-              try { playAiResultNotification(); } catch (_) {}
+              try { playAiResultNotification(); } catch { /* optional chime */ }
             }
-          } else {
-            updateTTSState({ isSpeaking: false, isLoading: false });
           }
         }
       };
-      utterance.onerror = () => {
-        if (deviceSpeechSession !== sessionId || (session && ttsState.activeSessionId !== session)) return;
-        deviceSpeechSession = null;
-        stopTTS();
-        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('prism:tts-error', { detail: { message: '음성 재생이 중단되었습니다. 다시 눌러 주세요.' } }));
-      };
-      synth.speak(utterance);
+      utterance.onerror = () => finish(false);
+      try { synth.speak(utterance); } catch { finish(false); }
     };
-
-    deviceSpeechSession = sessionId;
-    setTTSSessionActive(units[0] || text);
+    setTTSSessionActive(units[0]);
     updateTTSState({ isLoading: false, isSpeaking: true });
-
-    // 보이스 목록이 비어 있으면(iOS 첫 호출) 짧게 기다린 뒤 최고 품질 보이스로 낭독합니다.
-    void waitForDeviceVoices(synth).then(voices => {
-      if (deviceSpeechSession !== sessionId) return;
-      const best = pickBestKoreanDeviceVoice({ getVoices: () => voices } as unknown as SpeechSynthesis);
-      speakUnit(units[0], best, 0, units.length === 1);
-    });
-    return true;
-  } catch (_) {
-    deviceSpeechSession = null;
-    return false;
-  }
+    void waitForDeviceVoices(synth).then(async voices => {
+      if (!await waitForTTSResume(sessionId)) { finish(false); return; }
+      if (!isCurrent()) { finish(false); return; }
+      const best = pickBestKoreanDeviceVoice({ getVoices: () => voices } as SpeechSynthesis);
+      speakUnit(0, best);
+    }).catch(() => finish(false));
+  });
 }
 export function normalizeTextForSpeech(text: string): string {
   return prepareNaturalSpeechText(text);
@@ -537,6 +539,7 @@ export const playTTS = async (
     }
   }
 
+  const useDeviceForChunk = deviceFallbackSessions.has(sessionToVerify!);
   try {
     // Synchronously unlock audio during user gesture (required for mobile iOS/Android WebAudio playback)
     try {
@@ -548,6 +551,11 @@ export const playTTS = async (
     updateTTSState({ isLoading: !ttsState.isPaused, isSpeaking: false, activeText: cleanText,
       currentSentence: initialSubSentence, activeSentence: initialSubSentence,
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}) });
+    if (useDeviceForChunk) {
+      const completed = await speakWithDeviceSpeech(cleanText, sessionToVerify, isSequenceChunk, options);
+      if (completed || ttsState.activeSessionId !== sessionToVerify) return;
+      throw new Error('기기 음성 재생이 중단되었습니다. 다시 듣기를 눌러 주세요.');
+    }
     let data: TTSAudioData | undefined;
     for (let attempt = 0; attempt < 2; attempt++) {
       if (ttsState.activeSessionId !== sessionToVerify) return;
@@ -555,7 +563,7 @@ export const playTTS = async (
         data = await requestAIAudio(cleanText, activeEmotion, targetVoice, sessionToVerify);
         break;
       } catch (error) {
-        if (attempt || (error instanceof TTSAudioRequestError && (error.status < 500 || error.code === 'TTS_NOT_CONFIGURED'))) throw error;
+        if (attempt || (error instanceof TTSAudioRequestError && (error.status < 500 || error.code === 'TTS_NOT_CONFIGURED' || error.code === 'TTS_PROVIDER_UNAVAILABLE'))) throw error;
         await new Promise(resolve => setTimeout(resolve, 600));
       }
     }
@@ -622,9 +630,14 @@ export const playTTS = async (
 
     // 🔊 /api/ai/tts 실패(네트워크 오류, 5xx 등) 시에도 소리가 끊기지 않도록
     // 브라우저 내장 한국어 음성(speechSynthesis)으로 우회 낭독합니다.
-    if (speakWithDeviceSpeech(cleanText, sessionToVerify, isSequenceChunk, options)) {
-      console.warn('[TTS] AI audio unavailable; falling back to device speech.', error);
-      return;
+    if (!useDeviceForChunk) {
+      deviceFallbackSessions.add(sessionToVerify!);
+      const completed = await speakWithDeviceSpeech(cleanText, sessionToVerify, isSequenceChunk, options);
+      if (ttsState.activeSessionId !== sessionToVerify) return;
+      if (completed) {
+        console.warn('[TTS] AI audio unavailable; device speech completed this chunk.', error);
+        return;
+      }
     }
 
     stopTTS();

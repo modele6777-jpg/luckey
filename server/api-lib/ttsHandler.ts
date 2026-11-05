@@ -32,18 +32,23 @@ function stripInternalSpeechDirectives(text: string): string {
     .trim();
 }
 
-/**
- * 🔊 무료·무제한 제로 의존성 무료 음성 합성.
- * 유료 OpenAI·Gemini 키나 쿼터와 완전히 무관하게, 모든 TTS 요청
- * (오디오 도슨트, 타로 리딩, 사주 리딩, 명시 낭독, Calm 가이드 등)이
- * 항상 무료 mp3 음성으로 낭독됩니다. 유료 API 폴백은 사용하지 않습니다.
- */
-export async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerResult> {
-  const speech = stripInternalSpeechDirectives(String(options.text || '')).trim();
-  try {
-    return await synthesizeWithEdgeTTS(speech, options.voice);
-  } catch (error) {
-    console.error('[tts] Free TTS synthesis failed:', error);
-    throw Object.assign(new Error('음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.'), { status: 502 });
+/** Synthesize through the configured backup and expose permanent provider failures. */
+export function createTTSHandler(synthesize: typeof synthesizeWithEdgeTTS = synthesizeWithEdgeTTS) {
+  let providerUnavailableUntil = 0;
+  return async function handleTTS(options: TTSHandlerOptions): Promise<TTSHandlerResult> {
+    if (Date.now() < providerUnavailableUntil) throw Object.assign(new Error('서버 음성 연결을 사용할 수 없습니다.'), { status: 503, code: 'TTS_PROVIDER_UNAVAILABLE' });
+    const speech = stripInternalSpeechDirectives(String(options.text || '')).trim();
+    try {
+      return await synthesize(speech, options.voice);
+    } catch (error) {
+      console.error('[tts] Free TTS synthesis failed:', error);
+      const status = Number((error as { status?: number })?.status);
+      if ([401, 403, 429].includes(status)) {
+        providerUnavailableUntil = Date.now() + 60000;
+        throw Object.assign(new Error('서버 음성 제공자가 연결을 거절했습니다.'), { status: 503, code: 'TTS_PROVIDER_UNAVAILABLE' });
+      }
+      throw Object.assign(new Error('음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.'), { status: 502 });
+    }
   }
 }
+export const handleTTS = createTTSHandler();
