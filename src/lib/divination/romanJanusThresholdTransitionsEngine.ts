@@ -5,7 +5,7 @@
  * Version: LUCKEY-ROMAN-JANUS-v1.0.0
  */
 
-import { UserProfile } from '../../types';
+import type { UserProfile } from '../sharedState';
 
 export const ROMAN_JANUS_ENGINE_VERSION = 'LUCKEY-ROMAN-JANUS-v1.0.0';
 

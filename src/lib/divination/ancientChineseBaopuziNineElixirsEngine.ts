@@ -5,7 +5,7 @@
  * Version: LUCKEY-BAOPUZI-ELIXIRS-v1.0.0
  */
 
-import { UserProfile } from '../../types';
+import type { UserProfile } from '../sharedState';
 
 export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v1.0.0';
 

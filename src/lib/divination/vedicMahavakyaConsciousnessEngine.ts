@@ -5,7 +5,7 @@
  * Version: LUCKEY-VEDIC-MAHAVAKYA-v1.0.0
  */
 
-import { UserProfile } from '../../types';
+import type { UserProfile } from '../sharedState';
 
 export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v1.0.0';
 
