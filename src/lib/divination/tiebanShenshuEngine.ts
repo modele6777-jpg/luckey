@@ -177,8 +177,11 @@ export function calculateTiebanShenshu(
   let birthDay = 15;
   let birthHour = 12;
 
-  if (profile.birthDate) {
-    const parts = profile.birthDate.split('-').map(Number);
+  const birthDate = profile?.basic?.birthdate;
+  const birthTime = profile?.basic?.birthtime;
+
+  if (birthDate) {
+    const parts = birthDate.split('-').map(Number);
     if (parts.length >= 3 && !isNaN(parts[0])) {
       birthYear = parts[0];
       birthMonth = parts[1];
@@ -186,8 +189,8 @@ export function calculateTiebanShenshu(
     }
   }
 
-  if (profile.birthTime) {
-    const tParts = profile.birthTime.split(':').map(Number);
+  if (birthTime) {
+    const tParts = birthTime.split(':').map(Number);
     if (tParts.length >= 1 && !isNaN(tParts[0])) {
       birthHour = tParts[0];
     }
