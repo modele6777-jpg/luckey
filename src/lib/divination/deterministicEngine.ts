@@ -124,6 +124,9 @@ import { calculatePythagoreanTetraktys, formatPythagoreanTetraktysPrompt, type P
 import { calculateBabylonianEnumaElish, formatBabylonianEnumaElishPrompt, type BabylonianEnumaElishReport, BABYLONIAN_ENUMA_ELISH_VERSION } from './babylonianEnumaElishEngine';
 import { calculateTaoistHuangtingJing, formatTaoistHuangtingJingPrompt, type TaoistHuangtingJingReport, TAOIST_HUANGTING_VERSION } from './taoistHuangtingJingEngine';
 import { calculatePersianAmeshaSpenta, formatPersianAmeshaSpentaPrompt, type PersianAmeshaSpentaReport, PERSIAN_AMESHA_SPENTA_VERSION } from './persianAmeshaSpentaEngine';
+import { calculateSumerianFiftyMes, formatSumerianFiftyMesPrompt, type SumerianMeReport, SUMERIAN_FIFTY_MES_VERSION } from './sumerianFiftyMesEngine';
+import { calculateZhongLuInnerAlchemy, formatZhongLuInnerAlchemyPrompt, type ZhongLuAlchemyReport, ZHONG_LU_INNER_ALCHEMY_VERSION } from './zhongLuInnerAlchemyEngine';
+import { calculateDruidMoonTrees, formatDruidMoonTreesPrompt, type DruidMoonTreesReport, DRUID_MOON_TREES_VERSION } from './druidThirteenMoonTreesEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -268,6 +271,9 @@ export interface DeterministicEngineReport {
   babylonianEnumaElishResult?: BabylonianEnumaElishReport | null;
   taoistHuangtingJingResult?: TaoistHuangtingJingReport | null;
   persianAmeshaSpentaResult?: PersianAmeshaSpentaReport | null;
+  sumerianFiftyMesResult?: SumerianMeReport | null;
+  zhongLuAlchemyResult?: ZhongLuAlchemyReport | null;
+  druidMoonTreesResult?: DruidMoonTreesReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1650,6 +1656,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 96. 고대 수메르 에리두 창세력 & 50대 메(Me) 신성 문명 규범 엔진
+  const sumerianFiftyMesResult = (() => {
+    try {
+      return calculateSumerianFiftyMes(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 97. 도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진
+  const zhongLuAlchemyResult = (() => {
+    try {
+      return calculateZhongLuInnerAlchemy(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 98. 켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진
+  const druidMoonTreesResult = (() => {
+    try {
+      return calculateDruidMoonTrees(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1780,6 +1813,9 @@ export function runDeterministicEngine(params: {
     babylonianEnumaElishResult,
     taoistHuangtingJingResult,
     persianAmeshaSpentaResult,
+    sumerianFiftyMesResult,
+    zhongLuAlchemyResult,
+    druidMoonTreesResult,
     tools: toolsMap,
   };
 }
@@ -1903,6 +1939,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master' },
   { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
   { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master' },
+  { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master' },
+  { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
+  { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -1936,6 +1975,7 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'sumerianFiftyMes',
     'babylonianEnumaElish',
     'pythagoreanTetraktys',
     'sajuClassicYongshin',
@@ -1977,6 +2017,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'druidMoonTrees',
     'persianAmeshaSpenta',
     'esseneCommunion',
     'karmicSynastry',
@@ -1996,6 +2037,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'sumerianFiftyMes',
     'babylonianEnumaElish',
     'instantDecision',
     'tarotElementalCourt',
@@ -2014,6 +2056,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   daily_timing_transit: [
+    'zhongLuAlchemy',
+    'druidMoonTrees',
     'taoistHuangtingJing',
     'huangdiFiveMovementsSixQi',
     'chronoTransit',
@@ -2041,6 +2085,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'zhongLuAlchemy',
+    'druidMoonTrees',
     'taoistHuangtingJing',
     'huangdiFiveMovementsSixQi',
     'esseneCommunion',
@@ -2063,6 +2109,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'druidMoonTrees',
     'persianAmeshaSpenta',
     'pythagoreanTetraktys',
     'kabbalah',
@@ -2079,6 +2126,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'sumerianFiftyMes',
+    'zhongLuAlchemy',
+    'druidMoonTrees',
     'babylonianEnumaElish',
     'taoistHuangtingJing',
     'persianAmeshaSpenta',
@@ -2272,5 +2322,8 @@ ${report.huangdiFiveMovementsSixQiResult && shouldIncludeEngine('huangdiFiveMove
 ${report.pythagoreanTetraktysResult && shouldIncludeEngine('pythagoreanTetraktys', options) ? '\n' + formatPythagoreanTetraktysPrompt(report.pythagoreanTetraktysResult) : ''}
 ${report.babylonianEnumaElishResult && shouldIncludeEngine('babylonianEnumaElish', options) ? '\n' + formatBabylonianEnumaElishPrompt(report.babylonianEnumaElishResult) : ''}
 ${report.taoistHuangtingJingResult && shouldIncludeEngine('taoistHuangtingJing', options) ? '\n' + formatTaoistHuangtingJingPrompt(report.taoistHuangtingJingResult) : ''}
-${report.persianAmeshaSpentaResult && shouldIncludeEngine('persianAmeshaSpenta', options) ? '\n' + formatPersianAmeshaSpentaPrompt(report.persianAmeshaSpentaResult) : ''}`;
+${report.persianAmeshaSpentaResult && shouldIncludeEngine('persianAmeshaSpenta', options) ? '\n' + formatPersianAmeshaSpentaPrompt(report.persianAmeshaSpentaResult) : ''}
+${report.sumerianFiftyMesResult && shouldIncludeEngine('sumerianFiftyMes', options) ? '\n' + formatSumerianFiftyMesPrompt(report.sumerianFiftyMesResult) : ''}
+${report.zhongLuAlchemyResult && shouldIncludeEngine('zhongLuAlchemy', options) ? '\n' + formatZhongLuInnerAlchemyPrompt(report.zhongLuAlchemyResult) : ''}
+${report.druidMoonTreesResult && shouldIncludeEngine('druidMoonTrees', options) ? '\n' + formatDruidMoonTreesPrompt(report.druidMoonTreesResult) : ''}`;
 }
