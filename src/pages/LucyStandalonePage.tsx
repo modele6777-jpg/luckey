@@ -2001,8 +2001,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     if (!messagesContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-    const isUp = distanceFromBottom > 40;
-    isUserScrolledUpRef.current = isUp;
+    // 바닥에서 80px 이상 떨어져 있으면 사용자가 과거 대화를 읽는 중으로 엄격 보장
+    if (distanceFromBottom > 80) {
+      isUserScrolledUpRef.current = true;
+    } else if (distanceFromBottom <= 35) {
+      isUserScrolledUpRef.current = false;
+    }
   }, []);
 
   // 🌟 PC 데스크톱 마우스 휠 및 트랙패드 스크롤 시 자동 스크롤과 충돌 없이 즉각 반응
@@ -2085,27 +2089,30 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
   }, [lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, scrollToBottom]);
 
-  // 🚀 앱 재진입(visibilitychange / focus / pageshow) 및 최초 마운트 시 항상 최신 대화(하단)로 자동 스크롤
+  // 🚀 앱을 완전히 백그라운드로 나갔다가 다시 돌아왔을 때(hidden -> visible) 및 최초 마운트 시에만 단 1회 하단 이동
+  const wasAppHiddenRef = useRef(false);
   useEffect(() => {
-    const handleAppReentry = () => {
-      if (document.visibilityState === 'visible') {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        wasAppHiddenRef.current = true;
+      } else if (document.visibilityState === 'visible' && wasAppHiddenRef.current) {
+        wasAppHiddenRef.current = false;
+        // 다른 앱이나 홈 화면에서 돌아왔을 때만 1회 최신 대화로 정렬
         isUserScrolledUpRef.current = false;
         scrollToBottom(true, false);
-        setTimeout(() => scrollToBottom(true, true), 80);
-        setTimeout(() => scrollToBottom(true, false), 300);
       }
     };
 
-    document.addEventListener('visibilitychange', handleAppReentry);
-    window.addEventListener('focus', handleAppReentry);
-    window.addEventListener('pageshow', handleAppReentry);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    handleAppReentry();
+    // 컴포넌트 최초 진입 시 단 1회만 하단 정렬
+    const initTimer = setTimeout(() => {
+      scrollToBottom(true, false);
+    }, 100);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleAppReentry);
-      window.removeEventListener('focus', handleAppReentry);
-      window.removeEventListener('pageshow', handleAppReentry);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(initTimer);
     };
   }, [scrollToBottom]);
 
