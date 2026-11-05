@@ -1,42 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Code2 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { LucKeyLogoText } from './LucKeyLogoText';
 export function LoginScreen() {
-  const { signInWithGoogle, signInAsDeveloper, signInAsPairedSession, importDevicePairingCode } = useApp();
+  const { signInWithGoogle, signInAsDeveloper } = useApp();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPairingInput, setShowPairingInput] = useState(false);
-  const [pairingCode, setPairingCode] = useState('');
-  const [pairingStatus, setPairingStatus] = useState<string | null>(null);
-
-  const handlePairingSubmit = async () => {
-    if (pairingCode.trim().length !== 6) {
-      setError('6자리 연동 코드를 정확히 입력해주세요.');
-      return;
-    }
-    setLoading(true);
-    setPairingStatus('PC/다른 기기의 데이터를 가져오는 중...');
-    setError(null);
-    try {
-      const res = await importDevicePairingCode(pairingCode.trim());
-      if (res.success) {
-        setPairingStatus('🎉 연동 성공! 실시간 데이터 연결을 활성화합니다...');
-        setTimeout(() => {
-          signInAsPairedSession();
-        }, 800);
-      } else {
-        setError(res.message || '유효하지 않거나 만료된 연동 코드입니다.');
-        setPairingStatus(null);
-      }
-    } catch (e: any) {
-      setError('연동 중 오류가 발생했습니다: ' + (e?.message || '알 수 없음'));
-      setPairingStatus(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -111,24 +81,8 @@ export function LoginScreen() {
           </p>
         </div>
 
-        {/* Login buttons — 모바일에서 구글 팝업/리다이렉트가 막혀도 1초 만에 들어올 수 있도록 원클릭 연동을 최상단에 배치 */}
+        {/* Login buttons */}
         <div className="w-full flex flex-col gap-3.5">
-          <motion.button
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => { setLoading(true); try { signInAsDeveloper(); } finally { setLoading(false); } }}
-            disabled={loading}
-            className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer"
-            style={{
-              background: 'linear-gradient(135deg, oklch(0.82 0.15 85), oklch(0.78 0.14 160))',
-              color: 'oklch(0.12 0.02 270)',
-              boxShadow: '0 10px 34px rgba(245, 185, 66, 0.35), inset 0 1px 1px rgba(255,255,255,0.35)',
-            }}
-          >
-            <span className="text-xl leading-none">🍀</span>
-            <span className="text-center leading-snug">박주형 님 원클릭 계정 연동<br className="sm:hidden" /><span className="hidden sm:inline"> </span>(Google 승인 불필요)</span>
-          </motion.button>
-
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -156,66 +110,18 @@ export function LoginScreen() {
           </motion.button>
 
           <p className="text-[11px] text-center text-emerald-400/90 font-medium">
-            ✨ 같은 Google 계정으로 로그인 시 PC와 모바일의 모든 정보가 실시간 자동 동기화됩니다.
+            ✨ 같은 Google 계정으로 로그인하면 PC와 모바일에서 대화와 공유 데이터가 동기화됩니다.
           </p>
 
-          {/* 6-digit Device Pairing Option */}
-          <div className="w-full">
-            {!showPairingInput ? (
-              <button
-                type="button"
-                onClick={() => setShowPairingInput(true)}
-                className="w-full py-3 rounded-xl text-sm font-bold text-amber-300/90 hover:text-amber-200 border border-amber-500/25 hover:border-amber-500/45 bg-amber-500/5 hover:bg-amber-500/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <span>⚡ PC ⇄ 모바일 6자리 코드로 연동하기</span>
-              </button>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="p-3.5 rounded-2xl bg-white/5 border border-amber-500/30 flex flex-col gap-2.5 backdrop-blur-md"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-amber-300">6자리 연동 코드 입력</span>
-                  <button
-                    type="button"
-                    onClick={() => { setShowPairingInput(false); setPairingStatus(null); setError(null); }}
-                    className="text-[11px] text-white/40 hover:text-white/70"
-                  >
-                    닫기
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={6}
-                    placeholder="6자리 숫자"
-                    value={pairingCode}
-                    onChange={(e) => setPairingCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                    className="flex-1 px-3 py-2 bg-black/50 rounded-xl text-sm font-mono tracking-widest text-center text-yellow-400 font-bold border border-white/15 outline-none focus:border-amber-400"
-                  />
-                  <button
-                    type="button"
-                    disabled={loading || pairingCode.trim().length !== 6}
-                    onClick={handlePairingSubmit}
-                    className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold rounded-xl text-xs transition-all cursor-pointer shrink-0 shadow-md"
-                  >
-                    {loading ? '연동 중...' : '연동 시작'}
-                  </button>
-                </div>
-                {pairingStatus && (
-                  <p className="text-[11px] text-emerald-300 text-center">{pairingStatus}</p>
-                )}
-              </motion.div>
-            )}
-          </div>
-
-          <p className="text-[11px] text-center text-white/40 leading-relaxed">
-            📱 모바일에서 Google 로그인이 안 될 때는 위의 <b className="text-amber-300/90">🍀 원클릭 계정 연동</b>으로 들어오거나,<br />
-            PC에서 발급한 <b className="text-amber-300/90">6자리 연동 코드</b>로 PC 데이터를 그대로 가져올 수 있어요.
-          </p>
+          <button
+            type="button"
+            onClick={() => signInAsDeveloper()}
+            disabled={loading}
+            className="w-full py-3 rounded-xl text-sm font-bold text-emerald-300 border border-emerald-500/25 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <Code2 size={17} aria-hidden="true" />
+            개발자 모드로 로그인
+          </button>
 
           {error && (
             <p className="text-center text-sm text-red-400 whitespace-pre-line">{error}</p>
