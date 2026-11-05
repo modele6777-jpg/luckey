@@ -126,6 +126,9 @@ import { calculateVedicMahavakya, formatVedicMahavakyaPrompt, VEDIC_MAHAVAKYA_EN
 import { calculateSumerianApkalluWisdom, formatSumerianApkalluWisdomPrompt, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION } from '../src/lib/divination/sumerianApkalluWisdomEngine';
 import { calculateCelticTuathaFourTreasures, formatCelticTuathaFourTreasuresPrompt, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION } from '../src/lib/divination/celticTuathaFourTreasuresEngine';
 import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyFourSpiritsPrompt, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION } from '../src/lib/divination/taoistShangqingTwentyFourSpiritsEngine';
+import { calculateTibetanPhowaRainbowBody, formatTibetanPhowaRainbowBodyPrompt, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION } from '../src/lib/divination/tibetanPhowaRainbowBodyEngine';
+import { calculatePythagoreanHarmoniaSpheres, formatPythagoreanHarmoniaSpheresPrompt, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION } from '../src/lib/divination/pythagoreanHarmoniaSpheresEngine';
+import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION } from '../src/lib/divination/plumBlossomMeihuaOracleEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3244,6 +3247,41 @@ test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active t
   const prompt = formatTaoistShangqingTwentyFourSpiritsPrompt(rep);
   assert(prompt.includes('고대 중국 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 존사(存思) 통령 실측 데이터'));
   assert(prompt.includes(rep.activeTrueSpirit.nameKo));
+});
+
+test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha wisdoms', () => {
+  const rep = calculateTibetanPhowaRainbowBody({ profile });
+  assert.equal(rep.engineVersion, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION);
+  assert(rep.rigpaClarityScore >= 0 && rep.rigpaClarityScore <= 100);
+  assert(rep.phowaReadinessIndex >= 0 && rep.phowaReadinessIndex <= 100);
+  assert(rep.rainbowBodyAlignmentScore >= 0 && rep.rainbowBodyAlignmentScore <= 100);
+  assert(rep.primaryWisdom.nameKo.length > 0);
+  const prompt = formatTibetanPhowaRainbowBodyPrompt(rep);
+  assert(prompt.includes('티베트 족첸(Dzogchen) 릭파 본각 & 무지개체(Jalü) 5대 지혜 실측 데이터'));
+  assert(prompt.includes(rep.primaryWisdom.nameKo));
+});
+
+test('Pythagorean Harmonia Spheres Engine: calculates cosmic harmony and planet intervals', () => {
+  const rep = calculatePythagoreanHarmoniaSpheres({ profile });
+  assert.equal(rep.engineVersion, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION);
+  assert(rep.harmoniaCosmicaScore >= 0 && rep.harmoniaCosmicaScore <= 100);
+  assert(rep.dissonanceResolutionScore >= 0 && rep.dissonanceResolutionScore <= 100);
+  assert(rep.dominantSphere.planet.length > 0);
+  const prompt = formatPythagoreanHarmoniaSpheresPrompt(rep);
+  assert(prompt.includes('피타고라스 천구의 조화(Musica Universalis) 주파수 공명 실측 데이터'));
+  assert(prompt.includes(rep.dominantSphere.planet));
+});
+
+test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong relations', () => {
+  const rep = calculatePlumBlossomMeihuaOracle({ profile });
+  assert.equal(rep.engineVersion, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION);
+  assert(rep.movingLine >= 1 && rep.movingLine <= 6);
+  assert(rep.auspiciousScore >= 0 && rep.auspiciousScore <= 100);
+  assert(rep.benGua.fullName.length > 0);
+  assert(rep.tiGua.name.length > 0);
+  const prompt = formatPlumBlossomMeihuaOraclePrompt(rep);
+  assert(prompt.includes('송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터'));
+  assert(prompt.includes(rep.tiYongRelation));
 });
 
 
