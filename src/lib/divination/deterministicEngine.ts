@@ -148,6 +148,9 @@ import { calculateSlavicMokoshFateWeaving, formatSlavicMokoshFateWeavingPrompt, 
 import { calculateSumerianGilgameshTrials, formatSumerianGilgameshTrialsPrompt, type GilgameshTrialsReport, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION } from './sumerianGilgameshTwelveTrialsEngine';
 import { calculateHawaiianKahunaThreeSelves, formatHawaiianKahunaThreeSelvesPrompt, type KahunaManaReport, HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION } from './hawaiianKahunaThreeSelvesManaEngine';
 import { calculateNordicYggdrasilRealms, formatNordicYggdrasilRealmsPrompt, type YggdrasilRealmsReport, NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION } from './nordicYggdrasilNineRealmsEngine';
+import { calculateEgyptianMaatFeatherHeart, formatEgyptianMaatFeatherHeartPrompt, type MaatWeighingReport, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION } from './egyptianMaatFeatherHeartEngine';
+import { calculatePersianMithraicSpheres, formatPersianMithraicSpheresPrompt, type MithraicSpheresReport, PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION } from './persianMithraicSevenSpheresEngine';
+import { calculateOrpheicMysteries, formatOrpheicMysteriesPrompt, type OrphicMysteriesReport, ORPHEIC_MYSTERIES_ENGINE_VERSION } from './orpheicMysteriesDionysianEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -316,6 +319,9 @@ export interface DeterministicEngineReport {
   sumerianGilgameshTrialsResult?: GilgameshTrialsReport | null;
   hawaiianKahunaThreeSelvesResult?: KahunaManaReport | null;
   nordicYggdrasilRealmsResult?: YggdrasilRealmsReport | null;
+  egyptianMaatFeatherHeartResult?: MaatWeighingReport | null;
+  persianMithraicSpheresResult?: MithraicSpheresReport | null;
+  orpheicMysteriesResult?: OrphicMysteriesReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1914,6 +1920,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 120. 고대 이집트 마아트(Ma'at) 진리의 깃털 & 심장 무게 측정 엔진
+  const egyptianMaatFeatherHeartResult = (() => {
+    try {
+      return calculateEgyptianMaatFeatherHeart({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 121. 고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 엔진
+  const persianMithraicSpheresResult = (() => {
+    try {
+      return calculatePersianMithraicSpheres({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 122. 고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 엔진
+  const orpheicMysteriesResult = (() => {
+    try {
+      return calculateOrpheicMysteries({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2068,6 +2101,9 @@ export function runDeterministicEngine(params: {
     sumerianGilgameshTrialsResult,
     hawaiianKahunaThreeSelvesResult,
     nordicYggdrasilRealmsResult,
+    egyptianMaatFeatherHeartResult,
+    persianMithraicSpheresResult,
+    orpheicMysteriesResult,
     tools: toolsMap,
   };
 }
@@ -2651,5 +2687,8 @@ ${report.maoriMauriHauoraResult && shouldIncludeEngine('maoriMauriHauora', optio
 ${report.slavicMokoshFateWeavingResult && shouldIncludeEngine('slavicMokoshFateWeaving', options) ? '\n' + formatSlavicMokoshFateWeavingPrompt(report.slavicMokoshFateWeavingResult) : ''}
 ${report.sumerianGilgameshTrialsResult && shouldIncludeEngine('sumerianGilgameshTrials', options) ? '\n' + formatSumerianGilgameshTrialsPrompt(report.sumerianGilgameshTrialsResult) : ''}
 ${report.hawaiianKahunaThreeSelvesResult && shouldIncludeEngine('hawaiianKahunaThreeSelves', options) ? '\n' + formatHawaiianKahunaThreeSelvesPrompt(report.hawaiianKahunaThreeSelvesResult) : ''}
-${report.nordicYggdrasilRealmsResult && shouldIncludeEngine('nordicYggdrasilRealms', options) ? '\n' + formatNordicYggdrasilRealmsPrompt(report.nordicYggdrasilRealmsResult) : ''}`;
+${report.nordicYggdrasilRealmsResult && shouldIncludeEngine('nordicYggdrasilRealms', options) ? '\n' + formatNordicYggdrasilRealmsPrompt(report.nordicYggdrasilRealmsResult) : ''}
+${report.egyptianMaatFeatherHeartResult && shouldIncludeEngine('egyptianMaatFeatherHeart', options) ? '\n' + formatEgyptianMaatFeatherHeartPrompt(report.egyptianMaatFeatherHeartResult) : ''}
+${report.persianMithraicSpheresResult && shouldIncludeEngine('persianMithraicSpheres', options) ? '\n' + formatPersianMithraicSpheresPrompt(report.persianMithraicSpheresResult) : ''}
+${report.orpheicMysteriesResult && shouldIncludeEngine('orpheicMysteries', options) ? '\n' + formatOrpheicMysteriesPrompt(report.orpheicMysteriesResult) : ''}`;
 }

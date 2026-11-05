@@ -114,6 +114,9 @@ import { calculateSlavicMokoshFateWeaving, formatSlavicMokoshFateWeavingPrompt, 
 import { calculateSumerianGilgameshTrials, formatSumerianGilgameshTrialsPrompt, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION } from '../src/lib/divination/sumerianGilgameshTwelveTrialsEngine';
 import { calculateHawaiianKahunaThreeSelves, formatHawaiianKahunaThreeSelvesPrompt, HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION } from '../src/lib/divination/hawaiianKahunaThreeSelvesManaEngine';
 import { calculateNordicYggdrasilRealms, formatNordicYggdrasilRealmsPrompt, NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION } from '../src/lib/divination/nordicYggdrasilNineRealmsEngine';
+import { calculateEgyptianMaatFeatherHeart, formatEgyptianMaatFeatherHeartPrompt, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION } from '../src/lib/divination/egyptianMaatFeatherHeartEngine';
+import { calculatePersianMithraicSpheres, formatPersianMithraicSpheresPrompt, PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION } from '../src/lib/divination/persianMithraicSevenSpheresEngine';
+import { calculateOrpheicMysteries, formatOrpheicMysteriesPrompt, ORPHEIC_MYSTERIES_ENGINE_VERSION } from '../src/lib/divination/orpheicMysteriesDionysianEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3102,3 +3105,37 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
   assert(prompt.includes('고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
 });
+
+test('Egyptian Maat Feather Heart Engine: calculates heart lightness and Maat verdict', () => {
+  const rep = calculateEgyptianMaatFeatherHeart({ profile });
+  assert.equal(rep.engineVersion, EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION);
+  assert(rep.heartLightnessScore >= 0 && rep.heartLightnessScore <= 100);
+  assert(rep.weighingVerdict.length > 0);
+  assert(rep.activeNegativeConfessionVirtue.length > 0);
+  const prompt = formatEgyptianMaatFeatherHeartPrompt(rep);
+  assert(prompt.includes('고대 이집트 마아트(Ma\'at) 진리의 깃털 & 심장 무게 측정 실측 데이터'));
+  assert(prompt.includes(rep.activeNegativeConfessionVirtue));
+});
+
+test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol Invictus score', () => {
+  const rep = calculatePersianMithraicSpheres({ profile });
+  assert.equal(rep.engineVersion, PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION);
+  assert(rep.solInvictusScore >= 0 && rep.solInvictusScore <= 100);
+  assert(rep.astralLadderAscensionRate >= 0 && rep.astralLadderAscensionRate <= 100);
+  assert(rep.activeGrade.gradeLevel >= 1 && rep.activeGrade.gradeLevel <= 7);
+  const prompt = formatPersianMithraicSpheresPrompt(rep);
+  assert(prompt.includes('고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 실측 데이터'));
+  assert(prompt.includes(rep.activeGrade.gradeTitleKo));
+});
+
+test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian ecstasy vitality', () => {
+  const rep = calculateOrpheicMysteries({ profile });
+  assert.equal(rep.engineVersion, ORPHEIC_MYSTERIES_ENGINE_VERSION);
+  assert(rep.memoryWellAwakeningScore >= 0 && rep.memoryWellAwakeningScore <= 100);
+  assert(rep.dionysianEcstasyVitality >= 0 && rep.dionysianEcstasyVitality <= 100);
+  assert(rep.divineLineageDeclaration.length > 0);
+  const prompt = formatOrpheicMysteriesPrompt(rep);
+  assert(prompt.includes('고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터'));
+  assert(prompt.includes(rep.goldTabletPassportCode));
+});
+

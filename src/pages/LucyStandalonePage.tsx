@@ -2085,6 +2085,30 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
   }, [lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, scrollToBottom]);
 
+  // 🚀 앱 재진입(visibilitychange / focus / pageshow) 및 최초 마운트 시 항상 최신 대화(하단)로 자동 스크롤
+  useEffect(() => {
+    const handleAppReentry = () => {
+      if (document.visibilityState === 'visible') {
+        isUserScrolledUpRef.current = false;
+        scrollToBottom(true, false);
+        setTimeout(() => scrollToBottom(true, true), 80);
+        setTimeout(() => scrollToBottom(true, false), 300);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleAppReentry);
+    window.addEventListener('focus', handleAppReentry);
+    window.addEventListener('pageshow', handleAppReentry);
+
+    handleAppReentry();
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleAppReentry);
+      window.removeEventListener('focus', handleAppReentry);
+      window.removeEventListener('pageshow', handleAppReentry);
+    };
+  }, [scrollToBottom]);
+
   // 🚀 최상단 스크롤 이벤트 수신 시 루시 대화창 최상단으로 부드럽게 스크롤
   useEffect(() => {
     const handleScrollToTopEvent = () => {
