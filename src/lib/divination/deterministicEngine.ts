@@ -142,6 +142,9 @@ import { calculateFinnishKalevalaSampo, formatFinnishKalevalaSampoPrompt, type F
 import { calculateShanhaijingSacredBeasts, formatShanhaijingSacredBeastsPrompt, type ShanhaijingReport, SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION } from './shanhaijingSacredBeastsEngine';
 import { calculateJainGunasthanaKarma, formatJainGunasthanaKarmaPrompt, type JainGunasthanaReport, JAIN_GUNASTHANA_KARMA_ENGINE_VERSION } from './jainGunasthanaKarmaEngine';
 import { calculateCelticAwenTaliesin, formatCelticAwenTaliesinPrompt, type CelticAwenTaliesinReport, CELTIC_AWEN_TALIESIN_ENGINE_VERSION } from './celticAwenTaliesinEngine';
+import { calculateKoreanDangunCheonbuin, formatKoreanDangunCheonbuinPrompt, type KoreanDangunCheonbuinReport, KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION } from './koreanDangunCheonbuinEngine';
+import { calculateMaoriMauriHauora, formatMaoriMauriHauoraPrompt, type MaoriMauriHauoraReport, MAORI_MAURI_HAUORA_ENGINE_VERSION } from './maoriMauriHauoraEngine';
+import { calculateSlavicMokoshFateWeaving, formatSlavicMokoshFateWeavingPrompt, type SlavicMokoshFateWeavingReport, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION } from './slavicMokoshFateWeavingEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -304,6 +307,9 @@ export interface DeterministicEngineReport {
   shanhaijingSacredBeastsResult?: ShanhaijingReport | null;
   jainGunasthanaKarmaResult?: JainGunasthanaReport | null;
   celticAwenTaliesinResult?: CelticAwenTaliesinReport | null;
+  koreanDangunCheonbuinResult?: KoreanDangunCheonbuinReport | null;
+  maoriMauriHauoraResult?: MaoriMauriHauoraReport | null;
+  slavicMokoshFateWeavingResult?: SlavicMokoshFateWeavingReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1848,6 +1854,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 114. 고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 엔진
+  const koreanDangunCheonbuinResult = (() => {
+    try {
+      return calculateKoreanDangunCheonbuin({ profile, question: rawQuestion });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 115. 고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 영혼 수호 엔진
+  const maoriMauriHauoraResult = (() => {
+    try {
+      return calculateMaoriMauriHauora({ profile, question: rawQuestion });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 116. 고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 직관 엔진
+  const slavicMokoshFateWeavingResult = (() => {
+    try {
+      return calculateSlavicMokoshFateWeaving({ profile, question: rawQuestion });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1996,6 +2029,9 @@ export function runDeterministicEngine(params: {
     shanhaijingSacredBeastsResult,
     jainGunasthanaKarmaResult,
     celticAwenTaliesinResult,
+    koreanDangunCheonbuinResult,
+    maoriMauriHauoraResult,
+    slavicMokoshFateWeavingResult,
     tools: toolsMap,
   };
 }
@@ -2137,6 +2173,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'shanhaijingSacredBeasts', nameKo: '산해경 8방위 신성영수', icon: '🐉', category: 'deep_master' },
   { key: 'jainGunasthanaKarma', nameKo: '자이나 14군아스타나 카르마', icon: '🪷', category: 'deep_master' },
   { key: 'celticAwenTaliesin', nameKo: '켈트 탈리에신 아웬영감', icon: '🔮', category: 'deep_master' },
+  { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master' },
+  { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master' },
+  { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2170,6 +2209,7 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanDangunCheonbuin',
     'celticAwenTaliesin',
     'shanhaijingSacredBeasts',
     'shintoKotodamaFourSouls',
@@ -2334,6 +2374,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'koreanDangunCheonbuin',
+    'maoriMauriHauora',
+    'slavicMokoshFateWeaving',
     'jainGunasthanaKarma',
     'celticAwenTaliesin',
     'shanhaijingSacredBeasts',
@@ -2563,5 +2606,8 @@ ${report.aboriginalDreamtimeSonglinesResult && shouldIncludeEngine('aboriginalDr
 ${report.finnishKalevalaSampoResult && shouldIncludeEngine('finnishKalevalaSampo', options) ? '\n' + formatFinnishKalevalaSampoPrompt(report.finnishKalevalaSampoResult) : ''}
 ${report.shanhaijingSacredBeastsResult && shouldIncludeEngine('shanhaijingSacredBeasts', options) ? '\n' + formatShanhaijingSacredBeastsPrompt(report.shanhaijingSacredBeastsResult) : ''}
 ${report.jainGunasthanaKarmaResult && shouldIncludeEngine('jainGunasthanaKarma', options) ? '\n' + formatJainGunasthanaKarmaPrompt(report.jainGunasthanaKarmaResult) : ''}
-${report.celticAwenTaliesinResult && shouldIncludeEngine('celticAwenTaliesin', options) ? '\n' + formatCelticAwenTaliesinPrompt(report.celticAwenTaliesinResult) : ''}`;
+${report.celticAwenTaliesinResult && shouldIncludeEngine('celticAwenTaliesin', options) ? '\n' + formatCelticAwenTaliesinPrompt(report.celticAwenTaliesinResult) : ''}
+${report.koreanDangunCheonbuinResult && shouldIncludeEngine('koreanDangunCheonbuin', options) ? '\n' + formatKoreanDangunCheonbuinPrompt(report.koreanDangunCheonbuinResult) : ''}
+${report.maoriMauriHauoraResult && shouldIncludeEngine('maoriMauriHauora', options) ? '\n' + formatMaoriMauriHauoraPrompt(report.maoriMauriHauoraResult) : ''}
+${report.slavicMokoshFateWeavingResult && shouldIncludeEngine('slavicMokoshFateWeaving', options) ? '\n' + formatSlavicMokoshFateWeavingPrompt(report.slavicMokoshFateWeavingResult) : ''}`;
 }

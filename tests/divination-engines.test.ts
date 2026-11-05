@@ -108,6 +108,9 @@ import { calculateFinnishKalevalaSampo, formatFinnishKalevalaSampoPrompt, FINNIS
 import { calculateShanhaijingSacredBeasts, formatShanhaijingSacredBeastsPrompt, SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION } from '../src/lib/divination/shanhaijingSacredBeastsEngine';
 import { calculateJainGunasthanaKarma, formatJainGunasthanaKarmaPrompt, JAIN_GUNASTHANA_KARMA_ENGINE_VERSION } from '../src/lib/divination/jainGunasthanaKarmaEngine';
 import { calculateCelticAwenTaliesin, formatCelticAwenTaliesinPrompt, CELTIC_AWEN_TALIESIN_ENGINE_VERSION } from '../src/lib/divination/celticAwenTaliesinEngine';
+import { calculateKoreanDangunCheonbuin, formatKoreanDangunCheonbuinPrompt, KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION } from '../src/lib/divination/koreanDangunCheonbuinEngine';
+import { calculateMaoriMauriHauora, formatMaoriMauriHauoraPrompt, MAORI_MAURI_HAUORA_ENGINE_VERSION } from '../src/lib/divination/maoriMauriHauoraEngine';
+import { calculateSlavicMokoshFateWeaving, formatSlavicMokoshFateWeavingPrompt, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION } from '../src/lib/divination/slavicMokoshFateWeavingEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3028,4 +3031,37 @@ test('Tarot Yes/No Verdict: correctly identifies NO when reading content is NO d
 
   assert(matches.includes('NO'), 'Must detect NO in explicit declarations');
   assert(!matches.includes('YES'), 'Must NOT detect YES when content is NO');
+});
+
+test('Korean Dangun Cheonbuin Engine: calculates 3 Sacred Treasures and Hongik prosperity index', () => {
+  const rep = calculateKoreanDangunCheonbuin({ profile });
+  assert.equal(rep.engineVersion, KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION);
+  assert(rep.hongikProsperityIndex >= 0 && rep.hongikProsperityIndex <= 100);
+  assert(rep.cosmicHarmonyIndex >= 0 && rep.cosmicHarmonyIndex <= 100);
+  assert(rep.treasures.dominantTreasure.nameKo.length > 0);
+  const prompt = formatKoreanDangunCheonbuinPrompt(rep);
+  assert(prompt.includes('고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 실측 데이터'));
+  assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
+});
+
+test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality index', () => {
+  const rep = calculateMaoriMauriHauora({ profile });
+  assert.equal(rep.engineVersion, MAORI_MAURI_HAUORA_ENGINE_VERSION);
+  assert(rep.mauriVitalityIndex >= 0 && rep.mauriVitalityIndex <= 100);
+  assert(rep.manaSovereigntyScore >= 0 && rep.manaSovereigntyScore <= 100);
+  assert(rep.pillars.dominantPillar.nameMaori.length > 0);
+  const prompt = formatMaoriMauriHauoraPrompt(rep);
+  assert(prompt.includes('고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 실측 데이터'));
+  assert(prompt.includes(rep.pillars.dominantPillar.nameMaori));
+});
+
+test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads and fertility index', () => {
+  const rep = calculateSlavicMokoshFateWeaving({ profile });
+  assert.equal(rep.engineVersion, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION);
+  assert(rep.earthFertilityIndex >= 0 && rep.earthFertilityIndex <= 100);
+  assert(rep.fateTensionScore >= 0 && rep.fateTensionScore <= 100);
+  assert(rep.threads.dolya.strength > 0);
+  const prompt = formatSlavicMokoshFateWeavingPrompt(rep);
+  assert(prompt.includes('고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 실측 데이터'));
+  assert(prompt.includes(rep.threads.dolya.nameKo));
 });
