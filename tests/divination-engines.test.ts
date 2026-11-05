@@ -364,7 +364,7 @@ test('Auspicious stars: resonance detects when the partner holds my noble branch
 });
 
 import { calculateTaiyi, formatTaiyiPrompt, TAIYI_ENGINE_VERSION } from '../src/lib/divination/taiyiEngine';
-import { runDeterministicEngine } from '../src/lib/divination/deterministicEngine';
+import { runDeterministicEngine, ALL_DCE_ENGINES, getFiredEngineBadges } from '../src/lib/divination/deterministicEngine';
 
 test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt formatting', () => {
   const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
@@ -2635,4 +2635,14 @@ test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle
   const prompt = formatAyurvedicTridoshaPranaPrompt(rep);
   assert(prompt.includes('인도 정통 아유르베다 3대 도샤'));
   assert(prompt.includes(rep.prakritiConstitution.dominantDosha));
+});
+
+test('DCE Engine Registry & Fired Badges: dynamically expands and covers all 83 engines', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 83);
+  const rep = runDeterministicEngine({ profile });
+  const allBadges = getFiredEngineBadges(rep, { isMasterMobilization: true });
+  assert.equal(allBadges.length, 83);
+  const selectiveBadges = getFiredEngineBadges(rep, { isMasterMobilization: false, intent: 'vitality_wellness' });
+  assert(selectiveBadges.length >= 5);
+  assert(selectiveBadges.includes('인도 아유르베다 도샤'));
 });

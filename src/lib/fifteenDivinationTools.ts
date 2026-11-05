@@ -5,7 +5,7 @@ import { parseBirthTime } from './birthDateTime';
 import { UserProfile } from './sharedState';
 import { calculateDetailedSaju } from './sajuAnalysis';
 import { buildUserNatalSummary } from './astrologyAnalysis';
-import { runDeterministicEngine, formatDeterministicEnginePrompt } from './divination/deterministicEngine';
+import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges } from './divination/deterministicEngine';
 import { calculateKyusei } from './divination/kyuseiEngine';
 import { routeAndExecute } from './divination/smartAgentRouter';
 
@@ -356,6 +356,7 @@ ${kyuseiLine}
 
 export interface SelectedDivinationToolsResult {
   selectedTools: DivinationToolSpec[];
+  firedEngineBadges?: string[];
   isCasualMessage: boolean;
   isMasterMobilization?: boolean;
   selectionReason: string;
@@ -456,9 +457,10 @@ export function selectOptimalDivinationTools(
     const allTools = Object.values(FIFTEEN_DIVINATION_TOOLS);
     return {
       selectedTools: allTools,
+      firedEngineBadges: getFiredEngineBadges(routed.engineReport, { isMasterMobilization: true }),
       isCasualMessage: false,
       isMasterMobilization: true,
-      selectionReason: '마스터 모드 15대 운명학 도구 전원 총동원 & 7대 테마별 비교 분석',
+      selectionReason: '마스터 모드 운명학 도구 전원 총동원 & 7대 테마별 비교 분석',
       promptInjection: buildMasterFifteenToolsComparisonPrompt(profile, clean)
     };
   }
@@ -484,9 +486,10 @@ export function selectOptimalDivinationTools(
 
   return {
     selectedTools,
+    firedEngineBadges: routed.toolsForBadge,
     isCasualMessage: false,
     isMasterMobilization: false,
-    selectionReason: `${routed.routePlan.intentKoName} (${routed.toolsForBadge.join(' + ')})`,
+    selectionReason: `${routed.routePlan.intentKoName} (${routed.toolsForBadge.slice(0, 3).join(' + ')})`,
     promptInjection: routed.promptInjection
   };
 }

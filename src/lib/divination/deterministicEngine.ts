@@ -1646,6 +1646,138 @@ export interface FormatDeterministicEngineOptions {
   isMasterMobilization?: boolean;
 }
 
+export interface DceEngineMeta {
+  key: string;
+  nameKo: string;
+  icon: string;
+  category: 'foundational' | 'deep_master';
+}
+
+export const ALL_DCE_ENGINES: DceEngineMeta[] = [
+  // 15대 기초 운명학 도구
+  { key: 'saju', nameKo: '사주명리', icon: '🔮', category: 'foundational' },
+  { key: 'astrology', nameKo: '서양 점성술', icon: '♈', category: 'foundational' },
+  { key: 'ziwei', nameKo: '자미두수', icon: '🌌', category: 'foundational' },
+  { key: 'tarot', nameKo: '타로', icon: '🎴', category: 'foundational' },
+  { key: 'sukuyo', nameKo: '숙요경(27숙)', icon: '🌙', category: 'foundational' },
+  { key: 'mahabote', nameKo: '마하보테(8요일)', icon: '🇲🇲', category: 'foundational' },
+  { key: 'vedic', nameKo: '베딕 점성술', icon: '🕉️', category: 'foundational' },
+  { key: 'liuren', nameKo: '대육임', icon: '📜', category: 'foundational' },
+  { key: 'qimen', nameKo: '기문둔갑', icon: '🛡️', category: 'foundational' },
+  { key: 'kabbalah', nameKo: '카발라', icon: '🌳', category: 'foundational' },
+  { key: 'iching', nameKo: '주역(64괘)', icon: '☯️', category: 'foundational' },
+  { key: 'thai_astrology', nameKo: '태국점성술', icon: '🪷', category: 'foundational' },
+  { key: 'tojeong', nameKo: '토정비결', icon: '🍂', category: 'foundational' },
+  { key: 'kyusei', nameKo: '구성학', icon: '🧭', category: 'foundational' },
+  { key: 'taiyi', nameKo: '태을신수', icon: '🏛️', category: 'foundational' },
+
+  // 심층 마스터 백그라운드 엔진
+  { key: 'chronoTransit', nameKo: '실시간 행성 트랜짓', icon: '🌌', category: 'deep_master' },
+  { key: 'lifeSeasonTiming', nameKo: '10년대운 생애주기', icon: '⏳', category: 'deep_master' },
+  { key: 'energeticPrescription', nameKo: '오행 바이오에너지', icon: '🧪', category: 'deep_master' },
+  { key: 'contextualSynastry', nameKo: '대화 인연 동적궁합', icon: '👥', category: 'deep_master' },
+  { key: 'instantDecision', nameKo: '시가팔문 즉시결단', icon: '⚡', category: 'deep_master' },
+  { key: 'ziweiFlyingStars', nameKo: '자미두수 유년사화', icon: '🌌', category: 'deep_master' },
+  { key: 'specialStarsMatrix', nameKo: '15대 신살 슈퍼파워', icon: '⭐', category: 'deep_master' },
+  { key: 'monthlyFlow', nameKo: '12개월 월운 플로우', icon: '📅', category: 'deep_master' },
+  { key: 'spatialFengshui', nameKo: '공간 길방위 풍수', icon: '🧭', category: 'deep_master' },
+  { key: 'vitalityCurve', nameKo: '24시간 에너지곡선', icon: '🧬', category: 'deep_master' },
+  { key: 'samjaeGyoUn', nameKo: '삼재·교운기 변곡점', icon: '🔄', category: 'deep_master' },
+  { key: 'auspiciousStars', nameKo: '천을귀인·길성망', icon: '✨', category: 'deep_master' },
+  { key: 'geokguk', nameKo: '정통 10대 격국', icon: '📜', category: 'deep_master' },
+  { key: 'twentyEightMansions', nameKo: '28수 일진 택일', icon: '🌠', category: 'deep_master' },
+  { key: 'sukuyoAdvanced', nameKo: '27숙 심층 매트릭스', icon: '🌙', category: 'deep_master' },
+  { key: 'vedicAdvanced', nameKo: '베딕 120년 다샤', icon: '🕉️', category: 'deep_master' },
+  { key: 'heLuoLiShu', nameKo: '하락이수 수리원당효', icon: '🔢', category: 'deep_master' },
+  { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master' },
+  { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master' },
+  { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master' },
+  { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master' },
+  { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master' },
+  { key: 'wealthPipeline', nameKo: '부의 파이프라인', icon: '💎', category: 'deep_master' },
+  { key: 'karmicNodes', nameKo: '카르믹 노드', icon: '🪐', category: 'deep_master' },
+  { key: 'mentalResilience', nameKo: '멘탈 리질리언스', icon: '🛡️', category: 'deep_master' },
+  { key: 'nobleNetwork', nameKo: '귀인 네트워크', icon: '🤝', category: 'deep_master' },
+  { key: 'contractShield', nameKo: '계약·협상 실드', icon: '📑', category: 'deep_master' },
+  { key: 'deepWorkFlow', nameKo: '딥워크 몰입 리듬', icon: '🌊', category: 'deep_master' },
+  { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master' },
+  { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master' },
+  { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master' },
+  { key: 'transcendentalMeditation', nameKo: '초월 명상 주파수', icon: '🧘', category: 'deep_master' },
+  { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master' },
+  { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master' },
+  { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master' },
+  { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master' },
+  { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master' },
+  { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master' },
+  { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master' },
+  { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master' },
+  { key: 'chakraVibrationAlignment', nameKo: '차크라 진동 정렬', icon: '🌈', category: 'deep_master' },
+  { key: 'enneagramSoulIntegration', nameKo: '에니어그램 영혼통합', icon: '⭐', category: 'deep_master' },
+  { key: 'ancestralEpigeneticKarma', nameKo: '후성유전 카르마', icon: '🌳', category: 'deep_master' },
+  { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master' },
+  { key: 'akashicRecordsOracle', nameKo: '아카식 레코드', icon: '📖', category: 'deep_master' },
+  { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master' },
+  { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master' },
+  { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master' },
+  { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master' },
+  { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master' },
+  { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
+  { key: 'solfeggioHarmonic', nameKo: '솔페지오 하모닉', icon: '🎵', category: 'deep_master' },
+  { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master' },
+  { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
+  { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master' },
+  { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master' },
+  { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master' },
+  { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master' },
+  { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master' },
+  { key: 'karmicSynastry', nameKo: '카르믹 시나스트리', icon: '💫', category: 'deep_master' },
+  { key: 'fiveEmotionsPulse', nameKo: '오행 칠정 심신맥파', icon: '💓', category: 'deep_master' },
+  { key: 'hermeticKybalion', nameKo: '카이발리온 7대 우주법칙', icon: '📜', category: 'deep_master' },
+  { key: 'vibrationalSoulQuest', nameKo: '차크라 솔 퀘스트', icon: '🧭', category: 'deep_master' },
+  { key: 'alchemicalTransmutation', nameKo: '서양 연금술 7단계', icon: '⚗️', category: 'deep_master' },
+  { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master' },
+  { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master' },
+  { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master' },
+  { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master' },
+  { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master' },
+  { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master' },
+  { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master' },
+  { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master' },
+  { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master' },
+  { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master' },
+  { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master' },
+];
+
+export function getFiredEngineBadges(
+  report: DeterministicEngineReport,
+  options?: FormatDeterministicEngineOptions
+): string[] {
+  if (!options || options.isMasterMobilization !== false) {
+    // 올인원 마스터 모드: 등록된 83대 전원 자동 반환
+    return ALL_DCE_ENGINES.map((e) => e.nameKo);
+  }
+
+  const fired: string[] = [];
+  const focusSet = new Set(options.focusTools || []);
+
+  // 1. 기초 15대 도구 중 포커스에 해당하거나 기본 계산된 도구
+  ALL_DCE_ENGINES.filter((e) => e.category === 'foundational').forEach((e) => {
+    if (focusSet.has(e.key) || focusSet.size === 0) {
+      fired.push(e.nameKo);
+    }
+  });
+
+  // 2. 심층 마스터 엔진 중 현재 의도에 맞게 발동된 엔진
+  ALL_DCE_ENGINES.filter((e) => e.category === 'deep_master').forEach((e) => {
+    if (shouldIncludeEngine(e.key, options)) {
+      fired.push(e.nameKo);
+    }
+  });
+
+  return Array.from(new Set(fired));
+}
+
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
     'sajuClassicYongshin',
