@@ -1,8 +1,8 @@
 import { TarotCardBackFace } from '@/components/trinity/TarotCardBackFace';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
-import React, { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { Sparkles, ZoomIn, X, RotateCcw } from 'lucide-react';
+import React from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { Sparkles, RotateCcw } from 'lucide-react';
 import { DetectedTarotCard } from '@/utils/tarotDetector';
 
 interface LucyTarotCardViewProps {
@@ -16,7 +16,6 @@ interface LucyTarotCardViewProps {
 export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isLight = false, verifiedDraw = false, revealedCardIds = [], onRevealCard }) => {
   const { cardBackId } = useTarotCardBack();
   const reducedMotion = useReducedMotion();
-  const [zoomedCard, setZoomedCard] = useState<DetectedTarotCard | null>(null);
 
   if (!cards || cards.length === 0) return null;
 
@@ -37,17 +36,18 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
             return (
               <motion.button
                 type="button"
-                aria-label={isOpen ? `${card.nameKo} ${card.orientationKo} 크게 보기` : `${idx + 1}번째 타로 카드 열기`}
+                aria-label={isOpen ? `${card.nameKo} ${card.orientationKo}` : `${idx + 1}번째 타로 카드 열기`}
+                disabled={isOpen}
                 key={`${card.id}-${idx}`}
                 initial={{ opacity: 0, scale: 0.9, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: idx * 0.08 }}
-                className={`relative flex flex-col items-center shrink-0 w-36 sm:w-40 rounded-xl p-2 transition-all cursor-pointer group shadow-sm hover:shadow-md border ${
+                className={`relative flex flex-col items-center shrink-0 w-36 sm:w-40 rounded-xl p-2 transition-all group shadow-sm border ${isOpen ? 'cursor-default' : 'cursor-pointer hover:shadow-md'} ${
                   isLight
                     ? 'bg-amber-50/70 border-amber-200/90 text-slate-800 hover:border-amber-400'
                     : 'bg-slate-900/80 border-amber-500/30 text-white hover:border-amber-400/60'
                 }`}
-                onClick={() => isOpen ? setZoomedCard(card) : onRevealCard?.(card.id)}
+                onClick={() => { if (!isOpen) onRevealCard?.(card.id); }}
               >
                 {isOpen ? (
                   <motion.div key="front" initial={reducedMotion ? false : { rotateY: -90 }} animate={{ rotateY: 0 }} transition={{ duration: 0.3 }} className="flex flex-col items-center w-full">
@@ -61,9 +61,6 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
                     {isReversed && <RotateCcw size={9} />}
                     {card.orientationKo}
                   </span>
-                  <span className="text-[10px] text-slate-400 dark:text-white/40 flex items-center gap-0.5 group-hover:text-amber-500 transition-colors">
-                    <ZoomIn size={11} /> 확대
-                  </span>
                 </div>
 
                 {/* 카드 이미지 컨테이너 (고화질 webp) */}
@@ -73,7 +70,7 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
                     alt={card.displayTitle}
                     loading="eager"
                     fetchPriority="high"
-                    className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+                    className={`w-full h-full object-cover ${
                       isReversed ? 'rotate-180' : ''
                     }`}
                     onError={(e) => {
@@ -129,55 +126,6 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
         </div>
       </div>
 
-      {/* 카드 확대 모달 (Zoom Modal) */}
-      <AnimatePresence>
-        {zoomedCard && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-sm w-full bg-slate-900 border border-amber-500/40 rounded-2xl p-4 flex flex-col items-center text-white shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={() => setZoomedCard(null)}
-                className="absolute top-3 right-3 p-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-                aria-label="닫기"
-              >
-                <X size={18} />
-              </button>
-
-              <div className="text-sm font-bold text-amber-300 mb-1">
-                {zoomedCard.nameKo} ({zoomedCard.name})
-              </div>
-              <div className="text-xs text-amber-400/80 mb-3 font-semibold flex items-center gap-1">
-                {zoomedCard.reversed && <RotateCcw size={11} />}
-                {zoomedCard.orientationKo}
-              </div>
-
-              <div className="w-48 aspect-[3/5] rounded-xl overflow-hidden border-2 border-amber-400 shadow-xl bg-black">
-                <img
-                  src={zoomedCard.imageUrl}
-                  alt={zoomedCard.displayTitle}
-                  className={`w-full h-full object-cover ${zoomedCard.reversed ? 'rotate-180' : ''}`}
-                />
-              </div>
-
-              {zoomedCard.keywords && zoomedCard.keywords.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-3 justify-center">
-                  {zoomedCard.keywords.map((kw, idx) => (
-                    <span key={idx} className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/30">
-                      #{kw}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </>
   );
 };
