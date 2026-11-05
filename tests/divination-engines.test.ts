@@ -72,6 +72,9 @@ import { calculateCelticTreeOgham, formatCelticTreeOghamPrompt, CELTIC_OGHAM_VER
 import { calculateTaoistSanbaoInnerAlchemy, formatTaoistSanbaoInnerAlchemyPrompt, TAOIST_SANBAO_VERSION } from '../src/lib/divination/taoistSanbaoInnerAlchemyEngine';
 import { calculateTibetanBardoNavigation, formatTibetanBardoNavigationPrompt, TIBETAN_BARDO_VERSION } from '../src/lib/divination/tibetanBardoNavigationEngine';
 import { calculateMesopotamianSevenGates, formatMesopotamianSevenGatesPrompt, MESOPOTAMIAN_GATES_VERSION } from '../src/lib/divination/mesopotamianSevenGatesEngine';
+import { calculateEgyptianThirtySixDecans, formatEgyptianThirtySixDecansPrompt, EGYPTIAN_DECANS_VERSION } from '../src/lib/divination/egyptianThirtySixDecansEngine';
+import { calculateSufiLataifSoulAscension, formatSufiLataifSoulAscensionPrompt, SUFI_LATAIF_VERSION } from '../src/lib/divination/sufiLataifSoulAscensionEngine';
+import { calculateMayanTzolkinSacredCalendar, formatMayanTzolkinSacredCalendarPrompt, MAYAN_TZOLKIN_VERSION } from '../src/lib/divination/mayanTzolkinSacredCalendarEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2558,4 +2561,37 @@ test('Mesopotamian Seven Gates Engine: calculates planetary gate and resurrectio
   const prompt = formatMesopotamianSevenGatesPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 7대 행성 관문'));
   assert(prompt.includes(rep.activeGate.gateNameAkkadian));
+});
+
+test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', () => {
+  const rep = calculateEgyptianThirtySixDecans({ profile });
+  assert.equal(rep.engineVersion, EGYPTIAN_DECANS_VERSION);
+  assert(rep.birthDecan.decanNumber >= 1 && rep.birthDecan.decanNumber <= 36);
+  assert(rep.stellarResonanceScore >= 0 && rep.stellarResonanceScore <= 100);
+  assert(rep.spiritualNavigationGuidance.length > 0);
+  const prompt = formatEgyptianThirtySixDecansPrompt(rep);
+  assert(prompt.includes('고대 이집트 36 데칸'));
+  assert(prompt.includes(rep.birthDecan.guardianDeity));
+});
+
+test('Sufi Seven Lataif Soul Ascension Engine: calculates spiritual station and heart purity', () => {
+  const rep = calculateSufiLataifSoulAscension({ profile });
+  assert.equal(rep.engineVersion, SUFI_LATAIF_VERSION);
+  assert.equal(rep.lataifCenters.length, 7);
+  assert(rep.spiritualHeartPurityScore >= 0 && rep.spiritualHeartPurityScore <= 100);
+  assert(rep.currentSpiritualStation.stationName.length > 0);
+  const prompt = formatSufiLataifSoulAscensionPrompt(rep);
+  assert(prompt.includes('정통 수피즘 심장의 7대 라타이프'));
+  assert(prompt.includes(rep.dominantActiveCenter.koreanName));
+});
+
+test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic resonance', () => {
+  const rep = calculateMayanTzolkinSacredCalendar({ profile });
+  assert.equal(rep.engineVersion, MAYAN_TZOLKIN_VERSION);
+  assert(rep.birthKin.kinNumber >= 1 && rep.birthKin.kinNumber <= 260);
+  assert(rep.todayKin.kinNumber >= 1 && rep.todayKin.kinNumber <= 260);
+  assert(rep.galacticHarmonicResonanceScore >= 0 && rep.galacticHarmonicResonanceScore <= 100);
+  const prompt = formatMayanTzolkinSacredCalendarPrompt(rep);
+  assert(prompt.includes('고대 마야 촐킨'));
+  assert(prompt.includes(rep.todayKin.kinFullName));
 });
