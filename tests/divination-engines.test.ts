@@ -138,6 +138,9 @@ import { calculateGnosticPistisSophiaPleroma, formatGnosticPistisSophiaPleromaPr
 import { calculateSumerianInannaUnderworldDescent, formatSumerianInannaUnderworldDescentPrompt, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION } from '../src/lib/divination/sumerianInannaUnderworldDescentEngine';
 import { calculateNorseVolvaSeidrNineRealms, formatNorseVolvaSeidrNineRealmsPrompt, NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION } from '../src/lib/divination/norseVolvaSeidrNineRealmsEngine';
 import { calculateZhuangziXiaoyaoyouButterfly, formatZhuangziXiaoyaoyouButterflyPrompt, ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION } from '../src/lib/divination/zhuangziXiaoyaoyouButterflyEngine';
+import { calculateBuddhistYogacaraConsciousness, formatBuddhistYogacaraConsciousnessPrompt, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION } from '../src/lib/divination/buddhistYogacaraEightConsciousnessEngine';
+import { calculateVedicMandukyaTuriya, formatVedicMandukyaTuriyaPrompt, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION } from '../src/lib/divination/vedicMandukyaTuriyaEngine';
+import { calculateKabbalisticZoharSoul, formatKabbalisticZoharSoulPrompt, KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION } from '../src/lib/divination/kabbalisticZoharFiveSoulLevelsEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3408,6 +3411,45 @@ test('Zhuangzi Xiaoyaoyou Butterfly Engine: calculates absolute freedom, rocs fl
   const prompt = formatZhuangziXiaoyaoyouButterflyPrompt(rep);
   assert(prompt.includes('고대 도가 장자 소요유 붕정만리 & 제물론 호접몽 실측 데이터'));
   assert(prompt.includes(rep.dominantArchetype.nameKo));
+});
+
+test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses purification and transformed wisdom', () => {
+  const rep = calculateBuddhistYogacaraConsciousness({ profile, question: '아뢰야식과 전식득지' });
+  assert.equal(rep.engineVersion, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION);
+  assert(rep.alayaPurificationScore >= 0 && rep.alayaPurificationScore <= 100);
+  assert(rep.manasEgoTranscendenceRate >= 0 && rep.manasEgoTranscendenceRate <= 100);
+  assert(rep.fourWisdomsHarmonizationIndex >= 0 && rep.fourWisdomsHarmonizationIndex <= 100);
+  assert(rep.kleshaDefilementPurificationScore >= 0 && rep.kleshaDefilementPurificationScore <= 100);
+  assert(rep.dominantWisdom.nameKo.length > 0);
+  const prompt = formatBuddhistYogacaraConsciousnessPrompt(rep);
+  assert(prompt.includes('불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 실측 데이터'));
+  assert(prompt.includes(rep.dominantWisdom.nameKo));
+});
+
+test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM resonance and pure witness', () => {
+  const rep = calculateVedicMandukyaTuriya({ profile, question: '투리야 순수의식' });
+  assert.equal(rep.engineVersion, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION);
+  assert(rep.turiyaPureConsciousnessScore >= 0 && rep.turiyaPureConsciousnessScore <= 100);
+  assert(rep.aumSyllableResonanceIndex >= 0 && rep.aumSyllableResonanceIndex <= 100);
+  assert(rep.sakshiWitnessPresenceScore >= 0 && rep.sakshiWitnessPresenceScore <= 100);
+  assert(rep.mayaIllusionDissolutionRate >= 0 && rep.mayaIllusionDissolutionRate <= 100);
+  assert(rep.dominantState.nameKo.length > 0);
+  const prompt = formatVedicMandukyaTuriyaPrompt(rep);
+  assert(prompt.includes('고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 실측 데이터'));
+  assert(prompt.includes(rep.dominantState.nameKo));
+});
+
+test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and Ein Sof spark', () => {
+  const rep = calculateKabbalisticZoharSoul({ profile, question: '조하르 영혼의 불꽃' });
+  assert.equal(rep.engineVersion, KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION);
+  assert(rep.yechidahDivineSparkScore >= 0 && rep.yechidahDivineSparkScore <= 100);
+  assert(rep.tikkunSoulCorrectionProgress >= 0 && rep.tikkunSoulCorrectionProgress <= 100);
+  assert(rep.shekhinahDivinePresenceIndex >= 0 && rep.shekhinahDivinePresenceIndex <= 100);
+  assert(rep.qlippothShellPurificationRate >= 0 && rep.qlippothShellPurificationRate <= 100);
+  assert(rep.dominantSoulLevel.nameKo.length > 0);
+  const prompt = formatKabbalisticZoharSoulPrompt(rep);
+  assert(prompt.includes('카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 실측 데이터'));
+  assert(prompt.includes(rep.dominantSoulLevel.nameKo));
 });
 
 
