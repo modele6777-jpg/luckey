@@ -145,6 +145,9 @@ import { calculateCelticAwenTaliesin, formatCelticAwenTaliesinPrompt, type Celti
 import { calculateKoreanDangunCheonbuin, formatKoreanDangunCheonbuinPrompt, type KoreanDangunCheonbuinReport, KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION } from './koreanDangunCheonbuinEngine';
 import { calculateMaoriMauriHauora, formatMaoriMauriHauoraPrompt, type MaoriMauriHauoraReport, MAORI_MAURI_HAUORA_ENGINE_VERSION } from './maoriMauriHauoraEngine';
 import { calculateSlavicMokoshFateWeaving, formatSlavicMokoshFateWeavingPrompt, type SlavicMokoshFateWeavingReport, SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION } from './slavicMokoshFateWeavingEngine';
+import { calculateSumerianGilgameshTrials, formatSumerianGilgameshTrialsPrompt, type GilgameshTrialsReport, SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION } from './sumerianGilgameshTwelveTrialsEngine';
+import { calculateHawaiianKahunaThreeSelves, formatHawaiianKahunaThreeSelvesPrompt, type KahunaManaReport, HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION } from './hawaiianKahunaThreeSelvesManaEngine';
+import { calculateNordicYggdrasilRealms, formatNordicYggdrasilRealmsPrompt, type YggdrasilRealmsReport, NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION } from './nordicYggdrasilNineRealmsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -310,6 +313,9 @@ export interface DeterministicEngineReport {
   koreanDangunCheonbuinResult?: KoreanDangunCheonbuinReport | null;
   maoriMauriHauoraResult?: MaoriMauriHauoraReport | null;
   slavicMokoshFateWeavingResult?: SlavicMokoshFateWeavingReport | null;
+  sumerianGilgameshTrialsResult?: GilgameshTrialsReport | null;
+  hawaiianKahunaThreeSelvesResult?: KahunaManaReport | null;
+  nordicYggdrasilRealmsResult?: YggdrasilRealmsReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1881,6 +1887,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 117. 고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 엔진
+  const sumerianGilgameshTrialsResult = (() => {
+    try {
+      return calculateSumerianGilgameshTrials({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 118. 고대 하와이 카후나 3대 자아 & 마나 공명 엔진
+  const hawaiianKahunaThreeSelvesResult = (() => {
+    try {
+      return calculateHawaiianKahunaThreeSelves({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 119. 고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 엔진
+  const nordicYggdrasilRealmsResult = (() => {
+    try {
+      return calculateNordicYggdrasilRealms({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2032,6 +2065,9 @@ export function runDeterministicEngine(params: {
     koreanDangunCheonbuinResult,
     maoriMauriHauoraResult,
     slavicMokoshFateWeavingResult,
+    sumerianGilgameshTrialsResult,
+    hawaiianKahunaThreeSelvesResult,
+    nordicYggdrasilRealmsResult,
     tools: toolsMap,
   };
 }
@@ -2176,6 +2212,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master' },
   { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master' },
   { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master' },
+  { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master' },
+  { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master' },
+  { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2609,5 +2648,8 @@ ${report.jainGunasthanaKarmaResult && shouldIncludeEngine('jainGunasthanaKarma',
 ${report.celticAwenTaliesinResult && shouldIncludeEngine('celticAwenTaliesin', options) ? '\n' + formatCelticAwenTaliesinPrompt(report.celticAwenTaliesinResult) : ''}
 ${report.koreanDangunCheonbuinResult && shouldIncludeEngine('koreanDangunCheonbuin', options) ? '\n' + formatKoreanDangunCheonbuinPrompt(report.koreanDangunCheonbuinResult) : ''}
 ${report.maoriMauriHauoraResult && shouldIncludeEngine('maoriMauriHauora', options) ? '\n' + formatMaoriMauriHauoraPrompt(report.maoriMauriHauoraResult) : ''}
-${report.slavicMokoshFateWeavingResult && shouldIncludeEngine('slavicMokoshFateWeaving', options) ? '\n' + formatSlavicMokoshFateWeavingPrompt(report.slavicMokoshFateWeavingResult) : ''}`;
+${report.slavicMokoshFateWeavingResult && shouldIncludeEngine('slavicMokoshFateWeaving', options) ? '\n' + formatSlavicMokoshFateWeavingPrompt(report.slavicMokoshFateWeavingResult) : ''}
+${report.sumerianGilgameshTrialsResult && shouldIncludeEngine('sumerianGilgameshTrials', options) ? '\n' + formatSumerianGilgameshTrialsPrompt(report.sumerianGilgameshTrialsResult) : ''}
+${report.hawaiianKahunaThreeSelvesResult && shouldIncludeEngine('hawaiianKahunaThreeSelves', options) ? '\n' + formatHawaiianKahunaThreeSelvesPrompt(report.hawaiianKahunaThreeSelvesResult) : ''}
+${report.nordicYggdrasilRealmsResult && shouldIncludeEngine('nordicYggdrasilRealms', options) ? '\n' + formatNordicYggdrasilRealmsPrompt(report.nordicYggdrasilRealmsResult) : ''}`;
 }
