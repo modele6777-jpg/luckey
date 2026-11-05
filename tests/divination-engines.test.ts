@@ -105,6 +105,9 @@ import { calculateHinduNadiAgastyaPalmLeaf, formatHinduNadiAgastyaPalmLeafPrompt
 import { calculateShintoKotodama, formatShintoKotodamaPrompt, SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION } from '../src/lib/divination/shintoKotodamaFourSoulsEngine';
 import { calculateAboriginalDreamtimeSonglines, formatAboriginalDreamtimeSonglinesPrompt, ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION } from '../src/lib/divination/aboriginalDreamtimeSonglinesEngine';
 import { calculateFinnishKalevalaSampo, formatFinnishKalevalaSampoPrompt, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION } from '../src/lib/divination/finnishKalevalaSampoEngine';
+import { calculateShanhaijingSacredBeasts, formatShanhaijingSacredBeastsPrompt, SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION } from '../src/lib/divination/shanhaijingSacredBeastsEngine';
+import { calculateJainGunasthanaKarma, formatJainGunasthanaKarmaPrompt, JAIN_GUNASTHANA_KARMA_ENGINE_VERSION } from '../src/lib/divination/jainGunasthanaKarmaEngine';
+import { calculateCelticAwenTaliesin, formatCelticAwenTaliesinPrompt, CELTIC_AWEN_TALIESIN_ENGINE_VERSION } from '../src/lib/divination/celticAwenTaliesinEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2971,4 +2974,34 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
   const prompt = formatFinnishKalevalaSampoPrompt(rep);
   assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터'));
   assert(prompt.includes(rep.sampoBalance.dominantWing));
+});
+
+test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shielding index', () => {
+  const rep = calculateShanhaijingSacredBeasts({ profile });
+  assert.equal(rep.engineVersion, SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION);
+  assert(rep.spiritualShieldingIndex >= 0 && rep.spiritualShieldingIndex <= 100);
+  assert(rep.activeBeast.name.length > 0);
+  const prompt = formatShanhaijingSacredBeastsPrompt(rep);
+  assert(prompt.includes('고대 동양 산해경(山海經) 8방위 신성 영수(神獸) & 오행 방호 실측 데이터'));
+  assert(prompt.includes(rep.activeBeast.name));
+});
+
+test('Jain Gunasthana Karma Engine: calculates 14 Gunasthanas and Ratnatraya balance', () => {
+  const rep = calculateJainGunasthanaKarma({ profile });
+  assert.equal(rep.engineVersion, JAIN_GUNASTHANA_KARMA_ENGINE_VERSION);
+  assert(rep.ahimsaPeaceIndex >= 0 && rep.ahimsaPeaceIndex <= 100);
+  assert(rep.ratnatraya.dominantTreasure.length > 0);
+  const prompt = formatJainGunasthanaKarmaPrompt(rep);
+  assert(prompt.includes('고대 인도 자이나교 14 군아스타나 & 삼보(Ratnatraya) 카르마 실측 데이터'));
+  assert(prompt.includes(rep.activeStage.stageNameKo));
+});
+
+test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phase', () => {
+  const rep = calculateCelticAwenTaliesin({ profile });
+  assert.equal(rep.engineVersion, CELTIC_AWEN_TALIESIN_ENGINE_VERSION);
+  assert(rep.awenFlowIndex >= 0 && rep.awenFlowIndex <= 100);
+  assert(rep.awenRays.dominantRay.length > 0);
+  const prompt = formatCelticAwenTaliesinPrompt(rep);
+  assert(prompt.includes('고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터'));
+  assert(prompt.includes(rep.activeMetamorphosis.animalTotem));
 });
