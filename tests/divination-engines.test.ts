@@ -150,6 +150,9 @@ import { calculateKashmirShaivismSpanda, formatKashmirShaivismSpandaPrompt, KASH
 import { calculateSumerianEnumaElishFiftyNames, formatSumerianEnumaElishFiftyNamesPrompt, ENUMA_ELISH_ENGINE_VERSION } from '../src/lib/divination/sumerianEnumaElishFiftyNamesEngine';
 import { calculateAlexandrianDecanThirtySixGods, formatAlexandrianDecanThirtySixGodsPrompt, ALEXANDRIAN_DECAN_ENGINE_VERSION } from '../src/lib/divination/alexandrianDecanThirtySixGodsEngine';
 import { calculateTaoistLieziWindRiding, formatTaoistLieziWindRidingPrompt, TAOIST_LIEZI_ENGINE_VERSION } from '../src/lib/divination/taoistLieziWindRidingEngine';
+import { calculateRosicrucianChymicalWedding, formatRosicrucianChymicalWeddingPrompt, ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION } from '../src/lib/divination/rosicrucianChymicalWeddingSevenDaysEngine';
+import { calculateAztecTonalamatl, formatAztecTonalamatlPrompt, AZTEC_TONALAMATL_ENGINE_VERSION } from '../src/lib/divination/aztecTonalamatlSacredCalendarEngine';
+import { calculateMongolianTengriHiimori, formatMongolianTengriHiimoriPrompt, MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION } from '../src/lib/divination/mongolianTengriHiimoriSoulEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3577,6 +3580,45 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
   const prompt = formatTaoistLieziWindRidingPrompt(rep);
   assert(prompt.includes('도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터'));
   assert(prompt.includes(rep.dominantStage.nameKo));
+});
+
+test('Rosicrucian Chymical Wedding Engine: calculates seven days transmutation, chymical union and phoenix rebirth', () => {
+  const rep = calculateRosicrucianChymicalWedding({ profile, question: '로젠크로이츠 화학적 결혼' });
+  assert.equal(rep.engineVersion, ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION);
+  assert(rep.chymicalUnionScore >= 0 && rep.chymicalUnionScore <= 100);
+  assert(rep.philosophersStoneIndex >= 0 && rep.philosophersStoneIndex <= 100);
+  assert(rep.sevenDaysTransmutationRate >= 0 && rep.sevenDaysTransmutationRate <= 100);
+  assert(rep.phoenixRebirthVibration >= 0 && rep.phoenixRebirthVibration <= 100);
+  assert(rep.dominantStage.dayName.length > 0);
+  const prompt = formatRosicrucianChymicalWeddingPrompt(rep);
+  assert(prompt.includes('장미십자회 《화학적 결혼》 7일 연금술 영혼 승화 실측 데이터'));
+  assert(prompt.includes(rep.dominantStage.dayName));
+});
+
+test('Aztec Tonalamatl Sacred Calendar Engine: calculates twenty day signs, tonalli solar vitality and ollin harmony', () => {
+  const rep = calculateAztecTonalamatl({ profile, question: '아즈텍 토날포왈리 성력' });
+  assert.equal(rep.engineVersion, AZTEC_TONALAMATL_ENGINE_VERSION);
+  assert(rep.tonalliSolarVitalityScore >= 0 && rep.tonalliSolarVitalityScore <= 100);
+  assert(rep.teyoliaHeartPurityIndex >= 0 && rep.teyoliaHeartPurityIndex <= 100);
+  assert(rep.ihiyotlBreathPowerScore >= 0 && rep.ihiyotlBreathPowerScore <= 100);
+  assert(rep.ollinCosmicMovementHarmony >= 0 && rep.ollinCosmicMovementHarmony <= 100);
+  assert(rep.dominantDaySign.nameKo.length > 0);
+  const prompt = formatAztecTonalamatlPrompt(rep);
+  assert(prompt.includes('고대 아즈텍 토날포왈리 20대 일진 & 토날라마틀 성력 실측 데이터'));
+  assert(prompt.includes(rep.dominantDaySign.nameKo));
+});
+
+test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, blue sky resonance and suld spirit power', () => {
+  const rep = calculateMongolianTengriHiimori({ profile, question: '몽골 텡그리즘 풍마 히모리' });
+  assert.equal(rep.engineVersion, MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION);
+  assert(rep.hiimoriWindHorseVitalityScore >= 0 && rep.hiimoriWindHorseVitalityScore <= 100);
+  assert(rep.tengriBlueSkyResonanceIndex >= 0 && rep.tengriBlueSkyResonanceIndex <= 100);
+  assert(rep.suldImmortalSpiritPower >= 0 && rep.suldImmortalSpiritPower <= 100);
+  assert(rep.etugenMotherEarthRooting >= 0 && rep.etugenMotherEarthRooting <= 100);
+  assert(rep.dominantAspect.nameKo.length > 0);
+  const prompt = formatMongolianTengriHiimoriPrompt(rep);
+  assert(prompt.includes('몽골 텡그리즘 99 텡그리 & 히모리 풍마 영혼 공명 실측 데이터'));
+  assert(prompt.includes(rep.dominantAspect.nameKo));
 });
 
 
