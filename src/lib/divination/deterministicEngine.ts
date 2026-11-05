@@ -157,6 +157,9 @@ import { calculateVedicPanchaKosha, formatVedicPanchaKoshaPrompt, type PanchaKos
 import { calculateRomanJanus, formatRomanJanusPrompt, type RomanJanusReport, ROMAN_JANUS_ENGINE_VERSION } from './romanJanusThresholdTransitionsEngine';
 import { calculateBaopuziElixirs, formatBaopuziElixirsPrompt, type BaopuziElixirsReport, BAOPUZI_ELIXIRS_ENGINE_VERSION } from './ancientChineseBaopuziNineElixirsEngine';
 import { calculateVedicMahavakya, formatVedicMahavakyaPrompt, type VedicMahavakyaReport, VEDIC_MAHAVAKYA_ENGINE_VERSION } from './vedicMahavakyaConsciousnessEngine';
+import { calculateSumerianApkalluWisdom, formatSumerianApkalluWisdomPrompt, type SumerianApkalluWisdomReport, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION } from './sumerianApkalluWisdomEngine';
+import { calculateCelticTuathaFourTreasures, formatCelticTuathaFourTreasuresPrompt, type CelticTuathaFourTreasuresReport, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION } from './celticTuathaFourTreasuresEngine';
+import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyFourSpiritsPrompt, type TaoistShangqingTwentyFourSpiritsReport, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION } from './taoistShangqingTwentyFourSpiritsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -334,6 +337,9 @@ export interface DeterministicEngineReport {
   romanJanusResult?: RomanJanusReport | null;
   baopuziElixirsResult?: BaopuziElixirsReport | null;
   vedicMahavakyaResult?: VedicMahavakyaReport | null;
+  sumerianApkalluWisdomResult?: SumerianApkalluWisdomReport | null;
+  celticTuathaFourTreasuresResult?: CelticTuathaFourTreasuresReport | null;
+  taoistShangqingTwentyFourSpiritsResult?: TaoistShangqingTwentyFourSpiritsReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2013,6 +2019,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 129. 고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 & 신성 지혜 엔진
+  const sumerianApkalluWisdomResult = (() => {
+    try {
+      return calculateSumerianApkalluWisdom({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 130. 고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 & 영웅 운명 엔진
+  const celticTuathaFourTreasuresResult = (() => {
+    try {
+      return calculateCelticTuathaFourTreasures({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 131. 고대 중국 도교 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 & 존사(存思) 통령 엔진
+  const taoistShangqingTwentyFourSpiritsResult = (() => {
+    try {
+      return calculateTaoistShangqingTwentyFourSpirits({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2176,6 +2209,9 @@ export function runDeterministicEngine(params: {
     romanJanusResult,
     baopuziElixirsResult,
     vedicMahavakyaResult,
+    sumerianApkalluWisdomResult,
+    celticTuathaFourTreasuresResult,
+    taoistShangqingTwentyFourSpiritsResult,
     tools: toolsMap,
   };
 }
@@ -2323,6 +2359,18 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master' },
   { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master' },
   { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master' },
+  { key: 'egyptianMaatFeatherHeart', nameKo: '이집트 마아트 심장무게', icon: '🪶', category: 'deep_master' },
+  { key: 'persianMithraicSpheres', nameKo: '페르시아 미트라 7천구', icon: '☀️', category: 'deep_master' },
+  { key: 'orpheicMysteries', nameKo: '그리스 오르페우스 므네모시네', icon: '🎶', category: 'deep_master' },
+  { key: 'popolVuhHeroTwins', nameKo: '마야 포폴부 쌍둥이영웅', icon: '🌽', category: 'deep_master' },
+  { key: 'ancientYarrowProbability', nameKo: '주역 대연지수 49책 시초점', icon: '🌿', category: 'deep_master' },
+  { key: 'vedicPanchaKosha', nameKo: '인도 베단타 5대 코샤', icon: '🧘', category: 'deep_master' },
+  { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master' },
+  { key: 'baopuziElixirs', nameKo: '포박자 구전환단 선도', icon: '🍶', category: 'deep_master' },
+  { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master' },
+  { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master' },
+  { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
+  { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2330,7 +2378,7 @@ export function getFiredEngineBadges(
   options?: FormatDeterministicEngineOptions
 ): string[] {
   if (!options || options.isMasterMobilization !== false) {
-    // 올인원 마스터 모드: 등록된 83대 전원 자동 반환
+    // 올인원 마스터 모드: 등록된 138대 전원 자동 반환
     return ALL_DCE_ENGINES.map((e) => e.nameKo);
   }
 
@@ -2356,6 +2404,9 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'celticTuathaFourTreasures',
+    'sumerianApkalluWisdom',
+    'romanJanus',
     'koreanDangunCheonbuin',
     'celticAwenTaliesin',
     'shanhaijingSacredBeasts',
@@ -2478,6 +2529,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'taoistShangqingTwentyFourSpirits',
+    'baopuziElixirs',
     'tibetanBonNineWays',
     'zhongLuAlchemy',
     'druidMoonTrees',
@@ -2521,6 +2574,12 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'celticTuathaFourTreasures',
+    'sumerianApkalluWisdom',
+    'taoistShangqingTwentyFourSpirits',
+    'vedicMahavakya',
+    'vedicPanchaKosha',
+    'egyptianMaatFeatherHeart',
     'koreanDangunCheonbuin',
     'maoriMauriHauora',
     'slavicMokoshFateWeaving',
@@ -2768,5 +2827,8 @@ ${report.ancientYarrowProbabilityResult && shouldIncludeEngine('ancientYarrowPro
 ${report.vedicPanchaKoshaResult && shouldIncludeEngine('vedicPanchaKosha', options) ? '\n' + formatVedicPanchaKoshaPrompt(report.vedicPanchaKoshaResult) : ''}
 ${report.romanJanusResult && shouldIncludeEngine('romanJanus', options) ? '\n' + formatRomanJanusPrompt(report.romanJanusResult) : ''}
 ${report.baopuziElixirsResult && shouldIncludeEngine('baopuziElixirs', options) ? '\n' + formatBaopuziElixirsPrompt(report.baopuziElixirsResult) : ''}
-${report.vedicMahavakyaResult && shouldIncludeEngine('vedicMahavakya', options) ? '\n' + formatVedicMahavakyaPrompt(report.vedicMahavakyaResult) : ''}`;
+${report.vedicMahavakyaResult && shouldIncludeEngine('vedicMahavakya', options) ? '\n' + formatVedicMahavakyaPrompt(report.vedicMahavakyaResult) : ''}
+${report.sumerianApkalluWisdomResult && shouldIncludeEngine('sumerianApkalluWisdom', options) ? '\n' + formatSumerianApkalluWisdomPrompt(report.sumerianApkalluWisdomResult) : ''}
+${report.celticTuathaFourTreasuresResult && shouldIncludeEngine('celticTuathaFourTreasures', options) ? '\n' + formatCelticTuathaFourTreasuresPrompt(report.celticTuathaFourTreasuresResult) : ''}
+${report.taoistShangqingTwentyFourSpiritsResult && shouldIncludeEngine('taoistShangqingTwentyFourSpirits', options) ? '\n' + formatTaoistShangqingTwentyFourSpiritsPrompt(report.taoistShangqingTwentyFourSpiritsResult) : ''}`;
 }

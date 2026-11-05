@@ -123,6 +123,9 @@ import { calculateVedicPanchaKosha, formatVedicPanchaKoshaPrompt, VEDIC_PANCHA_K
 import { calculateRomanJanus, formatRomanJanusPrompt, ROMAN_JANUS_ENGINE_VERSION } from '../src/lib/divination/romanJanusThresholdTransitionsEngine';
 import { calculateBaopuziElixirs, formatBaopuziElixirsPrompt, BAOPUZI_ELIXIRS_ENGINE_VERSION } from '../src/lib/divination/ancientChineseBaopuziNineElixirsEngine';
 import { calculateVedicMahavakya, formatVedicMahavakyaPrompt, VEDIC_MAHAVAKYA_ENGINE_VERSION } from '../src/lib/divination/vedicMahavakyaConsciousnessEngine';
+import { calculateSumerianApkalluWisdom, formatSumerianApkalluWisdomPrompt, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION } from '../src/lib/divination/sumerianApkalluWisdomEngine';
+import { calculateCelticTuathaFourTreasures, formatCelticTuathaFourTreasuresPrompt, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION } from '../src/lib/divination/celticTuathaFourTreasuresEngine';
+import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyFourSpiritsPrompt, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION } from '../src/lib/divination/taoistShangqingTwentyFourSpiritsEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3209,6 +3212,38 @@ test('Vedic Mahavakya Consciousness Engine: calculates Brahman realization and S
   const prompt = formatVedicMahavakyaPrompt(rep);
   assert(prompt.includes('고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터'));
   assert(prompt.includes(rep.activeMahavakya.sanskritPhrase));
+});
+
+test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clarity', () => {
+  const rep = calculateSumerianApkalluWisdom({ profile });
+  assert.equal(rep.engineVersion, SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION);
+  assert(rep.apkalluResonanceScore >= 0 && rep.apkalluResonanceScore <= 100);
+  assert(rep.apsuClarityIndex >= 0 && rep.apsuClarityIndex <= 100);
+  assert(rep.activeSage.nameKo.length > 0);
+  const prompt = formatSumerianApkalluWisdomPrompt(rep);
+  assert(prompt.includes('고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 신성 지혜 실측 데이터'));
+  assert(prompt.includes(rep.activeSage.nameKo));
+});
+
+test('Celtic Tuatha Four Treasures Engine: calculates heroic destiny and dominant sacred treasure', () => {
+  const rep = calculateCelticTuathaFourTreasures({ profile });
+  assert.equal(rep.engineVersion, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION);
+  assert(rep.tuathaHeroResonance >= 0 && rep.tuathaHeroResonance <= 100);
+  assert(rep.treasures.dominantTreasure.nameKo.length > 0);
+  const prompt = formatCelticTuathaFourTreasuresPrompt(rep);
+  assert(prompt.includes('고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 영웅 운명 실측 데이터'));
+  assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
+});
+
+test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active true spirit', () => {
+  const rep = calculateTaoistShangqingTwentyFourSpirits({ profile });
+  assert.equal(rep.engineVersion, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION);
+  assert(rep.shangqingAttunementScore >= 0 && rep.shangqingAttunementScore <= 100);
+  assert(rep.spiritualShieldRate >= 0 && rep.spiritualShieldRate <= 100);
+  assert(rep.activeTrueSpirit.nameKo.length > 0);
+  const prompt = formatTaoistShangqingTwentyFourSpiritsPrompt(rep);
+  assert(prompt.includes('고대 중국 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 존사(存思) 통령 실측 데이터'));
+  assert(prompt.includes(rep.activeTrueSpirit.nameKo));
 });
 
 
