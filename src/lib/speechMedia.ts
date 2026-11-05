@@ -1,9 +1,11 @@
+import { primeUserMediaPlayback } from './nativeMediaPriming';
 // Use the browser's media pipeline so speech can continue while the page is hidden.
 let player: HTMLAudioElement | null = null;
 let objectUrl: string | null = null;
 let finish: (() => void) | null = null;
 let active = false;
 let paused = false;
+let playbackFailure: (() => void) | null = null;
 export function getSpeechMediaElement(): HTMLAudioElement {
   if (!player) {
     player = new Audio();
@@ -14,13 +16,11 @@ export function getSpeechMediaElement(): HTMLAudioElement {
   }
   return player;
 }
-export function primeSpeechMedia(): void {
-  // 🌟 무음 더미 오디오 재생 금지:
-  // 더미 wav 버퍼를 빈 Audio에 play()하는 순간 iOS 미디어 세션이 오디오 포커스를 독점하여
-  // 실행 중인 멜론, 애플뮤직 등 외부 음악이 즉시 일시정지되는 현상이 발생합니다.
-  // 따라서 더미 오디오 프라이밍을 제거하고 실제 TTS 음성 데이터가 로드되었을 때만 재생합니다.
-  getSpeechMediaElement();
+export function primeSpeechMedia(userGesture = typeof navigator !== 'undefined' && Boolean(navigator.userActivation?.isActive)): void {
+  const audio = getSpeechMediaElement();
+  primeUserMediaPlayback(audio, userGesture);
 }
+
 export function stopSpeechMedia(): void {
   active = false; paused = false;
   finish?.(); finish = null;
@@ -34,10 +34,14 @@ export function speechMediaProgress() {
 }
 export function isSpeechMediaPlaying() { return active && !paused && !!player && !player.paused; }
 export function pauseSpeechMedia() { if (active) { paused = true; player?.pause(); } }
-export function resumeSpeechMedia() { if (active && player) { paused = false; void player.play().catch(() => {}); } }
+export function resumeSpeechMedia() { if (active && player) { paused = false; const failed = playbackFailure; void player.play().catch(() => failed?.()); } }
 export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate: number, onPlaying?: () => void): Promise<void> {
-  stopSpeechMedia();
+  // Settle the old chunk without clearing/reloading the shared media element.
+  // Safari may release its background session if src is removed between chunks.
+  finish?.(); finish = null;
+  const previousUrl = objectUrl;
   const audio = getSpeechMediaElement();
+  paused = false;
   let data = bytes;
   if (encoding === 'pcm') {
     data = new Uint8Array(44 + bytes.length);
@@ -50,6 +54,7 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
   }
   objectUrl = URL.createObjectURL(new Blob([data as BlobPart], { type: encoding === 'pcm' || encoding === 'wav' ? 'audio/wav' : encoding === 'ogg' ? 'audio/ogg' : 'audio/mpeg' }));
   audio.src = objectUrl; audio.playbackRate = 1; active = true;
+  if (previousUrl) URL.revokeObjectURL(previousUrl);
   return new Promise<void>((resolve, reject) => {
     let settled = false;
     const playing = () => onPlaying?.();
@@ -58,10 +63,12 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
       audio.removeEventListener('ended', ended);
       audio.removeEventListener('error', failed);
       if (finish === ended) finish = null;
+      if (playbackFailure === failed) playbackFailure = null;
     };
     const ended = () => { if (settled) return; settled = true; active = false; cleanup(); resolve(); };
     const failed = () => { if (settled) return; settled = true; active = false; cleanup(); reject(new Error('음성을 재생하지 못했습니다. 다시 듣기를 눌러 주세요.')); };
     finish = ended;
+    playbackFailure = failed;
     audio.addEventListener('playing', playing, { once: true });
     audio.addEventListener('ended', ended);
     audio.addEventListener('error', failed);

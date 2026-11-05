@@ -128,16 +128,4 @@ export function encodeBgmWav(buffer: Pick<AudioBuffer, 'numberOfChannels' | 'len
   return new Blob([bytes], { type: 'audio/wav' });
 }
 
-let gesturePrimeUrl: string | null = null;
-/** Unlock this media element only during the user's explicit Play gesture (Safari). */
-export function primeNativeBgmPlayback(audio: HTMLAudioElement | null, userGesture: boolean): void {
-  if (!audio || !userGesture || audio.getAttribute('src')) return;
-  if (!gesturePrimeUrl) {
-    const samples = new Float32Array(4410);
-    gesturePrimeUrl = URL.createObjectURL(encodeBgmWav({ numberOfChannels: 1, length: samples.length, sampleRate: SAMPLE_RATE, getChannelData: () => samples }));
-  }
-  audio.src = gesturePrimeUrl;
-  // A brief primer authorizes the real, asynchronously rendered composition;
-  // it is never started on app entry and is not a background keep-alive loop.
-  void audio.play().catch(() => {});
-}
+export { primeUserMediaPlayback as primeNativeBgmPlayback } from './nativeMediaPriming';

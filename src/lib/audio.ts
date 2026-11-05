@@ -50,7 +50,7 @@ export function getSharedAudioContext(): AudioContext {
     const ctxInstance = sharedAudioCtx;
     ctxInstance.addEventListener('statechange', () => {
       const st = ctxInstance.state as string;
-      if (sharedAudioCtx === ctxInstance && (st === 'suspended' || st === 'interrupted') && ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
+      if (sharedAudioCtx === ctxInstance && (st === 'suspended' || st === 'interrupted') && ttsShouldBePlaying && !ttsUserExplicitlyPaused && !speechMediaProgress()) {
         ctxInstance.resume().catch(() => {});
         setTimeout(() => {
           if (
@@ -643,15 +643,15 @@ export function configureAmbientAudioSession(): void {
   if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
     try {
       const session = (navigator as any).audioSession;
-      // Only explicitly playing in-app music requests background playback.
-      // Merely opening the app keeps the ambient session and other apps' music.
-      const type = bgmPlaybackActive ? 'playback' : 'ambient';
+      // Explicit BGM or speech playback needs a background-capable session.
+      // App entry and paused/stopped speech leave other apps' audio alone.
+      const type = bgmPlaybackActive || (speechSessionActive && !ttsUserExplicitlyPaused) ? 'playback' : 'ambient';
       if (session.type !== type) session.type = type;
     } catch (_) { /* Older browsers may not support audioSession */ }
   }
 }
 
-/** Speech needs a playback session for screen-lock/background playback, but must NEVER interrupt background music. */
+/** Explicit speech playback needs a playback session for screen-lock/background audio. */
 export function configureTransientDuckingAudioSession(): void { configureAmbientAudioSession(); }
 export function configurePlaybackAudioSession(): void { configureAmbientAudioSession(); }
 export function configureSpeechAudioSession(): void {
@@ -906,10 +906,13 @@ export function pauseTTSAudio(): void {
 }
 
 export function resumeTTSAudio(): void {
-  configureSpeechAudioSession();
-  resumeSpeechMedia();
   ttsUserExplicitlyPaused = false;
   ttsShouldBePlaying = true;
+  configureSpeechAudioSession();
+  if (speechMediaProgress()) {
+    resumeSpeechMedia();
+    return; // Native speech does not depend on a running AudioContext.
+  }
   try {
     const ctx = getSharedAudioContext();
     if (ctx.state === 'suspended') {
@@ -1323,7 +1326,16 @@ export function initTTSAudioLifecycle(): void {
 
   const handleVisibleResume = () => {
     if (document.visibilityState === 'hidden') return;
-    if (speechMediaProgress()) { configureSpeechAudioSession(); return; }
+    const media = speechMediaProgress();
+    if (media) {
+      if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
+        configureSpeechAudioSession();
+        if (media.paused) resumeSpeechMedia();
+      } else {
+        configureAmbientAudioSession();
+      }
+      return;
+    }
     // 🌟 오직 TTS가 실제로 재생 중일 때만 AudioContext를 복원합니다.
     // 재생 중이 아닐 때는 AudioContext를 깨우지 않아 외부 백그라운드 음악(멜론, 스포티파이 등)이 중단되지 않도록 보호합니다.
     if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
