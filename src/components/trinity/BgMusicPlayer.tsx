@@ -1,9 +1,12 @@
+import { updateAppMediaSession } from '@/lib/appMediaSession';
+import { getProceduralBgmMediaUrl, primeNativeBgmPlayback } from '@/lib/proceduralBgmMedia';
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Disc, SkipForward, SkipBack, Volume2, VolumeX, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Music, Headphones, Shuffle, Repeat, Repeat1, RefreshCw, Trash2, EyeOff, RotateCcw, GripVertical, Sparkles, Maximize2, X, Sliders } from "lucide-react";
 import { AudioReactive3DVisualizer } from "./AudioReactive3DVisualizer";
 import {
   getSharedAudioContext,
+  setBgmPlaybackSessionActive,
   getAmbientAudioBus,
   getMasterAudioBus,
   createLoopingNoiseSource,
@@ -219,6 +222,9 @@ export function BgMusicPlayer() {
     }
   });
   
+  const playbackVolumeRef = useRef(isMuted ? 0 : volume);
+  playbackVolumeRef.current = isMuted ? 0 : volume;
+
   // Custom Controls
   const [repeatMode, setRepeatMode] = useState<RepeatMode>("all");
   const [isShuffle, setIsShuffle] = useState(true);
@@ -484,8 +490,8 @@ export function BgMusicPlayer() {
   const isPlayInitiatedRef = useRef<string>("");
   const masterGainRef = useRef<GainNode | null>(null);
   const currentTrackNormGainRef = useRef<number>(1.0);
-  const htmlGainRef = useRef<GainNode | null>(null);
-  const htmlSourceConnectedRef = useRef(false);
+  const nativeProceduralTrackRef = useRef("");
+  const renderingProceduralTrackRef = useRef("");
   const activeNodesRef = useRef<any[]>([]);
   const activeVoiceCountRef = useRef(0);
   const synthIntervalRef = useRef<any>(null);
@@ -518,6 +524,8 @@ export function BgMusicPlayer() {
     if (!track) return false;
 
     if (isProceduralTrack(track.url)) {
+      if (renderingProceduralTrackRef.current === track.url) return true;
+      if (nativeProceduralTrackRef.current === track.url && audioRef.current && !audioRef.current.paused) return true;
       return (
         isPlayInitiatedRef.current === track.url &&
         (masterGainRef.current !== null || synthIntervalRef.current !== null || secondarySynthIntervalRef.current !== null || activeNodesRef.current.length > 0)
@@ -684,6 +692,7 @@ export function BgMusicPlayer() {
   };
 
   const pausePlayback = () => {
+    setBgmPlaybackSessionActive(false);
     isPlayingRef.current = false;
     setIsPlaying(false);
     setIsBuffering(false);
@@ -696,13 +705,6 @@ export function BgMusicPlayer() {
     if (audio) {
       try {
         if (!audio.paused) audio.pause();
-      } catch (_) {}
-    }
-    if (htmlGainRef.current) {
-      try {
-        const ctx = getSharedAudioContext();
-        htmlGainRef.current.gain.cancelScheduledValues(ctx.currentTime);
-        htmlGainRef.current.gain.setValueAtTime(0, ctx.currentTime);
       } catch (_) {}
     }
     stopProceduralSynth();
@@ -854,41 +856,9 @@ export function BgMusicPlayer() {
   };
 
   const setHtmlBgmGain = (targetVol: number) => {
-    const ctx = getSharedAudioContext();
-    const now = ctx.currentTime;
-    const normalizedGain = targetVol * BGM_HTML_GAIN_SCALE;
-
-    if (htmlGainRef.current) {
-      try {
-        htmlGainRef.current.gain.cancelScheduledValues(now);
-        htmlGainRef.current.gain.setTargetAtTime(normalizedGain, now, 0.05);
-      } catch {
-        htmlGainRef.current.gain.setValueAtTime(normalizedGain, now);
-      }
-      if (audioRef.current) audioRef.current.volume = 1;
-      return;
-    }
+    const normalizedGain = isProceduralTrack(getActiveTrack().url) ? targetVol : targetVol * BGM_HTML_GAIN_SCALE;
     if (audioRef.current) {
       audioRef.current.volume = Math.max(0, Math.min(1, normalizedGain));
-    }
-  };
-
-  const ensureHtmlAudioRouting = () => {
-    const audio = audioRef.current;
-    if (!audio || htmlSourceConnectedRef.current) return;
-
-    try {
-      const ctx = getSharedAudioContext();
-      const source = ctx.createMediaElementSource(audio);
-      const gain = ctx.createGain();
-      gain.connect(getAmbientAudioBus());
-      source.connect(gain);
-      htmlGainRef.current = gain;
-      htmlSourceConnectedRef.current = true;
-      audio.volume = 1;
-      setHtmlBgmGain(isMuted ? 0 : volume);
-    } catch (err) {
-      console.warn("HTML BGM WebAudio routing unavailable, using element volume:", err);
     }
   };
 
@@ -907,8 +877,8 @@ export function BgMusicPlayer() {
     }
 
     stopProceduralSynth();
-    ensureHtmlAudioRouting();
-    setHtmlBgmGain(isMuted ? 0 : volume);
+    setBgmPlaybackSessionActive(true);
+    setHtmlBgmGain(playbackVolumeRef.current);
 
     if (loadedUrlRef.current !== resolvedUrl) {
       loadedUrlRef.current = resolvedUrl;
@@ -1026,16 +996,28 @@ export function BgMusicPlayer() {
     const track = tracksRef.current[trackIndex] || tracksRef.current[0];
     const targetUrl = track.url;
 
+    nativeProceduralTrackRef.current = '';
+    renderingProceduralTrackRef.current = '';
     if (isProceduralTrack(targetUrl)) {
-      try {
-        if (!audio.paused) {
-          audio.pause();
-          audio.currentTime = 0;
-        }
-      } catch (_) {}
-      loadedUrlRef.current = "";
-      isPlayInitiatedRef.current = targetUrl;
-      startProceduralSynth(targetUrl);
+      stopProceduralSynth();
+      if (!audio.paused) audio.pause();
+      renderingProceduralTrackRef.current = targetUrl;
+      setIsBuffering(true);
+      setBgmPlaybackSessionActive(true);
+      getProceduralBgmMediaUrl(targetUrl).then(url => {
+        if (generation !== playbackGenerationRef.current || !isPlayingRef.current || !isSameActiveTrack(track)) return;
+        renderingProceduralTrackRef.current = '';
+        nativeProceduralTrackRef.current = targetUrl;
+        playHtmlBgmAudio(url);
+        scheduleSynthAdvance();
+      }).catch(error => {
+        if (generation !== playbackGenerationRef.current || !isPlayingRef.current) return;
+        renderingProceduralTrackRef.current = '';
+        console.warn('Native BGM rendering unavailable; using live synthesis:', error);
+        isPlayInitiatedRef.current = targetUrl;
+        startProceduralSynth(targetUrl);
+        setIsBuffering(false);
+      });
       return;
     }
 
@@ -1146,12 +1128,30 @@ export function BgMusicPlayer() {
       localStorage.setItem('prism_bgm_playing', 'true');
     } catch (_) {}
     playTrackDirectly(nextOrder[0]);
+    const userGesture = Boolean(e?.isTrusted || navigator.userActivation?.isActive);
+    if (userGesture) {
+      setBgmPlaybackSessionActive(true);
+      primeNativeBgmPlayback(audioRef.current, true);
+    }
   };
 
   const handlePlayToggleRef = useRef(handlePlayToggle);
   handlePlayToggleRef.current = handlePlayToggle;
   const advanceToNextTrackRef = useRef(advanceToNextTrack);
   advanceToNextTrackRef.current = advanceToNextTrack;
+
+  const resumeBgmRef = useRef<() => void>(() => {});
+  resumeBgmRef.current = () => {
+    if (isPlayingRef.current) return;
+    isPlayingRef.current = true;
+    setIsPlaying(true);
+    setBgmPlaybackSessionActive(true);
+    try { localStorage.setItem('prism_bgm_playing', 'true'); } catch { /* storage unavailable */ }
+    playTrackDirectly(activeTrackIndexRef.current, true);
+  };
+  const pauseBgmRef = useRef(pausePlayback);
+  pauseBgmRef.current = pausePlayback;
+  const hasStartedBgmRef = useRef(false);
 
   // --- LP DISC HOLD & INTERACTION HANDLERS ---
   const handleLpPointerDown = (e: React.PointerEvent) => {
@@ -1696,6 +1696,41 @@ export function BgMusicPlayer() {
     );
   }, [isPlaying, isBuffering, currentTrack?.name, currentTrack?.artist, currentTrack?.category]);
 
+  useEffect(() => {
+    setBgmPlaybackSessionActive(isPlaying);
+    if (isPlaying) hasStartedBgmRef.current = true;
+    updateAppMediaSession('bgm', hasStartedBgmRef.current ? {
+      title: currentTrack?.name || 'Lucy BGM',
+      artist: currentTrack?.artist || 'Lucy Procedural Suite',
+      state: isPlaying ? 'playing' : 'paused',
+      actions: {
+        play: () => resumeBgmRef.current(),
+        pause: () => pauseBgmRef.current(),
+        stop: () => pauseBgmRef.current(),
+        nexttrack: () => advanceToNextTrackRef.current(),
+      },
+    } : null);
+  }, [isPlaying, currentTrack?.name, currentTrack?.artist]);
+
+  useEffect(() => {
+    const restore = () => {
+      if (document.visibilityState === 'hidden' || !isPlayingRef.current) return;
+      const audio = audioRef.current;
+      if (audio?.src && audio.paused && !renderingProceduralTrackRef.current) {
+        setBgmPlaybackSessionActive(true);
+        void audio.play().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', restore);
+    window.addEventListener('pageshow', restore);
+    return () => {
+      document.removeEventListener('visibilitychange', restore);
+      window.removeEventListener('pageshow', restore);
+      setBgmPlaybackSessionActive(false);
+      updateAppMediaSession('bgm', null);
+    };
+  }, []);
+
   // --- CLICK OUTSIDE TO COLLAPSE EXPANDED PLAYER & VOLUME SLIDER ---
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
@@ -1829,7 +1864,7 @@ export function BgMusicPlayer() {
         onError={handleAudioError}
         onWaiting={handleAudioWaiting}
         onPlaying={handleAudioPlaying}
-        loop={repeatMode === "one"}
+        loop={repeatMode === "one" || Boolean(nativeProceduralTrackRef.current)}
         preload={isPlaying && shouldPreloadBgmAudio() ? "auto" : "none"}
       />
 

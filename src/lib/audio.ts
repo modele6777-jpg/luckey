@@ -632,16 +632,21 @@ function startTTSKeepAlive() { configureSpeechAudioSession(); }
 function stopTTSKeepAlive() { configureAmbientAudioSession(); }
 
 let speechSessionActive = false;
+let bgmPlaybackActive = false;
+
+export function setBgmPlaybackSessionActive(active: boolean): void {
+  bgmPlaybackActive = active;
+  configureAmbientAudioSession();
+}
+
 export function configureAmbientAudioSession(): void {
   if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
     try {
       const session = (navigator as any).audioSession;
-      // 🌟 외부 음악(멜론, 애플뮤직, 스포티파이 등) 절대 중단 방지:
-      // iOS 사파리 및 WebKit 오디오 세션을 항상 'ambient' 또는 'transient-solo'가 아닌
-      // 다른 앱의 오디오 재생을 가로채지 않고 함께 믹싱되는 모드로 고정합니다.
-      if (session.type !== 'ambient') {
-        session.type = 'ambient';
-      }
+      // Only explicitly playing in-app music requests background playback.
+      // Merely opening the app keeps the ambient session and other apps' music.
+      const type = bgmPlaybackActive ? 'playback' : 'ambient';
+      if (session.type !== type) session.type = type;
     } catch (_) { /* Older browsers may not support audioSession */ }
   }
 }

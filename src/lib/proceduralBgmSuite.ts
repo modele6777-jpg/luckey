@@ -18,6 +18,7 @@ export interface BgmTrack {
 }
 
 export interface ProceduralSynthUtils {
+  scheduleInterval?: (callback: () => void, intervalMs: number) => any;
   createAutoPanner: (speedHz: number, panDepth: number) => any;
   createDelay: (delayTime: number, feedback: number, wet: number) => any;
   createNoiseNode: (ctx: AudioContext, color: NoiseColor) => AudioBufferSourceNode;
@@ -136,7 +137,7 @@ export function getTrackNormalizationGain(trackUrl: string): number {
 
 export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
   // 1. 木(목)의 새싹: 봄의 태동과 생명력 (Wood Spring Awakening)
-  "flow-saju-wood": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-saju-wood": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.85, 0.45, 0.35);
     const panner = createAutoPanner(0.06, 0.6);
 
@@ -182,11 +183,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playWood();
-    synthIntervalRef.current = setInterval(playWood, 5500);
+    synthIntervalRef.current = scheduleInterval(playWood, 5500);
   },
 
   // 2. 火(화)의 불꽃: 영혼의 열정과 빛 (Fire Radiant Passion)
-  "flow-saju-fire": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-saju-fire": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.1, 0.52, 0.28);
     const panner = createAutoPanner(0.03, 0.5);
 
@@ -238,11 +239,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playFire();
-    synthIntervalRef.current = setInterval(playFire, 7200);
+    synthIntervalRef.current = scheduleInterval(playFire, 7200);
   },
 
   // 3. 土(토)의 대지: 만물을 품는 중심과 균형 (Earth Sacred Grounding)
-  "flow-saju-earth": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-saju-earth": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.4, 0.45, 0.25);
     const omFreq = 136.1; // Earth Year / Om fundamental
 
@@ -277,11 +278,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playEarth();
-    synthIntervalRef.current = setInterval(playEarth, 8500);
+    synthIntervalRef.current = scheduleInterval(playEarth, 8500);
   },
 
   // 4. 金(금)의 결실: 명료한 가을과 수렴의 미학 (Metal Crisp Harvest)
-  "flow-saju-metal": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-saju-metal": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.65, 0.55, 0.4);
     const panner = createAutoPanner(0.08, 0.7);
 
@@ -322,11 +323,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playMetalChime();
-    synthIntervalRef.current = setInterval(playMetalChime, 4800);
+    synthIntervalRef.current = scheduleInterval(playMetalChime, 4800);
   },
 
   // 5. 水(수)의 심연: 지혜와 흐름의 침묵 (Water Deep Wisdom)
-  "flow-saju-water": (ctx, masterGain, { createNoiseNode, createDelay, registerDynamicVoice, synthIntervalRef, activeNodesRef }) => {
+  "flow-saju-water": (ctx, masterGain, { scheduleInterval = setInterval, createNoiseNode, createDelay, registerDynamicVoice, synthIntervalRef, activeNodesRef }) => {
     const delay = createDelay(1.2, 0.48, 0.35);
 
     // Deep water wave flow using gentle brown noise
@@ -370,11 +371,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playWhaleMelody();
-    synthIntervalRef.current = setInterval(playWhaleMelody, 8000);
+    synthIntervalRef.current = scheduleInterval(playWhaleMelody, 8000);
   },
 
   // 6. 바보의 도약: 두려움 없는 순수한 시작 (The Fool's Leap of Faith)
-  "flow-tarot-fool": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-tarot-fool": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.7, 0.45, 0.35);
     const panner = createAutoPanner(0.07, 0.6);
     const scale = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25]; // C Pentatonic major
@@ -407,11 +408,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playFool();
-    synthIntervalRef.current = setInterval(playFool, 5000);
+    synthIntervalRef.current = scheduleInterval(playFool, 5000);
   },
 
   // 7. 여황제의 정원: 풍요와 창조의 온기 (The Empress Lush Garden)
-  "flow-tarot-empress": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-tarot-empress": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.0, 0.5, 0.3);
     const chords = [
       [174.61, 220.00, 261.63, 329.63], // Fmaj7
@@ -459,11 +460,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playEmpress();
-    synthIntervalRef.current = setInterval(playEmpress, 7500);
+    synthIntervalRef.current = scheduleInterval(playEmpress, 7500);
   },
 
   // 8. 은둔자의 등불: 어둠을 밝히는 내면의 성찰 (The Hermit Inner Lantern)
-  "flow-tarot-hermit": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-tarot-hermit": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.3, 0.48, 0.35);
     const panner = createAutoPanner(0.03, 0.5);
 
@@ -498,11 +499,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playHermit();
-    synthIntervalRef.current = setInterval(playHermit, 9500);
+    synthIntervalRef.current = scheduleInterval(playHermit, 9500);
   },
 
   // 9. 운명의 회전축: 영원한 순환과 우주적 타이밍 (Wheel of Destiny Rotation)
-  "flow-tarot-wheel": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-tarot-wheel": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.1, 0.5, 0.32);
     const panner = createAutoPanner(0.05, 0.6);
 
@@ -543,11 +544,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playWheel();
-    synthIntervalRef.current = setInterval(playWheel, 6800);
+    synthIntervalRef.current = scheduleInterval(playWheel, 6800);
   },
 
   // 10. 별빛의 인도: 어둠 속 꺼지지 않는 희망 (The Star Celestial Beacon)
-  "flow-tarot-star": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-tarot-star": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.75, 0.55, 0.42);
     const panner = createAutoPanner(0.07, 0.7);
     const lydianNotes = [523.25, 587.33, 659.25, 739.99, 783.99, 880.0, 1046.50]; // C Lydian twinkling
@@ -581,11 +582,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playStar();
-    synthIntervalRef.current = setInterval(playStar, 5200);
+    synthIntervalRef.current = scheduleInterval(playStar, 5200);
   },
 
   // 11. 찬란한 태양: 승리와 무한한 생명 축복 (The Sun Glorious Triumph)
-  "flow-tarot-sun": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-tarot-sun": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.9, 0.45, 0.28);
 
     const playSun = () => {
@@ -619,11 +620,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playSun();
-    synthIntervalRef.current = setInterval(playSun, 7000);
+    synthIntervalRef.current = scheduleInterval(playSun, 7000);
   },
 
   // 12. 396Hz 죄책감과 두려움의 완전 해방 (396Hz Liberation)
-  "flow-heal-396": (ctx, masterGain, { createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-heal-396": (ctx, masterGain, { scheduleInterval = setInterval, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const panner = createAutoPanner(0.04, 0.4);
 
     const play396 = () => {
@@ -655,11 +656,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     play396();
-    synthIntervalRef.current = setInterval(play396, 8500);
+    synthIntervalRef.current = scheduleInterval(play396, 8500);
   },
 
   // 13. 432Hz 자연과 우주의 수학적 평온 동조 (432Hz Cosmic Harmony)
-  "flow-heal-432": (ctx, masterGain, { createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-heal-432": (ctx, masterGain, { scheduleInterval = setInterval, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const panner = createAutoPanner(0.03, 0.5);
 
     const play432 = () => {
@@ -687,11 +688,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     play432();
-    synthIntervalRef.current = setInterval(play432, 9000);
+    synthIntervalRef.current = scheduleInterval(play432, 9000);
   },
 
   // 14. 528Hz 기적과 사랑의 DNA 변형 파동 (528Hz Miracle Awakening)
-  "flow-heal-528": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-heal-528": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.2, 0.5, 0.35);
 
     const play528 = () => {
@@ -724,11 +725,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     play528();
-    synthIntervalRef.current = setInterval(play528, 8500);
+    synthIntervalRef.current = scheduleInterval(play528, 8500);
   },
 
   // 15. 639Hz 가슴 차크라와 관계의 조화로운 치유 (639Hz Heart Chakra)
-  "flow-heal-639": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-heal-639": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.0, 0.48, 0.3);
 
     const play639 = () => {
@@ -760,11 +761,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     play639();
-    synthIntervalRef.current = setInterval(play639, 8200);
+    synthIntervalRef.current = scheduleInterval(play639, 8200);
   },
 
   // 16. 741Hz 직관과 영적 명료함의 각성 (741Hz Intuitive Clarity)
-  "flow-heal-741": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-heal-741": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.8, 0.52, 0.35);
 
     const play741 = () => {
@@ -797,11 +798,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     play741();
-    synthIntervalRef.current = setInterval(play741, 7500);
+    synthIntervalRef.current = scheduleInterval(play741, 7500);
   },
 
   // 17. 963Hz 순수 신성 의식과 우주적 합일 (963Hz Divine Crown Connection)
-  "flow-heal-963": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-heal-963": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.4, 0.55, 0.4);
     const panner = createAutoPanner(0.03, 0.6);
 
@@ -835,11 +836,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     play963();
-    synthIntervalRef.current = setInterval(play963, 9200);
+    synthIntervalRef.current = scheduleInterval(play963, 9200);
   },
 
   // 18. 에고의 무조건적 항복 (Surrender of Ego)
-  "flow-sedona-surrender": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-sedona-surrender": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.2, 0.45, 0.3);
 
     const playSurrender = () => {
@@ -874,11 +875,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playSurrender();
-    synthIntervalRef.current = setInterval(playSurrender, 8200);
+    synthIntervalRef.current = scheduleInterval(playSurrender, 8200);
   },
 
   // 19. 생각 사이의 고요 (Silent Gap of Awareness)
-  "flow-sedona-gap": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-sedona-gap": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.5, 0.52, 0.38);
     const panner = createAutoPanner(0.04, 0.5);
 
@@ -910,11 +911,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playGapChime();
-    synthIntervalRef.current = setInterval(playGapChime, 6200);
+    synthIntervalRef.current = scheduleInterval(playGapChime, 6200);
   },
 
   // 20. 528Hz 무저항 챔버 (Zero-Resistance Sanctuary)
-  "flow-sedona-chamber": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-sedona-chamber": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.2, 0.48, 0.32);
 
     const playChamber = () => {
@@ -948,11 +949,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playChamber();
-    synthIntervalRef.current = setInterval(playChamber, 8800);
+    synthIntervalRef.current = scheduleInterval(playChamber, 8800);
   },
 
   // 21. 명치와 가슴의 신체 감각 릴리즈 (Somatic Heart Dissolution)
-  "flow-sedona-heart": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-sedona-heart": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.95, 0.45, 0.28);
     const panner = createAutoPanner(0.04, 0.5);
 
@@ -982,11 +983,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playSomatic();
-    synthIntervalRef.current = setInterval(playSomatic, 7200);
+    synthIntervalRef.current = scheduleInterval(playSomatic, 7200);
   },
 
   // 22. 순수 참나의 영원한 침묵 (Pure Presence Beyond Words)
-  "flow-sedona-presence": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-sedona-presence": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.5, 0.5, 0.35);
 
     const playPresence = () => {
@@ -1019,11 +1020,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playPresence();
-    synthIntervalRef.current = setInterval(playPresence, 9800);
+    synthIntervalRef.current = scheduleInterval(playPresence, 9800);
   },
 
   // 23. 미안합니다 · 용서하세요 (Ho'oponopono Cleansing)
-  "flow-hooponopono-cleanse": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-hooponopono-cleanse": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.8, 0.48, 0.32);
     const panner = createAutoPanner(0.05, 0.5);
     const notes = [261.63, 329.63, 392.00, 440.00, 523.25]; // Gentle acoustic piano tones
@@ -1057,11 +1058,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playCleanse();
-    synthIntervalRef.current = setInterval(playCleanse, 5600);
+    synthIntervalRef.current = scheduleInterval(playCleanse, 5600);
   },
 
   // 24. 감사합니다 · 사랑합니다 (Ho'oponopono Pure Love)
-  "flow-hooponopono-love": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-hooponopono-love": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.0, 0.5, 0.3);
     const loveChord = [261.63, 329.63, 392.0, 528.0]; // C Major with 528Hz Miracle Love
 
@@ -1095,11 +1096,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playLove();
-    synthIntervalRef.current = setInterval(playLove, 7200);
+    synthIntervalRef.current = scheduleInterval(playLove, 7200);
   },
 
   // 25. 블루 솔라 워터 태양빛 정화 (Blue Solar Water Transmutation)
-  "flow-hooponopono-water": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-hooponopono-water": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.65, 0.55, 0.4);
     const panner = createAutoPanner(0.08, 0.7);
     const drops = [659.25, 783.99, 880.00, 1046.50, 1318.51];
@@ -1134,11 +1135,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playWaterDrop();
-    synthIntervalRef.current = setInterval(playWaterDrop, 4500);
+    synthIntervalRef.current = scheduleInterval(playWaterDrop, 4500);
   },
 
   // 26. 푸른 새의 평화와 성경 묵상 (Bluebird Sacred Peace)
-  "flow-bluebird-peace": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-bluebird-peace": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.2, 0.48, 0.35);
 
     const playPeace = () => {
@@ -1172,11 +1173,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playPeace();
-    synthIntervalRef.current = setInterval(playPeace, 7800);
+    synthIntervalRef.current = scheduleInterval(playPeace, 7800);
   },
 
   // 27. 황금빛 양자 도약 (Quantum Leap Manifestation)
-  "flow-quantum-leap": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-quantum-leap": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.7, 0.52, 0.35);
     const panner = createAutoPanner(0.06, 0.6);
     const arpeggio = [261.63, 329.63, 392.0, 523.25, 659.25, 783.99]; // Ascending spiral
@@ -1207,11 +1208,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playQuantum();
-    synthIntervalRef.current = setInterval(playQuantum, 6000);
+    synthIntervalRef.current = scheduleInterval(playQuantum, 6000);
   },
 
   // 28. 5차원 주파수 앵커링 (5D Vibrational Anchor)
-  "flow-quantum-anchor": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-quantum-anchor": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.2, 0.45, 0.3);
 
     const playAnchor = () => {
@@ -1241,11 +1242,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playAnchor();
-    synthIntervalRef.current = setInterval(playAnchor, 8500);
+    synthIntervalRef.current = scheduleInterval(playAnchor, 8500);
   },
 
   // 29. 달빛 아래 예술가의 캔버스 (Moonlit Muse Canvas)
-  "flow-muse-canvas": (ctx, masterGain, { createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-muse-canvas": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(0.9, 0.5, 0.35);
     const panner = createAutoPanner(0.04, 0.5);
     const impressionistChords = [
@@ -1283,11 +1284,11 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playCanvas();
-    synthIntervalRef.current = setInterval(playCanvas, 7000);
+    synthIntervalRef.current = scheduleInterval(playCanvas, 7000);
   },
 
   // 30. 영원한 안식의 요람 (Cradle of Eternal Serenity)
-  "flow-muse-cradle": (ctx, masterGain, { createDelay, registerDynamicVoice, synthIntervalRef }) => {
+  "flow-muse-cradle": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.4, 0.48, 0.32);
 
     const playCradle = () => {
@@ -1321,6 +1322,6 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     };
 
     playCradle();
-    synthIntervalRef.current = setInterval(playCradle, 8800);
+    synthIntervalRef.current = scheduleInterval(playCradle, 8800);
   },
 };
