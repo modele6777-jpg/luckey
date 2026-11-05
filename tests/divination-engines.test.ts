@@ -78,6 +78,9 @@ import { calculateMayanTzolkinSacredCalendar, formatMayanTzolkinSacredCalendarPr
 import { calculateNordicElderFutharkRunes, formatNordicElderFutharkRunesPrompt, NORDIC_RUNES_VERSION } from '../src/lib/divination/nordicElderFutharkRunesEngine';
 import { calculateDelphicMaximsOracle, formatDelphicMaximsOraclePrompt, DELPHIC_MAXIMS_VERSION } from '../src/lib/divination/delphicMaximsOracleEngine';
 import { calculateAyurvedicTridoshaPrana, formatAyurvedicTridoshaPranaPrompt, AYURVEDIC_TRIDOSHA_VERSION } from '../src/lib/divination/ayurvedicTridoshaPranaEngine';
+import { calculateHawaiianHunaHooponopono, formatHawaiianHunaHooponoponoPrompt, HAWAIIAN_HUNA_VERSION } from '../src/lib/divination/hawaiianHunaHooponoponoEngine';
+import { calculateFengShuiEightMansions, formatFengShuiEightMansionsPrompt, FENG_SHUI_EIGHT_MANSIONS_VERSION } from '../src/lib/divination/fengShuiEightMansionsEngine';
+import { calculateZoroastrianAshaTruth, formatZoroastrianAshaTruthPrompt, ZOROASTRIAN_ASHA_VERSION } from '../src/lib/divination/zoroastrianAshaTruthEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2637,12 +2640,49 @@ test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle
   assert(prompt.includes(rep.prakritiConstitution.dominantDosha));
 });
 
-test('DCE Engine Registry & Fired Badges: dynamically expands and covers all 83 engines', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 83);
+test('Hawaiian Huna & Ho\'oponopono Engine: calculates active principle, three selves balance and cleansing mantra', () => {
+  const rep = calculateHawaiianHunaHooponopono({ profile });
+  assert.equal(rep.engineVersion, HAWAIIAN_HUNA_VERSION);
+  assert(rep.activePrinciple.hawaiianName.length > 0);
+  assert(rep.activePrinciple.resonanceScore >= 0 && rep.activePrinciple.resonanceScore <= 100);
+  assert(rep.threeSelves.unihipiliScore >= 0 && rep.threeSelves.uhaneScore >= 0 && rep.threeSelves.aumakuaScore >= 0);
+  assert(rep.hooponopono.cleansingFocusTheme.length > 0);
+  const prompt = formatHawaiianHunaHooponoponoPrompt(rep);
+  assert(prompt.includes('고대 하와이 호오포노포노 & 후나 7대 원리'));
+  assert(prompt.includes(rep.activePrinciple.hawaiianName));
+});
+
+test('Feng Shui Eight Mansions Engine: calculates kua number, east/west mansion and spatial directions', () => {
+  const rep = calculateFengShuiEightMansions({ profile });
+  assert.equal(rep.engineVersion, FENG_SHUI_EIGHT_MANSIONS_VERSION);
+  assert(rep.kuaNumber >= 1 && rep.kuaNumber <= 9);
+  assert(rep.auspiciousDirections.shengChi.length > 0);
+  assert(rep.inauspiciousDirections.chuehMing.length > 0);
+  assert(rep.prescription.deskFacingDirection.length > 0);
+  const prompt = formatFengShuiEightMansionsPrompt(rep);
+  assert(prompt.includes('동양 정통 풍수 8택(八宅) 공간 에너지'));
+  assert(prompt.includes(rep.kuaTrigram));
+});
+
+test('Zoroastrian Asha Truth Engine: calculates threefold path, sacred atar fire and ethical discernment', () => {
+  const rep = calculateZoroastrianAshaTruth({ profile });
+  assert.equal(rep.engineVersion, ZOROASTRIAN_ASHA_VERSION);
+  assert(rep.ashaAlignmentScore >= 0 && rep.ashaAlignmentScore <= 100);
+  assert(rep.threefoldPillars.humataScore >= 0 && rep.threefoldPillars.hukhtaScore >= 0 && rep.threefoldPillars.hvarshtaScore >= 0);
+  assert(rep.sacredAtar.firePurityScore >= 0 && rep.sacredAtar.firePurityScore <= 100);
+  assert(rep.discernment.truthAshaPath.length > 0);
+  const prompt = formatZoroastrianAshaTruthPrompt(rep);
+  assert(prompt.includes('고대 조로아스터교 아샤(Asha) 신성 우주 질서'));
+  assert(prompt.includes(rep.discernment.currentTrialTheme));
+});
+
+test('DCE Engine Registry & Fired Badges: dynamically expands and covers all 86 engines', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 86);
   const rep = runDeterministicEngine({ profile });
   const allBadges = getFiredEngineBadges(rep, { isMasterMobilization: true });
-  assert.equal(allBadges.length, 83);
+  assert.equal(allBadges.length, 86);
   const selectiveBadges = getFiredEngineBadges(rep, { isMasterMobilization: false, intent: 'vitality_wellness' });
   assert(selectiveBadges.length >= 5);
-  assert(selectiveBadges.includes('인도 아유르베다 도샤'));
+  assert(selectiveBadges.includes('호오포노포노 7원리'));
+  assert(selectiveBadges.includes('풍수 8택 방위에너지'));
 });
