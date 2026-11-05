@@ -44,3 +44,10 @@ test('only explicit reading requests trigger a draw, not meaning questions or ac
   assert.equal(isLucyTarotDrawRequest('타로 카드는 무엇이야?'), false);
   assert.equal(isLucyTarotDrawRequest('내 앱이 호리보다 얼마나 정확하고 완성적인지'), false);
 });
+
+test('validates bilingual card headings and checks beyond the first three mentions', () => {
+  const reading = '검 에이스 (Ace of Swords) / 역방향 카드야.';
+  assert.equal(verifyLucyTarotReply(reading, draw), reading);
+  const three = { ...draw, markers: '[TAROT:major_0:upright] [TAROT:cups_2:upright] [TAROT:swords_1:reversed]' };
+  assert.equal(verifyLucyTarotReply('타로 카드: 광대 정방향, 컵 2 정방향, 검 에이스 역방향, 황제 정방향.', three), UNVERIFIED_TAROT_REPLY);
+});

@@ -15,7 +15,7 @@ export const UNVERIFIED_TAROT_REPLY = '이번 응답에는 앱의 실제 추첨 
 /** Fail closed before any generated text reaches the UI, speech, or persistence. */
 export function verifyLucyTarotReply(text: string, draw?: LucyTarotDraw, userText = ''): string {
   const plain = stripTarotMarkers(text);
-  const mentioned = detectTarotCardsFromText(plain);
+  const mentioned = detectTarotCardsFromText(plain, 78);
   const modelMarkers = detectTarotCardsFromText((text.match(/\[TAROT:[^\]]+\]/gi) || []).join(' '));
   const claimsDraw = /(?:뽑(?:았|아봤|혔|힌|은|아놓)|추첨(?:했|된|한|해봤)|나온\s*카드|카드.{0,30}(?:나왔|나타났|펼쳤|선택했)|(?:drew|drawn)\b)/i.test(plain);
   if (!draw) {

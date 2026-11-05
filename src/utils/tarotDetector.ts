@@ -72,7 +72,7 @@ const ALIASES: Record<string, string> = {
 /**
  * 텍스트에서 명시적 [TAROT:card_id:orientation] 태그 또는 타로 카드 언급을 감지합니다.
  */
-export function detectTarotCardsFromText(text: string): DetectedTarotCard[] {
+export function detectTarotCardsFromText(text: string, maxCards = 3): DetectedTarotCard[] {
   if (!text || typeof text !== 'string') return [];
   const results: DetectedTarotCard[] = [];
   const seenIds = new Set<string>();
@@ -127,10 +127,11 @@ export function detectTarotCardsFromText(text: string): DetectedTarotCard[] {
         const index = found.index + found[1].length;
         const after = normalized.slice(index + found[2].length, index + found[2].length + 35);
         const before = normalized.slice(Math.max(0, index - 15), index);
+        const orientationAfter = after.match(/^(?:\s*\([A-Za-z][^)]{0,60}\))?[\s()（）:'"‘’“”\-–—/·,]*(정방향|역방향|upright|reversed)/i);
         // Avoid everyday uses of single-character names such as 힘, 별 and 달.
-        if (name.length === 1 && !/^\s*[)'”"’:\-–—]*\s*(?:카드|[（(]?\s*(?:정방향|역방향|upright|reversed))/i.test(after)
+        if (name.length === 1 && !orientationAfter && !/^\s*[)'”"’:\-–—]*\s*(?:카드|[（(]?\s*(?:정방향|역방향|upright|reversed))/i.test(after)
           && !/(?:뽑은|뽑힌|나온|선택한)\s*['"‘“]?\s*$/.test(before)) continue;
-        const orientation = after.match(/^[\s()（）:'"‘’“”\-–—]*(정방향|역방향|upright|reversed)/i)
+        const orientation = orientationAfter
           || before.match(/(정방향|역방향|upright|reversed)[\s()（）:'"‘’“”\-–—]*$/i);
         candidates.push({ card, index, reversed: /역방향|reversed/i.test(orientation?.[1] || '') });
       }
@@ -140,7 +141,7 @@ export function detectTarotCardsFromText(text: string): DetectedTarotCard[] {
       if (seenIds.has(card.id)) continue;
       seenIds.add(card.id);
       results.push({ ...card, reversed, orientationKo: reversed ? '역방향' : '정방향', imageUrl: getTarotCardImageUrl(card), displayTitle: `${card.nameKo} (${card.name})` });
-      if (results.length >= 3) break;
+      if (results.length >= maxCards) break;
     }
   }
 
