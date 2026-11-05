@@ -97,37 +97,50 @@ export function detectTarotCardsFromText(text: string): DetectedTarotCard[] {
     }
   }
 
-  // 2. 만약 명시적 마커가 없거나 부족한 경우, 타로 맥락이 담긴 텍스트에서 카드명 자연어 탐지
-  const isTarotContext = /타로|스프레드|아르카나|카드|리딩|뽑[힌은은았]/i.test(text);
+  // Older replies and model-initiated draws may have no explicit marker.
+  // Match all 78 Korean/English names, including Markdown headings and bold text.
+  const normalized = text.replace(/[*_`#]/g, '').replace(/\s+/g, ' ');
+  const isTarotContext = /타로|스프레드|아르카나|카드|리딩|정방향|역방향|tarot|upright|reversed/i.test(normalized);
   if (isTarotContext && results.length === 0) {
-    // 메이저 아르카나 및 별칭 검사
-    for (const [alias, id] of Object.entries(ALIASES)) {
-      if (seenIds.has(id)) continue;
-      // 단어 경계 검사: "힘"이나 "달", "별", "탑" 같은 한 글자 단어는 "카드", "뽑", "나온" 주변 맥락이 있을 때만 인정
-      const isShortWord = alias.length <= 1;
-      const pattern = isShortWord
-        ? new RegExp(`(?:타로|카드|뽑[은힌]|나온|당신의)\\s*['"\\s]*${alias}['"\\s]*(?:카드|\\(|\\s|$)`, 'i')
-        : new RegExp(`['"\\s\\[]${alias}['"\\s\\]]|${alias}\\s*카드|${alias}\\s*\\(`, 'i');
-
-      if (pattern.test(text)) {
-        const card = TAROT_BY_ID.get(id);
-        if (card) {
-          // 해당 카드 언급 주변 40자 이내에 '역방향' 키워드가 있는지 검사
-          const aliasIndex = text.indexOf(alias);
-          const surrounding = aliasIndex >= 0 ? text.slice(Math.max(0, aliasIndex - 25), aliasIndex + alias.length + 25) : '';
-          const isReversed = /역방향|뒤집|거꾸로|reversed/i.test(surrounding);
-
-          seenIds.add(card.id);
-          results.push({
-            ...card,
-            reversed: isReversed,
-            orientationKo: isReversed ? '역방향' : '정방향',
-            imageUrl: getTarotCardImageUrl(card),
-            displayTitle: `${card.nameKo} (${card.name})`,
-          });
-          if (results.length >= 3) break;
-        }
+    const candidates: { card: TarotCard; index: number; reversed: boolean }[] = [];
+    const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const names = new Map<string, TarotCard>();
+    for (const card of TAROT_DECK) {
+      names.set(card.nameKo, card);
+      names.set(card.name, card);
+      if (card.type === 'pentacles') {
+        names.set(card.nameKo.replace('펜타클', '동전'), card);
+        names.set(card.nameKo.replace('펜타클', '펜타클스'), card);
       }
+      if (card.type === 'wands') names.set(card.nameKo.replace('지팡이', '완드'), card);
+      if (card.type === 'swords') names.set(card.nameKo.replace('검', '소드'), card);
+    }
+    for (const [name, id] of Object.entries(ALIASES)) {
+      const card = TAROT_BY_ID.get(id);
+      if (card) names.set(name, card);
+    }
+    for (const [name, card] of names) {
+      const flexibleName = escapeRegex(name).replace(/\s+/g, '\\s*');
+      const pattern = new RegExp(`(^|[^가-힣a-zA-Z0-9])(${flexibleName})(?=$|[^가-힣a-zA-Z0-9]|카드|정방향|역방향)`, 'gi');
+      let found: RegExpExecArray | null;
+      while ((found = pattern.exec(normalized)) !== null) {
+        const index = found.index + found[1].length;
+        const after = normalized.slice(index + found[2].length, index + found[2].length + 35);
+        const before = normalized.slice(Math.max(0, index - 15), index);
+        // Avoid everyday uses of single-character names such as 힘, 별 and 달.
+        if (name.length === 1 && !/^\s*[)'”"’:\-–—]*\s*(?:카드|[（(]?\s*(?:정방향|역방향|upright|reversed))/i.test(after)
+          && !/(?:뽑은|뽑힌|나온|선택한)\s*['"‘“]?\s*$/.test(before)) continue;
+        const orientation = after.match(/^[\s()（）:'"‘’“”\-–—]*(정방향|역방향|upright|reversed)/i)
+          || before.match(/(정방향|역방향|upright|reversed)[\s()（）:'"‘’“”\-–—]*$/i);
+        candidates.push({ card, index, reversed: /역방향|reversed/i.test(orientation?.[1] || '') });
+      }
+    }
+    candidates.sort((left, right) => left.index - right.index);
+    for (const { card, reversed } of candidates) {
+      if (seenIds.has(card.id)) continue;
+      seenIds.add(card.id);
+      results.push({ ...card, reversed, orientationKo: reversed ? '역방향' : '정방향', imageUrl: getTarotCardImageUrl(card), displayTitle: `${card.nameKo} (${card.name})` });
+      if (results.length >= 3) break;
     }
   }
 
