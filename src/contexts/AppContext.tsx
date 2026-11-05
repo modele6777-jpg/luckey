@@ -1,3 +1,4 @@
+import { LUCY_TAROT_RESPONSE_PROFILE } from '../lib/lucyTarotReading';
 import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, buildLucyLongTermPrompt } from '../lib/lucyLongTermMemory';
 import { buildLucyEpisodicMemoryPrompt } from '../lib/lucyEpisodicMemoryEngine';
 import { buildLucySharedBackground } from '../lib/lucySharedBackground';
@@ -1916,7 +1917,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       mode: options?.mode,
       channels: options?.channels,
     });
-    const responseProfile = LUCY_RESPONSE_PROFILES[responseLength];
+    const responseProfile = options?.tarotCardMarkers
+      ? LUCY_TAROT_RESPONSE_PROFILE
+      : LUCY_RESPONSE_PROFILES[responseLength];
 
     // 직전 루시 답변 이후 사용자가 연속으로 입력한 모든 메시지 추출 (연속 대화 통합 이해)
     let lastCompletedModelIdx = -1;
@@ -1953,7 +1956,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = isLucyPlus || options?.mode === 'master' || activeThemeList.length === 7;
     const isCasualMode =
-      !isMasterCall && (
+      !options?.tarotCardMarkers && !isMasterCall && (
         options?.mode === 'casual' ||
         (!options?.mode && responseLength === 'short' && activeThemeList.length === 0)
       );
@@ -2496,7 +2499,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${responseProfile.rule}${options?.tarotCardMarkers && options.extraSystemContext ? '\n' + options.extraSystemContext : ''}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),

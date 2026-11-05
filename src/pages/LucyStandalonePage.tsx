@@ -54,6 +54,7 @@ import {
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
+import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
@@ -2321,8 +2322,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       const drawnCards = drawLucyTarotCards(isThreeCards ? 3 : 1);
       const cardMarkers = drawnCards.map((c) => formatTarotMarker(c)).join(' ');
       tarotCardMarkers = cardMarkers;
-      const cardDescriptions = drawnCards.map((c, i) => `- [${i + 1}번 카드] ${c.nameKo} (${c.name}, ${c.orientationKo}) — 키워드: ${c.keywords.join(', ')}`).join('\n');
-      const tarotInstruction = `[🔮 운명의 타로 카드 드로우 결과 (실제 뽑힌 카드)]\n${cardMarkers}\n${cardDescriptions}\n- [루시 타로 리딩 절대 지침]:\n  1. 위에서 실제로 뽑힌 타로 카드의 상징과 의미를 질문자의 고민과 연결하여 현실적이고 깊이 있게 풀이해줘.\n  2. 답변 첫머리나 카드를 소개하는 문장에 ${cardMarkers} 태그를 그대로 포함해줘. 시스템이 이 태그를 인식해 실제 고화질 타로 카드 이미지를 대화창에 띄워줍니다.`;
+      const tarotInstruction = buildLucyTarotReadingPrompt(drawnCards, userCleanText);
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${tarotInstruction}` : tarotInstruction;
     }
     const usedToolNames =
