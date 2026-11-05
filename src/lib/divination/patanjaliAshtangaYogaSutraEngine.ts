@@ -138,15 +138,18 @@ export function calculatePatanjaliAshtangaYoga(
   const contextText = options?.question || options?.contextText || '';
   const now = options?.now || options?.targetDate || new Date();
 
+  const bdate = profile?.basic?.birthdate || (profile as unknown as { birthdate?: string; birthDate?: string })?.birthdate || (profile as unknown as { birthDate?: string })?.birthDate || '';
+  const btime = profile?.basic?.birthtime || (profile as unknown as { birthtime?: string; birthTime?: string })?.birthtime || (profile as unknown as { birthTime?: string })?.birthTime || '';
+
   let seed = 83;
-  if (profile?.birthdate) {
-    const digits = profile.birthdate.replace(/\D/g, '');
+  if (bdate) {
+    const digits = bdate.replace(/\D/g, '');
     for (let i = 0; i < digits.length; i++) {
       seed = (seed * 37 + Number(digits[i])) % 10007;
     }
   }
-  if (profile?.birthtime) {
-    const tDigits = profile.birthtime.replace(/\D/g, '');
+  if (btime) {
+    const tDigits = btime.replace(/\D/g, '');
     for (let i = 0; i < tDigits.length; i++) {
       seed = (seed * 23 + Number(tDigits[i])) % 10007;
     }
