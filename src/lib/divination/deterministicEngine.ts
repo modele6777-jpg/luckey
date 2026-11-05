@@ -127,6 +127,9 @@ import { calculatePersianAmeshaSpenta, formatPersianAmeshaSpentaPrompt, type Per
 import { calculateSumerianFiftyMes, formatSumerianFiftyMesPrompt, type SumerianMeReport, SUMERIAN_FIFTY_MES_VERSION } from './sumerianFiftyMesEngine';
 import { calculateZhongLuInnerAlchemy, formatZhongLuInnerAlchemyPrompt, type ZhongLuAlchemyReport, ZHONG_LU_INNER_ALCHEMY_VERSION } from './zhongLuInnerAlchemyEngine';
 import { calculateDruidMoonTrees, formatDruidMoonTreesPrompt, type DruidMoonTreesReport, DRUID_MOON_TREES_VERSION } from './druidThirteenMoonTreesEngine';
+import { calculateTiebanShenshu, formatTiebanShenshuPrompt, type TiebanReport, TIEBAN_SHENSHU_VERSION } from './tiebanShenshuEngine';
+import { calculateTibetanBonNineWays, formatTibetanBonNineWaysPrompt, type TibetanBonReport, TIBETAN_BON_NINE_WAYS_VERSION } from './tibetanBonNineWaysEngine';
+import { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt, type EleusinianReport, ELEUSINIAN_MYSTERIES_VERSION } from './eleusinianMysteriesEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -274,6 +277,9 @@ export interface DeterministicEngineReport {
   sumerianFiftyMesResult?: SumerianMeReport | null;
   zhongLuAlchemyResult?: ZhongLuAlchemyReport | null;
   druidMoonTreesResult?: DruidMoonTreesReport | null;
+  tiebanShenshuResult?: TiebanReport | null;
+  tibetanBonResult?: TibetanBonReport | null;
+  eleusinianMysteriesResult?: EleusinianReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1683,6 +1689,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 99. 고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진
+  const tiebanShenshuResult = (() => {
+    try {
+      return calculateTiebanShenshu(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 100. 티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진
+  const tibetanBonResult = (() => {
+    try {
+      return calculateTibetanBonNineWays(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 101. 고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진
+  const eleusinianMysteriesResult = (() => {
+    try {
+      return calculateEleusinianMysteries(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1816,6 +1849,9 @@ export function runDeterministicEngine(params: {
     sumerianFiftyMesResult,
     zhongLuAlchemyResult,
     druidMoonTreesResult,
+    tiebanShenshuResult,
+    tibetanBonResult,
+    eleusinianMysteriesResult,
     tools: toolsMap,
   };
 }
@@ -1942,6 +1978,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master' },
   { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
   { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master' },
+  { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
+  { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master' },
+  { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -1975,6 +2014,7 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'tiebanShenshu',
     'sumerianFiftyMes',
     'babylonianEnumaElish',
     'pythagoreanTetraktys',
@@ -2017,6 +2057,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'tiebanShenshu',
     'druidMoonTrees',
     'persianAmeshaSpenta',
     'esseneCommunion',
@@ -2085,6 +2126,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'tibetanBonNineWays',
     'zhongLuAlchemy',
     'druidMoonTrees',
     'taoistHuangtingJing',
@@ -2109,6 +2151,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'eleusinianMysteries',
     'druidMoonTrees',
     'persianAmeshaSpenta',
     'pythagoreanTetraktys',
@@ -2126,6 +2169,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'tiebanShenshu',
+    'tibetanBonNineWays',
+    'eleusinianMysteries',
     'sumerianFiftyMes',
     'zhongLuAlchemy',
     'druidMoonTrees',
@@ -2325,5 +2371,8 @@ ${report.taoistHuangtingJingResult && shouldIncludeEngine('taoistHuangtingJing',
 ${report.persianAmeshaSpentaResult && shouldIncludeEngine('persianAmeshaSpenta', options) ? '\n' + formatPersianAmeshaSpentaPrompt(report.persianAmeshaSpentaResult) : ''}
 ${report.sumerianFiftyMesResult && shouldIncludeEngine('sumerianFiftyMes', options) ? '\n' + formatSumerianFiftyMesPrompt(report.sumerianFiftyMesResult) : ''}
 ${report.zhongLuAlchemyResult && shouldIncludeEngine('zhongLuAlchemy', options) ? '\n' + formatZhongLuInnerAlchemyPrompt(report.zhongLuAlchemyResult) : ''}
-${report.druidMoonTreesResult && shouldIncludeEngine('druidMoonTrees', options) ? '\n' + formatDruidMoonTreesPrompt(report.druidMoonTreesResult) : ''}`;
+${report.druidMoonTreesResult && shouldIncludeEngine('druidMoonTrees', options) ? '\n' + formatDruidMoonTreesPrompt(report.druidMoonTreesResult) : ''}
+${report.tiebanShenshuResult && shouldIncludeEngine('tiebanShenshu', options) ? '\n' + formatTiebanShenshuPrompt(report.tiebanShenshuResult) : ''}
+${report.tibetanBonResult && shouldIncludeEngine('tibetanBonNineWays', options) ? '\n' + formatTibetanBonNineWaysPrompt(report.tibetanBonResult) : ''}
+${report.eleusinianMysteriesResult && shouldIncludeEngine('eleusinianMysteries', options) ? '\n' + formatEleusinianMysteriesPrompt(report.eleusinianMysteriesResult) : ''}`;
 }
