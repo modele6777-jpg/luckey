@@ -178,6 +178,9 @@ import { calculateKabbalisticZoharSoul, formatKabbalisticZoharSoulPrompt, type K
 import { calculateRomanStoicProhairesis, formatRomanStoicProhairesisPrompt, type RomanStoicProhairesisReport, ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION } from './romanStoicProhairesisDichotomyEngine';
 import { calculatePatanjaliAshtangaYoga, formatPatanjaliAshtangaYogaPrompt, type PatanjaliAshtangaYogaReport, PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION } from './patanjaliAshtangaYogaSutraEngine';
 import { calculateKoreanPungryudoHwarang, formatKoreanPungryudoHwarangPrompt, type KoreanPungryudoHwarangReport, KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION } from './koreanPungryudoHwarangFivePreceptsEngine';
+import { calculatePersianAttarSevenValleys, formatPersianAttarSevenValleysPrompt, type PersianAttarSevenValleysReport, ATTAR_SEVEN_VALLEYS_ENGINE_VERSION } from './persianAttarSevenValleysEngine';
+import { calculateHermeticPoimandres, formatHermeticPoimandresPrompt, type HermeticPoimandresAscensionReport, HERMETIC_POIMANDRES_ENGINE_VERSION } from './hermeticPoimandresAscensionEngine';
+import { calculateKashmirShaivismSpanda, formatKashmirShaivismSpandaPrompt, type KashmirShaivismSpandaReport, KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION } from './kashmirShaivismSpandaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -376,6 +379,9 @@ export interface DeterministicEngineReport {
   romanStoicProhairesisResult?: RomanStoicProhairesisReport | null;
   patanjaliAshtangaYogaResult?: PatanjaliAshtangaYogaReport | null;
   koreanPungryudoHwarangResult?: KoreanPungryudoHwarangReport | null;
+  persianAttarSevenValleysResult?: PersianAttarSevenValleysReport | null;
+  hermeticPoimandresResult?: HermeticPoimandresAscensionReport | null;
+  kashmirShaivismSpandaResult?: KashmirShaivismSpandaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2244,6 +2250,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 150. 페르시아 수피즘 아타르 7대 계곡 & 시무르그 신성 자아 엔진
+  const persianAttarSevenValleysResult = (() => {
+    try {
+      return calculatePersianAttarSevenValleys({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 151. 고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 누스 각성 엔진
+  const hermeticPoimandresResult = (() => {
+    try {
+      return calculateHermeticPoimandres({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 152. 카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 본성 재인식 엔진
+  const kashmirShaivismSpandaResult = (() => {
+    try {
+      return calculateKashmirShaivismSpanda({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2428,6 +2461,9 @@ export function runDeterministicEngine(params: {
     romanStoicProhairesisResult,
     patanjaliAshtangaYogaResult,
     koreanPungryudoHwarangResult,
+    persianAttarSevenValleysResult,
+    hermeticPoimandresResult,
+    kashmirShaivismSpandaResult,
     tools: toolsMap,
   };
 }
@@ -2605,6 +2641,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master' },
   { key: 'patanjaliAshtangaYoga', nameKo: '파탄잘리 요가 8지칙', icon: '🧘', category: 'deep_master' },
   { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master' },
+  { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master' },
+  { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master' },
+  { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2803,6 +2842,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'persianAttarSevenValleys',
+    'hermeticPoimandres',
+    'kashmirShaivismSpanda',
     'koreanPungryudoHwarang',
     'buddhistYogacaraConsciousness',
     'vedicMandukyaTuriya',
@@ -2827,6 +2869,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'persianAttarSevenValleys',
+    'hermeticPoimandres',
+    'kashmirShaivismSpanda',
     'romanStoicProhairesis',
     'patanjaliAshtangaYoga',
     'koreanPungryudoHwarang',
@@ -3119,5 +3164,8 @@ ${report.vedicMandukyaTuriyaResult && shouldIncludeEngine('vedicMandukyaTuriya',
 ${report.kabbalisticZoharSoulResult && shouldIncludeEngine('kabbalisticZoharSoul', options) ? '\n' + formatKabbalisticZoharSoulPrompt(report.kabbalisticZoharSoulResult) : ''}
 ${report.romanStoicProhairesisResult && shouldIncludeEngine('romanStoicProhairesis', options) ? '\n' + formatRomanStoicProhairesisPrompt(report.romanStoicProhairesisResult) : ''}
 ${report.patanjaliAshtangaYogaResult && shouldIncludeEngine('patanjaliAshtangaYoga', options) ? '\n' + formatPatanjaliAshtangaYogaPrompt(report.patanjaliAshtangaYogaResult) : ''}
-${report.koreanPungryudoHwarangResult && shouldIncludeEngine('koreanPungryudoHwarang', options) ? '\n' + formatKoreanPungryudoHwarangPrompt(report.koreanPungryudoHwarangResult) : ''}`;
+${report.koreanPungryudoHwarangResult && shouldIncludeEngine('koreanPungryudoHwarang', options) ? '\n' + formatKoreanPungryudoHwarangPrompt(report.koreanPungryudoHwarangResult) : ''}
+${report.persianAttarSevenValleysResult && shouldIncludeEngine('persianAttarSevenValleys', options) ? '\n' + formatPersianAttarSevenValleysPrompt(report.persianAttarSevenValleysResult) : ''}
+${report.hermeticPoimandresResult && shouldIncludeEngine('hermeticPoimandres', options) ? '\n' + formatHermeticPoimandresPrompt(report.hermeticPoimandresResult) : ''}
+${report.kashmirShaivismSpandaResult && shouldIncludeEngine('kashmirShaivismSpanda', options) ? '\n' + formatKashmirShaivismSpandaPrompt(report.kashmirShaivismSpandaResult) : ''}`;
 }
