@@ -33,6 +33,7 @@ import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendat
 import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
+import { useSmartScroll } from '@/hooks/useSmartScroll';
 import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
 import type { UserProfile } from '@/lib/sharedState';
@@ -1031,6 +1032,14 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
 
+  // 🎯 TTS 낭독 중인 하이라이트 문장 화면 수직 중앙(50%) 자동 정렬 스마트 스크롤
+  useSmartScroll({
+    containerRef: messagesContainerRef,
+    enabled: Boolean(ttsInfo.isSpeaking),
+    centerOffset: 0,
+    resumeDelayMs: 3000,
+  });
+
   // Dedicated Lucy entrance aura loader
   const [isLucyReady, setIsLucyReady] = useState(false);
   useEffect(() => {
@@ -2018,7 +2027,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const scrollToBottom = useCallback((force = false, smooth = true) => {
     if (!messagesContainerRef.current) return;
-    if (!force && isUserScrolledUpRef.current) return;
+    if (!force && (isUserScrolledUpRef.current || ttsInfo.isSpeaking)) return;
 
     isAutoScrollingRef.current = true;
     if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
@@ -2031,7 +2040,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       top: container.scrollHeight,
       behavior: smooth ? 'smooth' : 'auto',
     });
-  }, []);
+  }, [ttsInfo.isSpeaking]);
 
   // Continuous height & image layout observer for smooth uncropped scrolling
   useEffect(() => {
@@ -2047,7 +2056,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
-        if (!isUserScrolledUpRef.current) {
+        if (!isUserScrolledUpRef.current && !ttsInfo.isSpeaking) {
           scrollToBottom(false, false);
         }
       });
@@ -2056,7 +2065,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     resizeObserver.observe(messagesWrapperRef.current);
 
     const handleContentResized = () => {
-      if (!isUserScrolledUpRef.current) {
+      if (!isUserScrolledUpRef.current && !ttsInfo.isSpeaking) {
         scrollToBottom(false, false);
       }
     };
@@ -2068,13 +2077,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
       window.removeEventListener('lucy-chat-content-resized', handleContentResized);
     };
-  }, [scrollToBottom]);
+  }, [scrollToBottom, ttsInfo.isSpeaking]);
 
   useEffect(() => {
-    if (!isUserScrolledUpRef.current) {
+    if (!isUserScrolledUpRef.current && !ttsInfo.isSpeaking) {
       scrollToBottom(false, false);
     }
-  }, [lucyMessages, isLucyGenerating, scrollToBottom]);
+  }, [lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, scrollToBottom]);
 
   // 🚀 최상단 스크롤 이벤트 수신 시 루시 대화창 최상단으로 부드럽게 스크롤
   useEffect(() => {
