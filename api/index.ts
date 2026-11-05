@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import firebaseConfig from "../firebase-applet-config.json";
+import { readFileSync } from "node:fs";
 
 const app = express();
 
@@ -312,6 +312,7 @@ app.post("/api/ai/recommend-art", async (req, res) => {
 async function canAccessServerVault(authorization: string | undefined, uid: string): Promise<boolean> {
   const token = authorization?.match(/^Bearer (\S+)$/i)?.[1];
   if (!token) return false;
+  const firebaseConfig = JSON.parse(readFileSync(new URL("../firebase-applet-config.json", import.meta.url), "utf8"));
   const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseConfig.apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -348,10 +349,10 @@ app.get("/api/sync/vault/pull/:uid", async (req, res) => {
   res.set("Cache-Control", "private, no-store");
   try {
     const { uid } = req.params;
+    const { getVaultData } = await import("../server/api-lib/syncRelay.ts");
     if (!(await canAccessServerVault(req.get("Authorization"), uid))) {
       return res.status(401).json({ error: "Vault authentication required" });
     }
-    const { getVaultData } = await import("../server/api-lib/syncRelay.ts");
     const result = getVaultData(uid);
     return res.status(200).json(result);
   } catch (e: any) {
