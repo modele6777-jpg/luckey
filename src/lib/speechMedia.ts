@@ -1,3 +1,5 @@
+import { notifyAudioDeviceChanged } from './audioDeviceChangeMonitor';
+
 // Use the browser's media pipeline so speech can continue while the page is hidden.
 let player: HTMLAudioElement | null = null;
 let objectUrl: string | null = null;
@@ -55,11 +57,25 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
   return new Promise<void>((resolve, reject) => {
     let settled = false;
     const playing = () => onPlaying?.();
-    const cleanup = () => { audio.removeEventListener('playing', playing); audio.removeEventListener('ended', ended); audio.removeEventListener('error', failed); if (finish === ended) finish = null; };
+    const onHardwarePause = () => {
+      if (active && !paused) {
+        notifyAudioDeviceChanged('hardware_pause');
+      }
+    };
+    const cleanup = () => {
+      audio.removeEventListener('playing', playing);
+      audio.removeEventListener('ended', ended);
+      audio.removeEventListener('error', failed);
+      audio.removeEventListener('pause', onHardwarePause);
+      if (finish === ended) finish = null;
+    };
     const ended = () => { if (settled) return; settled = true; active = false; cleanup(); resolve(); };
     const failed = () => { if (settled) return; settled = true; active = false; cleanup(); reject(new Error('음성을 재생하지 못했습니다. 다시 듣기를 눌러 주세요.')); };
     finish = ended;
-    audio.addEventListener('playing', playing, { once: true }); audio.addEventListener('ended', ended); audio.addEventListener('error', failed);
+    audio.addEventListener('playing', playing, { once: true });
+    audio.addEventListener('ended', ended);
+    audio.addEventListener('error', failed);
+    audio.addEventListener('pause', onHardwarePause);
     void audio.play().catch(failed);
   });
 }
