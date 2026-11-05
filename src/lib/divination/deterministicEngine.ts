@@ -172,6 +172,9 @@ import { calculateGnosticPistisSophiaPleroma, formatGnosticPistisSophiaPleromaPr
 import { calculateSumerianInannaUnderworldDescent, formatSumerianInannaUnderworldDescentPrompt, type SumerianInannaUnderworldDescentReport, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION } from './sumerianInannaUnderworldDescentEngine';
 import { calculateNorseVolvaSeidrNineRealms, formatNorseVolvaSeidrNineRealmsPrompt, type NorseVolvaSeidrNineRealmsReport, NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION } from './norseVolvaSeidrNineRealmsEngine';
 import { calculateZhuangziXiaoyaoyouButterfly, formatZhuangziXiaoyaoyouButterflyPrompt, type ZhuangziXiaoyaoyouButterflyReport, ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION } from './zhuangziXiaoyaoyouButterflyEngine';
+import { calculateBuddhistYogacaraConsciousness, formatBuddhistYogacaraConsciousnessPrompt, type BuddhistYogacaraConsciousnessReport, BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION } from './buddhistYogacaraEightConsciousnessEngine';
+import { calculateVedicMandukyaTuriya, formatVedicMandukyaTuriyaPrompt, type VedicMandukyaTuriyaReport, VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION } from './vedicMandukyaTuriyaEngine';
+import { calculateKabbalisticZoharSoul, formatKabbalisticZoharSoulPrompt, type KabbalisticZoharSoulReport, KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION } from './kabbalisticZoharFiveSoulLevelsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -364,6 +367,9 @@ export interface DeterministicEngineReport {
   sumerianInannaUnderworldDescentResult?: SumerianInannaUnderworldDescentReport | null;
   norseVolvaSeidrNineRealmsResult?: NorseVolvaSeidrNineRealmsReport | null;
   zhuangziXiaoyaoyouButterflyResult?: ZhuangziXiaoyaoyouButterflyReport | null;
+  buddhistYogacaraConsciousnessResult?: BuddhistYogacaraConsciousnessReport | null;
+  vedicMandukyaTuriyaResult?: VedicMandukyaTuriyaReport | null;
+  kabbalisticZoharSoulResult?: KabbalisticZoharSoulReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2178,6 +2184,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 144. 불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 엔진
+  const buddhistYogacaraConsciousnessResult = (() => {
+    try {
+      return calculateBuddhistYogacaraConsciousness({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 145. 고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 엔진
+  const vedicMandukyaTuriyaResult = (() => {
+    try {
+      return calculateVedicMandukyaTuriya({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 146. 카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 엔진
+  const kabbalisticZoharSoulResult = (() => {
+    try {
+      return calculateKabbalisticZoharSoul({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2356,6 +2389,9 @@ export function runDeterministicEngine(params: {
     sumerianInannaUnderworldDescentResult,
     norseVolvaSeidrNineRealmsResult,
     zhuangziXiaoyaoyouButterflyResult,
+    buddhistYogacaraConsciousnessResult,
+    vedicMandukyaTuriyaResult,
+    kabbalisticZoharSoulResult,
     tools: toolsMap,
   };
 }
@@ -2527,6 +2563,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master' },
   { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master' },
   { key: 'zhuangziXiaoyaoyouButterfly', nameKo: '도가 장자 소요유 호접몽', icon: '🦋', category: 'deep_master' },
+  { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master' },
+  { key: 'vedicMandukyaTuriya', nameKo: '만두키야 우파니샤드 투리야 순수의식', icon: '🕉️', category: 'deep_master' },
+  { key: 'kabbalisticZoharSoul', nameKo: '카발라 조하르 5대 영혼 층위', icon: '🕎', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2722,6 +2761,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'buddhistYogacaraConsciousness',
+    'vedicMandukyaTuriya',
+    'kabbalisticZoharSoul',
     'zhuangziXiaoyaoyouButterfly',
     'egyptianSphinxDreamOracle',
     'eleusinianMysteries',
@@ -2742,6 +2784,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'buddhistYogacaraConsciousness',
+    'vedicMandukyaTuriya',
+    'kabbalisticZoharSoul',
     'zhuangziXiaoyaoyouButterfly',
     'norseVolvaSeidrNineRealms',
     'sumerianInannaUnderworldDescent',
@@ -3022,5 +3067,8 @@ ${report.shugendoYamabushiTenRealmsResult && shouldIncludeEngine('shugendoYamabu
 ${report.gnosticPistisSophiaPleromaResult && shouldIncludeEngine('gnosticPistisSophiaPleroma', options) ? '\n' + formatGnosticPistisSophiaPleromaPrompt(report.gnosticPistisSophiaPleromaResult) : ''}
 ${report.sumerianInannaUnderworldDescentResult && shouldIncludeEngine('sumerianInannaUnderworldDescent', options) ? '\n' + formatSumerianInannaUnderworldDescentPrompt(report.sumerianInannaUnderworldDescentResult) : ''}
 ${report.norseVolvaSeidrNineRealmsResult && shouldIncludeEngine('norseVolvaSeidrNineRealms', options) ? '\n' + formatNorseVolvaSeidrNineRealmsPrompt(report.norseVolvaSeidrNineRealmsResult) : ''}
-${report.zhuangziXiaoyaoyouButterflyResult && shouldIncludeEngine('zhuangziXiaoyaoyouButterfly', options) ? '\n' + formatZhuangziXiaoyaoyouButterflyPrompt(report.zhuangziXiaoyaoyouButterflyResult) : ''}`;
+${report.zhuangziXiaoyaoyouButterflyResult && shouldIncludeEngine('zhuangziXiaoyaoyouButterfly', options) ? '\n' + formatZhuangziXiaoyaoyouButterflyPrompt(report.zhuangziXiaoyaoyouButterflyResult) : ''}
+${report.buddhistYogacaraConsciousnessResult && shouldIncludeEngine('buddhistYogacaraConsciousness', options) ? '\n' + formatBuddhistYogacaraConsciousnessPrompt(report.buddhistYogacaraConsciousnessResult) : ''}
+${report.vedicMandukyaTuriyaResult && shouldIncludeEngine('vedicMandukyaTuriya', options) ? '\n' + formatVedicMandukyaTuriyaPrompt(report.vedicMandukyaTuriyaResult) : ''}
+${report.kabbalisticZoharSoulResult && shouldIncludeEngine('kabbalisticZoharSoul', options) ? '\n' + formatKabbalisticZoharSoulPrompt(report.kabbalisticZoharSoulResult) : ''}`;
 }
