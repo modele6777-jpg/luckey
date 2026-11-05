@@ -187,6 +187,9 @@ import { calculateTaoistLieziWindRiding, formatTaoistLieziWindRidingPrompt, type
 import { calculateSamkhyaTwentyFiveTattvas, formatSamkhyaTwentyFiveTattvasPrompt, type SamkhyaTwentyFiveTattvasReport, SAMKHYA_TATTVAS_ENGINE_VERSION } from './samkhyaTwentyFiveTattvasEngine';
 import { calculateNeoConfucianFourSevenLiQi, formatNeoConfucianFourSevenLiQiPrompt, type NeoConfucianFourSevenLiQiReport, NEO_CONFUCIAN_LIQI_ENGINE_VERSION } from './neoConfucianFourSevenLiQiEngine';
 import { calculateEtruscanAugurSixteenSky, formatEtruscanAugurSixteenSkyPrompt, type EtruscanAugurSixteenSkyReport, ETRUSCAN_AUGUR_ENGINE_VERSION } from './etruscanAugurSixteenSkyDivinationEngine';
+import { calculateRosicrucianChymicalWedding, formatRosicrucianChymicalWeddingPrompt, type RosicrucianChymicalWeddingReport, ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION } from './rosicrucianChymicalWeddingSevenDaysEngine';
+import { calculateAztecTonalamatl, formatAztecTonalamatlPrompt, type AztecTonalamatlReport, AZTEC_TONALAMATL_ENGINE_VERSION } from './aztecTonalamatlSacredCalendarEngine';
+import { calculateMongolianTengriHiimori, formatMongolianTengriHiimoriPrompt, type MongolianTengriHiimoriReport, MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION } from './mongolianTengriHiimoriSoulEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -394,6 +397,9 @@ export interface DeterministicEngineReport {
   samkhyaTwentyFiveTattvasResult?: SamkhyaTwentyFiveTattvasReport | null;
   neoConfucianFourSevenLiQiResult?: NeoConfucianFourSevenLiQiReport | null;
   etruscanAugurSixteenSkyResult?: EtruscanAugurSixteenSkyReport | null;
+  rosicrucianChymicalWeddingResult?: RosicrucianChymicalWeddingReport | null;
+  aztecTonalamatlResult?: AztecTonalamatlReport | null;
+  mongolianTengriHiimoriResult?: MongolianTengriHiimoriReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2343,6 +2349,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 159. 로젠크로이츠 화학적 결혼 7일 연금술 영혼 승화 엔진
+  const rosicrucianChymicalWeddingResult = (() => {
+    try {
+      return calculateRosicrucianChymicalWedding({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 160. 고대 아즈텍 토날포왈리 20대 일진 & 13대 주천신 신성 역법 엔진
+  const aztecTonalamatlResult = (() => {
+    try {
+      return calculateAztecTonalamatl({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 161. 몽골 텡그리즘 99 텡그리 & 히모리 풍마 영혼 공명 엔진
+  const mongolianTengriHiimoriResult = (() => {
+    try {
+      return calculateMongolianTengriHiimori({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2536,6 +2569,9 @@ export function runDeterministicEngine(params: {
     samkhyaTwentyFiveTattvasResult,
     neoConfucianFourSevenLiQiResult,
     etruscanAugurSixteenSkyResult,
+    rosicrucianChymicalWeddingResult,
+    aztecTonalamatlResult,
+    mongolianTengriHiimoriResult,
     tools: toolsMap,
   };
 }
@@ -2722,6 +2758,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master' },
   { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master' },
   { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master' },
+  { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },
+  { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master' },
+  { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2861,6 +2900,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   daily_timing_transit: [
+    'aztecTonalamatl',
+    'mongolianTengriHiimori',
     'etruscanAugurSixteenSky',
     'alexandrianDecanThirtySixGods',
     'taoistLieziWindRiding',
@@ -2926,6 +2967,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'rosicrucianChymicalWedding',
     'samkhyaTwentyFiveTattvas',
     'etruscanAugurSixteenSky',
     'sumerianEnumaElishFiftyNames',
@@ -2957,6 +2999,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'rosicrucianChymicalWedding',
+    'aztecTonalamatl',
+    'mongolianTengriHiimori',
     'samkhyaTwentyFiveTattvas',
     'neoConfucianFourSevenLiQi',
     'sumerianEnumaElishFiftyNames',
@@ -3266,5 +3311,8 @@ ${report.alexandrianDecanThirtySixGodsResult && shouldIncludeEngine('alexandrian
 ${report.taoistLieziWindRidingResult && shouldIncludeEngine('taoistLieziWindRiding', options) ? '\n' + formatTaoistLieziWindRidingPrompt(report.taoistLieziWindRidingResult) : ''}
 ${report.samkhyaTwentyFiveTattvasResult && shouldIncludeEngine('samkhyaTwentyFiveTattvas', options) ? '\n' + formatSamkhyaTwentyFiveTattvasPrompt(report.samkhyaTwentyFiveTattvasResult) : ''}
 ${report.neoConfucianFourSevenLiQiResult && shouldIncludeEngine('neoConfucianFourSevenLiQi', options) ? '\n' + formatNeoConfucianFourSevenLiQiPrompt(report.neoConfucianFourSevenLiQiResult) : ''}
-${report.etruscanAugurSixteenSkyResult && shouldIncludeEngine('etruscanAugurSixteenSky', options) ? '\n' + formatEtruscanAugurSixteenSkyPrompt(report.etruscanAugurSixteenSkyResult) : ''}`;
+${report.etruscanAugurSixteenSkyResult && shouldIncludeEngine('etruscanAugurSixteenSky', options) ? '\n' + formatEtruscanAugurSixteenSkyPrompt(report.etruscanAugurSixteenSkyResult) : ''}
+${report.rosicrucianChymicalWeddingResult && shouldIncludeEngine('rosicrucianChymicalWedding', options) ? '\n' + formatRosicrucianChymicalWeddingPrompt(report.rosicrucianChymicalWeddingResult) : ''}
+${report.aztecTonalamatlResult && shouldIncludeEngine('aztecTonalamatl', options) ? '\n' + formatAztecTonalamatlPrompt(report.aztecTonalamatlResult) : ''}
+${report.mongolianTengriHiimoriResult && shouldIncludeEngine('mongolianTengriHiimori', options) ? '\n' + formatMongolianTengriHiimoriPrompt(report.mongolianTengriHiimoriResult) : ''}`;
 }
