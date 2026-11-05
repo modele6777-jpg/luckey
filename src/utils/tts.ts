@@ -22,6 +22,7 @@ import { prepareNaturalSpeechText } from './speechText';
 export { prepareNaturalSpeechText };
 import { trackSpeechHighlight } from '../lib/speechHighlightTiming';
 import { isIOSDevice } from '../lib/perfMode';
+import { registerAudioDeviceChangeListener } from '../lib/audioDeviceChangeMonitor';
 
 export interface TTSPlaybackOptions {
   skipCompletionChime?: boolean;
@@ -232,7 +233,14 @@ function ensureTTSLifecycle() {
   ttsLifecycleReady = true;
   initTTSAudioLifecycle();
   initTTSSessionHandlers(stopTTS, pauseTTS, resumeTTS);
-}
+  // 🎧 오디오 출력 장치 변경(이어폰 분리/스피커 전환) 시 TTS 자동 정지 안전장치
+  registerAudioDeviceChangeListener((reason) => {
+    if (ttsState.isSpeaking || isTTSAudioPlaying()) {
+      console.warn(`[TTS Safety] Audio output route changed (${reason}). Auto-stopping TTS to protect user privacy.`);
+      stopTTS();
+    }
+  });
+}
 
 const retiredTTSSessions = new Set<string>();
 function waitForTTSResume(session: string): Promise<boolean> {
