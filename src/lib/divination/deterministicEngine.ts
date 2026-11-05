@@ -1527,7 +1527,7 @@ export function runDeterministicEngine(params: {
   // 84. 고대 하와이 호오포노포노 & 후나 7대 원리 치유 나침반 엔진
   const hawaiianHunaResult = (() => {
     try {
-      return calculateHawaiianHunaHooponopono({ profile, contextText });
+      return calculateHawaiianHunaHooponopono({ profile, contextText: question });
     } catch (_) {
       return null;
     }
@@ -1536,7 +1536,7 @@ export function runDeterministicEngine(params: {
   // 85. 동양 정통 풍수 8택(八宅) 공간 에너지 & 24방위 길흉 엔진
   const fengShuiEightMansionsResult = (() => {
     try {
-      return calculateFengShuiEightMansions({ profile, contextText });
+      return calculateFengShuiEightMansions({ profile, contextText: question });
     } catch (_) {
       return null;
     }
@@ -1545,7 +1545,7 @@ export function runDeterministicEngine(params: {
   // 86. 고대 조로아스터교 아샤(Asha) 신성 우주 질서 & 3대 선행 진실 엔진
   const zoroastrianAshaResult = (() => {
     try {
-      return calculateZoroastrianAshaTruth({ profile, contextText });
+      return calculateZoroastrianAshaTruth({ profile, contextText: question });
     } catch (_) {
       return null;
     }
@@ -1783,9 +1783,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master' },
   { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master' },
   { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master' },
-  { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'transcendental' },
-  { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'transcendental' },
-  { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'transcendental' },
+  { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master' },
+  { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master' },
+  { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
