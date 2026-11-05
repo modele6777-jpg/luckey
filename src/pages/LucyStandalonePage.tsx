@@ -3,7 +3,7 @@ import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
 import { ChatBubbleForward } from '@/components/chat/ChatBubbleForward';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Search, X, Check, Volume2, VolumeX, Square,
@@ -2028,7 +2028,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
     container.addEventListener('wheel', onWheel, { passive: true });
     return () => container.removeEventListener('wheel', onWheel);
-  }, []);
+  }, [isLucyReady]);
 
   // Keep the callback stable: playback changes must not rerun the mount scroll effect.
   const ttsBlocksAutoScrollRef = useRef(false);
@@ -2086,17 +2086,26 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
       window.removeEventListener('lucy-chat-content-resized', handleContentResized);
     };
-  }, [scrollToBottom, ttsInfo.isSpeaking]);
+  }, [isLucyReady, scrollToBottom, ttsInfo.isSpeaking]);
 
   useEffect(() => {
     if (!isUserScrolledUpRef.current && !ttsInfo.isSpeaking) {
       scrollToBottom(false, false);
     }
-  }, [lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, scrollToBottom]);
+  }, [isLucyReady, lucyMessages, isLucyGenerating, ttsInfo.isSpeaking, scrollToBottom]);
 
-  // 🚀 앱을 완전히 백그라운드로 나갔다가 다시 돌아왔을 때(hidden -> visible) 및 최초 마운트 시에만 단 1회 하단 이동
+  // The message viewport mounts only after the entrance loader finishes.
+  // Align it before paint; playback state must never retrigger this entry scroll.
+  useLayoutEffect(() => {
+    if (!isLucyReady) return;
+    isUserScrolledUpRef.current = false;
+    scrollToBottom(true, false);
+  }, [isLucyReady, scrollToBottom]);
+
+  // Returning from the background also opens at the latest conversation.
   const wasAppHiddenRef = useRef(false);
   useEffect(() => {
+    if (!isLucyReady) return;
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         wasAppHiddenRef.current = true;
@@ -2110,16 +2119,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // 컴포넌트 최초 진입 시 단 1회만 하단 정렬
-    const initTimer = setTimeout(() => {
-      scrollToBottom(true, false);
-    }, 100);
-
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      clearTimeout(initTimer);
     };
-  }, [scrollToBottom]);
+  }, [isLucyReady, scrollToBottom]);
 
   // 🚀 최상단 스크롤 이벤트 수신 시 루시 대화창 최상단으로 부드럽게 스크롤
   useEffect(() => {
