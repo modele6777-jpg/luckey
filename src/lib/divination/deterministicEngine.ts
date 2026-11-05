@@ -115,6 +115,9 @@ import { calculateAyurvedicTridoshaPrana, formatAyurvedicTridoshaPranaPrompt, ty
 import { calculateHawaiianHunaHooponopono, formatHawaiianHunaHooponoponoPrompt, type HawaiianHunaReport, HAWAIIAN_HUNA_VERSION } from './hawaiianHunaHooponoponoEngine';
 import { calculateFengShuiEightMansions, formatFengShuiEightMansionsPrompt, type FengShuiEightMansionsReport, FENG_SHUI_EIGHT_MANSIONS_VERSION } from './fengShuiEightMansionsEngine';
 import { calculateZoroastrianAshaTruth, formatZoroastrianAshaTruthPrompt, type ZoroastrianAshaReport, ZOROASTRIAN_ASHA_VERSION } from './zoroastrianAshaTruthEngine';
+import { calculateHinduTantricKundalini, formatHinduTantricKundaliniPrompt, type HinduTantricKundaliniReport, HINDU_KUNDALINI_VERSION } from './hinduTantricKundaliniEngine';
+import { calculateGuiguziLiangtouqian, formatGuiguziLiangtouqianPrompt, type GuiguziLiangtouqianReport, GUIGUZI_VERSION } from './guiguziLiangtouqianEngine';
+import { calculateSlavicSvarogCircle, formatSlavicSvarogCirclePrompt, type SlavicSvarogCircleReport, SLAVIC_SVAROG_VERSION } from './slavicSvarogCircleEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -250,6 +253,9 @@ export interface DeterministicEngineReport {
   hawaiianHunaResult?: HawaiianHunaReport | null;
   fengShuiEightMansionsResult?: FengShuiEightMansionsReport | null;
   zoroastrianAshaResult?: ZoroastrianAshaReport | null;
+  hinduKundaliniResult?: HinduTantricKundaliniReport | null;
+  guiguziLiangtouqianResult?: GuiguziLiangtouqianReport | null;
+  slavicSvarogResult?: SlavicSvarogCircleReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1551,6 +1557,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 87. 힌두 탄트라 쿤달리니 7대 차크라 나디 프라나야마 각성 엔진
+  const hinduKundaliniResult = (() => {
+    try {
+      return calculateHinduTantricKundalini({ profile, contextText: question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 88. 고대 중국 귀곡자(鬼谷子) 양구령(兩頭鉗) 72변화 명리 결단 엔진
+  const guiguziLiangtouqianResult = (() => {
+    try {
+      return calculateGuiguziLiangtouqian({ profile, contextText: question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 89. 고대 슬라브 베다 신화 16 스바로그 체계 & 로드(Rod) 영혼 가계 카르마 엔진
+  const slavicSvarogResult = (() => {
+    try {
+      return calculateSlavicSvarogCircle({ profile, contextText: question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1672,6 +1705,9 @@ export function runDeterministicEngine(params: {
     hawaiianHunaResult,
     fengShuiEightMansionsResult,
     zoroastrianAshaResult,
+    hinduKundaliniResult,
+    guiguziLiangtouqianResult,
+    slavicSvarogResult,
     tools: toolsMap,
   };
 }
@@ -1786,6 +1822,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master' },
   { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master' },
   { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master' },
+  { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master' },
+  { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master' },
+  { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -1854,6 +1893,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hermeticKybalion',
     'mayanTzolkin',
     'fengShuiEightMansions',
+    'guiguziLiangtouqian',
   ],
   relationship_love: [
     'karmicSynastry',
@@ -1870,6 +1910,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'celticTreeOgham',
     'sufiLataif',
     'hawaiianHuna',
+    'slavicSvarog',
   ],
   immediate_decision: [
     'instantDecision',
@@ -1886,6 +1927,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'nordicRunes',
     'delphicMaxims',
     'zoroastrianAsha',
+    'guiguziLiangtouqian',
   ],
   daily_timing_transit: [
     'chronoTransit',
@@ -1910,6 +1952,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'tibetanBardo',
     'egyptianDecans',
     'mayanTzolkin',
+    'guiguziLiangtouqian',
   ],
   vitality_wellness: [
     'energeticPrescription',
@@ -1928,6 +1971,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ayurvedicTridosha',
     'hawaiianHuna',
     'fengShuiEightMansions',
+    'hinduKundalini',
   ],
   creative_mind: [
     'kabbalah',
@@ -1941,6 +1985,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'celticTreeOgham',
     'mayanTzolkin',
     'nordicRunes',
+    'slavicSvarog',
   ],
   life_reflection: [
     'supremeWisdomTrinity',
@@ -1958,6 +2003,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ayurvedicTridosha',
     'hawaiianHuna',
     'zoroastrianAsha',
+    'hinduKundalini',
+    'slavicSvarog',
   ],
 };
 
@@ -2119,5 +2166,8 @@ ${report.delphicMaximsResult && shouldIncludeEngine('delphicMaxims', options) ? 
 ${report.ayurvedicTridoshaResult && shouldIncludeEngine('ayurvedicTridosha', options) ? '\n' + formatAyurvedicTridoshaPranaPrompt(report.ayurvedicTridoshaResult) : ''}
 ${report.hawaiianHunaResult && shouldIncludeEngine('hawaiianHuna', options) ? '\n' + formatHawaiianHunaHooponoponoPrompt(report.hawaiianHunaResult) : ''}
 ${report.fengShuiEightMansionsResult && shouldIncludeEngine('fengShuiEightMansions', options) ? '\n' + formatFengShuiEightMansionsPrompt(report.fengShuiEightMansionsResult) : ''}
-${report.zoroastrianAshaResult && shouldIncludeEngine('zoroastrianAsha', options) ? '\n' + formatZoroastrianAshaTruthPrompt(report.zoroastrianAshaResult) : ''}`;
+${report.zoroastrianAshaResult && shouldIncludeEngine('zoroastrianAsha', options) ? '\n' + formatZoroastrianAshaTruthPrompt(report.zoroastrianAshaResult) : ''}
+${report.hinduKundaliniResult && shouldIncludeEngine('hinduKundalini', options) ? '\n' + formatHinduTantricKundaliniPrompt(report.hinduKundaliniResult) : ''}
+${report.guiguziLiangtouqianResult && shouldIncludeEngine('guiguziLiangtouqian', options) ? '\n' + formatGuiguziLiangtouqianPrompt(report.guiguziLiangtouqianResult) : ''}
+${report.slavicSvarogResult && shouldIncludeEngine('slavicSvarog', options) ? '\n' + formatSlavicSvarogCirclePrompt(report.slavicSvarogResult) : ''}`;
 }

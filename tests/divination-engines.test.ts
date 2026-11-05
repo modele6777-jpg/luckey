@@ -81,6 +81,9 @@ import { calculateAyurvedicTridoshaPrana, formatAyurvedicTridoshaPranaPrompt, AY
 import { calculateHawaiianHunaHooponopono, formatHawaiianHunaHooponoponoPrompt, HAWAIIAN_HUNA_VERSION } from '../src/lib/divination/hawaiianHunaHooponoponoEngine';
 import { calculateFengShuiEightMansions, formatFengShuiEightMansionsPrompt, FENG_SHUI_EIGHT_MANSIONS_VERSION } from '../src/lib/divination/fengShuiEightMansionsEngine';
 import { calculateZoroastrianAshaTruth, formatZoroastrianAshaTruthPrompt, ZOROASTRIAN_ASHA_VERSION } from '../src/lib/divination/zoroastrianAshaTruthEngine';
+import { calculateHinduTantricKundalini, formatHinduTantricKundaliniPrompt, HINDU_KUNDALINI_VERSION } from '../src/lib/divination/hinduTantricKundaliniEngine';
+import { calculateGuiguziLiangtouqian, formatGuiguziLiangtouqianPrompt, GUIGUZI_VERSION } from '../src/lib/divination/guiguziLiangtouqianEngine';
+import { calculateSlavicSvarogCircle, formatSlavicSvarogCirclePrompt, SLAVIC_SVAROG_VERSION } from '../src/lib/divination/slavicSvarogCircleEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2677,12 +2680,48 @@ test('Zoroastrian Asha Truth Engine: calculates threefold path, sacred atar fire
 });
 
 test('DCE Engine Registry & Fired Badges: dynamically expands and covers all 86 engines', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 86);
+  assert(ALL_DCE_ENGINES.length >= 86);
   const rep = runDeterministicEngine({ profile });
   const allBadges = getFiredEngineBadges(rep, { isMasterMobilization: true });
-  assert.equal(allBadges.length, 86);
+  assert.equal(allBadges.length, ALL_DCE_ENGINES.length);
   const selectiveBadges = getFiredEngineBadges(rep, { isMasterMobilization: false, intent: 'vitality_wellness' });
   assert(selectiveBadges.length >= 5);
   assert(selectiveBadges.includes('호오포노포노 7원리'));
   assert(selectiveBadges.includes('풍수 8택 방위에너지'));
+});
+
+test('Hindu Tantric Kundalini & Nadi Awakening Engine: calculates nadis, chakras, granthis and pranayama', () => {
+  const rep = calculateHinduTantricKundalini({ profile });
+  assert.equal(rep.engineVersion, HINDU_KUNDALINI_VERSION);
+  assert(rep.primaryNadi.sanskritName.length > 0);
+  assert(rep.kundaliniVitalityLevel >= 0 && rep.kundaliniVitalityLevel <= 100);
+  assert(rep.granthis.length === 3);
+  assert(rep.pranayama.primaryBreathwork.length > 0);
+  const prompt = formatHinduTantricKundaliniPrompt(rep);
+  assert(prompt.includes('힌두 탄트라 쿤달리니 7대 차크라 나디 각성 엔진'));
+  assert(prompt.includes(rep.primaryNadi.sanskritName));
+});
+
+test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, destiny star and strategic matrix', () => {
+  const rep = calculateGuiguziLiangtouqian({ profile });
+  assert.equal(rep.engineVersion, GUIGUZI_VERSION);
+  assert(rep.guaStructure.yearStem.length > 0 && rep.guaStructure.hourStem.length > 0);
+  assert(rep.guaStructure.patternName.length > 0);
+  assert(rep.strategy.tacticalLabel.length > 0);
+  assert(rep.strategicClarityScore >= 0 && rep.strategicClarityScore <= 100);
+  const prompt = formatGuiguziLiangtouqianPrompt(rep);
+  assert(prompt.includes('고대 중국 귀곡자(鬼谷子) 양구령 72변화 명리 결단 엔진'));
+  assert(prompt.includes(rep.guaStructure.patternName));
+});
+
+test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall, rod karma blessing and elements', () => {
+  const rep = calculateSlavicSvarogCircle({ profile });
+  assert.equal(rep.engineVersion, SLAVIC_SVAROG_VERSION);
+  assert(rep.svarogHall.koreanName.length > 0);
+  assert(rep.ancestralKarma.rodProtectionScore >= 0 && rep.ancestralKarma.rodProtectionScore <= 100);
+  assert(rep.elements.dominantElement.length > 0);
+  assert(rep.sacredRuneSymbol.symbolName.length > 0);
+  const prompt = formatSlavicSvarogCirclePrompt(rep);
+  assert(prompt.includes('고대 슬라브 16 스바로그 체계 & 로드(Rod) 가계 카르마 엔진'));
+  assert(prompt.includes(rep.svarogHall.koreanName));
 });
