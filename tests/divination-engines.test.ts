@@ -147,6 +147,9 @@ import { calculateKoreanPungryudoHwarang, formatKoreanPungryudoHwarangPrompt, KO
 import { calculatePersianAttarSevenValleys, formatPersianAttarSevenValleysPrompt, ATTAR_SEVEN_VALLEYS_ENGINE_VERSION } from '../src/lib/divination/persianAttarSevenValleysEngine';
 import { calculateHermeticPoimandres, formatHermeticPoimandresPrompt, HERMETIC_POIMANDRES_ENGINE_VERSION } from '../src/lib/divination/hermeticPoimandresAscensionEngine';
 import { calculateKashmirShaivismSpanda, formatKashmirShaivismSpandaPrompt, KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION } from '../src/lib/divination/kashmirShaivismSpandaEngine';
+import { calculateSumerianEnumaElishFiftyNames, formatSumerianEnumaElishFiftyNamesPrompt, ENUMA_ELISH_ENGINE_VERSION } from '../src/lib/divination/sumerianEnumaElishFiftyNamesEngine';
+import { calculateAlexandrianDecanThirtySixGods, formatAlexandrianDecanThirtySixGodsPrompt, ALEXANDRIAN_DECAN_ENGINE_VERSION } from '../src/lib/divination/alexandrianDecanThirtySixGodsEngine';
+import { calculateTaoistLieziWindRiding, formatTaoistLieziWindRidingPrompt, TAOIST_LIEZI_ENGINE_VERSION } from '../src/lib/divination/taoistLieziWindRidingEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3535,6 +3538,47 @@ test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna 
   assert(prompt.includes('카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 재인식 실측 데이터'));
   assert(prompt.includes(rep.dominantTattva.nameKo));
 });
+
+test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, four winds balance and Marduk sacred names', () => {
+  const rep = calculateSumerianEnumaElishFiftyNames({ profile, question: '에누마 엘리시 마르두크 50대 이름' });
+  assert.equal(rep.engineVersion, ENUMA_ELISH_ENGINE_VERSION);
+  assert(rep.tiamatSubjugationOrderScore >= 0 && rep.tiamatSubjugationOrderScore <= 100);
+  assert(rep.fiftySacredNamesResonanceIndex >= 0 && rep.fiftySacredNamesResonanceIndex <= 100);
+  assert(rep.cosmicSovereigntyScore >= 0 && rep.cosmicSovereigntyScore <= 100);
+  assert(rep.fourWindsDominance.northWindDiscipline >= 0 && rep.fourWindsDominance.northWindDiscipline <= 100);
+  assert(rep.fourWindsDominance.southWindPassion >= 0 && rep.fourWindsDominance.southWindPassion <= 100);
+  assert(rep.dominantSacredName.nameKo.length > 0);
+  const prompt = formatSumerianEnumaElishFiftyNamesPrompt(rep);
+  assert(prompt.includes('바빌로니아 에누마 엘리시 마르두크 50대 이름 & 4대 바람 정복 실측 데이터'));
+  assert(prompt.includes(rep.dominantSacredName.nameKo));
+});
+
+test('Alexandrian Decan Thirty Six Gods Engine: calculates Kairos time mastery, ten-day soul tuning and astral shielding', () => {
+  const rep = calculateAlexandrianDecanThirtySixGods({ profile, question: '알렉산드리아 36대 데칸' });
+  assert.equal(rep.engineVersion, ALEXANDRIAN_DECAN_ENGINE_VERSION);
+  assert(rep.kairosTimeMasteryScore >= 0 && rep.kairosTimeMasteryScore <= 100);
+  assert(rep.tenDaySoulTuningIndex >= 0 && rep.tenDaySoulTuningIndex <= 100);
+  assert(rep.astralShieldingRate >= 0 && rep.astralShieldingRate <= 100);
+  assert(rep.zodiacalEquilibriumScore >= 0 && rep.zodiacalEquilibriumScore <= 100);
+  assert(rep.dominantDecan.nameKo.length > 0);
+  const prompt = formatAlexandrianDecanThirtySixGodsPrompt(rep);
+  assert(prompt.includes('알렉산드리아 헤르메스주의 36대 데칸 천상 성령 & 시간의 지배자 실측 데이터'));
+  assert(prompt.includes(rep.dominantDecan.nameKo));
+});
+
+test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest index and tranquil emptiness', () => {
+  const rep = calculateTaoistLieziWindRiding({ profile, question: '열자 어풍동행 무하유지향' });
+  assert.equal(rep.engineVersion, TAOIST_LIEZI_ENGINE_VERSION);
+  assert(rep.windRidingUnityScore >= 0 && rep.windRidingUnityScore <= 100);
+  assert(rep.muhayuRestIndex >= 0 && rep.muhayuRestIndex <= 100);
+  assert(rep.tranquilEmptinessScore >= 0 && rep.tranquilEmptinessScore <= 100);
+  assert(rep.nonAttachmentFluidityRate >= 0 && rep.nonAttachmentFluidityRate <= 100);
+  assert(rep.dominantStage.nameKo.length > 0);
+  const prompt = formatTaoistLieziWindRidingPrompt(rep);
+  assert(prompt.includes('도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터'));
+  assert(prompt.includes(rep.dominantStage.nameKo));
+});
+
 
 
 
