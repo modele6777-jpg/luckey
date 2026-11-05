@@ -166,6 +166,9 @@ import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, 
 import { calculateGreekMoiraiAnankeFate, formatGreekMoiraiAnankeFatePrompt, type GreekMoiraiAnankeFateReport, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION } from './greekMoiraiAnankeFateEngine';
 import { calculateEgyptianSphinxDreamOracle, formatEgyptianSphinxDreamOraclePrompt, type EgyptianSphinxDreamOracleReport, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION } from './egyptianSphinxDreamOracleEngine';
 import { calculateChaldeanMulApinAstrology, formatChaldeanMulApinAstrologyPrompt, type ChaldeanMulApinAstrologyReport, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION } from './chaldeanMulApinAstrologyEngine';
+import { calculateToltecNagualDreaming, formatToltecNagualDreamingPrompt, type ToltecNagualDreamingReport, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION } from './toltecNagualDreamingEngine';
+import { calculateShugendoYamabushiTenRealms, formatShugendoYamabushiTenRealmsPrompt, type ShugendoYamabushiTenRealmsReport, SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION } from './shugendoYamabushiTenRealmsEngine';
+import { calculateGnosticPistisSophiaPleroma, formatGnosticPistisSophiaPleromaPrompt, type GnosticPistisSophiaPleromaReport, GNOSTIC_PISTIS_SOPHIA_PLEROMA_ENGINE_VERSION } from './gnosticPistisSophiaPleromaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -352,6 +355,9 @@ export interface DeterministicEngineReport {
   greekMoiraiAnankeFateResult?: GreekMoiraiAnankeFateReport | null;
   egyptianSphinxDreamOracleResult?: EgyptianSphinxDreamOracleReport | null;
   chaldeanMulApinAstrologyResult?: ChaldeanMulApinAstrologyReport | null;
+  toltecNagualDreamingResult?: ToltecNagualDreamingReport | null;
+  shugendoYamabushiTenRealmsResult?: ShugendoYamabushiTenRealmsReport | null;
+  gnosticPistisSophiaPleromaResult?: GnosticPistisSophiaPleromaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2112,6 +2118,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 138. 고대 멕시코 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 엔진
+  const toltecNagualDreamingResult = (() => {
+    try {
+      return calculateToltecNagualDreaming({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 139. 고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 산악영력 엔진
+  const shugendoYamabushiTenRealmsResult = (() => {
+    try {
+      return calculateShugendoYamabushiTenRealms({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 140. 고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 영적 각성 엔진
+  const gnosticPistisSophiaPleromaResult = (() => {
+    try {
+      return calculateGnosticPistisSophiaPleroma({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2284,6 +2317,9 @@ export function runDeterministicEngine(params: {
     greekMoiraiAnankeFateResult,
     egyptianSphinxDreamOracleResult,
     chaldeanMulApinAstrologyResult,
+    toltecNagualDreamingResult,
+    shugendoYamabushiTenRealmsResult,
+    gnosticPistisSophiaPleromaResult,
     tools: toolsMap,
   };
 }
@@ -2449,6 +2485,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master' },
   { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master' },
   { key: 'chaldeanMulApinAstrology', nameKo: '칼데아 물핀 12조디악', icon: '✨', category: 'deep_master' },
+  { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master' },
+  { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master' },
+  { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2559,6 +2598,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'toltecNagualDreaming',
     'greekMoiraiAnankeFate',
     'egyptianSphinxDreamOracle',
     'plumBlossomMeihuaOracle',
@@ -2660,6 +2700,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'gnosticPistisSophiaPleroma',
+    'shugendoYamabushiTenRealms',
+    'toltecNagualDreaming',
     'greekMoiraiAnankeFate',
     'egyptianSphinxDreamOracle',
     'chaldeanMulApinAstrology',
@@ -2928,5 +2971,8 @@ ${report.pythagoreanHarmoniaSpheresResult && shouldIncludeEngine('pythagoreanHar
 ${report.plumBlossomMeihuaOracleResult && shouldIncludeEngine('plumBlossomMeihuaOracle', options) ? '\n' + formatPlumBlossomMeihuaOraclePrompt(report.plumBlossomMeihuaOracleResult) : ''}
 ${report.greekMoiraiAnankeFateResult && shouldIncludeEngine('greekMoiraiAnankeFate', options) ? '\n' + formatGreekMoiraiAnankeFatePrompt(report.greekMoiraiAnankeFateResult) : ''}
 ${report.egyptianSphinxDreamOracleResult && shouldIncludeEngine('egyptianSphinxDreamOracle', options) ? '\n' + formatEgyptianSphinxDreamOraclePrompt(report.egyptianSphinxDreamOracleResult) : ''}
-${report.chaldeanMulApinAstrologyResult && shouldIncludeEngine('chaldeanMulApinAstrology', options) ? '\n' + formatChaldeanMulApinAstrologyPrompt(report.chaldeanMulApinAstrologyResult) : ''}`;
+${report.chaldeanMulApinAstrologyResult && shouldIncludeEngine('chaldeanMulApinAstrology', options) ? '\n' + formatChaldeanMulApinAstrologyPrompt(report.chaldeanMulApinAstrologyResult) : ''}
+${report.toltecNagualDreamingResult && shouldIncludeEngine('toltecNagualDreaming', options) ? '\n' + formatToltecNagualDreamingPrompt(report.toltecNagualDreamingResult) : ''}
+${report.shugendoYamabushiTenRealmsResult && shouldIncludeEngine('shugendoYamabushiTenRealms', options) ? '\n' + formatShugendoYamabushiTenRealmsPrompt(report.shugendoYamabushiTenRealmsResult) : ''}
+${report.gnosticPistisSophiaPleromaResult && shouldIncludeEngine('gnosticPistisSophiaPleroma', options) ? '\n' + formatGnosticPistisSophiaPleromaPrompt(report.gnosticPistisSophiaPleromaResult) : ''}`;
 }
