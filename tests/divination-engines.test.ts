@@ -99,6 +99,9 @@ import { calculateEleusinianMysteries, formatEleusinianMysteriesPrompt, ELEUSINI
 import { calculateVedicNakshatra108Pada, formatVedicNakshatra108PadaPrompt, VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION } from '../src/lib/divination/vedicNakshatra108PadaEngine';
 import { calculateEgyptianHermeticCartouche, formatEgyptianHermeticCartouchePrompt, EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION } from '../src/lib/divination/egyptianHermeticCartoucheEngine';
 import { calculateTaoistGongGuoGeKarma, formatTaoistGongGuoGeKarmaPrompt, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION } from '../src/lib/divination/taoistGongGuoGeKarmaEngine';
+import { calculateYorubaIfaOdu, formatYorubaIfaOduPrompt, YORUBA_IFA_ODU_ENGINE_VERSION } from '../src/lib/divination/yorubaIfaOduEngine';
+import { calculateArabicIlmAlRaml, formatArabicIlmAlRamlPrompt, ARABIC_ILM_AL_RAML_ENGINE_VERSION } from '../src/lib/divination/arabicIlmAlRamlEngine';
+import { calculateHinduNadiAgastyaPalmLeaf, formatHinduNadiAgastyaPalmLeafPrompt, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION } from '../src/lib/divination/hinduNadiAgastyaPalmLeafEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2905,4 +2908,34 @@ test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and shielding ind
   const prompt = formatTaoistGongGuoGeKarmaPrompt(rep);
   assert(prompt.includes('도교 태상감응편(太上感應篇) & 공과격(功過格) 선악 카르마 적선개운 실측 데이터'));
   assert(prompt.includes(rep.meritDomain));
+});
+
+test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
+  const rep = calculateYorubaIfaOdu({ profile });
+  assert.equal(rep.engineVersion, YORUBA_IFA_ODU_ENGINE_VERSION);
+  assert(rep.oduName.length > 0);
+  assert(rep.destinyAlignmentScore >= 0 && rep.destinyAlignmentScore <= 100);
+  const prompt = formatYorubaIfaOduPrompt(rep);
+  assert(prompt.includes('서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 실측 데이터'));
+  assert(prompt.includes(rep.oduName));
+});
+
+test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdict', () => {
+  const rep = calculateArabicIlmAlRaml({ profile });
+  assert.equal(rep.engineVersion, ARABIC_ILM_AL_RAML_ENGINE_VERSION);
+  assert(rep.figureNameLatin.length > 0);
+  assert(rep.earthResonanceIndex >= 0 && rep.earthResonanceIndex <= 100);
+  const prompt = formatArabicIlmAlRamlPrompt(rep);
+  assert(prompt.includes('고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 실측 데이터'));
+  assert(prompt.includes(rep.figureNameLatin));
+});
+
+test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Parikharam', () => {
+  const rep = calculateHinduNadiAgastyaPalmLeaf({ profile });
+  assert.equal(rep.engineVersion, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION);
+  assert(rep.activeKandamNumber >= 1 && rep.activeKandamNumber <= 14);
+  assert(rep.dharmaFulfillmentIndex >= 0 && rep.dharmaFulfillmentIndex <= 100);
+  const prompt = formatHinduNadiAgastyaPalmLeafPrompt(rep);
+  assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 실측 데이터'));
+  assert(prompt.includes(rep.kandamName));
 });
