@@ -642,12 +642,11 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (_) {}
-      recognitionRef.current = null;
-    }
+    const recognition = recognitionRef.current;
+    recognitionRef.current = null;
+    try {
+      recognition?.abort();
+    } catch (_) {}
   }, []);
 
   // 📷 사진 파일 선택 및 자동 리사이즈/압축 핸들러
@@ -825,16 +824,20 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       });
     } catch (err) {
       console.error('[LucyQuickChatBubble] Failed to send message:', err);
-      if (wasVoiceActive) {
+      if (isVoiceModeRef.current) {
         setVoiceState('listening');
         startListening();
       }
     }
   }, [input, attachedPhoto, activeGhostPrompt, isLucyGenerating, sendUnifiedMessage, stopRecognition]);
 
+  const handleSendRef = useRef(handleSend);
+  handleSendRef.current = handleSend;
+
   // 🎙️ 음성 인식 시작 (STT)
   const startListening = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !isVoiceModeRef.current || isMutedRef.current) return;
+    stopRecognition();
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -848,24 +851,22 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       unlockAudioPlayback();
       primeTTSAudioElement();
 
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch (_) {}
-      }
-
       const recognition = new SpeechRecognition();
       recognition.lang = 'ko-KR';
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
+      const isCurrent = () => recognitionRef.current === recognition && isVoiceModeRef.current && !isMutedRef.current;
+
       recognition.onstart = () => {
+        if (!isCurrent()) return;
         setVoiceError(null);
         setVoiceState('listening');
       };
 
       recognition.onresult = (event: any) => {
+        if (!isCurrent()) return;
         let finalStr = '';
         let interimStr = '';
 
@@ -886,23 +887,26 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
           silenceTimerRef.current = setTimeout(() => {
-            if (combined.length >= 2 && voiceStateRef.current === 'listening') {
-              handleSend(combined);
+            if (isCurrent() && combined.length >= 2 && voiceStateRef.current === 'listening') {
+              void handleSendRef.current(combined);
             }
           }, 1300);
         }
       };
 
       recognition.onerror = (e: any) => {
+        if (!isCurrent()) return;
         console.warn('[LucyQuickChatBubble] STT error:', e.error || e);
         if (e.error === 'not-allowed') {
+          stopRecognition();
           setVoiceError('마이크 권한이 차단되어 있습니다.');
           setVoiceState('error');
         }
       };
 
       recognition.onend = () => {
-        if (isVoiceModeRef.current && voiceStateRef.current === 'listening' && !isMutedRef.current) {
+        if (!isCurrent()) return;
+        if (voiceStateRef.current === 'listening') {
           try {
             recognition.start();
           } catch (_) {}
@@ -912,10 +916,11 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       recognitionRef.current = recognition;
       recognition.start();
     } catch (err: any) {
+      stopRecognition();
       console.warn('[LucyQuickChatBubble] startListening error:', err);
       setVoiceState('idle');
     }
-  }, [handleSend]);
+  }, [stopRecognition]);
 
   // 🎙️ 루시 말 끊기 (인터럽트) 및 듣기 전환
   const handleInterruptLucy = useCallback(() => {
@@ -929,7 +934,9 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
   // 🎙️ 음성 모드 토글
   const handleToggleVoiceMode = useCallback(() => {
     triggerHaptic('whitehole');
-    if (isVoiceMode) {
+    if (isVoiceModeRef.current) {
+      isVoiceModeRef.current = false;
+      speechTranscriptRef.current = '';
       stopRecognition();
       stopTTS();
       setPlayingMessageId(null);
@@ -939,12 +946,14 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       setSpeechInterim('');
       setVoiceError(null);
     } else {
+      isVoiceModeRef.current = true;
+      isMutedRef.current = false;
       setIsVoiceMode(true);
       setIsMuted(false);
       setVoiceState('listening');
       startListening();
     }
-  }, [isVoiceMode, startListening, stopRecognition]);
+  }, [startListening, stopRecognition]);
 
   // 🌟 오픈 및 초기 음성 모드 연동
   useEffect(() => {
@@ -955,6 +964,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
         primeTTSAudioElement();
         setIsVoiceMode(true);
         isVoiceModeRef.current = true;
+        isMutedRef.current = false;
         setIsMuted(false);
         setVoiceState('listening');
         voiceStateRef.current = 'listening';
@@ -965,6 +975,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
         }, 150);
       }
     } else {
+      isVoiceModeRef.current = false;
+      speechTranscriptRef.current = '';
       stopRecognition();
       stopTTS();
       setPlayingMessageId(null);
@@ -975,6 +987,11 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       setVoiceError(null);
     }
   }, [isOpen, initialVoiceActive, scrollToBottom, startListening, stopRecognition]);
+
+  useEffect(() => () => {
+    isVoiceModeRef.current = false;
+    stopRecognition();
+  }, [stopRecognition]);
 
   // Only an open bubble handles explicit voice-send and abort events.
   useEffect(() => {
@@ -1001,6 +1018,9 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       }
     };
     const handleAbortVoice = () => {
+      isVoiceModeRef.current = false;
+      speechTranscriptRef.current = '';
+      setIsVoiceMode(false);
       stopRecognition();
       setSpeechTranscript('');
       setSpeechInterim('');

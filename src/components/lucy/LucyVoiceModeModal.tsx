@@ -59,7 +59,7 @@ export function LucyVoiceModeModal() {
   const [, setLastUserSpeech] = useState<string>('');
   const [lastLucyReply, setLastLucyReply] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(false);
 
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -92,22 +92,22 @@ export function LucyVoiceModeModal() {
     };
   }, [isOpen, voiceState]);
 
-  // 🎙️ SpeechRecognition 초기화 및 경청 시작
-  const startListening = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    if (voiceStateRef.current === 'speaking' || voiceStateRef.current === 'thinking') return;
-
+  const stopRecognition = useCallback(() => {
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (_) {}
-      recognitionRef.current = null;
-    }
+    const recognition = recognitionRef.current;
+    recognitionRef.current = null;
+    try {
+      recognition?.abort();
+    } catch (_) {}
+  }, []);
 
+  // 🎙️ SpeechRecognition 초기화 및 경청 시작
+  const startListening = useCallback(() => {
+    if (typeof window === 'undefined' || !isComponentOpenRef.current || isMutedRef.current) return;
+    stopRecognition();
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -127,12 +127,16 @@ export function LucyVoiceModeModal() {
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
+      const isCurrent = () => recognitionRef.current === recognition && isComponentOpenRef.current && !isMutedRef.current;
+
       recognition.onstart = () => {
+        if (!isCurrent()) return;
         setVoiceState('listening');
         setErrorMessage(null);
       };
 
       recognition.onresult = (event: any) => {
+        if (!isCurrent()) return;
         let finalStr = '';
         let interimStr = '';
 
@@ -155,7 +159,7 @@ export function LucyVoiceModeModal() {
           if (!isPttActiveRef.current) {
             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = setTimeout(() => {
-              if (combined.length >= 2 && voiceStateRef.current === 'listening') {
+              if (isCurrent() && combined.length >= 2 && voiceStateRef.current === 'listening') {
                 handleSendPrompt(combined);
               }
             }, 1250);
@@ -164,16 +168,19 @@ export function LucyVoiceModeModal() {
       };
 
       recognition.onerror = (e: any) => {
+        if (!isCurrent()) return;
         console.warn('[LucyVoice] STT Error notice:', e.error || e);
         if (e.error === 'not-allowed') {
+          stopRecognition();
           setErrorMessage('마이크 접근 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
           setVoiceState('error');
         }
       };
 
       recognition.onend = () => {
+        if (!isCurrent()) return;
         // 모달이 열려있고 여전히 경청 상태라면 세션 재개
-        if (isComponentOpenRef.current && voiceStateRef.current === 'listening' && !isMuted) {
+        if (voiceStateRef.current === 'listening') {
           try {
             recognition.start();
           } catch (_) {}
@@ -183,23 +190,11 @@ export function LucyVoiceModeModal() {
       recognitionRef.current = recognition;
       recognition.start();
     } catch (err: any) {
+      stopRecognition();
       console.warn('[LucyVoice] Failed to start recognition:', err);
       setVoiceState('idle');
     }
-  }, [isMuted]);
-
-  const stopRecognition = useCallback(() => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (_) {}
-      recognitionRef.current = null;
-    }
-  }, []);
+  }, [stopRecognition]);
 
   // 🚀 사용자 발화 전송 및 루시 여성 음성 답변 유도
   const handleSendPrompt = async (text: string) => {
@@ -239,8 +234,8 @@ export function LucyVoiceModeModal() {
             console.warn('[LucyVoice] playTTS error:', ttsErr);
           } finally {
             if (isComponentOpenRef.current && voiceStateRef.current === 'speaking') {
-              setVoiceState('listening');
-              startListening();
+              setVoiceState(isMutedRef.current ? 'idle' : 'listening');
+              if (!recognitionRef.current) startListening();
             }
           }
         },
@@ -248,7 +243,7 @@ export function LucyVoiceModeModal() {
     } catch (err: any) {
       console.error('[LucyVoice] Send failed:', err);
       setErrorMessage('일시적인 통신 지연이 발생했습니다. 다시 말씀해 주시면 정성껏 답변해 드릴게요.');
-      setVoiceState('listening');
+      setVoiceState(isMutedRef.current ? 'idle' : 'listening');
       startListening();
     }
   };
@@ -258,16 +253,19 @@ export function LucyVoiceModeModal() {
     return subscribeTTS((state) => {
       if (!isComponentOpenRef.current) return;
       if (state.isSpeaking || state.isLoading) {
+        stopRecognition();
         if (voiceStateRef.current !== 'speaking') {
           setVoiceState('speaking');
         }
-      } else if (voiceStateRef.current === 'speaking') {
+      } else if (voiceStateRef.current === 'speaking' && !isMutedRef.current) {
         // 낭독이 완전히 끝나면 자연스럽게 다시 마이크 경청(listening) 상태로 복귀
         setVoiceState('listening');
-        startListening();
+        if (!recognitionRef.current) startListening();
+      } else if (voiceStateRef.current === 'speaking') {
+        setVoiceState('idle');
       }
     });
-  }, [startListening]);
+  }, [startListening, stopRecognition]);
 
   // 🎯 전역 이벤트 수신: 어디서든 빅뱅 버튼 홀드 또는 음성 모드 버튼 클릭 시 팝업
   useEffect(() => {
@@ -279,6 +277,7 @@ export function LucyVoiceModeModal() {
 
       setIsOpen(true);
       isComponentOpenRef.current = true;
+      isMutedRef.current = false;
       setErrorMessage(null);
 
       const initPrompt = detail?.initialPrompt;
@@ -291,9 +290,7 @@ export function LucyVoiceModeModal() {
       } else {
         // 일반 홀드 진입: 즉시 마이크 경청 시작
         setVoiceState('listening');
-        setTimeout(() => {
-          startListening();
-        }, 150);
+        startListening();
       }
     };
 
@@ -311,6 +308,7 @@ export function LucyVoiceModeModal() {
       latestTranscriptRef.current = '';
       setIsOpen(true);
       isComponentOpenRef.current = true;
+      isMutedRef.current = false;
       setErrorMessage(null);
       setTranscript('');
       setInterimTranscript('');
@@ -331,9 +329,11 @@ export function LucyVoiceModeModal() {
 
     // 🚀 PTT (손을 떼는 순간 무음 대기 없이 즉각 루시 질문 발송)
     const handleCommitVoicePtt = (e?: Event) => {
+      if (!isPttActiveRef.current) return;
       const detail = (e as CustomEvent)?.detail;
       const tossed = detail?.textToToss || tossedTextRef.current;
       isPttActiveRef.current = false;
+      isMutedRef.current = true;
       stopRecognition();
 
       const userSpeech = latestTranscriptRef.current.trim();
@@ -381,19 +381,21 @@ export function LucyVoiceModeModal() {
     }
 
     return () => {
+      isComponentOpenRef.current = false;
+      stopRecognition();
       window.removeEventListener('prism:open_lucy_voice', handleOpenVoice);
       window.removeEventListener('prism:close_lucy_voice', handleCloseVoice);
       window.removeEventListener('prism:start_lucy_voice_ptt', handleStartVoicePtt);
       window.removeEventListener('prism:commit_lucy_voice_ptt', handleCommitVoicePtt);
       window.removeEventListener('prism:abort_lucy_voice_ptt', handleAbortVoicePtt);
     };
-  }, [startListening]);
+  }, [startListening, stopRecognition]);
 
   // 🛑 루시 말 끊기(인터럽트) 및 듣기 전환
   const handleInterruptLucy = () => {
     triggerHaptic('whitehole');
     stopTTS();
-    setVoiceState('listening');
+    setVoiceState(isMutedRef.current ? 'idle' : 'listening');
     startListening();
   };
 
@@ -405,12 +407,15 @@ export function LucyVoiceModeModal() {
       return;
     }
 
-    if (voiceState === 'listening') {
+    if (!isMutedRef.current && (recognitionRef.current || voiceState === 'listening')) {
+      isMutedRef.current = true;
+      latestTranscriptRef.current = '';
       stopRecognition();
-      setIsMuted(true);
+      setTranscript('');
+      setInterimTranscript('');
       setVoiceState('idle');
     } else {
-      setIsMuted(false);
+      isMutedRef.current = false;
       setVoiceState('listening');
       startListening();
     }

@@ -1217,12 +1217,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (_) {}
-      recognitionRef.current = null;
-    }
+    const recognition = recognitionRef.current;
+    recognitionRef.current = null;
+    try {
+      recognition?.abort();
+    } catch (_) {}
   }, []);
 
   const stopRecognitionRef = useRef(stopRecognition);
@@ -1235,7 +1234,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   // 🎙️ 음성 인식 시작 (STT)
   const startListening = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !isVoiceModeRef.current || isVoiceMutedRef.current) return;
+    stopRecognition();
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -1249,25 +1249,23 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       unlockAudioPlayback();
       primeTTSAudioElement();
 
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch (_) {}
-      }
-
       const recognition = new SpeechRecognition();
       recognition.lang = 'ko-KR';
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
+      const isCurrent = () => recognitionRef.current === recognition && isVoiceModeRef.current && !isVoiceMutedRef.current;
+
       recognition.onstart = () => {
+        if (!isCurrent()) return;
         setVoiceError(null);
         setVoiceState('listening');
         voiceStateRef.current = 'listening';
       };
 
       recognition.onresult = (event: any) => {
+        if (!isCurrent()) return;
         let finalStr = '';
         let interimStr = '';
 
@@ -1289,7 +1287,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           // 1.3초 무음 감지 시 발화 마감 및 자동 전송
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
           silenceTimerRef.current = setTimeout(() => {
-            if (combined.length >= 2 && voiceStateRef.current === 'listening') {
+            if (isCurrent() && combined.length >= 2 && voiceStateRef.current === 'listening') {
               void handleSendRef.current(combined);
               setSpeechTranscript('');
               setSpeechInterim('');
@@ -1299,18 +1297,19 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       };
 
       recognition.onerror = (e: any) => {
+        if (!isCurrent()) return;
         console.warn('[LucyChat] STT error:', e.error || e);
         if (e.error === 'not-allowed') {
+          stopRecognition();
           setVoiceError('마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
           setVoiceState('error');
         }
       };
 
       recognition.onend = () => {
+        if (!isCurrent()) return;
         if (
-          isVoiceModeRef.current &&
           voiceStateRef.current === 'listening' &&
-          !isVoiceMutedRef.current &&
           !isLucyGeneratingRef.current
         ) {
           try {
@@ -1322,10 +1321,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       recognitionRef.current = recognition;
       recognition.start();
     } catch (err: any) {
+      stopRecognition();
       console.warn('[LucyChat] startListening error:', err);
       setVoiceState('idle');
     }
-  }, []);
+  }, [stopRecognition]);
 
   const startListeningRef = useRef(startListening);
   useEffect(() => {
@@ -1351,11 +1351,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       triggerHaptic('whitehole');
     } catch (_) {}
 
-    if (isVoiceMode) {
+    if (isVoiceModeRef.current) {
+      isVoiceModeRef.current = false;
+      speechTranscriptRef.current = '';
       stopRecognition();
       stopTTS();
       setIsVoiceMode(false);
-      isVoiceModeRef.current = false;
       setVoiceState('idle');
       voiceStateRef.current = 'idle';
       setSpeechTranscript('');
@@ -1375,7 +1376,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       setVoiceError(null);
       startListening();
     }
-  }, [isVoiceMode, startListening, stopRecognition]);
+  }, [startListening, stopRecognition]);
 
   // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
   useEffect(() => {
@@ -1815,13 +1816,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       });
       if (!state.isSpeaking && !state.isLoading && !state.isPaused && !state.activeSessionId) {
         setPlayingMsgId(null);
-        if (isVoiceModeRef.current && !isLucyGeneratingRef.current) {
+        if (isVoiceModeRef.current && !isVoiceMutedRef.current && !isLucyGeneratingRef.current && !recognitionRef.current) {
           // 루시 음성 종료 시 자동으로 듣기(STT) 상태로 전환하여 연속 대화 연결
           setVoiceState('listening');
           voiceStateRef.current = 'listening';
           startListeningRef.current?.();
         }
-      } else if (state.isSpeaking && isVoiceModeRef.current) {
+      } else if (state.isSpeaking && isVoiceModeRef.current && !isVoiceMutedRef.current) {
         setVoiceState('speaking');
         voiceStateRef.current = 'speaking';
         stopRecognitionRef.current?.();
@@ -3367,11 +3368,15 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <button
                       type="button"
                       onClick={() => {
-                        const nextMuted = !isVoiceMuted;
+                        const nextMuted = !isVoiceMutedRef.current;
                         setIsVoiceMuted(nextMuted);
                         isVoiceMutedRef.current = nextMuted;
                         if (nextMuted) {
                           stopRecognition();
+                          voiceStateRef.current = 'idle';
+                          speechTranscriptRef.current = '';
+                          setSpeechTranscript('');
+                          setSpeechInterim('');
                           setVoiceState('idle');
                         } else {
                           setVoiceState('listening');
