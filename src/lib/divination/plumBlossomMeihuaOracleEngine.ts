@@ -203,7 +203,7 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
 export function formatPlumBlossomMeihuaOraclePrompt(rep: PlumBlossomMeihuaReport): string {
   return `[송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 본괘(本卦): ${rep.benGua.fullName} [상괘 ${rep.benGua.upper.nameKo || rep.benGua.upper.name}(${rep.benGua.upper.element}) / 하괘 ${rep.benGua.lower.nameKo || rep.benGua.lower.name}(${rep.benGua.lower.element})]
+· 본괘(本卦): ${rep.benGua.fullName} [상괘 ${rep.benGua.upper.name}(${rep.benGua.upper.element}) / 하괘 ${rep.benGua.lower.name}(${rep.benGua.lower.element})]
 · 동효(動爻): 제 ${rep.movingLine}효 동함 | 체괘: ${rep.tiGua.name}(${rep.tiGua.element}) vs 용괘: ${rep.yongGua.name}(${rep.yongGua.element})
 · 체용 생극 판정: ${rep.tiYongRelation} (길흉 점수: ${rep.auspiciousScore}/100)
 · 호괘(互卦 - 내재 과정): ${rep.huGua.fullName} | 변괘(變卦 - 종국 결실): ${rep.bianGua.fullName}
