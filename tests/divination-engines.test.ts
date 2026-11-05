@@ -129,6 +129,9 @@ import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyF
 import { calculateTibetanPhowaRainbowBody, formatTibetanPhowaRainbowBodyPrompt, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION } from '../src/lib/divination/tibetanPhowaRainbowBodyEngine';
 import { calculatePythagoreanHarmoniaSpheres, formatPythagoreanHarmoniaSpheresPrompt, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION } from '../src/lib/divination/pythagoreanHarmoniaSpheresEngine';
 import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION } from '../src/lib/divination/plumBlossomMeihuaOracleEngine';
+import { calculateGreekMoiraiAnankeFate, formatGreekMoiraiAnankeFatePrompt, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION } from '../src/lib/divination/greekMoiraiAnankeFateEngine';
+import { calculateEgyptianSphinxDreamOracle, formatEgyptianSphinxDreamOraclePrompt, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION } from '../src/lib/divination/egyptianSphinxDreamOracleEngine';
+import { calculateChaldeanMulApinAstrology, formatChaldeanMulApinAstrologyPrompt, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION } from '../src/lib/divination/chaldeanMulApinAstrologyEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3282,6 +3285,45 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   const prompt = formatPlumBlossomMeihuaOraclePrompt(rep);
   assert(prompt.includes('송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터'));
   assert(prompt.includes(rep.tiYongRelation));
+});
+
+test('Greek Moirai Ananke Fate Engine: calculates Clotho, Lachesis, Atropos powers and necessity ratio', () => {
+  const rep = calculateGreekMoiraiAnankeFate({ profile, question: '인생의 중대한 결단' });
+  assert.equal(rep.engineVersion, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION);
+  assert(rep.clotho.powerScore >= 0 && rep.clotho.powerScore <= 100);
+  assert(rep.lachesis.powerScore >= 0 && rep.lachesis.powerScore <= 100);
+  assert(rep.atropos.powerScore >= 0 && rep.atropos.powerScore <= 100);
+  assert(rep.necessityRatio >= 0 && rep.necessityRatio <= 100);
+  assert(rep.dominantGoddess.length > 0);
+  const prompt = formatGreekMoiraiAnankeFatePrompt(rep);
+  assert(prompt.includes('고대 그리스 델포이 삼여신 모이라이(Moirai)'));
+  assert(prompt.includes(rep.dominantGoddess));
+});
+
+test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and sand cleansing index', () => {
+  const rep = calculateEgyptianSphinxDreamOracle({ profile, question: '미래의 왕권과 비전' });
+  assert.equal(rep.engineVersion, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION);
+  assert(rep.tetramorph.humanHead.score >= 0 && rep.tetramorph.humanHead.score <= 100);
+  assert(rep.tetramorph.lionHeart.score >= 0 && rep.tetramorph.lionHeart.score <= 100);
+  assert(rep.tetramorph.bullStrength.score >= 0 && rep.tetramorph.bullStrength.score <= 100);
+  assert(rep.tetramorph.eagleVision.score >= 0 && rep.tetramorph.eagleVision.score <= 100);
+  assert(rep.sandCleansingIndex >= 0 && rep.sandCleansingIndex <= 100);
+  assert(rep.dominantVirtue.length > 0);
+  const prompt = formatEgyptianSphinxDreamOraclePrompt(rep);
+  assert(prompt.includes('고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁'));
+  assert(prompt.includes(rep.dominantVirtue));
+});
+
+test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling planet and constellation', () => {
+  const rep = calculateChaldeanMulApinAstrology({ profile, question: '천문학적 타이밍' });
+  assert.equal(rep.engineVersion, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION);
+  assert(rep.pathAlignmentScore >= 0 && rep.pathAlignmentScore <= 100);
+  assert(rep.rulingPlanet.resonanceScore >= 0 && rep.rulingPlanet.resonanceScore <= 100);
+  assert(rep.celestialPath.length > 0);
+  assert(rep.mulApinConstellation.length > 0);
+  const prompt = formatChaldeanMulApinAstrologyPrompt(rep);
+  assert(prompt.includes('고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN)'));
+  assert(prompt.includes(rep.rulingPlanet.nameKo));
 });
 
 

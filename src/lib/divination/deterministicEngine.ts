@@ -163,6 +163,9 @@ import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyF
 import { calculateTibetanPhowaRainbowBody, formatTibetanPhowaRainbowBodyPrompt, type TibetanPhowaRainbowBodyReport, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION } from './tibetanPhowaRainbowBodyEngine';
 import { calculatePythagoreanHarmoniaSpheres, formatPythagoreanHarmoniaSpheresPrompt, type PythagoreanHarmoniaSpheresReport, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION } from './pythagoreanHarmoniaSpheresEngine';
 import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, type PlumBlossomMeihuaReport, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION } from './plumBlossomMeihuaOracleEngine';
+import { calculateGreekMoiraiAnankeFate, formatGreekMoiraiAnankeFatePrompt, type GreekMoiraiAnankeFateReport, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION } from './greekMoiraiAnankeFateEngine';
+import { calculateEgyptianSphinxDreamOracle, formatEgyptianSphinxDreamOraclePrompt, type EgyptianSphinxDreamOracleReport, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION } from './egyptianSphinxDreamOracleEngine';
+import { calculateChaldeanMulApinAstrology, formatChaldeanMulApinAstrologyPrompt, type ChaldeanMulApinAstrologyReport, CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION } from './chaldeanMulApinAstrologyEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -346,6 +349,9 @@ export interface DeterministicEngineReport {
   tibetanPhowaRainbowBodyResult?: TibetanPhowaRainbowBodyReport | null;
   pythagoreanHarmoniaSpheresResult?: PythagoreanHarmoniaSpheresReport | null;
   plumBlossomMeihuaOracleResult?: PlumBlossomMeihuaReport | null;
+  greekMoiraiAnankeFateResult?: GreekMoiraiAnankeFateReport | null;
+  egyptianSphinxDreamOracleResult?: EgyptianSphinxDreamOracleReport | null;
+  chaldeanMulApinAstrologyResult?: ChaldeanMulApinAstrologyReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2079,6 +2085,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 135. 고대 그리스 델포이 삼여신 모이라이(Moirai) 운명의 실타래 & 아낭케(Ananke) 필연 엔진
+  const greekMoiraiAnankeFateResult = (() => {
+    try {
+      return calculateGreekMoiraiAnankeFate({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 136. 고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁 & 태양신 레-호라크티 엔진
+  const egyptianSphinxDreamOracleResult = (() => {
+    try {
+      return calculateEgyptianSphinxDreamOracle({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 137. 고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN) 천문 신탁 엔진
+  const chaldeanMulApinAstrologyResult = (() => {
+    try {
+      return calculateChaldeanMulApinAstrology({ profile, question, now });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2248,6 +2281,9 @@ export function runDeterministicEngine(params: {
     tibetanPhowaRainbowBodyResult,
     pythagoreanHarmoniaSpheresResult,
     plumBlossomMeihuaOracleResult,
+    greekMoiraiAnankeFateResult,
+    egyptianSphinxDreamOracleResult,
+    chaldeanMulApinAstrologyResult,
     tools: toolsMap,
   };
 }
@@ -2410,6 +2446,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master' },
   { key: 'pythagoreanHarmoniaSpheres', nameKo: '피타고라스 천구의 조화 주파수', icon: '🪐', category: 'deep_master' },
   { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master' },
+  { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master' },
+  { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master' },
+  { key: 'chaldeanMulApinAstrology', nameKo: '칼데아 물핀 12조디악', icon: '✨', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2417,7 +2456,7 @@ export function getFiredEngineBadges(
   options?: FormatDeterministicEngineOptions
 ): string[] {
   if (!options || options.isMasterMobilization !== false) {
-    // 올인원 마스터 모드: 등록된 138대 전원 자동 반환
+    // 올인원 마스터 모드: 등록된 144대 전원 자동 반환
     return ALL_DCE_ENGINES.map((e) => e.nameKo);
   }
 
@@ -2520,6 +2559,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'greekMoiraiAnankeFate',
+    'egyptianSphinxDreamOracle',
     'plumBlossomMeihuaOracle',
     'sumerianFiftyMes',
     'babylonianEnumaElish',
@@ -2540,6 +2581,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   daily_timing_transit: [
+    'chaldeanMulApinAstrology',
     'zhongLuAlchemy',
     'druidMoonTrees',
     'taoistHuangtingJing',
@@ -2557,6 +2599,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ayurvedicTridosha',
   ],
   life_season_timing: [
+    'greekMoiraiAnankeFate',
     'lifeSeasonTiming',
     'monthlyFlow',
     'samjaeGyoUn',
@@ -2598,6 +2641,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'egyptianSphinxDreamOracle',
     'eleusinianMysteries',
     'druidMoonTrees',
     'persianAmeshaSpenta',
@@ -2616,6 +2660,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'greekMoiraiAnankeFate',
+    'egyptianSphinxDreamOracle',
+    'chaldeanMulApinAstrology',
     'plumBlossomMeihuaOracle',
     'pythagoreanHarmoniaSpheres',
     'tibetanPhowaRainbowBody',
@@ -2878,5 +2925,8 @@ ${report.celticTuathaFourTreasuresResult && shouldIncludeEngine('celticTuathaFou
 ${report.taoistShangqingTwentyFourSpiritsResult && shouldIncludeEngine('taoistShangqingTwentyFourSpirits', options) ? '\n' + formatTaoistShangqingTwentyFourSpiritsPrompt(report.taoistShangqingTwentyFourSpiritsResult) : ''}
 ${report.tibetanPhowaRainbowBodyResult && shouldIncludeEngine('tibetanPhowaRainbowBody', options) ? '\n' + formatTibetanPhowaRainbowBodyPrompt(report.tibetanPhowaRainbowBodyResult) : ''}
 ${report.pythagoreanHarmoniaSpheresResult && shouldIncludeEngine('pythagoreanHarmoniaSpheres', options) ? '\n' + formatPythagoreanHarmoniaSpheresPrompt(report.pythagoreanHarmoniaSpheresResult) : ''}
-${report.plumBlossomMeihuaOracleResult && shouldIncludeEngine('plumBlossomMeihuaOracle', options) ? '\n' + formatPlumBlossomMeihuaOraclePrompt(report.plumBlossomMeihuaOracleResult) : ''}`;
+${report.plumBlossomMeihuaOracleResult && shouldIncludeEngine('plumBlossomMeihuaOracle', options) ? '\n' + formatPlumBlossomMeihuaOraclePrompt(report.plumBlossomMeihuaOracleResult) : ''}
+${report.greekMoiraiAnankeFateResult && shouldIncludeEngine('greekMoiraiAnankeFate', options) ? '\n' + formatGreekMoiraiAnankeFatePrompt(report.greekMoiraiAnankeFateResult) : ''}
+${report.egyptianSphinxDreamOracleResult && shouldIncludeEngine('egyptianSphinxDreamOracle', options) ? '\n' + formatEgyptianSphinxDreamOraclePrompt(report.egyptianSphinxDreamOracleResult) : ''}
+${report.chaldeanMulApinAstrologyResult && shouldIncludeEngine('chaldeanMulApinAstrology', options) ? '\n' + formatChaldeanMulApinAstrologyPrompt(report.chaldeanMulApinAstrologyResult) : ''}`;
 }
