@@ -112,6 +112,9 @@ import { calculateMayanTzolkinSacredCalendar, formatMayanTzolkinSacredCalendarPr
 import { calculateNordicElderFutharkRunes, formatNordicElderFutharkRunesPrompt, type NordicElderFutharkRunesReport, NORDIC_RUNES_VERSION } from './nordicElderFutharkRunesEngine';
 import { calculateDelphicMaximsOracle, formatDelphicMaximsOraclePrompt, type DelphicMaximsOracleReport, DELPHIC_MAXIMS_VERSION } from './delphicMaximsOracleEngine';
 import { calculateAyurvedicTridoshaPrana, formatAyurvedicTridoshaPranaPrompt, type AyurvedicTridoshaReport, AYURVEDIC_TRIDOSHA_VERSION } from './ayurvedicTridoshaPranaEngine';
+import { calculateHawaiianHunaHooponopono, formatHawaiianHunaHooponoponoPrompt, type HawaiianHunaReport, HAWAIIAN_HUNA_VERSION } from './hawaiianHunaHooponoponoEngine';
+import { calculateFengShuiEightMansions, formatFengShuiEightMansionsPrompt, type FengShuiEightMansionsReport, FENG_SHUI_EIGHT_MANSIONS_VERSION } from './fengShuiEightMansionsEngine';
+import { calculateZoroastrianAshaTruth, formatZoroastrianAshaTruthPrompt, type ZoroastrianAshaReport, ZOROASTRIAN_ASHA_VERSION } from './zoroastrianAshaTruthEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -244,6 +247,9 @@ export interface DeterministicEngineReport {
   nordicRunesResult?: NordicElderFutharkRunesReport | null;
   delphicMaximsResult?: DelphicMaximsOracleReport | null;
   ayurvedicTridoshaResult?: AyurvedicTridoshaReport | null;
+  hawaiianHunaResult?: HawaiianHunaReport | null;
+  fengShuiEightMansionsResult?: FengShuiEightMansionsReport | null;
+  zoroastrianAshaResult?: ZoroastrianAshaReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1518,6 +1524,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 84. 고대 하와이 호오포노포노 & 후나 7대 원리 치유 나침반 엔진
+  const hawaiianHunaResult = (() => {
+    try {
+      return calculateHawaiianHunaHooponopono({ profile, contextText: question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 85. 동양 정통 풍수 8택(八宅) 공간 에너지 & 24방위 길흉 엔진
+  const fengShuiEightMansionsResult = (() => {
+    try {
+      return calculateFengShuiEightMansions({ profile, contextText: question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 86. 고대 조로아스터교 아샤(Asha) 신성 우주 질서 & 3대 선행 진실 엔진
+  const zoroastrianAshaResult = (() => {
+    try {
+      return calculateZoroastrianAshaTruth({ profile, contextText: question });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1636,6 +1669,9 @@ export function runDeterministicEngine(params: {
     nordicRunesResult,
     delphicMaximsResult,
     ayurvedicTridoshaResult,
+    hawaiianHunaResult,
+    fengShuiEightMansionsResult,
+    zoroastrianAshaResult,
     tools: toolsMap,
   };
 }
@@ -1747,6 +1783,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master' },
   { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master' },
   { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master' },
+  { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master' },
+  { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master' },
+  { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -1814,6 +1853,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'quantumLeap',
     'hermeticKybalion',
     'mayanTzolkin',
+    'fengShuiEightMansions',
   ],
   relationship_love: [
     'karmicSynastry',
@@ -1829,6 +1869,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ziweiHuaJi',
     'celticTreeOgham',
     'sufiLataif',
+    'hawaiianHuna',
   ],
   immediate_decision: [
     'instantDecision',
@@ -1844,6 +1885,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'vibrationalSoulQuest',
     'nordicRunes',
     'delphicMaxims',
+    'zoroastrianAsha',
   ],
   daily_timing_transit: [
     'chronoTransit',
@@ -1884,6 +1926,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'sufiLataif',
     'alchemicalTransmutation',
     'ayurvedicTridosha',
+    'hawaiianHuna',
+    'fengShuiEightMansions',
   ],
   creative_mind: [
     'kabbalah',
@@ -1912,6 +1956,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'alchemicalTransmutation',
     'delphicMaxims',
     'ayurvedicTridosha',
+    'hawaiianHuna',
+    'zoroastrianAsha',
   ],
 };
 
@@ -2070,5 +2116,8 @@ ${report.sufiLataifResult && shouldIncludeEngine('sufiLataif', options) ? '\n' +
 ${report.mayanTzolkinResult && shouldIncludeEngine('mayanTzolkin', options) ? '\n' + formatMayanTzolkinSacredCalendarPrompt(report.mayanTzolkinResult) : ''}
 ${report.nordicRunesResult && shouldIncludeEngine('nordicRunes', options) ? '\n' + formatNordicElderFutharkRunesPrompt(report.nordicRunesResult) : ''}
 ${report.delphicMaximsResult && shouldIncludeEngine('delphicMaxims', options) ? '\n' + formatDelphicMaximsOraclePrompt(report.delphicMaximsResult) : ''}
-${report.ayurvedicTridoshaResult && shouldIncludeEngine('ayurvedicTridosha', options) ? '\n' + formatAyurvedicTridoshaPranaPrompt(report.ayurvedicTridoshaResult) : ''}`;
+${report.ayurvedicTridoshaResult && shouldIncludeEngine('ayurvedicTridosha', options) ? '\n' + formatAyurvedicTridoshaPranaPrompt(report.ayurvedicTridoshaResult) : ''}
+${report.hawaiianHunaResult && shouldIncludeEngine('hawaiianHuna', options) ? '\n' + formatHawaiianHunaHooponoponoPrompt(report.hawaiianHunaResult) : ''}
+${report.fengShuiEightMansionsResult && shouldIncludeEngine('fengShuiEightMansions', options) ? '\n' + formatFengShuiEightMansionsPrompt(report.fengShuiEightMansionsResult) : ''}
+${report.zoroastrianAshaResult && shouldIncludeEngine('zoroastrianAsha', options) ? '\n' + formatZoroastrianAshaTruthPrompt(report.zoroastrianAshaResult) : ''}`;
 }
