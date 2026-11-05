@@ -53,6 +53,7 @@ import {
   mergeUnifiedMessages,
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
+import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
@@ -2031,7 +2032,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const scrollToBottom = useCallback((force = false, smooth = true) => {
     if (!messagesContainerRef.current) return;
-    if (!force && (isUserScrolledUpRef.current || ttsInfo.isSpeaking)) return;
+    if (!force && (isUserScrolledUpRef.current || ttsInfo.isSpeaking || ttsInfo.isLoading || manualTtsActiveRef.current)) return;
 
     isAutoScrollingRef.current = true;
     if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
@@ -2044,7 +2045,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       top: container.scrollHeight,
       behavior: smooth ? 'smooth' : 'auto',
     });
-  }, [ttsInfo.isSpeaking]);
+  }, [ttsInfo.isSpeaking, ttsInfo.isLoading]);
 
   // Continuous height & image layout observer for smooth uncropped scrolling
   useEffect(() => {
@@ -2304,6 +2305,17 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         ? `${extraSystemContext}\n\n${divinationSelection.promptInjection}`
         : divinationSelection.promptInjection;
     }
+
+    // 🔮 타로 질문 의도 감지 시 실제 운명의 타로 카드를 즉시 드로우하여 루시 프롬프트에 주입 (이미지 비주얼 연동)
+    const isTarotIntent = /타로|카드.*뽑|뽑.*카드|타로카드|점괘|스프레드|타로점/i.test(combinedContextText);
+    if (isTarotIntent) {
+      const isThreeCards = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
+      const drawnCards = drawLucyTarotCards(isThreeCards ? 3 : 1);
+      const cardMarkers = drawnCards.map((c) => formatTarotMarker(c)).join(' ');
+      const cardDescriptions = drawnCards.map((c, i) => `- [${i + 1}번 카드] ${c.nameKo} (${c.name}, ${c.orientationKo}) — 키워드: ${c.keywords.join(', ')}`).join('\n');
+      const tarotInstruction = `[🔮 운명의 타로 카드 드로우 결과 (실제 뽑힌 카드)]\n${cardMarkers}\n${cardDescriptions}\n- [루시 타로 리딩 절대 지침]:\n  1. 위에서 실제로 뽑힌 타로 카드의 상징과 의미를 질문자의 고민과 연결하여 현실적이고 깊이 있게 풀이해줘.\n  2. 답변 첫머리나 카드를 소개하는 문장에 ${cardMarkers} 태그를 그대로 포함해줘. 시스템이 이 태그를 인식해 실제 고화질 타로 카드 이미지를 대화창에 띄워줍니다.`;
+      extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${tarotInstruction}` : tarotInstruction;
+    }
     const usedToolNames =
       !divinationSelection.isCasualMessage && divinationSelection.promptInjection
         ? (divinationSelection.firedEngineBadges && divinationSelection.firedEngineBadges.length > 0
@@ -2530,6 +2542,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   };
 
   const handleVoicePlay = async (id: string, text: string, _voice?: string) => {
+    isUserScrolledUpRef.current = true; // 수동 음성 재생 클릭 시 하단 끌어당김 절대 차단
     unlockAudioPlayback();
     primeTTSAudioElement();
     const run = ++manualTtsRunRef.current;

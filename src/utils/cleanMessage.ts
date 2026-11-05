@@ -17,22 +17,23 @@ export function cleanUserMessageDisplay(text: string | null | undefined): string
 }
 
 export function cleanAssistantMessageDisplay(text: string | null | undefined): string {
-  if (!text || typeof text !== 'string' || !text.trimStart().startsWith('{')) return text || '';
+  if (!text || typeof text !== 'string') return '';
+  let cleaned = text;
 
-  try {
-    const parsed: unknown = JSON.parse(text);
-    if (
-      parsed &&
-      typeof parsed === 'object' &&
-      'diagnosis' in parsed &&
-      typeof parsed.diagnosis === 'string' &&
-      ['luckyNumber', 'luckyColor', 'remedy', 'symbol', 'frequency'].some((key) => key in parsed)
-    ) {
-      return parsed.diagnosis;
-    }
-  } catch {
-    return text;
+  if (cleaned.trimStart().startsWith('{')) {
+    try {
+      const parsed: unknown = JSON.parse(cleaned);
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        'diagnosis' in parsed &&
+        typeof parsed.diagnosis === 'string' &&
+        ['luckyNumber', 'luckyColor', 'remedy', 'symbol', 'frequency'].some((key) => key in parsed)
+      ) {
+        cleaned = parsed.diagnosis;
+      }
+    } catch {}
   }
 
-  return text;
+  return cleaned.replace(/\[TAROT:[a-zA-Z0-9_]+(?::(?:upright|reversed|정방향|역방향))?\]\s*/gi, '').trim();
 }

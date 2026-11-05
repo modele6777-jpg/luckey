@@ -16,7 +16,7 @@ export function stripInternalSpeechDirectives(text: string): string {
     .replace(/<(think|analysis|system|developer|internal|instructions)(?:\s[^>]*)?>[\s\S]*?(?:<\/\1\s*>|$)/gi, ' ')
     .replace(/```(?:system|developer|prompt|instructions|internal|analysis)\s*\n[\s\S]*?(?:```|$)/gi, ' ')
     .replace(/\[(SYSTEM|DEVELOPER|INTERNAL|PROMPT|INSTRUCTIONS|ANALYSIS)\]([\s\S]*?)(?:\[\/\1\]|$)/gi, ' ')
-    .replace(/\[(?:SYSTEM|DEVELOPER|INTERNAL|PROMPT|INSTRUCTIONS|ANALYSIS|EMOTION|SUGGESTIONS|TOOL|IMAGE|STAGE|SOUL_UPDATE|CARD_DRAWN|YOUTUBE)\s*:[\s\S]*?(?:\]|$)/gi, ' ')
+    .replace(/\[(?:SYSTEM|DEVELOPER|INTERNAL|PROMPT|INSTRUCTIONS|ANALYSIS|EMOTION|SUGGESTIONS|TOOL|IMAGE|STAGE|SOUL_UPDATE|CARD_DRAWN|YOUTUBE|TAROT)\s*:[\s\S]*?(?:\]|$)/gi, ' ')
     .trim();
 }
 
@@ -26,7 +26,7 @@ export function prepareNaturalSpeechText(text: string): string {
 
   // 1. Remove [SUGGESTIONS: ...] blocks (including unclosed trailing blocks) and system/media directives
   clean = clean.replace(/\[SUGGESTIONS\s*:[\s\S]*?(?:\]|$)/gi, "");
-  clean = clean.replace(/\[(?:YOUTUBE|EMOTION|TOOL|IMAGE|PROMPT|STAGE|SOUL_UPDATE|CARD_DRAWN|SYSTEM):[\s\S]*?\]/gi, "");
+  clean = clean.replace(/\[(?:YOUTUBE|EMOTION|TOOL|IMAGE|PROMPT|STAGE|SOUL_UPDATE|CARD_DRAWN|SYSTEM|TAROT):[\s\S]*?\]/gi, "");
 
   // 2. Remove Markdown images ![alt](url) completely so image alt/prompt URLs are never read aloud
   clean = clean.replace(/!\[[^\]]*\]\([^)]*\)/g, " ");
