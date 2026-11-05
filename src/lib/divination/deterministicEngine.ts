@@ -136,6 +136,9 @@ import { calculateTaoistGongGuoGeKarma, formatTaoistGongGuoGeKarmaPrompt, type T
 import { calculateYorubaIfaOdu, formatYorubaIfaOduPrompt, type YorubaIfaOduReport, YORUBA_IFA_ODU_ENGINE_VERSION } from './yorubaIfaOduEngine';
 import { calculateArabicIlmAlRaml, formatArabicIlmAlRamlPrompt, type ArabicIlmAlRamlReport, ARABIC_ILM_AL_RAML_ENGINE_VERSION } from './arabicIlmAlRamlEngine';
 import { calculateHinduNadiAgastyaPalmLeaf, formatHinduNadiAgastyaPalmLeafPrompt, type HinduNadiAgastyaPalmLeafReport, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION } from './hinduNadiAgastyaPalmLeafEngine';
+import { calculateShintoKotodama, formatShintoKotodamaPrompt, type ShintoKotodamaReport, SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION } from './shintoKotodamaFourSoulsEngine';
+import { calculateAboriginalDreamtimeSonglines, formatAboriginalDreamtimeSonglinesPrompt, type DreamtimeSonglineReport, ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION } from './aboriginalDreamtimeSonglinesEngine';
+import { calculateFinnishKalevalaSampo, formatFinnishKalevalaSampoPrompt, type FinnishKalevalaSampoReport, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION } from './finnishKalevalaSampoEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -292,6 +295,9 @@ export interface DeterministicEngineReport {
   yorubaIfaOduResult?: YorubaIfaOduReport | null;
   arabicIlmAlRamlResult?: ArabicIlmAlRamlReport | null;
   hinduNadiAgastyaPalmLeafResult?: HinduNadiAgastyaPalmLeafReport | null;
+  shintoKotodamaFourSoulsResult?: ShintoKotodamaReport | null;
+  aboriginalDreamtimeSonglinesResult?: DreamtimeSonglineReport | null;
+  finnishKalevalaSampoResult?: FinnishKalevalaSampoReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -1782,6 +1788,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 108. 고대 일본 신도 고토다마 50음령 & 4혼1생 영혼 조화 엔진
+  const shintoKotodamaFourSoulsResult = (() => {
+    try {
+      return calculateShintoKotodama({ profile, targetInstantTime: now.toISOString() });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 109. 호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 엔진
+  const aboriginalDreamtimeSonglinesResult = (() => {
+    try {
+      return calculateAboriginalDreamtimeSonglines({ profile, targetInstantTime: now.toISOString() });
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 110. 고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) 9대 룬가 번영 엔진
+  const finnishKalevalaSampoResult = (() => {
+    try {
+      return calculateFinnishKalevalaSampo({ profile, targetInstantTime: now.toISOString() });
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -1924,6 +1957,9 @@ export function runDeterministicEngine(params: {
     yorubaIfaOduResult,
     arabicIlmAlRamlResult,
     hinduNadiAgastyaPalmLeafResult,
+    shintoKotodamaFourSoulsResult,
+    aboriginalDreamtimeSonglinesResult,
+    finnishKalevalaSampoResult,
     tools: toolsMap,
   };
 }
@@ -2059,6 +2095,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master' },
   { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
   { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master' },
+  { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master' },
+  { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master' },
+  { key: 'finnishKalevalaSampo', nameKo: '핀란드 칼레발라 삼포', icon: '🌾', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2092,6 +2131,8 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'shintoKotodamaFourSouls',
+    'finnishKalevalaSampo',
     'yorubaIfaOdu',
     'arabicIlmAlRaml',
     'hinduNadiAgastyaPalmLeaf',
@@ -2252,6 +2293,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'shintoKotodamaFourSouls',
+    'aboriginalDreamtimeSonglines',
+    'finnishKalevalaSampo',
     'yorubaIfaOdu',
     'arabicIlmAlRaml',
     'hinduNadiAgastyaPalmLeaf',
@@ -2469,5 +2513,8 @@ ${report.egyptianHermeticCartoucheResult && shouldIncludeEngine('egyptianHermeti
 ${report.taoistGongGuoGeKarmaResult && shouldIncludeEngine('taoistGongGuoGeKarma', options) ? '\n' + formatTaoistGongGuoGeKarmaPrompt(report.taoistGongGuoGeKarmaResult) : ''}
 ${report.yorubaIfaOduResult && shouldIncludeEngine('yorubaIfaOdu', options) ? '\n' + formatYorubaIfaOduPrompt(report.yorubaIfaOduResult) : ''}
 ${report.arabicIlmAlRamlResult && shouldIncludeEngine('arabicIlmAlRaml', options) ? '\n' + formatArabicIlmAlRamlPrompt(report.arabicIlmAlRamlResult) : ''}
-${report.hinduNadiAgastyaPalmLeafResult && shouldIncludeEngine('hinduNadiAgastyaPalmLeaf', options) ? '\n' + formatHinduNadiAgastyaPalmLeafPrompt(report.hinduNadiAgastyaPalmLeafResult) : ''}`;
+${report.hinduNadiAgastyaPalmLeafResult && shouldIncludeEngine('hinduNadiAgastyaPalmLeaf', options) ? '\n' + formatHinduNadiAgastyaPalmLeafPrompt(report.hinduNadiAgastyaPalmLeafResult) : ''}
+${report.shintoKotodamaFourSoulsResult && shouldIncludeEngine('shintoKotodamaFourSouls', options) ? '\n' + formatShintoKotodamaPrompt(report.shintoKotodamaFourSoulsResult) : ''}
+${report.aboriginalDreamtimeSonglinesResult && shouldIncludeEngine('aboriginalDreamtimeSonglines', options) ? '\n' + formatAboriginalDreamtimeSonglinesPrompt(report.aboriginalDreamtimeSonglinesResult) : ''}
+${report.finnishKalevalaSampoResult && shouldIncludeEngine('finnishKalevalaSampo', options) ? '\n' + formatFinnishKalevalaSampoPrompt(report.finnishKalevalaSampoResult) : ''}`;
 }

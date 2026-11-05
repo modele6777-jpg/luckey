@@ -102,6 +102,9 @@ import { calculateTaoistGongGuoGeKarma, formatTaoistGongGuoGeKarmaPrompt, TAOIST
 import { calculateYorubaIfaOdu, formatYorubaIfaOduPrompt, YORUBA_IFA_ODU_ENGINE_VERSION } from '../src/lib/divination/yorubaIfaOduEngine';
 import { calculateArabicIlmAlRaml, formatArabicIlmAlRamlPrompt, ARABIC_ILM_AL_RAML_ENGINE_VERSION } from '../src/lib/divination/arabicIlmAlRamlEngine';
 import { calculateHinduNadiAgastyaPalmLeaf, formatHinduNadiAgastyaPalmLeafPrompt, HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION } from '../src/lib/divination/hinduNadiAgastyaPalmLeafEngine';
+import { calculateShintoKotodama, formatShintoKotodamaPrompt, SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION } from '../src/lib/divination/shintoKotodamaFourSoulsEngine';
+import { calculateAboriginalDreamtimeSonglines, formatAboriginalDreamtimeSonglinesPrompt, ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION } from '../src/lib/divination/aboriginalDreamtimeSonglinesEngine';
+import { calculateFinnishKalevalaSampo, formatFinnishKalevalaSampoPrompt, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION } from '../src/lib/divination/finnishKalevalaSampoEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -2938,4 +2941,34 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
   const prompt = formatHinduNadiAgastyaPalmLeafPrompt(rep);
   assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 실측 데이터'));
   assert(prompt.includes(rep.kandamName));
+});
+
+test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and Kotodama chant', () => {
+  const rep = calculateShintoKotodama({ profile });
+  assert.equal(rep.engineVersion, SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION);
+  assert(rep.naohiPurityIndex >= 0 && rep.naohiPurityIndex <= 100);
+  assert(rep.fourSouls.dominantSoul.length > 0);
+  const prompt = formatShintoKotodamaPrompt(rep);
+  assert(prompt.includes('고대 일본 신도 고토다마(言霊) 50음령 & 4혼1생(四魂一志) 영혼 조화 실측 데이터'));
+  assert(prompt.includes(rep.fourSouls.dominantSoul));
+});
+
+test('Aboriginal Dreamtime Songlines Engine: calculates ancestral totem and Kurunpa index', () => {
+  const rep = calculateAboriginalDreamtimeSonglines({ profile });
+  assert.equal(rep.engineVersion, ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION);
+  assert(rep.kurunpaLifeForceIndex >= 0 && rep.kurunpaLifeForceIndex <= 100);
+  assert(rep.activeTotem.name.length > 0);
+  const prompt = formatAboriginalDreamtimeSonglinesPrompt(rep);
+  assert(prompt.includes('호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 실측 데이터'));
+  assert(prompt.includes(rep.activeTotem.name));
+});
+
+test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilience index', () => {
+  const rep = calculateFinnishKalevalaSampo({ profile });
+  assert.equal(rep.engineVersion, FINNISH_KALEVALA_SAMPO_ENGINE_VERSION);
+  assert(rep.sisuResilienceIndex >= 0 && rep.sisuResilienceIndex <= 100);
+  assert(rep.sampoBalance.dominantWing.length > 0);
+  const prompt = formatFinnishKalevalaSampoPrompt(rep);
+  assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 실측 데이터'));
+  assert(prompt.includes(rep.sampoBalance.dominantWing));
 });
