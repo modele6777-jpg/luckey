@@ -159,6 +159,9 @@ import { calculateMongolianTengriHiimori, formatMongolianTengriHiimoriPrompt, MO
 import { calculateGaelicWheelFireFestivals, formatGaelicWheelFireFestivalsPrompt, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION } from '../src/lib/divination/gaelicWheelFireFestivalsEngine';
 import { calculateNorseHavamalEighteenGaldr, formatNorseHavamalEighteenGaldrPrompt, NORSE_HAVAMAL_GALDR_ENGINE_VERSION } from '../src/lib/divination/norseHavamalEighteenGaldrEngine';
 import { calculateIbnArabiWahdatAlWujud, formatIbnArabiWahdatAlWujudPrompt, IBN_ARABI_WAHDAT_ENGINE_VERSION } from '../src/lib/divination/ibnArabiWahdatAlWujudWisdomEngine';
+import { calculateChonggamnokTenSanctuaries, formatChonggamnokPrompt, CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION } from '../src/lib/divination/koreanChonggamnokTenSanctuariesEngine';
+import { calculateBalineseTriHitaKarana, formatBalineseTriHitaKaranaPrompt, BALINESE_TRI_HITA_KARANA_ENGINE_VERSION } from '../src/lib/divination/balineseTriHitaKaranaHarmonyEngine';
+import { calculateHopiFourWorldsKachina, formatHopiFourWorldsPrompt, HOPI_FOUR_WORLDS_ENGINE_VERSION } from '../src/lib/divination/hopiFourWorldsKachinaProphecyEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3705,6 +3708,45 @@ test('Ibn Arabi Wahdat al-Wujud Heart Wisdom Engine: calculates prophetic heart 
   const prompt = formatIbnArabiWahdatAlWujudPrompt(rep);
   assert(prompt.includes('이븐 아라비 존재의 단일성(Wahdat al-Wujud) 심장 영지 실측 데이터'));
   assert(prompt.includes(rep.dominantWisdom.prophetName));
+});
+
+test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gonggong-euleul virtue and sanctuary shield', () => {
+  const rep = calculateChonggamnokTenSanctuaries(profile);
+  assert.equal(rep.engineVersion, CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION);
+  assert(rep.gonggongEuleulVirtueScore >= 0 && rep.gonggongEuleulVirtueScore <= 100);
+  assert(rep.threeCalamitiesImmunityScore >= 0 && rep.threeCalamitiesImmunityScore <= 100);
+  assert(rep.geomanticVitalityIndex >= 0 && rep.geomanticVitalityIndex <= 100);
+  assert(rep.spiritualSanctuaryShield >= 0 && rep.spiritualSanctuaryShield <= 100);
+  assert(rep.dominantSanctuary.nameKo.length > 0);
+  const prompt = formatChonggamnokPrompt(rep);
+  assert(prompt.includes('조선 비전 정감록 10승지 영맥 & 보신 피난처 실측 데이터'));
+  assert(prompt.includes(rep.dominantSanctuary.nameKo));
+});
+
+test('Balinese Tri Hita Karana Engine: calculates cosmic trinity harmony, tri kaya purification and sanctuary resonance', () => {
+  const rep = calculateBalineseTriHitaKarana(profile);
+  assert.equal(rep.engineVersion, BALINESE_TRI_HITA_KARANA_ENGINE_VERSION);
+  assert(rep.parhyanganDivineHarmony >= 0 && rep.parhyanganDivineHarmony <= 100);
+  assert(rep.pawonganHumanityEmpathy >= 0 && rep.pawonganHumanityEmpathy <= 100);
+  assert(rep.palemahanEcologyBalance >= 0 && rep.palemahanEcologyBalance <= 100);
+  assert(rep.triKayaPurificationIndex >= 0 && rep.triKayaPurificationIndex <= 100);
+  assert(rep.activeSanctuary.nameKo.length > 0);
+  const prompt = formatBalineseTriHitaKaranaPrompt(rep);
+  assert(prompt.includes('발리 힌두교 트리 히타 카라나 3대 우주 조화 & 3업 정화 실측 데이터'));
+  assert(prompt.includes(rep.activeSanctuary.nameKo));
+});
+
+test('Hopi Four Worlds Kachina Prophecy Engine: calculates four worlds evolution, koyaanisqatsi healing and kiva center alignment', () => {
+  const rep = calculateHopiFourWorldsKachina(profile);
+  assert.equal(rep.engineVersion, HOPI_FOUR_WORLDS_ENGINE_VERSION);
+  assert(rep.fourWorldsEvolutionScore >= 0 && rep.fourWorldsEvolutionScore <= 100);
+  assert(rep.koyaanisqatsiHealingPower >= 0 && rep.koyaanisqatsiHealingPower <= 100);
+  assert(rep.kivaSacredCenterAlignment >= 0 && rep.kivaSacredCenterAlignment <= 100);
+  assert(rep.spiderGrandmotherWisdom >= 0 && rep.spiderGrandmotherWisdom <= 100);
+  assert(rep.dominantKachina.nameKo.length > 0);
+  const prompt = formatHopiFourWorldsPrompt(rep);
+  assert(prompt.includes('아메리카 호피족 4대 우주 시대 & 카치나 정령 지혜 실측 데이터'));
+  assert(prompt.includes(rep.dominantKachina.nameKo));
 });
 
 

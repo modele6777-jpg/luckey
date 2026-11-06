@@ -193,6 +193,9 @@ import { calculateMongolianTengriHiimori, formatMongolianTengriHiimoriPrompt, ty
 import { calculateGaelicWheelFireFestivals, formatGaelicWheelFireFestivalsPrompt, type GaelicWheelFireFestivalsReport, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION } from './gaelicWheelFireFestivalsEngine';
 import { calculateNorseHavamalEighteenGaldr, formatNorseHavamalEighteenGaldrPrompt, type NorseHavamalEighteenGaldrReport, NORSE_HAVAMAL_GALDR_ENGINE_VERSION } from './norseHavamalEighteenGaldrEngine';
 import { calculateIbnArabiWahdatAlWujud, formatIbnArabiWahdatAlWujudPrompt, type IbnArabiWahdatAlWujudReport, IBN_ARABI_WAHDAT_ENGINE_VERSION } from './ibnArabiWahdatAlWujudWisdomEngine';
+import { calculateChonggamnokTenSanctuaries, formatChonggamnokPrompt, type ChonggamnokReport, CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION } from './koreanChonggamnokTenSanctuariesEngine';
+import { calculateBalineseTriHitaKarana, formatBalineseTriHitaKaranaPrompt, type BalineseTriHitaKaranaReport, BALINESE_TRI_HITA_KARANA_ENGINE_VERSION } from './balineseTriHitaKaranaHarmonyEngine';
+import { calculateHopiFourWorldsKachina, formatHopiFourWorldsPrompt, type HopiFourWorldsReport, HOPI_FOUR_WORLDS_ENGINE_VERSION } from './hopiFourWorldsKachinaProphecyEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -406,6 +409,9 @@ export interface DeterministicEngineReport {
   gaelicWheelFireFestivalsResult?: GaelicWheelFireFestivalsReport | null;
   norseHavamalEighteenGaldrResult?: NorseHavamalEighteenGaldrReport | null;
   ibnArabiWahdatAlWujudResult?: IbnArabiWahdatAlWujudReport | null;
+  chonggamnokTenSanctuariesResult?: ChonggamnokReport | null;
+  balineseTriHitaKaranaResult?: BalineseTriHitaKaranaReport | null;
+  hopiFourWorldsKachinaResult?: HopiFourWorldsReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2409,6 +2415,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 165. 조선 비전 정감록 10승지 영맥·궁궁을을 지기 보신 피난처 엔진
+  const chonggamnokTenSanctuariesResult = (() => {
+    try {
+      return calculateChonggamnokTenSanctuaries(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 166. 발리 힌두교 트리 히타 카라나(3대 우주 조화) 및 트리 카야 파리수다 3업 정화 엔진
+  const balineseTriHitaKaranaResult = (() => {
+    try {
+      return calculateBalineseTriHitaKarana(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 167. 아메리카 호피족 4대 우주 시대 순환·카치나 정령 지혜·코양니스카시 치유 엔진
+  const hopiFourWorldsKachinaResult = (() => {
+    try {
+      return calculateHopiFourWorldsKachina(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2608,6 +2641,9 @@ export function runDeterministicEngine(params: {
     gaelicWheelFireFestivalsResult,
     norseHavamalEighteenGaldrResult,
     ibnArabiWahdatAlWujudResult,
+    chonggamnokTenSanctuariesResult,
+    balineseTriHitaKaranaResult,
+    hopiFourWorldsKachinaResult,
     tools: toolsMap,
   };
 }
@@ -2800,6 +2836,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master' },
   { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master' },
   { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },
+  { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master' },
+  { key: 'balineseTriHitaKarana', nameKo: '발리 트리 히타 카라나 3대 조화', icon: '🌺', category: 'deep_master' },
+  { key: 'hopiFourWorldsKachina', nameKo: '호피 4대 세계 카치나 정령 지혜', icon: '🦅', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3356,5 +3395,8 @@ ${report.aztecTonalamatlResult && shouldIncludeEngine('aztecTonalamatl', options
 ${report.mongolianTengriHiimoriResult && shouldIncludeEngine('mongolianTengriHiimori', options) ? '\n' + formatMongolianTengriHiimoriPrompt(report.mongolianTengriHiimoriResult) : ''}
 ${report.gaelicWheelFireFestivalsResult && shouldIncludeEngine('gaelicWheelFireFestivals', options) ? '\n' + formatGaelicWheelFireFestivalsPrompt(report.gaelicWheelFireFestivalsResult) : ''}
 ${report.norseHavamalEighteenGaldrResult && shouldIncludeEngine('norseHavamalEighteenGaldr', options) ? '\n' + formatNorseHavamalEighteenGaldrPrompt(report.norseHavamalEighteenGaldrResult) : ''}
-${report.ibnArabiWahdatAlWujudResult && shouldIncludeEngine('ibnArabiWahdatAlWujud', options) ? '\n' + formatIbnArabiWahdatAlWujudPrompt(report.ibnArabiWahdatAlWujudResult) : ''}`;
+${report.ibnArabiWahdatAlWujudResult && shouldIncludeEngine('ibnArabiWahdatAlWujud', options) ? '\n' + formatIbnArabiWahdatAlWujudPrompt(report.ibnArabiWahdatAlWujudResult) : ''}
+${report.chonggamnokTenSanctuariesResult && shouldIncludeEngine('chonggamnokTenSanctuaries', options) ? '\n' + formatChonggamnokPrompt(report.chonggamnokTenSanctuariesResult) : ''}
+${report.balineseTriHitaKaranaResult && shouldIncludeEngine('balineseTriHitaKarana', options) ? '\n' + formatBalineseTriHitaKaranaPrompt(report.balineseTriHitaKaranaResult) : ''}
+${report.hopiFourWorldsKachinaResult && shouldIncludeEngine('hopiFourWorldsKachina', options) ? '\n' + formatHopiFourWorldsPrompt(report.hopiFourWorldsKachinaResult) : ''}`;
 }
