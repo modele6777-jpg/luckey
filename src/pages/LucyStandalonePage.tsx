@@ -2956,20 +2956,18 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <span>{msgModeInfo.badgeLabel}</span>
                   </span>
 
-                  {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && msg.calculationAudit.length > 0 && (
-                    <details className="text-[11px] text-amber-700 dark:text-amber-200 max-w-full">
-                      <summary className="cursor-pointer">이번 답변의 계산 근거 {msg.calculationAudit.filter(item => item.sentToModel).length}개 · 상태 보기</summary>
-                      <ul className="mt-1 space-y-1">
-                        {msg.calculationAudit.filter(item => item.note !== '이번 질문에서 선택하지 않은 도구').map(item => (
-                          <li key={item.toolId}>
-                            {item.name}: {item.sentToModel ? '계산 완료 · 답변에 전달' : item.status === 'error' ? '계산 실패' : item.status === 'symbolic' ? '상징적 참고' : item.status === 'partial' ? '부분 계산' : '미계산'}
-                            {item.note ? ` — ${item.note}` : ''}
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="mt-1 opacity-80">계산 실행은 해석·미래 예측의 정확성을 보증하지 않습니다.검증되지 않은 심층 점수는 제외했습니다.</p>
-                    </details>
-                  )}
+                  {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && (() => {
+                    const tools = [...new Map(msg.calculationAudit
+                      .filter(item => item.status === 'calculated' && item.sentToModel)
+                      .map(item => [item.toolId, item.name])).values()];
+                    if (!tools.length) return null;
+                    return (
+                      <span data-used-calculation-tools="true" className="inline-flex flex-wrap items-center gap-1 text-[10px] text-amber-700 dark:text-amber-200">
+                        <span className="rounded-full border border-amber-400/40 px-2 py-0.5">사용 도구 {tools.length}개</span>
+                        {tools.map(name => <span key={name} className="rounded-full border border-amber-400/30 px-2 py-0.5">{name}</span>)}
+                      </span>
+                    );
+                  })()}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
