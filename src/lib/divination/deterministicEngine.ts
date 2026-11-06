@@ -190,6 +190,9 @@ import { calculateEtruscanAugurSixteenSky, formatEtruscanAugurSixteenSkyPrompt, 
 import { calculateRosicrucianChymicalWedding, formatRosicrucianChymicalWeddingPrompt, type RosicrucianChymicalWeddingReport, ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION } from './rosicrucianChymicalWeddingSevenDaysEngine';
 import { calculateAztecTonalamatl, formatAztecTonalamatlPrompt, type AztecTonalamatlReport, AZTEC_TONALAMATL_ENGINE_VERSION } from './aztecTonalamatlSacredCalendarEngine';
 import { calculateMongolianTengriHiimori, formatMongolianTengriHiimoriPrompt, type MongolianTengriHiimoriReport, MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION } from './mongolianTengriHiimoriSoulEngine';
+import { calculateGaelicWheelFireFestivals, formatGaelicWheelFireFestivalsPrompt, type GaelicWheelFireFestivalsReport, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION } from './gaelicWheelFireFestivalsEngine';
+import { calculateNorseHavamalEighteenGaldr, formatNorseHavamalEighteenGaldrPrompt, type NorseHavamalEighteenGaldrReport, NORSE_HAVAMAL_GALDR_ENGINE_VERSION } from './norseHavamalEighteenGaldrEngine';
+import { calculateIbnArabiWahdatAlWujud, formatIbnArabiWahdatAlWujudPrompt, type IbnArabiWahdatAlWujudReport, IBN_ARABI_WAHDAT_ENGINE_VERSION } from './ibnArabiWahdatAlWujudWisdomEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -400,6 +403,9 @@ export interface DeterministicEngineReport {
   rosicrucianChymicalWeddingResult?: RosicrucianChymicalWeddingReport | null;
   aztecTonalamatlResult?: AztecTonalamatlReport | null;
   mongolianTengriHiimoriResult?: MongolianTengriHiimoriReport | null;
+  gaelicWheelFireFestivalsResult?: GaelicWheelFireFestivalsReport | null;
+  norseHavamalEighteenGaldrResult?: NorseHavamalEighteenGaldrReport | null;
+  ibnArabiWahdatAlWujudResult?: IbnArabiWahdatAlWujudReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2376,6 +2382,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 162. 고대 게일 4대 화제 축제 및 휠 오브 더 이어 계절 순환 엔진
+  const gaelicWheelFireFestivalsResult = (() => {
+    try {
+      return calculateGaelicWheelFireFestivals(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 163. 고대 노르웨이 고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 엔진
+  const norseHavamalEighteenGaldrResult = (() => {
+    try {
+      return calculateNorseHavamalEighteenGaldr(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 164. 안달루시아 수피즘 이븐 아라비 존재의 단일성 및 28대 예언자 심장 영지 엔진
+  const ibnArabiWahdatAlWujudResult = (() => {
+    try {
+      return calculateIbnArabiWahdatAlWujud(profile, now);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2572,6 +2605,9 @@ export function runDeterministicEngine(params: {
     rosicrucianChymicalWeddingResult,
     aztecTonalamatlResult,
     mongolianTengriHiimoriResult,
+    gaelicWheelFireFestivalsResult,
+    norseHavamalEighteenGaldrResult,
+    ibnArabiWahdatAlWujudResult,
     tools: toolsMap,
   };
 }
@@ -2761,6 +2797,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },
   { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master' },
   { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master' },
+  { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master' },
+  { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master' },
+  { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3314,5 +3353,8 @@ ${report.neoConfucianFourSevenLiQiResult && shouldIncludeEngine('neoConfucianFou
 ${report.etruscanAugurSixteenSkyResult && shouldIncludeEngine('etruscanAugurSixteenSky', options) ? '\n' + formatEtruscanAugurSixteenSkyPrompt(report.etruscanAugurSixteenSkyResult) : ''}
 ${report.rosicrucianChymicalWeddingResult && shouldIncludeEngine('rosicrucianChymicalWedding', options) ? '\n' + formatRosicrucianChymicalWeddingPrompt(report.rosicrucianChymicalWeddingResult) : ''}
 ${report.aztecTonalamatlResult && shouldIncludeEngine('aztecTonalamatl', options) ? '\n' + formatAztecTonalamatlPrompt(report.aztecTonalamatlResult) : ''}
-${report.mongolianTengriHiimoriResult && shouldIncludeEngine('mongolianTengriHiimori', options) ? '\n' + formatMongolianTengriHiimoriPrompt(report.mongolianTengriHiimoriResult) : ''}`;
+${report.mongolianTengriHiimoriResult && shouldIncludeEngine('mongolianTengriHiimori', options) ? '\n' + formatMongolianTengriHiimoriPrompt(report.mongolianTengriHiimoriResult) : ''}
+${report.gaelicWheelFireFestivalsResult && shouldIncludeEngine('gaelicWheelFireFestivals', options) ? '\n' + formatGaelicWheelFireFestivalsPrompt(report.gaelicWheelFireFestivalsResult) : ''}
+${report.norseHavamalEighteenGaldrResult && shouldIncludeEngine('norseHavamalEighteenGaldr', options) ? '\n' + formatNorseHavamalEighteenGaldrPrompt(report.norseHavamalEighteenGaldrResult) : ''}
+${report.ibnArabiWahdatAlWujudResult && shouldIncludeEngine('ibnArabiWahdatAlWujud', options) ? '\n' + formatIbnArabiWahdatAlWujudPrompt(report.ibnArabiWahdatAlWujudResult) : ''}`;
 }
