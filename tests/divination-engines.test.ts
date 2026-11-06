@@ -201,6 +201,9 @@ import { calculateWangYangmingXinxue, formatWangYangmingXinxuePrompt, WANG_YANGM
 import { calculateSocraticMaieuticDaimon, formatSocraticMaieuticDaimonPrompt, SOCRATIC_MAIEUTIC_DAIMON_VERSION } from '../src/lib/divination/ancientGreekSocraticMaieuticDaimonEngine';
 import { calculateMenciusFourSproutsHoyeon, formatMenciusFourSproutsHoyeonPrompt, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION } from '../src/lib/divination/chineseMenciusFourSproutsHoyeonJigiEngine';
 import { calculateSenecaTimeSovereignty, formatSenecaTimeSovereigntyPrompt, SENECA_TIME_SOVEREIGNTY_VERSION } from '../src/lib/divination/romanSenecaTimeSovereigntyTranquilityEngine';
+import { calculatePlatonicIdeaCave, formatPlatonicIdeaCavePrompt, PLATONIC_IDEA_CAVE_VERSION } from '../src/lib/divination/ancientGreekPlatonicIdeaCaveEngine';
+import { calculateToegyeSeonghakSipdo, formatToegyeSeonghakSipdoPrompt, TOEGYE_SEONGHAK_SIPDO_VERSION } from '../src/lib/divination/koreanToegyeSeonghakSipdoEngine';
+import { calculateCiceroDeOfficiis, formatCiceroDeOfficiisPrompt, CICERO_DE_OFFICIIS_VERSION } from '../src/lib/divination/romanCiceroDeOfficiisHonestumEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4277,6 +4280,48 @@ test('Roman Seneca Time Sovereignty Tranquility Engine: calculates time sovereig
   const prompt = formatSenecaTimeSovereigntyPrompt(rep);
   assert(prompt.includes('고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 지표'));
   assert(prompt.includes(rep.activeSenecaStage.stageNameKo));
+});
+
+test('Ancient Greek Platonic Idea Cave Engine: calculates Idea of Good, Cave liberation, Anamnesis and Cardinal Virtues', () => {
+  const rep = calculatePlatonicIdeaCave(profile);
+  assert.equal(rep.engineVersion, PLATONIC_IDEA_CAVE_VERSION);
+  assert(rep.ideaTruthOrientationScore >= 0 && rep.ideaTruthOrientationScore <= 100);
+  assert(rep.shadowIllusionLiberationScore >= 0 && rep.shadowIllusionLiberationScore <= 100);
+  assert(rep.anamnesisSoulIntuitionScore >= 0 && rep.anamnesisSoulIntuitionScore <= 100);
+  assert(rep.cardinalVirtuesHarmonyScore >= 0 && rep.cardinalVirtuesHarmonyScore <= 100);
+  assert(rep.dialecticAscentPowerScore >= 0 && rep.dialecticAscentPowerScore <= 100);
+  assert(rep.activeAscentStage.stageNameGreek.length > 0);
+  const prompt = formatPlatonicIdeaCavePrompt(rep);
+  assert(prompt.includes('고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 지표'));
+  assert(prompt.includes(rep.activeAscentStage.stageNameKo));
+});
+
+test('Korean Joseon Toegye Seonghak Sipdo Engine: calculates Gyeong mindfulness, Geogyeong Gungri, Sangseongseong and Dignity', () => {
+  const rep = calculateToegyeSeonghakSipdo(profile);
+  assert.equal(rep.engineVersion, TOEGYE_SEONGHAK_SIPDO_VERSION);
+  assert(rep.gyeongMindfulnessFocusScore >= 0 && rep.gyeongMindfulnessFocusScore <= 100);
+  assert(rep.geogyeongGungriPrecisionScore >= 0 && rep.geogyeongGungriPrecisionScore <= 100);
+  assert(rep.sangseongseongAwakeningScore >= 0 && rep.sangseongseongAwakeningScore <= 100);
+  assert(rep.jeongjeEomsukDignityScore >= 0 && rep.jeongjeEomsukDignityScore <= 100);
+  assert(rep.seonghakIntegrationPracticeScore >= 0 && rep.seonghakIntegrationPracticeScore <= 100);
+  assert(rep.activeSeonghakDiagram.diagramTitleHanja.length > 0);
+  const prompt = formatToegyeSeonghakSipdoPrompt(rep);
+  assert(prompt.includes('한국 조선 성리학 퇴계 이황 성학십도 경(敬) 심법 지표'));
+  assert(prompt.includes(rep.activeSeonghakDiagram.diagramTitleKo));
+});
+
+test('Roman Cicero De Officiis Engine: calculates Honestum moral duty, Utile harmony, Fides and Decorum', () => {
+  const rep = calculateCiceroDeOfficiis(profile);
+  assert.equal(rep.engineVersion, CICERO_DE_OFFICIIS_VERSION);
+  assert(rep.honestumMoralDutyScore >= 0 && rep.honestumMoralDutyScore <= 100);
+  assert(rep.utileJustHarmonyScore >= 0 && rep.utileJustHarmonyScore <= 100);
+  assert(rep.fidesPromiseFaithScore >= 0 && rep.fidesPromiseFaithScore <= 100);
+  assert(rep.decorumCivicEleganceScore >= 0 && rep.decorumCivicEleganceScore <= 100);
+  assert(rep.bonumCommuneActionScore >= 0 && rep.bonumCommuneActionScore <= 100);
+  assert(rep.activeVirtueFoundation.foundationLatin.length > 0);
+  const prompt = formatCiceroDeOfficiisPrompt(rep);
+  assert(prompt.includes('고대 로마 키케로 의무론 도덕적 선 & 유용성 조화 지표'));
+  assert(prompt.includes(rep.activeVirtueFoundation.foundationKo));
 });
 
 
