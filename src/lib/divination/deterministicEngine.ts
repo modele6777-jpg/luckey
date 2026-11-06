@@ -232,6 +232,10 @@ import { calculateAureliusInnerCitadel, formatAureliusInnerCitadelPrompt, type A
 import { calculateLaoziDaodejing, formatLaoziDaodejingPrompt, type LaoziDaodejingResult, LAOZI_DAODEJING_VERSION } from './chineseLaoziDaodejingWaterWayEngine';
 import { calculateEpicureanTetrapharmakos, formatEpicureanTetrapharmakosPrompt, type EpicureanTetrapharmakosResult, EPICUREAN_TETRAPHARMAKOS_VERSION } from './ancientGreekEpicureanTetrapharmakosEngine';
 import { calculateYulgokGyeokmong, formatYulgokGyeokmongPrompt, type YulgokGyeokmongResult, YULGOK_GYEOKMONG_VERSION } from './koreanYulgokGyeokmongYogyeolEngine';
+import { calculateAristotleMesotes, formatAristotleMesotesPrompt, type AristotleMesotesResult, ARISTOTLE_MESOTES_VERSION } from './ancientGreekAristotleMesotesEudaimoniaEngine';
+import { calculateBhagavadGitaKarmaYoga, formatBhagavadGitaKarmaYogaPrompt, type BhagavadGitaKarmaYogaResult, BHAGAVAD_GITA_KARMA_YOGA_VERSION } from './ancientIndianBhagavadGitaKarmaYogaEngine';
+import { calculateWangYangmingXinxue, formatWangYangmingXinxuePrompt, type WangYangmingXinxueResult, WANG_YANGMING_LIANGZHI_VERSION } from './chineseWangYangmingLiangzhiXinxueEngine';
+
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -483,6 +487,10 @@ export interface DeterministicEngineReport {
   laoziDaodejingResult?: LaoziDaodejingResult | null;
   epicureanTetrapharmakosResult?: EpicureanTetrapharmakosResult | null;
   yulgokGyeokmongResult?: YulgokGyeokmongResult | null;
+  aristotleMesotesResult?: AristotleMesotesResult | null;
+  bhagavadGitaKarmaYogaResult?: BhagavadGitaKarmaYogaResult | null;
+  wangYangmingXinxueResult?: WangYangmingXinxueResult | null;
+
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2895,6 +2903,34 @@ try {
     }
   })()));
 
+  // 201. 고대 그리스 아리스토텔레스 니코마코스 윤리학 중용 & 에우다이모니아 엔진
+  const aristotleMesotesResult = calculateSupplement('aristotleMesotesResult', () => ((() => {
+    try {
+      return calculateAristotleMesotes(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 202. 고대 인도 바가바드 기타 카르마 요가 & 무집착 행동 엔진
+  const bhagavadGitaKarmaYogaResult = calculateSupplement('bhagavadGitaKarmaYogaResult', () => ((() => {
+    try {
+      return calculateBhagavadGitaKarmaYoga(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 203. 명나라 양명학 왕양명 전습록 치양지 & 지행합일 심학 엔진
+  const wangYangmingXinxueResult = calculateSupplement('wangYangmingXinxueResult', () => ((() => {
+    try {
+      return calculateWangYangmingXinxue(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -3132,6 +3168,9 @@ try {
     laoziDaodejingResult,
     epicureanTetrapharmakosResult,
     yulgokGyeokmongResult,
+    aristotleMesotesResult,
+    bhagavadGitaKarmaYogaResult,
+    wangYangmingXinxueResult,
     tools: toolsMap,
   };
 }
@@ -3360,6 +3399,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'laoziDaodejingWaterWay', nameKo: '노자 도덕경 81장 상선약수 화광동진 무위자연', icon: '☯️', category: 'deep_master' },
   { key: 'ancientGreekEpicureanTetrapharmakos', nameKo: '에피쿠로스 4대치유약 테트라파르마코스 아타락시아 영혼평정', icon: '🌿', category: 'deep_master' },
   { key: 'koreanYulgokGyeokmongYogyeol', nameKo: '율곡 이이 격몽요결 입지혁구습 구용구사 수신실천', icon: '📖', category: 'deep_master' },
+  { key: 'ancientGreekAristotleMesotesEudaimonia', nameKo: '아리스토텔레스 니코마코스 윤리학 중용 에우다이모니아', icon: '⚖️', category: 'deep_master' },
+  { key: 'ancientIndianBhagavadGitaKarmaYoga', nameKo: '바가바드 기타 카르마 요가 니슈카마 카르마 무집착', icon: '🕉️', category: 'deep_master' },
+  { key: 'chineseWangYangmingLiangzhiXinxue', nameKo: '양명학 왕양명 전습록 치양지 지행합일 심학', icon: '📜', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3467,6 +3509,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ancientGreekAristotleMesotesEudaimonia',
+    'ancientIndianBhagavadGitaKarmaYoga',
+    'chineseWangYangmingLiangzhiXinxue',
     'koreanYulgokGyeokmongYogyeol',
     'laoziDaodejingWaterWay',
     'ancientGreekEpicureanTetrapharmakos',
@@ -3522,6 +3567,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'ancientGreekAristotleMesotesEudaimonia',
+    'ancientIndianBhagavadGitaKarmaYoga',
+    'chineseWangYangmingLiangzhiXinxue',
     'koreanYulgokGyeokmongYogyeol',
     'laoziDaodejingWaterWay',
     'ancientGreekEpicureanTetrapharmakos',
@@ -3670,6 +3718,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'ancientGreekAristotleMesotesEudaimonia',
+    'ancientIndianBhagavadGitaKarmaYoga',
+    'chineseWangYangmingLiangzhiXinxue',
     'laoziDaodejingWaterWay',
     'ancientGreekEpicureanTetrapharmakos',
     'koreanYulgokGyeokmongYogyeol',

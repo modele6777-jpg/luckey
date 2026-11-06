@@ -195,6 +195,10 @@ import { calculateAureliusInnerCitadel, formatAureliusInnerCitadelPrompt, AURELI
 import { calculateLaoziDaodejing, formatLaoziDaodejingPrompt, LAOZI_DAODEJING_VERSION } from '../src/lib/divination/chineseLaoziDaodejingWaterWayEngine';
 import { calculateEpicureanTetrapharmakos, formatEpicureanTetrapharmakosPrompt, EPICUREAN_TETRAPHARMAKOS_VERSION } from '../src/lib/divination/ancientGreekEpicureanTetrapharmakosEngine';
 import { calculateYulgokGyeokmong, formatYulgokGyeokmongPrompt, YULGOK_GYEOKMONG_VERSION } from '../src/lib/divination/koreanYulgokGyeokmongYogyeolEngine';
+import { calculateAristotleMesotes, formatAristotleMesotesPrompt, ARISTOTLE_MESOTES_VERSION } from '../src/lib/divination/ancientGreekAristotleMesotesEudaimoniaEngine';
+import { calculateBhagavadGitaKarmaYoga, formatBhagavadGitaKarmaYogaPrompt, BHAGAVAD_GITA_KARMA_YOGA_VERSION } from '../src/lib/divination/ancientIndianBhagavadGitaKarmaYogaEngine';
+import { calculateWangYangmingXinxue, formatWangYangmingXinxuePrompt, WANG_YANGMING_LIANGZHI_VERSION } from '../src/lib/divination/chineseWangYangmingLiangzhiXinxueEngine';
+
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -4187,6 +4191,49 @@ test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration i
   assert(prompt.includes('조선 율곡 이이(栗谷 李珥) 《격몽요결(擊蒙要訣)》'));
   assert(prompt.includes(rep.activeScholarStage.stageNameKo));
 });
+
+test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean, Eudaimonia, Phronesis and Telos', () => {
+  const rep = calculateAristotleMesotes(profile);
+  assert.equal(rep.engineVersion, ARISTOTLE_MESOTES_VERSION);
+  assert(rep.mesotesGoldenMeanScore >= 0 && rep.mesotesGoldenMeanScore <= 100);
+  assert(rep.eudaimoniaFlourishingIndex >= 0 && rep.eudaimoniaFlourishingIndex <= 100);
+  assert(rep.phronesisPracticalWisdom >= 0 && rep.phronesisPracticalWisdom <= 100);
+  assert(rep.telosPurposeOrientation >= 0 && rep.telosPurposeOrientation <= 100);
+  assert(rep.areteExcellenceIntegrity >= 0 && rep.areteExcellenceIntegrity <= 100);
+  assert(rep.activeVirtueStage.virtueNameGreek.length > 0);
+  const prompt = formatAristotleMesotesPrompt(rep);
+  assert(prompt.includes('고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes)'));
+  assert(prompt.includes(rep.activeVirtueStage.virtueNameKo));
+});
+
+test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma, Swadharma, Samatvam and Yogastha', () => {
+  const rep = calculateBhagavadGitaKarmaYoga(profile);
+  assert.equal(rep.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);
+  assert(rep.nishkamaKarmaDetachmentScore >= 0 && rep.nishkamaKarmaDetachmentScore <= 100);
+  assert(rep.swadharmaCallingAlignment >= 0 && rep.swadharmaCallingAlignment <= 100);
+  assert(rep.samatvamEquanimityIndex >= 0 && rep.samatvamEquanimityIndex <= 100);
+  assert(rep.yogasthaSteadfastness >= 0 && rep.yogasthaSteadfastness <= 100);
+  assert(rep.karmaphalaRenunciation >= 0 && rep.karmaphalaRenunciation <= 100);
+  assert(rep.activeGitaStage.sanskritStage.length > 0);
+  const prompt = formatBhagavadGitaKarmaYogaPrompt(rep);
+  assert(prompt.includes('고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가'));
+  assert(prompt.includes(rep.activeGitaStage.stageNameKo));
+});
+
+test('Chinese Wang Yangming Liangzhi Xinxue Engine: calculates Liangzhi intuition, Zhi-Xing unity and mind integrity', () => {
+  const rep = calculateWangYangmingXinxue(profile);
+  assert.equal(rep.engineVersion, WANG_YANGMING_LIANGZHI_VERSION);
+  assert(rep.liangzhiIntuitionScore >= 0 && rep.liangzhiIntuitionScore <= 100);
+  assert(rep.zhiXingUnityPower >= 0 && rep.zhiXingUnityPower <= 100);
+  assert(rep.xinZhiLiMindCoreIntegrity >= 0 && rep.xinZhiLiMindCoreIntegrity <= 100);
+  assert(rep.shiShangMoLianResilience >= 0 && rep.shiShangMoLianResilience <= 100);
+  assert(rep.baBenSaiYuanSelflessPurity >= 0 && rep.baBenSaiYuanSelflessPurity <= 100);
+  assert(rep.activeXinxueStage.stageNameHanja.length > 0);
+  const prompt = formatWangYangmingXinxuePrompt(rep);
+  assert(prompt.includes('명나라 양명학 왕양명(王陽明) 치양지(致良知)'));
+  assert(prompt.includes(rep.activeXinxueStage.stageNameKo));
+});
+
 
 
 
