@@ -21,7 +21,7 @@ const SAMPLE_PROFILE: UserProfile = {
     gender: 'female',
     name: '지혜로운탐구자',
     birthCity: 'Seoul',
-    isLunar: false,
+    lunarSolar: 'solar',
   },
 };
 
