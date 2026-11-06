@@ -177,6 +177,9 @@ import { calculateEgyptianAmduat, formatEgyptianAmduatPrompt, EGYPTIAN_AMDUAT_VE
 import { calculateCelticBrehonLaw, formatCelticBrehonLawPrompt, CELTIC_BREHON_LAW_VERSION } from '../src/lib/divination/celticDruidBrehonLawJusticeEngine';
 import { calculateMesopotamianNisaba, formatMesopotamianNisabaPrompt, MESOPOTAMIAN_NISABA_VERSION } from '../src/lib/divination/mesopotamianNisabaScribeWisdomEngine';
 import { calculateSuunGasiHeon, formatSuunGasiHeonPrompt, SUUN_GASI_HEON_VERSION } from '../src/lib/divination/koreanSuunGasiHeonGyeongGwonEngine';
+import { calculateEleusinianTriptolemos, formatEleusinianTriptolemosPrompt, ELEUSINIAN_TRIPTOLEMOS_VERSION } from '../src/lib/divination/ancientGreekEleusinianTriptolemosEngine';
+import { calculateMixtecEightDeer, formatMixtecEightDeerPrompt, MIXTEC_EIGHT_DEER_VERSION } from '../src/lib/divination/mesoamericanMixtecEightDeerJaguarClawEngine';
+import { calculateJeonBongjunNokdu, formatJeonBongjunNokduPrompt, JEON_BONGJUN_NOKDU_VERSION } from '../src/lib/divination/koreanJeonBongjunNokduGeneralEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3917,6 +3920,49 @@ test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgye
   assert(prompt.includes('동학 수운 최제우 《용담유사》 검결(劍訣)'));
   assert(prompt.includes(rep.activeCultivationStage.stageNameKo));
 });
+
+test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sacred wheat and 3 laws of Demeter', () => {
+  const rep = calculateEleusinianTriptolemos(profile);
+  assert.equal(rep.engineVersion, ELEUSINIAN_TRIPTOLEMOS_VERSION);
+  assert(rep.goldenChariotFlightIndex >= 0 && rep.goldenChariotFlightIndex <= 100);
+  assert(rep.sacredWheatCivilizationForce >= 0 && rep.sacredWheatCivilizationForce <= 100);
+  assert(rep.demeterBlessingPurityScore >= 0 && rep.demeterBlessingPurityScore <= 100);
+  assert(rep.threeLawsHarmonyEquilibrium >= 0 && rep.threeLawsHarmonyEquilibrium <= 100);
+  assert(rep.seedSowingAbundancePower >= 0 && rep.seedSowingAbundancePower <= 100);
+  assert(rep.activeChariotStage.stageNameGreek.length > 0);
+  const prompt = formatEleusinianTriptolemosPrompt(rep);
+  assert(prompt.includes('고대 그리스 엘레우시스 밀의 《트리프톨레모스(Triptolemos)》'));
+  assert(prompt.includes(rep.activeChariotStage.stageNameKo));
+});
+
+test('Mesoamerican Mixtec Eight Deer Jaguar Claw Engine: calculates courage, sacred alliance, cave oracle and territorial balance', () => {
+  const rep = calculateMixtecEightDeer(profile);
+  assert.equal(rep.engineVersion, MIXTEC_EIGHT_DEER_VERSION);
+  assert(rep.jaguarClawCourageForce >= 0 && rep.jaguarClawCourageForce <= 100);
+  assert(rep.sacredAllianceUnificationScore >= 0 && rep.sacredAllianceUnificationScore <= 100);
+  assert(rep.ancestralCaveOracleClarity >= 0 && rep.ancestralCaveOracleClarity <= 100);
+  assert(rep.mountainCoastSynthesisBalance >= 0 && rep.mountainCoastSynthesisBalance <= 100);
+  assert(rep.turquoiseNoseOrnamentHonor >= 0 && rep.turquoiseNoseOrnamentHonor <= 100);
+  assert(rep.activeHeroRank.rankNameMixtec.length > 0);
+  const prompt = formatMixtecEightDeerPrompt(rep);
+  assert(prompt.includes('메소아메리카 믹스테크 《8-사슴 재규어 발톱(Eight Deer)》'));
+  assert(prompt.includes(rep.activeHeroRank.rankNameKo));
+});
+
+test('Korean Jeon Bongjun Nokdu General Engine: calculates Sabal Tongmun solidarity, Baeksan righteous force and 4 manifestos', () => {
+  const rep = calculateJeonBongjunNokdu(profile);
+  assert.equal(rep.engineVersion, JEON_BONGJUN_NOKDU_VERSION);
+  assert(rep.sabalTongmunHorizontalSolidarity >= 0 && rep.sabalTongmunHorizontalSolidarity <= 100);
+  assert(rep.baeksanRighteousForce >= 0 && rep.baeksanRighteousForce <= 100);
+  assert(rep.jepokGuminSalvationPower >= 0 && rep.jepokGuminSalvationPower <= 100);
+  assert(rep.bogukAnminPeaceStabilityScore >= 0 && rep.bogukAnminPeaceStabilityScore <= 100);
+  assert(rep.cheongpodoSpringResilience >= 0 && rep.cheongpodoSpringResilience <= 100);
+  assert(rep.activeNokduStage.stageNameHanja.length > 0);
+  const prompt = formatJeonBongjunNokduPrompt(rep);
+  assert(prompt.includes('한국 근대 동학농민혁명 《녹두장군 전봉준》'));
+  assert(prompt.includes(rep.activeNokduStage.stageNameKo));
+});
+
 
 
 

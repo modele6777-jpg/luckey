@@ -763,5 +763,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanSuunGasiHeon": {
     "field": "suunGasiHeonResult",
     "traceKey": "suunGasiHeonResult"
+  },
+  "eleusinianTriptolemosCivilization": {
+    "field": "eleusinianTriptolemosResult",
+    "traceKey": "eleusinianTriptolemosResult"
+  },
+  "mixtecEightDeerJaguarClaw": {
+    "field": "mixtecEightDeerResult",
+    "traceKey": "mixtecEightDeerResult"
+  },
+  "koreanJeonBongjunNokduGeneral": {
+    "field": "jeonBongjunNokduResult",
+    "traceKey": "jeonBongjunNokduResult"
   }
 };
