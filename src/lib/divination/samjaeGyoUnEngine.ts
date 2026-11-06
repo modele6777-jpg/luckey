@@ -144,6 +144,8 @@ export interface GyoUnAnalysis {
   switchYear: number | null;
   currentDaewoon: GyoUnDaewoonSnapshot | null;
   nextDaewoon: GyoUnDaewoonSnapshot | null;
+  transitionFromDaewoon?: GyoUnDaewoonSnapshot;
+  transitionToDaewoon?: GyoUnDaewoonSnapshot;
   tenGodShift: TenGodShift | null;
   seasonShift: SeasonShift | null;
   riskBufferAdvice: string;
@@ -344,7 +346,7 @@ function analyzeSamjae(
     }
   }
 
-  let grade: SamjaeGrade = '평삼재(平三災)';
+  let grade: SamjaeGrade | null = isSamjaeYear ? '평삼재(平三災)' : null;
   if (isSamjaeYear) {
     if (score >= 3) grade = '악삼재(惡三災)';
     else if (score <= -2) grade = '복삼재(福三災)';
@@ -618,8 +620,9 @@ function analyzeGyoUn(
     };
   };
 
-  const current = timeline.find((d) => targetKoreanAge >= d.startAge && targetKoreanAge <= d.endAge);
-  const next = timeline.find((d) => d.startAge > targetKoreanAge);
+  const entered = timeline.findIndex(d => d.order > 1 && targetKoreanAge >= d.startAge && targetKoreanAge <= d.startAge + 1);
+  const current = entered > 0 ? timeline[entered - 1] : timeline.find(d => targetKoreanAge >= d.startAge && targetKoreanAge <= d.endAge);
+  const next = entered > 0 ? timeline[entered] : timeline.find(d => d.startAge > targetKoreanAge);
 
   if (!current || !next) {
     return {
@@ -709,8 +712,10 @@ function analyzeGyoUn(
     yearsUntilSwitch,
     monthsUntilSwitch,
     switchYear,
-    currentDaewoon: curSnap,
-    nextDaewoon: nextSnap,
+    currentDaewoon: toSnapshot(timeline.find(d => targetKoreanAge >= d.startAge && targetKoreanAge <= d.endAge)!),
+    nextDaewoon: (() => { const upcoming = timeline.find(d => d.startAge > targetKoreanAge); return upcoming ? toSnapshot(upcoming) : null; })(),
+    transitionFromDaewoon: curSnap,
+    transitionToDaewoon: nextSnap,
     tenGodShift,
     seasonShift,
     riskBufferAdvice,
@@ -901,7 +906,7 @@ export function formatSamjaeGyoUnPrompt(result: SamjaeGyoUnResult): string {
   const gyoUnLines = gyoUn.currentDaewoon && gyoUn.nextDaewoon
     ? `   - 현재 대운: ${gyoUn.currentDaewoon.koreanName} (${gyoUn.currentDaewoon.startYear}~${gyoUn.currentDaewoon.endYear}년, ${gyoUn.currentDaewoon.startAge}~${gyoUn.currentDaewoon.endAge}세) — ${gyoUn.currentDaewoon.tenGodGan}(${gyoUn.currentDaewoon.tenGodCategory}) · ${gyoUn.currentDaewoon.zhiSeason} 계절 [${gyoUn.currentDaewoon.zhiElement}]
    - 다음 대운: ${gyoUn.nextDaewoon.koreanName} (${gyoUn.nextDaewoon.startYear}~${gyoUn.nextDaewoon.endYear}년, ${gyoUn.nextDaewoon.startAge}~${gyoUn.nextDaewoon.endAge}세) — ${gyoUn.nextDaewoon.tenGodGan}(${gyoUn.nextDaewoon.tenGodCategory}) · ${gyoUn.nextDaewoon.zhiSeason} 계절 [${gyoUn.nextDaewoon.zhiElement}]
-   - 교체 시점: ${gyoUn.switchYear}년 (교체 나이 ${gyoUn.nextDaewoon.startAge}세) | 교운기 진입 여부: ${gyoUn.isGyoUnPeriod ? `예 — ${gyoUn.windowType}` : '아니오 (순항)'}${gyoUn.yearsUntilSwitch !== null ? ` | 남은 햇수: ${gyoUn.yearsUntilSwitch}년` : ''}${gyoUn.monthsUntilSwitch !== null ? ` | 남은 월수: 약 ${gyoUn.monthsUntilSwitch}개월 (교체해 입춘 기준)` : ''}
+   - 교체 시점: ${gyoUn.switchYear}년 (교체 나이 ${(gyoUn.transitionToDaewoon || gyoUn.nextDaewoon).startAge}세) | 교운기 진입 여부: ${gyoUn.isGyoUnPeriod ? `예 — ${gyoUn.windowType}` : '아니오 (순항)'}${gyoUn.yearsUntilSwitch !== null ? ` | 남은 햇수: ${gyoUn.yearsUntilSwitch}년` : ''}${gyoUn.monthsUntilSwitch !== null ? ` | 남은 월수: 약 ${gyoUn.monthsUntilSwitch}개월 (교체해 입춘 기준)` : ''}
    - 십성·오행 전환: ${gyoUn.tenGodShift?.from} → ${gyoUn.tenGodShift?.to}
      · 리스크 서사: ${gyoUn.tenGodShift?.riskNarrative}
      · 완충 가이드: ${gyoUn.tenGodShift?.cushionGuide}

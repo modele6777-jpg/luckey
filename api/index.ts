@@ -1,3 +1,4 @@
+import { isMasterTierModel, LUCY_MASTER_FALLBACK_MODELS } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
 import { readFileSync } from "node:fs";
@@ -87,18 +88,21 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
     }
 
     let response;
+    let modelUsed = model;
+    const generationConfig = { ...(systemPrompt ? { systemInstruction: systemPrompt } : {}), ...(Number.isInteger(req.body.max_tokens) ? { maxOutputTokens: Math.min(32768, Math.max(1, req.body.max_tokens)) } : {}) };
     try {
       response = await ai.models.generateContent({
         model,
         contents,
-        config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
+        config: generationConfig
       });
     } catch (modelErr: any) {
-      console.warn(`[Proxy] Model ${model} failed, falling back to gemini-flash-lite-latest:`, modelErr?.message || modelErr);
+      modelUsed = isMasterTierModel(model) ? LUCY_MASTER_FALLBACK_MODELS.find(candidate => candidate !== model)! : 'gemini-flash-lite-latest';
+      console.warn(`[Proxy] Model ${model} failed; trying ${modelUsed}.`);
       response = await ai.models.generateContent({
-        model: "gemini-flash-lite-latest",
+        model: modelUsed,
         contents,
-        config: systemPrompt ? { systemInstruction: systemPrompt } : undefined
+        config: generationConfig
       });
     }
 
@@ -113,7 +117,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
         id: "chatcmpl-" + Date.now(),
         object: "chat.completion.chunk",
         created: Math.floor(Date.now() / 1000),
-        model,
+        model: modelUsed,
         choices: [{ index: 0, delta: { content: replyText }, finish_reason: null }]
       };
       res.write(`data: ${JSON.stringify(chunk)}\n\n`);
@@ -125,7 +129,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
         id: "chatcmpl-" + Date.now(),
         object: "chat.completion",
         created: Math.floor(Date.now() / 1000),
-        model,
+        model: modelUsed,
         choices: [{ index: 0, message: { role: "assistant", content: replyText }, finish_reason: "stop" }]
       });
     }

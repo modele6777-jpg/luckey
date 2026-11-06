@@ -372,7 +372,7 @@ export function calculateKabbalah(params: { profile?: UserProfile | null }): Kab
     const lifePathSephirah: KabbalahSephirah | typeof DAATH =
       lifePathNumber === 22
         ? DAATH
-        : kabbalahSephirahByNumber(lifePathNumber === 33 ? 1 : lifePathNumber); // 11·33 → 케테르(상위 세피라)
+        : kabbalahSephirahByNumber([11, 33].includes(lifePathNumber) ? 1 : lifePathNumber); // 11·33 → 케테르(상위 세피라)
     const lifePathInterpretation = lifePathIsMaster
       ? KABBALAH_MASTER_INTERPRETATIONS[lifePathNumber]
       : `${lifePathSephirah.name}(${lifePathSephirah.translit}) 세피라 — ${lifePathSephirah.title}의 원리가 삶의 배경 주제로 작동한다.`;

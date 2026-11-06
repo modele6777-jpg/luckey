@@ -1,3 +1,4 @@
+import { modelCandidates } from './lucyModelPolicy';
 import { GoogleGenAI, Modality } from "@google/genai";
 import OpenAI from "openai";
 import { z } from "zod";
@@ -332,6 +333,7 @@ export async function invokeLLM(params: {
   timeoutMs?: number;
   signal?: AbortSignal;
   model?: string;
+  fallbackModels?: string[];
   maxOutputTokens?: number;
   thinkingLevel?: LucyThinkingLevel;
   preferServer?: boolean;
@@ -390,11 +392,7 @@ export async function invokeLLM(params: {
       contents = [{ role: 'user', content: "Continue" }];
     }
 
-    const rawModelsToTry = [
-      "gemini-3.1-flash-lite",
-      params.model || modelName,
-      ...LUCY_CHAT_FALLBACK_MODELS,
-    ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
+    const rawModelsToTry = modelCandidates(params.model || modelName, params.fallbackModels || LUCY_CHAT_FALLBACK_MODELS);
 
     const availableModels = rawModelsToTry.filter(m => !isClientModelThrottled(m));
     const throttledModels = rawModelsToTry.filter(m => isClientModelThrottled(m));
@@ -402,7 +400,7 @@ export async function invokeLLM(params: {
 
     for (const currentModel of modelsToTry) {
       try {
-        const perModelTimeout = Math.min(timeoutMs, 15000);
+        const perModelTimeout = Math.min(timeoutMs, params.fallbackModels ? 90000 : 15000);
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error("Gemini API Timeout")), perModelTimeout)
         );
@@ -1320,11 +1318,12 @@ export async function invokeLLMStructured<T extends z.ZodTypeAny>(params: {
 async function invokeLLMStreamInner(params: {
   messages: Message[],
   onChunk: (chunk: string) => void,
-  onFinish?: (fullText: string) => void,
+  onFinish?: (fullText: string) => void | Promise<void>,
   timeoutMs?: number,
   signal?: AbortSignal,
   maxOutputTokens?: number,
   model?: string,
+  fallbackModels?: string[],
   thinkingLevel?: LucyThinkingLevel,
   preferBuffered?: boolean,
 }) {
@@ -1337,6 +1336,7 @@ async function invokeLLMStreamInner(params: {
       timeoutMs: requestTimeoutMs,
       signal: params.signal,
       model: params.model,
+      fallbackModels: params.fallbackModels,
       maxOutputTokens: params.maxOutputTokens,
       thinkingLevel: params.thinkingLevel,
       preferServer: true,
@@ -1344,7 +1344,7 @@ async function invokeLLMStreamInner(params: {
     const fullText = extractChatCompletionText(response) || String(response || "").trim();
     if (!fullText) throw new Error("Empty buffered response from LLM");
     params.onChunk(fullText);
-    params.onFinish?.(fullText);
+    await params.onFinish?.(fullText);
     return fullText;
   }
 
@@ -1359,17 +1359,11 @@ async function invokeLLMStreamInner(params: {
 
       const requestedPrimary =
         !params.model ||
-        params.model === "gemini-4-argon" ||
-        params.model === "gemini-3.8-flash" ||
-        params.model === "gemini-3.7-flash"
+        params.model === "gemini-4-argon"
           ? LUCY_CHAT_MODEL
           : params.model;
 
-      const rawCandidates = [
-        requestedPrimary,
-        LUCY_CHAT_MODEL,
-        ...LUCY_CHAT_FALLBACK_MODELS,
-      ].filter((m, i, arr): m is string => Boolean(m) && arr.indexOf(m) === i);
+      const rawCandidates = modelCandidates(requestedPrimary, params.fallbackModels || [LUCY_CHAT_MODEL, ...LUCY_CHAT_FALLBACK_MODELS]);
 
       const availableModels = rawCandidates.filter(m => !isClientModelThrottled(m));
       const throttledModels = rawCandidates.filter(m => isClientModelThrottled(m));
@@ -1399,7 +1393,7 @@ async function invokeLLMStreamInner(params: {
             const resolvedThinking = omitThinking ? undefined : resolveModelThinkingLevel(currentModel, params.thinkingLevel);
             const firstTokenDeadlineMs =
               params.thinkingLevel === "MEDIUM" || params.thinkingLevel === "HIGH"
-                ? 10000
+                ? (params.fallbackModels ? 60000 : 10000)
                 : 8000;
 
             const responseStream = await Promise.race([
@@ -1457,7 +1451,7 @@ async function invokeLLMStreamInner(params: {
             if (attemptContent && attemptContent.trim().length > 0) {
               clientModelCooldownMap.delete(currentModel);
               const finalCleaned = checkRepetitionLoop(attemptContent).cleaned || "마음속에 무거운 감정이 밀려왔나 봐. 천천히 숨을 고르고, 편안하게 이야기해 줘.";
-              params.onFinish?.(finalCleaned);
+              await params.onFinish?.(finalCleaned);
               return finalCleaned;
             }
 
@@ -1574,7 +1568,7 @@ async function invokeLLMStreamInner(params: {
             throw new Error("Empty fallback response from /api/openai/v1/chat/completions");
           }
           params.onChunk(fullResult);
-          params.onFinish?.(fullResult);
+          await params.onFinish?.(fullResult);
           return fullResult;
         } catch (fallbackError) {
           console.error("[invokeLLMStream] Fallback also failed:", fallbackError);
@@ -1706,7 +1700,7 @@ async function invokeLLMStreamInner(params: {
 
       if (fullContent && fullContent.trim().length > 0 && (receivedDoneSignal || !params.signal?.aborted)) {
         const finalCleaned = checkRepetitionLoop(fullContent).cleaned || "마음속에 무거운 감정이 밀려왔나 봐. 천천히 숨을 고르고, 편안하게 이야기해 줘.";
-        params.onFinish?.(finalCleaned);
+        await params.onFinish?.(finalCleaned);
         return finalCleaned;
       }
       if (fullContent.trim()) {
@@ -1719,12 +1713,12 @@ async function invokeLLMStreamInner(params: {
 
   // Fallback to OpenAI server-side chat completions if streaming failed or non-streaming direct
   try {
-    const fallbackRes = await invokeLLM({ messages: params.messages });
+    const fallbackRes = await invokeLLM({ messages: params.messages, model: params.model, fallbackModels: params.fallbackModels, signal: params.signal, timeoutMs: params.timeoutMs, maxOutputTokens: params.maxOutputTokens });
     const cleaned = extractChatCompletionText(fallbackRes) || String(fallbackRes || "").trim();
     if (cleaned) {
       params.onChunk(cleaned);
       if (params.onFinish) {
-        params.onFinish(cleaned);
+        await params.onFinish(cleaned);
       }
       return cleaned;
     }
@@ -1738,19 +1732,20 @@ async function invokeLLMStreamInner(params: {
 export async function invokeLLMStream(params: {
   messages: Message[];
   onChunk: (chunk: string) => void;
-  onFinish?: (fullText: string) => void;
+  onFinish?: (fullText: string) => void | Promise<void>;
   timeoutMs?: number;
   signal?: AbortSignal;
   maxOutputTokens?: number;
   /** 지정 시 해당 모델을 우선 사용 (예: 루시 채팅 = gemini-4-argon) */
   model?: string;
+  fallbackModels?: string[];
   /** Gemini 4 계열 사고 깊이 (수다 MINIMAL / 채널 LOW / 마스터 MEDIUM) */
   thinkingLevel?: LucyThinkingLevel;
   /** 모바일 등 불안정한 네트워크에서는 완료된 답변을 한 번에 받음 */
   preferBuffered?: boolean;
 }) {
   const maxDurationMs = params.timeoutMs ?? 180000;
-  const idleTimeoutMs = params.preferBuffered ? maxDurationMs : 60000;
+  const idleTimeoutMs = params.preferBuffered || params.fallbackModels ? maxDurationMs : 60000;
   let lastActivity = Date.now();
 
   const wrappedOnChunk = (chunk: string) => {

@@ -1,3 +1,4 @@
+import { isMasterTierModel, modelCandidates, LUCY_MASTER_FALLBACK_MODELS } from './src/lib/lucyModelPolicy';
 import dotenv from "dotenv";
 dotenv.config();
 dotenv.config({ path: ".env.local", override: true });
@@ -223,7 +224,7 @@ function normalizeRequestedGeminiModel(rawModel?: string): string | undefined {
   ) {
     return "gemini-3.1-flash-lite";
   }
-  if (VALID_GEMINI_MODELS.has(trimmed)) return trimmed;
+  if (isMasterTierModel(trimmed) || VALID_GEMINI_MODELS.has(trimmed)) return trimmed;
   if (trimmed.startsWith("gemini-")) return "gemini-3.1-flash-lite";
   return undefined;
 }
@@ -267,6 +268,10 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
 }
 
 function getPrioritizedGeminiModels(requestedModel?: string): string[] {
+  if (requestedModel && isMasterTierModel(requestedModel)) {
+    const candidates = modelCandidates(requestedModel,LUCY_MASTER_FALLBACK_MODELS);
+    return [...candidates.filter(model=>!isModelThrottled(model)),...candidates.filter(isModelThrottled)];
+  }
   const defaultModels = [
     "gemini-3.1-flash-lite",
     "gemini-3.8-flash",

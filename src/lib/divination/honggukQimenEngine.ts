@@ -295,6 +295,8 @@ export function calculateHonggukQimen(params: {
     const earthCenterNumber = palaceOf(numerals.reduce((sum, n) => sum + n.zhiPalace, 0));
     const heavenCenterNumber = palaceOf(numerals.reduce((sum, n) => sum + n.ganPalace, 0));
 
+    const starNameOf = (n: number) => HONGGUK_NINE_PALACES.find((p) => p.palace === n)?.starName || '황';
+
     // 3. 9궁 비성 포국 (중궁 기점 낙서 비행 경로 역행 배열)
     //    구성(九星)의 색은 입한 궁이 아니라 별의 수(數)를 따른다: 1백·2흑·3벽·4록·5황·6백·7적·8백·9자.
     const palaces: HonggukQimenPalace[] = HONGGUK_FLIGHT_PATH.map((palace, step) => {
@@ -316,7 +318,6 @@ export function calculateHonggukQimen(params: {
     });
 
     const basisOf = (palace: number) => HONGGUK_NINE_PALACES.find((p) => p.palace === palace)!;
-    const starNameOf = (n: number) => HONGGUK_NINE_PALACES.find((p) => p.palace === n)?.starName || '황';
     /** 궁수가 낙서 비행 경로에서 몇 번째 칸인지 (중궁=0) */
     const stepOf = (palace: number) => HONGGUK_FLIGHT_PATH.indexOf(palace);
     /** 그 궁에 입한 천반 비성의 수(數) */

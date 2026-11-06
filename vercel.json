@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.ts": {
-      "maxDuration": 60,
+      "maxDuration": 300,
       "includeFiles": "{firebase-applet-config.json,server/**,src/**,scripts/sites-ai-provider.mjs,scripts/sites-gemini-chat.mjs}"
     },
     "api/ai/tts.ts": {

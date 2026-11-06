@@ -509,7 +509,7 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
 import { calculateSukuyoAdvanced, formatSukuyoPrompt, SUKUYO_ENGINE_VERSION, sukuyoIndexFromLunar, sukuyoMansionInfoByIndex, type SukuyoRelationDynamic } from '../src/lib/divination/sukuyoEngine';
 import { formatDeterministicEnginePrompt } from '../src/lib/divination/deterministicEngine';
 
-const MANSION_HANJA_27 = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虚', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
+const MANSION_HANJA_27 = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虛', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
 const RELATION_LABELS_27 = ['명', '영', '쇠', '안', '위', '성', '괴', '우', '친', '업', '영', '쇠', '안', '위', '성', '괴', '우', '친', '태', '영', '쇠', '안', '위', '성', '괴', '우', '친'];
 const SHUKGUK_BY_INDEX = ['경질', '독현', '악해', '화선', '악해', '급맹', '화선', '안중', '강유', '독현', '경질', '안중', '급맹', '안중', '급맹', '경질', '안중', '독현', '화선', '급맹', '급맹', '독현', '악해', '화선', '강유', '안중', '경질'];
 const SHUKGUK_META_KEYS = ['안중', '화선', '급맹', '악해', '독현', '경질', '강유'];
@@ -670,7 +670,7 @@ test('Geokguk engine: Zipyeong Jinjeon 10-geok judgment, seong/pa/gueung, determ
   const seong = decideGeokgukFromPillars({ dayStem: '辛', monthBranch: '巳', stems: ['甲', '丙', '乙'], bodyLevel: '중화' });
   assert.equal(seong.geokgukName, '정관격');
   assert.equal(seong.verdict, '성격(成格)');
-  assert.equal(seong.shinsalClass, '길신(善神) · 순용(順용)');
+  assert.equal(seong.shinsalClass, '길신(善神) · 순용(順用)');
   assert(seong.seongGyeok !== null && seong.seongGyeok.title.includes('재생관'));
 
   // 대표 명식 수리: 파격(破格) + 구응(救應) — 상관견관을 인성제상으로 회복
@@ -1104,7 +1104,7 @@ test('Maha Thaksa cycle: 8 lords sum to 108 years, birth-lord pivot rotation, cu
   assert.equal(m.ageCounting, 2026 - 1967 + 1); // 세는 나이 60
   // 금성 기점: 금성(21) → 태양(6) → 달(15) → 화성(8) → 수성(17) → 토성(10) → 목성(19) → 라후(12)
   assert.deepEqual(m.sequence.map((s) => s.planetId), ['venus', 'sun', 'moon', 'mars', 'mercury', 'saturn', 'jupiter', 'rahu']);
-  assert.deepEqual(m.sequence.map((s) => [s.startAge, s.endAge]), [[1, 21], [22, 27], [28, 42], [43, 50], [51, 67], [68, 77], [78, 89], [90, 108]]);
+  assert.deepEqual(m.sequence.map((s) => [s.startAge, s.endAge]), [[1, 21], [22, 27], [28, 42], [43, 50], [51, 67], [68, 77], [78, 96], [97, 108]]);
   // 60세는 수성(51~67세) 구간, 출생 금성 기준 수성은 친화 → 데차(위광)
   assert.equal(m.current.planetId, 'mercury');
   assert.equal(m.current.startAge, 51);
@@ -1352,7 +1352,7 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
   assert.equal(n.rawDigitSum, 34);
   assert.equal(n.lifePathNumber, 7);
   assert.equal(n.lifePathIsMaster, false);
-  assert.equal(n.lifePathSephirah.name, '게부라'); // 7 = 엄격·심판
+  assert.equal(n.lifePathSephirah.name, '네차크'); // 7 = 네차크, 5 = 게부라
   assert.equal(n.personalityNumber, 7); // 25 → 7
   assert.equal(n.personalitySephirah.name, '네차크');
   assert.equal(n.soulPathNumber, 7);
@@ -1360,7 +1360,7 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
   assert.equal(n.soulPath.tarotName, '연인');
   // 활성 세피로트 4개(7·7·3·6): 자비 2, 엄격 1, 균형 1 → 50/25/25
   assert.deepEqual(n.pillarBalance, { mercy: 50, severity: 25, mildness: 25 });
-  assert.equal(n.dominantWorld.name, '베리아'); // 게부라(5)는 창조계
+  assert.equal(n.dominantWorld.name, '예치라'); // 네차크(7)는 형성계
   // 마스터 넘버 11 → 케테르 특별 해석 (1987-11-29 = 38 → 11)
   const r11 = calculateKabbalah({ profile: { basic: { birthdate: '1987-11-29', gender: 'female' as const } } });
   assert.equal(r11.numerology!.lifePathNumber, 11);
@@ -1388,7 +1388,8 @@ test('Kabbalah engine fixtures: life path / personality / soul path and pillar b
   const lunar = calculateKabbalah({ profile: { basic: { birthdate: '1995-03-25', lunarSolar: 'lunar' } } });
   assert.equal(lunar.status, 'calculated');
   assert.equal(lunar.birthInput!.isLunar, true);
-  assert.notEqual(lunar.numerology!.rawDigitSum, 34);
+  assert.equal(lunar.birthInput!.solarDateString, '1995-04-24');
+  assert.equal(lunar.numerology!.rawDigitSum, 34); // 날짜가 달라도 각 자리 합은 우연히 같을 수 있다.
 });
 
 test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', () => {
@@ -1406,12 +1407,12 @@ test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', (
   // 프롬프트 포맷터
   const prompt = formatKabbalahPrompt(r1);
   assert(prompt.includes('LUCKEY-KB-v1.0.0'));
-  assert(prompt.includes('게부라'));
   assert(prompt.includes('네차크'));
+  assert(!prompt.includes('라이프 패스 세피라: 7 → 게부라'));
   assert(prompt.includes('제17경로'));
   assert(prompt.includes('연인'));
   assert(prompt.includes('자비(확장) 50%'));
-  assert(prompt.includes('베리아'));
+  assert(prompt.includes('예치라'));
   assert(prompt.includes('생년월일 게마트리아 수리로 산출된 100% 확정 배속'));
   assert.equal(formatKabbalahPrompt(skipped), '');
   assert(KABBALAH_METHOD.length > 0);
@@ -1422,7 +1423,7 @@ test('Kabbalah engine binds into the deterministic engine report and prompt', ()
   const report = runDeterministicEngine({ profile, question: '내 카발라 생명나무 알려줘' });
   assert(report.kabbalahResult !== null && report.kabbalahResult !== undefined);
   assert.equal(report.kabbalahResult!.status, 'calculated');
-  assert.equal(report.kabbalahResult!.numerology!.lifePathSephirah.name, '게부라');
+  assert.equal(report.kabbalahResult!.numerology!.lifePathSephirah.name, '네차크');
   assert.equal(report.tools.kabbalah.status, 'calculated'); // symbolic → calculated 승격
   const prompt = formatDeterministicEnginePrompt(report);
   assert(prompt.includes('LUCKEY-KB-v1.0.0'));

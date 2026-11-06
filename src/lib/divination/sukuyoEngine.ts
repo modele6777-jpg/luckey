@@ -347,9 +347,9 @@ function relationDynamic(fromIndex: number, toIndex: number): SukuyoRelationDyna
 }
 
 /** 월별 기숙표 (음력 1~12월 초하루의 기준 숙 — birthCharts.MONTH_START와 동일) */
-const MONTH_START = ['室', '奎', '胃', '畢', '參', '鬼', '張', '角', '氐', '心', '斗', '虚'];
+const MONTH_START = ['室', '奎', '胃', '畢', '參', '鬼', '張', '角', '氐', '心', '斗', '虛'];
 /** 27숙 한자 순서 (birthCharts.SUKUYO_MANSIONS와 동일 — 우(牛) 제외) */
-const MANSION_HANJA_27 = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虚', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
+const MANSION_HANJA_27 = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虛', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
 
 /** 음력 월·일 → 27숙 색인 결정론 환산 (정통 월별 기숙표 + 일진 진행) */
 export function sukuyoIndexFromLunar(month: number, day: number): number {
