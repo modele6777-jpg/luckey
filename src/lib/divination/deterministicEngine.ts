@@ -229,6 +229,9 @@ import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, type Jeo
 import { calculateHeraclitusPantaRhei, formatHeraclitusPantaRheiPrompt, type HeraclitusPantaRheiResult, HERACLITUS_PANTA_RHEI_VERSION } from './ancientGreekHeraclitusPantaRheiLogosEngine';
 import { calculateMoziGyeomAe, formatMoziGyeomAePrompt, type MoziGyeomAeResult, MOZI_GYEOM_AE_VERSION } from './ancientChineseMoziGyeomAeUniversalLoveEngine';
 import { calculateAureliusInnerCitadel, formatAureliusInnerCitadelPrompt, type AureliusInnerCitadelResult, AURELIUS_INNER_CITADEL_VERSION } from './romanAureliusInnerCitadelMeditationsEngine';
+import { calculateLaoziDaodejing, formatLaoziDaodejingPrompt, type LaoziDaodejingResult, LAOZI_DAODEJING_VERSION } from './chineseLaoziDaodejingWaterWayEngine';
+import { calculateEpicureanTetrapharmakos, formatEpicureanTetrapharmakosPrompt, type EpicureanTetrapharmakosResult, EPICUREAN_TETRAPHARMAKOS_VERSION } from './ancientGreekEpicureanTetrapharmakosEngine';
+import { calculateYulgokGyeokmong, formatYulgokGyeokmongPrompt, type YulgokGyeokmongResult, YULGOK_GYEOKMONG_VERSION } from './koreanYulgokGyeokmongYogyeolEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -477,6 +480,9 @@ export interface DeterministicEngineReport {
   heraclitusPantaRheiResult?: HeraclitusPantaRheiResult | null;
   moziGyeomAeResult?: MoziGyeomAeResult | null;
   aureliusInnerCitadelResult?: AureliusInnerCitadelResult | null;
+  laoziDaodejingResult?: LaoziDaodejingResult | null;
+  epicureanTetrapharmakosResult?: EpicureanTetrapharmakosResult | null;
+  yulgokGyeokmongResult?: YulgokGyeokmongResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2862,6 +2868,33 @@ try {
     }
   })()));
 
+  // 198. 고대 중국 노자 《도덕경》 81장 상선약수 & 무위자연 엔진
+  const laoziDaodejingResult = calculateSupplement('laoziDaodejingResult', () => ((() => {
+    try {
+      return calculateLaoziDaodejing(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 199. 고대 그리스 에피쿠로스 《테트라파르마코스》 4대치유약 영혼평정 아타락시아 엔진
+  const epicureanTetrapharmakosResult = calculateSupplement('epicureanTetrapharmakosResult', () => ((() => {
+    try {
+      return calculateEpicureanTetrapharmakos(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 200. 조선 율곡 이이 선생 《격몽요결》 입지·혁구습·구용구사 수신실천 엔진
+  const yulgokGyeokmongResult = calculateSupplement('yulgokGyeokmongResult', () => ((() => {
+    try {
+      return calculateYulgokGyeokmong(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -3096,6 +3129,9 @@ try {
     heraclitusPantaRheiResult,
     moziGyeomAeResult,
     aureliusInnerCitadelResult,
+    laoziDaodejingResult,
+    epicureanTetrapharmakosResult,
+    yulgokGyeokmongResult,
     tools: toolsMap,
   };
 }
@@ -3321,6 +3357,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'heraclitusPantaRheiLogos', nameKo: '에페소스 헤라클레이토스 만물유전 로고스 대립물조화', icon: '🌊', category: 'deep_master' },
   { key: 'moziGyeomAeUniversalLove', nameKo: '묵가 묵자 겸애교리 비공절용 공평무사 평화수호', icon: '🛡️', category: 'deep_master' },
   { key: 'romanAureliusInnerCitadel', nameKo: '로마 철학황제 마르쿠스 아우렐리우스 명상록 내면의성채', icon: '🏛️', category: 'deep_master' },
+  { key: 'laoziDaodejingWaterWay', nameKo: '노자 도덕경 81장 상선약수 화광동진 무위자연', icon: '☯️', category: 'deep_master' },
+  { key: 'ancientGreekEpicureanTetrapharmakos', nameKo: '에피쿠로스 4대치유약 테트라파르마코스 아타락시아 영혼평정', icon: '🌿', category: 'deep_master' },
+  { key: 'koreanYulgokGyeokmongYogyeol', nameKo: '율곡 이이 격몽요결 입지혁구습 구용구사 수신실천', icon: '📖', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3374,6 +3413,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanYulgokGyeokmongYogyeol',
+    'laoziDaodejingWaterWay',
+    'ancientGreekEpicureanTetrapharmakos',
     'romanAureliusInnerCitadel',
     'moziGyeomAeUniversalLove',
     'koreanJeongYakyongMongminSimseo',
@@ -3425,6 +3467,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'koreanYulgokGyeokmongYogyeol',
+    'laoziDaodejingWaterWay',
+    'ancientGreekEpicureanTetrapharmakos',
     'moziGyeomAeUniversalLove',
     'heraclitusPantaRheiLogos',
     'koreanJeongYakyongMongminSimseo',
@@ -3477,6 +3522,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'koreanYulgokGyeokmongYogyeol',
+    'laoziDaodejingWaterWay',
+    'ancientGreekEpicureanTetrapharmakos',
     'heraclitusPantaRheiLogos',
     'romanAureliusInnerCitadel',
     'delphicChilonSpartanModeration',
@@ -3622,6 +3670,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'laoziDaodejingWaterWay',
+    'ancientGreekEpicureanTetrapharmakos',
+    'koreanYulgokGyeokmongYogyeol',
     'heraclitusPantaRheiLogos',
     'moziGyeomAeUniversalLove',
     'romanAureliusInnerCitadel',
