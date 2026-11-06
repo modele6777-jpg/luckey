@@ -811,5 +811,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanJeongYakyongMongminSimseo": {
     "field": "jeongYakyongMongminResult",
     "traceKey": "jeongYakyongMongminResult"
+  },
+  "heraclitusPantaRheiLogos": {
+    "field": "heraclitusPantaRheiResult",
+    "traceKey": "heraclitusPantaRheiResult"
+  },
+  "moziGyeomAeUniversalLove": {
+    "field": "moziGyeomAeResult",
+    "traceKey": "moziGyeomAeResult"
+  },
+  "romanAureliusInnerCitadel": {
+    "field": "aureliusInnerCitadelResult",
+    "traceKey": "aureliusInnerCitadelResult"
   }
 };
