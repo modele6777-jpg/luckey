@@ -847,5 +847,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "chineseWangYangmingLiangzhiXinxue": {
     "field": "wangYangmingXinxueResult",
     "traceKey": "wangYangmingXinxueResult"
+  },
+  "ancientGreekSocraticMaieuticDaimon": {
+    "field": "socraticMaieuticDaimonResult",
+    "traceKey": "socraticMaieuticDaimonResult"
+  },
+  "chineseMenciusFourSproutsHoyeon": {
+    "field": "menciusFourSproutsHoyeonResult",
+    "traceKey": "menciusFourSproutsHoyeonResult"
+  },
+  "romanSenecaTimeSovereignty": {
+    "field": "senecaTimeSovereigntyResult",
+    "traceKey": "senecaTimeSovereigntyResult"
   }
 };
