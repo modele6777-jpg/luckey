@@ -823,5 +823,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "romanAureliusInnerCitadel": {
     "field": "aureliusInnerCitadelResult",
     "traceKey": "aureliusInnerCitadelResult"
+  },
+  "laoziDaodejingWaterWay": {
+    "field": "laoziDaodejingResult",
+    "traceKey": "laoziDaodejingResult"
+  },
+  "ancientGreekEpicureanTetrapharmakos": {
+    "field": "epicureanTetrapharmakosResult",
+    "traceKey": "epicureanTetrapharmakosResult"
+  },
+  "koreanYulgokGyeokmongYogyeol": {
+    "field": "yulgokGyeokmongResult",
+    "traceKey": "yulgokGyeokmongResult"
   }
 };
