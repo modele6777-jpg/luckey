@@ -919,5 +919,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "frenchMontaigneEssaisWisdom": {
     "field": "montaigneEssaisWisdomResult",
     "traceKey": "montaigneEssaisWisdomResult"
+  },
+  "ancientIndianNagarjunaMadhyamakaSunyata": {
+    "field": "nagarjunaMadhyamakaSunyataResult",
+    "traceKey": "nagarjunaMadhyamakaSunyataResult"
+  },
+  "koreanJinulJeonghyeSsangsuDonohJeomsu": {
+    "field": "jinulJeonghyeSsangsuResult",
+    "traceKey": "jinulJeonghyeSsangsuResult"
+  },
+  "renaissanceBrunoInfiniteUniverseHeroicFurore": {
+    "field": "brunoInfiniteUniverseResult",
+    "traceKey": "brunoInfiniteUniverseResult"
   }
 };
