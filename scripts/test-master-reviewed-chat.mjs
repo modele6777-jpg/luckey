@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os';
 const normal = process.argv.includes('--normal');
 const cancel = process.argv.includes('--cancel');
 const memory = process.argv.includes('--memory');
+const approveWrongMemory = process.argv.includes('--approve-wrong-memory');
 const profile=await mkdtemp(tmpdir()+'/calculation-audit-ui-');
 // Requires npm run build. No external API calls or account data are used.
 const preview = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', '4174', '--strictPort'], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -55,7 +56,7 @@ try {
   await call('Page.addScriptToEvaluateOnNewDocument', {source:`localStorage.setItem('developer_bypass','true');localStorage.setItem('lucy_plus_active',${JSON.stringify(normal ? 'false' : 'true')});localStorage.setItem('lu_unlocked_date',new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date()));`},sessionId);
   const draft=memory?'미검증초안 어느 회사 면접이야? 처음 듣는 얘기야.':'미검증초안 186개 정밀 계산 완료. 무조건 성공해.';
   const corrected=memory?'가온회사 이직을 준비한다고 알려줬지. 그 면접을 보고 왔구나. 어떤 점이 가장 기억에 남아?':'성공을 확정할 자료는 없어. 생년월일을 알려주면 계산 가능한 범위를 확인하고, 지금은 실행 계획부터 함께 정리해 보자.';
-  let generations=0,reviews=0,draftVisible=false,reviewModeMatched=false,cancelled=false,generationMemoryReady=false,reviewMemoryReady=false;
+  let generations=0,reviews=0,draftVisible=false,reviewModeMatched=false,cancelled=false,generationMemoryReady=false,reviewMemoryReady=false,memoryConflictDetected=false;
   socket.addEventListener('message', async event=>{
     const e=JSON.parse(event.data);
     if(e.method!=='Fetch.requestPaused')return;
@@ -67,6 +68,7 @@ try {
     const google=request.url.includes('googleapis.com');
     const body=request.postData||'';
     const review=body.includes('근거 검토자');
+    if(memory&&review)memoryConflictDetected ||= body.includes('이미 제공된 회사 이름을 다시 질문');
     if(memory){
       const ready=body.includes('가온회사로 이직하려고 준비 중이야.')&&!body.includes('금지회사');
       if(review)reviewMemoryReady ||= ready&&body.includes('conversation');else generationMemoryReady ||= ready;
@@ -83,7 +85,7 @@ try {
       draftVisible ||= Boolean(state.result.value);
       await new Promise(r=>setTimeout(r,700));
     }else generations++;
-    const text=review?JSON.stringify({valid:false,issues:['전체 계산 및 성공 보장 과장'],revisedReply:corrected}):draft;
+    const text=review?JSON.stringify(approveWrongMemory&&reviews===1?{valid:true,issues:[],revisedReply:''}:{valid:false,issues:[memory?'반복 질문':'전체 계산 및 성공 보장 과장'],revisedReply:corrected}):draft;
     const stream=request.url.includes('streamGenerateContent')||(!google&&JSON.parse(body).stream);
     const payload=google?{candidates:[{content:{role:'model',parts:[{text}]},finishReason:'STOP'}]}:{model:'gemini-3.6-flash',choices:[stream?{index:0,delta:{content:text},finish_reason:'stop'}:{index:0,message:{role:'assistant',content:text},finish_reason:'stop'}]};
     const response=stream?'data: '+JSON.stringify(payload)+'\n\n'+(google?'':'data: [DONE]\n\n'):JSON.stringify(payload);
@@ -107,8 +109,9 @@ try {
     const persisted=await call('Runtime.evaluate',{expression:`(localStorage.getItem('lucy_long_term_memory_v1:master_modele6777')||'').includes(${JSON.stringify(draft)})`,returnByValue:true},sessionId);
     if(persisted.result.value)throw Error('Unreviewed draft entered long-term memory');
   }
+  if(approveWrongMemory&&(!memoryConflictDetected||generations!==2||reviews!==2))throw Error(JSON.stringify({memoryConflictDetected,generations,reviews}));
   if((cancel ? result.corrected || !cancelled || generations !== 1 : !result.corrected)||result.draft||draftVisible||!reviews||!generations||!reviewModeMatched||(memory&&(!generationMemoryReady||!reviewMemoryReady)))throw Error(JSON.stringify({result,reviews,generations,draftVisible,generationMemoryReady,reviewMemoryReady,reviewModeMatched}));
-  console.log(JSON.stringify({mode:normal?'normal':'master',generations,reviews,unreviewedDraftHidden:true,reviewModeMatched,cancelled,...(memory?{generationMemoryReady,reviewMemoryReady,unreviewedMemoryAbsent:true}:{}),reviewedCorrectionVisible:!cancel}));
+  console.log(JSON.stringify({mode:normal?'normal':'master',generations,reviews,unreviewedDraftHidden:true,reviewModeMatched,cancelled,...(memory?{generationMemoryReady,reviewMemoryReady,unreviewedMemoryAbsent:true,...(approveWrongMemory?{memoryConflictDetected}:{} )}:{}),reviewedCorrectionVisible:!cancel}));
 
 } finally {
   preview.kill(); socket?.close(); chrome.kill();

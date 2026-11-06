@@ -1,3 +1,4 @@
+import { formatLucyConversationMemory } from '../lib/lucyConversationMemory';
 import { buildLucyCriticalFacts, formatLucyCriticalFacts } from '../lib/lucyCriticalFacts';
 import { LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS, LUCY_REVIEW_MODEL, LUCY_REVIEW_FALLBACK_MODELS } from '../lib/lucyModelPolicy';
 import { reviewLucyReply } from '../lib/lucyReplyReview';
@@ -6,7 +7,7 @@ import type { CalculationAuditItem } from '../lib/divination/calculationAudit';
 import { TAROT_NO_DRAW_RULE, verifyLucyTarotReply, isLucyTarotDrawRequest, revealLucyTarotDrawCard, type LucyTarotDraw } from '../lib/lucyTarotIntegrity';
 import { drawLucyTarotCards, formatTarotMarker } from '../utils/tarotDetector';
 import { buildLucyTarotReadingPrompt, LUCY_TAROT_RESPONSE_PROFILE } from '../lib/lucyTarotReading';
-import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, buildLucyLongTermPrompt } from '../lib/lucyLongTermMemory';
+import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, recallLucyLongTermMemory } from '../lib/lucyLongTermMemory';
 import { buildLucySharedBackground } from '../lib/lucySharedBackground';
 import { buildFullProfilePrompt } from '../lib/divination/profileContext';
 import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
@@ -2107,7 +2108,8 @@ ${responseProfile.rule}`;
       question: text,
     });
     if (sharedLucyBackground) systemPrompt += `\n\n${sharedLucyBackground}`;
-    const longTermContext = buildLucyLongTermPrompt(memoryAccount, [...readLucyMemory(memoryAccount), ...(sharedStateRef.current?.lucyLongTermMemory || [])], effectiveUserText, [`${isProConversation ? 'lucy-pro' : 'lucy'}:${userMsg.id}`]);
+    const memoryRecall = recallLucyLongTermMemory(memoryAccount, [...readLucyMemory(memoryAccount), ...(sharedStateRef.current?.lucyLongTermMemory || [])], effectiveUserText, [`${isProConversation ? 'lucy-pro' : 'lucy'}:${userMsg.id}`]);
+    const longTermContext = formatLucyConversationMemory(memoryRecall);
     if (longTermContext) systemPrompt += `\n\n${longTermContext}`;
     const fullProfileContext = buildFullProfilePrompt(profile);
     systemPrompt += `\n\n${fullProfileContext}`;
@@ -2222,7 +2224,7 @@ ${responseProfile.rule}`;
           question: effectiveUserText,
           evidence: [options?.extraSystemContext || toolSelection.promptInjection || '', fullProfileContext, chatDivinationContext || '', longTermContext].join('\n'),
           conversation: taskContext.messages.slice(-8).map(message => ({ role:message.role === 'user' ? 'user' as const : 'assistant' as const, content:extractPlainUserText(message.content).slice(0,2000) })),
-          facts: criticalFacts,
+          facts: criticalFacts, memoryRecall,
           audit: reviewAudit, signal: currentAbortController.signal,
           request: messages => invokeLLM({ messages, preferServer: true, reviewMode: isMasterCall ? 'master' : 'general',
             model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_REVIEW_MODEL,

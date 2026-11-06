@@ -53,8 +53,12 @@ export function lucyMemorySignature(entries:unknown) {
   for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}
   return `${text.length}:${hash>>>0}`;
 }
-export function buildLucyLongTermPrompt(account:string,entries:unknown,question:string,excludeIds:readonly string[]=[]) {
+export function recallLucyLongTermMemory(account:string,entries:unknown,question:string,excludeIds:readonly string[]=[]) {
   const excluded=new Set(excludeIds);
   const all=mergeLucyMemory(forAccount(entries,account)).filter(entry=>!excluded.has(entry.id));
-  return formatLucyConversationMemory(selectLucyConversationMemory(account,all,question));
+  return selectLucyConversationMemory(account,all,question);
+}
+
+export function buildLucyLongTermPrompt(account:string,entries:unknown,question:string,excludeIds:readonly string[]=[]) {
+  return formatLucyConversationMemory(recallLucyLongTermMemory(account,entries,question,excludeIds));
 }

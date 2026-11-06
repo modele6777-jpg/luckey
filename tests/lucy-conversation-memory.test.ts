@@ -85,3 +85,30 @@ test('legacy episodic entry point cannot inject the global archive or invent per
  const ledger=extractEpisodicMemoryLedger([{date:'2026-11-06',timestamp:now,dialogueCount:1,summary:'면접 준비',userTopics:['회사 면접 준비 중이야.']}]);
  assert.deepEqual(ledger.coreValues,[]);
 });
+
+test('an unseen company is not silently replaced by the remembered company',()=>{
+ const rows=[entry('old','가온회사 면접 준비 중이야.')];
+ assert.ok(!selectLucyConversationMemory('a',rows,'새봄회사 면접을 볼 거야',now+100).entries.some(e=>e.id==='old'));
+});
+test('a bare cancellation is retained as the latest update to the remembered plan',()=>{
+ const rows=[entry('goal','가온회사 면접 준비 중이야.'),entry('cancel','취소했어.',10)];
+ assert.ok(selectLucyConversationMemory('a',rows,'그 회사 이야기를 이어서 하자',now+100).entries.some(e=>e.id==='cancel'));
+});
+test('a demonstrative word prefix does not turn a new noun into an old followup',()=>{
+ const rows=[entry('goal','가온회사 면접 준비 중이야.')];
+ assert.equal(selectLucyConversationMemory('a',rows,'그 거북이는 뭘 먹어?',now+100).entries.length,0);
+ assert.equal(selectLucyConversationMemory('a',rows,'그 건물 높이는 얼마야?',now+100).entries.length,0);
+});
+test('a temporal thank-you does not ask the user which old event they mean',()=>{
+ assert.equal(buildLucyLongTermPrompt('a',[],'아까는 고마웠어.'),'');
+});
+
+test('a new unnamed company can legitimately require a new identity question',()=>{
+ const recall=selectLucyConversationMemory('a',[entry('old','가온회사 면접 준비 중이야.')],'다른 회사 면접을 볼 거야',now+100);
+ assert.ok(!recall.entries.some(e=>e.id==='old'));
+});
+test('explicitly named friends are not merged when a new person is introduced',()=>{
+ const rows=[entry('friend','지민이라는 친구와 관계가 고민이야.')];
+ assert.ok(!selectLucyConversationMemory('a',rows,'수연이라는 친구 이야기를 할게',now+100).entries.some(e=>e.id==='friend'));
+ assert.ok(selectLucyConversationMemory('a',rows,'지민과 관계는 어때?',now+100).entries.some(e=>e.id==='friend'));
+});
