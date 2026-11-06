@@ -1656,8 +1656,8 @@ test('Unified Synastry: 결정론성(동일 입력 동일 출력)과 프롬프�
   assert(report.compatibilityResult !== null && report.compatibilityResult !== undefined);
   assert.equal(report.compatibilityResult!.engineVersion, 'LUCKEY-CS-v1.0.0');
   const enginePrompt = formatDeterministicEnginePrompt(report);
-  assert(enginePrompt.includes('LUCKEY-CS-v1.0.0'));
-  assert(enginePrompt.includes('5대 운명학 융합 궁합 리포트'));
+  assert(!enginePrompt.includes('5대 운명학 융합 궁합 리포트'));
+  assert(enginePrompt.includes('이번 질문의 계산 근거 및 한계'));
   // partnerProfile이 없으면 미바인딩
   const solo = runDeterministicEngine({ profile: csA, question: '내 운세 봐줘' });
   assert(!solo.compatibilityResult);
@@ -2338,90 +2338,20 @@ test('Deterministic Engine: 15대 운명학 도구 전원 calculated 완료 및 
   assert.equal(report.tools.iching.status, 'calculated');
   assert.equal(report.tools.tarot.status, 'calculated');
   const enginePrompt = formatDeterministicEnginePrompt(report);
-  assert(enginePrompt.includes(LIUREN_MASTER_ENGINE_VERSION));
-  assert(enginePrompt.includes(ICHING_MASTER_ENGINE_VERSION));
-  assert(enginePrompt.includes(TAROT_MASTER_ENGINE_VERSION));
-  assert(enginePrompt.includes(HELUOLISHU_ENGINE_VERSION));
-  assert(enginePrompt.includes(DYNAMIC_CLASH_ENGINE_VERSION));
-  assert(enginePrompt.includes(TWELVE_SPIRITS_ENGINE_VERSION));
-  assert(enginePrompt.includes(PYTHAGOREAN_LIFECYCLE_VERSION));
-  assert(enginePrompt.includes(ASTRO_DECAN_SABIAN_VERSION));
-  assert(enginePrompt.includes(MEDICAL_BIO_MATRIX_VERSION));
-  assert(enginePrompt.includes(WEALTH_PIPELINE_VERSION));
-  assert(enginePrompt.includes(KARMIC_NODES_ENGINE_VERSION));
-  assert(enginePrompt.includes(MENTAL_RESILIENCE_VERSION));
-  assert(enginePrompt.includes(NOBLE_NETWORK_VERSION));
-  assert(enginePrompt.includes(VOICE_PERSONA_VERSION));
-  assert(enginePrompt.includes(CONTRACT_SHIELD_VERSION));
-  assert(enginePrompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
-  assert(enginePrompt.includes(DEEP_WORK_FLOW_VERSION));
-  assert(enginePrompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
-  assert(enginePrompt.includes(QUANTUM_LEAP_VERSION));
-  assert(enginePrompt.includes(ELEMENTAL_RESONANCE_VERSION));
-  assert(enginePrompt.includes(YIN_YANG_POLARITY_VERSION));
-  assert(enginePrompt.includes(RUNE_MATRIX_VERSION));
-  assert(enginePrompt.includes(SOUL_JOURNEY_TAROT_VERSION));
-  assert(enginePrompt.includes(TRANSCENDENTAL_MEDITATION_VERSION));
-  assert(enginePrompt.includes(STRATEGIC_LEVERAGE_VERSION));
-  assert(enginePrompt.includes(SHADOW_ARCHETYPE_VERSION));
-  assert(enginePrompt.includes(BIORHYTHM_PEAK_FLOW_VERSION));
-  assert(enginePrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
-  assert(enginePrompt.includes(MICRO_HABIT_KARMA_VERSION));
-  assert(enginePrompt.includes(IKIGAI_DESTINY_COMPASS_VERSION));
-  assert(enginePrompt.includes(SERENDIPITY_SYNCHRONICITY_VERSION));
-  assert(enginePrompt.includes(HUMAN_DESIGN_BODYGRAPH_VERSION));
-  assert(enginePrompt.includes(CHAKRA_ALIGNMENT_VERSION));
-  assert(enginePrompt.includes(ENNEAGRAM_INTEGRATION_VERSION));
-  assert(enginePrompt.includes(ANCESTRAL_KARMA_VERSION));
-  assert(enginePrompt.includes(SHAMANIC_ANIMAL_TOTEM_VERSION));
-  assert(enginePrompt.includes(HERO_MONOMYTH_VERSION));
-  assert(enginePrompt.includes(AKASHIC_RECORDS_VERSION));
-  assert(enginePrompt.includes(QUANTUM_TIMELINE_VERSION));
-  assert(enginePrompt.includes(SOMATIC_ARMORING_VERSION));
-  assert(enginePrompt.includes(SUPREME_WISDOM_TRINITY_VERSION));
-  assert(enginePrompt.includes(SACRED_VORTEX_VERSION));
-  assert(enginePrompt.includes(TAOIST_NEIDAN_VERSION));
-  assert(enginePrompt.includes(SYNCHRONICITY_OMEN_VERSION));
-  assert(enginePrompt.includes(SOLFEGGIO_HARMONIC_VERSION));
-  assert(enginePrompt.includes(ETHERIC_AURA_VERSION));
-  assert(enginePrompt.includes(SAJU_CLASSIC_YONGSHIN_VERSION));
-  assert(enginePrompt.includes(TAROT_KABBALAH_SHADOW_VERSION));
-  assert(enginePrompt.includes(HELLENISTIC_LOTS_ENGINE_VERSION));
-  assert(enginePrompt.includes(ICHING_384YAO_ENGINE_VERSION));
+  assert(enginePrompt.includes('이번 질문의 계산 근거 및 한계'));
+  assert(!enginePrompt.includes('100% 확정 수치'));
+  assert(!enginePrompt.includes('영적 방패율:'));
+
 });
 
-test('Deterministic Engine: smart selective routing prunes prompt and focuses on intent engines', () => {
-  const profile = {
-    basic: { birthdate: '1990-05-15', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' }
-  };
-  const report = runDeterministicEngine({ profile, question: '그 사람 속마음과 우리 인연이 궁금해', forceAllTools: true });
-
-  // 1. 연애/인연 의도 selective prompt 테스트
-  const lovePrompt = formatDeterministicEnginePrompt(report, {
-    isMasterMobilization: false,
-    intent: 'relationship_love',
-    focusTools: ['saju', 'sukuyo', 'astrology']
-  });
-
-  assert(lovePrompt.includes('스마트 집중 모드 가동'));
-  assert(lovePrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
-  assert(lovePrompt.includes(TAROT_KABBALAH_SHADOW_VERSION));
-  // 연애 의도와 무관한 엔진은 선별 제외되어 프롬프트 비대화 방지
-  assert(!lovePrompt.includes(CONTRACT_SHIELD_VERSION));
-  assert(!lovePrompt.includes(WEALTH_PIPELINE_VERSION));
-  assert(!lovePrompt.includes(TAOIST_NEIDAN_VERSION));
-
-  // 2. 비즈니스/재물 의도 selective prompt 테스트
-  const businessPrompt = formatDeterministicEnginePrompt(report, {
-    isMasterMobilization: false,
-    intent: 'business_money',
-    focusTools: ['saju', 'ziwei', 'kyusei']
-  });
-  assert(businessPrompt.includes('스마트 집중 모드 가동'));
-  assert(businessPrompt.includes(WEALTH_PIPELINE_VERSION));
-  assert(businessPrompt.includes(SAJU_CLASSIC_YONGSHIN_VERSION));
-  assert(!businessPrompt.includes(DESTINY_SYNASTRY_ECHO_VERSION));
-  assert(!businessPrompt.includes(SOMATIC_ARMORING_VERSION));
+test('Deterministic Engine: selective prompts contain only selected successful tool data', () => {
+  const report = runDeterministicEngine({ profile, question: '그 사람 속마음', forceAllTools: true });
+  const prompt = formatDeterministicEnginePrompt(report, { isMasterMobilization: false, focusTools: ['saju'] });
+  const data = JSON.parse(prompt.split('[계산 상태 및 데이터 JSON]')[1].split('[JSON 끝]')[0]);
+  assert.equal(data.length, 1);
+  assert.equal(data[0].tool, '사주명리');
+  assert.equal(data[0].status, 'calculated');
+  assert(!prompt.includes('gunggungEuleulSpiritualShieldScore'));
 });
 
 test('Hellenistic Lots Engine: calculates Fortune, Spirit, Eros, Nemesis lots deterministically', () => {
@@ -2769,15 +2699,13 @@ test('Zoroastrian Asha Truth Engine: calculates threefold path, sacred atar fire
   assert(prompt.includes(rep.discernment.currentTrialTheme));
 });
 
-test('DCE Engine Registry & Fired Badges: dynamically expands and covers all 86 engines', () => {
-  assert(ALL_DCE_ENGINES.length >= 86);
-  const rep = runDeterministicEngine({ profile });
-  const allBadges = getFiredEngineBadges(rep, { isMasterMobilization: true });
-  assert.equal(allBadges.length, ALL_DCE_ENGINES.length);
-  const selectiveBadges = getFiredEngineBadges(rep, { isMasterMobilization: false, intent: 'vitality_wellness' });
-  assert(selectiveBadges.length >= 5);
-  assert(selectiveBadges.includes('호오포노포노 7원리'));
-  assert(selectiveBadges.includes('풍수 8택 방위에너지'));
+test('DCE catalogue size is never substituted for successful calculation evidence', () => {
+  const rep = runDeterministicEngine({ profile, coreOnly: true, focusTools: ['saju'] });
+  const badges = getFiredEngineBadges(rep, { isMasterMobilization: true });
+  assert.deepEqual(badges, ['계산 근거 · 사주명리']);
+  assert(badges.length < ALL_DCE_ENGINES.length);
+  rep.tools.saju.status = 'error';
+  assert.deepEqual(getFiredEngineBadges(rep, { isMasterMobilization: true }), []);
 });
 
 test('Hindu Tantric Kundalini & Nadi Awakening Engine: calculates nadis, chakras, granthis and pranayama', () => {

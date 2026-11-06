@@ -1,3 +1,5 @@
+import { CALCULATION_HONESTY_RULE } from '../lib/divination/calculationAudit';
+import type { CalculationAuditItem } from '../lib/divination/calculationAudit';
 import { TAROT_NO_DRAW_RULE, verifyLucyTarotReply, isLucyTarotDrawRequest, revealLucyTarotDrawCard, type LucyTarotDraw } from '../lib/lucyTarotIntegrity';
 import { drawLucyTarotCards, formatTarotMarker } from '../utils/tarotDetector';
 import { buildLucyTarotReadingPrompt, LUCY_TAROT_RESPONSE_PROFILE } from '../lib/lucyTarotReading';
@@ -58,6 +60,7 @@ export interface UnifiedMessage {
   mode?: string;
   keyExerciseIndex?: number;
   usedTools?: string[];
+  calculationAudit?: CalculationAuditItem[];
   divinationContext?: string;
 }
 
@@ -76,6 +79,7 @@ export interface SendUnifiedMessageOptions {
   oracleContext?: string;
   customUserProfile?: UserProfile;
   usedTools?: string[];
+  calculationAudit?: CalculationAuditItem[];
   isLucyPlus?: boolean;
 }
 
@@ -1918,6 +1922,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       consecutiveUserTexts.length > 1 ? consecutiveUserTexts.join('\n') : text;
 
     const hasDivinationInjection =
+      options?.extraSystemContext?.includes('[이번 질문의 계산 근거 및 한계]') ||
       options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
       options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
       options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
@@ -1936,9 +1941,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const toolsIncludedInPrompt = isCasualMode
       ? []
       : toolSelection.promptInjection
-      ? (toolSelection.firedEngineBadges && toolSelection.firedEngineBadges.length > 0
-          ? toolSelection.firedEngineBadges
-          : toolSelection.selectedTools.map((tool) => tool.koName))
+      ? (toolSelection.firedEngineBadges || [])
       : hasDivinationInjection
       ? options?.usedTools || []
       : [];
@@ -2114,14 +2117,17 @@ ${responseProfile.rule}`;
     systemPrompt += `\n\n${fullProfileContext}`;
     const fatePreviewContext = !isCasualMode ? buildFatePreviewPrompt(sajuObj) : '';
     if (fatePreviewContext) systemPrompt += `\n\n${fatePreviewContext}`;
+    systemPrompt += `\n\n${CALCULATION_HONESTY_RULE}`;
     let chatDivinationContext: string | undefined;
     // Calculate once per submitted turn in the shared send path used by Lucy and Pro.
     // Stream retries below reuse systemPrompt, so a retry cannot draw a different hexagram.
     if (!isCasualMode && toolsIncludedInPrompt.length > 0) {
       try {
         const { buildChatDivinationContext, CHAT_DIVINATION_MARKER } = await import('../lib/divination/chatContext');
+        const evidencedIds = new Set((options?.calculationAudit || toolSelection.calculationAudit || [])
+          .filter(item => item.sentToModel).map(item => item.toolId));
         const selected = Object.values(FIFTEEN_DIVINATION_TOOLS)
-          .filter(tool => toolsIncludedInPrompt.includes(tool.koName)).map(tool => tool.id);
+          .filter(tool => evidencedIds.has(tool.id)).map(tool => tool.id);
         const { buildSavedDivinationPrompt } = await import('../lib/divination/savedResults');
         const saved = buildSavedDivinationPrompt(sharedState?.featureHistory, profile, selected, text);
         if (saved.prompt && !saved.reuse) systemPrompt += `\n\n${saved.prompt}`;
@@ -2266,6 +2272,7 @@ ${responseProfile.rule}`;
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
                   usedTools: toolsIncludedInPrompt,
+                  calculationAudit: options?.calculationAudit || toolSelection.calculationAudit || [],
                   divinationContext: chatDivinationContext,
                   keyExerciseIndex: resolvedKeyExIndex ?? m.keyExerciseIndex
                 };
@@ -2283,6 +2290,7 @@ ${responseProfile.rule}`;
                 channels: options?.channels,
                 mode: options?.mode,
                 usedTools: toolsIncludedInPrompt,
+                  calculationAudit: options?.calculationAudit || toolSelection.calculationAudit || [],
                   divinationContext: chatDivinationContext,
                 keyExerciseIndex: resolvedKeyExIndex
               });
@@ -2362,7 +2370,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${responseProfile.rule}${options?.tarotCardMarkers && options.extraSystemContext ? '\n' + options.extraSystemContext : ''}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${options?.tarotCardMarkers && options.extraSystemContext ? '\n' + options.extraSystemContext : ''}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
@@ -2388,7 +2396,8 @@ ${responseProfile.rule}`;
                   channel: options?.channel || m.channel,
                   channels: options?.channels || m.channels,
                   mode: options?.mode || m.mode,
-                  usedTools: chatDivinationContext ? toolsIncludedInPrompt : [],
+                  usedTools: [],
+                  calculationAudit: [],
                   divinationContext: chatDivinationContext,
                 };
               }
@@ -2404,7 +2413,8 @@ ${responseProfile.rule}`;
                 channel: options?.channel,
                 channels: options?.channels,
                 mode: options?.mode,
-                usedTools: chatDivinationContext ? toolsIncludedInPrompt : [],
+                usedTools: [],
+                  calculationAudit: [],
                 divinationContext: chatDivinationContext,
               });
             }

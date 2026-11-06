@@ -78,7 +78,7 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     clean.length <= 15 &&
     /^(안녕|하이|루시야|반가워|고마워|땡큐|ㅋㅋ+|ㅎㅎ+|응|그래|맞아|좋아|오케이|잘\s*자|굿모닝|좋은\s*아침)[.!~?\s]*$/i.test(clean);
 
-  if (isShortGreeting && !isMasterRequested) {
+  if (isShortGreeting) {
     return {
       intent: 'casual_greeting',
       intentKoName: '가벼운 일상 수다',
@@ -101,7 +101,7 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
       intentKoName: '올인원 마스터 종합 청사진',
       confidence: 0.98,
       targetTools: ['saju', 'astrology', 'ziwei', 'sukuyo', 'vedic', 'iching', 'liuren', 'qimen', 'mahabote', 'kyusei'],
-      routingReason: '동서양 핵심 운명학 도구 전원 총동원 입체 교차 검증',
+      routingReason: '요청한 종합 상담에 필요한 도구의 계산 결과 비교',
       suggestedFocusPrompt: '인생의 큰 흐름(대운)부터 구체적 사건과 오늘의 타이밍까지 7대 테마별로 균형 있게 조망해 줘.',
       isMasterMobilization: true,
       isCasual: false,
@@ -279,7 +279,9 @@ export function routeAndExecute(params: {
   const engineReport = runDeterministicEngine({
     profile: params.profile,
     question: params.text,
-    forceAllTools: routePlan.isMasterMobilization,
+    forceAllTools: true,
+    focusTools: routePlan.targetTools,
+    coreOnly: true,
   });
 
   const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport, {

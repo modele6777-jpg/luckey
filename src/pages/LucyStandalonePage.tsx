@@ -2283,10 +2283,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 - ${chCfg ? `이 테마의 주력 운명학 도구: ${chCfg.fusionPhilosophy}` : `${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`}`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${singleContext}` : singleContext;
     } else if (isMaster) {
-      const masterContext = `[7대 채널 올인원 Lucy + 마스터 풀가동 — 15대 운명학 도구 전원 총동원 & 비교 분석 모드]
-- 7대 테마에 배정된 동서양 15가지 운명학 도구(프롤로그[태을신수·토정비결], 오렌지[홍국기문·육임·구성학], 트리니티[사주·점성술·자미두수·타로], 아우라[마하보테·태국점성술], 블루버드[숙요·베딕], 뮤즈[카발라·타로], 에필로그[주역·베딕])를 단 하나도 빠짐없이 전원 총동원합니다.
-- 7대 테마별로 묶어 15개 도구의 관점을 각각 비교 분석한 뒤, 실제 계산값이 제공된 도구들의 공통점과 차이를 비교해 줘. 미산출 도구를 계산했다고 하거나 15개 도구가 만장일치했다고 주장하지 마.
-- [마스터 절대 원칙]: 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드 대사를 하지 말고, 어떤 질문이든 15대 운명학 마스터의 깊이 있는 통찰과 해답으로 안내해.`;
+      const masterContext = `[루시플러스 통합 상담]
+- 질문과 관련하여 실제 계산 데이터가 전달된 도구만 비교하고, 없는 계산을 실행했다고 말하지 마.
+- 상징적 조언은 상징이라고 밝히고, 계산 실패·입력 부족은 정직하게 안내해. 엔진 개수로 정확성을 주장하지 마.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
       targetPersona = 'lucy';
     } else if (isSyn) {
@@ -2325,9 +2324,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     }
     const usedToolNames =
       !divinationSelection.isCasualMessage && divinationSelection.promptInjection
-        ? (divinationSelection.firedEngineBadges && divinationSelection.firedEngineBadges.length > 0
-            ? divinationSelection.firedEngineBadges
-            : divinationSelection.selectedTools.map((tool) => tool.koName))
+        ? (divinationSelection.firedEngineBadges || [])
         : [];
 
     setInput('');
@@ -2357,6 +2354,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       mode: isMaster ? 'master' : (isCasual ? 'casual' : (isSingle ? channels[0] : 'synergy')),
       channel: isSingle ? channels[0] : undefined,
       usedTools: usedToolNames,
+      calculationAudit: divinationSelection.calculationAudit || [],
       onFinish: async (fullText, _sentText, replyMsgId) => {
         if (!tarotCardMarkers && (isAutoTtsRef.current || isVoiceModeRef.current) && fullText && fullText.trim()) {
           void triggerAutoTts(fullText, replyMsgId);
@@ -2958,66 +2956,20 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <span>{msgModeInfo.badgeLabel}</span>
                   </span>
 
-                  {/* 🔮 루시 답장에 발동된 운명학 엔진 배지 표시 (마스터 모드 및 선별 발동 엔진) */}
-                  {!isUser && !isGreeting && !msgModeInfo.isCasual && (() => {
-                    const resolvedTools: string[] = Array.isArray(msg.usedTools)
-                      ? msg.usedTools.filter((toolName: unknown): toolName is string =>
-                          typeof toolName === 'string' && toolName.trim().length > 0
-                        )
-                      : [];
-                    if (resolvedTools.length === 0) return null;
-
-                    const isMaster = msgModeInfo.isMaster || resolvedTools.length >= 15;
-                    if (isMaster) {
-                      return (
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
-                            isLight
-                              ? 'bg-purple-50 text-purple-900 border-purple-300/80'
-                              : 'bg-purple-950/70 text-purple-200 border-purple-500/40'
-                          }`}
-                          title={`발동된 전체 마스터 엔진 (${resolvedTools.length}대 전원 총동원): ${resolvedTools.join(', ')}`}
-                        >
-                          <span>👑</span>
-                          <span>{resolvedTools.length}대 마스터 엔진 총동원 ({resolvedTools.slice(0, 3).join('·')} 외 {resolvedTools.length - 3}종)</span>
-                        </span>
-                      );
-                    }
-
-                    const displayTools = resolvedTools.slice(0, 4);
-                    const remainingCount = resolvedTools.length - 4;
-
-                    return (
-                      <div className="inline-flex items-center gap-1 flex-wrap">
-                        {displayTools.map((toolName) => (
-                          <span
-                            key={toolName}
-                            className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
-                              isLight
-                                ? 'bg-amber-50/95 text-amber-900 border-amber-300/80'
-                                : 'bg-amber-950/60 text-amber-200 border-amber-500/35'
-                            }`}
-                            title={`이 답변에 발동된 엔진: ${toolName}`}
-                          >
-                            <span>🔮</span>
-                            <span>{toolName}</span>
-                          </span>
+                  {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && msg.calculationAudit.length > 0 && (
+                    <details className="text-[11px] text-amber-700 dark:text-amber-200 max-w-full">
+                      <summary className="cursor-pointer">이번 답변의 계산 근거 {msg.calculationAudit.filter(item => item.sentToModel).length}개 · 상태 보기</summary>
+                      <ul className="mt-1 space-y-1">
+                        {msg.calculationAudit.filter(item => item.note !== '이번 질문에서 선택하지 않은 도구').map(item => (
+                          <li key={item.toolId}>
+                            {item.name}: {item.sentToModel ? '계산 완료 · 답변에 전달' : item.status === 'error' ? '계산 실패' : item.status === 'symbolic' ? '상징적 참고' : item.status === 'partial' ? '부분 계산' : '미계산'}
+                            {item.note ? ` — ${item.note}` : ''}
+                          </li>
                         ))}
-                        {remainingCount > 0 && (
-                          <span
-                            className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
-                              isLight
-                                ? 'bg-indigo-50 text-indigo-900 border-indigo-200'
-                                : 'bg-indigo-950/60 text-indigo-200 border-indigo-500/40'
-                            }`}
-                            title={`추가 발동된 심층 엔진: ${resolvedTools.slice(4).join(', ')}`}
-                          >
-                            <span>+{remainingCount}개 심층</span>
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })()}
+                      </ul>
+                      <p className="mt-1 opacity-80">계산 실행은 해석·미래 예측의 정확성을 보증하지 않습니다.검증되지 않은 심층 점수는 제외했습니다.</p>
+                    </details>
+                  )}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>

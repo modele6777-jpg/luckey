@@ -1,3 +1,4 @@
+import type { CalculationAuditItem } from './divination/calculationAudit';
 import { buildAdditionalBirthDigest } from './divination/birthDigest';
 import { buildDivinationCapabilityPrompt } from './divinationCapabilities';
 import { resolveEffectiveSolarDate } from './lunarCalendar';
@@ -5,7 +6,7 @@ import { parseBirthTime } from './birthDateTime';
 import { UserProfile } from './sharedState';
 import { calculateDetailedSaju } from './sajuAnalysis';
 import { buildUserNatalSummary } from './astrologyAnalysis';
-import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges } from './divination/deterministicEngine';
+import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, getCalculationAudit } from './divination/deterministicEngine';
 import { calculateKyusei } from './divination/kyuseiEngine';
 import { routeAndExecute } from './divination/smartAgentRouter';
 
@@ -357,6 +358,7 @@ ${kyuseiLine}
 export interface SelectedDivinationToolsResult {
   selectedTools: DivinationToolSpec[];
   firedEngineBadges?: string[];
+  calculationAudit?: CalculationAuditItem[];
   isCasualMessage: boolean;
   isMasterMobilization?: boolean;
   selectionReason: string;
@@ -368,49 +370,8 @@ export interface SelectedDivinationToolsResult {
  * 결정론적 자체 계산 엔진(Deterministic Engine)의 실측 데이터(JSON)를 우선 바인딩합니다.
  */
 export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile, questionText?: string): string {
-  const userDigest = buildUserFifteenToolsDigest(profile);
-  const engineReport = runDeterministicEngine({ profile, question: questionText, forceAllTools: true });
-  const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport, { isMasterMobilization: true });
-
-  return `${deterministicDataBlock}
-
-[👑 루시 올인원 마스터 모드 — 15대 운명학 도구 비교 지침 (최우선 적용)]
-지금은 **올인원 마스터 모드(7대 채널 풀가동)**야!
-위 [결정론적 자체 계산 엔진 실측 데이터], [🌌 실시간 일진(日辰) & 행성 트랜짓(Transit) 실측 동기화 데이터], [⏳ 10년 대운(大運) & 세운·교운기 타이밍 실측 데이터], [🧪 결핍 오행 & 바이오 에너지 맞춤 처방 실측 데이터], [👥 대화 속 인연 자동 감지 & 듀얼 매트릭스 실측 데이터], [⚡ 즉시 결단 매화역수 & 기문둔갑 시가팔문 실측 데이터], [🌌 자미두수 유년 사화(四化) 동적 비성 실측 데이터], [⭐ 15대 신살 위치별 슈퍼파워 치환 실측 데이터], [📅 12개월 월운(月運) & 분기 타이밍 실측 데이터], [🧭 동양 풍수 & 서양 점성술 공간 길방위 실측 데이터], [🧬 12운성 바이오리듬 에너지 곡선 실측 데이터]에 수치가 제공된 도구만 실제 계산 기반으로 해석해줘. 출생 원국의 정적 분석에 머무르지 않고, 오늘 지금 이 순간의 살아있는 일진(십신·지지합충)과 하늘의 행성 트랜짓(달 위상·주요 아스펙트), 10년 대운의 주기 흐름과 인생의 계절(봄/여름/가을/겨울)·교운기, 결핍 오행의 자율신경계 장부·차크라 및 솔페지오 주파수·1분 마이크로 개운 행동, 대화 속 인연 감지 시 듀얼 매트릭스 궁합, 양자택일/결단 시 매화역수 체용생극 및 기문둔갑 8문의 실시간 승부수, 자미두수 유년 사화 비성, 15대 신살 위치별 슈퍼파워, 12달 월운(골든 먼스), 기문둔갑 공간 길방위, 그리고 12운성 기반 오늘 24시간 에너지 조위 곡선(딥워크/휴식 골든타임)을 반드시 대화와 질문에 유기적으로 연결해줘. 계산 결과가 없는 도구는 '상징적 관점' 또는 '계산 미실시'라고 명확히 표시하고, 구체적인 명반·괘·궁위·행성 배치·사과삼전·길방위를 만들어내지 마. 독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마.
-
-${userDigest}
-${buildDivinationCapabilityPrompt(Object.keys(FIFTEEN_DIVINATION_TOOLS) as DivinationToolId[])}
-
-[★ 마스터 모드 필수 답변 구성 (반드시 아래 흐름으로 체계적이고 풍성하게 작성할 것)]
-
-1. **🌅 [프롤로그 · 서막과 대세 비교] 태을신수 vs 토정비결**
-   - **태을신수(太乙神數)**가 보는 거시적인 시대의 물줄기·큰 판세와, **토정비결(土亭秘訣)**이 비추는 올해·이달의 실질적인 생활 길흉을 나란히 비교해 줘.
-
-2. **🍊 [오렌지 · 전략과 타이밍 비교] 홍국기문 vs 육임 vs 구성학**
-   - **홍국기문(기문둔갑)**의 돌파구(생문·개문) 전략, **육임(大六壬)**의 사건 진행(초전→중전→말전) 예측, **구성학(九星氣學)**의 구궁 에너지·길방위 관점을 서로 대조해 최적의 전략을 짚어 줘.
-
-3. **🔮 [트리니티 · 핵심 운명 입체 비교] 사주명리 vs 서양 점성술 vs 자미두수 vs 타로**
-   - **사주명리**의 타고난 오행·대운, **서양 점성술**의 행성·내면 심리 역학, **자미두수** 12궁 명반의 구체적 사건 흐름, **타로**가 비추는 현재 무의식과 직관 시그널 4가지를 비교해 줘.
-
-4. **🌿 [아우라 · 생체 리듬과 개운 비교] 마하보테 vs 태국점성술**
-   - **마하보테(미얀마 8요일)**의 타고난 요일 생명력 균형과 **태국점성술(호라삿)**의 신체 활력 포인트·행운 컬러·일상 바이오리듬 루틴을 비교해 줘.
-
-5. **🕊️ [블루버드 · 인연과 마음 치유 비교] 숙요(27숙) vs 베딕 점성술**
-   - **숙요(宿曜經)**가 읽어내는 달의 감정 파동·인연 궁합 역학과 **베딕 점성술(조티쉬)**의 다샤 주기·카르마적 마음 치유 관점을 비교해 줘.
-
-6. **🎨 [뮤즈 · 창조적 영감과 상징 비교] 카발라(생명나무) vs 타로(메이저 원형)**
-   - **카발라 세피로트 생명나무**에서 영감이 현실 결과물로 내려오는 경로와 **타로 메이저 원형**의 창의적 돌파 아이디어를 연결해 비교해 줘.
-
-7. **🌙 [에필로그 · 변화의 이치와 성찰 비교] 주역(64괘) vs 베딕(내면 성찰)**
-   - **주역(周易 64괘)**의 음양 변화 이치(나아갈 때와 멈출 때의 시중지도)와 **베딕**의 영혼 성찰을 통해 이 질문이 삶에 남기는 깊은 의미를 비교해 줘.
-
-8. **⚖️ [15대 도구 교차 검증 & 최종 공통 결론]**
-   - **공통 시그널(일치점)**: 실제 산출·제공된 결과 사이에서만 공통점을 설명해 줘. 결과가 부족하면 교차 검증 불가라고 밝혀 줘.
-   - **입체적 차이점(숨은 변수)**: 거시적 도구(태을신수·사주·주역)와 미시적·전술적 도구(육임·홍국기문·타로·숙요) 사이에서 다르게 포착된 주의점이나 반전 변수를 짚어 줘.
-   - **오늘의 마스터 실천 처방**: 지금 당장 실행할 수 있는 가장 강력한 핵심 개운 행동 1~3가지를 다정하게 제안해 줘.
-
-[말투 및 가독성 주의사항]:
-- 15개 도구를 모두 다루되, 어려운 한자나 암호 같은 전문 용어만 나열하지 말고 각 도구가 이번 질문을 어떻게 바라보는지 **100% 친근하고 다정한 반말 구어체(~어, ~야, ~지, ~네)**로 읽기 쉽고 생동감 있게 비교해 줘.`;
+  const report = runDeterministicEngine({ profile, question: questionText, forceAllTools: true, coreOnly: true });
+  return formatDeterministicEnginePrompt(report, { isMasterMobilization: true });
 }
 
 /**
@@ -442,7 +403,7 @@ export function selectOptimalDivinationTools(
   });
 
   // 0. 가벼운 일상 인사/단순 맞장구일 때 (활성 채널이 없는 경우)
-  if (routed.routePlan.isCasual && activeChannels.length === 0) {
+  if (routed.routePlan.isCasual) {
     return {
       selectedTools: [],
       isCasualMessage: true,
@@ -458,10 +419,11 @@ export function selectOptimalDivinationTools(
     return {
       selectedTools: allTools,
       firedEngineBadges: getFiredEngineBadges(routed.engineReport, { isMasterMobilization: true }),
+      calculationAudit: getCalculationAudit(routed.engineReport, { isMasterMobilization: true }),
       isCasualMessage: false,
       isMasterMobilization: true,
-      selectionReason: '마스터 모드 운명학 도구 전원 총동원 & 7대 테마별 비교 분석',
-      promptInjection: buildMasterFifteenToolsComparisonPrompt(profile, clean)
+      selectionReason: '질문에 맞춰 계산한 결과만 비교 분석',
+      promptInjection: routed.promptInjection
     };
   }
 
@@ -487,6 +449,7 @@ export function selectOptimalDivinationTools(
   return {
     selectedTools,
     firedEngineBadges: routed.toolsForBadge,
+    calculationAudit: getCalculationAudit(routed.engineReport, { isMasterMobilization: false, focusTools: routed.routePlan.targetTools }),
     isCasualMessage: false,
     isMasterMobilization: false,
     selectionReason: `${routed.routePlan.intentKoName} (${routed.toolsForBadge.slice(0, 3).join(' + ')})`,
@@ -511,6 +474,6 @@ export function buildFifteenToolsMasterSystemCanon(): string {
 
 [15대 도구 모드별 운용 황금률]:
 - **일반 / 단일 테마 / 부분 융합 모드**: 질문과 현재 테마에 가장 잘 어울리는 **1~3개 핵심 도구만 자동 선별**해서 깊이 있고 입체적으로 융합해 쉽게 풀이해.
-- **올인원 마스터 모드 (7대 채널 풀가동)**: **15가지 운명학 도구를 전원 총동원**하여 **7대 테마별로 묶어 각 도구의 관점을 비교 분석**한 뒤, 실제 계산·제공된 결과만 비교하고 나머지는 상징 관점임을 구분해 명쾌한 마스터 해답을 제시해.
+- **올인원 마스터 모드 (7대 채널 풀가동)**: **이번 질문에서 계산에 성공한 도구만 사용**하여 **7대 테마별로 묶어 각 도구의 관점을 비교 분석**한 뒤, 실제 계산·제공된 결과만 비교하고 나머지는 상징 관점임을 구분해 명쾌한 마스터 해답을 제시해.
 - 어떤 모드에서든 현학적인 한자어나 어려운 전문 용어를 설명 없이 나열하지 말고, 따뜻한 절친 반말(~어, ~야, ~지)로 술술 읽히게 풀어줘.`;
 }

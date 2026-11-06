@@ -1,3 +1,4 @@
+import type { CalculationAuditItem } from './divination/calculationAudit';
 import { mergeLucyTarotDraw, type LucyTarotDraw } from './lucyTarotIntegrity';
 /**
  * =========================================================================
@@ -24,6 +25,7 @@ export interface UnifiedMessage {
   channels?: string[];
   mode?: string;
   usedTools?: string[];
+  calculationAudit?: CalculationAuditItem[];
   divinationContext?: string;
 }
 
@@ -293,6 +295,7 @@ export function mergeUnifiedMessages(
         channels: (Array.isArray(msg.channels) && msg.channels.length > 0) ? msg.channels : existing.channels,
         mode: msg.mode || existing.mode,
         usedTools: msg.usedTools || existing.usedTools,
+        calculationAudit: msg.calculationAudit || existing.calculationAudit,
         divinationContext: msg.divinationContext || existing.divinationContext,
       });
     }
