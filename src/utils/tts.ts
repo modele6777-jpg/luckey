@@ -1,3 +1,4 @@
+import { retrySpeechRequest } from './ttsRetry';
 import { useState, useEffect } from 'react';
 import {
   getSharedAudioContext,
@@ -427,17 +428,13 @@ export const playTTS = async (
     updateTTSState({ isLoading: !ttsState.isPaused, isSpeaking: false, activeText: cleanText,
       currentSentence: initialSubSentence, activeSentence: initialSubSentence,
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}) });
-    let data: TTSAudioData | undefined;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      if (ttsState.activeSessionId !== sessionToVerify) return;
-      try {
-        data = await requestAIAudio(cleanText, activeEmotion, targetVoice, sessionToVerify);
-        break;
-      } catch (error) {
-        if (attempt || (error instanceof TTSAudioRequestError && (error.status < 500 || error.code === 'TTS_NOT_CONFIGURED' || error.code === 'TTS_PROVIDER_UNAVAILABLE'))) throw error;
-        await new Promise(resolve => setTimeout(resolve, 600));
-      }
-    }
+    const data = await retrySpeechRequest(
+      () => requestAIAudio(cleanText, activeEmotion, targetVoice, sessionToVerify),
+      {
+        isActive: () => ttsState.activeSessionId === sessionToVerify,
+        waitUntilResumed: () => waitForTTSResume(sessionToVerify!),
+      },
+    );
 
     // CRITICAL ABORT CHECK after JSON parse
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) {
