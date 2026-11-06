@@ -835,5 +835,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanYulgokGyeokmongYogyeol": {
     "field": "yulgokGyeokmongResult",
     "traceKey": "yulgokGyeokmongResult"
+  },
+  "ancientGreekAristotleMesotesEudaimonia": {
+    "field": "aristotleMesotesResult",
+    "traceKey": "aristotleMesotesResult"
+  },
+  "ancientIndianBhagavadGitaKarmaYoga": {
+    "field": "bhagavadGitaKarmaYogaResult",
+    "traceKey": "bhagavadGitaKarmaYogaResult"
+  },
+  "chineseWangYangmingLiangzhiXinxue": {
+    "field": "wangYangmingXinxueResult",
+    "traceKey": "wangYangmingXinxueResult"
   }
 };
