@@ -47,7 +47,7 @@ test('master prompt and displayed evidence originate from the same successful to
   assert.ok(selected.calculationAudit?.length);
   const successes = selected.calculationAudit!.filter(item => item.sentToModel);
   assert.deepEqual(selected.firedEngineBadges, successes.map(item => `${item.status === 'symbolic' ? '상징 참고' : '계산 근거'} · ${item.name}`));
-  assert.equal(selected.calculationAudit!.length, 216);
+  assert.equal(selected.calculationAudit!.length, 219);
   assert.doesNotMatch(selected.promptInjection, /100% 확정 수치|영적 방패율:|전원 총동원/);
 });
 

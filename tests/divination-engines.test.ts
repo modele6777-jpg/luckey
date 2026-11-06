@@ -204,6 +204,9 @@ import { calculateSenecaTimeSovereignty, formatSenecaTimeSovereigntyPrompt, SENE
 import { calculatePlatonicIdeaCave, formatPlatonicIdeaCavePrompt, PLATONIC_IDEA_CAVE_VERSION } from '../src/lib/divination/ancientGreekPlatonicIdeaCaveEngine';
 import { calculateToegyeSeonghakSipdo, formatToegyeSeonghakSipdoPrompt, TOEGYE_SEONGHAK_SIPDO_VERSION } from '../src/lib/divination/koreanToegyeSeonghakSipdoEngine';
 import { calculateCiceroDeOfficiis, formatCiceroDeOfficiisPrompt, CICERO_DE_OFFICIIS_VERSION } from '../src/lib/divination/romanCiceroDeOfficiisHonestumEngine';
+import { calculateEpictetusDichotomyOfControl, formatEpictetusDichotomyOfControlPrompt, EPICTETUS_CONTROL_VERSION } from '../src/lib/divination/ancientGreekEpictetusDichotomyOfControlEngine';
+import { calculateConfuciusAnalectsZhitianming, formatConfuciusAnalectsZhitianmingPrompt, CONFUCIUS_ZHITIANMING_VERSION } from '../src/lib/divination/ancientChineseConfuciusAnalectsZhitianmingEngine';
+import { calculateBaruchSpinozaEthicaConatus, formatBaruchSpinozaEthicaConatusPrompt, SPINOZA_CONATUS_AMORDEI_VERSION } from '../src/lib/divination/baruchSpinozaEthicaConatusAmorDeiEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4322,6 +4325,48 @@ test('Roman Cicero De Officiis Engine: calculates Honestum moral duty, Utile har
   const prompt = formatCiceroDeOfficiisPrompt(rep);
   assert(prompt.includes('고대 로마 키케로 의무론 도덕적 선 & 유용성 조화 지표'));
   assert(prompt.includes(rep.activeVirtueFoundation.foundationKo));
+});
+
+test('Epictetus Dichotomy of Control Engine: calculates Ta Eph hemin clarity, Prohairesis autonomy and Topoi balance', () => {
+  const rep = calculateEpictetusDichotomyOfControl(profile);
+  assert.equal(rep.engineVersion, EPICTETUS_CONTROL_VERSION);
+  assert(rep.dichotomyClarityScore >= 0 && rep.dichotomyClarityScore <= 100);
+  assert(rep.prohairesisAutonomyScore >= 0 && rep.prohairesisAutonomyScore <= 100);
+  assert(rep.adiaphoraDetachmentScore >= 0 && rep.adiaphoraDetachmentScore <= 100);
+  assert(rep.threeTopoiDisciplineScore >= 0 && rep.threeTopoiDisciplineScore <= 100);
+  assert(rep.apatheiaEquanimityScore >= 0 && rep.apatheiaEquanimityScore <= 100);
+  assert(rep.activeControlDomain.domainNameGreek.length > 0);
+  const prompt = formatEpictetusDichotomyOfControlPrompt(rep);
+  assert(prompt.includes('스토아학파 에픽테토스 통제이분법 & 프로하이레시스 지표'));
+  assert(prompt.includes(rep.activeControlDomain.domainNameKo));
+});
+
+test('Confucius Analects Zhitianming Engine: calculates life stage wisdom, Ren, Li, and Junzi equanimity', () => {
+  const rep = calculateConfuciusAnalectsZhitianming(profile);
+  assert.equal(rep.engineVersion, CONFUCIUS_ZHITIANMING_VERSION);
+  assert(rep.tianmingAttunementScore >= 0 && rep.tianmingAttunementScore <= 100);
+  assert(rep.renBenevolenceCoreScore >= 0 && rep.renBenevolenceCoreScore <= 100);
+  assert(rep.liDecorumHarmonyScore >= 0 && rep.liDecorumHarmonyScore <= 100);
+  assert(rep.kejiFuliDisciplineScore >= 0 && rep.kejiFuliDisciplineScore <= 100);
+  assert(rep.junziEquanimityScore >= 0 && rep.junziEquanimityScore <= 100);
+  assert(rep.activeLifeStage.stageNameHanja.length > 0);
+  const prompt = formatConfuciusAnalectsZhitianmingPrompt(rep);
+  assert(prompt.includes('공자 논어 지천명 & 극기복례 군자도 지표'));
+  assert(prompt.includes(rep.activeLifeStage.stageNameKo));
+});
+
+test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aeternitatis, and Amor Dei Intellectualis', () => {
+  const rep = calculateBaruchSpinozaEthicaConatus(profile);
+  assert.equal(rep.engineVersion, SPINOZA_CONATUS_AMORDEI_VERSION);
+  assert(rep.conatusVitalityScore >= 0 && rep.conatusVitalityScore <= 100);
+  assert(rep.subSpecieAeternitatisScore >= 0 && rep.subSpecieAeternitatisScore <= 100);
+  assert(rep.affectJoyTransitionScore >= 0 && rep.affectJoyTransitionScore <= 100);
+  assert(rep.adequateIdeaIntellectScore >= 0 && rep.adequateIdeaIntellectScore <= 100);
+  assert(rep.amorDeiIntellectualisScore >= 0 && rep.amorDeiIntellectualisScore <= 100);
+  assert(rep.activeAffectState.affectNameLatin.length > 0);
+  const prompt = formatBaruchSpinozaEthicaConatusPrompt(rep);
+  assert(prompt.includes('스피노자 에티카 코나투스 & 신즉자연 관조 지표'));
+  assert(prompt.includes(rep.activeAffectState.affectNameKo));
 });
 
 
