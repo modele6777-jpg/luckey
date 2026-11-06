@@ -202,6 +202,9 @@ import { calculateShangOracleBoneDivination, formatShangOracleBoneDivinationProm
 import { calculateKoreanCheonbugyeongEightyOne, formatKoreanCheonbugyeongEightyOnePrompt, type CheonbugyeongEightyOneReport, CHEONBUGYEONG_ENGINE_VERSION } from './koreanCheonbugyeongEightyOneCosmicEngine';
 import { calculateHinduSriYantraSacredGeometry, formatHinduSriYantraSacredGeometryPrompt, type SriYantraSacredGeometryReport, SRI_YANTRA_ENGINE_VERSION } from './hinduSriYantraSacredGeometryEngine';
 import { calculateLakotaMedicineWheel, formatLakotaMedicineWheelPrompt, type LakotaMedicineWheelReport, LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION } from './lakotaMedicineWheelWakanTankaEngine';
+import { calculateGyeogamYurokProphecy, formatGyeogamYurokProphecyPrompt, type GyeogamYurokReport, GYEOGAM_YUROK_VERSION } from './koreanGyeogamYurokProphecyEngine';
+import { calculateHeianOnmyodoSeimei, formatHeianOnmyodoSeimeiPrompt, type HeianOnmyodoSeimeiReport, HEIAN_ONMYODO_SEIMEI_VERSION } from './japaneseHeianOnmyodoSeimeiEngine';
+import { calculatePolynesianWayfinding, formatPolynesianWayfindingPrompt, type PolynesianWayfindingReport, POLYNESIAN_WAYFINDING_VERSION } from './polynesianWayfindingStarCompassEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -424,6 +427,9 @@ export interface DeterministicEngineReport {
   cheonbugyeongEightyOneResult?: CheonbugyeongEightyOneReport | null;
   hinduSriYantraResult?: SriYantraSacredGeometryReport | null;
   lakotaMedicineWheelResult?: LakotaMedicineWheelReport | null;
+  gyeogamYurokResult?: GyeogamYurokReport | null;
+  heianOnmyodoSeimeiResult?: HeianOnmyodoSeimeiReport | null;
+  polynesianWayfindingResult?: PolynesianWayfindingReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2508,6 +2514,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 174. 조선 명종 격암 남사고 《격암유록》 45편 비결 & 계룡백석 궁궁을을 사중구생 엔진
+  const gyeogamYurokResult = (() => {
+    try {
+      return calculateGyeogamYurokProphecy(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 175. 일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 수호령 & 식신 사역 엔진
+  const heianOnmyodoSeimeiResult = (() => {
+    try {
+      return calculateHeianOnmyodoSeimei(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 176. 고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 & 호쿠레아 신성 인도 엔진
+  const polynesianWayfindingResult = (() => {
+    try {
+      return calculatePolynesianWayfinding(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2716,6 +2749,9 @@ export function runDeterministicEngine(params: {
     cheonbugyeongEightyOneResult,
     hinduSriYantraResult,
     lakotaMedicineWheelResult,
+    gyeogamYurokResult,
+    heianOnmyodoSeimeiResult,
+    polynesianWayfindingResult,
     tools: toolsMap,
   };
 }
@@ -2917,6 +2953,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'cheonbugyeongEightyOne', nameKo: '단군 단학 천부경 81자 삼일신고 성통광명', icon: '☀️', category: 'deep_master' },
   { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master' },
   { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master' },
+  { key: 'gyeogamYurok', nameKo: '격암 남사고 격암유록 궁궁을을 사중구생', icon: '📜', category: 'deep_master' },
+  { key: 'heianOnmyodoSeimei', nameKo: '헤이안 음양도 아베노 세이메이 12천장 식신', icon: '⭐', category: 'deep_master' },
+  { key: 'polynesianWayfinding', nameKo: '폴리네시아 마우이 웨이파인딩 32방위 스타컴퍼스', icon: '🧭', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2950,6 +2989,7 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'polynesianWayfinding',
     'celticTuathaFourTreasures',
     'sumerianApkalluWisdom',
     'romanJanus',
@@ -3027,6 +3067,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'heianOnmyodoSeimei',
     'etruscanAugurSixteenSky',
     'sumerianEnumaElishFiftyNames',
     'alexandrianDecanThirtySixGods',
@@ -3081,6 +3122,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'ayurvedicTridosha',
   ],
   life_season_timing: [
+    'gyeogamYurok',
     'greekMoiraiAnankeFate',
     'lifeSeasonTiming',
     'monthlyFlow',
@@ -3155,6 +3197,12 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'gyeogamYurok',
+    'heianOnmyodoSeimei',
+    'polynesianWayfinding',
+    'cheonbugyeongEightyOne',
+    'hinduSriYantra',
+    'lakotaMedicineWheel',
     'rosicrucianChymicalWedding',
     'aztecTonalamatl',
     'mongolianTengriHiimori',
@@ -3482,5 +3530,8 @@ ${report.incaAndeanThreePachaAyniResult && shouldIncludeEngine('incaAndeanThreeP
 ${report.shangOracleBoneDivinationResult && shouldIncludeEngine('shangOracleBoneDivination', options) ? '\n' + formatShangOracleBoneDivinationPrompt(report.shangOracleBoneDivinationResult) : ''}
 ${report.cheonbugyeongEightyOneResult && shouldIncludeEngine('cheonbugyeongEightyOne', options) ? '\n' + formatKoreanCheonbugyeongEightyOnePrompt(report.cheonbugyeongEightyOneResult) : ''}
 ${report.hinduSriYantraResult && shouldIncludeEngine('hinduSriYantra', options) ? '\n' + formatHinduSriYantraSacredGeometryPrompt(report.hinduSriYantraResult) : ''}
-${report.lakotaMedicineWheelResult && shouldIncludeEngine('lakotaMedicineWheel', options) ? '\n' + formatLakotaMedicineWheelPrompt(report.lakotaMedicineWheelResult) : ''}`;
+${report.lakotaMedicineWheelResult && shouldIncludeEngine('lakotaMedicineWheel', options) ? '\n' + formatLakotaMedicineWheelPrompt(report.lakotaMedicineWheelResult) : ''}
+${report.gyeogamYurokResult && shouldIncludeEngine('gyeogamYurok', options) ? '\n' + formatGyeogamYurokProphecyPrompt(report.gyeogamYurokResult) : ''}
+${report.heianOnmyodoSeimeiResult && shouldIncludeEngine('heianOnmyodoSeimei', options) ? '\n' + formatHeianOnmyodoSeimeiPrompt(report.heianOnmyodoSeimeiResult) : ''}
+${report.polynesianWayfindingResult && shouldIncludeEngine('polynesianWayfinding', options) ? '\n' + formatPolynesianWayfindingPrompt(report.polynesianWayfindingResult) : ''}`;
 }

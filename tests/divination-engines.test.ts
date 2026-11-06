@@ -168,6 +168,9 @@ import { calculateShangOracleBoneDivination, formatShangOracleBoneDivinationProm
 import { calculateKoreanCheonbugyeongEightyOne, formatKoreanCheonbugyeongEightyOnePrompt, CHEONBUGYEONG_ENGINE_VERSION } from '../src/lib/divination/koreanCheonbugyeongEightyOneCosmicEngine';
 import { calculateHinduSriYantraSacredGeometry, formatHinduSriYantraSacredGeometryPrompt, SRI_YANTRA_ENGINE_VERSION } from '../src/lib/divination/hinduSriYantraSacredGeometryEngine';
 import { calculateLakotaMedicineWheel, formatLakotaMedicineWheelPrompt, LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION } from '../src/lib/divination/lakotaMedicineWheelWakanTankaEngine';
+import { calculateGyeogamYurokProphecy, formatGyeogamYurokProphecyPrompt, GYEOGAM_YUROK_VERSION } from '../src/lib/divination/koreanGyeogamYurokProphecyEngine';
+import { calculateHeianOnmyodoSeimei, formatHeianOnmyodoSeimeiPrompt, HEIAN_ONMYODO_SEIMEI_VERSION } from '../src/lib/divination/japaneseHeianOnmyodoSeimeiEngine';
+import { calculatePolynesianWayfinding, formatPolynesianWayfindingPrompt, POLYNESIAN_WAYFINDING_VERSION } from '../src/lib/divination/polynesianWayfindingStarCompassEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3846,6 +3849,52 @@ test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, 
   const prompt = formatLakotaMedicineWheelPrompt(rep);
   assert(prompt.includes('라코타 수(Lakota Sioux)족 와칸 탕카 & 4대 방향 성스러운 의약 휠(Medicine Wheel)'));
   assert(prompt.includes(rep.primarySacredDirection.lakotaTerm));
+});
+
+test('Korean Gyeogam Yurok Prophecy Engine: calculates Gunggung Euleul, Haein three bounties and crisis resilience', () => {
+  const rep = calculateGyeogamYurokProphecy(profile);
+  assert.equal(rep.engineVersion, GYEOGAM_YUROK_VERSION);
+  assert(rep.gunggungEuleulSpiritualShieldScore >= 0 && rep.gunggungEuleulSpiritualShieldScore <= 100);
+  assert(rep.haeinThreeBountiesGraceIndex >= 0 && rep.haeinThreeBountiesGraceIndex <= 100);
+  assert(rep.gyeryongWhiteStonePurityScore >= 0 && rep.gyeryongWhiteStonePurityScore <= 100);
+  assert(rep.tenSanctuariesAuspiciousResonance >= 0 && rep.tenSanctuariesAuspiciousResonance <= 100);
+  assert(rep.crisisTranscendingResilience >= 0 && rep.crisisTranscendingResilience <= 100);
+  assert(rep.sajungGusaengTransformationIndex >= 0 && rep.sajungGusaengTransformationIndex <= 100);
+  assert(rep.primaryGyeogamChapter.titleKo.length > 0);
+  assert(rep.haeinTalismanType.nameKo.length > 0);
+  const prompt = formatGyeogamYurokProphecyPrompt(rep);
+  assert(prompt.includes('조선 명종 격암 남사고 《격암유록(格菴遺錄)》 45편 비결 & 궁궁을을·해인 사중구생'));
+  assert(prompt.includes(rep.primaryGyeogamChapter.titleKo));
+});
+
+test('Japanese Heian Onmyodo Seimei Engine: calculates 12 heavenly generals, Shikigami resonance and Seimei ward', () => {
+  const rep = calculateHeianOnmyodoSeimei(profile);
+  assert.equal(rep.engineVersion, HEIAN_ONMYODO_SEIMEI_VERSION);
+  assert(rep.shikigamiCommandResonance >= 0 && rep.shikigamiCommandResonance <= 100);
+  assert(rep.seimeiFivePointedStarWardStrength >= 0 && rep.seimeiFivePointedStarWardStrength <= 100);
+  assert(rep.taishanGodDestinyReversalPower >= 0 && rep.taishanGodDestinyReversalPower <= 100);
+  assert(rep.yinYangPolarityBalanceScore >= 0 && rep.yinYangPolarityBalanceScore <= 100);
+  assert(rep.sixCoursesDivinationAccuracy >= 0 && rep.sixCoursesDivinationAccuracy <= 100);
+  assert(rep.primaryGuardianGeneral.nameKo.length > 0);
+  assert(rep.secondaryGuardianGeneral.nameKo.length > 0);
+  const prompt = formatHeianOnmyodoSeimeiPrompt(rep);
+  assert(prompt.includes('일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 & 식신 사역'));
+  assert(prompt.includes(rep.primaryGuardianGeneral.nameKo));
+});
+
+test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses, Zenith stars and Ocean Swell', () => {
+  const rep = calculatePolynesianWayfinding(profile);
+  assert.equal(rep.engineVersion, POLYNESIAN_WAYFINDING_VERSION);
+  assert(rep.oceanSwellSensitivityIndex >= 0 && rep.oceanSwellSensitivityIndex <= 100);
+  assert(rep.wayfinderNavigationClarityScore >= 0 && rep.wayfinderNavigationClarityScore <= 100);
+  assert(rep.voyagingCanoeBalanceResilience >= 0 && rep.voyagingCanoeBalanceResilience <= 100);
+  assert(rep.ancestralManaExplorationForce >= 0 && rep.ancestralManaExplorationForce <= 100);
+  assert(rep.islandFindingArrivalCertainty >= 0 && rep.islandFindingArrivalCertainty <= 100);
+  assert(rep.primaryStarHouse.hawaiianName.length > 0);
+  assert(rep.guidingZenithStar.hawaiianName.length > 0);
+  const prompt = formatPolynesianWayfindingPrompt(rep);
+  assert(prompt.includes('고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 항해'));
+  assert(prompt.includes(rep.primaryStarHouse.hawaiianName));
 });
 
 
