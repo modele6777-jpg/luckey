@@ -189,6 +189,9 @@ import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, CHOE_HYE
 import { calculateZoroastrianAmeshaSpentas, formatZoroastrianAmeshaSpentasPrompt, ZOROASTRIAN_AMESHA_SPENTAS_VERSION } from '../src/lib/divination/ancientPersianZoroastrianAmeshaSpentasEngine';
 import { calculateDelphicChilon, formatDelphicChilonPrompt, DELPHIC_CHILON_VERSION } from '../src/lib/divination/ancientGreekDelphicChilonKnowThyselfEngine';
 import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, JEONG_YAKYONG_MONGMIN_VERSION } from '../src/lib/divination/koreanJeongYakyongMongminSimseoEngine';
+import { calculateHeraclitusPantaRhei, formatHeraclitusPantaRheiPrompt, HERACLITUS_PANTA_RHEI_VERSION } from '../src/lib/divination/ancientGreekHeraclitusPantaRheiLogosEngine';
+import { calculateMoziGyeomAe, formatMoziGyeomAePrompt, MOZI_GYEOM_AE_VERSION } from '../src/lib/divination/ancientChineseMoziGyeomAeUniversalLoveEngine';
+import { calculateAureliusInnerCitadel, formatAureliusInnerCitadelPrompt, AURELIUS_INNER_CITADEL_VERSION } from '../src/lib/divination/romanAureliusInnerCitadelMeditationsEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -4097,6 +4100,49 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
   assert(prompt.includes('다산 정약용 선생 《목민심서(牧民心書)》'));
   assert(prompt.includes(rep.activeOfficialStage.stageNameKo));
 });
+
+test('Ancient Greek Heraclitus Panta Rhei Engine: calculates flux index, Logos harmony, eternal fire and hidden harmonia', () => {
+  const rep = calculateHeraclitusPantaRhei(profile);
+  assert.equal(rep.engineVersion, HERACLITUS_PANTA_RHEI_VERSION);
+  assert(rep.pantaRheiFluxIndex >= 0 && rep.pantaRheiFluxIndex <= 100);
+  assert(rep.logosHarmoniaScore >= 0 && rep.logosHarmoniaScore <= 100);
+  assert(rep.eternalFireVitality >= 0 && rep.eternalFireVitality <= 100);
+  assert(rep.hiddenHarmoniaStrength >= 0 && rep.hiddenHarmoniaStrength <= 100);
+  assert(rep.enantiodromiaBalance >= 0 && rep.enantiodromiaBalance <= 100);
+  assert(rep.activeHeraclitusStage.stageNameGreek.length > 0);
+  const prompt = formatHeraclitusPantaRheiPrompt(rep);
+  assert(prompt.includes('에페소스 헤라클레이토스 만물유전(Panta Rhei)'));
+  assert(prompt.includes(rep.activeHeraclitusStage.stageNameKo));
+});
+
+test('Ancient Chinese Mozi Gyeom-Ae Universal Love Engine: calculates Gyeom-Ae love, Gyo-Ri mutual benefit and Bi-Gong shield', () => {
+  const rep = calculateMoziGyeomAe(profile);
+  assert.equal(rep.engineVersion, MOZI_GYEOM_AE_VERSION);
+  assert(rep.gyeomAeUniversalLoveScore >= 0 && rep.gyeomAeUniversalLoveScore <= 100);
+  assert(rep.gyoRiMutualBenefitIndex >= 0 && rep.gyoRiMutualBenefitIndex <= 100);
+  assert(rep.biGongPeaceShieldForce >= 0 && rep.biGongPeaceShieldForce <= 100);
+  assert(rep.jeolYongSimplicityPurity >= 0 && rep.jeolYongSimplicityPurity <= 100);
+  assert(rep.tianZhiCosmicJusticeScore >= 0 && rep.tianZhiCosmicJusticeScore <= 100);
+  assert(rep.activeMohistStage.stageNameHanja.length > 0);
+  const prompt = formatMoziGyeomAePrompt(rep);
+  assert(prompt.includes('춘추전국시대 묵가(墨家) 묵자(墨子) 겸애교리'));
+  assert(prompt.includes(rep.activeMohistStage.stageNameKo));
+});
+
+test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner Citadel score, Hic et nunc and Amor Fati', () => {
+  const rep = calculateAureliusInnerCitadel(profile);
+  assert.equal(rep.engineVersion, AURELIUS_INNER_CITADEL_VERSION);
+  assert(rep.innerCitadelFortressScore >= 0 && rep.innerCitadelFortressScore <= 100);
+  assert(rep.hicEtNuncPresentPresence >= 0 && rep.hicEtNuncPresentPresence <= 100);
+  assert(rep.amorFatiCosmicAcceptance >= 0 && rep.amorFatiCosmicAcceptance <= 100);
+  assert(rep.cosmopolisCommonGoodIndex >= 0 && rep.cosmopolisCommonGoodIndex <= 100);
+  assert(rep.hegemonikonSovereignSoul >= 0 && rep.hegemonikonSovereignSoul <= 100);
+  assert(rep.activeAureliusStage.stageNameLatin.length > 0);
+  const prompt = formatAureliusInnerCitadelPrompt(rep);
+  assert(prompt.includes('고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》'));
+  assert(prompt.includes(rep.activeAureliusStage.stageNameKo));
+});
+
 
 
 

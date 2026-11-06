@@ -226,6 +226,9 @@ import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, type Cho
 import { calculateZoroastrianAmeshaSpentas, formatZoroastrianAmeshaSpentasPrompt, type ZoroastrianAmeshaSpentasResult, ZOROASTRIAN_AMESHA_SPENTAS_VERSION } from './ancientPersianZoroastrianAmeshaSpentasEngine';
 import { calculateDelphicChilon, formatDelphicChilonPrompt, type DelphicChilonResult, DELPHIC_CHILON_VERSION } from './ancientGreekDelphicChilonKnowThyselfEngine';
 import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, type JeongYakyongMongminResult, JEONG_YAKYONG_MONGMIN_VERSION } from './koreanJeongYakyongMongminSimseoEngine';
+import { calculateHeraclitusPantaRhei, formatHeraclitusPantaRheiPrompt, type HeraclitusPantaRheiResult, HERACLITUS_PANTA_RHEI_VERSION } from './ancientGreekHeraclitusPantaRheiLogosEngine';
+import { calculateMoziGyeomAe, formatMoziGyeomAePrompt, type MoziGyeomAeResult, MOZI_GYEOM_AE_VERSION } from './ancientChineseMoziGyeomAeUniversalLoveEngine';
+import { calculateAureliusInnerCitadel, formatAureliusInnerCitadelPrompt, type AureliusInnerCitadelResult, AURELIUS_INNER_CITADEL_VERSION } from './romanAureliusInnerCitadelMeditationsEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -471,6 +474,9 @@ export interface DeterministicEngineReport {
   zoroastrianAmeshaSpentasResult?: ZoroastrianAmeshaSpentasResult | null;
   delphicChilonResult?: DelphicChilonResult | null;
   jeongYakyongMongminResult?: JeongYakyongMongminResult | null;
+  heraclitusPantaRheiResult?: HeraclitusPantaRheiResult | null;
+  moziGyeomAeResult?: MoziGyeomAeResult | null;
+  aureliusInnerCitadelResult?: AureliusInnerCitadelResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2829,6 +2835,33 @@ try {
     }
   })()));
 
+  // 195. 고대 그리스 에페소스 헤라클레이토스 만물유전 & 로고스 대립물 조화 엔진
+  const heraclitusPantaRheiResult = calculateSupplement('heraclitusPantaRheiResult', () => ((() => {
+    try {
+      return calculateHeraclitusPantaRhei(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 196. 춘추전국시대 묵가 묵자 겸애교리 & 비공절용 실천 엔진
+  const moziGyeomAeResult = calculateSupplement('moziGyeomAeResult', () => ((() => {
+    try {
+      return calculateMoziGyeomAe(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 197. 고대 로마 철학 황제 마르쿠스 아우렐리우스 명상록 내면의 성채 엔진
+  const aureliusInnerCitadelResult = calculateSupplement('aureliusInnerCitadelResult', () => ((() => {
+    try {
+      return calculateAureliusInnerCitadel(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -3060,6 +3093,9 @@ try {
     zoroastrianAmeshaSpentasResult,
     delphicChilonResult,
     jeongYakyongMongminResult,
+    heraclitusPantaRheiResult,
+    moziGyeomAeResult,
+    aureliusInnerCitadelResult,
     tools: toolsMap,
   };
 }
@@ -3282,6 +3318,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'zoroastrianAmeshaSpentasLight', nameKo: '페르시아 조로아스터교 6대 신성불멸자 빛의조화', icon: '🔥', category: 'deep_master' },
   { key: 'delphicChilonSpartanModeration', nameKo: '델포이 7현인 스파르타 킬론 너자신을알라 중용절제', icon: '🏛️', category: 'deep_master' },
   { key: 'koreanJeongYakyongMongminSimseo', nameKo: '다산 정약용 목민심서 율기수신 애민청렴 공평무사', icon: '📜', category: 'deep_master' },
+  { key: 'heraclitusPantaRheiLogos', nameKo: '에페소스 헤라클레이토스 만물유전 로고스 대립물조화', icon: '🌊', category: 'deep_master' },
+  { key: 'moziGyeomAeUniversalLove', nameKo: '묵가 묵자 겸애교리 비공절용 공평무사 평화수호', icon: '🛡️', category: 'deep_master' },
+  { key: 'romanAureliusInnerCitadel', nameKo: '로마 철학황제 마르쿠스 아우렐리우스 명상록 내면의성채', icon: '🏛️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3335,6 +3374,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'romanAureliusInnerCitadel',
+    'moziGyeomAeUniversalLove',
     'koreanJeongYakyongMongminSimseo',
     'delphicChilonSpartanModeration',
     'celticLughSamildanachAllArts',
@@ -3384,6 +3425,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'moziGyeomAeUniversalLove',
+    'heraclitusPantaRheiLogos',
     'koreanJeongYakyongMongminSimseo',
     'delphicChilonSpartanModeration',
     'ptahMemphiteHeartTongueCreation',
@@ -3434,6 +3477,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'heraclitusPantaRheiLogos',
+    'romanAureliusInnerCitadel',
     'delphicChilonSpartanModeration',
     'zoroastrianAmeshaSpentasLight',
     'celticLughSamildanachAllArts',
@@ -3577,6 +3622,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'heraclitusPantaRheiLogos',
+    'moziGyeomAeUniversalLove',
+    'romanAureliusInnerCitadel',
     'zoroastrianAmeshaSpentasLight',
     'delphicChilonSpartanModeration',
     'koreanJeongYakyongMongminSimseo',
