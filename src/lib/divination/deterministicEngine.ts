@@ -241,6 +241,9 @@ import { calculateSenecaTimeSovereignty, formatSenecaTimeSovereigntyPrompt, type
 import { calculatePlatonicIdeaCave, formatPlatonicIdeaCavePrompt, type PlatonicIdeaCaveResult, PLATONIC_IDEA_CAVE_VERSION } from './ancientGreekPlatonicIdeaCaveEngine';
 import { calculateToegyeSeonghakSipdo, formatToegyeSeonghakSipdoPrompt, type ToegyeSeonghakSipdoResult, TOEGYE_SEONGHAK_SIPDO_VERSION } from './koreanToegyeSeonghakSipdoEngine';
 import { calculateCiceroDeOfficiis, formatCiceroDeOfficiisPrompt, type CiceroDeOfficiisResult, CICERO_DE_OFFICIIS_VERSION } from './romanCiceroDeOfficiisHonestumEngine';
+import { calculateEpictetusDichotomyOfControl, formatEpictetusDichotomyOfControlPrompt, type EpictetusDichotomyOfControlResult, EPICTETUS_CONTROL_VERSION } from './ancientGreekEpictetusDichotomyOfControlEngine';
+import { calculateConfuciusAnalectsZhitianming, formatConfuciusAnalectsZhitianmingPrompt, type ConfuciusAnalectsZhitianmingResult, CONFUCIUS_ZHITIANMING_VERSION } from './ancientChineseConfuciusAnalectsZhitianmingEngine';
+import { calculateBaruchSpinozaEthicaConatus, formatBaruchSpinozaEthicaConatusPrompt, type BaruchSpinozaEthicaConatusResult, SPINOZA_CONATUS_AMORDEI_VERSION } from './baruchSpinozaEthicaConatusAmorDeiEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -502,6 +505,9 @@ export interface DeterministicEngineReport {
   platonicIdeaCaveResult?: PlatonicIdeaCaveResult | null;
   toegyeSeonghakSipdoResult?: ToegyeSeonghakSipdoResult | null;
   ciceroDeOfficiisResult?: CiceroDeOfficiisResult | null;
+  epictetusDichotomyOfControlResult?: EpictetusDichotomyOfControlResult | null;
+  confuciusAnalectsZhitianmingResult?: ConfuciusAnalectsZhitianmingResult | null;
+  spinozaEthicaConatusResult?: BaruchSpinozaEthicaConatusResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -2996,6 +3002,33 @@ try {
     }
   })()));
 
+  // 210. 고대 그리스 로마 스토아학파 에픽테토스 엥케이리디온 통제이분법 & 프로하이레시스 도덕의지 엔진
+  const epictetusDichotomyOfControlResult = calculateSupplement('epictetusDichotomyOfControlResult', () => ((() => {
+    try {
+      return calculateEpictetusDichotomyOfControl(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 211. 고대 동양 유학 공자 논어 지천명 & 극기복례 군자도 수양 엔진
+  const confuciusAnalectsZhitianmingResult = calculateSupplement('confuciusAnalectsZhitianmingResult', () => ((() => {
+    try {
+      return calculateConfuciusAnalectsZhitianming(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 212. 근대 네덜란드 바루흐 스피노자 에티카 코나투스 & 신즉자연 영원의 상 관조 엔진
+  const spinozaEthicaConatusResult = calculateSupplement('spinozaEthicaConatusResult', () => ((() => {
+    try {
+      return calculateBaruchSpinozaEthicaConatus(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3243,6 +3276,9 @@ try {
     platonicIdeaCaveResult,
     toegyeSeonghakSipdoResult,
     ciceroDeOfficiisResult,
+    epictetusDichotomyOfControlResult,
+    confuciusAnalectsZhitianmingResult,
+    spinozaEthicaConatusResult,
     tools: toolsMap,
   };
 }
@@ -3480,6 +3516,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ancientGreekPlatonicIdeaCave', nameKo: '플라톤 동굴의비유 이데아 상기설 4대추덕', icon: '🏛️', category: 'deep_master' },
   { key: 'koreanToegyeSeonghakSipdo', nameKo: '퇴계 이황 성학십도 거경궁리 상성성 경철학', icon: '📜', category: 'deep_master' },
   { key: 'romanCiceroDeOfficiisHonestum', nameKo: '키케로 의무론 도덕적선 유용성조화 신의품위', icon: '⚖️', category: 'deep_master' },
+  { key: 'ancientGreekEpictetusDichotomyOfControl', nameKo: '에픽테토스 엥케이리디온 통제이분법 프로하이레시스 도덕의지', icon: '🏛️', category: 'deep_master' },
+  { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master' },
+  { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3587,6 +3626,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ancientGreekEpictetusDichotomyOfControl',
+    'ancientChineseConfuciusAnalectsZhitianming',
+    'baruchSpinozaEthicaConatusAmorDei',
     'ancientGreekPlatonicIdeaCave',
     'koreanToegyeSeonghakSipdo',
     'romanCiceroDeOfficiisHonestum',
@@ -3651,6 +3693,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'ancientGreekEpictetusDichotomyOfControl',
+    'ancientChineseConfuciusAnalectsZhitianming',
+    'baruchSpinozaEthicaConatusAmorDei',
     'ancientGreekPlatonicIdeaCave',
     'koreanToegyeSeonghakSipdo',
     'romanCiceroDeOfficiisHonestum',
@@ -3808,6 +3853,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'ancientGreekEpictetusDichotomyOfControl',
+    'ancientChineseConfuciusAnalectsZhitianming',
+    'baruchSpinozaEthicaConatusAmorDei',
     'ancientGreekPlatonicIdeaCave',
     'koreanToegyeSeonghakSipdo',
     'romanCiceroDeOfficiisHonestum',

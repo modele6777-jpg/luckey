@@ -871,5 +871,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "romanCiceroDeOfficiisHonestum": {
     "field": "ciceroDeOfficiisResult",
     "traceKey": "ciceroDeOfficiisResult"
+  },
+  "ancientGreekEpictetusDichotomyOfControl": {
+    "field": "epictetusDichotomyOfControlResult",
+    "traceKey": "epictetusDichotomyOfControlResult"
+  },
+  "ancientChineseConfuciusAnalectsZhitianming": {
+    "field": "confuciusAnalectsZhitianmingResult",
+    "traceKey": "confuciusAnalectsZhitianmingResult"
+  },
+  "baruchSpinozaEthicaConatusAmorDei": {
+    "field": "spinozaEthicaConatusResult",
+    "traceKey": "spinozaEthicaConatusResult"
   }
 };
