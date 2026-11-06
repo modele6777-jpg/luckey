@@ -136,17 +136,10 @@ const GYEONG_PRACTICES: GyeongPractice[] = [
   },
 ];
 
-export function calculateToegyeSeonghakSipdo(params: {
-  profile?: UserProfile | null;
-  question?: string;
-  now?: Date;
-}): ToegyeSeonghakSipdoResult {
-  const { profile, question } = params;
-
+export function calculateToegyeSeonghakSipdo(profile: UserProfile): ToegyeSeonghakSipdoResult {
   const seedString =
-    (question ?? '') +
-    (profile?.name ?? (profile as any)?.userName ?? 'seeker') +
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
+    (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
     'ToegyeSeonghakSipdo';
 

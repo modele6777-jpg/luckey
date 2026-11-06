@@ -103,17 +103,10 @@ const HARMONY_CRITERIA: CiceroHarmonyCriterion[] = [
   },
 ];
 
-export function calculateCiceroDeOfficiis(params: {
-  profile?: UserProfile | null;
-  question?: string;
-  now?: Date;
-}): CiceroDeOfficiisResult {
-  const { profile, question } = params;
-
+export function calculateCiceroDeOfficiis(profile: UserProfile): CiceroDeOfficiisResult {
   const seedString =
-    (question ?? '') +
-    (profile?.name ?? (profile as any)?.userName ?? 'seeker') +
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
+    (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
     'CiceroDeOfficiis';
 
