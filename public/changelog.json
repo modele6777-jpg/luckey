@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.150",
+    "builtAt": "2026-11-06T06:55:00.000Z",
+    "summary": "에필로그 진입 로딩 원천 제거 (정적 라우트 전역 Suspense 해제 및 프로필 자동저장 루프 차단)",
+    "items": [
+      "App.tsx 전역 Switch를 감싸던 React.Suspense를 분리하여 동적 지연 컴포넌트에만 개별 적용하고, 에필로그 등 정적 라우트 진입 시 PageLoader(코스믹 로더) 노출 원천 차단",
+      "EpilogueApp 내부 DivinationLab을 정적 임포트로 통합하여 컴포넌트 레벨 Suspense 제거",
+      "EpilogueApp 프로필 시그니처 검증(getProfileSignature)을 신설하여 마운트 직후 불필요한 자동 저장 및 네트워크 루프 제거"
+    ]
+  },
+  {
     "version": "1.7.149",
     "builtAt": "2026-11-06T06:50:00.000Z",
     "summary": "3대 심층 마스터 백그라운드 엔진 구축 및 총 186대 결정론 엔진 체제 완성",
