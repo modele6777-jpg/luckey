@@ -78,7 +78,7 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
     clean.length <= 15 &&
     /^(안녕|하이|루시야|반가워|고마워|땡큐|ㅋㅋ+|ㅎㅎ+|응|그래|맞아|좋아|오케이|잘\s*자|굿모닝|좋은\s*아침)[.!~?\s]*$/i.test(clean);
 
-  if (isShortGreeting) {
+  if (isShortGreeting && !isMasterRequested) {
     return {
       intent: 'casual_greeting',
       intentKoName: '가벼운 일상 수다',
@@ -280,8 +280,9 @@ export function routeAndExecute(params: {
     profile: params.profile,
     question: params.text,
     forceAllTools: true,
-    focusTools: routePlan.targetTools,
+    focusTools: routePlan.isMasterMobilization ? undefined : routePlan.targetTools,
     coreOnly: true,
+    reviewAll: routePlan.isMasterMobilization,
   });
 
   const deterministicDataBlock = formatDeterministicEnginePrompt(engineReport, {

@@ -2958,13 +2958,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
                   {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && (() => {
                     const tools = [...new Map(msg.calculationAudit
-                      .filter(item => item.status === 'calculated' && item.sentToModel)
-                      .map(item => [item.toolId, item.name])).values()];
+                      .filter(item => ['calculated', 'symbolic'].includes(item.status) && item.sentToModel)
+                      .map(item => [item.toolId, item.status === 'symbolic' ? `${item.name} (상징)` : item.name])).values()];
                     if (!tools.length) return null;
                     return (
-                      <span data-used-calculation-tools="true" className="inline-flex flex-wrap items-center gap-1 text-[10px] text-amber-700 dark:text-amber-200">
-                        <span className="rounded-full border border-amber-400/40 px-2 py-0.5">사용 도구 {tools.length}개</span>
-                        {tools.map(name => <span key={name} className="rounded-full border border-amber-400/30 px-2 py-0.5">{name}</span>)}
+                      <span data-used-calculation-tools="true" className="inline-flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap text-[10px] text-amber-700 dark:text-amber-200">
+                        <span className="shrink-0 rounded-full border border-amber-400/40 px-2 py-0.5">사용 도구 {tools.length}개</span>
+                        {tools.map(name => <span key={name} className="shrink-0 rounded-full border border-amber-400/30 px-2 py-0.5">{name}</span>)}
                       </span>
                     );
                   })()}

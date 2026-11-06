@@ -370,7 +370,7 @@ export interface SelectedDivinationToolsResult {
  * 결정론적 자체 계산 엔진(Deterministic Engine)의 실측 데이터(JSON)를 우선 바인딩합니다.
  */
 export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile, questionText?: string): string {
-  const report = runDeterministicEngine({ profile, question: questionText, forceAllTools: true, coreOnly: true });
+  const report = runDeterministicEngine({ profile, question: questionText, forceAllTools: true, coreOnly: true, reviewAll: true });
   return formatDeterministicEnginePrompt(report, { isMasterMobilization: true });
 }
 

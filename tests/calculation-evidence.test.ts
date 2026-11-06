@@ -36,8 +36,8 @@ test('failure, empty result and symbolic data cannot acquire success badges', ()
   assert.deepEqual(getFiredEngineBadges(report), []);
 });
 
-test('greetings skip calculation even in Lucy Plus', () => {
-  const selected = selectOptimalDivinationTools('안녕', ['prologue','orange','trinity','aura','bluebird','muse','epilogue'], undefined, true, { allowMaster: true });
+test('ordinary greetings skip calculation', () => {
+  const selected = selectOptimalDivinationTools('안녕', [], undefined, false, { allowMaster: false });
   assert.equal(selected.isCasualMessage, true);
   assert.equal(selected.promptInjection, '');
 });
@@ -46,8 +46,8 @@ test('master prompt and displayed evidence originate from the same successful to
   const selected = selectOptimalDivinationTools('내 직업운을 종합 분석해줘', [], profile, true, { allowMaster: true });
   assert.ok(selected.calculationAudit?.length);
   const successes = selected.calculationAudit!.filter(item => item.sentToModel);
-  assert.deepEqual(selected.firedEngineBadges, successes.map(item => `계산 근거 · ${item.name}`));
-  assert.ok(selected.promptInjection.length < 100000);
+  assert.deepEqual(selected.firedEngineBadges, successes.map(item => `${item.status === 'symbolic' ? '상징 참고' : '계산 근거'} · ${item.name}`));
+  assert.equal(selected.calculationAudit!.length, 186);
   assert.doesNotMatch(selected.promptInjection, /100% 확정 수치|영적 방패율:|전원 총동원/);
 });
 

@@ -1,3 +1,5 @@
+import { getSymbolicPerspective } from './symbolicPerspective';
+import { MASTER_REVIEW_BINDINGS } from './masterReviewBindings';
 import type { CalculationAuditItem } from './calculationAudit';
 /**
  * =========================================================================
@@ -223,6 +225,8 @@ export interface ToolCalculationEnvelope<T = unknown> {
 }
 
 export interface DeterministicEngineReport {
+  masterReview?: boolean;
+  supplementExecutions?: Record<string, 'returned' | 'error' | 'skipped'>;
   engineVersion: string;
   timestamp: number;
   calculatedAtUtc: string;
@@ -467,11 +471,19 @@ export function runDeterministicEngine(params: {
   forceAllTools?: boolean;
   focusTools?: string[];
   coreOnly?: boolean;
+  reviewAll?: boolean;
 }): DeterministicEngineReport {
-  // Unreviewed supplemental scores are excluded from chat, and failures stay isolated.
-  function calculateSupplement<T>(calculate: () => T): T | null {
-    if (params.coreOnly) return null;
-    try { return calculate(); } catch { return null; }
+  const supplementExecutions: Record<string, 'returned' | 'error' | 'skipped'> = {};
+  function calculateSupplement<T>(key: string, calculate: () => T): T | null {
+    if ((params.coreOnly && !params.reviewAll) || (params.reviewAll && !solarDateStr)) {
+      supplementExecutions[key] = 'skipped';
+      return null;
+    }
+    try {
+      const result = calculate();
+      supplementExecutions[key] = result == null ? 'skipped' : 'returned';
+      return result;
+    } catch { supplementExecutions[key] = 'error'; return null; }
   }
   const now = new Date();
   const nowKst = new Date(now.getTime() + 9 * 3600000);
@@ -630,7 +642,7 @@ try {
 
   // 4. 숙요경 (27숙 본명숙 계산)
   let sukuyoEnvelope: ToolCalculationEnvelope<unknown>;
-  if (params.coreOnly && (!params.focusTools?.length || params.focusTools.includes('sukuyo'))) {
+  if (params.coreOnly && !params.reviewAll && (!params.focusTools?.length || params.focusTools.includes('sukuyo'))) {
 sukuyoEnvelope = {toolId:'sukuyo', toolKoName:'숙요경', status:'symbolic', note:'계산 기준 재검토 중 — 수치 근거에서 제외하고 상징적 참고로만 사용'};
 } else if (params.focusTools?.length && !params.focusTools.includes('sukuyo')) {
 sukuyoEnvelope = {toolId:'sukuyo', toolKoName:'숙요경', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
@@ -694,7 +706,7 @@ try {
   // 6. 마하보테 (미얀마 7궁 명반 및 8요일 성좌 엔진)
   let mahaboteEnvelope: ToolCalculationEnvelope<MahaboteResult>;
   let mahaboteResult: MahaboteResult | null = null;
-  if (params.coreOnly && (!params.focusTools?.length || params.focusTools.includes('mahabote'))) {
+  if (params.coreOnly && !params.reviewAll && (!params.focusTools?.length || params.focusTools.includes('mahabote'))) {
 mahaboteEnvelope = {toolId:'mahabote', toolKoName:'마하보테', status:'symbolic', note:'계산 기준 재검토 중 — 수치 근거에서 제외하고 상징적 참고로만 사용'};
 } else if (params.focusTools?.length && !params.focusTools.includes('mahabote')) {
 mahaboteEnvelope = {toolId:'mahabote', toolKoName:'마하보테', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
@@ -904,7 +916,7 @@ try {
   // 13. 카발라 (정통 생명나무 10 세피로트 · 3대 기둥 · 4개 세계 · 22 경로 & 생년월일 게마트리아 수리)
   let kabbalahEnvelope: ToolCalculationEnvelope<KabbalahResult>;
   let kabbalahResult: KabbalahResult | null = null;
-  if (params.coreOnly && (!params.focusTools?.length || params.focusTools.includes('kabbalah'))) {
+  if (params.coreOnly && !params.reviewAll && (!params.focusTools?.length || params.focusTools.includes('kabbalah'))) {
 kabbalahEnvelope = {toolId:'kabbalah', toolKoName:'카발라', status:'symbolic', note:'계산 기준 재검토 중 — 수치 근거에서 제외하고 상징적 참고로만 사용'};
 } else if (params.focusTools?.length && !params.focusTools.includes('kabbalah')) {
 kabbalahEnvelope = {toolId:'kabbalah', toolKoName:'카발라', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
@@ -1022,17 +1034,17 @@ try {
   const partialOrSymbolicCount = allTools.filter(t => t.status === 'partial' || t.status === 'symbolic').length;
   const notImplementedCount = allTools.filter(t => t.status === 'not_implemented').length;
 
-  const chronoTransitResult = calculateSupplement(() => (calculateChronoTransit({ profile, targetDate: now })));
-  const lifeSeasonTimingResult = calculateSupplement(() => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() })));
-  const energeticPrescriptionResult = calculateSupplement(() => (calculateEnergeticPrescription({ profile, currentDate: now })));
-  const contextualSynastryResult = calculateSupplement(() => (calculateContextualSynastry({ questionText: question, myProfile: profile })));
-  const instantDecisionResult = calculateSupplement(() => (calculateInstantDecision({ instant: now, questionText: question })));
-  const ziweiFlyingStarsResult = calculateSupplement(() => (calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() })));
-  const specialStarsResult = calculateSupplement(() => (calculateSpecialStarsMatrix({ profile })));
-  const monthlyFlowResult = calculateSupplement(() => (calculateMonthlyFlow({ profile, targetYear: now.getFullYear() })));
-  const spatialFengshuiResult = calculateSupplement(() => (calculateSpatialFengshui({ profile })));
-  const vitalityCurveResult = calculateSupplement(() => (calculateVitalityCurve({ profile })));
-  const tojeongResult = calculateSupplement(() => (birthdateStr && profile
+  const chronoTransitResult = calculateSupplement('chronoTransitResult', () => (calculateChronoTransit({ profile, targetDate: now })));
+  const lifeSeasonTimingResult = calculateSupplement('lifeSeasonTimingResult', () => (calculateLifeSeasonTiming({ profile, targetYear: now.getFullYear() })));
+  const energeticPrescriptionResult = calculateSupplement('energeticPrescriptionResult', () => (calculateEnergeticPrescription({ profile, currentDate: now })));
+  const contextualSynastryResult = calculateSupplement('contextualSynastryResult', () => (calculateContextualSynastry({ questionText: question, myProfile: profile })));
+  const instantDecisionResult = calculateSupplement('instantDecisionResult', () => (calculateInstantDecision({ instant: now, questionText: question })));
+  const ziweiFlyingStarsResult = calculateSupplement('ziweiFlyingStarsResult', () => (calculateZiweiFlyingStars({ profile, targetYear: now.getFullYear() })));
+  const specialStarsResult = calculateSupplement('specialStarsResult', () => (calculateSpecialStarsMatrix({ profile })));
+  const monthlyFlowResult = calculateSupplement('monthlyFlowResult', () => (calculateMonthlyFlow({ profile, targetYear: now.getFullYear() })));
+  const spatialFengshuiResult = calculateSupplement('spatialFengshuiResult', () => (calculateSpatialFengshui({ profile })));
+  const vitalityCurveResult = calculateSupplement('vitalityCurveResult', () => (calculateVitalityCurve({ profile })));
+  const tojeongResult = calculateSupplement('tojeongResult', () => (birthdateStr && profile
     ? (() => {
         try {
           const res = calculateTojeong({ profile, targetYear: now.getFullYear() });
@@ -1042,7 +1054,7 @@ try {
         }
       })()
     : null));
-  const kyuseiResult = calculateSupplement(() => (birthdateStr && profile
+  const kyuseiResult = calculateSupplement('kyuseiResult', () => (birthdateStr && profile
     ? (() => {
         try {
           const res = calculateKyusei({ profile, targetDate: now });
@@ -1052,7 +1064,7 @@ try {
         }
       })()
     : null));
-  const samjaeGyoUnResult = calculateSupplement(() => (birthdateStr && profile
+  const samjaeGyoUnResult = calculateSupplement('samjaeGyoUnResult', () => (birthdateStr && profile
     ? (() => {
         try {
           const res = calculateSamjaeGyoUn({ profile, targetYear: now.getFullYear() });
@@ -1062,7 +1074,7 @@ try {
         }
       })()
     : null));
-  const auspiciousStarsResult = calculateSupplement(() => (birthdateStr && profile
+  const auspiciousStarsResult = calculateSupplement('auspiciousStarsResult', () => (birthdateStr && profile
     ? (() => {
         try {
           const res = calculateAuspiciousStars({ profile, targetYear: now.getFullYear() });
@@ -1073,7 +1085,7 @@ try {
       })()
     : null));
   // 16. 정통 격국 성격·파격 수리 판정 엔진 (자평진전 월령 사령·투간 수리)
-  const geokgukResult = calculateSupplement(() => (birthdateStr && profile
+  const geokgukResult = calculateSupplement('geokgukResult', () => (birthdateStr && profile
     ? (() => {
         try {
           const res = calculateGeokguk({ profile });
@@ -1084,7 +1096,7 @@ try {
       })()
     : null));
   // 17. 천상열차분야지도 28수 일진·택일 엔진 (생년월일 무관 당일 일진 기준)
-  const twentyEightMansionsResult = calculateSupplement(() => ((() => {
+  const twentyEightMansionsResult = calculateSupplement('twentyEightMansionsResult', () => ((() => {
     try {
       return calculateTwentyEightMansions({ targetDate: now });
     } catch (_) {
@@ -1092,7 +1104,7 @@ try {
     }
   })()));
   // 18. 정통 밀교 숙요경 27숙 본명숙 & 6대 관계성 3거리 매트릭스 엔진
-  const sukuyoAdvancedResult = calculateSupplement(() => ((() => {
+  const sukuyoAdvancedResult = calculateSupplement('sukuyoAdvancedResult', () => ((() => {
     try {
       return calculateSukuyoAdvanced({ profile });
     } catch (_) {
@@ -1101,7 +1113,7 @@ try {
   })()));
 
   // 19. 5대 운명학 융합 궁합 마스터 엔진 (상대 프로필이 있을 때만 결정론 계산)
-  const compatibilityResult = calculateSupplement(() => (params.partnerProfile && profile && birthdateStr
+  const compatibilityResult = calculateSupplement('compatibilityResult', () => (params.partnerProfile && profile && birthdateStr
     ? (() => {
         try {
           return calculateDeterministicCompatibility(profile, params.partnerProfile);
@@ -1112,7 +1124,7 @@ try {
     : null));
 
   // 19. 하락이수(河洛理數) 사주·주역 융합 선천괘·후천괘·원당효 엔진
-  const heLuoLiShuResult = calculateSupplement(() => (birthdateStr && profile
+  const heLuoLiShuResult = calculateSupplement('heLuoLiShuResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateHeLuoLiShu({ profile });
@@ -1123,7 +1135,7 @@ try {
     : null));
 
   // 20. 실시간 삼형·육충·파해 동적 트리거 엔진
-  const dynamicClashResult = calculateSupplement(() => (birthdateStr && profile
+  const dynamicClashResult = calculateSupplement('dynamicClashResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateDynamicClashTrigger({ profile, targetDate: now });
@@ -1134,7 +1146,7 @@ try {
     : null));
 
   // 21. 사주 12신살(겁재천지년월망장반역육화) 완전 순환 엔진
-  const twelveSpiritsResult = calculateSupplement(() => (birthdateStr && profile
+  const twelveSpiritsResult = calculateSupplement('twelveSpiritsResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateTwelveSpiritsCycle({ profile, targetDate: now });
@@ -1145,7 +1157,7 @@ try {
     : null));
 
   // 22. 피타고라스 4대 피너클 & 챌린지 생애 주기 엔진
-  const pythagoreanLifecycleResult = calculateSupplement(() => (birthdateStr && profile
+  const pythagoreanLifecycleResult = calculateSupplement('pythagoreanLifecycleResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculatePythagoreanLifecycle({ profile, targetDate: now });
@@ -1156,7 +1168,7 @@ try {
     : null));
 
   // 23. 점성술 36 데칸 & 사비안 심볼 360° 엔진
-  const astrologicalDecanSabianResult = calculateSupplement(() => (birthdateStr && profile
+  const astrologicalDecanSabianResult = calculateSupplement('astrologicalDecanSabianResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateAstrologicalDecanSabian({ profile, targetDate: now });
@@ -1167,7 +1179,7 @@ try {
     : null));
 
   // 24. 오행 한난조습 & 메디컬 점성술 바이오 매트릭스 엔진
-  const medicalBioMatrixResult = calculateSupplement(() => (birthdateStr && profile
+  const medicalBioMatrixResult = calculateSupplement('medicalBioMatrixResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateMedicalBioMatrix({ profile, targetDate: now });
@@ -1178,7 +1190,7 @@ try {
     : null));
 
   // 25. 재물·비즈니스 포춘 파이프라인 엔진
-  const wealthPipelineResult = calculateSupplement(() => (birthdateStr && profile
+  const wealthPipelineResult = calculateSupplement('wealthPipelineResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateWealthPipeline({ profile, targetDate: now });
@@ -1189,7 +1201,7 @@ try {
     : null));
 
   // 26. 카르믹 노드 & 영혼 진화 궤적 엔진
-  const karmicNodesResult = calculateSupplement(() => (birthdateStr && profile
+  const karmicNodesResult = calculateSupplement('karmicNodesResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateKarmicNodes({ profile, targetDate: now });
@@ -1200,7 +1212,7 @@ try {
     : null));
 
   // 27. 위기 돌파 & 멘탈 리질리언스 지수 엔진
-  const mentalResilienceResult = calculateSupplement(() => (birthdateStr && profile
+  const mentalResilienceResult = calculateSupplement('mentalResilienceResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateMentalResilience({ profile, targetDate: now });
@@ -1211,7 +1223,7 @@ try {
     : null));
 
   // 28. 4대 귀인 & 인연 네트워크 시너지 엔진
-  const nobleNetworkResult = calculateSupplement(() => (birthdateStr && profile
+  const nobleNetworkResult = calculateSupplement('nobleNetworkResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateNobleNetwork({ profile, targetDate: now });
@@ -1222,7 +1234,7 @@ try {
     : null));
 
   // 29. 스피치 & 커뮤니케이션 페르소나 엔진
-  const voicePersonaResult = calculateSupplement(() => (birthdateStr && profile
+  const voicePersonaResult = calculateSupplement('voicePersonaResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateVoicePersona({ profile, targetDate: now });
@@ -1233,7 +1245,7 @@ try {
     : null));
 
   // 30. 계약·분쟁 방어 & 관재구설 쉴드 엔진
-  const contractShieldResult = calculateSupplement(() => (birthdateStr && profile
+  const contractShieldResult = calculateSupplement('contractShieldResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateContractShield({ profile, targetDate: now });
@@ -1244,7 +1256,7 @@ try {
     : null));
 
   // 31. 라이프 12궁 밸런스 휠 엔진
-  const lifeDomainWheelResult = calculateSupplement(() => (birthdateStr && profile
+  const lifeDomainWheelResult = calculateSupplement('lifeDomainWheelResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateLifeDomainWheel({ profile, targetDate: now });
@@ -1255,7 +1267,7 @@ try {
     : null));
 
   // 32. 창작 아우라 & 딥워크 몰입 엔진
-  const deepWorkFlowResult = calculateSupplement(() => (birthdateStr && profile
+  const deepWorkFlowResult = calculateSupplement('deepWorkFlowResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateDeepWorkFlow({ profile, targetDate: now });
@@ -1266,7 +1278,7 @@ try {
     : null));
 
   // 33. 수면 뇌파 & 무의식 직관 디코딩 엔진
-  const sleepSubconsciousResult = calculateSupplement(() => (birthdateStr && profile
+  const sleepSubconsciousResult = calculateSupplement('sleepSubconsciousResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSleepSubconscious({ profile, targetDate: now });
@@ -1277,7 +1289,7 @@ try {
     : null));
 
   // 34. 퀀텀 점프 & 승부수 모멘텀 타이밍 엔진
-  const quantumLeapResult = calculateSupplement(() => (birthdateStr && profile
+  const quantumLeapResult = calculateSupplement('quantumLeapResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateQuantumLeapTiming({ profile, targetDate: now });
@@ -1288,7 +1300,7 @@ try {
     : null));
 
   // 35. 오행 생극 공명 & 순환 루프 증폭 엔진
-  const elementalResonanceResult = calculateSupplement(() => (birthdateStr && profile
+  const elementalResonanceResult = calculateSupplement('elementalResonanceResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateElementalResonance({ profile, targetDate: now });
@@ -1299,7 +1311,7 @@ try {
     : null));
 
   // 36. 음양 극성 밸런스 & 바이폴라 리듬 엔진
-  const yinYangPolarityResult = calculateSupplement(() => (birthdateStr && profile
+  const yinYangPolarityResult = calculateSupplement('yinYangPolarityResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateYinYangPolarity({ profile, targetDate: now });
@@ -1310,7 +1322,7 @@ try {
     : null));
 
   // 37. 고대 노르딕 룬 동시성 매트릭스 엔진
-  const runeMatrixResult = calculateSupplement(() => (birthdateStr && profile
+  const runeMatrixResult = calculateSupplement('runeMatrixResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateRuneMatrix({ profile, targetDate: now });
@@ -1321,7 +1333,7 @@ try {
     : null));
 
   // 38. 영혼의 타로 여정 & 4원소 연금술 엔진
-  const soulJourneyTarotResult = calculateSupplement(() => (birthdateStr && profile
+  const soulJourneyTarotResult = calculateSupplement('soulJourneyTarotResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSoulJourneyTarot({ profile, targetDate: now });
@@ -1332,7 +1344,7 @@ try {
     : null));
 
   // 39. 초월 명상 & 브레인웨이브 동조 엔진
-  const transcendentalMeditationResult = calculateSupplement(() => (birthdateStr && profile
+  const transcendentalMeditationResult = calculateSupplement('transcendentalMeditationResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateTranscendentalMeditation({ profile, targetDate: now });
@@ -1343,7 +1355,7 @@ try {
     : null));
 
   // 40. 전략적 협상 & 손자병법 기문 레버리지 엔진
-  const strategicLeverageResult = calculateSupplement(() => (birthdateStr && profile
+  const strategicLeverageResult = calculateSupplement('strategicLeverageResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateStrategicLeverage({ profile, targetDate: now });
@@ -1354,7 +1366,7 @@ try {
     : null));
 
   // 41. 융 심리학 그림자 자아 & 골든 섀도우 연금술 엔진
-  const shadowArchetypeResult = calculateSupplement(() => (birthdateStr && profile
+  const shadowArchetypeResult = calculateSupplement('shadowArchetypeResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateShadowArchetype({ profile, targetDate: now });
@@ -1365,7 +1377,7 @@ try {
     : null));
 
   // 42. 3대 생체 바이오리듬 & 크로노타입 황금 피크 엔진
-  const biorhythmPeakFlowResult = calculateSupplement(() => (birthdateStr && profile
+  const biorhythmPeakFlowResult = calculateSupplement('biorhythmPeakFlowResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateBiorhythmPeakFlow({ profile, targetDate: now });
@@ -1376,7 +1388,7 @@ try {
     : null));
 
   // 43. 다차원 운명 공명 에코 & 카르마적 인연 중력 엔진
-  const destinySynastryEchoResult = calculateSupplement(() => (birthdateStr && profile
+  const destinySynastryEchoResult = calculateSupplement('destinySynastryEchoResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateDestinySynastryEcho({ profile, targetDate: now });
@@ -1387,7 +1399,7 @@ try {
     : null));
 
   // 44. 21일 카르마 리셋 & 오행 마이크로 해빗 엔진
-  const microHabitKarmaResult = calculateSupplement(() => (birthdateStr && profile
+  const microHabitKarmaResult = calculateSupplement('microHabitKarmaResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateMicroHabitKarma({ profile, targetDate: now });
@@ -1398,7 +1410,7 @@ try {
     : null));
 
   // 45. 이키가이 천직 4대 교집합 & 소명 나침반 엔진
-  const ikigaiDestinyCompassResult = calculateSupplement(() => (birthdateStr && profile
+  const ikigaiDestinyCompassResult = calculateSupplement('ikigaiDestinyCompassResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateIkigaiDestinyCompass({ profile, targetDate: now });
@@ -1409,7 +1421,7 @@ try {
     : null));
 
   // 46. 양자 동시성 & 세렌디피티 행운 가속 엔진
-  const serendipitySynchronicityResult = calculateSupplement(() => (birthdateStr && profile
+  const serendipitySynchronicityResult = calculateSupplement('serendipitySynchronicityResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSerendipitySynchronicity({ profile, targetDate: now });
@@ -1420,7 +1432,7 @@ try {
     : null));
 
   // 47. 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라 엔진
-  const humanDesignBodyGraphResult = calculateSupplement(() => (birthdateStr && profile
+  const humanDesignBodyGraphResult = calculateSupplement('humanDesignBodyGraphResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateHumanDesignBodyGraph({ profile, targetDate: now });
@@ -1431,7 +1443,7 @@ try {
     : null));
 
   // 48. 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱 엔진
-  const chakraVibrationAlignmentResult = calculateSupplement(() => (birthdateStr && profile
+  const chakraVibrationAlignmentResult = calculateSupplement('chakraVibrationAlignmentResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateChakraVibrationAlignment({ profile, targetDate: now });
@@ -1442,7 +1454,7 @@ try {
     : null));
 
   // 49. 에니어그램 영혼 성격 통합 & 의식 진화 엔진
-  const enneagramSoulIntegrationResult = calculateSupplement(() => (birthdateStr && profile
+  const enneagramSoulIntegrationResult = calculateSupplement('enneagramSoulIntegrationResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateEnneagramSoulIntegration({ profile, targetDate: now });
@@ -1453,7 +1465,7 @@ try {
     : null));
 
   // 50. 조상 혈통 업력 & 후성유전학적 카르마 정화 엔진
-  const ancestralEpigeneticKarmaResult = calculateSupplement(() => (birthdateStr && profile
+  const ancestralEpigeneticKarmaResult = calculateSupplement('ancestralEpigeneticKarmaResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateAncestralEpigeneticKarma({ profile, targetDate: now });
@@ -1464,7 +1476,7 @@ try {
     : null));
 
   // 51. 샤머니즘 파워 애니멀 & 12지지 스피릿 토템 가이드 엔진
-  const shamanicAnimalTotemResult = calculateSupplement(() => (birthdateStr && profile
+  const shamanicAnimalTotemResult = calculateSupplement('shamanicAnimalTotemResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateShamanicAnimalTotem({ profile, targetDate: now });
@@ -1475,7 +1487,7 @@ try {
     : null));
 
   // 52. 조셉 캠벨 영웅의 여정 12단계 & 운명 돌파 엔진
-  const heroMythMonomythResult = calculateSupplement(() => (birthdateStr && profile
+  const heroMythMonomythResult = calculateSupplement('heroMythMonomythResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateHeroMythMonomyth({ profile, targetDate: now });
@@ -1486,7 +1498,7 @@ try {
     : null));
 
   // 53. 아카식 레코드 영혼 서약 & 카르믹 청사진 엔진
-  const akashicRecordsOracleResult = calculateSupplement(() => (birthdateStr && profile
+  const akashicRecordsOracleResult = calculateSupplement('akashicRecordsOracleResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateAkashicRecordsOracle({ profile, targetDate: now });
@@ -1497,7 +1509,7 @@ try {
     : null));
 
   // 54. 양자 다중우주 타임라인 분기 & 퀀텀 점프 엔진
-  const quantumProbabilisticTimelineResult = calculateSupplement(() => (birthdateStr && profile
+  const quantumProbabilisticTimelineResult = calculateSupplement('quantumProbabilisticTimelineResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateQuantumProbabilisticTimeline({ profile, targetDate: now });
@@ -1508,7 +1520,7 @@ try {
     : null));
 
   // 55. 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각 엔진
-  const somaticBodyArmoringResult = calculateSupplement(() => (birthdateStr && profile
+  const somaticBodyArmoringResult = calculateSupplement('somaticBodyArmoringResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSomaticBodyArmoring({ profile, targetDate: now });
@@ -1519,7 +1531,7 @@ try {
     : null));
 
   // 56. 궁극의 영적 3위1체 마스터 지혜 엔진 (기적수업 × 초기불교 × 영지주의)
-  const supremeWisdomTrinityResult = calculateSupplement(() => (birthdateStr && profile
+  const supremeWisdomTrinityResult = calculateSupplement('supremeWisdomTrinityResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSupremeWisdomTrinity({ profile, targetDate: now });
@@ -1530,7 +1542,7 @@ try {
     : null));
 
   // 57. 황금비 영혼 수비학 & 보텍스 기하학 엔진
-  const sacredVortexGeometryResult = calculateSupplement(() => (birthdateStr && profile
+  const sacredVortexGeometryResult = calculateSupplement('sacredVortexGeometryResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSacredVortexGeometry({ profile, targetDate: now });
@@ -1541,7 +1553,7 @@ try {
     : null));
 
   // 58. 도교 내단 양생 & 진기 순환 경락 시계 엔진
-  const taoistNeidanMeridianResult = calculateSupplement(() => (birthdateStr && profile
+  const taoistNeidanMeridianResult = calculateSupplement('taoistNeidanMeridianResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateTaoistNeidanMeridian({ profile, targetDate: now });
@@ -1552,7 +1564,7 @@ try {
     : null));
 
   // 59. 칼 융 동시성 징조 해독 & 오멘 매트릭스 엔진
-  const synchronicityOmenResult = calculateSupplement(() => (birthdateStr && profile
+  const synchronicityOmenResult = calculateSupplement('synchronicityOmenResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSynchronicityOmen({ profile, targetDate: now });
@@ -1563,7 +1575,7 @@ try {
     : null));
 
   // 60. 솔페지오 주파수 사운드 힐링 & 뇌파 동조 엔진
-  const solfeggioHarmonicResult = calculateSupplement(() => (birthdateStr && profile
+  const solfeggioHarmonicResult = calculateSupplement('solfeggioHarmonicResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSolfeggioHarmonic({ profile, targetDate: now });
@@ -1574,7 +1586,7 @@ try {
     : null));
 
   // 61. 에테르 오라 생체장 & 쉴딩 엔진
-  const ethericAuraBiofieldResult = calculateSupplement(() => (birthdateStr && profile
+  const ethericAuraBiofieldResult = calculateSupplement('ethericAuraBiofieldResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateEthericAuraBiofield({ profile, targetDate: now });
@@ -1585,7 +1597,7 @@ try {
     : null));
 
   // 62. 사주 정통 3대 원전(자평진전·궁통보감·적천수) 용신·조후·억부 심층 처방 엔진
-  const sajuClassicYongshinResult = calculateSupplement(() => (birthdateStr && profile
+  const sajuClassicYongshinResult = calculateSupplement('sajuClassicYongshinResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateSajuClassicYongshin({ profile, targetDate: now });
@@ -1596,7 +1608,7 @@ try {
     : null));
 
   // 63. 타로 카발라 생명나무 22경로 & 섀도우 미러 심층 엔진
-  const tarotTreeOfLifeShadowResult = calculateSupplement(() => (birthdateStr && profile
+  const tarotTreeOfLifeShadowResult = calculateSupplement('tarotTreeOfLifeShadowResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateTarotTreeOfLifeShadow({ profile, targetDate: now });
@@ -1607,7 +1619,7 @@ try {
     : null));
 
   // 64. 고대 헬레니즘 아라빅 랏 & 조디악 릴리싱 엔진
-  const hellenisticLotsResult = calculateSupplement(() => (birthdateStr && profile
+  const hellenisticLotsResult = calculateSupplement('hellenisticLotsResult', () => (birthdateStr && profile
     ? (() => {
         try {
           return calculateHellenisticLots({ profile, targetDate: now });
@@ -1618,7 +1630,7 @@ try {
     : null));
 
   // 65. 주역 384효 동효 & 착종복잡 4대 변괘 엔진
-  const iching384YaoResult = calculateSupplement(() => ((() => {
+  const iching384YaoResult = calculateSupplement('iching384YaoResult', () => ((() => {
     try {
       return calculateIching384Yao({ profile, question, targetDate: now });
     } catch (_) {
@@ -1627,7 +1639,7 @@ try {
   })()));
 
   // 66. 사주 12운성 포태법 & 4대 묘고지 개고 엔진
-  const sajuTwelveStagesTombResult = calculateSupplement(() => ((() => {
+  const sajuTwelveStagesTombResult = calculateSupplement('sajuTwelveStagesTombResult', () => ((() => {
     try {
       return calculateSajuTwelveStagesTomb(profile, now);
     } catch (_) {
@@ -1636,7 +1648,7 @@ try {
   })()));
 
   // 67. 타로 4대 원소 & 16대 궁정 카드(Court Cards) 페르소나 엔진
-  const tarotElementalCourtResult = calculateSupplement(() => ((() => {
+  const tarotElementalCourtResult = calculateSupplement('tarotElementalCourtResult', () => ((() => {
     try {
       return calculateTarotElementalCourt(profile, question);
     } catch (_) {
@@ -1645,7 +1657,7 @@ try {
   })()));
 
   // 68. 카르믹 시나스트리 & 인연 성간 공명 엔진
-  const karmicSynastryResult = calculateSupplement(() => ((() => {
+  const karmicSynastryResult = calculateSupplement('karmicSynastryResult', () => ((() => {
     try {
       return calculateKarmicSynastry(profile, partnerProfile, question);
     } catch (_) {
@@ -1654,7 +1666,7 @@ try {
   })()));
 
   // 69. 오행 칠정(七情) 심신 맥파 & 기혈 조화 엔진
-  const fiveEmotionsPulseResult = calculateSupplement(() => ((() => {
+  const fiveEmotionsPulseResult = calculateSupplement('fiveEmotionsPulseResult', () => ((() => {
     try {
       return calculateFiveEmotionsPulse(profile, now);
     } catch (_) {
@@ -1663,7 +1675,7 @@ try {
   })()));
 
   // 70. 헤르메스 카이발리온 7대 우주 불변 법칙 진동 엔진
-  const hermeticKybalionResult = calculateSupplement(() => ((() => {
+  const hermeticKybalionResult = calculateSupplement('hermeticKybalionResult', () => ((() => {
     try {
       return calculateHermeticKybalion(profile, now);
     } catch (_) {
@@ -1672,7 +1684,7 @@ try {
   })()));
 
   // 71. 고대 수비학 차크라 솔 울림 & 퍼스널 라이프 퀘스트 나침반 엔진
-  const vibrationalSoulQuestResult = calculateSupplement(() => ((() => {
+  const vibrationalSoulQuestResult = calculateSupplement('vibrationalSoulQuestResult', () => ((() => {
     try {
       return calculateVibrationalSoulQuest(profile, now);
     } catch (_) {
@@ -1681,7 +1693,7 @@ try {
   })()));
 
   // 72. 서양 정통 연금술 7단계 영혼 변환 & 심리적 승화 엔진
-  const alchemicalTransmutationResult = calculateSupplement(() => ((() => {
+  const alchemicalTransmutationResult = calculateSupplement('alchemicalTransmutationResult', () => ((() => {
     try {
       return calculateAlchemicalTransmutation(profile, now);
     } catch (_) {
@@ -1690,7 +1702,7 @@ try {
   })()));
 
   // 73. 도교 자미두수 화기(化忌)·살성 정화 & 전화위복 해원 엔진
-  const ziweiHuaJiResult = calculateSupplement(() => ((() => {
+  const ziweiHuaJiResult = calculateSupplement('ziweiHuaJiResult', () => ((() => {
     try {
       return calculateZiweiHuaJiTransformation(profile, now);
     } catch (_) {
@@ -1699,7 +1711,7 @@ try {
   })()));
 
   // 74. 고대 켈트 오검(Ogham) 수목 신성 지혜 & 수호목 오라클 엔진
-  const celticTreeOghamResult = calculateSupplement(() => ((() => {
+  const celticTreeOghamResult = calculateSupplement('celticTreeOghamResult', () => ((() => {
     try {
       return calculateCelticTreeOgham(profile, now);
     } catch (_) {
@@ -1708,7 +1720,7 @@ try {
   })()));
 
   // 75. 도교 내단학 삼보(정·기·신) 생체 에너지 순환 & 연정화기 엔진
-  const taoistSanbaoResult = calculateSupplement(() => ((() => {
+  const taoistSanbaoResult = calculateSupplement('taoistSanbaoResult', () => ((() => {
     try {
       return calculateTaoistSanbaoInnerAlchemy(profile, now);
     } catch (_) {
@@ -1717,7 +1729,7 @@ try {
   })()));
 
   // 76. 티베트 불교 바르도 6대 환생 상태 & 전환기 의식 항해 엔진
-  const tibetanBardoResult = calculateSupplement(() => ((() => {
+  const tibetanBardoResult = calculateSupplement('tibetanBardoResult', () => ((() => {
     try {
       return calculateTibetanBardoNavigation(profile, now);
     } catch (_) {
@@ -1726,7 +1738,7 @@ try {
   })()));
 
   // 77. 고대 메소포타미아 7대 행성 관문 & 이슈타르 지하세계 하강·부활 엔진
-  const mesopotamianSevenGatesResult = calculateSupplement(() => ((() => {
+  const mesopotamianSevenGatesResult = calculateSupplement('mesopotamianSevenGatesResult', () => ((() => {
     try {
       return calculateMesopotamianSevenGates(profile, now);
     } catch (_) {
@@ -1735,7 +1747,7 @@ try {
   })()));
 
   // 78. 고대 이집트 36 데칸 별자리 수호신 & 누트 천구 항해 엔진
-  const egyptianDecansResult = calculateSupplement(() => ((() => {
+  const egyptianDecansResult = calculateSupplement('egyptianDecansResult', () => ((() => {
     try {
       return calculateEgyptianThirtySixDecans({ profile, targetDate: now });
     } catch (_) {
@@ -1744,7 +1756,7 @@ try {
   })()));
 
   // 79. 정통 수피즘 심장의 7대 라타이프 영혼 정화 & 미크라즈 상승 엔진
-  const sufiLataifResult = calculateSupplement(() => ((() => {
+  const sufiLataifResult = calculateSupplement('sufiLataifResult', () => ((() => {
     try {
       return calculateSufiLataifSoulAscension({ profile, targetDate: now });
     } catch (_) {
@@ -1753,7 +1765,7 @@ try {
   })()));
 
   // 80. 고대 마야 촐킨 260일 신성력 20 나왈 & 13 은하 톤 엔진
-  const mayanTzolkinResult = calculateSupplement(() => ((() => {
+  const mayanTzolkinResult = calculateSupplement('mayanTzolkinResult', () => ((() => {
     try {
       return calculateMayanTzolkinSacredCalendar({ profile, targetDate: now });
     } catch (_) {
@@ -1762,7 +1774,7 @@ try {
   })()));
 
   // 81. 북유럽 24 엘더 푸사르크 룬 문자 & 노른 운명 직조 엔진
-  const nordicRunesResult = calculateSupplement(() => ((() => {
+  const nordicRunesResult = calculateSupplement('nordicRunesResult', () => ((() => {
     try {
       return calculateNordicElderFutharkRunes({ profile, targetDate: now });
     } catch (_) {
@@ -1771,7 +1783,7 @@ try {
   })()));
 
   // 82. 고대 그리스 델포이 아폴론 신탁 & 147 델포이 잠언 신성 지혜 엔진
-  const delphicMaximsResult = calculateSupplement(() => ((() => {
+  const delphicMaximsResult = calculateSupplement('delphicMaximsResult', () => ((() => {
     try {
       return calculateDelphicMaximsOracle({ profile, targetDate: now });
     } catch (_) {
@@ -1780,7 +1792,7 @@ try {
   })()));
 
   // 83. 인도 정통 아유르베다 3대 도샤(트리도샤) 체질 & 프라나 생명력 엔진
-  const ayurvedicTridoshaResult = calculateSupplement(() => ((() => {
+  const ayurvedicTridoshaResult = calculateSupplement('ayurvedicTridoshaResult', () => ((() => {
     try {
       return calculateAyurvedicTridoshaPrana({ profile, targetDate: now });
     } catch (_) {
@@ -1789,7 +1801,7 @@ try {
   })()));
 
   // 84. 고대 하와이 호오포노포노 & 후나 7대 원리 치유 나침반 엔진
-  const hawaiianHunaResult = calculateSupplement(() => ((() => {
+  const hawaiianHunaResult = calculateSupplement('hawaiianHunaResult', () => ((() => {
     try {
       return calculateHawaiianHunaHooponopono({ profile, contextText: question });
     } catch (_) {
@@ -1798,7 +1810,7 @@ try {
   })()));
 
   // 85. 동양 정통 풍수 8택(八宅) 공간 에너지 & 24방위 길흉 엔진
-  const fengShuiEightMansionsResult = calculateSupplement(() => ((() => {
+  const fengShuiEightMansionsResult = calculateSupplement('fengShuiEightMansionsResult', () => ((() => {
     try {
       return calculateFengShuiEightMansions({ profile, contextText: question });
     } catch (_) {
@@ -1807,7 +1819,7 @@ try {
   })()));
 
   // 86. 고대 조로아스터교 아샤(Asha) 신성 우주 질서 & 3대 선행 진실 엔진
-  const zoroastrianAshaResult = calculateSupplement(() => ((() => {
+  const zoroastrianAshaResult = calculateSupplement('zoroastrianAshaResult', () => ((() => {
     try {
       return calculateZoroastrianAshaTruth({ profile, contextText: question });
     } catch (_) {
@@ -1816,7 +1828,7 @@ try {
   })()));
 
   // 87. 힌두 탄트라 쿤달리니 7대 차크라 나디 프라나야마 각성 엔진
-  const hinduKundaliniResult = calculateSupplement(() => ((() => {
+  const hinduKundaliniResult = calculateSupplement('hinduKundaliniResult', () => ((() => {
     try {
       return calculateHinduTantricKundalini({ profile, contextText: question });
     } catch (_) {
@@ -1825,7 +1837,7 @@ try {
   })()));
 
   // 88. 고대 중국 귀곡자(鬼谷子) 양구령(兩頭鉗) 72변화 명리 결단 엔진
-  const guiguziLiangtouqianResult = calculateSupplement(() => ((() => {
+  const guiguziLiangtouqianResult = calculateSupplement('guiguziLiangtouqianResult', () => ((() => {
     try {
       return calculateGuiguziLiangtouqian({ profile, contextText: question });
     } catch (_) {
@@ -1834,7 +1846,7 @@ try {
   })()));
 
   // 89. 고대 슬라브 베다 신화 16 스바로그 체계 & 로드(Rod) 영혼 가계 카르마 엔진
-  const slavicSvarogResult = calculateSupplement(() => ((() => {
+  const slavicSvarogResult = calculateSupplement('slavicSvarogResult', () => ((() => {
     try {
       return calculateSlavicSvarogCircle({ profile, contextText: question });
     } catch (_) {
@@ -1843,7 +1855,7 @@ try {
   })()));
 
   // 90. 고대 에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진
-  const esseneCommunionResult = calculateSupplement(() => ((() => {
+  const esseneCommunionResult = calculateSupplement('esseneCommunionResult', () => ((() => {
     try {
       return calculateEsseneCommunion(profile);
     } catch (_) {
@@ -1852,7 +1864,7 @@ try {
   })()));
 
   // 91. 황제명리(黃帝命理) & 오운육기(五運六氣) 천기대운 기상의학 엔진
-  const huangdiFiveMovementsSixQiResult = calculateSupplement(() => ((() => {
+  const huangdiFiveMovementsSixQiResult = calculateSupplement('huangdiFiveMovementsSixQiResult', () => ((() => {
     try {
       return calculateHuangdiFiveMovementsSixQi(profile);
     } catch (_) {
@@ -1861,7 +1873,7 @@ try {
   })()));
 
   // 92. 피타고라스 테트락티스(Tetraktys) 10대 신성기하 & 게마트리아 조화 엔진
-  const pythagoreanTetraktysResult = calculateSupplement(() => ((() => {
+  const pythagoreanTetraktysResult = calculateSupplement('pythagoreanTetraktysResult', () => ((() => {
     try {
       return calculatePythagoreanTetraktys(profile);
     } catch (_) {
@@ -1870,7 +1882,7 @@ try {
   })()));
 
   // 93. 고대 바빌로니아 에누마 엘리쉬 & 운명의 서판 천체 엔진
-  const babylonianEnumaElishResult = calculateSupplement(() => ((() => {
+  const babylonianEnumaElishResult = calculateSupplement('babylonianEnumaElishResult', () => ((() => {
     try {
       return calculateBabylonianEnumaElish(profile);
     } catch (_) {
@@ -1879,7 +1891,7 @@ try {
   })()));
 
   // 94. 도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사(存思) 내경 엔진
-  const taoistHuangtingJingResult = calculateSupplement(() => ((() => {
+  const taoistHuangtingJingResult = calculateSupplement('taoistHuangtingJingResult', () => ((() => {
     try {
       return calculateTaoistHuangtingJing(profile);
     } catch (_) {
@@ -1888,7 +1900,7 @@ try {
   })()));
 
   // 95. 고대 페르시아 바르숨(Baresman) & 6대 아메샤 스펜타 조화 엔진
-  const persianAmeshaSpentaResult = calculateSupplement(() => ((() => {
+  const persianAmeshaSpentaResult = calculateSupplement('persianAmeshaSpentaResult', () => ((() => {
     try {
       return calculatePersianAmeshaSpenta(profile);
     } catch (_) {
@@ -1897,7 +1909,7 @@ try {
   })()));
 
   // 96. 고대 수메르 에리두 창세력 & 50대 메(Me) 신성 문명 규범 엔진
-  const sumerianFiftyMesResult = calculateSupplement(() => ((() => {
+  const sumerianFiftyMesResult = calculateSupplement('sumerianFiftyMesResult', () => ((() => {
     try {
       return calculateSumerianFiftyMes(profile);
     } catch (_) {
@@ -1906,7 +1918,7 @@ try {
   })()));
 
   // 97. 도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진
-  const zhongLuAlchemyResult = calculateSupplement(() => ((() => {
+  const zhongLuAlchemyResult = calculateSupplement('zhongLuAlchemyResult', () => ((() => {
     try {
       return calculateZhongLuInnerAlchemy(profile);
     } catch (_) {
@@ -1915,7 +1927,7 @@ try {
   })()));
 
   // 98. 켈트 드루이드 13대 달나무(Moon Trees) & 오검 주술 엔진
-  const druidMoonTreesResult = calculateSupplement(() => ((() => {
+  const druidMoonTreesResult = calculateSupplement('druidMoonTreesResult', () => ((() => {
     try {
       return calculateDruidMoonTrees(profile);
     } catch (_) {
@@ -1924,7 +1936,7 @@ try {
   })()));
 
   // 99. 고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진
-  const tiebanShenshuResult = calculateSupplement(() => ((() => {
+  const tiebanShenshuResult = calculateSupplement('tiebanShenshuResult', () => ((() => {
     try {
       return calculateTiebanShenshu(profile);
     } catch (_) {
@@ -1933,7 +1945,7 @@ try {
   })()));
 
   // 100. 티베트 정통 본교(Bon) 카르마 9승 & 5대 영혼 수호 융드룽 엔진
-  const tibetanBonResult = calculateSupplement(() => ((() => {
+  const tibetanBonResult = calculateSupplement('tibetanBonResult', () => ((() => {
     try {
       return calculateTibetanBonNineWays(profile);
     } catch (_) {
@@ -1942,7 +1954,7 @@ try {
   })()));
 
   // 101. 고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진
-  const eleusinianMysteriesResult = calculateSupplement(() => ((() => {
+  const eleusinianMysteriesResult = calculateSupplement('eleusinianMysteriesResult', () => ((() => {
     try {
       return calculateEleusinianMysteries(profile);
     } catch (_) {
@@ -1951,7 +1963,7 @@ try {
   })()));
 
   // 102. 인도 베다 27나크샤트라 & 108파다(Pada) 카르마 성좌 정밀 엔진
-  const vedicNakshatra108PadaResult = calculateSupplement(() => ((() => {
+  const vedicNakshatra108PadaResult = calculateSupplement('vedicNakshatra108PadaResult', () => ((() => {
     try {
       return calculateVedicNakshatra108Pada(profile);
     } catch (_) {
@@ -1960,7 +1972,7 @@ try {
   })()));
 
   // 103. 고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 오라클 엔진
-  const egyptianHermeticCartoucheResult = calculateSupplement(() => ((() => {
+  const egyptianHermeticCartoucheResult = calculateSupplement('egyptianHermeticCartoucheResult', () => ((() => {
     try {
       return calculateEgyptianHermeticCartouche(profile);
     } catch (_) {
@@ -1969,7 +1981,7 @@ try {
   })()));
 
   // 104. 도교 태상감응편 & 공과격 선악 카르마 적선개운 엔진
-  const taoistGongGuoGeKarmaResult = calculateSupplement(() => ((() => {
+  const taoistGongGuoGeKarmaResult = calculateSupplement('taoistGongGuoGeKarmaResult', () => ((() => {
     try {
       return calculateTaoistGongGuoGeKarma(profile);
     } catch (_) {
@@ -1978,7 +1990,7 @@ try {
   })()));
 
   // 105. 서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 엔진
-  const yorubaIfaOduResult = calculateSupplement(() => ((() => {
+  const yorubaIfaOduResult = calculateSupplement('yorubaIfaOduResult', () => ((() => {
     try {
       return calculateYorubaIfaOdu({ profile, targetDate: now, question });
     } catch (_) {
@@ -1987,7 +1999,7 @@ try {
   })()));
 
   // 106. 고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 지혜 엔진
-  const arabicIlmAlRamlResult = calculateSupplement(() => ((() => {
+  const arabicIlmAlRamlResult = calculateSupplement('arabicIlmAlRamlResult', () => ((() => {
     try {
       return calculateArabicIlmAlRaml({ profile, targetDate: now, question });
     } catch (_) {
@@ -1996,7 +2008,7 @@ try {
   })()));
 
   // 107. 남인도 정통 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 카르마 신탁 엔진
-  const hinduNadiAgastyaPalmLeafResult = calculateSupplement(() => ((() => {
+  const hinduNadiAgastyaPalmLeafResult = calculateSupplement('hinduNadiAgastyaPalmLeafResult', () => ((() => {
     try {
       return calculateHinduNadiAgastyaPalmLeaf({ profile, targetDate: now, question });
     } catch (_) {
@@ -2005,7 +2017,7 @@ try {
   })()));
 
   // 108. 고대 일본 신도 고토다마 50음령 & 4혼1생 영혼 조화 엔진
-  const shintoKotodamaFourSoulsResult = calculateSupplement(() => ((() => {
+  const shintoKotodamaFourSoulsResult = calculateSupplement('shintoKotodamaFourSoulsResult', () => ((() => {
     try {
       return calculateShintoKotodama({ profile, targetInstantTime: now.toISOString() });
     } catch (_) {
@@ -2014,7 +2026,7 @@ try {
   })()));
 
   // 109. 호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반 엔진
-  const aboriginalDreamtimeSonglinesResult = calculateSupplement(() => ((() => {
+  const aboriginalDreamtimeSonglinesResult = calculateSupplement('aboriginalDreamtimeSonglinesResult', () => ((() => {
     try {
       return calculateAboriginalDreamtimeSonglines({ profile, targetInstantTime: now.toISOString() });
     } catch (_) {
@@ -2023,7 +2035,7 @@ try {
   })()));
 
   // 110. 고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) 9대 룬가 번영 엔진
-  const finnishKalevalaSampoResult = calculateSupplement(() => ((() => {
+  const finnishKalevalaSampoResult = calculateSupplement('finnishKalevalaSampoResult', () => ((() => {
     try {
       return calculateFinnishKalevalaSampo({ profile, targetInstantTime: now.toISOString() });
     } catch (_) {
@@ -2032,7 +2044,7 @@ try {
   })()));
 
   // 111. 고대 동양 산해경(山海經) 8방위 신성 영수(神獸) & 오행 방호 나침반 엔진
-  const shanhaijingSacredBeastsResult = calculateSupplement(() => ((() => {
+  const shanhaijingSacredBeastsResult = calculateSupplement('shanhaijingSacredBeastsResult', () => ((() => {
     try {
       return calculateShanhaijingSacredBeasts({ profile, targetInstantTime: now.toISOString() });
     } catch (_) {
@@ -2041,7 +2053,7 @@ try {
   })()));
 
   // 112. 고대 인도 자이나교(Jainism) 14 군아스타나 & 삼보(Ratnatraya) 카르마 엔진
-  const jainGunasthanaKarmaResult = calculateSupplement(() => ((() => {
+  const jainGunasthanaKarmaResult = calculateSupplement('jainGunasthanaKarmaResult', () => ((() => {
     try {
       return calculateJainGunasthanaKarma({ profile, targetInstantTime: now.toISOString() });
     } catch (_) {
@@ -2050,7 +2062,7 @@ try {
   })()));
 
   // 113. 고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 엔진
-  const celticAwenTaliesinResult = calculateSupplement(() => ((() => {
+  const celticAwenTaliesinResult = calculateSupplement('celticAwenTaliesinResult', () => ((() => {
     try {
       return calculateCelticAwenTaliesin({ profile, targetInstantTime: now.toISOString() });
     } catch (_) {
@@ -2059,7 +2071,7 @@ try {
   })()));
 
   // 114. 고대 한국 삼국유사 단군 천부인(天符印) 3보 & 홍익인간 광명 엔진
-  const koreanDangunCheonbuinResult = calculateSupplement(() => ((() => {
+  const koreanDangunCheonbuinResult = calculateSupplement('koreanDangunCheonbuinResult', () => ((() => {
     try {
       return calculateKoreanDangunCheonbuin({ profile, question });
     } catch (_) {
@@ -2068,7 +2080,7 @@ try {
   })()));
 
   // 115. 고대 마오리 하우오라 4대 기둥 & 마우리(Mauri) 생명력 영혼 수호 엔진
-  const maoriMauriHauoraResult = calculateSupplement(() => ((() => {
+  const maoriMauriHauoraResult = calculateSupplement('maoriMauriHauoraResult', () => ((() => {
     try {
       return calculateMaoriMauriHauora({ profile, question });
     } catch (_) {
@@ -2077,7 +2089,7 @@ try {
   })()));
 
   // 116. 고대 슬라브 모코시(Mokosh) 운명의 실타래 & 대지 모성 직관 엔진
-  const slavicMokoshFateWeavingResult = calculateSupplement(() => ((() => {
+  const slavicMokoshFateWeavingResult = calculateSupplement('slavicMokoshFateWeavingResult', () => ((() => {
     try {
       return calculateSlavicMokoshFateWeaving({ profile, question });
     } catch (_) {
@@ -2086,7 +2098,7 @@ try {
   })()));
 
   // 117. 고대 메소포타미아 길가메시 서사시 12관문 불멸 여정 엔진
-  const sumerianGilgameshTrialsResult = calculateSupplement(() => ((() => {
+  const sumerianGilgameshTrialsResult = calculateSupplement('sumerianGilgameshTrialsResult', () => ((() => {
     try {
       return calculateSumerianGilgameshTrials({ profile, question, now });
     } catch (_) {
@@ -2095,7 +2107,7 @@ try {
   })()));
 
   // 118. 고대 하와이 카후나 3대 자아 & 마나 공명 엔진
-  const hawaiianKahunaThreeSelvesResult = calculateSupplement(() => ((() => {
+  const hawaiianKahunaThreeSelvesResult = calculateSupplement('hawaiianKahunaThreeSelvesResult', () => ((() => {
     try {
       return calculateHawaiianKahunaThreeSelves({ profile, question, now });
     } catch (_) {
@@ -2104,7 +2116,7 @@ try {
   })()));
 
   // 119. 고대 북유럽 세계수 위그드라실(Yggdrasil) 9대 영역 엔진
-  const nordicYggdrasilRealmsResult = calculateSupplement(() => ((() => {
+  const nordicYggdrasilRealmsResult = calculateSupplement('nordicYggdrasilRealmsResult', () => ((() => {
     try {
       return calculateNordicYggdrasilRealms({ profile, question, now });
     } catch (_) {
@@ -2113,7 +2125,7 @@ try {
   })()));
 
   // 120. 고대 이집트 마아트(Ma'at) 진리의 깃털 & 심장 무게 측정 엔진
-  const egyptianMaatFeatherHeartResult = calculateSupplement(() => ((() => {
+  const egyptianMaatFeatherHeartResult = calculateSupplement('egyptianMaatFeatherHeartResult', () => ((() => {
     try {
       return calculateEgyptianMaatFeatherHeart({ profile, question, now });
     } catch (_) {
@@ -2122,7 +2134,7 @@ try {
   })()));
 
   // 121. 고대 페르시아 미트라(Mithra) 7대 행성 입문 천계 사다리 엔진
-  const persianMithraicSpheresResult = calculateSupplement(() => ((() => {
+  const persianMithraicSpheresResult = calculateSupplement('persianMithraicSpheresResult', () => ((() => {
     try {
       return calculatePersianMithraicSpheres({ profile, question, now });
     } catch (_) {
@@ -2131,7 +2143,7 @@ try {
   })()));
 
   // 122. 고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 엔진
-  const orpheicMysteriesResult = calculateSupplement(() => ((() => {
+  const orpheicMysteriesResult = calculateSupplement('orpheicMysteriesResult', () => ((() => {
     try {
       return calculateOrpheicMysteries({ profile, question, now });
     } catch (_) {
@@ -2140,7 +2152,7 @@ try {
   })()));
 
   // 123. 고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 엔진
-  const popolVuhHeroTwinsResult = calculateSupplement(() => ((() => {
+  const popolVuhHeroTwinsResult = calculateSupplement('popolVuhHeroTwinsResult', () => ((() => {
     try {
       return calculatePopolVuhHeroTwins({ profile, question, now });
     } catch (_) {
@@ -2149,7 +2161,7 @@ try {
   })()));
 
   // 124. 고대 중국 주역 대연지수(大衍之數) 49책 시초점 확률 수리 엔진
-  const ancientYarrowProbabilityResult = calculateSupplement(() => ((() => {
+  const ancientYarrowProbabilityResult = calculateSupplement('ancientYarrowProbabilityResult', () => ((() => {
     try {
       return calculateAncientYarrowProbability({ profile, question, now });
     } catch (_) {
@@ -2158,7 +2170,7 @@ try {
   })()));
 
   // 125. 고대 인도 베단타 5대 코샤(Pancha Kosha) 층위별 정렬 & 아트만 해방 엔진
-  const vedicPanchaKoshaResult = calculateSupplement(() => ((() => {
+  const vedicPanchaKoshaResult = calculateSupplement('vedicPanchaKoshaResult', () => ((() => {
     try {
       return calculateVedicPanchaKosha({ profile, question, now });
     } catch (_) {
@@ -2167,7 +2179,7 @@ try {
   })()));
 
   // 126. 고대 로마 야누스(Janus) 2대 얼굴 시공간 문턱 & 새출발 돌파 엔진
-  const romanJanusResult = calculateSupplement(() => ((() => {
+  const romanJanusResult = calculateSupplement('romanJanusResult', () => ((() => {
     try {
       return calculateRomanJanus({ profile, question, now });
     } catch (_) {
@@ -2176,7 +2188,7 @@ try {
   })()));
 
   // 127. 고대 동양 도교 포박자(抱朴子) 갈홍 내편 구전환단(九轉還丹) 무병장수 선도 엔진
-  const baopuziElixirsResult = calculateSupplement(() => ((() => {
+  const baopuziElixirsResult = calculateSupplement('baopuziElixirsResult', () => ((() => {
     try {
       return calculateBaopuziElixirs({ profile, question, now });
     } catch (_) {
@@ -2185,7 +2197,7 @@ try {
   })()));
 
   // 128. 고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 의식 각성 엔진
-  const vedicMahavakyaResult = calculateSupplement(() => ((() => {
+  const vedicMahavakyaResult = calculateSupplement('vedicMahavakyaResult', () => ((() => {
     try {
       return calculateVedicMahavakya({ profile, question, now });
     } catch (_) {
@@ -2194,7 +2206,7 @@ try {
   })()));
 
   // 129. 고대 수메르 에리두 엔키(Enki) 7대 압갈루(Apkallu) 현자 & 신성 지혜 엔진
-  const sumerianApkalluWisdomResult = calculateSupplement(() => ((() => {
+  const sumerianApkalluWisdomResult = calculateSupplement('sumerianApkalluWisdomResult', () => ((() => {
     try {
       return calculateSumerianApkalluWisdom({ profile, question, now });
     } catch (_) {
@@ -2203,7 +2215,7 @@ try {
   })()));
 
   // 130. 고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 & 영웅 운명 엔진
-  const celticTuathaFourTreasuresResult = calculateSupplement(() => ((() => {
+  const celticTuathaFourTreasuresResult = calculateSupplement('celticTuathaFourTreasuresResult', () => ((() => {
     try {
       return calculateCelticTuathaFourTreasures({ profile, question, now });
     } catch (_) {
@@ -2212,7 +2224,7 @@ try {
   })()));
 
   // 131. 고대 중국 도교 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 & 존사(存思) 통령 엔진
-  const taoistShangqingTwentyFourSpiritsResult = calculateSupplement(() => ((() => {
+  const taoistShangqingTwentyFourSpiritsResult = calculateSupplement('taoistShangqingTwentyFourSpiritsResult', () => ((() => {
     try {
       return calculateTaoistShangqingTwentyFourSpirits({ profile, question, now });
     } catch (_) {
@@ -2221,7 +2233,7 @@ try {
   })()));
 
   // 132. 티베트 밀교 족첸(Dzogchen) 릭파(Rigpa) 본각 & 포와(Phowa) 의식 전이 & 5대 지혜 무지개체(Jalü) 정렬 엔진
-  const tibetanPhowaRainbowBodyResult = calculateSupplement(() => ((() => {
+  const tibetanPhowaRainbowBodyResult = calculateSupplement('tibetanPhowaRainbowBodyResult', () => ((() => {
     try {
       return calculateTibetanPhowaRainbowBody({ profile, question, now });
     } catch (_) {
@@ -2230,7 +2242,7 @@ try {
   })()));
 
   // 133. 고대 그리스 피타고라스 천구의 조화(Musica Universalis) & 테트라코드 7대 행성 주파수 공명 엔진
-  const pythagoreanHarmoniaSpheresResult = calculateSupplement(() => ((() => {
+  const pythagoreanHarmoniaSpheresResult = calculateSupplement('pythagoreanHarmoniaSpheresResult', () => ((() => {
     try {
       return calculatePythagoreanHarmoniaSpheres({ profile, question, now });
     } catch (_) {
@@ -2239,7 +2251,7 @@ try {
   })()));
 
   // 134. 송대 소강절 선생의 매화역수(梅花易數) 심역(心易) 선천 작괘 & 체용생극(體用生克) 5대 동태 진단 엔진
-  const plumBlossomMeihuaOracleResult = calculateSupplement(() => ((() => {
+  const plumBlossomMeihuaOracleResult = calculateSupplement('plumBlossomMeihuaOracleResult', () => ((() => {
     try {
       return calculatePlumBlossomMeihuaOracle({ profile, question, now });
     } catch (_) {
@@ -2248,7 +2260,7 @@ try {
   })()));
 
   // 135. 고대 그리스 델포이 삼여신 모이라이(Moirai) 운명의 실타래 & 아낭케(Ananke) 필연 엔진
-  const greekMoiraiAnankeFateResult = calculateSupplement(() => ((() => {
+  const greekMoiraiAnankeFateResult = calculateSupplement('greekMoiraiAnankeFateResult', () => ((() => {
     try {
       return calculateGreekMoiraiAnankeFate({ profile, question, now });
     } catch (_) {
@@ -2257,7 +2269,7 @@ try {
   })()));
 
   // 136. 고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁 & 태양신 레-호라크티 엔진
-  const egyptianSphinxDreamOracleResult = calculateSupplement(() => ((() => {
+  const egyptianSphinxDreamOracleResult = calculateSupplement('egyptianSphinxDreamOracleResult', () => ((() => {
     try {
       return calculateEgyptianSphinxDreamOracle({ profile, question, now });
     } catch (_) {
@@ -2266,7 +2278,7 @@ try {
   })()));
 
   // 137. 고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN) 천문 신탁 엔진
-  const chaldeanMulApinAstrologyResult = calculateSupplement(() => ((() => {
+  const chaldeanMulApinAstrologyResult = calculateSupplement('chaldeanMulApinAstrologyResult', () => ((() => {
     try {
       return calculateChaldeanMulApinAstrology({ profile, question, now });
     } catch (_) {
@@ -2275,7 +2287,7 @@ try {
   })()));
 
   // 138. 고대 멕시코 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 엔진
-  const toltecNagualDreamingResult = calculateSupplement(() => ((() => {
+  const toltecNagualDreamingResult = calculateSupplement('toltecNagualDreamingResult', () => ((() => {
     try {
       return calculateToltecNagualDreaming({ profile, question, now });
     } catch (_) {
@@ -2284,7 +2296,7 @@ try {
   })()));
 
   // 139. 고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 산악영력 엔진
-  const shugendoYamabushiTenRealmsResult = calculateSupplement(() => ((() => {
+  const shugendoYamabushiTenRealmsResult = calculateSupplement('shugendoYamabushiTenRealmsResult', () => ((() => {
     try {
       return calculateShugendoYamabushiTenRealms({ profile, question, now });
     } catch (_) {
@@ -2293,7 +2305,7 @@ try {
   })()));
 
   // 140. 고대 영지주의(Gnosticism) 피스티스 소피아 12에온 & 플레로마 영적 각성 엔진
-  const gnosticPistisSophiaPleromaResult = calculateSupplement(() => ((() => {
+  const gnosticPistisSophiaPleromaResult = calculateSupplement('gnosticPistisSophiaPleromaResult', () => ((() => {
     try {
       return calculateGnosticPistisSophiaPleroma({ profile, question, now });
     } catch (_) {
@@ -2302,7 +2314,7 @@ try {
   })()));
 
   // 141. 고대 수메르 이난나(Inanna) 명계 하강 7대 관문 & 영혼 부활 엔진
-  const sumerianInannaUnderworldDescentResult = calculateSupplement(() => ((() => {
+  const sumerianInannaUnderworldDescentResult = calculateSupplement('sumerianInannaUnderworldDescentResult', () => ((() => {
     try {
       return calculateSumerianInannaUnderworldDescent({ profile, question, now });
     } catch (_) {
@@ -2311,7 +2323,7 @@ try {
   })()));
 
   // 142. 고대 북유럽 볼바(Völva) 세이드(Seiðr) 직관 & 위그드라실 9대 세계 예언 엔진
-  const norseVolvaSeidrNineRealmsResult = calculateSupplement(() => ((() => {
+  const norseVolvaSeidrNineRealmsResult = calculateSupplement('norseVolvaSeidrNineRealmsResult', () => ((() => {
     try {
       return calculateNorseVolvaSeidrNineRealms({ profile, question, now });
     } catch (_) {
@@ -2320,7 +2332,7 @@ try {
   })()));
 
   // 143. 고대 중국 도가 장자(莊子) 소요유(逍遙遊) 붕정만리 & 제물론(齊物論) 호접몽 초월 엔진
-  const zhuangziXiaoyaoyouButterflyResult = calculateSupplement(() => ((() => {
+  const zhuangziXiaoyaoyouButterflyResult = calculateSupplement('zhuangziXiaoyaoyouButterflyResult', () => ((() => {
     try {
       return calculateZhuangziXiaoyaoyouButterfly({ profile, question, now });
     } catch (_) {
@@ -2329,7 +2341,7 @@ try {
   })()));
 
   // 144. 불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 엔진
-  const buddhistYogacaraConsciousnessResult = calculateSupplement(() => ((() => {
+  const buddhistYogacaraConsciousnessResult = calculateSupplement('buddhistYogacaraConsciousnessResult', () => ((() => {
     try {
       return calculateBuddhistYogacaraConsciousness({ profile, question, now });
     } catch (_) {
@@ -2338,7 +2350,7 @@ try {
   })()));
 
   // 145. 고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 엔진
-  const vedicMandukyaTuriyaResult = calculateSupplement(() => ((() => {
+  const vedicMandukyaTuriyaResult = calculateSupplement('vedicMandukyaTuriyaResult', () => ((() => {
     try {
       return calculateVedicMandukyaTuriya({ profile, question, now });
     } catch (_) {
@@ -2347,7 +2359,7 @@ try {
   })()));
 
   // 146. 카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 엔진
-  const kabbalisticZoharSoulResult = calculateSupplement(() => ((() => {
+  const kabbalisticZoharSoulResult = calculateSupplement('kabbalisticZoharSoulResult', () => ((() => {
     try {
       return calculateKabbalisticZoharSoul({ profile, question, now });
     } catch (_) {
@@ -2356,7 +2368,7 @@ try {
   })()));
 
   // 147. 고대 로마 스토아학파 세네카·에픽테토스 아파테이아 & 프로하이레시스 통제이분법 엔진
-  const romanStoicProhairesisResult = calculateSupplement(() => ((() => {
+  const romanStoicProhairesisResult = calculateSupplement('romanStoicProhairesisResult', () => ((() => {
     try {
       return calculateRomanStoicProhairesis({ profile, question, now });
     } catch (_) {
@@ -2365,7 +2377,7 @@ try {
   })()));
 
   // 148. 고대 인도 요가 파탄잘리 요가 수트라 8지칙 & 치타 브리티 니로다 삼매 청정 엔진
-  const patanjaliAshtangaYogaResult = calculateSupplement(() => ((() => {
+  const patanjaliAshtangaYogaResult = calculateSupplement('patanjaliAshtangaYogaResult', () => ((() => {
     try {
       return calculatePatanjaliAshtangaYoga({ profile, question, now });
     } catch (_) {
@@ -2374,7 +2386,7 @@ try {
   })()));
 
   // 149. 고대 한국 신라 최치원 난랑비서 풍류도 현묘지도 & 화랑도 세속오계 엔진
-  const koreanPungryudoHwarangResult = calculateSupplement(() => ((() => {
+  const koreanPungryudoHwarangResult = calculateSupplement('koreanPungryudoHwarangResult', () => ((() => {
     try {
       return calculateKoreanPungryudoHwarang({ profile, question, now });
     } catch (_) {
@@ -2383,7 +2395,7 @@ try {
   })()));
 
   // 150. 페르시아 수피즘 아타르 7대 계곡 & 시무르그 신성 자아 엔진
-  const persianAttarSevenValleysResult = calculateSupplement(() => ((() => {
+  const persianAttarSevenValleysResult = calculateSupplement('persianAttarSevenValleysResult', () => ((() => {
     try {
       return calculatePersianAttarSevenValleys({ profile, question, now });
     } catch (_) {
@@ -2392,7 +2404,7 @@ try {
   })()));
 
   // 151. 고대 헤르메스주의 포이만드레스 7대 천계 탈각 & 옥도아드 누스 각성 엔진
-  const hermeticPoimandresResult = calculateSupplement(() => ((() => {
+  const hermeticPoimandresResult = calculateSupplement('hermeticPoimandresResult', () => ((() => {
     try {
       return calculateHermeticPoimandres({ profile, question, now });
     } catch (_) {
@@ -2401,7 +2413,7 @@ try {
   })()));
 
   // 152. 카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 본성 재인식 엔진
-  const kashmirShaivismSpandaResult = calculateSupplement(() => ((() => {
+  const kashmirShaivismSpandaResult = calculateSupplement('kashmirShaivismSpandaResult', () => ((() => {
     try {
       return calculateKashmirShaivismSpanda({ profile, question, now });
     } catch (_) {
@@ -2410,7 +2422,7 @@ try {
   })()));
 
   // 153. 고대 메소포타미아 바빌로니아 에누마 엘리시 마르두크 50대 이름 & 4대 바람 정복 엔진
-  const sumerianEnumaElishFiftyNamesResult = calculateSupplement(() => ((() => {
+  const sumerianEnumaElishFiftyNamesResult = calculateSupplement('sumerianEnumaElishFiftyNamesResult', () => ((() => {
     try {
       return calculateSumerianEnumaElishFiftyNames({ profile, question, now });
     } catch (_) {
@@ -2419,7 +2431,7 @@ try {
   })()));
 
   // 154. 고대 그리스 알렉산드리아 헤르메스주의 36대 데칸 천상 성령 & 시간의 지배자 엔진
-  const alexandrianDecanThirtySixGodsResult = calculateSupplement(() => ((() => {
+  const alexandrianDecanThirtySixGodsResult = calculateSupplement('alexandrianDecanThirtySixGodsResult', () => ((() => {
     try {
       return calculateAlexandrianDecanThirtySixGods({ profile, question, now });
     } catch (_) {
@@ -2428,7 +2440,7 @@ try {
   })()));
 
   // 155. 고대 중국 도가 열자 어풍동행 & 무하유지향 진인 유유자적 엔진
-  const taoistLieziWindRidingResult = calculateSupplement(() => ((() => {
+  const taoistLieziWindRidingResult = calculateSupplement('taoistLieziWindRidingResult', () => ((() => {
     try {
       return calculateTaoistLieziWindRiding({ profile, question, now });
     } catch (_) {
@@ -2437,7 +2449,7 @@ try {
   })()));
 
   // 156. 고대 인도 상키야 철학 25타트바 & 푸루샤-프라크리티 분별지 해탈 엔진
-  const samkhyaTwentyFiveTattvasResult = calculateSupplement(() => ((() => {
+  const samkhyaTwentyFiveTattvasResult = calculateSupplement('samkhyaTwentyFiveTattvasResult', () => ((() => {
     try {
       return calculateSamkhyaTwentyFiveTattvas({ profile, question, now });
     } catch (_) {
@@ -2446,7 +2458,7 @@ try {
   })()));
 
   // 157. 동양 유학 정통 성리학 사칠이기 & 거경궁리 주일무적 수양 엔진
-  const neoConfucianFourSevenLiQiResult = calculateSupplement(() => ((() => {
+  const neoConfucianFourSevenLiQiResult = calculateSupplement('neoConfucianFourSevenLiQiResult', () => ((() => {
     try {
       return calculateNeoConfucianFourSevenLiQi({ profile, question, now });
     } catch (_) {
@@ -2455,7 +2467,7 @@ try {
   })()));
 
   // 158. 고대 에트루리아 16천궁 분할 & 로마 아우구르 조점 신탁 엔진
-  const etruscanAugurSixteenSkyResult = calculateSupplement(() => ((() => {
+  const etruscanAugurSixteenSkyResult = calculateSupplement('etruscanAugurSixteenSkyResult', () => ((() => {
     try {
       return calculateEtruscanAugurSixteenSky({ profile, question, now });
     } catch (_) {
@@ -2464,7 +2476,7 @@ try {
   })()));
 
   // 159. 로젠크로이츠 화학적 결혼 7일 연금술 영혼 승화 엔진
-  const rosicrucianChymicalWeddingResult = calculateSupplement(() => ((() => {
+  const rosicrucianChymicalWeddingResult = calculateSupplement('rosicrucianChymicalWeddingResult', () => ((() => {
     try {
       return calculateRosicrucianChymicalWedding({ profile, question, now });
     } catch (_) {
@@ -2473,7 +2485,7 @@ try {
   })()));
 
   // 160. 고대 아즈텍 토날포왈리 20대 일진 & 13대 주천신 신성 역법 엔진
-  const aztecTonalamatlResult = calculateSupplement(() => ((() => {
+  const aztecTonalamatlResult = calculateSupplement('aztecTonalamatlResult', () => ((() => {
     try {
       return calculateAztecTonalamatl({ profile, question, now });
     } catch (_) {
@@ -2482,7 +2494,7 @@ try {
   })()));
 
   // 161. 몽골 텡그리즘 99 텡그리 & 히모리 풍마 영혼 공명 엔진
-  const mongolianTengriHiimoriResult = calculateSupplement(() => ((() => {
+  const mongolianTengriHiimoriResult = calculateSupplement('mongolianTengriHiimoriResult', () => ((() => {
     try {
       return calculateMongolianTengriHiimori({ profile, question, now });
     } catch (_) {
@@ -2491,7 +2503,7 @@ try {
   })()));
 
   // 162. 고대 게일 4대 화제 축제 및 휠 오브 더 이어 계절 순환 엔진
-  const gaelicWheelFireFestivalsResult = calculateSupplement(() => ((() => {
+  const gaelicWheelFireFestivalsResult = calculateSupplement('gaelicWheelFireFestivalsResult', () => ((() => {
     try {
       return calculateGaelicWheelFireFestivals(profile, now);
     } catch (_) {
@@ -2500,7 +2512,7 @@ try {
   })()));
 
   // 163. 고대 노르웨이 고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 엔진
-  const norseHavamalEighteenGaldrResult = calculateSupplement(() => ((() => {
+  const norseHavamalEighteenGaldrResult = calculateSupplement('norseHavamalEighteenGaldrResult', () => ((() => {
     try {
       return calculateNorseHavamalEighteenGaldr(profile, now);
     } catch (_) {
@@ -2509,7 +2521,7 @@ try {
   })()));
 
   // 164. 안달루시아 수피즘 이븐 아라비 존재의 단일성 및 28대 예언자 심장 영지 엔진
-  const ibnArabiWahdatAlWujudResult = calculateSupplement(() => ((() => {
+  const ibnArabiWahdatAlWujudResult = calculateSupplement('ibnArabiWahdatAlWujudResult', () => ((() => {
     try {
       return calculateIbnArabiWahdatAlWujud(profile, now);
     } catch (_) {
@@ -2518,7 +2530,7 @@ try {
   })()));
 
   // 165. 조선 비전 정감록 10승지 영맥·궁궁을을 지기 보신 피난처 엔진
-  const chonggamnokTenSanctuariesResult = calculateSupplement(() => ((() => {
+  const chonggamnokTenSanctuariesResult = calculateSupplement('chonggamnokTenSanctuariesResult', () => ((() => {
     try {
       return calculateChonggamnokTenSanctuaries(profile);
     } catch (_) {
@@ -2527,7 +2539,7 @@ try {
   })()));
 
   // 166. 발리 힌두교 트리 히타 카라나(3대 우주 조화) 및 트리 카야 파리수다 3업 정화 엔진
-  const balineseTriHitaKaranaResult = calculateSupplement(() => ((() => {
+  const balineseTriHitaKaranaResult = calculateSupplement('balineseTriHitaKaranaResult', () => ((() => {
     try {
       return calculateBalineseTriHitaKarana(profile);
     } catch (_) {
@@ -2536,7 +2548,7 @@ try {
   })()));
 
   // 167. 아메리카 호피족 4대 우주 시대 순환·카치나 정령 지혜·코양니스카시 치유 엔진
-  const hopiFourWorldsKachinaResult = calculateSupplement(() => ((() => {
+  const hopiFourWorldsKachinaResult = calculateSupplement('hopiFourWorldsKachinaResult', () => ((() => {
     try {
       return calculateHopiFourWorldsKachina(profile);
     } catch (_) {
@@ -2545,7 +2557,7 @@ try {
   })()));
 
   // 168. 동학 수운 최제우 시천주(侍天主) 주문 & 지기금지 인내천 천지조화 엔진
-  const donghakCheondoismCheonjuResult = calculateSupplement(() => ((() => {
+  const donghakCheondoismCheonjuResult = calculateSupplement('donghakCheondoismCheonjuResult', () => ((() => {
     try {
       return calculateDonghakCheondoismCheonju(profile);
     } catch (_) {
@@ -2554,7 +2566,7 @@ try {
   })()));
 
   // 169. 고대 잉카 안데스 코스몰로지 3대 세계·신성 영수·파차마마 아이니(Ayni) 호혜 조화 엔진
-  const incaAndeanThreePachaAyniResult = calculateSupplement(() => ((() => {
+  const incaAndeanThreePachaAyniResult = calculateSupplement('incaAndeanThreePachaAyniResult', () => ((() => {
     try {
       return calculateIncaAndeanThreePachaAyni(profile);
     } catch (_) {
@@ -2563,7 +2575,7 @@ try {
   })()));
 
   // 170. 고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열 엔진
-  const shangOracleBoneDivinationResult = calculateSupplement(() => ((() => {
+  const shangOracleBoneDivinationResult = calculateSupplement('shangOracleBoneDivinationResult', () => ((() => {
     try {
       return calculateShangOracleBoneDivination(profile);
     } catch (_) {
@@ -2572,7 +2584,7 @@ try {
   })()));
 
   // 171. 한국 고대 단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명 엔진
-  const cheonbugyeongEightyOneResult = calculateSupplement(() => ((() => {
+  const cheonbugyeongEightyOneResult = calculateSupplement('cheonbugyeongEightyOneResult', () => ((() => {
     try {
       return calculateKoreanCheonbugyeongEightyOne(profile);
     } catch (_) {
@@ -2581,7 +2593,7 @@ try {
   })()));
 
   // 172. 고대 인도 탄트라 스리 얀트라 9대 나바요니 교차 삼각형 & 바인두 9단계 아바라나 엔진
-  const hinduSriYantraResult = calculateSupplement(() => ((() => {
+  const hinduSriYantraResult = calculateSupplement('hinduSriYantraResult', () => ((() => {
     try {
       return calculateHinduSriYantraSacredGeometry(profile);
     } catch (_) {
@@ -2590,7 +2602,7 @@ try {
   })()));
 
   // 173. 북미 원주민 라코타 수족 와칸 탕카 & 4대 방향 성스러운 의약 휠(Medicine Wheel) 엔진
-  const lakotaMedicineWheelResult = calculateSupplement(() => ((() => {
+  const lakotaMedicineWheelResult = calculateSupplement('lakotaMedicineWheelResult', () => ((() => {
     try {
       return calculateLakotaMedicineWheel(profile);
     } catch (_) {
@@ -2599,7 +2611,7 @@ try {
   })()));
 
   // 174. 조선 명종 격암 남사고 《격암유록》 45편 비결 & 계룡백석 궁궁을을 사중구생 엔진
-  const gyeogamYurokResult = calculateSupplement(() => ((() => {
+  const gyeogamYurokResult = calculateSupplement('gyeogamYurokResult', () => ((() => {
     try {
       return calculateGyeogamYurokProphecy(profile);
     } catch (_) {
@@ -2608,7 +2620,7 @@ try {
   })()));
 
   // 175. 일본 헤이안 음양도 아베노 세이메이 《점사략》 12천장 수호령 & 식신 사역 엔진
-  const heianOnmyodoSeimeiResult = calculateSupplement(() => ((() => {
+  const heianOnmyodoSeimeiResult = calculateSupplement('heianOnmyodoSeimeiResult', () => ((() => {
     try {
       return calculateHeianOnmyodoSeimei(profile);
     } catch (_) {
@@ -2617,7 +2629,7 @@ try {
   })()));
 
   // 176. 고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 & 호쿠레아 신성 인도 엔진
-  const polynesianWayfindingResult = calculateSupplement(() => ((() => {
+  const polynesianWayfindingResult = calculateSupplement('polynesianWayfindingResult', () => ((() => {
     try {
       return calculatePolynesianWayfinding(profile);
     } catch (_) {
@@ -2626,7 +2638,7 @@ try {
   })()));
 
   // 177. 신라 원효대사 《십문화쟁론》 일심이문 화쟁 & 원융회통 엔진
-  const wonhyoHwajaengResult = calculateSupplement(() => ((() => {
+  const wonhyoHwajaengResult = calculateSupplement('wonhyoHwajaengResult', () => ((() => {
     try {
       return calculateWonhyoHwajaeng(profile);
     } catch (_) {
@@ -2635,7 +2647,7 @@ try {
   })()));
 
   // 178. 동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색 엔진
-  const mayiMianxiangResult = calculateSupplement(() => ((() => {
+  const mayiMianxiangResult = calculateSupplement('mayiMianxiangResult', () => ((() => {
     try {
       return calculateMayiMianxiang(profile);
     } catch (_) {
@@ -2644,7 +2656,7 @@ try {
   })()));
 
   // 179. 고대 이집트 《암두아트의 서》 12시간 태양신 라 밤의 저승 항해 & 케프리 부활 엔진
-  const egyptianAmduatResult = calculateSupplement(() => ((() => {
+  const egyptianAmduatResult = calculateSupplement('egyptianAmduatResult', () => ((() => {
     try {
       return calculateEgyptianAmduat(profile);
     } catch (_) {
@@ -2653,6 +2665,8 @@ try {
   })()));
 
   return {
+    masterReview: Boolean(params.reviewAll),
+    supplementExecutions,
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
     calculatedAtUtc: nowUtcIso,
@@ -3079,17 +3093,43 @@ export function getFiredEngineBadges(
   report: DeterministicEngineReport,
   options?: FormatDeterministicEngineOptions
 ): string[] {
-  return getIncludedCalculationTools(report, options)
-    .filter(tool => tool.status === 'calculated' && tool.data != null)
-    .map(tool => `계산 근거 · ${tool.toolKoName}`);
+  return getCalculationAudit(report, options).filter(item => item.sentToModel)
+    .map(item => `${item.status === 'symbolic' ? '상징 참고' : '계산 근거'} · ${item.name}`);
+}
+
+const REVIEW_PENDING_CORE = new Set(['sukuyo', 'mahabote', 'kabbalah']);
+
+export function getMasterSymbolicReview(report: DeterministicEngineReport) {
+  if (!report.masterReview) return [];
+  return ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master').map(engine => {
+    const binding = MASTER_REVIEW_BINDINGS[engine.key];
+    const value = binding ? (report as unknown as Record<string, unknown>)[binding.field] : null;
+    const execution = binding ? report.supplementExecutions?.[binding.traceKey] : undefined;
+    const nestedStatus = (value as { status?: string } | null)?.status;
+    const unavailable = value == null || ['error', 'skipped', 'not_implemented'].includes(nestedStatus || '');
+    const perspectives = unavailable ? [] : getSymbolicPerspective(value);
+    return {
+      toolId: engine.key, name: engine.nameKo,
+      status: execution === 'error' || nestedStatus === 'error' ? 'error' as const : perspectives.length ? 'symbolic' as const : 'skipped' as const,
+      sentToModel: perspectives.length > 0,
+      perspectives,
+    };
+  });
 }
 
 export function getCalculationAudit(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions): CalculationAuditItem[] {
-  return getIncludedCalculationTools(report, options).map(tool => ({
-    toolId: tool.toolId, name: tool.toolKoName, status: tool.status,
-    sentToModel: tool.status === 'calculated' && tool.data != null,
-    ...((tool.note || tool.limitations?.length) ? { note: [tool.note, ...(tool.limitations || [])].filter(Boolean).join(' · ') } : {}), ...(tool.method ? { method: tool.method } : {}),
-  }));
+  const core = getIncludedCalculationTools(report, options).map(tool => {
+    const symbolic = report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId);
+    const perspectives = symbolic ? getSymbolicPerspective(tool.data) : [];
+    return {
+      toolId: tool.toolId, name: tool.toolKoName,
+      status: symbolic && tool.data != null ? 'symbolic' as const : tool.status,
+      sentToModel: symbolic ? perspectives.length > 0 : tool.status === 'calculated' && tool.data != null,
+      ...((tool.note || tool.limitations?.length) ? { note: [tool.note, ...(tool.limitations || [])].filter(Boolean).join(' · ') } : {}),
+      ...(tool.method ? { method: tool.method } : {}),
+    };
+  });
+  return [...core, ...getMasterSymbolicReview(report).map(({ perspectives, ...item }) => item)];
 }
 
 function getIncludedCalculationTools(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions) {
@@ -3438,11 +3478,14 @@ export function formatDeterministicEnginePrompt(
 ): string {
   const included = getIncludedCalculationTools(report, options);
   const evidence = included.map(tool => ({
-    tool: tool.toolKoName, status: tool.status, method: tool.method,
+    tool: tool.toolKoName, status: report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId) && tool.data != null ? 'symbolic' : tool.status, method: tool.method,
     note: tool.note, limitations: tool.limitations,
-    ...(tool.status === 'calculated' && tool.data != null ? { data: tool.data } : {}),
+    ...(report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId)
+      ? { perspectives: getSymbolicPerspective(tool.data) }
+      : tool.status === 'calculated' && tool.data != null ? { data: tool.data } : {}),
   }));
-  const calculated = included.filter(tool => tool.status === 'calculated' && tool.data != null);
+  const calculated = included.filter(tool => tool.status === 'calculated' && tool.data != null && !(report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId)));
+  const symbolicReview = getMasterSymbolicReview(report);
   return `[이번 질문의 계산 근거 및 한계]
 기준 시각: ${report.calculatedAtKst}
 입력 생년월일: ${report.inputProfile.solarDateString || '미입력'} · 생시: ${report.inputProfile.birthtime || '미입력'}
@@ -3461,5 +3504,11 @@ skipped/error/partial/symbolic/not_implemented는 계산 성공으로 표현하�
 
 [계산 상태 및 데이터 JSON]
 ${JSON.stringify(evidence, null, 2)}
-[JSON 끝]`;
+[JSON 끝]
+${report.masterReview ? `[마스터 전체 검토: ${getCalculationAudit(report, options).length}개 항목]
+아래 항목은 모두 검토 대상으로 평가했다. symbolic은 실제 계산 성공이나 실측값이 아니라 상징적 조언으로만 전달한 것이다.
+skipped/error는 입력 부족·실패·제공할 안전한 관점 없음으로 제외한 항목이다. 모두 사용했다고 주장하지 않는다.
+사용 가능한 계산과 상징 관점을 빠짐없이 검토하고, 질문과 관련된 공통점·차이·충돌을 종합한다. 서로 모순되면 억지로 일치시켜 결론내리지 않는다.
+상징은 상징이라고 밝히며 확률·건강 진단·미래 보장·영적 수치로 바꾸지 않는다.
+${JSON.stringify(symbolicReview, null, 2)}` : ''}`;
 }
