@@ -1,3 +1,6 @@
+import { setDoc as writeFirestoreDocument } from 'firebase/firestore';
+import { createContinuousDataSync, localSyncChangeToken, syncDataSignature, localActivityPatch } from '../lib/continuousDataSync';
+import { recoveringSubscription } from '../lib/recoveringSubscription';
 import { formatLucyConversationMemory } from '../lib/lucyConversationMemory';
 import { buildLucyCriticalFacts, formatLucyCriticalFacts } from '../lib/lucyCriticalFacts';
 import { LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS, LUCY_REVIEW_MODEL, LUCY_REVIEW_FALLBACK_MODELS } from '../lib/lucyModelPolicy';
@@ -327,6 +330,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   });
   const sharedStateRef = useRef(sharedState);
+  const syncBaselineRef = useRef({uid:'',ready:false});
   const setSharedState = useCallback((next: React.SetStateAction<SharedState | null>) => {
     const value = typeof next === 'function' ? next(sharedStateRef.current) : next;
     sharedStateRef.current = value;
@@ -1098,8 +1102,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const cached = loadFromLocal(firebaseUser.uid) ?? loadGuestState();
     if (cached) setSharedState(cached);
 
+    syncBaselineRef.current = {uid:firebaseUser.uid,ready:false};
     const ref = doc(db, 'sharedState', firebaseUser.uid);
-    const unsub = onSnapshot(ref, (snap) => {
+    const applySharedSnapshot = (snap: any) => {
+      if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites)syncBaselineRef.current={uid:firebaseUser.uid,ready:true};
       // Ignore local write optimistic echoes to prevent loops and frame drops
       if (snap.metadata.hasPendingWrites) {
         return;
@@ -1107,8 +1113,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (snap.exists()) {
         const remoteData = snap.data() as SharedState;
-        const currentSig = getSharedStateSignature(sharedStateRef.current);
-        const remoteSig = getSharedStateSignature(remoteData);
+        const currentSig = syncDataSignature(sharedStateRef.current);
+        const remoteSig = syncDataSignature(remoteData);
         // If content signature is identical to current state, bypass re-render and re-hydration
         if (currentSig && remoteSig && currentSig === remoteSig) {
           return;
@@ -1134,6 +1140,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (mergedProfile && Object.keys(mergedProfile).length > 0) {
           mergedData.userProfile = mergedProfile;
         }
+        sharedStateRef.current = mergedData;
         setSharedState(mergedData);
         saveToLocal(firebaseUser.uid, mergedData);
         if (mergedProfile && Object.keys(mergedProfile).length > 0) {
@@ -1180,8 +1187,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setDoc(ref, cleanInit, { merge: true }).catch(() => {});
         }
       }
-    }, (err) => {
-      console.warn('[SharedState] Firestore read failed, using local cache:', (err as any).code || err.message);
+    };
+    const unsub = recoveringSubscription({
+      watch: (next, error) => onSnapshot(ref, { includeMetadataChanges: true }, next, error),
+      load: () => getDocFromServer(ref), receive: applySharedSnapshot,
+      isServer: (snap:any) => !snap.metadata?.fromCache && !snap.metadata?.hasPendingWrites,
+      visible: () => document.visibilityState === 'visible', events: window, document,
     });
 
     // Direct real-time listener on userProfiles collection for instant profile sync
@@ -1229,8 +1240,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const unsub = subscribeToPairedVault((incomingState) => {
       if (!incomingState) return;
-      const currentSig = getSharedStateSignature(sharedStateRef.current);
-      const incomingSig = getSharedStateSignature(incomingState);
+      const currentSig = syncDataSignature(sharedStateRef.current);
+      const incomingSig = syncDataSignature(incomingState);
       if (currentSig && incomingSig && currentSig === incomingSig) return;
 
       const localCached = sharedStateRef.current;
@@ -1238,13 +1249,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const mergedProfile = mergeUserProfiles(
         mergeUserProfiles(persistentProfile, localCached?.userProfile),
         incomingState?.userProfile,
-        true
+        Number((incomingState.userProfile as any)?.updatedAt || incomingState.userProfile?.completedAt || incomingState.profileUpdatedAt || 0) >= Number((localCached?.userProfile as any)?.updatedAt || localCached?.userProfile?.completedAt || localCached?.profileUpdatedAt || 0)
       );
       const mergedData: SharedState = mergeSharedState(
         localCached || {},
         incomingState,
-        0,
-        getSharedStateUpdatedAt(incomingState) || 1
+        getSharedStateUpdatedAt(localCached),
+        getSharedStateUpdatedAt(incomingState)
       );
       if (mergedProfile && Object.keys(mergedProfile).length > 0) {
         mergedData.userProfile = mergedProfile;
@@ -1446,6 +1457,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       return finalMerged;
     })();
+    sharedStateRef.current = finalMerged;
     setSharedState(finalMerged);
     unpackAndHydrateLocalStorage(firebaseUser?.uid, finalMerged);
     void pushToPairedVault(finalMerged).catch(() => {});
@@ -1590,6 +1602,63 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       isSyncInProgressRef.current = false;
     }
   }, [firebaseUser]);
+
+  useEffect(() => {
+    const uid = firebaseUser?.uid;
+    if (!uid || auth.currentUser?.uid !== uid) return;
+    const readPending = () => {
+        const activities = collectAllLocalActivities(uid);
+        if (activities.chatHistory) activities.chatHistory = activities.chatHistory.filter(message =>
+          message.role !== 'model' && message.role !== 'assistant' || (typeof message.content === 'string' ? Boolean(message.content.trim()) : Boolean(message.content?.length)));
+        const current=sharedStateRef.current || {};
+        const patch=localActivityPatch(current,activities);
+        return {...current,...patch,...(Object.keys(patch).length?{clientUpdatedAt:Date.now()}:{} )};
+    };
+    const controller = createContinuousDataSync<SharedState>({
+      changeToken: () => localSyncChangeToken(safeLocalStorage, uid),
+      visible: () => syncBaselineRef.current.uid === uid && syncBaselineRef.current.ready && document.visibilityState === 'visible' && navigator.onLine !== false,
+      signature: syncDataSignature,
+      read: readPending,
+      push: async state => {
+        if (auth.currentUser?.uid !== uid) throw Error('Sync account changed');
+        const next = { ...state, clientUpdatedAt: Date.now(), sourceApp: 'continuous-sync' };
+        sharedStateRef.current = next;
+        setSharedState(next);
+        saveToLocal(uid, next);
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            writeFirestoreDocument(doc(db, 'sharedState', uid), cleanFirestoreData({ ...next, updatedAt: serverTimestamp() }), { merge: true }),
+            new Promise<never>((_, reject) => { timer = setTimeout(() => reject(Error('Sync write timeout')), 6000); }),
+          ]);
+        } finally { if (timer) clearTimeout(timer); }
+      },
+    });
+    const scan = () => { void controller.scan(); };
+    const stagePending = () => {
+      if(auth.currentUser?.uid!==uid)return;
+      const pending=readPending();
+      if(syncDataSignature(pending)!==syncDataSignature(sharedStateRef.current)){
+        setSharedState(pending);saveToLocal(uid,pending);
+      }
+    };
+    const wake = () => { if (document.visibilityState === 'visible') void controller.wake(); else stagePending(); };
+    const timer = window.setInterval(scan, 1000);
+    scan();
+    window.addEventListener('storage', scan);
+    window.addEventListener('prism:state_changed', scan);
+    window.addEventListener('online', wake);
+    window.addEventListener('focus', wake);
+    window.addEventListener('pageshow', wake);
+    window.addEventListener('pagehide', stagePending);
+    document.addEventListener('visibilitychange', wake);
+    return () => {
+      controller.dispose();window.clearInterval(timer);
+      window.removeEventListener('storage', scan);window.removeEventListener('prism:state_changed', scan);
+      window.removeEventListener('online', wake);window.removeEventListener('focus', wake);window.removeEventListener('pageshow', wake);window.removeEventListener('pagehide', stagePending);
+      document.removeEventListener('visibilitychange', wake);
+    };
+  }, [firebaseUser?.uid]);
 
   const generateDevicePairingCode = useCallback(async () => {
     const currentState = sharedStateRef.current || loadGuestState() || {};

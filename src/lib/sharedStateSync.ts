@@ -1,3 +1,4 @@
+import { syncDataSignature } from './continuousDataSync';
 import { mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature } from './lucyLongTermMemory';
 import { db, doc, getDoc, getDocFromServer, setDoc, serverTimestamp, collection, getDocs, query, orderBy, limit } from './firebase';
 import type { SharedState, UserProfile } from './sharedState';
@@ -1209,25 +1210,23 @@ export function mergeSharedState(
     remote.profileUpdatedAt || 0,
   );
 
-  // 2. Merge Today Oracles across all dates
-  const mergedTodayOracles: Record<string, Record<string, any>> = {
-    ...(remote.todayOracles || {}),
-    ...(local.todayOracles || {}),
+  // 2. Same-day edits must converge instead of always preferring this device.
+  const oracleTime=(entry:any,fallback:number)=>{
+    const value=entry?.updatedAt??entry?.timestamp;
+    const time=typeof value==='number'?value:typeof value?.toMillis==='function'?value.toMillis():Date.parse(value||'');
+    return Number.isFinite(time)&&time>0?time:fallback;
   };
-  const allDates = new Set([...Object.keys(remote.todayOracles || {}), ...Object.keys(local.todayOracles || {})]);
-  allDates.forEach((d) => {
-    mergedTodayOracles[d] = {
-      ...((remote.todayOracles || {})[d] || {}),
-      ...((local.todayOracles || {})[d] || {}),
-    };
-  });
-  merged.todayOracles = mergedTodayOracles;
-
-  // 3. Merge Latest Daily Oracles
-  merged.latestDailyOracles = {
-    ...(remote.latestDailyOracles || {}),
-    ...(local.latestDailyOracles || {}),
+  const mergeOracles=(left:Record<string,any>={},right:Record<string,any>={})=>{
+    const result={...left};
+    for(const [app,incoming] of Object.entries(right)){
+      if(!result[app]||oracleTime(incoming,remoteUpdatedAt)>=oracleTime(result[app],localUpdatedAt))result[app]=incoming;
+    }
+    return result;
   };
+  const allDates=new Set([...Object.keys(local.todayOracles||{}),...Object.keys(remote.todayOracles||{})]);
+  merged.todayOracles={};
+  for(const day of allDates)merged.todayOracles[day]=mergeOracles(local.todayOracles?.[day],remote.todayOracles?.[day]);
+  merged.latestDailyOracles=mergeOracles(local.latestDailyOracles,remote.latestDailyOracles);
 
   // 3b. Merge Daily Secrets (Orange) with timestamp-aware conflict resolution
   const mergedDailySecrets: Record<string, any> = { ...(remote.dailySecrets || {}) };
@@ -1397,8 +1396,9 @@ export function mergeSharedState(
     } else {
       const localSaved = new Date(local.todoMissions.lastSavedAt || 0).getTime();
       const remoteSaved = new Date(remote.todoMissions.lastSavedAt || 0).getTime();
-      const base = localSaved >= remoteSaved ? local.todoMissions : remote.todoMissions;
-      const other = localSaved >= remoteSaved ? remote.todoMissions : local.todoMissions;
+      const preferLocal=localSaved>remoteSaved||(localSaved===remoteSaved&&syncDataSignature(local.todoMissions)>=syncDataSignature(remote.todoMissions));
+      const base = preferLocal ? local.todoMissions : remote.todoMissions;
+      const other = preferLocal ? remote.todoMissions : local.todoMissions;
       
       const missionMap = new Map<string, any>();
       (other.missions || []).forEach((m: any) => { if (m?.id) missionMap.set(m.id, m); });
@@ -1407,7 +1407,7 @@ export function mergeSharedState(
       merged.todoMissions = {
         date: base.date || getTodayDateKey(),
         missions: Array.from(missionMap.values()),
-        lastSavedAt: new Date(Math.max(localSaved, remoteSaved, Date.now())).toISOString(),
+        lastSavedAt: new Date(Math.max(localSaved || 0, remoteSaved || 0)).toISOString(),
       };
     }
   }
@@ -1460,13 +1460,18 @@ export function mergeSharedState(
     merged.growthLogs = lStreak >= rStreak ? (local.growthLogs || remote.growthLogs) : remote.growthLogs;
   }
 
-  // 6i. Merge Epilogue Reflection Diaries
+  // 6i. Resolve edits to the same diary by modification/state clock, not device order.
   const diaryMap = new Map<string, any>();
-  (remote.epilogueHistory || []).forEach((d: any) => { if (d?.dateKey || d?.id) diaryMap.set(d.dateKey || d.id, d); });
-  (local.epilogueHistory || []).forEach((d: any) => { if (d?.dateKey || d?.id) diaryMap.set(d.dateKey || d.id, d); });
-  if (diaryMap.size > 0) {
-    merged.epilogueHistory = Array.from(diaryMap.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const diaryTimes = new Map<string, number>();
+  for(const [list,stateTime] of [[local.epilogueHistory||[],localUpdatedAt],[remote.epilogueHistory||[],remoteUpdatedAt]] as const){
+    for(const item of list){
+      const key=item?.dateKey||item?.id;if(!key)continue;
+      const explicit=typeof item.updatedAt==='number'?item.updatedAt:Date.parse(item.updatedAt||item.lastSavedAt||'');
+      const time=Number.isFinite(explicit)?explicit:stateTime;
+      if(!diaryMap.has(key)||time>=(diaryTimes.get(key)||0)){diaryMap.set(key,item);diaryTimes.set(key,time);}
+    }
   }
+  if(diaryMap.size>0)merged.epilogueHistory=Array.from(diaryMap.values()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
   // 6j. Merge Talisman Chest & Equipped Charm
   const chestMap = new Map<string, any>();
@@ -1487,14 +1492,14 @@ export function mergeSharedState(
     const localTs = Number(local.userGoalsUpdatedAt || 0);
     const remoteTs = Number(remote.userGoalsUpdatedAt || 0);
     const goalMap = new Map<string, any>();
-    const newerIsLocal = localTs >= remoteTs;
+    const newerIsLocal = localTs > remoteTs || (localTs === remoteTs && syncDataSignature(local.userGoals || []) >= syncDataSignature(remote.userGoals || []));
     const primary = newerIsLocal ? (local.userGoals || []) : (remote.userGoals || []);
     const secondary = newerIsLocal ? (remote.userGoals || []) : (local.userGoals || []);
 
-    secondary.forEach((g: any) => { if (g?.id) goalMap.set(g.id, g); });
     primary.forEach((g: any) => { if (g?.id) goalMap.set(g.id, g); });
+    secondary.forEach((g: any) => { if (g?.id && !goalMap.has(g.id)) goalMap.set(g.id, g); });
     merged.userGoals = Array.from(goalMap.values());
-    merged.userGoalsUpdatedAt = Math.max(localTs, remoteTs, Date.now());
+    merged.userGoalsUpdatedAt = Math.max(localTs, remoteTs);
   }
 
   merged.clientAppVersions = {
