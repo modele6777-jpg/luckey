@@ -2874,7 +2874,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         style={{ overflowX: 'hidden', touchAction: 'pan-y' }}
         className="prism-page-content lucy-chat-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-x-none touch-pan-y p-3 sm:p-5 lg:p-6 w-full mx-auto min-w-0 select-text"
       >
-        <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-36 sm:pb-44 md:pb-52 w-full max-w-full min-w-0 overflow-x-hidden">
+        <div ref={messagesWrapperRef} className="space-y-3 sm:space-y-4 pb-3 sm:pb-4 w-full max-w-full min-w-0 overflow-x-hidden">
           {filteredMessages.length === 0 && searchQuery.trim().length > 0 && (
             <div className="text-center py-12 px-4">
               <p className="text-xs sm:text-sm text-slate-500">
@@ -3199,7 +3199,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             </div>
           )}
           
-          <div className="h-28 sm:h-36 md:h-44 w-full shrink-0 pointer-events-none" aria-hidden="true" />
           <div ref={chatEndRef} />
         </div>
       </main>

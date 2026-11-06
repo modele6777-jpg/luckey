@@ -29,6 +29,7 @@ import { initTTSAudioLifecycle } from "./lib/audio";
 import { shouldUsePageTransitions, shouldMountBgMusicPlayer } from "./lib/perfMode";
 import AuroraBackground from "./components/AuroraBackground";
 import HubHome from "./pages/HubHome";
+import EpilogueApp from "./pages/EpilogueApp";
 
 function lazyWithRetry<T extends React.ComponentType<any>>(
   componentImport: () => Promise<{ default: T }>
@@ -56,7 +57,6 @@ const BluebirdApp = lazyWithRetry(() => import("./pages/BluebirdApp"));
 const HealApp = lazyWithRetry(() => import("./pages/HealApp"));
 const ProfilePage = lazyWithRetry(() => import("./pages/ProfilePage"));
 const LibraryPage = lazyWithRetry(() => import("./pages/LibraryPage"));
-const EpilogueApp = lazyWithRetry(() => import("./pages/EpilogueApp"));
 const LucyProPage = lazyWithRetry(() => import("./pages/LucyProPage"));
 const LucyStandalonePage = lazyWithRetry(() => import("./pages/LucyStandalonePage"));
 const HandbookStandalonePage = lazyWithRetry(() => import("./pages/HandbookStandalonePage"));
@@ -73,7 +73,6 @@ const ALL_CHANNEL_LOADERS = [
   () => import("./pages/HealApp"),
   () => import("./pages/BluebirdApp"),
   () => import("./pages/MuseApp"),
-  () => import("./pages/EpilogueApp"),
   () => import("./pages/HandbookStandalonePage"),
   () => import("./pages/OmniWarpPage"),
   () => import("./pages/LibraryPage"),
@@ -96,16 +95,16 @@ export function preloadAllChannelChunks(): void {
       await ALL_CHANNEL_LOADERS[index]();
     } catch (_) {}
     if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(() => void preloadNext(index + 1), { timeout: 5000 });
+      (window as any).requestIdleCallback(() => void preloadNext(index + 1), { timeout: 1500 });
     } else {
-      setTimeout(() => void preloadNext(index + 1), 1000);
+      setTimeout(() => void preloadNext(index + 1), 400);
     }
   };
 
   if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => void preloadNext(0), { timeout: 5000 });
+    (window as any).requestIdleCallback(() => void preloadNext(0), { timeout: 1200 });
   } else {
-    setTimeout(() => void preloadNext(0), 1500);
+    setTimeout(() => void preloadNext(0), 500);
   }
 }
 
