@@ -859,5 +859,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "romanSenecaTimeSovereignty": {
     "field": "senecaTimeSovereigntyResult",
     "traceKey": "senecaTimeSovereigntyResult"
+  },
+  "ancientGreekPlatonicIdeaCave": {
+    "field": "platonicIdeaCaveResult",
+    "traceKey": "platonicIdeaCaveResult"
+  },
+  "koreanToegyeSeonghakSipdo": {
+    "field": "toegyeSeonghakSipdoResult",
+    "traceKey": "toegyeSeonghakSipdoResult"
+  },
+  "romanCiceroDeOfficiisHonestum": {
+    "field": "ciceroDeOfficiisResult",
+    "traceKey": "ciceroDeOfficiisResult"
   }
 };

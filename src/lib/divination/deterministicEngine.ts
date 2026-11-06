@@ -238,6 +238,9 @@ import { calculateWangYangmingXinxue, formatWangYangmingXinxuePrompt, type WangY
 import { calculateSocraticMaieuticDaimon, formatSocraticMaieuticDaimonPrompt, type SocraticMaieuticDaimonResult, SOCRATIC_MAIEUTIC_DAIMON_VERSION } from './ancientGreekSocraticMaieuticDaimonEngine';
 import { calculateMenciusFourSproutsHoyeon, formatMenciusFourSproutsHoyeonPrompt, type MenciusFourSproutsHoyeonResult, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION } from './chineseMenciusFourSproutsHoyeonJigiEngine';
 import { calculateSenecaTimeSovereignty, formatSenecaTimeSovereigntyPrompt, type SenecaTimeSovereigntyResult, SENECA_TIME_SOVEREIGNTY_VERSION } from './romanSenecaTimeSovereigntyTranquilityEngine';
+import { calculatePlatonicIdeaCave, formatPlatonicIdeaCavePrompt, type PlatonicIdeaCaveResult, PLATONIC_IDEA_CAVE_VERSION } from './ancientGreekPlatonicIdeaCaveEngine';
+import { calculateToegyeSeonghakSipdo, formatToegyeSeonghakSipdoPrompt, type ToegyeSeonghakSipdoResult, TOEGYE_SEONGHAK_SIPDO_VERSION } from './koreanToegyeSeonghakSipdoEngine';
+import { calculateCiceroDeOfficiis, formatCiceroDeOfficiisPrompt, type CiceroDeOfficiisResult, CICERO_DE_OFFICIIS_VERSION } from './romanCiceroDeOfficiisHonestumEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -496,6 +499,9 @@ export interface DeterministicEngineReport {
   socraticMaieuticDaimonResult?: SocraticMaieuticDaimonResult | null;
   menciusFourSproutsHoyeonResult?: MenciusFourSproutsHoyeonResult | null;
   senecaTimeSovereigntyResult?: SenecaTimeSovereigntyResult | null;
+  platonicIdeaCaveResult?: PlatonicIdeaCaveResult | null;
+  toegyeSeonghakSipdoResult?: ToegyeSeonghakSipdoResult | null;
+  ciceroDeOfficiisResult?: CiceroDeOfficiisResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -2963,6 +2969,33 @@ try {
     }
   })()));
 
+  // 207. 고대 그리스 플라톤 동굴의 비유 & 이데아 4대 추덕 사유 엔진
+  const platonicIdeaCaveResult = calculateSupplement('platonicIdeaCaveResult', () => ((() => {
+    try {
+      return calculatePlatonicIdeaCave(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 208. 한국 조선 성리학 퇴계 이황 성학십도 경(敬) 철학 & 거경궁리 심법 엔진
+  const toegyeSeonghakSipdoResult = calculateSupplement('toegyeSeonghakSipdoResult', () => ((() => {
+    try {
+      return calculateToegyeSeonghakSipdo(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 209. 고대 로마 키케로 의무론 도덕적 선(Honestum) & 유용성(Utile) 조화 처세 엔진
+  const ciceroDeOfficiisResult = calculateSupplement('ciceroDeOfficiisResult', () => ((() => {
+    try {
+      return calculateCiceroDeOfficiis(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3207,6 +3240,9 @@ try {
     socraticMaieuticDaimonResult,
     menciusFourSproutsHoyeonResult,
     senecaTimeSovereigntyResult,
+    platonicIdeaCaveResult,
+    toegyeSeonghakSipdoResult,
+    ciceroDeOfficiisResult,
     tools: toolsMap,
   };
 }
@@ -3441,6 +3477,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ancientGreekSocraticMaieuticDaimon', nameKo: '소크라테스 산파술 다이몬 영혼성찰 무지의지', icon: '🏛️', category: 'deep_master' },
   { key: 'chineseMenciusFourSproutsHoyeon', nameKo: '맹자 사단사덕 호연지기 부동심 대장부', icon: '🌊', category: 'deep_master' },
   { key: 'romanSenecaTimeSovereignty', nameKo: '세네카 인생의짧음에대하여 시간주권 마음의평정', icon: '⏳', category: 'deep_master' },
+  { key: 'ancientGreekPlatonicIdeaCave', nameKo: '플라톤 동굴의비유 이데아 상기설 4대추덕', icon: '🏛️', category: 'deep_master' },
+  { key: 'koreanToegyeSeonghakSipdo', nameKo: '퇴계 이황 성학십도 거경궁리 상성성 경철학', icon: '📜', category: 'deep_master' },
+  { key: 'romanCiceroDeOfficiisHonestum', nameKo: '키케로 의무론 도덕적선 유용성조화 신의품위', icon: '⚖️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3548,6 +3587,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ancientGreekPlatonicIdeaCave',
+    'koreanToegyeSeonghakSipdo',
+    'romanCiceroDeOfficiisHonestum',
     'ancientGreekSocraticMaieuticDaimon',
     'chineseMenciusFourSproutsHoyeon',
     'romanSenecaTimeSovereignty',
@@ -3609,6 +3651,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'ancientGreekPlatonicIdeaCave',
+    'koreanToegyeSeonghakSipdo',
+    'romanCiceroDeOfficiisHonestum',
     'ancientGreekSocraticMaieuticDaimon',
     'chineseMenciusFourSproutsHoyeon',
     'romanSenecaTimeSovereignty',
@@ -3763,6 +3808,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'ancientGreekPlatonicIdeaCave',
+    'koreanToegyeSeonghakSipdo',
+    'romanCiceroDeOfficiisHonestum',
     'ancientGreekSocraticMaieuticDaimon',
     'chineseMenciusFourSproutsHoyeon',
     'romanSenecaTimeSovereignty',
