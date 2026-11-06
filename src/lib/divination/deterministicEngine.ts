@@ -217,6 +217,9 @@ import { calculateSuunGasiHeon, formatSuunGasiHeonPrompt, type SuunGasiHeonResul
 import { calculateEleusinianTriptolemos, formatEleusinianTriptolemosPrompt, type EleusinianTriptolemosResult, ELEUSINIAN_TRIPTOLEMOS_VERSION } from './ancientGreekEleusinianTriptolemosEngine';
 import { calculateMixtecEightDeer, formatMixtecEightDeerPrompt, type MixtecEightDeerResult, MIXTEC_EIGHT_DEER_VERSION } from './mesoamericanMixtecEightDeerJaguarClawEngine';
 import { calculateJeonBongjunNokdu, formatJeonBongjunNokduPrompt, type JeonBongjunNokduResult, JEON_BONGJUN_NOKDU_VERSION } from './koreanJeonBongjunNokduGeneralEngine';
+import { calculateAtrahasisFlood, formatAtrahasisFloodPrompt, type AtrahasisFloodResult, ATRAHASIS_FLOOD_VERSION } from './mesopotamianAtrahasisFloodWisdomEngine';
+import { calculateEddicYggdrasil, formatEddicYggdrasilPrompt, type EddicYggdrasilResult, EDDIC_YGGDRASIL_VERSION } from './scandinavianEddicYggdrasilNineRealmsEngine';
+import { calculateYiSunSinNanjungIlgi, formatYiSunSinNanjungIlgiPrompt, type YiSunSinNanjungIlgiResult, YISUNSIN_NANJUNG_ILGI_VERSION } from './koreanYiSunSinNanjungIlgiStrategicEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -453,6 +456,9 @@ export interface DeterministicEngineReport {
   eleusinianTriptolemosResult?: EleusinianTriptolemosResult | null;
   mixtecEightDeerResult?: MixtecEightDeerResult | null;
   jeonBongjunNokduResult?: JeonBongjunNokduResult | null;
+  atrahasisFloodResult?: AtrahasisFloodResult | null;
+  eddicYggdrasilResult?: EddicYggdrasilResult | null;
+  yiSunSinNanjungIlgiResult?: YiSunSinNanjungIlgiResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2730,6 +2736,33 @@ try {
     }
   })()));
 
+  // 186. 고대 메소포타미아 서사시 《아트라하시스》 지혜의 방주 & 절제·균형 회복 엔진
+  const atrahasisFloodResult = calculateSupplement('atrahasisFloodResult', () => ((() => {
+    try {
+      return calculateAtrahasisFlood(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 187. 고대 북유럽 고에다 《위그드라실》 9대 우주계 & 3대 영천 소생 엔진
+  const eddicYggdrasilResult = calculateSupplement('eddicYggdrasilResult', () => ((() => {
+    try {
+      return calculateEddicYggdrasil(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 188. 충무공 이순신 장군 친필 《난중일기》 필사즉생 전략 & 명량 대역전 결의 엔진
+  const yiSunSinNanjungIlgiResult = calculateSupplement('yiSunSinNanjungIlgiResult', () => ((() => {
+    try {
+      return calculateYiSunSinNanjungIlgi(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -2952,6 +2985,9 @@ try {
     eleusinianTriptolemosResult,
     mixtecEightDeerResult,
     jeonBongjunNokduResult,
+    atrahasisFloodResult,
+    eddicYggdrasilResult,
+    yiSunSinNanjungIlgiResult,
     tools: toolsMap,
   };
 }
@@ -3165,6 +3201,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'eleusinianTriptolemosCivilization', nameKo: '엘레우시스 트리프톨레모스 황금전차 농경3대율법', icon: '🌾', category: 'deep_master' },
   { key: 'mixtecEightDeerJaguarClaw', nameKo: '믹스테크 8-사슴 재규어발톱 동맹결성 통일', icon: '🐆', category: 'deep_master' },
   { key: 'koreanJeonBongjunNokduGeneral', nameKo: '동학농민혁명 녹두장군 전봉준 사발통문 백산창의', icon: '📜', category: 'deep_master' },
+  { key: 'atrahasisFloodWisdom', nameKo: '메소포타미아 아트라하시스 지혜의방주 대홍수정화 절제', icon: '🌊', category: 'deep_master' },
+  { key: 'eddicYggdrasilNineRealms', nameKo: '북유럽 고에다 위그드라실 9대우주계 3대영천 소생', icon: '🌳', category: 'deep_master' },
+  { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3218,6 +3257,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'yiSunSinNanjungIlgiStrategic',
+    'atrahasisFloodWisdom',
     'mixtecEightDeerJaguarClaw',
     'eleusinianTriptolemosCivilization',
     'celticDruidBrehonLawJustice',
@@ -3261,6 +3302,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'atrahasisFloodWisdom',
+    'yiSunSinNanjungIlgiStrategic',
     'eleusinianTriptolemosCivilization',
     'mixtecEightDeerJaguarClaw',
     'celticDruidBrehonLawJustice',
@@ -3305,6 +3348,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'yiSunSinNanjungIlgiStrategic',
+    'eddicYggdrasilNineRealms',
     'koreanJeonBongjunNokduGeneral',
     'mixtecEightDeerJaguarClaw',
     'koreanSuunGasiHeon',
@@ -3442,6 +3487,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'eddicYggdrasilNineRealms',
+    'atrahasisFloodWisdom',
+    'yiSunSinNanjungIlgiStrategic',
     'eleusinianTriptolemosCivilization',
     'koreanJeonBongjunNokduGeneral',
     'celticDruidBrehonLawJustice',

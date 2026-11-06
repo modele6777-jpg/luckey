@@ -180,6 +180,9 @@ import { calculateSuunGasiHeon, formatSuunGasiHeonPrompt, SUUN_GASI_HEON_VERSION
 import { calculateEleusinianTriptolemos, formatEleusinianTriptolemosPrompt, ELEUSINIAN_TRIPTOLEMOS_VERSION } from '../src/lib/divination/ancientGreekEleusinianTriptolemosEngine';
 import { calculateMixtecEightDeer, formatMixtecEightDeerPrompt, MIXTEC_EIGHT_DEER_VERSION } from '../src/lib/divination/mesoamericanMixtecEightDeerJaguarClawEngine';
 import { calculateJeonBongjunNokdu, formatJeonBongjunNokduPrompt, JEON_BONGJUN_NOKDU_VERSION } from '../src/lib/divination/koreanJeonBongjunNokduGeneralEngine';
+import { calculateAtrahasisFlood, formatAtrahasisFloodPrompt, ATRAHASIS_FLOOD_VERSION } from '../src/lib/divination/mesopotamianAtrahasisFloodWisdomEngine';
+import { calculateEddicYggdrasil, formatEddicYggdrasilPrompt, EDDIC_YGGDRASIL_VERSION } from '../src/lib/divination/scandinavianEddicYggdrasilNineRealmsEngine';
+import { calculateYiSunSinNanjungIlgi, formatYiSunSinNanjungIlgiPrompt, YISUNSIN_NANJUNG_ILGI_VERSION } from '../src/lib/divination/koreanYiSunSinNanjungIlgiStrategicEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3962,6 +3965,49 @@ test('Korean Jeon Bongjun Nokdu General Engine: calculates Sabal Tongmun solidar
   assert(prompt.includes('한국 근대 동학농민혁명 《녹두장군 전봉준》'));
   assert(prompt.includes(rep.activeNokduStage.stageNameKo));
 });
+
+test('Mesopotamian Atrahasis Flood Wisdom Engine: calculates reed wall intuition, ark crafting resilience and equilibrium pact', () => {
+  const rep = calculateAtrahasisFlood(profile);
+  assert.equal(rep.engineVersion, ATRAHASIS_FLOOD_VERSION);
+  assert(rep.reedWallIntuitionScore >= 0 && rep.reedWallIntuitionScore <= 100);
+  assert(rep.arkCraftingResilienceForce >= 0 && rep.arkCraftingResilienceForce <= 100);
+  assert(rep.sevenDayStormPurificationIndex >= 0 && rep.sevenDayStormPurificationIndex <= 100);
+  assert(rep.seedPreservationWisdomPower >= 0 && rep.seedPreservationWisdomPower <= 100);
+  assert(rep.sacredEquilibriumPactHarmony >= 0 && rep.sacredEquilibriumPactHarmony <= 100);
+  assert(rep.activeWisdomRank.rankNameAkkadian.length > 0);
+  const prompt = formatAtrahasisFloodPrompt(rep);
+  assert(prompt.includes('고대 메소포타미아 서사시 《아트라하시스(Atrahasis)》'));
+  assert(prompt.includes(rep.activeWisdomRank.rankNameKo));
+});
+
+test('Scandinavian Eddic Yggdrasil Nine Realms Engine: calculates cosmic axis, Urðarbrunnr fate weaving, Mímir wisdom and Gimlé renewal', () => {
+  const rep = calculateEddicYggdrasil(profile);
+  assert.equal(rep.engineVersion, EDDIC_YGGDRASIL_VERSION);
+  assert(rep.yggdrasilCosmicAxisStability >= 0 && rep.yggdrasilCosmicAxisStability <= 100);
+  assert(rep.urdarbrunnrFateWeavingForce >= 0 && rep.urdarbrunnrFateWeavingForce <= 100);
+  assert(rep.mimirSpringWisdomDepth >= 0 && rep.mimirSpringWisdomDepth <= 100);
+  assert(rep.nineRealmsResonanceEquilibrium >= 0 && rep.nineRealmsResonanceEquilibrium <= 100);
+  assert(rep.gimleGoldenRenewalPower >= 0 && rep.gimleGoldenRenewalPower <= 100);
+  assert(rep.activeRealmStage.stageNameOldNorse.length > 0);
+  const prompt = formatEddicYggdrasilPrompt(rep);
+  assert(prompt.includes('고대 북유럽 고에다 《위그드라실(Yggdrasil)》'));
+  assert(prompt.includes(rep.activeRealmStage.stageNameKo));
+});
+
+test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaeng resolution, chokepoint tactic and Hansando composure', () => {
+  const rep = calculateYiSunSinNanjungIlgi(profile);
+  assert.equal(rep.engineVersion, YISUNSIN_NANJUNG_ILGI_VERSION);
+  assert(rep.pilsaJeuksaengResolutionForce >= 0 && rep.pilsaJeuksaengResolutionForce <= 100);
+  assert(rep.ilbuDanggyeongNarrowChokepointPower >= 0 && rep.ilbuDanggyeongNarrowChokepointPower <= 100);
+  assert(rep.hansandoMoonlitComposureScore >= 0 && rep.hansandoMoonlitComposureScore <= 100);
+  assert(rep.reconnaissanceIntelClarityIndex >= 0 && rep.reconnaissanceIntelClarityIndex <= 100);
+  assert(rep.geobukseonImpregnableShieldPower >= 0 && rep.geobukseonImpregnableShieldPower <= 100);
+  assert(rep.activeStrategicStage.stageNameHanja.length > 0);
+  const prompt = formatYiSunSinNanjungIlgiPrompt(rep);
+  assert(prompt.includes('충무공 이순신 장군 친필 《난중일기(亂中日記)》'));
+  assert(prompt.includes(rep.activeStrategicStage.stageNameKo));
+});
+
 
 
 

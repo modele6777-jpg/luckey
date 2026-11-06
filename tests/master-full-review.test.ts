@@ -15,7 +15,7 @@ test('master reviews every registered tool and only exposes qualitative suppleme
   assert.equal(new Set(audit.map(item => item.toolId)).size, ALL_DCE_ENGINES.length);
   for (const engine of ALL_DCE_ENGINES.filter(item => item.category === 'deep_master')) assert.ok(MASTER_REVIEW_BINDINGS[engine.key]);
   const symbolic = getMasterSymbolicReview(report);
-  assert.equal(symbolic.length, 177);
+  assert.equal(symbolic.length, 180);
   assert.ok(symbolic.some(item => item.sentToModel));
   assert.ok(symbolic.every(item => !item.sentToModel || item.status === 'symbolic'));
   for (const item of symbolic) for (const view of item.perspectives) assert.doesNotMatch(view, /[0-9%％]/);
@@ -27,10 +27,10 @@ test('master reviews every registered tool and only exposes qualitative suppleme
 test('missing input is not replaced with a default birthday during master review', () => {
   const report = runDeterministicEngine({ coreOnly:true, reviewAll:true, forceAllTools:true });
   const review = getMasterSymbolicReview(report);
-  assert.equal(review.length,177);
+  assert.equal(review.length,180);
   assert.ok(review.every(item => !item.sentToModel));
   assert.equal(report.gyeogamYurokResult,null);
-  assert.equal(getCalculationAudit(report).length,192);
+  assert.equal(getCalculationAudit(report).length,195);
 });
 
 test('failed supplementary results are excluded instead of counted from the catalogue', () => {
@@ -52,7 +52,7 @@ test('ordinary mode stays selective while explicit master greetings review the c
   assert.equal(ordinary.engineReport!.masterReview,false);
   assert.equal(ordinary.engineReport!.gyeogamYurokResult,null);
   const master=routeAndExecute({text:'안녕',profile,isMasterRequested:true});
-  assert.equal(getCalculationAudit(master.engineReport!).length,192);
+  assert.equal(getCalculationAudit(master.engineReport!).length,195);
   assert.ok(formatDeterministicEnginePrompt(master.engineReport!).includes('마스터 전체 검토'));
 });
 
