@@ -165,6 +165,9 @@ import { calculateHopiFourWorldsKachina, formatHopiFourWorldsPrompt, HOPI_FOUR_W
 import { calculateDonghakCheondoismCheonju, formatDonghakCheondoismCheonjuPrompt, DONGHAK_CHEONDOISM_VERSION } from '../src/lib/divination/koreanDonghakCheondoismCheonjuEngine';
 import { calculateIncaAndeanThreePachaAyni, formatIncaAndeanThreePachaAyniPrompt, INCA_ANDEAN_PACHA_VERSION } from '../src/lib/divination/incaAndeanThreePachaAyniEngine';
 import { calculateShangOracleBoneDivination, formatShangOracleBoneDivinationPrompt, SHANG_ORACLE_BONE_VERSION } from '../src/lib/divination/shangOracleBoneDivinationEngine';
+import { calculateKoreanCheonbugyeongEightyOne, formatKoreanCheonbugyeongEightyOnePrompt, CHEONBUGYEONG_ENGINE_VERSION } from '../src/lib/divination/koreanCheonbugyeongEightyOneCosmicEngine';
+import { calculateHinduSriYantraSacredGeometry, formatHinduSriYantraSacredGeometryPrompt, SRI_YANTRA_ENGINE_VERSION } from '../src/lib/divination/hinduSriYantraSacredGeometryEngine';
+import { calculateLakotaMedicineWheel, formatLakotaMedicineWheelPrompt, LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION } from '../src/lib/divination/lakotaMedicineWheelWakanTankaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3794,6 +3797,55 @@ test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, divine
   const prompt = formatShangOracleBoneDivinationPrompt(rep);
   assert(prompt.includes('고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열'));
   assert(prompt.includes(rep.divinerName));
+});
+
+test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth human, 3jin 3mang and budongbon', () => {
+  const rep = calculateKoreanCheonbugyeongEightyOne(profile);
+  assert.equal(rep.engineVersion, CHEONBUGYEONG_ENGINE_VERSION);
+  assert(rep.heavenCosmicAlignmentScore >= 0 && rep.heavenCosmicAlignmentScore <= 100);
+  assert(rep.earthGroundingStabilityScore >= 0 && rep.earthGroundingStabilityScore <= 100);
+  assert(rep.humanHarmonizingSovereigntyScore >= 0 && rep.humanHarmonizingSovereigntyScore <= 100);
+  assert(rep.sungMyungJungTrueTrinityScore >= 0 && rep.sungMyungJungTrueTrinityScore <= 100);
+  assert(rep.threeTrainingsMasteryScore >= 0 && rep.threeTrainingsMasteryScore <= 100);
+  assert(rep.yongbyeonBudongbonIntegrity >= 0 && rep.yongbyeonBudongbonIntegrity <= 100);
+  assert(rep.seongtongGwangmyeongIllumination >= 0 && rep.seongtongGwangmyeongIllumination <= 100);
+  assert(rep.hongikInkanManifestationCapacity >= 0 && rep.hongikInkanManifestationCapacity <= 100);
+  assert(rep.primaryHexagramGua.verseKo.length > 0);
+  const prompt = formatKoreanCheonbugyeongEightyOnePrompt(rep);
+  assert(prompt.includes('단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명'));
+  assert(prompt.includes(rep.primaryHexagramGua.verseHanja));
+});
+
+test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polarities, Nava Yoni and Nava Avarana', () => {
+  const rep = calculateHinduSriYantraSacredGeometry(profile);
+  assert.equal(rep.engineVersion, SRI_YANTRA_ENGINE_VERSION);
+  assert(rep.shivaAscendingConsciousnessScore >= 0 && rep.shivaAscendingConsciousnessScore <= 100);
+  assert(rep.shaktiDescendingGraceScore >= 0 && rep.shaktiDescendingGraceScore <= 100);
+  assert(rep.navaYoniInterlockingHarmony >= 0 && rep.navaYoniInterlockingHarmony <= 100);
+  assert(rep.binduTranscendentalAwakeningScore >= 0 && rep.binduTranscendentalAwakeningScore <= 100);
+  assert(rep.sarvaArthaManifestationIndex >= 0 && rep.sarvaArthaManifestationIndex <= 100);
+  assert(rep.sarvaRogaharaHealingPower >= 0 && rep.sarvaRogaharaHealingPower <= 100);
+  assert(rep.sarvaAnandamayaBlissAlignment >= 0 && rep.sarvaAnandamayaBlissAlignment <= 100);
+  assert(rep.primaryAvaranaChakra.level >= 1 && rep.primaryAvaranaChakra.level <= 9);
+  const prompt = formatHinduSriYantraSacredGeometryPrompt(rep);
+  assert(prompt.includes('힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학'));
+  assert(prompt.includes(rep.primaryAvaranaChakra.sanskritName));
+});
+
+test('Lakota Medicine Wheel Wakan Tanka Engine: calculates 4 sacred directions, balance index and Mitakuye Oyasin', () => {
+  const rep = calculateLakotaMedicineWheel(profile);
+  assert.equal(rep.engineVersion, LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION);
+  assert(rep.eastVisionClarityScore >= 0 && rep.eastVisionClarityScore <= 100);
+  assert(rep.southPassionTrustScore >= 0 && rep.southPassionTrustScore <= 100);
+  assert(rep.westIntrospectionHealingScore >= 0 && rep.westIntrospectionHealingScore <= 100);
+  assert(rep.northEnduranceWisdomScore >= 0 && rep.northEnduranceWisdomScore <= 100);
+  assert(rep.medicineWheelBalanceIndex >= 0 && rep.medicineWheelBalanceIndex <= 100);
+  assert(rep.mitakuyeOyasinInterconnectedness >= 0 && rep.mitakuyeOyasinInterconnectedness <= 100);
+  assert(rep.primarySacredDirection.lakotaTerm.length > 0);
+  assert(rep.activeCardinalVirtue.lakotaName.length > 0);
+  const prompt = formatLakotaMedicineWheelPrompt(rep);
+  assert(prompt.includes('라코타 수(Lakota Sioux)족 와칸 탕카 & 4대 방향 성스러운 의약 휠(Medicine Wheel)'));
+  assert(prompt.includes(rep.primarySacredDirection.lakotaTerm));
 });
 
 
