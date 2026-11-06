@@ -199,6 +199,9 @@ import { calculateHopiFourWorldsKachina, formatHopiFourWorldsPrompt, type HopiFo
 import { calculateDonghakCheondoismCheonju, formatDonghakCheondoismCheonjuPrompt, type DonghakCheonjuReport, DONGHAK_CHEONDOISM_VERSION } from './koreanDonghakCheondoismCheonjuEngine';
 import { calculateIncaAndeanThreePachaAyni, formatIncaAndeanThreePachaAyniPrompt, type IncaAndeanPachaReport, INCA_ANDEAN_PACHA_VERSION } from './incaAndeanThreePachaAyniEngine';
 import { calculateShangOracleBoneDivination, formatShangOracleBoneDivinationPrompt, type ShangOracleBoneReport, SHANG_ORACLE_BONE_VERSION } from './shangOracleBoneDivinationEngine';
+import { calculateKoreanCheonbugyeongEightyOne, formatKoreanCheonbugyeongEightyOnePrompt, type CheonbugyeongEightyOneReport, CHEONBUGYEONG_ENGINE_VERSION } from './koreanCheonbugyeongEightyOneCosmicEngine';
+import { calculateHinduSriYantraSacredGeometry, formatHinduSriYantraSacredGeometryPrompt, type SriYantraSacredGeometryReport, SRI_YANTRA_ENGINE_VERSION } from './hinduSriYantraSacredGeometryEngine';
+import { calculateLakotaMedicineWheel, formatLakotaMedicineWheelPrompt, type LakotaMedicineWheelReport, LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION } from './lakotaMedicineWheelWakanTankaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -418,6 +421,9 @@ export interface DeterministicEngineReport {
   donghakCheondoismCheonjuResult?: DonghakCheonjuReport | null;
   incaAndeanThreePachaAyniResult?: IncaAndeanPachaReport | null;
   shangOracleBoneDivinationResult?: ShangOracleBoneReport | null;
+  cheonbugyeongEightyOneResult?: CheonbugyeongEightyOneReport | null;
+  hinduSriYantraResult?: SriYantraSacredGeometryReport | null;
+  lakotaMedicineWheelResult?: LakotaMedicineWheelReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2475,6 +2481,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 171. 한국 고대 단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명 엔진
+  const cheonbugyeongEightyOneResult = (() => {
+    try {
+      return calculateKoreanCheonbugyeongEightyOne(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 172. 고대 인도 탄트라 스리 얀트라 9대 나바요니 교차 삼각형 & 바인두 9단계 아바라나 엔진
+  const hinduSriYantraResult = (() => {
+    try {
+      return calculateHinduSriYantraSacredGeometry(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 173. 북미 원주민 라코타 수족 와칸 탕카 & 4대 방향 성스러운 의약 휠(Medicine Wheel) 엔진
+  const lakotaMedicineWheelResult = (() => {
+    try {
+      return calculateLakotaMedicineWheel(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2680,6 +2713,9 @@ export function runDeterministicEngine(params: {
     donghakCheondoismCheonjuResult,
     incaAndeanThreePachaAyniResult,
     shangOracleBoneDivinationResult,
+    cheonbugyeongEightyOneResult,
+    hinduSriYantraResult,
+    lakotaMedicineWheelResult,
     tools: toolsMap,
   };
 }
@@ -2878,6 +2914,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'donghakCheondoismCheonju', nameKo: '동학 시천주 지기금지 인내천 조화', icon: '🕊️', category: 'deep_master' },
   { key: 'incaAndeanThreePachaAyni', nameKo: '잉카 안데스 3대 파차 아이니 호혜', icon: '🦙', category: 'deep_master' },
   { key: 'shangOracleBoneDivination', nameKo: '은나라 갑골문 신탁 복사 정인 균열', icon: '🐢', category: 'deep_master' },
+  { key: 'cheonbugyeongEightyOne', nameKo: '단군 단학 천부경 81자 삼일신고 성통광명', icon: '☀️', category: 'deep_master' },
+  { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master' },
+  { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3440,5 +3479,8 @@ ${report.balineseTriHitaKaranaResult && shouldIncludeEngine('balineseTriHitaKara
 ${report.hopiFourWorldsKachinaResult && shouldIncludeEngine('hopiFourWorldsKachina', options) ? '\n' + formatHopiFourWorldsPrompt(report.hopiFourWorldsKachinaResult) : ''}
 ${report.donghakCheondoismCheonjuResult && shouldIncludeEngine('donghakCheondoismCheonju', options) ? '\n' + formatDonghakCheondoismCheonjuPrompt(report.donghakCheondoismCheonjuResult) : ''}
 ${report.incaAndeanThreePachaAyniResult && shouldIncludeEngine('incaAndeanThreePachaAyni', options) ? '\n' + formatIncaAndeanThreePachaAyniPrompt(report.incaAndeanThreePachaAyniResult) : ''}
-${report.shangOracleBoneDivinationResult && shouldIncludeEngine('shangOracleBoneDivination', options) ? '\n' + formatShangOracleBoneDivinationPrompt(report.shangOracleBoneDivinationResult) : ''}`;
+${report.shangOracleBoneDivinationResult && shouldIncludeEngine('shangOracleBoneDivination', options) ? '\n' + formatShangOracleBoneDivinationPrompt(report.shangOracleBoneDivinationResult) : ''}
+${report.cheonbugyeongEightyOneResult && shouldIncludeEngine('cheonbugyeongEightyOne', options) ? '\n' + formatKoreanCheonbugyeongEightyOnePrompt(report.cheonbugyeongEightyOneResult) : ''}
+${report.hinduSriYantraResult && shouldIncludeEngine('hinduSriYantra', options) ? '\n' + formatHinduSriYantraSacredGeometryPrompt(report.hinduSriYantraResult) : ''}
+${report.lakotaMedicineWheelResult && shouldIncludeEngine('lakotaMedicineWheel', options) ? '\n' + formatLakotaMedicineWheelPrompt(report.lakotaMedicineWheelResult) : ''}`;
 }
