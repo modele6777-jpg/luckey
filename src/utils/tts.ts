@@ -99,10 +99,8 @@ export interface TTSAudioData {
 const ttsCache = new Map<string, Promise<TTSAudioData | null>>();
 interface SpeechLookahead { text: string; voice?: string; emotion?: string }
 const playbackLookahead = new Map<string, SpeechLookahead>();
-const deviceFallbackSessions = new Set<string>();
-let finishDeviceSpeech: ((completed: boolean) => void) | null = null;
 function prepareNextSpeech(session: string): void {
-  if (ttsState.activeSessionId !== session || ttsState.isPaused || deviceFallbackSessions.has(session)) return;
+  if (ttsState.activeSessionId !== session || ttsState.isPaused) return;
   const next = playbackLookahead.get(session);
   if (!next) return;
   // Match the next actual request even when a legacy reader supplies a long chunk.
@@ -199,7 +197,7 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
             throw new TTSAudioRequestError(`음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 ${waitSec}초 뒤 다시 눌러 주세요.`, 429, 'MEDIA_RATE_LIMIT');
           }
           if (failure?.code === 'TTS_PROVIDER_UNAVAILABLE') {
-            throw new TTSAudioRequestError('서버 음성 연결을 사용할 수 없어 기기 음성으로 전환합니다.', response.status, 'TTS_PROVIDER_UNAVAILABLE');
+            throw new TTSAudioRequestError('서버 음성을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.', response.status, 'TTS_PROVIDER_UNAVAILABLE');
           }
           if (response.status === 503 && (failure?.code === 'TTS_NOT_CONFIGURED' || /API.*키|키.*설정/.test(String(failure?.error || '')))) {
             throw new TTSAudioRequestError('AI 음성 API 키가 설정되지 않았습니다. 사이트의 API 설정을 확인해 주세요.', 503, 'TTS_NOT_CONFIGURED');
@@ -245,7 +243,8 @@ function ensureTTSLifecycle() {
       stopTTS();
     }
   });
-}
+}
+
 
 const retiredTTSSessions = new Set<string>();
 function waitForTTSResume(session: string): Promise<boolean> {
@@ -264,21 +263,12 @@ function waitForTTSResume(session: string): Promise<boolean> {
 export const pauseTTS = (): void => {
   if (!ttsState.activeSessionId || ttsState.isPaused) return;
   updateTTSState({ isSpeaking: false, isLoading: false, isPaused: true });
-  if (deviceSpeechSession) {
-    try { window.speechSynthesis?.pause(); } catch (_) {}
-  }
   pauseTTSAudio();
   pauseTTSSession();
 };
 
 export const resumeTTS = (): void => {
   if (!ttsState.activeSessionId || !ttsState.isPaused) return;
-  if (deviceSpeechSession) {
-    try { window.speechSynthesis?.resume(); } catch (_) {}
-    updateTTSState({ isPaused: false, isSpeaking: true, isLoading: false });
-    resumeTTSSession();
-    return;
-  }
   resumeTTSAudio();
   const speaking = isTTSAudioPlaying();
   updateTTSState({ isPaused: false, isSpeaking: speaking, isLoading: !speaking });
@@ -287,9 +277,6 @@ export const resumeTTS = (): void => {
 
 export const stopTTS = () => {
   playbackLookahead.clear();
-  finishDeviceSpeech?.(false);
-  finishDeviceSpeech = null;
-  deviceFallbackSessions.clear();
   if (ttsState.activeSessionId) {
     retiredTTSSessions.add(ttsState.activeSessionId);
     if (retiredTTSSessions.size > 256) retiredTTSSessions.delete(retiredTTSSessions.values().next().value!);
@@ -316,119 +303,9 @@ export const stopTTS = () => {
   });
   stopTTSPlayback();
   clearTTSSession();
-  deviceSpeechSession = null;
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
 };
 
 
-// 🔊 /api/ai/tts 장애 시에도 낭독이 끊기지 않도록 브라우저 내장 한국어 음성으로 우회합니다.
-let deviceSpeechSession: string | null = null;
-
-/**
- * 🎙️ 기기에 설치된 한국어 보이스를 전수 검사해 가장 고화질인 보이스를 고릅니다.
- * Siri(아이폰/Mac), Natural, Neural, Premium/Enhanced, Google 고음질 순으로 우선합니다.
- */
-function pickBestKoreanDeviceVoice(synth: SpeechSynthesis): SpeechSynthesisVoice | null {
-  try {
-    const voices = synth.getVoices().filter(voice => /^ko/i.test(voice?.lang || ''));
-    if (!voices.length) return null;
-    const score = (voice: SpeechSynthesisVoice): number => {
-      const name = String(voice?.name || '');
-      let value = 0;
-      if (/natural/i.test(name)) value += 100;        // Microsoft Natural / iOS 17+ Natural
-      if (/neural/i.test(name)) value += 90;           // 신경망 보이스
-      if (/siri/i.test(name)) value += 85;             // Siri 보이스
-      if (/premium|enhanced|고품질|고화질/i.test(name)) value += 75; // Siri 다운로드 보이스 (Yuna 등)
-      if (/google/i.test(name)) value += 65;           // Google 고음질
-      if (voice?.localService) value += 12;            // 오프라인 내장 보이스 (네트워크 끊김 없음)
-      if (/^ko-KR$/i.test(String(voice?.lang || ''))) value += 6;
-      if (/yuna|suan|kangmi|seora|hyunsu|sunhi|injoon|gyeongmin|jimin/i.test(name)) value += 20; // 알려진 한국어 고화질 보이스
-      return value;
-    };
-    return voices.sort((a, b) => score(b) - score(a))[0] || null;
-  } catch (_) {
-    return null;
-  }
-}
-
-/** iOS 등에서는 getVoices()가 비동기로 채워지므로, 비어 있으면 짧게 기다립니다. */
-function waitForDeviceVoices(synth: SpeechSynthesis, waitMs = 600): Promise<SpeechSynthesisVoice[]> {
-  try {
-    const voices = synth.getVoices();
-    if (voices.length) return Promise.resolve(voices);
-  } catch (_) {}
-  return new Promise(resolve => {
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      try { synth.removeEventListener?.('voiceschanged', finish); } catch (_) {}
-      try { resolve(synth.getVoices()); } catch (_) { resolve([]); }
-    };
-    try { synth.addEventListener?.('voiceschanged', finish); } catch (_) {}
-    setTimeout(finish, waitMs);
-  });
-}
-
-function speakWithDeviceSpeech(text: string, session: string | undefined, isSequenceChunk: boolean, options?: TTSPlaybackOptions): Promise<boolean> {
-  if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return Promise.resolve(false);
-  const synth = window.speechSynthesis;
-  finishDeviceSpeech?.(false);
-  synth.cancel();
-  const sessionId = session || 'device';
-  const sentences = splitSpeechIntoSentences(text);
-  const units = sentences.length ? sentences : [text];
-  deviceSpeechSession = sessionId;
-  return new Promise(resolve => {
-    let settled = false;
-    const isCurrent = () => !settled && deviceSpeechSession === sessionId && (!session || ttsState.activeSessionId === session);
-    const finish = (completed: boolean) => {
-      if (settled) return;
-      settled = true;
-      if (finishDeviceSpeech === finish) finishDeviceSpeech = null;
-      if (deviceSpeechSession === sessionId) deviceSpeechSession = null;
-      resolve(completed);
-    };
-    finishDeviceSpeech = finish;
-    const speakUnit = (index: number, voice: SpeechSynthesisVoice | null) => {
-      if (!isCurrent()) { finish(false); return; }
-      updateTTSState({ isLoading: false, isSpeaking: true, currentSentence: units[index], activeSentence: units[index] });
-      setTTSSessionActive(units[index]);
-      const utterance = new SpeechSynthesisUtterance(units[index]);
-      utterance.lang = 'ko-KR';
-      if (voice) utterance.voice = voice;
-      utterance.rate = 0.97; utterance.pitch = 1; utterance.volume = 1;
-      utterance.onend = () => {
-        if (!isCurrent()) { finish(false); return; }
-        if (index + 1 < units.length) {
-          // The utterance end event, not a timer, advances device speech.
-          void waitForTTSResume(sessionId).then(resumed => resumed ? speakUnit(index + 1, voice) : finish(false));
-        } else {
-          finish(true);
-          if (isSequenceChunk) updateTTSState({ isSpeaking: false, isLoading: false });
-          else {
-            stopTTS();
-            if (!options?.skipCompletionChime && !options?.isChatMode) {
-              try { playAiResultNotification(); } catch { /* optional chime */ }
-            }
-          }
-        }
-      };
-      utterance.onerror = () => finish(false);
-      try { synth.speak(utterance); } catch { finish(false); }
-    };
-    setTTSSessionActive(units[0]);
-    updateTTSState({ isLoading: false, isSpeaking: true });
-    void waitForDeviceVoices(synth).then(async voices => {
-      if (!await waitForTTSResume(sessionId)) { finish(false); return; }
-      if (!isCurrent()) { finish(false); return; }
-      const best = pickBestKoreanDeviceVoice({ getVoices: () => voices } as SpeechSynthesis);
-      speakUnit(0, best);
-    }).catch(() => finish(false));
-  });
-}
 export function normalizeTextForSpeech(text: string): string {
   return prepareNaturalSpeechText(text);
 }
@@ -539,7 +416,6 @@ export const playTTS = async (
     }
   }
 
-  const useDeviceForChunk = deviceFallbackSessions.has(sessionToVerify!);
   try {
     // Synchronously unlock audio during user gesture (required for mobile iOS/Android WebAudio playback)
     try {
@@ -551,11 +427,6 @@ export const playTTS = async (
     updateTTSState({ isLoading: !ttsState.isPaused, isSpeaking: false, activeText: cleanText,
       currentSentence: initialSubSentence, activeSentence: initialSubSentence,
       ...(fullTextReference ? { activeFullText: fullTextReference } : {}) });
-    if (useDeviceForChunk) {
-      const completed = await speakWithDeviceSpeech(cleanText, sessionToVerify, isSequenceChunk, options);
-      if (completed || ttsState.activeSessionId !== sessionToVerify) return;
-      throw new Error('기기 음성 재생이 중단되었습니다. 다시 듣기를 눌러 주세요.');
-    }
     let data: TTSAudioData | undefined;
     for (let attempt = 0; attempt < 2; attempt++) {
       if (ttsState.activeSessionId !== sessionToVerify) return;
@@ -627,18 +498,6 @@ export const playTTS = async (
     throw new Error('No audio content returned');
   } catch (error) {
     if (sessionToVerify && ttsState.activeSessionId !== sessionToVerify) return;
-
-    // 🔊 /api/ai/tts 실패(네트워크 오류, 5xx 등) 시에도 소리가 끊기지 않도록
-    // 브라우저 내장 한국어 음성(speechSynthesis)으로 우회 낭독합니다.
-    if (!useDeviceForChunk) {
-      deviceFallbackSessions.add(sessionToVerify!);
-      const completed = await speakWithDeviceSpeech(cleanText, sessionToVerify, isSequenceChunk, options);
-      if (ttsState.activeSessionId !== sessionToVerify) return;
-      if (completed) {
-        console.warn('[TTS] AI audio unavailable; device speech completed this chunk.', error);
-        return;
-      }
-    }
 
     stopTTS();
     console.warn('[TTS] AI audio unavailable; device speech is disabled.', error);
