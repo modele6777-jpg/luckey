@@ -69,7 +69,7 @@ const TOOL_KO_NAMES: Record<DivinationToolId, string> = {
 /**
  * 사용자 질문 텍스트를 분석하여 의도(Intent)와 최적 도구 조합(RoutePlan)을 산출합니다.
  */
-export function analyzeQuestionIntent(text: string, isMasterRequested = false): AgentRoutePlan {
+export function analyzeQuestionIntent(text: string, isMasterRequested = false, allowMaster = true): AgentRoutePlan {
   const clean = (text || '').trim();
   const lower = clean.toLowerCase();
 
@@ -92,10 +92,10 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false): 
   }
 
   // 1. 올인원 종합 마스터 모드 요청 판별
-  if (
+  if (allowMaster && (
     isMasterRequested ||
     /마스터\s*모드|올인원|15대|15가지|총동원|전체\s*진단|종합\s*분석|전체\s*비교|모든\s*도구/.test(lower)
-  ) {
+  )) {
     return {
       intent: 'master_blueprint',
       intentKoName: '올인원 마스터 종합 청사진',
@@ -264,8 +264,17 @@ export function routeAndExecute(params: {
   text: string;
   profile?: UserProfile | null;
   isMasterRequested?: boolean;
+  allowMaster?: boolean;
+  targetTools?: DivinationToolId[];
 }): RoutedExecutionResult {
-  const routePlan = analyzeQuestionIntent(params.text, params.isMasterRequested);
+  const routePlan = analyzeQuestionIntent(params.text, params.isMasterRequested, params.allowMaster);
+  if (!routePlan.isMasterMobilization && params.targetTools?.length) {
+    routePlan.targetTools = [...new Set(params.targetTools)];
+    routePlan.isCasual = false;
+    routePlan.intentKoName = '지정한 도구로 상담';
+    routePlan.routingReason = '사용자가 명시한 도구를 우선 적용';
+    routePlan.suggestedFocusPrompt = '지정한 도구의 실제 결과와 계산 한계 안에서 질문에 답해줘.';
+  }
 
   if (routePlan.isCasual) {
     return {

@@ -1,4 +1,4 @@
-import { isMasterTierModel, LUCY_MASTER_FALLBACK_MODELS } from '../src/lib/lucyModelPolicy.ts';
+import { isMasterTierModel, LUCY_MASTER_FALLBACK_MODELS, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
 import { readFileSync } from "node:fs";
@@ -87,24 +87,12 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
       return res.status(400).json({ error: "A final user message is required" });
     }
 
-    let response;
-    let modelUsed = model;
     const generationConfig = { ...(systemPrompt ? { systemInstruction: systemPrompt } : {}), ...(Number.isInteger(req.body.max_tokens) ? { maxOutputTokens: Math.min(32768, Math.max(1, req.body.max_tokens)) } : {}) };
-    try {
-      response = await ai.models.generateContent({
-        model,
-        contents,
-        config: generationConfig
-      });
-    } catch (modelErr: any) {
-      modelUsed = isMasterTierModel(model) ? LUCY_MASTER_FALLBACK_MODELS.find(candidate => candidate !== model)! : 'gemini-flash-lite-latest';
-      console.warn(`[Proxy] Model ${model} failed; trying ${modelUsed}.`);
-      response = await ai.models.generateContent({
-        model: modelUsed,
-        contents,
-        config: generationConfig
-      });
-    }
+    const { response, modelUsed } = await requestWithModelFallback(
+      model,
+      isMasterTierModel(model) ? LUCY_MASTER_FALLBACK_MODELS : ['gemini-flash-lite-latest'],
+      candidate => ai.models.generateContent({ model: candidate, contents, config: generationConfig }),
+    );
 
     const replyText = response.text || "";
 

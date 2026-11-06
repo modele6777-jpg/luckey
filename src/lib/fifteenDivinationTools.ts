@@ -371,7 +371,7 @@ export interface SelectedDivinationToolsResult {
  */
 export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile, questionText?: string): string {
   const report = runDeterministicEngine({ profile, question: questionText, forceAllTools: true, coreOnly: true, reviewAll: true });
-  return formatDeterministicEnginePrompt(report, { isMasterMobilization: true });
+  return buildDivinationCapabilityPrompt(Object.keys(FIFTEEN_DIVINATION_TOOLS) as DivinationToolId[]) + '\n독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마.\n' + formatDeterministicEnginePrompt(report, { isMasterMobilization: true });
 }
 
 /**
@@ -389,17 +389,28 @@ export function selectOptimalDivinationTools(
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();
 
-  const isMasterDetected = (
+  const isMasterDetected = policy.allowMaster !== false && (
     Boolean(isMasterMode) ||
     activeChannels.length === 7 ||
     /마스터\s*모드|올인원|15개\s*도구|15대\s*도구|15가지\s*도구|총동원|전부\s*비교|종합\s*비교/.test(lower)
   );
+
+  // Honor named traditions before inferring a topic. Qualified astrology names
+  // must not accidentally match the generic Western astrology keyword.
+  const westernText = lower.replace(/숙요\s*점성술|베딕\s*점성술|인도\s*점성술|태국\s*점성술|타이\s*점성술|미얀마\s*점성술|요일\s*점성술|vedic\s+astrology|thai\s+astrology/gi, '');
+  const explicitTools = Object.values(FIFTEEN_DIVINATION_TOOLS)
+    .filter(tool => tool.explicitRegex.test(tool.id === 'astrology' ? westernText : lower)
+      || (tool.id === 'vedic' && /vedic\s+astrology/i.test(lower))
+      || (tool.id === 'thai_astrology' && /thai\s+astrology/i.test(lower)))
+    .map(tool => tool.id).slice(0, 3);
 
   // 🧭 스마트 에이전트 라우터 가동: 질문 의도 분석 및 최적 도구 선별 & 수리 엔진 실행
   const routed = routeAndExecute({
     text: clean,
     profile,
     isMasterRequested: isMasterDetected,
+    allowMaster: policy.allowMaster,
+    targetTools: explicitTools.length ? explicitTools : undefined,
   });
 
   // 0. 가벼운 일상 인사/단순 맞장구일 때 (활성 채널이 없는 경우)
@@ -423,7 +434,7 @@ export function selectOptimalDivinationTools(
       isCasualMessage: false,
       isMasterMobilization: true,
       selectionReason: '질문에 맞춰 계산한 결과만 비교 분석',
-      promptInjection: routed.promptInjection
+      promptInjection: buildDivinationCapabilityPrompt(allTools.map(tool => tool.id)) + '\n독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마.\n' + routed.promptInjection
     };
   }
 
@@ -433,7 +444,7 @@ export function selectOptimalDivinationTools(
     .filter(Boolean);
 
   // 활성 채널이 단일/부분 융합으로 설정된 경우 보강
-  if (activeChannels.length > 0 && selectedTools.length < 3) {
+  if (!explicitTools.length && activeChannels.length > 0 && selectedTools.length < 3) {
     for (const ch of activeChannels) {
       const themeCfg = THEME_PRIMARY_DIVINATION_TOOLS[ch];
       if (themeCfg) {
@@ -453,7 +464,7 @@ export function selectOptimalDivinationTools(
     isCasualMessage: false,
     isMasterMobilization: false,
     selectionReason: `${routed.routePlan.intentKoName} (${routed.toolsForBadge.slice(0, 3).join(' + ')})`,
-    promptInjection: routed.promptInjection
+    promptInjection: buildDivinationCapabilityPrompt(routed.routePlan.targetTools) + '\n' + routed.promptInjection
   };
 }
 
