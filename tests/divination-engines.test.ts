@@ -189,6 +189,9 @@ import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, CHOE_HYE
 import { calculateZoroastrianAmeshaSpentas, formatZoroastrianAmeshaSpentasPrompt, ZOROASTRIAN_AMESHA_SPENTAS_VERSION } from '../src/lib/divination/ancientPersianZoroastrianAmeshaSpentasEngine';
 import { calculateDelphicChilon, formatDelphicChilonPrompt, DELPHIC_CHILON_VERSION } from '../src/lib/divination/ancientGreekDelphicChilonKnowThyselfEngine';
 import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, JEONG_YAKYONG_MONGMIN_VERSION } from '../src/lib/divination/koreanJeongYakyongMongminSimseoEngine';
+import { calculateLaoziDaodejing, formatLaoziDaodejingPrompt, LAOZI_DAODEJING_VERSION } from '../src/lib/divination/chineseLaoziDaodejingWaterWayEngine';
+import { calculateAureliusMeditations, formatAureliusMeditationsPrompt, AURELIUS_MEDITATIONS_VERSION } from '../src/lib/divination/romanMarcusAureliusMeditationsEngine';
+import { calculateYulgokGyeokmong, formatYulgokGyeokmongPrompt, YULGOK_GYEOKMONG_VERSION } from '../src/lib/divination/koreanYulgokGyeokmongYogyeolEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -4096,6 +4099,48 @@ test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integr
   const prompt = formatJeongYakyongMongminPrompt(rep);
   assert(prompt.includes('다산 정약용 선생 《목민심서(牧民心書)》'));
   assert(prompt.includes(rep.activeOfficialStage.stageNameKo));
+});
+
+test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adaptability, wuwei action and contentment', () => {
+  const rep = calculateLaoziDaodejing(profile);
+  assert.equal(rep.engineVersion, LAOZI_DAODEJING_VERSION);
+  assert(rep.waterYieldingAdaptabilityScore >= 0 && rep.waterYieldingAdaptabilityScore <= 100);
+  assert(rep.wuweiEffortlessActionForce >= 0 && rep.wuweiEffortlessActionForce <= 100);
+  assert(rep.harmoniousLightSofteningIndex >= 0 && rep.harmoniousLightSofteningIndex <= 100);
+  assert(rep.contentmentNonGraspingPower >= 0 && rep.contentmentNonGraspingPower <= 100);
+  assert(rep.greatVesselPatienceMaturity >= 0 && rep.greatVesselPatienceMaturity <= 100);
+  assert(rep.activeDaodejingStage.stageNameHanja.length > 0);
+  const prompt = formatLaoziDaodejingPrompt(rep);
+  assert(prompt.includes('고대 중국 노자(老子) 《도덕경(道德經)》'));
+  assert(prompt.includes(rep.activeDaodejingStage.stageNameKo));
+});
+
+test('Roman Marcus Aurelius Meditations Engine: calculates inner citadel strength, logos harmony and amor fati', () => {
+  const rep = calculateAureliusMeditations(profile);
+  assert.equal(rep.engineVersion, AURELIUS_MEDITATIONS_VERSION);
+  assert(rep.innerCitadelInviolableStrength >= 0 && rep.innerCitadelInviolableStrength <= 100);
+  assert(rep.logosCosmicReasonHarmony >= 0 && rep.logosCosmicReasonHarmony <= 100);
+  assert(rep.amorFatiProvidenceEmbrace >= 0 && rep.amorFatiProvidenceEmbrace <= 100);
+  assert(rep.mementoMoriTranquilClarity >= 0 && rep.mementoMoriTranquilClarity <= 100);
+  assert(rep.cosmopolisCivicDutyCommitment >= 0 && rep.cosmopolisCivicDutyCommitment <= 100);
+  assert(rep.activeAureliusStage.stageNameGreek.length > 0);
+  const prompt = formatAureliusMeditationsPrompt(rep);
+  assert(prompt.includes('고대 로마 철인 황제 마르쿠스 아우렐리우스 《명상록(Meditations)》'));
+  assert(prompt.includes(rep.activeAureliusStage.stageNameKo));
+});
+
+test('Korean Yulgok Yi I Gyeokmong Yogyeol Engine: calculates noble aspiration ipji, habit reform and nine mindfulness manners', () => {
+  const rep = calculateYulgokGyeokmong(profile);
+  assert.equal(rep.engineVersion, YULGOK_GYEOKMONG_VERSION);
+  assert(rep.ipjiNobleAspirationIndex >= 0 && rep.ipjiNobleAspirationIndex <= 100);
+  assert(rep.hyeokguseupOldHabitReformForce >= 0 && rep.hyeokguseupOldHabitReformForce <= 100);
+  assert(rep.guyongGusaComposureMindfulness >= 0 && rep.guyongGusaComposureMindfulness <= 100);
+  assert(rep.dokseoInquiryPracticalWisdom >= 0 && rep.dokseoInquiryPracticalWisdom <= 100);
+  assert(rep.jisinMoralDignitySincerity >= 0 && rep.jisinMoralDignitySincerity <= 100);
+  assert(rep.activeScholarStage.stageNameHanja.length > 0);
+  const prompt = formatYulgokGyeokmongPrompt(rep);
+  assert(prompt.includes('조선 율곡 이이(栗谷 李珥) 《격몽요결(擊蒙要訣)》'));
+  assert(prompt.includes(rep.activeScholarStage.stageNameKo));
 });
 
 

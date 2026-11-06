@@ -226,6 +226,9 @@ import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, type Cho
 import { calculateZoroastrianAmeshaSpentas, formatZoroastrianAmeshaSpentasPrompt, type ZoroastrianAmeshaSpentasResult, ZOROASTRIAN_AMESHA_SPENTAS_VERSION } from './ancientPersianZoroastrianAmeshaSpentasEngine';
 import { calculateDelphicChilon, formatDelphicChilonPrompt, type DelphicChilonResult, DELPHIC_CHILON_VERSION } from './ancientGreekDelphicChilonKnowThyselfEngine';
 import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, type JeongYakyongMongminResult, JEONG_YAKYONG_MONGMIN_VERSION } from './koreanJeongYakyongMongminSimseoEngine';
+import { calculateLaoziDaodejing, formatLaoziDaodejingPrompt, type LaoziDaodejingResult, LAOZI_DAODEJING_VERSION } from './chineseLaoziDaodejingWaterWayEngine';
+import { calculateAureliusMeditations, formatAureliusMeditationsPrompt, type AureliusMeditationsResult, AURELIUS_MEDITATIONS_VERSION } from './romanMarcusAureliusMeditationsEngine';
+import { calculateYulgokGyeokmong, formatYulgokGyeokmongPrompt, type YulgokGyeokmongResult, YULGOK_GYEOKMONG_VERSION } from './koreanYulgokGyeokmongYogyeolEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -471,6 +474,9 @@ export interface DeterministicEngineReport {
   zoroastrianAmeshaSpentasResult?: ZoroastrianAmeshaSpentasResult | null;
   delphicChilonResult?: DelphicChilonResult | null;
   jeongYakyongMongminResult?: JeongYakyongMongminResult | null;
+  laoziDaodejingResult?: LaoziDaodejingResult | null;
+  aureliusMeditationsResult?: AureliusMeditationsResult | null;
+  yulgokGyeokmongResult?: YulgokGyeokmongResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2829,6 +2835,33 @@ try {
     }
   })()));
 
+  // 195. 고대 중국 노자 《도덕경》 81장 상선약수 & 무위자연 엔진
+  const laoziDaodejingResult = calculateSupplement('laoziDaodejingResult', () => ((() => {
+    try {
+      return calculateLaoziDaodejing(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 196. 고대 로마 마르쿠스 아우렐리우스 《명상록》 내면의 성채 & 로고스 엔진
+  const aureliusMeditationsResult = calculateSupplement('aureliusMeditationsResult', () => ((() => {
+    try {
+      return calculateAureliusMeditations(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 197. 조선 율곡 이이 선생 《격몽요결》 입지·혁구습·구용구사 수신 엔진
+  const yulgokGyeokmongResult = calculateSupplement('yulgokGyeokmongResult', () => ((() => {
+    try {
+      return calculateYulgokGyeokmong(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -3060,6 +3093,9 @@ try {
     zoroastrianAmeshaSpentasResult,
     delphicChilonResult,
     jeongYakyongMongminResult,
+    laoziDaodejingResult,
+    aureliusMeditationsResult,
+    yulgokGyeokmongResult,
     tools: toolsMap,
   };
 }
@@ -3282,6 +3318,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'zoroastrianAmeshaSpentasLight', nameKo: '페르시아 조로아스터교 6대 신성불멸자 빛의조화', icon: '🔥', category: 'deep_master' },
   { key: 'delphicChilonSpartanModeration', nameKo: '델포이 7현인 스파르타 킬론 너자신을알라 중용절제', icon: '🏛️', category: 'deep_master' },
   { key: 'koreanJeongYakyongMongminSimseo', nameKo: '다산 정약용 목민심서 율기수신 애민청렴 공평무사', icon: '📜', category: 'deep_master' },
+  { key: 'laoziDaodejingWaterWay', nameKo: '노자 도덕경 81장 상선약수 화광동진 무위자연', icon: '☯️', category: 'deep_master' },
+  { key: 'romanMarcusAureliusMeditations', nameKo: '마르쿠스 아우렐리우스 명상록 내면의성채 아모르파티 로고스', icon: '🏛️', category: 'deep_master' },
+  { key: 'koreanYulgokGyeokmongYogyeol', nameKo: '율곡 이이 격몽요결 입지혁구습 구용구사 수신실천', icon: '📖', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3335,6 +3374,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanYulgokGyeokmongYogyeol',
+    'romanMarcusAureliusMeditations',
+    'laoziDaodejingWaterWay',
     'koreanJeongYakyongMongminSimseo',
     'delphicChilonSpartanModeration',
     'celticLughSamildanachAllArts',
@@ -3384,6 +3426,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'koreanYulgokGyeokmongYogyeol',
+    'laoziDaodejingWaterWay',
+    'romanMarcusAureliusMeditations',
     'koreanJeongYakyongMongminSimseo',
     'delphicChilonSpartanModeration',
     'ptahMemphiteHeartTongueCreation',
@@ -3434,6 +3479,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'koreanYulgokGyeokmongYogyeol',
+    'romanMarcusAureliusMeditations',
+    'laoziDaodejingWaterWay',
     'delphicChilonSpartanModeration',
     'zoroastrianAmeshaSpentasLight',
     'celticLughSamildanachAllArts',
@@ -3577,6 +3625,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'laoziDaodejingWaterWay',
+    'romanMarcusAureliusMeditations',
+    'koreanYulgokGyeokmongYogyeol',
     'zoroastrianAmeshaSpentasLight',
     'delphicChilonSpartanModeration',
     'koreanJeongYakyongMongminSimseo',
