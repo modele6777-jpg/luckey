@@ -210,6 +210,9 @@ import { calculateBaruchSpinozaEthicaConatus, formatBaruchSpinozaEthicaConatusPr
 import { calculateKantCategoricalImperative, formatKantCategoricalImperativePrompt, KANT_CATEGORICAL_IMPERATIVE_VERSION } from '../src/lib/divination/germanKantCategoricalImperativeSynthesisEngine';
 import { calculateUpanishadicTatTvamAsi, formatUpanishadicTatTvamAsiPrompt, UPANISHADIC_TAT_TVAM_ASI_VERSION } from '../src/lib/divination/indianUpanishadicTatTvamAsiEngine';
 import { calculateChoeHangiGihakUnwha, formatChoeHangiGihakUnwhaPrompt, CHOE_HANGI_GIHAK_UNWHA_VERSION } from '../src/lib/divination/koreanChoeHangiGihakUnwhaEngine';
+import { calculateSunTzuArtOfWarStrategy, formatSunTzuArtOfWarStrategyPrompt, SUNTZU_STRATEGY_VERSION } from '../src/lib/divination/ancientChineseSunTzuArtOfWarStrategyEngine';
+import { calculateFrenchDescartesCogito, formatFrenchDescartesCogitoPrompt, DESCARTES_COGITO_VERSION } from '../src/lib/divination/frenchDescartesCogitoClaraDistinctaEngine';
+import { calculateAncientIndianFourNobleTruths, formatAncientIndianFourNobleTruthsPrompt, FOUR_NOBLE_TRUTHS_VERSION } from '../src/lib/divination/ancientIndianEarlyBuddhistFourNobleTruthsEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4412,6 +4415,48 @@ test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong 
   const prompt = formatChoeHangiGihakUnwhaPrompt(rep);
   assert(prompt.includes('혜강 최한기 기학(氣學) & 신기통(神氣通) 운화 지표'));
   assert(prompt.includes(rep.activeGihakPrinciple.principleNameKo));
+});
+
+test('Sun Tzu Art of War Strategy Engine: calculates Five Factors, unfought victory, situational clarity, and water form', () => {
+  const rep = calculateSunTzuArtOfWarStrategy(profile);
+  assert.equal(rep.engineVersion, SUNTZU_STRATEGY_VERSION);
+  assert(rep.fiveFactorsHarmonyScore >= 0 && rep.fiveFactorsHarmonyScore <= 100);
+  assert(rep.unfoughtVictoryPowerScore >= 0 && rep.unfoughtVictoryPowerScore <= 100);
+  assert(rep.situationalClarityScore >= 0 && rep.situationalClarityScore <= 100);
+  assert(rep.waterFormFlexibilityScore >= 0 && rep.waterFormFlexibilityScore <= 100);
+  assert(rep.deceptiveTimingMasteryScore >= 0 && rep.deceptiveTimingMasteryScore <= 100);
+  assert(rep.focalFiveFactor.factorHanja.length > 0);
+  const prompt = formatSunTzuArtOfWarStrategyPrompt(rep);
+  assert(prompt.includes('손자병법 오사칠계 & 부전승 피실격허 전략 지표'));
+  assert(prompt.includes(rep.focalFiveFactor.factorHanja));
+});
+
+test('Descartes Cogito Clara Distincta Engine: calculates Cogito certainty, Clara et Distincta, and provisional moral resolve', () => {
+  const rep = calculateFrenchDescartesCogito(profile);
+  assert.equal(rep.engineVersion, DESCARTES_COGITO_VERSION);
+  assert(rep.cogitoPresenceCertaintyScore >= 0 && rep.cogitoPresenceCertaintyScore <= 100);
+  assert(rep.claraDistinctaClarityScore >= 0 && rep.claraDistinctaClarityScore <= 100);
+  assert(rep.methodicDoubtPurificationScore >= 0 && rep.methodicDoubtPurificationScore <= 100);
+  assert(rep.fourRulesReasoningScore >= 0 && rep.fourRulesReasoningScore <= 100);
+  assert(rep.provisionalMoralResolveScore >= 0 && rep.provisionalMoralResolveScore <= 100);
+  assert(rep.activeMethodRule.ruleNameFrench.length > 0);
+  const prompt = formatFrenchDescartesCogitoPrompt(rep);
+  assert(prompt.includes('데카르트 코기토 & 명석판명 방법서설 지표'));
+  assert(prompt.includes(rep.activeMethodRule.ruleNameFrench));
+});
+
+test('Early Buddhist Four Noble Truths Engine: calculates Four Noble Truths, Eightfold Path, Nirodha, and Sati presence', () => {
+  const rep = calculateAncientIndianFourNobleTruths(profile);
+  assert.equal(rep.engineVersion, FOUR_NOBLE_TRUTHS_VERSION);
+  assert(rep.fourNobleTruthsClarityScore >= 0 && rep.fourNobleTruthsClarityScore <= 100);
+  assert(rep.eightfoldPathBalanceScore >= 0 && rep.eightfoldPathBalanceScore <= 100);
+  assert(rep.cravingExtinctionNirodhaScore >= 0 && rep.cravingExtinctionNirodhaScore <= 100);
+  assert(rep.satiMindfulnessPresenceScore >= 0 && rep.satiMindfulnessPresenceScore <= 100);
+  assert(rep.middleWayMajjhimaScore >= 0 && rep.middleWayMajjhimaScore <= 100);
+  assert(rep.activeNobleTruth.truthHanja.length > 0);
+  const prompt = formatAncientIndianFourNobleTruthsPrompt(rep);
+  assert(prompt.includes('초기불교 사성제 & 팔정도 고집멸도 지표'));
+  assert(prompt.includes(rep.activeNobleTruth.truthHanja));
 });
 
 

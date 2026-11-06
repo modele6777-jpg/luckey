@@ -895,5 +895,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanChoeHangiGihakUnwha": {
     "field": "choeHangiGihakUnwhaResult",
     "traceKey": "choeHangiGihakUnwhaResult"
+  },
+  "ancientChineseSunTzuArtOfWarStrategy": {
+    "field": "sunTzuArtOfWarStrategyResult",
+    "traceKey": "sunTzuArtOfWarStrategyResult"
+  },
+  "frenchDescartesCogitoClaraDistincta": {
+    "field": "frenchDescartesCogitoResult",
+    "traceKey": "frenchDescartesCogitoResult"
+  },
+  "ancientIndianEarlyBuddhistFourNobleTruths": {
+    "field": "fourNobleTruthsResult",
+    "traceKey": "fourNobleTruthsResult"
   }
 };

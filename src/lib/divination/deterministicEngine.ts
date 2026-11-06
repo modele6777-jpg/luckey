@@ -247,6 +247,9 @@ import { calculateBaruchSpinozaEthicaConatus, formatBaruchSpinozaEthicaConatusPr
 import { calculateKantCategoricalImperative, formatKantCategoricalImperativePrompt, type KantCategoricalImperativeResult, KANT_CATEGORICAL_IMPERATIVE_VERSION } from './germanKantCategoricalImperativeSynthesisEngine';
 import { calculateUpanishadicTatTvamAsi, formatUpanishadicTatTvamAsiPrompt, type UpanishadicTatTvamAsiResult, UPANISHADIC_TAT_TVAM_ASI_VERSION } from './indianUpanishadicTatTvamAsiEngine';
 import { calculateChoeHangiGihakUnwha, formatChoeHangiGihakUnwhaPrompt, type ChoeHangiGihakUnwhaResult, CHOE_HANGI_GIHAK_UNWHA_VERSION } from './koreanChoeHangiGihakUnwhaEngine';
+import { calculateSunTzuArtOfWarStrategy, formatSunTzuArtOfWarStrategyPrompt, type SunTzuArtOfWarStrategyResult, SUNTZU_STRATEGY_VERSION } from './ancientChineseSunTzuArtOfWarStrategyEngine';
+import { calculateFrenchDescartesCogito, formatFrenchDescartesCogitoPrompt, type FrenchDescartesCogitoResult, DESCARTES_COGITO_VERSION } from './frenchDescartesCogitoClaraDistinctaEngine';
+import { calculateAncientIndianFourNobleTruths, formatAncientIndianFourNobleTruthsPrompt, type AncientIndianFourNobleTruthsResult, FOUR_NOBLE_TRUTHS_VERSION } from './ancientIndianEarlyBuddhistFourNobleTruthsEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -514,6 +517,9 @@ export interface DeterministicEngineReport {
   kantCategoricalImperativeResult?: KantCategoricalImperativeResult | null;
   upanishadicTatTvamAsiResult?: UpanishadicTatTvamAsiResult | null;
   choeHangiGihakUnwhaResult?: ChoeHangiGihakUnwhaResult | null;
+  sunTzuArtOfWarStrategyResult?: SunTzuArtOfWarStrategyResult | null;
+  frenchDescartesCogitoResult?: FrenchDescartesCogitoResult | null;
+  fourNobleTruthsResult?: AncientIndianFourNobleTruthsResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3062,6 +3068,33 @@ try {
     }
   })()));
 
+  // 216. 고대 중국 춘추전국시대 손무 손자병법 오사칠계 & 부전승 피실격허 전략 엔진
+  const sunTzuArtOfWarStrategyResult = calculateSupplement('sunTzuArtOfWarStrategyResult', () => ((() => {
+    try {
+      return calculateSunTzuArtOfWarStrategy(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 217. 근대 프랑스 르네 데카르트 방법서설 코기토 & 명석판명 지성 직관 엔진
+  const frenchDescartesCogitoResult = calculateSupplement('frenchDescartesCogitoResult', () => ((() => {
+    try {
+      return calculateFrenchDescartesCogito(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 218. 고대 인도 초기불교 석가모니 붓다 사성제 & 팔정도 고집멸도 중도해탈 엔진
+  const fourNobleTruthsResult = calculateSupplement('fourNobleTruthsResult', () => ((() => {
+    try {
+      return calculateAncientIndianFourNobleTruths(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3315,6 +3348,9 @@ try {
     kantCategoricalImperativeResult,
     upanishadicTatTvamAsiResult,
     choeHangiGihakUnwhaResult,
+    sunTzuArtOfWarStrategyResult,
+    frenchDescartesCogitoResult,
+    fourNobleTruthsResult,
     tools: toolsMap,
   };
 }
@@ -3558,6 +3594,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'germanKantCategoricalImperativeSynthesis', nameKo: '칸트 정언명령 목적의왕국 자율성 도덕법칙', icon: '⚖️', category: 'deep_master' },
   { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master' },
   { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
+  { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master' },
+  { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master' },
+  { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3665,6 +3704,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ancientChineseSunTzuArtOfWarStrategy',
+    'frenchDescartesCogitoClaraDistincta',
+    'ancientIndianEarlyBuddhistFourNobleTruths',
     'germanKantCategoricalImperativeSynthesis',
     'indianUpanishadicTatTvamAsi',
     'koreanChoeHangiGihakUnwha',
@@ -3735,6 +3777,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'ancientChineseSunTzuArtOfWarStrategy',
+    'frenchDescartesCogitoClaraDistincta',
+    'ancientIndianEarlyBuddhistFourNobleTruths',
     'germanKantCategoricalImperativeSynthesis',
     'indianUpanishadicTatTvamAsi',
     'koreanChoeHangiGihakUnwha',
@@ -3898,6 +3943,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'ancientChineseSunTzuArtOfWarStrategy',
+    'frenchDescartesCogitoClaraDistincta',
+    'ancientIndianEarlyBuddhistFourNobleTruths',
     'germanKantCategoricalImperativeSynthesis',
     'indianUpanishadicTatTvamAsi',
     'koreanChoeHangiGihakUnwha',
