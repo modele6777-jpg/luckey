@@ -1,3 +1,4 @@
+import { applyAudioMixingPolicy } from './audioMixingPolicy';
 let primeUrl: string | null = null;
 
 /** Authorize one media element during an explicit Play gesture, never on app entry. */
@@ -16,5 +17,6 @@ export function primeUserMediaPlayback(audio: HTMLAudioElement | null, userGestu
   }
   audio.src = primeUrl;
   // This short primer is only for the requested asynchronous audio, not a keep-alive loop.
+  applyAudioMixingPolicy();
   void audio.play().catch(() => {});
 }

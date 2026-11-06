@@ -1,3 +1,4 @@
+import { applyAudioMixingPolicy } from './audioMixingPolicy';
 import { getSpeechMediaElement, primeSpeechMedia, stopSpeechMedia, speechMediaProgress, isSpeechMediaPlaying, pauseSpeechMedia, resumeSpeechMedia, playSpeechMedia } from './speechMedia';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from './wakeLock';
 import { recoverSpeechContext } from './audioRecovery';
@@ -632,26 +633,16 @@ function startTTSKeepAlive() { configureSpeechAudioSession(); }
 function stopTTSKeepAlive() { configureAmbientAudioSession(); }
 
 let speechSessionActive = false;
-let bgmPlaybackActive = false;
 
-export function setBgmPlaybackSessionActive(active: boolean): void {
-  bgmPlaybackActive = active;
+export function setBgmPlaybackSessionActive(_active: boolean): void {
   configureAmbientAudioSession();
 }
 
 export function configureAmbientAudioSession(): void {
-  if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
-    try {
-      const session = (navigator as any).audioSession;
-      // Explicit BGM or speech playback needs a background-capable session.
-      // App entry and paused/stopped speech leave other apps' audio alone.
-      const type = bgmPlaybackActive || (speechSessionActive && !ttsUserExplicitlyPaused) ? 'playback' : 'ambient';
-      if (session.type !== type) session.type = type;
-    } catch (_) { /* Older browsers may not support audioSession */ }
-  }
+  applyAudioMixingPolicy();
 }
 
-/** Explicit speech playback needs a playback session for screen-lock/background audio. */
+/** Compatibility entry points must preserve the nonexclusive mixing policy. */
 export function configureTransientDuckingAudioSession(): void { configureAmbientAudioSession(); }
 export function configurePlaybackAudioSession(): void { configureAmbientAudioSession(); }
 export function configureSpeechAudioSession(): void {

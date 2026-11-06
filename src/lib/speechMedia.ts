@@ -1,3 +1,4 @@
+import { applyAudioMixingPolicy } from './audioMixingPolicy';
 import { primeUserMediaPlayback } from './nativeMediaPriming';
 // Use the browser's media pipeline so speech can continue while the page is hidden.
 let player: HTMLAudioElement | null = null;
@@ -11,7 +12,7 @@ export function getSpeechMediaElement(): HTMLAudioElement {
     player = new Audio();
     player.preload = 'auto';
     player.setAttribute('playsinline', 'true');
-    // iOS 사파리에서 오디오 믹싱 허용 속성
+    // Preserve pitch independently of the audio-session mixing policy.
     (player as any).preservesPitch = true;
   }
   return player;
@@ -34,7 +35,7 @@ export function speechMediaProgress() {
 }
 export function isSpeechMediaPlaying() { return active && !paused && !!player && !player.paused; }
 export function pauseSpeechMedia() { if (active) { paused = true; player?.pause(); } }
-export function resumeSpeechMedia() { if (active && player) { paused = false; const failed = playbackFailure; void player.play().catch(() => failed?.()); } }
+export function resumeSpeechMedia() { if (active && player) { paused = false; applyAudioMixingPolicy(); const failed = playbackFailure; void player.play().catch(() => failed?.()); } }
 export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate: number, onPlaying?: () => void): Promise<void> {
   // Settle the old chunk without clearing/reloading the shared media element.
   // Safari may release its background session if src is removed between chunks.
@@ -72,6 +73,7 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
     audio.addEventListener('playing', playing, { once: true });
     audio.addEventListener('ended', ended);
     audio.addEventListener('error', failed);
+    applyAudioMixingPolicy();
     void audio.play().catch(failed);
   });
 }

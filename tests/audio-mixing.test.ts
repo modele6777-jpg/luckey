@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { configureAmbientAudioSession, initTTSAudioLifecycle, playTTSAudio, pauseTTSAudio, resumeTTSAudio, stopTTSPlayback, getTTSPlaybackProgress, getSharedAudioContext } from '../src/lib/audio';
+import { configureAmbientAudioSession, initTTSAudioLifecycle, playTTSAudio, pauseTTSAudio, resumeTTSAudio, stopTTSPlayback, getTTSPlaybackProgress, getSharedAudioContext, setBgmPlaybackSessionActive, configurePlaybackAudioSession, configureTransientDuckingAudioSession } from '../src/lib/audio';
 import { getSpeechMediaElement, primeSpeechMedia } from '../src/lib/speechMedia';
 
-test('explicit native speech owns playback while idle and manually paused speech release it', async () => {
+test('speech, resume, BGM and compatibility entry points always retain nonexclusive mixing', async () => {
   let type = 'auto', plays = 0, loads = 0, contexts = 0;
   const param = () => ({ value: 1, setValueAtTime() {} });
   const node = () => ({ connect() {}, disconnect() {}, gain: param(), threshold: param(), knee: param(), ratio: param(), attack: param(), release: param() });
@@ -28,23 +28,26 @@ test('explicit native speech owns playback while idle and manually paused speech
   const doc = Object.assign(new EventTarget(), { visibilityState: 'visible' });
   const win = Object.assign(new EventTarget(), { AudioContext: Context });
   const originals = new Map(['window', 'navigator', 'document', 'Audio'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
-  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { audioSession: { get type() { return type; }, set type(value) { type = value; } }, userActivation: { isActive: false } } });
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { audioSession: { get type() { return type; }, set type(value) { assert.equal(value, 'ambient', 'no entry point may request exclusive audio focus'); type = value; } }, userActivation: { isActive: false } } });
   Object.defineProperty(globalThis, 'window', { configurable: true, value: win });
   Object.defineProperty(globalThis, 'document', { configurable: true, value: doc });
   Object.defineProperty(globalThis, 'Audio', { configurable: true, value: Media });
   try {
     initTTSAudioLifecycle(); configureAmbientAudioSession(); primeSpeechMedia(false);
     assert.equal(type, 'ambient'); assert.equal(contexts, 0); assert.equal(plays, 0);
+    setBgmPlaybackSessionActive(true); configurePlaybackAudioSession(); configureTransientDuckingAudioSession();
+    assert.equal(type, 'ambient');
     const audio = getSpeechMediaElement() as unknown as Media;
     const first = playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm', 24000, undefined, true);
-    assert.equal(type, 'playback'); assert.equal(plays, 1); assert.equal(loads, 0);
+    assert.equal(type, 'ambient'); assert.equal(plays, 1); assert.equal(loads, 0);
     audio.currentTime = 1.25;
     pauseTTSAudio();
     assert.equal(type, 'ambient'); assert.equal(audio.paused, true);
     doc.dispatchEvent(new Event('visibilitychange'));
     assert.equal(plays, 1, 'returning must not override an explicit user pause');
+    type = 'auto'; // Model a browser resetting the category between playback calls.
     resumeTTSAudio();
-    assert.equal(type, 'playback'); assert.equal(audio.currentTime, 1.25);
+    assert.equal(type, 'ambient'); assert.equal(audio.currentTime, 1.25);
     const ctx = getSharedAudioContext(); assert.equal(ctx.state, 'suspended');
     assert.equal(getTTSPlaybackProgress()?.elapsed, 1.25);
     audio.dispatchEvent(new Event('ended')); await first;

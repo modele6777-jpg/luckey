@@ -29,7 +29,7 @@ const { outputFiles } = await build({
       const started = new Promise(resolve => onPlaying = resolve);
       const first = playTTSAudio(encoded, 'pcm', 24000, undefined, true, undefined, () => onPlaying());
       await started;
-      if (fakeSession.type !== 'playback') throw Error('Active speech lacks background session');
+      if (fakeSession.type !== 'ambient') throw Error('Active speech requested exclusive audio focus');
       const liveContext = getSharedAudioContext();
       await liveContext.suspend();
       visibility = 'hidden'; document.dispatchEvent(new Event('visibilitychange'));
@@ -45,7 +45,7 @@ const { outputFiles } = await build({
       if (!audio.paused || Math.abs(audio.currentTime - pausedAt) > 0.02) throw Error('Visibility change overrode manual pause');
       resumeTTSAudio();
       await wait(250);
-      if (audio.currentTime < pausedAt + 0.1 || fakeSession.type !== 'playback') throw Error('Resume lost native speech position');
+      if (audio.currentTime < pausedAt + 0.1 || fakeSession.type !== 'ambient') throw Error('Resume lost native speech position');
       await first;
       let secondPlaying;
       const secondStarted = new Promise(resolve => secondPlaying = resolve);
@@ -103,5 +103,5 @@ try {
 } finally {
   socket?.close(); chrome.kill();
   await new Promise(resolve => chrome.once('exit', resolve));
-  await rm(profile, { recursive: true, force: true });
+  await rm(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 }
