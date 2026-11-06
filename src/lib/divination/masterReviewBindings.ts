@@ -883,5 +883,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "baruchSpinozaEthicaConatusAmorDei": {
     "field": "spinozaEthicaConatusResult",
     "traceKey": "spinozaEthicaConatusResult"
+  },
+  "germanKantCategoricalImperativeSynthesis": {
+    "field": "kantCategoricalImperativeResult",
+    "traceKey": "kantCategoricalImperativeResult"
+  },
+  "indianUpanishadicTatTvamAsi": {
+    "field": "upanishadicTatTvamAsiResult",
+    "traceKey": "upanishadicTatTvamAsiResult"
+  },
+  "koreanChoeHangiGihakUnwha": {
+    "field": "choeHangiGihakUnwhaResult",
+    "traceKey": "choeHangiGihakUnwhaResult"
   }
 };
