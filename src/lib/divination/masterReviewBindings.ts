@@ -751,5 +751,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "egyptianAmduat": {
     "field": "egyptianAmduatResult",
     "traceKey": "egyptianAmduatResult"
+  },
+  "celticDruidBrehonLawJustice": {
+    "field": "celticDruidBrehonLawResult",
+    "traceKey": "celticDruidBrehonLawResult"
+  },
+  "mesopotamianNisabaScribe": {
+    "field": "mesopotamianNisabaResult",
+    "traceKey": "mesopotamianNisabaResult"
+  },
+  "koreanSuunGasiHeon": {
+    "field": "suunGasiHeonResult",
+    "traceKey": "suunGasiHeonResult"
   }
 };

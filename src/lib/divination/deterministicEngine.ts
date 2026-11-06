@@ -211,6 +211,9 @@ import { calculatePolynesianWayfinding, formatPolynesianWayfindingPrompt, type P
 import { calculateWonhyoHwajaeng, formatWonhyoHwajaengPrompt, type WonhyoHwajaengReport, WONHYO_HWAJAENG_VERSION } from './koreanWonhyoHwajaengOneMindEngine';
 import { calculateMayiMianxiang, formatMayiMianxiangPrompt, type MayiMianxiangReport, MAYI_MIANXIANG_VERSION } from './chineseMayiMianxiangTwelvePalacesEngine';
 import { calculateEgyptianAmduat, formatEgyptianAmduatPrompt, type EgyptianAmduatReport, EGYPTIAN_AMDUAT_VERSION } from './egyptianAmduatTwelveHoursRaEngine';
+import { calculateCelticBrehonLaw, formatCelticBrehonLawPrompt, type CelticBrehonLawResult, CELTIC_BREHON_LAW_VERSION } from './celticDruidBrehonLawJusticeEngine';
+import { calculateMesopotamianNisaba, formatMesopotamianNisabaPrompt, type MesopotamianNisabaResult, MESOPOTAMIAN_NISABA_VERSION } from './mesopotamianNisabaScribeWisdomEngine';
+import { calculateSuunGasiHeon, formatSuunGasiHeonPrompt, type SuunGasiHeonResult, SUUN_GASI_HEON_VERSION } from './koreanSuunGasiHeonGyeongGwonEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -441,6 +444,9 @@ export interface DeterministicEngineReport {
   wonhyoHwajaengResult?: WonhyoHwajaengReport | null;
   mayiMianxiangResult?: MayiMianxiangReport | null;
   egyptianAmduatResult?: EgyptianAmduatReport | null;
+  celticDruidBrehonLawResult?: CelticBrehonLawResult | null;
+  mesopotamianNisabaResult?: MesopotamianNisabaResult | null;
+  suunGasiHeonResult?: SuunGasiHeonResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2664,6 +2670,33 @@ try {
     }
   })()));
 
+  // 180. 고대 켈트 드루이드 《브레혼 법전》 4대 우주정의 & 에릭 명예균형 엔진
+  const celticDruidBrehonLawResult = calculateSupplement('celticDruidBrehonLawResult', () => ((() => {
+    try {
+      return calculateCelticBrehonLaw(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 181. 수메르 서기 니사바 청금석 서판 갈대첨필 천문수리 계측 엔진
+  const mesopotamianNisabaResult = calculateSupplement('mesopotamianNisabaResult', () => ((() => {
+    try {
+      return calculateMesopotamianNisaba(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 182. 동학 수운 최제우 《용담유사》 검결 심기수련 & 삼경사상 신탁 엔진
+  const suunGasiHeonResult = calculateSupplement('suunGasiHeonResult', () => ((() => {
+    try {
+      return calculateSuunGasiHeon(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -2880,6 +2913,9 @@ try {
     wonhyoHwajaengResult,
     mayiMianxiangResult,
     egyptianAmduatResult,
+    celticDruidBrehonLawResult,
+    mesopotamianNisabaResult,
+    suunGasiHeonResult,
     tools: toolsMap,
   };
 }
@@ -3087,6 +3123,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'wonhyoHwajaeng', nameKo: '신라 원효대사 십문화쟁론 일심이문 무애', icon: '🕊️', category: 'deep_master' },
   { key: 'mayiMianxiang', nameKo: '마의도사 마의상법 12궁 관상 심상합일', icon: '👤', category: 'deep_master' },
   { key: 'egyptianAmduat', nameKo: '이집트 암두아트 12시간 라 밤의항해 케프리부활', icon: '🌅', category: 'deep_master' },
+  { key: 'celticDruidBrehonLawJustice', nameKo: '고대 켈트 브레혼 법전 4대 우주정의 에릭', icon: '⚖️', category: 'deep_master' },
+  { key: 'mesopotamianNisabaScribe', nameKo: '수메르 서기 니사바 청금석 서판 갈대첨필 천문수리', icon: '📐', category: 'deep_master' },
+  { key: 'koreanSuunGasiHeon', nameKo: '동학 수운 최제우 용담유사 검결 심기수련 삼경', icon: '🗡️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3140,6 +3179,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'celticDruidBrehonLawJustice',
+    'mesopotamianNisabaScribe',
     'mayiMianxiang',
     'polynesianWayfinding',
     'celticTuathaFourTreasures',
@@ -3179,6 +3220,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'celticDruidBrehonLawJustice',
+    'mesopotamianNisabaScribe',
     'pythagoreanTetraktys',
     'wealthPipeline',
     'sajuClassicYongshin',
@@ -3219,6 +3262,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'koreanSuunGasiHeon',
+    'celticDruidBrehonLawJustice',
     'wonhyoHwajaeng',
     'egyptianAmduat',
     'heianOnmyodoSeimei',
@@ -3319,6 +3364,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'mesopotamianNisabaScribe',
     'rosicrucianChymicalWedding',
     'samkhyaTwentyFiveTattvas',
     'etruscanAugurSixteenSky',
@@ -3351,6 +3397,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'celticDruidBrehonLawJustice',
+    'mesopotamianNisabaScribe',
+    'koreanSuunGasiHeon',
     'wonhyoHwajaeng',
     'mayiMianxiang',
     'egyptianAmduat',
