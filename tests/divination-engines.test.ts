@@ -216,6 +216,9 @@ import { calculateAncientIndianFourNobleTruths, formatAncientIndianFourNobleTrut
 import { calculateRumiMasnaviDivineLove, formatRumiMasnaviDivineLovePrompt, RUMI_MASNAVI_SUFI_VERSION } from '../src/lib/divination/islamicSufiRumiMasnaviDivineLoveEngine';
 import { calculateUisangHwaeomIlseungBeopgye, formatUisangHwaeomIlseungBeopgyePrompt, UISANG_HWAEOM_BEOPGYE_VERSION } from '../src/lib/divination/koreanUisangHwaeomIlseungBeopgyeEngine';
 import { calculateMontaigneEssaisWisdom, formatMontaigneEssaisWisdomPrompt, MONTAIGNE_ESSAIS_WISDOM_VERSION } from '../src/lib/divination/frenchMontaigneEssaisWisdomEngine';
+import { calculateNagarjunaMadhyamakaSunyata, formatNagarjunaMadhyamakaSunyataPrompt, NAGARJUNA_MADHYAMAKA_VERSION } from '../src/lib/divination/ancientIndianNagarjunaMadhyamakaSunyataEngine';
+import { calculateJinulJeonghyeSsangsu, formatJinulJeonghyeSsangsuPrompt, JINUL_JEONGHYE_SSANGSU_VERSION } from '../src/lib/divination/koreanJinulJeonghyeSsangsuDonohJeomsuEngine';
+import { calculateRenaissanceBrunoInfiniteUniverse, formatRenaissanceBrunoInfiniteUniversePrompt, BRUNO_INFINITE_UNIVERSE_VERSION } from '../src/lib/divination/renaissanceBrunoInfiniteUniverseHeroicFuroreEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4502,6 +4505,48 @@ test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-intro
   const prompt = formatMontaigneEssaisWisdomPrompt(rep);
   assert(prompt.includes('몽테뉴 수상록(Essais) 회의주의·자기성찰 지표'));
   assert(prompt.includes(rep.activeThematicEssay.essayTitleKo));
+});
+
+test('Nagarjuna Madhyamaka Sunyata Engine: calculates Sunyata wisdom, Eightfold negation, and Dependent origination', () => {
+  const rep = calculateNagarjunaMadhyamakaSunyata(profile);
+  assert.equal(rep.engineVersion, NAGARJUNA_MADHYAMAKA_VERSION);
+  assert(rep.sunyataWisdomScore >= 0 && rep.sunyataWisdomScore <= 100);
+  assert(rep.eightfoldNegationMiddleWayScore >= 0 && rep.eightfoldNegationMiddleWayScore <= 100);
+  assert(rep.pratityasamutpadaGraspScore >= 0 && rep.pratityasamutpadaGraspScore <= 100);
+  assert(rep.twoTruthsHarmonyScore >= 0 && rep.twoTruthsHarmonyScore <= 100);
+  assert(rep.clingingDeconstructionScore >= 0 && rep.clingingDeconstructionScore <= 100);
+  assert(rep.activeNegationAspect.aspectHanja.length > 0);
+  const prompt = formatNagarjunaMadhyamakaSunyataPrompt(rep);
+  assert(prompt.includes('용수 중론 & 팔불중도 공성(Śūnyatā) 지표'));
+  assert(prompt.includes(rep.activeNegationAspect.aspectHanja));
+});
+
+test('Jinul Jeonghye Ssangsu Engine: calculates Donoh insight, Jeomsu cultivation, and Seongjeok equanimity', () => {
+  const rep = calculateJinulJeonghyeSsangsu(profile);
+  assert.equal(rep.engineVersion, JINUL_JEONGHYE_SSANGSU_VERSION);
+  assert(rep.donohInsightScore >= 0 && rep.donohInsightScore <= 100);
+  assert(rep.jeomsuCultivationScore >= 0 && rep.jeomsuCultivationScore <= 100);
+  assert(rep.jeonghyeBalanceScore >= 0 && rep.jeonghyeBalanceScore <= 100);
+  assert(rep.seongjeokEquanimityScore >= 0 && rep.seongjeokEquanimityScore <= 100);
+  assert(rep.gongjeokYeongjiScore >= 0 && rep.gongjeokYeongjiScore <= 100);
+  assert(rep.activeCorePrinciple.principleHanja.length > 0);
+  const prompt = formatJinulJeonghyeSsangsuPrompt(rep);
+  assert(prompt.includes('보조국사 수심결 & 정혜쌍수·돈오점수 지표'));
+  assert(prompt.includes(rep.activeCorePrinciple.principleHanja));
+});
+
+test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision, Heroic furore, and Sovereign conscience', () => {
+  const rep = calculateRenaissanceBrunoInfiniteUniverse(profile);
+  assert.equal(rep.engineVersion, BRUNO_INFINITE_UNIVERSE_VERSION);
+  assert(rep.infiniteCosmosVisionScore >= 0 && rep.infiniteCosmosVisionScore <= 100);
+  assert(rep.heroicFurorePassionScore >= 0 && rep.heroicFurorePassionScore <= 100);
+  assert(rep.immanentDivineResonanceScore >= 0 && rep.immanentDivineResonanceScore <= 100);
+  assert(rep.actaeonTransformationScore >= 0 && rep.actaeonTransformationScore <= 100);
+  assert(rep.unboundedAutonomyScore >= 0 && rep.unboundedAutonomyScore <= 100);
+  assert(rep.activeCosmicAspect.aspectLatinOrItalian.length > 0);
+  const prompt = formatRenaissanceBrunoInfiniteUniversePrompt(rep);
+  assert(prompt.includes('브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표'));
+  assert(prompt.includes(rep.activeCosmicAspect.aspectLatinOrItalian));
 });
 
 

@@ -253,6 +253,9 @@ import { calculateAncientIndianFourNobleTruths, formatAncientIndianFourNobleTrut
 import { calculateRumiMasnaviDivineLove, formatRumiMasnaviDivineLovePrompt, type RumiMasnaviDivineLoveResult, RUMI_MASNAVI_SUFI_VERSION } from './islamicSufiRumiMasnaviDivineLoveEngine';
 import { calculateUisangHwaeomIlseungBeopgye, formatUisangHwaeomIlseungBeopgyePrompt, type UisangHwaeomIlseungBeopgyeResult, UISANG_HWAEOM_BEOPGYE_VERSION } from './koreanUisangHwaeomIlseungBeopgyeEngine';
 import { calculateMontaigneEssaisWisdom, formatMontaigneEssaisWisdomPrompt, type MontaigneEssaisWisdomResult, MONTAIGNE_ESSAIS_WISDOM_VERSION } from './frenchMontaigneEssaisWisdomEngine';
+import { calculateNagarjunaMadhyamakaSunyata, formatNagarjunaMadhyamakaSunyataPrompt, type NagarjunaMadhyamakaSunyataResult, NAGARJUNA_MADHYAMAKA_VERSION } from './ancientIndianNagarjunaMadhyamakaSunyataEngine';
+import { calculateJinulJeonghyeSsangsu, formatJinulJeonghyeSsangsuPrompt, type JinulJeonghyeSsangsuResult, JINUL_JEONGHYE_SSANGSU_VERSION } from './koreanJinulJeonghyeSsangsuDonohJeomsuEngine';
+import { calculateRenaissanceBrunoInfiniteUniverse, formatRenaissanceBrunoInfiniteUniversePrompt, type RenaissanceBrunoInfiniteUniverseResult, BRUNO_INFINITE_UNIVERSE_VERSION } from './renaissanceBrunoInfiniteUniverseHeroicFuroreEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -526,6 +529,9 @@ export interface DeterministicEngineReport {
   rumiMasnaviDivineLoveResult?: RumiMasnaviDivineLoveResult | null;
   uisangHwaeomIlseungBeopgyeResult?: UisangHwaeomIlseungBeopgyeResult | null;
   montaigneEssaisWisdomResult?: MontaigneEssaisWisdomResult | null;
+  nagarjunaMadhyamakaSunyataResult?: NagarjunaMadhyamakaSunyataResult | null;
+  jinulJeonghyeSsangsuResult?: JinulJeonghyeSsangsuResult | null;
+  brunoInfiniteUniverseResult?: RenaissanceBrunoInfiniteUniverseResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3128,6 +3134,33 @@ try {
     }
   })()));
 
+  // 222. 고대 인도 용수 중론 팔불중도 & 공성(Śūnyatā) 통찰 엔진
+  const nagarjunaMadhyamakaSunyataResult = calculateSupplement('nagarjunaMadhyamakaSunyataResult', () => ((() => {
+    try {
+      return calculateNagarjunaMadhyamakaSunyata(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 223. 한국 고려 보조국사 지눌 수심결 정혜쌍수 & 돈오점수 선학 지혜 엔진
+  const jinulJeonghyeSsangsuResult = calculateSupplement('jinulJeonghyeSsangsuResult', () => ((() => {
+    try {
+      return calculateJinulJeonghyeSsangsu(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 224. 이탈리아 르네상스 조르다노 브루노 무한우주론 & 영웅적 열정(Eroico Furore) 비상 엔진
+  const brunoInfiniteUniverseResult = calculateSupplement('brunoInfiniteUniverseResult', () => ((() => {
+    try {
+      return calculateRenaissanceBrunoInfiniteUniverse(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3387,6 +3420,9 @@ try {
     rumiMasnaviDivineLoveResult,
     uisangHwaeomIlseungBeopgyeResult,
     montaigneEssaisWisdomResult,
+    nagarjunaMadhyamakaSunyataResult,
+    jinulJeonghyeSsangsuResult,
+    brunoInfiniteUniverseResult,
     tools: toolsMap,
   };
 }
@@ -3636,6 +3672,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'islamicSufiRumiMasnaviDivineLove', nameKo: '루미 마스나비 수피즘 신성한사랑 영혼갈망', icon: '🕊️', category: 'deep_master' },
   { key: 'koreanUisangHwaeomIlseungBeopgye', nameKo: '신라 의상대사 화엄일승법계도 법성게 원융무애', icon: '☸️', category: 'deep_master' },
   { key: 'frenchMontaigneEssaisWisdom', nameKo: '몽테뉴 수상록 자기성찰 독단탈피 회의주의 중용', icon: '📖', category: 'deep_master' },
+  { key: 'ancientIndianNagarjunaMadhyamakaSunyata', nameKo: '용수 중론 팔불중도 연기즉공 이제설 공성지혜', icon: '☸️', category: 'deep_master' },
+  { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master' },
+  { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3743,6 +3782,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ancientIndianNagarjunaMadhyamakaSunyata',
+    'koreanJinulJeonghyeSsangsuDonohJeomsu',
+    'renaissanceBrunoInfiniteUniverseHeroicFurore',
     'islamicSufiRumiMasnaviDivineLove',
     'koreanUisangHwaeomIlseungBeopgye',
     'frenchMontaigneEssaisWisdom',
@@ -3819,6 +3861,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'ancientIndianNagarjunaMadhyamakaSunyata',
+    'koreanJinulJeonghyeSsangsuDonohJeomsu',
+    'renaissanceBrunoInfiniteUniverseHeroicFurore',
     'islamicSufiRumiMasnaviDivineLove',
     'koreanUisangHwaeomIlseungBeopgye',
     'frenchMontaigneEssaisWisdom',
