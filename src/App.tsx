@@ -55,7 +55,6 @@ const MuseApp = lazyWithRetry(() => import("./pages/MuseApp"));
 const OrangeApp = lazyWithRetry(() => import("./pages/OrangeApp"));
 const BluebirdApp = lazyWithRetry(() => import("./pages/BluebirdApp"));
 const HealApp = lazyWithRetry(() => import("./pages/HealApp"));
-const ProfilePage = lazyWithRetry(() => import("./pages/ProfilePage"));
 const LibraryPage = lazyWithRetry(() => import("./pages/LibraryPage"));
 const LucyProPage = lazyWithRetry(() => import("./pages/LucyProPage"));
 const LucyStandalonePage = lazyWithRetry(() => import("./pages/LucyStandalonePage"));
@@ -76,7 +75,6 @@ const ALL_CHANNEL_LOADERS = [
   () => import("./pages/HandbookStandalonePage"),
   () => import("./pages/OmniWarpPage"),
   () => import("./pages/LibraryPage"),
-  () => import("./pages/ProfilePage"),
 ];
 
 let hasPreloadedChannels = false;
@@ -158,7 +156,6 @@ function ActivePage({ loc }: { loc: string }) {
   const cleanLoc = loc ? loc.split('?')[0].split('#')[0] : '/';
   return (
     <ErrorBoundary key={cleanLoc}>
-    <React.Suspense fallback={<PageLoader />}>
       <Switch location={cleanLoc}>
         <Route path="/"><LucyStandalonePage /></Route>
         <Route path="/prologue"><HubHome /></Route>
@@ -168,29 +165,28 @@ function ActivePage({ loc }: { loc: string }) {
         <Route path="/mission"><HubHome /></Route>
         <Route path="/synergy"><HubHome /></Route>
         <Route path="/aegis"><HubHome /></Route>
-        <Route path="/trinity"><TrinityApp /></Route>
-        <Route path="/muse"><MuseApp /></Route>
-        <Route path="/orange"><OrangeApp /></Route>
-        <Route path="/bluebird"><BluebirdApp /></Route>
-        <Route path="/heal"><HealApp /></Route>
+        <Route path="/trinity"><React.Suspense fallback={<PageLoader />}><TrinityApp /></React.Suspense></Route>
+        <Route path="/muse"><React.Suspense fallback={<PageLoader />}><MuseApp /></React.Suspense></Route>
+        <Route path="/orange"><React.Suspense fallback={<PageLoader />}><OrangeApp /></React.Suspense></Route>
+        <Route path="/bluebird"><React.Suspense fallback={<PageLoader />}><BluebirdApp /></React.Suspense></Route>
+        <Route path="/heal"><React.Suspense fallback={<PageLoader />}><HealApp /></React.Suspense></Route>
         <Route path="/epilogue"><EpilogueApp /></Route>
-        <Route path="/library"><LibraryPage /></Route>
+        <Route path="/library"><React.Suspense fallback={<PageLoader />}><LibraryPage /></React.Suspense></Route>
         <Route path="/profile"><EpilogueApp /></Route>
         <Route path="/chronicle"><EpilogueApp /></Route>
-        <Route path="/handbook"><HandbookStandalonePage /></Route>
-        <Route path="/rebible"><HandbookStandalonePage /></Route>
-        <Route path="/chat/pro"><LucyProPage /></Route>
+        <Route path="/handbook"><React.Suspense fallback={<PageLoader />}><HandbookStandalonePage /></React.Suspense></Route>
+        <Route path="/rebible"><React.Suspense fallback={<PageLoader />}><HandbookStandalonePage /></React.Suspense></Route>
+        <Route path="/chat/pro"><React.Suspense fallback={<PageLoader />}><LucyProPage /></React.Suspense></Route>
         <Route path="/chat"><LucyStandalonePage /></Route>
         <Route path="/lucy"><LucyStandalonePage /></Route>
-        <Route path="/omniwarp"><OmniWarpPage /></Route>
-        <Route path="/bigbang"><OmniWarpPage /></Route>
-        <Route path="/orb"><CalmApp /></Route>
-        <Route path="/gateway"><CalmApp /></Route>
-        <Route path="/crystal"><CalmApp /></Route>
-        <Route path="/calm"><CalmApp /></Route>
-        <Route path="/key"><CalmApp /></Route>
+        <Route path="/omniwarp"><React.Suspense fallback={<PageLoader />}><OmniWarpPage /></React.Suspense></Route>
+        <Route path="/bigbang"><React.Suspense fallback={<PageLoader />}><OmniWarpPage /></React.Suspense></Route>
+        <Route path="/orb"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
+        <Route path="/gateway"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
+        <Route path="/crystal"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
+        <Route path="/calm"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
+        <Route path="/key"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
       </Switch>
-    </React.Suspense>
     </ErrorBoundary>
   );
 }

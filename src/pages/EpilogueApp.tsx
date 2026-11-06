@@ -1,4 +1,4 @@
-const DivinationLab = React.lazy(() => import('@/components/trinity/DivinationLab'));
+import DivinationLab from '@/components/trinity/DivinationLab';
 import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -487,6 +487,8 @@ export default function EpilogueApp() {
   const isInitialMount = useRef(true);
   const debounceTimerRef = useRef<number | null>(null);
   const lastLocalEditTimeRef = useRef<number>(0);
+  const getProfileSignature = (b: any, f: any, m: any, p: any, a: any) => JSON.stringify({ basic: b, fate: f, music: m, psych: p, art: a });
+  const lastSavedSignatureRef = useRef<string>(getProfileSignature(basic, fate, music, psych, art));
 
   useEffect(() => {
     const handleProfileUpdate = (e?: any) => {
@@ -517,6 +519,15 @@ export default function EpilogueApp() {
       if (profile.music) setMusic((m) => ({ ...m, ...profile.music }));
       if (profile.psych) setPsych((p) => ({ ...p, ...profile.psych }));
       if (profile.art) setArt((a) => ({ ...a, ...profile.art }));
+
+      // 외부 수신 시 최신 서명을 동기화하여 불필요한 자동 저장 루프 차단
+      lastSavedSignatureRef.current = getProfileSignature(
+        profile.basic || basic,
+        profile.fate || fate,
+        profile.music || music,
+        profile.psych || psych,
+        profile.art || art
+      );
     };
 
     handleProfileUpdate();
@@ -564,6 +575,11 @@ export default function EpilogueApp() {
       isInitialMount.current = false;
       return;
     }
+    const currentSig = getProfileSignature(basic, fate, music, psych, art);
+    // 실제 필드 변경이 없으면 불필요한 자동 저장 및 네트워크 루프 원천 차단
+    if (currentSig === lastSavedSignatureRef.current) {
+      return;
+    }
     lastLocalEditTimeRef.current = Date.now();
     // 변경 즉시 로컬 볼트에 0ms 동기화하여 페이지를 곧바로 나갔다 들어와도 절대 원상 복구되지 않도록 보장
     flushLocalProfileImmediate(basic, fate, music, psych, art);
@@ -572,6 +588,7 @@ export default function EpilogueApp() {
       window.clearTimeout(debounceTimerRef.current);
     }
     debounceTimerRef.current = window.setTimeout(() => {
+      lastSavedSignatureRef.current = currentSig;
       handleSave(true);
     }, 350);
     return () => {
@@ -1032,7 +1049,7 @@ export default function EpilogueApp() {
           </div>
         );
       case 6:
-        return <React.Suspense fallback={<p className="text-sm opacity-60">계산실 준비 중…</p>}><DivinationLab profile={{basic:{...basic,gender:basic.gender||undefined},fate,music,psych,art}} /></React.Suspense>;
+        return <DivinationLab profile={{basic:{...basic,gender:basic.gender||undefined},fate,music,psych,art}} />;
       default:
         return null;
     }
