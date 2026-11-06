@@ -695,9 +695,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeSessionStorage.setItem('lucy_plus_active', 'true');
       setIsPlusMode(true);
       triggerHaptic('whitehole');
-      try {
-        playAudioHaptic('milestone_success');
-      } catch (_) {}
       setModeSwitchToast('👑 Lucy + 진화! 7대 채널 올인원 마스터 모드가 가동되었습니다');
       setTimeout(() => setModeSwitchToast(null), 2500);
     };
@@ -718,9 +715,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           safeLocalStorage.setItem('lucy_plus_active', 'true');
           safeSessionStorage.setItem('lucy_plus_active', 'true');
           triggerHaptic('whitehole');
-          try {
-            playAudioHaptic('milestone_success');
-          } catch (_) {}
           setModeSwitchToast('👑 Lucy + 진화! 7대 채널 올인원 마스터 모드가 가동되었습니다');
         } else {
           safeLocalStorage.removeItem('lucy_plus_active');
@@ -2689,9 +2683,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                           safeLocalStorage.setItem('lucy_plus_active', 'true');
                           safeSessionStorage.setItem('lucy_plus_active', 'true');
                           triggerHaptic('whitehole');
-                          try {
-                            playAudioHaptic('milestone_success');
-                          } catch (_) {}
                           setModeSwitchToast('👑 Lucy + 진화! 15대 운명학 올인원 마스터 모드가 가동되었습니다');
                         } else {
                           safeLocalStorage.removeItem('lucy_plus_active');
@@ -2724,9 +2715,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         safeLocalStorage.setItem('lucy_plus_active', 'true');
                         safeSessionStorage.setItem('lucy_plus_active', 'true');
                         triggerHaptic('whitehole');
-                        try {
-                          playAudioHaptic('milestone_success');
-                        } catch (_) {}
                         setModeSwitchToast('👑 Lucy + 진화! 15대 운명학 올인원 마스터 모드가 가동되었습니다');
                       } else {
                         safeLocalStorage.removeItem('lucy_plus_active');
