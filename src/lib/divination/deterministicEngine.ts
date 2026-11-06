@@ -235,6 +235,9 @@ import { calculateYulgokGyeokmong, formatYulgokGyeokmongPrompt, type YulgokGyeok
 import { calculateAristotleMesotes, formatAristotleMesotesPrompt, type AristotleMesotesResult, ARISTOTLE_MESOTES_VERSION } from './ancientGreekAristotleMesotesEudaimoniaEngine';
 import { calculateBhagavadGitaKarmaYoga, formatBhagavadGitaKarmaYogaPrompt, type BhagavadGitaKarmaYogaResult, BHAGAVAD_GITA_KARMA_YOGA_VERSION } from './ancientIndianBhagavadGitaKarmaYogaEngine';
 import { calculateWangYangmingXinxue, formatWangYangmingXinxuePrompt, type WangYangmingXinxueResult, WANG_YANGMING_LIANGZHI_VERSION } from './chineseWangYangmingLiangzhiXinxueEngine';
+import { calculateSocraticMaieuticDaimon, formatSocraticMaieuticDaimonPrompt, type SocraticMaieuticDaimonResult, SOCRATIC_MAIEUTIC_DAIMON_VERSION } from './ancientGreekSocraticMaieuticDaimonEngine';
+import { calculateMenciusFourSproutsHoyeon, formatMenciusFourSproutsHoyeonPrompt, type MenciusFourSproutsHoyeonResult, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION } from './chineseMenciusFourSproutsHoyeonJigiEngine';
+import { calculateSenecaTimeSovereignty, formatSenecaTimeSovereigntyPrompt, type SenecaTimeSovereigntyResult, SENECA_TIME_SOVEREIGNTY_VERSION } from './romanSenecaTimeSovereigntyTranquilityEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -490,6 +493,9 @@ export interface DeterministicEngineReport {
   aristotleMesotesResult?: AristotleMesotesResult | null;
   bhagavadGitaKarmaYogaResult?: BhagavadGitaKarmaYogaResult | null;
   wangYangmingXinxueResult?: WangYangmingXinxueResult | null;
+  socraticMaieuticDaimonResult?: SocraticMaieuticDaimonResult | null;
+  menciusFourSproutsHoyeonResult?: MenciusFourSproutsHoyeonResult | null;
+  senecaTimeSovereigntyResult?: SenecaTimeSovereigntyResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -2930,6 +2936,33 @@ try {
     }
   })()));
 
+  // 204. 고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 엔진
+  const socraticMaieuticDaimonResult = calculateSupplement('socraticMaieuticDaimonResult', () => ((() => {
+    try {
+      return calculateSocraticMaieuticDaimon(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 205. 고대 중국 맹자 사단사덕 & 호연지기 양기 엔진
+  const menciusFourSproutsHoyeonResult = calculateSupplement('menciusFourSproutsHoyeonResult', () => ((() => {
+    try {
+      return calculateMenciusFourSproutsHoyeon(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 206. 고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 엔진
+  const senecaTimeSovereigntyResult = calculateSupplement('senecaTimeSovereigntyResult', () => ((() => {
+    try {
+      return calculateSenecaTimeSovereignty(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3171,6 +3204,9 @@ try {
     aristotleMesotesResult,
     bhagavadGitaKarmaYogaResult,
     wangYangmingXinxueResult,
+    socraticMaieuticDaimonResult,
+    menciusFourSproutsHoyeonResult,
+    senecaTimeSovereigntyResult,
     tools: toolsMap,
   };
 }
@@ -3402,6 +3438,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ancientGreekAristotleMesotesEudaimonia', nameKo: '아리스토텔레스 니코마코스 윤리학 중용 에우다이모니아', icon: '⚖️', category: 'deep_master' },
   { key: 'ancientIndianBhagavadGitaKarmaYoga', nameKo: '바가바드 기타 카르마 요가 니슈카마 카르마 무집착', icon: '🕉️', category: 'deep_master' },
   { key: 'chineseWangYangmingLiangzhiXinxue', nameKo: '양명학 왕양명 전습록 치양지 지행합일 심학', icon: '📜', category: 'deep_master' },
+  { key: 'ancientGreekSocraticMaieuticDaimon', nameKo: '소크라테스 산파술 다이몬 영혼성찰 무지의지', icon: '🏛️', category: 'deep_master' },
+  { key: 'chineseMenciusFourSproutsHoyeon', nameKo: '맹자 사단사덕 호연지기 부동심 대장부', icon: '🌊', category: 'deep_master' },
+  { key: 'romanSenecaTimeSovereignty', nameKo: '세네카 인생의짧음에대하여 시간주권 마음의평정', icon: '⏳', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3509,6 +3548,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ancientGreekSocraticMaieuticDaimon',
+    'chineseMenciusFourSproutsHoyeon',
+    'romanSenecaTimeSovereignty',
     'ancientGreekAristotleMesotesEudaimonia',
     'ancientIndianBhagavadGitaKarmaYoga',
     'chineseWangYangmingLiangzhiXinxue',
@@ -3567,6 +3609,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'ancientGreekSocraticMaieuticDaimon',
+    'chineseMenciusFourSproutsHoyeon',
+    'romanSenecaTimeSovereignty',
     'ancientGreekAristotleMesotesEudaimonia',
     'ancientIndianBhagavadGitaKarmaYoga',
     'chineseWangYangmingLiangzhiXinxue',
@@ -3718,6 +3763,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'ancientGreekSocraticMaieuticDaimon',
+    'chineseMenciusFourSproutsHoyeon',
+    'romanSenecaTimeSovereignty',
     'ancientGreekAristotleMesotesEudaimonia',
     'ancientIndianBhagavadGitaKarmaYoga',
     'chineseWangYangmingLiangzhiXinxue',

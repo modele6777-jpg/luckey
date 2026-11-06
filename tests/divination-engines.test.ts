@@ -198,6 +198,9 @@ import { calculateYulgokGyeokmong, formatYulgokGyeokmongPrompt, YULGOK_GYEOKMONG
 import { calculateAristotleMesotes, formatAristotleMesotesPrompt, ARISTOTLE_MESOTES_VERSION } from '../src/lib/divination/ancientGreekAristotleMesotesEudaimoniaEngine';
 import { calculateBhagavadGitaKarmaYoga, formatBhagavadGitaKarmaYogaPrompt, BHAGAVAD_GITA_KARMA_YOGA_VERSION } from '../src/lib/divination/ancientIndianBhagavadGitaKarmaYogaEngine';
 import { calculateWangYangmingXinxue, formatWangYangmingXinxuePrompt, WANG_YANGMING_LIANGZHI_VERSION } from '../src/lib/divination/chineseWangYangmingLiangzhiXinxueEngine';
+import { calculateSocraticMaieuticDaimon, formatSocraticMaieuticDaimonPrompt, SOCRATIC_MAIEUTIC_DAIMON_VERSION } from '../src/lib/divination/ancientGreekSocraticMaieuticDaimonEngine';
+import { calculateMenciusFourSproutsHoyeon, formatMenciusFourSproutsHoyeonPrompt, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION } from '../src/lib/divination/chineseMenciusFourSproutsHoyeonJigiEngine';
+import { calculateSenecaTimeSovereignty, formatSenecaTimeSovereigntyPrompt, SENECA_TIME_SOVEREIGNTY_VERSION } from '../src/lib/divination/romanSenecaTimeSovereigntyTranquilityEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4232,6 +4235,48 @@ test('Chinese Wang Yangming Liangzhi Xinxue Engine: calculates Liangzhi intuitio
   const prompt = formatWangYangmingXinxuePrompt(rep);
   assert(prompt.includes('명나라 양명학 왕양명(王陽明) 치양지(致良知)'));
   assert(prompt.includes(rep.activeXinxueStage.stageNameKo));
+});
+
+test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimonion, docta ignorantia and soul care', () => {
+  const rep = calculateSocraticMaieuticDaimon(profile);
+  assert.equal(rep.engineVersion, SOCRATIC_MAIEUTIC_DAIMON_VERSION);
+  assert(rep.maieuticDialogueScore >= 0 && rep.maieuticDialogueScore <= 100);
+  assert(rep.daimonionWarningSensitivity >= 0 && rep.daimonionWarningSensitivity <= 100);
+  assert(rep.doctaIgnorantiaHumility >= 0 && rep.doctaIgnorantiaHumility <= 100);
+  assert(rep.elenchusRefutationClarity >= 0 && rep.elenchusRefutationClarity <= 100);
+  assert(rep.epimeleiaSoulCareIntegrity >= 0 && rep.epimeleiaSoulCareIntegrity <= 100);
+  assert(rep.activeSocraticStage.stageNameGreek.length > 0);
+  const prompt = formatSocraticMaieuticDaimonPrompt(rep);
+  assert(prompt.includes('고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 지표'));
+  assert(prompt.includes(rep.activeSocraticStage.stageNameKo));
+});
+
+test('Chinese Mencius Four Sprouts Hoyeon Jigi Engine: calculates four sprouts, Hoyeon-jigi, Bu-dong-xin and moral accumulation', () => {
+  const rep = calculateMenciusFourSproutsHoyeon(profile);
+  assert.equal(rep.engineVersion, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION);
+  assert(rep.hoyeonJigiGreatVitalityScore >= 0 && rep.hoyeonJigiGreatVitalityScore <= 100);
+  assert(rep.fourSproutsCultivationLevel >= 0 && rep.fourSproutsCultivationLevel <= 100);
+  assert(rep.buDongXinSteadfastness >= 0 && rep.buDongXinSteadfastness <= 100);
+  assert(rep.jiYiMoralAccumulation >= 0 && rep.jiYiMoralAccumulation <= 100);
+  assert(rep.daejangbuNobility >= 0 && rep.daejangbuNobility <= 100);
+  assert(rep.activeMenciusStage.stageNameHanja.length > 0);
+  const prompt = formatMenciusFourSproutsHoyeonPrompt(rep);
+  assert(prompt.includes('고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 지표'));
+  assert(prompt.includes(rep.activeMenciusStage.stageNameKo));
+});
+
+test('Roman Seneca Time Sovereignty Tranquility Engine: calculates time sovereignty, tranquillitas and present living', () => {
+  const rep = calculateSenecaTimeSovereignty(profile);
+  assert.equal(rep.engineVersion, SENECA_TIME_SOVEREIGNTY_VERSION);
+  assert(rep.timeSovereigntyReclaimScore >= 0 && rep.timeSovereigntyReclaimScore <= 100);
+  assert(rep.tranquillitasInnerPeaceIndex >= 0 && rep.tranquillitasInnerPeaceIndex <= 100);
+  assert(rep.presentMomentLivingPower >= 0 && rep.presentMomentLivingPower <= 100);
+  assert(rep.stoicAutarkeiaResilience >= 0 && rep.stoicAutarkeiaResilience <= 100);
+  assert(rep.animiFluctuatioRelief >= 0 && rep.animiFluctuatioRelief <= 100);
+  assert(rep.activeSenecaStage.stageNameLatin.length > 0);
+  const prompt = formatSenecaTimeSovereigntyPrompt(rep);
+  assert(prompt.includes('고대 로마 세네카 인생의 짧음에 대하여 & 시간 주권 평정 지표'));
+  assert(prompt.includes(rep.activeSenecaStage.stageNameKo));
 });
 
 
