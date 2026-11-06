@@ -162,6 +162,9 @@ import { calculateIbnArabiWahdatAlWujud, formatIbnArabiWahdatAlWujudPrompt, IBN_
 import { calculateChonggamnokTenSanctuaries, formatChonggamnokPrompt, CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION } from '../src/lib/divination/koreanChonggamnokTenSanctuariesEngine';
 import { calculateBalineseTriHitaKarana, formatBalineseTriHitaKaranaPrompt, BALINESE_TRI_HITA_KARANA_ENGINE_VERSION } from '../src/lib/divination/balineseTriHitaKaranaHarmonyEngine';
 import { calculateHopiFourWorldsKachina, formatHopiFourWorldsPrompt, HOPI_FOUR_WORLDS_ENGINE_VERSION } from '../src/lib/divination/hopiFourWorldsKachinaProphecyEngine';
+import { calculateDonghakCheondoismCheonju, formatDonghakCheondoismCheonjuPrompt, DONGHAK_CHEONDOISM_VERSION } from '../src/lib/divination/koreanDonghakCheondoismCheonjuEngine';
+import { calculateIncaAndeanThreePachaAyni, formatIncaAndeanThreePachaAyniPrompt, INCA_ANDEAN_PACHA_VERSION } from '../src/lib/divination/incaAndeanThreePachaAyniEngine';
+import { calculateShangOracleBoneDivination, formatShangOracleBoneDivinationPrompt, SHANG_ORACLE_BONE_VERSION } from '../src/lib/divination/shangOracleBoneDivinationEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3747,6 +3750,50 @@ test('Hopi Four Worlds Kachina Prophecy Engine: calculates four worlds evolution
   const prompt = formatHopiFourWorldsPrompt(rep);
   assert(prompt.includes('아메리카 호피족 4대 우주 시대 & 카치나 정령 지혜 실측 데이터'));
   assert(prompt.includes(rep.dominantKachina.nameKo));
+});
+
+test('Donghak Cheondoism Cheonju Engine: calculates inner spirituality, cosmic resonance and gaebyeok index', () => {
+  const rep = calculateDonghakCheondoismCheonju(profile);
+  assert.equal(rep.engineVersion, DONGHAK_CHEONDOISM_VERSION);
+  assert(rep.innerSpiritualityScore >= 0 && rep.innerSpiritualityScore <= 100);
+  assert(rep.outerCosmicResonanceScore >= 0 && rep.outerCosmicResonanceScore <= 100);
+  assert(rep.unshakableAwakeningScore >= 0 && rep.unshakableAwakeningScore <= 100);
+  assert(rep.jigiUniversalEnergyAlignment >= 0 && rep.jigiUniversalEnergyAlignment <= 100);
+  assert(rep.gaebyeokTransformationIndex >= 0 && rep.gaebyeokTransformationIndex <= 100);
+  assert(rep.mansajiOmniscientWisdomScore >= 0 && rep.mansajiOmniscientWisdomScore <= 100);
+  assert(rep.primaryVirtue.titleKo.length > 0);
+  const prompt = formatDonghakCheondoismCheonjuPrompt(rep);
+  assert(prompt.includes('동학 수운 최제우 시천주(侍天主) & 지기금지 인내천 천지조화'));
+  assert(prompt.includes(rep.primaryVirtue.titleKo));
+});
+
+test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred reciprocity and totem medicine', () => {
+  const rep = calculateIncaAndeanThreePachaAyni(profile);
+  assert.equal(rep.engineVersion, INCA_ANDEAN_PACHA_VERSION);
+  assert(rep.hananPachaCelestialScore >= 0 && rep.hananPachaCelestialScore <= 100);
+  assert(rep.kayPachaEarthlyPresenceScore >= 0 && rep.kayPachaEarthlyPresenceScore <= 100);
+  assert(rep.ukuPachaSubconsciousDepthScore >= 0 && rep.ukuPachaSubconsciousDepthScore <= 100);
+  assert(rep.ayniReciprocityBalanceScore >= 0 && rep.ayniReciprocityBalanceScore <= 100);
+  assert(rep.samiLightEnergyPurity >= 0 && rep.samiLightEnergyPurity <= 100);
+  assert(rep.huchaHeavyEnergyClearance >= 0 && rep.huchaHeavyEnergyClearance <= 100);
+  assert(rep.sacredAnimalTotem.animalKo.length > 0);
+  const prompt = formatIncaAndeanThreePachaAyniPrompt(rep);
+  assert(prompt.includes('고대 잉카 안데스 코스몰로지 3대 파차 & 파차마마 아이니(Ayni) 호혜 조화'));
+  assert(prompt.includes(rep.sacredAnimalTotem.animalKo));
+});
+
+test('Shang Oracle Bone Divination Engine: calculates oracle bone medium, diviner judgment and crack auspiciousness', () => {
+  const rep = calculateShangOracleBoneDivination(profile);
+  assert.equal(rep.engineVersion, SHANG_ORACLE_BONE_VERSION);
+  assert(rep.divinationMedium.length > 0);
+  assert(rep.divinerName.length > 0);
+  assert(rep.shangdiDivineAlignmentScore >= 0 && rep.shangdiDivineAlignmentScore <= 100);
+  assert(rep.ancestralProtectionScore >= 0 && rep.ancestralProtectionScore <= 100);
+  assert(rep.crackAuspiciousnessIndex >= 0 && rep.crackAuspiciousnessIndex <= 100);
+  assert(rep.manifestationEfficacyScore >= 0 && rep.manifestationEfficacyScore <= 100);
+  const prompt = formatShangOracleBoneDivinationPrompt(rep);
+  assert(prompt.includes('고대 은나라 상(商) 갑골문(甲骨文) 신탁 복사(卜辭) & 정인 4단계 신의 균열'));
+  assert(prompt.includes(rep.divinerName));
 });
 
 
