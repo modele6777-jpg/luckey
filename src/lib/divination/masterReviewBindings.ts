@@ -907,5 +907,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "ancientIndianEarlyBuddhistFourNobleTruths": {
     "field": "fourNobleTruthsResult",
     "traceKey": "fourNobleTruthsResult"
+  },
+  "islamicSufiRumiMasnaviDivineLove": {
+    "field": "rumiMasnaviDivineLoveResult",
+    "traceKey": "rumiMasnaviDivineLoveResult"
+  },
+  "koreanUisangHwaeomIlseungBeopgye": {
+    "field": "uisangHwaeomIlseungBeopgyeResult",
+    "traceKey": "uisangHwaeomIlseungBeopgyeResult"
+  },
+  "frenchMontaigneEssaisWisdom": {
+    "field": "montaigneEssaisWisdomResult",
+    "traceKey": "montaigneEssaisWisdomResult"
   }
 };

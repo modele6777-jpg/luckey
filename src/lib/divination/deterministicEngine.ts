@@ -250,6 +250,9 @@ import { calculateChoeHangiGihakUnwha, formatChoeHangiGihakUnwhaPrompt, type Cho
 import { calculateSunTzuArtOfWarStrategy, formatSunTzuArtOfWarStrategyPrompt, type SunTzuArtOfWarStrategyResult, SUNTZU_STRATEGY_VERSION } from './ancientChineseSunTzuArtOfWarStrategyEngine';
 import { calculateFrenchDescartesCogito, formatFrenchDescartesCogitoPrompt, type FrenchDescartesCogitoResult, DESCARTES_COGITO_VERSION } from './frenchDescartesCogitoClaraDistinctaEngine';
 import { calculateAncientIndianFourNobleTruths, formatAncientIndianFourNobleTruthsPrompt, type AncientIndianFourNobleTruthsResult, FOUR_NOBLE_TRUTHS_VERSION } from './ancientIndianEarlyBuddhistFourNobleTruthsEngine';
+import { calculateRumiMasnaviDivineLove, formatRumiMasnaviDivineLovePrompt, type RumiMasnaviDivineLoveResult, RUMI_MASNAVI_SUFI_VERSION } from './islamicSufiRumiMasnaviDivineLoveEngine';
+import { calculateUisangHwaeomIlseungBeopgye, formatUisangHwaeomIlseungBeopgyePrompt, type UisangHwaeomIlseungBeopgyeResult, UISANG_HWAEOM_BEOPGYE_VERSION } from './koreanUisangHwaeomIlseungBeopgyeEngine';
+import { calculateMontaigneEssaisWisdom, formatMontaigneEssaisWisdomPrompt, type MontaigneEssaisWisdomResult, MONTAIGNE_ESSAIS_WISDOM_VERSION } from './frenchMontaigneEssaisWisdomEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -520,6 +523,9 @@ export interface DeterministicEngineReport {
   sunTzuArtOfWarStrategyResult?: SunTzuArtOfWarStrategyResult | null;
   frenchDescartesCogitoResult?: FrenchDescartesCogitoResult | null;
   fourNobleTruthsResult?: AncientIndianFourNobleTruthsResult | null;
+  rumiMasnaviDivineLoveResult?: RumiMasnaviDivineLoveResult | null;
+  uisangHwaeomIlseungBeopgyeResult?: UisangHwaeomIlseungBeopgyeResult | null;
+  montaigneEssaisWisdomResult?: MontaigneEssaisWisdomResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3095,6 +3101,33 @@ try {
     }
   })()));
 
+  // 219. 중세 이슬람 수피즘 잘랄 앗 딘 루미 마스나비 & 신성한 사랑 지혜 엔진
+  const rumiMasnaviDivineLoveResult = calculateSupplement('rumiMasnaviDivineLoveResult', () => ((() => {
+    try {
+      return calculateRumiMasnaviDivineLove(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 220. 한국 신라 의상대사 화엄일승법계도 & 법성게 원융무애 엔진
+  const uisangHwaeomIlseungBeopgyeResult = calculateSupplement('uisangHwaeomIlseungBeopgyeResult', () => ((() => {
+    try {
+      return calculateUisangHwaeomIlseungBeopgye(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 221. 프랑스 르네상스 몽테뉴 수상록(Essais) 회의주의·자기성찰 지혜 엔진
+  const montaigneEssaisWisdomResult = calculateSupplement('montaigneEssaisWisdomResult', () => ((() => {
+    try {
+      return calculateMontaigneEssaisWisdom(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3351,6 +3384,9 @@ try {
     sunTzuArtOfWarStrategyResult,
     frenchDescartesCogitoResult,
     fourNobleTruthsResult,
+    rumiMasnaviDivineLoveResult,
+    uisangHwaeomIlseungBeopgyeResult,
+    montaigneEssaisWisdomResult,
     tools: toolsMap,
   };
 }
@@ -3597,6 +3633,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ancientChineseSunTzuArtOfWarStrategy', nameKo: '손자병법 오사칠계 부전승 피실격허 전략', icon: '⚔️', category: 'deep_master' },
   { key: 'frenchDescartesCogitoClaraDistincta', nameKo: '데카르트 방법서설 코기토 명석판명 지성직관', icon: '💡', category: 'deep_master' },
   { key: 'ancientIndianEarlyBuddhistFourNobleTruths', nameKo: '초기불교 사성제 팔정도 고집멸도 중도해탈', icon: '☸️', category: 'deep_master' },
+  { key: 'islamicSufiRumiMasnaviDivineLove', nameKo: '루미 마스나비 수피즘 신성한사랑 영혼갈망', icon: '🕊️', category: 'deep_master' },
+  { key: 'koreanUisangHwaeomIlseungBeopgye', nameKo: '신라 의상대사 화엄일승법계도 법성게 원융무애', icon: '☸️', category: 'deep_master' },
+  { key: 'frenchMontaigneEssaisWisdom', nameKo: '몽테뉴 수상록 자기성찰 독단탈피 회의주의 중용', icon: '📖', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3704,6 +3743,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'islamicSufiRumiMasnaviDivineLove',
+    'koreanUisangHwaeomIlseungBeopgye',
+    'frenchMontaigneEssaisWisdom',
     'ancientChineseSunTzuArtOfWarStrategy',
     'frenchDescartesCogitoClaraDistincta',
     'ancientIndianEarlyBuddhistFourNobleTruths',
@@ -3777,6 +3819,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'islamicSufiRumiMasnaviDivineLove',
+    'koreanUisangHwaeomIlseungBeopgye',
+    'frenchMontaigneEssaisWisdom',
     'ancientChineseSunTzuArtOfWarStrategy',
     'frenchDescartesCogitoClaraDistincta',
     'ancientIndianEarlyBuddhistFourNobleTruths',
@@ -3943,6 +3988,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'islamicSufiRumiMasnaviDivineLove',
+    'koreanUisangHwaeomIlseungBeopgye',
+    'frenchMontaigneEssaisWisdom',
     'ancientChineseSunTzuArtOfWarStrategy',
     'frenchDescartesCogitoClaraDistincta',
     'ancientIndianEarlyBuddhistFourNobleTruths',

@@ -213,6 +213,9 @@ import { calculateChoeHangiGihakUnwha, formatChoeHangiGihakUnwhaPrompt, CHOE_HAN
 import { calculateSunTzuArtOfWarStrategy, formatSunTzuArtOfWarStrategyPrompt, SUNTZU_STRATEGY_VERSION } from '../src/lib/divination/ancientChineseSunTzuArtOfWarStrategyEngine';
 import { calculateFrenchDescartesCogito, formatFrenchDescartesCogitoPrompt, DESCARTES_COGITO_VERSION } from '../src/lib/divination/frenchDescartesCogitoClaraDistinctaEngine';
 import { calculateAncientIndianFourNobleTruths, formatAncientIndianFourNobleTruthsPrompt, FOUR_NOBLE_TRUTHS_VERSION } from '../src/lib/divination/ancientIndianEarlyBuddhistFourNobleTruthsEngine';
+import { calculateRumiMasnaviDivineLove, formatRumiMasnaviDivineLovePrompt, RUMI_MASNAVI_SUFI_VERSION } from '../src/lib/divination/islamicSufiRumiMasnaviDivineLoveEngine';
+import { calculateUisangHwaeomIlseungBeopgye, formatUisangHwaeomIlseungBeopgyePrompt, UISANG_HWAEOM_BEOPGYE_VERSION } from '../src/lib/divination/koreanUisangHwaeomIlseungBeopgyeEngine';
+import { calculateMontaigneEssaisWisdom, formatMontaigneEssaisWisdomPrompt, MONTAIGNE_ESSAIS_WISDOM_VERSION } from '../src/lib/divination/frenchMontaigneEssaisWisdomEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4458,6 +4461,49 @@ test('Early Buddhist Four Noble Truths Engine: calculates Four Noble Truths, Eig
   assert(prompt.includes('초기불교 사성제 & 팔정도 고집멸도 지표'));
   assert(prompt.includes(rep.activeNobleTruth.truthHanja));
 });
+
+test('Rumi Masnavi Divine Love Engine: calculates Ishq divine love, Qalb purification, Fana ego dissolution, and Sama tranquility', () => {
+  const rep = calculateRumiMasnaviDivineLove(profile);
+  assert.equal(rep.engineVersion, RUMI_MASNAVI_SUFI_VERSION);
+  assert(rep.ishqDivineLoveScore >= 0 && rep.ishqDivineLoveScore <= 100);
+  assert(rep.qalbPurificationScore >= 0 && rep.qalbPurificationScore <= 100);
+  assert(rep.fanaEgoDissolutionScore >= 0 && rep.fanaEgoDissolutionScore <= 100);
+  assert(rep.samaWhirlingTranquilityScore >= 0 && rep.samaWhirlingTranquilityScore <= 100);
+  assert(rep.woundLightWisdomScore >= 0 && rep.woundLightWisdomScore <= 100);
+  assert(rep.activeSpiritualStation.stationNameArabic.length > 0);
+  const prompt = formatRumiMasnaviDivineLovePrompt(rep);
+  assert(prompt.includes('루미 마스나비 & 수피즘 신성한 사랑 지표'));
+  assert(prompt.includes(rep.activeSpiritualStation.stationNameKo));
+});
+
+test('Uisang Hwaeom Ilseung Beopgyedo Engine: calculates Beopseong Wonnyung, Sangjeuk Sangip, Micro-Macro Cosmos, and First Mind Awakening', () => {
+  const rep = calculateUisangHwaeomIlseungBeopgye(profile);
+  assert.equal(rep.engineVersion, UISANG_HWAEOM_BEOPGYE_VERSION);
+  assert(rep.beopseongWonnyungScore >= 0 && rep.beopseongWonnyungScore <= 100);
+  assert(rep.sangjeukSangipInterpenetrationScore >= 0 && rep.sangjeukSangipInterpenetrationScore <= 100);
+  assert(rep.microMacroCosmosScore >= 0 && rep.microMacroCosmosScore <= 100);
+  assert(rep.firstMindAwakeningScore >= 0 && rep.firstMindAwakeningScore <= 100);
+  assert(rep.ancientImmobilityBuddhaScore >= 0 && rep.ancientImmobilityBuddhaScore <= 100);
+  assert(rep.activeBeopgyeVerse.hanjaVerse.length > 0);
+  const prompt = formatUisangHwaeomIlseungBeopgyePrompt(rep);
+  assert(prompt.includes('의상대사 화엄일승법계도 & 법성게 원융무애 지표'));
+  assert(prompt.includes(rep.activeBeopgyeVerse.hanjaVerse));
+});
+
+test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-introspection honesty, Natural moderation, and Equanimity', () => {
+  const rep = calculateMontaigneEssaisWisdom(profile);
+  assert.equal(rep.engineVersion, MONTAIGNE_ESSAIS_WISDOM_VERSION);
+  assert(rep.queSaisJeInquiryScore >= 0 && rep.queSaisJeInquiryScore <= 100);
+  assert(rep.selfIntrospectionHonestyScore >= 0 && rep.selfIntrospectionHonestyScore <= 100);
+  assert(rep.naturalModerationScore >= 0 && rep.naturalModerationScore <= 100);
+  assert(rep.humanToleranceEmpathyScore >= 0 && rep.humanToleranceEmpathyScore <= 100);
+  assert(rep.equanimityMortalityScore >= 0 && rep.equanimityMortalityScore <= 100);
+  assert(rep.activeThematicEssay.essayTitleFrench.length > 0);
+  const prompt = formatMontaigneEssaisWisdomPrompt(rep);
+  assert(prompt.includes('몽테뉴 수상록(Essais) 회의주의·자기성찰 지표'));
+  assert(prompt.includes(rep.activeThematicEssay.essayTitleKo));
+});
+
 
 
 
