@@ -156,6 +156,9 @@ import { calculateEtruscanAugurSixteenSky, formatEtruscanAugurSixteenSkyPrompt, 
 import { calculateRosicrucianChymicalWedding, formatRosicrucianChymicalWeddingPrompt, ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION } from '../src/lib/divination/rosicrucianChymicalWeddingSevenDaysEngine';
 import { calculateAztecTonalamatl, formatAztecTonalamatlPrompt, AZTEC_TONALAMATL_ENGINE_VERSION } from '../src/lib/divination/aztecTonalamatlSacredCalendarEngine';
 import { calculateMongolianTengriHiimori, formatMongolianTengriHiimoriPrompt, MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION } from '../src/lib/divination/mongolianTengriHiimoriSoulEngine';
+import { calculateGaelicWheelFireFestivals, formatGaelicWheelFireFestivalsPrompt, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION } from '../src/lib/divination/gaelicWheelFireFestivalsEngine';
+import { calculateNorseHavamalEighteenGaldr, formatNorseHavamalEighteenGaldrPrompt, NORSE_HAVAMAL_GALDR_ENGINE_VERSION } from '../src/lib/divination/norseHavamalEighteenGaldrEngine';
+import { calculateIbnArabiWahdatAlWujud, formatIbnArabiWahdatAlWujudPrompt, IBN_ARABI_WAHDAT_ENGINE_VERSION } from '../src/lib/divination/ibnArabiWahdatAlWujudWisdomEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3663,6 +3666,45 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   const prompt = formatMongolianTengriHiimoriPrompt(rep);
   assert(prompt.includes('몽골 텡그리즘 99 텡그리 & 히모리 풍마 영혼 공명 실측 데이터'));
   assert(prompt.includes(rep.dominantAspect.nameKo));
+});
+
+test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations, celtic hearthfire vibration and anam cara depth', () => {
+  const rep = calculateGaelicWheelFireFestivals(profile);
+  assert.equal(rep.engineVersion, GAELIC_FIRE_FESTIVALS_ENGINE_VERSION);
+  assert(rep.wheelCycleHarmonyScore >= 0 && rep.wheelCycleHarmonyScore <= 100);
+  assert(rep.celticFireVibration >= 0 && rep.celticFireVibration <= 100);
+  assert(rep.tuathaDeDanannBlessing >= 0 && rep.tuathaDeDanannBlessing <= 100);
+  assert(rep.anamCaraSoulDepth >= 0 && rep.anamCaraSoulDepth <= 100);
+  assert(rep.activeStation.nameKo.length > 0);
+  const prompt = formatGaelicWheelFireFestivalsPrompt(rep);
+  assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 실측 데이터'));
+  assert(prompt.includes(rep.activeStation.nameKo));
+});
+
+test('Norse Havamal Eighteen Galdr Engine: calculates eighteen runic charms, yggdrasil depth and odin mastery', () => {
+  const rep = calculateNorseHavamalEighteenGaldr(profile);
+  assert.equal(rep.engineVersion, NORSE_HAVAMAL_GALDR_ENGINE_VERSION);
+  assert(rep.yggdrasilWisdomDepth >= 0 && rep.yggdrasilWisdomDepth <= 100);
+  assert(rep.odinRuneMasteryIndex >= 0 && rep.odinRuneMasteryIndex <= 100);
+  assert(rep.valkyrieShieldIntegrity >= 0 && rep.valkyrieShieldIntegrity <= 100);
+  assert(rep.fateWyrdResilience >= 0 && rep.fateWyrdResilience <= 100);
+  assert(rep.dominantGaldrCharm.charmName.length > 0);
+  const prompt = formatNorseHavamalEighteenGaldrPrompt(rep);
+  assert(prompt.includes('고에다 하바말 오딘의 18대 게알드르 룬 비전 주문 실측 데이터'));
+  assert(prompt.includes(rep.dominantGaldrCharm.charmName));
+});
+
+test('Ibn Arabi Wahdat al-Wujud Heart Wisdom Engine: calculates prophetic heart facets, divine tajalli and mirror purity', () => {
+  const rep = calculateIbnArabiWahdatAlWujud(profile);
+  assert.equal(rep.engineVersion, IBN_ARABI_WAHDAT_ENGINE_VERSION);
+  assert(rep.wahdatOnenessPerceptionScore >= 0 && rep.wahdatOnenessPerceptionScore <= 100);
+  assert(rep.divineTajalliIllumination >= 0 && rep.divineTajalliIllumination <= 100);
+  assert(rep.perfectHumanMirrorIndex >= 0 && rep.perfectHumanMirrorIndex <= 100);
+  assert(rep.heartPurityBarakah >= 0 && rep.heartPurityBarakah <= 100);
+  assert(rep.dominantWisdom.prophetName.length > 0);
+  const prompt = formatIbnArabiWahdatAlWujudPrompt(rep);
+  assert(prompt.includes('이븐 아라비 존재의 단일성(Wahdat al-Wujud) 심장 영지 실측 데이터'));
+  assert(prompt.includes(rep.dominantWisdom.prophetName));
 });
 
 
