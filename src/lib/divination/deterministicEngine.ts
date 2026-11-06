@@ -223,6 +223,9 @@ import { calculateYiSunSinNanjungIlgi, formatYiSunSinNanjungIlgiPrompt, type YiS
 import { calculatePtahMemphite, formatPtahMemphitePrompt, type PtahMemphiteResult, PTAH_MEMPHITE_VERSION } from './ancientEgyptianPtahMemphiteTheologyEngine';
 import { calculateLughSamildanach, formatLughSamildanachPrompt, type LughSamildanachResult, LUGH_SAMILDANACH_VERSION } from './celticTuathaDeDanannLughSamildanachEngine';
 import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, type ChoeHyeonbaeGeulbonResult, CHOE_HYEONBAE_GEULBON_VERSION } from './koreanChoeHyeonbaeHangeulGeulbonEngine';
+import { calculateZoroastrianAmeshaSpentas, formatZoroastrianAmeshaSpentasPrompt, type ZoroastrianAmeshaSpentasResult, ZOROASTRIAN_AMESHA_SPENTAS_VERSION } from './ancientPersianZoroastrianAmeshaSpentasEngine';
+import { calculateDelphicChilon, formatDelphicChilonPrompt, type DelphicChilonResult, DELPHIC_CHILON_VERSION } from './ancientGreekDelphicChilonKnowThyselfEngine';
+import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, type JeongYakyongMongminResult, JEONG_YAKYONG_MONGMIN_VERSION } from './koreanJeongYakyongMongminSimseoEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -465,6 +468,9 @@ export interface DeterministicEngineReport {
   ptahMemphiteResult?: PtahMemphiteResult | null;
   lughSamildanachResult?: LughSamildanachResult | null;
   choeHyeonbaeGeulbonResult?: ChoeHyeonbaeGeulbonResult | null;
+  zoroastrianAmeshaSpentasResult?: ZoroastrianAmeshaSpentasResult | null;
+  delphicChilonResult?: DelphicChilonResult | null;
+  jeongYakyongMongminResult?: JeongYakyongMongminResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2796,6 +2802,33 @@ try {
     }
   })()));
 
+  // 192. 고대 페르시아 조로아스터교 6대 신성 불멸자 아메샤 스펜타 빛의 조화 엔진
+  const zoroastrianAmeshaSpentasResult = calculateSupplement('zoroastrianAmeshaSpentasResult', () => ((() => {
+    try {
+      return calculateZoroastrianAmeshaSpentas(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 193. 고대 그리스 델포이 아폴론 신전 스파르타의 킬론 자기성찰 & 절제 엔진
+  const delphicChilonResult = calculateSupplement('delphicChilonResult', () => ((() => {
+    try {
+      return calculateDelphicChilon(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 194. 다산 정약용 선생 《목민심서》 율기수신 & 애민청렴 공평무사 엔진
+  const jeongYakyongMongminResult = calculateSupplement('jeongYakyongMongminResult', () => ((() => {
+    try {
+      return calculateJeongYakyongMongmin(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -3024,6 +3057,9 @@ try {
     ptahMemphiteResult,
     lughSamildanachResult,
     choeHyeonbaeGeulbonResult,
+    zoroastrianAmeshaSpentasResult,
+    delphicChilonResult,
+    jeongYakyongMongminResult,
     tools: toolsMap,
   };
 }
@@ -3243,6 +3279,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ptahMemphiteHeartTongueCreation', nameKo: '이집트 멤피스신학 프타 심장구상 말씀선포 창조', icon: '🏛️', category: 'deep_master' },
   { key: 'celticLughSamildanachAllArts', nameKo: '켈트 투아하데다난 루 라바다 8대만능기예 마그투이레드', icon: '⚡', category: 'deep_master' },
   { key: 'koreanChoeHyeonbaeHangeulGeulbon', nameKo: '외솔 최현배 우리말본 한글 말글자주권 문화얼', icon: '📖', category: 'deep_master' },
+  { key: 'zoroastrianAmeshaSpentasLight', nameKo: '페르시아 조로아스터교 6대 신성불멸자 빛의조화', icon: '🔥', category: 'deep_master' },
+  { key: 'delphicChilonSpartanModeration', nameKo: '델포이 7현인 스파르타 킬론 너자신을알라 중용절제', icon: '🏛️', category: 'deep_master' },
+  { key: 'koreanJeongYakyongMongminSimseo', nameKo: '다산 정약용 목민심서 율기수신 애민청렴 공평무사', icon: '📜', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3296,6 +3335,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanJeongYakyongMongminSimseo',
+    'delphicChilonSpartanModeration',
     'celticLughSamildanachAllArts',
     'ptahMemphiteHeartTongueCreation',
     'yiSunSinNanjungIlgiStrategic',
@@ -3343,6 +3384,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'koreanJeongYakyongMongminSimseo',
+    'delphicChilonSpartanModeration',
     'ptahMemphiteHeartTongueCreation',
     'celticLughSamildanachAllArts',
     'atrahasisFloodWisdom',
@@ -3391,6 +3434,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'delphicChilonSpartanModeration',
+    'zoroastrianAmeshaSpentasLight',
     'celticLughSamildanachAllArts',
     'koreanChoeHyeonbaeHangeulGeulbon',
     'yiSunSinNanjungIlgiStrategic',
@@ -3532,6 +3577,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'zoroastrianAmeshaSpentasLight',
+    'delphicChilonSpartanModeration',
+    'koreanJeongYakyongMongminSimseo',
     'koreanChoeHyeonbaeHangeulGeulbon',
     'ptahMemphiteHeartTongueCreation',
     'eddicYggdrasilNineRealms',
