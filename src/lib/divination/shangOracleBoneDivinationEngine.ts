@@ -20,7 +20,7 @@
  * - 대국 결단력 및 응험 지수 (Manifestation Efficacy)
  */
 
-import type { UserProfile } from '../../types/user';
+import type { UserProfile } from '../sharedState';
 
 export const SHANG_ORACLE_BONE_VERSION = '1.0.0';
 

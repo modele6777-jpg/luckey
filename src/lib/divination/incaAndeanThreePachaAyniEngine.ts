@@ -23,7 +23,7 @@
  *    - 야차이 (Yachay): 머리의 밝은 지혜와 올바른 앎
  */
 
-import type { UserProfile } from '../../types/user';
+import type { UserProfile } from '../sharedState';
 
 export const INCA_ANDEAN_PACHA_VERSION = '1.0.0';
 

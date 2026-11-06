@@ -20,7 +20,7 @@
  *    - 낡은 운기가 소멸하고 새로운 생명과 지혜의 문명이 열리는 대전환의 기운
  */
 
-import type { UserProfile } from '../../types/user';
+import type { UserProfile } from '../sharedState';
 
 export const DONGHAK_CHEONDOISM_VERSION = '1.0.0';
 
