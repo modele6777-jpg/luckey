@@ -158,8 +158,11 @@ function djb2Hash(str: string): number {
   return Math.abs(hash);
 }
 
-export function calculateChonggamnokTenSanctuaries(profile: UserProfile): ChonggamnokReport {
-  const seedStr = `${profile.birthDate || '1994-01-24'}_${profile.birthTime || '12:00'}_${profile.name || 'zeZE'}_chonggamnok_v1`;
+export function calculateChonggamnokTenSanctuaries(profile?: UserProfile | null): ChonggamnokReport {
+  const bdate = profile?.basic?.birthdate || '1994-01-24';
+  const btime = profile?.basic?.birthtime || '12:00';
+  const name = profile?.basic?.name || 'zeZE';
+  const seedStr = `${bdate}_${btime}_${name}_chonggamnok_v1`;
   const seed = djb2Hash(seedStr);
 
   const gonggongEuleulVirtueScore = 60 + (seed % 39);

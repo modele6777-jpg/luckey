@@ -106,8 +106,11 @@ function djb2Hash(str: string): number {
   return Math.abs(hash);
 }
 
-export function calculateHopiFourWorldsKachina(profile: UserProfile): HopiFourWorldsReport {
-  const seedStr = `${profile.birthDate || '1994-01-24'}_${profile.birthTime || '12:00'}_${profile.name || 'zeZE'}_hopi_kachina_v1`;
+export function calculateHopiFourWorldsKachina(profile?: UserProfile | null): HopiFourWorldsReport {
+  const bdate = profile?.basic?.birthdate || '1994-01-24';
+  const btime = profile?.basic?.birthtime || '12:00';
+  const name = profile?.basic?.name || 'zeZE';
+  const seedStr = `${bdate}_${btime}_${name}_hopi_kachina_v1`;
   const seed = djb2Hash(seedStr);
 
   const fourWorldsEvolutionScore = 61 + (seed % 38);

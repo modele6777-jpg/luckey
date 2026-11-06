@@ -104,8 +104,11 @@ function djb2Hash(str: string): number {
   return Math.abs(hash);
 }
 
-export function calculateBalineseTriHitaKarana(profile: UserProfile): BalineseTriHitaKaranaReport {
-  const seedStr = `${profile.birthDate || '1994-01-24'}_${profile.birthTime || '12:00'}_${profile.name || 'zeZE'}_balinese_tri_hita_v1`;
+export function calculateBalineseTriHitaKarana(profile?: UserProfile | null): BalineseTriHitaKaranaReport {
+  const bdate = profile?.basic?.birthdate || '1994-01-24';
+  const btime = profile?.basic?.birthtime || '12:00';
+  const name = profile?.basic?.name || 'zeZE';
+  const seedStr = `${bdate}_${btime}_${name}_balinese_tri_hita_v1`;
   const seed = djb2Hash(seedStr);
 
   const parhyanganDivineHarmony = 62 + (seed % 37);
