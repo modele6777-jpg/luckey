@@ -799,5 +799,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanChoeHyeonbaeHangeulGeulbon": {
     "field": "choeHyeonbaeGeulbonResult",
     "traceKey": "choeHyeonbaeGeulbonResult"
+  },
+  "zoroastrianAmeshaSpentasLight": {
+    "field": "zoroastrianAmeshaSpentasResult",
+    "traceKey": "zoroastrianAmeshaSpentasResult"
+  },
+  "delphicChilonSpartanModeration": {
+    "field": "delphicChilonResult",
+    "traceKey": "delphicChilonResult"
+  },
+  "koreanJeongYakyongMongminSimseo": {
+    "field": "jeongYakyongMongminResult",
+    "traceKey": "jeongYakyongMongminResult"
   }
 };

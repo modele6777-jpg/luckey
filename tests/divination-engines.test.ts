@@ -186,6 +186,9 @@ import { calculateYiSunSinNanjungIlgi, formatYiSunSinNanjungIlgiPrompt, YISUNSIN
 import { calculatePtahMemphite, formatPtahMemphitePrompt, PTAH_MEMPHITE_VERSION } from '../src/lib/divination/ancientEgyptianPtahMemphiteTheologyEngine';
 import { calculateLughSamildanach, formatLughSamildanachPrompt, LUGH_SAMILDANACH_VERSION } from '../src/lib/divination/celticTuathaDeDanannLughSamildanachEngine';
 import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, CHOE_HYEONBAE_GEULBON_VERSION } from '../src/lib/divination/koreanChoeHyeonbaeHangeulGeulbonEngine';
+import { calculateZoroastrianAmeshaSpentas, formatZoroastrianAmeshaSpentasPrompt, ZOROASTRIAN_AMESHA_SPENTAS_VERSION } from '../src/lib/divination/ancientPersianZoroastrianAmeshaSpentasEngine';
+import { calculateDelphicChilon, formatDelphicChilonPrompt, DELPHIC_CHILON_VERSION } from '../src/lib/divination/ancientGreekDelphicChilonKnowThyselfEngine';
+import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, JEONG_YAKYONG_MONGMIN_VERSION } from '../src/lib/divination/koreanJeongYakyongMongminSimseoEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -4052,6 +4055,49 @@ test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul prese
   assert(prompt.includes('외솔 최현배 선생 《우리말본》'));
   assert(prompt.includes(rep.activeGeulbonStage.stageNameKo));
 });
+
+test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, Asha Vahishta truth, Spenta Armaiti and Garothman light', () => {
+  const rep = calculateZoroastrianAmeshaSpentas(profile);
+  assert.equal(rep.engineVersion, ZOROASTRIAN_AMESHA_SPENTAS_VERSION);
+  assert(rep.vohuManahGoodMindIndex >= 0 && rep.vohuManahGoodMindIndex <= 100);
+  assert(rep.ashaVahishtaCosmicTruthForce >= 0 && rep.ashaVahishtaCosmicTruthForce <= 100);
+  assert(rep.spentaArmaitiHolyDevotionScore >= 0 && rep.spentaArmaitiHolyDevotionScore <= 100);
+  assert(rep.haurvatatWholenessHealingPower >= 0 && rep.haurvatatWholenessHealingPower <= 100);
+  assert(rep.ameretatImmortalityVitality >= 0 && rep.ameretatImmortalityVitality <= 100);
+  assert(rep.activeSpentaStage.stageNameAvestan.length > 0);
+  const prompt = formatZoroastrianAmeshaSpentasPrompt(rep);
+  assert(prompt.includes('고대 페르시아 조로아스터교 《아베스타(Avesta)》'));
+  assert(prompt.includes(rep.activeSpentaStage.stageNameKo));
+});
+
+test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauton self-knowledge, Meden Agan moderation and Spartan brevity', () => {
+  const rep = calculateDelphicChilon(profile);
+  assert.equal(rep.engineVersion, DELPHIC_CHILON_VERSION);
+  assert(rep.gnothiSeautonSelfKnowledgeIndex >= 0 && rep.gnothiSeautonSelfKnowledgeIndex <= 100);
+  assert(rep.medenAganModerationEquilibrium >= 0 && rep.medenAganModerationEquilibrium <= 100);
+  assert(rep.enguaPrudenceDiscretionForce >= 0 && rep.enguaPrudenceDiscretionForce <= 100);
+  assert(rep.laconicBrevityClarityScore >= 0 && rep.laconicBrevityClarityScore <= 100);
+  assert(rep.spartanEnduranceTemperancePower >= 0 && rep.spartanEnduranceTemperancePower <= 100);
+  assert(rep.activeSageStage.stageNameGreek.length > 0);
+  const prompt = formatDelphicChilonPrompt(rep);
+  assert(prompt.includes('델포이 아폴론 신전 7현인 《스파르타의 킬론(Chilon)》'));
+  assert(prompt.includes(rep.activeSageStage.stageNameKo));
+});
+
+test('Korean Jeong Yak-yong Mongmin Simseo Engine: calculates Cheongnyeom integrity, Yulgi self-discipline and Aemin compassion', () => {
+  const rep = calculateJeongYakyongMongmin(profile);
+  assert.equal(rep.engineVersion, JEONG_YAKYONG_MONGMIN_VERSION);
+  assert(rep.cheongnyeomIntegrityPurityScore >= 0 && rep.cheongnyeomIntegrityPurityScore <= 100);
+  assert(rep.yulgiSelfDisciplineForce >= 0 && rep.yulgiSelfDisciplineForce <= 100);
+  assert(rep.aeminCompassionWelfarePower >= 0 && rep.aeminCompassionWelfarePower <= 100);
+  assert(rep.bonggongPublicDutyLoyaltyIndex >= 0 && rep.bonggongPublicDutyLoyaltyIndex <= 100);
+  assert(rep.jinhwangCrisisManagementResilience >= 0 && rep.jinhwangCrisisManagementResilience <= 100);
+  assert(rep.activeOfficialStage.stageNameHanja.length > 0);
+  const prompt = formatJeongYakyongMongminPrompt(rep);
+  assert(prompt.includes('다산 정약용 선생 《목민심서(牧民心書)》'));
+  assert(prompt.includes(rep.activeOfficialStage.stageNameKo));
+});
+
 
 
 
