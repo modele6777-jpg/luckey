@@ -642,7 +642,7 @@ function AppContent() {
       <main className="sites-pinned-main flex-1 min-h-0 overflow-x-hidden flex flex-col relative w-full">
         <motion.div
           key={location ? location.split('?')[0].split('#')[0] : '/'}
-          initial={{ opacity: 0.88 }}
+          initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.1, ease: 'easeOut' }}
           className="w-full h-full flex flex-col min-h-0"

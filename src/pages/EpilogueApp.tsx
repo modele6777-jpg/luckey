@@ -1056,20 +1056,14 @@ export default function EpilogueApp() {
   };
 
   return (
-    <div className="h-app-full w-full flex flex-col relative overflow-hidden font-sans bg-transparent">
+    <div data-epilogue-page="true" className="h-app-full w-full flex flex-col relative overflow-hidden font-sans bg-transparent">
       {/* Galaxy Milky Way Ambient Particles */}
       {!legacy && <FloatingParticles count={narrow ? 5 : 22} />}
-
-      {/* Galaxy Nebulae Glow Orbs */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 rounded-full bg-purple-600/15 blur-[120px] pointer-events-none z-0" />
-      <div className="fixed -bottom-40 -right-40 w-96 h-96 rounded-full bg-pink-600/15 blur-[120px] pointer-events-none z-0" />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-indigo-900/10 blur-[150px] pointer-events-none z-0" />
-
 
       {/* Header Info Bar (Matching other channels) */}
       <motion.div
         data-page-brand="true"
-        initial={{ y: -8, opacity: 0.88 }}
+        initial={false}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         className="prism-hub-header duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300"
@@ -1085,7 +1079,7 @@ export default function EpilogueApp() {
 
       {/* Navigation Subnav Menu (Epilogue: Diary / CHRONICLE / Profile) */}
       <motion.nav
-        initial={{ y: -10, opacity: 0.88 }}
+        initial={false}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className={`prism-xs-subnav duo-page-nav relative self-center shrink-0 mx-auto z-40 flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[calc(100%-2rem)] overflow-x-auto no-scrollbar md:max-w-fit  transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
@@ -1158,7 +1152,7 @@ export default function EpilogueApp() {
 
             {/* Section Form Card */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="glass p-6 sm:p-8 rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden backdrop-blur-2xl space-y-6 group"
@@ -1246,7 +1240,7 @@ export default function EpilogueApp() {
 
             {/* 🌟 현재 로그인된 구글 계정 및 클라우드 동기화 상태 (Google Cloud Account Status Bar) */}
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.1 }}
               className="glass p-5 sm:p-6 rounded-[32px] border border-purple-500/20 shadow-2xl backdrop-blur-2xl relative overflow-hidden space-y-4 group"

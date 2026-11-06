@@ -727,10 +727,10 @@ export function EpilogueDiaryView() {
   return (
     <DuoWorkspace className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-2 sm:pt-4 pb-16">
 <div className="duo-workspace-header"><motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="glass p-6 sm:p-8 rounded-[36px] border border-purple-500/20 shadow-2xl relative overflow-hidden backdrop-blur-2xl space-y-4 group"
+        data-epilogue-entry-panel="true" className="glass p-6 sm:p-8 rounded-[36px] border border-purple-500/20 shadow-2xl relative overflow-hidden backdrop-blur-2xl space-y-4 group"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-indigo-600/10 opacity-70 pointer-events-none" />
         
@@ -830,10 +830,10 @@ export function EpilogueDiaryView() {
         </div>
       </motion.div></div><section className="duo-workspace-input" aria-label="오늘의 기분과 성찰 일기 작성">
 <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.05 }}
-        className="glass p-6 sm:p-8 rounded-[36px] border border-white/10 shadow-2xl backdrop-blur-2xl space-y-6 relative overflow-hidden group"
+        data-epilogue-entry-panel="true" className="glass p-6 sm:p-8 rounded-[36px] border border-white/10 shadow-2xl backdrop-blur-2xl space-y-6 relative overflow-hidden group"
       >
 <div className="space-y-3">
           <label className="block text-xs font-bold text-white/60 tracking-wider font-sans uppercase flex items-center gap-2">
