@@ -775,5 +775,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanJeonBongjunNokduGeneral": {
     "field": "jeonBongjunNokduResult",
     "traceKey": "jeonBongjunNokduResult"
+  },
+  "atrahasisFloodWisdom": {
+    "field": "atrahasisFloodResult",
+    "traceKey": "atrahasisFloodResult"
+  },
+  "eddicYggdrasilNineRealms": {
+    "field": "eddicYggdrasilResult",
+    "traceKey": "eddicYggdrasilResult"
+  },
+  "yiSunSinNanjungIlgiStrategic": {
+    "field": "yiSunSinNanjungIlgiResult",
+    "traceKey": "yiSunSinNanjungIlgiResult"
   }
 };
