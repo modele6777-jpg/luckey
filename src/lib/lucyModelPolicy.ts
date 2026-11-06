@@ -12,12 +12,27 @@ export function isMasterTierModel(model: string): boolean {
 export async function requestWithModelFallback<T>(
   primary: string,
   fallback: readonly string[],
-  request: (model: string) => Promise<T>,
+  request: (model: string, signal?: AbortSignal) => Promise<T>,
+  options?: { attemptTimeoutMs: number },
 ): Promise<{ response: T; modelUsed: string }> {
   let lastError: unknown;
   for (const modelUsed of modelCandidates(primary, fallback)) {
-    try { return { response: await request(modelUsed), modelUsed }; }
-    catch (error) { lastError = error; }
+    const controller = options ? new AbortController() : undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const operation = request(modelUsed, controller?.signal);
+      const response = options ? await Promise.race([
+        operation,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => {
+            controller!.abort();
+            reject(new Error('Model request timed out'));
+          }, options.attemptTimeoutMs);
+        }),
+      ]) : await operation;
+      return { response, modelUsed };
+    } catch (error) { lastError = error; }
+    finally { if (timer) clearTimeout(timer); }
   }
   throw lastError;
 }

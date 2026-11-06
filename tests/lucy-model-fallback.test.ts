@@ -26,3 +26,15 @@ test('general review may fall back to a separate Lite review request while maste
   assert.ok(!getLucyRequestFallbacks(LUCY_MASTER_MODEL, 'master').some(model => model.includes('lite')));
   assert.ok(!getLucyRequestFallbacks(LUCY_REVIEW_MODEL).some(model => model.includes('lite')));
 });
+
+test('a hanging review model is aborted and the next candidate can finish', async () => {
+  let aborted = false;
+  const result = await requestWithModelFallback('hung', ['available'], (model, signal) => {
+    if (model === 'available') return Promise.resolve('reviewed');
+    signal!.addEventListener('abort', () => { aborted = true; }, { once:true });
+    return new Promise<string>(() => {});
+  }, { attemptTimeoutMs: 20 });
+  assert.equal(aborted, true);
+  assert.equal(result.modelUsed, 'available');
+  assert.equal(result.response, 'reviewed');
+});
