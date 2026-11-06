@@ -787,5 +787,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "yiSunSinNanjungIlgiStrategic": {
     "field": "yiSunSinNanjungIlgiResult",
     "traceKey": "yiSunSinNanjungIlgiResult"
+  },
+  "ptahMemphiteHeartTongueCreation": {
+    "field": "ptahMemphiteResult",
+    "traceKey": "ptahMemphiteResult"
+  },
+  "celticLughSamildanachAllArts": {
+    "field": "lughSamildanachResult",
+    "traceKey": "lughSamildanachResult"
+  },
+  "koreanChoeHyeonbaeHangeulGeulbon": {
+    "field": "choeHyeonbaeGeulbonResult",
+    "traceKey": "choeHyeonbaeGeulbonResult"
   }
 };
