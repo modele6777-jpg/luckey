@@ -220,6 +220,9 @@ import { calculateJeonBongjunNokdu, formatJeonBongjunNokduPrompt, type JeonBongj
 import { calculateAtrahasisFlood, formatAtrahasisFloodPrompt, type AtrahasisFloodResult, ATRAHASIS_FLOOD_VERSION } from './mesopotamianAtrahasisFloodWisdomEngine';
 import { calculateEddicYggdrasil, formatEddicYggdrasilPrompt, type EddicYggdrasilResult, EDDIC_YGGDRASIL_VERSION } from './scandinavianEddicYggdrasilNineRealmsEngine';
 import { calculateYiSunSinNanjungIlgi, formatYiSunSinNanjungIlgiPrompt, type YiSunSinNanjungIlgiResult, YISUNSIN_NANJUNG_ILGI_VERSION } from './koreanYiSunSinNanjungIlgiStrategicEngine';
+import { calculatePtahMemphite, formatPtahMemphitePrompt, type PtahMemphiteResult, PTAH_MEMPHITE_VERSION } from './ancientEgyptianPtahMemphiteTheologyEngine';
+import { calculateLughSamildanach, formatLughSamildanachPrompt, type LughSamildanachResult, LUGH_SAMILDANACH_VERSION } from './celticTuathaDeDanannLughSamildanachEngine';
+import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, type ChoeHyeonbaeGeulbonResult, CHOE_HYEONBAE_GEULBON_VERSION } from './koreanChoeHyeonbaeHangeulGeulbonEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -459,6 +462,9 @@ export interface DeterministicEngineReport {
   atrahasisFloodResult?: AtrahasisFloodResult | null;
   eddicYggdrasilResult?: EddicYggdrasilResult | null;
   yiSunSinNanjungIlgiResult?: YiSunSinNanjungIlgiResult | null;
+  ptahMemphiteResult?: PtahMemphiteResult | null;
+  lughSamildanachResult?: LughSamildanachResult | null;
+  choeHyeonbaeGeulbonResult?: ChoeHyeonbaeGeulbonResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2763,6 +2769,33 @@ try {
     }
   })()));
 
+  // 189. 고대 이집트 멤피스 신학 프타 심장 구상 & 말씀 선포 엔진
+  const ptahMemphiteResult = calculateSupplement('ptahMemphiteResult', () => ((() => {
+    try {
+      return calculatePtahMemphite(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 190. 아일랜드 켈트 신화 루 라바다 8대 만능 기예 & 마그 투이레드 승전 엔진
+  const lughSamildanachResult = calculateSupplement('lughSamildanachResult', () => ((() => {
+    try {
+      return calculateLughSamildanach(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 191. 외솔 최현배 선생 《우리말본》 & 한글 말글 자주권 문화 얼 계승 엔진
+  const choeHyeonbaeGeulbonResult = calculateSupplement('choeHyeonbaeGeulbonResult', () => ((() => {
+    try {
+      return calculateChoeHyeonbaeGeulbon(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -2988,6 +3021,9 @@ try {
     atrahasisFloodResult,
     eddicYggdrasilResult,
     yiSunSinNanjungIlgiResult,
+    ptahMemphiteResult,
+    lughSamildanachResult,
+    choeHyeonbaeGeulbonResult,
     tools: toolsMap,
   };
 }
@@ -3204,6 +3240,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'atrahasisFloodWisdom', nameKo: '메소포타미아 아트라하시스 지혜의방주 대홍수정화 절제', icon: '🌊', category: 'deep_master' },
   { key: 'eddicYggdrasilNineRealms', nameKo: '북유럽 고에다 위그드라실 9대우주계 3대영천 소생', icon: '🌳', category: 'deep_master' },
   { key: 'yiSunSinNanjungIlgiStrategic', nameKo: '충무공 이순신 난중일기 필사즉생 명량대역전', icon: '⚔️', category: 'deep_master' },
+  { key: 'ptahMemphiteHeartTongueCreation', nameKo: '이집트 멤피스신학 프타 심장구상 말씀선포 창조', icon: '🏛️', category: 'deep_master' },
+  { key: 'celticLughSamildanachAllArts', nameKo: '켈트 투아하데다난 루 라바다 8대만능기예 마그투이레드', icon: '⚡', category: 'deep_master' },
+  { key: 'koreanChoeHyeonbaeHangeulGeulbon', nameKo: '외솔 최현배 우리말본 한글 말글자주권 문화얼', icon: '📖', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3257,6 +3296,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'celticLughSamildanachAllArts',
+    'ptahMemphiteHeartTongueCreation',
     'yiSunSinNanjungIlgiStrategic',
     'atrahasisFloodWisdom',
     'mixtecEightDeerJaguarClaw',
@@ -3302,6 +3343,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ptahMemphiteHeartTongueCreation',
+    'celticLughSamildanachAllArts',
     'atrahasisFloodWisdom',
     'yiSunSinNanjungIlgiStrategic',
     'eleusinianTriptolemosCivilization',
@@ -3348,6 +3391,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'celticLughSamildanachAllArts',
+    'koreanChoeHyeonbaeHangeulGeulbon',
     'yiSunSinNanjungIlgiStrategic',
     'eddicYggdrasilNineRealms',
     'koreanJeonBongjunNokduGeneral',
@@ -3487,6 +3532,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'koreanChoeHyeonbaeHangeulGeulbon',
+    'ptahMemphiteHeartTongueCreation',
     'eddicYggdrasilNineRealms',
     'atrahasisFloodWisdom',
     'yiSunSinNanjungIlgiStrategic',

@@ -183,6 +183,9 @@ import { calculateJeonBongjunNokdu, formatJeonBongjunNokduPrompt, JEON_BONGJUN_N
 import { calculateAtrahasisFlood, formatAtrahasisFloodPrompt, ATRAHASIS_FLOOD_VERSION } from '../src/lib/divination/mesopotamianAtrahasisFloodWisdomEngine';
 import { calculateEddicYggdrasil, formatEddicYggdrasilPrompt, EDDIC_YGGDRASIL_VERSION } from '../src/lib/divination/scandinavianEddicYggdrasilNineRealmsEngine';
 import { calculateYiSunSinNanjungIlgi, formatYiSunSinNanjungIlgiPrompt, YISUNSIN_NANJUNG_ILGI_VERSION } from '../src/lib/divination/koreanYiSunSinNanjungIlgiStrategicEngine';
+import { calculatePtahMemphite, formatPtahMemphitePrompt, PTAH_MEMPHITE_VERSION } from '../src/lib/divination/ancientEgyptianPtahMemphiteTheologyEngine';
+import { calculateLughSamildanach, formatLughSamildanachPrompt, LUGH_SAMILDANACH_VERSION } from '../src/lib/divination/celticTuathaDeDanannLughSamildanachEngine';
+import { calculateChoeHyeonbaeGeulbon, formatChoeHyeonbaeGeulbonPrompt, CHOE_HYEONBAE_GEULBON_VERSION } from '../src/lib/divination/koreanChoeHyeonbaeHangeulGeulbonEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -4007,6 +4010,49 @@ test('Korean Yi Sun-sin Nanjung Ilgi Strategic Engine: calculates Pilsa Jeuksaen
   assert(prompt.includes('충무공 이순신 장군 친필 《난중일기(亂中日記)》'));
   assert(prompt.includes(rep.activeStrategicStage.stageNameKo));
 });
+
+test('Ancient Egyptian Ptah Memphite Theology Engine: calculates heart thought conceptualization, tongue utterance and Maat alignment', () => {
+  const rep = calculatePtahMemphite(profile);
+  assert.equal(rep.engineVersion, PTAH_MEMPHITE_VERSION);
+  assert(rep.heartThoughtConceptualizationIndex >= 0 && rep.heartThoughtConceptualizationIndex <= 100);
+  assert(rep.tongueUtteranceManifestationForce >= 0 && rep.tongueUtteranceManifestationForce <= 100);
+  assert(rep.divineKaVitalityInfusionScore >= 0 && rep.divineKaVitalityInfusionScore <= 100);
+  assert(rep.maatCosmicTruthAlignment >= 0 && rep.maatCosmicTruthAlignment <= 100);
+  assert(rep.artisanMasteryPrecisionPower >= 0 && rep.artisanMasteryPrecisionPower <= 100);
+  assert(rep.activeCreationStage.stageNameAncient.length > 0);
+  const prompt = formatPtahMemphitePrompt(rep);
+  assert(prompt.includes('고대 이집트 멤피스 신학 《프타(Ptah)》'));
+  assert(prompt.includes(rep.activeCreationStage.stageNameKo));
+});
+
+test('Celtic Tuatha Dé Danann Lugh Samildánach Engine: calculates polymath integrity, spear precision, Tara hall admission and Mag Tuired victory', () => {
+  const rep = calculateLughSamildanach(profile);
+  assert.equal(rep.engineVersion, LUGH_SAMILDANACH_VERSION);
+  assert(rep.samildanachPolymathIntegrityIndex >= 0 && rep.samildanachPolymathIntegrityIndex <= 100);
+  assert(rep.areadbharSpearOfLightPrecision >= 0 && rep.areadbharSpearOfLightPrecision <= 100);
+  assert(rep.taraHallAdmissionWorthiness >= 0 && rep.taraHallAdmissionWorthiness <= 100);
+  assert(rep.magTuiredStrategicVictoryPower >= 0 && rep.magTuiredStrategicVictoryPower <= 100);
+  assert(rep.eightArtsHarmoniousMastery >= 0 && rep.eightArtsHarmoniousMastery <= 100);
+  assert(rep.activeCraftRank.rankNameOldIrish.length > 0);
+  const prompt = formatLughSamildanachPrompt(rep);
+  assert(prompt.includes('켈트 투아하 데 다난 《루 라바다(Lugh Samildánach)》'));
+  assert(prompt.includes(rep.activeCraftRank.rankNameKo));
+});
+
+test('Korean Choe Hyeon-bae Hangeul Geulbon Engine: calculates Korean soul preservation, linguistic empowerment, plain words and prison resilience', () => {
+  const rep = calculateChoeHyeonbaeGeulbon(profile);
+  assert.equal(rep.engineVersion, CHOE_HYEONBAE_GEULBON_VERSION);
+  assert(rep.koreanSoulPreservationIndex >= 0 && rep.koreanSoulPreservationIndex <= 100);
+  assert(rep.geulbonLinguisticEmpowermentForce >= 0 && rep.geulbonLinguisticEmpowermentForce <= 100);
+  assert(rep.plainWordsCommunicationClarity >= 0 && rep.plainWordsCommunicationClarity <= 100);
+  assert(rep.prisonResilienceUnbendingFaith >= 0 && rep.prisonResilienceUnbendingFaith <= 100);
+  assert(rep.hangulRevivalCivilizationPower >= 0 && rep.hangulRevivalCivilizationPower <= 100);
+  assert(rep.activeGeulbonStage.stageNameHanja.length > 0);
+  const prompt = formatChoeHyeonbaeGeulbonPrompt(rep);
+  assert(prompt.includes('외솔 최현배 선생 《우리말본》'));
+  assert(prompt.includes(rep.activeGeulbonStage.stageNameKo));
+});
+
 
 
 
