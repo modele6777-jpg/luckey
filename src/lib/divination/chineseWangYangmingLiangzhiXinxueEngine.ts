@@ -68,7 +68,6 @@ const XINXUE_STAGES: XinxueStage[] = [
     stageNameHanja: '知行合一 (지행합일: 앎과 행함의 일치)',
     stageNameKo: '생각만 굴리지 않고 즉각적인 실천으로 진정한 앎을 완성하는 행동 단계',
     xinxuePrinciple: '앎은 행함의 뜻이요 행함은 앎의 공부이다 (知是行之始 行是知之成).',
-    actionableDirective: '머뭇거리며 계획만 세우지 말고 당장 할 수 있는 가장 작은 행동을 통해 현실을 변화시킴',
     actionBlessing: '지체 없이 행동에 착수하여 현실의 벽을 돌파하고 이론을 실전 역량으로 승화함',
   },
   {
