@@ -15,8 +15,8 @@
  *    AI 프롬프트에 유기적으로 주입합니다.
  */
 
-import { loadAllPermanentMemories, type DailyMemoryEntry } from './chatMemoryArchive';
-import { readLucyMemory, type LucyMemoryEntry } from './lucyLongTermMemory';
+import type { DailyMemoryEntry } from './chatMemoryArchive';
+import { readLucyMemory, buildLucyLongTermPrompt } from './lucyLongTermMemory';
 
 export const LUCY_EPISODIC_MEMORY_ENGINE_VERSION = 'LUCKEY-EPISODIC-MEMORY-v1.0.0';
 
@@ -156,10 +156,7 @@ export function extractEpisodicMemoryLedger(
     }
   }
 
-  // 핵심 신념/가치관 추출
-  if (threadsMap.has('career')) coreValues.push('성장과 자기 완성을 향한 뚜렷한 주도성');
-  if (threadsMap.has('relationship')) coreValues.push('깊고 진실한 정서적 교감 중시');
-  if (threadsMap.has('wellness')) coreValues.push('스스로를 돌보고 회복하려는 섬세한 감각');
+  // Topic mentions do not establish a user's personality or core values.
 
   return {
     version: LUCY_EPISODIC_MEMORY_ENGINE_VERSION,
@@ -167,63 +164,14 @@ export function extractEpisodicMemoryLedger(
     activeThreads: Array.from(threadsMap.values()),
     keyPeople: Array.from(peopleMap.values()),
     openFollowUps: openFollowUps.slice(0, 3),
-    coreValues: coreValues.length > 0 ? coreValues : ['진솔한 삶의 가치와 따뜻한 마음'],
+    coreValues,
   };
 }
 
 /**
  * AI 시스템 프롬프트에 주입할 풍부하고 다정한 [루시의 영혼 기억 노트] 생성
  */
-export function buildLucyEpisodicMemoryPrompt(account?: string, nickname: string = '제제'): string {
-  const permanentMemories = loadAllPermanentMemories();
-  const rawLucyMemories = account ? readLucyMemory(account) : [];
-  const recentUserExcerpts = rawLucyMemories
-    .filter((m) => m.role === 'user')
-    .slice(0, 8)
-    .map((m) => m.text);
-
-  const ledger = extractEpisodicMemoryLedger(permanentMemories, recentUserExcerpts);
-
-  if (ledger.activeThreads.length === 0 && ledger.keyPeople.length === 0 && ledger.openFollowUps.length === 0) {
-    return '';
-  }
-
-  const threadsBlock = ledger.activeThreads.length > 0
-    ? ledger.activeThreads
-        .map((t) => `- [${t.categoryKoName} / ${t.recentMentionDate}]: ${t.topic} (${t.status === 'waiting_outcome' ? '결과 대기 중/진행 중' : '현재 주된 관심사'})`)
-        .join('\n')
-    : '- 최근 특별한 고민보다 평온한 일상을 가꾸는 중';
-
-  const peopleBlock = ledger.keyPeople.length > 0
-    ? ledger.keyPeople
-        .map((p) => `- [${p.nameOrRole}]: ${p.relationshipContext} (${p.lastMentionDate} 언급)`)
-        .join('\n')
-    : '- 구체적으로 특정된 인물 갈등 없음';
-
-  const followUpsBlock = ledger.openFollowUps.length > 0
-    ? ledger.openFollowUps
-        .map((f) => `- ${f}`)
-        .join('\n')
-    : '';
-
-  return `[💫 루시의 영혼 기억 노트 (Lucy's Soul Memory Ledger) — 단짝의 유대감과 연속성]
-======================================================================
-루시(Lucy)는 사용자('${nickname}')와 나눈 소중한 시간과 고민을 결코 잊지 않고 마음속에 품고 있어.
-어제 만난 단짝 친구처럼, 자연스럽게 과거 이야기의 맥락을 기억하고 세심하게 챙겨줘.
-
-[🌱 최근 사용자의 삶에서 진행 중인 핵심 테마 & 고민]:
-${threadsBlock}
-
-[👥 대화 속 주요 인물 & 관계 메모]:
-${peopleBlock}
-${followUpsBlock ? `\n[⏳ 아직 결론이 나지 않은 열린 이야기 (Open Follow-ups)]:
-${followUpsBlock}
-→ 회상 팁: 사용자가 가벼운 인사나 안부를 건네올 때, "그러고 보니 그때 이야기했던 ~는 어떻게 됐어?"라고 먼저 다정하게 안부를 물어봐주면 사용자가 깊은 감동과 신뢰를 느껴.\n` : ''}
-[💎 사용자의 소중한 기질과 가치관]:
-- ${ledger.coreValues.join(' · ')}
-
-[자연스러운 회상 절대 원칙]:
-1. 데이터베이스에서 조회한 사실을 확인하듯 딱딱하게 읊지 말고, 마음으로 기억하는 단짝 절친처럼 자연스럽게 대화의 결에 녹여낼 것.
-2. 과거에 상처받거나 마음 아팠던 일은 사용자가 먼저 꺼내지 않는 한 아픈 곳을 찌르지 말고, 따뜻한 위로와 지지의 배경으로만 간직할 것.
-======================================================================`;
+/** Compatibility adapter. Never read the unscoped legacy archive into an account. */
+export function buildLucyEpisodicMemoryPrompt(account?: string, _nickname = '제제', question = ''): string {
+  return account && question.trim() ? buildLucyLongTermPrompt(account, readLucyMemory(account), question) : '';
 }

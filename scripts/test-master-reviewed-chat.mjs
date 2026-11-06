@@ -3,6 +3,7 @@ import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 const normal = process.argv.includes('--normal');
 const cancel = process.argv.includes('--cancel');
+const memory = process.argv.includes('--memory');
 const profile=await mkdtemp(tmpdir()+'/calculation-audit-ui-');
 // Requires npm run build. No external API calls or account data are used.
 const preview = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', '4174', '--strictPort'], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -46,10 +47,15 @@ try {
   await call('Network.enable', {}, sessionId);
 
   await call('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true}, sessionId);
+  if (memory) {
+    const records=[{id:'lucy:old-goal',account:'master_modele6777',scope:'lucy',role:'user',timestamp:Date.now()-3600000,text:'가온회사로 이직하려고 준비 중이야.'},{id:'lucy:foreign',account:'another-account',scope:'lucy',role:'user',timestamp:Date.now()-1000,text:'금지회사와 비밀 계약했어.'}];
+    const archive=[{date:'2026-10-01',timestamp:Date.now()-3600000,dialogueCount:1,summary:'금지회사 이야기',userTopics:['금지회사와 비밀 계약했어.']}];
+    await call('Page.addScriptToEvaluateOnNewDocument',{source:`sessionStorage.setItem('prism_auth_uid','memory-test');localStorage.setItem('lucy_long_term_memory_v1:master_modele6777',${JSON.stringify(JSON.stringify(records))});localStorage.setItem('lucy_soul_memories_archive',${JSON.stringify(JSON.stringify(archive))});`},sessionId);
+  }
   await call('Page.addScriptToEvaluateOnNewDocument', {source:`localStorage.setItem('developer_bypass','true');localStorage.setItem('lucy_plus_active',${JSON.stringify(normal ? 'false' : 'true')});localStorage.setItem('lu_unlocked_date',new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date()));`},sessionId);
-  const draft='미검증초안 186개 정밀 계산 완료. 무조건 성공해.';
-  const corrected='성공을 확정할 자료는 없어. 생년월일을 알려주면 계산 가능한 범위를 확인하고, 지금은 실행 계획부터 함께 정리해 보자.';
-  let generations=0,reviews=0,draftVisible=false,reviewModeMatched=false,cancelled=false;
+  const draft=memory?'미검증초안 어느 회사 면접이야? 처음 듣는 얘기야.':'미검증초안 186개 정밀 계산 완료. 무조건 성공해.';
+  const corrected=memory?'가온회사 이직을 준비한다고 알려줬지. 그 면접을 보고 왔구나. 어떤 점이 가장 기억에 남아?':'성공을 확정할 자료는 없어. 생년월일을 알려주면 계산 가능한 범위를 확인하고, 지금은 실행 계획부터 함께 정리해 보자.';
+  let generations=0,reviews=0,draftVisible=false,reviewModeMatched=false,cancelled=false,generationMemoryReady=false,reviewMemoryReady=false;
   socket.addEventListener('message', async event=>{
     const e=JSON.parse(event.data);
     if(e.method!=='Fetch.requestPaused')return;
@@ -61,6 +67,10 @@ try {
     const google=request.url.includes('googleapis.com');
     const body=request.postData||'';
     const review=body.includes('근거 검토자');
+    if(memory){
+      const ready=body.includes('가온회사로 이직하려고 준비 중이야.')&&!body.includes('금지회사');
+      if(review)reviewMemoryReady ||= ready&&body.includes('conversation');else generationMemoryReady ||= ready;
+    }
     if(review){
       reviews++;
       reviewModeMatched ||= JSON.parse(body).review_mode === (normal ? 'general' : 'master');
@@ -83,18 +93,22 @@ try {
   await call('Page.navigate',{url:normal?'http://127.0.0.1:4174/chat':'http://127.0.0.1:4174/chat?mode=plus'},sessionId);
   await new Promise(r=>setTimeout(r,7000));
   await call('Runtime.evaluate',{expression:`document.querySelector('textarea').focus()`},sessionId);
-  await call('Input.insertText',{text:'내 프로젝트가 성공할지 알려줘'},sessionId);
+  await call('Input.insertText',{text:memory?'그 회사 면접 봤어':'내 프로젝트가 성공할지 알려줘'},sessionId);
   await new Promise(r=>setTimeout(r,200));
   await call('Runtime.evaluate',{expression:`document.querySelector('button[aria-label="메시지 전송"]').click()`},sessionId);
   let final;
   for(let i=0;i<80;i++){
     await new Promise(r=>setTimeout(r,200));
-    final=await call('Runtime.evaluate',{expression:`JSON.stringify({corrected:document.body.innerText.includes('성공을 확정할 자료는 없어.')&&document.body.innerText.includes('지금은 실행 계획부터 함께 정리해 보자.'),draft:document.body.innerText.includes(${JSON.stringify(draft)})})`,returnByValue:true},sessionId);
+    final=await call('Runtime.evaluate',{expression:`JSON.stringify({corrected:document.body.innerText.includes(${JSON.stringify(memory?'가온회사 이직을 준비한다고 알려줬지.':'성공을 확정할 자료는 없어.')})&&document.body.innerText.includes(${JSON.stringify(memory?'어떤 점이 가장 기억에 남아?':'지금은 실행 계획부터 함께 정리해 보자.')}),draft:document.body.innerText.includes(${JSON.stringify(draft)})})`,returnByValue:true},sessionId);
     if(JSON.parse(final.result.value).corrected || (cancel && cancelled && i > 8))break;
   }
   const result=JSON.parse(final.result.value);
-  if((cancel ? result.corrected || !cancelled || generations !== 1 : !result.corrected)||result.draft||draftVisible||!reviews||!generations||!reviewModeMatched)throw Error(JSON.stringify({result,reviews,generations,draftVisible}));
-  console.log(JSON.stringify({mode:normal?'normal':'master',generations,reviews,unreviewedDraftHidden:true,reviewModeMatched,cancelled,reviewedCorrectionVisible:!cancel}));
+  if(memory){
+    const persisted=await call('Runtime.evaluate',{expression:`(localStorage.getItem('lucy_long_term_memory_v1:master_modele6777')||'').includes(${JSON.stringify(draft)})`,returnByValue:true},sessionId);
+    if(persisted.result.value)throw Error('Unreviewed draft entered long-term memory');
+  }
+  if((cancel ? result.corrected || !cancelled || generations !== 1 : !result.corrected)||result.draft||draftVisible||!reviews||!generations||!reviewModeMatched||(memory&&(!generationMemoryReady||!reviewMemoryReady)))throw Error(JSON.stringify({result,reviews,generations,draftVisible,generationMemoryReady,reviewMemoryReady,reviewModeMatched}));
+  console.log(JSON.stringify({mode:normal?'normal':'master',generations,reviews,unreviewedDraftHidden:true,reviewModeMatched,cancelled,...(memory?{generationMemoryReady,reviewMemoryReady,unreviewedMemoryAbsent:true}:{}),reviewedCorrectionVisible:!cancel}));
 
 } finally {
   preview.kill(); socket?.close(); chrome.kill();

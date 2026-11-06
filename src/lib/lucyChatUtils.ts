@@ -1,3 +1,4 @@
+import { isExplicitLucyTopicSwitch } from './lucyConversationMemory';
 export const LUCY_NO_YA_PREFIX_RULE = "절대로 대화 시작이나 문장 앞에 '[LUCY]', '루시:' 등의 접두사(Prefix)나 캐릭터 이름을 붙이지 말고, 대화 내용만 바로 말해줘. 또한 너(루시)는 항상 예외 없이 100% 다정하고 친근한 반말만 사용해야 해.";
 
 export const APP_CHANNEL_LABELS: Record<string, string> = {
@@ -43,6 +44,7 @@ export function resetLucyContextOnTaskSwitch<T extends { role: string; content: 
   messages: T[],
   currentRequest: string,
 ): { messages: T[]; didReset: boolean } {
+  if (isExplicitLucyTopicSwitch(currentRequest)) return { messages:messages.slice(-1), didReset:messages.length>1 };
   const currentIntent = detectLucyTaskIntent(currentRequest);
   if (!currentIntent) return { messages, didReset: false };
 
