@@ -25,7 +25,6 @@ import {
 } from '@/lib/omniWarp/contextNavCycleEngine';
 import { omniWarpAudio } from '@/lib/omniWarp/omniWarpAudio';
 import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousHaptic } from '@/lib/omniWarp/omniWarpHaptics';
-import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
@@ -1179,8 +1178,7 @@ export function BigBangButton() {
       if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
       singleTapTimerRef.current = null;
       lastTapTimeRef.current = 0;
-      unlockAudioPlayback();
-      primeTTSAudioElement();
+      // Mode-only navigation must not prime speech or claim OS audio focus.
       const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
       const prompt = textToToss.trim() ? `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.` : '';
       safeSessionStorage.removeItem('lucy_chat_voice_requested');
