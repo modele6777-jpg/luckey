@@ -208,6 +208,9 @@ import { calculatePolynesianWayfinding, formatPolynesianWayfindingPrompt, type P
 import { calculateWonhyoHwajaeng, formatWonhyoHwajaengPrompt, type WonhyoHwajaengReport, WONHYO_HWAJAENG_VERSION } from './koreanWonhyoHwajaengOneMindEngine';
 import { calculateMayiMianxiang, formatMayiMianxiangPrompt, type MayiMianxiangReport, MAYI_MIANXIANG_VERSION } from './chineseMayiMianxiangTwelvePalacesEngine';
 import { calculateEgyptianAmduat, formatEgyptianAmduatPrompt, type EgyptianAmduatReport, EGYPTIAN_AMDUAT_VERSION } from './egyptianAmduatTwelveHoursRaEngine';
+import { calculateCelticBrehonLaw, formatCelticBrehonLawPrompt, type CelticBrehonLawResult, CELTIC_BREHON_LAW_VERSION } from './celticDruidBrehonLawJusticeEngine';
+import { calculateMesopotamianNisaba, formatMesopotamianNisabaPrompt, type MesopotamianNisabaResult, MESOPOTAMIAN_NISABA_VERSION } from './mesopotamianNisabaScribeWisdomEngine';
+import { calculateSuunGasiHeon, formatSuunGasiHeonPrompt, type SuunGasiHeonResult, SUUN_GASI_HEON_VERSION } from './koreanSuunGasiHeonGyeongGwonEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -243,10 +246,15 @@ export interface DeterministicEngineReport {
   };
   summary: {
     totalToolsSupported: number;
+    totalCalculationEngines: number;
+    totalSymbolicEngines: number;
     toolsExecuted: number;
     toolsCalculated: number;
     toolsPartialOrSymbolic: number;
     toolsNotImplemented: number;
+    deliveredCalculationCount: number;
+    deliveredSymbolicCount: number;
+    deliveredTotalCount: number;
   };
   chronoTransit?: ChronoTransitResult;
   lifeSeasonTiming?: LifeSeasonTimingResult | null;
@@ -436,6 +444,9 @@ export interface DeterministicEngineReport {
   wonhyoHwajaengResult?: WonhyoHwajaengReport | null;
   mayiMianxiangResult?: MayiMianxiangReport | null;
   egyptianAmduatResult?: EgyptianAmduatReport | null;
+  celticDruidBrehonLawResult?: CelticBrehonLawResult | null;
+  mesopotamianNisabaResult?: MesopotamianNisabaResult | null;
+  suunGasiHeonResult?: SuunGasiHeonResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2574,7 +2585,34 @@ export function runDeterministicEngine(params: {
     }
   })();
 
-  return {
+  // 180. 고대 켈트 드루이드 《브레혼 법전》 4대 우주정의 & 에릭 명예균형 엔진 (계산용)
+  const celticDruidBrehonLawResult = (() => {
+    try {
+      return calculateCelticBrehonLaw(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 181. 수메르 서기의 수호신 《니사바》 청금석 서판 갈대첨필 천문수리 계측 엔진 (계산용)
+  const mesopotamianNisabaResult = (() => {
+    try {
+      return calculateMesopotamianNisaba(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 182. 동학 수운 최제우 《용담유사》 검결 심기수련 & 삼경사상 신탁 엔진 (상징용)
+  const suunGasiHeonResult = (() => {
+    try {
+      return calculateSuunGasiHeon(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  const report: DeterministicEngineReport = {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
     calculatedAtUtc: nowUtcIso,
@@ -2594,11 +2632,16 @@ export function runDeterministicEngine(params: {
       isDivinationQuery,
     },
     summary: {
-      totalToolsSupported: 15,
+      totalToolsSupported: ALL_DCE_ENGINES.length,
+      totalCalculationEngines: ALL_DCE_ENGINES.filter((e) => e.kind === 'calculation').length,
+      totalSymbolicEngines: ALL_DCE_ENGINES.filter((e) => e.kind === 'symbolic').length,
       toolsExecuted: allTools.filter(t => t.status !== 'skipped').length,
       toolsCalculated: calculatedCount,
       toolsPartialOrSymbolic: partialOrSymbolicCount,
       toolsNotImplemented: notImplementedCount,
+      deliveredCalculationCount: 0, // dynamically populated after assembly
+      deliveredSymbolicCount: 0,
+      deliveredTotalCount: 0,
     },
     chronoTransit: chronoTransitResult,
     lifeSeasonTiming: lifeSeasonTimingResult,
@@ -2788,8 +2831,18 @@ export function runDeterministicEngine(params: {
     wonhyoHwajaengResult,
     mayiMianxiangResult,
     egyptianAmduatResult,
+    celticDruidBrehonLawResult,
+    mesopotamianNisabaResult,
+    suunGasiHeonResult,
     tools: toolsMap,
   };
+
+  const delivered = ALL_DCE_ENGINES.filter((e) => isEngineDelivered(e, report));
+  report.summary.deliveredCalculationCount = delivered.filter((e) => e.kind === 'calculation').length;
+  report.summary.deliveredSymbolicCount = delivered.filter((e) => e.kind === 'symbolic').length;
+  report.summary.deliveredTotalCount = delivered.length;
+
+  return report;
 }
 
 export interface FormatDeterministicEngineOptions {
@@ -2798,236 +2851,256 @@ export interface FormatDeterministicEngineOptions {
   isMasterMobilization?: boolean;
 }
 
+export type DceEngineKind = 'calculation' | 'symbolic';
+
 export interface DceEngineMeta {
   key: string;
   nameKo: string;
   icon: string;
   category: 'foundational' | 'deep_master';
+  kind: DceEngineKind;
+  requiredInputs?: Array<'birthdate' | 'birthtime' | 'gender' | 'location'>;
+  description?: string;
+  reportProperty?: string;
 }
 
 export const ALL_DCE_ENGINES: DceEngineMeta[] = [
-  // 15대 기초 운명학 도구
-  { key: 'saju', nameKo: '사주명리', icon: '🔮', category: 'foundational' },
-  { key: 'astrology', nameKo: '서양 점성술', icon: '♈', category: 'foundational' },
-  { key: 'ziwei', nameKo: '자미두수', icon: '🌌', category: 'foundational' },
-  { key: 'tarot', nameKo: '타로', icon: '🎴', category: 'foundational' },
-  { key: 'sukuyo', nameKo: '숙요경(27숙)', icon: '🌙', category: 'foundational' },
-  { key: 'mahabote', nameKo: '마하보테(8요일)', icon: '🇲🇲', category: 'foundational' },
-  { key: 'vedic', nameKo: '베딕 점성술', icon: '🕉️', category: 'foundational' },
-  { key: 'liuren', nameKo: '대육임', icon: '📜', category: 'foundational' },
-  { key: 'qimen', nameKo: '기문둔갑', icon: '🛡️', category: 'foundational' },
-  { key: 'kabbalah', nameKo: '카발라', icon: '🌳', category: 'foundational' },
-  { key: 'iching', nameKo: '주역(64괘)', icon: '☯️', category: 'foundational' },
-  { key: 'thai_astrology', nameKo: '태국점성술', icon: '🪷', category: 'foundational' },
-  { key: 'tojeong', nameKo: '토정비결', icon: '🍂', category: 'foundational' },
-  { key: 'kyusei', nameKo: '구성학', icon: '🧭', category: 'foundational' },
-  { key: 'taiyi', nameKo: '태을신수', icon: '🏛️', category: 'foundational' },
-
-  // 심층 마스터 백그라운드 엔진
-  { key: 'chronoTransit', nameKo: '실시간 행성 트랜짓', icon: '🌌', category: 'deep_master' },
-  { key: 'lifeSeasonTiming', nameKo: '10년대운 생애주기', icon: '⏳', category: 'deep_master' },
-  { key: 'energeticPrescription', nameKo: '오행 바이오에너지', icon: '🧪', category: 'deep_master' },
-  { key: 'contextualSynastry', nameKo: '대화 인연 동적궁합', icon: '👥', category: 'deep_master' },
-  { key: 'instantDecision', nameKo: '시가팔문 즉시결단', icon: '⚡', category: 'deep_master' },
-  { key: 'ziweiFlyingStars', nameKo: '자미두수 유년사화', icon: '🌌', category: 'deep_master' },
-  { key: 'specialStarsMatrix', nameKo: '15대 신살 슈퍼파워', icon: '⭐', category: 'deep_master' },
-  { key: 'monthlyFlow', nameKo: '12개월 월운 플로우', icon: '📅', category: 'deep_master' },
-  { key: 'spatialFengshui', nameKo: '공간 길방위 풍수', icon: '🧭', category: 'deep_master' },
-  { key: 'vitalityCurve', nameKo: '24시간 에너지곡선', icon: '🧬', category: 'deep_master' },
-  { key: 'samjaeGyoUn', nameKo: '삼재·교운기 변곡점', icon: '🔄', category: 'deep_master' },
-  { key: 'auspiciousStars', nameKo: '천을귀인·길성망', icon: '✨', category: 'deep_master' },
-  { key: 'geokguk', nameKo: '정통 10대 격국', icon: '📜', category: 'deep_master' },
-  { key: 'twentyEightMansions', nameKo: '28수 일진 택일', icon: '🌠', category: 'deep_master' },
-  { key: 'sukuyoAdvanced', nameKo: '27숙 심층 매트릭스', icon: '🌙', category: 'deep_master' },
-  { key: 'vedicAdvanced', nameKo: '베딕 120년 다샤', icon: '🕉️', category: 'deep_master' },
-  { key: 'heLuoLiShu', nameKo: '하락이수 수리원당효', icon: '🔢', category: 'deep_master' },
-  { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master' },
-  { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master' },
-  { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master' },
-  { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master' },
-  { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master' },
-  { key: 'wealthPipeline', nameKo: '부의 파이프라인', icon: '💎', category: 'deep_master' },
-  { key: 'karmicNodes', nameKo: '카르믹 노드', icon: '🪐', category: 'deep_master' },
-  { key: 'mentalResilience', nameKo: '멘탈 리질리언스', icon: '🛡️', category: 'deep_master' },
-  { key: 'nobleNetwork', nameKo: '귀인 네트워크', icon: '🤝', category: 'deep_master' },
-  { key: 'contractShield', nameKo: '계약·협상 실드', icon: '📑', category: 'deep_master' },
-  { key: 'deepWorkFlow', nameKo: '딥워크 몰입 리듬', icon: '🌊', category: 'deep_master' },
-  { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master' },
-  { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master' },
-  { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master' },
-  { key: 'transcendentalMeditation', nameKo: '초월 명상 주파수', icon: '🧘', category: 'deep_master' },
-  { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master' },
-  { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master' },
-  { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master' },
-  { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master' },
-  { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master' },
-  { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master' },
-  { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master' },
-  { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master' },
-  { key: 'chakraVibrationAlignment', nameKo: '차크라 진동 정렬', icon: '🌈', category: 'deep_master' },
-  { key: 'enneagramSoulIntegration', nameKo: '에니어그램 영혼통합', icon: '⭐', category: 'deep_master' },
-  { key: 'ancestralEpigeneticKarma', nameKo: '후성유전 카르마', icon: '🌳', category: 'deep_master' },
-  { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master' },
-  { key: 'akashicRecordsOracle', nameKo: '아카식 레코드', icon: '📖', category: 'deep_master' },
-  { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master' },
-  { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master' },
-  { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master' },
-  { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master' },
-  { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master' },
-  { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
-  { key: 'solfeggioHarmonic', nameKo: '솔페지오 하모닉', icon: '🎵', category: 'deep_master' },
-  { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master' },
-  { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
-  { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master' },
-  { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master' },
-  { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master' },
-  { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master' },
-  { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master' },
-  { key: 'karmicSynastry', nameKo: '카르믹 시나스트리', icon: '💫', category: 'deep_master' },
-  { key: 'fiveEmotionsPulse', nameKo: '오행 칠정 심신맥파', icon: '💓', category: 'deep_master' },
-  { key: 'hermeticKybalion', nameKo: '카이발리온 7대 우주법칙', icon: '📜', category: 'deep_master' },
-  { key: 'vibrationalSoulQuest', nameKo: '차크라 솔 퀘스트', icon: '🧭', category: 'deep_master' },
-  { key: 'alchemicalTransmutation', nameKo: '서양 연금술 7단계', icon: '⚗️', category: 'deep_master' },
-  { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master' },
-  { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master' },
-  { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master' },
-  { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master' },
-  { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master' },
-  { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master' },
-  { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master' },
-  { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master' },
-  { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master' },
-  { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master' },
-  { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master' },
-  { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master' },
-  { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master' },
-  { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master' },
-  { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master' },
-  { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master' },
-  { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master' },
-  { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master' },
-  { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master' },
-  { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master' },
-  { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master' },
-  { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master' },
-  { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master' },
-  { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master' },
-  { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master' },
-  { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master' },
-  { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master' },
-  { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master' },
-  { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master' },
-  { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master' },
-  { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master' },
-  { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master' },
-  { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master' },
-  { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master' },
-  { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master' },
-  { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master' },
-  { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master' },
-  { key: 'finnishKalevalaSampo', nameKo: '핀란드 칼레발라 삼포', icon: '🌾', category: 'deep_master' },
-  { key: 'shanhaijingSacredBeasts', nameKo: '산해경 8방위 신성영수', icon: '🐉', category: 'deep_master' },
-  { key: 'jainGunasthanaKarma', nameKo: '자이나 14군아스타나 카르마', icon: '🪷', category: 'deep_master' },
-  { key: 'celticAwenTaliesin', nameKo: '켈트 탈리에신 아웬영감', icon: '🔮', category: 'deep_master' },
-  { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master' },
-  { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master' },
-  { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master' },
-  { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master' },
-  { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master' },
-  { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master' },
-  { key: 'egyptianMaatFeatherHeart', nameKo: '이집트 마아트 심장무게', icon: '🪶', category: 'deep_master' },
-  { key: 'persianMithraicSpheres', nameKo: '페르시아 미트라 7천구', icon: '☀️', category: 'deep_master' },
-  { key: 'orpheicMysteries', nameKo: '그리스 오르페우스 므네모시네', icon: '🎶', category: 'deep_master' },
-  { key: 'popolVuhHeroTwins', nameKo: '마야 포폴부 쌍둥이영웅', icon: '🌽', category: 'deep_master' },
-  { key: 'ancientYarrowProbability', nameKo: '주역 대연지수 49책 시초점', icon: '🌿', category: 'deep_master' },
-  { key: 'vedicPanchaKosha', nameKo: '인도 베단타 5대 코샤', icon: '🧘', category: 'deep_master' },
-  { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master' },
-  { key: 'baopuziElixirs', nameKo: '포박자 구전환단 선도', icon: '🍶', category: 'deep_master' },
-  { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master' },
-  { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master' },
-  { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
-  { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master' },
-  { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master' },
-  { key: 'pythagoreanHarmoniaSpheres', nameKo: '피타고라스 천구의 조화 주파수', icon: '🪐', category: 'deep_master' },
-  { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master' },
-  { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master' },
-  { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master' },
-  { key: 'chaldeanMulApinAstrology', nameKo: '칼데아 물핀 12조디악', icon: '✨', category: 'deep_master' },
-  { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master' },
-  { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master' },
-  { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master' },
-  { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master' },
-  { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master' },
-  { key: 'zhuangziXiaoyaoyouButterfly', nameKo: '도가 장자 소요유 호접몽', icon: '🦋', category: 'deep_master' },
-  { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master' },
-  { key: 'vedicMandukyaTuriya', nameKo: '만두키야 우파니샤드 투리야 순수의식', icon: '🕉️', category: 'deep_master' },
-  { key: 'kabbalisticZoharSoul', nameKo: '카발라 조하르 5대 영혼 층위', icon: '🕎', category: 'deep_master' },
-  { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master' },
-  { key: 'patanjaliAshtangaYoga', nameKo: '파탄잘리 요가 8지칙', icon: '🧘', category: 'deep_master' },
-  { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master' },
-  { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master' },
-  { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master' },
-  { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master' },
-  { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master' },
-  { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master' },
-  { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master' },
-  { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master' },
-  { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master' },
-  { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master' },
-  { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master' },
-  { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master' },
-  { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master' },
-  { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master' },
-  { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master' },
-  { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master' },
-  { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master' },
-  { key: 'balineseTriHitaKarana', nameKo: '발리 트리 히타 카라나 3대 조화', icon: '🌺', category: 'deep_master' },
-  { key: 'hopiFourWorldsKachina', nameKo: '호피 4대 세계 카치나 정령 지혜', icon: '🦅', category: 'deep_master' },
-  { key: 'donghakCheondoismCheonju', nameKo: '동학 시천주 지기금지 인내천 조화', icon: '🕊️', category: 'deep_master' },
-  { key: 'incaAndeanThreePachaAyni', nameKo: '잉카 안데스 3대 파차 아이니 호혜', icon: '🦙', category: 'deep_master' },
-  { key: 'shangOracleBoneDivination', nameKo: '은나라 갑골문 신탁 복사 정인 균열', icon: '🐢', category: 'deep_master' },
-  { key: 'cheonbugyeongEightyOne', nameKo: '단군 단학 천부경 81자 삼일신고 성통광명', icon: '☀️', category: 'deep_master' },
-  { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master' },
-  { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master' },
-  { key: 'gyeogamYurok', nameKo: '격암 남사고 격암유록 궁궁을을 사중구생', icon: '📜', category: 'deep_master' },
-  { key: 'heianOnmyodoSeimei', nameKo: '헤이안 음양도 아베노 세이메이 12천장 식신', icon: '⭐', category: 'deep_master' },
-  { key: 'polynesianWayfinding', nameKo: '폴리네시아 마우이 웨이파인딩 32방위 스타컴퍼스', icon: '🧭', category: 'deep_master' },
-  { key: 'wonhyoHwajaeng', nameKo: '신라 원효대사 십문화쟁론 일심이문 무애', icon: '🕊️', category: 'deep_master' },
-  { key: 'mayiMianxiang', nameKo: '마의도사 마의상법 12궁 관상 심상합일', icon: '👤', category: 'deep_master' },
-  { key: 'egyptianAmduat', nameKo: '이집트 암두아트 12시간 라 밤의항해 케프리부활', icon: '🌅', category: 'deep_master' },
+  { key: 'saju', nameKo: '사주명리', icon: '🔮', category: 'foundational', kind: 'calculation' },
+  { key: 'astrology', nameKo: '서양 점성술', icon: '♈', category: 'foundational', kind: 'calculation' },
+  { key: 'ziwei', nameKo: '자미두수', icon: '🌌', category: 'foundational', kind: 'calculation' },
+  { key: 'tarot', nameKo: '타로', icon: '🎴', category: 'foundational', kind: 'symbolic' },
+  { key: 'sukuyo', nameKo: '숙요경(27숙)', icon: '🌙', category: 'foundational', kind: 'calculation' },
+  { key: 'mahabote', nameKo: '마하보테(8요일)', icon: '🇲🇲', category: 'foundational', kind: 'calculation' },
+  { key: 'vedic', nameKo: '베딕 점성술', icon: '🕉️', category: 'foundational', kind: 'calculation' },
+  { key: 'liuren', nameKo: '대육임', icon: '📜', category: 'foundational', kind: 'calculation' },
+  { key: 'qimen', nameKo: '기문둔갑', icon: '🛡️', category: 'foundational', kind: 'calculation' },
+  { key: 'kabbalah', nameKo: '카발라', icon: '🌳', category: 'foundational', kind: 'symbolic' },
+  { key: 'iching', nameKo: '주역(64괘)', icon: '☯️', category: 'foundational', kind: 'symbolic' },
+  { key: 'thai_astrology', nameKo: '태국점성술', icon: '🪷', category: 'foundational', kind: 'calculation' },
+  { key: 'tojeong', nameKo: '토정비결', icon: '🍂', category: 'foundational', kind: 'calculation' },
+  { key: 'kyusei', nameKo: '구성학', icon: '🧭', category: 'foundational', kind: 'calculation' },
+  { key: 'taiyi', nameKo: '태을신수', icon: '🏛️', category: 'foundational', kind: 'calculation' },
+  { key: 'chronoTransit', nameKo: '실시간 행성 트랜짓', icon: '🌌', category: 'deep_master', kind: 'calculation', reportProperty: 'chronoTransit' },
+  { key: 'lifeSeasonTiming', nameKo: '10년대운 생애주기', icon: '⏳', category: 'deep_master', kind: 'calculation', reportProperty: 'lifeSeasonTiming' },
+  { key: 'energeticPrescription', nameKo: '오행 바이오에너지', icon: '🧪', category: 'deep_master', kind: 'calculation', reportProperty: 'energeticPrescription' },
+  { key: 'contextualSynastry', nameKo: '대화 인연 동적궁합', icon: '👥', category: 'deep_master', kind: 'calculation', reportProperty: 'contextualSynastry' },
+  { key: 'instantDecision', nameKo: '시가팔문 즉시결단', icon: '⚡', category: 'deep_master', kind: 'calculation', reportProperty: 'instantDecision' },
+  { key: 'ziweiFlyingStars', nameKo: '자미두수 유년사화', icon: '🌌', category: 'deep_master', kind: 'calculation', reportProperty: 'ziweiFlyingStars' },
+  { key: 'specialStarsMatrix', nameKo: '15대 신살 슈퍼파워', icon: '⭐', category: 'deep_master', kind: 'calculation', reportProperty: 'specialStarsMatrix' },
+  { key: 'monthlyFlow', nameKo: '12개월 월운 플로우', icon: '📅', category: 'deep_master', kind: 'calculation', reportProperty: 'monthlyFlow' },
+  { key: 'spatialFengshui', nameKo: '공간 길방위 풍수', icon: '🧭', category: 'deep_master', kind: 'calculation', reportProperty: 'spatialFengshui' },
+  { key: 'vitalityCurve', nameKo: '24시간 에너지곡선', icon: '🧬', category: 'deep_master', kind: 'calculation', reportProperty: 'vitalityCurve' },
+  { key: 'samjaeGyoUn', nameKo: '삼재·교운기 변곡점', icon: '🔄', category: 'deep_master', kind: 'calculation', reportProperty: 'samjaeGyoUnResult' },
+  { key: 'auspiciousStars', nameKo: '천을귀인·길성망', icon: '✨', category: 'deep_master', kind: 'calculation', reportProperty: 'auspiciousStarsResult' },
+  { key: 'geokguk', nameKo: '정통 10대 격국', icon: '📜', category: 'deep_master', kind: 'calculation', reportProperty: 'geokguk' },
+  { key: 'twentyEightMansions', nameKo: '28수 일진 택일', icon: '🌠', category: 'deep_master', kind: 'calculation', reportProperty: 'twentyEightMansionsResult' },
+  { key: 'sukuyoAdvanced', nameKo: '27숙 심층 매트릭스', icon: '🌙', category: 'deep_master', kind: 'calculation', reportProperty: 'sukuyoAdvancedResult' },
+  { key: 'vedicAdvanced', nameKo: '베딕 120년 다샤', icon: '🕉️', category: 'deep_master', kind: 'calculation', reportProperty: 'vedicAdvancedResult' },
+  { key: 'heLuoLiShu', nameKo: '하락이수 수리원당효', icon: '🔢', category: 'deep_master', kind: 'calculation', reportProperty: 'heLuoLiShuResult' },
+  { key: 'dynamicClash', nameKo: '충형파해 동적트리거', icon: '💥', category: 'deep_master', kind: 'calculation', reportProperty: 'dynamicClashResult' },
+  { key: 'twelveSpirits', nameKo: '12신살 주기', icon: '💫', category: 'deep_master', kind: 'calculation', reportProperty: 'twelveSpiritsResult' },
+  { key: 'pythagoreanLifecycle', nameKo: '피타고라스 생애주기', icon: '📐', category: 'deep_master', kind: 'calculation', reportProperty: 'pythagoreanLifecycleResult' },
+  { key: 'astrologicalDecanSabian', nameKo: '사비안 심볼·데칸', icon: '🔮', category: 'deep_master', kind: 'calculation', reportProperty: 'astrologicalDecanSabianResult' },
+  { key: 'medicalBioMatrix', nameKo: '메디컬 바이오 매트릭스', icon: '🩺', category: 'deep_master', kind: 'calculation', reportProperty: 'medicalBioMatrixResult' },
+  { key: 'wealthPipeline', nameKo: '부의 파이프라인', icon: '💎', category: 'deep_master', kind: 'calculation', reportProperty: 'wealthPipelineResult' },
+  { key: 'karmicNodes', nameKo: '카르믹 노드', icon: '🪐', category: 'deep_master', kind: 'calculation', reportProperty: 'karmicNodesResult' },
+  { key: 'mentalResilience', nameKo: '멘탈 리질리언스', icon: '🛡️', category: 'deep_master', kind: 'calculation', reportProperty: 'mentalResilienceResult' },
+  { key: 'nobleNetwork', nameKo: '귀인 네트워크', icon: '🤝', category: 'deep_master', kind: 'calculation', reportProperty: 'nobleNetworkResult' },
+  { key: 'contractShield', nameKo: '계약·협상 실드', icon: '📑', category: 'deep_master', kind: 'calculation', reportProperty: 'contractShieldResult' },
+  { key: 'deepWorkFlow', nameKo: '딥워크 몰입 리듬', icon: '🌊', category: 'deep_master', kind: 'calculation', reportProperty: 'deepWorkFlowResult' },
+  { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master', kind: 'symbolic', reportProperty: 'sleepSubconsciousResult' },
+  { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master', kind: 'calculation', reportProperty: 'quantumLeapResult' },
+  { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master', kind: 'symbolic', reportProperty: 'soulJourneyTarotResult' },
+  { key: 'transcendentalMeditation', nameKo: '초월 명상 주파수', icon: '🧘', category: 'deep_master', kind: 'symbolic', reportProperty: 'transcendentalMeditationResult' },
+  { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master', kind: 'calculation', reportProperty: 'strategicLeverageResult' },
+  { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master', kind: 'symbolic', reportProperty: 'shadowArchetypeResult' },
+  { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master', kind: 'calculation', reportProperty: 'biorhythmPeakFlowResult' },
+  { key: 'destinySynastryEcho', nameKo: '운명 공명 에코', icon: '🔔', category: 'deep_master', kind: 'calculation', reportProperty: 'destinySynastryEchoResult' },
+  { key: 'microHabitKarma', nameKo: '마이크로 해빗', icon: '🌱', category: 'deep_master', kind: 'calculation', reportProperty: 'microHabitKarmaResult' },
+  { key: 'ikigaiDestinyCompass', nameKo: '이키가이 나침반', icon: '🧭', category: 'deep_master', kind: 'calculation', reportProperty: 'ikigaiDestinyCompassResult' },
+  { key: 'serendipitySynchronicity', nameKo: '세렌디피티 레이더', icon: '🍀', category: 'deep_master', kind: 'symbolic', reportProperty: 'serendipitySynchronicityResult' },
+  { key: 'humanDesignBodyGraph', nameKo: '휴먼디자인 바디그래프', icon: '🧬', category: 'deep_master', kind: 'calculation', reportProperty: 'humanDesignBodyGraphResult' },
+  { key: 'chakraVibrationAlignment', nameKo: '차크라 진동 정렬', icon: '🌈', category: 'deep_master', kind: 'calculation', reportProperty: 'chakraVibrationAlignmentResult' },
+  { key: 'enneagramSoulIntegration', nameKo: '에니어그램 영혼통합', icon: '⭐', category: 'deep_master', kind: 'symbolic', reportProperty: 'enneagramSoulIntegrationResult' },
+  { key: 'ancestralEpigeneticKarma', nameKo: '후성유전 카르마', icon: '🌳', category: 'deep_master', kind: 'symbolic', reportProperty: 'ancestralEpigeneticKarmaResult' },
+  { key: 'heroMythMonomyth', nameKo: '영웅의 여정 모노미스', icon: '⚔️', category: 'deep_master', kind: 'symbolic', reportProperty: 'heroMythMonomythResult' },
+  { key: 'akashicRecordsOracle', nameKo: '아카식 레코드', icon: '📖', category: 'deep_master', kind: 'symbolic', reportProperty: 'akashicRecordsOracleResult' },
+  { key: 'quantumProbabilisticTimeline', nameKo: '양자 확률 타임라인', icon: '🔮', category: 'deep_master', kind: 'calculation', reportProperty: 'quantumProbabilisticTimelineResult' },
+  { key: 'somaticBodyArmoring', nameKo: '소매틱 아머링', icon: '🧘', category: 'deep_master', kind: 'calculation', reportProperty: 'somaticBodyArmoringResult' },
+  { key: 'supremeWisdomTrinity', nameKo: '3대 지혜 삼위일체', icon: '👑', category: 'deep_master', kind: 'symbolic', reportProperty: 'supremeWisdomTrinityResult' },
+  { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master', kind: 'calculation', reportProperty: 'sacredVortexGeometryResult' },
+  { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master', kind: 'calculation', reportProperty: 'taoistNeidanMeridianResult' },
+  { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master', kind: 'symbolic', reportProperty: 'synchronicityOmenResult' },
+  { key: 'solfeggioHarmonic', nameKo: '솔페지오 하모닉', icon: '🎵', category: 'deep_master', kind: 'calculation', reportProperty: 'solfeggioHarmonicResult' },
+  { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master', kind: 'calculation', reportProperty: 'ethericAuraBiofieldResult' },
+  { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master', kind: 'calculation', reportProperty: 'sajuClassicYongshinResult' },
+  { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master', kind: 'symbolic', reportProperty: 'tarotTreeOfLifeShadowResult' },
+  { key: 'hellenisticLots', nameKo: '헬레니즘 포르투나 롯', icon: '🏛️', category: 'deep_master', kind: 'calculation', reportProperty: 'hellenisticLotsResult' },
+  { key: 'iching384Yao', nameKo: '주역 384효 동효변괘', icon: '☯️', category: 'deep_master', kind: 'symbolic', reportProperty: 'iching384YaoResult' },
+  { key: 'sajuTwelveStagesTomb', nameKo: '12운성 묘고지 개고', icon: '🗝️', category: 'deep_master', kind: 'calculation', reportProperty: 'sajuTwelveStagesTombResult' },
+  { key: 'tarotElementalCourt', nameKo: '타로 16 코트 페르소나', icon: '🎭', category: 'deep_master', kind: 'symbolic', reportProperty: 'tarotElementalCourtResult' },
+  { key: 'karmicSynastry', nameKo: '카르믹 시나스트리', icon: '💫', category: 'deep_master', kind: 'calculation', reportProperty: 'karmicSynastryResult' },
+  { key: 'fiveEmotionsPulse', nameKo: '오행 칠정 심신맥파', icon: '💓', category: 'deep_master', kind: 'calculation', reportProperty: 'fiveEmotionsPulseResult' },
+  { key: 'hermeticKybalion', nameKo: '카이발리온 7대 우주법칙', icon: '📜', category: 'deep_master', kind: 'symbolic', reportProperty: 'hermeticKybalionResult' },
+  { key: 'vibrationalSoulQuest', nameKo: '차크라 솔 퀘스트', icon: '🧭', category: 'deep_master', kind: 'symbolic', reportProperty: 'vibrationalSoulQuestResult' },
+  { key: 'alchemicalTransmutation', nameKo: '서양 연금술 7단계', icon: '⚗️', category: 'deep_master', kind: 'symbolic', reportProperty: 'alchemicalTransmutationResult' },
+  { key: 'ziweiHuaJi', nameKo: '자미두수 화기 전화위복', icon: '🌌', category: 'deep_master', kind: 'calculation', reportProperty: 'ziweiHuaJiResult' },
+  { key: 'celticTreeOgham', nameKo: '켈트 오검 수목지혜', icon: '🌲', category: 'deep_master', kind: 'symbolic', reportProperty: 'celticTreeOghamResult' },
+  { key: 'taoistSanbao', nameKo: '도교 삼보 내단에너지', icon: '☯️', category: 'deep_master', kind: 'symbolic', reportProperty: 'taoistSanbaoResult' },
+  { key: 'tibetanBardo', nameKo: '티베트 바르도 6환생', icon: '☸️', category: 'deep_master', kind: 'symbolic', reportProperty: 'tibetanBardoResult' },
+  { key: 'mesopotamianSevenGates', nameKo: '메소포타미아 7관문', icon: '🏛️', category: 'deep_master', kind: 'symbolic', reportProperty: 'mesopotamianSevenGatesResult' },
+  { key: 'egyptianDecans', nameKo: '이집트 36데칸', icon: '🏺', category: 'deep_master', kind: 'calculation', reportProperty: 'egyptianDecansResult' },
+  { key: 'sufiLataif', nameKo: '수피 7라타이프', icon: '🕌', category: 'deep_master', kind: 'symbolic', reportProperty: 'sufiLataifResult' },
+  { key: 'mayanTzolkin', nameKo: '마야 촐킨 260일', icon: '☀️', category: 'deep_master', kind: 'calculation', reportProperty: 'mayanTzolkinResult' },
+  { key: 'nordicRunes', nameKo: '북유럽 24룬 노른직조', icon: 'ᚱ', category: 'deep_master', kind: 'symbolic', reportProperty: 'nordicRunesResult' },
+  { key: 'delphicMaxims', nameKo: '그리스 델포이 147잠언', icon: '🏛️', category: 'deep_master', kind: 'symbolic', reportProperty: 'delphicMaximsResult' },
+  { key: 'ayurvedicTridosha', nameKo: '인도 아유르베다 도샤', icon: '🌿', category: 'deep_master', kind: 'calculation', reportProperty: 'ayurvedicTridoshaResult' },
+  { key: 'hawaiianHuna', nameKo: '호오포노포노 7원리', icon: '🌺', category: 'deep_master', kind: 'symbolic', reportProperty: 'hawaiianHunaResult' },
+  { key: 'fengShuiEightMansions', nameKo: '풍수 8택 방위에너지', icon: '🧭', category: 'deep_master', kind: 'calculation', reportProperty: 'fengShuiEightMansionsResult' },
+  { key: 'zoroastrianAsha', nameKo: '조로아스터 아샤 진실', icon: '🔥', category: 'deep_master', kind: 'symbolic', reportProperty: 'zoroastrianAshaResult' },
+  { key: 'hinduKundalini', nameKo: '힌두 쿤달리니 나디각성', icon: '🕉️', category: 'deep_master', kind: 'calculation', reportProperty: 'hinduKundaliniResult' },
+  { key: 'guiguziLiangtouqian', nameKo: '귀곡자 양구령 72변화', icon: '📜', category: 'deep_master', kind: 'calculation', reportProperty: 'guiguziLiangtouqianResult' },
+  { key: 'slavicSvarog', nameKo: '슬라브 16스바로그 로드카르마', icon: '🌌', category: 'deep_master', kind: 'symbolic', reportProperty: 'slavicSvarogResult' },
+  { key: 'esseneCommunion', nameKo: '에세네 14대 천사교감', icon: '🕊️', category: 'deep_master', kind: 'symbolic', reportProperty: 'esseneCommunionResult' },
+  { key: 'huangdiFiveMovementsSixQi', nameKo: '황제내경 오운육기 기상의학', icon: '📜', category: 'deep_master', kind: 'calculation', reportProperty: 'huangdiFiveMovementsSixQiResult' },
+  { key: 'pythagoreanTetraktys', nameKo: '피타고라스 테트락티스 신성기하', icon: '📐', category: 'deep_master', kind: 'calculation', reportProperty: 'pythagoreanTetraktysResult' },
+  { key: 'babylonianEnumaElish', nameKo: '바빌로니아 운명의서판', icon: '🏛️', category: 'deep_master', kind: 'symbolic', reportProperty: 'babylonianEnumaElishResult' },
+  { key: 'taoistHuangtingJing', nameKo: '도교 황정경 오장존사', icon: '☯️', category: 'deep_master', kind: 'symbolic', reportProperty: 'taoistHuangtingJingResult' },
+  { key: 'persianAmeshaSpenta', nameKo: '페르시아 아메샤스펜타', icon: '🔥', category: 'deep_master', kind: 'symbolic', reportProperty: 'persianAmeshaSpentaResult' },
+  { key: 'sumerianFiftyMes', nameKo: '수메르 50대메 신성문명', icon: '🏺', category: 'deep_master', kind: 'symbolic', reportProperty: 'sumerianFiftyMesResult' },
+  { key: 'zhongLuAlchemy', nameKo: '종여내단 3품선도 환원', icon: '☯️', category: 'deep_master', kind: 'symbolic', reportProperty: 'zhongLuAlchemyResult' },
+  { key: 'druidMoonTrees', nameKo: '켈트 드루이드 13달나무', icon: '🌲', category: 'deep_master', kind: 'symbolic', reportProperty: 'druidMoonTreesResult' },
+  { key: 'tiebanShenshu', nameKo: '철판신수 12000조식', icon: '📜', category: 'deep_master', kind: 'calculation', reportProperty: 'tiebanShenshuResult' },
+  { key: 'tibetanBonNineWays', nameKo: '티베트 본교 9승 융드룽', icon: '卐', category: 'deep_master', kind: 'symbolic', reportProperty: 'tibetanBonResult' },
+  { key: 'eleusinianMysteries', nameKo: '엘레우시스 영혼입사의례', icon: '🌾', category: 'deep_master', kind: 'symbolic', reportProperty: 'eleusinianMysteriesResult' },
+  { key: 'vedicNakshatra108Pada', nameKo: '베다 108파다 카르마성좌', icon: '🕉️', category: 'deep_master', kind: 'calculation', reportProperty: 'vedicNakshatra108PadaResult' },
+  { key: 'egyptianHermeticCartouche', nameKo: '이집트 헤르메스 카르투슈', icon: '𓋹', category: 'deep_master', kind: 'symbolic', reportProperty: 'egyptianHermeticCartoucheResult' },
+  { key: 'taoistGongGuoGeKarma', nameKo: '도교 공과격 적선개운', icon: '☯️', category: 'deep_master', kind: 'symbolic', reportProperty: 'taoistGongGuoGeKarmaResult' },
+  { key: 'yorubaIfaOdu', nameKo: '요루바 이파 16오두 신탁', icon: '📿', category: 'deep_master', kind: 'symbolic', reportProperty: 'yorubaIfaOduResult' },
+  { key: 'arabicIlmAlRaml', nameKo: '아랍 일무람말 지오맨시', icon: '🏜️', category: 'deep_master', kind: 'calculation', reportProperty: 'arabicIlmAlRamlResult' },
+  { key: 'hinduNadiAgastyaPalmLeaf', nameKo: '인도 나디 아가스티야 야자잎', icon: '📜', category: 'deep_master', kind: 'symbolic', reportProperty: 'hinduNadiAgastyaPalmLeafResult' },
+  { key: 'shintoKotodamaFourSouls', nameKo: '신도 4혼1생 고토다마', icon: '⛩️', category: 'deep_master', kind: 'symbolic', reportProperty: 'shintoKotodamaFourSoulsResult' },
+  { key: 'aboriginalDreamtimeSonglines', nameKo: '호주 드림타임 송라인', icon: '🪃', category: 'deep_master', kind: 'symbolic', reportProperty: 'aboriginalDreamtimeSonglinesResult' },
+  { key: 'finnishKalevalaSampo', nameKo: '핀란드 칼레발라 삼포', icon: '🌾', category: 'deep_master', kind: 'symbolic', reportProperty: 'finnishKalevalaSampoResult' },
+  { key: 'shanhaijingSacredBeasts', nameKo: '산해경 8방위 신성영수', icon: '🐉', category: 'deep_master', kind: 'symbolic', reportProperty: 'shanhaijingSacredBeastsResult' },
+  { key: 'jainGunasthanaKarma', nameKo: '자이나 14군아스타나 카르마', icon: '🪷', category: 'deep_master', kind: 'symbolic', reportProperty: 'jainGunasthanaKarmaResult' },
+  { key: 'celticAwenTaliesin', nameKo: '켈트 탈리에신 아웬영감', icon: '🔮', category: 'deep_master', kind: 'symbolic', reportProperty: 'celticAwenTaliesinResult' },
+  { key: 'koreanDangunCheonbuin', nameKo: '단군 천부인 3보 홍익광명', icon: '🇰🇷', category: 'deep_master', kind: 'symbolic', reportProperty: 'koreanDangunCheonbuinResult' },
+  { key: 'maoriMauriHauora', nameKo: '마오리 하우오라 마우리생명력', icon: '🌿', category: 'deep_master', kind: 'symbolic', reportProperty: 'maoriMauriHauoraResult' },
+  { key: 'slavicMokoshFateWeaving', nameKo: '슬라브 모코시 운명실타래', icon: '🧶', category: 'deep_master', kind: 'symbolic', reportProperty: 'slavicMokoshFateWeavingResult' },
+  { key: 'sumerianGilgameshTrials', nameKo: '길가메시 서사시 12관문', icon: '🏛️', category: 'deep_master', kind: 'symbolic', reportProperty: 'sumerianGilgameshTrialsResult' },
+  { key: 'hawaiianKahunaThreeSelves', nameKo: '하와이 카후나 3대 자아 마나', icon: '🌺', category: 'deep_master', kind: 'symbolic', reportProperty: 'hawaiianKahunaThreeSelvesResult' },
+  { key: 'nordicYggdrasilRealms', nameKo: '북유럽 위그드라실 9대 영역', icon: '🌳', category: 'deep_master', kind: 'symbolic', reportProperty: 'nordicYggdrasilRealmsResult' },
+  { key: 'egyptianMaatFeatherHeart', nameKo: '이집트 마아트 심장무게', icon: '🪶', category: 'deep_master', kind: 'symbolic', reportProperty: 'egyptianMaatFeatherHeartResult' },
+  { key: 'persianMithraicSpheres', nameKo: '페르시아 미트라 7천구', icon: '☀️', category: 'deep_master', kind: 'symbolic', reportProperty: 'persianMithraicSpheresResult' },
+  { key: 'orpheicMysteries', nameKo: '그리스 오르페우스 므네모시네', icon: '🎶', category: 'deep_master', kind: 'symbolic', reportProperty: 'orpheicMysteriesResult' },
+  { key: 'popolVuhHeroTwins', nameKo: '마야 포폴부 쌍둥이영웅', icon: '🌽', category: 'deep_master', kind: 'symbolic', reportProperty: 'popolVuhHeroTwinsResult' },
+  { key: 'ancientYarrowProbability', nameKo: '주역 대연지수 49책 시초점', icon: '🌿', category: 'deep_master', kind: 'calculation', reportProperty: 'ancientYarrowProbabilityResult' },
+  { key: 'vedicPanchaKosha', nameKo: '인도 베단타 5대 코샤', icon: '🧘', category: 'deep_master', kind: 'symbolic', reportProperty: 'vedicPanchaKoshaResult' },
+  { key: 'romanJanus', nameKo: '로마 야누스 문턱전이', icon: '🚪', category: 'deep_master', kind: 'symbolic', reportProperty: 'romanJanusResult' },
+  { key: 'baopuziElixirs', nameKo: '포박자 구전환단 선도', icon: '🍶', category: 'deep_master', kind: 'symbolic', reportProperty: 'baopuziElixirsResult' },
+  { key: 'vedicMahavakya', nameKo: '베다 4대 마하바키야 각성', icon: '🕉️', category: 'deep_master', kind: 'symbolic', reportProperty: 'vedicMahavakyaResult' },
+  { key: 'sumerianApkalluWisdom', nameKo: '수메르 엔키 7압갈루 현자', icon: '🐟', category: 'deep_master', kind: 'symbolic', reportProperty: 'sumerianApkalluWisdomResult' },
+  { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master', kind: 'symbolic', reportProperty: 'celticTuathaFourTreasuresResult' },
+  { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master', kind: 'symbolic', reportProperty: 'taoistShangqingTwentyFourSpiritsResult' },
+  { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master', kind: 'symbolic', reportProperty: 'tibetanPhowaRainbowBodyResult' },
+  { key: 'pythagoreanHarmoniaSpheres', nameKo: '피타고라스 천구의 조화 주파수', icon: '🪐', category: 'deep_master', kind: 'calculation', reportProperty: 'pythagoreanHarmoniaSpheresResult' },
+  { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master', kind: 'calculation', reportProperty: 'plumBlossomMeihuaOracleResult' },
+  { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master', kind: 'symbolic', reportProperty: 'greekMoiraiAnankeFateResult' },
+  { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master', kind: 'symbolic', reportProperty: 'egyptianSphinxDreamOracleResult' },
+  { key: 'chaldeanMulApinAstrology', nameKo: '칼데아 물핀 12조디악', icon: '✨', category: 'deep_master', kind: 'calculation', reportProperty: 'chaldeanMulApinAstrologyResult' },
+  { key: 'toltecNagualDreaming', nameKo: '톨텍 나구알리즘 4대 약속', icon: '🦅', category: 'deep_master', kind: 'symbolic', reportProperty: 'toltecNagualDreamingResult' },
+  { key: 'shugendoYamabushiTenRealms', nameKo: '슈겐도 야마부시 10계수행', icon: '🏔️', category: 'deep_master', kind: 'symbolic', reportProperty: 'shugendoYamabushiTenRealmsResult' },
+  { key: 'gnosticPistisSophiaPleroma', nameKo: '영지주의 소피아 플레로마', icon: '🕊️', category: 'deep_master', kind: 'symbolic', reportProperty: 'gnosticPistisSophiaPleromaResult' },
+  { key: 'sumerianInannaUnderworldDescent', nameKo: '수메르 이난나 명계하강 7대관문', icon: '👑', category: 'deep_master', kind: 'symbolic', reportProperty: 'sumerianInannaUnderworldDescentResult' },
+  { key: 'norseVolvaSeidrNineRealms', nameKo: '북유럽 볼바 세이드 9대세계', icon: '🌲', category: 'deep_master', kind: 'symbolic', reportProperty: 'norseVolvaSeidrNineRealmsResult' },
+  { key: 'zhuangziXiaoyaoyouButterfly', nameKo: '도가 장자 소요유 호접몽', icon: '🦋', category: 'deep_master', kind: 'symbolic', reportProperty: 'zhuangziXiaoyaoyouButterflyResult' },
+  { key: 'buddhistYogacaraConsciousness', nameKo: '불교 유식학 8식 전식득지', icon: '☸️', category: 'deep_master', kind: 'symbolic', reportProperty: 'buddhistYogacaraConsciousnessResult' },
+  { key: 'vedicMandukyaTuriya', nameKo: '만두키야 우파니샤드 투리야 순수의식', icon: '🕉️', category: 'deep_master', kind: 'symbolic', reportProperty: 'vedicMandukyaTuriyaResult' },
+  { key: 'kabbalisticZoharSoul', nameKo: '카발라 조하르 5대 영혼 층위', icon: '🕎', category: 'deep_master', kind: 'symbolic', reportProperty: 'kabbalisticZoharSoulResult' },
+  { key: 'romanStoicProhairesis', nameKo: '로마 스토아 통제이분법', icon: '🏛️', category: 'deep_master', kind: 'symbolic', reportProperty: 'romanStoicProhairesisResult' },
+  { key: 'patanjaliAshtangaYoga', nameKo: '파탄잘리 요가 8지칙', icon: '🧘', category: 'deep_master', kind: 'symbolic', reportProperty: 'patanjaliAshtangaYogaResult' },
+  { key: 'koreanPungryudoHwarang', nameKo: '신라 풍류도 화랑오계', icon: '🌸', category: 'deep_master', kind: 'symbolic', reportProperty: 'koreanPungryudoHwarangResult' },
+  { key: 'persianAttarSevenValleys', nameKo: '페르시아 아타르 새들의 회의 7대 계곡', icon: '🕊️', category: 'deep_master', kind: 'symbolic', reportProperty: 'persianAttarSevenValleysResult' },
+  { key: 'hermeticPoimandres', nameKo: '헤르메스주의 포이만드레스 8대 천계', icon: '🌟', category: 'deep_master', kind: 'symbolic', reportProperty: 'hermeticPoimandresResult' },
+  { key: 'kashmirShaivismSpanda', nameKo: '카슈미르 시바파 스판다 우주 맥동', icon: '🔱', category: 'deep_master', kind: 'symbolic', reportProperty: 'kashmirShaivismSpandaResult' },
+  { key: 'sumerianEnumaElishFiftyNames', nameKo: '에누마 엘리시 50대 이름', icon: '⚔️', category: 'deep_master', kind: 'symbolic', reportProperty: 'sumerianEnumaElishFiftyNamesResult' },
+  { key: 'alexandrianDecanThirtySixGods', nameKo: '알렉산드리아 36대 데칸', icon: '⌛', category: 'deep_master', kind: 'calculation', reportProperty: 'alexandrianDecanThirtySixGodsResult' },
+  { key: 'taoistLieziWindRiding', nameKo: '열자 어풍동행 무하유지향', icon: '🍃', category: 'deep_master', kind: 'symbolic', reportProperty: 'taoistLieziWindRidingResult' },
+  { key: 'samkhyaTwentyFiveTattvas', nameKo: '상키야 25타트바 분별지', icon: '🧘', category: 'deep_master', kind: 'symbolic', reportProperty: 'samkhyaTwentyFiveTattvasResult' },
+  { key: 'neoConfucianFourSevenLiQi', nameKo: '성리학 사칠이기 거경궁리', icon: '📜', category: 'deep_master', kind: 'symbolic', reportProperty: 'neoConfucianFourSevenLiQiResult' },
+  { key: 'etruscanAugurSixteenSky', nameKo: '에트루리아 16천궁 아우구르', icon: '🦅', category: 'deep_master', kind: 'calculation', reportProperty: 'etruscanAugurSixteenSkyResult' },
+  { key: 'rosicrucianChymicalWedding', nameKo: '로젠크로이츠 화학적 결혼 7일 연금술', icon: '🌹', category: 'deep_master', kind: 'symbolic', reportProperty: 'rosicrucianChymicalWeddingResult' },
+  { key: 'aztecTonalamatl', nameKo: '아즈텍 토날포왈리 20대 일진 성력', icon: '☀️', category: 'deep_master', kind: 'calculation', reportProperty: 'aztecTonalamatlResult' },
+  { key: 'mongolianTengriHiimori', nameKo: '몽골 텡그리즘 풍마 히모리 영혼', icon: '🐎', category: 'deep_master', kind: 'calculation', reportProperty: 'mongolianTengriHiimoriResult' },
+  { key: 'gaelicWheelFireFestivals', nameKo: '게일 4대 화제 축제 휠 오브 더 이어', icon: '🔥', category: 'deep_master', kind: 'calculation', reportProperty: 'gaelicWheelFireFestivalsResult' },
+  { key: 'norseHavamalEighteenGaldr', nameKo: '하바말 오딘 18대 게알드르 룬 비전', icon: 'ᚱ', category: 'deep_master', kind: 'symbolic', reportProperty: 'norseHavamalEighteenGaldrResult' },
+  { key: 'ibnArabiWahdatAlWujud', nameKo: '이븐 아라비 존재의 단일성 심장 영지', icon: '🪞', category: 'deep_master', kind: 'symbolic', reportProperty: 'ibnArabiWahdatAlWujudResult' },
+  { key: 'chonggamnokTenSanctuaries', nameKo: '정감록 10승지 영맥 피난처', icon: '⛰️', category: 'deep_master', kind: 'calculation', reportProperty: 'chonggamnokTenSanctuariesResult' },
+  { key: 'balineseTriHitaKarana', nameKo: '발리 트리 히타 카라나 3대 조화', icon: '🌺', category: 'deep_master', kind: 'symbolic', reportProperty: 'balineseTriHitaKaranaResult' },
+  { key: 'hopiFourWorldsKachina', nameKo: '호피 4대 세계 카치나 정령 지혜', icon: '🦅', category: 'deep_master', kind: 'symbolic', reportProperty: 'hopiFourWorldsKachinaResult' },
+  { key: 'donghakCheondoismCheonju', nameKo: '동학 시천주 지기금지 인내천 조화', icon: '🕊️', category: 'deep_master', kind: 'symbolic', reportProperty: 'donghakCheondoismCheonjuResult' },
+  { key: 'incaAndeanThreePachaAyni', nameKo: '잉카 안데스 3대 파차 아이니 호혜', icon: '🦙', category: 'deep_master', kind: 'symbolic', reportProperty: 'incaAndeanThreePachaAyniResult' },
+  { key: 'shangOracleBoneDivination', nameKo: '은나라 갑골문 신탁 복사 정인 균열', icon: '🐢', category: 'deep_master', kind: 'symbolic', reportProperty: 'shangOracleBoneDivinationResult' },
+  { key: 'cheonbugyeongEightyOne', nameKo: '단군 단학 천부경 81자 삼일신고 성통광명', icon: '☀️', category: 'deep_master', kind: 'symbolic', reportProperty: 'cheonbugyeongEightyOneResult' },
+  { key: 'hinduSriYantra', nameKo: '힌두 탄트라 스리 얀트라 9나바요니 바인두', icon: '🔺', category: 'deep_master', kind: 'calculation', reportProperty: 'hinduSriYantraResult' },
+  { key: 'lakotaMedicineWheel', nameKo: '라코타 수족 와칸 탕카 성스러운 메디슨 휠', icon: '🪶', category: 'deep_master', kind: 'symbolic', reportProperty: 'lakotaMedicineWheelResult' },
+  { key: 'gyeogamYurok', nameKo: '격암 남사고 격암유록 궁궁을을 사중구생', icon: '📜', category: 'deep_master', kind: 'symbolic', reportProperty: 'gyeogamYurokResult' },
+  { key: 'heianOnmyodoSeimei', nameKo: '헤이안 음양도 아베노 세이메이 12천장 식신', icon: '⭐', category: 'deep_master', kind: 'calculation', reportProperty: 'heianOnmyodoSeimeiResult' },
+  { key: 'polynesianWayfinding', nameKo: '폴리네시아 마우이 웨이파인딩 32방위 스타컴퍼스', icon: '🧭', category: 'deep_master', kind: 'calculation', reportProperty: 'polynesianWayfindingResult' },
+  { key: 'wonhyoHwajaeng', nameKo: '신라 원효대사 십문화쟁론 일심이문 무애', icon: '🕊️', category: 'deep_master', kind: 'symbolic', reportProperty: 'wonhyoHwajaengResult' },
+  { key: 'mayiMianxiang', nameKo: '마의도사 마의상법 12궁 관상 심상합일', icon: '👤', category: 'deep_master', kind: 'calculation', reportProperty: 'mayiMianxiangResult' },
+  { key: 'egyptianAmduat', nameKo: '이집트 암두아트 12시간 라 밤의항해 케프리부활', icon: '🌅', category: 'deep_master', kind: 'symbolic', reportProperty: 'egyptianAmduatResult' },
+  { key: 'celticDruidBrehonLawJustice', nameKo: '고대 켈트 브레혼 법전 4대 우주정의 에릭', icon: '⚖️', category: 'deep_master', kind: 'calculation', reportProperty: 'celticDruidBrehonLawResult' },
+  { key: 'mesopotamianNisabaScribe', nameKo: '수메르 서기 니사바 청금석 서판 갈대첨필 천문수리', icon: '📐', category: 'deep_master', kind: 'calculation', reportProperty: 'mesopotamianNisabaResult' },
+  { key: 'koreanSuunGasiHeon', nameKo: '동학 수운 최제우 용담유사 검결 심기수련 삼경', icon: '🗡️', category: 'deep_master', kind: 'symbolic', reportProperty: 'suunGasiHeonResult' },
 ];
+
+export const DCE_MASTER_CATALOG = ALL_DCE_ENGINES;
+
+export function isEngineDelivered(
+  meta: DceEngineMeta,
+  report: DeterministicEngineReport,
+  options?: FormatDeterministicEngineOptions
+): boolean {
+  // 1. 선별 모드(스마트 라우팅/포커스) 검증
+  if (options && options.isMasterMobilization === false) {
+    if (meta.category === 'foundational') {
+      const focusSet = new Set(options.focusTools || []);
+      if (focusSet.size > 0 && !focusSet.has(meta.key) && meta.key !== 'saju' && meta.key !== 'astrology') {
+        return false;
+      }
+    } else {
+      if (!shouldIncludeEngine(meta.key, options)) {
+        return false;
+      }
+    }
+  }
+
+  // 2. 실제 데이터 산출 성공 여부 검증 (null/undefined/error/skipped 배제)
+  if (meta.category === 'foundational') {
+    const envelope = report.tools?.[meta.key];
+    return Boolean(envelope && (envelope.status === 'calculated' || envelope.status === 'symbolic') && envelope.data);
+  }
+
+  const propName = meta.reportProperty || (meta.key in report ? meta.key : `${meta.key}Result`);
+  const val = (report as unknown as Record<string, unknown>)[propName];
+  return val !== null && val !== undefined;
+}
 
 export function getFiredEngineBadges(
   report: DeterministicEngineReport,
   options?: FormatDeterministicEngineOptions
 ): string[] {
-  if (!options || options.isMasterMobilization !== false) {
-    // 올인원 마스터 모드: 등록된 144대 전원 자동 반환
-    return ALL_DCE_ENGINES.map((e) => e.nameKo);
-  }
-
-  const fired: string[] = [];
-  const focusSet = new Set(options.focusTools || []);
-
-  // 1. 기초 15대 도구 중 포커스에 해당하거나 기본 계산된 도구
-  ALL_DCE_ENGINES.filter((e) => e.category === 'foundational').forEach((e) => {
-    if (focusSet.has(e.key) || focusSet.size === 0) {
-      fired.push(e.nameKo);
-    }
-  });
-
-  // 2. 심층 마스터 엔진 중 현재 의도에 맞게 발동된 엔진
-  ALL_DCE_ENGINES.filter((e) => e.category === 'deep_master').forEach((e) => {
-    if (shouldIncludeEngine(e.key, options)) {
-      fired.push(e.nameKo);
-    }
-  });
-
-  return Array.from(new Set(fired));
+  return ALL_DCE_ENGINES
+    .filter((e) => isEngineDelivered(e, report, options))
+    .map((e) => e.nameKo);
 }
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'celticDruidBrehonLawJustice',
+    'mesopotamianNisabaScribe',
     'mayiMianxiang',
     'polynesianWayfinding',
     'celticTuathaFourTreasures',
@@ -3067,6 +3140,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'celticDruidBrehonLawJustice',
+    'mesopotamianNisabaScribe',
     'pythagoreanTetraktys',
     'wealthPipeline',
     'sajuClassicYongshin',
@@ -3107,6 +3182,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'koreanSuunGasiHeon',
+    'celticDruidBrehonLawJustice',
     'wonhyoHwajaeng',
     'egyptianAmduat',
     'heianOnmyodoSeimei',
@@ -3207,6 +3284,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'mesopotamianNisabaScribe',
     'rosicrucianChymicalWedding',
     'samkhyaTwentyFiveTattvas',
     'etruscanAugurSixteenSky',
@@ -3239,6 +3317,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'celticDruidBrehonLawJustice',
+    'mesopotamianNisabaScribe',
+    'koreanSuunGasiHeon',
     'wonhyoHwajaeng',
     'mayiMianxiang',
     'egyptianAmduat',
@@ -3377,12 +3458,17 @@ export function formatDeterministicEnginePrompt(
     }
   });
 
+  const delivered = ALL_DCE_ENGINES.filter((e) => isEngineDelivered(e, report, options));
+  const deliveredCalc = delivered.filter((e) => e.kind === 'calculation').length;
+  const deliveredSymbolic = delivered.filter((e) => e.kind === 'symbolic').length;
+
   return `[⚡ 결정론적 자체 계산 엔진(Deterministic Calculation Engine) 실측 데이터]
 ======================================================================
 엔진 버전: ${report.engineVersion}
 기준 시각: ${report.calculatedAtKst} (한국 표준시)
 프로필 입력: ${report.inputProfile.solarDateString || '생년월일 미입력'} ${report.inputProfile.birthtime || '(생시 미입력)'} | 출생지: ${report.inputProfile.birthCity || '미확인'}
-실측 계산 성공 도구: ${report.summary.toolsCalculated}개 | 상징/부분 도구: ${report.summary.toolsPartialOrSymbolic}개 | 미구현 도구: ${report.summary.toolsNotImplemented}개
+실측 전달 도구: 총 ${delivered.length}개 (수리/천문 계산: ${deliveredCalc}개 | 상징/원형 가이드: ${deliveredSymbolic}개)
+실측 계산 성공 기초도구: ${report.summary.toolsCalculated}개 | 상징/부분 도구: ${report.summary.toolsPartialOrSymbolic}개 | 미구현 도구: ${report.summary.toolsNotImplemented}개
 ${isSelective ? `[스마트 집중 모드 가동]: ${options?.intent ? `분석 의도 '${options.intent}'에 맞춘 ` : ''}핵심 특화 엔진 선별 주입 완료\n` : ''}======================================================================
 
 [★ AI 환각 원천 차단 절대 지침 (Anti-Hallucination Guard)]:
@@ -3581,5 +3667,8 @@ ${report.heianOnmyodoSeimeiResult && shouldIncludeEngine('heianOnmyodoSeimei', o
 ${report.polynesianWayfindingResult && shouldIncludeEngine('polynesianWayfinding', options) ? '\n' + formatPolynesianWayfindingPrompt(report.polynesianWayfindingResult) : ''}
 ${report.wonhyoHwajaengResult && shouldIncludeEngine('wonhyoHwajaeng', options) ? '\n' + formatWonhyoHwajaengPrompt(report.wonhyoHwajaengResult) : ''}
 ${report.mayiMianxiangResult && shouldIncludeEngine('mayiMianxiang', options) ? '\n' + formatMayiMianxiangPrompt(report.mayiMianxiangResult) : ''}
-${report.egyptianAmduatResult && shouldIncludeEngine('egyptianAmduat', options) ? '\n' + formatEgyptianAmduatPrompt(report.egyptianAmduatResult) : ''}`;
+${report.egyptianAmduatResult && shouldIncludeEngine('egyptianAmduat', options) ? '\n' + formatEgyptianAmduatPrompt(report.egyptianAmduatResult) : ''}
+${report.celticDruidBrehonLawResult && shouldIncludeEngine('celticDruidBrehonLawJustice', options) ? '\n' + formatCelticBrehonLawPrompt(report.celticDruidBrehonLawResult) : ''}
+${report.mesopotamianNisabaResult && shouldIncludeEngine('mesopotamianNisabaScribe', options) ? '\n' + formatMesopotamianNisabaPrompt(report.mesopotamianNisabaResult) : ''}
+${report.suunGasiHeonResult && shouldIncludeEngine('koreanSuunGasiHeon', options) ? '\n' + formatSuunGasiHeonPrompt(report.suunGasiHeonResult) : ''}`;
 }

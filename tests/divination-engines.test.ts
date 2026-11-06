@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import './dce-master-registry.test';
 import { calculateIching, castIching, hexagram } from '../src/lib/divination/iching';
 import { calculateZiwei, calculateSukuyo, calculateVedic, sukuyoFromLunar, sukuyoRelationship } from '../src/lib/divination/birthCharts';
 import { calculateLiuren, calculateQimen, eventInstant } from '../src/lib/divination/eventCharts';
@@ -174,6 +175,9 @@ import { calculatePolynesianWayfinding, formatPolynesianWayfindingPrompt, POLYNE
 import { calculateWonhyoHwajaeng, formatWonhyoHwajaengPrompt, WONHYO_HWAJAENG_VERSION } from '../src/lib/divination/koreanWonhyoHwajaengOneMindEngine';
 import { calculateMayiMianxiang, formatMayiMianxiangPrompt, MAYI_MIANXIANG_VERSION } from '../src/lib/divination/chineseMayiMianxiangTwelvePalacesEngine';
 import { calculateEgyptianAmduat, formatEgyptianAmduatPrompt, EGYPTIAN_AMDUAT_VERSION } from '../src/lib/divination/egyptianAmduatTwelveHoursRaEngine';
+import { calculateCelticBrehonLaw, formatCelticBrehonLawPrompt, CELTIC_BREHON_LAW_VERSION } from '../src/lib/divination/celticDruidBrehonLawJusticeEngine';
+import { calculateMesopotamianNisaba, formatMesopotamianNisabaPrompt, MESOPOTAMIAN_NISABA_VERSION } from '../src/lib/divination/mesopotamianNisabaScribeWisdomEngine';
+import { calculateSuunGasiHeon, formatSuunGasiHeonPrompt, SUUN_GASI_HEON_VERSION } from '../src/lib/divination/koreanSuunGasiHeonGyeongGwonEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3943,6 +3947,49 @@ test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld,
   assert(prompt.includes('고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활'));
   assert(prompt.includes(rep.currentAmduatHour.hourNameAncient));
 });
+
+test('Celtic Druid Brehon Law Justice Engine: calculates 4 cosmic justices, Cairde peace pact and Eric compensation', () => {
+  const rep = calculateCelticBrehonLaw(profile);
+  assert.equal(rep.engineVersion, CELTIC_BREHON_LAW_VERSION);
+  assert(rep.cairdePeacePactHarmony >= 0 && rep.cairdePeacePactHarmony <= 100);
+  assert(rep.ericCompensationRestoration >= 0 && rep.ericCompensationRestoration <= 100);
+  assert(rep.logNEnechHonorFaceValueScore >= 0 && rep.logNEnechHonorFaceValueScore <= 100);
+  assert(rep.firFlathaTruthSovereigntyIndex >= 0 && rep.firFlathaTruthSovereigntyIndex <= 100);
+  assert(rep.brehonArbitrationClarityPower >= 0 && rep.brehonArbitrationClarityPower <= 100);
+  assert(rep.activeJusticeRank.rankNameGaelic.length > 0);
+  const prompt = formatCelticBrehonLawPrompt(rep);
+  assert(prompt.includes('고대 켈트 드루이드 《브레혼 법전(Brehon Law)》'));
+  assert(prompt.includes(rep.activeJusticeRank.rankNameKo));
+});
+
+test('Mesopotamian Nisaba Scribe Wisdom Engine: calculates reed stylus precision, lapislazuli tablet and astral mul resonance', () => {
+  const rep = calculateMesopotamianNisaba(profile);
+  assert.equal(rep.engineVersion, MESOPOTAMIAN_NISABA_VERSION);
+  assert(rep.reedStylusPrecisionIndex >= 0 && rep.reedStylusPrecisionIndex <= 100);
+  assert(rep.lapislazuliTabletClarityScore >= 0 && rep.lapislazuliTabletClarityScore <= 100);
+  assert(rep.edubbaIntellectualGrowth >= 0 && rep.edubbaIntellectualGrowth <= 100);
+  assert(rep.sacredNindanMeasureBalance >= 0 && rep.sacredNindanMeasureBalance <= 100);
+  assert(rep.astralMulConstellationResonance >= 0 && rep.astralMulConstellationResonance <= 100);
+  assert(rep.activeScribeRank.rankSumerian.length > 0);
+  const prompt = formatMesopotamianNisabaPrompt(rep);
+  assert(prompt.includes('수메르 서기의 수호신 《니사바(Nisaba)》'));
+  assert(prompt.includes(rep.activeScribeRank.rankNameKo));
+});
+
+test('Korean Suun Gasi Heon Engine: calculates Yongcheon sword severance, Samgyeong reverence and Bu-Jae-Rae timing', () => {
+  const rep = calculateSuunGasiHeon(profile);
+  assert.equal(rep.engineVersion, SUUN_GASI_HEON_VERSION);
+  assert(rep.yongcheonSwordSeverancePower >= 0 && rep.yongcheonSwordSeverancePower <= 100);
+  assert(rep.samgyeongReverenceHarmony >= 0 && rep.samgyeongReverenceHarmony <= 100);
+  assert(rep.buJaeRaeTimingAwakening >= 0 && rep.buJaeRaeTimingAwakening <= 100);
+  assert(rep.jiGiGeumJiCosmicQiFlow >= 0 && rep.jiGiGeumJiCosmicQiFlow <= 100);
+  assert(rep.sudeokHeartPurityIndex >= 0 && rep.sudeokHeartPurityIndex <= 100);
+  assert(rep.activeCultivationStage.stageNameKo.length > 0);
+  const prompt = formatSuunGasiHeonPrompt(rep);
+  assert(prompt.includes('동학 수운 최제우 《용담유사》 검결(劍訣)'));
+  assert(prompt.includes(rep.activeCultivationStage.stageNameKo));
+});
+
 
 
 
