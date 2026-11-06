@@ -244,6 +244,9 @@ import { calculateCiceroDeOfficiis, formatCiceroDeOfficiisPrompt, type CiceroDeO
 import { calculateEpictetusDichotomyOfControl, formatEpictetusDichotomyOfControlPrompt, type EpictetusDichotomyOfControlResult, EPICTETUS_CONTROL_VERSION } from './ancientGreekEpictetusDichotomyOfControlEngine';
 import { calculateConfuciusAnalectsZhitianming, formatConfuciusAnalectsZhitianmingPrompt, type ConfuciusAnalectsZhitianmingResult, CONFUCIUS_ZHITIANMING_VERSION } from './ancientChineseConfuciusAnalectsZhitianmingEngine';
 import { calculateBaruchSpinozaEthicaConatus, formatBaruchSpinozaEthicaConatusPrompt, type BaruchSpinozaEthicaConatusResult, SPINOZA_CONATUS_AMORDEI_VERSION } from './baruchSpinozaEthicaConatusAmorDeiEngine';
+import { calculateKantCategoricalImperative, formatKantCategoricalImperativePrompt, type KantCategoricalImperativeResult, KANT_CATEGORICAL_IMPERATIVE_VERSION } from './germanKantCategoricalImperativeSynthesisEngine';
+import { calculateUpanishadicTatTvamAsi, formatUpanishadicTatTvamAsiPrompt, type UpanishadicTatTvamAsiResult, UPANISHADIC_TAT_TVAM_ASI_VERSION } from './indianUpanishadicTatTvamAsiEngine';
+import { calculateChoeHangiGihakUnwha, formatChoeHangiGihakUnwhaPrompt, type ChoeHangiGihakUnwhaResult, CHOE_HANGI_GIHAK_UNWHA_VERSION } from './koreanChoeHangiGihakUnwhaEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -508,6 +511,9 @@ export interface DeterministicEngineReport {
   epictetusDichotomyOfControlResult?: EpictetusDichotomyOfControlResult | null;
   confuciusAnalectsZhitianmingResult?: ConfuciusAnalectsZhitianmingResult | null;
   spinozaEthicaConatusResult?: BaruchSpinozaEthicaConatusResult | null;
+  kantCategoricalImperativeResult?: KantCategoricalImperativeResult | null;
+  upanishadicTatTvamAsiResult?: UpanishadicTatTvamAsiResult | null;
+  choeHangiGihakUnwhaResult?: ChoeHangiGihakUnwhaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3029,6 +3035,33 @@ try {
     }
   })()));
 
+  // 213. 독일 계몽주의 이마누엘 칸트 정언명령 & 목적의 왕국 자율성 도덕법칙 엔진
+  const kantCategoricalImperativeResult = calculateSupplement('kantCategoricalImperativeResult', () => ((() => {
+    try {
+      return calculateKantCategoricalImperative(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 214. 고대 인도 우파니샤드 타트 트밤 아시 & 범아일여 순수의식 엔진
+  const upanishadicTatTvamAsiResult = calculateSupplement('upanishadicTatTvamAsiResult', () => ((() => {
+    try {
+      return calculateUpanishadicTatTvamAsi(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 215. 한국 조선 실학 혜강 최한기 기학 & 신기통 운화 지혜 엔진
+  const choeHangiGihakUnwhaResult = calculateSupplement('choeHangiGihakUnwhaResult', () => ((() => {
+    try {
+      return calculateChoeHangiGihakUnwha(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3279,6 +3312,9 @@ try {
     epictetusDichotomyOfControlResult,
     confuciusAnalectsZhitianmingResult,
     spinozaEthicaConatusResult,
+    kantCategoricalImperativeResult,
+    upanishadicTatTvamAsiResult,
+    choeHangiGihakUnwhaResult,
     tools: toolsMap,
   };
 }
@@ -3519,6 +3555,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ancientGreekEpictetusDichotomyOfControl', nameKo: '에픽테토스 엥케이리디온 통제이분법 프로하이레시스 도덕의지', icon: '🏛️', category: 'deep_master' },
   { key: 'ancientChineseConfuciusAnalectsZhitianming', nameKo: '공자 논어 지천명 극기복례 군자도', icon: '📜', category: 'deep_master' },
   { key: 'baruchSpinozaEthicaConatusAmorDei', nameKo: '스피노자 에티카 코나투스 신즉자연 영원의상관조', icon: '✨', category: 'deep_master' },
+  { key: 'germanKantCategoricalImperativeSynthesis', nameKo: '칸트 정언명령 목적의왕국 자율성 도덕법칙', icon: '⚖️', category: 'deep_master' },
+  { key: 'indianUpanishadicTatTvamAsi', nameKo: '우파니샤드 타트트밤아시 범아일여 순수의식', icon: '🕉️', category: 'deep_master' },
+  { key: 'koreanChoeHangiGihakUnwha', nameKo: '혜강 최한기 기학 신기통 운화기 추측지리', icon: '📜', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3626,6 +3665,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'germanKantCategoricalImperativeSynthesis',
+    'indianUpanishadicTatTvamAsi',
+    'koreanChoeHangiGihakUnwha',
     'ancientGreekEpictetusDichotomyOfControl',
     'ancientChineseConfuciusAnalectsZhitianming',
     'baruchSpinozaEthicaConatusAmorDei',
@@ -3693,6 +3735,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'germanKantCategoricalImperativeSynthesis',
+    'indianUpanishadicTatTvamAsi',
+    'koreanChoeHangiGihakUnwha',
     'ancientGreekEpictetusDichotomyOfControl',
     'ancientChineseConfuciusAnalectsZhitianming',
     'baruchSpinozaEthicaConatusAmorDei',
@@ -3853,6 +3898,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'germanKantCategoricalImperativeSynthesis',
+    'indianUpanishadicTatTvamAsi',
+    'koreanChoeHangiGihakUnwha',
     'ancientGreekEpictetusDichotomyOfControl',
     'ancientChineseConfuciusAnalectsZhitianming',
     'baruchSpinozaEthicaConatusAmorDei',

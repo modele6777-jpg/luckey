@@ -207,6 +207,9 @@ import { calculateCiceroDeOfficiis, formatCiceroDeOfficiisPrompt, CICERO_DE_OFFI
 import { calculateEpictetusDichotomyOfControl, formatEpictetusDichotomyOfControlPrompt, EPICTETUS_CONTROL_VERSION } from '../src/lib/divination/ancientGreekEpictetusDichotomyOfControlEngine';
 import { calculateConfuciusAnalectsZhitianming, formatConfuciusAnalectsZhitianmingPrompt, CONFUCIUS_ZHITIANMING_VERSION } from '../src/lib/divination/ancientChineseConfuciusAnalectsZhitianmingEngine';
 import { calculateBaruchSpinozaEthicaConatus, formatBaruchSpinozaEthicaConatusPrompt, SPINOZA_CONATUS_AMORDEI_VERSION } from '../src/lib/divination/baruchSpinozaEthicaConatusAmorDeiEngine';
+import { calculateKantCategoricalImperative, formatKantCategoricalImperativePrompt, KANT_CATEGORICAL_IMPERATIVE_VERSION } from '../src/lib/divination/germanKantCategoricalImperativeSynthesisEngine';
+import { calculateUpanishadicTatTvamAsi, formatUpanishadicTatTvamAsiPrompt, UPANISHADIC_TAT_TVAM_ASI_VERSION } from '../src/lib/divination/indianUpanishadicTatTvamAsiEngine';
+import { calculateChoeHangiGihakUnwha, formatChoeHangiGihakUnwhaPrompt, CHOE_HANGI_GIHAK_UNWHA_VERSION } from '../src/lib/divination/koreanChoeHangiGihakUnwhaEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4368,6 +4371,49 @@ test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aet
   assert(prompt.includes('스피노자 에티카 코나투스 & 신즉자연 관조 지표'));
   assert(prompt.includes(rep.activeAffectState.affectNameKo));
 });
+
+test('Kant Categorical Imperative Engine: calculates universal law maxims, human dignity ends, and moral autonomy', () => {
+  const rep = calculateKantCategoricalImperative(profile);
+  assert.equal(rep.engineVersion, KANT_CATEGORICAL_IMPERATIVE_VERSION);
+  assert(rep.universalLawMaximsScore >= 0 && rep.universalLawMaximsScore <= 100);
+  assert(rep.humanDignityEndsScore >= 0 && rep.humanDignityEndsScore <= 100);
+  assert(rep.autonomousWillSovereigntyScore >= 0 && rep.autonomousWillSovereigntyScore <= 100);
+  assert(rep.transcendentalSynthesisScore >= 0 && rep.transcendentalSynthesisScore <= 100);
+  assert(rep.summumBonumHarmonyScore >= 0 && rep.summumBonumHarmonyScore <= 100);
+  assert(rep.activeImperativeFormula.formulaNameGerman.length > 0);
+  const prompt = formatKantCategoricalImperativePrompt(rep);
+  assert(prompt.includes('칸트 정언명령 & 목적의 왕국 자율성 지표'));
+  assert(prompt.includes(rep.activeImperativeFormula.formulaNameKo));
+});
+
+test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya piercing, Neti Neti detachment, and Sat-Chit-Ananda', () => {
+  const rep = calculateUpanishadicTatTvamAsi(profile);
+  assert.equal(rep.engineVersion, UPANISHADIC_TAT_TVAM_ASI_VERSION);
+  assert(rep.brahmanAtmanUnityScore >= 0 && rep.brahmanAtmanUnityScore <= 100);
+  assert(rep.mayaIllusionPiercingScore >= 0 && rep.mayaIllusionPiercingScore <= 100);
+  assert(rep.netiNetiDetachmentScore >= 0 && rep.netiNetiDetachmentScore <= 100);
+  assert(rep.satChitAnandaPureConsciousnessScore >= 0 && rep.satChitAnandaPureConsciousnessScore <= 100);
+  assert(rep.prajnaSpiritualWisdomScore >= 0 && rep.prajnaSpiritualWisdomScore <= 100);
+  assert(rep.activeMahavakya.vakyaSanskrit.length > 0);
+  const prompt = formatUpanishadicTatTvamAsiPrompt(rep);
+  assert(prompt.includes('우파니샤드 타트 트밤 아시 & 범아일여 순수의식 지표'));
+  assert(prompt.includes(rep.activeMahavakya.vakyaNameKo));
+});
+
+test('Choe Han-gi Gihak Unwha Engine: calculates Unwhagi cosmic flow, Singitong perceptual mind, Chucheuk empirical insight, and Daedong harmony', () => {
+  const rep = calculateChoeHangiGihakUnwha(profile);
+  assert.equal(rep.engineVersion, CHOE_HANGI_GIHAK_UNWHA_VERSION);
+  assert(rep.unwhagiCosmicFlowScore >= 0 && rep.unwhagiCosmicFlowScore <= 100);
+  assert(rep.singitongPerceptualMindScore >= 0 && rep.singitongPerceptualMindScore <= 100);
+  assert(rep.chucheukEmpiricalInsightScore >= 0 && rep.chucheukEmpiricalInsightScore <= 100);
+  assert(rep.tongminPublicConnectionScore >= 0 && rep.tongminPublicConnectionScore <= 100);
+  assert(rep.daedongUniversalHarmonyScore >= 0 && rep.daedongUniversalHarmonyScore <= 100);
+  assert(rep.activeGihakPrinciple.sourceText.length > 0);
+  const prompt = formatChoeHangiGihakUnwhaPrompt(rep);
+  assert(prompt.includes('혜강 최한기 기학(氣學) & 신기통(神氣通) 운화 지표'));
+  assert(prompt.includes(rep.activeGihakPrinciple.principleNameKo));
+});
+
 
 
 
