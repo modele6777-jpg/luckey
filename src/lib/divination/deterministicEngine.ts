@@ -229,6 +229,10 @@ import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, type Jeo
 import { calculateHeraclitusPantaRhei, formatHeraclitusPantaRheiPrompt, type HeraclitusPantaRheiResult, HERACLITUS_PANTA_RHEI_VERSION } from './ancientGreekHeraclitusPantaRheiLogosEngine';
 import { calculateMoziGyeomAe, formatMoziGyeomAePrompt, type MoziGyeomAeResult, MOZI_GYEOM_AE_VERSION } from './ancientChineseMoziGyeomAeUniversalLoveEngine';
 import { calculateAureliusInnerCitadel, formatAureliusInnerCitadelPrompt, type AureliusInnerCitadelResult, AURELIUS_INNER_CITADEL_VERSION } from './romanAureliusInnerCitadelMeditationsEngine';
+import { calculateLaoziWaterVirtueWuwei, formatLaoziWaterVirtueWuweiPrompt, type LaoziWaterVirtueWuweiResult, LAOZI_WATER_VIRTUE_WUWEI_VERSION } from './ancientChineseLaoziWaterVirtueWuweiEngine';
+import { calculateAristotleMesotes, formatAristotleMesotesPrompt, type AristotleMesotesResult, ARISTOTLE_MESOTES_VERSION } from './ancientGreekAristotleMesotesEudaimoniaEngine';
+import { calculateBhagavadGitaKarmaYoga, formatBhagavadGitaKarmaYogaPrompt, type BhagavadGitaKarmaYogaResult, BHAGAVAD_GITA_KARMA_YOGA_VERSION } from './ancientIndianBhagavadGitaKarmaYogaEngine';
+
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -477,6 +481,9 @@ export interface DeterministicEngineReport {
   heraclitusPantaRheiResult?: HeraclitusPantaRheiResult | null;
   moziGyeomAeResult?: MoziGyeomAeResult | null;
   aureliusInnerCitadelResult?: AureliusInnerCitadelResult | null;
+  laoziWaterVirtueWuweiResult?: LaoziWaterVirtueWuweiResult | null;
+  aristotleMesotesResult?: AristotleMesotesResult | null;
+  bhagavadGitaKarmaYogaResult?: BhagavadGitaKarmaYogaResult | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2862,6 +2869,34 @@ try {
     }
   })()));
 
+  // 198. 고대 중국 도가 노자 도덕경 상선약수 & 무위자연 엔진
+  const laoziWaterVirtueWuweiResult = calculateSupplement('laoziWaterVirtueWuweiResult', () => ((() => {
+    try {
+      return calculateLaoziWaterVirtueWuwei(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 199. 고대 그리스 아리스토텔레스 니코마코스 윤리학 중용 & 에우다이모니아 엔진
+  const aristotleMesotesResult = calculateSupplement('aristotleMesotesResult', () => ((() => {
+    try {
+      return calculateAristotleMesotes(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 200. 고대 인도 바가바드 기타 카르마 요가 & 무집착 행동 엔진
+  const bhagavadGitaKarmaYogaResult = calculateSupplement('bhagavadGitaKarmaYogaResult', () => ((() => {
+    try {
+      return calculateBhagavadGitaKarmaYoga(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+
   return {
     masterReview: Boolean(params.reviewAll),
     supplementExecutions,
@@ -3096,6 +3131,9 @@ try {
     heraclitusPantaRheiResult,
     moziGyeomAeResult,
     aureliusInnerCitadelResult,
+    laoziWaterVirtueWuweiResult,
+    aristotleMesotesResult,
+    bhagavadGitaKarmaYogaResult,
     tools: toolsMap,
   };
 }
@@ -3321,6 +3359,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'heraclitusPantaRheiLogos', nameKo: '에페소스 헤라클레이토스 만물유전 로고스 대립물조화', icon: '🌊', category: 'deep_master' },
   { key: 'moziGyeomAeUniversalLove', nameKo: '묵가 묵자 겸애교리 비공절용 공평무사 평화수호', icon: '🛡️', category: 'deep_master' },
   { key: 'romanAureliusInnerCitadel', nameKo: '로마 철학황제 마르쿠스 아우렐리우스 명상록 내면의성채', icon: '🏛️', category: 'deep_master' },
+  { key: 'ancientChineseLaoziWaterVirtueWuwei', nameKo: '도가 노자 도덕경 상선약수 무위자연 유약승강강', icon: '🌊', category: 'deep_master' },
+  { key: 'ancientGreekAristotleMesotesEudaimonia', nameKo: '아리스토텔레스 니코마코스 윤리학 중용 에우다이모니아', icon: '⚖️', category: 'deep_master' },
+  { key: 'ancientIndianBhagavadGitaKarmaYoga', nameKo: '바가바드 기타 카르마 요가 니슈카마 카르마 무집착', icon: '🕉️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3425,6 +3466,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'ancientChineseLaoziWaterVirtueWuwei',
+    'ancientGreekAristotleMesotesEudaimonia',
+    'ancientIndianBhagavadGitaKarmaYoga',
     'moziGyeomAeUniversalLove',
     'heraclitusPantaRheiLogos',
     'koreanJeongYakyongMongminSimseo',
@@ -3477,6 +3521,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'ancientChineseLaoziWaterVirtueWuwei',
+    'ancientGreekAristotleMesotesEudaimonia',
+    'ancientIndianBhagavadGitaKarmaYoga',
     'heraclitusPantaRheiLogos',
     'romanAureliusInnerCitadel',
     'delphicChilonSpartanModeration',
@@ -3622,6 +3669,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'ancientChineseLaoziWaterVirtueWuwei',
+    'ancientGreekAristotleMesotesEudaimonia',
+    'ancientIndianBhagavadGitaKarmaYoga',
     'heraclitusPantaRheiLogos',
     'moziGyeomAeUniversalLove',
     'romanAureliusInnerCitadel',

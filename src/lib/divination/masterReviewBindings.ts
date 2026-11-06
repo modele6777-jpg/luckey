@@ -823,5 +823,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "romanAureliusInnerCitadel": {
     "field": "aureliusInnerCitadelResult",
     "traceKey": "aureliusInnerCitadelResult"
+  },
+  "ancientChineseLaoziWaterVirtueWuwei": {
+    "field": "laoziWaterVirtueWuweiResult",
+    "traceKey": "laoziWaterVirtueWuweiResult"
+  },
+  "ancientGreekAristotleMesotesEudaimonia": {
+    "field": "aristotleMesotesResult",
+    "traceKey": "aristotleMesotesResult"
+  },
+  "ancientIndianBhagavadGitaKarmaYoga": {
+    "field": "bhagavadGitaKarmaYogaResult",
+    "traceKey": "bhagavadGitaKarmaYogaResult"
   }
 };

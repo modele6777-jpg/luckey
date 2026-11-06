@@ -192,6 +192,10 @@ import { calculateJeongYakyongMongmin, formatJeongYakyongMongminPrompt, JEONG_YA
 import { calculateHeraclitusPantaRhei, formatHeraclitusPantaRheiPrompt, HERACLITUS_PANTA_RHEI_VERSION } from '../src/lib/divination/ancientGreekHeraclitusPantaRheiLogosEngine';
 import { calculateMoziGyeomAe, formatMoziGyeomAePrompt, MOZI_GYEOM_AE_VERSION } from '../src/lib/divination/ancientChineseMoziGyeomAeUniversalLoveEngine';
 import { calculateAureliusInnerCitadel, formatAureliusInnerCitadelPrompt, AURELIUS_INNER_CITADEL_VERSION } from '../src/lib/divination/romanAureliusInnerCitadelMeditationsEngine';
+import { calculateLaoziWaterVirtueWuwei, formatLaoziWaterVirtueWuweiPrompt, LAOZI_WATER_VIRTUE_WUWEI_VERSION } from '../src/lib/divination/ancientChineseLaoziWaterVirtueWuweiEngine';
+import { calculateAristotleMesotes, formatAristotleMesotesPrompt, ARISTOTLE_MESOTES_VERSION } from '../src/lib/divination/ancientGreekAristotleMesotesEudaimoniaEngine';
+import { calculateBhagavadGitaKarmaYoga, formatBhagavadGitaKarmaYogaPrompt, BHAGAVAD_GITA_KARMA_YOGA_VERSION } from '../src/lib/divination/ancientIndianBhagavadGitaKarmaYogaEngine';
+
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -4142,6 +4146,49 @@ test('Roman Marcus Aurelius Inner Citadel Meditations Engine: calculates Inner C
   assert(prompt.includes('고대 로마 마르쿠스 아우렐리우스 《명상록(Meditations)》'));
   assert(prompt.includes(rep.activeAureliusStage.stageNameKo));
 });
+
+test('Ancient Chinese Laozi Water Virtue Wuwei Engine: calculates water flexibility, Wuwei harmony and yielding strength', () => {
+  const rep = calculateLaoziWaterVirtueWuwei(profile);
+  assert.equal(rep.engineVersion, LAOZI_WATER_VIRTUE_WUWEI_VERSION);
+  assert(rep.waterVirtueFlexibilityIndex >= 0 && rep.waterVirtueFlexibilityIndex <= 100);
+  assert(rep.wuweiNatureHarmonyScore >= 0 && rep.wuweiNatureHarmonyScore <= 100);
+  assert(rep.yieldingOverHardStrength >= 0 && rep.yieldingOverHardStrength <= 100);
+  assert(rep.profoundVirtueStillness >= 0 && rep.profoundVirtueStillness <= 100);
+  assert(rep.nonContentionWisdom >= 0 && rep.nonContentionWisdom <= 100);
+  assert(rep.activeWaterStage.stageNameHanja.length > 0);
+  const prompt = formatLaoziWaterVirtueWuweiPrompt(rep);
+  assert(prompt.includes('고대 중국 도가 노자(老子) 도덕경 상선약수(上善若水)'));
+  assert(prompt.includes(rep.activeWaterStage.stageNameKo));
+});
+
+test('Ancient Greek Aristotle Mesotes Eudaimonia Engine: calculates Golden Mean, Eudaimonia, Phronesis and Telos', () => {
+  const rep = calculateAristotleMesotes(profile);
+  assert.equal(rep.engineVersion, ARISTOTLE_MESOTES_VERSION);
+  assert(rep.mesotesGoldenMeanScore >= 0 && rep.mesotesGoldenMeanScore <= 100);
+  assert(rep.eudaimoniaFlourishingIndex >= 0 && rep.eudaimoniaFlourishingIndex <= 100);
+  assert(rep.phronesisPracticalWisdom >= 0 && rep.phronesisPracticalWisdom <= 100);
+  assert(rep.telosPurposeOrientation >= 0 && rep.telosPurposeOrientation <= 100);
+  assert(rep.areteExcellenceIntegrity >= 0 && rep.areteExcellenceIntegrity <= 100);
+  assert(rep.activeVirtueStage.virtueNameGreek.length > 0);
+  const prompt = formatAristotleMesotesPrompt(rep);
+  assert(prompt.includes('고대 그리스 아리스토텔레스 니코마코스 윤리학 중용(Mesotes)'));
+  assert(prompt.includes(rep.activeVirtueStage.virtueNameKo));
+});
+
+test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma, Swadharma, Samatvam and Yogastha', () => {
+  const rep = calculateBhagavadGitaKarmaYoga(profile);
+  assert.equal(rep.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);
+  assert(rep.nishkamaKarmaDetachmentScore >= 0 && rep.nishkamaKarmaDetachmentScore <= 100);
+  assert(rep.swadharmaCallingAlignment >= 0 && rep.swadharmaCallingAlignment <= 100);
+  assert(rep.samatvamEquanimityIndex >= 0 && rep.samatvamEquanimityIndex <= 100);
+  assert(rep.yogasthaSteadfastness >= 0 && rep.yogasthaSteadfastness <= 100);
+  assert(rep.karmaphalaRenunciation >= 0 && rep.karmaphalaRenunciation <= 100);
+  assert(rep.activeGitaStage.sanskritStage.length > 0);
+  const prompt = formatBhagavadGitaKarmaYogaPrompt(rep);
+  assert(prompt.includes('고대 인도 바가바드 기타(Bhagavad Gita) 카르마 요가'));
+  assert(prompt.includes(rep.activeGitaStage.stageNameKo));
+});
+
 
 
 
