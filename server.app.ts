@@ -1,4 +1,4 @@
-import { isMasterTierModel, modelCandidates, LUCY_MASTER_FALLBACK_MODELS } from './src/lib/lucyModelPolicy';
+import { isMasterTierModel, modelCandidates, LUCY_MASTER_FALLBACK_MODELS, getLucyRequestFallbacks } from './src/lib/lucyModelPolicy';
 import dotenv from "dotenv";
 dotenv.config();
 dotenv.config({ path: ".env.local", override: true });
@@ -267,7 +267,10 @@ function isTemporaryUnavailableOrRateLimited(err: any): boolean {
   );
 }
 
-function getPrioritizedGeminiModels(requestedModel?: string): string[] {
+function getPrioritizedGeminiModels(requestedModel?: string, reviewMode?: unknown): string[] {
+  if (reviewMode === 'general' && requestedModel) {
+    return modelCandidates(requestedModel, getLucyRequestFallbacks(requestedModel, reviewMode));
+  }
   if (requestedModel && isMasterTierModel(requestedModel)) {
     const candidates = modelCandidates(requestedModel,LUCY_MASTER_FALLBACK_MODELS);
     return [...candidates.filter(model=>!isModelThrottled(model)),...candidates.filter(isModelThrottled)];
@@ -356,8 +359,8 @@ async function callGeminiStreamWithFallback(ai: GoogleGenAI, contents: any, conf
   throw lastError || new Error("All Gemini streaming models exhausted");
 }
 
-async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, config: any, requestedModel?: string) {
-  const modelsToTry = getPrioritizedGeminiModels(requestedModel);
+async function callGeminiContentWithFallback(ai: GoogleGenAI, contents: any, config: any, requestedModel?: string, reviewMode?: unknown) {
+  const modelsToTry = getPrioritizedGeminiModels(requestedModel, reviewMode);
 
   let lastError: any = null;
   for (const model of modelsToTry) {
@@ -2064,7 +2067,7 @@ ${content}
           if (!streamSuccess || chunksDelivered === 0) {
             console.warn("[server/openai-stream] All streaming models failed, generating direct content fallback...");
             try {
-              const { response: fallbackRes, modelUsed: fallbackModel } = await callGeminiContentWithFallback(ai, contents, config, req.body.model);
+              const { response: fallbackRes, modelUsed: fallbackModel } = await callGeminiContentWithFallback(ai, contents, config, req.body.model, req.body.review_mode);
               const fallbackText = fallbackRes.text || "안녕! 무엇을 도와줄까?";
               if (!res.headersSent) {
                 res.setHeader('Content-Type', 'text/event-stream');
@@ -2137,11 +2140,12 @@ ${content}
           let text = "";
           let modelUsed = "gemini-flash-latest";
           try {
-            const resResult = await callGeminiContentWithFallback(ai, contents, config, req.body.model);
+            const resResult = await callGeminiContentWithFallback(ai, contents, config, req.body.model, req.body.review_mode);
             geminiRes = resResult.response;
             modelUsed = resResult.modelUsed;
             text = geminiRes.text || "";
           } catch (genErr) {
+            if (req.body.review_mode) return res.status(503).json({ error: '답변 검토를 완료하지 못했습니다.', code: 'AI_REVIEW_UNAVAILABLE' });
             console.warn("[server/API/openai] generateContent failed, engaging guided mock:", genErr);
             const isJsonExpected = req.body.response_format?.type === "json_object";
             text = buildSmartFallbackText(req.body.messages || [], isJsonExpected);
@@ -2151,7 +2155,7 @@ ${content}
             id: `chatcmpl-${Date.now()}`,
             object: "chat.completion",
             created: Math.floor(Date.now() / 1000),
-            model: req.body.model || "gemini-flash-latest",
+            model: modelUsed,
             choices: [
               {
                 index: 0,

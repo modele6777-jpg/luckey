@@ -1,5 +1,6 @@
-import { LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS } from '../lib/lucyModelPolicy';
-import { reviewLucyReply, findUnsupportedClaims } from '../lib/lucyReplyReview';
+import { buildLucyCriticalFacts, formatLucyCriticalFacts } from '../lib/lucyCriticalFacts';
+import { LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS, LUCY_REVIEW_MODEL, LUCY_REVIEW_FALLBACK_MODELS } from '../lib/lucyModelPolicy';
+import { reviewLucyReply } from '../lib/lucyReplyReview';
 import { CALCULATION_HONESTY_RULE } from '../lib/divination/calculationAudit';
 import type { CalculationAuditItem } from '../lib/divination/calculationAudit';
 import { TAROT_NO_DRAW_RULE, verifyLucyTarotReply, isLucyTarotDrawRequest, revealLucyTarotDrawCard, type LucyTarotDraw } from '../lib/lucyTarotIntegrity';
@@ -1846,14 +1847,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const activityIdleTimeoutMs = (options?.isLucyPlus || options?.mode === 'master') ? 300000 : isMobileChat ? 180000 : 60000;
     let watchdogTimer: NodeJS.Timeout | null = null;
     let isWatchdogTimeout = false;
+    let isReviewingReply = false;
 
     const resetWatchdog = () => {
       lastActivityTime = Date.now();
       if (watchdogTimer) clearTimeout(watchdogTimer);
+      const phaseIdleTimeout = isReviewingReply ? Math.max(activityIdleTimeoutMs, 120000) : activityIdleTimeoutMs;
       watchdogTimer = setTimeout(() => {
         const now = Date.now();
-        const isIdleTooLong = now - lastActivityTime >= activityIdleTimeoutMs;
-        const isMaxDurationReached = now - generationStartTime >= ((options?.isLucyPlus || options?.mode === 'master') ? 300000 : isMobileChat ? 180000 : 120000);
+        const isIdleTooLong = now - lastActivityTime >= phaseIdleTimeout;
+        const isMaxDurationReached = now - generationStartTime >= ((options?.isLucyPlus || options?.mode === 'master') ? 300000 : isMobileChat ? 180000 : 120000) + (isReviewingReply ? 120000 : 0);
 
         if (isGeneratingRef.current[sourcePersona] && (isIdleTooLong || isMaxDurationReached)) {
           console.warn(`[AppContext] Activity watchdog auto-released (${isIdleTooLong ? 'idle' : 'max cap'}) for ${sourcePersona}`);
@@ -1862,7 +1865,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else if (isGeneratingRef.current[sourcePersona]) {
           resetWatchdog();
         }
-      }, activityIdleTimeoutMs);
+      }, phaseIdleTimeout);
     };
 
     resetWatchdog();
@@ -2212,21 +2215,30 @@ ${responseProfile.rule}`;
       supersededControllersRef.current.has(currentAbortController) ||
       activeAssistMsgIdRef.current[sourcePersona] !== assistMsgId;
 
+    const reviewAudit = options?.calculationAudit || toolSelection.calculationAudit || [];
+    const criticalFacts = buildLucyCriticalFacts(
+      reviewAudit.some(item => item.toolId === 'saju' && item.sentToModel && item.status === 'calculated') ? sajuObj : null,
+      tarotDraw,
+    );
+    const criticalFactsPrompt = formatLucyCriticalFacts(criticalFacts);
+    conversationForAPI[0].content += '\n' + criticalFactsPrompt;
     const verifyReply = async (text: string): Promise<string> => {
-      const draft = verifyLucyTarotReply(cleanChatDisplayText(text), tarotDraw, effectiveUserText);
-      const audit = options?.calculationAudit || toolSelection.calculationAudit || [];
-      if (!isMasterCall) {
-        if (findUnsupportedClaims(draft, audit).length) throw new Error('답변의 계산 근거를 다시 확인해야 합니다.');
-        return draft;
-      }
+      const draft = cleanChatDisplayText(text);
+      isReviewingReply = true;
       resetWatchdog();
-      const reviewed = await reviewLucyReply(draft, {
-        question: effectiveUserText,
-        evidence: [options?.extraSystemContext || toolSelection.promptInjection || '', fullProfileContext, chatDivinationContext || ''].join('\n'),
-        audit, signal: currentAbortController.signal,
-        request: messages => invokeLLM({ messages, model: LUCY_MASTER_MODEL, fallbackModels: LUCY_MASTER_FALLBACK_MODELS, maxOutputTokens: 8192, timeoutMs: 120000, signal: currentAbortController.signal }),
-      });
-      return verifyLucyTarotReply(cleanChatDisplayText(reviewed), tarotDraw, effectiveUserText);
+      try {
+        const reviewed = await reviewLucyReply(draft, {
+          question: effectiveUserText,
+          evidence: [options?.extraSystemContext || toolSelection.promptInjection || '', fullProfileContext, chatDivinationContext || ''].join('\n'),
+          facts: criticalFacts,
+          audit: reviewAudit, signal: currentAbortController.signal,
+          request: messages => invokeLLM({ messages, preferServer: true, reviewMode: isMasterCall ? 'master' : 'general',
+            model: isMasterCall ? LUCY_MASTER_MODEL : LUCY_REVIEW_MODEL,
+            fallbackModels: isMasterCall ? LUCY_MASTER_FALLBACK_MODELS : LUCY_REVIEW_FALLBACK_MODELS,
+            maxOutputTokens: isMasterCall ? 8192 : 4096, timeoutMs: 120000, signal: currentAbortController.signal }),
+        });
+        return verifyLucyTarotReply(cleanChatDisplayText(reviewed), tarotDraw, effectiveUserText);
+      } finally { isReviewingReply = false; }
     };
 
     try {
@@ -2269,7 +2281,7 @@ ${responseProfile.rule}`;
             setIsGenerating(prev => ({ ...prev, [sourcePersona]: false }));
           }
 
-          const parsedSuggestions = parseSuggestions(fullText);
+          const parsedSuggestions = parseSuggestions(cleanFullText);
           if (parsedSuggestions.length > 0) {
             setChatSuggestions(prev => ({
               ...prev,
@@ -2392,7 +2404,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${isMasterCall ? '\n' + (options?.extraSystemContext || toolSelection.promptInjection || '') : options?.tarotCardMarkers && options.extraSystemContext ? '\n' + options.extraSystemContext : ''}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),

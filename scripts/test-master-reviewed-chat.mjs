@@ -1,6 +1,8 @@
 import {spawn} from 'node:child_process';
 import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
+const normal = process.argv.includes('--normal');
+const cancel = process.argv.includes('--cancel');
 const profile=await mkdtemp(tmpdir()+'/calculation-audit-ui-');
 // Requires npm run build. No external API calls or account data are used.
 const preview = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', '4174', '--strictPort'], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -44,10 +46,10 @@ try {
   await call('Network.enable', {}, sessionId);
 
   await call('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true}, sessionId);
-  await call('Page.addScriptToEvaluateOnNewDocument', {source:`localStorage.setItem('developer_bypass','true');localStorage.setItem('lucy_plus_active','true');localStorage.setItem('lu_unlocked_date',new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date()));`},sessionId);
+  await call('Page.addScriptToEvaluateOnNewDocument', {source:`localStorage.setItem('developer_bypass','true');localStorage.setItem('lucy_plus_active',${JSON.stringify(normal ? 'false' : 'true')});localStorage.setItem('lu_unlocked_date',new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date()));`},sessionId);
   const draft='미검증초안 186개 정밀 계산 완료. 무조건 성공해.';
   const corrected='성공을 확정할 자료는 없어. 생년월일을 알려주면 계산 가능한 범위를 확인하고, 지금은 실행 계획부터 함께 정리해 보자.';
-  let generations=0,reviews=0,draftVisible=false;
+  let generations=0,reviews=0,draftVisible=false,reviewModeMatched=false,cancelled=false;
   socket.addEventListener('message', async event=>{
     const e=JSON.parse(event.data);
     if(e.method!=='Fetch.requestPaused')return;
@@ -61,6 +63,12 @@ try {
     const review=body.includes('근거 검토자');
     if(review){
       reviews++;
+      reviewModeMatched ||= JSON.parse(body).review_mode === (normal ? 'general' : 'master');
+      if (cancel) {
+        const stopped=await call('Runtime.evaluate',{expression:`(()=>{const button=document.querySelector('button[aria-label="생성 중단"]');if(!button)return false;button.click();return true;})()`,returnByValue:true},sessionId);
+        if(!stopped.result.value)throw Error('Stop button missing during review');
+        cancelled=true;
+      }
       const state=await call('Runtime.evaluate',{expression:`document.body.innerText.includes(${JSON.stringify(draft)})`,returnByValue:true},sessionId);
       draftVisible ||= Boolean(state.result.value);
       await new Promise(r=>setTimeout(r,700));
@@ -69,10 +77,10 @@ try {
     const stream=request.url.includes('streamGenerateContent')||(!google&&JSON.parse(body).stream);
     const payload=google?{candidates:[{content:{role:'model',parts:[{text}]},finishReason:'STOP'}]}:{model:'gemini-3.6-flash',choices:[stream?{index:0,delta:{content:text},finish_reason:'stop'}:{index:0,message:{role:'assistant',content:text},finish_reason:'stop'}]};
     const response=stream?'data: '+JSON.stringify(payload)+'\n\n'+(google?'':'data: [DONE]\n\n'):JSON.stringify(payload);
-    await call('Fetch.fulfillRequest',{requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:stream?'text/event-stream':'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(response).toString('base64')},sessionId);
+    try { await call('Fetch.fulfillRequest',{requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:stream?'text/event-stream':'application/json'},{name:'Access-Control-Allow-Origin',value:'*'}],body:Buffer.from(response).toString('base64')},sessionId); } catch(error) { if(!cancel) throw error; }
   });
   await call('Fetch.enable',{patterns:[{urlPattern:'https://*'},{urlPattern:'http://127.0.0.1:4174/api/*'}]},sessionId);
-  await call('Page.navigate',{url:'http://127.0.0.1:4174/chat?mode=plus'},sessionId);
+  await call('Page.navigate',{url:normal?'http://127.0.0.1:4174/chat':'http://127.0.0.1:4174/chat?mode=plus'},sessionId);
   await new Promise(r=>setTimeout(r,7000));
   await call('Runtime.evaluate',{expression:`document.querySelector('textarea').focus()`},sessionId);
   await call('Input.insertText',{text:'내 프로젝트가 성공할지 알려줘'},sessionId);
@@ -82,11 +90,11 @@ try {
   for(let i=0;i<80;i++){
     await new Promise(r=>setTimeout(r,200));
     final=await call('Runtime.evaluate',{expression:`JSON.stringify({corrected:document.body.innerText.includes('성공을 확정할 자료는 없어.')&&document.body.innerText.includes('지금은 실행 계획부터 함께 정리해 보자.'),draft:document.body.innerText.includes(${JSON.stringify(draft)})})`,returnByValue:true},sessionId);
-    if(JSON.parse(final.result.value).corrected)break;
+    if(JSON.parse(final.result.value).corrected || (cancel && cancelled && i > 8))break;
   }
   const result=JSON.parse(final.result.value);
-  if(!result.corrected||result.draft||draftVisible||!reviews||!generations)throw Error(JSON.stringify({result,reviews,generations,draftVisible}));
-  console.log(JSON.stringify({generations,reviews,unreviewedDraftHidden:true,reviewedCorrectionVisible:true}));
+  if((cancel ? result.corrected || !cancelled || generations !== 1 : !result.corrected)||result.draft||draftVisible||!reviews||!generations||!reviewModeMatched)throw Error(JSON.stringify({result,reviews,generations,draftVisible}));
+  console.log(JSON.stringify({mode:normal?'normal':'master',generations,reviews,unreviewedDraftHidden:true,reviewModeMatched,cancelled,reviewedCorrectionVisible:!cancel}));
 
 } finally {
   preview.kill(); socket?.close(); chrome.kill();

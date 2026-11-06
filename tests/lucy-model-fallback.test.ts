@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS, requestWithModelFallback } from '../src/lib/lucyModelPolicy';
+import { LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS, requestWithModelFallback, getLucyRequestFallbacks, LUCY_REVIEW_MODEL } from '../src/lib/lucyModelPolicy';
 
 test('master survives primary and first fallback failure without downgrading to Lite', async () => {
   const tried: string[] = [];
@@ -19,4 +19,10 @@ test('all unavailable models fail explicitly instead of fabricating a response',
   let attempts = 0;
   await assert.rejects(requestWithModelFallback('primary', ['primary', 'backup'], async () => { attempts++; throw error; }), error);
   assert.equal(attempts, 2);
+});
+
+test('general review may fall back to a separate Lite review request while master stays in its tier', () => {
+  assert.ok(getLucyRequestFallbacks(LUCY_REVIEW_MODEL, 'general').includes('gemini-flash-lite-latest'));
+  assert.ok(!getLucyRequestFallbacks(LUCY_MASTER_MODEL, 'master').some(model => model.includes('lite')));
+  assert.ok(!getLucyRequestFallbacks(LUCY_REVIEW_MODEL).some(model => model.includes('lite')));
 });

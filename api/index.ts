@@ -1,4 +1,4 @@
-import { isMasterTierModel, LUCY_MASTER_FALLBACK_MODELS, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
+import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";
 import { readFileSync } from "node:fs";
@@ -90,7 +90,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
     const generationConfig = { ...(systemPrompt ? { systemInstruction: systemPrompt } : {}), ...(Number.isInteger(req.body.max_tokens) ? { maxOutputTokens: Math.min(32768, Math.max(1, req.body.max_tokens)) } : {}) };
     const { response, modelUsed } = await requestWithModelFallback(
       model,
-      isMasterTierModel(model) ? LUCY_MASTER_FALLBACK_MODELS : ['gemini-flash-lite-latest'],
+      getLucyRequestFallbacks(model, req.body.review_mode),
       candidate => ai.models.generateContent({ model: candidate, contents, config: generationConfig }),
     );
 
@@ -123,7 +123,9 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
     }
   } catch (err: any) {
     console.error("Gemini completion proxy error:", err);
-    return res.status(500).json({ error: err.message || "Internal server error" });
+    const status = Number(err?.status);
+    if (status === 429) return res.status(429).json({ error: 'AI 제공자의 사용 한도에 도달했습니다. 잠시 후 다시 시도하거나 연결된 Gemini 프로젝트의 할당량을 확인해 주세요.', code: 'AI_QUOTA_EXCEEDED' });
+    return res.status(status === 503 ? 503 : 500).json({ error: 'AI 응답을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.', code: 'AI_PROVIDER_UNAVAILABLE' });
   }
 });
 

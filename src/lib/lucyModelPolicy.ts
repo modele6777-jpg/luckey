@@ -21,3 +21,12 @@ export async function requestWithModelFallback<T>(
   }
   throw lastError;
 }
+
+/** General consultation also receives an independent semantic review. */
+export const LUCY_REVIEW_MODEL = 'gemini-3.6-flash';
+export const LUCY_REVIEW_FALLBACK_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+
+export function getLucyRequestFallbacks(model: string, reviewMode?: unknown): string[] {
+  if (reviewMode === 'general' && model === LUCY_REVIEW_MODEL) return [...LUCY_REVIEW_FALLBACK_MODELS];
+  return isMasterTierModel(model) ? [...LUCY_MASTER_FALLBACK_MODELS] : ['gemini-flash-lite-latest'];
+}

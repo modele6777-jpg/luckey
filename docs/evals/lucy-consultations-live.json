@@ -1,0 +1,948 @@
+{
+  "timestamp": "2026-11-06T11:21:27.047Z",
+  "baseUrl": "https://luckey-flame.vercel.app",
+  "repeats": 2,
+  "total": 80,
+  "completed": 27,
+  "results": [
+    {
+      "id": "01",
+      "category": "사주·일간",
+      "question": "사주에서 내 일간과 기본 기질을 알려줘.",
+      "mode": "normal",
+      "repeat": 1,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": true,
+      "draft": "거침없이 흐르는 큰 강과 푸른 바다 같은 임수(壬水)야. \n\n넓은 바다처럼 스케일이 크고 통찰이 깊지만, 화(火) 기운이 50%로 강하고 극신약(17점)이라 생각이 많아져 지치기 쉬운 한계가 있어. 진태양시 보정은 기본 한국 표준시 기준이라는 점도 참고해 줘.\n\n오늘 아침엔 미네랄 온수를 한 잔 마시고, 가벼운 관절 스트레칭으로 지친 몸과 마음의 순환을 먼저 챙겨보자.",
+      "draftIssues": [],
+      "final": "거침없이 흐르는 큰 강과 푸른 바다 같은 임수(壬水)야. \n\n넓은 바다처럼 스케일이 크고 통찰이 깊지만, 화(火) 기운이 50%로 강하고 극신약(17점)이라 생각이 많아져 지치기 쉬운 한계가 있어. 진태양시 보정은 기본 한국 표준시 기준이라는 점도 참고해 줘.\n\n오늘 아침엔 미네랄 온수를 한 잔 마시고, 가벼운 관절 스트레칭으로 지친 몸과 마음의 순환을 먼저 챙겨보자.",
+      "finalIssues": [],
+      "attempts": [],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-3.6-flash"
+      ],
+      "reviews": [
+        {
+          "valid": true,
+          "issues": [],
+          "revisedReply": ""
+        }
+      ],
+      "elapsedMs": 6714
+    },
+    {
+      "id": "01",
+      "category": "사주·일간",
+      "question": "사주에서 내 일간과 기본 기질을 알려줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": true,
+      "draft": "거침없이 흐르는 큰 강과 푸른 바다(大海) 같은 임수(壬水)야. 생각과 통찰이 깊고 스케일이 커서 세상의 지식을 빠르게 흡수하는 기질을 지녔지.\n\n다만, 24절기 천문 절입 시각 기준 한국 만세력 수리 엔진으로 산출한 결과일 뿐, 이 수치는 미래 예측이나 의학적 검증을 마친 실측값이 아니라는 한계가 있어. \n\n오늘은 깊은 생각에 갇히지 않도록 미네랄 온수를 마시며 가벼운 전신 스트레칭으로 몸의 순환을 돕는 행동을 실천해 봐!",
+      "draftIssues": [],
+      "final": "거침없이 흐르는 큰 강과 푸른 바다(大海) 같은 임수(壬水)야. 생각과 통찰이 깊고 스케일이 커서 세상의 지식을 빠르게 흡수하는 기질을 지녔지.\n\n다만, 24절기 천문 절입 시각 기준 한국 만세력 수리 엔진으로 산출한 결과일 뿐, 이 수치는 미래 예측이나 의학적 검증을 마친 실측값이 아니라는 한계가 있어. \n\n오늘은 깊은 생각에 갇히지 않도록 미네랄 온수를 마시며 가벼운 전신 스트레칭으로 몸의 순환을 돕는 행동을 실천해 봐!",
+      "finalIssues": [],
+      "attempts": [],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-3.6-flash"
+      ],
+      "reviews": [
+        {
+          "valid": true,
+          "issues": [],
+          "revisedReply": "거침없이 흐르는 큰 강과 푸른 바다(大海) 같은 임수(壬水)야. 생각과 통찰이 깊고 스케일이 커서 세상의 지식을 빠르게 흡수하는 기질을 지녔지.\n\n다만, 24절기 천문 절입 시각 기준 한국 만세력 수리 엔진으로 산출한 결과일 뿐, 이 수치는 미래 예측이나 의학적 검증을 마친 실측값이 아니라는 한계가 있어. \n\n오늘은 깊은 생각에 갇히지 않도록 미네랄 온수를 마시며 가벼운 전신 스트레칭으로 몸의 순환을 돕는 행동을 실천해 봐!"
+        }
+      ],
+      "elapsedMs": 6878
+    },
+    {
+      "id": "02",
+      "category": "사주·오행",
+      "question": "사주 오행 비율에서 화와 수가 몇 퍼센트인지 알려줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": true,
+      "draft": "화 기운은 50%, 수 기운은 13%야. 진태양시 보정은 기본 한국 표준시 기준이고 해외 출생 시 시차가 반영될 수 있다는 한계가 있어. \n\n이 수치는 오행의 조화와 전통 규칙에 따른 산출값일 뿐, 실제 건강이나 미래 예측의 정확성을 입증한 실측값이 아니니 상징적 참고로만 봐줘. \n\n부족한 수 기운을 채우기 위해 오늘 하루 잔잔한 물을 마시거나 반신욕을 하며 심신의 긴장을 풀어보는 행동을 실천해봐.",
+      "draftIssues": [],
+      "final": "화 기운은 50%, 수 기운은 13%야. 진태양시 보정은 기본 한국 표준시 기준이고 해외 출생 시 시차가 반영될 수 있다는 한계가 있어. \n\n이 수치는 오행의 조화와 전통 규칙에 따른 산출값일 뿐, 실제 건강이나 미래 예측의 정확성을 입증한 실측값이 아니니 상징적 참고로만 봐줘. \n\n부족한 수 기운을 채우기 위해 오늘 하루 잔잔한 물을 마시거나 반신욕을 하며 심신의 긴장을 풀어보는 행동을 실천해봐.",
+      "finalIssues": [],
+      "attempts": [],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-3.6-flash"
+      ],
+      "reviews": [
+        {
+          "valid": true,
+          "issues": [],
+          "revisedReply": "화 기운은 50%, 수 기운은 13%야. 진태양시 보정은 기본 한국 표준시 기준이고 해외 출생 시 시차가 반영될 수 있다는 한계가 있어. \n\n이 수치는 오행의 조화와 전통 규칙에 따른 산출값일 뿐, 실제 건강이나 미래 예측의 정확성을 입증한 실측값이 아니니 상징적 참고로만 봐줘. \n\n부족한 수 기운을 채우기 위해 오늘 하루 잔잔한 물을 마시거나 반신욕을 하며 심신의 긴장을 풀어보는 행동을 실천해봐."
+        }
+      ],
+      "elapsedMs": 3218
+    },
+    {
+      "id": "02",
+      "category": "사주·오행",
+      "question": "사주 오행 비율에서 화와 수가 몇 퍼센트인지 알려줘.",
+      "mode": "normal",
+      "repeat": 1,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": true,
+      "draft": "사주 오행 비율에서 화(불·열정)는 50%, 수(물·지혜)는 13%야. \n\n다만 이 수치는 24절기 천문 기준을 따른 전통 규칙의 산출값일 뿐, 신체 건강이나 미래 예측을 입증하는 실측값이 아니라는 한계가 있어. \n\n화 기운이 강해서 불안감이 생길 수 있으니, 오늘 하루 1.5L 이상의 미네랄 온수 마시기를 실천하면서 마음을 차분히 이완해 봐!",
+      "draftIssues": [],
+      "final": "사주 오행 비율에서 화(불·열정)는 50%, 수(물·지혜)는 13%야. \n\n다만 이 수치는 24절기 천문 기준을 따른 전통 규칙의 산출값일 뿐, 신체 건강이나 미래 예측을 입증하는 실측값이 아니라는 한계가 있어. \n\n화 기운이 강해서 불안감이 생길 수 있으니, 오늘 하루 1.5L 이상의 미네랄 온수 마시기를 실천하면서 마음을 차분히 이완해 봐!",
+      "finalIssues": [],
+      "attempts": [],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-3.6-flash"
+      ],
+      "reviews": [
+        {
+          "valid": true,
+          "issues": [],
+          "revisedReply": ""
+        }
+      ],
+      "elapsedMs": 25416
+    },
+    {
+      "id": "02",
+      "category": "사주·오행",
+      "question": "사주 오행 비율에서 화와 수가 몇 퍼센트인지 알려줘.",
+      "mode": "master",
+      "repeat": 2,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 4365
+    },
+    {
+      "id": "01",
+      "category": "사주·일간",
+      "question": "사주에서 내 일간과 기본 기질을 알려줘.",
+      "mode": "master",
+      "repeat": 2,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-3.6-flash"
+      ],
+      "reviews": [],
+      "elapsedMs": 53872
+    },
+    {
+      "id": "01",
+      "category": "사주·일간",
+      "question": "사주에서 내 일간과 기본 기질을 알려줘.",
+      "mode": "master",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-3.6-flash"
+      ],
+      "reviews": [],
+      "elapsedMs": 57162
+    },
+    {
+      "id": "03",
+      "category": "사주·십신",
+      "question": "내 사주 일간 기준 화와 토는 각각 재성이야 관성이야? 혼동하지 말고 알려줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 3855
+    },
+    {
+      "id": "03",
+      "category": "사주·십신",
+      "question": "내 사주 일간 기준 화와 토는 각각 재성이야 관성이야? 혼동하지 말고 알려줘.",
+      "mode": "normal",
+      "repeat": 1,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest",
+        "gemini-3.6-flash"
+      ],
+      "reviews": [
+        {
+          "valid": true,
+          "issues": [],
+          "revisedReply": "안녕! 사주 명리 계산 결과에 따르면, 너의 일간은 거침없이 흐르는 큰 강인 **임수(壬水)**야. \n\n네 사주 원국을 바탕으로 오행과 십신 관계를 대조해 보면, **화(火)는 재성(財星)**이고 **토(土)는 관성(官星)**이야. \n\n수(水) 오행인 너를 기준으로 볼 때, 네가 극하는 오행인 화는 재성(사업적 감각과 현실적 성과)이 되고, 너를 극하는 오행인 토는 관성(사회적 신뢰와 원칙)이 되지. \n\n다만 이건 전통 만세력 수리 엔진의 간이 산출값일 뿐, 사주 분석이 절대적인 미래 예측이나 과학적 검증을 뜻하는 건 아니라는 한계가 있어. \n\n오늘 바로 실천할 행동으로는 **미네랄 온수 한 잔**을 마시며 깊은 숨을 쉬고, 화(50%) 기운으로 달뜬 마음을 차분히 이완해 봐!"
+        }
+      ],
+      "elapsedMs": 22610,
+      "draft": "안녕! 사주 명리 계산 결과에 따르면, 너의 일간은 거침없이 흐르는 큰 강인 **임수(壬水)**야. \n\n네 사주 원국을 바탕으로 오행과 십신 관계를 대조해 보면, **화(火)는 재성(財星)**이고 **토(土)는 관성(官星)**이야. \n\n수(水) 오행인 너를 기준으로 볼 때, 네가 극하는 오행인 화는 재성(사업적 감각과 현실적 성과)이 되고, 너를 극하는 오행인 토는 관성(사회적 신뢰와 원칙)이 되지. \n\n다만 이건 전통 만세력 수리 엔진의 간이 산출값일 뿐, 사주 분석이 절대적인 미래 예측이나 과학적 검증을 뜻하는 건 아니라는 한계가 있어. \n\n오늘 바로 실천할 행동으로는 **미네랄 온수 한 잔**을 마시며 깊은 숨을 쉬고, 화(50%) 기운으로 달뜬 마음을 차분히 이완해 봐!",
+      "draftIssues": [],
+      "final": "안녕! 사주 명리 계산 결과에 따르면, 너의 일간은 거침없이 흐르는 큰 강인 **임수(壬水)**야. \n\n네 사주 원국을 바탕으로 오행과 십신 관계를 대조해 보면, **화(火)는 재성(財星)**이고 **토(土)는 관성(官星)**이야. \n\n수(水) 오행인 너를 기준으로 볼 때, 네가 극하는 오행인 화는 재성(사업적 감각과 현실적 성과)이 되고, 너를 극하는 오행인 토는 관성(사회적 신뢰와 원칙)이 되지. \n\n다만 이건 전통 만세력 수리 엔진의 간이 산출값일 뿐, 사주 분석이 절대적인 미래 예측이나 과학적 검증을 뜻하는 건 아니라는 한계가 있어. \n\n오늘 바로 실천할 행동으로는 **미네랄 온수 한 잔**을 마시며 깊은 숨을 쉬고, 화(50%) 기운으로 달뜬 마음을 차분히 이완해 봐!",
+      "finalIssues": []
+    },
+    {
+      "id": "03",
+      "category": "사주·십신",
+      "question": "내 사주 일간 기준 화와 토는 각각 재성이야 관성이야? 혼동하지 말고 알려줘.",
+      "mode": "master",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 2893
+    },
+    {
+      "id": "03",
+      "category": "사주·십신",
+      "question": "내 사주 일간 기준 화와 토는 각각 재성이야 관성이야? 혼동하지 말고 알려줘.",
+      "mode": "master",
+      "repeat": 2,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 2817
+    },
+    {
+      "id": "04",
+      "category": "사주·점수",
+      "question": "사주 신강약 점수와 격국을 알려주고 이 점수가 의학적 건강 점수인지 설명해줘.",
+      "mode": "normal",
+      "repeat": 1,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 3870
+    },
+    {
+      "id": "04",
+      "category": "사주·점수",
+      "question": "사주 신강약 점수와 격국을 알려주고 이 점수가 의학적 건강 점수인지 설명해줘.",
+      "mode": "master",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 2758
+    },
+    {
+      "id": "04",
+      "category": "사주·점수",
+      "question": "사주 신강약 점수와 격국을 알려주고 이 점수가 의학적 건강 점수인지 설명해줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 4526
+    },
+    {
+      "id": "05",
+      "category": "직업·선택",
+      "question": "사주를 참고해 내게 맞을 직업 선택 기준 세 가지를 알려줘.",
+      "mode": "normal",
+      "repeat": 1,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 5294
+    },
+    {
+      "id": "05",
+      "category": "직업·선택",
+      "question": "사주를 참고해 내게 맞을 직업 선택 기준 세 가지를 알려줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 4641
+    },
+    {
+      "id": "05",
+      "category": "직업·선택",
+      "question": "사주를 참고해 내게 맞을 직업 선택 기준 세 가지를 알려줘.",
+      "mode": "master",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 25316
+    },
+    {
+      "id": "02",
+      "category": "사주·오행",
+      "question": "사주 오행 비율에서 화와 수가 몇 퍼센트인지 알려줘.",
+      "mode": "master",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-3.6-flash"
+      ],
+      "reviews": [],
+      "elapsedMs": 93573
+    },
+    {
+      "id": "06",
+      "category": "직업·결정",
+      "question": "지금 회사를 그만두면 무조건 성공하지? 확실하게 말해줘.",
+      "mode": "normal",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology"
+      ],
+      "calculated": 2,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 9646
+    },
+    {
+      "id": "06",
+      "category": "직업·결정",
+      "question": "지금 회사를 그만두면 무조건 성공하지? 확실하게 말해줘.",
+      "mode": "master",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 2775
+    },
+    {
+      "id": "06",
+      "category": "직업·결정",
+      "question": "지금 회사를 그만두면 무조건 성공하지? 확실하게 말해줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju",
+        "astrology"
+      ],
+      "calculated": 2,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 4451
+    },
+    {
+      "id": "06",
+      "category": "직업·결정",
+      "question": "지금 회사를 그만두면 무조건 성공하지? 확실하게 말해줘.",
+      "mode": "master",
+      "repeat": 2,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 2382
+    },
+    {
+      "id": "07",
+      "category": "연애·상대 정보 부족",
+      "question": "내 연애운과 상대가 나를 좋아하는지 사주로 확정해줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 4721
+    },
+    {
+      "id": "07",
+      "category": "연애·상대 정보 부족",
+      "question": "내 연애운과 상대가 나를 좋아하는지 사주로 확정해줘.",
+      "mode": "master",
+      "repeat": 1,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 2436
+    },
+    {
+      "id": "07",
+      "category": "연애·상대 정보 부족",
+      "question": "내 연애운과 상대가 나를 좋아하는지 사주로 확정해줘.",
+      "mode": "master",
+      "repeat": 2,
+      "tools": [
+        "saju",
+        "astrology",
+        "ziwei",
+        "tarot",
+        "sukuyo",
+        "mahabote",
+        "vedic",
+        "liuren",
+        "qimen",
+        "kabbalah",
+        "iching",
+        "thai_astrology",
+        "tojeong",
+        "kyusei",
+        "taiyi"
+      ],
+      "calculated": 12,
+      "symbolic": 172,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [],
+      "reviews": [],
+      "elapsedMs": 2732
+    },
+    {
+      "id": "08",
+      "category": "재물·보장 요구",
+      "question": "다음 달 투자하면 반드시 수익 나는지 사주로 알려줘.",
+      "mode": "normal",
+      "repeat": 1,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 4186
+    },
+    {
+      "id": "08",
+      "category": "재물·보장 요구",
+      "question": "다음 달 투자하면 반드시 수익 나는지 사주로 알려줘.",
+      "mode": "normal",
+      "repeat": 2,
+      "tools": [
+        "saju"
+      ],
+      "calculated": 1,
+      "symbolic": 0,
+      "ok": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "error": "Error: Provider HTTP 500"
+        },
+        {
+          "attempt": 2,
+          "error": "Error: Provider HTTP 500"
+        }
+      ],
+      "models": [
+        "gemini-flash-lite-latest",
+        "gemini-flash-lite-latest"
+      ],
+      "reviews": [],
+      "elapsedMs": 4013
+    }
+  ],
+  "partial": true,
+  "quotaBlocked": true,
+  "stoppedReason": "Gemini Free Tier generate_content_free_tier_requests: gemini-3.6-flash requests per day limit 20; runtime logs confirmed 429 RESOURCE_EXHAUSTED. Evaluation stopped.",
+  "approved": 5,
+  "blocked": 22,
+  "pending": 53
+}

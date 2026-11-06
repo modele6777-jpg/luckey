@@ -337,7 +337,9 @@ export async function invokeLLM(params: {
   maxOutputTokens?: number;
   thinkingLevel?: LucyThinkingLevel;
   preferServer?: boolean;
+  reviewMode?: 'general' | 'master';
 }) {
+  params.signal?.throwIfAborted();
   const timeoutMs = params.timeoutMs || 45000;
   const mappedMessages = withKoreanOnlyOutput(params.messages.map(m => {
     const role = m.role === "model" ? "assistant" : m.role;
@@ -399,6 +401,7 @@ export async function invokeLLM(params: {
     const modelsToTry = [...availableModels, ...throttledModels].slice(0, 3);
 
     for (const currentModel of modelsToTry) {
+      params.signal?.throwIfAborted();
       try {
         const perModelTimeout = Math.min(timeoutMs, params.fallbackModels ? 90000 : 15000);
         const timeoutPromise = new Promise((_, reject) => 
@@ -442,6 +445,7 @@ export async function invokeLLM(params: {
   }
 
   // Server-side API proxy fallback
+  params.signal?.throwIfAborted();
   try {
     const url = `${getApiBaseUrl()}/api/openai/v1/chat/completions`;
     const controller = new AbortController();
@@ -460,6 +464,7 @@ export async function invokeLLM(params: {
           model: params.model || modelName,
           messages: mappedMessages,
           stream: false,
+          ...(params.reviewMode ? { review_mode: params.reviewMode } : {}),
           temperature: 0.7,
           ...(params.maxOutputTokens ? { max_tokens: params.maxOutputTokens } : {}),
           ...(params.thinkingLevel ? { thinking_level: params.thinkingLevel } : {}),
@@ -1327,6 +1332,7 @@ async function invokeLLMStreamInner(params: {
   thinkingLevel?: LucyThinkingLevel,
   preferBuffered?: boolean,
 }) {
+  params.signal?.throwIfAborted();
   const requestTimeoutMs = params.timeoutMs ?? 75000;
   const idleTimeoutMs = 35000;
 
@@ -1462,6 +1468,7 @@ async function invokeLLMStreamInner(params: {
             markClientModelThrottled(currentModel, 60000);
             break;
           } catch (streamModelErr: any) {
+            params.signal?.throwIfAborted();
             if (!omitThinking && !hasEmittedToCaller && (currentModel === "gemini-3.1-flash-lite" || currentModel === "gemini-3.8-flash")) {
               continue;
             }
@@ -1477,10 +1484,12 @@ async function invokeLLMStreamInner(params: {
         }
       }
     } catch (geminiStreamErr) {
+      params.signal?.throwIfAborted();
       console.warn("[invokeLLMStream] Gemini direct stream attempt failed:", geminiStreamErr);
     }
   }
 
+  params.signal?.throwIfAborted();
   // 2. Server Proxy SSE Streaming (Always available as fallback even if client genAI is present)
   if (openai) {
     let fullContent = "";
@@ -1707,10 +1716,12 @@ async function invokeLLMStreamInner(params: {
         throw new Error("Streaming response ended before the completion signal");
       }
     } catch (e: any) {
+      params.signal?.throwIfAborted();
       console.warn(`[invokeLLMStream] Streaming model ${modelName} failed:`, e?.message || e);
     }
   }
 
+  params.signal?.throwIfAborted();
   // Fallback to OpenAI server-side chat completions if streaming failed or non-streaming direct
   try {
     const fallbackRes = await invokeLLM({ messages: params.messages, model: params.model, fallbackModels: params.fallbackModels, signal: params.signal, timeoutMs: params.timeoutMs, maxOutputTokens: params.maxOutputTokens });
@@ -1744,74 +1755,72 @@ export async function invokeLLMStream(params: {
   /** 모바일 등 불안정한 네트워크에서는 완료된 답변을 한 번에 받음 */
   preferBuffered?: boolean;
 }) {
+  params.signal?.throwIfAborted();
   const maxDurationMs = params.timeoutMs ?? 180000;
   const idleTimeoutMs = params.preferBuffered || params.fallbackModels ? maxDurationMs : 60000;
   let lastActivity = Date.now();
 
-  const wrappedOnChunk = (chunk: string) => {
-    lastActivity = Date.now();
-    params.onChunk(chunk);
-  };
-
   return new Promise<string>((resolve, reject) => {
+    const controller = new AbortController();
     let isResolved = false;
+    let finishing = false;
     const startTime = Date.now();
-
     const cleanup = () => {
-      if (timer) clearInterval(timer);
+      clearInterval(timer);
+      params.signal?.removeEventListener('abort', abort);
     };
-
+    const fail = (message: string) => {
+      if (isResolved) return;
+      isResolved = true;
+      controller.abort();
+      cleanup();
+      reject(new Error(message));
+    };
+    const abort = () => fail('LLM stream aborted by user');
     const timer = setInterval(() => {
-      if (isResolved) {
-        cleanup();
-        return;
-      }
-      if (params.signal?.aborted) {
-        isResolved = true;
-        cleanup();
-        reject(new Error("LLM stream aborted by user"));
-        return;
-      }
+      if (isResolved) { cleanup(); return; }
+      if (params.signal?.aborted) { abort(); return; }
+      // Generation deadlines stop at completion. The verifier has its own
+      // request timeout, so slow generation cannot consume its review budget.
+      if (finishing) return;
       const now = Date.now();
-      if (now - startTime > maxDurationMs) {
-        isResolved = true;
-        cleanup();
-        reject(new Error("LLM stream max duration reached"));
-      } else if (now - lastActivity > idleTimeoutMs) {
-        isResolved = true;
-        cleanup();
-        reject(new Error("LLM stream idle timeout"));
-      }
+      if (now - startTime > maxDurationMs) fail('LLM stream max duration reached');
+      else if (now - lastActivity > idleTimeoutMs) fail('LLM stream idle timeout');
     }, 1000);
-
-    if (params.signal) {
-      params.signal.addEventListener("abort", () => {
-        if (!isResolved) {
-          isResolved = true;
-          cleanup();
-          reject(new Error("LLM stream aborted by user"));
-        }
-      }, { once: true });
-    }
+    params.signal?.addEventListener('abort', abort, { once:true });
 
     invokeLLMStreamInner({
       ...params,
-      onChunk: wrappedOnChunk,
-    })
-      .then((res) => {
-        if (!isResolved) {
-          isResolved = true;
-          cleanup();
-          resolve(res);
+      signal: controller.signal,
+      onChunk: chunk => {
+        controller.signal.throwIfAborted();
+        lastActivity = Date.now();
+        params.onChunk(chunk);
+      },
+      onFinish: async text => {
+        controller.signal.throwIfAborted();
+        finishing = true;
+        try { await params.onFinish?.(text); }
+        catch (error) {
+          // A rejected verification is not a transport failure: stop this
+          // generation before the caller performs its controlled recovery.
+          fail(error instanceof Error ? error.message : 'LLM reply verification failed');
+          throw error;
         }
-      })
-      .catch((err) => {
-        if (!isResolved) {
-          isResolved = true;
-          cleanup();
-          reject(err);
-        }
-      });
+        controller.signal.throwIfAborted();
+      },
+    }).then(result => {
+      if (isResolved) return;
+      isResolved = true;
+      cleanup();
+      resolve(result);
+    }).catch(error => {
+      if (isResolved) return;
+      isResolved = true;
+      controller.abort();
+      cleanup();
+      reject(error);
+    });
   });
 }
 
