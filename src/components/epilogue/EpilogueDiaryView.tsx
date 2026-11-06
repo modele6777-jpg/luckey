@@ -31,7 +31,7 @@ import { getTodayDateKey } from '@/lib/dailyCache';
 import { normalizeEpilogueDiaryEntries } from '@/lib/epilogueDiaryRecords';
 import { invokeEpilogueSummaryLLM, invokeMindDiaryLLM, invokeLucyMidnightWhisperLLM, createLucyMidnightWhisperFallback, isBrokenMidnightWhisper } from '@/lib/ai';
 import { TTSButton } from '@/components/TTSButton';
-import { EpilogueAchievementShareModal } from './EpilogueAchievementShareModal';
+const EpilogueAchievementShareModal = React.lazy(() => import('./EpilogueAchievementShareModal').then(module => ({ default: module.EpilogueAchievementShareModal })));
 import { EpilogueAchievementStatsCard } from './EpilogueAchievementStatsCard';
 import { calculateEpilogueAchievementStats } from '@/types/epilogueAchievement';
 import { playAudioHaptic } from '@/lib/audioHaptics';
@@ -1179,12 +1179,12 @@ export function EpilogueDiaryView() {
     <div className="duo-workspace-history"><h3>나의 일기 타임라인</h3>
       {entries.length === 0 ? <p>저장한 일기가 아직 없어요.</p> : [...entries].sort((a,b) => b.dateKey.localeCompare(a.dateKey)).slice(0,30).map(entry => <details key={entry.id} className="duo-workspace-record"><summary>{entry.dateKey || '날짜 미상'} · {entry.moodEmoji} {entry.mood}</summary><p className="whitespace-pre-wrap break-words">{entry.mindDiary || entry.rawNotes || entry.gratitudes.join(' · ')}</p></details>)}
     </div>
-</section><EpilogueAchievementShareModal
+</section>{isShareModalOpen && <React.Suspense fallback={<p role="status">공유 화면 준비 중…</p>}><EpilogueAchievementShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         stats={achievementStats}
         initialTab={shareModalTab}
-      />
+      /></React.Suspense>}
 </DuoWorkspace>
   );
 }

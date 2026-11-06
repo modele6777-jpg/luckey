@@ -38,10 +38,10 @@ import { LucKeyLogoText } from '@/components/LucKeyLogoText';
 import { type UserProfile, mergeUserProfiles } from '@/lib/sharedState';
 import { cleanFirestoreData } from '@/lib/sharedStateSync';
 import { compressImageToDataUrl } from '@/utils/imageCompress';
-import { SajuCardView } from '@/components/SajuCardView';
+const SajuCardView = React.lazy(() => import('@/components/SajuCardView').then(module => ({ default: module.SajuCardView })));
 import { db, doc, setDoc, serverTimestamp } from '@/lib/firebase';
 import { EpilogueDiaryView } from '@/components/epilogue/EpilogueDiaryView';
-import { EpilogueSynergySection } from '@/components/epilogue/EpilogueSynergySection';
+const EpilogueSynergySection = React.lazy(() => import('@/components/epilogue/EpilogueSynergySection').then(module => ({ default: module.EpilogueSynergySection })));
 import { useNarrowPhone } from '@/hooks/useNarrowPhone';
 import { isLegacyMobile } from '@/lib/perfMode';
 import { APP_VERSION, fetchDeployedAppVersion, compareVersions } from '@/lib/appVersion';
@@ -357,18 +357,18 @@ export default function EpilogueApp() {
     }
   };
 
-  const initialProfile = mergeUserProfiles(
+  const [initialProfile] = useState(() => mergeUserProfiles(
     sharedState?.userProfile,
     loadProfileFromAllVaults() || getPersistentUserProfile(),
     true
-  );
+  ));
 
   const rawInitName = initialProfile?.basic?.name || '';
   const initName = (rawInitName && rawInitName !== '여행자') ? rawInitName : '박주형';
   const rawInitNick = initialProfile?.basic?.nickname?.trim();
   const initNick = (rawInitNick && rawInitNick !== '여행자' && rawInitNick !== '사용자' && rawInitNick !== '박주형') ? rawInitNick : '제제';
 
-  const [basic, setBasic] = useState({
+  const [basic, setBasic] = useState(() => ({
     name: initName,
     nickname: initNick,
     birthdate: initialProfile?.basic?.birthdate || '',
@@ -377,7 +377,7 @@ export default function EpilogueApp() {
     birthCity: initialProfile?.basic?.birthCity || '',
     lunarSolar: (initialProfile?.basic?.lunarSolar || 'solar') as 'solar' | 'lunar',
     avatarUrl: getPermanentAvatar() || initialProfile?.basic?.avatarUrl || '',
-  });
+  }));
   const [fate, setFate] = useState({
     fateInterests: initialProfile?.fate?.fateInterests || ([] as string[]),
     lifeGoal: initialProfile?.fate?.lifeGoal || '',
@@ -1037,7 +1037,7 @@ export default function EpilogueApp() {
               <Sparkles size={16} className="text-yellow-400 shrink-0" />
               <span>입력하신 생년월일과 시간을 기반으로 산출됩니다. 저장된 프로필의 같은 계산 자료를 루시·루시프로 상담에서도 활용합니다.</span>
             </div>
-            <SajuCardView
+            <React.Suspense fallback={<p role="status" className="text-sm opacity-60">운명 프리뷰 준비 중…</p>}><SajuCardView
               profile={{
                 basic: { ...basic, gender: basic.gender || undefined },
                 fate,
@@ -1045,7 +1045,7 @@ export default function EpilogueApp() {
                 psych,
                 art,
               }}
-            />
+            /></React.Suspense>
           </div>
         );
       case 6:
@@ -1124,7 +1124,7 @@ export default function EpilogueApp() {
       <div data-app-scroll-root {...epilogueSwipeHandlers} className="min-h-0 flex-1 w-full overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-32 sm:pb-36 md:pb-20">
         {activeMode === 'synergy' ? (
           <div className="prism-page-content w-full mx-auto px-4 sm:px-6 pt-4 space-y-6">
-            <EpilogueSynergySection />
+            <React.Suspense fallback={<p role="status" className="text-sm opacity-60">연대기 준비 중…</p>}><EpilogueSynergySection /></React.Suspense>
           </div>
         ) : activeMode === 'diary' ? (
           <EpilogueDiaryView />

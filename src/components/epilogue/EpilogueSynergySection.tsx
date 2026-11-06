@@ -27,7 +27,7 @@ import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { invokeLLM } from '@/lib/ai';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
 import { playTTS, stopTTS, useTTSActive } from '@/utils/tts';
-import { EpilogueAchievementShareModal } from './EpilogueAchievementShareModal';
+const EpilogueAchievementShareModal = React.lazy(() => import('./EpilogueAchievementShareModal').then(module => ({ default: module.EpilogueAchievementShareModal })));
 import { EpilogueAchievementStatsCard } from './EpilogueAchievementStatsCard';
 import { calculateEpilogueAchievementStats } from '@/types/epilogueAchievement';
 import {
@@ -600,12 +600,12 @@ export function EpilogueSynergySection() {
       )}
 
       {/* 🌟 Achievement Share Modal */}
-      <EpilogueAchievementShareModal
+      {isShareModalOpen && <React.Suspense fallback={<p role="status">공유 화면 준비 중…</p>}><EpilogueAchievementShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         stats={achievementStats}
         initialTab={shareModalTab}
-      />
+      /></React.Suspense>}
     </div>
   );
 }
