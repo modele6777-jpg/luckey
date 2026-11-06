@@ -205,6 +205,9 @@ import { calculateLakotaMedicineWheel, formatLakotaMedicineWheelPrompt, type Lak
 import { calculateGyeogamYurokProphecy, formatGyeogamYurokProphecyPrompt, type GyeogamYurokReport, GYEOGAM_YUROK_VERSION } from './koreanGyeogamYurokProphecyEngine';
 import { calculateHeianOnmyodoSeimei, formatHeianOnmyodoSeimeiPrompt, type HeianOnmyodoSeimeiReport, HEIAN_ONMYODO_SEIMEI_VERSION } from './japaneseHeianOnmyodoSeimeiEngine';
 import { calculatePolynesianWayfinding, formatPolynesianWayfindingPrompt, type PolynesianWayfindingReport, POLYNESIAN_WAYFINDING_VERSION } from './polynesianWayfindingStarCompassEngine';
+import { calculateWonhyoHwajaeng, formatWonhyoHwajaengPrompt, type WonhyoHwajaengReport, WONHYO_HWAJAENG_VERSION } from './koreanWonhyoHwajaengOneMindEngine';
+import { calculateMayiMianxiang, formatMayiMianxiangPrompt, type MayiMianxiangReport, MAYI_MIANXIANG_VERSION } from './chineseMayiMianxiangTwelvePalacesEngine';
+import { calculateEgyptianAmduat, formatEgyptianAmduatPrompt, type EgyptianAmduatReport, EGYPTIAN_AMDUAT_VERSION } from './egyptianAmduatTwelveHoursRaEngine';
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
 
@@ -430,6 +433,9 @@ export interface DeterministicEngineReport {
   gyeogamYurokResult?: GyeogamYurokReport | null;
   heianOnmyodoSeimeiResult?: HeianOnmyodoSeimeiReport | null;
   polynesianWayfindingResult?: PolynesianWayfindingReport | null;
+  wonhyoHwajaengResult?: WonhyoHwajaengReport | null;
+  mayiMianxiangResult?: MayiMianxiangReport | null;
+  egyptianAmduatResult?: EgyptianAmduatReport | null;
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
     astrology: ToolCalculationEnvelope<Partial<NatalChartResult>>;
@@ -2541,6 +2547,33 @@ export function runDeterministicEngine(params: {
     }
   })();
 
+  // 177. 신라 원효대사 《십문화쟁론》 일심이문 화쟁 & 원융회통 엔진
+  const wonhyoHwajaengResult = (() => {
+    try {
+      return calculateWonhyoHwajaeng(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 178. 동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색 엔진
+  const mayiMianxiangResult = (() => {
+    try {
+      return calculateMayiMianxiang(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  // 179. 고대 이집트 《암두아트의 서》 12시간 태양신 라 밤의 저승 항해 & 케프리 부활 엔진
+  const egyptianAmduatResult = (() => {
+    try {
+      return calculateEgyptianAmduat(profile);
+    } catch (_) {
+      return null;
+    }
+  })();
+
   return {
     engineVersion: 'LUCKEY-DCE-v1.1.0',
     timestamp: now.getTime(),
@@ -2752,6 +2785,9 @@ export function runDeterministicEngine(params: {
     gyeogamYurokResult,
     heianOnmyodoSeimeiResult,
     polynesianWayfindingResult,
+    wonhyoHwajaengResult,
+    mayiMianxiangResult,
+    egyptianAmduatResult,
     tools: toolsMap,
   };
 }
@@ -2956,6 +2992,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'gyeogamYurok', nameKo: '격암 남사고 격암유록 궁궁을을 사중구생', icon: '📜', category: 'deep_master' },
   { key: 'heianOnmyodoSeimei', nameKo: '헤이안 음양도 아베노 세이메이 12천장 식신', icon: '⭐', category: 'deep_master' },
   { key: 'polynesianWayfinding', nameKo: '폴리네시아 마우이 웨이파인딩 32방위 스타컴퍼스', icon: '🧭', category: 'deep_master' },
+  { key: 'wonhyoHwajaeng', nameKo: '신라 원효대사 십문화쟁론 일심이문 무애', icon: '🕊️', category: 'deep_master' },
+  { key: 'mayiMianxiang', nameKo: '마의도사 마의상법 12궁 관상 심상합일', icon: '👤', category: 'deep_master' },
+  { key: 'egyptianAmduat', nameKo: '이집트 암두아트 12시간 라 밤의항해 케프리부활', icon: '🌅', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -2989,6 +3028,7 @@ export function getFiredEngineBadges(
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'mayiMianxiang',
     'polynesianWayfinding',
     'celticTuathaFourTreasures',
     'sumerianApkalluWisdom',
@@ -3067,6 +3107,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'wonhyoHwajaeng',
+    'egyptianAmduat',
     'heianOnmyodoSeimei',
     'etruscanAugurSixteenSky',
     'sumerianEnumaElishFiftyNames',
@@ -3197,6 +3239,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'wonhyoHwajaeng',
+    'mayiMianxiang',
+    'egyptianAmduat',
     'gyeogamYurok',
     'heianOnmyodoSeimei',
     'polynesianWayfinding',
@@ -3533,5 +3578,8 @@ ${report.hinduSriYantraResult && shouldIncludeEngine('hinduSriYantra', options) 
 ${report.lakotaMedicineWheelResult && shouldIncludeEngine('lakotaMedicineWheel', options) ? '\n' + formatLakotaMedicineWheelPrompt(report.lakotaMedicineWheelResult) : ''}
 ${report.gyeogamYurokResult && shouldIncludeEngine('gyeogamYurok', options) ? '\n' + formatGyeogamYurokProphecyPrompt(report.gyeogamYurokResult) : ''}
 ${report.heianOnmyodoSeimeiResult && shouldIncludeEngine('heianOnmyodoSeimei', options) ? '\n' + formatHeianOnmyodoSeimeiPrompt(report.heianOnmyodoSeimeiResult) : ''}
-${report.polynesianWayfindingResult && shouldIncludeEngine('polynesianWayfinding', options) ? '\n' + formatPolynesianWayfindingPrompt(report.polynesianWayfindingResult) : ''}`;
+${report.polynesianWayfindingResult && shouldIncludeEngine('polynesianWayfinding', options) ? '\n' + formatPolynesianWayfindingPrompt(report.polynesianWayfindingResult) : ''}
+${report.wonhyoHwajaengResult && shouldIncludeEngine('wonhyoHwajaeng', options) ? '\n' + formatWonhyoHwajaengPrompt(report.wonhyoHwajaengResult) : ''}
+${report.mayiMianxiangResult && shouldIncludeEngine('mayiMianxiang', options) ? '\n' + formatMayiMianxiangPrompt(report.mayiMianxiangResult) : ''}
+${report.egyptianAmduatResult && shouldIncludeEngine('egyptianAmduat', options) ? '\n' + formatEgyptianAmduatPrompt(report.egyptianAmduatResult) : ''}`;
 }

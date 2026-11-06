@@ -171,6 +171,9 @@ import { calculateLakotaMedicineWheel, formatLakotaMedicineWheelPrompt, LAKOTA_M
 import { calculateGyeogamYurokProphecy, formatGyeogamYurokProphecyPrompt, GYEOGAM_YUROK_VERSION } from '../src/lib/divination/koreanGyeogamYurokProphecyEngine';
 import { calculateHeianOnmyodoSeimei, formatHeianOnmyodoSeimeiPrompt, HEIAN_ONMYODO_SEIMEI_VERSION } from '../src/lib/divination/japaneseHeianOnmyodoSeimeiEngine';
 import { calculatePolynesianWayfinding, formatPolynesianWayfindingPrompt, POLYNESIAN_WAYFINDING_VERSION } from '../src/lib/divination/polynesianWayfindingStarCompassEngine';
+import { calculateWonhyoHwajaeng, formatWonhyoHwajaengPrompt, WONHYO_HWAJAENG_VERSION } from '../src/lib/divination/koreanWonhyoHwajaengOneMindEngine';
+import { calculateMayiMianxiang, formatMayiMianxiangPrompt, MAYI_MIANXIANG_VERSION } from '../src/lib/divination/chineseMayiMianxiangTwelvePalacesEngine';
+import { calculateEgyptianAmduat, formatEgyptianAmduatPrompt, EGYPTIAN_AMDUAT_VERSION } from '../src/lib/divination/egyptianAmduatTwelveHoursRaEngine';
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
 test('King Wen enumeration covers each of 64 hexagrams exactly once',()=>{
@@ -3895,6 +3898,50 @@ test('Polynesian Wayfinding Star Compass Engine: calculates Star Compass houses,
   const prompt = formatPolynesianWayfindingPrompt(rep);
   assert(prompt.includes('고대 폴리네시아 마우이 《웨이파인딩 32방위 스타 컴퍼스》 항해'));
   assert(prompt.includes(rep.primaryStarHouse.hawaiianName));
+});
+
+test('Korean Wonhyo Hwajaeng One Mind Engine: calculates One Mind Two Gates, Hwajaeng resolution and Mu-Ae freedom', () => {
+  const rep = calculateWonhyoHwajaeng(profile);
+  assert.equal(rep.engineVersion, WONHYO_HWAJAENG_VERSION);
+  assert(rep.oneMindTwoGatesBalance >= 0 && rep.oneMindTwoGatesBalance <= 100);
+  assert(rep.hwajaengContradictionResolution >= 0 && rep.hwajaengContradictionResolution <= 100);
+  assert(rep.wonhyoMuAeFreedomScore >= 0 && rep.wonhyoMuAeFreedomScore <= 100);
+  assert(rep.wonYungWheTongHarmonization >= 0 && rep.wonYungWheTongHarmonization <= 100);
+  assert(rep.innerJinYeoPurityIndex >= 0 && rep.innerJinYeoPurityIndex <= 100);
+  assert(rep.activeHwajaengGate.gateNameKo.length > 0);
+  const prompt = formatWonhyoHwajaengPrompt(rep);
+  assert(prompt.includes('신라 원효대사 《십문화쟁론》 일심이문 & 화쟁 원융회통'));
+  assert(prompt.includes(rep.activeHwajaengGate.gateNameKo));
+});
+
+test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi aura luminosity and inner heart morphology', () => {
+  const rep = calculateMayiMianxiang(profile);
+  assert.equal(rep.engineVersion, MAYI_MIANXIANG_VERSION);
+  assert(rep.innerHeartMorphologyResonance >= 0 && rep.innerHeartMorphologyResonance <= 100);
+  assert(rep.qiAuraLuminosityScore >= 0 && rep.qiAuraLuminosityScore <= 100);
+  assert(rep.twelvePalacesEquilibriumIndex >= 0 && rep.twelvePalacesEquilibriumIndex <= 100);
+  assert(rep.fiveFeaturesVitalityForce >= 0 && rep.fiveFeaturesVitalityForce <= 100);
+  assert(rep.yintangManifestationPower >= 0 && rep.yintangManifestationPower <= 100);
+  assert(rep.primaryPalace.nameKo.length > 0);
+  assert(rep.secondaryPalace.nameKo.length > 0);
+  const prompt = formatMayiMianxiangPrompt(rep);
+  assert(prompt.includes('동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색'));
+  assert(prompt.includes(rep.primaryPalace.nameKo));
+});
+
+test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld, Apophis dispelling and Khepri rebirth', () => {
+  const rep = calculateEgyptianAmduat(profile);
+  assert.equal(rep.engineVersion, EGYPTIAN_AMDUAT_VERSION);
+  assert(rep.khepriRebirthLuminosityScore >= 0 && rep.khepriRebirthLuminosityScore <= 100);
+  assert(rep.apophisChaosDispellingForce >= 0 && rep.apophisChaosDispellingForce <= 100);
+  assert(rep.midnightRaOsirisUnionPower >= 0 && rep.midnightRaOsirisUnionPower <= 100);
+  assert(rep.twelveUnderworldGatesMastery >= 0 && rep.twelveUnderworldGatesMastery <= 100);
+  assert(rep.mesektetSolarBarqueSteadiness >= 0 && rep.mesektetSolarBarqueSteadiness <= 100);
+  assert(rep.currentAmduatHour.hourNumber >= 1 && rep.currentAmduatHour.hourNumber <= 12);
+  assert(rep.solarDeityGuardian.nameAncient.length > 0);
+  const prompt = formatEgyptianAmduatPrompt(rep);
+  assert(prompt.includes('고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활'));
+  assert(prompt.includes(rep.currentAmduatHour.hourNameAncient));
 });
 
 
