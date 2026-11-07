@@ -6,49 +6,22 @@ import { OPEN_NAVIGATION_MENU_EVENT, TOGGLE_NAVIGATION_MENU_EVENT } from '@/lib/
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
-  Sun,
   Sparkles,
-  Music,
-  TreeDeciduous,
-  Bird,
-  Activity,
-  Moon,
-  ChevronLeft,
-  Menu,
-  Clover,
   KeyRound,
   User,
   Library,
   BookOpen,
   Compass,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
-import { getPermanentAvatar } from '@/lib/profileVault';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
-import { APP_VERSION } from '@/lib/appVersion';
-import {
-  peekNextRecommendedMenuByCycle,
-  resetActiveContextPeek,
-  type ContextNextMenuResult,
-} from '@/lib/omniWarp/contextNavCycleEngine';
 import {
   LPRecordDisc,
   getBgmPublicState,
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
 import { unlockAudioPlayback } from '@/lib/audio';
-
-const APP_ID_TO_PRISM_PATH: Record<string, string> = {
-  hub: '/prologue',
-  orange: '/orange',
-  trinity: '/trinity',
-  heal: '/heal',
-  bluebird: '/bluebird',
-  muse: '/muse',
-  epilogue: '/epilogue',
-};
 
 export interface NavItemConfig {
   path: string;
@@ -59,7 +32,6 @@ export interface NavItemConfig {
   isMainChat?: boolean;
   isKey?: boolean;
   isPrologue?: boolean;
-  isLuckey?: boolean;
 }
 
 // 1. Core Sanctuary Channels (AI 가이드 & 마음약방 & 럭키 7대 채널)
@@ -79,14 +51,6 @@ export const CORE_CHANNELS: NavItemConfig[] = [
     subLabel: '개운(開運) 리추얼 & 운기 노트',
     color: 'oklch(0.72 0.18 160)',
     isKey: true,
-  },
-  {
-    path: '#luckey',
-    icon: Clover,
-    label: 'LUCKEY',
-    subLabel: '7대 프리즘 채널',
-    color: 'oklch(0.75 0.22 150)',
-    isLuckey: true,
   },
 ];
 
@@ -208,13 +172,11 @@ export default function LeftSidebarNav() {
     };
   }, [hideSidebar, showSidebar]);
 
-  const [, setProfileVersion] = useState(0);
-  const [hoveredNavPath, setHoveredNavPath] = useState<string | null>(null);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();
-  const appContext = useApp();
-  const [topRecommendation, setTopRecommendation] = useState<ContextNextMenuResult | null>(null);
+  const reduceMotion = useReducedMotion();
+  const edgeDrag = useRef<{ id: number; x: number; y: number } | null>(null);
 
   // Sidebar LP BGM Button State & Long-Press Handlers
   const [bgmState, setBgmState] = useState<BgmPublicState>(() => getBgmPublicState());
@@ -316,91 +278,6 @@ export default function LeftSidebarNav() {
     e.stopPropagation();
   }, []);
 
-  const refreshTopRecommendation = useCallback(
-    (forceResetCache = false) => {
-      try {
-        if (forceResetCache) {
-          resetActiveContextPeek();
-        }
-        const selText =
-          typeof window !== 'undefined' ? window.getSelection()?.toString()?.trim() || '' : '';
-        const res = peekNextRecommendedMenuByCycle(
-          cleanPath,
-          selText.length >= 2 ? selText : undefined
-        );
-        setTopRecommendation(res);
-      } catch (err) {
-        console.warn('[LeftSidebarNav] Failed to compute top recommendation:', err);
-      }
-    },
-    [cleanPath]
-  );
-
-  useEffect(() => {
-    refreshTopRecommendation(true);
-  }, [cleanPath, isOpen, refreshTopRecommendation]);
-
-  useEffect(() => {
-    const handleCycleRefresh = () => refreshTopRecommendation(true);
-    const handleSelectionRefresh = () => {
-      if (isOpen) refreshTopRecommendation(false);
-    };
-
-    window.addEventListener('prism:context_cycle_jump', handleCycleRefresh);
-    window.addEventListener('prism:dialogue_updated', handleCycleRefresh);
-    window.addEventListener('prism:feature_updated', handleCycleRefresh);
-    document.addEventListener('selectionchange', handleSelectionRefresh);
-    return () => {
-      window.removeEventListener('prism:context_cycle_jump', handleCycleRefresh);
-      window.removeEventListener('prism:dialogue_updated', handleCycleRefresh);
-      window.removeEventListener('prism:feature_updated', handleCycleRefresh);
-      document.removeEventListener('selectionchange', handleSelectionRefresh);
-    };
-  }, [isOpen, refreshTopRecommendation]);
-
-  const recommendedPrismPath = topRecommendation
-    ? APP_ID_TO_PRISM_PATH[topRecommendation.stats.nextAppId] || '/trinity'
-    : '/trinity';
-  const recommendedPrismChannel =
-    PRISM_CHANNELS.find((ch) => ch.path === recommendedPrismPath) || PRISM_CHANNELS[2];
-
-  // Extract user profile / nickname and avatar URL for sidebar footer
-  let userNickname = '제제';
-  let userAvatarUrl: string | undefined = undefined;
-  try {
-    const { sharedState, firebaseUser } = appContext;
-    const rawNick = sharedState?.userProfile?.basic?.nickname?.trim();
-    const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
-    const chosen = rawNick || fallbackNick;
-    userNickname = (chosen && chosen !== '여행자' && chosen !== '사용자' && chosen !== '박주형') ? chosen : '제제';
-    const permAvatar = getPermanentAvatar();
-    userAvatarUrl = (permAvatar || undefined) || sharedState?.userProfile?.basic?.avatarUrl || getPersistentUserProfile()?.basic?.avatarUrl || firebaseUser?.photoURL || undefined;
-  } catch {
-    const fallbackNick = getPersistentUserProfile()?.basic?.nickname?.trim();
-    userNickname = (fallbackNick && fallbackNick !== '여행자' && fallbackNick !== '사용자' && fallbackNick !== '박주형') ? fallbackNick : '제제';
-    const permAvatar = getPermanentAvatar();
-    userAvatarUrl = (permAvatar || undefined) || getPersistentUserProfile()?.basic?.avatarUrl || undefined;
-  }
-
-  const isProfileActive = cleanPath === '/profile' || cleanPath.startsWith('/profile/');
-
-  // Realtime event sync for profile edits across views
-  useEffect(() => {
-    const handleProfileUpdate = () => {
-      setProfileVersion((v) => v + 1);
-    };
-    window.addEventListener('prism:profile_updated', handleProfileUpdate);
-    window.addEventListener('prism:feature_updated', handleProfileUpdate);
-    window.addEventListener('prism:realtime_sync', handleProfileUpdate);
-    window.addEventListener('storage', handleProfileUpdate);
-    return () => {
-      window.removeEventListener('prism:profile_updated', handleProfileUpdate);
-      window.removeEventListener('prism:feature_updated', handleProfileUpdate);
-      window.removeEventListener('prism:realtime_sync', handleProfileUpdate);
-      window.removeEventListener('storage', handleProfileUpdate);
-    };
-  }, []);
-
   const isLucyActive = LUCY_SUBPATHS.some(
     (p) => cleanPath === p || (p !== '/' && cleanPath.startsWith(p + '/'))
   );
@@ -416,67 +293,6 @@ export default function LeftSidebarNav() {
   const isEpilogueActive = EPILOGUE_SUBPATHS.some(
     (p) => cleanPath === p || cleanPath.startsWith(p + '/')
   );
-
-  // Check if any of the 7 PRISM channels are active
-  const isAnyPrismActive = PRISM_CHANNELS.some((item) => {
-    if (item.isPrologue) return isPrologueActive;
-    if (item.path === '/epilogue') return isEpilogueActive;
-    return cleanPath === item.path || cleanPath.startsWith(item.path + '/');
-  });
-
-  const [isChannelsOpen, setIsChannelsOpen] = useState(isAnyPrismActive);
-  const channelsCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleChannelsMouseEnter = useCallback(() => {
-    if (channelsCloseTimeoutRef.current) {
-      clearTimeout(channelsCloseTimeoutRef.current);
-      channelsCloseTimeoutRef.current = null;
-    }
-    setIsChannelsOpen(true);
-  }, []);
-
-  const handleChannelsMouseLeave = useCallback(() => {
-    if (isAnyPrismActive) return;
-    if (channelsCloseTimeoutRef.current) {
-      clearTimeout(channelsCloseTimeoutRef.current);
-    }
-    channelsCloseTimeoutRef.current = setTimeout(() => {
-      setIsChannelsOpen(false);
-    }, 300);
-  }, [isAnyPrismActive]);
-
-  useEffect(() => {
-    return () => {
-      if (channelsCloseTimeoutRef.current) {
-        clearTimeout(channelsCloseTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Automatically expand if navigating to any of the 7 prism channels
-  useEffect(() => {
-    if (isAnyPrismActive) {
-      setIsChannelsOpen(true);
-    }
-  }, [isAnyPrismActive]);
-
-  // Find the currently active nav item to highlight theme accent
-  const allNavItems = [...CORE_CHANNELS, ...PRISM_CHANNELS];
-  const activeItem =
-    allNavItems.find((item) => {
-      if (item.isMainChat) return isLucyActive;
-      if (item.isKey) return isKeyActive;
-      if (item.isLuckey) return false;
-      if (item.isPrologue) return isPrologueActive;
-      if (item.path === '/epilogue') return isEpilogueActive;
-      return cleanPath === item.path || cleanPath.startsWith(item.path + '/');
-    }) ||
-    AUXILIARY_CHANNELS.find(
-      (item) => cleanPath === item.path || cleanPath.startsWith(item.path + '/')
-    ) ||
-    CORE_CHANNELS[0];
-
-  const ActiveNavIcon = activeItem?.icon || Clover;
 
   // Broadcast sidebar open/closed state so widgets like LP player can sync visibility
   useEffect(() => {
@@ -505,21 +321,14 @@ export default function LeftSidebarNav() {
 
   const isLight = resolvedTheme === 'light';
 
-  const renderNavButton = (item: NavItemConfig) => {
-    const { path, icon: Icon, label, subLabel, isMainChat, isKey, isPrologue, isLuckey } = item;
-    const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isLuckey
-      ? Boolean(isAnyPrismActive || isChannelsOpen) : isPrologue ? isPrologueActive
-      : cleanPath === path || cleanPath.startsWith(path + '/');
+  const renderNavButton = ({ path, icon: Icon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
+    const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
+      : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
       <button key={path} type="button" className="refined-nav-item" data-active={isActive}
-        aria-label={isLuckey ? `${label} 7대 채널 ${isChannelsOpen ? '접기' : '펼치기'}` : label}
-        aria-current={!isLuckey && isActive ? 'page' : undefined}
-        aria-expanded={isLuckey ? isChannelsOpen : undefined}
-        onClick={() => isLuckey ? setIsChannelsOpen(prev => !prev) : handleNavigate(path)}>
-        <span className="refined-nav-icon"><Icon size={20} /></span>
-        <span className="refined-nav-copy"><span>{label}</span><small>{subLabel}</small></span>
-        {isLuckey && <ChevronLeft size={15} className={isChannelsOpen ? '-rotate-90' : 'rotate-180'} />}
-        {!isLuckey && isActive && <span className="refined-active-dot" aria-hidden="true" />}
+        aria-label={label} title={label} aria-current={isActive ? 'page' : undefined}
+        onClick={() => handleNavigate(path)}>
+        <Icon size={22} aria-hidden="true" />
       </button>
     );
   };
@@ -531,16 +340,43 @@ export default function LeftSidebarNav() {
 
   return createPortal(
     <>
-      {!isOpen && <button type="button" onClick={showSidebar} aria-label="메뉴 열기" aria-controls="main-sidebar-navigation" aria-expanded={false}
+      <div
+        className="sidebar-edge-hint"
+        role="button"
+        tabIndex={0}
+        aria-label={isOpen ? '사이드바 닫기' : '사이드바 열기'}
+        aria-controls={isOpen ? 'main-sidebar-navigation' : undefined}
+        aria-expanded={isOpen}
+        data-open={isOpen}
         data-theme={isLight ? 'light' : 'dark'}
-        className="page-menu-button fixed z-[398] flex h-10 w-10 items-center justify-center rounded-[14px] border backdrop-blur-xl active:scale-95">
-        <Menu size={21} strokeWidth={1.8} aria-hidden="true" />
-      </button>}
-      {!isOpen && <div className="sidebar-edge-hint" data-sidebar-edge-hint="true" data-theme={isLight ? 'light' : 'dark'} aria-hidden="true">
-        <span className="sidebar-edge-hint-mist" />
+        onPointerDown={(event) => {
+          if (!event.isPrimary || event.button !== 0) return;
+          edgeDrag.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onLostPointerCapture={() => { edgeDrag.current = null; }}
+        onClick={(event) => {
+          if (event.detail === 0) setIsOpen((open) => !open);
+        }}
+        onPointerUp={(event) => {
+          const start = edgeDrag.current;
+          if (!start || start.id !== event.pointerId) return;
+          edgeDrag.current = null;
+          const dx = event.clientX - start.x;
+          const dy = event.clientY - start.y;
+          if (Math.abs(dx) < 28 || Math.abs(dx) <= Math.abs(dy)) return;
+          if (isOpen && dx > 0) hideSidebar();
+          if (!isOpen && dx < 0) showSidebar();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            setIsOpen((open) => !open);
+          }
+        }}
+      >
         <span className="sidebar-edge-hint-line" />
-      </div>}
-      {/* 4. Sliding Sidebar Drawer */}
+      </div>
       <AnimatePresence>
         {isOpen && (
           <>
@@ -552,59 +388,18 @@ export default function LeftSidebarNav() {
               role="navigation"
               aria-label="사이드 네비게이션"
               data-theme={isLight ? 'light' : 'dark'}
-              initial={{ x: '-100%', opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '-100%', opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              style={{
-                width: 'min(284px, calc(100vw - 48px))',
-              }}
-              className={`sites-pinned-sidebar fixed left-0 top-0 bottom-0 backdrop-blur-md border-r z-[10021] flex flex-col justify-between select-none transition-colors duration-300 ${
-                isLight
-                  ? 'bg-[#fdfaf5]/95 border-amber-900/15 shadow-[16px_0_48px_rgba(120,95,70,0.22)] text-slate-800'
-                  : 'bg-neutral-950/95 border-white/10 shadow-[16px_0_48px_rgba(0,0,0,0.85)] text-neutral-200'
-              }`}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 32 }}
+              className="sites-pinned-sidebar fixed inset-y-0 right-0 z-[10021] flex flex-col select-none border-l"
             >
-              <div className="refined-menu-heading">
-                <div><strong>Luckey</strong><span>나만의 작은 우주</span></div>
-                <button type="button" onClick={hideSidebar} aria-label="메뉴 닫기"><ChevronLeft size={20} /></button>
-              </div>
-
-              {/* Navigation Channel Items (Icon-Only Rail) */}
               <div className="refined-menu-list flex-1 overflow-y-auto no-scrollbar">
-                {/* Core Sanctuary Channels: 1. LUCY, 2. KEY, 3. LUCKEY (3rd icon) */}
-                <div className="flex flex-col gap-1 w-full">
-                  {CORE_CHANNELS.map(renderNavButton)}
-                </div>
-
-                {/* 7 Prism Channels: Accordion Toggled by 3rd LUCKEY Icon */}
-                <AnimatePresence initial={false}>
-                  {isChannelsOpen && (
-                    <motion.div
-                      key="prism-channels-accordion"
-                      initial={{ opacity: 0, height: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                      exit={{ opacity: 0, height: 0, scale: 0.96 }}
-                      transition={{ duration: 0.24, ease: 'easeOut' }}
-                      onMouseEnter={handleChannelsMouseEnter}
-                      onMouseLeave={handleChannelsMouseLeave}
-                      className="w-full flex flex-col items-center overflow-visible"
-                    >
-                      <div className="refined-menu-section-label">EXPLORE · 7 CHANNELS</div>
-                      <div className="flex flex-col gap-1 w-full">
-                        {PRISM_CHANNELS.map(renderNavButton)}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {CORE_CHANNELS.map(renderNavButton)}
+                {PRISM_CHANNELS.map(renderNavButton)}
               </div>
 
-              {/* Footer: LP BGM Button, User Profile Button & Collapse Button */}
-              <div
-                className={`refined-menu-footer pb-[calc(var(--sab)+0.75rem)] px-1.5 pt-2.5 border-t flex items-center gap-2.5 shrink-0 transition-colors duration-300 ${
-                  isLight ? 'border-amber-900/15' : 'border-white/10'
-                }`}
-              >
+              <div className="refined-menu-footer">
                 {/* LP Background Music Button (Click: Play/Pause, Long-Press: LP Player Detail Popup) */}
                 <div className="relative group w-10 h-10 shrink-0 flex items-center justify-center">
                   {/* Soundwave Ripple & Floating Musical Notes when Playing */}
@@ -733,125 +528,24 @@ export default function LeftSidebarNav() {
                       }`}
                     />
                   </button>
-
-                  {/* Desktop Hover Tooltip to Right */}
-                  <div
-                    className={`hidden sm:group-hover:flex flex-col gap-1 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                      isLight
-                        ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                        : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          bgmState.isPlaying
-                            ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse'
-                            : 'bg-neutral-500'
-                        }`}
-                      />
-                      <span
-                        className={`text-xs font-extrabold tracking-wide ${
-                          isLight ? 'text-amber-700' : 'text-amber-300'
-                        }`}
-                      >
-                        LP 배경음 플레이어
-                      </span>
-                      <span
-                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
-                          bgmState.isPlaying
-                            ? isLight
-                              ? 'bg-amber-500/15 text-amber-800 border-amber-500/35'
-                              : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                            : isLight
-                            ? 'bg-slate-200/70 text-slate-600 border-slate-300'
-                            : 'bg-white/10 text-neutral-400 border-white/10'
-                        }`}
-                      >
-                        {bgmState.isPlaying ? 'PLAYING' : 'PAUSED'}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[11px] font-medium max-w-[210px] truncate ${
-                        isLight ? 'text-slate-700' : 'text-neutral-200'
-                      }`}
-                    >
-                      {bgmState.trackName || '사운드스케이프 대기 중'}
-                    </span>
-                    <span
-                      className={`text-[9.5px] pt-0.5 border-t ${
-                        isLight
-                          ? 'border-amber-900/10 text-slate-500'
-                          : 'border-white/10 text-neutral-400'
-                      }`}
-                    >
-                      클릭: 재생/일시정지 · 꾹 누르기: LP 상세 설정
-                    </span>
-                  </div>
                 </div>
-                {/* User Profile Button -> Navigates to Epilogue Profile (/profile) */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="relative group w-10 h-10 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        try {
-                          sessionStorage.setItem('prism_target_tab', 'profile');
-                          window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
-                        } catch (_) {}
-                        handleNavigate('/profile');
-                      }}
-                      className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all cursor-pointer active:scale-95 overflow-hidden shadow-sm ${
-                        isProfileActive
-                          ? isLight
-                            ? 'bg-amber-500/30 border-amber-600 text-amber-800 ring-2 ring-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.35)]'
-                            : 'bg-purple-500/30 border-purple-400 text-purple-200 ring-2 ring-purple-400/40 shadow-[0_0_16px_rgba(168,85,247,0.45)]'
-                          : isLight
-                          ? 'bg-amber-500/15 border-amber-500/40 hover:border-amber-600 text-amber-700 hover:bg-amber-500/25'
-                          : 'bg-amber-400/15 border-amber-400/30 hover:border-amber-400/70 text-amber-300 hover:bg-amber-400/25'
-                      }`}
-                      aria-label="내 프로필 및 사진 설정"
-                      title="내 프로필 및 사진 설정"
-                    >
-                      {userAvatarUrl ? (
-                        <img
-                          src={userAvatarUrl}
-                          alt={userNickname}
-                          className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <User size={16} className="group-hover:scale-110 transition-transform" />
-                      )}
-                    </button>
-
-                    {/* Desktop Hover Tooltip to Right */}
-                    <div
-                      className={`hidden sm:group-hover:flex items-center gap-2 absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl backdrop-blur-xl pointer-events-none whitespace-nowrap z-50 ${
-                        isLight
-                          ? 'bg-[#fffdf9]/96 border border-amber-900/15 text-slate-800 shadow-[0_10px_28px_rgba(120,95,70,0.18)]'
-                          : 'bg-neutral-900/95 border border-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.7)]'
-                      }`}
-                    >
-                      {userAvatarUrl ? (
-                        <img src={userAvatarUrl} alt="" className="w-5 h-5 rounded-full object-cover border border-amber-400/50" />
-                      ) : (
-                        <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      )}
-                      <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
-                        {userNickname}
-                      </span>
-                      <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-neutral-400'}`}>
-                        내 프로필 · 사진 설정
-                      </span>
-                    </div>
-                  </div>
-                  <span
-                    className={`text-[8px] leading-none whitespace-nowrap ${isLight ? 'text-slate-500' : 'text-neutral-500'}`}
-                    aria-label={`앱 버전 ${APP_VERSION}`}
-                  >
-                    v{APP_VERSION}
-                  </span>
-                </div>
+                <button
+                  type="button"
+                  className="refined-nav-item"
+                  data-active={cleanPath === '/profile'}
+                  aria-current={cleanPath === '/profile' ? 'page' : undefined}
+                  aria-label="내 프로필"
+                  title="내 프로필"
+                  onClick={() => {
+                    try {
+                      sessionStorage.setItem('prism_target_tab', 'profile');
+                      window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));
+                    } catch (_) {}
+                    handleNavigate('/profile');
+                  }}
+                >
+                  <User size={22} aria-hidden="true" />
+                </button>
               </div>
             </motion.aside>
           </>

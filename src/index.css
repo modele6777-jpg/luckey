@@ -3206,16 +3206,15 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 @keyframes sidebar-aurora-pulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sidebar-aurora > * { animation: none; } }
 
-/* Shared top-left menu slot and brand alignment, matching both Lucy headers. */
-:root { --page-header-inset: max(14px, env(safe-area-inset-left, 0px)); --page-brand-gap: 52px; --page-header-top: max(14px, calc(env(safe-area-inset-top, 0px) + 10px)); }
-@media (min-width: 640px) { :root { --page-header-inset: max(32px, env(safe-area-inset-left, 0px)); --page-brand-gap: 60px; } }
+/* Shared brand alignment across page headers. */
+:root { --page-header-inset: max(14px, env(safe-area-inset-left, 0px)); --page-header-top: max(14px, calc(env(safe-area-inset-top, 0px) + 10px)); }
+@media (min-width: 640px) { :root { --page-header-inset: max(32px, env(safe-area-inset-left, 0px)); } }
 @media (min-width: 1024px) { :root { --page-header-inset: max(48px, env(safe-area-inset-left, 0px)); } }
-.page-menu-button { left: var(--page-header-inset); top: var(--page-header-top); }
 .lucy-chat-header { padding-left: var(--page-header-inset) !important; }
 html:root [data-page-brand="true"] {
   top: 0 !important;
   left: 0 !important;
-  padding-left: calc(var(--page-header-inset) + var(--page-brand-gap)) !important;
+  padding-left: var(--page-header-inset) !important;
   padding-right: 14px;
   padding-top: var(--page-header-top) !important;
   width: 100%;
