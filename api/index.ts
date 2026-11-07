@@ -384,6 +384,11 @@ app.post("/api/sync/relay/consume", async (req, res) => {
   }
 });
 
+app.post("/api/saju/chart", async (req, res) => {
+  const { handleSajuChartPost } = await import("../server/api-lib/sajuChartRoute.ts");
+  return handleSajuChartPost(req, res);
+});
+
 app.get(["/api/health", "/health"], (_req, res) => res.json({ status: "ok" }));
 
 export default app;

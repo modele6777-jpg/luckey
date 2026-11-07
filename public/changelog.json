@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.7.205",
+    "builtAt": "2026-11-07T05:40:00.000Z",
+    "summary": "MCP 타로·사주를 기존 리딩 HTTP API 호출로 전환",
+    "items": [
+      "원카드 타로는 POST /api/ai/daily-tarot만 호출하고 MCP에서 Gemini나 로컬 리딩을 만들지 않음",
+      "사주는 새 POST /api/saju/chart가 앱과 같은 calculateDetailedSaju만 수행하고 MCP는 그 응답을 전달",
+      "여러 장 배열과 consult_oracle은 전용 API가 없어 실패로 반환",
+      "Bearer 토큰은 MCP 입장 검사용이며 리딩 API의 사용자 신원으로 전달하지 않음",
+      "호출 주소는 LUCKEY_API_ORIGIN만 사용"
+    ]
+  },
+  {
     "version": "1.7.204",
     "builtAt": "2026-11-07T05:01:40.000Z",
     "summary": "타로·사주 리딩을 표준 Streamable HTTP MCP로 제공",

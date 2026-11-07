@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { processMCPJsonRpc } from '../server/api-lib/mcpHandler';
+import { sajuChartFromInput } from '../server/api-lib/sajuChartApi';
+import { setReadingApiFetchForTests } from '../server/api-lib/readingApiClient';
+import { handleSitesApi } from '../server/sites-api';
 
-async function fortune(args: Record<string, unknown>) {
-  const response = await processMCPJsonRpc({
-    jsonrpc: '2.0', id: 1, method: 'tools/call',
-    params: { name: 'get_saju_fortune', arguments: args },
-  });
-  assert.ok(!response.error, response.error?.message);
-  return JSON.parse(response.result.content[0].text);
+function fortune(args: Record<string, unknown>) {
+  return sajuChartFromInput(args);
 }
 
 test('MCP saju uses birth year instead of hardcoded 2026', async () => {
@@ -35,27 +33,59 @@ test('MCP saju distinguishes lunar leap months', async () => {
   assert.notEqual(regular.solarEquivalentDate, leap.solarEquivalentDate);
 });
 
-test('MCP saju rejects invalid calendar dates', async () => {
-  const response = await processMCPJsonRpc({
-    jsonrpc: '2.0', id: 2, method: 'tools/call',
-    params: { name: 'get_saju_fortune', arguments: { year: 2026, month: 2, day: 30 } },
+test('MCP saju chart route rejects invalid calendar dates', () => {
+  assert.throws(() => fortune({ year: 2026, month: 2, day: 30 }));
+});
+
+test('legacy saju and daily tarot tools call the reading APIs and do not read the response from MCP math', async () => {
+  const calls: { url: string; body: any; authorization?: string }[] = [];
+  process.env.LUCKEY_MCP_TOKEN = 'luckey-mcp-test-token-0123456789';
+  process.env.LUCKEY_API_ORIGIN = 'https://readings.example/ignored-path';
+  setReadingApiFetchForTests(async (url, init) => {
+    const headers = new Headers(init?.headers);
+    calls.push({ url: String(url), body: JSON.parse(String(init?.body)), authorization: headers.get('authorization') || undefined });
+    const path = new URL(String(url)).pathname;
+    if (path === '/api/saju/chart') return new Response(JSON.stringify({ pillars: { day: 'FROM-API' } }), { status: 200 });
+    return new Response(JSON.stringify({ diagnosis: 'API 진단' }), { status: 400, headers: { 'content-type': 'application/json' } });
   });
-  assert.ok(response.error);
+  try {
+    const denied = await processMCPJsonRpc({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'get_saju_fortune', arguments: { year: 2000, month: 1, day: 1 } } });
+    assert.match(denied.error.message, /인증/);
+    assert.equal(calls.length, 0);
+    const chart = await processMCPJsonRpc({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'get_saju_fortune', arguments: { year: 1994, month: 1, day: 24, birthtime: '12:00', isLunar: false } } }, { authorized: true });
+    assert.equal(JSON.parse(chart.result.content[0].text).pillars.day, 'FROM-API');
+    assert.equal(calls[0].url, 'https://readings.example/api/saju/chart');
+    assert.equal(calls[0].body.year, 1994);
+    assert.equal(calls[0].body.birthtime, '12:00');
+    assert.equal(calls[0].authorization, undefined);
+    const tarot = await processMCPJsonRpc({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'get_daily_tarot', arguments: { cardId: 'major_0', reversed: true, concern: '오늘의 타로' } } }, { authorized: true });
+    assert.match(tarot.error.message, /리딩 API 400/);
+    assert.equal(calls[1].url, 'https://readings.example/api/ai/daily-tarot');
+    assert.equal(calls[1].body.card.id, 'major_0');
+    assert.equal(calls[1].body.card.reversed, true);
+    assert.equal(calls[1].body.mode, 'oracle');
+    assert.equal(calls[1].body.profile.fate.currentWorry, '오늘의 타로');
+    assert.equal(calls[1].authorization, undefined);
+    const oracle = await processMCPJsonRpc({ jsonrpc: '2.0', id: 5, method: 'tools/call', params: { name: 'consult_oracle', arguments: { question: '테스트' } } }, { authorized: true });
+    assert.equal(oracle.error.code, -32002);
+    assert.match(oracle.error.message, /HTTP API는 없습니다/);
+    assert.equal(calls.length, 2);
+  } finally {
+    setReadingApiFetchForTests(null);
+  }
 });
 
 
-test('MCP daily tarot tool returns a card and reading', async () => {
-  const response = await processMCPJsonRpc({
-    jsonrpc: '2.0', id: 2, method: 'tools/call',
-    params: { name: 'get_daily_tarot', arguments: {} },
-  });
-  assert.ok(!response.error, response.error?.message);
-  assert.ok(response.result?.content?.[0]?.text);
-  const payload = JSON.parse(response.result.content[0].text);
-  assert.ok(payload.card?.id !== undefined);
-  assert.ok(payload.reading);
+test('Sites saju chart route uses the app calculation and does not call Gemini', async () => {
+  let called = false;
+  const response = await handleSitesApi(new Request('https://audit.invalid/api/saju/chart', {
+    method: 'POST', body: JSON.stringify({ year: 2000, month: 1, day: 1, birthtime: '12:00' }),
+  }), { gemini: 'test-private-key' }, (async () => { called = true; return new Response(''); }) as typeof fetch);
+  assert.equal(called, false);
+  assert.equal(response?.status, 200);
+  const body = await response!.json();
+  assert.equal(body.pillars.day.slice(0, 2), '戊午');
 });
-
 
 test('MCP art prescriptions return one of several curated artworks', async () => {
   const titles = new Set<string>();

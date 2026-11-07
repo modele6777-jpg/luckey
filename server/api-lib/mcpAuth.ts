@@ -1,11 +1,10 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
+import { readTarotUsesDailyApi } from './mcpReadingGateway.ts';
 
 const TOKEN_MIN_LENGTH = 24;
-const WINDOW_MS = 60 * 60 * 1000;
-const budgetHits = new Map<string, number[]>();
 
-export type ProtectedReading = 'saju' | 'model';
+export type ProtectedReading = 'saju' | 'daily-tarot';
 
 function headerValue(value: string | string[] | undefined): string {
   if (Array.isArray(value)) return value.join(',');
@@ -31,10 +30,12 @@ export function verifyMcpBearer(presented: string | null): boolean {
 
 function messageProtection(message: unknown): ProtectedReading | null {
   if (!message || typeof message !== 'object') return null;
-  const call = message as { method?: unknown; params?: { name?: unknown; arguments?: { narrative?: unknown } } };
+  const call = message as { method?: unknown; params?: { name?: unknown; arguments?: { theme?: unknown; cards?: unknown } } };
   if (call.method !== 'tools/call') return null;
-  if (call.params?.name === 'read_saju') return 'saju';
-  if (call.params?.name === 'read_tarot' && call.params.arguments?.narrative === 'model') return 'model';
+  const name = call.params?.name;
+  if (name === 'read_saju' || name === 'get_saju_fortune') return 'saju';
+  if (name === 'get_daily_tarot') return 'daily-tarot';
+  if (name === 'read_tarot' && readTarotUsesDailyApi(call.params?.arguments)) return 'daily-tarot';
   return null;
 }
 
@@ -43,7 +44,7 @@ export function protectedReading(body: unknown): ProtectedReading | null {
   let protection: ProtectedReading | null = null;
   for (const message of messages) {
     const kind = messageProtection(message);
-    if (kind === 'model') return 'model';
+    if (kind === 'daily-tarot') return 'daily-tarot';
     if (kind === 'saju') protection = 'saju';
   }
   return protection;
@@ -54,34 +55,4 @@ export function rpcId(body: unknown): string | number | null {
   if (!message || typeof message !== 'object' || !('id' in message)) return null;
   const id = (message as { id?: unknown }).id;
   return typeof id === 'string' || typeof id === 'number' ? id : null;
-}
-
-function modelHourlyLimit(): number {
-  const parsed = Number(process.env.LUCKEY_MCP_MODEL_HOURLY_LIMIT ?? 12);
-  if (!Number.isFinite(parsed)) return 12;
-  return Math.min(100, Math.max(1, Math.floor(parsed)));
-}
-
-export function takeModelBudget(token: string): boolean {
-  const key = createHash('sha256').update(token).digest('hex');
-  const now = Date.now();
-  const recent = (budgetHits.get(key) || []).filter((timestamp) => now - timestamp < WINDOW_MS);
-  if (recent.length >= modelHourlyLimit()) {
-    budgetHits.set(key, recent);
-    return false;
-  }
-  recent.push(now);
-  budgetHits.set(key, recent);
-  if (budgetHits.size > 1000) {
-    const oldest = budgetHits.keys().next().value;
-    if (oldest) budgetHits.delete(oldest);
-  }
-  return true;
-}
-
-export function resetMcpModelBudgetForTests(): void {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('MCP test hook is disabled');
-  }
-  budgetHits.clear();
 }

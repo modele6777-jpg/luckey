@@ -1099,6 +1099,11 @@ ${content}
   }
 
   // Daily Tarot Oracle Handler
+  app.post("/api/saju/chart", async (req, res) => {
+    const { handleSajuChartPost } = await import("./server/api-lib/sajuChartRoute");
+    return handleSajuChartPost(req, res);
+  });
+
   app.post("/api/ai/daily-tarot", async (req, res) => {
     const { card, mode = "oracle", comfortLevel = 3, profile, touchMetadata } = req.body || {};
     if (!card) {

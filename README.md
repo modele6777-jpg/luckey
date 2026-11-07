@@ -31,7 +31,7 @@ View your app in AI Studio: https://ai.studio/apps/74fc4969-44a5-40f7-b5bd-e3b32
 
 ## 원격 MCP
 
-타로·사주 Streamable HTTP 엔드포인트는 `POST /api/mcp`입니다. 주소, 인증, 도구, 배포 한계는 [docs/mcp-remote.md](docs/mcp-remote.md)에 있습니다. 사주와 모델 서사는 서버 환경 변수 `LUCKEY_MCP_TOKEN`이 필요합니다.
+타로·사주 Streamable HTTP 엔드포인트는 `POST /api/mcp`입니다. 원카드 타로와 사주는 `LUCKEY_API_ORIGIN`의 기존 리딩 API만 호출합니다. 주소, 인증, 도구별 흐름은 [docs/mcp-remote.md](docs/mcp-remote.md)에 있습니다.
 
 ## 기기 간 자동 동기화
 

@@ -7,17 +7,11 @@ import { z } from 'zod';
 import {
   protectedReading,
   readBearerToken,
-  resetMcpModelBudgetForTests,
   rpcId,
-  takeModelBudget,
   verifyMcpBearer,
 } from './mcpAuth.ts';
-import {
-  createSajuReading,
-  createTarotReading,
-  listTarotSpreads,
-  TAROT_THEME_IDS,
-} from './mcpReadings.ts';
+import { fetchDailyTarot, fetchSajuChart, readTarotUsesDailyApi, selectTarotCard, TAROT_SPREAD_GAP } from './mcpReadingGateway.ts';
+import { listTarotSpreads, TAROT_THEME_IDS } from './mcpCatalog.ts';
 import { MCP_SERVER_VERSION } from './mcpVersion.ts';
 
 const MAX_BODY_CHARS = 65536;
@@ -29,7 +23,7 @@ const tarotInput = {
     id: z.string().trim().min(1).max(40).describe('TAROT_DECK 카드 id. 예: major_0'),
     reversed: z.boolean().optional().describe('역방향 여부. 생략하면 정방향'),
   })).max(10).optional().describe('직접 지정할 카드. 생략하면 배열 장수만큼 78장 덱에서 뽑습니다.'),
-  narrative: z.enum(['local', 'model']).optional().describe('local은 앱 결정적 리딩. model은 서버 모델 1회 호출이며 Bearer 인증이 필요합니다.'),
+  narrative: z.enum(['local', 'model']).optional().describe('호환용 필드입니다. MCP는 Gemini를 직접 호출하지 않고, 한 장 오늘의 타로만 /api/ai/daily-tarot로 보냅니다.'),
 };
 
 const sajuInput = {
@@ -49,16 +43,12 @@ function textResult(payload: unknown, isError = false) {
   };
 }
 
-function isReadingFailure<T extends { ok: boolean }>(result: T): result is Extract<T, { ok: false }> {
-  return result.ok === false;
-}
-
 function createReadingServer(): McpServer {
   const server = new McpServer({
     name: 'luckey-readings',
     version: MCP_SERVER_VERSION,
   }, {
-    instructions: 'LUCKEY 타로와 사주 리딩입니다. list_tarot_spreads와 read_tarot의 local 서사는 인증 없이 앱 덱과 로컬 엔진을 사용합니다. read_saju와 read_tarot narrative=model은 Authorization: Bearer 토큰이 필요합니다. 출생 정보는 저장하지 않습니다.',
+    instructions: '타로 원카드는 POST /api/ai/daily-tarot, 사주는 POST /api/saju/chart만 호출합니다. 여러 장 배열과 consult_oracle은 전용 HTTP API가 없어 실패로 반환합니다. Bearer 토큰은 사용자 신원으로 전달하지 않습니다.',
   });
 
   server.registerTool('list_tarot_spreads', {
@@ -69,34 +59,28 @@ function createReadingServer(): McpServer {
 
   server.registerTool('read_tarot', {
     title: '타로 리딩',
-    description: '78장 덱과 앱 배열법으로 타로를 읽습니다. narrative=model은 인증된 서버 모델 호출이며, 실패하면 같은 카드의 로컬 리딩을 반환합니다.',
+    description: '한 장 오늘의 타로는 앱과 같은 POST /api/ai/daily-tarot를 호출합니다. 여러 장 배열은 전용 API가 없어 실패합니다. Bearer 토큰은 리딩 API로 전달하지 않습니다.',
     inputSchema: tarotInput,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
   }, async (args) => {
-    const cards = args.cards?.map((card) => ({ id: card.id || '', reversed: card.reversed }));
-    if (cards?.some((card) => !card.id)) return textResult({ error: '카드 id가 필요합니다.' }, true);
-    const result = await createTarotReading({
-      question: args.question,
-      theme: args.theme,
-      narrative: args.narrative,
-      cards,
-    });
-    if (isReadingFailure(result)) return textResult({ error: result.message }, true);
-    return textResult(result.payload);
+    if (!readTarotUsesDailyApi(args)) return textResult({ error: TAROT_SPREAD_GAP, gap: 'tarot_spread_http_api' }, true);
+    const selected = selectTarotCard(args.cards?.[0] ? { cardId: args.cards[0].id, reversed: args.cards[0].reversed } : {});
+    if ('error' in selected) return textResult({ error: selected.error }, true);
+    const result = await fetchDailyTarot(selected, { concern: args.question });
+    if (!result.ok) return textResult({ error: result.message, status: result.status }, true);
+    return textResult({ endpoint: '/api/ai/daily-tarot', request: result.payload, reading: result.api });
   });
 
   server.registerTool('read_saju', {
     title: '사주 리딩',
-    description: '앱의 calculateDetailedSaju로 사주 원국, 오행, 격국, 용신, 세운을 계산합니다. 출생 정보를 받으므로 Bearer 인증이 필요합니다.',
+    description: '앱이 쓰는 사주 계산을 노출한 POST /api/saju/chart를 호출합니다. MCP에서 사주를 다시 계산하지 않습니다.',
     inputSchema: sajuInput,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
   }, async (args, extra) => {
-    if (!extra.authInfo?.scopes.includes('saju')) {
-      return textResult({ error: '인증이 필요합니다.' }, true);
-    }
-    const result = createSajuReading(args);
-    if (isReadingFailure(result)) return textResult({ error: result.message }, true);
-    return textResult(result.payload);
+    if (!extra.authInfo?.scopes.includes('saju')) return textResult({ error: '인증이 필요합니다.' }, true);
+    const result = await fetchSajuChart(args);
+    if (!result.ok) return textResult({ error: result.message, status: result.status }, true);
+    return textResult({ endpoint: '/api/saju/chart', chart: result.api });
   });
 
   return server;
@@ -156,15 +140,9 @@ export async function handleStreamableMcpPost(req: Request, res: Response): Prom
     jsonRpcError(res, 401, rpcId(body), -32001, '인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.');
     return;
   }
-  if (protection === 'model') {
-    if (!presented || !takeModelBudget(presented)) {
-      jsonRpcError(res, 429, rpcId(body), -32029, '모델 리딩 호출 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.');
-      return;
-    }
-  }
   if (authorized) {
     const authed = req as IncomingMessage & { auth?: AuthInfo };
-    authed.auth = { token: 'redacted', clientId: 'luckey-mcp', scopes: ['saju', 'model'] };
+    authed.auth = { token: 'redacted', clientId: 'luckey-mcp', scopes: ['saju', 'daily-tarot'] };
   }
 
   const server = createReadingServer();
@@ -187,5 +165,3 @@ export async function handleStreamableMcpPost(req: Request, res: Response): Prom
     });
   }
 }
-
-export { resetMcpModelBudgetForTests };
