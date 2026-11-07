@@ -317,6 +317,26 @@ export default function LeftSidebarNav() {
 
   const isLight = resolvedTheme === 'light';
 
+  useEffect(() => {
+    const syncFooterHeight = () => {
+      const footerEl = document.querySelector('.lucy-chat-footer');
+      if (footerEl) {
+        const h = footerEl.getBoundingClientRect().height;
+        if (h > 0) {
+          document.documentElement.style.setProperty('--lucy-footer-height', `${Math.round(h)}px`);
+        }
+      }
+    };
+    syncFooterHeight();
+    const observer = new MutationObserver(syncFooterHeight);
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('resize', syncFooterHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', syncFooterHeight);
+    };
+  }, []);
+
   const renderNavButton = ({ path, icon: Icon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');

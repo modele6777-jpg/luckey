@@ -3127,7 +3127,7 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
   will-change: transform;
 }
 /* Reserve the permanent navigation rail without adding bottom space. */
-:root { --sites-sidebar-width: 80px; }
+:root { --sites-sidebar-width: 80px; --lucy-footer-height: calc(105px + max(10px, env(safe-area-inset-bottom, 0px))); }
 .sites-pinned-main {
   --sal: env(safe-area-inset-left, 0px);
   /* The permanent rail already owns the right screen inset. */

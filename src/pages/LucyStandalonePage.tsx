@@ -915,6 +915,27 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   });
   const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const chatFooterRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const el = chatFooterRef.current;
+    if (!el) return;
+    const updateFooterHeight = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.height > 0) {
+        document.documentElement.style.setProperty('--lucy-footer-height', `${Math.round(rect.height)}px`);
+      }
+    };
+    updateFooterHeight();
+    const ro = new ResizeObserver(updateFooterHeight);
+    ro.observe(el);
+    window.addEventListener('resize', updateFooterHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateFooterHeight);
+    };
+  }, []);
+
   const currentGhostPromptRef = useRef<string>('');
   const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');
 
@@ -3143,6 +3164,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
       {/* ⌨️ Bottom Input Bar: Image Preview + STT Mic + Multi-Modal Vision + Send */}
       <footer 
+        ref={chatFooterRef}
         style={{
           paddingBottom: 'max(0.25rem, var(--sab, 0px))',
           backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
