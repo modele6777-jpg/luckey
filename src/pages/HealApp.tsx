@@ -1838,7 +1838,7 @@ export default function HealApp() {
                            <h3 className="text-2xl font-display text-white">Soul Profile Configuration</h3>
                            <button onClick={() => setIsEditingProfile(false)} className="p-2 hover:bg-white/5 rounded-full text-white/20 hover:text-white"><X size={20}/></button>
                          </div>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left layout-form-grid" data-form-columns="2">
                            <div className="space-y-2">
                              <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-3 block">Name</label>
                              <input className="w-full bg-white/5 border border-white/10 rounded-[24px] px-6 py-4 text-sm focus:outline-none focus:border-emerald-500/50 text-white" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
@@ -2080,7 +2080,7 @@ export default function HealApp() {
                 {isEditingProfile ? (
                   <div className="max-w-2xl mx-auto bg-white/[0.02] border border-white/5 p-8 rounded-[40px] space-y-8 text-white">
                      <h3 className="text-xl font-display text-white">Soul Profile Configuration</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left layout-form-grid" data-form-columns="2">
                        <div className="space-y-2">
                          <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-3 block">Name</label>
                          <input className="w-full bg-white/5 border border-white/10 rounded-[24px] px-6 py-4 text-sm focus:outline-none focus:border-emerald-500/50 text-white" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />

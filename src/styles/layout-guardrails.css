@@ -1,0 +1,39 @@
+/* Constrain controls to their actual form width without hiding overflow symptoms. */
+:where(.prism-app-shell, .screen-portal, .duo-portal) :is(input, select, textarea) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+:where(.prism-app-shell, .screen-portal, .duo-portal) :where(div, label):has(> :is(input, select, textarea)) {
+  min-width: 0;
+  max-width: 100%;
+}
+:where(.prism-app-shell, .screen-portal, .duo-portal) :where(.grid) > * { min-width: 0; }
+:where(.prism-app-shell, .screen-portal, .duo-portal) input:is([type='date'], [type='time'], [type='datetime-local'], [type='month'], [type='week']) {
+  appearance: none;
+  -webkit-appearance: none;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  text-align: left;
+}
+:where(.prism-app-shell, .screen-portal, .duo-portal) input::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  text-align: left;
+}
+:where(.prism-app-shell, .screen-portal, .duo-portal) input::-webkit-datetime-edit { min-width: 0; padding: 0; }
+
+/* Auto-fit uses the card's width; explicit maxima preserve each form's column count. */
+.layout-form-grid[data-form-columns] {
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(15rem, calc((100% - 1rem) / 2))), 1fr));
+}
+.layout-form-grid[data-form-columns='3'] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(15rem, calc((100% - 2rem) / 3))), 1fr));
+}
+.layout-form-grid[data-form-columns='4'] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(15rem, calc((100% - 3rem) / 4))), 1fr));
+}
+.layout-form-grid > * { min-width: 0; max-width: 100%; grid-column: auto; }
+.layout-form-grid :is(label, p) { overflow-wrap: anywhere; }
+:where(.prism-page-content, .duo-dialog-body) :where(p, li, dd) { overflow-wrap: anywhere; }
+:where(.prism-page-content, .duo-dialog-body) pre { max-width: 100%; overflow-x: auto; }

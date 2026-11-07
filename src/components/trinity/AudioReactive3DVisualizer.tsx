@@ -689,9 +689,9 @@ export function AudioReactive3DVisualizer({
 
       {/* Floating Bottom HUD Controls */}
       {showControls && (
-        <footer className="mt-auto relative z-20 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+        <footer className="mt-auto relative z-20 p-4 sm:p-6 flex flex-wrap flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
           {/* Mode Switcher Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+          <div className="flex flex-wrap max-w-full items-center justify-center gap-1.5 p-1 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
             {(
               [
                 { id: 'cosmic-galaxy', label: '성운 나선 은하', desc: 'Cosmic Galaxy' },

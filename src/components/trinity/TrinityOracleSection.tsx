@@ -4541,7 +4541,7 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 layout-form-grid" data-form-columns="2">
                   <div>
                     <label className="block text-zinc-300 font-medium mb-1">태어난 시간</label>
                     <input

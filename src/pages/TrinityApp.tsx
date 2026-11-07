@@ -4405,7 +4405,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         <X size={20} />
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left layout-form-grid" data-form-columns="2">
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-3 block">
                           Name

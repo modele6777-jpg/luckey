@@ -455,7 +455,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 layout-form-grid" data-form-columns="2">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-zinc-400">생년월일 (양력)</label>
                 <input
@@ -650,7 +650,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
               onSubmit={handleSaveProfile}
               className="mt-5 p-5 rounded-2xl bg-black/40 border border-white/10 space-y-4"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 layout-form-grid" data-form-columns="4">
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold text-zinc-400">성함</label>
                   <input

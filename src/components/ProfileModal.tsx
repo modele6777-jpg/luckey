@@ -94,14 +94,14 @@ function InputField({ label, value, onChange, type = 'text', placeholder, isLigh
   type?: string; placeholder?: string; isLight?: boolean;
 }) {
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <label className={`block text-xs mb-1.5 tracking-wider font-semibold ${isLight ? 'text-slate-700' : 'text-white/40'}`}>{label}</label>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-all ${
+        className={`block box-border w-full min-w-0 max-w-full px-4 py-3 rounded-xl text-sm outline-none transition-all ${
           isLight
             ? 'text-slate-900 bg-white placeholder-slate-400 border border-slate-300 focus:border-amber-500 shadow-sm'
             : 'text-white/90 bg-white/5 placeholder-white/20 border border-white/10 focus:border-yellow-500/50'
@@ -287,7 +287,7 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
             <InputField label="실명 *" value={basic.name} onChange={v => setBasic(b => ({ ...b, name: v }))} placeholder="예: 홍길동" isLight={isLight} />
             <InputField label="닉네임" value={basic.nickname} onChange={v => setBasic(b => ({ ...b, nickname: v }))} placeholder="예: 제제" isLight={isLight} />
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 layout-form-grid" data-form-columns="3">
               <div className="sm:col-span-2">
                 <InputField label="생년월일 *" value={basic.birthdate} type="date" onChange={v => setBasic(b => ({ ...b, birthdate: v }))} isLight={isLight} />
               </div>
@@ -309,7 +309,7 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 layout-form-grid" data-form-columns="2">
               <InputField label="태어난 시각 (생시)" value={basic.birthtime} type="time" onChange={v => setBasic(b => ({ ...b, birthtime: v }))} isLight={isLight} />
               <InputField label="출생 도시" value={basic.birthCity || ''} onChange={v => setBasic(b => ({ ...b, birthCity: v }))} placeholder="예: 서울, 부산, 대구" isLight={isLight} />
             </div>

@@ -77,14 +77,14 @@ function InputField({ label, value, onChange, type = 'text', placeholder }: {
   type?: string; placeholder?: string;
 }) {
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <label className="block text-xs text-white/40 mb-1.5 tracking-wider">{label}</label>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-xl text-sm text-white/90 placeholder-white/20 outline-none transition-all"
+        className="block box-border w-full min-w-0 max-w-full px-4 py-3 rounded-xl text-sm text-white/90 placeholder-white/20 outline-none transition-all"
         style={{
           background: 'oklch(0.14 0.015 270)',
           border: '1px solid oklch(0.22 0.01 270)',

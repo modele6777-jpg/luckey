@@ -107,8 +107,8 @@ export const FollowUpTarotTimeline: React.FC<FollowUpTarotTimelineProps> = ({
                 <div className="rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-black/90 border border-amber-500/25 p-4 sm:p-5 shadow-xl backdrop-blur-md space-y-4 hover:border-amber-500/40 transition-colors">
                   {/* Top Bar: Question Badge, Time & Controls */}
                   <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="space-y-1 flex-1 min-w-[200px]">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1 flex-1 min-w-0 basis-[200px]">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/40">
                           추가 질문 #{index + 1}
                         </span>

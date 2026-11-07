@@ -2739,7 +2739,7 @@ export default function BluebirdApp() {
                            <h3 className="text-2xl font-display text-white ">Soul Profile Configuration</h3>
                            <button onClick={() => setIsEditingProfile(false)} className="p-2 hover:bg-white/5 rounded-full text-white/20 hover:text-white"><X size={20}/></button>
                          </div>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left layout-form-grid" data-form-columns="2">
                            <div className="space-y-2">
                              <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-3 block">Name</label>
                              <input className="w-full bg-white/5 border border-white/10 rounded-[24px] px-6 py-4 text-sm focus:outline-none focus:border-sky-500/50 text-white" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />

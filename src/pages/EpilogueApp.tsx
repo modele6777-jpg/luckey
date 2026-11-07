@@ -801,7 +801,7 @@ export default function EpilogueApp() {
               type="date"
               onChange={(v) => setBasic((b) => ({ ...b, birthdate: v }))}
             />
-            <div className="epilogue-profile-pair grid gap-3">
+            <div className="epilogue-profile-pair grid gap-3 layout-form-grid" data-form-columns="2">
               <div className="min-w-0">
                 <label className="block text-xs font-bold text-white/50 mb-1.5 tracking-wider font-sans uppercase">
                   양력 / 음력
