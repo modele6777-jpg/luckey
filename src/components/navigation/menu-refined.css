@@ -38,8 +38,6 @@
   flex-shrink: 0;
   border-top: 1px solid var(--menu-line);
   height: var(--lucy-footer-height, calc(110px + max(8px, env(safe-area-inset-bottom, 0px))));
-  max-height: 142px;
-  min-height: 110px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
