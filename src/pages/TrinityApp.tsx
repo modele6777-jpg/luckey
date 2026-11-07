@@ -1,3 +1,4 @@
+import '@/styles/tarot-reading.css';
 import { DuoWorkspace, WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import React, {
   useState,
@@ -3346,26 +3347,23 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 animate={{ opacity: 1, y: 0 }}
                 className="prism-page-content w-full mx-auto self-center space-y-8 pb-8 sm:pb-12"
               >
-                <div className={`glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
+                <div className={`tarot-reading-panel glass relative w-full self-center p-5 sm:p-8 md:p-10 rounded-[32px] sm:rounded-[40px] bg-white/[0.04] sm:bg-white/[0.06] border border-yellow-400/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col my-4 backdrop-blur-2xl ${tarotVirtualMode ? "min-h-[720px] sm:min-h-[800px]" : ""}`}>
                   {/* Subtle starlight gold specular glow */}
                   <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-yellow-500/10 blur-[100px] pointer-events-none" />
                   <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none" />
 
                   {/* Header */}
-                  <div className="duo-workspace-actions relative z-10 flex items-center justify-between pb-6 border-b border-white/10 mb-6 shrink-0 bg-white/[0.02] -mx-5 -mt-5 sm:-mx-8 sm:-mt-8 md:-mx-10 md:-mt-10 px-5 pt-5 sm:px-8 sm:pt-8 md:px-10 md:pt-8">
+                  <div className="tarot-reading-header duo-workspace-actions relative z-10 flex items-center justify-between pb-6 border-b border-white/10 mb-6 shrink-0 bg-white/[0.02] -mx-5 -mt-5 sm:-mx-8 sm:-mt-8 md:-mx-10 md:-mt-10 px-5 pt-5 sm:px-8 sm:pt-8 md:px-10 md:pt-8">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                        <TarotCardIcon size={20} className="text-yellow-400 animate-pulse" />
+                        <TarotCardIcon size={20} className="text-yellow-400" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h2 className="text-lg font-bold text-white tracking-tight">Tarot Reading (78장 타로 오라클)</h2>
-                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-400/30 uppercase tracking-wider">
-                            TRINITY 특수기능
-                          </span>
+                          <h2 className="text-lg font-bold text-white tracking-tight">타로 리딩</h2>
                         </div>
                         <p className="text-xs text-white/60 font-sans">
-                          천상의 78장 타로 휠 · 심층 AI 오라클 리딩
+                          78장 카드로 고민의 흐름을 살펴보세요.
                         </p>
                       </div>
                     </div>
@@ -3378,7 +3376,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         title="Quin 스타일 20종 타로 카드 뒷면 덱 커스텀"
                       >
                         <Palette size={13} />
-                        <span className="hidden sm:inline">덱 뒷면 ({tarotBackTheme.nameKo})</span>
+                        <span className="hidden sm:inline">카드 디자인</span>
                         <span className="sm:hidden">덱 뒷면</span>
                       </button>
                     </div>
@@ -3406,19 +3404,19 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         {!drawnCards &&
                         !tarotResult &&
                         !isTarotGenerating ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 w-full items-start">
-                            {/* 🌟 1. 우측 상단(모바일 1순위): Cosmic Anchor Banner */}
-                            <div className="order-1 md:order-2 flex flex-col gap-3 w-full">
+                          <div className="tarot-setup-grid grid gap-5 w-full items-start">
+                            {/* Optional daily-card context follows the concern form on compact canvases. */}
+                            <div className="tarot-daily-section flex flex-col gap-3 w-full min-w-0">
                             {!isDailyTarotChecked ? (
                               <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="relative overflow-hidden rounded-3xl border border-yellow-400/40 bg-gradient-to-r from-yellow-950/40 via-amber-950/30 to-indigo-950/40 p-4 sm:p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)] backdrop-blur-xl text-left"
+                                className="tarot-daily-guide relative overflow-hidden rounded-3xl border border-yellow-400/40 bg-gradient-to-r from-yellow-950/40 via-amber-950/30 to-indigo-950/40 p-4 sm:p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)] backdrop-blur-xl text-left"
                               >
                                 <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-yellow-500/15 blur-3xl pointer-events-none" />
                                 <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
 
-                                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                <div className="relative z-10 flex flex-col items-stretch gap-4">
                                   <div className="flex items-start gap-3.5 min-w-0 flex-1">
                                     <div className="w-11 h-11 rounded-2xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-yellow-300 shrink-0 shadow-[0_0_20px_rgba(234,179,8,0.3)] mt-0.5">
                                       <Sparkles size={22} className="animate-pulse text-yellow-400" />
@@ -3427,22 +3425,22 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       <div className="flex items-center gap-2 flex-wrap mb-1">
                                         <span className="text-[11px] font-black uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
                                           <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
-                                          오늘의 지배 카드 (Cosmic Anchor) 연동 안내
+                                          오늘의 타로
                                         </span>
                                         <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-yellow-400/20 text-yellow-200 border border-yellow-400/30">
-                                          사전 추천
+                                          선택 사항
                                         </span>
                                       </div>
                                       <h4 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-1.5 flex-wrap">
-                                        <span>오늘의 타로 선택 시 더 정확한 안내가 가능합니다</span>
+                                        <span>오늘의 카드도 함께 살펴보세요</span>
                                       </h4>
                                       <p className="text-xs text-zinc-300/90 mt-1 leading-relaxed break-keep">
-                                        타로 리딩은 오늘 하루를 관통하는 <strong className="text-yellow-300 font-bold">'오늘의 지배 카드'</strong>의 기저 파동 및 사주 본원과 융합하여 당신의 고민을 가장 입체적으로 해독합니다. <span className="text-amber-200 font-medium">오늘의 타로를 먼저 확인하시면 리딩의 정밀도가 극대화됩니다.</span>
+                                        오늘의 카드를 선택하면 고민 리딩에 함께 참고합니다. 바로 고민을 입력하고 카드를 뽑아도 괜찮아요.
                                       </p>
                                     </div>
                                   </div>
 
-                                  <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2 shrink-0 w-full md:w-auto">
+                                  <div className="flex flex-col items-start gap-2 w-full">
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -3458,11 +3456,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-400 hover:to-amber-400 text-black font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all cursor-pointer active:scale-95 whitespace-nowrap"
                                     >
                                       <Sparkles size={14} className="text-black" />
-                                      <span>오늘의 타로 먼저 선택하기 (추천)</span>
+                                      <span>오늘의 카드 선택</span>
                                     </button>
-                                    <span className="text-[10px] text-zinc-400 text-center md:text-right">
-                                      바로 일반 타로 카드를 뽑으셔도 무방합니다
-                                    </span>
                                   </div>
                                 </div>
                               </motion.div>
@@ -3531,27 +3526,15 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                             ) : null}
                             </div>
 
-                            {/* 📝 2. 좌측 상단(모바일 2순위): Your Concern 입력 폼 & 배열법 선택 */}
-                            <div className="order-2 md:order-1 flex flex-col gap-3 w-full">
+                            {/* Concern input and spread selection */}
+                            <div className="tarot-concern-section flex flex-col gap-3 w-full min-w-0">
                             <div className="space-y-3 text-left w-full overflow-hidden">
-                              <div className="duo-workspace-actions flex items-center justify-between pl-2">
-                                <label className="text-xs text-white/50 font-bold uppercase tracking-widest block">
-                                  Your Concern
-                                </label>
-                                <button
-                                  type="button"
-                                  onClick={() => setIsSpreadModalOpen(true)}
-                                  className="text-[11px] text-yellow-300 hover:text-yellow-200 font-bold font-sans flex items-center gap-1.5 px-3 py-1 rounded-xl bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/30 transition-all cursor-pointer shadow-sm active:scale-95 group"
-                                  title="타로 배열법 직접 선택 모달 열기"
-                                >
-                                  <Layers size={13} className="text-yellow-400 group-hover:rotate-12 transition-transform" />
-                                  <span>배열법 선택</span>
-                                  <ChevronRight size={13} className="text-yellow-400/70 group-hover:translate-x-0.5 transition-transform" />
-                                </button>
-                              </div>
+                              <label className="block text-sm font-semibold text-white/85" htmlFor="tarot-concern-input">
+                                고민을 들려주세요
+                              </label>
 
                               {/* Popular Spread Preset Pills */}
-                              <div className="flex items-center gap-1.5 overflow-x-auto select-none pb-1 scroll-smooth [scrollbar-width:none]">
+                              <div className="tarot-spread-presets flex items-center gap-1.5 select-none pb-1">
                                 <button
                                   type="button"
                                   onClick={() => setIsSpreadModalOpen(true)}
@@ -3559,7 +3542,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                   title="전체 타로 배열법 검색 및 직접 선택 모달 열기"
                                 >
                                   <Layers size={12} className="text-yellow-400" />
-                                  <span>🎴 전체 배열법 선택</span>
+                                  <span>전체 배열법</span>
                                 </button>
                                 <button
                                   type="button"
@@ -3607,6 +3590,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 
                               <div className="relative">
                                 <textarea
+                                  id="tarot-concern-input"
                                   value={tarotConcern}
                                   onChange={(e) => {
                                     setTarotConcern(e.target.value);
@@ -3642,7 +3626,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                     title="현재 타이핑 중인 추천 고민 예시를 바로 입력합니다 (Tab 키 지원)"
                                   >
                                     <Sparkles size={11} className="text-yellow-400" />
-                                    <span>이 추천 고민 입력 [Tab]</span>
+                                    <span>예시 입력</span>
                                   </button>
                                 )}
                                 {tarotConcern.trim().length > 0 && (
@@ -3743,7 +3727,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                               {/* Clickable Tarot Spread Recommendation / Custom Spread Card */}
                               <div
                                 onClick={() => setIsSpreadModalOpen(true)}
-                                className="rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-black/40 to-yellow-500/5 hover:border-yellow-400/60 hover:bg-yellow-500/15 p-4 transition-all cursor-pointer group shadow-md active:scale-[0.99] relative overflow-hidden text-left"
+                                className="tarot-selected-spread rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-black/40 to-yellow-500/5 hover:border-yellow-400/60 hover:bg-yellow-500/15 p-4 transition-all cursor-pointer group shadow-md active:scale-[0.99] relative overflow-hidden text-left"
                                 title="클릭하여 타로 배열법 직접 선택 / 변경하기"
                               >
                                 <div className="duo-workspace-actions flex items-center justify-between gap-2 mb-1.5">

@@ -1,0 +1,43 @@
+.tarot-reading-panel {
+  --tarot-panel-padding: clamp(16px, 2vw, 28px);
+  container: tarot-reading / inline-size;
+  padding: var(--tarot-panel-padding);
+  border-radius: 24px;
+  border-color: #d5b86c30;
+  background: #11121de8;
+  box-shadow: 0 12px 36px #00000020;
+}
+.tarot-reading-header {
+  margin: calc(-1 * var(--tarot-panel-padding));
+  margin-bottom: 24px;
+  padding: 20px var(--tarot-panel-padding);
+  gap: 16px;
+  background: #ffffff02;
+}
+.tarot-reading-header > div { min-width: 0; }
+.tarot-reading-header h2 { font-size: 18px; line-height: 1.5; }
+.tarot-reading-header p { margin-top: 4px; line-height: 1.6; }
+.tarot-reading-header svg { flex-shrink: 0; }
+.tarot-setup-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.tarot-concern-section { order: 1; }
+.tarot-daily-section { order: 2; }
+.tarot-daily-guide {
+  border-radius: 18px;
+  border-color: #d5b86c30;
+  background: #d5b86c08;
+  box-shadow: none;
+}
+.tarot-daily-guide > .absolute { display: none; }
+.tarot-daily-guide p { line-height: 1.8; word-break: keep-all; overflow-wrap: break-word; }
+.tarot-daily-guide button { white-space: normal; max-width: 100%; box-shadow: none; }
+.tarot-daily-guide h4 { line-height: 1.7; }
+.tarot-spread-presets { flex-wrap: wrap; }
+.tarot-spread-presets > button { max-width: 100%; box-shadow: none; }
+.tarot-spread-presets > button span { white-space: normal; text-align: left; }
+.tarot-reading-panel textarea { min-height: 160px; border-color: #ffffff20; background: #080b1466; }
+.tarot-selected-spread { border-color: #d5b86c30; background: #ffffff03; box-shadow: none; }
+.tarot-reading-panel :is(.animate-pulse, .animate-ping) { animation: none; }
+@container tarot-reading (min-width: 1100px) {
+  .tarot-setup-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}
+html.light .tarot-reading-panel { background: #fffdfa; border-color: #a0844933; box-shadow: 0 8px 24px #44320c08; }
