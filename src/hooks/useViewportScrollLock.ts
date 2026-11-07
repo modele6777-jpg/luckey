@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { canUseKeyboardViewport, orientedScreenSize, readViewportSnapshot, resolveAppLayoutHeight } from '@/lib/visualViewportBox';
+import { isKeyboardViewportOpen, readViewportSnapshot, resolveAppLayoutHeight, syncVisualViewportBox } from '@/lib/visualViewportBox';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
@@ -60,34 +60,17 @@ export function useViewportScrollLock() {
       return tag === 'INPUT' || tag === 'TEXTAREA' || (active as HTMLElement).isContentEditable;
     };
 
-    const getOrientedScreenSize = (): { width: number; height: number } => {
-      // 🌟 폴더블 기기(아이폰 듀오/갤럭시 폴드) 커버 화면 대응:
-      // 접힌 상태(커버 화면, 폭 580px 미만 세로)에서는 window.screen이 펼쳐진 대화면 기준 물리 해상도(예: 2048px)를
-      // 반환하므로, window.innerWidth/innerHeight를 우선하여 실제 활성 디스플레이 영역에 정확히 맞춘다.
-      const isFoldedCover = window.innerWidth < 580 && window.innerHeight >= window.innerWidth;
-      const sw = isFoldedCover ? window.innerWidth : (window.screen?.width || window.innerWidth);
-      const sh = isFoldedCover ? window.innerHeight : (window.screen?.height || window.innerHeight);
-      // Orientation events can arrive before the screen orientation flag updates.
-      return orientedScreenSize(sw, sh, window.innerWidth, window.innerHeight);
-    };
-
     const updateAppViewportHeight = () => {
       if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
       lockWindowScroll();
 
       const visual = window.visualViewport;
-      const innerH = window.innerHeight;
-      const visualH = visual ? visual.height : innerH;
+      const visualH = visual ? visual.height : window.innerHeight;
       const visualTop = visual ? Math.max(0, Math.round(visual.offsetTop)) : 0;
 
       const snapshot = readViewportSnapshot(window);
-      const oriented = getOrientedScreenSize();
-      // 가상 키보드가 실제로 올라와 있는지 정밀 판별:
-      // 1. 활성 입력창(input/textarea/contenteditable)이 포커스되어 있고 visualH가 화면 높이보다 100px 이상 작을 때 (PWA standalone 대응)
-      // 2. 또는 visualViewport 높이가 innerHeight보다 100px 이상 작을 때 (Safari 브라우저 대응)
-      const hasKeyboard = canUseKeyboardViewport(snapshot, isInputActive())
-        && (visualH < oriented.height - 100 || innerH - visualH > 100);
+      const hasKeyboard = isKeyboardViewportOpen(snapshot, isInputActive());
 
       if (hasKeyboard) {
         document.documentElement.classList.add('keyboard-open');
@@ -135,6 +118,8 @@ export function useViewportScrollLock() {
         document.documentElement.style.setProperty('--vv-left', '0px');
         const layoutHeight = resolveAppLayoutHeight(snapshot);
         document.documentElement.style.setProperty('--app-height', layoutHeight);
+        // Restore every viewport alias as well as the shell after keyboard dismissal.
+        syncVisualViewportBox(window);
         document.documentElement.style.removeProperty('height');
         document.documentElement.style.removeProperty('min-height');
         document.body?.style.removeProperty('height');
@@ -183,7 +168,7 @@ export function useViewportScrollLock() {
           if (!isInputActive()) {
             lockWindowScroll();
             updateAppViewportHeight();
-            scheduleSync([50, 150, 300]);
+            scheduleSync([50, 150, 300, 800, 1200]);
           }
         }, 80);
       }

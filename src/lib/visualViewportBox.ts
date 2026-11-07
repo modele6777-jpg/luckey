@@ -123,6 +123,23 @@ export function canUseKeyboardViewport(snapshot: ViewportSnapshot, inputActive: 
     && Math.abs(innerWidth - visualWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
 }
 
+/** Focus can remain after dismissing the keyboard; a small stale gap is not a keyboard. */
+export function isKeyboardViewportOpen(snapshot: ViewportSnapshot, inputActive: boolean): boolean {
+  if (!canUseKeyboardViewport(snapshot, inputActive)) return false;
+  const visualHeight = snapshot.visual!.height;
+  let fullHeight = snapshot.innerHeight;
+  const sw = positive(snapshot.screenWidth);
+  const sh = positive(snapshot.screenHeight);
+  if (snapshot.iosStandalone && sw != null && sh != null) {
+    const screen = orientedScreenSize(sw, sh, snapshot.innerWidth, snapshot.innerHeight);
+    if (Math.abs(screen.width - snapshot.innerWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) {
+      fullHeight = Math.max(fullHeight, screen.height);
+    }
+  }
+  const delta = fullHeight - visualHeight;
+  return delta > VIEWPORT_KEYBOARD_MIN_DELTA_PX && delta / fullHeight > VIEWPORT_KEYBOARD_MIN_RATIO;
+}
+
 export function resolveAppLayoutHeight(snapshot: ViewportSnapshot): string {
   const layoutHeight = positive(snapshot.innerHeight);
   if (layoutHeight == null) return '100dvh';
@@ -330,7 +347,12 @@ export function applyVisualViewportBox(
 ): void {
   const bleed = snapshot ? sideColumnBleed(snapshot, box.width) : { left: 0, right: 0 };
   const signature = `${box.width}|${box.height}|${box.offsetTop}|${box.offsetLeft}|${box.bottomGap}|${bleed.left}|${bleed.right}`;
-  if (signature === appliedSignature) return;
+  // The keyboard hook can write these variables without changing our cached box.
+  // Reapply after dismissal even when the restored dimensions match the cache.
+  if (signature === appliedSignature
+    && root.style.getPropertyValue('--vvh') === px(box.height)
+    && root.style.getPropertyValue('--visual-vh') === px(box.height)
+    && root.style.getPropertyValue('--vv-top') === px(box.offsetTop)) return;
   appliedSignature = signature;
   lastAppliedBox = box;
   root.style.setProperty('--vvw', px(box.width));
@@ -371,11 +393,11 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
   const snapshot = readViewportSnapshot(win);
-  const visualHeight = snapshot.visual?.height ?? 0;
-  const innerHeight = snapshot.innerHeight;
+  const active = document.activeElement as HTMLElement | null;
+  const inputActive = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || Boolean(active?.isContentEditable);
   // 키보드가 열린 동안 --vv-top / --app-height는 useViewportScrollLock이 소유한다.
   // 여기서 offsetTop을 0으로 덮어쓰면 셸이 레이아웃 맨 위에 고정되어 화면이 과도하게 올라간다.
-  if (document.documentElement.classList.contains('keyboard-open') || (visualHeight > 0 && innerHeight - visualHeight > 100)) {
+  if (document.documentElement.classList.contains('keyboard-open') || isKeyboardViewportOpen(snapshot, inputActive)) {
     applySafeAreaVars(document);
     return null;
   }
