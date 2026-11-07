@@ -265,6 +265,9 @@ import { calculateSeosanHyujeongSeongaGwigam, formatSeosanHyujeongSeongaGwigamPr
 import { calculateJungIndividuationArchetype, formatJungIndividuationArchetypePrompt, type JungIndividuationArchetypeResult, SWISS_JUNG_INDIVIDUATION_VERSION } from './swissJungIndividuationArchetypeEngine';
 import { calculateHegelDialecticalAufheben, formatHegelDialecticalAufhebenPrompt, type HegelDialecticalAufhebenResult, GERMAN_HEGEL_DIALECTICAL_VERSION } from './germanHegelDialecticalAufhebenEngine';
 import { calculateDasanMokminSimseo, formatDasanMokminSimseoPrompt, type DasanMokminSimseoResult, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION } from './koreanDasanJeongYagyongMokminSimseoEngine';
+import { calculateAugustineConfessionesIlluminatio, formatAugustineConfessionesIlluminatioPrompt, type AugustineConfessionesIlluminatioResult, NORTH_AFRICAN_AUGUSTINE_VERSION } from './northAfricanAugustineConfessionesIlluminatioEngine';
+import { calculateMachiavelliVirtuFortuna, formatMachiavelliVirtuFortunaPrompt, type MachiavelliVirtuFortunaResult, ITALIAN_MACHIAVELLI_VERSION } from './italianMachiavelliVirtuFortunaEngine';
+import { calculateChoeChiwonPungryudo, formatChoeChiwonPungryudoPrompt, type ChoeChiwonPungryudoResult, KOREAN_CHOE_CHIWON_VERSION } from './koreanChoeChiwonPungryudoEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -550,6 +553,9 @@ export interface DeterministicEngineReport {
   jungIndividuationArchetypeResult?: JungIndividuationArchetypeResult | null;
   hegelDialecticalAufhebenResult?: HegelDialecticalAufhebenResult | null;
   dasanMokminSimseoResult?: DasanMokminSimseoResult | null;
+  augustineConfessionesIlluminatioResult?: AugustineConfessionesIlluminatioResult | null;
+  machiavelliVirtuFortunaResult?: MachiavelliVirtuFortunaResult | null;
+  choeChiwonPungryudoResult?: ChoeChiwonPungryudoResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3260,6 +3266,33 @@ try {
     }
   })()));
 
+  // 234. 북아프리카 아우구스티누스 고백록 시간의 3중현존 & 내적조명 안식 평정심 엔진
+  const augustineConfessionesIlluminatioResult = calculateSupplement('augustineConfessionesIlluminatioResult', () => ((() => {
+    try {
+      return calculateAugustineConfessionesIlluminatio(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 235. 이탈리아 르네상스 니콜로 마키아벨리 군주론 비르투 역량 & 포르투나 극복 엔진
+  const machiavelliVirtuFortunaResult = calculateSupplement('machiavelliVirtuFortunaResult', () => ((() => {
+    try {
+      return calculateMachiavelliVirtuFortuna(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 236. 신라 고운 최치원 난랑비서 국유현묘지도 풍류도 & 포함삼교 접화군생 조화 엔진
+  const choeChiwonPungryudoResult = calculateSupplement('choeChiwonPungryudoResult', () => ((() => {
+    try {
+      return calculateChoeChiwonPungryudo(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3531,6 +3564,9 @@ try {
     jungIndividuationArchetypeResult,
     hegelDialecticalAufhebenResult,
     dasanMokminSimseoResult,
+    augustineConfessionesIlluminatioResult,
+    machiavelliVirtuFortunaResult,
+    choeChiwonPungryudoResult,
     tools: toolsMap,
   };
 }
@@ -3792,6 +3828,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'swissJungIndividuationArchetype', nameKo: '카를 융 개성화 원형통합 그림자 아니마아니무스 동시성', icon: '🎭', category: 'deep_master' },
   { key: 'germanHegelDialecticalAufheben', nameKo: '헤겔 정신현상학 변증법적지양 정반합 인륜성 미네르바올빼미', icon: '🏛️', category: 'deep_master' },
   { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master' },
+  { key: 'northAfricanAugustineConfessionesIlluminatio', nameKo: '아우구스티누스 고백록 시간의3중현존 내적조명 은총안식 평정심', icon: '🕯️', category: 'deep_master' },
+  { key: 'italianMachiavelliVirtuFortuna', nameKo: '마키아벨리 군주론 비르투역량 포르투나극복 시대조화 여우와사자', icon: '🦁', category: 'deep_master' },
+  { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3899,6 +3938,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'northAfricanAugustineConfessionesIlluminatio',
+    'italianMachiavelliVirtuFortuna',
+    'koreanChoeChiwonPungryudo',
     'swissJungIndividuationArchetype',
     'germanHegelDialecticalAufheben',
     'koreanDasanJeongYagyongMokminSimseo',
@@ -3987,6 +4029,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'northAfricanAugustineConfessionesIlluminatio',
+    'italianMachiavelliVirtuFortuna',
+    'koreanChoeChiwonPungryudo',
     'swissJungIndividuationArchetype',
     'germanHegelDialecticalAufheben',
     'koreanDasanJeongYagyongMokminSimseo',
