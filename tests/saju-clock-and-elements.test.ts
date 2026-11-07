@@ -102,7 +102,7 @@ test('lunar conversions and invalid calendar or clock values stay explicit', () 
     assert.equal((error as { code?: string }).code, 'invalid_time_format');
     assert.equal((error as Error).message, badTime?.message);
   }
-  assert.throws(() => sajuChartFromInput({ year: 2021, month: 4, day: 1, isLunar: true, isLeapMonth: true }), /윤달이 아니거나/);
+  assert.throws(() => sajuChartFromInput({ year: 2021, month: 4, day: 1, isLunar: true, isLeapMonth: true }), /2021년 음력 4월은 윤달이 아닙니다/);
 });
 
 test('sexagenary day advances from the 2000-01-01 anchor without reimplementing the Julian formula', () => {

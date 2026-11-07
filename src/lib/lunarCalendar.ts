@@ -45,6 +45,26 @@ export function convertLunarToSolar(
   throw new RangeError('유효하지 않거나 지원되지 않는 음력 날짜입니다.');
 }
 
+const leapMonthCache = new Map<number, number | null>();
+
+/** Leap month number in the bundled KARI table, or null when that lunar year has none. */
+export function koreanLeapMonth(year: number): number | null {
+  const cached = leapMonthCache.get(year);
+  if (cached !== undefined) return cached;
+  let found: number | null = null;
+  for (let month = 1; month <= 12; month += 1) {
+    try {
+      convertLunarToSolar(year, month, 1, true);
+      found = month;
+      break;
+    } catch {
+      // This month is not the intercalary month.
+    }
+  }
+  leapMonthCache.set(year, found);
+  return found;
+}
+
 /**
  * Converts a Gregorian solar date to a Korean lunar date.
  */
