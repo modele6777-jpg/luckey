@@ -955,5 +955,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanSeosanHyujeongSeongaGwigam": {
     "field": "seosanHyujeongSeongaGwigamResult",
     "traceKey": "seosanHyujeongSeongaGwigamResult"
+  },
+  "swissJungIndividuationArchetype": {
+    "field": "jungIndividuationArchetypeResult",
+    "traceKey": "jungIndividuationArchetypeResult"
+  },
+  "germanHegelDialecticalAufheben": {
+    "field": "hegelDialecticalAufhebenResult",
+    "traceKey": "hegelDialecticalAufhebenResult"
+  },
+  "koreanDasanJeongYagyongMokminSimseo": {
+    "field": "dasanMokminSimseoResult",
+    "traceKey": "dasanMokminSimseoResult"
   }
 };

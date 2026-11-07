@@ -225,6 +225,9 @@ import { calculateChusaKimJeonghuiSehando, formatChusaKimJeonghuiSehandoPrompt, 
 import { calculateKierkegaardStagesOfLife, formatKierkegaardStagesOfLifePrompt, KIERKEGAARD_STAGES_OF_LIFE_VERSION } from '../src/lib/divination/danishKierkegaardStagesOfLifeEngine';
 import { calculateNietzscheZarathustraAmorFati, formatNietzscheZarathustraAmorFatiPrompt, NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION } from '../src/lib/divination/germanNietzscheZarathustraAmorFatiEngine';
 import { calculateSeosanHyujeongSeongaGwigam, formatSeosanHyujeongSeongaGwigamPrompt, SEOSAN_SEONGA_GWIGAM_VERSION } from '../src/lib/divination/koreanSeosanHyujeongSeongaGwigamEngine';
+import { calculateJungIndividuationArchetype, formatJungIndividuationArchetypePrompt, SWISS_JUNG_INDIVIDUATION_VERSION } from '../src/lib/divination/swissJungIndividuationArchetypeEngine';
+import { calculateHegelDialecticalAufheben, formatHegelDialecticalAufhebenPrompt, GERMAN_HEGEL_DIALECTICAL_VERSION } from '../src/lib/divination/germanHegelDialecticalAufhebenEngine';
+import { calculateDasanMokminSimseo, formatDasanMokminSimseoPrompt, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION } from '../src/lib/divination/koreanDasanJeongYagyongMokminSimseoEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4637,6 +4640,48 @@ test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, 
   const prompt = formatSeosanHyujeongSeongaGwigamPrompt(rep);
   assert(prompt.includes('서산대사 선가귀감(禪家龜鑑) 일물영명 & 활구참선 지표'));
   assert(prompt.includes(rep.activeSeosanTheme.themeTitleKo));
+});
+
+test('Carl Gustav Jung Individuation Archetype Engine: calculates Self realization, Shadow integration, and Anima/Animus syzygy', () => {
+  const rep = calculateJungIndividuationArchetype(profile);
+  assert.equal(rep.engineVersion, SWISS_JUNG_INDIVIDUATION_VERSION);
+  assert(rep.individuationSelfRealizationScore >= 0 && rep.individuationSelfRealizationScore <= 100);
+  assert(rep.shadowIntegrationCourageScore >= 0 && rep.shadowIntegrationCourageScore <= 100);
+  assert(rep.animaAnimusHarmoniousBalanceScore >= 0 && rep.animaAnimusHarmoniousBalanceScore <= 100);
+  assert(rep.personaFlexibilityWisdomScore >= 0 && rep.personaFlexibilityWisdomScore <= 100);
+  assert(rep.synchronicityMeaningfulInsightScore >= 0 && rep.synchronicityMeaningfulInsightScore <= 100);
+  assert(rep.activeJungTheme.themeTitleGerman.length > 0);
+  const prompt = formatJungIndividuationArchetypePrompt(rep);
+  assert(prompt.includes('카를 융 개성화(Individuation) & 원형 통합 지표'));
+  assert(prompt.includes(rep.activeJungTheme.themeTitleKo));
+});
+
+test('G.W.F. Hegel Dialectical Aufheben Engine: calculates Dialectical synthesis, Mutual recognition, and Sittlichkeit harmony', () => {
+  const rep = calculateHegelDialecticalAufheben(profile);
+  assert.equal(rep.engineVersion, GERMAN_HEGEL_DIALECTICAL_VERSION);
+  assert(rep.dialecticalAufhebenSynthesisScore >= 0 && rep.dialecticalAufhebenSynthesisScore <= 100);
+  assert(rep.mutualAnerkennungMaturityScore >= 0 && rep.mutualAnerkennungMaturityScore <= 100);
+  assert(rep.sittlichkeitEthicalLifeHarmonyScore >= 0 && rep.sittlichkeitEthicalLifeHarmonyScore <= 100);
+  assert(rep.rationalRealityGraspScore >= 0 && rep.rationalRealityGraspScore <= 100);
+  assert(rep.minervaReflectiveWisdomScore >= 0 && rep.minervaReflectiveWisdomScore <= 100);
+  assert(rep.activeHegelTheme.themeTitleGerman.length > 0);
+  const prompt = formatHegelDialecticalAufhebenPrompt(rep);
+  assert(prompt.includes('G.W.F. 헤겔 변증법적 지양(Aufheben) & 인륜성 지표'));
+  assert(prompt.includes(rep.activeHegelTheme.themeTitleKo));
+});
+
+test('Dasan Jeong Yagyong Mokmin Simseo Silhak Engine: calculates Yeoyudang Sindok, Yulgi integrity, and Silsagusi practicality', () => {
+  const rep = calculateDasanMokminSimseo(profile);
+  assert.equal(rep.engineVersion, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION);
+  assert(rep.yeoyudangPrudentDiscretionScore >= 0 && rep.yeoyudangPrudentDiscretionScore <= 100);
+  assert(rep.yulgiIntegrousSelfDisciplineScore >= 0 && rep.yulgiIntegrousSelfDisciplineScore <= 100);
+  assert(rep.aeminCompassionatePublicGoodScore >= 0 && rep.aeminCompassionatePublicGoodScore <= 100);
+  assert(rep.silsagusiPragmaticWisdomScore >= 0 && rep.silsagusiPragmaticWisdomScore <= 100);
+  assert(rep.heumheumMeticulousTruthseekingScore >= 0 && rep.heumheumMeticulousTruthseekingScore <= 100);
+  assert(rep.activeDasanTheme.themeTitleHanja.length > 0);
+  const prompt = formatDasanMokminSimseoPrompt(rep);
+  assert(prompt.includes('다산 정약용 목민심서(牧民心書) & 실사구시 실학 지표'));
+  assert(prompt.includes(rep.activeDasanTheme.themeTitleKo));
 });
 
 

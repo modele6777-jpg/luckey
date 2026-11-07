@@ -262,6 +262,9 @@ import { calculateChusaKimJeonghuiSehando, formatChusaKimJeonghuiSehandoPrompt, 
 import { calculateKierkegaardStagesOfLife, formatKierkegaardStagesOfLifePrompt, type KierkegaardStagesOfLifeResult, KIERKEGAARD_STAGES_OF_LIFE_VERSION } from './danishKierkegaardStagesOfLifeEngine';
 import { calculateNietzscheZarathustraAmorFati, formatNietzscheZarathustraAmorFatiPrompt, type NietzscheZarathustraAmorFatiResult, NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION } from './germanNietzscheZarathustraAmorFatiEngine';
 import { calculateSeosanHyujeongSeongaGwigam, formatSeosanHyujeongSeongaGwigamPrompt, type SeosanHyujeongSeongaGwigamResult, SEOSAN_SEONGA_GWIGAM_VERSION } from './koreanSeosanHyujeongSeongaGwigamEngine';
+import { calculateJungIndividuationArchetype, formatJungIndividuationArchetypePrompt, type JungIndividuationArchetypeResult, SWISS_JUNG_INDIVIDUATION_VERSION } from './swissJungIndividuationArchetypeEngine';
+import { calculateHegelDialecticalAufheben, formatHegelDialecticalAufhebenPrompt, type HegelDialecticalAufhebenResult, GERMAN_HEGEL_DIALECTICAL_VERSION } from './germanHegelDialecticalAufhebenEngine';
+import { calculateDasanMokminSimseo, formatDasanMokminSimseoPrompt, type DasanMokminSimseoResult, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION } from './koreanDasanJeongYagyongMokminSimseoEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -544,6 +547,9 @@ export interface DeterministicEngineReport {
   kierkegaardStagesOfLifeResult?: KierkegaardStagesOfLifeResult | null;
   nietzscheZarathustraAmorFatiResult?: NietzscheZarathustraAmorFatiResult | null;
   seosanHyujeongSeongaGwigamResult?: SeosanHyujeongSeongaGwigamResult | null;
+  jungIndividuationArchetypeResult?: JungIndividuationArchetypeResult | null;
+  hegelDialecticalAufhebenResult?: HegelDialecticalAufhebenResult | null;
+  dasanMokminSimseoResult?: DasanMokminSimseoResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3227,6 +3233,33 @@ try {
     }
   })()));
 
+  // 231. 스위스 카를 융 개성화 & 그림자·아니마/아니무스 원형 통합 엔진
+  const jungIndividuationArchetypeResult = calculateSupplement('jungIndividuationArchetypeResult', () => ((() => {
+    try {
+      return calculateJungIndividuationArchetype(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 232. 독일 G.W.F. 헤겔 정신현상학 변증법적 지양 & 인륜성 자유실현 엔진
+  const hegelDialecticalAufhebenResult = calculateSupplement('hegelDialecticalAufhebenResult', () => ((() => {
+    try {
+      return calculateHegelDialecticalAufheben(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 233. 조선 다산 정약용 목민심서 여유당 율기·애민 실사구시 실학 지혜 엔진
+  const dasanMokminSimseoResult = calculateSupplement('dasanMokminSimseoResult', () => ((() => {
+    try {
+      return calculateDasanMokminSimseo(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3495,6 +3528,9 @@ try {
     kierkegaardStagesOfLifeResult,
     nietzscheZarathustraAmorFatiResult,
     seosanHyujeongSeongaGwigamResult,
+    jungIndividuationArchetypeResult,
+    hegelDialecticalAufhebenResult,
+    dasanMokminSimseoResult,
     tools: toolsMap,
   };
 }
@@ -3753,6 +3789,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'danishKierkegaardStagesOfLife', nameKo: '쇠렌 키르케고르 단독자 실존3단계 이것이냐저것이냐 신앙도약', icon: '⚖️', category: 'deep_master' },
   { key: 'germanNietzscheZarathustraAmorFati', nameKo: '프리드리히 니체 차라투스트라 초인 아모르파티 영원회귀', icon: '🦅', category: 'deep_master' },
   { key: 'koreanSeosanHyujeongSeongaGwigam', nameKo: '서산대사 휴정 선가귀감 일물영명 활구참선 선교원융', icon: '📿', category: 'deep_master' },
+  { key: 'swissJungIndividuationArchetype', nameKo: '카를 융 개성화 원형통합 그림자 아니마아니무스 동시성', icon: '🎭', category: 'deep_master' },
+  { key: 'germanHegelDialecticalAufheben', nameKo: '헤겔 정신현상학 변증법적지양 정반합 인륜성 미네르바올빼미', icon: '🏛️', category: 'deep_master' },
+  { key: 'koreanDasanJeongYagyongMokminSimseo', nameKo: '다산 정약용 목민심서 여유당신독 율기청렴 애민 실사구시', icon: '📜', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3860,6 +3899,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'swissJungIndividuationArchetype',
+    'germanHegelDialecticalAufheben',
+    'koreanDasanJeongYagyongMokminSimseo',
     'danishKierkegaardStagesOfLife',
     'germanNietzscheZarathustraAmorFati',
     'koreanSeosanHyujeongSeongaGwigam',
@@ -3945,6 +3987,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'swissJungIndividuationArchetype',
+    'germanHegelDialecticalAufheben',
+    'koreanDasanJeongYagyongMokminSimseo',
     'danishKierkegaardStagesOfLife',
     'germanNietzscheZarathustraAmorFati',
     'koreanSeosanHyujeongSeongaGwigam',
