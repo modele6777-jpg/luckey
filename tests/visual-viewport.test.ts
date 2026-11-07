@@ -8,6 +8,7 @@ import {
   resolveViewportBox,
   viewportNeedsResumeFill,
   applyVisualViewportBox,
+  applyAppLayoutViewport,
   isKeyboardViewportOpen,
 } from '../src/lib/visualViewportBox';
 import {
@@ -215,4 +216,35 @@ test('the update path does not schedule a second navigation after reload starts'
   const hook = readFileSync(new URL('../src/hooks/useViewportScrollLock.ts', import.meta.url), 'utf8');
   const restored = hook.slice(hook.indexOf("style.setProperty('--vv-top', '0px')"));
   assert.ok(restored.indexOf('syncVisualViewportBox(window)') < restored.indexOf("setProperty('--app-height'"));
+});
+
+test('late update recovery restores app height and clears stale keyboard constraints together', () => {
+  const makeElement = () => {
+    const values = new Map<string, string>([['height', '450px'], ['max-height', '450px'], ['top', '100px']]);
+    const classes = new Set(['keyboard-open']);
+    return {
+      values, classes,
+      style: {
+        setProperty: (key: string, value: string) => { values.set(key, value); },
+        removeProperty: (key: string) => { values.delete(key); return ''; },
+      },
+      classList: { remove: (key: string) => { classes.delete(key); } },
+    };
+  };
+  const html = makeElement(), body = makeElement(), root = makeElement(), shell = makeElement();
+  const doc = {
+    documentElement: html, body,
+    getElementById: () => ({ ...root, querySelector: () => shell }),
+  } as unknown as Document;
+  const full = { width: 960, height: 675, offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
+  applyAppLayoutViewport(full, doc);
+  assert.equal(html.values.get('--app-height'), 'max(100dvh, 675px)');
+  assert.equal(root.values.has('max-height'), false);
+  assert.equal(root.values.has('top'), false);
+  assert.equal(shell.values.has('height'), false);
+  assert.equal(html.classes.has('keyboard-open'), false);
+  assert.equal(body.classes.has('keyboard-open'), false);
+  html.values.set('--app-height', '520px');
+  applyAppLayoutViewport(full, doc);
+  assert.equal(html.values.get('--app-height'), 'max(100dvh, 675px)');
 });

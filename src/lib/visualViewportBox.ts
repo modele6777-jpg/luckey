@@ -8,7 +8,7 @@ export const VIEWPORT_KEYBOARD_MIN_DELTA_PX = 160;
 export const VIEWPORT_KEYBOARD_MIN_RATIO = 0.22;
 export const VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX = 24;
 export const TABLET_SHORT_SIDE_PX = 600;
-export const VIEWPORT_SYNC_RETRY_MS = [80, 280, 700];
+export const VIEWPORT_SYNC_RETRY_MS = [80, 280, 700, 1400, 2200];
 /** iPad reports a stale short visual viewport for a while after unlock or app switch. */
 export const VIEWPORT_RESUME_RETRY_MS = [50, 160, 400, 800, 1400, 2200];
 export const VIEWPORT_RESUME_FILL_MS = 2600;
@@ -410,6 +410,24 @@ function fillArmed(now = Date.now()): boolean {
   return now < fillUntil;
 }
 
+/** Keep the app shell in the same recovery transaction as visual-viewport aliases. */
+export function applyAppLayoutViewport(box: ViewportBox, doc: Document): void {
+  const html = doc.documentElement;
+  html.classList.remove('keyboard-open');
+  doc.body?.classList.remove('keyboard-open');
+  html.style.setProperty('--app-height', `max(100dvh, ${px(box.height)})`);
+  for (const element of [html, doc.body]) {
+    element?.style.removeProperty('height');
+    element?.style.removeProperty('min-height');
+  }
+  const root = doc.getElementById('root');
+  for (const property of ['position', 'top', 'left', 'right', 'width', 'height', 'min-height', 'max-height']) {
+    root?.style.removeProperty(property);
+  }
+  const shell = root?.querySelector<HTMLElement>('.prism-app-shell');
+  for (const property of ['height', 'min-height', 'max-height']) shell?.style.removeProperty(property);
+}
+
 export function syncVisualViewportBox(win: Window = window): ViewportBox | null {
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
@@ -418,7 +436,7 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   const inputActive = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || Boolean(active?.isContentEditable);
   // 키보드가 열린 동안 --vv-top / --app-height는 useViewportScrollLock이 소유한다.
   // 여기서 offsetTop을 0으로 덮어쓰면 셸이 레이아웃 맨 위에 고정되어 화면이 과도하게 올라간다.
-  if (document.documentElement.classList.contains('keyboard-open') || isKeyboardViewportOpen(snapshot, inputActive)) {
+  if (isKeyboardViewportOpen(snapshot, inputActive)) {
     applySafeAreaVars(document);
     return null;
   }
@@ -430,6 +448,7 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
     screenFilled(snapshot, lastAppliedBox) || screenFilled(snapshot, next),
   );
   applyVisualViewportBox(box, document.documentElement, snapshot);
+  applyAppLayoutViewport(box, document);
   applySafeAreaVars(document);
   rememberStable(box);
   return box;
@@ -561,6 +580,12 @@ export function bindVisualViewportLifecycle(win: Window = window): void {
     if (!plan.recover) return;
     if (plan.extendRetries) armViewportResumeFill();
     sawHidden = true;
+    resume(true);
+  });
+
+  win.addEventListener('load', () => resume(true), { once: true });
+  win.navigator?.serviceWorker?.addEventListener('controllerchange', () => {
+    armViewportResumeFill();
     resume(true);
   });
 

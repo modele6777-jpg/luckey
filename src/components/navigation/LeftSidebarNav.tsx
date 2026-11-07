@@ -1,3 +1,4 @@
+import { useSidebarFooterHeight } from '@/hooks/useSidebarFooterHeight';
 import { createPortal } from 'react-dom';
 import './menu-refined.css';
 import { CHANNEL_MENU_ICONS } from '@/lib/channelMenuIcons';
@@ -365,52 +366,7 @@ export default function LeftSidebarNav() {
     }, remaining);
   }, [isSyncSpinning, syncPrismDevicesFn]);
 
-  useEffect(() => {
-    let activeRo: ResizeObserver | null = null;
-    let observedEl: Element | null = null;
-
-    const syncFooterHeight = () => {
-      const footerEl = document.querySelector('.lucy-chat-footer');
-      if (footerEl) {
-        const rect = footerEl.getBoundingClientRect();
-        if (rect.height > 0) {
-          document.documentElement.style.setProperty('--lucy-footer-height', `${Math.round(rect.height)}px`);
-        }
-        if (footerEl !== observedEl) {
-          if (activeRo) activeRo.disconnect();
-          observedEl = footerEl;
-          activeRo = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-              const h = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
-              const actualH = footerEl.getBoundingClientRect().height || h;
-              if (actualH > 0) {
-                document.documentElement.style.setProperty('--lucy-footer-height', `${Math.round(actualH)}px`);
-              }
-            }
-          });
-          activeRo.observe(footerEl);
-        }
-      } else {
-        if (activeRo) {
-          activeRo.disconnect();
-          activeRo = null;
-          observedEl = null;
-        }
-        document.documentElement.style.removeProperty('--lucy-footer-height');
-      }
-    };
-
-    syncFooterHeight();
-    const observer = new MutationObserver(syncFooterHeight);
-    observer.observe(document.body, { childList: true, subtree: true });
-    window.addEventListener('resize', syncFooterHeight);
-    return () => {
-      if (activeRo) activeRo.disconnect();
-      observer.disconnect();
-      window.removeEventListener('resize', syncFooterHeight);
-      document.documentElement.style.removeProperty('--lucy-footer-height');
-    };
-  }, []);
+  useSidebarFooterHeight();
 
   const renderNavButton = ({ path, icon: Icon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive

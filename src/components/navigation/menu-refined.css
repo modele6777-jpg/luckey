@@ -37,7 +37,7 @@
   background: var(--menu-bg);
   flex-shrink: 0;
   border-top: 1px solid var(--menu-line);
-  height: var(--lucy-footer-height, calc(110px + max(8px, env(safe-area-inset-bottom, 0px))));
+  height: var(--sidebar-footer-height, var(--lucy-footer-height, calc(110px + max(8px, env(safe-area-inset-bottom, 0px)))));
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
