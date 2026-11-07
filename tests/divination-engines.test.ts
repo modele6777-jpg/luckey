@@ -228,6 +228,9 @@ import { calculateSeosanHyujeongSeongaGwigam, formatSeosanHyujeongSeongaGwigamPr
 import { calculateJungIndividuationArchetype, formatJungIndividuationArchetypePrompt, SWISS_JUNG_INDIVIDUATION_VERSION } from '../src/lib/divination/swissJungIndividuationArchetypeEngine';
 import { calculateHegelDialecticalAufheben, formatHegelDialecticalAufhebenPrompt, GERMAN_HEGEL_DIALECTICAL_VERSION } from '../src/lib/divination/germanHegelDialecticalAufhebenEngine';
 import { calculateDasanMokminSimseo, formatDasanMokminSimseoPrompt, KOREAN_DASAN_MOKMIN_SIMSEO_VERSION } from '../src/lib/divination/koreanDasanJeongYagyongMokminSimseoEngine';
+import { calculateAugustineConfessionesIlluminatio, formatAugustineConfessionesIlluminatioPrompt, NORTH_AFRICAN_AUGUSTINE_VERSION } from '../src/lib/divination/northAfricanAugustineConfessionesIlluminatioEngine';
+import { calculateMachiavelliVirtuFortuna, formatMachiavelliVirtuFortunaPrompt, ITALIAN_MACHIAVELLI_VERSION } from '../src/lib/divination/italianMachiavelliVirtuFortunaEngine';
+import { calculateChoeChiwonPungryudo, formatChoeChiwonPungryudoPrompt, KOREAN_CHOE_CHIWON_VERSION } from '../src/lib/divination/koreanChoeChiwonPungryudoEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4682,6 +4685,48 @@ test('Dasan Jeong Yagyong Mokmin Simseo Silhak Engine: calculates Yeoyudang Sind
   const prompt = formatDasanMokminSimseoPrompt(rep);
   assert(prompt.includes('다산 정약용 목민심서(牧民心書) & 실사구시 실학 지표'));
   assert(prompt.includes(rep.activeDasanTheme.themeTitleKo));
+});
+
+test('Aurelius Augustine Confessiones Illuminatio Engine: calculates Interior Illuminatio, Distentio Animi, and Restful Peace', () => {
+  const rep = calculateAugustineConfessionesIlluminatio(profile);
+  assert.equal(rep.engineVersion, NORTH_AFRICAN_AUGUSTINE_VERSION);
+  assert(rep.interiorIlluminationInsightScore >= 0 && rep.interiorIlluminationInsightScore <= 100);
+  assert(rep.temporalPresenceHarmonizationScore >= 0 && rep.temporalPresenceHarmonizationScore <= 100);
+  assert(rep.graceOvercomingPrideScore >= 0 && rep.graceOvercomingPrideScore <= 100);
+  assert(rep.restfulPeaceOfHeartScore >= 0 && rep.restfulPeaceOfHeartScore <= 100);
+  assert(rep.transcendentLoveOrientationScore >= 0 && rep.transcendentLoveOrientationScore <= 100);
+  assert(rep.activeAugustineTheme.themeTitleLatin.length > 0);
+  const prompt = formatAugustineConfessionesIlluminatioPrompt(rep);
+  assert(prompt.includes('아우구스티누스 《고백록》 내적 조명 & 안식 평정심 지표'));
+  assert(prompt.includes(rep.activeAugustineTheme.themeTitleKo));
+});
+
+test('Niccolo Machiavelli Virtu and Fortuna Engine: calculates Virtu decisiveness, Fortuna navigation, and Riscontro adaptability', () => {
+  const rep = calculateMachiavelliVirtuFortuna(profile);
+  assert.equal(rep.engineVersion, ITALIAN_MACHIAVELLI_VERSION);
+  assert(rep.virtuDecisiveCompetenceScore >= 0 && rep.virtuDecisiveCompetenceScore <= 100);
+  assert(rep.fortunaNavigationMasteryScore >= 0 && rep.fortunaNavigationMasteryScore <= 100);
+  assert(rep.riscontroTemporalAdaptabilityScore >= 0 && rep.riscontroTemporalAdaptabilityScore <= 100);
+  assert(rep.foxLionPrudentBalanceScore >= 0 && rep.foxLionPrudentBalanceScore <= 100);
+  assert(rep.effectualTruthRealismScore >= 0 && rep.effectualTruthRealismScore <= 100);
+  assert(rep.activeMachiavelliTheme.themeTitleItalian.length > 0);
+  const prompt = formatMachiavelliVirtuFortunaPrompt(rep);
+  assert(prompt.includes('니콜로 마키아벨리 《군주론》 비르투 & 포르투나 지표'));
+  assert(prompt.includes(rep.activeMachiavelliTheme.themeTitleKo));
+});
+
+test('Choe Chiwon Pungryudo and Three Teachings Harmony Engine: calculates Mystic Vitality, Inclusion Balance, and Jeophwa Gunsaeng', () => {
+  const rep = calculateChoeChiwonPungryudo(profile);
+  assert.equal(rep.engineVersion, KOREAN_CHOE_CHIWON_VERSION);
+  assert(rep.pungryuMysticVitalityScore >= 0 && rep.pungryuMysticVitalityScore <= 100);
+  assert(rep.threeTeachingsInclusionBalanceScore >= 0 && rep.threeTeachingsInclusionBalanceScore <= 100);
+  assert(rep.jeophwaGunsaengHarmoniousLoveScore >= 0 && rep.jeophwaGunsaengHarmoniousLoveScore <= 100);
+  assert(rep.literaryIntellectualInsightScore >= 0 && rep.literaryIntellectualInsightScore <= 100);
+  assert(rep.detachedTranscendentalPeaceScore >= 0 && rep.detachedTranscendentalPeaceScore <= 100);
+  assert(rep.activeChoeChiwonTheme.themeTitleHanja.length > 0);
+  const prompt = formatChoeChiwonPungryudoPrompt(rep);
+  assert(prompt.includes('고운 최치원 풍류도(風流道) & 접화군생(接化群生) 지표'));
+  assert(prompt.includes(rep.activeChoeChiwonTheme.themeTitleKo));
 });
 
 

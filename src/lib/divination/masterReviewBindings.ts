@@ -967,5 +967,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanDasanJeongYagyongMokminSimseo": {
     "field": "dasanMokminSimseoResult",
     "traceKey": "dasanMokminSimseoResult"
+  },
+  "northAfricanAugustineConfessionesIlluminatio": {
+    "field": "augustineConfessionesIlluminatioResult",
+    "traceKey": "augustineConfessionesIlluminatioResult"
+  },
+  "italianMachiavelliVirtuFortuna": {
+    "field": "machiavelliVirtuFortunaResult",
+    "traceKey": "machiavelliVirtuFortunaResult"
+  },
+  "koreanChoeChiwonPungryudo": {
+    "field": "choeChiwonPungryudoResult",
+    "traceKey": "choeChiwonPungryudoResult"
   }
 };
