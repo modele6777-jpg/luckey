@@ -43,6 +43,10 @@
 .sites-pinned-sidebar[data-theme] .refined-menu-list {
   position: relative;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 8px var(--sidebar-center-inset) 8px 0;
 }
 
@@ -56,7 +60,7 @@
 }
 
 .refined-menu-content {
-  margin-block: 0;
+  margin-block: auto;
 }
 
 .refined-prism-icons {
