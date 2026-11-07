@@ -51,6 +51,7 @@ import {
   type FiveElement,
   type DailySajuReport
 } from '@/lib/sajuAnalysis';
+import { inspectSajuProfile } from '@/lib/sajuInput';
 import { invokeLLM } from '@/lib/ai';
 import { playTTS, playTTSInChunks, stopTTS, useTTSActive } from '@/utils/tts';
 
@@ -219,7 +220,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
       `  * 일주: ${saju.pillars.day.full} (${saju.pillars.day.tenGodGan.name}/${saju.pillars.day.tenGodZhi.name})\n` +
       `  * 시주: ${saju.pillars.hour ? `${saju.pillars.hour.full} (${saju.pillars.hour.tenGodGan.name}/${saju.pillars.hour.tenGodZhi.name})` : '시간 미지정'}\n` +
       `- 오행 분포: 목(${saju.elements.counts.목}) 화(${saju.elements.counts.화}) 토(${saju.elements.counts.토}) 금(${saju.elements.counts.금}) 수(${saju.elements.counts.수})\n` +
-      `- 중심 기운: ${saju.elements.dominant.name} / 결핍 기운: ${saju.elements.lacking.name}\n` +
+      `- ${(saju.elements.leaders?.length ?? 0) > 1 ? '가장 많은 오행' : '중심 기운'}: ${(saju.elements.leaders?.length ?? 0) > 1 ? saju.elements.strengthLabel : saju.elements.dominant.name} / 결핍 기운: ${saju.elements.lacking.name}\n` +
       `- 용신 보약: ${saju.yongsin.name} (${saju.yongsin.actionTip})\n` +
       `- 2026 병오년 흐름: ${saju.annual2026.theme}`;
 
@@ -320,7 +321,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
       let answerText = '';
 
       const systemPrompt = `당신은 대한민국 최고의 정통 사주명리학 대가이자 직관적인 카운슬러 '루시(Lucy)'입니다.
-내담자의 사주 원국: [일간] ${saju.dayMaster.hanja} (${saju.dayMaster.symbolName}, ${saju.dayMaster.archetypeTitle}) / [오행] 중심 ${saju.elements.dominant.name}, 결핍 ${saju.elements.lacking.name}
+내담자의 사주 원국: [일간] ${saju.dayMaster.hanja} (${saju.dayMaster.symbolName}, ${saju.dayMaster.archetypeTitle}, 오행 ${saju.dayMaster.element}) / [오행 분포] ${(saju.elements.leaders?.length ?? 0) > 1 ? saju.elements.strengthLabel : saju.elements.dominant.name}, 결핍 ${saju.elements.lacking.name}. 일간 오행과 개수가 많은 오행을 같은 말로 섞지 마세요.
 
 [명리 AI 마스터 심층 상담실 절대 준수 원칙]:
 1. [오직 질문에만 직접 답변]: 내담자가 문의한 구체적 질문("${q}")에 대해서만 즉시 직접 답변하세요.
@@ -439,7 +440,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
               영혼의 설계도 — 사주 오행 & 만세력 리포트
             </h3>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto leading-relaxed">
-              생년월일과 태어난 시간을 입력하시면, 정통 명리학 기반의 사주 4주 8자 원국표와 목·화·토·금·수 오행 밸런스를 즉시 분석해 드립니다.
+              {inspectSajuProfile(profile)?.message || '생년월일과 태어난 시간을 입력하시면, 정통 명리학 기반의 사주 4주 8자 원국표와 목·화·토·금·수 오행 밸런스를 즉시 분석해 드립니다.'}
             </p>
           </div>
 
@@ -1375,7 +1376,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-zinc-400 font-mono">
-              중심 기운: <strong className="text-amber-300">{elements.dominant.name}</strong>
+              {(elements.leaders?.length ?? 0) > 1 ? '가장 많은 오행' : '중심 기운'}: <strong className="text-amber-300">{(elements.leaders?.length ?? 0) > 1 ? elements.strengthLabel : elements.dominant.name}</strong>
             </span>
             <span className="text-white/20">|</span>
             <span className="text-xs text-zinc-400 font-mono">
@@ -1390,7 +1391,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
             const count = elements.counts[el];
             const pct = elements.percentages[el];
             const detail = ELEMENT_DETAILS[el];
-            const isDominant = elements.dominant.element === el;
+            const isDominant = (elements.leaders?.length ? elements.leaders : [elements.dominant.element]).includes(el);
             const isLacking = elements.lacking.element === el;
             const ElIcon = ELEMENT_COLORS[el].icon;
 

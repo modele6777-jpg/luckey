@@ -191,7 +191,7 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ApiError(400, '요청 내용을 확인해 주세요.');
     if (route === '/api/saju/chart') {
       try { return json(sajuChartFromInput(body)); }
-      catch (error) { throw new ApiError(error instanceof SajuInputError ? error.status : 400, error instanceof Error ? error.message : '사주 계산에 실패했습니다.'); }
+      catch (error) { throw new ApiError(error instanceof SajuInputError ? error.status : 400, error instanceof Error ? error.message : '사주 계산에 실패했습니다.', undefined, error instanceof SajuInputError ? error.code : undefined); }
     }
     if (route === '/api/ai/daily-bgm') {
       const input = { ...body, focusPlaylist: required(body.focusPlaylist, '재생 목록', 1000), dateKey: required(body.dateKey, '날짜', 40), trackKey: required(body.trackKey, '트랙', 300) };

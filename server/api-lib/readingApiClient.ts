@@ -61,8 +61,8 @@ export async function postReadingApi(path: ReadingApiPath, body: unknown): Promi
 }
 
 export function upstreamErrorMessage(status: number, body: unknown): string {
-  const message = body && typeof body === 'object' && 'error' in body && typeof (body as { error?: unknown }).error === 'string'
-    ? (body as { error: string }).error
-    : '리딩 API가 실패했습니다.';
-  return `리딩 API ${status}: ${message}`;
+  const record = body && typeof body === 'object' ? body as { error?: unknown; code?: unknown } : {};
+  const message = typeof record.error === 'string' ? record.error : '리딩 API가 실패했습니다.';
+  const code = typeof record.code === 'string' ? ` ${record.code}` : '';
+  return `리딩 API ${status}${code}: ${message}`;
 }
