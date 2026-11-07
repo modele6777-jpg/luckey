@@ -1,5 +1,6 @@
 import type { CalculationAuditItem } from './divination/calculationAudit';
 import { mergeLucyTarotDraw, type LucyTarotDraw } from './lucyTarotIntegrity';
+import { ALL_DCE_ENGINES } from './divination/deterministicEngine';
 /**
  * =========================================================================
  * PRISM & LUCY PRO: 통합 대화 기록 동기화 & 일일 초기화 엔진 (Smart Chat Sync)
@@ -128,7 +129,9 @@ export function isGreetingMessage(m: UnifiedMessage | null | undefined): boolean
     if (
       text.includes("통합 AI 마스터 가이드 '루시'야") ||
       text.includes('언제든 친구처럼 다정하게 수다 떨 준비되어 있어') ||
-      text.includes('나랑 가볍게 수다 떨자! 💬✨')
+      text.includes('나랑 가볍게 수다 떨자! 💬✨') ||
+      text.includes('올인원 마스터 모드야') ||
+      text.includes('마스터 모드야')
     ) {
       return true;
     }
@@ -160,16 +163,17 @@ export function createDefaultGreeting(targetPersona: PersonaType = 'lucy', userN
   const nick = userName || getSavedNickname();
   const nameLabel = nick && nick !== '여행자' ? `${nick}! ` : '';
   const todayKey = getTodayDateKey();
+  const engineCount = ALL_DCE_ENGINES.length;
   if (isMaster) {
     return {
       id: `greet-${todayKey}`,
       role: 'model',
-      content: `안녕, ${nameLabel}루시 플러스 15대 운명학 올인원 마스터 모드야. 7대 테마와 동서양 15가지 운명학 도구를 전원 총동원해서 깊이 있는 통찰과 해답을 풀어줄게. 어떤 고민이든 편하게 물어봐! 👑🔮`,
+      content: `안녕, ${nameLabel}루시 플러스 ${engineCount}대 운명학 올인원 마스터 모드야. 7대 테마와 동서양 ${engineCount}가지 운명학·결정론 엔진을 전원 총동원해서 깊이 있는 통찰과 해답을 풀어줄게. 어떤 고민이든 편하게 물어봐! 👑🔮`,
       timestamp: Date.now(),
       persona: targetPersona,
       mode: 'master',
       channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'],
-      usedTools: ['사주명리', '점성술', '자미두수', '타로', '숙요점성술', '마하보테', '베딕점성술', '육임', '홍국기문', '카발라', '주역', '태국점성술', '토정비결', '구성학', '태을신수'],
+      usedTools: ALL_DCE_ENGINES.map((e) => e.nameKo),
     };
   }
   return {

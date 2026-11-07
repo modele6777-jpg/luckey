@@ -39,6 +39,7 @@ import { selectOptimalDivinationTools, FIFTEEN_DIVINATION_TOOLS, type SevenTheme
 // import { buildSedonaSystemPrompt } from '../lib/sedonaWisdom';
 // import { buildLettingGoSystemPrompt } from '../lib/lettingGoWisdom';
 import { loadSavedUnifiedMessages, saveUnifiedMessagesSafely, mergeUnifiedMessages, hasRealUserConversation, createDefaultGreeting } from '../lib/chatHistorySync';
+import { ALL_DCE_ENGINES } from '../lib/divination/deterministicEngine';
 import { processDailyChatArchival, archiveAndResetChat } from '../lib/chatMemoryArchive';
 import {
   SUGGESTIONS_SYSTEM_SUFFIX,
@@ -2083,8 +2084,8 @@ ${responseProfile.rule}`;
 
       if (sourcePersona === 'lucy' && isMasterCall) {
         systemPrompt += `\n\n[루시 플러스 마스터 모드 응답 절대 원칙]:
-1. [마스터 모드 100% 절대 고정]: 당신은 동서양 15대 운명학과 7대 테마가 모두 활성화된 '루시 플러스(Lucy +) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마.
-2. [전천후 마스터 통찰]: 사용자가 짧은 인사("안녕", "하이")나 사소한 일상 이야기를 건네더라도 가벼운 수다 모드로 이탈하지 말고, 15대 운명학 마스터의 깊이 있고 다정한 품격으로 반갑게 맞이하며 오늘의 운기 흐름, 사주·점성학·타로 등 15가지 도구 관점에서의 통찰을 준비된 상태로 친근하고 명쾌하게 제시해줘.`;
+1. [마스터 모드 100% 절대 고정]: 당신은 동서양 ${ALL_DCE_ENGINES.length}대 운명학과 7대 테마가 모두 활성화된 '루시 플러스(Lucy +) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마.
+2. [전천후 마스터 통찰]: 사용자가 짧은 인사("안녕", "하이")나 사소한 일상 이야기를 건네더라도 가벼운 수다 모드로 이탈하지 말고, ${ALL_DCE_ENGINES.length}대 운명학 마스터의 깊이 있고 다정한 품격으로 반갑게 맞이하며 오늘의 운기 흐름, 사주·점성학·타로 등 ${ALL_DCE_ENGINES.length}가지 도구 관점에서의 통찰을 준비된 상태로 친근하고 명쾌하게 제시해줘.`;
       }
 
       // Append cross-app real-time remembrance

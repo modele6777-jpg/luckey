@@ -57,8 +57,7 @@ export function getManualSyncChangelogEntries(
   targetVersion: string = APP_VERSION,
   recentCount = 50,
 ): ChangelogEntry[] {
-  const eligible = entries
-    .filter((entry) => compareVersions(entry.version, targetVersion) <= 0)
+  const eligible = [...entries]
     .sort((a, b) => compareVersions(b.version, a.version));
 
   if (eligible.length === 0) return [];

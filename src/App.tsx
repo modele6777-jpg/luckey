@@ -347,6 +347,19 @@ function AppContent() {
   };
 
   React.useEffect(() => {
+    const handleOpenNotice = async () => {
+      try {
+        const deployedVer = await fetchDeployedAppVersion();
+        void showManualSyncNotice(deployedVer || APP_VERSION);
+      } catch (_) {
+        void showManualSyncNotice();
+      }
+    };
+    window.addEventListener('prism:open-update-notice', handleOpenNotice);
+    return () => window.removeEventListener('prism:open-update-notice', handleOpenNotice);
+  }, [showManualSyncNotice]);
+
+  React.useEffect(() => {
     setIsTarotActive(false);
     resetAppScroll();
   }, [location]);
