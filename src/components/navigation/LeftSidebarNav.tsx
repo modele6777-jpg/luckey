@@ -321,6 +321,19 @@ export default function LeftSidebarNav() {
   const isLight = resolvedTheme === 'light';
 
   const [isSyncSpinning, setIsSyncSpinning] = useState(false);
+  const [isBgmFlashing, setIsBgmFlashing] = useState(false);
+  const [isProfileFlashing, setIsProfileFlashing] = useState(false);
+
+  const flashBgm = useCallback(() => {
+    setIsBgmFlashing(true);
+    setTimeout(() => setIsBgmFlashing(false), 400);
+  }, []);
+
+  const flashProfile = useCallback(() => {
+    setIsProfileFlashing(true);
+    setTimeout(() => setIsProfileFlashing(false), 400);
+  }, []);
+
   let syncPrismDevicesFn: (() => Promise<any>) | null = null;
   try {
     const appContext = useApp();
@@ -428,8 +441,9 @@ export default function LeftSidebarNav() {
                 {/* 🔄 실시간 동기화 & 최신 업데이트 버튼 */}
                 <button
                   type="button"
-                  className="refined-nav-item sidebar-sync-control"
-                  data-active={isSyncSpinning}
+                  className={`refined-nav-item sidebar-sync-control transition-colors duration-200 ${
+                    isSyncSpinning ? 'text-yellow-300' : 'text-white/70 hover:text-white'
+                  }`}
                   onClick={handleSyncClick}
                   aria-label="실시간 동기화 및 업데이트"
                   title="실시간 동기화 & 업데이트 (PC·모바일 데이터 연동 및 최신 버전 확인)"
@@ -437,7 +451,7 @@ export default function LeftSidebarNav() {
                   <RotateCw
                     size={20}
                     className={`transition-transform duration-300 ${
-                      isSyncSpinning ? 'animate-spin text-cyan-300' : ''
+                      isSyncSpinning ? 'animate-spin text-yellow-300' : ''
                     }`}
                     aria-hidden="true"
                   />
@@ -446,16 +460,27 @@ export default function LeftSidebarNav() {
                 {/* Gramophone shares the rail's monochrome icon style and hit target. */}
                 <button
                   type="button"
-                  className="refined-nav-item sidebar-bgm-control"
-                  data-active={bgmState.isPlaying || isBgmHolding}
+                  className={`refined-nav-item sidebar-bgm-control transition-colors duration-200 ${
+                    isBgmFlashing
+                      ? 'text-yellow-300'
+                      : bgmState.isPlaying
+                        ? 'text-yellow-400'
+                        : 'text-white/70 hover:text-white'
+                  }`}
                   aria-pressed={bgmState.isPlaying}
                   aria-busy={bgmState.isBuffering}
-                  onPointerDown={handleBgmPointerDown}
+                  onPointerDown={(e) => {
+                    flashBgm();
+                    handleBgmPointerDown(e);
+                  }}
                   onPointerMove={handleBgmPointerMove}
                   onPointerUp={handleBgmPointerUp}
                   onPointerLeave={handleBgmPointerUp}
                   onPointerCancel={handleBgmPointerUp}
-                  onClick={handleBgmClick}
+                  onClick={(e) => {
+                    flashBgm();
+                    handleBgmClick(e);
+                  }}
                   onContextMenu={handleBgmContextMenu}
                   aria-label={bgmState.isPlaying
                     ? '배경음 일시정지 (길게 누르면 상세 설정)'
@@ -481,12 +506,18 @@ export default function LeftSidebarNav() {
                 </button>
                 <button
                   type="button"
-                  className="refined-nav-item"
-                  data-active={cleanPath === '/profile'}
+                  className={`refined-nav-item transition-colors duration-200 ${
+                    isProfileFlashing
+                      ? 'text-yellow-300'
+                      : cleanPath === '/profile'
+                        ? 'text-white'
+                        : 'text-white/70 hover:text-white'
+                  }`}
                   aria-current={cleanPath === '/profile' ? 'page' : undefined}
                   aria-label="내 프로필"
                   title="내 프로필"
                   onClick={() => {
+                    flashProfile();
                     try {
                       sessionStorage.setItem('prism_target_tab', 'profile');
                       window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'profile' } }));

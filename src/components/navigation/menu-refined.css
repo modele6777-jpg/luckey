@@ -51,6 +51,31 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.refined-menu-footer .refined-nav-item:hover,
+.refined-menu-footer .refined-nav-item:active,
+.refined-menu-footer .refined-nav-item:focus,
+.refined-menu-footer .refined-nav-item:focus-visible,
+.refined-menu-footer .refined-nav-item[data-active='true'] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.refined-menu-footer .refined-nav-item:active {
+  color: #facc15 !important;
+  transform: scale(0.92);
 }
 
 .refined-menu-footer .refined-nav-item > svg {
