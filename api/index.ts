@@ -44,6 +44,11 @@ app.post("/api/mcp/messages", async (req, res) => {
   return handleMCPPostMessage(req, res);
 });
 
+app.delete("/api/mcp", async (req, res) => {
+  const { handleStreamableMethodNotAllowed } = await import("../server/api-lib/mcpHandler.ts");
+  return handleStreamableMethodNotAllowed(req, res);
+});
+
 // Chat completions proxy using Gemini API
 import { GoogleGenAI } from "@google/genai";
 

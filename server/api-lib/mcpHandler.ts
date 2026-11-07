@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis.ts';
 import { TAROT_DECK } from '../../src/data/tarotData.ts';
 import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle.ts';
+import { handleStreamableMcpPost, isStreamableMcpGet, isStreamableMcpPost } from './mcpStreamable.ts';
+export { handleStreamableMethodNotAllowed } from './mcpStreamable.ts';
 // TTS is loaded only when the MCP TTS tool is called.
 
 interface SseClient {
@@ -544,6 +546,16 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
 
 // Handler for GET /api/mcp/sse or /sse (Model Context Protocol over SSE)
 export function handleMCPSseStream(req: Request, res: Response) {
+  if (isStreamableMcpGet(req)) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({
+      jsonrpc: '2.0',
+      id: null,
+      error: { code: -32000, message: '이 엔드포인트의 Streamable HTTP는 세션 없는 JSON POST만 받습니다.' },
+    });
+  }
+
   const host = req.get('x-forwarded-host') || req.get('host') || req.headers.host || 'localhost:3000';
   const proto = req.get('x-forwarded-proto') || (req.secure ? 'https' : (host.includes('localhost') ? 'http' : 'https'));
 
@@ -561,6 +573,12 @@ export function handleMCPSseStream(req: Request, res: Response) {
         sse: `${proto}://${host}/api/mcp/sse`,
         messages: `${proto}://${host}/api/mcp/messages`,
         http: `${proto}://${host}/api/mcp`,
+      },
+      streamableHttp: {
+        url: `${proto}://${host}/api/mcp`,
+        transport: 'streamable-http',
+        accept: 'application/json, text/event-stream',
+        session: 'stateless',
       },
       tools: MCP_TOOLS.map((t) => t.name),
     });
@@ -626,6 +644,10 @@ export async function handleMCPDirectPost(req: Request, res: Response) {
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  if (isStreamableMcpPost(req)) {
+    return handleStreamableMcpPost(req, res);
   }
 
   const message = req.body;
