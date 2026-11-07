@@ -380,12 +380,9 @@ export default function LeftSidebarNav() {
                     aria-hidden="true"
                     focusable="false"
                   >
-                    {/* Flared horn, curved tone pipe, turntable and wooden cabinet. */}
-                    <path d="M5 3c2 2 4 3 7 3v4c-3 0-5 1-7 3" />
-                    <ellipse cx="5" cy="8" rx="2" ry="5" />
-                    <path d="M12 8h1a3 3 0 0 1 3 3v4" />
-                    <ellipse cx="11" cy="16" rx="7" ry="2" />
-                    <path d="M4 16v5h14v-5M18 18h2l1-2M3 21h16" />
+                    <path d="M18 3v10L8 10V8Z" />
+                    <path d="M8 10v3a3 3 0 0 0 3 3" />
+                    <rect x="5" y="16" width="14" height="5" rx="1.5" />
                   </svg>
                 </button>
                 <button
