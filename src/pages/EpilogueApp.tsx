@@ -1,4 +1,3 @@
-import DivinationLab from '@/components/trinity/DivinationLab';
 import { DuoWorkspace } from '@/components/layout/DuoWorkspace';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,7 +17,6 @@ import {
   Sparkles,
   Zap,
   Globe,
-  Compass,
   ShieldCheck,
   Mail,
   RefreshCw,
@@ -89,7 +87,6 @@ const SECTIONS = [
   { id: 'psych', label: '심리 · 결정', icon: Brain, color: 'oklch(0.72 0.18 55)', desc: 'MBTI · AI 상담 스타일' },
   { id: 'art', label: '예술 감성', icon: Palette, color: 'oklch(0.65 0.18 240)', desc: '화풍 · 색감 · 선호 시인' },
   { id: 'card', label: '운명 프리뷰', icon: Sparkles, color: 'oklch(0.80 0.20 320)', desc: '실시간 천문 사주 카드' },
-  { id: 'divination', label: '점술 계산실', icon: Compass, color: 'oklch(0.75 0.18 285)', desc: '명반 · 포국 · 주역과 나의 저장 자료' },
 ];
 
 const FATE_INTERESTS = ['사주', '타로', '별자리', '꿈해몽', '수비학', '관상', '기적수업', '동양철학'];
@@ -1048,8 +1045,6 @@ export default function EpilogueApp() {
             /></React.Suspense>
           </div>
         );
-      case 6:
-        return <DivinationLab profile={{basic:{...basic,gender:basic.gender||undefined},fate,music,psych,art}} />;
       default:
         return null;
     }
@@ -1199,8 +1194,8 @@ export default function EpilogueApp() {
 
               <div className="relative z-10"><DuoWorkspace className="duo-profile-workspace">
   {SECTIONS.map((item, index) => index === currentSection && (
-    <section key={item.id} className={`duo-profile-section duo-workspace-full ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label} style={item.id === 'divination' ? {padding:0,border:0} : undefined}>
-      {item.id !== 'divination' && <h3 className="text-sm font-bold mb-4">{item.label}</h3>}{renderSection(index)}
+    <section key={item.id} className={`duo-profile-section duo-workspace-full ${index === currentSection ? 'is-active' : ''}`} aria-label={item.label}>
+      <h3 className="text-sm font-bold mb-4">{item.label}</h3>{renderSection(index)}
     </section>
   ))}
 </DuoWorkspace></div>
