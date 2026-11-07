@@ -346,6 +346,7 @@ export default function LeftSidebarNav() {
     if (isSyncSpinning) return;
     setIsSyncSpinning(true);
     triggerHaptic('whitehole');
+    const startTime = Date.now();
     try {
       if (syncPrismDevicesFn) {
         await syncPrismDevicesFn().catch(() => null);
@@ -355,18 +356,32 @@ export default function LeftSidebarNav() {
     } catch (err) {
       console.warn('[LeftSidebarNav] Sync error:', err);
     }
-    // 캐시 퍼지 및 최신 버전 앱 셸로 즉시 강제 리로드/업데이트 적용
-    await forceAppUpgradeAndReload();
+    // 노란빛 스핀 애니메이션이 700ms 동안 명확히 노출된 후 최신 배포 셸로 즉시 강제 리로드
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, 700 - elapsed);
+    setTimeout(async () => {
+      await forceAppUpgradeAndReload();
+    }, remaining);
   }, [isSyncSpinning, syncPrismDevicesFn]);
 
   useEffect(() => {
     const syncFooterHeight = () => {
+      const isChatRoute = window.location.pathname.startsWith('/chat') || window.location.pathname.startsWith('/lucy');
+      if (!isChatRoute) {
+        document.documentElement.style.removeProperty('--lucy-footer-height');
+        return;
+      }
       const footerEl = document.querySelector('.lucy-chat-footer');
       if (footerEl) {
-        const h = footerEl.getBoundingClientRect().height;
+        const rect = footerEl.getBoundingClientRect();
+        const h = rect.height;
+        // 키보드 오픈이나 다중 줄 입력 시 사이드바 선 및 아이콘이 위로 튀어 올라가는 현상 방지 (112px ~ 140px 클램프)
         if (h > 0) {
-          document.documentElement.style.setProperty('--lucy-footer-height', `${Math.round(h)}px`);
+          const clampedH = Math.min(140, Math.max(112, Math.round(h)));
+          document.documentElement.style.setProperty('--lucy-footer-height', `${clampedH}px`);
         }
+      } else {
+        document.documentElement.style.removeProperty('--lucy-footer-height');
       }
     };
     syncFooterHeight();
