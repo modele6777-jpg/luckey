@@ -10,6 +10,7 @@
   --menu-text: #e9eef5;
   --menu-line: #ffffff20;
   --menu-selected: #ffffff18;
+  --menu-active-icon: #facc15;
   background: var(--menu-bg);
   color: var(--menu-text);
   border-color: var(--menu-line);
@@ -21,6 +22,7 @@
   --menu-text: #243448;
   --menu-line: #1c304420;
   --menu-selected: #e9eff5;
+  --menu-active-icon: #a16207;
 }
 
 .refined-menu-list {
@@ -156,4 +158,11 @@ html[data-dual-screen='true'] .refined-menu-content {
 .refined-nav-item > svg {
   width: 20px;
   height: 20px;
+}
+
+/* Persistent state must outrank the base icon color, not rely on utility classes. */
+.refined-menu-footer .sidebar-bgm-control[aria-pressed='true'],
+.refined-menu-footer .refined-nav-item[aria-current='page'] {
+  color: var(--menu-active-icon);
+  filter: drop-shadow(0 0 3px #facc1540);
 }

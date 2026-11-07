@@ -499,7 +499,7 @@ export default function LeftSidebarNav() {
                     isProfileFlashing
                       ? 'text-yellow-300'
                       : cleanPath === '/profile'
-                        ? 'text-white'
+                        ? 'text-yellow-400'
                         : 'text-white/70 hover:text-white'
                   }`}
                   aria-current={cleanPath === '/profile' ? 'page' : undefined}
