@@ -356,11 +356,12 @@ export default function LeftSidebarNav() {
     } catch (err) {
       console.warn('[LeftSidebarNav] Sync error:', err);
     }
-    // 노란빛 스핀 애니메이션이 700ms 동안 명확히 노출된 후 최신 배포 셸로 즉시 강제 리로드
+    // 노란빛 스핀 애니메이션이 700ms 동안 회전한 뒤, 최신 업데이트 변경점 및 몇 버전인지 확인 모달 팝업 표시
     const elapsed = Date.now() - startTime;
     const remaining = Math.max(0, 700 - elapsed);
-    setTimeout(async () => {
-      await forceAppUpgradeAndReload();
+    setTimeout(() => {
+      setIsSyncSpinning(false);
+      window.dispatchEvent(new CustomEvent('prism:open-update-notice'));
     }, remaining);
   }, [isSyncSpinning, syncPrismDevicesFn]);
 

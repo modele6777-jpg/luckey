@@ -61,6 +61,7 @@ import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
+import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import '@/styles/lucy-starlight.css';
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
@@ -207,18 +208,18 @@ const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
   ]
 };
 
-// 👑 7대 채널 풀가동 PRO 마스터 Pool (15대 운명학 도구 총동원 비교 분석)
+// 👑 7대 채널 풀가동 PRO 마스터 Pool (DCE 운명학 도구 총동원 비교 분석)
 const MASTER_PROMPT_POOL = [
-  '15가지 운명학 도구를 총동원해서 올해 나의 운세와 핵심 전환점을 7대 테마별로 비교 분석해 줘.',
-  '지금 내가 고민 중인 중요한 선택을 15개 도구 관점으로 비교 분석하고 공통 결론을 내려줘.',
-  '사주·점성술·자미두수·홍국기문·주역 등 15대 도구를 총동원해 내 재물운과 커리어 돌파구를 비교해 줘.',
-  '알아차림과 통찰, 그리고 15대 운명학 지혜를 총동원해 지금 내 고민을 입체적으로 비교 분석해 줘.',
-  '내면의 본질과 잠재된 가능성을 7대 테마 15개 도구로 비교 진단해 줘.',
-  '나의 사주·심리·신체 에너지와 인생 전략을 15개 도구로 총망라해서 통합 비교해 줘.',
-  '현재 직면한 중대한 전환점을 7대 테마와 15대 운명학 관점에서 입체적으로 비교 분석해 줘.',
-  '내 영혼의 최고 잠재력을 끌어올리기 위한 15대 도구 비교 분석 마스터 로드맵을 설계해 줘.',
-  '내 운명의 타이밍에 맞춘 비즈니스 & 라이프 마스터플랜을 15개 도구 비교로 설계해 줘.',
-  '우주적 동시성과 1원칙 논리가 만나는 최고의 의사결정 해답을 15개 도구 비교 분석으로 제시해 줘.'
+  `${ALL_DCE_ENGINES.length}가지 운명학·결정론 엔진을 총동원해서 올해 나의 운세와 핵심 전환점을 7대 테마별로 비교 분석해 줘.`,
+  `지금 내가 고민 중인 중요한 선택을 ${ALL_DCE_ENGINES.length}개 엔진 관점으로 비교 분석하고 공통 결론을 내려줘.`,
+  `사주·점성술·자미두수·홍국기문·주역 등 ${ALL_DCE_ENGINES.length}대 엔진을 총동원해 내 재물운과 커리어 돌파구를 비교해 줘.`,
+  `알아차림과 통찰, 그리고 ${ALL_DCE_ENGINES.length}대 운명학 지혜를 총동원해 지금 내 고민을 입체적으로 비교 분석해 줘.`,
+  `내면의 본질과 잠재된 가능성을 7대 테마 ${ALL_DCE_ENGINES.length}개 엔진으로 비교 진단해 줘.`,
+  `나의 사주·심리·신체 에너지와 인생 전략을 ${ALL_DCE_ENGINES.length}개 엔진으로 총망라해서 통합 비교해 줘.`,
+  `현재 직면한 중대한 전환점을 7대 테마와 ${ALL_DCE_ENGINES.length}대 운명학 관점에서 입체적으로 비교 분석해 줘.`,
+  `내 영혼의 최고 잠재력을 끌어올리기 위한 ${ALL_DCE_ENGINES.length}대 도구 비교 분석 마스터 로드맵을 설계해 줘.`,
+  `내 운명의 타이밍에 맞춘 비즈니스 & 라이프 마스터플랜을 ${ALL_DCE_ENGINES.length}개 엔진 비교로 설계해 줘.`,
+  `우주적 동시성과 1원칙 논리가 만나는 최고의 의사결정 해답을 ${ALL_DCE_ENGINES.length}개 엔진 비교 분석으로 제시해 줘.`
 ];
 
 // 💬 일상 대화 & 힐링 & 인생 조언을 위한 풍부한 캐주얼 추천 질문 풀 (동적 순환)
@@ -459,9 +460,11 @@ export function resolveMessageModeAndChannels(
   const isGreet = msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.includes('greet') || isGreetingMessage(msg);
   if (isGreet) {
     const isMasterGreetingText = 
-      cleanText.includes('15대 운명학') || 
+      cleanText.includes('운명학') || 
+      cleanText.includes('마스터 모드') ||
       cleanText.includes('올인원 마스터') || 
       cleanText.includes('루시 프로') ||
+      cleanText.includes('결정론') ||
       cleanText.includes('7대 테마');
     if (rawMode === 'master' || isMasterGreetingText) {
       rawChannels = [...ALL_CHANNELS];
@@ -1790,11 +1793,22 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   // Filter messages by search query if search is active (대화 기록이 비어있다면 기본 루시 인사말 표시 보장)
   const filteredMessages = useMemo(() => {
     const isMasterGreeting = isPlusMode || pro;
-    const baseList = lucyMessages.length > 0
+    const rawList = lucyMessages.length > 0
       ? (lucyMessages.length === 1 && isGreetingMessage(lucyMessages[0]) && isMasterGreeting
           ? [createDefaultGreeting('lucy', userDisplayName, true)]
           : lucyMessages)
       : [createDefaultGreeting('lucy', userDisplayName, isMasterGreeting)];
+    const baseList = rawList.map((m) => {
+      if (isGreetingMessage(m) && typeof m.content === 'string' && (m.mode === 'master' || m.content.includes('마스터 모드') || isMasterGreeting)) {
+        return {
+          ...m,
+          content: m.content
+            .replace(/\d+대\s*운명학/g, `${ALL_DCE_ENGINES.length}대 운명학`)
+            .replace(/\d+가지\s*(?:운명학\s*도구|결정론\s*엔진|운명학·결정론\s*엔진)/g, `${ALL_DCE_ENGINES.length}가지 운명학·결정론 엔진`),
+        };
+      }
+      return m;
+    });
     if (!searchQuery.trim()) return baseList;
     const q = searchQuery.toLowerCase();
     return baseList.filter((m) => {
@@ -2702,7 +2716,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                           safeLocalStorage.setItem('lucy_plus_active', 'true');
                           safeSessionStorage.setItem('lucy_plus_active', 'true');
                           triggerHaptic('whitehole');
-                          setModeSwitchToast('👑 Lucy + 진화! 15대 운명학 올인원 마스터 모드가 가동되었습니다');
+                          setModeSwitchToast(`👑 Lucy + 진화! ${ALL_DCE_ENGINES.length}대 운명학 올인원 마스터 모드가 가동되었습니다`);
                         } else {
                           safeLocalStorage.removeItem('lucy_plus_active');
                           safeSessionStorage.removeItem('lucy_plus_active');
@@ -2711,7 +2725,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         }
                         setTimeout(() => setModeSwitchToast(null), 2200);
                       }}
-                      title={isPlusMode ? '클릭 시 일반 Lucy 모드로 전환' : '클릭 시 15대 도구 올인원 Lucy + 마스터로 진화'}
+                      title={isPlusMode ? '클릭 시 일반 Lucy 모드로 전환' : `클릭 시 ${ALL_DCE_ENGINES.length}대 도구 올인원 Lucy + 마스터로 진화`}
                       className="cursor-pointer flex items-center gap-1.5"
                     >
                       {isPlusMode ? (
@@ -2734,7 +2748,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         safeLocalStorage.setItem('lucy_plus_active', 'true');
                         safeSessionStorage.setItem('lucy_plus_active', 'true');
                         triggerHaptic('whitehole');
-                        setModeSwitchToast('👑 Lucy + 진화! 15대 운명학 올인원 마스터 모드가 가동되었습니다');
+                        setModeSwitchToast(`👑 Lucy + 진화! ${ALL_DCE_ENGINES.length}대 운명학 올인원 마스터 모드가 가동되었습니다`);
                       } else {
                         safeLocalStorage.removeItem('lucy_plus_active');
                         safeSessionStorage.removeItem('lucy_plus_active');
