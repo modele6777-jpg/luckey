@@ -253,3 +253,27 @@ html.light .lucy-mode-transition { background: #f5f9fdf2; color: #243448; }
     margin-inline: 0 auto;
   }
 }
+
+/* Fill the usable canvas up to the rail and show complete recommendation text. */
+.lucy-night .lucy-chat-footer { padding-right: 4px; }
+.lucy-night .lucy-input-stack { max-width: 100%; }
+.lucy-night .lucy-suggestion-toolbar {
+  align-items: flex-start;
+  overflow: visible;
+}
+.lucy-night .lucy-suggestion-list {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.lucy-night .lucy-suggestion-list > button {
+  flex: 1 1 18rem;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+@media (max-width: 640px) {
+  .lucy-night .lucy-suggestion-toolbar { flex-wrap: wrap; }
+  .lucy-night .lucy-suggestion-list { flex-basis: 100%; }
+}
