@@ -222,6 +222,9 @@ import { calculateRenaissanceBrunoInfiniteUniverse, formatRenaissanceBrunoInfini
 import { calculatePascalPenseesHeartReason, formatPascalPenseesHeartReasonPrompt, PASCAL_PENSEES_HEART_REASON_VERSION } from '../src/lib/divination/frenchPascalPenseesHeartReasonEngine';
 import { calculateSchopenhauerWillRepresentation, formatSchopenhauerWillRepresentationPrompt, SCHOPENHAUER_WILL_REPRESENTATION_VERSION } from '../src/lib/divination/germanSchopenhauerWillRepresentationEngine';
 import { calculateChusaKimJeonghuiSehando, formatChusaKimJeonghuiSehandoPrompt, CHUSA_SEHANDO_WISDOM_VERSION } from '../src/lib/divination/koreanChusaKimJeonghuiSehandoEngine';
+import { calculateKierkegaardStagesOfLife, formatKierkegaardStagesOfLifePrompt, KIERKEGAARD_STAGES_OF_LIFE_VERSION } from '../src/lib/divination/danishKierkegaardStagesOfLifeEngine';
+import { calculateNietzscheZarathustraAmorFati, formatNietzscheZarathustraAmorFatiPrompt, NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION } from '../src/lib/divination/germanNietzscheZarathustraAmorFatiEngine';
+import { calculateSeosanHyujeongSeongaGwigam, formatSeosanHyujeongSeongaGwigamPrompt, SEOSAN_SEONGA_GWIGAM_VERSION } from '../src/lib/divination/koreanSeosanHyujeongSeongaGwigamEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4592,6 +4595,48 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
   const prompt = formatChusaKimJeonghuiSehandoPrompt(rep);
   assert(prompt.includes('추사 김정희 세한도(歲寒圖) 송백후조 & 문자향 서권기 지표'));
   assert(prompt.includes(rep.activeSehandoTheme.themeTitleKo));
+});
+
+test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authenticity, Leap of faith, and Anxiety possibility mastery', () => {
+  const rep = calculateKierkegaardStagesOfLife(profile);
+  assert.equal(rep.engineVersion, KIERKEGAARD_STAGES_OF_LIFE_VERSION);
+  assert(rep.existentialLeapCourageScore >= 0 && rep.existentialLeapCourageScore <= 100);
+  assert(rep.denEnkelteAuthenticityScore >= 0 && rep.denEnkelteAuthenticityScore <= 100);
+  assert(rep.angstPossibilityMasteryScore >= 0 && rep.angstPossibilityMasteryScore <= 100);
+  assert(rep.ethicalSelfChoiceCommitmentScore >= 0 && rep.ethicalSelfChoiceCommitmentScore <= 100);
+  assert(rep.spiritSynthesisWholenessScore >= 0 && rep.spiritSynthesisWholenessScore <= 100);
+  assert(rep.activeKierkegaardTheme.themeTitleDanish.length > 0);
+  const prompt = formatKierkegaardStagesOfLifePrompt(rep);
+  assert(prompt.includes('쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표'));
+  assert(prompt.includes(rep.activeKierkegaardTheme.themeTitleKo));
+});
+
+test('Friedrich Nietzsche Zarathustra Amor Fati Engine: calculates Amor Fati radical affirmation, Three metamorphoses, and Übermensch overcoming', () => {
+  const rep = calculateNietzscheZarathustraAmorFati(profile);
+  assert.equal(rep.engineVersion, NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION);
+  assert(rep.amorFatiRadicalAffirmationScore >= 0 && rep.amorFatiRadicalAffirmationScore <= 100);
+  assert(rep.threeMetamorphosesCreativeScore >= 0 && rep.threeMetamorphosesCreativeScore <= 100);
+  assert(rep.uebermenschSelfOvercomingScore >= 0 && rep.uebermenschSelfOvercomingScore <= 100);
+  assert(rep.eternalRecurrenceResolveScore >= 0 && rep.eternalRecurrenceResolveScore <= 100);
+  assert(rep.dionysianVitalityDriveScore >= 0 && rep.dionysianVitalityDriveScore <= 100);
+  assert(rep.activeNietzscheTheme.themeTitleGerman.length > 0);
+  const prompt = formatNietzscheZarathustraAmorFatiPrompt(rep);
+  assert(prompt.includes('프리드리히 니체 차라투스트라 초인 & 아모르 파티(Amor Fati) 지표'));
+  assert(prompt.includes(rep.activeNietzscheTheme.themeTitleKo));
+});
+
+test('Seosan Daesa Hyujeong Seonga Gwigam Engine: calculates Ilmul yeongmyeong, Hwalku chamseon, and Seon-Gyo integration', () => {
+  const rep = calculateSeosanHyujeongSeongaGwigam(profile);
+  assert.equal(rep.engineVersion, SEOSAN_SEONGA_GWIGAM_VERSION);
+  assert(rep.ilmulYeongmyeongClarityScore >= 0 && rep.ilmulYeongmyeongClarityScore <= 100);
+  assert(rep.hwalkuDirectPiercingScore >= 0 && rep.hwalkuDirectPiercingScore <= 100);
+  assert(rep.seonGyoHarmoniousIntegrationScore >= 0 && rep.seonGyoHarmoniousIntegrationScore <= 100);
+  assert(rep.samgaHoetongBreadthScore >= 0 && rep.samgaHoetongBreadthScore <= 100);
+  assert(rep.daeseungBodhisattvaActionScore >= 0 && rep.daeseungBodhisattvaActionScore <= 100);
+  assert(rep.activeSeosanTheme.themeTitleHanja.length > 0);
+  const prompt = formatSeosanHyujeongSeongaGwigamPrompt(rep);
+  assert(prompt.includes('서산대사 선가귀감(禪家龜鑑) 일물영명 & 활구참선 지표'));
+  assert(prompt.includes(rep.activeSeosanTheme.themeTitleKo));
 });
 
 

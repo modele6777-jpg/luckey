@@ -259,6 +259,9 @@ import { calculateRenaissanceBrunoInfiniteUniverse, formatRenaissanceBrunoInfini
 import { calculatePascalPenseesHeartReason, formatPascalPenseesHeartReasonPrompt, type PascalPenseesHeartReasonResult, PASCAL_PENSEES_HEART_REASON_VERSION } from './frenchPascalPenseesHeartReasonEngine';
 import { calculateSchopenhauerWillRepresentation, formatSchopenhauerWillRepresentationPrompt, type SchopenhauerWillRepresentationResult, SCHOPENHAUER_WILL_REPRESENTATION_VERSION } from './germanSchopenhauerWillRepresentationEngine';
 import { calculateChusaKimJeonghuiSehando, formatChusaKimJeonghuiSehandoPrompt, type ChusaKimJeonghuiSehandoResult, CHUSA_SEHANDO_WISDOM_VERSION } from './koreanChusaKimJeonghuiSehandoEngine';
+import { calculateKierkegaardStagesOfLife, formatKierkegaardStagesOfLifePrompt, type KierkegaardStagesOfLifeResult, KIERKEGAARD_STAGES_OF_LIFE_VERSION } from './danishKierkegaardStagesOfLifeEngine';
+import { calculateNietzscheZarathustraAmorFati, formatNietzscheZarathustraAmorFatiPrompt, type NietzscheZarathustraAmorFatiResult, NIETZSCHE_ZARATHUSTRA_AMOR_FATI_VERSION } from './germanNietzscheZarathustraAmorFatiEngine';
+import { calculateSeosanHyujeongSeongaGwigam, formatSeosanHyujeongSeongaGwigamPrompt, type SeosanHyujeongSeongaGwigamResult, SEOSAN_SEONGA_GWIGAM_VERSION } from './koreanSeosanHyujeongSeongaGwigamEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -538,6 +541,9 @@ export interface DeterministicEngineReport {
   pascalPenseesHeartReasonResult?: PascalPenseesHeartReasonResult | null;
   schopenhauerWillRepresentationResult?: SchopenhauerWillRepresentationResult | null;
   chusaKimJeonghuiSehandoResult?: ChusaKimJeonghuiSehandoResult | null;
+  kierkegaardStagesOfLifeResult?: KierkegaardStagesOfLifeResult | null;
+  nietzscheZarathustraAmorFatiResult?: NietzscheZarathustraAmorFatiResult | null;
+  seosanHyujeongSeongaGwigamResult?: SeosanHyujeongSeongaGwigamResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3194,6 +3200,33 @@ try {
     }
   })()));
 
+  // 228. 덴마크 쇠렌 키르케고르 이것이냐 저것이냐 & 단독자 실존 3단계 도약 엔진
+  const kierkegaardStagesOfLifeResult = calculateSupplement('kierkegaardStagesOfLifeResult', () => ((() => {
+    try {
+      return calculateKierkegaardStagesOfLife(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 229. 독일 프리드리히 니체 차라투스트라는 이렇게 말했다 초인 & 아모르 파티 엔진
+  const nietzscheZarathustraAmorFatiResult = calculateSupplement('nietzscheZarathustraAmorFatiResult', () => ((() => {
+    try {
+      return calculateNietzscheZarathustraAmorFati(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 230. 조선 서산대사 휴정 선가귀감 일물영명 & 활구참선 선교원융 엔진
+  const seosanHyujeongSeongaGwigamResult = calculateSupplement('seosanHyujeongSeongaGwigamResult', () => ((() => {
+    try {
+      return calculateSeosanHyujeongSeongaGwigam(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3459,6 +3492,9 @@ try {
     pascalPenseesHeartReasonResult,
     schopenhauerWillRepresentationResult,
     chusaKimJeonghuiSehandoResult,
+    kierkegaardStagesOfLifeResult,
+    nietzscheZarathustraAmorFatiResult,
+    seosanHyujeongSeongaGwigamResult,
     tools: toolsMap,
   };
 }
@@ -3714,6 +3750,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchPascalPenseesHeartReason', nameKo: '블레즈 파스칼 팡세 사유하는갈대 심장의논리 파스칼의내기', icon: '🌾', category: 'deep_master' },
   { key: 'germanSchopenhauerWillRepresentation', nameKo: '쇼펜하우어 의지와표상 맹목적의지초월 심미적관조 동포애자비', icon: '🎼', category: 'deep_master' },
   { key: 'koreanChusaKimJeonghuiSehando', nameKo: '추사 김정희 세한도 송백후조 역경극복지조 문자향서권기', icon: '🌲', category: 'deep_master' },
+  { key: 'danishKierkegaardStagesOfLife', nameKo: '쇠렌 키르케고르 단독자 실존3단계 이것이냐저것이냐 신앙도약', icon: '⚖️', category: 'deep_master' },
+  { key: 'germanNietzscheZarathustraAmorFati', nameKo: '프리드리히 니체 차라투스트라 초인 아모르파티 영원회귀', icon: '🦅', category: 'deep_master' },
+  { key: 'koreanSeosanHyujeongSeongaGwigam', nameKo: '서산대사 휴정 선가귀감 일물영명 활구참선 선교원융', icon: '📿', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3821,6 +3860,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'danishKierkegaardStagesOfLife',
+    'germanNietzscheZarathustraAmorFati',
+    'koreanSeosanHyujeongSeongaGwigam',
     'frenchPascalPenseesHeartReason',
     'germanSchopenhauerWillRepresentation',
     'koreanChusaKimJeonghuiSehando',
@@ -3903,6 +3945,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'danishKierkegaardStagesOfLife',
+    'germanNietzscheZarathustraAmorFati',
+    'koreanSeosanHyujeongSeongaGwigam',
     'frenchPascalPenseesHeartReason',
     'germanSchopenhauerWillRepresentation',
     'koreanChusaKimJeonghuiSehando',
