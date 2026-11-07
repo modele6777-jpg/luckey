@@ -553,12 +553,12 @@
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: calc(var(--sab) + 7.5rem);
+    bottom: calc(var(--sab) + 8.75rem) !important;
     left: 0 !important;
     right: var(--sites-sidebar-width, 80px) !important;
     transform: none !important;
-    width: 76px !important;
-    height: 76px !important;
+    width: 84px !important;
+    height: 84px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -569,7 +569,7 @@
   }
   @media (min-width: 640px) {
     .bottom-safe-fab-center {
-      bottom: calc(var(--sab) + 8.75rem);
+      bottom: calc(var(--sab) + 8.75rem) !important;
       width: 84px !important;
       height: 84px !important;
     }
@@ -3243,6 +3243,7 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
 .bottom-safe-fab-center {
   left: 0 !important;
   right: var(--sites-sidebar-width, 80px) !important;
+  bottom: calc(var(--sab) + 8.75rem) !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }

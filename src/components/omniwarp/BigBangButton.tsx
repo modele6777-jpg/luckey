@@ -1444,7 +1444,7 @@ export function BigBangButton() {
       {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
-        className={`fixed bottom-safe-fab-center w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] pointer-events-none flex items-center justify-center select-none ${
+        className={`fixed bottom-safe-fab-center w-[84px] h-[84px] pointer-events-none flex items-center justify-center select-none ${
           isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
       >
@@ -1454,7 +1454,7 @@ export function BigBangButton() {
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
-          className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] flex items-center justify-center pointer-events-auto touch-none select-none shrink-0"
+          className="relative w-[84px] h-[84px] flex items-center justify-center pointer-events-auto touch-none select-none shrink-0"
           onPointerEnter={(e) => {
             if (e.pointerType === 'mouse') {
               setIsHovered(true);
