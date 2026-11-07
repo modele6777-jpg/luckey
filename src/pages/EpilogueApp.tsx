@@ -161,7 +161,7 @@ function InputField({
   placeholder?: string;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="epilogue-profile-field space-y-1.5 min-w-0 max-w-full">
       <label className="block text-xs font-bold text-slate-700 dark:text-white/70 tracking-wider font-sans uppercase">
         {label}
       </label>
@@ -171,7 +171,7 @@ function InputField({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder={placeholder}
-        className="w-full px-4 py-3.5 rounded-2xl text-sm text-slate-900 dark:text-white/95 placeholder-slate-400 dark:placeholder-white/40 outline-none transition-all duration-200 bg-white/80 dark:bg-white/[0.04] backdrop-blur-md border border-slate-300 dark:border-white/10 focus:border-purple-500 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-[0_0_20px_rgba(192,132,252,0.15)]"
+        className="block box-border w-full min-w-0 max-w-full px-4 py-3.5 rounded-2xl text-sm text-slate-900 dark:text-white/95 placeholder-slate-400 dark:placeholder-white/40 outline-none transition-all duration-200 bg-white/80 dark:bg-white/[0.04] backdrop-blur-md border border-slate-300 dark:border-white/10 focus:border-purple-500 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-[0_0_20px_rgba(192,132,252,0.15)]"
       />
     </div>
   );
@@ -801,8 +801,8 @@ export default function EpilogueApp() {
               type="date"
               onChange={(v) => setBasic((b) => ({ ...b, birthdate: v }))}
             />
-            <div className="grid grid-cols-2 gap-3">
-              <div>
+            <div className="epilogue-profile-pair grid gap-3">
+              <div className="min-w-0">
                 <label className="block text-xs font-bold text-white/50 mb-1.5 tracking-wider font-sans uppercase">
                   양력 / 음력
                 </label>

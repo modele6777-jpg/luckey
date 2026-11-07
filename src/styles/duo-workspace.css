@@ -132,3 +132,30 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+/* Native date/time controls must not expand a profile's grid tracks in WebKit. */
+.epilogue-profile-field,
+.epilogue-profile-pair > * { min-width: 0; max-width: 100%; }
+.epilogue-profile-field > input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.epilogue-profile-field > input:is([type='date'], [type='time']) {
+  appearance: none;
+  -webkit-appearance: none;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  text-align: left;
+}
+.epilogue-profile-field > input::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  text-align: left;
+}
+.epilogue-profile-field > input::-webkit-datetime-edit { min-width: 0; padding: 0; }
+.epilogue-profile-pair { grid-template-columns: minmax(0, 1fr); }
+@container duo-workspace (min-width: 26rem) {
+  .epilogue-profile-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
