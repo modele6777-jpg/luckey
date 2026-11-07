@@ -2661,9 +2661,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         }`}
       >
         <div className="flex items-center justify-between gap-2 min-w-0 w-full max-w-full">
-          <span className="h-10 w-10 shrink-0" aria-hidden="true" />
           {/* Brand logo stays within the current chat page. */}
-          <div className="flex items-center min-w-0 flex-1 pl-1 sm:pl-3 overflow-hidden">
+          <div className="flex items-center min-w-0 flex-1 overflow-hidden">
             <div
               className="flex items-center gap-2 sm:gap-3 min-w-0 w-full group select-none"
             >
