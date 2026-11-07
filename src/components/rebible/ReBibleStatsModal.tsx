@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React from 'react';
 import { 
   X, 
@@ -31,7 +32,7 @@ export const ReBibleStatsModal: React.FC<ReBibleStatsModalProps> = ({
   const isParchment = atmosphere === 'parchment';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in">
+    <ScreenPortal><div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in">
       <div className={`w-full max-w-xl flex flex-col rounded-3xl border shadow-2xl overflow-hidden ${
         isParchment 
           ? 'bg-[#FAF6EE] border-amber-900/20 text-stone-900' 
@@ -179,6 +180,6 @@ export const ReBibleStatsModal: React.FC<ReBibleStatsModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div></ScreenPortal>
   );
 };

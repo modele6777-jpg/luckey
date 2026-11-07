@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import './prompt-library.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -97,8 +97,8 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
 
   if (!isOpen) return null;
 
-  return createPortal(
-    <AnimatePresence>
+  return (
+    <ScreenPortal><AnimatePresence>
       <div 
         id="hori-prompt-library-modal-backdrop"
         className="fixed inset-0 z-[10030] flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-md"
@@ -417,6 +417,6 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>, document.body
+    </AnimatePresence></ScreenPortal>
   );
 };

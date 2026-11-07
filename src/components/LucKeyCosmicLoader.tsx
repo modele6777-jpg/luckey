@@ -1,5 +1,5 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { motion } from 'motion/react';
 import { LucKeyLogoText } from './LucKeyLogoText';
 
@@ -150,7 +150,7 @@ export function LucKeyCosmicLoader({
       </div>
     </div>
   );
-  return fullScreen && typeof document !== 'undefined' ? createPortal(content, document.body) : content;
+  return fullScreen && typeof document !== 'undefined' ? <ScreenPortal>{content}</ScreenPortal> : content;
 }
 
 export default LucKeyCosmicLoader;

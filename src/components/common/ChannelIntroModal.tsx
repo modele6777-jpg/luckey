@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -346,7 +347,7 @@ export function ChannelIntroModal() {
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <div className="fixed inset-0 z-[400] flex items-center justify-center p-3 sm:p-4 select-none">
         {/* Backdrop */}
         <motion.div
@@ -502,6 +503,6 @@ export function ChannelIntroModal() {
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -950,7 +951,7 @@ export function GoalProgressRingDashboard() {
         {/* ✍️ Add Goal Modal */}
         <AnimatePresence>
           {isAddModalOpen && (
-            <motion.div
+            <ScreenPortal><motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -1084,7 +1085,7 @@ export function GoalProgressRingDashboard() {
                   </div>
                 </form>
               </motion.div>
-            </motion.div>
+            </motion.div></ScreenPortal>
           )}
         </AnimatePresence>
       </div>

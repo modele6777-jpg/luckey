@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -703,7 +704,7 @@ export function WishingWellModal({
   }
 
   return (
-    <div
+    <ScreenPortal><div
       id="wishing-well-modal"
       className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-2xl overflow-y-auto"
       onClick={onClose}
@@ -717,6 +718,6 @@ export function WishingWellModal({
       >
         {wellContent}
       </motion.div>
-    </div>
+    </div></ScreenPortal>
   );
 }

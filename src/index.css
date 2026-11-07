@@ -3219,3 +3219,22 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* Viewport-fixed page controls respect the space already occupied by navigation. */
+.sites-pinned-main .prism-xs-fab-group,
+.prism-app-shell [data-sidebar-aware='true'] {
+  right: calc(var(--sites-sidebar-width) + 1rem);
+  max-width: calc(100vw - var(--sites-sidebar-width) - 2rem);
+}
+@media (min-width: 640px) {
+  .sites-pinned-main .prism-xs-fab-group,
+  .prism-app-shell [data-sidebar-aware='true'] { right: calc(var(--sites-sidebar-width) + 1.5rem); }
+}
+/* Portal-hosted dialogs use their own full-width viewport, not the page rail gutter. */
+:is(.duo-portal, .screen-portal) .prism-xs-fab-group,
+:is(.duo-portal, .screen-portal) [data-sidebar-aware='true'] { right: 1rem; max-width: calc(100vw - 2rem); }
+
+.prism-app-shell .pwa-install-banner {
+  left: calc((100% - var(--sites-sidebar-width)) / 2);
+  max-width: calc(100vw - var(--sites-sidebar-width) - 2rem);
+}

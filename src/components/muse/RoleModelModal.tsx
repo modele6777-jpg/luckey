@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -682,7 +683,7 @@ export function RoleModelModal({ isOpen = true, onClose, isInline = false }: Rol
   }
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -701,6 +702,6 @@ export function RoleModelModal({ isOpen = true, onClose, isInline = false }: Rol
           {renderContent()}
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

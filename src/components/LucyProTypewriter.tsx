@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -98,7 +99,7 @@ function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
       {/* Lightbox Modal for Full Uncropped Image View */}
       <AnimatePresence>
         {isModalOpen && (
-          <motion.div
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -153,7 +154,7 @@ function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
                 <span>닫기</span>
               </button>
             </div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
     </>

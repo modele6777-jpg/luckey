@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -1184,7 +1185,7 @@ export function SecretMessage({ isOpen, onClose, isModal }: SecretMessageProps =
       {/* PIN Unlock Prompt Modal */}
       <AnimatePresence>
         {pinTargetNoteId && (
-          <motion.div
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1240,7 +1241,7 @@ export function SecretMessage({ isOpen, onClose, isModal }: SecretMessageProps =
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
     </div>
@@ -1250,7 +1251,7 @@ export function SecretMessage({ isOpen, onClose, isModal }: SecretMessageProps =
     return (
       <AnimatePresence>
         {(isOpen ?? true) && (
-          <motion.div
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1277,7 +1278,7 @@ export function SecretMessage({ isOpen, onClose, isModal }: SecretMessageProps =
               )}
               {mainContent}
             </motion.div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
     );

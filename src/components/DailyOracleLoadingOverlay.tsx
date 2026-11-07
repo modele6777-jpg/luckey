@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles } from 'lucide-react';
@@ -76,7 +77,7 @@ export function DailyOracleLoadingOverlay({
   }, [isLoading]);
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       {isLoading && (
         <motion.div
           key="daily-oracle-loading"
@@ -180,6 +181,6 @@ export function DailyOracleLoadingOverlay({
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

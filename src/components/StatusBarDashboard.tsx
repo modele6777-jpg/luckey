@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Activity, Zap, Heart, Brain, X, Info } from 'lucide-react';
@@ -24,7 +25,7 @@ export function StatusBarDashboard({ isOpen, onClose, color, appName }: StatusBa
   };
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       {isOpen && (
         <>
           <motion.div 
@@ -76,7 +77,7 @@ export function StatusBarDashboard({ isOpen, onClose, color, appName }: StatusBa
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }
 

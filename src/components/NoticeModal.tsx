@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Info, Sparkles, X } from 'lucide-react';
@@ -12,7 +13,7 @@ interface NoticeModalProps {
 
 export default function NoticeModal({ isOpen, onClose, title, message, confirmLabel = "확인" }: NoticeModalProps) {
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       {isOpen && (
         <motion.div 
           initial={{ opacity: 0 }} 
@@ -48,6 +49,6 @@ export default function NoticeModal({ isOpen, onClose, title, message, confirmLa
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

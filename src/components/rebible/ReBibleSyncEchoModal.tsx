@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -225,7 +226,7 @@ export const ReBibleSyncEchoModal: React.FC<ReBibleSyncEchoModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
+    <ScreenPortal><div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
       <div className={`w-full max-w-3xl flex flex-col max-h-[92vh] rounded-3xl border shadow-2xl overflow-hidden ${
         isParchment 
           ? 'bg-[#FAF6EE] border-amber-900/20 text-stone-900' 
@@ -608,6 +609,6 @@ export const ReBibleSyncEchoModal: React.FC<ReBibleSyncEchoModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div></ScreenPortal>
   );
 };

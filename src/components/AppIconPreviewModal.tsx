@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Smartphone, Download, Check, ExternalLink } from 'lucide-react';
@@ -45,7 +46,7 @@ export default function AppIconPreviewModal({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
         {/* Backdrop */}
         <motion.div
@@ -170,6 +171,6 @@ export default function AppIconPreviewModal({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

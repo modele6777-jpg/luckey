@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -76,7 +77,7 @@ export function TarotSpreadSelectionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-3 sm:p-5 font-sans">
+    <ScreenPortal><div className="fixed inset-0 z-[500] flex items-center justify-center p-3 sm:p-5 font-sans">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -326,6 +327,6 @@ export function TarotSpreadSelectionModal({
           </button>
         </div>
       </motion.div>
-    </div>
+    </div></ScreenPortal>
   );
 }

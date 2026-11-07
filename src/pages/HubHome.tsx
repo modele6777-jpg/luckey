@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
@@ -626,7 +627,7 @@ export default function HubHome() {
             {/* 프로필 설정 유도 모달 */}
             <AnimatePresence>
               {showProfileModal && (
-                <motion.div
+                <ScreenPortal><motion.div
                   key="profile-modal-overlay"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -687,7 +688,7 @@ export default function HubHome() {
                       </button>
                     </div>
                   </motion.div>
-                </motion.div>
+                </motion.div></ScreenPortal>
               )}
             </AnimatePresence>
 

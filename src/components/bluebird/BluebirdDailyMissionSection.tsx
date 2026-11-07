@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -404,7 +405,7 @@ export function BluebirdDailyMissionSection({
       {/* 6. Milestone Detail Modal */}
       <AnimatePresence>
         {selectedMilestone && (
-          <div
+          <ScreenPortal><div
             className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
             onClick={() => setSelectedMilestone(null)}
           >
@@ -458,7 +459,7 @@ export function BluebirdDailyMissionSection({
                 확인
               </button>
             </motion.div>
-          </div>
+          </div></ScreenPortal>
         )}
       </AnimatePresence>
     </div>

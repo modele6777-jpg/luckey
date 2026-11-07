@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { Download, Maximize2, RefreshCw, X } from "lucide-react";
 
 interface ImageOutputActionsProps {
@@ -84,8 +84,8 @@ export function ImageOutputActions({
     };
   }, [isOpen]);
 
-  const lightbox = isOpen && createPortal(
-        <div className="fixed inset-0 z-[2500] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label={`${alt} 크게 보기`}>
+  const lightbox = isOpen && (
+        <ScreenPortal><div className="fixed inset-0 z-[2500] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label={`${alt} 크게 보기`}>
           <div className="relative flex items-center justify-center w-full h-full max-w-[min(96vw,720px)] max-h-[88dvh]" onClick={(event) => event.stopPropagation()}>
             {isImageLoading && !hasImageError && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/70">
@@ -157,8 +157,7 @@ export function ImageOutputActions({
               <span>닫기</span>
             </button>
           </div>
-        </div>,
-        document.body,
+        </div></ScreenPortal>
       );
 
   if (modalOnly) {

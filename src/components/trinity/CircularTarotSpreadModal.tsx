@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -28,7 +29,7 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 overflow-y-auto no-scrollbar">
         {/* Backdrop */}
         <motion.div
@@ -122,7 +123,7 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
           )}
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 };
 

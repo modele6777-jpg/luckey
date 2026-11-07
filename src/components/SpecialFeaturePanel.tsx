@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
 
@@ -128,7 +129,7 @@ export function SpecialFeatureOverlay({
   }[maxWidth] || "max-w-4xl";
 
   return (
-    <div
+    <ScreenPortal><div
       onClick={onClose}
       className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6 overflow-x-hidden overflow-y-auto bg-black/80 backdrop-blur-2xl transition-all duration-300 cursor-pointer"
     >
@@ -143,7 +144,7 @@ export function SpecialFeatureOverlay({
       >
         {children}
       </motion.div>
-    </div>
+    </div></ScreenPortal>
   );
 }
 

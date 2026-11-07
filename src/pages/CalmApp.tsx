@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { useWideWorkspace } from '@/hooks/useWideWorkspace';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
@@ -295,7 +296,7 @@ export default function CalmApp() {
     >
       <AnimatePresence mode="wait">
         {isLoading && (
-          <motion.div
+          <ScreenPortal><motion.div
             key="key-cosmic-loader"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -308,7 +309,7 @@ export default function CalmApp() {
               message="Key 개운(開運) 파동 조율 중..."
               subMessage="40 DESTINY OPENING RITUALS & FIVE ELEMENTS SOUND"
             />
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
       <iframe

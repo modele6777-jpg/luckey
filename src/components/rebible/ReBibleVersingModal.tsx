@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -150,7 +151,7 @@ export const ReBibleVersingModal: React.FC<ReBibleVersingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-md animate-fade-in">
+    <ScreenPortal><div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-md animate-fade-in">
       <div className={`w-full max-w-2xl max-h-[90vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden ${
         isParchment 
           ? 'bg-[#FAF6EE] border-amber-900/20 text-stone-900' 
@@ -576,6 +577,6 @@ export const ReBibleVersingModal: React.FC<ReBibleVersingModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div></ScreenPortal>
   );
 };

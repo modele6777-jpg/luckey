@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocation } from 'wouter';
@@ -446,7 +447,7 @@ export function LucyVoiceModeModal() {
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <div className="fixed inset-0 pointer-events-none z-[9995] select-none font-sans overflow-hidden">
         {/* ✨ Non-intrusive Floating Voice HUD Capsule positioned above the bottom-right BigBang Button */}
         <motion.div
@@ -592,7 +593,7 @@ export function LucyVoiceModeModal() {
           )}
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }
 

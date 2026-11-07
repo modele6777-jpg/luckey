@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 
 interface Props { children: React.ReactNode; text: string; targetLabel: string; onForward?: (text: string) => void; disabled?: boolean }
 export function ChatBubbleForward({ children, text, targetLabel, onForward, disabled = false }: Props) {
@@ -40,8 +40,8 @@ export function ChatBubbleForward({ children, text, targetLabel, onForward, disa
     onPointerUp={clear} onPointerCancel={clear} onPointerLeave={clear}
     onContextMenu={event => { if (onForward && !disabled && isBubblePadding(event.target, event.clientX, event.clientY)) { event.preventDefault(); clear(); show(); } }}>
     {children}
-    {open && typeof document !== 'undefined' && createPortal(
-      <div className="fixed inset-0 z-[10030] flex items-center justify-center bg-black/35 p-5" onPointerDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
+    {open && typeof document !== 'undefined' && (
+      <ScreenPortal><div className="fixed inset-0 z-[10030] flex items-center justify-center bg-black/35 p-5" onPointerDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
         <section role="dialog" aria-modal="true" aria-label="말풍선 전달" className="w-full max-w-sm rounded-3xl border border-emerald-200 bg-white p-5 text-slate-800 shadow-2xl" onKeyDown={event => {
           if (event.key === 'Escape') { event.stopPropagation(); setOpen(false); }
           if (event.key === 'Tab') { event.preventDefault(); (document.activeElement === confirmRef.current ? cancelRef.current : confirmRef.current)?.focus(); }
@@ -54,6 +54,6 @@ export function ChatBubbleForward({ children, text, targetLabel, onForward, disa
             <button ref={confirmRef} type="button" className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white" onClick={() => { setOpen(false); onForward?.(text); }}>전달하기</button>
           </div>
         </section>
-      </div>, document.body)}
+      </div></ScreenPortal>)}
   </div>;
 }

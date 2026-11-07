@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Leaf, Activity, Sparkles, ArrowLeft, RefreshCw, Wand2 } from 'lucide-react';
@@ -742,7 +743,7 @@ export function MeditationOverlay({
   }
 
   return (
-    <motion.div
+    <ScreenPortal><motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -759,6 +760,6 @@ export function MeditationOverlay({
       >
         {renderContent()}
       </motion.div>
-    </motion.div>
+    </motion.div></ScreenPortal>
   );
 }

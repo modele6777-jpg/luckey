@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   Sparkles, Eye, RefreshCw, Sun, Compass, Activity,
@@ -905,7 +905,8 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
     touchedCardIdRef.current = null;
   };
 
-  return createPortal(
+  return (
+    <ScreenPortal>
     <div
       ref={rootRef}
       id="tarot-stage-container"
@@ -1362,7 +1363,7 @@ export const TarotSpread: React.FC<TarotSpreadProps> = ({
           onComplete(cards);
         }}
       />
-    </div>,
-    document.body,
+    </div>
+    </ScreenPortal>
   );
 };

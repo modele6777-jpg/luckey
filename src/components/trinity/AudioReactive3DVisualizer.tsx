@@ -1,4 +1,4 @@
-import { createPortal } from 'react-dom';
+import { ScreenPortal, isTopScreenOverlay } from '@/components/layout/ScreenPortal';
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import {
@@ -40,7 +40,7 @@ export function AudioReactive3DVisualizer({
     const previousFocus = document.activeElement as HTMLElement | null;
     closeButtonRef.current?.focus({ preventScroll: true });
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
+      if (event.key !== 'Escape' || !isTopScreenOverlay(containerRef.current?.parentElement ?? null)) return;
       event.preventDefault();
       event.stopPropagation();
       closeStageRef.current?.();
@@ -583,7 +583,8 @@ export function AudioReactive3DVisualizer({
   }
 
   // Portal outside transformed app containers and above the permanent sidebar.
-  return createPortal(
+  return (
+    <ScreenPortal>
     <div
       ref={containerRef}
       role="dialog"
@@ -794,6 +795,6 @@ export function AudioReactive3DVisualizer({
           </div>
         </footer>
       )}
-    </div>, document.body
+    </div></ScreenPortal>
   );
 }

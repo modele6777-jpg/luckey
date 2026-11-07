@@ -62,11 +62,26 @@
   .duo-workspace-container :is(.md\:grid-cols-2, .lg\:grid-cols-2) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .duo-split-workspace .duo-profile-section.duo-workspace-full { grid-column: 1 / -1; }
 }
-.duo-portal { display: contents; }
-.duo-portal > .fixed {
-  width: 100%;
+/* Dialog layers live outside app transforms and the permanent navigation rail. */
+.duo-portal,
+.screen-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+.duo-portal > :not(.pointer-events-none),
+.screen-portal > :not(.pointer-events-none) { pointer-events: auto; }
+/* Keep anchored popovers at their intended width; only full-screen roots fill the viewport. */
+.duo-portal > .fixed.inset-0,
+.screen-portal > .fixed.inset-0 {
+  box-sizing: border-box;
+  top: var(--vv-top, 0px);
+  bottom: auto;
+  height: var(--app-height, 100dvh);
   max-width: 100%;
-  z-index: 600;
+}
+.duo-portal > .fixed.inset-0 {
   padding: max(.75rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(.75rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
 }
 .duo-dialog-panel {

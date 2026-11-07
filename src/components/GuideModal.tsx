@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Activity,
@@ -420,7 +421,7 @@ export function GuideModal({ isOpen, onClose }: GuideModalProps) {
   };
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -800,6 +801,6 @@ export function GuideModal({ isOpen, onClose }: GuideModalProps) {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

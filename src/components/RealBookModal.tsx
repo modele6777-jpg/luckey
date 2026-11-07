@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -314,7 +315,7 @@ export function RealBookModal({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -613,6 +614,6 @@ export function RealBookModal({
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

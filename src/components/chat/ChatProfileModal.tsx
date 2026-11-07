@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { X, User, Calendar, Clock, MapPin, Heart, Sparkles, Check, Moon } from 'lucide-react';
 import type { ChatTargetProfile } from '@/types/chatProfile';
@@ -144,7 +145,7 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
   };
 
   return (
-    <div 
+    <ScreenPortal><div
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/65 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
@@ -417,6 +418,6 @@ export const ChatProfileModal: React.FC<ChatProfileModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div></ScreenPortal>
   );
 };

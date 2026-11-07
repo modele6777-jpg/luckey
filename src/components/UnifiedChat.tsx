@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
@@ -895,7 +896,7 @@ export function UnifiedChat() {
   };
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       {isChatOpen && (
         <div id="unified-chat-portal" className="fixed inset-0 z-[2000] flex items-center justify-end font-sans overflow-hidden">
           {/* Backdrop overlay */}
@@ -1414,6 +1415,6 @@ export function UnifiedChat() {
           setInput(promptText);
         }}
       />
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

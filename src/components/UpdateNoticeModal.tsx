@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X, RefreshCw, Check } from 'lucide-react';
@@ -52,7 +53,7 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
   };
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -176,6 +177,6 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

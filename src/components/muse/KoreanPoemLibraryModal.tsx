@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -57,7 +58,7 @@ export const KoreanPoemLibraryModal: React.FC<KoreanPoemLibraryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
         {/* Backdrop */}
         <motion.div
@@ -325,6 +326,6 @@ export const KoreanPoemLibraryModal: React.FC<KoreanPoemLibraryModalProps> = ({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 };

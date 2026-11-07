@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { shuffleCardDeck } from '@/lib/cardShuffle';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -229,7 +230,7 @@ export const PhysicalTarotInputModal: React.FC<PhysicalTarotInputModalProps> = (
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-3 sm:p-5 font-sans">
         {/* Backdrop */}
         <motion.div
@@ -681,6 +682,6 @@ export const PhysicalTarotInputModal: React.FC<PhysicalTarotInputModalProps> = (
           </div>
         )}
       </div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 };

@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, {
   useState,
   useEffect,
@@ -322,7 +323,7 @@ function Modal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <ScreenPortal><motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -351,7 +352,7 @@ function Modal({
               {children}
             </div>
           </motion.div>
-        </motion.div>
+        </motion.div></ScreenPortal>
       )}
     </AnimatePresence>
   );
@@ -2420,7 +2421,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
 
       <AnimatePresence>
         {showDailyModal && dailyResult && (
-          <motion.div
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2504,14 +2505,14 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
 
       {/* Creative Soul Modal */}
       <AnimatePresence>
         {showSoulModal && (
-          <motion.div
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2667,7 +2668,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                 </div>
               ) : null}
             </motion.div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
 

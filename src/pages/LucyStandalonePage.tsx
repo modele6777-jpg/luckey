@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
@@ -3657,7 +3658,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       {/*  제제 님의 소울 프로필 퀵뷰 모달 */}
       <AnimatePresence>
         {isProfileModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <ScreenPortal><div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -3717,7 +3718,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </div></ScreenPortal>
         )}
       </AnimatePresence>
 

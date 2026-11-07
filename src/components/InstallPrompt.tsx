@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Triangle, X, Download, Share, PlusSquare, Info, Sparkles } from 'lucide-react';
@@ -182,7 +183,7 @@ export default function InstallPrompt() {
       {/* Guide Modal for iOS or manual install */}
       <AnimatePresence>
         {showGuide && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <ScreenPortal><div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -353,7 +354,7 @@ export default function InstallPrompt() {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </div></ScreenPortal>
         )}
       </AnimatePresence>
     </>

@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -92,7 +93,7 @@ function Modal({ isOpen, onClose, title, children }: { isOpen: boolean; onClose:
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
+        <ScreenPortal><motion.div
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
           exit={{ opacity: 0 }} 
@@ -116,7 +117,7 @@ function Modal({ isOpen, onClose, title, children }: { isOpen: boolean; onClose:
               {children}
             </div>
           </motion.div>
-        </motion.div>
+        </motion.div></ScreenPortal>
       )}
     </AnimatePresence>
   );
@@ -1423,7 +1424,7 @@ export default function OrangeApp() {
 
           <AnimatePresence>
             {isDailyOracleLoading && (
-              <motion.div 
+              <ScreenPortal><motion.div
                 key="oracle-loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -1440,14 +1441,14 @@ export default function OrangeApp() {
                      <p className="text-[10px] text-orange-400 font-bold uppercase tracking-[0.4em] font-sans">마음의 주파수를 정렬하고 있습니다</p>
                    </div>
                 </div>
-              </motion.div>
+              </motion.div></ScreenPortal>
             )}
           </AnimatePresence>
 
 
                 <AnimatePresence>
           {limitModalInfo && limitModalInfo.open && (
-            <motion.div
+            <ScreenPortal><motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -1494,7 +1495,7 @@ export default function OrangeApp() {
                   Go to Epilogue 🧪
                 </button>
               </motion.div>
-            </motion.div>
+            </motion.div></ScreenPortal>
           )}
         </AnimatePresence>
 

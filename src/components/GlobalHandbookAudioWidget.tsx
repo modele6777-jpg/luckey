@@ -94,6 +94,7 @@ export const GlobalHandbookAudioWidget: React.FC = () => {
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         transition={{ duration: 0.25 }}
         aria-label="핸드북 백그라운드 오디오 플레이어"
+        data-sidebar-aware="true"
         className="fixed bottom-[calc(var(--sab)+6.5rem)] right-3 md:right-6 z-[80] max-w-[calc(100vw-24px)] md:max-w-md"
       >
         <div

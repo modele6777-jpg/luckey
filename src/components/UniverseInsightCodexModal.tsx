@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Search, Sparkles, Copy, Check, Volume2, BookOpen, Filter, ArrowRight, Star } from 'lucide-react';
@@ -66,7 +67,7 @@ export function UniverseInsightCodexModal({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
         {/* Backdrop */}
         <motion.div
@@ -344,6 +345,6 @@ export function UniverseInsightCodexModal({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

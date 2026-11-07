@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState } from 'react';
 import { X, History, MessageSquarePlus, Clock, Sparkles, BookOpen } from 'lucide-react';
 import { ReBibleVerse } from '../../types/rebible';
@@ -45,7 +46,7 @@ export const ReBibleAnnotationModal: React.FC<ReBibleAnnotationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+    <ScreenPortal><div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
       <div className="w-full max-w-2xl my-auto flex flex-col rounded-3xl border border-[#D8C6A5] bg-[#FAF6EE] text-stone-900 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="px-5 py-4 border-b border-[#E8DFC8] bg-[#F4EDE0] flex items-center justify-between">
@@ -173,6 +174,6 @@ export const ReBibleAnnotationModal: React.FC<ReBibleAnnotationModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div></ScreenPortal>
   );
 };

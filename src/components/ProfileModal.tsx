@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -443,7 +444,7 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
   };
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -1008,6 +1009,6 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }

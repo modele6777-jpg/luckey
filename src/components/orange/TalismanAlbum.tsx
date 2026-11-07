@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -280,7 +281,7 @@ export function TalismanAlbum({ onClose }: { onClose?: () => void }) {
       {/* Immersive View Overlay Modal for Talisman Detail */}
       <AnimatePresence>
         {selectedTalisman && (
-          <motion.div
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -420,7 +421,7 @@ export function TalismanAlbum({ onClose }: { onClose?: () => void }) {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
     </div>

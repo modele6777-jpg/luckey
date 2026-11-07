@@ -55,6 +55,7 @@ export const SmartScrollResumeButton: React.FC<SmartScrollResumeButtonProps> = (
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.92 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
+          data-sidebar-aware={fixed || undefined}
           className={
             fixed
               ? `fixed bottom-20 sm:bottom-24 right-4 sm:right-8 z-50 pointer-events-auto ${className}`

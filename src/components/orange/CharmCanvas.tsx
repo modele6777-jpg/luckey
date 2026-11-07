@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -908,7 +909,7 @@ export const CharmCanvas: React.FC<CharmCanvasProps> = ({ onSuggestText, onChang
       {/* Forging Ceremony Loading Modal */}
       <AnimatePresence>
         {isForging && (
-          <motion.div 
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -962,7 +963,7 @@ export const CharmCanvas: React.FC<CharmCanvasProps> = ({ onSuggestText, onChang
                 ))}
               </div>
             </div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
 

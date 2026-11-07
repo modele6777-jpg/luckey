@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { updateAppMediaSession } from '@/lib/appMediaSession';
 import { getProceduralBgmMediaUrl, primeNativeBgmPlayback } from '@/lib/proceduralBgmMedia';
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -1871,7 +1872,7 @@ export function BgMusicPlayer() {
       {/* Detailed Menu Modal Popup (LP판 홀드시 노출되는 프리미엄 LP 턴테이블 상세메뉴) */}
       <AnimatePresence>
         {isDetailMenuOpen && (
-          <>
+          <ScreenPortal>
             {/* Backdrop Dimmer Overlay (가벼운 오버레이로 외부 터치 시 즉시 닫힘) */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -2458,7 +2459,7 @@ export function BgMusicPlayer() {
                 </p>
               </div>
             </motion.div>
-          </>
+          </ScreenPortal>
         )}
       </AnimatePresence>
 

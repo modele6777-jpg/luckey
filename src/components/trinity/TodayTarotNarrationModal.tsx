@@ -1,5 +1,5 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -348,7 +348,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <ScreenPortal><AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -766,7 +766,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
           )}
 
           {/* 🎡 잔여 덱 전용 360도 원형 휠 선택 모달 */}
-          {showFollowUpWheelModal && typeof document !== 'undefined' && createPortal(
+          {showFollowUpWheelModal && (
             <TarotSpread
               deckSource={dailyRemainingDeck}
               maxCards={1}
@@ -775,12 +775,11 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
               spreadReason={`오늘의 타로를 제외한 ${dailyRemainingDeck.length}장의 잔여 덱에서 1장을 직접 고릅니다.`}
               onComplete={handleFollowUpWheelComplete}
               onCancel={() => setShowFollowUpWheelModal(false)}
-            />,
-            document.body,
+            />
           )}
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence></ScreenPortal>
   );
 }
 

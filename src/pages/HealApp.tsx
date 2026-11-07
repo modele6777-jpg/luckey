@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { playConversation, stopTTS, useTTSActive } from '@/utils/tts'; import { Volume2, VolumeX } from 'lucide-react';
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -2045,7 +2046,7 @@ export default function HealApp() {
 
       <AnimatePresence>
         {showSoulModal && (
-          <motion.div 
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
@@ -2199,7 +2200,7 @@ export default function HealApp() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
 
@@ -2207,7 +2208,7 @@ export default function HealApp() {
 
       <AnimatePresence>
         {limitModalInfo && limitModalInfo.open && (
-          <motion.div
+          <ScreenPortal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2254,7 +2255,7 @@ export default function HealApp() {
                 Go to Epilogue 🧪
               </button>
             </motion.div>
-          </motion.div>
+          </motion.div></ScreenPortal>
         )}
       </AnimatePresence>
     </div>

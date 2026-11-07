@@ -1,3 +1,4 @@
+import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useMemo } from 'react';
 import { 
   X, 
@@ -174,7 +175,7 @@ export const ReBibleCalendarModal: React.FC<ReBibleCalendarModalProps> = ({
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <ScreenPortal><div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="w-full max-w-lg flex flex-col rounded-3xl border border-[#D8C6A5] bg-[#FAF6EE] text-stone-900 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="px-5 py-4 border-b border-[#E8DFC8] bg-[#F4EDE0] flex items-center justify-between">
@@ -341,6 +342,6 @@ export const ReBibleCalendarModal: React.FC<ReBibleCalendarModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div></ScreenPortal>
   );
 };
