@@ -979,5 +979,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanChoeChiwonPungryudo": {
     "field": "choeChiwonPungryudoResult",
     "traceKey": "choeChiwonPungryudoResult"
+  },
+  "italianThomasAquinasSummaTheologiae": {
+    "field": "thomasAquinasSummaTheologiaeResult",
+    "traceKey": "thomasAquinasSummaTheologiaeResult"
+  },
+  "britishFrancisBaconNovumOrganum": {
+    "field": "francisBaconNovumOrganumResult",
+    "traceKey": "francisBaconNovumOrganumResult"
+  },
+  "koreanRyuSeongryongJingbirok": {
+    "field": "ryuSeongryongJingbirokResult",
+    "traceKey": "ryuSeongryongJingbirokResult"
   }
 };

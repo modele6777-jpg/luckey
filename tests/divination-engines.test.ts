@@ -231,6 +231,9 @@ import { calculateDasanMokminSimseo, formatDasanMokminSimseoPrompt, KOREAN_DASAN
 import { calculateAugustineConfessionesIlluminatio, formatAugustineConfessionesIlluminatioPrompt, NORTH_AFRICAN_AUGUSTINE_VERSION } from '../src/lib/divination/northAfricanAugustineConfessionesIlluminatioEngine';
 import { calculateMachiavelliVirtuFortuna, formatMachiavelliVirtuFortunaPrompt, ITALIAN_MACHIAVELLI_VERSION } from '../src/lib/divination/italianMachiavelliVirtuFortunaEngine';
 import { calculateChoeChiwonPungryudo, formatChoeChiwonPungryudoPrompt, KOREAN_CHOE_CHIWON_VERSION } from '../src/lib/divination/koreanChoeChiwonPungryudoEngine';
+import { calculateThomasAquinasSummaTheologiae, formatThomasAquinasSummaTheologiaePrompt, ITALIAN_THOMAS_AQUINAS_VERSION } from '../src/lib/divination/italianThomasAquinasSummaTheologiaeEngine';
+import { calculateFrancisBaconNovumOrganum, formatFrancisBaconNovumOrganumPrompt, BRITISH_FRANCIS_BACON_VERSION } from '../src/lib/divination/britishFrancisBaconNovumOrganumEngine';
+import { calculateRyuSeongryongJingbirok, formatRyuSeongryongJingbirokPrompt, KOREAN_RYU_SEONGRYONG_VERSION } from '../src/lib/divination/koreanRyuSeongryongJingbirokEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4727,6 +4730,48 @@ test('Choe Chiwon Pungryudo and Three Teachings Harmony Engine: calculates Mysti
   const prompt = formatChoeChiwonPungryudoPrompt(rep);
   assert(prompt.includes('고운 최치원 풍류도(風流道) & 접화군생(接化群生) 지표'));
   assert(prompt.includes(rep.activeChoeChiwonTheme.themeTitleKo));
+});
+
+test('Thomas Aquinas Summa Theologiae Engine: calculates Reason and Faith Harmony, Quinque Viae, and Beatific Vision', () => {
+  const rep = calculateThomasAquinasSummaTheologiae(profile);
+  assert.equal(rep.engineVersion, ITALIAN_THOMAS_AQUINAS_VERSION);
+  assert(rep.reasonFaithHarmonyScore >= 0 && rep.reasonFaithHarmonyScore <= 100);
+  assert(rep.fiveWaysCausalInsightScore >= 0 && rep.fiveWaysCausalInsightScore <= 100);
+  assert(rep.cardinalTheologicalVirtuesBalanceScore >= 0 && rep.cardinalTheologicalVirtuesBalanceScore <= 100);
+  assert(rep.naturalMoralLawPrudenceScore >= 0 && rep.naturalMoralLawPrudenceScore <= 100);
+  assert(rep.beatificVisionSupremeGoodScore >= 0 && rep.beatificVisionSupremeGoodScore <= 100);
+  assert(rep.activeAquinasTheme.themeTitleLatin.length > 0);
+  const prompt = formatThomasAquinasSummaTheologiaePrompt(rep);
+  assert(prompt.includes('토마스 아퀴나스 《신학대전》 이성·신앙 조화 & 덕론 종합 지표'));
+  assert(prompt.includes(rep.activeAquinasTheme.themeTitleKo));
+});
+
+test('Francis Bacon Novum Organum Engine: calculates Four Idols overcoming, Inductio Vera, and Empirical Grounding', () => {
+  const rep = calculateFrancisBaconNovumOrganum(profile);
+  assert.equal(rep.engineVersion, BRITISH_FRANCIS_BACON_VERSION);
+  assert(rep.idolsTribusSpeciesBiasOvercomingScore >= 0 && rep.idolsTribusSpeciesBiasOvercomingScore <= 100);
+  assert(rep.idolsSpecusPersonalPrejudiceOvercomingScore >= 0 && rep.idolsSpecusPersonalPrejudiceOvercomingScore <= 100);
+  assert(rep.idolsForiLinguisticClarityScore >= 0 && rep.idolsForiLinguisticClarityScore <= 100);
+  assert(rep.idolsTheatriAuthorityDogmaOvercomingScore >= 0 && rep.idolsTheatriAuthorityDogmaOvercomingScore <= 100);
+  assert(rep.trueInductionEmpiricalGroundedScore >= 0 && rep.trueInductionEmpiricalGroundedScore <= 100);
+  assert(rep.activeBaconTheme.themeTitleLatin.length > 0);
+  const prompt = formatFrancisBaconNovumOrganumPrompt(rep);
+  assert(prompt.includes('프랜시스 베이컨 《신기관》 4대 우상 타파 & 실증 경험 지표'));
+  assert(prompt.includes(rep.activeBaconTheme.themeTitleKo));
+});
+
+test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection, Yubimuhwan preparedness, and Public Devotion', () => {
+  const rep = calculateRyuSeongryongJingbirok(profile);
+  assert.equal(rep.engineVersion, KOREAN_RYU_SEONGRYONG_VERSION);
+  assert(rep.jingjeonBihuPastReflectionScore >= 0 && rep.jingjeonBihuPastReflectionScore <= 100);
+  assert(rep.yubimuhwanPreemptivePreparednessScore >= 0 && rep.yubimuhwanPreemptivePreparednessScore <= 100);
+  assert(rep.daeseungTalentIntegrationScore >= 0 && rep.daeseungTalentIntegrationScore <= 100);
+  assert(rep.selflessDevotionPublicGoodScore >= 0 && rep.selflessDevotionPublicGoodScore <= 100);
+  assert(rep.practicalCrisisManagementExecutionScore >= 0 && rep.practicalCrisisManagementExecutionScore <= 100);
+  assert(rep.activeJingbirokTheme.themeTitleHanja.length > 0);
+  const prompt = formatRyuSeongryongJingbirokPrompt(rep);
+  assert(prompt.includes('서애 류성룡 《징비록》 징전비후 성찰 & 유비무환 위기대응 지표'));
+  assert(prompt.includes(rep.activeJingbirokTheme.themeTitleKo));
 });
 
 
