@@ -943,5 +943,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanChusaKimJeonghuiSehando": {
     "field": "chusaKimJeonghuiSehandoResult",
     "traceKey": "chusaKimJeonghuiSehandoResult"
+  },
+  "danishKierkegaardStagesOfLife": {
+    "field": "kierkegaardStagesOfLifeResult",
+    "traceKey": "kierkegaardStagesOfLifeResult"
+  },
+  "germanNietzscheZarathustraAmorFati": {
+    "field": "nietzscheZarathustraAmorFatiResult",
+    "traceKey": "nietzscheZarathustraAmorFatiResult"
+  },
+  "koreanSeosanHyujeongSeongaGwigam": {
+    "field": "seosanHyujeongSeongaGwigamResult",
+    "traceKey": "seosanHyujeongSeongaGwigamResult"
   }
 };
