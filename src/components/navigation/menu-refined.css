@@ -28,8 +28,34 @@
 }
 
 .refined-menu-footer {
+  margin-top: auto;
+  z-index: 2;
+  background: var(--menu-bg);
   flex-shrink: 0;
   border-top: 1px solid var(--menu-line);
+}
+
+.sites-pinned-sidebar[data-theme] .refined-menu-list {
+  position: absolute;
+  inset: 0;
+  padding: max(112px, env(safe-area-inset-top, 0px)) env(safe-area-inset-right, 0px) max(112px, env(safe-area-inset-bottom, 0px)) 0;
+}
+
+.refined-menu-content,
+.refined-prism-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.refined-menu-content {
+  margin-block: auto;
+}
+
+.refined-prism-icons {
+  overflow: hidden;
 }
 
 .refined-nav-item {

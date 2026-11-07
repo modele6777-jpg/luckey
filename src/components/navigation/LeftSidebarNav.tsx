@@ -12,6 +12,7 @@ import {
   Library,
   BookOpen,
   Compass,
+  Clover,
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -154,6 +155,7 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 
 export default function LeftSidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isChannelsOpen, setIsChannelsOpen] = useState(false);
   const showSidebar = useCallback(() => setIsOpen(true), []);
   const hideSidebar = useCallback(() => setIsOpen(false), []);
 
@@ -338,6 +340,10 @@ export default function LeftSidebarNav() {
     hideSidebar();
   }, [cleanPath, hideSidebar]);
 
+  useEffect(() => {
+    if (!isOpen) setIsChannelsOpen(false);
+  }, [isOpen]);
+
   return createPortal(
     <>
       <div
@@ -395,8 +401,35 @@ export default function LeftSidebarNav() {
               className="sites-pinned-sidebar fixed inset-y-0 right-0 z-[10021] flex flex-col select-none border-l"
             >
               <div className="refined-menu-list flex-1 overflow-y-auto no-scrollbar">
-                {CORE_CHANNELS.map(renderNavButton)}
-                {PRISM_CHANNELS.map(renderNavButton)}
+                <div className="refined-menu-content">
+                  {CORE_CHANNELS.map(renderNavButton)}
+                  <button
+                    type="button"
+                    className="refined-nav-item"
+                    data-active={isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
+                    aria-label={isChannelsOpen ? '7대 프리즘 채널 접기' : '7대 프리즘 채널 펼치기'}
+                    aria-expanded={isChannelsOpen}
+                    aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
+                    title="7대 프리즘 채널"
+                    onClick={() => setIsChannelsOpen((open) => !open)}
+                  >
+                    <Clover size={22} aria-hidden="true" />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isChannelsOpen && (
+                      <motion.div
+                        id="prism-channel-icons"
+                        className="refined-prism-icons"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.2 }}
+                      >
+                        {PRISM_CHANNELS.map(renderNavButton)}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               <div className="refined-menu-footer">
