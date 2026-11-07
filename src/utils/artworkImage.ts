@@ -208,35 +208,30 @@ export async function resolveArtworkImage(
   art: ArtworkImageInput,
   options?: { forcePollinations?: boolean },
 ): Promise<ResolvedArtworkImage> {
-  // 절대로 throw하지 않습니다: 서버 API가 실패해도 즉시 AI 명화 재현 URL로 응답해
-  // "AI 명화 재현" 버튼이 항상 성공하도록 보장합니다.
+  const fallbackUrl = buildPollinationsArtworkUrl(art);
   const fallback: ResolvedArtworkImage = {
-    url: buildPollinationsArtworkUrl(art),
-    displayUrl: buildPollinationsArtworkUrl(art),
+    url: fallbackUrl,
+    displayUrl: fallbackUrl,
     source: "pollinations",
   };
+  let response: Response;
+  let data: { url?: string; displayUrl?: string; source?: ArtworkImageSource; error?: string } | null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000);
-    let received = false;
-    try {
-      const response = await fetch('/api/muse/artwork-image', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...art, ...options }), signal: controller.signal,
-      });
-      received = true;
-      let data: { url?: string; displayUrl?: string; source?: ArtworkImageSource; error?: string };
-      try { data = await response.json(); }
-      catch { return fallback; }
-      if (!response.ok || (!data.url && !data.displayUrl)) return fallback;
-      const url = data.url || '';
-      const displayUrl = data.displayUrl || url;
-      if (!displayUrl) return fallback;
-      return { url, displayUrl, source: resolveArtworkSource(data.source, displayUrl || url) };
-    } catch (error) {
-      return fallback;
-    } finally { clearTimeout(timer); }
-  } catch (_) {
+    response = await fetch('/api/muse/artwork-image', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...art, ...options }), signal: controller.signal,
+    });
+    data = await response.json().catch(() => null);
+  } catch {
     return fallback;
+  } finally {
+    clearTimeout(timer);
   }
+  if (response.status === 429) throw new Error(data?.error || '이미지 생성 한도를 확인해 주세요.');
+  const url = data?.url || '';
+  const displayUrl = data?.displayUrl || url;
+  if (!response.ok || !displayUrl) return fallback;
+  return { url, displayUrl, source: resolveArtworkSource(data?.source, displayUrl) };
 }

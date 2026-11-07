@@ -7,25 +7,33 @@ export function recoveringSubscription<T>(options:{
 }){
   let stopped=false,loading=false,lastServer=0,retries=0;
   let unsubscribe:(()=>void)|undefined,retry:ReturnType<typeof setTimeout>|undefined;
-  let generation=0;
+  let generation=0,serverUpdates=0;
   const visible=()=>!options.visible||options.visible();
   const receive=(value:T)=>{if(stopped)return;if(!options.isServer||options.isServer(value)){lastServer=Date.now();retries=0;}options.receive(value);};
   const attach=()=>{
     if(stopped||!visible())return;
+    if(retry){clearTimeout(retry);retry=undefined;}
     unsubscribe?.();const active=++generation;
     const failed=()=>{
       if(stopped||active!==generation)return;
       if(retry)clearTimeout(retry);
       retry=setTimeout(()=>{attach();void refresh();},Math.min(30000,(options.retryMs??1000)*2**Math.min(retries++,5)));
     };
-    try{unsubscribe=options.watch(value=>{if(active===generation)receive(value);},failed);}catch{failed();}
+    try{
+      unsubscribe=options.watch(value=>{
+        if(active!==generation)return;
+        if(!options.isServer||options.isServer(value))serverUpdates++;
+        receive(value);
+      },failed);
+    }catch{failed();}
   };
   const refresh=async()=>{
     if(stopped||loading||!visible())return;
     loading=true;let timer:ReturnType<typeof setTimeout>|undefined;
+    const updatesAtStart=serverUpdates;
     try{
       const value=await Promise.race([options.load(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(Error('Sync read timeout')),options.loadTimeoutMs??6000);})]);
-      receive(value);
+      if(updatesAtStart===serverUpdates)receive(value);
     }catch{ /* Local data stays intact; the next wake or watchdog retries. */ }
     finally{if(timer)clearTimeout(timer);loading=false;}
   };

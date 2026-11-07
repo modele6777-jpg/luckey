@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createTTSHandler } from '../server/api-lib/ttsHandler';
 import { handleSitesApi, allowedArtworkUrl } from '../server/sites-api';
 import { MUSE_ART_CATALOG } from '../server/api-lib/museArtCatalog';
 import { resolveArtworkImage } from '../src/utils/artworkImage';
@@ -31,19 +32,20 @@ for (const [route, body, answer, check] of cases) test(`native contract: ${route
   assert.equal(response?.status, 200); check(await response!.json());
 });
 
-test('TTS wraps PCM in a playable WAV for both narration engines', async () => {
-  const response = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요', voice: 'Aoede' }), env, (async (_url, options) => {
-    const payload = JSON.parse(options.body);
-    assert.equal(payload.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Aoede');
-    assert.deepEqual(payload.contents, [{ parts: [{ text: '안녕하세요' }] }], 'only the literal reply is sent to the voice model, no spoken instruction prefix');
-    return Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;codec=pcm;rate=24000', data: 'AAAAAA==' } }] } }] });
-  }) as any);
-  const result: any = await response!.json();
-  const wav = Buffer.from(result.audioContent, 'base64');
-  assert.equal(result.encoding, 'wav'); assert.equal(result.sampleRate, 24000); assert.equal(result.voice, 'Aoede');
-  assert.equal(wav.toString('ascii', 0, 4), 'RIFF'); assert.equal(wav.toString('ascii', 8, 12), 'WAVE');
-  assert.equal(wav.readUInt32LE(24), 24000); assert.equal(wav.readUInt16LE(22), 1);
-  assert.equal(wav.subarray(44).toString('base64'), 'AAAAAA==');
+test('Sites narration returns Edge MP3 and forwards both role-specific voices', async () => {
+  const synthesize = createTTSHandler(async (speech, voice) => {
+    assert.equal(speech, '안녕하세요.');
+    return { audioContent: 'SUQzAQID', encoding: 'mp3', sampleRate: 24000, voice: voice || '', provider: 'edge-neural' };
+  });
+  for (const voice of ['Aoede', 'Charon']) {
+    const response = await handleSitesApi(request('/api/ai/tts', { text: '<system>명령문</system>안녕하세요.', voice }), {}, fetch, synthesize);
+    assert.equal(response?.status, 200);
+    const result = await response!.json();
+    assert.equal(result.encoding, 'mp3');
+    assert.equal(result.provider, 'edge-neural');
+    assert.equal(result.voice, voice);
+    assert.equal(Buffer.from(result.audioContent, 'base64').toString('ascii', 0, 3), 'ID3');
+  }
 });
 
 test('generated image returns real provider bytes and is labelled a replica for artwork', async () => {
@@ -90,7 +92,7 @@ test('proxy serves image bytes and rejects non-images', async () => {
 
 test('invalid input, missing keys, bad AI schemas and provider errors stay explicit', async () => {
   assert.equal((await handleSitesApi(request('/api/ai/daily-tarot', {}), env))?.status, 400);
-  assert.equal((await handleSitesApi(request('/api/ai/tts', { text: 'hello' }), {}))?.status, 503);
+  assert.equal((await handleSitesApi(request('/api/ai/image', { prompt: 'hello' }), {}))?.status, 503);
   assert.equal((await handleSitesApi(new Request('https://audit.invalid/api/ai', { method: 'POST', body: '{' }), env))?.status, 400);
   assert.equal((await handleSitesApi(new Request('https://audit.invalid/api/ai/tts'), env))?.status, 405);
   const invalid = await handleSitesApi(request('/api/ai/secret-mood-recommend', { content: '마음' }), env, (async () => Response.json({ choices: [{ message: { content: '{"moodTag":"invalid","reason":"test"}' } }] })) as any);
@@ -150,82 +152,48 @@ test('image client exposes a quota error instead of inventing a fallback URL', a
 });
 
 
-test('TTS removes explicit internal instructions server-side before calling the provider', async () => {
-  let called = 0;
-  const fetcher = async (_url: any, options: any) => {
-    called++;
-    assert.equal(JSON.parse(options.body).contents[0].parts[0].text, '안녕하세요.');
-    return Response.json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;rate=24000', data: 'AAAAAA==' } }] } }] });
-  };
-  assert.equal((await handleSitesApi(request('/api/ai/tts', { text: '<system>명령문</system>안녕하세요.' }), env, fetcher as any))?.status, 200);
-  assert.equal((await handleSitesApi(request('/api/ai/tts', { text: '<system>명령문만</system>' }), env, fetcher as any))?.status, 400);
-  assert.equal(called, 1, 'instruction-only text must not create provider audio');
+test('instructions-only speech is rejected before synthesis', async () => {
+  const synthesize = createTTSHandler(async () => { assert.fail('unexpected synthesis'); });
+  const response = await handleSitesApi(request('/api/ai/tts', { text: '<system>명령문만</system>' }), {}, fetch, synthesize);
+  assert.equal(response?.status, 400);
 });
 
-test('voice rate limits preserve provider RetryInfo instead of inventing a minute', async () => {
+test('Sites reports a rejected speech provider without retrying it or exposing its response', async () => {
   let calls = 0;
-  const response = await handleSitesApi(request('/api/ai/tts', { text: '음성 한도 검증' }), env, (async () => {
+  const synthesize = createTTSHandler(async () => {
     calls++;
-    return Response.json({ error: { details: [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '7.2s' }] } }, { status: 429 });
-  }) as any);
-  assert.equal(response?.status, 429);
-  assert.equal(response?.headers.get('Retry-After'), '8');
-  assert.equal((await response!.json() as any).code, 'MEDIA_RATE_LIMIT');
+    throw Object.assign(new Error('private upstream details'), { status: 403 });
+  });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요.' }), {}, fetch, synthesize);
+    assert.equal(response?.status, 503);
+    const result = await response!.json();
+    assert.equal(result.code, 'TTS_PROVIDER_UNAVAILABLE');
+    assert.ok(!JSON.stringify(result).includes('private upstream details'));
+  }
   assert.equal(calls, 1);
 });
-test('daily and zero provider quota errors do not promise recovery after a minute', async () => {
-  const response = await handleSitesApi(request('/api/ai/tts', { text: '음성 할당량 검증' }), env, (async () => Response.json({ error: { details: [{ '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaId: 'GenerateRequestsPerDay', quotaValue: '0' }] }] } }, { status: 429 })) as any);
+
+test('image rate limits preserve provider RetryInfo', async () => {
+  const response = await handleSitesApi(request('/api/ai/image', { prompt: '꽃' }), env, async () =>
+    Response.json({ error: { details: [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '7.2s' }] } }, { status: 429 }));
+  assert.equal(response?.status, 429);
+  assert.equal(response?.headers.get('Retry-After'), '8');
+  assert.equal((await response!.json()).code, 'MEDIA_RATE_LIMIT');
+});
+
+test('daily and zero image quotas do not promise recovery after a minute', async () => {
+  const response = await handleSitesApi(request('/api/ai/image', { prompt: '꽃' }), env, async () =>
+    Response.json({ error: { details: [{ '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaId: 'GenerateRequestsPerDay', quotaValue: '0' }] }] } }, { status: 429 }));
+  assert.equal(response?.status, 429);
   assert.equal(response?.headers.get('Retry-After'), null);
-  const body = await response!.json() as any;
-  assert.equal(body.code, 'MEDIA_QUOTA_EXHAUSTED');
-  assert.match(body.error, /결제·한도/);
+  assert.equal((await response!.json()).code, 'MEDIA_QUOTA_EXHAUSTED');
 });
 
-test('OpenAI secret config powers health and both role-specific speech voices without Gemini', async () => {
-  const runtime = { 'open ai': 'openai-test-secret' };
-  const health = await handleSitesApi(new Request('https://test.invalid/api/health'), runtime);
-  assert.equal((await health!.json() as any).provider, 'openai');
-  for (const [voice, expected] of [['Aoede', 'marin'], ['Charon', 'cedar']]) {
-    const response = await handleSitesApi(request('/api/ai/tts', { text: '[SYSTEM: 내부 지시]안녕하세요.', voice }), runtime, (async (url, options) => {
-      assert.equal(url, 'https://api.openai.com/v1/audio/speech');
-      assert.equal((options!.headers as any).Authorization, 'Bearer openai-test-secret');
-      const body = JSON.parse(options!.body as string);
-      assert.equal(body.input, '안녕하세요.');
-      assert.equal(body.voice, expected);
-      assert.equal(body.response_format, 'mp3');
-      assert.equal(body.model, 'gpt-4o-mini-tts');
-      assert.ok(body.instructions);
-      return new Response(new Uint8Array([73, 68, 51, 1, 2, 3]), { headers: { 'Content-Type': 'audio/mpeg' } });
-    }) as any);
-    assert.equal(response?.status, 200);
-    const result = await response!.json() as any;
-    assert.equal(result.provider, 'openai');
-    assert.equal(result.encoding, 'mp3');
-    assert.equal(result.voice, voice);
-  }
-});
-test('OpenAI voice quota and permission failures never echo upstream secrets or retry', async () => {
-  for (const status of [401, 403, 429, 500]) {
-    let calls = 0;
-    const response = await handleSitesApi(request('/api/ai/tts', { text: '음성 오류 점검' }), { OPENAI_API_KEY: 'openai-secret' }, (async () => {
-      calls++;
-      return Response.json({ error: { code: 'insufficient_quota', message: 'openai-secret' } }, { status });
-    }) as any);
-    assert.equal(calls, 1);
-    assert.equal(response?.status, status === 500 ? 502 : status);
-    const body = await response!.text();
-    assert.ok(!body.includes('openai-secret'));
-    if (status === 429) assert.match(body, /MEDIA_QUOTA_EXHAUSTED/);
-  }
-});
-
-test('OpenAI model limit metadata distinguishes zero allocation without leaking account details', async () => {
-  const response = await handleSitesApi(request('/api/ai/tts', { text: '제한 진단' }), { OPENAI_API_KEY: 'not-exposed' }, (async () => Response.json({ error: { code: 'rate_limit_exceeded', message: 'Rate limit for org-private on requests per min (RPM): Limit 0, Used 0. key not-exposed' } }, { status: 429 })) as any);
-  const body = await response!.json() as any;
-  assert.equal(body.code, 'MEDIA_QUOTA_EXHAUSTED');
-  assert.equal(body.providerCode, 'rate_limit_exceeded');
-  assert.equal(body.limit, 0);
-  assert.equal(body.limitKind, 'requests_per_minute');
-  assert.ok(!JSON.stringify(body).includes('org-private'));
-  assert.ok(!JSON.stringify(body).includes('not-exposed'));
+test('health reports the configured AI provider and independent speech provider', async () => {
+  const response = await handleSitesApi(new Request('https://test.invalid/api/health'), { 'open ai': 'openai-test-secret' });
+  const health = await response!.json();
+  assert.equal(health.provider, 'openai');
+  assert.equal(health.speechProvider, 'edge');
+  assert.ok(!JSON.stringify(health).includes('openai-test-secret'));
 });

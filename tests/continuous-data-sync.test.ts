@@ -51,6 +51,25 @@ test('reconnect events reattach and read immediately; cleanup rejects late resul
  late();resolveLoad?.(99);await wait(1);assert.equal(deliveries,before);
 });
 
+test('a delayed read cannot overwrite a newer live server snapshot', async () => {
+ const delivered: number[] = [];
+ let publish!: (value: number) => void;
+ let resolveRead!: (value: number) => void;
+ const stop = recoveringSubscription({
+  watch: (next) => { publish = next; return () => {}; },
+  load: () => new Promise<number>((resolve) => { resolveRead = resolve; }),
+  receive: (value) => delivered.push(value),
+ });
+ try {
+  publish(2);
+  resolveRead(1);
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.deepEqual(delivered, [2]);
+ } finally {
+  stop();
+ }
+});
+
 test('actual local edits get conflict clocks while unchanged collector reads do not',()=>{
  const current={dailyArts:{today:{title:'old',timestamp:10}},userGoals:[{id:'g',title:'old'}],userGoalsUpdatedAt:10};
  assert.deepEqual(localActivityPatch(current,{dailyArts:{today:{title:'old',timestamp:999}}},100),{});

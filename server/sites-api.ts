@@ -1,5 +1,5 @@
 import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
-import { synthesizeWithEdgeTTS } from './api-lib/edgeTts';
+import { handleTTS } from './api-lib/ttsHandler';
 import { stripInternalSpeechDirectives } from '../src/utils/speechText';
 import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm';
 import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog';
@@ -161,7 +161,7 @@ async function proxyImage(request: Request, fetchApi: Fetcher) {
   throw new ApiError(502, '작품 이미지의 이동 횟수가 너무 많습니다.');
 }
 
-export async function handleSitesApi(request: Request, env: Runtime, fetchApi: Fetcher = fetch): Promise<Response | null> {
+export async function handleSitesApi(request: Request, env: Runtime, fetchApi: Fetcher = fetch, synthesize: typeof handleTTS = handleTTS): Promise<Response | null> {
   const route = new URL(request.url).pathname;
   if (!routes.has(route)) return null;
   const method = route === '/api/health' || route.endsWith('/proxy') ? 'GET' : 'POST';
@@ -195,14 +195,13 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     }
     if (route === '/api/ai/tts') {
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
-      // 🔊 무료·무제한 Edge TTS 전면 교체: 유료 OpenAI/Gemini 키나 쿼터 없이
-      // 모든 낭독(오디오 도슨트, 타로·사주 리딩, 명시, Calm 가이드 등)이 항상 재생됩니다.
       try {
-        const edge = await synthesizeWithEdgeTTS(speech, body.voice);
-        return json(edge);
+        return json(await synthesize({ text: speech, voice: body.voice }));
       } catch (edgeError) {
         if (request.signal.aborted) throw new ApiError(504, '음성 생성 요청이 취소되었습니다. 다시 눌러 주세요.');
-        console.error('[tts] Edge TTS synthesis failed:', edgeError);
+        if ((edgeError as { code?: string })?.code === 'TTS_PROVIDER_UNAVAILABLE') {
+          throw new ApiError(503, '서버 음성 연결을 사용할 수 없습니다.', undefined, 'TTS_PROVIDER_UNAVAILABLE');
+        }
         throw new ApiError(502, '음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.');
       }
     }

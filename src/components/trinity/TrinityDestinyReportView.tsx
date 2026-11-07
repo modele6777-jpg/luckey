@@ -97,8 +97,8 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const profileName = profile?.basic?.name?.trim() || '';
   const [editName, setEditName] = useState(profileName);
-  const [editBirthdate, setEditBirthdate] = useState(profile?.basic?.birthdate || '1995-05-15');
-  const [editBirthtime, setEditBirthtime] = useState(profile?.basic?.birthtime || '12:00');
+  const [editBirthdate, setEditBirthdate] = useState(profile?.basic?.birthdate || '');
+  const [editBirthtime, setEditBirthtime] = useState(profile?.basic?.birthtime || '');
   const [editGender, setEditGender] = useState<'male' | 'female'>(profile?.basic?.gender === 'female' ? 'female' : 'male');
   const [copied, setCopied] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -460,6 +460,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                 <label className="text-xs font-bold text-zinc-400">생년월일 (양력)</label>
                 <input
                   type="date"
+                  required
                   value={editBirthdate}
                   onChange={(e) => setEditBirthdate(e.target.value)}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:border-amber-400 focus:outline-none"
@@ -596,7 +597,12 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
             <button
               onClick={() => {
-                if (!isEditingProfile) setEditName(profileName);
+                if (!isEditingProfile) {
+                  setEditName(profileName);
+                  setEditBirthdate(profile?.basic?.birthdate || '');
+                  setEditBirthtime(profile?.basic?.birthtime || '');
+                  setEditGender(profile?.basic?.gender === 'female' ? 'female' : 'male');
+                }
                 setIsEditingProfile(!isEditingProfile);
               }}
               className="p-2.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 transition-all text-xs font-medium flex items-center gap-1.5"
@@ -658,6 +664,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                   <label className="text-[11px] font-bold text-zinc-400">생년월일</label>
                   <input
                     type="date"
+                    required
                     value={editBirthdate}
                     onChange={(e) => setEditBirthdate(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-white text-xs focus:outline-none focus:border-amber-400"
