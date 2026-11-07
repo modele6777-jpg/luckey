@@ -1,20 +1,23 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { convertSolarToLunar, koreanLeapMonth, resolveEffectiveSolarDate } from '../src/lib/lunarCalendar';
-import { inspectSajuProfile } from '../src/lib/sajuInput';
+import { convertSolarToLunar, resolveEffectiveSolarDate } from '../src/lib/lunarCalendar';
+import { inspectSajuProfile, SajuInputError } from '../src/lib/sajuInput';
 import { sajuChartFromInput } from '../server/api-lib/sajuChartApi';
 
-// Source, fetched 2026-11-07 with HTTP 200:
+// Korean dates below are from the KASI 2017 attachment fetched 2026-11-07 (HTTP 200):
 // https://www.kasi.re.kr/kor/publication/post/newsMaterial/3660
-// attachment https://www.kasi.re.kr/file/1457689454683_1.hwp
-// "음력-양력 대조표(2017)" lists 초하루 and the KST conjunction clock.
-// That clock is not a saju hour pillar. This file compares civil dates only.
-// The app's −30 minute hour branch and 23:30 day rollover are a separate convention.
+// https://www.kasi.re.kr/file/1457689454683_1.hwp
+// The table lists 초하루 and the KST conjunction clock. The clock is not a saju hour pillar.
+// This file does not change conversion. It checks the existing Korean table.
 //
-// https://astro.kasi.re.kr/life/pageView/4 returned HTTP 500 the same day.
-// data.go.kr LrsrCldInfoService was not called (it needs a service key).
-// korean-lunar-calendar, convertSolarToLunar, and MCP-vs-app are the same engine.
-// Those checks are labeled below and are not this source.
+// A Chinese almanac fetched the same day labels the same solar dates differently:
+// http://cn.nongli.info/years/index.php?year=2017
+// 2017-05-26 五月初一, 2017-06-24 六月初一, 2017-07-23 闰六月初一.
+// https://www.yinliyangli.com/huangli/2017/2017.nongli.php agrees (HTTP 200).
+// Those pages are not an official observatory. Adopting 闰六月 would be the wrong Korean date.
+// https://astro.kasi.re.kr/life/pageView/4 returned HTTP 500.
+// https://www.xinhuanet.com/politics/2017-07-22/c_1121363131.htm returned HTTP 404.
+// Round trips and 2020/2023/2025 below are the same library, not another KASI file.
 
 interface NewMoon {
   month: number;
@@ -45,27 +48,41 @@ function addDays(iso: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
-function engineSolar(month: number, day: number, leap: boolean) {
+function engineSolar(year: number, month: number, day: number, leap: boolean) {
   return resolveEffectiveSolarDate(
-    `2017-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+    `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
     'lunar',
     leap,
   ).solarDateString;
 }
 
-test('2017 new moons match the fetched KASI table, including regular month 6', () => {
+test('Korean 2017 regular and leap pairs match the KASI table', () => {
+  assert.equal(engineSolar(2017, 5, 1, false), '2017-05-26');
+  assert.equal(engineSolar(2017, 5, 1, true), '2017-06-24');
+  assert.equal(engineSolar(2017, 6, 1, false), '2017-07-23');
   assert.equal(KASI_2017_NEW_MOONS.filter((row) => row.leap).map((row) => row.month).join(','), '5');
   for (let index = 0; index < KASI_2017_NEW_MOONS.length; index += 1) {
     const row = KASI_2017_NEW_MOONS[index];
-    assert.equal(engineSolar(row.month, 1, row.leap), row.solar, `${row.month} leap=${row.leap}`);
+    assert.equal(engineSolar(2017, row.month, 1, row.leap), row.solar);
     const next = KASI_2017_NEW_MOONS[index + 1];
     if (next) assert.equal(addDays(row.solar, row.length), next.solar);
   }
-  assert.equal(koreanLeapMonth(2017), 5);
 });
 
-test('press-release holidays match the same table by civil-day offset', () => {
-  // Body of the press page, not the HWP table: 정월대보름, 단오, 칠석.
+test('2017 leap month 6 does not exist on the Korean table and is rejected', () => {
+  assert.throws(() => engineSolar(2017, 6, 1, true), RangeError);
+  const app = inspectSajuProfile({ basic: { birthdate: '2017-06-01', lunarSolar: 'lunar', isLeapMonth: true } });
+  assert.equal(app?.code, 'invalid_leap_month');
+  assert.match(app?.message || '', /윤달이 아니거나/);
+  assert.throws(
+    () => sajuChartFromInput({ year: 2017, month: 6, day: 1, isLunar: true, isLeapMonth: true }),
+    (error: unknown) => error instanceof SajuInputError && error.code === 'invalid_leap_month' && error.message === app?.message,
+  );
+  const chart = sajuChartFromInput({ year: 2017, month: 6, day: 1, isLunar: true, birthtime: '12:00' });
+  assert.equal(chart.solarEquivalentDate, '2017-07-23');
+});
+
+test('press-release holidays follow the KASI 초하루 by civil days', () => {
   const holiday = (month: number, day: number) => {
     const start = KASI_2017_NEW_MOONS.find((row) => row.month === month && !row.leap);
     if (!start) throw new Error(`missing month ${month}`);
@@ -74,53 +91,18 @@ test('press-release holidays match the same table by civil-day offset', () => {
   assert.equal(holiday(1, 15), '2017-02-11');
   assert.equal(holiday(5, 5), '2017-05-30');
   assert.equal(holiday(7, 7), '2017-08-28');
-  assert.equal(engineSolar(5, 5, false), '2017-05-30');
-  assert.equal(engineSolar(7, 7, false), '2017-08-28');
+  assert.equal(engineSolar(2017, 5, 5, false), '2017-05-30');
+  assert.equal(engineSolar(2017, 7, 7, false), '2017-08-28');
 });
 
-test('reported 2017 month-6 dates use the KASI civil dates, and leap month 6 does not exist', () => {
-  const month6 = KASI_2017_NEW_MOONS.find((row) => row.month === 6 && !row.leap);
-  if (!month6) throw new Error('missing regular month 6');
-  assert.equal(engineSolar(6, 1, false), month6.solar);
-  assert.equal(engineSolar(6, 2, false), addDays(month6.solar, 1));
-  assert.equal(engineSolar(6, 10, false), addDays(month6.solar, 9));
-  assert.equal(month6.solar, '2017-07-23');
-  assert.equal(addDays(month6.solar, 1), '2017-07-24');
-  assert.equal(addDays(month6.solar, 9), '2017-08-01');
-
-  const app = inspectSajuProfile({ basic: { birthdate: '2017-06-01', lunarSolar: 'lunar', isLeapMonth: true } });
-  assert.equal(app?.code, 'invalid_leap_month');
-  assert.match(app?.message || '', /2017년 음력 6월은 윤달이 아닙니다/);
-  assert.match(app?.message || '', /윤달은 5월/);
-  for (const day of [1, 2, 10]) {
-    assert.throws(
-      () => sajuChartFromInput({ year: 2017, month: 6, day, isLunar: true, isLeapMonth: true }),
-      (error: unknown) => error instanceof Error && error.message === app?.message,
-    );
-  }
-  const chart = sajuChartFromInput({ year: 2017, month: 6, day: 1, isLunar: true, birthtime: '12:00' });
-  assert.equal(chart.solarEquivalentDate, '2017-07-23');
-});
-
-test('same-library round trip is only a consistency check', () => {
+test('solar to lunar round trip only repeats this library', () => {
   const back = convertSolarToLunar(2017, 7, 23);
   assert.deepEqual(back, { year: 2017, month: 6, day: 1, isLeapMonth: false });
-  assert.equal(engineSolar(back.month, back.day, back.isLeapMonth), '2017-07-23');
+  assert.equal(engineSolar(2017, back.month, back.day, back.isLeapMonth), '2017-07-23');
 });
 
-test('2020, 2023 and 2025 leaps are library checks, not a fetched KASI table', () => {
-  const samples = [
-    { year: 2020, month: 4, solar: '2020-05-23' },
-    { year: 2023, month: 2, solar: '2023-03-22' },
-    { year: 2025, month: 6, solar: '2025-07-25' },
-  ];
-  for (const sample of samples) {
-    const iso = resolveEffectiveSolarDate(
-      `${sample.year}-${String(sample.month).padStart(2, '0')}-01`,
-      'lunar',
-      true,
-    ).solarDateString;
-    assert.equal(iso, sample.solar);
-    assert.equal(koreanLeapMonth(sample.year), sample.month);
-  }
+test('2020, 2023 and 2025 leap days are library checks, not another fetched KASI file', () => {
+  assert.equal(engineSolar(2020, 4, 1, true), '2020-05-23');
+  assert.equal(engineSolar(2023, 2, 1, true), '2023-03-22');
+  assert.equal(engineSolar(2025, 6, 1, true), '2025-07-25');
 });

@@ -1,4 +1,4 @@
-import { koreanLeapMonth, resolveEffectiveSolarDate } from './lunarCalendar';
+import { resolveEffectiveSolarDate } from './lunarCalendar';
 
 export type SajuInputCode =
   | 'invalid_time_format'
@@ -71,11 +71,7 @@ export function assertSajuClock(input: SajuClockInput): {
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
     if (!isLunar) throw new SajuInputError(`${birthdate}은 양력에 없는 날짜입니다.`, 'invalid_date');
-    if (isLeapMonth) {
-      const leap = koreanLeapMonth(year);
-      const which = leap ? `그해 윤달은 ${leap}월입니다.` : '그해에는 윤달이 없습니다.';
-      throw new SajuInputError(`${year}년 음력 ${month}월은 윤달이 아닙니다. ${which}`, 'invalid_leap_month');
-    }
+    if (isLeapMonth) throw new SajuInputError(`${year}년 음력 ${month}월은 윤달이 아니거나 지원되지 않는 음력 날짜입니다.`, 'invalid_leap_month');
     throw new SajuInputError(message || '올바른 생년월일을 입력해 주세요.', 'invalid_date');
   }
   return { year, month, day, birthtime, isLunar, isLeapMonth, birthdate };
