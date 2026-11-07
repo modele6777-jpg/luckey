@@ -931,5 +931,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "renaissanceBrunoInfiniteUniverseHeroicFurore": {
     "field": "brunoInfiniteUniverseResult",
     "traceKey": "brunoInfiniteUniverseResult"
+  },
+  "frenchPascalPenseesHeartReason": {
+    "field": "pascalPenseesHeartReasonResult",
+    "traceKey": "pascalPenseesHeartReasonResult"
+  },
+  "germanSchopenhauerWillRepresentation": {
+    "field": "schopenhauerWillRepresentationResult",
+    "traceKey": "schopenhauerWillRepresentationResult"
+  },
+  "koreanChusaKimJeonghuiSehando": {
+    "field": "chusaKimJeonghuiSehandoResult",
+    "traceKey": "chusaKimJeonghuiSehandoResult"
   }
 };

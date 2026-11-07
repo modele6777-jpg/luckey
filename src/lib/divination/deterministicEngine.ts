@@ -256,6 +256,9 @@ import { calculateMontaigneEssaisWisdom, formatMontaigneEssaisWisdomPrompt, type
 import { calculateNagarjunaMadhyamakaSunyata, formatNagarjunaMadhyamakaSunyataPrompt, type NagarjunaMadhyamakaSunyataResult, NAGARJUNA_MADHYAMAKA_VERSION } from './ancientIndianNagarjunaMadhyamakaSunyataEngine';
 import { calculateJinulJeonghyeSsangsu, formatJinulJeonghyeSsangsuPrompt, type JinulJeonghyeSsangsuResult, JINUL_JEONGHYE_SSANGSU_VERSION } from './koreanJinulJeonghyeSsangsuDonohJeomsuEngine';
 import { calculateRenaissanceBrunoInfiniteUniverse, formatRenaissanceBrunoInfiniteUniversePrompt, type RenaissanceBrunoInfiniteUniverseResult, BRUNO_INFINITE_UNIVERSE_VERSION } from './renaissanceBrunoInfiniteUniverseHeroicFuroreEngine';
+import { calculatePascalPenseesHeartReason, formatPascalPenseesHeartReasonPrompt, type PascalPenseesHeartReasonResult, PASCAL_PENSEES_HEART_REASON_VERSION } from './frenchPascalPenseesHeartReasonEngine';
+import { calculateSchopenhauerWillRepresentation, formatSchopenhauerWillRepresentationPrompt, type SchopenhauerWillRepresentationResult, SCHOPENHAUER_WILL_REPRESENTATION_VERSION } from './germanSchopenhauerWillRepresentationEngine';
+import { calculateChusaKimJeonghuiSehando, formatChusaKimJeonghuiSehandoPrompt, type ChusaKimJeonghuiSehandoResult, CHUSA_SEHANDO_WISDOM_VERSION } from './koreanChusaKimJeonghuiSehandoEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -532,6 +535,9 @@ export interface DeterministicEngineReport {
   nagarjunaMadhyamakaSunyataResult?: NagarjunaMadhyamakaSunyataResult | null;
   jinulJeonghyeSsangsuResult?: JinulJeonghyeSsangsuResult | null;
   brunoInfiniteUniverseResult?: RenaissanceBrunoInfiniteUniverseResult | null;
+  pascalPenseesHeartReasonResult?: PascalPenseesHeartReasonResult | null;
+  schopenhauerWillRepresentationResult?: SchopenhauerWillRepresentationResult | null;
+  chusaKimJeonghuiSehandoResult?: ChusaKimJeonghuiSehandoResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3161,6 +3167,33 @@ try {
     }
   })()));
 
+  // 225. 프랑스 블레즈 파스칼 팡세 사유하는 갈대 & 심장의 논리 엔진
+  const pascalPenseesHeartReasonResult = calculateSupplement('pascalPenseesHeartReasonResult', () => ((() => {
+    try {
+      return calculatePascalPenseesHeartReason(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 226. 독일 아서 쇼펜하우어 의지와 표상으로서의 세계 맹목적 의지 초월 & 심미적 관조·자비 엔진
+  const schopenhauerWillRepresentationResult = calculateSupplement('schopenhauerWillRepresentationResult', () => ((() => {
+    try {
+      return calculateSchopenhauerWillRepresentation(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 227. 조선 완당 추사 김정희 세한도 송백후조 & 문자향 서권기 품격 엔진
+  const chusaKimJeonghuiSehandoResult = calculateSupplement('chusaKimJeonghuiSehandoResult', () => ((() => {
+    try {
+      return calculateChusaKimJeonghuiSehando(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3423,6 +3456,9 @@ try {
     nagarjunaMadhyamakaSunyataResult,
     jinulJeonghyeSsangsuResult,
     brunoInfiniteUniverseResult,
+    pascalPenseesHeartReasonResult,
+    schopenhauerWillRepresentationResult,
+    chusaKimJeonghuiSehandoResult,
     tools: toolsMap,
   };
 }
@@ -3675,6 +3711,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ancientIndianNagarjunaMadhyamakaSunyata', nameKo: '용수 중론 팔불중도 연기즉공 이제설 공성지혜', icon: '☸️', category: 'deep_master' },
   { key: 'koreanJinulJeonghyeSsangsuDonohJeomsu', nameKo: '보조국사 지눌 수심결 정혜쌍수 돈오점수 성적등지', icon: '📜', category: 'deep_master' },
   { key: 'renaissanceBrunoInfiniteUniverseHeroicFurore', nameKo: '조르다노 브루노 무한우주론 영웅적열정 정신주권', icon: '🌌', category: 'deep_master' },
+  { key: 'frenchPascalPenseesHeartReason', nameKo: '블레즈 파스칼 팡세 사유하는갈대 심장의논리 파스칼의내기', icon: '🌾', category: 'deep_master' },
+  { key: 'germanSchopenhauerWillRepresentation', nameKo: '쇼펜하우어 의지와표상 맹목적의지초월 심미적관조 동포애자비', icon: '🎼', category: 'deep_master' },
+  { key: 'koreanChusaKimJeonghuiSehando', nameKo: '추사 김정희 세한도 송백후조 역경극복지조 문자향서권기', icon: '🌲', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3782,6 +3821,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'frenchPascalPenseesHeartReason',
+    'germanSchopenhauerWillRepresentation',
+    'koreanChusaKimJeonghuiSehando',
     'ancientIndianNagarjunaMadhyamakaSunyata',
     'koreanJinulJeonghyeSsangsuDonohJeomsu',
     'renaissanceBrunoInfiniteUniverseHeroicFurore',
@@ -3861,6 +3903,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'frenchPascalPenseesHeartReason',
+    'germanSchopenhauerWillRepresentation',
+    'koreanChusaKimJeonghuiSehando',
     'ancientIndianNagarjunaMadhyamakaSunyata',
     'koreanJinulJeonghyeSsangsuDonohJeomsu',
     'renaissanceBrunoInfiniteUniverseHeroicFurore',

@@ -219,6 +219,9 @@ import { calculateMontaigneEssaisWisdom, formatMontaigneEssaisWisdomPrompt, MONT
 import { calculateNagarjunaMadhyamakaSunyata, formatNagarjunaMadhyamakaSunyataPrompt, NAGARJUNA_MADHYAMAKA_VERSION } from '../src/lib/divination/ancientIndianNagarjunaMadhyamakaSunyataEngine';
 import { calculateJinulJeonghyeSsangsu, formatJinulJeonghyeSsangsuPrompt, JINUL_JEONGHYE_SSANGSU_VERSION } from '../src/lib/divination/koreanJinulJeonghyeSsangsuDonohJeomsuEngine';
 import { calculateRenaissanceBrunoInfiniteUniverse, formatRenaissanceBrunoInfiniteUniversePrompt, BRUNO_INFINITE_UNIVERSE_VERSION } from '../src/lib/divination/renaissanceBrunoInfiniteUniverseHeroicFuroreEngine';
+import { calculatePascalPenseesHeartReason, formatPascalPenseesHeartReasonPrompt, PASCAL_PENSEES_HEART_REASON_VERSION } from '../src/lib/divination/frenchPascalPenseesHeartReasonEngine';
+import { calculateSchopenhauerWillRepresentation, formatSchopenhauerWillRepresentationPrompt, SCHOPENHAUER_WILL_REPRESENTATION_VERSION } from '../src/lib/divination/germanSchopenhauerWillRepresentationEngine';
+import { calculateChusaKimJeonghuiSehando, formatChusaKimJeonghuiSehandoPrompt, CHUSA_SEHANDO_WISDOM_VERSION } from '../src/lib/divination/koreanChusaKimJeonghuiSehandoEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4547,6 +4550,48 @@ test('Giordano Bruno Infinite Universe Engine: calculates Infinite cosmos vision
   const prompt = formatRenaissanceBrunoInfiniteUniversePrompt(rep);
   assert(prompt.includes('브루노 무한우주론 & 영웅적 열정(Eroico Furore) 지표'));
   assert(prompt.includes(rep.activeCosmicAspect.aspectLatinOrItalian));
+});
+
+test('Blaise Pascal Pensees Engine: calculates Thinking reed dignity, Heart intuition, and Existential wager resolve', () => {
+  const rep = calculatePascalPenseesHeartReason(profile);
+  assert.equal(rep.engineVersion, PASCAL_PENSEES_HEART_REASON_VERSION);
+  assert(rep.thinkingReedDignityScore >= 0 && rep.thinkingReedDignityScore <= 100);
+  assert(rep.heartIntuitionFinesseScore >= 0 && rep.heartIntuitionFinesseScore <= 100);
+  assert(rep.existentialWagerResolveScore >= 0 && rep.existentialWagerResolveScore <= 100);
+  assert(rep.dualInfinitiesPerspectiveScore >= 0 && rep.dualInfinitiesPerspectiveScore <= 100);
+  assert(rep.divertissementTranquilityScore >= 0 && rep.divertissementTranquilityScore <= 100);
+  assert(rep.activeThematicThought.thoughtTitleFrench.length > 0);
+  const prompt = formatPascalPenseesHeartReasonPrompt(rep);
+  assert(prompt.includes('블레즈 파스칼 팡세(Pensées) 사유하는 갈대 & 심장의 논리 지표'));
+  assert(prompt.includes(rep.activeThematicThought.thoughtTitleKo));
+});
+
+test('Arthur Schopenhauer Will Representation Engine: calculates Will transcendence, Aesthetic contemplation, and Mitleid compassion', () => {
+  const rep = calculateSchopenhauerWillRepresentation(profile);
+  assert.equal(rep.engineVersion, SCHOPENHAUER_WILL_REPRESENTATION_VERSION);
+  assert(rep.willTranscendenceClarityScore >= 0 && rep.willTranscendenceClarityScore <= 100);
+  assert(rep.aestheticContemplationDepthScore >= 0 && rep.aestheticContemplationDepthScore <= 100);
+  assert(rep.mitleidUniversalCompassionScore >= 0 && rep.mitleidUniversalCompassionScore <= 100);
+  assert(rep.innerHeiterkeitSerenityScore >= 0 && rep.innerHeiterkeitSerenityScore <= 100);
+  assert(rep.wiseRelationalDistanceScore >= 0 && rep.wiseRelationalDistanceScore <= 100);
+  assert(rep.activeSchopenhauerTheme.themeTitleGerman.length > 0);
+  const prompt = formatSchopenhauerWillRepresentationPrompt(rep);
+  assert(prompt.includes('쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 지표'));
+  assert(prompt.includes(rep.activeSchopenhauerTheme.themeTitleKo));
+});
+
+test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, Enduring friendship, and Munjahyang seogwongi', () => {
+  const rep = calculateChusaKimJeonghuiSehando(profile);
+  assert.equal(rep.engineVersion, CHUSA_SEHANDO_WISDOM_VERSION);
+  assert(rep.songbaekHudjoIntegrityScore >= 0 && rep.songbaekHudjoIntegrityScore <= 100);
+  assert(rep.enduringFriendshipTrustScore >= 0 && rep.enduringFriendshipTrustScore <= 100);
+  assert(rep.munjahyangScholarlyGraceScore >= 0 && rep.munjahyangScholarlyGraceScore <= 100);
+  assert(rep.chusaBoldHarmonyFlexibilityScore >= 0 && rep.chusaBoldHarmonyFlexibilityScore <= 100);
+  assert(rep.dambaekSimgyeongPurityScore >= 0 && rep.dambaekSimgyeongPurityScore <= 100);
+  assert(rep.activeSehandoTheme.themeTitleHanja.length > 0);
+  const prompt = formatChusaKimJeonghuiSehandoPrompt(rep);
+  assert(prompt.includes('추사 김정희 세한도(歲寒圖) 송백후조 & 문자향 서권기 지표'));
+  assert(prompt.includes(rep.activeSehandoTheme.themeTitleKo));
 });
 
 
