@@ -3476,7 +3476,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
             {/* 가로 스크롤 추천 질문 리스트 */}
             {currentPrompts.length > 0 && (
-              <div className="lucy-suggestion-list flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 py-0.5">
+              <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
                 {currentPrompts.map((promptText) => (
                   <button
                     key={promptText}
