@@ -108,7 +108,7 @@ button, a, input, textarea, select {
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   border-bottom: 1px solid var(--border-linen);
   box-shadow: 0 2px 12px rgba(92, 60, 43, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
-  padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
+  padding: max(12px, var(--key-safe-top, env(safe-area-inset-top))) max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -4247,7 +4247,7 @@ button, a, input, textarea, select {
 
   /* 1. Header & Top Navigation for iPhone */
   .top-nav {
-    padding-top: max(10px, env(safe-area-inset-top));
+    padding-top: max(10px, var(--key-safe-top, env(safe-area-inset-top)));
     padding-bottom: 10px;
     padding-left: max(14px, env(safe-area-inset-left));
     padding-right: max(14px, env(safe-area-inset-right));

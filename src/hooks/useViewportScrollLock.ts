@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { canUseKeyboardViewport, layoutOutgrewVisual, orientedScreenSize, readViewportSnapshot } from '@/lib/visualViewportBox';
+import { canUseKeyboardViewport, orientedScreenSize, readViewportSnapshot, resolveAppLayoutHeight } from '@/lib/visualViewportBox';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
@@ -71,24 +71,6 @@ export function useViewportScrollLock() {
       return orientedScreenSize(sw, sh, window.innerWidth, window.innerHeight);
     };
 
-    const isIosOrTablet = (): boolean => {
-      if (typeof navigator === 'undefined') return false;
-      const ua = navigator.userAgent || '';
-      const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      return isIos || /Tablet|Android/i.test(ua);
-    };
-
-    const isStandaloneMode = (): boolean => {
-      if (typeof window === 'undefined') return false;
-      const nav = window.navigator as any;
-      return Boolean(
-        nav?.standalone === true ||
-        window.matchMedia('(display-mode: standalone)').matches ||
-        window.matchMedia('(display-mode: fullscreen)').matches ||
-        document.documentElement.classList.contains('pwa-standalone')
-      );
-    };
-
     const updateAppViewportHeight = () => {
       if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
@@ -100,7 +82,6 @@ export function useViewportScrollLock() {
       const visualTop = visual ? Math.max(0, Math.round(visual.offsetTop)) : 0;
 
       const snapshot = readViewportSnapshot(window);
-      const unfolding = layoutOutgrewVisual(snapshot);
       const oriented = getOrientedScreenSize();
       // 가상 키보드가 실제로 올라와 있는지 정밀 판별:
       // 1. 활성 입력창(input/textarea/contenteditable)이 포커스되어 있고 visualH가 화면 높이보다 100px 이상 작을 때 (PWA standalone 대응)
@@ -152,75 +133,20 @@ export function useViewportScrollLock() {
         if (document.body) document.body.classList.remove('keyboard-open');
         document.documentElement.style.setProperty('--vv-top', '0px');
         document.documentElement.style.setProperty('--vv-left', '0px');
-        const resetShell = () => {
-          const shell = document.getElementById('root')?.querySelector<HTMLElement>('.prism-app-shell') || null;
-          if (shell) {
-            shell.style.height = '';
-            shell.style.minHeight = '';
-            shell.style.maxHeight = '';
-          }
-        };
-        const rootEl = document.getElementById('root');
-        if (rootEl) {
-          rootEl.style.removeProperty('position');
-          rootEl.style.removeProperty('top');
-          rootEl.style.removeProperty('left');
-          rootEl.style.removeProperty('right');
-          rootEl.style.removeProperty('width');
-          rootEl.style.removeProperty('height');
-          rootEl.style.removeProperty('min-height');
-          rootEl.style.removeProperty('max-height');
-        }
-        const isCandidate = isIosOrTablet() || isStandaloneMode();
-        const shortfall = oriented.height - innerH;
+        const layoutHeight = resolveAppLayoutHeight(snapshot);
+        document.documentElement.style.setProperty('--app-height', layoutHeight);
+        document.documentElement.style.removeProperty('height');
+        document.documentElement.style.removeProperty('min-height');
+        document.body?.style.removeProperty('height');
+        document.body?.style.removeProperty('min-height');
 
-        // 🌟 핵심 해결: iPad / 태블릿 PWA 홈 화면 앱에서 WebKit이 상/하단 바를 중복 차감하여
-        // innerHeight가 실제 하드웨어 화면보다 60~120px 짧게 보고되는 고질적 버그 대응
-        // 키보드가 없을 때 실제 화면 높이(oriented.height)로 100% 가득 채워 하단 검은 여백을 원천 제거합니다.
-        if (!unfolding && isCandidate && shortfall > 10 && shortfall < oriented.height * 0.45) {
-          const fullScreenH = Math.round(oriented.height);
-          document.documentElement.style.setProperty('--app-height', `${fullScreenH}px`);
-          document.documentElement.style.setProperty('--vvh', `${fullScreenH}px`);
-          document.documentElement.style.setProperty('--visual-vh', `${fullScreenH}px`);
-          document.documentElement.style.height = `${fullScreenH}px`;
-          document.documentElement.style.minHeight = `${fullScreenH}px`;
-          if (document.body) {
-            document.body.style.height = `${fullScreenH}px`;
-            document.body.style.minHeight = `${fullScreenH}px`;
-          }
-          const root = document.getElementById('root');
-          if (root) {
-            root.style.position = 'fixed';
-            root.style.top = '0px';
-            root.style.left = '0px';
-            root.style.right = '0px';
-            root.style.height = `${fullScreenH}px`;
-            root.style.minHeight = `${fullScreenH}px`;
-          }
-          resetShell();
-        } else {
-          const measuredHeight = `${Math.round(innerH)}px`;
-          const layoutHeight = unfolding ? measuredHeight
-            : snapshot.iosStandalone ? `max(100dvh, ${measuredHeight})` : '100dvh';
-          document.documentElement.style.setProperty('--app-height', layoutHeight);
-          document.documentElement.style.setProperty('--vvh', layoutHeight);
-          document.documentElement.style.setProperty('--visual-vh', layoutHeight);
-          document.documentElement.style.height = '';
-          document.documentElement.style.minHeight = '';
-          if (document.body) {
-            document.body.style.height = '';
-            document.body.style.minHeight = '';
-          }
-          const root = document.getElementById('root');
-          if (root) {
-            root.style.position = 'fixed';
-            root.style.top = '0px';
-            root.style.left = '0px';
-            root.style.right = '0px';
-            root.style.height = layoutHeight;
-            root.style.minHeight = layoutHeight;
-          }
-          resetShell();
+        const root = document.getElementById('root');
+        for (const property of ['position', 'top', 'left', 'right', 'width', 'height', 'min-height', 'max-height']) {
+          root?.style.removeProperty(property);
+        }
+        const shell = root?.querySelector<HTMLElement>('.prism-app-shell');
+        for (const property of ['height', 'min-height', 'max-height']) {
+          shell?.style.removeProperty(property);
         }
       }
     };

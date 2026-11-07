@@ -93,9 +93,7 @@
     width: 100%;
     height: 100%;
     flex: 1;
-    min-height: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -119,13 +117,6 @@
     right: 0px !important;
     height: var(--app-height, 100dvh);
     min-height: var(--app-height, 100dvh);
-  }
-
-  html.pwa-standalone .prism-app-shell {
-    height: 100%;
-    min-height: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
   }
 
   [data-app-scroll-root] {
@@ -373,11 +364,7 @@
     width: 100%;
     height: 100%;
     flex: 1;
-    /* base 레이어의 최소 높이 체인을 이 중복 정의가 덮지 않도록 동일하게 유지 (iPad PWA 하단 여백 방지).
-       키보드 활성 시에는 useViewportScrollLock이 인라인으로 0px로 해제한다. */
-    min-height: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 0;
     overflow: hidden;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;

@@ -7,6 +7,7 @@ import { savePendingSelection, clearPendingSelection } from "@/lib/selectionBrid
 import { getPendingPrismToss, clearPrismToss } from "@/lib/prismToss";
 import { playAudioHaptic } from "@/lib/audioHaptics";
 import { useTheme } from "@/contexts/ThemeContext";
+import { readSafeAreaInsets } from "@/lib/visualViewportBox";
 
 const CALM_DARK_THEME_CSS = `
   html.dark {
@@ -91,6 +92,31 @@ export default function CalmApp() {
       syncIframeTheme();
     }
   }, [resolvedTheme, iframeLoaded, syncIframeTheme]);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    let frame = 0;
+    const syncTopInset = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const root = iframe.contentDocument?.documentElement;
+        if (!root) return;
+        root.style.setProperty('--key-safe-top', `${readSafeAreaInsets(document).top}px`);
+      });
+    };
+    const observer = new ResizeObserver(syncTopInset);
+    observer.observe(iframe);
+    window.addEventListener('resize', syncTopInset);
+    iframe.addEventListener('load', syncTopInset);
+    syncTopInset();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', syncTopInset);
+      iframe.removeEventListener('load', syncTopInset);
+      window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   const dismissLoader = useCallback(() => {
     setIsLoading(false);
@@ -261,7 +287,7 @@ export default function CalmApp() {
     return () => frame?.removeEventListener('load', updateLayout);
   }, [isWideWorkspace]);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=38.0' : '?v=38.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=39.0' : '?v=39.0'}`;
 
   return (
     <div
@@ -289,7 +315,7 @@ export default function CalmApp() {
         ref={iframeRef}
         src={iframeSrc}
         title="Key"
-        className="w-full h-full border-0 m-0 p-0 flex-1"
+        className="block w-full min-h-0 border-0 m-0 p-0 flex-1"
         allow="autoplay; microphone"
         onLoad={handleIFrameLoad}
       />

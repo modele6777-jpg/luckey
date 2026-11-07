@@ -123,6 +123,20 @@ export function canUseKeyboardViewport(snapshot: ViewportSnapshot, inputActive: 
     && Math.abs(innerWidth - visualWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
 }
 
+export function resolveAppLayoutHeight(snapshot: ViewportSnapshot): string {
+  const layoutHeight = positive(snapshot.innerHeight);
+  if (layoutHeight == null) return '100dvh';
+  if (layoutOutgrewVisual(snapshot)) return px(layoutHeight);
+
+  const standalone = standaloneResumeBox(snapshot);
+  if (standalone) return `max(100dvh, ${px(standalone.height)})`;
+
+  const visual = snapshot.visual;
+  const sameWidth = visual && Math.abs(visual.width - snapshot.innerWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
+  const measuredHeight = (sameWidth && positive(visual.height)) || layoutHeight;
+  return `max(100dvh, ${px(roundPx(measuredHeight))})`;
+}
+
 /** The window width is the page width. A wider screen does not stretch the shell. */
 export function coverScreenEdges(_snapshot: ViewportSnapshot, box: ViewportBox): ViewportBox {
   return box;
@@ -325,20 +339,6 @@ export function applyVisualViewportBox(
   root.style.setProperty('--vv-bleed-right', px(bleed.right));
   root.toggleAttribute('data-lucy-wide-cover', bleed.right > 0);
   root.style.setProperty('--visual-vh', px(box.height));
-  if (snapshot?.iosStandalone && box.height > (snapshot.innerHeight || 0)) {
-    root.style.setProperty('--app-height', px(box.height));
-    root.style.height = px(box.height);
-    root.style.minHeight = px(box.height);
-    if (document.body) {
-      document.body.style.height = px(box.height);
-      document.body.style.minHeight = px(box.height);
-    }
-    const appRoot = document.getElementById('root');
-    if (appRoot) {
-      appRoot.style.height = px(box.height);
-      appRoot.style.minHeight = px(box.height);
-    }
-  }
 }
 
 function rememberStable(box: ViewportBox): void {
@@ -372,7 +372,7 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   const innerHeight = snapshot.innerHeight;
   // 키보드가 열린 동안 --vv-top / --app-height는 useViewportScrollLock이 소유한다.
   // 여기서 offsetTop을 0으로 덮어쓰면 셸이 레이아웃 맨 위에 고정되어 화면이 과도하게 올라간다.
-  if (visualHeight > 0 && innerHeight - visualHeight > 100) {
+  if (document.documentElement.classList.contains('keyboard-open') || (visualHeight > 0 && innerHeight - visualHeight > 100)) {
     applySafeAreaVars(document);
     return null;
   }
