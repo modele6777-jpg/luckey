@@ -63,6 +63,25 @@
   margin-block: auto;
 }
 
+/* Unfolded / Wide Screen (iPhone Duo Inner Screen >= 580px or dual-pane-active): All icons from top */
+@media (min-width: 580px), (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
+  .sites-pinned-sidebar[data-theme] .refined-menu-list {
+    justify-content: flex-start;
+  }
+  .refined-menu-content {
+    margin-block: 0;
+  }
+}
+
+html.dual-pane-active .sites-pinned-sidebar[data-theme] .refined-menu-list,
+html[data-dual-screen='true'] .sites-pinned-sidebar[data-theme] .refined-menu-list {
+  justify-content: flex-start;
+}
+html.dual-pane-active .refined-menu-content,
+html[data-dual-screen='true'] .refined-menu-content {
+  margin-block: 0;
+}
+
 .refined-prism-icons {
   overflow: hidden;
 }
