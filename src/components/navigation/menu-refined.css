@@ -66,8 +66,8 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border: 1px solid transparent;
   border-radius: 12px;
   color: var(--menu-text);
@@ -83,4 +83,10 @@
 .refined-nav-item:focus-visible {
   outline: 2px solid #85a8cb;
   outline-offset: -2px;
+}
+
+/* Match the status indicator scale and keep every control on the rail centerline. */
+.refined-nav-item > svg {
+  width: 20px;
+  height: 20px;
 }
