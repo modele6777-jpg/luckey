@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import {
@@ -7,7 +8,7 @@ import {
   VisualizerMode,
   VisualizerColorTheme,
 } from '@/lib/audioReactiveVisualizer';
-import { Sparkles, Maximize2, Minimize2, Eye, Sliders, Volume2, RotateCcw } from 'lucide-react';
+import { Sparkles, Maximize2, X, Eye, Sliders, Volume2, RotateCcw } from 'lucide-react';
 
 interface AudioReactive3DVisualizerProps {
   isPlaying: boolean;
@@ -30,6 +31,27 @@ export function AudioReactive3DVisualizer({
 }: AudioReactive3DVisualizerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const closeStageRef = useRef(onCloseStage);
+  closeStageRef.current = onCloseStage;
+
+  useEffect(() => {
+    if (mode !== 'stage') return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    closeButtonRef.current?.focus({ preventScroll: true });
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeStageRef.current?.();
+    };
+    document.addEventListener('keydown', handleEscape, true);
+    return () => {
+      document.removeEventListener('keydown', handleEscape, true);
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, [mode]);
+
 
   // User interactive state for stage mode
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>('cosmic-galaxy');
@@ -510,6 +532,7 @@ export function AudioReactive3DVisualizer({
 
   // Touch and mouse orbital interaction handlers
   const handlePointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('button, input, select, a')) return;
     isDraggingRef.current = true;
     lastMousePosRef.current = { x: e.clientX, y: e.clientY };
   };
@@ -559,16 +582,21 @@ export function AudioReactive3DVisualizer({
     );
   }
 
-  // Render for Stage Mode (Fullscreen Immersive 3D Experience)
-  return (
+  // Portal outside transformed app containers and above the permanent sidebar.
+  return createPortal(
     <div
       ref={containerRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="audio-visualizer-title"
+      style={{ top: 'var(--vv-top, 0px)', height: 'var(--app-height, 100dvh)' }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       onWheel={handleWheel}
-      className={`fixed inset-0 z-[9999] flex flex-col bg-zinc-950 text-white select-none overflow-hidden touch-none cursor-grab active:cursor-grabbing ${className}`}
+      className={`fixed inset-x-0 z-[12000] flex flex-col bg-zinc-950 text-white select-none overflow-hidden touch-none cursor-grab active:cursor-grabbing ${className}`}
     >
       {/* 3D WebGL Canvas Stage */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block z-0" />
@@ -577,8 +605,11 @@ export function AudioReactive3DVisualizer({
       <div className="absolute inset-0 pointer-events-none bg-radial from-transparent via-black/30 to-black/90 z-10" />
 
       {/* Top Header Bar */}
-      <header className="relative z-20 flex items-center justify-between px-4 py-3 sm:px-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-        <div className="flex items-center gap-3">
+      <header
+        className="relative z-20 flex shrink-0 items-center justify-between gap-3 px-4 py-3 sm:px-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent"
+        style={{ paddingTop: 'max(12px, env(safe-area-inset-top, 0px))', paddingRight: 'max(16px, env(safe-area-inset-right, 0px))' }}
+      >
+        <div className="flex items-center gap-3 min-w-0">
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg border"
             style={{
@@ -588,9 +619,9 @@ export function AudioReactive3DVisualizer({
           >
             <Sparkles size={16} style={{ color: theme.primary }} className="animate-pulse" />
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-extrabold tracking-wide text-white">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span id="audio-visualizer-title" className="text-sm font-extrabold tracking-wide text-white">
                 PRISM 3D 오디오 시각화
               </span>
               <span
@@ -604,14 +635,14 @@ export function AudioReactive3DVisualizer({
                 {theme.category}
               </span>
             </div>
-            <span className="text-[11px] text-white/60">
+            <span className="text-[11px] text-white/60 truncate">
               {trackName || '30곡 실시간 주파수 반응형 3D 파티클 엔진'} · {trackArtist || 'PRISM Audio Suite'}
             </span>
           </div>
         </div>
 
         {/* Action Controls Header */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={handleResetCamera}
@@ -635,11 +666,14 @@ export function AudioReactive3DVisualizer({
           {onCloseStage && (
             <button
               type="button"
+              ref={closeButtonRef}
               onClick={onCloseStage}
-              className="p-2 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white transition-all border border-white/20"
-              title="시각화 무대 닫기"
+              className="min-h-11 min-w-11 px-3 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white transition-all border border-white/30 flex items-center justify-center gap-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              aria-label="3D 오디오 시각화 닫기"
+              title="시각화 닫기 (Esc)"
             >
-              <Minimize2 size={16} />
+              <X size={18} aria-hidden="true" />
+              <span className="hidden sm:inline text-xs font-semibold">닫기</span>
             </button>
           )}
         </div>
@@ -760,6 +794,6 @@ export function AudioReactive3DVisualizer({
           </div>
         </footer>
       )}
-    </div>
+    </div>, document.body
   );
 }
