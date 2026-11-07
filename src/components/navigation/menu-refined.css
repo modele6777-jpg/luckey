@@ -38,14 +38,24 @@
   flex-shrink: 0;
   border-top: 1px solid var(--menu-line);
   height: var(--lucy-footer-height, calc(105px + max(10px, env(safe-area-inset-bottom, 0px))));
-  min-height: 156px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 5px;
-  padding: 18px var(--sidebar-center-inset) max(8px, env(safe-area-inset-bottom, 0px)) 0;
+  gap: 3px;
+  padding: 8px var(--sidebar-center-inset) max(6px, env(safe-area-inset-bottom, 0px)) 0;
+}
+
+.refined-menu-footer .refined-nav-item {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.refined-menu-footer .refined-nav-item > svg {
+  width: 19px;
+  height: 19px;
 }
 
 .sites-pinned-sidebar[data-theme] .refined-menu-list {

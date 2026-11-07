@@ -333,24 +333,17 @@ export default function LeftSidebarNav() {
     if (isSyncSpinning) return;
     setIsSyncSpinning(true);
     triggerHaptic('whitehole');
-    const startTime = Date.now();
     try {
-      const result = syncPrismDevicesFn
-        ? await syncPrismDevicesFn()
-        : await syncPrismAcrossDevices();
-      if (result?.needsReload) {
-        await forceAppUpgradeAndReload();
-        return;
+      if (syncPrismDevicesFn) {
+        await syncPrismDevicesFn().catch(() => null);
+      } else {
+        await syncPrismAcrossDevices().catch(() => null);
       }
     } catch (err) {
       console.warn('[LeftSidebarNav] Sync error:', err);
-    } finally {
-      const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, 800 - elapsed);
-      setTimeout(() => {
-        setIsSyncSpinning(false);
-      }, remaining);
     }
+    // 캐시 퍼지 및 최신 버전 앱 셸로 즉시 강제 리로드/업데이트 적용
+    await forceAppUpgradeAndReload();
   }, [isSyncSpinning, syncPrismDevicesFn]);
 
   useEffect(() => {
@@ -501,7 +494,7 @@ export default function LeftSidebarNav() {
                     handleNavigate('/profile');
                   }}
                 >
-                  <User size={22} aria-hidden="true" />
+                  <User size={19} aria-hidden="true" />
                 </button>
               </div>
     </aside>, document.body
