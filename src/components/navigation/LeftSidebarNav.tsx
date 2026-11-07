@@ -501,7 +501,7 @@ export default function LeftSidebarNav() {
                     handleNavigate('/profile');
                   }}
                 >
-                  <User size={22} aria-hidden="true" />
+                  <User size={19} aria-hidden="true" />
                 </button>
               </div>
     </aside>, document.body
