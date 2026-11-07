@@ -1,8 +1,6 @@
 import { createPortal } from 'react-dom';
-import './sidebar-edge-hint.css';
 import './menu-refined.css';
 import { CHANNEL_MENU_ICONS } from '@/lib/channelMenuIcons';
-import { OPEN_NAVIGATION_MENU_EVENT, TOGGLE_NAVIGATION_MENU_EVENT } from '@/lib/navigationMenu';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
@@ -154,31 +152,11 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
-  const [isOpen, setIsOpen] = useState(false);
   const [isChannelsOpen, setIsChannelsOpen] = useState(false);
-  const showSidebar = useCallback(() => setIsOpen(true), []);
-  const hideSidebar = useCallback(() => setIsOpen(false), []);
-
-  useEffect(() => {
-    const toggle = () => setIsOpen(current => !current);
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') hideSidebar();
-    };
-    window.addEventListener(OPEN_NAVIGATION_MENU_EVENT, showSidebar);
-    window.addEventListener(TOGGLE_NAVIGATION_MENU_EVENT, toggle);
-    window.addEventListener('keydown', escape);
-    return () => {
-      window.removeEventListener(OPEN_NAVIGATION_MENU_EVENT, showSidebar);
-      window.removeEventListener(TOGGLE_NAVIGATION_MENU_EVENT, toggle);
-      window.removeEventListener('keydown', escape);
-    };
-  }, [hideSidebar, showSidebar]);
-
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
-  const edgeDrag = useRef<{ id: number; x: number; y: number } | null>(null);
 
   // Sidebar LP BGM Button State & Long-Press Handlers
   const [bgmState, setBgmState] = useState<BgmPublicState>(() => getBgmPublicState());
@@ -205,12 +183,6 @@ export default function LeftSidebarNav() {
     };
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      setBgmState(getBgmPublicState());
-      window.dispatchEvent(new CustomEvent('prism:request_bgm_state'));
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     return () => {
@@ -296,13 +268,15 @@ export default function LeftSidebarNav() {
     (p) => cleanPath === p || cleanPath.startsWith(p + '/')
   );
 
-  // Broadcast sidebar open/closed state so widgets like LP player can sync visibility
+  // Keep LP widgets informed that navigation is permanently visible.
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent('left-sidebar-state', { detail: { isOpen } }));
-  }, [isOpen]);
+    window.dispatchEvent(new CustomEvent('left-sidebar-state', { detail: { isOpen: true } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('left-sidebar-state', { detail: { isOpen: false } }));
+    };
+  }, []);
 
   const handleNavigate = (path: string) => {
-    hideSidebar();
     const isTargetActive =
       path === '/'
         ? isLucyActive
@@ -335,71 +309,14 @@ export default function LeftSidebarNav() {
     );
   };
 
-  // Auto-hide sidebar whenever route changes
-  useEffect(() => {
-    hideSidebar();
-  }, [cleanPath, hideSidebar]);
-
-  useEffect(() => {
-    if (!isOpen) setIsChannelsOpen(false);
-  }, [isOpen]);
-
   return createPortal(
-    <>
-      <div
-        className="sidebar-edge-hint"
-        role="button"
-        tabIndex={0}
-        aria-label={isOpen ? '사이드바 닫기' : '사이드바 열기'}
-        aria-controls={isOpen ? 'main-sidebar-navigation' : undefined}
-        aria-expanded={isOpen}
-        data-open={isOpen}
-        data-theme={isLight ? 'light' : 'dark'}
-        onPointerDown={(event) => {
-          if (!event.isPrimary || event.button !== 0) return;
-          edgeDrag.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
-          event.currentTarget.setPointerCapture(event.pointerId);
-        }}
-        onLostPointerCapture={() => { edgeDrag.current = null; }}
-        onClick={(event) => {
-          if (event.detail === 0) setIsOpen((open) => !open);
-        }}
-        onPointerUp={(event) => {
-          const start = edgeDrag.current;
-          if (!start || start.id !== event.pointerId) return;
-          edgeDrag.current = null;
-          const dx = event.clientX - start.x;
-          const dy = event.clientY - start.y;
-          if (Math.abs(dx) < 28 || Math.abs(dx) <= Math.abs(dy)) return;
-          if (isOpen && dx > 0) hideSidebar();
-          if (!isOpen && dx < 0) showSidebar();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            setIsOpen((open) => !open);
-          }
-        }}
-      >
-        <span className="sidebar-edge-hint-line" />
-      </div>
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <div key="nav-backdrop" className="fixed inset-0 z-[10020] bg-slate-950/25 backdrop-blur-[2px]" onClick={hideSidebar} aria-hidden="true" />
-            {/* Original slim icon rail */}
-            <motion.aside
-              key="nav-drawer"
-              id="main-sidebar-navigation"
-              role="navigation"
-              aria-label="사이드 네비게이션"
-              data-theme={isLight ? 'light' : 'dark'}
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 32 }}
-              className="sites-pinned-sidebar fixed inset-y-0 right-0 z-[10021] flex flex-col select-none border-l"
-            >
+    <aside
+      id="main-sidebar-navigation"
+      role="navigation"
+      aria-label="사이드 네비게이션"
+      data-theme={isLight ? 'light' : 'dark'}
+      className="sites-pinned-sidebar z-[398] flex flex-col select-none border-l"
+    >
               <div className="refined-menu-list flex-1 overflow-y-auto no-scrollbar">
                 <div className="refined-menu-content">
                   {CORE_CHANNELS.map(renderNavButton)}
@@ -580,10 +497,6 @@ export default function LeftSidebarNav() {
                   <User size={22} aria-hidden="true" />
                 </button>
               </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-    </>, document.body
+    </aside>, document.body
   );
 }

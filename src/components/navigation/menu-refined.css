@@ -1,9 +1,9 @@
 .sites-pinned-sidebar {
-  position: absolute;
-  top: 0;
+  position: fixed;
+  top: var(--vv-top, 0px);
   right: 0;
-  bottom: 0;
-  width: var(--sidebar-width);
+  height: var(--app-height, 100dvh);
+  width: var(--sites-sidebar-width);
   padding: max(112px, env(safe-area-inset-top, 0px)) 0 env(safe-area-inset-bottom, 0px);
   --menu-bg: #151d29;
   --menu-text: #e9eef5;
