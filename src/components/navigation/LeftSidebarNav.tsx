@@ -11,6 +11,7 @@ import {
   BookOpen,
   Compass,
   Clover,
+  RotateCw,
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -21,6 +22,8 @@ import {
 } from '@/components/trinity/BgMusicPlayer';
 import { unlockAudioPlayback } from '@/lib/audio';
 import { isDualPaneLayout } from '@/lib/perfMode';
+import { syncPrismAcrossDevices, forceAppUpgradeAndReload } from '@/lib/prismSync';
+import { useApp } from '@/contexts/AppContext';
 
 export interface NavItemConfig {
   path: string;
@@ -317,6 +320,39 @@ export default function LeftSidebarNav() {
 
   const isLight = resolvedTheme === 'light';
 
+  const [isSyncSpinning, setIsSyncSpinning] = useState(false);
+  let syncPrismDevicesFn: (() => Promise<any>) | null = null;
+  try {
+    const appContext = useApp();
+    syncPrismDevicesFn = appContext.syncPrismDevices;
+  } catch (_) {
+    syncPrismDevicesFn = null;
+  }
+
+  const handleSyncClick = useCallback(async () => {
+    if (isSyncSpinning) return;
+    setIsSyncSpinning(true);
+    triggerHaptic('whitehole');
+    const startTime = Date.now();
+    try {
+      const result = syncPrismDevicesFn
+        ? await syncPrismDevicesFn()
+        : await syncPrismAcrossDevices();
+      if (result?.needsReload) {
+        await forceAppUpgradeAndReload();
+        return;
+      }
+    } catch (err) {
+      console.warn('[LeftSidebarNav] Sync error:', err);
+    } finally {
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 800 - elapsed);
+      setTimeout(() => {
+        setIsSyncSpinning(false);
+      }, remaining);
+    }
+  }, [isSyncSpinning, syncPrismDevicesFn]);
+
   useEffect(() => {
     const syncFooterHeight = () => {
       const footerEl = document.querySelector('.lucy-chat-footer');
@@ -396,6 +432,24 @@ export default function LeftSidebarNav() {
               </div>
 
               <div className="refined-menu-footer">
+                {/* 🔄 실시간 동기화 & 최신 업데이트 버튼 */}
+                <button
+                  type="button"
+                  className="refined-nav-item sidebar-sync-control"
+                  data-active={isSyncSpinning}
+                  onClick={handleSyncClick}
+                  aria-label="실시간 동기화 및 업데이트"
+                  title="실시간 동기화 & 업데이트 (PC·모바일 데이터 연동 및 최신 버전 확인)"
+                >
+                  <RotateCw
+                    size={20}
+                    className={`transition-transform duration-300 ${
+                      isSyncSpinning ? 'animate-spin text-cyan-300' : ''
+                    }`}
+                    aria-hidden="true"
+                  />
+                </button>
+
                 {/* Gramophone shares the rail's monochrome icon style and hit target. */}
                 <button
                   type="button"
