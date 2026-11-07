@@ -3130,7 +3130,8 @@ html.light .lucy-cosmic-bubble .lucy-user-cosmic-msg * {
 :root { --sites-sidebar-width: 80px; }
 .sites-pinned-main {
   --sal: env(safe-area-inset-left, 0px);
-  --sar: env(safe-area-inset-right, 0px);
+  /* The permanent rail already owns the right screen inset. */
+  --sar: 0px;
   margin-left: 0;
   width: calc(100% - var(--sites-sidebar-width));
   max-width: calc(100% - var(--sites-sidebar-width));
