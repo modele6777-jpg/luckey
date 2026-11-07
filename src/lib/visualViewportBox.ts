@@ -225,7 +225,9 @@ export function standaloneResumeBox(snapshot: ViewportSnapshot): ViewportBox | n
   const layoutWidth = innerWidth ?? visualWidth;
   const layoutHeight = innerHeight ?? visualHeight;
   if (screenWidth == null || screenHeight == null || layoutWidth == null || layoutHeight == null) return null;
-  if (Math.min(layoutWidth, layoutHeight) < TABLET_SHORT_SIDE_PX) return null;
+  // Identify tablets from the screen, not the already-shortened web view.
+  // A landscape tablet can report a layout height below 600px after resume.
+  if (Math.min(screenWidth, screenHeight) < TABLET_SHORT_SIDE_PX) return null;
   if (visualHeight != null && Math.abs(layoutHeight - visualHeight) > STANDALONE_EQUAL_SHRINK_PX) return null;
 
   const screen = orientedScreenSize(screenWidth, screenHeight, layoutWidth, layoutHeight);
