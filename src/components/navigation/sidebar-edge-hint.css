@@ -1,6 +1,6 @@
 .sidebar-edge-hint,
 .sites-pinned-sidebar {
-  --sidebar-width: calc(64px + env(safe-area-inset-right, 0px));
+  --sidebar-width: 64px;
 }
 
 .sidebar-edge-hint {

@@ -1,6 +1,10 @@
 .sites-pinned-sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
   width: var(--sidebar-width);
-  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) 0;
+  padding: max(112px, env(safe-area-inset-top, 0px)) 0 env(safe-area-inset-bottom, 0px);
   --menu-bg: #151d29;
   --menu-text: #e9eef5;
   --menu-line: #ffffff20;
@@ -36,9 +40,9 @@
 }
 
 .sites-pinned-sidebar[data-theme] .refined-menu-list {
-  position: absolute;
-  inset: 0;
-  padding: max(112px, env(safe-area-inset-top, 0px)) env(safe-area-inset-right, 0px) max(112px, env(safe-area-inset-bottom, 0px)) 0;
+  position: relative;
+  min-height: 0;
+  padding: 8px 0;
 }
 
 .refined-menu-content,
@@ -51,7 +55,7 @@
 }
 
 .refined-menu-content {
-  margin-block: auto;
+  margin-block: 0;
 }
 
 .refined-prism-icons {

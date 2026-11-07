@@ -17,3 +17,10 @@ test('only an installed iOS tablet fills a corroborated shortfall to the screen 
   assert.equal(resolveAppLayoutHeight(layout), 'max(100dvh, 945px)');
   assert.equal(resolveAppLayoutHeight({ ...layout, iosStandalone: true }), 'max(100dvh, 1024px)');
 });
+
+test('a shorter visual viewport cannot shrink the app below the layout bottom', () => {
+  assert.equal(resolveAppLayoutHeight({
+    innerWidth: 1280, innerHeight: 900,
+    visual: { width: 1280, height: 790, offsetTop: 0, offsetLeft: 0 },
+  }), 'max(100dvh, 900px)');
+});

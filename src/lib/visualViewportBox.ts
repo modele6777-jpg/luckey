@@ -133,7 +133,8 @@ export function resolveAppLayoutHeight(snapshot: ViewportSnapshot): string {
 
   const visual = snapshot.visual;
   const sameWidth = visual && Math.abs(visual.width - snapshot.innerWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
-  const measuredHeight = (sameWidth && positive(visual.height)) || layoutHeight;
+  // A stale, shorter visual viewport must not leave the layout bottom uncovered.
+  const measuredHeight = Math.max(layoutHeight, (sameWidth && positive(visual.height)) || layoutHeight);
   return `max(100dvh, ${px(roundPx(measuredHeight))})`;
 }
 
