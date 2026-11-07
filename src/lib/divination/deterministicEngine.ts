@@ -268,6 +268,9 @@ import { calculateDasanMokminSimseo, formatDasanMokminSimseoPrompt, type DasanMo
 import { calculateAugustineConfessionesIlluminatio, formatAugustineConfessionesIlluminatioPrompt, type AugustineConfessionesIlluminatioResult, NORTH_AFRICAN_AUGUSTINE_VERSION } from './northAfricanAugustineConfessionesIlluminatioEngine';
 import { calculateMachiavelliVirtuFortuna, formatMachiavelliVirtuFortunaPrompt, type MachiavelliVirtuFortunaResult, ITALIAN_MACHIAVELLI_VERSION } from './italianMachiavelliVirtuFortunaEngine';
 import { calculateChoeChiwonPungryudo, formatChoeChiwonPungryudoPrompt, type ChoeChiwonPungryudoResult, KOREAN_CHOE_CHIWON_VERSION } from './koreanChoeChiwonPungryudoEngine';
+import { calculateThomasAquinasSummaTheologiae, formatThomasAquinasSummaTheologiaePrompt, type ThomasAquinasSummaTheologiaeResult, ITALIAN_THOMAS_AQUINAS_VERSION } from './italianThomasAquinasSummaTheologiaeEngine';
+import { calculateFrancisBaconNovumOrganum, formatFrancisBaconNovumOrganumPrompt, type FrancisBaconNovumOrganumResult, BRITISH_FRANCIS_BACON_VERSION } from './britishFrancisBaconNovumOrganumEngine';
+import { calculateRyuSeongryongJingbirok, formatRyuSeongryongJingbirokPrompt, type RyuSeongryongJingbirokResult, KOREAN_RYU_SEONGRYONG_VERSION } from './koreanRyuSeongryongJingbirokEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -556,6 +559,9 @@ export interface DeterministicEngineReport {
   augustineConfessionesIlluminatioResult?: AugustineConfessionesIlluminatioResult | null;
   machiavelliVirtuFortunaResult?: MachiavelliVirtuFortunaResult | null;
   choeChiwonPungryudoResult?: ChoeChiwonPungryudoResult | null;
+  thomasAquinasSummaTheologiaeResult?: ThomasAquinasSummaTheologiaeResult | null;
+  francisBaconNovumOrganumResult?: FrancisBaconNovumOrganumResult | null;
+  ryuSeongryongJingbirokResult?: RyuSeongryongJingbirokResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3293,6 +3299,33 @@ try {
     }
   })()));
 
+  // 237. 이탈리아 토마스 아퀴나스 신학대전 이성·신앙 조화 & 덕론 종합 엔진
+  const thomasAquinasSummaTheologiaeResult = calculateSupplement('thomasAquinasSummaTheologiaeResult', () => ((() => {
+    try {
+      return calculateThomasAquinasSummaTheologiae(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 238. 영국 프랜시스 베이컨 신기관 4대 우상 타파 & 참된 귀납 사실 검증 지성 엔진
+  const francisBaconNovumOrganumResult = calculateSupplement('francisBaconNovumOrganumResult', () => ((() => {
+    try {
+      return calculateFrancisBaconNovumOrganum(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 239. 조선 서애 류성룡 징비록 징전비후 성찰 & 유비무환 위기대응 실천 엔진
+  const ryuSeongryongJingbirokResult = calculateSupplement('ryuSeongryongJingbirokResult', () => ((() => {
+    try {
+      return calculateRyuSeongryongJingbirok(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3567,6 +3600,9 @@ try {
     augustineConfessionesIlluminatioResult,
     machiavelliVirtuFortunaResult,
     choeChiwonPungryudoResult,
+    thomasAquinasSummaTheologiaeResult,
+    francisBaconNovumOrganumResult,
+    ryuSeongryongJingbirokResult,
     tools: toolsMap,
   };
 }
@@ -3831,6 +3867,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'northAfricanAugustineConfessionesIlluminatio', nameKo: '아우구스티누스 고백록 시간의3중현존 내적조명 은총안식 평정심', icon: '🕯️', category: 'deep_master' },
   { key: 'italianMachiavelliVirtuFortuna', nameKo: '마키아벨리 군주론 비르투역량 포르투나극복 시대조화 여우와사자', icon: '🦁', category: 'deep_master' },
   { key: 'koreanChoeChiwonPungryudo', nameKo: '최치원 난랑비서 국유현묘지도 풍류도 포함삼교 접화군생 계원필경', icon: '🪶', category: 'deep_master' },
+  { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master' },
+  { key: 'britishFrancisBaconNovumOrganum', nameKo: '프랜시스 베이컨 신기관 4대우상타파 참된귀납 아는것이힘이다 사실검증', icon: '🔬', category: 'deep_master' },
+  { key: 'koreanRyuSeongryongJingbirok', nameKo: '서애 류성룡 징비록 징전비후 유비무환 거안사위 인재발탁 실사구시', icon: '🛡️', category: 'deep_master' },
 ];
 
 export function getFiredEngineBadges(
@@ -3938,6 +3977,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'italianThomasAquinasSummaTheologiae',
+    'britishFrancisBaconNovumOrganum',
+    'koreanRyuSeongryongJingbirok',
     'northAfricanAugustineConfessionesIlluminatio',
     'italianMachiavelliVirtuFortuna',
     'koreanChoeChiwonPungryudo',
@@ -4029,6 +4071,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'italianThomasAquinasSummaTheologiae',
+    'britishFrancisBaconNovumOrganum',
+    'koreanRyuSeongryongJingbirok',
     'northAfricanAugustineConfessionesIlluminatio',
     'italianMachiavelliVirtuFortuna',
     'koreanChoeChiwonPungryudo',
