@@ -20,6 +20,7 @@ import {
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
 import { unlockAudioPlayback } from '@/lib/audio';
+import { isDualPaneLayout } from '@/lib/perfMode';
 
 export interface NavItemConfig {
   path: string;
@@ -152,6 +153,26 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 
 export default function LeftSidebarNav() {
   const [isChannelsOpen, setIsChannelsOpen] = useState(false);
+  const [isUnfolded, setIsUnfolded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDualPaneLayout() || window.innerWidth >= 580;
+  });
+
+  useEffect(() => {
+    const handleLayoutChange = () => {
+      if (typeof window === 'undefined') return;
+      setIsUnfolded(isDualPaneLayout() || window.innerWidth >= 580);
+    };
+    handleLayoutChange();
+    window.addEventListener('resize', handleLayoutChange, { passive: true });
+    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    return () => {
+      window.removeEventListener('resize', handleLayoutChange);
+      window.removeEventListener('orientationchange', handleLayoutChange);
+      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+    };
+  }, []);
   const [location, navigate] = useLocation();
   const cleanPath = location ? location.split('?')[0].split('#')[0] : '/';
   const { resolvedTheme } = useTheme();
@@ -319,32 +340,38 @@ export default function LeftSidebarNav() {
               <div className="refined-menu-list flex-1 overflow-y-auto no-scrollbar">
                 <div className="refined-menu-content">
                   {CORE_CHANNELS.map(renderNavButton)}
-                  <button
-                    type="button"
-                    className="refined-nav-item"
-                    data-active={isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
-                    aria-label={isChannelsOpen ? '7대 프리즘 채널 접기' : '7대 프리즘 채널 펼치기'}
-                    aria-expanded={isChannelsOpen}
-                    aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
-                    title="7대 프리즘 채널"
-                    onClick={() => setIsChannelsOpen((open) => !open)}
-                  >
-                    <Clover size={22} aria-hidden="true" />
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {isChannelsOpen && (
-                      <motion.div
-                        id="prism-channel-icons"
-                        className="refined-prism-icons"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: reduceMotion ? 0 : 0.2 }}
+                  {isUnfolded ? (
+                    PRISM_CHANNELS.map(renderNavButton)
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="refined-nav-item"
+                        data-active={isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
+                        aria-label={isChannelsOpen ? '7대 프리즘 채널 접기' : '7대 프리즘 채널 펼치기'}
+                        aria-expanded={isChannelsOpen}
+                        aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
+                        title="7대 프리즘 채널"
+                        onClick={() => setIsChannelsOpen((open) => !open)}
                       >
-                        {PRISM_CHANNELS.map(renderNavButton)}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        <Clover size={22} aria-hidden="true" />
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {isChannelsOpen && (
+                          <motion.div
+                            id="prism-channel-icons"
+                            className="refined-prism-icons"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: reduceMotion ? 0 : 0.2 }}
+                          >
+                            {PRISM_CHANNELS.map(renderNavButton)}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
                 </div>
               </div>
 
