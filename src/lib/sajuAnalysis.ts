@@ -566,7 +566,7 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     const preferredName = (rawNickname && rawNickname !== '여행자' && rawNickname !== '사용자' && rawNickname !== '박주형')
       ? rawNickname
       : ((rawName && rawName !== '여행자' && rawName !== '사용자') ? rawName : '제제');
-    const name = preferredName;
+    const name = rawName || preferredName;
     const nickname = preferredName;
 
     // 절기 엔진은 KST 벽시계 시각을 UTC 필드에 담은 Date와 비교한다.

@@ -37,8 +37,7 @@ import { SajuDestinyShareModal } from './SajuDestinyShareModal';
 import { SajuVisualInteractiveCharts } from './SajuVisualInteractiveCharts';
 import { type SajuDestinyStoryData } from '@/utils/sajuDestinyExporter';
 import { playAudioHaptic } from '@/lib/audioHaptics';
-import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
-import { saveProfileToAllVaults } from '@/lib/profileVault';
+import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import {
   calculateDetailedSaju,
   generateDailySajuReport,
@@ -90,16 +89,14 @@ interface TrinityDestinyReportViewProps {
 }
 
 export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportViewProps) {
-  const { sharedState } = useApp();
+  const { sharedState, updateSharedState } = useApp();
   const profile = sharedState?.userProfile || getPersistentUserProfile();
   const isTTSActive = useTTSActive();
 
   // 프로필 편집 모달/인라인 토글
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const rawNick = profile?.basic?.nickname?.trim();
-  const [editName, setEditName] = useState(
-    (rawNick && rawNick !== '여행자' && rawNick !== '사용자' && rawNick !== '박주형') ? rawNick : '제제'
-  );
+  const profileName = profile?.basic?.name?.trim() || '';
+  const [editName, setEditName] = useState(profileName);
   const [editBirthdate, setEditBirthdate] = useState(profile?.basic?.birthdate || '1995-05-15');
   const [editBirthtime, setEditBirthtime] = useState(profile?.basic?.birthtime || '12:00');
   const [editGender, setEditGender] = useState<'male' | 'female'>(profile?.basic?.gender === 'female' ? 'female' : 'male');
@@ -190,22 +187,16 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   // 프로필 저장 핸들러
   const handleSaveProfile = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const chosenEditName = editName.trim() || '제제';
-    const curNick = profile?.basic?.nickname?.trim();
-    const safeNick = (curNick && curNick !== '여행자' && curNick !== '사용자' && curNick !== '박주형') ? curNick : '제제';
+    const chosenEditName = editName.trim() || profileName;
     const newProfile = {
-      ...(profile || {}),
       basic: {
-        ...(profile?.basic || {}),
-        name: chosenEditName,
-        nickname: safeNick,
+        ...(chosenEditName ? { name: chosenEditName } : {}),
         birthdate: editBirthdate,
         birthtime: editBirthtime,
         gender: editGender,
       },
     };
-    setPersistentUserProfile(newProfile as any);
-    saveProfileToAllVaults(newProfile as any);
+    void updateSharedState({ userProfile: newProfile }, 'TRINITY');
     setIsEditingProfile(false);
   };
 
@@ -604,7 +595,10 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
             </button>
 
             <button
-              onClick={() => setIsEditingProfile(!isEditingProfile)}
+              onClick={() => {
+                if (!isEditingProfile) setEditName(profileName);
+                setIsEditingProfile(!isEditingProfile);
+              }}
               className="p-2.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 transition-all text-xs font-medium flex items-center gap-1.5"
             >
               <Edit3 size={15} />
