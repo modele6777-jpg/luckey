@@ -137,10 +137,11 @@ export const AUGUSTINE_APHORISMS: AugustineAphorism[] = [
 export function calculateAugustineConfessionesIlluminatio(
   profile: UserProfile
 ): AugustineConfessionesIlluminatioResult {
-  const name = profile.name || '방문자';
-  const birthDate = profile.birthDate || '1990-01-01';
-  const birthTime = profile.birthTime || '12:00';
-  const gender = profile.gender || 'neutral';
+  const p = profile as any;
+  const name = profile?.basic?.name ?? p?.name ?? '방문자';
+  const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1990-01-01';
+  const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
+  const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
   const seedString = `AUGUSTINE-CONFESSIONES:${name}:${birthDate}:${birthTime}:${gender}`;
 
