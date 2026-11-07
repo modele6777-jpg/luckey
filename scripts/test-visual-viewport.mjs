@@ -9,7 +9,7 @@ const bundle = await build({
   platform: 'node',
   format: 'esm',
 });
-const { resolveViewportBox, viewportNeedsResumeFill, sideColumnBleed, canUseKeyboardViewport, orientedScreenSize } = await import(
+const { resolveViewportBox, resolveAppLayoutHeight, viewportNeedsResumeFill, sideColumnBleed, canUseKeyboardViewport, orientedScreenSize, chooseStableViewportBox, planViewportRecovery } = await import(
   'data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64')
 );
 
@@ -225,6 +225,28 @@ assert.match(lifecycle, /addEventListener\('resume'/);
 assert.match(lifecycle, /visibilityState === 'hidden'/);
 assert.match(lifecycle, /scrollTo\(0, 0\)/);
 assert.match(lifecycle, /iosStandalone/);
+assert.match(lifecycle, /planViewportRecovery/);
+assert.match(lifecycle, /prepareViewportAfterUpdate/);
+
+const updateLetterbox = {
+  iosStandalone: true,
+  innerWidth: 960,
+  innerHeight: 592.5,
+  screenWidth: 960,
+  screenHeight: 675,
+  visual: { width: 960, height: 520, offsetTop: 0, offsetLeft: 0 },
+};
+assert.equal(resolveAppLayoutHeight(updateLetterbox), 'max(100dvh, 675px)');
+assert.equal(resolveViewportBox(updateLetterbox, { fillLayoutGap: true }).width, 960);
+assert.equal(resolveViewportBox(updateLetterbox, { fillLayoutGap: true }).height, 675);
+assert.equal(viewportNeedsResumeFill(updateLetterbox, false, null), true);
+const filled = { width: 960, height: 675, offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
+assert.equal(chooseStableViewportBox(filled, { ...filled, height: 520 }, true).height, 675);
+const resumed = { ...updateLetterbox, innerHeight: 675, visual: { ...updateLetterbox.visual, height: 675 } };
+assert.equal(resolveViewportBox(resumed, { fillLayoutGap: true }).height, 675);
+assert.equal(resolveViewportBox(resumed, { fillLayoutGap: true }).width, 960);
+assert.equal(planViewportRecovery({ updateReload: true, navigationType: 'navigate', iosStandalone: true }).recover, true);
+assert.equal(planViewportRecovery({ navigationType: 'navigate', iosStandalone: true }).recover, false);
 
 const html = readFileSync('index.html', 'utf8');
 assert.match(html, /viewport-fit=cover/);

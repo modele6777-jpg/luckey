@@ -1,6 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyVisualViewportBox, isKeyboardViewportOpen, resolveAppLayoutHeight } from '../src/lib/visualViewportBox';
+import { readFileSync } from 'node:fs';
+import {
+  chooseStableViewportBox,
+  planViewportRecovery,
+  resolveAppLayoutHeight,
+  resolveViewportBox,
+  viewportNeedsResumeFill,
+  applyVisualViewportBox,
+  isKeyboardViewportOpen,
+} from '../src/lib/visualViewportBox';
+import {
+  consumeAppUpdateReload,
+  createSingleFlight,
+  installSingleAppReload,
+  isAppUpdateReloadMarked,
+} from '../src/lib/appUpdateReload';
 
 test('portrait uses the newer visible height once the viewport widths agree', () => {
   const layout = { innerWidth: 390, innerHeight: 760 };
@@ -91,4 +106,113 @@ test('restoring the same viewport repairs height variables overwritten by the ke
   assert.equal(values.get('--vvh'), '900px');
   assert.equal(values.get('--visual-vh'), '900px');
   assert.equal(values.get('--vv-top'), '0px');
+});
+
+test('an open-app update fills a tablet letterbox when the reported heights disagree', () => {
+  const stale = {
+    iosStandalone: true,
+    innerWidth: 960,
+    innerHeight: 592.5,
+    screenWidth: 960,
+    screenHeight: 675,
+    visual: { width: 960, height: 520, offsetTop: 0, offsetLeft: 0 },
+  };
+  assert.equal(resolveAppLayoutHeight(stale), 'max(100dvh, 675px)');
+  const filled = resolveViewportBox(stale, { fillLayoutGap: true });
+  assert.equal(filled?.height, 675);
+  assert.equal(filled?.width, 960);
+  assert.equal(viewportNeedsResumeFill(stale, false, null), true);
+
+  const settled = {
+    ...stale,
+    innerHeight: 675,
+    visual: { ...stale.visual, height: 675 },
+  };
+  assert.equal(resolveAppLayoutHeight(settled), 'max(100dvh, 675px)');
+  assert.equal(resolveViewportBox(settled, { fillLayoutGap: true })?.width, 960);
+});
+
+test('a later short reading cannot undo the filled height, and width stays put', () => {
+  const filled = { width: 960, height: 675, offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
+  const shrunk = { ...filled, height: 520 };
+  assert.equal(chooseStableViewportBox(filled, shrunk, true).height, 675);
+  assert.equal(chooseStableViewportBox(filled, shrunk, true).width, 960);
+  assert.equal(chooseStableViewportBox(shrunk, filled, true).height, 675);
+  assert.equal(chooseStableViewportBox(filled, { ...shrunk, width: 700 }, true).width, 700);
+  assert.equal(chooseStableViewportBox(filled, shrunk, false).height, 520);
+});
+
+test('browser, phone, keyboard, and split widths do not grow', () => {
+  const stale = {
+    innerWidth: 960, innerHeight: 592.5, screenWidth: 960, screenHeight: 675,
+    visual: { width: 960, height: 520, offsetTop: 0, offsetLeft: 0 },
+  };
+  assert.equal(resolveAppLayoutHeight({ ...stale, iosStandalone: false }), 'max(100dvh, 592.5px)');
+  assert.equal(resolveAppLayoutHeight({
+    iosStandalone: true, innerWidth: 390, innerHeight: 760,
+    screenWidth: 390, screenHeight: 844,
+    visual: { width: 390, height: 700, offsetTop: 0, offsetLeft: 0 },
+  }), 'max(100dvh, 760px)');
+  assert.equal(resolveAppLayoutHeight({
+    iosStandalone: true, innerWidth: 960, innerHeight: 350,
+    screenWidth: 960, screenHeight: 675,
+    visual: { width: 960, height: 350, offsetTop: 0, offsetLeft: 0 },
+  }), 'max(100dvh, 350px)');
+  const split = resolveViewportBox({
+    iosStandalone: true, innerWidth: 512, innerHeight: 700,
+    screenWidth: 1024, screenHeight: 768,
+    visual: { width: 512, height: 640, offsetTop: 0, offsetLeft: 0 },
+  }, { fillLayoutGap: true });
+  assert.equal(split?.width, 512);
+  assert.equal(split?.height, 700);
+});
+
+test('an in-app update reloads once and the page that stays open plans a resume', () => {
+  const store = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => { store.set(key, value); },
+    removeItem: (key: string) => { store.delete(key); },
+  };
+  let calls = 0;
+  const win = {
+    sessionStorage: storage,
+    location: { reload() { calls += 1; } },
+  };
+  installSingleAppReload(win as unknown as Window);
+  win.location.reload();
+  win.location.reload();
+  assert.equal(calls, 1);
+  assert.equal(isAppUpdateReloadMarked(storage), true);
+  assert.equal(consumeAppUpdateReload(storage), true);
+  assert.equal(consumeAppUpdateReload(storage), false);
+
+  const update = planViewportRecovery({ updateReload: true, navigationType: 'navigate', iosStandalone: true });
+  assert.equal(update.recover, true);
+  assert.equal(update.resetScroll, true);
+  assert.equal(update.extendRetries, true);
+  const cold = planViewportRecovery({ navigationType: 'navigate', persisted: false, iosStandalone: true });
+  assert.equal(cold.recover, false);
+  assert.equal(planViewportRecovery({ navigationType: 'reload', iosStandalone: false }).resetScroll, false);
+  assert.equal(planViewportRecovery({ persisted: true, iosStandalone: true }).recover, true);
+
+  let flights = 0;
+  const once = createSingleFlight(() => { flights += 1; });
+  once();
+  once();
+  assert.equal(flights, 1);
+});
+
+test('the update path does not schedule a second navigation after reload starts', () => {
+  const sync = readFileSync(new URL('../src/lib/prismSync.ts', import.meta.url), 'utf8');
+  const marker = "if (swState === 'reloading')";
+  const at = sync.indexOf(marker);
+  assert.ok(at > 0);
+  const block = sync.slice(at, at + 180);
+  assert.match(block, /clearTimeout\(fallbackId\)/);
+  const main = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
+  assert.ok(main.indexOf('installSingleAppReload(window)') < main.indexOf('registerSW('));
+  const hook = readFileSync(new URL('../src/hooks/useViewportScrollLock.ts', import.meta.url), 'utf8');
+  const restored = hook.slice(hook.indexOf("style.setProperty('--vv-top', '0px')"));
+  assert.ok(restored.indexOf('syncVisualViewportBox(window)') < restored.indexOf("setProperty('--app-height'"));
 });

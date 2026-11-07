@@ -1,4 +1,4 @@
-import { bindVisualViewportLifecycle, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
+import { bindVisualViewportLifecycle, prepareViewportAfterUpdate, scheduleVisualViewportSync, syncVisualViewportBox } from './visualViewportBox';
 
 export type PerfProfile = 'full' | 'galaxy' | 'duo' | 'iphonexs' | 'pwa' | 'reduced' | 'legacy';
 
@@ -338,6 +338,9 @@ function applyDuoAndViewportFlags(): void {
 }
 
 export function initPerfMode(): PerfProfile {
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+    prepareViewportAfterUpdate(window);
+  }
   if (cachedProfile) return cachedProfile;
 
   const profile = resolvePerfProfile();

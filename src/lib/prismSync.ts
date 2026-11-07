@@ -13,6 +13,7 @@ import {
   saveSharedStateToLocal,
   syncSharedStateWithCloud,
 } from './sharedStateSync';
+import { createSingleFlight, isAppUpdateReloadMarked, markAppUpdateReload } from './appUpdateReload';
 
 export type PrismSyncResult = {
   success: boolean;
@@ -146,23 +147,28 @@ export async function forcePurgeStaleCaches(): Promise<void> {
   }
 }
 
+function navigateToFreshShell(): void {
+  if (isAppUpdateReloadMarked(window.sessionStorage)) return;
+  markAppUpdateReload(window.sessionStorage);
+  window.location.href = window.location.pathname + '?v=' + Date.now();
+}
+
 export async function forceAppUpgradeAndReload(): Promise<void> {
-  const fallbackId = window.setTimeout(() => {
-    window.location.href = window.location.pathname + '?v=' + Date.now();
-  }, 1000);
+  const fallbackId = window.setTimeout(navigateToFreshShell, 1000);
 
   try {
     await forcePurgeStaleCaches();
     const swState = await applyServiceWorkerUpdate();
-    if (swState === 'reloading') return;
+    if (swState === 'reloading') {
+      window.clearTimeout(fallbackId);
+      return;
+    }
   } catch (e) {
     console.warn('[forceAppUpgradeAndReload] SW update error:', e);
   }
 
   window.clearTimeout(fallbackId);
-  window.setTimeout(() => {
-    window.location.href = window.location.pathname + '?v=' + Date.now();
-  }, 150);
+  window.setTimeout(navigateToFreshShell, 150);
 }
 
 const SW_UPDATE_TIMEOUT_MS = 2000;
@@ -175,15 +181,17 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
 }
 
 function activateWaitingWorker(registration: ServiceWorkerRegistration): 'reloading' {
+  const reloadOnce = createSingleFlight(() => {
+    markAppUpdateReload(window.sessionStorage);
+    window.location.reload();
+  });
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
-    }, { once: true });
+    navigator.serviceWorker.addEventListener('controllerchange', reloadOnce, { once: true });
   }
   if (registration.waiting) {
     registration.waiting.postMessage({ type: 'SKIP_WAITING' });
   }
-  window.setTimeout(() => window.location.reload(), 300);
+  window.setTimeout(reloadOnce, 300);
   return 'reloading';
 }
 

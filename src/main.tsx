@@ -5,6 +5,7 @@ import App from './App.tsx';
 import './index.css';
 import './styles/duo-workspace.css';
 import './styles/layout-guardrails.css';
+import { installSingleAppReload } from './lib/appUpdateReload';
 import { initPerfMode, initNarrowPhoneClass, getSwUpdateIntervalMs } from './lib/perfMode';
 import { initHorizontalWheelScroll } from './lib/horizontalWheelScroll';
 
@@ -33,6 +34,7 @@ if (typeof window !== 'undefined') {
   }, true);
 }
 
+if (typeof window !== 'undefined') installSingleAppReload(window);
 initPerfMode();
 initNarrowPhoneClass();
 initHorizontalWheelScroll();

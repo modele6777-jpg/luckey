@@ -116,10 +116,11 @@ export function useViewportScrollLock() {
         if (document.body) document.body.classList.remove('keyboard-open');
         document.documentElement.style.setProperty('--vv-top', '0px');
         document.documentElement.style.setProperty('--vv-left', '0px');
-        const layoutHeight = resolveAppLayoutHeight(snapshot);
+        // Measure first so a later stale visualViewport event cannot replace a
+        // filled height, then size the shell from that same box.
+        const box = syncVisualViewportBox(window);
+        const layoutHeight = box ? `max(100dvh, ${box.height}px)` : resolveAppLayoutHeight(snapshot);
         document.documentElement.style.setProperty('--app-height', layoutHeight);
-        // Restore every viewport alias as well as the shell after keyboard dismissal.
-        syncVisualViewportBox(window);
         document.documentElement.style.removeProperty('height');
         document.documentElement.style.removeProperty('min-height');
         document.body?.style.removeProperty('height');

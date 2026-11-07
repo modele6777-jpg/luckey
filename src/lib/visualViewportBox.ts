@@ -2,6 +2,7 @@
  * Screen height and width stay on the layout viewport.
  * A short visual viewport, or a screen wider than the window, does not resize the page.
  */
+import { consumeAppUpdateReload } from './appUpdateReload';
 
 export const VIEWPORT_KEYBOARD_MIN_DELTA_PX = 160;
 export const VIEWPORT_KEYBOARD_MIN_RATIO = 0.22;
@@ -11,7 +12,11 @@ export const VIEWPORT_SYNC_RETRY_MS = [80, 280, 700];
 /** iPad reports a stale short visual viewport for a while after unlock or app switch. */
 export const VIEWPORT_RESUME_RETRY_MS = [50, 160, 400, 800, 1400, 2200];
 export const VIEWPORT_RESUME_FILL_MS = 2600;
-/** Home-screen web app: inner and visual shrink by the same amount, short of the screen. */
+/**
+ * Home-screen web app: inner and visual can disagree by more than this after an
+ * in-app update reload and still both be a letterbox. Keyboard-sized gaps are
+ * rejected separately. Do not require the two heights to match within this band.
+ */
 export const STANDALONE_EQUAL_SHRINK_PX = 24;
 export const STANDALONE_MAX_SHRINK_RATIO = 0.35;
 
@@ -184,7 +189,13 @@ export function viewportNeedsResumeFill(
   const visualWidth = positive(snapshot.visual?.width);
   const visualHeight = positive(snapshot.visual?.height);
   if (innerWidth == null || innerHeight == null) return false;
-  if (Math.min(innerWidth, innerHeight) < TABLET_SHORT_SIDE_PX) return false;
+  const screenWidth = positive(snapshot.screenWidth);
+  const screenHeight = positive(snapshot.screenHeight);
+  const sizeBasis = screenWidth != null && screenHeight != null
+    ? Math.min(screenWidth, screenHeight)
+    : Math.min(innerWidth, innerHeight);
+  // A landscape tablet can report a layout height below 600px while the screen is still a tablet.
+  if (sizeBasis < TABLET_SHORT_SIDE_PX) return false;
   if (visualWidth != null && Math.abs(visualWidth - innerWidth) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) {
     return false;
   }
@@ -223,13 +234,21 @@ export function orientedScreenSize(
   return { width: screenHeight, height: screenWidth };
 }
 
+function isKeyboardSizedGap(full: number, visible: number): boolean {
+  const delta = Math.abs(full - visible);
+  const taller = Math.max(full, visible);
+  return taller > 0
+    && delta > VIEWPORT_KEYBOARD_MIN_DELTA_PX
+    && delta / taller > VIEWPORT_KEYBOARD_MIN_RATIO;
+}
+
 /**
- * Standalone iPad: a resumed web view often reports innerHeight and
- * visualViewport.height equally short of screen.height (status bar / home
- * indicator subtracted twice, or a stale frame). Fill the screen. A keyboard
- * drops the visual height far below the layout height, and a very large
- * equal shrink stays untouched. Offsets are cleared because a non-zero
- * visualViewport.offsetTop after resume is a phantom scroll.
+ * Standalone iPad: a resumed or just-updated web view often reports
+ * innerHeight and visualViewport.height short of screen.height. They do not
+ * have to match. Fill the screen height only. A keyboard-sized shrink and a
+ * very large equal shrink stay untouched. Width is the layout width.
+ * Offsets are cleared because a non-zero visualViewport.offsetTop after
+ * resume is a phantom scroll.
  */
 export function standaloneResumeBox(snapshot: ViewportSnapshot): ViewportBox | null {
   if (!snapshot.iosStandalone) return null;
@@ -245,7 +264,6 @@ export function standaloneResumeBox(snapshot: ViewportSnapshot): ViewportBox | n
   // Identify tablets from the screen, not the already-shortened web view.
   // A landscape tablet can report a layout height below 600px after resume.
   if (Math.min(screenWidth, screenHeight) < TABLET_SHORT_SIDE_PX) return null;
-  if (visualHeight != null && Math.abs(layoutHeight - visualHeight) > STANDALONE_EQUAL_SHRINK_PX) return null;
 
   const screen = orientedScreenSize(screenWidth, screenHeight, layoutWidth, layoutHeight);
   const widthGap = Math.min(
@@ -254,7 +272,10 @@ export function standaloneResumeBox(snapshot: ViewportSnapshot): ViewportBox | n
   );
   if (widthGap >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) return null;
 
-  const current = Math.max(layoutHeight, visualHeight ?? layoutHeight);
+  // A short visual viewport must not hide a layout that is itself only a letterbox below the screen.
+  const current = visualHeight != null && isKeyboardSizedGap(layoutHeight, visualHeight)
+    ? layoutHeight
+    : Math.max(layoutHeight, visualHeight ?? layoutHeight);
   const shortfall = screen.height - current;
   if (shortfall <= 1) return null;
   if (shortfall / screen.height > STANDALONE_MAX_SHRINK_RATIO) return null;
@@ -401,8 +422,13 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
     applySafeAreaVars(document);
     return null;
   }
-  const box = resolveViewportBox(snapshot, { fillLayoutGap: fillArmed() || Boolean(snapshot.iosStandalone) });
-  if (!box) return null;
+  const next = resolveViewportBox(snapshot, { fillLayoutGap: fillArmed() || Boolean(snapshot.iosStandalone) });
+  if (!next) return null;
+  const box = chooseStableViewportBox(
+    lastAppliedBox,
+    next,
+    screenFilled(snapshot, lastAppliedBox) || screenFilled(snapshot, next),
+  );
   applyVisualViewportBox(box, document.documentElement, snapshot);
   applySafeAreaVars(document);
   rememberStable(box);
@@ -411,6 +437,77 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
 
 let retryTimers: number[] = [];
 let retryFrame = 0;
+
+export function chooseStableViewportBox(
+  previous: ViewportBox | null,
+  next: ViewportBox,
+  hold: boolean,
+): ViewportBox {
+  if (!hold || !previous) return next;
+  if (Math.abs(previous.width - next.width) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) return next;
+  if (next.height + 1 >= previous.height) return next;
+  return previous;
+}
+
+function screenFilled(snapshot: ViewportSnapshot, box: ViewportBox | null): boolean {
+  if (!snapshot.iosStandalone || !box) return false;
+  const inner = positive(snapshot.innerHeight);
+  return inner != null && box.height > inner + 1;
+}
+
+export type ViewportRecoveryPlan = {
+  recover: boolean;
+  resetScroll: boolean;
+  extendRetries: boolean;
+};
+
+export function readNavigationType(win: Window): string | null {
+  try {
+    const entry = win.performance?.getEntriesByType?.('navigation')?.[0] as PerformanceNavigationTiming | undefined;
+    return entry?.type ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** An update reload, a manual reload, or a restored page should remeasure like a resume. */
+export function planViewportRecovery(input: {
+  navigationType?: string | null;
+  persisted?: boolean;
+  updateReload?: boolean;
+  iosStandalone?: boolean;
+}): ViewportRecoveryPlan {
+  const recover = Boolean(input.updateReload) || input.navigationType === 'reload' || input.persisted === true;
+  return {
+    recover,
+    resetScroll: recover && Boolean(input.iosStandalone),
+    extendRetries: recover,
+  };
+}
+
+let updateRecoveryPrepared = false;
+
+export function prepareViewportAfterUpdate(win: Window): boolean {
+  if (updateRecoveryPrepared) return false;
+  updateRecoveryPrepared = true;
+  let updateReload = false;
+  try {
+    updateReload = consumeAppUpdateReload(win.sessionStorage);
+  } catch {
+    updateReload = false;
+  }
+  const plan = planViewportRecovery({
+    navigationType: readNavigationType(win),
+    persisted: false,
+    updateReload,
+    iosStandalone: isIosStandaloneWindow(win),
+  });
+  if (plan.extendRetries) armViewportResumeFill();
+  if (plan.resetScroll) {
+    try { win.scrollTo(0, 0); } catch { /* ignore */ }
+  }
+  return plan.recover;
+}
 
 export function scheduleVisualViewportSync(win: Window = window): void {
   if (retryFrame) win.cancelAnimationFrame(retryFrame);
@@ -454,7 +551,15 @@ export function bindVisualViewportLifecycle(win: Window = window): void {
   });
 
   win.addEventListener('pageshow', (event: PageTransitionEvent) => {
-    if (!event.persisted) return;
+    const plan = planViewportRecovery({
+      navigationType: readNavigationType(win),
+      persisted: event.persisted,
+      iosStandalone: isIosStandaloneWindow(win),
+    });
+    // A service-worker reload is not a back-forward cache restore, but it
+    // leaves the same short frame until the app is backgrounded.
+    if (!plan.recover) return;
+    if (plan.extendRetries) armViewportResumeFill();
     sawHidden = true;
     resume(true);
   });
