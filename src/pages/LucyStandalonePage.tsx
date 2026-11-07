@@ -936,6 +936,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     return () => {
       ro.disconnect();
       window.removeEventListener('resize', updateFooterHeight);
+      document.documentElement.style.removeProperty('--lucy-footer-height');
     };
   }, []);
 
