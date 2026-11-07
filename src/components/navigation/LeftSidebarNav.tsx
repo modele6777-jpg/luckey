@@ -16,7 +16,6 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import {
-  LPRecordDisc,
   getBgmPublicState,
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
@@ -350,135 +349,45 @@ export default function LeftSidebarNav() {
               </div>
 
               <div className="refined-menu-footer">
-                {/* LP Background Music Button (Click: Play/Pause, Long-Press: LP Player Detail Popup) */}
-                <div className="relative group w-10 h-10 shrink-0 flex items-center justify-center">
-                  {/* Soundwave Ripple & Floating Musical Notes when Playing */}
-                  <AnimatePresence>
-                    {bgmState.isPlaying && !bgmState.isBuffering && (
-                      <>
-                        {/* Soft expanding soundwave pulse ring */}
-                        <motion.span
-                          key="bgm-wave-ring"
-                          initial={{ scale: 0.9, opacity: 0.55 }}
-                          animate={{ scale: [0.95, 1.28, 1.38], opacity: [0.5, 0.22, 0] }}
-                          transition={{ duration: 2.1, repeat: Infinity, ease: 'easeOut' }}
-                          className="absolute inset-0 rounded-xl border border-amber-400/60 pointer-events-none"
-                        />
-                        {/* Floating Note 1 (♪) */}
-                        <motion.span
-                          key="bgm-note-1"
-                          initial={{ opacity: 0, y: 2, x: -6, scale: 0.7 }}
-                          animate={{
-                            opacity: [0, 0.95, 0],
-                            y: [2, -14, -22],
-                            x: [-5, -9, -6],
-                            scale: [0.75, 1, 0.85],
-                          }}
-                          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                          className={`absolute -top-1 left-1 text-[9px] font-bold pointer-events-none select-none z-20 ${
-                            isLight
-                              ? 'text-amber-600 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]'
-                              : 'text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.9)]'
-                          }`}
-                        >
-                          ♪
-                        </motion.span>
-                        {/* Floating Note 2 (♫) */}
-                        <motion.span
-                          key="bgm-note-2"
-                          initial={{ opacity: 0, y: 2, x: 6, scale: 0.7 }}
-                          animate={{
-                            opacity: [0, 0.9, 0],
-                            y: [2, -13, -21],
-                            x: [5, 9, 6],
-                            scale: [0.7, 0.95, 0.8],
-                          }}
-                          transition={{
-                            duration: 2.4,
-                            delay: 1.15,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                          }}
-                          className={`absolute -top-1 right-0.5 text-[8.5px] font-bold pointer-events-none select-none z-20 ${
-                            isLight
-                              ? 'text-rose-500 drop-shadow-[0_0_4px_rgba(244,63,94,0.45)]'
-                              : 'text-amber-200 drop-shadow-[0_0_6px_rgba(251,191,36,0.85)]'
-                          }`}
-                        >
-                          ♫
-                        </motion.span>
-                      </>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Long-Press Hold Progress SVG Ring (450ms) */}
-                  {isBgmHolding && (
-                    <svg
-                      className="absolute -inset-1 w-12 h-12 -rotate-90 pointer-events-none z-30"
-                      viewBox="0 0 48 48"
-                    >
-                      <rect
-                        x="3"
-                        y="3"
-                        width="42"
-                        height="42"
-                        rx="13"
-                        fill="none"
-                        stroke="rgba(251, 191, 36, 0.95)"
-                        strokeWidth="2.5"
-                        strokeDasharray="145"
-                        className="animate-lp-hold drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]"
-                      />
-                    </svg>
-                  )}
-
-                  <button
-                    type="button"
-                    onPointerDown={handleBgmPointerDown}
-                    onPointerMove={handleBgmPointerMove}
-                    onPointerUp={handleBgmPointerUp}
-                    onPointerLeave={handleBgmPointerUp}
-                    onPointerCancel={handleBgmPointerUp}
-                    onClick={handleBgmClick}
-                    onContextMenu={handleBgmContextMenu}
-                    aria-label={
-                      bgmState.isPlaying
-                        ? '배경음 일시정지 (길게 누르면 LP 상세 설정)'
-                        : '배경음 재생 (길게 누르면 LP 상세 설정)'
-                    }
-                    title="클릭: 배경음 재생/일시정지 · 길게 누르기: LP 상세 설정"
-                    className={`relative w-full h-full rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer select-none overflow-hidden ${
-                      isBgmHolding ? 'scale-92' : 'hover:scale-105 active:scale-95'
-                    } ${
-                      bgmState.isPlaying
-                        ? isLight
-                          ? 'bg-gradient-to-br from-amber-500/25 via-amber-400/15 to-rose-500/20 border-amber-500/80 shadow-[0_0_16px_rgba(245,158,11,0.38)]'
-                          : 'bg-gradient-to-br from-amber-500/25 via-neutral-900 to-rose-500/20 border-amber-400/75 shadow-[0_0_18px_rgba(251,191,36,0.45)]'
-                        : isLight
-                        ? 'bg-amber-900/[0.06] border-amber-900/20 hover:border-amber-600/50 hover:bg-amber-500/15'
-                        : 'bg-white/[0.05] border-white/15 hover:border-amber-400/50 hover:bg-white/[0.1]'
-                    }`}
+                {/* Gramophone shares the rail's monochrome icon style and hit target. */}
+                <button
+                  type="button"
+                  className="refined-nav-item sidebar-bgm-control"
+                  data-active={bgmState.isPlaying || isBgmHolding}
+                  aria-pressed={bgmState.isPlaying}
+                  aria-busy={bgmState.isBuffering}
+                  onPointerDown={handleBgmPointerDown}
+                  onPointerMove={handleBgmPointerMove}
+                  onPointerUp={handleBgmPointerUp}
+                  onPointerLeave={handleBgmPointerUp}
+                  onPointerCancel={handleBgmPointerUp}
+                  onClick={handleBgmClick}
+                  onContextMenu={handleBgmContextMenu}
+                  aria-label={bgmState.isPlaying
+                    ? '배경음 일시정지 (길게 누르면 상세 설정)'
+                    : '배경음 재생 (길게 누르면 상세 설정)'}
+                  title="배경음 · 클릭: 재생/일시정지 · 길게 누르기: 상세 설정"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    focusable="false"
                   >
-                    {/* Mini LP Vinyl Disc Icon */}
-                    <LPRecordDisc
-                      isPlaying={bgmState.isPlaying}
-                      isBuffering={bgmState.isBuffering}
-                      size="sm"
-                      className="pointer-events-none"
-                    />
-
-                    {/* Playing Status Micro LED Dot */}
-                    <span
-                      className={`absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full pointer-events-none transition-all duration-300 ${
-                        bgmState.isPlaying
-                          ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse'
-                          : isLight
-                          ? 'bg-slate-400/60'
-                          : 'bg-white/25'
-                      }`}
-                    />
-                  </button>
-                </div>
+                    {/* Flared horn, curved tone pipe, turntable and wooden cabinet. */}
+                    <path d="M5 3c2 2 4 3 7 3v4c-3 0-5 1-7 3" />
+                    <ellipse cx="5" cy="8" rx="2" ry="5" />
+                    <path d="M12 8h1a3 3 0 0 1 3 3v4" />
+                    <ellipse cx="11" cy="16" rx="7" ry="2" />
+                    <path d="M4 16v5h14v-5M18 18h2l1-2M3 21h16" />
+                  </svg>
+                </button>
                 <button
                   type="button"
                   className="refined-nav-item"
