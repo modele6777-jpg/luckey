@@ -120,13 +120,7 @@ const PENSEES_MAXIMS: PascalPenseesMaxim[] = [
   },
 ];
 
-export function calculatePascalPenseesHeartReason(
-  paramsOrProfile?: { profile?: UserProfile | null; question?: string; now?: Date } | UserProfile | null
-): PascalPenseesHeartReasonResult {
-  const profile = (paramsOrProfile && 'basic' in paramsOrProfile)
-    ? paramsOrProfile
-    : paramsOrProfile?.profile;
-
+export function calculatePascalPenseesHeartReason(profile: UserProfile): PascalPenseesHeartReasonResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +

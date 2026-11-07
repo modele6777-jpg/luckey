@@ -120,13 +120,7 @@ const SCHOPENHAUER_APHORISMS: SchopenhauerAphorism[] = [
   },
 ];
 
-export function calculateSchopenhauerWillRepresentation(
-  paramsOrProfile?: { profile?: UserProfile | null; question?: string; now?: Date } | UserProfile | null
-): SchopenhauerWillRepresentationResult {
-  const profile = (paramsOrProfile && 'basic' in paramsOrProfile)
-    ? paramsOrProfile
-    : paramsOrProfile?.profile;
-
+export function calculateSchopenhauerWillRepresentation(profile: UserProfile): SchopenhauerWillRepresentationResult {
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
