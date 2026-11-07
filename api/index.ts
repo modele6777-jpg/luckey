@@ -44,6 +44,11 @@ app.post("/api/mcp/messages", async (req, res) => {
   return handleMCPPostMessage(req, res);
 });
 
+app.delete("/api/mcp", async (req, res) => {
+  const { handleStreamableMethodNotAllowed } = await import("../server/api-lib/mcpHandler.ts");
+  return handleStreamableMethodNotAllowed(req, res);
+});
+
 // Chat completions proxy using Gemini API
 import { GoogleGenAI } from "@google/genai";
 
@@ -377,6 +382,11 @@ app.post("/api/sync/relay/consume", async (req, res) => {
   } catch (e: any) {
     return res.status(500).json({ error: e.message });
   }
+});
+
+app.post("/api/saju/chart", async (req, res) => {
+  const { handleSajuChartPost } = await import("../server/api-lib/sajuChartRoute.ts");
+  return handleSajuChartPost(req, res);
 });
 
 app.get(["/api/health", "/health"], (_req, res) => res.json({ status: "ok" }));

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Compass, Shield, Flame, Activity, Info, Star, Award, Layers, Zap } from 'lucide-react';
 import { calculateDetailedSaju, ELEMENT_DETAILS, type SajuAnalysisResult, type FiveElement } from '@/lib/sajuAnalysis';
+import { inspectSajuProfile } from '@/lib/sajuInput';
 import type { UserProfile } from '@/lib/sharedState';
 
 interface SajuCardViewProps {
@@ -12,7 +13,17 @@ interface SajuCardViewProps {
 }
 
 export function SajuCardView({ profile, sajuResult, compact = false, className = '' }: SajuCardViewProps) {
-  const saju = sajuResult || (profile ? calculateDetailedSaju(profile) : null);
+  const inputIssue = sajuResult ? null : inspectSajuProfile(profile);
+  const saju = sajuResult || (inputIssue ? null : profile ? calculateDetailedSaju(profile) : null);
+
+  if (inputIssue) {
+    return (
+      <div className={`p-6 rounded-3xl bg-white/[0.03] border border-white/10 text-center space-y-2.5 ${className}`}>
+        <Compass size={28} className="mx-auto text-white/30" />
+        <p className="text-xs text-amber-100/80 font-sans leading-relaxed">{inputIssue.message}</p>
+      </div>
+    );
+  }
 
   if (!saju || !saju.hasBirthInfo) {
     return (
@@ -41,7 +52,7 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
       animate={{ opacity: 1, y: 0 }}
       className={`p-6 rounded-[28px] bg-gradient-to-br from-[#0c0d19]/95 via-[#080911]/98 to-[#130f26]/95 border border-amber-500/20 shadow-2xl backdrop-blur-2xl text-left space-y-6 ${className}`}
     >
-      <p className="rounded-xl border border-amber-400/15 bg-amber-500/5 p-3 text-[11px] leading-relaxed text-white/65">한국 표준시와 30분 보정·23:30 일주 전환 관례 기준입니다. 출생지 진태양시는 별도 확인이 필요하며, 용신·신강약은 간이 추정입니다. 생시가 없으면 시주는 계산하지 않습니다.</p>
+      <p className="rounded-xl border border-amber-400/15 bg-amber-500/5 p-3 text-[11px] leading-relaxed text-white/65">{saju.timePolicy?.summary || '한국 표준시 벽시계와 시주 30분 보정·23:30 일주 전환 관례입니다. 출생지 진태양시는 적용하지 않습니다. 생시가 없으면 시주는 계산하지 않습니다.'}</p>
       {/* Title Header */}
       <div className="border-b border-white/10 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -197,7 +208,7 @@ export function SajuCardView({ profile, sajuResult, compact = false, className =
               const count = elements.counts[el];
               const pct = elements.percentages[el];
               const detail = ELEMENT_DETAILS[el];
-              const isDominant = elements.dominant.element === el;
+              const isDominant = (elements.leaders?.length ? elements.leaders : [elements.dominant.element]).includes(el);
               return (
                 <div key={el} className="space-y-1.5">
                   <div className="flex justify-between items-center text-[11px]">

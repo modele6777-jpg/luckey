@@ -74,6 +74,61 @@ export const BRANCH_YIN_YANG: Record<string, '양' | '음'> = {
   '戌': '양', '亥': '음',
 };
 
+const ELEMENT_COUNT_ORDER: FiveElement[] = ['목', '화', '토', '금', '수'];
+
+/** Separate the day-master element from the counted distribution. A tie is not a single winner. */
+export function describeElementLead(
+  counts: Record<FiveElement, number>,
+  dayMaster: { hanja: string; korean: string; element: FiveElement },
+): {
+  leaders: FiveElement[];
+  tied: boolean;
+  element: FiveElement;
+  count: number;
+  name: string;
+  advice: string;
+  summary: string;
+  strengthLabel: string;
+} {
+  const max = Math.max(...ELEMENT_COUNT_ORDER.map((element) => counts[element] || 0));
+  const leaders = ELEMENT_COUNT_ORDER.filter((element) => (counts[element] || 0) === max && max > 0);
+  const representative = leaders[0] || '목';
+  const self = ELEMENT_DETAILS[dayMaster.element];
+  const selfSentence = `일간 본원은 ${dayMaster.hanja}(${dayMaster.korean})이며 오행은 ${self.name}입니다.`;
+  if (leaders.length <= 1) {
+    const detail = ELEMENT_DETAILS[representative];
+    const count = counts[representative] || 0;
+    const sameElement = representative === dayMaster.element;
+    return {
+      leaders: leaders.length ? leaders : [representative],
+      tied: false,
+      element: representative,
+      count,
+      name: detail.name,
+      advice: sameElement
+        ? `${detail.name}의 기운이 강하여 ${detail.emotionNegative} 경향이 나타날 수 있으니 이완과 순환이 중요합니다.`
+        : `개수 기준 ${detail.name}이 ${count}으로 가장 많습니다. 일간 본원의 오행은 ${self.name}입니다.`,
+      summary: sameElement
+        ? (count >= 3
+          ? `중심 기운인 ${detail.name}가 묵직하게 기틀을 잡고 있으며, 다른 오행들이 순환하며 조화를 이루는 구조입니다.`
+          : `${selfSentence} 오행이 비교적 골고루 분포되어 유연하고 다채로운 잠재력을 발휘하는 안정적인 구조입니다.`)
+        : `${selfSentence} 개수가 가장 많은 오행은 ${detail.name} ${count}입니다. 개수가 많다고 일간 오행이 바뀌지는 않습니다.`,
+      strengthLabel: sameElement ? `${representative}기운 우세` : `개수 최다 ${representative} ${count}`,
+    };
+  }
+  const counted = leaders.map((element) => `${ELEMENT_DETAILS[element].name} ${counts[element]}`).join(', ');
+  return {
+    leaders,
+    tied: true,
+    element: representative,
+    count: max,
+    name: leaders.map((element) => ELEMENT_DETAILS[element].name).join(' · '),
+    advice: `${counted}로 같습니다. 일간 본원의 오행은 ${self.name}입니다.`,
+    summary: `${selfSentence} 가장 많은 오행은 ${counted}로 같습니다. 개수가 같은 오행 가운데 하나만 중심 기운으로 두지 않습니다.`,
+    strengthLabel: `${leaders.map((element) => `${element} ${counts[element]}`).join(' · ')} 동률`,
+  };
+}
+
 export const ELEMENT_DETAILS: Record<FiveElement, {
   hanja: string;
   name: string;
@@ -452,6 +507,10 @@ export interface SajuAnalysisResult {
   elements: {
     counts: Record<FiveElement, number>;
     percentages: Record<FiveElement, number>;
+    /** Elements sharing the highest count. One entry when there is a unique lead. */
+    leaders?: FiveElement[];
+    /** Unique lead keeps the old “X기운 우세” phrase. A tie names every leader and its count. */
+    strengthLabel?: string;
     dominant: { element: FiveElement; count: number; name: string; advice: string };
     lacking: { element: FiveElement; count: number; name: string; remedy: string; luckyColor: string; luckyFood: string; luckyPlace: string };
     summary: string;
@@ -540,6 +599,44 @@ export interface SajuAnalysisResult {
   // 통합 프롬프트 헌장 및 요약 문자열
   systemPromptSummary: string;
   shortDigest: string;
+  timePolicy: SajuTimePolicy;
+}
+
+export interface SajuTimePolicy {
+  inputTimeZone: 'Asia/Seoul';
+  hourKnown: boolean;
+  /** Wall-clock minus the fixed 30-minute hour-branch convention. Not true solar time. */
+  hourBranchClock: string | null;
+  dayRolled: boolean;
+  summary: string;
+}
+
+export const SAJU_TIME_POLICY_TEXT = [
+  '입력 시각은 한국 표준시(Asia/Seoul) 벽시계입니다. 절기 비교도 그 벽시계를 기준으로 하며, 실제 UTC에서 9시간을 다시 빼지 않습니다.',
+  '시주만 벽시계에서 30분을 뺀 뒤 2시간 지지에 넣습니다. 이 30분은 일부 명리 유파의 고정 보정이며, 한국 전역의 천문 진태양시나 출생지 경도 보정이 아닙니다.',
+  '출생지 경도·균시차·진태양시는 적용하지 않습니다.',
+  '일주는 벽시계 23:30부터 다음 날로 넘깁니다. 23:00부터 23:29는 넘기지 않고 해시입니다.',
+  '출생 시각은 분 단위입니다. 절입 시각의 초가 그 분보다 뒤면, 같은 시:분으로 입력해도 아직 이전 절기입니다.',
+].join(' ');
+
+export function describeSajuTimePolicy(clock: { hour: number; minute: number } | null): SajuTimePolicy {
+  let hourBranchClock: string | null = null;
+  let dayRolled = false;
+  if (clock) {
+    const adjusted = (clock.hour * 60 + clock.minute - 30 + 1440) % 1440;
+    hourBranchClock = `${String(Math.floor(adjusted / 60)).padStart(2, '0')}:${String(adjusted % 60).padStart(2, '0')}`;
+    dayRolled = clock.hour === 23 && clock.minute >= 30;
+  }
+  const adjustedNote = hourBranchClock
+    ? ` 시주 보정 시각은 ${hourBranchClock}입니다.${dayRolled ? ' 이 시각은 일주가 다음 날로 넘어갑니다.' : ''}`
+    : ' 생시가 없으면 시주를 만들지 않습니다. 년·월의 절기 비교와 대운 시작 나이만 정오 12:00 벽시계를 참고하므로, 절입 당일에는 실제 시각에 따라 월주가 달라질 수 있습니다.';
+  return {
+    inputTimeZone: 'Asia/Seoul',
+    hourKnown: Boolean(clock),
+    hourBranchClock,
+    dayRolled,
+    summary: `${SAJU_TIME_POLICY_TEXT}${adjustedNote}`,
+  };
 }
 
 /**
@@ -737,9 +834,7 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     };
 
     const sortedElements = (Object.entries(counts) as [FiveElement, number][]).sort((a, b) => b[1] - a[1]);
-    const dominantEl = sortedElements[0][0];
     const lackingEl = sortedElements[sortedElements.length - 1][0];
-    const dominantDetail = ELEMENT_DETAILS[dominantEl];
     const lackingDetail = ELEMENT_DETAILS[lackingEl];
 
     // 8. 일간 본원 아키타입
@@ -1116,13 +1211,14 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
 
     // 16. AI 시스템 프롬프트 헌장
     const specialStrText = specialStructures.map(s => `• ${s.name}: ${s.description}`).join('\n');
-    const elementsSummary = counts[dominantEl] >= 3
-      ? `중심 기운인 ${dominantDetail.name}가 묵직하게 기틀을 잡고 있으며, 다른 오행들이 순환하며 조화를 이루는 구조입니다.`
-      : `오행이 비교적 골고루 분포되어 유연하고 다채로운 잠재력을 발휘하는 안정적인 구조입니다.`;
+    const elementLead = describeElementLead(counts, dayMaster);
+    const dominantEl = elementLead.element;
+    const elementsSummary = elementLead.summary;
 
     const systemPromptSummary = `
-[사주명리학 계산 결과: 한국 표준시 기준]
-- 계산 한계: 생시 미입력 시 시주 제외·절기 경계는 정오 참고, 용신·신강약은 간이 해석이며 확정 판정이 아님. 해외 출생지·서머타임·진태양시는 별도 검증 필요.
+[사주명리학 계산 결과]
+- 시각 기준: ${describeSajuTimePolicy(birthTime).summary}
+- 계산 한계: 용신·신강약은 간이 해석이며 확정 판정이 아님.
 - 생년월일 기준: ${basic.birthdate} (${isLunar ? `음력 ➔ 정밀 환산 양력 ${solarDateString}` : '양력'})${basic.birthtime ? ` ${basic.birthtime}` : ' (생시 미입력)'}
 - 사주 4주 8자: 년주(${pillars.year.full} - ${pillars.year.tenGodGan.name}/${pillars.year.tenGodZhi.name}) | 월주(${pillars.month.full} - ${pillars.month.tenGodGan.name}/${pillars.month.tenGodZhi.name}) | 일주(${pillars.day.full} - ${pillars.day.tenGodGan.name}/${pillars.day.tenGodZhi.name})${pillars.hour ? ` | 시주(${pillars.hour.full} - ${pillars.hour.tenGodGan.name}/${pillars.hour.tenGodZhi.name})` : ' | 시주(생시 미입력)'}
 - 일간(Day Master) 본원: ${dayMaster.hanja}(${dayMaster.korean}) - ${dayMaster.symbolName}
@@ -1157,11 +1253,13 @@ ${specialStrText || '• 안정적인 오행 순환 구조'}
       elements: {
         counts,
         percentages,
+        leaders: elementLead.leaders,
+        strengthLabel: elementLead.strengthLabel,
         dominant: {
           element: dominantEl,
-          count: counts[dominantEl],
-          name: dominantDetail.name,
-          advice: `${dominantDetail.name}의 기운이 강하여 ${dominantDetail.emotionNegative} 경향이 나타날 수 있으니 이완과 순환이 중요합니다.`,
+          count: elementLead.count,
+          name: elementLead.name,
+          advice: elementLead.advice,
         },
         lacking: {
           element: lackingEl,
@@ -1190,6 +1288,7 @@ ${specialStrText || '• 안정적인 오행 순환 구조'}
       daewunDetail,
       systemPromptSummary,
       shortDigest,
+      timePolicy: describeSajuTimePolicy(birthTime),
     };
   } catch (err) {
     console.warn("calculateDetailedSaju error:", err);
@@ -1531,8 +1630,12 @@ export function generateDailySajuReport(
   let harmonySummary = '';
   if (todayElGan === saju.elements.lacking.element) {
     harmonySummary = `특히 오늘 하늘의 기운은 ${saju.name}님에게 부족한 ${saju.elements.lacking.name} 기운을 가득 보충해 주어, 막힌 흐름이 시원하게 풀리는 보약 같은 날입니다.`;
-  } else if (todayElGan === saju.elements.dominant.element) {
+  } else if ((saju.elements.leaders?.length ?? 0) > 1 && saju.elements.leaders?.includes(todayElGan)) {
+    harmonySummary = `오늘 하늘의 기운은 개수가 같은 ${saju.elements.strengthLabel} 안에 있습니다. 일간 본원은 ${saju.dayMaster.hanja}(${saju.dayMaster.korean})입니다.`;
+  } else if (todayElGan === saju.elements.dominant.element && (saju.elements.leaders?.length ?? 1) <= 1 && saju.elements.dominant.element === saju.dayMaster.element) {
     harmonySummary = `오늘 하늘의 기운은 ${saju.name}님의 중심 기운인 ${saju.elements.dominant.name} 에너지를 강하게 자극하므로, 조급함을 내려놓고 깊은 호흡으로 평정심을 유지하는 것이 지혜입니다.`;
+  } else if (todayElGan === saju.elements.dominant.element && (saju.elements.leaders?.length ?? 1) <= 1) {
+    harmonySummary = `오늘 하늘의 ${todayElGan} 기운은 개수가 가장 많은 오행과 같습니다. 일간 본원은 ${saju.dayMaster.hanja}(${saju.dayMaster.korean})이며 오행은 ${saju.dayMaster.element}입니다.`;
   } else {
     harmonySummary = `오늘의 ${todayElGan} 기운은 ${saju.name}님의 본원인 ${saju.dayMaster.symbolName}과 조화롭게 어우러져 편안하고 안정된 리듬을 선사합니다.`;
   }

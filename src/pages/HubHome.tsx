@@ -764,7 +764,7 @@ export default function HubHome() {
                         {saju && (
                           <p className="text-[11px] text-indigo-300/95 font-sans font-semibold mt-1 flex items-center gap-1.5">
                             <Sparkles size={11} className="text-amber-400 shrink-0" />
-                            <span>{saju.dayMaster.hanja}({saju.dayMaster.korean}) 본원 체질 · {saju.elements.dominant.element}기운 우세</span>
+                            <span>{saju.dayMaster.hanja}({saju.dayMaster.korean}) 본원 체질 · {saju.elements.strengthLabel || `${saju.elements.dominant.element}기운 우세`}</span>
                           </p>
                         )}
                       </div>

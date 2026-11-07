@@ -29,6 +29,10 @@ View your app in AI Studio: https://ai.studio/apps/74fc4969-44a5-40f7-b5bd-e3b32
 3. Run the app:
    `npm run dev`
 
+## 원격 MCP
+
+타로·사주 Streamable HTTP 엔드포인트는 `POST /api/mcp`입니다. 원카드 타로와 사주는 `LUCKEY_API_ORIGIN`의 기존 리딩 API만 호출합니다. 주소, 인증, 도구별 흐름은 [docs/mcp-remote.md](docs/mcp-remote.md)에 있습니다.
+
 ## 기기 간 자동 동기화
 
 같은 Sites 주소에서 같은 ChatGPT 계정으로 접속하면 프로필·대화·기록이 약 1초 간격으로 양방향 반영됩니다. 창이 활성화된 동안 변경된 항목만 확인하고, 오프라인 변경은 재접속 시 전송합니다. Firebase 로그인이나 기기별 PIN 페어링에 의존하지 않습니다.

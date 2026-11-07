@@ -1964,12 +1964,17 @@ function localKeywordHint(card: TarotCardContext): string {
   return `정방향 — ${kws.slice(0, 3).join(', ')}`;
 }
 
-export function buildLocalTarotReading(concern: string, cards: any[], photoMode?: boolean): string {
+export function buildLocalTarotReading(
+  concern: string,
+  cards: any[],
+  photoMode?: boolean,
+  analysisOverride?: TarotConcernAnalysis,
+): string {
   if (!Array.isArray(cards) || cards.length === 0) {
     return "펼쳐진 카드가 없어 리딩을 시작할 수 없습니다. 마음을 가다듬고 다시 한 번 카드를 뽑아주세요.";
   }
 
-  const analysis = analyzeTarotConcern(concern);
+  const analysis = analysisOverride ?? analyzeTarotConcern(concern);
   const { spread } = analysis;
   const leadCard = cards[0];
   const leadName = leadCard?.nameKo || leadCard?.kr || '첫 번째 카드';

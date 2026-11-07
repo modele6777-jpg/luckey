@@ -1099,6 +1099,11 @@ ${content}
   }
 
   // Daily Tarot Oracle Handler
+  app.post("/api/saju/chart", async (req, res) => {
+    const { handleSajuChartPost } = await import("./server/api-lib/sajuChartRoute");
+    return handleSajuChartPost(req, res);
+  });
+
   app.post("/api/ai/daily-tarot", async (req, res) => {
     const { card, mode = "oracle", comfortLevel = 3, profile, touchMetadata } = req.body || {};
     if (!card) {
@@ -1609,6 +1614,11 @@ ${content}
     return handleMCPDirectPost(req, res);
   });
 
+  app.delete(["/api/mcp", "/mcp"], async (req, res) => {
+    const { handleStreamableMethodNotAllowed } = await import("./server/api-lib/mcpHandler");
+    return handleStreamableMethodNotAllowed(req, res);
+  });
+
   // Support root URL (https://luckey.ai.studio/) when accessed by an MCP client (SSE, JSON discovery, or direct JSON-RPC POST)
   app.get("/", async (req, res, next) => {
     const accept = req.headers.accept || "";
@@ -1630,7 +1640,7 @@ ${content}
   app.options(["*", "/", "/api/mcp", "/api/mcp/*", "/sse", "/mcp", "/mcp/*", "/messages"], (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
     return res.status(200).end();
   });
 

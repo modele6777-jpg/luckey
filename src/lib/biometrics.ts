@@ -125,7 +125,8 @@ function sajuAdjustment(state: SharedState | null, hour: number): { fatigue: num
     let stress = 0;
     let focus = 0;
 
-    const dom = saju.elements.dominant.element;
+    const leaders = saju.elements.leaders?.length ? saju.elements.leaders : [saju.elements.dominant.element];
+    const dom = leaders.length === 1 ? leaders[0] : null;
     const lack = saju.elements.lacking.element;
 
     // 일간 및 오행 영향

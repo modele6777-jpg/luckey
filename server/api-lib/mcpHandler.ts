@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
-import { calculateDetailedSaju } from '../../src/lib/sajuAnalysis.ts';
-import { TAROT_DECK } from '../../src/data/tarotData.ts';
-import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle.ts';
+import { verifyMcpBearer, readBearerToken, protectedReading } from './mcpAuth.ts';
+import { fetchDailyTarot, fetchSajuChart, ORACLE_GAP, selectTarotCard } from './mcpReadingGateway.ts';
+import { handleStreamableMcpPost, isStreamableMcpGet, isStreamableMcpPost } from './mcpStreamable.ts';
+export { handleStreamableMethodNotAllowed } from './mcpStreamable.ts';
 // TTS is loaded only when the MCP TTS tool is called.
 
 interface SseClient {
@@ -29,7 +30,7 @@ setInterval(() => {
 export const MCP_TOOLS = [
   {
     name: 'get_daily_tarot',
-    description: '오늘의 정통 78장 타로 카드 1장을 드로우하여 상징 해석, 오늘 하루의 흐름, 루시의 특별 조언 및 행운의 확언을 반환합니다.',
+    description: '카드 한 장을 고른 뒤 앱과 같은 POST /api/ai/daily-tarot 응답을 반환합니다. MCP에서 리딩 문장을 만들지 않습니다.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -41,12 +42,20 @@ export const MCP_TOOLS = [
           type: 'string',
           description: '오늘의 고민이나 질문 (선택)',
         },
+        cardId: {
+          type: 'string',
+          description: '선택한 78장 덱 카드 id. 생략하면 덱에서 한 장을 골라 /api/ai/daily-tarot에 전달합니다.',
+        },
+        reversed: {
+          type: 'boolean',
+          description: '선택 카드의 역방향 여부',
+        },
       },
     },
   },
   {
     name: 'get_saju_fortune',
-    description: '오늘의 일진(천간·지지, 오행 기운)과 사주 원국 에너지를 분석하여 오늘의 운세 흐름 및 균형 처방을 반환합니다.',
+    description: '출생 정보를 POST /api/saju/chart로 보내 앱과 같은 사주 계산 결과를 반환합니다. MCP에서 사주를 다시 계산하지 않습니다.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -61,7 +70,7 @@ export const MCP_TOOLS = [
   },
   {
     name: 'consult_oracle',
-    description: '사주명리학과 78장 타로를 교차 융합한 심층 오라클 리딩 및 핵심 3줄 요약([현재 에너지], [방향과 결단], [실천 처방])을 반환합니다.',
+    description: '전용 HTTP API가 없습니다. 호출하면 이유와 함께 실패하며, 고정 문장 리딩을 만들지 않습니다.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -136,7 +145,7 @@ export const MCP_PROMPTS = [
   },
 ];
 
-export async function processMCPJsonRpc(message: any): Promise<any> {
+export async function processMCPJsonRpc(message: any, context: { authorized?: boolean } = {}): Promise<any> {
   const { jsonrpc = '2.0', id, method, params } = message || {};
 
   // 1. initialize
@@ -188,72 +197,16 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
     const { name, arguments: args = {} } = params || {};
 
     try {
-      if (name === 'get_daily_tarot') {
-        const rawCard = TAROT_DECK[Math.floor(Math.random() * TAROT_DECK.length)];
-        const isReversed = Math.random() < 0.25;
-        const randomCard = { ...rawCard, reversed: isReversed };
-        const oracle = buildSpecificTarotDailyOracle(randomCard, 'oracle');
-        const detail = (await import('../../src/lib/dailyTarotOracle.ts')).TAROT_DETAILS[randomCard.id];
-
-        return {
-          jsonrpc: '2.0',
-          id,
-          result: {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    card: {
-                      id: randomCard.id,
-                      nameKo: randomCard.nameKo,
-                      nameEn: randomCard.name,
-                      type: randomCard.type,
-                      reversed: isReversed,
-                      keywords: randomCard.keywords,
-                      coreInterpretation: isReversed ? detail?.reversedCore : detail?.uprightCore,
-                      actionGuidance: detail?.actionGuidance,
-                      shadowWarning: detail?.shadowWarning,
-                    },
-                    reading: {
-                      diagnosis: oracle.diagnosis,
-                      luckyNumber: oracle.luckyNumber,
-                      luckyColor: oracle.luckyColor,
-                      remedy: oracle.remedy,
-                      symbol: oracle.symbol,
-                      frequency: oracle.frequency,
-                      blessingMessage: oracle.blessingMessage,
-                    },
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          },
-        };
+      if (name === 'get_daily_tarot' || name === 'get_saju_fortune') {
+        if (!context.authorized) throw new Error('인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.');
       }
 
-      if (name === 'get_saju_fortune') {
-        const year = Number(args.year);
-        const month = Number(args.month);
-        const day = Number(args.day);
-        if (!Number.isInteger(year) || year < 1900 || year > 2050 ||
-            !Number.isInteger(month) || month < 1 || month > 12 ||
-            !Number.isInteger(day) || day < 1 || day > 31) {
-          throw new Error('출생 연월일을 1900~2050년 범위에서 정확히 입력해 주세요.');
-        }
-        const birthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const analysis = calculateDetailedSaju({
-          basic: {
-            birthdate,
-            birthtime: typeof args.birthtime === 'string' ? args.birthtime : undefined,
-            lunarSolar: args.isLunar ? 'lunar' : 'solar',
-            isLeapMonth: Boolean(args.isLeapMonth),
-          },
-        } as Parameters<typeof calculateDetailedSaju>[0]);
-        if (!analysis) throw new Error('사주 계산에 실패했습니다. 생년월일을 확인해 주세요.');
-
+      if (name === 'get_daily_tarot') {
+        const selected = selectTarotCard({ cardId: args.cardId, reversed: args.reversed });
+        if ('error' in selected) throw new Error(selected.error);
+        const result = await fetchDailyTarot(selected, { name: args.name, concern: args.concern });
+        if (!result.ok) throw new Error(result.message);
+        const api = result.api && typeof result.api === 'object' ? result.api as Record<string, unknown> : {};
         return {
           jsonrpc: '2.0',
           id,
@@ -261,75 +214,30 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
             content: [{
               type: 'text',
               text: JSON.stringify({
-                birthdate,
-                solarEquivalentDate: analysis.solarEquivalentDate,
-                isLunar: analysis.isLunar,
-                pillars: {
-                  year: analysis.pillars.year.full,
-                  month: analysis.pillars.month.full,
-                  day: analysis.pillars.day.full,
-                  hour: analysis.pillars.hour?.full ?? null,
-                },
-                elementBalance: analysis.elements.counts,
-                dayMaster: analysis.pillars.day.ganKr,
-                interpretation: analysis.elements.summary,
-                note: '사주 해석은 전통적 상징 해석이며 미래 사건을 확정적으로 예측하지 않습니다.',
+                endpoint: '/api/ai/daily-tarot',
+                card: result.payload.card,
+                reading: api,
               }, null, 2),
             }],
           },
         };
       }
 
-      if (name === 'consult_oracle') {
-        const mode = args.mode === 'growth' ? 'growth' : 'healing';
-        const question = args.question || '내면의 길을 찾고자 합니다.';
-        const recipient = args.name || '질문자';
-
-        // Sample 3 random cards for the oracle spread
-        const shuffled = [...TAROT_DECK].sort(() => 0.5 - Math.random());
-        const cards = shuffled.slice(0, 3).map((c, i) => ({
-          slot: i === 0 ? '현재 상태 / 무의식' : i === 1 ? '도전 과제 / 기회' : '결과 / 실천 처방',
-          cardName: c.nameKo,
-          keywords: c.keywords.slice(0, 3).join(', '),
-        }));
-
-        const isHealing = mode === 'healing';
-        const summaryBullets = isHealing
-          ? [
-              `[현재 에너지] 사주 원국의 본원 기운과 [${cards[0].cardName}] 카드가 만나 지나온 여정의 피로와 전환기 과부하를 비추고 있습니다.`,
-              `[방향과 결단] [${cards[1].cardName}] 카드의 깊은 통찰처럼 타인의 기준이나 조급함을 내려놓고 자신의 고유한 회복 리듬을 선택할 때입니다.`,
-              `[실천 처방] [${cards[2].cardName}] 카드의 상생 에너지를 담아 오늘 밤 따뜻한 차 한 잔과 깊은 호흡으로 마음을 다정하게 안아주세요.`,
-            ]
-          : [
-              `[현재 에너지] 사주 원국의 추진력과 [${cards[0].cardName}] 카드가 만나 실행 정체를 뚫어낼 돌파의 잠재력을 가리키고 있습니다.`,
-              `[방향과 결단] [${cards[1].cardName}] 카드의 조언처럼 망설임과 잔가지를 과감히 쳐내고 오늘 가장 중요한 1순위에 몰입하세요.`,
-              `[실천 처방] [${cards[2].cardName}] 카드의 실행력을 담아 10분 안에 끝낼 수 있는 가장 작은 1% 마이크로 행동을 즉시 시작하세요.`,
-            ];
-
+      if (name === 'get_saju_fortune') {
+        const result = await fetchSajuChart(args);
+        if (!result.ok) throw new Error(result.message);
         return {
           jsonrpc: '2.0',
           id,
-          result: {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    mode,
-                    recipient,
-                    question,
-                    spread: cards,
-                    quickSummary: summaryBullets,
-                    masterMessage: isHealing
-                      ? `${recipient} 님, 지금 마주한 파동은 정체가 아니라 더 큰 성장을 위한 고요한 충전기입니다. 스스로를 재촉하지 마시고 자신의 고유한 리듬을 신뢰하세요.`
-                      : `${recipient} 님, 탁월함은 거창한 결심이 아닌 오늘의 작은 실행에서 완성됩니다. 주저하지 마시고 첫 단추를 채우세요.`,
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          },
+          result: { content: [{ type: 'text', text: JSON.stringify(result.api, null, 2) }] },
+        };
+      }
+
+      if (name === 'consult_oracle') {
+        return {
+          jsonrpc: '2.0',
+          id,
+          error: { code: -32002, message: ORACLE_GAP },
         };
       }
 
@@ -544,6 +452,16 @@ export async function processMCPJsonRpc(message: any): Promise<any> {
 
 // Handler for GET /api/mcp/sse or /sse (Model Context Protocol over SSE)
 export function handleMCPSseStream(req: Request, res: Response) {
+  if (isStreamableMcpGet(req)) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({
+      jsonrpc: '2.0',
+      id: null,
+      error: { code: -32000, message: '이 엔드포인트의 Streamable HTTP는 세션 없는 JSON POST만 받습니다.' },
+    });
+  }
+
   const host = req.get('x-forwarded-host') || req.get('host') || req.headers.host || 'localhost:3000';
   const proto = req.get('x-forwarded-proto') || (req.secure ? 'https' : (host.includes('localhost') ? 'http' : 'https'));
 
@@ -561,6 +479,12 @@ export function handleMCPSseStream(req: Request, res: Response) {
         sse: `${proto}://${host}/api/mcp/sse`,
         messages: `${proto}://${host}/api/mcp/messages`,
         http: `${proto}://${host}/api/mcp`,
+      },
+      streamableHttp: {
+        url: `${proto}://${host}/api/mcp`,
+        transport: 'streamable-http',
+        accept: 'application/json, text/event-stream',
+        session: 'stateless',
       },
       tools: MCP_TOOLS.map((t) => t.name),
     });
@@ -606,7 +530,15 @@ export async function handleMCPPostMessage(req: Request, res: Response) {
   const client = sseClients.get(sessionId);
 
   const message = req.body;
-  const rpcResponse = await processMCPJsonRpc(message);
+  if (protectedReading(message) && !verifyMcpBearer(readBearerToken(req))) {
+    const id = message && typeof message === 'object' && 'id' in message ? (message as { id?: unknown }).id : null;
+    return res.status(401).json({
+      jsonrpc: '2.0',
+      id: typeof id === 'string' || typeof id === 'number' ? id : null,
+      error: { code: -32001, message: '인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.' },
+    });
+  }
+  const rpcResponse = await processMCPJsonRpc(message, { authorized: verifyMcpBearer(readBearerToken(req)) });
 
   if (rpcResponse) {
     if (client) {
@@ -628,8 +560,20 @@ export async function handleMCPDirectPost(req: Request, res: Response) {
     return res.status(200).end();
   }
 
+  if (isStreamableMcpPost(req)) {
+    return handleStreamableMcpPost(req, res);
+  }
+
   const message = req.body;
-  const rpcResponse = await processMCPJsonRpc(message);
+  if (protectedReading(message) && !verifyMcpBearer(readBearerToken(req))) {
+    const id = message && typeof message === 'object' && 'id' in message ? (message as { id?: unknown }).id : null;
+    return res.status(401).json({
+      jsonrpc: '2.0',
+      id: typeof id === 'string' || typeof id === 'number' ? id : null,
+      error: { code: -32001, message: '인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.' },
+    });
+  }
+  const rpcResponse = await processMCPJsonRpc(message, { authorized: verifyMcpBearer(readBearerToken(req)) });
 
   if (!rpcResponse) {
     return res.status(204).end();
