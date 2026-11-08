@@ -1045,30 +1045,34 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         }
         if (prev !== unfolded) {
           setLucyTier((currentTier) => {
-            // 👑 Lucy Pro 상태에서는 화면을 접거나 펼쳐도 252대 풀엔진 스펙을 그대로 유지!
+            // 👑 Lucy Pro 상태에서는 화면을 접거나 펼쳐도 252대 풀엔진 스펙을 그대로 유지 (0ms 즉시 무로딩)!
             if (currentTier === 'pro') {
               triggerHaptic('whitehole');
               setModeSwitchToast(
                 unfolded
-                  ? `👑 듀오 펼침 · AI+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
-                  : `👑 듀오 접힘 · AI Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
+                  ? `👑 듀오 펼침 · Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
+                  : `👑 듀오 접힘 · Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
               );
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'pro';
             }
-            // 일반 상태: 접었을 때는 'AI', 펼쳤을 때는 'AI+'!
+            // 일반 상태: 접었을 때는 'Lucy', 펼쳤을 때는 'Lucy +' (각각 알맞은 전환 로딩 애니메이션 발동!)
             if (unfolded) {
               safeLocalStorage.setItem('lucy_tier_mode', 'plus');
               safeSessionStorage.setItem('lucy_tier_mode', 'plus');
+              setModeTransitioningTier('plus');
+              setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
-              setModeSwitchToast('🌿 듀오 펼침 · AI+');
+              setModeSwitchToast('🌿 듀오 펼침 · Lucy +');
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'plus';
             } else {
               safeLocalStorage.setItem('lucy_tier_mode', 'ai');
               safeSessionStorage.setItem('lucy_tier_mode', 'ai');
+              setModeTransitioningTier('ai');
+              setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
-              setModeSwitchToast('✨ 듀오 접힘 · AI');
+              setModeSwitchToast('✨ 듀오 접힘 · Lucy');
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'ai';
             }
