@@ -717,19 +717,30 @@ const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { 
 
 export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   // 🌟 루시 3대 모드 상태 머신 (Lucy AI / Lucy Plus / Lucy Pro):
-  // - 접힌 상태: [루시 AI] ↔ [루시 프로]만 가능
-  // - 펼친 상태: [루시 플러스] ↔ [루시 프로]만 가능
+  // - 접힌 상태: [루시 AI] ↔ [루시 프로]만 가능 (루시 플러스 진입 원천 차단)
+  // - 펼친 상태: [루시 플러스] ↔ [루시 프로]만 가능 (일반 루시 진입 원천 차단)
   // (루시 AI는 접혔을 때만, 루시 플러스는 펼쳤을 때만 작동, 프로는 빅뱅 홀드로 어디서든 252대 풀엔진 진입)
+  const isDuoContainer = typeof document !== 'undefined' && (
+    Boolean(document.getElementById('duo-lucy-viewport')) ||
+    document.documentElement.classList.contains('duo-unfolded-mode') ||
+    document.documentElement.classList.contains('dual-pane-active')
+  );
+
+  const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || window.innerWidth >= 600;
+  });
+
   const [lucyTier, setLucyTier] = useState<LucyTier>(() => {
     if (pro) return 'pro';
     try {
       if (typeof window !== 'undefined') {
-        const isWide = isDualPaneLayout() || window.innerWidth >= 640;
+        const isWide = isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || window.innerWidth >= 600;
         const search = window.location.search || '';
         if (search.includes('mode=pro') || search.includes('mode=ultra')) return 'pro';
         const saved = safeLocalStorage.getItem('lucy_tier_mode') || safeSessionStorage.getItem('lucy_tier_mode');
         if (saved === 'pro' || saved === 'ultra') return 'pro';
-        // 접힘: 'ai', 펼침: 'plus'
+        // 접힘: 'ai', 펼침: 'plus' (펼친 상태에서 일반 루시 진입 불가, 접힌 상태에서 루시 플러스 진입 불가)
         return isWide ? 'plus' : 'ai';
       }
     } catch {
@@ -748,17 +759,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     previousPlusMode.current = isPlusMode;
   }, [isPlusMode]);
 
-  // 📱 메인 본문 캔버스 실측 너비 기준 iPhone Duo 접힘 / 펼침 (Dual-Pane) 레이아웃 반응형 감지 및 모드 자동 전환
-  const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return isDualPaneLayout() || window.innerWidth >= 640;
-  });
-
   const chatScope = 'lucy';
   const [location, navigate] = useLocation();
   const { resolvedTheme, lucyDayPeriod } = useTheme();
   // 📱 iPhone Duo 펼친 화면에서는 좌측 뷰포트가 키채널(라이트)이더라도 우측/하단 루시채팅은 항상 시그니처 다크 코스믹 테마 유지!
-  const isLight = isDuoUnfolded ? false : (resolvedTheme === 'light');
+  const isLight = (isDuoUnfolded || isDuoContainer) ? false : (resolvedTheme === 'light');
   const useWhiteTheme = false;
 
   useEffect(() => {
@@ -780,7 +785,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     // ✨ 빅뱅 버튼 탭: 접혀있으면 'Lucy', 펼쳐있으면 'Lucy +'!
     const handleRevertNormal = (e?: any) => {
-      const isWide = isDualPaneLayout() || window.innerWidth >= 640;
+      const isWide = isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || (typeof window !== 'undefined' && window.innerWidth >= 600);
       const validTarget: LucyTier = isWide ? 'plus' : 'ai';
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
@@ -795,7 +800,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     // 🎛️ 상단 로고 클릭 토글: 접혀있으면 [루시 AI ↔ 루시 프로], 펼쳐있으면 [루시 플러스 ↔ 루시 프로]
     const handleToggle = () => {
       setLucyTier((prev) => {
-        const isWide = isDualPaneLayout() || window.innerWidth >= 640;
+        const isWide = isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || (typeof window !== 'undefined' && window.innerWidth >= 600);
+        // 펼침 상태: 프로 ↔ 플러스 (일반 루시 진입 금지)
+        // 접힘 상태: 프로 ↔ AI (루시 플러스 진입 금지)
         const next: LucyTier = prev === 'pro' ? (isWide ? 'plus' : 'ai') : 'pro';
         safeLocalStorage.setItem('lucy_tier_mode', next);
         safeSessionStorage.setItem('lucy_tier_mode', next);
@@ -805,7 +812,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         setModeSwitchToast(
           next === 'pro'
             ? (isWide ? `👑 Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`)
-            : next === 'plus'
+            : isWide
             ? '🌿 Lucy +'
             : '✨ Lucy'
         );
@@ -1095,22 +1102,23 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
   }, []);
 
-  // 🌟 듀얼 화면 펼침 상태에서 좌측 채널 선택 상태에 따른 우측 루시 티어 자동 동기화
+  // 🌟 듀얼 화면 펼침 상태에서 일반 루시(AI) 진입 원천 차단 (최소 Lucy + 또는 Lucy+ Pro 보장)
+  // 반대로 접힘 상태에서는 루시 플러스(Plus) 진입 원천 차단 (오직 Lucy AI 또는 Lucy Pro 보장)
   useEffect(() => {
-    if (!isDuoUnfolded) return;
-    const cleanPath = (location || '').split('?')[0].split('#')[0] || '/';
-    const isLucyActiveInMenu = cleanPath === '/' || cleanPath === '/chat' || cleanPath === '/lucy';
-
-    // 프로 모드가 활성화되어 있다면 프로 모드 유지
-    if (lucyTier === 'pro') return;
-
-    // 좌측 화면이 코스믹 룸(루시 선택)이면 우측 루시는 'plus'
-    // 좌측 화면이 KEY 또는 럭키 채널이면 우측 루시는 'ai'
-    const targetTier: LucyTier = isLucyActiveInMenu ? 'plus' : 'ai';
-    if (lucyTier !== targetTier) {
-      setLucyTier(targetTier);
+    if (isDuoUnfolded) {
+      if (lucyTier === 'ai') {
+        setLucyTier('plus');
+        safeLocalStorage.setItem('lucy_tier_mode', 'plus');
+        safeSessionStorage.setItem('lucy_tier_mode', 'plus');
+      }
+    } else {
+      if (lucyTier === 'plus') {
+        setLucyTier('ai');
+        safeLocalStorage.setItem('lucy_tier_mode', 'ai');
+        safeSessionStorage.setItem('lucy_tier_mode', 'ai');
+      }
     }
-  }, [location, isDuoUnfolded, lucyTier]);
+  }, [isDuoUnfolded, lucyTier]);
 
   const currentGhostPromptRef = useRef<string>('');
   const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');

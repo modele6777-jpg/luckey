@@ -224,6 +224,9 @@ function AppContent() {
       document.body.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
       document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
       document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
+      if (state.unfolded) {
+        document.body.style.backgroundColor = 'transparent';
+      }
     };
     handleLayoutChange();
     window.addEventListener('resize', handleLayoutChange, { passive: true });
@@ -701,7 +704,7 @@ function AppContent() {
                   ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%' }
                   : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%' }
               }
-              className={`shrink-0 flex flex-col overflow-hidden relative ${isDuoPortrait ? 'border-b border-white/10' : 'border-r border-white/10'}`}
+              className={`duo-folded-view shrink-0 flex flex-col overflow-hidden relative ${isDuoPortrait ? 'border-b border-white/10' : 'border-r border-white/10'}`}
             >
               {isLucyRoute ? (
                 /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */

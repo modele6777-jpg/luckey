@@ -172,7 +172,7 @@ export function TodayLucyPersonaCard({
 
       <div className="relative z-10 flex flex-col flex-1 justify-between gap-4">
         {/* Top Header Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-white/10">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-white/10 duo-persona-header">
           <div className="flex items-center gap-3">
             {/* Lucy Avatar with Glowing Breathing Aura */}
             <div className="relative w-12 h-12 rounded-2xl border border-white/25 flex items-center justify-center shrink-0 shadow-[0_0_24px_rgba(168,85,247,0.4)] backdrop-blur-md bg-gradient-to-br from-purple-500/35 via-pink-500/25 to-amber-500/35 group/avatar">
