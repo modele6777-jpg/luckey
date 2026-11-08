@@ -3280,3 +3280,9 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .sites-pinned-sidebar {
 html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   position: absolute !important;
 }
+
+/* A rotation must reposition the FAB with the composer immediately. Ring and
+   gesture animations live inside it and retain their existing transitions. */
+html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
+  transition: none !important;
+}

@@ -43,3 +43,13 @@ misses this case. The normal-flow canvas now uses paired CSS viewport width
 and height when they agree with the current width and orientation. A stale
 portrait CSS measurement must be rejected both for layout and keyboard checks.
 The diagnostic screen records both CSS dimensions and orientation for this.
+
+## Rotation latency update (1.7.241)
+
+For installed Safari with supported paired viewport units, normal geometry now
+sets `--app-height: 100lvh` instead of freezing the measured pixel height. CSS
+therefore follows the next viewport size without waiting for JS resize events.
+The resolver remains useful for aliases and keyboard decisions; keyboard mode
+still writes the visible pixel height. Orientation events also run one coalesced,
+short animation-frame measurement loop to catch staged WebKit updates. This
+removes application-added waits, not the OS rotation animation itself.

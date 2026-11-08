@@ -464,11 +464,14 @@ function fillArmed(now = Date.now()): boolean {
 }
 
 /** Keep the app shell in the same recovery transaction as visual-viewport aliases. */
-export function applyAppLayoutViewport(box: ViewportBox, doc: Document): void {
+export function applyAppLayoutViewport(box: ViewportBox, doc: Document, snapshot?: ViewportSnapshot): void {
   const html = doc.documentElement;
   html.classList.remove('keyboard-open');
   doc.body?.classList.remove('keyboard-open');
-  html.style.setProperty('--app-height', px(box.height));
+  // Native CSS viewport units react during rotation before delayed JS callbacks.
+  const nativeCanvas = snapshot?.iosStandalone && positive(snapshot.cssViewportHeight) != null
+    && positive(snapshot.cssViewportWidth) != null;
+  html.style.setProperty('--app-height', nativeCanvas ? '100lvh' : px(box.height));
   for (const element of [html, doc.body]) {
     element?.style.removeProperty('height');
     element?.style.removeProperty('min-height');
@@ -550,13 +553,15 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
       && (screenFilled(snapshot, lastAppliedBox) || screenFilled(snapshot, next)),
   );
   applyVisualViewportBox(box, document.documentElement, snapshot);
-  applyAppLayoutViewport(box, document);
+  applyAppLayoutViewport(box, document, snapshot);
   applySafeAreaVars(document);
   return box;
 }
 
 let retryTimers: number[] = [];
 let retryFrame = 0;
+let rotationFrame = 0;
+let rotationFramesRemaining = 0;
 
 export function chooseStableViewportBox(
   previous: ViewportBox | null,
@@ -616,6 +621,9 @@ export async function resetAppScreen(win: Window = window): Promise<void> {
   retryFrame = 0;
   for (const timer of retryTimers) win.clearTimeout(timer);
   retryTimers = [];
+  if (rotationFrame) win.cancelAnimationFrame(rotationFrame);
+  rotationFrame = 0;
+  rotationFramesRemaining = 0;
   appliedSignature = '';
   lastAppliedBox = null;
   fillUntil = 0;
@@ -684,6 +692,22 @@ export function scheduleVisualViewportSync(win: Window = window): void {
   );
 }
 
+/** Coalesce rotation events into one short frame loop instead of waiting for
+ * the 80/280ms retry timers when WebKit updates CSS/visual geometry in stages.
+ */
+export function syncViewportDuringRotation(win: Window = window): void {
+  syncVisualViewportBox(win);
+  scheduleVisualViewportSync(win);
+  rotationFramesRemaining = 12;
+  if (rotationFrame) return;
+  const tick = () => {
+    rotationFrame = 0;
+    syncVisualViewportBox(win);
+    if (--rotationFramesRemaining > 0) rotationFrame = win.requestAnimationFrame(tick);
+  };
+  rotationFrame = win.requestAnimationFrame(tick);
+}
+
 export function bindVisualViewportLifecycle(win: Window = window): void {
   if (lifecycleBound) return;
   lifecycleBound = true;
@@ -733,11 +757,11 @@ export function bindVisualViewportLifecycle(win: Window = window): void {
   });
 
   win.screen?.orientation?.addEventListener?.('change', () => {
-    scheduleVisualViewportSync(win);
+    syncViewportDuringRotation(win);
   });
 
   win.addEventListener('orientationchange', () => {
-    scheduleVisualViewportSync(win);
+    syncViewportDuringRotation(win);
   }, { passive: true });
 
   doc.addEventListener('resume', () => {

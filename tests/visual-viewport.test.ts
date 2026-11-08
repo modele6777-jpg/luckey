@@ -411,3 +411,21 @@ test('reported landscape trace fills 669px despite a zero top safe area', () => 
   assert.equal(resolveAppLayoutHeight(landscape), '669px');
   assert.equal(resolveViewportBox({ ...landscape, cssViewportWidth: 669, cssViewportHeight: 951 })?.height, 587);
 });
+
+
+test('installed Safari uses a CSS canvas that can resize before JS events arrive', () => {
+  const values = new Map<string, string>();
+  const el = { style: {
+    setProperty: (k: string, v: string) => { values.set(k, v); },
+    removeProperty: (k: string) => { values.delete(k); },
+  }, classList: { remove() {} } };
+  const doc = { documentElement: el, body: el, getElementById: () => null } as unknown as Document;
+  const full = { width: 669, height: 951, offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
+  const snapshot = { iosStandalone: true, innerWidth: 669, innerHeight: 869, cssViewportWidth: 669, cssViewportHeight: 951 };
+  applyAppLayoutViewport(full, doc, snapshot);
+  assert.equal(values.get('--app-height'), '100lvh');
+  applyAppLayoutViewport(full, doc, { ...snapshot, iosStandalone: false });
+  assert.equal(values.get('--app-height'), '951px');
+  applyAppLayoutViewport(full, doc, { ...snapshot, cssViewportHeight: undefined });
+  assert.equal(values.get('--app-height'), '951px');
+});
