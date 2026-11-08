@@ -9,6 +9,7 @@ import {
   viewportNeedsResumeFill,
   applyVisualViewportBox,
   applyAppLayoutViewport,
+  applyKeyboardLayoutViewport,
   isKeyboardViewportOpen,
 } from '../src/lib/visualViewportBox';
 import {
@@ -213,9 +214,7 @@ test('the update path does not schedule a second navigation after reload starts'
   assert.match(block, /clearTimeout\(fallbackId\)/);
   const main = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
   assert.ok(main.indexOf('installSingleAppReload(window)') < main.indexOf('registerSW('));
-  const hook = readFileSync(new URL('../src/hooks/useViewportScrollLock.ts', import.meta.url), 'utf8');
-  const restored = hook.slice(hook.indexOf("style.setProperty('--vv-top', '0px')"));
-  assert.ok(restored.indexOf('syncVisualViewportBox(window)') < restored.indexOf("setProperty('--app-height'"));
+
 });
 
 test('late update recovery restores app height and clears stale keyboard constraints together', () => {
@@ -265,4 +264,50 @@ test('unfolded portrait cold launch fills the newer visible height without a rel
   // Neither a cover-screen measurement nor a shorter keyboard may size the shell.
   assert.equal(resolveViewportBox({ ...starting, visual: { ...starting.visual, width: 400 } })?.height, 1170);
   assert.equal(resolveViewportBox({ ...starting, visual: { ...starting.visual, height: 600 } })?.height, 1170);
+});
+
+
+test('installed iPhone Duo uses CSS viewport even when both JS readings remain short', () => {
+  const snapshot = {
+    iosStandalone: true, innerWidth: 450, innerHeight: 562.5,
+    screenWidth: 450, screenHeight: 640, cssViewportHeight: 640,
+    visual: { width: 450, height: 562.5, offsetTop: 50, offsetLeft: 0 },
+  };
+  assert.equal(resolveViewportBox(snapshot)?.height, 640);
+  assert.equal(resolveAppLayoutHeight(snapshot), 'max(100dvh, 640px)');
+  assert.equal(resolveViewportBox({ ...snapshot, iosStandalone: false })?.height, 562.5);
+  assert.equal(isKeyboardViewportOpen(snapshot, true), false);
+  assert.equal(isKeyboardViewportOpen({ ...snapshot, innerHeight: 300, visual: { ...snapshot.visual, height: 300 } }, true), true);
+});
+
+test('one geometry owner restores root, sidebar variables and shell after keyboard dismissal', () => {
+  const makeElement = () => {
+    const values = new Map<string, string>();
+    const classes = new Set<string>();
+    return {
+      values, classes,
+      style: {
+        setProperty: (k: string, v: string) => { values.set(k, v); },
+        getPropertyValue: (k: string) => values.get(k) ?? '',
+        removeProperty: (k: string) => { values.delete(k); return ''; },
+      },
+      classList: { add: (k: string) => { classes.add(k); }, remove: (k: string) => { classes.delete(k); } },
+      toggleAttribute: () => {},
+    };
+  };
+  const html = makeElement(), body = makeElement(), root = makeElement(), shell = makeElement();
+  const doc = { documentElement: html, body, getElementById: () => ({ ...root, querySelector: () => shell }) } as unknown as Document;
+  const full = { width: 450, height: 640, offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
+  applyVisualViewportBox(full, html as unknown as HTMLElement);
+  applyKeyboardLayoutViewport({ ...full, height: 300, offsetTop: 50 }, doc);
+  assert.equal(root.values.get('height'), '300px');
+  assert.equal(html.values.get('--app-height'), '300px');
+  assert.equal(html.values.get('--vv-top'), '50px');
+  applyVisualViewportBox(full, html as unknown as HTMLElement);
+  applyAppLayoutViewport(full, doc);
+  assert.equal(html.values.get('--app-height'), 'max(100dvh, 640px)');
+  assert.equal(html.values.get('--vv-top'), '0px');
+  assert.equal(root.values.has('max-height'), false);
+  assert.equal(shell.values.has('height'), false);
+  assert.equal(html.classes.has('keyboard-open'), false);
 });

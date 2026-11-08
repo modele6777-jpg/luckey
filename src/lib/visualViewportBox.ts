@@ -37,6 +37,8 @@ export type ViewportSnapshot = {
    * still covers the screen.
    */
   iosStandalone?: boolean;
+  /** CSS large viewport is independent of stale JS height on installed WebKit. */
+  cssViewportHeight?: number;
   screenWidth?: number;
   screenHeight?: number;
   visual?: {
@@ -103,7 +105,8 @@ export function resolveViewportBox(
   // innerHeight. Use that newer height only once both report the same width;
   // a visual viewport from the cover screen or previous orientation is unsafe.
   const sameWidth = Math.abs(visualWidth - layoutWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
-  const height = sameWidth ? Math.max(layoutHeight, visualHeight) : layoutHeight;
+  const cssHeight = snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) : null;
+  const height = Math.max(sameWidth ? Math.max(layoutHeight, visualHeight) : layoutHeight, cssHeight ?? 0);
   return coverScreenEdges(snapshot, {
     width: roundPx(layoutWidth),
     height: roundPx(height),
@@ -137,7 +140,7 @@ export function canUseKeyboardViewport(snapshot: ViewportSnapshot, inputActive: 
 export function isKeyboardViewportOpen(snapshot: ViewportSnapshot, inputActive: boolean): boolean {
   if (!canUseKeyboardViewport(snapshot, inputActive)) return false;
   const visualHeight = snapshot.visual!.height;
-  let fullHeight = snapshot.innerHeight;
+  let fullHeight = Math.max(snapshot.innerHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
   const sw = positive(snapshot.screenWidth);
   const sh = positive(snapshot.screenHeight);
   if (snapshot.iosStandalone && sw != null && sh != null) {
@@ -161,7 +164,7 @@ export function resolveAppLayoutHeight(snapshot: ViewportSnapshot): string {
   const visual = snapshot.visual;
   const sameWidth = visual && Math.abs(visual.width - snapshot.innerWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
   // A stale, shorter visual viewport must not leave the layout bottom uncovered.
-  const measuredHeight = Math.max(layoutHeight, (sameWidth && positive(visual.height)) || layoutHeight);
+  const measuredHeight = Math.max(layoutHeight, (sameWidth && positive(visual.height)) || layoutHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
   return `max(100dvh, ${px(roundPx(measuredHeight))})`;
 }
 
@@ -338,10 +341,20 @@ function applySafeAreaVars(doc: Document): void {
 
 export function readViewportSnapshot(win: Window): ViewportSnapshot {
   const visual = win.visualViewport;
+  const iosStandalone = isIosStandaloneWindow(win);
+  let cssViewportHeight: number | undefined;
+  if (iosStandalone && (win as Window & { CSS?: typeof CSS }).CSS?.supports('height', '100lvh')) {
+    const probe = win.document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100lvh;visibility:hidden;pointer-events:none;contain:strict';
+    (win.document.body ?? win.document.documentElement).appendChild(probe);
+    cssViewportHeight = probe.getBoundingClientRect().height;
+    probe.remove();
+  }
   return {
     innerWidth: win.innerWidth,
     innerHeight: win.innerHeight,
-    iosStandalone: isIosStandaloneWindow(win),
+    iosStandalone,
+    cssViewportHeight,
     screenWidth: win.screen?.width,
     screenHeight: win.screen?.height,
     visual: visual
@@ -361,7 +374,6 @@ function px(value: number): string {
 
 let appliedSignature = '';
 let lastAppliedBox: ViewportBox | null = null;
-let stableBox: ViewportBox | null = null;
 let sawHidden = false;
 let fillUntil = 0;
 let lifecycleBound = false;
@@ -392,21 +404,6 @@ export function applyVisualViewportBox(
   root.style.setProperty('--visual-vh', px(box.height));
 }
 
-function rememberStable(box: ViewportBox): void {
-  if (
-    !stableBox ||
-    Math.abs(stableBox.width - box.width) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX ||
-    box.height >= stableBox.height - 1
-  ) {
-    stableBox = box;
-  }
-}
-
-function restoreStableBox(): void {
-  if (!stableBox || typeof document === 'undefined') return;
-  applyVisualViewportBox(stableBox, document.documentElement);
-}
-
 export function armViewportResumeFill(now = Date.now()): void {
   fillUntil = now + VIEWPORT_RESUME_FILL_MS;
 }
@@ -433,29 +430,76 @@ export function applyAppLayoutViewport(box: ViewportBox, doc: Document): void {
   for (const property of ['height', 'min-height', 'max-height']) shell?.style.removeProperty(property);
 }
 
+export function applyKeyboardLayoutViewport(box: ViewportBox, doc: Document): void {
+  doc.documentElement.classList.add('keyboard-open');
+  if (doc.body) doc.body.classList.add('keyboard-open');
+
+  // iOS는 키보드가 열릴 때 visualViewport를 위로 패닝(offsetTop)한다.
+  // 여기서 html/body 높이까지 줄이면 그 패닝과 겹쳐 화면이 키보드보다 더 위로 올라간다.
+  // 문서 높이는 그대로 두고, #root만 지금 보이는 사각형(offset + visual height)에 붙인다.
+
+
+  doc.documentElement.style.removeProperty('height');
+  doc.documentElement.style.removeProperty('min-height');
+  if (doc.body) {
+    doc.body.style.removeProperty('height');
+    doc.body.style.removeProperty('min-height');
+  }
+
+  doc.documentElement.style.setProperty('--vv-top', `${box.offsetTop}px`);
+  doc.documentElement.style.setProperty('--vv-left', '0px');
+  doc.documentElement.style.setProperty('--app-height', `${box.height}px`);
+  doc.documentElement.style.setProperty('--vvh', `${box.height}px`);
+  doc.documentElement.style.setProperty('--visual-vh', `${box.height}px`);
+
+  const root = doc.getElementById('root');
+  if (root) {
+    root.style.setProperty('position', 'fixed', 'important');
+    root.style.setProperty('top', `${box.offsetTop}px`, 'important');
+    root.style.setProperty('left', '0px', 'important');
+    root.style.setProperty('right', '0px', 'important');
+    root.style.setProperty('width', '100%', 'important');
+    root.style.setProperty('height', `${box.height}px`, 'important');
+    root.style.setProperty('min-height', '0px', 'important');
+    root.style.setProperty('max-height', `${box.height}px`, 'important');
+  }
+  const shell = root?.querySelector<HTMLElement>('.prism-app-shell') || null;
+  if (shell) {
+    shell.style.height = `${box.height}px`;
+    shell.style.minHeight = '0px';
+    shell.style.maxHeight = `${box.height}px`;
+  }
+}
+
 export function syncVisualViewportBox(win: Window = window): ViewportBox | null {
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
   const snapshot = readViewportSnapshot(win);
   const active = document.activeElement as HTMLElement | null;
   const inputActive = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || Boolean(active?.isContentEditable);
-  // 키보드가 열린 동안 --vv-top / --app-height는 useViewportScrollLock이 소유한다.
-  // 여기서 offsetTop을 0으로 덮어쓰면 셸이 레이아웃 맨 위에 고정되어 화면이 과도하게 올라간다.
+  // Every event path uses the same owner for keyboard and normal geometry.
   if (isKeyboardViewportOpen(snapshot, inputActive)) {
+    const box: ViewportBox = {
+      width: snapshot.innerWidth,
+      height: Math.round(snapshot.visual!.height),
+      offsetTop: Math.max(0, Math.round(snapshot.visual!.offsetTop)),
+      offsetLeft: 0, bottomGap: 0,
+    };
+    applyKeyboardLayoutViewport(box, document);
     applySafeAreaVars(document);
-    return null;
+    return box;
   }
   const next = resolveViewportBox(snapshot, { fillLayoutGap: fillArmed() || Boolean(snapshot.iosStandalone) });
   if (!next) return null;
   const box = chooseStableViewportBox(
     lastAppliedBox,
     next,
-    screenFilled(snapshot, lastAppliedBox) || screenFilled(snapshot, next),
+    snapshot.cssViewportHeight == null
+      && (screenFilled(snapshot, lastAppliedBox) || screenFilled(snapshot, next)),
   );
   applyVisualViewportBox(box, document.documentElement, snapshot);
   applyAppLayoutViewport(box, document);
   applySafeAreaVars(document);
-  rememberStable(box);
   return box;
 }
 
@@ -568,7 +612,6 @@ export function bindVisualViewportLifecycle(win: Window = window): void {
   doc.addEventListener('visibilitychange', () => {
     if (doc.visibilityState === 'hidden') {
       sawHidden = true;
-      restoreStableBox();
       return;
     }
     resume(true);

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { isKeyboardViewportOpen, readViewportSnapshot, resolveAppLayoutHeight, syncVisualViewportBox } from '@/lib/visualViewportBox';
+import { syncVisualViewportBox } from '@/lib/visualViewportBox';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
@@ -65,76 +65,9 @@ export function useViewportScrollLock() {
 
       lockWindowScroll();
 
-      const visual = window.visualViewport;
-      const visualH = visual ? visual.height : window.innerHeight;
-      const visualTop = visual ? Math.max(0, Math.round(visual.offsetTop)) : 0;
-
-      const snapshot = readViewportSnapshot(window);
-      const hasKeyboard = isKeyboardViewportOpen(snapshot, isInputActive());
-
-      if (hasKeyboard) {
-        document.documentElement.classList.add('keyboard-open');
-        if (document.body) document.body.classList.add('keyboard-open');
-
-        // iOS는 키보드가 열릴 때 visualViewport를 위로 패닝(offsetTop)한다.
-        // 여기서 html/body 높이까지 줄이면 그 패닝과 겹쳐 화면이 키보드보다 더 위로 올라간다.
-        // 문서 높이는 그대로 두고, #root만 지금 보이는 사각형(offset + visual height)에 붙인다.
-        const keyboardSafeHeight = Math.round(visualH);
-
-        document.documentElement.style.removeProperty('height');
-        document.documentElement.style.removeProperty('min-height');
-        if (document.body) {
-          document.body.style.removeProperty('height');
-          document.body.style.removeProperty('min-height');
-        }
-
-        document.documentElement.style.setProperty('--vv-top', `${visualTop}px`);
-        document.documentElement.style.setProperty('--vv-left', '0px');
-        document.documentElement.style.setProperty('--app-height', `${keyboardSafeHeight}px`);
-        document.documentElement.style.setProperty('--vvh', `${keyboardSafeHeight}px`);
-        document.documentElement.style.setProperty('--visual-vh', `${keyboardSafeHeight}px`);
-
-        const root = document.getElementById('root');
-        if (root) {
-          root.style.setProperty('position', 'fixed', 'important');
-          root.style.setProperty('top', `${visualTop}px`, 'important');
-          root.style.setProperty('left', '0px', 'important');
-          root.style.setProperty('right', '0px', 'important');
-          root.style.setProperty('width', '100%', 'important');
-          root.style.setProperty('height', `${keyboardSafeHeight}px`, 'important');
-          root.style.setProperty('min-height', '0px', 'important');
-          root.style.setProperty('max-height', `${keyboardSafeHeight}px`, 'important');
-        }
-        const shell = root?.querySelector<HTMLElement>('.prism-app-shell') || null;
-        if (shell) {
-          shell.style.height = `${keyboardSafeHeight}px`;
-          shell.style.minHeight = '0px';
-          shell.style.maxHeight = `${keyboardSafeHeight}px`;
-        }
-      } else {
-        document.documentElement.classList.remove('keyboard-open');
-        if (document.body) document.body.classList.remove('keyboard-open');
-        document.documentElement.style.setProperty('--vv-top', '0px');
-        document.documentElement.style.setProperty('--vv-left', '0px');
-        // Measure first so a later stale visualViewport event cannot replace a
-        // filled height, then size the shell from that same box.
-        const box = syncVisualViewportBox(window);
-        const layoutHeight = box ? `max(100dvh, ${box.height}px)` : resolveAppLayoutHeight(snapshot);
-        document.documentElement.style.setProperty('--app-height', layoutHeight);
-        document.documentElement.style.removeProperty('height');
-        document.documentElement.style.removeProperty('min-height');
-        document.body?.style.removeProperty('height');
-        document.body?.style.removeProperty('min-height');
-
-        const root = document.getElementById('root');
-        for (const property of ['position', 'top', 'left', 'right', 'width', 'height', 'min-height', 'max-height']) {
-          root?.style.removeProperty(property);
-        }
-        const shell = root?.querySelector<HTMLElement>('.prism-app-shell');
-        for (const property of ['height', 'min-height', 'max-height']) {
-          shell?.style.removeProperty(property);
-        }
-      }
+      // One writer owns normal and keyboard geometry. Hidden pages are ignored
+      // there so a background resize cannot leave stale inline constraints.
+      syncVisualViewportBox(window);
     };
 
     let timers: ReturnType<typeof setTimeout>[] = [];
