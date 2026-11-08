@@ -366,8 +366,55 @@ html[data-lucy-period='night'] .lucy-shooting-star { animation-play-state: runni
 .lucy-night .lucy-chat-header h1 span { font-weight: inherit; letter-spacing: inherit; }
 .lucy-mode-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; line-height: 20px; padding: 0 7px; border-radius: 6px; color: #aab9cc; background: #ffffff08; white-space: nowrap; }
 .lucy-mode-badge::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #92ac9c; }
-.lucy-mode-badge.is-master { color: #fcd34d; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); }
-.lucy-mode-badge.is-master::before { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+.lucy-mode-badge.is-plus { color: #6ee7b7; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); }
+.lucy-mode-badge.is-plus::before { background: #10b981; box-shadow: 0 0 6px #10b981; }
+.lucy-mode-badge.is-master, .lucy-mode-badge.is-pro, .lucy-mode-badge.is-ultra { color: #fcd34d; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.45); box-shadow: 0 0 8px rgba(245, 158, 11, 0.2); }
+.lucy-mode-badge.is-master::before, .lucy-mode-badge.is-pro::before, .lucy-mode-badge.is-ultra::before { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+
+/* 🌟 Lucy Pro 전용 숨쉬는 로딩 애니메이션: 옅은 상태 ➔ 선명하고 진한 상태 */
+@keyframes lucyProBreathe {
+  0%, 100% {
+    opacity: 0.22;
+    transform: scale(0.94);
+    filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.2));
+    color: rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.95));
+    color: #fde68a;
+  }
+}
+
+@keyframes lucyProRingBreathe {
+  0%, 100% {
+    opacity: 0.18;
+    transform: scale(0.92);
+    border-color: rgba(245, 158, 11, 0.2);
+    box-shadow: 0 0 4px rgba(245, 158, 11, 0.1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+    border-color: rgba(245, 158, 11, 0.7);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.45);
+  }
+}
+
+.lucy-pro-loading-text {
+  display: inline-block;
+  animation: lucyProBreathe 2s ease-in-out infinite;
+  will-change: opacity, transform, filter;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.12em;
+}
+
+.lucy-pro-loading-pulse-ring {
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  animation: lucyProRingBreathe 2s ease-in-out infinite;
+  will-change: opacity, transform, border-color;
+}
 html.light .lucy-mode-badge { color: #647487; background: #253d5610; }
 html.light .lucy-mode-badge.is-master { color: #92400e; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(217, 119, 6, 0.4); }
 html.light .lucy-mode-badge.is-master::before { background: #d97706; box-shadow: 0 0 6px #d97706; }

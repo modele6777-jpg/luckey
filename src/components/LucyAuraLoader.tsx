@@ -7,17 +7,19 @@ interface LucyAuraLoaderProps {
   subMessage?: string;
   fullScreen?: boolean;
   compact?: boolean;
+  isPro?: boolean;
 }
 
 /**
  * 🍀 LucyAuraLoader (Minimalist Edition)
- * 루시 AI 챗 & 교감 진입 전용 미니멀 클로버 로딩 화면
+ * 루시 AI 챗 & Lucy Pro 진입 전용 미니멀 클로버 / Pro 로딩 화면
  */
 export function LucyAuraLoader({
   message = '루시와 행운의 깊은 교감 조율 중...',
   subMessage = 'FOUR-LEAF CLOVER · FORTUNE & INTUITION',
   fullScreen = false,
   compact = false,
+  isPro = false,
 }: LucyAuraLoaderProps) {
   const content = (
     <div
@@ -33,13 +35,15 @@ export function LucyAuraLoader({
       }`}
       style={fullScreen ? { boxSizing: 'border-box', minHeight: 0, margin: 0, paddingTop: 'max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))', paddingBottom: 'max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))' } : undefined}
     >
-      {/* Soft Ambient Emerald Glow */}
+      {/* Soft Ambient Glow (Pro: Amber / Normal: Emerald) */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-full bg-emerald-500/8 blur-3xl" />
+        <div className={`w-48 h-48 sm:w-64 sm:h-64 rounded-full blur-3xl ${
+          isPro ? 'bg-amber-500/12' : 'bg-emerald-500/8'
+        }`} />
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center">
-        {/* Minimal Clover Breath Emblem */}
+        {/* Emblem Container */}
         <div className="relative flex items-center justify-center mb-4 sm:mb-6">
           {/* Subtle Outer Hairline Pulse Ring */}
           <motion.div
@@ -52,52 +56,77 @@ export function LucyAuraLoader({
               repeat: Number.POSITIVE_INFINITY,
               ease: 'easeInOut',
             }}
-            className="absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-emerald-400/20"
+            className={`absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full border ${
+              isPro ? 'border-amber-400/30' : 'border-emerald-400/20'
+            }`}
           />
 
-          {/* Minimal Clover Geometry Container */}
-          <motion.div
-            animate={{
-              scale: [0.97, 1.03, 0.97],
-            }}
-            transition={{
-              duration: 2.6,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: 'easeInOut',
-            }}
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-950/60 backdrop-blur-sm"
-          >
-            <svg
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400"
+          {/* Minimal Geometry Container */}
+          {isPro ? (
+            <motion.div
+              animate={{
+                scale: [0.97, 1.03, 0.97],
+              }}
+              transition={{
+                duration: 2.2,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: 'easeInOut',
+              }}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-950/60 backdrop-blur-sm relative overflow-hidden"
             >
-              {/* Minimal Organic Four Leaf Petals */}
-              <g stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                {/* Top Leaf */}
-                <path d="M16 16 C16 10, 11 8, 11 12 C11 15.5, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-                {/* Right Leaf */}
-                <path d="M16 16 C22 16, 24 11, 20 11 C16.5 11, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-                {/* Bottom Leaf */}
-                <path d="M16 16 C16 22, 21 24, 21 20 C21 16.5, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-                {/* Left Leaf */}
-                <path d="M16 16 C10 16, 8 21, 12 21 C15.5 21, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-              </g>
-              {/* Central Golden Core Dewdrop */}
-              <circle cx="16" cy="16" r="1.8" fill="#fde047" />
-            </svg>
-          </motion.div>
+              <div className="lucy-pro-loading-pulse-ring absolute inset-1 rounded-xl pointer-events-none" />
+              <span className="lucy-pro-loading-text text-base sm:text-lg font-black tracking-widest text-amber-300 z-10">
+                PRO
+              </span>
+            </motion.div>
+          ) : (
+            <motion.div
+              animate={{
+                scale: [0.97, 1.03, 0.97],
+              }}
+              transition={{
+                duration: 2.6,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: 'easeInOut',
+              }}
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-950/60 backdrop-blur-sm"
+            >
+              <svg
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400"
+              >
+                {/* Minimal Organic Four Leaf Petals */}
+                <g stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Top Leaf */}
+                  <path d="M16 16 C16 10, 11 8, 11 12 C11 15.5, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
+                  {/* Right Leaf */}
+                  <path d="M16 16 C22 16, 24 11, 20 11 C16.5 11, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
+                  {/* Bottom Leaf */}
+                  <path d="M16 16 C16 22, 21 24, 21 20 C21 16.5, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
+                  {/* Left Leaf */}
+                  <path d="M16 16 C10 16, 8 21, 12 21 C15.5 21, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
+                </g>
+                {/* Central Golden Core Dewdrop */}
+                <circle cx="16" cy="16" r="1.8" fill="#fde047" />
+              </svg>
+            </motion.div>
+          )}
         </div>
 
         {/* Minimal Lucy Wordmark */}
         <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-          <span className="text-[11px] sm:text-xs font-semibold tracking-[0.3em] uppercase text-emerald-300 font-sans">
+          <span className={`text-[11px] sm:text-xs font-black tracking-[0.3em] uppercase font-sans ${
+            isPro ? 'text-amber-300' : 'text-emerald-300'
+          }`}>
             Lucy
           </span>
-          <span className="w-1 h-1 rounded-full bg-emerald-400/50" />
-          <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-emerald-400/60 font-mono">
-            Bestie
+          <span className={`w-1 h-1 rounded-full ${isPro ? 'bg-amber-400/50' : 'bg-emerald-400/50'}`} />
+          <span className={`text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-mono font-bold ${
+            isPro ? 'text-amber-400/80' : 'text-emerald-400/60'
+          }`}>
+            {isPro ? 'Pro Master' : 'Bestie'}
           </span>
         </div>
 
@@ -105,14 +134,18 @@ export function LucyAuraLoader({
         <motion.p
           animate={{ opacity: [0.65, 0.95, 0.65] }}
           transition={{ duration: 2.4, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
-          className="text-xs sm:text-[13px] font-medium tracking-wide text-emerald-100/90 font-sans max-w-xs break-keep px-4"
+          className={`text-xs sm:text-[13px] font-medium tracking-wide font-sans max-w-xs break-keep px-4 ${
+            isPro ? 'text-amber-100/90' : 'text-emerald-100/90'
+          }`}
         >
           {message}
         </motion.p>
 
         {/* Minimal Submessage */}
         {subMessage && (
-          <p className="text-[9px] sm:text-[10px] tracking-[0.2em] text-emerald-500/50 font-mono mt-1 uppercase">
+          <p className={`text-[9px] sm:text-[10px] tracking-[0.2em] font-mono mt-1 uppercase ${
+            isPro ? 'text-amber-500/60' : 'text-emerald-500/50'
+          }`}>
             {subMessage}
           </p>
         )}
@@ -128,12 +161,16 @@ export function LucyAuraLoader({
               repeat: Number.POSITIVE_INFINITY,
               ease: [0.4, 0, 0.2, 1],
             }}
-            className="w-full h-full rounded-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent"
+            className={`w-full h-full rounded-full bg-gradient-to-r from-transparent ${
+              isPro ? 'via-amber-400' : 'via-emerald-400'
+            } to-transparent`}
           />
         </div>
       </div>
     </div>
   );
+  return fullScreen && typeof document !== 'undefined' ? <ScreenPortal>{content}</ScreenPortal> : content;
+}
   return fullScreen && typeof document !== 'undefined' ? <ScreenPortal>{content}</ScreenPortal> : content;
 }
 
