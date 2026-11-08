@@ -252,6 +252,9 @@ import { calculateBaekbeomKimGuMyDesireCulture, formatBaekbeomKimGuMyDesireCultu
 import { calculateMartinHeideggerBeingAndTime, formatMartinHeideggerBeingAndTimePrompt, GERMAN_MARTIN_HEIDEGGER_VERSION } from '../src/lib/divination/germanMartinHeideggerBeingAndTimeEngine';
 import { calculateHannahArendtVitaActiva, formatHannahArendtVitaActivaPrompt, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION } from '../src/lib/divination/americanGermanHannahArendtVitaActivaEngine';
 import { calculateDosanAhnChanghoMusilYeokhaeng, formatDosanAhnChanghoMusilYeokhaengPrompt, KOREAN_DOSAN_AHN_CHANGHO_VERSION } from '../src/lib/divination/koreanDosanAhnChanghoMusilYeokhaengEngine';
+import { calculateHenryDavidThoreauWalden, formatHenryDavidThoreauWaldenPrompt, AMERICAN_HENRY_DAVID_THOREAU_VERSION } from '../src/lib/divination/americanHenryDavidThoreauWaldenEngine';
+import { calculateDavidHumeTreatiseHumanNature, formatDavidHumeTreatiseHumanNaturePrompt, SCOTTISH_DAVID_HUME_VERSION } from '../src/lib/divination/scottishDavidHumeTreatiseHumanNatureEngine';
+import { calculateManhaeHanYongunNimuiChimmuk, formatManhaeHanYongunNimuiChimmukPrompt, KOREAN_MANHAE_HAN_YONGUN_VERSION } from '../src/lib/divination/koreanManhaeHanYongunNimuiChimmukEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5042,6 +5045,48 @@ test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, an
   const prompt = formatDosanAhnChanghoMusilYeokhaengPrompt(rep);
   assert(prompt.includes('도산 안창호 《무실역행》 인격혁명 & 주인정신 지표'));
   assert(prompt.includes(rep.activeDosanTheme.themeTitleKo));
+});
+
+test('Henry David Thoreau Walden Engine: calculates Simplicity, Nature Communion, and Moral Conscience', () => {
+  const rep = calculateHenryDavidThoreauWalden(profile);
+  assert.equal(rep.engineVersion, AMERICAN_HENRY_DAVID_THOREAU_VERSION);
+  assert(rep.simplicityEssentialLifeScore >= 0 && rep.simplicityEssentialLifeScore <= 100);
+  assert(rep.natureCommunionHarmoniaScore >= 0 && rep.natureCommunionHarmoniaScore <= 100);
+  assert(rep.awakenedConsciousnessIndex >= 0 && rep.awakenedConsciousnessIndex <= 100);
+  assert(rep.moralConscienceDisobedienceScore >= 0 && rep.moralConscienceDisobedienceScore <= 100);
+  assert(rep.vitalMarrowLivingIndex >= 0 && rep.vitalMarrowLivingIndex <= 100);
+  assert(rep.activeThoreauTheme.themeTitleKo.length > 0);
+  const prompt = formatHenryDavidThoreauWaldenPrompt(rep);
+  assert(prompt.includes('헨리 데이비드 소로 《월든》 단순함 & 양심 지표'));
+  assert(prompt.includes(rep.activeThoreauTheme.themeTitleKo));
+});
+
+test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticism, Sympathy, and Gentle Composure', () => {
+  const rep = calculateDavidHumeTreatiseHumanNature(profile);
+  assert.equal(rep.engineVersion, SCOTTISH_DAVID_HUME_VERSION);
+  assert(rep.mitigatedSkepticismScore >= 0 && rep.mitigatedSkepticismScore <= 100);
+  assert(rep.sympathyBenevolenceEmpathyScore >= 0 && rep.sympathyBenevolenceEmpathyScore <= 100);
+  assert(rep.passionsReasonHarmonyScore >= 0 && rep.passionsReasonHarmonyScore <= 100);
+  assert(rep.customExperienceWisdomIndex >= 0 && rep.customExperienceWisdomIndex <= 100);
+  assert(rep.gentleComposurePeaceScore >= 0 && rep.gentleComposurePeaceScore <= 100);
+  assert(rep.activeHumeTheme.themeTitleKo.length > 0);
+  const prompt = formatDavidHumeTreatiseHumanNaturePrompt(rep);
+  assert(prompt.includes('데이비드 흄 《인간 본성에 관한 논고》 온건한 회의주의 & 공감 지표'));
+  assert(prompt.includes(rep.activeHumeTheme.themeTitleKo));
+});
+
+test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gongyak Samjang, and Lotus Integrity', () => {
+  const rep = calculateManhaeHanYongunNimuiChimmuk(profile);
+  assert.equal(rep.engineVersion, KOREAN_MANHAE_HAN_YONGUN_VERSION);
+  assert(rep.nimuiChimmukTranscendentLoveScore >= 0 && rep.nimuiChimmukTranscendentLoveScore <= 100);
+  assert(rep.gongyakSamjangIndependenceSovereigntyScore >= 0 && rep.gongyakSamjangIndependenceSovereigntyScore <= 100);
+  assert(rep.buddhistYusinReformationEnergyScore >= 0 && rep.buddhistYusinReformationEnergyScore <= 100);
+  assert(rep.unyieldingLotusIntegrityIndex >= 0 && rep.unyieldingLotusIntegrityIndex <= 100);
+  assert(rep.hwaduGreatDoubtEnlightenmentScore >= 0 && rep.hwaduGreatDoubtEnlightenmentScore <= 100);
+  assert(rep.activeHanYongunTheme.themeTitleKo.length > 0);
+  const prompt = formatManhaeHanYongunNimuiChimmukPrompt(rep);
+  assert(prompt.includes('만해 한용운 《님의 침묵》 역설적 사랑 & 자주 지조 지표'));
+  assert(prompt.includes(rep.activeHanYongunTheme.themeTitleKo));
 });
 
 

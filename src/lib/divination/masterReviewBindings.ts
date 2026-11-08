@@ -1063,5 +1063,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanDosanAhnChanghoMusilYeokhaeng": {
     "field": "dosanAhnChanghoMusilYeokhaengResult",
     "traceKey": "dosanAhnChanghoMusilYeokhaengResult"
+  },
+  "americanHenryDavidThoreauWalden": {
+    "field": "henryDavidThoreauWaldenResult",
+    "traceKey": "henryDavidThoreauWaldenResult"
+  },
+  "scottishDavidHumeTreatiseHumanNature": {
+    "field": "davidHumeTreatiseHumanNatureResult",
+    "traceKey": "davidHumeTreatiseHumanNatureResult"
+  },
+  "koreanManhaeHanYongunNimuiChimmuk": {
+    "field": "manhaeHanYongunNimuiChimmukResult",
+    "traceKey": "manhaeHanYongunNimuiChimmukResult"
   }
 };
