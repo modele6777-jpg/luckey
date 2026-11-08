@@ -1229,6 +1229,9 @@ export function BigBangButton() {
         lastTapTimeRef.current = 0;
         safeSessionStorage.removeItem('lucy_plus_active');
         safeLocalStorage.removeItem('lucy_plus_active');
+        safeSessionStorage.setItem('lucy_plus_active', 'false');
+        safeLocalStorage.setItem('lucy_plus_active', 'false');
+        safeSessionStorage.setItem('lucy_force_ai_mode', 'true');
         safeSessionStorage.removeItem('lucy_chat_voice_requested');
         triggerHaptic('whitehole');
         if (checkIsInLucyChat()) {
@@ -1237,7 +1240,7 @@ export function BigBangButton() {
         } else {
           safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
           safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
-          handleRuneNavigate('/chat');
+          handleRuneNavigate('/chat?mode=ai');
         }
         window.getSelection()?.removeAllRanges();
         lastValidSelectionRef.current = '';
@@ -1272,21 +1275,19 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 🌟 Lucy + 상태에서 빅뱅 버튼을 1회 탭하면 일반 Lucy 모드로 복귀!
-          const isLucyPlusActive = safeSessionStorage.getItem('lucy_plus_active') === 'true' ||
-            (typeof document !== 'undefined' && (
-              document.documentElement.classList.contains('lucy-plus-active') ||
-              document.body.classList.contains('lucy-plus-active')
-            ));
+          // 🌟 빅뱅 버튼 1회 탭은 항상 본래의 일반 루시 AI 모드 고유 기능 수행!
+          safeSessionStorage.removeItem('lucy_plus_active');
+          safeLocalStorage.removeItem('lucy_plus_active');
+          safeSessionStorage.setItem('lucy_plus_active', 'false');
+          safeLocalStorage.setItem('lucy_plus_active', 'false');
+          safeSessionStorage.setItem('lucy_force_ai_mode', 'true');
 
-          if (checkIsInLucyChat() && isLucyPlusActive) {
-            safeSessionStorage.removeItem('lucy_plus_active');
-            safeLocalStorage.removeItem('lucy_plus_active');
+          if (checkIsInLucyChat()) {
             window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
             return;
           }
 
-          handleRuneNavigate('/chat');
+          handleRuneNavigate('/chat?mode=ai');
         }, 250);
       }
       return;

@@ -715,14 +715,35 @@ function getCuratedPrompts(
 const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
 
 export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
-  // 🌟 Lucy + 진화 상태 머신: 접으면 루시 AI, 듀오 펼치면 루시 플러스(마스터 모드) 기본 자동 전환
+  // 🌟 Lucy + 진화 상태 머신: 접으면 루시 AI, 듀오 펼치면 루시 플러스(마스터 모드) 기본 자동 전환 (단, 명시적 루시 AI 진입/선택 시 AI 모드 우선)
   const [isPlusMode, setIsPlusMode] = useState<boolean>(() => {
     if (pro) return true;
     try {
       if (typeof window !== 'undefined') {
         const search = window.location.search || '';
+        // 1. URL 쿼리로 명시적 AI 모드가 지정된 경우 최우선 반영
+        if (search.includes('mode=ai') || search.includes('mode=casual') || search.includes('mode=lucy')) {
+          safeLocalStorage.setItem('lucy_plus_active', 'false');
+          safeSessionStorage.setItem('lucy_plus_active', 'false');
+          return false;
+        }
         if (search.includes('mode=plus') || search.includes('mode=pro')) return true;
-        // 듀오 펼침 상태(640px 이상 또는 dual-pane) 진입 시 루시 플러스 기본 발동
+        // 2. 세션/스토리지에 명시적 루시 AI 진입 플래그가 있는 경우
+        if (safeSessionStorage.getItem('lucy_force_ai_mode') === 'true') {
+          safeSessionStorage.removeItem('lucy_force_ai_mode');
+          safeLocalStorage.setItem('lucy_plus_active', 'false');
+          safeSessionStorage.setItem('lucy_plus_active', 'false');
+          return false;
+        }
+        // 3. 사용자가 직전에 명시적으로 AI 모드로 복귀한 기록이 있는 경우 펼침 상태라도 AI 모드 보존
+        if (safeLocalStorage.getItem('lucy_plus_active') === 'false' || safeSessionStorage.getItem('lucy_plus_active') === 'false') {
+          return false;
+        }
+        // 4. 저장된 플러스 모드가 있는 경우
+        if (safeLocalStorage.getItem('lucy_plus_active') === 'true' || safeSessionStorage.getItem('lucy_plus_active') === 'true') {
+          return true;
+        }
+        // 5. 듀오 펼침 상태(640px 이상 또는 dual-pane) 첫 진입 시 루시 플러스 기본 발동
         const isWide = isDualPaneLayout() || window.innerWidth >= 640;
         if (isWide) return true;
       }
@@ -760,8 +781,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
 
     const handleRevert = () => {
-      safeLocalStorage.removeItem('lucy_plus_active');
-      safeSessionStorage.removeItem('lucy_plus_active');
+      safeLocalStorage.setItem('lucy_plus_active', 'false');
+      safeSessionStorage.setItem('lucy_plus_active', 'false');
       setIsPlusMode(false);
       triggerHaptic('whitehole');
       setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
@@ -1004,13 +1025,18 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   });
 
   useEffect(() => {
+    let initialRun = true;
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout() || window.innerWidth >= 640;
       setIsDuoUnfolded((prev) => {
+        if (initialRun) {
+          initialRun = false;
+          return unfolded;
+        }
         if (prev !== unfolded) {
           if (unfolded) {
-            // 듀오 펼침 감지: 루시 플러스(마스터 모드) 자동 전환
+            // 하드웨어 화면을 실제로 '펼쳤을 때'만 루시 플러스(마스터 모드) 자동 전환
             setIsPlusMode(true);
             safeLocalStorage.setItem('lucy_plus_active', 'true');
             safeSessionStorage.setItem('lucy_plus_active', 'true');
@@ -1018,10 +1044,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             setModeSwitchToast(`👑 듀오 펼침 · 루시 플러스 가동`);
             setTimeout(() => setModeSwitchToast(null), 2000);
           } else {
-            // 듀오 접힘 감지: 일반 루시 AI 모드 자동 복귀
+            // 하드웨어 화면을 실제로 '접었을 때'만 일반 루시 AI 모드 자동 복귀
             setIsPlusMode(false);
-            safeLocalStorage.removeItem('lucy_plus_active');
-            safeSessionStorage.removeItem('lucy_plus_active');
+            safeLocalStorage.setItem('lucy_plus_active', 'false');
+            safeSessionStorage.setItem('lucy_plus_active', 'false');
             triggerHaptic('whitehole');
             setModeSwitchToast('✨ 듀오 접힘 · 루시 AI 복귀');
             setTimeout(() => setModeSwitchToast(null), 2000);
@@ -2836,8 +2862,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                           triggerHaptic('whitehole');
                           setModeSwitchToast(`👑 Lucy + 진화! ${ALL_DCE_ENGINES.length}대 운명학 올인원 마스터 모드가 가동되었습니다`);
                         } else {
-                          safeLocalStorage.removeItem('lucy_plus_active');
-                          safeSessionStorage.removeItem('lucy_plus_active');
+                          safeLocalStorage.setItem('lucy_plus_active', 'false');
+                          safeSessionStorage.setItem('lucy_plus_active', 'false');
                           triggerHaptic('whitehole');
                           setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
                         }
@@ -2868,8 +2894,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         triggerHaptic('whitehole');
                         setModeSwitchToast(`👑 Lucy + 진화! ${ALL_DCE_ENGINES.length}대 운명학 올인원 마스터 모드가 가동되었습니다`);
                       } else {
-                        safeLocalStorage.removeItem('lucy_plus_active');
-                        safeSessionStorage.removeItem('lucy_plus_active');
+                        safeLocalStorage.setItem('lucy_plus_active', 'false');
+                        safeSessionStorage.setItem('lucy_plus_active', 'false');
                         triggerHaptic('whitehole');
                         setModeSwitchToast('✨ 일반 Lucy 모드로 복귀했습니다');
                       }
@@ -3021,18 +3047,18 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         </AnimatePresence>
       </header>
 
-      {/* 📱 메인 본문 너비 기준 듀얼 뷰: 펼침 시 2-Column 마스터 코스믹 룸, 접힘 시 단일 열 뷰 */}
+      {/* 📱 메인 본문 너비 기준 듀얼 뷰: 펼침 & 마스터/플러스 모드일 때만 2-Column 마스터 코스믹 룸, 루시 AI 모드일 때는 온전한 단일 열 뷰 */}
       <div className={`flex-1 min-h-0 flex w-full max-w-full overflow-hidden ${
-        isDuoUnfolded ? 'flex-row' : 'flex-col'
+        (isDuoUnfolded && (isPlusMode || pro)) ? 'flex-row' : 'flex-col'
       }`}>
-        {isDuoUnfolded && (
+        {isDuoUnfolded && (isPlusMode || pro) && (
           <aside className="w-1/2 min-w-[340px] max-w-[50%] h-full shrink-0 flex flex-col overflow-hidden border-r border-white/10 z-10">
             <DuoCosmicAmbientRoom isLight={isLight} />
           </aside>
         )}
 
         <div className={`h-full flex flex-col min-w-0 overflow-hidden relative ${
-          isDuoUnfolded ? 'w-1/2 flex-1' : 'w-full flex-1'
+          (isDuoUnfolded && (isPlusMode || pro)) ? 'w-1/2 flex-1' : 'w-full flex-1'
         }`}>
           {/* Chat Messages Stream */}
           <main

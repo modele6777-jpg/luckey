@@ -237,6 +237,9 @@ import { calculateRyuSeongryongJingbirok, formatRyuSeongryongJingbirokPrompt, KO
 import { calculateKingSejongHunminjeongeumAemin, formatKingSejongHunminjeongeumAeminPrompt, KOREAN_KING_SEJONG_VERSION } from '../src/lib/divination/koreanKingSejongHunminjeongeumAeminEngine';
 import { calculateJangBogoCheonghaejinMaritimePioneer, formatJangBogoCheonghaejinMaritimePioneerPrompt, KOREAN_JANG_BOGO_VERSION } from '../src/lib/divination/koreanJangBogoCheonghaejinMaritimePioneerEngine';
 import { calculateJohnStuartMillOnLibertyIndividuality, formatJohnStuartMillOnLibertyIndividualityPrompt, BRITISH_JS_MILL_VERSION } from '../src/lib/divination/britishJohnStuartMillOnLibertyIndividualityEngine';
+import { calculateFrenchJeanJacquesRousseauNatureAuthenticity, formatJeanJacquesRousseauNatureAuthenticityPrompt, FRENCH_JJ_ROUSSEAU_VERSION } from '../src/lib/divination/frenchJeanJacquesRousseauNatureAuthenticityEngine';
+import { calculateGermanJohannWolfgangGoetheFaustStriving, formatJohannWolfgangGoetheFaustStrivingPrompt, GERMAN_GOETHE_FAUST_VERSION } from '../src/lib/divination/germanJohannWolfgangGoetheFaustStrivingEngine';
+import { calculateItalianDanteAlighieriDivineComedyAscent, formatDanteAlighieriDivineComedyAscentPrompt, ITALIAN_DANTE_COMEDY_VERSION } from '../src/lib/divination/italianDanteAlighieriDivineComedyAscentEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4817,6 +4820,48 @@ test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Har
   const prompt = formatJohnStuartMillOnLibertyIndividualityPrompt(rep);
   assert(prompt.includes('존 스튜어트 밀 《자유론》 개별성 자율성 & 해악 원칙 지표'));
   assert(prompt.includes(rep.activeMillTheme.themeTitleKo));
+});
+
+test('Jean-Jacques Rousseau Nature Authenticity Engine: calculates Inherent Goodness, Authenticity, and General Will', () => {
+  const rep = calculateFrenchJeanJacquesRousseauNatureAuthenticity(profile);
+  assert.equal(rep.engineVersion, FRENCH_JJ_ROUSSEAU_VERSION);
+  assert(rep.natureInherentGoodnessScore >= 0 && rep.natureInherentGoodnessScore <= 100);
+  assert(rep.authenticityInnerVoiceScore >= 0 && rep.authenticityInnerVoiceScore <= 100);
+  assert(rep.generalWillSolidarityScore >= 0 && rep.generalWillSolidarityScore <= 100);
+  assert(rep.amourDeSoiSelfLoveScore >= 0 && rep.amourDeSoiSelfLoveScore <= 100);
+  assert(rep.emileAutonomyEducationScore >= 0 && rep.emileAutonomyEducationScore <= 100);
+  assert(rep.activeRousseauTheme.themeTitleKo.length > 0);
+  const prompt = formatJeanJacquesRousseauNatureAuthenticityPrompt(rep);
+  assert(prompt.includes('장 자크 루소 《에밀·사회계약론》 인간 본성 자연 회복 & 진정성 지표'));
+  assert(prompt.includes(rep.activeRousseauTheme.themeTitleKo));
+});
+
+test('Johann Wolfgang von Goethe Faust Striving Engine: calculates Striving Salvation, Sacred Moment, and Creative Action', () => {
+  const rep = calculateGermanJohannWolfgangGoetheFaustStriving(profile);
+  assert.equal(rep.engineVersion, GERMAN_GOETHE_FAUST_VERSION);
+  assert(rep.eternalStrivingEndeavorScore >= 0 && rep.eternalStrivingEndeavorScore <= 100);
+  assert(rep.verweileDochMomentPresenceScore >= 0 && rep.verweileDochMomentPresenceScore <= 100);
+  assert(rep.sturmUndDrangPassionDriveScore >= 0 && rep.sturmUndDrangPassionDriveScore <= 100);
+  assert(rep.mephistoNegationOvercomeScore >= 0 && rep.mephistoNegationOvercomeScore <= 100);
+  assert(rep.eternalFeminineUpliftScore >= 0 && rep.eternalFeminineUpliftScore <= 100);
+  assert(rep.activeGoetheTheme.themeTitleKo.length > 0);
+  const prompt = formatJohannWolfgangGoetheFaustStrivingPrompt(rep);
+  assert(prompt.includes('괴테 《파우스트》 영혼 구원 갈망 노력 & 현재 순간 몰입 지표'));
+  assert(prompt.includes(rep.activeGoetheTheme.themeTitleKo));
+});
+
+test('Dante Alighieri Divine Comedy Ascent Engine: calculates Wayfinding, Inferno Shadow Confront, and Cosmic Love', () => {
+  const rep = calculateItalianDanteAlighieriDivineComedyAscent(profile);
+  assert.equal(rep.engineVersion, ITALIAN_DANTE_COMEDY_VERSION);
+  assert(rep.selvaOscuraWayfindingScore >= 0 && rep.selvaOscuraWayfindingScore <= 100);
+  assert(rep.infernoShadowConfrontScore >= 0 && rep.infernoShadowConfrontScore <= 100);
+  assert(rep.purgatorioCleansingVirtueScore >= 0 && rep.purgatorioCleansingVirtueScore <= 100);
+  assert(rep.paradisoLuminousClarityScore >= 0 && rep.paradisoLuminousClarityScore <= 100);
+  assert(rep.cosmicLoveHarmonizingScore >= 0 && rep.cosmicLoveHarmonizingScore <= 100);
+  assert(rep.activeDanteTheme.themeTitleKo.length > 0);
+  const prompt = formatDanteAlighieriDivineComedyAscentPrompt(rep);
+  assert(prompt.includes('단테 알리기에리 《신곡》 영혼의 상승 & 지옥·연옥·천국 지혜 지표'));
+  assert(prompt.includes(rep.activeDanteTheme.themeTitleKo));
 });
 
 

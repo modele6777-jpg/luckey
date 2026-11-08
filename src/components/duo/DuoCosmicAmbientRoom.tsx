@@ -130,7 +130,7 @@ class BinauralBeatSynthesizer {
   }
 }
 
-// 📖 249대 DCE 엔진별 핵심 통찰 및 요약 설명 생성기
+// 📖 252대 DCE 엔진별 핵심 통찰 및 요약 설명 생성기
 function getEngineShortSummary(engine: DceEngineMeta): string {
   if (engine.summary) return engine.summary;
   const k = engine.key;
@@ -212,7 +212,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
 
   // BPM 리듬 설정 (기본 90 BPM)
   const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90);
-  // 🔮 249대 DCE 엔진 무조건 랜덤 셔플로 시작
+  // 🔮 252대 DCE 엔진 무조건 랜덤 셔플로 시작
   const [activeEngineIdx, setActiveEngineIdx] = useState<number>(() => {
     return Math.floor(Math.random() * ALL_DCE_ENGINES.length);
   });

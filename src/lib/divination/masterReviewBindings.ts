@@ -1003,5 +1003,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "britishJohnStuartMillOnLibertyIndividuality": {
     "field": "johnStuartMillOnLibertyIndividualityResult",
     "traceKey": "johnStuartMillOnLibertyIndividualityResult"
+  },
+  "frenchJeanJacquesRousseauNatureAuthenticity": {
+    "field": "frenchJeanJacquesRousseauNatureAuthenticityResult",
+    "traceKey": "frenchJeanJacquesRousseauNatureAuthenticityResult"
+  },
+  "germanJohannWolfgangGoetheFaustStriving": {
+    "field": "germanJohannWolfgangGoetheFaustStrivingResult",
+    "traceKey": "germanJohannWolfgangGoetheFaustStrivingResult"
+  },
+  "italianDanteAlighieriDivineComedyAscent": {
+    "field": "italianDanteAlighieriDivineComedyAscentResult",
+    "traceKey": "italianDanteAlighieriDivineComedyAscentResult"
   }
 };

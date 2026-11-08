@@ -274,6 +274,9 @@ import { calculateRyuSeongryongJingbirok, formatRyuSeongryongJingbirokPrompt, ty
 import { calculateKingSejongHunminjeongeumAemin, formatKingSejongHunminjeongeumAeminPrompt, type KingSejongHunminjeongeumAeminResult, KOREAN_KING_SEJONG_VERSION } from './koreanKingSejongHunminjeongeumAeminEngine';
 import { calculateJangBogoCheonghaejinMaritimePioneer, formatJangBogoCheonghaejinMaritimePioneerPrompt, type JangBogoCheonghaejinMaritimePioneerResult, KOREAN_JANG_BOGO_VERSION } from './koreanJangBogoCheonghaejinMaritimePioneerEngine';
 import { calculateJohnStuartMillOnLibertyIndividuality, formatJohnStuartMillOnLibertyIndividualityPrompt, type JohnStuartMillOnLibertyIndividualityResult, BRITISH_JS_MILL_VERSION } from './britishJohnStuartMillOnLibertyIndividualityEngine';
+import { calculateFrenchJeanJacquesRousseauNatureAuthenticity, formatJeanJacquesRousseauNatureAuthenticityPrompt, type JeanJacquesRousseauNatureAuthenticityResult, FRENCH_JJ_ROUSSEAU_VERSION } from './frenchJeanJacquesRousseauNatureAuthenticityEngine';
+import { calculateGermanJohannWolfgangGoetheFaustStriving, formatJohannWolfgangGoetheFaustStrivingPrompt, type JohannWolfgangGoetheFaustStrivingResult, GERMAN_GOETHE_FAUST_VERSION } from './germanJohannWolfgangGoetheFaustStrivingEngine';
+import { calculateItalianDanteAlighieriDivineComedyAscent, formatDanteAlighieriDivineComedyAscentPrompt, type DanteAlighieriDivineComedyAscentResult, ITALIAN_DANTE_COMEDY_VERSION } from './italianDanteAlighieriDivineComedyAscentEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -568,6 +571,9 @@ export interface DeterministicEngineReport {
   kingSejongHunminjeongeumAeminResult?: KingSejongHunminjeongeumAeminResult | null;
   jangBogoCheonghaejinMaritimePioneerResult?: JangBogoCheonghaejinMaritimePioneerResult | null;
   johnStuartMillOnLibertyIndividualityResult?: JohnStuartMillOnLibertyIndividualityResult | null;
+  frenchJeanJacquesRousseauNatureAuthenticityResult?: JeanJacquesRousseauNatureAuthenticityResult | null;
+  germanJohannWolfgangGoetheFaustStrivingResult?: JohannWolfgangGoetheFaustStrivingResult | null;
+  italianDanteAlighieriDivineComedyAscentResult?: DanteAlighieriDivineComedyAscentResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3359,6 +3365,33 @@ try {
     }
   })()));
 
+  // 243. 프랑스 장 자크 루소 에밀 & 사회계약론 인간 본성 자연 회복 & 진정성 지혜 엔진
+  const frenchJeanJacquesRousseauNatureAuthenticityResult = calculateSupplement('frenchJeanJacquesRousseauNatureAuthenticityResult', () => ((() => {
+    try {
+      return calculateFrenchJeanJacquesRousseauNatureAuthenticity(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 244. 독일 요한 볼프강 폰 괴테 파우스트 영혼 구원 갈망 노력 & 현재 순간 몰입 지혜 엔진
+  const germanJohannWolfgangGoetheFaustStrivingResult = calculateSupplement('germanJohannWolfgangGoetheFaustStrivingResult', () => ((() => {
+    try {
+      return calculateGermanJohannWolfgangGoetheFaustStriving(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 245. 이탈리아 단테 알리기에리 신곡 영혼 상승 지옥·연옥·천국 사랑 광명 지혜 엔진
+  const italianDanteAlighieriDivineComedyAscentResult = calculateSupplement('italianDanteAlighieriDivineComedyAscentResult', () => ((() => {
+    try {
+      return calculateItalianDanteAlighieriDivineComedyAscent(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3639,6 +3672,9 @@ try {
     kingSejongHunminjeongeumAeminResult,
     jangBogoCheonghaejinMaritimePioneerResult,
     johnStuartMillOnLibertyIndividualityResult,
+    frenchJeanJacquesRousseauNatureAuthenticityResult,
+    germanJohannWolfgangGoetheFaustStrivingResult,
+    italianDanteAlighieriDivineComedyAscentResult,
     tools: toolsMap,
   };
 }
@@ -3910,6 +3946,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'koreanKingSejongHunminjeongeumAemin', nameKo: '세종대왕 훈민정음 어제서문 애민창조 여민락 집현전 실용실사', icon: '📜', category: 'deep_master', summary: '세종대왕의 훈민정음 어제서문과 애민 정신으로 장벽을 허물고 세상을 이롭게 하는 실천적 창의력을 발휘합니다.' },
   { key: 'koreanJangBogoCheonghaejinMaritimePioneer', nameKo: '장보고 해상왕 청해진 글로벌무역 신의개척 파도극복 자주국방', icon: '⚓', category: 'deep_master', summary: '장보고의 청해진 해상 네트워크와 신의의 개척 정신으로 거친 파도를 넘어 글로벌 시야의 새 항로를 엽니다.' },
   { key: 'britishJohnStuartMillOnLibertyIndividuality', nameKo: '존 스튜어트 밀 자유론 개별성존중 해악원칙 내면의자유 질적공리', icon: '🕊️', category: 'deep_master', summary: '존 스튜어트 밀의 자유론과 개별성 철학으로 획일성을 탈피하고 온전한 내면의 자주적 자율성을 확립합니다.' },
+  { key: 'frenchJeanJacquesRousseauNatureAuthenticity', nameKo: '장 자크 루소 에밀 사회계약론 자연으로돌아가라 일반의지 진정성회복', icon: '🌿', category: 'deep_master', summary: '장 자크 루소의 자연 회복 철학으로 사회적 가식을 벗겨내고 내면의 자연적 진정성과 일반의지의 조화를 회복합니다.' },
+  { key: 'germanJohannWolfgangGoetheFaustStriving', nameKo: '괴테 파우스트 끝없는노력과갈망 영혼의구원 현재순간몰입 질풍노도', icon: '⚡', category: 'deep_master', summary: '괴테의 파우스트 철학으로 방황을 딛고 끊임없이 갈망하며 노력하는 영혼의 구원과 현재 순간의 완전한 몰입을 이끕니다.' },
+  { key: 'italianDanteAlighieriDivineComedyAscent', nameKo: '단테 신곡 지옥직면 연옥정화 천국상승 어두운숲탈출 태양과별을움직이는사랑', icon: '🌌', category: 'deep_master', summary: '단테의 신곡 철학으로 인생의 어두운 숲을 뚫고 지옥의 직면과 연옥의 정화를 거쳐 궁극의 사랑과 광명으로 비상합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -3966,6 +4005,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'frenchJeanJacquesRousseauNatureAuthenticity',
+    'germanJohannWolfgangGoetheFaustStriving',
+    'italianDanteAlighieriDivineComedyAscent',
     'koreanKingSejongHunminjeongeumAemin',
     'koreanJangBogoCheonghaejinMaritimePioneer',
     'britishJohnStuartMillOnLibertyIndividuality',
