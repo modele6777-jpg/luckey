@@ -991,5 +991,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanRyuSeongryongJingbirok": {
     "field": "ryuSeongryongJingbirokResult",
     "traceKey": "ryuSeongryongJingbirokResult"
+  },
+  "koreanKingSejongHunminjeongeumAemin": {
+    "field": "kingSejongHunminjeongeumAeminResult",
+    "traceKey": "kingSejongHunminjeongeumAeminResult"
+  },
+  "koreanJangBogoCheonghaejinMaritimePioneer": {
+    "field": "jangBogoCheonghaejinMaritimePioneerResult",
+    "traceKey": "jangBogoCheonghaejinMaritimePioneerResult"
+  },
+  "britishJohnStuartMillOnLibertyIndividuality": {
+    "field": "johnStuartMillOnLibertyIndividualityResult",
+    "traceKey": "johnStuartMillOnLibertyIndividualityResult"
   }
 };

@@ -271,6 +271,9 @@ import { calculateChoeChiwonPungryudo, formatChoeChiwonPungryudoPrompt, type Cho
 import { calculateThomasAquinasSummaTheologiae, formatThomasAquinasSummaTheologiaePrompt, type ThomasAquinasSummaTheologiaeResult, ITALIAN_THOMAS_AQUINAS_VERSION } from './italianThomasAquinasSummaTheologiaeEngine';
 import { calculateFrancisBaconNovumOrganum, formatFrancisBaconNovumOrganumPrompt, type FrancisBaconNovumOrganumResult, BRITISH_FRANCIS_BACON_VERSION } from './britishFrancisBaconNovumOrganumEngine';
 import { calculateRyuSeongryongJingbirok, formatRyuSeongryongJingbirokPrompt, type RyuSeongryongJingbirokResult, KOREAN_RYU_SEONGRYONG_VERSION } from './koreanRyuSeongryongJingbirokEngine';
+import { calculateKingSejongHunminjeongeumAemin, formatKingSejongHunminjeongeumAeminPrompt, type KingSejongHunminjeongeumAeminResult, KOREAN_KING_SEJONG_VERSION } from './koreanKingSejongHunminjeongeumAeminEngine';
+import { calculateJangBogoCheonghaejinMaritimePioneer, formatJangBogoCheonghaejinMaritimePioneerPrompt, type JangBogoCheonghaejinMaritimePioneerResult, KOREAN_JANG_BOGO_VERSION } from './koreanJangBogoCheonghaejinMaritimePioneerEngine';
+import { calculateJohnStuartMillOnLibertyIndividuality, formatJohnStuartMillOnLibertyIndividualityPrompt, type JohnStuartMillOnLibertyIndividualityResult, BRITISH_JS_MILL_VERSION } from './britishJohnStuartMillOnLibertyIndividualityEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -562,6 +565,9 @@ export interface DeterministicEngineReport {
   thomasAquinasSummaTheologiaeResult?: ThomasAquinasSummaTheologiaeResult | null;
   francisBaconNovumOrganumResult?: FrancisBaconNovumOrganumResult | null;
   ryuSeongryongJingbirokResult?: RyuSeongryongJingbirokResult | null;
+  kingSejongHunminjeongeumAeminResult?: KingSejongHunminjeongeumAeminResult | null;
+  jangBogoCheonghaejinMaritimePioneerResult?: JangBogoCheonghaejinMaritimePioneerResult | null;
+  johnStuartMillOnLibertyIndividualityResult?: JohnStuartMillOnLibertyIndividualityResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3326,6 +3332,33 @@ try {
     }
   })()));
 
+  // 240. 조선 세종대왕 훈민정음 어제서문 애민창조 & 여민락 실용 집현전 지혜 엔진
+  const kingSejongHunminjeongeumAeminResult = calculateSupplement('kingSejongHunminjeongeumAeminResult', () => ((() => {
+    try {
+      return calculateKingSejongHunminjeongeumAemin(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 241. 신라 해상왕 장보고 청해진 글로벌 해상무역 & 신의 개척 실천 엔진
+  const jangBogoCheonghaejinMaritimePioneerResult = calculateSupplement('jangBogoCheonghaejinMaritimePioneerResult', () => ((() => {
+    try {
+      return calculateJangBogoCheonghaejinMaritimePioneer(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 242. 영국 존 스튜어트 밀 자유론 개별성 자율성 & 해악 원칙 질적 공리 지혜 엔진
+  const johnStuartMillOnLibertyIndividualityResult = calculateSupplement('johnStuartMillOnLibertyIndividualityResult', () => ((() => {
+    try {
+      return calculateJohnStuartMillOnLibertyIndividuality(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3603,6 +3636,9 @@ try {
     thomasAquinasSummaTheologiaeResult,
     francisBaconNovumOrganumResult,
     ryuSeongryongJingbirokResult,
+    kingSejongHunminjeongeumAeminResult,
+    jangBogoCheonghaejinMaritimePioneerResult,
+    johnStuartMillOnLibertyIndividualityResult,
     tools: toolsMap,
   };
 }
@@ -3871,6 +3907,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'italianThomasAquinasSummaTheologiae', nameKo: '토마스 아퀴나스 신학대전 이성신앙조화 5대길 7대덕목 지복직관', icon: '⛪', category: 'deep_master' },
   { key: 'britishFrancisBaconNovumOrganum', nameKo: '프랜시스 베이컨 신기관 4대우상타파 참된귀납 아는것이힘이다 사실검증', icon: '🔬', category: 'deep_master' },
   { key: 'koreanRyuSeongryongJingbirok', nameKo: '서애 류성룡 징비록 징전비후 유비무환 거안사위 인재발탁 실사구시', icon: '🛡️', category: 'deep_master' },
+  { key: 'koreanKingSejongHunminjeongeumAemin', nameKo: '세종대왕 훈민정음 어제서문 애민창조 여민락 집현전 실용실사', icon: '📜', category: 'deep_master', summary: '세종대왕의 훈민정음 어제서문과 애민 정신으로 장벽을 허물고 세상을 이롭게 하는 실천적 창의력을 발휘합니다.' },
+  { key: 'koreanJangBogoCheonghaejinMaritimePioneer', nameKo: '장보고 해상왕 청해진 글로벌무역 신의개척 파도극복 자주국방', icon: '⚓', category: 'deep_master', summary: '장보고의 청해진 해상 네트워크와 신의의 개척 정신으로 거친 파도를 넘어 글로벌 시야의 새 항로를 엽니다.' },
+  { key: 'britishJohnStuartMillOnLibertyIndividuality', nameKo: '존 스튜어트 밀 자유론 개별성존중 해악원칙 내면의자유 질적공리', icon: '🕊️', category: 'deep_master', summary: '존 스튜어트 밀의 자유론과 개별성 철학으로 획일성을 탈피하고 온전한 내면의 자주적 자율성을 확립합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -3927,6 +3966,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanKingSejongHunminjeongeumAemin',
+    'koreanJangBogoCheonghaejinMaritimePioneer',
+    'britishJohnStuartMillOnLibertyIndividuality',
     'italianMachiavelliVirtuFortuna',
     'koreanRyuSeongryongJingbirok',
     'swissJungIndividuationArchetype',
