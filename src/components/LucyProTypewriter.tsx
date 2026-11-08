@@ -161,6 +161,18 @@ function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
   );
 }
 
+function formatLucyMarkdown(content: string): string {
+  if (!content) return '';
+  let formatted = content;
+  // 1. 인라인으로 연달아 붙은 불릿( • )을 줄바꿈 목록으로 분리
+  formatted = formatted.replace(/([^\n])\s*[•·]\s+/g, '$1\n\n- ');
+  // 2. 단독 줄 시작 불릿(•, ·)을 표준 마크다운 목록(- )으로 정규화
+  formatted = formatted.replace(/^[\t ]*[•·]\s*/gm, '- ');
+  // 3. 불릿 뒤의 레이블 형태 (예: "- 실천할 행동: ...")를 굵게 강조하여 가독성 강화
+  formatted = formatted.replace(/^- ([가-힣A-Za-z0-9\s]{2,16}:)\s*/gm, '- **$1** ');
+  return formatted;
+}
+
 export function LucyProTypewriter({
   content,
   isLatest = false,
@@ -227,9 +239,9 @@ export function LucyProTypewriter({
 
   const displayedText = useMemo(() => {
     if (!shouldAnimate || displayedLength >= content.length) {
-      return content;
+      return formatLucyMarkdown(content);
     }
-    return content.slice(0, displayedLength);
+    return formatLucyMarkdown(content.slice(0, displayedLength));
   }, [content, displayedLength, shouldAnimate]);
 
   const { isSpeaking, activeSentence } = useTTSCurrentSentence(true);
@@ -251,7 +263,7 @@ export function LucyProTypewriter({
 
   return (
     <div
-      className={`min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] leading-relaxed font-sans [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:break-words [&_pre]:bg-slate-900 [&_pre]:text-white [&_pre]:p-3.5 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_table]:block [&_table]:overflow-x-auto [&_table]:max-w-full [&_p]:mb-2.5 [&_p:last-child]:mb-0 ${
+      className={`min-w-0 max-w-full overflow-x-hidden break-words [overflow-wrap:anywhere] leading-relaxed font-sans [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2.5 [&_ul]:space-y-1.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2.5 [&_ol]:space-y-1.5 [&_li]:mb-1.5 [&_blockquote]:border-l-4 [&_blockquote]:border-amber-400 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:break-words [&_pre]:bg-slate-900 [&_pre]:text-white [&_pre]:p-3.5 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_table]:block [&_table]:overflow-x-auto [&_table]:max-w-full [&_p]:mb-2.5 [&_p:last-child]:mb-0 ${
         isLight
           ? 'text-slate-800 [&_h1]:text-slate-900 [&_h2]:text-slate-900 [&_h3]:text-slate-900 [&_strong]:text-amber-900 [&_blockquote]:text-slate-600 [&_code]:bg-amber-50 [&_code]:text-amber-800'
           : 'text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-amber-200 [&_strong]:text-amber-300 [&_blockquote]:text-white/90 [&_code]:bg-amber-950/60 [&_code]:text-amber-200'
@@ -263,7 +275,7 @@ export function LucyProTypewriter({
         components={{
           p: ({ node, children, ...props }) => (
             <div
-              className={`mb-2.5 last:mb-0 leading-relaxed font-sans ${isLight ? 'text-slate-800' : 'text-white'}`}
+              className={`mb-3 last:mb-0 leading-relaxed font-sans whitespace-pre-line ${isLight ? 'text-slate-800' : 'text-white'}`}
               style={{ color: isLight ? '#1e293b' : '#ffffff' }}
               {...props}
             >
@@ -272,7 +284,7 @@ export function LucyProTypewriter({
           ),
           li: ({ node, children, ...props }) => (
             <li
-              className={`mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}
+              className={`mb-1.5 last:mb-0 leading-relaxed pl-1 whitespace-pre-line ${isLight ? 'text-slate-800' : 'text-white'}`}
               style={{ color: isLight ? '#1e293b' : '#ffffff' }}
               {...props}
             >

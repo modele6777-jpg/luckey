@@ -116,7 +116,7 @@ const KOREAN_ONLY_OUTPUT_RULE = `출력 언어 및 문장 가독성 원칙:
 - 한자어가 필요하면 반드시 자연스러운 한글 표현(예: 전 과정, 운명, 영혼)으로 바꾸세요.
 - 고유명사에 원문 한자가 있어도 사용자에게는 한글 표기만 보여주세요.
 - [간결성 & 가독성 원칙]: 불필요하게 길고 늘어지는 만연체 문장은 피하고, 명확하고 산뜻한 단문 위주로 작성하세요.
-- 핵심 인사이트나 실천 조언은 불릿 포인트(•)와 적절한 줄바꿈을 활용하여 한눈에 들어오도록 구조화하세요.`;
+- [문단 가독성 & 줄바꿈 필수 원칙]: 각 항목이나 불릿(•, -)은 반드시 빈 줄(\\n\\n)로 명확히 분리하고, 소제목(예: • **실천할 행동**:)과 본문은 한 줄로 뭉개거나 연달아 이어 쓰지 말고 명확한 줄바꿈과 독립된 단락으로 깔끔하게 구조화하세요.`;
 
 function withKoreanOnlyOutput(messages: Array<{ role: "system" | "user" | "assistant"; content: any }>) {
   return [{ role: "system" as const, content: KOREAN_ONLY_OUTPUT_RULE }, ...messages];

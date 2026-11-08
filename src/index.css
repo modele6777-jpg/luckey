@@ -553,7 +553,7 @@
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) !important;
+    bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
     left: 0 !important;
     right: var(--sites-sidebar-width, 80px) !important;
     transform: none !important;
@@ -569,7 +569,7 @@
   }
   @media (min-width: 640px) {
     .bottom-safe-fab-center {
-      bottom: var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) !important;
+      bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
       width: 84px !important;
       height: 84px !important;
     }
@@ -3243,7 +3243,7 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
 .bottom-safe-fab-center {
   left: 0 !important;
   right: var(--sites-sidebar-width, 80px) !important;
-  bottom: var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) !important;
+  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -3269,13 +3269,13 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .sites-pinned-sidebar {
   top: 0;
 }
 
-/* The chat composer owns the lower edge; align the Big Bang FAB directly to the composer's
-   divider line using its measured height instead of a fixed rem offset. */
+/* The chat composer owns the lower edge; align the Big Bang FAB (including outer rune ring) directly above the composer's
+   divider line using its measured height + 32px offset. */
 html.in-lucy-chat .bottom-safe-fab-center,
 .lucy-chat-shell ~ .bottom-safe-fab-center,
 body:has(.lucy-chat-footer) .bottom-safe-fab-center,
 .bottom-safe-fab-center {
-  bottom: var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) !important;
+  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
 }
 html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   position: absolute !important;
