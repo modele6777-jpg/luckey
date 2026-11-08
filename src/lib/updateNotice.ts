@@ -7,6 +7,8 @@ export type ChangelogEntry = {
   builtAt?: string;
 };
 
+export const REFRESH_NOTICE_KEY = 'prism_refresh_update_notice';
+
 export const UPDATE_ACK_KEY = 'prism_update_ack_version';
 
 export async function fetchChangelog(): Promise<ChangelogEntry[]> {

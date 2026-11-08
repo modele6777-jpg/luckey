@@ -5,6 +5,7 @@ import {
   getManualSyncChangelogEntries,
   getUnseenChangelogEntries,
   UPDATE_ACK_KEY,
+  REFRESH_NOTICE_KEY,
   type ChangelogEntry,
 } from '@/lib/updateNotice';
 import { safeLocalStorage } from '@/utils/safeStorage';
@@ -40,11 +41,23 @@ export function useUpdateNotice(enabled: boolean) {
   }, []);
 
   useEffect(() => {
-    if (!enabled) return;
+    let showAfterRefresh = false;
+    try { showAfterRefresh = sessionStorage.getItem(REFRESH_NOTICE_KEY) === '1'; } catch { /* ignore */ }
+    if (!enabled && !showAfterRefresh) return;
 
     let cancelled = false;
 
     const checkUpdates = async () => {
+      if (showAfterRefresh) {
+        const changelog = await fetchChangelog();
+        if (cancelled) return;
+        const recent = getManualSyncChangelogEntries(changelog, APP_VERSION);
+        if (recent.length > 0) {
+          try { sessionStorage.removeItem(REFRESH_NOTICE_KEY); } catch { /* ignore */ }
+          void openNotice(recent, 'manual');
+        }
+        return;
+      }
       const ackVersion = safeLocalStorage.getItem(UPDATE_ACK_KEY);
 
       if (!ackVersion) {

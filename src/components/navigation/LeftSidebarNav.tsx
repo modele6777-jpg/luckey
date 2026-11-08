@@ -24,6 +24,8 @@ import {
 import { unlockAudioPlayback } from '@/lib/audio';
 import { isDualPaneLayout } from '@/lib/perfMode';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
+import { useApp } from '@/contexts/AppContext';
+import { REFRESH_NOTICE_KEY } from '@/lib/updateNotice';
 
 export interface NavItemConfig {
   path: string;
@@ -334,21 +336,34 @@ export default function LeftSidebarNav() {
     setTimeout(() => setIsProfileFlashing(false), 400);
   }, []);
 
+  const { syncPrismDevices } = useApp();
   const restartStartedRef = useRef(false);
   const handleSyncClick = useCallback(async () => {
     if (restartStartedRef.current) return;
     restartStartedRef.current = true;
     setIsSyncSpinning(true);
     triggerHaptic('whitehole');
-    // Reload the document, not just cloud data: this releases page-owned audio,
-    // timers and UI state and remeasures the viewport on the next startup.
+    // Finish a normal manual sync first. A stalled cloud request must not
+    // prevent the recovery action; automatic sync resumes after startup.
+    let syncTimeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        syncPrismDevices().catch((err) => console.warn('[LeftSidebarNav] Sync error:', err)),
+        new Promise<void>((resolve) => { syncTimeout = setTimeout(resolve, 4000); }),
+      ]);
+    } finally {
+      clearTimeout(syncTimeout);
+    }
+    try {
+      sessionStorage.setItem(REFRESH_NOTICE_KEY, '1');
+    } catch { /* The restart still works if browser storage is unavailable. */ }
     try {
       await forceAppUpgradeAndReload();
     } catch (err) {
       console.warn('[LeftSidebarNav] Restart failed:', err);
       window.location.reload();
     }
-  }, []);
+  }, [syncPrismDevices]);
 
   useSidebarFooterHeight();
 
@@ -420,8 +435,8 @@ export default function LeftSidebarNav() {
                   onClick={handleSyncClick}
                   disabled={isSyncSpinning}
                   aria-busy={isSyncSpinning}
-                  aria-label={isSyncSpinning ? '앱 다시 불러오는 중' : '앱 새로고침'}
-                  title="앱 새로고침 · 저장된 대화와 설정을 유지하고 다시 시작"
+                  aria-label={isSyncSpinning ? '동기화 및 앱 다시 불러오는 중' : '동기화 · 업데이트 · 앱 새로고침'}
+                  title="데이터 동기화 · 최신 업데이트 적용 · 앱 다시 시작 · 업데이트 내역 확인"
                 >
                   <RotateCw
                     size={20}
