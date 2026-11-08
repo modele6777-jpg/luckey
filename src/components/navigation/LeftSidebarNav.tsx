@@ -199,6 +199,9 @@ export default function LeftSidebarNav() {
   const { resolvedTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
+  // 📐 우측 메뉴 분할선과 루시 채팅 입력란 분할선 1:1 완벽 수평 일치 연동
+  useSidebarFooterHeight();
+
   // Sidebar LP BGM Button State & Long-Press Handlers
   const [bgmState, setBgmState] = useState<BgmPublicState>(() => getBgmPublicState());
   const [isBgmHolding, setIsBgmHolding] = useState(false);

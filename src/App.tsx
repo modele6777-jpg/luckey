@@ -224,9 +224,7 @@ function AppContent() {
       document.body.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
       document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
       document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
-      if (state.unfolded) {
-        document.body.style.backgroundColor = 'transparent';
-      }
+      // 접힌 상태와 동일한 테마 배경 유지 (강제 투명화 제거)
     };
     handleLayoutChange();
     window.addEventListener('resize', handleLayoutChange, { passive: true });

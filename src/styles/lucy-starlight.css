@@ -178,17 +178,54 @@ html[data-lucy-period='night'] .is-pro-theme .lucy-star-field { opacity: .5; }
 
 /* Time-specific celestial light stays behind every reading surface. */
 .lucy-morning-light { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
-html[data-lucy-period='morning'] .lucy-morning-light { opacity: 1; }
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-morning-light { opacity: 1 !important; }
 
-/* 1. Dawn Aurora Wave: Deep breathing morning sky glow */
+/* 아침 테마 프로 모드(Lucy Pro · Lucy+ Pro): 밝은 햇살 배경 위에서 싱그럽고 영롱한 네잎클로버가 날리도록 고선명 발광 스타일 연동 */
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible {
+  opacity: 1 !important;
+}
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit {
+  animation-play-state: running !important;
+}
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-particle {
+  color: #059669 !important;
+  opacity: 0.78 !important;
+  filter: drop-shadow(0 2px 8px rgba(5, 150, 105, 0.35)) drop-shadow(0 0 12px rgba(245, 158, 11, 0.25)) !important;
+}
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(2n) .lucy-clover-particle {
+  color: #10b981 !important;
+}
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle {
+  color: #047857 !important;
+}
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(4n) .lucy-clover-particle {
+  color: #15803d !important;
+}
+
+/* 1. Dawn Aurora Wave: Deep breathing morning sky glow & shimmering light caustic */
 .lucy-morning-aurora {
   position: absolute;
   inset: -15%;
   background:
-    radial-gradient(circle at 86% 12%, rgba(255, 222, 135, 0.52) 0%, rgba(255, 198, 115, 0.28) 28%, transparent 60%),
-    radial-gradient(circle at 55% -8%, rgba(255, 210, 150, 0.32) 0%, transparent 52%),
-    radial-gradient(circle at 12% 28%, rgba(255, 240, 205, 0.25) 0%, transparent 48%);
-  animation: lucy-aurora-breathe 14s ease-in-out infinite alternate;
+    radial-gradient(circle at 86% 12%, rgba(255, 222, 135, 0.6) 0%, rgba(255, 198, 115, 0.34) 28%, transparent 60%),
+    radial-gradient(circle at 55% -8%, rgba(255, 210, 150, 0.4) 0%, transparent 52%),
+    radial-gradient(circle at 12% 28%, rgba(255, 240, 205, 0.32) 0%, transparent 48%),
+    radial-gradient(ellipse at 70% 30%, rgba(255, 245, 215, 0.45) 0%, transparent 65%);
+  animation: lucy-aurora-breathe 12s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* 1-1. Radiant Shimmer Caustic Wave: 빛이 부드럽게 일렁이는 영롱한 광원 효과 */
+.lucy-morning-caustic {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 80% 20%, rgba(255, 248, 220, 0.5) 0%, rgba(255, 230, 160, 0.2) 35%, transparent 68%),
+    repeating-linear-gradient(60deg, transparent 0, transparent 40px, rgba(255, 240, 190, 0.12) 50px, rgba(255, 255, 255, 0.22) 65px, transparent 80px);
+  mask-image: radial-gradient(ellipse at 75% 25%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at 75% 25%, #000 30%, transparent 75%);
+  animation: lucy-caustic-ripple 8s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
@@ -311,6 +348,12 @@ html[data-lucy-period='morning'] .lucy-morning-light { opacity: 1; }
   0% { transform: scale(0.98) translate3d(0, 0, 0); opacity: 0.72; }
   50% { transform: scale(1.02) translate3d(-10px, 8px, 0); opacity: 0.95; }
   100% { transform: scale(1.01) translate3d(8px, -6px, 0); opacity: 0.82; }
+}
+
+@keyframes lucy-caustic-ripple {
+  0% { transform: scale(0.96) rotate(-2deg); opacity: 0.65; filter: blur(0px); }
+  50% { transform: scale(1.04) rotate(1.5deg); opacity: 0.95; filter: blur(1px); }
+  100% { transform: scale(0.99) rotate(-1deg); opacity: 0.78; filter: blur(0.5px); }
 }
 
 @keyframes lucy-sun-breathe {
