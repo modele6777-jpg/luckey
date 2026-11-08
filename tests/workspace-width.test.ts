@@ -23,6 +23,8 @@ test('a wide browser does not force a narrow content container into two columns'
   const container = { get clientWidth() { return width; } } as HTMLElement;
   Object.assign(globalThis, {
     window: {
+      innerWidth: 1440, innerHeight: 900,
+      addEventListener: () => {}, removeEventListener: () => {},
       matchMedia: () => ({ matches: true }),
       getComputedStyle: () => ({ paddingLeft: '20px', paddingRight: '20px' }),
     },

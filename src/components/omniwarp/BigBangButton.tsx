@@ -27,7 +27,7 @@ import { omniWarpAudio } from '@/lib/omniWarp/omniWarpAudio';
 import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
-import { isDualPaneLayout } from '@/lib/perfMode';
+import { isDuoUnfoldedState, isDualPaneLayout } from '@/lib/perfMode';
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
@@ -1258,12 +1258,11 @@ export function BigBangButton() {
       safeSessionStorage.setItem('lucy_plus_active', 'true');
       safeLocalStorage.setItem('lucy_plus_active', 'true');
 
-      const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 640);
+      const isWide = isDuoUnfoldedState().unfolded;
 
       if (inLucyChat || isWide) {
         // 🌟 현재 Lucy 화면 내 또는 듀얼 뷰(펼침: 좌측 루시 상시 마운트)인 경우, 우측 화면을 이탈하지 않고 좌측 루시를 즉각 'Lucy Pro'로 진화!
         window.dispatchEvent(new CustomEvent('prism:evolve_lucy_pro', { detail: { prompt } }));
-        window.dispatchEvent(new CustomEvent('prism:evolve_lucy_ultra', { detail: { prompt } }));
         if (prompt) {
           window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
         }
@@ -1278,7 +1277,6 @@ export function BigBangButton() {
         window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
         setTimeout(() => {
           window.dispatchEvent(new CustomEvent('prism:evolve_lucy_pro', { detail: { prompt } }));
-          window.dispatchEvent(new CustomEvent('prism:evolve_lucy_ultra', { detail: { prompt } }));
         }, 100);
       }
 
@@ -1302,6 +1300,9 @@ export function BigBangButton() {
         if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = null;
         lastTapTimeRef.current = 0;
+        const normalTier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
+        safeSessionStorage.setItem('lucy_tier_mode', normalTier);
+        safeLocalStorage.setItem('lucy_tier_mode', normalTier);
         safeSessionStorage.removeItem('lucy_plus_active');
         safeLocalStorage.removeItem('lucy_plus_active');
         safeSessionStorage.setItem('lucy_plus_active', 'false');
@@ -1341,6 +1342,10 @@ export function BigBangButton() {
       if (doubleTap) {
         showGestureFeedback('double');
         lastTapTimeRef.current = 0;
+        const normalTier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
+        safeSessionStorage.setItem('lucy_tier_mode', normalTier);
+        safeLocalStorage.setItem('lucy_tier_mode', normalTier);
+        window.dispatchEvent(new CustomEvent('prism:revert_lucy_normal'));
         goToKeyChannel();
       } else {
         lastTapTimeRef.current = now;
@@ -1353,12 +1358,12 @@ export function BigBangButton() {
           // 🌟 빅뱅 버튼 1회 탭: 프로 모드로 절대 진입하지 않음!
           // - 펼침: 오직 루시 플러스('plus') 고정 & 좌측 코스믹 룸 토글 (일반 루시 진입 금지)
           // - 접힘: 오직 루시 AI('ai') 고정 (루시 플러스 진입 금지)
-          const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 600) || (typeof document !== 'undefined' && Boolean(document.getElementById('duo-lucy-viewport')));
+          const isWide = isDuoUnfoldedState().unfolded;
           if (isWide) {
             safeSessionStorage.setItem('lucy_tier_mode', 'plus');
             safeLocalStorage.setItem('lucy_tier_mode', 'plus');
             handleRuneNavigate('/');
-            window.dispatchEvent(new CustomEvent('prism:toggle_lucy_plus'));
+            window.dispatchEvent(new CustomEvent('prism:revert_lucy_normal', { detail: { tier: 'plus' } }));
             return;
           }
 

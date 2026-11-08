@@ -133,7 +133,7 @@ export function isIPhoneDuoCoverScreen(): boolean {
   if (typeof window === 'undefined') return false;
   const w = window.innerWidth;
   const h = window.innerHeight;
-  return w < 580 && h >= w;
+  return Math.min(w, h) < 580;
 }
 
 /**
@@ -148,7 +148,7 @@ export function isDualPaneLayout(): boolean {
   const isLandscape = w > h;
 
   // Outer cover screen in portrait mode is strictly single-column
-  if (w < 580 && !isLandscape) {
+  if (isIPhoneDuoCoverScreen()) {
     return false;
   }
 
@@ -203,7 +203,8 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
     }
   } catch {}
 
-  const isInnerScreen = isSpanned || (Math.min(w, h) >= 460) || (isLandscape && w >= 520);
+  if (!isSpanned && Math.min(w, h) < 580) return { unfolded: false, orientation: isLandscape ? 'landscape' : 'portrait' };
+  const isInnerScreen = isSpanned || Math.min(w, h) >= 580;
   const unfolded = isInnerScreen || isDualPaneLayout();
   const orientation = isLandscape ? 'landscape' : 'portrait';
   return { unfolded, orientation };
@@ -251,7 +252,7 @@ export function isGalaxyFoldSeClass(): boolean {
 
 export function isFoldCoverScreen(): boolean {
   if (!isGalaxyFoldSeClass() || typeof window === 'undefined') return false;
-  return window.innerWidth < 520;
+  return Math.min(window.innerWidth, window.innerHeight) < 520;
 }
 
 /** Galaxy S23-class flagships — perf tuning only, no UI overrides */

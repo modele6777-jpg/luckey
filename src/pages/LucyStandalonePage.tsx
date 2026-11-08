@@ -737,18 +737,17 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || window.innerWidth >= 600;
+    return isDuoContainer || isDuoUnfoldedState().unfolded;
   });
 
   const [lucyTier, setLucyTier] = useState<LucyTier>(() => {
     if (pro) return 'pro';
     try {
       if (typeof window !== 'undefined') {
-        const isWide = isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || window.innerWidth >= 600;
+        const isWide = isDuoContainer || isDuoUnfoldedState().unfolded;
         const search = window.location.search || '';
+        if (search.includes('mode=ai') || search.includes('mode=plus')) return isWide ? 'plus' : 'ai';
         if (search.includes('mode=pro') || search.includes('mode=ultra')) return 'pro';
-        const saved = safeLocalStorage.getItem('lucy_tier_mode') || safeSessionStorage.getItem('lucy_tier_mode');
-        if (saved === 'pro' || saved === 'ultra') return 'pro';
         // 접힘: 'ai', 펼침: 'plus' (펼친 상태에서 일반 루시 진입 불가, 접힌 상태에서 루시 플러스 진입 불가)
         return isWide ? 'plus' : 'ai';
       }
@@ -794,11 +793,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     // ✨ 빅뱅 버튼 탭: 접혀있으면 'Lucy', 펼쳐있으면 'Lucy +'!
     const handleRevertNormal = (e?: any) => {
-      const isWide = isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || (typeof window !== 'undefined' && window.innerWidth >= 600);
+      const isWide = isDuoContainer || isDuoUnfoldedState().unfolded;
       const validTarget: LucyTier = isWide ? 'plus' : 'ai';
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
       setLucyTier(validTarget);
+      const mode = new URLSearchParams(window.location.search).get('mode');
+      if (mode === 'pro' || mode === 'ultra') navigate('/chat?mode=' + validTarget, { replace: true });
       setModeTransitioningTier(validTarget === 'plus' ? 'plus' : 'pro');
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
@@ -806,29 +807,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       setTimeout(() => setModeSwitchToast(null), 2000);
     };
 
-    // 🎛️ 상단 로고 클릭 토글: 접혀있으면 [루시 AI ↔ 루시 프로], 펼쳐있으면 [루시 플러스 ↔ 루시 프로]
-    const handleToggle = () => {
-      setLucyTier((prev) => {
-        const isWide = isDuoContainer || isDualPaneLayout() || isDuoUnfoldedState().unfolded || (typeof window !== 'undefined' && window.innerWidth >= 600);
-        // 펼침 상태: 프로 ↔ 플러스 (일반 루시 진입 금지)
-        // 접힘 상태: 프로 ↔ AI (루시 플러스 진입 금지)
-        const next: LucyTier = prev === 'pro' ? (isWide ? 'plus' : 'ai') : 'pro';
-        safeLocalStorage.setItem('lucy_tier_mode', next);
-        safeSessionStorage.setItem('lucy_tier_mode', next);
-        setModeTransitioningTier(prev === 'pro' ? 'pro' : next);
-        setTimeout(() => setModeTransitioningTier(null), 550);
-        triggerHaptic('whitehole');
-        setModeSwitchToast(
-          next === 'pro'
-            ? (isWide ? `👑 Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`)
-            : isWide
-            ? '🌿 Lucy +'
-            : '✨ Lucy'
-        );
-        setTimeout(() => setModeSwitchToast(null), 2200);
-        return next;
-      });
-    };
+    // Tap events only return to the normal tier; Pro requires a BigBang hold.
+    const handleToggle = handleRevertNormal;
 
     window.addEventListener('prism:evolve_lucy_pro', handleEvolvePro);
     window.addEventListener('prism:evolve_lucy_ultra', handleEvolvePro);
@@ -1050,7 +1030,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     let initialRun = true;
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
-      const unfolded = isDualPaneLayout() || window.innerWidth >= 640;
+      const unfolded = isDuoContainer || isDuoUnfoldedState().unfolded;
       setIsDuoUnfolded((prev) => {
         if (initialRun) {
           initialRun = false;
@@ -2966,26 +2946,20 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <button
                       type="button"
                       onClick={() => {
-                        const next: LucyTier = lucyTier === 'pro' ? (isDuoUnfolded ? 'plus' : 'ai') : 'pro';
+                        const next: LucyTier = isDuoUnfolded ? 'plus' : 'ai';
                         setLucyTier(next);
                         safeLocalStorage.setItem('lucy_tier_mode', next);
                         safeSessionStorage.setItem('lucy_tier_mode', next);
                         setModeTransitioningTier(lucyTier === 'pro' ? 'pro' : next);
                         setTimeout(() => setModeTransitioningTier(null), 550);
                         triggerHaptic('whitehole');
-                        setModeSwitchToast(
-                          next === 'pro'
-                            ? (isDuoUnfolded ? `👑 Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`)
-                            : next === 'plus'
-                            ? '🌿 Lucy +'
-                            : '✨ Lucy'
-                        );
+                        setModeSwitchToast(next === 'plus' ? '🌿 Lucy +' : '✨ Lucy');
                         setTimeout(() => setModeSwitchToast(null), 2200);
                       }}
                       title={
                         lucyTier === 'pro'
                           ? '클릭 시 기본 모드로 복귀'
-                          : `클릭 시 ${ALL_DCE_ENGINES.length}대 도구 올인원 Lucy Pro로 승격`
+                          : '프로 진입: 빅뱅 버튼을 길게 누르세요'
                       }
                       className="cursor-pointer flex items-center gap-1.5"
                     >

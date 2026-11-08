@@ -1,3 +1,4 @@
+import { PullToRefresh } from './PullToRefresh';
 import { useSidebarFooterHeight } from '@/hooks/useSidebarFooterHeight';
 import { createPortal } from 'react-dom';
 import './menu-refined.css';
@@ -163,18 +164,18 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 export default function LeftSidebarNav() {
   const [isUnfolded, setIsUnfolded] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return isDualPaneLayout() || window.innerWidth >= 580;
+    return isDualPaneLayout();
   });
   // 🍀 펼친 화면: 기본적으로 펼쳐짐(true), 접힌 화면: 기본적으로 접혀짐(false)
   const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return isDualPaneLayout() || window.innerWidth >= 580;
+    return isDualPaneLayout();
   });
 
   useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
-      const unfolded = isDualPaneLayout() || window.innerWidth >= 580;
+      const unfolded = isDualPaneLayout();
       setIsUnfolded((prev) => {
         if (prev !== unfolded) {
           // 화면 전환 시: 펼치면 기본적으로 펼쳐지고, 접으면 기본적으로 네잎클로버 버튼도 접힘
@@ -353,21 +354,8 @@ export default function LeftSidebarNav() {
 
   const { syncPrismDevices } = useApp();
   const restartStartedRef = useRef(false);
-  const diagnosticHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const diagnosticOpenedRef = useRef(false);
-  useEffect(() => {
-    showViewportDiagnostics(true);
-    return () => { if (diagnosticHoldRef.current) clearTimeout(diagnosticHoldRef.current); };
-  }, []);
-  const cancelDiagnosticHold = () => {
-    if (diagnosticHoldRef.current) clearTimeout(diagnosticHoldRef.current);
-    diagnosticHoldRef.current = null;
-  };
+  useEffect(() => { showViewportDiagnostics(true); }, []);
   const handleSyncClick = useCallback(async () => {
-    if (diagnosticOpenedRef.current) {
-      diagnosticOpenedRef.current = false;
-      return;
-    }
     if (restartStartedRef.current) return;
     restartStartedRef.current = true;
     setIsSyncSpinning(true);
@@ -411,6 +399,8 @@ export default function LeftSidebarNav() {
   };
 
   return createPortal(
+    <>
+    <PullToRefresh key={cleanPath} onRefresh={handleSyncClick} refreshing={isSyncSpinning} />
     <aside
       id="main-sidebar-navigation"
       role="navigation"
@@ -458,38 +448,6 @@ export default function LeftSidebarNav() {
               </div>
 
               <div className="refined-menu-footer">
-                {/* Restart the app without deleting persisted conversations or settings. */}
-                <button
-                  type="button"
-                  className={`refined-nav-item sidebar-sync-control transition-colors duration-200 ${
-                    isSyncSpinning ? 'text-yellow-300' : 'text-white/70 hover:text-white'
-                  }`}
-                  onPointerDown={() => {
-                    diagnosticOpenedRef.current = false;
-                    cancelDiagnosticHold();
-                    diagnosticHoldRef.current = setTimeout(() => {
-                      diagnosticOpenedRef.current = true;
-                      showViewportDiagnostics();
-                    }, 800);
-                  }}
-                  onPointerUp={cancelDiagnosticHold}
-                  onPointerLeave={cancelDiagnosticHold}
-                  onPointerCancel={cancelDiagnosticHold}
-                  onContextMenu={(event) => event.preventDefault()}
-                  onClick={handleSyncClick}
-                  disabled={isSyncSpinning}
-                  aria-busy={isSyncSpinning}
-                  aria-label={isSyncSpinning ? '동기화 및 앱 다시 불러오는 중' : '동기화 · 업데이트 · 앱 새로고침'}
-                  title="화면 상태 초기화 · 데이터 동기화 · 최신 업데이트 적용 · 앱 다시 시작 · 업데이트 내역 확인 · 길게 누르면 화면 진단"
-                >
-                  <RotateCw
-                    size={20}
-                    className={`transition-transform duration-300 ${
-                      isSyncSpinning ? 'animate-spin text-yellow-300' : ''
-                    }`}
-                    aria-hidden="true"
-                  />
-                </button>
 
                 {/* Gramophone shares the rail's monochrome icon style and hit target. */}
                 <button
@@ -562,6 +520,7 @@ export default function LeftSidebarNav() {
                   <User size={19} aria-hidden="true" />
                 </button>
               </div>
-    </aside>, document.body
+    </aside>
+    </>, document.body
   );
 }

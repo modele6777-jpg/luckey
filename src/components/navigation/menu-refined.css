@@ -157,3 +157,14 @@
   color: var(--menu-active-icon);
   filter: drop-shadow(0 0 3px #facc1540);
 }
+
+.refined-menu-footer {
+  height: var(--sidebar-footer-height, var(--lucy-footer-height, calc(148px + env(safe-area-inset-bottom, 0px))));
+  justify-content: flex-start;
+}
+.pull-refresh-indicator {
+  position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); left: calc((100vw - var(--sites-sidebar-width, 80px)) / 2);
+  z-index: 11000; pointer-events: none; display: grid; place-items: center;
+  width: 42px; height: 42px; border-radius: 50%; background: #fffdf7; color: #8b622e;
+  border: 1px solid #d8c8ab; box-shadow: 0 6px 24px #0002;
+}

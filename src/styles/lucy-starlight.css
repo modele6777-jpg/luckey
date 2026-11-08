@@ -682,3 +682,10 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
 /* Fill the usable canvas up to the rail. */
 .lucy-night .lucy-chat-footer { padding-right: 4px; }
 .lucy-night .lucy-input-stack { max-width: 100%; }
+
+/* A channel in the other pane must not hide Lucy Plus sunrise. */
+.lucy-chat-shell[data-lucy-period='morning'] .lucy-morning-light { opacity: 1; }
+.lucy-chat-shell:not([data-lucy-period='morning']) .lucy-morning-light { opacity: 0; }
+.lucy-morning-light * { animation-play-state: paused; }
+.lucy-chat-shell[data-lucy-period='morning'] .lucy-morning-light * { animation-play-state: running; }
+.lucy-chat-footer { min-height: calc(148px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }

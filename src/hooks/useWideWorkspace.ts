@@ -6,6 +6,7 @@ export const isWideWorkspaceWidth = (width: number) => Number.isFinite(width) &&
 export function createWorkspaceWidthStore(container: HTMLElement | null | undefined) {
   const getSnapshot = () => {
     if (container === null || typeof window === 'undefined') return false;
+    if (Math.min(window.innerWidth, window.innerHeight) < 580) return false;
     if (!container) return window.matchMedia(`(min-width: ${WORKSPACE_BREAKPOINT}px)`).matches;
     const style = window.getComputedStyle(container);
     const width = container.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
@@ -16,7 +17,8 @@ export function createWorkspaceWidthStore(container: HTMLElement | null | undefi
     if (!container) {
       const query = window.matchMedia(`(min-width: ${WORKSPACE_BREAKPOINT}px)`);
       query.addEventListener('change', onChange);
-      return () => query.removeEventListener('change', onChange);
+      window.addEventListener('resize', onChange);
+      return () => { query.removeEventListener('change', onChange); window.removeEventListener('resize', onChange); };
     }
     if (typeof ResizeObserver === 'undefined') {
       window.addEventListener('resize', onChange);
@@ -24,7 +26,8 @@ export function createWorkspaceWidthStore(container: HTMLElement | null | undefi
     }
     const observer = new ResizeObserver(onChange);
     observer.observe(container);
-    return () => observer.disconnect();
+    window.addEventListener('resize', onChange);
+    return () => { observer.disconnect(); window.removeEventListener('resize', onChange); };
   };
   return { getSnapshot, subscribe };
 }
