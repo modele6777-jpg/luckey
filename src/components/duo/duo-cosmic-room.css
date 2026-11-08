@@ -93,10 +93,10 @@
   min-height: 180px;
   height: 180px;
   margin: 6px 0;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #b8905025;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(184, 144, 80, 0.08);
+  border: 1px solid rgba(184, 144, 80, 0.20);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 0 24px rgba(139, 92, 246, 0.08);
 }
 .cosmic-room-stage canvas {
   position: absolute;
