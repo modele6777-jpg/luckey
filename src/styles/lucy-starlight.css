@@ -415,6 +415,96 @@ html[data-lucy-period='night'] .lucy-shooting-star { animation-play-state: runni
   animation: lucyProRingBreathe 2s ease-in-out infinite;
   will-change: opacity, transform, border-color;
 }
+
+/* 🌿 Lucy Plus Loading Animation (옅은 상태에서 진하게 숨쉬는 티얼/에메랄드) */
+@keyframes lucyPlusBreathe {
+  0%, 100% {
+    opacity: 0.22;
+    transform: scale(0.96);
+    filter: drop-shadow(0 0 2px rgba(20, 184, 166, 0.2));
+    color: rgba(20, 184, 166, 0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 16px rgba(20, 184, 166, 0.95));
+    color: #99f6e4;
+  }
+}
+
+@keyframes lucyPlusRingBreathe {
+  0%, 100% {
+    opacity: 0.18;
+    transform: scale(0.92);
+    border-color: rgba(20, 184, 166, 0.2);
+    box-shadow: 0 0 4px rgba(20, 184, 166, 0.1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+    border-color: rgba(20, 184, 166, 0.7);
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.45);
+  }
+}
+
+.lucy-plus-loading-text {
+  display: inline-block;
+  animation: lucyPlusBreathe 2s ease-in-out infinite;
+  will-change: opacity, transform, filter;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.12em;
+}
+
+.lucy-plus-loading-pulse-ring {
+  border: 1.5px solid rgba(20, 184, 166, 0.4);
+  animation: lucyPlusRingBreathe 2s ease-in-out infinite;
+  will-change: opacity, transform, border-color;
+}
+
+/* ✨ Lucy AI Loading Animation (옅은 상태에서 진하게 숨쉬는 민트/에메랄드) */
+@keyframes lucyAiBreathe {
+  0%, 100% {
+    opacity: 0.22;
+    transform: scale(0.96);
+    filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.2));
+    color: rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.95));
+    color: #a7f3d0;
+  }
+}
+
+@keyframes lucyAiRingBreathe {
+  0%, 100% {
+    opacity: 0.18;
+    transform: scale(0.92);
+    border-color: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+    border-color: rgba(16, 185, 129, 0.7);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);
+  }
+}
+
+.lucy-ai-loading-text {
+  display: inline-block;
+  animation: lucyAiBreathe 2s ease-in-out infinite;
+  will-change: opacity, transform, filter;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.12em;
+}
+
+.lucy-ai-loading-pulse-ring {
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  animation: lucyAiRingBreathe 2s ease-in-out infinite;
+  will-change: opacity, transform, border-color;
+}
 html.light .lucy-mode-badge { color: #647487; background: #253d5610; }
 html.light .lucy-mode-badge.is-master { color: #92400e; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(217, 119, 6, 0.4); }
 html.light .lucy-mode-badge.is-master::before { background: #d97706; box-shadow: 0 0 6px #d97706; }
