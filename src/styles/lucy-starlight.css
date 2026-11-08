@@ -366,7 +366,11 @@ html[data-lucy-period='night'] .lucy-shooting-star { animation-play-state: runni
 .lucy-night .lucy-chat-header h1 span { font-weight: inherit; letter-spacing: inherit; }
 .lucy-mode-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; line-height: 20px; padding: 0 7px; border-radius: 6px; color: #aab9cc; background: #ffffff08; white-space: nowrap; }
 .lucy-mode-badge::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #92ac9c; }
+.lucy-mode-badge.is-master { color: #fcd34d; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); }
+.lucy-mode-badge.is-master::before { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 html.light .lucy-mode-badge { color: #647487; background: #253d5610; }
+html.light .lucy-mode-badge.is-master { color: #92400e; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(217, 119, 6, 0.4); }
+html.light .lucy-mode-badge.is-master::before { background: #d97706; box-shadow: 0 0 6px #d97706; }
 html[data-lucy-theme='starlight'] .lucy-night .lucy-header-actions > button { min-width: 36px; height: 36px; padding: 7px; border: 0 !important; border-radius: 11px; background: transparent !important; color: inherit !important; box-shadow: none; }
 .lucy-header-actions > button:hover { opacity: .7; }
 .lucy-header-actions > button span { display: none; }
