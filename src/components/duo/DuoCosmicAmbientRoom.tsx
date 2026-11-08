@@ -334,6 +334,20 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
       color: string;
       baseAlpha: number;
     }
+    const updateCanvasSize = () => {
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = Math.floor((rect.width || 440) * dpr);
+      const h = Math.floor((rect.height || 210) * dpr);
+      if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+    };
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize, { passive: true });
+
     const motes: DreamyStardust[] = [];
     const colors = [
       '#fde68a', // starlight yellow
@@ -342,10 +356,10 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
       '#f472b6', // dreamy rose
       '#ffffff', // diamond white
     ];
-    for (let i = 0; i < 36; i++) {
+    for (let i = 0; i < 48; i++) {
       motes.push({
-        x: Math.random() * 440,
-        y: Math.random() * 200,
+        x: Math.random() * (canvas.width || 440),
+        y: Math.random() * (canvas.height || 210),
         size: 0.8 + Math.random() * 2.2,
         speedX: (Math.random() - 0.5) * 12,
         speedY: -4 - Math.random() * 10,
@@ -601,7 +615,10 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     };
 
     animId = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', updateCanvasSize);
+    };
   }, [ambientTempoBpm, isBinauralPlaying]);
 
   const currentEngine = ALL_DCE_ENGINES[activeEngineIdx] || ALL_DCE_ENGINES[0];

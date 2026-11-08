@@ -554,17 +554,17 @@
   .bottom-safe-fab-center {
     position: fixed;
     bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
-    left: 0 !important;
-    right: var(--sites-sidebar-width, 80px) !important;
-    transform: none !important;
+    left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
     width: 84px !important;
     height: 84px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     pointer-events: none !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @media (min-width: 640px) {
@@ -3239,13 +3239,14 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
   max-width: calc(100vw - var(--sites-sidebar-width) - 2rem);
 }
 
-/* Big Bang FAB centers across main canvas excluding permanent right sidebar */
+/* Big Bang FAB centers across Lucy chat canvas excluding permanent right sidebar */
 .bottom-safe-fab-center {
-  left: 0 !important;
-  right: var(--sites-sidebar-width, 80px) !important;
+  left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
+  right: auto !important;
   bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transform: translateX(-50%) !important;
 }
 
 
@@ -3355,11 +3356,11 @@ html.duo-unfolded-landscape .sites-pinned-main {
 
 html.duo-unfolded-landscape .bottom-safe-fab-center,
 body.duo-unfolded-landscape .bottom-safe-fab-center {
-  left: 50vw !important;
-  right: var(--sites-sidebar-width, 80px) !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  transform: none !important;
+  left: var(--lucy-chat-center-x, 75vw) !important;
+  right: auto !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transform: translateX(-50%) !important;
 }
 
 html.duo-unfolded-landscape .prism-hub-header {
@@ -3448,7 +3449,7 @@ html.duo-unfolded-portrait .sites-pinned-main {
 
 html.duo-unfolded-portrait .bottom-safe-fab-center,
 body.duo-unfolded-portrait .bottom-safe-fab-center {
-  left: 50% !important;
+  left: var(--lucy-chat-center-x, 50%) !important;
   right: auto !important;
   transform: translateX(-50%) !important;
   bottom: calc(var(--lucy-footer-height, calc(env(safe-area-inset-bottom, 0px) + 5rem)) + 54px + 16px) !important;
@@ -3461,5 +3462,35 @@ html.duo-unfolded-portrait .prism-xs-subnav:not(.duo-page-nav) {
   left: 50% !important;
   max-width: 90vw !important;
   transform: translateX(-50%) !important;
+}
+
+/* 🛡️ Duo 펼침 화면에서 루시 채팅은 좌측 채널의 라이트 테마(html.light)에 오염되지 않고 상시 시그니처 다크 코스믹 테마 100% 보존 */
+html.light #duo-lucy-viewport .lucy-chat-shell,
+html.light #duo-lucy-viewport .lucy-starlight-assistant,
+html.light #duo-lucy-viewport .lucy-starlight-assistant *,
+html.light #duo-lucy-viewport .lucy-assistant-bubble,
+html.light #duo-lucy-viewport .lucy-assistant-bubble *,
+html.light #duo-lucy-viewport .lucy-starlight-user,
+html.light #duo-lucy-viewport .lucy-user-bubble,
+html.light #duo-lucy-viewport .lucy-starlight-composer,
+html.light #duo-lucy-viewport :is(input, textarea) {
+  color: #f1f5fa !important;
+}
+
+html.light #duo-lucy-viewport .lucy-starlight-assistant,
+html.light #duo-lucy-viewport .lucy-assistant-bubble {
+  background-color: var(--lucy-surface, rgba(15, 23, 42, 0.92)) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.light #duo-lucy-viewport .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) {
+  color: #fbbf24 !important;
+}
+
+html.light #duo-lucy-viewport .lucy-chat-header,
+html.light #duo-lucy-viewport .lucy-chat-footer {
+  background-color: rgba(10, 15, 26, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f1f5fa !important;
 }
 
