@@ -741,6 +741,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const isMasterMode = pro || lucyTier === 'pro';
   const isPlusMode = lucyTier === 'plus' || lucyTier === 'pro';
   const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
+  const [modeTransitionDirection, setModeTransitionDirection] = useState<'deepen' | 'dim'>('deepen');
 
   const previousPlusMode = useRef(isPlusMode);
   useEffect(() => {
@@ -760,6 +761,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeLocalStorage.setItem('lucy_tier_mode', 'pro');
       safeSessionStorage.setItem('lucy_tier_mode', 'pro');
       setLucyTier('pro');
+      setModeTransitionDirection('deepen');
       setModeTransitioningTier('pro');
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
@@ -778,7 +780,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
       setLucyTier(validTarget);
-      setModeTransitioningTier(validTarget);
+      setModeTransitionDirection('dim');
+      setModeTransitioningTier(validTarget === 'plus' ? 'plus' : 'pro');
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
       setModeSwitchToast(isWide ? '🌿 Lucy +' : '✨ Lucy');
@@ -792,7 +795,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         const next: LucyTier = prev === 'pro' ? (isWide ? 'plus' : 'ai') : 'pro';
         safeLocalStorage.setItem('lucy_tier_mode', next);
         safeSessionStorage.setItem('lucy_tier_mode', next);
-        setModeTransitioningTier(next);
+        setModeTransitionDirection(prev === 'pro' ? 'dim' : 'deepen');
+        setModeTransitioningTier(prev === 'pro' ? 'pro' : next);
         setTimeout(() => setModeTransitioningTier(null), 550);
         triggerHaptic('whitehole');
         setModeSwitchToast(
@@ -1045,8 +1049,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         }
         if (prev !== unfolded) {
           setLucyTier((currentTier) => {
-            // 👑 Lucy Pro 상태에서는 화면을 접거나 펼쳐도 252대 풀엔진 스펙을 그대로 유지 (0ms 즉시 무로딩)!
+            // 👑 Lucy Pro 상태: 펼치면 Lucy+ Pro 진해짐, 접으면 진해졌던 + Pro가 다시 옅어짐!
             if (currentTier === 'pro') {
+              setModeTransitionDirection(unfolded ? 'deepen' : 'dim');
+              setModeTransitioningTier('pro');
+              setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
               setModeSwitchToast(
                 unfolded
@@ -1056,10 +1063,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'pro';
             }
-            // 일반 상태: 접었을 때는 'Lucy', 펼쳤을 때는 'Lucy +' (각각 알맞은 전환 로딩 애니메이션 발동!)
+            // 일반 상태: 펼칠 때는 '+'가 옅음에서 진해지고, 접을 때는 '+'만 진한 상태에서 다시 옅어짐!
             if (unfolded) {
               safeLocalStorage.setItem('lucy_tier_mode', 'plus');
               safeSessionStorage.setItem('lucy_tier_mode', 'plus');
+              setModeTransitionDirection('deepen');
               setModeTransitioningTier('plus');
               setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
@@ -1069,7 +1077,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             } else {
               safeLocalStorage.setItem('lucy_tier_mode', 'ai');
               safeSessionStorage.setItem('lucy_tier_mode', 'ai');
-              setModeTransitioningTier('ai');
+              setModeTransitionDirection('dim');
+              setModeTransitioningTier('plus');
               setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
               setModeSwitchToast('✨ 듀오 접힘 · Lucy');
@@ -2832,6 +2841,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         fullScreen
         tier={modeTransitioningTier}
         isUnfolded={isDuoUnfolded}
+        fadeDirection={modeTransitionDirection}
       />
     );
   }
@@ -2907,7 +2917,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         setLucyTier(next);
                         safeLocalStorage.setItem('lucy_tier_mode', next);
                         safeSessionStorage.setItem('lucy_tier_mode', next);
-                        setModeTransitioningTier(next);
+                        setModeTransitionDirection(lucyTier === 'pro' ? 'dim' : 'deepen');
+                        setModeTransitioningTier(lucyTier === 'pro' ? 'pro' : next);
                         setTimeout(() => setModeTransitioningTier(null), 550);
                         triggerHaptic('whitehole');
                         setModeSwitchToast(

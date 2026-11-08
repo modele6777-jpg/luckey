@@ -12,12 +12,13 @@ interface LucyAuraLoaderProps {
   isPro?: boolean;
   tier?: LucyLoaderTier;
   isUnfolded?: boolean;
+  fadeDirection?: 'deepen' | 'dim';
 }
 
 /**
  * 🍀 LucyAuraLoader (4-Tier Typography Edition)
  * 루시 4대 모드(Lucy · Lucy + · Lucy Pro · Lucy+ Pro) 전환 및 진입 전용 숨쉬는 로딩 애니메이션
- * (모드별로 Lucy / + / Pro / + Pro 문양이 옅은 상태에서 진하게 맥동)
+ * (펼칠 때는 옅음➔진함, 접을 때는 진함➔옅어짐 역방향 트랜지션 완비)
  */
 export function LucyAuraLoader({
   message,
@@ -27,6 +28,7 @@ export function LucyAuraLoader({
   isPro = false,
   tier,
   isUnfolded = false,
+  fadeDirection = 'deepen',
 }: LucyAuraLoaderProps) {
   const activeTier: LucyLoaderTier = tier ?? (isPro ? 'pro' : 'ai');
   const isPlusPro = activeTier === 'pro' && Boolean(isUnfolded);
@@ -97,25 +99,25 @@ export function LucyAuraLoader({
             }`}
           />
 
-          {/* Minimal Geometry Container with Respective Breathing Text */}
+          {/* Minimal Geometry Container with Respective Breathing / Fading Text */}
           {activeTier === 'pro' ? (
             <motion.div
               animate={{ scale: [0.97, 1.03, 0.97] }}
               transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
               className="min-w-[3.75rem] h-14 sm:min-w-[4.5rem] sm:h-16 px-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-950/60 backdrop-blur-sm relative overflow-hidden"
             >
-              <div className="lucy-pro-loading-pulse-ring absolute inset-1 rounded-xl pointer-events-none" />
+              <div className={`${fadeDirection === 'dim' ? 'lucy-pro-fading-pulse-ring' : 'lucy-pro-loading-pulse-ring'} absolute inset-1 rounded-xl pointer-events-none`} />
               {isPlusPro ? (
                 <div className="flex items-center gap-1.5 z-10 whitespace-nowrap select-none">
-                  <span className="text-base sm:text-lg font-black text-amber-300/85 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">
+                  <span className={`${fadeDirection === 'dim' ? 'lucy-pro-fading-text' : 'text-amber-300/85'} text-base sm:text-lg font-black drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]`}>
                     +
                   </span>
-                  <span className="lucy-pro-loading-text text-base sm:text-lg font-black tracking-wider text-amber-300">
+                  <span className={`${fadeDirection === 'dim' ? 'lucy-pro-fading-text' : 'lucy-pro-loading-text'} text-base sm:text-lg font-black tracking-wider text-amber-300`}>
                     Pro
                   </span>
                 </div>
               ) : (
-                <span className="lucy-pro-loading-text text-base sm:text-lg font-black tracking-wider text-amber-300 z-10 whitespace-nowrap">
+                <span className={`${fadeDirection === 'dim' ? 'lucy-pro-fading-text' : 'lucy-pro-loading-text'} text-base sm:text-lg font-black tracking-wider text-amber-300 z-10 whitespace-nowrap`}>
                   Pro
                 </span>
               )}
@@ -126,8 +128,8 @@ export function LucyAuraLoader({
               transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
               className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-teal-950/40 border border-teal-500/30 flex items-center justify-center shadow-lg shadow-teal-950/60 backdrop-blur-sm relative overflow-hidden"
             >
-              <div className="lucy-plus-loading-pulse-ring absolute inset-1 rounded-xl pointer-events-none" />
-              <span className="lucy-plus-loading-text text-2xl sm:text-3xl font-black text-teal-300 z-10 leading-none">
+              <div className={`${fadeDirection === 'dim' ? 'lucy-plus-fading-pulse-ring' : 'lucy-plus-loading-pulse-ring'} absolute inset-1 rounded-xl pointer-events-none`} />
+              <span className={`${fadeDirection === 'dim' ? 'lucy-plus-fading-text' : 'lucy-plus-loading-text'} text-2xl sm:text-3xl font-black text-teal-300 z-10 leading-none`}>
                 +
               </span>
             </motion.div>
