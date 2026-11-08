@@ -1,7 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveLucyPageChannels, LUCY_MASTER_CHANNELS } from '../src/lib/lucyChatPageMode';
-import { detectLucyChannelsFromText } from '../src/lib/lucyAutoModeDetector';
+import { detectLucyChannelsFromText, detectSeptagramChannelsFromText } from '../src/lib/lucyAutoModeDetector';
+
+test('Lucy and septagram channels distinguish ordinary 점 words from divination requests', () => {
+  for (const detect of [detectLucyChannelsFromText, detectSeptagramChannelsFromText]) {
+    for (const question of ['점심 추천해줘', '장점과 단점을 알려줘', '관점을 바꿔줘', '맹점을 점검해줘']) {
+      assert.equal(detect(question).channels.includes('trinity'), false, question);
+    }
+    for (const question of ['점 봐줘', '점을 좀 봐줘', '점', '점괘 알려줘', '점성술 설명해줘']) {
+      assert.equal(detect(question).channels.includes('trinity'), true, question);
+    }
+  }
+});
 
 test('Pro always uses all seven channels, including casual or forced single-channel input', () => {
   for (const channels of [[], ['orange'], [...LUCY_MASTER_CHANNELS]] as const) {

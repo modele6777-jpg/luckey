@@ -51,6 +51,31 @@ test('smart agent router routes immediate decision to Kierkegaard, Descartes, an
   assert.ok(plan.deepEngineKeys?.includes('ancientChineseSunTzuArtOfWarStrategy'));
 });
 
+test('ordinary words containing 점 do not request an immediate divination', () => {
+  for (const question of [
+    '점심 추천해줘',
+    '내 장점과 단점을 알려줘',
+    '생각의 맹점을 점검해줘',
+    '다른 관점에서 설명해줘',
+    '점수가 무슨 뜻이야?',
+    '점성술을 설명해줘',
+  ]) {
+    assert.notEqual(analyzeQuestionIntent(question).intent, 'immediate_decision', question);
+  }
+  assert.equal(analyzeQuestionIntent('오늘 점성술 흐름을 알려줘').intent, 'daily_timing_transit');
+  assert.equal(analyzeQuestionIntent('그림의 장점을 설명해줘').intent, 'creative_mind');
+});
+
+test('explicit divination and decision requests retain immediate routing', () => {
+  for (const question of [
+    '점', '점!', '점 봐줘', '점좀봐줘', '점을 좀 봐줘', '점을 쳐줘',
+    '점을 보고 싶어', '점을 볼까?', '오늘 점 봐줘', '내 점괘 알려줘',
+    '기문둔갑으로 봐줘', '매화역수로 봐줘', '지금 갈까 말까?',
+  ]) {
+    assert.equal(analyzeQuestionIntent(question).intent, 'immediate_decision', question);
+  }
+});
+
 test('episodic soul memory ledger extracts active threads, key people, and follow-ups', () => {
   const now = Date.now();
   const memoryEntries = [

@@ -1,4 +1,5 @@
 import type { SpecialChannel } from '@/pages/LucyStandalonePage';
+import { DIVINATION_REQUEST_PATTERN } from './divinationIntent';
 
 export interface LucyAutoDetectResult {
   channels: SpecialChannel[];
@@ -128,7 +129,8 @@ export function detectLucyChannelsFromText(text: string, options: { allowMaster?
   // 4. 트리니티 (운명의 서 - 사주 / 점성술 / 자미두수 / 타로 / 운세)
   const trinityPatterns = [
     /트리니티|운세|오늘\s*운|내일\s*운|올해\s*운|신년\s*운|금전운|재물운|연애운|직업운|사업운|시험운|합격운|이사운|행운|불운/,
-    /사주|원국|대운|세운|신년운|팔자|사주팔자|궁합|점|점괘|만세력|일주|월주|년주|시주/,
+    /사주|원국|대운|세운|신년운|팔자|사주팔자|궁합|점괘|만세력|일주|월주|년주|시주/,
+    DIVINATION_REQUEST_PATTERN,
     /타로|스프레드|오라클|카드|메이저|마이너|아르카나/,
     /천을귀인|용신|희신|기신|십신|삼재|개운|액땜|부적/,
     /운명|하늘의\s*타이밍|우주의\s*타이밍|동시성|영적\s*나침반/,
@@ -295,7 +297,8 @@ export function detectSeptagramChannelsFromText(text: string): SeptagramAutoDete
   // 4. 트리니티 (운명의 서 - 사주 / 점성술 / 자미두수 / 타로)
   const trinityPatterns = [
     /운세|오늘\s*운|내일\s*운|올해\s*운|신년\s*운|금전운|재물운|연애운|직업운|사업운|시험운|합격운|이사운|행운|불운/,
-    /사주|원국|대운|세운|신년운|팔자|사주팔자|궁합|점|점괘|만세력|일주|월주|년주|시주|오행|천간|지지/,
+    /사주|원국|대운|세운|신년운|팔자|사주팔자|궁합|점괘|만세력|일주|월주|년주|시주|오행|천간|지지/,
+    DIVINATION_REQUEST_PATTERN,
     /타로|스프레드|오라클|카드|메이저|마이너|아르카나|예견/,
     /천을귀인|용신|희신|기신|십신|삼재|개운|액땜|부적|귀인/,
     /운명|하늘의\s*타이밍|우주의\s*타이밍|동시성|영적\s*나침반|무의식/,
