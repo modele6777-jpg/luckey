@@ -289,6 +289,9 @@ import { calculateBaekbeomKimGuMyDesireCulture, formatBaekbeomKimGuMyDesireCultu
 import { calculateMartinHeideggerBeingAndTime, formatMartinHeideggerBeingAndTimePrompt, type MartinHeideggerBeingAndTimeResult, GERMAN_MARTIN_HEIDEGGER_VERSION } from './germanMartinHeideggerBeingAndTimeEngine';
 import { calculateHannahArendtVitaActiva, formatHannahArendtVitaActivaPrompt, type HannahArendtVitaActivaResult, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION } from './americanGermanHannahArendtVitaActivaEngine';
 import { calculateDosanAhnChanghoMusilYeokhaeng, formatDosanAhnChanghoMusilYeokhaengPrompt, type DosanAhnChanghoMusilYeokhaengResult, KOREAN_DOSAN_AHN_CHANGHO_VERSION } from './koreanDosanAhnChanghoMusilYeokhaengEngine';
+import { calculateHenryDavidThoreauWalden, formatHenryDavidThoreauWaldenPrompt, type HenryDavidThoreauWaldenResult, AMERICAN_HENRY_DAVID_THOREAU_VERSION } from './americanHenryDavidThoreauWaldenEngine';
+import { calculateDavidHumeTreatiseHumanNature, formatDavidHumeTreatiseHumanNaturePrompt, type DavidHumeTreatiseHumanNatureResult, SCOTTISH_DAVID_HUME_VERSION } from './scottishDavidHumeTreatiseHumanNatureEngine';
+import { calculateManhaeHanYongunNimuiChimmuk, formatManhaeHanYongunNimuiChimmukPrompt, type ManhaeHanYongunNimuiChimmukResult, KOREAN_MANHAE_HAN_YONGUN_VERSION } from './koreanManhaeHanYongunNimuiChimmukEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -598,6 +601,9 @@ export interface DeterministicEngineReport {
   martinHeideggerBeingAndTimeResult?: MartinHeideggerBeingAndTimeResult | null;
   hannahArendtVitaActivaResult?: HannahArendtVitaActivaResult | null;
   dosanAhnChanghoMusilYeokhaengResult?: DosanAhnChanghoMusilYeokhaengResult | null;
+  henryDavidThoreauWaldenResult?: HenryDavidThoreauWaldenResult | null;
+  davidHumeTreatiseHumanNatureResult?: DavidHumeTreatiseHumanNatureResult | null;
+  manhaeHanYongunNimuiChimmukResult?: ManhaeHanYongunNimuiChimmukResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3524,6 +3530,33 @@ try {
     }
   })()));
 
+  // 258. 미국 헨리 데이비드 소로 월든 단순한 삶 & 자연 합일·깨어있는 양심 실천 엔진
+  const henryDavidThoreauWaldenResult = calculateSupplement('henryDavidThoreauWaldenResult', () => ((() => {
+    try {
+      return calculateHenryDavidThoreauWalden(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 259. 스코틀랜드 데이비드 흄 인간 본성에 관한 논고 온건한 회의주의 & 공감·온유한 평정 지혜 엔진
+  const davidHumeTreatiseHumanNatureResult = calculateSupplement('davidHumeTreatiseHumanNatureResult', () => ((() => {
+    try {
+      return calculateDavidHumeTreatiseHumanNature(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 260. 대한민국 만해 한용운 님의 침묵 역설적 사랑 승화 & 불교 유신·자주독립 지조 실천 엔진
+  const manhaeHanYongunNimuiChimmukResult = calculateSupplement('manhaeHanYongunNimuiChimmukResult', () => ((() => {
+    try {
+      return calculateManhaeHanYongunNimuiChimmuk(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3819,6 +3852,9 @@ try {
     martinHeideggerBeingAndTimeResult,
     hannahArendtVitaActivaResult,
     dosanAhnChanghoMusilYeokhaengResult,
+    henryDavidThoreauWaldenResult,
+    davidHumeTreatiseHumanNatureResult,
+    manhaeHanYongunNimuiChimmukResult,
     tools: toolsMap,
   };
 }
@@ -4105,6 +4141,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'germanMartinHeideggerBeingAndTime', nameKo: '마틴 하이데거 존재와시간 현존재 세계내존재 죽음을향한존재 본래성 염려', icon: '🌲', category: 'deep_master', summary: '마틴 하이데거의 실존 현상학으로 세인의 일상성을 탈피하고 유한성을 직시하는 본래적 결단과 시간의 순간을 회복합니다.' },
   { key: 'americanGermanHannahArendtVitaActiva', nameKo: '한나 아렌트 인간의조건 탄생성 활동적삶 악의평범성극복 사유와판단 다원성', icon: '🏛️', category: 'deep_master', summary: '한나 아렌트의 정치철학으로 맹목적 무사유를 깨뜨리고 언제든 새 시작을 여는 탄생성과 말과 행위의 공적 다원성을 발휘합니다.' },
   { key: 'koreanDosanAhnChanghoMusilYeokhaeng', nameKo: '도산 안창호 무실역행 충의용감 애기애타 주인정신 인격혁명', icon: '🇰🇷', category: 'deep_master', summary: '도산 안창호 선생의 무실역행 정신으로 거짓을 버리고 참됨을 일삼으며 남 탓하지 않고 스스로 주인이 되는 실천을 이룹니다.' },
+  { key: 'americanHenryDavidThoreauWalden', nameKo: '헨리 데이비드 소로 월든 단순한삶 자연합일 깨어있는양심 시민불복종 다른북소리', icon: '🌲', category: 'deep_master', summary: '헨리 데이비드 소로의 월든 사상으로 소유의 군더더기를 털어내고 대자연과 깊이 교감하며 양심에 따른 내적 자립을 세웁니다.' },
+  { key: 'scottishDavidHumeTreatiseHumanNature', nameKo: '데이비드 흄 인간본성논고 온건한회의주의 공감 도덕감정 정념과이성조화 온유한평정', icon: '⚖️', category: 'deep_master', summary: '데이비드 흄의 경험론과 공감 철학으로 독단적 도그마를 탈피하고 따뜻한 인류애와 온유한 삶의 평정을 가꿉니다.' },
+  { key: 'koreanManhaeHanYongunNimuiChimmuk', nameKo: '만해 한용운 님의침묵 역설적사랑승화 공약삼장 자주평화 조선불교유신 출오염지조', icon: '🇰🇷', category: 'deep_master', summary: '만해 한용운 선사의 역설적 사랑과 지조로 상실의 슬픔을 희망으로 승화하고 낡은 타성을 깨뜨리는 당당한 자주를 선포합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4161,6 +4200,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'americanHenryDavidThoreauWalden',
+    'scottishDavidHumeTreatiseHumanNature',
+    'koreanManhaeHanYongunNimuiChimmuk',
     'germanMartinHeideggerBeingAndTime',
     'americanGermanHannahArendtVitaActiva',
     'koreanDosanAhnChanghoMusilYeokhaeng',
@@ -4313,6 +4355,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'koreanManhaeHanYongunNimuiChimmuk',
+    'scottishDavidHumeTreatiseHumanNature',
     'swissJungIndividuationArchetype',
     'koreanChusaKimJeonghuiSehando',
     'frenchPascalPenseesHeartReason',
@@ -4532,6 +4576,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'americanHenryDavidThoreauWalden',
+    'scottishDavidHumeTreatiseHumanNature',
+    'koreanManhaeHanYongunNimuiChimmuk',
     'frenchHenriBergsonElanVital',
     'frenchAlbertCamusAbsurdRevolt',
     'islamicSufiRumiMasnaviDivineLove',
