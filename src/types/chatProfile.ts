@@ -1,6 +1,7 @@
 export interface ChatTargetProfile {
   id: string;
   name: string;
+  nickname?: string;
   isMe?: boolean;
   birthdate: string; // YYYY-MM-DD
   birthtime?: string; // HH:MM

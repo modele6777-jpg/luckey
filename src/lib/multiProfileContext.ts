@@ -6,11 +6,15 @@ import { buildUserNatalSummary } from '@/lib/astrologyAnalysis';
 /**
  * 개별 프로필의 사주팔자 및 서양 점성술 천문 데이터를 분석하여 텍스트로 요약합니다.
  */
-export function formatProfileAnalysisContext(profile: ChatTargetProfile, index: number): string {
+export function formatProfileAnalysisContext(profile: ChatTargetProfile, index: number, userDisplayName?: string): string {
+  const displayName = (profile.isMe || profile.relationship === '본인')
+    ? (userDisplayName || profile.nickname || profile.name)
+    : profile.name;
+
   const mockUserProfile: UserProfile = {
     basic: {
-      name: profile.name,
-      nickname: profile.name,
+      name: displayName,
+      nickname: displayName,
       birthdate: profile.birthdate,
       birthtime: profile.birthtime,
       gender: profile.gender,
@@ -36,7 +40,7 @@ export function formatProfileAnalysisContext(profile: ChatTargetProfile, index: 
 
   const digest = saju?.shortDigest ? ` · ${saju.shortDigest}` : '';
 
-  return `[대상자 ${index + 1}: ${profile.name} (${profile.relationship || (profile.isMe ? '본인' : '상담대상')})]
+  return `[대상자 ${index + 1}: ${displayName} (${profile.relationship || (profile.isMe ? '본인' : '상담대상')})]
 - 기본 정보: ${profile.gender === 'female' ? '여성' : profile.gender === 'male' ? '남성' : '기타'}, ${profile.birthdate} ${profile.birthtime ? profile.birthtime : '시간모름'} (${profile.lunarSolar === 'lunar' ? '음력' : '양력'}), 출생지: ${profile.birthCity || '미지정'}
 - 사주 8자: ${sajuPillars}
 - 일간(본원): ${dayMaster}${digest}
@@ -48,7 +52,7 @@ export function formatProfileAnalysisContext(profile: ChatTargetProfile, index: 
  * 대화창에 등록된 1인~4인 프로필에 맞추어 루시 AI 시스템 프롬프트(extraSystemContext)를 동적 생성합니다.
  * activeProfileId가 전달되면 해당 인물을 메인 1순위 상담 대상으로 강력하게 지정합니다.
  */
-export function buildMultiProfileSystemContext(profiles: ChatTargetProfile[], activeProfileId?: string): string {
+export function buildMultiProfileSystemContext(profiles: ChatTargetProfile[], activeProfileId?: string, userDisplayName?: string): string {
   if (!profiles || profiles.length === 0) return '';
 
   const primary = activeProfileId 
@@ -58,14 +62,16 @@ export function buildMultiProfileSystemContext(profiles: ChatTargetProfile[], ac
   const formattedProfiles = profiles.map((p, idx) => {
     const isTarget = p.id === primary.id;
     const prefix = isTarget ? '★ [현재 메인 상담 분석 대상자]' : `[대상자 ${idx + 1}]`;
-    return `${prefix}\n${formatProfileAnalysisContext(p, idx)}`;
+    return `${prefix}\n${formatProfileAnalysisContext(p, idx, userDisplayName)}`;
   }).join('\n\n');
 
   if (profiles.length === 1) {
     const single = profiles[0];
+    const targetName = (single.isMe || single.relationship === '본인') ? (userDisplayName || single.name) : single.name;
     return `[대화창 활성 상담 대상자 1인 전용 만세력·사주 데이터]
 ${formattedProfiles}
-- 핵심 지침: 위 대상자 '${single.name}'(${single.relationship || '본인'})님의 만세력(사주 4주 8자)과 점성학적 천문 데이터를 기반으로 질문자의 고민에 맞춘 정밀하고 현실적인 맞춤 점괘와 운명 통찰을 제공하십시오.`;
+- 핵심 지침: 위 대상자 '${targetName}'(${single.relationship || '본인'})님의 만세력(사주 4주 8자)과 점성학적 천문 데이터를 기반으로 질문자의 고민에 맞춘 정밀하고 현실적인 맞춤 점괘와 운명 통찰을 제공하십시오.
+- 사용자 호칭 원칙: 사용자를 부를 때는 본명이나 실명을 절대 부르지 말고, 오직 닉네임인 '${targetName}'(으)로만 다정하게 부르십시오.`;
   }
 
   const names = profiles.map(p => p.name).join(' · ');

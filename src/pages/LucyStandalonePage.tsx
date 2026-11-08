@@ -1111,11 +1111,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       gender: persistentBasic?.gender || sharedBasic?.gender,
       birthCity: persistentBasic?.birthCity || sharedBasic?.birthCity,
     };
-    // 🌟 사용자 요청: 프로필 추가/상담 창 및 독 칩에서는 닉네임 대신 본명(실명)으로 표시
+    // 🌟 사용자 요청: 루시 채팅에서 실명 대신 닉네임(기본 '제제')으로 호칭 및 표시
     const rawRealName = basic?.name?.trim();
     const myRealName = (rawRealName && rawRealName !== '제제' && rawRealName !== '여행자' && rawRealName !== '사용자')
       ? rawRealName
       : (persistentBasic?.name?.trim() || '박주형');
+    const myDisplayName = userDisplayName;
 
     // 1. 이전에 저장된 다자간 프로필 리스트가 있으면 최우선 복원 (사용자가 수정한 값이 덮어써지지 않도록 영구 보존)
     try {
@@ -1127,7 +1128,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             if (p.isMe || p.relationship === '본인') {
               return {
                 ...p,
-                name: (p.name && p.name !== '제제' && p.name !== '여행자') ? p.name : myRealName,
+                name: myDisplayName,
+                nickname: myDisplayName,
                 birthdate: p.birthdate || basic?.birthdate || '1994-01-24',
                 birthtime: p.birthtime !== undefined ? p.birthtime : (basic?.birthtime ?? '12:00'),
                 gender: p.gender || basic?.gender || 'male',
@@ -1146,7 +1148,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     const myProfile: ChatTargetProfile = {
       id: 'my-profile',
       isMe: true,
-      name: myRealName,
+      name: myDisplayName,
+      nickname: myDisplayName,
       birthdate: basic?.birthdate || '1994-01-24',
       birthtime: basic?.birthtime ?? '12:00',
       gender: basic?.gender || 'male',
@@ -1168,15 +1171,16 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     return found || activeProfiles[0];
   }, [activeProfiles, activeProfileId]);
 
-  // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (만세력·사주 전면 전환)
+  // 🌟 사용자 요청: 루시 채팅에서 실명 대신 닉네임으로 호칭 및 사주 상담
   const counselingUserProfile: UserProfile = useMemo(() => {
     if (!primaryProfile) return sharedState?.userProfile || getPersistentUserProfile();
+    const isMe = primaryProfile.isMe || primaryProfile.relationship === '본인';
     return {
       ...sharedState?.userProfile,
       basic: {
         ...sharedState?.userProfile?.basic,
-        name: primaryProfile.name,
-        nickname: primaryProfile.name,
+        name: isMe ? userDisplayName : primaryProfile.name,
+        nickname: isMe ? userDisplayName : (primaryProfile.nickname || primaryProfile.name),
         birthdate: primaryProfile.birthdate,
         birthtime: primaryProfile.birthtime,
         gender: primaryProfile.gender,
@@ -1184,7 +1188,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         lunarSolar: primaryProfile.lunarSolar || 'solar',
       },
     };
-  }, [primaryProfile, sharedState?.userProfile]);
+  }, [primaryProfile, sharedState?.userProfile, userDisplayName]);
 
   // Detailed Saju Info for Soul Profile View (상담 대상자 기준으로 자동 동기화)
   const sajuInfo = useMemo(() => calculateDetailedSaju(counselingUserProfile), [counselingUserProfile]);
@@ -2306,10 +2310,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     let extraSystemContext: string | undefined = undefined;
 
     // 👥 활성화된 1인~4인 프로필 사주·점성술 데이터 및 다자간 궁합 가이드 주입 (현재 메인 상담 대상자 강조)
-    const multiProfileContext = buildMultiProfileSystemContext(activeProfiles, activeProfileId);
+    const multiProfileContext = buildMultiProfileSystemContext(activeProfiles, activeProfileId, userDisplayName);
     if (multiProfileContext) {
       extraSystemContext = multiProfileContext;
     }
+    const nicknameGuidance = `[사용자 호칭 절대 원칙]\n- 루시채팅에서 사용자를 부를 때는 본명이나 실명('박주형' 등)을 절대 부르지 말고, 반드시 사용자의 닉네임인 '${userDisplayName}'(으)로만 다정하게 불러줘. (예: '${userDisplayName}아', '${userDisplayName}야')`;
+    extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${nicknameGuidance}` : nicknameGuidance;
 
     if (isCasual) {
       targetPersona = 'lucy';
@@ -3461,7 +3467,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 >
                   <User size={9} className="text-amber-600 dark:text-amber-400 shrink-0" />
                   <span className="truncate max-w-[42px] sm:max-w-[70px]">
-                    {activeProfiles[0]?.name || '내 프로필'}
+                    {activeProfiles[0]?.isMe ? userDisplayName : (activeProfiles[0]?.name || userDisplayName)}
                   </span>
                 </button>
                 <button
