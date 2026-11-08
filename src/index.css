@@ -3516,11 +3516,11 @@ html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-content-viewport {
 
 html.duo-unfolded-landscape #duo-lucy-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-lucy-viewport {
-  width: 50vw !important;
-  min-width: 50vw !important;
-  max-width: 50vw !important;
+  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  min-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
   height: 100% !important;
-  flex: 0 0 50vw !important;
+  flex: 1 1 0px !important;
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -3553,6 +3553,10 @@ html.duo-unfolded-portrait #duo-lucy-viewport {
 
 /* 좌측 콘텐츠 뷰포트 내부의 직계 콘텐츠 래퍼는 뷰포트 너비 100% 채움 */
 #duo-content-viewport > div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+#duo-content-viewport iframe {
   width: 100% !important;
   max-width: 100% !important;
 }

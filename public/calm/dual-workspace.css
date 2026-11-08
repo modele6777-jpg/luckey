@@ -12,3 +12,31 @@
   html:not(.duo-parent-managed) .calm-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 28px; }
   html:not(.duo-parent-managed) .exercises-filter-strip { flex-direction: column; align-items: stretch; }
 }
+
+/* 📱 Duo 좌측 화면에서는 1열 단일 스택 강제 및 꽉 찬 너비 보장 */
+html.duo-folded-view .calm-workspace,
+html.duo-left-viewport .calm-workspace,
+body.duo-left-viewport .calm-workspace,
+.duo-parent-managed:not(.duo-parent-wide) .calm-workspace {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 20px !important;
+}
+
+html.duo-folded-view .main-wrapper,
+html.duo-left-viewport .main-wrapper,
+body.duo-left-viewport .main-wrapper,
+.duo-parent-managed:not(.duo-parent-wide) .main-wrapper {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 16px 14px 40px 14px !important;
+  box-sizing: border-box !important;
+}
+
+html.duo-folded-view .exercises-filter-strip,
+html.duo-left-viewport .exercises-filter-strip,
+body.duo-left-viewport .exercises-filter-strip,
+.duo-parent-managed:not(.duo-parent-wide) .exercises-filter-strip {
+  flex-direction: row !important;
+  position: static !important;
+}
