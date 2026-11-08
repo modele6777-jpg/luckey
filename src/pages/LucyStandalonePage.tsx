@@ -56,7 +56,9 @@ import {
   mergeUnifiedMessages,
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
-import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
+import { drawLucyTarotCards, formatTarotMarker, detectTarotCardsFromText } from '@/utils/tarotDetector';
+import { isDualPaneLayout } from '@/lib/perfMode';
+import { DuoDualPaneContainer } from '@/components/duo/DuoDualPaneContainer';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -991,6 +993,28 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
   }, []);
 
+  // 📱 메인 본문 캔버스 실측 너비 기준 iPhone Duo 접힘 / 펼침 (Dual-Pane) 반응형 감지
+  const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDualPaneLayout() || window.innerWidth >= 640;
+  });
+
+  useEffect(() => {
+    const handleLayoutChange = () => {
+      if (typeof window === 'undefined') return;
+      setIsDuoUnfolded(isDualPaneLayout() || window.innerWidth >= 640);
+    };
+    handleLayoutChange();
+    window.addEventListener('resize', handleLayoutChange, { passive: true });
+    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    return () => {
+      window.removeEventListener('resize', handleLayoutChange);
+      window.removeEventListener('orientationchange', handleLayoutChange);
+      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+    };
+  }, []);
+
   const currentGhostPromptRef = useRef<string>('');
   const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');
 
@@ -1878,6 +1902,27 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       return txt.toLowerCase().includes(q);
     });
   }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro]);
+
+  // 🔮 듀오 펼침 모드용 최신 타로 카드 추출
+  const latestTarotMessage = useMemo(() => {
+    for (let i = filteredMessages.length - 1; i >= 0; i--) {
+      const m = filteredMessages[i];
+      if (m.role === 'assistant') {
+        const text = typeof m.content === 'string' ? m.content : '';
+        if (m.tarotDraw?.markers || text.includes('::TAROT::') || text.includes('[TAROT:')) {
+          return m;
+        }
+      }
+    }
+    return null;
+  }, [filteredMessages]);
+
+  const latestTarotCards = useMemo(() => {
+    if (!latestTarotMessage) return [];
+    const markers = latestTarotMessage.tarotDraw?.markers;
+    const text = typeof latestTarotMessage.content === 'string' ? latestTarotMessage.content : '';
+    return detectTarotCardsFromText(markers || text, 3);
+  }, [latestTarotMessage]);
 
   // Background Auto-Prefetch latest Lucy message for 0ms instant TTS playback
   useEffect(() => {
@@ -2966,8 +3011,41 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         </AnimatePresence>
       </header>
 
-      {/* Chat Messages Stream */}
-      <main
+      {/* 📱 메인 본문 너비 기준 듀얼 뷰: 펼침 시 2-Column 분할 뷰, 접힘 시 단일 열 뷰 */}
+      <div className={`flex-1 min-h-0 flex w-full max-w-full overflow-hidden ${
+        isDuoUnfolded ? 'flex-row' : 'flex-col'
+      }`}>
+        {isDuoUnfolded && (
+          <aside className="w-1/2 min-w-[340px] max-w-[50%] h-full shrink-0 flex flex-col overflow-hidden border-r border-white/10 z-10">
+            <DuoDualPaneContainer
+              latestTarotCards={latestTarotCards}
+              verifiedDraw={Boolean(latestTarotMessage?.tarotDraw?.source === 'app-random')}
+              revealedCardIds={latestTarotMessage?.tarotDraw?.revealedCardIds}
+              onRevealCard={(cardId) => {
+                if (latestTarotMessage) {
+                  revealLucyTarotCard(String(latestTarotMessage.id), cardId, pro ? 'lucy-pro' : 'lucy');
+                }
+              }}
+              onScrollToReading={(cardId) => {
+                const targetEl = document.querySelector(`[data-tarot-card-id="${cardId}"]`) || messagesContainerRef.current?.querySelector('.lucy-starlight-assistant:last-of-type');
+                targetEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+              onQuickDraw={(promptText) => {
+                setInput(promptText);
+                setTimeout(() => {
+                  focusInputBox(promptText);
+                }, 100);
+              }}
+              isLight={isLight}
+            />
+          </aside>
+        )}
+
+        <div className={`h-full flex flex-col min-w-0 overflow-hidden relative ${
+          isDuoUnfolded ? 'w-1/2 flex-1' : 'w-full flex-1'
+        }`}>
+          {/* Chat Messages Stream */}
+          <main
         ref={messagesContainerRef}
         onScroll={handleScroll}
         style={{ overflowX: 'hidden', touchAction: 'pan-y' }}
@@ -3763,6 +3841,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           </div>
         </div>
       </footer>
+        </div>
+      </div>
 
       {/*  제제 님의 소울 프로필 퀵뷰 모달 */}
       <AnimatePresence>
