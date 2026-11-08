@@ -740,6 +740,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   const isMasterMode = pro || lucyTier === 'pro';
   const isPlusMode = lucyTier === 'plus' || lucyTier === 'pro';
+  const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
 
   const previousPlusMode = useRef(isPlusMode);
   useEffect(() => {
@@ -759,42 +760,47 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeLocalStorage.setItem('lucy_tier_mode', 'pro');
       safeSessionStorage.setItem('lucy_tier_mode', 'pro');
       setLucyTier('pro');
+      setModeTransitioningTier('pro');
+      setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
-      setModeSwitchToast(`👑 AI Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 마스터 가동`);
+      setModeSwitchToast(
+        isDualPaneLayout() || window.innerWidth >= 640
+          ? `👑 Lucy+ Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+          : `👑 Lucy Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+      );
       setTimeout(() => setModeSwitchToast(null), 2500);
     };
 
-    // ✨ 빅뱅 버튼 탭: 접혀있으면 'AI', 펼쳐있으면 'AI+'!
+    // ✨ 빅뱅 버튼 탭: 접혀있으면 'Lucy', 펼쳐있으면 'Lucy +'!
     const handleRevertNormal = (e?: any) => {
       const isWide = isDualPaneLayout() || window.innerWidth >= 640;
       const validTarget: LucyTier = isWide ? 'plus' : 'ai';
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
       setLucyTier(validTarget);
+      setModeTransitioningTier(validTarget);
+      setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
-      setModeSwitchToast(isWide ? '🌿 AI+' : '✨ AI');
+      setModeSwitchToast(isWide ? '🌿 Lucy +' : '✨ Lucy');
       setTimeout(() => setModeSwitchToast(null), 2000);
     };
 
-    // 🎛️ 상단 배지/로고 클릭 토글: 접혀있으면 [루시 AI ↔ 루시 프로], 펼쳐있으면 [루시 플러스 ↔ 루시 프로]
+    // 🎛️ 상단 로고 클릭 토글: 접혀있으면 [루시 AI ↔ 루시 프로], 펼쳐있으면 [루시 플러스 ↔ 루시 프로]
     const handleToggle = () => {
       setLucyTier((prev) => {
         const isWide = isDualPaneLayout() || window.innerWidth >= 640;
-        let next: LucyTier;
-        if (prev === 'pro') {
-          next = isWide ? 'plus' : 'ai';
-        } else {
-          next = 'pro';
-        }
+        const next: LucyTier = prev === 'pro' ? (isWide ? 'plus' : 'ai') : 'pro';
         safeLocalStorage.setItem('lucy_tier_mode', next);
         safeSessionStorage.setItem('lucy_tier_mode', next);
+        setModeTransitioningTier(next);
+        setTimeout(() => setModeTransitioningTier(null), 550);
         triggerHaptic('whitehole');
         setModeSwitchToast(
           next === 'pro'
-            ? `👑 Lucy Pro 승격! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+            ? (isWide ? `👑 Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`)
             : next === 'plus'
-            ? '🌿 루시 플러스 모드'
-            : '✨ 일반 루시 AI 모드'
+            ? '🌿 Lucy +'
+            : '✨ Lucy'
         );
         setTimeout(() => setModeSwitchToast(null), 2200);
         return next;
@@ -2816,14 +2822,22 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     URL.revokeObjectURL(url);
   };
 
-  if (!isLucyReady) {
-    const isProLoader = pro || lucyTier === 'pro';
+  if (modeTransitioningTier !== null) {
     return (
       <LucyAuraLoader
         fullScreen
-        isPro={isProLoader}
-        message={isProLoader ? `Lucy Pro ${ALL_DCE_ENGINES.length}대 결정론 엔진 조율 중...` : "루시와 행운의 깊은 교감 조율 중..."}
-        subMessage={isProLoader ? `${ALL_DCE_ENGINES.length} DETERMINISTIC ENGINES · ALL-IN-ONE MASTER` : "FOUR-LEAF CLOVER · FORTUNE & INTUITION"}
+        tier={modeTransitioningTier}
+        isUnfolded={isDuoUnfolded}
+      />
+    );
+  }
+
+  if (!isLucyReady) {
+    return (
+      <LucyAuraLoader
+        fullScreen
+        tier={lucyTier}
+        isUnfolded={isDuoUnfolded}
       />
     );
   }
@@ -2889,13 +2903,15 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         setLucyTier(next);
                         safeLocalStorage.setItem('lucy_tier_mode', next);
                         safeSessionStorage.setItem('lucy_tier_mode', next);
+                        setModeTransitioningTier(next);
+                        setTimeout(() => setModeTransitioningTier(null), 550);
                         triggerHaptic('whitehole');
                         setModeSwitchToast(
                           next === 'pro'
-                            ? `👑 Lucy Pro 승격! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+                            ? (isDuoUnfolded ? `👑 Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`)
                             : next === 'plus'
-                            ? '🌿 루시 플러스 모드'
-                            : '✨ 일반 루시 AI 모드'
+                            ? '🌿 Lucy +'
+                            : '✨ Lucy'
                         );
                         setTimeout(() => setModeSwitchToast(null), 2200);
                       }}

@@ -2,30 +2,58 @@ import React from 'react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { motion } from 'motion/react';
 
+export type LucyLoaderTier = 'ai' | 'plus' | 'pro';
+
 interface LucyAuraLoaderProps {
   message?: string;
   subMessage?: string;
   fullScreen?: boolean;
   compact?: boolean;
   isPro?: boolean;
+  tier?: LucyLoaderTier;
+  isUnfolded?: boolean;
 }
 
 /**
- * 🍀 LucyAuraLoader (Minimalist Edition)
- * 루시 AI 챗 & Lucy Pro 진입 전용 미니멀 클로버 / Pro 로딩 화면
+ * 🍀 LucyAuraLoader (4-Tier Typography Edition)
+ * 루시 4대 모드(Lucy · Lucy + · Lucy Pro · Lucy+ Pro) 전환 및 진입 전용 숨쉬는 로딩 애니메이션
+ * (모드별로 Lucy / + / Pro / + Pro 문양이 옅은 상태에서 진하게 맥동)
  */
 export function LucyAuraLoader({
-  message = '루시와 행운의 깊은 교감 조율 중...',
-  subMessage = 'FOUR-LEAF CLOVER · FORTUNE & INTUITION',
+  message,
+  subMessage,
   fullScreen = false,
   compact = false,
   isPro = false,
+  tier,
+  isUnfolded = false,
 }: LucyAuraLoaderProps) {
+  const activeTier: LucyLoaderTier = tier ?? (isPro ? 'pro' : 'ai');
+  const isPlusPro = activeTier === 'pro' && Boolean(isUnfolded);
+  const proText = isPlusPro ? '+ Pro' : 'Pro';
+
+  const defaultMessage =
+    activeTier === 'pro'
+      ? `${isPlusPro ? 'Lucy+ Pro' : 'Lucy Pro'} 252대 결정론 엔진 조율 중...`
+      : activeTier === 'plus'
+      ? 'Lucy + 코스믹 룸 & 일상 교감 조율 중...'
+      : 'Lucy와 행운의 깊은 교감 조율 중...';
+
+  const defaultSubMessage =
+    activeTier === 'pro'
+      ? '252 DETERMINISTIC ENGINES · ALL-IN-ONE MASTER'
+      : activeTier === 'plus'
+      ? 'COSMIC AMBIENT ROOM · INTUITIVE AI'
+      : 'FOUR-LEAF CLOVER · FORTUNE & INTUITION';
+
+  const finalMessage = message ?? defaultMessage;
+  const finalSubMessage = subMessage ?? defaultSubMessage;
+
   const content = (
     <div
       data-fullscreen-loader={fullScreen || undefined}
       role="status"
-      aria-label={message}
+      aria-label={finalMessage}
       className={`flex flex-col items-center justify-center select-none text-slate-100 overflow-hidden ${
         fullScreen
           ? 'fixed inset-0 z-[9999] bg-[#050806] h-[100dvh] w-full px-4'
@@ -35,10 +63,14 @@ export function LucyAuraLoader({
       }`}
       style={fullScreen ? { boxSizing: 'border-box', minHeight: 0, margin: 0, paddingTop: 'max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))', paddingBottom: 'max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))' } : undefined}
     >
-      {/* Soft Ambient Glow (Pro: Amber / Normal: Emerald) */}
+      {/* Soft Ambient Glow (Pro: Amber / Plus: Teal / AI: Emerald) */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         <div className={`w-48 h-48 sm:w-64 sm:h-64 rounded-full blur-3xl ${
-          isPro ? 'bg-amber-500/12' : 'bg-emerald-500/8'
+          activeTier === 'pro'
+            ? 'bg-amber-500/12'
+            : activeTier === 'plus'
+            ? 'bg-teal-500/14'
+            : 'bg-emerald-500/10'
         }`} />
       </div>
 
@@ -57,60 +89,58 @@ export function LucyAuraLoader({
               ease: 'easeInOut',
             }}
             className={`absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full border ${
-              isPro ? 'border-amber-400/30' : 'border-emerald-400/20'
+              activeTier === 'pro'
+                ? 'border-amber-400/30'
+                : activeTier === 'plus'
+                ? 'border-teal-400/30'
+                : 'border-emerald-400/25'
             }`}
           />
 
-          {/* Minimal Geometry Container */}
-          {isPro ? (
+          {/* Minimal Geometry Container with Respective Breathing Text */}
+          {activeTier === 'pro' ? (
             <motion.div
-              animate={{
-                scale: [0.97, 1.03, 0.97],
-              }}
-              transition={{
-                duration: 2.2,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: 'easeInOut',
-              }}
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-950/60 backdrop-blur-sm relative overflow-hidden"
+              animate={{ scale: [0.97, 1.03, 0.97] }}
+              transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
+              className="min-w-[3.75rem] h-14 sm:min-w-[4.5rem] sm:h-16 px-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-950/60 backdrop-blur-sm relative overflow-hidden"
             >
               <div className="lucy-pro-loading-pulse-ring absolute inset-1 rounded-xl pointer-events-none" />
-              <span className="lucy-pro-loading-text text-base sm:text-lg font-black tracking-widest text-amber-300 z-10">
-                PRO
+              {isPlusPro ? (
+                <div className="flex items-center gap-1.5 z-10 whitespace-nowrap select-none">
+                  <span className="text-base sm:text-lg font-black text-amber-300/85 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">
+                    +
+                  </span>
+                  <span className="lucy-pro-loading-text text-base sm:text-lg font-black tracking-wider text-amber-300">
+                    Pro
+                  </span>
+                </div>
+              ) : (
+                <span className="lucy-pro-loading-text text-base sm:text-lg font-black tracking-wider text-amber-300 z-10 whitespace-nowrap">
+                  Pro
+                </span>
+              )}
+            </motion.div>
+          ) : activeTier === 'plus' ? (
+            <motion.div
+              animate={{ scale: [0.97, 1.03, 0.97] }}
+              transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-teal-950/40 border border-teal-500/30 flex items-center justify-center shadow-lg shadow-teal-950/60 backdrop-blur-sm relative overflow-hidden"
+            >
+              <div className="lucy-plus-loading-pulse-ring absolute inset-1 rounded-xl pointer-events-none" />
+              <span className="lucy-plus-loading-text text-2xl sm:text-3xl font-black text-teal-300 z-10 leading-none">
+                +
               </span>
             </motion.div>
           ) : (
             <motion.div
-              animate={{
-                scale: [0.97, 1.03, 0.97],
-              }}
-              transition={{
-                duration: 2.6,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: 'easeInOut',
-              }}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-950/60 backdrop-blur-sm"
+              animate={{ scale: [0.97, 1.03, 0.97] }}
+              transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-950/40 border border-emerald-500/25 flex items-center justify-center shadow-lg shadow-emerald-950/60 backdrop-blur-sm relative overflow-hidden"
             >
-              <svg
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400"
-              >
-                {/* Minimal Organic Four Leaf Petals */}
-                <g stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  {/* Top Leaf */}
-                  <path d="M16 16 C16 10, 11 8, 11 12 C11 15.5, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-                  {/* Right Leaf */}
-                  <path d="M16 16 C22 16, 24 11, 20 11 C16.5 11, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-                  {/* Bottom Leaf */}
-                  <path d="M16 16 C16 22, 21 24, 21 20 C21 16.5, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-                  {/* Left Leaf */}
-                  <path d="M16 16 C10 16, 8 21, 12 21 C15.5 21, 16 16, 16 16" fill="currentColor" fillOpacity="0.25" />
-                </g>
-                {/* Central Golden Core Dewdrop */}
-                <circle cx="16" cy="16" r="1.8" fill="#fde047" />
-              </svg>
+              <div className="lucy-ai-loading-pulse-ring absolute inset-1 rounded-xl pointer-events-none" />
+              <span className="lucy-ai-loading-text text-sm sm:text-base font-black tracking-widest text-emerald-300 z-10">
+                Lucy
+              </span>
             </motion.div>
           )}
         </div>
@@ -118,15 +148,29 @@ export function LucyAuraLoader({
         {/* Minimal Lucy Wordmark */}
         <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
           <span className={`text-[11px] sm:text-xs font-black tracking-[0.3em] uppercase font-sans ${
-            isPro ? 'text-amber-300' : 'text-emerald-300'
+            activeTier === 'pro'
+              ? 'text-amber-300'
+              : activeTier === 'plus'
+              ? 'text-teal-300'
+              : 'text-emerald-300'
           }`}>
             Lucy
           </span>
-          <span className={`w-1 h-1 rounded-full ${isPro ? 'bg-amber-400/50' : 'bg-emerald-400/50'}`} />
+          <span className={`w-1 h-1 rounded-full ${
+            activeTier === 'pro'
+              ? 'bg-amber-400/50'
+              : activeTier === 'plus'
+              ? 'bg-teal-400/50'
+              : 'bg-emerald-400/50'
+          }`} />
           <span className={`text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-mono font-bold ${
-            isPro ? 'text-amber-400/80' : 'text-emerald-400/60'
+            activeTier === 'pro'
+              ? 'text-amber-400/80'
+              : activeTier === 'plus'
+              ? 'text-teal-400/80'
+              : 'text-emerald-400/70'
           }`}>
-            {isPro ? 'Pro Master' : 'Bestie'}
+            {activeTier === 'pro' ? 'Pro Master' : activeTier === 'plus' ? 'Plus Ambient' : 'Intuitive AI'}
           </span>
         </div>
 
@@ -135,18 +179,26 @@ export function LucyAuraLoader({
           animate={{ opacity: [0.65, 0.95, 0.65] }}
           transition={{ duration: 2.4, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
           className={`text-xs sm:text-[13px] font-medium tracking-wide font-sans max-w-xs break-keep px-4 ${
-            isPro ? 'text-amber-100/90' : 'text-emerald-100/90'
+            activeTier === 'pro'
+              ? 'text-amber-100/90'
+              : activeTier === 'plus'
+              ? 'text-teal-100/90'
+              : 'text-emerald-100/90'
           }`}
         >
-          {message}
+          {finalMessage}
         </motion.p>
 
         {/* Minimal Submessage */}
-        {subMessage && (
+        {finalSubMessage && (
           <p className={`text-[9px] sm:text-[10px] tracking-[0.2em] font-mono mt-1 uppercase ${
-            isPro ? 'text-amber-500/60' : 'text-emerald-500/50'
+            activeTier === 'pro'
+              ? 'text-amber-500/60'
+              : activeTier === 'plus'
+              ? 'text-teal-500/60'
+              : 'text-emerald-500/50'
           }`}>
-            {subMessage}
+            {finalSubMessage}
           </p>
         )}
 
@@ -162,7 +214,11 @@ export function LucyAuraLoader({
               ease: [0.4, 0, 0.2, 1],
             }}
             className={`w-full h-full rounded-full bg-gradient-to-r from-transparent ${
-              isPro ? 'via-amber-400' : 'via-emerald-400'
+              activeTier === 'pro'
+                ? 'via-amber-400'
+                : activeTier === 'plus'
+                ? 'via-teal-400'
+                : 'via-emerald-400'
             } to-transparent`}
           />
         </div>
