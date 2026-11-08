@@ -760,11 +760,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeSessionStorage.setItem('lucy_tier_mode', 'pro');
       setLucyTier('pro');
       triggerHaptic('whitehole');
-      setModeSwitchToast(`👑 Lucy Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 마스터 가동`);
+      setModeSwitchToast(`👑 Pro모드 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 마스터 가동`);
       setTimeout(() => setModeSwitchToast(null), 2500);
     };
 
-    // ✨ 빅뱅 버튼 탭: 접혀있으면 '루시 AI', 펼쳐있으면 '루시 플러스'!
+    // ✨ 빅뱅 버튼 탭: 접혀있으면 'AI 모드', 펼쳐있으면 'AI+ 모드'!
     const handleRevertNormal = (e?: any) => {
       const isWide = isDualPaneLayout() || window.innerWidth >= 640;
       const validTarget: LucyTier = isWide ? 'plus' : 'ai';
@@ -772,7 +772,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
       setLucyTier(validTarget);
       triggerHaptic('whitehole');
-      setModeSwitchToast(isWide ? '🌿 루시 플러스 모드' : '✨ 일반 루시 AI 모드');
+      setModeSwitchToast(isWide ? '🌿 AI+ 모드' : '✨ AI 모드');
       setTimeout(() => setModeSwitchToast(null), 2000);
     };
 
@@ -1044,25 +1044,25 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               triggerHaptic('whitehole');
               setModeSwitchToast(
                 unfolded
-                  ? `👑 듀오 펼침 · Lucy Pro (좌측 코스믹 룸 + ${ALL_DCE_ENGINES.length}대 풀엔진)`
-                  : `👑 듀오 접힘 · Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진 단일창)`
+                  ? `👑 듀오 펼침 · AI+ Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`
+                  : `👑 듀오 접힘 · Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`
               );
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'pro';
             }
-            // 일반 상태: 접었을 때는 '루시 AI', 펼쳤을 때는 '루시 플러스'!
+            // 일반 상태: 접었을 때는 'AI 모드', 펼쳤을 때는 'AI+ 모드'!
             if (unfolded) {
               safeLocalStorage.setItem('lucy_tier_mode', 'plus');
               safeSessionStorage.setItem('lucy_tier_mode', 'plus');
               triggerHaptic('whitehole');
-              setModeSwitchToast('🌿 듀오 펼침 · 루시 플러스 (코스믹 룸 + 일상 AI)');
+              setModeSwitchToast('🌿 듀오 펼침 · AI+ 모드');
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'plus';
             } else {
               safeLocalStorage.setItem('lucy_tier_mode', 'ai');
               safeSessionStorage.setItem('lucy_tier_mode', 'ai');
               triggerHaptic('whitehole');
-              setModeSwitchToast('✨ 듀오 접힘 · 루시 AI');
+              setModeSwitchToast('✨ 듀오 접힘 · AI 모드');
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'ai';
             }
@@ -2928,10 +2928,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       triggerHaptic('whitehole');
                       setModeSwitchToast(
                         next === 'pro'
-                          ? `👑 Lucy Pro 승격! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+                          ? (isDuoUnfolded ? `👑 AI+ Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`)
                           : next === 'plus'
-                          ? '🌿 루시 플러스 모드'
-                          : '✨ 일반 루시 AI 모드'
+                          ? '🌿 AI+ 모드'
+                          : '✨ AI 모드'
                       );
                       setTimeout(() => setModeSwitchToast(null), 2200);
                     }}
@@ -2941,13 +2941,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         : lucyTier === 'plus'
                         ? 'is-plus'
                         : ''
-                    } cursor-pointer hover:opacity-85 transition-opacity shrink-0`}
+                    } cursor-pointer hover:opacity-85 transition-opacity shrink-0 font-bold`}
                     title="클릭 시 마스터 프로 모드 토글"
                   >
                     {lucyTier === 'pro'
-                      ? '프로 모드'
+                      ? (isDuoUnfolded ? 'AI+ Pro모드' : 'Pro모드')
                       : lucyTier === 'plus'
-                      ? '플러스 모드'
+                      ? 'AI+ 모드'
                       : 'AI 모드'}
                   </button>
                   {isMasterMode && (
