@@ -276,11 +276,9 @@ export function LucyResponseRecommendation({
     document.documentElement.classList.contains('duo-unfolded-mode') ||
     document.documentElement.classList.contains('dual-pane-active')
   );
-  // 📱 Duo 펼침 화면 또는 프로펠 루시 뷰포트 내에서는 키채널에 있더라도 상시 다크 테마 유지!
+  // 📱 시간대별 루시 테마(아침·낮·밤) 연동: propIsLight 또는 resolvedTheme 기준 반영
   const isLight = propIsLight !== undefined
     ? propIsLight
-    : isDuoContainer
-    ? false
     : resolvedTheme === 'light';
 
   // 1. 수다 모드(isCasual) 또는 루시의 인사말(isGreeting)에서는 기법 추천과 채널 추천을 전면 생략

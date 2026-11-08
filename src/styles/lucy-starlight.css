@@ -84,38 +84,59 @@ html[data-lucy-theme='starlight'] .lucy-chat-shell.lucy-night .lucy-starlight-as
 }
 
 /* Daylight palettes are scoped to Lucy; the rest of the app keeps its channel theme. */
-html[data-lucy-period='morning'] .lucy-chat-shell.lucy-night {
-  --lucy-bg: #fffbf2; --lucy-surface: rgba(255, 255, 255, 0.94); --lucy-chrome: rgba(255, 253, 248, 0.88);
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='morning']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight),
+.lucy-chat-shell[data-lucy-period='morning'] {
+  --lucy-bg: #fffbf2; --lucy-surface: rgba(255, 255, 255, 0.96); --lucy-chrome: rgba(255, 253, 248, 0.92);
   --lucy-border: #eddcc6; --lucy-accent: #8b5320; --lucy-user: #fceeda;
 }
-html[data-lucy-period='day'] .lucy-chat-shell.lucy-night {
+:is(html[data-lucy-period='day'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight),
+.lucy-chat-shell[data-lucy-period='day'] {
   --lucy-bg: #e6f3ff; --lucy-surface: #ffffff; --lucy-chrome: #f3faff;
   --lucy-border: #b9d4ea; --lucy-accent: #175d92; --lucy-user: #cce7ff;
 }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-pro-theme {
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight).is-pro-theme,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']).is-pro-theme {
   --lucy-accent: #79623d;
 }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night {
-  color-scheme: light; color: #243449; background: var(--lucy-bg) !important;
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight),
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) {
+  color-scheme: light; color: #243449 !important; background: var(--lucy-bg) !important;
 }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(.lucy-starlight-assistant, .lucy-starlight-user, .lucy-user-bubble, .lucy-starlight-composer) {
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) :is(.lucy-starlight-assistant, .lucy-assistant-bubble, .lucy-starlight-user, .lucy-user-bubble, .lucy-starlight-composer),
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) :is(.lucy-starlight-assistant, .lucy-assistant-bubble, .lucy-starlight-user, .lucy-user-bubble, .lucy-starlight-composer) {
   color: #243449 !important; border-color: var(--lucy-border) !important;
 }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(.lucy-starlight-user, .lucy-user-bubble) { background: var(--lucy-user) !important; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-composer { background: var(--lucy-surface) !important; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(.lucy-starlight-composer textarea, .lucy-starlight-composer input) { color: #243449 !important; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night :is(input, textarea)::placeholder { color: #5a6e82 !important; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-chat-header h1 button > span { color: #243449 !important; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) { color: var(--lucy-accent) !important; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(pre, code) { background: #eef3f8; color: #243449; }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-send { background: #175d92 !important; color: #ffffff !important; }
-html.light[data-lucy-period='morning'] .lucy-chat-shell.lucy-night .lucy-starlight-send {
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) .lucy-starlight-assistant *,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) .lucy-starlight-assistant * {
+  color: #243449;
+}
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) :is(.lucy-starlight-user, .lucy-user-bubble),
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) :is(.lucy-starlight-user, .lucy-user-bubble) { background: var(--lucy-user) !important; color: #243449 !important; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) .lucy-starlight-composer,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) .lucy-starlight-composer { background: var(--lucy-surface) !important; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) :is(.lucy-starlight-composer textarea, .lucy-starlight-composer input),
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) :is(.lucy-starlight-composer textarea, .lucy-starlight-composer input) { color: #243449 !important; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) :is(input, textarea)::placeholder,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) :is(input, textarea)::placeholder { color: #5a6e82 !important; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) .lucy-chat-header h1 button > span,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) .lucy-chat-header h1 button > span { color: #243449 !important; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a),
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) { color: var(--lucy-accent) !important; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) .lucy-starlight-assistant :is(pre, code),
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) .lucy-starlight-assistant :is(pre, code) { background: #eef3f8; color: #243449; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) .lucy-starlight-send,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) .lucy-starlight-send { background: #175d92 !important; color: #ffffff !important; }
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='morning']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight) .lucy-starlight-send,
+.lucy-chat-shell[data-lucy-period='morning'] .lucy-starlight-send {
   background: linear-gradient(135deg, #e69c24 0%, #cf7b12 100%) !important; color: #ffffff !important;
   box-shadow: 0 2px 10px rgba(230, 156, 36, 0.35) !important;
 }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-pro-theme .lucy-starlight-send { background: #79623d !important; }
-html.light[data-lucy-period] .lucy-cosmic-wash { background: radial-gradient(ellipse at 80% 5%, #ffffffb0, transparent 60%); }
-html[data-lucy-period='morning'] .lucy-cosmic-wash {
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) :is(.lucy-chat-shell.lucy-night, .lucy-chat-shell.lucy-daylight).is-pro-theme .lucy-starlight-send,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']).is-pro-theme .lucy-starlight-send { background: #79623d !important; }
+:is(html[data-lucy-period='morning'], html[data-lucy-period='day'], [data-lucy-period='morning'], [data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day']) .lucy-cosmic-wash,
+.lucy-chat-shell:is([data-lucy-period='morning'], [data-lucy-period='day']) .lucy-cosmic-wash { background: radial-gradient(ellipse at 80% 5%, #ffffffb0, transparent 60%); }
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='morning']) .lucy-cosmic-wash,
+.lucy-chat-shell[data-lucy-period='morning'] .lucy-cosmic-wash {
   background: radial-gradient(ellipse at 88% 12%, rgba(255, 230, 160, 0.72) 0%, rgba(255, 210, 145, 0.35) 30%, rgba(255, 245, 220, 0.15) 58%, transparent 78%) !important;
 }
 html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }

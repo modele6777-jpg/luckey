@@ -3464,35 +3464,6 @@ html.duo-unfolded-portrait .prism-xs-subnav:not(.duo-page-nav) {
   transform: translateX(-50%) !important;
 }
 
-/* 🛡️ Duo 펼침 화면에서 루시 채팅은 좌측 채널의 라이트 테마(html.light)에 오염되지 않고 상시 시그니처 다크 코스믹 테마 100% 보존 */
-html.light #duo-lucy-viewport .lucy-chat-shell,
-html.light #duo-lucy-viewport .lucy-starlight-assistant,
-html.light #duo-lucy-viewport .lucy-starlight-assistant *,
-html.light #duo-lucy-viewport .lucy-assistant-bubble,
-html.light #duo-lucy-viewport .lucy-assistant-bubble *,
-html.light #duo-lucy-viewport .lucy-starlight-user,
-html.light #duo-lucy-viewport .lucy-user-bubble,
-html.light #duo-lucy-viewport .lucy-starlight-composer,
-html.light #duo-lucy-viewport :is(input, textarea) {
-  color: #f1f5fa !important;
-}
-
-html.light #duo-lucy-viewport .lucy-starlight-assistant,
-html.light #duo-lucy-viewport .lucy-assistant-bubble {
-  background-color: var(--lucy-surface, rgba(15, 23, 42, 0.92)) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-html.light #duo-lucy-viewport .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) {
-  color: #fbbf24 !important;
-}
-
-html.light #duo-lucy-viewport .lucy-chat-header,
-html.light #duo-lucy-viewport .lucy-chat-footer {
-  background-color: rgba(10, 15, 26, 0.94) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: #f1f5fa !important;
-}
 
 /* ==========================================================================
    📱 iPhone Duo 7.6" 펼친 화면 분할 뷰포트 (가로 50vw:50vw / 세로 50vh:50vh)

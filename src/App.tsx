@@ -728,7 +728,7 @@ function AppContent() {
             {/* 루시 채팅창:
                 - 가로(Landscape): 우측 메뉴(80px) 제외 메인화면의 정확한 50%
                 - 세로(Portrait): 하단 50%
-                - 다크 코스믹 테마 영구 보존 (.dark 강제 적용)
+                - 시간대별 루시 고유 테마(아침·낮·밤) 100% 온전히 반영
              */}
             <div
               id="duo-lucy-viewport"
@@ -737,7 +737,7 @@ function AppContent() {
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
                   : { width: '50%', minWidth: '50%', maxWidth: '50%', height: '100%', flex: '0 0 50%' }
               }
-              className="dark shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative"
+              className="shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative"
             >
               <LucyStandalonePage />
             </div>

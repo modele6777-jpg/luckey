@@ -762,8 +762,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const chatScope = 'lucy';
   const [location, navigate] = useLocation();
   const { resolvedTheme, lucyDayPeriod } = useTheme();
-  // 📱 iPhone Duo 펼친 화면에서는 좌측 뷰포트가 키채널(라이트)이더라도 우측/하단 루시채팅은 항상 시그니처 다크 코스믹 테마 유지!
-  const isLight = (isDuoUnfolded || isDuoContainer) ? false : (resolvedTheme === 'light');
+  // 📱 시간대별 루시 고유 테마(아침·낮·밤) 100% 반영: 아침(06:00~) 및 낮(11:00~)은 화사한 햇살/하늘 테마, 밤(18:00~)은 코스믹 나이트 테마
+  const isLight = lucyDayPeriod !== 'night';
   const useWhiteTheme = false;
 
   useEffect(() => {
@@ -2869,7 +2869,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   return (
     <div
-      className={`lucy-chat-shell ${isMasterMode ? 'is-pro-theme' : ''} lucy-night h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
+      data-lucy-period={lucyDayPeriod}
+      data-lucy-light={isLight ? 'true' : 'false'}
+      className={`lucy-chat-shell ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
       style={{
         overflowX: 'hidden',
         maxWidth: '100vw',
