@@ -26,7 +26,8 @@ import { KeyCosmicLoader } from "./components/KeyCosmicLoader";
 
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
-import { shouldUsePageTransitions, shouldMountBgMusicPlayer } from "./lib/perfMode";
+import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout } from "./lib/perfMode";
+import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
 import HubHome from "./pages/HubHome";
 import EpilogueApp from "./pages/EpilogueApp";
@@ -199,8 +200,34 @@ function GlobalTTSScroll() {
 function AppContent() {
   const { firebaseUser, isAuthReady, logout, signInWithGoogle, sharedState, isUnlocked, unlock, isChatOpen, syncPrismDevices } = useApp();
   const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [location, navigate] = useLocation();
   const locationSearch = useSearch();
+
+  // 📱 iPhone Duo 7.6" 펼침 / 접힘 (Dual-Pane) 레이아웃 실시간 감지
+  const [isDuoUnfolded, setIsDuoUnfolded] = React.useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDualPaneLayout();
+  });
+
+  React.useEffect(() => {
+    const handleLayoutChange = () => {
+      if (typeof window === 'undefined') return;
+      const unfolded = isDualPaneLayout();
+      setIsDuoUnfolded(unfolded);
+      document.documentElement.classList.toggle('duo-unfolded-mode', unfolded);
+      document.body.classList.toggle('duo-unfolded-mode', unfolded);
+    };
+    handleLayoutChange();
+    window.addEventListener('resize', handleLayoutChange, { passive: true });
+    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    return () => {
+      window.removeEventListener('resize', handleLayoutChange);
+      window.removeEventListener('orientationchange', handleLayoutChange);
+      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
+    };
+  }, []);
 
   const isFirstMount = React.useRef(true);
 
@@ -653,16 +680,46 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <main className="sites-pinned-main flex-1 min-h-0 overflow-x-hidden flex flex-col relative w-full">
-        <motion.div
-          key={location ? location.split('?')[0].split('#')[0] : '/'}
-          initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.1, ease: 'easeOut' }}
-          className="w-full h-full flex flex-col min-h-0"
-        >
-          <ActivePage loc={location} />
-        </motion.div>
+      <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? 'duo-dual-view flex flex-row' : 'flex flex-col'}`}>
+        {isDuoUnfolded ? (
+          <div className="w-full h-full flex flex-row min-h-0 overflow-hidden">
+            {/* 좌측 화면: 최우측 메뉴 및 우측 빅뱅 버튼으로 컨트롤하는 채널 뷰포트 (50%) */}
+            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden border-r border-white/10 relative">
+              {isLucyRoute ? (
+                /* 최우측 메뉴에서 루시 선택 시 ➔ 좌측 화면에 코스믹 룸 표출 */
+                <div className="w-full h-full overflow-hidden flex flex-col">
+                  <DuoCosmicAmbientRoom isLight={isLight} />
+                </div>
+              ) : (
+                /* 최우측 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 좌측 화면에 해당 페이지 표출 */
+                <motion.div
+                  key={location ? location.split('?')[0].split('#')[0] : '/'}
+                  initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.1, ease: 'easeOut' }}
+                  className="w-full h-full flex flex-col min-h-0 overflow-x-hidden"
+                >
+                  <ActivePage loc={location} />
+                </motion.div>
+              )}
+            </div>
+
+            {/* 우측 화면: 루시 채팅 상시 고정 (오른손 엄지 입력 최적화, 50%) */}
+            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden z-10 relative">
+              <LucyStandalonePage />
+            </div>
+          </div>
+        ) : (
+          <motion.div
+            key={location ? location.split('?')[0].split('#')[0] : '/'}
+            initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.1, ease: 'easeOut' }}
+            className="w-full h-full flex flex-col min-h-0"
+          >
+            <ActivePage loc={location} />
+          </motion.div>
+        )}
       </main>
       <OneStopVisitTracker />
       <LeftSidebarNav />

@@ -1190,15 +1190,17 @@ export function BigBangButton() {
       safeSessionStorage.setItem('lucy_plus_active', 'true');
       safeLocalStorage.setItem('lucy_plus_active', 'true');
 
-      if (inLucyChat) {
-        // 🌟 현재 Lucy 화면 내에서 즉각 히든 모드 'Lucy Pro'로 진화! (252대 풀엔진 가동)
+      const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 640);
+
+      if (inLucyChat || isWide) {
+        // 🌟 현재 Lucy 화면 내 또는 듀얼 뷰(펼침: 좌측 루시 상시 마운트)인 경우, 우측 화면을 이탈하지 않고 좌측 루시를 즉각 'Lucy Pro'로 진화!
         window.dispatchEvent(new CustomEvent('prism:evolve_lucy_pro', { detail: { prompt } }));
         window.dispatchEvent(new CustomEvent('prism:evolve_lucy_ultra', { detail: { prompt } }));
         if (prompt) {
           window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
         }
       } else {
-        // 🌟 외부 화면인 경우 Lucy(/chat?mode=pro)로 이동하면서 Lucy Pro 가동!
+        // 🌟 단일 뷰(접힘) 외부 화면인 경우 Lucy(/chat?mode=pro)로 이동하면서 Lucy Pro 가동!
         if (prompt) {
           safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
         }
@@ -1280,9 +1282,21 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 🌟 빅뱅 버튼 1회 탭: 접혀있을 때는 루시 AI, 펼쳐있을 때는 루시 플러스!
+          // 🌟 빅뱅 버튼 1회 탭
           const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 640);
-          const targetTier = isWide ? 'plus' : 'ai';
+          if (isWide) {
+            // 듀얼 뷰(펼침) 상태: 우측 화면 전담 조작!
+            // 우측 화면이 이미 루시(코스믹 룸)인 경우 -> KEY 채널로 전환
+            // 우측 화면이 다른 채널인 경우 -> 루시 코스믹 룸('/')으로 전환
+            const cleanLoc = (location || '').split('?')[0].split('#')[0] || '/';
+            const isCurrentlyLucy = cleanLoc === '/' || cleanLoc === '/chat' || cleanLoc === '/lucy';
+            const targetPath = isCurrentlyLucy ? '/key' : '/';
+            handleRuneNavigate(targetPath);
+            return;
+          }
+
+          // 단일 뷰(접힘) 상태: 접혀있을 때는 루시 AI!
+          const targetTier = 'ai';
           safeSessionStorage.setItem('lucy_tier_mode', targetTier);
           safeLocalStorage.setItem('lucy_tier_mode', targetTier);
 

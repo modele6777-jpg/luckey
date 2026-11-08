@@ -58,7 +58,6 @@ import {
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
 import { isDualPaneLayout } from '@/lib/perfMode';
-import { DuoCosmicAmbientRoom } from '@/components/duo/DuoCosmicAmbientRoom';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -750,7 +749,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   }, [isPlusMode]);
 
   const chatScope = 'lucy';
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const { resolvedTheme, lucyDayPeriod } = useTheme();
   const isLight = resolvedTheme === 'light';
   const useWhiteTheme = false;
@@ -1094,6 +1093,23 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       window.visualViewport?.removeEventListener('resize', handleLayoutChange);
     };
   }, []);
+
+  // 🌟 듀얼 화면 펼침 상태에서 좌측 채널 선택 상태에 따른 우측 루시 티어 자동 동기화
+  useEffect(() => {
+    if (!isDuoUnfolded) return;
+    const cleanPath = (location || '').split('?')[0].split('#')[0] || '/';
+    const isLucyActiveInMenu = cleanPath === '/' || cleanPath === '/chat' || cleanPath === '/lucy';
+
+    // 프로 모드가 활성화되어 있다면 프로 모드 유지
+    if (lucyTier === 'pro') return;
+
+    // 좌측 화면이 코스믹 룸(루시 선택)이면 우측 루시는 'plus'
+    // 좌측 화면이 KEY 또는 럭키 채널이면 우측 루시는 'ai'
+    const targetTier: LucyTier = isLucyActiveInMenu ? 'plus' : 'ai';
+    if (lucyTier !== targetTier) {
+      setLucyTier(targetTier);
+    }
+  }, [location, isDuoUnfolded, lucyTier]);
 
   const currentGhostPromptRef = useRef<string>('');
   const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');
@@ -3076,19 +3092,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         </AnimatePresence>
       </header>
 
-      {/* 📱 메인 본문 너비 기준 듀얼 뷰: 펼침 & 마스터/플러스 모드일 때만 2-Column 마스터 코스믹 룸, 루시 AI 모드일 때는 온전한 단일 열 뷰 */}
-      <div className={`flex-1 min-h-0 flex w-full max-w-full overflow-hidden ${
-        (isDuoUnfolded && (isPlusMode || pro)) ? 'flex-row' : 'flex-col'
-      }`}>
-        {isDuoUnfolded && (isPlusMode || pro) && (
-          <aside className="w-1/2 min-w-[340px] max-w-[50%] h-full shrink-0 flex flex-col overflow-hidden border-r border-white/10 z-10">
-            <DuoCosmicAmbientRoom isLight={isLight} />
-          </aside>
-        )}
-
-        <div className={`h-full flex flex-col min-w-0 overflow-hidden relative ${
-          (isDuoUnfolded && (isPlusMode || pro)) ? 'w-1/2 flex-1' : 'w-full flex-1'
-        }`}>
+      {/* 📱 메인 본문: 펼침 모드에서는 좌측 50% 화면을 온전히 채우며, 접힘 모드에서는 전체 단일 화면 채움 */}
+      <div className="flex-1 min-h-0 flex flex-col w-full max-w-full overflow-hidden">
+        <div className="h-full flex flex-col min-w-0 overflow-hidden relative w-full flex-1">
           {/* Chat Messages Stream */}
           <main
         ref={messagesContainerRef}

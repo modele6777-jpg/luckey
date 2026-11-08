@@ -3286,3 +3286,14 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
 html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   transition: none !important;
 }
+
+/* 📱 iPhone Duo 펼침 듀얼 화면: 접혀있을 때의 위치 그대로 우측 화면 내 동일 위치에 정확히 센터링 */
+html.duo-unfolded-mode .bottom-safe-fab-center,
+body.duo-unfolded-mode .bottom-safe-fab-center,
+.duo-unfolded-mode .bottom-safe-fab-center {
+  left: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  right: var(--sites-sidebar-width, 80px) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
