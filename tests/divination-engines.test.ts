@@ -243,6 +243,9 @@ import { calculateItalianDanteAlighieriDivineComedyAscent, formatDanteAlighieriD
 import { calculateMarcusAureliusMeditationsCitadel, formatMarcusAureliusMeditationsCitadelPrompt, ROMAN_MARCUS_AURELIUS_VERSION } from '../src/lib/divination/romanMarcusAureliusMeditationsCitadelEngine';
 import { calculateSuunChoeJeuDonghakSicheonju, formatSuunChoeJeuDonghakSicheonjuPrompt, KOREAN_SUUN_CHOE_JEU_VERSION } from '../src/lib/divination/koreanSuunChoeJeuDonghakSicheonjuEngine';
 import { calculateRalphWaldoEmersonSelfReliance, formatRalphWaldoEmersonSelfReliancePrompt, AMERICAN_RALPH_WALDO_EMERSON_VERSION } from '../src/lib/divination/americanRalphWaldoEmersonSelfRelianceEngine';
+import { calculateHenriBergsonElanVital, formatHenriBergsonElanVitalPrompt, FRENCH_HENRI_BERGSON_VERSION } from '../src/lib/divination/frenchHenriBergsonElanVitalEngine';
+import { calculateAlbertCamusAbsurdRevolt, formatAlbertCamusAbsurdRevoltPrompt, FRENCH_ALBERT_CAMUS_VERSION } from '../src/lib/divination/frenchAlbertCamusAbsurdRevoltEngine';
+import { calculateYeonamParkJiwonYeolhaIlgi, formatYeonamParkJiwonYeolhaIlgiPrompt, KOREAN_YEONAM_PARK_JIWON_VERSION } from '../src/lib/divination/koreanYeonamParkJiwonYeolhaIlgiEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4907,6 +4910,48 @@ test('Ralph Waldo Emerson Self-Reliance Engine: calculates Self-Reliance Autonom
   const prompt = formatRalphWaldoEmersonSelfReliancePrompt(rep);
   assert(prompt.includes('랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표'));
   assert(prompt.includes(rep.activeEmersonTheme.themeTitleKo));
+});
+
+test('Henri Bergson Elan Vital Engine: calculates Pure Duration, Elan Vital, and Creative Freedom', () => {
+  const rep = calculateHenriBergsonElanVital(profile);
+  assert.equal(rep.engineVersion, FRENCH_HENRI_BERGSON_VERSION);
+  assert(rep.pureDurationContinuityScore >= 0 && rep.pureDurationContinuityScore <= 100);
+  assert(rep.elanVitalCreativeImpulseScore >= 0 && rep.elanVitalCreativeImpulseScore <= 100);
+  assert(rep.intuitiveSympathyInsightScore >= 0 && rep.intuitiveSympathyInsightScore <= 100);
+  assert(rep.creativeFreedomUnfoldingScore >= 0 && rep.creativeFreedomUnfoldingScore <= 100);
+  assert(rep.openSocietyVitalityIndex >= 0 && rep.openSocietyVitalityIndex <= 100);
+  assert(rep.activeBergsonTheme.themeTitleKo.length > 0);
+  const prompt = formatHenriBergsonElanVitalPrompt(rep);
+  assert(prompt.includes('앙리 베르그송 《시간과 자유의지》 순수 지속 & 생명의 도약 지표'));
+  assert(prompt.includes(rep.activeBergsonTheme.themeTitleKo));
+});
+
+test('Albert Camus Absurd Revolt Engine: calculates Absurd Lucidity, Unceasing Revolt, and Sisyphus Happiness', () => {
+  const rep = calculateAlbertCamusAbsurdRevolt(profile);
+  assert.equal(rep.engineVersion, FRENCH_ALBERT_CAMUS_VERSION);
+  assert(rep.absurdLucidityAwakeningScore >= 0 && rep.absurdLucidityAwakeningScore <= 100);
+  assert(rep.unceasingRevoltDignityScore >= 0 && rep.unceasingRevoltDignityScore <= 100);
+  assert(rep.passionateVitalityIndex >= 0 && rep.passionateVitalityIndex <= 100);
+  assert(rep.lucidFreedomAutonomyScore >= 0 && rep.lucidFreedomAutonomyScore <= 100);
+  assert(rep.sisyphusHappinessResilienceScore >= 0 && rep.sisyphusHappinessResilienceScore <= 100);
+  assert(rep.activeCamusTheme.themeTitleKo.length > 0);
+  const prompt = formatAlbertCamusAbsurdRevoltPrompt(rep);
+  assert(prompt.includes('알베르 카뮈 《시지프 신화》 부조리의 자각 & 실존적 반항 지표'));
+  assert(prompt.includes(rep.activeCamusTheme.themeTitleKo));
+});
+
+test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings, Beopgo Changsin, and Iyongs Husaeng', () => {
+  const rep = calculateYeonamParkJiwonYeolhaIlgi(profile);
+  assert.equal(rep.engineVersion, KOREAN_YEONAM_PARK_JIWON_VERSION);
+  assert(rep.nightCrossingRiverSerenityScore >= 0 && rep.nightCrossingRiverSerenityScore <= 100);
+  assert(rep.beopgoChangsinCreativeWisdomScore >= 0 && rep.beopgoChangsinCreativeWisdomScore <= 100);
+  assert(rep.iyongHusaengPracticalCompetenceScore >= 0 && rep.iyongHusaengPracticalCompetenceScore <= 100);
+  assert(rep.bukhakOpenMindedInsightScore >= 0 && rep.bukhakOpenMindedInsightScore <= 100);
+  assert(rep.haehakSatiricalGenerosityQuotient >= 0 && rep.haehakSatiricalGenerosityQuotient <= 100);
+  assert(rep.activeYeonamTheme.themeTitleKo.length > 0);
+  const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
+  assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
+  assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo));
 });
 
 

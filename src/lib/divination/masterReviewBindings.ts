@@ -1027,5 +1027,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "americanRalphWaldoEmersonSelfReliance": {
     "field": "ralphWaldoEmersonSelfRelianceResult",
     "traceKey": "ralphWaldoEmersonSelfRelianceResult"
+  },
+  "frenchHenriBergsonElanVital": {
+    "field": "henriBergsonElanVitalResult",
+    "traceKey": "henriBergsonElanVitalResult"
+  },
+  "frenchAlbertCamusAbsurdRevolt": {
+    "field": "albertCamusAbsurdRevoltResult",
+    "traceKey": "albertCamusAbsurdRevoltResult"
+  },
+  "koreanYeonamParkJiwonYeolhaIlgi": {
+    "field": "yeonamParkJiwonYeolhaIlgiResult",
+    "traceKey": "yeonamParkJiwonYeolhaIlgiResult"
   }
 };
