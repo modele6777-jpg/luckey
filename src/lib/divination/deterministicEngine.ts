@@ -280,6 +280,9 @@ import { calculateItalianDanteAlighieriDivineComedyAscent, formatDanteAlighieriD
 import { calculateMarcusAureliusMeditationsCitadel, formatMarcusAureliusMeditationsCitadelPrompt, type MarcusAureliusMeditationsCitadelResult, ROMAN_MARCUS_AURELIUS_VERSION } from './romanMarcusAureliusMeditationsCitadelEngine';
 import { calculateSuunChoeJeuDonghakSicheonju, formatSuunChoeJeuDonghakSicheonjuPrompt, type SuunChoeJeuDonghakSicheonjuResult, KOREAN_SUUN_CHOE_JEU_VERSION } from './koreanSuunChoeJeuDonghakSicheonjuEngine';
 import { calculateRalphWaldoEmersonSelfReliance, formatRalphWaldoEmersonSelfReliancePrompt, type RalphWaldoEmersonSelfRelianceResult, AMERICAN_RALPH_WALDO_EMERSON_VERSION } from './americanRalphWaldoEmersonSelfRelianceEngine';
+import { calculateHenriBergsonElanVital, formatHenriBergsonElanVitalPrompt, type HenriBergsonElanVitalResult, FRENCH_HENRI_BERGSON_VERSION } from './frenchHenriBergsonElanVitalEngine';
+import { calculateAlbertCamusAbsurdRevolt, formatAlbertCamusAbsurdRevoltPrompt, type AlbertCamusAbsurdRevoltResult, FRENCH_ALBERT_CAMUS_VERSION } from './frenchAlbertCamusAbsurdRevoltEngine';
+import { calculateYeonamParkJiwonYeolhaIlgi, formatYeonamParkJiwonYeolhaIlgiPrompt, type YeonamParkJiwonYeolhaIlgiResult, KOREAN_YEONAM_PARK_JIWON_VERSION } from './koreanYeonamParkJiwonYeolhaIlgiEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -580,6 +583,9 @@ export interface DeterministicEngineReport {
   marcusAureliusMeditationsCitadelResult?: MarcusAureliusMeditationsCitadelResult | null;
   suunChoeJeuDonghakSicheonjuResult?: SuunChoeJeuDonghakSicheonjuResult | null;
   ralphWaldoEmersonSelfRelianceResult?: RalphWaldoEmersonSelfRelianceResult | null;
+  henriBergsonElanVitalResult?: HenriBergsonElanVitalResult | null;
+  albertCamusAbsurdRevoltResult?: AlbertCamusAbsurdRevoltResult | null;
+  yeonamParkJiwonYeolhaIlgiResult?: YeonamParkJiwonYeolhaIlgiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3425,6 +3431,33 @@ try {
     }
   })()));
 
+  // 249. 프랑스 앙리 베르그송 시간과 자유의지 & 창조적 진화 순수 지속 & 생명의 도약 엔진
+  const henriBergsonElanVitalResult = calculateSupplement('henriBergsonElanVitalResult', () => ((() => {
+    try {
+      return calculateHenriBergsonElanVital(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 250. 프랑스/알제리 알베르 카뮈 시지프 신화 & 반항하는 인간 부조리 자각 & 실존적 반항 엔진
+  const albertCamusAbsurdRevoltResult = calculateSupplement('albertCamusAbsurdRevoltResult', () => ((() => {
+    try {
+      return calculateAlbertCamusAbsurdRevolt(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 251. 조선 연암 박지원 열하일기 도강록 일야구도 & 이용후생·법고창신 실학 지혜 엔진
+  const yeonamParkJiwonYeolhaIlgiResult = calculateSupplement('yeonamParkJiwonYeolhaIlgiResult', () => ((() => {
+    try {
+      return calculateYeonamParkJiwonYeolhaIlgi(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3711,6 +3744,9 @@ try {
     marcusAureliusMeditationsCitadelResult,
     suunChoeJeuDonghakSicheonjuResult,
     ralphWaldoEmersonSelfRelianceResult,
+    henriBergsonElanVitalResult,
+    albertCamusAbsurdRevoltResult,
+    yeonamParkJiwonYeolhaIlgiResult,
     tools: toolsMap,
   };
 }
@@ -3988,6 +4024,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'romanMarcusAureliusMeditationsCitadel', nameKo: '마르쿠스 아우렐리우스 명상록 내면의성채 로고스섭리순응 메멘토모리 아파테이아 평정심', icon: '🏛️', category: 'deep_master', summary: '마르쿠스 아우렐리우스의 명상록 철학으로 외부 자극에 흔들리지 않는 내면의 성채를 세우고 스토아 실존의 평정을 확립합니다.' },
   { key: 'koreanSuunChoeJeuDonghakSicheonju', nameKo: '수운 최제우 동학 동경대전 시천주 사인여천 인내천 오심즉여심 후천개벽', icon: '🕊️', category: 'deep_master', summary: '수운 최제우의 동학 사상으로 내 안의 한울 영성 존엄을 자각하고 사람을 하늘처럼 섬기며 새 시대를 여는 개벽의 지혜를 발휘합니다.' },
   { key: 'americanRalphWaldoEmersonSelfReliance', nameKo: '랠프 월도 에머슨 자기신뢰 자연 오버소울 비순응 독창성 투명한눈동자', icon: '🌲', category: 'deep_master', summary: '랠프 월도 에머슨의 자기신뢰와 초월주의 철학으로 사회적 순응을 탈피하고 내면의 신적 직관을 신뢰하는 온전한 주체성을 세웁니다.' },
+  { key: 'frenchHenriBergsonElanVital', nameKo: '앙리 베르그송 시간과자유의지 창조적진화 순수지속 엘랑비탈 생명의도약 철학적직관', icon: '⏳', category: 'deep_master', summary: '앙리 베르그송의 생명철학으로 분절된 시계 시간을 넘어 내면의 순수 지속과 생명의 도약(Élan vital)으로 삶을 주체적으로 창조합니다.' },
+  { key: 'frenchAlbertCamusAbsurdRevolt', nameKo: '알베르 카뮈 시지프신화 반항하는인간 부조리자각 영구한반항 삶의열정 실존적자유', icon: '🪨', category: 'deep_master', summary: '알베르 카뮈의 실존철학으로 세계의 부조리를 명석하게 직시하며 굴복하지 않는 당당한 반항과 뜨거운 열정으로 운명을 포옹합니다.' },
+  { key: 'koreanYeonamParkJiwonYeolhaIlgi', nameKo: '연암 박지원 열하일기 일야구도 법고창신 이용후생 북학개방 해학파위 실학지혜', icon: '🐎', category: 'deep_master', summary: '연암 박지원 선생의 실학 정신으로 두려움을 비워 거친 격류를 건너는 일야구도의 담대함과 옛것을 본받아 새것을 여는 법고창신을 이룹니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4044,6 +4083,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'frenchHenriBergsonElanVital',
+    'frenchAlbertCamusAbsurdRevolt',
+    'koreanYeonamParkJiwonYeolhaIlgi',
     'americanRalphWaldoEmersonSelfReliance',
     'romanMarcusAureliusMeditationsCitadel',
     'koreanSuunChoeJeuDonghakSicheonju',
@@ -4114,6 +4156,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'delphicMaxims',
   ],
   business_money: [
+    'koreanYeonamParkJiwonYeolhaIlgi',
     'italianThomasAquinasSummaTheologiae',
     'britishFrancisBaconNovumOrganum',
     'koreanRyuSeongryongJingbirok',
@@ -4214,6 +4257,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   immediate_decision: [
+    'frenchAlbertCamusAbsurdRevolt',
+    'koreanYeonamParkJiwonYeolhaIlgi',
     'italianThomasAquinasSummaTheologiae',
     'britishFrancisBaconNovumOrganum',
     'koreanRyuSeongryongJingbirok',
@@ -4368,6 +4413,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'frenchHenriBergsonElanVital',
+    'koreanYeonamParkJiwonYeolhaIlgi',
     'mesopotamianNisabaScribe',
     'rosicrucianChymicalWedding',
     'samkhyaTwentyFiveTattvas',
@@ -4401,6 +4448,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'frenchHenriBergsonElanVital',
+    'frenchAlbertCamusAbsurdRevolt',
     'islamicSufiRumiMasnaviDivineLove',
     'koreanUisangHwaeomIlseungBeopgye',
     'frenchMontaigneEssaisWisdom',
