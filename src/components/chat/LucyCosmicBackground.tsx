@@ -1,9 +1,9 @@
 interface LucyCosmicBackgroundProps {
-  isPlusMode: boolean;
+  isProMode: boolean;
 }
 
 /** Decorative layers stay behind opaque reading surfaces. */
-export function LucyCosmicBackground({ isPlusMode }: LucyCosmicBackgroundProps) {
+export function LucyCosmicBackground({ isProMode }: LucyCosmicBackgroundProps) {
   return (
     <div className="lucy-cosmic-bg-container" aria-hidden="true">
       <div className="lucy-cosmic-wash" />
@@ -42,11 +42,11 @@ export function LucyCosmicBackground({ isPlusMode }: LucyCosmicBackgroundProps) 
           </div>
         ))}
       </div>
-      <div className={`lucy-star-field ${isPlusMode ? '' : 'is-visible'}`}>
+      <div className={`lucy-star-field ${isProMode ? '' : 'is-visible'}`}>
         <div className="lucy-stars lucy-stars-distant" />
         <div className="lucy-stars lucy-stars-bright" />
       </div>
-      <div className={`lucy-clover-field ${isPlusMode ? 'is-visible' : ''}`}>
+      <div className={`lucy-clover-field ${isProMode ? 'is-visible' : ''}`}>
         {Array.from({ length: 16 }, (_, i) => (
           <div key={i} className="lucy-clover-orbit"
             style={{ left: `${5 + (i * 37) % 90}%`, top: `${4 + (i * 29) % 92}%`, animationDelay: `${-i * 3}s`, animationDuration: `${26 + (i % 7) * 3}s`, width: `clamp(${16 + i % 4}px, ${1.5 + (i % 3) * .25}vw, ${22 + i % 5}px)` }}>

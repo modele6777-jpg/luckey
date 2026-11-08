@@ -14,12 +14,12 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
   --lucy-user: #304765;
   isolation: isolate; color-scheme: dark; color: #f1f5fa; background: var(--lucy-bg);
 }
-.lucy-chat-shell.lucy-night.is-plus-mode {
+.lucy-chat-shell.lucy-night.is-pro-theme {
   --lucy-accent: #d9c692;
 }
 .lucy-cosmic-bg-container { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none; }
 .lucy-cosmic-wash { position: absolute; inset: 0; background: radial-gradient(ellipse at 85% 8%, #6e8cb818, transparent 55%); transition: background 800ms; }
-.is-plus-mode .lucy-cosmic-wash { background: radial-gradient(ellipse at 85% 8%, #c6b5e014, transparent 55%); }
+.is-pro-theme .lucy-cosmic-wash { background: radial-gradient(ellipse at 85% 8%, #c6b5e014, transparent 55%); }
 /* Crossfade whole fields so twinkle opacity cannot leak stars into Plus. */
 .lucy-star-field, .lucy-clover-field { position: absolute; inset: 0; opacity: 0; transition: opacity 900ms ease; }
 .lucy-star-field.is-visible, .lucy-clover-field.is-visible { opacity: 1; }
@@ -63,7 +63,7 @@ html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !import
 .lucy-night .lucy-starlight-assistant blockquote { color: #d4deea; border-color: var(--lucy-accent); }
 .lucy-night .lucy-starlight-assistant :is(pre, code) { background-color: #101b26; color: #e0eafb; }
 .lucy-night .lucy-starlight-send { background: #c2d5ff; color: #17263d; border: 0; width: 36px; height: 36px; box-shadow: none; }
-.lucy-night.is-plus-mode .lucy-starlight-send { background: #d9c692; color: #302b24; }
+.lucy-night.is-pro-theme .lucy-starlight-send { background: #d9c692; color: #302b24; }
 .lucy-night .lucy-chat-header h1 button > span { color: #f1f5fa; background: none; filter: none; }
 @keyframes lucy-twinkle { from { opacity: .2; } to { opacity: .65; } }
 @keyframes lucy-twinkle-distant { from { opacity: .18; } to { opacity: .4; } }
@@ -92,7 +92,7 @@ html[data-lucy-period='day'] .lucy-chat-shell.lucy-night {
   --lucy-bg: #e6f3ff; --lucy-surface: #ffffff; --lucy-chrome: #f3faff;
   --lucy-border: #b9d4ea; --lucy-accent: #175d92; --lucy-user: #cce7ff;
 }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode {
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-pro-theme {
   --lucy-accent: #79623d;
 }
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night {
@@ -113,7 +113,7 @@ html.light[data-lucy-period='morning'] .lucy-chat-shell.lucy-night .lucy-starlig
   background: linear-gradient(135deg, #e69c24 0%, #cf7b12 100%) !important; color: #ffffff !important;
   box-shadow: 0 2px 10px rgba(230, 156, 36, 0.35) !important;
 }
-html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode .lucy-starlight-send { background: #79623d !important; }
+html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-pro-theme .lucy-starlight-send { background: #79623d !important; }
 html.light[data-lucy-period] .lucy-cosmic-wash { background: radial-gradient(ellipse at 80% 5%, #ffffffb0, transparent 60%); }
 html[data-lucy-period='morning'] .lucy-cosmic-wash {
   background: radial-gradient(ellipse at 88% 12%, rgba(255, 230, 160, 0.72) 0%, rgba(255, 210, 145, 0.35) 30%, rgba(255, 245, 220, 0.15) 58%, transparent 78%) !important;
@@ -145,7 +145,7 @@ html[data-lucy-period='day'] .lucy-day-cloud { animation-play-state: running; }
   100% { transform: translate3d(-8px, -64px, 0) rotate(22deg); }
 }
 /* Nighttime Plus combines distant starlight with floating clovers. */
-html[data-lucy-period='night'] .is-plus-mode .lucy-star-field { opacity: .5; }
+html[data-lucy-period='night'] .is-pro-theme .lucy-star-field { opacity: .5; }
 @media (prefers-reduced-motion: reduce) {
   .lucy-day-cloud-0 { left: -8%; }
   .lucy-day-cloud-1 { left: auto; right: -10%; }
@@ -627,27 +627,16 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-suggestion-toolbar button { 
 html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #8793a010; border: 0; padding: 7px 9px; border-radius: 10px; box-shadow: none; }
 .lucy-voice-status > button { background: #73869b30; color: inherit; box-shadow: none; min-height: 26px; padding: 4px 8px; }
 
-.lucy-mode-transition { position: fixed; inset: 0; z-index: 10050; display: grid; place-items: center; background: #101722ed; color: #edf3fb; backdrop-filter: blur(8px); }
-html.light .lucy-mode-transition { background: #f5f9fdf2; color: #243448; }
-.lucy-mode-transition-card { display: flex; flex-direction: column; align-items: center; gap: 13px; text-align: center; padding: 32px; }
-.lucy-mode-transition-card strong { font-size: 28px; letter-spacing: -1px; }
-.lucy-mode-transition-card > span:last-child { font-size: 13px; opacity: .75; }
-.lucy-mode-transition-ring { display: block; width: 40px; height: 40px; margin-bottom: 8px; border-radius: 50%; border: 2px solid #8da5bd30; border-top-color: #8da5bd; animation: lucy-mode-loading 900ms linear infinite; }
-@keyframes lucy-mode-loading { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .lucy-mode-transition-ring { animation: none; } }
-
-/* Keep the name stationary while only the mode's plus sign crossfades. */
-.lucy-transition-wordmark { display: inline-flex; align-items: baseline; gap: .18em; }
-.lucy-transition-plus { display: inline-block; width: .65em; text-align: center; }
-[data-lucy-mode-transition='plus'] .lucy-transition-plus { animation: lucy-plus-appear 850ms ease-in-out 70ms both; }
-[data-lucy-mode-transition='lucy'] .lucy-transition-plus { animation: lucy-plus-disappear 850ms ease-in-out 70ms both; }
-@keyframes lucy-plus-appear { from { opacity: 0; } to { opacity: 1; } }
-@keyframes lucy-plus-disappear { from { opacity: 1; } to { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) {
-  .lucy-mode-transition .lucy-transition-plus { animation: none; }
-  [data-lucy-mode-transition='plus'] .lucy-transition-plus { opacity: 1; }
-  [data-lucy-mode-transition='lucy'] .lucy-transition-plus { opacity: 0; }
-}
+.lucy-mode-transition { position: fixed; inset: 0; z-index: 10050; display: grid; place-items: center; background: #fff; color: #20344f; }
+.lucy-transition-wordmark { position: relative; display: inline-block; font-size: clamp(36px, 5vw, 52px); font-weight: 800; line-height: 1.15; letter-spacing: -.055em; }
+.lucy-transition-markers { position: absolute; left: calc(100% + .16em); top: 0; display: flex; align-items: baseline; gap: .18em; white-space: nowrap; letter-spacing: -.04em; }
+.lucy-transition-marker { display: inline-block; opacity: var(--lucy-marker-to); }
+.lucy-transition-marker[data-direction="in"] { animation: lucy-mode-marker-in 500ms cubic-bezier(.22,.61,.36,1) both; }
+.lucy-transition-marker[data-direction="out"] { animation: lucy-mode-marker-out 500ms cubic-bezier(.4,0,.68,.45) both; }
+.lucy-transition-pro { font-size: .68em; font-weight: 600; letter-spacing: -.025em; }
+@keyframes lucy-mode-marker-in { from { opacity: .08; transform: translateY(3px); filter: blur(1.5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+@keyframes lucy-mode-marker-out { from { opacity: 1; transform: translateY(0); filter: blur(0); } to { opacity: .08; transform: translateY(-2px); filter: blur(1px); } }
+@media (prefers-reduced-motion: reduce) { .lucy-mode-transition .lucy-transition-marker { animation: none; opacity: var(--lucy-marker-to); } }
 
 /* Extend the chat canvas toward the cover screen edge while keeping controls in the visible viewport. */
 @media (orientation: portrait) {
