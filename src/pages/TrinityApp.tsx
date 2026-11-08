@@ -147,6 +147,7 @@ import { useSmartScroll } from "@/hooks/useSmartScroll";
 import { SmartScrollResumeButton } from "@/components/common/SmartScrollResumeButton";
 import { TTSHighlightText } from "@/utils/ttsHighlight";
 import { DynamicGhostInputPlaceholder } from "@/components/chat/DynamicGhostInputPlaceholder";
+import { isDualPaneLayout } from "@/lib/perfMode";
 
 const EnergyAnalysisSchema = z.object({
   luckScore: z
@@ -250,6 +251,7 @@ import {
   getTarotThemeMeta,
   getTarotRecommendationReason,
   isDailyTarotConcern,
+  isEffectiveDailyTarot,
   buildSpreadForTheme,
   buildLocalTarotReading,
   buildTarotBinaryChoicePromptAddon,
@@ -1320,11 +1322,24 @@ function playDailyCardChimeAsync() {
   };
 
   const resetTarotSession = useCallback((preserveDailyIfUnfinished = false) => {
+    // 🌟 오늘의 타로는 무조건 하루에 한 번이므로, 오늘 완료된 오늘의 타로는 리셋하지 않고 보존
+    const isDaily = isDailyTarotConcern(tarotConcern) || customSpread?.theme === 'daily';
+    if (isDaily && isTrinityDailyLockedToday()) {
+      setNotice({
+        open: true,
+        title: "오늘의 타로 1일 1회 완료",
+        message: "오늘의 타로는 하루 1회만 제공됩니다. 오늘 보신 카드는 안전하게 보존됩니다.",
+      });
+      return;
+    }
+
     setDrawnCards(null);
     setTarotResult(null);
+    setInlineZoomedCard(null);
     setFollowUpEntries([]);
     try {
       localStorage.removeItem('trinity_followup_tarot_entries');
+      localStorage.removeItem('trinity_active_tarot_session');
     } catch (_) {}
     setTarotSubMessages([]);
     setTarotVirtualMode(false);
@@ -1342,7 +1357,7 @@ function playDailyCardChimeAsync() {
     } else {
       setTarotConcern("");
     }
-  }, [dailyResult, firebaseUser?.uid]);
+  }, [dailyResult, firebaseUser?.uid, tarotConcern, customSpread?.theme, isTrinityDailyLockedToday]);
 
   const [form, setForm] = useState<ProfileForm>(() => {
     const p = getPersistentUserProfile()?.basic;
@@ -1504,6 +1519,23 @@ function playDailyCardChimeAsync() {
   }, [followUpEntries]);
 
   const [zoomedCard, setZoomedCard] = useState<{ card: TarotCard; slotName?: string } | null>(null);
+  const [inlineZoomedCard, setInlineZoomedCard] = useState<{ card: TarotCard; slotName?: string } | null>(null);
+  const [isDualPane, setIsDualPane] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDualPaneLayout() || window.innerWidth >= 600;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDualPane(isDualPaneLayout() || window.innerWidth >= 600);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('orientationchange', handleResize, { passive: true });
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
   const [cardFlipCycle, setCardFlipCycle] = useState(0);
   const [hideTarotPopup, setHideTarotPopup] = useState(false);
   const [tarotSubMessages, setTarotSubMessages] = useState<
@@ -2010,6 +2042,9 @@ function playDailyCardChimeAsync() {
     if (dailyResult?.drawnCard && (dailyResult?.dateKey === today || !dailyResult?.dateKey)) {
       return true;
     }
+    if (dailyDrawnCard) {
+      return true;
+    }
     if (sharedState?.todayOracles?.[today]?.trinity) {
       return true;
     }
@@ -2017,18 +2052,31 @@ function playDailyCardChimeAsync() {
       return true;
     }
     try {
-      const cached = localStorage.getItem(getTrinityDailyResultKey(uid)) || localStorage.getItem(getTrinityDailyResultKey("guest"));
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed?.dateKey === today && (parsed?.diagnosis || parsed?.summary || parsed?.drawnCard)) {
-          return true;
+      const candidateKeys = [
+        `trinity_saved_daily_tarot_${today}`,
+        getTrinityDailyResultKey(uid),
+        getTrinityDailyResultKey("guest"),
+        `trinity_daily_result_${uid}_${today}`,
+        `trinity_daily_result_guest_${today}`,
+        `prism_daily_oracle_trinity_${today}`,
+      ];
+      for (const key of candidateKeys) {
+        const val = localStorage.getItem(key);
+        if (val) {
+          if (val === 'true') return true;
+          try {
+            const parsed = JSON.parse(val);
+            if (parsed?.dateKey === today || !parsed?.dateKey) return true;
+          } catch (_) {
+            return true;
+          }
         }
       }
     } catch (_) {}
     return false;
-  }, [firebaseUser?.uid, sharedState?.todayOracles, sharedState?.latestDailyOracles]);
+  }, [firebaseUser?.uid, sharedState?.todayOracles, sharedState?.latestDailyOracles, dailyResult, dailyDrawnCard]);
 
-  const applyDailyResultState = useCallback((result: any) => {
+  const applyDailyResultState = useCallback((result: any, syncTarot = false) => {
     if (!result) return;
     setDailyResult(result);
     if (result.drawnCard) {
@@ -2037,31 +2085,41 @@ function playDailyCardChimeAsync() {
       const idx = TRINITY_CARDS.findIndex((c) => c.id === restoredCard.id);
       setSelectedCardIdx(idx >= 0 ? idx : null);
       setIsFlipped(true);
+      if (syncTarot) {
+        setDrawnCards([restoredCard]);
+        setTarotResult(result.diagnosis || result.summary || result.reading || "");
+        if (result.tarotConcern) {
+          setTarotConcern(result.tarotConcern);
+        }
+        setHideTarotPopup(false);
+      }
     }
   }, []);
 
-  const restoreTodayDailyResult = useCallback((): boolean => {
+  const restoreTodayDailyResult = useCallback((syncTarot = false): any => {
     const uid = firebaseUser?.uid || "guest";
     const today = getTodayDateKey();
 
-    // Check sharedState from Firestore first (cross-device source of truth)
+    // 1. Check sharedState from Firestore first (cross-device source of truth)
     if (sharedState?.todayOracles?.[today]?.trinity) {
       const oracle = sharedState.todayOracles[today].trinity;
-      if (oracle?.diagnosis || oracle?.summary || oracle?.prescription || (oracle as any)?.reading) {
-        applyDailyResultState(oracle);
-        return true;
+      if (oracle?.diagnosis || oracle?.summary || oracle?.prescription || (oracle as any)?.reading || (oracle as any)?.drawnCard) {
+        applyDailyResultState(oracle, syncTarot);
+        return oracle;
       }
     }
     if (sharedState?.latestDailyOracles?.trinity) {
       const latest = sharedState.latestDailyOracles.trinity;
-      if (latest.dateKey === today && (latest.diagnosis || latest.summary || latest.prescription)) {
-        applyDailyResultState(latest);
-        return true;
+      if (latest.dateKey === today && (latest.diagnosis || latest.summary || latest.prescription || (latest as any)?.drawnCard)) {
+        applyDailyResultState(latest, syncTarot);
+        return latest;
       }
     }
 
+    // 2. Check local persistent keys
     try {
       const candidateKeys = [
+        `trinity_saved_daily_tarot_${today}`,
         getTrinityDailyResultKey(uid),
         getTrinityDailyResultKey("guest"),
         `trinity_daily_result_${uid}_${today}`,
@@ -2072,28 +2130,47 @@ function playDailyCardChimeAsync() {
         const cached = localStorage.getItem(key);
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (parsed?.diagnosis || parsed?.summary || parsed?.prescription) {
+          if (parsed && (parsed.diagnosis || parsed.summary || parsed.prescription || parsed.result || parsed.drawnCard || parsed.card)) {
             if (parsed.dateKey && parsed.dateKey !== today) continue;
-            applyDailyResultState(parsed);
-            return true;
+            const normalized = {
+              ...parsed,
+              drawnCard: parsed.drawnCard || parsed.card || (parsed.drawnCards ? parsed.drawnCards[0] : null),
+              diagnosis: parsed.diagnosis || parsed.result || parsed.summary || "",
+              dateKey: today,
+            };
+            applyDailyResultState(normalized, syncTarot);
+            return normalized;
           }
         }
       }
     } catch (_) {}
 
-    const entry = findTodayOracleInSources(trinityOracleHistory, ["oracle-vision"]);
+    // 3. Check Firestore History entries
+    const entry = findTodayOracleInSources(trinityOracleHistory, [
+      "oracle-vision",
+      "tarot_reading",
+      "daily_tarot",
+      "today_tarot",
+      "oracle",
+    ]);
     const resolved = entry ? resolveOracleVisionResult(entry) : null;
-    if (resolved && (resolved.diagnosis || resolved.summary || resolved.prescription)) {
-      applyDailyResultState(resolved);
+    if (resolved && (resolved.diagnosis || resolved.summary || resolved.prescription || resolved.drawnCard)) {
+      const normalized = {
+        ...resolved,
+        drawnCard: resolved.drawnCard || (resolved.cards ? resolved.cards[0] : null),
+        diagnosis: resolved.diagnosis || resolved.summary || resolved.prescription || "",
+        dateKey: today,
+      };
+      applyDailyResultState(normalized, syncTarot);
       try {
-        localStorage.setItem(getTrinityDailyResultKey(uid), JSON.stringify(resolved));
-        localStorage.setItem(getTrinityDailyResultKey("guest"), JSON.stringify(resolved));
+        localStorage.setItem(getTrinityDailyResultKey(uid), JSON.stringify(normalized));
+        localStorage.setItem(getTrinityDailyResultKey("guest"), JSON.stringify(normalized));
+        localStorage.setItem(`trinity_saved_daily_tarot_${today}`, JSON.stringify(normalized));
       } catch (_) {}
-      return true;
+      return normalized;
     }
 
-    // 🛡️ Comprehensive Daily Tarot Restoration Guard:
-    // If today is locked or a card was previously picked, never leave the user with an empty/loading state!
+    // 4. Check if today was marked as drawn/locked in any way
     const limitKey = `limit_daily_trinity_${uid}_${today}`;
     const guestLimitKey = `limit_daily_trinity_guest_${today}`;
     if (localStorage.getItem(limitKey) || localStorage.getItem(guestLimitKey) || isTrinityDailyLockedToday() || dailyDrawnCard) {
@@ -2103,16 +2180,17 @@ function playDailyCardChimeAsync() {
         drawnCard: card,
         dateKey: today,
       };
-      applyDailyResultState(synthesized);
+      applyDailyResultState(synthesized, syncTarot);
       try {
         localStorage.setItem(getTrinityDailyResultKey(uid), JSON.stringify(synthesized));
         localStorage.setItem(getTrinityDailyResultKey("guest"), JSON.stringify(synthesized));
+        localStorage.setItem(`trinity_saved_daily_tarot_${today}`, JSON.stringify(synthesized));
       } catch (_) {}
-      return true;
+      return synthesized;
     }
 
-    return false;
-  }, [firebaseUser?.uid, sharedState?.todayOracles, sharedState?.latestDailyOracles, trinityOracleHistory, applyDailyResultState, dailyDrawnCard, isTrinityDailyLockedToday]);
+    return null;
+  }, [firebaseUser?.uid, sharedState?.todayOracles, sharedState?.latestDailyOracles, isTrinityDailyLockedToday, dailyDrawnCard, dailyResult, trinityOracleHistory, applyDailyResultState]);
 
   // Listen for real-time daily oracle updates across devices
   useEffect(() => {
@@ -2216,19 +2294,54 @@ function playDailyCardChimeAsync() {
   }, [dailyResult, dailyDrawnCard]);
 
   useEffect(() => {
-    if (activeMode === "tarot" && typeof window !== "undefined" && sessionStorage.getItem('prism_tarot_focus_daily')) {
+    if (activeMode !== "tarot" || typeof window === "undefined") return;
+
+    const shouldFocusDaily = sessionStorage.getItem('prism_tarot_focus_daily');
+    if (shouldFocusDaily) {
       sessionStorage.removeItem('prism_tarot_focus_daily');
       resetTarotSession(true);
       setTarotConcern("오늘의 타로");
-      restoreTodayDailyResult();
-      const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
+      const restored = restoreTodayDailyResult(true);
+      const targetCard = restored?.drawnCard || dailyResult?.drawnCard || dailyDrawnCard;
       if (targetCard) {
         setDrawnCards([targetCard]);
-        setTarotResult(dailyResult?.diagnosis || dailyResult?.summary || "");
+        setTarotResult(restored?.diagnosis || dailyResult?.diagnosis || dailyResult?.summary || "");
         setHideTarotPopup(false);
       }
+      return;
     }
-  }, [activeMode, dailyResult, dailyDrawnCard, restoreTodayDailyResult, resetTarotSession]);
+
+    // 🌟 오늘 이미 오늘의 타로를 뽑았고 화면에 카드가 비어있다면, 오늘의 타로 결과를 자동으로 복원
+    if (!drawnCards && !tarotResult) {
+      if (customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern) || isTrinityDailyLockedToday()) {
+        const restored = restoreTodayDailyResult(customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern));
+        if (customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern)) {
+          const targetCard = restored?.drawnCard || dailyResult?.drawnCard || dailyDrawnCard;
+          if (targetCard) {
+            setTarotConcern(restored?.tarotConcern || "오늘의 타로");
+            setDrawnCards([targetCard]);
+            setTarotResult(restored?.diagnosis || dailyResult?.diagnosis || dailyResult?.summary || "");
+            setHideTarotPopup(false);
+            return;
+          }
+        }
+      }
+
+      // 또는 직전 세션에 보던 활성 리딩이 있으면 복원
+      try {
+        const savedSession = localStorage.getItem('trinity_active_tarot_session');
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          if (parsed && parsed.dateKey === getTodayDateKey() && parsed.drawnCards && parsed.tarotResult) {
+            setDrawnCards(parsed.drawnCards);
+            setTarotResult(parsed.tarotResult);
+            if (parsed.tarotConcern) setTarotConcern(parsed.tarotConcern);
+            setHideTarotPopup(false);
+          }
+        }
+      } catch (_) {}
+    }
+  }, [activeMode, customSpread?.theme, tarotConcern, dailyResult, dailyDrawnCard, restoreTodayDailyResult, resetTarotSession, isTrinityDailyLockedToday, drawnCards, tarotResult]);
 
   const handleSend = async (customMsg?: string, sendOpts?: OracleDeepInsightSendOpts) => {
     const userMsg = (customMsg || chatInput).trim();
@@ -2503,13 +2616,17 @@ function playDailyCardChimeAsync() {
       }
 
       // 🌟 Check if this is the 1-card Daily Oracle flow from Tarot special feature
-      if (isDailyTarotConcern(effectiveTarotConcern)) {
+      const isDailyRequested = isEffectiveDailyTarot(effectiveTarotConcern, customSpread, tarotSpreadRecommendation);
+
+      if (isDailyRequested) {
         if (isTrinityDailyLockedToday() || dailyResult?.drawnCard) {
-          restoreTodayDailyResult();
-          const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
+          const restored = restoreTodayDailyResult(true);
+          const targetCard = restored?.drawnCard || dailyResult?.drawnCard || dailyDrawnCard;
           if (targetCard) {
+            setTarotConcern(restored?.tarotConcern || effectiveTarotConcern || "오늘의 타로");
             setDrawnCards([targetCard]);
-            setTarotResult(dailyResult?.diagnosis || dailyResult?.summary || "");
+            setTarotResult(restored?.diagnosis || dailyResult?.diagnosis || dailyResult?.summary || "");
+            setHideTarotPopup(false);
           }
           setNotice({
             open: true,
@@ -2532,6 +2649,7 @@ function playDailyCardChimeAsync() {
             ...localDaily,
             drawnCard: card,
             dateKey: today,
+            tarotConcern: effectiveTarotConcern,
           };
           setDailyResult(dailyWithCard);
           setDailyDrawnCard(card);
@@ -2540,6 +2658,16 @@ function playDailyCardChimeAsync() {
           localStorage.setItem(`limit_daily_trinity_guest_${today}`, "true");
           localStorage.setItem(getTrinityDailyResultKey(uid), JSON.stringify(dailyWithCard));
           localStorage.setItem(getTrinityDailyResultKey("guest"), JSON.stringify(dailyWithCard));
+          localStorage.setItem(`trinity_daily_result_${uid}_${today}`, JSON.stringify(dailyWithCard));
+          localStorage.setItem(`trinity_daily_result_guest_${today}`, JSON.stringify(dailyWithCard));
+          localStorage.setItem(`trinity_saved_daily_tarot_${today}`, JSON.stringify({
+            card,
+            drawnCards: [card],
+            result: localDaily.diagnosis,
+            concern: effectiveTarotConcern,
+            dateKey: today,
+            timestamp: Date.now(),
+          }));
         } catch (_) {}
       }
 
@@ -2753,7 +2881,8 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
         setTarotResult(finalResponse);
 
         // Synchronize dailyResult so Today's Tarot modal and tabs are 100% in sync
-        if (isDailyTarotConcern(tarotConcern) && selectedCards?.[0]) {
+        const isDailyTheme = isEffectiveDailyTarot(tarotConcern, customSpread, concernAnalysis.spread);
+        if (isDailyTheme && selectedCards?.[0]) {
           const card = selectedCards[0];
           const today = getTodayDateKey();
           const uid = firebaseUser?.uid || "guest";
@@ -2768,15 +2897,52 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
             frequency: '528Hz',
             spiritualEnergy: `[${card.nameKo}] 카드가 오늘 하루 당신에게 든든한 안정감과 명료함을 선사합니다.`,
             blessingMessage: `오늘 하루 당신의 모든 발걸음 위에 [${card.nameKo}] 카드의 밝은 행운이 함께하길 축복합니다.`,
+            tarotConcern: tarotConcern || effectiveTarotConcern || '오늘의 타로',
           };
           setDailyResult((prev: any) => ({ ...prev, ...updatedDaily }));
+          setDailyDrawnCard(card);
           try {
             localStorage.setItem(getTrinityDailyResultKey(uid), JSON.stringify(updatedDaily));
             localStorage.setItem(getTrinityDailyResultKey("guest"), JSON.stringify(updatedDaily));
             localStorage.setItem(`trinity_daily_result_${uid}_${today}`, JSON.stringify(updatedDaily));
             localStorage.setItem(`trinity_daily_result_guest_${today}`, JSON.stringify(updatedDaily));
+            localStorage.setItem(`limit_daily_trinity_${uid}_${today}`, "true");
+            localStorage.setItem(`limit_daily_trinity_guest_${today}`, "true");
+            localStorage.setItem(`trinity_saved_daily_tarot_${today}`, JSON.stringify({
+              card,
+              drawnCards: [card],
+              result: finalResponse,
+              concern: tarotConcern || effectiveTarotConcern,
+              dateKey: today,
+              timestamp: Date.now(),
+            }));
           } catch (_) {}
+
+          recordDailyOracleResult({
+            app: 'trinity',
+            featureName: '오늘의 데일리 타로',
+            cardName: `${card.nameKo} (${card.name})`,
+            cardKeywords: card.keywords,
+            drawnCard: card,
+            diagnosis: finalResponse,
+            remedy: `오늘 하루, [${card.nameKo}] 카드의 조화로운 에너지를 마음에 품기`,
+            spiritualEnergy: `[${card.nameKo}] 카드가 오늘 하루 당신에게 안정을 선사합니다.`,
+            blessingMessage: `오늘 하루 당신의 모든 발걸음 위에 [${card.nameKo}] 카드의 행운이 함께하길 축복합니다.`,
+            frequency: '528Hz',
+            dateKey: today,
+          });
         }
+
+        try {
+          localStorage.setItem('trinity_active_tarot_session', JSON.stringify({
+            drawnCards: selectedCards,
+            tarotResult: finalResponse,
+            tarotConcern,
+            spread: concernAnalysis.spread,
+            dateKey: getTodayDateKey(),
+            timestamp: Date.now(),
+          }));
+        } catch (_) {}
 
         if (finalResponse.trim()) {
           recordPrismFeature({
@@ -3551,10 +3717,20 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       setCustomSpread(null);
                                     } else {
                                       setCustomSpread(buildSpreadForTheme('daily', { kind: 'open' }));
+                                      if (isTrinityDailyLockedToday() || dailyResult?.drawnCard) {
+                                        const restored = restoreTodayDailyResult(true);
+                                        const targetCard = restored?.drawnCard || dailyResult?.drawnCard || dailyDrawnCard;
+                                        if (targetCard) {
+                                          setTarotConcern(restored?.tarotConcern || "오늘의 타로");
+                                          setDrawnCards([targetCard]);
+                                          setTarotResult(restored?.diagnosis || dailyResult?.diagnosis || dailyResult?.summary || "");
+                                          setHideTarotPopup(false);
+                                        }
+                                      }
                                     }
                                   }}
                                   className={`flex-none px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm ${
-                                    (customSpread?.theme === 'daily' || isDailyTarotConcern(tarotConcern))
+                                    (customSpread?.theme === 'daily' || isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation))
                                       ? 'bg-yellow-500/25 border-yellow-400/60 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.3)]'
                                       : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
                                   }`}
@@ -3562,7 +3738,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 >
                                   <span>🌟 오늘의 타로 (1장)</span>
                                 </button>
-                                {POPULAR_TAROT_SPREAD_PRESETS.map((preset) => {
+                                {POPULAR_TAROT_SPREAD_PRESETS.filter((preset) => preset.theme !== 'daily').map((preset) => {
                                   const isSelected = tarotSpreadRecommendation.theme === preset.theme && !isDailyTarotConcern(tarotConcern);
                                   return (
                                     <button
@@ -3853,17 +4029,17 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                             {/* 🚀 4. 좌측 하단(모바일 4순위): 타로 리딩 시작 액션 버튼들 */}
                             <div className="order-4 md:order-3 flex flex-col gap-3 w-full">
                             <div className="flex flex-col gap-3 w-full">
-                              {isDailyTarotConcern(tarotConcern) && isTrinityDailyLockedToday() ? (
+                              {isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation) && isTrinityDailyLockedToday() ? (
                                 <div className="flex flex-col sm:flex-row items-stretch gap-2.5 w-full">
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      restoreTodayDailyResult();
-                                      const targetCard = dailyResult?.drawnCard || dailyDrawnCard;
+                                      const restored = restoreTodayDailyResult(true);
+                                      const targetCard = restored?.drawnCard || dailyResult?.drawnCard || dailyDrawnCard;
                                       if (targetCard) {
-                                        setTarotConcern("오늘의 타로");
+                                        setTarotConcern(restored?.tarotConcern || "오늘의 타로");
                                         setDrawnCards([targetCard]);
-                                        setTarotResult(dailyResult?.diagnosis || dailyResult?.summary || "");
+                                        setTarotResult(restored?.diagnosis || dailyResult?.diagnosis || dailyResult?.summary || "");
                                         setHideTarotPopup(false);
                                       } else {
                                         setShowDailyModal(true);
@@ -3980,11 +4156,89 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                           index={i}
                                           size="md"
                                           slotName={positionLabel}
-                                          onClick={() => setZoomedCard({ card: cardWithRev, slotName: positionLabel })}
+                                          onClick={() => {
+                                            if (isDualPane) {
+                                              setInlineZoomedCard({ card: cardWithRev, slotName: positionLabel });
+                                            } else {
+                                              setZoomedCard({ card: cardWithRev, slotName: positionLabel });
+                                            }
+                                          }}
                                         />
                                       );
                                     })}
                                   </motion.div>
+
+                                  {/* 📱 듀얼 뷰(펼친 화면): 카드 클릭 시 하단 여백 공간에 해당 카드를 크게 노출하는 인라인 쇼케이스 */}
+                                  {isDualPane && inlineZoomedCard && (
+                                    <AnimatePresence mode="wait">
+                                      <motion.div
+                                        key={`inline-tarot-zoom-${inlineZoomedCard.card.id || inlineZoomedCard.card.nameKo}`}
+                                        initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                                        className="mt-3 p-4 rounded-3xl bg-black/45 border border-yellow-500/35 backdrop-blur-md shadow-2xl flex flex-col items-center relative overflow-hidden"
+                                      >
+                                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(234,179,8,0.15)_0%,transparent_70%)] pointer-events-none -z-10" />
+
+                                        {/* 닫기 버튼 */}
+                                        <button
+                                          type="button"
+                                          onClick={() => setInlineZoomedCard(null)}
+                                          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all cursor-pointer z-10"
+                                          title="크게보기 닫기"
+                                        >
+                                          <X size={14} />
+                                        </button>
+
+                                        {/* 위치 / 슬롯 라벨 */}
+                                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 text-[11px] font-bold mb-2">
+                                          <Sparkles size={11} className="text-yellow-400" />
+                                          <span>{inlineZoomedCard.slotName || '선택한 카드'}</span>
+                                        </div>
+
+                                        {/* 고화질 대형 타로 카드 이미지 */}
+                                        <div className="relative my-1">
+                                          <img
+                                            src={getTarotCardImageUrl(inlineZoomedCard.card)}
+                                            alt={inlineZoomedCard.card.nameKo}
+                                            className={`w-44 sm:w-52 h-auto max-h-[300px] object-contain rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.4)] border-2 border-yellow-400/60 transition-transform duration-500 ${
+                                              inlineZoomedCard.card.reversed ? 'rotate-180' : ''
+                                            }`}
+                                          />
+                                          {inlineZoomedCard.card.reversed && (
+                                            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-rose-500/90 border border-rose-400 text-white text-[10px] font-extrabold shadow-lg">
+                                              역방향 (Reversed)
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        {/* 카드 한글/영문 이름 */}
+                                        <h4 className="text-sm font-black text-white mt-2 tracking-tight flex items-center gap-1.5">
+                                          <span>{inlineZoomedCard.card.nameKo}</span>
+                                          {inlineZoomedCard.card.name && (
+                                            <span className="text-[11px] font-medium text-yellow-400/80 uppercase">
+                                              ({inlineZoomedCard.card.name})
+                                            </span>
+                                          )}
+                                        </h4>
+
+                                        {/* 핵심 키워드 칩 */}
+                                        {inlineZoomedCard.card.keywords && inlineZoomedCard.card.keywords.length > 0 && (
+                                          <div className="flex flex-wrap gap-1 justify-center mt-2 max-w-[260px]">
+                                            {inlineZoomedCard.card.keywords.slice(0, 4).map((kw, ki) => (
+                                              <span
+                                                key={ki}
+                                                className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-yellow-200/90"
+                                              >
+                                                #{kw}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </motion.div>
+                                    </AnimatePresence>
+                                  )}
                                 </motion.div>
                               )}
                               </div>
@@ -4219,7 +4473,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                               <div className="pt-3 border-t border-white/10 flex flex-col gap-3 w-full shrink-0">
                                 {/* Redraw & Share Buttons */}
                                 <div className="flex items-center justify-center gap-2.5 pt-1 flex-wrap">
-                                  {isDailyTarotConcern(tarotConcern) || isTrinityDailyLockedToday() ? (
+                                  {isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation) || isTrinityDailyLockedToday() ? (
                                     <div className="text-[11px] text-yellow-300/80 font-sans py-2 px-5 rounded-full bg-yellow-500/10 border border-yellow-500/25 flex items-center gap-1.5 shadow-sm">
                                       <Sparkles size={12} className="text-yellow-400" />
                                       <span>오늘의 타로는 1일 1회 완료되었습니다 (내일 00시 리셋)</span>
@@ -4843,9 +5097,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         onSelectSpread={(spread) => setCustomSpread(spread)}
       />
 
-      {/* Tarot Card Zoom / Detail Inspection Modal */}
+      {/* Tarot Card Zoom / Detail Inspection Modal (접힌 화면/모바일에서만 팝업 실행) */}
       <TarotCardZoomModal
-        isOpen={!!zoomedCard}
+        isOpen={Boolean(zoomedCard && !isDualPane)}
         onClose={() => setZoomedCard(null)}
         card={zoomedCard?.card ?? null}
         slotName={zoomedCard?.slotName}

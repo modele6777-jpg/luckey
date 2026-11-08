@@ -85,6 +85,7 @@
   height: 19px;
 }
 
+/* 기본 상태 및 네잎클로버가 닫혀 아이콘이 3개로 줄어들었을 때는 접힘/펼침 상관없이 항상 중앙 정렬 */
 .sites-pinned-sidebar[data-theme] .refined-menu-list {
   position: relative;
   min-height: 0;
@@ -106,24 +107,14 @@
 
 .refined-menu-content {
   margin-block: auto;
+  transition: margin-block 0.2s ease;
 }
 
-/* Unfolded / Wide Screen (iPhone Duo Inner Screen >= 580px or dual-pane-active): All icons from top */
-@media (min-width: 580px), (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
-  .sites-pinned-sidebar[data-theme] .refined-menu-list {
-    justify-content: flex-start;
-  }
-  .refined-menu-content {
-    margin-block: 0;
-  }
-}
-
-html.dual-pane-active .sites-pinned-sidebar[data-theme] .refined-menu-list,
-html[data-dual-screen='true'] .sites-pinned-sidebar[data-theme] .refined-menu-list {
+/* 네잎클로버 채널 목록이 펼쳐졌을 때만(data-channels-open='true') 상단 정렬로 부드럽게 확장 */
+.sites-pinned-sidebar[data-theme] .refined-menu-list[data-channels-open='true'] {
   justify-content: flex-start;
 }
-html.dual-pane-active .refined-menu-content,
-html[data-dual-screen='true'] .refined-menu-content {
+.sites-pinned-sidebar[data-theme] .refined-menu-list[data-channels-open='true'] .refined-menu-content {
   margin-block: 0;
 }
 

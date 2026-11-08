@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Sparkles, Music, Activity, Play, Pause, RefreshCw, Volume2 } from 'lucide-react';
+import { Sparkles, Music, Activity, Play, Pause, Volume2 } from 'lucide-react';
 import './duo-cosmic-room.css';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
@@ -212,7 +212,10 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
 
   // BPM 리듬 설정 (기본 90 BPM)
   const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90);
-  const [activeEngineIdx, setActiveEngineIdx] = useState<number>(0);
+  // 🔮 246대 DCE 엔진 무조건 랜덤 셔플로 시작
+  const [activeEngineIdx, setActiveEngineIdx] = useState<number>(() => {
+    return Math.floor(Math.random() * ALL_DCE_ENGINES.length);
+  });
 
   // 바이노럴 비트 합성기 상태
   const [isBinauralPlaying, setIsBinauralPlaying] = useState<boolean>(false);
@@ -254,17 +257,17 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     };
   }, []);
 
-  // 셔플: 엔진 순환
-  const handleShuffleEngine = useCallback(() => {
-    triggerHaptic('whitehole');
-    setActiveEngineIdx((prev) => (prev + 1) % ALL_DCE_ENGINES.length);
-  }, []);
-
-  // 자동 엔진 셔플 (8초 주기)
+  // 무조건 랜덤 셔플 (10초 주기)
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveEngineIdx((prev) => (prev + 1) % ALL_DCE_ENGINES.length);
-    }, 8000);
+      setActiveEngineIdx((prev) => {
+        let next = Math.floor(Math.random() * ALL_DCE_ENGINES.length);
+        if (next === prev && ALL_DCE_ENGINES.length > 1) {
+          next = (next + 1) % ALL_DCE_ENGINES.length;
+        }
+        return next;
+      });
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -466,24 +469,13 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         </div>
       </div>
 
-      {/* 2️⃣ 중간 카드: 새로운 관점 (246대 엔진 셔플 및 엔진 요약 설명) */}
+      {/* 2️⃣ 중간 카드: 새로운 관점 (무조건 랜덤 셔플 표출 & 셔플 버튼 제거) */}
       <section
-        onClick={handleShuffleEngine}
         className="cosmic-room-engine cosmic-room-card"
         aria-label="운명학 관점 소개"
-        title="클릭하여 다른 엔진 관점으로 셔플 전환"
       >
         <div className="cosmic-room-card-heading">
           <span><Sparkles size={13} /> 새로운 관점</span>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); handleShuffleEngine(); }}
-            className="cosmic-room-count"
-            title="새로운 엔진 셔플"
-          >
-            <span>{activeEngineIdx + 1} / {ALL_DCE_ENGINES.length}</span>
-            <RefreshCw size={10} />
-          </button>
         </div>
         <h3>{currentEngine?.nameKo || '나를 알아가는 시간'}</h3>
         <p>{currentSummary}</p>
