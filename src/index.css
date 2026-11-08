@@ -3247,3 +3247,24 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
   margin-left: auto !important;
   margin-right: auto !important;
 }
+
+
+/* Installed Safari clips fixed app roots to its status-bar-shortened viewport.
+   A full-height document and an in-flow root can occupy the complete canvas.
+   Keyboard geometry keeps the existing fixed visual-viewport handling. */
+html[data-ios-standalone-flow]:not(.keyboard-open),
+html[data-ios-standalone-flow]:not(.keyboard-open) body {
+  position: relative;
+  height: var(--app-height) !important;
+  min-height: var(--app-height) !important;
+}
+html[data-ios-standalone-flow]:not(.keyboard-open) #root {
+  position: relative !important;
+  top: 0 !important;
+  height: var(--app-height) !important;
+  min-height: var(--app-height) !important;
+}
+html[data-ios-standalone-flow]:not(.keyboard-open) .sites-pinned-sidebar {
+  position: absolute;
+  top: 0;
+}

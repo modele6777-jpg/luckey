@@ -335,3 +335,22 @@ test('reported iPhone Duo reload trace keeps controls inside the 869px document 
   assert.equal(isKeyboardViewportOpen(keyboard, true), true);
   assert.equal(isKeyboardViewportOpen(keyboard, false), false);
 });
+
+
+test('a status-bar-sized standalone shortfall fills the full in-flow canvas', () => {
+  const reported = {
+    iosStandalone: true, innerWidth: 669, innerHeight: 869,
+    layoutViewportHeight: 869, cssViewportHeight: 951, safeAreaTop: 82,
+    screenWidth: 457, screenHeight: 678,
+    visual: { width: 669, height: 869, offsetTop: 0, offsetLeft: 0 },
+  };
+  assert.equal(resolveViewportBox(reported)?.height, 951);
+  assert.equal(resolveAppLayoutHeight(reported), '951px');
+  assert.equal(isKeyboardViewportOpen(reported, true), false);
+  assert.equal(resolveViewportBox({ ...reported, safeAreaTop: 0 })?.height, 869);
+  assert.equal(resolveViewportBox({ ...reported, cssViewportHeight: 1100 })?.height, 869);
+  assert.equal(resolveViewportBox({ ...reported, iosStandalone: false })?.height, 869);
+  assert.equal(isKeyboardViewportOpen({ ...reported, innerHeight: 400, layoutViewportHeight: 400, visual: { ...reported.visual, height: 400 } }, true), true);
+  const settled = { ...reported, innerHeight: 951, layoutViewportHeight: 951, visual: { ...reported.visual, height: 951 } };
+  assert.equal(resolveViewportBox(settled)?.height, 951);
+});

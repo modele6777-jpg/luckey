@@ -41,6 +41,7 @@ export type ViewportSnapshot = {
   iosStandalone?: boolean;
   /** CSS large viewport is independent of stale JS height on installed WebKit. */
   cssViewportHeight?: number;
+  safeAreaTop?: number;
   screenWidth?: number;
   screenHeight?: number;
   visual?: {
@@ -74,14 +75,19 @@ function roundPx(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-/** Installed WebKit can retain a larger lvh/innerHeight after reload.
- * documentElement.clientHeight is the actual layout viewport in standards mode.
- * screen dimensions may belong to the folded display and are not a size source.
+/** A standalone status-bar shrink can leave lvh exactly one top inset taller.
+ * Use that full canvas only with an in-flow root, so WebKit cannot clip it to
+ * the shorter fixed-position viewport. Other size disagreements stay bounded.
  */
 function installedLayoutBox(snapshot: ViewportSnapshot): ViewportBox | null {
-  const height = positive(snapshot.layoutViewportHeight);
+  const clientHeight = positive(snapshot.layoutViewportHeight);
   const width = positive(snapshot.innerWidth);
-  if (!snapshot.iosStandalone || height == null || width == null) return null;
+  if (!snapshot.iosStandalone || clientHeight == null || width == null) return null;
+  const fullHeight = positive(snapshot.cssViewportHeight);
+  const inset = positive(snapshot.safeAreaTop);
+  const statusBarShrink = fullHeight != null && inset != null
+    && fullHeight > clientHeight && Math.abs(fullHeight - clientHeight - inset) <= 2;
+  const height = statusBarShrink ? fullHeight! : clientHeight;
   return { width: roundPx(width), height: roundPx(height), offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
 }
 
@@ -156,7 +162,7 @@ export function isKeyboardViewportOpen(snapshot: ViewportSnapshot, inputActive: 
   if (!canUseKeyboardViewport(snapshot, inputActive)) return false;
   const visualHeight = snapshot.visual!.height;
   const installed = installedLayoutBox(snapshot);
-  let fullHeight = installed?.height ?? Math.max(snapshot.innerHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
+  let fullHeight = Math.max(installed?.height ?? snapshot.innerHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
   const sw = positive(snapshot.screenWidth);
   const sh = positive(snapshot.screenHeight);
   if (!installed && snapshot.iosStandalone && sw != null && sh != null) {
@@ -374,6 +380,7 @@ export function readViewportSnapshot(win: Window): ViewportSnapshot {
     layoutViewportHeight: win.document.documentElement.clientHeight,
     iosStandalone,
     cssViewportHeight,
+    safeAreaTop: iosStandalone ? readSafeAreaInsets(win.document).top : undefined,
     screenWidth: win.screen?.width,
     screenHeight: win.screen?.height,
     visual: visual
@@ -494,6 +501,7 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
   const snapshot = readViewportSnapshot(win);
+  document.documentElement.toggleAttribute('data-ios-standalone-flow', Boolean(snapshot.iosStandalone));
   const active = document.activeElement as HTMLElement | null;
   const inputActive = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || Boolean(active?.isContentEditable);
   // Every event path uses the same owner for keyboard and normal geometry.
