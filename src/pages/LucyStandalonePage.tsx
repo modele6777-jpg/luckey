@@ -2945,7 +2945,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           overflowX: 'hidden',
         }}
         className={`lucy-chat-header w-full max-w-full overflow-x-hidden px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-500 ${
-          isPlusMode
+          isLight
+            ? 'bg-white/85 border-amber-200/60 text-slate-900 shadow-[0_2px_14px_rgba(180,140,90,0.08)]'
+            : isPlusMode
             ? 'bg-slate-950/85 border-amber-500/30 text-white shadow-[0_4px_24px_rgba(245,158,11,0.1)]'
             : 'bg-slate-950/80 border-white/10 text-white'
         }`}
@@ -2959,7 +2961,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               <div className="min-w-0 flex-1 overflow-hidden">
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
                   <h1
-                    className="text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 shrink-0 text-white"
+                    className={`text-base sm:text-xl font-black tracking-tight flex items-center gap-1.5 shrink-0 ${isLight ? 'text-slate-900' : 'text-white'}`}
                   >
                     <button
                       type="button"
