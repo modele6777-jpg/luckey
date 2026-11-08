@@ -159,21 +159,38 @@ export function isMessageFromToday(m: UnifiedMessage | null | undefined): boolea
 /**
  * 기본 환영 메시지 생성자 (매일 처음 루시채팅 들어갈 때만 표시)
  */
-export function createDefaultGreeting(targetPersona: PersonaType = 'lucy', userName?: string, isMaster = false): UnifiedMessage {
+export function createDefaultGreeting(
+  targetPersona: PersonaType = 'lucy',
+  userName?: string,
+  isMaster = false,
+  isPlus = false
+): UnifiedMessage {
   const nick = userName || getSavedNickname();
   const nameLabel = nick && nick !== '여행자' ? `${nick}! ` : '';
   const todayKey = getTodayDateKey();
   const engineCount = ALL_DCE_ENGINES.length;
+  // 👑 오직 프로 모드(isMaster)일 때만 270대 올인원 마스터 모드 가동! 루시 플러스에서는 절대 프로 모드가 켜지지 않습니다.
   if (isMaster) {
     return {
       id: `greet-${todayKey}`,
       role: 'model',
-      content: `안녕, ${nameLabel}루시 플러스 ${engineCount}대 운명학 올인원 마스터 모드야. 7대 테마와 동서양 ${engineCount}가지 운명학·결정론 엔진을 전원 총동원해서 깊이 있는 통찰과 해답을 풀어줄게. 어떤 고민이든 편하게 물어봐! 👑🔮`,
+      content: `안녕, ${nameLabel}루시 프로 ${engineCount}대 운명학 올인원 마스터 모드야. 7대 테마와 동서양 ${engineCount}가지 운명학·결정론 엔진을 전원 총동원해서 깊이 있는 통찰과 해답을 풀어줄게. 어떤 고민이든 편하게 물어봐! 👑🔮`,
       timestamp: Date.now(),
       persona: targetPersona,
       mode: 'master',
       channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'],
       usedTools: ALL_DCE_ENGINES.map((e) => e.nameKo),
+    };
+  }
+  if (isPlus) {
+    return {
+      id: `greet-${todayKey}`,
+      role: 'model',
+      content: `안녕, ${nameLabel}오늘 하루는 어땠어? ㅎㅎ 사소한 일상 이야기나 오늘 있었던 일, 나누고 싶은 생각 뭐든 편하게 들려줘. 좌측 화면을 보면서 언제든 다정하게 수다 떨 준비되어 있어! 💬✨`,
+      timestamp: Date.now(),
+      persona: targetPersona,
+      mode: 'casual',
+      channels: [],
     };
   }
   return {

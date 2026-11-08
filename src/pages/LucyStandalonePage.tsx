@@ -511,14 +511,23 @@ export function resolveMessageModeAndChannels(
   // 0. 환영 및 일일 인사말 메시지인 경우: 인사말 고유의 모드/내용을 통해 실제 모드 추출
   const isGreet = msgId === 'greet' || msgId === 'greet-main' || msgId.startsWith('greet-') || msgId.includes('greet') || isGreetingMessage(msg);
   if (isGreet) {
+    const isProTier = Boolean(
+      typeof window !== 'undefined' && (
+        window.location.search.includes('mode=pro') ||
+        window.location.search.includes('mode=ultra') ||
+        (safeLocalStorage.getItem('lucy_tier_mode') === 'pro' && !document.documentElement.classList.contains('lucy-plus-active'))
+      )
+    );
     const isMasterGreetingText = 
-      cleanText.includes('운명학') || 
-      cleanText.includes('마스터 모드') ||
-      cleanText.includes('올인원 마스터') || 
-      cleanText.includes('루시 프로') ||
-      cleanText.includes('결정론') ||
-      cleanText.includes('7대 테마');
-    if (rawMode === 'master' || isMasterGreetingText) {
+      isProTier && (
+        cleanText.includes('운명학') || 
+        cleanText.includes('마스터 모드') ||
+        cleanText.includes('올인원 마스터') || 
+        cleanText.includes('루시 프로') ||
+        cleanText.includes('결정론') ||
+        cleanText.includes('7대 테마')
+      );
+    if (isProTier && (rawMode === 'master' || isMasterGreetingText)) {
       rawChannels = [...ALL_CHANNELS];
       rawMode = 'master';
     } else {
@@ -1999,20 +2008,30 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   // Filter messages by search query if search is active (대화 기록이 비어있다면 기본 루시 인사말 표시 보장)
   const filteredMessages = useMemo(() => {
-    const isMasterGreeting = isPlusMode || pro;
+    // 👑 오직 프로 모드(pro || lucyTier === 'pro')일 때만 마스터 인사말 적용 (루시 플러스에서는 프로 모드 절대 발동 차단)
+    const isMasterGreeting = pro || lucyTier === 'pro';
     const rawList = lucyMessages.length > 0
-      ? (lucyMessages.length === 1 && isGreetingMessage(lucyMessages[0]) && isMasterGreeting
-          ? [createDefaultGreeting('lucy', userDisplayName, true)]
+      ? (lucyMessages.length === 1 && isGreetingMessage(lucyMessages[0])
+          ? (isMasterGreeting
+              ? [createDefaultGreeting('lucy', userDisplayName, true)]
+              : (lucyMessages[0].mode === 'master' || (typeof lucyMessages[0].content === 'string' && (lucyMessages[0].content.includes('마스터 모드') || lucyMessages[0].content.includes('운명학 올인원')))
+                  ? [createDefaultGreeting('lucy', userDisplayName, false, isPlusMode)]
+                  : lucyMessages))
           : lucyMessages)
-      : [createDefaultGreeting('lucy', userDisplayName, isMasterGreeting)];
+      : [createDefaultGreeting('lucy', userDisplayName, isMasterGreeting, isPlusMode)];
     const baseList = rawList.map((m) => {
-      if (isGreetingMessage(m) && typeof m.content === 'string' && (m.mode === 'master' || m.content.includes('마스터 모드') || isMasterGreeting)) {
-        return {
-          ...m,
-          content: m.content
-            .replace(/\d+대\s*운명학/g, `${ALL_DCE_ENGINES.length}대 운명학`)
-            .replace(/\d+가지\s*(?:운명학\s*도구|결정론\s*엔진|운명학·결정론\s*엔진)/g, `${ALL_DCE_ENGINES.length}가지 운명학·결정론 엔진`),
-        };
+      if (isGreetingMessage(m) && typeof m.content === 'string') {
+        if (isMasterGreeting && (m.mode === 'master' || m.content.includes('마스터 모드'))) {
+          return {
+            ...m,
+            content: m.content
+              .replace(/\d+대\s*운명학/g, `${ALL_DCE_ENGINES.length}대 운명학`)
+              .replace(/\d+가지\s*(?:운명학\s*도구|결정론\s*엔진|운명학·결정론\s*엔진)/g, `${ALL_DCE_ENGINES.length}가지 운명학·결정론 엔진`),
+          };
+        }
+        if (!isMasterGreeting && (m.mode === 'master' || m.content.includes('마스터 모드') || m.content.includes('운명학 올인원'))) {
+          return createDefaultGreeting('lucy', userDisplayName, false, isPlusMode);
+        }
       }
       return m;
     });
@@ -2023,7 +2042,25 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       const txt = m.role === 'user' ? rawText : cleanAssistantMessageDisplay(rawText);
       return txt.toLowerCase().includes(q);
     });
-  }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro]);
+  }, [lucyMessages, searchQuery, userDisplayName, isPlusMode, pro, lucyTier]);
+
+  // 🛡️ 루시 플러스(Lucy+) 진입 시 잔존하는 프로 모드(마스터) 인사말 및 프로 상태 완벽 정화
+  useEffect(() => {
+    if (lucyTier === 'plus' && !pro) {
+      setPersonaMessages((prevRecord) => {
+        const current = prevRecord.lucy || [];
+        if (current.length === 1 && isGreetingMessage(current[0]) && (current[0].mode === 'master' || (typeof current[0].content === 'string' && current[0].content.includes('마스터 모드')))) {
+          const freshGreeting = [createDefaultGreeting('lucy', userDisplayName, false, true)];
+          saveUnifiedMessagesSafely(freshGreeting);
+          return {
+            ...prevRecord,
+            lucy: freshGreeting,
+          };
+        }
+        return prevRecord;
+      });
+    }
+  }, [lucyTier, pro, userDisplayName, setPersonaMessages]);
 
   // Background Auto-Prefetch latest Lucy message for 0ms instant TTS playback
   useEffect(() => {
