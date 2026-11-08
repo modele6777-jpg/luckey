@@ -1011,6 +1011,54 @@ export default function TrinityApp() {
       rotOff: 0,
     }))
   );
+
+  const [tarotConcern, setTarotConcern] = useState<string>("");
+  const [customSpread, setCustomSpread] = useState<TarotSpreadRecommendation | null>(null);
+
+  const isTrinityDailyLockedToday = useCallback(() => {
+    const uid = firebaseUser?.uid || "guest";
+    const today = getTodayDateKey();
+    const limitKey = `limit_daily_trinity_${uid}_${today}`;
+    const guestLimitKey = `limit_daily_trinity_guest_${today}`;
+    if (localStorage.getItem(limitKey) || localStorage.getItem(guestLimitKey)) {
+      return true;
+    }
+    if (dailyResult?.drawnCard && (dailyResult?.dateKey === today || !dailyResult?.dateKey)) {
+      return true;
+    }
+    if (dailyDrawnCard) {
+      return true;
+    }
+    if (sharedState?.todayOracles?.[today]?.trinity) {
+      return true;
+    }
+    if (sharedState?.latestDailyOracles?.trinity?.dateKey === today) {
+      return true;
+    }
+    try {
+      const candidateKeys = [
+        `trinity_saved_daily_tarot_${today}`,
+        getTrinityDailyResultKey(uid),
+        getTrinityDailyResultKey("guest"),
+        `trinity_daily_result_${uid}_${today}`,
+        `trinity_daily_result_guest_${today}`,
+        `prism_daily_oracle_trinity_${today}`,
+      ];
+      for (const key of candidateKeys) {
+        const val = localStorage.getItem(key);
+        if (val) {
+          if (val === 'true') return true;
+          try {
+            const parsed = JSON.parse(val);
+            if (parsed?.dateKey === today || !parsed?.dateKey) return true;
+          } catch (_) {
+            return true;
+          }
+        }
+      }
+    } catch (_) {}
+    return false;
+  }, [firebaseUser?.uid, sharedState?.todayOracles, sharedState?.latestDailyOracles, dailyResult, dailyDrawnCard]);
   useEffect(() => {
     const uid = firebaseUser?.uid || "guest";
     const limitKey = `limit_daily_trinity_${uid}_${getTodayDateKey()}`;
@@ -1583,7 +1631,6 @@ function playDailyCardChimeAsync() {
     },
     enabled: !tarotVirtualMode && !showDailyModal && !isDailyOracleLoading && !zoomedCard,
   });
-  const [tarotConcern, setTarotConcern] = useState<string>("");
   const [activeTarotGhostPrompt, setActiveTarotGhostPrompt] = useState<string>("");
   const tarotGhostPromptPool = useMemo(
     () => [
@@ -1597,7 +1644,6 @@ function playDailyCardChimeAsync() {
     ],
     []
   );
-  const [customSpread, setCustomSpread] = useState<TarotSpreadRecommendation | null>(null);
   const [isSpreadModalOpen, setIsSpreadModalOpen] = useState(false);
   const [showTarotCardBackModal, setShowTarotCardBackModal] = useState(false);
   const [showPhysicalTarotModal, setShowPhysicalTarotModal] = useState(false);
@@ -2030,51 +2076,6 @@ function playDailyCardChimeAsync() {
     () => [...(sharedState?.trinityHistory || []), ...localHistory],
     [sharedState?.trinityHistory, localHistory],
   );
-
-  const isTrinityDailyLockedToday = useCallback(() => {
-    const uid = firebaseUser?.uid || "guest";
-    const today = getTodayDateKey();
-    const limitKey = `limit_daily_trinity_${uid}_${today}`;
-    const guestLimitKey = `limit_daily_trinity_guest_${today}`;
-    if (localStorage.getItem(limitKey) || localStorage.getItem(guestLimitKey)) {
-      return true;
-    }
-    if (dailyResult?.drawnCard && (dailyResult?.dateKey === today || !dailyResult?.dateKey)) {
-      return true;
-    }
-    if (dailyDrawnCard) {
-      return true;
-    }
-    if (sharedState?.todayOracles?.[today]?.trinity) {
-      return true;
-    }
-    if (sharedState?.latestDailyOracles?.trinity?.dateKey === today) {
-      return true;
-    }
-    try {
-      const candidateKeys = [
-        `trinity_saved_daily_tarot_${today}`,
-        getTrinityDailyResultKey(uid),
-        getTrinityDailyResultKey("guest"),
-        `trinity_daily_result_${uid}_${today}`,
-        `trinity_daily_result_guest_${today}`,
-        `prism_daily_oracle_trinity_${today}`,
-      ];
-      for (const key of candidateKeys) {
-        const val = localStorage.getItem(key);
-        if (val) {
-          if (val === 'true') return true;
-          try {
-            const parsed = JSON.parse(val);
-            if (parsed?.dateKey === today || !parsed?.dateKey) return true;
-          } catch (_) {
-            return true;
-          }
-        }
-      }
-    } catch (_) {}
-    return false;
-  }, [firebaseUser?.uid, sharedState?.todayOracles, sharedState?.latestDailyOracles, dailyResult, dailyDrawnCard]);
 
   const applyDailyResultState = useCallback((result: any, syncTarot = false) => {
     if (!result) return;
@@ -3738,7 +3739,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 >
                                   <span>🌟 오늘의 타로 (1장)</span>
                                 </button>
-                                {POPULAR_TAROT_SPREAD_PRESETS.filter((preset) => preset.theme !== 'daily').map((preset) => {
+                                {POPULAR_TAROT_SPREAD_PRESETS.map((preset) => {
                                   const isSelected = tarotSpreadRecommendation.theme === preset.theme && !isDailyTarotConcern(tarotConcern);
                                   return (
                                     <button
