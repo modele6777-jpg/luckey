@@ -108,8 +108,8 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       confidence: 0.98,
       targetTools: ['saju', 'astrology', 'ziwei', 'sukuyo', 'vedic', 'iching', 'liuren', 'qimen', 'mahabote', 'kyusei'],
       deepEngineKeys: ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => e.key),
-      deepEnginesKo: ['246대 전원 총동원'],
-      deepEngineGuidance: '동서양 246대 운명학 및 철학 엔진의 산출값과 상징적 관점을 종합적으로 검토하여 입체적 통찰 제시',
+      deepEnginesKo: [`${ALL_DCE_ENGINES.length}대 전원 총동원`],
+      deepEngineGuidance: `동서양 ${ALL_DCE_ENGINES.length}대 운명학 및 철학 엔진의 산출값과 상징적 관점을 종합적으로 검토하여 입체적 통찰 제시`,
       routingReason: '요청한 종합 상담에 필요한 도구의 계산 결과 비교',
       suggestedFocusPrompt: '인생의 큰 흐름(대운)부터 구체적 사건과 오늘의 타이밍까지 7대 테마별로 균형 있게 조망해 줘.',
       isMasterMobilization: true,
@@ -483,7 +483,7 @@ export function routeAndExecute(params: {
   });
 
   const deepBlock = routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
-    ? `\n- 246대 DCE 심층 특화 엔진: **${routePlan.deepEnginesKo.join(' · ')}**
+    ? `\n- ${ALL_DCE_ENGINES.length}대 DCE 심층 특화 엔진: **${routePlan.deepEnginesKo.join(' · ')}**
 - 심층 엔진 융합 가이드: ${routePlan.deepEngineGuidance}`
     : '';
 

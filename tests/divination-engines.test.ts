@@ -234,6 +234,9 @@ import { calculateChoeChiwonPungryudo, formatChoeChiwonPungryudoPrompt, KOREAN_C
 import { calculateThomasAquinasSummaTheologiae, formatThomasAquinasSummaTheologiaePrompt, ITALIAN_THOMAS_AQUINAS_VERSION } from '../src/lib/divination/italianThomasAquinasSummaTheologiaeEngine';
 import { calculateFrancisBaconNovumOrganum, formatFrancisBaconNovumOrganumPrompt, BRITISH_FRANCIS_BACON_VERSION } from '../src/lib/divination/britishFrancisBaconNovumOrganumEngine';
 import { calculateRyuSeongryongJingbirok, formatRyuSeongryongJingbirokPrompt, KOREAN_RYU_SEONGRYONG_VERSION } from '../src/lib/divination/koreanRyuSeongryongJingbirokEngine';
+import { calculateKingSejongHunminjeongeumAemin, formatKingSejongHunminjeongeumAeminPrompt, KOREAN_KING_SEJONG_VERSION } from '../src/lib/divination/koreanKingSejongHunminjeongeumAeminEngine';
+import { calculateJangBogoCheonghaejinMaritimePioneer, formatJangBogoCheonghaejinMaritimePioneerPrompt, KOREAN_JANG_BOGO_VERSION } from '../src/lib/divination/koreanJangBogoCheonghaejinMaritimePioneerEngine';
+import { calculateJohnStuartMillOnLibertyIndividuality, formatJohnStuartMillOnLibertyIndividualityPrompt, BRITISH_JS_MILL_VERSION } from '../src/lib/divination/britishJohnStuartMillOnLibertyIndividualityEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4772,6 +4775,48 @@ test('Ryu Seong-ryong Jingbirok Engine: calculates Jingjeon Bihu past reflection
   const prompt = formatRyuSeongryongJingbirokPrompt(rep);
   assert(prompt.includes('서애 류성룡 《징비록》 징전비후 성찰 & 유비무환 위기대응 지표'));
   assert(prompt.includes(rep.activeJingbirokTheme.themeTitleKo));
+});
+
+test('King Sejong Hunminjeongeum Aemin Engine: calculates Aemin Creativity, Barrier Break, and Yeominrak', () => {
+  const rep = calculateKingSejongHunminjeongeumAemin(profile);
+  assert.equal(rep.engineVersion, KOREAN_KING_SEJONG_VERSION);
+  assert(rep.aeminCreativityScore >= 0 && rep.aeminCreativityScore <= 100);
+  assert(rep.pragmaticBarrierBreakScore >= 0 && rep.pragmaticBarrierBreakScore <= 100);
+  assert(rep.yeominrakHarmonyQuotient >= 0 && rep.yeominrakHarmonyQuotient <= 100);
+  assert(rep.jiphyeonjeonCollectiveWisdom >= 0 && rep.jiphyeonjeonCollectiveWisdom <= 100);
+  assert(rep.saengsaengJirakVitalityScore >= 0 && rep.saengsaengJirakVitalityScore <= 100);
+  assert(rep.activeHunminTheme.themeTitleHanja.length > 0);
+  const prompt = formatKingSejongHunminjeongeumAeminPrompt(rep);
+  assert(prompt.includes('세종대왕 《훈민정음》 어제서문 애민창조 & 여민락 지혜 지표'));
+  assert(prompt.includes(rep.activeHunminTheme.themeTitleKo));
+});
+
+test('Jang Bogo Cheonghaejin Maritime Pioneer Engine: calculates Maritime Vision, Trust Network, and Wave Breaker Resilience', () => {
+  const rep = calculateJangBogoCheonghaejinMaritimePioneer(profile);
+  assert.equal(rep.engineVersion, KOREAN_JANG_BOGO_VERSION);
+  assert(rep.maritimePioneerVisionScore >= 0 && rep.maritimePioneerVisionScore <= 100);
+  assert(rep.trustNetworkCreditScore >= 0 && rep.trustNetworkCreditScore <= 100);
+  assert(rep.waveBreakerResilienceScore >= 0 && rep.waveBreakerResilienceScore <= 100);
+  assert(rep.globalTradeStrategicMindScore >= 0 && rep.globalTradeStrategicMindScore <= 100);
+  assert(rep.independentStrongholdScore >= 0 && rep.independentStrongholdScore <= 100);
+  assert(rep.activeCheonghaeTheme.themeTitleHanja.length > 0);
+  const prompt = formatJangBogoCheonghaejinMaritimePioneerPrompt(rep);
+  assert(prompt.includes('해상왕 장보고 《청해진》 글로벌 해상무역 & 신의 개척 지표'));
+  assert(prompt.includes(rep.activeCheonghaeTheme.themeTitleKo));
+});
+
+test('John Stuart Mill On Liberty Individuality Engine: calculates Autonomy, Harm Principle, and Qualitative Growth', () => {
+  const rep = calculateJohnStuartMillOnLibertyIndividuality(profile);
+  assert.equal(rep.engineVersion, BRITISH_JS_MILL_VERSION);
+  assert(rep.individualityAutonomyScore >= 0 && rep.individualityAutonomyScore <= 100);
+  assert(rep.harmPrincipleClarityScore >= 0 && rep.harmPrincipleClarityScore <= 100);
+  assert(rep.thoughtConscienceLibertyScore >= 0 && rep.thoughtConscienceLibertyScore <= 100);
+  assert(rep.tyrannyResistanceCourageScore >= 0 && rep.tyrannyResistanceCourageScore <= 100);
+  assert(rep.qualitativeGrowthPursuitScore >= 0 && rep.qualitativeGrowthPursuitScore <= 100);
+  assert(rep.activeMillTheme.themeTitleEn.length > 0);
+  const prompt = formatJohnStuartMillOnLibertyIndividualityPrompt(rep);
+  assert(prompt.includes('존 스튜어트 밀 《자유론》 개별성 자율성 & 해악 원칙 지표'));
+  assert(prompt.includes(rep.activeMillTheme.themeTitleKo));
 });
 
 
