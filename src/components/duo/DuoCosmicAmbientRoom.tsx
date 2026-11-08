@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Sparkles, Music, Sliders, Play, Pause, Activity, Zap, Compass } from 'lucide-react';
+import { Sparkles, Music, Activity, Compass } from 'lucide-react';
+import './duo-cosmic-room.css';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { getBgmPublicState, type BgmPublicState } from '@/components/trinity/BgMusicPlayer';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
@@ -14,7 +15,6 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
 
   // 외부 음악(멜론/애플뮤직) 앰비언트 펄스 설정
   const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90); // 기본 90 BPM
-  const [visualMode, setVisualMode] = useState<'mandala' | 'wave' | 'galaxy'>('mandala');
   const [activeEngineIdx, setActiveEngineIdx] = useState<number>(0);
   const tapTimesRef = useRef<number[]>([]);
 
@@ -37,7 +37,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveEngineIdx((prev) => (prev + 1) % ALL_DCE_ENGINES.length);
-    }, 2800);
+    }, 8000);
     return () => clearInterval(timer);
   }, []);
 
@@ -70,7 +70,8 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     if (!ctx) return;
 
     let animId: number;
-    let startTime = performance.now();
+    const startTime = performance.now();
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const render = () => {
       const now = performance.now();
@@ -149,118 +150,53 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
 
       ctx.restore();
 
-      animId = requestAnimationFrame(render);
+      if (!reducedMotion) animId = requestAnimationFrame(render);
     };
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
-  }, [ambientTempoBpm, visualMode]);
+  }, [ambientTempoBpm]);
 
   const currentEngine = ALL_DCE_ENGINES[activeEngineIdx] || ALL_DCE_ENGINES[0];
 
   return (
-    <div className={`h-full w-full flex flex-col justify-between select-none p-3.5 sm:p-5 transition-colors duration-500 relative overflow-hidden ${
-      isLight ? 'bg-gradient-to-br from-slate-100 via-amber-50/40 to-slate-200 text-slate-800' : 'bg-slate-950 text-white'
-    }`}>
-      {/* 배경 앰비언트 캔버스 */}
-      <canvas
-        ref={canvasRef}
-        width={420}
-        height={320}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-90"
-      />
-
-      {/* 상단: 상태 배지 및 외부 음악 모드 알림 */}
-      <div className="relative z-10 flex items-center justify-between pb-3 border-b border-amber-500/20 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-400/30">
-            <Compass size={16} className="animate-spin-slow" />
-          </span>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-xs sm:text-sm font-black tracking-tight text-amber-300">
-                마스터 코스믹 룸
-              </h2>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                246대 풀가동
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400">
-              외부 음악 믹싱 보존 · 앰비언트 펄스 비주얼라이저
-            </p>
-          </div>
+    <section className={'cosmic-room ' + (isLight ? 'cosmic-room--light' : '')} aria-label="코스믹 룸">
+      <header className="cosmic-room-heading">
+        <span className="cosmic-room-eyebrow"><Compass size={13} /> LUCY + · COSMIC ROOM</span>
+        <h2>나만의 코스믹 룸</h2>
+        <p>음악에 맞춰 잠시, 마음을 고요하게.</p>
+      </header>
+      <div className="cosmic-room-visual cosmic-room-card">
+        <div className="cosmic-room-visual-heading">
+          <span className="cosmic-room-live"><i aria-hidden="true" /> 나의 리듬</span>
+          <span className="cosmic-room-music"><Music size={12} /> {bgmState.isPlaying ? 'BGM 감상 중' : '외부 음악과 함께'}</span>
         </div>
-
-        {/* 오디오 모드 뱃지 */}
-        <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-900/80 border border-white/10 text-[10px] font-semibold text-amber-300 shadow-xs">
-          <Music size={12} className="animate-bounce" />
-          <span>{bgmState.isPlaying ? '내장 BGM 반응' : '외부 음악 감상 모드'}</span>
+        <div className="cosmic-room-stage">
+          <canvas ref={canvasRef} width={420} height={320} aria-hidden="true" />
+          <span className="cosmic-room-stage-label">BREATHE<br /><strong>& FLOW</strong></span>
         </div>
+        <p className="cosmic-room-caption">나의 속도로, 천천히.</p>
+        <p className="cosmic-room-note">듣고 있는 음악은 그대로 이어져요.</p>
       </div>
-
-      {/* 중앙: 실시간 가동 중인 246대 DCE 엔진 텔레메트리 */}
-      <div className="relative z-10 my-auto text-center py-4 flex flex-col items-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 border border-amber-400/30 text-xs font-bold text-amber-200 mb-2 shadow-lg backdrop-blur-md">
-          <Zap size={13} className="text-amber-400 animate-pulse" />
-          <span>DCE #{activeEngineIdx + 1} · {currentEngine?.nameKo || '심층 운명학 엔진'}</span>
+      <section className="cosmic-room-engine cosmic-room-card" aria-label="운명학 관점 소개">
+        <div className="cosmic-room-card-heading">
+          <span><Sparkles size={13} /> 새로운 관점</span>
+          <span className="cosmic-room-count">{activeEngineIdx + 1} / {ALL_DCE_ENGINES.length}</span>
         </div>
-        <p className="text-[11px] text-slate-400 max-w-xs leading-relaxed drop-shadow-sm font-medium">
-          {currentEngine ? `${currentEngine.nameKo} · ${currentEngine.category === 'foundational' ? '기초 운명학 도구' : '심층 결정론 마스터 엔진'}이 실시간 주입되고 있습니다.` : '전체 246개 결정론·운명학 엔진이 우측 루시 대화창에 실시간 주입되고 있습니다.'}
-        </p>
-      </div>
-
-      {/* 하단: 템포 조절 바 및 탭 템포 버튼 (외부 음악 맞춤 박자) */}
-      <div className="relative z-10 pt-3 border-t border-white/10 shrink-0 bg-slate-900/60 backdrop-blur-md rounded-xl p-3 border">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-            <Activity size={13} className="text-amber-400" />
-            <span>비주얼 펄스 템포</span>
-            <span className="text-amber-400 font-mono">({ambientTempoBpm} BPM)</span>
-          </span>
-
-          {/* 탭 템포 버튼 */}
-          <button
-            type="button"
-            onClick={handleTapTempo}
-            className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-[10px] font-bold transition-all cursor-pointer active:scale-95 shadow-2xs"
-            title="듣고 계신 멜론/애플뮤직 비트에 맞춰 탭하면 템포가 싱크됩니다"
-          >
-            👆 비트 탭 싱크 (Tap)
-          </button>
+        <h3>{currentEngine?.nameKo || '나를 알아가는 시간'}</h3>
+        <p>지금의 질문을 조금 다른 각도에서 바라보세요.</p>
+      </section>
+      <section className="cosmic-room-tempo cosmic-room-card" aria-label="비주얼 리듬 설정">
+        <div className="cosmic-room-tempo-heading">
+          <div><span className="cosmic-room-card-heading"><Activity size={13} /> 비주얼 리듬</span><p><strong>{ambientTempoBpm}</strong><span>BPM</span></p></div>
+          <button type="button" onClick={handleTapTempo} className="cosmic-room-tap" title="듣고 있는 음악 박자에 맞춰 두 번 이상 눌러주세요">박자 맞추기</button>
         </div>
-
-        {/* 프리셋 템포 칩 */}
-        <div className="grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            onClick={() => { triggerHaptic('whitehole'); setAmbientTempoBpm(60); }}
-            className={`py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
-              ambientTempoBpm === 60 ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800/80 text-slate-300 border-white/10'
-            }`}
-          >
-            🧘 명상 60
-          </button>
-          <button
-            type="button"
-            onClick={() => { triggerHaptic('whitehole'); setAmbientTempoBpm(90); }}
-            className={`py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
-              ambientTempoBpm === 90 ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800/80 text-slate-300 border-white/10'
-            }`}
-          >
-            ☕ 팝 90
-          </button>
-          <button
-            type="button"
-            onClick={() => { triggerHaptic('whitehole'); setAmbientTempoBpm(120); }}
-            className={`py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
-              ambientTempoBpm === 120 ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800/80 text-slate-300 border-white/10'
-            }`}
-          >
-            ⚡ 비트 120
-          </button>
+        <div className="cosmic-room-presets" role="group" aria-label="리듬 프리셋">
+          {[{ bpm: 60, label: '명상' }, { bpm: 90, label: '편안하게' }, { bpm: 120, label: '집중' }].map(({ bpm, label }) => (
+            <button key={bpm} type="button" aria-pressed={ambientTempoBpm === bpm} onClick={() => { triggerHaptic('whitehole'); setAmbientTempoBpm(bpm); }}><span>{label}</span><small>{bpm}</small></button>
+          ))}
         </div>
-      </div>
-    </div>
+      </section>
+    </section>
   );
 };
