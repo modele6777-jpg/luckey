@@ -1895,8 +1895,9 @@ ${buildFifteenToolsMasterSystemCanon()}
 ${globalMemory ? `[에코시스템 배경 메모리]: ${globalMemory}\n` : ''}${deepCoreInfo ? `${deepCoreInfo}\n` : ''}
 # User Context Schema (앱 주입 변수)
 [사용자 기본 정보]
-- 이름/닉네임: ${nickname || realName || '친구'}
-${nickname && realName && nickname !== realName ? `- 호칭 절대 원칙: 사용자의 본명(${realName}) 대신 닉네임 '${nickname}'(으)로만 다정하게 부를 것.\n` : ''}- 별자리/차트 요약: ${astro || '정보 없음'}
+- 닉네임(호칭): ${nickname || '제제'}
+- 호칭 절대 원칙: 사용자를 부를 때는 본명이나 실명('${realName || '박주형'}' 등)을 절대 부르지 말고, 오직 닉네임 '${nickname || '제제'}'(으)로만 다정하게 부를 것. (예: '${nickname || '제제'}야', '${nickname || '제제'}아')
+- 별자리/차트 요약: ${astro || '정보 없음'}
 - 사주 정보: ${saju || '정보 없음'}
 - 이전 대화 참고(배경): ${memory || '새로운 만남'}
 - 현재 에너지: ${currentVibe || '평온함'}
