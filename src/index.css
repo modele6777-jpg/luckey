@@ -553,7 +553,7 @@
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
+    bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
     left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
     right: auto !important;
     transform: translateX(-50%) !important;
@@ -569,7 +569,7 @@
   }
   @media (min-width: 640px) {
     .bottom-safe-fab-center {
-      bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
+      bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
       width: 84px !important;
       height: 84px !important;
     }
@@ -3243,7 +3243,7 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
 .bottom-safe-fab-center {
   left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
   right: auto !important;
-  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
+  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   transform: translateX(-50%) !important;
@@ -3271,12 +3271,12 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .sites-pinned-sidebar {
 }
 
 /* The chat composer owns the lower edge; align the Big Bang FAB (including outer rune ring) directly above the composer's
-   divider line using its measured height + 32px offset. */
+   divider line using its measured height + 48px offset. */
 html.in-lucy-chat .bottom-safe-fab-center,
 .lucy-chat-shell ~ .bottom-safe-fab-center,
 body:has(.lucy-chat-footer) .bottom-safe-fab-center,
 .bottom-safe-fab-center {
-  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 32px) !important;
+  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
 }
 html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   position: absolute !important;
@@ -3292,10 +3292,9 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
    📱 iPhone Duo 7.6" 펼침 화면 최적화 (가로 좌우 50vw / 세로 상하 50vh)
    ========================================================================== */
 
-/* 🌌 우주 배경 복원: 바디 투명화로 AuroraBackground 성운/별빛이 럭키채널 전체에 비치도록 보장 */
-html.duo-unfolded-mode body,
-body.duo-unfolded-mode {
-  background-color: transparent !important;
+/* 🌌 좌측 럭키채널 테마: 접힌 상태와 동일한 고유 테마 배경 복원 */
+#duo-content-viewport {
+  background-color: var(--app-bg, oklch(0.08 0.02 270));
 }
 
 /* 럭키채널 뷰포트 내 UI 크기 최적화: 50% 분할 폭에 맞춰 단일 컬럼으로 편안하게 안착 */
@@ -3361,6 +3360,7 @@ body.duo-unfolded-landscape .bottom-safe-fab-center {
   margin-left: 0 !important;
   margin-right: 0 !important;
   transform: translateX(-50%) !important;
+  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
 }
 
 html.duo-unfolded-landscape .prism-hub-header {
@@ -3571,15 +3571,24 @@ html.duo-unfolded-mode #duo-content-viewport .prism-page-content {
   max-width: 100% !important;
 }
 
-/* 5. 좌측 뷰포트 헤더와 서브네비게이션이 겹치지 않고 자연스럽게 상하 배치 */
+/* 5. 좌측 뷰포트 헤더와 서브네비게이션: 늘어난 50vw 화면 비율에 맞춰 여백·크기 최적 재편성 */
 html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav {
   position: relative !important;
   left: auto !important;
   right: auto !important;
   top: auto !important;
   transform: none !important;
-  margin: 0.5rem auto 1rem auto !important;
+  margin: 0.75rem auto 1rem auto !important;
   max-width: calc(100% - 1.5rem) !important;
+  padding: 0.375rem 0.625rem !important;
+  gap: 0.375rem !important;
+  width: fit-content !important;
+}
+
+html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav :is(button, a, .prism-subnav-btn) {
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
 }
 
 html.duo-unfolded-mode #duo-content-viewport .prism-hub-header {
@@ -3611,8 +3620,8 @@ html.duo-unfolded-mode:not(.duo-unfolded-portrait) :is([data-app-channel-loader]
   position: fixed !important;
   left: 0 !important;
   top: 0 !important;
-  width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
-  max-width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  width: 50vw !important;
+  max-width: 50vw !important;
   right: auto !important;
   height: 100% !important;
   bottom: 0 !important;
@@ -3627,21 +3636,21 @@ html.duo-unfolded-portrait :is([data-app-channel-loader], [data-fullscreen-loade
   top: 0 !important;
   width: 100vw !important;
   max-width: 100vw !important;
-  height: calc((100dvh - 54px) / 2) !important;
-  max-height: calc((100dvh - 54px) / 2) !important;
+  height: 50% !important;
+  max-height: 50% !important;
   bottom: auto !important;
   right: auto !important;
   z-index: 9999 !important;
   overflow: hidden !important;
 }
 
-/* 가로 모드: 루시 관련 로더 & 애니메이션 ➔ 우측 50% 한정 */
+/* 가로 모드: 루시 관련 로더 & 애니메이션 ➔ 우측 루시 뷰포트 영역(50vw ~ 100vw-80px) 한정 */
 html.duo-unfolded-landscape :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]),
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
   position: fixed !important;
-  left: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
-  width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
-  max-width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  left: 50vw !important;
+  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
   right: var(--sites-sidebar-width, 80px) !important;
   top: 0 !important;
   height: 100% !important;
@@ -3654,12 +3663,12 @@ html.duo-unfolded-mode:not(.duo-unfolded-portrait) :is([data-lucy-loader], [data
 html.duo-unfolded-portrait :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
   position: fixed !important;
   left: 0 !important;
-  top: calc((100dvh - 54px) / 2) !important;
+  top: 50% !important;
   width: 100vw !important;
   max-width: 100vw !important;
-  height: calc((100dvh - 54px) / 2) !important;
-  max-height: calc((100dvh - 54px) / 2) !important;
-  bottom: 54px !important;
+  height: 50% !important;
+  max-height: 50% !important;
+  bottom: 0 !important;
   right: auto !important;
   z-index: 9999 !important;
   overflow: hidden !important;

@@ -9,6 +9,7 @@ export function LucyCosmicBackground({ isProMode }: LucyCosmicBackgroundProps) {
       <div className="lucy-cosmic-wash" />
       <div className="lucy-morning-light">
         <div className="lucy-morning-aurora" />
+        <div className="lucy-morning-caustic" />
         <div className="lucy-sun-halo" />
         <div className="lucy-sun-beams" />
         <div className="lucy-sun-rays" />

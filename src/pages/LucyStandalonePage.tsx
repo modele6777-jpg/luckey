@@ -746,10 +746,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       if (typeof window !== 'undefined') {
         const isWide = isDuoContainer || isDuoUnfoldedState().unfolded;
         const search = window.location.search || '';
-        if (search.includes('mode=ai') || search.includes('mode=plus')) return isWide ? 'plus' : 'ai';
+        const path = window.location.pathname || '/';
+        const isCosmic = isWide && (path === '/' || path === '/chat' || path === '/lucy');
         if (search.includes('mode=pro') || search.includes('mode=ultra')) return 'pro';
-        // 접힘: 'ai', 펼침: 'plus' (펼친 상태에서 일반 루시 진입 불가, 접힌 상태에서 루시 플러스 진입 불가)
-        return isWide ? 'plus' : 'ai';
+        if (search.includes('mode=ai')) return 'ai';
+        if (search.includes('mode=plus')) return isWide ? 'plus' : 'ai';
+        // 접힘: 'ai', 펼침: 코스믹 룸일 때만 'plus', 다른 채널일 땐 'ai'
+        return isCosmic ? 'plus' : 'ai';
       }
     } catch {
       return 'ai';
@@ -791,19 +794,21 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       setTimeout(() => setModeSwitchToast(null), 2500);
     };
 
-    // ✨ 빅뱅 버튼 탭: 접혀있으면 'Lucy', 펼쳐있으면 'Lucy +'!
+    // ✨ 빅뱅 버튼 탭: 접혀있거나 일반 채널이면 'Lucy', 펼치고 코스믹 룸일 때만 'Lucy +'!
     const handleRevertNormal = (e?: any) => {
       const isWide = isDuoContainer || isDuoUnfoldedState().unfolded;
-      const validTarget: LucyTier = isWide ? 'plus' : 'ai';
+      const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+      const isCosmic = isWide && (path === '/' || path === '/chat' || path === '/lucy');
+      const validTarget: LucyTier = isCosmic ? 'plus' : 'ai';
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
       setLucyTier(validTarget);
       const mode = new URLSearchParams(window.location.search).get('mode');
       if (mode === 'pro' || mode === 'ultra') navigate('/chat?mode=' + validTarget, { replace: true });
-      setModeTransitioningTier(validTarget === 'plus' ? 'plus' : 'pro');
+      setModeTransitioningTier(validTarget);
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
-      setModeSwitchToast(isWide ? '🌿 Lucy +' : '✨ Lucy');
+      setModeSwitchToast(validTarget === 'plus' ? '🌿 Lucy +' : '✨ Lucy');
       setTimeout(() => setModeSwitchToast(null), 2000);
     };
 
@@ -1012,7 +1017,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     const updateFooterHeight = () => {
       const rect = el.getBoundingClientRect();
       if (rect.height > 0) {
-        document.documentElement.style.setProperty('--lucy-footer-height', `${Math.round(rect.height)}px`);
+        const hStr = `${Math.round(rect.height)}px`;
+        document.documentElement.style.setProperty('--lucy-footer-height', hStr);
+        document.documentElement.style.setProperty('--sidebar-footer-height', hStr);
       }
     };
     updateFooterHeight();
@@ -1023,8 +1030,27 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       ro.disconnect();
       window.removeEventListener('resize', updateFooterHeight);
       document.documentElement.style.removeProperty('--lucy-footer-height');
+      document.documentElement.style.removeProperty('--sidebar-footer-height');
     };
   }, []);
+
+  // 🧭 채널 이동 감지: 펼친 상태에서 채팅 버튼 눌러 코스믹 룸 진입 시 'Lucy+', 다른 채널일 땐 'Lucy'로 정밀 자동 전환
+  useEffect(() => {
+    if (pro) return;
+    if (lucyTier === 'pro') return;
+    const isWide = isDuoContainer || isDuoUnfoldedState().unfolded;
+    const clean = location ? location.split('?')[0].split('#')[0] : '/';
+    const isCosmic = isWide && (clean === '/' || clean === '/chat' || clean === '/lucy');
+    const expected: LucyTier = isCosmic ? 'plus' : 'ai';
+    if (lucyTier !== expected) {
+      setLucyTier(expected);
+      setModeTransitioningTier(expected);
+      setTimeout(() => setModeTransitioningTier(null), 550);
+      triggerHaptic('whitehole');
+      setModeSwitchToast(expected === 'plus' ? '🌿 Lucy +' : '✨ Lucy');
+      setTimeout(() => setModeSwitchToast(null), 2000);
+    }
+  }, [location, isDuoUnfolded, pro, lucyTier]);
 
   useEffect(() => {
     let initialRun = true;
@@ -2897,7 +2923,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     >
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
       <LucyCosmicBackground isProMode={isMasterMode} />
-      <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={isDuoUnfolded} isProMode={isMasterMode} />
+      <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={lucyTier === 'plus'} isProMode={isMasterMode} />
 
       {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>
@@ -3440,12 +3466,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       <footer 
         ref={chatFooterRef}
         style={{
-          paddingBottom: 'max(0.25rem, var(--sab, 0px))',
+          paddingBottom: 'max(2px, calc(var(--sab, 0px) * 0.35))',
           backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
           color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',
         }}
-        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-1 pb-1 sm:pt-1.5 sm:pb-1.5 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 ${
+        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1 sm:pb-1 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 ${
           isLight
             ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_-2px_12px_rgba(180,140,90,0.06)]'
             : 'bg-slate-950/88 border-white/10 text-white'
