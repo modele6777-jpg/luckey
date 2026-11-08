@@ -8,7 +8,7 @@ export const VIEWPORT_KEYBOARD_MIN_DELTA_PX = 160;
 export const VIEWPORT_KEYBOARD_MIN_RATIO = 0.22;
 export const VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX = 24;
 export const TABLET_SHORT_SIDE_PX = 600;
-export const VIEWPORT_SYNC_RETRY_MS = [80, 280, 700, 1400, 2200];
+export const VIEWPORT_SYNC_RETRY_MS = [80, 280, 700, 1400, 2200, 3500, 5000];
 /** iPad reports a stale short visual viewport for a while after unlock or app switch. */
 export const VIEWPORT_RESUME_RETRY_MS = [50, 160, 400, 800, 1400, 2200];
 export const VIEWPORT_RESUME_FILL_MS = 2600;
@@ -99,9 +99,14 @@ export function resolveViewportBox(
     if (standaloneFill) return coverScreenEdges(snapshot, standaloneFill);
   }
 
+  // On a cold launch on an unfolded screen, visualViewport can settle before
+  // innerHeight. Use that newer height only once both report the same width;
+  // a visual viewport from the cover screen or previous orientation is unsafe.
+  const sameWidth = Math.abs(visualWidth - layoutWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
+  const height = sameWidth ? Math.max(layoutHeight, visualHeight) : layoutHeight;
   return coverScreenEdges(snapshot, {
     width: roundPx(layoutWidth),
-    height: roundPx(layoutHeight),
+    height: roundPx(height),
     offsetTop: 0,
     offsetLeft: 0,
     bottomGap: 0,

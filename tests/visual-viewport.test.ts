@@ -248,3 +248,21 @@ test('late update recovery restores app height and clears stale keyboard constra
   applyAppLayoutViewport(full, doc);
   assert.equal(html.values.get('--app-height'), 'max(100dvh, 675px)');
 });
+
+
+test('unfolded portrait cold launch fills the newer visible height without a reload', () => {
+  const starting = {
+    innerWidth: 900, innerHeight: 1170,
+    screenWidth: 900, screenHeight: 1280,
+    visual: { width: 900, height: 1280, offsetTop: 110, offsetLeft: 0 },
+  };
+  const box = resolveViewportBox(starting)!;
+  assert.equal(box.width, 900);
+  assert.equal(box.height, 1280);
+  assert.equal(box.offsetTop, 0);
+  assert.equal(resolveAppLayoutHeight(starting), 'max(100dvh, 1280px)');
+  assert.equal(resolveViewportBox({ ...starting, innerHeight: 1280 })?.height, box.height);
+  // Neither a cover-screen measurement nor a shorter keyboard may size the shell.
+  assert.equal(resolveViewportBox({ ...starting, visual: { ...starting.visual, width: 400 } })?.height, 1170);
+  assert.equal(resolveViewportBox({ ...starting, visual: { ...starting.visual, height: 600 } })?.height, 1170);
+});
