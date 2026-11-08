@@ -1,68 +1,270 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Sparkles, Music, Sliders, Play, Pause, Activity, Zap, Compass } from 'lucide-react';
-import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
-import { getBgmPublicState, type BgmPublicState } from '@/components/trinity/BgMusicPlayer';
+import { Sparkles, Music, Activity, Play, Pause, RefreshCw, Volume2 } from 'lucide-react';
+import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
 interface DuoCosmicAmbientRoomProps {
   isLight?: boolean;
 }
 
+// 🎧 Web Audio API 기반 순수 바이노럴 비트 합성기 (스테레오 채널 분리)
+class BinauralBeatSynthesizer {
+  private ctx: AudioContext | null = null;
+  private leftOsc: OscillatorNode | null = null;
+  private rightOsc: OscillatorNode | null = null;
+  private masterGain: GainNode | null = null;
+  private isPlaying: boolean = false;
+
+  public static getBeatFreq(bpm: number): { beatHz: number; carrierHz: number; waveLabel: string } {
+    if (bpm <= 65) {
+      return { beatHz: 4.5, carrierHz: 216, waveLabel: '세타파(θ) 4.5Hz · 깊은 명상' };
+    }
+    if (bpm <= 95) {
+      return { beatHz: 10.0, carrierHz: 220, waveLabel: '알파파(α) 10Hz · 편안한 이완' };
+    }
+    return { beatHz: 15.0, carrierHz: 240, waveLabel: '베타파(β) 15Hz · 집중과 각성' };
+  }
+
+  public start(bpm: number): boolean {
+    try {
+      this.stop();
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return false;
+
+      const ctx = new AudioCtx();
+      this.ctx = ctx;
+
+      const { beatHz, carrierHz } = BinauralBeatSynthesizer.getBeatFreq(bpm);
+
+      // 좌측 채널: carrierHz (예: 216Hz, 220Hz, 240Hz)
+      const leftOsc = ctx.createOscillator();
+      leftOsc.type = 'sine';
+      leftOsc.frequency.setValueAtTime(carrierHz, ctx.currentTime);
+
+      // 우측 채널: carrierHz + beatHz (예: 220.5Hz, 230Hz, 255Hz)
+      const rightOsc = ctx.createOscillator();
+      rightOsc.type = 'sine';
+      rightOsc.frequency.setValueAtTime(carrierHz + beatHz, ctx.currentTime);
+
+      // 스테레오 채널 분리 머저
+      const merger = ctx.createChannelMerger(2);
+
+      const leftGain = ctx.createGain();
+      leftGain.gain.setValueAtTime(0.5, ctx.currentTime);
+      leftOsc.connect(leftGain);
+      leftGain.connect(merger, 0, 0); // 좌측 이어폰
+
+      const rightGain = ctx.createGain();
+      rightGain.gain.setValueAtTime(0.5, ctx.currentTime);
+      rightOsc.connect(rightGain);
+      rightGain.connect(merger, 0, 1); // 우측 이어폰
+
+      // 부드러운 페이드인
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.001, ctx.currentTime);
+      masterGain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.5);
+
+      merger.connect(masterGain);
+      masterGain.connect(ctx.destination);
+
+      leftOsc.start();
+      rightOsc.start();
+
+      this.leftOsc = leftOsc;
+      this.rightOsc = rightOsc;
+      this.masterGain = masterGain;
+      this.isPlaying = true;
+
+      if (ctx.state === 'suspended') {
+        void ctx.resume();
+      }
+      return true;
+    } catch (e) {
+      console.warn('Binaural beat synthesis error:', e);
+      return false;
+    }
+  }
+
+  public updateBpm(bpm: number) {
+    if (!this.isPlaying || !this.ctx || !this.leftOsc || !this.rightOsc) return;
+    try {
+      const { beatHz, carrierHz } = BinauralBeatSynthesizer.getBeatFreq(bpm);
+      const now = this.ctx.currentTime;
+      this.leftOsc.frequency.linearRampToValueAtTime(carrierHz, now + 0.3);
+      this.rightOsc.frequency.linearRampToValueAtTime(carrierHz + beatHz, now + 0.3);
+    } catch (_) {}
+  }
+
+  public stop() {
+    if (this.ctx && this.masterGain) {
+      try {
+        const now = this.ctx.currentTime;
+        this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+        this.masterGain.gain.linearRampToValueAtTime(0.001, now + 0.25);
+        setTimeout(() => {
+          try {
+            this.leftOsc?.stop();
+            this.rightOsc?.stop();
+            this.leftOsc?.disconnect();
+            this.rightOsc?.disconnect();
+            this.ctx?.close();
+          } catch (_) {}
+          this.ctx = null;
+          this.leftOsc = null;
+          this.rightOsc = null;
+          this.masterGain = null;
+          this.isPlaying = false;
+        }, 280);
+      } catch (_) {
+        this.ctx = null;
+        this.isPlaying = false;
+      }
+    } else {
+      this.isPlaying = false;
+    }
+  }
+
+  public getIsPlaying(): boolean {
+    return this.isPlaying;
+  }
+}
+
+// 📖 246대 DCE 엔진별 핵심 통찰 및 요약 설명 생성기
+function getEngineShortSummary(engine: DceEngineMeta): string {
+  if (engine.summary) return engine.summary;
+  const k = engine.key;
+  const n = engine.nameKo;
+
+  // 1. 기초 15대 도구
+  if (k === 'saju') return '생년월일시 사주팔자와 오행의 생극제화로 타고난 기질과 대운의 흐름을 조망합니다.';
+  if (k === 'astrology') return '출생 천궁도 행성 배치와 황도 12궁 각도로 내면의 원형과 우주적 기운을 해석합니다.';
+  if (k === 'ziwei') return '자미성·천부성 등 12궁 별자리 배치를 통해 인생의 길흉화복과 귀인 흐름을 정밀 분석합니다.';
+  if (k === 'tarot') return '78장 원형 카드의 무의식적 투사와 동시성으로 현재 당면한 기운과 선택의 기로를 짚어냅니다.';
+  if (k === 'sukuyo') return '달의 27숙 궤도와 6대 관계 매트릭스로 영혼의 상성과 숙명적 인연의 깊이를 읽습니다.';
+  if (k === 'mahabote') return '출생 요일과 미얀마 8요일 행성 주기로 성격의 고유한 장단점과 대처 방식을 진단합니다.';
+  if (k === 'vedic') return '항성황도대 정밀 계산과 120년 다샤로 카르마의 전개와 인생의 결실 시기를 진단합니다.';
+  if (k === 'liuren') return '하늘과 땅의 12신살 정단으로 일상 속 구체적인 사건과 거래의 진척을 밝힙니다.';
+  if (k === 'qimen') return '천간·지지와 팔문·구성의 시공간 포국으로 현실 속 최선의 전략적 승부처를 찾습니다.';
+  if (k === 'kabbalah') return '생명나무 10대 세피라와 22개 길을 통해 우주적 창조 질서와 영혼의 성장 단계를 짚습니다.';
+  if (k === 'iching') return '음양 64괘의 동효와 변괘를 통해 세상의 변화 이치와 알맞은 처세의 타이밍을 읽습니다.';
+  if (k === 'thai_astrology') return '동남아 전통 불교 점성학의 생애주기와 인연수치로 업보의 흐름을 살펴봅니다.';
+  if (k === 'tojeong') return '토정 이지함의 역학 원리로 한 해의 사계절 운세 흐름과 조심할 액운을 방비합니다.';
+  if (k === 'kyusei') return '낙서 9궁의 정위반 순환으로 해와 달의 기운에 따른 길방위와 개운법을 도출합니다.';
+  if (k === 'taiyi') return '천문 3식의 최고봉으로 국가적·시대적 대세 흐름과 거시적 환경 변화를 관조합니다.';
+
+  // 2. 주요 심층 결정론 도구
+  if (k === 'chronoTransit') return '지금 이 시각 행성들의 하늘 위치가 나의 출생 차트와 이루는 실시간 각도를 해석합니다.';
+  if (k === 'lifeSeasonTiming') return '10년 주기로 바뀌는 대운의 계절적 전환점을 파악해 인생의 속도 조절을 돕습니다.';
+  if (k === 'energeticPrescription') return '목화토금수 오행의 결핍과 과다를 진단해 심신의 균형을 맞추는 솔루션을 제시합니다.';
+  if (k === 'contextualSynastry') return '대화 상대방과의 사주·에너지 상성을 실시간 교차 검증해 관계의 시너지를 찾습니다.';
+  if (k === 'instantDecision') return '지금 시각의 기문둔갑 시가팔문으로 선택의 길흉과 즉시 행동 여부를 명확히 가릅니다.';
+  if (k === 'ziweiFlyingStars') return '유년 사화(록·권·과·기)의 비궁 흐름을 추적해 올해의 재물과 명예 기회를 포착합니다.';
+  if (k === 'specialStarsMatrix') return '천을귀인·괴강·백호·양인 등 15대 신살의 역동성을 분석해 잠재된 슈퍼파워를 깨웁니다.';
+  if (k === 'monthlyFlow') return '12개월의 월별 운기 흐름을 시각화해 상반기와 하반기의 핵심 실행 전략을 제시합니다.';
+  if (k === 'spatialFengshui') return '거주 공간과 집무실의 방위 에너지를 조율해 집중력과 재물운을 끌어올립니다.';
+  if (k === 'vitalityCurve') return '24시간 생체 시계와 오행 순환 리듬을 대조해 최적의 몰입과 휴식 타이밍을 찾습니다.';
+  if (k === 'samjaeGyoUn') return '삼재와 10년 대운 교운기의 환절기 변곡점을 짚어 무리한 확장을 방비하고 체질을 개선합니다.';
+  if (k === 'auspiciousStars') return '내 사주에 깃든 귀인과 길성망을 찾아내 위기 상황에서 나를 도울 조력자의 성향을 짚습니다.';
+  if (k === 'geokguk') return '월지 정통 10대 격국을 규명해 사회적 성취의 그릇과 나에게 가장 유리한 커리어 궤도를 밝힙니다.';
+  if (k === 'wealthPipeline') return '재성의 통근 여부와 식상 생재의 흐름을 분석해 안정적인 자산 파이프라인 구축을 돕습니다.';
+  if (k === 'karmicNodes') return '노스노드와 사우스노드를 대조해 과거의 익숙한 집착을 넘어 영혼이 나아가야 할 진로를 비춥니다.';
+  if (k === 'contractShield') return '문서운과 계약궁의 충극을 사전 검토해 불리한 조항이나 법적 분쟁의 씨앗을 방어합니다.';
+  if (k === 'deepWorkFlow') return '수면 주기와 일주 기운에 맞춘 최적의 딥워크 시간대를 도출해 창작과 성과의 밀도를 극대화합니다.';
+  if (k === 'ikigaiDestinyCompass') return '내가 잘하는 것과 세상이 원하는 것, 사주 적성이 만나는 인생의 참된 보람을 발굴합니다.';
+
+  // 3. 역사적 철학·원형 엔진 매칭
+  if (n.includes('니체')) return '운명을 긍정하는 아모르파티 철학으로 어떤 고난도 극복하는 결단의 힘을 부여합니다.';
+  if (n.includes('마키아벨리')) return '비르투(역량)와 포르투나(기회)의 균형으로 냉철한 전략적 주도권을 잡습니다.';
+  if (n.includes('융') || n.includes('그림자')) return '무의식의 그림자와 아니마·아니무스 원형을 탐색해 온전한 자기실현(개성화)을 이끕니다.';
+  if (n.includes('정약용')) return '실사구시와 목민심서의 실천적 공직 윤리로 삶의 질서를 단단히 바로 세웁니다.';
+  if (n.includes('류성룡') || n.includes('징비록')) return '징비록의 반성적 성찰을 통해 과거의 실패를 미래의 확실한 자산으로 바꿉니다.';
+  if (n.includes('키르케고르')) return '단독자로서 주체적이고 실존적인 결단을 내리는 진정한 용기를 일깨웁니다.';
+  if (n.includes('스피노자')) return '자연의 필연성과 내면의 코나투스(존재 역량)를 긍정하며 명징한 평정을 얻습니다.';
+  if (n.includes('데카르트')) return '의심할 수 없는 명징한 사유로 복잡한 문제의 근본 핵심을 간결하게 꿰뚫습니다.';
+  if (n.includes('칸트')) return '보편적 도덕 법칙과 순수 실천 이성으로 스스로에게 부끄러움 없는 확고한 원칙을 세웁니다.';
+  if (n.includes('손자병법') || n.includes('손자')) return '싸우지 않고 이기는 부전승의 지혜와 지형·형세의 흐름을 읽는 전략을 제공합니다.';
+  if (n.includes('헤겔')) return '모순과 갈등을 더 높은 차원으로 종합하는 변증법적 도약(지양)의 계기를 찾습니다.';
+  if (n.includes('쇼펜하우어')) return '삶의 맹목적 의지와 번뇌를 직시하여 과도한 집착에서 벗어난 관조의 평온을 얻습니다.';
+  if (n.includes('파스칼')) return '이성이 미처 알지 못하는 심장의 지혜로 삶의 실존적 확신을 되찾습니다.';
+  if (n.includes('루미')) return '수피즘의 신성한 사랑과 시적 영감으로 메마른 영혼의 갈증을 포근하게 적십니다.';
+  if (n.includes('추사') || n.includes('세한도')) return '세한도의 지혜처럼 험난한 겨울에도 변치 않는 진정한 가치와 인연을 가려냅니다.';
+  if (n.includes('베이컨')) return '신기관의 실증적 관찰과 경험적 검증으로 낡은 편견을 깨고 혁신을 도모합니다.';
+  if (n.includes('아퀴나스')) return '신앙과 이성의 조화로 가치 있는 것과 일시적인 것을 명확히 분별합니다.';
+  if (n.includes('아우구스티누스')) return '고백록의 깊은 내적 조명을 통해 시간의 한계를 넘어 영원한 진리를 성찰합니다.';
+  if (n.includes('용수') || n.includes('중론')) return '양극단의 집착을 내려놓고 공(空)과 중도의 시선으로 사태의 본모습을 봅니다.';
+  if (n.includes('지눌')) return '단번에 본질을 깨닫고 꾸준히 닦아 나가는 정혜쌍수의 실천적 평정을 유지합니다.';
+  if (n.includes('몽테뉴')) return '수상록의 유연한 인간 성찰로 타인의 시선에 얽매이지 않고 나다운 삶을 누립니다.';
+  if (n.includes('원효')) return '원융회통의 열린 지혜로 모든 대립과 갈등을 한마음(일심) 안에서 조화롭게 화해시킵니다.';
+  if (n.includes('최치원')) return '유불선 삼교를 아우르는 풍류도의 기운으로 동서양 지혜를 유연하게 융합합니다.';
+  if (n.includes('피타고라스')) return '수의 비례와 천체의 조화로 내 삶의 리듬 속에 깃든 필연적 질서를 해독합니다.';
+  if (n.includes('아카식')) return '모든 사건과 통찰이 보존된 우주적 지혜의 저장소에서 현재의 영적 실마리를 엽니다.';
+  if (n.includes('풍수') || n.includes('8택')) return '머무는 공간의 방위와 에너지 흐름을 조율해 삶의 운기를 북돋웁니다.';
+  if (n.includes('차크라') || n.includes('쿤달리니')) return '에너지 센터의 진동수를 정렬해 막힌 기운을 틔우고 생명력을 복원합니다.';
+  if (n.includes('바이오리듬')) return '신체·감성·지성의 삼중 주기를 살펴 중요한 일의 타이밍을 최적화합니다.';
+
+  // 기본 유니버설 템플릿
+  return `${n}의 고유한 결정론적 관점을 통해 현재 질문을 새로운 각도에서 깊이 있게 조망합니다.`;
+}
+
 export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLight = false }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [bgmState, setBgmState] = useState<BgmPublicState>(() => getBgmPublicState());
 
-  // 외부 음악(멜론/애플뮤직) 앰비언트 펄스 설정
-  const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90); // 기본 90 BPM
-  const [visualMode, setVisualMode] = useState<'mandala' | 'wave' | 'galaxy'>('mandala');
+  // BPM 리듬 설정 (기본 90 BPM)
+  const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90);
   const [activeEngineIdx, setActiveEngineIdx] = useState<number>(0);
-  const tapTimesRef = useRef<number[]>([]);
 
-  // BGM 상태 실시간 수신
+  // 바이노럴 비트 합성기 상태
+  const [isBinauralPlaying, setIsBinauralPlaying] = useState<boolean>(false);
+  const synthRef = useRef<BinauralBeatSynthesizer | null>(null);
+
   useEffect(() => {
-    const handleBgmStateChange = (e: Event) => {
-      const customEvent = e as CustomEvent<BgmPublicState>;
-      if (customEvent.detail) {
-        setBgmState(customEvent.detail);
-      }
-    };
-    window.addEventListener('prism:bgm_state_change', handleBgmStateChange);
-    window.dispatchEvent(new CustomEvent('prism:request_bgm_state'));
+    synthRef.current = new BinauralBeatSynthesizer();
     return () => {
-      window.removeEventListener('prism:bgm_state_change', handleBgmStateChange);
+      synthRef.current?.stop();
     };
   }, []);
 
-  // 246대 DCE 엔진 텔레메트리 티커 (3초마다 순환)
+  // 셔플: 엔진 순환
+  const handleShuffleEngine = useCallback(() => {
+    triggerHaptic('whitehole');
+    setActiveEngineIdx((prev) => (prev + 1) % ALL_DCE_ENGINES.length);
+  }, []);
+
+  // 자동 엔진 셔플 (8초 주기)
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveEngineIdx((prev) => (prev + 1) % ALL_DCE_ENGINES.length);
-    }, 2800);
+    }, 8000);
     return () => clearInterval(timer);
   }, []);
 
-  // 탭 템포: 음악 박자에 맞춰 탭하면 템포 자동 동기화
-  const handleTapTempo = useCallback(() => {
+  // BPM 변경 시 바이노럴 비트 주파수 연동
+  const handleSelectBpm = useCallback((bpm: number) => {
     triggerHaptic('whitehole');
-    const now = Date.now();
-    const times = tapTimesRef.current;
-    times.push(now);
-    if (times.length > 4) times.shift();
-
-    if (times.length >= 2) {
-      const intervals = [];
-      for (let i = 1; i < times.length; i++) {
-        intervals.push(times[i] - times[i - 1]);
-      }
-      const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-      if (avgInterval > 250 && avgInterval < 2000) {
-        const calculatedBpm = Math.round(60000 / avgInterval);
-        setAmbientTempoBpm(Math.min(180, Math.max(50, calculatedBpm)));
-      }
+    setAmbientTempoBpm(bpm);
+    if (synthRef.current?.getIsPlaying()) {
+      synthRef.current.updateBpm(bpm);
     }
   }, []);
 
-  // 캔버스 앰비언트 펄스 & 만다라 렌더러
+  // 바이노럴 비트 재생 / 정지 토글
+  const handleToggleBinauralBeat = useCallback(() => {
+    triggerHaptic('whitehole');
+    const synth = synthRef.current;
+    if (!synth) return;
+
+    if (isBinauralPlaying) {
+      synth.stop();
+      setIsBinauralPlaying(false);
+    } else {
+      const ok = synth.start(ambientTempoBpm);
+      if (ok) {
+        setIsBinauralPlaying(true);
+      }
+    }
+  }, [isBinauralPlaying, ambientTempoBpm]);
+
+  // 🎨 상단 [나의 리듬] 캔버스 유기적 코스믹 파동 렌더러
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -70,7 +272,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     if (!ctx) return;
 
     let animId: number;
-    let startTime = performance.now();
+    const startTime = performance.now();
 
     const render = () => {
       const now = performance.now();
@@ -79,73 +281,87 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
       const height = canvas.height;
       const cx = width / 2;
       const cy = height / 2;
+      const minDim = Math.min(width, height);
 
       ctx.clearRect(0, 0, width, height);
 
-      // 템포 주파수 계산 (BPM -> Hz)
+      // 템포 주파수 (BPM -> Hz)
       const freq = ambientTempoBpm / 60;
       const pulse = Math.sin(elapsed * Math.PI * 2 * freq);
       const secondaryPulse = Math.cos(elapsed * Math.PI * freq * 0.5);
-      const radius = Math.min(width, height) * 0.32 * (1 + pulse * 0.08);
+      const radius = minDim * 0.35 * (1 + pulse * 0.06);
 
-      // 1. 코스믹 배경 오로라 방사광
-      const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius * 1.6);
-      grad.addColorStop(0, 'rgba(245, 158, 11, 0.18)');
-      grad.addColorStop(0.4, 'rgba(139, 92, 246, 0.12)');
-      grad.addColorStop(0.8, 'rgba(16, 185, 129, 0.05)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = grad;
+      // 1. 코스믹 방사광 오로라
+      const radialGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius * 1.55);
+      radialGrad.addColorStop(0, isBinauralPlaying ? 'rgba(245, 158, 11, 0.22)' : 'rgba(245, 158, 11, 0.14)');
+      radialGrad.addColorStop(0.35, 'rgba(139, 92, 246, 0.10)');
+      radialGrad.addColorStop(0.7, 'rgba(16, 185, 129, 0.05)');
+      radialGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = radialGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // 2. 신성기하학 만다라 링
       ctx.save();
       ctx.translate(cx, cy);
-      ctx.rotate(elapsed * 0.15);
 
-      const rings = 5;
-      for (let r = 0; r < rings; r++) {
-        const ringR = (radius / rings) * (r + 1) * (1 + secondaryPulse * 0.04);
+      // 2. 신성기하학 3중 브리딩 링
+      const ringCount = 4;
+      for (let r = 1; r <= ringCount; r++) {
+        const ringR = (radius / ringCount) * r * (1 + Math.sin(elapsed * 2 + r) * 0.03);
         ctx.beginPath();
         ctx.arc(0, 0, ringR, 0, Math.PI * 2);
-        ctx.strokeStyle = r % 2 === 0 
-          ? `rgba(245, 158, 11, ${0.15 + (pulse + 1) * 0.1})` 
-          : `rgba(99, 102, 241, ${0.12 + (secondaryPulse + 1) * 0.08})`;
-        ctx.lineWidth = 1 + (r === rings - 1 ? 1.5 : 0.5);
+        ctx.strokeStyle = r === ringCount
+          ? `rgba(245, 158, 11, ${0.28 + (pulse + 1) * 0.1})`
+          : r % 2 === 0
+          ? `rgba(139, 92, 246, ${0.12 + (secondaryPulse + 1) * 0.06})`
+          : `rgba(16, 185, 129, 0.12)`;
+        ctx.lineWidth = r === ringCount ? 1.5 : 0.8;
+        if (r % 2 === 1) {
+          ctx.setLineDash([4, 6]);
+        } else {
+          ctx.setLineDash([]);
+        }
         ctx.stroke();
       }
+      ctx.setLineDash([]);
 
-      // 3. 12방위 천체 노드 파티클
-      const nodes = 12;
-      for (let i = 0; i < nodes; i++) {
-        const angle = (i * Math.PI * 2) / nodes;
-        const nx = Math.cos(angle) * radius;
-        const ny = Math.sin(angle) * radius;
+      // 3. 유기적 리듬 사인파 리본 (Organic Rhythm Ribbon)
+      const wavePoints = 72;
+      ctx.beginPath();
+      for (let p = 0; p <= wavePoints; p++) {
+        const theta = (p / wavePoints) * Math.PI * 2;
+        const waveOffset = Math.sin(theta * 8 + elapsed * 2.5) * (4 + pulse * 5)
+                         + Math.cos(theta * 4 - elapsed * 1.8) * 3;
+        const wr = radius * 0.84 + waveOffset;
+        const wx = Math.cos(theta + elapsed * 0.1) * wr;
+        const wy = Math.sin(theta + elapsed * 0.1) * wr;
+        if (p === 0) ctx.moveTo(wx, wy);
+        else ctx.lineTo(wx, wy);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = isBinauralPlaying ? 'rgba(251, 191, 36, 0.7)' : 'rgba(245, 158, 11, 0.45)';
+      ctx.lineWidth = isBinauralPlaying ? 2.2 : 1.6;
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = isBinauralPlaying ? 12 : 6;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // 4. 천체 궤도 유영 파티클 12성좌
+      const moteCount = 12;
+      for (let i = 0; i < moteCount; i++) {
+        const angle = (i * Math.PI * 2) / moteCount + elapsed * 0.22 * (i % 2 === 0 ? 1 : -0.7);
+        const moteDist = radius * (0.62 + (i % 4) * 0.12) + Math.sin(elapsed * 2.8 + i) * 6;
+        const mx = Math.cos(angle) * moteDist;
+        const my = Math.sin(angle) * moteDist;
 
         ctx.beginPath();
-        ctx.arc(nx, ny, 3 + (pulse + 1) * 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = i % 3 === 0 ? '#f59e0b' : i % 3 === 1 ? '#8b5cf6' : '#10b981';
+        const mSize = 2.4 + Math.sin(elapsed * 4 + i) * 1.2;
+        ctx.arc(mx, my, Math.max(1.2, mSize), 0, Math.PI * 2);
+        ctx.fillStyle = i % 4 === 0 ? '#f59e0b' : i % 4 === 1 ? '#8b5cf6' : i % 4 === 2 ? '#10b981' : '#f43f5e';
         ctx.shadowColor = ctx.fillStyle;
         ctx.shadowBlur = 8;
         ctx.fill();
         ctx.shadowBlur = 0;
       }
-
-      // 4. 리듬 사운드웨이브 궤도선
-      const wavePoints = 64;
-      ctx.beginPath();
-      for (let p = 0; p <= wavePoints; p++) {
-        const theta = (p / wavePoints) * Math.PI * 2;
-        const waveOffset = Math.sin(theta * 6 + elapsed * 3) * (6 + pulse * 8);
-        const wr = radius * 0.65 + waveOffset;
-        const wx = Math.cos(theta) * wr;
-        const wy = Math.sin(theta) * wr;
-        if (p === 0) ctx.moveTo(wx, wy);
-        else ctx.lineTo(wx, wy);
-      }
-      ctx.closePath();
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
 
       ctx.restore();
 
@@ -154,110 +370,177 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
-  }, [ambientTempoBpm, visualMode]);
+  }, [ambientTempoBpm, isBinauralPlaying]);
 
   const currentEngine = ALL_DCE_ENGINES[activeEngineIdx] || ALL_DCE_ENGINES[0];
+  const currentSummary = getEngineShortSummary(currentEngine);
 
   return (
-    <div className={`h-full w-full flex flex-col justify-between select-none p-3.5 sm:p-5 transition-colors duration-500 relative overflow-hidden ${
-      isLight ? 'bg-gradient-to-br from-slate-100 via-amber-50/40 to-slate-200 text-slate-800' : 'bg-slate-950 text-white'
+    <div className={`h-full w-full flex flex-col justify-between p-3 sm:p-4 gap-3 select-none overflow-hidden relative ${
+      isLight ? 'bg-[#f8f9fa] text-slate-800' : 'bg-slate-950 text-white'
     }`}>
-      {/* 배경 앰비언트 캔버스 */}
-      <canvas
-        ref={canvasRef}
-        width={420}
-        height={320}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-90"
-      />
-
-      {/* 상단: 상태 배지 및 외부 음악 모드 알림 */}
-      <div className="relative z-10 flex items-center justify-between pb-3 border-b border-amber-500/20 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-400/30">
-            <Compass size={16} className="animate-spin-slow" />
-          </span>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-xs sm:text-sm font-black tracking-tight text-amber-300">
-                마스터 코스믹 룸
-              </h2>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                246대 풀가동
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400">
-              외부 음악 믹싱 보존 · 앰비언트 펄스 비주얼라이저
-            </p>
+      {/* 1️⃣ 상단 카드: 나의 리듬 (제목·설명 제외 순수 비주얼 파동 캔버스) */}
+      <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs border flex-1 min-h-[220px] flex flex-col justify-between overflow-hidden relative ${
+        isLight ? 'bg-white border-slate-200/70' : 'bg-slate-900/90 border-white/10'
+      }`}>
+        {/* 상단 라벨 */}
+        <div className="flex items-center justify-between shrink-0 relative z-10">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-2xs" />
+            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">
+              나의 리듬
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+            <Music size={12} className="text-slate-400 shrink-0" />
+            <span>외부 음악과 함께</span>
           </div>
         </div>
 
-        {/* 오디오 모드 뱃지 */}
-        <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-900/80 border border-white/10 text-[10px] font-semibold text-amber-300 shadow-xs">
-          <Music size={12} className="animate-bounce" />
-          <span>{bgmState.isPlaying ? '내장 BGM 반응' : '외부 음악 감상 모드'}</span>
+        {/* 중앙: 유기적 코스믹 파동 캔버스 & BREATHE & FLOW 중앙 엠블럼 */}
+        <div className="relative w-full flex-1 flex items-center justify-center my-auto min-h-[140px]">
+          <canvas
+            ref={canvasRef}
+            width={380}
+            height={260}
+            className="w-full h-full max-h-[200px] object-contain pointer-events-none"
+          />
+
+          {/* 중앙 플로팅 엠블럼 */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full border flex flex-col items-center justify-center shadow-inner transition-transform duration-700 ${
+              isLight
+                ? 'border-amber-400/25 bg-amber-50/20 backdrop-blur-[1px]'
+                : 'border-amber-400/20 bg-amber-950/20 backdrop-blur-[1px]'
+            }`}>
+              <span className="text-[9px] sm:text-[10px] tracking-[0.28em] font-bold text-amber-700 dark:text-amber-300 uppercase">
+                BREATHE
+              </span>
+              <span className="text-[12px] sm:text-[13px] tracking-[0.32em] font-black text-amber-900 dark:text-amber-100 uppercase mt-0.5">
+                & FLOW
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 중앙: 실시간 가동 중인 246대 DCE 엔진 텔레메트리 */}
-      <div className="relative z-10 my-auto text-center py-4 flex flex-col items-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 border border-amber-400/30 text-xs font-bold text-amber-200 mb-2 shadow-lg backdrop-blur-md">
-          <Zap size={13} className="text-amber-400 animate-pulse" />
-          <span>DCE #{activeEngineIdx + 1} · {currentEngine?.nameKo || '심층 운명학 엔진'}</span>
+      {/* 2️⃣ 중간 카드: 새로운 관점 (246대 엔진 셔플 및 엔진 요약 설명) */}
+      <div
+        onClick={handleShuffleEngine}
+        className={`rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs border shrink-0 flex flex-col justify-between cursor-pointer active:scale-[0.99] transition-all group ${
+          isLight ? 'bg-white hover:bg-amber-50/30 border-slate-200/70' : 'bg-slate-900/90 hover:bg-slate-800/80 border-white/10'
+        }`}
+        title="클릭하여 다른 엔진 관점으로 셔플 전환"
+      >
+        <div className="flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-1.5">
+            <Sparkles size={14} className="text-amber-600 dark:text-amber-400" />
+            <span className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
+              새로운 관점
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); handleShuffleEngine(); }}
+            className="text-xs font-mono text-slate-400 hover:text-amber-600 transition-colors flex items-center gap-1 cursor-pointer"
+            title="새로운 엔진 셔플"
+          >
+            <span>{activeEngineIdx + 1} / {ALL_DCE_ENGINES.length}</span>
+            <RefreshCw size={10} className="group-hover:rotate-180 transition-transform text-slate-400" />
+          </button>
         </div>
-        <p className="text-[11px] text-slate-400 max-w-xs leading-relaxed drop-shadow-sm font-medium">
-          {currentEngine ? `${currentEngine.nameKo} · ${currentEngine.category === 'foundational' ? '기초 운명학 도구' : '심층 결정론 마스터 엔진'}이 실시간 주입되고 있습니다.` : '전체 246개 결정론·운명학 엔진이 우측 루시 대화창에 실시간 주입되고 있습니다.'}
-        </p>
+
+        <div className="my-1.5">
+          <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
+            {currentEngine.nameKo}
+          </h3>
+          <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed font-normal mt-1">
+            {currentSummary}
+          </p>
+        </div>
       </div>
 
-      {/* 하단: 템포 조절 바 및 탭 템포 버튼 (외부 음악 맞춤 박자) */}
-      <div className="relative z-10 pt-3 border-t border-white/10 shrink-0 bg-slate-900/60 backdrop-blur-md rounded-xl p-3 border">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-            <Activity size={13} className="text-amber-400" />
-            <span>비주얼 펄스 템포</span>
-            <span className="text-amber-400 font-mono">({ambientTempoBpm} BPM)</span>
+      {/* 3️⃣ 하단 카드: 비주얼 리듬 (BPM + 바이노럴 비트 재생/정지 버튼 + 프리셋 3종) */}
+      <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs border shrink-0 flex flex-col gap-3 ${
+        isLight ? 'bg-white border-slate-200/70' : 'bg-slate-900/90 border-white/10'
+      }`}>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Activity size={14} className="text-amber-700 dark:text-amber-400" />
+          <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
+            비주얼 리듬
           </span>
+        </div>
 
-          {/* 탭 템포 버튼 */}
+        {/* BPM 수치 & 바이노럴 비트 재생 버튼 */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              {ambientTempoBpm}
+            </span>
+            <span className="text-xs font-semibold text-slate-400">
+              BPM
+            </span>
+          </div>
+
+          {/* 바이노럴 비트 재생/정지 버튼 */}
           <button
             type="button"
-            onClick={handleTapTempo}
-            className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-[10px] font-bold transition-all cursor-pointer active:scale-95 shadow-2xs"
-            title="듣고 계신 멜론/애플뮤직 비트에 맞춰 탭하면 템포가 싱크됩니다"
+            onClick={handleToggleBinauralBeat}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-2xs ${
+              isBinauralPlaying
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 border-amber-400 text-slate-950 shadow-amber-500/20'
+                : 'bg-slate-50 hover:bg-amber-50 border-slate-200 hover:border-amber-300 text-slate-700 dark:bg-slate-800 dark:border-white/10 dark:text-slate-200'
+            }`}
+            title={`${ambientTempoBpm} BPM에 조율된 바이노럴 비트 (${BinauralBeatSynthesizer.getBeatFreq(ambientTempoBpm).waveLabel}) 재생`}
           >
-            👆 비트 탭 싱크 (Tap)
+            {isBinauralPlaying ? (
+              <>
+                <Volume2 size={13} className="text-slate-950 animate-pulse" />
+                <span>비트 정지</span>
+              </>
+            ) : (
+              <>
+                <Play size={12} className="text-amber-600 fill-amber-600 dark:text-amber-400 dark:fill-amber-400" />
+                <span>바이노럴 비트</span>
+              </>
+            )}
           </button>
         </div>
 
-        {/* 프리셋 템포 칩 */}
-        <div className="grid grid-cols-3 gap-1.5">
+        {/* BPM 프리셋 칩 (명상 60 / 편안하게 90 / 집중 120) */}
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
-            onClick={() => { triggerHaptic('whitehole'); setAmbientTempoBpm(60); }}
-            className={`py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
-              ambientTempoBpm === 60 ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800/80 text-slate-300 border-white/10'
+            onClick={() => handleSelectBpm(60)}
+            className={`py-2 px-1 rounded-xl text-xs sm:text-[13px] font-bold transition-all cursor-pointer active:scale-95 flex items-center justify-center border shadow-2xs ${
+              ambientTempoBpm === 60
+                ? 'bg-amber-50/90 dark:bg-amber-950/60 border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 font-extrabold'
+                : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900'
             }`}
           >
-            🧘 명상 60
+            명상 60
           </button>
           <button
             type="button"
-            onClick={() => { triggerHaptic('whitehole'); setAmbientTempoBpm(90); }}
-            className={`py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
-              ambientTempoBpm === 90 ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800/80 text-slate-300 border-white/10'
+            onClick={() => handleSelectBpm(90)}
+            className={`py-2 px-1 rounded-xl text-xs sm:text-[13px] font-bold transition-all cursor-pointer active:scale-95 flex items-center justify-center border shadow-2xs ${
+              ambientTempoBpm === 90
+                ? 'bg-amber-50/90 dark:bg-amber-950/60 border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 font-extrabold'
+                : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900'
             }`}
           >
-            ☕ 팝 90
+            편안하게 90
           </button>
           <button
             type="button"
-            onClick={() => { triggerHaptic('whitehole'); setAmbientTempoBpm(120); }}
-            className={`py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
-              ambientTempoBpm === 120 ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800/80 text-slate-300 border-white/10'
+            onClick={() => handleSelectBpm(120)}
+            className={`py-2 px-1 rounded-xl text-xs sm:text-[13px] font-bold transition-all cursor-pointer active:scale-95 flex items-center justify-center border shadow-2xs ${
+              ambientTempoBpm === 120
+                ? 'bg-amber-50/90 dark:bg-amber-950/60 border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 font-extrabold'
+                : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900'
             }`}
           >
-            ⚡ 비트 120
+            집중 120
           </button>
         </div>
       </div>
