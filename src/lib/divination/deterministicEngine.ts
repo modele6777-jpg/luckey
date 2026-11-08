@@ -283,6 +283,9 @@ import { calculateRalphWaldoEmersonSelfReliance, formatRalphWaldoEmersonSelfReli
 import { calculateHenriBergsonElanVital, formatHenriBergsonElanVitalPrompt, type HenriBergsonElanVitalResult, FRENCH_HENRI_BERGSON_VERSION } from './frenchHenriBergsonElanVitalEngine';
 import { calculateAlbertCamusAbsurdRevolt, formatAlbertCamusAbsurdRevoltPrompt, type AlbertCamusAbsurdRevoltResult, FRENCH_ALBERT_CAMUS_VERSION } from './frenchAlbertCamusAbsurdRevoltEngine';
 import { calculateYeonamParkJiwonYeolhaIlgi, formatYeonamParkJiwonYeolhaIlgiPrompt, type YeonamParkJiwonYeolhaIlgiResult, KOREAN_YEONAM_PARK_JIWON_VERSION } from './koreanYeonamParkJiwonYeolhaIlgiEngine';
+import { calculateJeanPaulSartreExistentialism, formatJeanPaulSartreExistentialismPrompt, type JeanPaulSartreExistentialismResult, FRENCH_JEAN_PAUL_SARTRE_VERSION } from './frenchJeanPaulSartreExistentialismEngine';
+import { calculateViktorFranklLogotherapy, formatViktorFranklLogotherapyPrompt, type ViktorFranklLogotherapyResult, AUSTRIAN_VIKTOR_FRANKL_VERSION } from './austrianViktorFranklLogotherapyEngine';
+import { calculateBaekbeomKimGuMyDesireCulture, formatBaekbeomKimGuMyDesireCulturePrompt, type BaekbeomKimGuMyDesireCultureResult, KOREAN_BAEKBEOM_KIM_GU_VERSION } from './koreanBaekbeomKimGuMyDesireCultureEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -586,6 +589,9 @@ export interface DeterministicEngineReport {
   henriBergsonElanVitalResult?: HenriBergsonElanVitalResult | null;
   albertCamusAbsurdRevoltResult?: AlbertCamusAbsurdRevoltResult | null;
   yeonamParkJiwonYeolhaIlgiResult?: YeonamParkJiwonYeolhaIlgiResult | null;
+  jeanPaulSartreExistentialismResult?: JeanPaulSartreExistentialismResult | null;
+  viktorFranklLogotherapyResult?: ViktorFranklLogotherapyResult | null;
+  baekbeomKimGuMyDesireCultureResult?: BaekbeomKimGuMyDesireCultureResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3458,6 +3464,33 @@ try {
     }
   })()));
 
+  // 252. 프랑스 장 폴 사르트르 존재와 무 & 실존주의는 휴머니즘이다 실존적 자유·주체적 기획 & 진정성과 앙가주망 엔진
+  const jeanPaulSartreExistentialismResult = calculateSupplement('jeanPaulSartreExistentialismResult', () => ((() => {
+    try {
+      return calculateJeanPaulSartreExistentialism(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 253. 오스트리아 빅터 프랭클 죽음의 수용소에서 & 로고테라피 시련 속 최후의 자유 & 의미를 향한 의지와 비극적 낙관주의 엔진
+  const viktorFranklLogotherapyResult = calculateSupplement('viktorFranklLogotherapyResult', () => ((() => {
+    try {
+      return calculateViktorFranklLogotherapy(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 254. 대한민국 백범 김구 백범일지 & 나의 소원 높은 문화의 힘 & 홍익인간 상생 평화와 자주독립 실천 엔진
+  const baekbeomKimGuMyDesireCultureResult = calculateSupplement('baekbeomKimGuMyDesireCultureResult', () => ((() => {
+    try {
+      return calculateBaekbeomKimGuMyDesireCulture(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3747,6 +3780,9 @@ try {
     henriBergsonElanVitalResult,
     albertCamusAbsurdRevoltResult,
     yeonamParkJiwonYeolhaIlgiResult,
+    jeanPaulSartreExistentialismResult,
+    viktorFranklLogotherapyResult,
+    baekbeomKimGuMyDesireCultureResult,
     tools: toolsMap,
   };
 }
@@ -4027,6 +4063,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchHenriBergsonElanVital', nameKo: '앙리 베르그송 시간과자유의지 창조적진화 순수지속 엘랑비탈 생명의도약 철학적직관', icon: '⏳', category: 'deep_master', summary: '앙리 베르그송의 생명철학으로 분절된 시계 시간을 넘어 내면의 순수 지속과 생명의 도약(Élan vital)으로 삶을 주체적으로 창조합니다.' },
   { key: 'frenchAlbertCamusAbsurdRevolt', nameKo: '알베르 카뮈 시지프신화 반항하는인간 부조리자각 영구한반항 삶의열정 실존적자유', icon: '🪨', category: 'deep_master', summary: '알베르 카뮈의 실존철학으로 세계의 부조리를 명석하게 직시하며 굴복하지 않는 당당한 반항과 뜨거운 열정으로 운명을 포옹합니다.' },
   { key: 'koreanYeonamParkJiwonYeolhaIlgi', nameKo: '연암 박지원 열하일기 일야구도 법고창신 이용후생 북학개방 해학파위 실학지혜', icon: '🐎', category: 'deep_master', summary: '연암 박지원 선생의 실학 정신으로 두려움을 비워 거친 격류를 건너는 일야구도의 담대함과 옛것을 본받아 새것을 여는 법고창신을 이룹니다.' },
+  { key: 'frenchJeanPaulSartreExistentialism', nameKo: '장 폴 사르트르 존재와무 실존은본질에앞선다 자유의형벌 자기기만극복 앙가주망', icon: '🕯️', category: 'deep_master', summary: '장 폴 사르트르의 실존주의 철학으로 핑계 뒤로 숨는 자기기만을 털어내고 전적인 자유와 책임을 오롯이 짊어지며 자신의 본질을 창조합니다.' },
+  { key: 'austrianViktorFranklLogotherapy', nameKo: '빅터 프랭클 죽음의수용소에서 로고테라피 최후의자유 의미를향한의지 비극적낙관주의', icon: '🕊️', category: 'deep_master', summary: '빅터 프랭클의 로고테라피 의미치료로 극한의 시련 속에서도 결코 빼앗길 수 없는 태도 선택의 최후의 자유와 삶의 고유한 의미를 일깨웁니다.' },
+  { key: 'koreanBaekbeomKimGuMyDesireCulture', nameKo: '백범 김구 백범일지 나의소원 높은문화의힘 홍익인간 상생평화 답설야중거 자주독립', icon: '🇰🇷', category: 'deep_master', summary: '백범 김구 선생의 숭고한 민족혼으로 영혼을 살리는 높은 문화의 힘을 꽃피우고 올곧은 솔선수범과 자주독립의 기개를 굳건히 세웁니다.' },
 ];
 
 export function getFiredEngineBadges(

@@ -1039,5 +1039,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanYeonamParkJiwonYeolhaIlgi": {
     "field": "yeonamParkJiwonYeolhaIlgiResult",
     "traceKey": "yeonamParkJiwonYeolhaIlgiResult"
+  },
+  "frenchJeanPaulSartreExistentialism": {
+    "field": "jeanPaulSartreExistentialismResult",
+    "traceKey": "jeanPaulSartreExistentialismResult"
+  },
+  "austrianViktorFranklLogotherapy": {
+    "field": "viktorFranklLogotherapyResult",
+    "traceKey": "viktorFranklLogotherapyResult"
+  },
+  "koreanBaekbeomKimGuMyDesireCulture": {
+    "field": "baekbeomKimGuMyDesireCultureResult",
+    "traceKey": "baekbeomKimGuMyDesireCultureResult"
   }
 };
