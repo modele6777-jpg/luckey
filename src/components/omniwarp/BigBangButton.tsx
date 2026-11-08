@@ -639,7 +639,8 @@ export function BigBangButton() {
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
-    if (elapsed >= 220 && !(start.pointerType === 'touch' && start.direction !== 'none')) {
+    // 👑 롱프레스 홀드: 오직 500ms 이상 지속해서 꾹 누르고 있을 때만 프로 모드 타겟으로 전환
+    if (elapsed >= 500 && !(start.pointerType === 'touch' && start.direction !== 'none')) {
       currentHole = 'whitehole';
       const isTextToss = Boolean(textToToss);
       target = {
@@ -762,6 +763,7 @@ export function BigBangButton() {
     if (recommendedWarpInFlightRef.current || !e.isPrimary || touchStartRef.current || (e.button !== 0 && e.pointerType === 'mouse')) return;
     activePointerIdRef.current = e.pointerId;
     visualDragRef.current = false;
+    isPttRecordingRef.current = false;
     if (windTailTimerRef.current) clearTimeout(windTailTimerRef.current);
     setCloverWind('off');
     // Keep the selected sentence intact while the button resolves the gesture.
@@ -1233,9 +1235,9 @@ export function BigBangButton() {
       return;
     }
 
-    // 🎙️ [홀드 완료: duration >= 480ms 의도적 롱프레스 또는 isPttRecordingRef.current]
-    // 탭과 홀드를 엄격히 구분: 480ms 미만의 탭은 절대 프로 모드로 진입하지 않습니다!
-    const isHoldGesture = isPttRecordingRef.current || duration >= 480;
+    // 🎙️ [홀드 완료: 오직 duration >= 500ms 의도적 롱프레스 홀드에서만 루시 프로 진입!]
+    // 탭은 절대 프로 모드로 진입하지 않습니다.
+    const isHoldGesture = !isDragGesture && duration >= 500 && dist < DRAG_ACTIVATION_THRESHOLD;
     if (isHoldGesture) {
       showGestureFeedback('hold');
       isPttRecordingRef.current = false;
@@ -1290,8 +1292,8 @@ export function BigBangButton() {
       return;
     }
 
-    // Wait briefly for a second tap before opening the single-tap menu.
-    const isTapGesture = !isDragGesture && !isHoldGesture && duration < 220 && dist < DRAG_ACTIVATION_THRESHOLD;
+    // ⚡ [탭 완료: duration < 500ms - 프로 모드 절대 진입 불가]
+    const isTapGesture = !isDragGesture && !isHoldGesture && dist < DRAG_ACTIVATION_THRESHOLD;
     if (isTapGesture) {
       const selectedText = (touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText()).trim();
       if (selectedText) {

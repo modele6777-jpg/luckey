@@ -140,8 +140,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   // Synchronously apply theme class before paint on route transitions
   useLayoutEffect(() => {
     applyThemeToDocument(resolvedTheme);
-    if (isLucyThemeRoute(activePath)) document.documentElement.dataset.lucyPeriod = lucyDayPeriod;
-    else delete document.documentElement.dataset.lucyPeriod;
+    // ☀️ 루시 시간대별 테마(아침·낮·밤): 루시 경로 또는 듀오 펼침 모드(우측 루시 상시 마운트) 시 dataset.lucyPeriod 동기화
+    if (isLucyThemeRoute(activePath) || (typeof document !== 'undefined' && (document.documentElement.classList.contains('duo-unfolded-mode') || Boolean(document.getElementById('duo-lucy-viewport'))))) {
+      document.documentElement.dataset.lucyPeriod = lucyDayPeriod;
+    } else {
+      delete document.documentElement.dataset.lucyPeriod;
+    }
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(

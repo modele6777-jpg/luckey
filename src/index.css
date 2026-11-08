@@ -3464,35 +3464,6 @@ html.duo-unfolded-portrait .prism-xs-subnav:not(.duo-page-nav) {
   transform: translateX(-50%) !important;
 }
 
-/* 🛡️ Duo 펼침 화면에서 루시 채팅은 좌측 채널의 라이트 테마(html.light)에 오염되지 않고 상시 시그니처 다크 코스믹 테마 100% 보존 */
-html.light #duo-lucy-viewport .lucy-chat-shell,
-html.light #duo-lucy-viewport .lucy-starlight-assistant,
-html.light #duo-lucy-viewport .lucy-starlight-assistant *,
-html.light #duo-lucy-viewport .lucy-assistant-bubble,
-html.light #duo-lucy-viewport .lucy-assistant-bubble *,
-html.light #duo-lucy-viewport .lucy-starlight-user,
-html.light #duo-lucy-viewport .lucy-user-bubble,
-html.light #duo-lucy-viewport .lucy-starlight-composer,
-html.light #duo-lucy-viewport :is(input, textarea) {
-  color: #f1f5fa !important;
-}
-
-html.light #duo-lucy-viewport .lucy-starlight-assistant,
-html.light #duo-lucy-viewport .lucy-assistant-bubble {
-  background-color: var(--lucy-surface, rgba(15, 23, 42, 0.92)) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-html.light #duo-lucy-viewport .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) {
-  color: #fbbf24 !important;
-}
-
-html.light #duo-lucy-viewport .lucy-chat-header,
-html.light #duo-lucy-viewport .lucy-chat-footer {
-  background-color: rgba(10, 15, 26, 0.94) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: #f1f5fa !important;
-}
 
 /* ==========================================================================
    📱 iPhone Duo 7.6" 펼친 화면 분할 뷰포트 (가로 50vw:50vw / 세로 50vh:50vh)
@@ -3503,49 +3474,53 @@ html.light #duo-lucy-viewport .lucy-chat-footer {
   box-sizing: border-box;
 }
 
-/* 가로 모드 (Landscape): 정확히 50vw : 50vw 나란히 분할 */
+/* 가로 모드 (Landscape): 메뉴(80px) 제외 메인 화면의 정확한 50% : 50% 분할 (접힌 폰 비율 1:1 일치) */
 html.duo-unfolded-landscape #duo-content-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-content-viewport {
-  width: 50vw !important;
-  min-width: 50vw !important;
-  max-width: 50vw !important;
+  width: 50% !important;
+  min-width: 50% !important;
+  max-width: 50% !important;
   height: 100% !important;
-  flex: 0 0 50vw !important;
-  overflow: hidden !important;
+  flex: 0 0 50% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
 }
 
 html.duo-unfolded-landscape #duo-lucy-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-lucy-viewport {
-  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  min-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  width: 50% !important;
+  min-width: 50% !important;
+  max-width: 50% !important;
   height: 100% !important;
-  flex: 1 1 0px !important;
+  flex: 0 0 50% !important;
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
+  box-sizing: border-box !important;
 }
 
-/* 세로 모드 (Portrait): 상하 50vh : 50vh 분할 */
+/* 세로 모드 (Portrait): 상하 50% : 50% 분할 */
 html.duo-unfolded-portrait #duo-content-viewport {
-  width: 100vw !important;
-  min-width: 100vw !important;
-  max-width: 100vw !important;
-  height: 50vh !important;
-  min-height: 50vh !important;
-  max-height: 50vh !important;
-  flex: 0 0 50vh !important;
-  overflow: hidden !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 50% !important;
+  min-height: 50% !important;
+  max-height: 50% !important;
+  flex: 0 0 50% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
 }
 
 html.duo-unfolded-portrait #duo-lucy-viewport {
-  width: 100vw !important;
-  min-width: 100vw !important;
-  max-width: 100vw !important;
-  height: 50vh !important;
-  min-height: 50vh !important;
-  max-height: 50vh !important;
-  flex: 0 0 50vh !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 50% !important;
+  min-height: 50% !important;
+  max-height: 50% !important;
+  flex: 0 0 50% !important;
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -3615,7 +3590,7 @@ html.duo-unfolded-mode #duo-content-viewport .prism-hub-header {
   padding-bottom: 0.25rem !important;
 }
 
-/* 6. 좌측 화면 채널 이동 시 로딩 오버레이는 전체 화면을 덮지 않고 좌측 뷰포트에만 국한 */
+/* 6. 좌측 화면 채널 이동 시 로딩 오버레이는 전체 화면을 덮지 않고 좌측 뷰포트에만 완벽 격리 */
 html.duo-unfolded-mode #duo-content-viewport .screen-portal,
 html.duo-unfolded-mode #duo-content-viewport .duo-portal {
   position: absolute !important;
@@ -3623,5 +3598,72 @@ html.duo-unfolded-mode #duo-content-viewport .duo-portal {
   width: 100% !important;
   height: 100% !important;
 }
+
+/* ==========================================================================
+   📱 듀오 화면별 로딩 & 애니메이션 격리 규칙
+   1) 앱별 전환 로딩([data-app-channel-loader]): 좌측 화면에만 노출
+   2) 루시 관련 애니메이션([data-lucy-loader], .lucy-mode-transition): 우측 화면에만 노출
+   ========================================================================== */
+
+/* 가로 모드: 앱별 전환 로딩 ➔ 좌측 50% 한정 */
+html.duo-unfolded-landscape :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader])),
+html.duo-unfolded-mode:not(.duo-unfolded-portrait) :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader])) {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  max-width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  right: auto !important;
+  height: 100% !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  overflow: hidden !important;
+}
+
+/* 세로 모드: 앱별 전환 로딩 ➔ 상단 50% 한정 */
+html.duo-unfolded-portrait :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader])) {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: calc((100dvh - 54px) / 2) !important;
+  max-height: calc((100dvh - 54px) / 2) !important;
+  bottom: auto !important;
+  right: auto !important;
+  z-index: 9999 !important;
+  overflow: hidden !important;
+}
+
+/* 가로 모드: 루시 관련 로더 & 애니메이션 ➔ 우측 50% 한정 */
+html.duo-unfolded-landscape :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]),
+html.duo-unfolded-mode:not(.duo-unfolded-portrait) :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
+  position: fixed !important;
+  left: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  max-width: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  right: var(--sites-sidebar-width, 80px) !important;
+  top: 0 !important;
+  height: 100% !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  overflow: hidden !important;
+}
+
+/* 세로 모드: 루시 관련 로더 & 애니메이션 ➔ 하단 50% 한정 */
+html.duo-unfolded-portrait :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
+  position: fixed !important;
+  left: 0 !important;
+  top: calc((100dvh - 54px) / 2) !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: calc((100dvh - 54px) / 2) !important;
+  max-height: calc((100dvh - 54px) / 2) !important;
+  bottom: 54px !important;
+  right: auto !important;
+  z-index: 9999 !important;
+  overflow: hidden !important;
+}
+
 
 

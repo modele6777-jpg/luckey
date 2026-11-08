@@ -54,6 +54,8 @@ export function LucyAuraLoader({
   const content = (
     <div
       data-fullscreen-loader={fullScreen || undefined}
+      data-lucy-loader="true"
+      data-lucy-aura-loader="true"
       role="status"
       aria-label={finalMessage}
       className={`flex flex-col items-center justify-center select-none text-slate-100 overflow-hidden ${
