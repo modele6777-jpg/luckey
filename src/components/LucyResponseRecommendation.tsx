@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import './lucy-response-recommendation.css';
 import { motion } from 'framer-motion';
 import {
   Sparkles, ArrowRight, Check, Compass, TreeDeciduous,
@@ -516,7 +517,7 @@ export function LucyResponseRecommendation({
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`mt-3 pt-2.5 border-t ${isLight ? 'border-amber-900/10 text-stone-800' : 'border-white/15 text-white'}`}
+      className={`lucy-recommendation mt-3 pt-2.5 border-t ${isLight ? 'border-amber-900/10 text-stone-800' : 'border-white/15 text-white'}`}
     >
       {/* 🌟 단일 통합 추천 칸 (Key 추천 기법 + LucKey 연계 추천 경로 1개를 같은 칸에 배치 - 프리미엄 베이지/다크 테마) */}
       <div className={`p-3 sm:p-3.5 rounded-2xl border space-y-2.5 transition-all ${
@@ -525,8 +526,8 @@ export function LucyResponseRecommendation({
           : 'bg-slate-950/80 border-white/15 hover:border-amber-400/40'
       }`}>
         {/* 헤더: LucKey 연계 추천 라벨 & 테마 이유 */}
-        <div className="flex items-center justify-between gap-2">
-          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10.5px] font-bold shadow-2xs ${
+        <div className="lucy-recommendation-heading">
+          <div className={`lucy-recommendation-badge flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10.5px] font-bold shadow-2xs ${
             isLight
               ? 'bg-[#EFE4D2] border-[#DFCEB3] text-[#844A14]'
               : 'bg-amber-950/70 border-amber-500/40 text-amber-200'
@@ -534,7 +535,7 @@ export function LucyResponseRecommendation({
             <Sparkles size={12} className="text-[#D97706] dark:text-[#FBBF24] animate-pulse shrink-0" />
             <span>LucKey 연계 추천</span>
           </div>
-          <span className={`text-[10px] font-medium truncate max-w-[210px] sm:max-w-none ${
+          <span className={`lucy-recommendation-reason text-[10px] font-medium ${
             isLight ? 'text-stone-500' : 'text-white/80'
           }`}>
             {themeReason}
@@ -542,11 +543,14 @@ export function LucyResponseRecommendation({
         </div>
 
         {/* 같은 칸 내부: Key 추천기법 (좌측) + 단 1개의 LucKey 연계 채널 (우측) */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-0.5">
+        <div className="lucy-recommendation-layout pt-0.5">
           {/* A. Key 추천 기법 (40가지 실천 연습실) */}
-          <div
+          <button
+            type="button"
+            disabled={isLeaping}
             onClick={() => handleLeapToFeature(recommendedFeature)}
-            className={`flex-1 flex items-center gap-2.5 p-2 rounded-xl border transition-all duration-200 hover:scale-[1.015] cursor-pointer group active:scale-[0.99] min-w-0 shadow-xs ${
+            aria-label={recommendedFeature.featureTitle}
+            className={`lucy-recommendation-feature p-3 rounded-xl border transition-all duration-200 cursor-pointer group active:scale-[0.99] min-w-0 shadow-xs ${
               isLight
                 ? 'bg-white/90 hover:bg-white border-[#E8DEC9] hover:border-[#D0BD9D]'
                 : 'bg-slate-900/90 hover:bg-slate-800/90 border-white/15 hover:border-amber-400/50'
@@ -594,22 +598,20 @@ export function LucyResponseRecommendation({
                 {recommendedFeature.description}
               </p>
             </div>
-            <button
-              type="button"
-              disabled={isLeaping}
-              className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white shrink-0 flex items-center gap-1 shadow-xs transition-all duration-200 group-hover:scale-105 group-hover:brightness-105 active:scale-95 cursor-pointer"
+            <span
+              className="lucy-recommendation-action px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white shrink-0 flex items-center gap-1 shadow-xs transition-all duration-200 group-hover:brightness-105 active:scale-95 cursor-pointer"
               style={{
                 background: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)',
               }}
             >
               <span>실천</span>
               <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
+            </span>
+          </button>
 
           {/* B. LucKey 연계 추천 경로 (단 1개만 같은 칸에 배치) */}
-          <div className={`sm:border-l sm:pl-2.5 flex items-center justify-between sm:justify-start gap-2 shrink-0 ${
-            isLight ? 'sm:border-[#DFCBB0]/70' : 'sm:border-white/15'
+          <div className={`lucy-recommendation-channel ${
+            isLight ? 'border-[#DFCBB0]/70' : 'border-white/15'
           }`}>
             <button
               type="button"

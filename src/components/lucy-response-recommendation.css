@@ -1,0 +1,20 @@
+.lucy-recommendation { container: lucy-recommendation / inline-size; width: 100%; min-width: 0; max-width: 100%; }
+.lucy-recommendation-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.lucy-recommendation-badge { flex-shrink: 0; width: fit-content; white-space: nowrap; }
+.lucy-recommendation-reason { flex: 1 1 220px; min-width: 0; line-height: 1.65; word-break: keep-all; overflow-wrap: break-word; }
+.lucy-recommendation-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.lucy-recommendation-feature { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: start; gap: 10px; width: 100%; text-align: left; }
+.lucy-recommendation-feature:focus-visible { outline: 2px solid #b5833b; outline-offset: 3px; }
+.lucy-recommendation-feature p, .lucy-recommendation-feature span { word-break: keep-all; overflow-wrap: break-word; }
+.lucy-recommendation-feature p { line-height: 1.75; }
+.lucy-recommendation-action { grid-column: 2; justify-self: start; min-height: 36px; }
+.lucy-recommendation-channel { display: flex; min-width: 0; padding-top: 10px; border-top-width: 1px; }
+.lucy-recommendation-channel button { max-width: 100%; min-height: 40px; }
+@container lucy-recommendation (min-width: 440px) {
+  .lucy-recommendation-feature { grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; }
+  .lucy-recommendation-action { grid-column: 3; grid-row: 1; }
+}
+@container lucy-recommendation (min-width: 680px) {
+  .lucy-recommendation-layout { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .lucy-recommendation-channel { border-top-width: 0; border-left-width: 1px; padding: 0 0 0 12px; }
+}

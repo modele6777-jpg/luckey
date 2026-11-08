@@ -1,0 +1,59 @@
+.cosmic-room {
+  --room-ink: #e9eef7;
+  --room-muted: #a2b0c5;
+  --room-gold: #e4bd77;
+  --room-line: #a7b6ce26;
+  --room-card: #152238b3;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(18px, 3vw, 28px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--room-ink);
+  background: radial-gradient(ellipse at 10% 0%, #263b5c80, transparent 65%), #0b1424;
+}
+.cosmic-room--light {
+  --room-ink: #2b3c50;
+  --room-muted: #6d7c8f;
+  --room-gold: #986c32;
+  --room-line: #b2beca40;
+  --room-card: #ffffffc4;
+  background: radial-gradient(ellipse at 0% 0%, #e1edf7, transparent 70%), linear-gradient(160deg, #f5f9fd, #f6f4ee);
+}
+.cosmic-room-heading { flex-shrink: 0; padding: 2px 2px 0; }
+.cosmic-room-eyebrow { display: flex; align-items: center; gap: 7px; color: var(--room-gold); font-size: 10px; font-weight: 700; letter-spacing: .13em; }
+.cosmic-room-heading h2 { margin: 9px 0 5px; font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; letter-spacing: -.045em; }
+.cosmic-room-heading p, .cosmic-room-engine p { color: var(--room-muted); font-size: 12px; line-height: 1.65; }
+.cosmic-room-card { flex-shrink: 0; min-width: 0; border: 1px solid var(--room-line); border-radius: 22px; background: var(--room-card); padding: 18px; box-shadow: 0 6px 24px #243c5810; }
+.cosmic-room-visual { margin-block: auto; text-align: center; background-image: radial-gradient(ellipse at 50% 55%, #d4b87912, transparent 70%); }
+.cosmic-room-visual-heading, .cosmic-room-card-heading, .cosmic-room-tempo-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cosmic-room-visual-heading { flex-wrap: wrap; }
+.cosmic-room-live, .cosmic-room-music, .cosmic-room-card-heading > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.cosmic-room-live { font-size: 11px; font-weight: 600; }
+.cosmic-room-live i { width: 6px; height: 6px; border-radius: 50%; background: #63a998; box-shadow: 0 0 0 4px #63a99814; }
+.cosmic-room-music { font-size: 10px; color: var(--room-muted); }
+.cosmic-room-stage { position: relative; display: grid; place-items: center; height: clamp(150px, 24vh, 220px); margin: 8px 0 2px; }
+.cosmic-room-stage canvas { position: absolute; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.cosmic-room-stage-label { position: relative; font-size: 10px; line-height: 1.8; letter-spacing: .25em; color: var(--room-gold); }
+.cosmic-room-stage-label strong { font-size: 16px; letter-spacing: .12em; font-weight: 500; }
+.cosmic-room-caption { font-size: 14px; font-weight: 600; letter-spacing: -.025em; }
+.cosmic-room-note { margin-top: 5px; color: var(--room-muted); font-size: 11px; }
+.cosmic-room-card-heading { color: var(--room-gold); font-size: 11px; font-weight: 600; }
+.cosmic-room-count { color: var(--room-muted); font-variant-numeric: tabular-nums; font-size: 10px; }
+.cosmic-room-engine h3 { margin: 12px 0 5px; font-size: 15px; font-weight: 650; overflow-wrap: break-word; word-break: keep-all; }
+.cosmic-room-tempo-heading p { display: flex; align-items: baseline; gap: 6px; margin-top: 5px; }
+.cosmic-room-tempo-heading strong { font-size: 28px; line-height: 1.2; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.05em; }
+.cosmic-room-tempo-heading p span { color: var(--room-muted); font-size: 10px; letter-spacing: .08em; }
+.cosmic-room button { cursor: pointer; transition: background .18s, border-color .18s; }
+.cosmic-room button:focus-visible { outline: 2px solid var(--room-gold); outline-offset: 3px; }
+.cosmic-room-tap { min-height: 40px; padding: 9px 13px; border: 1px solid var(--room-line); border-radius: 12px; color: var(--room-gold); font-size: 11px; font-weight: 600; background: #b8905010; }
+.cosmic-room-tap:hover { background: #b8905020; }
+.cosmic-room-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 14px; }
+.cosmic-room-presets button { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 7px; min-height: 40px; border: 1px solid var(--room-line); border-radius: 11px; color: var(--room-muted); font-size: 11px; }
+.cosmic-room-presets small { font-size: 10px; opacity: .8; font-variant-numeric: tabular-nums; }
+.cosmic-room-presets button[aria-pressed=true] { border-color: #bd965455; color: var(--room-gold); background: #b890501a; font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .cosmic-room button { transition: none; } }
