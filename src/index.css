@@ -3287,13 +3287,179 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   transition: none !important;
 }
 
-/* 📱 iPhone Duo 펼침 듀얼 화면: 접혀있을 때의 위치 그대로 우측 화면 내 동일 위치에 정확히 센터링 */
-html.duo-unfolded-mode .bottom-safe-fab-center,
-body.duo-unfolded-mode .bottom-safe-fab-center,
-.duo-unfolded-mode .bottom-safe-fab-center {
+/* ==========================================================================
+   📱 iPhone Duo 7.6" 펼침 화면 최적화 (가로 좌우 50vw / 세로 상하 50vh)
+   ========================================================================== */
+
+/* 🌌 우주 배경 복원: 바디 투명화로 AuroraBackground 성운/별빛이 럭키채널 전체에 비치도록 보장 */
+html.duo-unfolded-mode body,
+body.duo-unfolded-mode {
+  background-color: transparent !important;
+}
+
+/* 럭키채널 뷰포트 내 UI 크기 최적화: 50% 분할 폭에 맞춰 단일 컬럼으로 편안하게 안착 */
+html.duo-unfolded-mode .universe-content .duo-split-grid,
+html.duo-unfolded-mode .universe-content .duo-channel-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* 🔮 타로 리딩(휠·선택·해설 모달) 화면: 전체를 덮지 않고 콘텐츠 뷰포트 영역 내에만 표시 */
+html.duo-unfolded-landscape #tarot-stage-container,
+html.duo-unfolded-landscape #today-tarot-narration-modal,
+html.duo-unfolded-landscape #circular-tarot-modal-container,
+body.duo-unfolded-landscape #tarot-stage-container,
+body.duo-unfolded-landscape #today-tarot-narration-modal,
+body.duo-unfolded-landscape #circular-tarot-modal-container {
+  left: 0 !important;
+  right: auto !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 50vw !important;
+  max-width: 50vw !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  position: fixed !important;
+}
+
+html.duo-unfolded-portrait #tarot-stage-container,
+html.duo-unfolded-portrait #today-tarot-narration-modal,
+html.duo-unfolded-portrait #circular-tarot-modal-container,
+body.duo-unfolded-portrait #tarot-stage-container,
+body.duo-unfolded-portrait #today-tarot-narration-modal,
+body.duo-unfolded-portrait #circular-tarot-modal-container {
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: auto !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 50vh !important;
+  max-height: 50vh !important;
+  position: fixed !important;
+}
+
+/* 🧭 가로 방향 (Landscape): 좌측 50vw 콘텐츠 / 우측 50vw 루시채팅 / 우측 80px 세로 메뉴 */
+html.duo-unfolded-landscape .sites-pinned-sidebar,
+body.duo-unfolded-landscape .sites-pinned-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: var(--sites-sidebar-width, 80px) !important;
+  height: 100% !important;
+}
+
+html.duo-unfolded-landscape .sites-pinned-main {
+  width: calc(100vw - var(--sites-sidebar-width, 80px)) !important;
+  max-width: calc(100vw - var(--sites-sidebar-width, 80px)) !important;
+}
+
+html.duo-unfolded-landscape .bottom-safe-fab-center,
+body.duo-unfolded-landscape .bottom-safe-fab-center {
   left: 50vw !important;
   right: var(--sites-sidebar-width, 80px) !important;
   margin-left: auto !important;
   margin-right: auto !important;
+  transform: none !important;
+}
+
+html.duo-unfolded-landscape .prism-hub-header {
+  left: 1rem !important;
+}
+html.duo-unfolded-landscape .prism-xs-subnav:not(.duo-page-nav) {
+  left: 25vw !important;
+  max-width: calc(50vw - 2rem) !important;
+  transform: translateX(-50%) !important;
+}
+
+/* 📱 세로 방향 (Portrait): 상단 50vh 콘텐츠 / 하단 50vh 루시채팅 / 최하단 가로 메뉴바 */
+html.duo-unfolded-portrait .sites-pinned-sidebar,
+body.duo-unfolded-portrait .sites-pinned-sidebar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+  flex-direction: row !important;
+  border-top: 1px solid var(--menu-line, rgba(255, 255, 255, 0.12)) !important;
+  border-left: none !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.45) !important;
+  background: rgba(10, 15, 26, 0.94) !important;
+  backdrop-filter: blur(20px) !important;
+  z-index: 398 !important;
+}
+
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-menu-list {
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  width: 100% !important;
+  height: 54px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  margin: 0 !important;
+}
+
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-menu-content {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  gap: 4px !important;
+  padding: 0 6px !important;
+}
+
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-nav-item {
+  width: 42px !important;
+  height: 42px !important;
+  flex-shrink: 0 !important;
+}
+
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-prism-icons {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+  height: 100% !important;
+}
+
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-menu-footer {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 6px !important;
+  border-top: none !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.duo-unfolded-portrait .sites-pinned-main {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+html.duo-unfolded-portrait .bottom-safe-fab-center,
+body.duo-unfolded-portrait .bottom-safe-fab-center {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  bottom: calc(var(--lucy-footer-height, calc(env(safe-area-inset-bottom, 0px) + 5rem)) + 54px + 16px) !important;
+}
+
+html.duo-unfolded-portrait .prism-hub-header {
+  left: 1rem !important;
+}
+html.duo-unfolded-portrait .prism-xs-subnav:not(.duo-page-nav) {
+  left: 50% !important;
+  max-width: 90vw !important;
+  transform: translateX(-50%) !important;
 }
 

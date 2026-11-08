@@ -26,7 +26,7 @@ import { KeyCosmicLoader } from "./components/KeyCosmicLoader";
 
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
-import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout } from "./lib/perfMode";
+import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState } from "./lib/perfMode";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
 import HubHome from "./pages/HubHome";
@@ -204,19 +204,26 @@ function AppContent() {
   const [location, navigate] = useLocation();
   const locationSearch = useSearch();
 
-  // 📱 iPhone Duo 7.6" 펼침 / 접힘 (Dual-Pane) 레이아웃 실시간 감지
-  const [isDuoUnfolded, setIsDuoUnfolded] = React.useState(() => {
-    if (typeof window === 'undefined') return false;
-    return isDualPaneLayout();
+  // 📱 iPhone Duo 7.6" 펼침 / 접힘 및 세로(상하)/가로(좌우) 레이아웃 실시간 감지
+  const [duoState, setDuoState] = React.useState(() => {
+    if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' as const };
+    return isDuoUnfoldedState();
   });
+  const isDuoUnfolded = duoState.unfolded;
+  const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
+  const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
 
   React.useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
-      const unfolded = isDualPaneLayout();
-      setIsDuoUnfolded(unfolded);
-      document.documentElement.classList.toggle('duo-unfolded-mode', unfolded);
-      document.body.classList.toggle('duo-unfolded-mode', unfolded);
+      const state = isDuoUnfoldedState();
+      setDuoState(state);
+      document.documentElement.classList.toggle('duo-unfolded-mode', state.unfolded);
+      document.body.classList.toggle('duo-unfolded-mode', state.unfolded);
+      document.documentElement.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
+      document.body.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
+      document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
+      document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
     };
     handleLayoutChange();
     window.addEventListener('resize', handleLayoutChange, { passive: true });
@@ -680,21 +687,29 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? 'duo-dual-view flex flex-row' : 'flex flex-col'}`}>
+      <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? (isDuoPortrait ? 'duo-dual-view flex flex-col' : 'duo-dual-view flex flex-row') : 'flex flex-col'}`}>
         {isDuoUnfolded ? (
-          <div className="w-full h-full flex flex-row min-h-0 overflow-hidden">
-            {/* 좌측 화면: 최우측 메뉴 및 우측 빅뱅 버튼으로 컨트롤하는 채널 뷰포트 (네비게이션 포함 전체 화면의 정확히 50%) */}
+          <div className={`w-full h-full min-h-0 overflow-hidden flex ${isDuoPortrait ? 'flex-col' : 'flex-row'}`}>
+            {/* 콘텐츠 뷰포트:
+                - 가로(Landscape): 좌측 50vw (전체 화면 50%)
+                - 세로(Portrait): 상단 50vh (전체 화면 50%)
+             */}
             <div
-              style={{ width: '50vw', minWidth: '50vw', maxWidth: '50vw' }}
-              className="h-full shrink-0 flex flex-col overflow-hidden border-r border-white/10 relative"
+              id="duo-content-viewport"
+              style={
+                isDuoPortrait
+                  ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%' }
+                  : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%' }
+              }
+              className={`shrink-0 flex flex-col overflow-hidden relative ${isDuoPortrait ? 'border-b border-white/10' : 'border-r border-white/10'}`}
             >
               {isLucyRoute ? (
-                /* 최우측 메뉴에서 루시 선택 시 ➔ 좌측 화면에 코스믹 룸 표출 */
+                /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
                 <div className="w-full h-full overflow-hidden flex flex-col">
                   <DuoCosmicAmbientRoom isLight={isLight} />
                 </div>
               ) : (
-                /* 최우측 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 좌측 화면에 해당 페이지 표출 */
+                /* 최우측/최하단 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 해당 페이지 표출 */
                 <motion.div
                   key={location ? location.split('?')[0].split('#')[0] : '/'}
                   initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
@@ -707,8 +722,12 @@ function AppContent() {
               )}
             </div>
 
-            {/* 우측 화면: 루시 채팅 상시 고정 (오른손 엄지 입력 최적화, 네비게이션과 함께 우측 50% 구성) */}
-            <div className="flex-1 h-full min-w-0 flex flex-col overflow-hidden z-10 relative">
+            {/* 루시 채팅창:
+                - 가로(Landscape): 우측 50vw
+                - 세로(Portrait): 하단 50vh
+                - 다크 코스믹 테마 영구 보존 (.dark 강제 적용)
+             */}
+            <div className="dark flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden z-10 relative">
               <LucyStandalonePage />
             </div>
           </div>

@@ -176,7 +176,39 @@ export function isDualPaneLayout(): boolean {
   // Square-ish unfolded foldable inner screen (aspect ratio >= 0.78 and width >= 620px)
   if (w >= 620 && (Math.min(w, h) / Math.max(w, h)) >= 0.75) return true;
 
+  // iPhone Duo 7.6" inner screen in portrait (both dimensions >= 540px)
+  if (Math.min(w, h) >= 540) return true;
+
   return false;
+}
+
+export interface DuoUnfoldedState {
+  unfolded: boolean;
+  orientation: 'landscape' | 'portrait';
+}
+
+export function isDuoUnfoldedState(): DuoUnfoldedState {
+  if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const isLandscape = w >= h;
+
+  let isSpanned = false;
+  try {
+    if (
+      window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
+      window.matchMedia('(vertical-viewport-segments: 2)').matches ||
+      window.matchMedia('(spanning: single-fold-vertical)').matches ||
+      window.matchMedia('(spanning: single-fold-horizontal)').matches
+    ) {
+      isSpanned = true;
+    }
+  } catch {}
+
+  const isInnerScreen = isSpanned || (Math.min(w, h) >= 540) || (isLandscape && w >= 560);
+  const unfolded = isInnerScreen || isDualPaneLayout();
+  const orientation = isLandscape ? 'landscape' : 'portrait';
+  return { unfolded, orientation };
 }
 
 function isFoldableInnerScreen(): boolean {

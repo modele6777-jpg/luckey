@@ -1282,16 +1282,13 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 🌟 빅뱅 버튼 1회 탭
+          // 🌟 빅뱅 버튼 1회 탭: 키채널로 이동하지 않고 무조건 루시/루시플러스로 이동하며 좌측화면을 코스믹 룸으로 변경!
           const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 640);
           if (isWide) {
-            // 듀얼 뷰(펼침) 상태: 우측 화면 전담 조작!
-            // 우측 화면이 이미 루시(코스믹 룸)인 경우 -> KEY 채널로 전환
-            // 우측 화면이 다른 채널인 경우 -> 루시 코스믹 룸('/')으로 전환
-            const cleanLoc = (location || '').split('?')[0].split('#')[0] || '/';
-            const isCurrentlyLucy = cleanLoc === '/' || cleanLoc === '/chat' || cleanLoc === '/lucy';
-            const targetPath = isCurrentlyLucy ? '/key' : '/';
-            handleRuneNavigate(targetPath);
+            safeSessionStorage.setItem('lucy_tier_mode', 'plus');
+            safeLocalStorage.setItem('lucy_tier_mode', 'plus');
+            handleRuneNavigate('/');
+            window.dispatchEvent(new CustomEvent('prism:toggle_lucy_plus'));
             return;
           }
 
