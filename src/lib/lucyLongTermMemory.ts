@@ -1,6 +1,7 @@
 import { selectLucyConversationMemory, formatLucyConversationMemory } from './lucyConversationMemory';
 import { safeLocalStorage } from '../utils/safeStorage';
 import type { UnifiedMessage } from './chatHistorySync';
+import { extractEpisodicLedgerFromMemoryEntries, formatEpisodicSoulMemory } from './lucyEpisodicMemoryEngine';
 export interface LucyMemoryEntry {
   id:string;account:string;scope:'lucy'|'lucy-pro';role:'user'|'assistant';timestamp:number;text:string;
 }
@@ -60,5 +61,15 @@ export function recallLucyLongTermMemory(account:string,entries:unknown,question
 }
 
 export function buildLucyLongTermPrompt(account:string,entries:unknown,question:string,excludeIds:readonly string[]=[]) {
-  return formatLucyConversationMemory(recallLucyLongTermMemory(account,entries,question,excludeIds));
+  const recall = recallLucyLongTermMemory(account,entries,question,excludeIds);
+  const base = formatLucyConversationMemory(recall);
+  if (!base) return '';
+  if (recall.entries.length > 0) {
+    const ledger = extractEpisodicLedgerFromMemoryEntries(recall.entries);
+    const soulNote = formatEpisodicSoulMemory(ledger);
+    if (soulNote) {
+      return `${base}\n\n${soulNote}`;
+    }
+  }
+  return base;
 }

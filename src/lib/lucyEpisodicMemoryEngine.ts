@@ -169,6 +169,50 @@ export function extractEpisodicMemoryLedger(
 }
 
 /**
+ * LucyMemoryEntry 목록에서 일자별 그룹화를 통해 EpisodicMemoryLedger를 추출합니다.
+ */
+export function extractEpisodicLedgerFromMemoryEntries(
+  entries: readonly { timestamp: number; text: string; role: string }[]
+): EpisodicMemoryLedger {
+  const userEntries = entries.filter(e => e.role === 'user' && typeof e.text === 'string' && e.text.trim().length >= 4);
+  const dailyGroups = new Map<string, string[]>();
+  for (const entry of userEntries) {
+    const dateStr = new Date(entry.timestamp).toISOString().slice(0, 10);
+    const list = dailyGroups.get(dateStr) || [];
+    list.push(entry.text.trim());
+    dailyGroups.set(dateStr, list);
+  }
+  const dailyMemories: DailyMemoryEntry[] = Array.from(dailyGroups.entries()).map(([date, texts]) => ({
+    date,
+    timestamp: new Date(date).getTime(),
+    dialogueCount: texts.length,
+    summary: texts[0] || '',
+    userTopics: texts,
+  }));
+  return extractEpisodicMemoryLedger(dailyMemories);
+}
+
+/**
+ * EpisodicMemoryLedger를 읽기 쉬운 다정한 [루시의 영혼 기억 노트] 프롬프트 블록으로 변환합니다.
+ */
+export function formatEpisodicSoulMemory(ledger: EpisodicMemoryLedger): string {
+  const parts: string[] = [];
+  if (ledger.activeThreads.length > 0) {
+    parts.push('진행 중인 삶의 스레드:\n' + ledger.activeThreads.map(t => `- [${t.categoryKoName}] "${t.topic}" (최근 언급: ${t.recentMentionDate})`).join('\n'));
+  }
+  if (ledger.keyPeople.length > 0) {
+    parts.push('마음에 둔 주요 인물/관계:\n' + ledger.keyPeople.map(p => `- [${p.nameOrRole}] ${p.relationshipContext}`).join('\n'));
+  }
+  if (ledger.openFollowUps.length > 0) {
+    parts.push('챙겨줄 열린 미결 사건:\n' + ledger.openFollowUps.map(f => `- ${f}`).join('\n'));
+  }
+  if (parts.length === 0) return '';
+  return `[루시의 영혼 기억 노트 (Soul Memory Ledger)]\n${parts.join('\n\n')}\n\n[영혼 기억 연동 가이드]:
+- 사용자가 진행 중인 스레드나 인물을 언급할 때는 지난 맥락을 다정하게 기억하고 이어받아줘.
+- 당면 질문에 먼저 명쾌하게 답하되, 대화의 결에 맞춰 열린 미결 사건의 안부를 단짝 친구처럼 따뜻하게 물어봐줘.`;
+}
+
+/**
  * AI 시스템 프롬프트에 주입할 풍부하고 다정한 [루시의 영혼 기억 노트] 생성
  */
 /** Compatibility adapter. Never read the unscoped legacy archive into an account. */
