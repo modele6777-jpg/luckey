@@ -312,7 +312,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     }
   }, []);
 
-  // 🎨 상단 [나의 리듬] 캔버스: 병원 심장박동(ECG 심전도) 초호화 네온 오실로스코프 모니터 렌더러
+  // 🎨 상단 [나의 리듬] 캔버스: 신비롭고 몽환적인 심우주 오로라 & 리듬 파동 (Celestial Starlight Nebula & Dreamy Pulse)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -323,367 +323,278 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     const startTime = performance.now();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 파티클 시스템 (R-Peak 발생 시 뿜어져 나오는 황금빛 스타더스트 불꽃)
-    interface SparkleParticle {
+    // 🌟 몽환적인 유영 별빛 & 반딧불이 성운 가루 (36개 별빛 정령)
+    interface DreamyStardust {
       x: number;
       y: number;
-      vx: number;
-      vy: number;
-      life: number;
-      maxLife: number;
       size: number;
+      speedX: number;
+      speedY: number;
+      phase: number;
       color: string;
+      baseAlpha: number;
     }
-    const particles: SparkleParticle[] = [];
-    let lastRPeakTrigger = 0;
-    const rippleWaves: { x: number; y: number; r: number; alpha: number }[] = [];
-
-    // ECG 파형 계산 함수 (0 ~ 1 주기 내 P-Q-R-S-T-U 파형 생성)
-    const getEcgWaveY = (phase: number, rBoost: number): number => {
-      const u = (phase % 1.0 + 1.0) % 1.0;
-      let y = Math.sin(u * Math.PI * 32) * 0.6; // 생체 미세 떨림
-
-      if (u >= 0.08 && u < 0.18) {
-        // P-wave (심방 탈분극: 부드러운 언덕)
-        const pPhase = (u - 0.08) / 0.10;
-        y += Math.sin(pPhase * Math.PI) * 11;
-      } else if (u >= 0.22 && u < 0.25) {
-        // Q-wave (날카로운 하강)
-        const qPhase = (u - 0.22) / 0.03;
-        y -= Math.sin(qPhase * Math.PI) * 9;
-      } else if (u >= 0.25 && u < 0.32) {
-        // R-peak (심실 주 탈분극: 심장 박동의 최고점! 극도로 날카롭고 웅장한 수직 스파이크)
-        const rPhase = (u - 0.25) / 0.07;
-        const rHeight = 72 * rBoost;
-        if (rPhase < 0.45) {
-          y += (rPhase / 0.45) * rHeight;
-        } else {
-          y += (1 - (rPhase - 0.45) / 0.55) * rHeight;
-        }
-      } else if (u >= 0.32 && u < 0.38) {
-        // S-wave (깊은 하강 파동)
-        const sPhase = (u - 0.32) / 0.06;
-        y -= Math.sin(sPhase * Math.PI) * 24;
-      } else if (u >= 0.38 && u < 0.46) {
-        // ST-segment: 미세한 온화한 회복선
-        y += 2.2;
-      } else if (u >= 0.46 && u < 0.66) {
-        // T-wave (심실 재분극: 풍부하고 우아한 황금빛 돔)
-        const tPhase = (u - 0.46) / 0.20;
-        y += Math.sin(tPhase * Math.PI) * 20;
-      } else if (u >= 0.66 && u < 0.73) {
-        // U-wave (미세 잔류 파형)
-        const uPhase = (u - 0.66) / 0.07;
-        y += Math.sin(uPhase * Math.PI) * 4.5;
-      }
-      return y;
-    };
+    const motes: DreamyStardust[] = [];
+    const colors = [
+      '#fde68a', // starlight yellow
+      '#c084fc', // mystical purple
+      '#6ee7b7', // aurora mint
+      '#f472b6', // dreamy rose
+      '#ffffff', // diamond white
+    ];
+    for (let i = 0; i < 36; i++) {
+      motes.push({
+        x: Math.random() * 440,
+        y: Math.random() * 200,
+        size: 0.8 + Math.random() * 2.2,
+        speedX: (Math.random() - 0.5) * 12,
+        speedY: -4 - Math.random() * 10,
+        phase: Math.random() * Math.PI * 2,
+        color: colors[i % colors.length],
+        baseAlpha: 0.25 + Math.random() * 0.55,
+      });
+    }
 
     const render = () => {
       const now = performance.now();
       const elapsed = (now - startTime) / 1000;
       const width = canvas.width;
       const height = canvas.height;
-      const baselineY = height * 0.55;
+      const cy = height * 0.52;
 
       ctx.clearRect(0, 0, width, height);
 
-      // 1. 깊은 흑요석(Obsidian) 배경 + 방사형 앰버 오로라 글로우
-      const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
-      bgGrad.addColorStop(0, '#06080e');
-      bgGrad.addColorStop(0.5, '#0b0f19');
-      bgGrad.addColorStop(1, '#06080e');
-      ctx.fillStyle = bgGrad;
+      // 1. 심우주 벨벳 성운 배경 (Deep Velvet Cosmic Space)
+      const bg = ctx.createLinearGradient(0, 0, width, height);
+      bg.addColorStop(0, '#050713');
+      bg.addColorStop(0.5, '#0b0c1e');
+      bg.addColorStop(1, '#070512');
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, width, height);
 
-      const auraGrad = ctx.createRadialGradient(width / 2, baselineY, 10, width / 2, baselineY, width * 0.6);
-      auraGrad.addColorStop(0, isBinauralPlaying ? 'rgba(245, 158, 11, 0.16)' : 'rgba(245, 158, 11, 0.09)');
-      auraGrad.addColorStop(0.5, 'rgba(16, 185, 129, 0.05)');
-      auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = auraGrad;
+      // 템포 주파수 (BPM -> Hz)
+      const freq = ambientTempoBpm / 60;
+      // 🎵 심장박동 & 음악 비트 펄스 (부드러운 유기적 호흡)
+      const beatCycle = (elapsed * freq) % 1.0;
+      const beatBreath = Math.exp(-beatCycle * 3.5);
+      const beatSwell = Math.sin(elapsed * Math.PI * 2 * freq) * 0.25 + beatBreath * 0.75;
+
+      // 2. 신비로운 다중 오로라 성운 발광 워시 (Dreamy Nebula Aurora Glow)
+      // 중앙 좌측: 황금빛 성운
+      const goldNebula = ctx.createRadialGradient(
+        width * 0.35 + Math.sin(elapsed * 0.4) * 30,
+        cy + Math.cos(elapsed * 0.5) * 20,
+        10,
+        width * 0.35,
+        cy,
+        width * 0.45
+      );
+      goldNebula.addColorStop(0, isBinauralPlaying ? 'rgba(245, 158, 11, 0.20)' : 'rgba(245, 158, 11, 0.12)');
+      goldNebula.addColorStop(0.6, 'rgba(245, 158, 11, 0.03)');
+      goldNebula.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = goldNebula;
       ctx.fillRect(0, 0, width, height);
 
-      // 2. 고정밀 밀리미터 골든 메디컬 그리드 (병원 오실로스코프 눈금)
+      // 중앙 우측: 자수정빛 황혼 성운 (Amethyst Twilight Nebula)
+      const purpleNebula = ctx.createRadialGradient(
+        width * 0.68 + Math.cos(elapsed * 0.35) * 30,
+        cy + Math.sin(elapsed * 0.45) * 20,
+        15,
+        width * 0.68,
+        cy,
+        width * 0.50
+      );
+      purpleNebula.addColorStop(0, 'rgba(168, 85, 247, 0.16)');
+      purpleNebula.addColorStop(0.55, 'rgba(52, 211, 153, 0.05)');
+      purpleNebula.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = purpleNebula;
+      ctx.fillRect(0, 0, width, height);
+
+      // 3. 신성기하학 달빛 헤일로 (Moonlight Resonance Rings)
       ctx.save();
-      const minorStep = 16;
+      const haloR = 48 * (1 + beatSwell * 0.08);
       ctx.beginPath();
-      for (let x = 0; x <= width; x += minorStep) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-      }
-      for (let y = 0; y <= height; y += minorStep) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.045)';
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
-
-      const majorStep = 48;
-      ctx.beginPath();
-      for (let x = 0; x <= width; x += majorStep) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-      }
-      for (let y = 0; y <= height; y += majorStep) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.10)';
+      ctx.arc(width / 2, cy, haloR, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(245, 158, 11, ${0.12 + beatSwell * 0.12})`;
       ctx.lineWidth = 1;
+      ctx.setLineDash([4, 8]);
       ctx.stroke();
 
-      // 그리드 교차점 미세 십자선 (+)
-      for (let x = majorStep; x < width; x += majorStep) {
-        for (let y = majorStep; y < height; y += majorStep) {
-          ctx.beginPath();
-          ctx.moveTo(x - 3, y);
-          ctx.lineTo(x + 3, y);
-          ctx.moveTo(x, y - 3);
-          ctx.lineTo(x, y + 3);
-          ctx.strokeStyle = 'rgba(245, 158, 11, 0.22)';
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-      }
+      ctx.beginPath();
+      ctx.arc(width / 2, cy, haloR * 1.5, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(168, 85, 247, ${0.08 + beatSwell * 0.06})`;
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([2, 12]);
+      ctx.stroke();
       ctx.restore();
 
-      // 3. 심장박동 파형 (스위핑 레이저 오실로스코프)
-      const freq = ambientTempoBpm / 60; // 초당 박동 수
-      const cycleDuration = 1 / freq;    // 1회 심박 소요 시간 (초)
-      const sweepSpeed = (width / 2.4) * freq;
-      const headX = (elapsed * sweepSpeed) % width;
+      // 4. 은하수의 결 · 몽환적인 3중 실크 오로라 리본 파동 (Silk Starlight Waves)
+      const segments = 90;
+      const stepX = width / segments;
 
-      // 🎵 음악 비트 킥드럼 어택 & 지수 감쇠
-      const beatPhase = (elapsed * freq) % 1.0;
-      const kickAttack = Math.exp(-beatPhase * 5.0);
+      const getWaveY = (x: number, layer: number): number => {
+        const nx = x / width;
+        const wave1 = Math.sin(nx * Math.PI * 3.2 - elapsed * 2.2 + layer * 1.2) * (14 + beatSwell * 10);
+        const wave2 = Math.cos(nx * Math.PI * 5.6 + elapsed * 1.6 - layer * 0.8) * (8 + beatSwell * 5);
+        const centerDist = Math.abs(nx - 0.5);
+        const centerHeart = Math.exp(-centerDist * centerDist * 18) * (26 * beatSwell);
+        const flutter = Math.sin(nx * 18 + elapsed * 3.5 + layer) * 2.5;
 
-      // 수동 탭 리플
-      let tapRipple = 0;
+        return wave1 + wave2 + (layer === 1 ? centerHeart : -centerHeart * 0.4) + flutter;
+      };
+
+      // [리본 A] 자수정 섀도우 리본 (Amethyst Aurora Base)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      for (let i = 0; i <= segments; i++) {
+        const x = i * stepX;
+        const y = cy - getWaveY(x, 0);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(width, height);
+      ctx.closePath();
+      const ribAGrad = ctx.createLinearGradient(0, cy - 35, 0, height);
+      ribAGrad.addColorStop(0, 'rgba(168, 85, 247, 0.22)');
+      ribAGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.08)');
+      ribAGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = ribAGrad;
+      ctx.fill();
+
+      // [리본 B] 에메랄드 오로라 언더필 (Emerald Aurora Silk)
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      for (let i = 0; i <= segments; i++) {
+        const x = i * stepX;
+        const y = cy - getWaveY(x, 2);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(width, height);
+      ctx.closePath();
+      const ribBGrad = ctx.createLinearGradient(0, cy - 30, 0, height);
+      ribBGrad.addColorStop(0, 'rgba(52, 211, 153, 0.18)');
+      ribBGrad.addColorStop(0.6, 'rgba(16, 185, 129, 0.05)');
+      ribBGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = ribBGrad;
+      ctx.fill();
+      ctx.restore();
+
+      // [파동 선 1] 에메랄드 실크 윤곽선
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i <= segments; i++) {
+        const x = i * stepX;
+        const y = cy - getWaveY(x, 2);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(52, 211, 153, 0.45)';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+
+      // [파동 선 2] 자수정 오로라 윤곽선
+      ctx.beginPath();
+      for (let i = 0; i <= segments; i++) {
+        const x = i * stepX;
+        const y = cy - getWaveY(x, 0);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(192, 132, 252, 0.55)';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      // [파동 선 3: 황금빛 주 리듬 스트림] 찬란하게 빛나는 골든 스타더스트 리본
+      ctx.beginPath();
+      for (let i = 0; i <= segments; i++) {
+        const x = i * stepX;
+        const y = cy - getWaveY(x, 1);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = isBinauralPlaying ? 'rgba(251, 191, 36, 0.85)' : 'rgba(245, 158, 11, 0.70)';
+      ctx.lineWidth = 3.2;
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = isBinauralPlaying ? 16 : 10;
+      ctx.stroke();
+
+      // [파동 선 4: 백열 순백 코어 필라멘트]
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 4;
+      ctx.stroke();
+      ctx.restore();
+
+      // 5. 몽환적인 유영 별빛 정령 & 반딧불이 성운 가루 (Dreamy Firefly Motes)
+      for (let i = 0; i < motes.length; i++) {
+        const m = motes[i];
+        m.x += m.speedX * 0.016;
+        m.y += m.speedY * 0.016;
+        if (m.x < 0) m.x = width;
+        if (m.x > width) m.x = 0;
+        if (m.y < 0) m.y = height;
+        if (m.y > height) m.y = 0;
+
+        const pulseAlpha = Math.sin(elapsed * 2.5 + m.phase) * 0.35 + 0.65;
+        const currentAlpha = m.baseAlpha * pulseAlpha * (1 + beatSwell * 0.4);
+
+        ctx.save();
+        ctx.beginPath();
+        const r = Math.max(0.6, m.size * (1 + beatSwell * 0.3));
+        ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = m.color;
+        ctx.globalAlpha = Math.min(1, currentAlpha);
+        ctx.shadowColor = m.color;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 6. 탭 파문 (Golden Starlight Water Ripples)
       if (lastTapRippleRef.current) {
         const tapDelta = (now - lastTapRippleRef.current.time) / 1000;
-        if (tapDelta < 1.0) {
-          tapRipple = Math.sin(tapDelta * Math.PI) * (1 - tapDelta);
+        if (tapDelta < 1.4) {
+          const ripProgress = tapDelta / 1.4;
+          const ripR = ripProgress * 130;
+          const ripAlpha = (1 - ripProgress) * 0.65;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(width / 2, cy, ripR, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(251, 191, 36, ${ripAlpha})`;
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = '#f59e0b';
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+          ctx.restore();
         }
       }
 
-      const rBoost = 1.0 + kickAttack * 0.25 + tapRipple * 0.35 + (isBinauralPlaying ? 0.15 : 0);
-      const eraseGap = 28; // 앞쪽 지우개 간격 (실제 병원 모니터의 스캔 지우개)
-
-      // R-Peak 발화 감지: headX 위치에서의 파형이 정점에 도달했을 때 불꽃/리플 트리거
-      const headCycleTime = (now / 1000);
-      const currentCyclePhase = (headCycleTime / cycleDuration) % 1.0;
-      if (currentCyclePhase >= 0.27 && currentCyclePhase <= 0.31) {
-        if (now - lastRPeakTrigger > (cycleDuration * 800)) {
-          lastRPeakTrigger = now;
-          const peakY = baselineY - (72 * rBoost);
-          // 뿜어져 나오는 황금빛 스타더스트 불꽃 12개 생성
-          for (let p = 0; p < 12; p++) {
-            const angle = Math.random() * Math.PI * 2;
-            const spd = 20 + Math.random() * 60;
-            particles.push({
-              x: headX,
-              y: peakY,
-              vx: Math.cos(angle) * spd,
-              vy: Math.sin(angle) * spd - 30,
-              life: 0,
-              maxLife: 0.6 + Math.random() * 0.4,
-              size: 1.5 + Math.random() * 2.5,
-              color: p % 3 === 0 ? '#fbbf24' : p % 3 === 1 ? '#34d399' : '#ffffff',
-            });
-          }
-          // 동심원 쇼크웨이브
-          rippleWaves.push({ x: headX, y: peakY, r: 0, alpha: 0.85 });
-        }
-      }
-
-      // 점 배열 구축
-      const points: { x: number; y: number; alpha: number }[] = [];
-      const stepX = 2;
-      for (let x = 0; x < width; x += stepX) {
-        const distBehind = (headX - x + width) % width;
-        if (distBehind < eraseGap && distBehind > 0) {
-          continue; // 지우개 간격 통과
-        }
-        const persistence = Math.max(0.35, 1.0 - (distBehind / width) * 0.65);
-        const timeOffset = (distBehind / sweepSpeed);
-        const ptTime = elapsed - timeOffset;
-        const phase = (ptTime / cycleDuration) % 1.0;
-        const waveY = getEcgWaveY(phase, rBoost);
-        points.push({ x, y: baselineY - waveY, alpha: persistence });
-      }
-
-      // 파형 언더필 그라디언트 (빛나는 오로라 워시)
-      if (points.length > 2) {
-        ctx.save();
-        ctx.beginPath();
-        let inSub = false;
-        for (let i = 0; i < points.length; i++) {
-          const pt = points[i];
-          const prev = points[i - 1];
-          if (!prev || Math.abs(pt.x - prev.x) > stepX * 2) {
-            if (inSub) {
-              ctx.lineTo(prev.x, baselineY);
-              ctx.closePath();
-            }
-            ctx.moveTo(pt.x, baselineY);
-            ctx.lineTo(pt.x, pt.y);
-            inSub = true;
-          } else {
-            ctx.lineTo(pt.x, pt.y);
-          }
-        }
-        if (inSub && points.length > 0) {
-          ctx.lineTo(points[points.length - 1].x, baselineY);
-          ctx.closePath();
-        }
-        const fillGrad = ctx.createLinearGradient(0, baselineY - 80, 0, baselineY);
-        fillGrad.addColorStop(0, isBinauralPlaying ? 'rgba(245, 158, 11, 0.22)' : 'rgba(245, 158, 11, 0.14)');
-        fillGrad.addColorStop(0.6, 'rgba(16, 185, 129, 0.06)');
-        fillGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = fillGrad;
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // 4. 고광택 멀티 레이어 ECG 선 그리기
+      // 7. 은은하고 신비로운 캡션 텍스트 (우측 상단 528Hz & 좌측 상단 BPM 앰비언트)
       ctx.save();
-      ctx.beginPath();
-      for (let i = 0; i < points.length; i++) {
-        const pt = points[i];
-        const prev = points[i - 1];
-        if (!prev || Math.abs(pt.x - prev.x) > stepX * 2) {
-          ctx.moveTo(pt.x, pt.y);
-        } else {
-          ctx.lineTo(pt.x, pt.y);
-        }
-      }
-      ctx.strokeStyle = isBinauralPlaying ? 'rgba(251, 191, 36, 0.55)' : 'rgba(245, 158, 11, 0.40)';
-      ctx.lineWidth = 4.5;
-      ctx.shadowColor = '#fbbf24';
-      ctx.shadowBlur = 14;
-      ctx.stroke();
-
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 2.0;
+      ctx.font = '500 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.75)';
       ctx.shadowColor = '#f59e0b';
       ctx.shadowBlur = 6;
-      ctx.stroke();
+      ctx.fillText(`✦ ${ambientTempoBpm} BPM`, 16, 24);
 
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.0;
-      ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 2;
-      ctx.stroke();
-      ctx.restore();
-
-      // 5. 스캔 헤드 (Leading Sweep Head): 눈부신 코스믹 다이아몬드 스파크
-      const headWaveY = getEcgWaveY((elapsed / cycleDuration) % 1.0, rBoost);
-      const headPosY = baselineY - headWaveY;
-
-      // 수직 레이저 스캔 가이드 빔
-      const scanBeamGrad = ctx.createLinearGradient(0, 0, 0, height);
-      scanBeamGrad.addColorStop(0, 'rgba(245, 158, 11, 0)');
-      scanBeamGrad.addColorStop(Math.max(0, (headPosY - 25) / height), 'rgba(245, 158, 11, 0.08)');
-      scanBeamGrad.addColorStop(headPosY / height, 'rgba(255, 255, 255, 0.35)');
-      scanBeamGrad.addColorStop(Math.min(1, (headPosY + 25) / height), 'rgba(245, 158, 11, 0.08)');
-      scanBeamGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
-      ctx.fillStyle = scanBeamGrad;
-      ctx.fillRect(headX - 1, 0, 2, height);
-
-      // 스캔 헤드 발광 오브
-      ctx.save();
-      const sparkGlow = ctx.createRadialGradient(headX, headPosY, 0, headX, headPosY, 16);
-      sparkGlow.addColorStop(0, '#ffffff');
-      sparkGlow.addColorStop(0.3, '#fde68a');
-      sparkGlow.addColorStop(0.7, 'rgba(245, 158, 11, 0.4)');
-      sparkGlow.addColorStop(1, 'rgba(245, 158, 11, 0)');
-      ctx.fillStyle = sparkGlow;
-      ctx.beginPath();
-      ctx.arc(headX, headPosY, 16, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 백열 핵
-      ctx.beginPath();
-      ctx.arc(headX, headPosY, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 8;
-      ctx.fill();
-      ctx.restore();
-
-      // 6. 스타더스트 불꽃 파티클 렌더링 & 업데이트
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life += 0.016;
-        if (p.life >= p.maxLife) {
-          particles.splice(i, 1);
-          continue;
-        }
-        p.x += p.vx * 0.016;
-        p.y += p.vy * 0.016;
-        p.vy += 25 * 0.016;
-        const progress = p.life / p.maxLife;
-        const alpha = 1 - progress;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, Math.max(0.5, p.size * (1 - progress * 0.5)), 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = alpha;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 6;
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // 7. R-Peak 쇼크웨이브 동심원 링
-      for (let i = rippleWaves.length - 1; i >= 0; i--) {
-        const rw = rippleWaves[i];
-        rw.r += 45 * 0.016;
-        rw.alpha -= 1.2 * 0.016;
-        if (rw.alpha <= 0) {
-          rippleWaves.splice(i, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(rw.x, rw.y, rw.r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(251, 191, 36, ${rw.alpha * 0.6})`;
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // 8. 럭셔리 메디컬 텔레메트리 HUD 텍스트 (Hospital ECG Monitor Information)
-      ctx.save();
-      const currentCyclePhaseNow = ((now / 1000) / cycleDuration) % 1.0;
-      ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "JetBrains Mono", monospace';
-      ctx.fillStyle = '#fbbf24';
-      ctx.shadowColor = '#f59e0b';
-      ctx.shadowBlur = 6;
-      ctx.fillText(`♥ ${ambientTempoBpm} BPM`, 14, 22);
-
-      ctx.font = '600 8.5px -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(245, 158, 11, 0.65)';
+      ctx.font = '400 8.5px -apple-system, sans-serif';
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.50)';
       ctx.shadowBlur = 0;
-      ctx.fillText('LEAD II · ECG HARMONICS', 14, 34);
+      ctx.fillText('COSMIC RESONANCE', 16, 36);
 
       ctx.textAlign = 'right';
-      ctx.font = '600 9px -apple-system, "JetBrains Mono", monospace';
-      ctx.fillStyle = '#34d399';
+      ctx.font = '500 10px -apple-system, sans-serif';
+      ctx.fillStyle = 'rgba(52, 211, 153, 0.75)';
       ctx.shadowColor = '#10b981';
-      ctx.shadowBlur = 4;
-      ctx.fillText('528Hz SYNC · OPTIMAL', width - 14, 22);
+      ctx.shadowBlur = 6;
+      ctx.fillText('528Hz LOVE FREQUENCY', width - 16, 24);
 
-      ctx.font = '600 8.5px -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.font = '400 8.5px -apple-system, sans-serif';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.40)';
       ctx.shadowBlur = 0;
-      ctx.fillText('QTc: 412ms · HRV: 68', width - 14, 34);
-
-      ctx.font = '500 8px -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
-      ctx.fillText('TAP TO SYNC BPM', width - 14, height - 10);
+      ctx.fillText('TAP TO SYNC', width - 16, 36);
       ctx.restore();
 
       if (!reducedMotion) animId = requestAnimationFrame(render);
