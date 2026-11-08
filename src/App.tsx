@@ -683,8 +683,11 @@ function AppContent() {
       <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? 'duo-dual-view flex flex-row' : 'flex flex-col'}`}>
         {isDuoUnfolded ? (
           <div className="w-full h-full flex flex-row min-h-0 overflow-hidden">
-            {/* 좌측 화면: 최우측 메뉴 및 우측 빅뱅 버튼으로 컨트롤하는 채널 뷰포트 (50%) */}
-            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden border-r border-white/10 relative">
+            {/* 좌측 화면: 최우측 메뉴 및 우측 빅뱅 버튼으로 컨트롤하는 채널 뷰포트 (네비게이션 포함 전체 화면의 정확히 50%) */}
+            <div
+              style={{ width: '50vw', minWidth: '50vw', maxWidth: '50vw' }}
+              className="h-full shrink-0 flex flex-col overflow-hidden border-r border-white/10 relative"
+            >
               {isLucyRoute ? (
                 /* 최우측 메뉴에서 루시 선택 시 ➔ 좌측 화면에 코스믹 룸 표출 */
                 <div className="w-full h-full overflow-hidden flex flex-col">
@@ -704,8 +707,8 @@ function AppContent() {
               )}
             </div>
 
-            {/* 우측 화면: 루시 채팅 상시 고정 (오른손 엄지 입력 최적화, 50%) */}
-            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden z-10 relative">
+            {/* 우측 화면: 루시 채팅 상시 고정 (오른손 엄지 입력 최적화, 네비게이션과 함께 우측 50% 구성) */}
+            <div className="flex-1 h-full min-w-0 flex flex-col overflow-hidden z-10 relative">
               <LucyStandalonePage />
             </div>
           </div>
