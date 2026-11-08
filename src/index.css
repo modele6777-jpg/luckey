@@ -3291,7 +3291,7 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
 html.duo-unfolded-mode .bottom-safe-fab-center,
 body.duo-unfolded-mode .bottom-safe-fab-center,
 .duo-unfolded-mode .bottom-safe-fab-center {
-  left: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
+  left: 50vw !important;
   right: var(--sites-sidebar-width, 80px) !important;
   margin-left: auto !important;
   margin-right: auto !important;
