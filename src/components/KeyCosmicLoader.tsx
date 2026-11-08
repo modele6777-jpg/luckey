@@ -19,6 +19,7 @@ export function KeyCosmicLoader({
   return (
     <div
       role="status"
+      data-app-channel-loader="true"
       aria-label={message}
       className={`flex flex-col items-center justify-center select-none z-50 text-slate-100 overflow-hidden ${
         fullScreen
