@@ -2100,7 +2100,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   //  Dynamic PWA Manifest & iOS Home-screen Metadata Switcher
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = pro ? 'Lucy Pro' : 'Lucy';
+    const activeTitle = (lucyTier === 'pro' || pro)
+      ? (isDuoUnfolded ? 'Lucy+ Pro' : 'Lucy Pro')
+      : (lucyTier === 'plus' ? 'Lucy +' : 'Lucy');
+    document.title = activeTitle;
 
     let manifestTag = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
     const prevManifestHref = manifestTag ? manifestTag.getAttribute('href') : null;
@@ -2905,7 +2908,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     >
                       {lucyTier === 'pro' ? (
                         <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]">
-                          Lucy ✦ Pro
+                          {isDuoUnfolded ? 'Lucy+ Pro' : 'Lucy Pro'}
                         </span>
                       ) : lucyTier === 'plus' ? (
                         <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]">
