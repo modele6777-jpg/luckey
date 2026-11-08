@@ -711,10 +711,10 @@ export default function EpilogueApp() {
         return (
           <div className="space-y-4 animate-in fade-in duration-300">
             {/* 프로필 사진 변경 카드 (1단계 최상단) */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center gap-4 backdrop-blur-md">
-              <div className="flex items-center gap-4">
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-3.5 backdrop-blur-md">
+              <div className="flex items-start gap-3.5">
                 <div className="relative group/avatar shrink-0">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-white/5 border-2 border-purple-400/40 shadow-[0_0_18px_rgba(168,85,247,0.2)] flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/5 border-2 border-purple-400/40 shadow-[0_0_18px_rgba(168,85,247,0.2)] flex items-center justify-center">
                     {effectiveAvatarUrl ? (
                       <img
                         src={effectiveAvatarUrl}
@@ -740,16 +740,16 @@ export default function EpilogueApp() {
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <h3 className="text-sm font-bold text-white/95">프로필 사진</h3>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono font-bold border border-purple-400/30">
-                      {basic.avatarUrl ? '직접 등록됨' : isUsingGoogleAvatar ? '구글 계정 사진 연동됨' : '기본 아이콘'}
+                      {basic.avatarUrl ? '직접 등록됨' : isUsingGoogleAvatar ? '구글 계정 연동됨' : '기본'}
                     </span>
                   </div>
-                  <p className="text-xs text-white/50 leading-relaxed">
-                    좌측 사이드바와 프로필에 표시될 나만의 사진입니다. 직접 등록하지 않으면 연동된 구글 계정 사진이 우선 표시됩니다.
+                  <p className="text-xs text-white/60 leading-relaxed break-keep">
+                    좌측 사이드바와 프로필에 표시될 나만의 사진입니다. 직접 등록하지 않으면 구글 계정 사진이 표시됩니다.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 sm:ml-auto shrink-0">
+              <div className="flex items-center gap-2 pt-1 border-t border-white/5">
                 <input
                   ref={avatarFileInputRef}
                   type="file"
@@ -761,7 +761,7 @@ export default function EpilogueApp() {
                   type="button"
                   disabled={isUploadingAvatar}
                   onClick={() => avatarFileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-500/25 hover:bg-purple-500/35 text-purple-200 border border-purple-400/40 transition-all cursor-pointer active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-purple-500/25 hover:bg-purple-500/35 text-purple-200 border border-purple-400/40 transition-all cursor-pointer active:scale-95"
                 >
                   <Upload size={13} />
                   <span>{isUploadingAvatar ? '처리 중...' : basic.avatarUrl ? '사진 변경' : '사진 등록'}</span>
@@ -770,8 +770,8 @@ export default function EpilogueApp() {
                   <button
                     type="button"
                     onClick={handleRemoveAvatar}
-                    className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-white/10 transition-all cursor-pointer active:scale-95"
-                    title="직접 등록한 사진 삭제 (구글 프로필 또는 기본 아이콘으로 복원)"
+                    className="px-3 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-white/10 transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1"
+                    title="직접 등록한 사진 삭제"
                   >
                     <RotateCcw size={13} />
                     <span>초기화</span>

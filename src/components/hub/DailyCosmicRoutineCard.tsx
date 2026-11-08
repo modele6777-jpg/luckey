@@ -407,8 +407,8 @@ export function DailyCosmicRoutineCard() {
           </div>
         </div>
 
-        {/* 3단계 스텝 버튼 */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        {/* 3단계 스텝 버튼: 듀오 펼침 화면(50vw) 및 모바일에서는 접힌 상태처럼 1열 스택으로 텍스트 여유 확보 */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 duo-routine-grid gap-2.5">
           {STEPS.map((s) => {
             const Icon = s.icon;
             const isOpen = openStep === s.id;

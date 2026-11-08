@@ -3494,3 +3494,79 @@ html.light #duo-lucy-viewport .lucy-chat-footer {
   color: #f1f5fa !important;
 }
 
+/* ==========================================================================
+   📱 iPhone Duo 7.6" 펼친 화면 좌측 콘텐츠 뷰포트 (50vw):
+   - 좌측 화면은 스마트폰 1대 너비이므로, 접힌 상태의 구조와 UI(단일 폰 1열 스택 뷰)로 고정
+   ========================================================================== */
+#duo-content-viewport {
+  container-type: inline-size;
+  container-name: duo-content;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* 1. 모닝 루틴, 카테고리 칩 등 가로 3열/2열 강제 붕괴 방지 -> 접힌 상태의 1열 스택 UI 복원 */
+html.duo-unfolded-mode #duo-content-viewport :is(.sm\:grid-cols-3, .md\:grid-cols-3, .lg\:grid-cols-3, .sm\:grid-cols-2, .md\:grid-cols-2, .lg\:grid-cols-2, .duo-routine-grid),
+html.duo-unfolded-mode #duo-content-viewport .duo-split-workspace,
+html.duo-unfolded-mode #duo-content-viewport .duo-workspace-pair,
+html.duo-unfolded-mode #duo-content-viewport .duo-split-grid,
+html.duo-unfolded-mode #duo-content-viewport .duo-channel-grid,
+html.duo-unfolded-mode #duo-content-viewport .duo-dapp-workspace {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* 2. 카드 내부의 무리한 가로 flex-row 분할을 모바일용 수직 스택으로 재배치 */
+html.duo-unfolded-mode #duo-content-viewport :is(.sm\:flex-row, .md\:flex-row, .lg\:flex-row) {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+/* 3. 모닝 루틴 카드 및 데일리 케어 카드 모바일 최적화 */
+html.duo-unfolded-mode #duo-content-viewport .duo-routine-grid > button {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+html.duo-unfolded-mode #duo-content-viewport .duo-persona-header {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 0.75rem !important;
+}
+
+/* 4. 프로필 및 에필로그 폰 전용 패딩 & 여백 */
+html.duo-unfolded-mode #duo-content-viewport .prism-page-content {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  max-width: 100% !important;
+}
+
+/* 5. 좌측 뷰포트 헤더와 서브네비게이션이 겹치지 않고 자연스럽게 상하 배치 */
+html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  transform: none !important;
+  margin: 0.5rem auto 1rem auto !important;
+  max-width: calc(100% - 1.5rem) !important;
+}
+
+html.duo-unfolded-mode #duo-content-viewport .prism-hub-header {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.25rem !important;
+}
+
+/* 6. 좌측 화면 채널 이동 시 로딩 오버레이는 전체 화면을 덮지 않고 좌측 뷰포트에만 국한 */
+html.duo-unfolded-mode #duo-content-viewport .screen-portal,
+html.duo-unfolded-mode #duo-content-viewport .duo-portal {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+

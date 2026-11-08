@@ -1202,9 +1202,23 @@ export function BigBangButton() {
       setHoverDirection('none');
       showDirectionFeedback(targetDir);
       if (targetDir === 'north') {
-        cardinalActionsRef.current?.scrollToTop(e);
+        const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
+        if (isDuo) {
+          const contentEl = document.getElementById('duo-content-viewport');
+          const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
+          scrollRoot?.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          cardinalActionsRef.current?.scrollToTop(e);
+        }
       } else if (targetDir === 'south') {
-        cardinalActionsRef.current?.scrollToBottom(e);
+        const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
+        if (isDuo) {
+          const contentEl = document.getElementById('duo-content-viewport');
+          const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
+          scrollRoot?.scrollTo({ top: scrollRoot.scrollHeight, behavior: 'smooth' });
+        } else {
+          cardinalActionsRef.current?.scrollToBottom(e);
+        }
       } else if (targetDir === 'west') {
         goToPreviousDapp();
       } else if (targetDir === 'east') {
@@ -1219,9 +1233,9 @@ export function BigBangButton() {
       return;
     }
 
-    // 🎙️ [홀드 완료: duration >= 220ms 또는 isPttRecordingRef.current]
-    // 홀드를 놓으면 프로 페이지로 이동하지 않고, Lucy를 그 자리에서 Lucy +로 진화시킵니다!
-    const isHoldGesture = isPttRecordingRef.current || duration >= 220;
+    // 🎙️ [홀드 완료: duration >= 480ms 의도적 롱프레스 또는 isPttRecordingRef.current]
+    // 탭과 홀드를 엄격히 구분: 480ms 미만의 탭은 절대 프로 모드로 진입하지 않습니다!
+    const isHoldGesture = isPttRecordingRef.current || duration >= 480;
     if (isHoldGesture) {
       showGestureFeedback('hold');
       isPttRecordingRef.current = false;
@@ -1334,8 +1348,10 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 🌟 빅뱅 버튼 1회 탭: 키채널로 이동하지 않고 무조건 루시/루시플러스로 이동하며 좌측화면을 코스믹 룸으로 변경!
-          const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 640);
+          // 🌟 빅뱅 버튼 1회 탭: 프로 모드로 절대 진입하지 않음!
+          // - 펼침: 오직 루시 플러스('plus') 고정 & 좌측 코스믹 룸 토글 (일반 루시 진입 금지)
+          // - 접힘: 오직 루시 AI('ai') 고정 (루시 플러스 진입 금지)
+          const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 600) || (typeof document !== 'undefined' && Boolean(document.getElementById('duo-lucy-viewport')));
           if (isWide) {
             safeSessionStorage.setItem('lucy_tier_mode', 'plus');
             safeLocalStorage.setItem('lucy_tier_mode', 'plus');
@@ -1344,7 +1360,7 @@ export function BigBangButton() {
             return;
           }
 
-          // 단일 뷰(접힘) 상태: 접혀있을 때는 루시 AI!
+          // 단일 뷰(접힘) 상태: 접혀있을 때는 루시 AI! (루시 플러스 진입 절대 차단)
           const targetTier = 'ai';
           safeSessionStorage.setItem('lucy_tier_mode', targetTier);
           safeLocalStorage.setItem('lucy_tier_mode', targetTier);

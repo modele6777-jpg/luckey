@@ -173,11 +173,9 @@ export function isDualPaneLayout(): boolean {
   // Tablet / Desktop Wide View (iPad, Galaxy Tab, desktop window >= 720px)
   if (w >= 720) return true;
 
-  // Square-ish unfolded foldable inner screen (aspect ratio >= 0.78 and width >= 620px)
-  if (w >= 620 && (Math.min(w, h) / Math.max(w, h)) >= 0.75) return true;
-
-  // iPhone Duo 7.6" inner screen in portrait (both dimensions >= 540px)
-  if (Math.min(w, h) >= 540) return true;
+  // iPhone Duo 7.6" inner screen in landscape and portrait
+  if (Math.min(w, h) >= 440 && Math.max(w, h) >= 580 && (Math.min(w, h) / Math.max(w, h)) >= 0.65) return true;
+  if (Math.min(w, h) >= 480) return true;
 
   return false;
 }
@@ -205,7 +203,7 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
     }
   } catch {}
 
-  const isInnerScreen = isSpanned || (Math.min(w, h) >= 540) || (isLandscape && w >= 560);
+  const isInnerScreen = isSpanned || (Math.min(w, h) >= 460) || (isLandscape && w >= 520);
   const unfolded = isInnerScreen || isDualPaneLayout();
   const orientation = isLandscape ? 'landscape' : 'portrait';
   return { unfolded, orientation };
