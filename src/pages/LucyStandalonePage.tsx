@@ -3033,8 +3033,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               onQuickDraw={(promptText) => {
                 setInput(promptText);
                 setTimeout(() => {
-                  focusInputBox(promptText);
-                }, 100);
+                  textareaRef.current?.focus();
+                }, 60);
               }}
               isLight={isLight}
             />

@@ -206,7 +206,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
           <span>DCE #{activeEngineIdx + 1} · {currentEngine?.nameKo || '심층 운명학 엔진'}</span>
         </div>
         <p className="text-[11px] text-slate-400 max-w-xs leading-relaxed drop-shadow-sm font-medium">
-          {currentEngine?.description || '전체 246개 결정론·운명학 엔진이 우측 루시 대화창에 실시간 주입되고 있습니다.'}
+          {currentEngine ? `${currentEngine.nameKo} · ${currentEngine.category === 'foundational' ? '기초 운명학 도구' : '심층 결정론 마스터 엔진'}이 실시간 주입되고 있습니다.` : '전체 246개 결정론·운명학 엔진이 우측 루시 대화창에 실시간 주입되고 있습니다.'}
         </p>
       </div>
 
