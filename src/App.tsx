@@ -727,7 +727,7 @@ function AppContent() {
                 - 세로(Portrait): 하단 50vh
                 - 다크 코스믹 테마 영구 보존 (.dark 강제 적용)
              */}
-            <div className="dark flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden z-10 relative">
+            <div id="duo-lucy-viewport" className="dark flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden z-10 relative">
               <LucyStandalonePage />
             </div>
           </div>

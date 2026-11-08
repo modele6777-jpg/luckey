@@ -228,6 +228,58 @@ export function BigBangButton() {
   const cardinalActionsRef = useRef<BigBangCircularMeterActions | null>(null);
   const [cardinalInfo, setCardinalInfo] = useState<{ prevStepName?: string; nextStepName?: string }>({});
 
+  // 🎯 좌측 화면과 우측 메뉴(네비게이션)를 제외한 오직 '루시채팅창'의 가로 정중앙 추적
+  const [chatCenterLeft, setChatCenterLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const updateCenter = () => {
+      // 1. 펼침 화면(듀얼 뷰)에서는 전담 우측 루시 채팅 뷰포트(#duo-lucy-viewport) 우선
+      const duoLucy = document.getElementById('duo-lucy-viewport');
+      // 2. 단독 루시 화면(.lucy-chat-shell) 또는 메인 영역(.sites-pinned-main)
+      const target = duoLucy || document.querySelector('.lucy-chat-shell') || document.querySelector('.sites-pinned-main');
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        if (rect.width > 0) {
+          const centerX = Math.round(rect.left + rect.width / 2);
+          setChatCenterLeft(centerX);
+          document.documentElement.style.setProperty('--lucy-chat-center-x', `${centerX}px`);
+          return;
+        }
+      }
+      // 3. Fallback: 사이드바 제외 정중앙
+      const sidebar = document.querySelector('.sites-pinned-sidebar');
+      const sbWidth = sidebar ? sidebar.getBoundingClientRect().width : 80;
+      const fallbackCenter = Math.round((window.innerWidth - sbWidth) / 2);
+      setChatCenterLeft(fallbackCenter);
+      document.documentElement.style.setProperty('--lucy-chat-center-x', `${fallbackCenter}px`);
+    };
+
+    updateCenter();
+    window.addEventListener('resize', updateCenter, { passive: true });
+    window.addEventListener('orientationchange', updateCenter, { passive: true });
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => updateCenter());
+      const duoLucy = document.getElementById('duo-lucy-viewport');
+      if (duoLucy) ro.observe(duoLucy);
+      const main = document.querySelector('.sites-pinned-main');
+      if (main) ro.observe(main);
+    }
+
+    const mo = new MutationObserver(() => updateCenter());
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      window.removeEventListener('resize', updateCenter);
+      window.removeEventListener('orientationchange', updateCenter);
+      ro?.disconnect();
+      mo.disconnect();
+    };
+  }, []);
+
   // ☁️ 탭 & 홀드 시 뭉게구름 피어오름(Cloud Genesis) 이펙트 상태
   const [cloudBurstSeed, setCloudBurstSeed] = useState<number>(0);
   const cloudBurstTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -1463,6 +1515,17 @@ export function BigBangButton() {
         className={`fixed bottom-safe-fab-center w-[84px] h-[84px] pointer-events-none flex items-center justify-center select-none ${
           isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
+        style={
+          chatCenterLeft != null
+            ? {
+                left: `${chatCenterLeft}px`,
+                right: 'auto',
+                marginLeft: 0,
+                marginRight: 0,
+                transform: 'translateX(-50%)',
+              }
+            : undefined
+        }
       >
         <div
           ref={hoverContainerRef}
