@@ -1051,5 +1051,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanBaekbeomKimGuMyDesireCulture": {
     "field": "baekbeomKimGuMyDesireCultureResult",
     "traceKey": "baekbeomKimGuMyDesireCultureResult"
+  },
+  "germanMartinHeideggerBeingAndTime": {
+    "field": "martinHeideggerBeingAndTimeResult",
+    "traceKey": "martinHeideggerBeingAndTimeResult"
+  },
+  "americanGermanHannahArendtVitaActiva": {
+    "field": "hannahArendtVitaActivaResult",
+    "traceKey": "hannahArendtVitaActivaResult"
+  },
+  "koreanDosanAhnChanghoMusilYeokhaeng": {
+    "field": "dosanAhnChanghoMusilYeokhaengResult",
+    "traceKey": "dosanAhnChanghoMusilYeokhaengResult"
   }
 };

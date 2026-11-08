@@ -286,6 +286,9 @@ import { calculateYeonamParkJiwonYeolhaIlgi, formatYeonamParkJiwonYeolhaIlgiProm
 import { calculateJeanPaulSartreExistentialism, formatJeanPaulSartreExistentialismPrompt, type JeanPaulSartreExistentialismResult, FRENCH_JEAN_PAUL_SARTRE_VERSION } from './frenchJeanPaulSartreExistentialismEngine';
 import { calculateViktorFranklLogotherapy, formatViktorFranklLogotherapyPrompt, type ViktorFranklLogotherapyResult, AUSTRIAN_VIKTOR_FRANKL_VERSION } from './austrianViktorFranklLogotherapyEngine';
 import { calculateBaekbeomKimGuMyDesireCulture, formatBaekbeomKimGuMyDesireCulturePrompt, type BaekbeomKimGuMyDesireCultureResult, KOREAN_BAEKBEOM_KIM_GU_VERSION } from './koreanBaekbeomKimGuMyDesireCultureEngine';
+import { calculateMartinHeideggerBeingAndTime, formatMartinHeideggerBeingAndTimePrompt, type MartinHeideggerBeingAndTimeResult, GERMAN_MARTIN_HEIDEGGER_VERSION } from './germanMartinHeideggerBeingAndTimeEngine';
+import { calculateHannahArendtVitaActiva, formatHannahArendtVitaActivaPrompt, type HannahArendtVitaActivaResult, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION } from './americanGermanHannahArendtVitaActivaEngine';
+import { calculateDosanAhnChanghoMusilYeokhaeng, formatDosanAhnChanghoMusilYeokhaengPrompt, type DosanAhnChanghoMusilYeokhaengResult, KOREAN_DOSAN_AHN_CHANGHO_VERSION } from './koreanDosanAhnChanghoMusilYeokhaengEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -592,6 +595,9 @@ export interface DeterministicEngineReport {
   jeanPaulSartreExistentialismResult?: JeanPaulSartreExistentialismResult | null;
   viktorFranklLogotherapyResult?: ViktorFranklLogotherapyResult | null;
   baekbeomKimGuMyDesireCultureResult?: BaekbeomKimGuMyDesireCultureResult | null;
+  martinHeideggerBeingAndTimeResult?: MartinHeideggerBeingAndTimeResult | null;
+  hannahArendtVitaActivaResult?: HannahArendtVitaActivaResult | null;
+  dosanAhnChanghoMusilYeokhaengResult?: DosanAhnChanghoMusilYeokhaengResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3491,6 +3497,33 @@ try {
     }
   })()));
 
+  // 255. 독일 마틴 하이데거 존재와 시간 현존재 & 세계-내-존재·죽음을 향한 존재 본래성 실존 엔진
+  const martinHeideggerBeingAndTimeResult = calculateSupplement('martinHeideggerBeingAndTimeResult', () => ((() => {
+    try {
+      return calculateMartinHeideggerBeingAndTime(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 256. 미국/독일 한나 아렌트 인간의 조건 탄생성 & 활동적 삶(노동·작업·행위)·사유와 판단 지혜 엔진
+  const hannahArendtVitaActivaResult = calculateSupplement('hannahArendtVitaActivaResult', () => ((() => {
+    try {
+      return calculateHannahArendtVitaActiva(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 257. 대한민국 도산 안창호 무실역행 & 애기애타 인격혁명·주인정신 실천 엔진
+  const dosanAhnChanghoMusilYeokhaengResult = calculateSupplement('dosanAhnChanghoMusilYeokhaengResult', () => ((() => {
+    try {
+      return calculateDosanAhnChanghoMusilYeokhaeng(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3783,6 +3816,9 @@ try {
     jeanPaulSartreExistentialismResult,
     viktorFranklLogotherapyResult,
     baekbeomKimGuMyDesireCultureResult,
+    martinHeideggerBeingAndTimeResult,
+    hannahArendtVitaActivaResult,
+    dosanAhnChanghoMusilYeokhaengResult,
     tools: toolsMap,
   };
 }
@@ -4066,6 +4102,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchJeanPaulSartreExistentialism', nameKo: '장 폴 사르트르 존재와무 실존은본질에앞선다 자유의형벌 자기기만극복 앙가주망', icon: '🕯️', category: 'deep_master', summary: '장 폴 사르트르의 실존주의 철학으로 핑계 뒤로 숨는 자기기만을 털어내고 전적인 자유와 책임을 오롯이 짊어지며 자신의 본질을 창조합니다.' },
   { key: 'austrianViktorFranklLogotherapy', nameKo: '빅터 프랭클 죽음의수용소에서 로고테라피 최후의자유 의미를향한의지 비극적낙관주의', icon: '🕊️', category: 'deep_master', summary: '빅터 프랭클의 로고테라피 의미치료로 극한의 시련 속에서도 결코 빼앗길 수 없는 태도 선택의 최후의 자유와 삶의 고유한 의미를 일깨웁니다.' },
   { key: 'koreanBaekbeomKimGuMyDesireCulture', nameKo: '백범 김구 백범일지 나의소원 높은문화의힘 홍익인간 상생평화 답설야중거 자주독립', icon: '🇰🇷', category: 'deep_master', summary: '백범 김구 선생의 숭고한 민족혼으로 영혼을 살리는 높은 문화의 힘을 꽃피우고 올곧은 솔선수범과 자주독립의 기개를 굳건히 세웁니다.' },
+  { key: 'germanMartinHeideggerBeingAndTime', nameKo: '마틴 하이데거 존재와시간 현존재 세계내존재 죽음을향한존재 본래성 염려', icon: '🌲', category: 'deep_master', summary: '마틴 하이데거의 실존 현상학으로 세인의 일상성을 탈피하고 유한성을 직시하는 본래적 결단과 시간의 순간을 회복합니다.' },
+  { key: 'americanGermanHannahArendtVitaActiva', nameKo: '한나 아렌트 인간의조건 탄생성 활동적삶 악의평범성극복 사유와판단 다원성', icon: '🏛️', category: 'deep_master', summary: '한나 아렌트의 정치철학으로 맹목적 무사유를 깨뜨리고 언제든 새 시작을 여는 탄생성과 말과 행위의 공적 다원성을 발휘합니다.' },
+  { key: 'koreanDosanAhnChanghoMusilYeokhaeng', nameKo: '도산 안창호 무실역행 충의용감 애기애타 주인정신 인격혁명', icon: '🇰🇷', category: 'deep_master', summary: '도산 안창호 선생의 무실역행 정신으로 거짓을 버리고 참됨을 일삼으며 남 탓하지 않고 스스로 주인이 되는 실천을 이룹니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4122,6 +4161,12 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'germanMartinHeideggerBeingAndTime',
+    'americanGermanHannahArendtVitaActiva',
+    'koreanDosanAhnChanghoMusilYeokhaeng',
+    'frenchJeanPaulSartreExistentialism',
+    'austrianViktorFranklLogotherapy',
+    'koreanBaekbeomKimGuMyDesireCulture',
     'frenchHenriBergsonElanVital',
     'frenchAlbertCamusAbsurdRevolt',
     'koreanYeonamParkJiwonYeolhaIlgi',
