@@ -3474,14 +3474,14 @@ html.duo-unfolded-portrait .prism-xs-subnav:not(.duo-page-nav) {
   box-sizing: border-box;
 }
 
-/* 가로 모드 (Landscape): 메뉴(80px) 제외 메인 화면의 정확한 50% : 50% 분할 (접힌 폰 비율 1:1 일치) */
+/* 가로 모드 (Landscape): 물리 힌지 기준 기기 절반 (50vw : 50vw 분할) */
 html.duo-unfolded-landscape #duo-content-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-content-viewport {
-  width: 50% !important;
-  min-width: 50% !important;
-  max-width: 50% !important;
+  width: 50vw !important;
+  min-width: 50vw !important;
+  max-width: 50vw !important;
   height: 100% !important;
-  flex: 0 0 50% !important;
+  flex: 0 0 50vw !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   box-sizing: border-box !important;
@@ -3489,11 +3489,11 @@ html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-content-viewport {
 
 html.duo-unfolded-landscape #duo-lucy-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-lucy-viewport {
-  width: 50% !important;
-  min-width: 50% !important;
-  max-width: 50% !important;
+  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  min-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
   height: 100% !important;
-  flex: 0 0 50% !important;
+  flex: 1 1 0px !important;
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;

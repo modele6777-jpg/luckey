@@ -694,7 +694,7 @@ function AppContent() {
         {isDuoUnfolded ? (
           <div className={`w-full h-full min-h-0 overflow-hidden flex ${isDuoPortrait ? 'flex-col' : 'flex-row'}`}>
             {/* 콘텐츠 뷰포트:
-                - 가로(Landscape): 우측 메뉴(80px) 제외 메인화면의 정확한 50% (접힌 화면 비율과 1:1 일치)
+                - 가로(Landscape): 물리 힌지 기준 기기 절반 (50vw)
                 - 세로(Portrait): 상단 50%
              */}
             <div
@@ -702,7 +702,7 @@ function AppContent() {
               style={
                 isDuoPortrait
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
-                  : { width: '50%', minWidth: '50%', maxWidth: '50%', height: '100%', flex: '0 0 50%' }
+                  : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%', flex: '0 0 50vw' }
               }
               className={`duo-folded-view shrink-0 flex flex-col overflow-hidden relative ${isDuoPortrait ? 'border-b border-white/10' : 'border-r border-white/10'}`}
             >
@@ -726,7 +726,7 @@ function AppContent() {
             </div>
 
             {/* 루시 채팅창:
-                - 가로(Landscape): 우측 메뉴(80px) 제외 메인화면의 정확한 50%
+                - 가로(Landscape): 우측 기기 절반 (네비게이션 80px 포함 50vw 구성)
                 - 세로(Portrait): 하단 50%
                 - 시간대별 루시 고유 테마(아침·낮·밤) 100% 온전히 반영
              */}
@@ -735,7 +735,7 @@ function AppContent() {
               style={
                 isDuoPortrait
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
-                  : { width: '50%', minWidth: '50%', maxWidth: '50%', height: '100%', flex: '0 0 50%' }
+                  : { flex: '1 1 0px', width: 'calc(50vw - var(--sites-sidebar-width, 80px))', height: '100%' }
               }
               className="shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative"
             >
