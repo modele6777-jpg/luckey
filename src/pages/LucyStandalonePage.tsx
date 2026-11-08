@@ -57,6 +57,8 @@ import {
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
+import { isDualPaneLayout } from '@/lib/perfMode';
+import { DuoCosmicAmbientRoom } from '@/components/duo/DuoCosmicAmbientRoom';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
@@ -713,13 +715,16 @@ function getCuratedPrompts(
 const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
 
 export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
-  // 🌟 Lucy + 진화 상태 머신: 빅뱅 버튼 홀드 또는 헤더 탭 시 true로 진화, 1회 탭 시 false로 복귀
+  // 🌟 Lucy + 진화 상태 머신: 접힘 시 AI 모드 기본, 듀오 펼침 시 마스터 모드(Lucy +) 기본 자동 진화
   const [isPlusMode, setIsPlusMode] = useState<boolean>(() => {
     if (pro) return true;
     try {
       if (typeof window !== 'undefined') {
         const search = window.location.search || '';
         if (search.includes('mode=plus') || search.includes('mode=pro')) return true;
+        // 듀오 펼침 상태(640px 이상 또는 dual-pane) 첫 진입 시 마스터 모드 기본 발동
+        const isWide = isDualPaneLayout() || window.innerWidth >= 640;
+        if (isWide) return true;
       }
       return safeLocalStorage.getItem('lucy_plus_active') === 'true' || safeSessionStorage.getItem('lucy_plus_active') === 'true';
     } catch {
@@ -988,6 +993,50 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       ro.disconnect();
       window.removeEventListener('resize', updateFooterHeight);
       document.documentElement.style.removeProperty('--lucy-footer-height');
+    };
+  }, []);
+
+  // 📱 메인 본문 캔버스 실측 너비 기준 iPhone Duo 접힘 / 펼침 (Dual-Pane) 반응형 감지 및 모드 자동 연동
+  const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDualPaneLayout() || window.innerWidth >= 640;
+  });
+
+  useEffect(() => {
+    const handleLayoutChange = () => {
+      if (typeof window === 'undefined') return;
+      const unfolded = isDualPaneLayout() || window.innerWidth >= 640;
+      setIsDuoUnfolded((prev) => {
+        if (prev !== unfolded) {
+          if (unfolded) {
+            // 듀오 펼침 감지: 마스터 모드(Lucy +) 기본 자동 발동
+            setIsPlusMode(true);
+            safeLocalStorage.setItem('lucy_plus_active', 'true');
+            safeSessionStorage.setItem('lucy_plus_active', 'true');
+            triggerHaptic('whitehole');
+            setModeSwitchToast(`👑 듀오 펼침 감지 · ${ALL_DCE_ENGINES.length}대 마스터 모드 가동`);
+            setTimeout(() => setModeSwitchToast(null), 2200);
+          } else {
+            // 듀오 접힘 감지: 일반 루시 AI 모드 기본 자동 복귀
+            setIsPlusMode(false);
+            safeLocalStorage.removeItem('lucy_plus_active');
+            safeSessionStorage.removeItem('lucy_plus_active');
+            triggerHaptic('whitehole');
+            setModeSwitchToast('✨ 듀오 접힘 감지 · 루시 AI 모드 복귀');
+            setTimeout(() => setModeSwitchToast(null), 2000);
+          }
+        }
+        return unfolded;
+      });
+    };
+    handleLayoutChange();
+    window.addEventListener('resize', handleLayoutChange, { passive: true });
+    window.addEventListener('orientationchange', handleLayoutChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleLayoutChange, { passive: true });
+    return () => {
+      window.removeEventListener('resize', handleLayoutChange);
+      window.removeEventListener('orientationchange', handleLayoutChange);
+      window.visualViewport?.removeEventListener('resize', handleLayoutChange);
     };
   }, []);
 
@@ -2966,8 +3015,21 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         </AnimatePresence>
       </header>
 
-      {/* Chat Messages Stream */}
-      <main
+      {/* 📱 메인 본문 너비 기준 듀얼 뷰: 펼침 시 2-Column 마스터 코스믹 룸, 접힘 시 단일 열 뷰 */}
+      <div className={`flex-1 min-h-0 flex w-full max-w-full overflow-hidden ${
+        isDuoUnfolded ? 'flex-row' : 'flex-col'
+      }`}>
+        {isDuoUnfolded && (
+          <aside className="w-1/2 min-w-[340px] max-w-[50%] h-full shrink-0 flex flex-col overflow-hidden border-r border-white/10 z-10">
+            <DuoCosmicAmbientRoom isLight={isLight} />
+          </aside>
+        )}
+
+        <div className={`h-full flex flex-col min-w-0 overflow-hidden relative ${
+          isDuoUnfolded ? 'w-1/2 flex-1' : 'w-full flex-1'
+        }`}>
+          {/* Chat Messages Stream */}
+          <main
         ref={messagesContainerRef}
         onScroll={handleScroll}
         style={{ overflowX: 'hidden', touchAction: 'pan-y' }}
@@ -3763,6 +3825,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           </div>
         </div>
       </footer>
+        </div>
+      </div>
 
       {/*  제제 님의 소울 프로필 퀵뷰 모달 */}
       <AnimatePresence>

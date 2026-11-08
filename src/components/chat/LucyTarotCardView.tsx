@@ -36,6 +36,7 @@ export const LucyTarotCardView: React.FC<LucyTarotCardViewProps> = ({ cards, isL
             return (
               <motion.button
                 type="button"
+                data-tarot-card-id={card.id}
                 aria-label={isOpen ? `${card.nameKo} ${card.orientationKo}` : `${idx + 1}번째 타로 카드 열기`}
                 disabled={isOpen}
                 key={`${card.id}-${idx}`}
