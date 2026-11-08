@@ -237,7 +237,7 @@ test('late update recovery restores app height and clears stale keyboard constra
   } as unknown as Document;
   const full = { width: 960, height: 675, offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
   applyAppLayoutViewport(full, doc);
-  assert.equal(html.values.get('--app-height'), 'max(100dvh, 675px)');
+  assert.equal(html.values.get('--app-height'), '675px');
   assert.equal(root.values.has('max-height'), false);
   assert.equal(root.values.has('top'), false);
   assert.equal(shell.values.has('height'), false);
@@ -245,7 +245,7 @@ test('late update recovery restores app height and clears stale keyboard constra
   assert.equal(body.classes.has('keyboard-open'), false);
   html.values.set('--app-height', '520px');
   applyAppLayoutViewport(full, doc);
-  assert.equal(html.values.get('--app-height'), 'max(100dvh, 675px)');
+  assert.equal(html.values.get('--app-height'), '675px');
 });
 
 
@@ -305,9 +305,33 @@ test('one geometry owner restores root, sidebar variables and shell after keyboa
   assert.equal(html.values.get('--vv-top'), '50px');
   applyVisualViewportBox(full, html as unknown as HTMLElement);
   applyAppLayoutViewport(full, doc);
-  assert.equal(html.values.get('--app-height'), 'max(100dvh, 640px)');
+  assert.equal(html.values.get('--app-height'), '640px');
   assert.equal(html.values.get('--vv-top'), '0px');
   assert.equal(root.values.has('max-height'), false);
   assert.equal(shell.values.has('height'), false);
   assert.equal(html.classes.has('keyboard-open'), false);
+});
+
+
+test('reported iPhone Duo reload trace keeps controls inside the 869px document viewport', () => {
+  const trace = {
+    iosStandalone: true, innerWidth: 669, innerHeight: 951,
+    layoutViewportHeight: 869, cssViewportHeight: 951,
+    screenWidth: 457, screenHeight: 678,
+    visual: { width: 669, height: 951, offsetTop: 0, offsetLeft: 0 },
+  };
+  for (const innerHeight of [951, 869]) {
+    const sample = { ...trace, innerHeight, visual: { ...trace.visual, height: innerHeight } };
+    assert.equal(resolveViewportBox(sample, { fillLayoutGap: true })?.height, 869);
+    assert.equal(resolveAppLayoutHeight(sample), '869px');
+    assert.equal(isKeyboardViewportOpen(sample, true), false);
+  }
+  // CSS's larger 951px must not reappear in the app-height expression.
+  assert.equal(resolveViewportBox({ ...trace, screenWidth: 669, screenHeight: 951 }, { fillLayoutGap: true })?.height, 869);
+  const settled = { ...trace, layoutViewportHeight: 951 };
+  assert.equal(resolveViewportBox(settled)?.height, 951);
+  assert.equal(resolveViewportBox({ ...settled, layoutViewportHeight: 869 })?.height, 869);
+  const keyboard = { ...trace, innerHeight: 400, visual: { ...trace.visual, height: 400, offsetTop: 50 } };
+  assert.equal(isKeyboardViewportOpen(keyboard, true), true);
+  assert.equal(isKeyboardViewportOpen(keyboard, false), false);
 });

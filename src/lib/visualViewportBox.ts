@@ -31,6 +31,8 @@ export type ViewportResolveOptions = {
 export type ViewportSnapshot = {
   innerWidth: number;
   innerHeight: number;
+  /** Standards-mode viewport available to the document, independent of CSS lvh. */
+  layoutViewportHeight?: number;
   /**
    * iPad home-screen web app (standalone + black-translucent). After resume,
    * innerHeight and visualViewport.height shrink together while the web view
@@ -72,10 +74,23 @@ function roundPx(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+/** Installed WebKit can retain a larger lvh/innerHeight after reload.
+ * documentElement.clientHeight is the actual layout viewport in standards mode.
+ * screen dimensions may belong to the folded display and are not a size source.
+ */
+function installedLayoutBox(snapshot: ViewportSnapshot): ViewportBox | null {
+  const height = positive(snapshot.layoutViewportHeight);
+  const width = positive(snapshot.innerWidth);
+  if (!snapshot.iosStandalone || height == null || width == null) return null;
+  return { width: roundPx(width), height: roundPx(height), offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
+}
+
 export function resolveViewportBox(
   snapshot: ViewportSnapshot,
   options: ViewportResolveOptions = {},
 ): ViewportBox | null {
+  const installed = installedLayoutBox(snapshot);
+  if (installed) return installed;
   const innerWidth = positive(snapshot.innerWidth);
   const innerHeight = positive(snapshot.innerHeight);
   const visual = snapshot.visual;
@@ -140,10 +155,11 @@ export function canUseKeyboardViewport(snapshot: ViewportSnapshot, inputActive: 
 export function isKeyboardViewportOpen(snapshot: ViewportSnapshot, inputActive: boolean): boolean {
   if (!canUseKeyboardViewport(snapshot, inputActive)) return false;
   const visualHeight = snapshot.visual!.height;
-  let fullHeight = Math.max(snapshot.innerHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
+  const installed = installedLayoutBox(snapshot);
+  let fullHeight = installed?.height ?? Math.max(snapshot.innerHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
   const sw = positive(snapshot.screenWidth);
   const sh = positive(snapshot.screenHeight);
-  if (snapshot.iosStandalone && sw != null && sh != null) {
+  if (!installed && snapshot.iosStandalone && sw != null && sh != null) {
     const screen = orientedScreenSize(sw, sh, snapshot.innerWidth, snapshot.innerHeight);
     if (Math.abs(screen.width - snapshot.innerWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) {
       fullHeight = Math.max(fullHeight, screen.height);
@@ -154,6 +170,8 @@ export function isKeyboardViewportOpen(snapshot: ViewportSnapshot, inputActive: 
 }
 
 export function resolveAppLayoutHeight(snapshot: ViewportSnapshot): string {
+  const installed = installedLayoutBox(snapshot);
+  if (installed) return px(installed.height);
   const layoutHeight = positive(snapshot.innerHeight);
   if (layoutHeight == null) return '100dvh';
   if (layoutOutgrewVisual(snapshot)) return px(layoutHeight);
@@ -353,6 +371,7 @@ export function readViewportSnapshot(win: Window): ViewportSnapshot {
   return {
     innerWidth: win.innerWidth,
     innerHeight: win.innerHeight,
+    layoutViewportHeight: win.document.documentElement.clientHeight,
     iosStandalone,
     cssViewportHeight,
     screenWidth: win.screen?.width,
@@ -417,7 +436,7 @@ export function applyAppLayoutViewport(box: ViewportBox, doc: Document): void {
   const html = doc.documentElement;
   html.classList.remove('keyboard-open');
   doc.body?.classList.remove('keyboard-open');
-  html.style.setProperty('--app-height', `max(100dvh, ${px(box.height)})`);
+  html.style.setProperty('--app-height', px(box.height));
   for (const element of [html, doc.body]) {
     element?.style.removeProperty('height');
     element?.style.removeProperty('min-height');
@@ -494,7 +513,7 @@ export function syncVisualViewportBox(win: Window = window): ViewportBox | null 
   const box = chooseStableViewportBox(
     lastAppliedBox,
     next,
-    snapshot.cssViewportHeight == null
+    !installedLayoutBox(snapshot) && snapshot.cssViewportHeight == null
       && (screenFilled(snapshot, lastAppliedBox) || screenFilled(snapshot, next)),
   );
   applyVisualViewportBox(box, document.documentElement, snapshot);
