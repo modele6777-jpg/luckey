@@ -23,6 +23,7 @@ export function LucKeyCosmicLoader({
   const content = (
     <div
       data-fullscreen-loader={fullScreen || undefined}
+      data-app-channel-loader="true"
       role="status"
       aria-label={message}
       className={`flex flex-col items-center justify-center select-none text-white overflow-hidden ${

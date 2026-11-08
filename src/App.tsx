@@ -694,15 +694,15 @@ function AppContent() {
         {isDuoUnfolded ? (
           <div className={`w-full h-full min-h-0 overflow-hidden flex ${isDuoPortrait ? 'flex-col' : 'flex-row'}`}>
             {/* 콘텐츠 뷰포트:
-                - 가로(Landscape): 좌측 50vw (전체 화면 50%)
-                - 세로(Portrait): 상단 50vh (전체 화면 50%)
+                - 가로(Landscape): 우측 메뉴(80px) 제외 메인화면의 정확한 50% (접힌 화면 비율과 1:1 일치)
+                - 세로(Portrait): 상단 50%
              */}
             <div
               id="duo-content-viewport"
               style={
                 isDuoPortrait
-                  ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%', flex: '0 0 50vh' }
-                  : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%', flex: '0 0 50vw' }
+                  ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
+                  : { width: '50%', minWidth: '50%', maxWidth: '50%', height: '100%', flex: '0 0 50%' }
               }
               className={`duo-folded-view shrink-0 flex flex-col overflow-hidden relative ${isDuoPortrait ? 'border-b border-white/10' : 'border-r border-white/10'}`}
             >
@@ -726,16 +726,16 @@ function AppContent() {
             </div>
 
             {/* 루시 채팅창:
-                - 가로(Landscape): 우측 50vw (네비게이션 80px 제외 calc(50vw - 80px)로 정확히 채움)
-                - 세로(Portrait): 하단 50vh (전체 화면 50%)
+                - 가로(Landscape): 우측 메뉴(80px) 제외 메인화면의 정확한 50%
+                - 세로(Portrait): 하단 50%
                 - 다크 코스믹 테마 영구 보존 (.dark 강제 적용)
              */}
             <div
               id="duo-lucy-viewport"
               style={
                 isDuoPortrait
-                  ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%', flex: '0 0 50vh' }
-                  : { width: 'calc(50vw - var(--sites-sidebar-width, 80px))', minWidth: 'calc(50vw - var(--sites-sidebar-width, 80px))', maxWidth: 'calc(50vw - var(--sites-sidebar-width, 80px))', height: '100%', flex: '1 1 0px' }
+                  ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
+                  : { width: '50%', minWidth: '50%', maxWidth: '50%', height: '100%', flex: '0 0 50%' }
               }
               className="dark shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative"
             >

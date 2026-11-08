@@ -26,7 +26,7 @@ export function LucyModeTransition({ active, isPlusMode, isProMode }: LucyModeTr
     ? 'steady' : change.to[marker] ? 'in' : 'out';
 
   return createPortal(
-    <div className="lucy-mode-transition" role="status" aria-label={`${name} 모드로 전환 중`} aria-live="polite" aria-busy="true">
+    <div className="lucy-mode-transition" data-lucy-animation="true" data-lucy-loader="true" role="status" aria-label={`${name} 모드로 전환 중`} aria-live="polite" aria-busy="true">
       <strong className="lucy-transition-wordmark" aria-hidden="true">
         Lucy
         <span className="lucy-transition-markers">
