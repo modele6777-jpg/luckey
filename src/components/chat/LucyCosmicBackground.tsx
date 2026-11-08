@@ -8,9 +8,18 @@ export function LucyCosmicBackground({ isPlusMode }: LucyCosmicBackgroundProps) 
     <div className="lucy-cosmic-bg-container" aria-hidden="true">
       <div className="lucy-cosmic-wash" />
       <div className="lucy-morning-light">
+        <div className="lucy-morning-aurora" />
         <div className="lucy-sun-halo" />
+        <div className="lucy-sun-beams" />
         <div className="lucy-sun-rays" />
         <div className="lucy-sun-disc" />
+        <div className="lucy-morning-flare lucy-morning-flare-1" />
+        <div className="lucy-morning-flare lucy-morning-flare-2" />
+        <div className="lucy-morning-shimmer-field">
+          {Array.from({ length: 10 }, (_, i) => (
+            <div key={i} className={`lucy-morning-shimmer lucy-morning-shimmer-${i}`} />
+          ))}
+        </div>
       </div>
       <div className="lucy-meteor-field">
         {[0, 1, 2].map((i) => (
