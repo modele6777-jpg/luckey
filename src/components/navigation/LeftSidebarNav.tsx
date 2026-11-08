@@ -5,6 +5,7 @@ import { CHANNEL_MENU_ICONS } from '@/lib/channelMenuIcons';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
+  MessageCircle,
   Sparkles,
   KeyRound,
   User,
@@ -45,7 +46,7 @@ export interface NavItemConfig {
 export const CORE_CHANNELS: NavItemConfig[] = [
   {
     path: '/',
-    icon: Sparkles,
+    icon: MessageCircle,
     label: 'Lucy',
     subLabel: '나를 이해하는 대화',
     color: 'oklch(0.70 0.20 300)',
@@ -160,8 +161,12 @@ export const AUXILIARY_CHANNELS: NavItemConfig[] = [
 ];
 
 export default function LeftSidebarNav() {
-  const [isChannelsOpen, setIsChannelsOpen] = useState(false);
   const [isUnfolded, setIsUnfolded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDualPaneLayout() || window.innerWidth >= 580;
+  });
+  // 🍀 펼친 화면: 기본적으로 펼쳐짐(true), 접힌 화면: 기본적으로 접혀짐(false)
+  const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     return isDualPaneLayout() || window.innerWidth >= 580;
   });
@@ -169,7 +174,14 @@ export default function LeftSidebarNav() {
   useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
-      setIsUnfolded(isDualPaneLayout() || window.innerWidth >= 580);
+      const unfolded = isDualPaneLayout() || window.innerWidth >= 580;
+      setIsUnfolded((prev) => {
+        if (prev !== unfolded) {
+          // 화면 전환 시: 펼치면 기본적으로 펼쳐지고, 접으면 기본적으로 네잎클로버 버튼도 접힘
+          setIsChannelsOpen(unfolded);
+        }
+        return unfolded;
+      });
     };
     handleLayoutChange();
     window.addEventListener('resize', handleLayoutChange, { passive: true });
@@ -409,38 +421,36 @@ export default function LeftSidebarNav() {
               <div className="refined-menu-list flex-1 overflow-y-auto no-scrollbar">
                 <div className="refined-menu-content">
                   {CORE_CHANNELS.map(renderNavButton)}
-                  {isUnfolded ? (
-                    PRISM_CHANNELS.map(renderNavButton)
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        className="refined-nav-item"
-                        data-active={isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
-                        aria-label={isChannelsOpen ? '7대 프리즘 채널 접기' : '7대 프리즘 채널 펼치기'}
-                        aria-expanded={isChannelsOpen}
-                        aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
-                        title="7대 프리즘 채널"
-                        onClick={() => setIsChannelsOpen((open) => !open)}
+                  {/* 🍀 우측 메뉴 네잎클로버 버튼: 접힘/펼침 화면 모두 일관되게 제공 (펼침 기본: 펼쳐짐, 접힘 기본: 접힘) */}
+                  <button
+                    type="button"
+                    className="refined-nav-item"
+                    data-active={isChannelsOpen || PRISM_CHANNELS.some(({ path }) => cleanPath === path)}
+                    aria-label={isChannelsOpen ? '7대 프리즘 채널 접기' : '7대 프리즘 채널 펼치기'}
+                    aria-expanded={isChannelsOpen}
+                    aria-controls={isChannelsOpen ? 'prism-channel-icons' : undefined}
+                    title="7대 프리즘 채널"
+                    onClick={() => {
+                      triggerHaptic('whitehole');
+                      setIsChannelsOpen((open) => !open);
+                    }}
+                  >
+                    <Clover size={22} aria-hidden="true" />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isChannelsOpen && (
+                      <motion.div
+                        id="prism-channel-icons"
+                        className="refined-prism-icons"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.2 }}
                       >
-                        <Clover size={22} aria-hidden="true" />
-                      </button>
-                      <AnimatePresence initial={false}>
-                        {isChannelsOpen && (
-                          <motion.div
-                            id="prism-channel-icons"
-                            className="refined-prism-icons"
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: reduceMotion ? 0 : 0.2 }}
-                          >
-                            {PRISM_CHANNELS.map(renderNavButton)}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  )}
+                        {PRISM_CHANNELS.map(renderNavButton)}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
