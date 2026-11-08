@@ -2820,11 +2820,26 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       }
                       setTimeout(() => setModeSwitchToast(null), 2200);
                     }}
-                    className="lucy-mode-badge cursor-pointer hover:opacity-85 transition-opacity"
+                    className={`lucy-mode-badge ${(isPlusMode || pro) ? 'is-master' : ''} cursor-pointer hover:opacity-85 transition-opacity shrink-0`}
                     title="클릭 시 마스터 모드 토글"
                   >
-                    {isPlusMode ? '마스터 모드' : 'AI 모드'}
+                    {(isPlusMode || pro) ? '마스터 모드' : 'AI 모드'}
                   </button>
+                  {(isPlusMode || pro) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic('whitehole');
+                        setModeSwitchToast(`👑 총 ${ALL_DCE_ENGINES.length}대 운명학·결정론 엔진 도구 풀가동 중`);
+                        setTimeout(() => setModeSwitchToast(null), 2000);
+                      }}
+                      className="inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-400/30 whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none"
+                      title={`총 ${ALL_DCE_ENGINES.length}대 운명학·결정론 엔진 도구 가동 중`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      엔진 도구 {ALL_DCE_ENGINES.length}개
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
