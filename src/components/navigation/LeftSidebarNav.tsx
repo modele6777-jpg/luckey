@@ -25,6 +25,8 @@ import { unlockAudioPlayback } from '@/lib/audio';
 import { isDualPaneLayout } from '@/lib/perfMode';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
+import { resetAppScreen } from '@/lib/visualViewportBox';
+import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { REFRESH_NOTICE_KEY } from '@/lib/updateNotice';
 
@@ -358,6 +360,8 @@ export default function LeftSidebarNav() {
     restartStartedRef.current = true;
     setIsSyncSpinning(true);
     triggerHaptic('whitehole');
+    markAppScreenReset(window.sessionStorage);
+    await resetAppScreen().catch((err) => console.warn('[LeftSidebarNav] Screen reset:', err));
     // Finish a normal manual sync first. A stalled cloud request must not
     // prevent the recovery action; automatic sync resumes after startup.
     let syncTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -463,7 +467,7 @@ export default function LeftSidebarNav() {
                   disabled={isSyncSpinning}
                   aria-busy={isSyncSpinning}
                   aria-label={isSyncSpinning ? '동기화 및 앱 다시 불러오는 중' : '동기화 · 업데이트 · 앱 새로고침'}
-                  title="데이터 동기화 · 최신 업데이트 적용 · 앱 다시 시작 · 업데이트 내역 확인 · 길게 누르면 화면 진단"
+                  title="화면 상태 초기화 · 데이터 동기화 · 최신 업데이트 적용 · 앱 다시 시작 · 업데이트 내역 확인 · 길게 누르면 화면 진단"
                 >
                   <RotateCw
                     size={20}

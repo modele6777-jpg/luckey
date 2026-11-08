@@ -1,6 +1,7 @@
 /** One navigation per open page when an update reloads the running app. */
 
 export const APP_UPDATE_RELOAD_KEY = 'luckey-update-viewport';
+export const APP_SCREEN_RESET_KEY = 'luckey-screen-reset';
 
 type StorageWriter = { setItem(key: string, value: string): void };
 type StorageReader = { getItem(key: string): string | null; removeItem(key: string): void };
@@ -52,4 +53,17 @@ export function installSingleAppReload(win: Window): void {
   } catch {
     // Some webviews expose a non-writable Location.reload.
   }
+}
+
+
+export function markAppScreenReset(storage: StorageWriter | null | undefined): void {
+  try { storage?.setItem(APP_SCREEN_RESET_KEY, '1'); } catch { /* optional storage */ }
+}
+
+export function consumeAppScreenReset(storage: StorageReader | null | undefined): boolean {
+  try {
+    if (storage?.getItem(APP_SCREEN_RESET_KEY) !== '1') return false;
+    storage.removeItem(APP_SCREEN_RESET_KEY);
+    return true;
+  } catch { return false; }
 }

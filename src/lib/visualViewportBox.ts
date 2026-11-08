@@ -2,7 +2,7 @@
  * Screen height and width stay on the layout viewport.
  * A short visual viewport, or a screen wider than the window, does not resize the page.
  */
-import { consumeAppUpdateReload } from './appUpdateReload';
+import { consumeAppUpdateReload, consumeAppScreenReset } from './appUpdateReload';
 
 export const VIEWPORT_KEYBOARD_MIN_DELTA_PX = 160;
 export const VIEWPORT_KEYBOARD_MIN_RATIO = 0.22;
@@ -580,27 +580,65 @@ export function planViewportRecovery(input: {
   };
 }
 
+/** User-requested reset of page-owned geometry, before and after a reload.
+ * Does not clear conversations, authentication, settings or the browser process.
+ */
+export async function resetAppScreen(win: Window = window): Promise<void> {
+  const doc = win.document;
+  const active = doc.activeElement as HTMLElement | null;
+  if (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || active?.isContentEditable) active.blur();
+  if (retryFrame) win.cancelAnimationFrame(retryFrame);
+  retryFrame = 0;
+  for (const timer of retryTimers) win.clearTimeout(timer);
+  retryTimers = [];
+  appliedSignature = '';
+  lastAppliedBox = null;
+  fillUntil = 0;
+  const html = doc.documentElement;
+  // Remove only styles owned by the viewport/keyboard engine.
+  applyAppLayoutViewport({ width: win.innerWidth, height: win.innerHeight, offsetTop: 0, offsetLeft: 0, bottomGap: 0 }, doc);
+  for (const name of ['--app-height', '--vvw', '--vvh', '--visual-vh', '--vv-top', '--vv-left', '--vv-bottom', '--vv-bleed-left', '--vv-bleed-right', '--sat', '--sab', '--sal', '--sar']) html.style.removeProperty(name);
+  html.removeAttribute('data-lucy-wide-cover');
+  html.removeAttribute('data-ios-standalone-flow');
+  const resetScroll = () => {
+    win.scrollTo(0, 0);
+    if (doc.scrollingElement) { doc.scrollingElement.scrollTop = 0; doc.scrollingElement.scrollLeft = 0; }
+  };
+  resetScroll();
+  // Commit removal of old constraints, then read the next rendered frame.
+  void html.getBoundingClientRect();
+  await new Promise<void>((resolve) => win.requestAnimationFrame(() => resolve()));
+  resetScroll();
+  syncVisualViewportBox(win);
+  await new Promise<void>((resolve) => win.requestAnimationFrame(() => resolve()));
+  syncVisualViewportBox(win);
+  scheduleVisualViewportSync(win);
+}
+
 let updateRecoveryPrepared = false;
 
 export function prepareViewportAfterUpdate(win: Window): boolean {
   if (updateRecoveryPrepared) return false;
   updateRecoveryPrepared = true;
   let updateReload = false;
+  let screenReset = false;
   try {
     updateReload = consumeAppUpdateReload(win.sessionStorage);
+    screenReset = consumeAppScreenReset(win.sessionStorage);
   } catch {
     updateReload = false;
   }
   const plan = planViewportRecovery({
     navigationType: readNavigationType(win),
     persisted: false,
-    updateReload,
+    updateReload: updateReload || screenReset,
     iosStandalone: isIosStandaloneWindow(win),
   });
   if (plan.extendRetries) armViewportResumeFill();
   if (plan.resetScroll) {
     try { win.scrollTo(0, 0); } catch { /* ignore */ }
   }
+  if (screenReset) void resetAppScreen(win).catch(() => scheduleVisualViewportSync(win));
   return plan.recover;
 }
 

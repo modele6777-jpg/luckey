@@ -14,6 +14,8 @@ import {
 } from '../src/lib/visualViewportBox';
 import {
   consumeAppUpdateReload,
+  markAppScreenReset,
+  consumeAppScreenReset,
   createSingleFlight,
   installSingleAppReload,
   isAppUpdateReloadMarked,
@@ -353,4 +355,19 @@ test('a status-bar-sized standalone shortfall fills the full in-flow canvas', ()
   assert.equal(isKeyboardViewportOpen({ ...reported, innerHeight: 400, layoutViewportHeight: 400, visual: { ...reported.visual, height: 400 } }, true), true);
   const settled = { ...reported, innerHeight: 951, layoutViewportHeight: 951, visual: { ...reported.visual, height: 951 } };
   assert.equal(resolveViewportBox(settled)?.height, 951);
+});
+
+
+test('manual screen reset survives navigation once without clearing saved data', () => {
+  const data = new Map<string, string>([['conversation', 'saved']]);
+  const storage = {
+    setItem: (k: string, v: string) => { data.set(k, v); },
+    getItem: (k: string) => data.get(k) ?? null,
+    removeItem: (k: string) => { data.delete(k); },
+  };
+  markAppScreenReset(storage);
+  assert.equal(consumeAppScreenReset(storage), true);
+  assert.equal(consumeAppScreenReset(storage), false);
+  assert.equal(data.get('conversation'), 'saved');
+  assert.doesNotThrow(() => markAppScreenReset({ setItem() { throw Error('blocked'); } }));
 });
