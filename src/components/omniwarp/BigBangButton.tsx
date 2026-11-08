@@ -27,6 +27,7 @@ import { omniWarpAudio } from '@/lib/omniWarp/omniWarpAudio';
 import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
+import { isDualPaneLayout } from '@/lib/perfMode';
 import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
@@ -591,18 +592,18 @@ export function BigBangButton() {
       const isTextToss = Boolean(textToToss);
       target = {
         id: 'lucy',
-        icon: '🍀',
+        icon: '👑',
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: 'Lucy + 마스터 진화',
+        title: 'Lucy Pro (252대 풀엔진)',
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
-          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ Lucy + 전달`
-          : `[홀드] Lucy + 7대 채널 마스터 진화`,
+          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ Lucy Pro 전달`
+          : `[홀드] Lucy Pro 252대 풀엔진 가동`,
         previewDescription: isTextToss
-          ? '선택한 문장을 Lucy + 7대 채널 올인원 마스터 모드로 전달합니다'
-          : 'Lucy를 Lucy +로 진화시키며 7대 채널 마스터 모드를 엽니다',
+          ? '선택한 문장을 Lucy Pro 252대 풀엔진 마스터 모드로 전달합니다'
+          : '빅뱅 홀드 히든 모드 · 252대 운명학 올인원 Lucy Pro를 가동합니다',
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',
@@ -1184,26 +1185,30 @@ export function BigBangButton() {
       safeSessionStorage.removeItem('lucy_chat_voice_requested');
       
       const inLucyChat = checkIsInLucyChat();
+      safeSessionStorage.setItem('lucy_tier_mode', 'pro');
+      safeLocalStorage.setItem('lucy_tier_mode', 'pro');
       safeSessionStorage.setItem('lucy_plus_active', 'true');
       safeLocalStorage.setItem('lucy_plus_active', 'true');
 
       if (inLucyChat) {
-        // 🌟 현재 Lucy 화면 내에서 즉각 Lucy +로 진화! (페이지 이동 없이 인플레이스 진화)
-        window.dispatchEvent(new CustomEvent('prism:evolve_lucy_plus', { detail: { prompt } }));
+        // 🌟 현재 Lucy 화면 내에서 즉각 히든 모드 'Lucy Pro'로 진화! (252대 풀엔진 가동)
+        window.dispatchEvent(new CustomEvent('prism:evolve_lucy_pro', { detail: { prompt } }));
+        window.dispatchEvent(new CustomEvent('prism:evolve_lucy_ultra', { detail: { prompt } }));
         if (prompt) {
           window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
         }
       } else {
-        // 🌟 외부 화면인 경우 Lucy(/chat)로 이동하면서 Lucy +로 진화!
+        // 🌟 외부 화면인 경우 Lucy(/chat?mode=pro)로 이동하면서 Lucy Pro 가동!
         if (prompt) {
           safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
         }
         (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-        navigate('/chat');
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
+        navigate('/chat?mode=pro');
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat?mode=pro' } }));
         window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
         setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('prism:evolve_lucy_plus', { detail: { prompt } }));
+          window.dispatchEvent(new CustomEvent('prism:evolve_lucy_pro', { detail: { prompt } }));
+          window.dispatchEvent(new CustomEvent('prism:evolve_lucy_ultra', { detail: { prompt } }));
         }, 100);
       }
 
@@ -1275,19 +1280,18 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 🌟 빅뱅 버튼 1회 탭은 항상 본래의 일반 루시 AI 모드 고유 기능 수행!
-          safeSessionStorage.removeItem('lucy_plus_active');
-          safeLocalStorage.removeItem('lucy_plus_active');
-          safeSessionStorage.setItem('lucy_plus_active', 'false');
-          safeLocalStorage.setItem('lucy_plus_active', 'false');
-          safeSessionStorage.setItem('lucy_force_ai_mode', 'true');
+          // 🌟 빅뱅 버튼 1회 탭: 접혀있을 때는 루시 AI, 펼쳐있을 때는 루시 플러스!
+          const isWide = isDualPaneLayout() || (typeof window !== 'undefined' && window.innerWidth >= 640);
+          const targetTier = isWide ? 'plus' : 'ai';
+          safeSessionStorage.setItem('lucy_tier_mode', targetTier);
+          safeLocalStorage.setItem('lucy_tier_mode', targetTier);
 
           if (checkIsInLucyChat()) {
-            window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
+            window.dispatchEvent(new CustomEvent('prism:revert_lucy_normal', { detail: { tier: targetTier } }));
             return;
           }
 
-          handleRuneNavigate('/chat?mode=ai');
+          handleRuneNavigate(`/chat?mode=${targetTier}`);
         }, 250);
       }
       return;
@@ -1501,7 +1505,7 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">💬</span>
-                <span>선택한 문장 · 탭: Lucy · 홀드: Lucy +</span>
+                <span>선택한 문장 · 탭: Lucy · 홀드: Lucy Pro</span>
               </motion.div>
             )}
           </AnimatePresence>
