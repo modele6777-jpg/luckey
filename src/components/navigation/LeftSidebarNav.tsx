@@ -25,6 +25,7 @@ import { unlockAudioPlayback } from '@/lib/audio';
 import { isDualPaneLayout } from '@/lib/perfMode';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
+import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { REFRESH_NOTICE_KEY } from '@/lib/updateNotice';
 
 export interface NavItemConfig {
@@ -338,7 +339,21 @@ export default function LeftSidebarNav() {
 
   const { syncPrismDevices } = useApp();
   const restartStartedRef = useRef(false);
+  const diagnosticHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const diagnosticOpenedRef = useRef(false);
+  useEffect(() => {
+    showViewportDiagnostics(true);
+    return () => { if (diagnosticHoldRef.current) clearTimeout(diagnosticHoldRef.current); };
+  }, []);
+  const cancelDiagnosticHold = () => {
+    if (diagnosticHoldRef.current) clearTimeout(diagnosticHoldRef.current);
+    diagnosticHoldRef.current = null;
+  };
   const handleSyncClick = useCallback(async () => {
+    if (diagnosticOpenedRef.current) {
+      diagnosticOpenedRef.current = false;
+      return;
+    }
     if (restartStartedRef.current) return;
     restartStartedRef.current = true;
     setIsSyncSpinning(true);
@@ -432,11 +447,23 @@ export default function LeftSidebarNav() {
                   className={`refined-nav-item sidebar-sync-control transition-colors duration-200 ${
                     isSyncSpinning ? 'text-yellow-300' : 'text-white/70 hover:text-white'
                   }`}
+                  onPointerDown={() => {
+                    diagnosticOpenedRef.current = false;
+                    cancelDiagnosticHold();
+                    diagnosticHoldRef.current = setTimeout(() => {
+                      diagnosticOpenedRef.current = true;
+                      showViewportDiagnostics();
+                    }, 800);
+                  }}
+                  onPointerUp={cancelDiagnosticHold}
+                  onPointerLeave={cancelDiagnosticHold}
+                  onPointerCancel={cancelDiagnosticHold}
+                  onContextMenu={(event) => event.preventDefault()}
                   onClick={handleSyncClick}
                   disabled={isSyncSpinning}
                   aria-busy={isSyncSpinning}
                   aria-label={isSyncSpinning ? '동기화 및 앱 다시 불러오는 중' : '동기화 · 업데이트 · 앱 새로고침'}
-                  title="데이터 동기화 · 최신 업데이트 적용 · 앱 다시 시작 · 업데이트 내역 확인"
+                  title="데이터 동기화 · 최신 업데이트 적용 · 앱 다시 시작 · 업데이트 내역 확인 · 길게 누르면 화면 진단"
                 >
                   <RotateCw
                     size={20}
