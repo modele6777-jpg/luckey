@@ -246,6 +246,9 @@ import { calculateRalphWaldoEmersonSelfReliance, formatRalphWaldoEmersonSelfReli
 import { calculateHenriBergsonElanVital, formatHenriBergsonElanVitalPrompt, FRENCH_HENRI_BERGSON_VERSION } from '../src/lib/divination/frenchHenriBergsonElanVitalEngine';
 import { calculateAlbertCamusAbsurdRevolt, formatAlbertCamusAbsurdRevoltPrompt, FRENCH_ALBERT_CAMUS_VERSION } from '../src/lib/divination/frenchAlbertCamusAbsurdRevoltEngine';
 import { calculateYeonamParkJiwonYeolhaIlgi, formatYeonamParkJiwonYeolhaIlgiPrompt, KOREAN_YEONAM_PARK_JIWON_VERSION } from '../src/lib/divination/koreanYeonamParkJiwonYeolhaIlgiEngine';
+import { calculateJeanPaulSartreExistentialism, formatJeanPaulSartreExistentialismPrompt, FRENCH_JEAN_PAUL_SARTRE_VERSION } from '../src/lib/divination/frenchJeanPaulSartreExistentialismEngine';
+import { calculateViktorFranklLogotherapy, formatViktorFranklLogotherapyPrompt, AUSTRIAN_VIKTOR_FRANKL_VERSION } from '../src/lib/divination/austrianViktorFranklLogotherapyEngine';
+import { calculateBaekbeomKimGuMyDesireCulture, formatBaekbeomKimGuMyDesireCulturePrompt, KOREAN_BAEKBEOM_KIM_GU_VERSION } from '../src/lib/divination/koreanBaekbeomKimGuMyDesireCultureEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4952,6 +4955,48 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
   assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
   assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo));
+});
+
+test('Jean-Paul Sartre Existentialism Engine: calculates Existence Precedes Essence, Condemned to be Free, and Engagement', () => {
+  const rep = calculateJeanPaulSartreExistentialism(profile);
+  assert.equal(rep.engineVersion, FRENCH_JEAN_PAUL_SARTRE_VERSION);
+  assert(rep.existencePrecedesEssenceScore >= 0 && rep.existencePrecedesEssenceScore <= 100);
+  assert(rep.condemnedToBeFreeScore >= 0 && rep.condemnedToBeFreeScore <= 100);
+  assert(rep.badFaithOvercomingAuthenticityScore >= 0 && rep.badFaithOvercomingAuthenticityScore <= 100);
+  assert(rep.existentialAnguishLucidityScore >= 0 && rep.existentialAnguishLucidityScore <= 100);
+  assert(rep.engagementSolidarityActionIndex >= 0 && rep.engagementSolidarityActionIndex <= 100);
+  assert(rep.activeSartreTheme.themeTitleKo.length > 0);
+  const prompt = formatJeanPaulSartreExistentialismPrompt(rep);
+  assert(prompt.includes('장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 지표'));
+  assert(prompt.includes(rep.activeSartreTheme.themeTitleKo));
+});
+
+test('Viktor Frankl Logotherapy Engine: calculates The Last Human Freedom, Will to Meaning, and Tragic Optimism', () => {
+  const rep = calculateViktorFranklLogotherapy(profile);
+  assert.equal(rep.engineVersion, AUSTRIAN_VIKTOR_FRANKL_VERSION);
+  assert(rep.lastHumanFreedomAttitudeScore >= 0 && rep.lastHumanFreedomAttitudeScore <= 100);
+  assert(rep.willToMeaningDriveScore >= 0 && rep.willToMeaningDriveScore <= 100);
+  assert(rep.tragicOptimismResilienceScore >= 0 && rep.tragicOptimismResilienceScore <= 100);
+  assert(rep.selfTranscendenceDedicationScore >= 0 && rep.selfTranscendenceDedicationScore <= 100);
+  assert(rep.lifeResponsibilityIntegrityIndex >= 0 && rep.lifeResponsibilityIntegrityIndex <= 100);
+  assert(rep.activeFranklTheme.themeTitleKo.length > 0);
+  const prompt = formatViktorFranklLogotherapyPrompt(rep);
+  assert(prompt.includes('빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표'));
+  assert(prompt.includes(rep.activeFranklTheme.themeTitleKo));
+});
+
+test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture, Hongik Ingan, and Snow Field Guidance', () => {
+  const rep = calculateBaekbeomKimGuMyDesireCulture(profile);
+  assert.equal(rep.engineVersion, KOREAN_BAEKBEOM_KIM_GU_VERSION);
+  assert(rep.highCulturalPowerSpiritualScore >= 0 && rep.highCulturalPowerSpiritualScore <= 100);
+  assert(rep.hongikInganUniversalPeaceScore >= 0 && rep.hongikInganUniversalPeaceScore <= 100);
+  assert(rep.snowFieldExemplaryGuidanceScore >= 0 && rep.snowFieldExemplaryGuidanceScore <= 100);
+  assert(rep.selfReliantIndependenceWillScore >= 0 && rep.selfReliantIndependenceWillScore <= 100);
+  assert(rep.baekbeomHumilityPublicLoveIndex >= 0 && rep.baekbeomHumilityPublicLoveIndex <= 100);
+  assert(rep.activeKimGuTheme.themeTitleKo.length > 0);
+  const prompt = formatBaekbeomKimGuMyDesireCulturePrompt(rep);
+  assert(prompt.includes('백범 김구 《백범일지》 높은 문화의 힘 & 자주독립 실천 지표'));
+  assert(prompt.includes(rep.activeKimGuTheme.themeTitleKo));
 });
 
 
