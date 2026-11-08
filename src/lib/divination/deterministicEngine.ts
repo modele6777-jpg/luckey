@@ -277,6 +277,9 @@ import { calculateJohnStuartMillOnLibertyIndividuality, formatJohnStuartMillOnLi
 import { calculateFrenchJeanJacquesRousseauNatureAuthenticity, formatJeanJacquesRousseauNatureAuthenticityPrompt, type JeanJacquesRousseauNatureAuthenticityResult, FRENCH_JJ_ROUSSEAU_VERSION } from './frenchJeanJacquesRousseauNatureAuthenticityEngine';
 import { calculateGermanJohannWolfgangGoetheFaustStriving, formatJohannWolfgangGoetheFaustStrivingPrompt, type JohannWolfgangGoetheFaustStrivingResult, GERMAN_GOETHE_FAUST_VERSION } from './germanJohannWolfgangGoetheFaustStrivingEngine';
 import { calculateItalianDanteAlighieriDivineComedyAscent, formatDanteAlighieriDivineComedyAscentPrompt, type DanteAlighieriDivineComedyAscentResult, ITALIAN_DANTE_COMEDY_VERSION } from './italianDanteAlighieriDivineComedyAscentEngine';
+import { calculateMarcusAureliusMeditationsCitadel, formatMarcusAureliusMeditationsCitadelPrompt, type MarcusAureliusMeditationsCitadelResult, ROMAN_MARCUS_AURELIUS_VERSION } from './romanMarcusAureliusMeditationsCitadelEngine';
+import { calculateSuunChoeJeuDonghakSicheonju, formatSuunChoeJeuDonghakSicheonjuPrompt, type SuunChoeJeuDonghakSicheonjuResult, KOREAN_SUUN_CHOE_JEU_VERSION } from './koreanSuunChoeJeuDonghakSicheonjuEngine';
+import { calculateRalphWaldoEmersonSelfReliance, formatRalphWaldoEmersonSelfReliancePrompt, type RalphWaldoEmersonSelfRelianceResult, AMERICAN_RALPH_WALDO_EMERSON_VERSION } from './americanRalphWaldoEmersonSelfRelianceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -574,6 +577,9 @@ export interface DeterministicEngineReport {
   frenchJeanJacquesRousseauNatureAuthenticityResult?: JeanJacquesRousseauNatureAuthenticityResult | null;
   germanJohannWolfgangGoetheFaustStrivingResult?: JohannWolfgangGoetheFaustStrivingResult | null;
   italianDanteAlighieriDivineComedyAscentResult?: DanteAlighieriDivineComedyAscentResult | null;
+  marcusAureliusMeditationsCitadelResult?: MarcusAureliusMeditationsCitadelResult | null;
+  suunChoeJeuDonghakSicheonjuResult?: SuunChoeJeuDonghakSicheonjuResult | null;
+  ralphWaldoEmersonSelfRelianceResult?: RalphWaldoEmersonSelfRelianceResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3392,6 +3398,33 @@ try {
     }
   })()));
 
+  // 246. 로마 마르쿠스 아우렐리우스 명상록 내면의 성채 & 스토아 실존 평정 지혜 엔진
+  const marcusAureliusMeditationsCitadelResult = calculateSupplement('marcusAureliusMeditationsCitadelResult', () => ((() => {
+    try {
+      return calculateMarcusAureliusMeditationsCitadel(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 247. 한국 동학 수운 최제우 동경대전 시천주 & 사인여천 영성 존엄 및 후천개벽 엔진
+  const suunChoeJeuDonghakSicheonjuResult = calculateSupplement('suunChoeJeuDonghakSicheonjuResult', () => ((() => {
+    try {
+      return calculateSuunChoeJeuDonghakSicheonju(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 248. 미국 랠프 월도 에머슨 자기신뢰 & 자연 오버소울 비순응 자립 지혜 엔진
+  const ralphWaldoEmersonSelfRelianceResult = calculateSupplement('ralphWaldoEmersonSelfRelianceResult', () => ((() => {
+    try {
+      return calculateRalphWaldoEmersonSelfReliance(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3675,6 +3708,9 @@ try {
     frenchJeanJacquesRousseauNatureAuthenticityResult,
     germanJohannWolfgangGoetheFaustStrivingResult,
     italianDanteAlighieriDivineComedyAscentResult,
+    marcusAureliusMeditationsCitadelResult,
+    suunChoeJeuDonghakSicheonjuResult,
+    ralphWaldoEmersonSelfRelianceResult,
     tools: toolsMap,
   };
 }
@@ -3949,6 +3985,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchJeanJacquesRousseauNatureAuthenticity', nameKo: '장 자크 루소 에밀 사회계약론 자연으로돌아가라 일반의지 진정성회복', icon: '🌿', category: 'deep_master', summary: '장 자크 루소의 자연 회복 철학으로 사회적 가식을 벗겨내고 내면의 자연적 진정성과 일반의지의 조화를 회복합니다.' },
   { key: 'germanJohannWolfgangGoetheFaustStriving', nameKo: '괴테 파우스트 끝없는노력과갈망 영혼의구원 현재순간몰입 질풍노도', icon: '⚡', category: 'deep_master', summary: '괴테의 파우스트 철학으로 방황을 딛고 끊임없이 갈망하며 노력하는 영혼의 구원과 현재 순간의 완전한 몰입을 이끕니다.' },
   { key: 'italianDanteAlighieriDivineComedyAscent', nameKo: '단테 신곡 지옥직면 연옥정화 천국상승 어두운숲탈출 태양과별을움직이는사랑', icon: '🌌', category: 'deep_master', summary: '단테의 신곡 철학으로 인생의 어두운 숲을 뚫고 지옥의 직면과 연옥의 정화를 거쳐 궁극의 사랑과 광명으로 비상합니다.' },
+  { key: 'romanMarcusAureliusMeditationsCitadel', nameKo: '마르쿠스 아우렐리우스 명상록 내면의성채 로고스섭리순응 메멘토모리 아파테이아 평정심', icon: '🏛️', category: 'deep_master', summary: '마르쿠스 아우렐리우스의 명상록 철학으로 외부 자극에 흔들리지 않는 내면의 성채를 세우고 스토아 실존의 평정을 확립합니다.' },
+  { key: 'koreanSuunChoeJeuDonghakSicheonju', nameKo: '수운 최제우 동학 동경대전 시천주 사인여천 인내천 오심즉여심 후천개벽', icon: '🕊️', category: 'deep_master', summary: '수운 최제우의 동학 사상으로 내 안의 한울 영성 존엄을 자각하고 사람을 하늘처럼 섬기며 새 시대를 여는 개벽의 지혜를 발휘합니다.' },
+  { key: 'americanRalphWaldoEmersonSelfReliance', nameKo: '랠프 월도 에머슨 자기신뢰 자연 오버소울 비순응 독창성 투명한눈동자', icon: '🌲', category: 'deep_master', summary: '랠프 월도 에머슨의 자기신뢰와 초월주의 철학으로 사회적 순응을 탈피하고 내면의 신적 직관을 신뢰하는 온전한 주체성을 세웁니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4005,6 +4044,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'americanRalphWaldoEmersonSelfReliance',
+    'romanMarcusAureliusMeditationsCitadel',
+    'koreanSuunChoeJeuDonghakSicheonju',
     'frenchJeanJacquesRousseauNatureAuthenticity',
     'germanJohannWolfgangGoetheFaustStriving',
     'italianDanteAlighieriDivineComedyAscent',
