@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Search, X, Check, Volume2, VolumeX, Square,
   Download, User, Plus, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
-  Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked, Mic, MicOff, MessageSquare
+  Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked, Mic, MicOff, MessageSquare, ChevronDown
 } from 'lucide-react';
 import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -64,6 +64,56 @@ import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import '@/styles/lucy-starlight.css';
+
+function CalculationAuditToolList({ tools }: { tools: string[] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const threshold = 3;
+  const isLong = tools.length > threshold;
+  const displayedTools = isLong && !isExpanded ? tools.slice(0, threshold) : tools;
+
+  return (
+    <span data-used-calculation-tools="true" className="inline-flex max-w-full flex-wrap items-center gap-1 text-[10px] text-amber-700 dark:text-amber-200">
+      <button
+        type="button"
+        onClick={() => isLong && setIsExpanded(prev => !prev)}
+        className={`shrink-0 rounded-full border border-amber-400/40 px-2 py-0.5 font-medium transition-colors ${
+          isLong ? 'cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-950/50 flex items-center gap-0.5 font-semibold' : 'cursor-default'
+        }`}
+        title={isLong ? (isExpanded ? '도구 목록 접기' : '도구 전체 목록 펼치기') : undefined}
+      >
+        <span>사용 도구 {tools.length}개</span>
+        {isLong && (
+          <ChevronDown size={10} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+        )}
+      </button>
+      {displayedTools.map(name => (
+        <span key={name} className="shrink-0 rounded-full border border-amber-400/30 px-2 py-0.5">
+          {name}
+        </span>
+      ))}
+      {isLong && !isExpanded && (
+        <button
+          type="button"
+          onClick={() => setIsExpanded(true)}
+          className="shrink-0 rounded-full border border-dashed border-amber-400/50 px-1.5 py-0.5 text-[9px] text-amber-600 dark:text-amber-300 hover:bg-amber-100/40 cursor-pointer font-medium"
+          title="전체 도구 목록 펼치기"
+        >
+          +{tools.length - threshold}개 더보기
+        </button>
+      )}
+      {isLong && isExpanded && (
+        <button
+          type="button"
+          onClick={() => setIsExpanded(false)}
+          className="shrink-0 rounded-full border border-dashed border-amber-400/50 px-1.5 py-0.5 text-[9px] text-amber-600 dark:text-amber-300 hover:bg-amber-100/40 cursor-pointer font-medium"
+          title="도구 목록 접기"
+        >
+          접기
+        </button>
+      )}
+    </span>
+  );
+}
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -3009,11 +3059,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       .filter(item => ['calculated', 'symbolic'].includes(item.status) && item.sentToModel)
                       .map(item => [item.toolId, item.status === 'symbolic' ? `${item.name} (상징)` : item.name])).values()];
                     if (!tools.length) return null;
-                    return (
-                      <span data-used-calculation-tools="true" className="inline-flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap text-[10px] text-amber-700 dark:text-amber-200">
-                        {tools.map(name => <span key={name} className="shrink-0 rounded-full border border-amber-400/30 px-2 py-0.5">{name}</span>)}
-                      </span>
-                    );
+                    return <CalculationAuditToolList tools={tools} />;
                   })()}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
