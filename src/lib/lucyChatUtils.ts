@@ -98,6 +98,15 @@ export function buildCrossAppDialogueContextFromThread(lucyThread: any[], curren
  * - 코드 블록, 마크다운 표, 제목+본문 세트가 깨지지 않도록 보호합니다.
  * - 문단 구분(\n\n)이 없는 긴 단일 문단도 자연스러운 문장 호흡 단위로 2~4개 말풍선으로 쪼갭니다.
  */
+function isBubbleHeading(line: string): boolean {
+  const text = line.trim();
+  const label = text.replace(/^(?:[-+•·‣▪]\s*|\*\s+|\d+[.)]\s+)/, '');
+  return /^#{1,6}\s+\S/.test(label)
+    || /^\*\*[^\n]+\*\*\s*:?$/.test(label)
+    || /^[^\n.!?。]{1,100}[:：]$/.test(label)
+    || (/^(?:\[|🔮|💡|✨|📌|🌿|🍊|🕊️|🎨|🌅|🌙)[^\n]{1,42}$/.test(label) && !/[.!?~…]$/.test(label));
+}
+
 export function splitIntoKakaoBubbles(rawText: string, maxBubbles = 4): string[] {
   if (!rawText || typeof rawText !== "string") return [];
   const trimmed = cleanLucyChatText(rawText).trim();
@@ -126,14 +135,11 @@ export function splitIntoKakaoBubbles(rawText: string, maxBubbles = 4): string[]
 
   // 2. 단독 소제목(# 헤더, 짧은 볼드 타이틀 등)이 다음 문단과 분리되어 고립되지 않도록 병합
   const mergedParagraphs: string[] = [];
-  for (let i = 0; i < rawParagraphs.length; i++) {
-    const curr = rawParagraphs[i];
-    const isStandaloneHeading =
-      /^#{1,4}\s+[^\n]+$/.test(curr) ||
-      (/^(?:\*\*|\[|🔮|💡|✨|📌|🌿|🍊|🕊️|🎨|🌅|🌙)[^\n]{1,42}$/.test(curr) && !/[.!?~…]$/.test(curr));
-
-    if (isStandaloneHeading && i + 1 < rawParagraphs.length) {
-      rawParagraphs[i + 1] = `${curr}\n\n${rawParagraphs[i + 1]}`;
+  for (const curr of rawParagraphs) {
+    const previous = mergedParagraphs.at(-1);
+    // A title may be its own paragraph or the final line of the previous paragraph.
+    if (previous && isBubbleHeading(previous.split('\n').at(-1) || '')) {
+      mergedParagraphs[mergedParagraphs.length - 1] = `${previous}\n\n${curr}`;
     } else {
       mergedParagraphs.push(curr);
     }
@@ -143,6 +149,8 @@ export function splitIntoKakaoBubbles(rawText: string, maxBubbles = 4): string[]
   let units = mergedParagraphs;
   if (units.length === 1) {
     const single = units[0];
+    // Do not undo title/body grouping in the line/sentence fallback below.
+    if (single.split('\n').some(isBubbleHeading)) return [single];
     if (single.length < 45) {
       return [single];
     }
@@ -234,29 +242,18 @@ export function splitIntoKakaoBubbles(rawText: string, maxBubbles = 4): string[]
       const remainingItems = items.length - i;
       const remainingBuckets = bucketCount - buckets.length;
 
-      if (remainingItems === remainingBuckets) {
-        if (currentBucket.length > 0) {
-          buckets.push(currentBucket.join("\n\n"));
-          currentBucket = [];
-          currentLen = 0;
-        }
-        buckets.push(items[i]);
-        continue;
-      }
-
       const targetBucketLen = totalLen / bucketCount;
-      currentBucket.push(items[i]);
-      currentLen += items[i].length;
-
       if (
-        currentLen >= targetBucketLen * 0.82 &&
+        currentBucket.length > 0 &&
         buckets.length < bucketCount - 1 &&
-        items.length - (i + 1) >= bucketCount - (buckets.length + 1)
+        (currentLen >= targetBucketLen * 0.82 || remainingItems === remainingBuckets - 1)
       ) {
         buckets.push(currentBucket.join("\n\n"));
         currentBucket = [];
         currentLen = 0;
       }
+      currentBucket.push(items[i]);
+      currentLen += items[i].length;
     }
 
     if (currentBucket.length > 0) {
