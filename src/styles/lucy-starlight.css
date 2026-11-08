@@ -85,8 +85,8 @@ html[data-lucy-theme='starlight'] .lucy-chat-shell.lucy-night .lucy-starlight-as
 
 /* Daylight palettes are scoped to Lucy; the rest of the app keeps its channel theme. */
 html[data-lucy-period='morning'] .lucy-chat-shell.lucy-night {
-  --lucy-bg: #faf7f0; --lucy-surface: #ffffff; --lucy-chrome: #fffdf8;
-  --lucy-border: #d9d1c3; --lucy-accent: #775530; --lucy-user: #eee4d4;
+  --lucy-bg: #fffbf2; --lucy-surface: rgba(255, 255, 255, 0.94); --lucy-chrome: rgba(255, 253, 248, 0.88);
+  --lucy-border: #eddcc6; --lucy-accent: #8b5320; --lucy-user: #fceeda;
 }
 html[data-lucy-period='day'] .lucy-chat-shell.lucy-night {
   --lucy-bg: #e6f3ff; --lucy-surface: #ffffff; --lucy-chrome: #f3faff;
@@ -109,13 +109,20 @@ html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-chat-header h1 bu
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(strong, h1, h2, h3, h4, a) { color: var(--lucy-accent) !important; }
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-assistant :is(pre, code) { background: #eef3f8; color: #243449; }
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night .lucy-starlight-send { background: #175d92 !important; color: #ffffff !important; }
+html.light[data-lucy-period='morning'] .lucy-chat-shell.lucy-night .lucy-starlight-send {
+  background: linear-gradient(135deg, #e69c24 0%, #cf7b12 100%) !important; color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(230, 156, 36, 0.35) !important;
+}
 html.light[data-lucy-period] .lucy-chat-shell.lucy-night.is-plus-mode .lucy-starlight-send { background: #79623d !important; }
 html.light[data-lucy-period] .lucy-cosmic-wash { background: radial-gradient(ellipse at 80% 5%, #ffffffb0, transparent 60%); }
+html[data-lucy-period='morning'] .lucy-cosmic-wash {
+  background: radial-gradient(ellipse at 88% 12%, rgba(255, 230, 160, 0.72) 0%, rgba(255, 210, 145, 0.35) 30%, rgba(255, 245, 220, 0.15) 58%, transparent 78%) !important;
+}
 html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }
 html.light[data-lucy-period] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
 html.light[data-lucy-period] .lucy-clover-particle { color: #5d9442; filter: none; }
 html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #34835a; }
-html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #faf7f0 !important; }
+html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #fffbf2 !important; }
 html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
 
 /* Soft clouds belong only to the blue daytime sky. */
@@ -147,16 +154,192 @@ html[data-lucy-period='night'] .is-plus-mode .lucy-star-field { opacity: .5; }
 }
 
 /* Time-specific celestial light stays behind every reading surface. */
-.lucy-morning-light { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease; }
+.lucy-morning-light { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
 html[data-lucy-period='morning'] .lucy-morning-light { opacity: 1; }
-.lucy-sun-halo { position: absolute; width: clamp(300px, 65vw, 850px); aspect-ratio: 1; right: -15%; top: -16%; background: radial-gradient(circle, #ffdb8b66 0%, #ffe8a938 30%, transparent 68%); animation: lucy-sun-breathe 12s ease-in-out infinite alternate; }
-.lucy-sun-disc { position: absolute; right: 11%; top: 15%; width: clamp(42px, 6vw, 80px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fffdf0, #ffe4a1); box-shadow: 0 0 32px 14px #ffd98a35, 0 0 80px 30px #ffdf9d20; }
-.lucy-sun-rays { position: absolute; width: 150%; height: 150%; right: -60%; top: -48%; transform-origin: 65% 30%; background: repeating-conic-gradient(from 15deg at 65% 30%, transparent 0deg 20deg, #ffd88812 25deg, transparent 35deg 50deg); mask-image: radial-gradient(ellipse at 65% 30%, #0006, transparent 65%); -webkit-mask-image: radial-gradient(ellipse at 65% 30%, #0006, transparent 65%); animation: lucy-rays-sway 24s ease-in-out infinite alternate; }
+
+/* 1. Dawn Aurora Wave: Deep breathing morning sky glow */
+.lucy-morning-aurora {
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(circle at 86% 12%, rgba(255, 222, 135, 0.52) 0%, rgba(255, 198, 115, 0.28) 28%, transparent 60%),
+    radial-gradient(circle at 55% -8%, rgba(255, 210, 150, 0.32) 0%, transparent 52%),
+    radial-gradient(circle at 12% 28%, rgba(255, 240, 205, 0.25) 0%, transparent 48%);
+  animation: lucy-aurora-breathe 14s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* 2. Radiant Sun Halo: Multi-layered corona bloom */
+.lucy-sun-halo {
+  position: absolute;
+  width: clamp(340px, 72vw, 920px);
+  aspect-ratio: 1;
+  right: -12%;
+  top: -14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 228, 142, 0.68) 0%, rgba(255, 195, 105, 0.35) 32%, rgba(255, 220, 165, 0.14) 58%, transparent 74%);
+  animation: lucy-sun-breathe 10s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* 3. Luminous Volumetric God Rays (아침 햇살 빛줄기) */
+.lucy-sun-beams {
+  position: absolute;
+  width: 180%;
+  height: 180%;
+  right: -55%;
+  top: -45%;
+  transform-origin: 75% 25%;
+  background:
+    linear-gradient(135deg, rgba(255, 240, 185, 0.35) 0%, rgba(255, 220, 150, 0.18) 22%, transparent 48%),
+    repeating-linear-gradient(125deg, transparent 0px, transparent 40px, rgba(255, 235, 175, 0.14) 55px, rgba(255, 248, 215, 0.24) 75px, transparent 100px);
+  mask-image: radial-gradient(ellipse at 75% 25%, #000 22%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse at 75% 25%, #000 22%, transparent 72%);
+  animation: lucy-beams-sway 18s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* 4. Conic Rays Sway: Soft rotating ray fan */
+.lucy-sun-rays {
+  position: absolute;
+  width: 160%;
+  height: 160%;
+  right: -55%;
+  top: -45%;
+  transform-origin: 70% 28%;
+  background: repeating-conic-gradient(from 12deg at 70% 28%, transparent 0deg 18deg, rgba(255, 220, 130, 0.16) 22deg, transparent 32deg 46deg);
+  mask-image: radial-gradient(ellipse at 70% 28%, #0008, transparent 65%);
+  -webkit-mask-image: radial-gradient(ellipse at 70% 28%, #0008, transparent 65%);
+  animation: lucy-rays-sway 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* 5. Brilliant Sun Disc Core (눈부신 아침 태양) */
+.lucy-sun-disc {
+  position: absolute;
+  right: 12%;
+  top: 14%;
+  width: clamp(48px, 6.8vw, 84px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #ffffff 0%, #fffef8 28%, #ffe8a3 62%, #ffbe42 100%);
+  box-shadow:
+    0 0 28px 10px rgba(255, 255, 255, 0.95),
+    0 0 65px 24px rgba(255, 214, 110, 0.72),
+    0 0 130px 52px rgba(255, 175, 75, 0.42),
+    0 0 240px 100px rgba(255, 205, 120, 0.22);
+  animation: lucy-sun-pulse 8s ease-in-out infinite alternate;
+  will-change: transform, box-shadow;
+}
+
+/* 6. Lens Flare Elements along the sun diagonal */
+.lucy-morning-flare {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.lucy-morning-flare-1 {
+  right: 28%;
+  top: 28%;
+  width: clamp(24px, 3.5vw, 42px);
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(255, 240, 200, 0.45) 0%, rgba(255, 210, 140, 0.18) 50%, transparent 70%);
+  border: 1px solid rgba(255, 230, 170, 0.25);
+  animation: lucy-flare-drift 12s ease-in-out infinite alternate;
+}
+.lucy-morning-flare-2 {
+  right: 42%;
+  top: 40%;
+  width: clamp(40px, 5.5vw, 70px);
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(255, 220, 160, 0.25) 0%, rgba(255, 180, 120, 0.1) 45%, transparent 70%);
+  animation: lucy-flare-drift 16s ease-in-out infinite alternate reverse;
+}
+
+/* 7. Floating Golden Shimmer Motes (햇살 속 미세 금빛 입자들) */
+.lucy-morning-shimmer-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.lucy-morning-shimmer {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, #ffd978 60%, rgba(255, 190, 80, 0) 100%);
+  box-shadow: 0 0 8px 2px rgba(255, 215, 110, 0.6);
+  opacity: 0;
+  animation: lucy-shimmer-float 9s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.lucy-morning-shimmer-0 { right: 18%; top: 22%; width: 4px; height: 4px; animation-duration: 7s; animation-delay: 0s; }
+.lucy-morning-shimmer-1 { right: 26%; top: 30%; width: 5px; height: 5px; animation-duration: 9.5s; animation-delay: -2s; }
+.lucy-morning-shimmer-2 { right: 35%; top: 20%; width: 3px; height: 3px; animation-duration: 8s; animation-delay: -4s; }
+.lucy-morning-shimmer-3 { right: 15%; top: 40%; width: 6px; height: 6px; animation-duration: 11s; animation-delay: -1s; }
+.lucy-morning-shimmer-4 { right: 22%; top: 52%; width: 4px; height: 4px; animation-duration: 8.5s; animation-delay: -5s; }
+.lucy-morning-shimmer-5 { right: 48%; top: 35%; width: 3.5px; height: 3.5px; animation-duration: 10s; animation-delay: -3.5s; }
+.lucy-morning-shimmer-6 { right: 30%; top: 62%; width: 5px; height: 5px; animation-duration: 12s; animation-delay: -7s; }
+.lucy-morning-shimmer-7 { right: 12%; top: 68%; width: 3px; height: 3px; animation-duration: 7.5s; animation-delay: -2.5s; }
+.lucy-morning-shimmer-8 { right: 40%; top: 50%; width: 4px; height: 4px; animation-duration: 9s; animation-delay: -6s; }
+.lucy-morning-shimmer-9 { right: 55%; top: 28%; width: 3px; height: 3px; animation-duration: 8.2s; animation-delay: -4.5s; }
+
+/* Morning Keyframe Animations */
+@keyframes lucy-aurora-breathe {
+  0% { transform: scale(0.98) translate3d(0, 0, 0); opacity: 0.72; }
+  50% { transform: scale(1.02) translate3d(-10px, 8px, 0); opacity: 0.95; }
+  100% { transform: scale(1.01) translate3d(8px, -6px, 0); opacity: 0.82; }
+}
+
+@keyframes lucy-sun-breathe {
+  from { opacity: 0.7; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1.06); }
+}
+
+@keyframes lucy-sun-pulse {
+  0% { transform: scale(0.97); filter: brightness(0.98); }
+  50% { transform: scale(1.03); filter: brightness(1.06); }
+  100% { transform: scale(0.98); filter: brightness(1.01); }
+}
+
+@keyframes lucy-beams-sway {
+  0% { transform: rotate(-4deg) scale(0.98); opacity: 0.7; }
+  50% { transform: rotate(2deg) scale(1.03); opacity: 0.95; }
+  100% { transform: rotate(5deg) scale(1.01); opacity: 0.78; }
+}
+
+@keyframes lucy-rays-sway {
+  from { transform: rotate(-6deg); opacity: 0.65; }
+  to { transform: rotate(7deg); opacity: 1; }
+}
+
+@keyframes lucy-flare-drift {
+  0% { transform: translate3d(0, 0, 0) scale(0.95); opacity: 0.55; }
+  100% { transform: translate3d(12px, 14px, 0) scale(1.08); opacity: 0.85; }
+}
+
+@keyframes lucy-shimmer-float {
+  0% { transform: translate3d(0, 16px, 0) scale(0.6); opacity: 0; }
+  20% { opacity: 0.85; transform: translate3d(-6px, 6px, 0) scale(1.1); }
+  50% { opacity: 1; transform: translate3d(4px, -10px, 0) scale(1); }
+  80% { opacity: 0.65; transform: translate3d(-2px, -24px, 0) scale(0.9); }
+  100% { transform: translate3d(8px, -36px, 0) scale(0.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucy-morning-aurora,
+  .lucy-sun-halo,
+  .lucy-sun-beams,
+  .lucy-sun-rays,
+  .lucy-sun-disc,
+  .lucy-morning-flare,
+  .lucy-morning-shimmer {
+    animation: none !important;
+  }
+}
+
 .lucy-night-moon { position: absolute; right: 9%; top: 17%; width: clamp(40px, 6vw, 76px); color: #f4e9c6; opacity: 0; filter: drop-shadow(0 0 10px #e9e2bd55); transition: opacity 1.2s ease; }
 .lucy-night-moon svg { display: block; width: 100%; height: auto; }
 html[data-lucy-period='night'] .lucy-night-moon { opacity: .78; }
-@keyframes lucy-sun-breathe { from { opacity: .65; transform: scale(.97); } to { opacity: 1; transform: scale(1.04); } }
-@keyframes lucy-rays-sway { from { transform: rotate(-5deg); opacity: .65; } to { transform: rotate(6deg); opacity: 1; } }
 
 /* Occasional shooting stars: brief flights with long, staggered quiet intervals. */
 .lucy-meteor-field { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1s ease; }
