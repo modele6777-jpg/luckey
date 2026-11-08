@@ -292,6 +292,9 @@ import { calculateDosanAhnChanghoMusilYeokhaeng, formatDosanAhnChanghoMusilYeokh
 import { calculateHenryDavidThoreauWalden, formatHenryDavidThoreauWaldenPrompt, type HenryDavidThoreauWaldenResult, AMERICAN_HENRY_DAVID_THOREAU_VERSION } from './americanHenryDavidThoreauWaldenEngine';
 import { calculateDavidHumeTreatiseHumanNature, formatDavidHumeTreatiseHumanNaturePrompt, type DavidHumeTreatiseHumanNatureResult, SCOTTISH_DAVID_HUME_VERSION } from './scottishDavidHumeTreatiseHumanNatureEngine';
 import { calculateManhaeHanYongunNimuiChimmuk, formatManhaeHanYongunNimuiChimmukPrompt, type ManhaeHanYongunNimuiChimmukResult, KOREAN_MANHAE_HAN_YONGUN_VERSION } from './koreanManhaeHanYongunNimuiChimmukEngine';
+import { calculateGottfriedLeibnizMonadologyHarmony, formatGottfriedLeibnizMonadologyHarmonyPrompt, type GottfriedLeibnizMonadologyHarmonyResult, GERMAN_GOTTFRIED_LEIBNIZ_VERSION } from './germanGottfriedLeibnizMonadologyHarmonyEngine';
+import { calculateJohnLockeHumanUnderstanding, formatJohnLockeHumanUnderstandingPrompt, type JohnLockeHumanUnderstandingResult, BRITISH_JOHN_LOCKE_VERSION } from './britishJohnLockeHumanUnderstandingEngine';
+import { calculateHyechoWangOcheonchukgukjeon, formatHyechoWangOcheonchukgukjeonPrompt, type HyechoWangOcheonchukgukjeonResult, KOREAN_HYECHO_VERSION } from './koreanHyechoWangOcheonchukgukjeonEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -604,6 +607,9 @@ export interface DeterministicEngineReport {
   henryDavidThoreauWaldenResult?: HenryDavidThoreauWaldenResult | null;
   davidHumeTreatiseHumanNatureResult?: DavidHumeTreatiseHumanNatureResult | null;
   manhaeHanYongunNimuiChimmukResult?: ManhaeHanYongunNimuiChimmukResult | null;
+  gottfriedLeibnizMonadologyHarmonyResult?: GottfriedLeibnizMonadologyHarmonyResult | null;
+  johnLockeHumanUnderstandingResult?: JohnLockeHumanUnderstandingResult | null;
+  hyechoWangOcheonchukgukjeonResult?: HyechoWangOcheonchukgukjeonResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3557,6 +3563,33 @@ try {
     }
   })()));
 
+  // 261. 독일 고트프리트 빌헬름 라이프니츠 단자론 예정조화설 & 최선의 세계·충족이유율 지혜 엔진
+  const gottfriedLeibnizMonadologyHarmonyResult = calculateSupplement('gottfriedLeibnizMonadologyHarmonyResult', () => ((() => {
+    try {
+      return calculateGottfriedLeibnizMonadologyHarmony(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 262. 영국 존 로크 인간 오성론 타불라 라사 & 경험적 이성·천부인권 관용 엔진
+  const johnLockeHumanUnderstandingResult = calculateSupplement('johnLockeHumanUnderstandingResult', () => ((() => {
+    try {
+      return calculateJohnLockeHumanUnderstanding(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 263. 신라 혜초 왕오천축국전 구도 순례 개척 & 설산사막 극복·망향 서정 평정 지혜 엔진
+  const hyechoWangOcheonchukgukjeonResult = calculateSupplement('hyechoWangOcheonchukgukjeonResult', () => ((() => {
+    try {
+      return calculateHyechoWangOcheonchukgukjeon(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3855,6 +3888,9 @@ try {
     henryDavidThoreauWaldenResult,
     davidHumeTreatiseHumanNatureResult,
     manhaeHanYongunNimuiChimmukResult,
+    gottfriedLeibnizMonadologyHarmonyResult,
+    johnLockeHumanUnderstandingResult,
+    hyechoWangOcheonchukgukjeonResult,
     tools: toolsMap,
   };
 }
@@ -4144,6 +4180,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'americanHenryDavidThoreauWalden', nameKo: '헨리 데이비드 소로 월든 단순한삶 자연합일 깨어있는양심 시민불복종 다른북소리', icon: '🌲', category: 'deep_master', summary: '헨리 데이비드 소로의 월든 사상으로 소유의 군더더기를 털어내고 대자연과 깊이 교감하며 양심에 따른 내적 자립을 세웁니다.' },
   { key: 'scottishDavidHumeTreatiseHumanNature', nameKo: '데이비드 흄 인간본성논고 온건한회의주의 공감 도덕감정 정념과이성조화 온유한평정', icon: '⚖️', category: 'deep_master', summary: '데이비드 흄의 경험론과 공감 철학으로 독단적 도그마를 탈피하고 따뜻한 인류애와 온유한 삶의 평정을 가꿉니다.' },
   { key: 'koreanManhaeHanYongunNimuiChimmuk', nameKo: '만해 한용운 님의침묵 역설적사랑승화 공약삼장 자주평화 조선불교유신 출오염지조', icon: '🇰🇷', category: 'deep_master', summary: '만해 한용운 선사의 역설적 사랑과 지조로 상실의 슬픔을 희망으로 승화하고 낡은 타성을 깨뜨리는 당당한 자주를 선포합니다.' },
+  { key: 'germanGottfriedLeibnizMonadologyHarmony', nameKo: '라이프니츠 단자론 예정조화설 최선의세계 충족이유율 미소지각과통각', icon: '🌌', category: 'deep_master', summary: '고트프리트 빌헬름 라이프니츠의 단자론과 예정조화 철학으로 우주의 유기적 조화를 통찰하고 충족이유율과 최선의 세계를 향한 긍정을 회복합니다.' },
+  { key: 'britishJohnLockeHumanUnderstanding', nameKo: '존 로크 인간오성론 백지상태 감각과반성 천부인권 사회계약 관용과분별', icon: '📜', category: 'deep_master', summary: '존 로크의 경험론과 자연권 철학으로 편견 없는 열린 지성을 닦고 침해할 수 없는 인권과 상호 신뢰의 평화적 관용을 확립합니다.' },
+  { key: 'koreanHyechoWangOcheonchukgukjeon', nameKo: '혜초 왕오천축국전 구도순례개척 실크로드횡단 설산사막극복 망향시평정 문명포용', icon: '🐪', category: 'deep_master', summary: '신라 혜초 스님의 왕오천축국전 구도 순례 정신으로 미지의 극한 역경을 뚫고 만방의 문명을 포용하며 내면의 고요한 평정심을 지켜냅니다.' },
 ];
 
 export function getFiredEngineBadges(

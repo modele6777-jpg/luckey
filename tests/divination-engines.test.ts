@@ -255,6 +255,9 @@ import { calculateDosanAhnChanghoMusilYeokhaeng, formatDosanAhnChanghoMusilYeokh
 import { calculateHenryDavidThoreauWalden, formatHenryDavidThoreauWaldenPrompt, AMERICAN_HENRY_DAVID_THOREAU_VERSION } from '../src/lib/divination/americanHenryDavidThoreauWaldenEngine';
 import { calculateDavidHumeTreatiseHumanNature, formatDavidHumeTreatiseHumanNaturePrompt, SCOTTISH_DAVID_HUME_VERSION } from '../src/lib/divination/scottishDavidHumeTreatiseHumanNatureEngine';
 import { calculateManhaeHanYongunNimuiChimmuk, formatManhaeHanYongunNimuiChimmukPrompt, KOREAN_MANHAE_HAN_YONGUN_VERSION } from '../src/lib/divination/koreanManhaeHanYongunNimuiChimmukEngine';
+import { calculateGottfriedLeibnizMonadologyHarmony, formatGottfriedLeibnizMonadologyHarmonyPrompt, GERMAN_GOTTFRIED_LEIBNIZ_VERSION } from '../src/lib/divination/germanGottfriedLeibnizMonadologyHarmonyEngine';
+import { calculateJohnLockeHumanUnderstanding, formatJohnLockeHumanUnderstandingPrompt, BRITISH_JOHN_LOCKE_VERSION } from '../src/lib/divination/britishJohnLockeHumanUnderstandingEngine';
+import { calculateHyechoWangOcheonchukgukjeon, formatHyechoWangOcheonchukgukjeonPrompt, KOREAN_HYECHO_VERSION } from '../src/lib/divination/koreanHyechoWangOcheonchukgukjeonEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5087,6 +5090,48 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   const prompt = formatManhaeHanYongunNimuiChimmukPrompt(rep);
   assert(prompt.includes('만해 한용운 《님의 침묵》 역설적 사랑 & 자주 지조 지표'));
   assert(prompt.includes(rep.activeHanYongunTheme.themeTitleKo));
+});
+
+test('Gottfried Leibniz Monadology Engine: calculates Pre-established Harmony, Monad Vis Viva, and Apperception', () => {
+  const rep = calculateGottfriedLeibnizMonadologyHarmony(profile);
+  assert.equal(rep.engineVersion, GERMAN_GOTTFRIED_LEIBNIZ_VERSION);
+  assert(rep.preEstablishedHarmonyScore >= 0 && rep.preEstablishedHarmonyScore <= 100);
+  assert(rep.monadIntrinsicVitalityIndex >= 0 && rep.monadIntrinsicVitalityIndex <= 100);
+  assert(rep.apperceptionClarityScore >= 0 && rep.apperceptionClarityScore <= 100);
+  assert(rep.bestPossibleWorldOptimismIndex >= 0 && rep.bestPossibleWorldOptimismIndex <= 100);
+  assert(rep.sufficientReasonInsightScore >= 0 && rep.sufficientReasonInsightScore <= 100);
+  assert(rep.activeLeibnizTheme.themeTitleKo.length > 0);
+  const prompt = formatGottfriedLeibnizMonadologyHarmonyPrompt(rep);
+  assert(prompt.includes('라이프니츠 《단자론》 예정조화 & 최선의 세계 지표'));
+  assert(prompt.includes(rep.activeLeibnizTheme.themeTitleKo));
+});
+
+test('John Locke Human Understanding Engine: calculates Tabula Rasa, Sensation/Reflection, and Natural Rights', () => {
+  const rep = calculateJohnLockeHumanUnderstanding(profile);
+  assert.equal(rep.engineVersion, BRITISH_JOHN_LOCKE_VERSION);
+  assert(rep.tabulaRasaOpenReceptivityScore >= 0 && rep.tabulaRasaOpenReceptivityScore <= 100);
+  assert(rep.sensationReflectionBalanceIndex >= 0 && rep.sensationReflectionBalanceIndex <= 100);
+  assert(rep.naturalRightsInviolabilityScore >= 0 && rep.naturalRightsInviolabilityScore <= 100);
+  assert(rep.socialContractMutualTrustIndex >= 0 && rep.socialContractMutualTrustIndex <= 100);
+  assert(rep.tolerantPrudenceWisdomScore >= 0 && rep.tolerantPrudenceWisdomScore <= 100);
+  assert(rep.activeLockeTheme.themeTitleKo.length > 0);
+  const prompt = formatJohnLockeHumanUnderstandingPrompt(rep);
+  assert(prompt.includes('존 로크 《인간 오성론》 타불라 라사 & 천부인권 지표'));
+  assert(prompt.includes(rep.activeLockeTheme.themeTitleKo));
+});
+
+test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit, Frontier Resilience, and Poetic Equanimity', () => {
+  const rep = calculateHyechoWangOcheonchukgukjeon(profile);
+  assert.equal(rep.engineVersion, KOREAN_HYECHO_VERSION);
+  assert(rep.pilgrimagePioneerSpiritScore >= 0 && rep.pilgrimagePioneerSpiritScore <= 100);
+  assert(rep.extremeFrontierResilienceIndex >= 0 && rep.extremeFrontierResilienceIndex <= 100);
+  assert(rep.nostalgicPoeticEquanimityScore >= 0 && rep.nostalgicPoeticEquanimityScore <= 100);
+  assert(rep.culturalOpennessCompassionIndex >= 0 && rep.culturalOpennessCompassionIndex <= 100);
+  assert(rep.bodhisattvaFieldWisdomScore >= 0 && rep.bodhisattvaFieldWisdomScore <= 100);
+  assert(rep.activeHyechoTheme.themeTitleKo.length > 0);
+  const prompt = formatHyechoWangOcheonchukgukjeonPrompt(rep);
+  assert(prompt.includes('혜초 《왕오천축국전》 구도 순례 & 역경 극복 지표'));
+  assert(prompt.includes(rep.activeHyechoTheme.themeTitleKo));
 });
 
 

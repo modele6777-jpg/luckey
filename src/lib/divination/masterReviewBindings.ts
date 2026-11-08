@@ -1075,5 +1075,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanManhaeHanYongunNimuiChimmuk": {
     "field": "manhaeHanYongunNimuiChimmukResult",
     "traceKey": "manhaeHanYongunNimuiChimmukResult"
+  },
+  "germanGottfriedLeibnizMonadologyHarmony": {
+    "field": "gottfriedLeibnizMonadologyHarmonyResult",
+    "traceKey": "gottfriedLeibnizMonadologyHarmonyResult"
+  },
+  "britishJohnLockeHumanUnderstanding": {
+    "field": "johnLockeHumanUnderstandingResult",
+    "traceKey": "johnLockeHumanUnderstandingResult"
+  },
+  "koreanHyechoWangOcheonchukgukjeon": {
+    "field": "hyechoWangOcheonchukgukjeonResult",
+    "traceKey": "hyechoWangOcheonchukgukjeonResult"
   }
 };
