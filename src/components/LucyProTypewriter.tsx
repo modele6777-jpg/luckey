@@ -164,12 +164,20 @@ function LucyProImageItem({ src, alt }: { src?: string; alt?: string }) {
 function formatLucyMarkdown(content: string): string {
   if (!content) return '';
   let formatted = content;
-  // 1. 인라인으로 연달아 붙은 불릿( • )을 줄바꿈 목록으로 분리
-  formatted = formatted.replace(/([^\n])\s*[•·]\s+/g, '$1\n\n- ');
-  // 2. 단독 줄 시작 불릿(•, ·)을 표준 마크다운 목록(- )으로 정규화
-  formatted = formatted.replace(/^[\t ]*[•·]\s*/gm, '- ');
-  // 3. 불릿 뒤의 레이블 형태 (예: "- 실천할 행동: ...")를 굵게 강조하여 가독성 강화
-  formatted = formatted.replace(/^- ([가-힣A-Za-z0-9\s]{2,16}:)\s*/gm, '- **$1** ');
+  // 1. 헤더(#) 앞에 붙은 불릿이나 대시는 헤더 내부로 일원화 (예: "• ### 소제목" -> "### • 소제목")
+  formatted = formatted.replace(/^(?:[-*•·]\s*)?(#{1,6})\s*(?:[•·]\s*)?([^\n]+)$/gm, '$1 • $2');
+
+  // 2. 불릿 뒤에 바로 줄바꿈이 오는 결함(• \n소제목)을 한 줄로 병합하여 소제목 바로 옆에 불릿 배치
+  formatted = formatted.replace(/^[•·]\s*\n+([^\n]+)/gm, '• $1');
+
+  // 3. 인라인으로 연달아 붙은 불릿( • )을 줄바꿈 분리하되, 소제목 옆에 불릿(• )이 나란히 오도록 유지
+  formatted = formatted.replace(/([^\n])\s*[•·]\s+/g, '$1\n\n• ');
+
+  // 4. 불릿 뒤의 레이블 형태 (예: "• 실천할 행동: ...")를 굵게 강조하여 가독성 강화
+  formatted = formatted.replace(/^[•·]\s*([가-힣A-Za-z0-9\s]{2,16}:)\s*/gm, '• **$1** ');
+
+  // 5. 마크다운 리스트 대시 뒤에 불릿이 중복되거나 소제목이 오면 소제목 옆 불릿으로 일원화
+  formatted = formatted.replace(/^[\t ]*-\s*[•·]\s*/gm, '• ');
   return formatted;
 }
 
@@ -284,7 +292,7 @@ export function LucyProTypewriter({
           ),
           li: ({ node, children, ...props }) => (
             <li
-              className={`mb-1.5 last:mb-0 leading-relaxed pl-1 whitespace-pre-line ${isLight ? 'text-slate-800' : 'text-white'}`}
+              className={`mb-1.5 last:mb-0 leading-relaxed pl-1 whitespace-pre-line ${isLight ? 'text-slate-800' : 'text-white'} [&>div]:inline [&>p]:inline [&>h1]:inline [&>h2]:inline [&>h3]:inline [&>h4]:inline`}
               style={{ color: isLight ? '#1e293b' : '#ffffff' }}
               {...props}
             >
