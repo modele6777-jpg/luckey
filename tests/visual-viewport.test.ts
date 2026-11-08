@@ -371,3 +371,43 @@ test('manual screen reset survives navigation once without clearing saved data',
   assert.equal(data.get('conversation'), 'saved');
   assert.doesNotThrow(() => markAppScreenReset({ setItem() { throw Error('blocked'); } }));
 });
+
+test('rotation with a focused draft must not turn old portrait CSS height into a landscape keyboard', () => {
+  const rotating = {
+    iosStandalone: true, innerWidth: 951, innerHeight: 587,
+    layoutViewportHeight: 587, cssViewportWidth: 669, cssViewportHeight: 951,
+    orientation: 'landscape-primary', safeAreaTop: 82,
+    screenWidth: 457, screenHeight: 678,
+    visual: { width: 951, height: 587, offsetTop: 0, offsetLeft: 0 },
+  };
+  assert.equal(isKeyboardViewportOpen(rotating, true), false);
+  assert.equal(isKeyboardViewportOpen({ ...rotating, cssViewportWidth: 951 }, true), false);
+  const settled = { ...rotating, cssViewportWidth: 951, cssViewportHeight: 669 };
+  assert.equal(isKeyboardViewportOpen(settled, true), false);
+  assert.equal(resolveViewportBox(settled)?.height, 669);
+  assert.equal(isKeyboardViewportOpen({ ...settled, visual: { ...settled.visual, height: 280 } }, true), true);
+  const portrait = {
+    ...settled, innerWidth: 669, innerHeight: 869, layoutViewportHeight: 869,
+    cssViewportWidth: 669, cssViewportHeight: 951, orientation: 'portrait-primary',
+    visual: { width: 669, height: 869, offsetTop: 0, offsetLeft: 0 },
+  };
+  assert.equal(resolveViewportBox(portrait)?.height, 951);
+  assert.equal(isKeyboardViewportOpen(portrait, true), false);
+  assert.equal(isKeyboardViewportOpen({ ...portrait, visual: { ...portrait.visual, height: 400 } }, true), true);
+});
+
+
+test('reported landscape trace fills 669px despite a zero top safe area', () => {
+  const landscape = {
+    iosStandalone: true, innerWidth: 951, innerHeight: 587,
+    layoutViewportHeight: 587, cssViewportWidth: 951, cssViewportHeight: 669,
+    safeAreaTop: 0, orientation: 'landscape-secondary',
+    screenWidth: 457, screenHeight: 678,
+    visual: { width: 951, height: 587, offsetTop: 0, offsetLeft: 0 },
+  };
+  assert.equal(isKeyboardViewportOpen(landscape, false), false);
+  assert.equal(isKeyboardViewportOpen(landscape, true), false);
+  assert.equal(resolveViewportBox(landscape)?.height, 669);
+  assert.equal(resolveAppLayoutHeight(landscape), '669px');
+  assert.equal(resolveViewportBox({ ...landscape, cssViewportWidth: 669, cssViewportHeight: 951 })?.height, 587);
+});

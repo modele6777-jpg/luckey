@@ -41,6 +41,8 @@ export type ViewportSnapshot = {
   iosStandalone?: boolean;
   /** CSS large viewport is independent of stale JS height on installed WebKit. */
   cssViewportHeight?: number;
+  cssViewportWidth?: number;
+  orientation?: string;
   safeAreaTop?: number;
   screenWidth?: number;
   screenHeight?: number;
@@ -75,19 +77,37 @@ function roundPx(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-/** A standalone status-bar shrink can leave lvh exactly one top inset taller.
- * Use that full canvas only with an in-flow root, so WebKit cannot clip it to
- * the shorter fixed-position viewport. Other size disagreements stay bounded.
+/** WebKit can update the width and height of CSS viewport units on different
+ * rotation frames. A portrait height must never become a keyboard baseline
+ * for a landscape viewport merely because an input retained focus.
+ */
+function currentStandaloneCssHeight(snapshot: ViewportSnapshot): number | null {
+  if (!snapshot.iosStandalone) return null;
+  const height = positive(snapshot.cssViewportHeight);
+  if (height == null) return null;
+  const width = positive(snapshot.cssViewportWidth);
+  if (width != null && Math.abs(width - snapshot.innerWidth) >= VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX) return null;
+  if (snapshot.orientation?.startsWith('landscape') && height >= snapshot.innerWidth - 1) return null;
+  if (snapshot.orientation?.startsWith('portrait') && height <= snapshot.innerWidth + 1) return null;
+  return height;
+}
+
+/** Installed WebKit may reserve a strip even when rotated safe-area-top is 0.
+ * Prefer a full CSS canvas whose width and orientation match this frame. The
+ * in-flow root prevents fixed-position clipping. Missing CSS pairs retain the
+ * older inset-correlated fallback; screen dimensions are never a size source.
  */
 function installedLayoutBox(snapshot: ViewportSnapshot): ViewportBox | null {
   const clientHeight = positive(snapshot.layoutViewportHeight);
   const width = positive(snapshot.innerWidth);
   if (!snapshot.iosStandalone || clientHeight == null || width == null) return null;
-  const fullHeight = positive(snapshot.cssViewportHeight);
+  const fullHeight = currentStandaloneCssHeight(snapshot);
   const inset = positive(snapshot.safeAreaTop);
+  const pairedCssCanvas = positive(snapshot.cssViewportWidth) != null && fullHeight != null;
   const statusBarShrink = fullHeight != null && inset != null
     && fullHeight > clientHeight && Math.abs(fullHeight - clientHeight - inset) <= 2;
-  const height = statusBarShrink ? fullHeight! : clientHeight;
+  const height = pairedCssCanvas ? Math.max(clientHeight, fullHeight!)
+    : statusBarShrink ? fullHeight! : clientHeight;
   return { width: roundPx(width), height: roundPx(height), offsetTop: 0, offsetLeft: 0, bottomGap: 0 };
 }
 
@@ -126,7 +146,7 @@ export function resolveViewportBox(
   // innerHeight. Use that newer height only once both report the same width;
   // a visual viewport from the cover screen or previous orientation is unsafe.
   const sameWidth = Math.abs(visualWidth - layoutWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
-  const cssHeight = snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) : null;
+  const cssHeight = currentStandaloneCssHeight(snapshot);
   const height = Math.max(sameWidth ? Math.max(layoutHeight, visualHeight) : layoutHeight, cssHeight ?? 0);
   return coverScreenEdges(snapshot, {
     width: roundPx(layoutWidth),
@@ -162,7 +182,7 @@ export function isKeyboardViewportOpen(snapshot: ViewportSnapshot, inputActive: 
   if (!canUseKeyboardViewport(snapshot, inputActive)) return false;
   const visualHeight = snapshot.visual!.height;
   const installed = installedLayoutBox(snapshot);
-  let fullHeight = Math.max(installed?.height ?? snapshot.innerHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
+  let fullHeight = Math.max(installed?.height ?? snapshot.innerHeight, currentStandaloneCssHeight(snapshot) ?? 0);
   const sw = positive(snapshot.screenWidth);
   const sh = positive(snapshot.screenHeight);
   if (!installed && snapshot.iosStandalone && sw != null && sh != null) {
@@ -188,7 +208,7 @@ export function resolveAppLayoutHeight(snapshot: ViewportSnapshot): string {
   const visual = snapshot.visual;
   const sameWidth = visual && Math.abs(visual.width - snapshot.innerWidth) < VIEWPORT_KEYBOARD_MAX_WIDTH_DELTA_PX;
   // A stale, shorter visual viewport must not leave the layout bottom uncovered.
-  const measuredHeight = Math.max(layoutHeight, (sameWidth && positive(visual.height)) || layoutHeight, snapshot.iosStandalone ? positive(snapshot.cssViewportHeight) ?? 0 : 0);
+  const measuredHeight = Math.max(layoutHeight, (sameWidth && positive(visual.height)) || layoutHeight, currentStandaloneCssHeight(snapshot) ?? 0);
   return `max(100dvh, ${px(roundPx(measuredHeight))})`;
 }
 
@@ -367,11 +387,14 @@ export function readViewportSnapshot(win: Window): ViewportSnapshot {
   const visual = win.visualViewport;
   const iosStandalone = isIosStandaloneWindow(win);
   let cssViewportHeight: number | undefined;
+  let cssViewportWidth: number | undefined;
   if (iosStandalone && (win as Window & { CSS?: typeof CSS }).CSS?.supports('height', '100lvh')) {
     const probe = win.document.createElement('div');
-    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100lvh;visibility:hidden;pointer-events:none;contain:strict';
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:100lvw;height:100lvh;visibility:hidden;pointer-events:none;contain:strict';
     (win.document.body ?? win.document.documentElement).appendChild(probe);
-    cssViewportHeight = probe.getBoundingClientRect().height;
+    const cssRect = probe.getBoundingClientRect();
+    cssViewportHeight = cssRect.height;
+    cssViewportWidth = cssRect.width;
     probe.remove();
   }
   return {
@@ -380,6 +403,8 @@ export function readViewportSnapshot(win: Window): ViewportSnapshot {
     layoutViewportHeight: win.document.documentElement.clientHeight,
     iosStandalone,
     cssViewportHeight,
+    cssViewportWidth,
+    orientation: win.screen?.orientation?.type,
     safeAreaTop: iosStandalone ? readSafeAreaInsets(win.document).top : undefined,
     screenWidth: win.screen?.width,
     screenHeight: win.screen?.height,

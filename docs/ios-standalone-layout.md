@@ -33,3 +33,13 @@ Keep on-device confirmation separate from simulation results.
 Related observations:
 - https://bugs.webkit.org/show_bug.cgi?id=313800
 - https://github.com/cjnova/piclaw-monaco/blob/main/docs/PWA.md
+
+
+## Rotation update (1.7.239)
+
+The on-device landscape trace reports 951×587, CSS full height 669, and a
+**zero** top safe-area inset. Comparing the shortfall to the current top inset
+misses this case. The normal-flow canvas now uses paired CSS viewport width
+and height when they agree with the current width and orientation. A stale
+portrait CSS measurement must be rejected both for layout and keyboard checks.
+The diagnostic screen records both CSS dimensions and orientation for this.
