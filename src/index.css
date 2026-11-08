@@ -3268,3 +3268,15 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .sites-pinned-sidebar {
   position: absolute;
   top: 0;
 }
+
+/* The chat composer owns the lower edge; use its measured height instead of
+   a fixed rem offset. Installed Safari's FAB must share the in-flow canvas
+   with the composer, not the shorter fixed-position viewport. */
+@layer base {
+  html.in-lucy-chat .bottom-safe-fab-center {
+    bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height)) + 12px) !important;
+  }
+}
+html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
+  position: absolute !important;
+}

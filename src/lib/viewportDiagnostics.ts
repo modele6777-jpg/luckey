@@ -49,7 +49,7 @@ export function showViewportDiagnostics(resume = false): void {
       device: { userAgent: navigator.userAgent, standalone: (navigator as Navigator & { standalone?: boolean }).standalone, pixelRatio: devicePixelRatio, orientation: screen.orientation?.type },
       keyboard: document.documentElement.classList.contains('keyboard-open'),
       insets: Object.fromEntries(['--sat', '--sab', '--app-height', '--vvh', '--vv-top'].map(k => [k, style.getPropertyValue(k)])),
-      elements: Object.fromEntries(['html', 'body', '#root', '.prism-app-shell', '.sites-pinned-main', '.sites-pinned-sidebar', '.lucy-chat-shell', '.lucy-chat-footer'].map(k => [k, rect(k)])),
+      elements: Object.fromEntries(['html', 'body', '#root', '.prism-app-shell', '.sites-pinned-main', '.sites-pinned-sidebar', '.lucy-chat-shell', '.lucy-chat-footer', '.bottom-safe-fab-center'].map(k => [k, rect(k)])),
     };
     history.push(data);
     history = history.slice(-12);
