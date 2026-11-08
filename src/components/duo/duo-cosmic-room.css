@@ -6,11 +6,12 @@
   --room-card: #152238b3;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: clamp(18px, 3vw, 28px);
+  padding: clamp(12px, 2vw, 18px);
   overflow-y: auto;
   overscroll-behavior: contain;
   color: var(--room-ink);
@@ -24,36 +25,214 @@
   --room-card: #ffffffc4;
   background: radial-gradient(ellipse at 0% 0%, #e1edf7, transparent 70%), linear-gradient(160deg, #f5f9fd, #f6f4ee);
 }
-.cosmic-room-heading { flex-shrink: 0; padding: 2px 2px 0; }
-.cosmic-room-eyebrow { display: flex; align-items: center; gap: 7px; color: var(--room-gold); font-size: 10px; font-weight: 700; letter-spacing: .13em; }
-.cosmic-room-heading h2 { margin: 9px 0 5px; font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; letter-spacing: -.045em; }
-.cosmic-room-heading p, .cosmic-room-engine p { color: var(--room-muted); font-size: 12px; line-height: 1.65; }
-.cosmic-room-card { flex-shrink: 0; min-width: 0; border: 1px solid var(--room-line); border-radius: 22px; background: var(--room-card); padding: 18px; box-shadow: 0 6px 24px #243c5810; }
-.cosmic-room-visual { margin-block: auto; text-align: center; background-image: radial-gradient(ellipse at 50% 55%, #d4b87912, transparent 70%); }
-.cosmic-room-visual-heading, .cosmic-room-card-heading, .cosmic-room-tempo-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.cosmic-room-visual-heading { flex-wrap: wrap; }
-.cosmic-room-live, .cosmic-room-music, .cosmic-room-card-heading > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
-.cosmic-room-live { font-size: 11px; font-weight: 600; }
-.cosmic-room-live i { width: 6px; height: 6px; border-radius: 50%; background: #63a998; box-shadow: 0 0 0 4px #63a99814; }
-.cosmic-room-music { font-size: 10px; color: var(--room-muted); }
-.cosmic-room-stage { position: relative; display: grid; place-items: center; height: clamp(150px, 24vh, 220px); margin: 8px 0 2px; }
-.cosmic-room-stage canvas { position: absolute; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-.cosmic-room-stage-label { position: relative; font-size: 10px; line-height: 1.8; letter-spacing: .25em; color: var(--room-gold); }
-.cosmic-room-stage-label strong { font-size: 16px; letter-spacing: .12em; font-weight: 500; }
-.cosmic-room-caption { font-size: 14px; font-weight: 600; letter-spacing: -.025em; }
-.cosmic-room-note { margin-top: 5px; color: var(--room-muted); font-size: 11px; }
-.cosmic-room-card-heading { color: var(--room-gold); font-size: 11px; font-weight: 600; }
-.cosmic-room-count { color: var(--room-muted); font-variant-numeric: tabular-nums; font-size: 10px; }
-.cosmic-room-engine h3 { margin: 12px 0 5px; font-size: 15px; font-weight: 650; overflow-wrap: break-word; word-break: keep-all; }
-.cosmic-room-tempo-heading p { display: flex; align-items: baseline; gap: 6px; margin-top: 5px; }
-.cosmic-room-tempo-heading strong { font-size: 28px; line-height: 1.2; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.05em; }
-.cosmic-room-tempo-heading p span { color: var(--room-muted); font-size: 10px; letter-spacing: .08em; }
-.cosmic-room button { cursor: pointer; transition: background .18s, border-color .18s; }
-.cosmic-room button:focus-visible { outline: 2px solid var(--room-gold); outline-offset: 3px; }
-.cosmic-room-tap { min-height: 40px; padding: 9px 13px; border: 1px solid var(--room-line); border-radius: 12px; color: var(--room-gold); font-size: 11px; font-weight: 600; background: #b8905010; }
-.cosmic-room-tap:hover { background: #b8905020; }
-.cosmic-room-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 14px; }
-.cosmic-room-presets button { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 7px; min-height: 40px; border: 1px solid var(--room-line); border-radius: 11px; color: var(--room-muted); font-size: 11px; }
-.cosmic-room-presets small { font-size: 10px; opacity: .8; font-variant-numeric: tabular-nums; }
-.cosmic-room-presets button[aria-pressed=true] { border-color: #bd965455; color: var(--room-gold); background: #b890501a; font-weight: 700; }
-@media (prefers-reduced-motion: reduce) { .cosmic-room button { transition: none; } }
+.cosmic-room-card {
+  flex-shrink: 0;
+  min-width: 0;
+  border: 1px solid var(--room-line);
+  border-radius: 20px;
+  background: var(--room-card);
+  padding: 16px;
+  box-shadow: 0 4px 20px #243c580a;
+}
+.cosmic-room-visual {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  background-image: radial-gradient(ellipse at 50% 55%, #d4b87912, transparent 70%);
+}
+.cosmic-room-visual-heading,
+.cosmic-room-card-heading,
+.cosmic-room-tempo-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cosmic-room-live,
+.cosmic-room-music,
+.cosmic-room-card-heading > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cosmic-room-live {
+  font-size: 12px;
+  font-weight: 700;
+}
+.cosmic-room-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 4px #10b98118;
+}
+.cosmic-room-music-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--room-muted);
+  background: transparent;
+  border: none;
+  padding: 3px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color .2s, background .2s;
+}
+.cosmic-room-music-btn:hover {
+  color: var(--room-gold);
+  background: #b8905018;
+}
+.cosmic-room-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 120px;
+  margin: 4px 0;
+}
+.cosmic-room-stage canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.cosmic-room-stage-emblem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 1px solid #b8905030;
+  background: #b890500a;
+  backdrop-filter: blur(2px);
+  box-shadow: inset 0 0 12px #b8905015;
+}
+.cosmic-room-stage-emblem span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  color: var(--room-gold);
+}
+.cosmic-room-stage-emblem strong {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .28em;
+  color: var(--room-ink);
+  margin-top: 1px;
+}
+.cosmic-room-engine {
+  cursor: pointer;
+  transition: transform .12s, border-color .18s;
+}
+.cosmic-room-engine:active {
+  transform: scale(0.99);
+}
+.cosmic-room-card-heading {
+  color: var(--room-gold);
+  font-size: 11px;
+  font-weight: 700;
+}
+.cosmic-room-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--room-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+.cosmic-room-count:hover {
+  color: var(--room-gold);
+}
+.cosmic-room-engine h3 {
+  margin: 8px 0 4px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--room-ink);
+}
+.cosmic-room-engine p {
+  color: var(--room-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.cosmic-room-tempo-heading p {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 4px;
+}
+.cosmic-room-tempo-heading strong {
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.04em;
+  color: var(--room-ink);
+}
+.cosmic-room-tempo-heading p span {
+  color: var(--room-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.cosmic-room-binaural-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--room-line);
+  color: var(--room-ink);
+  background: #b8905012;
+  cursor: pointer;
+  transition: all .2s;
+}
+.cosmic-room-binaural-btn:hover {
+  border-color: #bd965488;
+  background: #b8905022;
+}
+.cosmic-room-binaural-btn.is-active {
+  border-color: #f59e0b;
+  color: #0f172a;
+  background: linear-gradient(135deg, #f59e0b, #eab308);
+  box-shadow: 0 2px 10px #f59e0b40;
+}
+.cosmic-room-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.cosmic-room-presets button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  border: 1px solid var(--room-line);
+  border-radius: 11px;
+  color: var(--room-muted);
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+  transition: all .18s;
+}
+.cosmic-room-presets button[aria-pressed=true] {
+  border-color: #bd965477;
+  color: var(--room-gold);
+  background: #b8905020;
+  font-weight: 800;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-room button { transition: none; }
+}

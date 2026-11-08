@@ -3618,6 +3618,7 @@ export interface DceEngineMeta {
   nameKo: string;
   icon: string;
   category: 'foundational' | 'deep_master';
+  summary?: string;
 }
 
 export const ALL_DCE_ENGINES: DceEngineMeta[] = [
