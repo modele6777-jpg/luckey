@@ -1613,6 +1613,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     return getCuratedPrompts(activeProfiles, selectedMode, activeChannels);
   });
 
+  // 🔄 루시 AI 모드 ↔ 마스터 모드 전환 시 하단 추천 질문 예시 1:1 실시간 즉시 동기화
+  useEffect(() => {
+    setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels));
+  }, [selectedMode, activeChannels, activeProfiles]);
+
   // sharedState 변경 시 내 프로필 정보 동기화 (사용자가 대화창에서 프로필을 직접 수정한 경우 덮어쓰지 않고 변경 상태 유지)
   useEffect(() => {
     if (hasUserCustomizedProfilesRef.current) return;
@@ -1892,9 +1897,9 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     return Array.from(new Set(combined.filter((p) => p && p.trim().length > 0)));
   }, [activeProfiles.length, selectedMode]);
 
-  // dynamicGhostPrompts가 준비되면 즉시 첫 예시 질문을 activeGhostPrompt의 기본값으로 동기화
+  // dynamicGhostPrompts가 준비되거나 모드가 바뀌면 즉시 첫 예시 질문을 activeGhostPrompt의 기본값으로 동기화
   useEffect(() => {
-    if (!currentGhostPromptRef.current && dynamicGhostPrompts.length > 0) {
+    if (dynamicGhostPrompts.length > 0) {
       currentGhostPromptRef.current = dynamicGhostPrompts[0];
       setActiveGhostPrompt(dynamicGhostPrompts[0]);
     }
