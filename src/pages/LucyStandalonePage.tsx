@@ -754,7 +754,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const isLight = resolvedTheme === 'light';
   const useWhiteTheme = false;
 
-  // 🌟 듀얼 화면 펼침 상태에서 우측 채널 선택 상태에 따른 좌측 루시 티어 자동 동기화
+  // 🌟 듀얼 화면 펼침 상태에서 좌측 채널 선택 상태에 따른 우측 루시 티어 자동 동기화
   useEffect(() => {
     if (!isDuoUnfolded) return;
     const cleanPath = (location || '').split('?')[0].split('#')[0] || '/';
@@ -763,8 +763,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     // 프로 모드가 활성화되어 있다면 프로 모드 유지
     if (lucyTier === 'pro') return;
 
-    // 우측 화면이 코스믹 룸(루시 선택)이면 좌측 루시는 'plus'
-    // 우측 화면이 KEY 또는 럭키 채널이면 좌측 루시는 'ai'
+    // 좌측 화면이 코스믹 룸(루시 선택)이면 우측 루시는 'plus'
+    // 좌측 화면이 KEY 또는 럭키 채널이면 우측 루시는 'ai'
     const targetTier: LucyTier = isLucyActiveInMenu ? 'plus' : 'ai';
     if (lucyTier !== targetTier) {
       setLucyTier(targetTier);

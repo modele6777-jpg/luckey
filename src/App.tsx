@@ -683,20 +683,15 @@ function AppContent() {
       <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? 'duo-dual-view flex flex-row' : 'flex flex-col'}`}>
         {isDuoUnfolded ? (
           <div className="w-full h-full flex flex-row min-h-0 overflow-hidden">
-            {/* 좌측 화면: 루시 채팅 상시 고정 (50%) */}
-            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden border-r border-white/10 z-10 relative">
-              <LucyStandalonePage />
-            </div>
-
-            {/* 우측 화면: 최우측 메뉴 및 빅뱅 버튼으로 오가는 채널 (50%) */}
-            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden relative">
+            {/* 좌측 화면: 최우측 메뉴 및 우측 빅뱅 버튼으로 컨트롤하는 채널 뷰포트 (50%) */}
+            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden border-r border-white/10 relative">
               {isLucyRoute ? (
-                /* 최우측 메뉴에서 루시 선택 시 ➔ 우측 화면에 코스믹 룸 표출 */
+                /* 최우측 메뉴에서 루시 선택 시 ➔ 좌측 화면에 코스믹 룸 표출 */
                 <div className="w-full h-full overflow-hidden flex flex-col">
                   <DuoCosmicAmbientRoom isLight={isLight} />
                 </div>
               ) : (
-                /* 최우측 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 우측 화면에 해당 페이지 표출 */
+                /* 최우측 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 좌측 화면에 해당 페이지 표출 */
                 <motion.div
                   key={location ? location.split('?')[0].split('#')[0] : '/'}
                   initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
@@ -707,6 +702,11 @@ function AppContent() {
                   <ActivePage loc={location} />
                 </motion.div>
               )}
+            </div>
+
+            {/* 우측 화면: 루시 채팅 상시 고정 (오른손 엄지 입력 최적화, 50%) */}
+            <div className="w-1/2 h-full min-w-0 flex flex-col overflow-hidden z-10 relative">
+              <LucyStandalonePage />
             </div>
           </div>
         ) : (
