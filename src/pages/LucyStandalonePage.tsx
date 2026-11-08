@@ -57,7 +57,7 @@ import {
 } from '@/lib/chatHistorySync';
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker } from '@/utils/tarotDetector';
-import { isDualPaneLayout } from '@/lib/perfMode';
+import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { buildLucyTarotReadingPrompt } from '@/lib/lucyTarotReading';
 import { getTodayDateKey } from '@/lib/dailyCache';
 import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
