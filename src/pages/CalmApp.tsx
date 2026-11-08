@@ -279,8 +279,19 @@ export default function CalmApp() {
     const updateLayout = () => {
       try {
         const html = frame?.contentDocument?.documentElement;
+        const body = frame?.contentDocument?.body;
         html?.classList.add('duo-parent-managed');
-        html?.classList.toggle('duo-parent-wide', isWideWorkspace);
+        const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
+        // 📱 좌측 화면(50vw)에서는 태블릿용 2열 가로 분할(duo-parent-wide)을 절대 켜지 않고 접힌 상태의 1열 단일 스택 뷰를 강제!
+        if (isDuo) {
+          html?.classList.add('duo-folded-view', 'duo-left-viewport');
+          body?.classList.add('duo-left-viewport');
+          html?.classList.remove('duo-parent-wide');
+        } else {
+          html?.classList.toggle('duo-parent-wide', isWideWorkspace);
+          html?.classList.remove('duo-folded-view', 'duo-left-viewport');
+          body?.classList.remove('duo-left-viewport');
+        }
       } catch { /* The iframe remains usable while its document is navigating. */ }
     };
     frame?.addEventListener('load', updateLayout);

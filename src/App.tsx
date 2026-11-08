@@ -726,7 +726,7 @@ function AppContent() {
             </div>
 
             {/* 루시 채팅창:
-                - 가로(Landscape): 우측 50vw (전체 화면 50%)
+                - 가로(Landscape): 우측 50vw (네비게이션 80px 제외 calc(50vw - 80px)로 정확히 채움)
                 - 세로(Portrait): 하단 50vh (전체 화면 50%)
                 - 다크 코스믹 테마 영구 보존 (.dark 강제 적용)
              */}
@@ -735,7 +735,7 @@ function AppContent() {
               style={
                 isDuoPortrait
                   ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%', flex: '0 0 50vh' }
-                  : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%', flex: '0 0 50vw' }
+                  : { width: 'calc(50vw - var(--sites-sidebar-width, 80px))', minWidth: 'calc(50vw - var(--sites-sidebar-width, 80px))', maxWidth: 'calc(50vw - var(--sites-sidebar-width, 80px))', height: '100%', flex: '1 1 0px' }
               }
               className="dark shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative"
             >
