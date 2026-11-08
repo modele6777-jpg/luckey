@@ -715,16 +715,13 @@ function getCuratedPrompts(
 const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
 
 export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
-  // 🌟 Lucy + 진화 상태 머신: 접힘 시 AI 모드 기본, 듀오 펼침 시 마스터 모드(Lucy +) 기본 자동 진화
+  // 🌟 Lucy + 진화 상태 머신: 사용자가 상단 Lucy + 배지를 누르거나 명시적으로 진화시킬 때만 발동 (접힘/펼침 폼팩터와 무관하게 동일한 동작 보장)
   const [isPlusMode, setIsPlusMode] = useState<boolean>(() => {
     if (pro) return true;
     try {
       if (typeof window !== 'undefined') {
         const search = window.location.search || '';
         if (search.includes('mode=plus') || search.includes('mode=pro')) return true;
-        // 듀오 펼침 상태(640px 이상 또는 dual-pane) 첫 진입 시 마스터 모드 기본 발동
-        const isWide = isDualPaneLayout() || window.innerWidth >= 640;
-        if (isWide) return true;
       }
       return safeLocalStorage.getItem('lucy_plus_active') === 'true' || safeSessionStorage.getItem('lucy_plus_active') === 'true';
     } catch {
@@ -997,7 +994,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
   }, []);
 
-  // 📱 메인 본문 캔버스 실측 너비 기준 iPhone Duo 접힘 / 펼침 (Dual-Pane) 반응형 감지 및 모드 자동 연동
+  // 📱 메인 본문 캔버스 실측 너비 기준 iPhone Duo 접힘 / 펼침 (Dual-Pane) 레이아웃 반응형 감지 (빅뱅 버튼 기능과 루시 모드는 접힘/펼침과 무관하게 100% 동일하게 유지)
   const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
     if (typeof window === 'undefined') return false;
     return isDualPaneLayout() || window.innerWidth >= 640;
@@ -1007,28 +1004,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout() || window.innerWidth >= 640;
-      setIsDuoUnfolded((prev) => {
-        if (prev !== unfolded) {
-          if (unfolded) {
-            // 듀오 펼침 감지: 마스터 모드(Lucy +) 기본 자동 발동
-            setIsPlusMode(true);
-            safeLocalStorage.setItem('lucy_plus_active', 'true');
-            safeSessionStorage.setItem('lucy_plus_active', 'true');
-            triggerHaptic('whitehole');
-            setModeSwitchToast(`👑 듀오 펼침 감지 · ${ALL_DCE_ENGINES.length}대 마스터 모드 가동`);
-            setTimeout(() => setModeSwitchToast(null), 2200);
-          } else {
-            // 듀오 접힘 감지: 일반 루시 AI 모드 기본 자동 복귀
-            setIsPlusMode(false);
-            safeLocalStorage.removeItem('lucy_plus_active');
-            safeSessionStorage.removeItem('lucy_plus_active');
-            triggerHaptic('whitehole');
-            setModeSwitchToast('✨ 듀오 접힘 감지 · 루시 AI 모드 복귀');
-            setTimeout(() => setModeSwitchToast(null), 2000);
-          }
-        }
-        return unfolded;
-      });
+      setIsDuoUnfolded(unfolded);
     };
     handleLayoutChange();
     window.addEventListener('resize', handleLayoutChange, { passive: true });

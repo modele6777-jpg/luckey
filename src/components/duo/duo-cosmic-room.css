@@ -88,45 +88,23 @@
 }
 .cosmic-room-stage {
   position: relative;
-  display: grid;
-  place-items: center;
-  flex: 1;
-  min-height: 120px;
-  margin: 4px 0;
+  display: block;
+  width: 100%;
+  min-height: 180px;
+  height: 180px;
+  margin: 6px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #b8905025;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(184, 144, 80, 0.08);
 }
 .cosmic-room-stage canvas {
   position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
-}
-.cosmic-room-stage-emblem {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border: 1px solid #b8905030;
-  background: #b890500a;
-  backdrop-filter: blur(2px);
-  box-shadow: inset 0 0 12px #b8905015;
-}
-.cosmic-room-stage-emblem span {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .24em;
-  color: var(--room-gold);
-}
-.cosmic-room-stage-emblem strong {
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .28em;
-  color: var(--room-ink);
-  margin-top: 1px;
 }
 .cosmic-room-engine {
   cursor: pointer;

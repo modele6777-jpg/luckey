@@ -300,6 +300,19 @@ export function isDailyTarotConcern(text: string): boolean {
   return /(?:오늘의?\s*타로|오늘의?\s*운세|오늘의?\s*카드|오늘\s*타로|오늘\s*운세|데일리\s*타로|데일리\s*오라클|일일\s*타로|daily\s*tarot|daily\s*oracle|^오늘$|^daily$)/i.test(t);
 }
 
+export function isEffectiveDailyTarot(
+  concern?: string | null,
+  customSpread?: any | null,
+  recommendation?: any | null
+): boolean {
+  if (concern && isDailyTarotConcern(concern)) return true;
+  if (customSpread?.theme === 'daily' || customSpread?.id === 'daily_oracle') return true;
+  if (customSpread?.name && /오늘의\s*타로|데일리\s*타로/i.test(customSpread.name)) return true;
+  if (recommendation?.theme === 'daily' || recommendation?.id === 'daily_oracle') return true;
+  if (recommendation?.name && /오늘의\s*타로|데일리\s*타로/i.test(recommendation.name)) return true;
+  return false;
+}
+
 function cleanTarotOption(raw: string): string {
   return raw
     .replace(/^[「『"'\s]+/, '')
@@ -869,13 +882,6 @@ export const POPULAR_TAROT_SPREAD_PRESETS = [
     cardCount: 4,
     desc: '지친 마음 어루만짐 & 내면 아이와의 화해와 영혼 치유',
     defaultPrompt: '내 지친 마음과 내면 아이의 상처를 치유하고 평온을 되찾는 길을 알려줘',
-  },
-  {
-    theme: 'daily' as const,
-    name: '🌟 오늘의 타로 (원카드)',
-    cardCount: 1,
-    desc: '오늘 하루의 우주적 기운과 일일 오라클 계시',
-    defaultPrompt: '오늘의 타로',
   },
   {
     theme: 'saju' as const,

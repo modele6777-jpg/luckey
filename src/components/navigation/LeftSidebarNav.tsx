@@ -418,7 +418,10 @@ export default function LeftSidebarNav() {
       data-theme={isLight ? 'light' : 'dark'}
       className="sites-pinned-sidebar z-[398] flex flex-col select-none border-l"
     >
-              <div className="refined-menu-list flex-1 overflow-y-auto no-scrollbar">
+              <div
+                className="refined-menu-list flex-1 overflow-y-auto no-scrollbar"
+                data-channels-open={isChannelsOpen ? 'true' : 'false'}
+              >
                 <div className="refined-menu-content">
                   {CORE_CHANNELS.map(renderNavButton)}
                   {/* 🍀 우측 메뉴 네잎클로버 버튼: 접힘/펼침 화면 모두 일관되게 제공 (펼침 기본: 펼쳐짐, 접힘 기본: 접힘) */}
