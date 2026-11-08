@@ -240,6 +240,9 @@ import { calculateJohnStuartMillOnLibertyIndividuality, formatJohnStuartMillOnLi
 import { calculateFrenchJeanJacquesRousseauNatureAuthenticity, formatJeanJacquesRousseauNatureAuthenticityPrompt, FRENCH_JJ_ROUSSEAU_VERSION } from '../src/lib/divination/frenchJeanJacquesRousseauNatureAuthenticityEngine';
 import { calculateGermanJohannWolfgangGoetheFaustStriving, formatJohannWolfgangGoetheFaustStrivingPrompt, GERMAN_GOETHE_FAUST_VERSION } from '../src/lib/divination/germanJohannWolfgangGoetheFaustStrivingEngine';
 import { calculateItalianDanteAlighieriDivineComedyAscent, formatDanteAlighieriDivineComedyAscentPrompt, ITALIAN_DANTE_COMEDY_VERSION } from '../src/lib/divination/italianDanteAlighieriDivineComedyAscentEngine';
+import { calculateMarcusAureliusMeditationsCitadel, formatMarcusAureliusMeditationsCitadelPrompt, ROMAN_MARCUS_AURELIUS_VERSION } from '../src/lib/divination/romanMarcusAureliusMeditationsCitadelEngine';
+import { calculateSuunChoeJeuDonghakSicheonju, formatSuunChoeJeuDonghakSicheonjuPrompt, KOREAN_SUUN_CHOE_JEU_VERSION } from '../src/lib/divination/koreanSuunChoeJeuDonghakSicheonjuEngine';
+import { calculateRalphWaldoEmersonSelfReliance, formatRalphWaldoEmersonSelfReliancePrompt, AMERICAN_RALPH_WALDO_EMERSON_VERSION } from '../src/lib/divination/americanRalphWaldoEmersonSelfRelianceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4862,6 +4865,48 @@ test('Dante Alighieri Divine Comedy Ascent Engine: calculates Wayfinding, Infern
   const prompt = formatDanteAlighieriDivineComedyAscentPrompt(rep);
   assert(prompt.includes('단테 알리기에리 《신곡》 영혼의 상승 & 지옥·연옥·천국 지혜 지표'));
   assert(prompt.includes(rep.activeDanteTheme.themeTitleKo));
+});
+
+test('Marcus Aurelius Meditations Citadel Engine: calculates Inner Citadel, Logos Providence, and Apatheia Serenity', () => {
+  const rep = calculateMarcusAureliusMeditationsCitadel(profile);
+  assert.equal(rep.engineVersion, ROMAN_MARCUS_AURELIUS_VERSION);
+  assert(rep.innerCitadelResilienceScore >= 0 && rep.innerCitadelResilienceScore <= 100);
+  assert(rep.logosProvidenceAlignmentScore >= 0 && rep.logosProvidenceAlignmentScore <= 100);
+  assert(rep.mementoMoriClarityQuotient >= 0 && rep.mementoMoriClarityQuotient <= 100);
+  assert(rep.koinoniaCosmopolitanDutyScore >= 0 && rep.koinoniaCosmopolitanDutyScore <= 100);
+  assert(rep.apatheiaSerenityIndex >= 0 && rep.apatheiaSerenityIndex <= 100);
+  assert(rep.activeMeditationsTheme.themeTitleKo.length > 0);
+  const prompt = formatMarcusAureliusMeditationsCitadelPrompt(rep);
+  assert(prompt.includes('마르쿠스 아우렐리우스 《명상록》 내면의 성채 & 스토아 실존 평정 지표'));
+  assert(prompt.includes(rep.activeMeditationsTheme.themeTitleKo));
+});
+
+test('Suun Choe Je-u Donghak Sicheonju Engine: calculates Sicheonju Dignity, Sainyeocheon Reverence, and Hucheon Gaebyeok', () => {
+  const rep = calculateSuunChoeJeuDonghakSicheonju(profile);
+  assert.equal(rep.engineVersion, KOREAN_SUUN_CHOE_JEU_VERSION);
+  assert(rep.sicheonjuDignityScore >= 0 && rep.sicheonjuDignityScore <= 100);
+  assert(rep.sainyeocheonReverenceQuotient >= 0 && rep.sainyeocheonReverenceQuotient <= 100);
+  assert(rep.osimJeukYeosimEmpathyScore >= 0 && rep.osimJeukYeosimEmpathyScore <= 100);
+  assert(rep.susimJeonggiEquanimityScore >= 0 && rep.susimJeonggiEquanimityScore <= 100);
+  assert(rep.hucheonGaebyeokPioneerScore >= 0 && rep.hucheonGaebyeokPioneerScore <= 100);
+  assert(rep.activeDonghakTheme.themeTitleKo.length > 0);
+  const prompt = formatSuunChoeJeuDonghakSicheonjuPrompt(rep);
+  assert(prompt.includes('수운 최제우 《동경대전》 시천주 & 사인여천 영성 존엄 및 후천개벽 지표'));
+  assert(prompt.includes(rep.activeDonghakTheme.themeTitleKo));
+});
+
+test('Ralph Waldo Emerson Self-Reliance Engine: calculates Self-Reliance Autonomy, Over-Soul Divine, and Creative Originality', () => {
+  const rep = calculateRalphWaldoEmersonSelfReliance(profile);
+  assert.equal(rep.engineVersion, AMERICAN_RALPH_WALDO_EMERSON_VERSION);
+  assert(rep.selfRelianceAutonomyScore >= 0 && rep.selfRelianceAutonomyScore <= 100);
+  assert(rep.overSoulDivineConnectionScore >= 0 && rep.overSoulDivineConnectionScore <= 100);
+  assert(rep.nonconformistAuthenticityQuotient >= 0 && rep.nonconformistAuthenticityQuotient <= 100);
+  assert(rep.natureSpiritualRenewalScore >= 0 && rep.natureSpiritualRenewalScore <= 100);
+  assert(rep.creativeOriginalityPowerIndex >= 0 && rep.creativeOriginalityPowerIndex <= 100);
+  assert(rep.activeEmersonTheme.themeTitleKo.length > 0);
+  const prompt = formatRalphWaldoEmersonSelfReliancePrompt(rep);
+  assert(prompt.includes('랠프 월도 에머슨 《자기신뢰》 & 《자연》 오버소울 비순응 자립 지표'));
+  assert(prompt.includes(rep.activeEmersonTheme.themeTitleKo));
 });
 
 

@@ -1015,5 +1015,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "italianDanteAlighieriDivineComedyAscent": {
     "field": "italianDanteAlighieriDivineComedyAscentResult",
     "traceKey": "italianDanteAlighieriDivineComedyAscentResult"
+  },
+  "romanMarcusAureliusMeditationsCitadel": {
+    "field": "marcusAureliusMeditationsCitadelResult",
+    "traceKey": "marcusAureliusMeditationsCitadelResult"
+  },
+  "koreanSuunChoeJeuDonghakSicheonju": {
+    "field": "suunChoeJeuDonghakSicheonjuResult",
+    "traceKey": "suunChoeJeuDonghakSicheonjuResult"
+  },
+  "americanRalphWaldoEmersonSelfReliance": {
+    "field": "ralphWaldoEmersonSelfRelianceResult",
+    "traceKey": "ralphWaldoEmersonSelfRelianceResult"
   }
 };
