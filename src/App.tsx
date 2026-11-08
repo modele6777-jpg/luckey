@@ -701,8 +701,8 @@ function AppContent() {
               id="duo-content-viewport"
               style={
                 isDuoPortrait
-                  ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%' }
-                  : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%' }
+                  ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%', flex: '0 0 50vh' }
+                  : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%', flex: '0 0 50vw' }
               }
               className={`duo-folded-view shrink-0 flex flex-col overflow-hidden relative ${isDuoPortrait ? 'border-b border-white/10' : 'border-r border-white/10'}`}
             >
@@ -726,11 +726,19 @@ function AppContent() {
             </div>
 
             {/* 루시 채팅창:
-                - 가로(Landscape): 우측 50vw
-                - 세로(Portrait): 하단 50vh
+                - 가로(Landscape): 우측 50vw (전체 화면 50%)
+                - 세로(Portrait): 하단 50vh (전체 화면 50%)
                 - 다크 코스믹 테마 영구 보존 (.dark 강제 적용)
              */}
-            <div id="duo-lucy-viewport" className="dark flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden z-10 relative">
+            <div
+              id="duo-lucy-viewport"
+              style={
+                isDuoPortrait
+                  ? { height: '50vh', minHeight: '50vh', maxHeight: '50vh', width: '100%', flex: '0 0 50vh' }
+                  : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%', flex: '0 0 50vw' }
+              }
+              className="dark shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative"
+            >
               <LucyStandalonePage />
             </div>
           </div>
