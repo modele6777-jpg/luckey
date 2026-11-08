@@ -1,4 +1,5 @@
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
+import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { queueChatForward, takeChatForward, forwardedChatPrompt } from '@/lib/lucyChatForward';
@@ -741,7 +742,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const isMasterMode = pro || lucyTier === 'pro';
   const isPlusMode = lucyTier === 'plus' || lucyTier === 'pro';
   const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
-  const [modeTransitionDirection, setModeTransitionDirection] = useState<'deepen' | 'dim'>('deepen');
 
   const previousPlusMode = useRef(isPlusMode);
   useEffect(() => {
@@ -761,7 +761,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeLocalStorage.setItem('lucy_tier_mode', 'pro');
       safeSessionStorage.setItem('lucy_tier_mode', 'pro');
       setLucyTier('pro');
-      setModeTransitionDirection('deepen');
       setModeTransitioningTier('pro');
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
@@ -780,7 +779,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
       setLucyTier(validTarget);
-      setModeTransitionDirection('dim');
       setModeTransitioningTier(validTarget === 'plus' ? 'plus' : 'pro');
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
@@ -795,7 +793,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         const next: LucyTier = prev === 'pro' ? (isWide ? 'plus' : 'ai') : 'pro';
         safeLocalStorage.setItem('lucy_tier_mode', next);
         safeSessionStorage.setItem('lucy_tier_mode', next);
-        setModeTransitionDirection(prev === 'pro' ? 'dim' : 'deepen');
         setModeTransitioningTier(prev === 'pro' ? 'pro' : next);
         setTimeout(() => setModeTransitioningTier(null), 550);
         triggerHaptic('whitehole');
@@ -1051,7 +1048,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           setLucyTier((currentTier) => {
             // 👑 Lucy Pro 상태: 펼치면 Lucy+ Pro 진해짐, 접으면 진해졌던 + Pro가 다시 옅어짐!
             if (currentTier === 'pro') {
-              setModeTransitionDirection(unfolded ? 'deepen' : 'dim');
               setModeTransitioningTier('pro');
               setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
@@ -1067,7 +1063,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             if (unfolded) {
               safeLocalStorage.setItem('lucy_tier_mode', 'plus');
               safeSessionStorage.setItem('lucy_tier_mode', 'plus');
-              setModeTransitionDirection('deepen');
               setModeTransitioningTier('plus');
               setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
@@ -1077,7 +1072,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             } else {
               safeLocalStorage.setItem('lucy_tier_mode', 'ai');
               safeSessionStorage.setItem('lucy_tier_mode', 'ai');
-              setModeTransitionDirection('dim');
               setModeTransitioningTier('plus');
               setTimeout(() => setModeTransitioningTier(null), 550);
               triggerHaptic('whitehole');
@@ -2835,17 +2829,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     URL.revokeObjectURL(url);
   };
 
-  if (modeTransitioningTier !== null) {
-    return (
-      <LucyAuraLoader
-        fullScreen
-        tier={modeTransitioningTier}
-        isUnfolded={isDuoUnfolded}
-        fadeDirection={modeTransitionDirection}
-      />
-    );
-  }
-
   if (!isLucyReady) {
     return (
       <LucyAuraLoader
@@ -2858,15 +2841,16 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   return (
     <div
-      className={`lucy-chat-shell ${isPlusMode ? 'is-plus-mode' : ''} lucy-night h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
+      className={`lucy-chat-shell ${isMasterMode ? 'is-pro-theme' : ''} lucy-night h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
       style={{
         overflowX: 'hidden',
         maxWidth: '100vw',
         touchAction: 'pan-y',
       }}
     >
-      {/* 🌌 Animated Cosmic Background: Night Sky Starlight (Lucy) <-> Clover Aura (Lucy +) */}
-      <LucyCosmicBackground isPlusMode={isPlusMode} />
+      {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
+      <LucyCosmicBackground isProMode={isMasterMode} />
+      <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={isDuoUnfolded} isProMode={isMasterMode} />
 
       {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>
@@ -2917,7 +2901,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         setLucyTier(next);
                         safeLocalStorage.setItem('lucy_tier_mode', next);
                         safeSessionStorage.setItem('lucy_tier_mode', next);
-                        setModeTransitionDirection(lucyTier === 'pro' ? 'dim' : 'deepen');
                         setModeTransitioningTier(lucyTier === 'pro' ? 'pro' : next);
                         setTimeout(() => setModeTransitioningTier(null), 550);
                         triggerHaptic('whitehole');

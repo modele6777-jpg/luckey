@@ -1,16 +1,43 @@
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 
-export function LucyModeTransition({ target }: { target: 'lucy' | 'plus' }) {
-  if (typeof document === 'undefined') return null;
+interface ModeAppearance { plus: boolean; pro: boolean }
+interface LucyModeTransitionProps { active: boolean; isPlusMode: boolean; isProMode: boolean }
+
+/** Keep the name still; animate only the mode markers that actually change. */
+export function LucyModeTransition({ active, isPlusMode, isProMode }: LucyModeTransitionProps) {
+  const previous = useRef<ModeAppearance>({ plus: isPlusMode, pro: isProMode });
+  const [change, setChange] = useState(() => ({ from: previous.current, to: previous.current }));
+  useLayoutEffect(() => {
+    const to = { plus: isPlusMode, pro: isProMode };
+    const from = previous.current;
+    if (from.plus === to.plus && from.pro === to.pro) return;
+    previous.current = to;
+    setChange({ from, to });
+  }, [isPlusMode, isProMode]);
+
+  if (!active || typeof document === 'undefined') return null;
+  const name = `Lucy${isPlusMode ? ' +' : ''}${isProMode ? ' Pro' : ''}`;
+  const markerStyle = (marker: keyof ModeAppearance) => ({
+    '--lucy-marker-from': change.from[marker] ? 1 : 0.08,
+    '--lucy-marker-to': change.to[marker] ? 1 : 0.08,
+  }) as CSSProperties;
+  const markerDirection = (marker: keyof ModeAppearance) => change.from[marker] === change.to[marker]
+    ? 'steady' : change.to[marker] ? 'in' : 'out';
+
   return createPortal(
-    <div className="lucy-mode-transition" data-lucy-mode-transition={target} role="status" aria-live="polite" aria-busy="true">
-      <div className="lucy-mode-transition-card">
-        <span className="lucy-mode-transition-ring" aria-hidden="true" />
-        <strong className="lucy-transition-wordmark" aria-label={target === 'plus' ? 'Lucy +' : 'Lucy'}>
-          Lucy<span className="lucy-transition-plus" aria-hidden="true">+</span>
-        </strong>
-        <span>{target === 'plus' ? '마스터 모드로 전환하고 있어요' : '일반 모드로 돌아가고 있어요'}</span>
-      </div>
-    </div>, document.body
+    <div className="lucy-mode-transition" role="status" aria-label={`${name} 모드로 전환 중`} aria-live="polite" aria-busy="true">
+      <strong className="lucy-transition-wordmark" aria-hidden="true">
+        Lucy
+        <span className="lucy-transition-markers">
+          {(change.from.plus || change.to.plus) && (
+            <span key={`plus-${change.from.plus}-${change.to.plus}`} className="lucy-transition-marker" data-marker="plus" data-direction={markerDirection('plus')} style={markerStyle('plus')}>+</span>
+          )}
+          {(change.from.pro || change.to.pro) && (
+            <span key={`pro-${change.from.pro}-${change.to.pro}`} className="lucy-transition-marker lucy-transition-pro" data-marker="pro" data-direction={markerDirection('pro')} style={markerStyle('pro')}>Pro</span>
+          )}
+        </span>
+      </strong>
+    </div>, document.body,
   );
 }
