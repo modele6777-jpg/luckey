@@ -15,7 +15,7 @@
 
 import type { DivinationToolId } from '../fifteenDivinationTools';
 import type { UserProfile } from '../sharedState';
-import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, type DeterministicEngineReport } from './deterministicEngine';
+import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, type DeterministicEngineReport, ALL_DCE_ENGINES } from './deterministicEngine';
 
 export type QuestionIntentCategory =
   | 'career_strategy'     // 이직, 퇴사, 승진, 진로, 커리어, 시험
@@ -35,6 +35,9 @@ export interface AgentRoutePlan {
   intentKoName: string;
   confidence: number; // 0.0 ~ 1.0
   targetTools: DivinationToolId[];
+  deepEngineKeys?: string[];
+  deepEnginesKo?: string[];
+  deepEngineGuidance?: string;
   routingReason: string;
   suggestedFocusPrompt: string;
   isMasterMobilization: boolean;
@@ -84,6 +87,8 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '가벼운 일상 수다',
       confidence: 0.99,
       targetTools: [],
+      deepEngineKeys: [],
+      deepEnginesKo: [],
       routingReason: '일상적 인사말 및 가벼운 티키타카',
       suggestedFocusPrompt: '가벼운 수다 모드로 다정하고 편안하게 맞이해 줘.',
       isMasterMobilization: false,
@@ -101,6 +106,9 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '올인원 마스터 종합 청사진',
       confidence: 0.98,
       targetTools: ['saju', 'astrology', 'ziwei', 'sukuyo', 'vedic', 'iching', 'liuren', 'qimen', 'mahabote', 'kyusei'],
+      deepEngineKeys: ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => e.key),
+      deepEnginesKo: ['246대 전원 총동원'],
+      deepEngineGuidance: '동서양 246대 운명학 및 철학 엔진의 산출값과 상징적 관점을 종합적으로 검토하여 입체적 통찰 제시',
       routingReason: '요청한 종합 상담에 필요한 도구의 계산 결과 비교',
       suggestedFocusPrompt: '인생의 큰 흐름(대운)부터 구체적 사건과 오늘의 타이밍까지 7대 테마별로 균형 있게 조망해 줘.',
       isMasterMobilization: true,
@@ -116,6 +124,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '이직·커리어 돌파 & 15대 신살 슈퍼파워',
       confidence: 0.94,
       targetTools: ['saju', 'ziwei', 'qimen'],
+      deepEngineKeys: [
+        'italianMachiavelliVirtuFortuna',
+        'koreanRyuSeongryongJingbirok',
+        'swissJungIndividuationArchetype',
+        'koreanDasanJeongYagyongMokminSimseo',
+        'germanNietzscheZarathustraAmorFati',
+        'specialStarsMatrix',
+      ],
+      deepEnginesKo: [
+        '마키아벨리 비르투·포르투나',
+        '류성룡 징비록',
+        '칼 융 개성화 원형',
+        '정약용 목민심서',
+        '니체 아모르파티',
+        '15대 신살 슈퍼파워',
+      ],
+      deepEngineGuidance: '마키아벨리의 현실적 역경 돌파(비르투), 류성룡의 징비록적 위기 대비, 칼 융의 개성화 소명, 정약용의 실사구시 및 니체의 운명애(아모르파티) 관점을 사주 원국과 결합하여 날카로운 커리어 돌파구를 처방해 줘.',
       routingReason: '15대 신살(천을귀인/괴강/백호/도화 등) 위치별 현대적 슈퍼파워 × 자미두수 유년 사화 비성 × 기문둔갑 개문 융합',
       suggestedFocusPrompt: '사주 4개 기둥(년/월/일/시)에 포진한 신살을 고전적 흉살이 아닌 독점적 전문성과 천재적 직업 무기(슈퍼파워)로 승화하여, 커리어와 비즈니스에서 압도적 우위를 점할 수 있는 실천 전략을 명쾌하게 처방해 줘.',
       isMasterMobilization: false,
@@ -131,6 +156,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '재물·사업·투자 흐름',
       confidence: 0.91,
       targetTools: ['saju', 'ziwei', 'kyusei'],
+      deepEngineKeys: [
+        'wealthPipeline',
+        'contractShield',
+        'strategicLeverage',
+        'britishFrancisBaconNovumOrganum',
+        'italianThomasAquinasSummaTheologiae',
+        'instantDecision',
+      ],
+      deepEnginesKo: [
+        '부의 파이프라인',
+        '계약·협상 실드',
+        '전략적 레버리지',
+        '베이컨 신기관(실증·혁신)',
+        '토마스 아퀴나스 가치분별',
+        '시가팔문 즉시결단',
+      ],
+      deepEngineGuidance: '부의 파이프라인과 계약 실드 방어선, 베이컨의 실증적 우상 타파와 아퀴나스의 정당한 가치 분별을 통해 요행이 아닌 지속 가능한 현실 자산 증식 로드맵을 제시해 줘.',
       routingReason: '사주 재성(정재/편재)의 크기와 자미두수 재백궁 성향, 구성학의 재물 공간·방위 에너지 융합',
       suggestedFocusPrompt: '요행을 바라는 투기성 예측을 지양하고, 타고난 재물 그릇과 안정적 자산 축적 원칙, 사업 확장의 유리한 타이밍을 짚어 줘.',
       isMasterMobilization: false,
@@ -146,6 +188,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '연애·궁합·대화 속 인연 듀얼 매트릭스',
       confidence: 0.96,
       targetTools: ['saju', 'sukuyo', 'astrology'],
+      deepEngineKeys: [
+        'contextualSynastry',
+        'destinySynastryEcho',
+        'swissJungIndividuationArchetype',
+        'koreanChusaKimJeonghuiSehando',
+        'frenchPascalPenseesHeartReason',
+        'islamicSufiRumiMasnaviDivineLove',
+      ],
+      deepEnginesKo: [
+        '대화 인연 동적궁합',
+        '운명 공명 에코',
+        '융 아니마·아니무스 원형',
+        '추사 김정희 세한도(진정한 인연)',
+        '파스칼 팡세(심장의 이성)',
+        '루미 마스나비(신성한 사랑)',
+      ],
+      deepEngineGuidance: '칼 융의 아니마/아니무스 투사와 통합, 추사 세한도의 시련 속 변치 않는 인연의 진가, 파스칼의 심장의 이성 및 루미의 영혼 사랑을 바탕으로 관계의 본질과 화해·발전의 지혜를 풀어줘.',
       routingReason: '사주 일간 천간합·지지육합·오행보완도 × 숙요경 27숙 6대 카르마(영친/안괴/업태) × 점성술 시나스트리 듀얼 매트릭스 백그라운드 융합',
       suggestedFocusPrompt: '두 사람 사이의 천간합·지지육합과 오행 상호 보완도, 숙요경 27숙 인연 관계와 점성술 원소 호환성을 바탕으로 끌림의 본질과 관계 발전의 지혜를 입체적으로 풀어줘.',
       isMasterMobilization: false,
@@ -161,6 +220,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '즉시 결단·매화역수 & 기문둔갑 시가팔문',
       confidence: 0.95,
       targetTools: ['iching', 'qimen', 'liuren'],
+      deepEngineKeys: [
+        'instantDecision',
+        'iching384Yao',
+        'danishKierkegaardStagesOfLife',
+        'frenchDescartesCogitoClaraDistincta',
+        'germanKantCategoricalImperativeSynthesis',
+        'ancientChineseSunTzuArtOfWarStrategy',
+      ],
+      deepEnginesKo: [
+        '시가팔문 즉시결단',
+        '주역 384효 동효변괘',
+        '키르케고르 실존적 결단',
+        '데카르트 명징한 사유',
+        '칸트 정언명령',
+        '손자병법 승리전략',
+      ],
+      deepEngineGuidance: '매화역수·시가팔문의 시공간 괘상과 키르케고르의 주체적 실존 결단, 데카르트의 명징한 분별 및 손자병법의 득실 판단을 결합해 지금 당장 취할 단호한 행동 지침을 제시해 줘.',
       routingReason: '소강절 매화역수 시간작괘(본괘·호괘·변괘 체용 생극) × 기문둔갑 시가 8문(생문·개문·휴문 등) 실시간 수리 연산',
       suggestedFocusPrompt: '실시간 타임스탬프로 도출된 매화역수 본괘·호괘·변괘의 체용 생극과 기문둔갑 시가팔문의 문턱을 근거로, 지금 밀어붙여야 할지(Strong Go) 멈추고 조율해야 할지(Wait) 명쾌하고 단호한 행동 지침을 제시해 줘.',
       isMasterMobilization: false,
@@ -176,6 +252,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '실시간 일진·행성 트랜짓 동기화',
       confidence: 0.94,
       targetTools: ['saju', 'astrology'],
+      deepEngineKeys: [
+        'chronoTransit',
+        'vitalityCurve',
+        'biorhythmPeakFlow',
+        'synchronicityOmen',
+        'specialStarsMatrix',
+        'taoistNeidanMeridian',
+      ],
+      deepEnginesKo: [
+        '실시간 행성 트랜짓',
+        '24시간 에너지곡선',
+        '바이오리듬 피크',
+        '칼 융 동시성 오멘',
+        '15대 신살',
+        '도교 내단 경락시계',
+      ],
+      deepEngineGuidance: '오늘 현재의 하늘 배치와 24시간 에너지 조위 곡선, 칼 융의 동시성 징조를 종합하여 오늘 이 시각 가장 에너지가 응축되는 골든타임과 피해야 할 함정을 짚어 줘.',
       routingReason: '오늘의 만세력 일진(십신·지지합충)과 실시간 하늘의 행성 트랜짓(달 위상·주요 아스펙트) 동시 동기화',
       suggestedFocusPrompt: '오늘 현재의 살아있는 일진 간지와 하늘의 행성 배치를 출생 차트와 실시간 대조하여, 오늘 지금 이 순간 가장 유리한 흐름과 주의점을 명쾌하게 짚어 줘.',
       isMasterMobilization: false,
@@ -191,6 +284,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '10년 대운·12개월 월운 타이밍',
       confidence: 0.96,
       targetTools: ['saju', 'ziwei', 'astrology'],
+      deepEngineKeys: [
+        'lifeSeasonTiming',
+        'monthlyFlow',
+        'samjaeGyoUn',
+        'germanHegelDialecticalAufheben',
+        'pythagoreanLifecycle',
+        'astrologicalDecanSabian',
+      ],
+      deepEnginesKo: [
+        '10년대운 생애주기',
+        '12개월 월운 플로우',
+        '삼재·교운기 변곡점',
+        '헤겔 변증법적 도약',
+        '피타고라스 생애주기',
+        '사비안 심볼',
+      ],
+      deepEngineGuidance: '10년 대운과 세운·교운기의 큰 계절 흐름에 헤겔 변증법적 모순의 지양과 성숙 관점을 접목하여, 현재 겪는 고난이 다음 단계 도약의 필연적 계기임을 명쾌하게 규명해 줘.',
       routingReason: '10년 대운 주기와 올해 세운, 그리고 12개월 절기월(월운) 타임라인 및 4대 분기 골든 먼스 정밀 분석',
       suggestedFocusPrompt: '현재 대운의 인생 계절(봄/여름/가을/겨울)과 함께, 올해 12달 중 언제가 가장 운이 좋은 골든 먼스(이직/계약/수익)인지와 조심해야 할 달을 명쾌한 타임라인으로 풀어줘.',
       isMasterMobilization: false,
@@ -206,6 +316,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '결핍 오행·공간 풍수 & 12운성 바이오리듬',
       confidence: 0.95,
       targetTools: ['saju', 'qimen', 'mahabote'],
+      deepEngineKeys: [
+        'energeticPrescription',
+        'vitalityCurve',
+        'medicalBioMatrix',
+        'germanSchopenhauerWillRepresentation',
+        'koreanSeosanHyujeongSeongaGwigam',
+        'somaticBodyArmoring',
+      ],
+      deepEnginesKo: [
+        '오행 바이오에너지',
+        '24시간 에너지곡선',
+        '메디컬 바이오 매트릭스',
+        '쇼펜하우어 번뇌 직시',
+        '서산대사 선가귀감(마음등불)',
+        '소매틱 아머링',
+      ],
+      deepEngineGuidance: '사주 결핍 오행 처방과 쇼펜하우어의 맹목적 의지 직시를 통한 내적 평정, 서산대사의 심등(마음의 등불) 지혜로 신체와 정신의 방전을 즉각 회복하는 힐링 처방을 들려줘.',
       routingReason: '사주 결핍 오행 처방 × 12운성 24시간 에너지 조위 곡선 × 기문둔갑·점성술 공간 길방위 3중 바이오웰니스 융합',
       suggestedFocusPrompt: '사주 결핍 오행 처방(솔페지오 주파수·1분 개운 행동), 12운성 기반 오늘 24시간 에너지 조위 곡선(딥워크 피크/휴식 골든타임), 그리고 기문둔갑 공간 길방위 및 작업 좌향 명당 팁을 현대적 바이오웰니스 언어로 다정하게 안내해 줘.',
       isMasterMobilization: false,
@@ -221,6 +348,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '창작·예술적 영감',
       confidence: 0.89,
       targetTools: ['kabbalah', 'tarot'],
+      deepEngineKeys: [
+        'koreanChoeChiwonPungryudo',
+        'renaissanceBrunoInfiniteUniverseHeroicFurore',
+        'sacredVortexGeometry',
+        'celticAwenTaliesin',
+        'akashicRecordsOracle',
+        'tarotTreeOfLifeShadow',
+      ],
+      deepEnginesKo: [
+        '최치원 풍류도(융합영감)',
+        '조르다노 브루노 무한우주론',
+        '황금비 영혼 수비학',
+        '켈트 탈리에신 아웬',
+        '아카식 레코드',
+        '타로 세피로트 그림자',
+      ],
+      deepEngineGuidance: '최치원의 유불선 삼교 포용 풍류도와 브루노의 무한우주 영웅적 열광, 황금비 수비학 메타포를 자극해 고착된 틀을 깨는 폭발적인 독창적 영감을 열어줘.',
       routingReason: '카발라 세피로트 생명나무의 발상 경로와 타로 메이저 아르카나의 원형적 스토리텔링 융합',
       suggestedFocusPrompt: '막힌 상상력을 자극하는 상징과 메타포를 제시하고, 아이디어를 구체적 형태의 결과물로 완성하는 통로를 열어줘.',
       isMasterMobilization: false,
@@ -236,6 +380,23 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       intentKoName: '하루 회고·내면 성찰',
       confidence: 0.88,
       targetTools: ['vedic', 'iching'],
+      deepEngineKeys: [
+        'northAfricanAugustineConfessionesIlluminatio',
+        'ancientIndianNagarjunaMadhyamakaSunyata',
+        'koreanJinulJeonghyeSsangsuDonohJeomsu',
+        'frenchMontaigneEssaisWisdom',
+        'baruchSpinozaEthicaConatusAmorDei',
+        'koreanUisangHwaeomIlseungBeopgye',
+      ],
+      deepEnginesKo: [
+        '아우구스티누스 고백록(내적조명)',
+        '용수 중론(공성과 중도)',
+        '지눌 정혜쌍수·돈오점수',
+        '몽테뉴 수상록(인간성찰)',
+        '스피노자 에티카(지적신애)',
+        '의상대사 화엄법계도',
+      ],
+      deepEngineGuidance: '아우구스티누스의 내적 조명과 용수 중론의 집착 내려놓음, 지눌의 정혜쌍수 돈오점수 성찰을 통해 하루의 소란을 고요히 갈무리하고 깊은 평안을 회복하도록 이끌어줘.',
       routingReason: '베딕의 영혼 평온 지혜와 주역의 하루 음양 갈무리 성찰 결합',
       suggestedFocusPrompt: '오늘 하루의 치열했던 에너지를 편안하게 내려놓고, 내일을 맞이할 맑은 내면의 평화를 회복하도록 이끌어줘.',
       isMasterMobilization: false,
@@ -249,6 +410,21 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
     intentKoName: '사주·점성술 핵심 운명 진단',
     confidence: 0.80,
     targetTools: ['saju', 'astrology'],
+    deepEngineKeys: [
+      'sajuClassicYongshin',
+      'geokguk',
+      'specialStarsMatrix',
+      'vitalityCurve',
+      'chronoTransit',
+    ],
+    deepEnginesKo: [
+      '사주 원전 억부용신',
+      '정통 10대 격국',
+      '15대 신살 슈퍼파워',
+      '24시간 에너지곡선',
+      '실시간 행성 트랜짓',
+    ],
+    deepEngineGuidance: '억부용신과 정통 격국, 신살 배치를 통해 본원적 성향과 현재 운기의 핵심을 명확하게 짚어 줘.',
     routingReason: '타고난 사주 원국과 서양 천문 행성 배치를 통한 핵심 운명과 심리 분석',
     suggestedFocusPrompt: '타고난 기질과 현재 운의 흐름을 균형감 있게 짚고 실천 가능한 조언을 들려줘.',
     isMasterMobilization: false,
@@ -305,17 +481,22 @@ export function routeAndExecute(params: {
     isMasterMobilization: routePlan.isMasterMobilization,
   });
 
+  const deepBlock = routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
+    ? `\n- 246대 DCE 심층 특화 엔진: **${routePlan.deepEnginesKo.join(' · ')}**
+- 심층 엔진 융합 가이드: ${routePlan.deepEngineGuidance}`
+    : '';
+
   const promptInjection = `${deterministicDataBlock}
 
 [🎯 스마트 에이전트 라우터(Agent Router) 정밀 지능 가이드]
 ======================================================================
 - 분석된 질문 의도: **[${routePlan.intentKoName}]**
-- 스마트 라우팅 도구: **${toolsForBadge.join(' + ')}**
+- 스마트 라우팅 기초 도구: **${toolsForBadge.join(' + ')}**${deepBlock}
 - 라우팅 선정 사유: ${routePlan.routingReason}
 - 중점 답변 가이드: ${routePlan.suggestedFocusPrompt}
 ======================================================================
 [루시 답변 필수 지침]:
-1. 위 라우팅된 도구의 실제 계산 데이터(JSON)를 최우선 근거로 삼되, 지식을 나열하지 말고 질문자의 현실 상황과 마음에 딱 들어맞는 살아있는 비유로 풀어줘.
+1. 위 라우팅된 도구의 실제 계산 데이터(JSON)와 심층 특화 엔진의 철학·상징적 해법을 유기적으로 융합하되, 단순 지식을 나열하지 말고 질문자의 현실 상황과 마음에 딱 들어맞는 살아있는 비유로 풀어줘.
 2. 서론 없이 첫 문장부터 질문자의 속마음을 꿰뚫으며 시작하고, 당장 실천할 구체적 행동 팁과 깊은 영적 위로를 카톡식 다중 말풍선(\`\\n\\n\`)으로 전해줘.`;
 
   return {

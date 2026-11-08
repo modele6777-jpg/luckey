@@ -3882,9 +3882,12 @@ export function getFiredEngineBadges(
 
 const REVIEW_PENDING_CORE = new Set(['sukuyo', 'mahabote', 'kabbalah']);
 
-export function getMasterSymbolicReview(report: DeterministicEngineReport) {
+export function getMasterSymbolicReview(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions) {
   if (!report.masterReview) return [];
-  return ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master').map(engine => {
+  const engines = (options && options.isMasterMobilization === false)
+    ? ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master' && shouldIncludeEngine(engine.key, options))
+    : ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master');
+  return engines.map(engine => {
     const binding = MASTER_REVIEW_BINDINGS[engine.key];
     const value = binding ? (report as unknown as Record<string, unknown>)[binding.field] : null;
     const execution = binding ? report.supplementExecutions?.[binding.traceKey] : undefined;
@@ -3923,6 +3926,13 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'italianMachiavelliVirtuFortuna',
+    'koreanRyuSeongryongJingbirok',
+    'swissJungIndividuationArchetype',
+    'koreanDasanJeongYagyongMokminSimseo',
+    'germanNietzscheZarathustraAmorFati',
+    'britishFrancisBaconNovumOrganum',
+    'germanHegelDialecticalAufheben',
     'koreanYulgokGyeokmongYogyeol',
     'laoziDaodejingWaterWay',
     'ancientGreekEpicureanTetrapharmakos',
@@ -4049,6 +4059,12 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'swissJungIndividuationArchetype',
+    'koreanChusaKimJeonghuiSehando',
+    'frenchPascalPenseesHeartReason',
+    'islamicSufiRumiMasnaviDivineLove',
+    'baruchSpinozaEthicaConatusAmorDei',
+    'danishKierkegaardStagesOfLife',
     'egyptianHermeticCartouche',
     'tiebanShenshu',
     'druidMoonTrees',
@@ -4432,7 +4448,7 @@ export function formatDeterministicEnginePrompt(
       : tool.status === 'calculated' && tool.data != null ? { data: tool.data } : {}),
   }));
   const calculated = included.filter(tool => tool.status === 'calculated' && tool.data != null && !(report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId)));
-  const symbolicReview = getMasterSymbolicReview(report);
+  const symbolicReview = getMasterSymbolicReview(report, options);
   return `[이번 질문의 계산 근거 및 한계]
 기준 시각: ${report.calculatedAtKst}
 입력 생년월일: ${report.inputProfile.solarDateString || '미입력'} · 생시: ${report.inputProfile.birthtime || '미입력'}
