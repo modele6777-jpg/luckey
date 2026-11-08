@@ -171,7 +171,5 @@ export function LucyAuraLoader({
   );
   return fullScreen && typeof document !== 'undefined' ? <ScreenPortal>{content}</ScreenPortal> : content;
 }
-  return fullScreen && typeof document !== 'undefined' ? <ScreenPortal>{content}</ScreenPortal> : content;
-}
 
 export default LucyAuraLoader;
