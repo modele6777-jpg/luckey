@@ -974,6 +974,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   });
   const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isInputComposingRef = useRef(false);
   const chatFooterRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -3748,6 +3749,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onCompositionStart={() => { isInputComposingRef.current = true; }}
+                onCompositionEnd={() => { isInputComposingRef.current = false; }}
                 onFocus={() => {
                   setIsInputFocused(true);
                   setTimeout(() => {
@@ -3757,6 +3760,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                   }, 80);
                 }}
                 onKeyDown={(e) => {
+                  // Safari may end composition before keydown; keyCode 229 still identifies the IME event.
+                  if (isInputComposingRef.current || e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;
                   if (e.key === 'Tab' && !input && currentGhostPromptRef.current) {
                     e.preventDefault();
                     setInput(currentGhostPromptRef.current);

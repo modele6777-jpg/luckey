@@ -15,6 +15,7 @@
 
 import type { DivinationToolId } from '../fifteenDivinationTools';
 import type { UserProfile } from '../sharedState';
+import { DIVINATION_REQUEST_PATTERN } from '../divinationIntent';
 import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, type DeterministicEngineReport, ALL_DCE_ENGINES } from './deterministicEngine';
 
 export type QuestionIntentCategory =
@@ -213,8 +214,8 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
   }
 
   // 5. 즉시 결단 / 양자택일 / 오늘의 승부수 / 점 / 매화역수 & 기문둔갑
-  const decisionRegex = /선택|결정|어떻게\s*할까|갈까\s*말까|할까\s*말까|점|점괘|뽑아\s*줘|작괘|타로\s*한\s*장|오늘의\s*선택|승부수|결과\s*예측|매화역수|기문둔갑|팔문|길흉|지금\s*할까/;
-  if (decisionRegex.test(lower)) {
+  const decisionRegex = /선택|결정|어떻게\s*할까|갈까\s*말까|할까\s*말까|점괘|뽑아\s*줘|작괘|타로\s*한\s*장|오늘의\s*선택|승부수|결과\s*예측|매화역수|기문둔갑|팔문|길흉|지금\s*할까/;
+  if (decisionRegex.test(lower) || DIVINATION_REQUEST_PATTERN.test(lower)) {
     return {
       intent: 'immediate_decision',
       intentKoName: '즉시 결단·매화역수 & 기문둔갑 시가팔문',
