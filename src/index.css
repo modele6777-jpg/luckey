@@ -3495,7 +3495,9 @@ html.light #duo-lucy-viewport .lucy-chat-footer {
 }
 
 /* ==========================================================================
-   📱 iPhone Duo 7.6" 펼친 화면 분할 뷰포트 (가로 50vw:50vw / 세로 50vh:50vh)
+   📱 iPhone Duo 7.6" 펼친 화면 분할 뷰포트
+   - 우측 메뉴(80px) 제외 메인 화면의 정확한 50% : 50% 분할
+   - 접힌 화면 비율(단일 폰 뷰)과 1:1 완벽 일치
    ========================================================================== */
 #duo-content-viewport {
   container-type: inline-size;
@@ -3503,49 +3505,53 @@ html.light #duo-lucy-viewport .lucy-chat-footer {
   box-sizing: border-box;
 }
 
-/* 가로 모드 (Landscape): 정확히 50vw : 50vw 나란히 분할 */
+/* 가로 모드 (Landscape): 메뉴 제외 메인 화면 50% : 50% 분할 */
 html.duo-unfolded-landscape #duo-content-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-content-viewport {
-  width: 50vw !important;
-  min-width: 50vw !important;
-  max-width: 50vw !important;
+  width: 50% !important;
+  min-width: 50% !important;
+  max-width: 50% !important;
   height: 100% !important;
-  flex: 0 0 50vw !important;
-  overflow: hidden !important;
+  flex: 0 0 50% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
 }
 
 html.duo-unfolded-landscape #duo-lucy-viewport,
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) #duo-lucy-viewport {
-  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  min-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
-  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  width: 50% !important;
+  min-width: 50% !important;
+  max-width: 50% !important;
   height: 100% !important;
-  flex: 1 1 0px !important;
+  flex: 0 0 50% !important;
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
+  box-sizing: border-box !important;
 }
 
-/* 세로 모드 (Portrait): 상하 50vh : 50vh 분할 */
+/* 세로 모드 (Portrait): 상하 50% : 50% 분할 */
 html.duo-unfolded-portrait #duo-content-viewport {
-  width: 100vw !important;
-  min-width: 100vw !important;
-  max-width: 100vw !important;
-  height: 50vh !important;
-  min-height: 50vh !important;
-  max-height: 50vh !important;
-  flex: 0 0 50vh !important;
-  overflow: hidden !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 50% !important;
+  min-height: 50% !important;
+  max-height: 50% !important;
+  flex: 0 0 50% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
 }
 
 html.duo-unfolded-portrait #duo-lucy-viewport {
-  width: 100vw !important;
-  min-width: 100vw !important;
-  max-width: 100vw !important;
-  height: 50vh !important;
-  min-height: 50vh !important;
-  max-height: 50vh !important;
-  flex: 0 0 50vh !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 50% !important;
+  min-height: 50% !important;
+  max-height: 50% !important;
+  flex: 0 0 50% !important;
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
