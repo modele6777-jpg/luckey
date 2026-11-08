@@ -748,10 +748,17 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     previousPlusMode.current = isPlusMode;
   }, [isPlusMode]);
 
+  // 📱 메인 본문 캔버스 실측 너비 기준 iPhone Duo 접힘 / 펼침 (Dual-Pane) 레이아웃 반응형 감지 및 모드 자동 전환
+  const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isDualPaneLayout() || window.innerWidth >= 640;
+  });
+
   const chatScope = 'lucy';
   const [location, navigate] = useLocation();
   const { resolvedTheme, lucyDayPeriod } = useTheme();
-  const isLight = resolvedTheme === 'light';
+  // 📱 iPhone Duo 펼친 화면에서는 좌측 뷰포트가 키채널(라이트)이더라도 우측/하단 루시채팅은 항상 시그니처 다크 코스믹 테마 유지!
+  const isLight = isDuoUnfolded ? false : (resolvedTheme === 'light');
   const useWhiteTheme = false;
 
   useEffect(() => {
@@ -1022,12 +1029,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       document.documentElement.style.removeProperty('--lucy-footer-height');
     };
   }, []);
-
-  // 📱 메인 본문 캔버스 실측 너비 기준 iPhone Duo 접힘 / 펼침 (Dual-Pane) 레이아웃 반응형 감지 및 모드 자동 전환
-  const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return isDualPaneLayout() || window.innerWidth >= 640;
-  });
 
   useEffect(() => {
     let initialRun = true;
@@ -2181,14 +2182,17 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     document.documentElement.setAttribute('data-lucy-theme', useWhiteTheme ? 'white' : 'starlight');
 
     // 📱 앱(PWA) 모드에서 상하단 안전영역(노치/홈바)이 어두운 body 배경으로 비쳐 회색으로 보이는 현상 방지
+    // ⚠️ 펼친 듀얼 화면에서는 바디 전체에 단색 배경을 덮어씌우지 않아 럭키채널 우주배경을 온전히 보존
     const prevHtmlBg = document.documentElement.style.background;
     const prevBodyBg = document.body.style.background;
     const prevHtmlBgColor = document.documentElement.style.backgroundColor;
     const prevBodyBgColor = document.body.style.backgroundColor;
-    document.documentElement.style.background = chatBackground;
-    document.body.style.background = chatBackground;
-    document.documentElement.style.backgroundColor = chatBackground;
-    document.body.style.backgroundColor = chatBackground;
+    if (!isDuoUnfolded) {
+      document.documentElement.style.background = chatBackground;
+      document.body.style.background = chatBackground;
+      document.documentElement.style.backgroundColor = chatBackground;
+      document.body.style.backgroundColor = chatBackground;
+    }
 
     return () => {
       document.title = prevTitle;

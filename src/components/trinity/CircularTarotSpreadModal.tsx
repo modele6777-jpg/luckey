@@ -30,7 +30,7 @@ export const CircularTarotSpreadModal: React.FC<CircularTarotSpreadModalProps> =
 
   return (
     <ScreenPortal><AnimatePresence>
-      <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 overflow-y-auto no-scrollbar">
+      <div id="circular-tarot-modal-container" className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 overflow-y-auto no-scrollbar circular-tarot-modal-container">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
