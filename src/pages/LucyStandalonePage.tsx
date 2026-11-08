@@ -36,6 +36,7 @@ import { PromptLibraryModal } from '@/components/chat/PromptLibraryModal';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
 import { useSmartScroll } from '@/hooks/useSmartScroll';
+import { SmartScrollResumeButton } from '@/components/common/SmartScrollResumeButton';
 import { ChatProfileModal } from '@/components/chat/ChatProfileModal';
 import { type ChatTargetProfile } from '@/types/chatProfile';
 import type { UserProfile } from '@/lib/sharedState';
@@ -1057,7 +1058,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const isUserScrolledUpRef = useRef(false);
 
   // 🎯 TTS 낭독 중인 하이라이트 문장 화면 수직 중앙(50%) 자동 정렬 스마트 스크롤
-  useSmartScroll({
+  const {
+    isUserOverriding: isLucyUserOverriding,
+    resumeAutoScroll: resumeLucyAutoScroll,
+    remainingSeconds: lucyRemainingSeconds,
+    hasActiveHighlight: hasLucyActiveHighlight,
+  } = useSmartScroll({
     containerRef: messagesContainerRef,
     enabled: Boolean(ttsInfo.isSpeaking),
     centerOffset: 0,
@@ -3005,7 +3011,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     if (!tools.length) return null;
                     return (
                       <span data-used-calculation-tools="true" className="inline-flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap text-[10px] text-amber-700 dark:text-amber-200">
-                        <span className="shrink-0 rounded-full border border-amber-400/40 px-2 py-0.5">사용 도구 {tools.length}개</span>
                         {tools.map(name => <span key={name} className="shrink-0 rounded-full border border-amber-400/30 px-2 py-0.5">{name}</span>)}
                       </span>
                     );
@@ -3764,6 +3769,15 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           </div></ScreenPortal>
         )}
       </AnimatePresence>
+
+      {/* 📍 루시 채팅 스마트 스크롤 낭독 위치 즉시 복귀 플로팅 버튼 */}
+      <SmartScrollResumeButton
+        isVisible={isLucyUserOverriding && isTTSActive && hasLucyActiveHighlight}
+        onResume={resumeLucyAutoScroll}
+        remainingSeconds={lucyRemainingSeconds}
+        fixed
+        className="!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+12px)] sm:!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+16px)]"
+      />
 
       {/* 🔊 Auto-TTS Feedback Toast */}
       <AnimatePresence>

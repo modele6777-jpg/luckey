@@ -1766,12 +1766,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   proRuntimeRef.current = proChat.runtime;
 
   const revealLucyTarotCard = useCallback((messageId: string, cardId: string, conversationId: 'lucy' | 'lucy-pro' = 'lucy') => {
-    const runtime = conversationId === 'lucy-pro' ? proRuntimeRef.current : regularRuntimeRef.current;
-    runtime.setMessages(previous => previous.map(message => {
-      if (message.id !== messageId || message.tarotDraw?.source !== 'app-random') return message;
-      const tarotDraw = revealLucyTarotDrawCard(message.tarotDraw, cardId);
-      return tarotDraw === message.tarotDraw ? message : { ...message, tarotDraw };
-    }));
+    const isPro = conversationId === 'lucy-pro';
+    const runtime = isPro ? proRuntimeRef.current : regularRuntimeRef.current;
+    runtime.setMessages(previous => {
+      let changed = false;
+      const next = previous.map(message => {
+        if (message.id !== messageId || message.tarotDraw?.source !== 'app-random') return message;
+        const tarotDraw = revealLucyTarotDrawCard(message.tarotDraw, cardId);
+        if (tarotDraw !== message.tarotDraw) changed = true;
+        return tarotDraw === message.tarotDraw ? message : { ...message, tarotDraw };
+      });
+      if (!changed) return previous;
+      try {
+        runtime.save(next);
+      } catch (_) {}
+
+      if (!isPro) {
+        try {
+          regularRuntimeRef.current.chatBroadcastRef.current?.postMessage({
+            type: 'CHAT_SYNC',
+            messages: next,
+            account: regularRuntimeRef.current.account,
+          });
+        } catch (_) {}
+        try {
+          regularRuntimeRef.current.pushChatThreadsToFirestore(next);
+        } catch (_) {}
+      } else {
+        try {
+          proRuntimeRef.current.push(next);
+        } catch (_) {}
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('prism:tarot-card-revealed', { detail: { messageId, cardId, conversationId } }));
+      }
+      return next;
+    });
   }, []);
 
   const sendUnifiedMessage = useCallback(async (
