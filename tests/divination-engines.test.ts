@@ -249,6 +249,9 @@ import { calculateYeonamParkJiwonYeolhaIlgi, formatYeonamParkJiwonYeolhaIlgiProm
 import { calculateJeanPaulSartreExistentialism, formatJeanPaulSartreExistentialismPrompt, FRENCH_JEAN_PAUL_SARTRE_VERSION } from '../src/lib/divination/frenchJeanPaulSartreExistentialismEngine';
 import { calculateViktorFranklLogotherapy, formatViktorFranklLogotherapyPrompt, AUSTRIAN_VIKTOR_FRANKL_VERSION } from '../src/lib/divination/austrianViktorFranklLogotherapyEngine';
 import { calculateBaekbeomKimGuMyDesireCulture, formatBaekbeomKimGuMyDesireCulturePrompt, KOREAN_BAEKBEOM_KIM_GU_VERSION } from '../src/lib/divination/koreanBaekbeomKimGuMyDesireCultureEngine';
+import { calculateMartinHeideggerBeingAndTime, formatMartinHeideggerBeingAndTimePrompt, GERMAN_MARTIN_HEIDEGGER_VERSION } from '../src/lib/divination/germanMartinHeideggerBeingAndTimeEngine';
+import { calculateHannahArendtVitaActiva, formatHannahArendtVitaActivaPrompt, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION } from '../src/lib/divination/americanGermanHannahArendtVitaActivaEngine';
+import { calculateDosanAhnChanghoMusilYeokhaeng, formatDosanAhnChanghoMusilYeokhaengPrompt, KOREAN_DOSAN_AHN_CHANGHO_VERSION } from '../src/lib/divination/koreanDosanAhnChanghoMusilYeokhaengEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -4997,6 +5000,48 @@ test('Baekbeom Kim Gu My Desire Culture Engine: calculates High Power of Culture
   const prompt = formatBaekbeomKimGuMyDesireCulturePrompt(rep);
   assert(prompt.includes('백범 김구 《백범일지》 높은 문화의 힘 & 자주독립 실천 지표'));
   assert(prompt.includes(rep.activeKimGuTheme.themeTitleKo));
+});
+
+test('Martin Heidegger Being and Time Engine: calculates In-der-Welt-sein, Eigentlichkeit, and Sein-zum-Tode', () => {
+  const rep = calculateMartinHeideggerBeingAndTime(profile);
+  assert.equal(rep.engineVersion, GERMAN_MARTIN_HEIDEGGER_VERSION);
+  assert(rep.inDerWeltSeinRelationalScore >= 0 && rep.inDerWeltSeinRelationalScore <= 100);
+  assert(rep.dasManOvercomingAuthenticityScore >= 0 && rep.dasManOvercomingAuthenticityScore <= 100);
+  assert(rep.geworfenheitEntwurfProjectScore >= 0 && rep.geworfenheitEntwurfProjectScore <= 100);
+  assert(rep.seinZumTodeLucidityScore >= 0 && rep.seinZumTodeLucidityScore <= 100);
+  assert(rep.sorgeCareTemporalIndex >= 0 && rep.sorgeCareTemporalIndex <= 100);
+  assert(rep.activeHeideggerTheme.themeTitleKo.length > 0);
+  const prompt = formatMartinHeideggerBeingAndTimePrompt(rep);
+  assert(prompt.includes('마틴 하이데거 《존재와 시간》 현존재 & 본래성 지표'));
+  assert(prompt.includes(rep.activeHeideggerTheme.themeTitleKo));
+});
+
+test('Hannah Arendt Vita Activa Engine: calculates Natality, Action, and Banality of Evil Overcoming', () => {
+  const rep = calculateHannahArendtVitaActiva(profile);
+  assert.equal(rep.engineVersion, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION);
+  assert(rep.natalityRenewalCapacityScore >= 0 && rep.natalityRenewalCapacityScore <= 100);
+  assert(rep.vitaActivaBalanceScore >= 0 && rep.vitaActivaBalanceScore <= 100);
+  assert(rep.banalityOfEvilOvercomingThinkingScore >= 0 && rep.banalityOfEvilOvercomingThinkingScore <= 100);
+  assert(rep.publicRealmPluralityIndex >= 0 && rep.publicRealmPluralityIndex <= 100);
+  assert(rep.forgivenessAndPromiseFidelityScore >= 0 && rep.forgivenessAndPromiseFidelityScore <= 100);
+  assert(rep.activeArendtTheme.themeTitleKo.length > 0);
+  const prompt = formatHannahArendtVitaActivaPrompt(rep);
+  assert(prompt.includes('한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표'));
+  assert(prompt.includes(rep.activeArendtTheme.themeTitleKo));
+});
+
+test('Dosan Ahn Chang-ho Musil Yeokhaeng Engine: calculates Musil, Yeokhaeng, and Owner Responsibility', () => {
+  const rep = calculateDosanAhnChanghoMusilYeokhaeng(profile);
+  assert.equal(rep.engineVersion, KOREAN_DOSAN_AHN_CHANGHO_VERSION);
+  assert(rep.musilTruthfulnessScore >= 0 && rep.musilTruthfulnessScore <= 100);
+  assert(rep.yeokhaengActionPowerScore >= 0 && rep.yeokhaengActionPowerScore <= 100);
+  assert(rep.chunguiYonggamIntegrityScore >= 0 && rep.chunguiYonggamIntegrityScore <= 100);
+  assert(rep.aegiAetaCharacterIndex >= 0 && rep.aegiAetaCharacterIndex <= 100);
+  assert(rep.masterMindOwnerResponsibilityScore >= 0 && rep.masterMindOwnerResponsibilityScore <= 100);
+  assert(rep.activeDosanTheme.themeTitleKo.length > 0);
+  const prompt = formatDosanAhnChanghoMusilYeokhaengPrompt(rep);
+  assert(prompt.includes('도산 안창호 《무실역행》 인격혁명 & 주인정신 지표'));
+  assert(prompt.includes(rep.activeDosanTheme.themeTitleKo));
 });
 
 
