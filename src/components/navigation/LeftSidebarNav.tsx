@@ -23,8 +23,7 @@ import {
 } from '@/components/trinity/BgMusicPlayer';
 import { unlockAudioPlayback } from '@/lib/audio';
 import { isDualPaneLayout } from '@/lib/perfMode';
-import { syncPrismAcrossDevices, forceAppUpgradeAndReload } from '@/lib/prismSync';
-import { useApp } from '@/contexts/AppContext';
+import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 
 export interface NavItemConfig {
   path: string;
@@ -335,36 +334,21 @@ export default function LeftSidebarNav() {
     setTimeout(() => setIsProfileFlashing(false), 400);
   }, []);
 
-  let syncPrismDevicesFn: (() => Promise<any>) | null = null;
-  try {
-    const appContext = useApp();
-    syncPrismDevicesFn = appContext.syncPrismDevices;
-  } catch (_) {
-    syncPrismDevicesFn = null;
-  }
-
+  const restartStartedRef = useRef(false);
   const handleSyncClick = useCallback(async () => {
-    if (isSyncSpinning) return;
+    if (restartStartedRef.current) return;
+    restartStartedRef.current = true;
     setIsSyncSpinning(true);
     triggerHaptic('whitehole');
-    const startTime = Date.now();
+    // Reload the document, not just cloud data: this releases page-owned audio,
+    // timers and UI state and remeasures the viewport on the next startup.
     try {
-      if (syncPrismDevicesFn) {
-        await syncPrismDevicesFn().catch(() => null);
-      } else {
-        await syncPrismAcrossDevices().catch(() => null);
-      }
+      await forceAppUpgradeAndReload();
     } catch (err) {
-      console.warn('[LeftSidebarNav] Sync error:', err);
+      console.warn('[LeftSidebarNav] Restart failed:', err);
+      window.location.reload();
     }
-    // 노란빛 스핀 애니메이션이 700ms 동안 회전한 뒤, 최신 업데이트 변경점 및 몇 버전인지 확인 모달 팝업 표시
-    const elapsed = Date.now() - startTime;
-    const remaining = Math.max(0, 700 - elapsed);
-    setTimeout(() => {
-      setIsSyncSpinning(false);
-      window.dispatchEvent(new CustomEvent('prism:open-update-notice'));
-    }, remaining);
-  }, [isSyncSpinning, syncPrismDevicesFn]);
+  }, []);
 
   useSidebarFooterHeight();
 
@@ -427,15 +411,17 @@ export default function LeftSidebarNav() {
               </div>
 
               <div className="refined-menu-footer">
-                {/* 🔄 실시간 동기화 & 최신 업데이트 버튼 */}
+                {/* Restart the app without deleting persisted conversations or settings. */}
                 <button
                   type="button"
                   className={`refined-nav-item sidebar-sync-control transition-colors duration-200 ${
                     isSyncSpinning ? 'text-yellow-300' : 'text-white/70 hover:text-white'
                   }`}
                   onClick={handleSyncClick}
-                  aria-label="실시간 동기화 및 업데이트"
-                  title="실시간 동기화 & 업데이트 (PC·모바일 데이터 연동 및 최신 버전 확인)"
+                  disabled={isSyncSpinning}
+                  aria-busy={isSyncSpinning}
+                  aria-label={isSyncSpinning ? '앱 다시 불러오는 중' : '앱 새로고침'}
+                  title="앱 새로고침 · 저장된 대화와 설정을 유지하고 다시 시작"
                 >
                   <RotateCw
                     size={20}

@@ -138,7 +138,7 @@ export async function syncPrismAcrossDevices(
 
 export async function forcePurgeStaleCaches(): Promise<void> {
   try {
-    if ('caches' in window) {
+    if (navigator.onLine !== false && 'caches' in window) {
       const keys = await window.caches.keys();
       await Promise.all(keys.map((k) => window.caches.delete(k)));
     }
@@ -150,7 +150,9 @@ export async function forcePurgeStaleCaches(): Promise<void> {
 function navigateToFreshShell(): void {
   if (isAppUpdateReloadMarked(window.sessionStorage)) return;
   markAppUpdateReload(window.sessionStorage);
-  window.location.href = window.location.pathname + '?v=' + Date.now();
+  const freshUrl = new URL(window.location.href);
+  freshUrl.searchParams.set('v', String(Date.now()));
+  window.location.replace(freshUrl.href);
 }
 
 export async function forceAppUpgradeAndReload(): Promise<void> {
