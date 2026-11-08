@@ -760,7 +760,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeSessionStorage.setItem('lucy_tier_mode', 'pro');
       setLucyTier('pro');
       triggerHaptic('whitehole');
-      setModeSwitchToast(`👑 Pro모드 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 마스터 가동`);
+      setModeSwitchToast(`👑 AI Pro모드 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 마스터 가동`);
       setTimeout(() => setModeSwitchToast(null), 2500);
     };
 
@@ -1045,7 +1045,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               setModeSwitchToast(
                 unfolded
                   ? `👑 듀오 펼침 · AI+ Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`
-                  : `👑 듀오 접힘 · Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`
+                  : `👑 듀오 접힘 · AI Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`
               );
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'pro';
@@ -2928,7 +2928,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                       triggerHaptic('whitehole');
                       setModeSwitchToast(
                         next === 'pro'
-                          ? (isDuoUnfolded ? `👑 AI+ Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`)
+                          ? (isDuoUnfolded ? `👑 AI+ Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)` : `👑 AI Pro모드 (${ALL_DCE_ENGINES.length}대 풀엔진)`)
                           : next === 'plus'
                           ? '🌿 AI+ 모드'
                           : '✨ AI 모드'
@@ -2945,7 +2945,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     title="클릭 시 마스터 프로 모드 토글"
                   >
                     {lucyTier === 'pro'
-                      ? (isDuoUnfolded ? 'AI+ Pro모드' : 'Pro모드')
+                      ? (isDuoUnfolded ? 'AI+ Pro모드' : 'AI Pro모드')
                       : lucyTier === 'plus'
                       ? 'AI+ 모드'
                       : 'AI 모드'}
