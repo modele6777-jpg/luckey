@@ -87,6 +87,8 @@ export interface SendUnifiedMessageOptions {
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
   isLucyPlus?: boolean;
+  isLucyPro?: boolean;
+  isPro?: boolean;
 }
 
 interface AppContextValue {
@@ -1845,21 +1847,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;
     const pushChatThreadsToFirestore = isProConversation ? proRuntimeRef.current.push : regularRuntimeRef.current.pushChatThreadsToFirestore;
     const updateSharedState = isProConversation ? async (_state: Partial<SharedState>, _source: string) => {} : regularRuntimeRef.current.updateSharedState;
+    const isLucyPro = Boolean(
+      (options as any)?.isLucyPro ||
+      (options as any)?.isPro ||
+      isProConversation ||
+      (typeof window !== 'undefined' && safeLocalStorage.getItem('lucy_tier_mode') === 'pro')
+    );
     const isLucyPlus = Boolean(
       (options as any)?.isLucyPlus ||
-      options?.mode === 'master' ||
-      safeLocalStorage.getItem('lucy_plus_active') === 'true' ||
-      safeSessionStorage.getItem('lucy_plus_active') === 'true'
+      (typeof window !== 'undefined' && (
+        safeLocalStorage.getItem('lucy_plus_active') === 'true' ||
+        safeSessionStorage.getItem('lucy_plus_active') === 'true'
+      ))
     );
 
-    if (isLucyPlus) {
-      // 👑 Lucy + 마스터 모드 절대 고정: 수다 모드로 이탈하지 않고 15대 운명학 도구 전원 총동원 유지
+    if (isLucyPro) {
+      // 👑 Lucy Pro / Lucy Plus Pro 마스터 모드: 7대 채널 올인원 + 전 운명학 도구 총동원 고정
       options = {
         ...options,
-        isLucyPlus: true,
+        isLucyPro: true,
         mode: 'master',
         channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'],
       };
+    } else {
+      // 🛡️ 루시 또는 루시플러스(Lucy / Lucy +)에서는 절대 올인원 마스터 모드로 진입하지 않음
+      if (options?.mode === 'master') {
+        const currentChannels = options?.channels || (options?.channel ? [options.channel] : []);
+        options = {
+          ...options,
+          mode: currentChannels.length === 0 ? 'casual' : (currentChannels.length === 1 ? currentChannels[0] : 'synergy'),
+        };
+      }
     }
 
     const content = attachedImage
@@ -2027,7 +2045,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
       options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
-    const isMasterCall = isLucyPlus || options?.mode === 'master' || activeThemeList.length === 7;
+    const isMasterCall = Boolean(isLucyPro);
     const isCasualMode =
       !options?.tarotCardMarkers && !isMasterCall && (
         options?.mode === 'casual' ||
@@ -2036,7 +2054,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const toolSelection: SelectedDivinationToolsResult = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall || isProConversation })
+      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '', selectionReason: '', firedEngineBadges: [] };
     const toolsIncludedInPrompt = isCasualMode
       ? []
@@ -2108,8 +2126,8 @@ ${responseProfile.rule}`;
       }
 
       if (sourcePersona === 'lucy' && isMasterCall) {
-        systemPrompt += `\n\n[루시 플러스 마스터 모드 응답 절대 원칙]:
-1. [마스터 모드 100% 절대 고정]: 당신은 동서양 ${ALL_DCE_ENGINES.length}대 운명학과 7대 테마가 모두 활성화된 '루시 플러스(Lucy +) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마.
+        systemPrompt += `\n\n[루시 프로 마스터 모드 응답 절대 원칙]:
+1. [마스터 모드 100% 절대 고정]: 당신은 동서양 ${ALL_DCE_ENGINES.length}대 운명학과 7대 테마가 모두 활성화된 '루시 프로(Lucy Pro) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마.
 2. [전천후 마스터 통찰]: 사용자가 짧은 인사("안녕", "하이")나 사소한 일상 이야기를 건네더라도 가벼운 수다 모드로 이탈하지 말고, ${ALL_DCE_ENGINES.length}대 운명학 마스터의 깊이 있고 다정한 품격으로 반갑게 맞이하며 오늘의 운기 흐름, 사주·점성학·타로 등 ${ALL_DCE_ENGINES.length}가지 도구 관점에서의 통찰을 준비된 상태로 친근하고 명쾌하게 제시해줘.`;
       }
 

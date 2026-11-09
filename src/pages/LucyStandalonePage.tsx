@@ -606,10 +606,9 @@ export function resolveMessageModeAndChannels(
   const filteredChannels = rawChannels.filter((c: any) => ALL_CHANNELS.includes(c)) as SpecialChannel[];
   const isAllChannels = filteredChannels.length === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => filteredChannels.includes(c));
 
+  const isProMsg = Boolean((msg as any)?.isPro || (msg as any)?.isLucyPro || msg?.conversationId === 'lucy-pro');
   const isMaster = Boolean(
-    rawMode === 'master' ||
-    msg?.mode === 'master' ||
-    isAllChannels
+    (rawMode === 'master' || msg?.mode === 'master') && isProMsg
   );
   const validChannels = isMaster ? [...ALL_CHANNELS] : filteredChannels;
   const isCasual = !isMaster && (rawMode === 'casual' || (validChannels.length === 0 && rawMode !== 'synergy'));
@@ -929,7 +928,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isAutoDetect = selectedMode === 'auto';
   const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';
-    if (selectedMode === 'master') return '7대 채널 올인원 마스터';
+    if (selectedMode === 'master') return isMasterMode ? '7대 채널 올인원 마스터' : null;
     if (selectedMode !== 'auto') {
       const cfg = SPECIAL_CHANNELS[selectedMode as SpecialChannel];
       return cfg ? cfg.name : selectedMode;
@@ -940,12 +939,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
     setAutoDetectedTitleState(previous => {
       const next = typeof value === 'function' ? value(previous) : value;
-      return pro ? '7대 채널 올인원 마스터' : next?.includes('마스터') ? 'AI 자동 상담' : next;
+      return isMasterMode ? '7대 채널 올인원 마스터' : next?.includes('마스터') ? 'AI 자동 상담' : next;
     });
-  }, [pro]);
+  }, [isMasterMode]);
 
   const currentActiveModeConfig = useMemo(() => {
-    if (pro) return { ...LUCY_MODE_CONFIGS[0], label: '마스터', subLabel: '7대 채널 올인원', tagline: '7대 채널 마스터 지능 상시 가동' };
+    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '마스터', subLabel: '7대 채널 올인원', tagline: '7대 채널 마스터 지능 상시 가동' };
     if (activeChannels.length >= 2) {
       return {
         id: 'auto' as const,
@@ -959,7 +958,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       };
     }
     return LUCY_MODE_CONFIGS.find((m) => m.id === selectedMode) || LUCY_MODE_CONFIGS[0];
-  }, [selectedMode, activeChannels, pro]);
+  }, [selectedMode, activeChannels, isMasterMode]);
 
   // 📌 추천 질문 라이브러리 및 칩에서 지정된 모드를 보존하여 실시간 디바운스 임의 덮어쓰기 방지
   const presetModeRef = useRef<{
@@ -1949,8 +1948,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 말풍선 배지 / 추천 카드 클릭 시: AI 모드를 유지한 채 해당 채널 조합(단일·융합·마스터)을 즉시 반영
   const handleActivateMessageMode = (targetChannels: SpecialChannel[], targetIsMaster: boolean, label?: string) => {
-    const nextChannels = resolveLucyPageChannels(targetChannels, pro);
-    const modeLabel = !pro && (targetIsMaster || label?.includes('마스터')) ? formatChannelsModeTitle(nextChannels) : label || formatChannelsModeTitle(nextChannels);
+    const nextChannels = resolveLucyPageChannels(targetChannels, isMasterMode);
+    const modeLabel = !isMasterMode && (targetIsMaster || label?.includes('마스터')) ? formatChannelsModeTitle(nextChannels, isMasterMode) : label || formatChannelsModeTitle(nextChannels, isMasterMode);
     setActiveChannels(nextChannels);
     setAutoDetectedTitle(modeLabel);
     setCurrentPrompts(getCuratedPrompts(activeProfiles, 'auto', nextChannels));
@@ -1963,9 +1962,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Dynamic Current Mode Info
   const channelCount = activeChannels.length;
   const isCasualChat = channelCount === 0;
-  const isFullProMaster = channelCount === ALL_CHANNELS.length;
+  const isFullProMaster = isMasterMode && channelCount === ALL_CHANNELS.length;
   const isSingleSpecial = channelCount === 1;
-  const isSynergy = channelCount >= 2 && channelCount < ALL_CHANNELS.length;
+  const isSynergy = channelCount >= 2 && (!isMasterMode || channelCount < ALL_CHANNELS.length);
 
   const currentModeTitle = useMemo(() => {
     if (isCasualChat) return '가벼운 일상 수다';
@@ -2534,7 +2533,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             break;
           }
         }
-        if (!effectiveForcedChannels && MASTER_PROMPT_POOL.includes(userCleanText)) {
+        if (isMasterMode && !effectiveForcedChannels && MASTER_PROMPT_POOL.includes(userCleanText)) {
           effectiveForcedChannels = ALL_CHANNELS;
         }
       }
@@ -2549,32 +2548,32 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     } else if (effectiveForcedChannels !== undefined) {
       channels = effectiveForcedChannels;
       setActiveChannels(effectiveForcedChannels);
-      setAutoDetectedTitle(formatChannelsModeTitle(effectiveForcedChannels));
+      setAutoDetectedTitle(formatChannelsModeTitle(effectiveForcedChannels, isMasterMode));
       presetModeRef.current = {
         text: userCleanText,
         channels: effectiveForcedChannels,
-        title: formatChannelsModeTitle(effectiveForcedChannels),
+        title: formatChannelsModeTitle(effectiveForcedChannels, isMasterMode),
       };
     } else if (isAutoDetect && forcedChannels === undefined && combinedContextText.length > 0) {
       const detected = detectPageChannels(combinedContextText);
-      if (detected.isMaster) {
+      if (isMasterMode && detected.isMaster) {
         channels = ALL_CHANNELS;
       } else {
         channels = detected.channels;
       }
       setActiveChannels(channels);
-      setAutoDetectedTitle(detected.modeTitle);
+      setAutoDetectedTitle((isMasterMode && detected.isMaster) ? detected.modeTitle : formatChannelsModeTitle(channels, isMasterMode));
     } else if (forcedChannels !== undefined) {
       channels = forcedChannels;
       setActiveChannels(forcedChannels);
-      setAutoDetectedTitle(formatChannelsModeTitle(forcedChannels));
+      setAutoDetectedTitle(formatChannelsModeTitle(forcedChannels, isMasterMode));
     }
 
     channels = isMasterMode ? ALL_CHANNELS : resolveLucyPageChannels(channels, false);
     setActiveChannels(channels);
-    setAutoDetectedTitle(formatChannelsModeTitle(channels));
+    setAutoDetectedTitle(formatChannelsModeTitle(channels, isMasterMode));
     const channelCount = channels.length;
-    const isMaster = isMasterMode || (channelCount === ALL_CHANNELS.length && ALL_CHANNELS.every((c) => channels.includes(c)));
+    const isMaster = isMasterMode;
     const isCasual = !isMaster && channelCount === 0;
     const isSingle = !isMaster && channelCount === 1;
     const isSyn = !isMaster && channelCount >= 2;
@@ -2663,8 +2662,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
       tarotCardMarkers,
-      conversationId: 'lucy',
+      conversationId: isMasterMode ? 'lucy-pro' : 'lucy',
       isLucyPlus: isPlusMode,
+      isLucyPro: isMasterMode,
+      isPro: isMasterMode,
       extraSystemContext,
       customUserProfile: counselingUserProfile,
       channels: isMaster ? ALL_CHANNELS : channels,
@@ -2697,11 +2698,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
     if (resolvedChannels.length === 0) {
       const detected = detectPageChannels(promptText);
-      resolvedChannels = detected.isMaster ? ALL_CHANNELS : detected.channels;
+      resolvedChannels = (isMasterMode && detected.isMaster) ? ALL_CHANNELS : detected.channels;
     }
 
     // 2. 일관된 모드 명칭 생성 (단일: '오렌지 (성찰)', 융합: '2중 융합 (오렌지 + 트리니티)')
-    const modeTitle = formatChannelsModeTitle(resolvedChannels);
+    const modeTitle = formatChannelsModeTitle(resolvedChannels, isMasterMode);
 
     // 3. 헤더 배지 및 활성 채널 상태 즉시 전환
     setActiveChannels(resolvedChannels);
@@ -2733,7 +2734,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const horiItem = HORI_PROMPT_LIBRARY.find((p) => p.title === promptText || p.body === promptText);
     if (horiItem && horiItem.tool_ids && horiItem.tool_ids.length > 0) {
       const validChannels = horiItem.tool_ids.filter((t) => ALL_CHANNELS.includes(t as SpecialChannel)) as SpecialChannel[];
-      const modeTitle = formatChannelsModeTitle(validChannels);
+      const modeTitle = formatChannelsModeTitle(validChannels, isMasterMode);
       setActiveChannels(validChannels);
       setAutoDetectedTitle(modeTitle);
       presetModeRef.current = {
@@ -2749,7 +2750,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     for (const [ch, pool] of Object.entries(CHANNEL_PROMPT_POOLS)) {
       if (pool.includes(promptText)) {
         const targetChannels: SpecialChannel[] = [ch as SpecialChannel];
-        const modeTitle = formatChannelsModeTitle(targetChannels);
+        const modeTitle = formatChannelsModeTitle(targetChannels, isMasterMode);
         setActiveChannels(targetChannels);
         setAutoDetectedTitle(modeTitle);
         presetModeRef.current = {
@@ -2763,9 +2764,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
 
     // 3. 올인원 마스터 추천 풀 일치 확인
-    if (MASTER_PROMPT_POOL.includes(promptText)) {
+    if (isMasterMode && MASTER_PROMPT_POOL.includes(promptText)) {
       const targetChannels = ALL_CHANNELS;
-      const modeTitle = formatChannelsModeTitle(targetChannels);
+      const modeTitle = formatChannelsModeTitle(targetChannels, true);
       setActiveChannels(targetChannels);
       setAutoDetectedTitle(modeTitle);
       presetModeRef.current = {
@@ -2779,8 +2780,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     // 4. 일반/융합 질문 풀 및 텍스트 자동 감지 폴백
     const detected = detectPageChannels(promptText);
-    const targetChannels = detected.isMaster ? ALL_CHANNELS : detected.channels;
-    const modeTitle = detected.modeTitle || formatChannelsModeTitle(targetChannels);
+    const targetChannels = (isMasterMode && detected.isMaster) ? ALL_CHANNELS : detected.channels;
+    const modeTitle = (isMasterMode && detected.isMaster) ? detected.modeTitle : formatChannelsModeTitle(targetChannels, isMasterMode);
     setActiveChannels(targetChannels);
     setAutoDetectedTitle(modeTitle);
     presetModeRef.current = {

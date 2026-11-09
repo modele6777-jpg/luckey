@@ -34,12 +34,12 @@ export const SEPTAGRAM_SINGLE_TITLES: Record<SeptagramChannel, string> = {
 /**
  * 채널 목록을 기반으로 7대 채널 명칭에 부합하는 일관된 모드 타이틀을 반환합니다.
  */
-export function formatChannelsModeTitle(channels: SpecialChannel[]): string {
+export function formatChannelsModeTitle(channels: SpecialChannel[], allowMaster = true): string {
   if (!channels || channels.length === 0) {
     return '가벼운 일상 수다';
   }
   if (channels.length === 7) {
-    return '7대 채널 올인원 마스터';
+    return allowMaster ? '7대 채널 올인원 마스터' : '7중 융합 시너지';
   }
   if (channels.length === 1) {
     const ch = channels[0] as SeptagramChannel;
@@ -197,7 +197,7 @@ export function detectLucyChannelsFromText(text: string, options: { allowMaster?
   const channels = options.allowMaster === false && matchedChannels.size === 7 ? [] : Array.from(matchedChannels);
   const isCasual = channels.length === 0;
 
-  const modeTitle = formatChannelsModeTitle(channels);
+  const modeTitle = formatChannelsModeTitle(channels, options.allowMaster !== false);
 
   return {
     channels,
