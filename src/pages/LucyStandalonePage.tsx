@@ -1116,6 +1116,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       safeSessionStorage.setItem('lucy_tier_mode', 'ai');
     }
   }, [isDuoUnfolded, lucyTier]);
+
+  const currentGhostPromptRef = useRef<string>('');
   const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');
 
   // 🔊 루시 답변 자동 음성 재생 (Auto-TTS 바로재생) 상태 및 설정 (기본값: ON, localStorage 영구 보존)
