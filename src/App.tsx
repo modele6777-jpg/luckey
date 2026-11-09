@@ -31,6 +31,7 @@ import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
 import HubHome from "./pages/HubHome";
 import EpilogueApp from "./pages/EpilogueApp";
+import LucyStandalonePage from "./pages/LucyStandalonePage";
 
 function lazyWithRetry<T extends React.ComponentType<any>>(
   componentImport: () => Promise<{ default: T }>
@@ -58,7 +59,6 @@ const BluebirdApp = lazyWithRetry(() => import("./pages/BluebirdApp"));
 const HealApp = lazyWithRetry(() => import("./pages/HealApp"));
 const LibraryPage = lazyWithRetry(() => import("./pages/LibraryPage"));
 const LucyProPage = lazyWithRetry(() => import("./pages/LucyProPage"));
-const LucyStandalonePage = lazyWithRetry(() => import("./pages/LucyStandalonePage"));
 const HandbookStandalonePage = lazyWithRetry(() => import("./pages/HandbookStandalonePage"));
 const OmniWarpPage = lazyWithRetry(() => import("./pages/OmniWarpPage"));
 const CalmApp = lazyWithRetry(() => import("./pages/CalmApp"));
@@ -702,7 +702,7 @@ function AppContent() {
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
                   : { width: '50vw', minWidth: '50vw', maxWidth: '50vw', height: '100%', flex: '0 0 50vw' }
               }
-              className={`duo-folded-view shrink-0 flex flex-col overflow-hidden relative ${isDuoPortrait ? 'border-b border-white/10' : 'border-r border-white/10'}`}
+              className="duo-folded-view shrink-0 flex flex-col overflow-hidden relative border-none"
             >
               {isLucyRoute ? (
                 /* 최우측/최하단 메뉴에서 루시 선택 시 ➔ 코스믹 룸 표출 */
@@ -735,9 +735,13 @@ function AppContent() {
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
                   : { flex: '1 1 0px', width: 'calc(50vw - var(--sites-sidebar-width, 80px))', height: '100%' }
               }
-              className="shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative"
+              className="shrink-0 min-h-0 flex flex-col overflow-hidden z-10 relative border-none"
             >
-              <LucyStandalonePage />
+              <ErrorBoundary>
+                <React.Suspense fallback={<PageLoader />}>
+                  <LucyStandalonePage />
+                </React.Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         ) : (
