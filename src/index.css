@@ -3320,6 +3320,22 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   transition: none !important;
 }
 
+/* 🛡️ 상단 검색창 활성화 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통 빅뱅버튼 즉시 숨김 */
+html.lucy-search-active .bottom-safe-fab-center,
+body.lucy-search-active .bottom-safe-fab-center,
+.lucy-search-active ~ .bottom-safe-fab-center,
+body:has(.lucy-search-active) .bottom-safe-fab-center,
+body:has([data-lucy-search-active="true"]) .bottom-safe-fab-center,
+[data-lucy-search-active="true"] ~ .bottom-safe-fab-center,
+.keyboard-open .bottom-safe-fab-center,
+body:has(.keyboard-open) .bottom-safe-fab-center {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0) !important;
+}
+
 /* ==========================================================================
    📱 iPhone Duo 7.6" 펼침 화면 최적화 (가로 좌우 50vw / 세로 상하 50vh)
    ========================================================================== */
