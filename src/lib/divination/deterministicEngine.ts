@@ -307,6 +307,9 @@ import { calculateKoreanSambongJeongDoJeonMinbonReform, formatKoreanSambongJeong
 import { calculateBritishBertrandRussellConquestOfHappiness, formatBritishBertrandRussellConquestOfHappinessPrompt, type BritishBertrandRussellConquestOfHappinessResult, BRITISH_BERTRAND_RUSSELL_VERSION } from './britishBertrandRussellConquestOfHappinessEngine';
 import { calculateGermanKarlJaspersExistenzGrenzsituationen, formatGermanKarlJaspersExistenzGrenzsituationenPrompt, type GermanKarlJaspersExistenzGrenzsituationenResult, GERMAN_KARL_JASPERS_VERSION } from './germanKarlJaspersExistenzGrenzsituationenEngine';
 import { calculateKoreanMaewoldangKimSiSeupGeumoSinhwa, formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt, type KoreanMaewoldangKimSiSeupGeumoSinhwaResult, KOREAN_KIM_SI_SEUP_VERSION } from './koreanMaewoldangKimSiSeupGeumoSinhwaEngine';
+import { calculateAmericanWilliamJamesPragmatism, formatAmericanWilliamJamesPragmatismPrompt, type AmericanWilliamJamesPragmatismResult, AMERICAN_WILLIAM_JAMES_VERSION } from './americanWilliamJamesPragmatismWillToBelieveEngine';
+import { calculateGermanErichFrommArtOfLovingBeing, formatGermanErichFrommArtOfLovingBeingPrompt, type GermanErichFrommArtOfLovingBeingResult, GERMAN_ERICH_FROMM_VERSION } from './germanErichFrommArtOfLovingBeingEngine';
+import { calculateKoreanDanjaeShinChaeHoJoseonSanggosa, formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt, type KoreanDanjaeShinChaeHoJoseonSanggosaResult, KOREAN_DANJAE_SHIN_CHAE_HO_VERSION } from './koreanDanjaeShinChaeHoJoseonSanggosaEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -634,6 +637,9 @@ export interface DeterministicEngineReport {
   britishBertrandRussellConquestOfHappinessResult?: BritishBertrandRussellConquestOfHappinessResult | null;
   germanKarlJaspersExistenzGrenzsituationenResult?: GermanKarlJaspersExistenzGrenzsituationenResult | null;
   koreanMaewoldangKimSiSeupGeumoSinhwaResult?: KoreanMaewoldangKimSiSeupGeumoSinhwaResult | null;
+  americanWilliamJamesPragmatismResult?: AmericanWilliamJamesPragmatismResult | null;
+  germanErichFrommArtOfLovingBeingResult?: GermanErichFrommArtOfLovingBeingResult | null;
+  koreanDanjaeShinChaeHoJoseonSanggosaResult?: KoreanDanjaeShinChaeHoJoseonSanggosaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3722,6 +3728,33 @@ try {
     }
   })()));
 
+  // 276. 미국 윌리엄 제임스 실용주의 & 신념의 의지 실천적 현금가치 지혜 엔진
+  const americanWilliamJamesPragmatismResult = calculateSupplement('americanWilliamJamesPragmatismResult', () => ((() => {
+    try {
+      return calculateAmericanWilliamJamesPragmatism(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 277. 독일/미국 에리히 프롬 사랑의 기술 & 소유냐 존재냐 능동적 사랑 지혜 엔진
+  const germanErichFrommArtOfLovingBeingResult = calculateSupplement('germanErichFrommArtOfLovingBeingResult', () => ((() => {
+    try {
+      return calculateGermanErichFrommArtOfLovingBeing(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 278. 대한민국 단재 신채호 조선상고사 아(我)의 주체자각 & 비타협 자주독립 지혜 엔진
+  const koreanDanjaeShinChaeHoJoseonSanggosaResult = calculateSupplement('koreanDanjaeShinChaeHoJoseonSanggosaResult', () => ((() => {
+    try {
+      return calculateKoreanDanjaeShinChaeHoJoseonSanggosa(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4035,6 +4068,9 @@ try {
     britishBertrandRussellConquestOfHappinessResult,
     germanKarlJaspersExistenzGrenzsituationenResult,
     koreanMaewoldangKimSiSeupGeumoSinhwaResult,
+    americanWilliamJamesPragmatismResult,
+    germanErichFrommArtOfLovingBeingResult,
+    koreanDanjaeShinChaeHoJoseonSanggosaResult,
     tools: toolsMap,
   };
 }
@@ -4339,6 +4375,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'britishBertrandRussellConquestOfHappiness', nameKo: '버트런드 러셀 행복의정복 열정적관심 자기몰두극복 건설적일 비인칭적흥미 합리적이성', icon: '🍓', category: 'deep_master', summary: '버트런드 러셀의 행복의 정복 사상으로 자기몰두와 질투를 극복하고 외부 세계를 향한 열정적 관심과 건설적인 일의 성취를 누립니다.' },
   { key: 'germanKarlJaspersExistenzGrenzsituationen', nameKo: '카를 야스퍼스 철학 한계상황직시 실존적도약 포괄자암호해독 사랑의투쟁 이성실존조화', icon: '⛰️', category: 'deep_master', summary: '카를 야스퍼스의 실존철학으로 불가피한 한계상황을 정면으로 마주하고 진실한 실존적 소통과 초월자의 암호를 통찰합니다.' },
   { key: 'koreanMaewoldangKimSiSeupGeumoSinhwa', nameKo: '매월당 김시습 금오신화 방외인자유혼 청한절의 시공초월지순사랑 유불도삼교원융 시주자다', icon: '🪶', category: 'deep_master', summary: '매월당 김시습 선생의 금오신화 문학과 방외인 사상으로 세속을 초월한 맑은 절의와 지순한 인연, 유불도 삼교의 원융을 체득합니다.' },
+  { key: 'americanWilliamJamesPragmatism', nameKo: '윌리엄 제임스 실용주의 신념의의지 실천적현금가치 의식의흐름 다원주의 건강한영혼', icon: '🧭', category: 'deep_master', summary: '윌리엄 제임스의 실용주의와 심리학 사상으로 삶에서 구체적 차이를 만드는 실천적 현금가치와 용기 있는 신념의 의지를 발휘합니다.' },
+  { key: 'germanErichFrommArtOfLovingBeing', nameKo: '에리히 프롬 사랑의기술 소유냐존재냐 능동적배려책임 존재적실존 적극적자유 생명사랑', icon: '❤️', category: 'deep_master', summary: '에리히 프롬의 인본주의 사랑과 존재 철학으로 소유적 집착을 넘어선 능동적 배려와 존중, 적극적 자유의 충만한 삶을 실현합니다.' },
+  { key: 'koreanDanjaeShinChaeHoJoseonSanggosa', nameKo: '단재 신채호 조선상고사 아와비아주체자각 비타협자주독립 역사혼회복 민중직접혁명 낭가기개', icon: '🇰🇷', category: 'deep_master', summary: '단재 신채호 선생의 조선상고사와 주체 역사철학으로 아(我)의 주체성을 확립하고 타협 없는 자주독립과 호방한 낭가의 기개를 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4395,6 +4434,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'americanWilliamJamesPragmatism',
+    'koreanDanjaeShinChaeHoJoseonSanggosa',
     'britishBertrandRussellConquestOfHappiness',
     'koreanSambongJeongDoJeonMinbonReform',
     'koreanLeeYukSaGwangyaPeak',
@@ -4553,6 +4594,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'germanErichFrommArtOfLovingBeing',
     'koreanMaewoldangKimSiSeupGeumoSinhwa',
     'austrianMartinBuberIAndThou',
     'koreanManhaeHanYongunNimuiChimmuk',
@@ -4712,6 +4754,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'americanWilliamJamesPragmatism',
     'britishBertrandRussellConquestOfHappiness',
     'tibetanPhowaRainbowBody',
     'pythagoreanHarmoniaSpheres',
@@ -4780,6 +4823,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'germanErichFrommArtOfLovingBeing',
+    'koreanDanjaeShinChaeHoJoseonSanggosa',
+    'americanWilliamJamesPragmatism',
     'germanKarlJaspersExistenzGrenzsituationen',
     'britishBertrandRussellConquestOfHappiness',
     'koreanMaewoldangKimSiSeupGeumoSinhwa',

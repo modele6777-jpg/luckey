@@ -270,6 +270,9 @@ import { calculateKoreanSambongJeongDoJeonMinbonReform, formatKoreanSambongJeong
 import { calculateBritishBertrandRussellConquestOfHappiness, formatBritishBertrandRussellConquestOfHappinessPrompt, BRITISH_BERTRAND_RUSSELL_VERSION } from '../src/lib/divination/britishBertrandRussellConquestOfHappinessEngine';
 import { calculateGermanKarlJaspersExistenzGrenzsituationen, formatGermanKarlJaspersExistenzGrenzsituationenPrompt, GERMAN_KARL_JASPERS_VERSION } from '../src/lib/divination/germanKarlJaspersExistenzGrenzsituationenEngine';
 import { calculateKoreanMaewoldangKimSiSeupGeumoSinhwa, formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt, KOREAN_KIM_SI_SEUP_VERSION } from '../src/lib/divination/koreanMaewoldangKimSiSeupGeumoSinhwaEngine';
+import { calculateAmericanWilliamJamesPragmatism, formatAmericanWilliamJamesPragmatismPrompt, AMERICAN_WILLIAM_JAMES_VERSION } from '../src/lib/divination/americanWilliamJamesPragmatismWillToBelieveEngine';
+import { calculateGermanErichFrommArtOfLovingBeing, formatGermanErichFrommArtOfLovingBeingPrompt, GERMAN_ERICH_FROMM_VERSION } from '../src/lib/divination/germanErichFrommArtOfLovingBeingEngine';
+import { calculateKoreanDanjaeShinChaeHoJoseonSanggosa, formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt, KOREAN_DANJAE_SHIN_CHAE_HO_VERSION } from '../src/lib/divination/koreanDanjaeShinChaeHoJoseonSanggosaEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5312,6 +5315,48 @@ test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom,
   const prompt = formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(rep);
   assert(prompt.includes('매월당 김시습 《금오신화》 방외인 자유혼 & 절의·삼교원융 지표'));
   assert(prompt.includes(rep.activeMaewoldangTheme.themeTitleKo));
+});
+
+test('William James Pragmatism Will to Believe Engine: calculates Cash-Value, Will to Believe, Stream of Consciousness, and Healthy-Mindedness', () => {
+  const rep = calculateAmericanWilliamJamesPragmatism(profile);
+  assert.equal(rep.engineVersion, AMERICAN_WILLIAM_JAMES_VERSION);
+  assert(rep.practicalCashValueIndex >= 0 && rep.practicalCashValueIndex <= 100);
+  assert(rep.willToBelieveConfidenceScore >= 0 && rep.willToBelieveConfidenceScore <= 100);
+  assert(rep.streamOfConsciousnessVitalityIndex >= 0 && rep.streamOfConsciousnessVitalityIndex <= 100);
+  assert(rep.pluralisticOpennessScore >= 0 && rep.pluralisticOpennessScore <= 100);
+  assert(rep.healthyMindedResilienceIndex >= 0 && rep.healthyMindedResilienceIndex <= 100);
+  assert(rep.activeJamesTheme.themeTitleKo.length > 0);
+  const prompt = formatAmericanWilliamJamesPragmatismPrompt(rep);
+  assert(prompt.includes('윌리엄 제임스 《실용주의》 & 《신념의 의지》 실천적 현금가치 지표'));
+  assert(prompt.includes(rep.activeJamesTheme.themeTitleKo));
+});
+
+test('Erich Fromm Art of Loving Being Engine: calculates Active Care, Respect & Knowledge, Being Mode, and Positive Freedom', () => {
+  const rep = calculateGermanErichFrommArtOfLovingBeing(profile);
+  assert.equal(rep.engineVersion, GERMAN_ERICH_FROMM_VERSION);
+  assert(rep.activeCareAndResponsibilityIndex >= 0 && rep.activeCareAndResponsibilityIndex <= 100);
+  assert(rep.respectAndKnowledgeWisdomScore >= 0 && rep.respectAndKnowledgeWisdomScore <= 100);
+  assert(rep.beingModeFulfillmentIndex >= 0 && rep.beingModeFulfillmentIndex <= 100);
+  assert(rep.positiveFreedomAutonomyScore >= 0 && rep.positiveFreedomAutonomyScore <= 100);
+  assert(rep.productiveOrientationVitalityScore >= 0 && rep.productiveOrientationVitalityScore <= 100);
+  assert(rep.activeFrommTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanErichFrommArtOfLovingBeingPrompt(rep);
+  assert(prompt.includes('에리히 프롬 《사랑의 기술》 & 《소유냐 존재냐》 능동적 사랑과 존재 지표'));
+  assert(prompt.includes(rep.activeFrommTheme.themeTitleKo));
+});
+
+test('Danjae Shin Chae-ho Joseon Sanggosa Engine: calculates Ah vs Non-Ah Subjective Consciousness, Sovereign Integrity, and Nangga Spirit', () => {
+  const rep = calculateKoreanDanjaeShinChaeHoJoseonSanggosa(profile);
+  assert.equal(rep.engineVersion, KOREAN_DANJAE_SHIN_CHAE_HO_VERSION);
+  assert(rep.ahSubjectiveConsciousnessIndex >= 0 && rep.ahSubjectiveConsciousnessIndex <= 100);
+  assert(rep.uncompromisingIndependenceScore >= 0 && rep.uncompromisingIndependenceScore <= 100);
+  assert(rep.historicalIdentityReclamationScore >= 0 && rep.historicalIdentityReclamationScore <= 100);
+  assert(rep.peoplesDirectRevolutionDynamic >= 0 && rep.peoplesDirectRevolutionDynamic <= 100);
+  assert(rep.indomitableDanjaeResilienceIndex >= 0 && rep.indomitableDanjaeResilienceIndex <= 100);
+  assert(rep.activeDanjaeTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(rep);
+  assert(prompt.includes('단재 신채호 《조선상고사》 & 〈조선혁명선언〉 아(我)의 주체자각 & 자주독립 지표'));
+  assert(prompt.includes(rep.activeDanjaeTheme.themeTitleKo));
 });
 
 

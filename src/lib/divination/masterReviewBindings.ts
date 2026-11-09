@@ -1135,5 +1135,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanMaewoldangKimSiSeupGeumoSinhwa": {
     "field": "koreanMaewoldangKimSiSeupGeumoSinhwaResult",
     "traceKey": "koreanMaewoldangKimSiSeupGeumoSinhwaResult"
+  },
+  "americanWilliamJamesPragmatism": {
+    "field": "americanWilliamJamesPragmatismResult",
+    "traceKey": "americanWilliamJamesPragmatismResult"
+  },
+  "germanErichFrommArtOfLovingBeing": {
+    "field": "germanErichFrommArtOfLovingBeingResult",
+    "traceKey": "germanErichFrommArtOfLovingBeingResult"
+  },
+  "koreanDanjaeShinChaeHoJoseonSanggosa": {
+    "field": "koreanDanjaeShinChaeHoJoseonSanggosaResult",
+    "traceKey": "koreanDanjaeShinChaeHoJoseonSanggosaResult"
   }
 };
