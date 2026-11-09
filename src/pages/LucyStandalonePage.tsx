@@ -1,3 +1,4 @@
+import { LucyModeName } from '@/components/chat/LucyModeName';
 import { useSlowHorizontalScroll } from '@/hooks/useSlowHorizontalScroll';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
@@ -764,6 +765,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
 
   const isMasterMode = pro || lucyTier === 'pro';
+  const showPlusMarker = isDuoUnfolded && isActuallyUnfoldedDual && (lucyTier === 'plus' || isMasterMode);
   const isPlusMode = lucyTier === 'plus' || lucyTier === 'pro';
   const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
 
@@ -2943,7 +2945,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     >
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
       <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />
-      <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={lucyTier === 'plus'} isProMode={isMasterMode} />
+      <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={showPlusMarker} isProMode={isMasterMode} />
 
       {/* Mode Switch & Auto-TTS Toast */}
       <AnimatePresence>
@@ -3010,19 +3012,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       }
                       className="cursor-pointer flex items-center gap-1.5"
                     >
-                      {lucyTier === 'pro' ? (
-                        <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]">
-                          {(isDuoUnfolded && typeof document !== 'undefined' && Boolean(document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport'))) ? 'Lucy+ Pro' : 'Lucy Pro'}
-                        </span>
-                      ) : (isDuoUnfolded && typeof document !== 'undefined' && Boolean(document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')) && (location === '/' || location === '/chat' || location === '/lucy') && lucyTier === 'plus') ? (
-                        <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]">
-                          Lucy +
-                        </span>
-                      ) : (
-                        <span className={`flex items-center gap-1.5 font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                          Lucy
-                        </span>
-                      )}
+                      <LucyModeName plus={showPlusMarker} pro={isMasterMode} isLight={isLight} />
                     </button>
                   </h1>
                   {(lucyTier === 'pro' || pro) && (

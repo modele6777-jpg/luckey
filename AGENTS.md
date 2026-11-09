@@ -33,3 +33,8 @@ Every time a user request is completed or changes are made to the codebase:
 - Rotating an unfolded viewport must preserve the unfolded state: landscape is content left / Lucy right; portrait is content top / Lucy bottom / a horizontal menu at the very bottom.
 - Use `isDuoUnfoldedState`/`resolveDuoViewport` consistently. Rotation and keyboard height changes must not turn an inner display into a folded cover.
 - The portrait menu owns its safe-area inset; split only the space above it into equal canvases. Remove vertical-rail padding and footer minimum heights in portrait.
+
+### 6. Independent Lucy Plus / Pro Markers
+- Lucy+ → Lucy+ Pro and its reverse must keep the existing `+` marker visible and stable. Only the Pro marker changes.
+- Do not derive the transition's Plus appearance solely from `lucyTier === 'plus'`, since Pro is a separate tier value. Preserve the unfolded Plus appearance while Pro is active.
+- Folded Lucy Pro must not gain a Plus marker.
