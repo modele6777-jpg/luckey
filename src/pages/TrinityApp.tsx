@@ -1382,7 +1382,7 @@ function playDailyCardChimeAsync() {
 
     setDrawnCards(null);
     setTarotResult(null);
-    setInlineZoomedCard(null);
+    setZoomedCard(null);
     setFollowUpEntries([]);
     try {
       localStorage.removeItem('trinity_followup_tarot_entries');
