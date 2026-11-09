@@ -1,10 +1,12 @@
 /* Quiet night / botanical night: shared, opaque reading surfaces. */
-html[data-lucy-theme='starlight'] {
+/* Only standalone Lucy owns the document canvas. In a split view its
+   opaque theme lives on .lucy-chat-shell so channel auroras stay visible. */
+html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'] {
   background: var(--lucy-page-background, #101722) !important;
 }
-html[data-lucy-theme='starlight'] body,
-html[data-lucy-theme='starlight'] #root,
-html[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !important; }
+html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'] body,
+html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'] #root,
+html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'] .prism-app-shell { background: #101722 !important; }
 .lucy-chat-shell.lucy-night {
   --lucy-bg: #101722;
   --lucy-surface: #1c2735;
@@ -145,8 +147,8 @@ html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-grad
 html.light[data-lucy-period] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
 html.light[data-lucy-period] .lucy-clover-particle { color: #5d9442; filter: none; }
 html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #34835a; }
-html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #fffbf2 !important; }
-html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
+html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #fffbf2 !important; }
+html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
 
 /* Soft clouds belong to the daytime and morning sky. */
 .lucy-day-clouds { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1.2s ease; pointer-events: none; }
