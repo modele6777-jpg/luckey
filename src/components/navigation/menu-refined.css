@@ -40,15 +40,15 @@
   background: var(--menu-bg);
   flex-shrink: 0;
   border-top: 1px solid var(--menu-line);
-  height: var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) !important;
-  min-height: calc(84px + max(4px, env(safe-area-inset-bottom, 0px))) !important;
+  height: var(--sidebar-footer-height, calc(74px + max(2px, env(safe-area-inset-bottom, 0px)))) !important;
+  min-height: calc(74px + max(2px, env(safe-area-inset-bottom, 0px))) !important;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 3px;
-  padding: 4px var(--sidebar-center-inset) max(6px, env(safe-area-inset-bottom, 0px)) 0;
+  gap: 2px;
+  padding: 2px var(--sidebar-center-inset) max(2px, env(safe-area-inset-bottom, 0px)) 0;
 }
 
 .refined-menu-footer .refined-nav-item {
