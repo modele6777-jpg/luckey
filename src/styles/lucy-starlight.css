@@ -731,4 +731,4 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
 .lucy-chat-shell:not([data-lucy-period='morning']) .lucy-morning-light { opacity: 0; }
 .lucy-morning-light * { animation-play-state: paused; }
 .lucy-chat-shell[data-lucy-period='morning'] .lucy-morning-light * { animation-play-state: running; }
-.lucy-chat-footer { min-height: calc(148px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
+.lucy-chat-footer { box-sizing: border-box; }
