@@ -137,7 +137,13 @@ export function calculateAustrianMartinBuberIAndThou(
   profile?: UserProfile,
   query?: string,
 ): AustrianMartinBuberIAndThouResult {
-  const seedString = `${profile?.name ?? '남희'}_${profile?.birthday ?? '1967-08-25'}_${query ?? ''}_BUBER_ICH_DU`;
+  const p = profile as any;
+  const name = profile?.basic?.name ?? p?.name ?? '남희';
+  const birthDate = profile?.basic?.birthdate ?? p?.birthDate ?? p?.birthdate ?? '1967-08-25';
+  const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
+  const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
+
+  const seedString = `MARTIN-BUBER-ICH-UND-DU:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
