@@ -1123,5 +1123,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanSambongJeongDoJeonMinbonReform": {
     "field": "koreanSambongJeongDoJeonMinbonReformResult",
     "traceKey": "koreanSambongJeongDoJeonMinbonReformResult"
+  },
+  "britishBertrandRussellConquestOfHappiness": {
+    "field": "britishBertrandRussellConquestOfHappinessResult",
+    "traceKey": "britishBertrandRussellConquestOfHappinessResult"
+  },
+  "germanKarlJaspersExistenzGrenzsituationen": {
+    "field": "germanKarlJaspersExistenzGrenzsituationenResult",
+    "traceKey": "germanKarlJaspersExistenzGrenzsituationenResult"
+  },
+  "koreanMaewoldangKimSiSeupGeumoSinhwa": {
+    "field": "koreanMaewoldangKimSiSeupGeumoSinhwaResult",
+    "traceKey": "koreanMaewoldangKimSiSeupGeumoSinhwaResult"
   }
 };

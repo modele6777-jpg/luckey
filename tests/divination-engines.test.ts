@@ -267,6 +267,9 @@ import { calculateKoreanLeeYukSaGwangyaPeak, formatKoreanLeeYukSaGwangyaPeakProm
 import { calculateGermanSwissHermannHesseDemianSiddhartha, formatGermanSwissHermannHesseDemianSiddharthaPrompt, GERMAN_HERMANN_HESSE_VERSION } from '../src/lib/divination/germanSwissHermannHesseDemianSiddharthaEngine';
 import { calculateAustrianMartinBuberIAndThou, formatAustrianMartinBuberIAndThouPrompt, AUSTRIAN_MARTIN_BUBER_VERSION } from '../src/lib/divination/austrianMartinBuberIAndThouEngine';
 import { calculateKoreanSambongJeongDoJeonMinbonReform, formatKoreanSambongJeongDoJeonMinbonReformPrompt, KOREAN_JEONG_DO_JEON_VERSION } from '../src/lib/divination/koreanSambongJeongDoJeonMinbonReformEngine';
+import { calculateBritishBertrandRussellConquestOfHappiness, formatBritishBertrandRussellConquestOfHappinessPrompt, BRITISH_BERTRAND_RUSSELL_VERSION } from '../src/lib/divination/britishBertrandRussellConquestOfHappinessEngine';
+import { calculateGermanKarlJaspersExistenzGrenzsituationen, formatGermanKarlJaspersExistenzGrenzsituationenPrompt, GERMAN_KARL_JASPERS_VERSION } from '../src/lib/divination/germanKarlJaspersExistenzGrenzsituationenEngine';
+import { calculateKoreanMaewoldangKimSiSeupGeumoSinhwa, formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt, KOREAN_KIM_SI_SEUP_VERSION } from '../src/lib/divination/koreanMaewoldangKimSiSeupGeumoSinhwaEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5267,6 +5270,48 @@ test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Ins
   const prompt = formatKoreanSambongJeongDoJeonMinbonReformPrompt(rep);
   assert(prompt.includes('삼봉 정도전 《조선경국전·경제문감》 민본사상 & 정도(正道) 개혁 실천 지표'));
   assert(prompt.includes(rep.activeSambongTheme.themeTitleKo));
+});
+
+test('Bertrand Russell Conquest of Happiness Engine: calculates Zest for Life, Overcoming Self-Absorption, Constructive Work, and Rational Equanimity', () => {
+  const rep = calculateBritishBertrandRussellConquestOfHappiness(profile);
+  assert.equal(rep.engineVersion, BRITISH_BERTRAND_RUSSELL_VERSION);
+  assert(rep.zestForLifeIndex >= 0 && rep.zestForLifeIndex <= 100);
+  assert(rep.overcomingSelfAbsorptionIndex >= 0 && rep.overcomingSelfAbsorptionIndex <= 100);
+  assert(rep.constructiveWorkFulfillmentScore >= 0 && rep.constructiveWorkFulfillmentScore <= 100);
+  assert(rep.impersonalInterestsVitalityIndex >= 0 && rep.impersonalInterestsVitalityIndex <= 100);
+  assert(rep.rationalEquanimityResilienceScore >= 0 && rep.rationalEquanimityResilienceScore <= 100);
+  assert(rep.activeRussellTheme.themeTitleKo.length > 0);
+  const prompt = formatBritishBertrandRussellConquestOfHappinessPrompt(rep);
+  assert(prompt.includes('버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표'));
+  assert(prompt.includes(rep.activeRussellTheme.themeTitleKo));
+});
+
+test('Karl Jaspers Existenz Grenzsituationen Engine: calculates Grenzsituationen Acceptance, Existential Leap, Cipher Transcendence, and Loving Struggle Communication', () => {
+  const rep = calculateGermanKarlJaspersExistenzGrenzsituationen(profile);
+  assert.equal(rep.engineVersion, GERMAN_KARL_JASPERS_VERSION);
+  assert(rep.grenzsituationenAcceptanceScore >= 0 && rep.grenzsituationenAcceptanceScore <= 100);
+  assert(rep.existentialLeapFreedomScore >= 0 && rep.existentialLeapFreedomScore <= 100);
+  assert(rep.cipherTranscendenceInsightIndex >= 0 && rep.cipherTranscendenceInsightIndex <= 100);
+  assert(rep.lovingStruggleCommunicationScore >= 0 && rep.lovingStruggleCommunicationScore <= 100);
+  assert(rep.reasonExistenzHarmonizationIndex >= 0 && rep.reasonExistenzHarmonizationIndex <= 100);
+  assert(rep.activeJaspersTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanKarlJaspersExistenzGrenzsituationenPrompt(rep);
+  assert(prompt.includes('카를 야스퍼스 《철학》 한계상황 직시 & 초월자 암호·실존적 소통 지표'));
+  assert(prompt.includes(rep.activeJaspersTheme.themeTitleKo));
+});
+
+test('Maewoldang Kim Si-seup Geumo Sinhwa Engine: calculates Fangwairen Freedom, Clean Fidelity, Transcendent Love, and Three Teachings Harmony', () => {
+  const rep = calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(profile);
+  assert.equal(rep.engineVersion, KOREAN_KIM_SI_SEUP_VERSION);
+  assert(rep.fangwairenFreedomScore >= 0 && rep.fangwairenFreedomScore <= 100);
+  assert(rep.indomitableFidelityConscienceScore >= 0 && rep.indomitableFidelityConscienceScore <= 100);
+  assert(rep.transcendentLoveLiteraryIndex >= 0 && rep.transcendentLoveLiteraryIndex <= 100);
+  assert(rep.threeTeachingsSyncreticHarmonyIndex >= 0 && rep.threeTeachingsSyncreticHarmonyIndex <= 100);
+  assert(rep.cheonghanSolitudeTranscendenceScore >= 0 && rep.cheonghanSolitudeTranscendenceScore <= 100);
+  assert(rep.activeMaewoldangTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt(rep);
+  assert(prompt.includes('매월당 김시습 《금오신화》 방외인 자유혼 & 절의·삼교원융 지표'));
+  assert(prompt.includes(rep.activeMaewoldangTheme.themeTitleKo));
 });
 
 

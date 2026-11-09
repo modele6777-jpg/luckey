@@ -304,6 +304,9 @@ import { calculateKoreanLeeYukSaGwangyaPeak, formatKoreanLeeYukSaGwangyaPeakProm
 import { calculateGermanSwissHermannHesseDemianSiddhartha, formatGermanSwissHermannHesseDemianSiddharthaPrompt, type GermanSwissHermannHesseDemianSiddharthaResult, GERMAN_HERMANN_HESSE_VERSION } from './germanSwissHermannHesseDemianSiddharthaEngine';
 import { calculateAustrianMartinBuberIAndThou, formatAustrianMartinBuberIAndThouPrompt, type AustrianMartinBuberIAndThouResult, AUSTRIAN_MARTIN_BUBER_VERSION } from './austrianMartinBuberIAndThouEngine';
 import { calculateKoreanSambongJeongDoJeonMinbonReform, formatKoreanSambongJeongDoJeonMinbonReformPrompt, type KoreanSambongJeongDoJeonMinbonReformResult, KOREAN_JEONG_DO_JEON_VERSION } from './koreanSambongJeongDoJeonMinbonReformEngine';
+import { calculateBritishBertrandRussellConquestOfHappiness, formatBritishBertrandRussellConquestOfHappinessPrompt, type BritishBertrandRussellConquestOfHappinessResult, BRITISH_BERTRAND_RUSSELL_VERSION } from './britishBertrandRussellConquestOfHappinessEngine';
+import { calculateGermanKarlJaspersExistenzGrenzsituationen, formatGermanKarlJaspersExistenzGrenzsituationenPrompt, type GermanKarlJaspersExistenzGrenzsituationenResult, GERMAN_KARL_JASPERS_VERSION } from './germanKarlJaspersExistenzGrenzsituationenEngine';
+import { calculateKoreanMaewoldangKimSiSeupGeumoSinhwa, formatKoreanMaewoldangKimSiSeupGeumoSinhwaPrompt, type KoreanMaewoldangKimSiSeupGeumoSinhwaResult, KOREAN_KIM_SI_SEUP_VERSION } from './koreanMaewoldangKimSiSeupGeumoSinhwaEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -628,6 +631,9 @@ export interface DeterministicEngineReport {
   germanSwissHermannHesseDemianSiddharthaResult?: GermanSwissHermannHesseDemianSiddharthaResult | null;
   austrianMartinBuberIAndThouResult?: AustrianMartinBuberIAndThouResult | null;
   koreanSambongJeongDoJeonMinbonReformResult?: KoreanSambongJeongDoJeonMinbonReformResult | null;
+  britishBertrandRussellConquestOfHappinessResult?: BritishBertrandRussellConquestOfHappinessResult | null;
+  germanKarlJaspersExistenzGrenzsituationenResult?: GermanKarlJaspersExistenzGrenzsituationenResult | null;
+  koreanMaewoldangKimSiSeupGeumoSinhwaResult?: KoreanMaewoldangKimSiSeupGeumoSinhwaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3689,6 +3695,33 @@ try {
     }
   })()));
 
+  // 273. 영국 버트런드 러셀 행복의 정복 열정적 관심 & 합리적 낙관 지혜 엔진
+  const britishBertrandRussellConquestOfHappinessResult = calculateSupplement('britishBertrandRussellConquestOfHappinessResult', () => ((() => {
+    try {
+      return calculateBritishBertrandRussellConquestOfHappiness(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 274. 독일/스위스 카를 야스퍼스 실존과 한계상황 직시 & 초월자 암호 지혜 엔진
+  const germanKarlJaspersExistenzGrenzsituationenResult = calculateSupplement('germanKarlJaspersExistenzGrenzsituationenResult', () => ((() => {
+    try {
+      return calculateGermanKarlJaspersExistenzGrenzsituationen(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 275. 대한민국 매월당 김시습 금오신화 방외인 자유혼 & 절의·삼교원융 지혜 엔진
+  const koreanMaewoldangKimSiSeupGeumoSinhwaResult = calculateSupplement('koreanMaewoldangKimSiSeupGeumoSinhwaResult', () => ((() => {
+    try {
+      return calculateKoreanMaewoldangKimSiSeupGeumoSinhwa(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3999,6 +4032,9 @@ try {
     germanSwissHermannHesseDemianSiddharthaResult,
     austrianMartinBuberIAndThouResult,
     koreanSambongJeongDoJeonMinbonReformResult,
+    britishBertrandRussellConquestOfHappinessResult,
+    germanKarlJaspersExistenzGrenzsituationenResult,
+    koreanMaewoldangKimSiSeupGeumoSinhwaResult,
     tools: toolsMap,
   };
 }
@@ -4300,6 +4336,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'germanSwissHermannHesseDemianSiddhartha', nameKo: '헤르만 헤세 데미안 싯다르타 아브락사스 자아실현 양극성통합 강물의지혜 내면부름성실', icon: '🥚', category: 'deep_master', summary: '헤르만 헤세의 데미안과 싯다르타 사상으로 알을 깨고 나오는 진정한 자아실현과 만유의 흐름을 품는 강물의 지혜를 체득합니다.' },
   { key: 'austrianMartinBuberIAndThou', nameKo: '마틴 부버 나와너 인격적만남 참된대화 나그것극복 사이의영역성찰 영원한너교감', icon: '🤝', category: 'deep_master', summary: '마틴 부버의 대화철학으로 도구주의적 관계를 극복하고 온 인격을 바쳐 상대를 목적으로 마주하는 참된 만남의 지혜를 세웁니다.' },
   { key: 'koreanSambongJeongDoJeonMinbonReform', nameKo: '삼봉 정도전 조선경국전 경제문감 민본위민 정도경국 청렴공정 백년대계건국 불굴실천', icon: '🏯', category: 'deep_master', summary: '삼봉 정도전 선생의 민본사상과 정도 개혁 철학으로 백성을 하늘처럼 섬기며 공정하고 지속 가능한 제도의 기틀을 닦습니다.' },
+  { key: 'britishBertrandRussellConquestOfHappiness', nameKo: '버트런드 러셀 행복의정복 열정적관심 자기몰두극복 건설적일 비인칭적흥미 합리적이성', icon: '🍓', category: 'deep_master', summary: '버트런드 러셀의 행복의 정복 사상으로 자기몰두와 질투를 극복하고 외부 세계를 향한 열정적 관심과 건설적인 일의 성취를 누립니다.' },
+  { key: 'germanKarlJaspersExistenzGrenzsituationen', nameKo: '카를 야스퍼스 철학 한계상황직시 실존적도약 포괄자암호해독 사랑의투쟁 이성실존조화', icon: '⛰️', category: 'deep_master', summary: '카를 야스퍼스의 실존철학으로 불가피한 한계상황을 정면으로 마주하고 진실한 실존적 소통과 초월자의 암호를 통찰합니다.' },
+  { key: 'koreanMaewoldangKimSiSeupGeumoSinhwa', nameKo: '매월당 김시습 금오신화 방외인자유혼 청한절의 시공초월지순사랑 유불도삼교원융 시주자다', icon: '🪶', category: 'deep_master', summary: '매월당 김시습 선생의 금오신화 문학과 방외인 사상으로 세속을 초월한 맑은 절의와 지순한 인연, 유불도 삼교의 원융을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4356,6 +4395,7 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'britishBertrandRussellConquestOfHappiness',
     'koreanSambongJeongDoJeonMinbonReform',
     'koreanLeeYukSaGwangyaPeak',
     'americanHenryDavidThoreauWalden',
@@ -4513,6 +4553,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'koreanMaewoldangKimSiSeupGeumoSinhwa',
     'austrianMartinBuberIAndThou',
     'koreanManhaeHanYongunNimuiChimmuk',
     'scottishDavidHumeTreatiseHumanNature',
@@ -4671,6 +4712,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'britishBertrandRussellConquestOfHappiness',
     'tibetanPhowaRainbowBody',
     'pythagoreanHarmoniaSpheres',
     'taoistShangqingTwentyFourSpirits',
@@ -4700,6 +4742,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'koreanMaewoldangKimSiSeupGeumoSinhwa',
     'germanSwissHermannHesseDemianSiddhartha',
     'indianRabindranathTagoreGitanjali',
     'frenchHenriBergsonElanVital',
@@ -4737,6 +4780,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'germanKarlJaspersExistenzGrenzsituationen',
+    'britishBertrandRussellConquestOfHappiness',
+    'koreanMaewoldangKimSiSeupGeumoSinhwa',
     'germanSwissHermannHesseDemianSiddhartha',
     'austrianMartinBuberIAndThou',
     'russianLeoTolstoyCalendarOfWisdom',
