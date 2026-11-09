@@ -134,26 +134,29 @@ export function isIPhoneDuoCoverScreen(): boolean {
   const w = window.innerWidth;
   const h = window.innerHeight;
 
-  // Spanned hardware hinge active -> inner screen
+  // 📱 단일 폰 뷰포트 규격: 최소 변 너비 < 560px 또는 가로폭 < 580px은 100% 접힌 커버 스크린
+  if (Math.min(w, h) < 560 || w < 580) return true;
+
+  // 세로(Portrait, w <= h) 모드에서는 단일 화면 규격(< 768px) 또는 일반 폰 종횡비(ratio < 0.78)는 100% 접힌 단일 화면
+  if (w <= h) {
+    const ratio = Math.min(w, h) / Math.max(w, h);
+    if (ratio < 0.78 || w < 768) return true;
+  }
+
+  // Spanned hardware hinge active ONLY when viewport is truly wide enough (min >= 580px)
   try {
     if (
-      window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
-      window.matchMedia('(vertical-viewport-segments: 2)').matches ||
-      window.matchMedia('(spanning: single-fold-vertical)').matches ||
-      window.matchMedia('(spanning: single-fold-horizontal)').matches
+      (window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
+       window.matchMedia('(vertical-viewport-segments: 2)').matches ||
+       window.matchMedia('(spanning: single-fold-vertical)').matches ||
+       window.matchMedia('(spanning: single-fold-horizontal)').matches) &&
+      Math.min(w, h) >= 580
     ) {
       return false;
     }
   } catch {}
 
-  // 📱 접힌 상태(Cover Screen):
-  // 1) 세로(Portrait, w <= h) 모드에서는 종횡비가 세로로 길거나(ratio < 0.78) 단일 폰 뷰포트 너비(< 768px)는 100% 접힌 단일 화면
-  if (w <= h) {
-    const ratio = Math.min(w, h) / Math.max(w, h);
-    if (ratio < 0.78) return true;
-    if (w < 768) return true;
-  }
-  return Math.min(w, h) < 560;
+  return false;
 }
 
 /**
@@ -207,8 +210,8 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   const h = window.innerHeight;
   const isLandscape = w > h;
 
-  // 🛡️ Cover screen in portrait is strictly folded (never unfolded)
-  if (isIPhoneDuoCoverScreen()) {
+  // 🛡️ Cover screen in portrait or narrow viewport is strictly folded (never unfolded)
+  if (isIPhoneDuoCoverScreen() || Math.min(w, h) < 560 || (w <= h && w < 700)) {
     return { unfolded: false, orientation: 'portrait' };
   }
 
@@ -225,7 +228,7 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   } catch {}
 
   const ratio = Math.min(w, h) / Math.max(w, h);
-  const isInnerScreen = isSpanned || (isLandscape && w >= 768) || (w > h && ratio >= 0.75);
+  const isInnerScreen = (isSpanned && Math.min(w, h) >= 580) || (isLandscape && w >= 768) || (w > h && ratio >= 0.75 && w >= 640);
   const unfolded = isInnerScreen;
   const orientation = isLandscape ? 'landscape' : 'portrait';
   return { unfolded, orientation };
