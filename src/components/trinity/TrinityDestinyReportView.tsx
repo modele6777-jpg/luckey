@@ -220,7 +220,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
       `  * 일주: ${saju.pillars.day.full} (${saju.pillars.day.tenGodGan.name}/${saju.pillars.day.tenGodZhi.name})\n` +
       `  * 시주: ${saju.pillars.hour ? `${saju.pillars.hour.full} (${saju.pillars.hour.tenGodGan.name}/${saju.pillars.hour.tenGodZhi.name})` : '시간 미지정'}\n` +
       `- 오행 분포: 목(${saju.elements.counts.목}) 화(${saju.elements.counts.화}) 토(${saju.elements.counts.토}) 금(${saju.elements.counts.금}) 수(${saju.elements.counts.수})\n` +
-      `- ${(saju.elements.leaders?.length ?? 0) > 1 ? '가장 많은 오행' : '중심 기운'}: ${(saju.elements.leaders?.length ?? 0) > 1 ? saju.elements.strengthLabel : saju.elements.dominant.name} / 결핍 기운: ${saju.elements.lacking.name}\n` +
+      `- ${(saju.elements.strengthLabel || '').includes('기운 우세') ? '중심 기운' : '가장 많은 오행'}: ${saju.elements.strengthLabel || saju.elements.dominant.name} / 가장 적은 표면 개수: ${saju.elements.lacking.name}\n` +
       `- 용신 보약: ${saju.yongsin.name} (${saju.yongsin.actionTip})\n` +
       `- 2026 병오년 흐름: ${saju.annual2026.theme}`;
 
@@ -321,7 +321,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
       let answerText = '';
 
       const systemPrompt = `당신은 대한민국 최고의 정통 사주명리학 대가이자 직관적인 카운슬러 '루시(Lucy)'입니다.
-내담자의 사주 원국: [일간] ${saju.dayMaster.hanja} (${saju.dayMaster.symbolName}, ${saju.dayMaster.archetypeTitle}, 오행 ${saju.dayMaster.element}) / [오행 분포] ${(saju.elements.leaders?.length ?? 0) > 1 ? saju.elements.strengthLabel : saju.elements.dominant.name}, 결핍 ${saju.elements.lacking.name}. 일간 오행과 개수가 많은 오행을 같은 말로 섞지 마세요.
+내담자의 사주 원국: [일간] ${saju.dayMaster.hanja} (${saju.dayMaster.symbolName}, ${saju.dayMaster.archetypeTitle}, 오행 ${saju.dayMaster.element}) / [표면 개수] ${saju.elements.strengthLabel || saju.elements.dominant.name}. 일간 오행과 개수가 많은 오행을 같은 말로 섞지 마세요. 표면 개수 0으로 건강·재물·운명을 정하지 마세요. 시주가 없으면 6글자 부분 결과입니다.
 
 [명리 AI 마스터 심층 상담실 절대 준수 원칙]:
 1. [오직 질문에만 직접 답변]: 내담자가 문의한 구체적 질문("${q}")에 대해서만 즉시 직접 답변하세요.
@@ -1376,11 +1376,11 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-zinc-400 font-mono">
-              {(elements.leaders?.length ?? 0) > 1 ? '가장 많은 오행' : '중심 기운'}: <strong className="text-amber-300">{(elements.leaders?.length ?? 0) > 1 ? elements.strengthLabel : elements.dominant.name}</strong>
+              {(elements.strengthLabel || '').includes('기운 우세') ? '중심 기운' : '가장 많은 오행'}: <strong className="text-amber-300">{elements.strengthLabel || elements.dominant.name}</strong>
             </span>
             <span className="text-white/20">|</span>
             <span className="text-xs text-zinc-400 font-mono">
-              결핍 기운: <strong className="text-sky-300">{elements.lacking.name}</strong>
+              가장 적은 표면 개수: <strong className="text-sky-300">{elements.lacking.name}</strong>
             </span>
           </div>
         </div>
