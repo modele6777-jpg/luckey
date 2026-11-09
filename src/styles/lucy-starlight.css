@@ -814,3 +814,40 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
   border-color: var(--lucy-border) !important;
   color: var(--lucy-text) !important;
 }
+
+/* Continuous flowing horizontal marquee ticker for question recommendation chips */
+@keyframes lucy-prompts-flow {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.lucy-prompts-marquee-container {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent, black 8px, black calc(100% - 8px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8px, black calc(100% - 8px), transparent);
+}
+
+.lucy-prompts-marquee-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: max-content;
+  animation: lucy-prompts-flow 38s linear infinite;
+  will-change: transform;
+}
+
+@media (hover: hover) {
+  .lucy-prompts-marquee-container:hover .lucy-prompts-marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+.lucy-prompts-marquee-container:active .lucy-prompts-marquee-track {
+  animation-play-state: paused;
+}

@@ -145,16 +145,23 @@ export interface DuoUnfoldedState {
 
 /** Rotation-invariant geometry: a narrow phone stays folded in either direction. */
 export function resolveDuoViewport(width: number, height: number, spanned = false): DuoUnfoldedState {
+  // 1. Spanned API (hardware hinge detection)
+  if (spanned) {
+    return { unfolded: true, orientation: width > height ? 'landscape' : 'portrait' };
+  }
+
+  // 2. Explicit cover screen: any portrait phone with width < 540px is strictly folded
+  if (width <= height && width < 540) {
+    return { unfolded: false, orientation: 'portrait' };
+  }
+
+  // 3. Clear inner unfolded screen: both dimensions are large (e.g. 7.6" inner display) or wide landscape
   const shortSide = Math.min(width, height);
   const longSide = Math.max(width, height);
   const ratio = shortSide / Math.max(longSide, 1);
-  const isNarrowCoverPortrait = width <= height && (width < 500 || ratio < 0.68) && !spanned;
-  const isUnfolded = !isNarrowCoverPortrait && (
-    spanned ||
-    shortSide >= 520 ||
-    (shortSide >= 480 && ratio >= 0.70) ||
-    longSide >= 768
-  );
+
+  const isUnfolded = (shortSide >= 550 && ratio >= 0.72) || longSide >= 768 || (width > height && width >= 600);
+
   return {
     unfolded: isUnfolded,
     orientation: width > height ? 'landscape' : 'portrait',
@@ -162,7 +169,6 @@ export function resolveDuoViewport(width: number, height: number, spanned = fals
 }
 
 let lastDuoLayoutViewport: { width: number; height: number } | null = null;
-let stickyUnfoldedState: boolean | null = null;
 
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
@@ -189,23 +195,13 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   ].some(query => {
     try { return window.matchMedia(query).matches; } catch { return false; }
   });
-  const resolved = resolveDuoViewport(width, height, spanned);
 
-  const shortSide = Math.min(width, height);
-  const longSide = Math.max(width, height);
-  const ratio = shortSide / Math.max(longSide, 1);
-  const isDefiniteCoverPhone = width <= height && width < 480 && ratio < 0.62 && !spanned;
-
-  if (resolved.unfolded) {
-    stickyUnfoldedState = true;
-  } else if (isDefiniteCoverPhone) {
-    stickyUnfoldedState = false;
-  } else if (stickyUnfoldedState === true && !isDefiniteCoverPhone) {
-    // 펼쳐진 상태를 유지하여 한 화면으로 빠지는 현상을 완전히 방지
-    resolved.unfolded = true;
+  // Explicit cover screen: portrait phone with width < 540 is NEVER dual
+  if (width <= height && width < 540 && !spanned) {
+    return { unfolded: false, orientation: 'portrait' };
   }
 
-  return resolved;
+  return resolveDuoViewport(width, height, spanned);
 }
 
 function isFoldableInnerScreen(): boolean {
