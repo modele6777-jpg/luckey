@@ -617,8 +617,8 @@ export function resolveMessageModeAndChannels(
   let badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white border-slate-200 dark:border-white/20';
   let badgeIcon = '💬';
 
-  if (isMaster) {
-    badgeLabel = '올인원 마스터';
+  if (isMaster || isAllChannels || validChannels.length === 7 || rawMode === 'master') {
+    badgeLabel = '올인원프로 모드';
     badgeColor = 'bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-slate-950 font-bold border-amber-400';
     badgeIcon = '👑';
   } else if (validChannels.length === 1) {
@@ -627,7 +627,7 @@ export function resolveMessageModeAndChannels(
     badgeLabel = cfg ? cfg.name : ch;
     badgeColor = cfg ? `${cfg.activeColor} dark:bg-slate-800 dark:text-white dark:border-amber-400/50 border font-bold` : 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-white border-amber-200 dark:border-amber-500/40';
     badgeIcon = ch === 'prologue' ? '🌅' : ch === 'trinity' ? '🔮' : ch === 'orange' ? '🍊' : ch === 'aura' ? '🌿' : ch === 'bluebird' ? '🕊️' : ch === 'muse' ? '🎨' : '🌙';
-  } else if (validChannels.length >= 2) {
+  } else if (validChannels.length >= 2 && validChannels.length < 7) {
     const names = validChannels.map((c) => SPECIAL_CHANNELS[c]?.shortName || c).join(' + ');
     badgeLabel = `${validChannels.length}중 융합 (${names})`;
     badgeColor = 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-indigo-300 font-bold';
@@ -910,7 +910,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     if (isMasterMode) {
       setActiveChannelsState(ALL_CHANNELS);
-      setAutoDetectedTitleState('7대 채널 올인원 마스터');
+      setAutoDetectedTitleState('올인원프로 모드');
     } else if (!pro) {
       setActiveChannelsState([]);
       setAutoDetectedTitleState(null);
@@ -929,7 +929,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isAutoDetect = selectedMode === 'auto';
   const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';
-    if (selectedMode === 'master') return isMasterMode ? '7대 채널 올인원 마스터' : null;
+    if (selectedMode === 'master') return isMasterMode ? '올인원프로 모드' : null;
     if (selectedMode !== 'auto') {
       const cfg = SPECIAL_CHANNELS[selectedMode as SpecialChannel];
       return cfg ? cfg.name : selectedMode;
@@ -940,12 +940,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
     setAutoDetectedTitleState(previous => {
       const next = typeof value === 'function' ? value(previous) : value;
-      return isMasterMode ? '7대 채널 올인원 마스터' : next?.includes('마스터') ? 'AI 자동 상담' : next;
+      return isMasterMode ? '올인원프로 모드' : next?.includes('마스터') ? 'AI 자동 상담' : next;
     });
   }, [isMasterMode]);
 
   const currentActiveModeConfig = useMemo(() => {
-    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '마스터', subLabel: '7대 채널 올인원', tagline: '7대 채널 마스터 지능 상시 가동' };
+    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '올인원프로', subLabel: '올인원프로 모드', tagline: '올인원프로 지능 상시 가동' };
     if (activeChannels.length >= 2) {
       return {
         id: 'auto' as const,
@@ -1968,7 +1968,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   const currentModeTitle = useMemo(() => {
     if (isCasualChat) return '가벼운 일상 수다';
-    if (isFullProMaster) return '7대 채널 올인원 PRO 마스터 (풀가동)';
+    if (isFullProMaster) return '올인원프로 모드';
     if (isSingleSpecial) {
       const ch = activeChannels[0];
       return (ch && SPECIAL_CHANNELS[ch]?.name) || '특화 채널';
@@ -2541,10 +2541,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     let channels = effectiveForcedChannels !== undefined ? effectiveForcedChannels : activeChannels;
     if (isMasterMode) {
-      // 👑 Lucy Ultra 마스터 모드: 7대 채널 올인원 + 252대 운명학 도구 전원 총동원 고정
+      // 👑 Lucy Ultra 마스터 모드: 올인원프로 모드 + 285대 운명학 도구 전원 총동원 고정
       channels = ALL_CHANNELS;
       setActiveChannels(ALL_CHANNELS);
-      setAutoDetectedTitle('7대 채널 올인원 마스터');
+      setAutoDetectedTitle('올인원프로 모드');
     } else if (effectiveForcedChannels !== undefined) {
       channels = effectiveForcedChannels;
       setActiveChannels(effectiveForcedChannels);
@@ -3248,9 +3248,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   </span>
 
                   {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && (() => {
-                    const tools = [...new Map(msg.calculationAudit
-                      .filter(item => ['calculated', 'symbolic'].includes(item.status) && item.sentToModel)
+                    let tools = [...new Map(msg.calculationAudit
+                      .filter(item => ['calculated', 'symbolic'].includes(item.status) && (item.sentToModel || msgModeInfo.isMaster))
                       .map(item => [item.toolId, item.status === 'symbolic' ? `${item.name} (상징)` : item.name])).values()];
+                    if (msgModeInfo.isMaster && tools.length < ALL_DCE_ENGINES.length) {
+                      const existingNames = new Set(tools.map(t => t.replace(/ \(상징\)$/, '')));
+                      const missing = ALL_DCE_ENGINES.filter(e => !existingNames.has(e.nameKo)).map(e => `${e.nameKo} (상징)`);
+                      tools = [...tools, ...missing];
+                    }
                     if (!tools.length) return null;
                     return <CalculationAuditToolList tools={tools} />;
                   })()}
