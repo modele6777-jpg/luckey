@@ -301,6 +301,9 @@ import { calculateKoreanYunDongJuSkyWindStarsPoetry, formatKoreanYunDongJuSkyWin
 import { calculateRussianLeoTolstoyCalendarOfWisdom, formatRussianLeoTolstoyCalendarOfWisdomPrompt, type RussianLeoTolstoyCalendarOfWisdomResult, RUSSIAN_LEO_TOLSTOY_VERSION } from './russianLeoTolstoyCalendarOfWisdomEngine';
 import { calculateIndianRabindranathTagoreGitanjali, formatIndianRabindranathTagoreGitanjaliPrompt, type IndianRabindranathTagoreGitanjaliResult, INDIAN_TAGORE_GITANJALI_VERSION } from './indianRabindranathTagoreGitanjaliEngine';
 import { calculateKoreanLeeYukSaGwangyaPeak, formatKoreanLeeYukSaGwangyaPeakPrompt, type KoreanLeeYukSaGwangyaPeakResult, KOREAN_LEE_YUK_SA_VERSION } from './koreanLeeYukSaGwangyaPeakEngine';
+import { calculateGermanSwissHermannHesseDemianSiddhartha, formatGermanSwissHermannHesseDemianSiddharthaPrompt, type GermanSwissHermannHesseDemianSiddharthaResult, GERMAN_HERMANN_HESSE_VERSION } from './germanSwissHermannHesseDemianSiddharthaEngine';
+import { calculateAustrianMartinBuberIAndThou, formatAustrianMartinBuberIAndThouPrompt, type AustrianMartinBuberIAndThouResult, AUSTRIAN_MARTIN_BUBER_VERSION } from './austrianMartinBuberIAndThouEngine';
+import { calculateKoreanSambongJeongDoJeonMinbonReform, formatKoreanSambongJeongDoJeonMinbonReformPrompt, type KoreanSambongJeongDoJeonMinbonReformResult, KOREAN_JEONG_DO_JEON_VERSION } from './koreanSambongJeongDoJeonMinbonReformEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -622,6 +625,9 @@ export interface DeterministicEngineReport {
   russianLeoTolstoyCalendarOfWisdomResult?: RussianLeoTolstoyCalendarOfWisdomResult | null;
   indianRabindranathTagoreGitanjaliResult?: IndianRabindranathTagoreGitanjaliResult | null;
   koreanLeeYukSaGwangyaPeakResult?: KoreanLeeYukSaGwangyaPeakResult | null;
+  germanSwissHermannHesseDemianSiddharthaResult?: GermanSwissHermannHesseDemianSiddharthaResult | null;
+  austrianMartinBuberIAndThouResult?: AustrianMartinBuberIAndThouResult | null;
+  koreanSambongJeongDoJeonMinbonReformResult?: KoreanSambongJeongDoJeonMinbonReformResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3656,6 +3662,33 @@ try {
     }
   })()));
 
+  // 270. 독일/스위스 헤르만 헤세 데미안 & 싯다르타 아브락사스 자아실현 & 내면의 길 지혜 엔진
+  const germanSwissHermannHesseDemianSiddharthaResult = calculateSupplement('germanSwissHermannHesseDemianSiddharthaResult', () => ((() => {
+    try {
+      return calculateGermanSwissHermannHesseDemianSiddhartha(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 271. 오스트리아/유대 마틴 부버 나와 너 인격적 만남 & 진정한 대화 실존 지혜 엔진
+  const austrianMartinBuberIAndThouResult = calculateSupplement('austrianMartinBuberIAndThouResult', () => ((() => {
+    try {
+      return calculateAustrianMartinBuberIAndThou(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 272. 대한민국 삼봉 정도전 선생 조선경국전 & 경제문감 민본사상 & 정도 개혁 실천 지혜 엔진
+  const koreanSambongJeongDoJeonMinbonReformResult = calculateSupplement('koreanSambongJeongDoJeonMinbonReformResult', () => ((() => {
+    try {
+      return calculateKoreanSambongJeongDoJeonMinbonReform(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3963,6 +3996,9 @@ try {
     russianLeoTolstoyCalendarOfWisdomResult,
     indianRabindranathTagoreGitanjaliResult,
     koreanLeeYukSaGwangyaPeakResult,
+    germanSwissHermannHesseDemianSiddharthaResult,
+    austrianMartinBuberIAndThouResult,
+    koreanSambongJeongDoJeonMinbonReformResult,
     tools: toolsMap,
   };
 }
@@ -4261,6 +4297,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'russianLeoTolstoyCalendarOfWisdom', nameKo: '레프 톨스토이 인생독본 사람은무엇으로사는가 영적각성 아가페사랑 소박한노동 비폭력용서', icon: '📖', category: 'deep_master', summary: '레프 톨스토이의 인생독본 사상으로 세속적 허영을 털어내고 타인을 향한 조건 없는 사랑과 소박한 양심의 참된 평화를 누립니다.' },
   { key: 'indianRabindranathTagoreGitanjali', nameKo: '라빈드라나트 타고르 기탄잘리 동방의등불 우주적영혼합일 두려움없는자유 순수헌신', icon: '🪔', category: 'deep_master', summary: '라빈드라나트 타고르의 기탄잘리 영성으로 편협한 두려움을 넘어선 영혼의 무한한 자유와 대자연과의 신성한 합일, 꺼지지 않는 희망의 등불을 밝힙니다.' },
   { key: 'koreanLeeYukSaGwangyaPeak', nameKo: '이육사 광야 절정 청포도 강철무지개 매운계절초극 백마탄초인 가난한노래씨앗 순결지조', icon: '🇰🇷', category: 'deep_master', summary: '이육사 시인의 광야와 절정 정신으로 매운 계절의 칼날 위에서도 꺾이지 않는 강철 무지개의 기개와 황무지에 노래의 씨를 뿌리는 선구자적 지조를 세웁니다.' },
+  { key: 'germanSwissHermannHesseDemianSiddhartha', nameKo: '헤르만 헤세 데미안 싯다르타 아브락사스 자아실현 양극성통합 강물의지혜 내면부름성실', icon: '🥚', category: 'deep_master', summary: '헤르만 헤세의 데미안과 싯다르타 사상으로 알을 깨고 나오는 진정한 자아실현과 만유의 흐름을 품는 강물의 지혜를 체득합니다.' },
+  { key: 'austrianMartinBuberIAndThou', nameKo: '마틴 부버 나와너 인격적만남 참된대화 나그것극복 사이의영역성찰 영원한너교감', icon: '🤝', category: 'deep_master', summary: '마틴 부버의 대화철학으로 도구주의적 관계를 극복하고 온 인격을 바쳐 상대를 목적으로 마주하는 참된 만남의 지혜를 세웁니다.' },
+  { key: 'koreanSambongJeongDoJeonMinbonReform', nameKo: '삼봉 정도전 조선경국전 경제문감 민본위민 정도경국 청렴공정 백년대계건국 불굴실천', icon: '🏯', category: 'deep_master', summary: '삼봉 정도전 선생의 민본사상과 정도 개혁 철학으로 백성을 하늘처럼 섬기며 공정하고 지속 가능한 제도의 기틀을 닦습니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4317,6 +4356,7 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanSambongJeongDoJeonMinbonReform',
     'koreanLeeYukSaGwangyaPeak',
     'americanHenryDavidThoreauWalden',
     'scottishDavidHumeTreatiseHumanNature',
@@ -4473,6 +4513,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'austrianMartinBuberIAndThou',
     'koreanManhaeHanYongunNimuiChimmuk',
     'scottishDavidHumeTreatiseHumanNature',
     'swissJungIndividuationArchetype',
@@ -4659,6 +4700,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'germanSwissHermannHesseDemianSiddhartha',
     'indianRabindranathTagoreGitanjali',
     'frenchHenriBergsonElanVital',
     'koreanYeonamParkJiwonYeolhaIlgi',
@@ -4695,6 +4737,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'germanSwissHermannHesseDemianSiddhartha',
+    'austrianMartinBuberIAndThou',
     'russianLeoTolstoyCalendarOfWisdom',
     'indianRabindranathTagoreGitanjali',
     'koreanLeeYukSaGwangyaPeak',
