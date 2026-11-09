@@ -387,8 +387,6 @@ export default function LeftSidebarNav() {
     }
   }, [syncPrismDevices]);
 
-  useSidebarFooterHeight();
-
   const renderNavButton = ({ path, icon: Icon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');

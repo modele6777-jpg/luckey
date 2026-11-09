@@ -1030,7 +1030,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       ro.disconnect();
       window.removeEventListener('resize', updateFooterHeight);
       document.documentElement.style.removeProperty('--lucy-footer-height');
-      document.documentElement.style.removeProperty('--sidebar-footer-height');
+      // --sidebar-footer-height는 채널 이동 시에도 메뉴 분할선 위치를 일치시키기 위해 유지
     };
   }, []);
 
@@ -1046,7 +1046,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       setLucyTier(expected);
       setModeTransitioningTier(expected);
       setTimeout(() => setModeTransitioningTier(null), 550);
-      triggerHaptic('whitehole');
+      try { triggerHaptic('whitehole'); } catch (_) {}
       setModeSwitchToast(expected === 'plus' ? '🌿 Lucy +' : '✨ Lucy');
       setTimeout(() => setModeSwitchToast(null), 2000);
     }
@@ -3466,7 +3466,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       <footer 
         ref={chatFooterRef}
         style={{
-          paddingBottom: 'max(2px, calc(var(--sab, 0px) * 0.35))',
+          paddingBottom: 'max(2px, env(safe-area-inset-bottom, 0px))',
           backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
           color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',

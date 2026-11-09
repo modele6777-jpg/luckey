@@ -553,7 +553,7 @@
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
+    bottom: calc(var(--sidebar-footer-height, calc(82px + max(2px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
     left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
     right: auto !important;
     transform: translateX(-50%) !important;
@@ -569,7 +569,7 @@
   }
   @media (min-width: 640px) {
     .bottom-safe-fab-center {
-      bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
+      bottom: calc(var(--sidebar-footer-height, calc(82px + max(2px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
       width: 84px !important;
       height: 84px !important;
     }
@@ -3243,7 +3243,7 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
 .bottom-safe-fab-center {
   left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
   right: auto !important;
-  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
+  bottom: calc(var(--sidebar-footer-height, calc(82px + max(2px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   transform: translateX(-50%) !important;
@@ -3271,12 +3271,12 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .sites-pinned-sidebar {
 }
 
 /* The chat composer owns the lower edge; align the Big Bang FAB (including outer rune ring) directly above the composer's
-   divider line using its measured height + 48px offset. */
+   divider line using its measured height + 44px offset. */
 html.in-lucy-chat .bottom-safe-fab-center,
 .lucy-chat-shell ~ .bottom-safe-fab-center,
 body:has(.lucy-chat-footer) .bottom-safe-fab-center,
 .bottom-safe-fab-center {
-  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
+  bottom: calc(var(--sidebar-footer-height, calc(82px + max(2px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
 }
 html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   position: absolute !important;
@@ -3295,6 +3295,17 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
 /* 🌌 좌측 럭키채널 테마: 접힌 상태와 동일한 고유 테마 배경 복원 */
 #duo-content-viewport {
   background-color: var(--app-bg, oklch(0.08 0.02 270));
+}
+
+/* 🌌 듀오 중앙 검은선 및 세로 분할선 완전 제거: 좌측·우측 뷰포트 사이 경계선 완전 소멸 */
+#duo-content-viewport,
+#duo-lucy-viewport {
+  border: none !important;
+  border-right: none !important;
+  border-left: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 
 /* 럭키채널 뷰포트 내 UI 크기 최적화: 50% 분할 폭에 맞춰 단일 컬럼으로 편안하게 안착 */
@@ -3360,7 +3371,7 @@ body.duo-unfolded-landscape .bottom-safe-fab-center {
   margin-left: 0 !important;
   margin-right: 0 !important;
   transform: translateX(-50%) !important;
-  bottom: calc(var(--sidebar-footer-height, var(--lucy-footer-height, calc(var(--sab, 0px) + 8.75rem))) + 48px) !important;
+  bottom: calc(var(--sidebar-footer-height, calc(82px + max(2px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
 }
 
 html.duo-unfolded-landscape .prism-hub-header {
