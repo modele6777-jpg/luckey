@@ -747,11 +747,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
         const isWide = isDuoContainer || isDuoUnfoldedState().unfolded;
         const search = window.location.search || '';
         const path = window.location.pathname || '/';
+        // 🌟 절대 원칙: 펼친 화면(isWide)이면서 좌측 코스믹 룸(path === '/' | '/chat' | '/lucy')일 때만 'plus'!
+        // 접힌 상태이거나 다른 채널(Key, 세도나 등)일 때는 무조건 기본 'ai' (Lucy)
         const isCosmic = isWide && (path === '/' || path === '/chat' || path === '/lucy');
         if (search.includes('mode=pro') || search.includes('mode=ultra')) return 'pro';
         if (search.includes('mode=ai')) return 'ai';
-        if (search.includes('mode=plus')) return isWide ? 'plus' : 'ai';
-        // 접힘: 'ai', 펼침: 코스믹 룸일 때만 'plus', 다른 채널일 땐 'ai'
         return isCosmic ? 'plus' : 'ai';
       }
     } catch {
@@ -1034,16 +1034,17 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     };
   }, []);
 
-  // 🧭 채널 이동 감지: 펼친 상태에서 채팅 버튼 눌러 코스믹 룸 진입 시 'Lucy+', 다른 채널일 땐 'Lucy'로 정밀 자동 전환
+  // 🧭 채널 이동 감지: 펼친 상태에서 채팅 버튼 눌러 코스믹 룸 진입 시 'Lucy+', 그 외 모든 경우(접힘 또는 다른 채널)엔 무조건 'Lucy'
   useEffect(() => {
-    if (pro) return;
-    if (lucyTier === 'pro') return;
+    if (pro || lucyTier === 'pro') return;
     const isWide = isDuoContainer || isDuoUnfoldedState().unfolded;
     const clean = location ? location.split('?')[0].split('#')[0] : '/';
     const isCosmic = isWide && (clean === '/' || clean === '/chat' || clean === '/lucy');
     const expected: LucyTier = isCosmic ? 'plus' : 'ai';
     if (lucyTier !== expected) {
       setLucyTier(expected);
+      safeLocalStorage.setItem('lucy_tier_mode', expected);
+      safeSessionStorage.setItem('lucy_tier_mode', expected);
       setModeTransitioningTier(expected);
       setTimeout(() => setModeTransitioningTier(null), 550);
       try { triggerHaptic('whitehole'); } catch (_) {}
@@ -1058,11 +1059,15 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       if (typeof window === 'undefined') return;
       const unfolded = isDuoContainer || isDuoUnfoldedState().unfolded;
       setIsDuoUnfolded((prev) => {
+        const clean = window.location.pathname || '/';
+        const isCosmic = unfolded && (clean === '/' || clean === '/chat' || clean === '/lucy');
+        const targetTier: LucyTier = isCosmic ? 'plus' : 'ai';
+
         if (initialRun) {
           initialRun = false;
           setLucyTier((current) => {
             if (current === 'pro') return 'pro';
-            return unfolded ? 'plus' : 'ai';
+            return targetTier;
           });
           return unfolded;
         }
@@ -1072,7 +1077,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
             if (currentTier === 'pro') {
               setModeTransitioningTier('pro');
               setTimeout(() => setModeTransitioningTier(null), 550);
-              triggerHaptic('whitehole');
+              try { triggerHaptic('whitehole'); } catch (_) {}
               setModeSwitchToast(
                 unfolded
                   ? `👑 듀오 펼침 · Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
@@ -1081,26 +1086,14 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'pro';
             }
-            // 일반 상태: 펼칠 때는 '+'가 옅음에서 진해지고, 접을 때는 '+'만 진한 상태에서 다시 옅어짐!
-            if (unfolded) {
-              safeLocalStorage.setItem('lucy_tier_mode', 'plus');
-              safeSessionStorage.setItem('lucy_tier_mode', 'plus');
-              setModeTransitioningTier('plus');
-              setTimeout(() => setModeTransitioningTier(null), 550);
-              triggerHaptic('whitehole');
-              setModeSwitchToast('🌿 듀오 펼침 · Lucy +');
-              setTimeout(() => setModeSwitchToast(null), 2000);
-              return 'plus';
-            } else {
-              safeLocalStorage.setItem('lucy_tier_mode', 'ai');
-              safeSessionStorage.setItem('lucy_tier_mode', 'ai');
-              setModeTransitioningTier('plus');
-              setTimeout(() => setModeTransitioningTier(null), 550);
-              triggerHaptic('whitehole');
-              setModeSwitchToast('✨ 듀오 접힘 · Lucy');
-              setTimeout(() => setModeSwitchToast(null), 2000);
-              return 'ai';
-            }
+            safeLocalStorage.setItem('lucy_tier_mode', targetTier);
+            safeSessionStorage.setItem('lucy_tier_mode', targetTier);
+            setModeTransitioningTier(targetTier);
+            setTimeout(() => setModeTransitioningTier(null), 550);
+            try { triggerHaptic('whitehole'); } catch (_) {}
+            setModeSwitchToast(targetTier === 'plus' ? '🌿 듀오 펼침 · Lucy +' : '✨ 듀오 접힘 · Lucy');
+            setTimeout(() => setModeSwitchToast(null), 2000);
+            return targetTier;
           });
         }
         return unfolded;
@@ -1116,24 +1109,6 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       window.visualViewport?.removeEventListener('resize', handleLayoutChange);
     };
   }, []);
-
-  // 🌟 듀얼 화면 펼침 상태에서 일반 루시(AI) 진입 원천 차단 (최소 Lucy + 또는 Lucy+ Pro 보장)
-  // 반대로 접힘 상태에서는 루시 플러스(Plus) 진입 원천 차단 (오직 Lucy AI 또는 Lucy Pro 보장)
-  useEffect(() => {
-    if (isDuoUnfolded) {
-      if (lucyTier === 'ai') {
-        setLucyTier('plus');
-        safeLocalStorage.setItem('lucy_tier_mode', 'plus');
-        safeSessionStorage.setItem('lucy_tier_mode', 'plus');
-      }
-    } else {
-      if (lucyTier === 'plus') {
-        setLucyTier('ai');
-        safeLocalStorage.setItem('lucy_tier_mode', 'ai');
-        safeSessionStorage.setItem('lucy_tier_mode', 'ai');
-      }
-    }
-  }, [isDuoUnfolded, lucyTier]);
 
   const currentGhostPromptRef = useRef<string>('');
   const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');
@@ -2181,9 +2156,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   //  Dynamic PWA Manifest & iOS Home-screen Metadata Switcher
   useEffect(() => {
     const prevTitle = document.title;
+    const isCosmic = isDuoUnfolded && (location === '/' || location === '/chat' || location === '/lucy');
     const activeTitle = (lucyTier === 'pro' || pro)
       ? (isDuoUnfolded ? 'Lucy+ Pro' : 'Lucy Pro')
-      : (lucyTier === 'plus' ? 'Lucy +' : 'Lucy');
+      : (lucyTier === 'plus' && isCosmic ? 'Lucy +' : 'Lucy');
     document.title = activeTitle;
 
     let manifestTag = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
@@ -2972,7 +2948,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                     <button
                       type="button"
                       onClick={() => {
-                        const next: LucyTier = isDuoUnfolded ? 'plus' : 'ai';
+                        const isCosmic = isDuoUnfolded && (location === '/' || location === '/chat' || location === '/lucy');
+                        const next: LucyTier = isCosmic ? 'plus' : 'ai';
                         setLucyTier(next);
                         safeLocalStorage.setItem('lucy_tier_mode', next);
                         safeSessionStorage.setItem('lucy_tier_mode', next);
@@ -2993,12 +2970,12 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]">
                           {isDuoUnfolded ? 'Lucy+ Pro' : 'Lucy Pro'}
                         </span>
-                      ) : lucyTier === 'plus' ? (
+                      ) : (lucyTier === 'plus' && isDuoUnfolded && (location === '/' || location === '/chat' || location === '/lucy')) ? (
                         <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]">
                           Lucy +
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1.5 font-black text-white">
+                        <span className={`flex items-center gap-1.5 font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
                           Lucy
                         </span>
                       )}
@@ -3466,12 +3443,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       <footer 
         ref={chatFooterRef}
         style={{
-          paddingBottom: 'max(2px, env(safe-area-inset-bottom, 0px))',
+          paddingTop: '2px',
+          paddingBottom: 'max(4px, env(safe-area-inset-bottom, 0px))',
           backgroundColor: isLight ? 'rgba(255, 255, 255, 0.96)' : undefined,
           color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',
         }}
-        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 pt-0.5 pb-0.5 sm:pt-1 sm:pb-1 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 ${
+        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 ${
           isLight
             ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_-2px_12px_rgba(180,140,90,0.06)]'
             : 'bg-slate-950/88 border-white/10 text-white'

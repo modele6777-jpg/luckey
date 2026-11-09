@@ -133,7 +133,25 @@ export function isIPhoneDuoCoverScreen(): boolean {
   if (typeof window === 'undefined') return false;
   const w = window.innerWidth;
   const h = window.innerHeight;
-  return Math.min(w, h) < 580;
+
+  // Spanned hardware hinge active -> inner screen
+  try {
+    if (
+      window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
+      window.matchMedia('(vertical-viewport-segments: 2)').matches ||
+      window.matchMedia('(spanning: single-fold-vertical)').matches ||
+      window.matchMedia('(spanning: single-fold-horizontal)').matches
+    ) {
+      return false;
+    }
+  } catch {}
+
+  // 📱 접힌 상태(Cover Screen): 세로(Portrait) 모드에서 폰 화면 너비(< 600px)이거나 종횡비가 세로로 긴(h / w >= 1.35) 단일 화면
+  if (w < h) {
+    if (w < 600) return true;
+    if (h / Math.max(w, 1) >= 1.35 && w < 768) return true;
+  }
+  return Math.min(w, h) < 560;
 }
 
 /**
@@ -170,12 +188,8 @@ export function isDualPaneLayout(): boolean {
   if (isSurfaceDuoOrDualScreen() && (w >= 600 || isLandscape)) return true;
   if (isGalaxyFoldSeClass() && !isFoldCoverScreen()) return true;
 
-  // Tablet / Desktop Wide View (iPad, Galaxy Tab, desktop window >= 720px)
-  if (w >= 720) return true;
-
-  // iPhone Duo 7.6" inner screen in landscape and portrait
-  if (Math.min(w, h) >= 440 && Math.max(w, h) >= 580 && (Math.min(w, h) / Math.max(w, h)) >= 0.65) return true;
-  if (Math.min(w, h) >= 480) return true;
+  // Tablet / Desktop Wide View (iPad, Galaxy Tab, desktop window >= 768px)
+  if (w >= 768) return true;
 
   return false;
 }
@@ -203,9 +217,14 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
     }
   } catch {}
 
+  // 🛡️ Cover screen in portrait is strictly folded (never unfolded)
+  if (isIPhoneDuoCoverScreen()) {
+    return { unfolded: false, orientation: 'portrait' };
+  }
+
   if (!isSpanned && Math.min(w, h) < 580) return { unfolded: false, orientation: isLandscape ? 'landscape' : 'portrait' };
-  const isInnerScreen = isSpanned || Math.min(w, h) >= 580;
-  const unfolded = isInnerScreen || isDualPaneLayout();
+  const isInnerScreen = isSpanned || (Math.min(w, h) >= 600 && (isLandscape || w >= 600));
+  const unfolded = isInnerScreen || (isLandscape && w >= 680);
   const orientation = isLandscape ? 'landscape' : 'portrait';
   return { unfolded, orientation };
 }
