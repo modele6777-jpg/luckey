@@ -258,6 +258,9 @@ import { calculateManhaeHanYongunNimuiChimmuk, formatManhaeHanYongunNimuiChimmuk
 import { calculateGottfriedLeibnizMonadologyHarmony, formatGottfriedLeibnizMonadologyHarmonyPrompt, GERMAN_GOTTFRIED_LEIBNIZ_VERSION } from '../src/lib/divination/germanGottfriedLeibnizMonadologyHarmonyEngine';
 import { calculateJohnLockeHumanUnderstanding, formatJohnLockeHumanUnderstandingPrompt, BRITISH_JOHN_LOCKE_VERSION } from '../src/lib/divination/britishJohnLockeHumanUnderstandingEngine';
 import { calculateHyechoWangOcheonchukgukjeon, formatHyechoWangOcheonchukgukjeonPrompt, KOREAN_HYECHO_VERSION } from '../src/lib/divination/koreanHyechoWangOcheonchukgukjeonEngine';
+import { calculateAncientGreekPlotinusEnneadsHenosis, formatAncientGreekPlotinusEnneadsHenosisPrompt, ANCIENT_GREEK_PLOTINUS_VERSION } from '../src/lib/divination/ancientGreekPlotinusEnneadsHenosisEngine';
+import { calculateScottishAdamSmithMoralSentiments, formatScottishAdamSmithMoralSentimentsPrompt, SCOTTISH_ADAM_SMITH_VERSION } from '../src/lib/divination/scottishAdamSmithMoralSentimentsEngine';
+import { calculateKoreanYunDongJuSkyWindStarsPoetry, formatKoreanYunDongJuSkyWindStarsPoetryPrompt, KOREAN_YUN_DONG_JU_VERSION } from '../src/lib/divination/koreanYunDongJuSkyWindStarsPoetryEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5132,6 +5135,48 @@ test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit
   const prompt = formatHyechoWangOcheonchukgukjeonPrompt(rep);
   assert(prompt.includes('혜초 《왕오천축국전》 구도 순례 & 역경 극복 지표'));
   assert(prompt.includes(rep.activeHyechoTheme.themeTitleKo));
+});
+
+test('Plotinus Enneads Henosis Engine: calculates The One, Nous, Psyche, Henosis, and Inner Beauty Sculpting', () => {
+  const rep = calculateAncientGreekPlotinusEnneadsHenosis(profile);
+  assert.equal(rep.engineVersion, ANCIENT_GREEK_PLOTINUS_VERSION);
+  assert(rep.theOneSupremeSourceEmanationScore >= 0 && rep.theOneSupremeSourceEmanationScore <= 100);
+  assert(rep.nousIntellectualContemplationIndex >= 0 && rep.nousIntellectualContemplationIndex <= 100);
+  assert(rep.psycheSoulSelfCultivationScore >= 0 && rep.psycheSoulSelfCultivationScore <= 100);
+  assert(rep.henosisMysticAscentUnionIndex >= 0 && rep.henosisMysticAscentUnionIndex <= 100);
+  assert(rep.innerBeautySculptingVirtueScore >= 0 && rep.innerBeautySculptingVirtueScore <= 100);
+  assert(rep.activePlotinusTheme.themeTitleKo.length > 0);
+  const prompt = formatAncientGreekPlotinusEnneadsHenosisPrompt(rep);
+  assert(prompt.includes('플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표'));
+  assert(prompt.includes(rep.activePlotinusTheme.themeTitleKo));
+});
+
+test('Adam Smith Moral Sentiments Engine: calculates Impartial Spectator, Sympathy, Self-Command, and Praiseworthiness', () => {
+  const rep = calculateScottishAdamSmithMoralSentiments(profile);
+  assert.equal(rep.engineVersion, SCOTTISH_ADAM_SMITH_VERSION);
+  assert(rep.impartialSpectatorConscienceScore >= 0 && rep.impartialSpectatorConscienceScore <= 100);
+  assert(rep.mutualSympathyFellowFeelingIndex >= 0 && rep.mutualSympathyFellowFeelingIndex <= 100);
+  assert(rep.selfCommandEquanimityScore >= 0 && rep.selfCommandEquanimityScore <= 100);
+  assert(rep.justiceBeneficenceHarmonyIndex >= 0 && rep.justiceBeneficenceHarmonyIndex <= 100);
+  assert(rep.praiseworthinessIntegrityScore >= 0 && rep.praiseworthinessIntegrityScore <= 100);
+  assert(rep.activeAdamSmithTheme.themeTitleKo.length > 0);
+  const prompt = formatScottishAdamSmithMoralSentimentsPrompt(rep);
+  assert(prompt.includes('아담 스미스 《도덕감정론》 공정한 관찰자 & 공감·자기통제 지표'));
+  assert(prompt.includes(rep.activeAdamSmithTheme.themeTitleKo));
+});
+
+test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Wellspring Reflection, Compassion, and Lantern of Hope', () => {
+  const rep = calculateKoreanYunDongJuSkyWindStarsPoetry(profile);
+  assert.equal(rep.engineVersion, KOREAN_YUN_DONG_JU_VERSION);
+  assert(rep.pureConscienceIntegrityScore >= 0 && rep.pureConscienceIntegrityScore <= 100);
+  assert(rep.wellspringSelfReflectiveSincerityIndex >= 0 && rep.wellspringSelfReflectiveSincerityIndex <= 100);
+  assert(rep.leafBreezeCompassionSensibilityScore >= 0 && rep.leafBreezeCompassionSensibilityScore <= 100);
+  assert(rep.starCountingImmortalLoveIndex >= 0 && rep.starCountingImmortalLoveIndex <= 100);
+  assert(rep.lanternHopeResilienceScore >= 0 && rep.lanternHopeResilienceScore <= 100);
+  assert(rep.activeYunDongJuTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanYunDongJuSkyWindStarsPoetryPrompt(rep);
+  assert(prompt.includes('윤동주 《하늘과 바람과 별과 시》 순결한 양심 & 실존성찰 지표'));
+  assert(prompt.includes(rep.activeYunDongJuTheme.themeTitleKo));
 });
 
 

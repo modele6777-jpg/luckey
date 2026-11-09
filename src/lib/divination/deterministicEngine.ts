@@ -295,6 +295,9 @@ import { calculateManhaeHanYongunNimuiChimmuk, formatManhaeHanYongunNimuiChimmuk
 import { calculateGottfriedLeibnizMonadologyHarmony, formatGottfriedLeibnizMonadologyHarmonyPrompt, type GottfriedLeibnizMonadologyHarmonyResult, GERMAN_GOTTFRIED_LEIBNIZ_VERSION } from './germanGottfriedLeibnizMonadologyHarmonyEngine';
 import { calculateJohnLockeHumanUnderstanding, formatJohnLockeHumanUnderstandingPrompt, type JohnLockeHumanUnderstandingResult, BRITISH_JOHN_LOCKE_VERSION } from './britishJohnLockeHumanUnderstandingEngine';
 import { calculateHyechoWangOcheonchukgukjeon, formatHyechoWangOcheonchukgukjeonPrompt, type HyechoWangOcheonchukgukjeonResult, KOREAN_HYECHO_VERSION } from './koreanHyechoWangOcheonchukgukjeonEngine';
+import { calculateAncientGreekPlotinusEnneadsHenosis, formatAncientGreekPlotinusEnneadsHenosisPrompt, type AncientGreekPlotinusEnneadsHenosisResult, ANCIENT_GREEK_PLOTINUS_VERSION } from './ancientGreekPlotinusEnneadsHenosisEngine';
+import { calculateScottishAdamSmithMoralSentiments, formatScottishAdamSmithMoralSentimentsPrompt, type ScottishAdamSmithMoralSentimentsResult, SCOTTISH_ADAM_SMITH_VERSION } from './scottishAdamSmithMoralSentimentsEngine';
+import { calculateKoreanYunDongJuSkyWindStarsPoetry, formatKoreanYunDongJuSkyWindStarsPoetryPrompt, type KoreanYunDongJuSkyWindStarsPoetryResult, KOREAN_YUN_DONG_JU_VERSION } from './koreanYunDongJuSkyWindStarsPoetryEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -610,6 +613,9 @@ export interface DeterministicEngineReport {
   gottfriedLeibnizMonadologyHarmonyResult?: GottfriedLeibnizMonadologyHarmonyResult | null;
   johnLockeHumanUnderstandingResult?: JohnLockeHumanUnderstandingResult | null;
   hyechoWangOcheonchukgukjeonResult?: HyechoWangOcheonchukgukjeonResult | null;
+  ancientGreekPlotinusEnneadsHenosisResult?: AncientGreekPlotinusEnneadsHenosisResult | null;
+  scottishAdamSmithMoralSentimentsResult?: ScottishAdamSmithMoralSentimentsResult | null;
+  koreanYunDongJuSkyWindStarsPoetryResult?: KoreanYunDongJuSkyWindStarsPoetryResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3590,6 +3596,33 @@ try {
     }
   })()));
 
+  // 264. 고대 그리스/로마 플로티노스 엔네아데스 일자유출설 & 영적 귀환·내면합일 지혜 엔진
+  const ancientGreekPlotinusEnneadsHenosisResult = calculateSupplement('ancientGreekPlotinusEnneadsHenosisResult', () => ((() => {
+    try {
+      return calculateAncientGreekPlotinusEnneadsHenosis(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 265. 스코틀랜드 아담 스미스 도덕감정론 공정한 관찰자 & 공감·자기통제 도덕감정 지혜 엔진
+  const scottishAdamSmithMoralSentimentsResult = calculateSupplement('scottishAdamSmithMoralSentimentsResult', () => ((() => {
+    try {
+      return calculateScottishAdamSmithMoralSentiments(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 266. 대한민국 윤동주 시인 하늘과 바람과 별과 시 순결한 양심 & 별 헤는 밤·자화상 실존성찰 지혜 엔진
+  const koreanYunDongJuSkyWindStarsPoetryResult = calculateSupplement('koreanYunDongJuSkyWindStarsPoetryResult', () => ((() => {
+    try {
+      return calculateKoreanYunDongJuSkyWindStarsPoetry(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3891,6 +3924,9 @@ try {
     gottfriedLeibnizMonadologyHarmonyResult,
     johnLockeHumanUnderstandingResult,
     hyechoWangOcheonchukgukjeonResult,
+    ancientGreekPlotinusEnneadsHenosisResult,
+    scottishAdamSmithMoralSentimentsResult,
+    koreanYunDongJuSkyWindStarsPoetryResult,
     tools: toolsMap,
   };
 }
@@ -4183,6 +4219,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'germanGottfriedLeibnizMonadologyHarmony', nameKo: '라이프니츠 단자론 예정조화설 최선의세계 충족이유율 미소지각과통각', icon: '🌌', category: 'deep_master', summary: '고트프리트 빌헬름 라이프니츠의 단자론과 예정조화 철학으로 우주의 유기적 조화를 통찰하고 충족이유율과 최선의 세계를 향한 긍정을 회복합니다.' },
   { key: 'britishJohnLockeHumanUnderstanding', nameKo: '존 로크 인간오성론 백지상태 감각과반성 천부인권 사회계약 관용과분별', icon: '📜', category: 'deep_master', summary: '존 로크의 경험론과 자연권 철학으로 편견 없는 열린 지성을 닦고 침해할 수 없는 인권과 상호 신뢰의 평화적 관용을 확립합니다.' },
   { key: 'koreanHyechoWangOcheonchukgukjeon', nameKo: '혜초 왕오천축국전 구도순례개척 실크로드횡단 설산사막극복 망향시평정 문명포용', icon: '🐪', category: 'deep_master', summary: '신라 혜초 스님의 왕오천축국전 구도 순례 정신으로 미지의 극한 역경을 뚫고 만방의 문명을 포용하며 내면의 고요한 평정심을 지켜냅니다.' },
+  { key: 'ancientGreekPlotinusEnneadsHenosis', nameKo: '플로티노스 엔네아데스 일자유출설 누스관조 프쉬케조화 헤노시스합일 내면조각정화', icon: '🏛️', category: 'deep_master', summary: '플로티노스의 엔네아데스 신플라톤주의 철학으로 만유의 근원인 일자와 교감하고 영혼의 군더더기를 깎아내어 지고의 영적 귀환을 이룹니다.' },
+  { key: 'scottishAdamSmithMoralSentiments', nameKo: '아담 스미스 도덕감정론 공정한관찰자 동류의식공감 고결한자기통제 정의와인애 칭찬받을자격', icon: '⚖️', category: 'deep_master', summary: '아담 스미스의 도덕감정론 철학으로 가슴속 공정한 관찰자를 깨워 양심을 성찰하고 타인과 깊이 공감하며 품위 있는 자기통제를 확립합니다.' },
+  { key: 'koreanYunDongJuSkyWindStarsPoetry', nameKo: '윤동주 하늘과바람과별과시 순결한양심 우물속자화상 잎새에이는바람연민 별헤는밤사랑 등불희망', icon: '⭐', category: 'deep_master', summary: '윤동주 시인의 하늘과 바람과 별과 시 정신으로 한 점 부끄럼 없는 결백한 양심을 지키고 모든 죽어가는 것을 사랑하며 어둠 속 등불을 밝힙니다.' },
 ];
 
 export function getFiredEngineBadges(
