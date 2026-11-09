@@ -23,7 +23,6 @@ import {
   getBgmPublicState,
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
-import { unlockAudioPlayback } from '@/lib/audio';
 import { isDualPaneLayout } from '@/lib/perfMode';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
@@ -286,7 +285,6 @@ export default function LeftSidebarNav() {
       return;
     }
     triggerHaptic('whitehole');
-    unlockAudioPlayback();
     window.dispatchEvent(new CustomEvent('prism:toggle_bgm'));
   }, []);
 

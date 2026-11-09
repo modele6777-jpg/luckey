@@ -50,7 +50,6 @@ import { hasUnlockedPinToday, markPinUnlockedToday, clearPinUnlockedToday, getTo
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
-import { unlockAudioPlayback, primeTTSAudioElement } from '../lib/audio';
 import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
@@ -353,12 +352,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     persona?: PersonaType | 'epilogue' | string,
     options?: { autoSendPrompt?: string; draftPrompt?: string; mode?: string }
   ) => {
-    // 🔊 사용자 터치/클릭 제스처 내에서 오디오 컨텍스트 및 TTS 엘리먼트를 즉시 언락
-    try {
-      unlockAudioPlayback();
-      primeTTSAudioElement();
-    } catch (_) {}
-
+    // Navigation alone must never start silent audio or request audio focus.
     const targetPersona: PersonaType = persona === 'epilogue' ? 'lucy' : ((persona as any) || 'lucy');
     setActivePersona(targetPersona);
     if (typeof window !== 'undefined') {

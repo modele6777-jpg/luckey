@@ -1,3 +1,4 @@
+import { installAudioMixingPolicy } from './lib/audioMixingPolicy';
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
@@ -34,6 +35,7 @@ if (typeof window !== 'undefined') {
   }, true);
 }
 
+installAudioMixingPolicy();
 if (typeof window !== 'undefined') installSingleAppReload(window);
 initPerfMode();
 initNarrowPhoneClass();

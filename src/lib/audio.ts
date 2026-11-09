@@ -35,7 +35,7 @@ export function getSharedAudioContext(): AudioContext {
     throw new Error('AudioContext is only available in a browser with Web Audio support');
   }
 
-  // Preserve the playback session while TTS owns audio; otherwise use ambient.
+  // All sound, including BGM and speech, uses a nonexclusive ambient session.
   configureAmbientAudioSession();
 
   if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
@@ -648,7 +648,6 @@ export function configurePlaybackAudioSession(): void { configureAmbientAudioSes
 export function configureSpeechAudioSession(): void {
   speechSessionActive = true;
   configureAmbientAudioSession();
-  if (typeof window !== 'undefined') primeSpeechMedia();
 }
 
 export function getTTSAudioElement(): HTMLAudioElement {

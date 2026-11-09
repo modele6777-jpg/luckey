@@ -1599,10 +1599,6 @@ export function BgMusicPlayer() {
       const { name, url, artist, trackKey, persist = true } = customEvent.detail || {};
       if (!url || !name) return;
 
-      try {
-        getSharedAudioContext();
-      } catch (_) {}
-
       const trackIndex = upsertCustomBgmTrack({
         name,
         url,
@@ -1620,6 +1616,7 @@ export function BgMusicPlayer() {
     const handleRegisterCustomBgm = (e: Event) => handleCustomBgmEvent(e, false);
 
     const handleUnlockAudio = () => {
+      if (!isPlayingRef.current) return;
       try {
         const ctx = getSharedAudioContext();
         if (ctx.state === 'suspended') {

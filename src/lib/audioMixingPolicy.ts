@@ -9,3 +9,20 @@ export function applyAudioMixingPolicy(): void {
     if (session && session.type !== 'ambient') session.type = 'ambient';
   } catch { /* Session selection is unavailable on some browsers/iOS versions. */ }
 }
+
+let installed = false;
+
+/** Establish mixing before any channel can create audio, without starting audio. */
+export function installAudioMixingPolicy(): void {
+  if (installed || typeof window === 'undefined' || typeof document === 'undefined') return;
+  installed = true;
+  applyAudioMixingPolicy();
+  window.addEventListener('pointerdown', applyAudioMixingPolicy, { capture: true, passive: true });
+  window.addEventListener('keydown', applyAudioMixingPolicy, { capture: true });
+  window.addEventListener('pageshow', applyAudioMixingPolicy);
+  window.addEventListener('focus', applyAudioMixingPolicy);
+  document.addEventListener('play', applyAudioMixingPolicy, true);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') applyAudioMixingPolicy();
+  });
+}

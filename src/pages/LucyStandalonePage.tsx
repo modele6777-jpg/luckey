@@ -2650,10 +2650,11 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       stopRecognition();
     }
 
-    // 🔊 사용자 액션(전송 클릭 또는 Enter 입력) 시 오디오 컨텍스트를 즉시 해제 및 프라이밍
-    // 이를 통해 AI 응답 수신 후 브라우저 오디오 자동 재생 제한 없이 즉시 음성이 나옵니다.
-    unlockAudioPlayback();
-    primeTTSAudioElement();
+    // Text-only chat must not prime a silent player or wake an audio context.
+    if (isAutoTtsRef.current || isVoiceModeRef.current) {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+    }
 
     // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
