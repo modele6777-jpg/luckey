@@ -1087,5 +1087,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanHyechoWangOcheonchukgukjeon": {
     "field": "hyechoWangOcheonchukgukjeonResult",
     "traceKey": "hyechoWangOcheonchukgukjeonResult"
+  },
+  "ancientGreekPlotinusEnneadsHenosis": {
+    "field": "ancientGreekPlotinusEnneadsHenosisResult",
+    "traceKey": "ancientGreekPlotinusEnneadsHenosisResult"
+  },
+  "scottishAdamSmithMoralSentiments": {
+    "field": "scottishAdamSmithMoralSentimentsResult",
+    "traceKey": "scottishAdamSmithMoralSentimentsResult"
+  },
+  "koreanYunDongJuSkyWindStarsPoetry": {
+    "field": "koreanYunDongJuSkyWindStarsPoetryResult",
+    "traceKey": "koreanYunDongJuSkyWindStarsPoetryResult"
   }
 };
