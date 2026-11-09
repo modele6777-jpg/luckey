@@ -739,6 +739,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     if (typeof window === 'undefined') return false;
     return isActuallyUnfoldedDual;
   });
+  const isDuoPortrait = isDuoUnfolded && isDuoUnfoldedState().orientation === 'portrait';
 
   const [lucyTier, setLucyTier] = useState<LucyTier>(() => {
     if (pro) return 'pro';
@@ -998,23 +999,24 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // 🔍 상단 검색창 활성화 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통으로 빅뱅버튼 숨김 클래스 연동
+  // 🔍 상단 검색창 활성화 및 하단 입력창 포커스 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통으로 빅뱅버튼 숨김 클래스 연동
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    if (isSearchOpen) {
-      document.documentElement.classList.add('lucy-search-active');
-      document.body.classList.add('lucy-search-active');
+    const hideBigBang = isSearchOpen || isInputFocused;
+    if (hideBigBang) {
+      document.documentElement.classList.add('lucy-search-active', 'lucy-input-focused');
+      document.body.classList.add('lucy-search-active', 'lucy-input-focused');
     } else {
-      document.documentElement.classList.remove('lucy-search-active');
-      document.body.classList.remove('lucy-search-active');
+      document.documentElement.classList.remove('lucy-search-active', 'lucy-input-focused');
+      document.body.classList.remove('lucy-search-active', 'lucy-input-focused');
     }
     return () => {
-      document.documentElement.classList.remove('lucy-search-active');
-      document.body.classList.remove('lucy-search-active');
+      document.documentElement.classList.remove('lucy-search-active', 'lucy-input-focused');
+      document.body.classList.remove('lucy-search-active', 'lucy-input-focused');
     };
-  }, [isSearchOpen]);
+  }, [isSearchOpen, isInputFocused]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [modeSwitchToast, setModeSwitchToast] = useState<string | null>(null);
+  const setModeSwitchToast = (_val: string | null) => {};
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
   const [ttsError, setTtsError] = useState('');
@@ -2930,7 +2932,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       data-lucy-period={lucyDayPeriod}
       data-lucy-light={isLight ? 'true' : 'false'}
       data-lucy-search-active={isSearchOpen ? 'true' : 'false'}
-      className={`lucy-chat-shell ${isSearchOpen ? 'lucy-search-active' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
+      data-lucy-input-focused={isInputFocused ? 'true' : 'false'}
+      className={`lucy-chat-shell ${isSearchOpen ? 'lucy-search-active' : ''} ${isInputFocused ? 'lucy-input-focused' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
       style={{
         overflowX: 'hidden',
         maxWidth: '100vw',
@@ -2941,29 +2944,10 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />
       <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={lucyTier === 'plus'} isProMode={isMasterMode} />
 
-      {/* Mode Switch & Auto-TTS Toast */}
-      <AnimatePresence>
-        {(modeSwitchToast || autoTtsToast) && (
-          <motion.div
-            initial={{ opacity: 0, y: -30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -30, scale: 0.95 }}
-            className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full text-white shadow-2xl border flex items-center gap-2 font-sans text-xs sm:text-sm backdrop-blur-md font-bold max-w-[92vw] truncate pointer-events-none ${
-              isPlusMode
-                ? 'bg-emerald-950/90 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.35)]'
-                : 'bg-slate-900/95 border-amber-400/40'
-            }`}
-          >
-            <Sparkles size={14} className="text-amber-400 animate-spin shrink-0" />
-            <span className="truncate">{autoTtsToast || modeSwitchToast}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* PRO Top Header Bar */}
       <header 
         style={{
-          paddingTop: 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
+          paddingTop: isDuoPortrait ? 'max(8px, 0.5rem)' : 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
           overflowX: 'hidden',
         }}
         className={`lucy-chat-header w-full max-w-full overflow-x-hidden px-3.5 sm:px-8 lg:px-12 pb-3 backdrop-blur-xl border-b shadow-xs flex flex-col gap-2.5 z-40 shrink-0 relative transition-colors duration-500 ${
@@ -3919,7 +3903,17 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                 onCompositionEnd={() => { isInputComposingRef.current = false; }}
                 onFocus={() => {
                   setIsInputFocused(true);
+                  if (typeof window !== 'undefined') {
+                    if (window.scrollX !== 0) window.scrollTo(0, window.scrollY);
+                    if (document.documentElement.scrollLeft !== 0) document.documentElement.scrollLeft = 0;
+                    if (document.body.scrollLeft !== 0) document.body.scrollLeft = 0;
+                  }
                   setTimeout(() => {
+                    if (typeof window !== 'undefined') {
+                      if (window.scrollX !== 0) window.scrollTo(0, window.scrollY);
+                      if (document.documentElement.scrollLeft !== 0) document.documentElement.scrollLeft = 0;
+                      if (document.body.scrollLeft !== 0) document.body.scrollLeft = 0;
+                    }
                     if (messagesContainerRef.current) {
                       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
                     }

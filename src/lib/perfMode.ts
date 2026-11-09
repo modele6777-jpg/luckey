@@ -126,13 +126,34 @@ export function isSurfaceDuoOrDualScreen(): boolean {
   return cachedDuo;
 }
 
+let lastKnownDuoState: DuoUnfoldedState = { unfolded: false, orientation: 'portrait' };
+
 /**
  * Checks if current viewport is iPhone Duo or Foldable outer cover screen in portrait
  */
 export function isIPhoneDuoCoverScreen(): boolean {
   if (typeof window === 'undefined') return false;
+
+  const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+  const isInputActive = Boolean(
+    activeEl &&
+    (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)
+  );
+  const isKeyboardOpen =
+    (typeof document !== 'undefined' &&
+      (document.documentElement.classList.contains('keyboard-open') ||
+       document.body?.classList.contains('keyboard-open') ||
+       document.documentElement.classList.contains('lucy-input-focused') ||
+       document.body?.classList.contains('lucy-input-focused'))) ||
+    isInputActive;
+
+  // 가상 키보드 활성화 시 이전에 펼침(unfolded) 상태였으면 커버스크린으로 오판하지 않음
+  if (isKeyboardOpen && lastKnownDuoState.unfolded) {
+    return false;
+  }
+
   const w = window.innerWidth;
-  const h = window.innerHeight;
+  const h = isKeyboardOpen ? Math.max(window.innerHeight, (window.screen?.height || 800) * 0.7) : window.innerHeight;
 
   // 📱 단일 폰 뷰포트 규격: 최소 변 너비 < 560px 또는 가로폭 < 580px은 100% 접힌 커버 스크린
   if (Math.min(w, h) < 560 || w < 580) return true;
@@ -166,6 +187,24 @@ export function isIPhoneDuoCoverScreen(): boolean {
  */
 export function isDualPaneLayout(): boolean {
   if (typeof window === 'undefined') return false;
+
+  const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+  const isInputActive = Boolean(
+    activeEl &&
+    (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)
+  );
+  const isKeyboardOpen =
+    (typeof document !== 'undefined' &&
+      (document.documentElement.classList.contains('keyboard-open') ||
+       document.body?.classList.contains('keyboard-open') ||
+       document.documentElement.classList.contains('lucy-input-focused') ||
+       document.body?.classList.contains('lucy-input-focused'))) ||
+    isInputActive;
+
+  if (isKeyboardOpen && lastKnownDuoState.unfolded) {
+    return true;
+  }
+
   const w = window.innerWidth;
   const h = window.innerHeight;
   const isLandscape = w > h;
@@ -206,13 +245,33 @@ export interface DuoUnfoldedState {
 
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
+
+  const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+  const isInputActive = Boolean(
+    activeEl &&
+    (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)
+  );
+  const isKeyboardOpen =
+    (typeof document !== 'undefined' &&
+      (document.documentElement.classList.contains('keyboard-open') ||
+       document.body?.classList.contains('keyboard-open') ||
+       document.documentElement.classList.contains('lucy-input-focused') ||
+       document.body?.classList.contains('lucy-input-focused'))) ||
+    isInputActive;
+
+  if (isKeyboardOpen && lastKnownDuoState.unfolded) {
+    return lastKnownDuoState;
+  }
+
   const w = window.innerWidth;
   const h = window.innerHeight;
   const isLandscape = w > h;
 
   // 🛡️ Cover screen in portrait or narrow viewport is strictly folded (never unfolded)
   if (isIPhoneDuoCoverScreen() || Math.min(w, h) < 560 || (w <= h && w < 700)) {
-    return { unfolded: false, orientation: 'portrait' };
+    const foldedResult: DuoUnfoldedState = { unfolded: false, orientation: 'portrait' };
+    if (!isKeyboardOpen) lastKnownDuoState = foldedResult;
+    return foldedResult;
   }
 
   let isSpanned = false;
@@ -231,7 +290,11 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   const isInnerScreen = (isSpanned && Math.min(w, h) >= 580) || (isLandscape && w >= 768) || (w > h && ratio >= 0.75 && w >= 640);
   const unfolded = isInnerScreen;
   const orientation = isLandscape ? 'landscape' : 'portrait';
-  return { unfolded, orientation };
+  const result: DuoUnfoldedState = { unfolded, orientation };
+  if (!isKeyboardOpen) {
+    lastKnownDuoState = result;
+  }
+  return result;
 }
 
 function isFoldableInnerScreen(): boolean {
