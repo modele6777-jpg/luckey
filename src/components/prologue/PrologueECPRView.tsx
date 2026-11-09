@@ -557,7 +557,7 @@ export function PrologueECPRView() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-home md:pt-home-md space-y-8 pb-20 font-sans">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 space-y-8 pb-20 font-sans">
       {/* 🚨 Emergency SOS Main Header */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}

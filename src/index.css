@@ -541,7 +541,7 @@
   }
 
   .pt-home {
-    padding-top: calc(var(--sat) + 9.5rem);
+    padding-top: calc(var(--sat) + 5.25rem);
   }
 
   .pb-page,
@@ -557,7 +557,7 @@
 
   .md\:pt-home-md {
     @media (width >= 48rem) {
-      padding-top: calc(var(--sat) + 10.5rem);
+      padding-top: calc(var(--sat) + 6rem);
     }
   }
 
