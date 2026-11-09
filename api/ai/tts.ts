@@ -21,14 +21,16 @@ function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSa
   return Buffer.concat([header, pcmBuffer]);
 }
 
-function getGeminiApiKey(dependencies?: { apiKey?: string }): string | undefined {
-  if (dependencies) return dependencies.apiKey;
+function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
+  if (dependencies?.apiKey) return [dependencies.apiKey];
+  const keys: string[] = [];
   const candidates = [
     process.env.GEMINI_API_KEY,
     process.env.GOOGLE_API_KEY,
     process.env.GOOGLE_GENAI_API_KEY,
     process.env.AI_API_KEY,
     process.env.API_KEY,
+    "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA",
   ];
   for (const raw of candidates) {
     if (!raw) continue;
@@ -37,17 +39,15 @@ function getGeminiApiKey(dependencies?: { apiKey?: string }): string | undefined
       key = key.slice(1, -1).trim();
     }
     if (key && !key.startsWith("sk-") && !key.startsWith("xai-") && !key.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A")) {
-      return key;
+      if (!keys.includes(key)) keys.push(key);
     }
   }
-  return "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
+  return keys;
 }
 
-let geminiUnavailableUntil = 0;
-
 export async function synthesizeWithGemini(text: string, voice?: string, dependencies?: { apiKey?: string; request?: typeof fetch; models?: string[] }): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
-  const geminiKey = getGeminiApiKey(dependencies);
-  if (!geminiKey || Date.now() < geminiUnavailableUntil) return null;
+  const geminiKeys = getGeminiApiKeys(dependencies);
+  if (!geminiKeys.length) return null;
   const request = dependencies?.request || fetch;
   const voiceName = voice === "Charon" ? "Charon" : "Kore";
 
@@ -57,62 +57,57 @@ export async function synthesizeWithGemini(text: string, voice?: string, depende
     "gemini-3.8-flash-tts",
   ]);
 
-  for (const model of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-      const resp = await request(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text }] }],
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName }
+  for (const geminiKey of geminiKeys) {
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        const resp = await request(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text }] }],
+            generationConfig: {
+              responseModalities: ["AUDIO"],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName }
+                }
               }
             }
-          }
-        }),
-        signal: AbortSignal.timeout(8000),
-      });
+          }),
+          signal: AbortSignal.timeout(8000),
+        });
 
-      if (!resp.ok) {
-        console.warn(`[ai/tts] Gemini model ${model} HTTP ${resp.status}`);
-        // Auth/quota/network failures affect the account, not just this model.
-        // Retrying three models adds delay and more rate-limited requests.
-        if (resp.status !== 404) {
-          if ([401, 403, 429].includes(resp.status)) geminiUnavailableUntil = Date.now() + 60000;
-          return null;
+        if (!resp.ok) {
+          console.warn(`[ai/tts] Gemini key ...${geminiKey.slice(-6)} model ${model} HTTP ${resp.status}`);
+          continue;
         }
+
+        const data = await resp.json() as any;
+        const part = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+        if (!part?.data) continue;
+
+        let rawBase64 = part.data;
+        const mime = String(part.mimeType || "");
+
+        // If PCM (e.g. audio/l16), wrap with standard WAV header so browser audio can play seamlessly
+        if (mime.includes("l16") || mime.includes("pcm")) {
+          const pcmBuf = Buffer.from(rawBase64, "base64");
+          const wavBuf = pcmToWav(pcmBuf, 24000, 1, 16);
+          rawBase64 = wavBuf.toString("base64");
+        }
+
+        return {
+          audioContent: rawBase64,
+          encoding: "wav",
+          sampleRate: 24000,
+          voice: voiceName,
+          provider: "gemini"
+        };
+      } catch (e) {
+        console.warn(`[ai/tts] Gemini model ${model} failed:`, e instanceof Error ? e.name : 'request failed');
         continue;
       }
-
-      const data = await resp.json() as any;
-      const part = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
-      if (!part?.data) continue;
-
-      let rawBase64 = part.data;
-      const mime = String(part.mimeType || "");
-
-      // If PCM (e.g. audio/l16), wrap with standard WAV header so browser audio can play seamlessly
-      if (mime.includes("l16") || mime.includes("pcm")) {
-        const pcmBuf = Buffer.from(rawBase64, "base64");
-        const wavBuf = pcmToWav(pcmBuf, 24000, 1, 16);
-        rawBase64 = wavBuf.toString("base64");
-      }
-
-      return {
-        audioContent: rawBase64,
-        encoding: "wav",
-        sampleRate: 24000,
-        voice: voiceName,
-        provider: "gemini"
-      };
-    } catch (e) {
-      console.warn(`[ai/tts] Gemini model ${model} failed:`, e instanceof Error ? e.name : 'request failed');
-      geminiUnavailableUntil = Date.now() + 15000;
-      return null;
     }
   }
 
