@@ -28,3 +28,8 @@ Every time a user request is completed or changes are made to the codebase:
 - Lucy's time-of-day palette and nested text renderers use `LucyThemeBoundary`, regardless of whether the other pane is Key (light) or Lucky (dark).
 - Global channel theme selectors and Tailwind dark utilities must respect `.lucy-chat-shell`'s own daylight marker; never recolor its messages using the Key channel's document theme.
 - Check Lucy header, message text/surfaces and composer in both root themes for morning, day and night.
+
+### 5. Unfolded Rotation Layout
+- Rotating an unfolded viewport must preserve the unfolded state: landscape is content left / Lucy right; portrait is content top / Lucy bottom / a horizontal menu at the very bottom.
+- Use `isDuoUnfoldedState`/`resolveDuoViewport` consistently. Rotation and keyboard height changes must not turn an inner display into a folded cover.
+- The portrait menu owns its safe-area inset; split only the space above it into equal canvases. Remove vertical-rail padding and footer minimum heights in portrait.

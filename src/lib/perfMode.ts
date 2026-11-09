@@ -130,73 +130,12 @@ export function isSurfaceDuoOrDualScreen(): boolean {
  * Checks if current viewport is iPhone Duo or Foldable outer cover screen in portrait
  */
 export function isIPhoneDuoCoverScreen(): boolean {
-  if (typeof window === 'undefined') return false;
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-
-  // 📱 단일 폰 뷰포트 규격: 최소 변 너비 < 560px 또는 가로폭 < 580px은 100% 접힌 커버 스크린
-  if (Math.min(w, h) < 560 || w < 580) return true;
-
-  // 세로(Portrait, w <= h) 모드에서는 단일 화면 규격(< 768px) 또는 일반 폰 종횡비(ratio < 0.78)는 100% 접힌 단일 화면
-  if (w <= h) {
-    const ratio = Math.min(w, h) / Math.max(w, h);
-    if (ratio < 0.78 || w < 768) return true;
-  }
-
-  // Spanned hardware hinge active ONLY when viewport is truly wide enough (min >= 580px)
-  try {
-    if (
-      (window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
-       window.matchMedia('(vertical-viewport-segments: 2)').matches ||
-       window.matchMedia('(spanning: single-fold-vertical)').matches ||
-       window.matchMedia('(spanning: single-fold-horizontal)').matches) &&
-      Math.min(w, h) >= 580
-    ) {
-      return false;
-    }
-  } catch {}
-
-  return false;
+  return typeof window !== 'undefined' && !isDuoUnfoldedState().unfolded;
 }
 
-/**
- * Determines whether the current viewport should activate the 2-Column Dual-Pane Split layout
- * (iPhone Duo 7.6" Inner Screen in Landscape/Wide mode, Unfolded Foldable, or Spanned Duo).
- * Note: When in Portrait on the outer cover screen (5.4"), strictly remains single column.
- */
+/** All consumers (layout, navigation and Lucy) share the same fold decision. */
 export function isDualPaneLayout(): boolean {
-  if (typeof window === 'undefined') return false;
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const isLandscape = w > h;
-
-  // Outer cover screen in portrait mode is strictly single-column
-  if (isIPhoneDuoCoverScreen()) {
-    return false;
-  }
-
-  try {
-    if (
-      window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
-      window.matchMedia('(spanning: single-fold-vertical)').matches
-    ) {
-      return true;
-    }
-  } catch {}
-
-  // iPhone Duo / Foldable Inner Screen in Landscape or wide mode (>= 580px wide)
-  if (isLandscape && w >= 560) {
-    return true;
-  }
-
-  // Spanned Surface Duo or unfolded Galaxy Fold / iPhone Duo inner screen
-  if (isSurfaceDuoOrDualScreen() && (w >= 600 || isLandscape)) return true;
-  if (isGalaxyFoldSeClass() && !isFoldCoverScreen()) return true;
-
-  // Tablet / Desktop Wide View (iPad, Galaxy Tab, desktop window >= 768px)
-  if (w >= 768) return true;
-
-  return false;
+  return isDuoUnfoldedState().unfolded;
 }
 
 export interface DuoUnfoldedState {
@@ -204,34 +143,35 @@ export interface DuoUnfoldedState {
   orientation: 'landscape' | 'portrait';
 }
 
+/** Rotation-invariant geometry: a narrow phone stays folded in either direction. */
+export function resolveDuoViewport(width: number, height: number, spanned = false): DuoUnfoldedState {
+  const shortSide = Math.min(width, height);
+  const longSide = Math.max(width, height);
+  return {
+    unfolded: shortSide >= 560 && (
+      spanned || longSide >= 768 || (shortSide >= 600 && longSide >= 640 && shortSide / longSide >= 0.75)
+    ),
+    orientation: width > height ? 'landscape' : 'portrait',
+  };
+}
+
+let lastDuoLayoutViewport: { width: number; height: number } | null = null;
+
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const isLandscape = w > h;
-
-  // 🛡️ Cover screen in portrait or narrow viewport is strictly folded (never unfolded)
-  if (isIPhoneDuoCoverScreen() || Math.min(w, h) < 560 || (w <= h && w < 700)) {
-    return { unfolded: false, orientation: 'portrait' };
-  }
-
-  let isSpanned = false;
-  try {
-    if (
-      window.matchMedia('(horizontal-viewport-segments: 2)').matches ||
-      window.matchMedia('(vertical-viewport-segments: 2)').matches ||
-      window.matchMedia('(spanning: single-fold-vertical)').matches ||
-      window.matchMedia('(spanning: single-fold-horizontal)').matches
-    ) {
-      isSpanned = true;
-    }
-  } catch {}
-
-  const ratio = Math.min(w, h) / Math.max(w, h);
-  const isInnerScreen = (isSpanned && Math.min(w, h) >= 580) || (isLandscape && w >= 768) || (w > h && ratio >= 0.75 && w >= 640);
-  const unfolded = isInnerScreen;
-  const orientation = isLandscape ? 'landscape' : 'portrait';
-  return { unfolded, orientation };
+  const width = window.innerWidth;
+  const keyboardOpen = typeof document !== 'undefined' && document.documentElement.classList.contains('keyboard-open');
+  // A keyboard reduces available height; it does not fold the device.
+  const height = keyboardOpen && lastDuoLayoutViewport?.width === width
+    ? lastDuoLayoutViewport.height : window.innerHeight;
+  if (!keyboardOpen) lastDuoLayoutViewport = { width, height };
+  const spanned = [
+    '(horizontal-viewport-segments: 2)', '(vertical-viewport-segments: 2)',
+    '(spanning: single-fold-vertical)', '(spanning: single-fold-horizontal)',
+  ].some(query => {
+    try { return window.matchMedia(query).matches; } catch { return false; }
+  });
+  return resolveDuoViewport(width, height, spanned);
 }
 
 function isFoldableInnerScreen(): boolean {

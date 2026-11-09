@@ -238,7 +238,7 @@ function AppContent() {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const state = isDuoUnfoldedState();
-      setDuoState(state);
+      setDuoState(previous => previous.unfolded === state.unfolded && previous.orientation === state.orientation ? previous : state);
       document.documentElement.classList.toggle('duo-unfolded-mode', state.unfolded);
       document.body.classList.toggle('duo-unfolded-mode', state.unfolded);
       document.documentElement.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');

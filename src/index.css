@@ -3669,3 +3669,54 @@ html.duo-unfolded-portrait :is([data-lucy-loader], [data-lucy-aura-loader], .luc
 
 
 
+
+/* Unfolded portrait: two equal canvases above one horizontal navigation row. */
+html.duo-unfolded-portrait {
+  --duo-bottom-nav-height: calc(54px + env(safe-area-inset-bottom, 0px));
+  --duo-portrait-canvas-height: calc(var(--app-height, 100dvh) - var(--duo-bottom-nav-height));
+}
+html.duo-unfolded-portrait .sites-pinned-sidebar {
+  box-sizing: border-box !important;
+  height: var(--duo-bottom-nav-height) !important;
+  min-height: var(--duo-bottom-nav-height) !important;
+  padding: 0 0 env(safe-area-inset-bottom, 0px) !important;
+  background: var(--menu-bg) !important;
+  align-items: center !important;
+}
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-menu-list {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  min-height: 0 !important;
+  padding: 0 4px !important;
+  justify-content: flex-start !important;
+}
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-menu-content {
+  width: max-content !important;
+  min-width: 100%;
+  flex: 0 0 auto !important;
+  justify-content: space-evenly !important;
+  padding: 0 4px !important;
+}
+html.duo-unfolded-portrait .sites-pinned-sidebar .refined-menu-footer {
+  height: 54px !important;
+  min-height: 54px !important;
+  max-height: 54px !important;
+  width: auto !important;
+  margin: 0 !important;
+  justify-content: center !important;
+  gap: 2px !important;
+}
+html.duo-unfolded-portrait .sites-pinned-main {
+  padding-bottom: var(--duo-bottom-nav-height) !important;
+}
+html.duo-unfolded-portrait :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader]), #tarot-stage-container, #today-tarot-narration-modal, #circular-tarot-modal-container) {
+  height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+  max-height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+}
+html.duo-unfolded-portrait :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
+  top: calc(var(--duo-portrait-canvas-height) / 2) !important;
+  height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+  max-height: calc(var(--duo-portrait-canvas-height) / 2) !important;
+  bottom: var(--duo-bottom-nav-height) !important;
+}
