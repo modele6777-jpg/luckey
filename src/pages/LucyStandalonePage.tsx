@@ -1,3 +1,4 @@
+import { useSlowHorizontalScroll } from '@/hooks/useSlowHorizontalScroll';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
@@ -1730,6 +1731,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
     return getCuratedPrompts(activeProfiles, selectedMode, activeChannels);
   });
+
+  const promptScrollRef = useSlowHorizontalScroll(JSON.stringify(currentPrompts));
 
   // 🔄 루시 AI 모드 ↔ 마스터 모드 전환 시 하단 추천 질문 예시 1:1 실시간 즉시 동기화
   useEffect(() => {
@@ -3819,7 +3822,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
             {/* 가로 스크롤 추천 질문 리스트 */}
             {currentPrompts.length > 0 && (
-              <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0 scroll-smooth h-full">
+              <div ref={promptScrollRef} aria-label="추천 질문 예시" className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0 h-full" style={{ scrollBehavior: 'auto' }}>
                 {currentPrompts.map((promptText) => (
                   <button
                     key={promptText}
