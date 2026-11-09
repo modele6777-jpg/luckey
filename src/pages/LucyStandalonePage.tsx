@@ -2175,6 +2175,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
   //  Dynamic PWA Manifest & iOS Home-screen Metadata Switcher
   useEffect(() => {
+    const prevTitle = document.title;
     const isDual = typeof document !== 'undefined' && Boolean(
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
