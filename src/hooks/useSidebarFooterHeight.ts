@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 export const SIDEBAR_FOOTER_HEIGHT = '--sidebar-footer-height';
-export const UNIFIED_MENU_FOOTER_HEIGHT = '76px';
+export const UNIFIED_MENU_FOOTER_HEIGHT = 'calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))';
 
 /** The sidebar owns this measurement, so leaving chat cannot clear alignment across all channels. */
 export function useSidebarFooterHeight() {

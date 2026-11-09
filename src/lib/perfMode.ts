@@ -146,10 +146,12 @@ export function isIPhoneDuoCoverScreen(): boolean {
     }
   } catch {}
 
-  // 📱 접힌 상태(Cover Screen): 세로(Portrait) 모드에서 폰 화면 너비(< 600px)이거나 종횡비가 세로로 긴(h / w >= 1.35) 단일 화면
-  if (w < h) {
-    if (w < 600) return true;
-    if (h / Math.max(w, 1) >= 1.35 && w < 768) return true;
+  // 📱 접힌 상태(Cover Screen):
+  // 1) 세로(Portrait, w <= h) 모드에서는 종횡비가 세로로 길거나(ratio < 0.78) 단일 폰 뷰포트 너비(< 768px)는 100% 접힌 단일 화면
+  if (w <= h) {
+    const ratio = Math.min(w, h) / Math.max(w, h);
+    if (ratio < 0.78) return true;
+    if (w < 768) return true;
   }
   return Math.min(w, h) < 560;
 }
@@ -203,7 +205,12 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const isLandscape = w >= h;
+  const isLandscape = w > h;
+
+  // 🛡️ Cover screen in portrait is strictly folded (never unfolded)
+  if (isIPhoneDuoCoverScreen()) {
+    return { unfolded: false, orientation: 'portrait' };
+  }
 
   let isSpanned = false;
   try {
@@ -217,14 +224,9 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
     }
   } catch {}
 
-  // 🛡️ Cover screen in portrait is strictly folded (never unfolded)
-  if (isIPhoneDuoCoverScreen()) {
-    return { unfolded: false, orientation: 'portrait' };
-  }
-
-  if (!isSpanned && Math.min(w, h) < 580) return { unfolded: false, orientation: isLandscape ? 'landscape' : 'portrait' };
-  const isInnerScreen = isSpanned || (Math.min(w, h) >= 600 && (isLandscape || w >= 600));
-  const unfolded = isInnerScreen || (isLandscape && w >= 680);
+  const ratio = Math.min(w, h) / Math.max(w, h);
+  const isInnerScreen = isSpanned || (isLandscape && w >= 768) || (w > h && ratio >= 0.75);
+  const unfolded = isInnerScreen;
   const orientation = isLandscape ? 'landscape' : 'portrait';
   return { unfolded, orientation };
 }
