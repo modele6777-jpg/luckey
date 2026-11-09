@@ -148,11 +148,24 @@ html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-parti
 html[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #fffbf2 !important; }
 html[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
 
-/* Soft clouds belong only to the blue daytime sky. */
-.lucy-day-clouds { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1.2s ease; }
-html[data-lucy-period='day'] .lucy-day-clouds { opacity: 1; }
-.lucy-day-cloud { position: absolute; color: #ffffff; opacity: .65; width: clamp(150px, 28vw, 380px); animation: lucy-cloud-glide 70s linear infinite; animation-play-state: paused; }
-html[data-lucy-period='day'] .lucy-day-cloud { animation-play-state: running; }
+/* Soft clouds belong to the daytime and morning sky. */
+.lucy-day-clouds { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1.2s ease; pointer-events: none; }
+:is(html[data-lucy-period='day'], html[data-lucy-period='morning'], [data-lucy-period='day'], [data-lucy-period='morning'], .lucy-cosmic-bg-container[data-lucy-period='day'], .lucy-cosmic-bg-container[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning']) .lucy-day-clouds {
+  opacity: 0.85 !important;
+  display: block !important;
+}
+.lucy-day-cloud {
+  position: absolute;
+  color: #ffffff;
+  opacity: .75;
+  width: clamp(160px, 30vw, 420px);
+  animation: lucy-cloud-glide 60s linear infinite;
+  animation-play-state: paused;
+  filter: drop-shadow(0 6px 20px rgba(160, 180, 210, 0.35));
+}
+:is(html[data-lucy-period='day'], html[data-lucy-period='morning'], [data-lucy-period='day'], [data-lucy-period='morning'], .lucy-cosmic-bg-container[data-lucy-period='day'], .lucy-cosmic-bg-container[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='day'], .lucy-chat-shell[data-lucy-period='morning']) .lucy-day-cloud {
+  animation-play-state: running !important;
+}
 .lucy-day-cloud svg { display: block; width: 100%; height: auto; }
 .lucy-day-cloud-0 { top: 15%; left: 0; animation-delay: -14s; }
 .lucy-day-cloud-1 { top: 39%; left: 0; width: clamp(190px, 35vw, 460px); opacity: .48; animation-delay: -19s; animation-duration: 61s; }
@@ -178,28 +191,59 @@ html[data-lucy-period='night'] .is-pro-theme .lucy-star-field { opacity: .5; }
 
 /* Time-specific celestial light stays behind every reading surface. */
 .lucy-morning-light { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
-:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-morning-light { opacity: 1 !important; }
-
-/* 아침 테마 프로 모드(Lucy Pro · Lucy+ Pro): 밝은 햇살 배경 위에서 싱그럽고 영롱한 네잎클로버가 날리도록 고선명 발광 스타일 연동 */
-:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible {
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning'], .lucy-cosmic-bg-container[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='morning']) .lucy-morning-light {
   opacity: 1 !important;
+  display: block !important;
 }
-:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit {
+:is(html[data-lucy-period='morning'], [data-lucy-period='morning'], .lucy-cosmic-bg-container[data-lucy-period='morning'], .lucy-chat-shell[data-lucy-period='morning']) .lucy-morning-light * {
   animation-play-state: running !important;
 }
-:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-particle {
-  color: #059669 !important;
-  opacity: 0.78 !important;
-  filter: drop-shadow(0 2px 8px rgba(5, 150, 105, 0.35)) drop-shadow(0 0 12px rgba(245, 158, 11, 0.25)) !important;
+
+/* 🍀 프로 모드 네잎클로버(Lucy Pro · Lucy+ Pro 둘 다) 전 테마 완벽 연동 */
+.lucy-clover-field {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  pointer-events: none;
 }
-:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(2n) .lucy-clover-particle {
+.lucy-clover-field.is-visible {
+  opacity: 1 !important;
+  display: block !important;
+}
+.lucy-clover-field.is-visible .lucy-clover-orbit {
+  animation: lucy-clover-float 24s ease-in-out infinite alternate !important;
+  animation-play-state: running !important;
+}
+.lucy-clover-field.is-visible .lucy-clover-particle {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: lucy-clover-twinkle 6s ease-in-out infinite !important;
+  animation-play-state: running !important;
+}
+
+/* 밝은 테마(아침·낮) 프로 모드 네잎클로버: 싱그러운 에메랄드 & 황금빛 발광 */
+:is([data-lucy-period='morning'], [data-lucy-period='day'], .lucy-cosmic-bg-container:not([data-lucy-period='night']), .lucy-chat-shell:not(.lucy-night)) .lucy-clover-field.is-visible .lucy-clover-particle {
+  color: #059669 !important;
+  opacity: 0.88 !important;
+  filter: drop-shadow(0 2px 8px rgba(5, 150, 105, 0.45)) drop-shadow(0 0 14px rgba(245, 158, 11, 0.35)) !important;
+}
+:is([data-lucy-period='morning'], [data-lucy-period='day'], .lucy-cosmic-bg-container:not([data-lucy-period='night']), .lucy-chat-shell:not(.lucy-night)) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(2n) .lucy-clover-particle {
   color: #10b981 !important;
 }
-:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle {
+:is([data-lucy-period='morning'], [data-lucy-period='day'], .lucy-cosmic-bg-container:not([data-lucy-period='night']), .lucy-chat-shell:not(.lucy-night)) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle {
   color: #047857 !important;
 }
-:is(html[data-lucy-period='morning'], [data-lucy-period='morning']) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(4n) .lucy-clover-particle {
+:is([data-lucy-period='morning'], [data-lucy-period='day'], .lucy-cosmic-bg-container:not([data-lucy-period='night']), .lucy-chat-shell:not(.lucy-night)) .lucy-clover-field.is-visible .lucy-clover-orbit:nth-child(4n) .lucy-clover-particle {
   color: #15803d !important;
+}
+
+/* 어두운 테마(저녁·밤) 프로 모드 네잎클로버: 영롱한 민트 & 별빛 발광 */
+:is([data-lucy-period='night'], .lucy-cosmic-bg-container[data-lucy-period='night'], .lucy-chat-shell.lucy-night) .lucy-clover-field.is-visible .lucy-clover-particle {
+  color: #6ee7b7 !important;
+  opacity: 0.88 !important;
+  filter: drop-shadow(0 0 10px rgba(110, 231, 183, 0.7)) drop-shadow(0 0 20px rgba(52, 211, 153, 0.45)) !important;
 }
 
 /* 1. Dawn Aurora Wave: Deep breathing morning sky glow & shimmering light caustic */
@@ -403,15 +447,15 @@ html[data-lucy-period='night'] .is-pro-theme .lucy-star-field { opacity: .5; }
   }
 }
 
-.lucy-night-moon { position: absolute; right: 9%; top: 17%; width: clamp(40px, 6vw, 76px); color: #f4e9c6; opacity: 0; filter: drop-shadow(0 0 10px #e9e2bd55); transition: opacity 1.2s ease; }
+.lucy-night-moon { position: absolute; right: 9%; top: 17%; width: clamp(40px, 6vw, 76px); color: #f4e9c6; opacity: 0; filter: drop-shadow(0 0 10px #e9e2bd55); transition: opacity 1.2s ease; pointer-events: none; }
 .lucy-night-moon svg { display: block; width: 100%; height: auto; }
-html[data-lucy-period='night'] .lucy-night-moon { opacity: .78; }
+:is(html[data-lucy-period='night'], [data-lucy-period='night'], .lucy-cosmic-bg-container[data-lucy-period='night'], .lucy-chat-shell[data-lucy-period='night'], .lucy-chat-shell.lucy-night) .lucy-night-moon { opacity: .88 !important; display: block !important; }
 
 /* Occasional shooting stars: brief flights with long, staggered quiet intervals. */
-.lucy-meteor-field { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1s ease; }
-html[data-lucy-period='night'] .lucy-meteor-field { opacity: 1; }
+.lucy-meteor-field { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity 1s ease; pointer-events: none; }
+:is(html[data-lucy-period='night'], [data-lucy-period='night'], .lucy-cosmic-bg-container[data-lucy-period='night'], .lucy-chat-shell[data-lucy-period='night'], .lucy-chat-shell.lucy-night) .lucy-meteor-field { opacity: 1 !important; display: block !important; }
 .lucy-shooting-star { position: absolute; width: clamp(70px, 12vw, 150px); height: 2px; opacity: 0; animation: lucy-meteor-flight 17s linear infinite; animation-play-state: paused; }
-html[data-lucy-period='night'] .lucy-shooting-star { animation-play-state: running; }
+:is(html[data-lucy-period='night'], [data-lucy-period='night'], .lucy-cosmic-bg-container[data-lucy-period='night'], .lucy-chat-shell[data-lucy-period='night'], .lucy-chat-shell.lucy-night) .lucy-shooting-star { animation-play-state: running !important; }
 .lucy-shooting-star-0 { left: 78%; top: 24%; animation-delay: -1s; }
 .lucy-shooting-star-1 { left: 94%; top: 47%; animation-duration: 23s; animation-delay: -9s; }
 .lucy-shooting-star-2 { left: 58%; top: 63%; animation-duration: 29s; animation-delay: -18s; }
@@ -723,12 +767,26 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
 }
 
 /* Fill the usable canvas up to the rail. */
-.lucy-night .lucy-chat-footer { padding-right: 4px; }
-.lucy-night .lucy-input-stack { max-width: 100%; }
+.lucy-chat-footer {
+  box-sizing: border-box;
+  min-height: calc(84px + max(4px, env(safe-area-inset-bottom, 0px)));
+}
+.lucy-input-stack {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: 0 !important;
+}
+.lucy-suggestion-toolbar {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.lucy-starlight-composer {
+  width: 100% !important;
+  max-width: 100% !important;
+}
 
 /* A channel in the other pane must not hide Lucy Plus sunrise. */
 .lucy-chat-shell[data-lucy-period='morning'] .lucy-morning-light { opacity: 1; }
 .lucy-chat-shell:not([data-lucy-period='morning']) .lucy-morning-light { opacity: 0; }
 .lucy-morning-light * { animation-play-state: paused; }
 .lucy-chat-shell[data-lucy-period='morning'] .lucy-morning-light * { animation-play-state: running; }
-.lucy-chat-footer { box-sizing: border-box; }

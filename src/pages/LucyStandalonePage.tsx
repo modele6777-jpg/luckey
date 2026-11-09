@@ -730,9 +730,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   // - 펼친 상태: [루시 플러스] ↔ [루시 프로]만 가능 (일반 루시 진입 원천 차단)
   // (루시 AI는 접혔을 때만, 루시 플러스는 펼쳤을 때만 작동, 프로는 빅뱅 홀드로 어디서든 252대 풀엔진 진입)
   const isDuoContainer = typeof document !== 'undefined' && (
-    Boolean(document.getElementById('duo-lucy-viewport')) ||
-    document.documentElement.classList.contains('duo-unfolded-mode') ||
-    document.documentElement.classList.contains('dual-pane-active')
+    Boolean(document.getElementById('duo-lucy-viewport'))
   );
 
   const [isDuoUnfolded, setIsDuoUnfolded] = useState(() => {
@@ -1109,6 +1107,15 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       window.visualViewport?.removeEventListener('resize', handleLayoutChange);
     };
   }, []);
+
+  // 🛡️ 접힌 상태(Cover Screen)에서는 무조건 기본 'Lucy'(ai)로 리셋
+  useEffect(() => {
+    if (!isDuoUnfolded && lucyTier === 'plus') {
+      setLucyTier('ai');
+      safeLocalStorage.setItem('lucy_tier_mode', 'ai');
+      safeSessionStorage.setItem('lucy_tier_mode', 'ai');
+    }
+  }, [isDuoUnfolded, lucyTier]);
 
   const currentGhostPromptRef = useRef<string>('');
   const [activeGhostPrompt, setActiveGhostPrompt] = useState<string>('');
@@ -2898,7 +2905,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       }}
     >
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
-      <LucyCosmicBackground isProMode={isMasterMode} />
+      <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />
       <LucyModeTransition active={modeTransitioningTier !== null} isPlusMode={lucyTier === 'plus'} isProMode={isMasterMode} />
 
       {/* Mode Switch & Auto-TTS Toast */}
@@ -2970,7 +2977,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
                         <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-300 via-emerald-300 to-yellow-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_16px_rgba(245,158,11,0.6)]">
                           {isDuoUnfolded ? 'Lucy+ Pro' : 'Lucy Pro'}
                         </span>
-                      ) : (lucyTier === 'plus' && isDuoUnfolded && (location === '/' || location === '/chat' || location === '/lucy')) ? (
+                      ) : (isDuoUnfolded && (location === '/' || location === '/chat' || location === '/lucy') && lucyTier === 'plus') ? (
                         <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-200 bg-clip-text text-transparent font-black tracking-wide drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]">
                           Lucy +
                         </span>
@@ -3449,13 +3456,13 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
           color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',
         }}
-        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-2 sm:px-4 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 ${
+        className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-1 sm:px-2 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 ${
           isLight
             ? 'bg-white/95 border-amber-200/80 text-slate-800 shadow-[0_-2px_12px_rgba(180,140,90,0.06)]'
             : 'bg-slate-950/88 border-white/10 text-white'
         }`}
       >
-        <div className="lucy-input-stack w-full min-w-0 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto flex flex-col gap-0.5 sm:gap-1 overflow-x-hidden">
+        <div className="lucy-input-stack w-full min-w-0 max-w-full flex flex-col gap-0.5 sm:gap-1 overflow-x-hidden">
           {/* Image Attachment Preview */}
           {attachedImage && (
             <div className="flex items-center gap-1.5 bg-amber-50/90 dark:bg-slate-900 p-1 rounded-xl w-fit border border-amber-200 dark:border-white/15">

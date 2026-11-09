@@ -585,7 +585,7 @@
 
   .bottom-safe-fab-center {
     position: fixed;
-    bottom: calc(var(--sidebar-footer-height, calc(76px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
+    bottom: calc(var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
     left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
     right: auto !important;
     transform: translateX(-50%) !important;
@@ -601,7 +601,7 @@
   }
   @media (min-width: 640px) {
     .bottom-safe-fab-center {
-      bottom: calc(var(--sidebar-footer-height, calc(76px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
+      bottom: calc(var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
       width: 84px !important;
       height: 84px !important;
     }
@@ -3275,7 +3275,7 @@ html:root [data-page-brand="true"] > div > div { padding-left: 0 !important; min
 .bottom-safe-fab-center {
   left: var(--lucy-chat-center-x, calc((100vw - var(--sites-sidebar-width, 80px)) / 2)) !important;
   right: auto !important;
-  bottom: calc(var(--sidebar-footer-height, calc(76px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
+  bottom: calc(var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   transform: translateX(-50%) !important;
@@ -3308,7 +3308,7 @@ html.in-lucy-chat .bottom-safe-fab-center,
 .lucy-chat-shell ~ .bottom-safe-fab-center,
 body:has(.lucy-chat-footer) .bottom-safe-fab-center,
 .bottom-safe-fab-center {
-  bottom: calc(var(--sidebar-footer-height, calc(76px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
+  bottom: calc(var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
 }
 html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   position: absolute !important;
@@ -3326,7 +3326,7 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
 
 /* 🌌 좌측 럭키채널 테마: 접힌 상태와 동일한 고유 테마 배경 복원 */
 #duo-content-viewport {
-  background: transparent;
+  background-color: var(--app-bg, oklch(0.08 0.02 270)) !important;
 }
 
 /* 🌌 듀오 중앙 검은선 및 세로 분할선 완전 제거: 좌측·우측 뷰포트 사이 경계선 완전 소멸 */
@@ -3397,7 +3397,7 @@ body.duo-unfolded-landscape .bottom-safe-fab-center {
   margin-left: 0 !important;
   margin-right: 0 !important;
   transform: translateX(-50%) !important;
-  bottom: calc(var(--sidebar-footer-height, calc(76px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
+  bottom: calc(var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
 }
 
 html.duo-unfolded-landscape .prism-hub-header {
@@ -3611,32 +3611,29 @@ html.duo-unfolded-mode #duo-content-viewport :is(.prism-xs-fab-group, [data-side
   max-width: calc(100% - 2rem);
 }
 
-/* Shared card/workspace layouts expand only when their own canvas has room. */
-@container duo-content (width < 42rem) {
-  #duo-content-viewport :is(.duo-split-grid, .duo-channel-grid, .duo-routine-grid, .duo-dapp-workspace, .duo-workspace-pair, .duo-split-workspace) {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
+/* 좌측 뷰포트는 접힌 상태의 모바일 1열 스택 UI를 100% 동일하게 유지하며, 늘어난 50vw 폭에 맞춰 여백·크기 최적화 */
+html.duo-unfolded-mode #duo-content-viewport :is(.duo-split-grid, .duo-channel-grid, .duo-routine-grid, .duo-dapp-workspace, .duo-workspace-pair, .duo-split-workspace, .universe-content .duo-split-grid, .universe-content .duo-channel-grid) {
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100% !important;
 }
-@container duo-content (width >= 42rem) {
-  #duo-content-viewport :is(.duo-channel-grid, .duo-routine-grid, .duo-dapp-workspace) {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
+
+html.duo-unfolded-mode #duo-content-viewport :is(.sm\:grid-cols-2, .md\:grid-cols-2, .lg\:grid-cols-2, .sm\:grid-cols-3, .md\:grid-cols-3, .lg\:grid-cols-3) {
+  grid-template-columns: minmax(0, 1fr) !important;
 }
-@container duo-content (width >= 56rem) {
-  #duo-content-viewport :is(.duo-split-grid, .duo-workspace-pair, .duo-split-workspace) {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-@container duo-content (width >= 64rem) {
-  #duo-content-viewport .duo-channel-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
+
+html.duo-unfolded-mode #duo-content-viewport :is(.sm\:flex-row, .md\:flex-row, .lg\:flex-row) {
+  flex-direction: column !important;
+  align-items: stretch !important;
 }
 
 /* Show the original channel aurora at the content pane's proportions. */
 html.duo-unfolded-mode:not(.duo-unfolded-portrait) .prism-aura-bg {
-  right: auto;
-  width: 50vw;
+  position: absolute !important;
+  inset: 0 !important;
+  right: auto !important;
+  width: 50vw !important;
+  height: 100% !important;
+  pointer-events: none !important;
 }
 html.duo-unfolded-portrait .prism-aura-bg {
   bottom: auto;

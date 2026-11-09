@@ -1,11 +1,20 @@
 interface LucyCosmicBackgroundProps {
   isProMode: boolean;
+  period?: 'morning' | 'day' | 'night';
 }
 
 /** Decorative layers stay behind opaque reading surfaces. */
-export function LucyCosmicBackground({ isProMode }: LucyCosmicBackgroundProps) {
+export function LucyCosmicBackground({ isProMode, period }: LucyCosmicBackgroundProps) {
+  const currentPeriod = period || (() => {
+    if (typeof window === 'undefined') return 'day';
+    const h = new Date().getHours();
+    if (h >= 6 && h < 11) return 'morning';
+    if (h >= 11 && h < 18) return 'day';
+    return 'night';
+  })();
+
   return (
-    <div className="lucy-cosmic-bg-container" aria-hidden="true">
+    <div className="lucy-cosmic-bg-container" data-lucy-period={currentPeriod} aria-hidden="true">
       <div className="lucy-cosmic-wash" />
       <div className="lucy-morning-light">
         <div className="lucy-morning-aurora" />
