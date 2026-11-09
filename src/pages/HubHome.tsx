@@ -537,12 +537,13 @@ export default function HubHome() {
   return (
     <div className="universe-layout h-app-full w-full min-w-0 flex flex-col relative font-sans bg-transparent">
       {/* Header Info Bar - Always Fixed Outside Scroll Root */}
+      {/* Top Left Branding */}
       <motion.div
         data-page-brand="true"
         initial={{ y: -8, opacity: 0.88 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className="prism-hub-header fixed top-safe-2 left-2 sm:left-4 md:top-safe-4 md:left-6 pointer-events-auto z-[110] transition-all duration-300 isolate"
+        className="duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300"
       >
         <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
           <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/prologue')}>
@@ -556,10 +557,10 @@ export default function HubHome() {
 
       {/* Navigation Subnav Menu (Universe, eCPR & ToDo Sections) */}
       <motion.nav
-        initial={{ y: -10, x: '-50%', opacity: 0.88 }}
-        animate={{ y: 0, x: '-50%', opacity: 1 }}
+        initial={{ y: -10, opacity: 0.88 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="prism-xs-subnav fixed top-safe-nav md:top-safe-nav-md left-1/2 z-[100] flex items-center gap-1.5 p-1.5 rounded-full bg-slate-950/80 dark:bg-slate-950/75 backdrop-blur-2xl border border-white/15 shadow-[0_12px_32px_rgba(0,0,0,0.45)] max-w-[95vw] overflow-x-auto no-scrollbar md:max-w-fit md:overflow-visible transition-all duration-300"
+        className="prism-xs-subnav duo-page-nav relative self-center shrink-0 mx-auto z-40 flex items-center gap-1 p-1 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[calc(100%-2rem)] overflow-x-auto no-scrollbar md:max-w-fit transition-opacity duration-300"
       >
         {[
           { id: 'universe', icon: Compass, label: 'Universe' },
@@ -582,47 +583,38 @@ export default function HubHome() {
                   navigate('/prologue');
                 }
               }}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold font-sans transition-all duration-300 whitespace-nowrap cursor-pointer ${
+              className={`prism-subnav-btn flex shrink-0 whitespace-nowrap items-center gap-2 md:gap-3 px-4 md:px-5 py-2.5 md:py-3 rounded-2xl transition-all duration-300 group ${
                 isActive
                   ? item.id === 'ecpr'
-                    ? 'bg-gradient-to-r from-red-500/80 via-rose-500/70 to-amber-500/70 keep-white border border-red-300/60 shadow-[0_0_16px_rgba(239,68,68,0.35)] scale-[1.02]'
+                    ? 'bg-gradient-to-r from-red-500/80 via-rose-500/70 to-amber-500/70 text-white shadow-lg shadow-red-500/20 border border-red-500/30'
                     : item.id === 'todo'
-                    ? 'bg-gradient-to-r from-indigo-600/80 via-purple-600/70 to-amber-500/70 keep-white border border-indigo-300/60 shadow-[0_0_18px_rgba(99,102,241,0.4)] scale-[1.02]'
-                    : 'bg-gradient-to-r from-cyan-500/75 via-indigo-500/75 to-purple-500/75 keep-white border border-cyan-300/60 shadow-[0_0_18px_rgba(34,211,238,0.35)] scale-[1.02]'
-                  : 'text-white/65 hover:text-white hover:bg-white/10 border border-transparent'
+                    ? 'bg-gradient-to-r from-indigo-600/80 via-purple-600/70 to-amber-500/70 text-white shadow-lg shadow-indigo-500/20 border border-indigo-500/30'
+                    : 'bg-yellow-600 text-white shadow-lg shadow-yellow-500/20 border border-yellow-500/30'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-white/60 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Icon
-                size={14}
-                className={
-                  isActive
-                    ? item.id === 'ecpr'
-                      ? 'text-rose-200 animate-pulse'
-                      : item.id === 'todo'
-                      ? 'text-indigo-200 animate-pulse'
-                      : 'text-cyan-200 animate-pulse'
-                    : 'text-white/45'
-                }
-              />
-              <span className={isActive ? 'keep-white' : ''}>{item.label}</span>
+              <Icon size={16} className={isActive ? 'animate-pulse' : ''} />
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'opacity-100 keep-white' : 'opacity-70'}`}>
+                {item.label}
+              </span>
             </button>
           );
         })}
       </motion.nav>
 
-      <div data-app-scroll-root {...hubSwipeHandlers} className="flex-1 w-full min-w-0 overflow-x-hidden overflow-y-auto flex flex-col no-scrollbar z-10 pb-52 sm:pb-56">
+      <div data-app-scroll-root {...hubSwipeHandlers} className="min-h-0 flex-1 w-full pt-4 pb-24 flex flex-col items-center relative z-10 overflow-y-auto no-scrollbar scroll-smooth text-slate-900 dark:text-white touch-pan-y overscroll-x-none">
         {!legacy && <FloatingParticles count={narrow ? 4 : 14} />}
 
         {activeSection === 'ecpr' ? (
           <PrologueECPRView />
         ) : activeSection === 'todo' ? (
-          <div className="prism-page-content w-full mx-auto px-4 sm:px-6 pt-home md:pt-home-md">
+          <div className="prism-page-content w-full mx-auto px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col items-center min-w-0">
             <ErrorBoundary>
               <PrologueTodoSection />
             </ErrorBoundary>
           </div>
         ) : (
-          <div className="flex-1 w-full min-w-0 flex flex-col relative text-slate-900 dark:text-white font-sans">
+          <div className="prism-page-content universe-content relative z-10 w-full min-w-0 px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col mx-auto space-y-6 md:space-y-7">
             
             {/* 프로필 설정 유도 모달 */}
             <AnimatePresence>
