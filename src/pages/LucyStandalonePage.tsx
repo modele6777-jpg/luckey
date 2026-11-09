@@ -1,5 +1,4 @@
 import { LucyModeName } from '@/components/chat/LucyModeName';
-import { useSlowHorizontalScroll } from '@/hooks/useSlowHorizontalScroll';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
@@ -1735,7 +1734,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return getCuratedPrompts(activeProfiles, selectedMode, activeChannels);
   });
 
-  const promptScrollRef = useSlowHorizontalScroll(JSON.stringify(currentPrompts));
 
   // 🔄 루시 AI 모드 ↔ 마스터 모드 전환 시 하단 추천 질문 예시 1:1 실시간 즉시 동기화
   useEffect(() => {
@@ -3801,25 +3799,27 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               <RefreshCw size={10} className={`sm:w-2.5 sm:h-2.5 text-amber-600 dark:text-amber-400 ${isLucyGenerating ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* 가로 스크롤 추천 질문 리스트 */}
+            {/* 가로 무한 흐름 추천 질문 리스트 (GPU 가속 연속 마키) */}
             {currentPrompts.length > 0 && (
-              <div ref={promptScrollRef} aria-label="추천 질문 예시" className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0 h-full" style={{ scrollBehavior: 'auto' }}>
-                {currentPrompts.map((promptText) => (
-                  <button
-                    key={promptText}
-                    type="button"
-                    onClick={() => handleSelectRecommendationChip(promptText)}
-                    disabled={isLucyGenerating}
-                    className={`shrink-0 px-2.5 sm:px-3 h-[22px] sm:h-[24px] flex items-center rounded-full border text-[10px] sm:text-[11.5px] font-medium transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap leading-none ${
-                      isLight
-                        ? 'bg-[#fffdf9]/90 hover:bg-amber-50 border-amber-200/80 hover:border-amber-300 text-slate-800 hover:text-amber-950'
-                        : 'bg-slate-900/90 hover:bg-slate-800 border-white/20 hover:border-amber-400/50 text-white hover:text-amber-200'
-                    }`}
-                    style={{ color: isLight ? '#1e293b' : '#ffffff' }}
-                  >
-                    {promptText}
-                  </button>
-                ))}
+              <div aria-label="추천 질문 예시" className="lucy-prompts-marquee-container flex-1 min-w-0 flex items-center py-0 h-full overflow-hidden select-none">
+                <div className="lucy-prompts-marquee-track">
+                  {[...currentPrompts, ...currentPrompts].map((promptText, promptIdx) => (
+                    <button
+                      key={`${promptText}-${promptIdx}`}
+                      type="button"
+                      onClick={() => handleSelectRecommendationChip(promptText)}
+                      disabled={isLucyGenerating}
+                      className={`shrink-0 px-2.5 sm:px-3 h-[22px] sm:h-[24px] flex items-center rounded-full border text-[10px] sm:text-[11.5px] font-medium transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap leading-none ${
+                        isLight
+                          ? 'bg-[#fffdf9]/90 hover:bg-amber-50 border-amber-200/80 hover:border-amber-300 text-slate-800 hover:text-amber-950'
+                          : 'bg-slate-900/90 hover:bg-slate-800 border-white/20 hover:border-amber-400/50 text-white hover:text-amber-200'
+                      }`}
+                      style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+                    >
+                      {promptText}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
