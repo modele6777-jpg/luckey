@@ -97,7 +97,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
       model,
       getLucyRequestFallbacks(model, req.body.review_mode),
       (candidate, signal) => ai.models.generateContent({ model: candidate, contents, config: { ...generationConfig, ...(signal ? { abortSignal: signal } : {}) } }),
-      req.body.review_mode === 'general' ? { attemptTimeoutMs: 25000 } : undefined,
+      { attemptTimeoutMs: req.body.review_mode === 'general' ? 25000 : 15000 },
     );
 
     const replyText = response.text || "";

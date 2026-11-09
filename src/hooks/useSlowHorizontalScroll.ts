@@ -8,82 +8,114 @@ export function useSlowHorizontalScroll(resetKey: string) {
     const element = ref.current;
     if (!element) return;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const pixelsPerSecond = 12;
+    const pixelsPerSecond = 20; // Natural, lively smooth pace
     let direction = 1;
     let previousTime = 0;
-    let resumeAt = performance.now() + 2000;
-    let hovered = window.matchMedia('(hover: hover)').matches && element.matches(':hover');
+    let resumeAt = performance.now() + 1000;
+    let hovered = false;
     let pressed = false;
-    let focused = element.contains(document.activeElement);
     let frame = 0;
     let maximum = 0;
-    let position = 0;
-    element.scrollLeft = 0;
+    let position = element.scrollLeft;
 
     const measure = () => {
       maximum = Math.max(0, element.scrollWidth - element.clientWidth);
-      position = Math.min(position, maximum);
+      position = Math.min(element.scrollLeft, maximum);
     };
-    const pause = () => {
-      resumeAt = performance.now() + 4000;
+
+    const pause = (delayMs = 2500) => {
+      resumeAt = performance.now() + delayMs;
       position = element.scrollLeft;
     };
+
     const syncScroll = () => {
-      if (hovered || pressed || focused || performance.now() < resumeAt) position = element.scrollLeft;
+      if (hovered || pressed || performance.now() < resumeAt) {
+        position = element.scrollLeft;
+      }
     };
+
     const enter = (event: PointerEvent) => {
       if (event.pointerType === 'mouse') hovered = true;
     };
-    const leave = () => { hovered = false; pause(); };
-    const down = () => { pressed = true; pause(); };
-    const up = () => { pressed = false; pause(); };
-    const focusIn = () => { focused = true; };
-    const focusOut = (event: FocusEvent) => {
-      focused = event.relatedTarget instanceof Node && element.contains(event.relatedTarget);
-      pause();
+    const leave = () => {
+      hovered = false;
+      pause(1500);
     };
+    const down = () => {
+      pressed = true;
+      pause(3000);
+    };
+    const up = () => {
+      pressed = false;
+      pause(2000);
+    };
+
     const tick = (time: number) => {
       const elapsed = previousTime ? Math.min(time - previousTime, 50) : 0;
       previousTime = time;
-      if (!document.hidden && !reducedMotion.matches && !hovered && !pressed && !focused && time >= resumeAt && maximum > 0) {
-        // Keep a fractional position: integer scrollLeft rounding must not stall slow motion.
-        position = Math.max(0, Math.min(maximum, position + direction * pixelsPerSecond * elapsed / 1000));
+
+      // Dynamically recheck maximum if it wasn't measured yet
+      if (maximum <= 0 && element.scrollWidth > element.clientWidth) {
+        measure();
+      }
+
+      if (!document.hidden && !reducedMotion.matches && !hovered && !pressed && time >= resumeAt && maximum > 0) {
+        position = Math.max(0, Math.min(maximum, position + direction * pixelsPerSecond * (elapsed / 1000)));
         element.scrollLeft = position;
-        if (position === maximum || position === 0) {
-          direction *= -1;
-          resumeAt = time + 2000;
+
+        if (position >= maximum - 0.5) {
+          direction = -1;
+          position = maximum;
+          resumeAt = time + 1800; // brief pause at ends before reversing
+        } else if (position <= 0.5) {
+          direction = 1;
+          position = 0;
+          resumeAt = time + 1800;
         }
       }
       frame = requestAnimationFrame(tick);
     };
+
     measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    for (const child of element.children) observer.observe(child);
+    // Re-measure after initial paint and layout
+    const initTimer = setTimeout(measure, 150);
+    const initTimer2 = setTimeout(measure, 500);
+
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(element);
+    for (const child of element.children) resizeObserver.observe(child);
+
+    const mutationObserver = new MutationObserver(() => {
+      measure();
+      for (const child of element.children) {
+        try { resizeObserver.observe(child); } catch (_) {}
+      }
+    });
+    mutationObserver.observe(element, { childList: true, subtree: true });
+
     element.addEventListener('pointerenter', enter);
     element.addEventListener('pointerleave', leave);
     element.addEventListener('pointerdown', down, { passive: true });
     window.addEventListener('pointerup', up, { passive: true });
     window.addEventListener('pointercancel', up, { passive: true });
     element.addEventListener('scroll', syncScroll, { passive: true });
-    element.addEventListener('wheel', pause, { passive: true });
-    element.addEventListener('touchmove', pause, { passive: true });
-    element.addEventListener('focusin', focusIn);
-    element.addEventListener('focusout', focusOut);
+    element.addEventListener('wheel', () => pause(2500), { passive: true });
+    element.addEventListener('touchmove', () => pause(2500), { passive: true });
+
     frame = requestAnimationFrame(tick);
+
     return () => {
+      clearTimeout(initTimer);
+      clearTimeout(initTimer2);
       cancelAnimationFrame(frame);
-      observer.disconnect();
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
       element.removeEventListener('pointerenter', enter);
       element.removeEventListener('pointerleave', leave);
       element.removeEventListener('pointerdown', down);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', up);
       element.removeEventListener('scroll', syncScroll);
-      element.removeEventListener('wheel', pause);
-      element.removeEventListener('touchmove', pause);
-      element.removeEventListener('focusin', focusIn);
-      element.removeEventListener('focusout', focusOut);
     };
   }, [resetKey]);
 

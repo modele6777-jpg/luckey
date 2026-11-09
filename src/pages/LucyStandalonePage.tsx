@@ -723,7 +723,8 @@ function getCuratedPrompts(
 
 export type LucyTier = 'ai' | 'plus' | 'pro';
 
-const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
+const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {}) =>
+  detectLucyChannelsFromText(text, { allowMaster: Boolean(options.allowMaster) });
 
 function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🌟 루시 3대 모드 상태 머신 (Lucy AI / Lucy Plus / Lucy Pro):
@@ -1420,9 +1421,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Detailed Saju Info for Soul Profile View (상담 대상자 기준으로 자동 동기화)
   const sajuInfo = useMemo(() => calculateDetailedSaju(counselingUserProfile), [counselingUserProfile]);
 
-  const baseLucyMessages = personaMessages?.lucy || [];
-  const lucyMessages = (baseLucyMessages.length > 0 || !pro) ? baseLucyMessages : lucyProMessages;
-  const isLucyGenerating = isPlusMode ? (Boolean(isGenerating?.lucy) || Boolean(isLucyProGenerating)) : (Boolean(isGenerating?.lucy));
+  const lucyMessages = personaMessages?.lucy || [];
+  const isLucyGenerating = Boolean(isGenerating?.lucy);
 
   // 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 (STT 마이크 + TTS 자동 루프)
   const [isVoiceMode, setIsVoiceMode] = useState<boolean>(() => {
@@ -2555,7 +2555,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         title: formatChannelsModeTitle(effectiveForcedChannels, isMasterMode),
       };
     } else if (isAutoDetect && forcedChannels === undefined && combinedContextText.length > 0) {
-      const detected = detectPageChannels(combinedContextText);
+      const detected = detectPageChannels(combinedContextText, { allowMaster: isMasterMode });
       if (isMasterMode && detected.isMaster) {
         channels = ALL_CHANNELS;
       } else {
@@ -2662,7 +2662,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 🌟 사용자 요청: 프로필이 바뀌면 내 기준이 아니라 그 사람 기준으로 상담 (counselingUserProfile 전달)
     await sendUnifiedMessage(userCleanText, targetPersona, imgToSend, {
       tarotCardMarkers,
-      conversationId: isMasterMode ? 'lucy-pro' : 'lucy',
+      conversationId: 'lucy',
       isLucyPlus: isPlusMode,
       isLucyPro: isMasterMode,
       isPro: isMasterMode,

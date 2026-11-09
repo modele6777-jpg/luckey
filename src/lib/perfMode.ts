@@ -147,15 +147,22 @@ export interface DuoUnfoldedState {
 export function resolveDuoViewport(width: number, height: number, spanned = false): DuoUnfoldedState {
   const shortSide = Math.min(width, height);
   const longSide = Math.max(width, height);
+  const ratio = shortSide / Math.max(longSide, 1);
+  const isNarrowCoverPortrait = width <= height && (width < 500 || ratio < 0.68) && !spanned;
+  const isUnfolded = !isNarrowCoverPortrait && (
+    spanned ||
+    shortSide >= 520 ||
+    (shortSide >= 480 && ratio >= 0.70) ||
+    longSide >= 768
+  );
   return {
-    unfolded: shortSide >= 560 && (
-      spanned || longSide >= 768 || (shortSide >= 600 && longSide >= 640 && shortSide / longSide >= 0.75)
-    ),
+    unfolded: isUnfolded,
     orientation: width > height ? 'landscape' : 'portrait',
   };
 }
 
 let lastDuoLayoutViewport: { width: number; height: number } | null = null;
+let stickyUnfoldedState: boolean | null = null;
 
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
@@ -182,7 +189,23 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   ].some(query => {
     try { return window.matchMedia(query).matches; } catch { return false; }
   });
-  return resolveDuoViewport(width, height, spanned);
+  const resolved = resolveDuoViewport(width, height, spanned);
+
+  const shortSide = Math.min(width, height);
+  const longSide = Math.max(width, height);
+  const ratio = shortSide / Math.max(longSide, 1);
+  const isDefiniteCoverPhone = width <= height && width < 480 && ratio < 0.62 && !spanned;
+
+  if (resolved.unfolded) {
+    stickyUnfoldedState = true;
+  } else if (isDefiniteCoverPhone) {
+    stickyUnfoldedState = false;
+  } else if (stickyUnfoldedState === true && !isDefiniteCoverPhone) {
+    // 펼쳐진 상태를 유지하여 한 화면으로 빠지는 현상을 완전히 방지
+    resolved.unfolded = true;
+  }
+
+  return resolved;
 }
 
 function isFoldableInnerScreen(): boolean {
