@@ -4,6 +4,38 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Inside the unfolded content pane, use its width for the same responsive UI. */
+@custom-variant sm {
+  @media (width >= 40rem) {
+    &:where(:not(#duo-content-viewport *)) { @slot; }
+  }
+  @container duo-content (width >= 40rem) { @slot; }
+}
+@custom-variant md {
+  @media (width >= 48rem) {
+    &:where(:not(#duo-content-viewport *)) { @slot; }
+  }
+  @container duo-content (width >= 48rem) { @slot; }
+}
+@custom-variant lg {
+  @media (width >= 64rem) {
+    &:where(:not(#duo-content-viewport *)) { @slot; }
+  }
+  @container duo-content (width >= 64rem) { @slot; }
+}
+@custom-variant xl {
+  @media (width >= 80rem) {
+    &:where(:not(#duo-content-viewport *)) { @slot; }
+  }
+  @container duo-content (width >= 80rem) { @slot; }
+}
+@custom-variant 2xl {
+  @media (width >= 96rem) {
+    &:where(:not(#duo-content-viewport *)) { @slot; }
+  }
+  @container duo-content (width >= 96rem) { @slot; }
+}
+
 @theme {
   --font-sans: "Outfit", "SUIT Variable", -apple-system, sans-serif;
   --font-serif: "Playfair Display", "Noto Serif KR", serif;
@@ -3294,7 +3326,7 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
 
 /* 🌌 좌측 럭키채널 테마: 접힌 상태와 동일한 고유 테마 배경 복원 */
 #duo-content-viewport {
-  background-color: var(--app-bg, oklch(0.08 0.02 270));
+  background: transparent;
 }
 
 /* 🌌 듀오 중앙 검은선 및 세로 분할선 완전 제거: 좌측·우측 뷰포트 사이 경계선 완전 소멸 */
@@ -3306,12 +3338,6 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   border-top: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
-}
-
-/* 럭키채널 뷰포트 내 UI 크기 최적화: 50% 분할 폭에 맞춰 단일 컬럼으로 편안하게 안착 */
-html.duo-unfolded-mode .universe-content .duo-split-grid,
-html.duo-unfolded-mode .universe-content .duo-channel-grid {
-  grid-template-columns: minmax(0, 1fr) !important;
 }
 
 /* 🔮 타로 리딩(휠·선택·해설 모달) 화면: 전체를 덮지 않고 콘텐츠 뷰포트 영역 내에만 표시 */
@@ -3547,67 +3573,74 @@ html.duo-unfolded-portrait #duo-lucy-viewport {
   max-width: 100% !important;
 }
 
-/* 1. 모닝 루틴, 카테고리 칩 등 가로 3열/2열 강제 붕괴 방지 -> 접힌 상태의 1열 스택 UI 복원 */
-html.duo-unfolded-mode #duo-content-viewport :is(.sm\:grid-cols-3, .md\:grid-cols-3, .lg\:grid-cols-3, .sm\:grid-cols-2, .md\:grid-cols-2, .lg\:grid-cols-2, .duo-routine-grid),
-html.duo-unfolded-mode #duo-content-viewport .duo-split-workspace,
-html.duo-unfolded-mode #duo-content-viewport .duo-workspace-pair,
-html.duo-unfolded-mode #duo-content-viewport .duo-split-grid,
-html.duo-unfolded-mode #duo-content-viewport .duo-channel-grid,
-html.duo-unfolded-mode #duo-content-viewport .duo-dapp-workspace {
-  grid-template-columns: minmax(0, 1fr) !important;
+/* Keep the folded channel chrome and cards; only adapt to the pane's canvas. */
+html.duo-unfolded-mode #duo-content-viewport {
+  /* Fixed page headers and controls belong to this pane, not the whole device. */
+  transform: translateZ(0);
+  --page-header-inset: clamp(14px, 4cqw, 32px);
+  --page-header-top: max(14px, env(safe-area-inset-top, 0px));
 }
 
-/* 2. 카드 내부의 무리한 가로 flex-row 분할을 모바일용 수직 스택으로 재배치 */
-html.duo-unfolded-mode #duo-content-viewport :is(.sm\:flex-row, .md\:flex-row, .lg\:flex-row) {
-  flex-direction: column !important;
-  align-items: stretch !important;
+html.duo-unfolded-mode #duo-content-viewport .h-app-full {
+  height: 100% !important;
+  min-height: 0;
 }
 
-/* 3. 모닝 루틴 카드 및 데일리 케어 카드 모바일 최적화 */
-html.duo-unfolded-mode #duo-content-viewport .duo-routine-grid > button {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-html.duo-unfolded-mode #duo-content-viewport .duo-persona-header {
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 0.75rem !important;
-}
-
-/* 4. 프로필 및 에필로그 폰 전용 패딩 & 여백 */
 html.duo-unfolded-mode #duo-content-viewport .prism-page-content {
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
-  max-width: 100% !important;
+  padding-inline: clamp(.5rem, 2cqw, 1.5rem) !important;
+}
+html.duo-unfolded-mode #duo-content-viewport .prism-page-content :is(.prism-page-content, .duo-workspace-container) {
+  padding-inline: 0 !important;
 }
 
-/* 5. 좌측 뷰포트 헤더와 서브네비게이션: 늘어난 50vw 화면 비율에 맞춰 여백·크기 최적 재편성 */
 html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav {
-  position: relative !important;
-  left: auto !important;
-  right: auto !important;
-  top: auto !important;
-  transform: none !important;
-  margin: 0.75rem auto 1rem auto !important;
-  max-width: calc(100% - 1.5rem) !important;
-  padding: 0.375rem 0.625rem !important;
-  gap: 0.375rem !important;
-  width: fit-content !important;
+  left: 50% !important;
+  max-width: calc(100% - 2rem) !important;
+  transform: translateX(-50%) !important;
+  overflow-x: auto;
 }
 
-html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav :is(button, a, .prism-subnav-btn) {
-  padding: 0.35rem 0.75rem !important;
-  font-size: 0.75rem !important;
-  line-height: 1rem !important;
+html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav:not(.duo-page-nav) {
+  top: calc(var(--sat, 0px) + 4.25rem) !important;
+}
+html.duo-unfolded-mode #duo-content-viewport .pt-home {
+  padding-top: calc(var(--sat, 0px) + 7.25rem) !important;
+}
+html.duo-unfolded-mode #duo-content-viewport :is(.prism-xs-fab-group, [data-sidebar-aware='true']) {
+  right: 1rem;
+  max-width: calc(100% - 2rem);
 }
 
-html.duo-unfolded-mode #duo-content-viewport .prism-hub-header {
-  position: relative !important;
-  left: auto !important;
-  top: auto !important;
-  padding-top: 0.75rem !important;
-  padding-bottom: 0.25rem !important;
+/* Shared card/workspace layouts expand only when their own canvas has room. */
+@container duo-content (width < 42rem) {
+  #duo-content-viewport :is(.duo-split-grid, .duo-channel-grid, .duo-routine-grid, .duo-dapp-workspace, .duo-workspace-pair, .duo-split-workspace) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+@container duo-content (width >= 42rem) {
+  #duo-content-viewport :is(.duo-channel-grid, .duo-routine-grid, .duo-dapp-workspace) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@container duo-content (width >= 56rem) {
+  #duo-content-viewport :is(.duo-split-grid, .duo-workspace-pair, .duo-split-workspace) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@container duo-content (width >= 64rem) {
+  #duo-content-viewport .duo-channel-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Show the original channel aurora at the content pane's proportions. */
+html.duo-unfolded-mode:not(.duo-unfolded-portrait) .prism-aura-bg {
+  right: auto;
+  width: 50vw;
+}
+html.duo-unfolded-portrait .prism-aura-bg {
+  bottom: auto;
+  height: calc((var(--app-height, 100dvh) - 54px - env(safe-area-inset-bottom, 0px)) / 2);
 }
 
 /* 6. 좌측 화면 채널 이동 시 로딩 오버레이는 전체 화면을 덮지 않고 좌측 뷰포트에만 완벽 격리 */
