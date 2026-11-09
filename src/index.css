@@ -3283,13 +3283,19 @@ html[data-ios-standalone-flow]:not(.keyboard-open) .bottom-safe-fab-center {
   transition: none !important;
 }
 
-/* 🛡️ 상단 검색창 활성화 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통 빅뱅버튼 즉시 숨김 */
+/* 🛡️ 상단 검색창 및 하단 입력창 활성화 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통 빅뱅버튼 즉시 숨김 */
 html.lucy-search-active .bottom-safe-fab-center,
 body.lucy-search-active .bottom-safe-fab-center,
+html.lucy-input-focused .bottom-safe-fab-center,
+body.lucy-input-focused .bottom-safe-fab-center,
 .lucy-search-active ~ .bottom-safe-fab-center,
+.lucy-input-focused ~ .bottom-safe-fab-center,
 body:has(.lucy-search-active) .bottom-safe-fab-center,
+body:has(.lucy-input-focused) .bottom-safe-fab-center,
 body:has([data-lucy-search-active="true"]) .bottom-safe-fab-center,
+body:has([data-lucy-input-focused="true"]) .bottom-safe-fab-center,
 [data-lucy-search-active="true"] ~ .bottom-safe-fab-center,
+[data-lucy-input-focused="true"] ~ .bottom-safe-fab-center,
 .keyboard-open .bottom-safe-fab-center,
 body:has(.keyboard-open) .bottom-safe-fab-center {
   display: none !important;
@@ -3297,6 +3303,21 @@ body:has(.keyboard-open) .bottom-safe-fab-center {
   opacity: 0 !important;
   pointer-events: none !important;
   transform: scale(0) !important;
+}
+
+/* 🛡️ iOS Safari 입력창 포커스 시 화면 자동 확대(16px 미만 줌인) 원천 방지 */
+@media (hover: none) and (pointer: coarse) {
+  .lucy-starlight-composer textarea,
+  .lucy-starlight-composer input {
+    font-size: 16px !important;
+  }
+}
+
+/* 📱 iPhone Duo 펼침 세로 모드(Portrait 50% 상하 분할) 시:
+   하단에 위치하는 루시 채팅창 상단에는 노치/다이나믹 아일랜드가 없으므로 과다 상단 여백 제거 */
+.duo-dual-view.flex-col #duo-lucy-viewport .lucy-chat-header,
+.duo-dual-view.flex-col #duo-lucy-viewport header {
+  padding-top: max(8px, 0.5rem) !important;
 }
 
 /* ==========================================================================

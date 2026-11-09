@@ -176,7 +176,7 @@ export function BigBangButton() {
   }, []);
 
   // 🧭 상하좌우 원뿔 모양 모핑 방향 ('none' | 'north' | 'south' | 'west' | 'east')
-  // 🛡️ 가상 키보드 활성화 또는 상단 검색창 활성화 시 FAB 버튼을 완전히 숨겨 화면 가림 및 스크롤 충돌 방지
+  // 🛡️ 가상 키보드 활성화, 상단 검색창 활성화 또는 하단 입력창 포커스 시 FAB 버튼을 완전히 숨겨 화면 가림 및 스크롤 충돌 방지
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -186,14 +186,16 @@ export function BigBangButton() {
         document.body.classList.contains('keyboard-open') ||
         document.documentElement.classList.contains('lucy-search-active') ||
         document.body.classList.contains('lucy-search-active') ||
-        Boolean(document.querySelector('.lucy-search-active, [data-lucy-search-active="true"]'));
+        document.documentElement.classList.contains('lucy-input-focused') ||
+        document.body.classList.contains('lucy-input-focused') ||
+        Boolean(document.querySelector('.lucy-search-active, .lucy-input-focused, [data-lucy-search-active="true"], [data-lucy-input-focused="true"]'));
       setIsKeyboardOpen(open);
     };
     check();
     const obs = new MutationObserver(check);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-lucy-search-active'] });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-lucy-search-active', 'data-lucy-input-focused'] });
     if (document.body) {
-      obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      obs.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-lucy-input-focused'] });
     }
     return () => obs.disconnect();
   }, []);

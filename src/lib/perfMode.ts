@@ -160,7 +160,18 @@ let lastDuoLayoutViewport: { width: number; height: number } | null = null;
 export function isDuoUnfoldedState(): DuoUnfoldedState {
   if (typeof window === 'undefined') return { unfolded: false, orientation: 'portrait' };
   const width = window.innerWidth;
-  const keyboardOpen = typeof document !== 'undefined' && document.documentElement.classList.contains('keyboard-open');
+  const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+  const isInputActive = Boolean(
+    activeEl &&
+    (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable)
+  );
+  const keyboardOpen =
+    (typeof document !== 'undefined' &&
+      (document.documentElement.classList.contains('keyboard-open') ||
+       document.body?.classList.contains('keyboard-open') ||
+       document.documentElement.classList.contains('lucy-input-focused') ||
+       document.body?.classList.contains('lucy-input-focused'))) ||
+    isInputActive;
   // A keyboard reduces available height; it does not fold the device.
   const height = keyboardOpen && lastDuoLayoutViewport?.width === width
     ? lastDuoLayoutViewport.height : window.innerHeight;
