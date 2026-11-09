@@ -147,7 +147,6 @@ import { useSmartScroll } from "@/hooks/useSmartScroll";
 import { SmartScrollResumeButton } from "@/components/common/SmartScrollResumeButton";
 import { TTSHighlightText } from "@/utils/ttsHighlight";
 import { DynamicGhostInputPlaceholder } from "@/components/chat/DynamicGhostInputPlaceholder";
-import { isDualPaneLayout } from "@/lib/perfMode";
 
 const EnergyAnalysisSchema = z.object({
   luckScore: z
@@ -1567,23 +1566,6 @@ function playDailyCardChimeAsync() {
   }, [followUpEntries]);
 
   const [zoomedCard, setZoomedCard] = useState<{ card: TarotCard; slotName?: string } | null>(null);
-  const [inlineZoomedCard, setInlineZoomedCard] = useState<{ card: TarotCard; slotName?: string } | null>(null);
-  const [isDualPane, setIsDualPane] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return isDualPaneLayout() || window.innerWidth >= 600;
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDualPane(isDualPaneLayout() || window.innerWidth >= 600);
-    };
-    window.addEventListener('resize', handleResize, { passive: true });
-    window.addEventListener('orientationchange', handleResize, { passive: true });
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
-  }, []);
   const [cardFlipCycle, setCardFlipCycle] = useState(0);
   const [hideTarotPopup, setHideTarotPopup] = useState(false);
   const [tarotSubMessages, setTarotSubMessages] = useState<
@@ -4158,88 +4140,14 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                           size="md"
                                           slotName={positionLabel}
                                           onClick={() => {
-                                            if (isDualPane) {
-                                              setInlineZoomedCard({ card: cardWithRev, slotName: positionLabel });
-                                            } else {
-                                              setZoomedCard({ card: cardWithRev, slotName: positionLabel });
-                                            }
+                                            setZoomedCard({ card: cardWithRev, slotName: positionLabel });
                                           }}
                                         />
                                       );
                                     })}
                                   </motion.div>
 
-                                  {/* 📱 듀얼 뷰(펼친 화면): 카드 클릭 시 하단 여백 공간에 해당 카드를 크게 노출하는 인라인 쇼케이스 */}
-                                  {isDualPane && inlineZoomedCard && (
-                                    <AnimatePresence mode="wait">
-                                      <motion.div
-                                        key={`inline-tarot-zoom-${inlineZoomedCard.card.id || inlineZoomedCard.card.nameKo}`}
-                                        initial={{ opacity: 0, y: 12, scale: 0.96 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                                        className="mt-3 p-4 rounded-3xl bg-black/45 border border-yellow-500/35 backdrop-blur-md shadow-2xl flex flex-col items-center relative overflow-hidden"
-                                      >
-                                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(234,179,8,0.15)_0%,transparent_70%)] pointer-events-none -z-10" />
 
-                                        {/* 닫기 버튼 */}
-                                        <button
-                                          type="button"
-                                          onClick={() => setInlineZoomedCard(null)}
-                                          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all cursor-pointer z-10"
-                                          title="크게보기 닫기"
-                                        >
-                                          <X size={14} />
-                                        </button>
-
-                                        {/* 위치 / 슬롯 라벨 */}
-                                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 text-[11px] font-bold mb-2">
-                                          <Sparkles size={11} className="text-yellow-400" />
-                                          <span>{inlineZoomedCard.slotName || '선택한 카드'}</span>
-                                        </div>
-
-                                        {/* 고화질 대형 타로 카드 이미지 */}
-                                        <div className="relative my-1">
-                                          <img
-                                            src={getTarotCardImageUrl(inlineZoomedCard.card)}
-                                            alt={inlineZoomedCard.card.nameKo}
-                                            className={`w-44 sm:w-52 h-auto max-h-[300px] object-contain rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.4)] border-2 border-yellow-400/60 transition-transform duration-500 ${
-                                              inlineZoomedCard.card.reversed ? 'rotate-180' : ''
-                                            }`}
-                                          />
-                                          {inlineZoomedCard.card.reversed && (
-                                            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-rose-500/90 border border-rose-400 text-white text-[10px] font-extrabold shadow-lg">
-                                              역방향 (Reversed)
-                                            </span>
-                                          )}
-                                        </div>
-
-                                        {/* 카드 한글/영문 이름 */}
-                                        <h4 className="text-sm font-black text-white mt-2 tracking-tight flex items-center gap-1.5">
-                                          <span>{inlineZoomedCard.card.nameKo}</span>
-                                          {inlineZoomedCard.card.name && (
-                                            <span className="text-[11px] font-medium text-yellow-400/80 uppercase">
-                                              ({inlineZoomedCard.card.name})
-                                            </span>
-                                          )}
-                                        </h4>
-
-                                        {/* 핵심 키워드 칩 */}
-                                        {inlineZoomedCard.card.keywords && inlineZoomedCard.card.keywords.length > 0 && (
-                                          <div className="flex flex-wrap gap-1 justify-center mt-2 max-w-[260px]">
-                                            {inlineZoomedCard.card.keywords.slice(0, 4).map((kw, ki) => (
-                                              <span
-                                                key={ki}
-                                                className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-yellow-200/90"
-                                              >
-                                                #{kw}
-                                              </span>
-                                            ))}
-                                          </div>
-                                        )}
-                                      </motion.div>
-                                    </AnimatePresence>
-                                  )}
                                 </motion.div>
                               )}
                               </div>
@@ -5098,9 +5006,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         onSelectSpread={(spread) => setCustomSpread(spread)}
       />
 
-      {/* Tarot Card Zoom / Detail Inspection Modal (접힌 화면/모바일에서만 팝업 실행) */}
+      {/* Tarot Card Zoom / Detail Inspection Modal (접힘·펼침 공통) */}
       <TarotCardZoomModal
-        isOpen={Boolean(zoomedCard && !isDualPane)}
+        isOpen={Boolean(zoomedCard)}
         onClose={() => setZoomedCard(null)}
         card={zoomedCard?.card ?? null}
         slotName={zoomedCard?.slotName}

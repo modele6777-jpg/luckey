@@ -192,6 +192,22 @@ function ActivePage({ loc }: { loc: string }) {
   );
 }
 
+// Folded and unfolded channels render the exact same page tree and transitions.
+function ChannelPage({ location }: { location: string }) {
+  const path = location.split('?')[0].split('#')[0];
+  return (
+    <motion.div
+      key={path}
+      initial={['/epilogue', '/profile', '/chronicle'].includes(path) ? false : { opacity: 0.88 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.1, ease: 'easeOut' }}
+      className="w-full h-full flex flex-col min-h-0"
+    >
+      <ActivePage loc={location} />
+    </motion.div>
+  );
+}
+
 function GlobalTTSScroll() {
   useSmartScroll();
   return null;
@@ -711,15 +727,7 @@ function AppContent() {
                 </div>
               ) : (
                 /* 최우측/최하단 메뉴에서 KEY 또는 럭키 채널 선택 시 ➔ 해당 페이지 표출 */
-                <motion.div
-                  key={location ? location.split('?')[0].split('#')[0] : '/'}
-                  initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.1, ease: 'easeOut' }}
-                  className="w-full h-full flex flex-col min-h-0 overflow-x-hidden"
-                >
-                  <ActivePage loc={location} />
-                </motion.div>
+                <ChannelPage location={location} />
               )}
             </div>
 
@@ -745,15 +753,7 @@ function AppContent() {
             </div>
           </div>
         ) : (
-          <motion.div
-            key={location ? location.split('?')[0].split('#')[0] : '/'}
-            initial={['/epilogue', '/profile', '/chronicle'].includes(location.split('?')[0]) ? false : { opacity: 0.88 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.1, ease: 'easeOut' }}
-            className="w-full h-full flex flex-col min-h-0"
-          >
-            <ActivePage loc={location} />
-          </motion.div>
+          <ChannelPage location={location} />
         )}
       </main>
       <OneStopVisitTracker />

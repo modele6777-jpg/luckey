@@ -3340,15 +3340,8 @@ body:has(.keyboard-open) .bottom-safe-fab-center {
    📱 iPhone Duo 7.6" 펼침 화면 최적화 (가로 좌우 50vw / 세로 상하 50vh)
    ========================================================================== */
 
-/* 🌌 좌측 럭키채널 테마: 접힌 상태와 100% 동일한 깊은 우주 테마(스타필드·성운 그라데이션) 복원 */
-#duo-content-viewport {
-  background: radial-gradient(ellipse 95% 60% at 50% 108%, oklch(0.48 0.22 295 / 0.28) 0%, transparent 62%),
-              radial-gradient(ellipse 75% 55% at 6% 20%, oklch(0.42 0.19 255 / 0.32) 0%, transparent 58%),
-              radial-gradient(ellipse 70% 52% at 94% 32%, oklch(0.52 0.21 330 / 0.26) 0%, transparent 55%),
-              radial-gradient(ellipse 58% 45% at 74% 80%, oklch(0.50 0.14 215 / 0.22) 0%, transparent 52%),
-              linear-gradient(180deg, oklch(0.035 0.03 275) 0%, oklch(0.055 0.04 265) 38%, oklch(0.042 0.038 290) 72%, oklch(0.03 0.025 280) 100%) !important;
-  background-color: oklch(0.035 0.03 275) !important;
-}
+/* The shared channel aurora supplies the same background in both layouts. */
+#duo-content-viewport { background: transparent; }
 
 /* 🌌 듀오 중앙 검은선 및 세로 분할선 완전 제거: 좌측·우측 뷰포트 사이 경계선 완전 소멸 */
 #duo-content-viewport,
@@ -3607,13 +3600,6 @@ html.duo-unfolded-mode #duo-content-viewport .h-app-full {
   min-height: 0;
 }
 
-html.duo-unfolded-mode #duo-content-viewport .prism-page-content {
-  padding-inline: clamp(.5rem, 2cqw, 1.5rem) !important;
-}
-html.duo-unfolded-mode #duo-content-viewport .prism-page-content :is(.prism-page-content, .duo-workspace-container) {
-  padding-inline: 0 !important;
-}
-
 html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav {
   left: 50% !important;
   max-width: calc(100% - 2rem) !important;
@@ -3624,27 +3610,9 @@ html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav {
 html.duo-unfolded-mode #duo-content-viewport .prism-xs-subnav:not(.duo-page-nav) {
   top: calc(var(--sat, 0px) + 4.25rem) !important;
 }
-html.duo-unfolded-mode #duo-content-viewport .pt-home {
-  padding-top: calc(var(--sat, 0px) + 9.5rem) !important;
-}
 html.duo-unfolded-mode #duo-content-viewport :is(.prism-xs-fab-group, [data-sidebar-aware='true']) {
   right: 1rem;
   max-width: calc(100% - 2rem);
-}
-
-/* 좌측 뷰포트는 접힌 상태의 모바일 1열 스택 UI를 100% 동일하게 유지하며, 늘어난 50vw 폭에 맞춰 여백·크기 최적화 */
-html.duo-unfolded-mode #duo-content-viewport :is(.duo-split-grid, .duo-channel-grid, .duo-routine-grid, .duo-dapp-workspace, .duo-workspace-pair, .duo-split-workspace, .universe-content .duo-split-grid, .universe-content .duo-channel-grid) {
-  grid-template-columns: minmax(0, 1fr) !important;
-  width: 100% !important;
-}
-
-html.duo-unfolded-mode #duo-content-viewport :is(.sm\:grid-cols-2, .md\:grid-cols-2, .lg\:grid-cols-2, .sm\:grid-cols-3, .md\:grid-cols-3, .lg\:grid-cols-3) {
-  grid-template-columns: minmax(0, 1fr) !important;
-}
-
-html.duo-unfolded-mode #duo-content-viewport :is(.sm\:flex-row, .md\:flex-row, .lg\:flex-row) {
-  flex-direction: column !important;
-  align-items: stretch !important;
 }
 
 /* Show the original channel aurora at the content pane's proportions. */
