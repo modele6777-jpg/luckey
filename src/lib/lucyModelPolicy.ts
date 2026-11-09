@@ -1,6 +1,6 @@
 /** Master requests stay in the reasoning tier even when a provider is throttled. */
-export const LUCY_MASTER_MODEL = 'gemini-3.1-pro-preview';
-export const LUCY_MASTER_FALLBACK_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest'];
+export const LUCY_MASTER_MODEL = 'gemini-3.6-flash';
+export const LUCY_MASTER_FALLBACK_MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
 export function modelCandidates(primary: string, fallback: readonly string[]): string[] {
   return [...new Set([primary, ...fallback].filter(Boolean))];
 }
@@ -39,7 +39,7 @@ export async function requestWithModelFallback<T>(
 
 /** General consultation also receives an independent semantic review. */
 export const LUCY_REVIEW_MODEL = 'gemini-3.6-flash';
-export const LUCY_REVIEW_FALLBACK_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+export const LUCY_REVIEW_FALLBACK_MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
 
 export function getLucyRequestFallbacks(model: string, reviewMode?: unknown): string[] {
   if (reviewMode === 'general' && model === LUCY_REVIEW_MODEL) return [...LUCY_REVIEW_FALLBACK_MODELS];
