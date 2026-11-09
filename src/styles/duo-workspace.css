@@ -108,7 +108,7 @@ html:root [data-page-brand="true"].duo-page-brand {
 .duo-page-brand > div { pointer-events: auto; width: fit-content; }
 .duo-page-nav {
   position: absolute !important;
-  top: calc(var(--page-header-top) + 3.25rem) !important;
+  top: var(--channel-nav-top, calc(var(--page-header-top) + 3.25rem)) !important;
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
@@ -124,7 +124,7 @@ html:root [data-page-brand="true"].duo-page-brand {
   content: "";
   display: block;
   flex-shrink: 0;
-  height: calc(var(--page-header-top) + 7.5rem);
+  height: var(--channel-content-top, calc(var(--page-header-top) + 7.5rem));
 }
 @media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
   .duo-split-workspace { column-gap: var(--duo-hinge-gap, 1.5rem); }
@@ -149,4 +149,42 @@ html:root [data-page-brand="true"].duo-page-brand {
 .sites-pinned-main [data-app-scroll-root]:has(.prism-page-content) {
   padding-left: 0;
   padding-right: 0;
+}
+
+/* Reference: 356px content canvas, logo at x14/y24, tabs at y62,
+   first card at y150 with 8px side gutters. Scale against the channel,
+   including an unfolded pane, rather than the complete device width. */
+.channel-page { container: channel-page / inline-size; }
+.channel-page > :first-child {
+  --page-header-inset: max(14px, env(safe-area-inset-left, 0px));
+  --page-header-top: max(24px, env(safe-area-inset-top, 0px));
+  --channel-nav-top: clamp(62px, 17.4cqw, 88px);
+  --channel-content-top: clamp(150px, 42.13cqw, 210px);
+}
+html:root .channel-page [data-page-brand="true"] > div { min-height: 24px; }
+.channel-page .duo-page-nav {
+  height: 36px;
+  padding: 3px !important;
+  gap: 2px !important;
+  border-radius: 999px;
+  width: max-content;
+  box-sizing: border-box;
+}
+.channel-page .duo-page-nav .prism-subnav-btn {
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px !important;
+  gap: 6px !important;
+  border-radius: 999px;
+  line-height: 14px;
+}
+.channel-page .duo-page-nav .prism-subnav-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.channel-page .duo-page-nav .prism-subnav-btn > span:has(> svg) { gap: 6px; }
+.channel-page .duo-page-nav .prism-subnav-btn span.text-\[10px\] {
+  font-size: 10px;
+  line-height: 14px;
 }

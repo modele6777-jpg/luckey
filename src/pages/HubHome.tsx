@@ -573,6 +573,9 @@ export default function HubHome() {
             <button
               key={item.id}
               type="button"
+              aria-pressed={isActive}
+              aria-label={item.label}
+              title={item.label}
               onClick={() => {
                 setActiveSection(item.id as 'universe' | 'ecpr' | 'todo');
                 if (item.id === 'ecpr') {
@@ -594,7 +597,7 @@ export default function HubHome() {
               }`}
             >
               <Icon size={16} className={isActive ? 'animate-pulse' : ''} />
-              <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'opacity-100 keep-white' : 'opacity-70'}`}>
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'opacity-100 keep-white' : 'opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-auto transition-all'}`}>
                 {item.label}
               </span>
             </button>
@@ -684,7 +687,7 @@ export default function HubHome() {
               )}
             </AnimatePresence>
 
-            <div className="prism-page-content universe-content relative z-10 w-full min-w-0 px-3 sm:px-6 prism-xs-pad pt-home md:pt-home-md flex-1 flex flex-col mx-auto space-y-6 md:space-y-7">
+            <div className="prism-page-content universe-content relative z-10 w-full min-w-0 px-3 sm:px-6 prism-xs-pad flex-1 flex flex-col mx-auto space-y-6 md:space-y-7">
 
               {/* ✨ 데일리 코스믹 모닝 루틴 허브 — 앱을 켜자마자 원클릭으로 하루를 여는 3분 루틴 */}
               <ErrorBoundary>

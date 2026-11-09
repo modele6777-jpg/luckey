@@ -201,7 +201,7 @@ function ChannelPage({ location }: { location: string }) {
       initial={['/epilogue', '/profile', '/chronicle'].includes(path) ? false : { opacity: 0.88 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.1, ease: 'easeOut' }}
-      className="w-full h-full flex flex-col min-h-0"
+      className="channel-page w-full h-full flex flex-col min-h-0"
     >
       <ActivePage loc={location} />
     </motion.div>
