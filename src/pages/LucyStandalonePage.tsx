@@ -997,6 +997,22 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // 🔍 상단 검색창 활성화 시 전 모드(루시·루시플러스·루시프로·루시플러스프로) 공통으로 빅뱅버튼 숨김 클래스 연동
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isSearchOpen) {
+      document.documentElement.classList.add('lucy-search-active');
+      document.body.classList.add('lucy-search-active');
+    } else {
+      document.documentElement.classList.remove('lucy-search-active');
+      document.body.classList.remove('lucy-search-active');
+    }
+    return () => {
+      document.documentElement.classList.remove('lucy-search-active');
+      document.body.classList.remove('lucy-search-active');
+    };
+  }, [isSearchOpen]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [modeSwitchToast, setModeSwitchToast] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -2913,7 +2929,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
     <div
       data-lucy-period={lucyDayPeriod}
       data-lucy-light={isLight ? 'true' : 'false'}
-      className={`lucy-chat-shell ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
+      data-lucy-search-active={isSearchOpen ? 'true' : 'false'}
+      className={`lucy-chat-shell ${isSearchOpen ? 'lucy-search-active' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
       style={{
         overflowX: 'hidden',
         maxWidth: '100vw',
