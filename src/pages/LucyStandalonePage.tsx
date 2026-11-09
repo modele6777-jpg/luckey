@@ -723,7 +723,8 @@ function getCuratedPrompts(
 
 export type LucyTier = 'ai' | 'plus' | 'pro';
 
-const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
+const detectPageChannels = (text: string, options: { allowMaster?: boolean } = {}) =>
+  detectLucyChannelsFromText(text, { allowMaster: Boolean(options.allowMaster) });
 
 function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🌟 루시 3대 모드 상태 머신 (Lucy AI / Lucy Plus / Lucy Pro):
