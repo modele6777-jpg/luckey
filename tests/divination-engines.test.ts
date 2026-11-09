@@ -261,6 +261,9 @@ import { calculateHyechoWangOcheonchukgukjeon, formatHyechoWangOcheonchukgukjeon
 import { calculateAncientGreekPlotinusEnneadsHenosis, formatAncientGreekPlotinusEnneadsHenosisPrompt, ANCIENT_GREEK_PLOTINUS_VERSION } from '../src/lib/divination/ancientGreekPlotinusEnneadsHenosisEngine';
 import { calculateScottishAdamSmithMoralSentiments, formatScottishAdamSmithMoralSentimentsPrompt, SCOTTISH_ADAM_SMITH_VERSION } from '../src/lib/divination/scottishAdamSmithMoralSentimentsEngine';
 import { calculateKoreanYunDongJuSkyWindStarsPoetry, formatKoreanYunDongJuSkyWindStarsPoetryPrompt, KOREAN_YUN_DONG_JU_VERSION } from '../src/lib/divination/koreanYunDongJuSkyWindStarsPoetryEngine';
+import { calculateRussianLeoTolstoyCalendarOfWisdom, formatRussianLeoTolstoyCalendarOfWisdomPrompt, RUSSIAN_LEO_TOLSTOY_VERSION } from '../src/lib/divination/russianLeoTolstoyCalendarOfWisdomEngine';
+import { calculateIndianRabindranathTagoreGitanjali, formatIndianRabindranathTagoreGitanjaliPrompt, INDIAN_TAGORE_GITANJALI_VERSION } from '../src/lib/divination/indianRabindranathTagoreGitanjaliEngine';
+import { calculateKoreanLeeYukSaGwangyaPeak, formatKoreanLeeYukSaGwangyaPeakPrompt, KOREAN_LEE_YUK_SA_VERSION } from '../src/lib/divination/koreanLeeYukSaGwangyaPeakEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5178,6 +5181,49 @@ test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Well
   assert(prompt.includes('윤동주 《하늘과 바람과 별과 시》 순결한 양심 & 실존성찰 지표'));
   assert(prompt.includes(rep.activeYunDongJuTheme.themeTitleKo));
 });
+
+test('Leo Tolstoy Calendar of Wisdom Engine: calculates Spiritual Awakening, Agape Love, Simplicity, and Conscience Integrity', () => {
+  const rep = calculateRussianLeoTolstoyCalendarOfWisdom(profile);
+  assert.equal(rep.engineVersion, RUSSIAN_LEO_TOLSTOY_VERSION);
+  assert(rep.spiritualAwakeningScore >= 0 && rep.spiritualAwakeningScore <= 100);
+  assert(rep.agapeLoveAltruismIndex >= 0 && rep.agapeLoveAltruismIndex <= 100);
+  assert(rep.simpleLifeLaborHarmonyScore >= 0 && rep.simpleLifeLaborHarmonyScore <= 100);
+  assert(rep.nonViolencePeaceEquanimityIndex >= 0 && rep.nonViolencePeaceEquanimityIndex <= 100);
+  assert(rep.existentialConscienceIntegrityScore >= 0 && rep.existentialConscienceIntegrityScore <= 100);
+  assert(rep.activeTolstoyTheme.themeTitleKo.length > 0);
+  const prompt = formatRussianLeoTolstoyCalendarOfWisdomPrompt(rep);
+  assert(prompt.includes('레프 톨스토이 《인생독본·사람은 무엇으로 사는가》 영적 각성 & 아가페 사랑 지표'));
+  assert(prompt.includes(rep.activeTolstoyTheme.themeTitleKo));
+});
+
+test('Rabindranath Tagore Gitanjali Engine: calculates Cosmic Soul Communion, Bhakti Devotion, Fearless Freedom, and Lamp of the East', () => {
+  const rep = calculateIndianRabindranathTagoreGitanjali(profile);
+  assert.equal(rep.engineVersion, INDIAN_TAGORE_GITANJALI_VERSION);
+  assert(rep.cosmicSoulCommunionScore >= 0 && rep.cosmicSoulCommunionScore <= 100);
+  assert(rep.pureDevotionalBhaktiIndex >= 0 && rep.pureDevotionalBhaktiIndex <= 100);
+  assert(rep.fearlessFreedomMindScore >= 0 && rep.fearlessFreedomMindScore <= 100);
+  assert(rep.lyricNatureHarmonizationIndex >= 0 && rep.lyricNatureHarmonizationIndex <= 100);
+  assert(rep.lampOfTheEastResilienceScore >= 0 && rep.lampOfTheEastResilienceScore <= 100);
+  assert(rep.activeTagoreTheme.themeTitleKo.length > 0);
+  const prompt = formatIndianRabindranathTagoreGitanjaliPrompt(rep);
+  assert(prompt.includes('타고르 《기탄잘리·동방의 등불》 우주적 영혼합일 & 두려움 없는 자유 지표'));
+  assert(prompt.includes(rep.activeTagoreTheme.themeTitleKo));
+});
+
+test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow, Hero Calling, Sowing Song Seed, and Pure Integrity', () => {
+  const rep = calculateKoreanLeeYukSaGwangyaPeak(profile);
+  assert.equal(rep.engineVersion, KOREAN_LEE_YUK_SA_VERSION);
+  assert(rep.peakResilienceInBitterSeasonScore >= 0 && rep.peakResilienceInBitterSeasonScore <= 100);
+  assert(rep.steelRainbowTranscendenceIndex >= 0 && rep.steelRainbowTranscendenceIndex <= 100);
+  assert(rep.visionaryCallingOfHeroScore >= 0 && rep.visionaryCallingOfHeroScore <= 100);
+  assert(rep.sowingPoorSongSeedVirtueIndex >= 0 && rep.sowingPoorSongSeedVirtueIndex <= 100);
+  assert(rep.pureIntegrityCheongpodoScore >= 0 && rep.pureIntegrityCheongpodoScore <= 100);
+  assert(rep.activeLeeYukSaTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanLeeYukSaGwangyaPeakPrompt(rep);
+  assert(prompt.includes('이육사 《광야·절정·청포도》 강철 무지개 실존의지 & 선구자 지표'));
+  assert(prompt.includes(rep.activeLeeYukSaTheme.themeTitleKo));
+});
+
 
 
 

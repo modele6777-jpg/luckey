@@ -298,6 +298,9 @@ import { calculateHyechoWangOcheonchukgukjeon, formatHyechoWangOcheonchukgukjeon
 import { calculateAncientGreekPlotinusEnneadsHenosis, formatAncientGreekPlotinusEnneadsHenosisPrompt, type AncientGreekPlotinusEnneadsHenosisResult, ANCIENT_GREEK_PLOTINUS_VERSION } from './ancientGreekPlotinusEnneadsHenosisEngine';
 import { calculateScottishAdamSmithMoralSentiments, formatScottishAdamSmithMoralSentimentsPrompt, type ScottishAdamSmithMoralSentimentsResult, SCOTTISH_ADAM_SMITH_VERSION } from './scottishAdamSmithMoralSentimentsEngine';
 import { calculateKoreanYunDongJuSkyWindStarsPoetry, formatKoreanYunDongJuSkyWindStarsPoetryPrompt, type KoreanYunDongJuSkyWindStarsPoetryResult, KOREAN_YUN_DONG_JU_VERSION } from './koreanYunDongJuSkyWindStarsPoetryEngine';
+import { calculateRussianLeoTolstoyCalendarOfWisdom, formatRussianLeoTolstoyCalendarOfWisdomPrompt, type RussianLeoTolstoyCalendarOfWisdomResult, RUSSIAN_LEO_TOLSTOY_VERSION } from './russianLeoTolstoyCalendarOfWisdomEngine';
+import { calculateIndianRabindranathTagoreGitanjali, formatIndianRabindranathTagoreGitanjaliPrompt, type IndianRabindranathTagoreGitanjaliResult, INDIAN_TAGORE_GITANJALI_VERSION } from './indianRabindranathTagoreGitanjaliEngine';
+import { calculateKoreanLeeYukSaGwangyaPeak, formatKoreanLeeYukSaGwangyaPeakPrompt, type KoreanLeeYukSaGwangyaPeakResult, KOREAN_LEE_YUK_SA_VERSION } from './koreanLeeYukSaGwangyaPeakEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -616,6 +619,9 @@ export interface DeterministicEngineReport {
   ancientGreekPlotinusEnneadsHenosisResult?: AncientGreekPlotinusEnneadsHenosisResult | null;
   scottishAdamSmithMoralSentimentsResult?: ScottishAdamSmithMoralSentimentsResult | null;
   koreanYunDongJuSkyWindStarsPoetryResult?: KoreanYunDongJuSkyWindStarsPoetryResult | null;
+  russianLeoTolstoyCalendarOfWisdomResult?: RussianLeoTolstoyCalendarOfWisdomResult | null;
+  indianRabindranathTagoreGitanjaliResult?: IndianRabindranathTagoreGitanjaliResult | null;
+  koreanLeeYukSaGwangyaPeakResult?: KoreanLeeYukSaGwangyaPeakResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3623,6 +3629,33 @@ try {
     }
   })()));
 
+  // 267. 러시아 레프 톨스토이 인생독본 & 사람은 무엇으로 사는가 영적 각성·아가페 사랑 지혜 엔진
+  const russianLeoTolstoyCalendarOfWisdomResult = calculateSupplement('russianLeoTolstoyCalendarOfWisdomResult', () => ((() => {
+    try {
+      return calculateRussianLeoTolstoyCalendarOfWisdom(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 268. 인도 벵골 라빈드라나트 타고르 기탄잘리 & 동방의 등불 우주적 영혼합일 지혜 엔진
+  const indianRabindranathTagoreGitanjaliResult = calculateSupplement('indianRabindranathTagoreGitanjaliResult', () => ((() => {
+    try {
+      return calculateIndianRabindranathTagoreGitanjali(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 269. 대한민국 이육사 시인 광야 & 절정 강철 무지개 실존의지 지혜 엔진
+  const koreanLeeYukSaGwangyaPeakResult = calculateSupplement('koreanLeeYukSaGwangyaPeakResult', () => ((() => {
+    try {
+      return calculateKoreanLeeYukSaGwangyaPeak(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -3927,6 +3960,9 @@ try {
     ancientGreekPlotinusEnneadsHenosisResult,
     scottishAdamSmithMoralSentimentsResult,
     koreanYunDongJuSkyWindStarsPoetryResult,
+    russianLeoTolstoyCalendarOfWisdomResult,
+    indianRabindranathTagoreGitanjaliResult,
+    koreanLeeYukSaGwangyaPeakResult,
     tools: toolsMap,
   };
 }
@@ -4222,6 +4258,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'ancientGreekPlotinusEnneadsHenosis', nameKo: '플로티노스 엔네아데스 일자유출설 누스관조 프쉬케조화 헤노시스합일 내면조각정화', icon: '🏛️', category: 'deep_master', summary: '플로티노스의 엔네아데스 신플라톤주의 철학으로 만유의 근원인 일자와 교감하고 영혼의 군더더기를 깎아내어 지고의 영적 귀환을 이룹니다.' },
   { key: 'scottishAdamSmithMoralSentiments', nameKo: '아담 스미스 도덕감정론 공정한관찰자 동류의식공감 고결한자기통제 정의와인애 칭찬받을자격', icon: '⚖️', category: 'deep_master', summary: '아담 스미스의 도덕감정론 철학으로 가슴속 공정한 관찰자를 깨워 양심을 성찰하고 타인과 깊이 공감하며 품위 있는 자기통제를 확립합니다.' },
   { key: 'koreanYunDongJuSkyWindStarsPoetry', nameKo: '윤동주 하늘과바람과별과시 순결한양심 우물속자화상 잎새에이는바람연민 별헤는밤사랑 등불희망', icon: '⭐', category: 'deep_master', summary: '윤동주 시인의 하늘과 바람과 별과 시 정신으로 한 점 부끄럼 없는 결백한 양심을 지키고 모든 죽어가는 것을 사랑하며 어둠 속 등불을 밝힙니다.' },
+  { key: 'russianLeoTolstoyCalendarOfWisdom', nameKo: '레프 톨스토이 인생독본 사람은무엇으로사는가 영적각성 아가페사랑 소박한노동 비폭력용서', icon: '📖', category: 'deep_master', summary: '레프 톨스토이의 인생독본 사상으로 세속적 허영을 털어내고 타인을 향한 조건 없는 사랑과 소박한 양심의 참된 평화를 누립니다.' },
+  { key: 'indianRabindranathTagoreGitanjali', nameKo: '라빈드라나트 타고르 기탄잘리 동방의등불 우주적영혼합일 두려움없는자유 순수헌신', icon: '🪔', category: 'deep_master', summary: '라빈드라나트 타고르의 기탄잘리 영성으로 편협한 두려움을 넘어선 영혼의 무한한 자유와 대자연과의 신성한 합일, 꺼지지 않는 희망의 등불을 밝힙니다.' },
+  { key: 'koreanLeeYukSaGwangyaPeak', nameKo: '이육사 광야 절정 청포도 강철무지개 매운계절초극 백마탄초인 가난한노래씨앗 순결지조', icon: '🇰🇷', category: 'deep_master', summary: '이육사 시인의 광야와 절정 정신으로 매운 계절의 칼날 위에서도 꺾이지 않는 강철 무지개의 기개와 황무지에 노래의 씨를 뿌리는 선구자적 지조를 세웁니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4278,6 +4317,7 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanLeeYukSaGwangyaPeak',
     'americanHenryDavidThoreauWalden',
     'scottishDavidHumeTreatiseHumanNature',
     'koreanManhaeHanYongunNimuiChimmuk',
@@ -4619,6 +4659,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'indianRabindranathTagoreGitanjali',
     'frenchHenriBergsonElanVital',
     'koreanYeonamParkJiwonYeolhaIlgi',
     'mesopotamianNisabaScribe',
@@ -4654,6 +4695,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'russianLeoTolstoyCalendarOfWisdom',
+    'indianRabindranathTagoreGitanjali',
+    'koreanLeeYukSaGwangyaPeak',
     'americanHenryDavidThoreauWalden',
     'scottishDavidHumeTreatiseHumanNature',
     'koreanManhaeHanYongunNimuiChimmuk',

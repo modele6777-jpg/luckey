@@ -52,7 +52,7 @@ test('ordinary mode stays selective while explicit master greetings review the c
   assert.equal(ordinary.engineReport!.masterReview,false);
   assert.equal(ordinary.engineReport!.gyeogamYurokResult,null);
   const master=routeAndExecute({text:'안녕',profile,isMasterRequested:true});
-  assert.equal(getCalculationAudit(master.engineReport!).length, 273);
+  assert.equal(getCalculationAudit(master.engineReport!).length, 276);
   assert.ok(formatDeterministicEnginePrompt(master.engineReport!).includes('마스터 전체 검토'));
 });
 

@@ -1099,5 +1099,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanYunDongJuSkyWindStarsPoetry": {
     "field": "koreanYunDongJuSkyWindStarsPoetryResult",
     "traceKey": "koreanYunDongJuSkyWindStarsPoetryResult"
+  },
+  "russianLeoTolstoyCalendarOfWisdom": {
+    "field": "russianLeoTolstoyCalendarOfWisdomResult",
+    "traceKey": "russianLeoTolstoyCalendarOfWisdomResult"
+  },
+  "indianRabindranathTagoreGitanjali": {
+    "field": "indianRabindranathTagoreGitanjaliResult",
+    "traceKey": "indianRabindranathTagoreGitanjaliResult"
+  },
+  "koreanLeeYukSaGwangyaPeak": {
+    "field": "koreanLeeYukSaGwangyaPeakResult",
+    "traceKey": "koreanLeeYukSaGwangyaPeakResult"
   }
 };
