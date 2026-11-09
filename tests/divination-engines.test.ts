@@ -264,6 +264,9 @@ import { calculateKoreanYunDongJuSkyWindStarsPoetry, formatKoreanYunDongJuSkyWin
 import { calculateRussianLeoTolstoyCalendarOfWisdom, formatRussianLeoTolstoyCalendarOfWisdomPrompt, RUSSIAN_LEO_TOLSTOY_VERSION } from '../src/lib/divination/russianLeoTolstoyCalendarOfWisdomEngine';
 import { calculateIndianRabindranathTagoreGitanjali, formatIndianRabindranathTagoreGitanjaliPrompt, INDIAN_TAGORE_GITANJALI_VERSION } from '../src/lib/divination/indianRabindranathTagoreGitanjaliEngine';
 import { calculateKoreanLeeYukSaGwangyaPeak, formatKoreanLeeYukSaGwangyaPeakPrompt, KOREAN_LEE_YUK_SA_VERSION } from '../src/lib/divination/koreanLeeYukSaGwangyaPeakEngine';
+import { calculateGermanSwissHermannHesseDemianSiddhartha, formatGermanSwissHermannHesseDemianSiddharthaPrompt, GERMAN_HERMANN_HESSE_VERSION } from '../src/lib/divination/germanSwissHermannHesseDemianSiddharthaEngine';
+import { calculateAustrianMartinBuberIAndThou, formatAustrianMartinBuberIAndThouPrompt, AUSTRIAN_MARTIN_BUBER_VERSION } from '../src/lib/divination/austrianMartinBuberIAndThouEngine';
+import { calculateKoreanSambongJeongDoJeonMinbonReform, formatKoreanSambongJeongDoJeonMinbonReformPrompt, KOREAN_JEONG_DO_JEON_VERSION } from '../src/lib/divination/koreanSambongJeongDoJeonMinbonReformEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5222,6 +5225,48 @@ test('Lee Yuk-sa Gwangya Peak Engine: calculates Peak Resilience, Steel Rainbow,
   const prompt = formatKoreanLeeYukSaGwangyaPeakPrompt(rep);
   assert(prompt.includes('이육사 《광야·절정·청포도》 강철 무지개 실존의지 & 선구자 지표'));
   assert(prompt.includes(rep.activeLeeYukSaTheme.themeTitleKo));
+});
+
+test('Hermann Hesse Demian Siddhartha Engine: calculates Abraxas Self-Actualization, Polarity Harmonization, and River Wisdom', () => {
+  const rep = calculateGermanSwissHermannHesseDemianSiddhartha(profile);
+  assert.equal(rep.engineVersion, GERMAN_HERMANN_HESSE_VERSION);
+  assert(rep.abraxasSelfActualizationScore >= 0 && rep.abraxasSelfActualizationScore <= 100);
+  assert(rep.innerPolarityHarmonizationIndex >= 0 && rep.innerPolarityHarmonizationIndex <= 100);
+  assert(rep.siddharthaAutonomousQuestScore >= 0 && rep.siddharthaAutonomousQuestScore <= 100);
+  assert(rep.riverWisdomUnityIndex >= 0 && rep.riverWisdomUnityIndex <= 100);
+  assert(rep.innerCallingFidelityScore >= 0 && rep.innerCallingFidelityScore <= 100);
+  assert(rep.activeHesseTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanSwissHermannHesseDemianSiddharthaPrompt(rep);
+  assert(prompt.includes('헤르만 헤세 《데미안·싯다르타》 아브락사스 자아실현 & 내면의 길 지표'));
+  assert(prompt.includes(rep.activeHesseTheme.themeTitleKo));
+});
+
+test('Martin Buber I and Thou Dialogue Engine: calculates I-Thou Resonance, Authentic Dialogue, and Between-Sphere Meaning', () => {
+  const rep = calculateAustrianMartinBuberIAndThou(profile);
+  assert.equal(rep.engineVersion, AUSTRIAN_MARTIN_BUBER_VERSION);
+  assert(rep.iThouRelationalResonanceScore >= 0 && rep.iThouRelationalResonanceScore <= 100);
+  assert(rep.authenticDialoguePresenceIndex >= 0 && rep.authenticDialoguePresenceIndex <= 100);
+  assert(rep.overcomingInstrumentalizationScore >= 0 && rep.overcomingInstrumentalizationScore <= 100);
+  assert(rep.betweenSphereMeaningIndex >= 0 && rep.betweenSphereMeaningIndex <= 100);
+  assert(rep.eternalThouCommunionTrustScore >= 0 && rep.eternalThouCommunionTrustScore <= 100);
+  assert(rep.activeBuberTheme.themeTitleKo.length > 0);
+  const prompt = formatAustrianMartinBuberIAndThouPrompt(rep);
+  assert(prompt.includes('마틴 부버 《나와 너》 인격적 만남 & 진정한 대화(Dialogue) 실존 지표'));
+  assert(prompt.includes(rep.activeBuberTheme.themeTitleKo));
+});
+
+test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Institutional Reform, Clean Governance, and Indomitable Tenacity', () => {
+  const rep = calculateKoreanSambongJeongDoJeonMinbonReform(profile);
+  assert.equal(rep.engineVersion, KOREAN_JEONG_DO_JEON_VERSION);
+  assert(rep.minbonPeopleServingScore >= 0 && rep.minbonPeopleServingScore <= 100);
+  assert(rep.jeongdoInstitutionalReformScore >= 0 && rep.jeongdoInstitutionalReformScore <= 100);
+  assert(rep.cleanGovernanceIntegrityIndex >= 0 && rep.cleanGovernanceIntegrityIndex <= 100);
+  assert(rep.architecturalForesightIndex >= 0 && rep.architecturalForesightIndex <= 100);
+  assert(rep.indomitableReformTenacityScore >= 0 && rep.indomitableReformTenacityScore <= 100);
+  assert(rep.activeSambongTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanSambongJeongDoJeonMinbonReformPrompt(rep);
+  assert(prompt.includes('삼봉 정도전 《조선경국전·경제문감》 민본사상 & 정도(正道) 개혁 실천 지표'));
+  assert(prompt.includes(rep.activeSambongTheme.themeTitleKo));
 });
 
 
