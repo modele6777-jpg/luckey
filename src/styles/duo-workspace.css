@@ -154,8 +154,8 @@ html:root [data-page-brand="true"].duo-page-brand {
 /* Reference: 356px content canvas, logo at x14/y24, tabs at y62,
    first card at y150 with 8px side gutters. Scale against the channel,
    including an unfolded pane, rather than the complete device width. */
-.channel-page { container: channel-page / inline-size; }
-.channel-page > :first-child {
+.channel-page { container: channel-page / inline-size; position: relative; isolation: isolate; }
+.channel-page > .channel-page-content {
   --page-header-inset: max(14px, env(safe-area-inset-left, 0px));
   --page-header-top: max(24px, env(safe-area-inset-top, 0px));
   --channel-nav-top: clamp(62px, 17.4cqw, 88px);
@@ -187,4 +187,37 @@ html:root .channel-page [data-page-brand="true"] > div { min-height: 24px; }
 .channel-page .duo-page-nav .prism-subnav-btn span.text-\[10px\] {
   font-size: 10px;
   line-height: 14px;
+}
+
+/* The same folded sky lives inside each Lucky channel in either screen mode. */
+.prism-aura-bg[data-channel-background] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  container: channel-sky / size;
+}
+body:has([data-channel-background]) .prism-aura-bg:not([data-channel-background]) {
+  display: none;
+}
+
+/* Device optimization classes must not change the folded channel artwork. */
+:root [data-channel-background] svg { shape-rendering: optimizeSpeed !important; }
+:root [data-channel-background] .cosmic-star-twinkle {
+  animation: none !important;
+  opacity: var(--channel-star-opacity, .6) !important;
+}
+[data-channel-background] .channel-constellations {
+  animation: cosmic-constellation-pulse 8s ease-in-out infinite;
+  will-change: opacity;
+}
+[data-channel-background] .channel-star-flare {
+  animation: cosmic-star-flare 5s ease-in-out infinite;
+  transform-origin: center;
+}
+html:root [data-channel-background] .cosmic-meteor {
+  animation: cosmic-meteor-fly var(--meteor-cycle, 10s) linear var(--meteor-delay, 0s) infinite !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root [data-channel-background] :is(.cosmic-meteor, .channel-constellations, .channel-star-flare) { animation: none !important; }
 }

@@ -1,3 +1,4 @@
+import { isLucyThemeRoute } from './lib/lucyDayTheme';
 import { TTSFailureNotice } from './components/common/TTSFailureNotice';
 import { recordOneStopPageVisit } from './lib/omniWarp/contextNavCycleEngine';
 import React from "react";
@@ -5,7 +6,7 @@ import { Route, Switch, Redirect, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
 import { AppProvider, useApp } from "./contexts/AppContext";
-import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { ThemeProvider, useTheme, resolveChannelThemeFromPath } from "./contexts/ThemeContext";
 import { LoginScreen } from "./components/LoginScreen";
 import { useSmartScroll } from "./hooks/useSmartScroll";
 import LeftSidebarNav from "./components/navigation/LeftSidebarNav";
@@ -195,6 +196,7 @@ function ActivePage({ loc }: { loc: string }) {
 // Folded and unfolded channels render the exact same page tree and transitions.
 function ChannelPage({ location }: { location: string }) {
   const path = location.split('?')[0].split('#')[0];
+  const isLuckyChannel = !isLucyThemeRoute(path) && resolveChannelThemeFromPath(path) === 'dark';
   return (
     <motion.div
       key={path}
@@ -203,7 +205,10 @@ function ChannelPage({ location }: { location: string }) {
       transition={{ duration: 0.1, ease: 'easeOut' }}
       className="channel-page w-full h-full flex flex-col min-h-0"
     >
-      <ActivePage loc={location} />
+      {isLuckyChannel && <AuroraBackground channel />}
+      <div className="channel-page-content relative z-[1] w-full h-full flex flex-col min-h-0">
+        <ActivePage loc={location} />
+      </div>
     </motion.div>
   );
 }

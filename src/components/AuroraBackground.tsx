@@ -65,7 +65,7 @@ function spreadAt(index: number, salt: number, max: number): number {
 
 const METEOR_SEQUENCE_CYCLE_S = 10;
 
-function ShootingStars({ count }: { count: number }) {
+function ShootingStars({ count, contained = false }: { count: number; contained?: boolean }) {
   const meteors = useMemo(
     () =>
       Array.from({ length: Math.max(count, 5) }, (_, i) => {
@@ -103,10 +103,10 @@ function ShootingStars({ count }: { count: number }) {
           style={{
             left: `${meteor.startLeft}%`,
             top: `${meteor.startTop}%`,
-            ['--meteor-angle' as string]: `${meteor.angle}deg`,
+            ['--meteor-angle' as string]: contained ? '22deg' : `${meteor.angle}deg`,
             ['--meteor-trail' as string]: `${meteor.trail}px`,
-            ['--meteor-end-x' as string]: `${meteor.endX}vw`,
-            ['--meteor-end-y' as string]: `${meteor.endY}vh`,
+            ['--meteor-end-x' as string]: `${meteor.endX}${contained ? 'cqw' : 'vw'}`,
+            ['--meteor-end-y' as string]: `${meteor.endY}${contained ? 'cqh' : 'vh'}`,
             ['--meteor-cycle' as string]: `${meteor.cycle}s`,
             ['--meteor-delay' as string]: `${meteor.delay}s`,
           }}
@@ -146,6 +146,7 @@ function Starfield({ density, minSize }: { density: number; minSize: number }) {
             width: star.size,
             height: star.size,
             opacity: star.opacity,
+            ['--channel-star-opacity' as string]: star.opacity,
             transform: 'translateZ(0)',
           }}
         />
@@ -296,10 +297,10 @@ const CONSTELLATIONS: ConstellationDef[] = [
   },
 ];
 
-function ConstellationsLayer() {
+function ConstellationsLayer({ contained = false }: { contained?: boolean }) {
   return (
     <svg
-      className="cosmic-constellations absolute inset-0 w-full h-full pointer-events-none"
+      className={`${contained ? 'channel-constellations' : 'cosmic-constellations'} absolute inset-0 w-full h-full pointer-events-none`}
       viewBox="0 0 1000 1000"
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
@@ -356,7 +357,7 @@ function ConstellationsLayer() {
                 />
                 {/* 4-Point Diffraction Flare on Alpha Stars */}
                 {star.flare && (
-                  <g className="cosmic-star-flare">
+                  <g className={contained ? 'channel-star-flare' : 'cosmic-star-flare'}>
                     <line
                       x1={-((star.size || 2) * 2.2)}
                       y1="0"
@@ -418,16 +419,17 @@ function NebulaOrb({
   );
 }
 
-const AuroraBackgroundComponent: React.FC = () => {
+const AuroraBackgroundComponent: React.FC<{ channel?: boolean }> = ({ channel = false }) => {
   const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === 'light';
+  const isLight = !channel && resolvedTheme === 'light';
   const profile = getPerfProfile();
   const { void: voidColor, abyss, nebulaViolet, nebulaBlue, nebulaMagenta, nebulaCyan, galacticGold } =
     COSMOS;
 
-  const isXS = isIPhoneXSClass();
-  const legacy = isLegacyMobile() || isXS;
-  const isMobile = isMobileDevice() || isPerfReduced() || isXS || legacy;
+  const isXS = !channel && isIPhoneXSClass();
+  const legacy = !channel && (isLegacyMobile() || isXS);
+  // Lucky channels always use the folded mobile sky, independent of device width.
+  const isMobile = channel || isMobileDevice() || isPerfReduced() || isXS || legacy;
   const foldCover = isGalaxyFoldSeClass() && isFoldCoverScreen();
   const galaxy = profile === 'galaxy';
   const starDensity = isMobile
@@ -447,7 +449,7 @@ const AuroraBackgroundComponent: React.FC = () => {
   const nebulaBlur = isXS ? 26 : legacy ? 48 : foldCover ? 82 : profile === 'full' || galaxy ? 104 : 72;
   const animateOrbs = !isMobile && (profile === 'full' || (galaxy && !foldCover));
   const staticStarCount = isMobile ? 20 : isXS ? 18 : legacy ? 28 : foldCover ? 32 : 36;
-  const shootingStarCount = isXS ? 4 : legacy ? 4 : foldCover ? 5 : profile === 'full' ? 8 : galaxy ? 6 : 5;
+  const shootingStarCount = channel ? 5 : isXS ? 4 : legacy ? 4 : foldCover ? 5 : profile === 'full' ? 8 : galaxy ? 6 : 5;
 
   if (isLight) {
     const {
@@ -551,6 +553,7 @@ const AuroraBackgroundComponent: React.FC = () => {
 
   return (
     <div
+      data-channel-background={channel ? "folded-sky" : undefined}
       className="prism-aura-bg fixed inset-0 pointer-events-none z-0 overflow-hidden transition-colors duration-500"
       style={{ contain: 'strict', contentVisibility: 'auto' }}
       aria-hidden
@@ -638,8 +641,8 @@ const AuroraBackgroundComponent: React.FC = () => {
 
       {/* Dynamic Starfield, Constellations & Shooting Stars (rendered on all devices) */}
       <Starfield density={starDensity} minSize={minStarSize} />
-      <ConstellationsLayer />
-      <ShootingStars count={shootingStarCount} />
+      <ConstellationsLayer contained={channel} />
+      <ShootingStars count={shootingStarCount} contained={channel} />
     </div>
   );
 };

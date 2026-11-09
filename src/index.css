@@ -3616,7 +3616,7 @@ html.duo-unfolded-mode #duo-content-viewport :is(.prism-xs-fab-group, [data-side
 }
 
 /* Show the original channel aurora at the content pane's proportions. */
-html.duo-unfolded-mode:not(.duo-unfolded-portrait) .prism-aura-bg {
+html.duo-unfolded-mode:not(.duo-unfolded-portrait) .prism-aura-bg:not([data-channel-background]) {
   position: absolute !important;
   inset: 0 !important;
   right: auto !important;
@@ -3624,7 +3624,7 @@ html.duo-unfolded-mode:not(.duo-unfolded-portrait) .prism-aura-bg {
   height: 100% !important;
   pointer-events: none !important;
 }
-html.duo-unfolded-portrait .prism-aura-bg {
+html.duo-unfolded-portrait .prism-aura-bg:not([data-channel-background]) {
   bottom: auto;
   height: calc((var(--app-height, 100dvh) - 54px - env(safe-area-inset-bottom, 0px)) / 2);
 }
