@@ -143,10 +143,10 @@ html[data-lucy-theme='starlight'] .lucy-chat-shell.lucy-night .lucy-starlight-as
 .lucy-chat-shell[data-lucy-period='morning'] .lucy-cosmic-wash {
   background: radial-gradient(ellipse at 88% 12%, rgba(255, 230, 160, 0.72) 0%, rgba(255, 210, 145, 0.35) 30%, rgba(255, 245, 220, 0.15) 58%, transparent 78%) !important;
 }
-html.light[data-lucy-period] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }
-html.light[data-lucy-period] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
-html.light[data-lucy-period] .lucy-clover-particle { color: #5d9442; filter: none; }
-html.light[data-lucy-period] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #34835a; }
+.lucy-chat-shell[data-lucy-light='true'] .lucy-stars-distant { background-image: radial-gradient(1px 1px at 29px 43px, #6d91b6 85%, transparent), radial-gradient(1px 1px at 143px 167px, #6d91b6 85%, transparent); }
+.lucy-chat-shell[data-lucy-light='true'] .lucy-stars-bright { background-image: radial-gradient(2px 2px at 111px 89px, #7197bb 35%, transparent); }
+.lucy-chat-shell[data-lucy-light='true'] .lucy-clover-particle { color: #5d9442; filter: none; }
+.lucy-chat-shell[data-lucy-light='true'] .lucy-clover-orbit:nth-child(3n) .lucy-clover-particle { color: #34835a; }
 html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'][data-lucy-period='morning'] :is(body, #root, .prism-app-shell) { background: #fffbf2 !important; }
 html:not(.duo-unfolded-mode)[data-lucy-theme='starlight'][data-lucy-period='day'] :is(body, #root, .prism-app-shell) { background: #e6f3ff !important; }
 
@@ -706,9 +706,9 @@ html[data-lucy-period='night'] .is-pro-theme .lucy-star-field { opacity: .5; }
   animation: lucyAiRingBreathe 2s ease-in-out infinite;
   will-change: opacity, transform, border-color;
 }
-html.light .lucy-mode-badge { color: #647487; background: #253d5610; }
-html.light .lucy-mode-badge.is-master { color: #92400e; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(217, 119, 6, 0.4); }
-html.light .lucy-mode-badge.is-master::before { background: #d97706; box-shadow: 0 0 6px #d97706; }
+.lucy-chat-shell[data-lucy-light='true'] .lucy-mode-badge { color: #647487; background: #253d5610; }
+.lucy-chat-shell[data-lucy-light='true'] .lucy-mode-badge.is-master { color: #92400e; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(217, 119, 6, 0.4); }
+.lucy-chat-shell[data-lucy-light='true'] .lucy-mode-badge.is-master::before { background: #d97706; box-shadow: 0 0 6px #d97706; }
 html[data-lucy-theme='starlight'] .lucy-night .lucy-header-actions > button { min-width: 36px; height: 36px; padding: 7px; border: 0 !important; border-radius: 11px; background: transparent !important; color: inherit !important; box-shadow: none; }
 .lucy-header-actions > button:hover { opacity: .7; }
 .lucy-header-actions > button span { display: none; }
@@ -800,3 +800,17 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
 .lucy-chat-shell:not([data-lucy-period='morning']) .lucy-morning-light { opacity: 0; }
 .lucy-morning-light * { animation-play-state: paused; }
 .lucy-chat-shell[data-lucy-period='morning'] .lucy-morning-light * { animation-play-state: running; }
+
+/* Lucy owns every reading surface, including daylight, independently of Key. */
+.lucy-chat-shell { --lucy-text: #f1f5fa; }
+.lucy-chat-shell[data-lucy-light='true'] { --lucy-text: #243449; }
+.lucy-chat-shell:is(.lucy-night, .lucy-daylight) :is(.lucy-chat-header, .lucy-chat-footer) {
+  background: var(--lucy-chrome) !important;
+  border-color: var(--lucy-border) !important;
+  color: var(--lucy-text) !important;
+}
+.lucy-chat-shell:is(.lucy-night, .lucy-daylight) :is(.lucy-starlight-assistant, .lucy-assistant-bubble) {
+  background: var(--lucy-surface) !important;
+  border-color: var(--lucy-border) !important;
+  color: var(--lucy-text) !important;
+}

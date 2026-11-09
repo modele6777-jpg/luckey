@@ -23,3 +23,8 @@ Every time a user request is completed or changes are made to the codebase:
 - Keep this background within the channel canvas, behind page content; never rely on a document-wide background behind split panes.
 - Do not substitute Lucy day/night backgrounds or desktop nebula palettes for the Lucky channel sky. Keep star density, palette and channel-relative meteor geometry identical across folded/unfolded modes.
 - Preserve Lucy and Key channel themes independently. Compare the channel background at equal content dimensions in both screen modes when editing it.
+
+### 4. Lucy Theme Isolation Across Channels
+- Lucy's time-of-day palette and nested text renderers use `LucyThemeBoundary`, regardless of whether the other pane is Key (light) or Lucky (dark).
+- Global channel theme selectors and Tailwind dark utilities must respect `.lucy-chat-shell`'s own daylight marker; never recolor its messages using the Key channel's document theme.
+- Check Lucy header, message text/surfaces and composer in both root themes for morning, day and night.

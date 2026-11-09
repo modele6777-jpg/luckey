@@ -187,3 +187,13 @@ export function useTheme(): ThemeContextType {
   const context = useContext(ThemeContext);
   return context || defaultThemeContext;
 }
+
+/** Local Lucy theme for text renderers and portals; never changes the document. */
+export function LucyThemeBoundary({ children }: { children: React.ReactNode }) {
+  const parent = useTheme();
+  const theme: ResolvedTheme = parent.lucyDayPeriod === 'night' ? 'dark' : 'light';
+  const value = useMemo<ThemeContextType>(() => ({
+    ...parent, theme, resolvedTheme: theme, themeMode: theme,
+  }), [parent, theme]);
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}

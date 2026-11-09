@@ -14,7 +14,7 @@ import {
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked, Mic, MicOff, MessageSquare, ChevronDown
 } from 'lucide-react';
 import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme, LucyThemeBoundary } from '@/contexts/ThemeContext';
 import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { useLocation } from 'wouter';
 import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, prefetchTTSChunks, normalizeTextForSpeech } from '@/utils/tts';
@@ -725,7 +725,7 @@ export type LucyTier = 'ai' | 'plus' | 'pro';
 
 const detectPageChannels = (text: string) => detectLucyChannelsFromText(text, { allowMaster: false });
 
-export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
+function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🌟 루시 3대 모드 상태 머신 (Lucy AI / Lucy Plus / Lucy Pro):
   // - 접힌 상태: [루시 AI] ↔ [루시 프로]만 가능 (루시 플러스 진입 원천 차단)
   // - 펼친 상태: [루시 플러스] ↔ [루시 프로]만 가능 (일반 루시 진입 원천 차단)
@@ -2934,7 +2934,7 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
       data-lucy-period={lucyDayPeriod}
       data-lucy-light={isLight ? 'true' : 'false'}
       data-lucy-search-active={isSearchOpen ? 'true' : 'false'}
-      className={`lucy-chat-shell ${isSearchOpen ? 'lucy-search-active' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
+      className={`lucy-chat-shell ${isLight ? 'light' : 'dark'} ${isSearchOpen ? 'lucy-search-active' : ''} ${isMasterMode ? 'is-pro-theme' : ''} ${lucyDayPeriod === 'night' ? 'lucy-night' : 'lucy-daylight'} h-full min-h-0 flex-1 w-full max-w-[100vw] overflow-hidden overflow-x-hidden overscroll-x-none touch-pan-y flex flex-col font-sans select-text relative transition-colors duration-500`}
       style={{
         overflowX: 'hidden',
         maxWidth: '100vw',
@@ -4121,4 +4121,8 @@ export default function LucyStandalonePage({ pro = false }: { pro?: boolean }) {
 
     </div>
   );
+}
+
+export default function LucyStandalonePage(props: { pro?: boolean }) {
+  return <LucyThemeBoundary><LucyStandaloneContent {...props} /></LucyThemeBoundary>;
 }
