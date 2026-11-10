@@ -33,7 +33,7 @@ MCP는 리딩 문장이나 사주 원국을 직접 계산하지 않고, 고정�
 
 ## 인증
 
-`/api/ai/daily-tarot`와 채팅 완성 API에는 사용자 세션·앱 과금 검사가 없습니다. 한도는 모델 제공자 쿼터뿐입니다. MCP가 그 유료 경로와 출생 정보 경로를 익명으로 열지 않도록, `get_daily_tarot`, `read_tarot`(원카드), `get_saju_fortune`, `read_saju`는 서버 비밀 `LUCKEY_MCP_TOKEN`(24자 이상)이 있어야 합니다. 토큰은 `Authorization: Bearer`로 보내거나, 헤더를 보낼 수 없는 클라이언트는 URL 쿼리 `key`(별칭 `token`)로 보냅니다. 헤더가 있으면 헤더를 쓰고, 없을 때만 쿼리를 봅니다. 비교는 SHA-256 뒤 상수 시간입니다. 이 토큰은 리딩 API로 전달하지 않습니다. 거절 로그에는 URL의 `key`/`token`과 Bearer 값을 `[redacted]`로만 남깁니다. SSE를 `?key=`로 열면 그 세션의 다음 메시지에 토큰을 다시 붙이지 않으며, endpoint 이벤트 URL에도 토큰을 넣지 않습니다.
+`/api/ai/daily-tarot`와 채팅 완성 API에는 사용자 세션·앱 과금 검사가 없습니다. 한도는 모델 제공자 쿼터뿐입니다. MCP가 그 유료 경로와 출생 정보 경로를 익명으로 열지 않도록, `get_daily_tarot`, `read_tarot`(원카드), `get_saju_fortune`, `read_saju`는 서버 비밀 `LUCKEY_MCP_TOKEN`(16자 이상)이 있어야 합니다. 토큰은 `Authorization: Bearer`로 보내거나, 헤더를 보낼 수 없는 클라이언트는 URL 쿼리 `key`(별칭 `token`)로 보냅니다. 헤더가 있으면 헤더를 쓰고, 없을 때만 쿼리를 봅니다. 양쪽의 앞뒤 공백과 감싼 따옴표를 뺀 뒤 SHA-256과 상수 시간으로 비교합니다. 쿼리의 `+`가 공백으로 바뀐 값과, 한 번 더 디코드한 값도 후보입니다. 이 토큰은 리딩 API로 전달하지 않습니다. 거절 로그에는 이유, 출처, 길이만 남기고 URL의 `key`/`token`과 Bearer 값은 `[redacted]`입니다. 값, 앞뒤 조각, 해시는 로그에 없습니다. SSE를 `?key=`로 열면 그 세션의 다음 메시지에 토큰을 다시 붙이지 않으며, endpoint 이벤트 URL에도 토큰을 넣지 않습니다.
 
 예술·TTS 도구와 `initialize`, `tools/list`, `list_tarot_spreads`, 여러 장 타로의 실패 응답, `consult_oracle`의 실패 응답은 토큰 없이 동작합니다.
 
@@ -60,7 +60,7 @@ MCP는 리딩 문장이나 사주 원국을 직접 계산하지 않고, 고정�
 }
 ```
 
-Grok 커스텀 커넥터는 URL만 받고 `Authorization` 헤더를 보내지 않습니다. [grok.com/connectors](https://grok.com/connectors)에서 New Connector, Custom을 고르고 아래 주소를 붙입니다. `LUCKEY_MCP_TOKEN`은 24자 이상이며, 예약 문자가 있으면 URL 인코딩합니다. 토큰이 들어 있는 전체 주소는 로그나 채팅에 남기지 않습니다.
+Grok 커스텀 커넥터는 URL만 받고 `Authorization` 헤더를 보내지 않습니다. [grok.com/connectors](https://grok.com/connectors)에서 New Connector, Custom을 고르고 아래 주소를 붙입니다. `LUCKEY_MCP_TOKEN`은 16자 이상이며, 예약 문자가 있으면 URL 인코딩합니다. 토큰이 들어 있는 전체 주소는 로그나 채팅에 남기지 않습니다.
 
 ```text
 https://luckey-six.vercel.app/api/mcp?key=<LUCKEY_MCP_TOKEN>
@@ -72,6 +72,6 @@ https://luckey-six.vercel.app/api/mcp?key=<LUCKEY_MCP_TOKEN>
 
 ## 운영자가 정할 일
 
-1. `LUCKEY_MCP_TOKEN`을 24자 이상 임의 값으로 서버 비밀에만 저장합니다.
+1. `LUCKEY_MCP_TOKEN`을 16자 이상 임의 값으로 서버 비밀에만 저장합니다.
 2. `LUCKEY_API_ORIGIN`을 리딩 API가 있는 https 출처로 저장합니다. Host 헤더로 대체하지 않습니다.
 3. 원카드 타로의 모델 호출은 그 출처의 기존 Gemini 키와 제공자 쿼터를 사용합니다. MCP는 Gemini SDK를 호출하지 않습니다.

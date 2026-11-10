@@ -1,11 +1,10 @@
 {
-  "version": "1.7.317",
-  "builtAt": "2026-11-10T10:31:25.000Z",
-  "summary": "Grok 커넥터가 URL의 key로 LUCKEY MCP에 연결된다",
+  "version": "1.7.318",
+  "builtAt": "2026-11-10T11:04:19.000Z",
+  "summary": "Grok MCP 키 비교가 붙여넣기 손상과 16자 비밀번호를 허용한다",
   "items": [
-    "MCP 토큰을 Authorization Bearer와 URL 쿼리 key, token으로 받음",
-    "비교는 24자 이상 비밀의 SHA-256과 상수 시간 비교",
-    "거절 로그는 key와 token, Bearer 값을 가림",
-    "Vercel /api/mcp rewrite는 쿼리 문자열을 유지"
+    "거절 로그에 이유, 출처, 길이만 남기고 토큰 값과 해시는 남기지 않음",
+    "공백, 따옴표, +가 공백으로 바뀐 값, 한 번 더 디코드한 값을 비교",
+    "MCP 토큰 최소 길이를 16자로 낮춤"
   ]
 }
