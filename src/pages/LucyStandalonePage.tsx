@@ -732,6 +732,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🌟 실제 펼친 듀얼스크린 감지:
   // 오직 실제 DOM에 '#duo-lucy-viewport' 및 '#duo-content-viewport'가 모두 존재하고 isDuoUnfoldedState().unfolded가 true일 때만 '펼침'으로 판정!
   // 접힌 단일 화면에서는 isActuallyUnfoldedDual이 무조건 false!
+  const [location, navigate] = useLocation();
+
   const isActuallyUnfoldedDual = typeof document !== 'undefined' && Boolean(
     document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
   ) && isDuoUnfoldedState().unfolded;
@@ -742,6 +744,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
   const isDuoPortrait = isDuoUnfolded && isDuoUnfoldedState().orientation === 'portrait';
 
+  // 🌟 핵심 판정: 실제로 펼친 듀얼 화면이면서 좌측에 코스믹 룸이 열렸을 때만 true!
+  // 코스믹룸 대신 다른 어플/채널(사주, 타로, 럭키채널, 프로필 등)을 좌측에서 사용 중이면 false
+  const isCosmicRoomActive = isActuallyUnfoldedDual && (
+    location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro'
+  );
+
   const [lucyTier, setLucyTier] = useState<LucyTier>(() => {
     if (pro) return 'pro';
     try {
@@ -749,14 +757,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         const search = window.location.search || '';
         if (search.includes('mode=pro') || search.includes('mode=ultra')) return 'pro';
         if (search.includes('mode=ai')) return 'ai';
-        const isDual = typeof document !== 'undefined' && Boolean(
-          document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
-        ) && isDuoUnfoldedState().unfolded;
-        const path = window.location.pathname || '/';
-        // 🌟 절대 원칙: 실제로 펼친 듀얼 화면이면서 좌측에 코스믹 룸이 열렸을 때만 'plus'!
-        // 접힌 상태이거나 다른 채널일 때는 무조건 기본 'ai' (Lucy)
-        const isCosmic = isDual && (path === '/' || path === '/chat' || path === '/lucy');
-        return isCosmic ? 'plus' : 'ai';
+        return isCosmicRoomActive ? 'plus' : 'ai';
       }
     } catch {
       return 'ai';
@@ -765,8 +766,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
 
   const isMasterMode = pro || lucyTier === 'pro';
-  const showPlusMarker = isDuoUnfolded && isActuallyUnfoldedDual && (lucyTier === 'plus' || isMasterMode);
-  const isPlusMode = lucyTier === 'plus' || lucyTier === 'pro';
+
+  // 🌟 사용자 규칙: 펼친 화면에서 코스믹룸 대신 다른 어플을 좌측에서 사용 중이면 '+' 마커를 제거하여 'Lucy Pro'로 표출, 코스믹룸일 때만 'Lucy+ Pro'
+  const showPlusMarker = isCosmicRoomActive;
+  const isPlusMode = showPlusMarker;
   const [modeTransitioningTier, setModeTransitioningTier] = useState<LucyTier | null>(null);
 
   const previousPlusMode = useRef(isPlusMode);
@@ -776,14 +779,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, [isPlusMode]);
 
   const chatScope = 'lucy';
-  const [location, navigate] = useLocation();
   const { resolvedTheme, lucyDayPeriod } = useTheme();
   // 📱 시간대별 루시 고유 테마(아침·낮·밤) 100% 반영: 아침(06:00~) 및 낮(11:00~)은 화사한 햇살/하늘 테마, 밤(18:00~)은 코스믹 나이트 테마
   const isLight = lucyDayPeriod !== 'night';
   const useWhiteTheme = false;
 
   useEffect(() => {
-    // 👑 빅뱅 버튼 홀드: 화면 접힘/펼침 상관없이 무조건 252대 풀엔진 'Lucy Pro' 진입!
+    // 👑 빅뱅 버튼 홀드: 화면 접힘/펼침 상관없이 무조건 285대 풀엔진 'Lucy Pro' 진입!
     const handleEvolvePro = () => {
       safeLocalStorage.setItem('lucy_tier_mode', 'pro');
       safeSessionStorage.setItem('lucy_tier_mode', 'pro');
@@ -791,8 +793,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setModeTransitioningTier('pro');
       setTimeout(() => setModeTransitioningTier(null), 550);
       triggerHaptic('whitehole');
+      const isDual = typeof document !== 'undefined' && Boolean(
+        document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
+      ) && isDuoUnfoldedState().unfolded;
+      const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+      const isCosmic = isDual && (path === '/' || path === '/chat' || path === '/lucy' || path === '/chat/pro');
       setModeSwitchToast(
-        isDualPaneLayout() || window.innerWidth >= 640
+        isCosmic
           ? `👑 Lucy+ Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
           : `👑 Lucy Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
       );
@@ -805,7 +812,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
       ) && isDuoUnfoldedState().unfolded;
       const path = typeof window !== 'undefined' ? window.location.pathname : '/';
-      const isCosmic = isDual && (path === '/' || path === '/chat' || path === '/lucy');
+      const isCosmic = isDual && (path === '/' || path === '/chat' || path === '/lucy' || path === '/chat/pro');
       const validTarget: LucyTier = isCosmic ? 'plus' : 'ai';
       safeLocalStorage.setItem('lucy_tier_mode', validTarget);
       safeSessionStorage.setItem('lucy_tier_mode', validTarget);
@@ -1107,8 +1114,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               setTimeout(() => setModeTransitioningTier(null), 550);
               try { triggerHaptic('whitehole'); } catch (_) {}
               setModeSwitchToast(
-                isDual
+                isCosmic
                   ? `👑 듀오 펼침 · Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
+                  : isDual
+                  ? `👑 듀오 펼침 · Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
                   : `👑 듀오 접힘 · Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
               );
               setTimeout(() => setModeSwitchToast(null), 2000);
@@ -2199,10 +2208,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const isDual = typeof document !== 'undefined' && Boolean(
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
-    const isCosmic = isDual && (location === '/' || location === '/chat' || location === '/lucy');
+    const clean = location ? location.split('?')[0].split('#')[0] : '/';
+    const isCosmic = isDual && (clean === '/' || clean === '/chat' || clean === '/lucy' || clean === '/chat/pro');
     const activeTitle = (lucyTier === 'pro' || pro)
-      ? (isDual ? 'Lucy+ Pro' : 'Lucy Pro')
-      : (lucyTier === 'plus' && isCosmic ? 'Lucy +' : 'Lucy');
+      ? (isCosmic ? 'Lucy+ Pro' : 'Lucy Pro')
+      : (isCosmic ? 'Lucy +' : 'Lucy');
     document.title = activeTitle;
 
     let manifestTag = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
@@ -2927,7 +2937,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       <LucyAuraLoader
         fullScreen
         tier={lucyTier}
-        isUnfolded={isDuoUnfolded}
+        isUnfolded={showPlusMarker}
       />
     );
   }
@@ -3422,7 +3432,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 <div className="flex flex-col gap-0.5 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs sm:text-sm font-black tracking-tight bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
-                      Lucy Pro {ALL_DCE_ENGINES.length}대 풀엔진 가동 중
+                      {showPlusMarker ? 'Lucy+ Pro' : 'Lucy Pro'} {ALL_DCE_ENGINES.length}대 풀엔진 가동 중
                     </span>
                     <div className="flex gap-1 items-center ml-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
