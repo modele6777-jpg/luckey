@@ -67,8 +67,8 @@ export function formatSajuDestinyShareText(data: SajuDestinyStoryData): string {
     `🏛️ 사주원국: ${pillarsStr}\n` +
     `⚡ 본원 일주: ${dayPillar}\n\n` +
     `🌿 오행 밸런스:\n` +
-    `• 중심 기운: ${dominant} 과다\n` +
-    `• 결핍 기운: ${lacking} 보충 필요\n\n` +
+    `• 표면 개수: ${data.elements.strengthLabel || dominant}\n` +
+    `• 가장 적은 표면 개수: ${lacking}\n\n` +
     `🔮 2026 운명 돌파 보약 처방:\n` +
     `• 개운 컬러: ${luckyColor}\n` +
     `• 보양 식단: ${luckyFood}\n` +
@@ -424,7 +424,7 @@ export async function generateSajuDestinyStoryCanvas(
   ctx.font = '14px -apple-system, sans-serif';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
   ctx.fillText(
-    `중심 기운: [${data.elements.dominant?.name}]  |  결핍 기운: [${data.elements.lacking?.name}]`,
+    `표면 개수: [${data.elements.strengthLabel || data.elements.dominant?.name}]  |  가장 적음: [${data.elements.lacking?.name}]`,
     width - 105,
     elemBoxY + 40
   );

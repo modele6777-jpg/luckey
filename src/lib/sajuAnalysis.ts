@@ -76,10 +76,33 @@ export const BRANCH_YIN_YANG: Record<string, '양' | '음'> = {
 
 const ELEMENT_COUNT_ORDER: FiveElement[] = ['목', '화', '토', '금', '수'];
 
+export interface ElementSurfaceContext {
+  monthText?: string;
+  hourText?: string | null;
+}
+
+function surfaceCountLine(counts: Record<FiveElement, number>) {
+  return ELEMENT_COUNT_ORDER.map((element) => `${element} ${counts[element] || 0}`).join(' ');
+}
+
+function zeroCountSentence(counts: Record<FiveElement, number>) {
+  const zeros = ELEMENT_COUNT_ORDER.filter((element) => !(counts[element] > 0));
+  const limit = '이 표면 개수는 건강·재물·운명을 정하지 않습니다.';
+  if (!zeros.length) return `표면 개수가 0인 오행은 없습니다. ${limit}`;
+  return `표면 개수가 0인 오행은 ${zeros.join('·')}입니다. 표면 개수 0은 지장간까지 영향이 전혀 없다는 뜻이 아닙니다. ${limit}`;
+}
+
+function placeSentence(context?: ElementSurfaceContext) {
+  if (!context?.monthText) return '';
+  if (context.hourText) return `월주는 ${context.monthText}, 시주는 ${context.hourText}입니다.`;
+  return '월주는 ' + context.monthText + '입니다. 시주가 없어 년·월·일 6글자만의 부분 결과입니다. 이 분포를 고르거나 안정적이라고 단정하지 않습니다.';
+}
+
 /** Separate the day-master element from the counted distribution. A tie is not a single winner. */
 export function describeElementLead(
   counts: Record<FiveElement, number>,
   dayMaster: { hanja: string; korean: string; element: FiveElement },
+  context?: ElementSurfaceContext,
 ): {
   leaders: FiveElement[];
   tied: boolean;
@@ -95,24 +118,26 @@ export function describeElementLead(
   const representative = leaders[0] || '목';
   const self = ELEMENT_DETAILS[dayMaster.element];
   const selfSentence = `일간 본원은 ${dayMaster.hanja}(${dayMaster.korean})이며 오행은 ${self.name}입니다.`;
+  const distribution = `표면 개수는 ${surfaceCountLine(counts)}입니다.`;
+  const place = placeSentence(context);
   if (leaders.length <= 1) {
     const detail = ELEMENT_DETAILS[representative];
     const count = counts[representative] || 0;
     const sameElement = representative === dayMaster.element;
+    const lead = sameElement
+      ? `표면 개수가 가장 많은 오행은 일간과 같은 ${detail.name} ${count}입니다.`
+      : `표면 개수가 가장 많은 오행은 ${detail.name} ${count}이며 일간 오행과 다릅니다.`;
+    const center = sameElement && context?.hourText
+      ? `이 표면 개수에서는 ${detail.name}을 중심 기운으로 볼 수 있습니다.`
+      : '이 개수만으로 분포가 고르거나 안정적이라고 단정하지 않습니다.';
     return {
       leaders: leaders.length ? leaders : [representative],
       tied: false,
       element: representative,
       count,
       name: detail.name,
-      advice: sameElement
-        ? `${detail.name}의 기운이 강하여 ${detail.emotionNegative} 경향이 나타날 수 있으니 이완과 순환이 중요합니다.`
-        : `개수 기준 ${detail.name}이 ${count}으로 가장 많습니다. 일간 본원의 오행은 ${self.name}입니다.`,
-      summary: sameElement
-        ? (count >= 3
-          ? `중심 기운인 ${detail.name}가 묵직하게 기틀을 잡고 있으며, 다른 오행들이 순환하며 조화를 이루는 구조입니다.`
-          : `${selfSentence} 오행이 비교적 골고루 분포되어 유연하고 다채로운 잠재력을 발휘하는 안정적인 구조입니다.`)
-        : `${selfSentence} 개수가 가장 많은 오행은 ${detail.name} ${count}입니다. 개수가 많다고 일간 오행이 바뀌지는 않습니다.`,
+      advice: `${lead} 일간 본원의 오행은 ${self.name}입니다.`,
+      summary: [selfSentence, place, distribution, lead, center, zeroCountSentence(counts)].filter(Boolean).join(' '),
       strengthLabel: sameElement ? `${representative}기운 우세` : `개수 최다 ${representative} ${count}`,
     };
   }
@@ -124,7 +149,7 @@ export function describeElementLead(
     count: max,
     name: leaders.map((element) => ELEMENT_DETAILS[element].name).join(' · '),
     advice: `${counted}로 같습니다. 일간 본원의 오행은 ${self.name}입니다.`,
-    summary: `${selfSentence} 가장 많은 오행은 ${counted}로 같습니다. 개수가 같은 오행 가운데 하나만 중심 기운으로 두지 않습니다.`,
+    summary: [selfSentence, place, distribution, `가장 많은 오행은 ${counted}로 같습니다. 하나만 중심 기운으로 두지 않습니다.`, zeroCountSentence(counts)].filter(Boolean).join(' '),
     strengthLabel: `${leaders.map((element) => `${element} ${counts[element]}`).join(' · ')} 동률`,
   };
 }
@@ -1211,7 +1236,10 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
 
     // 16. AI 시스템 프롬프트 헌장
     const specialStrText = specialStructures.map(s => `• ${s.name}: ${s.description}`).join('\n');
-    const elementLead = describeElementLead(counts, dayMaster);
+    const elementLead = describeElementLead(counts, dayMaster, {
+      monthText: pillars.month.full,
+      hourText: pillars.hour?.full ?? null,
+    });
     const dominantEl = elementLead.element;
     const elementsSummary = elementLead.summary;
 
@@ -1265,7 +1293,7 @@ ${specialStrText || '• 안정적인 오행 순환 구조'}
           element: lackingEl,
           count: counts[lackingEl],
           name: lackingDetail.name,
-          remedy: `${lackingDetail.name}의 기운이 부족하여 보충이 필요합니다.`,
+          remedy: `${lackingDetail.name}은 표면 개수가 가장 적습니다. 건강·재물·운명의 결핍으로 단정하지 않습니다.`,
           luckyColor: lackingDetail.colorName,
           luckyFood: lackingDetail.remedyFood,
           luckyPlace: lackingDetail.remedyActivity,
@@ -1629,15 +1657,15 @@ export function generateDailySajuReport(
   // 사용자 오행과의 상호작용
   let harmonySummary = '';
   if (todayElGan === saju.elements.lacking.element) {
-    harmonySummary = `특히 오늘 하늘의 기운은 ${saju.name}님에게 부족한 ${saju.elements.lacking.name} 기운을 가득 보충해 주어, 막힌 흐름이 시원하게 풀리는 보약 같은 날입니다.`;
+    harmonySummary = `오늘 일진의 천간 오행은 표면 개수가 가장 적은 ${saju.elements.lacking.name}과 같습니다. 건강이 보충된다는 뜻은 아닙니다.`;
   } else if ((saju.elements.leaders?.length ?? 0) > 1 && saju.elements.leaders?.includes(todayElGan)) {
     harmonySummary = `오늘 하늘의 기운은 개수가 같은 ${saju.elements.strengthLabel} 안에 있습니다. 일간 본원은 ${saju.dayMaster.hanja}(${saju.dayMaster.korean})입니다.`;
   } else if (todayElGan === saju.elements.dominant.element && (saju.elements.leaders?.length ?? 1) <= 1 && saju.elements.dominant.element === saju.dayMaster.element) {
-    harmonySummary = `오늘 하늘의 기운은 ${saju.name}님의 중심 기운인 ${saju.elements.dominant.name} 에너지를 강하게 자극하므로, 조급함을 내려놓고 깊은 호흡으로 평정심을 유지하는 것이 지혜입니다.`;
+    harmonySummary = `오늘 하늘의 기운은 일간과 같은 표면 개수 최다 오행 ${saju.elements.dominant.name}과 같습니다.`;
   } else if (todayElGan === saju.elements.dominant.element && (saju.elements.leaders?.length ?? 1) <= 1) {
     harmonySummary = `오늘 하늘의 ${todayElGan} 기운은 개수가 가장 많은 오행과 같습니다. 일간 본원은 ${saju.dayMaster.hanja}(${saju.dayMaster.korean})이며 오행은 ${saju.dayMaster.element}입니다.`;
   } else {
-    harmonySummary = `오늘의 ${todayElGan} 기운은 ${saju.name}님의 본원인 ${saju.dayMaster.symbolName}과 조화롭게 어우러져 편안하고 안정된 리듬을 선사합니다.`;
+    harmonySummary = `오늘의 ${todayElGan} 기운은 일간 본원 ${saju.dayMaster.hanja}의 오행 ${saju.dayMaster.element}과 다릅니다. 표면 개수와 별개입니다.`;
   }
 
   // ==========================================
