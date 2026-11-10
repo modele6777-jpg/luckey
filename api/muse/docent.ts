@@ -1,5 +1,6 @@
 import type { Response } from "express";
 import { GoogleGenAI } from "@google/genai";
+import { getGeminiApiKey } from "../../server/geminiKey.ts";
 
 export interface DocentMessage {
   role: "user" | "assistant";
@@ -92,21 +93,6 @@ const MUSE_SYSTEM_PROMPT = `당신은 세계적 미술관의 수석 오디오 �
 
 function normalizeApiKey(raw: unknown): string {
   return String(raw || "").trim().replace(/^["']|["']$/g, "");
-}
-
-function getGeminiApiKey(): string {
-  const candidates = [
-    process.env.GEMINI_API_KEY,
-    process.env.GOOGLE_API_KEY,
-    process.env.GOOGLE_GENAI_API_KEY,
-    process.env.AI_API_KEY,
-    process.env.API_KEY,
-  ];
-  for (const raw of candidates) {
-    const key = normalizeApiKey(raw);
-    if (key && !key.startsWith("sk-") && !key.startsWith("xai-")) return key;
-  }
-  return "";
 }
 
 function getXaiApiKey(): string {

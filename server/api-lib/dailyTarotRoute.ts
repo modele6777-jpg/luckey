@@ -1,8 +1,7 @@
 import type { Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle.ts';
-import { getLucyRequestFallbacks, requestWithModelFallback } from '../../src/lib/lucyModelPolicy.ts';
-import { getGeminiApiKey } from '../geminiKey.ts';
+import { describeGeminiError, getGeminiApiKey } from '../geminiKey.ts';
 
 export interface DailyTarotModelResponse {
   text?: string;
@@ -73,19 +72,115 @@ function cleanDailyTarotDiagnosis(rawText: string): string {
   return text;
 }
 
-async function defaultCallModel(apiKey: string, contents: unknown, config: Record<string, unknown>): Promise<DailyTarotModelResponse> {
+const ORACLE_MODEL = 'gemini-flash-lite-latest';
+const ORACLE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    diagnosis: { type: 'STRING' },
+    luckyNumber: { type: 'STRING' },
+    luckyColor: { type: 'STRING' },
+    remedy: { type: 'STRING' },
+    symbol: { type: 'STRING' },
+    frequency: { type: 'STRING' },
+    spiritualEnergy: { type: 'STRING' },
+    blessingMessage: { type: 'STRING' },
+    focusPlaylist: { type: 'STRING' },
+  },
+  required: ['diagnosis', 'luckyNumber', 'luckyColor', 'remedy', 'symbol', 'frequency'],
+};
+
+export interface TarotGenerateRequest {
+  model: string;
+  contents: unknown;
+  config?: Record<string, unknown>;
+}
+
+/** One JSON object with a diagnosis string, including fenced or embedded JSON. */
+export function parseOracleJson(raw: string | undefined | null): Record<string, unknown> | null {
+  const text = (raw || '').trim();
+  if (!text) return null;
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
+  const candidates = [fenced, text].filter((value): value is string => Boolean(value));
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start >= 0 && end > start) candidates.push(text.slice(start, end + 1));
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate) as unknown;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && typeof (parsed as { diagnosis?: unknown }).diagnosis === 'string' && (parsed as { diagnosis: string }).diagnosis.trim()) {
+        return parsed as Record<string, unknown>;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+/**
+ * The structured schema call is what production was sending. A plain
+ * generateContent to the same model succeeds, so a schema/timeout failure
+ * retries once in that shape.
+ */
+export async function requestTarotModelText(
+  generate: (request: TarotGenerateRequest) => Promise<{ text?: string }>,
+  systemInstruction: string,
+  userText: string,
+): Promise<string> {
+  const failures: string[] = [];
+  try {
+    const structured = await generate({
+      model: ORACLE_MODEL,
+      contents: [{ role: 'user', parts: [{ text: userText }] }],
+      config: {
+        systemInstruction,
+        maxOutputTokens: 8192,
+        responseMimeType: 'application/json',
+        responseSchema: ORACLE_SCHEMA,
+        abortSignal: AbortSignal.timeout(8000),
+      },
+    });
+    const parsed = parseOracleJson(structured.text);
+    if (parsed) return JSON.stringify(parsed);
+    failures.push('structured response had no diagnosis');
+  } catch (error) {
+    failures.push(describeGeminiError(error));
+  }
+  console.warn('[daily-tarot] structured Gemini call was not usable:', failures[failures.length - 1]);
+  try {
+    const plain = await generate({
+      model: ORACLE_MODEL,
+      contents: `${systemInstruction}\n\n${userText}\n\nJSON 객체 하나만 반환하세요. 키는 diagnosis, luckyNumber, luckyColor, remedy, symbol, frequency, spiritualEnergy, blessingMessage, focusPlaylist 입니다.`,
+      config: { maxOutputTokens: 8192, abortSignal: AbortSignal.timeout(25000) },
+    });
+    const parsed = parseOracleJson(plain.text);
+    if (parsed) return JSON.stringify(parsed);
+    failures.push('plain response had no diagnosis');
+  } catch (error) {
+    failures.push(describeGeminiError(error));
+  }
+  throw new Error(failures.join(' | '));
+}
+
+async function defaultCallModel(apiKey: string, _contents: unknown, config: Record<string, unknown>): Promise<DailyTarotModelResponse> {
   const ai = new GoogleGenAI({ apiKey });
-  const { response } = await requestWithModelFallback(
-    'gemini-flash-lite-latest',
-    getLucyRequestFallbacks('gemini-flash-lite-latest'),
-    (model, signal) => ai.models.generateContent({
-      model,
-      contents: contents as never,
-      config: { ...config, ...(signal ? { abortSignal: signal } : {}) },
-    }),
-    { attemptTimeoutMs: 15000 },
+  const systemInstruction = typeof config.systemInstruction === 'string' ? config.systemInstruction : '';
+  const userText = '오늘 뽑은 카드의 오라클 비전을 JSON으로 리포트해 줘.';
+  const contents = _contents as { parts?: { text?: string }[] }[] | undefined;
+  const fromContents = contents?.[0]?.parts?.[0]?.text || userText;
+  const text = await requestTarotModelText(
+    async (request) => {
+      const response = await ai.models.generateContent({
+        model: request.model,
+        contents: request.contents as never,
+        config: request.config,
+      });
+      return { text: response.text };
+    },
+    systemInstruction,
+    fromContents,
   );
-  return { text: response.text };
+  return { text };
 }
 
 /** Shared by the long-running server and the Vercel catch-all. No live model call when the key is absent. */
@@ -173,39 +268,25 @@ export async function handleDailyTarotPost(req: Request, res: Response, options:
 - 본문 마지막(5단계 이후)에 [핵심 3줄 요약]이나 어떠한 형태의 요약 블록도 절대로 다시 작성하지 마십시오.
 - 최상단 [핵심 3줄 요약]부터 1단계~5단계 마지막 축복까지 한 문장도 끊김 없이 끝까지 완결된 형태로 작성하여 주십시오.`;
 
-      const config = {
-        systemInstruction,
-        maxOutputTokens: 8192,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            diagnosis: { type: 'STRING' },
-            luckyNumber: { type: 'STRING' },
-            luckyColor: { type: 'STRING' },
-            remedy: { type: 'STRING' },
-            symbol: { type: 'STRING' },
-            frequency: { type: 'STRING' },
-            spiritualEnergy: { type: 'STRING' },
-            blessingMessage: { type: 'STRING' },
-            focusPlaylist: { type: 'STRING' },
-          },
-          required: ['diagnosis', 'luckyNumber', 'luckyColor', 'remedy', 'symbol', 'frequency'],
-        },
-      };
+      const config = { systemInstruction };
       const contents = [{ role: 'user', parts: [{ text: `오늘 뽑은 [${cardNameKo}] 카드의 오라클 비전을 리포트해 줘.` }] }];
       const callModel = options.callModel ?? defaultCallModel;
-      const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Tarot Gemini Timeout')), 35000));
-      const response = await Promise.race([callModel(apiKey, contents, config), timeout]);
-      const parsed = JSON.parse(response.text || '');
+      const response = await callModel(apiKey, contents, config);
+      const parsed = parseOracleJson(response.text);
       if (parsed?.diagnosis) {
-        parsed.diagnosis = cleanDailyTarotDiagnosis(parsed.diagnosis);
+        parsed.diagnosis = cleanDailyTarotDiagnosis(String(parsed.diagnosis));
+        parsed.source = 'model';
+        res.setHeader?.('x-luckey-oracle-source', 'model');
         return res.status(200).json(parsed);
       }
+      console.warn('[daily-tarot] model response had no diagnosis, using local engine');
     } catch (err) {
-      console.warn('[daily-tarot] Gemini call failed/timed out, using specialized card engine:', err instanceof Error ? err.name : 'error');
+      console.warn('[daily-tarot] model failed, using local engine:', describeGeminiError(err));
     }
+  } else {
+    console.warn('[daily-tarot] GEMINI_API_KEY is unset, using local engine');
   }
 
-  return res.status(200).json(buildSpecificTarotDailyOracle(card, mode));
+  res.setHeader?.('x-luckey-oracle-source', 'engine');
+  return res.status(200).json({ ...buildSpecificTarotDailyOracle(card, mode), source: 'engine' });
 }

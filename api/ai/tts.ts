@@ -1,4 +1,5 @@
 import type { Response } from "express";
+import { getGeminiApiKey } from "../../server/geminiKey.ts";
 
 function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSample = 16): Buffer {
   const byteRate = sampleRate * channels * (bitsPerSample / 8);
@@ -25,25 +26,8 @@ let geminiAccountCooldownUntil = 0;
 
 function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
   if (dependencies?.apiKey) return [dependencies.apiKey];
-  const keys: string[] = [];
-  const candidates = [
-    process.env.GEMINI_API_KEY,
-    process.env.GOOGLE_API_KEY,
-    process.env.GOOGLE_GENAI_API_KEY,
-    process.env.AI_API_KEY,
-    process.env.API_KEY,
-  ];
-  for (const raw of candidates) {
-    if (!raw) continue;
-    let key = raw.trim();
-    if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
-      key = key.slice(1, -1).trim();
-    }
-    if (key && !key.startsWith("sk-") && !key.startsWith("xai-")) {
-      if (!keys.includes(key)) keys.push(key);
-    }
-  }
-  return keys;
+  const key = getGeminiApiKey();
+  return key ? [key] : [];
 }
 
 export async function synthesizeWithGemini(text: string, voice?: string, dependencies?: { apiKey?: string; request?: typeof fetch; models?: string[] }): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
