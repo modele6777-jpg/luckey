@@ -1159,5 +1159,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanNammyeongJoSikGyeongUi": {
     "field": "koreanNammyeongJoSikGyeongUiResult",
     "traceKey": "koreanNammyeongJoSikGyeongUiResult"
+  },
+  "germanAlbertSchweitzerReverenceForLife": {
+    "field": "germanAlbertSchweitzerReverenceForLifeResult",
+    "traceKey": "germanAlbertSchweitzerReverenceForLifeResult"
+  },
+  "frenchMichelDeMontaigneEssays": {
+    "field": "frenchMichelDeMontaigneEssaysResult",
+    "traceKey": "frenchMichelDeMontaigneEssaysResult"
+  },
+  "koreanOhseongHaneumFriendshipGovernance": {
+    "field": "koreanOhseongHaneumFriendshipGovernanceResult",
+    "traceKey": "koreanOhseongHaneumFriendshipGovernanceResult"
   }
 };

@@ -313,6 +313,9 @@ import { calculateKoreanDanjaeShinChaeHoJoseonSanggosa, formatKoreanDanjaeShinCh
 import { calculateFrenchMontesquieuSpiritOfLaws, formatFrenchMontesquieuSpiritOfLawsPrompt, type FrenchMontesquieuSpiritOfLawsResult, FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION } from './frenchMontesquieuSpiritOfLawsEngine';
 import { calculateFrenchGastonBachelardPoeticsOfSpace, formatFrenchGastonBachelardPoeticsOfSpacePrompt, type FrenchGastonBachelardPoeticsOfSpaceResult, FRENCH_GASTON_BACHELARD_POETICS_VERSION } from './frenchGastonBachelardPoeticsOfSpaceEngine';
 import { calculateKoreanNammyeongJoSikGyeongUi, formatKoreanNammyeongJoSikGyeongUiPrompt, type KoreanNammyeongJoSikGyeongUiResult, KOREAN_NAMMYEONG_JO_SIK_VERSION } from './koreanNammyeongJoSikGyeongUiEngine';
+import { calculateGermanAlbertSchweitzerReverenceForLife, formatGermanAlbertSchweitzerReverenceForLifePrompt, type GermanAlbertSchweitzerReverenceForLifeResult, GERMAN_ALBERT_SCHWEITZER_VERSION } from './germanAlbertSchweitzerReverenceForLifeEngine';
+import { calculateFrenchMichelDeMontaigneEssays, formatFrenchMichelDeMontaigneEssaysPrompt, type FrenchMichelDeMontaigneEssaysResult, FRENCH_MICHEL_DE_MONTAIGNE_VERSION } from './frenchMichelDeMontaigneEssaysEngine';
+import { calculateKoreanOhseongHaneumFriendshipGovernance, formatKoreanOhseongHaneumFriendshipGovernancePrompt, type KoreanOhseongHaneumFriendshipGovernanceResult, KOREAN_OHSEONG_HANEUM_VERSION } from './koreanOhseongHaneumFriendshipGovernanceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -646,6 +649,9 @@ export interface DeterministicEngineReport {
   frenchMontesquieuSpiritOfLawsResult?: FrenchMontesquieuSpiritOfLawsResult | null;
   frenchGastonBachelardPoeticsOfSpaceResult?: FrenchGastonBachelardPoeticsOfSpaceResult | null;
   koreanNammyeongJoSikGyeongUiResult?: KoreanNammyeongJoSikGyeongUiResult | null;
+  germanAlbertSchweitzerReverenceForLifeResult?: GermanAlbertSchweitzerReverenceForLifeResult | null;
+  frenchMichelDeMontaigneEssaysResult?: FrenchMichelDeMontaigneEssaysResult | null;
+  koreanOhseongHaneumFriendshipGovernanceResult?: KoreanOhseongHaneumFriendshipGovernanceResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3788,6 +3794,33 @@ try {
     }
   })()));
 
+  // 282. 독일/프랑스 알베르트 슈바이처 《생명에 대한 경외》 생명외경 & 헌신봉사 지혜 엔진
+  const germanAlbertSchweitzerReverenceForLifeResult = calculateSupplement('germanAlbertSchweitzerReverenceForLifeResult', () => ((() => {
+    try {
+      return calculateGermanAlbertSchweitzerReverenceForLife(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 283. 프랑스 미셸 드 몽테뉴 《수상록》 "내가 무엇을 아는가(Que sais-je?)" 회의주의적 겸양 & 자기관찰 지혜 엔진
+  const frenchMichelDeMontaigneEssaysResult = calculateSupplement('frenchMichelDeMontaigneEssaysResult', () => ((() => {
+    try {
+      return calculateFrenchMichelDeMontaigneEssays(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 284. 대한민국 백사 이항복 & 한음 이덕형 《오성과 한음》 지기지우 & 경세제민 지혜 엔진
+  const koreanOhseongHaneumFriendshipGovernanceResult = calculateSupplement('koreanOhseongHaneumFriendshipGovernanceResult', () => ((() => {
+    try {
+      return calculateKoreanOhseongHaneumFriendshipGovernance(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4107,6 +4140,9 @@ try {
     frenchMontesquieuSpiritOfLawsResult,
     frenchGastonBachelardPoeticsOfSpaceResult,
     koreanNammyeongJoSikGyeongUiResult,
+    germanAlbertSchweitzerReverenceForLifeResult,
+    frenchMichelDeMontaigneEssaysResult,
+    koreanOhseongHaneumFriendshipGovernanceResult,
     tools: toolsMap,
   };
 }
@@ -4417,6 +4453,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchMontesquieuSpiritOfLaws', nameKo: '샤를 드 몽테스키외 법의정신 권력분립 견제와균형 법치와자유 시민적덕성 온건한중용', icon: '⚖️', category: 'deep_master', summary: '샤를 드 몽테스키외의 법의 정신 사상으로 권력의 독주를 막는 견제와 균형, 법치 속의 참된 자유와 온건한 중용을 체득합니다.' },
   { key: 'frenchGastonBachelardPoeticsOfSpace', nameKo: '가스통 바슐라르 공간의시학 촛불의미학 몽상의시학 내면의집 촛불의고독 물질적상상력', icon: '🕯️', category: 'deep_master', summary: '가스통 바슐라르의 공간의 시학과 촛불의 미학으로 영혼을 품어주는 내면의 집과 순수 고독의 명상, 이성과 시의 조화를 누립니다.' },
   { key: 'koreanNammyeongJoSikGyeongUi', nameKo: '남명 조식 내명자경외단자의 성성자방울 경의검 단성소직언 서릿발실천지조 산천재기개', icon: '🗡️', category: 'deep_master', summary: '남명 조식 선생의 경의사상으로 안으로는 마음을 밝히고 밖으로는 불의를 결단하며, 성성자 방울의 상시 각성과 서릿발 실천 지조를 발휘합니다.' },
+  { key: 'germanAlbertSchweitzerReverenceForLife', nameKo: '알베르트 슈바이처 생명에대한경외 문화와윤리 생명외경 이타적봉사 문명도덕쇄신 무한한책임 바흐평정', icon: '🩺', category: 'deep_master', summary: '알베르트 슈바이처 박사의 생명에 대한 경외 사상으로 살아있는 모든 생명을 깊이 존중하고, 이타적 헌신과 문명의 도덕적 쇄신을 실천합니다.' },
+  { key: 'frenchMichelDeMontaigneEssays', nameKo: '미셸 드 몽테뉴 수상록 에세 내가무엇을아는가 지적겸양 솔직한자기관찰 관용과중용 영혼의뒷방', icon: '🏰', category: 'deep_master', summary: '미셸 드 몽테뉴의 수상록 사상으로 "내가 무엇을 아는가"라는 지적 겸양과 솔직한 자기 성찰, 영혼의 뒷방 서재가 주는 참된 내적 자유를 누립니다.' },
+  { key: 'koreanOhseongHaneumFriendshipGovernance', nameKo: '오성과 한음 이항복 이덕형 지기지우 국난극복경세제민 해학위트배포 당쟁초월공명정대 불굴선비품격', icon: '🤝', category: 'deep_master', summary: '백사 이항복과 한음 이덕형의 오성과 한음 사상으로 평생의 도의적 신의(지기지우)와 국난 극복의 실전적 경세제민, 궁지에서도 잃지 않는 해학과 배포를 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4479,6 +4518,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanOhseongHaneumFriendshipGovernance',
+    'frenchMichelDeMontaigneEssays',
     'frenchMontesquieuSpiritOfLaws',
     'koreanNammyeongJoSikGyeongUi',
     'americanWilliamJamesPragmatism',
@@ -4641,6 +4682,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'germanAlbertSchweitzerReverenceForLife',
+    'koreanOhseongHaneumFriendshipGovernance',
     'germanErichFrommArtOfLovingBeing',
     'koreanMaewoldangKimSiSeupGeumoSinhwa',
     'austrianMartinBuberIAndThou',
@@ -4801,6 +4844,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'germanAlbertSchweitzerReverenceForLife',
     'americanWilliamJamesPragmatism',
     'britishBertrandRussellConquestOfHappiness',
     'tibetanPhowaRainbowBody',
@@ -4871,6 +4915,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'germanAlbertSchweitzerReverenceForLife',
+    'frenchMichelDeMontaigneEssays',
+    'koreanOhseongHaneumFriendshipGovernance',
     'frenchMontesquieuSpiritOfLaws',
     'frenchGastonBachelardPoeticsOfSpace',
     'koreanNammyeongJoSikGyeongUi',

@@ -276,6 +276,9 @@ import { calculateKoreanDanjaeShinChaeHoJoseonSanggosa, formatKoreanDanjaeShinCh
 import { calculateFrenchMontesquieuSpiritOfLaws, formatFrenchMontesquieuSpiritOfLawsPrompt, FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION } from '../src/lib/divination/frenchMontesquieuSpiritOfLawsEngine';
 import { calculateFrenchGastonBachelardPoeticsOfSpace, formatFrenchGastonBachelardPoeticsOfSpacePrompt, FRENCH_GASTON_BACHELARD_POETICS_VERSION } from '../src/lib/divination/frenchGastonBachelardPoeticsOfSpaceEngine';
 import { calculateKoreanNammyeongJoSikGyeongUi, formatKoreanNammyeongJoSikGyeongUiPrompt, KOREAN_NAMMYEONG_JO_SIK_VERSION } from '../src/lib/divination/koreanNammyeongJoSikGyeongUiEngine';
+import { calculateGermanAlbertSchweitzerReverenceForLife, formatGermanAlbertSchweitzerReverenceForLifePrompt, GERMAN_ALBERT_SCHWEITZER_VERSION } from '../src/lib/divination/germanAlbertSchweitzerReverenceForLifeEngine';
+import { calculateFrenchMichelDeMontaigneEssays, formatFrenchMichelDeMontaigneEssaysPrompt, FRENCH_MICHEL_DE_MONTAIGNE_VERSION } from '../src/lib/divination/frenchMichelDeMontaigneEssaysEngine';
+import { calculateKoreanOhseongHaneumFriendshipGovernance, formatKoreanOhseongHaneumFriendshipGovernancePrompt, KOREAN_OHSEONG_HANEUM_VERSION } from '../src/lib/divination/koreanOhseongHaneumFriendshipGovernanceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5402,6 +5405,48 @@ test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer 
   const prompt = formatKoreanNammyeongJoSikGyeongUiPrompt(rep);
   assert(prompt.includes('남명 조식 선생 《내명자경 외단자의》 경의검 & 성성자 실천 지표'));
   assert(prompt.includes(rep.activeNammyeongTheme.themeTitleKo));
+});
+
+test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life, Altruistic Service, and Civilizational Renewal', () => {
+  const rep = calculateGermanAlbertSchweitzerReverenceForLife(profile);
+  assert.equal(rep.engineVersion, GERMAN_ALBERT_SCHWEITZER_VERSION);
+  assert(rep.reverenceForLifeEthicalIndex >= 0 && rep.reverenceForLifeEthicalIndex <= 100);
+  assert(rep.altruisticServiceDevotionScore >= 0 && rep.altruisticServiceDevotionScore <= 100);
+  assert(rep.culturalMoralRenewalScore >= 0 && rep.culturalMoralRenewalScore <= 100);
+  assert(rep.infiniteResponsibilityConscienceIndex >= 0 && rep.infiniteResponsibilityConscienceIndex <= 100);
+  assert(rep.spiritualEquanimityHarmonyIndex >= 0 && rep.spiritualEquanimityHarmonyIndex <= 100);
+  assert(rep.activeSchweitzerTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(rep);
+  assert(prompt.includes('알베르트 슈바이처 《생명에 대한 경외》 & 《문화와 윤리》 생명외경 지표'));
+  assert(prompt.includes(rep.activeSchweitzerTheme.themeTitleKo));
+});
+
+test('Michel de Montaigne Essays Engine: calculates Epistemic Humility, Candid Self-Observation, and Inner Freedom Sanctuary', () => {
+  const rep = calculateFrenchMichelDeMontaigneEssays(profile);
+  assert.equal(rep.engineVersion, FRENCH_MICHEL_DE_MONTAIGNE_VERSION);
+  assert(rep.epistemicHumilityQueSaisJeIndex >= 0 && rep.epistemicHumilityQueSaisJeIndex <= 100);
+  assert(rep.candidSelfObservationIntrospectionScore >= 0 && rep.candidSelfObservationIntrospectionScore <= 100);
+  assert(rep.toleranceMiddleWayPrudenceIndex >= 0 && rep.toleranceMiddleWayPrudenceIndex <= 100);
+  assert(rep.humanConditionAcceptanceScore >= 0 && rep.humanConditionAcceptanceScore <= 100);
+  assert(rep.innerFreedomSanctuaryIndex >= 0 && rep.innerFreedomSanctuaryIndex <= 100);
+  assert(rep.activeMontaigneTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchMichelDeMontaigneEssaysPrompt(rep);
+  assert(prompt.includes('미셸 드 몽테뉴 《수상록(Les Essais)》 "내가 무엇을 아는가" 지혜 지표'));
+  assert(prompt.includes(rep.activeMontaigneTheme.themeTitleKo));
+});
+
+test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral Friendship, Crisis Governance, and Humor Wit Magnanimity', () => {
+  const rep = calculateKoreanOhseongHaneumFriendshipGovernance(profile);
+  assert.equal(rep.engineVersion, KOREAN_OHSEONG_HANEUM_VERSION);
+  assert(rep.lifelongMoralFriendshipTrustIndex >= 0 && rep.lifelongMoralFriendshipTrustIndex <= 100);
+  assert(rep.crisisGovernanceStatesmanshipScore >= 0 && rep.crisisGovernanceStatesmanshipScore <= 100);
+  assert(rep.humorWitMagnanimityResilienceIndex >= 0 && rep.humorWitMagnanimityResilienceIndex <= 100);
+  assert(rep.antiFactionalImpartialityScore >= 0 && rep.antiFactionalImpartialityScore <= 100);
+  assert(rep.unyieldingFidelityGraceIndex >= 0 && rep.unyieldingFidelityGraceIndex <= 100);
+  assert(rep.activeOhseongHaneumTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
+  assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
+  assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo));
 });
 
 
