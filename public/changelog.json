@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.312",
+    "builtAt": "2026-11-10T08:47:31.000Z",
+    "summary": "Vercel이 사주와 MCP의 TypeScript 원본을 읽어 500이 나던 문제를 고쳤다",
+    "items": [
+      "사주 입력 오류와 MCP 리딩 오류를 Node가 타입만 지우고 실행할 수 있는 문법으로 바꿈",
+      "사주 차트와 MCP 핸들러를 Vercel 함수가 컴파일하는 정적 import로 연결",
+      "Node 타입 제거 모드와 erasableSyntaxOnly로 같은 그래프를 검사"
+    ]
+  },
+  {
     "version": "1.7.310",
     "builtAt": "2026-11-10T07:09:20.000Z",
     "summary": "사주와 MCP API가 응답 없이 멈추던 문제를 고치고, 코드에 적힌 Gemini 키를 뺐다",
