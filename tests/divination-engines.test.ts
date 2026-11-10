@@ -285,6 +285,9 @@ import { calculateKoreanAhnJungGeunPeaceRighteousness, formatKoreanAhnJungGeunPe
 import { calculateAustrianAlfredAdlerIndividualPsychology, formatAustrianAlfredAdlerIndividualPsychologyPrompt, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION } from '../src/lib/divination/austrianAlfredAdlerIndividualPsychologyEngine';
 import { calculateGermanFriedrichSchillerAestheticEducation, formatGermanFriedrichSchillerAestheticEducationPrompt, GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION } from '../src/lib/divination/germanFriedrichSchillerAestheticEducationEngine';
 import { calculateKoreanDamheonHongDaeYongUisanMundap, formatKoreanDamheonHongDaeYongUisanMundapPrompt, KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION } from '../src/lib/divination/koreanDamheonHongDaeYongUisanMundapEngine';
+import { calculateAustrianWittgensteinLanguageGameSilence, formatAustrianWittgensteinLanguageGameSilencePrompt, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION } from '../src/lib/divination/austrianWittgensteinLanguageGameSilenceEngine';
+import { calculateFrenchGillesDeleuzeRhizomeBecoming, formatFrenchGillesDeleuzeRhizomeBecomingPrompt, FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION } from '../src/lib/divination/frenchGillesDeleuzeRhizomeBecomingEngine';
+import { calculateKoreanHeoJunDonguiBogamYangsaeng, formatKoreanHeoJunDonguiBogamYangsaengPrompt, KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION } from '../src/lib/divination/koreanHeoJunDonguiBogamYangsaengEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5537,6 +5540,48 @@ test('Hong Dae-yong Uisan Mundap Engine: calculates Infinite Universe, Earth Rot
   const prompt = formatKoreanDamheonHongDaeYongUisanMundapPrompt(rep);
   assert(prompt.includes('담헌 홍대용 《의산문답》 지전설·무한우주론 및 인물균 지혜 지표'));
   assert(prompt.includes(rep.activeHongDaeYongTheme.themeTitleKo));
+});
+
+test('Wittgenstein Language Game and Silence Engine: calculates Logical Clarity, Silence, and Meaning as Use', () => {
+  const rep = calculateAustrianWittgensteinLanguageGameSilence(profile);
+  assert.equal(rep.engineVersion, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION);
+  assert(rep.logicalClarityTractatusPrecisionIndex >= 0 && rep.logicalClarityTractatusPrecisionIndex <= 100);
+  assert(rep.mysticalSilenceReverenceScore >= 0 && rep.mysticalSilenceReverenceScore <= 100);
+  assert(rep.languageGameContextualFlexibilityIndex >= 0 && rep.languageGameContextualFlexibilityIndex <= 100);
+  assert(rep.meaningAsUsePragmaticActionScore >= 0 && rep.meaningAsUsePragmaticActionScore <= 100);
+  assert(rep.therapeuticDissolutionClarityScore >= 0 && rep.therapeuticDissolutionClarityScore <= 100);
+  assert(rep.activeWittgensteinTheme.themeTitleKo.length > 0);
+  const prompt = formatAustrianWittgensteinLanguageGameSilencePrompt(rep);
+  assert(prompt.includes('비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임·침묵 지혜 지표'));
+  assert(prompt.includes(rep.activeWittgensteinTheme.themeTitleKo));
+});
+
+test('Gilles Deleuze Rhizome and Becoming Engine: calculates Rhizomatic Connection, Deterritorialization, and Becoming', () => {
+  const rep = calculateFrenchGillesDeleuzeRhizomeBecoming(profile);
+  assert.equal(rep.engineVersion, FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION);
+  assert(rep.rhizomaticHorizontalConnectionIndex >= 0 && rep.rhizomaticHorizontalConnectionIndex <= 100);
+  assert(rep.deterritorializationNomadicFreedomScore >= 0 && rep.deterritorializationNomadicFreedomScore <= 100);
+  assert(rep.affirmationOfDifferenceMultiplicityIndex >= 0 && rep.affirmationOfDifferenceMultiplicityIndex <= 100);
+  assert(rep.creativeBecomingVitalityScore >= 0 && rep.creativeBecomingVitalityScore <= 100);
+  assert(rep.desiringProductionLiberationResilienceScore >= 0 && rep.desiringProductionLiberationResilienceScore <= 100);
+  assert(rep.activeDeleuzeTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchGillesDeleuzeRhizomeBecomingPrompt(rep);
+  assert(prompt.includes('들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 지혜 지표'));
+  assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo));
+});
+
+test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheon-In-Sang-Eung, and Chi-Mi-Byeong', () => {
+  const rep = calculateKoreanHeoJunDonguiBogamYangsaeng(profile);
+  assert.equal(rep.engineVersion, KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION);
+  assert(rep.tongJeukBulTongCirculationIndex >= 0 && rep.tongJeukBulTongCirculationIndex <= 100);
+  assert(rep.bodyCosmosCorrespondenceHarmonyScore >= 0 && rep.bodyCosmosCorrespondenceHarmonyScore <= 100);
+  assert(rep.preventiveChiMiByeongYangsaengIndex >= 0 && rep.preventiveChiMiByeongYangsaengIndex <= 100);
+  assert(rep.essenceQiSpiritPreservationScore >= 0 && rep.essenceQiSpiritPreservationScore <= 100);
+  assert(rep.beneficentCompassionHealingResilienceScore >= 0 && rep.beneficentCompassionHealingResilienceScore <= 100);
+  assert(rep.activeHeoJunTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanHeoJunDonguiBogamYangsaengPrompt(rep);
+  assert(prompt.includes('구암 허준 《동의보감》 신형장부도·통즉불통 및 치미병 양생 지혜 지표'));
+  assert(prompt.includes(rep.activeHeoJunTheme.themeTitleKo));
 });
 
 

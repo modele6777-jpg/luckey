@@ -1195,5 +1195,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanDamheonHongDaeYongUisanMundap": {
     "field": "koreanDamheonHongDaeYongUisanMundapResult",
     "traceKey": "koreanDamheonHongDaeYongUisanMundapResult"
+  },
+  "austrianWittgensteinLanguageGameSilence": {
+    "field": "austrianWittgensteinLanguageGameSilenceResult",
+    "traceKey": "austrianWittgensteinLanguageGameSilenceResult"
+  },
+  "frenchGillesDeleuzeRhizomeBecoming": {
+    "field": "frenchGillesDeleuzeRhizomeBecomingResult",
+    "traceKey": "frenchGillesDeleuzeRhizomeBecomingResult"
+  },
+  "koreanHeoJunDonguiBogamYangsaeng": {
+    "field": "koreanHeoJunDonguiBogamYangsaengResult",
+    "traceKey": "koreanHeoJunDonguiBogamYangsaengResult"
   }
 };

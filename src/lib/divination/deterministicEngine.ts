@@ -322,6 +322,9 @@ import { calculateKoreanAhnJungGeunPeaceRighteousness, formatKoreanAhnJungGeunPe
 import { calculateAustrianAlfredAdlerIndividualPsychology, formatAustrianAlfredAdlerIndividualPsychologyPrompt, type AustrianAlfredAdlerIndividualPsychologyResult, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION } from './austrianAlfredAdlerIndividualPsychologyEngine';
 import { calculateGermanFriedrichSchillerAestheticEducation, formatGermanFriedrichSchillerAestheticEducationPrompt, type GermanFriedrichSchillerAestheticEducationResult, GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION } from './germanFriedrichSchillerAestheticEducationEngine';
 import { calculateKoreanDamheonHongDaeYongUisanMundap, formatKoreanDamheonHongDaeYongUisanMundapPrompt, type KoreanDamheonHongDaeYongUisanMundapResult, KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION } from './koreanDamheonHongDaeYongUisanMundapEngine';
+import { calculateAustrianWittgensteinLanguageGameSilence, formatAustrianWittgensteinLanguageGameSilencePrompt, type AustrianWittgensteinLanguageGameSilenceResult, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION } from './austrianWittgensteinLanguageGameSilenceEngine';
+import { calculateFrenchGillesDeleuzeRhizomeBecoming, formatFrenchGillesDeleuzeRhizomeBecomingPrompt, type FrenchGillesDeleuzeRhizomeBecomingResult, FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION } from './frenchGillesDeleuzeRhizomeBecomingEngine';
+import { calculateKoreanHeoJunDonguiBogamYangsaeng, formatKoreanHeoJunDonguiBogamYangsaengPrompt, type KoreanHeoJunDonguiBogamYangsaengResult, KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION } from './koreanHeoJunDonguiBogamYangsaengEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -664,6 +667,9 @@ export interface DeterministicEngineReport {
   austrianAlfredAdlerIndividualPsychologyResult?: AustrianAlfredAdlerIndividualPsychologyResult | null;
   germanFriedrichSchillerAestheticEducationResult?: GermanFriedrichSchillerAestheticEducationResult | null;
   koreanDamheonHongDaeYongUisanMundapResult?: KoreanDamheonHongDaeYongUisanMundapResult | null;
+  austrianWittgensteinLanguageGameSilenceResult?: AustrianWittgensteinLanguageGameSilenceResult | null;
+  frenchGillesDeleuzeRhizomeBecomingResult?: FrenchGillesDeleuzeRhizomeBecomingResult | null;
+  koreanHeoJunDonguiBogamYangsaengResult?: KoreanHeoJunDonguiBogamYangsaengResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3887,6 +3893,33 @@ try {
     }
   })()));
 
+  // 291. 오스트리아/영국 루트비히 비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임 & 삶의형식·침묵의지혜 엔진
+  const austrianWittgensteinLanguageGameSilenceResult = calculateSupplement('austrianWittgensteinLanguageGameSilenceResult', () => ((() => {
+    try {
+      return calculateAustrianWittgensteinLanguageGameSilence(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 292. 프랑스 질 들뢰즈 《천 개의 고원·차이와 반복》 리좀적접속 & 탈영토화·생성(Devenir) 지혜 엔진
+  const frenchGillesDeleuzeRhizomeBecomingResult = calculateSupplement('frenchGillesDeleuzeRhizomeBecomingResult', () => ((() => {
+    try {
+      return calculateFrenchGillesDeleuzeRhizomeBecoming(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 293. 대한민국 구암 허준 《동의보감》 신형장부도·천인상응 & 통즉불통·치미병(治未病) 양생 지혜 엔진
+  const koreanHeoJunDonguiBogamYangsaengResult = calculateSupplement('koreanHeoJunDonguiBogamYangsaengResult', () => ((() => {
+    try {
+      return calculateKoreanHeoJunDonguiBogamYangsaeng(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4215,6 +4248,9 @@ try {
     austrianAlfredAdlerIndividualPsychologyResult,
     germanFriedrichSchillerAestheticEducationResult,
     koreanDamheonHongDaeYongUisanMundapResult,
+    austrianWittgensteinLanguageGameSilenceResult,
+    frenchGillesDeleuzeRhizomeBecomingResult,
+    koreanHeoJunDonguiBogamYangsaengResult,
     tools: toolsMap,
   };
 }
@@ -4534,6 +4570,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'austrianAlfredAdlerIndividualPsychology', nameKo: '알프레트 아들러 인간이해 삶의의미 열등감극복 공동체감각 과제분리 목적론적결단 불완전할용기', icon: '🌱', category: 'deep_master', summary: '알프레트 아들러의 개인심리학 사상으로 열등감을 성장의 원동력으로 삼고, 과제의 분리와 공동체 감각(Gemeinschaftsgefühl)으로 타인과 건강하게 연대합니다.' },
   { key: 'germanFriedrichSchillerAestheticEducation', nameKo: '프리드리히 실러 인간의미적교육 놀이충동 살아있는형상 우아함과존엄 미적자유 전인적조화', icon: '🎭', category: 'deep_master', summary: '프리드리히 실러의 미적 교육론 사상으로 물질과 이성의 분열을 아우르는 놀이 충동(Spieltrieb)과 살아있는 형상(Lebende Gestalt)으로 온전한 전인적 자유를 누립니다.' },
   { key: 'koreanDamheonHongDaeYongUisanMundap', nameKo: '담헌 홍대용 의산문답 지전설 무한우주론 인물균 탈중화개방성 탈편견실증주의 거문고사색호연지기', icon: '🌌', category: 'deep_master', summary: '담헌 홍대용 선생의 의산문답 사상으로 지전설과 무한우주론의 대우주적 안목, 인간과 만물이 평등하다는 인물균(人物均)의 지혜와 탈편견 실증 개방성을 체득합니다.' },
+  { key: 'austrianWittgensteinLanguageGameSilence', nameKo: '루트비히 비트겐슈타인 논리철학논고 철학적탐구 언어게임 삶의형식 침묵의지혜 의미는사용 관념치료', icon: '🤫', category: 'deep_master', summary: '루트비히 비트겐슈타인의 사상으로 말할 수 있는 것의 명료한 논리적 정밀성과 신비 앞의 경건한 침묵, 언어 게임과 삶의 형식을 통한 실천적 맥락 지혜를 체득합니다.' },
+  { key: 'frenchGillesDeleuzeRhizomeBecoming', nameKo: '질 들뢰즈 천개의고원 차이와반복 리좀적접속 탈영토화 노마디즘 순수차이긍정 다양체 되기생성', icon: '🌿', category: 'deep_master', summary: '질 들뢰즈의 철학으로 수목형 위계를 허무는 리좀(Rhizome)적 수평 접속, 경계를 허무는 탈영토화와 노마디즘, 고착을 벗어나 끊임없이 변용하는 생성(Devenir)의 활력을 누립니다.' },
+  { key: 'koreanHeoJunDonguiBogamYangsaeng', nameKo: '구암 허준 동의보감 신형장부도 천인상응 통즉불통 치미병양생 정기신삼보 혜민구휼치유', icon: '🌿', category: 'deep_master', summary: '구암 허준 선생의 동의보감 사상으로 통즉불통(通則不痛)의 원활한 소통과 순환, 천인상응의 전인적 조화, 병이 생기기 전에 근원을 다스리는 치미병(治未病) 양생 지혜를 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4596,6 +4635,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'austrianWittgensteinLanguageGameSilence',
+    'frenchGillesDeleuzeRhizomeBecoming',
     'austrianAlfredAdlerIndividualPsychology',
     'koreanDamheonHongDaeYongUisanMundap',
     'koreanAhnJungGeunPeaceRighteousness',
@@ -4930,6 +4971,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'koreanHeoJunDonguiBogamYangsaeng',
     'americanWaltWhitmanLeavesOfGrass',
     'germanAlbertSchweitzerReverenceForLife',
     'americanWilliamJamesPragmatism',
@@ -4963,6 +5005,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'frenchGillesDeleuzeRhizomeBecoming',
+    'austrianWittgensteinLanguageGameSilence',
     'germanFriedrichSchillerAestheticEducation',
     'koreanDamheonHongDaeYongUisanMundap',
     'frenchGastonBachelardPoeticsOfSpace',
@@ -5004,6 +5048,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'austrianWittgensteinLanguageGameSilence',
+    'frenchGillesDeleuzeRhizomeBecoming',
+    'koreanHeoJunDonguiBogamYangsaeng',
     'austrianAlfredAdlerIndividualPsychology',
     'germanFriedrichSchillerAestheticEducation',
     'koreanDamheonHongDaeYongUisanMundap',
