@@ -3,12 +3,12 @@
 // Ported directly from TRINITY repo
 // ==========================================================
 
-import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
-import type { UserProfile } from '@/lib/sharedState';
-import { extractConciseSummary, groundTarotSummaryParts, stripSummaryFromTarotText } from '@/lib/tarotSummaryUtils';
-import { getTarotCardDetails } from '@/lib/dailyTarotOracle';
-import { getCardSoulBlessing, getCardDailyAffirmation } from '@/lib/tarotBlessings';
-import { getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from '@/data/tarotData';
+import { calculateDetailedSaju } from '../sajuAnalysis.ts';
+import type { UserProfile } from '../sharedState.ts';
+import { extractConciseSummary, groundTarotSummaryParts, stripSummaryFromTarotText } from '../tarotSummaryUtils.ts';
+import { getTarotCardDetails } from '../dailyTarotOracle.ts';
+import { getCardSoulBlessing, getCardDailyAffirmation } from '../tarotBlessings.ts';
+import { getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from '../../data/tarotData.ts';
 
 // ✨ Constants
 export const HS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
