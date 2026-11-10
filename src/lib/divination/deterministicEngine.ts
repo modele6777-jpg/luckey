@@ -4412,18 +4412,24 @@ export function getMasterSymbolicReview(report: DeterministicEngineReport, optio
 }
 
 export function getCalculationAudit(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions): CalculationAuditItem[] {
+  const isMaster = options?.isMasterMobilization !== false;
   const core = getIncludedCalculationTools(report, options).map(tool => {
     const symbolic = report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId);
     const perspectives = symbolic ? getSymbolicPerspective(tool.data) : [];
     return {
       toolId: tool.toolId, name: tool.toolKoName,
-      status: symbolic && tool.data != null ? 'symbolic' as const : tool.status,
-      sentToModel: symbolic ? perspectives.length > 0 : tool.status === 'calculated' && tool.data != null,
+      status: (symbolic && tool.data != null) || isMaster ? 'symbolic' as const : tool.status,
+      sentToModel: isMaster || (symbolic ? perspectives.length > 0 : tool.status === 'calculated' && tool.data != null),
       ...((tool.note || tool.limitations?.length) ? { note: [tool.note, ...(tool.limitations || [])].filter(Boolean).join(' · ') } : {}),
       ...(tool.method ? { method: tool.method } : {}),
     };
   });
-  return [...core, ...getMasterSymbolicReview(report).map(({ perspectives, ...item }) => item)];
+  const symbolicReviews = getMasterSymbolicReview(report, options).map(({ perspectives, ...item }) => ({
+    ...item,
+    status: isMaster ? 'symbolic' as const : item.status,
+    sentToModel: isMaster ? true : item.sentToModel,
+  }));
+  return [...core, ...symbolicReviews];
 }
 
 function getIncludedCalculationTools(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions) {

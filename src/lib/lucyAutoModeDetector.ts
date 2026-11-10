@@ -39,7 +39,7 @@ export function formatChannelsModeTitle(channels: SpecialChannel[], allowMaster 
     return '가벼운 일상 수다';
   }
   if (channels.length === 7) {
-    return allowMaster ? '7대 채널 올인원 마스터' : '7중 융합 시너지';
+    return '올인원프로 모드';
   }
   if (channels.length === 1) {
     const ch = channels[0] as SeptagramChannel;
@@ -95,7 +95,7 @@ export function detectLucyChannelsFromText(text: string, options: { allowMaster?
       isMaster: true,
       isCasual: false,
       reasons: ['7대 우주 지능 올인원 통합 진단'],
-      modeTitle: '7대 채널 올인원 마스터'
+      modeTitle: '올인원프로 모드'
     };
   }
 
@@ -263,7 +263,7 @@ export function detectSeptagramChannelsFromText(text: string): SeptagramAutoDete
       isMaster: true,
       isCasual: false,
       reasons: ['7대 우주 차원 올인원 마스터 통합 공명'],
-      modeTitle: '7대 채널 올인원 마스터'
+      modeTitle: '올인원프로 모드'
     };
   }
 

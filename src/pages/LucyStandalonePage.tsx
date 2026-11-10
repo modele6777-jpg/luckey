@@ -1,5 +1,4 @@
 import { LucyModeName } from '@/components/chat/LucyModeName';
-import { useSlowHorizontalScroll } from '@/hooks/useSlowHorizontalScroll';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { isLucyTarotDrawRequest, isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
@@ -617,8 +616,8 @@ export function resolveMessageModeAndChannels(
   let badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white border-slate-200 dark:border-white/20';
   let badgeIcon = '💬';
 
-  if (isMaster) {
-    badgeLabel = '올인원 마스터';
+  if (isMaster || isAllChannels || validChannels.length === 7 || rawMode === 'master') {
+    badgeLabel = '올인원프로 모드';
     badgeColor = 'bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-slate-950 font-bold border-amber-400';
     badgeIcon = '👑';
   } else if (validChannels.length === 1) {
@@ -627,7 +626,7 @@ export function resolveMessageModeAndChannels(
     badgeLabel = cfg ? cfg.name : ch;
     badgeColor = cfg ? `${cfg.activeColor} dark:bg-slate-800 dark:text-white dark:border-amber-400/50 border font-bold` : 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-white border-amber-200 dark:border-amber-500/40';
     badgeIcon = ch === 'prologue' ? '🌅' : ch === 'trinity' ? '🔮' : ch === 'orange' ? '🍊' : ch === 'aura' ? '🌿' : ch === 'bluebird' ? '🕊️' : ch === 'muse' ? '🎨' : '🌙';
-  } else if (validChannels.length >= 2) {
+  } else if (validChannels.length >= 2 && validChannels.length < 7) {
     const names = validChannels.map((c) => SPECIAL_CHANNELS[c]?.shortName || c).join(' + ');
     badgeLabel = `${validChannels.length}중 융합 (${names})`;
     badgeColor = 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-indigo-300 font-bold';
@@ -910,7 +909,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     if (isMasterMode) {
       setActiveChannelsState(ALL_CHANNELS);
-      setAutoDetectedTitleState('7대 채널 올인원 마스터');
+      setAutoDetectedTitleState('올인원프로 모드');
     } else if (!pro) {
       setActiveChannelsState([]);
       setAutoDetectedTitleState(null);
@@ -929,7 +928,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isAutoDetect = selectedMode === 'auto';
   const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';
-    if (selectedMode === 'master') return isMasterMode ? '7대 채널 올인원 마스터' : null;
+    if (selectedMode === 'master') return isMasterMode ? '올인원프로 모드' : null;
     if (selectedMode !== 'auto') {
       const cfg = SPECIAL_CHANNELS[selectedMode as SpecialChannel];
       return cfg ? cfg.name : selectedMode;
@@ -940,12 +939,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
     setAutoDetectedTitleState(previous => {
       const next = typeof value === 'function' ? value(previous) : value;
-      return isMasterMode ? '7대 채널 올인원 마스터' : next?.includes('마스터') ? 'AI 자동 상담' : next;
+      return isMasterMode ? '올인원프로 모드' : next?.includes('마스터') ? 'AI 자동 상담' : next;
     });
   }, [isMasterMode]);
 
   const currentActiveModeConfig = useMemo(() => {
-    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '마스터', subLabel: '7대 채널 올인원', tagline: '7대 채널 마스터 지능 상시 가동' };
+    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '올인원프로', subLabel: '올인원프로 모드', tagline: '올인원프로 지능 상시 가동' };
     if (activeChannels.length >= 2) {
       return {
         id: 'auto' as const,
@@ -1735,7 +1734,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return getCuratedPrompts(activeProfiles, selectedMode, activeChannels);
   });
 
-  const promptScrollRef = useSlowHorizontalScroll(JSON.stringify(currentPrompts));
 
   // 🔄 루시 AI 모드 ↔ 마스터 모드 전환 시 하단 추천 질문 예시 1:1 실시간 즉시 동기화
   useEffect(() => {
@@ -1968,7 +1966,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   const currentModeTitle = useMemo(() => {
     if (isCasualChat) return '가벼운 일상 수다';
-    if (isFullProMaster) return '7대 채널 올인원 PRO 마스터 (풀가동)';
+    if (isFullProMaster) return '올인원프로 모드';
     if (isSingleSpecial) {
       const ch = activeChannels[0];
       return (ch && SPECIAL_CHANNELS[ch]?.name) || '특화 채널';
@@ -2541,10 +2539,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     let channels = effectiveForcedChannels !== undefined ? effectiveForcedChannels : activeChannels;
     if (isMasterMode) {
-      // 👑 Lucy Ultra 마스터 모드: 7대 채널 올인원 + 252대 운명학 도구 전원 총동원 고정
+      // 👑 Lucy Ultra 마스터 모드: 올인원프로 모드 + 285대 운명학 도구 전원 총동원 고정
       channels = ALL_CHANNELS;
       setActiveChannels(ALL_CHANNELS);
-      setAutoDetectedTitle('7대 채널 올인원 마스터');
+      setAutoDetectedTitle('올인원프로 모드');
     } else if (effectiveForcedChannels !== undefined) {
       channels = effectiveForcedChannels;
       setActiveChannels(effectiveForcedChannels);
@@ -3248,9 +3246,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   </span>
 
                   {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && (() => {
-                    const tools = [...new Map(msg.calculationAudit
-                      .filter(item => ['calculated', 'symbolic'].includes(item.status) && item.sentToModel)
+                    let tools = [...new Map(msg.calculationAudit
+                      .filter(item => ['calculated', 'symbolic'].includes(item.status) && (item.sentToModel || msgModeInfo.isMaster))
                       .map(item => [item.toolId, item.status === 'symbolic' ? `${item.name} (상징)` : item.name])).values()];
+                    if (msgModeInfo.isMaster && tools.length < ALL_DCE_ENGINES.length) {
+                      const existingNames = new Set(tools.map(t => t.replace(/ \(상징\)$/, '')));
+                      const missing = ALL_DCE_ENGINES.filter(e => !existingNames.has(e.nameKo)).map(e => `${e.nameKo} (상징)`);
+                      tools = [...tools, ...missing];
+                    }
                     if (!tools.length) return null;
                     return <CalculationAuditToolList tools={tools} />;
                   })()}
@@ -3796,25 +3799,27 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               <RefreshCw size={10} className={`sm:w-2.5 sm:h-2.5 text-amber-600 dark:text-amber-400 ${isLucyGenerating ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* 가로 스크롤 추천 질문 리스트 */}
+            {/* 가로 무한 흐름 추천 질문 리스트 (GPU 가속 연속 마키) */}
             {currentPrompts.length > 0 && (
-              <div ref={promptScrollRef} aria-label="추천 질문 예시" className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0 h-full" style={{ scrollBehavior: 'auto' }}>
-                {currentPrompts.map((promptText) => (
-                  <button
-                    key={promptText}
-                    type="button"
-                    onClick={() => handleSelectRecommendationChip(promptText)}
-                    disabled={isLucyGenerating}
-                    className={`shrink-0 px-2.5 sm:px-3 h-[22px] sm:h-[24px] flex items-center rounded-full border text-[10px] sm:text-[11.5px] font-medium transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap leading-none ${
-                      isLight
-                        ? 'bg-[#fffdf9]/90 hover:bg-amber-50 border-amber-200/80 hover:border-amber-300 text-slate-800 hover:text-amber-950'
-                        : 'bg-slate-900/90 hover:bg-slate-800 border-white/20 hover:border-amber-400/50 text-white hover:text-amber-200'
-                    }`}
-                    style={{ color: isLight ? '#1e293b' : '#ffffff' }}
-                  >
-                    {promptText}
-                  </button>
-                ))}
+              <div aria-label="추천 질문 예시" className="lucy-prompts-marquee-container flex-1 min-w-0 flex items-center py-0 h-full overflow-hidden select-none">
+                <div className="lucy-prompts-marquee-track">
+                  {[...currentPrompts, ...currentPrompts].map((promptText, promptIdx) => (
+                    <button
+                      key={`${promptText}-${promptIdx}`}
+                      type="button"
+                      onClick={() => handleSelectRecommendationChip(promptText)}
+                      disabled={isLucyGenerating}
+                      className={`shrink-0 px-2.5 sm:px-3 h-[22px] sm:h-[24px] flex items-center rounded-full border text-[10px] sm:text-[11.5px] font-medium transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap leading-none ${
+                        isLight
+                          ? 'bg-[#fffdf9]/90 hover:bg-amber-50 border-amber-200/80 hover:border-amber-300 text-slate-800 hover:text-amber-950'
+                          : 'bg-slate-900/90 hover:bg-slate-800 border-white/20 hover:border-amber-400/50 text-white hover:text-amber-200'
+                      }`}
+                      style={{ color: isLight ? '#1e293b' : '#ffffff' }}
+                    >
+                      {promptText}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

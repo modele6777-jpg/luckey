@@ -1,6 +1,6 @@
 {
-  "version": "1.7.306",
-  "builtAt": "2026-11-09T23:40:00.000Z",
+  "version": "1.7.307",
+  "builtAt": "2026-11-10T00:20:00.000Z",
   "summary": "사주 해석은 일간과 표면 오행 개수를 나누어 말함",
   "items": [
     "일간, elementBalance, interpretation을 앱과 /api/saju/chart, get_saju_fortune, read_saju가 같이 씀",
