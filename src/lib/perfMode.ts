@@ -127,7 +127,7 @@ export function isSurfaceDuoOrDualScreen(): boolean {
 }
 
 /**
- * Checks if current viewport is iPhone Duo or Foldable outer cover screen in portrait
+ * Folded cover, in either orientation. Dual mode is a separate question from rotation.
  */
 export function isIPhoneDuoCoverScreen(): boolean {
   return typeof window !== 'undefined' && !isDuoUnfoldedState().unfolded;
@@ -143,29 +143,51 @@ export interface DuoUnfoldedState {
   orientation: 'landscape' | 'portrait';
 }
 
-/** Rotation-invariant geometry: a narrow phone stays folded in either direction. */
+/**
+ * Shorter side of a folded phone. It is the cover width and does not change
+ * when the phone rotates, so a wide-but-short landscape viewport stays folded.
+ *
+ * iPhone Duo cover is about 450×640 CSS px (installed standalone readings;
+ * the 5.4" panel is 1398×2034 physical, about 466×678 at 3x). Ordinary phones
+ * are about 390–440 CSS px wide. 540 is the existing portrait cover guard and
+ * still sits below the inner display.
+ */
+export const DUO_COVER_MAX_SHORT_SIDE = 540;
+
+/**
+ * Inner display once the shorter side has cleared the cover.
+ * 7.6" inner panel is about 626×890 CSS px (1878×2670 at 3x, ratio about 0.70).
+ * `longSide >= 768` keeps that panel, iPad, and spanned Surface Duo viewports
+ * dual. The nearer-square clause keeps 840×960-class inner screens dual.
+ * Width or landscape orientation alone is not a fold signal.
+ */
+const DUO_INNER_MIN_SHORT_SIDE = 550;
+const DUO_INNER_MIN_RATIO = 0.72;
+const DUO_LARGE_SCREEN_LONG_SIDE = 768;
+
+/** Rotation-invariant geometry: a folded phone stays one page in either direction. */
 export function resolveDuoViewport(width: number, height: number, spanned = false): DuoUnfoldedState {
-  // 1. Spanned API (hardware hinge detection)
+  const orientation: DuoUnfoldedState['orientation'] = width > height ? 'landscape' : 'portrait';
+
+  // Hardware hinge. A spanned screen is the unfolded inner display even if a
+  // segment reports a narrow size.
   if (spanned) {
-    return { unfolded: true, orientation: width > height ? 'landscape' : 'portrait' };
+    return { unfolded: true, orientation };
   }
 
-  // 2. Explicit cover screen: any portrait phone with width < 540px is strictly folded
-  if (width <= height && width < 540) {
-    return { unfolded: false, orientation: 'portrait' };
-  }
-
-  // 3. Clear inner unfolded screen: both dimensions are large (e.g. 7.6" inner display) or wide landscape
   const shortSide = Math.min(width, height);
   const longSide = Math.max(width, height);
   const ratio = shortSide / Math.max(longSide, 1);
 
-  const isUnfolded = (shortSide >= 550 && ratio >= 0.72) || longSide >= 768 || (width > height && width >= 600);
+  if (shortSide < DUO_COVER_MAX_SHORT_SIDE) {
+    return { unfolded: false, orientation };
+  }
 
-  return {
-    unfolded: isUnfolded,
-    orientation: width > height ? 'landscape' : 'portrait',
-  };
+  const isUnfolded =
+    (shortSide >= DUO_INNER_MIN_SHORT_SIDE && ratio >= DUO_INNER_MIN_RATIO) ||
+    longSide >= DUO_LARGE_SCREEN_LONG_SIDE;
+
+  return { unfolded: isUnfolded, orientation };
 }
 
 let lastDuoLayoutViewport: { width: number; height: number } | null = null;
@@ -195,11 +217,6 @@ export function isDuoUnfoldedState(): DuoUnfoldedState {
   ].some(query => {
     try { return window.matchMedia(query).matches; } catch { return false; }
   });
-
-  // Explicit cover screen: portrait phone with width < 540 is NEVER dual
-  if (width <= height && width < 540 && !spanned) {
-    return { unfolded: false, orientation: 'portrait' };
-  }
 
   return resolveDuoViewport(width, height, spanned);
 }
