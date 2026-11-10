@@ -104,9 +104,9 @@ function getGeminiApiKey(): string {
   ];
   for (const raw of candidates) {
     const key = normalizeApiKey(raw);
-    if (key && !key.startsWith("sk-") && !key.startsWith("xai-") && !key.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A")) return key;
+    if (key && !key.startsWith("sk-") && !key.startsWith("xai-")) return key;
   }
-  return "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
+  return "";
 }
 
 function getXaiApiKey(): string {

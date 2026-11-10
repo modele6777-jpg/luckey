@@ -2,8 +2,11 @@ import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lu
 import "dotenv/config";
 import express from "express";
 import { readFileSync } from "node:fs";
+import { getGeminiApiKey } from "../server/geminiKey.ts";
+import { installAsyncRouteGuard } from "../server/api-lib/routeGuard.ts";
 
 const app = express();
+installAsyncRouteGuard(app);
 
 app.use(express.json({ limit: "50mb" }));
 
@@ -53,10 +56,9 @@ app.delete("/api/mcp", async (req, res) => {
 import { GoogleGenAI } from "@google/genai";
 
 app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/v1/chat/completions"], async (req, res) => {
-  const rawKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
-  const geminiApiKey = rawKey.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A") ? "" : rawKey;
+  const geminiApiKey = getGeminiApiKey();
   if (!geminiApiKey) {
-    return res.status(500).json({ error: "GEMINI_API_KEY not configured or invalid" });
+    return res.status(503).json({ error: "GEMINI_API_KEY가 설정되지 않았습니다.", code: "GEMINI_API_KEY_MISSING" });
   }
 
   try {
@@ -128,7 +130,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
       });
     }
   } catch (err: any) {
-    console.error("Gemini completion proxy error:", err);
+    console.error("Gemini completion proxy error:", err instanceof Error ? err.name : "error");
     const status = Number(err?.status);
     if (status === 429) return res.status(429).json({ error: 'AI 제공자의 사용 한도에 도달했습니다. 잠시 후 다시 시도하거나 연결된 Gemini 프로젝트의 할당량을 확인해 주세요.', code: 'AI_QUOTA_EXCEEDED' });
     return res.status(status === 503 ? 503 : 500).json({ error: 'AI 응답을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.', code: 'AI_PROVIDER_UNAVAILABLE' });
@@ -196,11 +198,12 @@ ${content}
   "emotions": ["감정태그1", "감정태그2"]
 }`;
 
-  const rawKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
-  const geminiApiKey = rawKey.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A") ? "" : rawKey;
+  const geminiApiKey = getGeminiApiKey();
+  if (!geminiApiKey) {
+    return res.status(503).json({ error: "GEMINI_API_KEY가 설정되지 않았습니다.", code: "GEMINI_API_KEY_MISSING" });
+  }
 
-  if (geminiApiKey) {
-    try {
+  try {
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
       const geminiRes = await ai.models.generateContent({
         model: "gemini-flash-lite-latest",
@@ -217,9 +220,8 @@ ${content}
           return res.status(200).json(parsed);
         }
       }
-    } catch (err) {
-      console.warn("Gemini analysis failed on Vercel, falling back to heuristic offline analysis:", err);
-    }
+  } catch (err) {
+    console.warn("Gemini analysis failed on Vercel, falling back to heuristic offline analysis:", err instanceof Error ? err.name : "error");
   }
 
   // Heuristic Offline Fallback
@@ -387,6 +389,11 @@ app.post("/api/sync/relay/consume", async (req, res) => {
 app.post("/api/saju/chart", async (req, res) => {
   const { handleSajuChartPost } = await import("../server/api-lib/sajuChartRoute.ts");
   return handleSajuChartPost(req, res);
+});
+
+app.post("/api/ai/daily-tarot", async (req, res) => {
+  const { handleDailyTarotPost } = await import("../server/api-lib/dailyTarotRoute.ts");
+  return handleDailyTarotPost(req, res);
 });
 
 app.get(["/api/health", "/health"], (_req, res) => res.json({ status: "ok" }));

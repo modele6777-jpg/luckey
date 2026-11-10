@@ -60,6 +60,28 @@ function orientationOf(width: number, height: number): 'landscape' | 'portrait' 
   return width > height ? 'landscape' : 'portrait';
 }
 
+test('outer cover remains one screen through portrait and landscape rotation', () => {
+  const previous = globalThis.window;
+  const viewport = { innerWidth: 420, innerHeight: 960, matchMedia: () => ({ matches: false }) };
+  Object.assign(globalThis, { window: viewport });
+  try {
+    for (const [width, height] of [[420, 960], [960, 420], [390, 844], [844, 390]]) {
+      viewport.innerWidth = width;
+      viewport.innerHeight = height;
+      assert.equal(isDuoUnfoldedState().unfolded, false, `${width}x${height}`);
+      assert.equal(isDualPaneLayout(), false, `${width}x${height}`);
+    }
+    viewport.innerWidth = 960;
+    viewport.innerHeight = 840;
+    assert.equal(isDuoUnfoldedState().unfolded, true);
+    viewport.innerWidth = 840;
+    viewport.innerHeight = 960;
+    assert.equal(isDuoUnfoldedState().unfolded, true);
+  } finally {
+    Object.assign(globalThis, { window: previous });
+  }
+});
+
 test('folded portrait and landscape stay on one page', () => {
   for (const [width, height] of FOLDED) {
     const state = resolveDuoViewport(width, height);

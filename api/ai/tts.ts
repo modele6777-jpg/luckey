@@ -21,6 +21,8 @@ function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSa
   return Buffer.concat([header, pcmBuffer]);
 }
 
+let geminiAccountCooldownUntil = 0;
+
 function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
   if (dependencies?.apiKey) return [dependencies.apiKey];
   const keys: string[] = [];
@@ -30,7 +32,6 @@ function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
     process.env.GOOGLE_GENAI_API_KEY,
     process.env.AI_API_KEY,
     process.env.API_KEY,
-    "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA",
   ];
   for (const raw of candidates) {
     if (!raw) continue;
@@ -38,7 +39,7 @@ function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
     if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
       key = key.slice(1, -1).trim();
     }
-    if (key && !key.startsWith("sk-") && !key.startsWith("xai-") && !key.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A")) {
+    if (key && !key.startsWith("sk-") && !key.startsWith("xai-")) {
       if (!keys.includes(key)) keys.push(key);
     }
   }
@@ -47,7 +48,7 @@ function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
 
 export async function synthesizeWithGemini(text: string, voice?: string, dependencies?: { apiKey?: string; request?: typeof fetch; models?: string[] }): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
   const geminiKeys = getGeminiApiKeys(dependencies);
-  if (!geminiKeys.length) return null;
+  if (!geminiKeys.length || Date.now() < geminiAccountCooldownUntil) return null;
   const request = dependencies?.request || fetch;
   const voiceName = voice === "Charon" ? "Charon" : "Kore";
 
@@ -79,7 +80,11 @@ export async function synthesizeWithGemini(text: string, voice?: string, depende
         });
 
         if (!resp.ok) {
-          console.warn(`[ai/tts] Gemini key ...${geminiKey.slice(-6)} model ${model} HTTP ${resp.status}`);
+          console.warn(`[ai/tts] Gemini model ${model} HTTP ${resp.status}`);
+          if (resp.status === 401 || resp.status === 403 || resp.status === 429) {
+            geminiAccountCooldownUntil = Date.now() + 60_000;
+            return null;
+          }
           continue;
         }
 
