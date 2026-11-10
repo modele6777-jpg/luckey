@@ -1,4 +1,4 @@
-import { parseBirthTime } from './birthDateTime';
+import { parseBirthTime } from './birthDateTime.ts';
 /**
  * =========================================================================
  * PRISM 사주명리학(四柱命理學) 정밀 분석 및 본원 에너지 통합 엔진

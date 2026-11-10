@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.7.310",
+    "builtAt": "2026-11-10T07:09:20.000Z",
+    "summary": "사주와 MCP API가 응답 없이 멈추던 문제를 고치고, 코드에 적힌 Gemini 키를 뺐다",
+    "items": [
+      "Vercel Node ESM에서 확장자 없는 사주 import와 @ 경로가 실패해도 연결을 열어 두지 않고 JSON으로 응답",
+      "POST /api/saju/chart와 /api/mcp가 올바른 값과 잘못된 값 모두 바로 응답",
+      "POST /api/ai/daily-tarot를 서버와 Vercel이 같은 핸들러로 처리",
+      "Gemini 키는 환경 변수만 쓰고, 채팅과 기록 분석은 키가 없으면 503"
+    ]
+  },
+  {
     "version": "1.7.309",
     "builtAt": "2026-11-10T05:15:00.000Z",
     "summary": "펼친 Lucy+에서 좌측 코스믹 룸을 마지막으로 만지고 접으면 접힌 화면에 코스믹 룸이 나온다",

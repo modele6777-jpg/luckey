@@ -1,4 +1,4 @@
-import { resolveEffectiveSolarDate } from './lunarCalendar';
+import { resolveEffectiveSolarDate } from './lunarCalendar.ts';
 
 export type SajuInputCode =
   | 'invalid_time_format'
