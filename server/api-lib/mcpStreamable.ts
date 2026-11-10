@@ -5,8 +5,10 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 import { z } from 'zod';
 import {
+  MCP_AUTH_MESSAGE,
+  logRejectedMcpAuth,
   protectedReading,
-  readBearerToken,
+  readMcpCredential,
   rpcId,
   verifyMcpBearer,
 } from './mcpAuth.ts';
@@ -134,10 +136,10 @@ export async function handleStreamableMcpPost(req: Request, res: Response): Prom
   }
 
   const protection = protectedReading(body);
-  const presented = readBearerToken(req);
-  const authorized = verifyMcpBearer(presented);
+  const authorized = verifyMcpBearer(readMcpCredential(req));
   if (protection && !authorized) {
-    jsonRpcError(res, 401, rpcId(body), -32001, '인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.');
+    logRejectedMcpAuth(req);
+    jsonRpcError(res, 401, rpcId(body), -32001, MCP_AUTH_MESSAGE);
     return;
   }
   if (authorized) {

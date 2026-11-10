@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.7.317",
+    "builtAt": "2026-11-10T10:31:25.000Z",
+    "summary": "Grok 커넥터가 URL의 key로 LUCKEY MCP에 연결된다",
+    "items": [
+      "MCP 토큰을 Authorization Bearer와 URL 쿼리 key, token으로 받음",
+      "비교는 24자 이상 비밀의 SHA-256과 상수 시간 비교",
+      "거절 로그는 key와 token, Bearer 값을 가림",
+      "Vercel /api/mcp rewrite는 쿼리 문자열을 유지"
+    ]
+  },
+  {
     "version": "1.7.316",
     "builtAt": "2026-11-10T09:47:46.000Z",
     "summary": "운영에서 끊기던 비밀 쪽지·동기화·도슨트 API를 고치고 공개 프록시를 막음",

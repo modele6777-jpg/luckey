@@ -84,6 +84,14 @@
       "destination": "/api/bluebird/docent"
     },
     {
+      "source": "/api/mcp",
+      "destination": "/api"
+    },
+    {
+      "source": "/api/mcp/(.*)",
+      "destination": "/api"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api"
     },

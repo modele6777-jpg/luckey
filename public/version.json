@@ -1,13 +1,11 @@
 {
-  "version": "1.7.316",
-  "builtAt": "2026-11-10T09:47:46.000Z",
-  "summary": "운영에서 끊기던 비밀 쪽지·동기화·도슨트 API를 고치고 공개 프록시를 막음",
+  "version": "1.7.317",
+  "builtAt": "2026-11-10T10:31:25.000Z",
+  "summary": "Grok 커넥터가 URL의 key로 LUCKEY MCP에 연결된다",
   "items": [
-    "비밀 축복과 기분 추천을 Vercel 엔트리에 등록하고 같은 핸들러를 씀",
-    "서버 TypeScript 상대 import에 .ts를 붙여 모듈을 찾게 함",
-    "파랑새·뮤즈 도슨트는 키나 시간이 없어도 큐레이션 답으로 돌아옴",
-    "일기 분석 실패를 기록하고 source로 모델과 엔진을 구분",
-    "채팅 프록시와 음성·타로·추천·뮤즈는 앱 출처와 본문 크기만 허용",
-    "robots.txt, sitemap.xml, favicon, /health가 index.html로 내려가지 않음"
+    "MCP 토큰을 Authorization Bearer와 URL 쿼리 key, token으로 받음",
+    "비교는 24자 이상 비밀의 SHA-256과 상수 시간 비교",
+    "거절 로그는 key와 token, Bearer 값을 가림",
+    "Vercel /api/mcp rewrite는 쿼리 문자열을 유지"
   ]
 }
