@@ -11,9 +11,13 @@ export type SajuInputCode =
   | 'calculation_failed';
 
 export class SajuInputError extends Error {
-  constructor(message: string, readonly code: SajuInputCode, readonly status = 400) {
+  readonly code: SajuInputCode;
+  readonly status: number;
+  constructor(message: string, code: SajuInputCode, status = 400) {
     super(message);
     this.name = 'SajuInputError';
+    this.code = code;
+    this.status = status;
   }
 }
 

@@ -4,6 +4,14 @@ import express from "express";
 import { readFileSync } from "node:fs";
 import { getGeminiApiKey } from "../server/geminiKey.ts";
 import { installAsyncRouteGuard } from "../server/api-lib/routeGuard.ts";
+import { handleDailyTarotPost } from "../server/api-lib/dailyTarotRoute.ts";
+import {
+  handleMCPDirectPost,
+  handleMCPPostMessage,
+  handleMCPSseStream,
+  handleStreamableMethodNotAllowed,
+} from "../server/api-lib/mcpHandler.ts";
+import { handleSajuChartPost } from "../server/api-lib/sajuChartRoute.ts";
 
 const app = express();
 installAsyncRouteGuard(app);
@@ -33,22 +41,18 @@ app.use((req, _res, next) => {
 
 // MCP routes are also needed in the Vercel entrypoint (not only server.app.ts).
 app.get(["/api/mcp", "/api/mcp/sse"], async (req, res) => {
-  const { handleMCPSseStream } = await import("../server/api-lib/mcpHandler.ts");
   return handleMCPSseStream(req, res);
 });
 
 app.post(["/api/mcp", "/api/mcp/sse"], async (req, res) => {
-  const { handleMCPDirectPost } = await import("../server/api-lib/mcpHandler.ts");
   return handleMCPDirectPost(req, res);
 });
 
 app.post("/api/mcp/messages", async (req, res) => {
-  const { handleMCPPostMessage } = await import("../server/api-lib/mcpHandler.ts");
   return handleMCPPostMessage(req, res);
 });
 
 app.delete("/api/mcp", async (req, res) => {
-  const { handleStreamableMethodNotAllowed } = await import("../server/api-lib/mcpHandler.ts");
   return handleStreamableMethodNotAllowed(req, res);
 });
 
@@ -387,12 +391,10 @@ app.post("/api/sync/relay/consume", async (req, res) => {
 });
 
 app.post("/api/saju/chart", async (req, res) => {
-  const { handleSajuChartPost } = await import("../server/api-lib/sajuChartRoute.ts");
   return handleSajuChartPost(req, res);
 });
 
 app.post("/api/ai/daily-tarot", async (req, res) => {
-  const { handleDailyTarotPost } = await import("../server/api-lib/dailyTarotRoute.ts");
   return handleDailyTarotPost(req, res);
 });
 

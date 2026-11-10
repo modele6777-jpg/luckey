@@ -2,9 +2,11 @@ const READING_PATHS = ['/api/ai/daily-tarot', '/api/saju/chart'] as const;
 export type ReadingApiPath = (typeof READING_PATHS)[number];
 
 export class ReadingApiError extends Error {
-  constructor(readonly status: number, message: string) {
+  readonly status: number;
+  constructor(status: number, message: string) {
     super(message);
     this.name = 'ReadingApiError';
+    this.status = status;
   }
 }
 
