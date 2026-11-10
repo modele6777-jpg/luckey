@@ -201,9 +201,50 @@ function isDanglingAction(sentence: string): boolean {
   return !hasConcreteAction(sentence);
 }
 
+/** Section-3 headings the daily prompt asks the model to declare. They are not a decision sentence. */
+export const DIRECTION_TITLE_STUBS = ['확실한 추진', '신중한 내실 다지기', '과감한 결단', '유연한 관조'] as const;
+
+export function splitDirectionStub(body: string): { stub: string; rest: string } | null {
+  const text = body.replace(/\*\*/g, '').replace(/^\[|\]$/g, '').trim();
+  for (const label of DIRECTION_TITLE_STUBS) {
+    const bare = text.replace(/[.!?…\s]+$/g, '');
+    if (bare === label) return { stub: label, rest: '' };
+    const matched = text.match(new RegExp(`^${label}\\s*[:：]\\s*([\\s\\S]*)$`));
+    if (matched) return { stub: label, rest: matched[1].trim() };
+  }
+  return null;
+}
+
+export function isDirectionTitleStub(body: string): boolean {
+  const split = splitDirectionStub(body);
+  if (!split) return false;
+  return split.rest.replace(/[.!?…\s]/g, '').length < 12;
+}
+
+function finishSummarySentence(text: string): string {
+  const trimmed = text.replace(/[\s.…·,]+$/g, '').trim();
+  if (!trimmed) return trimmed;
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
+/** Keep a real decision sentence. A bare direction title becomes this card's sentence. */
+export function repairDirectionSummaryLine(diagnosis: string, cards?: any[]): string {
+  if (!diagnosis || !/\[방향과\s*결단\]/.test(diagnosis)) return diagnosis;
+  return diagnosis.replace(/^(\s*[-*•]?\s*\[방향과\s*결단\]\s*)(.+)$/m, (_full, prefix: string, body: string) => {
+    const split = splitDirectionStub(String(body).trim());
+    if (!split) return `${prefix}${String(body).trim()}`;
+    const name = String(cards?.[0]?.nameKo || cards?.[0]?.name || '');
+    const rest = split.rest.trim();
+    const restIsSentence = rest.length >= 24 && (!name || rest.includes(name));
+    const sentence = restIsSentence ? finishSummarySentence(rest) : finishSummarySentence(groundTarotSummaryParts(cards).decision);
+    return `${prefix}${sentence}`;
+  });
+}
+
 function classifySummarySentence(sentence: string, role: SummaryRole): 'good' | 'skip' {
   const s = sentence.trim();
   if (s.length < 8) return 'skip';
+  if (role === 'decision' && isDirectionTitleStub(s)) return 'skip';
   if (GENERIC_SUMMARY.test(s) || isPictureOnly(s)) return 'skip';
   if (isCautionTeaser(s) || isDanglingAction(s)) return 'skip';
   if (role === 'energy' && /(?:하세요|보세요|십시오|마세요|해야\s*합니다|할\s*때입니다|될\s*것입니다|할\s*것입니다|전환점에\s*서\s*있습니다)\s*[.!?]?$/u.test(s)) return 'skip';

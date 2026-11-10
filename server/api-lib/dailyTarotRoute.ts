@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import { buildSpecificTarotDailyOracle } from '../../src/lib/dailyTarotOracle.ts';
+import { repairDirectionSummaryLine } from '../../src/lib/tarotSummaryUtils.ts';
 import { describeGeminiError, getGeminiApiKey } from '../geminiKey.ts';
 
 export interface DailyTarotModelResponse {
@@ -233,7 +234,7 @@ export async function handleDailyTarotPost(req: Request, res: Response, options:
 [✨ 핵심 3줄 요약 — 리딩 결과의 최상단에 반드시 아래 형식으로 3줄 요약을 가장 먼저 작성하십시오]
 [핵심 3줄 요약]
 - [현재 에너지] (1. 카드가 비추는 당신의 마음과 현재 에너지 섹션의 제목에 맞춘 핵심 1문장 요약)
-- [방향과 결단] (3. 트리니티 마스터의 직관적 결단 & 방향성 섹션의 제목에 맞춘 최종 판정 핵심 1문장 요약)
+- [방향과 결단] 이 카드의 이름과, 그 카드가 오늘 가리키는 구체적인 방향을 한 문장으로 적으십시오. "과감한 결단", "확실한 추진", "신중한 내실 다지기", "유연한 관조"처럼 제목만 적고 끝내는 문장은 금지입니다.
 - [실천 처방] (4. 운의 흐름을 바꿀 마스터의 실천 처방 섹션의 제목에 맞춘 구체적 행동 조언 핵심 1문장 요약)
 
 [★ 중복 생성 절대 금지 — 본문 및 하단 중복 기입 전면 배제]
@@ -251,7 +252,7 @@ export async function handleDailyTarotPost(req: Request, res: Response, options:
 
 ### 🔮 3. 트리니티 마스터의 직관적 결단 & 방향성
 - 오늘 하루에 대해 카드가 내린 최종 판정을 명확히 짚어주십시오.
-- **[확실한 추진 / 신중한 내실 다지기 / 과감한 결단 / 유연한 관조]** 중 굵은 글씨로 선언하고, 왜 이 방향으로 나아가야 하는지 그 필연적 이유를 확신에 찬 목소리로 들려주십시오.
+- 본문에서는 방향을 한 문장으로 설명하십시오. "확실한 추진", "신중한 내실 다지기", "과감한 결단", "유연한 관조"는 제목으로만 두지 말고, 왜 이 카드가 그 방향인지를 카드 이름과 함께 문장 안에 적으십시오. [방향과 결단] 요약 줄에는 그 제목만 옮겨 적지 마십시오.
 
 ### 🌿 4. 운의 흐름을 바꿀 마스터의 실천 처방 (개운 가이드)
 - 내담자가 오늘 당장 행운을 끌어당기고 액운을 피할 수 있는 현실적이고 구체적인 행동 처방(마음가짐, 소통 방식, 피해야 할 행동, 행운의 행동 등)을 다정하면서도 명확하게 짚어주십시오.
@@ -274,7 +275,7 @@ export async function handleDailyTarotPost(req: Request, res: Response, options:
       const response = await callModel(apiKey, contents, config);
       const parsed = parseOracleJson(response.text);
       if (parsed?.diagnosis) {
-        parsed.diagnosis = cleanDailyTarotDiagnosis(String(parsed.diagnosis));
+        parsed.diagnosis = repairDirectionSummaryLine(cleanDailyTarotDiagnosis(String(parsed.diagnosis)), [card]);
         parsed.source = 'model';
         res.setHeader?.('x-luckey-oracle-source', 'model');
         return res.status(200).json(parsed);
@@ -288,5 +289,6 @@ export async function handleDailyTarotPost(req: Request, res: Response, options:
   }
 
   res.setHeader?.('x-luckey-oracle-source', 'engine');
-  return res.status(200).json({ ...buildSpecificTarotDailyOracle(card, mode), source: 'engine' });
+  const local = buildSpecificTarotDailyOracle(card, mode);
+  return res.status(200).json({ ...local, diagnosis: repairDirectionSummaryLine(local.diagnosis, [card]), source: 'engine' });
 }
