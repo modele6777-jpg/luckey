@@ -78,6 +78,444 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+
+  // ==========================================================================
+  // WEB AUDIO ENGINE: 528Hz Pure Sine & Soothing Rain Ambience
+  // ==========================================================================
+  let calmAudioCtx = null;
+  let solfeggioOsc = null;
+  let solfeggioGain = null;
+  let rainNoiseNode = null;
+  let rainGain = null;
+  let globalSensoryVol = 0.3;
+
+  function getCalmAudioContext() {
+    if (!calmAudioCtx) {
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtxClass) calmAudioCtx = new AudioCtxClass();
+    }
+    if (calmAudioCtx && calmAudioCtx.state === 'suspended') {
+      calmAudioCtx.resume();
+    }
+    return calmAudioCtx;
+  }
+
+  function toggle528Hz(forcePlay) {
+    const ctx = getCalmAudioContext();
+    if (!ctx) return false;
+
+    if (solfeggioOsc) {
+      try {
+        solfeggioGain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+        setTimeout(() => {
+          if (solfeggioOsc) {
+            solfeggioOsc.stop();
+            solfeggioOsc.disconnect();
+            solfeggioOsc = null;
+          }
+        }, 350);
+      } catch (e) {}
+      if (forcePlay === undefined || forcePlay === false) return false;
+    }
+
+    if (forcePlay === undefined || forcePlay === true) {
+      try {
+        solfeggioOsc = ctx.createOscillator();
+        solfeggioGain = ctx.createGain();
+        solfeggioOsc.type = 'sine';
+        solfeggioOsc.frequency.setValueAtTime(528, ctx.currentTime);
+        solfeggioGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        solfeggioGain.gain.linearRampToValueAtTime(globalSensoryVol * 0.45, ctx.currentTime + 1.0);
+        solfeggioOsc.connect(solfeggioGain);
+        solfeggioGain.connect(ctx.destination);
+        solfeggioOsc.start();
+        return true;
+      } catch (e) {
+        console.warn('528Hz synthesis error:', e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  function toggleRainNoise(forcePlay) {
+    const ctx = getCalmAudioContext();
+    if (!ctx) return false;
+
+    if (rainNoiseNode) {
+      try {
+        rainGain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+        setTimeout(() => {
+          if (rainNoiseNode) {
+            rainNoiseNode.stop();
+            rainNoiseNode.disconnect();
+            rainNoiseNode = null;
+          }
+        }, 450);
+      } catch (e) {}
+      if (forcePlay === undefined || forcePlay === false) return false;
+    }
+
+    if (forcePlay === undefined || forcePlay === true) {
+      try {
+        const bufferSize = 2 * ctx.sampleRate;
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+          b6 = white * 0.115926;
+        }
+
+        const whiteNoise = ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+        rainGain = ctx.createGain();
+        rainGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        rainGain.gain.linearRampToValueAtTime(globalSensoryVol * 0.65, ctx.currentTime + 1.2);
+        whiteNoise.connect(rainGain);
+        rainGain.connect(ctx.destination);
+        whiteNoise.start();
+        rainNoiseNode = whiteNoise;
+        return true;
+      } catch (e) {
+        console.warn('Rain noise synthesis error:', e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  // ==========================================================================
+  // TAB 2: SOS SENSORY TOOLBOX (연습 3 스트레스 해소 도구 상자 기반)
+  // ==========================================================================
+  function initSensoryToolbox() {
+    const btnSosReset = document.getElementById('btn-sos-quick-reset');
+    const bannerSos = document.getElementById('sos-live-banner');
+    const timerSos = document.getElementById('sos-live-timer');
+    const guideSos = document.getElementById('sos-live-guide');
+    const btnSosStop = document.getElementById('btn-sos-stop');
+
+    let sosCountdown = 60;
+    let sosInterval = null;
+
+    const sosGuides = [
+      '1단계: 어깨와 턱의 힘을 툭 빼고, 발바닥이 단단한 땅을 딛고 있음을 느낍니다.',
+      '2단계: 눈에 보이는 안정적인 색깔 3가지를 가만히 마음속으로 짚어봅니다.',
+      '3단계: 손바닥을 가슴에 얹고 숨이 오르내리는 따뜻한 온기에 집중합니다.',
+      '4단계: 코로 시원한 공기가 들어오고 입으로 따뜻한 숨이 나가는 흐름을 봅니다.',
+      '5단계: "지금 이 순간, 나는 안전하다. 내 신경계는 편안해지고 있다"고 속삭입니다.'
+    ];
+
+    function stopSosReset() {
+      if (sosInterval) {
+        clearInterval(sosInterval);
+        sosInterval = null;
+      }
+      if (bannerSos) bannerSos.style.display = 'none';
+      if (btnSosReset) {
+        btnSosReset.disabled = false;
+        btnSosReset.querySelector('.sos-text').textContent = '1분 SOS 즉시 진정';
+      }
+    }
+
+    if (btnSosReset) {
+      btnSosReset.addEventListener('click', () => {
+        if (sosInterval) return;
+        if (bannerSos) bannerSos.style.display = 'flex';
+        btnSosReset.disabled = true;
+        btnSosReset.querySelector('.sos-text').textContent = 'SOS 진정 진행 중...';
+        sosCountdown = 60;
+        if (timerSos) timerSos.textContent = '60s';
+        if (guideSos) guideSos.textContent = sosGuides[0];
+
+        // 528Hz 안정 톤 자동 재생
+        toggle528Hz(true);
+        const btn528 = document.getElementById('btn-toggle-528');
+        const lbl528 = document.getElementById('label-528');
+        if (btn528) btn528.classList.add('active');
+        if (lbl528) lbl528.textContent = '528Hz 평온 톤 (ON)';
+
+        sosInterval = setInterval(() => {
+          sosCountdown--;
+          if (timerSos) timerSos.textContent = `${sosCountdown}s`;
+
+          const guideIdx = Math.min(4, Math.floor((60 - sosCountdown) / 12));
+          if (guideSos && sosGuides[guideIdx]) {
+            guideSos.textContent = sosGuides[guideIdx];
+          }
+
+          if (sosCountdown <= 0) {
+            stopSosReset();
+            if (guideSos) guideSos.textContent = '1분 긴급 진정이 완료되었습니다. 신경계가 평온의 중심으로 돌아왔습니다 🌱';
+          }
+        }, 1000);
+      });
+    }
+
+    if (btnSosStop) btnSosStop.addEventListener('click', stopSosReset);
+
+    // 시각 씬 선택
+    const sceneBtns = document.querySelectorAll('.btn-scene-select');
+    const scenes = {
+      forest: document.getElementById('scene-forest'),
+      ocean: document.getElementById('scene-ocean'),
+      fire: document.getElementById('scene-fire')
+    };
+
+    sceneBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetScene = btn.dataset.scene;
+        sceneBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        Object.keys(scenes).forEach(k => {
+          if (scenes[k]) {
+            if (k === targetScene) scenes[k].classList.add('active');
+            else scenes[k].classList.remove('active');
+          }
+        });
+      });
+    });
+
+    // 528Hz & 빗소리 토글
+    const btn528 = document.getElementById('btn-toggle-528');
+    const lbl528 = document.getElementById('label-528');
+    if (btn528) {
+      btn528.addEventListener('click', () => {
+        const isPlaying = toggle528Hz();
+        if (isPlaying) {
+          btn528.classList.add('active');
+          if (lbl528) lbl528.textContent = '528Hz 평온 톤 (ON)';
+        } else {
+          btn528.classList.remove('active');
+          if (lbl528) lbl528.textContent = '528Hz 평온 톤 (OFF)';
+        }
+      });
+    }
+
+    const btnRain = document.getElementById('btn-toggle-rain');
+    const lblRain = document.getElementById('label-rain');
+    if (btnRain) {
+      btnRain.addEventListener('click', () => {
+        const isPlaying = toggleRainNoise();
+        if (isPlaying) {
+          btnRain.classList.add('active');
+          if (lblRain) lblRain.textContent = '안개비 백색소음 (ON)';
+        } else {
+          btnRain.classList.remove('active');
+          if (lblRain) lblRain.textContent = '안개비 백색소음 (OFF)';
+        }
+      });
+    }
+
+    // 볼륨 슬라이더
+    const volSlider = document.getElementById('sensory-volume');
+    if (volSlider) {
+      volSlider.addEventListener('input', (e) => {
+        globalSensoryVol = parseFloat(e.target.value) / 100;
+        const ctx = getCalmAudioContext();
+        if (ctx) {
+          if (solfeggioGain) solfeggioGain.gain.setValueAtTime(globalSensoryVol * 0.45, ctx.currentTime);
+          if (rainGain) rainGain.gain.setValueAtTime(globalSensoryVol * 0.65, ctx.currentTime);
+        }
+      });
+    }
+
+    // 촉각 펄스 인터랙션
+    const pulseCircle = document.getElementById('tactile-pulse-circle');
+    const pulseText = document.getElementById('tactile-pulse-text');
+    let isPulsing = false;
+    if (pulseCircle) {
+      pulseCircle.addEventListener('click', () => {
+        isPulsing = !isPulsing;
+        if (isPulsing) {
+          pulseCircle.classList.add('pulsing');
+          if (pulseText) pulseText.textContent = '가슴에 손을 얹고 온기를 느껴보세요';
+          if (navigator.vibrate) {
+            try { navigator.vibrate([40, 80, 40]); } catch (e) {}
+          }
+        } else {
+          pulseCircle.classList.remove('pulsing');
+          if (pulseText) pulseText.textContent = '터치하여 손바닥 온기 느끼기';
+        }
+      });
+    }
+
+    // 아로마 칩
+    const aromaChips = document.querySelectorAll('.aroma-chip-item');
+    aromaChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        aromaChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // 마인드풀 시핑 타이머
+    const btnSip = document.getElementById('btn-start-sip');
+    const sipTimerDisplay = document.getElementById('sip-timer-display');
+    let sipInterval = null;
+    let sipCount = 60;
+    if (btnSip) {
+      btnSip.addEventListener('click', () => {
+        if (sipInterval) {
+          clearInterval(sipInterval);
+          sipInterval = null;
+          btnSip.textContent = '시작 (60초)';
+          if (sipTimerDisplay) sipTimerDisplay.textContent = '따뜻한 음료 한 잔을 준비하고 시작하세요.';
+          return;
+        }
+
+        sipCount = 60;
+        btnSip.textContent = '중단';
+        if (sipTimerDisplay) sipTimerDisplay.textContent = '음료를 천천히 한 모금 머금고 입안의 온도를 느껴보세요... (60s)';
+
+        sipInterval = setInterval(() => {
+          sipCount--;
+          if (sipTimerDisplay) {
+            if (sipCount > 40) {
+              sipTimerDisplay.textContent = `음료의 맛과 향이 혀끝에 머무는 감각에 집중합니다... (${sipCount}s)`;
+            } else if (sipCount > 20) {
+              sipTimerDisplay.textContent = `목을 타고 가슴 깊이 내려가는 따스함을 느껴보세요... (${sipCount}s)`;
+            } else {
+              sipTimerDisplay.textContent = `온몸으로 퍼져나가는 편안한 이완을 음미합니다... (${sipCount}s)`;
+            }
+          }
+          if (sipCount <= 0) {
+            clearInterval(sipInterval);
+            sipInterval = null;
+            btnSip.textContent = '다시 시작';
+            if (sipTimerDisplay) sipTimerDisplay.textContent = '따뜻한 한 모금이 당신의 몸 전체를 포근하게 안아주었습니다 🌱';
+          }
+        }, 1000);
+      });
+    }
+  }
+
+  // ==========================================================================
+  // TAB 3: NON-DOING ENERGY RECHARGE LOUNGE (연습 1 무목적 쉼 기반)
+  // ==========================================================================
+  function initEnergyRestLounge() {
+    let selectedMinutes = 5;
+    let restRemainingSec = 5 * 60;
+    let restTotalSec = 5 * 60;
+    let restTimerInterval = null;
+    let isResting = false;
+
+    const durationBtns = document.querySelectorAll('.btn-duration-pill');
+    const btnStart = document.getElementById('btn-rest-start');
+    const btnReset = document.getElementById('btn-rest-reset');
+    const timeDisplay = document.getElementById('rest-time-display');
+    const fillBar = document.getElementById('battery-fill-bar');
+    const pctText = document.getElementById('battery-percent-text');
+    const statusGuide = document.getElementById('rest-status-guide');
+
+    const restAffirmations = [
+      "휴식은 일을 끝낸 뒤에 받는 보상이 아니라, 생명을 지탱하는 기본 연료입니다.",
+      "아무것도 생산하지 않는 순간에도 당신의 존재는 이미 완전하고 아름답습니다.",
+      "쉼을 죄책감 없이 허락할 때, 당신의 영혼은 다시 맑게 피어납니다.",
+      "세상의 빠른 보폭에 맞추려 하지 마세요. 당신만의 고유한 속도가 가장 안전합니다.",
+      "내가 멈추어도 세상은 무너지지 않으며, 멈춤 속에서 가장 눈부신 지혜가 샘솟습니다."
+    ];
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateBatteryUI() {
+      if (timeDisplay) timeDisplay.textContent = formatTime(restRemainingSec);
+      const progress = Math.min(100, Math.round(((restTotalSec - restRemainingSec) / restTotalSec) * 100));
+      const batteryLevel = Math.min(100, Math.max(15, progress));
+      if (fillBar) fillBar.style.width = `${batteryLevel}%`;
+      if (pctText) pctText.textContent = `${batteryLevel}%`;
+    }
+
+    durationBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (isResting) return;
+        durationBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedMinutes = parseInt(btn.dataset.minutes, 10) || 5;
+        restTotalSec = selectedMinutes * 60;
+        restRemainingSec = restTotalSec;
+        updateBatteryUI();
+      });
+    });
+
+    if (btnStart) {
+      btnStart.addEventListener('click', () => {
+        if (isResting) {
+          // Pause
+          clearInterval(restTimerInterval);
+          restTimerInterval = null;
+          isResting = false;
+          btnStart.querySelector('#rest-start-text').textContent = '쉼 이어가기';
+          if (statusGuide) statusGuide.textContent = '"잠시 멈추었습니다. 편안할 때 언제든 다시 이어가세요."';
+          return;
+        }
+
+        // Start
+        isResting = true;
+        btnStart.querySelector('#rest-start-text').textContent = '쉼 일시정지';
+        if (statusGuide) statusGuide.textContent = '"지금 당신은 아무것도 증명할 필요가 없습니다. 그저 숨 쉬세요."';
+
+        restTimerInterval = setInterval(() => {
+          restRemainingSec--;
+          updateBatteryUI();
+
+          if (restRemainingSec <= 0) {
+            clearInterval(restTimerInterval);
+            restTimerInterval = null;
+            isResting = false;
+            btnStart.querySelector('#rest-start-text').textContent = '쉼 완료';
+            btnStart.disabled = true;
+            if (statusGuide) {
+              statusGuide.textContent = '🎉 온전한 무목적 쉼이 완료되었습니다! 맑아진 에너지를 만끽하세요.';
+            }
+          }
+        }, 1000);
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        if (restTimerInterval) clearInterval(restTimerInterval);
+        restTimerInterval = null;
+        isResting = false;
+        restRemainingSec = restTotalSec;
+        if (btnStart) {
+          btnStart.disabled = false;
+          btnStart.querySelector('#rest-start-text').textContent = '무목적 쉼 시작하기';
+        }
+        if (statusGuide) {
+          statusGuide.textContent = '"당신은 아무것도 생산하지 않아도 온전히 사랑받을 가치가 있습니다."';
+        }
+        updateBatteryUI();
+      });
+    }
+
+    // 확언 새로고침
+    const btnNextAff = document.getElementById('btn-next-aff');
+    const affQuote = document.getElementById('rest-aff-quote');
+    let affIdx = 0;
+    if (btnNextAff && affQuote) {
+      btnNextAff.addEventListener('click', () => {
+        affIdx = (affIdx + 1) % restAffirmations.length;
+        affQuote.textContent = `"${restAffirmations[affIdx]}"`;
+      });
+    }
+
+    updateBatteryUI();
+  }
+
   // 전역 인라인 및 모듈 간 탭 전환 지원
   window.switchTab = switchTab;
 
@@ -568,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getGlobalExerciseIndex(chapter, index) {
-    const chapterOffsets = { 1: 0, 2: 12, 3: 22 };
+    const chapterOffsets = { 1: 0, 2: 10, 3: 20, 4: 30, 5: 40 };
     return (chapterOffsets[chapter] || 0) + parseInt(index, 10);
   }
 
@@ -602,16 +1040,16 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="ex-card-top-line">
           <span class="ex-card-tag">${chapter}장 · ${tag}</span>
-          <span class="ex-card-page">비전 ${page}P</span>
+          <span class="ex-card-page">${page}P</span>
         </div>
-        <h3 class="ex-card-title">${icon} 개운법 ${index}. ${title}</h3>
+        <h3 class="ex-card-title">${icon} 연습 ${ex.globalIndex}. ${title}</h3>
         <div class="ex-card-subtitle">${subtitle}</div>
         <p class="ex-card-description">${description}</p>
         <div class="ex-card-footer-btns">
           <button class="btn-card-launch" onclick="window.startPractice(${ex.globalIndex})">
-            <span>🎯 개운 실천하기</span>
+            <span>🎯 실천하기</span>
           </button>
-          <button class="btn-card-chat" onclick="window.askAboutPractice(${ex.globalIndex})" title="루시에게 이 개운법 질문하기">
+          <button class="btn-card-chat" onclick="window.askAboutPractice(${ex.globalIndex})" title="루시에게 이 연습 질문하기">
             💬 루시에게 질문
           </button>
         </div>
@@ -1562,9 +2000,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalEntries = records.length;
     const uniqueIndices = new Set(records.filter(r => r.exerciseIdx && !String(r.title).includes('처방전')).map(r => r.exerciseIdx));
     const completedCount = uniqueIndices.size;
-    const completionRate = Math.min(100, Math.round((completedCount / 40) * 100));
+    const totalExercisesCount = (window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length) || 50;
+    const completionRate = Math.min(100, Math.round((completedCount / totalExercisesCount) * 100));
 
-    // 챕터별 완주 개수 계산
+    // 챕터별(1~5장) 완주 개수 계산
     const exercisesMap = {};
     if (window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length > 0) {
       window.PRACTICE_EXERCISES.forEach(ex => {
@@ -1572,14 +2011,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    let ch1Count = 0;
-    let ch2Count = 0;
-    let ch3Count = 0;
+    let ch1Count = 0, ch2Count = 0, ch3Count = 0, ch4Count = 0, ch5Count = 0;
     uniqueIndices.forEach(idx => {
       const ch = exercisesMap[idx];
       if (ch === 1) ch1Count++;
       else if (ch === 2) ch2Count++;
       else if (ch === 3) ch3Count++;
+      else if (ch === 4) ch4Count++;
+      else if (ch === 5) ch5Count++;
     });
 
     // 동그란 원형 프로그레스 차트 갱신
@@ -1598,9 +2037,9 @@ document.addEventListener('DOMContentLoaded', () => {
       circleRing.style.strokeDashoffset = offset.toFixed(2);
     }
     if (circlePercent) circlePercent.textContent = `${completionRate}%`;
-    if (circleCount) circleCount.textContent = `${completedCount} / 40개`;
+    if (circleCount) circleCount.textContent = `${completedCount} / ${totalExercisesCount}개`;
     if (circleHeading) {
-      circleHeading.textContent = `40가지 개운법 중 ${completedCount}개 완주 (${completionRate}%)`;
+      circleHeading.textContent = `50가지 실천 연습 중 ${completedCount}개 완주 (${completionRate}%)`;
     }
     if (circleStatus) {
       if (completedCount === 0) {
@@ -1624,32 +2063,42 @@ document.addEventListener('DOMContentLoaded', () => {
         circleStatus.style.background = '#fff8e1';
         circleStatus.style.color = '#f57f17';
       } else {
-        circleStatus.textContent = '🏆 40가지 개운 리추얼 마스터 달성!';
+        circleStatus.textContent = '🏆 50가지 민감성 실천 마스터 달성!';
         circleStatus.style.background = 'linear-gradient(135deg, #ffd700, #ffb300)';
         circleStatus.style.color = '#000000';
       }
     }
 
-    if (elCircleCh1) elCircleCh1.textContent = `${ch1Count} / 12개 (${Math.round((ch1Count / 12) * 100)}%)`;
+    const elCircleCh4 = document.getElementById('wb-circle-ch4');
+    const elCircleCh5 = document.getElementById('wb-circle-ch5');
+    if (elCircleCh1) elCircleCh1.textContent = `${ch1Count} / 10개 (${Math.round((ch1Count / 10) * 100)}%)`;
     if (elCircleCh2) elCircleCh2.textContent = `${ch2Count} / 10개 (${Math.round((ch2Count / 10) * 100)}%)`;
-    if (elCircleCh3) elCircleCh3.textContent = `${ch3Count} / 18개 (${Math.round((ch3Count / 18) * 100)}%)`;
+    if (elCircleCh3) elCircleCh3.textContent = `${ch3Count} / 10개 (${Math.round((ch3Count / 10) * 100)}%)`;
+    if (elCircleCh4) elCircleCh4.textContent = `${ch4Count} / 10개 (${Math.round((ch4Count / 10) * 100)}%)`;
+    if (elCircleCh5) elCircleCh5.textContent = `${ch5Count} / 10개 (${Math.round((ch5Count / 10) * 100)}%)`;
 
     // 필터별 개수 카운팅
     const cntAll = totalEntries;
     const cntCh1 = records.filter(r => String(r.chapter) === '1').length;
     const cntCh2 = records.filter(r => String(r.chapter) === '2').length;
     const cntCh3 = records.filter(r => String(r.chapter) === '3').length;
+    const cntCh4 = records.filter(r => String(r.chapter) === '4').length;
+    const cntCh5 = records.filter(r => String(r.chapter) === '5').length;
     const cntRx = records.filter(r => String(r.title).includes('처방전') || r.isRx).length;
 
     const elCntAll = document.getElementById('wb-cnt-all');
     const elCntCh1 = document.getElementById('wb-cnt-ch1');
     const elCntCh2 = document.getElementById('wb-cnt-ch2');
     const elCntCh3 = document.getElementById('wb-cnt-ch3');
+    const elCntCh4 = document.getElementById('wb-cnt-ch4');
+    const elCntCh5 = document.getElementById('wb-cnt-ch5');
     const elCntRx = document.getElementById('wb-cnt-rx');
     if (elCntAll) elCntAll.textContent = cntAll;
     if (elCntCh1) elCntCh1.textContent = cntCh1;
     if (elCntCh2) elCntCh2.textContent = cntCh2;
     if (elCntCh3) elCntCh3.textContent = cntCh3;
+    if (elCntCh4) elCntCh4.textContent = cntCh4;
+    if (elCntCh5) elCntCh5.textContent = cntCh5;
     if (elCntRx) elCntRx.textContent = cntRx;
 
     // SUD 평균 점수 계산
@@ -1666,7 +2115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const elStatLast = document.getElementById('wb-stat-last');
     const elStatLastCh = document.getElementById('wb-stat-last-chapter');
 
-    if (elStatRate) elStatRate.textContent = `${uniqueIndices.size} / 40개 (${completionRate}%)`;
+    if (elStatRate) elStatRate.textContent = `${uniqueIndices.size} / ${totalExercisesCount}개 (${completionRate}%)`;
     if (elStatBar) elStatBar.style.width = `${completionRate}%`;
     if (elStatCount) elStatCount.textContent = `${totalEntries}회`;
 
@@ -1720,10 +2169,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="wb-empty-title">아직 기록된 소원 확언 & 운기 노트가 없습니다</div>
             <p class="wb-empty-desc">
               막힌 운은 작은 실천과 확언을 기록할 때 비로소 트이기 시작합니다.<br>
-              40가지 개운 리추얼이나 3분 액운 정화에서 오늘의 첫 개운을 시작해 보세요.
+              50가지 민감성 실천 연습이나 3분 액운 정화에서 오늘의 첫 개운을 시작해 보세요.
             </p>
             <div class="wb-empty-btns">
-              <button class="btn-copper" onclick="switchTab('tab-exercises')">🎯 40가지 개운 리추얼 가기</button>
+              <button class="btn-copper" onclick="switchTab('tab-exercises')">🎯 50가지 민감성 실천 연습 가기</button>
               <button class="btn-sage" onclick="launchRandomPractice()">🎲 오늘의 랜덤 개운법 뽑기</button>
             </div>
           </div>
@@ -1743,7 +2192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       cardsHtml = filtered.map(r => {
         const isRx = String(r.title).includes('처방전') || String(r.title).includes('개운부적') || r.isRx;
-        const typeBadge = isRx ? '🔮 3분 개운부적' : '🎯 40가지 개운법';
+        const typeBadge = isRx ? '🔮 3분 개운부적' : '🎯 50가지 실천 연습';
         const typeClass = isRx ? 'wb-badge-rx' : 'wb-badge-ch';
         const sud = r.sudScore || (r.answers ? r.answers['sud_score'] : null);
         let sudHtml = '';
@@ -1782,7 +2231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="wb-card-topbar">
               <div class="wb-badges-group">
                 <span class="wb-badge-pill ${typeClass}">${typeBadge}</span>
-                <span class="wb-badge-pill wb-badge-ch">${r.chapter || 1}장 · 비전 ${r.page || 18}P</span>
+                <span class="wb-badge-pill wb-badge-ch">${r.chapter || 1}장 · ${r.page || 22}P</span>
                 <span class="wb-badge-date">📅 ${r.date}</span>
               </div>
             </div>
@@ -1791,7 +2240,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="wb-card-icon">${r.icon || (isRx ? '🔮' : '🎯')}</div>
               <div>
                 <h3 class="wb-card-title">${escapeHtml(r.title)}</h3>
-                <div class="wb-card-page">《KEY : 운을 여는 40가지 개운 리추얼》 비전 ${r.page || 18}쪽 기록</div>
+                <div class="wb-card-page">《KEY : 운을 여는 50가지 민감성 실천 연습》 ${r.page || 22}쪽 기록</div>
               </div>
             </div>
 
@@ -2017,7 +2466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modalPrescription) return;
 
     // 랜덤 추천 연습 1개 배정
-    const randomIdx = Math.floor(Math.random() * 40) + 1;
+    const randomIdx = Math.floor(Math.random() * ((window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length) || 50)) + 1;
     rxPrescribedEx = window.PRACTICE_EXERCISES.find(e => e.globalIndex === randomIdx) || window.PRACTICE_EXERCISES[0];
     rxUserWorry = '';
 
@@ -3154,6 +3603,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 초기 워크북 피드 및 통계 렌더링
   renderWorkbook();
+
+  // SOS 오감 진정 도구함 및 에너지 쉼 라운지 초기화
+  initSensoryToolbox();
+  initEnergyRestLounge();
 
   // 기본 활성 탭: 40가지 실천 연습실(tab-exercises) 안전 활성화 (모든 모듈 로드 완료 후 실행)
   let initialTab = 'tab-exercises';
