@@ -1,1 +1,1 @@
-export * from "./api-lib/bluebirdDocent";
+export * from "./api-lib/bluebirdDocent.ts";

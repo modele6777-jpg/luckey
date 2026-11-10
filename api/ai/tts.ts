@@ -1,5 +1,6 @@
 import type { Response } from "express";
 import { getGeminiApiKey } from "../../server/geminiKey.ts";
+import { applyRestrictedCors, bodyTooLarge, rejectDisallowedOrigin } from "../../server/api-lib/publicAccess.ts";
 
 function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSample = 16): Buffer {
   const byteRate = sampleRate * channels * (bitsPerSample / 8);
@@ -103,10 +104,14 @@ export async function synthesizeWithGemini(text: string, voice?: string, depende
   return null;
 }
 
-export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
+export default async function handler(req: { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> }, res: Response) {
   try {
-    const { applyCors } = await import("../../server/api-lib/cors.ts");
-    applyCors(res);
+    const expressReq = req as Parameters<typeof rejectDisallowedOrigin>[0];
+    applyRestrictedCors(expressReq, res);
+    if (rejectDisallowedOrigin(expressReq, res)) return;
+    if (req.method !== "OPTIONS" && bodyTooLarge(expressReq, 16_000)) {
+      return res.status(413).json({ error: "요청이 너무 큽니다.", code: "BODY_TOO_LARGE" });
+    }
     if (req.method === "OPTIONS") {
       return res.status(200).end();
     }

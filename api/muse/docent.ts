@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import { GoogleGenAI } from "@google/genai";
 import { getGeminiApiKey } from "../../server/geminiKey.ts";
+import { applyRestrictedCors, bodyTooLarge, isAllowedAppOrigin, rejectDisallowedOrigin } from "../../server/api-lib/publicAccess.ts";
 
 export interface DocentMessage {
   role: "user" | "assistant";
@@ -267,13 +268,7 @@ async function tryGemini(messages: GrokMessage[], maxTokens: number): Promise<st
   const geminiKey = getGeminiApiKey();
   if (!geminiKey) return null;
 
-  const models = [
-    "gemini-3.7-flash",
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-3.6-flash",
-    "gemini-flash-latest",
-  ];
+  const models = ["gemini-flash-lite-latest"];
 
   const systemMsg = messages.find((m) => m.role === "system");
   const userMsgs = messages.filter((m) => m.role !== "system");
@@ -289,8 +284,9 @@ async function tryGemini(messages: GrokMessage[], maxTokens: number): Promise<st
         contents: promptText,
         config: {
           systemInstruction: typeof systemMsg?.content === "string" ? systemMsg.content : undefined,
-          maxOutputTokens: maxTokens,
+          maxOutputTokens: Math.min(maxTokens, 1024),
           temperature: 0.55,
+          abortSignal: AbortSignal.timeout(8000),
         },
       });
 
@@ -308,7 +304,7 @@ async function tryXai(messages: GrokMessage[], maxTokens: number): Promise<strin
   const xaiKey = getXaiApiKey();
   if (!xaiKey) return null;
 
-  const models = ["grok-2-vision-1212", "grok-4.3", "grok-4.20", "grok-3"];
+  const models = ["grok-2-vision-1212"];
 
   for (const model of models) {
     try {
@@ -324,7 +320,7 @@ async function tryXai(messages: GrokMessage[], maxTokens: number): Promise<strin
           temperature: 0.55,
           max_tokens: maxTokens,
         }),
-        signal: AbortSignal.timeout(25000),
+        signal: AbortSignal.timeout(7000),
       });
 
       if (!res.ok) continue;
@@ -343,7 +339,7 @@ async function tryOpenAI(messages: GrokMessage[], maxTokens: number): Promise<st
   const openAIKey = getOpenAIApiKey();
   if (!openAIKey) return null;
 
-  const models = ["gpt-4o-mini", "gpt-4o"];
+  const models = ["gpt-4o-mini"];
 
   for (const model of models) {
     try {
@@ -359,7 +355,7 @@ async function tryOpenAI(messages: GrokMessage[], maxTokens: number): Promise<st
           temperature: 0.55,
           max_tokens: maxTokens,
         }),
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(6000),
       });
 
       if (!res.ok) continue;
@@ -374,31 +370,32 @@ async function tryOpenAI(messages: GrokMessage[], maxTokens: number): Promise<st
   return null;
 }
 
-export async function handleMuseDocent(req: MuseDocentRequest): Promise<{ reply: string }> {
+export async function handleMuseDocent(req: MuseDocentRequest): Promise<{ reply: string; source: 'model' | 'engine' }> {
   const history = Array.isArray(req.messages) ? req.messages : [];
   const isAudioMode = req.mode === "audio";
-  const maxTokens = isAudioMode ? 3500 : 2500;
+  const maxTokens = isAudioMode ? 900 : 700;
   const visionImageUrl = resolveDocentImageUrl(req.imageUrl);
+  const deadline = Date.now() + 22000;
+  const expired = () => Date.now() >= deadline;
 
   const buildMessages = (includeImage: boolean) => {
     const baseMessages = buildGrokMessages(req, history, { includeImage, visionImageUrl });
     return isAudioMode ? withAudioSystemPrompt(baseMessages) : baseMessages;
   };
 
-  // 1. Try Gemini
-  const geminiReply = await tryGemini(buildMessages(false), maxTokens);
-  if (geminiReply) return { reply: geminiReply };
-
-  // 2. Try xAI Grok (with vision if image exists)
-  const xaiReply = await tryXai(buildMessages(!!visionImageUrl), maxTokens);
-  if (xaiReply) return { reply: xaiReply };
-
-  // 3. Try OpenAI
-  const openAIReply = await tryOpenAI(buildMessages(false), maxTokens);
-  if (openAIReply) return { reply: openAIReply };
-
-  // 4. Zero-Failure Curated Masterpiece Docent
-  return { reply: generateCuratedDocentScript(req) };
+  if (!expired() && getGeminiApiKey()) {
+    const geminiReply = await tryGemini(buildMessages(false), maxTokens);
+    if (geminiReply) return { reply: geminiReply, source: 'model' };
+  }
+  if (!expired() && getXaiApiKey()) {
+    const xaiReply = await tryXai(buildMessages(!!visionImageUrl), maxTokens);
+    if (xaiReply) return { reply: xaiReply, source: 'model' };
+  }
+  if (!expired() && getOpenAIApiKey()) {
+    const openAIReply = await tryOpenAI(buildMessages(false), maxTokens);
+    if (openAIReply) return { reply: openAIReply, source: 'model' };
+  }
+  return { reply: generateCuratedDocentScript(req), source: 'engine' };
 }
 
 export function applyCors(res: { setHeader: (k: string, v: string) => void }): void {
@@ -410,13 +407,21 @@ export function applyCors(res: { setHeader: (k: string, v: string) => void }): v
   );
 }
 
-export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
-  applyCors(res as any);
+export default async function handler(req: { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> }, res: Response) {
+  const expressReq = req as Parameters<typeof rejectDisallowedOrigin>[0];
+  applyRestrictedCors(expressReq, res);
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+    if (rejectDisallowedOrigin(expressReq, res)) return;
+    return res.status(204).end();
   }
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+  if (!isAllowedAppOrigin(typeof req.headers?.origin === 'string' ? req.headers.origin : undefined)) {
+    return res.status(403).json({ error: '이 출처에서는 요청할 수 없습니다.', code: 'ORIGIN_NOT_ALLOWED' });
+  }
+  if (bodyTooLarge(expressReq, 64_000)) {
+    return res.status(413).json({ error: '요청이 너무 큽니다.', code: 'BODY_TOO_LARGE' });
   }
 
   try {
@@ -424,6 +429,6 @@ export default async function handler(req: { method?: string; body?: unknown }, 
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("[muse/docent] error:", err);
-    return res.status(200).json({ reply: generateCuratedDocentScript(req.body as MuseDocentRequest) });
+    return res.status(200).json({ reply: generateCuratedDocentScript(req.body as MuseDocentRequest), source: 'engine' });
   }
 }

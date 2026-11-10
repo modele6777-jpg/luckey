@@ -5,6 +5,7 @@
   "description": "LucKey AI 페르소나 유니버스",
   "start_url": "/",
   "scope": "/",
+  "lang": "ko",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#06070a",

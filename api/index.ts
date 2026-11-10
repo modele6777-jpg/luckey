@@ -12,18 +12,38 @@ import {
   handleStreamableMethodNotAllowed,
 } from "../server/api-lib/mcpHandler.ts";
 import { handleSajuChartPost } from "../server/api-lib/sajuChartRoute.ts";
+import { handleSecretBlessingPost, handleSecretMoodPost } from "../server/api-lib/secretNoteRoute.ts";
+import { heuristicDiaryAnalysis, requestDiaryAnalysis } from "../server/api-lib/analyzeEntry.ts";
+import { applyRestrictedCors, guardRestrictedRoute, isRestrictedAppRoute, rateLimit, requestPath } from "../server/api-lib/publicAccess.ts";
 
 const app = express();
 installAsyncRouteGuard(app);
 
+app.use((req, res, next) => {
+  if (!isRestrictedAppRoute(requestPath(req))) return next();
+  const declared = Number(req.headers["content-length"] || 0);
+  if (Number.isFinite(declared) && declared > 48_000) {
+    applyRestrictedCors(req, res);
+    return res.status(413).json({ error: "요청이 너무 큽니다.", code: "BODY_TOO_LARGE" });
+  }
+  return next();
+});
+
 app.use(express.json({ limit: "50mb" }));
 
-// CORS & OPTIONS Preflight Handler
+app.use(guardRestrictedRoute(48_000));
+
+// CORS & OPTIONS Preflight Handler. Restricted app routes set their own origin.
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const path = (req.originalUrl || req.url || '/').split('?')[0];
+  const restricted = path === '/api/ai/tts' || path === '/api/ai/recommend-art' || path === '/api/ai/daily-tarot' || path === '/api/muse/docent' || path.endsWith('/chat/completions');
+  if (!restricted) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-stainless-sdk-version, x-stainless-os, x-stainless-lang, x-stainless-runtime, x-stainless-runtime-version, x-stainless-helper-method, x-stainless-package-version");
   if (req.method === "OPTIONS") {
+    if (restricted) return next();
     return res.sendStatus(200);
   }
   next();
@@ -60,6 +80,12 @@ app.delete("/api/mcp", async (req, res) => {
 import { GoogleGenAI } from "@google/genai";
 
 app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/v1/chat/completions"], async (req, res) => {
+  if (rateLimit(req, res, 20)) return;
+  if (Number.isInteger(req.body?.max_tokens)) req.body.max_tokens = Math.min(2048, Math.max(1, req.body.max_tokens));
+  const messagesForCap = Array.isArray(req.body?.messages) ? req.body.messages : [];
+  if (messagesForCap.length > 20 || messagesForCap.some((message: { content?: unknown }) => JSON.stringify(message?.content ?? '').length > 8000)) {
+    return res.status(413).json({ error: '메시지가 너무 깁니다.', code: 'BODY_TOO_LARGE' });
+  }
   const geminiApiKey = getGeminiApiKey();
   if (!geminiApiKey) {
     return res.status(503).json({ error: "GEMINI_API_KEY가 설정되지 않았습니다.", code: "GEMINI_API_KEY_MISSING" });
@@ -98,7 +124,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
       return res.status(400).json({ error: "A final user message is required" });
     }
 
-    const generationConfig = { ...(systemPrompt ? { systemInstruction: systemPrompt } : {}), ...(Number.isInteger(req.body.max_tokens) ? { maxOutputTokens: Math.min(32768, Math.max(1, req.body.max_tokens)) } : {}) };
+    const generationConfig = { ...(systemPrompt ? { systemInstruction: systemPrompt } : {}), ...(Number.isInteger(req.body.max_tokens) ? { maxOutputTokens: Math.min(2048, Math.max(1, req.body.max_tokens)) } : { maxOutputTokens: 1024 }) };
     const { response, modelUsed } = await requestWithModelFallback(
       model,
       getLucyRequestFallbacks(model, req.body.review_mode),
@@ -203,61 +229,29 @@ ${content}
 }`;
 
   const geminiApiKey = getGeminiApiKey();
-  if (!geminiApiKey) {
-    return res.status(503).json({ error: "GEMINI_API_KEY가 설정되지 않았습니다.", code: "GEMINI_API_KEY_MISSING" });
-  }
-
-  try {
+  if (geminiApiKey) {
+    try {
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-      const geminiRes = await ai.models.generateContent({
-        model: "gemini-flash-lite-latest",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json"
-        }
+      const analyzed = await requestDiaryAnalysis(async (plain) => {
+        const response = await ai.models.generateContent({
+          model: 'gemini-flash-lite-latest',
+          contents: plain ? `${prompt}\n\nJSON 객체만 반환하세요. 키는 keywords와 emotions 입니다.` : prompt,
+          config: {
+            maxOutputTokens: 512,
+            abortSignal: AbortSignal.timeout(8000),
+            ...(plain ? {} : { responseMimeType: 'application/json' }),
+          },
+        });
+        return { text: response.text };
       });
-
-      const rawText = geminiRes.text;
-      if (rawText) {
-        const parsed = JSON.parse(rawText.trim());
-        if (parsed && Array.isArray(parsed.keywords) && Array.isArray(parsed.emotions)) {
-          return res.status(200).json(parsed);
-        }
-      }
-  } catch (err) {
-    console.warn("Gemini analysis failed on Vercel, falling back to heuristic offline analysis:", describeGeminiError(err));
-  }
-
-  // Heuristic Offline Fallback
-  const keywords: string[] = [];
-  const emotions: string[] = [];
-  const lowerContent = content.toLowerCase();
-
-  const emotionDictionary = [
-    { keys: ["기쁨", "행복", "감사", "사랑", "설렘", "즐거", "happy", "love", "joy"], tag: "평온/기쁨" },
-    { keys: ["슬픔", "우울", "눈물", "외롭", "쓸쓸", "sad", "blue", "lonely"], tag: "내면의 슬픔" },
-    { keys: ["불안", "걱정", "두려", "초조", "긴장", "scared", "anxious", "worry"], tag: "정서적 초조" },
-    { keys: ["분노", "화가", "짜증", "억울", "미움", "angry", "irritated"], tag: "의식의 마찰" },
-    { keys: ["지침", "피곤", "소진", "번아웃", "무기력", "tired", "exhausted"], tag: "에너지 소진" },
-  ];
-
-  for (const dict of emotionDictionary) {
-    if (dict.keys.some(k => lowerContent.includes(k))) {
-      emotions.push(dict.tag);
+      return res.status(200).json(analyzed);
+    } catch (err) {
+      console.warn('[analyze-entry] Gemini failed, using heuristic:', describeGeminiError(err));
+      return res.status(200).json(heuristicDiaryAnalysis(String(content || title || '')));
     }
   }
-  if (emotions.length === 0) {
-    emotions.push("미묘한 중립");
-  }
-
-  const words = (content as string).split(/\s+/).filter(w => w.length > 1 && !w.startsWith("#"));
-  const uniqueWords = Array.from(new Set(words)) as string[];
-  keywords.push(...uniqueWords.slice(0, 4));
-  if (keywords.length === 0) {
-    keywords.push("내면 기록", "일상");
-  }
-
-  return res.status(200).json({ keywords, emotions });
+  console.warn('[analyze-entry] GEMINI_API_KEY is unset');
+  return res.status(503).json({ error: 'GEMINI_API_KEY가 설정되지 않았습니다.', code: 'GEMINI_API_KEY_MISSING' });
 });
 
 // 데일리 카드 전용 BGM 생성 (시드 기반 고유 WAV)
@@ -276,7 +270,7 @@ app.post("/api/ai/daily-bgm", async (req, res) => {
       return res.status(400).json({ error: "focusPlaylist, dateKey, trackKey are required" });
     }
 
-    const { generateDailyBgmBuffer } = await import("../server/api-lib/generateDailyBgm");
+    const { generateDailyBgmBuffer } = await import("../server/api-lib/generateDailyBgm.ts");
     const { buffer, durationSec } = generateDailyBgmBuffer({
       focusPlaylist: String(focusPlaylist),
       frequency: frequency ? String(frequency) : undefined,
@@ -370,7 +364,7 @@ app.post("/api/sync/relay/create", async (req, res) => {
   try {
     const { payload, vaultId } = req.body || {};
     if (!payload) return res.status(400).json({ error: "Missing payload" });
-    const { createRelayCode } = await import("../server/api-lib/syncRelay");
+    const { createRelayCode } = await import("../server/api-lib/syncRelay.ts");
     const result = await createRelayCode(payload, vaultId);
     return res.status(200).json(result);
   } catch (e: any) {
@@ -382,7 +376,7 @@ app.post("/api/sync/relay/consume", async (req, res) => {
   try {
     const { code } = req.body || {};
     if (!code) return res.status(400).json({ error: "Missing code" });
-    const { getRelayData } = await import("../server/api-lib/syncRelay");
+    const { getRelayData } = await import("../server/api-lib/syncRelay.ts");
     const result = await getRelayData(code);
     return res.status(200).json(result);
   } catch (e: any) {
@@ -397,6 +391,9 @@ app.post("/api/saju/chart", async (req, res) => {
 app.post("/api/ai/daily-tarot", async (req, res) => {
   return handleDailyTarotPost(req, res);
 });
+
+app.post("/api/ai/secret-blessing", async (req, res) => handleSecretBlessingPost(req, res));
+app.post("/api/ai/secret-mood-recommend", async (req, res) => handleSecretMoodPost(req, res));
 
 app.get(["/api/health", "/health"], (_req, res) => res.json({ status: "ok" }));
 

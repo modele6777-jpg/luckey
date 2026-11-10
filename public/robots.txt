@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://luckey-six.vercel.app/sitemap.xml

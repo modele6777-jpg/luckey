@@ -22,7 +22,7 @@ export default async function handler(req: { method?: string; body?: unknown }, 
       return res.status(400).json({ error: "focusPlaylist, dateKey, trackKey are required" });
     }
 
-    const { generateDailyBgmBuffer } = await import("../../server/api-lib/generateDailyBgm");
+    const { generateDailyBgmBuffer } = await import("../../server/api-lib/generateDailyBgm.ts");
     const { buffer, durationSec } = generateDailyBgmBuffer({
       focusPlaylist,
       frequency: body.frequency ? String(body.frequency) : undefined,

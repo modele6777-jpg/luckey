@@ -1,5 +1,7 @@
 import type OpenAI from "openai";
-import { getXaiApiKey } from "./xaiKey";
+import { GoogleGenAI } from "@google/genai";
+import { describeGeminiError, getGeminiApiKey } from "../geminiKey.ts";
+import { getXaiApiKey } from "./xaiKey.ts";
 
 type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 
@@ -138,22 +140,24 @@ function buildGrokMessages(
   return messages;
 }
 
-export async function handleBluebirdDocent(req: BluebirdDocentRequest): Promise<{ reply: string }> {
-  const apiKey = getXaiApiKey();
-  if (!apiKey) {
-    throw new Error("XAI_API_KEY가 설정되지 않았습니다.");
-  }
+function curatedBluebirdReply(req: BluebirdDocentRequest): string {
+  const title = req.title?.trim() || '오늘의 작품';
+  const theme = req.theme?.trim() || '마음의 풍경';
+  return `${title} 앞에서 잠시 머물겠습니다. ${theme}의 색과 여백이 오늘의 호흡을 천천히 고르게 합니다. 같은 결의 명곡은 드뷔시의 「달빛」, 시는 김소월의 「진달래꽃」, 명화는 모네의 「수련」처럼 잔잔한 빛과 물의 결을 나눕니다. 서두르지 말고 한 가지 색만 오래 바라보세요.`;
+}
 
-  if (!req.imageUrl?.trim()) {
-    throw new Error("작품 이미지 URL이 필요합니다.");
-  }
+export async function handleBluebirdDocent(req: BluebirdDocentRequest): Promise<{ reply: string; source: 'model' | 'engine' }> {
   if (!req.title?.trim() || !req.theme?.trim()) {
     throw new Error("작품 제목과 테마가 필요합니다.");
   }
+  const prompt = `${LUMI_SYSTEM_PROMPT}\n\n${req.isFirstMessage === false ? buildFollowUpUserText(req, req.messages?.at(-1)?.content || req.prompt || '') : buildFirstUserText(req)}`;
+  const xaiKey = getXaiApiKey();
+  let lastError: unknown = null;
+  if (xaiKey && req.imageUrl?.trim()) {
 
   const history = Array.isArray(req.messages) ? req.messages : [];
   const { default: OpenAI } = await import("openai");
-  const grok = new OpenAI({ apiKey, baseURL: "https://api.x.ai/v1" });
+  const grok = new OpenAI({ apiKey: xaiKey, baseURL: "https://api.x.ai/v1", timeout: 10000 });
   const isAudioMode = req.mode === "audio";
   const baseMessages = buildGrokMessages(req, history);
   const messages = isAudioMode
@@ -166,8 +170,7 @@ export async function handleBluebirdDocent(req: BluebirdDocentRequest): Promise<
       ]
     : baseMessages;
 
-  let lastError: unknown = null;
-  for (const model of GROK_VISION_MODELS) {
+  for (const model of GROK_VISION_MODELS.slice(0, 1)) {
     try {
       const response = await grok.chat.completions.create({
         model,
@@ -179,12 +182,28 @@ export async function handleBluebirdDocent(req: BluebirdDocentRequest): Promise<
       if (!reply) {
         throw new Error("Grok가 빈 응답을 반환했습니다.");
       }
-      return { reply };
+      return { reply, source: 'model' };
     } catch (err) {
       lastError = err;
-      console.warn(`[bluebird/docent] Model ${model} failed:`, err instanceof Error ? err.message : err);
+      console.warn(`[bluebird/docent] Model ${model} failed:`, describeGeminiError(err));
     }
   }
-
-  throw lastError instanceof Error ? lastError : new Error("도슨트 응답 생성에 실패했습니다.");
+  }
+  const geminiKey = getGeminiApiKey();
+  if (geminiKey) {
+    try {
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const response = await ai.models.generateContent({
+        model: 'gemini-flash-lite-latest',
+        contents: prompt,
+        config: { maxOutputTokens: 1024, abortSignal: AbortSignal.timeout(12000) },
+      });
+      const reply = response.text?.trim();
+      if (reply) return { reply, source: 'model' };
+    } catch (error) {
+      console.warn('[bluebird/docent] gemini failed:', describeGeminiError(error));
+    }
+  }
+  if (lastError) console.warn('[bluebird/docent] using curated fallback:', describeGeminiError(lastError));
+  return { reply: curatedBluebirdReply(req), source: 'engine' };
 }

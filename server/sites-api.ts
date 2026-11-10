@@ -1,10 +1,10 @@
 import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
-import { handleTTS } from './api-lib/ttsHandler';
-import { stripInternalSpeechDirectives } from '../src/utils/speechText';
-import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm';
-import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog';
+import { handleTTS } from './api-lib/ttsHandler.ts';
+import { stripInternalSpeechDirectives } from '../src/utils/speechText.ts';
+import { buildDailyBgmRecipe, renderDailyBgmBytes } from './api-lib/generateDailyBgm.ts';
+import { buildVerifiedArtRecommendation, MUSE_ART_CATALOG } from './api-lib/museArtCatalog.ts';
 import { handleSitesGeminiChat } from '../scripts/sites-gemini-chat.mjs';
-import { SajuInputError, sajuChartFromInput } from './api-lib/sajuChartApi';
+import { SajuInputError, sajuChartFromInput } from './api-lib/sajuChartApi.ts';
 export { handleSitesGeminiChat };
 
 type Runtime = Record<string, string | undefined>;

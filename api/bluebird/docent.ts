@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import { applyCors } from "../../server/api-lib/cors";
+import { applyCors } from "../../server/api-lib/cors.ts";
 
 export default async function handler(req: { method?: string; body?: unknown }, res: Response) {
   applyCors(res);
@@ -11,7 +11,7 @@ export default async function handler(req: { method?: string; body?: unknown }, 
   }
 
   try {
-    const { handleBluebirdDocent } = await import("../../server/api-lib/bluebirdDocent");
+    const { handleBluebirdDocent } = await import("../../server/api-lib/bluebirdDocent.ts");
     const result = await handleBluebirdDocent(req.body as Parameters<typeof handleBluebirdDocent>[0]);
     return res.status(200).json(result);
   } catch (err: unknown) {

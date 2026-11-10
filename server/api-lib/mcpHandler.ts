@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { MCP_SERVER_VERSION } from './mcpVersion.ts';
 import { verifyMcpBearer, readBearerToken, protectedReading } from './mcpAuth.ts';
 import { fetchDailyTarot, fetchSajuChart, ORACLE_GAP, selectTarotCard } from './mcpReadingGateway.ts';
 import { handleStreamableMcpPost, isStreamableMcpGet, isStreamableMcpPost } from './mcpStreamable.ts';
@@ -164,7 +165,7 @@ export async function processMCPJsonRpc(message: any, context: { authorized?: bo
         },
         serverInfo: {
           name: 'luckey-oracle-mcp',
-          version: '1.4.180',
+          version: MCP_SERVER_VERSION,
           description: '정통 사주 ✕ 78장 타로 융합 오라클, AI 심층 리딩 및 고품질 한국어 TTS MCP 서버',
         },
       },
@@ -473,7 +474,7 @@ export function handleMCPSseStream(req: Request, res: Response) {
     return res.status(200).json({
       status: 'healthy',
       name: 'luckey-oracle-mcp',
-      version: '1.4.180',
+      version: MCP_SERVER_VERSION,
       protocolVersion: '2024-11-05',
       endpoints: {
         sse: `${proto}://${host}/api/mcp/sse`,

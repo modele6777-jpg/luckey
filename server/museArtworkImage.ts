@@ -1,1 +1,1 @@
-export * from "./api-lib/museArtworkImage";
+export * from "./api-lib/museArtworkImage.ts";

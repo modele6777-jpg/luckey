@@ -1,7 +1,7 @@
 import type { Response } from "express";
-import { getXaiApiKey } from "./xaiKey";
-import { buildOriginalSearchQuery, extractOriginalLanguage } from "../_shared/artSearchQuery";
-import { getDateSeed } from "../_shared/dailyCache";
+import { getXaiApiKey } from "./xaiKey.ts";
+import { buildOriginalSearchQuery, extractOriginalLanguage } from "../_shared/artSearchQuery.ts";
+import { getDateSeed } from "../_shared/dailyCache.ts";
 
 export type ArtworkImageSource =
   | "google"

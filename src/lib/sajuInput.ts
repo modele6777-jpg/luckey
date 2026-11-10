@@ -49,7 +49,10 @@ export function assertSajuClock(input: SajuClockInput): {
   const year = integer(input.year, 1900, 2050);
   const month = integer(input.month, 1, 12);
   const day = integer(input.day, 1, 31);
-  if (year === null) throw new SajuInputError(`출생 연도 ${String(input.year)}은 1900~2050 정수가 아닙니다.`, 'invalid_year');
+  if (year === null) {
+    const missing = input.year === undefined || input.year === null || input.year === '';
+    throw new SajuInputError(missing ? '출생 연도를 입력해 주세요.' : `출생 연도 ${String(input.year)}은 1900~2050 정수가 아닙니다.`, 'invalid_year');
+  }
   if (month === null) throw new SajuInputError(`출생 월 ${String(input.month)}은 1~12가 아닙니다.`, 'invalid_month');
   if (day === null) throw new SajuInputError(`출생 일 ${String(input.day)}은 1~31이 아닙니다.`, 'invalid_day');
   let birthtime: string | undefined;

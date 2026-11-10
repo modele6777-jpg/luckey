@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { GoogleGenAI } from "@google/genai";
+import { getGeminiApiKey } from "../geminiKey.ts";
 import {
   buildVerifiedArtRecommendation,
   type ArtRecommendationPayload,
@@ -16,16 +17,6 @@ export interface RecommendArtRequest {
   excludeCatalogIds?: string[];
   excludePoemTitles?: string[];
   excludeSongTitles?: string[];
-}
-
-function getGeminiApiKey(): string {
-  const key = (
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    process.env.GOOGLE_GENAI_API_KEY ||
-    ""
-  ).trim();
-  return key.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A") ? "" : key;
 }
 
 async function personalizeWithGemini(

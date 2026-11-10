@@ -1,1 +1,1 @@
-export * from "./api-lib/museDocent";
+export * from "./api-lib/museDocent.ts";

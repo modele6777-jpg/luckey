@@ -106,46 +106,53 @@ export default defineConfig(({mode}) => {
           start_url: "/",
           display: "standalone",
           orientation: "any",
-          background_color: "#000000",
-          theme_color: "#000000",
+          lang: "ko",
+          background_color: "#06070a",
+          theme_color: "#06070a",
           icons: [
             {
-              src: "/icon-192.png",
+              src: "/icon-192-v2.png",
               sizes: "192x192",
               type: "image/png",
               purpose: "any"
             },
             {
-              src: "/icon-512.png",
+              src: "/icon-512-v2.png",
               sizes: "512x512",
               type: "image/png",
               purpose: "any"
             },
             {
-              src: "/apple-touch-icon.png",
+              src: "/icon-512-v2.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable"
+            },
+            {
+              src: "/apple-touch-icon-v2.png",
               sizes: "180x180",
               type: "image/png",
               purpose: "any"
             },
             {
-              src: "/icon-512.png",
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "maskable"
+              src: "/icon.svg",
+              sizes: "any",
+              type: "image/svg+xml",
+              purpose: "any"
             },
           ],
           shortcuts: [
             {
-              name: "루시 AI 프로 (LUCY AI PRO)",
-              short_name: "루시 AI 프로",
-              description: "루시 AI 프로와 나누는 심플 & 라이트 대화",
+              name: "Lucy",
+              short_name: "Lucy",
+              description: "Lucy와 나누는 소울 & 라이프 지능 대화",
               url: "/chat",
               icons: [{ src: "/lucy-icon-192.png", sizes: "192x192" }]
             },
             {
-              name: "PRISM 핸드북 & 바이블",
-              short_name: "프리즘핸드북",
-              description: "PRISM 7대 우주 공간 가이드 & 론다번·사주·세도나·호오포노포노 바이블",
+              name: "ReBible",
+              short_name: "ReBible",
+              description: "ReBible 7대 우주 지혜 경전 & 가이드",
               url: "/handbook",
               icons: [{ src: "/handbook-icon-192.png", sizes: "192x192" }]
             }
@@ -154,7 +161,7 @@ export default defineConfig(({mode}) => {
         workbox: {
           globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg}'],
           navigateFallback: 'index.html',
-          navigateFallbackDenylist: [/^\/chat/, /^\/lucy/, /^\/handbook/, /^\/rebible/, /^\/calm/],
+          navigateFallbackDenylist: [/^\/chat/, /^\/lucy/, /^\/handbook/, /^\/rebible/, /^\/calm/, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /^\/favicon\.ico$/, /^\/health$/],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
