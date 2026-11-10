@@ -273,6 +273,9 @@ import { calculateKoreanMaewoldangKimSiSeupGeumoSinhwa, formatKoreanMaewoldangKi
 import { calculateAmericanWilliamJamesPragmatism, formatAmericanWilliamJamesPragmatismPrompt, AMERICAN_WILLIAM_JAMES_VERSION } from '../src/lib/divination/americanWilliamJamesPragmatismWillToBelieveEngine';
 import { calculateGermanErichFrommArtOfLovingBeing, formatGermanErichFrommArtOfLovingBeingPrompt, GERMAN_ERICH_FROMM_VERSION } from '../src/lib/divination/germanErichFrommArtOfLovingBeingEngine';
 import { calculateKoreanDanjaeShinChaeHoJoseonSanggosa, formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt, KOREAN_DANJAE_SHIN_CHAE_HO_VERSION } from '../src/lib/divination/koreanDanjaeShinChaeHoJoseonSanggosaEngine';
+import { calculateFrenchMontesquieuSpiritOfLaws, formatFrenchMontesquieuSpiritOfLawsPrompt, FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION } from '../src/lib/divination/frenchMontesquieuSpiritOfLawsEngine';
+import { calculateFrenchGastonBachelardPoeticsOfSpace, formatFrenchGastonBachelardPoeticsOfSpacePrompt, FRENCH_GASTON_BACHELARD_POETICS_VERSION } from '../src/lib/divination/frenchGastonBachelardPoeticsOfSpaceEngine';
+import { calculateKoreanNammyeongJoSikGyeongUi, formatKoreanNammyeongJoSikGyeongUiPrompt, KOREAN_NAMMYEONG_JO_SIK_VERSION } from '../src/lib/divination/koreanNammyeongJoSikGyeongUiEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5357,6 +5360,48 @@ test('Danjae Shin Chae-ho Joseon Sanggosa Engine: calculates Ah vs Non-Ah Subjec
   const prompt = formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt(rep);
   assert(prompt.includes('단재 신채호 《조선상고사》 & 〈조선혁명선언〉 아(我)의 주체자각 & 자주독립 지표'));
   assert(prompt.includes(rep.activeDanjaeTheme.themeTitleKo));
+});
+
+test('Charles de Montesquieu Spirit of Laws Engine: calculates Checks and Balances, Political Liberty, Contextual Prudence, and Civic Virtue', () => {
+  const rep = calculateFrenchMontesquieuSpiritOfLaws(profile);
+  assert.equal(rep.engineVersion, FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION);
+  assert(rep.checksAndBalancesPrudenceIndex >= 0 && rep.checksAndBalancesPrudenceIndex <= 100);
+  assert(rep.politicalLibertyTemperanceScore >= 0 && rep.politicalLibertyTemperanceScore <= 100);
+  assert(rep.contextualSpiritOfLawsWisdomIndex >= 0 && rep.contextualSpiritOfLawsWisdomIndex <= 100);
+  assert(rep.civicVirtuePublicSpiritScore >= 0 && rep.civicVirtuePublicSpiritScore <= 100);
+  assert(rep.enlightenedPluralismToleranceIndex >= 0 && rep.enlightenedPluralismToleranceIndex <= 100);
+  assert(rep.activeMontesquieuTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchMontesquieuSpiritOfLawsPrompt(rep);
+  assert(prompt.includes('샤를 드 몽테스키외 《법의 정신》 견제와 균형 & 권력분립 지표'));
+  assert(prompt.includes(rep.activeMontesquieuTheme.themeTitleKo));
+});
+
+test('Gaston Bachelard Poetics of Space Engine: calculates Material Imagination, House Sanctuary, Candle Meditation, and Dual Spiral', () => {
+  const rep = calculateFrenchGastonBachelardPoeticsOfSpace(profile);
+  assert.equal(rep.engineVersion, FRENCH_GASTON_BACHELARD_POETICS_VERSION);
+  assert(rep.materialImaginationVitalityIndex >= 0 && rep.materialImaginationVitalityIndex <= 100);
+  assert(rep.poeticsOfHouseSanctuaryScore >= 0 && rep.poeticsOfHouseSanctuaryScore <= 100);
+  assert(rep.solitaryCandleMeditationIndex >= 0 && rep.solitaryCandleMeditationIndex <= 100);
+  assert(rep.dualSpiralReasonPoeticsScore >= 0 && rep.dualSpiralReasonPoeticsScore <= 100);
+  assert(rep.cosmicIntimacyReverieResilience >= 0 && rep.cosmicIntimacyReverieResilience <= 100);
+  assert(rep.activeBachelardTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchGastonBachelardPoeticsOfSpacePrompt(rep);
+  assert(prompt.includes('가스통 바슐라르 《공간의 시학》 & 《촛불의 미학》 몽상의 시학 지표'));
+  assert(prompt.includes(rep.activeBachelardTheme.themeTitleKo));
+});
+
+test('Nammyeong Jo Sik Gyeong-Ui Engine: calculates Inner Clarity Gyeong, Outer Decisive Ui, Seongseongja Vigilance, and Danseongso Integrity', () => {
+  const rep = calculateKoreanNammyeongJoSikGyeongUi(profile);
+  assert.equal(rep.engineVersion, KOREAN_NAMMYEONG_JO_SIK_VERSION);
+  assert(rep.innerClarityGyeongScore >= 0 && rep.innerClarityGyeongScore <= 100);
+  assert(rep.outerDecisiveUiScore >= 0 && rep.outerDecisiveUiScore <= 100);
+  assert(rep.seongseongjaBellAwakeningIndex >= 0 && rep.seongseongjaBellAwakeningIndex <= 100);
+  assert(rep.danseongsoUprightCourageScore >= 0 && rep.danseongsoUprightCourageScore <= 100);
+  assert(rep.sancheonjaeActionScholarshipIndex >= 0 && rep.sancheonjaeActionScholarshipIndex <= 100);
+  assert(rep.activeNammyeongTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanNammyeongJoSikGyeongUiPrompt(rep);
+  assert(prompt.includes('남명 조식 선생 《내명자경 외단자의》 경의검 & 성성자 실천 지표'));
+  assert(prompt.includes(rep.activeNammyeongTheme.themeTitleKo));
 });
 
 

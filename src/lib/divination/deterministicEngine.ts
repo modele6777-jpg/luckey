@@ -310,6 +310,9 @@ import { calculateKoreanMaewoldangKimSiSeupGeumoSinhwa, formatKoreanMaewoldangKi
 import { calculateAmericanWilliamJamesPragmatism, formatAmericanWilliamJamesPragmatismPrompt, type AmericanWilliamJamesPragmatismResult, AMERICAN_WILLIAM_JAMES_VERSION } from './americanWilliamJamesPragmatismWillToBelieveEngine';
 import { calculateGermanErichFrommArtOfLovingBeing, formatGermanErichFrommArtOfLovingBeingPrompt, type GermanErichFrommArtOfLovingBeingResult, GERMAN_ERICH_FROMM_VERSION } from './germanErichFrommArtOfLovingBeingEngine';
 import { calculateKoreanDanjaeShinChaeHoJoseonSanggosa, formatKoreanDanjaeShinChaeHoJoseonSanggosaPrompt, type KoreanDanjaeShinChaeHoJoseonSanggosaResult, KOREAN_DANJAE_SHIN_CHAE_HO_VERSION } from './koreanDanjaeShinChaeHoJoseonSanggosaEngine';
+import { calculateFrenchMontesquieuSpiritOfLaws, formatFrenchMontesquieuSpiritOfLawsPrompt, type FrenchMontesquieuSpiritOfLawsResult, FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION } from './frenchMontesquieuSpiritOfLawsEngine';
+import { calculateFrenchGastonBachelardPoeticsOfSpace, formatFrenchGastonBachelardPoeticsOfSpacePrompt, type FrenchGastonBachelardPoeticsOfSpaceResult, FRENCH_GASTON_BACHELARD_POETICS_VERSION } from './frenchGastonBachelardPoeticsOfSpaceEngine';
+import { calculateKoreanNammyeongJoSikGyeongUi, formatKoreanNammyeongJoSikGyeongUiPrompt, type KoreanNammyeongJoSikGyeongUiResult, KOREAN_NAMMYEONG_JO_SIK_VERSION } from './koreanNammyeongJoSikGyeongUiEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -640,6 +643,9 @@ export interface DeterministicEngineReport {
   americanWilliamJamesPragmatismResult?: AmericanWilliamJamesPragmatismResult | null;
   germanErichFrommArtOfLovingBeingResult?: GermanErichFrommArtOfLovingBeingResult | null;
   koreanDanjaeShinChaeHoJoseonSanggosaResult?: KoreanDanjaeShinChaeHoJoseonSanggosaResult | null;
+  frenchMontesquieuSpiritOfLawsResult?: FrenchMontesquieuSpiritOfLawsResult | null;
+  frenchGastonBachelardPoeticsOfSpaceResult?: FrenchGastonBachelardPoeticsOfSpaceResult | null;
+  koreanNammyeongJoSikGyeongUiResult?: KoreanNammyeongJoSikGyeongUiResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3755,6 +3761,33 @@ try {
     }
   })()));
 
+  // 279. 프랑스 샤를 드 몽테스키외 《법의 정신》 권력분립 & 견제와 균형 지혜 엔진
+  const frenchMontesquieuSpiritOfLawsResult = calculateSupplement('frenchMontesquieuSpiritOfLawsResult', () => ((() => {
+    try {
+      return calculateFrenchMontesquieuSpiritOfLaws(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 280. 프랑스 가스통 바슐라르 《공간의 시학》 몽상의 시학 & 내면의 집·촛불의 고독 지혜 엔진
+  const frenchGastonBachelardPoeticsOfSpaceResult = calculateSupplement('frenchGastonBachelardPoeticsOfSpaceResult', () => ((() => {
+    try {
+      return calculateFrenchGastonBachelardPoeticsOfSpace(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 281. 대한민국 남명 조식 선생 《내명자경 외단자의》 경의검 & 성성자 실천 지조 지혜 엔진
+  const koreanNammyeongJoSikGyeongUiResult = calculateSupplement('koreanNammyeongJoSikGyeongUiResult', () => ((() => {
+    try {
+      return calculateKoreanNammyeongJoSikGyeongUi(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4071,6 +4104,9 @@ try {
     americanWilliamJamesPragmatismResult,
     germanErichFrommArtOfLovingBeingResult,
     koreanDanjaeShinChaeHoJoseonSanggosaResult,
+    frenchMontesquieuSpiritOfLawsResult,
+    frenchGastonBachelardPoeticsOfSpaceResult,
+    koreanNammyeongJoSikGyeongUiResult,
     tools: toolsMap,
   };
 }
@@ -4378,6 +4414,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'americanWilliamJamesPragmatism', nameKo: '윌리엄 제임스 실용주의 신념의의지 실천적현금가치 의식의흐름 다원주의 건강한영혼', icon: '🧭', category: 'deep_master', summary: '윌리엄 제임스의 실용주의와 심리학 사상으로 삶에서 구체적 차이를 만드는 실천적 현금가치와 용기 있는 신념의 의지를 발휘합니다.' },
   { key: 'germanErichFrommArtOfLovingBeing', nameKo: '에리히 프롬 사랑의기술 소유냐존재냐 능동적배려책임 존재적실존 적극적자유 생명사랑', icon: '❤️', category: 'deep_master', summary: '에리히 프롬의 인본주의 사랑과 존재 철학으로 소유적 집착을 넘어선 능동적 배려와 존중, 적극적 자유의 충만한 삶을 실현합니다.' },
   { key: 'koreanDanjaeShinChaeHoJoseonSanggosa', nameKo: '단재 신채호 조선상고사 아와비아주체자각 비타협자주독립 역사혼회복 민중직접혁명 낭가기개', icon: '🇰🇷', category: 'deep_master', summary: '단재 신채호 선생의 조선상고사와 주체 역사철학으로 아(我)의 주체성을 확립하고 타협 없는 자주독립과 호방한 낭가의 기개를 체득합니다.' },
+  { key: 'frenchMontesquieuSpiritOfLaws', nameKo: '샤를 드 몽테스키외 법의정신 권력분립 견제와균형 법치와자유 시민적덕성 온건한중용', icon: '⚖️', category: 'deep_master', summary: '샤를 드 몽테스키외의 법의 정신 사상으로 권력의 독주를 막는 견제와 균형, 법치 속의 참된 자유와 온건한 중용을 체득합니다.' },
+  { key: 'frenchGastonBachelardPoeticsOfSpace', nameKo: '가스통 바슐라르 공간의시학 촛불의미학 몽상의시학 내면의집 촛불의고독 물질적상상력', icon: '🕯️', category: 'deep_master', summary: '가스통 바슐라르의 공간의 시학과 촛불의 미학으로 영혼을 품어주는 내면의 집과 순수 고독의 명상, 이성과 시의 조화를 누립니다.' },
+  { key: 'koreanNammyeongJoSikGyeongUi', nameKo: '남명 조식 내명자경외단자의 성성자방울 경의검 단성소직언 서릿발실천지조 산천재기개', icon: '🗡️', category: 'deep_master', summary: '남명 조식 선생의 경의사상으로 안으로는 마음을 밝히고 밖으로는 불의를 결단하며, 성성자 방울의 상시 각성과 서릿발 실천 지조를 발휘합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4440,6 +4479,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'frenchMontesquieuSpiritOfLaws',
+    'koreanNammyeongJoSikGyeongUi',
     'americanWilliamJamesPragmatism',
     'koreanDanjaeShinChaeHoJoseonSanggosa',
     'britishBertrandRussellConquestOfHappiness',
@@ -4791,6 +4832,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'frenchGastonBachelardPoeticsOfSpace',
     'koreanMaewoldangKimSiSeupGeumoSinhwa',
     'germanSwissHermannHesseDemianSiddhartha',
     'indianRabindranathTagoreGitanjali',
@@ -4829,6 +4871,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'frenchMontesquieuSpiritOfLaws',
+    'frenchGastonBachelardPoeticsOfSpace',
+    'koreanNammyeongJoSikGyeongUi',
     'germanErichFrommArtOfLovingBeing',
     'koreanDanjaeShinChaeHoJoseonSanggosa',
     'americanWilliamJamesPragmatism',
