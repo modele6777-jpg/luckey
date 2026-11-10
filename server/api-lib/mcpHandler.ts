@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { MCP_SERVER_VERSION } from './mcpVersion.ts';
-import { verifyMcpBearer, readBearerToken, protectedReading } from './mcpAuth.ts';
+import { MCP_AUTH_MESSAGE, logRejectedMcpAuth, protectedReading, readMcpCredential, verifyMcpBearer } from './mcpAuth.ts';
 import { fetchDailyTarot, fetchSajuChart, ORACLE_GAP, selectTarotCard } from './mcpReadingGateway.ts';
 import { handleStreamableMcpPost, isStreamableMcpGet, isStreamableMcpPost } from './mcpStreamable.ts';
 export { handleStreamableMethodNotAllowed } from './mcpStreamable.ts';
@@ -10,6 +10,7 @@ interface SseClient {
   id: string;
   res: Response;
   createdAt: number;
+  authorized: boolean;
 }
 
 const sseClients = new Map<string, SseClient>();
@@ -199,7 +200,7 @@ export async function processMCPJsonRpc(message: any, context: { authorized?: bo
 
     try {
       if (name === 'get_daily_tarot' || name === 'get_saju_fortune') {
-        if (!context.authorized) throw new Error('인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.');
+        if (!context.authorized) throw new Error(MCP_AUTH_MESSAGE);
       }
 
       if (name === 'get_daily_tarot') {
@@ -504,6 +505,7 @@ export function handleMCPSseStream(req: Request, res: Response) {
     id: sessionId,
     res,
     createdAt: Date.now(),
+    authorized: verifyMcpBearer(readMcpCredential(req)),
   });
 
   // Initial endpoint event per MCP SSE spec (both absolute URL and relative fallback for maximum client compatibility)
@@ -531,15 +533,17 @@ export async function handleMCPPostMessage(req: Request, res: Response) {
   const client = sseClients.get(sessionId);
 
   const message = req.body;
-  if (protectedReading(message) && !verifyMcpBearer(readBearerToken(req))) {
+  const authorized = verifyMcpBearer(readMcpCredential(req)) || Boolean(client?.authorized);
+  if (protectedReading(message) && !authorized) {
+    logRejectedMcpAuth(req);
     const id = message && typeof message === 'object' && 'id' in message ? (message as { id?: unknown }).id : null;
     return res.status(401).json({
       jsonrpc: '2.0',
       id: typeof id === 'string' || typeof id === 'number' ? id : null,
-      error: { code: -32001, message: '인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.' },
+      error: { code: -32001, message: MCP_AUTH_MESSAGE },
     });
   }
-  const rpcResponse = await processMCPJsonRpc(message, { authorized: verifyMcpBearer(readBearerToken(req)) });
+  const rpcResponse = await processMCPJsonRpc(message, { authorized });
 
   if (rpcResponse) {
     if (client) {
@@ -566,15 +570,17 @@ export async function handleMCPDirectPost(req: Request, res: Response) {
   }
 
   const message = req.body;
-  if (protectedReading(message) && !verifyMcpBearer(readBearerToken(req))) {
+  const authorized = verifyMcpBearer(readMcpCredential(req));
+  if (protectedReading(message) && !authorized) {
+    logRejectedMcpAuth(req);
     const id = message && typeof message === 'object' && 'id' in message ? (message as { id?: unknown }).id : null;
     return res.status(401).json({
       jsonrpc: '2.0',
       id: typeof id === 'string' || typeof id === 'number' ? id : null,
-      error: { code: -32001, message: '인증이 필요합니다. Authorization: Bearer 토큰을 확인해 주세요.' },
+      error: { code: -32001, message: MCP_AUTH_MESSAGE },
     });
   }
-  const rpcResponse = await processMCPJsonRpc(message, { authorized: verifyMcpBearer(readBearerToken(req)) });
+  const rpcResponse = await processMCPJsonRpc(message, { authorized });
 
   if (!rpcResponse) {
     return res.status(204).end();
