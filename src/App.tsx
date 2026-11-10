@@ -121,6 +121,7 @@ import { safeLocalStorage, safeSessionStorage } from "./utils/safeStorage";
 import { usePinScreenLock } from "./hooks/usePinScreenLock";
 import { useViewportScrollLock } from "./hooks/useViewportScrollLock";
 import { resolveCanonicalPath } from "./lib/prismRouteRegistry";
+import { resolveFoldCover } from "./lib/duoFoldCover";
 
 const ROUTES_MAP = [
   { path: "/", Component: LucyStandalonePage },
@@ -238,6 +239,7 @@ function AppContent() {
   const lastTouchedDuoPaneRef = React.useRef<'left' | 'right'>('right');
   const lastLeftChannelPathRef = React.useRef<string>('/key');
   const previousUnfoldedRef = React.useRef(duoState.unfolded);
+  const [foldedCosmicRoom, setFoldedCosmicRoom] = React.useState(false);
 
   React.useEffect(() => {
     const handleLayoutChange = () => {
@@ -255,21 +257,19 @@ function AppContent() {
       document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
       document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
 
-      // 📱 펼침 ➔ 접힘 전환 시: 마지막 터치 패널에 따라 표출 어플 결정
+      // 펼침 → 접힘: 마지막에 만진 쪽이 접힌 화면이 된다.
+      // 좌측이 코스믹 룸이면 이전 채널로 보내지 않고 코스믹 룸을 유지한다.
       if (wasUnfolded && !isNowUnfolded) {
-        if (lastTouchedDuoPaneRef.current === 'right') {
-          // 우측(루시)을 마지막에 터치하고 접었을 때 ➔ 루시 표출
-          const cleanLoc = window.location.pathname || '/';
-          if (cleanLoc !== '/' && cleanLoc !== '/chat' && cleanLoc !== '/lucy') {
-            navigate('/chat');
-          }
-        } else if (lastTouchedDuoPaneRef.current === 'left') {
-          // 좌측(채널)을 마지막에 터치하고 접었을 때 ➔ 좌측 어플 표출
-          const cleanLoc = window.location.pathname || '/';
-          const targetLeftPath = lastLeftChannelPathRef.current;
-          if (targetLeftPath && (cleanLoc === '/' || cleanLoc === '/chat' || cleanLoc === '/lucy')) {
-            navigate(targetLeftPath);
-          }
+        const cover = resolveFoldCover({
+          lastTouched: lastTouchedDuoPaneRef.current,
+          currentPath: window.location.pathname || '/',
+          lastLeftChannelPath: lastLeftChannelPathRef.current,
+        });
+        if (cover.kind === 'cosmic') {
+          setFoldedCosmicRoom(true);
+        } else {
+          setFoldedCosmicRoom(false);
+          if (cover.navigateTo) navigate(cover.navigateTo);
         }
       }
     };
@@ -336,6 +336,7 @@ function AppContent() {
       const targetPath = e?.detail?.path;
       if (targetPath && typeof targetPath === 'string') {
         markIntentionalNav();
+        setFoldedCosmicRoom(false);
         const safePath = resolveCanonicalPath(targetPath);
         navigate(safePath);
       }
@@ -702,6 +703,7 @@ function AppContent() {
 
     const handleNavClick = (e: any) => {
       const p = e?.detail?.path;
+      if (p) setFoldedCosmicRoom(false);
       if (p === '/' || p === '/chat' || p === '/lucy') {
         lastTouchedDuoPaneRef.current = 'right';
       } else if (p) {
@@ -854,6 +856,10 @@ function AppContent() {
                 </React.Suspense>
               </ErrorBoundary>
             </div>
+          </div>
+        ) : foldedCosmicRoom && isLucyRoute ? (
+          <div className="duo-folded-view w-full h-full min-h-0 flex-1 overflow-hidden flex flex-col">
+            <DuoCosmicAmbientRoom isLight={isLight} />
           </div>
         ) : (
           <ChannelPage location={location} />
