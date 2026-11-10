@@ -1183,5 +1183,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanAhnJungGeunPeaceRighteousness": {
     "field": "koreanAhnJungGeunPeaceRighteousnessResult",
     "traceKey": "koreanAhnJungGeunPeaceRighteousnessResult"
+  },
+  "austrianAlfredAdlerIndividualPsychology": {
+    "field": "austrianAlfredAdlerIndividualPsychologyResult",
+    "traceKey": "austrianAlfredAdlerIndividualPsychologyResult"
+  },
+  "germanFriedrichSchillerAestheticEducation": {
+    "field": "germanFriedrichSchillerAestheticEducationResult",
+    "traceKey": "germanFriedrichSchillerAestheticEducationResult"
+  },
+  "koreanDamheonHongDaeYongUisanMundap": {
+    "field": "koreanDamheonHongDaeYongUisanMundapResult",
+    "traceKey": "koreanDamheonHongDaeYongUisanMundapResult"
   }
 };

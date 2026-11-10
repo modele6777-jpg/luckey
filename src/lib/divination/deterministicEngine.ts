@@ -319,6 +319,9 @@ import { calculateKoreanOhseongHaneumFriendshipGovernance, formatKoreanOhseongHa
 import { calculateFrenchVoltaireCandideTolerance, formatFrenchVoltaireCandideTolerancePrompt, type FrenchVoltaireCandideToleranceResult, FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION } from './frenchVoltaireCandideToleranceEngine';
 import { calculateAmericanWaltWhitmanLeavesOfGrass, formatAmericanWaltWhitmanLeavesOfGrassPrompt, type AmericanWaltWhitmanLeavesOfGrassResult, AMERICAN_WALT_WHITMAN_VERSION } from './americanWaltWhitmanLeavesOfGrassEngine';
 import { calculateKoreanAhnJungGeunPeaceRighteousness, formatKoreanAhnJungGeunPeaceRighteousnessPrompt, type KoreanAhnJungGeunPeaceRighteousnessResult, KOREAN_AHN_JUNG_GEUN_VERSION } from './koreanAhnJungGeunPeaceRighteousnessEngine';
+import { calculateAustrianAlfredAdlerIndividualPsychology, formatAustrianAlfredAdlerIndividualPsychologyPrompt, type AustrianAlfredAdlerIndividualPsychologyResult, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION } from './austrianAlfredAdlerIndividualPsychologyEngine';
+import { calculateGermanFriedrichSchillerAestheticEducation, formatGermanFriedrichSchillerAestheticEducationPrompt, type GermanFriedrichSchillerAestheticEducationResult, GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION } from './germanFriedrichSchillerAestheticEducationEngine';
+import { calculateKoreanDamheonHongDaeYongUisanMundap, formatKoreanDamheonHongDaeYongUisanMundapPrompt, type KoreanDamheonHongDaeYongUisanMundapResult, KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION } from './koreanDamheonHongDaeYongUisanMundapEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -658,6 +661,9 @@ export interface DeterministicEngineReport {
   frenchVoltaireCandideToleranceResult?: FrenchVoltaireCandideToleranceResult | null;
   americanWaltWhitmanLeavesOfGrassResult?: AmericanWaltWhitmanLeavesOfGrassResult | null;
   koreanAhnJungGeunPeaceRighteousnessResult?: KoreanAhnJungGeunPeaceRighteousnessResult | null;
+  austrianAlfredAdlerIndividualPsychologyResult?: AustrianAlfredAdlerIndividualPsychologyResult | null;
+  germanFriedrichSchillerAestheticEducationResult?: GermanFriedrichSchillerAestheticEducationResult | null;
+  koreanDamheonHongDaeYongUisanMundapResult?: KoreanDamheonHongDaeYongUisanMundapResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3854,6 +3860,33 @@ try {
     }
   })()));
 
+  // 288. 오스트리아 알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 & 공동체 감각 지혜 엔진
+  const austrianAlfredAdlerIndividualPsychologyResult = calculateSupplement('austrianAlfredAdlerIndividualPsychologyResult', () => ((() => {
+    try {
+      return calculateAustrianAlfredAdlerIndividualPsychology(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 289. 독일 프리드리히 실러 《인간의 미적 교육에 관한 편지》 놀이 충동 & 미적 자유 지혜 엔진
+  const germanFriedrichSchillerAestheticEducationResult = calculateSupplement('germanFriedrichSchillerAestheticEducationResult', () => ((() => {
+    try {
+      return calculateGermanFriedrichSchillerAestheticEducation(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 290. 대한민국 담헌 홍대용 《의산문답》 지전설·무한우주론 & 인물균(人物均) 개방지성 지혜 엔진
+  const koreanDamheonHongDaeYongUisanMundapResult = calculateSupplement('koreanDamheonHongDaeYongUisanMundapResult', () => ((() => {
+    try {
+      return calculateKoreanDamheonHongDaeYongUisanMundap(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4179,6 +4212,9 @@ try {
     frenchVoltaireCandideToleranceResult,
     americanWaltWhitmanLeavesOfGrassResult,
     koreanAhnJungGeunPeaceRighteousnessResult,
+    austrianAlfredAdlerIndividualPsychologyResult,
+    germanFriedrichSchillerAestheticEducationResult,
+    koreanDamheonHongDaeYongUisanMundapResult,
     tools: toolsMap,
   };
 }
@@ -4495,6 +4531,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchVoltaireCandideTolerance', nameKo: '볼테르 캉디드 관용론 밭을일구는실천 관용의이성 위트풍자 정의구현 현실직시', icon: '🌱', category: 'deep_master', summary: '볼테르의 캉디드와 관용론 사상으로 공리공론을 벗어나 지금-여기 밭을 일구는 성실한 실천과 편협을 깨뜨리는 열린 관용, 진실을 변호하는 정의감을 체득합니다.' },
   { key: 'americanWaltWhitmanLeavesOfGrass', nameKo: '월트 휘트먼 풀잎 나자신의노래 우주적생명찬가 무한포용 모순수용 풀잎영성 열린길모험심', icon: '🌿', category: 'deep_master', summary: '월트 휘트먼의 풀잎과 나 자신의 노래 사상으로 타인의 시선을 초월한 무조건적 자아 긍정과 대우주적 포용력, 열린 길을 향한 자유로운 모험심을 누립니다.' },
   { key: 'koreanAhnJungGeunPeaceRighteousness', nameKo: '안중근 동양평화론 견리사의견위수명 살신성인 일일부독서 백인당중유태화 주권평화선비기개', icon: '🕊️', category: 'deep_master', summary: '안중근 의사의 동양평화론과 견리사의 견위수명 사상으로 사익을 초월한 고결한 도덕적 기개와 자주독립 상생 평화 비전, 숭고한 인내와 지적 수양을 실천합니다.' },
+  { key: 'austrianAlfredAdlerIndividualPsychology', nameKo: '알프레트 아들러 인간이해 삶의의미 열등감극복 공동체감각 과제분리 목적론적결단 불완전할용기', icon: '🌱', category: 'deep_master', summary: '알프레트 아들러의 개인심리학 사상으로 열등감을 성장의 원동력으로 삼고, 과제의 분리와 공동체 감각(Gemeinschaftsgefühl)으로 타인과 건강하게 연대합니다.' },
+  { key: 'germanFriedrichSchillerAestheticEducation', nameKo: '프리드리히 실러 인간의미적교육 놀이충동 살아있는형상 우아함과존엄 미적자유 전인적조화', icon: '🎭', category: 'deep_master', summary: '프리드리히 실러의 미적 교육론 사상으로 물질과 이성의 분열을 아우르는 놀이 충동(Spieltrieb)과 살아있는 형상(Lebende Gestalt)으로 온전한 전인적 자유를 누립니다.' },
+  { key: 'koreanDamheonHongDaeYongUisanMundap', nameKo: '담헌 홍대용 의산문답 지전설 무한우주론 인물균 탈중화개방성 탈편견실증주의 거문고사색호연지기', icon: '🌌', category: 'deep_master', summary: '담헌 홍대용 선생의 의산문답 사상으로 지전설과 무한우주론의 대우주적 안목, 인간과 만물이 평등하다는 인물균(人物均)의 지혜와 탈편견 실증 개방성을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4557,6 +4596,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'austrianAlfredAdlerIndividualPsychology',
+    'koreanDamheonHongDaeYongUisanMundap',
     'koreanAhnJungGeunPeaceRighteousness',
     'frenchVoltaireCandideTolerance',
     'koreanOhseongHaneumFriendshipGovernance',
@@ -4723,6 +4764,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'austrianAlfredAdlerIndividualPsychology',
+    'germanFriedrichSchillerAestheticEducation',
     'americanWaltWhitmanLeavesOfGrass',
     'frenchVoltaireCandideTolerance',
     'germanAlbertSchweitzerReverenceForLife',
@@ -4920,6 +4963,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'germanFriedrichSchillerAestheticEducation',
+    'koreanDamheonHongDaeYongUisanMundap',
     'frenchGastonBachelardPoeticsOfSpace',
     'koreanMaewoldangKimSiSeupGeumoSinhwa',
     'germanSwissHermannHesseDemianSiddhartha',
@@ -4959,6 +5004,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'austrianAlfredAdlerIndividualPsychology',
+    'germanFriedrichSchillerAestheticEducation',
+    'koreanDamheonHongDaeYongUisanMundap',
     'koreanAhnJungGeunPeaceRighteousness',
     'americanWaltWhitmanLeavesOfGrass',
     'frenchVoltaireCandideTolerance',
