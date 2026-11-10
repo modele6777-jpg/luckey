@@ -259,6 +259,7 @@ function AppContent() {
 
       // 펼침 → 접힘: 마지막에 만진 쪽이 접힌 화면이 된다.
       // 좌측이 코스믹 룸이면 이전 채널로 보내지 않고 코스믹 룸을 유지한다.
+      // 접힌 채로 가로로 돌리는 것은 이 전환이 아니다. 지금 페이지만 가로로 남긴다.
       if (wasUnfolded && !isNowUnfolded) {
         const cover = resolveFoldCover({
           lastTouched: lastTouchedDuoPaneRef.current,
