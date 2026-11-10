@@ -325,11 +325,10 @@ async function invokeFastMeditationPrescriptionLLM(
   systemInstruction: string,
   timeoutMs: number = 6000
 ): Promise<any> {
-  const rawKey =
+  const geminiApiKey =
     (import.meta as any).env?.VITE_GEMINI_API_KEY ||
     (import.meta as any).env?.VITE_AI_API_KEY ||
     '';
-  const geminiApiKey = rawKey.includes('AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A') ? '' : rawKey;
 
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error(`Meditation AI timeout (${timeoutMs}ms)`)), timeoutMs);

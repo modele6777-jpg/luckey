@@ -1,4 +1,4 @@
-import { router } from "../_core/trpc";
+import { router } from "../_core/trpc.ts";
 
 export const appRouter = router({
 });

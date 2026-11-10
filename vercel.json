@@ -116,7 +116,15 @@
       "destination": "/index.html"
     },
     {
-      "source": "/((?!api).*)",
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon.png"
+    },
+    {
+      "source": "/((?!api(?:/|$)|robots\\.txt$|sitemap\\.xml$|favicon\\.ico$|favicon\\.png$|health$).*)",
       "destination": "/index.html"
     }
   ]

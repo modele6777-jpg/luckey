@@ -1,1 +1,1 @@
-export { getXaiApiKey } from "../api-lib/xaiKey";
+export { getXaiApiKey } from "../api-lib/xaiKey.ts";

@@ -1,15 +1,11 @@
 import { isMasterTierModel, modelCandidates, LUCY_MASTER_FALLBACK_MODELS, getLucyRequestFallbacks } from './src/lib/lucyModelPolicy';
+import { isRevokedGeminiKey } from './server/geminiKey.ts';
 import dotenv from "dotenv";
 dotenv.config();
 dotenv.config({ path: ".env.local", override: true });
 
-// Prefer explicit env keys; clean known revoked/deleted service account keys.
-if (process.env.GEMINI_API_KEY?.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A")) {
-  delete process.env.GEMINI_API_KEY;
-}
-if (process.env.GOOGLE_GENAI_API_KEY?.includes("AQ.Ab8RN6LJzmJJ3ExtNix-ERyIkxzPtsV23WdCr71NRGItFPK41A")) {
-  delete process.env.GOOGLE_GENAI_API_KEY;
-}
+if (isRevokedGeminiKey(process.env.GEMINI_API_KEY)) delete process.env.GEMINI_API_KEY;
+if (isRevokedGeminiKey(process.env.GOOGLE_GENAI_API_KEY)) delete process.env.GOOGLE_GENAI_API_KEY;
 const activeGeminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || "";
 if (activeGeminiKey) {
   process.env.GEMINI_API_KEY = activeGeminiKey;
@@ -930,7 +926,7 @@ ${content}
   // Bluebird ?꾩뒯??'猷⑤?' ???ㅻ뒛???덉닠 ?묓뭹 vision 遺꾩꽍 + 紐낃끝쨌?쑣룸챸??異붿쿇
   app.post("/api/bluebird/docent", async (req, res) => {
     try {
-      const { handleBluebirdDocent } = await import("./server/bluebirdDocent");
+      const { handleBluebirdDocent } = await import("./server/bluebirdDocent.ts");
       const result = await handleBluebirdDocent(req.body);
       return res.status(200).json(result);
     } catch (err: any) {
@@ -944,7 +940,7 @@ ${content}
   // Muse ?꾩뒯?????곗씪由??꾪듃 vision 遺꾩꽍 + ?뚯꽦 ?먮젅?댁뀡
   app.post("/api/muse/docent", async (req, res) => {
     try {
-      const { handleMuseDocent } = await import("./server/museDocent");
+      const { handleMuseDocent } = await import("./server/museDocent.ts");
       const result = await handleMuseDocent(req.body);
       return res.status(200).json(result);
     } catch (err: any) {
@@ -957,7 +953,7 @@ ${content}
 
   app.post("/api/muse/artwork-image", async (req, res) => {
     try {
-      const { resolveMuseArtworkImage } = await import("./server/museArtworkImage");
+      const { resolveMuseArtworkImage } = await import("./server/museArtworkImage.ts");
       const { forcePollinations, ...art } = req.body || {};
       const result = await resolveMuseArtworkImage(art, { forcePollinations: !!forcePollinations });
       return res.status(200).json(result);
@@ -969,7 +965,7 @@ ${content}
 
   app.get("/api/muse/artwork-image/proxy", async (req, res) => {
     try {
-      const { isAllowedImageProxyUrl, proxyArtworkImage } = await import("./server/museArtworkImage");
+      const { isAllowedImageProxyUrl, proxyArtworkImage } = await import("./server/museArtworkImage.ts");
       const url = String(req.query.url || "");
       if (!isAllowedImageProxyUrl(url)) {
         return res.status(400).json({ error: "Invalid image URL" });
@@ -996,7 +992,7 @@ ${content}
         return res.status(400).json({ error: "focusPlaylist, dateKey, trackKey are required" });
       }
 
-      const { generateDailyBgmBuffer } = await import("./server/api-lib/generateDailyBgm");
+      const { generateDailyBgmBuffer } = await import("./server/api-lib/generateDailyBgm.ts");
       const { buffer, durationSec } = generateDailyBgmBuffer({
         focusPlaylist: String(focusPlaylist),
         frequency: frequency ? String(frequency) : undefined,
@@ -1022,12 +1018,12 @@ ${content}
   // 오늘의 예술: 검증된 카탈로그 기반 + AI 해석 문구만 개인화
   app.post("/api/ai/recommend-art", async (req, res) => {
     try {
-      const { buildDailyArtRecommendation } = await import("./server/api-lib/recommendArt");
+      const { buildDailyArtRecommendation } = await import("./server/api-lib/recommendArt.ts");
       const result = await buildDailyArtRecommendation(req.body || {});
       return res.status(200).json(result);
     } catch (err: unknown) {
       console.error("[recommend-art] error:", err);
-      const { buildVerifiedArtRecommendation } = await import("./server/api-lib/museArtCatalog");
+      const { buildVerifiedArtRecommendation } = await import("./server/api-lib/museArtCatalog.ts");
       const dateKey = String(req.body?.dateKey || new Date().toLocaleDateString("sv"));
       return res.status(200).json(
         buildVerifiedArtRecommendation(
@@ -1145,250 +1141,14 @@ ${content}
     return res.status(200).json(fallback);
   });
 
-  // Bluebird Secret Blessing Echo Handler (Concise Healing Mantra)
   app.post("/api/ai/secret-blessing", async (req, res) => {
-    const { content, moodTag, moodLabel } = req.body || {};
-    const text = String(content || "").trim();
-
-    if (!text) {
-      return res.status(400).json({ error: "쪽지 내용이 비어 있습니다." });
-    }
-
-    const { apiKey } = getAIConfig();
-    const systemInstruction = `당신은 사용자의 비밀 쪽지(마음의 기록)를 읽고, 그 사연에 꼭 맞춘 가장 따뜻하고 정갈한 '1줄 치유 문구(Comfort Mantra)'를 전하는 파랑새입니다.
-
-[필수 규칙]:
-1. 사족이나 장황한 서론/설명, 일반론적인 안부 인사는 절대 금지합니다.
-2. 사용자가 적은 쪽지의 핵심 상황(직장, 관계, 사랑, 불안, 피로, 자책 등)에 정확하게 공명하는 오직 '1~2문장의 핵심 치유 문구'만 생성하세요.
-3. 어조: 다정하고 평온한 울림을 주는 한국어 구어체.
-4. JSON 형식: {"comfortMantra": "사용자 사연에 꼭 맞춘 1~2문장의 따뜻한 치유 문구"}`;
-
-    const prompt = `[비밀 테마]: ${moodLabel || moodTag || "마음의 기록"}
-[사용자가 보낸 쪽지 내용]:
-"${text}"
-
-위 쪽지 내용의 핵심 감정과 사연을 깊이 어루만지는 1~2문장의 핵심 치유 문구(comfortMantra)만 JSON으로 보내주세요.`;
-
-    if (apiKey) {
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        const config = {
-          systemInstruction,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              comfortMantra: { type: "STRING" }
-            },
-            required: ["comfortMantra"]
-          }
-        };
-        const contents = [{ role: "user", parts: [{ text: prompt }] }];
-        const { response } = await callGeminiContentWithFallback(ai, contents, config);
-        const parsed = JSON.parse(response.text);
-        if (parsed?.comfortMantra) {
-          return res.status(200).json({
-            comfortMantra: parsed.comfortMantra.replace(/^["'“”‘’]+|["'“”‘’]+$/g, '').trim()
-          });
-        }
-      } catch (geminiErr) {
-        console.warn("[secret-blessing] Gemini call failed, falling back to smart contextual generator:", geminiErr);
-      }
-    }
-
-    // Contextual fallback helper
-    const getTailoredComfortMantra = (txt: string): string => {
-      const lower = txt.toLowerCase();
-      if (lower.includes('회사') || lower.includes('직장') || lower.includes('일') || lower.includes('야근') || lower.includes('업무') || lower.includes('상사') || lower.includes('퇴사') || lower.includes('이직') || lower.includes('동료')) {
-        return '일터의 무거운 책임감을 잠시 내려놓고, 오늘 밤은 오직 당신만을 위한 따뜻한 쉼을 누리세요.';
-      }
-      if (lower.includes('친구') || lower.includes('사람') || lower.includes('인간관계') || lower.includes('상처') || lower.includes('서운') || lower.includes('배신') || lower.includes('싸움') || lower.includes('오해') || lower.includes('눈치')) {
-        return '내 마음의 평화가 가장 소중합니다. 타인의 시선에 휘둘리지 않고 당신만의 맑은 온기를 지키세요.';
-      }
-      if (lower.includes('사랑') || lower.includes('연애') || lower.includes('이별') || lower.includes('그리움') || lower.includes('보고싶') || lower.includes('짝사랑') || lower.includes('남자친구') || lower.includes('여자친구') || lower.includes('헤어') || lower.includes('마음')) {
-        return '누군가를 진심으로 아끼고 사랑했던 당신의 순수한 온기는 그 자체로 눈부시게 아름답습니다.';
-      }
-      if (lower.includes('불안') || lower.includes('걱정') || lower.includes('두려') || lower.includes('미래') || lower.includes('시험') || lower.includes('취업') || lower.includes('면접') || lower.includes('돈') || lower.includes('재정') || lower.includes('합격') || lower.includes('준비')) {
-        return '조급해하지 않아도 괜찮아요. 모든 순리는 가장 알맞고 아름다운 때에 당신 편이 되어줍니다.';
-      }
-      if (lower.includes('외로') || lower.includes('혼자') || lower.includes('쓸쓸') || lower.includes('우울') || lower.includes('눈물') || lower.includes('지침') || lower.includes('피곤') || lower.includes('힘들') || lower.includes('지쳐') || lower.includes('버겁')) {
-        return '숨을 깊게 들이쉬고 내쉬어 보세요. 무거운 짐을 견뎌온 당신이라는 존재 자체로 이미 귀하고 충분합니다.';
-      }
-      if (lower.includes('감사') || lower.includes('행복') || lower.includes('고마') || lower.includes('희망') || lower.includes('소망') || lower.includes('축복') || lower.includes('기쁨') || lower.includes('좋아')) {
-        return '세상에 띄워 보낸 당신의 다정한 감사의 파동은 머지않아 더 커다란 행운과 평온으로 되돌아옵니다.';
-      }
-      return '흘러간 것은 흘러간 대로 두고, 지금 이 순간의 나를 온전히 안아줍니다.';
-    };
-
-    return res.status(200).json({
-      comfortMantra: getTailoredComfortMantra(text)
-    });
+    const { handleSecretBlessingPost } = await import("./server/api-lib/secretNoteRoute.ts");
+    return handleSecretBlessingPost(req, res);
   });
 
-  // Bluebird Secret Note Emotion Tag Auto-Recommendation Handler
   app.post("/api/ai/secret-mood-recommend", async (req, res) => {
-    const { content } = req.body || {};
-    const text = String(content || "").trim();
-
-    if (!text) {
-      return res.status(400).json({ error: "쪽지 내용이 비어 있습니다." });
-    }
-
-    const availableTags = [
-      { id: "confession", label: "밤의 고백", emoji: "🌙", desc: "누구에게도 말하지 못한 은밀한 진실이나 짝사랑, 속마음 고백" },
-      { id: "release", label: "놓아주는 마음", emoji: "🕊️", desc: "미련, 집착, 지나간 과거를 훌훌 털어내고 비워내는 마음" },
-      { id: "tears", label: "남모를 눈물", emoji: "💧", desc: "서러움, 슬픔, 외로움, 남모르게 흘린 눈물과 상처" },
-      { id: "wish", label: "숨겨둔 소망", emoji: "✨", desc: "간절한 소원, 꿈, 미래에 대한 희망과 바람" },
-      { id: "letter", label: "파랑새에게 부치는 편지", emoji: "✉️", desc: "파랑새를 부르며 대화하듯 전하는 온기 어린 편지" },
-      { id: "gratitude", label: "비밀 감사", emoji: "🤍", desc: "숨겨둔 고마움, 은혜, 따뜻한 감사와 축복" },
-    ];
-
-    const { apiKey } = getAIConfig();
-    const systemInstruction = `당신은 사용자의 비밀 쪽지 글을 읽고 가장 깊이 공명하는 감정 태그를 추천하는 파랑새 감정 분석 엔진입니다.
-선택 가능한 태그 ID: ["confession", "release", "tears", "wish", "letter", "gratitude"]
-반드시 위의 6가지 ID 중 가장 적합한 1개를 선택하고, 1문장의 따뜻한 추천 이유를 반환하세요.`;
-
-    const prompt = `[사용자의 비밀 쪽지]:
-"${text}"
-
-가장 적합한 moodTag ID와 추천 이유(reason)를 JSON으로 보내주세요.`;
-
-    if (apiKey) {
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        const config = {
-          systemInstruction,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              moodTag: { type: "STRING", enum: ["confession", "release", "tears", "wish", "letter", "gratitude"] },
-              reason: { type: "STRING" }
-            },
-            required: ["moodTag", "reason"]
-          }
-        };
-        const contents = [{ role: "user", parts: [{ text: prompt }] }];
-        const { response } = await callGeminiContentWithFallback(ai, contents, config);
-        const parsed = JSON.parse(response.text);
-        const matched = availableTags.find(t => t.id === parsed.moodTag) || availableTags[0];
-        return res.status(200).json({
-          moodTag: matched.id,
-          moodLabel: matched.label,
-          emoji: matched.emoji,
-          reason: parsed.reason || `${matched.label} 테마에 어울리는 쪽지입니다.`
-        });
-      } catch (geminiErr) {
-        console.warn("[secret-mood-recommend] Gemini call failed, falling back to heuristic engine:", geminiErr);
-      }
-    }
-
-    // Heuristic mood tag recommendation fallback
-    const lower = text.toLowerCase();
-    let bestTag = availableTags[0];
-    let reason = "진솔한 마음을 담은 고백입니다.";
-
-    if (lower.includes('눈물') || lower.includes('울') || lower.includes('슬프') || lower.includes('아프') || lower.includes('상처') || lower.includes('서운') || lower.includes('외로') || lower.includes('쓸쓸') || lower.includes('우울') || lower.includes('지쳐') || lower.includes('힘들') || lower.includes('괴로')) {
-      bestTag = availableTags[2]; // tears
-      reason = "남모르게 홀로 삼켜온 슬픔과 눈물의 온기가 느껴집니다.";
-    } else if (lower.includes('놓아') || lower.includes('비우') || lower.includes('잊어') || lower.includes('미련') || lower.includes('집착') || lower.includes('훌훌') || lower.includes('털어') || lower.includes('그만') || lower.includes('용서') || lower.includes('정리')) {
-      bestTag = availableTags[1]; // release
-      reason = "무거운 짐을 내려놓고 마음을 비워내려는 용기가 돋보입니다.";
-    } else if (lower.includes('소원') || lower.includes('소망') || lower.includes('바래') || lower.includes('바라') || lower.includes('꿈') || lower.includes('희망') || lower.includes('이루') || lower.includes('꼭') || lower.includes('기��') || lower.includes('행복해')) {
-      bestTag = availableTags[3]; // wish
-      reason = "가슴 깊이 간직한 빛나는 소망과 바람이 담겨 있습니다.";
-    } else if (lower.includes('감사') || lower.includes('고마') || lower.includes('은혜') || lower.includes('덕분') || lower.includes('축복') || lower.includes('따뜻')) {
-      bestTag = availableTags[5]; // gratitude
-      reason = "세상을 밝히는 순수한 감사의 파동이 느껴집니다.";
-    } else if (lower.includes('파랑새') || lower.includes('편지') || lower.includes('너에게') || lower.includes('들어줘') || lower.includes('전해줘') || lower.includes('답장')) {
-      bestTag = availableTags[4]; // letter
-      reason = "파랑새에게 다정하게 띄워 보내는 마음의 편지입니다.";
-    }
-
-    return res.status(200).json({
-      moodTag: bestTag.id,
-      moodLabel: bestTag.label,
-      emoji: bestTag.emoji,
-      reason
-    });
-  });
-
-  // Bluebird Secret Note Fast Blessing Generation Endpoint
-  app.post("/api/ai/secret-blessing", async (req, res) => {
-    const { content, moodTag, userName } = req.body || {};
-    const text = String(content || "").trim();
-    const tag = String(moodTag || "confession").trim();
-    const name = String(userName || "제제").trim();
-
-    if (!text) {
-      return res.status(400).json({ error: "쪽지 내용이 비어 있습니다." });
-    }
-
-    const { apiKey } = getAIConfig();
-    if (apiKey) {
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        const systemInstruction = `당신은 사용자의 지친 마음과 비밀을 다정하게 품어주는 치유의 영적 수호자 '파랑새(BLUEBIRD)'입니다.
-사용자가 작성한 비밀 쪽지 내용을 진심 어린 마음으로 읽고, 사용자가 처한 구체적인 감정과 상황을 직접 언급하며 깊은 공감과 위로를 건네는 2~3문장의 따뜻한 구어체 답장(comfortMantra)을 작성하세요.
-절대 뻔하거나 상투적인 조언을 하지 말고, 사용자가 털어놓은 구체적 사연, 감정, 인물, 고민을 따스하게 감싸 안아주세요.
-반드시 모든 자연어 출력은 현대 한국어 한글로만 작성하고 JSON 형태로 응답하세요.`;
-
-        const prompt = `[사용자 닉네임]: ${name}\n[감정 테마]: ${tag}\n[사용자가 작성한 비밀 쪽지]:\n"${text}"\n\n이 마음에 진심으로 공감하고 따뜻한 힘이 되어주는 파랑새의 위로 답장(comfortMantra)을 JSON으로 보내주세요.`;
-
-        const config = {
-          systemInstruction,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              comfortMantra: { type: "STRING" }
-            },
-            required: ["comfortMantra"]
-          },
-          maxOutputTokens: 512,
-        };
-
-        const contents = [{ role: "user", parts: [{ text: prompt }] }];
-        // Fast direct Gemini with prioritized fast model & 3.5s timeout race
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Fast AI Timeout")), 3500)
-        );
-        const { response } = await Promise.race([
-          callGeminiContentWithFallback(ai, contents, config, "gemini-3.1-flash-lite"),
-          timeoutPromise
-        ]);
-        const parsed = JSON.parse(response.text);
-        if (parsed?.comfortMantra) {
-          return res.status(200).json({
-            comfortMantra: parsed.comfortMantra.replace(/^['“”‘’]+|['“”‘’]+$/g, '').trim()
-          });
-        }
-      } catch (geminiErr) {
-        console.warn("[secret-blessing] Fast Gemini call failed or timed out, falling back to heuristic engine:", geminiErr);
-      }
-    }
-
-    // Heuristic fallback matching keywords and user's context
-    const lower = text.toLowerCase();
-    let echo = `${name} 님, 흘러간 것은 흘러간 대로 두고, 지금 이 순간의 나를 온전히 안아줍니다.`;
-
-    if (lower.includes('회사') || lower.includes('직장') || lower.includes('일') || lower.includes('야근') || lower.includes('업무') || lower.includes('상사') || lower.includes('퇴사') || lower.includes('이직') || lower.includes('동료')) {
-      echo = `${name} 님, 일터의 무거운 책임감을 잠시 내려놓고, 오늘 밤은 오직 당신만을 위한 따뜻하고 포근한 쉼을 누리세요.`;
-    } else if (lower.includes('친구') || lower.includes('사람') || lower.includes('인간관계') || lower.includes('상처') || lower.includes('서운') || lower.includes('배신') || lower.includes('싸움') || lower.includes('오해') || lower.includes('눈치')) {
-      echo = `${name} 님의 마음의 평화가 가장 소중합니다. 타인의 시선에 휘둘리지 않고 당신만의 맑은 온기를 지키세요.`;
-    } else if (lower.includes('사랑') || lower.includes('연애') || lower.includes('이별') || lower.includes('그리움') || lower.includes('보고싶') || lower.includes('짝사랑') || lower.includes('남자친구') || lower.includes('여자친구') || lower.includes('헤어') || lower.includes('마음')) {
-      echo = `누군가를 진심으로 아끼고 사랑했던 ${name} 님의 순수한 온기는 그 자체로 눈부시게 아름답습니다.`;
-    } else if (lower.includes('불안') || lower.includes('걱정') || lower.includes('두려') || lower.includes('미래') || lower.includes('시험') || lower.includes('취업') || lower.includes('면접') || lower.includes('돈') || lower.includes('재정') || lower.includes('합격') || lower.includes('준비')) {
-      echo = `조급해하지 않아도 괜찮아요, ${name} 님. 모든 순리는 가장 알맞고 아름다운 때에 당신 편이 되어줍니다.`;
-    } else if (lower.includes('외로') || lower.includes('혼자') || lower.includes('쓸쓸') || lower.includes('우울') || lower.includes('눈물') || lower.includes('지침') || lower.includes('피곤') || lower.includes('힘들') || lower.includes('지쳐') || lower.includes('버겁')) {
-      echo = `숨을 깊게 들이쉬고 내쉬어 보세요. 무거운 짐을 견뎌온 ${name} 님이라는 존재 자체로 이미 귀하고 충분합니다.`;
-    } else if (lower.includes('감사') || lower.includes('행복') || lower.includes('고마') || lower.includes('희망') || lower.includes('소망') || lower.includes('축복') || lower.includes('기쁨') || lower.includes('좋아')) {
-      echo = `세상에 띄워 보낸 ${name} 님의 다정한 감사의 파동은 머지않아 더 커다란 행운과 평온으로 되돌아옵니다.`;
-    }
-
-    return res.status(200).json({
-      comfortMantra: echo
-    });
+    const { handleSecretMoodPost } = await import("./server/api-lib/secretNoteRoute.ts");
+    return handleSecretMoodPost(req, res);
   });
 
   // TTS - generative AI speech only, without standard/device voice substitution
@@ -1396,7 +1156,7 @@ ${content}
     const { text, voice = 'Aoede', emotion, rate, speed, pitch, language } = req.body || {};
 
     try {
-      const { handleTTS } = await import('./server/api-lib/ttsHandler');
+      const { handleTTS } = await import('./server/api-lib/ttsHandler.ts');
       const result = await handleTTS({ text, voice, emotion, rate, speed, pitch, language });
       return res.status(200).json(result);
     } catch (error: any) {
@@ -1410,22 +1170,22 @@ ${content}
 
   // 🔌 MCP (Model Context Protocol) Endpoints (Spark, Claude, Cursor 등 외부 커스텀 앱 연동)
   app.get(["/api/mcp/sse", "/api/mcp", "/sse", "/mcp/sse", "/mcp"], async (req, res) => {
-    const { handleMCPSseStream } = await import("./server/api-lib/mcpHandler");
+    const { handleMCPSseStream } = await import("./server/api-lib/mcpHandler.ts");
     return handleMCPSseStream(req, res);
   });
 
   app.post(["/api/mcp/messages", "/messages", "/mcp/messages"], async (req, res) => {
-    const { handleMCPPostMessage } = await import("./server/api-lib/mcpHandler");
+    const { handleMCPPostMessage } = await import("./server/api-lib/mcpHandler.ts");
     return handleMCPPostMessage(req, res);
   });
 
   app.post(["/api/mcp", "/mcp", "/sse", "/api/mcp/sse", "/mcp/sse"], async (req, res) => {
-    const { handleMCPDirectPost } = await import("./server/api-lib/mcpHandler");
+    const { handleMCPDirectPost } = await import("./server/api-lib/mcpHandler.ts");
     return handleMCPDirectPost(req, res);
   });
 
   app.delete(["/api/mcp", "/mcp"], async (req, res) => {
-    const { handleStreamableMethodNotAllowed } = await import("./server/api-lib/mcpHandler");
+    const { handleStreamableMethodNotAllowed } = await import("./server/api-lib/mcpHandler.ts");
     return handleStreamableMethodNotAllowed(req, res);
   });
 
@@ -1433,7 +1193,7 @@ ${content}
   app.get("/", async (req, res, next) => {
     const accept = req.headers.accept || "";
     if (accept.includes("text/event-stream") || accept.includes("application/json") || req.query.mcp !== undefined || req.query.format === "json") {
-      const { handleMCPSseStream } = await import("./server/api-lib/mcpHandler");
+      const { handleMCPSseStream } = await import("./server/api-lib/mcpHandler.ts");
       return handleMCPSseStream(req, res);
     }
     return next();
@@ -1441,7 +1201,7 @@ ${content}
 
   app.post("/", async (req, res, next) => {
     if (req.body?.jsonrpc === "2.0" || req.body?.method === "initialize" || req.is("application/json")) {
-      const { handleMCPDirectPost } = await import("./server/api-lib/mcpHandler");
+      const { handleMCPDirectPost } = await import("./server/api-lib/mcpHandler.ts");
       return handleMCPDirectPost(req, res);
     }
     return next();
@@ -2286,7 +2046,7 @@ ${content}
     try {
       const { uid, payload } = req.body || {};
       if (!uid || !payload) return res.status(400).json({ error: "Missing uid or payload" });
-      const { saveVaultData } = await import("./server/api-lib/syncRelay");
+      const { saveVaultData } = await import("./server/api-lib/syncRelay.ts");
       const result = saveVaultData(uid, payload);
       return res.status(200).json(result);
     } catch (e: any) {
@@ -2297,7 +2057,7 @@ ${content}
   app.get("/api/sync/vault/pull/:uid", async (req, res) => {
     try {
       const { uid } = req.params;
-      const { getVaultData } = await import("./server/api-lib/syncRelay");
+      const { getVaultData } = await import("./server/api-lib/syncRelay.ts");
       const result = getVaultData(uid);
       return res.status(200).json(result);
     } catch (e: any) {
@@ -2309,7 +2069,7 @@ ${content}
     try {
       const { payload, vaultId } = req.body || {};
       if (!payload) return res.status(400).json({ error: "Missing payload" });
-      const { createRelayCode } = await import("./server/api-lib/syncRelay");
+      const { createRelayCode } = await import("./server/api-lib/syncRelay.ts");
       const result = await createRelayCode(payload, vaultId);
       return res.status(200).json(result);
     } catch (e: any) {
@@ -2321,7 +2081,7 @@ ${content}
     try {
       const { code } = req.body || {};
       if (!code) return res.status(400).json({ error: "Missing code" });
-      const { getRelayData } = await import("./server/api-lib/syncRelay");
+      const { getRelayData } = await import("./server/api-lib/syncRelay.ts");
       const result = await getRelayData(code);
       return res.status(200).json(result);
     } catch (e: any) {

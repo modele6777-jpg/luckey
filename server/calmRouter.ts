@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
 import { OpenAI } from "openai";
-import { getGeminiApiKey } from "./geminiKey";
+import { getGeminiApiKey } from "./geminiKey.ts";
 
 export const calmRouter = express.Router();
 
@@ -249,7 +249,7 @@ calmRouter.post("/api/tts", async (req: Request, res: Response) => {
 
   // Generative AI speech only. Failure never enables a device/standard voice.
   try {
-    const { handleTTS } = await import("./api-lib/ttsHandler");
+    const { handleTTS } = await import("./api-lib/ttsHandler.ts");
     const result = await handleTTS({ text: cleanText, voice });
     if (result && result.audioContent) {
       const mimeType = result.encoding === "mp3" ? "audio/mpeg" : "audio/wav";
