@@ -11,7 +11,7 @@ const calmDataDir = path.join(process.cwd(), "server", "calm", "data");
 const bookKnowledgePath = path.join(calmDataDir, "book_knowledge.json");
 const bookFullPath = path.join(calmDataDir, "book_full.md");
 
-let bookKnowledge: any = { title: "왜 나는 불안할까", author: "제이미 저커먼", exercises: [] };
+let bookKnowledge: any = { title: "왜 나는 예민할까", author: "에이프릴 스노우", exercises: [] };
 let bookFullText = "";
 
 try {
@@ -29,35 +29,45 @@ try {
 const ttsCache = new Map<string, string>();
 
 const KEYWORD_MAP: Record<string, number[]> = {
-  "숨": [13, 14, 15, 20],
-  "호흡": [13, 14, 15, 20],
-  "심장": [13, 16, 21],
-  "두근": [13, 16, 21],
-  "어깨": [15, 20, 21],
-  "긴장": [13, 15, 20, 21],
-  "몸": [13, 14, 15, 17, 18, 20, 21],
-  "공황": [13, 14, 16],
-  "발": [18],
-  "샤워": [17], "요리": [17],
-  "생각": [1, 2, 3, 4, 5, 6, 8, 10],
-  "머리": [1, 3, 6, 12],
-  "걱정": [1, 3, 4, 11, 12],
-  "반추": [5, 10],
-  "잡생각": [3, 4, 5, 6, 10],
-  "비난": [9],
-  "자책": [9],
-  "피자": [12],
-  "회피": [23, 24, 27, 28, 30, 31, 37],
-  "미루": [27, 30, 37],
-  "일": [22, 27, 29, 37],
-  "발표": [16, 36, 37],
-  "사람": [25, 26, 35],
-  "시선": [25],
-  "화": [33, 35],
-  "분노": [33, 35],
-  "두려움": [16, 23, 24, 36],
-  "가면": [32],
-  "완벽": [27, 37, 40]
+  "휴식": [1, 13, 18, 19, 29],
+  "에너지": [1, 12, 18, 21, 27],
+  "피로": [1, 12, 18, 27, 31],
+  "일기": [2, 10, 41, 48],
+  "기록": [2, 10, 11, 48],
+  "도구": [3, 14, 18],
+  "스트레스": [3, 12, 13, 17, 32],
+  "오감": [2, 3, 7, 14, 15],
+  "예민": [4, 8, 22, 41, 46, 50],
+  "기질": [4, 8, 22, 41, 42, 50],
+  "감정": [2, 5, 6, 21, 45],
+  "분노": [5, 6, 21, 30],
+  "자책": [6, 43, 45],
+  "비판": [6, 30],
+  "불안": [7, 10, 16, 17, 44],
+  "우울": [7, 45],
+  "호흡": [1, 5, 7, 47],
+  "속도": [8, 13, 19, 34],
+  "결정": [9, 44, 47],
+  "생각": [6, 10, 13, 34],
+  "루틴": [11, 16, 39],
+  "집": [14, 15, 36],
+  "수면": [10, 15, 48],
+  "잠": [10, 15, 48],
+  "아침": [11, 16, 40],
+  "커피": [17], "카페인": [17], "술": [17],
+  "공감": [21, 23, 27, 50],
+  "관계": [21, 22, 23, 24, 25, 27, 28],
+  "거절": [18, 24, 26, 35],
+  "친구": [22, 23, 26],
+  "직장": [31, 32, 33, 34, 35, 36, 37, 38],
+  "일": [31, 32, 35, 36, 37, 38],
+  "완벽": [37],
+  "월요": [40],
+  "나다움": [41, 42, 46, 50],
+  "직감": [44, 47],
+  "꿈": [48],
+  "영감": [49],
+  "강점": [50]
 };
 
 function searchRelevantContext(query: string) {
@@ -71,7 +81,7 @@ function searchRelevantContext(query: string) {
   }
 
   if (matchedExerciseIndices.size === 0) {
-    [13, 6, 14, 2].forEach(i => matchedExerciseIndices.add(i));
+    [1, 3, 7, 21].forEach(i => matchedExerciseIndices.add(i));
   }
 
   const recommendedExercises = Array.from(matchedExerciseIndices)
@@ -86,14 +96,14 @@ function searchRelevantContext(query: string) {
       translator: bookKnowledge.translator
     },
     recommendedExercises,
-    summaryContext: `도서 《${bookKnowledge.title}》(제이미 저커먼 지음)는 수용전념치료(ACT)와 인지행동치료(CBT), 마음챙김에 기반하여 불안을 억누르지 않고 건강하게 분리하고 마주하는 40가지 구체적 연습을 제공합니다.`
+    summaryContext: `도서 《${bookKnowledge.title}》(에이프릴 스노우 지음)는 민감한 사람(HSP)이 섬세한 감각을 나만의 무기로 바꾸는 50가지 구체적 연습을 제공합니다.`
   };
 }
 
 const SYSTEM_PROMPT = `
 # Role & Persona: Somatic-ACIM-ACT Inner Peace Guide (신체 접지형 기적수업 & 도서 연동 내면 치유 안내자)
 
-당신은 초기불교의 정밀한 신체 감각 자각(Grounding), 기적수업(ACIM)의 따뜻한 투사 회수와 용서(Healing), 수용전념치료(ACT)의 인지적 탈융합, 영지주의의 본래적 온전함(Liberation)을 하나로 통합한 '신체 접지형 기적수업 내면 코치'이자 제이미 저커먼 박사의 도서 《FIND YOUR 왜 나는 불안할까》 지식 안내자입니다.
+당신은 초기불교의 정밀한 신체 감각 자각(Grounding), 기적수업(ACIM)의 따뜻한 투사 회수와 용서(Healing), 수용전념치료(ACT)의 인지적 탈융합, 영지주의의 본래적 온전함(Liberation)을 하나로 통합한 '신체 접지형 기적수업 내면 코치'이자 심리치료사 에이프릴 스노우의 도서 《FIND YOUR 왜 나는 예민할까》 지식 안내자입니다.
 
 모든 종교적·현학적 어휘를 배제하고, 일상적이고 다정한 언어로 사용자가 마음의 평화를 되찾도록 돕습니다.
 
@@ -149,7 +159,7 @@ calmRouter.post("/api/chat", async (req: Request, res: Response) => {
   ).join("\n");
 
   const userPromptWithContext = `
-[참고할 도서 《왜 나는 불안할까》 추천 실천 연습]:
+[참고할 도서 《왜 나는 예민할까》 추천 실천 연습]:
 ${exercisesContext}
 
 [내담자의 고민]:
