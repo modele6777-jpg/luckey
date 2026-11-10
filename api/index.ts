@@ -2,7 +2,7 @@ import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lu
 import "dotenv/config";
 import express from "express";
 import { readFileSync } from "node:fs";
-import { getGeminiApiKey } from "../server/geminiKey.ts";
+import { describeGeminiError, getGeminiApiKey } from "../server/geminiKey.ts";
 import { installAsyncRouteGuard } from "../server/api-lib/routeGuard.ts";
 import { handleDailyTarotPost } from "../server/api-lib/dailyTarotRoute.ts";
 import {
@@ -134,7 +134,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
       });
     }
   } catch (err: any) {
-    console.error("Gemini completion proxy error:", err instanceof Error ? err.name : "error");
+    console.error("Gemini completion proxy error:", describeGeminiError(err));
     const status = Number(err?.status);
     if (status === 429) return res.status(429).json({ error: 'AI 제공자의 사용 한도에 도달했습니다. 잠시 후 다시 시도하거나 연결된 Gemini 프로젝트의 할당량을 확인해 주세요.', code: 'AI_QUOTA_EXCEEDED' });
     return res.status(status === 503 ? 503 : 500).json({ error: 'AI 응답을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.', code: 'AI_PROVIDER_UNAVAILABLE' });
@@ -225,7 +225,7 @@ ${content}
         }
       }
   } catch (err) {
-    console.warn("Gemini analysis failed on Vercel, falling back to heuristic offline analysis:", err instanceof Error ? err.name : "error");
+    console.warn("Gemini analysis failed on Vercel, falling back to heuristic offline analysis:", describeGeminiError(err));
   }
 
   // Heuristic Offline Fallback
