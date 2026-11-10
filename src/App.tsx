@@ -234,10 +234,19 @@ function AppContent() {
   const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
   const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
 
+  // 📱 iPhone Duo 펼친 상태에서 마지막으로 터치한 패널(좌측 vs 우측) 및 마지막 좌측 채널 경로 추적
+  const lastTouchedDuoPaneRef = React.useRef<'left' | 'right'>('right');
+  const lastLeftChannelPathRef = React.useRef<string>('/key');
+  const previousUnfoldedRef = React.useRef(duoState.unfolded);
+
   React.useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const state = isDuoUnfoldedState();
+      const wasUnfolded = previousUnfoldedRef.current;
+      const isNowUnfolded = state.unfolded;
+      previousUnfoldedRef.current = isNowUnfolded;
+
       setDuoState(previous => previous.unfolded === state.unfolded && previous.orientation === state.orientation ? previous : state);
       document.documentElement.classList.toggle('duo-unfolded-mode', state.unfolded);
       document.body.classList.toggle('duo-unfolded-mode', state.unfolded);
@@ -245,7 +254,24 @@ function AppContent() {
       document.body.classList.toggle('duo-unfolded-portrait', state.unfolded && state.orientation === 'portrait');
       document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
       document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
-      // 접힌 상태와 동일한 테마 배경 유지 (강제 투명화 제거)
+
+      // 📱 펼침 ➔ 접힘 전환 시: 마지막 터치 패널에 따라 표출 어플 결정
+      if (wasUnfolded && !isNowUnfolded) {
+        if (lastTouchedDuoPaneRef.current === 'right') {
+          // 우측(루시)을 마지막에 터치하고 접었을 때 ➔ 루시 표출
+          const cleanLoc = window.location.pathname || '/';
+          if (cleanLoc !== '/' && cleanLoc !== '/chat' && cleanLoc !== '/lucy') {
+            navigate('/chat');
+          }
+        } else if (lastTouchedDuoPaneRef.current === 'left') {
+          // 좌측(채널)을 마지막에 터치하고 접었을 때 ➔ 좌측 어플 표출
+          const cleanLoc = window.location.pathname || '/';
+          const targetLeftPath = lastLeftChannelPathRef.current;
+          if (targetLeftPath && (cleanLoc === '/' || cleanLoc === '/chat' || cleanLoc === '/lucy')) {
+            navigate(targetLeftPath);
+          }
+        }
+      }
     };
     handleLayoutChange();
     window.addEventListener('resize', handleLayoutChange, { passive: true });
@@ -256,7 +282,7 @@ function AppContent() {
       window.removeEventListener('orientationchange', handleLayoutChange);
       window.visualViewport?.removeEventListener('resize', handleLayoutChange);
     };
-  }, []);
+  }, [navigate]);
 
   const isFirstMount = React.useRef(true);
 
@@ -638,6 +664,64 @@ function AppContent() {
   }, [isUnlocked, sharedState?.themeColor, resolvedTheme]);
 
   const isLucyRoute = location === '/' || location === '/chat' || location === '/lucy' || location === '/chat/pro';
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const isCosmicActive = isDuoUnfolded && isLucyRoute;
+    document.documentElement.classList.toggle('duo-cosmic-active', isCosmicActive);
+    document.body.classList.toggle('duo-cosmic-active', isCosmicActive);
+  }, [isDuoUnfolded, isLucyRoute]);
+
+  // 📱 좌/우측 패널 터치 감지 및 좌측 채널 경로 동기화
+  React.useEffect(() => {
+    if (!isLucyRoute) {
+      lastLeftChannelPathRef.current = location;
+    }
+  }, [location, isLucyRoute]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleGlobalPointer = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      if (target.closest('#duo-lucy-viewport')) {
+        lastTouchedDuoPaneRef.current = 'right';
+        return;
+      }
+
+      if (target.closest('#duo-content-viewport')) {
+        lastTouchedDuoPaneRef.current = 'left';
+        if (!isLucyRoute) {
+          lastLeftChannelPathRef.current = location;
+        }
+        return;
+      }
+    };
+
+    const handleNavClick = (e: any) => {
+      const p = e?.detail?.path;
+      if (p === '/' || p === '/chat' || p === '/lucy') {
+        lastTouchedDuoPaneRef.current = 'right';
+      } else if (p) {
+        lastTouchedDuoPaneRef.current = 'left';
+        lastLeftChannelPathRef.current = p;
+      }
+    };
+
+    window.addEventListener('pointerdown', handleGlobalPointer, { capture: true, passive: true });
+    window.addEventListener('touchstart', handleGlobalPointer, { capture: true, passive: true });
+    window.addEventListener('click', handleGlobalPointer, { capture: true, passive: true });
+    window.addEventListener('nav-click-active', handleNavClick);
+
+    return () => {
+      window.removeEventListener('pointerdown', handleGlobalPointer, { capture: true });
+      window.removeEventListener('touchstart', handleGlobalPointer, { capture: true });
+      window.removeEventListener('click', handleGlobalPointer, { capture: true });
+      window.removeEventListener('nav-click-active', handleNavClick);
+    };
+  }, [isLucyRoute, location]);
   const isKeyRoute = location === '/key' || location === '/calm';
   const isDistractionFreeRoute =
     location === '/handbook' ||
@@ -718,6 +802,14 @@ function AppContent() {
              */}
             <div
               id="duo-content-viewport"
+              onPointerDownCapture={() => {
+                lastTouchedDuoPaneRef.current = 'left';
+                if (!isLucyRoute) lastLeftChannelPathRef.current = location;
+              }}
+              onTouchStartCapture={() => {
+                lastTouchedDuoPaneRef.current = 'left';
+                if (!isLucyRoute) lastLeftChannelPathRef.current = location;
+              }}
               style={
                 isDuoPortrait
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }
@@ -743,6 +835,12 @@ function AppContent() {
              */}
             <div
               id="duo-lucy-viewport"
+              onPointerDownCapture={() => {
+                lastTouchedDuoPaneRef.current = 'right';
+              }}
+              onTouchStartCapture={() => {
+                lastTouchedDuoPaneRef.current = 'right';
+              }}
               style={
                 isDuoPortrait
                   ? { height: '50%', minHeight: '50%', maxHeight: '50%', width: '100%', flex: '0 0 50%' }

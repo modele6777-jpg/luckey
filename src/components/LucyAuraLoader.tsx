@@ -36,14 +36,14 @@ export function LucyAuraLoader({
 
   const defaultMessage =
     activeTier === 'pro'
-      ? `${isPlusPro ? 'Lucy+ Pro' : 'Lucy Pro'} 252대 결정론 엔진 조율 중...`
+      ? `${isPlusPro ? 'Lucy+ Pro' : 'Lucy Pro'} 285대 결정론 엔진 조율 중...`
       : activeTier === 'plus'
       ? 'Lucy + 코스믹 룸 & 일상 교감 조율 중...'
       : 'Lucy와 행운의 깊은 교감 조율 중...';
 
   const defaultSubMessage =
     activeTier === 'pro'
-      ? '252 DETERMINISTIC ENGINES · ALL-IN-ONE MASTER'
+      ? '285 DETERMINISTIC ENGINES · ALL-IN-ONE MASTER'
       : activeTier === 'plus'
       ? 'COSMIC AMBIENT ROOM · INTUITIVE AI'
       : 'FOUR-LEAF CLOVER · FORTUNE & INTUITION';
