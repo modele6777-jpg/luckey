@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { after, before, describe, test } from 'node:test';
 import app from '../api/index.ts';
-import { redactMcpSecrets } from '../server/api-lib/mcpAuth.ts';
+import { evaluateMcpAuth, logRejectedMcpAuth, redactMcpSecrets, verifyMcpBearer } from '../server/api-lib/mcpAuth.ts';
 import { setReadingApiFetchForTests } from '../server/api-lib/readingApiClient.ts';
 
 const TOKEN = 'luckey-mcp-query-token-0123456789';
@@ -74,32 +75,56 @@ describe('MCP query token', { concurrency: false }, () => {
     const alias = await post(`/mcp?token=${encodeURIComponent(TOKEN)}`, LEGACY, { accept: 'application/json' });
     assert.equal(alias.status, 200);
     assert.match(alias.text, /FROM-API/);
+
+    process.env.LUCKEY_MCP_TOKEN = 'ab+cd-efghijklmnop';
+    try {
+      const plus = await post('/api/mcp?key=ab+cd-efghijklmnop', SAJU, { accept: ACCEPT });
+      assert.equal(plus.status, 200, plus.text);
+      assert.match(plus.text, /FROM-API/);
+    } finally {
+      process.env.LUCKEY_MCP_TOKEN = TOKEN;
+    }
   });
 
   test('wrong, short, and missing tokens are rejected and redacted', async () => {
-    const warnings: string[] = [];
+    const warnings: unknown[][] = [];
     const original = console.warn;
-    console.warn = (...args: unknown[]) => { warnings.push(args.map(String).join(' ')); };
+    console.warn = (...args: unknown[]) => { warnings.push(args); };
+    const rendered = () => warnings
+      .filter((args) => args.some((arg) => String(arg).includes('[mcp] auth rejected')))
+      .map((args) => args.map((arg) => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' '))
+      .join('\n');
     try {
       const wrong = await post(`/api/mcp?key=${encodeURIComponent(WRONG)}`, SAJU, { accept: ACCEPT });
       assert.equal(wrong.status, 401);
       assert.equal(wrong.body.error.code, -32001);
       assert.equal(wrong.text.includes(WRONG), false);
-      const logged = warnings.filter((line) => line.includes('[mcp] auth rejected')).join('\n');
+      const logged = rendered();
       assert.match(logged, /\[redacted\]/);
+      assert.match(logged, /"reason":"mismatch"/);
+      assert.match(logged, /"source":"query-key"/);
       assert.equal(logged.includes(WRONG), false);
+      assert.equal(logged.includes(createHash('sha256').update(WRONG).digest('hex')), false);
       const redactedUrl = redactMcpSecrets(`https://luckey-six.vercel.app/api/mcp?key=${WRONG}&token=${TOKEN}`);
       assert.equal(redactedUrl.includes(WRONG), false);
       assert.equal(redactedUrl.includes(TOKEN), false);
       assert.equal(redactMcpSecrets(`Authorization: Bearer ${TOKEN}`).includes(TOKEN), false);
 
+      warnings.length = 0;
       process.env.LUCKEY_MCP_TOKEN = 'short-token';
       const shortEnv = await post(`/api/mcp?key=${encodeURIComponent('short-token')}`, SAJU, { accept: ACCEPT });
       assert.equal(shortEnv.status, 401);
+      assert.match(rendered(), /"reason":"env_too_short"/);
+      assert.match(rendered(), /"matchesAfterNormalization":true/);
+      assert.equal(rendered().includes('short-token'), false);
 
+      warnings.length = 0;
       delete process.env.LUCKEY_MCP_TOKEN;
       const missing = await post('/api/mcp', SAJU, { accept: ACCEPT, authorization: `Bearer ${TOKEN}` });
       assert.equal(missing.status, 401);
+      assert.match(rendered(), /"reason":"env_missing"/);
+      assert.match(rendered(), /"source":"bearer"/);
+      assert.equal(rendered().includes(TOKEN), false);
     } finally {
       console.warn = original;
       process.env.LUCKEY_MCP_TOKEN = TOKEN;
@@ -130,6 +155,77 @@ describe('MCP query token', { concurrency: false }, () => {
       assert.equal(text.includes(TOKEN), false);
     } finally {
       await reader.cancel();
+    }
+  });
+
+  test('copy-paste damage still matches and rejection logs stay secret', () => {
+    const secret = 'H4k9vN8sR1wLm2Qp';
+    const previous = process.env.LUCKEY_MCP_TOKEN;
+    process.env.LUCKEY_MCP_TOKEN = `  "${secret}"  `;
+    try {
+      assert.equal(verifyMcpBearer(secret), true);
+      assert.equal(verifyMcpBearer(`  ${secret}  `), true);
+      assert.equal(verifyMcpBearer(`'${secret}'`), true);
+      assert.equal(verifyMcpBearer(encodeURIComponent(`"${secret}"`)), true);
+      assert.equal(verifyMcpBearer('not-the-configured-secret'), false);
+      assert.equal(evaluateMcpAuth('%').reason, 'mismatch');
+      assert.equal(evaluateMcpAuth(null).reason, 'no_credential');
+      assert.equal(evaluateMcpAuth(null).presentedLength, 0);
+      assert.equal(evaluateMcpAuth(null).matchesAfterNormalization, false);
+
+      process.env.LUCKEY_MCP_TOKEN = 'ab+cd-efghijklmnop';
+      assert.equal(verifyMcpBearer('ab cd-efghijklmnop'), true);
+      assert.equal(verifyMcpBearer('  "ab cd-efghijklmnop"  '), true);
+      assert.equal(verifyMcpBearer(encodeURIComponent('ab+cd-efghijklmnop')), true);
+
+      process.env.LUCKEY_MCP_TOKEN = secret.slice(0, 15);
+      const short = evaluateMcpAuth(secret.slice(0, 15));
+      assert.equal(short.ok, false);
+      assert.equal(short.reason, 'env_too_short');
+      assert.equal(short.expectedLength, 15);
+      assert.equal(short.presentedLength, 15);
+      assert.equal(short.matchesAfterNormalization, true);
+
+      process.env.LUCKEY_MCP_TOKEN = secret;
+      const exact = evaluateMcpAuth(secret);
+      assert.equal(exact.ok, true);
+      assert.equal(exact.expectedLength, 16);
+      assert.equal(exact.matchesAfterNormalization, true);
+
+      const warnings: unknown[][] = [];
+      const original = console.warn;
+      console.warn = (...args: unknown[]) => { warnings.push(args); };
+      try {
+        logRejectedMcpAuth({
+          headers: {},
+          url: `/api/mcp?key=${secret}-wrong`,
+          originalUrl: `/api/mcp?key=${secret}-wrong`,
+          query: { key: `${secret}-wrong` },
+        });
+        logRejectedMcpAuth({ headers: { authorization: `Bearer ${secret}-wrong` }, url: '/api/mcp', originalUrl: '/api/mcp', query: {} });
+        logRejectedMcpAuth({ headers: {}, url: `/api/mcp?token=${secret}-wrong`, originalUrl: `/api/mcp?token=${secret}-wrong`, query: { token: `${secret}-wrong` } });
+        logRejectedMcpAuth({ headers: {}, url: '/api/mcp', originalUrl: '/api/mcp', query: {} });
+        delete process.env.LUCKEY_MCP_TOKEN;
+        logRejectedMcpAuth({ headers: {}, url: '/api/mcp', originalUrl: '/api/mcp', query: {} });
+      } finally {
+        console.warn = original;
+      }
+      const logged = warnings.map((args) => args.map((arg) => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ')).join('\n');
+      const hashes = [secret, `${secret}-wrong`, secret.slice(0, 15)].map((value) => createHash('sha256').update(value).digest('hex'));
+      assert.match(logged, /"reason":"mismatch"/);
+      assert.match(logged, /"source":"query-key"/);
+      assert.match(logged, /"source":"bearer"/);
+      assert.match(logged, /"source":"query-token"/);
+      assert.match(logged, /"reason":"no_credential"/);
+      assert.match(logged, /"reason":"env_missing"/);
+      assert.match(logged, /"source":"none"/);
+      assert.equal(logged.includes(secret), false);
+      assert.equal(logged.includes(secret.slice(0, 4)), false);
+      assert.equal(logged.includes(secret.slice(-4)), false);
+      for (const hash of hashes) assert.equal(logged.includes(hash), false);
+    } finally {
+      if (previous === undefined) delete process.env.LUCKEY_MCP_TOKEN;
+      else process.env.LUCKEY_MCP_TOKEN = previous;
     }
   });
 
