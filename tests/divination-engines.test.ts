@@ -282,6 +282,9 @@ import { calculateKoreanOhseongHaneumFriendshipGovernance, formatKoreanOhseongHa
 import { calculateFrenchVoltaireCandideTolerance, formatFrenchVoltaireCandideTolerancePrompt, FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION } from '../src/lib/divination/frenchVoltaireCandideToleranceEngine';
 import { calculateAmericanWaltWhitmanLeavesOfGrass, formatAmericanWaltWhitmanLeavesOfGrassPrompt, AMERICAN_WALT_WHITMAN_VERSION } from '../src/lib/divination/americanWaltWhitmanLeavesOfGrassEngine';
 import { calculateKoreanAhnJungGeunPeaceRighteousness, formatKoreanAhnJungGeunPeaceRighteousnessPrompt, KOREAN_AHN_JUNG_GEUN_VERSION } from '../src/lib/divination/koreanAhnJungGeunPeaceRighteousnessEngine';
+import { calculateAustrianAlfredAdlerIndividualPsychology, formatAustrianAlfredAdlerIndividualPsychologyPrompt, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION } from '../src/lib/divination/austrianAlfredAdlerIndividualPsychologyEngine';
+import { calculateGermanFriedrichSchillerAestheticEducation, formatGermanFriedrichSchillerAestheticEducationPrompt, GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION } from '../src/lib/divination/germanFriedrichSchillerAestheticEducationEngine';
+import { calculateKoreanDamheonHongDaeYongUisanMundap, formatKoreanDamheonHongDaeYongUisanMundapPrompt, KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION } from '../src/lib/divination/koreanDamheonHongDaeYongUisanMundapEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5492,6 +5495,48 @@ test('Ahn Jung-geun Peace and Righteousness Engine: calculates Moral Righteousne
   const prompt = formatKoreanAhnJungGeunPeaceRighteousnessPrompt(rep);
   assert(prompt.includes('안중근 의사 《동양평화론》 및 〈견리사의 견위수명〉 대의·평화 지표'));
   assert(prompt.includes(rep.activeAhnJungGeunTheme.themeTitleKo));
+});
+
+test('Alfred Adler Individual Psychology Engine: calculates Inferiority Transcendence, Community Feeling, and Separation of Tasks', () => {
+  const rep = calculateAustrianAlfredAdlerIndividualPsychology(profile);
+  assert.equal(rep.engineVersion, AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION);
+  assert(rep.inferiorityTranscendenceHealthyStrivingScore >= 0 && rep.inferiorityTranscendenceHealthyStrivingScore <= 100);
+  assert(rep.communityFeelingContributionIndex >= 0 && rep.communityFeelingContributionIndex <= 100);
+  assert(rep.separationOfTasksCourageScore >= 0 && rep.separationOfTasksCourageScore <= 100);
+  assert(rep.teleologicalReframingCreationIndex >= 0 && rep.teleologicalReframingCreationIndex <= 100);
+  assert(rep.courageToBeImperfectResilienceScore >= 0 && rep.courageToBeImperfectResilienceScore <= 100);
+  assert(rep.activeAdlerTheme.themeTitleKo.length > 0);
+  const prompt = formatAustrianAlfredAdlerIndividualPsychologyPrompt(rep);
+  assert(prompt.includes('알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 및 공동체 감각 지혜 지표'));
+  assert(prompt.includes(rep.activeAdlerTheme.themeTitleKo));
+});
+
+test('Friedrich Schiller Aesthetic Education Engine: calculates Play Drive, Aesthetic Freedom, and Grace & Dignity', () => {
+  const rep = calculateGermanFriedrichSchillerAestheticEducation(profile);
+  assert.equal(rep.engineVersion, GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION);
+  assert(rep.spieltriebPlayDriveHarmonyScore >= 0 && rep.spieltriebPlayDriveHarmonyScore <= 100);
+  assert(rep.aestheticStateFreedomIndex >= 0 && rep.aestheticStateFreedomIndex <= 100);
+  assert(rep.livingFormBeautyCreativityScore >= 0 && rep.livingFormBeautyCreativityScore <= 100);
+  assert(rep.graceAndDignityIntegrityScore >= 0 && rep.graceAndDignityIntegrityScore <= 100);
+  assert(rep.aestheticHealingWholenessResilienceScore >= 0 && rep.aestheticHealingWholenessResilienceScore <= 100);
+  assert(rep.activeSchillerTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanFriedrichSchillerAestheticEducationPrompt(rep);
+  assert(prompt.includes('프리드리히 실러 《인간의 미적 교육에 관한 편지》 놀이 충동 및 미적 자유 지표'));
+  assert(prompt.includes(rep.activeSchillerTheme.themeTitleKo));
+});
+
+test('Hong Dae-yong Uisan Mundap Engine: calculates Infinite Universe, Earth Rotation, and In-Mul-Gyun Equality', () => {
+  const rep = calculateKoreanDamheonHongDaeYongUisanMundap(profile);
+  assert.equal(rep.engineVersion, KOREAN_DAMHEON_HONG_DAE_YONG_UISAN_MUNDAP_VERSION);
+  assert(rep.infiniteUniverseRotationCosmologicalInsightScore >= 0 && rep.infiniteUniverseRotationCosmologicalInsightScore <= 100);
+  assert(rep.egalitarianHarmonyHumansNatureIndex >= 0 && rep.egalitarianHarmonyHumansNatureIndex <= 100);
+  assert(rep.universalRelativismOpenMindednessScore >= 0 && rep.universalRelativismOpenMindednessScore <= 100);
+  assert(rep.scientificEmpiricismDisillusionmentIndex >= 0 && rep.scientificEmpiricismDisillusionmentIndex <= 100);
+  assert(rep.magnanimousGeomungoResilienceScore >= 0 && rep.magnanimousGeomungoResilienceScore <= 100);
+  assert(rep.activeHongDaeYongTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanDamheonHongDaeYongUisanMundapPrompt(rep);
+  assert(prompt.includes('담헌 홍대용 《의산문답》 지전설·무한우주론 및 인물균 지혜 지표'));
+  assert(prompt.includes(rep.activeHongDaeYongTheme.themeTitleKo));
 });
 
 
