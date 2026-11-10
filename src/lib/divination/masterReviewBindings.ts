@@ -1147,5 +1147,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanDanjaeShinChaeHoJoseonSanggosa": {
     "field": "koreanDanjaeShinChaeHoJoseonSanggosaResult",
     "traceKey": "koreanDanjaeShinChaeHoJoseonSanggosaResult"
+  },
+  "frenchMontesquieuSpiritOfLaws": {
+    "field": "frenchMontesquieuSpiritOfLawsResult",
+    "traceKey": "frenchMontesquieuSpiritOfLawsResult"
+  },
+  "frenchGastonBachelardPoeticsOfSpace": {
+    "field": "frenchGastonBachelardPoeticsOfSpaceResult",
+    "traceKey": "frenchGastonBachelardPoeticsOfSpaceResult"
+  },
+  "koreanNammyeongJoSikGyeongUi": {
+    "field": "koreanNammyeongJoSikGyeongUiResult",
+    "traceKey": "koreanNammyeongJoSikGyeongUiResult"
   }
 };
