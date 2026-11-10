@@ -279,6 +279,9 @@ import { calculateKoreanNammyeongJoSikGyeongUi, formatKoreanNammyeongJoSikGyeong
 import { calculateGermanAlbertSchweitzerReverenceForLife, formatGermanAlbertSchweitzerReverenceForLifePrompt, GERMAN_ALBERT_SCHWEITZER_VERSION } from '../src/lib/divination/germanAlbertSchweitzerReverenceForLifeEngine';
 import { calculateFrenchMichelDeMontaigneEssays, formatFrenchMichelDeMontaigneEssaysPrompt, FRENCH_MICHEL_DE_MONTAIGNE_VERSION } from '../src/lib/divination/frenchMichelDeMontaigneEssaysEngine';
 import { calculateKoreanOhseongHaneumFriendshipGovernance, formatKoreanOhseongHaneumFriendshipGovernancePrompt, KOREAN_OHSEONG_HANEUM_VERSION } from '../src/lib/divination/koreanOhseongHaneumFriendshipGovernanceEngine';
+import { calculateFrenchVoltaireCandideTolerance, formatFrenchVoltaireCandideTolerancePrompt, FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION } from '../src/lib/divination/frenchVoltaireCandideToleranceEngine';
+import { calculateAmericanWaltWhitmanLeavesOfGrass, formatAmericanWaltWhitmanLeavesOfGrassPrompt, AMERICAN_WALT_WHITMAN_VERSION } from '../src/lib/divination/americanWaltWhitmanLeavesOfGrassEngine';
+import { calculateKoreanAhnJungGeunPeaceRighteousness, formatKoreanAhnJungGeunPeaceRighteousnessPrompt, KOREAN_AHN_JUNG_GEUN_VERSION } from '../src/lib/divination/koreanAhnJungGeunPeaceRighteousnessEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5447,6 +5450,48 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
   assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
   assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo));
+});
+
+test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Devotion, Tolerance, and Satirical Wit', () => {
+  const rep = calculateFrenchVoltaireCandideTolerance(profile);
+  assert.equal(rep.engineVersion, FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION);
+  assert(rep.cultivateOurGardenPragmaticDevotionScore >= 0 && rep.cultivateOurGardenPragmaticDevotionScore <= 100);
+  assert(rep.toleranceEnlightenedReasonIndex >= 0 && rep.toleranceEnlightenedReasonIndex <= 100);
+  assert(rep.witSatiricalPiercingInsightScore >= 0 && rep.witSatiricalPiercingInsightScore <= 100);
+  assert(rep.justiceAdvocacyConscienceScore >= 0 && rep.justiceAdvocacyConscienceScore <= 100);
+  assert(rep.realisticDisillusionmentClarityIndex >= 0 && rep.realisticDisillusionmentClarityIndex <= 100);
+  assert(rep.activeVoltaireTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchVoltaireCandideTolerancePrompt(rep);
+  assert(prompt.includes('볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표'));
+  assert(prompt.includes(rep.activeVoltaireTheme.themeTitleKo));
+});
+
+test('Walt Whitman Leaves of Grass Engine: calculates Song of Myself, Multitudes Inclusivity, and Open Road Spirit', () => {
+  const rep = calculateAmericanWaltWhitmanLeavesOfGrass(profile);
+  assert.equal(rep.engineVersion, AMERICAN_WALT_WHITMAN_VERSION);
+  assert(rep.songOfMyselfSelfCelebrationScore >= 0 && rep.songOfMyselfSelfCelebrationScore <= 100);
+  assert(rep.embracingMultitudesInclusivityIndex >= 0 && rep.embracingMultitudesInclusivityIndex <= 100);
+  assert(rep.leavesOfGrassWonderVitalityScore >= 0 && rep.leavesOfGrassWonderVitalityScore <= 100);
+  assert(rep.democraticFreedomOpenRoadIndex >= 0 && rep.democraticFreedomOpenRoadIndex <= 100);
+  assert(rep.cyclicalNatureOptimisticResilienceScore >= 0 && rep.cyclicalNatureOptimisticResilienceScore <= 100);
+  assert(rep.activeWhitmanTheme.themeTitleKo.length > 0);
+  const prompt = formatAmericanWaltWhitmanLeavesOfGrassPrompt(rep);
+  assert(prompt.includes('월트 휘트먼 《풀잎(Leaves of Grass)》 우주적 생명 찬가 지표'));
+  assert(prompt.includes(rep.activeWhitmanTheme.themeTitleKo));
+});
+
+test('Ahn Jung-geun Peace and Righteousness Engine: calculates Moral Righteousness, Sovereign Peace, and Daily Reading', () => {
+  const rep = calculateKoreanAhnJungGeunPeaceRighteousness(profile);
+  assert.equal(rep.engineVersion, KOREAN_AHN_JUNG_GEUN_VERSION);
+  assert(rep.moralRighteousnessOverGainScore >= 0 && rep.moralRighteousnessOverGainScore <= 100);
+  assert(rep.sovereignPeaceCoexistenceIndex >= 0 && rep.sovereignPeaceCoexistenceIndex <= 100);
+  assert(rep.courageousDevotionFortitudeScore >= 0 && rep.courageousDevotionFortitudeScore <= 100);
+  assert(rep.intellectualCultivationReadingIndex >= 0 && rep.intellectualCultivationReadingIndex <= 100);
+  assert(rep.sublimePatienceMagnanimousPeaceScore >= 0 && rep.sublimePatienceMagnanimousPeaceScore <= 100);
+  assert(rep.activeAhnJungGeunTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanAhnJungGeunPeaceRighteousnessPrompt(rep);
+  assert(prompt.includes('안중근 의사 《동양평화론》 및 〈견리사의 견위수명〉 대의·평화 지표'));
+  assert(prompt.includes(rep.activeAhnJungGeunTheme.themeTitleKo));
 });
 
 

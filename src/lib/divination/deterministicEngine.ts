@@ -316,6 +316,9 @@ import { calculateKoreanNammyeongJoSikGyeongUi, formatKoreanNammyeongJoSikGyeong
 import { calculateGermanAlbertSchweitzerReverenceForLife, formatGermanAlbertSchweitzerReverenceForLifePrompt, type GermanAlbertSchweitzerReverenceForLifeResult, GERMAN_ALBERT_SCHWEITZER_VERSION } from './germanAlbertSchweitzerReverenceForLifeEngine';
 import { calculateFrenchMichelDeMontaigneEssays, formatFrenchMichelDeMontaigneEssaysPrompt, type FrenchMichelDeMontaigneEssaysResult, FRENCH_MICHEL_DE_MONTAIGNE_VERSION } from './frenchMichelDeMontaigneEssaysEngine';
 import { calculateKoreanOhseongHaneumFriendshipGovernance, formatKoreanOhseongHaneumFriendshipGovernancePrompt, type KoreanOhseongHaneumFriendshipGovernanceResult, KOREAN_OHSEONG_HANEUM_VERSION } from './koreanOhseongHaneumFriendshipGovernanceEngine';
+import { calculateFrenchVoltaireCandideTolerance, formatFrenchVoltaireCandideTolerancePrompt, type FrenchVoltaireCandideToleranceResult, FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION } from './frenchVoltaireCandideToleranceEngine';
+import { calculateAmericanWaltWhitmanLeavesOfGrass, formatAmericanWaltWhitmanLeavesOfGrassPrompt, type AmericanWaltWhitmanLeavesOfGrassResult, AMERICAN_WALT_WHITMAN_VERSION } from './americanWaltWhitmanLeavesOfGrassEngine';
+import { calculateKoreanAhnJungGeunPeaceRighteousness, formatKoreanAhnJungGeunPeaceRighteousnessPrompt, type KoreanAhnJungGeunPeaceRighteousnessResult, KOREAN_AHN_JUNG_GEUN_VERSION } from './koreanAhnJungGeunPeaceRighteousnessEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -652,6 +655,9 @@ export interface DeterministicEngineReport {
   germanAlbertSchweitzerReverenceForLifeResult?: GermanAlbertSchweitzerReverenceForLifeResult | null;
   frenchMichelDeMontaigneEssaysResult?: FrenchMichelDeMontaigneEssaysResult | null;
   koreanOhseongHaneumFriendshipGovernanceResult?: KoreanOhseongHaneumFriendshipGovernanceResult | null;
+  frenchVoltaireCandideToleranceResult?: FrenchVoltaireCandideToleranceResult | null;
+  americanWaltWhitmanLeavesOfGrassResult?: AmericanWaltWhitmanLeavesOfGrassResult | null;
+  koreanAhnJungGeunPeaceRighteousnessResult?: KoreanAhnJungGeunPeaceRighteousnessResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3821,6 +3827,33 @@ try {
     }
   })()));
 
+  // 285. 프랑스 볼테르 《캉디드》 & 《관용론》 밭을 일구는 실천 & 관용 지혜 엔진
+  const frenchVoltaireCandideToleranceResult = calculateSupplement('frenchVoltaireCandideToleranceResult', () => ((() => {
+    try {
+      return calculateFrenchVoltaireCandideTolerance(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 286. 미국 월트 휘트먼 《풀잎》 & 〈나 자신의 노래〉 우주적 생명 찬가 & 무한 포용 지혜 엔진
+  const americanWaltWhitmanLeavesOfGrassResult = calculateSupplement('americanWaltWhitmanLeavesOfGrassResult', () => ((() => {
+    try {
+      return calculateAmericanWaltWhitmanLeavesOfGrass(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 287. 대한민국 안중근 의사 《동양평화론》 & 〈견리사의 견위수명〉 대의헌신 & 주권평화 지혜 엔진
+  const koreanAhnJungGeunPeaceRighteousnessResult = calculateSupplement('koreanAhnJungGeunPeaceRighteousnessResult', () => ((() => {
+    try {
+      return calculateKoreanAhnJungGeunPeaceRighteousness(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4143,6 +4176,9 @@ try {
     germanAlbertSchweitzerReverenceForLifeResult,
     frenchMichelDeMontaigneEssaysResult,
     koreanOhseongHaneumFriendshipGovernanceResult,
+    frenchVoltaireCandideToleranceResult,
+    americanWaltWhitmanLeavesOfGrassResult,
+    koreanAhnJungGeunPeaceRighteousnessResult,
     tools: toolsMap,
   };
 }
@@ -4456,6 +4492,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'germanAlbertSchweitzerReverenceForLife', nameKo: '알베르트 슈바이처 생명에대한경외 문화와윤리 생명외경 이타적봉사 문명도덕쇄신 무한한책임 바흐평정', icon: '🩺', category: 'deep_master', summary: '알베르트 슈바이처 박사의 생명에 대한 경외 사상으로 살아있는 모든 생명을 깊이 존중하고, 이타적 헌신과 문명의 도덕적 쇄신을 실천합니다.' },
   { key: 'frenchMichelDeMontaigneEssays', nameKo: '미셸 드 몽테뉴 수상록 에세 내가무엇을아는가 지적겸양 솔직한자기관찰 관용과중용 영혼의뒷방', icon: '🏰', category: 'deep_master', summary: '미셸 드 몽테뉴의 수상록 사상으로 "내가 무엇을 아는가"라는 지적 겸양과 솔직한 자기 성찰, 영혼의 뒷방 서재가 주는 참된 내적 자유를 누립니다.' },
   { key: 'koreanOhseongHaneumFriendshipGovernance', nameKo: '오성과 한음 이항복 이덕형 지기지우 국난극복경세제민 해학위트배포 당쟁초월공명정대 불굴선비품격', icon: '🤝', category: 'deep_master', summary: '백사 이항복과 한음 이덕형의 오성과 한음 사상으로 평생의 도의적 신의(지기지우)와 국난 극복의 실전적 경세제민, 궁지에서도 잃지 않는 해학과 배포를 체득합니다.' },
+  { key: 'frenchVoltaireCandideTolerance', nameKo: '볼테르 캉디드 관용론 밭을일구는실천 관용의이성 위트풍자 정의구현 현실직시', icon: '🌱', category: 'deep_master', summary: '볼테르의 캉디드와 관용론 사상으로 공리공론을 벗어나 지금-여기 밭을 일구는 성실한 실천과 편협을 깨뜨리는 열린 관용, 진실을 변호하는 정의감을 체득합니다.' },
+  { key: 'americanWaltWhitmanLeavesOfGrass', nameKo: '월트 휘트먼 풀잎 나자신의노래 우주적생명찬가 무한포용 모순수용 풀잎영성 열린길모험심', icon: '🌿', category: 'deep_master', summary: '월트 휘트먼의 풀잎과 나 자신의 노래 사상으로 타인의 시선을 초월한 무조건적 자아 긍정과 대우주적 포용력, 열린 길을 향한 자유로운 모험심을 누립니다.' },
+  { key: 'koreanAhnJungGeunPeaceRighteousness', nameKo: '안중근 동양평화론 견리사의견위수명 살신성인 일일부독서 백인당중유태화 주권평화선비기개', icon: '🕊️', category: 'deep_master', summary: '안중근 의사의 동양평화론과 견리사의 견위수명 사상으로 사익을 초월한 고결한 도덕적 기개와 자주독립 상생 평화 비전, 숭고한 인내와 지적 수양을 실천합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4518,6 +4557,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanAhnJungGeunPeaceRighteousness',
+    'frenchVoltaireCandideTolerance',
     'koreanOhseongHaneumFriendshipGovernance',
     'frenchMichelDeMontaigneEssays',
     'frenchMontesquieuSpiritOfLaws',
@@ -4682,6 +4723,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'americanWaltWhitmanLeavesOfGrass',
+    'frenchVoltaireCandideTolerance',
     'germanAlbertSchweitzerReverenceForLife',
     'koreanOhseongHaneumFriendshipGovernance',
     'germanErichFrommArtOfLovingBeing',
@@ -4844,6 +4887,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'americanWaltWhitmanLeavesOfGrass',
     'germanAlbertSchweitzerReverenceForLife',
     'americanWilliamJamesPragmatism',
     'britishBertrandRussellConquestOfHappiness',
@@ -4915,6 +4959,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'koreanAhnJungGeunPeaceRighteousness',
+    'americanWaltWhitmanLeavesOfGrass',
+    'frenchVoltaireCandideTolerance',
     'germanAlbertSchweitzerReverenceForLife',
     'frenchMichelDeMontaigneEssays',
     'koreanOhseongHaneumFriendshipGovernance',

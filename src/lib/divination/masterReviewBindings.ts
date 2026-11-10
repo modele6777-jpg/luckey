@@ -1171,5 +1171,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanOhseongHaneumFriendshipGovernance": {
     "field": "koreanOhseongHaneumFriendshipGovernanceResult",
     "traceKey": "koreanOhseongHaneumFriendshipGovernanceResult"
+  },
+  "frenchVoltaireCandideTolerance": {
+    "field": "frenchVoltaireCandideToleranceResult",
+    "traceKey": "frenchVoltaireCandideToleranceResult"
+  },
+  "americanWaltWhitmanLeavesOfGrass": {
+    "field": "americanWaltWhitmanLeavesOfGrassResult",
+    "traceKey": "americanWaltWhitmanLeavesOfGrassResult"
+  },
+  "koreanAhnJungGeunPeaceRighteousness": {
+    "field": "koreanAhnJungGeunPeaceRighteousnessResult",
+    "traceKey": "koreanAhnJungGeunPeaceRighteousnessResult"
   }
 };
