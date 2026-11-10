@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.319",
+    "builtAt": "2026-11-10T11:17:07.000Z",
+    "summary": "MCP 리딩은 LUCKEY_API_ORIGIN이 없어도 운영 주소를 호출한다",
+    "items": [
+      "비어 있으면 Vercel 운영 주소, 현재 배포 주소, luckey-six.vercel.app 순서로 고름",
+      "지정된 LUCKEY_API_ORIGIN이 규칙에 맞지 않으면 폴백하지 않음",
+      "서버 호출은 Origin 헤더를 넣지 않아 앱의 출처 검사를 통과함"
+    ]
+  },
+  {
     "version": "1.7.318",
     "builtAt": "2026-11-10T11:04:19.000Z",
     "summary": "Grok MCP 키 비교가 붙여넣기 손상과 16자 비밀번호를 허용한다",
