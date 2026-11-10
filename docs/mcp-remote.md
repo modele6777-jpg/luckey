@@ -1,6 +1,6 @@
 # LUCKEY 원격 MCP (타로·사주)
 
-MCP는 리딩 문장이나 사주 원국을 직접 계산하지 않고, 고정된 `LUCKEY_API_ORIGIN`의 기존 HTTP API만 호출합니다. 요청의 Host, 도구 인자, MCP Bearer 토큰으로 호출 주소를 바꾸거나 사용자 신원인 것처럼 전달하지 않습니다.
+MCP는 리딩 문장이나 사주 원국을 직접 계산하지 않고, 기존 HTTP API만 호출합니다. 주소는 `LUCKEY_API_ORIGIN`이 있으면 그 값이고, 없으면 `VERCEL_PROJECT_PRODUCTION_URL`, 그다음 `VERCEL_URL`, 마지막에 `https://luckey-six.vercel.app`입니다. 요청의 Host, 도구 인자, MCP Bearer 토큰으로 호출 주소를 바꾸거나 사용자 신원인 것처럼 전달하지 않습니다.
 
 확인한 구현은 소스와 `127.0.0.1` 핸들러 테스트입니다. `https://luckey.ai.studio/api/mcp`는 배포 후 계획 주소이며 이번 변경에서 호출하지 않았습니다.
 
@@ -43,9 +43,9 @@ MCP는 리딩 문장이나 사주 원국을 직접 계산하지 않고, 고정�
 
 ## 호출 주소
 
-`LUCKEY_API_ORIGIN`만 사용합니다. https, 또는 `localhost`/`127.0.0.1`의 http. 사용자 정보가 있는 URL은 거절합니다. 리다이렉트는 따라가지 않습니다. 허용 경로는 `/api/ai/daily-tarot`와 `/api/saju/chart`뿐입니다.
+`LUCKEY_API_ORIGIN`이 있으면 그 출처만 사용합니다. 비어 있으면 `https://`와 `VERCEL_PROJECT_PRODUCTION_URL`, 그다음 `VERCEL_URL`, 마지막으로 `https://luckey-six.vercel.app` 순서로 고릅니다. 허용되지 않는 폴백은 건너뜁니다. https, 또는 `localhost`/`127.0.0.1`의 http만 허용하고 사용자 정보가 있는 URL은 거절합니다. 명시된 `LUCKEY_API_ORIGIN`이 그 규칙에 맞지 않으면 폴백으로 넘어가지 않습니다. 리다이렉트는 따라가지 않습니다. 허용 경로는 `/api/ai/daily-tarot`와 `/api/saju/chart`뿐입니다.
 
-이 값이 비어 있으면 유료·사주 도구는 API를 호출하지 않고 설정 오류를 반환합니다.
+서버가 그 경로를 부를 때는 `Origin` 헤더를 넣지 않습니다. 앱은 Origin이 없는 요청을 허용하고, 이 두 경로는 분당 호출 제한에 걸리지 않습니다.
 
 ## 클라이언트
 
@@ -73,5 +73,5 @@ https://luckey-six.vercel.app/api/mcp?key=<LUCKEY_MCP_TOKEN>
 ## 운영자가 정할 일
 
 1. `LUCKEY_MCP_TOKEN`을 16자 이상 임의 값으로 서버 비밀에만 저장합니다.
-2. `LUCKEY_API_ORIGIN`을 리딩 API가 있는 https 출처로 저장합니다. Host 헤더로 대체하지 않습니다.
+2. `LUCKEY_API_ORIGIN`은 리딩 API를 다른 https 출처로 보낼 때만 저장합니다. 비어 있으면 Vercel 운영 주소, 현재 배포 주소, `https://luckey-six.vercel.app` 순서로 호출합니다. Host 헤더로 대체하지 않습니다.
 3. 원카드 타로의 모델 호출은 그 출처의 기존 Gemini 키와 제공자 쿼터를 사용합니다. MCP는 Gemini SDK를 호출하지 않습니다.

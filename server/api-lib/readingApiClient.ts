@@ -1,4 +1,5 @@
 const READING_PATHS = ['/api/ai/daily-tarot', '/api/saju/chart'] as const;
+const DEFAULT_READING_ORIGIN = 'https://luckey-six.vercel.app';
 export type ReadingApiPath = (typeof READING_PATHS)[number];
 
 export class ReadingApiError extends Error {
@@ -17,22 +18,45 @@ export function setReadingApiFetchForTests(fetcher: typeof fetch | null): void {
   fetchOverride = fetcher;
 }
 
-/** Operator-configured origin only. Request Host and tool arguments are never used. */
-export function readingApiOrigin(): string {
-  const raw = (process.env.LUCKEY_API_ORIGIN || '').trim();
-  if (!raw) throw new ReadingApiError(503, 'LUCKEY_API_ORIGIN이 설정되지 않아 리딩 API를 호출하지 않습니다.');
+function parseAllowedOrigin(raw: string): string | null {
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
-    throw new ReadingApiError(503, 'LUCKEY_API_ORIGIN이 올바른 URL이 아닙니다.');
+    return null;
   }
   const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
   const allowed = url.protocol === 'https:' || (url.protocol === 'http:' && local);
-  if (!allowed || url.username || url.password) {
-    throw new ReadingApiError(503, 'LUCKEY_API_ORIGIN은 https 또는 로컬 http만 허용됩니다.');
-  }
+  if (!allowed || url.username || url.password) return null;
   return url.origin;
+}
+
+function originFromHost(host: string | undefined): string | null {
+  const raw = (host || '').trim();
+  if (!raw) return null;
+  return parseAllowedOrigin(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+}
+
+/** LUCKEY_API_ORIGIN overrides Vercel production, the current deployment, then the public app. */
+export function readingApiOrigin(): string {
+  const override = (process.env.LUCKEY_API_ORIGIN || '').trim();
+  if (override) {
+    let url: URL;
+    try {
+      url = new URL(override);
+    } catch {
+      throw new ReadingApiError(503, 'LUCKEY_API_ORIGIN이 올바른 URL이 아닙니다.');
+    }
+    const parsed = parseAllowedOrigin(override);
+    if (!parsed || url.username || url.password) {
+      throw new ReadingApiError(503, 'LUCKEY_API_ORIGIN은 https 또는 로컬 http만 허용됩니다.');
+    }
+    return parsed;
+  }
+  return originFromHost(process.env.VERCEL_PROJECT_PRODUCTION_URL)
+    || originFromHost(process.env.VERCEL_URL)
+    || parseAllowedOrigin(DEFAULT_READING_ORIGIN)
+    || DEFAULT_READING_ORIGIN;
 }
 
 export async function postReadingApi(path: ReadingApiPath, body: unknown): Promise<{ status: number; body: unknown }> {
