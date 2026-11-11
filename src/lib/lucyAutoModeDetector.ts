@@ -11,6 +11,56 @@ export interface LucyAutoDetectResult {
 
 export type SeptagramChannel = 'prologue' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse' | 'epilogue';
 
+export const SEPTAGRAM_RAINBOW_ORDER: readonly SeptagramChannel[] = [
+  'prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue',
+];
+
+export const SEPTAGRAM_RAINBOW_PALETTE: Record<SeptagramChannel, { background: string; foreground: string; border: string }> = {
+  prologue: { background: '#fee2e2', foreground: '#991b1b', border: '#fca5a5' },
+  orange: { background: '#ffedd5', foreground: '#9a3412', border: '#fdba74' },
+  trinity: { background: '#fef9c3', foreground: '#854d0e', border: '#fde047' },
+  aura: { background: '#dcfce7', foreground: '#166534', border: '#86efac' },
+  bluebird: { background: '#dbeafe', foreground: '#1e40af', border: '#93c5fd' },
+  muse: { background: '#e0e7ff', foreground: '#3730a3', border: '#a5b4fc' },
+  epilogue: { background: '#f3e8ff', foreground: '#6b21a8', border: '#c4b5fd' },
+};
+
+export interface SeptagramBadgeStyle {
+  backgroundColor?: string;
+  backgroundImage?: string;
+  color: string;
+  borderColor: string;
+}
+
+export function getSeptagramBadgeStyle(channels: readonly SeptagramChannel[]): SeptagramBadgeStyle {
+  const active = SEPTAGRAM_RAINBOW_ORDER.filter((channel) => channels.includes(channel));
+  if (active.length === 1) {
+    const { background, foreground, border } = SEPTAGRAM_RAINBOW_PALETTE[active[0]];
+    return { backgroundColor: background, color: foreground, borderColor: border };
+  }
+  if (active.length > 1) {
+    const stops = active.map((channel, index) => {
+      const position = (index / (active.length - 1)) * 100;
+      return `${SEPTAGRAM_RAINBOW_PALETTE[channel].background} ${position}%`;
+    });
+    return {
+      backgroundImage: `linear-gradient(90deg, ${stops.join(', ')})`,
+      color: '#312e81',
+      borderColor: '#a78bfa',
+    };
+  }
+  return { backgroundColor: '#f5f3ff', color: '#4c1d95', borderColor: '#ddd6fe' };
+}
+
+export function shouldShowAutoDetectionBadge(
+  enabled: boolean,
+  focused: boolean,
+  input: string,
+  detection: Pick<LucyAutoDetectResult, 'isCasual'> | null,
+): boolean {
+  return enabled && focused && input.trim().length >= 2 && detection !== null && !detection.isCasual;
+}
+
 export const SEPTAGRAM_CHANNEL_NAMES: Record<SeptagramChannel, string> = {
   prologue: '프롤로그',
   orange: '오렌지',

@@ -29,7 +29,7 @@ import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
-import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
+import { detectLucyChannelsFromText, formatChannelsModeTitle, getSeptagramBadgeStyle, shouldShowAutoDetectionBadge } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { LucyResponseRecommendation } from '@/components/LucyResponseRecommendation';
@@ -942,6 +942,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
     return null;
   });
+  const [liveDetection, setLiveDetection] = useState<{ channels: SpecialChannel[]; isCasual: boolean } | null>(null);
 
   const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
     setAutoDetectedTitleState(previous => {
@@ -976,25 +977,33 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // Real-time input text analysis for live dynamic mode indicator badge (AI 자동 감지 모드일 때 실시간 인디케이터 배지 표시용)
   useEffect(() => {
-    if (!isAutoDetect) return;
+    if (!isAutoDetect) {
+      setLiveDetection(null);
+      return;
+    }
 
     if (!input.trim() || input.trim().length < 2) {
       presetModeRef.current = null;
+      setLiveDetection(null);
       setAutoDetectedTitle(null);
       return;
     }
 
     // 질문 라이브러리/칩에서 선택된 질문 내용과 완전히 일치할 경우 사전 지정된 모드 유지
     if (presetModeRef.current && presetModeRef.current.text === input) {
+      const channels = [...presetModeRef.current.channels];
+      setLiveDetection({ channels, isCasual: channels.length === 0 });
       setAutoDetectedTitle(presetModeRef.current.title);
       return;
     }
 
     // 사용자가 직접 내용을 수정/타이핑하기 시작하면 프리셋을 해제하고 실시간 감지 실행
     presetModeRef.current = null;
+    setLiveDetection(null);
 
     const timer = setTimeout(() => {
       const detected = detectPageChannels(input);
+      setLiveDetection({ channels: [...detected.channels], isCasual: detected.isCasual });
       const nextTitle = detected.isMaster || detected.channels.length > 0
         ? detected.modeTitle
         : '가벼운 일상 수다';
@@ -1003,6 +1012,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }, 300);
     return () => clearTimeout(timer);
   }, [input, isAutoDetect]);
+
+  const showAutoDetectBadge = shouldShowAutoDetectionBadge(isAutoDetect, isInputFocused, input, liveDetection);
 
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -3554,17 +3565,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Live Auto-Detect Indicator Badge */}
           <AnimatePresence>
-            {isAutoDetect && isInputFocused && autoDetectedTitle && input.trim().length >= 2 && (
+            {showAutoDetectBadge && autoDetectedTitle && liveDetection && (
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
-                className="flex items-center gap-1 px-2 py-0.2 bg-violet-50 dark:bg-violet-950/70 border border-violet-200/90 dark:border-violet-500/30 text-violet-900 dark:text-white rounded-full text-[9px] sm:text-[10px] font-semibold w-fit shadow-2xs"
+                className="lucy-auto-detect-badge flex items-center gap-1 px-2 py-0.5 border rounded-full text-[9px] sm:text-[10px] font-semibold w-fit shadow-2xs"
+                style={getSeptagramBadgeStyle(liveDetection.channels)}
               >
-                <Sparkles size={10} className="text-violet-600 dark:text-violet-300 animate-spin" />
+                <Sparkles size={10} className="animate-spin" />
                 <span>AI 감지:</span>
-                <span className="font-bold text-violet-950 dark:text-white underline decoration-violet-300">{autoDetectedTitle}</span>
-                <span className="text-[8px] sm:text-[9px] text-violet-600 dark:text-violet-100 bg-violet-100/80 dark:bg-violet-900/60 px-1 py-0.1 rounded-full font-medium">자동 전환</span>
+                <span className="font-bold underline decoration-current/30">{autoDetectedTitle}</span>
+                <span className="text-[8px] sm:text-[9px] bg-white/75 px-1 py-0.1 rounded-full font-medium">자동 전환</span>
               </motion.div>
             )}
           </AnimatePresence>
