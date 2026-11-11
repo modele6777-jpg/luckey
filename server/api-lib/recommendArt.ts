@@ -25,6 +25,7 @@ async function personalizeWithGemini(
   userContext: string,
   energyFrequency: string,
   userConcern?: string,
+  signal?: AbortSignal,
 ): Promise<Pick<ArtRecommendationPayload, "whyRecommended" | "challenges"> | null> {
   const geminiKey = getGeminiApiKey();
   if (!geminiKey) return null;
@@ -82,6 +83,7 @@ ${JSON.stringify(facts, null, 2)}
     ];
 
     for (const model of modelsToTry) {
+      if (signal?.aborted) break;
       try {
         const response = await ai.models.generateContent({
           model,
@@ -97,6 +99,7 @@ ${JSON.stringify(facts, null, 2)}
               required: ["whyRecommended", "challenges"],
             },
             temperature: 0.35,
+            ...(signal ? { abortSignal: signal } : {}),
           },
         });
 
@@ -129,6 +132,7 @@ async function personalizeWithOpenAI(
   currentMood: string,
   userContext: string,
   energyFrequency: string,
+  signal?: AbortSignal,
 ): Promise<Pick<ArtRecommendationPayload, "whyRecommended" | "challenges"> | null> {
   const openAIKey = (process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "").trim();
   if (!openAIKey) return null;
@@ -141,7 +145,7 @@ async function personalizeWithOpenAI(
   };
 
   try {
-    const openai = new OpenAI({ apiKey: openAIKey });
+    const openai = new OpenAI({ apiKey: openAIKey, timeout: 10000, maxRetries: 0 });
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.35,
@@ -157,7 +161,7 @@ async function personalizeWithOpenAI(
           content: `Facts: ${JSON.stringify(facts)}\nMood: ${currentMood}\nEnergy: ${energyFrequency}\nContext: ${userContext || "none"}`,
         },
       ],
-    });
+    }, signal ? { signal } : undefined);
     const rawText = response.choices[0]?.message?.content;
     if (!rawText) return null;
     const parsed = JSON.parse(rawText) as {
@@ -196,10 +200,11 @@ export async function buildDailyArtRecommendation(
   );
 
   const userConcern = String(req.userConcern || "").trim();
+  const personalizationDeadline = AbortSignal.timeout(10000);
 
   const personalized =
-    (await personalizeWithGemini(base, currentMood, userContext, energyFrequency, userConcern)) ||
-    (await personalizeWithOpenAI(base, currentMood, userContext, energyFrequency));
+    (await personalizeWithGemini(base, currentMood, userContext, energyFrequency, userConcern, personalizationDeadline)) ||
+    (await personalizeWithOpenAI(base, currentMood, userContext, energyFrequency, personalizationDeadline));
 
   if (!personalized) return base;
 

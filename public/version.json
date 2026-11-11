@@ -1,10 +1,12 @@
 {
-  "version": "1.7.334",
-  "builtAt": "2026-11-11T08:02:20.763Z",
-  "summary": "Gemini 3.8 자연 음성 연결 복구 및 Edge Neural TTS 프로토콜 수정",
+  "version": "1.7.335",
+  "builtAt": "2026-11-11T08:52:45.892Z",
+  "summary": "데일리아트 무한로딩·서버 TTS 오류·YouTube 재생 실패 보완",
   "items": [
-    "Gemini 3.8 Flash TTS와 Flash-Lite를 공식 Interactions API에 연결하고 WAV·PCM 응답을 안정적으로 처리",
-    "환경변수에 저장된 Gemini 키만 사용하고 브라우저 내장 음성·번역기 음성 fallback은 제외",
-    "Edge Neural TTS SSML timestamp의 중복 Z를 수정하고 회귀 테스트 추가"
+    "데일리아트 추천/API 대기와 작품 이미지 처리를 분리해 결과 화면의 무한 로딩을 방지",
+    "Gemini TTS 429 시 Flash-Lite 신경망 음성을 한 번 시도하고, 모두 제한되면 정확한 재시도용 429 반환",
+    "재생 불가로 확인된 YouTube ID는 임베드하지 않고 곡 검색으로 안내하며 Apple Music 탭에서 YouTube 링크 제거",
+    "외부 음악과의 독립성을 위해 ambient 오디오 정책을 유지하고 시스템 미디어 세션 점유·자동 포커스 회수 제거",
+    "브라우저 내장 음성·번역기 음성 폴백 제외; iOS 잠금/백그라운드 재생은 브라우저와 OS 지원 범위에 한정"
   ]
 }

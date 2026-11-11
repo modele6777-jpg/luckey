@@ -3,13 +3,34 @@ import assert from 'node:assert/strict';
 import { synthesizeWithGemini } from '../api/ai/tts';
 import { createTTSHandler } from '../server/api-lib/ttsHandler';
 
-test('Gemini requires configured credentials and does not retry account quota failures across models', async () => {
+test('Gemini requires configured credentials and reports rate limits after bounded model failover', async () => {
   let requests = 0;
   const quota = async () => { requests++; return new Response('{}', { status: 429 }); };
   assert.equal(await synthesizeWithGemini('설명', 'Aoede', { request: quota as typeof fetch }), null);
   assert.equal(requests, 0, 'no source-embedded/demo credential may trigger a request');
-  assert.equal(await synthesizeWithGemini('설명', 'Aoede', { apiKey: 'test-only', request: quota as typeof fetch, models: ['configured-a', 'configured-b'] }), null);
-  assert.equal(requests, 1, 'account quota affects all models, so do not try another model');
+  await assert.rejects(
+    synthesizeWithGemini('설명', 'Aoede', { apiKey: 'test-only', request: quota as typeof fetch, models: ['configured-a', 'configured-b'] }),
+    error => (error as any).status === 429 && (error as any).code === 'MEDIA_RATE_LIMIT',
+  );
+  assert.equal(requests, 2, 'try one alternate model, then surface the provider rate limit');
+});
+
+test('Gemini Lite neural TTS can serve when the preferred model is rate-limited', async () => {
+  const audio = Buffer.from('RIFF\u0000\u0000\u0000\u0000WAVEtest').toString('base64');
+  const attemptedModels: string[] = [];
+  const result = await synthesizeWithGemini('안녕하세요.', 'Aoede', {
+    apiKey: 'test-only',
+    models: ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'],
+    request: async (_url, init) => {
+      const model = JSON.parse(String(init?.body)).model;
+      attemptedModels.push(model);
+      if (model === 'gemini-3.8-flash-tts') return new Response('{}', { status: 429 });
+      return Response.json({ output_audio: { data: audio, mime_type: 'audio/wav' } });
+    },
+  });
+  assert.deepEqual(attemptedModels, ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts']);
+  assert.equal(result?.audioContent, audio);
+  assert.equal(result?.provider, 'gemini');
 });
 
 test('Gemini 3.8 Interactions TTS returns WAV from the documented REST audio step', async () => {

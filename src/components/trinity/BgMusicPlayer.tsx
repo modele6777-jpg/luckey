@@ -1710,40 +1710,9 @@ export function BgMusicPlayer() {
     } : null);
   }, [isPlaying, currentTrack?.name, currentTrack?.artist]);
 
-  useEffect(() => {
-    const restore = () => {
-      if (!isPlayingRef.current) return;
-      const audio = audioRef.current;
-      if (audio?.src && audio.paused && !renderingProceduralTrackRef.current) {
-        setBgmPlaybackSessionActive(true);
-        void audio.play().catch(() => {});
-      }
-    };
-
-    const audio = audioRef.current;
-    const handleAutoPause = () => {
-      // Guard against iOS pausing audio during screen lock or background app switch
-      if (isPlayingRef.current && audio && audio.paused && audio.src && !renderingProceduralTrackRef.current) {
-        setTimeout(() => {
-          if (isPlayingRef.current && audio && audio.paused) {
-            void audio.play().catch(() => {});
-          }
-        }, 50);
-      }
-    };
-
-    audio?.addEventListener('pause', handleAutoPause);
-    document.addEventListener('visibilitychange', restore);
-    window.addEventListener('pageshow', restore);
-    window.addEventListener('focus', restore);
-    return () => {
-      audio?.removeEventListener('pause', handleAutoPause);
-      document.removeEventListener('visibilitychange', restore);
-      window.removeEventListener('pageshow', restore);
-      window.removeEventListener('focus', restore);
-      setBgmPlaybackSessionActive(false);
-      updateAppMediaSession('bgm', null);
-    };
+  useEffect(() => () => {
+    setBgmPlaybackSessionActive(false);
+    updateAppMediaSession('bgm', null);
   }, []);
 
   // --- CLICK OUTSIDE TO COLLAPSE EXPANDED PLAYER & VOLUME SLIDER ---
