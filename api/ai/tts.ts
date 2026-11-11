@@ -2,6 +2,23 @@ import type { Response } from "express";
 import { getGeminiApiKey } from "../../server/geminiKey.ts";
 import { applyRestrictedCors, bodyTooLarge, rejectDisallowedOrigin } from "../../server/api-lib/publicAccess.ts";
 
+const DEFAULT_TTS_MODELS = ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"];
+const REQUEST_TIMEOUT_MS = 24_000;
+
+type TTSDependencies = {
+  apiKey?: string;
+  request?: typeof fetch;
+  models?: string[];
+};
+
+type TTSAudioResult = {
+  audioContent: string;
+  encoding: "wav" | "mp3";
+  sampleRate: number;
+  voice: string;
+  provider: "gemini";
+};
+
 function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSample = 16): Buffer {
   const byteRate = sampleRate * channels * (bitsPerSample / 8);
   const blockAlign = channels * (bitsPerSample / 8);
@@ -12,7 +29,7 @@ function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSa
   header.write("WAVE", 8);
   header.write("fmt ", 12);
   header.writeUInt32LE(16, 16);
-  header.writeUInt16LE(1, 20); // PCM format
+  header.writeUInt16LE(1, 20);
   header.writeUInt16LE(channels, 22);
   header.writeUInt32LE(sampleRate, 24);
   header.writeUInt32LE(byteRate, 28);
@@ -23,92 +40,139 @@ function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSa
   return Buffer.concat([header, pcmBuffer]);
 }
 
-function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
-  if (dependencies?.apiKey) return [dependencies.apiKey];
-  if (dependencies && !dependencies.apiKey) return [];
-  const keys: string[] = [];
+function getGeminiApiKeys(dependencies?: TTSDependencies): string[] {
+  // Tests and callers that inject dependencies must explicitly provide a test key.
+  if (dependencies) return dependencies.apiKey ? [dependencies.apiKey] : [];
   const key = getGeminiApiKey();
-  if (key && !keys.includes(key)) keys.push(key);
-  const fallback = "AQ.Ab8RN6Ktg9fspBAkf_p1oB0MmWL7R5_TftVattiDqgGRlTcOpA";
-  if (!keys.includes(fallback)) keys.push(fallback);
-  return keys;
+  return key ? [key] : [];
 }
 
-export async function synthesizeWithGemini(text: string, voice?: string, dependencies?: { apiKey?: string; request?: typeof fetch; models?: string[] }): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
+function resolveVoice(voice?: string): string {
+  return voice === "Charon" ? "Charon" : "Aoede";
+}
+
+function resolveSpeechStyle(emotion?: string): string {
+  const value = String(emotion || "").toLowerCase();
+  const tone = /위로|치유|평온|차분|warm|calm|healing|comfort/.test(value)
+    ? "calm and reassuring"
+    : /기쁨|설렘|응원|밝음|joy|cheer|bright|happy/.test(value)
+      ? "bright and encouraging"
+      : /신비|진지|경고|mystery|serious|dreamy/.test(value)
+        ? "gentle and reflective"
+        : "warm and conversational";
+  return `Natural Korean narration with a ${tone} tone, expressive intonation, clear articulation, and natural pauses; avoid a flat, robotic cadence.`;
+}
+
+function extractAudio(data: any): { base64: string; mimeType: string } | null {
+  const outputAudio = data?.output_audio;
+  if (typeof outputAudio?.data === "string" && outputAudio.data) {
+    return { base64: outputAudio.data, mimeType: String(outputAudio.mime_type || outputAudio.mimeType || "audio/wav") };
+  }
+
+  const steps = Array.isArray(data?.steps) ? data.steps : [];
+  for (let index = steps.length - 1; index >= 0; index--) {
+    const content = Array.isArray(steps[index]?.content) ? steps[index].content : [];
+    for (let partIndex = content.length - 1; partIndex >= 0; partIndex--) {
+      const part = content[partIndex];
+      if (part?.type === "audio" && typeof part.data === "string" && part.data) {
+        return { base64: part.data, mimeType: String(part.mime_type || part.mimeType || "audio/wav") };
+      }
+    }
+  }
+  return null;
+}
+
+function normalizedAudio(audio: { base64: string; mimeType: string }, voice: string): TTSAudioResult | null {
+  let bytes: Buffer;
+  try {
+    bytes = Buffer.from(audio.base64, "base64");
+  } catch {
+    return null;
+  }
+  if (!bytes.length) return null;
+
+  const mime = audio.mimeType.toLowerCase();
+  const rateMatch = /(?:rate|sample-rate)\s*=\s*(\d+)/i.exec(mime);
+  const sampleRate = Number(rateMatch?.[1]) || 24000;
+  if (mime.includes("l16") || mime.includes("pcm")) {
+    bytes = pcmToWav(bytes, sampleRate, 1, 16);
+    return { audioContent: bytes.toString("base64"), encoding: "wav", sampleRate, voice, provider: "gemini" };
+  }
+  if (mime.includes("mpeg") || mime.includes("mp3") || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) {
+    return { audioContent: bytes.toString("base64"), encoding: "mp3", sampleRate, voice, provider: "gemini" };
+  }
+  if (mime.includes("wav") || bytes.subarray(0, 4).toString("ascii") === "RIFF" || !mime) {
+    return { audioContent: bytes.toString("base64"), encoding: "wav", sampleRate, voice, provider: "gemini" };
+  }
+  return null;
+}
+
+/** Generate natural speech with Gemini's current TTS Interactions API. */
+export async function synthesizeWithGemini(
+  text: string,
+  voice?: string,
+  dependencies?: TTSDependencies,
+  emotion?: string,
+): Promise<TTSAudioResult | null> {
   const geminiKeys = getGeminiApiKeys(dependencies);
   if (!geminiKeys.length) return null;
   const request = dependencies?.request || fetch;
-  const voiceName = voice === "Charon" ? "Charon" : "Kore";
-
-  const models = dependencies?.models || (process.env.GEMINI_TTS_MODEL ? [process.env.GEMINI_TTS_MODEL] : [
-    "gemini-2.5-flash-preview-tts",
-    "gemini-3.1-flash-tts-preview",
-    "gemini-2.5-pro-preview-tts",
-    "gemini-3.8-flash-lite-tts",
-    "gemini-3.8-flash-tts",
-  ]);
+  const voiceName = resolveVoice(voice);
+  const configuredModel = process.env.GEMINI_TTS_MODEL?.trim();
+  const preferredModel = configuredModel && DEFAULT_TTS_MODELS.includes(configuredModel) ? configuredModel : undefined;
+  const models = dependencies?.models || (preferredModel
+    ? [preferredModel, ...DEFAULT_TTS_MODELS.filter(model => model !== preferredModel)]
+    : DEFAULT_TTS_MODELS);
 
   for (const geminiKey of geminiKeys) {
     for (const model of models) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-        const resp = await request(url, {
+        const response = await request("https://generativelanguage.googleapis.com/v1beta/interactions", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": geminiKey,
+          },
           body: JSON.stringify({
-            contents: [{ parts: [{ text }] }],
-            generationConfig: {
-              responseModalities: ["AUDIO"],
-              speechConfig: {
-                voiceConfig: {
-                  prebuiltVoiceConfig: { voiceName }
-                }
-              }
-            }
+            model,
+            input: [{
+              type: "user_input",
+              content: [{
+                type: "text",
+                text,
+                annotations: [{ type: "speech_metadata", style: resolveSpeechStyle(emotion) }],
+              }],
+            }],
+            response_format: { type: "audio" },
+            generation_config: { speech_config: [{ voice: voiceName }] },
           }),
-          signal: AbortSignal.timeout(28000),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         });
 
-        if (!resp.ok) {
-          console.warn(`[ai/tts] Gemini model ${model} HTTP ${resp.status}`);
-          if (resp.status === 400 || resp.status === 401 || resp.status === 403 || resp.status === 429) {
-            break;
-          }
+        if (!response.ok) {
+          // Account-level auth/quota failures affect both models; don't spend more requests retrying them.
+          console.warn(`[ai/tts] Gemini model ${model} HTTP ${response.status}`);
+          if ([401, 403, 429].includes(response.status)) break;
           continue;
         }
 
-        const data = await resp.json() as any;
-        const part = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
-        if (!part?.data) continue;
-
-        let rawBase64 = part.data;
-        const mime = String(part.mimeType || "").toLowerCase();
-
-        // If PCM (e.g. audio/l16 or audio/pcm), wrap with standard WAV header so browser audio can play seamlessly
-        if (mime.includes("l16") || mime.includes("pcm")) {
-          const pcmBuf = Buffer.from(rawBase64, "base64");
-          const wavBuf = pcmToWav(pcmBuf, 24000, 1, 16);
-          rawBase64 = wavBuf.toString("base64");
-        }
-
-        return {
-          audioContent: rawBase64,
-          encoding: "wav",
-          sampleRate: 24000,
-          voice: voiceName,
-          provider: "gemini"
-        };
-      } catch (e) {
-        console.warn(`[ai/tts] Gemini model ${model} failed:`, e instanceof Error ? e.name : 'request failed');
-        continue;
+        const payload = await response.json() as any;
+        const audio = extractAudio(payload);
+        if (!audio) continue;
+        const result = normalizedAudio(audio, voiceName);
+        if (result) return result;
+      } catch (error) {
+        console.warn(`[ai/tts] Gemini model ${model} failed:`, error instanceof Error ? error.name : "request failed");
       }
     }
   }
-
   return null;
 }
 
-export default async function handler(req: { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> }, res: Response) {
+export default async function handler(
+  req: { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> },
+  res: Response,
+) {
   try {
     const expressReq = req as Parameters<typeof rejectDisallowedOrigin>[0];
     applyRestrictedCors(expressReq, res);
@@ -116,58 +180,39 @@ export default async function handler(req: { method?: string; body?: unknown; he
     if (req.method !== "OPTIONS" && bodyTooLarge(expressReq, 16_000)) {
       return res.status(413).json({ error: "요청이 너무 큽니다.", code: "BODY_TOO_LARGE" });
     }
-    if (req.method === "OPTIONS") {
-      return res.status(200).end();
-    }
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
+    if (req.method === "OPTIONS") return res.status(200).end();
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
     let body = req.body as any;
     if (typeof body === "string") {
-      try {
-        body = JSON.parse(body);
-      } catch (_) {}
+      try { body = JSON.parse(body); } catch { body = {}; }
     } else if (Buffer.isBuffer(body)) {
-      try {
-        body = JSON.parse(body.toString("utf-8"));
-      } catch (_) {}
+      try { body = JSON.parse(body.toString("utf-8")); } catch { body = {}; }
     }
-    body = body || {};
+    body = body && typeof body === "object" && !Array.isArray(body) ? body : {};
 
     const text = String(body.text || "").trim();
     const voice = body.voice ? String(body.voice) : undefined;
     const emotion = body.emotion ? String(body.emotion) : undefined;
-    const rate = body.rate ? String(body.rate) : undefined;
-    const pitch = body.pitch ? String(body.pitch) : undefined;
-    const speed = typeof body.speed === "number" ? body.speed : undefined;
-    const language = body.language ? String(body.language) : undefined;
+    if (!text) return res.status(400).json({ error: "Empty speech text" });
 
-    if (!text) {
-      return res.status(400).json({ error: "Empty speech text" });
-    }
+    // Gemini neural speech is primary. The only fallback is server-side Edge Neural TTS;
+    // browser speech synthesis and translator voices are never used.
+    const geminiResult = await synthesizeWithGemini(text, voice, undefined, emotion);
+    if (geminiResult) return res.status(200).json(geminiResult);
 
-    // 🌟 1순위: Google Gemini Neural Audio TTS (다중 모델 자동 페일오버)
-    const geminiResult = await synthesizeWithGemini(text, voice).catch(() => null);
-    if (geminiResult) {
-      return res.status(200).json(geminiResult);
-    }
-
-    // 2순위: 서버 백업 TTS 핸들러
     const { handleTTS } = await import("../../server/api-lib/ttsHandler.ts");
-    const result = await handleTTS({ text, voice, emotion, rate, pitch, speed, language });
+    const result = await handleTTS({ text, voice, emotion });
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("[ai/tts] Vercel error:", err);
-    const message = err instanceof Error ? err.message : "TTS generation failed";
     const failure = err as { status?: number; code?: string; retryAfterSeconds?: number };
+    const message = err instanceof Error ? err.message : "TTS generation failed";
     const retryAfter = Number(failure?.retryAfterSeconds);
     const hasRetry = Number.isFinite(retryAfter) && retryAfter > 0;
     if (hasRetry) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
     return res.status(failure?.status || 500).json({
       error: message,
-      detail: message || String(err),
-      stack: String((err as Error)?.stack || "").slice(0, 600),
       ...(failure?.code ? { code: failure.code } : {}),
       ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}),
     });
