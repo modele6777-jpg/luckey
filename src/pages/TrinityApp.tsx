@@ -254,6 +254,7 @@ import {
   buildTarotBinaryChoicePromptAddon,
   buildTarotSpreadPromptAddon,
   buildTarotContextPromptAddon,
+  extractTarotSymbolicDirection,
   isTarotStreamFailure,
   ensureCompleteTarotReading,
   POPULAR_TAROT_SPREAD_PRESETS,
@@ -261,6 +262,7 @@ import {
   type TarotConcernAnalysis,
   type TarotConcernKind,
 } from "@/lib/trinity/utils";
+import { buildTarotInterpretationGuidance } from "@/lib/divination/consultationGuidance";
 import { buildSpreadTailoredReadingGuide } from "@/lib/trinity/spreadStructures";
 import {
   auth,
@@ -1712,120 +1714,21 @@ function playDailyCardChimeAsync() {
     });
   }, [tarotResult, drawnCards, dailyResult, dailyDrawnCard, sharedState, tarotConcern, tarotConcernAnalysis]);
 
-  // 🎯 예/아니오 (YES or NO) 타로 최종 판정 추출
+  // 예/아니오 타로 결과에서 모델이 명시한 상징적 참고만 표시하고 판정을 자동 생성하지 않음
   const tarotYesNoVerdict = useMemo(() => {
     if (!tarotResult) return null;
     const isYesNoContext =
       tarotConcernAnalysis.kind === 'yes_no' ||
       tarotConcernAnalysis.theme === 'yes_no' ||
       tarotSpreadRecommendation.theme === 'yes_no';
-
-    // 1. 텍스트 라인별 정밀 분석: [YES / NO] 옵션 나열 헤더를 배제하고 실제 선언된 최종 판정 추출
-    const lines = tarotResult.split('\n');
-
-    // 명시적 최종 판정 패턴: "최종 판정: [NO]", "**최종 판정: [NO]**", "최종 판정은 [NO]이며", "최종 판정: [조건부 YES]" 등
-    // (뒤에 / 나 '또는', 'or' 등이 붙어 선택지를 나열하는 헤더나 안내문은 엄격히 배제)
-    const explicitVerdictRegex = /(?:최종\s*판정|마스터의\s*최종\s*결단|마스터의\s*최종\s*판정|방향과\s*결단)\s*(?:은|는|이|가|[:—\-])?\s*(?:\*\*)?\s*\[?\s*(조건부\s*YES|확실한\s*YES|YES|단호한\s*NO|NO)\s*\]?(?!\s*[\/|또는|or])/i;
-
-    const explicitMatches: string[] = [];
-    for (const line of lines) {
-      const trimmed = line.trim();
-      // 옵션 목록이나 마크다운 헤더(예: ### ... [YES / NO / 조건부 YES])는 판정 선언이 아니므로 건너뜀
-      if (trimmed.startsWith('#') && (trimmed.includes('/') || trimmed.includes('또는') || trimmed.includes(' or '))) {
-        continue;
-      }
-      const match = trimmed.match(explicitVerdictRegex);
-      if (match && match[1]) {
-        explicitMatches.push(match[1].trim().toUpperCase());
-      }
-    }
-
-    // 2. 단독 대괄호 판정 패턴: "[NO]", "[단호한 NO]", "[조건부 YES]", "[YES]" 등
-    const standaloneBracketRegex = /\[\s*(조건부\s*YES|확실한\s*YES|YES|단호한\s*NO|NO)\s*\](?!\s*[\/|또는|or])/i;
-    const bracketMatches: string[] = [];
-    if (explicitMatches.length === 0 && isYesNoContext) {
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('#') && (trimmed.includes('/') || trimmed.includes('또는') || trimmed.includes(' or '))) {
-          continue;
-        }
-        const match = trimmed.match(standaloneBracketRegex);
-        if (match && match[1]) {
-          bracketMatches.push(match[1].trim().toUpperCase());
-        }
-      }
-    }
-
-    const detectedVerdicts = explicitMatches.length > 0 ? explicitMatches : bracketMatches;
-
-    if (detectedVerdicts.length > 0) {
-      // NO 또는 단호한 NO가 하나라도 선언되어 있으면 판정은 확실하게 NO
-      const hasNo = detectedVerdicts.some((v) => v.includes('NO'));
-      const hasConditionalYes = detectedVerdicts.some((v) => v.includes('조건부'));
-      const hasYes = detectedVerdicts.some((v) => v === 'YES' || v.includes('확실한 YES'));
-
-      if (hasNo) {
-        return {
-          type: 'NO',
-          label: 'NO',
-          badgeText: '지금은 무리한 추진보다 숨은 변수 점검과 호흡 조율 필요',
-        };
-      }
-      if (hasConditionalYes) {
-        return {
-          type: 'CONDITIONAL_YES',
-          label: '조건부 YES',
-          badgeText: '준비와 보완을 거친 후 적극 전진 권장',
-        };
-      }
-      if (hasYes) {
-        return {
-          type: 'YES',
-          label: 'YES',
-          badgeText: '우주와 카드가 비추는 확실한 긍정과 기회',
-        };
-      }
-    }
-
-    // 3. 예/아니오 맥락에서 3번째 카드(최종 판정 자리)의 실제 정/역방향 상태 연동
-    if (isYesNoContext && Array.isArray(drawnCards) && drawnCards.length >= 3) {
-      const finalCard = drawnCards[2];
-      if (finalCard?.reversed) {
-        return {
-          type: 'NO',
-          label: 'NO',
-          badgeText: '3번 최종 판정 카드가 역방향을 가리키며 호흡 조율을 권고',
-        };
-      }
-      if (finalCard && !finalCard.reversed) {
-        return {
-          type: 'YES',
-          label: 'YES',
-          badgeText: '3번 최종 판정 카드가 정방향의 맑은 흐름을 제시',
-        };
-      }
-    }
-
-    // 4. 예/아니오 맥락에서 단독 단어 기반 탐색
-    if (isYesNoContext) {
-      const cleanResult = tarotResult.toUpperCase();
-      if (/\bNO\b/i.test(cleanResult) && !/\bYES\b/i.test(cleanResult)) {
-        return {
-          type: 'NO',
-          label: 'NO',
-          badgeText: '신중한 검토와 페이스 조절 필요',
-        };
-      }
-      if (/\bYES\b/i.test(cleanResult) && !/\bNO\b/i.test(cleanResult)) {
-        return {
-          type: 'YES',
-          label: 'YES',
-          badgeText: '카드가 가리키는 긍정의 확신',
-        };
-      }
-    }
-
-    return null;
+    if (!isYesNoContext || !Array.isArray(drawnCards) || drawnCards.length === 0) return null;
+    const label = extractTarotSymbolicDirection(tarotResult);
+    if (!label) return null;
+    return {
+      type: label,
+      label,
+      badgeText: '실제 앱 카드의 상징적 참고이며, 현실의 결과나 결정에 대한 판정·보장이 아닙니다.',
+    };
   }, [tarotResult, tarotConcernAnalysis, tarotSpreadRecommendation, drawnCards]);
 
   const displayTarotResult = useMemo(() => {
@@ -2689,10 +2592,10 @@ function playDailyCardChimeAsync() {
         );
         const decisionHint =
           concernAnalysis.kind === "binary_choice"
-            ? ` [★ 양자택일 결단 필수: [${concernAnalysis.optionA}] vs [${concernAnalysis.optionB}] 중 절대로 둘 다 좋다는 식의 중립/절충/회피를 일체 하지 마시고, 반드시 한쪽 길만을 승자로 확정 선언해 주세요. 추상적 수사를 배제하고 현실 손익과 구체적 사건을 직언해 주세요.]`
+            ? ` [양자택일: [${concernAnalysis.optionA}]와 [${concernAnalysis.optionB}]의 카드 상징과 확인할 현실 조건을 비교하세요. 승자·점수·확률·미래 결과를 지어내지 마세요.]`
             : concernAnalysis.kind === "yes_no"
-              ? " [★ 예/아니오 결정 질문: 반드시 3단계와 요약에 최종 판정 [YES] 또는 [NO]를 명확히 선언하고, 추상적 비유 없이 현실적 팩트를 직언해 주세요.]"
-              : " [★ 극사실주의 현실 번역: 뜬구름 잡는 추상적 비유나 철학적 수사를 일체 배제하고, 질문자의 실제 현실 상황과 구체적인 사건, 명확한 타이밍, 실행 가능한 실전 행동 수칙을 직언해 주세요.]";
+              ? " [예/아니오 질문: 결과를 YES/NO로 판정하지 말고, 카드에 근거한 상징적 참고와 현재 확인할 조건을 설명하세요.]"
+              : " [카드 상징은 현재와 가까운 선택을 돌아보는 참고로 해석하세요. 사실처럼 단정하거나 정확한 시점·사건을 만들지 마세요.]";
         const spreadHint = ` [자동 적용 배열법: ${concernAnalysis.spread.name} — ${concernAnalysis.spread.positions.join(", ")}]`;
         const dailyAnchorHint = dailyCard
           ? ` [오늘의 지배 카드(배경 에너지): ${dailyCard.nameKo} (${dailyCard.name})${dailyCard.reversed ? ' (역방향)' : ''}]`
@@ -2748,16 +2651,11 @@ function playDailyCardChimeAsync() {
 - 적용 배열법: ${concernAnalysis.spread.name} (${concernAnalysis.spread.cardCount}장)
 - 펼쳐진 카드: [${cardNames}]${dailyCardDirective}
 
-[★ 최우선 필수 대원칙 — 뜬구름 잡는 추상적 표현 전면 금지 & 100% 극사실주의 현실 번역]
-1. **추상적 영적 미사여구 배제**: "내면의 빛을 비추어보라", "우주의 파동을 느껴라", "영혼의 고요한 울림", "마음의 거울" 같은 뜬구름 잡는 추상적인 수사나 상투적인 힐링 문구는 일체 금지합니다.
-2. **손에 잡히는 구체적 현실 상황으로 100% 번역**: 카드의 상징이 내담자의 실제 현실(직장 상사/동료/이직/연봉 협상, 연애 상대방의 실제 속마음과 연락 패턴, 사업·투자 손익, 학업/시험/계약 등)에서 정확히 어떤 사건과 결과로 일어나는지 구체적인 장면으로 명쾌하게 짚어내십시오.
-3. **골든타임 및 타이밍 제시**: "당장 이번 주", "앞으로 2주~1달 이내", "상대방의 연락이 올 때까지 3일간 침묵 유지" 등 실행에 옮길 수 있는 구체적인 시기와 타임라인을 제시하십시오.
-4. **구체적 실전 행동 수칙(Action Blueprint)**: 오늘 당장 실행할 행동을 "어디서, 누구에게, 어떤 말을 하고, 무엇을 점검해야 하는지" 명확한 행동 미션으로 지시하십시오.
-
-[★ 양자택일(Binary Choice) 단일 판정 절대 법칙 — 양다리·절충안 100% 금지!]
-- 질문이 두 가지 길 중 선택하는 양자택일인 경우, 절대로 "둘 다 장단점이 있다", "어느 쪽이든 배움이 된다", "마음이 끌리는 쪽을 따르라" 식의 어정쩡한 중립·절충·회피 답변을 100% 엄벌 금지합니다!
-- 카드의 상징과 현실 손익(리스크와 리턴)에 근거하여 **반드시 단 하나의 승자(Winner)를 명확히 못 박아 선언**하십시오.
-- 최상단 [핵심 3줄 요약]과 본문 결단 단계 모두에서 **🎯 최종 결단: [선택지 명칭] (승자 판정)** 형태로 단독 선언하고, 선택된 길이 왜 유리한지 현실적 근거를 제시하며, 탈락한 쪽 길은 왜 지금 선택하면 손해나 위험이 큰지 명확히 직언하십시오.
+[★ 실제 카드와 확인 가능한 현실 조건을 근거로 해석]
+1. **앱 추첨 결과만 사용**: 아래 카드 목록과 정·역방향, 배열만 해석하십시오. 카드를 선택·추첨·추가하거나 배열을 바꾸지 말고, 전달되지 않은 카드나 사용자의 실제 상황을 지어내지 마세요.
+2. **상징은 사실·예언이 아님**: 카드로 제3자의 숨은 생각이나 실제 사건을 알 수 있다고 주장하지 말고, 의미를 가능한 성찰의 관점으로 설명하십시오.
+3. **현재와 가까운 기간에 초점**: 지금 점검할 변수와 사용자가 확인할 수 있는 조건, 되돌리기 쉬운 다음 행동을 제안하십시오. 먼 미래의 결말, 정확한 날짜·연락·합격, 확정 수익을 단정하지 마세요.
+4. **두 선택지와 예/아니오**: 실제 옵션의 장점·주의점·확인 기준을 비교하되 객관적인 승자, 최종 YES/NO, 승률·확률을 만들지 마세요. 카드가 비추는 방향을 언급한다면 상징적 참고임을 분명히 하십시오.
 
 [★ 최우선 필수 대원칙 — 뽑힌 카드의 고유한 상징과 정/역방향 뜻 중심의 심층 리딩]
 1. **타로 본연의 도상과 상징 중심 해독**: 카드 이름만 단순 언급하고 지나가는 피상적 리딩은 절대 금지합니다. 뽑힌 모든 카드의 도상학적 상징(그림 속 인물의 표정과 자세, 손에 쥔 도구, 배경 색채, 4대 원소 기운)과 정통 타로의 본질적 의미(정방향/역방향의 깊은 뜻)를 리딩 전체의 가장 확고한 뼈대와 근거로 삼으십시오.
@@ -2775,13 +2673,14 @@ function playDailyCardChimeAsync() {
 - 동일한 문장, 동일한 조언, 동일한 표현을 리딩 내에서 절대로 2번 이상 중복하여 서술하지 마십시오.
 - 각 단계는 고유한 통찰과 관점을 담아야 하며, 앞서 언급한 카드의 해석이나 키워드를 다른 단계에서 그대로 복사하듯 반복 나열하지 마십시오.
 
-[🔮 타로 마스터 리딩 원칙 — 보고서형 어투 절대 금지]
+[🔮 타로 마스터 리딩 원칙]
 1. **생생한 상담실 대화체**: 딱딱한 기획서·보고서·수치 나열형은 절대 지양하십시오. 대신 실제 타로 마스터의 생동감 넘치는 호흡으로 이야기하듯 서술하십시오.
 2. **깊은 공감과 날카로운 팩트폭행의 조화**: 내담자가 겪고 있는 혼란과 불안을 따뜻하게 안아주되, 카드가 경고하는 현실적 맹점이나 피해야 할 악수는 숨김없이 명쾌하고 솔직하게 짚어주십시오.
 3. **스토리텔링 식 카드 융합 해독**: 카드를 개별 사전식으로 분리해 나열하지 말고, 각 위치의 상징들이 서로 인과관계를 맺으며 어떻게 흘러가는지 하나의 흥미진진한 운명의 드라마처럼 유기적으로 엮어내십시오.
-4. **명확하고 흔들림 없는 결론**: 애매하게 얼버무리거나 회피하지 않고, 카드의 기운이 가리키는 방향을 마스터의 확신 있는 어조로 단호하게 선언하십시오.
+4. **현실적인 마무리**: 카드의 한계를 숨기지 않고, 확인할 조건과 사용자가 선택할 수 있는 가까운 다음 단계를 차분히 정리하십시오.
 
-${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${contextPromptAddon}`;
+${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${contextPromptAddon}
+${buildTarotInterpretationGuidance({ question: tarotConcern, hasAppDraw: true })}`;
         }
 
         systemPrompt += `
@@ -2790,7 +2689,7 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
 주제: ${getTarotThemeMeta(concernAnalysis.theme).label}
 리딩 맨 앞에 [핵심 3줄 요약]과 다음 세 줄을 작성하세요. 각 줄은 앞 문장을 보지 않아도 뜻이 끝나는 완결 문장으로, 70~130자 안에 쓰세요. 글자 수를 맞추려고 주의점이나 행동을 빼지 마세요.
 - [현재 에너지] 질문 속 구체적인 대상이나 상황부터 밝히고, 지금 무엇이 마음을 움직이거나 막고 있는지 한 문장으로 설명하세요. 예: “이직을 생각하고 있지만 새 직장의 조건이 아직 분명하지 않아 현재 직장을 떠날지 망설이고 있습니다.” 카드의 뜻은 이 해석의 근거로만 쓰고, 그림 설명·미래 예측·행동 조언·막연한 기운 묘사는 이 줄에 넣지 마세요.
-- [방향과 결단] 질문에 대한 판단과, 구체적으로 무엇을 조심해야 하는지를 같은 문장에 적으세요. "주의할 점은 있습니다"처럼 주의 내용이 빠진 문장은 금지입니다. 양자택일이면 승자 이름을, 예/아니오이면 YES 또는 NO를 이 줄에 남기세요.
+- [방향과 주의점] 카드의 상징적 참고와 구체적인 주의점을 함께 적으세요. 양자택일·예/아니오 질문도 객관적인 승자·최종 판정·확률을 만들지 말고, 근거가 부족한 부분을 밝히세요.
 - [실천 행동] 오늘 할 행동을 하나 적으세요. 무엇을 할지가 그 문장 안에 있어야 합니다. "이 작은 행동", "이 실천", "첫 단추"처럼 행동을 가리키기만 하는 말, 그리고 사주 세운 덕담으로 행동을 대신하는 말은 금지입니다.
 각 줄은 서로 다른 내용이고 본문과 모순되지 않아야 합니다. 근거가 부족한 점은 명시하세요.
 연애는 관계·연락·상대와의 소통, 진로는 이직·지원·시험·업무, 금전은 비용·수익·위험 등 실제 질문의 맥락을 유지하세요.
@@ -4259,34 +4158,28 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                           {/* ✨ 핵심 3줄 요약 프리미엄 그래픽 카드 (내가 한 질문 포함 · 최상단 고정 & 원클릭 TTS) */}
 
 
-                                          {/* ⚖️ 예/아니오 (YES or NO) 마스터 최종 판정 배너 */}
+                                          {/* ⚖️ 실제 카드 해석에 명시된 상징적 참고만 표시 */}
                                           {tarotYesNoVerdict && (
                                             <div className={`p-4 rounded-2xl border flex items-center justify-between gap-3 shadow-lg backdrop-blur-md transition-all ${
                                               tarotYesNoVerdict.type === 'NO'
                                                 ? 'bg-gradient-to-r from-rose-950/60 via-rose-900/30 to-black/80 border-rose-500/50 shadow-[0_0_25px_rgba(244,63,94,0.2)]'
-                                                : tarotYesNoVerdict.type === 'CONDITIONAL_YES'
-                                                  ? 'bg-gradient-to-r from-amber-950/60 via-amber-900/30 to-black/80 border-amber-500/50 shadow-[0_0_25px_rgba(245,158,11,0.2)]'
-                                                  : 'bg-gradient-to-r from-emerald-950/60 via-emerald-900/30 to-black/80 border-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.2)]'
+                                                : 'bg-gradient-to-r from-emerald-950/60 via-emerald-900/30 to-black/80 border-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.2)]'
                                             }`}>
                                               <div className="flex items-center gap-3.5">
                                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl tracking-wider shrink-0 ${
                                                   tarotYesNoVerdict.type === 'NO'
                                                     ? 'bg-rose-500/20 text-rose-300 border border-rose-400/60 shadow-[0_0_15px_rgba(244,63,94,0.4)]'
-                                                    : tarotYesNoVerdict.type === 'CONDITIONAL_YES'
-                                                      ? 'bg-amber-500/20 text-amber-300 border border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                                                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/60 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                                                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/60 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
                                                 }`}>
                                                   {tarotYesNoVerdict.label}
                                                 </div>
                                                 <div>
                                                   <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] sm:text-xs uppercase tracking-widest font-bold text-white/60 font-sans"><TTSHighlightText text="마스터 최종 판정" /></span>
+                                                    <span className="text-[10px] sm:text-xs uppercase tracking-widest font-bold text-white/60 font-sans"><TTSHighlightText text="상징적 기울기 참고" /></span>
                                                     <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border ${
                                                       tarotYesNoVerdict.type === 'NO'
                                                         ? 'bg-rose-500/20 text-rose-300 border-rose-400/30'
-                                                        : tarotYesNoVerdict.type === 'CONDITIONAL_YES'
-                                                          ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
-                                                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                                                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
                                                     }`}>
                                                       <TTSHighlightText text={tarotYesNoVerdict.label} />
                                                     </span>
@@ -4295,9 +4188,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                                 </div>
                                               </div>
                                               <div className={`text-2xl sm:text-3xl font-black shrink-0 tracking-tight ${
-                                                tarotYesNoVerdict.type === 'NO' ? 'text-rose-400' : tarotYesNoVerdict.type === 'CONDITIONAL_YES' ? 'text-amber-400' : 'text-emerald-400'
+                                                tarotYesNoVerdict.type === 'NO' ? 'text-rose-400' : 'text-emerald-400'
                                               }`}>
-                                                {tarotYesNoVerdict.type === 'NO' ? '🛑 NO' : tarotYesNoVerdict.type === 'CONDITIONAL_YES' ? '⚡ 조건부 YES' : '✨ YES'}
+                                                상징 참고
                                               </div>
                                             </div>
                                           )}

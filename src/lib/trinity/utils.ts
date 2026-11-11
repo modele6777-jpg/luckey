@@ -220,9 +220,9 @@ export function getTarotThemeMeta(theme: TarotConcernTheme): {
     case 'money':
       return { label: '재물·투자·금전', emoji: '💰', shortDesc: '재정 흐름과 막힘 해소 및 유입 기회' };
     case 'binary_choice':
-      return { label: '양자택일 비교', emoji: '⚖️', shortDesc: '두 가지 선택지의 실질적 결과 비교 판별' };
+      return { label: '양자택일 비교', emoji: '⚖️', shortDesc: '두 선택지의 상징과 현실에서 확인할 조건 비교' };
     case 'yes_no':
-      return { label: '예/아니오 결단', emoji: '🎯', shortDesc: '명쾌한 YES/NO 판정과 핵심 변수 진단' };
+      return { label: '예/아니오 질문', emoji: '🎯', shortDesc: '카드 상징의 참고와 지금 확인할 조건' };
     case 'timing':
       return { label: '시기·타이밍', emoji: '⏳', shortDesc: '움직여야 할 최적의 시점과 과거·현재 흐름' };
     case 'obstacle':
@@ -265,9 +265,9 @@ export function getTarotRecommendationReason(
     case 'money':
       return `자금 흐름의 정체 원인과 유입 기회, 구체적 실천 조언을 밝히는 [${spreadName} (${cardCount}장)]이 맞춤 추천되었습니다.`;
     case 'binary_choice':
-      return `${analysis?.optionA && analysis?.optionB ? `선택지 [${analysis.optionA}] vs [${analysis.optionB}]의` : '두 선택지의'} 결과와 장단점을 비교 판별하는 [${spreadName} (${cardCount}장)]이 맞춤 추천되었습니다.`;
+      return `${analysis?.optionA && analysis?.optionB ? `선택지 [${analysis.optionA}]와 [${analysis.optionB}]의` : '두 선택지의'} 카드 상징과 현실에서 확인할 조건을 비교하는 [${spreadName} (${cardCount}장)]이 맞춤 추천되었습니다. 결과나 승자를 판정하지 않습니다.`;
     case 'yes_no':
-      return `명확한 YES/NO 결단과 숨겨진 변수, 최종 판정을 신속히 확인하는 [${spreadName} (${cardCount}장)]이 맞춤 추천되었습니다.`;
+      return `예/아니오 질문에서 카드의 상징적 참고와 지금 확인할 변수를 살펴보는 [${spreadName} (${cardCount}장)]이 맞춤 추천되었습니다. 현실의 결과를 판정하거나 보장하지 않습니다.`;
     case 'timing':
       return `움직여야 할 최적의 시점과 과거의 영향, 결과 타이밍을 점검하는 [${spreadName} (${cardCount}장)]이 맞춤 추천되었습니다.`;
     case 'obstacle':
@@ -795,8 +795,8 @@ export function buildSpreadForTheme(
       id: 'yes_no_gate',
       name: '예·아니오 결정 배열',
       cardCount: 3,
-      reason: '지금 실행해도 되는지, 무엇이 변수인지, 최종 판정을 빠르게 확인하는 배열입니다.',
-      positions: ['현재 에너지', '숨은 변수', '최종 판정'],
+      reason: '현재 흐름과 숨은 변수, 결정 전에 확인할 현실 조건을 비교하는 배열입니다.',
+      positions: ['현재 에너지', '첫 번째 선택의 상징', '두 번째 선택의 상징'],
       theme: 'yes_no',
     },
     love: {
@@ -1460,50 +1460,30 @@ export function buildTarotBinaryChoicePromptAddon(analysis: TarotConcernAnalysis
 
     return `
 
-[⚖️ 양자택일 질문 상담 지침 — 기계적 'A안/B안' 표기 절대 금지 & 오직 단 하나의 승자만 명확히 결정!]
+[⚖️ 양자택일 질문 상담 지침 — 실제 선택지와 확인 가능한 조건을 비교]
 내담자는 현재 두 가지 구체적인 길 사이에서 인생의 중대한 갈림길에 서 있습니다:
 - 첫 번째 고민 선택지: **[${optA}]**
 - 두 번째 고민 선택지: **[${optB}]**
 
-[★ 양자택일 마스터 결단 절대 규칙 — 중립/양다리/절충안 100% 엄격 금지!]
-1. [기계적 기호 사용 금지]: 리딩 본문과 요약 어디에서도 절대로 'A안', 'B안', '선택지 A', '선택지 B', 'A를 선택', 'B를 선택' 같은 무미건조한 기호를 쓰지 마십시오! 반드시 내담자의 실제 선택지 이름인 **[${optA}]**와 **[${optB}]**를 직접 명시하십시오.
-2. [단 하나의 명확한 승자(Winner) 판정 필수 — 둘 다 좋다는 식의 회피 전면 금지]:
-   - "둘 다 일장일단이 있습니다", "어느 쪽이든 배움과 성장의 기회입니다", "마음의 소리에 맡기십시오" 같은 식의 비겁한 양다리나 회피성 조언은 100% 절대 금지합니다!
-   - 2번 카드([${optA}] 선택 시)와 3번 카드([${optB}] 선택 시)의 도상과 정/역방향 기운, 그리고 4번 최종 조언 카드를 면밀히 비교하여, **오직 한쪽 길만을 승자(Winner)로 확실하게 못 박아 선언**하십시오.
-3. [최상단 3줄 요약 단일 승자 선언]:
-   - 최상단의 [핵심 3줄 요약] 중 [최종 선택 판정] 항목에서 반드시 **"최종 결단은 [${optA}] (적합도 OO%)이며..."** 또는 **"최종 결단은 [${optB}] (적합도 OO%)이며..."**와 같이 승자 선택지 명칭을 가장 먼저 대괄호 안에 단독 선언하십시오.
-4. [본문 4단계 결단 섹션 단독 선언]:
-   - '4. 트리니티 마스터의 결정적 최종 결단' 섹션의 첫 문장에서 반드시 **🎯 마스터의 최종 결단: [${optA}] 승자 판정 (추천도 OO%)** 또는 **🎯 마스터의 최종 결단: [${optB}] 승자 판정 (추천도 OO%)**를 굵은 단독 제목으로 크고 명확하게 선언하십시오.
-5. [손익 비교 & 탈락한 쪽의 리스크 직언]:
-   - 선택된 길([승자])이 왜 압도적으로 유리한지 현실적 손익(수익, 커리어 안정성, 관계의 진전 등 구체적 팩트)을 설명하십시오.
-   - 반대로 탈락한 다른 쪽 길은 왜 지금 선택하면 안 되는지(감수해야 할 손실, 뒤따를 후회, 에너지의 정체 등 구체적 위험)를 가차없이 냉철하게 경고하여 질문자가 미련 없이 버릴 수 있도록 결단을 내려주십시오.
-6. [추상적 수사 금지 & 극사실주의 서술]:
-   - "내면의 빛", "영혼의 파동" 등 모호한 철학적 비유를 배제하고, 실제 현실(직장 상사/연봉, 연애 상대방의 반응, 돈의 손실/이득, 계약 조건)에서 펼쳐질 실제 사건으로 서술하십시오.`;
+양쪽 선택지를 실제 이름으로 부르고, 각 카드의 상징이 비추는 관점·장점·주의점과 현실에서 확인할 조건을 비교하세요. 카드만으로 객관적인 승자나 결과를 정할 수는 없으므로 하나를 반드시 고르라고 압박하지 말고, 수치·확률·수익률을 만들지 마세요. 미래의 실제 사건이나 상대의 반응을 예언하지 말고, 지금 또는 가까운 기간에 확인할 수 있는 다음 단계와 판단 기준을 제안하세요.`;
   }
 
   if (analysis.kind === 'yes_no') {
     return `
 
-[🎯 예/아니오 (YES / NO) 결정 질문 특별 지침]
-내담자는 지금 실행 여부나 결과에 대해 확실한 '예(YES)' 또는 '아니오(NO)'의 명쾌한 결단을 절실히 원하고 있습니다.
-
-[예/아니오 판정 마스터 절대 규칙]
-1. '3. 트리니티 마스터의 직관적 결단과 최종 판정' 섹션 첫 줄에 반드시 **최종 판정: [YES]** 또는 **최종 판정: [NO]** (상황에 따라 신중한 보완이 필요할 시 **최종 판정: [조건부 YES]**)를 크고 명확하게 단독 선언하십시오.
-   - 절대로 'YES'나 'NO' 단어를 생략하거나 애매한 말로 얼버무리지 마십시오.
-   - 반드시 **최종 판정: [YES]** 또는 **최종 판정: [NO]**라고 명확한 영문 단어를 대괄호 안에 포함하여 선언해야 합니다.
-   - 3단계 제목에는 [YES / NO] 선택지 목록을 나열하지 마시고, 실제 본문 첫 줄에 오직 결정된 단일 판정 하나만을 선언하십시오.
-2. 선언 직후, 뽑힌 카드의 상징과 정방향/역방향의 깊은 뜻(특히 3번째 최종 판정 카드의 기운)을 근거로 삼아 왜 [YES] 또는 [NO]인지 그 필연적 이유를 설득력 있고 확신에 찬 목소리로 풀어내십시오.
-3. 최상단의 [핵심 3줄 요약] 중 [방향과 결단] 항목에서도 "최종 판정은 [YES]이며..." 혹은 "최종 판정은 [NO]이며..."와 같이 판정 결과(YES 또는 NO)를 빠짐없이 명시하십시오.`;
+[🎯 예/아니오 질문 상담 지침]
+실제 앱 카드의 상징을 참고로 설명하되, 카드만으로 현실의 결과를 확정하거나 최종 YES/NO 판정을 내리지 마세요. 필요하다면 "상징적 기울기"라고 분명히 표시하고, 확률·정확한 시점·보장된 결과를 만들지 마세요. 지금 확인해야 할 조건과 되돌리기 쉬운 가까운 행동을 제안하세요.`;
   }
 
   return `
 
-[✅ 실행/방향 결정 질문 상담 지침]
-내담자는 실행 여부 및 구체적인 행동 방향에 대해 명쾌한 결단을 원하고 있습니다.
+[실행·방향 질문 상담 지침]
+카드의 상징을 가능한 해석 중 하나로 설명하고, 확정된 결과나 미래의 사건으로 단정하지 마세요. 질문에 맞는 현재의 변수, 확인할 조건, 가까운 기간의 현실적인 다음 단계를 제안하세요. 카드가 말하지 않는 날짜·확률·수익을 덧붙이지 마세요.`;
+}
 
-[결정 마스터 규칙]
-1. '3. 트리니티 마스터의 직관적 결단 & 방향성' 섹션 첫 줄에 카드의 상징과 본질에 근거한 명확하고 구체적인 실행 방향(예: **[적극적인 실행과 도약 권장]**, **[신중한 검토와 호흡 조율 필요]**, **[새로운 대안 모색 권고]**, **[내실 다지기 우선]**) 형태로 품격 있게 선언하십시오.
-2. 막연히 '때를 기다리라'는 식의 무책임한 회피를 금하며, 질문에 대한 카드의 목소리를 명확하게 들려주십시오.`;
+export function extractTarotSymbolicDirection(result: string): 'YES' | 'NO' | null {
+  const match = String(result || '').match(/(?:^|\n)\s*(?:\*\*)?상징적\s*기울기\s*[:：]\s*\[?\s*(YES|NO)\s*\]?(?:\*\*)?\s*(?=\n|$)/i);
+  return match ? match[1].toUpperCase() as 'YES' | 'NO' : null;
 }
 
 export interface ThemeTailoredStructure {
@@ -1623,25 +1603,25 @@ export function getThemeTailoredReadingStructure(
 
   if (theme === 'yes_no') {
     return {
-      themeTitle: '예·아니오 결정 타로 (YES / NO GATE)',
-      themeBadge: 'DEFINITIVE VERDICT',
+      themeTitle: '예·아니오 질문 타로 (상징적 참고)',
+      themeBadge: 'SYMBOLIC REFLECTION',
       themeEmoji: '🎯',
       themeGradient: 'from-violet-500/20 via-indigo-500/10 to-transparent',
       stepTitles: [
         '### ⚖️ 1. 현재 상황의 기저 에너지와 질문의 본질',
         '### 🔍 2. 카드가 비추는 숨은 변수와 현실적 인과관계 (카드별 상징 해독)',
-        '### 🎯 3. 마스터의 최종 판정: [YES / NO / 조건부 YES] 및 필연적 이유',
-        '### 🛡️ 4. 성공 확률을 100%로 끌어올릴 핵심 대비책 & 행동 지침',
+        '### 🎯 3. 카드의 상징적 기울기와 판단에 필요한 조건',
+        '### 🛡️ 4. 지금 확인할 수 있는 조건과 현실적인 다음 단계',
         '### ✨ 5. 결단을 든든하게 지지하는 마스터의 수호 축복',
       ],
       stepDescriptions: [
         '내담자가 갈등하는 문제의 핵심 본질과 상황의 기저 에너지를 꿰뚫어보세요.',
         '결과를 좌우할 숨은 변수와 예상치 못한 기회의 요인을 카드로 해독하세요.',
-        '반드시 첫 줄에 최종 판정 [YES] 또는 [NO]를 굵게 선언하고 근거를 설명하세요.',
-        '선택의 결과를 극대화하거나 위험을 방어할 핵심 실천 지침을 처방하세요.',
+        '카드는 현실 결과를 확정하지 않음을 밝히고, 실제 카드에 근거한 상징적 참고와 함께 추가 확인이 필요한 조건을 설명하세요.',
+        '확률이나 보장을 만들지 말고, 질문자가 지금 확인할 수 있는 사실과 되돌리기 쉬운 가까운 행동을 제안하세요.',
         '스스로 내린 결단에 후회가 없도록 단단한 용기를 불어넣는 축복을 건네세요.',
       ],
-      summaryLabels: ['현재 에너지 진단', '최종 판정 [YES/NO]', '핵심 대비 행동 처방'],
+      summaryLabels: ['현재 에너지', '상징적 참고와 주의점', '현실적인 다음 단계'],
     };
   }
 
@@ -1657,25 +1637,25 @@ export function getThemeTailoredReadingStructure(
         : extracted.optionB;
 
     return {
-      themeTitle: `양자택일 갈림길 타로 (${optA} vs ${optB})`,
+      themeTitle: `두 선택지 비교 타로 (${optA} vs ${optB})`,
       themeBadge: 'BINARY FORK DECISION',
       themeEmoji: '⚖️',
       themeGradient: 'from-emerald-500/20 via-teal-500/10 to-transparent',
       stepTitles: [
         `### ⚖️ 1. [${optA}]와 [${optB}] 기로에 선 내담자의 심리와 갈등의 본질`,
-        `### 🔀 2. [${optA}] 선택 시 vs [${optB}] 선택 시의 운명적 결과 심층 대비`,
-        `### 🎯 3. 마스터의 단호한 최종 선택: [${optA} / ${optB} 중 택 1] 및 필연적 이유`,
-        '### 🌿 4. 선택 후 흔들림 없이 나아가기 위한 마스터의 실천 가이드',
-        '### ✨ 5. 선택한 길을 환하게 밝히는 운명의 축복',
+        `### 🔀 2. [${optA}]와 [${optB}]의 현재 조건·상징 비교`,
+        '### 🎯 3. 두 방향에서 고려할 장점과 주의점',
+        '### 🌿 4. 판단 전에 확인할 현실 조건과 가까운 다음 단계',
+        '### ✨ 5. 스스로 판단할 수 있도록 돕는 격려',
       ],
       stepDescriptions: [
         `내담자가 '${optA}'와 '${optB}' 사이에서 흔들리는 심리적 이유와 내면의 진짜 갈망을 짚어내세요. ('A안', 'B안' 같은 기호 대신 실제 고민 명칭을 직접 부르세요.)`,
-        `'${optA}'의 길을 택했을 때의 흐름과 '${optB}'의 길을 택했을 때의 결과를 카드의 도상으로 입체 대비하세요.`,
-        `반드시 첫 줄에 **최종 선택: [${optA}]** 또는 **최종 선택: [${optB}]**로 실제 고민 명칭을 선언하고 이유를 제시하세요.`,
-        '선택한 길에서 겪을 수 있는 초기 혼란을 막고 탄탄하게 밀고 나갈 실천법을 처방하세요.',
-        '새로운 여정을 향해 나아가는 발걸음에 힘찬 축복을 선사하세요.',
+        `두 선택지의 상징적 주제와 사용자가 현실에서 확인할 조건을 비교하세요. 어느 쪽의 미래 결과도 확정하지 마세요.`,
+        '객관적인 승자나 확률을 만들지 말고, 선택에 앞서 확인할 장점·위험·추가 정보의 균형을 설명하세요.',
+        '당장 되돌리기 쉬운 작은 확인 행동과 판단 기준을 제안하세요.',
+        '결정권은 내담자에게 있음을 존중하며 격려하세요.',
       ],
-      summaryLabels: ['갈등의 본질', '마스터 최종 선택', '실천 추진 처방'],
+      summaryLabels: ['갈등의 본질', '두 선택지의 비교', '현실적인 다음 단계'],
     };
   }
 
@@ -1907,60 +1887,6 @@ export function isTarotStreamFailure(response: string | null | undefined): boole
   );
 }
 
-function pickBinaryChoiceSide(
-  analysis: TarotConcernAnalysis,
-  concern: string,
-  cards: Array<{ id?: string; nameKo?: string; name?: string; reversed?: boolean; type?: string }>,
-): { chosen: string; rejected: string; chosenRate: number; reason: string } | null {
-  if (analysis.kind !== 'binary_choice' || !analysis.optionA || !analysis.optionB) {
-    return null;
-  }
-
-  const optA = analysis.optionA;
-  const optB = analysis.optionB;
-
-  // 카드 1(optA)과 카드 2(optB)의 도상 기운 비교
-  const cardA = cards[1];
-  const cardB = cards[2];
-
-  let scoreA = 50;
-  let scoreB = 50;
-
-  if (cardA) {
-    scoreA += cardA.reversed ? -20 : 25;
-    if (cardA.type === 'major') scoreA += 10;
-  }
-  if (cardB) {
-    scoreB += cardB.reversed ? -20 : 25;
-    if (cardB.type === 'major') scoreB += 10;
-  }
-
-  if (scoreA === scoreB) {
-    const seed = `${concern}:${cards.map((c) => c.id || c.nameKo || c.name).join('|')}`;
-    const hash = seed.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-    if (hash % 2 === 0) scoreA += 15;
-    else scoreB += 15;
-  }
-
-  const pickA = scoreA >= scoreB;
-  const diff = Math.abs(scoreA - scoreB);
-  const chosenRate = Math.min(94, Math.max(76, Math.round(65 + diff * 0.6)));
-
-  return pickA
-    ? {
-        chosen: optA,
-        rejected: optB,
-        chosenRate,
-        reason: `2번 카드([${cardA?.nameKo || optA}])의 기운이 3번 카드([${cardB?.nameKo || optB}])보다 현실적 번영과 안전성 면에서 압도적으로 우세합니다.`,
-      }
-    : {
-        chosen: optB,
-        rejected: optA,
-        chosenRate,
-        reason: `3번 카드([${cardB?.nameKo || optB}])의 기운이 2번 카드([${cardA?.nameKo || optA}])보다 현실적 번영과 리스크 통제 면에서 압도적으로 우세합니다.`,
-      };
-}
-
 function localKeywordHint(card: TarotCardContext): string {
   const kws = getEffectiveTarotKeywords(card);
   if (!kws.length) return '';
@@ -1984,7 +1910,6 @@ export function buildLocalTarotReading(
   const { spread } = analysis;
   const leadCard = cards[0];
   const leadName = leadCard?.nameKo || leadCard?.kr || '첫 번째 카드';
-  const binaryPick = pickBinaryChoiceSide(analysis, concern, cards);
 
   const cardStories = cards
     .map((c, i) => {
@@ -2009,8 +1934,8 @@ export function buildLocalTarotReading(
           : `당신을 둘러싼 환경은 **${meaningCore}**의 깊은 통찰을 통해 새로운 돌파구를 제시하고 있습니다. [${d.symbolWord}]이 주는 유연한 태도가 상황을 당신의 편으로 이끕니다.`;
       } else if (i === 2 || pos.includes('미래') || pos.includes('결과') || pos.includes('조언') || pos.includes('결실')) {
         storyBody = isRev
-          ? `앞으로 다가올 전개는 역방향이 가리키는 **${meaningCore}**의 성찰과 균형을 요구합니다. [${d.archetype}]의 가르침처럼 겉으로 드러나는 결과보다 내면의 진실을 충실히 채우면 더 큰 운이 열리게 됩니다. 무엇보다 이 카드가 전하는 주의점 한 가지는 **"${caution}"**입니다.`
-          : `운명의 나침반은 마침내 **${meaningCore}**의 눈부신 성취와 보상을 가리키고 있습니다. [${d.symbolWord}]의 축복을 믿고 확신을 갖고 한 걸음 더 전진하십시오.`;
+          ? `가까운 시기에 살펴볼 수 있는 한 가지 관점은 역방향의 **${meaningCore}**가 성찰과 균형을 권한다는 점입니다. 이는 결과의 예언이 아니라 점검을 돕는 상징입니다. 특히 주의점 한 가지는 **"${caution}"**입니다.`
+          : `이 카드의 정방향 상징인 **${meaningCore}**는 가까운 선택에서 참고할 수 있는 가능성을 비춥니다. [${d.symbolWord}]의 의미를 현실의 조건과 함께 살펴보되, 성취나 보장을 약속하는 예측으로 받아들이지는 마세요.`;
       } else {
         storyBody = isRev
           ? `이 자리는 [${d.archetype}]의 역방향 상징인 **${meaningCore}**를 통해, 성급함을 멈추고 내실을 먼저 다질 것을 권고합니다. 특히 이 카드의 주의점 한 가지는 **"${caution}"**입니다.`
@@ -2022,34 +1947,40 @@ export function buildLocalTarotReading(
     })
     .join('\n\n');
 
+  const groundedSummary = groundTarotSummaryParts(cards, concern);
   let decisionText = '';
-  if (analysis.kind === 'binary_choice' && binaryPick) {
-    decisionText = `### 🎯 4. 트리니티 마스터의 결정적 최종 결단: [${binaryPick.chosen}] vs [${binaryPick.rejected}] 단일 판정
-**🎯 최종 결단: [${binaryPick.chosen}] (적합도 ${binaryPick.chosenRate}% 확정 판정)**
+  let decisionSummary = groundedSummary.decision;
+  if (analysis.kind === 'binary_choice') {
+    const optionA = analysis.optionA?.trim() || '첫 번째 선택지';
+    const optionB = analysis.optionB?.trim() || '두 번째 선택지';
+    const describeCard = (card: any) => {
+      if (!card) return '이번 선택에 해당하는 카드 정보가 제공되지 않았습니다.';
+      const details = getTarotCardDetails(card);
+      const meaning = card.reversed
+        ? getTarotReversedData(card)?.meaning || details.reversedCore
+        : details.uprightCore;
+      return `[${card.nameKo || card.kr || '앱에서 뽑힌 카드'}${card.reversed ? ' 역방향' : ' 정방향'}]의 상징인 ${meaning}`;
+    };
+    decisionText = `### ⚖️ 3. 두 선택지를 살펴볼 상징적 관점
+- **[${optionA}]**: ${describeCard(cards[1])}
+- **[${optionB}]**: ${describeCard(cards[2])}
 
-카드의 현실적 손익과 운명의 파동은 한 치의 흔들림도 없이 오직 **[${binaryPick.chosen}]** 쪽만을 단독 승자로 가리키고 있습니다.
-
-- **승자 선택지 [${binaryPick.chosen}] 추진 근거**: ${binaryPick.reason} 지금 이 길을 결단하면 장애물을 돌파하고 가시적인 성과(수익 증대, 입지 확보, 관계 안정)를 단기간 내에 손에 쥘 수 있습니다.
-- **탈락 선택지 [${binaryPick.rejected}] 기각 이유**: 반면 [${binaryPick.rejected}] 쪽은 겉보기에 무난해 보일지라도 잠재적 변수와 에너지 정체, 뒤따를 후회와 기회비용 손실이 매우 큽니다. 지금은 미련 없이 내려놓아야 할 길입니다.`;
+이 카드는 객관적인 승자나 각 선택의 미래 결과를 판정하지 않습니다. 조건·비용·위험·되돌릴 수 있는 정도처럼 현실에서 확인할 기준을 비교해 보세요.`;
+    decisionSummary = `앱에서 뽑힌 카드의 상징은 [${optionA}]와 [${optionB}]를 각각 살펴볼 관점을 제공하지만, 어느 한쪽의 승자나 결과를 확정하지 않습니다.`;
   } else if (analysis.kind === 'yes_no') {
     const finalCard = cards[cards.length - 1] || leadCard;
-    const finalCardName = finalCard?.nameKo || finalCard?.kr || '최종 판정 카드';
-    const isReversed = Boolean(finalCard?.reversed);
-    const yesOrNo = isReversed ? 'NO' : 'YES';
-    const verdictDetail = isReversed
-      ? `3번째 최종 판정 자리에 놓인 [${finalCardName} (역방향)] 카드의 상징을 비추어볼 때, 카드는 지금 무리하게 밀어붙이기보다 잠시 멈추어야 함을 가리키며 **[NO]**를 선언합니다. 숨어 있는 변수와 리스크를 면밀히 점검하고 내실을 먼저 다지는 것이 안전합니다.`
-      : `3번째 최종 판정 자리에 놓인 [${finalCardName} (정방향)] 카드의 맑고 역동적인 상징을 비추어볼 때, 운명의 문은 활짝 열려 있으며 카드는 확신에 찬 **[YES]**를 선언합니다. 주저하거나 스스로를 의심하지 마시고, 준비해 온 마음과 직관을 믿고 당당하게 전진하십시오.`;
-    decisionText = `### 🔮 3. 트리니티 마스터의 직관적 결단 & 방향성\n**최종 판정: [${yesOrNo}]**\n\n${verdictDetail}`;
+    const finalCardName = finalCard?.nameKo || finalCard?.kr || '마지막으로 펼쳐진 카드';
+    const details = getTarotCardDetails(finalCard);
+    const meaning = finalCard?.reversed
+      ? getTarotReversedData(finalCard)?.meaning || details.reversedCore
+      : details.uprightCore;
+    decisionText = `### 🔮 3. 선택을 돕는 상징적 참고
+실제로 뽑힌 [${finalCardName}${finalCard?.reversed ? ' 역방향' : ' 정방향'}]의 상징은 **${meaning}**입니다. 이는 성찰을 위한 한 가지 관점일 뿐, 현실의 결과에 대한 YES/NO 판정이나 보장이 아닙니다. 실행 여부를 정하기 전 지금 확인할 조건과 위험을 살펴보세요.`;
+    decisionSummary = `실제 카드의 상징(${meaning})은 참고 관점이며 결과를 확정하지 않으므로, 실행 조건과 위험을 직접 확인하세요.`;
   } else {
-    decisionText = `### 🔮 3. 트리니티 마스터의 직관적 결단 & 방향성\n**마스터의 핵심 선언: [도약과 확신의 타이밍]**\n\n지금 당신을 둘러싼 흐름은 정체를 지나 변화의 물꼬를 트고 있습니다. 두려움에 머무르지 말고 직관을 믿고 나아가세요.`;
+    decisionText = `### 🔮 3. 현재 흐름을 위한 상징적 참고
+실제 앱에서 펼쳐진 [${leadName}]의 의미는 현재 상황을 돌아보는 한 관점을 제공합니다. 이는 미래의 확정 예언이 아니며, 질문자가 확인할 수 있는 조건과 선택이 우선입니다.`;
   }
-
-  const groundedSummary = groundTarotSummaryParts(cards, concern);
-  const decisionSummary = binaryPick
-    ? `최종 결단은 [${binaryPick.chosen}] (적합도 ${binaryPick.chosenRate}%)입니다. ${binaryPick.reason}`
-    : analysis.kind === 'yes_no'
-      ? `최종 판정은 [${cards[cards.length - 1]?.reversed ? 'NO' : 'YES'}]이며, ${cards[cards.length - 1]?.reversed ? '지금은 숨은 변수를 점검하고 내실을 다진 뒤에 다시 판단하세요.' : '확인된 준비를 바탕으로 오늘 한 걸음 실행하세요.'}`
-      : groundedSummary.decision;
 
   return `[핵심 3줄 요약]
 - [현재 에너지] ${groundedSummary.energy}
@@ -2155,6 +2086,3 @@ export function ensureCompleteTarotReading(
 
   return cleaned;
 }
-
-
-
