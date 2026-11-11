@@ -8,7 +8,7 @@ export interface DuoDividerTap {
 }
 
 const DOUBLE_TAP_WINDOW_MS = 380;
-const DOUBLE_TAP_MAX_DISTANCE_PX = 36;
+const DOUBLE_TAP_MAX_HORIZONTAL_DISTANCE_PX = 48;
 
 export function isDuoDividerDoubleTap(
   previous: DuoDividerTap | null,
@@ -19,8 +19,8 @@ export function isDuoDividerDoubleTap(
   const elapsed = current.timestamp - previous.timestamp;
   if (elapsed < 0 || elapsed > DOUBLE_TAP_WINDOW_MS) return false;
 
-  return Math.hypot(current.clientX - previous.clientX, current.clientY - previous.clientY)
-    <= DOUBLE_TAP_MAX_DISTANCE_PX;
+  // The hit target spans the divider vertically, so taps may be anywhere from top to bottom.
+  return Math.abs(current.clientX - previous.clientX) <= DOUBLE_TAP_MAX_HORIZONTAL_DISTANCE_PX;
 }
 
 export function mapDuoPaneSide(side: DuoPaneSide, swapped: boolean): DuoPaneSide {

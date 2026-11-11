@@ -903,7 +903,7 @@ function AppContent() {
                 onPointerUp={handleDuoDividerPointerUp}
                 onPointerCancel={() => { duoDividerTapRef.current = null; }}
                 onClick={handleDuoDividerClick}
-                className="absolute top-1/2 z-[80] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-transparent bg-transparent text-transparent opacity-0 shadow-none backdrop-blur-none focus-visible:opacity-100 focus-visible:border-white/60 focus-visible:bg-zinc-950/75 focus-visible:shadow-xl cursor-pointer touch-manipulation"
+                className="absolute inset-y-0 z-[80] flex w-12 -translate-x-1/2 items-center justify-center border border-transparent bg-transparent text-transparent opacity-0 shadow-none backdrop-blur-none focus-visible:opacity-100 focus-visible:border-white/60 focus-visible:bg-zinc-950/75 focus-visible:shadow-xl cursor-pointer touch-manipulation"
                 style={{ left: '50vw', touchAction: 'manipulation' }}
               >
               </button>
