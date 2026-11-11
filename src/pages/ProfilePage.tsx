@@ -590,11 +590,11 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="h-app-full bg-[#fdfaf5] dark:bg-[#080910] text-slate-900 dark:text-white relative overflow-x-hidden overflow-y-auto flex flex-col">
+    <div data-app-scroll-root="true" className="h-app-full bg-[#fdfaf5] dark:bg-[#080910] text-slate-900 dark:text-white relative overflow-x-hidden overflow-y-auto flex flex-col">
       <div className="prism-page-content flex-1 w-full mx-auto flex flex-col relative text-slate-900 dark:text-white">
       <div className="relative z-10 px-4 pt-[calc(3rem+var(--sat))] pb-12">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+        <motion.div data-top-bar="true" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-3 mb-8">
           <button onClick={() => navigate('/')} className="text-white/30 hover:text-white/60 transition-colors p-1 cursor-pointer">
             <ArrowLeft size={20} />
