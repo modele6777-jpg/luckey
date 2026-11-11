@@ -1223,5 +1223,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanPoeunJeongMongJuDansimga": {
     "field": "koreanPoeunJeongMongJuDansimgaResult",
     "traceKey": "koreanPoeunJeongMongJuDansimgaResult"
+  },
+  "frenchSimoneDeBeauvoirAmbiguityFreedom": {
+    "field": "frenchSimoneDeBeauvoirAmbiguityFreedomResult",
+    "traceKey": "frenchSimoneDeBeauvoirAmbiguityFreedomResult"
+  },
+  "frenchMauriceMerleauPontyEmbodiedPhenomenology": {
+    "field": "frenchMauriceMerleauPontyEmbodiedPhenomenologyResult",
+    "traceKey": "frenchMauriceMerleauPontyEmbodiedPhenomenologyResult"
+  },
+  "koreanSamyeongdaesaSongunYujeong": {
+    "field": "koreanSamyeongdaesaSongunYujeongResult",
+    "traceKey": "koreanSamyeongdaesaSongunYujeongResult"
   }
 };

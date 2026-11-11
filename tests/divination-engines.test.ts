@@ -292,6 +292,9 @@ import { calculateKoreanGosanYoonSeonDoFiveFriends, formatKoreanGosanYoonSeonDoF
 import { calculateItalianPicoDellaMirandolaDignity, formatItalianPicoDellaMirandolaDignityPrompt, ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION } from '../src/lib/divination/italianPicoDellaMirandolaDignityEngine';
 import { calculateAustrianFranzKafkaExistentialTruth, formatAustrianFranzKafkaExistentialTruthPrompt, AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION } from '../src/lib/divination/austrianFranzKafkaExistentialTruthEngine';
 import { calculateKoreanPoeunJeongMongJuDansimga, formatKoreanPoeunJeongMongJuDansimgaPrompt, KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION } from '../src/lib/divination/koreanPoeunJeongMongJuDansimgaEngine';
+import { calculateFrenchSimoneDeBeauvoirAmbiguityFreedom, formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION } from '../src/lib/divination/frenchSimoneDeBeauvoirAmbiguityFreedomEngine';
+import { calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology, formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt, FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION } from '../src/lib/divination/frenchMauriceMerleauPontyEmbodiedPhenomenologyEngine';
+import { calculateKoreanSamyeongdaesaSongunYujeong, formatKoreanSamyeongdaesaSongunYujeongPrompt, KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION } from '../src/lib/divination/koreanSamyeongdaesaSongunYujeongEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5657,6 +5660,48 @@ test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, D
   const prompt = formatKoreanPoeunJeongMongJuDansimgaPrompt(rep);
   assert(prompt.includes('포은 정몽주 《단심가·포은집》 일편단심 지조 및 경세외교 지략 지표'));
   assert(prompt.includes(rep.activePoeunTheme.themeTitleKo));
+});
+
+test('Simone de Beauvoir Ambiguity & Freedom Engine: calculates Self-Creation, Ethics of Ambiguity, and Mutual Freedom Solidarity', () => {
+  const rep = calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(profile);
+  assert.equal(rep.engineVersion, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION);
+  assert(rep.authenticSelfCreationScore >= 0 && rep.authenticSelfCreationScore <= 100);
+  assert(rep.ethicsOfAmbiguityIndex >= 0 && rep.ethicsOfAmbiguityIndex <= 100);
+  assert(rep.mutualFreedomSolidarityScore >= 0 && rep.mutualFreedomSolidarityScore <= 100);
+  assert(rep.situationalAgencyIndex >= 0 && rep.situationalAgencyIndex <= 100);
+  assert(rep.existentialCourageResilienceScore >= 0 && rep.existentialCourageResilienceScore <= 100);
+  assert(rep.activeBeauvoirTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(rep);
+  assert(prompt.includes('시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 지표'));
+  assert(prompt.includes(rep.activeBeauvoirTheme.themeTitleKo));
+});
+
+test('Maurice Merleau-Ponty Embodied Phenomenology Engine: calculates Body-Subject Embodiment, Primordial Perception, and Chiasmic Harmony', () => {
+  const rep = calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(profile);
+  assert.equal(rep.engineVersion, FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION);
+  assert(rep.corpsSujetEmbodimentScore >= 0 && rep.corpsSujetEmbodimentScore <= 100);
+  assert(rep.primordialPerceptionIndex >= 0 && rep.primordialPerceptionIndex <= 100);
+  assert(rep.chiasmicIntercorporealityScore >= 0 && rep.chiasmicIntercorporealityScore <= 100);
+  assert(rep.sensoryCreativeEyeScore >= 0 && rep.sensoryCreativeEyeScore <= 100);
+  assert(rep.phenomenologicalGroundingResilienceScore >= 0 && rep.phenomenologicalGroundingResilienceScore <= 100);
+  assert(rep.activePontyTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(rep);
+  assert(prompt.includes('모리스 메를로퐁티 《지각의 현상학》 신체-주체 및 원초적 지각 지표'));
+  assert(prompt.includes(rep.activePontyTheme.themeTitleKo));
+});
+
+test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplomatic Rescue, and Transcendent Compassion', () => {
+  const rep = calculateKoreanSamyeongdaesaSongunYujeong(profile);
+  assert.equal(rep.engineVersion, KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION);
+  assert(rep.righteousDevotionScore >= 0 && rep.righteousDevotionScore <= 100);
+  assert(rep.diplomaticRescueIndex >= 0 && rep.diplomaticRescueIndex <= 100);
+  assert(rep.transcendentCompassionScore >= 0 && rep.transcendentCompassionScore <= 100);
+  assert(rep.pragmaticBodhisattvaIndex >= 0 && rep.pragmaticBodhisattvaIndex <= 100);
+  assert(rep.renunciationResilienceScore >= 0 && rep.renunciationResilienceScore <= 100);
+  assert(rep.activeSamyeongTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanSamyeongdaesaSongunYujeongPrompt(rep);
+  assert(prompt.includes('사명대사 송운 유정 《분충서난록》 호국대의 및 자비구제 지표'));
+  assert(prompt.includes(rep.activeSamyeongTheme.themeTitleKo));
 });
 
 
