@@ -29,7 +29,7 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       if (!el) return false;
       return Boolean(
         el.closest(
-          'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], audio, video, iframe, .duo-page-brand, [data-page-brand], [data-brand-logo], [data-lucy-name], .lucy-header-actions'
+          'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], [data-brand-logo], audio, video, iframe, .lucy-header-actions, .prism-subnav-btn, .duo-page-nav'
         )
       );
     };
@@ -47,7 +47,9 @@ export function GlobalScrollToTopOnHeaderTap(): null {
     ): HTMLElement | null | false => {
       if (isInteractiveElement(target)) return false;
 
-      const safeAreaThreshold = Math.max(54, getSafeAreaTop() + 10);
+      // 상단 상태바/노치 및 헤더 여백 터치 감지 영역 (상단 ~ 78px 또는 safe-area + 28px)
+      const safeAreaThreshold = Math.max(76, getSafeAreaTop() + 28);
+      if (clientY > safeAreaThreshold) return false;
 
       // 1. 듀얼 스크린 (iPhone Duo 펼친 화면: 좌측 채널 vs 우측 루시)
       const contentPane = document.getElementById('duo-content-viewport');
@@ -65,32 +67,25 @@ export function GlobalScrollToTopOnHeaderTap(): null {
         const isSideBySide = Math.abs(contentRect.top - lucyRect.top) < 30;
 
         if (isSideBySide) {
-          // 📱 좌측 화면(콘텐츠 뷰포트) 중앙 노치
-          const leftCenterX = contentRect.left + contentRect.width / 2;
-          const leftNotchHalfWidth = Math.max(50, Math.min(85, contentRect.width * 0.22));
+          // 📱 좌측 화면(콘텐츠 뷰포트) 노치: 좌측 0~70px(로고) 제외, 우측 여백 전까지
           if (
-            clientY <= safeAreaThreshold &&
-            Math.abs(clientX - leftCenterX) <= leftNotchHalfWidth
+            clientX >= contentRect.left + 70 &&
+            clientX <= contentRect.right - 20
           ) {
             return contentPane;
           }
 
-          // 📱 우측 화면(루시 채팅창) 중앙 노치
-          const rightCenterX = lucyRect.left + lucyRect.width / 2;
-          const rightNotchHalfWidth = Math.max(50, Math.min(85, lucyRect.width * 0.22));
+          // 📱 우측 화면(루시 채팅창) 노치: 좌측 로고/버튼 제외, 중앙부 터치
           if (
-            clientY <= safeAreaThreshold &&
-            Math.abs(clientX - rightCenterX) <= rightNotchHalfWidth
+            clientX >= lucyRect.left + 80 &&
+            clientX <= lucyRect.right - 80
           ) {
             return lucyPane;
           }
         } else {
           // 📱 상하 듀얼 화면 (세로 회전 펼침)
-          const windowCenterX = window.innerWidth / 2;
-          const notchHalfWidth = Math.max(60, Math.min(100, window.innerWidth * 0.22));
-
           // 상단 화면(콘텐츠 뷰포트) 노치
-          if (clientY <= safeAreaThreshold && Math.abs(clientX - windowCenterX) <= notchHalfWidth) {
+          if (clientY <= safeAreaThreshold && clientX >= 70 && clientX <= window.innerWidth - 30) {
             return contentPane;
           }
 
@@ -98,7 +93,8 @@ export function GlobalScrollToTopOnHeaderTap(): null {
           if (
             clientY >= lucyRect.top &&
             clientY <= lucyRect.top + safeAreaThreshold &&
-            Math.abs(clientX - windowCenterX) <= notchHalfWidth
+            clientX >= 70 &&
+            clientX <= window.innerWidth - 30
           ) {
             return lucyPane;
           }
@@ -109,10 +105,8 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       }
 
       // 2. 단일 화면 (접힌 화면 또는 일반 모바일) 중앙 노치
-      const windowCenterX = window.innerWidth / 2;
-      const notchHalfWidth = Math.max(60, Math.min(100, window.innerWidth * 0.22));
-
-      if (clientY <= safeAreaThreshold && Math.abs(clientX - windowCenterX) <= notchHalfWidth) {
+      // 좌측 로고 영역(0~70px) 및 우측 여백 제외 중앙 상단 탭
+      if (clientX >= 70 && clientX <= window.innerWidth - 30) {
         return target;
       }
 
@@ -154,7 +148,7 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       if (isDragging || e.touches.length !== 1) return;
       const touch = e.touches[0];
       const dist = Math.hypot(touch.clientX - startX, touch.clientY - startY);
-      if (dist > 14) {
+      if (dist > 25) {
         isDragging = true;
       }
     };
@@ -167,8 +161,8 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       const duration = Date.now() - startTime;
       const distance = Math.hypot(endX - startX, endY - startY);
 
-      // 드래그/스와이프가 아닌 명확한 탭(400ms 이내, 14px 미만 이동) 판정
-      if (distance > 14 || duration > 400) return;
+      // 드래그/스와이프가 아닌 명확한 탭(500ms 이내, 25px 미만 이동) 판정
+      if (distance > 25 || duration > 500) return;
 
       const target = (document.elementFromPoint(endX, endY) || e.target) as HTMLElement | null;
 

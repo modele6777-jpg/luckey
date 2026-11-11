@@ -1061,11 +1061,13 @@ export default function EpilogueApp() {
         initial={false}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className="prism-hub-header duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300"
+        className="prism-hub-header duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-none z-40 transition-opacity duration-300"
       >
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div
-            className="cursor-pointer flex flex-col justify-center select-none pl-1 sm:pl-2"
+            data-brand-logo="true"
+            data-no-scroll-top="true"
+            className="pointer-events-auto cursor-pointer flex flex-col justify-center select-none pl-1 sm:pl-2"
             onClick={() => {
               try {
                 sessionStorage.setItem('prism_target_tab', 'universe');
@@ -1093,7 +1095,7 @@ export default function EpilogueApp() {
         data-page-title="true"
         className={`duo-page-title pointer-events-none select-none z-40 flex items-center justify-center transition-opacity duration-300 ${isSpecialFeatureChromeHidden ? 'hidden' : 'opacity-100'}`}
       >
-        <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.28em] text-slate-800 dark:text-white/90 drop-shadow-sm">
+        <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.32em] text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
           EPILOGUE
         </span>
       </div>
