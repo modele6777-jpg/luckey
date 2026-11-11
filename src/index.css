@@ -3794,3 +3794,35 @@ body.duo-unfolded-landscape.duo-panels-swapped :is([data-lucy-loader], [data-luc
   max-width: 50vw !important;
   right: auto !important;
 }
+
+/* Keep changelog copy paired with its modal surface after global theme remaps. */
+.update-notice-modal {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+.update-notice-modal .update-notice-entry {
+  background-color: #fffdf9 !important;
+  border-color: rgba(180, 145, 105, 0.22) !important;
+}
+.update-notice-modal .update-notice-summary {
+  color: #0f172a !important;
+}
+.update-notice-modal .update-notice-item,
+.update-notice-modal .update-notice-note {
+  color: #334155 !important;
+}
+html.dark .update-notice-modal {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+html.dark .update-notice-modal .update-notice-entry {
+  background-color: #172033 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+html.dark .update-notice-modal .update-notice-summary {
+  color: #f8fafc !important;
+}
+html.dark .update-notice-modal .update-notice-item,
+html.dark .update-notice-modal .update-notice-note {
+  color: #cbd5e1 !important;
+}

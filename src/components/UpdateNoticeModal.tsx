@@ -67,7 +67,7 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.94, y: 18, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 220, damping: 24 }}
-            className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-950 border border-amber-500/30 dark:border-yellow-500/20 rounded-[28px] sm:rounded-[32px] p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:shadow-[0_0_50px_rgba(234,179,8,0.15)] relative backdrop-blur-2xl"
+            className="update-notice-modal w-full max-w-md max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-950 border border-amber-500/30 dark:border-yellow-500/20 rounded-[28px] sm:rounded-[32px] p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:shadow-[0_0_50px_rgba(234,179,8,0.15)] relative backdrop-blur-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -106,7 +106,7 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
               {displayEntries.map((entry) => (
                 <div
                   key={entry.version}
-                  className="rounded-2xl border border-amber-900/10 dark:border-white/10 bg-amber-50/60 dark:bg-white/[0.04] px-4 py-3.5 transition-colors"
+                  className="update-notice-entry rounded-2xl border border-amber-900/10 dark:border-white/10 bg-amber-50/60 dark:bg-white/[0.04] px-4 py-3.5 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <p className="text-[12px] font-extrabold text-amber-700 dark:text-yellow-300 font-mono tracking-wide">
@@ -118,7 +118,7 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
                       </span>
                     )}
                   </div>
-                  <p className="text-[13.5px] text-slate-900 dark:text-white/90 leading-snug break-keep font-sans font-bold mb-2">
+                  <p className="update-notice-summary text-[13.5px] text-slate-900 dark:text-white/90 leading-snug break-keep font-sans font-bold mb-2">
                     {entry.summary}
                   </p>
                   {entry.items && entry.items.length > 0 ? (
@@ -126,7 +126,7 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
                       {entry.items.map((item, idx) => (
                         <li
                           key={`${entry.version}-item-${idx}`}
-                          className="text-[12.5px] text-slate-700 dark:text-white/80 leading-relaxed break-keep font-sans flex items-start gap-2"
+                          className="update-notice-item text-[12.5px] text-slate-700 dark:text-white/80 leading-relaxed break-keep font-sans flex items-start gap-2"
                         >
                           <span className="text-amber-500 dark:text-yellow-400 shrink-0 font-bold mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
@@ -136,7 +136,7 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
                   ) : (
                     entry.summary === '자동 업데이트' ||
                     /^자동 업데이트\s+\d{4}/.test(entry.summary) ? (
-                      <p className="mt-2 text-xs text-slate-500 dark:text-white/50 font-sans">
+                      <p className="update-notice-note mt-2 text-xs text-slate-500 dark:text-white/50 font-sans">
                         상세 변경 내역이 아직 기록되지 않은 버전입니다.
                       </p>
                     ) : null
