@@ -24,7 +24,7 @@ export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v1.0.0';
 export interface TimelineTrack {
   trackName: string;
   probabilityPercent: number;    // 확률 (0 ~ 100%)
-  frequencyLevel: '3D 관성 궤도' | '4D 각성 궤도' | '5D 초월 마스터 궤도';
+  decisionPerspective: '현재 습관에 따른 경로' | '목표 지향적 성장 경로';
   projectedOutcome6Months: string; // 6개월 후 펼쳐질 현실 시나리오
   wealthEnergyLevel: string;     // 재물/자원 파동 수준
 }
@@ -41,7 +41,7 @@ export interface QuantumProbabilisticTimelineReport {
   quantumCollapseCatalyst: {
     identityShift: string;       // 자아 정체성의 양자 도약 ("나는 이미 ~한 존재다")
     physicalAnchorAction: string;// 물질 현실에 닻을 내리는 물리적 1순위 행동
-    frequencyTaboo: string;      // 하위 타임라인으로 끌어내리는 저진동 습관
+    limitingPattern: string;     // 목표를 방해할 수 있는 습관
   };
   quantumJumpFeasibilityScore: number; // 퀀텀 점프 실현 가능성 지수 (0 ~ 100)
   synthesisPromptGuidance: string;
@@ -105,17 +105,17 @@ export function runQuantumProbabilisticTimelineEngine(
   }
 
   const baselineTimeline: TimelineTrack = {
-    trackName: '관성적 일상 타임라인 (Timeline Alpha · 3D)',
+    trackName: '관성적 일상 타임라인 (Timeline Alpha)',
     probabilityPercent: baselineProbability,
-    frequencyLevel: '3D 관성 궤도',
+    decisionPerspective: '현재 습관에 따른 경로',
     projectedOutcome6Months: baselineOutcome,
     wealthEnergyLevel: '현상 유지 및 소폭 감소 (에너지 누수 존재)'
   };
 
   const optimalQuantumTimeline: TimelineTrack = {
-    trackName: '초월적 도약 타임라인 (Timeline Prime · 5D)',
+    trackName: '목표 지향적 성장 타임라인 (Timeline Prime)',
     probabilityPercent: optimalProbability,
-    frequencyLevel: '5D 초월 마스터 궤도',
+    decisionPerspective: '목표 지향적 성장 경로',
     projectedOutcome6Months: optimalOutcome,
     wealthEnergyLevel: '기하급수적 레버리지 및 경제적 주권 확립'
   };
@@ -124,7 +124,7 @@ export function runQuantumProbabilisticTimelineEngine(
   const criticalEnd = new Date(targetDate.getTime() + 35 * 24 * 3600 * 1000);
   const criticalDateRange = `${criticalStart.getMonth() + 1}월 ${criticalStart.getDate()}일 ~ ${criticalEnd.getMonth() + 1}월 ${criticalEnd.getDate()}일 (약 4주간)`;
 
-  const frequencyTaboo = '결과가 아직 눈에 보이지 않는다는 이유로 스스로를 의심하며 과거의 실패 서사로 회귀하는 태도';
+  const limitingPattern = '결과가 아직 눈에 보이지 않는다는 이유로 스스로를 의심하며 과거의 실패 서사로 회귀하는 태도';
 
   const quantumJumpFeasibilityScore = optimalProbability;
 
@@ -137,7 +137,7 @@ export function runQuantumProbabilisticTimelineEngine(
 - 퀀텀 붕괴 3대 촉매:
   * 정체성 도약: "${identityShift}"
   * 물리적 1순위 행동: ${physicalAnchorAction}
-  * 경계할 저진동 금기: ${frequencyTaboo}`;
+  * 주의할 습관: ${limitingPattern}`;
 
   return {
     engineVersion: QUANTUM_TIMELINE_VERSION,
@@ -151,7 +151,7 @@ export function runQuantumProbabilisticTimelineEngine(
     quantumCollapseCatalyst: {
       identityShift,
       physicalAnchorAction,
-      frequencyTaboo
+      limitingPattern
     },
     quantumJumpFeasibilityScore,
     synthesisPromptGuidance

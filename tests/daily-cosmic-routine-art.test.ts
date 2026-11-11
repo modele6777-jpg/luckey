@@ -17,7 +17,18 @@ test('Wikimedia thumbnails are normalized to their original filename through Spe
 
 test('morning routine artwork uses the Wikimedia file resolver and AI fallback URL when needed', () => {
   assert.match(routineSource, /getWikimediaFilePathUrl\(art\.entry\.imageUrl \|\| ''\)/);
-  assert.match(routineSource, /src=\{artImageFallbackUrl \?\? art\.entry\.imageUrl\}/);
+  assert.match(routineSource, /src=\{routineArtImageUrl\}/);
+});
+
+test('morning routine artwork is clickable for enlargement and exposes download actions', () => {
+  assert.match(routineSource, /<ImageOutputActions[\s\S]*?src=\{routineArtImageUrl\}[\s\S]*?isOpen=\{isRoutineArtImageOpen\}/);
+  assert.match(routineSource, /aria-label=\{`\$\{art\.entry\.title\} 크게 보기`\}/);
+  assert.match(routineSource, /onClick=\{\(\) => setIsRoutineArtImageOpen\(true\)\}/);
+});
+
+test('stalled morning routine images advance to a fallback and ultimately stop loading', () => {
+  assert.match(routineSource, /window\.setTimeout\(\(\) => \{[\s\S]*?handleArtImageError\(\)/);
+  assert.match(routineSource, /isAiFallback \? 20000 : 10000/);
 });
 
 test('a failed or missing original image requests an AI fallback instead of leaving a blank tile', () => {

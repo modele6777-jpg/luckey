@@ -101,7 +101,7 @@ export function getTodaySecretContext(name: string = '여행자'): TodaySecretCo
 }
 
 /**
- * High-fidelity deterministic generator matching Today's Secret frequency with Wishing Well
+ * High-fidelity deterministic generator matching Today's Secret themes with Wishing Well
  */
 export function generateDeterministicSecretWellRecommendations(
   ctx: TodaySecretContext,
@@ -120,7 +120,7 @@ export function generateDeterministicSecretWellRecommendations(
     dim1Wish = cleanWish
       ? `"${cleanWish}"을(를) 향한 마음속 모든 결핍감과 조급함을 우물의 맑은 수면에 흘려보내고, 마르지 않는 풍요의 타이밍을 온전히 신뢰합니다.`
       : '돈과 미래에 대한 모든 결핍과 조급함을 맑은 우물에 던져버리고, 우주가 예비한 풍요의 완전한 타이밍을 신뢰하는 깊은 평온을 누립니다.';
-    dim1Synergy = '소원에 대한 집착과 결핍의 주파수를 씻어내어, 시크릿에서 확언한 풍요의 통로를 활짝 개방합니다.';
+    dim1Synergy = '소원에 대한 집착과 결핍감을 돌아보고, 시크릿에서 확언한 풍요의 통로를 활짝 개방합니다.';
   } else if (theme === 'success') {
     dim1Wish = cleanWish
       ? `"${cleanWish}"의 결과에 대한 두려움과 압박감을 우물의 고요한 물결에 씻어내고, 흔들리지 않는 맑은 집중력과 내면의 평온을 회복합니다.`
@@ -165,7 +165,7 @@ export function generateDeterministicSecretWellRecommendations(
     dim2Wish = cleanWish
       ? `애써 증명하지 않아도 사랑받기에 충분한 나를 먼저 꼭 안아주고, "${cleanWish}"의 다정한 행복을 기꺼이 받아들입니다.`
       : '조건 없이 나를 온전히 사랑하고 아껴줄 때 비로소 타인과의 관계에서도 건강하고 조화로운 사랑이 샘솟음을 신뢰합니다.';
-    dim2Synergy = '셀프러브의 주파수를 먼저 채움으로써 타인과의 관계에서 불안과 의존을 걷어내고 건강한 연결을 맺습니다.';
+    dim2Synergy = '자기애를 먼저 키워 타인과의 관계에서 불안과 의존을 걷어내고 건강한 연결을 맺습니다.';
   } else if (theme === 'health') {
     dim2Wish = cleanWish
       ? `매 순간 나를 지켜주고 회복시키는 내 몸의 모든 세포에게 감사를 전하며, "${cleanWish}"의 가벼운 생명력을 사랑으로 환영합니다.`
@@ -190,7 +190,7 @@ export function generateDeterministicSecretWellRecommendations(
   if (theme === 'abundance') {
     dim3Category = 'dream';
     dim3Wish = cleanWish
-      ? `오늘 시크릿에서 선포한 "${cleanWish}"의 주파수가 우물의 깊은 잠재의식 수면에 단단히 뿌리내려, 가장 아름답고 풍성한 현실로 피어납니다.`
+      ? `오늘 시크릿에서 선포한 "${cleanWish}" 의도가 우물의 깊은 마음에 단단히 뿌리내려, 가장 아름답고 풍성한 현실로 피어납니다.`
       : '마르지 않는 풍요의 샘물이 내 삶의 모든 길목마다 솟아나, 재정적 자유와 함께 세상에 선한 빛을 나누는 위대한 꿈을 이룹니다.';
     dim3Synergy = '시크릿의 확언을 우물의 무의식 수면에 단단히 각인하여 현실 창조의 가속도를 극대화합니다.';
   } else if (theme === 'success') {
@@ -299,7 +299,7 @@ export async function fetchAiSecretWellRecommendations(
 규칙:
 1. wish1 (정화 & 저항 방출): category는 "inner_peace". 시크릿 소원에 대한 조급함, 결핍, 불안을 밤하늘에 띄워 보내는 문장 (60~85자).
 2. wish2 (자격 & 내면아이 신뢰): category는 "self_love". 이 시크릿 축복을 누릴 자격이 충분함을 밤하늘 별빛과 확신하는 문장 (60~85자).
-3. wish3 (씨앗 심기 & 현실화): category는 "dream" 또는 "courage" 또는 "relationship". 시크릿 주파수를 별빛에 각인하여 현실 결실을 맺는 문장 (60~85자).
+3. wish3 (씨앗 심기 & 현실화): category는 "dream" 또는 "courage" 또는 "relationship". 시크릿의 의도를 별빛에 새겨 현실 결실을 맺는 문장 (60~85자).
 4. 각 항목별로 synergyReason(왜 이 소망이 오늘의 시크릿과 시너지를 내는지 1문장, 30~50자)을 작성하세요.
 
 반드시 마크다운 없이 유효한 JSON 문자열로만 응답하세요:

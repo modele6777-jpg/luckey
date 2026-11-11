@@ -5,6 +5,7 @@ import { pickDailySeededItem, getDateSeed, getTodayDateKey } from '@/lib/dailyCa
 import { TAROT_DECK, getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import { getTarotCardDetails, getTarotLuckyAction } from '@/lib/dailyTarotOracle';
 import { MUSE_ART_CATALOG } from '@/lib/museDailyArt';
+import { ImageOutputActions } from '@/components/ImageOutputActions';
 import {
   buildAppleMusicClassicalSearchUrl,
   resolveAppleMusicClassicalEmbedUrl,
@@ -141,6 +142,7 @@ export function DailyCosmicRoutineCard() {
   const [artImageFallbackUrl, setArtImageFallbackUrl] = useState<string | null>(null);
   const [cardImageFailed, setCardImageFailed] = useState(false);
   const [imageRetryTick, setImageRetryTick] = useState(0);
+  const [isRoutineArtImageOpen, setIsRoutineArtImageOpen] = useState(false);
   const artFallbackRequestedRef = useRef(false);
   const artFilePathRetryRef = useRef(false);
   const artAiFallbackActiveRef = useRef(false);
@@ -187,6 +189,17 @@ export function DailyCosmicRoutineCard() {
 
     void loadAiArtFallback();
   }, [art.entry.imageUrl, artImageFallbackUrl, loadAiArtFallback]);
+
+  const routineArtImageUrl = artImageFallbackUrl ?? art.entry.imageUrl ?? '';
+  useEffect(() => {
+    if (!routineArtImageUrl || artImageFailed) return;
+    const isAiFallback = artAiFallbackActiveRef.current;
+    const timer = window.setTimeout(() => {
+      if (isAiFallback) setArtImageFailed(true);
+      else handleArtImageError();
+    }, isAiFallback ? 20000 : 10000);
+    return () => window.clearTimeout(timer);
+  }, [routineArtImageUrl, artImageFailed, handleArtImageError]);
 
   const stepPanel = (id: RoutineStepId) => {
     if (id === 'fortune') {
@@ -334,15 +347,32 @@ export function DailyCosmicRoutineCard() {
       return (
         <div className="flex flex-col sm:flex-row gap-4 items-stretch">
           <div className="relative w-full sm:w-44 h-40 sm:h-44 shrink-0 rounded-2xl overflow-hidden border border-white/15 bg-gradient-to-br from-indigo-950/60 to-purple-950/40">
-            {!artImageFailed && (artImageFallbackUrl ?? art.entry.imageUrl) ? (
-              <img
-                key={imageRetryTick}
-                src={artImageFallbackUrl ?? art.entry.imageUrl}
-                alt={art.entry.title}
-                className="w-full h-full object-cover"
-                onError={handleArtImageError}
-                loading="lazy"
-              />
+            {!artImageFailed && routineArtImageUrl ? (
+              <>
+                <ImageOutputActions
+                  src={routineArtImageUrl}
+                  alt={`${art.entry.title} — ${art.entry.creator}`}
+                  filename={`daily-art-${art.entry.title}-${getTodayDateKey()}`}
+                  isOpen={isRoutineArtImageOpen}
+                  onOpenChange={setIsRoutineArtImageOpen}
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsRoutineArtImageOpen(true)}
+                  aria-label={`${art.entry.title} 크게 보기`}
+                  title="작품 크게 보기"
+                  className="absolute inset-0 w-full h-full cursor-zoom-in"
+                >
+                  <img
+                    key={imageRetryTick}
+                    src={routineArtImageUrl}
+                    alt={`${art.entry.title} — ${art.entry.creator}`}
+                    className="w-full h-full object-cover"
+                    onError={handleArtImageError}
+                    loading="lazy"
+                  />
+                </button>
+              </>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Palette size={26} className="text-indigo-300/70" />

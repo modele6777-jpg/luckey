@@ -6,10 +6,9 @@
  * (이전 구현의 translate.google.com 기계음은 완전히 제거되었습니다.)
  *
  * ⚡ 빠른 실패 전략: Microsoft WAF가 서버리스 데이터센터 IP의 WebSocket을 403으로
- * 차단하는 것이 확인되었습니다. 그래서 재시도·폴백 없이 짧은 제한 시간 안에
- * 즉시 실패를 반환하고, 클라이언트(src/utils/tts.ts)가 기기 내 고품질 신경망
- * 보이스(iOS Siri·Natural·Neural·Google 고음질)로 지체 없이 바로 낭독합니다.
- * 차단이 풀리는 날에는 이 엔진이 자동으로 다시 48kbps MP3 고품질을 돌려줍니다.
+ * 차단할 수 있어 재시도 없이 제한 시간 안에 실패를 반환합니다. 호출부는 이를
+ * TTS_PROVIDER_UNAVAILABLE(503)로 안전하게 전달하며, 브라우저 내장 음성이나
+ * 번역기 음성으로 대체하지 않습니다. Edge 접속이 복구되면 서버 합성이 다시 동작합니다.
  *
  * - node-edge-tts 패키지를 쓰지 않으므로 Vercel 서버리스 번들에서
  *   `Cannot find module './lib/stream'`(FUNCTION_INVOCATION_FAILED) 문제가 재발하지 않습니다.

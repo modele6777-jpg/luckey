@@ -215,7 +215,7 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: 'Thai Horasat (태국 호라삿)',
     primaryTheme: 'aura',
     secondaryThemes: ['bluebird', 'trinity'],
-    coreEssence: '태국 전통 호라삿(Horasat)의 요일별 수호 행성·행운 컬러·신체 부위 에너지와 생활 밀착형 개운 리추얼(탄·메타·음식·방향·색상 조율)을 통해 일상의 생기와 행운 주파수를 즉시 높이는 동남아 황실 점성술',
+    coreEssence: '태국 전통 호라삿(Horasat)의 요일별 수호 행성·행운 컬러·신체 부위 에너지와 생활 밀착형 개운 리추얼(탄·메타·음식·방향·색상 조율)을 통해 일상의 생기와 행운을 북돋는 동남아 황실 점성술',
     bestFor: '오늘의 행운 컬러·아이템·음식, 신체 부위별 컨디션 케어, 액운을 부드럽게 흘려보내는 일상 개운 리추얼',
     easyLanguageGuide: '"태국점성술(호라삿)에서 오늘 네 바이오리듬과 기운을 북돋워 줄 컬러와 작은 습관은 ~야"처럼 당장 오늘 실천할 수 있는 기분 좋은 웰니스·개운 처방으로 알려줘.',
     explicitRegex: /태국\s*점성술|타이\s*점성술|호라삿|horasat|태국\s*운세/i,

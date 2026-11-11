@@ -528,7 +528,7 @@ export const UNIVERSE_INSIGHTS: UniverseInsightItem[] = [
     categoryName: '영지 & 심층심리',
     categoryColor: 'text-purple-400',
     categoryIcon: '🔮',
-    resonance: "내면의 마음 풍경이 정돈되고 밝아질 때, 당신의 외부 현실 또한 그 주파수에 맞춰 거짓말처럼 조화롭게 재정렬됩니다.",
+    resonance: "내면의 마음 풍경을 정돈하고 밝히면, 주변 상황을 더 차분하고 균형 있게 바라보는 데 도움이 됩니다.",
     tags: ['헤르메티시즘', '상응의법칙', '내면투사', '우주법칙']
   },
   {
@@ -1161,15 +1161,15 @@ export const UNIVERSE_INSIGHTS: UniverseInsightItem[] = [
   },
   {
     id: 'cosmos-05',
-    quote: "우주의 모든 위대한 비밀을 밝혀내고 싶다면, 에너지와 주파수, 그리고 진동(Vibration)의 관점에서 생각하라.",
-    author: "니콜라 테슬라",
-    source: "테슬라 회고록",
+    quote: "자연을 이해하려면 관찰한 현상을 차분히 살피고 근거를 확인해야 합니다.",
+    author: "Luckey 편집팀",
+    source: "편집 문구",
     category: 'cosmos_truth',
     categoryName: '우주 & 초월진리',
     categoryColor: 'text-cyan-400',
     categoryIcon: '✨',
-    resonance: "모든 물질과 감정은 고유한 주파수를 지닙니다. 당신의 의식 진동을 높일 때 더 높은 차원의 기적이 현실로 끌려옵니다.",
-    tags: ['테슬라', '에너지', '주파수', '진동']
+    resonance: "감정과 자연을 설명할 때는 실제 관찰과 개인적인 비유를 구분하고, 확인할 수 있는 근거를 함께 살핍니다.",
+    tags: ['관찰', '비판적 사고', '과학적 태도']
   },
   {
     id: 'cosmos-06',

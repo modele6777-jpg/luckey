@@ -303,7 +303,7 @@ export const QUICK_EMPATHY_REACTIONS: QuickEmpathyReaction[] = [
     emoji: '☀️',
     label: '상쾌하고 좋아',
     responseHeadline: '그 밝은 에너지가 우주를 밝혀!',
-    lucyReply: '네가 웃으니 내 마음까지 환해진다! 오늘의 맑은 주파수를 가득 채워서 주변에도 다정한 온기를 전해봐. 네가 보낸 미소가 더 큰 행운의 부메랑이 되어 돌아올 거야.',
+    lucyReply: '네가 웃으니 내 마음까지 환해진다! 오늘의 맑은 기분을 가득 느끼며 주변에도 다정한 온기를 전해봐. 네가 보낸 미소가 더 큰 행운의 부메랑이 되어 돌아올 거야.',
     suggestedAction: '소중한 사람에게 기분 좋은 안부 메시지 하나 건네기',
   },
 ];

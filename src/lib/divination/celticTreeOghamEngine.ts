@@ -6,7 +6,7 @@
  * 
  * [학술적 배경]
  * 고대 아일랜드와 브리튼의 드루이드(Druids) 전통에서 전승된 켈트 신성 문자 오검(Ogham).
- * 13개 태음월 켈트 수목 달력(Celtic Tree Calendar)과 대자연의 영적 주파수를
+ * 13개 태음월 켈트 수목 달력(Celtic Tree Calendar)과 대자연의 흐름을
  * 생년월일 수비학에 매핑하여, 내담자의 '본명 수호목(Birth Guardian Tree)'과
  * 현재 인생의 전환점에 필요한 대자연의 치유 처방(Tree Medicine)을 0ms 순수 수리로 해석합니다.
  * 

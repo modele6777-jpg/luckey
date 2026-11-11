@@ -167,7 +167,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
   }
 });
 
-// TTS generation endpoint with resilient fallbacks (EdgeTTS -> Google TTS -> OpenAI TTS)
+// TTS generation endpoint backed by server-only Edge Neural TTS.
 // Load TTS dependencies only when the TTS route is invoked.
 
 app.post("/api/ai/tts", async (req, res) => {

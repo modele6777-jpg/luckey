@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { runDeterministicEngine, getFiredEngineBadges, getCalculationAudit, formatDeterministicEnginePrompt } from '../src/lib/divination/deterministicEngine';
+import { ALL_DCE_ENGINES, runDeterministicEngine, getFiredEngineBadges, getCalculationAudit, formatDeterministicEnginePrompt } from '../src/lib/divination/deterministicEngine';
 import { selectOptimalDivinationTools } from '../src/lib/fifteenDivinationTools';
 
 const profile = { basic: { name: '검사용', birthdate: '1990-05-17', birthtime: '14:30', gender: 'female' as const, birthCity: '서울', lunarSolar: 'solar' as const } };
@@ -47,7 +47,7 @@ test('master prompt and displayed evidence originate from the same successful to
   assert.ok(selected.calculationAudit?.length);
   const successes = selected.calculationAudit!.filter(item => item.sentToModel);
   assert.deepEqual(selected.firedEngineBadges, successes.map(item => `${item.status === 'symbolic' ? '상징 참고' : '계산 근거'} · ${item.name}`));
-  assert.equal(selected.calculationAudit!.length, 300);
+  assert.equal(selected.calculationAudit!.length, ALL_DCE_ENGINES.length);
   assert.doesNotMatch(selected.promptInjection, /100% 확정 수치|영적 방패율:|전원 총동원/);
 });
 
