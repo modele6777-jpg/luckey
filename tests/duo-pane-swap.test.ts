@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { isDuoDividerDoubleTap, mapDuoPaneSide, type DuoDividerTap } from '../src/lib/duoPaneSwap';
+import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from '../src/lib/duoPaneSwap';
 
 const appSource = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const cssSource = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
@@ -30,6 +30,14 @@ test('physical pane tracking follows the swapped screen for folded-cover selecti
   assert.equal(mapDuoPaneSide('right', false), 'right');
   assert.equal(mapDuoPaneSide('left', true), 'right');
   assert.equal(mapDuoPaneSide('right', true), 'left');
+});
+
+test('pane order resets when an unfolded screen is folded, but not on initial unfold or rotation', () => {
+  assert.equal(shouldResetDuoPaneSwapOnFold(true, false), true);
+  assert.equal(shouldResetDuoPaneSwapOnFold(false, true), false);
+  assert.equal(shouldResetDuoPaneSwapOnFold(true, true), false);
+  assert.equal(shouldResetDuoPaneSwapOnFold(false, false), false);
+  assert.match(appSource, /shouldResetDuoPaneSwapOnFold\(wasUnfolded, isNowUnfolded\)[\s\S]*?setDuoPanesSwapped\(false\)/);
 });
 
 test('the divider control is limited to unfolded landscape and swapped panes reserve the right menu rail', () => {

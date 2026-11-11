@@ -17,6 +17,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { TTSButton } from '@/components/TTSButton';
+import { isScriptingTypingComplete } from '@/lib/scriptingTypingPractice';
 
 export interface ScriptingSample {
   id: string;
@@ -254,7 +255,7 @@ export function ScriptingTypingPractice({
     setAccuracy(currentAcc);
 
     // Check completion condition (full match or reached target length with high accuracy)
-    if (value === targetText || (value.length >= targetText.length && value === targetText.slice(0, value.length))) {
+    if (isScriptingTypingComplete(value, targetText)) {
       const finishTime = Date.now();
       setEndTime(finishTime);
       setIsCompleted(true);
@@ -463,6 +464,7 @@ export function ScriptingTypingPractice({
               text={targetText}
               voice="Kore"
               className="text-violet-300 border-violet-500/20 text-xs py-1 px-2.5 h-auto"
+              disabled={!isCompleted || !isScriptingTypingComplete(userInput, targetText)}
             />
             <button
               type="button"

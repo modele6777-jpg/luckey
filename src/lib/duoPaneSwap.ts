@@ -27,3 +27,7 @@ export function mapDuoPaneSide(side: DuoPaneSide, swapped: boolean): DuoPaneSide
   if (!swapped) return side;
   return side === 'left' ? 'right' : 'left';
 }
+
+export function shouldResetDuoPaneSwapOnFold(wasUnfolded: boolean, isNowUnfolded: boolean): boolean {
+  return wasUnfolded && !isNowUnfolded;
+}

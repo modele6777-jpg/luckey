@@ -34,9 +34,8 @@ import { MuseSongAppleMusicPlayer, ensureAppleMusicClassicalUrl } from "@/compon
 import { recordPrismFeature } from "@/lib/prismOmniSync";
 import {
   resolveArtworkImage,
-  buildPollinationsArtworkUrl,
-  getWikimediaFullResUrl,
-  getWikimediaFilePathUrl,
+  buildDailyArtworkFallbackUrls,
+  DAILY_ART_LOCAL_FALLBACK_URL,
   isAiArtworkUrl,
   isAiArtworkSource,
   resolveArtworkSource,
@@ -1668,8 +1667,7 @@ function sanitizeArtRecommendation(raw: ArtRecommendation, offset?: number): Art
   return rec;
 }
 
-function isAiRecreatedArtworkSource(source: ArtworkImageSource | null, url?: string | null, fallbackIndex?: number): boolean {
-  if (isAiArtworkUrl(url) || (typeof fallbackIndex === "number" && fallbackIndex >= 2)) return true;
+function isAiRecreatedArtworkSource(source: ArtworkImageSource | null, url?: string | null): boolean {
   return isAiArtworkSource(source, url);
 }
 
@@ -1926,7 +1924,6 @@ export function ArtRecommendationView() {
 
   const [imageFallbackIndex, setImageFallbackIndex] = useState(0);
   const [imageLoadError, setImageLoadError] = useState(false);
-  const [imageApiError, setImageApiError] = useState('');
   const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
 
   // Safety timer to prevent infinite image loading state (15s for high-res / AI generation)
@@ -1942,7 +1939,6 @@ export function ArtRecommendationView() {
   useEffect(() => {
     setImageFallbackIndex(0);
     setImageLoadError(false);
-    setImageApiError('');
     setLoadedImageUrl(null);
   }, [recommendation?.catalogId, recommendation?.title]);
 
@@ -1953,7 +1949,6 @@ export function ArtRecommendationView() {
     if (isGeneratingImageRef.current) return;
     isGeneratingImageRef.current = true;
     setLoadingImage(true);
-    setImageApiError('');
     try {
       const { displayUrl, source } = await withTimeout(
         resolveArtworkImage(
@@ -1995,9 +1990,7 @@ export function ArtRecommendationView() {
         }, 'MUSE');
       }
     } catch (e) {
-      console.error("Failed to resolve artwork image:", e);
-      setImageApiError(e instanceof Error ? e.message : '작품 이미지를 불러오지 못했습니다. 다시 시도해 주세요.');
-      setImageLoadError(true);
+      console.warn("Artwork image provider unavailable; keeping the local image fallback available.", e);
     } finally {
       setLoadingImage(false);
       isGeneratingImageRef.current = false;
@@ -2555,32 +2548,7 @@ export function ArtRecommendationView() {
 
   const fallbackUrls = useMemo(() => {
     if (!recommendation) return [];
-    const list: string[] = [];
-
-    // 1. [★ 최우선 대원칙] 미술관 공식 소장본 원작 스캔 — 서버리스 프록시를 거치지 않는 직링 4단 계단식 폴백
-    if (recommendation.imageUrl && !isAiArtworkUrl(recommendation.imageUrl)) {
-      const raw = recommendation.imageUrl.trim();
-      // 1순위: 원본 직링 (CDN 즉시 로드)
-      list.push(raw);
-      // 2순위: 인코딩된 원본 직링 (유니코드 파일명 대응)
-      list.push(encodeURI(raw));
-      // 3순위: 위키미디어 원본 풀 해상도 URL (썸네일 경로 제거)
-      const fullRes = getWikimediaFullResUrl(raw);
-      if (fullRes) list.push(fullRes);
-      // 4순위: 위키미디어 Special:FilePath 리졸버 (파일명으로 재요청)
-      const filePath = getWikimediaFilePathUrl(raw);
-      if (filePath) list.push(filePath);
-    }
-
-    // 5. Saved/resolved nanobananaImage (if valid and not duplicate)
-    if (nanobananaImage && nanobananaImage !== "null" && nanobananaImage !== "undefined") {
-      list.push(nanobananaImage);
-    }
-
-    // 6. [최종 안전망] AI 명화 재현 (Pollinations) — 원작을 불러올 수 없는 작품도 반드시 표시
-    list.push(buildPollinationsArtworkUrl(recommendation));
-
-    return [...new Set(list.filter(Boolean))];
+    return buildDailyArtworkFallbackUrls(recommendation.imageUrl, nanobananaImage);
   }, [nanobananaImage, recommendation]);
 
   const effectiveImage = useMemo(() => {
@@ -3270,7 +3238,11 @@ export function ArtRecommendationView() {
                           setLoadedImageUrl(effectiveImage);
                           setLoadingImage(false);
                           setImageLoadError(false);
-                          if (isAiArtworkUrl(effectiveImage) || imageFallbackIndex >= 2) {
+                          if (effectiveImage === DAILY_ART_LOCAL_FALLBACK_URL) {
+                            setArtworkImageSource("local_fallback");
+                            safeLocalStorage.setItem(ART_CACHE_KEYS.image, effectiveImage);
+                            localStorage.setItem(ART_CACHE_KEYS.imageSource, "local_fallback");
+                          } else if (isAiArtworkUrl(effectiveImage)) {
                             if (artworkImageSource !== "pollinations" && artworkImageSource !== "ai_replica") {
                               setArtworkImageSource("pollinations");
                               localStorage.setItem(ART_CACHE_KEYS.imageSource, "pollinations");
@@ -3283,11 +3255,6 @@ export function ArtRecommendationView() {
                             const nextIndex = imageFallbackIndex + 1;
                             setImageFallbackIndex(nextIndex);
                             setLoadingImage(true);
-                            const nextUrl = fallbackUrls[nextIndex];
-                            if (isAiArtworkUrl(nextUrl) || nextIndex >= 2) {
-                              setArtworkImageSource("pollinations");
-                              localStorage.setItem(ART_CACHE_KEYS.imageSource, "pollinations");
-                            }
                           } else {
                             setLoadingImage(false);
                             setImageLoadError(true);
@@ -3329,7 +3296,6 @@ export function ArtRecommendationView() {
                       <p className="text-xs text-amber-200/70 font-medium mb-4">
                         {recommendation.creator} · {recommendation.era}
                       </p>
-                      {imageApiError && <p role="status" className="mb-4 max-w-sm text-xs text-amber-100/90">{imageApiError}</p>}
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -3374,7 +3340,9 @@ export function ArtRecommendationView() {
 
                 {effectiveImage && !loadingImage && (
                   <p className="text-[10px] text-amber-200/80 text-center leading-relaxed px-2 -mt-2">
-                    {isAiRecreatedArtworkSource(artworkImageSource, effectiveImage, imageFallbackIndex)
+                    {effectiveImage === DAILY_ART_LOCAL_FALLBACK_URL
+                      ? "🎨 외부 이미지 연결이 원활하지 않아 기본 전시 이미지를 표시하고 있습니다. 작품 제목·작가·원작 출처는 그대로 유지됩니다."
+                      : isAiRecreatedArtworkSource(artworkImageSource, effectiveImage)
                       ? "✨ 원작의 저작권 보호 또는 소장처 정책으로 인해 원작의 구성과 색채를 정밀 분석하여 재현한 고화질 미학 버전입니다."
                       : "🏛️ 시카고 미술관 / 메트로폴리탄 / 위키미디어 / DailyArt 공식 소장 원작 스캔본입니다. (저작권 등으로 로드 불가 시 AI 재현본으로 자동 전환됩니다.)"}
                   </p>
