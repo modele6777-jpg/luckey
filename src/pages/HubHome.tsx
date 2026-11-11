@@ -546,13 +546,39 @@ export default function HubHome() {
         className="duo-page-brand relative w-full shrink-0 px-4 pt-4 pointer-events-auto z-40 transition-opacity duration-300"
       >
         <div className="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
-          <div className="cursor-pointer flex flex-col justify-center select-none" onClick={() => navigate('/prologue')}>
+          <div
+            className="cursor-pointer flex flex-col justify-center select-none"
+            onClick={() => {
+              setActiveSection('universe');
+              try {
+                sessionStorage.setItem('prism_target_tab', 'universe');
+              } catch (_) {}
+              if (typeof window !== 'undefined') {
+                (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+              }
+              navigate('/prologue?tab=universe');
+              try {
+                window.dispatchEvent(new CustomEvent('prism-tab-change', { detail: { tab: 'universe' } }));
+              } catch (_) {}
+            }}
+            title="프롤로그 유니버스 탭으로 이동"
+          >
             <h1>
               <LucKeyLogoText />
             </h1>
           </div>
         </div>
       </motion.div>
+
+      {/* 상단 로고와 메뉴 사이 중앙 영문 앱 제목 */}
+      <div
+        data-page-title="true"
+        className="duo-page-title pointer-events-none select-none z-40 flex items-center justify-center transition-opacity duration-300"
+      >
+        <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.28em] text-slate-800 dark:text-white/90 drop-shadow-sm">
+          PROLOGUE
+        </span>
+      </div>
 
 
       {/* Navigation Subnav Menu (Universe, eCPR & ToDo Sections) */}

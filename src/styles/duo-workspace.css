@@ -106,9 +106,24 @@ html:root [data-page-brand="true"].duo-page-brand {
   pointer-events: none;
 }
 .duo-page-brand > div { pointer-events: auto; width: fit-content; }
+.duo-page-title {
+  position: absolute !important;
+  top: var(--channel-title-top, calc(var(--page-header-top) + 2.4rem)) !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  margin: 0;
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: fit-content;
+}
 .duo-page-nav {
   position: absolute !important;
-  top: var(--channel-nav-top, calc(var(--page-header-top) + 3.25rem)) !important;
+  top: var(--channel-nav-top, calc(var(--page-header-top) + 4.5rem)) !important;
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
@@ -124,7 +139,7 @@ html:root [data-page-brand="true"].duo-page-brand {
   content: "";
   display: block;
   flex-shrink: 0;
-  height: var(--channel-content-top, calc(var(--page-header-top) + 7.5rem));
+  height: var(--channel-content-top, calc(var(--page-header-top) + 8.6rem));
 }
 @media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
   .duo-split-workspace { column-gap: var(--duo-hinge-gap, 1.5rem); }
