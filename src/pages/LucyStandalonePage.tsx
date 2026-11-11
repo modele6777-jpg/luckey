@@ -3003,24 +3003,43 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   >
                     <button
                       type="button"
+                      data-no-scroll-top="true"
                       onClick={() => {
-                        const isCosmic = isDuoUnfolded && (location === '/' || location === '/chat' || location === '/lucy');
-                        const next: LucyTier = isCosmic ? 'plus' : 'ai';
-                        setLucyTier(next);
-                        safeLocalStorage.setItem('lucy_tier_mode', next);
-                        safeSessionStorage.setItem('lucy_tier_mode', next);
-                        setModeTransitioningTier(lucyTier === 'pro' ? 'pro' : next);
-                        setTimeout(() => setModeTransitioningTier(null), 550);
-                        triggerHaptic('whitehole');
-                        setModeSwitchToast(next === 'plus' ? '🌿 Lucy +' : '✨ Lucy');
-                        setTimeout(() => setModeSwitchToast(null), 2200);
+                        if (isMasterMode) {
+                          // 프로 모드 해제: 원래 기본 모드로 복귀 (펼친 코스믹룸은 Lucy+, 그 외는 Lucy)
+                          const target: LucyTier = isCosmicRoomActive ? 'plus' : 'ai';
+                          safeLocalStorage.setItem('lucy_tier_mode', target);
+                          safeSessionStorage.setItem('lucy_tier_mode', target);
+                          setLucyTier(target);
+                          const mode = new URLSearchParams(window.location.search).get('mode');
+                          if (mode === 'pro' || mode === 'ultra') navigate('/chat?mode=' + target, { replace: true });
+                          setModeTransitioningTier(target);
+                          setTimeout(() => setModeTransitioningTier(null), 550);
+                          triggerHaptic('whitehole');
+                          setModeSwitchToast(isCosmicRoomActive ? '🌿 Lucy +' : '✨ Lucy');
+                          setTimeout(() => setModeSwitchToast(null), 2000);
+                        } else {
+                          // 프로 모드 진입: 루시 ➔ 루시 프로, 루시플러스 ➔ 루시플러스 프로
+                          safeLocalStorage.setItem('lucy_tier_mode', 'pro');
+                          safeSessionStorage.setItem('lucy_tier_mode', 'pro');
+                          setLucyTier('pro');
+                          setModeTransitioningTier('pro');
+                          setTimeout(() => setModeTransitioningTier(null), 550);
+                          triggerHaptic('whitehole');
+                          setModeSwitchToast(
+                            isCosmicRoomActive
+                              ? `👑 Lucy+ Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+                              : `👑 Lucy Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+                          );
+                          setTimeout(() => setModeSwitchToast(null), 2500);
+                        }
                       }}
                       title={
-                        lucyTier === 'pro'
-                          ? '클릭 시 기본 모드로 복귀'
-                          : '프로 진입: 빅뱅 버튼을 길게 누르세요'
+                        isMasterMode
+                          ? (showPlusMarker ? '클릭 시 Lucy + 로 전환' : '클릭 시 Lucy 로 전환')
+                          : (showPlusMarker ? '클릭 시 Lucy+ Pro 로 전환' : '클릭 시 Lucy Pro 로 전환')
                       }
-                      className="cursor-pointer flex items-center gap-1.5"
+                      className="cursor-pointer flex items-center gap-1.5 select-none"
                     >
                       <LucyModeName plus={showPlusMarker} pro={isMasterMode} isLight={isLight} />
                     </button>

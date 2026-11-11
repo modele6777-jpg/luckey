@@ -3,11 +3,11 @@ import { resetAppScroll } from '@/utils/scrollToTop';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 
 /**
- * 📱 아이폰 상태바 / 상단 헤더 탭 시 최상단 스크롤(Scroll-to-Top) 전역 컨트롤러
- * - 아이폰 고유의 Status Bar 탭 최상단 이동 인터랙션을 앱의 모든 페이지에 1:1 구현
- * - 상단 상태바 영역(0~54px) 및 각 페이지 헤더의 빈 공간/타이틀 탭 시 부도럽게 최상단으로 스크롤
- * - 버튼, 링크, 입력창 등 인터랙티브 요소는 정상 동작을 100% 보장하며 스크롤과 간섭 방지
- * - 듀얼 스크린(iPhone Duo) 환경에서는 탭된 좌/우 뷰포트를 판별하여 해당 창만 독립 스크롤
+ * 📱 아이폰 상태바 상단 중앙 노치(Notch) 탭 최상단 스크롤(Scroll-to-Top) 전역 컨트롤러
+ * - 사용자 지시사항:
+ *   1) 상단 로고 말고 상단 중앙 노치부분 누르면 최상단으로 이동
+ *   2) 듀얼 화면(iPhone Duo)에서는 반반 쪼개서 중앙 노치부분 누르면 해당 화면만 독립 스크롤
+ *   3) 로고, 버튼, 링크, 입력창 등 인터랙티브 요소는 100% 본래 동작 보장 (스크롤 간섭 원천 차단)
  */
 export function GlobalScrollToTopOnHeaderTap(): null {
   useEffect(() => {
@@ -29,40 +29,98 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       if (!el) return false;
       return Boolean(
         el.closest(
-          'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], audio, video, iframe'
+          'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], audio, video, iframe, .duo-page-brand, [data-page-brand], [data-brand-logo], [data-lucy-name], .lucy-header-actions'
         )
       );
     };
 
-    const isTopScrollTriggerZone = (
-      target: HTMLElement | null,
-      clientY: number
-    ): boolean => {
-      if (!target) return false;
+    /**
+     * 🎯 상단 중앙 노치(Notch) 영역 터치 판별 및 스크롤 대상 패널 반환
+     * - 반환값:
+     *   - HTMLElement: 해당 화면/패널만 선별 스크롤 (듀얼 모드 좌/우 패널 또는 단일 화면)
+     *   - false: 노치 영역이 아니거나 인터랙티브 요소 터치 (스크롤하지 않음)
+     */
+    const getNotchScrollTarget = (
+      clientX: number,
+      clientY: number,
+      target: HTMLElement | null
+    ): HTMLElement | null | false => {
+      if (isInteractiveElement(target)) return false;
 
-      // 1. 최상단 상태바 / 노치 / 다이내믹 아일랜드 터치 영역 (안전영역 + 12px)
-      const safeAreaThreshold = Math.max(54, getSafeAreaTop() + 12);
-      if (clientY <= safeAreaThreshold) {
-        return true;
+      const safeAreaThreshold = Math.max(54, getSafeAreaTop() + 10);
+
+      // 1. 듀얼 스크린 (iPhone Duo 펼친 화면: 좌측 채널 vs 우측 루시)
+      const contentPane = document.getElementById('duo-content-viewport');
+      const lucyPane = document.getElementById('duo-lucy-viewport');
+      const isDual = Boolean(
+        contentPane &&
+        lucyPane &&
+        contentPane.offsetParent !== null &&
+        lucyPane.offsetParent !== null
+      );
+
+      if (isDual && contentPane && lucyPane) {
+        const contentRect = contentPane.getBoundingClientRect();
+        const lucyRect = lucyPane.getBoundingClientRect();
+        const isSideBySide = Math.abs(contentRect.top - lucyRect.top) < 30;
+
+        if (isSideBySide) {
+          // 📱 좌측 화면(콘텐츠 뷰포트) 중앙 노치
+          const leftCenterX = contentRect.left + contentRect.width / 2;
+          const leftNotchHalfWidth = Math.max(50, Math.min(85, contentRect.width * 0.22));
+          if (
+            clientY <= safeAreaThreshold &&
+            Math.abs(clientX - leftCenterX) <= leftNotchHalfWidth
+          ) {
+            return contentPane;
+          }
+
+          // 📱 우측 화면(루시 채팅창) 중앙 노치
+          const rightCenterX = lucyRect.left + lucyRect.width / 2;
+          const rightNotchHalfWidth = Math.max(50, Math.min(85, lucyRect.width * 0.22));
+          if (
+            clientY <= safeAreaThreshold &&
+            Math.abs(clientX - rightCenterX) <= rightNotchHalfWidth
+          ) {
+            return lucyPane;
+          }
+        } else {
+          // 📱 상하 듀얼 화면 (세로 회전 펼침)
+          const windowCenterX = window.innerWidth / 2;
+          const notchHalfWidth = Math.max(60, Math.min(100, window.innerWidth * 0.22));
+
+          // 상단 화면(콘텐츠 뷰포트) 노치
+          if (clientY <= safeAreaThreshold && Math.abs(clientX - windowCenterX) <= notchHalfWidth) {
+            return contentPane;
+          }
+
+          // 하단 화면(루시 채팅창) 노치
+          if (
+            clientY >= lucyRect.top &&
+            clientY <= lucyRect.top + safeAreaThreshold &&
+            Math.abs(clientX - windowCenterX) <= notchHalfWidth
+          ) {
+            return lucyPane;
+          }
+        }
+
+        // 듀얼 모드에서 노치 영역 밖을 터치한 경우 스크롤 무시
+        return false;
       }
 
-      // 2. 페이지 상단 헤더 / 네비게이션 바 영역 (빈 공간 및 타이틀)
-      const headerAncestor = target.closest(
-        'header, nav.top-nav, .lucy-chat-header, .hub-header, [data-top-bar], [data-header], .sticky.top-0, .top-navigation-strip, .prism-header'
-      );
-      if (headerAncestor) {
-        // 헤더 내부라도 화면 상단 120px 이내인 경우 최상단 이동 트리거로 인정
-        const rect = headerAncestor.getBoundingClientRect();
-        if (rect.top <= safeAreaThreshold && clientY <= rect.bottom + 8) {
-          return true;
-        }
+      // 2. 단일 화면 (접힌 화면 또는 일반 모바일) 중앙 노치
+      const windowCenterX = window.innerWidth / 2;
+      const notchHalfWidth = Math.max(60, Math.min(100, window.innerWidth * 0.22));
+
+      if (clientY <= safeAreaThreshold && Math.abs(clientX - windowCenterX) <= notchHalfWidth) {
+        return target;
       }
 
       return false;
     };
 
-    const executeScrollToTop = (target: HTMLElement | null) => {
-      resetAppScroll('smooth', target);
+    const executeScrollToTop = (scrollTarget: HTMLElement | null) => {
+      resetAppScroll('smooth', scrollTarget);
 
       try {
         playAudioHaptic('tap_light');
@@ -77,7 +135,7 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       try {
         window.dispatchEvent(
           new CustomEvent('prism-scroll-to-top', {
-            detail: { target, timestamp: Date.now() },
+            detail: { target: scrollTarget, timestamp: Date.now() },
           })
         );
       } catch (_) {}
@@ -113,26 +171,18 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       if (distance > 14 || duration > 400) return;
 
       const target = (document.elementFromPoint(endX, endY) || e.target) as HTMLElement | null;
-      if (!target) return;
 
-      // 인터랙티브 버튼/링크 탭은 원래 기능 수행을 위해 절대 차단하지 않음
-      if (isInteractiveElement(target)) {
-        return;
-      }
-
-      // 상단 상태바 또는 헤더 영역 탭 검증
-      if (isTopScrollTriggerZone(target, endY)) {
-        executeScrollToTop(target);
+      const scrollTarget = getNotchScrollTarget(endX, endY, target);
+      if (scrollTarget !== false) {
+        executeScrollToTop(scrollTarget);
       }
     };
 
     const handleClick = (e: MouseEvent) => {
-      // 마우스/트랙패드 클릭 처리
       const target = (document.elementFromPoint(e.clientX, e.clientY) || e.target) as HTMLElement | null;
-      if (!target || isInteractiveElement(target)) return;
-
-      if (isTopScrollTriggerZone(target, e.clientY)) {
-        executeScrollToTop(target);
+      const scrollTarget = getNotchScrollTarget(e.clientX, e.clientY, target);
+      if (scrollTarget !== false) {
+        executeScrollToTop(scrollTarget);
       }
     };
 
