@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.334",
+    "builtAt": "2026-11-11T08:02:20.763Z",
+    "summary": "Gemini 3.8 자연 음성 연결 복구 및 Edge Neural TTS 프로토콜 수정",
+    "items": [
+      "Gemini 3.8 Flash TTS와 Flash-Lite를 공식 Interactions API에 연결하고 WAV·PCM 응답을 안정적으로 처리",
+      "환경변수에 저장된 Gemini 키만 사용하고 브라우저 내장 음성·번역기 음성 fallback은 제외",
+      "Edge Neural TTS SSML timestamp의 중복 Z를 수정하고 회귀 테스트 추가"
+    ]
+  },
+  {
     "version": "1.7.333",
     "builtAt": "2026-11-11T07:30:00.000Z",
     "summary": "TTS 긴 문장 14초 지연 타임아웃 완치(28초 확장) 및 최적 청크 분할(110자)·쿨다운 블록 해제",

@@ -1,10 +1,10 @@
 {
-  "version": "1.7.333",
-  "builtAt": "2026-11-11T07:15:00.000Z",
-  "summary": "TTS 서버 음성(Gemini Neural Audio) 다중 모델 및 활성 키 자동 페일오버 복원 수복",
+  "version": "1.7.334",
+  "builtAt": "2026-11-11T08:02:20.763Z",
+  "summary": "Gemini 3.8 자연 음성 연결 복구 및 Edge Neural TTS 프로토콜 수정",
   "items": [
-    "Vercel 서버리스 환경에서 환경변수 누락 시에도 고품질 Gemini 신경망 음성이 100% 정상 작동하도록 활성 키 페일오버 체계 수복",
-    "gemini-2.5-flash-preview-tts 등 검증된 5대 음성 합성 모델 순회 페일오버로 서버 음성 503 오류 원천 완치",
-    "L16/PCM 대소문자 무관 완벽 WAV 인코딩 래핑 보장으로 모바일 사파리 및 전 채널 낭독 무결성 확보"
+    "Gemini 3.8 Flash TTS와 Flash-Lite를 공식 Interactions API에 연결하고 WAV·PCM 응답을 안정적으로 처리",
+    "환경변수에 저장된 Gemini 키만 사용하고 브라우저 내장 음성·번역기 음성 fallback은 제외",
+    "Edge Neural TTS SSML timestamp의 중복 Z를 수정하고 회귀 테스트 추가"
   ]
 }

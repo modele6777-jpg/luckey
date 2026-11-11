@@ -249,15 +249,8 @@ async function synthesizeChunkWithEdgeNeural(
       }),
     ));
 
-    const escaped = chunk
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
     const requestId = randomBytes(16).toString('hex');
-    socket.write(encodeWsTextFrame(
-      `X-RequestId:${requestId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${stamp}Z\r\nPath:ssml\r\n\r\n` +
-      `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'>` +
-      `<voice name='${voice}'><prosody pitch='+0Hz' rate='+0%' volume='+0%'>${escaped}</prosody></voice></speak>`,
-    ));
+    socket.write(encodeWsTextFrame(buildEdgeTtsSsmlMessage(chunk, voice, lang, stamp, requestId)));
 
     socket.on('data', (incoming: Buffer) => {
       receiveBuffer = Buffer.concat([receiveBuffer, incoming]);
@@ -350,6 +343,16 @@ function splitSpeechIntoFreeChunks(speech: string): string[] {
     if (current) units.push(current);
   }
   return units.length > 0 ? units : [speech];
+}
+
+/** Build a protocol-valid SSML request; the ISO timestamp already ends in Z. */
+export function buildEdgeTtsSsmlMessage(chunk: string, voice: string, lang: string, stamp: string, requestId: string): string {
+  const escaped = chunk
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return `X-RequestId:${requestId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${stamp}\r\nPath:ssml\r\n\r\n` +
+    `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'>` +
+    `<voice name='${voice}'><prosody pitch='+0Hz' rate='+0%' volume='+0%'>${escaped}</prosody></voice></speak>`;
 }
 
 /** 신경망 TTS로 mp3 음성을 합성합니다. 실패 시 예외를 던지므로 호출부가 적절히 안내할 수 있습니다. */
