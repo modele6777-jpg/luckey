@@ -286,6 +286,9 @@ import { calculateKoreanDamheonHongDaeYongUisanMundap, formatKoreanDamheonHongDa
 import { calculateAustrianWittgensteinLanguageGameSilence, formatAustrianWittgensteinLanguageGameSilencePrompt, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION } from '../src/lib/divination/austrianWittgensteinLanguageGameSilenceEngine';
 import { calculateFrenchGillesDeleuzeRhizomeBecoming, formatFrenchGillesDeleuzeRhizomeBecomingPrompt, FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION } from '../src/lib/divination/frenchGillesDeleuzeRhizomeBecomingEngine';
 import { calculateKoreanHeoJunDonguiBogamYangsaeng, formatKoreanHeoJunDonguiBogamYangsaengPrompt, KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION } from '../src/lib/divination/koreanHeoJunDonguiBogamYangsaengEngine';
+import { calculateDutchDesideriusErasmusPraiseOfFolly, formatDutchDesideriusErasmusPraiseOfFollyPrompt, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION } from '../src/lib/divination/dutchDesideriusErasmusPraiseOfFollyEngine';
+import { calculateBritishThomasMoreUtopia, formatBritishThomasMoreUtopiaPrompt, BRITISH_THOMAS_MORE_UTOPIA_VERSION } from '../src/lib/divination/britishThomasMoreUtopiaEngine';
+import { calculateKoreanGosanYoonSeonDoFiveFriends, formatKoreanGosanYoonSeonDoFiveFriendsPrompt, KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION } from '../src/lib/divination/koreanGosanYoonSeonDoFiveFriendsEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5567,6 +5570,48 @@ test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheo
   const prompt = formatKoreanHeoJunDonguiBogamYangsaengPrompt(rep);
   assert(prompt.includes('구암 허준 《동의보감》 신형장부도·통즉불통 및 치미병 양생 지혜 지표'));
   assert(prompt.includes(rep.activeHeoJunTheme.themeTitleKo));
+});
+
+test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dogma Dissolution, and Humanistic Tolerance', () => {
+  const rep = calculateDutchDesideriusErasmusPraiseOfFolly(profile);
+  assert.equal(rep.engineVersion, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION);
+  assert(rep.follyHumorousWisdomScore >= 0 && rep.follyHumorousWisdomScore <= 100);
+  assert(rep.dogmaticPrejudiceDissolutionIndex >= 0 && rep.dogmaticPrejudiceDissolutionIndex <= 100);
+  assert(rep.renaissanceHumanisticToleranceScore >= 0 && rep.renaissanceHumanisticToleranceScore <= 100);
+  assert(rep.practicalSincereVirtueIndex >= 0 && rep.practicalSincereVirtueIndex <= 100);
+  assert(rep.cheerfulResilienceScore >= 0 && rep.cheerfulResilienceScore <= 100);
+  assert(rep.activeErasmusTheme.themeTitleKo.length > 0);
+  const prompt = formatDutchDesideriusErasmusPraiseOfFollyPrompt(rep);
+  assert(prompt.includes('데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표'));
+  assert(prompt.includes(rep.activeErasmusTheme.themeTitleKo));
+});
+
+test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure Balance, and Spiritual Integrity', () => {
+  const rep = calculateBritishThomasMoreUtopia(profile);
+  assert.equal(rep.engineVersion, BRITISH_THOMAS_MORE_UTOPIA_VERSION);
+  assert(rep.communalConscienceJusticeScore >= 0 && rep.communalConscienceJusticeScore <= 100);
+  assert(rep.laborOtiumBalancedHarmonyIndex >= 0 && rep.laborOtiumBalancedHarmonyIndex <= 100);
+  assert(rep.spiritualIntegrityPurityScore >= 0 && rep.spiritualIntegrityPurityScore <= 100);
+  assert(rep.visionarySocialReformIndex >= 0 && rep.visionarySocialReformIndex <= 100);
+  assert(rep.steadfastMoralCourageResilienceScore >= 0 && rep.steadfastMoralCourageResilienceScore <= 100);
+  assert(rep.activeMoreTheme.themeTitleKo.length > 0);
+  const prompt = formatBritishThomasMoreUtopiaPrompt(rep);
+  assert(prompt.includes('토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표'));
+  assert(prompt.includes(rep.activeMoreTheme.themeTitleKo));
+});
+
+test('Gosan Yoon Seon-do Five Friends Engine: calculates Five Friends Integrity, Four Seasons Equanimity, and Bamboo Humility', () => {
+  const rep = calculateKoreanGosanYoonSeonDoFiveFriends(profile);
+  assert.equal(rep.engineVersion, KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION);
+  assert(rep.fiveFriendsIntegrityIndex >= 0 && rep.fiveFriendsIntegrityIndex <= 100);
+  assert(rep.fourSeasonsAestheticEquanimityScore >= 0 && rep.fourSeasonsAestheticEquanimityScore <= 100);
+  assert(rep.bambooHollowHumilityScore >= 0 && rep.bambooHollowHumilityScore <= 100);
+  assert(rep.waterUnceasingPurityIndex >= 0 && rep.waterUnceasingPurityIndex <= 100);
+  assert(rep.seyeonjeongSolitaryResilienceScore >= 0 && rep.seyeonjeongSolitaryResilienceScore <= 100);
+  assert(rep.activeYoonTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanGosanYoonSeonDoFiveFriendsPrompt(rep);
+  assert(prompt.includes('고산 윤선도 《오우가》 수석송죽월 5우 지조 및 《어부사시사》 심미적 안빈낙도 지표'));
+  assert(prompt.includes(rep.activeYoonTheme.themeTitleKo));
 });
 
 

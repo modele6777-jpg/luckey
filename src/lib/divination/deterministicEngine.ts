@@ -323,6 +323,9 @@ import { calculateKoreanDamheonHongDaeYongUisanMundap, formatKoreanDamheonHongDa
 import { calculateAustrianWittgensteinLanguageGameSilence, formatAustrianWittgensteinLanguageGameSilencePrompt, type AustrianWittgensteinLanguageGameSilenceResult, AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION } from './austrianWittgensteinLanguageGameSilenceEngine';
 import { calculateFrenchGillesDeleuzeRhizomeBecoming, formatFrenchGillesDeleuzeRhizomeBecomingPrompt, type FrenchGillesDeleuzeRhizomeBecomingResult, FRENCH_GILLES_DELEUZE_RHIZOME_BECOMING_VERSION } from './frenchGillesDeleuzeRhizomeBecomingEngine';
 import { calculateKoreanHeoJunDonguiBogamYangsaeng, formatKoreanHeoJunDonguiBogamYangsaengPrompt, type KoreanHeoJunDonguiBogamYangsaengResult, KOREAN_HEO_JUN_DONGUI_BOGAM_YANGSAENG_VERSION } from './koreanHeoJunDonguiBogamYangsaengEngine';
+import { calculateDutchDesideriusErasmusPraiseOfFolly, formatDutchDesideriusErasmusPraiseOfFollyPrompt, type DutchDesideriusErasmusPraiseOfFollyResult, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION } from './dutchDesideriusErasmusPraiseOfFollyEngine';
+import { calculateBritishThomasMoreUtopia, formatBritishThomasMoreUtopiaPrompt, type BritishThomasMoreUtopiaResult, BRITISH_THOMAS_MORE_UTOPIA_VERSION } from './britishThomasMoreUtopiaEngine';
+import { calculateKoreanGosanYoonSeonDoFiveFriends, formatKoreanGosanYoonSeonDoFiveFriendsPrompt, type KoreanGosanYoonSeonDoFiveFriendsResult, KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION } from './koreanGosanYoonSeonDoFiveFriendsEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -666,6 +669,9 @@ export interface DeterministicEngineReport {
   austrianWittgensteinLanguageGameSilenceResult?: AustrianWittgensteinLanguageGameSilenceResult | null;
   frenchGillesDeleuzeRhizomeBecomingResult?: FrenchGillesDeleuzeRhizomeBecomingResult | null;
   koreanHeoJunDonguiBogamYangsaengResult?: KoreanHeoJunDonguiBogamYangsaengResult | null;
+  dutchDesideriusErasmusPraiseOfFollyResult?: DutchDesideriusErasmusPraiseOfFollyResult | null;
+  britishThomasMoreUtopiaResult?: BritishThomasMoreUtopiaResult | null;
+  koreanGosanYoonSeonDoFiveFriendsResult?: KoreanGosanYoonSeonDoFiveFriendsResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3896,6 +3902,33 @@ try {
     }
   })()));
 
+  // 294. 네덜란드 데시데리우스 에라스무스 《우신예찬》 우신의지혜·르네상스 휴머니즘 & 해학·도그마타파 관용 엔진
+  const dutchDesideriusErasmusPraiseOfFollyResult = calculateSupplement('dutchDesideriusErasmusPraiseOfFollyResult', () => ((() => {
+    try {
+      return calculateDutchDesideriusErasmusPraiseOfFolly(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 295. 영국 토머스 모어 《유토피아》 공동체 양심 & 삶의 균형(노동·여가)·내면 순결과 공공 정의 지혜 엔진
+  const britishThomasMoreUtopiaResult = calculateSupplement('britishThomasMoreUtopiaResult', () => ((() => {
+    try {
+      return calculateBritishThomasMoreUtopia(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 296. 대한민국 고산 윤선도 《오우가·어부사시사》 수석송죽월 5우 청백지조 & 사계절 순환 심미적 안빈낙도 지혜 엔진
+  const koreanGosanYoonSeonDoFiveFriendsResult = calculateSupplement('koreanGosanYoonSeonDoFiveFriendsResult', () => ((() => {
+    try {
+      return calculateKoreanGosanYoonSeonDoFiveFriends(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4225,6 +4258,9 @@ try {
     austrianWittgensteinLanguageGameSilenceResult,
     frenchGillesDeleuzeRhizomeBecomingResult,
     koreanHeoJunDonguiBogamYangsaengResult,
+    dutchDesideriusErasmusPraiseOfFollyResult,
+    britishThomasMoreUtopiaResult,
+    koreanGosanYoonSeonDoFiveFriendsResult,
     tools: toolsMap,
   };
 }
@@ -4545,6 +4581,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'austrianWittgensteinLanguageGameSilence', nameKo: '루트비히 비트겐슈타인 논리철학논고 철학적탐구 언어게임 삶의형식 침묵의지혜 의미는사용 관념치료', icon: '🤫', category: 'deep_master', summary: '루트비히 비트겐슈타인의 사상으로 말할 수 있는 것의 명료한 논리적 정밀성과 신비 앞의 경건한 침묵, 언어 게임과 삶의 형식을 통한 실천적 맥락 지혜를 체득합니다.' },
   { key: 'frenchGillesDeleuzeRhizomeBecoming', nameKo: '질 들뢰즈 천개의고원 차이와반복 리좀적접속 탈영토화 노마디즘 순수차이긍정 다양체 되기생성', icon: '🌿', category: 'deep_master', summary: '질 들뢰즈의 철학으로 수목형 위계를 허무는 리좀(Rhizome)적 수평 접속, 경계를 허무는 탈영토화와 노마디즘, 고착을 벗어나 끊임없이 변용하는 생성(Devenir)의 활력을 누립니다.' },
   { key: 'koreanHeoJunDonguiBogamYangsaeng', nameKo: '구암 허준 동의보감 신형장부도 천인상응 통즉불통 치미병양생 정기신삼보 혜민구휼치유', icon: '🌿', category: 'deep_master', summary: '구암 허준 선생의 동의보감 사상으로 통즉불통(通則不痛)의 원활한 소통과 순환, 천인상응의 전인적 조화, 병이 생기기 전에 근원을 다스리는 치미병(治未病) 양생 지혜를 체득합니다.' },
+  { key: 'dutchDesideriusErasmusPraiseOfFolly', nameKo: '데시데리우스 에라스무스 우신예찬 르네상스휴머니즘 해학적통찰 도그마타파 관용실천 유쾌한긍정', icon: '🎭', category: 'deep_master', summary: '에라스무스의 우신예찬 사상으로 경직된 엄숙주의와 도그마를 깨뜨리는 유쾌한 해학의 지혜, 인간의 연약함을 품는 르네상스 휴머니즘 관용을 체득합니다.' },
+  { key: 'britishThomasMoreUtopia', nameKo: '토머스 모어 유토피아 공동체양심 삶의균형 노동과여가 내면순결 청빈공공정의 불굴도덕용기', icon: '🏰', category: 'deep_master', summary: '토머스 모어의 유토피아 사상으로 노동과 여가(Otium)의 조화, 물질적 탐욕을 초월한 영혼의 순결함, 공공선을 지키는 단호한 도덕적 용기를 체득합니다.' },
+  { key: 'koreanGosanYoonSeonDoFiveFriends', nameKo: '고산 윤선도 오우가 수석송죽월5우 청백지조 어부사시사 사계절순환 허심대나무 세연정초연평온', icon: '🎋', category: 'deep_master', summary: '고산 윤선도 선생의 오우가·어부사시사 사상으로 수·석·송·죽·월의 불변하는 청백지조, 속을 비우는 대나무의 허심(虛心), 사계절 순환 속에서 안빈낙도하는 선비의 평온을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4607,6 +4646,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'britishThomasMoreUtopia',
+    'dutchDesideriusErasmusPraiseOfFolly',
     'austrianWittgensteinLanguageGameSilence',
     'frenchGillesDeleuzeRhizomeBecoming',
     'austrianAlfredAdlerIndividualPsychology',
@@ -4777,6 +4818,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'dutchDesideriusErasmusPraiseOfFolly',
+    'koreanGosanYoonSeonDoFiveFriends',
     'austrianAlfredAdlerIndividualPsychology',
     'germanFriedrichSchillerAestheticEducation',
     'americanWaltWhitmanLeavesOfGrass',
@@ -4943,6 +4986,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'koreanGosanYoonSeonDoFiveFriends',
+    'britishThomasMoreUtopia',
     'koreanHeoJunDonguiBogamYangsaeng',
     'americanWaltWhitmanLeavesOfGrass',
     'germanAlbertSchweitzerReverenceForLife',
@@ -5018,6 +5063,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'koreanGosanYoonSeonDoFiveFriends',
+    'britishThomasMoreUtopia',
+    'dutchDesideriusErasmusPraiseOfFolly',
     'austrianWittgensteinLanguageGameSilence',
     'frenchGillesDeleuzeRhizomeBecoming',
     'koreanHeoJunDonguiBogamYangsaeng',
