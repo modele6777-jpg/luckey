@@ -30,7 +30,11 @@ test('physical pane tracking follows the swapped screen for folded-cover selecti
 
 test('the divider control is limited to unfolded landscape and swapped panes reserve the right menu rail', () => {
   assert.match(appSource, /isDuoLandscape && \(/);
+  assert.match(appSource, /aria-label=\{isDuoPanesSwapped/);
+  assert.match(appSource, /data-duo-divider-swap[\s\S]*?opacity-0/);
   assert.match(appSource, /onPointerUp=\{handleDuoDividerPointerUp\}/);
+  assert.match(appSource, /setDuoPanesSwapped\(\(previous\) => !previous\)/);
+  assert.doesNotMatch(appSource, /ArrowLeftRight/);
   assert.match(appSource, /flex-row-reverse/);
   assert.match(cssSource, /html\.duo-unfolded-landscape\.duo-panels-swapped #duo-content-viewport/);
   assert.match(cssSource, /html\.duo-unfolded-landscape\.duo-panels-swapped #duo-lucy-viewport/);

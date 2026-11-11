@@ -4,7 +4,7 @@ import { recordOneStopPageVisit } from './lib/omniWarp/contextNavCycleEngine';
 import React from "react";
 import { Route, Switch, Redirect, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
-import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles, ArrowLeftRight } from "lucide-react";
+import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { ThemeProvider, useTheme, resolveChannelThemeFromPath } from "./contexts/ThemeContext";
 import { LoginScreen } from "./components/LoginScreen";
@@ -903,10 +903,9 @@ function AppContent() {
                 onPointerUp={handleDuoDividerPointerUp}
                 onPointerCancel={() => { duoDividerTapRef.current = null; }}
                 onClick={handleDuoDividerClick}
-                className="absolute top-1/2 z-[80] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-zinc-950/75 text-white shadow-xl backdrop-blur-md cursor-pointer touch-manipulation"
+                className="absolute top-1/2 z-[80] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-transparent bg-transparent text-transparent opacity-0 shadow-none backdrop-blur-none focus-visible:opacity-100 focus-visible:border-white/60 focus-visible:bg-zinc-950/75 focus-visible:shadow-xl cursor-pointer touch-manipulation"
                 style={{ left: '50vw', touchAction: 'manipulation' }}
               >
-                <ArrowLeftRight size={16} aria-hidden="true" />
               </button>
             )}
           </div>
