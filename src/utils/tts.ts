@@ -641,7 +641,7 @@ export const playTTSInChunks = async (
     stopTTS();
   }
 
-  const effectiveMaxLen = Math.max(220, maxChunkLength);
+  const effectiveMaxLen = Math.max(80, Math.min(120, maxChunkLength));
   const chunks = splitSpeechIntoChunks(cleanText, effectiveMaxLen);
   if (chunks.length === 0) return;
 

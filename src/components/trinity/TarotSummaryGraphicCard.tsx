@@ -57,7 +57,7 @@ export function TarotSummaryGraphicCard({
 }: TarotSummaryGraphicCardProps) {
   const [copied, setCopied] = useState(false);
   const cleanQuestion = question?.trim() || '';
-  const displayQuestion = (isDailyTarotConcern(cleanQuestion) || /오늘의\s*타로/i.test(cleanQuestion)) ? '오늘의 타로' : cleanQuestion;
+  const displayQuestion = (!cleanQuestion || isDailyTarotConcern(cleanQuestion) || /오늘의\s*타로/i.test(cleanQuestion)) ? '오늘의 타로' : cleanQuestion;
 
   if (!bullets || bullets.length === 0) return null;
 
