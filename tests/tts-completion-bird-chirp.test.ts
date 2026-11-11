@@ -34,8 +34,8 @@ test('the completion chirp is brief, gentle, finite audio with a soft tail', () 
 test('a chunked reading plays one completion cue only after its final chunk', () => {
   assert.match(chunkedTtsSource, /const isLastChunk = i === chunks\.length - 1;/);
   assert.match(chunkedTtsSource, /await playTTS\(currentChunkText,[\s\S]*?sequenceSessionId, true/);
-  assert.match(chunkedTtsSource, /if \(isLastChunk\)\s*\{[\s\S]*?if \(!options\?\.skipCompletionChime && !options\?\.isChatMode\)[\s\S]*?playAiResultNotification\(\)/);
-  assert.match(singleTtsSource, /ttsState\.activeSessionId === sessionToVerify && !isSequenceChunk[\s\S]*?if \(!options\?\.skipCompletionChime && !options\?\.isChatMode\)[\s\S]*?playAiResultNotification\(\)/);
+  assert.match(chunkedTtsSource, /if \(isLastChunk\)\s*\{[\s\S]*?if \(shouldPlayTTSCompletionChime\(options\)\)[\s\S]*?playAiResultNotification\(\)/);
+  assert.match(singleTtsSource, /ttsState\.activeSessionId === sessionToVerify && !isSequenceChunk[\s\S]*?if \(shouldPlayTTSCompletionChime\(options\)\)[\s\S]*?playAiResultNotification\(\)/);
 });
 
 test('the completion haptic now uses the bird chirp on the existing shared output bus', () => {
