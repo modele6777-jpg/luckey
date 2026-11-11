@@ -108,7 +108,7 @@ html:root [data-page-brand="true"].duo-page-brand {
 .duo-page-brand > div { pointer-events: auto; width: fit-content; }
 .duo-page-title {
   position: absolute !important;
-  top: var(--channel-title-top, calc(var(--page-header-top) + 2.4rem)) !important;
+  top: var(--channel-title-top, calc(var(--page-header-top) + 2.1rem)) !important;
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
@@ -118,12 +118,30 @@ html:root [data-page-brand="true"].duo-page-brand {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: auto;
   max-width: fit-content;
+  line-height: 1;
+}
+.duo-page-title > span {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(255, 255, 255, 0.2);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+@media (min-width: 640px) {
+  .duo-page-title > span {
+    font-size: 12px;
+  }
 }
 .duo-page-nav {
   position: absolute !important;
-  top: var(--channel-nav-top, calc(var(--page-header-top) + 4.5rem)) !important;
+  top: var(--channel-nav-top, calc(var(--page-header-top) + 4.35rem)) !important;
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
@@ -139,7 +157,7 @@ html:root [data-page-brand="true"].duo-page-brand {
   content: "";
   display: block;
   flex-shrink: 0;
-  height: var(--channel-content-top, calc(var(--page-header-top) + 8.6rem));
+  height: var(--channel-content-top, calc(var(--page-header-top) + 8.5rem));
 }
 @media (horizontal-viewport-segments: 2), (spanning: single-fold-vertical) {
   .duo-split-workspace { column-gap: var(--duo-hinge-gap, 1.5rem); }
@@ -172,9 +190,10 @@ html:root [data-page-brand="true"].duo-page-brand {
 .channel-page { container: channel-page / inline-size; position: relative; isolation: isolate; }
 .channel-page > .channel-page-content {
   --page-header-inset: max(14px, env(safe-area-inset-left, 0px));
-  --page-header-top: max(24px, env(safe-area-inset-top, 0px));
-  --channel-nav-top: clamp(62px, 17.4cqw, 88px);
-  --channel-content-top: clamp(150px, 42.13cqw, 210px);
+  --page-header-top: max(14px, env(safe-area-inset-top, 0px));
+  --channel-title-top: calc(var(--page-header-top) + 2.1rem);
+  --channel-nav-top: calc(var(--page-header-top) + 4.35rem);
+  --channel-content-top: calc(var(--page-header-top) + 8.5rem);
 }
 html:root .channel-page [data-page-brand="true"] > div { min-height: 24px; }
 .channel-page .duo-page-nav {

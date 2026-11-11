@@ -47,6 +47,11 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
       } catch (_) {
         el.scrollTop = 0;
       }
+      if (behavior === 'smooth') {
+        window.setTimeout(() => {
+          if (el.scrollTop > 0) el.scrollTop = 0;
+        }, 360);
+      }
     });
     try {
       duoLucyPane.scrollTo({ top: 0, left: 0, behavior });
@@ -62,6 +67,11 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
         el.scrollTo({ top: 0, left: 0, behavior });
       } catch (_) {
         el.scrollTop = 0;
+      }
+      if (behavior === 'smooth') {
+        window.setTimeout(() => {
+          if (el.scrollTop > 0) el.scrollTop = 0;
+        }, 360);
       }
     });
     try {
@@ -98,6 +108,11 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
       el.scrollTop = 0;
       el.scrollLeft = 0;
     }
+    if (behavior === 'smooth') {
+      window.setTimeout(() => {
+        if (el.scrollTop > 0) el.scrollTop = 0;
+      }, 360);
+    }
   });
 
   // Also scroll any active overflow-y scroll containers that are scrolled down
@@ -107,6 +122,11 @@ function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement 
         el.scrollTo({ top: 0, left: 0, behavior });
       } catch (_) {
         el.scrollTop = 0;
+      }
+      if (behavior === 'smooth') {
+        window.setTimeout(() => {
+          if (el.scrollTop > 0) el.scrollTop = 0;
+        }, 360);
       }
     }
   });

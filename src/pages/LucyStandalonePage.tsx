@@ -2360,6 +2360,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       if (messagesContainerRef.current) {
         messagesContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         isUserScrolledUpRef.current = true;
+        setTimeout(() => {
+          if (messagesContainerRef.current && messagesContainerRef.current.scrollTop > 0) {
+            messagesContainerRef.current.scrollTop = 0;
+          }
+        }, 360);
       }
     };
     window.addEventListener('prism-scroll-to-top', handleScrollToTopEvent);
