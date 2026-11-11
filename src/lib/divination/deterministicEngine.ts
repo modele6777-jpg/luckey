@@ -326,6 +326,9 @@ import { calculateKoreanHeoJunDonguiBogamYangsaeng, formatKoreanHeoJunDonguiBoga
 import { calculateDutchDesideriusErasmusPraiseOfFolly, formatDutchDesideriusErasmusPraiseOfFollyPrompt, type DutchDesideriusErasmusPraiseOfFollyResult, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION } from './dutchDesideriusErasmusPraiseOfFollyEngine';
 import { calculateBritishThomasMoreUtopia, formatBritishThomasMoreUtopiaPrompt, type BritishThomasMoreUtopiaResult, BRITISH_THOMAS_MORE_UTOPIA_VERSION } from './britishThomasMoreUtopiaEngine';
 import { calculateKoreanGosanYoonSeonDoFiveFriends, formatKoreanGosanYoonSeonDoFiveFriendsPrompt, type KoreanGosanYoonSeonDoFiveFriendsResult, KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION } from './koreanGosanYoonSeonDoFiveFriendsEngine';
+import { calculateItalianPicoDellaMirandolaDignity, formatItalianPicoDellaMirandolaDignityPrompt, type ItalianPicoDellaMirandolaDignityResult, ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION } from './italianPicoDellaMirandolaDignityEngine';
+import { calculateAustrianFranzKafkaExistentialTruth, formatAustrianFranzKafkaExistentialTruthPrompt, type AustrianFranzKafkaExistentialTruthResult, AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION } from './austrianFranzKafkaExistentialTruthEngine';
+import { calculateKoreanPoeunJeongMongJuDansimga, formatKoreanPoeunJeongMongJuDansimgaPrompt, type KoreanPoeunJeongMongJuDansimgaResult, KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION } from './koreanPoeunJeongMongJuDansimgaEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -672,6 +675,9 @@ export interface DeterministicEngineReport {
   dutchDesideriusErasmusPraiseOfFollyResult?: DutchDesideriusErasmusPraiseOfFollyResult | null;
   britishThomasMoreUtopiaResult?: BritishThomasMoreUtopiaResult | null;
   koreanGosanYoonSeonDoFiveFriendsResult?: KoreanGosanYoonSeonDoFiveFriendsResult | null;
+  italianPicoDellaMirandolaDignityResult?: ItalianPicoDellaMirandolaDignityResult | null;
+  austrianFranzKafkaExistentialTruthResult?: AustrianFranzKafkaExistentialTruthResult | null;
+  koreanPoeunJeongMongJuDansimgaResult?: KoreanPoeunJeongMongJuDansimgaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3929,6 +3935,33 @@ try {
     }
   })()));
 
+  // 297. 이탈리아 조반니 피코 델라 미란돌라 《인간의 존엄성에 관한 연설》 자유의지·자기형성 주체성 & 무한한 잠재력·보편적 지혜 융합 엔진
+  const italianPicoDellaMirandolaDignityResult = calculateSupplement('italianPicoDellaMirandolaDignityResult', () => ((() => {
+    try {
+      return calculateItalianPicoDellaMirandolaDignity(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 298. 오스트리아/체코 프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 & 고독 속 영혼의 존엄과 진실 추구 지혜 엔진
+  const austrianFranzKafkaExistentialTruthResult = calculateSupplement('austrianFranzKafkaExistentialTruthResult', () => ((() => {
+    try {
+      return calculateAustrianFranzKafkaExistentialTruth(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 299. 대한민국 포은 정몽주 《단심가·포은집》 일편단심(一片丹心) 불변의 지조 & 난세극복 경세외교·대의명분 지혜 엔진
+  const koreanPoeunJeongMongJuDansimgaResult = calculateSupplement('koreanPoeunJeongMongJuDansimgaResult', () => ((() => {
+    try {
+      return calculateKoreanPoeunJeongMongJuDansimga(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4261,6 +4294,9 @@ try {
     dutchDesideriusErasmusPraiseOfFollyResult,
     britishThomasMoreUtopiaResult,
     koreanGosanYoonSeonDoFiveFriendsResult,
+    italianPicoDellaMirandolaDignityResult,
+    austrianFranzKafkaExistentialTruthResult,
+    koreanPoeunJeongMongJuDansimgaResult,
     tools: toolsMap,
   };
 }
@@ -4584,6 +4620,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'dutchDesideriusErasmusPraiseOfFolly', nameKo: '데시데리우스 에라스무스 우신예찬 르네상스휴머니즘 해학적통찰 도그마타파 관용실천 유쾌한긍정', icon: '🎭', category: 'deep_master', summary: '에라스무스의 우신예찬 사상으로 경직된 엄숙주의와 도그마를 깨뜨리는 유쾌한 해학의 지혜, 인간의 연약함을 품는 르네상스 휴머니즘 관용을 체득합니다.' },
   { key: 'britishThomasMoreUtopia', nameKo: '토머스 모어 유토피아 공동체양심 삶의균형 노동과여가 내면순결 청빈공공정의 불굴도덕용기', icon: '🏰', category: 'deep_master', summary: '토머스 모어의 유토피아 사상으로 노동과 여가(Otium)의 조화, 물질적 탐욕을 초월한 영혼의 순결함, 공공선을 지키는 단호한 도덕적 용기를 체득합니다.' },
   { key: 'koreanGosanYoonSeonDoFiveFriends', nameKo: '고산 윤선도 오우가 수석송죽월5우 청백지조 어부사시사 사계절순환 허심대나무 세연정초연평온', icon: '🎋', category: 'deep_master', summary: '고산 윤선도 선생의 오우가·어부사시사 사상으로 수·석·송·죽·월의 불변하는 청백지조, 속을 비우는 대나무의 허심(虛心), 사계절 순환 속에서 안빈낙도하는 선비의 평온을 체득합니다.' },
+  { key: 'italianPicoDellaMirandolaDignity', nameKo: '조반니 피코 델라 미란돌라 인간의존엄성에관한연설 자유의지 자기형성적주체성 무한한잠재력 보편적지혜융합 내면정화평정', icon: '🏛️', category: 'deep_master', summary: '피코 델라 미란돌라의 인간 존엄성 사상으로 고정된 한계를 넘어 자유의지로 스스로를 조각하는 자기형성 주체성, 무한한 잠재력과 보편적 지혜의 조화를 체득합니다.' },
+  { key: 'austrianFranzKafkaExistentialTruth', nameKo: '프란츠 카프카 변신 성 실존적정직성 부조리직시 소외속고독한존엄 얼어붙은바다를깨는도끼 끈질긴진실추구', icon: '📜', category: 'deep_master', summary: '프란츠 카프카의 실존 문학 사상으로 자기기만을 거부하는 실존적 정직성, 얼어붙은 바다를 깨는 도끼와 같은 통찰, 소외 속에서도 잃지 않는 고독한 영혼의 존엄을 체득합니다.' },
+  { key: 'koreanPoeunJeongMongJuDansimga', nameKo: '포은 정몽주 단심가 포은집 일편단심 도의적신의 난세극복경세외교 대의명분 동방이학지조 불굴선비기개', icon: '🩸', category: 'deep_master', summary: '포은 정몽주 선생의 단심가 사상으로 백 번 고쳐 죽어도 변치 않는 일편단심(一片丹心)의 도의적 신의와 지조, 적진 앞에서도 당당한 기품의 경세외교 지략을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4646,6 +4685,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'italianPicoDellaMirandolaDignity',
+    'koreanPoeunJeongMongJuDansimga',
     'britishThomasMoreUtopia',
     'dutchDesideriusErasmusPraiseOfFolly',
     'austrianWittgensteinLanguageGameSilence',
@@ -4818,6 +4859,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'koreanPoeunJeongMongJuDansimga',
     'dutchDesideriusErasmusPraiseOfFolly',
     'koreanGosanYoonSeonDoFiveFriends',
     'austrianAlfredAdlerIndividualPsychology',
@@ -5020,6 +5062,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'italianPicoDellaMirandolaDignity',
+    'austrianFranzKafkaExistentialTruth',
     'frenchGillesDeleuzeRhizomeBecoming',
     'austrianWittgensteinLanguageGameSilence',
     'germanFriedrichSchillerAestheticEducation',
@@ -5063,6 +5107,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'italianPicoDellaMirandolaDignity',
+    'austrianFranzKafkaExistentialTruth',
+    'koreanPoeunJeongMongJuDansimga',
     'koreanGosanYoonSeonDoFiveFriends',
     'britishThomasMoreUtopia',
     'dutchDesideriusErasmusPraiseOfFolly',
