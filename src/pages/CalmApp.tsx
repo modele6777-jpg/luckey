@@ -299,7 +299,7 @@ export default function CalmApp() {
     return () => frame?.removeEventListener('load', updateLayout);
   }, [isWideWorkspace]);
   const searchParams = typeof window !== 'undefined' ? window.location.search : '';
-  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=39.0' : '?v=39.0'}`;
+  const iframeSrc = `/calm/index.html${searchParams ? searchParams + '&v=40.0' : '?v=40.0'}`;
 
   return (
     <div
@@ -318,7 +318,7 @@ export default function CalmApp() {
             <KeyCosmicLoader
               fullScreen
               message="Key 개운(開運) 파동 조율 중..."
-              subMessage="40 DESTINY OPENING RITUALS & FIVE ELEMENTS SOUND"
+              subMessage="90 DESTINY OPENING RITUALS & MINDFUL PRACTICES"
             />
           </motion.div></ScreenPortal>
         )}
