@@ -1199,5 +1199,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanHeoJunDonguiBogamYangsaeng": {
     "field": "koreanHeoJunDonguiBogamYangsaengResult",
     "traceKey": "koreanHeoJunDonguiBogamYangsaengResult"
+  },
+  "dutchDesideriusErasmusPraiseOfFolly": {
+    "field": "dutchDesideriusErasmusPraiseOfFollyResult",
+    "traceKey": "dutchDesideriusErasmusPraiseOfFollyResult"
+  },
+  "britishThomasMoreUtopia": {
+    "field": "britishThomasMoreUtopiaResult",
+    "traceKey": "britishThomasMoreUtopiaResult"
+  },
+  "koreanGosanYoonSeonDoFiveFriends": {
+    "field": "koreanGosanYoonSeonDoFiveFriendsResult",
+    "traceKey": "koreanGosanYoonSeonDoFiveFriendsResult"
   }
 };
