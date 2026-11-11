@@ -33,7 +33,7 @@ export interface KashmirShaivismTattva {
 export interface KashmirShaivismSpandaReport {
   engineVersion: string;
   timestamp: string;
-  spandaCosmicPulsationScore: number; // 0 ~ 100 스판다 우주 신성 진동 주파수
+  spandaCosmicPulsationScore: number; // 0 ~ 100 스판다 우주적 맥동 점수
   pratyabhijnaSelfRecognitionIndex: number; // 0 ~ 100 프라티야비즈냐 본성 재인식 완성도
   prakashaVimarshaUnityScore: number; // 0 ~ 100 프라카샤-비마르샤 합일률
   threeMalasPurificationRate: number; // 0 ~ 100 3대 말라(에고 불순) 정화율
@@ -155,7 +155,7 @@ export function calculateKashmirShaivismSpanda(
 export function formatKashmirShaivismSpandaPrompt(rep: KashmirShaivismSpandaReport): string {
   return `[카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 재인식 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
-· 스판다 우주 신성 진동 주파수: ${rep.spandaCosmicPulsationScore}/100 | 프라티야비즈냐 본성 재인식도: ${rep.pratyabhijnaSelfRecognitionIndex}/100
+· 스판다 우주적 맥동 점수: ${rep.spandaCosmicPulsationScore}/100 | 프라티야비즈냐 본성 재인식도: ${rep.pratyabhijnaSelfRecognitionIndex}/100
 · 프라카샤-비마르샤 합일률: ${rep.prakashaVimarshaUnityScore}/100 | 3대 말라(에고 불순) 정화율: ${rep.threeMalasPurificationRate}/100
 · 주재 트리카 신성 양상: [${rep.dominantTattva.nameKo} (${rep.dominantTattva.sanskrit})] — 공명도 ${rep.dominantTattva.resonanceScore}%
   - 5대 신성 행위: ${rep.dominantTattva.divineAction}

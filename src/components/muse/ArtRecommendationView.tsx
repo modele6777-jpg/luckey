@@ -1819,10 +1819,20 @@ export function ArtRecommendationView() {
   const [loading, setLoading] = useState(false);
   const [autoPlayDocentRequestId, setAutoPlayDocentRequestId] = useState<number | null>(null);
   const autoPlayDocentSequenceRef = useRef(0);
+  const autoPlayedDocentFingerprintRef = useRef<string | null>(null);
   const requestDocentAutoPlay = useCallback(() => {
     const requestId = ++autoPlayDocentSequenceRef.current;
     setAutoPlayDocentRequestId(requestId);
   }, []);
+  const requestDocentAutoPlayFor = useCallback((art: ArtRecommendation) => {
+    const fingerprint = [
+      getTodayDateKey(), art.catalogId || '', art.title, art.creator || '',
+      art.famousPoem?.title || '', art.famousSong?.title || '', art.whyRecommended || '',
+    ].join('|');
+    if (autoPlayedDocentFingerprintRef.current === fingerprint) return;
+    autoPlayedDocentFingerprintRef.current = fingerprint;
+    requestDocentAutoPlay();
+  }, [requestDocentAutoPlay]);
   const consumeDocentAutoPlay = useCallback((requestId: number) => {
     setAutoPlayDocentRequestId((current) => current === requestId ? null : current);
   }, []);
@@ -1895,6 +1905,7 @@ export function ArtRecommendationView() {
     if (!cachedRec) return false;
 
     setRecommendation(cachedRec);
+    requestDocentAutoPlayFor(cachedRec);
     setCompletedChallenges({});
 
     const cachedMoodLabel = localStorage.getItem(ART_CACHE_KEYS.mood);
@@ -1911,11 +1922,12 @@ export function ArtRecommendationView() {
     }
 
     return true;
-  }, []);
+  }, [requestDocentAutoPlayFor]);
 
   const [imageFallbackIndex, setImageFallbackIndex] = useState(0);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [imageApiError, setImageApiError] = useState('');
+  const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
 
   // Safety timer to prevent infinite image loading state (15s for high-res / AI generation)
   useEffect(() => {
@@ -1931,6 +1943,7 @@ export function ArtRecommendationView() {
     setImageFallbackIndex(0);
     setImageLoadError(false);
     setImageApiError('');
+    setLoadedImageUrl(null);
   }, [recommendation?.catalogId, recommendation?.title]);
 
   const generateNanobananaImage = useCallback(async (
@@ -2072,7 +2085,7 @@ export function ArtRecommendationView() {
       const enriched = sanitizeArtRecommendation(data, offset);
       
       setRecommendation(enriched);
-      requestDocentAutoPlay();
+      requestDocentAutoPlayFor(enriched);
       touchArtCacheDate();
       localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(enriched));
       recordArtworkHistory(enriched);
@@ -2101,7 +2114,7 @@ export function ArtRecommendationView() {
       // Fallback
       const genericFallback = getDailyArtFallback(offset);
       setRecommendation(genericFallback);
-      requestDocentAutoPlay();
+      requestDocentAutoPlayFor(genericFallback);
       touchArtCacheDate();
       localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(genericFallback));
       recordArtworkHistory(genericFallback);
@@ -2126,7 +2139,7 @@ export function ArtRecommendationView() {
     } finally {
       setLoading(false);
     }
-  }, [customConcern, generateNanobananaImage, requestDocentAutoPlay, restoreDailyArtFromCache, sharedState?.dailyArts, updateSharedState]);
+  }, [customConcern, generateNanobananaImage, requestDocentAutoPlayFor, restoreDailyArtFromCache, sharedState?.dailyArts, updateSharedState]);
 
   // Prism Toss processing handler: binds Oracle Tarot's 3-card sequence & anchor masterpiece
   const handleTossedArtRecommendation = useCallback(async (toss: PrismTossPayload) => {
@@ -2299,6 +2312,7 @@ export function ArtRecommendationView() {
         const backup = JSON.parse(backupRaw);
         if (backup.recommendation) {
           setRecommendation(backup.recommendation);
+          requestDocentAutoPlayFor(backup.recommendation);
           setNanobananaImage(backup.image || null);
           const effectiveSrc = resolveArtworkSource(backup.imageSource, backup.image);
           setArtworkImageSource(effectiveSrc);
@@ -2314,7 +2328,7 @@ export function ArtRecommendationView() {
     if (!restoreDailyArtFromCache()) {
       void handleRecommendArt();
     }
-  }, [handleRecommendArt, restoreDailyArtFromCache]);
+  }, [handleRecommendArt, requestDocentAutoPlayFor, restoreDailyArtFromCache]);
 
   // Cross-device synchronization from cloud sharedState
   useEffect(() => {
@@ -2359,6 +2373,7 @@ export function ArtRecommendationView() {
       if (cloudArt && typeof cloudArt === "object" && (cloudArt.recommendation || cloudArt.title)) {
         const rec = cloudArt.recommendation || cloudArt;
         setRecommendation(rec);
+        requestDocentAutoPlayFor(rec);
         const img = cloudArt.image || cloudArt.nanobananaImage || cloudArt.imageUrl || rec.imageUrl;
         if (img) setNanobananaImage(img);
         const rawSource = cloudArt.imageSource || cloudArt.artworkImageSource;
@@ -2379,7 +2394,7 @@ export function ArtRecommendationView() {
       window.removeEventListener("prism:feature_updated", handleSync);
       window.removeEventListener("prism:daily_art_updated", handleSync);
     };
-  }, [restoreDailyArtFromCache, sharedState?.dailyArts]);
+  }, [requestDocentAutoPlayFor, restoreDailyArtFromCache, sharedState?.dailyArts]);
 
   // Global event listener to trigger Daily ART generation from subnav or floating controls
   useEffect(() => {
@@ -2571,6 +2586,20 @@ export function ArtRecommendationView() {
   const effectiveImage = useMemo(() => {
     return fallbackUrls[imageFallbackIndex] || fallbackUrls[0] || "";
   }, [fallbackUrls, imageFallbackIndex]);
+
+  useEffect(() => {
+    if (!effectiveImage || imageLoadError || loadedImageUrl === effectiveImage) return;
+    const timer = window.setTimeout(() => {
+      if (imageFallbackIndex + 1 < fallbackUrls.length) {
+        setImageFallbackIndex((current) => current === imageFallbackIndex ? current + 1 : current);
+        setLoadingImage(true);
+      } else {
+        setLoadingImage(false);
+        setImageLoadError(true);
+      }
+    }, 10000);
+    return () => window.clearTimeout(timer);
+  }, [effectiveImage, imageLoadError, loadedImageUrl, imageFallbackIndex, fallbackUrls.length]);
 
   // Ensure image generation starts immediately whenever recommendation is ready
   useEffect(() => {
@@ -3238,6 +3267,7 @@ export function ArtRecommendationView() {
                         alt={`${recommendation.title} — ${recommendation.creator}`}
                         referrerPolicy="no-referrer"
                         onLoad={() => {
+                          setLoadedImageUrl(effectiveImage);
                           setLoadingImage(false);
                           setImageLoadError(false);
                           if (isAiArtworkUrl(effectiveImage) || imageFallbackIndex >= 2) {
@@ -3248,9 +3278,11 @@ export function ArtRecommendationView() {
                           }
                         }}
                         onError={() => {
+                          setLoadedImageUrl(null);
                           if (imageFallbackIndex + 1 < fallbackUrls.length) {
                             const nextIndex = imageFallbackIndex + 1;
                             setImageFallbackIndex(nextIndex);
+                            setLoadingImage(true);
                             const nextUrl = fallbackUrls[nextIndex];
                             if (isAiArtworkUrl(nextUrl) || nextIndex >= 2) {
                               setArtworkImageSource("pollinations");

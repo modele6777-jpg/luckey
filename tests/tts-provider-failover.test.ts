@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { synthesizeWithGemini } from '../api/ai/tts';
+import { synthesizeSpeechWithFallback, synthesizeWithGemini } from '../api/ai/tts';
 import { createTTSHandler } from '../server/api-lib/ttsHandler';
 
 test('Gemini requires configured credentials and reports rate limits after bounded model failover', async () => {
@@ -13,6 +13,40 @@ test('Gemini requires configured credentials and reports rate limits after bound
     error => (error as any).status === 429 && (error as any).code === 'MEDIA_RATE_LIMIT',
   );
   assert.equal(requests, 2, 'try one alternate model, then surface the provider rate limit');
+});
+
+test('Gemini 429 falls through to Edge and an Edge 403 becomes non-retryable 503', async () => {
+  const attempts: string[] = [];
+  const edge = createTTSHandler(async () => {
+    attempts.push('edge');
+    throw Object.assign(new Error('private Edge response'), { status: 403 });
+  });
+
+  await assert.rejects(
+    synthesizeSpeechWithFallback('낭독 문장', 'Aoede', '차분', {
+      synthesizeGemini: async () => {
+        attempts.push('gemini');
+        throw Object.assign(new Error('quota'), { status: 429, code: 'MEDIA_RATE_LIMIT' });
+      },
+      synthesizeEdge: edge,
+    }),
+    error => {
+      assert.equal((error as any).status, 503);
+      assert.equal((error as any).code, 'TTS_PROVIDER_UNAVAILABLE');
+      assert.doesNotMatch((error as Error).message, /private Edge response/);
+      return true;
+    },
+  );
+  assert.deepEqual(attempts, ['gemini', 'edge']);
+});
+
+test('Gemini 429 can recover through successful Edge audio', async () => {
+  const result = await synthesizeSpeechWithFallback('낭독 문장', 'Aoede', '차분', {
+    synthesizeGemini: async () => { throw Object.assign(new Error('quota'), { status: 429 }); },
+    synthesizeEdge: async () => ({ audioContent: 'ZWRnZQ==', encoding: 'mp3', sampleRate: 24000, provider: 'edge-neural' }),
+  });
+  assert.equal(result.provider, 'edge-neural');
+  assert.equal(result.audioContent, 'ZWRnZQ==');
 });
 
 test('Gemini Lite neural TTS can serve when the preferred model is rate-limited', async () => {

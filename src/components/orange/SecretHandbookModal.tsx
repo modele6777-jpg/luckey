@@ -80,7 +80,7 @@ export const SECRET_BIBLE_SECTIONS = [
     ]
   },
   {
-    id: 'frequency',
+    id: 'mood_shifters',
     title: 'Mood Shifters · 기분 전환과 저항 해소',
     principles: [
       "기분이 안 좋을 때는 좋아하는 음악이나 자연을 바라보며 시크릿 시프터를 발동하세요.",

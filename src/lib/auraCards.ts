@@ -110,7 +110,7 @@ export const AURA_CARDS: AuraThemeCard[] = [
     nameKo: "통합의 무지개",
     emoji: "🌈",
     keywords: ["통합", "다양성", "자유", "완성"],
-    desc: "모든 아우라 주파수가 완벽한 어울림을 이루어 눈부신 생명을 그려내는 무지개 스펙트럼입니다."
+    desc: "서로 다른 색과 개성이 조화롭게 어우러져 눈부신 생명을 그려내는 무지개 스펙트럼입니다."
   },
   {
     id: "obsidian_protection",
@@ -142,7 +142,7 @@ export const AURA_CARDS: AuraThemeCard[] = [
     nameKo: "접지의 구리",
     emoji: "🪙",
     keywords: ["연결", "정렬", "전도", "균형"],
-    desc: "하늘과 땅의 활력을 막힘 없이 이어주고 신체의 에너지를 조화롭게 활성화하는 구리빛 주파수입니다."
+    desc: "하늘과 땅을 잇는 상징으로 균형과 안정감을 떠올리게 하는 구리빛 이미지입니다."
   },
   {
     id: "platinum_evolution",

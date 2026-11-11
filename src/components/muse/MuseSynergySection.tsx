@@ -71,6 +71,7 @@ export function MuseSynergySection() {
   const imageRequestId = useRef(0);
   const automaticArtworkFallbackRequestedRef = useRef(false);
   const isGeneratingAiArtworkRef = useRef(false);
+  const selectedArtworkImageLoadedRef = useRef(false);
   const [selectedArtworkThumbnailFailed, setSelectedArtworkThumbnailFailed] = useState(false);
   const [isSelectedArtworkImageOpen, setIsSelectedArtworkImageOpen] = useState(false);
 
@@ -78,6 +79,7 @@ export function MuseSynergySection() {
     imageRequestId.current++;
     automaticArtworkFallbackRequestedRef.current = false;
     isGeneratingAiArtworkRef.current = false;
+    selectedArtworkImageLoadedRef.current = false;
     setSelectedArtworkThumbnailFailed(false);
     setIsSelectedArtworkImageOpen(false);
     setCustomArtworkUrl('');
@@ -177,6 +179,16 @@ export function MuseSynergySection() {
     }
     requestAutomaticArtworkFallback();
   };
+
+  useEffect(() => {
+    if (!selectedArtworkPreviewUrl || selectedArtworkThumbnailFailed) return;
+    selectedArtworkImageLoadedRef.current = false;
+    const timer = window.setTimeout(() => {
+      if (selectedArtworkImageLoadedRef.current) return;
+      handleSelectedArtworkThumbnailError();
+    }, 10000);
+    return () => window.clearTimeout(timer);
+  }, [selectedArtworkPreviewUrl, selectedArtworkThumbnailFailed, customArtworkUrl]);
 
   useEffect(() => {
     return () => {
@@ -483,8 +495,14 @@ export function MuseSynergySection() {
                       className="w-full h-full object-cover"
                       loading="lazy"
                       referrerPolicy="no-referrer"
-                      onLoad={() => setSelectedArtworkThumbnailFailed(false)}
-                      onError={handleSelectedArtworkThumbnailError}
+                      onLoad={() => {
+                        selectedArtworkImageLoadedRef.current = true;
+                        setSelectedArtworkThumbnailFailed(false);
+                      }}
+                      onError={() => {
+                        selectedArtworkImageLoadedRef.current = false;
+                        handleSelectedArtworkThumbnailError();
+                      }}
                     />
                     <span className="absolute left-1 bottom-1 w-6 h-6 rounded-md bg-black/75 border border-white/20 text-white flex items-center justify-center">
                       <Maximize2 size={12} aria-hidden="true" />

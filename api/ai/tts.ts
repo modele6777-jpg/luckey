@@ -189,6 +189,42 @@ export async function synthesizeWithGemini(
   return null;
 }
 
+type TTSAudioResponse = {
+  audioContent: string;
+  encoding: "wav" | "mp3" | "pcm";
+  sampleRate?: number;
+  voice?: string;
+  provider?: string;
+};
+
+type TTSFailoverDependencies = {
+  synthesizeGemini?: typeof synthesizeWithGemini;
+  synthesizeEdge?: (options: { text: string; voice?: string; emotion?: string }) => Promise<TTSAudioResponse>;
+};
+
+/** Gemini neural TTS is primary; a quota response falls through to server-only Edge TTS. */
+export async function synthesizeSpeechWithFallback(
+  text: string,
+  voice?: string,
+  emotion?: string,
+  dependencies: TTSFailoverDependencies = {},
+): Promise<TTSAudioResponse> {
+  let geminiResult: TTSAudioResult | null = null;
+  try {
+    geminiResult = await (dependencies.synthesizeGemini || synthesizeWithGemini)(text, voice, undefined, emotion);
+  } catch (error) {
+    if (Number((error as { status?: number })?.status) !== 429) throw error;
+    // Every configured Gemini model has reached quota; try the server-side backup before surfacing a failure.
+  }
+  if (geminiResult) return geminiResult;
+
+  const synthesizeEdge = dependencies.synthesizeEdge || (async (options) => {
+    const { handleTTS } = await import("../../server/api-lib/ttsHandler.ts");
+    return handleTTS(options);
+  });
+  return synthesizeEdge({ text, voice, emotion });
+}
+
 export default async function handler(
   req: { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> },
   res: Response,
@@ -216,13 +252,8 @@ export default async function handler(
     const emotion = body.emotion ? String(body.emotion) : undefined;
     if (!text) return res.status(400).json({ error: "Empty speech text" });
 
-    // Gemini neural speech is primary. The only fallback is server-side Edge Neural TTS;
-    // browser speech synthesis and translator voices are never used.
-    const geminiResult = await synthesizeWithGemini(text, voice, undefined, emotion);
-    if (geminiResult) return res.status(200).json(geminiResult);
-
-    const { handleTTS } = await import("../../server/api-lib/ttsHandler.ts");
-    const result = await handleTTS({ text, voice, emotion });
+    // Server-only Gemini → Edge Neural TTS. Browser-native and translator voices are excluded.
+    const result = await synthesizeSpeechWithFallback(text, voice, emotion);
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("[ai/tts] Vercel error:", err);

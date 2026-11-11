@@ -60,7 +60,7 @@ export interface EsseneCommunionReport {
   morningEarthlyAngel: EsseneAngel;
   eveningHeavenlyAngel: EsseneAngel;
   treeTrinity: EsseneTreeTrinity;
-  communionVibrationalScore: number; // 0 ~ 100 종합 교감 주파수
+  communionVibrationalScore: number; // 0 ~ 100 종합 교감 점수
   dailyEsseneGuidance: string;
   synthesisMessage: string;
 }

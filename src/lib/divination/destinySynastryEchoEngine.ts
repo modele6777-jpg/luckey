@@ -93,7 +93,7 @@ export function runDestinySynastryEchoEngine(
     optimalEngagementPace = '명확한 역할 분담과 사전 규칙 합의를 바탕으로 꾸준한 루틴 유지하기';
   } else {
     gravityType = '영혼의 동반자형 (Soul Synergy · 시대를 함께 여는 파트너십)';
-    magneticPullFactor = '말하지 않아도 눈빛만으로 본질이 통하고 삶의 깊은 가치관과 소명이 공명하는 영혼의 주파수';
+    magneticPullFactor = '말하지 않아도 눈빛만으로 본질이 통하고 삶의 깊은 가치관과 소명을 나누는 특별한 유대';
     blindspotVulnerability = '너무 깊은 유대감으로 인해 상대방의 사소한 실망이나 변화에도 영혼의 기반이 흔들리는 착각';
     evolutionaryLesson = '서로의 거룩한 독립성을 존중하면서도 하나의 위대한 우주적 목적을 위해 나란히 걷는 지혜';
     mindOpeningKeyword = '"존중과 자유" (영혼의 절대적 신뢰)';

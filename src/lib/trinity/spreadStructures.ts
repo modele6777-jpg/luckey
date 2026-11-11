@@ -75,7 +75,7 @@ export const THEME_STRUCTURES: Record<TarotConcernTheme, (spread: TarotSpreadRec
         stepNumber: 1,
         emoji: '💎',
         title: '결핍의 무의식을 소멸시키는 황금빛 머니 마인드셋',
-        subtitle: '1번 카드: 무의식의 부의 주파수 진단',
+        subtitle: '1번 카드: 부에 대한 생각과 감정 살펴보기',
         instruction: '1번 카드의 도상과 상징을 통해 내담자의 무의식 속에 숨어 있던 돈에 대한 두려움이나 결핍감을 정화하고, 부를 온전히 받아들일 수 있는 심리적 토대를 해독하십시오.',
       },
       {
@@ -102,13 +102,13 @@ export const THEME_STRUCTURES: Record<TarotConcernTheme, (spread: TarotSpreadRec
       {
         stepNumber: 5,
         emoji: '💰',
-        title: '부의 주파수를 100배 깨우는 황금빛 선언과 축복',
+        title: '풍요를 향한 태도와 실천을 돕는 황금빛 선언',
         subtitle: '부의 마인드셋 완성 확언',
         instruction: '볼수록 돈이 불어나고 모든 재물 흐름이 내게로 흘러들어온다는 확신에 찬 황금빛 머니 확언과 축복을 건네십시오.',
       },
     ],
     summaryTags: ['머니 마인드셋', '현금 흐름', '부자 액션'],
-    blessingTitle: '부의 주파수를 깨우는 황금빛 선언',
+    blessingTitle: '풍요를 향한 태도와 실천을 돕는 선언',
   }),
 
   lucky: () => ({
@@ -212,9 +212,9 @@ export const THEME_STRUCTURES: Record<TarotConcernTheme, (spread: TarotSpreadRec
       {
         stepNumber: 1,
         emoji: '🕊️',
-        title: '영혼의 현재 주파수와 수호천사의 첫 계시',
+        title: '현재 마음과 수호천사의 첫 계시',
         subtitle: '1번 카드: 영혼의 현주소와 빛의 연결',
-        instruction: '1번 카드의 신성한 상징을 통해 내담자의 영혼이 지금 우주와 어떤 주파수로 공명하고 있는지 진단하고, 수호천사가 건네는 첫 전언을 해독하십시오.',
+        instruction: '1번 카드의 신성한 상징을 통해 내담자의 영혼이 지금 어떤 마음 상태와 고민을 안고 있는지 살펴보고, 수호천사가 건네는 첫 전언을 해독하십시오.',
       },
       {
         stepNumber: 2,
@@ -245,7 +245,7 @@ export const THEME_STRUCTURES: Record<TarotConcernTheme, (spread: TarotSpreadRec
         instruction: '당신은 언제나 사랑받고 보호받고 있다는 수호천사의 따스한 품과 같은 축복으로 마무리하십시오.',
       },
     ],
-    summaryTags: ['영혼 주파수', '빛의 나침반', '천상의 은총'],
+    summaryTags: ['영적 성장', '빛의 나침반', '천상의 은총'],
     blessingTitle: '천사의 날개 아래 전하는 안식과 은총',
   }),
 

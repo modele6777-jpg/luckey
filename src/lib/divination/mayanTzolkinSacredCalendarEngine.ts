@@ -89,7 +89,7 @@ const GALACTIC_TONES: GalacticToneInfo[] = [
   { toneNumber: 4, mayaToneName: 'Kan', toneNameKo: '자기존재적 톤 (Self-Existing)', creativePower: '형태 정의 · 측정', actionPrinciple: '아이디어를 현실적인 구조와 일정표로 설계하십시오.' },
   { toneNumber: 5, mayaToneName: 'Ho', toneNameKo: '배음적 톤 (Overtone)', creativePower: '권능 부여 · 지휘', actionPrinciple: '중심을 굳건히 잡고 내면의 지휘관을 깨우십시오.' },
   { toneNumber: 6, mayaToneName: 'Uak', toneNameKo: '율동적 톤 (Rhythmic)', creativePower: '유기적 균형 · 평등', actionPrinciple: '일상의 일과 쉼, 몸과 마음의 리듬을 조율하십시오.' },
-  { toneNumber: 7, mayaToneName: 'Uuk', toneNameKo: '공명적 톤 (Resonant)', creativePower: '채널링 · 조율', actionPrinciple: '명상을 통해 우주의 지혜와 주파수를 맞추십시오.' },
+  { toneNumber: 7, mayaToneName: 'Uuk', toneNameKo: '공명적 톤 (Resonant)', creativePower: '채널링 · 조율', actionPrinciple: '명상으로 마음을 가라앉히고 자연의 리듬을 살피십시오.' },
   { toneNumber: 8, mayaToneName: 'Uaxac', toneNameKo: '은하적 톤 (Galactic)', creativePower: '온전성 · 조화', actionPrinciple: '말과 행동이 일치하도록 진실하게 행동하십시오.' },
   { toneNumber: 9, mayaToneName: 'Bolan', toneNameKo: '태양적 톤 (Solar)', creativePower: '의도 맥동 · 실현', actionPrinciple: '가슴 깊은 열정으로 현실의 결과를 창출하십시오.' },
   { toneNumber: 10, mayaToneName: 'Lahun', toneNameKo: '행성적 톤 (Planetary)', creativePower: '현현 완성 · 생산', actionPrinciple: '그동안 다져온 노력을 실질적인 열매로 결실 맺으십시오.' },
