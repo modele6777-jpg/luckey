@@ -1211,5 +1211,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanGosanYoonSeonDoFiveFriends": {
     "field": "koreanGosanYoonSeonDoFiveFriendsResult",
     "traceKey": "koreanGosanYoonSeonDoFiveFriendsResult"
+  },
+  "italianPicoDellaMirandolaDignity": {
+    "field": "italianPicoDellaMirandolaDignityResult",
+    "traceKey": "italianPicoDellaMirandolaDignityResult"
+  },
+  "austrianFranzKafkaExistentialTruth": {
+    "field": "austrianFranzKafkaExistentialTruthResult",
+    "traceKey": "austrianFranzKafkaExistentialTruthResult"
+  },
+  "koreanPoeunJeongMongJuDansimga": {
+    "field": "koreanPoeunJeongMongJuDansimgaResult",
+    "traceKey": "koreanPoeunJeongMongJuDansimgaResult"
   }
 };

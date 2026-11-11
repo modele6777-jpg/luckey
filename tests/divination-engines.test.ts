@@ -289,6 +289,9 @@ import { calculateKoreanHeoJunDonguiBogamYangsaeng, formatKoreanHeoJunDonguiBoga
 import { calculateDutchDesideriusErasmusPraiseOfFolly, formatDutchDesideriusErasmusPraiseOfFollyPrompt, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION } from '../src/lib/divination/dutchDesideriusErasmusPraiseOfFollyEngine';
 import { calculateBritishThomasMoreUtopia, formatBritishThomasMoreUtopiaPrompt, BRITISH_THOMAS_MORE_UTOPIA_VERSION } from '../src/lib/divination/britishThomasMoreUtopiaEngine';
 import { calculateKoreanGosanYoonSeonDoFiveFriends, formatKoreanGosanYoonSeonDoFiveFriendsPrompt, KOREAN_GOSAN_YOON_SEON_DO_FIVE_FRIENDS_VERSION } from '../src/lib/divination/koreanGosanYoonSeonDoFiveFriendsEngine';
+import { calculateItalianPicoDellaMirandolaDignity, formatItalianPicoDellaMirandolaDignityPrompt, ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION } from '../src/lib/divination/italianPicoDellaMirandolaDignityEngine';
+import { calculateAustrianFranzKafkaExistentialTruth, formatAustrianFranzKafkaExistentialTruthPrompt, AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION } from '../src/lib/divination/austrianFranzKafkaExistentialTruthEngine';
+import { calculateKoreanPoeunJeongMongJuDansimga, formatKoreanPoeunJeongMongJuDansimgaPrompt, KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION } from '../src/lib/divination/koreanPoeunJeongMongJuDansimgaEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5612,6 +5615,48 @@ test('Gosan Yoon Seon-do Five Friends Engine: calculates Five Friends Integrity,
   const prompt = formatKoreanGosanYoonSeonDoFiveFriendsPrompt(rep);
   assert(prompt.includes('고산 윤선도 《오우가》 수석송죽월 5우 지조 및 《어부사시사》 심미적 안빈낙도 지표'));
   assert(prompt.includes(rep.activeYoonTheme.themeTitleKo));
+});
+
+test('Giovanni Pico della Mirandola Dignity Engine: calculates Free Will Agency, Infinite Potential, and Syncretic Wisdom', () => {
+  const rep = calculateItalianPicoDellaMirandolaDignity(profile);
+  assert.equal(rep.engineVersion, ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION);
+  assert(rep.freeWillAgencyScore >= 0 && rep.freeWillAgencyScore <= 100);
+  assert(rep.infinitePotentialIndex >= 0 && rep.infinitePotentialIndex <= 100);
+  assert(rep.syncreticUniversalWisdomScore >= 0 && rep.syncreticUniversalWisdomScore <= 100);
+  assert(rep.innerPurificationPeaceIndex >= 0 && rep.innerPurificationPeaceIndex <= 100);
+  assert(rep.sovereignDignityResilienceScore >= 0 && rep.sovereignDignityResilienceScore <= 100);
+  assert(rep.activePicoTheme.themeTitleKo.length > 0);
+  const prompt = formatItalianPicoDellaMirandolaDignityPrompt(rep);
+  assert(prompt.includes('조반니 피코 델라 미란돌라 《인간의 존엄성에 관한 연설》 자유의지 및 주체적 존엄성 지표'));
+  assert(prompt.includes(rep.activePicoTheme.themeTitleKo));
+});
+
+test('Franz Kafka Existential Truth Engine: calculates Existential Honesty, Inner Sanctity, and Frozen Sea Piercing Insight', () => {
+  const rep = calculateAustrianFranzKafkaExistentialTruth(profile);
+  assert.equal(rep.engineVersion, AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION);
+  assert(rep.existentialHonestyScore >= 0 && rep.existentialHonestyScore <= 100);
+  assert(rep.innerSanctityInAlienationIndex >= 0 && rep.innerSanctityInAlienationIndex <= 100);
+  assert(rep.persistentTruthSearchScore >= 0 && rep.persistentTruthSearchScore <= 100);
+  assert(rep.frozenSeaPiercingInsightIndex >= 0 && rep.frozenSeaPiercingInsightIndex <= 100);
+  assert(rep.transformativeSolitudeResilienceScore >= 0 && rep.transformativeSolitudeResilienceScore <= 100);
+  assert(rep.activeKafkaTheme.themeTitleKo.length > 0);
+  const prompt = formatAustrianFranzKafkaExistentialTruthPrompt(rep);
+  assert(prompt.includes('프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 및 내적 존엄성 지표'));
+  assert(prompt.includes(rep.activeKafkaTheme.themeTitleKo));
+});
+
+test('Poeun Jeong Mong-ju Dansimga Engine: calculates Dansimga Moral Fidelity, Diplomatic Statesmanship, and Undaunted Integrity', () => {
+  const rep = calculateKoreanPoeunJeongMongJuDansimga(profile);
+  assert.equal(rep.engineVersion, KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION);
+  assert(rep.dansimgaMoralFidelityScore >= 0 && rep.dansimgaMoralFidelityScore <= 100);
+  assert(rep.righteousNobleResolutionIndex >= 0 && rep.righteousNobleResolutionIndex <= 100);
+  assert(rep.diplomaticStatesmanshipScore >= 0 && rep.diplomaticStatesmanshipScore <= 100);
+  assert(rep.foundationalScholarshipGovernanceIndex >= 0 && rep.foundationalScholarshipGovernanceIndex <= 100);
+  assert(rep.undauntedIntegrityResilienceScore >= 0 && rep.undauntedIntegrityResilienceScore <= 100);
+  assert(rep.activePoeunTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanPoeunJeongMongJuDansimgaPrompt(rep);
+  assert(prompt.includes('포은 정몽주 《단심가·포은집》 일편단심 지조 및 경세외교 지략 지표'));
+  assert(prompt.includes(rep.activePoeunTheme.themeTitleKo));
 });
 
 
