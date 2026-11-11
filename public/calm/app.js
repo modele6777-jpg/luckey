@@ -558,12 +558,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSyncedExIdx = 1;
 
   function syncPage(pageNum) {
-    const page = parseInt(pageNum, 10) || 18;
-    const info = window.BOOK_PAGE_INDEX(page);
-    syncChapterBadge.textContent = info.chapter;
-    syncTitleText.textContent = info.title;
-    syncDescText.textContent = info.desc;
-    currentSyncedExIdx = info.exerciseIdx;
+    try {
+      const page = parseInt(pageNum, 10) || 18;
+      if (typeof window.BOOK_PAGE_INDEX === 'function') {
+        const info = window.BOOK_PAGE_INDEX(page);
+        if (syncChapterBadge) syncChapterBadge.textContent = info.chapter;
+        if (syncTitleText) syncTitleText.textContent = info.title;
+        if (syncDescText) syncDescText.textContent = info.desc;
+        currentSyncedExIdx = info.exerciseIdx;
+      }
+    } catch (e) {
+      console.warn('[Key] syncPage error:', e);
+    }
   }
 
   if (btnSyncPage) {
@@ -1010,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return (chapterOffsets[chapter] || 0) + parseInt(index, 10);
   }
 
-  // 7. 40 Exercises Studio Grid 렌더링 및 필터링
+  // 7. 90 Exercises Studio Grid 렌더링 및 필터링
   const exercisesGrid = document.getElementById('exercises-grid');
   const filterBtns = document.querySelectorAll('.exercises-filter-strip .filter-pill-btn');
 
@@ -1020,26 +1026,28 @@ document.addEventListener('DOMContentLoaded', () => {
     exercisesGrid.innerHTML = '';
     const filtered = window.PRACTICE_EXERCISES.filter(ex => {
       if (filterChapter === 'all') return true;
+      if (filterChapter === 'book1') return ex.globalIndex <= 40;
+      if (filterChapter === 'book2') return ex.globalIndex > 40;
       return ex.chapter.toString() === filterChapter;
     });
 
     filtered.forEach((ex, idx) => {
       const card = document.createElement('div');
       card.className = 'studio-ex-card';
-      const staggerDelay = Math.min(idx * 0.032, 0.55).toFixed(3);
+      const staggerDelay = Math.min(idx * 0.02, 0.45).toFixed(3);
       card.style.animationDelay = `${staggerDelay}s`;
       const chapter = ex.chapter || 1;
       const tag = ex.tag || '마음 연습';
       const page = ex.page || 18;
       const icon = ex.icon || '🎯';
-      const index = ex.index || 1;
       const title = ex.title || '마음 연습';
       const subtitle = ex.subtitle || '';
       const description = ex.description || ex.purpose || '마음의 평온을 되찾는 실천 연습입니다.';
+      const bookBadge = ex.globalIndex <= 40 ? '📖 불안 개운' : '🌿 예민 케어';
 
       card.innerHTML = `
         <div class="ex-card-top-line">
-          <span class="ex-card-tag">${chapter}장 · ${tag}</span>
+          <span class="ex-card-tag">${chapter}장 · ${tag} · ${bookBadge}</span>
           <span class="ex-card-page">${page}P</span>
         </div>
         <h3 class="ex-card-title">${icon} 연습 ${ex.globalIndex}. ${title}</h3>
@@ -2000,10 +2008,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalEntries = records.length;
     const uniqueIndices = new Set(records.filter(r => r.exerciseIdx && !String(r.title).includes('처방전')).map(r => r.exerciseIdx));
     const completedCount = uniqueIndices.size;
-    const totalExercisesCount = (window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length) || 50;
+    const totalExercisesCount = (window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length) || 90;
     const completionRate = Math.min(100, Math.round((completedCount / totalExercisesCount) * 100));
 
-    // 챕터별(1~5장) 완주 개수 계산
+    // 챕터별(1~8장) 완주 개수 계산
     const exercisesMap = {};
     if (window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length > 0) {
       window.PRACTICE_EXERCISES.forEach(ex => {
@@ -2011,7 +2019,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    let ch1Count = 0, ch2Count = 0, ch3Count = 0, ch4Count = 0, ch5Count = 0;
+    let ch1Count = 0, ch2Count = 0, ch3Count = 0, ch4Count = 0, ch5Count = 0, ch6Count = 0, ch7Count = 0, ch8Count = 0;
     uniqueIndices.forEach(idx => {
       const ch = exercisesMap[idx];
       if (ch === 1) ch1Count++;
@@ -2019,6 +2027,9 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (ch === 3) ch3Count++;
       else if (ch === 4) ch4Count++;
       else if (ch === 5) ch5Count++;
+      else if (ch === 6) ch6Count++;
+      else if (ch === 7) ch7Count++;
+      else if (ch === 8) ch8Count++;
     });
 
     // 동그란 원형 프로그레스 차트 갱신
@@ -2466,7 +2477,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modalPrescription) return;
 
     // 랜덤 추천 연습 1개 배정
-    const randomIdx = Math.floor(Math.random() * ((window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length) || 50)) + 1;
+    const totalAvailable = (window.PRACTICE_EXERCISES && window.PRACTICE_EXERCISES.length) || 90;
+    const randomIdx = Math.floor(Math.random() * totalAvailable) + 1;
     rxPrescribedEx = window.PRACTICE_EXERCISES.find(e => e.globalIndex === randomIdx) || window.PRACTICE_EXERCISES[0];
     rxUserWorry = '';
 
@@ -3617,4 +3629,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch (e) {}
   switchTab(initialTab, false);
+
+  // 🌟 상단 당겨서 새로고침(Pull-to-refresh) 브릿지 연동 (부모 PRISM 앱의 새로고침 인디케이터 및 동기화와 1:1 완벽 일치)
+  (function initIframePullToRefresh() {
+    let startY = 0;
+    let startX = 0;
+    let isTracking = false;
+    const THRESHOLD = 92;
+
+    function getTopScroll() {
+      return Math.max(
+        document.scrollingElement ? document.scrollingElement.scrollTop : 0,
+        document.documentElement ? document.documentElement.scrollTop : 0,
+        document.body ? document.body.scrollTop : 0,
+        window.scrollY || window.pageYOffset || 0
+      );
+    }
+
+    document.addEventListener('touchstart', function(e) {
+      if (e.touches.length !== 1) { isTracking = false; return; }
+      const target = e.target;
+      if (target && target.closest && target.closest('input, textarea, select, [contenteditable="true"], button, a')) {
+        isTracking = false;
+        return;
+      }
+      if (getTopScroll() > 1) {
+        isTracking = false;
+        return;
+      }
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      isTracking = true;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function(e) {
+      if (!isTracking || e.touches.length !== 1) return;
+      const dy = e.touches[0].clientY - startY;
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      if (dy < 0 || dx > Math.max(18, dy)) {
+        isTracking = false;
+        try { window.parent.postMessage({ type: 'PRISM_PTR_RESET' }, '*'); } catch(_) {}
+        return;
+      }
+      if (dy < 12) return;
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+      const distance = Math.min(124, dy * 0.55);
+      try {
+        window.parent.postMessage({ type: 'PRISM_PTR_MOVE', distance: distance }, '*');
+      } catch(_) {}
+    }, { passive: false });
+
+    function handleTouchEnd(e) {
+      if (!isTracking) return;
+      isTracking = false;
+      const endY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : startY;
+      const dy = endY - startY;
+      const distance = Math.min(124, dy * 0.55);
+      if (distance >= THRESHOLD) {
+        try {
+          window.parent.postMessage({ type: 'PRISM_PTR_TRIGGER' }, '*');
+        } catch(_) {}
+      } else {
+        try {
+          window.parent.postMessage({ type: 'PRISM_PTR_RESET' }, '*');
+        } catch(_) {}
+      }
+    }
+
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    document.addEventListener('touchcancel', function() {
+      isTracking = false;
+      try { window.parent.postMessage({ type: 'PRISM_PTR_RESET' }, '*'); } catch(_) {}
+    }, { passive: true });
+  })();
 });
