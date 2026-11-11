@@ -95,7 +95,7 @@ export function sendDailySecretToLucy(
 
   openLucyChat('orange');
   return sendUnifiedMessage(
-    `오늘의 시크릿으로 "${wishStr}" 소원과 맞춤 확언 키트를 받았어.\n\n[오늘의 확언]\n"${secretData.affirmation}"\n\n이 소원이 이미 완벽히 이루어졌음을 깊이 믿고 끌어당김 주파수를 극대화할 수 있도록 루시가 내 무의식과 마음가짐을 깊이 통찰하고 이끌어줘.`,
+    `오늘의 시크릿으로 "${wishStr}" 소원과 맞춤 확언 키트를 받았어.\n\n[오늘의 확언]\n"${secretData.affirmation}"\n\n이 소원을 향해 내가 지금 할 수 있는 현실적인 한 걸음을 찾고 마음가짐을 차분히 돌아볼 수 있도록 루시가 깊이 통찰하고 이끌어줘.`,
     'orange',
     undefined,
     { force: true, oracleContext: deepContext }
@@ -158,7 +158,7 @@ export function sendSedonaDailyToLucy(
   sendUnifiedMessage: SendUnifiedMessageFn
 ) {
   const cardName = drawnCard?.nameKo ? `${drawnCard.nameKo} (${drawnCard.name})` : (oracleResult?.symbol || '아우라 힐링 카드');
-  const deepContext = `[⚡ AURA 데일리 힐링 카드 & 정화 심층 연계]\n- 뽑은 카드: ${cardName}\n- 키워드: ${(drawnCard?.keywords || []).join(', ')}\n- 진단 내용: ${oracleResult?.diagnosis || ''}\n- 에너지 처방: ${oracleResult?.remedy || ''}\n- 차크라/주파수: ${oracleResult?.frequency || '528Hz'} / ${oracleResult?.symbol || ''}\n- 영적 파동: ${oracleResult?.spiritualEnergy || ''}\n- 축복 메시지: ${oracleResult?.blessingMessage || ''}`;
+  const deepContext = `[⚡ AURA 데일리 힐링 카드 & 정화 심층 연계]\n- 뽑은 카드: ${cardName}\n- 키워드: ${(drawnCard?.keywords || []).join(', ')}\n- 진단 내용: ${oracleResult?.diagnosis || ''}\n- 에너지 처방: ${oracleResult?.remedy || ''}\n- 상징: ${oracleResult?.symbol || ''}\n- 영적 파동: ${oracleResult?.spiritualEnergy || ''}\n- 축복 메시지: ${oracleResult?.blessingMessage || ''}`;
 
   openLucyChat('aura');
   return sendUnifiedMessage(
@@ -237,11 +237,11 @@ export function sendSoulInsightToLucy(
   openLucyChat: OpenLucyChatFn,
   sendUnifiedMessage: SendUnifiedMessageFn
 ) {
-  const deepContext = `[⚡ AURA Bio-Spectrum 에너지 분석 연계]\n- 영성/활력 레벨: ${insightResult.luckScore || 80}점\n- 조화/풍요/생명력: ${insightResult.loveScore || 80} / ${insightResult.wealthScore || 80} / ${insightResult.healthScore || 80}\n- 동조 레벨: ${insightResult.deepSyncLevel || 'OPTIMAL'}\n- 파워 아이템/컬러: ${insightResult.luckyItem} / ${insightResult.luckyColor}\n- 생체 주파수 분석: ${insightResult.cosmicAspect || ''}\n- 영혼 가이드 프로토콜: ${insightResult.guidance || ''}`;
+  const deepContext = `[⚡ AURA Bio-Spectrum 에너지 분석 연계]\n- 영성/활력 레벨: ${insightResult.luckScore || 80}점\n- 조화/풍요/생명력: ${insightResult.loveScore || 80} / ${insightResult.wealthScore || 80} / ${insightResult.healthScore || 80}\n- 동조 레벨: ${insightResult.deepSyncLevel || 'OPTIMAL'}\n- 파워 아이템/컬러: ${insightResult.luckyItem} / ${insightResult.luckyColor}\n- 생체 컨디션 분석: ${insightResult.cosmicAspect || ''}\n- 영혼 가이드 프로토콜: ${insightResult.guidance || ''}`;
 
   openLucyChat(appType);
   return sendUnifiedMessage(
-    `나의 Bio-Spectrum 소울 에너지 분석 결과에 대해 루시와 심층 상담(Deep Insight)을 나누고 싶어.\n\n[생체 에너지 분석 요약]\n- 영성 레벨: ${insightResult.luckScore || 80}점 (동조 레벨: ${insightResult.deepSyncLevel || 'OPTIMAL'})\n- 파워 아이템: ${insightResult.luckyItem || ''}\n\n이 에너지 데이터를 바탕으로 내 신체와 마음의 컨디션을 최상으로 끌어올리는 웰니스 조언을 해줘.`,
+    `나의 Bio-Spectrum 소울 에너지 분석 결과에 대해 루시와 심층 상담(Deep Insight)을 나누고 싶어.\n\n[생체 에너지 분석 요약]\n- 영성 레벨: ${insightResult.luckScore || 80}점 (동조 레벨: ${insightResult.deepSyncLevel || 'OPTIMAL'})\n- 파워 아이템: ${insightResult.luckyItem || ''}\n\n이 정보를 바탕으로 내 신체와 마음의 컨디션을 돌보는 현실적인 웰니스 조언을 해줘.`,
     appType,
     undefined,
     { force: true, oracleContext: deepContext }
@@ -257,7 +257,7 @@ export function sendDailyMuseToLucy(
   sendUnifiedMessage: SendUnifiedMessageFn
 ) {
   const theme = dailyResult?.diagnosis || dailyResult?.summary || '오늘의 뮤즈 영감';
-  const deepContext = `[🎶 뮤즈 데일리 창작 영감 오라클 심층 연계]\n- 영감 진단: ${theme}\n- 행동 처방: ${dailyResult?.remedy || ''}\n- 주파수/상징: ${dailyResult?.frequency || '396Hz'} / ${dailyResult?.symbol || ''}\n- 축복 메시지: ${dailyResult?.blessingMessage || ''}`;
+  const deepContext = `[🎶 뮤즈 데일리 창작 영감 오라클 심층 연계]\n- 영감 진단: ${theme}\n- 행동 처방: ${dailyResult?.remedy || ''}\n- 상징: ${dailyResult?.symbol || ''}\n- 축복 메시지: ${dailyResult?.blessingMessage || ''}`;
 
   openLucyChat('muse');
   return sendUnifiedMessage(
@@ -390,7 +390,7 @@ export function buildOracleDeepInsightUserMessage(appType: string, dailyResult?:
   }
   if (appType === 'heal' || appType === 'aura') {
     const diag = dailyResult?.diagnosis ? ` (진단: ${dailyResult.diagnosis.slice(0, 80)}...)` : '';
-    return `오늘의 아우라 오라클 및 신체·에너지 진단 결과${diag}에 대한 딥 인사이트(Deep Insight)를 들려줘. 나의 차크라와 주파수를 어떻게 조율하고 치유하면 좋을지 자세히 알려줘.`;
+    return `오늘의 아우라 오라클 및 신체·에너지 진단 결과${diag}에 대한 딥 인사이트(Deep Insight)를 들려줘. 호흡과 일상에서 실천할 수 있는 차분한 웰니스 방법을 알려줘.`;
   }
   if (appType === 'muse') {
     const theme = dailyResult?.diagnosis || dailyResult?.summary || '오늘의 영감 오라클';
@@ -424,7 +424,7 @@ export function buildOracleDeepInsightSystemContext(dailyResult: any, appType: s
 - 영적 에너지 분석: ${dailyResult.spiritualEnergy || '우주 파동과의 동조'}
 - 행동 처방 (Remedy): ${dailyResult.remedy || dailyResult.guidance || '내면의 직관을 따르고 중심을 유지할 것'}
 - 축복 메시지: ${dailyResult.blessingMessage || '우주의 축복이 함께합니다'}
-- 상징 및 주파수: ${dailyResult.symbol || ''} (${dailyResult.frequency || '528Hz'})
+- 상징: ${dailyResult.symbol || ''}
 
 [루시(Lucy)의 딥 인사이트 답변 절대 지침]
 1. 사용자가 방금 요청한 "오늘 뽑은 데일리 타로 카드 [${cardName}]에 대한 딥 인사이트(Deep Insight)"를 정독하고, 사용자의 질문에 직접적이고 명쾌하며 정성스럽게 답변해줘.
@@ -436,5 +436,3 @@ export function buildOracleDeepInsightSystemContext(dailyResult: any, appType: s
 
   return `\n[Oracle Deep Insight Context - Daily Resonance Data]\n${JSON.stringify(dailyResult, null, 2)}\n`;
 }
-
-

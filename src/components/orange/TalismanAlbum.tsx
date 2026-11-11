@@ -51,7 +51,7 @@ const ELEMENT_DETAILS = {
   water: {
     hanja: '水',
     name: '수(水) - 지혜와 통찰의 대양',
-    desc: '모든 형태에 유연하게 순응하는 지혜, 심해의 끝없는 통찰과 영적 주파수',
+    desc: '모든 형태에 유연하게 순응하는 지혜와 심해처럼 깊은 통찰',
     color: '#3b82f6',
     bgClass: 'from-blue-950/40 to-indigo-950/20 border-blue-500/30',
     glowColor: 'rgba(59, 130, 246, 0.4)'

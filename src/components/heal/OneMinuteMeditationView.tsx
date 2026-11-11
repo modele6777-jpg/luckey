@@ -159,7 +159,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
   // Clean up sounds and voice loop when unmounting
   useEffect(() => {
     return () => {
-      meditationSound.stopTone();
       stopAffirmationLoop();
     };
   }, []);
@@ -245,7 +244,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
   const handleCompleteSession = useCallback(async () => {
     setIsRunning(false);
     isRunningRef.current = false;
-    meditationSound.stopTone();
     // 🌟 1분 명상 타이머가 완료되어도 현재 재생 중인 확언 음성이 중간에 뚝 잘리지 않고 끝까지 부드럽게 완독되도록 보장 (반복 루프만 중단하고 진행 중인 음성은 유지)
     stopAffirmationLoop(false);
     if (soundEnabled) {
@@ -324,7 +322,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
       isRunningRef.current = true;
       if (soundEnabled) {
         meditationSound.playSingingBowlBell();
-        meditationSound.playTone(activeTheme.frequency);
       }
       if (hapticEnabled) {
         triggerBreathingHaptic('inhale');
@@ -339,7 +336,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
       // Pausing
       setIsRunning(false);
       isRunningRef.current = false;
-      meditationSound.stopTone();
       stopAffirmationLoop();
     }
   };
@@ -348,7 +344,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
   const handleReset = () => {
     setIsRunning(false);
     isRunningRef.current = false;
-    meditationSound.stopTone();
     stopAffirmationLoop();
     setSecondsRemaining(TOTAL_DURATION);
     secondsRemainingRef.current = TOTAL_DURATION;
@@ -362,9 +357,7 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
     const next = !soundEnabled;
     setSoundEnabled(next);
     if (!next) {
-      meditationSound.stopTone();
     } else if (isRunning) {
-      meditationSound.playTone(activeTheme.frequency);
     }
   };
 
@@ -373,7 +366,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
     if (isRunning) {
       setIsRunning(false);
       isRunningRef.current = false;
-      meditationSound.stopTone();
     }
     const wasLooping = isAffirmationLoopActiveRef.current;
     stopAffirmationLoop();
@@ -570,7 +562,7 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
           AURA 호흡 스튜디오 <span className="text-emerald-400 text-lg md:text-xl font-medium font-sans">· Breathing Studio</span>
         </h2>
         <p className="text-xs md:text-sm text-white/60 max-w-xl leading-relaxed break-keep">
-          하루 60초, 과부하된 뇌파를 알파파로 이완시키고 흩어진 생체 오라 에너지를 즉각 정렬하는 마이크로 호흡 명상 스튜디오입니다.
+          하루 60초, 호흡과 짧은 음성 안내에 집중하는 마이크로 호흡 명상 스튜디오입니다.
         </p>
 
         {/* Top Feature Nav Tabs */}
@@ -722,7 +714,7 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-white tracking-wide">{activeTheme.nameKo}</span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-                      AI 맞춤 {activeTheme.frequency}Hz
+                      AI 맞춤 호흡 테마
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-200/70 font-sans mt-0.5 line-clamp-1">
@@ -757,7 +749,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                     <Activity size={13} className="animate-pulse" />
-                    {activeTheme.freqLabel}
                   </span>
                 </div>
 
@@ -781,7 +772,7 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
                   <button
                     type="button"
                     onClick={toggleSound}
-                    title={soundEnabled ? '솔페지오 주파수 사운드 끄기' : '사운드 켜기'}
+                    title={soundEnabled ? '명상 효과음 끄기' : '사운드 켜기'}
                     className={`p-2 rounded-xl border transition-all text-xs flex items-center gap-1.5 cursor-pointer ${
                       soundEnabled
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
@@ -1128,8 +1119,8 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
 
                 <div className="flex items-center justify-between py-2 border-b border-white/5">
                   <div>
-                    <span className="text-xs font-semibold text-white block">솔페지오 치유 주파수 사운드</span>
-                    <span className="text-[11px] text-white/50">세션 시작 시 432Hz/528Hz 치유 톤 및 싱잉볼 차임 재생</span>
+                    <span className="text-xs font-semibold text-white block">명상 효과음</span>
+                    <span className="text-[11px] text-white/50">세션 시작과 완료 시 짧은 싱잉볼 차임 재생</span>
                   </div>
                   <button
                     type="button"
@@ -1378,7 +1369,6 @@ export function OneMinuteMeditationView({ onClose, isModal = false }: OneMinuteM
                       </div>
                     </div>
                     <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                      {MEDITATION_THEMES.find(t => t.id === customPrescription.recommendedThemeId)?.frequency || 528}Hz
                     </span>
                   </div>
 

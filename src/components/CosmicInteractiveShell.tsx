@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Play, Square, Copy, Check, Volume2, Wind, Sparkles, RefreshCw, Music, 
+  Copy, Check, Wind, Sparkles, RefreshCw, Music,
   ChevronRight, Sparkle
 } from 'lucide-react';
 
@@ -34,10 +34,6 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
   const [breathPhase, setBreathPhase] = useState<'inhale' | 'holdIn' | 'exhale' | 'holdOut'>('inhale');
   const [breathTimer, setBreathTimer] = useState(4);
   const [breathCount, setBreathCount] = useState(0);
-  const [breatheWithSound, setBreatheWithSound] = useState(false);
-  const breathAudioCtxRef = useRef<AudioContext | null>(null);
-  const breathOscRef = useRef<OscillatorNode | null>(null);
-  const breathGainRef = useRef<GainNode | null>(null);
 
   // 1. REGEX SCAN TO RETRIEVE QUOTES & BREATH DIRECTIVES INDEPENDENTLY
   useEffect(() => {
@@ -104,13 +100,6 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
     setDetectedMusic(musicData);
   }, [record]);
 
-  // Clean-up playing sounds on unmount
-  useEffect(() => {
-    return () => {
-      stopBreathSound();
-    };
-  }, []);
-
 
   // --- BREATHING ENGINE (SAMSARA BREATH HARMONY) ---
   // Inhale (4s) -> Hold In (2s) -> Exhale (4s) -> Hold Out (2s)
@@ -123,20 +112,16 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
             // Trigger state transition
             setBreathPhase(curr => {
               if (curr === 'inhale') {
-                if (breatheWithSound) sweepBreathPitch('holdIn');
                 return 'holdIn';
               }
               if (curr === 'holdIn') {
-                if (breatheWithSound) sweepBreathPitch('exhale');
                 return 'exhale';
               }
               if (curr === 'exhale') {
-                if (breatheWithSound) sweepBreathPitch('holdOut');
                 return 'holdOut';
               }
               // Return to inhale
               setBreathCount(c => c + 1);
-              if (breatheWithSound) sweepBreathPitch('inhale');
               return 'inhale';
             });
             // Reset timers for next step: inhale:4, holdIn:2, exhale:4, holdOut:2
@@ -151,7 +136,7 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
     }
 
     return () => clearInterval(intervalId);
-  }, [isBreathingActive, breatheWithSound]);
+  }, [isBreathingActive]);
 
   // Handle phase specific durations
   useEffect(() => {
@@ -162,94 +147,6 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
       setBreathTimer(2);
     }
   }, [breathPhase, isBreathingActive]);
-
-  // --- BREATHING SOUND SWEETENER ---
-  const startBreathSound = () => {
-    try {
-      stopBreathSound();
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioContextClass();
-      breathAudioCtxRef.current = ctx;
-
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      
-      // Gentle soft frequency
-      const initialHz = breathPhase === 'inhale' ? 150 : (breathPhase === 'exhale' ? 240 : 190);
-      osc.frequency.setValueAtTime(initialHz, ctx.currentTime);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.01, ctx.currentTime); // very thin soft cosmic background wave
-      
-      // Connect
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-
-      breathOscRef.current = osc;
-      breathGainRef.current = gain;
-
-      // Trigger first pitch sweep
-      sweepBreathPitch(breathPhase);
-    } catch (e) {
-      console.warn("Breath synth fail:", e);
-    }
-  };
-
-  const stopBreathSound = () => {
-    try {
-      if (breathOscRef.current) {
-        breathOscRef.current.stop();
-        breathOscRef.current.disconnect();
-      }
-      if (breathAudioCtxRef.current) {
-        breathAudioCtxRef.current.close();
-      }
-    } catch (_) {}
-    breathOscRef.current = null;
-    breathAudioCtxRef.current = null;
-  };
-
-  const sweepBreathPitch = (phase: 'inhale' | 'holdIn' | 'exhale' | 'holdOut') => {
-    const osc = breathOscRef.current;
-    const gain = breathGainRef.current;
-    const ctx = breathAudioCtxRef.current;
-    if (!osc || !gain || !ctx) return;
-
-    const now = ctx.currentTime;
-    if (phase === 'inhale') {
-      // Inhale: frequency rises from 140Hz up to 260Hz like a deep inhalation breath, and volume inflates
-      osc.frequency.setValueAtTime(140, now);
-      osc.frequency.exponentialRampToValueAtTime(260, now + 4.0);
-      gain.gain.setValueAtTime(0.01, now);
-      gain.gain.linearRampToValueAtTime(0.06, now + 4.0);
-    } else if (phase === 'holdIn') {
-      // Hold high: static light frequency and solid volume
-      osc.frequency.setValueAtTime(260, now);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.linearRampToValueAtTime(0.04, now + 2.0);
-    } else if (phase === 'exhale') {
-      // Exhale: frequency fades from 260Hz down to 130Hz and volume deflates
-      osc.frequency.setValueAtTime(260, now);
-      osc.frequency.exponentialRampToValueAtTime(130, now + 4.0);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.linearRampToValueAtTime(0.005, now + 4.0);
-    } else {
-      // Hold empty: absolute whisper
-      osc.frequency.setValueAtTime(130, now);
-      gain.gain.setValueAtTime(0.005, now);
-      gain.gain.linearRampToValueAtTime(0.01, now + 2.0);
-    }
-  };
-
-  useEffect(() => {
-    if (isBreathingActive && breatheWithSound) {
-      startBreathSound();
-    } else {
-      stopBreathSound();
-    }
-  }, [isBreathingActive, breatheWithSound]);
-
 
   // --- WISDOM QUOTE COPIER ---
   const handleCopyQuote = () => {
@@ -271,7 +168,7 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
               </span>
               <div>
                 <h4 className="text-xs font-bold text-emerald-200">생체 주기 동기화 메커니즘 (마음 챙김)</h4>
-                <p className="text-[10px] text-white/50 font-cute mt-0.5">기록에 새겨진 치유 진동수에 호흡의 심연적 리듬을 조율합니다.</p>
+                <p className="text-[10px] text-white/50 font-cute mt-0.5">호흡의 심연적 리듬을 따라 천천히 마음을 가라앉힙니다.</p>
               </div>
             </div>
 
@@ -354,23 +251,6 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
                   </div>
                 </div>
 
-                {/* Ambient Synthesizer Option */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-[10px] font-cute text-white/60">
-                  <span className="flex items-center gap-1.5">
-                    <Music size={12} />
-                    동조 피치 사운드 가동 (호흡 압력 동기화 음향)
-                  </span>
-                  <button 
-                    onClick={() => setBreatheWithSound(!breatheWithSound)}
-                    className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase transition-all cursor-pointer ${
-                      breatheWithSound 
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
-                        : 'bg-white/5 text-white/30 border border-white/5'
-                    }`}
-                  >
-                    {breatheWithSound ? 'SOUND ON' : 'SOUND OFF'}
-                  </button>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -401,7 +281,7 @@ export function CosmicInteractiveShell({ record }: CosmicInteractiveShellProps) 
                 {detectedMusic.name}
               </p>
               <p className="text-[10px] text-white/40 font-cute leading-relaxed">
-                성찰록에 소개된 선율을 깊은 주파수 안정을 위해 YouTube에서 즉시 감상하실 수 있습니다.
+                성찰록에 소개된 선율을 YouTube에서 즉시 감상하실 수 있습니다.
               </p>
               <p className="text-[9px] text-sky-400/80 font-mono select-all break-all">
                 {detectedMusic.url}

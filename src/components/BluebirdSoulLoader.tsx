@@ -49,7 +49,7 @@ export const BluebirdSoulLoader = () => {
         >
           Bluebird · Soul Medicine
         </motion.span>
-        <p className="text-[11px] text-white/50 mt-1 font-sans">치유의 주파수를 조율하는 중...</p>
+        <p className="text-[11px] text-white/50 mt-1 font-sans">호흡과 마음을 정돈하는 중...</p>
       </div>
 
       {/* Minimal Hairline Progress */}

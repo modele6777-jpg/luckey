@@ -57,10 +57,10 @@ const TrinityDailyLuckySchema = z.object({
 
   // ✨ 2. 행운의 글귀 (Celestial Lucky Quote & Wisdom)
   luckyQuote: z.object({
-    quote: z.string().describe('마음의 주파수를 높이고 행운을 끌어당기는 깊이 있는 명언이나 글귀 한 줄'),
+    quote: z.string().describe('마음의 흐름을 높이고 행운을 끌어당기는 깊이 있는 명언이나 글귀 한 줄'),
     author: z.string().describe('글귀의 출처나 지혜의 현자'),
     wisdomLesson: z.string().describe('이 글귀가 오늘 나에게 건네는 통찰과 실천 조언 (1~2문장)'),
-  }).describe('영혼의 진동수를 높이는 행운의 글귀'),
+  }).describe('영혼의 감정의 흐름을 높이는 행운의 글귀'),
 
   // 📖 3. 운이 올라가는 이야기 (Fortune-Boosting Story & Parable)
   fortuneStory: z.object({
@@ -94,7 +94,7 @@ export const DIVERSE_LUCKY_QUOTES = [
   {
     quote: '“행운은 긍정의 파동을 품고 스스로 빛나는 사람에게 자석처럼 끌려온다.”',
     author: '우주 끌어당김의 법칙',
-    wisdomLesson: '불평과 조급함을 내려놓고 오늘 내게 주어진 작은 것에 미소 지으세요. 높은 진동수의 마음이 가장 큰 행운을 끌어당깁니다.',
+    wisdomLesson: '불평과 조급함을 내려놓고 오늘 내게 주어진 작은 것에 미소 지으세요. 따뜻하고 열린 마음이 가장 큰 행운을 끌어당깁니다.',
   },
   {
     quote: '“작은 친절과 정성을 매일 쌓아가는 자에게 우주는 결코 문을 닫지 않는다.”',
@@ -142,7 +142,7 @@ export const DIVERSE_LUCKY_QUOTES = [
     wisdomLesson: '뜻대로 풀리지 않는 순간도 더 큰 축복을 위한 우주의 재배치임을 기억하고 미소 지으세요.',
   },
   {
-    quote: '“감사는 우주의 풍요와 당신의 주파수를 단 1초 만에 정렬시키는 가장 강력한 황금 열쇠다.”',
+    quote: '“감사는 우주의 풍요와 당신의 마음의 흐름을 단 1초 만에 정렬시키는 가장 강력한 황금 열쇠다.”',
     author: '시크릿의 론다 번',
     wisdomLesson: '오늘 하루 감사할 일 세 가지만 찾아보세요. 감사의 감정이 솟구치는 순간 부족함의 파동은 소멸합니다.',
   },
@@ -946,7 +946,7 @@ export function TrinityDailyLuckyView({ onConsult }: TrinityDailyLuckyViewProps)
                   className="p-3.5 rounded-2xl bg-emerald-500/25 border border-emerald-400/50 text-emerald-200 text-xs font-bold flex items-center justify-center md:justify-start gap-2 shadow-2xl backdrop-blur-2xl"
                 >
                   <Sparkles size={16} className="text-yellow-300 animate-pulse" />
-                  <span>🍀 4번째 기적의 잎이 개화하여 888Hz 황금빛 행운 주파수가 온전히 동기화되었습니다!</span>
+                  <span>🍀 4번째 기적의 잎이 개화했습니다. 오늘의 작은 행운을 이어가 보세요!</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1076,7 +1076,7 @@ export function TrinityDailyLuckyView({ onConsult }: TrinityDailyLuckyViewProps)
                       👉 <strong className="text-yellow-200/90 font-medium">구체적 행동:</strong> {quest.concreteAction}
                     </p>
                     <p className="text-[11px] text-emerald-400/80 font-sans">
-                      ✨ 개운 효과: {quest.benefit || '탁기 정화 및 행운 주파수 상승'}
+                      ✨ 개운 효과: {quest.benefit || '탁기 정화 및 행운을 위한 마음 정돈'}
                     </p>
                   </div>
                 </div>

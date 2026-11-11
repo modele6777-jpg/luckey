@@ -259,7 +259,6 @@ app.post("/api/ai/daily-bgm", async (req, res) => {
   try {
     const {
       focusPlaylist,
-      frequency,
       cardName,
       symbol,
       dateKey,
@@ -273,7 +272,6 @@ app.post("/api/ai/daily-bgm", async (req, res) => {
     const { generateDailyBgmBuffer } = await import("../server/api-lib/generateDailyBgm.ts");
     const { buffer, durationSec } = generateDailyBgmBuffer({
       focusPlaylist: String(focusPlaylist),
-      frequency: frequency ? String(frequency) : undefined,
       cardName: cardName ? String(cardName) : undefined,
       symbol: symbol ? String(symbol) : undefined,
       dateKey: String(dateKey),

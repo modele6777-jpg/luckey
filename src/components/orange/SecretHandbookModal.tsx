@@ -48,7 +48,7 @@ export const SECRET_BIBLE_SECTIONS = [
     steps: [
       "끌어당김을 시작할 때 소원을 어떤 문장과 시제로 작성해야 가장 강력한지 알려줘",
       "소원을 요청하고 나서 자꾸 의심이 생길 때 대처하는 법을 설명해줘",
-      "부정적인 생각이나 결핍감이 떠오를 때 주파수를 즉시 전환하는 팁을 줘"
+      "부정적인 생각이나 결핍감이 떠오를 때 마음의 흐름을 즉시 전환하는 팁을 줘"
     ]
   },
   {
@@ -57,7 +57,7 @@ export const SECRET_BIBLE_SECTIONS = [
     principles: [
       "물리적 눈앞에 보이기 전에 영적 차원에서 이미 완성되었음을 아는 것입니다.",
       "‘어떻게(How)’ 이루어질지는 우주의 몫이므로 당신이 통제하려 하지 마세요.",
-      "의심과 불안이 올라올 때는 즉시 감사의 마음으로 주파수를 전환하세요."
+      "의심과 불안이 올라올 때는 즉시 감사의 마음으로 마음의 흐름을 전환하세요."
     ],
     steps: [
       "소원이 아직 눈앞에 보이지 않아도 '이미 받았다'고 느끼는 구체적인 방법은?",
@@ -70,7 +70,7 @@ export const SECRET_BIBLE_SECTIONS = [
     title: 'Receive · 감사의 수신',
     principles: [
       "소원이 실제로 이루어졌을 때 느낄 벅찬 감격과 환희를 지금 미리 느끼세요.",
-      "감사는 받는 주파수에 접속하는 가장 빠르고 강력한 열쇠입니다.",
+      "감사는 받아들이는 마음에 접속하는 가장 빠르고 강력한 열쇠입니다.",
       "내면의 영감이 떠오를 때 가벼운 마음으로 기쁘게 즉각 행동하세요."
     ],
     steps: [
@@ -81,14 +81,14 @@ export const SECRET_BIBLE_SECTIONS = [
   },
   {
     id: 'frequency',
-    title: 'Frequency & Shifters · 주파수 조율과 저항 해소',
+    title: 'Mood Shifters · 기분 전환과 저항 해소',
     principles: [
       "기분이 안 좋을 때는 좋아하는 음악이나 자연을 바라보며 시크릿 시프터를 발동하세요.",
       "부와 성공에 대한 무의식의 죄책감이나 저항을 사랑으로 녹여내세요.",
       "비전보드(Vision Board)를 통해 매일 시각적 자극으로 잠재의식을 프로그래밍하세요."
     ],
     steps: [
-      "기분이 안 좋을 때 즉각 주파수를 끌어올리는 1분 시크릿 시프터 기술은?",
+      "기분이 안 좋을 때 즉각 기분을 전환하는 1분 시크릿 시프터 기술은?",
       "돈과 풍요에 대한 무의식의 무거운 저항을 푸는 확언 5가지를 추천해줘",
       "비전보드를 가장 효과적으로 배치하고 시각화하는 꿀팁을 줘"
     ]
@@ -111,7 +111,7 @@ export const CREATIVE_PROCESS_STEPS = [
     ],
     chantKo: `우주여, 나는 지금 온전한 풍요와 사랑, 그리고 기적 같은 소원 성취 속에 존재합니다.
 내가 바라는 모든 이상적인 현실이 가장 완벽하고 조화로운 방식으로 지금 내게 흘러들어오고 있음에 깊이 감사합니다.
-나의 생각과 주파수가 우주의 풍요와 하나로 일치되었습니다.`,
+나의 생각과 마음이 우주의 풍요를 향하고 있습니다.`,
     chantEn: `Thank you, Universe, for bringing all the abundance, joy, and manifestation into my life right now. My desire is already accomplished, and I receive it with deep gratitude.`,
   },
   {
@@ -124,7 +124,7 @@ export const CREATIVE_PROCESS_STEPS = [
     desc: '믿음이란 소원이 물리적 눈앞에 보이기 전에 이미 영적 차원에서 완성되었음을 아는 것입니다. ‘어떻게(How)’ 이루어질지는 우주의 몫이므로 당신이 통제하려 하지 마세요.',
     rules: [
       '결과가 어떻게 나타날지 고민하지 마세요. 방법(How)은 우주가 가장 경이로운 길로 찾아옵니다.',
-      '의심이나 불안이 올라올 때는 즉시 감사의 마음으로 주파수를 전환하세요.',
+      '의심이나 불안이 올라올 때는 즉시 감사의 마음으로 마음의 흐름을 전환하세요.',
       '이미 소원이 이루어진 사람처럼 안도감과 여유로운 마음으로 일상을 살아가세요.',
     ],
     chantKo: `나는 이미 받았음을 온 마음으로 믿습니다.
@@ -135,14 +135,14 @@ export const CREATIVE_PROCESS_STEPS = [
   {
     id: 'receive',
     stepNumber: 'STEP 3',
-    titleKo: 'Receive · 받으라 (감정의 주파수 일치)',
+    titleKo: 'Receive · 받으라 (감정과 마음의 일치)',
     titleEn: 'Step 3: Receive with Joy',
     quote: '"그것을 받았을 때 느낄 기쁨과 감사를 ‘지금 이 순간’ 미리 느껴라."',
-    quoteEn: '“Feel wonderful now. When you feel good, you are on the frequency of receiving.” — Rhonda Byrne',
-    desc: '받아들임(Receive)의 핵심은 기분 좋은 감정(Good Feelings)입니다. 소원이 실제로 이루어졌을 때 느낄 벅찬 감격, 환희, 안도감을 지금 느끼면 당신은 받는 주파수에 즉시 맞춰집니다.',
+    quoteEn: '“Feel wonderful now. When you feel good, you are open to receiving.” — Rhonda Byrne',
+    desc: '받아들임(Receive)의 핵심은 기분 좋은 감정(Good Feelings)입니다. 소원이 실제로 이루어졌을 때 느낄 벅찬 감격, 환희, 안도감을 지금 느끼면 당신은 받아들이는 마음에 즉시 맞춰집니다.',
     rules: [
       '기분이 좋아지는 모든 것을 하세요. 좋은 음악, 산책, 따뜻한 차, 사랑하는 사람과의 대화.',
-      '감사는 받는 주파수에 접속하는 가장 빠르고 강력한 열쇠입니다.',
+      '감사는 받아들이는 마음에 접속하는 가장 빠르고 강력한 열쇠입니다.',
       '내면의 영감(Inspiration)이 떠오를 때 가벼운 마음으로 기쁘게 즉각 행동하세요.',
     ],
     chantKo: `나는 지금 우주가 주는 모든 축복과 선물을 기쁘게 받아들입니다.
@@ -173,7 +173,7 @@ export const SECRET_TOOLS_CATALOG: SecretToolItem[] = [
     category: 'daily',
     summary: '매일 밤 잠들기 전 돌을 쥐고 오늘 일어난 최고의 일에 감사하며 잠드는 마법의 습관',
     howToPractice: '침대 머리맡에 작은 돌을 두고, 잠들기 직전 손에 쥐며 오늘 일어난 가장 감사한 일 1가지를 떠올리고 "감사합니다"를 속삭입니다.',
-    quote: '“매일 밤 감사의 돌을 쥐고 잠드는 것은 당신의 잠재의식을 가장 높은 풍요의 주파수로 밤새 채우는 방법이다.” — 『더 매직』',
+    quote: '“매일 밤 감사의 돌을 쥐고 잠드는 것은 당신의 잠재의식을 가장 높은 풍요로운 마음으로 밤새 채우는 방법이다.” — 『더 매직』',
     suggestedWish: '오늘 하루 나를 스쳐 간 모든 은혜와 내일 찾아올 기적 같은 행운에 감사합니다.',
   },
   {
@@ -245,13 +245,13 @@ export const SECRET_TOOLS_CATALOG: SecretToolItem[] = [
   {
     id: 'secret_shifters',
     name: '기분 전환 장치 (Secret Shifters)',
-    nameEn: 'Secret Frequency Shifters',
+    nameEn: 'Secret Mood Shifters',
     emoji: '🌈',
     category: 'daily',
-    summary: '주파수가 떨어지고 불안할 때 5분 만에 기분을 끌어올리는 나만의 마법 트리거 목록',
+    summary: '마음이 무겁고 불안할 때 5분 만에 기분을 끌어올리는 나만의 마법 트리거 목록',
     howToPractice: '좋아하는 음악, 귀여운 반려동물 영상, 가장 행복했던 여행 추억 사진을 미리 준비해두고 우울할 때 즉시 꺼내 봅니다.',
-    quote: '“부정적인 생각이 떠오를 때 탓하지 마세요. 그저 시크릿 전환 장치를 켜서 주파수 채널을 바꾸면 됩니다.”',
-    suggestedWish: '어떤 상황에서도 나는 순식간에 기쁨과 감사의 최고 주파수로 되돌아옵니다.',
+    quote: '“부정적인 생각이 떠오를 때 탓하지 마세요. 그저 시크릿 전환 장치를 켜서 기분 전환 방법을 바꾸면 됩니다.”',
+    suggestedWish: '어떤 상황에서도 나는 순식간에 기쁨과 감사의 좋은 마음으로 되돌아옵니다.',
   },
   {
     id: 'acting_as_if',
@@ -286,7 +286,7 @@ export const SECRET_PHILOSOPHY_RULES = [
   {
     title: '2. 좋은 기분이 최고의 자석이다 (Good Feelings First)',
     desc: '원하는 것이 있어서 행복해지는 것이 아니라, 지금 먼저 행복하고 감사할 때 원하는 것이 저절로 끌려옵니다.',
-    tag: '주파수의 비밀',
+    tag: '마음의 비밀',
   },
   {
     title: '3. 감사는 기적을 두 배로 만든다 (Gratitude is the Multiplier)',
@@ -304,19 +304,19 @@ const SECRET_AUDIOBOOK_NARRATIONS: Record<string, string> = {
   creation: `시크릿 황금 필사본, 제1장 우주 3대 창조 공식입니다.
 1단계, 구하라 (Ask): 당신이 진정으로 원하는 것이 무엇인지 명확하게 우주에 선언하세요. 이미 이루어진 것처럼 구체적으로 그리십시오.
 2단계, 믿으라 (Believe): 의심과 불안은 결핍을 끌어당깁니다. 소망이 이미 이루어졌다는 절대적인 확신을 품으세요. 어떻게 이루어질지는 우주의 몫입니다.
-3단계, 받으라 (Receive): 소망이 현실에 나타났을 때 느낄 벅찬 감동과 감사의 주파수에 지금 당장 자신을 일치시키십시오. 기분 좋은 상태를 유지하는 것이 최고의 수신 상태입니다.`,
+3단계, 받으라 (Receive): 소망이 현실에 나타났을 때 느낄 벅찬 감동과 감사의 마음에 지금 당장 자신을 일치시키십시오. 기분 좋은 상태를 유지하는 것이 최고의 수신 상태입니다.`,
   tools: `제2장, 10가지 끌어당김 실천 도구입니다.
 첫 번째, 감사 바위는 주머니에 작은 돌을 넣고 만질 때마다 감사의 에너지를 발산하는 도구입니다.
 두 번째, 68초 순수 시각화는 아무런 저항 없이 68초간 소원의 완벽한 성취에 몰입하여 물리적 창조를 폭발시키는 기법입니다.
 세 번째, 비전 보드는 원하는 삶의 이미지를 시각화하여 뇌의 망상활성계를 강력하게 자극합니다.
 네 번째, 매직 스크립팅은 소원이 이미 이루어진 미래의 하루를 일기처럼 기록하여 우주에 청사진을 보내는 방법입니다.`,
   philosophy: `제3장, 시크릿 철학과 부의 마인드셋입니다.
-우주는 당신의 생각과 감정에 공명하여 정확히 같은 주파수의 현실을 배달합니다.
+우주는 당신의 생각과 감정에 공명하여 정확히 같은 마음의 현실을 배달합니다.
 결핍과 불평에 집중하면 더 많은 결핍이 찾아오고, 풍요와 감사에 집중하면 무한한 번영이 흘러들어옵니다.
 당신은 자신의 현실을 창조하는 살아있는 자석입니다.`,
   bible: `제4장, 시크릿 Q&A 및 실천 바이블입니다.
 의심이 들 때는 즉시 기분 전환 장치를 활용하여 기분을 바꾸세요.
-좋아하는 음악을 듣거나 자연을 바라볼 때 주파수는 즉시 상승합니다.
+좋아하는 음악을 듣거나 자연을 바라볼 때 마음은 한결 가벼워집니다.
 결과의 방법에 집착하지 말고, 이미 이루어진 기쁨 속에 머무르십시오.`
 };
 
@@ -530,7 +530,7 @@ export function SecretHandbookModal({
                           : 'bg-white/5 border border-white/5 text-white/50 hover:text-white'
                       }`}
                     >
-                      🌟 마인드셋 & 주파수
+                      🌟 마인드셋 & 마음의 흐름
                     </button>
                   </div>
 
@@ -551,7 +551,7 @@ export function SecretHandbookModal({
                         <div className="flex items-center justify-between">
                           <span className="text-2xl">{tool.emoji}</span>
                           <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-amber-300/70 group-hover:border-amber-400/30 transition-colors">
-                            {tool.category === 'core' ? 'Core Tool' : tool.category === 'daily' ? 'Daily Magic' : 'Frequency'}
+                            {tool.category === 'core' ? 'Core Tool' : tool.category === 'daily' ? 'Daily Magic' : 'Mood'}
                           </span>
                         </div>
 
@@ -610,7 +610,7 @@ export function SecretHandbookModal({
                       시크릿의 4가지 위대한 끌어당김의 황금률
                     </h3>
                     <p className="text-xs text-white/60 font-sans">
-                      당신의 주파수가 곧 당신의 현실입니다. 우주는 언제나 당신의 감정에 실시간으로 응답합니다.
+                      당신의 마음가짐이 곧 당신의 현실입니다. 우주는 언제나 당신의 감정에 실시간으로 응답합니다.
                     </p>
                   </div>
 

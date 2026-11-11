@@ -64,6 +64,7 @@ test('model and engine daily tarot both return a full decision sentence', async 
     }),
   });
   assert.equal(modeled.body?.source, 'model');
+  assert.equal('frequency' in (modeled.body || {}), false);
   const modelLine = decisionLine(String(modeled.body?.diagnosis));
   assert.equal(modelLine.endsWith('과감한 결단'), false);
   assert.match(modelLine, /별/);

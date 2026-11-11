@@ -143,7 +143,8 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
           </div>
         );
 
-      case 'solfeggio_violet':
+      case 'amethyst_violet':
+      case 'solfeggio_violet': // Legacy persisted card-back ID.
         return (
           <div className={`relative flex items-center justify-center ${iconScale}`}>
             <div className={`w-9 h-9 rounded-full border border-violet-400/70 bg-gradient-to-b from-purple-900/60 to-zinc-950 flex items-center justify-center ${isWheelFast ? '' : 'shadow-[0_0_15px_rgba(168,85,247,0.5)]'}`}>
@@ -153,7 +154,7 @@ export const TarotCardBackFace: React.FC<TarotCardBackFaceProps> = React.memo(fu
                 <circle cx="12" cy="12" r="9" />
               </svg>
             </div>
-            <span className="absolute -bottom-3 text-[6px] font-mono text-violet-300/80 font-bold">528Hz</span>
+            <span className="absolute -bottom-3 text-[6px] font-mono text-violet-300/80 font-bold">AMETHYST</span>
           </div>
         );
 

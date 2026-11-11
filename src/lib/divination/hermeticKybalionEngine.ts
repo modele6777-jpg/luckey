@@ -5,7 +5,7 @@
  * 
  * [학술적 배경]
  * 고대 에르메스주의(Hermeticism)의 불후의 고전 『The Kybalion (카이발리온)』 7대 대우주 원리를
- * 상담자의 생년월일 수비학적 진동수 및 일간 에너지에 매핑하여, 현재 인생 국면에서
+ * 상담자의 생년월일 수비학적 수치 및 일간 에너지에 매핑하여, 현재 인생 국면에서
  * 내담자가 겪고 있는 사건과 내면 갈등의 우주적 작동 원리를 0ms 순수 수리로 해석합니다.
  * 
  * 1. 정신성의 원리 (The Principle of Mentalism) - 'THE ALL is Mind; The Universe is Mental'
@@ -38,7 +38,7 @@ export interface HermeticKybalionReport {
     coreInsight: string;
     alchemicalKey: string;      // 정신 연금술적 열쇠
   };
-  vibrationFrequencyLevel: number; // 현재 의식 진동 주파수 (100 ~ 999 Hz 비유 수치)
+  principleAlignmentScore: number; // 7대 원리의 평균 정렬도 (0~100)
   rhythmPhase: '밀물(진전/확장기)' | '썰물(정리/내면화기)' | '전환점(진자 극점)';
   polarityTranscendence: {
     currentDuality: string;     // 직면한 양극성 (예: 성공 vs 실패, 인정 vs 고립)
@@ -94,14 +94,14 @@ export function calculateHermeticKybalion(
       nameKo: '진동의 원리',
       aphorism: '어떤 것도 멈춰 있지 않으며 모든 것은 진동한다.',
       alignmentScore: 75 + ((birthSum * 7 + targetYear) % 24),
-      lifeApplication: '부정적 감정이 들 때는 억누르지 말고 신체 활동과 긍정적 언어로 진동 주파수를 상승시키십시오.'
+      lifeApplication: '부정적 감정이 들 때는 억누르기보다 신체 활동과 긍정적인 언어로 마음의 방향을 전환하십시오.'
     },
     {
       nameEn: 'Polarity',
       nameKo: '극성의 원리',
       aphorism: '모든 것은 양면성을 가지며, 반대되는 것은 본질상 동일한 것의 양 극단이다.',
       alignmentScore: 68 + ((birthSum * 2 + targetDay * 2) % 31),
-      lifeApplication: '두려움과 용기는 같은 감정의 양 극단입니다. 주파수 슬라이더를 돌리듯 마음의 방향을 용기로 옮기십시오.'
+      lifeApplication: '두려움과 용기는 같은 감정의 양 극단입니다. 시선을 돌리듯 마음의 방향을 용기로 옮기십시오.'
     },
     {
       nameEn: 'Rhythm',
@@ -137,13 +137,13 @@ export function calculateHermeticKybalion(
   else if (rhythmScore <= 72) rhythmPhase = '썰물(정리/내면화기)';
   else rhythmPhase = '전환점(진자 극점)';
 
-  // 의식 진동 주파수 (비유적 수치)
+  // 7대 원리의 평균 정렬도
   const avgAlignment = Math.round(principles.reduce((a, b) => a + b.alignmentScore, 0) / 7);
-  const vibrationFrequencyLevel = 432 + (avgAlignment * 4) + (birthSum * 7);
+  const principleAlignmentScore = avgAlignment;
 
   // 극성 초월 진단
   const dualities = [
-    { pair: '결핍감 vs 풍요의식', shift: '이미 가진 것에 집중하여 감사의 주파수로 전환하십시오.' },
+    { pair: '결핍감 vs 풍요의식', shift: '이미 가진 것에 집중하여 감사하는 마음으로 전환하십시오.' },
     { pair: '통제욕 vs 방임의 두려움', shift: '할 수 있는 최선에만 집중하고 결과는 우주의 흐름에 맡기십시오.' },
     { pair: '타인의 평가 vs 진정한 자기다움', shift: '외부의 시선에서 벗어나 내면의 고유한 직관에 귀를 기울이십시오.' },
     { pair: '과거의 후회 vs 미래의 불안', shift: '오직 현존(지금 이 순간)에 닻을 내림으로써 양 극단의 환영을 초월하십시오.' }
@@ -159,7 +159,7 @@ export function calculateHermeticKybalion(
       coreInsight: master.aphorism,
       alchemicalKey: master.lifeApplication
     },
-    vibrationFrequencyLevel,
+    principleAlignmentScore,
     rhythmPhase,
     polarityTranscendence: {
       currentDuality: chosenDuality.pair,
@@ -180,7 +180,7 @@ export function formatHermeticKybalionPrompt(rep: HermeticKybalionReport): strin
 - 현재 주도 우주 원리: ${rep.masterPrinciple.nameKo} (${rep.masterPrinciple.nameEn})
   • 핵심 통찰: "${rep.masterPrinciple.coreInsight}"
   • 정신 연금술 키: ${rep.masterPrinciple.alchemicalKey}
-- 의식 진동 주파수: ${rep.vibrationFrequencyLevel} Hz 수준 (평균 공명도 상위)
+- 7대 원리 평균 정렬도: ${rep.principleAlignmentScore}%
 - 우주적 리듬 국면: ${rep.rhythmPhase}
 - 극성 초월 과제: [${rep.polarityTranscendence.currentDuality}] → ${rep.polarityTranscendence.transcendenceShift}
 - 7대 법칙 공명 매트릭스:

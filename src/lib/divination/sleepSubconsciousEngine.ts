@@ -1,13 +1,13 @@
 /**
  * =========================================================================
- * LUCKEY 수면 뇌파 & 무의식 직관 디코딩 엔진 (Sleep & Subconscious Engine)
+ * LUCKEY 수면 회복 & 무의식 직관 디코딩 엔진 (Sleep & Subconscious Engine)
  * =========================================================================
  * 
  * [엔진 개요]
  * 사주 12운성의 사(死)·묘(墓)·절(絶) 깊은 의식 이완 궤적, 점성술 12하우스
  * (무의식·꿈·영혼의 치유처), 그리고 달(Moon)의 실시간 위상 에너지를 융합하여
- * 오늘 밤 최적의 수면 뇌파 유도 주파수, 3분 나이트 리셋 리추얼, 그리고
- * 꿈이 암시하는 직관 디코딩 가이드를 결정론적 수리로 산출합니다.
+ * 오늘 밤 활용할 수 있는 일반 사운드 스케이프, 3분 나이트 리셋 리추얼,
+ * 그리고 꿈이 암시하는 직관 디코딩 가이드를 결정론적 수리로 산출합니다.
  */
 
 import type { UserProfile } from '../sharedState';
@@ -38,11 +38,10 @@ export interface SleepSubconsciousResult {
   sleepRecoveryScore: number;
   sleepQualityTitle: string;
 
-  // 추천 수면 뇌파 및 사운드 주파수
-  soundWaveProtocol: {
-    targetWave: string;         // 타깃 뇌파 (델타파/세타파)
-    frequencyHz: string;        // 추천 음향 주파수
-    soundDescription: string;   // 음향 특성
+  // 편안한 수면 환경을 위한 일반 사운드 안내
+  soundscape: {
+    recommendedSounds: string;
+    listeningGuidance: string;
   };
 
   // 3단계 나이트 리셋 리추얼
@@ -74,16 +73,15 @@ export function calculateSleepSubconscious(params?: {
   if ((elements['금'] || 0) >= 2) sleepRecoveryScore += 5; // 금 기운의 불필요한 생각 단절
   sleepRecoveryScore = Math.min(97, sleepRecoveryScore);
 
-  let sleepQualityTitle = '깊은 무의식 치유 궤도 (Deep Restorative Flow)';
-  if (sleepRecoveryScore >= 88) sleepQualityTitle = '최상의 델타파 완전 회복 (Delta Bliss)';
+  let sleepQualityTitle = '깊은 휴식 회복 궤도 (Deep Restorative Flow)';
+  if (sleepRecoveryScore >= 88) sleepQualityTitle = '최상의 깊은 회복 (Deep Rest Bliss)';
   else if (sleepRecoveryScore >= 78) sleepQualityTitle = '안정적 무의식 재충전 (Restorative Flow)';
-  else sleepQualityTitle = '뇌신경 전압 감압 필요 (Need Tension Release)';
+  else sleepQualityTitle = '긴장 완화가 필요한 날 (Need Tension Release)';
 
-  // 2. 뇌파 및 사운드 프로토콜
-  const soundWaveProtocol = {
-    targetWave: '델타파(Delta, 0.5~3Hz) & 세타파(Theta, 4~7Hz) 하이브리드',
-    frequencyHz: '432Hz 우주 자연 조화 주파수 + 396Hz 죄책감/두려움 해소 솔페지오',
-    soundDescription: '깊은 밤 잔잔하게 밀려오는 파도 소리와 432Hz 따뜻한 사인파 패드 음'
+  // 2. 일반 사운드 스케이프 안내
+  const soundscape = {
+    recommendedSounds: '잔잔한 파도 소리 또는 부드러운 앰비언트 음악',
+    listeningGuidance: '낮은 볼륨으로 배경에 두고 편안한 호흡과 함께 들어보세요.'
   };
 
   // 3. 3단계 나이트 리셋 리추얼
@@ -101,14 +99,14 @@ export function calculateSleepSubconscious(params?: {
   };
 
   const summary = `[수면 무의식 엔진] 회복 잠재력: ${sleepRecoveryScore}점 [${sleepQualityTitle}]. ` +
-    `뇌파 타깃: 델타/세타 (432Hz & 396Hz). 3단계 나이트 리셋 및 꿈 인큐베이션 장착.`;
+    `편안한 사운드 스케이프와 3단계 나이트 리셋, 꿈 인큐베이션을 안내합니다.`;
 
   return {
     engineVersion: SLEEP_SUBCONSCIOUS_VERSION,
     calculatedAtIso: now.toISOString(),
     sleepRecoveryScore,
     sleepQualityTitle,
-    soundWaveProtocol,
+    soundscape,
     nightRitual,
     dreamDecoding,
     summary
@@ -119,12 +117,11 @@ export function calculateSleepSubconscious(params?: {
  * 프롬프트 주입용 포맷터
  */
 export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): string {
-  return `[수면 뇌파 & 무의식 직관 디코딩 리포트 (엔진: ${res.engineVersion})]
+  return `[수면 회복 & 무의식 직관 디코딩 리포트 (엔진: ${res.engineVersion})]
 - 수면 회복 잠재력 지수: **${res.sleepRecoveryScore}점** [${res.sleepQualityTitle}]
-- 수면 사운드 & 뇌파 처방:
-  • 타깃 뇌파: ${res.soundWaveProtocol.targetWave}
-  • 추천 주파수: **${res.soundWaveProtocol.frequencyHz}**
-  • 음향 가이드: ${res.soundWaveProtocol.soundDescription}
+- 수면 사운드 가이드:
+  • 추천 사운드: ${res.soundscape.recommendedSounds}
+  • 활용 안내: ${res.soundscape.listeningGuidance}
 - 3단계 나이트 리셋 리추얼:
   • ${res.nightRitual.step1BrainDump}
   • ${res.nightRitual.step2ThermalRelease}
@@ -133,5 +130,5 @@ export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): str
   • 상징 테마: ${res.dreamDecoding.dreamSymbolCategory}
   • 무의식 메시지: ${res.dreamDecoding.subconsciousMessage}
   • 아침 10초 직관 포착: "${res.dreamDecoding.lucidAwakeningPrompt}"
-※ 루시 지침: 수면은 단순히 하루를 끄는 오프(Off) 버튼이 아니라, 무의식이 뇌신경을 깨끗이 정화하고 놀라운 영감을 빚어내는 '영혼의 성역'입니다. 사용자가 오늘 하루의 피로를 부드럽게 털어내고, 밤사이 델타파의 깊은 치유와 창의적 무의식 인큐베이션을 온전히 누릴 수 있도록 다정하고 평온하게 안내해 주세요.`;
+※ 루시 지침: 수면은 단순히 하루를 끄는 오프(Off) 버튼이 아니라, 몸과 마음이 쉬고 새로운 영감을 정리하는 시간입니다. 사용자가 하루의 피로를 부드럽게 털어내고, 자신에게 편안한 소리와 차분한 나이트 리셋을 선택하도록 다정하고 평온하게 안내해 주세요.`;
 }

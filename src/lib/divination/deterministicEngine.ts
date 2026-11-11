@@ -25,7 +25,7 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { calculateChronoTransit, formatChronoTransitPrompt, type ChronoTransitResult } from './chronoTransitEngine';
 import { calculateLifeSeasonTiming, formatLifeSeasonTimingPrompt, type LifeSeasonTimingResult } from './lifeSeasonTimingEngine';
-import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, type EnergeticPrescriptionResult } from './energeticPrescriptionEngine';
+import { calculateEnergeticPrescription, type EnergeticPrescriptionResult } from './energeticPrescriptionEngine';
 import { calculateContextualSynastry, formatContextualSynastryPrompt, type ContextualSynastryResult } from './contextualSynastryEngine';
 import { calculateInstantDecision, formatInstantDecisionPrompt, type InstantDecisionResult } from './instantDecisionEngine';
 import { calculateZiweiFlyingStars, formatZiweiFlyingStarsPrompt, type ZiweiFlyingStarsResult } from './ziweiFlyingStarsEngine';
@@ -91,7 +91,6 @@ import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, type S
 import { calculateSacredVortexGeometry, formatSacredVortexGeometryPrompt, type SacredVortexGeometryResult } from './sacredVortexGeometryEngine';
 import { calculateTaoistNeidanMeridian, formatTaoistNeidanMeridianPrompt, type TaoistNeidanMeridianResult } from './taoistNeidanMeridianEngine';
 import { calculateSynchronicityOmen, formatSynchronicityOmenPrompt, type SynchronicityOmenResult } from './synchronicityOmenEngine';
-import { calculateSolfeggioHarmonic, formatSolfeggioHarmonicPrompt, type SolfeggioHarmonicResult } from './solfeggioHarmonicResonanceEngine';
 import { calculateEthericAuraBiofield, formatEthericAuraBiofieldPrompt, type EthericAuraBiofieldResult } from './ethericAuraBiofieldEngine';
 import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, type SajuClassicYongshinResult } from './sajuClassicYongshinPrescriptionEngine';
 import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, type TarotTreeOfLifeShadowResult } from './tarotTreeOfLifeShadowEngine';
@@ -164,7 +163,6 @@ import { calculateSumerianApkalluWisdom, formatSumerianApkalluWisdomPrompt, type
 import { calculateCelticTuathaFourTreasures, formatCelticTuathaFourTreasuresPrompt, type CelticTuathaFourTreasuresReport, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION } from './celticTuathaFourTreasuresEngine';
 import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyFourSpiritsPrompt, type TaoistShangqingTwentyFourSpiritsReport, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION } from './taoistShangqingTwentyFourSpiritsEngine';
 import { calculateTibetanPhowaRainbowBody, formatTibetanPhowaRainbowBodyPrompt, type TibetanPhowaRainbowBodyReport, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION } from './tibetanPhowaRainbowBodyEngine';
-import { calculatePythagoreanHarmoniaSpheres, formatPythagoreanHarmoniaSpheresPrompt, type PythagoreanHarmoniaSpheresReport, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION } from './pythagoreanHarmoniaSpheresEngine';
 import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, type PlumBlossomMeihuaReport, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION } from './plumBlossomMeihuaOracleEngine';
 import { calculateGreekMoiraiAnankeFate, formatGreekMoiraiAnankeFatePrompt, type GreekMoiraiAnankeFateReport, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION } from './greekMoiraiAnankeFateEngine';
 import { calculateEgyptianSphinxDreamOracle, formatEgyptianSphinxDreamOraclePrompt, type EgyptianSphinxDreamOracleReport, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION } from './egyptianSphinxDreamOracleEngine';
@@ -436,7 +434,6 @@ export interface DeterministicEngineReport {
   sacredVortexGeometryResult?: SacredVortexGeometryResult | null;
   taoistNeidanMeridianResult?: TaoistNeidanMeridianResult | null;
   synchronicityOmenResult?: SynchronicityOmenResult | null;
-  solfeggioHarmonicResult?: SolfeggioHarmonicResult | null;
   ethericAuraBiofieldResult?: EthericAuraBiofieldResult | null;
   sajuClassicYongshinResult?: SajuClassicYongshinResult | null;
   tarotTreeOfLifeShadowResult?: TarotTreeOfLifeShadowResult | null;
@@ -509,7 +506,6 @@ export interface DeterministicEngineReport {
   celticTuathaFourTreasuresResult?: CelticTuathaFourTreasuresReport | null;
   taoistShangqingTwentyFourSpiritsResult?: TaoistShangqingTwentyFourSpiritsReport | null;
   tibetanPhowaRainbowBodyResult?: TibetanPhowaRainbowBodyReport | null;
-  pythagoreanHarmoniaSpheresResult?: PythagoreanHarmoniaSpheresReport | null;
   plumBlossomMeihuaOracleResult?: PlumBlossomMeihuaReport | null;
   greekMoiraiAnankeFateResult?: GreekMoiraiAnankeFateReport | null;
   egyptianSphinxDreamOracleResult?: EgyptianSphinxDreamOracleReport | null;
@@ -1804,17 +1800,6 @@ try {
       })()
     : null));
 
-  // 60. 솔페지오 주파수 사운드 힐링 & 뇌파 동조 엔진
-  const solfeggioHarmonicResult = calculateSupplement('solfeggioHarmonicResult', () => (birthdateStr && profile
-    ? (() => {
-        try {
-          return calculateSolfeggioHarmonic({ profile, targetDate: now });
-        } catch (_) {
-          return null;
-        }
-      })()
-    : null));
-
   // 61. 에테르 오라 생체장 & 쉴딩 엔진
   const ethericAuraBiofieldResult = calculateSupplement('ethericAuraBiofieldResult', () => (birthdateStr && profile
     ? (() => {
@@ -2466,15 +2451,6 @@ try {
   const tibetanPhowaRainbowBodyResult = calculateSupplement('tibetanPhowaRainbowBodyResult', () => ((() => {
     try {
       return calculateTibetanPhowaRainbowBody({ profile, question, now });
-    } catch (_) {
-      return null;
-    }
-  })()));
-
-  // 133. 고대 그리스 피타고라스 천구의 조화(Musica Universalis) & 테트라코드 7대 행성 주파수 공명 엔진
-  const pythagoreanHarmoniaSpheresResult = calculateSupplement('pythagoreanHarmoniaSpheresResult', () => ((() => {
-    try {
-      return calculatePythagoreanHarmoniaSpheres({ profile, question, now });
     } catch (_) {
       return null;
     }
@@ -4017,7 +3993,6 @@ try {
     sacredVortexGeometryResult,
     taoistNeidanMeridianResult,
     synchronicityOmenResult,
-    solfeggioHarmonicResult,
     ethericAuraBiofieldResult,
     sajuClassicYongshinResult,
     tarotTreeOfLifeShadowResult,
@@ -4090,7 +4065,6 @@ try {
     celticTuathaFourTreasuresResult,
     taoistShangqingTwentyFourSpiritsResult,
     tibetanPhowaRainbowBodyResult,
-    pythagoreanHarmoniaSpheresResult,
     plumBlossomMeihuaOracleResult,
     greekMoiraiAnankeFateResult,
     egyptianSphinxDreamOracleResult,
@@ -4319,7 +4293,7 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'sleepSubconscious', nameKo: '수면 무의식 뇌파', icon: '💤', category: 'deep_master' },
   { key: 'quantumLeap', nameKo: '퀀텀 점프 가능성', icon: '🚀', category: 'deep_master' },
   { key: 'soulJourneyTarot', nameKo: '영혼 여정 타로', icon: '🎴', category: 'deep_master' },
-  { key: 'transcendentalMeditation', nameKo: '초월 명상 주파수', icon: '🧘', category: 'deep_master' },
+  { key: 'transcendentalMeditation', nameKo: '초월 명상 가이드', icon: '🧘', category: 'deep_master' },
   { key: 'strategicLeverage', nameKo: '전략적 레버리지', icon: '🎯', category: 'deep_master' },
   { key: 'shadowArchetype', nameKo: '융 그림자 원형', icon: '🌑', category: 'deep_master' },
   { key: 'biorhythmPeakFlow', nameKo: '바이오리듬 피크', icon: '📈', category: 'deep_master' },
@@ -4339,7 +4313,6 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'sacredVortexGeometry', nameKo: '황금비 영혼 수비학', icon: '🌀', category: 'deep_master' },
   { key: 'taoistNeidanMeridian', nameKo: '도교 내단 경락시계', icon: '☯️', category: 'deep_master' },
   { key: 'synchronicityOmen', nameKo: '칼 융 동시성 오멘', icon: '🕊️', category: 'deep_master' },
-  { key: 'solfeggioHarmonic', nameKo: '솔페지오 하모닉', icon: '🎵', category: 'deep_master' },
   { key: 'ethericAuraBiofield', nameKo: '에테릭 오라 바이오필드', icon: '✨', category: 'deep_master' },
   { key: 'sajuClassicYongshin', nameKo: '사주 원전 억부용신', icon: '📜', category: 'deep_master' },
   { key: 'tarotTreeOfLifeShadow', nameKo: '타로 세피로트 그림자', icon: '🌳', category: 'deep_master' },
@@ -4412,7 +4385,6 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'celticTuathaFourTreasures', nameKo: '켈트 투아하 4대 신성보물', icon: '🗡️', category: 'deep_master' },
   { key: 'taoistShangqingTwentyFourSpirits', nameKo: '도교 진고 상청 24성도', icon: '✨', category: 'deep_master' },
   { key: 'tibetanPhowaRainbowBody', nameKo: '티베트 족첸 릭파 무지개체', icon: '🌈', category: 'deep_master' },
-  { key: 'pythagoreanHarmoniaSpheres', nameKo: '피타고라스 천구의 조화 주파수', icon: '🪐', category: 'deep_master' },
   { key: 'plumBlossomMeihuaOracle', nameKo: '소강절 매화역수 체용생극', icon: '🌸', category: 'deep_master' },
   { key: 'greekMoiraiAnankeFate', nameKo: '그리스 모이라이 운명실타래', icon: '🧶', category: 'deep_master' },
   { key: 'egyptianSphinxDreamOracle', nameKo: '이집트 스핑크스 꿈신탁', icon: '🦁', category: 'deep_master' },
@@ -4977,7 +4949,6 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'americanWilliamJamesPragmatism',
     'britishBertrandRussellConquestOfHappiness',
     'tibetanPhowaRainbowBody',
-    'pythagoreanHarmoniaSpheres',
     'taoistShangqingTwentyFourSpirits',
     'baopuziElixirs',
     'tibetanBonNineWays',
@@ -4992,7 +4963,6 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'chakraVibrationAlignment',
     'somaticBodyArmoring',
     'taoistNeidanMeridian',
-    'solfeggioHarmonic',
     'ethericAuraBiofield',
     'biorhythmPeakFlow',
     'taoistSanbao',
@@ -5155,7 +5125,6 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'egyptianSphinxDreamOracle',
     'chaldeanMulApinAstrology',
     'plumBlossomMeihuaOracle',
-    'pythagoreanHarmoniaSpheres',
     'tibetanPhowaRainbowBody',
     'celticTuathaFourTreasures',
     'sumerianApkalluWisdom',

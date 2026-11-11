@@ -3681,7 +3681,7 @@ window.PRACTICE_EXERCISES = [
           {
             "id": "ex3_q1",
             "label": "시각 & 청각 도구",
-            "placeholder": "예: 은은한 숲 사진, 528Hz 싱잉볼 소리, 빗소리 백색소음"
+            "placeholder": "예: 은은한 숲 사진, 잔잔한 싱잉볼 소리, 빗소리 백색소음"
           },
           {
             "id": "ex3_q2",

@@ -47,33 +47,6 @@ import { getTodayDateKey } from '@/lib/dailyCache';
 import { getKoreanParticle, attachKoreanParticle, extractCleanConcernNoun } from '@/utils/koreanGrammar';
 import { meditationSound } from '@/lib/oneMinuteMeditation';
 
-// Web Audio API Solfeggio Sound Generator
-function playSolfeggioTone(freq: number, durationMs = 3000) {
-  try {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-    // Warm smooth attack and long meditative decay
-    gain.gain.setValueAtTime(0.001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.3);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + durationMs / 1000);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + durationMs / 1000 + 0.1);
-  } catch {
-    // Audio playback optional in headless / restrictive contexts
-  }
-}
-
 const PRESET_ISSUES = [
   '직장/상사의 지적이나 평가에 대한 억울함',
   '미래 경제적 불확실성과 진로에 대한 막막함',
@@ -220,7 +193,6 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
           if (prev <= 1) {
             setIsSurrenderActive(false);
             setHasCompletedSomaticHold(true);
-            playSolfeggioTone(528, 4000);
             return 0;
           }
           return prev - 1;
@@ -244,7 +216,6 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
             try {
               meditationSound.playSingingBowlBell();
             } catch (_) {
-              playSolfeggioTone(528, 3000);
             }
             return 0;
           }
@@ -261,13 +232,11 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
     setGapTimer(5);
     setIsGapTimerActive(true);
     setHasCompletedGap(false);
-    playSolfeggioTone(432, 1500);
   };
 
   const handleVaporizeThought = () => {
     if (!thoughtInput.trim()) return;
     setIsVaporizing(true);
-    playSolfeggioTone(528, 2500);
     setTimeout(() => {
       setVaporizedThought(thoughtInput.trim());
       setThoughtInput('');
@@ -278,7 +247,6 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
   const handleTriggerStopFlash = () => {
     setIsStopFlash(true);
     setHasPerformedStop(true);
-    playSolfeggioTone(396, 1800);
     setTimeout(() => {
       setIsStopFlash(false);
     }, 800);
@@ -289,7 +257,6 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
     setSurrenderTimer(15);
     setIsSurrenderActive(true);
     setHasCompletedSomaticHold(false);
-    playSolfeggioTone(432, 2500);
   };
 
   // Stop Somatic Hold
@@ -307,8 +274,6 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
     if (isReleasedAnimation) return;
     setIsGripHolding(true);
     setGripHoldProgress(0);
-
-    playSolfeggioTone(396, 1500);
 
     if (gripHoldIntervalRef.current) clearInterval(gripHoldIntervalRef.current);
     gripHoldIntervalRef.current = setInterval(() => {
@@ -348,7 +313,6 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
 
   const handleGripReleaseTrigger = () => {
     setIsReleasedAnimation(true);
-    playSolfeggioTone(639, 4000);
     setTimeout(() => {
       finishReleaseSession();
     }, 1400);
@@ -625,7 +589,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
                 <div className="duo-workspace-actions flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-100 flex items-center gap-2">
                     <Compass size={16} className="text-emerald-400" />
-                    <span>호킨스 의식 스펙트럼 (고민 맞춤 자동 주파수)</span>
+                    <span>호킨스 의식 스펙트럼 (고민 맞춤 감정 안내)</span>
                   </span>
                   <span className="text-[11px] font-mono text-emerald-400 font-bold">
                     현재: {selectedEmotion.nameKo} (Lv.{selectedEmotion.level})
@@ -1358,7 +1322,7 @@ export function SedonaDailyView({ firebaseUser, onDailyComplete }: SedonaDailyVi
               <div className="duo-workspace-actions flex items-center justify-between border-b border-amber-500/20 pb-2">
                 <h4 className="text-sm font-bold text-amber-300 uppercase tracking-widest font-mono flex items-center gap-2">
                   <Compass size={16} />
-                  <span>3. 호킨스 의식 스펙트럼 8대 감정 주파수 (Scale of Consciousness)</span>
+                  <span>3. 호킨스 의식 스펙트럼 8대 감정 (Scale of Consciousness)</span>
                 </h4>
                 <span className="text-[11px] text-amber-400/70 font-mono">Lv.20 ~ Lv.600</span>
               </div>

@@ -11,7 +11,6 @@ export interface RecommendArtRequest {
   userConcern?: string;
   currentMood?: string;
   moodId?: string;
-  energyFrequency?: string;
   dateKey?: string;
   randomOffset?: number;
   excludeCatalogIds?: string[];
@@ -23,7 +22,6 @@ async function personalizeWithGemini(
   base: ArtRecommendationPayload,
   currentMood: string,
   userContext: string,
-  energyFrequency: string,
   userConcern?: string,
   signal?: AbortSignal,
 ): Promise<Pick<ArtRecommendationPayload, "whyRecommended" | "challenges"> | null> {
@@ -58,7 +56,6 @@ ${JSON.stringify(facts, null, 2)}
 
 [사용자 상태]
 - 무드: ${currentMood}
-- 에너지: ${energyFrequency}
 - 최근 맥락: ${userContext || "없음"}${concernPrompt}
 
 오직 다음 JSON만 반환하세요:
@@ -131,7 +128,6 @@ async function personalizeWithOpenAI(
   base: ArtRecommendationPayload,
   currentMood: string,
   userContext: string,
-  energyFrequency: string,
   signal?: AbortSignal,
 ): Promise<Pick<ArtRecommendationPayload, "whyRecommended" | "challenges"> | null> {
   const openAIKey = (process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "").trim();
@@ -158,7 +154,7 @@ async function personalizeWithOpenAI(
         },
         {
           role: "user",
-          content: `Facts: ${JSON.stringify(facts)}\nMood: ${currentMood}\nEnergy: ${energyFrequency}\nContext: ${userContext || "none"}`,
+          content: `Facts: ${JSON.stringify(facts)}\nMood: ${currentMood}\nContext: ${userContext || "none"}`,
         },
       ],
     }, signal ? { signal } : undefined);
@@ -187,7 +183,6 @@ export async function buildDailyArtRecommendation(
   const curationDate = String(req.dateKey || new Date().toLocaleDateString("sv")).trim();
   const currentMood = String(req.currentMood || "").trim();
   const userContext = String(req.userContext || "").trim().slice(0, 1000);
-  const energyFrequency = String(req.energyFrequency || "528Hz").trim();
 
   const base = buildVerifiedArtRecommendation(
     curationDate,
@@ -203,8 +198,8 @@ export async function buildDailyArtRecommendation(
   const personalizationDeadline = AbortSignal.timeout(10000);
 
   const personalized =
-    (await personalizeWithGemini(base, currentMood, userContext, energyFrequency, userConcern, personalizationDeadline)) ||
-    (await personalizeWithOpenAI(base, currentMood, userContext, energyFrequency, personalizationDeadline));
+    (await personalizeWithGemini(base, currentMood, userContext, userConcern, personalizationDeadline)) ||
+    (await personalizeWithOpenAI(base, currentMood, userContext, personalizationDeadline));
 
   if (!personalized) return base;
 

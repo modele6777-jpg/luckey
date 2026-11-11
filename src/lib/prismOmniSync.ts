@@ -26,7 +26,6 @@ export interface DailyOracleSummary {
   remedy?: string;
   spiritualEnergy?: string;
   blessingMessage?: string;
-  frequency?: string;
   symbol?: string;
   focusPlaylist?: string;
   drawnCard?: any;
@@ -171,13 +170,14 @@ export function recordDailyOracleResult(params: DailyOracleSummary): void {
     const featureName = params.featureName || '데일리 오라클 비전';
     const timestamp = params.timestamp || Date.now();
 
-    const summaryPayload: DailyOracleSummary = {
-      ...params,
+    const summaryPayload = {
+      ...(params as DailyOracleSummary & { frequency?: string }),
       appName,
       featureName,
       timestamp,
       dateKey: todayKey,
-    };
+    } as DailyOracleSummary & { frequency?: string };
+    delete summaryPayload.frequency;
 
     // 1. Save to dedicated daily oracle slot for the app
     try {
@@ -475,7 +475,7 @@ export function buildPrismOmniscientContext(sharedState?: SharedState | null, ui
       if (rawRes) {
         const res = JSON.parse(rawRes);
         if (res?.prescription || res?.advice) {
-          trinityItems.push(`- [트리니티 영혼 공명]: 일관성 ${res.coherence ?? 90}%, 주파수 ${res.freqText || res.frequency || '528Hz'}, 처방: "${res.prescription || ''}", 실천: "${res.advice || ''}"`);
+          trinityItems.push(`- [트리니티 영혼 공명]: 일관성 ${res.coherence ?? 90}%, 처방: "${res.prescription || ''}", 실천: "${res.advice || ''}"`);
         }
       }
     } catch (_) {}
@@ -511,7 +511,7 @@ export function buildPrismOmniscientContext(sharedState?: SharedState | null, ui
       if (rawRes) {
         const res = JSON.parse(rawRes);
         if (res?.prescription || res?.advice) {
-          bluebirdItems.push(`- [블루버드 휴식 공명]: 일관성 ${res.coherence ?? 88}%, 평온 주파수 ${res.freqText || '432Hz'}, 처방: "${res.prescription || ''}", 지침: "${res.advice || ''}"`);
+          bluebirdItems.push(`- [블루버드 휴식 공명]: 일관성 ${res.coherence ?? 88}%, 처방: "${res.prescription || ''}", 지침: "${res.advice || ''}"`);
         }
       }
     } catch (_) {}
@@ -529,7 +529,7 @@ export function buildPrismOmniscientContext(sharedState?: SharedState | null, ui
       if (rawRes) {
         const res = JSON.parse(rawRes);
         if (res?.prescription || res?.advice) {
-          healItems.push(`- [아우라 웰니스 공명]: 일관성 ${res.coherence ?? 90}%, 치유 파동 ${res.freqText || '528Hz'}, 처방: "${res.prescription || ''}", 지침: "${res.advice || ''}"`);
+          healItems.push(`- [아우라 웰니스 공명]: 일관성 ${res.coherence ?? 90}%, 처방: "${res.prescription || ''}", 지침: "${res.advice || ''}"`);
         }
       }
     } catch (_) {}
@@ -547,7 +547,7 @@ export function buildPrismOmniscientContext(sharedState?: SharedState | null, ui
       if (rawRes) {
         const res = JSON.parse(rawRes);
         if (res?.prescription || res?.advice) {
-          museItems.push(`- [뮤즈 창작 공명]: 일관성 ${res.coherence ?? 87}%, 창작 주파수 ${res.freqText || '639Hz'}, 처방: "${res.prescription || ''}", 지침: "${res.advice || ''}"`);
+          museItems.push(`- [뮤즈 창작 공명]: 일관성 ${res.coherence ?? 87}%, 처방: "${res.prescription || ''}", 지침: "${res.advice || ''}"`);
         }
       }
     } catch (_) {}

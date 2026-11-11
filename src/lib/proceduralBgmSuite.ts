@@ -1,8 +1,8 @@
 /**
- * PRISM Healing & Transcendence Procedural BGM Suite (30 Premium Synthesized Tracks)
+ * PRISM Healing & Transcendence Procedural BGM Suite (24 Premium Synthesized Tracks)
  * 100% Web Audio API procedural synthesis - no external audio files required.
  * Infinite, pristine, zero-latency looping with soothing acoustic & celestial soundscapes.
- * Tailored exclusively for: 사주·오행 / 78장 오라클 타로 / 솔페지오 치유 / 세도나 방하착 / 호오포노포노 / 양자 현실화 & 뮤즈.
+ * Tailored exclusively for: 사주·오행 / 78장 오라클 타로 / 세도나 방하착 / 호오포노포노 / 양자 현실화 & 뮤즈.
  */
 import {
   createLoopingNoiseSource,
@@ -56,18 +56,9 @@ export const FLOW_AUDIO_TRACKS: BgmTrack[] = [
   { name: "10. 별빛의 인도: 어둠 속 꺼지지 않는 희망", url: "flow-tarot-star", artist: "PRISM 오라클 타로", category: "오라클 타로" },
   { name: "11. 찬란한 태양: 승리와 무한한 생명 축복", url: "flow-tarot-sun", artist: "PRISM 오라클 타로", category: "오라클 타로" },
 
-  // --- Suite 3: 솔페지오 기적 주파수 & 차크라 (Solfeggio Frequencies) ---
-  { name: "12. 396Hz 죄책감과 두려움의 완전 해방", url: "flow-heal-396", artist: "PRISM 솔페지오 치유", category: "솔페지오" },
-  { name: "13. 432Hz 자연과 우주의 수학적 평온 동조", url: "flow-heal-432", artist: "PRISM 솔페지오 치유", category: "솔페지오" },
-  { name: "14. 528Hz 기적과 사랑의 DNA 변형 파동", url: "flow-heal-528", artist: "PRISM 솔페지오 치유", category: "솔페지오" },
-  { name: "15. 639Hz 가슴 차크라와 관계의 조화로운 치유", url: "flow-heal-639", artist: "PRISM 솔페지오 치유", category: "솔페지오" },
-  { name: "16. 741Hz 직관과 영적 명료함의 각성", url: "flow-heal-741", artist: "PRISM 솔페지오 치유", category: "솔페지오" },
-  { name: "17. 963Hz 순수 신성 의식과 우주적 합일", url: "flow-heal-963", artist: "PRISM 솔페지오 치유", category: "솔페지오" },
-
   // --- Suite 4: 세도나 메서드 & 방하착 릴리즈 (Sedona Letting Go) ---
   { name: "18. 에고의 무조건적 항복 (Surrender of Ego)", url: "flow-sedona-surrender", artist: "PRISM 세도나 방하착", category: "세도나 방하착" },
   { name: "19. 생각 사이의 고요 (Silent Gap of Awareness)", url: "flow-sedona-gap", artist: "PRISM 세도나 방하착", category: "세도나 방하착" },
-  { name: "20. 528Hz 무저항 챔버 (Zero-Resistance Sanctuary)", url: "flow-sedona-chamber", artist: "PRISM 세도나 방하착", category: "세도나 방하착" },
   { name: "21. 명치와 가슴의 신체 감각 릴리즈 (Somatic Heart Dissolution)", url: "flow-sedona-heart", artist: "PRISM 세도나 방하착", category: "세도나 방하착" },
   { name: "22. 순수 참나의 영원한 침묵 (Pure Presence Beyond Words)", url: "flow-sedona-presence", artist: "PRISM 세도나 방하착", category: "세도나 방하착" },
 
@@ -79,7 +70,6 @@ export const FLOW_AUDIO_TRACKS: BgmTrack[] = [
 
   // --- Suite 6: 뮤즈 아우라 & 양자 현실화 (Quantum & Muse) ---
   { name: "27. 황금빛 양자 도약 (Quantum Leap Manifestation)", url: "flow-quantum-leap", artist: "PRISM 양자 현실화", category: "양자·뮤즈" },
-  { name: "28. 5차원 주파수 앵커링 (5D Vibrational Anchor)", url: "flow-quantum-anchor", artist: "PRISM 양자 현실화", category: "양자·뮤즈" },
   { name: "29. 달빛 아래 예술가의 캔버스 (Moonlit Muse Canvas)", url: "flow-muse-canvas", artist: "PRISM 뮤즈 예술", category: "양자·뮤즈" },
   { name: "30. 영원한 안식의 요람 (Cradle of Eternal Serenity)", url: "flow-muse-cradle", artist: "PRISM 뮤즈 예술", category: "양자·뮤즈" },
 ];
@@ -103,18 +93,9 @@ export const TRACK_NORMALIZATION_GAINS: Record<string, number> = {
   "flow-tarot-star": 0.90,
   "flow-tarot-sun": 0.85,
 
-  // Solfeggio Suite
-  "flow-heal-396": 1.10,
-  "flow-heal-432": 1.0,
-  "flow-heal-528": 1.0,
-  "flow-heal-639": 1.05,
-  "flow-heal-741": 1.05,
-  "flow-heal-963": 0.95,
-
   // Sedona Suite
   "flow-sedona-surrender": 1.0,
   "flow-sedona-gap": 1.30,
-  "flow-sedona-chamber": 0.95,
   "flow-sedona-heart": 1.10,
   "flow-sedona-presence": 1.15,
 
@@ -126,7 +107,6 @@ export const TRACK_NORMALIZATION_GAINS: Record<string, number> = {
 
   // Quantum & Muse Suite
   "flow-quantum-leap": 0.90,
-  "flow-quantum-anchor": 1.0,
   "flow-muse-canvas": 1.05,
   "flow-muse-cradle": 1.10,
 };
@@ -509,7 +489,7 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
 
     const playWheel = () => {
       const now = ctx.currentTime;
-      const root = 528.0;
+      const root = 523.25;
       const harmonics = [root * 0.5, root, root * 1.5, root * 2.0];
       const freq = harmonics[Math.floor(Math.random() * harmonics.length)];
 
@@ -623,222 +603,6 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
     synthIntervalRef.current = scheduleInterval(playSun, 7000);
   },
 
-  // 12. 396Hz 죄책감과 두려움의 완전 해방 (396Hz Liberation)
-  "flow-heal-396": (ctx, masterGain, { scheduleInterval = setInterval, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
-    const panner = createAutoPanner(0.04, 0.4);
-
-    const play396 = () => {
-      const now = ctx.currentTime;
-      const freq = 396.0;
-
-      const oscL = ctx.createOscillator();
-      const oscR = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      oscL.type = "sine";
-      oscL.frequency.setValueAtTime(freq, now);
-      oscR.type = "sine";
-      oscR.frequency.setValueAtTime(freq + 4.5, now); // 4.5Hz Theta brainwave beat
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.018, now + 3.0);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 11.0);
-
-      oscL.connect(gain);
-      oscR.connect(gain);
-      gain.connect(panner);
-
-      oscL.start(now);
-      oscR.start(now);
-      oscL.stop(now + 11.5);
-      oscR.stop(now + 11.5);
-      registerDynamicVoice([oscL, oscR, gain], 11.5);
-    };
-
-    play396();
-    synthIntervalRef.current = scheduleInterval(play396, 8500);
-  },
-
-  // 13. 432Hz 자연과 우주의 수학적 평온 동조 (432Hz Cosmic Harmony)
-  "flow-heal-432": (ctx, masterGain, { scheduleInterval = setInterval, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
-    const panner = createAutoPanner(0.03, 0.5);
-
-    const play432 = () => {
-      const now = ctx.currentTime;
-      const freqs = [432.0, 432.0 * 1.5, 432.0 * 0.5]; // 216Hz, 432Hz, 648Hz
-
-      freqs.forEach((f) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(f, now);
-
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.016, now + 3.5);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 12.0);
-
-        osc.connect(gain);
-        gain.connect(panner);
-
-        osc.start(now);
-        osc.stop(now + 12.5);
-        registerDynamicVoice([osc, gain], 12.5);
-      });
-    };
-
-    play432();
-    synthIntervalRef.current = scheduleInterval(play432, 9000);
-  },
-
-  // 14. 528Hz 기적과 사랑의 DNA 변형 파동 (528Hz Miracle Awakening)
-  "flow-heal-528": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
-    const delay = createDelay(1.2, 0.5, 0.35);
-
-    const play528 = () => {
-      const now = ctx.currentTime;
-      const base = 528.0;
-
-      const osc = ctx.createOscillator();
-      const oscOvertone = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(base, now);
-      oscOvertone.type = "sine";
-      oscOvertone.frequency.setValueAtTime(base * 2.0, now);
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.018, now + 3.0);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 11.0);
-
-      osc.connect(gain);
-      oscOvertone.connect(gain);
-      gain.connect(delay);
-      gain.connect(masterGain);
-
-      osc.start(now);
-      oscOvertone.start(now);
-      osc.stop(now + 11.5);
-      oscOvertone.stop(now + 11.5);
-      registerDynamicVoice([osc, oscOvertone, gain], 11.5);
-    };
-
-    play528();
-    synthIntervalRef.current = scheduleInterval(play528, 8500);
-  },
-
-  // 15. 639Hz 가슴 차크라와 관계의 조화로운 치유 (639Hz Heart Chakra)
-  "flow-heal-639": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
-    const delay = createDelay(1.0, 0.48, 0.3);
-
-    const play639 = () => {
-      const now = ctx.currentTime;
-      const f = 639.0;
-      const osc = ctx.createOscillator();
-      const oscSub = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(f, now);
-      oscSub.type = "triangle";
-      oscSub.frequency.setValueAtTime(f * 0.5, now);
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.016, now + 3.0);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 10.5);
-
-      osc.connect(gain);
-      oscSub.connect(gain);
-      gain.connect(delay);
-      gain.connect(masterGain);
-
-      osc.start(now);
-      oscSub.start(now);
-      osc.stop(now + 11.0);
-      oscSub.stop(now + 11.0);
-      registerDynamicVoice([osc, oscSub, gain], 11.0);
-    };
-
-    play639();
-    synthIntervalRef.current = scheduleInterval(play639, 8200);
-  },
-
-  // 16. 741Hz 직관과 영적 명료함의 각성 (741Hz Intuitive Clarity)
-  "flow-heal-741": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
-    const delay = createDelay(0.8, 0.52, 0.35);
-
-    const play741 = () => {
-      const now = ctx.currentTime;
-      const f = 741.0;
-
-      const osc = ctx.createOscillator();
-      const oscFifth = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(f, now);
-      oscFifth.type = "sine";
-      oscFifth.frequency.setValueAtTime(f * 1.5, now);
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.014, now + 2.5);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 9.5);
-
-      osc.connect(gain);
-      oscFifth.connect(gain);
-      gain.connect(delay);
-      gain.connect(masterGain);
-
-      osc.start(now);
-      oscFifth.start(now);
-      osc.stop(now + 10.0);
-      oscFifth.stop(now + 10.0);
-      registerDynamicVoice([osc, oscFifth, gain], 10.0);
-    };
-
-    play741();
-    synthIntervalRef.current = scheduleInterval(play741, 7500);
-  },
-
-  // 17. 963Hz 순수 신성 의식과 우주적 합일 (963Hz Divine Crown Connection)
-  "flow-heal-963": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, createAutoPanner, registerDynamicVoice, synthIntervalRef }) => {
-    const delay = createDelay(1.4, 0.55, 0.4);
-    const panner = createAutoPanner(0.03, 0.6);
-
-    const play963 = () => {
-      const now = ctx.currentTime;
-      const f = 963.0;
-
-      const osc = ctx.createOscillator();
-      const oscSub = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(f, now);
-      oscSub.type = "sine";
-      oscSub.frequency.setValueAtTime(f * 0.5, now);
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.013, now + 3.5);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 12.0);
-
-      osc.connect(gain);
-      oscSub.connect(gain);
-      gain.connect(delay);
-      gain.connect(panner);
-
-      osc.start(now);
-      oscSub.start(now);
-      osc.stop(now + 12.5);
-      oscSub.stop(now + 12.5);
-      registerDynamicVoice([osc, oscSub, gain], 12.5);
-    };
-
-    play963();
-    synthIntervalRef.current = scheduleInterval(play963, 9200);
-  },
-
   // 18. 에고의 무조건적 항복 (Surrender of Ego)
   "flow-sedona-surrender": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.2, 0.45, 0.3);
@@ -912,44 +676,6 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
 
     playGapChime();
     synthIntervalRef.current = scheduleInterval(playGapChime, 6200);
-  },
-
-  // 20. 528Hz 무저항 챔버 (Zero-Resistance Sanctuary)
-  "flow-sedona-chamber": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
-    const delay = createDelay(1.2, 0.48, 0.32);
-
-    const playChamber = () => {
-      const now = ctx.currentTime;
-      const freqs = [528.0, 528.0 * 0.5, 528.0 * 0.25];
-
-      freqs.forEach((f, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const filter = ctx.createBiquadFilter();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(f, now);
-
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(520, now);
-
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(idx === 0 ? 0.018 : 0.012, now + 3.5);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 11.5);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(delay);
-        gain.connect(masterGain);
-
-        osc.start(now);
-        osc.stop(now + 12.0);
-        registerDynamicVoice([osc, filter, gain], 12.0);
-      });
-    };
-
-    playChamber();
-    synthIntervalRef.current = scheduleInterval(playChamber, 8800);
   },
 
   // 21. 명치와 가슴의 신체 감각 릴리즈 (Somatic Heart Dissolution)
@@ -1064,7 +790,7 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
   // 24. 감사합니다 · 사랑합니다 (Ho'oponopono Pure Love)
   "flow-hooponopono-love": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
     const delay = createDelay(1.0, 0.5, 0.3);
-    const loveChord = [261.63, 329.63, 392.0, 528.0]; // C Major with 528Hz Miracle Love
+    const loveChord = [261.63, 329.63, 392.0, 523.25]; // C major
 
     const playLove = () => {
       const now = ctx.currentTime;
@@ -1209,40 +935,6 @@ export const FLOW_TRACK_GENERATORS: Record<string, TrackPlayFn> = {
 
     playQuantum();
     synthIntervalRef.current = scheduleInterval(playQuantum, 6000);
-  },
-
-  // 28. 5차원 주파수 앵커링 (5D Vibrational Anchor)
-  "flow-quantum-anchor": (ctx, masterGain, { scheduleInterval = setInterval, createDelay, registerDynamicVoice, synthIntervalRef }) => {
-    const delay = createDelay(1.2, 0.45, 0.3);
-
-    const playAnchor = () => {
-      const now = ctx.currentTime;
-      // Dual-core 432Hz + 528Hz anchoring
-      const anchorPitches = [216.0, 432.0, 528.0];
-
-      anchorPitches.forEach((f, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(f, now);
-
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(idx === 0 ? 0.018 : 0.014, now + 3.0);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 10.5);
-
-        osc.connect(gain);
-        gain.connect(delay);
-        gain.connect(masterGain);
-
-        osc.start(now);
-        osc.stop(now + 11.0);
-        registerDynamicVoice([osc, gain], 11.0);
-      });
-    };
-
-    playAnchor();
-    synthIntervalRef.current = scheduleInterval(playAnchor, 8500);
   },
 
   // 29. 달빛 아래 예술가의 캔버스 (Moonlit Muse Canvas)

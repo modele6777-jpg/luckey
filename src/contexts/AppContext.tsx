@@ -2454,7 +2454,7 @@ ${responseProfile.rule}`;
               { collectionName: 'lucy_history', logType: 'chat_sync', logTitle: '루시 마스터 대화' },
               { collectionName: 'orange_history', logType: 'chat_sync', logTitle: '오렌지 다이어리 교감' },
               { collectionName: 'bluebird_history', logType: 'chat_sync', logTitle: '블루버드 라디오 교감' },
-              { collectionName: 'heal_history', logType: 'chat_sync', logTitle: '아우라 주파수 조율' },
+              { collectionName: 'heal_history', logType: 'chat_sync', logTitle: '아우라 웰니스 대화' },
               { collectionName: 'muse_history', logType: 'chat_sync', logTitle: '뮤즈 영감 싱크' },
               { collectionName: 'trinity_history', logType: 'chat_sync', logTitle: '트리니티 오라클 자문' }
             ];

@@ -4,7 +4,7 @@ import { recordOneStopPageVisit } from './lib/omniWarp/contextNavCycleEngine';
 import React from "react";
 import { Route, Switch, Redirect, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
-import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles } from "lucide-react";
+import { LogOut, User, Volume2, VolumeX, Download, Triangle, RefreshCw, HelpCircle, Sparkles, ArrowLeftRight } from "lucide-react";
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { ThemeProvider, useTheme, resolveChannelThemeFromPath } from "./contexts/ThemeContext";
 import { LoginScreen } from "./components/LoginScreen";
@@ -29,6 +29,7 @@ import { GlobalScrollToTopOnHeaderTap } from "./components/navigation/GlobalScro
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
 import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState } from "./lib/perfMode";
+import { isDuoDividerDoubleTap, mapDuoPaneSide, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
 import HubHome from "./pages/HubHome";
@@ -235,6 +236,40 @@ function AppContent() {
   const isDuoUnfolded = duoState.unfolded;
   const isDuoPortrait = isDuoUnfolded && duoState.orientation === 'portrait';
   const isDuoLandscape = isDuoUnfolded && duoState.orientation === 'landscape';
+  const [duoPanesSwapped, setDuoPanesSwapped] = React.useState(false);
+  const isDuoPanesSwapped = isDuoLandscape && duoPanesSwapped;
+  const duoDividerTapRef = React.useRef<DuoDividerTap | null>(null);
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('duo-panels-swapped', isDuoPanesSwapped);
+    document.body.classList.toggle('duo-panels-swapped', isDuoPanesSwapped);
+    return () => {
+      document.documentElement.classList.remove('duo-panels-swapped');
+      document.body.classList.remove('duo-panels-swapped');
+    };
+  }, [isDuoPanesSwapped]);
+
+  const handleDuoDividerPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const currentTap: DuoDividerTap = {
+      timestamp: Date.now(),
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pointerType: event.pointerType,
+    };
+    if (isDuoDividerDoubleTap(duoDividerTapRef.current, currentTap)) {
+      duoDividerTapRef.current = null;
+      setDuoPanesSwapped((previous) => !previous);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    duoDividerTapRef.current = currentTap;
+  };
+
+  const handleDuoDividerClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (event.detail === 0) setDuoPanesSwapped((previous) => !previous);
+  };
 
   // 📱 iPhone Duo 펼친 상태에서 마지막으로 터치한 패널(좌측 vs 우측) 및 마지막 좌측 채널 경로 추적
   const lastTouchedDuoPaneRef = React.useRef<'left' | 'right'>('right');
@@ -690,12 +725,12 @@ function AppContent() {
       if (!target) return;
 
       if (target.closest('#duo-lucy-viewport')) {
-        lastTouchedDuoPaneRef.current = 'right';
+        lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
         return;
       }
 
       if (target.closest('#duo-content-viewport')) {
-        lastTouchedDuoPaneRef.current = 'left';
+        lastTouchedDuoPaneRef.current = mapDuoPaneSide('left', isDuoPanesSwapped);
         if (!isLucyRoute) {
           lastLeftChannelPathRef.current = location;
         }
@@ -707,9 +742,9 @@ function AppContent() {
       const p = e?.detail?.path;
       if (p) setFoldedCosmicRoom(false);
       if (p === '/' || p === '/chat' || p === '/lucy') {
-        lastTouchedDuoPaneRef.current = 'right';
+        lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
       } else if (p) {
-        lastTouchedDuoPaneRef.current = 'left';
+        lastTouchedDuoPaneRef.current = mapDuoPaneSide('left', isDuoPanesSwapped);
         lastLeftChannelPathRef.current = p;
       }
     };
@@ -725,7 +760,7 @@ function AppContent() {
       window.removeEventListener('click', handleGlobalPointer, { capture: true });
       window.removeEventListener('nav-click-active', handleNavClick);
     };
-  }, [isLucyRoute, location]);
+  }, [isLucyRoute, isDuoPanesSwapped, location]);
   const isKeyRoute = location === '/key' || location === '/calm';
   const isDistractionFreeRoute =
     location === '/handbook' ||
@@ -797,9 +832,9 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? (isDuoPortrait ? 'duo-dual-view flex flex-col' : 'duo-dual-view flex flex-row') : 'flex flex-col'}`}>
+      <main className={`sites-pinned-main flex-1 min-h-0 overflow-x-hidden relative w-full ${isDuoUnfolded ? `duo-dual-view flex ${isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}` : 'flex flex-col'}`}>
         {isDuoUnfolded ? (
-          <div className={`w-full h-full min-h-0 overflow-hidden flex ${isDuoPortrait ? 'flex-col' : 'flex-row'}`}>
+          <div className={`w-full h-full min-h-0 overflow-hidden flex relative ${isDuoPortrait ? 'flex-col' : isDuoPanesSwapped ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* 콘텐츠 뷰포트:
                 - 가로(Landscape): 물리 힌지 기준 기기 절반 (50vw)
                 - 세로(Portrait): 상단 50%
@@ -807,11 +842,11 @@ function AppContent() {
             <div
               id="duo-content-viewport"
               onPointerDownCapture={() => {
-                lastTouchedDuoPaneRef.current = 'left';
+                lastTouchedDuoPaneRef.current = mapDuoPaneSide('left', isDuoPanesSwapped);
                 if (!isLucyRoute) lastLeftChannelPathRef.current = location;
               }}
               onTouchStartCapture={() => {
-                lastTouchedDuoPaneRef.current = 'left';
+                lastTouchedDuoPaneRef.current = mapDuoPaneSide('left', isDuoPanesSwapped);
                 if (!isLucyRoute) lastLeftChannelPathRef.current = location;
               }}
               style={
@@ -840,10 +875,10 @@ function AppContent() {
             <div
               id="duo-lucy-viewport"
               onPointerDownCapture={() => {
-                lastTouchedDuoPaneRef.current = 'right';
+                lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
               }}
               onTouchStartCapture={() => {
-                lastTouchedDuoPaneRef.current = 'right';
+                lastTouchedDuoPaneRef.current = mapDuoPaneSide('right', isDuoPanesSwapped);
               }}
               style={
                 isDuoPortrait
@@ -858,6 +893,22 @@ function AppContent() {
                 </React.Suspense>
               </ErrorBoundary>
             </div>
+            {isDuoLandscape && (
+              <button
+                type="button"
+                aria-label={isDuoPanesSwapped ? '좌우 화면 배치를 원래대로 바꾸기' : '좌우 화면 바꾸기'}
+                aria-pressed={isDuoPanesSwapped}
+                title="가운데 경계를 두 번 탭하면 좌우 화면을 바꿉니다"
+                data-duo-divider-swap
+                onPointerUp={handleDuoDividerPointerUp}
+                onPointerCancel={() => { duoDividerTapRef.current = null; }}
+                onClick={handleDuoDividerClick}
+                className="absolute top-1/2 z-[80] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-zinc-950/75 text-white shadow-xl backdrop-blur-md cursor-pointer touch-manipulation"
+                style={{ left: '50vw', touchAction: 'manipulation' }}
+              >
+                <ArrowLeftRight size={16} aria-hidden="true" />
+              </button>
+            )}
           </div>
         ) : foldedCosmicRoom && isLucyRoute ? (
           <div className="duo-folded-view w-full h-full min-h-0 flex-1 overflow-hidden flex flex-col">

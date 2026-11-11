@@ -149,10 +149,10 @@ export function scoreMenuByContext(menu: PrismMenuDestination, contextText: stri
   }
   if (/피곤|지쳤|숨|뻐근|목|어깨|스트레스|휴식|졸려|답답|불안/.test(trimmed)) {
     if (menu.id === 'heal_wellness' || menu.id === 'heal_breathing' || menu.id === 'hub_ecpr') score += 22;
-    if (menu.id === 'heal_sedona' || menu.id === 'bluebird_sanctuary' || menu.id === 'heal_frequency') score += 16;
+    if (menu.id === 'heal_sedona' || menu.id === 'bluebird_sanctuary') score += 16;
   }
   if (/차크라|에너지|오라|기운|명상|수련|생체/.test(trimmed)) {
-    if (menu.id === 'heal_chakra' || menu.id === 'heal_frequency' || menu.id === 'hub_ecpr') score += 22;
+    if (menu.id === 'heal_chakra' || menu.id === 'hub_ecpr') score += 22;
   }
   if (/생각|정리|오늘|하루|마무리|기억|적어|일기|추억|밤/.test(trimmed)) {
     if (menu.id === 'epilogue_journal' || menu.id === 'epilogue_retrospect' || menu.id === 'epilogue_stars') score += 22;

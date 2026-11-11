@@ -12,43 +12,15 @@ import { type AuraThemeCard, getAuraCardSedonaRecommendation } from '@/lib/auraC
 import { TTSButton } from '@/components/TTSButton';
 import { playTTS, stopTTS } from '@/utils/tts';
 
-// Web Audio Solfeggio Tone generator
-function playSolfeggioTone(freq: number) {
-  try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
-    // Custom soft envelope
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.5);
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc.start();
-    osc.stop(ctx.currentTime + 2.5);
-  } catch (e) {
-    console.warn("Audio playback context restricted or failed:", e);
-  }
-}
-
 // Sedona and Letting Go Release Themes
 const RELEASE_THEMES = {
   apathy: {
     id: 'apathy',
     name: '무기력 & 체념 (Apathy)',
-    desc: '아무것도 할 수 없고 의미 없다는 깊은 좌절과 세포의 긴장을 무한한 의식 속으로 흘려보냅니다.',
+    desc: '아무것도 할 수 없고 의미 없다는 깊은 좌절과 마음의 긴장을 무한한 의식 속으로 흘려보냅니다.',
     emoji: '🥀',
     bgLight: 'rgba(239, 68, 68, 0.05)',
     accent: 'rgb(248, 113, 113)',
-    solfeggio: 396,
     questions: [
       "지금 내면에서 느껴지는 무기력과 '할 수 없다'는 완강한 체념을 있는 그대로 환영하고 허용해볼 수 있나요?",
       "이 힘겨운 무기력을 품에 안아준 뒤, 잠시만 강물에 띄우듯 흘려보낼 수 있나요?",
@@ -63,7 +35,6 @@ const RELEASE_THEMES = {
     emoji: '💧',
     bgLight: 'rgba(59, 130, 246, 0.05)',
     accent: 'rgb(147, 197, 253)',
-    solfeggio: 417,
     questions: [
       "가슴 밑바닥에 오랫동안 서려 있던 상처와 가슴 시린 그리움을 있는 그대로 외면하지 않고 느껴볼 수 있나요?",
       "이 오래된 슬픔을 애정 어린 우주의 숨결 속에 잠시 흘려보낼 수 있나요?",
@@ -78,7 +49,6 @@ const RELEASE_THEMES = {
     emoji: '🌪️',
     bgLight: 'rgba(245, 158, 11, 0.05)',
     accent: 'rgb(253, 186, 116)',
-    solfeggio: 528,
     questions: [
       "지금 몸 구석구석을 떨게 하고 긴장하게 만드는 이 불안과 두려움이라는 파동을 기꺼이 환영할 수 있나요?",
       "자신을 상하게 만드는 이 위축과 두려움을 아주 편안하게 흘려보낼 수 있나요?",
@@ -93,7 +63,6 @@ const RELEASE_THEMES = {
     emoji: '⚡',
     bgLight: 'rgba(168, 85, 247, 0.05)',
     accent: 'rgb(216, 180, 254)',
-    solfeggio: 639,
     questions: [
       "나를 극도로 흥분하게 하거나 고집스럽게 주장하려는 이 화와 억울한 분노 전압을 있는 그대로 고스란히 비춰볼 수 있나요?",
       "나를 무겁게 가두었던 가시 돋친 원망 and 공격적 전하를 허공 속으로 흘려보낼 수 있나요?",
@@ -108,7 +77,6 @@ const RELEASE_THEMES = {
     emoji: '✊',
     bgLight: 'rgba(16, 185, 129, 0.05)',
     accent: 'rgb(110, 231, 183)',
-    solfeggio: 741,
     questions: [
       "내 뜻대로 세상과 사건을 끼워 맞추고 바꾸려는 무의식의 강박적 쥐어짜기를 온전히 느껴볼 수 있나요?",
       "지친 당신의 에고가 매달린 이 숨막히는 통제 열망을 시원하고 가볍게 흘려보낼 수 있나요?",
@@ -123,7 +91,6 @@ const RELEASE_THEMES = {
     emoji: '🌸',
     bgLight: 'rgba(236, 72, 153, 0.05)',
     accent: 'rgb(247, 180, 205)',
-    solfeggio: 852,
     questions: [
       "타인에게 소외당할까 우려하여 미성숙하게 인정과 칭송을 구걸하는 숨길 수 없는 요구를 허용하고 볼 수 있나요?",
       "남의 칭찬 속에서만 확인하려 했던 지친 자가 검열을 평화의 안개 속으로 가볍게 날려보낼 수 있나요?",
@@ -138,7 +105,6 @@ const RELEASE_THEMES = {
     emoji: '⚓',
     bgLight: 'rgba(20, 184, 166, 0.05)',
     accent: 'rgb(115, 235, 230)',
-    solfeggio: 963,
     questions: [
       "언제 다치거나 잘못될지 모른다는 뼛속 깊은 원초적 두려움과 과보호 본능을 있는 그대로 환영할 수 있나요?",
       "가만히 영원한 영혼인 자신을 비스듬히 느끼며, 이 생존 강박을 전적으로 완화해 흘려보낼 수 있나요?",
@@ -325,7 +291,6 @@ export function MeditationOverlay({
         if (prev <= 1) {
           if (step < 3) {
             setStep(s => s + 1);
-            playSolfeggioTone(selectedTheme.solfeggio);
             return 15;
           } else {
             setStep(4);
@@ -366,19 +331,16 @@ export function MeditationOverlay({
   // Handle Firebase persistence when finishing meditations
   useEffect(() => {
     if (step === 4) {
-      playSolfeggioTone(selectedTheme.solfeggio + 100);
       onReleaseComplete?.(theme);
       const user = firebaseUser || auth.currentUser;
       if (user) {
         addDoc(collection(db, 'heal_history', user.uid, 'entries'), {
           type: 'meditation',
           title: `방하착 세도나 정화 완료: ${selectedTheme.name}`,
-          content: `방하착 타겟: ${selectedTheme.name}\n정화 기법: 세도나 메서드 4단계 릴리즈\n솔페지오 ���파수: ${selectedTheme.solfeggio}Hz 자명\n\n[무의식 성찰 결과]\n"내 뜻대로 통제하고, 사랑받고, 안전해지려는 에고의 집착으로부터 영혼이 비워졌습니다. 마음을 가로막던 전하(Charge)는 흘러가고 순수한 평정 자리만이 장엄하게 드러납니다."`,
           createdAt: serverTimestamp(),
           metadata: {
             pattern: 'Sedona Releasing Flow',
             themeId: selectedTheme.id,
-            solfeggioFreq: selectedTheme.solfeggio,
             aiRecommended: aiRecommendation?.themeId === theme,
           }
         }).catch(err => console.error("Firebase Sedona logging failed:", err));
@@ -391,7 +353,6 @@ export function MeditationOverlay({
       const nextStep = step + 1;
       setStep(nextStep);
       setAutoTimer(15);
-      playSolfeggioTone(selectedTheme.solfeggio);
     } else {
       setStep(4);
       setIsPlaying(false);
@@ -403,7 +364,6 @@ export function MeditationOverlay({
     setStep(0);
     setIsPlaying(true);
     setAutoTimer(15);
-    playSolfeggioTone(RELEASE_THEMES[selectedThemeId].solfeggio);
   };
 
   const renderContent = () => (
@@ -436,7 +396,7 @@ export function MeditationOverlay({
         {/* Dynamic content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10 relative min-h-0 premium-scroll">
           
-          {/* Solfeggio Background Energy Ripple */}
+          {/* Calm release background animation */}
           {step >= 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
               <motion.div
@@ -564,7 +524,6 @@ export function MeditationOverlay({
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-xs text-slate-200 tracking-wide">{tVal.name}</span>
-                            <span className="text-[9px] font-mono opacity-50 px-1.5 py-0.5 rounded border border-white/10">{tVal.solfeggio}Hz</span>
                             {isAiPick && (
                               <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/25">
                                 AI 추천
@@ -582,7 +541,7 @@ export function MeditationOverlay({
 
                 <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/5 text-center">
                   <p className="text-xs text-slate-300 font-light leading-relaxed">
-                    릴리즈 단계에 돌입하면 마음을 차분히 가라앉히는 <span className="text-emerald-300 font-bold font-mono">Solfeggio 신성 주파수</span>가 즉각 공명 자명됩니다.
+                    릴리즈 단계에 돌입하면 마음을 차분히 가라앉히는 안내와 호흡에 집중합니다.
                   </p>
                 </div>
               </motion.div>
@@ -600,7 +559,6 @@ export function MeditationOverlay({
                   <span className="font-mono text-[9px] uppercase tracking-widest text-white/30 px-2 py-0.5 rounded border border-white/5">
                     {selectedTheme.name} 정화기 • STEP {step + 1} / 4
                   </span>
-                  <p className="text-white/20 text-[10px] font-mono tracking-wide">{selectedTheme.solfeggio}Hz 치유음 자진중</p>
                 </div>
 
                 {/* Question */}

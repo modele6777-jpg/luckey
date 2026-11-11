@@ -57,7 +57,7 @@ export const LUCY_8_MODE_CONFIGS: Lucy8ModeConfig[] = [
     icon: '🔮',
     label: '트리니티',
     subLabel: '사주·타로',
-    tagline: '천문 사주원국 & 타로 주파수 영적 통찰',
+    tagline: '천문 사주원국 & 타로 마음의 흐름 영적 통찰',
     activeGradient: 'from-purple-600 to-fuchsia-600 text-white shadow-purple-200/50',
     activeBorder: 'border-purple-400',
     badgeBg: 'bg-purple-100 text-purple-900 border-purple-200',

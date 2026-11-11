@@ -1010,7 +1010,7 @@ const DAILY_ART_FALLBACKS: ArtFallbackEntry[] = [
     artworkType: "미술 (유화)",
     era: "인상주의 · 1916년",
     description: "빛의 변화에 따른 물그림자의 색조를 끊임없이 기록한 명작입니다. 연못의 깊이에 침잠하여 경계 없는 평온함을 선물하며 번뇌를 녹여내어 깊은 명상적 합일에 이르게 합니다.",
-    whyRecommended: "지금 당신의 마음에 고요하고 부드러운 치유가 필요합니다. 세세한 격리된 감정을 흐르는 빛줄기에 스며들게 함으로써 창작의 근원 주파수를 정화해 줍니다.",
+    whyRecommended: "지금 당신의 마음에 고요하고 부드러운 치유가 필요합니다. 세세한 감정을 흐르는 빛줄기에 스며들게 하며 새로운 창작 영감을 건넵니다.",
     challenges: [
       "눈을 감고 정갈한 호수 수면을 바라보는 명상을 3분간 진행해 보세요.",
       "노트 중심에 파란색이나 보라색 크레용으로 가볍게 퍼져나가는 원형 물결을 어루만지듯 그려보세요."
@@ -1027,7 +1027,7 @@ const DAILY_ART_FALLBACKS: ArtFallbackEntry[] = [
     artworkType: "미술 (유화)",
     era: "후기 인상주의 · 1889년",
     description: "요동치는 푸른 밤하늘과 소용돌이치는 황금빛 별들이 영혼의 격정을 예술로 승화한 걸작입니다. 내면의 혼란을 창조적 에너지로 치유하는 강렬한 울림을 줍니다.",
-    whyRecommended: "당신의 깊은 무의식에 잠재된 열정과 빛을 일깨울 시간입니다. 어두운 밤하늘 속에서도 영롱하게 빛나는 별의 주파수에 주파수를 맞추어 보세요.",
+    whyRecommended: "당신의 깊은 무의식에 잠재된 열정과 빛을 일깨울 시간입니다. 어두운 밤하늘 속에서도 영롱하게 빛나는 별에서 오늘의 영감을 발견해 보세요.",
     challenges: [
       "밤하늘을 올려다보며 가장 밝게 빛나는 별 하나를 찾아 10초간 응시해 보세요.",
       "노란색 펜으로 나만의 빛나는 별 모양을 스케치북에 힘있게 휘갈겨 보세요."
@@ -2059,7 +2059,6 @@ export function ArtRecommendationView() {
           moodId: dailyMood.id,
           userContext,
           userConcern: concernText,
-          energyFrequency: "528Hz",
           dateKey: getTodayDateKey(),
           randomOffset: offset,
           excludeCatalogIds,
@@ -2220,7 +2219,7 @@ export function ArtRecommendationView() {
           artworkType: catalogMatch.artworkType,
           era: catalogMatch.era,
           description: toss.contextMessage || catalogMatch.description,
-          whyRecommended: `오라클 타로 [${cardNames || '영혼의 3장'}]의 서사적 조합과 완전한 주파수로 공명하는 예술 처방입니다.`,
+          whyRecommended: `오라클 타로 [${cardNames || '영혼의 3장'}]의 서사와 잘 어울리는 예술 영감 처방입니다.`,
           challenges: catalogMatch.defaultChallenges ? [...catalogMatch.defaultChallenges] : [],
           aestheticTone: catalogMatch.aestheticTone,
           quote: toss.anchorArtQuote || catalogMatch.quote,
@@ -2242,7 +2241,7 @@ export function ArtRecommendationView() {
           titleOriginal: anchorTitle || fallbackMatch.titleOriginal,
           quote: toss.anchorArtQuote || fallbackMatch.quote,
           description: toss.contextMessage || fallbackMatch.description,
-          whyRecommended: `오라클 타로에서 도출된 [${cardNames}] 3장의 카드 시퀀스와 완전한 주파수로 공명하는 예술 처방입니다.`,
+          whyRecommended: `오라클 타로에서 도출된 [${cardNames}] 3장의 카드 시퀀스에서 출발한 예술 영감 처방입니다.`,
         };
       }
 
@@ -2415,7 +2414,7 @@ export function ArtRecommendationView() {
 
   const loadingMessages = [
     "퀀텀 시냅스를 정렬하여 당신의 최근 내면 흐름을 수집하고 있습니다...",
-    "동조 주파수 파동(Hz)과 마인드풀 에너지의 완벽한 조화를 스캔하는 중...",
+    "마음 상태와 예술적 영감에 어울리는 명작을 찾는 중...",
     "DailyArt Magazine의 Masterpiece Stories에서 검증된 명작을 큐레이션합니다...",
     "예술이 전하는 영감과 실천적 미션을 마법처럼 조율하는 마지막 단계..."
   ];
@@ -3193,9 +3192,6 @@ export function ArtRecommendationView() {
                     </span>
                   </div>
                   
-                  <div className="text-[10px] font-mono tracking-widest text-[#a5b4fc]/80 bg-[#a5b4fc]/5 border border-[#a5b4fc]/10 px-3 py-1.5 rounded-xl">
-                    ENERGY FREQUENCY: 528Hz Sync
-                  </div>
                 </div>
 
                 {/* Title & Creator */}
@@ -3409,7 +3405,7 @@ export function ArtRecommendationView() {
                 <div className="p-5 md:p-6 rounded-[24px] bg-blue-500/[0.03] border border-blue-500/10 space-y-3 animate-fade-in">
                   <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-blue-300">
                     <Sparkles size={11} className="animate-pulse" />
-                    뮤즈의 주파수 가이드 전언
+                    뮤즈의 창작 영감 가이드
                   </span>
                   <p className="text-xs md:text-sm text-blue-100/80 leading-relaxed font-sans font-medium">
                     {recommendation.whyRecommended}

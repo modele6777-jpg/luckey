@@ -404,7 +404,7 @@ export function VisualFortuneChartWidget({
                         ? 'bg-amber-400/20 border-amber-400/50 text-amber-200'
                         : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
                     }`}
-                    title="528Hz 정화 싱잉볼을 가볍게 울립니다."
+                    title="잔잔한 싱잉볼 소리를 가볍게 울립니다."
                   >
                     {isRinging ? <Check size={10} className="text-emerald-400" /> : <Bell size={10} className="text-amber-400" />}
                     <span>{isRinging ? '정화 🔔' : '싱잉볼'}</span>

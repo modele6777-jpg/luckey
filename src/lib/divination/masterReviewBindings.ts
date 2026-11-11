@@ -272,10 +272,6 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
     "field": "synchronicityOmenResult",
     "traceKey": "synchronicityOmenResult"
   },
-  "solfeggioHarmonic": {
-    "field": "solfeggioHarmonicResult",
-    "traceKey": "solfeggioHarmonicResult"
-  },
   "ethericAuraBiofield": {
     "field": "ethericAuraBiofieldResult",
     "traceKey": "ethericAuraBiofieldResult"
@@ -563,10 +559,6 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "tibetanPhowaRainbowBody": {
     "field": "tibetanPhowaRainbowBodyResult",
     "traceKey": "tibetanPhowaRainbowBodyResult"
-  },
-  "pythagoreanHarmoniaSpheres": {
-    "field": "pythagoreanHarmoniaSpheresResult",
-    "traceKey": "pythagoreanHarmoniaSpheresResult"
   },
   "plumBlossomMeihuaOracle": {
     "field": "plumBlossomMeihuaOracleResult",

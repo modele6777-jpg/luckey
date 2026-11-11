@@ -637,7 +637,7 @@ export function AudioReactive3DVisualizer({
               </span>
             </div>
             <span className="text-[11px] text-white/60 truncate">
-              {trackName || '30곡 실시간 주파수 반응형 3D 파티클 엔진'} · {trackArtist || 'PRISM Audio Suite'}
+              {trackName || '30곡 실시간 음악 반응형 3D 파티클 엔진'} · {trackArtist || 'PRISM Audio Suite'}
             </span>
           </div>
         </div>
@@ -683,7 +683,7 @@ export function AudioReactive3DVisualizer({
       {/* Center Interactive Drag Hint */}
       <div className="relative z-10 mx-auto mt-2 pointer-events-none">
         <span className="text-[10px] text-white/40 tracking-widest font-mono bg-black/40 px-3 py-1 rounded-full backdrop-blur-md border border-white/5">
-          DRAG TO ORBIT · SCROLL TO ZOOM · 3D PARTICLES REACT TO FREQUENCIES
+          DRAG TO ORBIT · SCROLL TO ZOOM · 3D PARTICLES REACT TO MUSIC
         </span>
       </div>
 
@@ -717,7 +717,7 @@ export function AudioReactive3DVisualizer({
             })}
           </div>
 
-          {/* Real-time Frequency Spectrum Meters HUD */}
+          {/* Real-time Audio Meters HUD */}
           <div className="flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl">
             {/* Bass */}
             <div className="flex flex-col items-center gap-1 min-w-[38px]">

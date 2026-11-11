@@ -5,7 +5,6 @@
  * - White / Pink Noise (화이트 & 핑크 노이즈)
  * - Forest Bird Calls (숲속 새소리 & 바람)
  * - Ocean Waves (해변 파도 소리)
- * - Binaural Beats (432Hz 힐링 주파수 & 세타파)
  * - Cozy Fireplace (모닥불 장작 소리)
  *
  * 100% client-side, zero latency, seamless infinite procedural loop.
@@ -13,7 +12,7 @@
 
 import { getSharedAudioContext } from './audio';
 
-export type MoodSoundId = 'rain' | 'whitenoise' | 'forest' | 'ocean' | 'binaural' | 'fireplace';
+export type MoodSoundId = 'rain' | 'whitenoise' | 'forest' | 'ocean' | 'fireplace';
 
 export interface MoodPreset {
   id: MoodSoundId;
@@ -66,16 +65,6 @@ export const MOOD_PRESETS: MoodPreset[] = [
     color: '#06b6d4',
     accentClass: 'from-cyan-500/20 to-blue-500/20 border-cyan-400/40 text-cyan-300',
     badge: '수면 유도',
-  },
-  {
-    id: 'binaural',
-    name: '432Hz 바이노럴 비트',
-    nameEn: '432Hz Binaural Beat',
-    emoji: '🧘',
-    description: '뇌파를 세타파(5.5Hz)로 동조시키는 치유의 주파수 화음',
-    color: '#f59e0b',
-    accentClass: 'from-amber-500/20 to-yellow-500/20 border-amber-400/40 text-amber-300',
-    badge: '뇌파 동조',
   },
   {
     id: 'fireplace',
@@ -227,9 +216,6 @@ class MoodSoundEngine {
           break;
         case 'ocean':
           this.buildOceanWavesSynth(ctx, gainNode);
-          break;
-        case 'binaural':
-          this.buildBinauralSynth(ctx, gainNode);
           break;
         case 'fireplace':
           this.buildFireplaceSynth(ctx, gainNode);
@@ -490,67 +476,7 @@ class MoodSoundEngine {
   }
 
   // -------------------------------------------------------------
-  // 5. 🧘 432Hz Binaural Beat
-  // -------------------------------------------------------------
-  private buildBinauralSynth(ctx: AudioContext, out: GainNode) {
-    const carrier = 432;
-    const beat = 5.5; // Theta wave
-
-    const oscLeft = ctx.createOscillator();
-    const oscRight = ctx.createOscillator();
-    oscLeft.type = 'sine';
-    oscRight.type = 'sine';
-    oscLeft.frequency.setValueAtTime(carrier, ctx.currentTime);
-    oscRight.frequency.setValueAtTime(carrier + beat, ctx.currentTime);
-
-    // Stereo split
-    let pannerLeft: any = null;
-    let pannerRight: any = null;
-
-    if (typeof ctx.createStereoPanner === 'function') {
-      pannerLeft = ctx.createStereoPanner();
-      pannerRight = ctx.createStereoPanner();
-      pannerLeft.pan.setValueAtTime(-0.8, ctx.currentTime);
-      pannerRight.pan.setValueAtTime(0.8, ctx.currentTime);
-    }
-
-    const binauralGain = ctx.createGain();
-    binauralGain.gain.setValueAtTime(0.35, ctx.currentTime);
-
-    if (pannerLeft && pannerRight) {
-      oscLeft.connect(pannerLeft);
-      pannerLeft.connect(binauralGain);
-      oscRight.connect(pannerRight);
-      pannerRight.connect(binauralGain);
-    } else {
-      oscLeft.connect(binauralGain);
-      oscRight.connect(binauralGain);
-    }
-
-    // Warm sub-harmony pad
-    const subOsc = ctx.createOscillator();
-    subOsc.type = 'sine';
-    subOsc.frequency.setValueAtTime(108, ctx.currentTime); // 2 octaves below 432
-    const subGain = ctx.createGain();
-    subGain.gain.setValueAtTime(0.12, ctx.currentTime);
-    subOsc.connect(subGain);
-    subGain.connect(out);
-
-    binauralGain.connect(out);
-
-    oscLeft.start();
-    oscRight.start();
-    subOsc.start();
-
-    this.activeCleanups.push(() => {
-      try { oscLeft.stop(); oscLeft.disconnect(); } catch {}
-      try { oscRight.stop(); oscRight.disconnect(); } catch {}
-      try { subOsc.stop(); subOsc.disconnect(); } catch {}
-    });
-  }
-
-  // -------------------------------------------------------------
-  // 6. 🔥 Cozy Fireplace Crackle
+  // 5. 🔥 Cozy Fireplace Crackle
   // -------------------------------------------------------------
   private buildFireplaceSynth(ctx: AudioContext, out: GainNode) {
     // Warm low roar

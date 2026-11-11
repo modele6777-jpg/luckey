@@ -53,14 +53,6 @@ const ENVIRONMENT_ATMOSPHERES: Record<MoodSoundId, EnvironmentAtmosphere> = {
     particleGlow: 'rgba(6, 182, 212, 0.6)',
     keyword: '끝없이 밀려왔다 물러서는 밤바다의 숨결',
   },
-  binaural: {
-    gradient: 'linear-gradient(145deg, rgba(217, 119, 6, 0.42) 0%, rgba(180, 83, 9, 0.28) 45%, rgba(69, 26, 3, 0.88) 100%)',
-    radialCore: 'radial-gradient(circle at 50% 18%, rgba(245, 158, 11, 0.4) 0%, rgba(217, 119, 6, 0.15) 50%, transparent 75%)',
-    secondaryColor: '#d97706',
-    vignetteColor: 'rgba(217, 119, 6, 0.3)',
-    particleGlow: 'rgba(245, 158, 11, 0.6)',
-    keyword: '432Hz 솔페지오 황금빛 공명과 내면의 조화',
-  },
   fireplace: {
     gradient: 'linear-gradient(145deg, rgba(234, 88, 12, 0.42) 0%, rgba(154, 52, 18, 0.28) 45%, rgba(67, 20, 7, 0.88) 100%)',
     radialCore: 'radial-gradient(circle at 50% 18%, rgba(249, 115, 22, 0.4) 0%, rgba(234, 88, 12, 0.15) 50%, transparent 75%)',
