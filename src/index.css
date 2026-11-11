@@ -3826,3 +3826,29 @@ html.dark .update-notice-modal .update-notice-item,
 html.dark .update-notice-modal .update-notice-note {
   color: #cbd5e1 !important;
 }
+
+/* iOS/WebKit can render glyph fill separately from CSS `color`; set both on the copy itself. */
+.update-notice-modal .update-notice-summary,
+.update-notice-modal .update-notice-note {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+.update-notice-modal .update-notice-item {
+  color: #334155 !important;
+}
+.update-notice-modal .update-notice-item > span:not(.text-amber-500) {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+html.dark .update-notice-modal .update-notice-summary,
+html.dark .update-notice-modal .update-notice-note {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+html.dark .update-notice-modal .update-notice-item {
+  color: #cbd5e1 !important;
+}
+html.dark .update-notice-modal .update-notice-item > span:not(.text-amber-500) {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
