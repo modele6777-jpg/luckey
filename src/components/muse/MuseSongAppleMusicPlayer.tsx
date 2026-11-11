@@ -38,6 +38,32 @@ const DEAD_APPLE_MUSIC_ALBUMS = new Set([
   "1545642456",
 ]);
 
+/** Accept only Apple Music URLs that identify a specific song, not an album alone. */
+export function resolveAppleMusicClassicalTrackUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" || !/(^|\.)music\.apple\.com$/i.test(parsed.hostname)) return undefined;
+    if ([...DEAD_APPLE_MUSIC_ALBUMS].some((albumId) => parsed.pathname.includes(albumId))) return undefined;
+
+    const isAlbumPath = /\/album\/(?:[^/]+\/)?\d+\/?$/i.test(parsed.pathname);
+    const hasTrackQuery = isAlbumPath && /^\d+$/.test(parsed.searchParams.get("i") || "");
+    const hasSongPath = /\/song\/(?:[^/]+\/)?\d+\/?$/i.test(parsed.pathname);
+    return hasTrackQuery || hasSongPath ? parsed.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Prefer a usable track link; otherwise open the title's Apple Music Classical search results. */
+export function resolveAppleMusicClassicalSongUrl(
+  url: string | undefined,
+  title: string,
+  artist?: string,
+): string {
+  return resolveAppleMusicClassicalTrackUrl(url) || buildAppleMusicClassicalSearchUrl(title, artist);
+}
+
 /**
  * Converts any Apple Music / Apple Music Classical web link
  * into its embed.music.apple.com iframe URL.
@@ -168,22 +194,23 @@ export function MuseSongAppleMusicPlayer({
   appleMusicClassicalUrl,
   youtubeVideoId,
 }: MuseSongAppleMusicPlayerProps) {
-  // Apple Music 목적지 URL (한국 스토어 검색 딥링크 우선)
-  const openAppleUrl = useMemo(() => {
-    const explicit = appleMusicClassicalUrl?.trim();
-    // 만약 알려진 404 앨범 ID가 들어있다면, 사용자가 앱에서 열었을 때 국가/지역 제한 팝업이 뜨지 않도록 즉시 /kr/search로 변환
-    if (explicit) {
-      for (const deadId of DEAD_APPLE_MUSIC_ALBUMS) {
-        if (explicit.includes(deadId)) {
-          return buildAppleMusicClassicalSearchUrl(title, artistOriginal || artist);
-        }
-      }
-      return explicit;
-    }
-    return buildAppleMusicClassicalSearchUrl(title, artistOriginal || artist);
-  }, [appleMusicClassicalUrl, title, titleOriginal, artist, artistOriginal]);
-
-  const embedAppleUrl = useMemo(() => resolveAppleMusicClassicalEmbedUrl(openAppleUrl), [openAppleUrl]);
+  const directAppleSongUrl = useMemo(
+    () => resolveAppleMusicClassicalTrackUrl(appleMusicClassicalUrl?.trim()),
+    [appleMusicClassicalUrl],
+  );
+  const searchTitle = titleOriginal?.trim() || title;
+  const appleMusicSearchUrl = useMemo(
+    () => buildAppleMusicClassicalSearchUrl(searchTitle, artistOriginal || artist),
+    [searchTitle, artist, artistOriginal],
+  );
+  const openAppleUrl = useMemo(
+    () => resolveAppleMusicClassicalSongUrl(directAppleSongUrl, searchTitle, artistOriginal || artist),
+    [directAppleSongUrl, searchTitle, artist, artistOriginal],
+  );
+  const embedAppleUrl = useMemo(
+    () => directAppleSongUrl ? resolveAppleMusicClassicalEmbedUrl(directAppleSongUrl) : undefined,
+    [directAppleSongUrl],
+  );
 
   // YouTube 연동
   const resolvedYtId = useMemo(
@@ -200,11 +227,7 @@ export function MuseSongAppleMusicPlayer({
     [resolvedYtId],
   );
 
-  // 🌟 스마트 기본 모드 결정:
-  // Apple Music 임베드가 불가능하거나(404 ID), 회색 먹통 박스가 뜰 위험이 있는 곡은
-  // 사용자 요청("애플뮤직에서 재생 안되는 콘텐츠는 유튜브로 나오게 해줘")에 따라 즉시 YouTube를 기본으로 띄웁니다!
-  const defaultTab = embedAppleUrl ? "applemusic" : "youtube";
-  const [activeTab, setActiveTab] = useState<"applemusic" | "youtube">(defaultTab);
+  const [activeTab, setActiveTab] = useState<"applemusic" | "youtube">("applemusic");
 
   return (
     <div className="space-y-3.5 pb-2">
@@ -237,10 +260,10 @@ export function MuseSongAppleMusicPlayer({
           </button>
         </div>
 
-        {/* 상호 자동 백업 안내 뱃지 */}
+        {/* Apple Music Classical remains the initial destination; switching is user-controlled. */}
         <span className="text-[10px] text-white/50 flex items-center gap-1 font-mono">
           <Sparkles size={11} className="text-amber-400/80" />
-          상호 자동 폴백 지원
+          Apple Music Classical 우선
         </span>
       </div>
 
@@ -259,16 +282,18 @@ export function MuseSongAppleMusicPlayer({
               />
             </div>
           ) : (
-            /* Apple Music 인플레이스 앨범이 한국 스토어에 없는 경우에는 검색 안내만 표시 */
+            /* Without a usable track link, keep the Apple Music action pointed at search. */
             <div className="rounded-2xl p-4 border border-rose-500/25 bg-gradient-to-br from-rose-950/30 to-black/60 space-y-3 text-left">
               <div className="flex items-start gap-2.5">
                 <Music size={16} className="text-rose-400 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-white">
-                    한국 Apple Music Classical 검색 딥링크 제공
+                    {directAppleSongUrl ? "Apple Music Classical 곡 링크" : "Apple Music Classical 곡 검색"}
                   </p>
                   <p className="text-[11px] text-white/60 leading-relaxed">
-                    이 곡의 Apple Music 직접 재생 주소가 없어 한국 스토어 검색 결과로 연결됩니다. 아래 링크에서 곡을 확인해 주세요.
+                    {directAppleSongUrl
+                      ? "아래에서 이 곡을 열 수 있습니다. 재생이 되지 않으면 검색 결과 링크를 이용하세요."
+                      : "곡별 딥링크가 없어 곡 제목의 Apple Music Classical 검색 결과를 엽니다."}
                   </p>
                 </div>
               </div>
@@ -279,9 +304,14 @@ export function MuseSongAppleMusicPlayer({
           <div className="flex items-center justify-between gap-2 flex-wrap pt-0.5">
             <a href={openAppleUrl} target="_blank" rel="noopener noreferrer" className={linkClassName}>
               <AppleIcon size={13} />
-              Apple Music Classical에서 열기 ↗
+              {directAppleSongUrl ? "Apple Music Classical에서 곡 열기 ↗" : "Apple Music Classical에서 곡 검색 ↗"}
               <ChevronRight size={12} />
             </a>
+            {directAppleSongUrl && (
+              <a href={appleMusicSearchUrl} target="_blank" rel="noopener noreferrer" className={linkClassName}>
+                Apple Music Classical에서 곡 검색 ↗
+              </a>
+            )}
 
           </div>
         </div>
@@ -329,7 +359,7 @@ export function MuseSongAppleMusicPlayer({
 
       {/* 💡 상호 폴백 힌트 메시지 */}
       <p className="text-[10px] text-white/40 leading-relaxed font-sans pt-1 border-t border-white/5">
-        💡 특정 플랫폼에서 국가·지역 제한 또는 로딩 정체가 발생하면, 위 탭이나 전환 버튼을 눌러 상호 보완 음원으로 끊김 없이 들으실 수 있습니다.
+        💡 Apple Music Classical에서 곡을 찾지 못하면 검색 결과에서 확인하세요. 다른 플랫폼은 필요할 때 위 탭에서 직접 선택할 수 있습니다.
       </p>
     </div>
   );
