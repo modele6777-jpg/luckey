@@ -2350,6 +2350,22 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return () => container.removeEventListener('wheel', onWheel);
   }, [isLucyReady]);
 
+  // 📱 상단 상태바/헤더 탭 시 최상단 스크롤 이벤트 직접 수신
+  useEffect(() => {
+    const handleScrollToTopEvent = (e: any) => {
+      const target = e?.detail?.target;
+      if (target && typeof target.closest === 'function' && target.closest('#duo-content-viewport')) {
+        return;
+      }
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        isUserScrolledUpRef.current = true;
+      }
+    };
+    window.addEventListener('prism-scroll-to-top', handleScrollToTopEvent);
+    return () => window.removeEventListener('prism-scroll-to-top', handleScrollToTopEvent);
+  }, []);
+
   // Keep the callback stable: playback changes must not rerun the mount scroll effect.
   const ttsBlocksAutoScrollRef = useRef(false);
   ttsBlocksAutoScrollRef.current = ttsInfo.isSpeaking || ttsInfo.isLoading;
@@ -2961,6 +2977,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
       {/* PRO Top Header Bar */}
       <header 
+        data-top-bar="true"
         style={{
           paddingTop: isDuoPortrait ? 'max(8px, 0.5rem)' : 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
           overflowX: 'hidden',
@@ -3155,6 +3172,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           {/* Chat Messages Stream */}
           <main
         ref={messagesContainerRef}
+        data-app-scroll-root="true"
         onScroll={handleScroll}
         style={{ overflowX: 'hidden', touchAction: 'pan-y' }}
         className="prism-page-content lucy-chat-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-x-none touch-pan-y p-3 sm:p-5 lg:p-6 w-full mx-auto min-w-0 select-text"

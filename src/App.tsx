@@ -25,6 +25,7 @@ import { PrismRainbowLoader } from "./components/PrismRainbowLoader";
 import { LucyAuraLoader } from "./components/LucyAuraLoader";
 import { KeyCosmicLoader } from "./components/KeyCosmicLoader";
 
+import { GlobalScrollToTopOnHeaderTap } from "./components/navigation/GlobalScrollToTopOnHeaderTap";
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
 import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState } from "./lib/perfMode";
@@ -867,6 +868,7 @@ function AppContent() {
         )}
       </main>
       <OneStopVisitTracker />
+      <GlobalScrollToTopOnHeaderTap />
       <LeftSidebarNav />
       <BigBangButton />
       <BigBangExpansionOverlay />

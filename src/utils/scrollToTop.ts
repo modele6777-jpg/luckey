@@ -1,6 +1,80 @@
-const SCROLL_ROOT_SELECTOR = "[data-app-scroll-root]";
+const SCROLL_ROOT_SELECTOR = "[data-app-scroll-root], .lucy-chat-main";
 
-function scrollRootsToTop(behavior: ScrollBehavior) {
+function scrollIframeToTop(iframe: HTMLIFrameElement, behavior: ScrollBehavior) {
+  try {
+    iframe.contentWindow?.postMessage({ type: 'PRISM_SCROLL_TO_TOP', behavior }, '*');
+  } catch (_) {}
+  try {
+    const win = iframe.contentWindow;
+    const doc = iframe.contentDocument;
+    if (win) {
+      try {
+        win.scrollTo({ top: 0, left: 0, behavior });
+      } catch (_) {
+        win.scrollTo(0, 0);
+      }
+    }
+    if (doc) {
+      try {
+        doc.documentElement?.scrollTo({ top: 0, left: 0, behavior });
+        doc.body?.scrollTo({ top: 0, left: 0, behavior });
+      } catch (_) {
+        if (doc.documentElement) doc.documentElement.scrollTop = 0;
+        if (doc.body) doc.body.scrollTop = 0;
+      }
+      doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll, .portal-container, .main-content').forEach((el) => {
+        if (el.scrollTop > 0) {
+          try {
+            el.scrollTo({ top: 0, left: 0, behavior });
+          } catch (_) {
+            el.scrollTop = 0;
+          }
+        }
+      });
+    }
+  } catch (_) {}
+}
+
+function scrollRootsToTop(behavior: ScrollBehavior, targetElement?: HTMLElement | null) {
+  // iPhone Duo 듀얼 화면 분할 모드 지원: 탭된 패널(우측 루시 vs 좌측 채널)만 선별 스크롤
+  const duoLucyPane = targetElement?.closest('#duo-lucy-viewport');
+  const duoContentPane = targetElement?.closest('#duo-content-viewport');
+
+  if (duoLucyPane) {
+    duoLucyPane.querySelectorAll<HTMLElement>('[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll').forEach((el) => {
+      try {
+        el.scrollTo({ top: 0, left: 0, behavior });
+      } catch (_) {
+        el.scrollTop = 0;
+      }
+    });
+    try {
+      duoLucyPane.scrollTo({ top: 0, left: 0, behavior });
+    } catch (_) {
+      duoLucyPane.scrollTop = 0;
+    }
+    return;
+  }
+
+  if (duoContentPane) {
+    duoContentPane.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll').forEach((el) => {
+      try {
+        el.scrollTo({ top: 0, left: 0, behavior });
+      } catch (_) {
+        el.scrollTop = 0;
+      }
+    });
+    try {
+      duoContentPane.scrollTo({ top: 0, left: 0, behavior });
+    } catch (_) {
+      duoContentPane.scrollTop = 0;
+    }
+    duoContentPane.querySelectorAll<HTMLIFrameElement>('iframe').forEach((iframe) => {
+      scrollIframeToTop(iframe, behavior);
+    });
+    return;
+  }
+
   try {
     window.scrollTo({ top: 0, left: 0, behavior });
   } catch (_) {
@@ -39,45 +113,14 @@ function scrollRootsToTop(behavior: ScrollBehavior) {
 
   // Also scroll any embedded same-origin iframes (e.g., KEY channel /calm/index.html)
   document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((iframe) => {
-    try {
-      iframe.contentWindow?.postMessage({ type: 'PRISM_SCROLL_TO_TOP', behavior }, '*');
-    } catch (_) {}
-    try {
-      const win = iframe.contentWindow;
-      const doc = iframe.contentDocument;
-      if (win) {
-        try {
-          win.scrollTo({ top: 0, left: 0, behavior });
-        } catch (_) {
-          win.scrollTo(0, 0);
-        }
-      }
-      if (doc) {
-        try {
-          doc.documentElement?.scrollTo({ top: 0, left: 0, behavior });
-          doc.body?.scrollTo({ top: 0, left: 0, behavior });
-        } catch (_) {
-          if (doc.documentElement) doc.documentElement.scrollTop = 0;
-          if (doc.body) doc.body.scrollTop = 0;
-        }
-        doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .overflow-y-auto, .overflow-y-scroll, .portal-container, .main-content').forEach((el) => {
-          if (el.scrollTop > 0) {
-            try {
-              el.scrollTo({ top: 0, left: 0, behavior });
-            } catch (_) {
-              el.scrollTop = 0;
-            }
-          }
-        });
-      }
-    } catch (_) {}
+    scrollIframeToTop(iframe, behavior);
   });
 }
 
-export function resetAppScroll(behavior: ScrollBehavior = "auto") {
-  scrollRootsToTop(behavior);
+export function resetAppScroll(behavior: ScrollBehavior = "auto", targetElement?: HTMLElement | null) {
+  scrollRootsToTop(behavior, targetElement);
   if (behavior !== "smooth") {
-    requestAnimationFrame(() => scrollRootsToTop(behavior));
+    requestAnimationFrame(() => scrollRootsToTop(behavior, targetElement));
   }
 }
 
@@ -168,4 +211,4 @@ export function resetAppScrollToBottom(behavior: ScrollBehavior = "smooth") {
   if (behavior !== "smooth") {
     requestAnimationFrame(() => scrollRootsToBottom(behavior));
   }
-}
+}

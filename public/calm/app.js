@@ -3706,4 +3706,69 @@ document.addEventListener('DOMContentLoaded', () => {
       try { window.parent.postMessage({ type: 'PRISM_PTR_RESET' }, '*'); } catch(_) {}
     }, { passive: true });
   })();
+
+  // 📱 Key 채널 iframe 상단 탭 시 최상단 스크롤 (아이폰 고유 기능 연동)
+  (function initIframeScrollToTopOnHeaderTap() {
+    let startX = 0, startY = 0, startTime = 0, isDragging = false;
+
+    window.addEventListener('touchstart', function(e) {
+      if (!e.touches || e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+      isDragging = false;
+    }, { passive: true, capture: true });
+
+    window.addEventListener('touchmove', function(e) {
+      if (isDragging || !e.touches || e.touches.length !== 1) return;
+      var dist = Math.hypot(e.touches[0].clientX - startX, e.touches[0].clientY - startY);
+      if (dist > 14) isDragging = true;
+    }, { passive: true, capture: true });
+
+    function scrollIframeToTopSmooth() {
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) { window.scrollTo(0, 0); }
+      try { document.documentElement.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) { document.documentElement.scrollTop = 0; }
+      try { document.body.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) { document.body.scrollTop = 0; }
+      document.querySelectorAll('.portal-container, .main-content, .exercises-grid, .scroll-container').forEach(function(el) {
+        if (el.scrollTop > 0) {
+          try { el.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) { el.scrollTop = 0; }
+        }
+      });
+    }
+
+    window.addEventListener('touchend', function(e) {
+      if (isDragging) return;
+      var touch = e.changedTouches && e.changedTouches[0];
+      if (!touch) return;
+      var duration = Date.now() - startTime;
+      var dist = Math.hypot(touch.clientX - startX, touch.clientY - startY);
+      if (dist > 14 || duration > 400) return;
+
+      var target = (document.elementFromPoint(touch.clientX, touch.clientY) || e.target);
+      if (!target) return;
+      if (target.closest('button, a, input, select, textarea, [role="button"], label, .chip')) return;
+
+      var isTopEdge = touch.clientY <= 56;
+      var isTopNav = Boolean(target.closest('.top-nav, header, nav'));
+
+      if (isTopEdge || isTopNav) {
+        scrollIframeToTopSmooth();
+      }
+    }, { passive: true, capture: true });
+
+    window.addEventListener('click', function(e) {
+      var target = document.elementFromPoint(e.clientX, e.clientY) || e.target;
+      if (!target || target.closest('button, a, input, select, textarea, [role="button"], label, .chip')) return;
+
+      if (e.clientY <= 52 || Boolean(target.closest('.top-nav, header, nav'))) {
+        scrollIframeToTopSmooth();
+      }
+    }, { passive: true, capture: true });
+
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'PRISM_SCROLL_TO_TOP') {
+        scrollIframeToTopSmooth();
+      }
+    });
+  })();
 });
