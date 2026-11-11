@@ -92,21 +92,10 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
       });
       onPlaying?.();
     };
-    const onPause = () => {
-      // Guard against iOS pausing speech on screen lock or background app transition
-      if (active && !paused && !settled && audio.paused) {
-        setTimeout(() => {
-          if (active && !paused && !settled && audio.paused) {
-            void audio.play().catch(() => {});
-          }
-        }, 40);
-      }
-    };
     const cleanup = () => {
       audio.removeEventListener('playing', playing);
       audio.removeEventListener('ended', ended);
       audio.removeEventListener('error', failed);
-      audio.removeEventListener('pause', onPause);
       if (finish === ended) finish = null;
       if (playbackFailure === failed) playbackFailure = null;
     };
@@ -131,7 +120,6 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
     audio.addEventListener('playing', playing, { once: true });
     audio.addEventListener('ended', ended);
     audio.addEventListener('error', failed);
-    audio.addEventListener('pause', onPause);
     applyAudioMixingPolicy();
     void audio.play().catch(failed);
   });

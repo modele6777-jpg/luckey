@@ -123,6 +123,8 @@ export async function synthesizeWithGemini(
   const models = dependencies?.models || (preferredModel
     ? [preferredModel, ...DEFAULT_TTS_MODELS.filter(model => model !== preferredModel)]
     : DEFAULT_TTS_MODELS);
+  let geminiRateLimited = false;
+  let retryAfterSeconds: number | undefined;
 
   for (const geminiKey of geminiKeys) {
     for (const model of models) {
@@ -150,9 +152,20 @@ export async function synthesizeWithGemini(
         });
 
         if (!response.ok) {
-          // Account-level auth/quota failures affect both models; don't spend more requests retrying them.
           console.warn(`[ai/tts] Gemini model ${model} HTTP ${response.status}`);
-          if ([401, 403, 429].includes(response.status)) break;
+          if (response.status === 429) {
+            // A model-specific limit may leave the Lite neural model available. Try each configured model once.
+            geminiRateLimited = true;
+            const header = response.headers.get("retry-after");
+            const supplied = header
+              ? (/^\d+(?:\.\d+)?$/.test(header) ? Number(header) : (Date.parse(header) - Date.now()) / 1000)
+              : Number.NaN;
+            if (Number.isFinite(supplied) && supplied > 0) {
+              retryAfterSeconds = Math.max(retryAfterSeconds || 0, Math.ceil(supplied));
+            }
+            continue;
+          }
+          if ([401, 403].includes(response.status)) break;
           continue;
         }
 
@@ -165,6 +178,13 @@ export async function synthesizeWithGemini(
         console.warn(`[ai/tts] Gemini model ${model} failed:`, error instanceof Error ? error.name : "request failed");
       }
     }
+  }
+  if (geminiRateLimited) {
+    throw Object.assign(new Error("Gemini neural TTS is temporarily rate limited."), {
+      status: 429,
+      code: "MEDIA_RATE_LIMIT",
+      ...(retryAfterSeconds ? { retryAfterSeconds } : {}),
+    });
   }
   return null;
 }

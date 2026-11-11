@@ -47,6 +47,7 @@ import { useApp } from "@/contexts/AppContext";
 import { sendArtRecommendationToLucy } from "@/lib/oracleDeepInsight";
 import { getPendingPrismToss, clearPrismToss, type PrismTossPayload } from "@/lib/prismToss";
 import { KOREAN_FAMOUS_POEMS } from "@/lib/koreanFamousPoems";
+import { withTimeout } from "@/lib/asyncTimeout";
 
 interface FamousPoem {
   title: string;
@@ -1816,6 +1817,15 @@ function touchArtCacheDate(): void {
 export function ArtRecommendationView() {
   const { sharedState, updateSharedState, openLucyChat, sendUnifiedMessage } = useApp();
   const [loading, setLoading] = useState(false);
+  const [autoPlayDocentRequestId, setAutoPlayDocentRequestId] = useState<number | null>(null);
+  const autoPlayDocentSequenceRef = useRef(0);
+  const requestDocentAutoPlay = useCallback(() => {
+    const requestId = ++autoPlayDocentSequenceRef.current;
+    setAutoPlayDocentRequestId(requestId);
+  }, []);
+  const consumeDocentAutoPlay = useCallback((requestId: number) => {
+    setAutoPlayDocentRequestId((current) => current === requestId ? null : current);
+  }, []);
   const [loadingImage, setLoadingImage] = useState(false);
   const [recommendation, setRecommendation] = useState<ArtRecommendation | null>(() => {
     if (typeof window !== "undefined" && isArtCacheFresh()) {
@@ -1932,19 +1942,23 @@ export function ArtRecommendationView() {
     setLoadingImage(true);
     setImageApiError('');
     try {
-      const { displayUrl, source } = await resolveArtworkImage(
-        {
-          title: art.title,
-          titleOriginal: art.titleOriginal,
-          creator: art.creator,
-          creatorOriginal: art.creatorOriginal,
-          artworkType: art.artworkType,
-          era: art.era,
-          description: art.description,
-          aestheticTone: art.aestheticTone,
-          dailyArtImageUrl: art.imageUrl,
-        },
-        options,
+      const { displayUrl, source } = await withTimeout(
+        resolveArtworkImage(
+          {
+            title: art.title,
+            titleOriginal: art.titleOriginal,
+            creator: art.creator,
+            creatorOriginal: art.creatorOriginal,
+            artworkType: art.artworkType,
+            era: art.era,
+            description: art.description,
+            aestheticTone: art.aestheticTone,
+            dailyArtImageUrl: art.imageUrl,
+          },
+          options,
+        ),
+        15000,
+        '작품 이미지를 불러오지 못했습니다. 다시 시도해 주세요.',
       );
 
       setNanobananaImage(displayUrl);
@@ -2016,7 +2030,11 @@ export function ArtRecommendationView() {
           orderBy("createdAt", "desc"),
           limit(3)
         );
-         const querySnapshot = await getDocs(q);
+        const querySnapshot = await withTimeout(
+          getDocs(q),
+          4000,
+          'Daily ART 사용자 기록 조회 시간이 초과되었습니다.',
+        );
         if (!querySnapshot.empty) {
           userContext = querySnapshot.docs
             .map((doc) => doc.data().content || "")
@@ -2035,6 +2053,7 @@ export function ArtRecommendationView() {
       const response = await fetch("/api/ai/recommend-art", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(12000),
         body: JSON.stringify({
           currentMood: dailyMood.promptMood,
           moodId: dailyMood.id,
@@ -2054,6 +2073,7 @@ export function ArtRecommendationView() {
       const enriched = sanitizeArtRecommendation(data, offset);
       
       setRecommendation(enriched);
+      requestDocentAutoPlay();
       touchArtCacheDate();
       localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(enriched));
       recordArtworkHistory(enriched);
@@ -2076,12 +2096,13 @@ export function ArtRecommendationView() {
       } catch (_) {}
       
       // Auto-trigger picture drawing inspired by this masterpiece
-      await generateNanobananaImage(enriched);
+      void generateNanobananaImage(enriched);
     } catch (e) {
       console.error(e);
       // Fallback
       const genericFallback = getDailyArtFallback(offset);
       setRecommendation(genericFallback);
+      requestDocentAutoPlay();
       touchArtCacheDate();
       localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(genericFallback));
       recordArtworkHistory(genericFallback);
@@ -2102,11 +2123,11 @@ export function ArtRecommendationView() {
         }, 'MUSE');
       } catch (_) {}
 
-      await generateNanobananaImage(genericFallback);
+      void generateNanobananaImage(genericFallback);
     } finally {
       setLoading(false);
     }
-  }, [customConcern, generateNanobananaImage, restoreDailyArtFromCache, sharedState?.dailyArts, updateSharedState]);
+  }, [customConcern, generateNanobananaImage, requestDocentAutoPlay, restoreDailyArtFromCache, sharedState?.dailyArts, updateSharedState]);
 
   // Prism Toss processing handler: binds Oracle Tarot's 3-card sequence & anchor masterpiece
   const handleTossedArtRecommendation = useCallback(async (toss: PrismTossPayload) => {
@@ -2408,6 +2429,7 @@ export function ArtRecommendationView() {
         console.log('[ArtRecommendationView] Midnight transition detected. Resetting to new day:', nowKey);
         setCurrentDateKey(nowKey);
         setRecommendation(null);
+        setAutoPlayDocentRequestId(null);
         setNanobananaImage(null);
         setArtworkImageSource(null);
         setCustomConcern("");
@@ -3004,6 +3026,8 @@ export function ArtRecommendationView() {
                   오늘의 명곡, 명시, 명화를 뮤즈가 하나의 감동적인 이야기로 엮어 순서대로 생생하게 음성 안내해 드립니다.
                 </p>
                 <MuseDocentAudio
+                  autoPlayRequestId={autoPlayDocentRequestId}
+                  onAutoPlayConsumed={consumeDocentAutoPlay}
                   artwork={{
                     imageUrl: effectiveImage,
                     title: recommendation.title,

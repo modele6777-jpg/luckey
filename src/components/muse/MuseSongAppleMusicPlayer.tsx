@@ -109,14 +109,22 @@ export const YOUTUBE_CLASSICAL_MAP: Record<string, string> = {
   "Rhapsody in Blue": "IIc7xuiVqVI",
 };
 
+/** Video IDs verified unavailable on YouTube; send these songs to search instead. */
+const UNAVAILABLE_YOUTUBE_VIDEO_IDS = new Set(["MreT_U00zI8"]);
+
 /**
  * 곡 제목과 작곡가로부터 최적의 YouTube Video ID를 찾습니다.
  */
 export function resolveYouTubeVideoId(title: string, artist?: string, explicitId?: string): string {
-  if (explicitId && explicitId.trim()) return explicitId.trim();
+  if (explicitId && explicitId.trim()) {
+    const candidate = explicitId.trim();
+    return UNAVAILABLE_YOUTUBE_VIDEO_IDS.has(candidate) ? "" : candidate;
+  }
   const cleanedTitle = title.replace(/\s*\([^)]*\)/g, "").trim();
   for (const [key, id] of Object.entries(YOUTUBE_CLASSICAL_MAP)) {
-    if (title.includes(key) || cleanedTitle.includes(key)) return id;
+    if (title.includes(key) || cleanedTitle.includes(key)) {
+      return UNAVAILABLE_YOUTUBE_VIDEO_IDS.has(id) ? "" : id;
+    }
   }
   return "";
 }
@@ -184,17 +192,13 @@ export function MuseSongAppleMusicPlayer({
   );
 
   const openYoutubeUrl = useMemo(() => {
-    if (resolvedYtId) return `https://www.youtube.com/watch?v=${resolvedYtId}`;
     return buildYouTubeSearchUrl(title, artistOriginal || artist);
-  }, [resolvedYtId, title, artistOriginal, artist]);
+  }, [title, artistOriginal, artist]);
 
-  const embedYoutubeUrl = useMemo(() => {
-    if (resolvedYtId) {
-      return `https://www.youtube-nocookie.com/embed/${resolvedYtId}?autoplay=0&rel=0&playsinline=1`;
-    }
-    const query = [artistOriginal || artist, title].filter(Boolean).join(" ");
-    return `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(query)}&playsinline=1`;
-  }, [resolvedYtId, artistOriginal, artist, title]);
+  const embedYoutubeUrl = useMemo(
+    () => resolvedYtId ? `https://www.youtube-nocookie.com/embed/${resolvedYtId}?autoplay=0&rel=0&playsinline=1` : null,
+    [resolvedYtId],
+  );
 
   // 🌟 스마트 기본 모드 결정:
   // Apple Music 임베드가 불가능하거나(404 ID), 회색 먹통 박스가 뜰 위험이 있는 곡은
@@ -255,7 +259,7 @@ export function MuseSongAppleMusicPlayer({
               />
             </div>
           ) : (
-            /* Apple Music 인플레이스 앨범이 한국 스토어에 없는 경우: 친절한 우회 가이드 & 유튜브 원클릭 추천 */
+            /* Apple Music 인플레이스 앨범이 한국 스토어에 없는 경우에는 검색 안내만 표시 */
             <div className="rounded-2xl p-4 border border-rose-500/25 bg-gradient-to-br from-rose-950/30 to-black/60 space-y-3 text-left">
               <div className="flex items-start gap-2.5">
                 <Music size={16} className="text-rose-400 shrink-0 mt-0.5" />
@@ -264,18 +268,10 @@ export function MuseSongAppleMusicPlayer({
                     한국 Apple Music Classical 검색 딥링크 제공
                   </p>
                   <p className="text-[11px] text-white/60 leading-relaxed">
-                    이 음원은 앨범 직링 대신 공식 앱 검색으로 바로 연결되거나, 아래 YouTube로 화면 안에서 즉시 감상하실 수 있습니다.
+                    이 곡의 Apple Music 직접 재생 주소가 없어 한국 스토어 검색 결과로 연결됩니다. 아래 링크에서 곡을 확인해 주세요.
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setActiveTab("youtube")}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-200 text-xs font-bold transition-all cursor-pointer shadow-sm"
-              >
-                <YoutubeIcon size={14} className="text-red-400" />
-                YouTube로 즉시 감상하기 (추천)
-              </button>
             </div>
           )}
 
@@ -287,14 +283,6 @@ export function MuseSongAppleMusicPlayer({
               <ChevronRight size={12} />
             </a>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("youtube")}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-red-300 hover:text-white hover:bg-red-500/10 transition-colors cursor-pointer"
-            >
-              <YoutubeIcon size={12} className="text-red-400" />
-              재생이 안 되나요? YouTube로 전환
-            </button>
           </div>
         </div>
       )}
@@ -302,22 +290,28 @@ export function MuseSongAppleMusicPlayer({
       {/* ▶️ 2. YouTube 탭 */}
       {activeTab === "youtube" && (
         <div className="space-y-3">
-          <div className="rounded-2xl overflow-hidden border border-red-500/25 shadow-xl bg-black/60">
-            <iframe
-              src={embedYoutubeUrl}
-              title={`${artist} - ${title} (YouTube)`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="w-full h-[220px] border-0"
-              loading="lazy"
-            />
-          </div>
+          {embedYoutubeUrl ? (
+            <div className="rounded-2xl overflow-hidden border border-red-500/25 shadow-xl bg-black/60">
+              <iframe
+                src={embedYoutubeUrl}
+                title={`${artist} - ${title} (YouTube)`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-[220px] border-0"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-xs leading-relaxed text-white/70">
+              등록 영상이 없거나 현재 재생할 수 없습니다. 아래 링크에서 곡명으로 검색해 주세요.
+            </div>
+          )}
 
           {/* 하단 액션 버튼들 */}
           <div className="flex items-center justify-between gap-2 flex-wrap pt-0.5">
             <a href={openYoutubeUrl} target="_blank" rel="noopener noreferrer" className={linkClassName}>
               <YoutubeIcon size={14} className="text-red-400" />
-              YouTube 앱/웹에서 열기 ↗
+              YouTube에서 재생 가능한 곡 검색 ↗
               <ChevronRight size={12} />
             </a>
 

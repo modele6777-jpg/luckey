@@ -48,22 +48,6 @@ export function getSharedAudioContext(): AudioContext {
     }
     ensureMasterChain(sharedAudioCtx);
 
-    const ctxInstance = sharedAudioCtx;
-    ctxInstance.addEventListener('statechange', () => {
-      const st = ctxInstance.state as string;
-      if (sharedAudioCtx === ctxInstance && (st === 'suspended' || st === 'interrupted') && ttsShouldBePlaying && !ttsUserExplicitlyPaused && !speechMediaProgress()) {
-        ctxInstance.resume().catch(() => {});
-        setTimeout(() => {
-          if (
-            ((ctxInstance.state as string) === 'suspended' || (ctxInstance.state as string) === 'interrupted') &&
-            ttsShouldBePlaying &&
-            !ttsUserExplicitlyPaused
-          ) {
-            ctxInstance.resume().catch(() => {});
-          }
-        }, 120);
-      }
-    });
   }
 
   return sharedAudioCtx;
@@ -636,11 +620,7 @@ let speechSessionActive = false;
 
 export function setBgmPlaybackSessionActive(active: boolean): void {
   setAppAudioActive(active);
-  if (active) {
-    if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
-      try { (navigator as any).audioSession.type = 'playback'; } catch (_) {}
-    }
-  } else if (!speechSessionActive) {
+  if (!active && !speechSessionActive) {
     configureAmbientAudioSession();
   }
 }
@@ -649,20 +629,14 @@ export function configureAmbientAudioSession(): void {
   applyAudioMixingPolicy();
 }
 
-/** Compatibility entry points must preserve background playback when requested. */
+/** Compatibility entry points stay nonexclusive to preserve external player audio. */
 export function configureTransientDuckingAudioSession(): void { configureAmbientAudioSession(); }
 export function configurePlaybackAudioSession(): void {
   setAppAudioActive(true);
-  if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
-    try { (navigator as any).audioSession.type = 'playback'; } catch (_) {}
-  }
 }
 export function configureSpeechAudioSession(): void {
   speechSessionActive = true;
   setAppAudioActive(true);
-  if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
-    try { (navigator as any).audioSession.type = 'playback'; } catch (_) {}
-  }
 }
 
 export function getTTSAudioElement(): HTMLAudioElement {
@@ -1316,69 +1290,15 @@ export function initTTSAudioLifecycle(): void {
   ttsLifecycleInitialized = true;
   configureAmbientAudioSession();
 
-  const ensureAudioContextRunningForTTS = () => {
-    if (!ttsShouldBePlaying || ttsUserExplicitlyPaused || speechMediaProgress()) return;
-    try {
-      const ctx = getSharedAudioContext();
-      const st = ctx.state as string;
-      if (st === 'suspended' || st === 'interrupted') {
-        ctx.resume().catch(() => {});
-      }
-    } catch (error) {
-      console.error('[AudioLifecycle] Failed to restore AudioContext:', error);
-    }
-  };
-
   const handleVisibleResume = () => {
     if (document.visibilityState === 'hidden') return;
-    const media = speechMediaProgress();
-    if (media) {
-      if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
-        configureSpeechAudioSession();
-        if (media.paused) resumeSpeechMedia();
-      } else {
-        configureAmbientAudioSession();
-      }
-      return;
-    }
-    // 🌟 오직 TTS가 실제로 재생 중일 때만 AudioContext를 복원합니다.
-    // 재생 중이 아닐 때는 AudioContext를 깨우지 않아 외부 백그라운드 음악(멜론, 스포티파이 등)이 중단되지 않도록 보호합니다.
-    if (ttsShouldBePlaying && !ttsUserExplicitlyPaused) {
-      try {
-        const ctx = getSharedAudioContext();
-        const st = ctx.state as string;
-        if (st === 'suspended' || st === 'interrupted') {
-          ctx.resume().catch((error) => {
-            console.error('[AudioLifecycle] AudioContext resume after visibility change rejected:', error);
-          });
-        }
-      } catch (error) {
-        console.error('[AudioLifecycle] Failed to restore AudioContext:', error);
-      }
-
-      configureSpeechAudioSession();
-      // Only relaunch if the source node was explicitly detached with a saved non-zero offset.
-      // When AudioContext resumes, an existing ttsActiveSource continues seamlessly from its exact sample position.
-      if (ttsActiveBuffer && !ttsActiveSource && ttsPausedOffsetSec > 0 && ttsPausedOffsetSec < ttsActiveBuffer.duration - 0.05) {
-        launchWebAudioTTSSource(ttsPlaybackId);
-      }
-    } else {
-      configureAmbientAudioSession();
-    }
+    // Reapply only the nonexclusive policy; never reclaim focus or restart a paused source.
+    configureAmbientAudioSession();
   };
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       handleVisibleResume();
-    } else if (document.visibilityState === 'hidden') {
-      // Keep TTS and BGM actively playing when screen locks or app goes to background
-      ensureAudioContextRunningForTTS();
-      setTimeout(ensureAudioContextRunningForTTS, 50);
-      setTimeout(ensureAudioContextRunningForTTS, 200);
-      const media = speechMediaProgress();
-      if (media && ttsShouldBePlaying && !ttsUserExplicitlyPaused && media.paused) {
-        resumeSpeechMedia();
-      }
     }
   });
   window.addEventListener('pageshow', handleVisibleResume);
