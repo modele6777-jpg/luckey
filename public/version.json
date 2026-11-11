@@ -1,5 +1,5 @@
 {
-  "version": "1.7.332",
+  "version": "1.7.333",
   "builtAt": "2026-11-11T07:15:00.000Z",
   "summary": "TTS 서버 음성(Gemini Neural Audio) 다중 모델 및 활성 키 자동 페일오버 복원 수복",
   "items": [

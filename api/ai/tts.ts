@@ -23,8 +23,6 @@ function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, channels = 1, bitsPerSa
   return Buffer.concat([header, pcmBuffer]);
 }
 
-let geminiAccountCooldownUntil = 0;
-
 function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
   if (dependencies?.apiKey) return [dependencies.apiKey];
   if (dependencies && !dependencies.apiKey) return [];
@@ -38,7 +36,7 @@ function getGeminiApiKeys(dependencies?: { apiKey?: string }): string[] {
 
 export async function synthesizeWithGemini(text: string, voice?: string, dependencies?: { apiKey?: string; request?: typeof fetch; models?: string[] }): Promise<{ audioContent: string; encoding: 'wav'; sampleRate: number; voice: string; provider: 'gemini' } | null> {
   const geminiKeys = getGeminiApiKeys(dependencies);
-  if (!geminiKeys.length || Date.now() < geminiAccountCooldownUntil) return null;
+  if (!geminiKeys.length) return null;
   const request = dependencies?.request || fetch;
   const voiceName = voice === "Charon" ? "Charon" : "Kore";
 
@@ -50,7 +48,6 @@ export async function synthesizeWithGemini(text: string, voice?: string, depende
     "gemini-3.8-flash-tts",
   ]);
 
-  let hadAuthOrQuotaError = false;
   for (const geminiKey of geminiKeys) {
     for (const model of models) {
       try {
@@ -69,13 +66,12 @@ export async function synthesizeWithGemini(text: string, voice?: string, depende
               }
             }
           }),
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(28000),
         });
 
         if (!resp.ok) {
           console.warn(`[ai/tts] Gemini model ${model} HTTP ${resp.status}`);
-          if (resp.status === 401 || resp.status === 403 || resp.status === 429) {
-            hadAuthOrQuotaError = true;
+          if (resp.status === 400 || resp.status === 401 || resp.status === 403 || resp.status === 429) {
             break;
           }
           continue;
@@ -109,9 +105,6 @@ export async function synthesizeWithGemini(text: string, voice?: string, depende
     }
   }
 
-  if (hadAuthOrQuotaError) {
-    geminiAccountCooldownUntil = Date.now() + 15_000;
-  }
   return null;
 }
 
