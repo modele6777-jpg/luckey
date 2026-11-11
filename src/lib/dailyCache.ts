@@ -120,8 +120,10 @@ export function resolveOracleVisionResult(entry: any): any {
     entry.data && typeof entry.data === "object" && !Array.isArray(entry.data)
       ? entry.data
       : entry;
+  const supportedPayload = { ...payload };
+  delete supportedPayload.frequency;
   return {
-    ...payload,
+    ...supportedPayload,
     drawnCard:
       payload.drawnCard ||
       entry.drawnCard ||
@@ -141,7 +143,6 @@ export function resolveOracleVisionResult(entry: any): any {
     blessingMessage: payload.blessingMessage || entry.blessingMessage || "",
     focusPlaylist: payload.focusPlaylist || entry.focusPlaylist || "",
     symbol: payload.symbol || entry.symbol || "",
-    frequency: payload.frequency || entry.frequency || "",
   };
 }
 
@@ -209,5 +210,4 @@ export function getDailyLockKey(appType: string, uid: string): string {
 }
 
 export const clearStaleDailyLocks = clearDailyOracleRunLocks;
-
 

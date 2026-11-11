@@ -503,7 +503,7 @@ export function WishingWellModal({
                       <Compass size={13} className="text-amber-300" />
                       소원 영역 선택
                     </span>
-                    <span className="text-[10px] text-white/45 font-mono">카테고리별 맞춤 주파수</span>
+                    <span className="text-[10px] text-white/45 font-mono">카테고리별 맞춤 기분 가이드</span>
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                     {WISH_CATEGORIES.map((cat) => {

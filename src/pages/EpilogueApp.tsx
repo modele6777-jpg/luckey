@@ -27,7 +27,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
-import { useBinauralBeat } from '@/hooks/useBinauralBeat';
+import { useBackgroundMood } from '@/hooks/useBackgroundMood';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { useScrollToTopOnChange } from '@/hooks/useScrollToTopOnChange';
 import { useSpecialFeatureChromeHidden, SPECIAL_FEATURE_CHROME_HIDDEN_CLASS } from '@/components/SpecialFeaturePanel';
@@ -279,7 +279,7 @@ export default function EpilogueApp() {
   const [currentSection, setCurrentSection] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('epilogue');
+  const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('epilogue');
   const [syncingDevices, setSyncingDevices] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);

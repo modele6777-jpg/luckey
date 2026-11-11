@@ -14,7 +14,6 @@ export type DailyBgmTrack = {
 export type DailyBgmInput = {
   appId: DailyBgmAppId;
   focusPlaylist: string;
-  frequency?: string;
   cardName?: string;
   symbol?: string;
   dateKey: string;
@@ -23,7 +22,7 @@ export type DailyBgmInput = {
 export const dailyFocusPlaylistSchema = z
   .string()
   .describe(
-    "사용자의 현재 분위기·영적 상태·집중력 향상을 위해 추천하는 맞춤 사운드스케이프 이름 (예: '528Hz Healing Chime', 'Calm Ocean Meditation', 'Tibetan Singing Bowls')",
+    "사용자의 현재 분위기·집중력에 맞는 맞춤 사운드스케이프 이름 (예: 'Calm Ocean Meditation', 'Soft Piano', 'Gentle Rain')",
   )
   .optional();
 
@@ -40,7 +39,7 @@ export function getDailyBgmArtist(appId: DailyBgmAppId): string {
 }
 
 export const DAILY_BGM_ARTIST = DAILY_BGM_ARTIST_BY_APP.trinity;
-export const DAILY_BGM_ALGO_VERSION = 2;
+export const DAILY_BGM_ALGO_VERSION = 3;
 export const BGM_EXTRA_TRACKS_STORAGE_KEY = 'prism_bgm_extra_tracks_v1';
 export const BGM_HIDDEN_TRACKS_STORAGE_KEY = 'prism_bgm_hidden_tracks_v1';
 export const BGM_PURGED_TRACKS_STORAGE_KEY = 'prism_bgm_purged_tracks_v1';
@@ -254,14 +253,12 @@ function slugify(value: string): string {
 export function deriveFocusPlaylist(result: {
   focusPlaylist?: string;
   symbol?: string;
-  frequency?: string;
   remedy?: string;
 }): string {
   if (result.focusPlaylist?.trim()) return result.focusPlaylist.trim();
-  const parts = [result.symbol, result.frequency].filter(Boolean);
-  if (parts.length > 0) return `${parts.join(' ')} Resonance Soundscape`;
+  if (result.symbol?.trim()) return `${result.symbol.trim()} Ambient Soundscape`;
   if (result.remedy?.trim()) return `${result.remedy.slice(0, 48)} Ambient`;
-  return 'Daily Resonance Soundscape';
+  return 'Daily Ambient Soundscape';
 }
 
 export function buildDailyBgmTrackKey(input: {
@@ -437,7 +434,6 @@ export async function ensureDailyBgmGenerated(input: DailyBgmInput): Promise<Dai
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       focusPlaylist: input.focusPlaylist,
-      frequency: input.frequency,
       cardName: input.cardName,
       symbol: input.symbol,
       dateKey: input.dateKey,
@@ -560,7 +556,6 @@ export function buildDailyBgmInputFromResult(
   appId: DailyBgmAppId,
   result: {
     focusPlaylist?: string;
-    frequency?: string;
     symbol?: string;
     remedy?: string;
     drawnCard?: { name?: string; nameKo?: string };
@@ -572,7 +567,6 @@ export function buildDailyBgmInputFromResult(
   return {
     appId,
     focusPlaylist,
-    frequency: result.frequency,
     cardName: result.drawnCard?.name || result.drawnCard?.nameKo,
     symbol: result.symbol,
     dateKey: result.dateKey || getTodayDateKey(),
@@ -584,7 +578,6 @@ export async function resolveDailyResultBgm(
   daily: {
     focusPlaylist?: string;
     focusBgmTrackKey?: string;
-    frequency?: string;
     symbol?: string;
     remedy?: string;
     drawnCard?: { name?: string; nameKo?: string };
@@ -615,7 +608,6 @@ export function useDailyBgm(
     focusPlaylist?: string;
     focusBgmTrackKey?: string;
     focusBgmUrl?: string;
-    frequency?: string;
     symbol?: string;
     remedy?: string;
     drawnCard?: { name?: string; nameKo?: string };
@@ -664,7 +656,6 @@ export function useDailyBgm(
     void generateAndRegister(dailyResult);
   }, [
     dailyResult?.focusPlaylist,
-    dailyResult?.frequency,
     dailyResult?.symbol,
     dailyResult?.remedy,
     dailyResult?.drawnCard?.name,

@@ -310,7 +310,7 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
   }
 
   // 6. 신체 활력 / 수면 / 피로 / 결핍 오행 처방 / 공간 풍수 / 12운성 바이오리듬
-  const wellnessRegex = /피로|피곤|체력|방전|번아웃|지침|수면|잠|불면|몸|아파|스트레스|두통|결림|호흡|명상|웰니스|개운\s*법|개운|오행|결핍|바이오|주파수|솔페지오|에너지\s*처방|맞춤\s*처방|방위|방향|풍수|이사|여행|자리|카페\s*위치|명당|책상|바이오리듬|에너지\s*곡선|컨디션|집중력|골든타임|몰입|12운성/;
+  const wellnessRegex = /피로|피곤|체력|방전|번아웃|지침|수면|잠|불면|몸|아파|스트레스|두통|결림|호흡|명상|웰니스|개운\s*법|개운|오행|결핍|바이오|에너지\s*처방|맞춤\s*처방|방위|방향|풍수|이사|여행|자리|카페\s*위치|명당|책상|바이오리듬|에너지\s*곡선|컨디션|집중력|골든타임|몰입|12운성/;
   if (wellnessRegex.test(lower)) {
     return {
       intent: 'vitality_wellness',
@@ -335,7 +335,7 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       ],
       deepEngineGuidance: '사주 결핍 오행 처방과 쇼펜하우어의 맹목적 의지 직시를 통한 내적 평정, 서산대사의 심등(마음의 등불) 지혜로 신체와 정신의 방전을 즉각 회복하는 힐링 처방을 들려줘.',
       routingReason: '사주 결핍 오행 처방 × 12운성 24시간 에너지 조위 곡선 × 기문둔갑·점성술 공간 길방위 3중 바이오웰니스 융합',
-      suggestedFocusPrompt: '사주 결핍 오행 처방(솔페지오 주파수·1분 개운 행동), 12운성 기반 오늘 24시간 에너지 조위 곡선(딥워크 피크/휴식 골든타임), 그리고 기문둔갑 공간 길방위 및 작업 좌향 명당 팁을 현대적 바이오웰니스 언어로 다정하게 안내해 줘.',
+      suggestedFocusPrompt: '사주 결핍 오행에 맞는 현실적인 생활 팁과 1분 호흡·스트레칭, 12운성 기반 오늘의 집중·휴식 타이밍, 그리고 작업 공간을 편하게 정리하는 방법을 현대적 웰니스 언어로 다정하게 안내해 줘.',
       isMasterMobilization: false,
       isCasual: false,
     };

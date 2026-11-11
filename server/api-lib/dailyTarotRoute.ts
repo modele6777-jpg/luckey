@@ -82,12 +82,11 @@ const ORACLE_SCHEMA = {
     luckyColor: { type: 'STRING' },
     remedy: { type: 'STRING' },
     symbol: { type: 'STRING' },
-    frequency: { type: 'STRING' },
     spiritualEnergy: { type: 'STRING' },
     blessingMessage: { type: 'STRING' },
     focusPlaylist: { type: 'STRING' },
   },
-  required: ['diagnosis', 'luckyNumber', 'luckyColor', 'remedy', 'symbol', 'frequency'],
+  required: ['diagnosis', 'luckyNumber', 'luckyColor', 'remedy', 'symbol'],
 };
 
 export interface TarotGenerateRequest {
@@ -109,7 +108,9 @@ export function parseOracleJson(raw: string | undefined | null): Record<string, 
     try {
       const parsed = JSON.parse(candidate) as unknown;
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && typeof (parsed as { diagnosis?: unknown }).diagnosis === 'string' && (parsed as { diagnosis: string }).diagnosis.trim()) {
-        return parsed as Record<string, unknown>;
+        const supportedFields = { ...(parsed as Record<string, unknown>) };
+        delete supportedFields.frequency;
+        return supportedFields;
       }
     } catch {
       continue;
@@ -151,7 +152,7 @@ export async function requestTarotModelText(
   try {
     const plain = await generate({
       model: ORACLE_MODEL,
-      contents: `${systemInstruction}\n\n${userText}\n\nJSON 객체 하나만 반환하세요. 키는 diagnosis, luckyNumber, luckyColor, remedy, symbol, frequency, spiritualEnergy, blessingMessage, focusPlaylist 입니다.`,
+      contents: `${systemInstruction}\n\n${userText}\n\nJSON 객체 하나만 반환하세요. 키는 diagnosis, luckyNumber, luckyColor, remedy, symbol, spiritualEnergy, blessingMessage, focusPlaylist 입니다.`,
       config: { maxOutputTokens: 8192, abortSignal: AbortSignal.timeout(25000) },
     });
     const parsed = parseOracleJson(plain.text);

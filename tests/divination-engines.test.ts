@@ -54,7 +54,6 @@ import { calculateSupremeWisdomTrinity, formatSupremeWisdomTrinityPrompt, SUPREM
 import { calculateSacredVortexGeometry, formatSacredVortexGeometryPrompt, SACRED_VORTEX_VERSION } from '../src/lib/divination/sacredVortexGeometryEngine';
 import { calculateTaoistNeidanMeridian, formatTaoistNeidanMeridianPrompt, TAOIST_NEIDAN_VERSION } from '../src/lib/divination/taoistNeidanMeridianEngine';
 import { calculateSynchronicityOmen, formatSynchronicityOmenPrompt, SYNCHRONICITY_OMEN_VERSION } from '../src/lib/divination/synchronicityOmenEngine';
-import { calculateSolfeggioHarmonic, formatSolfeggioHarmonicPrompt, SOLFEGGIO_HARMONIC_VERSION } from '../src/lib/divination/solfeggioHarmonicResonanceEngine';
 import { calculateEthericAuraBiofield, formatEthericAuraBiofieldPrompt, ETHERIC_AURA_VERSION } from '../src/lib/divination/ethericAuraBiofieldEngine';
 import { calculateSajuClassicYongshin, formatSajuClassicYongshinPrompt, SAJU_CLASSIC_YONGSHIN_VERSION } from '../src/lib/divination/sajuClassicYongshinPrescriptionEngine';
 import { calculateTarotTreeOfLifeShadow, formatTarotTreeOfLifeShadowPrompt, TAROT_KABBALAH_SHADOW_VERSION } from '../src/lib/divination/tarotTreeOfLifeShadowEngine';
@@ -127,7 +126,6 @@ import { calculateSumerianApkalluWisdom, formatSumerianApkalluWisdomPrompt, SUME
 import { calculateCelticTuathaFourTreasures, formatCelticTuathaFourTreasuresPrompt, CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION } from '../src/lib/divination/celticTuathaFourTreasuresEngine';
 import { calculateTaoistShangqingTwentyFourSpirits, formatTaoistShangqingTwentyFourSpiritsPrompt, TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION } from '../src/lib/divination/taoistShangqingTwentyFourSpiritsEngine';
 import { calculateTibetanPhowaRainbowBody, formatTibetanPhowaRainbowBodyPrompt, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION } from '../src/lib/divination/tibetanPhowaRainbowBodyEngine';
-import { calculatePythagoreanHarmoniaSpheres, formatPythagoreanHarmoniaSpheresPrompt, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION } from '../src/lib/divination/pythagoreanHarmoniaSpheresEngine';
 import { calculatePlumBlossomMeihuaOracle, formatPlumBlossomMeihuaOraclePrompt, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION } from '../src/lib/divination/plumBlossomMeihuaOracleEngine';
 import { calculateGreekMoiraiAnankeFate, formatGreekMoiraiAnankeFatePrompt, GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION } from '../src/lib/divination/greekMoiraiAnankeFateEngine';
 import { calculateEgyptianSphinxDreamOracle, formatEgyptianSphinxDreamOraclePrompt, EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION } from '../src/lib/divination/egyptianSphinxDreamOracleEngine';
@@ -2021,25 +2019,27 @@ test('Deep Work Flow Engine: 딥워크 몰입 아키타입 및 최적 환경 매
   assert.equal(res.engineVersion, DEEP_WORK_FLOW_VERSION);
   assert(res.archetype.title.length > 0);
   assert(res.flowFocusScore >= 0 && res.flowFocusScore <= 100);
-  assert(res.environment.soundFrequency.length > 0);
+  assert(res.environment.soundscape.length > 0);
   assert(res.archetype.optimalSprintMinutes > 0);
   const prompt = formatDeepWorkFlowPrompt(res);
   assert(prompt.includes(DEEP_WORK_FLOW_VERSION));
   assert(prompt.includes('1순위 몰입 아키타입'));
   assert(prompt.includes('최적 환경 매트릭스'));
+  assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
-test('Sleep Subconscious Engine: 수면 뇌파 및 3단계 나이트 리셋 검증', () => {
+test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 리셋 검증', () => {
   const res = calculateSleepSubconscious({ profile, targetDate: new Date('2026-11-03T08:00:00+09:00') });
   assert.equal(res.engineVersion, SLEEP_SUBCONSCIOUS_VERSION);
   assert(res.sleepRecoveryScore >= 0 && res.sleepRecoveryScore <= 100);
-  assert(res.soundWaveProtocol.frequencyHz.length > 0);
+  assert(res.soundscape.recommendedSounds.length > 0);
   assert(res.nightRitual.step1BrainDump.length > 0);
   assert(res.dreamDecoding.subconsciousMessage.length > 0);
   const prompt = formatSleepSubconsciousPrompt(res);
   assert(prompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
   assert(prompt.includes('수면 회복 잠재력'));
   assert(prompt.includes('나이트 리셋 리추얼'));
+  assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|델타파|세타파|뇌파|주파수/i);
 });
 
 test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 검증', () => {
@@ -2100,15 +2100,16 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
   assert(prompt.includes(res.currentArchetype.nameKo));
 });
 
-test('Transcendental Meditation Engine: 초월 명상 및 뇌파 동조 검증', () => {
+test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 검증', () => {
   const res = calculateTranscendentalMeditation({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
   assert.equal(res.engineVersion, TRANSCENDENTAL_MEDITATION_VERSION);
   assert(res.equanimityScore >= 0 && res.equanimityScore <= 100);
-  assert(res.prescription.solfeggioHz > 0);
+  assert(res.prescription.intendedMindState.length > 0);
   assert(res.ichingZenState.mantraText.length > 0);
   const prompt = formatTranscendentalMeditationPrompt(res);
-  assert(prompt.includes('LUCKEY 초월 명상 & 브레인웨이브 지능'));
+  assert(prompt.includes('LUCKEY 초월 명상 & 마음 안정 지능'));
   assert(prompt.includes(res.zenEnergyArchetype));
+  assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|뇌파|주파수/i);
 });
 
 test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리지 검증', () => {
@@ -2207,16 +2208,18 @@ test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 
   assert(prompt.includes(res.designType.koreanLabel));
 });
 
-test('Chakra Vibration Alignment Engine: 7대 차크라 파동 정렬 및 퀀텀 밸런싱 검증', () => {
+test('Chakra Vibration Alignment Engine: frequency-free chakra alignment and balance', () => {
   const res = calculateChakraVibrationAlignment({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
   assert.equal(res.engineVersion, CHAKRA_ALIGNMENT_VERSION);
   assert.equal(res.chakras.length, 7);
   assert(res.overallChakraBalanceScore >= 0 && res.overallChakraBalanceScore <= 100);
-  assert(res.primaryFocusChakra.frequencyHz > 0);
+  assert.equal('frequencyHz' in res.primaryFocusChakra, false);
+  assert(res.chakras.every((chakra) => !('frequencyHz' in chakra)));
   assert(res.kundaliniBreathingPrescription.instruction.length > 0);
   const prompt = formatChakraVibrationAlignmentPrompt(res);
   assert(prompt.includes('LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱'));
   assert(prompt.includes(res.primaryFocusChakra.name));
+  assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/);
 });
 
 test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 및 의식 진화 검증', () => {
@@ -2323,11 +2326,12 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
   assert.equal(res.engineVersion, SACRED_VORTEX_VERSION);
   assert(res.soulGeometryTitle.length > 0);
   assert(res.platonicSolid.solidName.length > 0);
-  assert(res.platonicSolid.geometricFrequencyHz > 0);
+  assert.equal('geometricFrequencyHz' in res.platonicSolid, false);
   assert(res.vortexDynamics.phiRatioAlignmentScore >= 0 && res.vortexDynamics.phiRatioAlignmentScore <= 100);
   const prompt = formatSacredVortexGeometryPrompt(res);
   assert(prompt.includes('LUCKEY 황금비 영혼 수비학 & 보텍스 기하학'));
   assert(prompt.includes(res.platonicSolid.solidName));
+  assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
 test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락 시계 검증', () => {
@@ -2355,18 +2359,6 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   const prompt = formatSynchronicityOmenPrompt(res);
   assert(prompt.includes('LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스'));
   assert(prompt.includes(res.dominantOmenTheme));
-});
-
-test('Solfeggio Harmonic Resonance Engine: 솔페지오 주파수 사운드 힐링 & 뇌파 동조 검증', () => {
-  const res = calculateSolfeggioHarmonic({ profile, targetDate: new Date('2026-11-04T14:00:00+09:00') });
-  assert.equal(res.engineVersion, SOLFEGGIO_HARMONIC_VERSION);
-  assert(res.harmonicTitle.length > 0);
-  assert(res.primaryFrequency.frequencyHz > 0);
-  assert(res.brainwaveTuning.targetFrequencyHz > 0);
-  assert(res.resonanceAffirmation.length > 0);
-  const prompt = formatSolfeggioHarmonicPrompt(res);
-  assert(prompt.includes('LUCKEY 솔페지오 주파수 & 뇌파 동조'));
-  assert(prompt.includes(String(res.primaryFrequency.frequencyHz)));
 });
 
 test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 검증', () => {
@@ -2622,11 +2614,12 @@ test('Hermetic Kybalion Engine: maps 7 cosmic principles and alchemical shift', 
   const rep = calculateHermeticKybalion(profile);
   assert.equal(rep.engineVersion, HERMETIC_KYBALION_VERSION);
   assert(rep.cosmicPrinciples.length === 7);
-  assert(rep.vibrationFrequencyLevel >= 100);
+  assert(rep.principleAlignmentScore >= 0 && rep.principleAlignmentScore <= 100);
   assert(rep.masterPrinciple.nameKo.length > 0);
   const prompt = formatHermeticKybalionPrompt(rep);
   assert(prompt.includes('헤르메스 카이발리온'));
   assert(prompt.includes(rep.masterPrinciple.nameKo));
+  assert.doesNotMatch(prompt, /\bHz\b|주파수|frequency/i);
 });
 
 test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal year quest', () => {
@@ -2635,9 +2628,11 @@ test('Vibrational Soul Quest Engine: derives 4 core soul numbers and personal ye
   assert(rep.soulNumbers.lifePathNumber >= 1);
   assert(rep.soulNumbers.personalYear >= 1 && rep.soulNumbers.personalYear <= 9);
   assert(rep.questArchetype.length > 0);
+  assert.equal('frequencyHz' in rep.focusChakra, false);
   const prompt = formatVibrationalSoulQuestPrompt(rep);
   assert(prompt.includes('고대 수비학 차크라 솔 울림'));
   assert(prompt.includes(rep.questArchetype));
+  assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
 test('Alchemical Transmutation Engine: calculates 7 stages and 4 opus phases', () => {
@@ -2817,11 +2812,11 @@ test('Zoroastrian Asha Truth Engine: calculates threefold path, sacred atar fire
 
 test('DCE catalogue size is never substituted for successful calculation evidence', () => {
   const rep = runDeterministicEngine({ profile, coreOnly: true, focusTools: ['saju'] });
-  const badges = getFiredEngineBadges(rep, { isMasterMobilization: true });
+  const badges = getFiredEngineBadges(rep, { isMasterMobilization: false });
   assert.deepEqual(badges, ['계산 근거 · 사주명리']);
   assert(badges.length < ALL_DCE_ENGINES.length);
   rep.tools.saju.status = 'error';
-  assert.deepEqual(getFiredEngineBadges(rep, { isMasterMobilization: true }), []);
+  assert.deepEqual(getFiredEngineBadges(rep, { isMasterMobilization: false }), []);
 });
 
 test('Hindu Tantric Kundalini & Nadi Awakening Engine: calculates nadis, chakras, granthis and pranayama', () => {
@@ -3350,17 +3345,6 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
   assert(prompt.includes(rep.primaryWisdom.nameKo));
 });
 
-test('Pythagorean Harmonia Spheres Engine: calculates cosmic harmony and planet intervals', () => {
-  const rep = calculatePythagoreanHarmoniaSpheres({ profile });
-  assert.equal(rep.engineVersion, PYTHAGOREAN_HARMONIA_SPHERES_ENGINE_VERSION);
-  assert(rep.harmoniaCosmicaScore >= 0 && rep.harmoniaCosmicaScore <= 100);
-  assert(rep.dissonanceResolutionScore >= 0 && rep.dissonanceResolutionScore <= 100);
-  assert(rep.dominantSphere.planet.length > 0);
-  const prompt = formatPythagoreanHarmoniaSpheresPrompt(rep);
-  assert(prompt.includes('피타고라스 천구의 조화(Musica Universalis) 주파수 공명 실측 데이터'));
-  assert(prompt.includes(rep.dominantSphere.planet));
-});
-
 test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong relations', () => {
   const rep = calculatePlumBlossomMeihuaOracle({ profile });
   assert.equal(rep.engineVersion, PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION);
@@ -3431,11 +3415,12 @@ test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification a
   assert(rep.symbolicRebirthScore >= 0 && rep.symbolicRebirthScore <= 100);
   assert(rep.sixRootsPurificationScore >= 0 && rep.sixRootsPurificationScore <= 100);
   assert(rep.kujiKiriWardDefenseScore >= 0 && rep.kujiKiriWardDefenseScore <= 100);
-  assert(rep.horagaiResonanceFrequency > 0);
+  assert.equal('horagaiResonanceFrequency' in rep, false);
   assert(rep.currentInitiationRealm.nameKo.length > 0);
   const prompt = formatShugendoYamabushiTenRealmsPrompt(rep);
   assert(prompt.includes('고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터'));
   assert(prompt.includes(rep.currentInitiationRealm.nameKo));
+  assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
 
 test('Gnostic Pistis Sophia Pleroma Engine: calculates twelve aeons resonance and pneuma spark', () => {
@@ -5583,9 +5568,6 @@ test('Heo Jun Dongui Bogam Yangsaeng Engine: calculates Tong-Jeuk-Bul-Tong, Cheo
   assert(prompt.includes('구암 허준 《동의보감》 신형장부도·통즉불통 및 치미병 양생 지혜 지표'));
   assert(prompt.includes(rep.activeHeoJunTheme.themeTitleKo));
 });
-
-
-
 
 
 

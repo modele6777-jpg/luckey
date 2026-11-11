@@ -7,7 +7,7 @@ import { ensureCompleteTarotReading } from '@/lib/trinity/utils';
 export const DAILY_TAROT_CAUTION = '타로는 미래를 결정짓는 절대적 예언이 아니라, 자신의 내면을 성찰하고 더 나은 선택을 돕는 지혜의 나침반입니다. 맹목적인 믿음을 지양하고, 모든 운명의 결정권과 최종 열쇠는 언제나 당신 자신의 주체적인 의지와 지혜에 있습니다.';
 
 export interface TarotNarrationChapter {
-  id: 'card_anchor' | 'summary' | 'master_diagnosis' | 'action_remedy' | 'blessing_frequency';
+  id: 'card_anchor' | 'summary' | 'master_diagnosis' | 'action_remedy' | 'blessing';
   title: string;
   badge: string;
   iconType: 'sparkles' | 'eye' | 'compass' | 'sun';
@@ -34,7 +34,6 @@ export interface TarotNarrationData {
   summarySpeechText: string;
   rawRemedy: string;
   rawBlessing: string;
-  frequency: string;
   luckyNumber: string;
   luckyColor: string;
 }
@@ -111,7 +110,6 @@ export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData
       summarySpeechText: '',
       rawRemedy: '',
       rawBlessing: '',
-      frequency: '528Hz',
       luckyNumber: '7',
       luckyColor: '골드',
     };
@@ -163,7 +161,6 @@ export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData
     '사소한 불안이나 타인의 시선에 휘둘리지 말고, 지금 마주한 일에 고요히 몰입하며 마음의 중심을 지키세요.'
   ).trim();
 
-  const frequency = String(dailyResult.frequency || '528Hz 솔페지오 사랑과 치유의 주파수').trim();
   const luckyNumber = String(dailyResult.luckyNumber || '7').trim();
   const luckyColor = String(dailyResult.luckyColor || '황금빛 골드').trim();
   const rawBlessing = String(
@@ -193,11 +190,11 @@ export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData
   const ch3Speech = prepareNaturalSpeechText(cleanDiag);
   const ch3Display = cleanDiag;
 
-  // Chapter 4: 행운의 주파수와 축복 확언
+  // Chapter 4: 행운의 숫자와 축복 확언
   const ch4Speech = prepareNaturalSpeechText(
-    `오늘의 우주적 조화 주파수는 ${frequency}이며, 행운의 숫자는 ${luckyNumber}, 행운의 색은 ${luckyColor}입니다. ${rawBlessing}`
+    `오늘의 행운의 숫자는 ${luckyNumber}, 행운의 색은 ${luckyColor}입니다. ${rawBlessing}`
   );
-  const ch4Display = `• 조화 주파수: ${frequency}\n• 행운의 숫자: ${luckyNumber}\n• 행운의 색상: ${luckyColor}\n• 오늘의 축복 확언: ${rawBlessing}`;
+  const ch4Display = `• 행운의 숫자: ${luckyNumber}\n• 행운의 색상: ${luckyColor}\n• 오늘의 축복 확언: ${rawBlessing}`;
 
   const chapters: TarotNarrationChapter[] = [
     {
@@ -229,8 +226,8 @@ export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData
       displayText: ch3Display,
     },
     {
-      id: 'blessing_frequency',
-      title: '행운의 주파수와 축복 확언',
+      id: 'blessing',
+      title: '행운의 숫자와 축복 확언',
       badge: 'Chapter 3 · 에너지 축복',
       iconType: 'sun',
       speechText: ch4Speech,
@@ -264,7 +261,6 @@ export function buildTarotNarrationContent(dailyResult: any): TarotNarrationData
     summarySpeechText,
     rawRemedy,
     rawBlessing,
-    frequency,
     luckyNumber,
     luckyColor,
   };

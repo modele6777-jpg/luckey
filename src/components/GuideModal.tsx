@@ -139,7 +139,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
           },
           {
             title: "몸이 지치거나 긴장될 때",
-            body: "AURA 에너지 점검 → 1분 명상(60초 마이크로 이완·솔페지오 주파수·호흡 리셋) 실천하기.",
+            body: "AURA 에너지 점검 → 1분 명상(60초 집중 호흡·마이크로 이완) 실천하기.",
           },
           {
             title: "표현·영감이 필요할 때",
@@ -230,7 +230,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     steps: [
       "Sedona Method 탭에서 오늘의 방하착 세션을 시작합니다.",
       "Sedona Bible에서 세도나 4문답과 호킨스 놓아버림을 함께 살펴봅니다.",
-      "AURA 1분 명상(60s Micro Healing)으로 언제 어디서나 뇌파와 신경계를 안정시킵니다.",
+      "AURA 1분 명상(60s Micro Healing)에서 호흡을 따라 긴장을 풀고 마음을 가라앉힙니다.",
     ],
     tip: "불편함이 지속되거나 심하면 앱의 안내보다 의료 전문가의 도움을 우선하세요.",
   },
@@ -298,7 +298,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     steps: [
       "차별점: 실시간 에너지 동조, 일곱 공간 연결, 공간별 영혼 가디언",
       "강점: 완결된 여정, PC·모바일 동기화, 감정·키워드 기록 통합",
-      "특별점: 솔페지오·바이노럴 명상, 가이드북 TTS, 에필로그 성찰 저장소",
+      "특별점: 호흡·자연 소리 기반 이완, 가이드북 TTS, 에필로그 성찰 저장소",
     ],
     tip: "하나만 골라 써도 좋고, 프롤로그에서 에필로그까지 이어가면 PRISM의 강점이 가장 잘 드러납니다.",
   },
@@ -350,7 +350,7 @@ const PRISM_HIGHLIGHT_GROUPS = [
     items: [
       {
         title: "AURA 1분 명상(60s Micro Healing)",
-        body: "AURA 1분 명상에서 60초 집중 호흡 가이드, 솔페지오 주파수(432Hz/528Hz 등), 맞춤 명상 처방을 통해 빠르게 뇌파를 이완하고 에너지를 회복합니다.",
+        body: "AURA 1분 명상에서 60초 집중 호흡 가이드와 맞춤 명상 처방으로 잠시 쉬어갈 수 있습니다.",
       },
       {
         title: "가이드북 읽어주기(TTS)",
@@ -719,7 +719,7 @@ export function GuideModal({ isOpen, onClose }: GuideModalProps) {
                           {[
                             { icon: MessageCircle, label: "가디언 대화", desc: "공간별 맞춤 톤" },
                             { icon: RefreshCw, label: "자동 동기화", desc: "PC·모바일 연동" },
-                            { icon: Headphones, label: "주파수 명상", desc: "솔페지오·바이노럴" },
+                            { icon: Headphones, label: "호흡·자연 소리", desc: "편안한 이완" },
                           ].map((badge) => {
                             const BadgeIcon = badge.icon;
                             return (

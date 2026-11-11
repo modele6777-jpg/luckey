@@ -11,6 +11,7 @@ import { recordPrismFeature } from '@/lib/prismOmniSync';
 import { playTTS, stopTTS, useTTSActive } from '@/utils/tts';
 import {
   getSafeArtworkUrl,
+  getWikimediaFilePathUrl,
   resolveArtworkImage,
   isAiArtworkUrl,
   getArtworkImageBadgeInfo,
@@ -57,7 +58,6 @@ export function MuseSynergySection() {
   const [dialogueData, setDialogueData] = useState<MasterpieceDialogueData>(initialDialogue);
   const [isSynthesized, setIsSynthesized] = useState<boolean>(false); // 생성 버튼을 명시적으로 눌러야 마스터클래스 대화가 시작되도록 변경
   const [copied, setCopied] = useState<boolean>(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const isTTSActive = useTTSActive();
 
   // 3. 미술 작품 이미지 상태 (원작 우선 구성 + 저작권/실패 시에만 AI 재현)
@@ -69,9 +69,17 @@ export function MuseSynergySection() {
   const [isAiGenerated, setIsAiGenerated] = useState<boolean>(false);
   const [imageApiError, setImageApiError] = useState('');
   const imageRequestId = useRef(0);
+  const automaticArtworkFallbackRequestedRef = useRef(false);
+  const isGeneratingAiArtworkRef = useRef(false);
+  const [selectedArtworkThumbnailFailed, setSelectedArtworkThumbnailFailed] = useState(false);
+  const [isSelectedArtworkImageOpen, setIsSelectedArtworkImageOpen] = useState(false);
 
   useEffect(() => {
     imageRequestId.current++;
+    automaticArtworkFallbackRequestedRef.current = false;
+    isGeneratingAiArtworkRef.current = false;
+    setSelectedArtworkThumbnailFailed(false);
+    setIsSelectedArtworkImageOpen(false);
     setCustomArtworkUrl('');
     setImageApiError('');
     setIsAiGenerated(false);
@@ -97,19 +105,29 @@ export function MuseSynergySection() {
     // 2. [★ 최우선 대원칙] 거장의 공식 미술관 소장 원작 스캔본 (선택 작품의 이미지 또는 거장 기본 이미지)
     const targetArtworkImg = selectedArtwork?.imageUrl || selectedMaster.imageUrl;
     if (targetArtworkImg && !isAiArtworkUrl(targetArtworkImg)) {
-      list.push(getSafeArtworkUrl(targetArtworkImg));
-      list.push(encodeURI(targetArtworkImg));
+      const resolvedOriginal = getWikimediaFilePathUrl(targetArtworkImg) || getSafeArtworkUrl(targetArtworkImg);
+      list.push(resolvedOriginal);
+      if (targetArtworkImg !== resolvedOriginal) list.push(encodeURI(targetArtworkImg));
     }
 
     return [...new Set(list.filter(Boolean))];
   }, [customArtworkUrl, selectedMaster, selectedArtwork, dialogueData]);
 
   const effectiveArtworkImage = fallbackUrls[imageFallbackIndex] || fallbackUrls[0] || '';
+  const selectedArtworkSourceImage = selectedArtwork?.imageUrl || selectedMaster.imageUrl || '';
+  const selectedArtworkPreviewUrl = customArtworkUrl ||
+    (selectedArtworkSourceImage
+      ? getWikimediaFilePathUrl(selectedArtworkSourceImage) || getSafeArtworkUrl(selectedArtworkSourceImage)
+      : '');
+  const selectedArtworkFilename = `masterpiece-${selectedArtwork.piece.replace(/[^a-zA-Z0-9가-힣]/g, '_')}-${selectedMaster.name.replace(/[^a-zA-Z0-9가-힣]/g, '_')}`;
   const artworkFilename = `masterpiece-${dialogueData.masterpieceName.replace(/[^a-zA-Z0-9가-힣]/g, '_')}-${dialogueData.masterName.replace(/[^a-zA-Z0-9가-힣]/g, '_')}`;
 
   // 수동 AI 이미지 재생성 요청
   const handleRegenerateArtwork = async () => {
+    if (isGeneratingAiArtworkRef.current) return;
+    isGeneratingAiArtworkRef.current = true;
     const requestId = ++imageRequestId.current;
+    let imageUrlReturned = false;
     setLoadingArtwork(true);
     setArtworkLoadError(false);
     setImageApiError('');
@@ -126,60 +144,42 @@ export function MuseSynergySection() {
       if (imageRequestId.current !== requestId) return;
       setCustomArtworkUrl(result.displayUrl || result.url);
       setIsAiGenerated(true);
+      setArtworkLoadError(false);
+      setSelectedArtworkThumbnailFailed(false);
+      imageUrlReturned = true;
     } catch (error) {
       if (imageRequestId.current !== requestId) return;
       setImageApiError(error instanceof Error ? error.message : '작품 이미지를 생성하지 못했습니다.');
       setArtworkLoadError(true);
+      setSelectedArtworkThumbnailFailed(true);
     } finally {
-      if (imageRequestId.current === requestId) setLoadingArtwork(false);
-    }
-  };
-
-  // 639Hz 솔페지오 주파수 사운드 합성
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
-
-  const toggle639Hz = () => {
-    if (isAudioPlaying) {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
-      audioCtxRef.current = null;
-      oscRef.current = null;
-      setIsAudioPlaying(false);
-    } else {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(639, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 1.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        oscRef.current = osc;
-        setIsAudioPlaying(true);
-      } catch (e) {
-        console.warn('Audio synthesis error:', e);
+      if (imageRequestId.current === requestId) {
+        isGeneratingAiArtworkRef.current = false;
+        if (!imageUrlReturned) setLoadingArtwork(false);
       }
     }
   };
 
+  const requestAutomaticArtworkFallback = () => {
+    if (isGeneratingAiArtworkRef.current) return;
+    if (automaticArtworkFallbackRequestedRef.current) {
+      setSelectedArtworkThumbnailFailed(true);
+      return;
+    }
+    automaticArtworkFallbackRequestedRef.current = true;
+    void handleRegenerateArtwork();
+  };
+
+  const handleSelectedArtworkThumbnailError = () => {
+    if (customArtworkUrl) {
+      setSelectedArtworkThumbnailFailed(true);
+      return;
+    }
+    requestAutomaticArtworkFallback();
+  };
+
   useEffect(() => {
     return () => {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
       stopTTS();
     };
   }, []);
@@ -384,7 +384,6 @@ export function MuseSynergySection() {
                 <Sparkles size={12} className="text-blue-400 animate-pulse" />
                 ART ✕ MATE FUSION
               </span>
-              <span className="text-[10px] text-white/40 font-mono">639Hz HARMONY TONE</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
               <Palette className="text-blue-400 drop-shadow-[0_0_12px_rgba(59,130,246,0.8)]" size={28} />
@@ -395,17 +394,6 @@ export function MuseSynergySection() {
             </p>
           </div>
 
-          <button
-            onClick={toggle639Hz}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-bold font-sans flex items-center gap-2 border transition-all cursor-pointer shrink-0 ${
-              isAudioPlaying
-                ? 'bg-blue-500 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.6)] animate-pulse'
-                : 'bg-white/5 hover:bg-white/10 text-white/80 border-white/10'
-            }`}
-          >
-            {isAudioPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            <span>{isAudioPlaying ? '639Hz 영감 주파수 재생 중' : '639Hz 주파수 켜기'}</span>
-          </button>
         </div>
       </motion.div>
 
@@ -470,23 +458,57 @@ export function MuseSynergySection() {
           </div>
 
           <div className="flex items-center gap-3.5 p-3 sm:p-3.5 rounded-xl bg-black/40 border border-white/10">
-            {selectedArtwork.imageUrl ? (
-              <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0 relative">
-                <img
-                  src={getSafeArtworkUrl(selectedArtwork.imageUrl)}
-                  alt={selectedArtwork.piece}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = 'none';
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 shrink-0 flex items-center justify-center text-xl text-white/80">
-                {selectedMaster.category === 'music' ? '🎵' : selectedMaster.category === 'poem' ? '📜' : selectedMaster.category === 'quote' ? '💬' : '🎨'}
-              </div>
-            )}
+            <div className="w-20 h-20 rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0 relative">
+              {selectedArtworkPreviewUrl && !selectedArtworkThumbnailFailed ? (
+                <>
+                  <ImageOutputActions
+                    src={selectedArtworkPreviewUrl}
+                    alt={selectedArtwork.piece}
+                    filename={selectedArtworkFilename}
+                    isOpen={isSelectedArtworkImageOpen}
+                    onOpenChange={setIsSelectedArtworkImageOpen}
+                    modalOnly
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsSelectedArtworkImageOpen(true)}
+                    aria-label={`${selectedArtwork.piece} 크게 보기`}
+                    title="작품 크게 보기"
+                    className="absolute inset-0 w-full h-full cursor-zoom-in"
+                  >
+                    <img
+                      key={selectedArtworkPreviewUrl}
+                      src={selectedArtworkPreviewUrl}
+                      alt={selectedArtwork.piece}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onLoad={() => setSelectedArtworkThumbnailFailed(false)}
+                      onError={handleSelectedArtworkThumbnailError}
+                    />
+                    <span className="absolute left-1 bottom-1 w-6 h-6 rounded-md bg-black/75 border border-white/20 text-white flex items-center justify-center">
+                      <Maximize2 size={12} aria-hidden="true" />
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void downloadImage(selectedArtworkPreviewUrl, selectedArtworkFilename);
+                    }}
+                    aria-label={`${selectedArtwork.piece} 다운로드`}
+                    title="작품 다운로드"
+                    className="absolute top-1 right-1 z-10 w-7 h-7 rounded-md bg-black/75 border border-white/20 text-white flex items-center justify-center hover:bg-black/90"
+                  >
+                    <Download size={13} aria-hidden="true" />
+                  </button>
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xl text-white/80">
+                  {selectedArtworkThumbnailFailed ? <Palette size={22} className="text-amber-300" /> : selectedMaster.category === 'music' ? '🎵' : selectedMaster.category === 'poem' ? '📜' : selectedMaster.category === 'quote' ? '💬' : '🎨'}
+                </div>
+              )}
+            </div>
 
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -751,9 +773,6 @@ export function MuseSynergySection() {
                     {dialogueData.masterpieceMedium}
                   </span>
                 </div>
-                <div className="text-[10px] font-mono tracking-widest text-[#a5b4fc]/80 bg-[#a5b4fc]/5 border border-[#a5b4fc]/10 px-3 py-1.5 rounded-xl">
-                  ENERGY FREQUENCY: 639Hz Sync
-                </div>
               </div>
 
               {/* Title & Creator */}
@@ -814,6 +833,8 @@ export function MuseSynergySection() {
                           if (isAiArtworkUrl(nextUrl) || nextUrl === customArtworkUrl) {
                             setIsAiGenerated(true);
                           }
+                        } else if (!customArtworkUrl && !isAiGenerated) {
+                          requestAutomaticArtworkFallback();
                         } else {
                           setLoadingArtwork(false);
                           setArtworkLoadError(true);

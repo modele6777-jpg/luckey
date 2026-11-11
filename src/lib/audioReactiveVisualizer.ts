@@ -47,20 +47,6 @@ export const VISUALIZER_THEMES: Record<string, VisualizerColorTheme> = {
       glow: new THREE.Color(0x6366f1),
     },
   },
-  '솔페지오': {
-    category: '솔페지오',
-    name: '치유의 솔페지오 주파수 (Teal · Quartz · Celestial)',
-    primary: '#14b8a6',
-    secondary: '#38bdf8',
-    accent: '#f472b6',
-    glow: '#a78bfa',
-    threeColors: {
-      primary: new THREE.Color(0x14b8a6),
-      secondary: new THREE.Color(0x38bdf8),
-      accent: new THREE.Color(0xf472b6),
-      glow: new THREE.Color(0xa78bfa),
-    },
-  },
   '세도나 방하착': {
     category: '세도나 방하착',
     name: '세도나 볼텍스 석양 (Sedona Red Rock & Sunset Amber)',

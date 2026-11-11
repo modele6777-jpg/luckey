@@ -161,6 +161,7 @@ describe('Vercel API entry', { concurrency: false }, () => {
     });
     assert.equal(res.statusCode, 200);
     assert.equal((res.body as { diagnosis: string }).diagnosis.includes('모델 진단'), true);
+    assert.equal('frequency' in (res.body as Record<string, unknown>), false);
     assert.equal(calls.length, 1);
     res.statusCode = 0;
     await handleDailyTarotPost(req as any, res as any, { apiKey: '' });

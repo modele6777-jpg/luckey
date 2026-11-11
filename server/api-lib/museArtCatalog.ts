@@ -41,6 +41,9 @@ export interface VerifiedArtEntry {
   moods: MuseArtMoodId[];
   dailyArtUrl: string;
   imageUrl: string;
+  imageAttribution?: string;
+  imageLicenseName?: string;
+  imageAttributionUrl?: string;
   title: string;
   titleOriginal: string;
   creator: string;
@@ -625,7 +628,7 @@ export const MUSE_ART_CATALOG: VerifiedArtEntry[] = [
       appleMusicClassicalUrl: `${APPLE_MUSIC_CLASSICAL_HOME}album/1358340973`,
       songSourceName: APPLE_MUSIC_CLASSICAL_SOURCE_NAME,
     },
-    defaultWhyRecommended: "지금 당신의 마음에 고요하고 부드러운 치유가 필요합니다. 세세한 격리된 감정을 흐르는 빛줄기에 스며들게 함으로써 창작의 근원 주파수를 정화해 줍니다.",
+    defaultWhyRecommended: "지금 당신의 마음에 고요하고 부드러운 치유가 필요합니다. 세세한 감정을 흐르는 빛줄기에 스며들게 하며 창작에 필요한 마음의 여백을 되찾아 보세요.",
     defaultChallenges: [
       "눈을 감고 정갈한 호수 수면을 바라보는 명상을 3분간 진행해 보세요.",
       "노트 중심에 파란색이나 보라색 크레용으로 가볍게 퍼져나가는 원형 물결을 어루만지듯 그려보세요."
@@ -665,7 +668,7 @@ export const MUSE_ART_CATALOG: VerifiedArtEntry[] = [
       appleMusicClassicalUrl: `${APPLE_MUSIC_CLASSICAL_HOME}album/1440843236`,
       songSourceName: APPLE_MUSIC_CLASSICAL_SOURCE_NAME,
     },
-    defaultWhyRecommended: "당신의 깊은 무의식에 잠재된 열정과 빛을 일깨울 시간입니다. 어두운 밤하늘 속에서도 영롱하게 빛나는 별의 주파수에 맞추어 보세요.",
+    defaultWhyRecommended: "당신의 깊은 무의식에 잠재된 열정과 빛을 일깨울 시간입니다. 어두운 밤하늘을 바라보며 별빛의 고요함을 느껴보세요.",
     defaultChallenges: [
       "밤하늘을 올려다보며 가장 밝게 빛나는 별 하나를 찾아 10초간 응시해 보세요.",
       "노란색 펜으로 나만의 빛나는 별 모양을 스케치북에 힘있게 휘갈겨 보세요."
@@ -922,7 +925,7 @@ export const MUSE_ART_CATALOG: VerifiedArtEntry[] = [
     creatorOriginal: "Wassily Kandinsky",
     artworkType: "미술 (유화)",
     era: "추상미술 / 바우하우스 · 1923년",
-    description: "원, 선, 삼각형 등 엄격하게 구성된 기하학적 요소들이 캔버스 위에서 고유한 주파수와 리듬으로 공명하는 추상 회화의 기념비적인 수작입니다. 음악적 율동을 시각적으로 구현했습니다.",
+    description: "원, 선, 삼각형 등 엄격하게 구성된 기하학적 요소들이 캔버스 위에서 고유한 리듬과 균형을 이루는 추상 회화의 기념비적인 수작입니다. 음악적 율동을 시각적으로 구현했습니다.",
     quote: "색채는 영혼에 직접적인 영향을 미치는 수단이다.",
     aestheticTone: "샤프하고 경쾌한 흑색 그리드, 우아한 연노랑 바탕, 강렬하게 폭발하는 원색 포인트",
     famousPoem: {
@@ -3195,7 +3198,10 @@ export const MUSE_ART_CATALOG: VerifiedArtEntry[] = [
     id: "rodin_the_thinker",
     moods: ["planning", "resurrection"],
     dailyArtUrl: "https://www.dailyartmagazine.com/auguste-rodin-the-thinker/",
-    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/The_Thinker_Musee_Rodin.jpg/960px-The_Thinker_Musee_Rodin.jpg",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/The_Thinker_Musee_Rodin.jpg?width=960",
+    imageAttribution: "innoxiuss",
+    imageLicenseName: "CC BY 2.0",
+    imageAttributionUrl: "https://commons.wikimedia.org/wiki/File:The_Thinker_Musee_Rodin.jpg",
     title: "생각하는 사람 (The Thinker, 1904)",
     titleOriginal: "Le Penseur",
     creator: "오귀스트 로댕 (Auguste Rodin, 프랑스)",

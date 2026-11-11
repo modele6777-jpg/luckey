@@ -19,14 +19,14 @@ import { z } from 'zod';
 import { Streamdown } from '@/components/Streamdown';
 import { TTSButton } from '@/components/TTSButton';
 import { AnimatedText } from '@/components/AnimatedText';
-import { SoulFrequencyChart, EmotionDistribution } from '@/components/SoulCharts';
+import { SoulProgressChart, EmotionDistribution } from '@/components/SoulCharts';
 import { CalendarView } from '@/components/CalendarView';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import NoticeModal from '@/components/NoticeModal';
 
 import imageCompression from 'browser-image-compression';
 import { SecretBible } from '@/components/orange/SecretBible';
-import { useBinauralBeat } from '@/hooks/useBinauralBeat';
+import { useBackgroundMood } from '@/hooks/useBackgroundMood';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { recordPrismFeature, recordDailyOracleResult } from '@/lib/prismOmniSync';
 import { DailySecret } from '@/components/orange/DailySecret';
@@ -210,7 +210,6 @@ const QuickInsightSchema = z.object({
   luckyColor: z.string(),
   remedy: z.string(),
   symbol: z.string(),
-  frequency: z.union([z.string(), z.number()]).transform(v => String(v)),
 });
 
 const translateEnglishValue = (val: string) => {
@@ -272,7 +271,7 @@ const translateEnglishValue = (val: string) => {
 export default function OrangeApp() {
   const [, navigate] = useLocation();
   const isTTSActive = useTTSActive();
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('orange');
+  const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('orange');
   const cardContainerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const { firebaseUser, sharedState, updateSharedState, isChatOpen, setIsChatOpen, sendUnifiedMessage, openLucyChat } = useApp();
@@ -320,7 +319,7 @@ export default function OrangeApp() {
     name: "Quantum Core (양자 아이디어 핵)",
     emoji: "⚛️",
     keyphrase: "확률적 아이디어 무한 중첩",
-    desc: "모든 가능성이 동시에 공존하는 고밀도의 무한한 주파수입니다. 이 수호 기하학과 결합하면 우주적인 보호와 대업 달성의 비전이 조형될 것입니다.",
+    desc: "모든 가능성이 동시에 공존하는 풍부한 상상력입니다. 이 수호 기하학과 결합하면 우주적인 보호와 대업 달성의 비전이 조형될 것입니다.",
     isReversed: false
   });
 
@@ -337,7 +336,7 @@ export default function OrangeApp() {
     { name: "Synergy Bolt (시너지 볼트)", emoji: "⚡", keyphrase: "순간적 스파크와 가속", desc: "서로 다른 영역의 아이디어가 충돌하며 번뜩이는 직관적 연결고리를 발산하는 강력한 동조 타이밍입니다." },
     { name: "Deep Node (딥 노드)", emoji: "🧠", keyphrase: "주파적 초몰입과 논리 정돈", desc: "외부 산만함을 전면 배제하고 중심 핵심 아키텍처나 코드 구조를 극도로 정교화할 수 있는 응축기입니다." },
     { name: "Chaos Fusion (카오스 퓨전)", emoji: "🌀", keyphrase: "모순개념의 예술적 연합", desc: "정반합의 모순과 비이성적 무의식을 엮어 차세대 패러다임을 설계해내는 과감한 모험 구도입니다." },
-    { name: "Static Shifting (정적 전환)", emoji: "⏳", keyphrase: "컨텍스트 클리어 및 보존", desc: "과열된 싱크 주파수 편차를 가라앉히고 제3자 관점으로 전면 환기하는 지식 리부팅 지점입니다." },
+    { name: "Static Shifting (정적 전환)", emoji: "⏳", keyphrase: "컨텍스트 클리어 및 보존", desc: "과열된 생각의 흐름을 가라앉히고 제3자 관점으로 전면 환기하는 지식 리부팅 지점입니다." },
     { name: "Vision Arch (비전 아치)", emoji: "🏛️", keyphrase: "장기 프레임워크 설계", desc: "산발적인 낙서 수준의 조각들을 미래 핵심 비전의 거대한 중심 구도로 전위화하는 구축 흐름입니다." }
   ], []);
 
@@ -872,7 +871,6 @@ export default function OrangeApp() {
           diagnosis: String(data.diagnosis || ''),
           remedy: String(data.remedy || ''),
           symbol: String(data.symbol || sessionCardDrawn?.name || ''),
-          frequency: String(data.frequency || '639Hz'),
           dateKey: todayK,
         });
 
@@ -1173,7 +1171,7 @@ export default function OrangeApp() {
         : "최근 상담 내역이 없습니다.";
 
       const dailyContext = dailyResult 
-        ? `오늘의 Daily 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol}, 주파수: ${dailyResult.frequency})`
+        ? `오늘의 Daily 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol})`
         : "오늘의 Daily 진단 데이터가 없습니다.";
 
       const rawNick = sharedState?.userProfile?.basic?.nickname;
@@ -1466,7 +1464,7 @@ export default function OrangeApp() {
                    </div>
                    <div className="text-center space-y-2">
                      <p className="text-2xl font-display text-white  tracking-widest animate-pulse font-bold">Consulting the Oracle...</p>
-                     <p className="text-[10px] text-orange-400 font-bold uppercase tracking-[0.4em] font-sans">마음의 주파수를 정렬하고 있습니다</p>
+                     <p className="text-[10px] text-orange-400 font-bold uppercase tracking-[0.4em] font-sans">호흡을 고르고 오늘의 영감을 살피고 있습니다</p>
                    </div>
                 </div>
               </motion.div></ScreenPortal>
@@ -1510,7 +1508,7 @@ export default function OrangeApp() {
                 </div>
 
                 <p className="text-sm text-white/60 leading-relaxed font-sans break-keep">
-                  이 댑의 {limitModalInfo.type === 'daily' ? '데일리 비전' : '소울 분석'} 기능은 하루에 한 번만 실행할 수 있습니다. 이미 오늘의 주파수가 우주와 동조되었습니다. 에필로그에서 이전의 찬란했던 동조 기록들을 살펴보세요.
+                  이 댑의 {limitModalInfo.type === 'daily' ? '데일리 비전' : '소울 분석'} 기능은 하루에 한 번만 실행할 수 있습니다. 이미 오늘의 오라클을 확인했습니다. 에필로그에서 이전의 찬란했던 동조 기록들을 살펴보세요.
                 </p>
 
                 <button

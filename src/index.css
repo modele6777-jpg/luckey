@@ -3741,3 +3741,56 @@ html.duo-unfolded-portrait :is([data-lucy-loader], [data-lucy-aura-loader], .luc
   max-height: calc(var(--duo-portrait-canvas-height) / 2) !important;
   bottom: var(--duo-bottom-nav-height) !important;
 }
+
+
+/* Swapped landscape panels: Lucy occupies the physical left half; the content
+   pane keeps the right-side navigation rail reserved on the physical right. */
+html.duo-unfolded-landscape.duo-panels-swapped #duo-content-viewport,
+body.duo-unfolded-landscape.duo-panels-swapped #duo-content-viewport {
+  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  min-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  flex: 0 0 calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+}
+html.duo-unfolded-landscape.duo-panels-swapped #duo-lucy-viewport,
+body.duo-unfolded-landscape.duo-panels-swapped #duo-lucy-viewport {
+  width: 50vw !important;
+  min-width: 50vw !important;
+  max-width: 50vw !important;
+  flex: 0 0 50vw !important;
+}
+html.duo-unfolded-landscape.duo-panels-swapped #tarot-stage-container,
+html.duo-unfolded-landscape.duo-panels-swapped #today-tarot-narration-modal,
+html.duo-unfolded-landscape.duo-panels-swapped #circular-tarot-modal-container,
+body.duo-unfolded-landscape.duo-panels-swapped #tarot-stage-container,
+body.duo-unfolded-landscape.duo-panels-swapped #today-tarot-narration-modal,
+body.duo-unfolded-landscape.duo-panels-swapped #circular-tarot-modal-container {
+  left: 50vw !important;
+  right: var(--sites-sidebar-width, 80px) !important;
+  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+}
+html.duo-unfolded-landscape.duo-panels-swapped .bottom-safe-fab-center,
+body.duo-unfolded-landscape.duo-panels-swapped .bottom-safe-fab-center {
+  left: 25vw !important;
+  right: auto !important;
+}
+html.duo-unfolded-landscape.duo-panels-swapped .prism-xs-subnav:not(.duo-page-nav),
+body.duo-unfolded-landscape.duo-panels-swapped .prism-xs-subnav:not(.duo-page-nav) {
+  left: calc(75vw - 40px) !important;
+  max-width: calc(50vw - var(--sites-sidebar-width, 80px) - 2rem) !important;
+}
+html.duo-unfolded-landscape.duo-panels-swapped :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader])),
+body.duo-unfolded-landscape.duo-panels-swapped :is([data-app-channel-loader], [data-fullscreen-loader]:not([data-lucy-loader])) {
+  left: 50vw !important;
+  width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  max-width: calc(50vw - var(--sites-sidebar-width, 80px)) !important;
+  right: var(--sites-sidebar-width, 80px) !important;
+}
+html.duo-unfolded-landscape.duo-panels-swapped :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]),
+body.duo-unfolded-landscape.duo-panels-swapped :is([data-lucy-loader], [data-lucy-aura-loader], .lucy-mode-transition, [data-lucy-animation]) {
+  left: 0 !important;
+  width: 50vw !important;
+  max-width: 50vw !important;
+  right: auto !important;
+}

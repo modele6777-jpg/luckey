@@ -75,54 +75,11 @@ export function AuraSynergySection() {
   const [chamberTimer, setChamberTimer] = useState<number>(60);
   const [isTtsGuideEnabled, setIsTtsGuideEnabled] = useState<boolean>(true);
   const isTTSActive = useTTSActive();
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
-
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
   const lastSpokenPhaseRef = useRef<number | null>(null);
   const chamberSessionIdRef = useRef<string | null>(null);
 
-  const toggleTone = () => {
-    if (isAudioPlaying) {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
-      audioCtxRef.current = null;
-      oscRef.current = null;
-      setIsAudioPlaying(false);
-    } else {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(528, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 1.5);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        oscRef.current = osc;
-        setIsAudioPlaying(true);
-      } catch (e) {
-        console.warn('Sanctuary audio error:', e);
-      }
-    }
-  };
-
   useEffect(() => {
     return () => {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
       stopTTS();
     };
   }, []);
@@ -266,7 +223,7 @@ export function AuraSynergySection() {
 2. 올바른 한국어 조사(은/는, 이/가, 을/를, 과/와, 으로/로) 문법 철저 준수:
    받침 유무에 따른 올바른 조사를 결합하여 어색함이 전혀 없는 매끄럽고 유려한 문장이어야 합니다.
 3. 세련되고 완결성 높은 타이틀(title):
-   〈고민 핵심 명사구 해방〉 528Hz 무저항 챔버 (예: 〈미래 불안과 초조함 해방〉 528Hz 무저항 챔버, 〈관계의 서운함과 응어리 방하착〉 528Hz 무저항 챔버) 형태로 자연스럽게 명명하세요.
+   〈고민 핵심 명사구 해방〉 무저항 챔버 (예: 〈미래 불안과 초조함 해방〉 무저항 챔버, 〈관계의 서운함과 응어리 방하착〉 무저항 챔버) 형태로 자연스럽게 명명하세요.
 4. 깊은 공감의 요약(targetThoughtDetail):
    사용자의 고민 핵심을 따뜻하고 정갈하게 정제하여 한 줄 명사구/요약문으로 정리하세요.
 5. 세도나 5문답 깨달음(sedonaInquiryAnswer):
@@ -284,7 +241,7 @@ export function AuraSynergySection() {
 
 반드시 아래 JSON 스키마로만 엄격하게 응답하세요 (문맥 상 오류 및 비문 절대 금지):
 {
-  "title": "〈${concernTopic} 해방〉 528Hz 무저항 챔버",
+  "title": "〈${concernTopic} 해방〉 무저항 챔버",
   "tensionArea": "${tensionLabel}",
   "targetThoughtDetail": "${trimmedDetail ? concernTopic : tensionLabel}",
   "sedonaInquiryAnswer": "손아귀에 쥔 힘을 풀듯 ${attachKoreanParticle(concernTopic, '을/를')} 허공으로 내려놓는 깊은 깨달음의 세도나 해방 문장",
@@ -299,7 +256,7 @@ export function AuraSynergySection() {
           ...FALLBACK_SANCTUARY,
           tensionArea: tensionLabel,
           targetThoughtDetail: concernTopic,
-          title: `〈${concernTopic} 해방〉 528Hz 무저항 챔버`,
+          title: `〈${concernTopic} 해방〉 무저항 챔버`,
           sedonaInquiryAnswer: trimmedDetail
             ? `마음을 무겁게 짓누르던 ${attachKoreanParticle(concernTopic, '과/와')} 통제 욕구를 있는 그대로 허용하고, 허공 속으로 가볍게 흘려보냅니다.`
             : FALLBACK_SANCTUARY.sedonaInquiryAnswer,
@@ -384,7 +341,6 @@ export function AuraSynergySection() {
                 <Sparkles size={12} className="text-emerald-400 animate-pulse" />
                 LETTING GO ✕ 1-MIN FUSION
               </span>
-              <span className="text-[10px] text-white/40 font-mono">ZERO RESISTANCE 528Hz</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
               <Leaf className="text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.8)]" size={28} />
@@ -394,18 +350,6 @@ export function AuraSynergySection() {
               <strong>Letting Go Method(세도나 흘려보내기)</strong>와 <strong>1-MIN(1분 마이크로 집중 명상)</strong>의 양쪽 메뉴를 융합하여, 몸과 마음에 맺힌 저항을 0%로 증발시키는 방하착 챔버입니다.
             </p>
           </div>
-
-          <button
-            onClick={toggleTone}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-bold font-sans flex items-center gap-2 border transition-all cursor-pointer shrink-0 ${
-              isAudioPlaying
-                ? 'bg-emerald-500 text-black border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.6)] animate-pulse'
-                : 'bg-white/5 hover:bg-white/10 text-white/80 border-white/10'
-            }`}
-          >
-            {isAudioPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            <span>{isAudioPlaying ? '치유 주파수 재생 중' : '528Hz 치유음 켜기'}</span>
-          </button>
         </div>
       </div>
 

@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Award,
-  Volume2,
   VolumeX,
   Check,
   Copy,
@@ -17,7 +16,6 @@ import {
   Palette,
   Shield,
   Play,
-  Square,
   Share2,
   Archive,
   History,
@@ -45,18 +43,16 @@ export function EpilogueSynergySection() {
   
   const [selectedFocus, setSelectedFocus] = useState<string>(COSMIC_FOCUS_OPTIONS[0].id);
   const [customInsight, setCustomInsight] = useState<string>('');
-  const [activeFrequency, setActiveFrequency] = useState<number>(COSMIC_FOCUS_OPTIONS[0].frequency);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // 초기값부터 사용자 프로필 및 오늘 날짜에 기반하여 동적으로 생성
   const initialChronicle = useMemo(() => {
-    return getDynamicSoulChronicle(COSMIC_FOCUS_OPTIONS[0].id, COSMIC_FOCUS_OPTIONS[0].frequency, '', userProfile);
+    return getDynamicSoulChronicle(COSMIC_FOCUS_OPTIONS[0].id, '', userProfile);
   }, []);
 
   const [chronicleData, setChronicleData] = useState<ChronicleStampData>(initialChronicle);
   const [isSynthesized, setIsSynthesized] = useState<boolean>(false); // 버튼을 눌러야 발행되도록 변경
   const [copied, setCopied] = useState<boolean>(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [shareModalTab, setShareModalTab] = useState<'card' | 'feed'>('card');
   const [archiveHistory, setArchiveHistory] = useState<ChronicleStampData[]>([]);
@@ -87,66 +83,18 @@ export function EpilogueSynergySection() {
   }, [sharedState?.epilogueHistory, userProfile, chronicleData.soulEvolutionLevel]);
 
   const isTTSActive = useTTSActive();
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
-
-  // Toggle Solfeggio frequency tone generator
-  const toggleFrequencyTone = (freq?: number) => {
-    const targetFreq = freq || activeFrequency;
-    if (isAudioPlaying) {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
-      audioCtxRef.current = null;
-      oscRef.current = null;
-      setIsAudioPlaying(false);
-    } else {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioCtx) return;
-        const ctx = new AudioCtx();
-        if (ctx.state === 'suspended') {
-          ctx.resume().catch(() => {});
-        }
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(targetFreq, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 1.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        oscRef.current = osc;
-        setIsAudioPlaying(true);
-      } catch (e) {
-        console.warn('Audio synthesis error:', e);
-      }
-    }
-  };
 
   useEffect(() => {
     return () => {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
       stopTTS();
     };
   }, []);
 
-  // 포커스 변경 시: 포커스 및 주파수 갱신 (이미 발행된 상태라면 연대기 데이터 동기화)
+  // 포커스 변경 시 이미 발행된 연대기 데이터 동기화
   const handleSelectFocus = (focus: CosmicFocusOption) => {
     setSelectedFocus(focus.id);
-    setActiveFrequency(focus.frequency);
     if (isSynthesized) {
-      const updated = getDynamicSoulChronicle(focus.id, focus.frequency, customInsight, userProfile);
+      const updated = getDynamicSoulChronicle(focus.id, customInsight, userProfile);
       setChronicleData(updated);
     }
   };
@@ -169,7 +117,7 @@ export function EpilogueSynergySection() {
 [필수 대원칙]
 1. 정형화되거나 매일 똑같은 템플릿 문구를 절대 출력하지 마세요.
 2. 사용자가 남긴 깨달음("${insightText}")과 닉네임, 선택된 영혼 테마("${focusObj.label}")를 깊이 반영하여, 가슴 벅차오르는 거룩하고 시적인 문장으로 작성하세요.
-3. 주파수나 Hz 등의 물리적 수치 언급은 배제하고, 영혼의 깨달음과 내면의 평화, 의식의 진화에 집중하여 서술하세요.
+3. 영혼의 깨달음과 내면의 평화, 의식의 진화에 집중하여 서술하세요.
 4. 반드시 유효한 JSON 형식으로만 응답하세요.`;
 
     const userPrompt = `[양쪽 메뉴 융합: DIARY 성찰 일기 ✕ PROFILE 영혼 프로필]
@@ -199,7 +147,7 @@ export function EpilogueSynergySection() {
     // 25초 안전 타임아웃
     const safetyTimeout = new Promise<ChronicleStampData>((resolve) => {
       setTimeout(() => {
-        resolve(getDynamicSoulChronicle(selectedFocus, activeFrequency, insightText, userProfile));
+        resolve(getDynamicSoulChronicle(selectedFocus, insightText, userProfile));
       }, 25000);
     });
 
@@ -224,7 +172,7 @@ export function EpilogueSynergySection() {
       } catch (e) {
         console.warn('[EpilogueSynergy] invokeLLM error, using dynamic fallback:', e);
       }
-      return getDynamicSoulChronicle(selectedFocus, activeFrequency, insightText, userProfile);
+      return getDynamicSoulChronicle(selectedFocus, insightText, userProfile);
     };
 
     try {
@@ -247,7 +195,7 @@ export function EpilogueSynergySection() {
       }, 'EPILOGUE');
     } catch (e) {
       console.warn('Epilogue fallback error:', e);
-      const fallback = getDynamicSoulChronicle(selectedFocus, activeFrequency, insightText, userProfile);
+      const fallback = getDynamicSoulChronicle(selectedFocus, insightText, userProfile);
       setChronicleData(fallback);
       setIsSynthesized(true);
     } finally {
@@ -296,7 +244,7 @@ export function EpilogueSynergySection() {
             </p>
           </div>
 
-          {/* Action Buttons: Meditation Tone & Soul Achievement Report */}
+          {/* Action Buttons: Soul Achievement Report */}
           <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
             <button
               type="button"
@@ -311,17 +259,6 @@ export function EpilogueSynergySection() {
               <span>성취 리포트 공유</span>
             </button>
 
-            <button
-              onClick={() => toggleFrequencyTone()}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold font-sans flex items-center gap-2 border transition-all cursor-pointer shrink-0 ${
-                isAudioPlaying
-                  ? 'bg-purple-500 text-white border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.6)] animate-pulse'
-                  : 'bg-white/5 hover:bg-white/10 text-white/80 border-white/10'
-              }`}
-            >
-              {isAudioPlaying ? <Volume2 size={15} /> : <VolumeX size={15} />}
-              <span>{isAudioPlaying ? '수면 명상음 재생 중' : '수면 명상음 듣기'}</span>
-            </button>
           </div>
         </div>
       </div>

@@ -23,7 +23,7 @@ export const TrinityBible: React.FC<{ onConsult: (text: string) => void }> = ({ 
         ]}
         steps={[
           "최근 내가 겪은 우연한 일들의 숨겨진 의미 해독하기",
-          "우주의 주파수와 나의 파동을 동기화하는 명상법",
+          "우주의 마음의 흐름과 나의 파동을 동기화하는 명상법",
           "선택의 기로에서 직관의 소리를 분별하는 법"
         ]}
         color="border-yellow-500/20"

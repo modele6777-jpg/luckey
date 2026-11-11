@@ -981,7 +981,6 @@ ${content}
     try {
       const {
         focusPlaylist,
-        frequency,
         cardName,
         symbol,
         dateKey,
@@ -995,7 +994,6 @@ ${content}
       const { generateDailyBgmBuffer } = await import("./server/api-lib/generateDailyBgm.ts");
       const { buffer, durationSec } = generateDailyBgmBuffer({
         focusPlaylist: String(focusPlaylist),
-        frequency: frequency ? String(frequency) : undefined,
         cardName: cardName ? String(cardName) : undefined,
         symbol: symbol ? String(symbol) : undefined,
         dateKey: String(dateKey),
@@ -1095,7 +1093,7 @@ ${content}
 3. remedy: [${cardNameKo}] 카드를 바탕으로 한 오늘 하루의 Releasing 실천 지침 1~2문장 요약
 4. spiritualEnergy: [${cardNameKo}] 카드가 일깨우는 치유 파동 2문장
 5. blessingMessage: [${cardNameKo}] 카드의 따뜻한 수호 축복 1문장
-6. symbol, frequency, luckyColor, luckyNumber, focusPlaylist 포함`;
+6. symbol, luckyColor, luckyNumber, focusPlaylist 포함`;
 
         const config = {
           systemInstruction,
@@ -1108,12 +1106,11 @@ ${content}
               luckyColor: { type: "STRING" },
               remedy: { type: "STRING" },
               symbol: { type: "STRING" },
-              frequency: { type: "STRING" },
               spiritualEnergy: { type: "STRING" },
               blessingMessage: { type: "STRING" },
               focusPlaylist: { type: "STRING" }
             },
-            required: ["diagnosis", "luckyNumber", "luckyColor", "remedy", "symbol", "frequency"]
+            required: ["diagnosis", "luckyNumber", "luckyColor", "remedy", "symbol"]
           }
         };
 
@@ -1272,10 +1269,9 @@ ${content}
       luckyColor: "에메랄드 힐링 그린",
       remedy: `[${cardName}] 카드의 상징을 마음에 품고, 호흡을 내쉴 때마다 가슴 속 긴장을 10초간 온전히 흘려보내기`,
       symbol: `${cardName}의 정화 크리스탈`,
-      frequency: "528Hz 솔페지오 사랑과 치유",
-      spiritualEnergy: `[${cardName}] 카드의 치유 파동이 가슴 차크라와 공명하여 에고의 저항을 녹여내고 본연의 평온을 회복시킵니다.`,
+      spiritualEnergy: `[${cardName}] 카드의 상징을 떠올리며 에고의 저항을 녹여내고 본연의 평온을 회복해 보세요.`,
       blessingMessage: `모든 집착이 스러진 고요한 자리에서 [${cardName}]의 청정한 빛이 당신의 하루를 온전히 축복합니다.`,
-      focusPlaylist: "528Hz Cellular Healing & Release"
+      focusPlaylist: "Calm Ambient Instrumental"
     });
 
     const buildTarotFallback = (cardName: string): string => JSON.stringify({
@@ -1284,10 +1280,9 @@ ${content}
       luckyColor: "황금빛 골드 (Celestial Gold)",
       remedy: `[${cardName}] 카드의 상징을 마음에 그리며 따뜻한 차 한 잔과 함께 3분간 깊은 복식호흡 수행하기`,
       symbol: `${cardName}의 빛`,
-      frequency: "528Hz",
       spiritualEnergy: `[${cardName}] 카드의 원소적 에너지가 당신의 내면 의식과 조화롭게 공명하여 깊은 통찰력과 정서적 안정감을 일깨웁니다.`,
       blessingMessage: `오늘 하루 당신이 딛는 모든 길 위에 [${cardName}] 카드의 신성한 보호와 빛나는 은총이 함께하기를 축복합니다.`,
-      focusPlaylist: "528Hz Solfeggio Resonance"
+      focusPlaylist: "Calm Ambient Instrumental"
     });
 
     const buildSmartFallbackText = (messages: any[], isJsonExpected: boolean): string => {
@@ -1325,17 +1320,13 @@ ${content}
           });
         }
 
-        if (wholeStr.includes("coherence") || wholeStr.includes("carrier") || wholeStr.includes("beat") || wholeStr.includes("bandtext")) {
+        if (wholeStr.includes("coherence")) {
           return JSON.stringify({
-            title: "오라 공명 정렬",
+            title: "오라 웰니스 안내",
             coherence: 85,
-            bandText: "퀀텀 슈만 공명 조율 대역 (7.83Hz)",
-            freqText: "자율신경계와 뇌파를 고요하게 정렬합니다.",
             shieldToken: "오라실드",
             prescription: "피로가 쌓였다면 무리하지 말고 몸과 마음에 고요한 쉼을 주세요.",
             advice: "어깨를 가볍게 펴고 깊은 호흡을 세 번 천천히 내쉬어 보세요.",
-            carrier: 432,
-            beat: 7.83,
             luckScore: 78,
             loveScore: 82,
             wealthScore: 76,

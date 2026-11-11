@@ -40,7 +40,7 @@ interface ScriptingTypingPracticeProps {
 const CLASSIC_SECRET_QUOTES: string[] = [
   '내가 간절히 바라는 것은 이미 보이지 않는 차원에서 나를 향해 다가오고 있다.',
   '나는 무한한 가능성을 지닌 우주의 중심이며, 내 생각과 감정이 현실을 창조한다.',
-  '오늘 하루도 내게 주어진 모든 순간에 감사하며 가장 높은 풍요의 주파수를 유지한다.',
+  '오늘 하루도 내게 주어진 모든 순간에 감사하며 풍요를 향한 작은 행동을 이어간다.',
   '나는 원하는 모든 성공과 사랑, 건강과 풍요를 온전히 누릴 자격이 충분한 사람이다.',
   '기적은 매일 나의 삶 속에 가장 자연스럽고 완전한 방식으로 피어난다.',
   '이미 모든 것이 이루어졌음에 깊이 감사하며 평온한 확신으로 오늘을 살아간다.',
@@ -607,7 +607,7 @@ export function ScriptingTypingPractice({
                     <Sparkles size={13} className="text-amber-400" />
                   </h4>
                   <p className="text-xs text-emerald-200/80 font-sans">
-                    확언의 주파수가 잠재의식에 선명히 각인되었습니다.
+                    오늘의 확언을 차분히 되새겼습니다.
                   </p>
                 </div>
               </div>

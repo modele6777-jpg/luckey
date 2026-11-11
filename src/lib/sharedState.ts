@@ -266,7 +266,7 @@ export interface SharedState {
   lastHealSoulSync?: number;
   lastMuseDailySync?: number;
   lastMuseSoulSync?: number;
-  soulHistory?: { name: string; value: number }[]; // For SoulFrequencyChart
+  soulHistory?: { name: string; value: number }[]; // For SoulProgressChart
   emotionHistory?: { name: string; value: number }[]; // For EmotionDistribution
   lastEnergyAnalysis?: number; // timestamp
   focusPlaylists?: string[]; // Saved focus music playlists

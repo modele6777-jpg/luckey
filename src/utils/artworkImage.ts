@@ -186,7 +186,10 @@ export function getWikimediaFilePathUrl(url: string): string {
   try {
     const parsed = new URL(url);
     if (!/(^|\.)wikimedia\.org$|(^|\.)wikipedia\.org$/i.test(parsed.hostname)) return "";
-    const filename = decodeURIComponent(parsed.pathname.split("/").pop() || "");
+    const pathParts = decodeURIComponent(parsed.pathname).split("/").filter(Boolean);
+    const thumbIndex = pathParts.indexOf("thumb");
+    const filename = (thumbIndex >= 0 ? pathParts[thumbIndex + 3] : pathParts.at(-1))
+      ?.replace(/^\d+px-/i, "") || "";
     if (!filename) return "";
     return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=1600`;
   } catch (_) {

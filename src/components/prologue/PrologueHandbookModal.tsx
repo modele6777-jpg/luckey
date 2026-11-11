@@ -71,7 +71,7 @@ export const SANCTUARY_GUIDES = [
     name: '✨ TRINITY (트리니티)',
     role: '천문 정밀 사주 & 운명 오라클 & 기적수업',
     color: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
-    details: '정밀 만세력 사주원국, 타로 주파수 리딩, 기적수업(ACIM) 용서의 원리로 삶의 전환점과 개운법을 밝힙니다.'
+    details: '정밀 만세력 사주원국, 타로 마음의 흐름 리딩, 기적수업(ACIM) 용서의 원리로 삶의 전환점과 개운법을 밝힙니다.'
   },
   {
     name: '⚡ AURA (아우라 / HEAL)',

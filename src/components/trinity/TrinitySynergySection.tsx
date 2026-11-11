@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Compass, Flame, Volume2, VolumeX, Copy, Check, RefreshCw, Award, ArrowRight, ShieldCheck, Zap, Disc } from 'lucide-react';
+import { Sparkles, Compass, Flame, Copy, Check, RefreshCw, Award, ArrowRight, ShieldCheck, Zap, Disc, Volume2, VolumeX } from 'lucide-react';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { invokeLLM } from '@/lib/ai';
 import { recordPrismFeature } from '@/lib/prismOmniSync';
@@ -77,53 +77,11 @@ export function TrinitySynergySection() {
   const [alchemyData, setAlchemyData] = useState<DestinyAlchemyData>(FALLBACK_ALCHEMY);
   const [isDrawn, setIsDrawn] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const isTTSActive = useTTSActive();
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
-
-  const toggle741Hz = () => {
-    if (isAudioPlaying) {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
-      audioCtxRef.current = null;
-      oscRef.current = null;
-      setIsAudioPlaying(false);
-    } else {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(741, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 1.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        oscRef.current = osc;
-        setIsAudioPlaying(true);
-      } catch (e) {
-        console.warn('Audio synthesis failed:', e);
-      }
-    }
-  };
 
   useEffect(() => {
     return () => {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
       stopTTS();
     };
   }, []);
@@ -241,7 +199,6 @@ export function TrinitySynergySection() {
                 <Sparkles size={12} className="text-yellow-400 animate-pulse" />
                 LUCKY ✕ TAROT FUSION
               </span>
-              <span className="text-[10px] text-white/40 font-mono">741Hz INTUITION FREQUENCY</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
               <Compass className="text-yellow-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.8)]" size={28} />
@@ -252,17 +209,6 @@ export function TrinitySynergySection() {
             </p>
           </div>
 
-          <button
-            onClick={toggle741Hz}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-bold font-sans flex items-center gap-2 border transition-all cursor-pointer shrink-0 ${
-              isAudioPlaying
-                ? 'bg-yellow-500 text-black border-yellow-400 shadow-[0_0_20px_rgba(234,179,8,0.6)] animate-pulse'
-                : 'bg-white/5 hover:bg-white/10 text-white/80 border-white/10'
-            }`}
-          >
-            {isAudioPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            <span>{isAudioPlaying ? '741Hz 직관 주파수 재생 중' : '741Hz 주파수 켜기'}</span>
-          </button>
         </div>
       </div>
 

@@ -7,7 +7,7 @@ export function PageLoader() {
         fullScreen
         compact
         message="LucKey 유니버스 조율 중..."
-        subMessage="ALIGNING SACRED FREQUENCY"
+        subMessage="FINDING YOUR INNER CALM"
       />
   );
 }

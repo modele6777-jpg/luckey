@@ -5,7 +5,7 @@
  * 
  * [엔진 개요]
  * 고대 인도의 7대 차크라(Chakras) 에너지 나디(Nadi) 체계와 동양의 사주 5행(목·화·토·금·수) 생극제화,
- * 양자 파동 솔페지오 주파수(Solfeggio Frequencies), 크리스탈 원석 및 아로마 테라피를 결합한 엔진입니다.
+ * 크리스탈 원석 및 아로마 테라피를 결합한 엔진입니다.
  * 
  * 1. 물라다라(Muladhara/뿌리 차크라 - 빨강 · 생존과 그라운딩): 수(Water) 신장 및 지구력
  * 2. 스와디스타나(Svadhisthana/천골 차크라 - 주황 · 감정과 성, 창조성): 수/목(생명수)
@@ -30,7 +30,6 @@ export interface SingleChakraInfo {
   koreanName: string;
   location: string;
   color: string;
-  frequencyHz: number;
   opennessPercent: number; // 0 ~ 100%
   status: '최적 정렬 (Harmonized)' | '에너지 과활성 (Overactive)' | '막힘/결핍 (Underactive/Blocked)';
   theme: string;
@@ -44,7 +43,6 @@ export interface ChakraVibrationAlignmentReport {
   primaryFocusChakra: {
     name: string;
     reason: string;
-    frequencyHz: number;
     gemstone: string;
     aromatherapyOil: string;
   };
@@ -90,7 +88,6 @@ export function runChakraVibrationAlignmentEngine(
       koreanName: '1. 뿌리 차크라 (물라다라)',
       location: '골반저, 회음부',
       color: '루비 레드 (Red)',
-      frequencyHz: 396,
       opennessPercent: rootScore,
       status: rootScore < 75 ? '막힘/결핍 (Underactive/Blocked)' : rootScore > 92 ? '에너지 과활성 (Overactive)' : '최적 정렬 (Harmonized)',
       theme: '생존 본능, 육체적 안정감, 재정적 그라운딩',
@@ -102,7 +99,6 @@ export function runChakraVibrationAlignmentEngine(
       koreanName: '2. 천골 차크라 (스와디스타나)',
       location: '배꼽 아래 3cm (단전)',
       color: '선셋 오렌지 (Orange)',
-      frequencyHz: 417,
       opennessPercent: sacralScore,
       status: sacralScore < 75 ? '막힘/결핍 (Underactive/Blocked)' : sacralScore > 92 ? '에너지 과활성 (Overactive)' : '최적 정렬 (Harmonized)',
       theme: '감정의 자유로운 흐름, 관능과 성 에너지, 창의적 열정',
@@ -114,7 +110,6 @@ export function runChakraVibrationAlignmentEngine(
       koreanName: '3. 태양신경총 차크라 (마니푸라)',
       location: '명치, 윗배',
       color: '골든 옐로우 (Yellow)',
-      frequencyHz: 528,
       opennessPercent: solarScore,
       status: solarScore < 75 ? '막힘/결핍 (Underactive/Blocked)' : solarScore > 92 ? '에너지 과활성 (Overactive)' : '최적 정렬 (Harmonized)',
       theme: '강인한 자존감, 내면의 전사 에너지, 실행력과 결단',
@@ -126,7 +121,6 @@ export function runChakraVibrationAlignmentEngine(
       koreanName: '4. 심장 차크라 (아나하타)',
       location: '가슴 정중앙',
       color: '에메랄드 그린 / 로즈 (Green/Pink)',
-      frequencyHz: 639,
       opennessPercent: heartScore,
       status: heartScore < 75 ? '막힘/결핍 (Underactive/Blocked)' : heartScore > 92 ? '에너지 과활성 (Overactive)' : '최적 정렬 (Harmonized)',
       theme: '무조건적인 사랑, 자비, 용서와 관계의 연결',
@@ -138,7 +132,6 @@ export function runChakraVibrationAlignmentEngine(
       koreanName: '5. 목 차크라 (비슈다)',
       location: '목구멍, 후두',
       color: '스카이 블루 (Blue)',
-      frequencyHz: 741,
       opennessPercent: throatScore,
       status: throatScore < 75 ? '막힘/결핍 (Underactive/Blocked)' : throatScore > 92 ? '에너지 과활성 (Overactive)' : '최적 정렬 (Harmonized)',
       theme: '자기 표현, 진실된 목소리, 솔직한 커뮤니케이션',
@@ -150,7 +143,6 @@ export function runChakraVibrationAlignmentEngine(
       koreanName: '6. 제3의 눈 차크라 (아즈나)',
       location: '미간 사이',
       color: '인디고 남색 (Indigo)',
-      frequencyHz: 852,
       opennessPercent: ajnaScore,
       status: ajnaScore < 75 ? '막힘/결핍 (Underactive/Blocked)' : ajnaScore > 92 ? '에너지 과활성 (Overactive)' : '최적 정렬 (Harmonized)',
       theme: '직관, 영적 통찰, 미래 예지, 상상력',
@@ -162,7 +154,6 @@ export function runChakraVibrationAlignmentEngine(
       koreanName: '7. 크라운 차크라 (사하스라라)',
       location: '정수리 백회혈',
       color: '바이올렛 / 퓨어 화이트 (Violet/White)',
-      frequencyHz: 963,
       opennessPercent: crownScore,
       status: crownScore < 75 ? '막힘/결핍 (Underactive/Blocked)' : crownScore > 92 ? '에너지 과활성 (Overactive)' : '최적 정렬 (Harmonized)',
       theme: '우주 의식과의 합일, 영적 각성, 초월적 평화',
@@ -187,7 +178,6 @@ export function runChakraVibrationAlignmentEngine(
   const primaryFocusChakra = {
     name: chosenChakra.koreanName,
     reason: `현재 에너지 순환에서 상대적 막힘 지수가 감지되어, [${chosenChakra.theme}] 테마의 정렬이 시급합니다.`,
-    frequencyHz: chosenChakra.frequencyHz,
     gemstone: gemstoneMap[focusIdx],
     aromatherapyOil: aromaMap[focusIdx]
   };
@@ -195,19 +185,18 @@ export function runChakraVibrationAlignmentEngine(
   const kundaliniBreathingPrescription = {
     techniqueName: '나디 쇼다나 (Nadi Shodhana · 교호호흡 및 골든 파동 호흡법)',
     durationMinutes: 5,
-    instruction: `오른손 엄지로 오른쪽 콧구멍을 막고 왼쪽으로 4초간 숨을 들이마신 뒤, 약지로 왼쪽을 막고 4초간 멈추며 [${chosenChakra.frequencyHz}Hz ${primaryFocusChakra.name}] 부위에 황금빛 에너지가 차오르는 것을 시각화합니다. 반대쪽으로 8초간 천천히 내쉬기를 5분간 반복합니다.`
+    instruction: `오른손 엄지로 오른쪽 콧구멍을 막고 왼쪽으로 4초간 숨을 들이마신 뒤, 약지로 왼쪽을 막고 4초간 멈추며 [${primaryFocusChakra.name}] 부위에 황금빛 에너지가 차오르는 것을 시각화합니다. 반대쪽으로 8초간 천천히 내쉬기를 5분간 반복합니다.`
   };
 
   const synthesisPromptGuidance = `[LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱 v1.0.0]
 - 전체 차크라 조화도: ${overallChakraBalanceScore}점
 - 1순위 집중 치유 차크라: [${primaryFocusChakra.name}] (${chosenChakra.opennessPercent}%)
-  * 핵심 진동수: ${primaryFocusChakra.frequencyHz}Hz 솔페지오 주파수
   * 공명 원석(Gemstone): ${primaryFocusChakra.gemstone}
   * 아로마 에센스: ${primaryFocusChakra.aromatherapyOil}
   * 확언(Affirmation): "${chosenChakra.affirmation}"
 - 7대 차크라 개방도 요약:
-  * 뿌리(Root 396Hz): ${rootScore}% | 천골(Sacral 417Hz): ${sacralScore}% | 태양신경총(Solar 528Hz): ${solarScore}%
-  * 심장(Heart 639Hz): ${heartScore}% | 목(Throat 741Hz): ${throatScore}% | 제3의눈(Ajna 852Hz): ${ajnaScore}% | 크라운(Crown 963Hz): ${crownScore}%
+  * 뿌리(Root): ${rootScore}% | 천골(Sacral): ${sacralScore}% | 태양신경총(Solar): ${solarScore}%
+  * 심장(Heart): ${heartScore}% | 목(Throat): ${throatScore}% | 제3의눈(Ajna): ${ajnaScore}% | 크라운(Crown): ${crownScore}%
 - 쿤달리니 정렬 호흡법: [${kundaliniBreathingPrescription.techniqueName} ${kundaliniBreathingPrescription.durationMinutes}분] ${kundaliniBreathingPrescription.instruction}`;
 
   return {

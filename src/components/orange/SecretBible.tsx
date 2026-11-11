@@ -29,7 +29,7 @@ export const SecretBible: React.FC<{
           론다 번의 시크릿 — 끌어당김의 법칙 바이블
         </p>
         <p className="text-xs text-white/45 max-w-2xl mx-auto leading-relaxed font-sans normal-case tracking-normal">
-          생각과 감정이 현실을 만듭니다. 루시(AI)와 함께 질문을 던지며 당신의 진동수를 원하는 주파수에 맞추는 코칭 가이드입니다.
+          생각과 감정이 현실을 만듭니다. 루시(AI)와 함께 질문을 던지며 당신의 감정의 흐름을 원하는 방향을 찾는 코칭 가이드입니다.
         </p>
         <div className="flex items-center justify-center gap-2 flex-wrap pt-2">
           {['Ask', 'Believe', 'Receive'].map((step) => (
@@ -97,7 +97,7 @@ export const SecretBible: React.FC<{
         title="Gratitude · 감사의 자석"
         icon={Heart}
         principles={[
-          '감사는 가장 빠른 끌어당김 주파수입니다.',
+          '감사는 가장 빠른 끌어당김의 마음가짐입니다.',
           '이미 가진 것에 감사할수록 더 많은 풍요가 옵니다.',
           '감사는 부족함이 아니라 풍요의 관점을 열어 줍니다.',
         ]}
@@ -126,17 +126,17 @@ export const SecretBible: React.FC<{
       />
 
       <BibleToolSection
-        title="Good Feeling · 좋은 기분의 주파수"
+        title="Good Feeling · 좋은 기분의 마음의 흐름"
         icon={Sun}
         principles={[
-          '같은 주파수끼리 끌어당깁니다. 좋은 기분은 좋은 일을 부릅니다.',
+          '같은 마음의 흐름끼리 끌어당깁니다. 좋은 기분은 좋은 일을 부릅니다.',
           '기분이 낮을 때는 먼저 기분을 올리는 작은 것부터 하세요.',
           '기분 전환은 끌어당김의 응급처치입니다.',
         ]}
         steps={[
           '지금 기분을 5분 안에 올리는 시크릿 방법 5가지 알려줘',
-          '부정적 생각이 반복될 때 주파수 바꾸는 법 알려줘',
-          '하루 종일 좋은 주파수를 유지하는 루틴 짜줘',
+          '부정적 생각이 반복될 때 마음의 흐름 바꾸는 법 알려줘',
+          '하루 종일 좋은 편안한 마음을 유지하는 루틴 짜줘',
         ]}
         {...sectionProps}
       />
@@ -162,7 +162,7 @@ export const SecretBible: React.FC<{
         icon={Sparkles}
         principles={[
           '『더 매직(The Magic)』의 핵심 실천 도구인 감사의 돌과 우주 백지수표입니다.',
-          '매일 밤 잠들기 전 감사의 돌을 쥐고 하루 중 가장 감사했던 일을 떠올리며 감사의 주파수로 잠듭니다.',
+          '매일 밤 잠들기 전 감사의 돌을 쥐고 하루 중 가장 감사했던 일을 떠올리며 감사의 마음으로 잠듭니다.',
           '우주 은행으로부터 필요한 풍요를 지급받는 상징적 수표를 발행하여 눈에 보이는 곳에 두고 기쁨을 느낍니다.',
         ]}
         steps={[
@@ -184,7 +184,7 @@ export const SecretBible: React.FC<{
         steps={[
           '내 소원이 완벽히 실현된 하루를 스크립팅 일기 예시로 써줘',
           '타인에게 감사의 마법 가루를 뿌리는 일상 실천 루틴 알려줘',
-          '기분이 다운될 때 5분 만에 주파수를 올리는 시크릿 전환 장치 목록 짜줘',
+          '기분이 다운될 때 5분 만에 기분을 전환하는 시크릿 전환 장치 목록 짜줘',
         ]}
         {...sectionProps}
       />

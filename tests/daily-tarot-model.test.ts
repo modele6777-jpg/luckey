@@ -28,6 +28,7 @@ function response() {
 test('oracle JSON is accepted from a fenced model reply', () => {
   const parsed = parseOracleJson('설명\n```json\n' + JSON.stringify(modelJson) + '\n```');
   assert.equal(parsed?.diagnosis, modelJson.diagnosis);
+  assert.equal('frequency' in (parsed || {}), false);
   assert.equal(parseOracleJson('그냥 문장입니다.'), null);
 });
 
@@ -42,6 +43,9 @@ test('a schema failure retries as a plain generateContent and keeps the model te
   assert.equal(calls.length, 2);
   assert.equal(calls[0].model, 'gemini-flash-lite-latest');
   assert.ok(calls[0].config?.responseSchema);
+  const responseSchema = calls[0].config?.responseSchema as { properties?: Record<string, unknown>; required?: string[] };
+  assert.equal(responseSchema.properties?.frequency, undefined);
+  assert.equal(responseSchema.required?.includes('frequency'), false);
   assert.equal(calls[1].config?.responseSchema, undefined);
   assert.equal(typeof calls[1].contents, 'string');
 });
@@ -60,6 +64,7 @@ test('daily tarot marks model and engine sources and logs the fallback without t
     assert.equal(modeled.body?.source, 'model');
     assert.equal(modeled.body?.diagnosis, modelJson.diagnosis);
     assert.equal(modeled.body?.luckyNumber, '7');
+    assert.equal('frequency' in (modeled.body || {}), false);
     assert.equal(modeled.headers['x-luckey-oracle-source'], 'model');
 
     const local = response();

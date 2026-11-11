@@ -603,7 +603,7 @@ export function SecretMessage({ isOpen, onClose, isModal }: SecretMessageProps =
           </h2>
           <p className="text-xs sm:text-sm text-sky-200/70 max-w-md mx-auto leading-relaxed">
             세상에 꺼내놓지 못한 은밀한 마음과 감정을 안전하게 봉인하세요. 
-            고요한 파랑새가 당신의 숨은 고백을 온화한 치유의 주파수로 감싸줍니다.
+            고요한 파랑새가 당신의 숨은 고백을 온화한 따뜻한 마음으로 감싸줍니다.
           </p>
         </div>
 
@@ -696,7 +696,7 @@ export function SecretMessage({ isOpen, onClose, isModal }: SecretMessageProps =
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-[10px] uppercase font-mono font-bold tracking-widest text-sky-300/80 block text-left">
-                1. 비밀의 감정 테마 (Soul Frequency)
+                1. 비밀의 감정 테마 (Soul Mood)
               </label>
 
               <div className="flex items-center gap-2">

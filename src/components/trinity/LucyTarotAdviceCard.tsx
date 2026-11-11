@@ -170,7 +170,6 @@ export function LucyTarotAdviceCard({
       diagnosis: readingText,
       adviceHeadline: advice.headline,
       adviceText: advice.advice,
-      frequency: saju?.yongsin?.name ? `${saju.yongsin.name} 용신 조화` : undefined,
     };
   }, [cards, mode, oracleMode, tarotConcern, readingText, advice.headline, advice.advice, saju]);
 

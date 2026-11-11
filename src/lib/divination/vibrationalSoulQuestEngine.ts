@@ -5,14 +5,14 @@
  * =========================================================================
  * 
  * [학술적 배경]
- * 피타고라스 및 칼데아 수비학 진동 체계와 7대 차크라 주파수 공명론에 기반하여,
- * 개인의 4대 핵심 영혼 진동수(생애 여정수·운명수·영혼 충동수·인격수)와
+ * 피타고라스 및 칼데아 수비학 체계를 바탕으로,
+ * 개인의 4대 핵심 영혼 지표(생애 여정수·운명수·영혼 충동수·인격수)와
  * 9년 주기 개인 년수(Personal Year Cycle)를 결합하여 현재 나이와 시점에서
  * 반드시 정복해야 할 '궁극의 영혼 퀘스트(Ultimate Soul Quest)'를 0ms 순수 수리로 도출합니다.
  * 
  * 1. 4대 영혼 진동수(Life Path, Destiny, Soul Urge, Personality) 및 마스터 넘버(11, 22, 33) 식별
  * 2. 9년 주기 퍼스널 이어 사이클(1년 씨앗 파종 ~ 9년 완성/해방) 진단
- * 3. 7대 차크라 주파수 공명점 및 카르마적 마일스톤(Karmic Milestone) 확정
+ * 3. 오늘의 집중 차크라와 카르마적 마일스톤(Karmic Milestone) 확정
  * 4. 데일리 영혼 퀘스트 행동 강령 도출
  */
 
@@ -35,9 +35,8 @@ export interface SoulQuestReport {
   questArchetype: string;      // 영혼 퀘스트 아키타입 (예: 개척자의 성역, 지혜의 연금술사 등)
   currentCyclePhase: string;   // 9년 주기 중 현재 테마 (파종, 뿌리내림, 확장, 완성 등)
   karmicMilestone: string;     // 이번 주기에서 정복해야 할 카르마적 과제
-  resonantChakra: {
+  focusChakra: {
     chakraName: string;
-    frequencyHz: number;
     activationPoint: string;
   };
   dailySoulDirective: string;  // 오늘의 영혼 퀘스트 실천 미션
@@ -142,19 +141,19 @@ export function calculateVibrationalSoulQuest(
   const currentTheme = cycleThemes[personalYear] || cycleThemes[1];
 
   // 영혼 퀘스트 아키타입 매핑 (Life Path 기반)
-  const archetypes: Record<number, { name: string; chakra: string; freq: number; point: string; quote: string }> = {
-    1: { name: '독립의 선구자 (The Sovereign Pioneer)', chakra: '물라다라 (뿌리 차크라)', freq: 396, point: '회음부 - 강인한 생명력과 추진력', quote: '두려움 없이 길을 개척하는 자가 세상의 새 지도를 그린다.' },
-    2: { name: '영혼의 조율사 (The Sacred Peacemaker)', chakra: '스와디스타나 (천골 차크라)', freq: 417, point: '하복부 - 유연한 공감과 감정의 정화', quote: '가장 부드러운 물이 가장 단단한 바위를 뚫는다.' },
-    3: { name: '빛의 스토리텔러 (The Radiant Creator)', chakra: '마니푸라 (태양신경총)', freq: 528, point: '명치 - 확신에 찬 자기표현과 기적의 변용', quote: '당신의 진실된 목소리가 누군가에게는 어둠을 밝히는 등대가 된다.' },
-    4: { name: '현실의 마스터 아키텍트 (The Master Builder)', chakra: '아나하타 (심장 차크라)', freq: 639, point: '가슴 중앙 - 흔들림 없는 사랑과 헌신', quote: '단단한 기초 위에 세워진 신념은 어떤 비바람에도 무너지지 않는다.' },
-    5: { name: '자유의 바람 탐험가 (The Cosmic Nomad)', chakra: '비슈다 (목 차크라)', freq: 741, point: '목 - 진실의 선포와 직관적 소통', quote: '한계를 규정짓지 않는 영혼만이 우주의 광활함을 품을 수 있다.' },
-    6: { name: '성스러운 치유자 (The Guardian Healer)', chakra: '아즈나 (제3의 눈)', freq: 852, point: '미간 - 깊은 통찰과 영적 안목', quote: '온전한 이해와 포용이 세상을 바꾸는 가장 위대한 힘이다.' },
-    7: { name: '비전의 은둔 현자 (The Mystic Sage)', chakra: '사하스라라 (백회 차크라)', freq: 963, point: '정수리 - 우주 의식과의 완전한 합일', quote: '침묵 속에서만 신성의 속삭임이 또렷하게 들려온다.' },
-    8: { name: '풍요의 군주 (The Sovereign Alchemist)', chakra: '태양신경총 & 루트 통합', freq: 528, point: '단전과 명치의 축 - 물질과 영성의 조화', quote: '진정한 풍요는 나누고 창조할수록 더 거대하게 되돌아온다.' },
-    9: { name: '인류애의 자비로운 등대 (The Universal Humanitarian)', chakra: '오라 & 전신 에너지장', freq: 432, point: '전신 생체장 - 무조건적 자비와 해방', quote: '모든 것을 놓아줄 때 우리는 비로소 모든 것과 하나가 된다.' },
-    11: { name: '빛의 메신저 마스터 (The Illumined Visionary)', chakra: '제3의 눈 & 크라운', freq: 852, point: '영적 직관과 예지 채널', quote: '어둠을 탓하기보다 스스로 한 줄기 불꽃이 되어라.' },
-    22: { name: '지상 낙원의 마스터 빌더 (The Master Architect of Reality)', chakra: '전 차크라 정렬', freq: 963, point: '우주적 영감을 현실 제도로 구체화', quote: '위대한 꿈은 우주의 법칙과 결합할 때 현실이 된다.' },
-    33: { name: '무조건적 자비의 소울 마스터 (The Avatar of Compassion)', chakra: '초월적 하트 차크라', freq: 528, point: '생명 전체를 향한 순수한 연민', quote: '사랑은 모든 차원을 관통하는 유일한 우주 언어다.' }
+  const archetypes: Record<number, { name: string; chakra: string; point: string; quote: string }> = {
+    1: { name: '독립의 선구자 (The Sovereign Pioneer)', chakra: '물라다라 (뿌리 차크라)', point: '회음부 - 강인한 생명력과 추진력', quote: '두려움 없이 길을 개척하는 자가 세상의 새 지도를 그린다.' },
+    2: { name: '영혼의 조율사 (The Sacred Peacemaker)', chakra: '스와디스타나 (천골 차크라)', point: '하복부 - 유연한 공감과 감정의 정화', quote: '가장 부드러운 물이 가장 단단한 바위를 뚫는다.' },
+    3: { name: '빛의 스토리텔러 (The Radiant Creator)', chakra: '마니푸라 (태양신경총)', point: '명치 - 확신에 찬 자기표현과 기적의 변용', quote: '당신의 진실된 목소리가 누군가에게는 어둠을 밝히는 등대가 된다.' },
+    4: { name: '현실의 마스터 아키텍트 (The Master Builder)', chakra: '아나하타 (심장 차크라)', point: '가슴 중앙 - 흔들림 없는 사랑과 헌신', quote: '단단한 기초 위에 세워진 신념은 어떤 비바람에도 무너지지 않는다.' },
+    5: { name: '자유의 바람 탐험가 (The Cosmic Nomad)', chakra: '비슈다 (목 차크라)', point: '목 - 진실의 선포와 직관적 소통', quote: '한계를 규정짓지 않는 영혼만이 우주의 광활함을 품을 수 있다.' },
+    6: { name: '성스러운 치유자 (The Guardian Healer)', chakra: '아즈나 (제3의 눈)', point: '미간 - 깊은 통찰과 영적 안목', quote: '온전한 이해와 포용이 세상을 바꾸는 가장 위대한 힘이다.' },
+    7: { name: '비전의 은둔 현자 (The Mystic Sage)', chakra: '사하스라라 (백회 차크라)', point: '정수리 - 우주 의식과의 완전한 합일', quote: '침묵 속에서만 신성의 속삭임이 또렷하게 들려온다.' },
+    8: { name: '풍요의 군주 (The Sovereign Alchemist)', chakra: '태양신경총 & 루트 통합', point: '단전과 명치의 축 - 물질과 영성의 조화', quote: '진정한 풍요는 나누고 창조할수록 더 거대하게 되돌아온다.' },
+    9: { name: '인류애의 자비로운 등대 (The Universal Humanitarian)', chakra: '오라 & 전신 에너지장', point: '전신 생체장 - 무조건적 자비와 해방', quote: '모든 것을 놓아줄 때 우리는 비로소 모든 것과 하나가 된다.' },
+    11: { name: '빛의 메신저 마스터 (The Illumined Visionary)', chakra: '제3의 눈 & 크라운', point: '영적 직관과 예지 채널', quote: '어둠을 탓하기보다 스스로 한 줄기 불꽃이 되어라.' },
+    22: { name: '지상 낙원의 마스터 빌더 (The Master Architect of Reality)', chakra: '전 차크라 정렬', point: '우주적 영감을 현실 제도로 구체화', quote: '위대한 꿈은 우주의 법칙과 결합할 때 현실이 된다.' },
+    33: { name: '무조건적 자비의 소울 마스터 (The Avatar of Compassion)', chakra: '초월적 하트 차크라', point: '생명 전체를 향한 순수한 연민', quote: '사랑은 모든 차원을 관통하는 유일한 우주 언어다.' }
   };
 
   const selectedArchetype = archetypes[lifePathNumber] || archetypes[1];
@@ -172,9 +171,8 @@ export function calculateVibrationalSoulQuest(
     questArchetype: selectedArchetype.name,
     currentCyclePhase: currentTheme.theme,
     karmicMilestone: currentTheme.milestone,
-    resonantChakra: {
+    focusChakra: {
       chakraName: selectedArchetype.chakra,
-      frequencyHz: selectedArchetype.freq,
       activationPoint: selectedArchetype.point
     },
     dailySoulDirective: currentTheme.directive,
@@ -195,8 +193,8 @@ export function formatVibrationalSoulQuestPrompt(rep: SoulQuestReport): string {
   • 영혼의 아포리즘: "${rep.wisdomQuote}"
 - 현재 주기 카르마적 마일스톤:
   • ${rep.karmicMilestone}
-- 공명 차크라 & 솔페지오 주파수:
-  • ${rep.resonantChakra.chakraName} (${rep.resonantChakra.frequencyHz} Hz) - ${rep.resonantChakra.activationPoint}
+- 오늘의 집중 차크라:
+  • ${rep.focusChakra.chakraName} - ${rep.focusChakra.activationPoint}
 - 데일리 영혼 퀘스트 행동 강령:
   • ${rep.dailySoulDirective}
 ※ 상담 시 내담자에게 현재 나이와 시기가 9년 주기 중 몇 년차(${rep.soulNumbers.personalYear}년차: ${rep.currentCyclePhase})에 해당하는지 짚어주고, 현실의 불안을 '영혼이 겪고 있는 성장의 퀘스트'로 승화시켜 가슴 벅찬 용기를 선물해 주세요.`;

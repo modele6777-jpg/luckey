@@ -7,15 +7,14 @@ import {
   CheckCircle,
   Copy,
   Check,
-  Volume2,
-  VolumeX,
   Compass,
   RefreshCw,
   ChevronDown,
   ChevronUp,
   Smile,
   Edit3,
-  Headphones
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
 import { invokeLLM } from '@/lib/ai';
@@ -39,7 +38,6 @@ import {
 
 interface QuantumCatalystData {
   title: string;
-  manifestationFrequency: number;
   sensoryScript: string;
   quantumLeapActions: string[];
   vibrationalAnchorAffirmation: string;
@@ -74,14 +72,13 @@ export function generateNaturalSensoryScript(category: string, wish: string, vib
 
 const FALLBACK_CATALYST: QuantumCatalystData = {
   title: "눈부신 풍요와 자유의 양자 현실화",
-  manifestationFrequency: 528,
   sensoryScript: "따스한 햇살이 비추는 아늑한 공간에서 향긋한 커피 잔을 손에 쥐고 있다. 더 이상 일정이나 돈에 쫓기지 않고, 언제든 원하는 선택을 자유롭게 할 수 있다는 깊고 평온한 안도감이 가슴을 가득 채운다. 이미 모든 소망이 이루어졌음에 온 마음으로 감사하며, 이 벅찬 순간을 세포 하나하나로 온전히 만끽한다.",
   quantumLeapActions: [
     "이미 소원이 완벽히 이루어진 사람의 여유로운 태도와 걸음걸이로 오늘 하루를 살아가기",
     "소망의 실현을 기정사실화하고, 가슴을 뛰게 하는 첫 번째 작은 결정을 24시간 내 행동으로 옮기기",
     "잠들기 전 침대에서 감사한 미소를 지으며 이미 이루어진 현실의 정경을 1분간 생생히 느끼기"
   ],
-  vibrationalAnchorAffirmation: "나의 의식 주파수는 지금 이 순간 기적의 장에 완전히 고정되었으며, 현실은 나의 고진동을 따라 즉각 재배열된다."
+  vibrationalAnchorAffirmation: "나의 의식의 흐름은 지금 이 순간 기적의 장에 완전히 고정되었으며, 현실은 나의 고진동을 따라 즉각 재배열된다."
 };
 
 const MANIFESTATION_CATEGORIES = [
@@ -92,8 +89,6 @@ const MANIFESTATION_CATEGORIES = [
     icon: '💎',
     vibe: '무한 풍요 & 기적',
     vibeId: 'abundance',
-    frequency: 528,
-    freqLabel: '528Hz 풍요',
     defaultWish: '월 3,000만원 이상의 자유로운 패시브 인컴과 재정적 독립'
   },
   {
@@ -103,8 +98,6 @@ const MANIFESTATION_CATEGORIES = [
     icon: '🚀',
     vibe: '자신감 & 강력한 돌파',
     vibeId: 'confidence',
-    frequency: 528,
-    freqLabel: '528Hz 돌파',
     defaultWish: '원하던 글로벌 프로젝트 성공 및 꿈의 포지션 안착'
   },
   {
@@ -114,8 +107,6 @@ const MANIFESTATION_CATEGORIES = [
     icon: '💖',
     vibe: '사랑 & 온기 회복',
     vibeId: 'love',
-    frequency: 639,
-    freqLabel: '639Hz 조화',
     defaultWish: '서로를 깊이 존중하고 영혼을 성장시키는 평생의 인연'
   },
   {
@@ -125,8 +116,6 @@ const MANIFESTATION_CATEGORIES = [
     icon: '🌿',
     vibe: '평온 & 불안 정화',
     vibeId: 'peace',
-    frequency: 432,
-    freqLabel: '432Hz 치유',
     defaultWish: '지치지 않는 에너제틱한 건강과 맑고 깊은 숙면'
   },
   {
@@ -136,8 +125,6 @@ const MANIFESTATION_CATEGORIES = [
     icon: '🎨',
     vibe: '명료한 통찰 & 직관',
     vibeId: 'clarity',
-    frequency: 741,
-    freqLabel: '741Hz 영감',
     defaultWish: '세상을 놀라게 할 위대한 예술작품과 창작의 결실'
   },
   {
@@ -147,8 +134,6 @@ const MANIFESTATION_CATEGORIES = [
     icon: '🕊️',
     vibe: '해방 & 무한한 자유',
     vibeId: 'freedom',
-    frequency: 852,
-    freqLabel: '852Hz 초월',
     defaultWish: '언제 어디서든 원하는 일을 하며 사는 자유로운 라이프스타일'
   },
 ];
@@ -193,7 +178,6 @@ export function OrangeSynergySection() {
     const { affirmation } = getDynamicVibrationalAffirmation(
       MANIFESTATION_CATEGORIES[0].id,
       MANIFESTATION_CATEGORIES[0].defaultWish,
-      528,
       0,
       initialContext
     );
@@ -213,8 +197,6 @@ export function OrangeSynergySection() {
   const resultRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [copiedAffirmation, setCopiedAffirmation] = useState<boolean>(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
-  const [dialValue, setDialValue] = useState<number>(528);
   const [recentWishingWellWish, setRecentWishingWellWish] = useState<string | null>(null);
   const [wishesHistory, setWishesHistory] = useState<WishEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState<boolean>(true);
@@ -223,8 +205,6 @@ export function OrangeSynergySection() {
   const [isAffirmationSpeaking, setIsAffirmationSpeaking] = useState<boolean>(false);
   const isTTSActive = useTTSActive();
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
 
   // Refresh counseling & vibe context when component loads
   useEffect(() => {
@@ -269,47 +249,8 @@ export function OrangeSynergySection() {
     };
   }, [fetchWishesHistory]);
 
-  const toggle528Hz = () => {
-    if (isAudioPlaying) {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
-      audioCtxRef.current = null;
-      oscRef.current = null;
-      setIsAudioPlaying(false);
-    } else {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(dialValue || 528, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 1.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        oscRef.current = osc;
-        setIsAudioPlaying(true);
-      } catch (e) {
-        console.warn('528Hz audio synthesis error:', e);
-      }
-    }
-  };
-
   useEffect(() => {
     return () => {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
       stopTTS();
     };
   }, []);
@@ -318,7 +259,7 @@ export function OrangeSynergySection() {
     if (isTTSActive) {
       stopTTS();
     } else {
-      const speech = `양자 현실화 오감 스크립트입니다. ${catalystData.sensoryScript} 주파수 고정 진동 확언입니다. ${catalystData.vibrationalAnchorAffirmation}`;
+      const speech = `양자 현실화 오감 스크립트입니다. ${catalystData.sensoryScript} 마음 정돈 진동 확언입니다. ${catalystData.vibrationalAnchorAffirmation}`;
       playTTS(speech, 'Kore', false, '확신');
     }
   };
@@ -350,7 +291,6 @@ export function OrangeSynergySection() {
     const { affirmation } = getDynamicVibrationalAffirmation(
       selectedCategory,
       targetWish,
-      dialValue,
       nextIdx,
       {
         counselingTopic: vibeContext.counselingTopic,
@@ -367,7 +307,6 @@ export function OrangeSynergySection() {
       const aiAffirmation = await generateAIVibrationalAffirmation({
         category: selectedCategory,
         wish: targetWish,
-        frequency: dialValue,
         counselingTopic: vibeContext.counselingTopic,
         currentVibe: selectedVibe,
         cycleOffset: nextIdx
@@ -403,7 +342,6 @@ export function OrangeSynergySection() {
     const { affirmation } = getDynamicVibrationalAffirmation(
       selectedCategory,
       targetWish,
-      dialValue,
       nextIdx,
       {
         counselingTopic: vibeContext.counselingTopic,
@@ -421,14 +359,12 @@ export function OrangeSynergySection() {
     setTargetWish(cat.defaultWish);
     setSelectedVibe(cat.vibe);
     setSelectedVibeId(cat.vibeId);
-    setDialValue(cat.frequency);
 
     const nextIdx = affirmationCycleIndex + 1;
     setAffirmationCycleIndex(nextIdx);
     const { affirmation } = getDynamicVibrationalAffirmation(
       cat.id,
       cat.defaultWish,
-      cat.frequency,
       nextIdx,
       {
         counselingTopic: vibeContext.counselingTopic,
@@ -439,31 +375,10 @@ export function OrangeSynergySection() {
     setCatalystData(prev => ({
       ...prev,
       sensoryScript: naturalSensory,
-      manifestationFrequency: cat.frequency,
       vibrationalAnchorAffirmation: affirmation
     }));
   };
 
-  const handleDialChange = (freq: number) => {
-    setDialValue(freq);
-    const nextIdx = affirmationCycleIndex + 1;
-    setAffirmationCycleIndex(nextIdx);
-    const { affirmation } = getDynamicVibrationalAffirmation(
-      selectedCategory,
-      targetWish,
-      freq,
-      nextIdx,
-      {
-        counselingTopic: vibeContext.counselingTopic,
-        currentVibe: selectedVibe
-      }
-    );
-    setCatalystData(prev => ({
-      ...prev,
-      manifestationFrequency: freq,
-      vibrationalAnchorAffirmation: affirmation
-    }));
-  };
 
   const handleSelectWishFromHistory = (entry: WishEntry) => {
     setTargetWish(entry.wish);
@@ -480,14 +395,12 @@ export function OrangeSynergySection() {
     setSelectedCategory(cat.id);
     setSelectedVibe(cat.vibe);
     setSelectedVibeId(cat.vibeId);
-    setDialValue(cat.frequency);
 
     const nextIdx = affirmationCycleIndex + 1;
     setAffirmationCycleIndex(nextIdx);
     const { affirmation } = getDynamicVibrationalAffirmation(
       cat.id,
       entry.wish,
-      cat.frequency,
       nextIdx,
       {
         counselingTopic: vibeContext.counselingTopic,
@@ -498,7 +411,6 @@ export function OrangeSynergySection() {
     setCatalystData(prev => ({
       ...prev,
       sensoryScript: naturalSensory,
-      manifestationFrequency: cat.frequency,
       vibrationalAnchorAffirmation: affirmation
     }));
   };
@@ -513,7 +425,7 @@ export function OrangeSynergySection() {
 
 [오감 현실화 스크립트(sensoryScript) 절대 원칙]
 1. 앱 메뉴 언급 금지: "좌측 메뉴", "우측 메뉴", "소원의 우물", "융합 매트릭스" 같은 앱 기능이나 화면 인터페이스 용어를 절대 쓰지 마십시오.
-2. 기계적 문구 금지: "528Hz 주파수와 결합하여", "을(를)", "양자 도약 연금술이 작동하여" 같은 어색한 번역투나 인위적 문구를 절대 쓰지 마십시오.
+2. 기계적 문구 금지: "을(를)", "양자 도약 연금술이 작동하여" 같은 어색한 번역투나 인위적 문구를 절대 쓰지 마십시오.
 3. 오감(시각·청각·촉각·호흡·온도)과 가슴 벅찬 안도감/환희를 네빌 고다드 식 '이미 이루어진 상태'의 1인칭 현재형("~하고 있다", "~가 전해진다", "~차오른다")으로 문학적이고 자연스럽게 3~4문장으로 서술하십시오.
 4. 읽는 것만으로도 온몸에 전율이 돋고 심장이 따뜻해지는 감동적인 문체여야 합니다.`;
 
@@ -528,7 +440,6 @@ export function OrangeSynergySection() {
 반드시 아래 JSON 스키마로만 엄격하게 응답하세요:
 {
   "title": "감동적인 현실화 테마 명칭 (예: 눈부신 경제적 자유의 아침)",
-  "manifestationFrequency": ${dialValue},
   "sensoryScript": "1인칭 현재형으로 이미 소원이 이루어진 순간의 시각·청각·촉각·온도·벅찬 안도감을 묘사한 지극히 자연스럽고 감동적인 오감 스크립트 (3~4문장, 200~320자 내외)",
   "quantumLeapActions": [
     "24시간 내 즉시 실행할 현실화 실천 행동 1",
@@ -541,7 +452,6 @@ export function OrangeSynergySection() {
     const fallbackAffirmation = getDynamicVibrationalAffirmation(
       selectedCategory,
       targetWish,
-      dialValue,
       affirmationCycleIndex + 1,
       {
         counselingTopic: vibeContext.counselingTopic,
@@ -554,8 +464,7 @@ export function OrangeSynergySection() {
     const safetyTimeout = new Promise<QuantumCatalystData>((resolve) => {
       setTimeout(() => {
         resolve({
-          title: `〈${categoryName}〉 ${dialValue}Hz 현실화 완성`,
-          manifestationFrequency: dialValue,
+          title: `〈${categoryName}〉 현실화 완성`,
           sensoryScript: naturalFallbackScript,
           quantumLeapActions: [
             `이미 소원이 완전히 실현된 사람의 여유롭고 당당한 태도로 오늘 하루를 살아가기`,
@@ -611,7 +520,7 @@ export function OrangeSynergySection() {
   };
 
   const handleCopy = () => {
-    const text = `🌲 [${catalystData.title}]\n\n🎯 목표 소원: ${targetWish}\n🌀 진동 주파수: ${catalystData.manifestationFrequency}Hz\n✨ 조율 Vibe: ${selectedVibe}\n\n✨ 이미 이루어진 오감 현실화 스크립트:\n"${catalystData.sensoryScript}"\n\n🚀 24시간 실천 행동:\n${catalystData.quantumLeapActions.map((a, i) => `${i+1}. ${a}`).join('\n')}\n\n⚡ 주파수 고정 확언:\n"${catalystData.vibrationalAnchorAffirmation}"\n\n- PRISM ORANGE Quantum Manifestation Catalyst`;
+    const text = `🌲 [${catalystData.title}]\n\n🎯 목표 소원: ${targetWish}\n✨ 조율 Vibe: ${selectedVibe}\n\n✨ 이미 이루어진 오감 현실화 스크립트:\n"${catalystData.sensoryScript}"\n\n🚀 24시간 실천 행동:\n${catalystData.quantumLeapActions.map((a, i) => `${i+1}. ${a}`).join('\n')}\n\n⚡ 현실화 확언:\n"${catalystData.vibrationalAnchorAffirmation}"\n\n- PRISM ORANGE Quantum Manifestation Catalyst`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -631,28 +540,16 @@ export function OrangeSynergySection() {
                 <Sparkles size={12} className="text-yellow-400 animate-pulse" />
                 QUANTUM CATALYST
               </span>
-              <span className="text-[10px] text-white/40 font-mono">{dialValue}Hz MIRACLE TONE</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
               <Zap className="text-orange-400 drop-shadow-[0_0_12px_rgba(249,115,22,0.8)]" size={28} />
               <span>양자 현실화 가속기 (Quantum Manifestation Catalyst)</span>
             </h2>
             <p className="text-xs sm:text-sm text-orange-100/70 max-w-xl leading-relaxed">
-              솔페지오 진동수와 1인칭 오감 확언을 통해, 바라는 소망을 미래가 아닌 <strong>'지금 이 순간 이미 이루어진 현실'</strong>로 가속 동조시키는 양자 가속기입니다.
+              바라는 소망을 구체적인 감각과 1인칭 확언으로 표현하고, 오늘 실천할 작은 행동을 찾아보는 공간입니다.
             </p>
           </div>
 
-          <button
-            onClick={toggle528Hz}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-bold font-sans flex items-center gap-2 border transition-all cursor-pointer shrink-0 ${
-              isAudioPlaying
-                ? 'bg-orange-500 text-white border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-pulse'
-                : 'bg-white/5 hover:bg-white/10 text-white/80 border-white/10'
-            }`}
-          >
-            {isAudioPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            <span>{isAudioPlaying ? `${dialValue}Hz 주파수 재생 중` : `${dialValue}Hz 주파수 켜기`}</span>
-          </button>
         </div>
       </div>
 
@@ -777,9 +674,6 @@ export function OrangeSynergySection() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[9px] font-mono pt-1.5 border-t border-white/5">
-                  <span className={isSelected ? 'text-amber-300 font-bold' : 'text-white/40'}>
-                    {cat.freqLabel}
-                  </span>
                   <span className={`px-1.5 py-0.5 rounded-full break-keep ${isSelected ? 'bg-orange-500/30 text-orange-200 font-bold' : 'bg-white/5 text-white/40'}`}>
                     {cat.vibe}
                   </span>
@@ -802,7 +696,6 @@ export function OrangeSynergySection() {
               const { affirmation } = getDynamicVibrationalAffirmation(
                 selectedCategory,
                 e.target.value,
-                dialValue,
                 affirmationCycleIndex,
                 { counselingTopic: vibeContext.counselingTopic, currentVibe: selectedVibe }
               );
@@ -819,7 +712,6 @@ export function OrangeSynergySection() {
                 const { affirmation } = getDynamicVibrationalAffirmation(
                   selectedCategory,
                   recentWishingWellWish,
-                  dialValue,
                   affirmationCycleIndex,
                   { counselingTopic: vibeContext.counselingTopic, currentVibe: selectedVibe }
                 );
@@ -893,32 +785,6 @@ export function OrangeSynergySection() {
           </div>
         </div>
 
-        {/* Frequency Tuning Bar */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="space-y-1">
-            <span className="text-xs font-bold text-white flex items-center gap-2">
-              <Zap size={14} className="text-yellow-400" />
-              양자 진동수 조율: <strong className="text-orange-400 font-mono">{dialValue}Hz</strong>
-            </span>
-            <p className="text-[10px] text-white/50">솔페지오 주파수에 맞춰 의식과 세포의 진동을 정렬합니다.</p>
-          </div>
-          <div className="flex gap-1.5 sm:gap-2 flex-wrap">
-            {[432, 528, 639, 741, 852].map((freq) => (
-              <button
-                key={freq}
-                onClick={() => handleDialChange(freq)}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-mono font-bold transition-all cursor-pointer ${
-                  dialValue === freq
-                    ? 'bg-orange-500 text-white shadow-md ring-1 ring-orange-300'
-                    : 'bg-white/5 text-white/50 hover:text-white'
-                }`}
-              >
-                {freq}Hz
-              </button>
-            ))}
-          </div>
-        </div>
-
         <button
           onClick={handleAccelerateManifestation}
           disabled={isLoading}
@@ -953,9 +819,6 @@ export function OrangeSynergySection() {
                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-orange-400">
                   QUANTUM MANIFESTATION CERTIFICATE
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-300 border border-yellow-500/20 font-mono font-bold">
-                  {catalystData.manifestationFrequency}Hz
-                </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">
                   {selectedVibe}
                 </span>
@@ -973,7 +836,7 @@ export function OrangeSynergySection() {
                 }`}
               >
                 {isTTSActive ? <VolumeX size={14} className="text-amber-300" /> : <Volume2 size={14} className="text-orange-300" />}
-                <span>{isTTSActive ? '낭독 중단' : '오감 스크립트 & 주파수 확언 낭독'}</span>
+                <span>{isTTSActive ? '낭독 중단' : '오감 스크립트 & 현실화 확언 낭독'}</span>
               </button>
 
               <button
@@ -986,17 +849,14 @@ export function OrangeSynergySection() {
             </div>
           </div>
 
-          {/* ⚡ Vibrational Anchor Affirmation Card - 주파수 고정 진동 확언 (최상단 하이라이트) */}
+          {/* ⚡ Vibrational Anchor Affirmation Card - 마음 정돈 진동 확언 (최상단 하이라이트) */}
           <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-500/20 via-orange-500/25 to-yellow-500/20 border-2 border-amber-400/60 relative shadow-2xl space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <span className="text-[11px] sm:text-xs font-mono text-amber-300 uppercase tracking-widest font-black flex items-center gap-1.5">
                 <span className="text-amber-400 font-bold text-sm animate-pulse">⚡</span>
-                <span>주파수 고정 진동 확언 (Vibrational Anchor Affirmation)</span>
+                <span>현실화 확언 (Vibrational Anchor Affirmation)</span>
               </span>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] sm:text-[11px] text-amber-200 font-mono bg-amber-400/30 border border-amber-400/50 px-2.5 py-0.5 rounded-full font-bold shadow-sm shrink-0">
-                  {catalystData.manifestationFrequency}Hz 고정
-                </span>
                 <span className="text-[10px] text-orange-200/90 font-mono bg-orange-500/20 border border-orange-400/30 px-2 py-0.5 rounded-full shrink-0">
                   {selectedVibe}
                 </span>
@@ -1043,19 +903,6 @@ export function OrangeSynergySection() {
                 >
                   <RefreshCw size={12} className={isAffirmationGenerating ? "animate-spin text-orange-400" : ""} />
                   <span>{isAffirmationGenerating ? '확언 조율 중...' : '다른 확언 조율'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={toggle528Hz}
-                  className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 border ${
-                    isAudioPlaying
-                      ? 'bg-amber-400 text-black border-amber-300 shadow-md'
-                      : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border-white/15'
-                  }`}
-                  title="주파수 톤 청음"
-                >
-                  <Headphones size={13} />
-                  <span>{isAudioPlaying ? `${dialValue}Hz 정지` : `${dialValue}Hz 청음`}</span>
                 </button>
               </div>
             </div>

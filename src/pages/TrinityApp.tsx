@@ -96,7 +96,7 @@ import { TrinityDestinyReportView } from "@/components/trinity/TrinityDestinyRep
 import { TrinityOracleSection } from "@/components/trinity/TrinityOracleSection";
 import { TrinitySynergySection } from "@/components/trinity/TrinitySynergySection";
 import { AcimHandbookModal } from "@/components/trinity/AcimHandbookModal";
-import { useBinauralBeat } from "@/hooks/useBinauralBeat";
+import { useBackgroundMood } from "@/hooks/useBackgroundMood";
 import { TarotSpread } from "@/components/trinity/TarotSpread";
 import { TarotSpreadSelectionModal } from "@/components/trinity/TarotSpreadSelectionModal";
 import { TarotCardBackCustomizerModal } from "@/components/trinity/TarotCardBackCustomizerModal";
@@ -211,10 +211,9 @@ ${isReversed ? '지금은 서두르기보다 주변 상황을 면밀히 살피�
     luckyColor: "황금빛 골드 (Celestial Gold)",
     remedy: `오늘 하루, [${cardName}] 카드의 조화로운 에너지를 기억하며 가볍게 심호흡하기`,
     symbol: card?.keywords?.[0] || "운명의 빛",
-    frequency: "528Hz",
     spiritualEnergy: `[${cardName}] 카드가 오늘 하루 당신에게 든든한 안정감과 명료함을 선사합니다.`,
     blessingMessage: `오늘 하루 당신의 모든 발걸음 위에 [${cardName}] 카드의 밝은 행운이 함께하길 축복합니다.`,
-    focusPlaylist: "528Hz Solfeggio Resonance",
+    focusPlaylist: "Calm Ambient Instrumental",
   };
 }
 
@@ -224,12 +223,11 @@ const QuickInsightSchema = z.object({
   luckyColor: z.string().optional().default("황금빛 골드"),
   remedy: z.string().optional().default("마음의 중심을 잡고 깊은 호흡으로 하루를 시작하기"),
   symbol: z.string().optional().default("운명의 수레바퀴"),
-  frequency: z.union([z.string(), z.number()]).transform((v) => String(v)).optional().default("528Hz"),
   spiritualEnergy: z
     .string()
     .describe("현재 사용자에게 가장 필요한 영적 에너지에 대한 심층 분석")
     .optional()
-    .default("우주의 주파수가 당신의 내면과 공명하여 깊은 직관과 통찰을 깨웁니다."),
+    .default("차분한 음악과 호흡이 당신의 내면에 깊은 직관과 통찰을 깨웁니다."),
   blessingMessage: z
     .string()
     .describe(
@@ -614,7 +612,7 @@ function LucyRelationshipsModal({
           <div className="flex items-center gap-3 mb-6">
             <Users size={18} className="text-indigo-400" />
             <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
-              인연의 주파수
+              인연의 흐름
             </span>
           </div>
           <div className="space-y-5 font-sans">
@@ -846,7 +844,7 @@ export default function TrinityApp() {
   const { firebaseUser, sharedState, updateSharedState, isChatOpen, setIsChatOpen, sendUnifiedMessage, openLucyChat, personaMessages, isGenerating } = useApp();
   const lucyMessages = personaMessages.lucy || [];
   const isSpecialFeatureChromeHidden = useSpecialFeatureChromeHidden();
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('trinity');
+  const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('trinity');
 
   const [activeDailyMode, setActiveDailyMode] = useState<
     "oracle" | "refine" | "combine"
@@ -2527,7 +2525,6 @@ function playDailyCardChimeAsync() {
           remedy: data.remedy || '',
           spiritualEnergy: data.spiritualEnergy || '',
           blessingMessage: data.blessingMessage || '',
-          frequency: data.frequency || '528Hz',
           symbol: data.symbol || selectedCard.keywords[0] || '',
           dateKey: getTodayDateKey(),
         });
@@ -2877,7 +2874,6 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
             remedy: `오늘 하루, [${card.nameKo}] 카드의 조화로운 에너지를 마음에 품기`,
             dateKey: today,
             symbol: card.keywords?.[0] || '빛',
-            frequency: '528Hz',
             spiritualEnergy: `[${card.nameKo}] 카드가 오늘 하루 당신에게 든든한 안정감과 명료함을 선사합니다.`,
             blessingMessage: `오늘 하루 당신의 모든 발걸음 위에 [${card.nameKo}] 카드의 밝은 행운이 함께하길 축복합니다.`,
             tarotConcern: tarotConcern || effectiveTarotConcern || '오늘의 타로',
@@ -2911,7 +2907,6 @@ ${tailoredGuide.promptTemplate}${binaryChoicePromptAddon}${spreadPromptAddon}${c
             remedy: `오늘 하루, [${card.nameKo}] 카드의 조화로운 에너지를 마음에 품기`,
             spiritualEnergy: `[${card.nameKo}] 카드가 오늘 하루 당신에게 안정을 선사합니다.`,
             blessingMessage: `오늘 하루 당신의 모든 발걸음 위에 [${card.nameKo}] 카드의 행운이 함께하길 축복합니다.`,
-            frequency: '528Hz',
             dateKey: today,
           });
         }
@@ -3326,7 +3321,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
           },
           {
             role: "user",
-            content: `호칭/닉네임: ${(form.nickname && form.nickname !== '박주형' && form.nickname !== '여행자' && form.nickname !== '사용자') ? form.nickname : (sharedState?.userProfile?.basic?.nickname && sharedState.userProfile.basic.nickname !== '박주형' && sharedState.userProfile.basic.nickname !== '여행자' ? sharedState.userProfile.basic.nickname : '제제')}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 성별: ${form.gender}. 현재 내 영적 오라클 주파수와 에너지 레벨, 연애운, 재물운, 소울 상태를 심도 있게 통찰하고 처방을 내려줘.`,
+            content: `호칭/닉네임: ${(form.nickname && form.nickname !== '박주형' && form.nickname !== '여행자' && form.nickname !== '사용자') ? form.nickname : (sharedState?.userProfile?.basic?.nickname && sharedState.userProfile.basic.nickname !== '박주형' && sharedState.userProfile.basic.nickname !== '여행자' ? sharedState.userProfile.basic.nickname : '제제')}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 성별: ${form.gender}. 현재 내 에너지 레벨, 연애운, 재물운, 소울 상태를 심도 있게 통찰하고 처방을 내려줘.`,
           },
         ],
         schema: EnergyAnalysisSchema as any,
@@ -4447,7 +4442,6 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                       conciseSummaryBullets: conciseSummaryBullets,
                                       diagnosis: displayTarotResult || stripSummaryFromTarotText(tarotResult || ""),
                                       rawBlessing: dailyResult?.blessing,
-                                      frequency: dailyResult?.frequency,
                                       luckyNumber: dailyResult?.luckyNumber,
                                       luckyColor: dailyResult?.luckyColor,
                                     }}
@@ -4542,7 +4536,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         "성공과 성장을 위한 영혼의 메시지",
                         "명상 중에 떠오른 의문을 풀고 싶어요",
                         "내 영혼이 진정으로 원하는 삶의 목적을 찾는 방법",
-                        "부정적인 에너지를 차단하고 내 주파수를 높이는 법",
+                        "부정적인 감정을 다루고 마음의 균형을 찾는 법",
                         "반복되는 문제 속에서 배워야 할 카르마적 교훈",
                         "직관력을 높이고 우주의 신호를 더 잘 읽어내는 방법"
                       ].map((q) => (
@@ -4796,7 +4790,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                         Energy Analysis
                       </h3>
                       <p className="text-sm text-white/40 font-sans leading-relaxed">
-                        "현재 당신의 영적 주파수와 운명의 흐름을 다차원적으로 분석합니다. 트리니티의 연금술과 결합하여 오늘의 운명 선언문을 발행하세요."
+                        "현재 당신의 감정과 운명의 흐름을 다차원적으로 분석합니다. 트리니티의 연금술과 결합하여 오늘의 운명 선언문을 발행하세요."
                       </p>
                     </div>
                     <div className="flex flex-col gap-4 w-full">
@@ -4980,7 +4974,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 ))}
               </div>
               <p className="text-[10px] text-white/30 font-sans uppercase tracking-[0.4em]">
-                Synching with the universal frequency...
+                Preparing your daily reading...
               </p>
             </div>
           </motion.div></WorkspacePortal>

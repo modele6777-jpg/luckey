@@ -240,11 +240,12 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     if (route === '/api/ai/daily-tarot' || route === '/api/ai/daily-sedona') {
       if (!body.card || typeof body.card !== 'object' || Array.isArray(body.card)) throw new ApiError(400, '선택한 카드 정보가 필요합니다.');
       const sedona = route.endsWith('sedona');
+      const fields = ['diagnosis', 'luckyNumber', 'luckyColor', 'remedy', 'symbol', 'spiritualEnergy', 'blessingMessage', 'focusPlaylist'];
       const result = await objectReply(request, env, fetchApi,
         sedona ? '선택한 카드와 테마를 중심으로 감정을 허용하고 놓아버리는 세도나 질문, 차분한 확언과 구체적인 실천을 안내하세요. 의학적 진단이나 치유 보장은 하지 마세요.'
           : '선택한 카드의 정역 방향과 고유 상징을 중심으로 오늘의 타로 리딩을 작성하세요. diagnosis에는 최상단 핵심 3줄 요약과 중복 없는 다섯 개의 마크다운 절을 포함하세요. 미래나 운세를 사실로 확정하지 말고 성찰과 실천을 돕는 관점으로 쓰세요.',
-        body, ['diagnosis', 'luckyNumber', 'luckyColor', 'remedy', 'symbol', 'frequency', 'spiritualEnergy', 'blessingMessage', 'focusPlaylist']);
-      return json(result);
+        body, fields);
+      return json(Object.fromEntries(fields.map(field => [field, result[field]])));
     }
     if (route === '/api/ai/secret-blessing') {
       required(body.content, '쪽지 내용');

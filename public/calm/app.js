@@ -80,11 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // ==========================================================================
-  // WEB AUDIO ENGINE: 528Hz Pure Sine & Soothing Rain Ambience
+  // WEB AUDIO ENGINE: Soothing Rain Ambience
   // ==========================================================================
   let calmAudioCtx = null;
-  let solfeggioOsc = null;
-  let solfeggioGain = null;
   let rainNoiseNode = null;
   let rainGain = null;
   let globalSensoryVol = 0.3;
@@ -98,44 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
       calmAudioCtx.resume();
     }
     return calmAudioCtx;
-  }
-
-  function toggle528Hz(forcePlay) {
-    const ctx = getCalmAudioContext();
-    if (!ctx) return false;
-
-    if (solfeggioOsc) {
-      try {
-        solfeggioGain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
-        setTimeout(() => {
-          if (solfeggioOsc) {
-            solfeggioOsc.stop();
-            solfeggioOsc.disconnect();
-            solfeggioOsc = null;
-          }
-        }, 350);
-      } catch (e) {}
-      if (forcePlay === undefined || forcePlay === false) return false;
-    }
-
-    if (forcePlay === undefined || forcePlay === true) {
-      try {
-        solfeggioOsc = ctx.createOscillator();
-        solfeggioGain = ctx.createGain();
-        solfeggioOsc.type = 'sine';
-        solfeggioOsc.frequency.setValueAtTime(528, ctx.currentTime);
-        solfeggioGain.gain.setValueAtTime(0.0001, ctx.currentTime);
-        solfeggioGain.gain.linearRampToValueAtTime(globalSensoryVol * 0.45, ctx.currentTime + 1.0);
-        solfeggioOsc.connect(solfeggioGain);
-        solfeggioGain.connect(ctx.destination);
-        solfeggioOsc.start();
-        return true;
-      } catch (e) {
-        console.warn('528Hz synthesis error:', e);
-        return false;
-      }
-    }
-    return false;
   }
 
   function toggleRainNoise(forcePlay) {
@@ -236,12 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (timerSos) timerSos.textContent = '60s';
         if (guideSos) guideSos.textContent = sosGuides[0];
 
-        // 528Hz 안정 톤 자동 재생
-        toggle528Hz(true);
-        const btn528 = document.getElementById('btn-toggle-528');
-        const lbl528 = document.getElementById('label-528');
-        if (btn528) btn528.classList.add('active');
-        if (lbl528) lbl528.textContent = '528Hz 평온 톤 (ON)';
 
         sosInterval = setInterval(() => {
           sosCountdown--;
@@ -284,22 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // 528Hz & 빗소리 토글
-    const btn528 = document.getElementById('btn-toggle-528');
-    const lbl528 = document.getElementById('label-528');
-    if (btn528) {
-      btn528.addEventListener('click', () => {
-        const isPlaying = toggle528Hz();
-        if (isPlaying) {
-          btn528.classList.add('active');
-          if (lbl528) lbl528.textContent = '528Hz 평온 톤 (ON)';
-        } else {
-          btn528.classList.remove('active');
-          if (lbl528) lbl528.textContent = '528Hz 평온 톤 (OFF)';
-        }
-      });
-    }
-
     const btnRain = document.getElementById('btn-toggle-rain');
     const lblRain = document.getElementById('label-rain');
     if (btnRain) {
@@ -322,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
         globalSensoryVol = parseFloat(e.target.value) / 100;
         const ctx = getCalmAudioContext();
         if (ctx) {
-          if (solfeggioGain) solfeggioGain.gain.setValueAtTime(globalSensoryVol * 0.45, ctx.currentTime);
           if (rainGain) rainGain.gain.setValueAtTime(globalSensoryVol * 0.65, ctx.currentTime);
         }
       });
@@ -1112,7 +1049,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 오디오 알림 컨트롤
   const btnBreathingAudioToggle = document.getElementById('btn-breathing-audio-toggle');
-  const btnBreathingAudioPreview = document.getElementById('btn-breathing-audio-preview');
   const breathingAudioIcon = document.getElementById('breathing-audio-icon');
   const breathingAudioLabel = document.getElementById('breathing-audio-label');
   const audioBellStatus = document.getElementById('audio-bell-status');
@@ -1257,19 +1193,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 알림 켤 때 부드러운 짧은 피드백 타종
       if (breathingAudioEnabled && window.soundscapeEngine) {
         if (typeof window.soundscapeEngine.playSingingBowlChime === 'function') {
-          window.soundscapeEngine.playSingingBowlChime({ freq: 528, volume: 0.5, duration: 3.5 });
-        }
-      }
-    });
-  }
-
-  if (btnBreathingAudioPreview) {
-    btnBreathingAudioPreview.addEventListener('click', () => {
-      if (window.soundscapeEngine) {
-        if (typeof window.soundscapeEngine.playSingingBowlChime === 'function') {
-          window.soundscapeEngine.playSingingBowlChime({ freq: 528, volume: 0.7, duration: 6.8 });
-        } else if (typeof window.soundscapeEngine.playChime === 'function') {
-          window.soundscapeEngine.playChime();
+          window.soundscapeEngine.playSingingBowlChime({ volume: 0.5, duration: 3.5 });
         }
       }
     });
@@ -1439,10 +1363,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
       }
 
-      // 오디오 알림 재생: 부드러운 티베트 싱잉볼 종소리 (528Hz Solfeggio)
+      // 오디오 알림 재생: 부드러운 티베트 싱잉볼 종소리
       if (breathingAudioEnabled && window.soundscapeEngine) {
         if (typeof window.soundscapeEngine.playSingingBowlChime === 'function') {
-          window.soundscapeEngine.playSingingBowlChime({ freq: 528, volume: 0.75, duration: 7.0 });
+          window.soundscapeEngine.playSingingBowlChime({ volume: 0.75, duration: 7.0 });
         } else if (typeof window.soundscapeEngine.playChime === 'function') {
           window.soundscapeEngine.playChime();
         }
@@ -1453,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (celebrationTitle) celebrationTitle.textContent = `${finalCount}회 풍선 호흡 완주!`;
         if (celebrationDesc) {
           celebrationDesc.innerHTML = breathingAudioEnabled
-            ? `부드러운 싱잉볼 종소리(528Hz)와 함께 미주신경이 활성화되어 온몸의 긴장이 풀렸습니다.`
+            ? `부드러운 싱잉볼 종소리와 함께 호흡을 마치고 온몸의 긴장이 풀렸습니다.`
             : `호흡을 깊게 비워내고 몸과 마음에 평온한 중심을 되찾았습니다.`;
         }
         celebrationCard.style.display = 'block';

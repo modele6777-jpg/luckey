@@ -51,7 +51,7 @@ import {
 import { sendHoponoponoToLucy } from '@/lib/oracleDeepInsight';
 import { playTTS, playConversation, stopTTS, useTTSActive } from '@/utils/tts';
 import { z } from "zod";
-import { useBinauralBeat } from '@/hooks/useBinauralBeat';
+import { useBackgroundMood } from '@/hooks/useBackgroundMood';
 import { auth, db, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDocs, limit, handleFirestoreError, OperationType, doc, getDoc, setDoc } from '@/lib/firebase';
 
 import { getTodayDateKey, getDailyLockKey, isTimestampToday } from '@/lib/dailyCache';
@@ -75,7 +75,6 @@ const QuickInsightSchema = z.object({
   luckyColor: z.string(),
   remedy: z.string(),
   symbol: z.string(),
-  frequency: z.union([z.string(), z.number()]).transform(v => String(v)),
 });
 
 const SoulInsightSchema = z.object({
@@ -192,7 +191,7 @@ const JUYEOK_PRESETS = [
 
 
 const BLUEBIRD_CARDS = [
-  { name: "파랑새의 고요 (Deep Peace)", emoji: "🐦", keyphrase: "내면의 고요와 평온", desc: "분주한 마음의 소음을 끄고, 가장 안전하고 아늑한 침묵 속에서 당신만의 평온 주파수를 호흡하십시오." },
+  { name: "파랑새의 고요 (Deep Peace)", emoji: "🐦", keyphrase: "내면의 고요와 평온", desc: "분주한 마음의 소음을 끄고, 가장 안전하고 아늑한 침묵 속에서 당신만의 평온한 호흡을 찾아보세요." },
   { name: "자애의 시그널 (Self-Compassion)", emoji: "💙", keyphrase: "온전한 자기 수용과 위로", desc: "그동안 타인에게 향해 있던 따스����� 시선을 나에게 돌려보세요. 당신은 존재 자체로 소중하며 가치 있는 영혼입니다." },
   { name: "치유의 기류 (Emotional Flow)", emoji: "🌊", keyphrase: "정서적 찌꺼기 자정", desc: "억눌러둔 무거운 감정이 있다면 그저 흐르게 두십시오. 고여 있던 불안과 자책이 맑고 가벼운 안개로 승화됩니다." },
   { name: "자유로운 비상 (Soul Release)", emoji: "🍃", keyphrase: "집착과 부담에서의 탈출", desc: "어깨를 누르던 정체 모를 의무감과 타인의 시선에서 가볍게 벗어나십시오. 영혼이 가장 맑은 하늘을 향해 날아오릅니다." },
@@ -242,7 +241,7 @@ const translateEnglishValue = (val: string) => {
 export default function BluebirdApp() {
   const [, navigate] = useLocation();
   const isTTSActive = useTTSActive();
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('bluebird');
+  const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('bluebird');
   const cardContainerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const { firebaseUser, sharedState, updateSharedState, isChatOpen, setIsChatOpen, sendUnifiedMessage, openLucyChat } = useApp();
@@ -1444,7 +1443,7 @@ export default function BluebirdApp() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.05)_0%,transparent_70%)] pointer-events-none" />
                 
                 <div className="space-y-4">
-                  <span className="text-[10px] text-sky-400 font-bold uppercase tracking-[0.3em] font-mono block">일일 정서 주파수 정렬</span>
+                  <span className="text-[10px] text-sky-400 font-bold uppercase tracking-[0.3em] font-mono block">일일 정서 호흡 정렬</span>
                   <h4 className="text-2xl sm:text-3xl font-display text-white tracking-widest uppercase">Your Selected Serenity Oracle</h4>
                   <p className="text-xs text-white/40 max-w-md mx-auto leading-relaxed font-sans">
                     오늘 당신의 지적 맑고 청아한 평화 에너지가 활짝 피어나 내면 자아를 조율합니다. 카드를 뒤집고 편안함을 체크해 보세요.
@@ -1625,8 +1624,8 @@ export default function BluebirdApp() {
                       </p>
                       <p className="text-xs text-white/50 leading-relaxed break-keep max-w-xs mx-auto">
                         {isBreathingCalibrationActive 
-                          ? `실시간 정서 뇌파 및 심실 수렴 주파수 동조 중... (${breathingTimeLeft}초)`
-                          : '아래 버튼을 눌러 15초간의 정서 주파수 호흡 동률 조율을 시작하십시오.'}
+                          ? `실시간 호흡과 감정의 흐름을 살피는 중... (${breathingTimeLeft}초)`
+                          : '아래 버튼을 눌러 15초간 편안한 호흡을 시작하십시오.'}
                       </p>
                     </div>
 
@@ -1977,7 +1976,7 @@ export default function BluebirdApp() {
       console.error(e);
     }
     return [
-      { id: 'greet', role: 'model', content: "반가워! 문학의 문장들과 고유한 음악 주파수로 너의 영혼을 깊고 맑게 위로하는 루시의 블루버드 예술치유 채널이야. 잠시 여기에 무거운 마음의 짐을 다 녹여보자.", timestamp: Date.now() }
+      { id: 'greet', role: 'model', content: "반가워! 문학의 문장들과 잔잔한 음악으로 너의 마음을 깊고 맑게 위로하는 루시의 블루버드 예술치유 채널이야. 잠시 여기에 무거운 마음의 짐을 다 녹여보자.", timestamp: Date.now() }
     ];
   });
 
@@ -2112,7 +2111,7 @@ export default function BluebirdApp() {
       });
     } catch (err) {
       console.error("[JuyeokConsult] Failed to consult:", err);
-      setJuyeokResult("우주적 주파수 통신 중 예기치 못한 차원 변위가 감지되었습니다. 다시 한 번 신탁을 시작해 주세요.");
+      setJuyeokResult("오라클을 불러오는 중 예기치 못한 오류가 발생했습니다. 다시 한 번 신탁을 시작해 주세요.");
     } finally {
       setIsJuyeokLoading(false);
     }
@@ -2163,13 +2162,13 @@ export default function BluebirdApp() {
     const userProfileStr = sharedState?.userProfile ? JSON.stringify(sharedState.userProfile) : JSON.stringify(form);
     const recentMemory = sharedState?.bluebirdMemory || sharedState?.globalMemory || "최근 기록 없음";
     const dailyContext = dailyResult 
-      ? `오늘의 Daily 오라클 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol}, 주파수: ${dailyResult.frequency})`
+      ? `오늘의 Daily 오라클 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol})`
       : "오늘의 Daily 진단 데이터 없음";
 
     try {
       const data = await invokeLLMStructured({
         messages: [
-          { role: 'system', content: `당신은 마음의 주파수를 꿰뚫어보는 영적 데이터 분석가 블루버드입니다. 사용자의 사주와 기운, 프로��, 최근 감정 기록 및 오늘의 Daily 오라클 진단을 종합적으로 분석하여 영혼의 치유와 안식을 주는 소울 리포트를 매우 심층적이고 고도화된 수준으로 작성하세요. [데이터 가이드: 프로필(${userProfileStr}), 최근상태(${recentMemory}), 데일리진단(${dailyContext})]\n준수사항: 'guidance' 필드는 소제목, 리스트, 강조 등 마크다운 양식을 적극 활용하여 최소 4문단 이상의 깊이 있는 통찰과 치유의 방향을 제시할 것. 또한, luckyColor(예: '하늘색', '시안 블루 (청청색)'), luckyItem(예: '푸른 깃털', '오르골'), deepSyncLevel(예: '최적화', '완전한 조화')는 반드시 완전한 한글 구문으로 기입하세요.` },
+          { role: 'system', content: `당신은 마음의 상태를 살피는 영적 데이터 분석가 블루버드입니다. 사용자의 사주와 기운, 프로��, 최근 감정 기록 및 오늘의 Daily 오라클 진단을 종합적으로 분석하여 영혼의 치유와 안식을 주는 소울 리포트를 매우 심층적이고 고도화된 수준으로 작성하세요. [데이터 가이드: 프로필(${userProfileStr}), 최근상태(${recentMemory}), 데일리진단(${dailyContext})]\n준수사항: 'guidance' 필드는 소제목, 리스트, 강조 등 마크다운 양식을 적극 활용하여 최소 4문단 이상의 깊이 있는 통찰과 치유의 방향을 제시할 것. 또한, luckyColor(예: '하늘색', '시안 블루 (청청색)'), luckyItem(예: '푸른 깃털', '오르골'), deepSyncLevel(예: '최적화', '완전한 조화')는 반드시 완전한 한글 구문으로 기입하세요.` },
           { role: 'user', content: `호칭/닉네임: ${(form.nickname && form.nickname !== '박주형' && form.nickname !== '여행자' && form.nickname !== '사용자') ? form.nickname : (sharedState?.userProfile?.basic?.nickname && sharedState.userProfile.basic.nickname !== '박주형' && sharedState.userProfile.basic.nickname !== '여행자' ? sharedState.userProfile.basic.nickname : '제제')}, 생년월일: ${form.birthdate || sharedState?.userProfile?.basic?.birthdate}, 생시: ${form.birthtime || sharedState?.userProfile?.basic?.birthtime}, 거주지: ${form.city}, 성별: ${form.gender}. 현재 내 영혼의 에너지 레벨, 치유의 포인트, 그리고 나아가야 할 방향을 초고도화된 리포트로 전해줘.` }
         ],
         schema: SoulInsightSchema
@@ -2487,7 +2486,7 @@ export default function BluebirdApp() {
     setIsDailyOracleLoading(true);
     setDailyResult(null);
 
-    const modePrompt = dailyMode === 'breathe' ? '생명 에너지의 흐름을 조율하고 우주적 주파수와 동조시켜 영혼의 호흡을 깊게 유도하는 차원 높은 명상적 가이드로' :
+    const modePrompt = dailyMode === 'breathe' ? '편안한 호흡을 이끌고 마음을 가라앉히는 차원 높은 명상적 가이드로' :
                        dailyMode === 'reflect' ? '무의식의 심연을 섬세하게 어루만지고, 흩어진 감정의 파편들을 모아 온전한 내면의 평화를 빚어내는 심층적인 성찰과 위로로' :
                        dailyMode === 'oracle' ? '시간과 공간을 초월한 치유의 메시지이자 굳건한 영적 신탁을 내리는 차원 높은 예언자의 형식으로' : 
                        dailyMode === 'care' ? '지친 영혼을 완벽히 감싸안고, 가장 안전한 우주의 요람에서 돌보아주는 성숙하고 무한한 포용력과 따뜻함으로' : '종합적이고 초월적인 영적 조언과 함께';
@@ -2499,7 +2498,7 @@ export default function BluebirdApp() {
       
     const isRev = (sessionCardDrawn as any)?.isReversed;
     const cardContext = sessionCardDrawn
-      ? `\n[오늘의 치유 오라클 카드]: ${sessionCardDrawn.name} ${sessionCardDrawn.emoji} (${sessionCardDrawn.keyphrase}) - ${isRev ? "역방향(Reversed)" : "정방향(Upright)"} 상태\n- 치유 분석 가이드: 이 카드는 현재 ${isRev ? "역방향으로 발현되어 해당 평온의 에너지가 사용자의 무의식 속에서 억압되어 있거나, 오히려 마음의 가시나 불안으로 과잉되어 나타나는 상태(역설적 조언 및 내면의 숨겨진 그림자 해소 가이드)로 해석해야 합니다." : "정방향으로 발현되어 해당 맑고 청아한 평화 에너지가 활짝 피어나 내면 자아를 온전하게 위로하는 상태로 해석해야 합니다."} 이 카드의 정/역방향 위안 주파수와 치유 상징을 오라클 리딩에 아주 중요한 모티브로 함께 융합하여 해석해줄 것`
+      ? `\n[오늘의 치유 오라클 카드]: ${sessionCardDrawn.name} ${sessionCardDrawn.emoji} (${sessionCardDrawn.keyphrase}) - ${isRev ? "역방향(Reversed)" : "정방향(Upright)"} 상태\n- 치유 분석 가이드: 이 카드는 현재 ${isRev ? "역방향으로 발현되어 해당 평온의 에너지가 사용자의 무의식 속에서 억압되어 있거나, 오히려 마음의 가시나 불안으로 과잉되어 나타나는 상태(역설적 조언 및 내면의 숨겨진 그림자 해소 가이드)로 해석해야 합니다." : "정방향으로 발현되어 해당 맑고 청아한 평화 에너지가 활짝 피어나 내면 자아를 온전하게 위로하는 상태로 해석해야 합니다."} 이 카드의 정/역방향 위안의 감정과 치유 상징을 오라클 리딩에 아주 중요한 모티브로 함께 융합하여 해석해줄 것`
       : "";
     const levelContext = `\n[자가 진단 정서/피로 편차 수준]: 현재 레벨 ${sessionComfortLevel}수준 (${sessionComfortLevel === 1 ? '매우 고갈되고 마음의 여유가 부족함' : sessionComfortLevel === 5 ? '가볍고 평온한 맑은 상태' : '보통 또는 미미한 불안상태'})`;
 
@@ -2509,7 +2508,7 @@ export default function BluebirdApp() {
 오늘 질문자가 뽑은 치유 카드는 **[${sessionCardDrawn ? `${sessionCardDrawn.name} ${sessionCardDrawn.emoji}` : "치유의 파랑새"}]**입니다.
 
 [반드시 준수할 필수 지침]
-1. 오늘 드로우한 치유 카드 **[${sessionCardDrawn?.name || ''}]**(${sessionCardDrawn?.keyphrase || ''})의 상징과 위로의 주파수를 진단의 최우선 중심축으로 삼아 풀이하세요.
+1. 오늘 드로우한 치유 카드 **[${sessionCardDrawn?.name || ''}]**(${sessionCardDrawn?.keyphrase || ''})의 상징과 위로의 감정을 진단의 최우선 중심축으로 삼아 풀이하세요.
 2. 'diagnosis' 필드는 마크다운(소제목, 글머리 기호)을 활용하여 3~4문단 이상의 장문으로 [${sessionCardDrawn?.name || ''}] 카드가 전하는 마음 챙김과 내면 평화의 심층 분석 리포트를 작성하세요.
 3. 'remedy'에는 이 카드의 지혜를 담은 오늘 하루의 마음 실천 팁 2문장을 전달하세요. [데이터: 프로필(${userProfileStr}), 최근상태(${recentMemory})${cardContext}${levelContext}]` },
           { role: 'user', content: `오늘 내가 뽑은 치유 카드는 [${sessionCardDrawn?.name || ''} ${sessionCardDrawn?.emoji || ''}] (${sessionCardDrawn?.keyphrase || ''})야. 이 카드의 치유 모티브를 중심으로, ${modePrompt} 오늘 나의 마음을 진단하고 가이드해줘.` }
@@ -2530,7 +2529,6 @@ export default function BluebirdApp() {
         diagnosis: String(data.diagnosis || ''),
         remedy: String(data.remedy || ''),
         symbol: String(data.symbol || sessionCardDrawn?.name || ''),
-        frequency: String(data.frequency || '432Hz'),
         dateKey: todayK,
       });
 
@@ -2856,7 +2854,7 @@ export default function BluebirdApp() {
                                    </div>
                                    <div className="flex flex-col">
                                      <span className="text-xs font-bold text-sky-400 uppercase tracking-widest">Cosmic Alignment & Destiny Sync</span>
-                                     <span className="text-[10px] text-white/40 mt-0.5 font-sans">우주적 운명과 영적 주파수 분석</span>
+                                     <span className="text-[10px] text-white/40 mt-0.5 font-sans">우주적 운명과 감정의 흐름 분석</span>
                                    </div>
                                  </div>
                                  <p className="text-[11px] text-white/50 bg-white/[0.02] border border-white/5 rounded-2xl px-4 py-2.5 mb-4 leading-relaxed font-sans font-medium">
@@ -2877,7 +2875,7 @@ export default function BluebirdApp() {
                          <div className="space-y-4">
                             <h3 className="text-3xl font-display text-white font-bold tracking-tight uppercase">Energy Analysis</h3>
                             <p className="text-sm text-white/40 font-sans leading-relaxed">
-                               "현재 당신의 영적 주파수와 위로의 흐름을 다차원적으로 분석합니다. 블루버드의 연금술과 결���하여 오늘의 치유 선언문을 발행하세요."
+                               "현재 당신의 감정과 위로의 흐름을 다차원적으로 분석합니다. 블루버드의 연금술과 결���하여 오늘의 치유 선언문을 발행하세요."
                             </p>
                          </div>
                          <div className="flex flex-col gap-4 w-full">
@@ -2911,7 +2909,7 @@ export default function BluebirdApp() {
                                 <span className="text-[10px] text-sky-400 font-bold uppercase tracking-[0.2em] font-mono">Healing Card Casting</span>
                                 <h4 className="text-2xl font-bold text-white tracking-tight">오늘의 마음 치유 오라클 카드 드로우</h4>
                                 <p className="text-xs text-white/50 max-w-lg mx-auto leading-relaxed break-keep">
-                                  스스로를 돌보고 안심시키기 위한 평온의 우주 주파수를 한 장의 치유 카드로 응축합니다. 가슴 깊이 호흡하고 마음에 닿는 카드를 터치해 주세요.
+                                  스스로를 돌보고 안심시키기 위한 평온한 감정을 한 장의 치유 카드로 응축합니다. 가슴 깊이 호흡하고 마음에 닿는 카드를 터치해 주세요.
                                 </p>
                               </div>
 
@@ -3127,7 +3125,7 @@ export default function BluebirdApp() {
                                     </button>
                                   ) : (
                                     <div className="py-2.5 px-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-[10px] text-sky-400 font-bold font-sans text-center">
-                                      ✓ 현재의 정서 전위차가 데일리 평온 주파수 필터링 기저에 기록되었습니다.
+                                      ✓ 현재의 정서 상태가 데일리 평온 기록에 반영되었습니다.
                                     </div>
                                   )}
                                 </div>
@@ -3140,7 +3138,7 @@ export default function BluebirdApp() {
                          <div className="lg:col-span-2 space-y-8 opacity-100">
                            {false ? (
                              <div className="p-8 rounded-[40px] text-center border-2 border-dashed border-white/10 bg-white/[0.01] text-white/30 text-xs">
-                               위 오라클 힐링 카드를 먼저 드로우하여 정서 주파수를 한 번 정렬한 다음 영적 비전을 확인하세요.
+                               위 오라클 힐링 카드를 먼저 드로우하여 마음을 가라앉힌 다음 영적 비전을 확인하세요.
                              </div>
                            ) : (
                              <motion.button 
@@ -3192,7 +3190,6 @@ export default function BluebirdApp() {
 
                                 <div className="grid grid-cols-2 gap-4 pt-8 border-t border-sky-500/10 text-left">
                                    {Object.entries({
-                                     Frequency: dailyResult.frequency,
                                      Symbol: dailyResult.symbol,
                                    }).map(([k, v]) => (
                                      <div key={k} className="p-5 md:p-6 rounded-3xl bg-white/[0.03] border border-sky-500/20 backdrop-blur-md">
@@ -3460,7 +3457,7 @@ export default function BluebirdApp() {
               </div>
 
               <p className="text-sm text-white/60 leading-relaxed font-sans break-keep">
-                이 댑의 {limitModalInfo.type === 'daily' ? '데일리 비전' : '소울 분석'} 기능은 하루에 한 번만 실행할 수 있습니다. 이미 오늘의 주파수가 우주와 동조되었습니다. 에필로그에서 이전의 찬란했던 동조 기록들을 살펴보세요.
+                이 댑의 {limitModalInfo.type === 'daily' ? '데일리 비전' : '소울 분석'} 기능은 하루에 한 번만 실행할 수 있습니다. 이미 오늘의 오라클을 확인했습니다. 에필로그에서 이전의 찬란했던 동조 기록들을 살펴보세요.
               </p>
 
               <button

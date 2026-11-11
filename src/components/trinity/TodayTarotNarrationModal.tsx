@@ -244,7 +244,6 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
     conciseSummaryBullets: narrationData.conciseSummaryBullets,
     diagnosis: narrationData.cleanDiagnosis || narrationData.rawDiagnosis,
     rawBlessing: narrationData.rawBlessing,
-    frequency: narrationData.frequency,
     luckyNumber: narrationData.luckyNumber,
     luckyColor: narrationData.luckyColor,
   }), [narrationData]);
@@ -303,7 +302,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
       summaryText +
       `■ 마스터 심층 비전 리딩\n${narrationData.cleanDiagnosis || narrationData.rawDiagnosis}\n\n` +
       (narrationData.rawBlessing
-        ? `■ 행운의 파동과 축복\n주파수: ${narrationData.frequency} · 행운수: ${narrationData.luckyNumber} · 행운색: ${narrationData.luckyColor}\n"${narrationData.rawBlessing}"\n`
+        ? `■ 행운의 숫자와 축복\n행운수: ${narrationData.luckyNumber} · 행운색: ${narrationData.luckyColor}\n"${narrationData.rawBlessing}"\n`
         : '') +
       `- PRISM TRINITY ORACLE`;
     navigator.clipboard.writeText(textToCopy).catch(() => {});
@@ -613,12 +612,9 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                 <Streamdown immediate enableTTSHighlight={isFullPlaying}>{narrationData.cleanDiagnosis}</Streamdown>
               </div>
 
-              {/* Planetary / Frequency Harmony Section */}
+              {/* Lucky Number / Blessing Section */}
               <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-2 mt-2">
                 <div className="flex items-center gap-2 text-xs font-mono text-yellow-300/90 flex-wrap">
-                  <span className="px-2 py-0.5 rounded-md bg-yellow-400/10 border border-yellow-400/20">
-                    주파수: {narrationData.frequency}
-                  </span>
                   <span className="px-2 py-0.5 rounded-md bg-yellow-400/10 border border-yellow-400/20">
                     행운수: {narrationData.luckyNumber}
                   </span>

@@ -1376,7 +1376,6 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
         ? `에고의 환영을 넘어 참된 용서와 하나님의 평화로 · 지배 타로 [${todayDailyTarot.nameKo}]`
         : `오늘의 지배 타로 [${todayDailyTarot.nameKo}] · 사주 일진 [${dailySaju?.dayPillar.full || '조화'}] (${dailySaju?.tenGodGan.name || '상생'})`,
       luckyColor: dailySaju?.remedy?.luckyColor || undefined,
-      frequency: saju?.yongsin?.name ? `사주 용신: ${saju.yongsin.name} · 지배 카드: ${todayDailyTarot.nameKo}` : `지배 카드: ${todayDailyTarot.nameKo}`,
     };
   }, [oracleMode, healingResult, growthResult, miracleResult, inquiryText, drawnCards, slotPositions, saju, oracleSummaryBullets, todayDailyTarot, dailySaju]);
 
