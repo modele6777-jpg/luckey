@@ -4182,7 +4182,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 {conciseSummaryBullets.length > 0 && tarotResult && (
                                             <TarotSummaryGraphicCard
                                               bullets={conciseSummaryBullets}
-                                              question={tarotConcern?.trim() || '오늘의 타로'}
+                                              question={(isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation) || isDailyTarotConcern(tarotConcern)) ? '오늘의 타로' : (tarotConcern?.trim() || '오늘의 타로')}
                                               readingText={displayTarotResult || tarotResult || ""}
                                               isTTSActive={isSummaryTTSActive}
                                               onToggleTTS={async () => {
@@ -4250,13 +4250,13 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                     ) : (
                                       <div className="space-y-4">
                                           {/* 💬 내가 한 질문 상단 표시 (핵심 요약이 아직 생성 중일 때도 즉시 표시) */}
-                                          {tarotConcern?.trim() && conciseSummaryBullets.length === 0 && (
+                                          {((isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation) || isDailyTarotConcern(tarotConcern)) || tarotConcern?.trim()) && conciseSummaryBullets.length === 0 && (
                                             <div className="px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-purple-500/15 border border-amber-400/35 flex items-start gap-2.5 shadow-md">
                                               <span className="px-2 py-0.5 rounded-md bg-amber-400/25 border border-amber-300/40 text-amber-200 text-[10px] sm:text-[11px] font-extrabold tracking-wide shrink-0 mt-0.5">
                                                 💬 내가 한 질문
                                               </span>
                                               <p className="text-xs sm:text-sm font-bold text-amber-50 leading-relaxed break-keep">
-                                                &ldquo;{tarotConcern.trim()}&rdquo;
+                                                &ldquo;{(isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation) || isDailyTarotConcern(tarotConcern)) ? '오늘의 타로' : tarotConcern.trim()}&rdquo;
                                               </p>
                                             </div>
                                           )}

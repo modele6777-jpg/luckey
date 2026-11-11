@@ -1,4 +1,5 @@
-import { applyAudioMixingPolicy } from './audioMixingPolicy';
+import { applyAudioMixingPolicy, setAppAudioActive } from './audioMixingPolicy';
+import { updateAppMediaSession } from './appMediaSession';
 import { primeUserMediaPlayback } from './nativeMediaPriming';
 // Use the browser's media pipeline so speech can continue while the page is hidden.
 let player: HTMLAudioElement | null = null;
@@ -25,6 +26,8 @@ export function primeSpeechMedia(userGesture = typeof navigator !== 'undefined' 
 export function stopSpeechMedia(): void {
   active = false; paused = false;
   finish?.(); finish = null;
+  updateAppMediaSession('tts', null);
+  setAppAudioActive(false);
   if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
   if (objectUrl) URL.revokeObjectURL(objectUrl);
   objectUrl = null;
@@ -34,8 +37,28 @@ export function speechMediaProgress() {
   return { elapsed: player.currentTime || 0, duration: Number.isFinite(player.duration) ? player.duration : 0, paused: paused || player.paused };
 }
 export function isSpeechMediaPlaying() { return active && !paused && !!player && !player.paused; }
-export function pauseSpeechMedia() { if (active) { paused = true; player?.pause(); } }
-export function resumeSpeechMedia() { if (active && player) { paused = false; applyAudioMixingPolicy(); const failed = playbackFailure; void player.play().catch(() => failed?.()); } }
+export function pauseSpeechMedia() {
+  if (active) {
+    paused = true;
+    player?.pause();
+    updateAppMediaSession('tts', { title: 'Lucy Speech', artist: '루시 (Lucy)', state: 'paused' });
+  }
+}
+export function resumeSpeechMedia() {
+  if (active && player) {
+    paused = false;
+    setAppAudioActive(true);
+    applyAudioMixingPolicy();
+    updateAppMediaSession('tts', {
+      title: 'Lucy Speech',
+      artist: '루시 (Lucy)',
+      state: 'playing',
+      actions: { pause: pauseSpeechMedia, play: resumeSpeechMedia, stop: stopSpeechMedia },
+    });
+    const failed = playbackFailure;
+    void player.play().catch(() => failed?.());
+  }
+}
 export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate: number, onPlaying?: () => void): Promise<void> {
   // Settle the old chunk without clearing/reloading the shared media element.
   // Safari may release its background session if src is removed between chunks.
@@ -43,6 +66,8 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
   const previousUrl = objectUrl;
   const audio = getSpeechMediaElement();
   paused = false;
+  setAppAudioActive(true);
+  applyAudioMixingPolicy();
   let data = bytes;
   if (encoding === 'pcm') {
     data = new Uint8Array(44 + bytes.length);
@@ -58,21 +83,55 @@ export function playSpeechMedia(bytes: Uint8Array, encoding: string, sampleRate:
   if (previousUrl) URL.revokeObjectURL(previousUrl);
   return new Promise<void>((resolve, reject) => {
     let settled = false;
-    const playing = () => onPlaying?.();
+    const playing = () => {
+      updateAppMediaSession('tts', {
+        title: 'Lucy Speech',
+        artist: '루시 (Lucy)',
+        state: 'playing',
+        actions: { pause: pauseSpeechMedia, play: resumeSpeechMedia, stop: stopSpeechMedia },
+      });
+      onPlaying?.();
+    };
+    const onPause = () => {
+      // Guard against iOS pausing speech on screen lock or background app transition
+      if (active && !paused && !settled && audio.paused) {
+        setTimeout(() => {
+          if (active && !paused && !settled && audio.paused) {
+            void audio.play().catch(() => {});
+          }
+        }, 40);
+      }
+    };
     const cleanup = () => {
       audio.removeEventListener('playing', playing);
       audio.removeEventListener('ended', ended);
       audio.removeEventListener('error', failed);
+      audio.removeEventListener('pause', onPause);
       if (finish === ended) finish = null;
       if (playbackFailure === failed) playbackFailure = null;
     };
-    const ended = () => { if (settled) return; settled = true; active = false; cleanup(); resolve(); };
-    const failed = () => { if (settled) return; settled = true; active = false; cleanup(); reject(new Error('음성을 재생하지 못했습니다. 다시 듣기를 눌러 주세요.')); };
+    const ended = () => {
+      if (settled) return;
+      settled = true;
+      active = false;
+      cleanup();
+      updateAppMediaSession('tts', null);
+      resolve();
+    };
+    const failed = () => {
+      if (settled) return;
+      settled = true;
+      active = false;
+      cleanup();
+      updateAppMediaSession('tts', null);
+      reject(new Error('음성을 재생하지 못했습니다. 다시 듣기를 눌러 주세요.'));
+    };
     finish = ended;
     playbackFailure = failed;
     audio.addEventListener('playing', playing, { once: true });
     audio.addEventListener('ended', ended);
     audio.addEventListener('error', failed);
+    audio.addEventListener('pause', onPause);
     applyAudioMixingPolicy();
     void audio.play().catch(failed);
   });
