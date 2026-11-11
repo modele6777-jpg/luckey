@@ -243,18 +243,19 @@ const FEATURE_APPS: FeatureAppMeta[] = [
     id: 'key',
     name: 'KEY 개운 성전',
     shortName: 'Key 개운 리추얼',
-    featureTitle: '40가지 개운(開運) 리추얼 & 오행 파동 정화',
+    featureTitle: '90가지 개운(開運)·마음 실천 성전',
     path: '/key',
     iconText: '🔑',
     runeSymbol: 'ᛟ',
     runeName: 'Othala',
     color: '#38bdf8',
     glowColor: 'rgba(56, 189, 248, 0.9)',
-    description: '막힌 운기와 액운을 비워내고 행운의 파동을 채우는 40가지 개운(開運) 실천 리추얼 & 소원 노트',
+    description: '불안을 비워내고 섬세함을 나만의 무기로 바꾸는 90가지 개운·마음 실천 리추얼 & 소원 노트',
     actionLabel: 'Key 개운 성전 도약',
     keywords: [
       '개운', '액운', '운기', '소원', '정화', '불안', '걱정', '초조', '스트레스', '긴장', '마음약방', '처방', '연습',
-      '실천', '키', 'key', '오행', '파동', '호흡', '명상', '부적', '리추얼'
+      '실천', '키', 'key', '오행', '파동', '호흡', '명상', '부적', '리추얼', '예민', '민감', 'HSP', '섬세', '공감',
+      '번아웃', '휴식', '에너지', '마음챙김', '도구함', '쉼'
     ],
   },
 ];
@@ -386,21 +387,27 @@ export function LucyResponseRecommendation({
       }
     });
 
-    // 매칭된 Key 연습의 도메인과 LucKey 채널 시너지 연계 가중치 부여
+    // 매칭된 Key 연습의 도메인과 LucKey 채널 시너지 연계 가중치 부여 (90대 연습 전수 매핑)
     const exIdx = bestEx.globalIndex;
-    if ([13, 14, 15, 16, 17, 18, 20, 21].includes(exIdx)) {
-      // 신체 감각, 호흡, 이완, 근육 긴장 -> 아우라 채널
+    if ([13, 14, 15, 16, 17, 18, 20, 21, 41, 47, 53, 55, 57, 72].includes(exIdx)) {
+      // 신체 감각, 호흡, 이완, 근육 긴장, 수면, 자극최소화 -> 아우라 채널
       channelScores.aura += 12;
-    } else if ([9, 23, 24, 28, 32, 33, 35].includes(exIdx)) {
-      // 내면아이, 슬픔, 위로, 수용, 감정 정화 -> 블루버드 채널
+    } else if ([9, 23, 24, 28, 32, 33, 35, 45, 46, 61, 62, 63, 65, 67, 81, 83, 85].includes(exIdx)) {
+      // 내면아이, 슬픔, 위로, 수용, 감정 정화, 인간관계 치유 -> 블루버드 채널
       channelScores.bluebird += 12;
-    } else if ([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 22, 25, 26, 27, 29, 30, 31, 34, 39, 40].includes(exIdx)) {
-      // 전략적 사고, 우선순위, 가치 행동, 인지 재구성 -> 오렌지 채널
-      channelScores.orange += 12;
-    } else if ([36, 37, 38].includes(exIdx)) {
-      // 예기불안, 미래 통찰 -> 트리니티 및 오렌지
-      channelScores.trinity += 8;
+    } else if ([42, 50, 60, 69, 88].includes(exIdx)) {
+      // 일기, 회고, 밤 서재, 생각 비우기, 꿈 저널 -> 에필로그 채널
+      channelScores.epilogue += 12;
+    } else if ([89].includes(exIdx)) {
+      // 예술처방, 명화, 영감, 심미안 -> 뮤즈 채널
+      channelScores.muse += 12;
+    } else if ([36, 37, 38, 44, 86, 87].includes(exIdx)) {
+      // 예기불안, 미래 통찰, 기질의 새로운 시선, 직감 신뢰 -> 트리니티 및 오렌지
+      channelScores.trinity += 10;
       channelScores.orange += 6;
+    } else {
+      // 전략적 사고, 우선순위, 가치 행동, 인지 재구성, 라이프 루틴, 커리어 -> 오렌지 채널
+      channelScores.orange += 12;
     }
 
     // 최고 득점 단 1개의 최적 추천 채널 선정
@@ -411,19 +418,22 @@ export function LucyResponseRecommendation({
     // 모든 채널 점수가 0인 경우에도 Key 연습의 성격에 맞는 자연스러운 채널 도출
     let topChannelKey: SpecialChannel = sortedChannels[0];
     if (channelScores[topChannelKey] <= 0) {
-      if ([13, 14, 15, 16, 17, 18, 20, 21].includes(exIdx)) topChannelKey = 'aura';
-      else if ([9, 23, 24, 28, 32, 33, 35].includes(exIdx)) topChannelKey = 'bluebird';
-      else if ([36, 37, 38].includes(exIdx)) topChannelKey = 'trinity';
+      if ([13, 14, 15, 16, 17, 18, 20, 21, 41, 47, 53, 55, 57, 72].includes(exIdx)) topChannelKey = 'aura';
+      else if ([9, 23, 24, 28, 32, 33, 35, 45, 46, 61, 62, 63, 65, 67, 81, 83, 85].includes(exIdx)) topChannelKey = 'bluebird';
+      else if ([42, 50, 60, 69, 88].includes(exIdx)) topChannelKey = 'epilogue';
+      else if ([89].includes(exIdx)) topChannelKey = 'muse';
+      else if ([36, 37, 38, 44, 86, 87].includes(exIdx)) topChannelKey = 'trinity';
       else topChannelKey = 'orange';
     }
 
     const primaryChannel = CHANNELS_META[topChannelKey];
 
+    const bookCategory = bestEx.globalIndex <= 40 ? '불안 개운' : '예민 케어';
     const keyFeature: FeatureAppMeta = {
       id: 'key',
       name: 'KEY 개운 성전',
-      shortName: `개운법 ${bestEx.index}. ${bestEx.title}`,
-      featureTitle: `40대 개운 리추얼 맞춤 처방: 개운법 ${bestEx.index}. ${bestEx.title}`,
+      shortName: `개운법 ${bestEx.globalIndex}. ${bestEx.title}`,
+      featureTitle: `90대 마음 실천 맞춤 처방: [${bookCategory}] 연습 ${bestEx.globalIndex}. ${bestEx.title}`,
       path: `/key?ex=${bestEx.globalIndex}`,
       iconText: bestEx.icon || '🔑',
       runeSymbol: 'ᛟ',
@@ -435,7 +445,7 @@ export function LucyResponseRecommendation({
       keywords: [],
     };
 
-    const reasonText = `[${bestEx.tag}·${primaryChannel.badgeLabel}] ${primaryChannel.shortName} 채널 × Key 개운법(${bestEx.title}) 맞춤 연계`;
+    const reasonText = `[${bestEx.tag}·${primaryChannel.badgeLabel}] ${primaryChannel.shortName} 채널 × Key 실천법(${bestEx.title}) 맞춤 연계`;
 
     return {
       recommendedChannel: primaryChannel,

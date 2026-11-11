@@ -2050,7 +2050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (circlePercent) circlePercent.textContent = `${completionRate}%`;
     if (circleCount) circleCount.textContent = `${completedCount} / ${totalExercisesCount}개`;
     if (circleHeading) {
-      circleHeading.textContent = `50가지 실천 연습 중 ${completedCount}개 완주 (${completionRate}%)`;
+      circleHeading.textContent = `90가지 개운·마음 실천 중 ${completedCount}개 완주 (${completionRate}%)`;
     }
     if (circleStatus) {
       if (completedCount === 0) {
@@ -2074,19 +2074,21 @@ document.addEventListener('DOMContentLoaded', () => {
         circleStatus.style.background = '#fff8e1';
         circleStatus.style.color = '#f57f17';
       } else {
-        circleStatus.textContent = '🏆 50가지 민감성 실천 마스터 달성!';
+        circleStatus.textContent = '🏆 90가지 개운·마음 실천 마스터 달성!';
         circleStatus.style.background = 'linear-gradient(135deg, #ffd700, #ffb300)';
         circleStatus.style.color = '#000000';
       }
     }
 
-    const elCircleCh4 = document.getElementById('wb-circle-ch4');
-    const elCircleCh5 = document.getElementById('wb-circle-ch5');
-    if (elCircleCh1) elCircleCh1.textContent = `${ch1Count} / 10개 (${Math.round((ch1Count / 10) * 100)}%)`;
-    if (elCircleCh2) elCircleCh2.textContent = `${ch2Count} / 10개 (${Math.round((ch2Count / 10) * 100)}%)`;
-    if (elCircleCh3) elCircleCh3.textContent = `${ch3Count} / 10개 (${Math.round((ch3Count / 10) * 100)}%)`;
-    if (elCircleCh4) elCircleCh4.textContent = `${ch4Count} / 10개 (${Math.round((ch4Count / 10) * 100)}%)`;
-    if (elCircleCh5) elCircleCh5.textContent = `${ch5Count} / 10개 (${Math.round((ch5Count / 10) * 100)}%)`;
+    const anxietyTotal = 40;
+    const hspTotal = 50;
+    const anxietyCount = ch1Count + ch2Count + ch3Count;
+    const hspCount = ch4Count + ch5Count + ch6Count + ch7Count + ch8Count;
+
+    const elCircleAnxiety = document.getElementById('wb-circle-ch-anxiety');
+    const elCircleHsp = document.getElementById('wb-circle-ch-hsp');
+    if (elCircleAnxiety) elCircleAnxiety.textContent = `${anxietyCount} / ${anxietyTotal}개 (${Math.round((anxietyCount / anxietyTotal) * 100)}%)`;
+    if (elCircleHsp) elCircleHsp.textContent = `${hspCount} / ${hspTotal}개 (${Math.round((hspCount / hspTotal) * 100)}%)`;
 
     // 필터별 개수 카운팅
     const cntAll = totalEntries;
@@ -2180,10 +2182,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="wb-empty-title">아직 기록된 소원 확언 & 운기 노트가 없습니다</div>
             <p class="wb-empty-desc">
               막힌 운은 작은 실천과 확언을 기록할 때 비로소 트이기 시작합니다.<br>
-              50가지 민감성 실천 연습이나 3분 액운 정화에서 오늘의 첫 개운을 시작해 보세요.
+              90가지 개운·마음 실천 연습이나 3분 액운 정화에서 오늘의 첫 개운을 시작해 보세요.
             </p>
             <div class="wb-empty-btns">
-              <button class="btn-copper" onclick="switchTab('tab-exercises')">🎯 50가지 민감성 실천 연습 가기</button>
+              <button class="btn-copper" onclick="switchTab('tab-exercises')">🎯 90가지 개운·마음 실천 연습 가기</button>
               <button class="btn-sage" onclick="launchRandomPractice()">🎲 오늘의 랜덤 개운법 뽑기</button>
             </div>
           </div>
@@ -2203,7 +2205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       cardsHtml = filtered.map(r => {
         const isRx = String(r.title).includes('처방전') || String(r.title).includes('개운부적') || r.isRx;
-        const typeBadge = isRx ? '🔮 3분 개운부적' : '🎯 50가지 실천 연습';
+        const typeBadge = isRx ? '🔮 3분 개운부적' : '🎯 90가지 실천 연습';
         const typeClass = isRx ? 'wb-badge-rx' : 'wb-badge-ch';
         const sud = r.sudScore || (r.answers ? r.answers['sud_score'] : null);
         let sudHtml = '';
@@ -2251,7 +2253,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="wb-card-icon">${r.icon || (isRx ? '🔮' : '🎯')}</div>
               <div>
                 <h3 class="wb-card-title">${escapeHtml(r.title)}</h3>
-                <div class="wb-card-page">《KEY : 운을 여는 50가지 민감성 실천 연습》 ${r.page || 22}쪽 기록</div>
+                <div class="wb-card-page">《KEY : 막힌 운을 여는 90가지 개운·마음 실천 성전》 ${r.page || 18}쪽 기록</div>
               </div>
             </div>
 
