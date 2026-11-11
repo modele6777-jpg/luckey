@@ -21,6 +21,7 @@ export interface ProfileBasic {
   nickname?: string;        // 닉네임 (루시가 부를 이름)
   birthdate?: string;       // YYYY-MM-DD
   birthtime?: string;       // HH:MM
+  birthTimeAccuracy?: 'exact' | 'approximate' | 'unknown';
   gender?: 'male' | 'female' | 'other';
   birthCity?: string;
   lunarSolar?: 'solar' | 'lunar';

@@ -14,6 +14,11 @@ import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, l
 import { buildLucySharedBackground } from '../lib/lucySharedBackground';
 import { buildFullProfilePrompt } from '../lib/divination/profileContext';
 import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
+import {
+  buildSajuChatGuidance,
+  buildTarotInterpretationGuidance,
+  isSajuConsultationRequest,
+} from '../lib/divination/consultationGuidance';
 import { useLucyProConversation } from '@/hooks/useLucyProConversation';
 import { resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -2251,6 +2256,15 @@ ${responseProfile.rule}`;
       } catch (_) {
         systemPrompt += '\n[채팅 점술 계산 실패] 이번 메시지의 새 포국·작괘를 계산했다고 말하지 말고 계산실 이용을 안내해.';
       }
+    }
+
+    const sajuAudit = (options?.calculationAudit || toolSelection.calculationAudit || [])
+      .some(item => item.toolId === 'saju' && item.sentToModel);
+    if (isSajuConsultationRequest(effectiveUserText) || sajuAudit) {
+      systemPrompt += `\n\n${buildSajuChatGuidance(Boolean(sajuObj), effectiveUserText)}`;
+    }
+    if (tarotDraw) {
+      systemPrompt += `\n\n${buildTarotInterpretationGuidance({ question: effectiveUserText, hasAppDraw: true })}`;
     }
 
     const _isPerfReduced = isPerfReduced() || isStandalonePWA();

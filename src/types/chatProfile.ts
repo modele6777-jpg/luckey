@@ -5,6 +5,7 @@ export interface ChatTargetProfile {
   isMe?: boolean;
   birthdate: string; // YYYY-MM-DD
   birthtime?: string; // HH:MM
+  birthTimeAccuracy?: 'exact' | 'approximate' | 'unknown';
   gender: 'male' | 'female' | 'other';
   birthCity?: string; // 출생지 (예: 서울, 부산, 대구 등)
   lunarSolar?: 'solar' | 'lunar';

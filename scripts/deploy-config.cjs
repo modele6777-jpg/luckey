@@ -5,7 +5,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const localConfigPath = path.join(repoRoot, 'scripts', 'deploy.local.json');
 
 const DEFAULTS = {
-  productionUrl: 'https://prism-universe.vercel.app',
+  productionUrl: 'https://luckey-six.vercel.app',
   pollIntervalMs: 15_000,
   pollTimeoutMs: 4 * 60_000,
   redeployPollTimeoutMs: 6 * 60_000,
