@@ -2160,8 +2160,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       const cleanAnswer = normalizeTextForSpeech(joinedBubblesText);
       if (cleanAnswer) {
         await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, {
-          skipCompletionChime: true,
           isChatMode: true,
+          allowChatCompletionChime: true,
           isAutoPlay: true,
         });
       }
@@ -2917,7 +2917,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     stopTTS();
     try {
       // Starting a sequence emits an idle reset first. Assign its owner after that reset.
-      const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, { skipCompletionChime: true, isChatMode: true });
+      const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, {
+        isChatMode: true,
+        allowChatCompletionChime: true,
+      });
       setPlayingMsgId(id);
       await playback;
     } catch (error) {

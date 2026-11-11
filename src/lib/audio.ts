@@ -747,13 +747,17 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
         ttsActiveReject = null;
         ttsActiveFinishResolver = null;
         ttsActiveBuffer = null;
+        ttsPausedOffsetSec = 0;
         ttsShouldBePlaying = false;
+        ttsEarlyEndRetries = 0;
+        ttsContextRecoveryAttempts = 0;
         stopActiveWebAudioTTSSource(false);
         stopTTSKeepAlive();
         releaseScreenWakeLock().catch(() => {});
-        reject?.(Object.assign(new Error('음성 출력이 반복해서 중단되었습니다. 다시 듣기를 눌러 주세요.'), { code: 'TTS_INTERRUPTED' }));
+        reject?.(Object.assign(new Error('화면 잠금이나 앱 전환으로 낭독이 중단되었습니다. 다시 듣기를 눌러 이어주세요.'), { code: 'TTS_INTERRUPTED' }));
       };
-      if (++ttsEarlyEndRetries <= 2) {
+      const visible = typeof document === 'undefined' || document.visibilityState !== 'hidden';
+      if (visible && ++ttsEarlyEndRetries <= 1) {
         try { launchWebAudioTTSSource(activePlaybackId); }
         catch { failInterruptedPlayback(); }
       } else {
@@ -790,7 +794,10 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
       ttsActiveReject = null;
       ttsActiveFinishResolver = null;
       ttsActiveBuffer = null;
+      ttsPausedOffsetSec = 0;
       ttsShouldBePlaying = false;
+      ttsEarlyEndRetries = 0;
+      ttsContextRecoveryAttempts = 0;
       stopTTSKeepAlive();
       releaseScreenWakeLock().catch(() => {});
       reject?.(Object.assign(new Error('음성 출력을 복구하지 못했습니다. 재생 버튼을 다시 눌러 주세요.'), { code: 'TTS_CONTEXT_STALLED' }));
@@ -814,15 +821,23 @@ function launchWebAudioTTSSource(activePlaybackId: number): void {
         return;
       }
 
-      // A running-but-frozen clock or a permanently interrupted context used
-      // to wait forever. Recover once while visible; hidden tabs may be throttled.
+      // A running-but-frozen clock or an interrupted context must not leave a
+      // speaking session stuck or trigger repeated background resume attempts.
       const clock = audioCtx.currentTime;
       const visible = typeof document === 'undefined' || document.visibilityState !== 'hidden';
+      if (!visible && ((audioCtx.state as string) !== 'running' || clock <= lastClock + 0.001)) {
+        onSourceEnded();
+        return;
+      }
       stalledChecks = visible && clock <= lastClock + 0.001 ? stalledChecks + 1 : 0;
       lastClock = clock;
       if (stalledChecks >= 3) { recoverStalledOutput(); return; }
       if ((audioCtx.state as string) !== 'running') {
-        audioCtx.resume().catch(() => {});
+        if (ttsContextRecoveryAttempts >= 1) { recoverStalledOutput(); return; }
+        ttsContextRecoveryAttempts++;
+        audioCtx.resume().catch(() => {
+          if (!ended && activePlaybackId === ttsPlaybackId) recoverStalledOutput();
+        });
         scheduleSafetyCheck(1000);
         return;
       }
@@ -1265,6 +1280,8 @@ export async function playTTSAudio(
 
   const activePlaybackId = ++ttsPlaybackId;
   ttsUserExplicitlyPaused = false;
+  ttsEarlyEndRetries = 0;
+  ttsContextRecoveryAttempts = 0;
   configureSpeechAudioSession();
   stopRawPCM();
   stopActiveWebAudioTTSSource(false);
