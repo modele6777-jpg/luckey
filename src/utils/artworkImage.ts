@@ -8,7 +8,10 @@ export type ArtworkImageSource =
   | "met"
   | "pollinations"
   | "ai_replica"
+  | "local_fallback"
   | "dailyart";
+
+export const DAILY_ART_LOCAL_FALLBACK_URL = "/images/daily-art-fallback.svg";
 
 export interface ArtworkImageInput {
   title: string;
@@ -80,6 +83,7 @@ export function resolveArtworkSource(
   if (isAiArtworkUrl(url)) {
     return "pollinations";
   }
+  if (source === "local_fallback") return "local_fallback";
   if (source === "dailyart") return "dailyart";
   if (source === "google") return "google";
   if (
@@ -129,6 +133,16 @@ export function getArtworkImageBadgeInfo(
       borderClass: "border-purple-400/35 bg-purple-950/40",
       textClass: "text-purple-300",
       dotClass: "bg-purple-400",
+    };
+  }
+
+  if (effectiveSource === "local_fallback") {
+    return {
+      label: "🎨 기본 전시 아트워크",
+      isAi: false,
+      borderClass: "border-sky-400/35 bg-slate-950/75",
+      textClass: "text-sky-200",
+      dotClass: "bg-sky-300",
     };
   }
 
@@ -195,6 +209,27 @@ export function getWikimediaFilePathUrl(url: string): string {
   } catch (_) {
     return "";
   }
+}
+
+export function buildDailyArtworkFallbackUrls(
+  artworkImageUrl?: string | null,
+  cachedImage?: string | null,
+): string[] {
+  const list: string[] = [];
+  const original = artworkImageUrl?.trim() || "";
+  if (original && !isAiArtworkUrl(original)) {
+    list.push(original, encodeURI(original));
+    const fullRes = getWikimediaFullResUrl(original);
+    if (fullRes) list.push(fullRes);
+    const filePath = getWikimediaFilePathUrl(original);
+    if (filePath) list.push(filePath);
+  }
+  const cached = cachedImage?.trim() || "";
+  if (cached && cached !== "null" && cached !== "undefined" && !isAiArtworkUrl(cached)) {
+    list.push(cached);
+  }
+  list.push(DAILY_ART_LOCAL_FALLBACK_URL);
+  return [...new Set(list.filter(Boolean))];
 }
 
 export function getSafeArtworkUrl(url?: string | null): string {

@@ -56,6 +56,7 @@ import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLuc
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
+import { shouldPreserveDuoSplitForLucyAction } from '../lib/duoLucyActionRouting';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
@@ -373,17 +374,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         epilogue: 'master',  // 🌟 에필로그: 5대 우주 지능 올인원 PRO 마스터 모드
       };
       const targetMode = options?.mode || channelModeMap[persona || 'lucy'] || 'casual';
-      safeSessionStorage.setItem('lucy_pro_pending_channel', targetMode);
-      if (options?.autoSendPrompt) {
-        safeSessionStorage.setItem('lucy_injected_auto_send', options.autoSendPrompt);
-        safeSessionStorage.setItem('lucy_injected_input_draft', options.autoSendPrompt);
+      const preserveDuoSplit = shouldPreserveDuoSplitForLucyAction(
+        typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport')),
+        typeof document !== 'undefined' && Boolean(document.getElementById('duo-lucy-viewport')),
+      );
+      if (preserveDuoSplit) {
+        const prompt = options?.autoSendPrompt || options?.draftPrompt;
         window.dispatchEvent(new CustomEvent('lucy-inject-message', {
-          detail: { prompt: options.autoSendPrompt, channel: targetMode }
+          detail: {
+            channel: targetMode,
+            ...(prompt ? { prompt } : {}),
+            ...(options?.draftPrompt && !options?.autoSendPrompt ? { draftOnly: true } : {}),
+          },
         }));
-      } else if (options?.draftPrompt) {
-        safeSessionStorage.setItem('lucy_injected_input_draft', options.draftPrompt);
+      } else {
+        safeSessionStorage.setItem('lucy_pro_pending_channel', targetMode);
+        if (options?.autoSendPrompt) {
+          safeSessionStorage.setItem('lucy_injected_auto_send', options.autoSendPrompt);
+          safeSessionStorage.setItem('lucy_injected_input_draft', options.autoSendPrompt);
+          window.dispatchEvent(new CustomEvent('lucy-inject-message', {
+            detail: { prompt: options.autoSendPrompt, channel: targetMode }
+          }));
+        } else if (options?.draftPrompt) {
+          safeSessionStorage.setItem('lucy_injected_input_draft', options.draftPrompt);
+        }
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
       }
-      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
     }
   }, []);
 

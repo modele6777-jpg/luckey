@@ -2863,17 +2863,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     const handleDynamicInject = (e: Event) => {
       const detail = (e as CustomEvent)?.detail;
-      if (detail?.prompt) {
-        const injectedChannels: SpecialChannel[] = detail.channel
-          ? parsePendingChannels(detail.channel)
-          : (detail.channels || ALL_CHANNELS);
-        setActiveChannels(injectedChannels);
-        setTimeout(() => {
-          if (handleSendRef.current) {
-            handleSendRef.current(detail.prompt, injectedChannels);
-          }
-        }, 150);
+      if (!detail) return;
+      const injectedChannels: SpecialChannel[] = detail.channel
+        ? parsePendingChannels(detail.channel)
+        : (detail.channels || ALL_CHANNELS);
+      setActiveChannels(injectedChannels);
+      if (!detail.prompt) return;
+      if (detail.draftOnly) {
+        setInput(detail.prompt);
+        return;
       }
+      setTimeout(() => {
+        if (handleSendRef.current) {
+          handleSendRef.current(detail.prompt, injectedChannels);
+        }
+      }, 150);
     };
 
     window.addEventListener('lucy-inject-message', handleDynamicInject);

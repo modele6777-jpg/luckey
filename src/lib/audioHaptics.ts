@@ -12,7 +12,7 @@
  */
 
 import { getSharedAudioContext, getMasterAudioBus } from './audio';
-import { playCompletionBowl } from './completionBowl';
+import { playCompletionBirdChirp } from './completionBirdChirp';
 
 export type HapticCategory =
   | 'success'      // Sharp pulse confirmation & triumphant achievements
@@ -29,7 +29,7 @@ export type AudioHapticType =
   | 'save_success'       // Saved confirmation with radiant double-chime + sharp double pulse
   | 'save_auto'          // Discrete water droplet bell ping for auto-saves
   | 'milestone_success'  // Triumphant multi-stage sharp ripple pulse & golden chord flourish
-  | 'ai_result_chime'    // 또렷한 싱잉볼 완료 알림 (대화 제외)
+  | 'ai_result_chime'    // 짧은 새 지저귐 완료 알림 (대화 제외)
 
   // --- Breathing category (soft, rhythmic vibration & respiratory bio-harmonics) ---
   | 'breathe_inhale'     // Gentle swelling rhythmic wave [25, 75, 40, 75, 55] + soft note cue
@@ -97,8 +97,8 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
   ai_result_chime: {
     vibration: [18, 35, 22],
     category: 'success',
-    label: 'TTS 및 작업 완료 싱잉볼',
-    description: '또렷한 중음역 타종과 2.3초의 부드러운 여운이 있는 싱잉볼 (대화 제외)',
+    label: 'TTS 및 작업 완료 새소리',
+    description: 'TTS 완독 뒤 한 번 울리는 0.66초의 부드러운 새 지저귐 (대화 제외)',
   },
 
   // Breathing (Soft Rhythmic)
@@ -525,7 +525,7 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       }
 
       case 'ai_result_chime': {
-        playCompletionBowl(ctx, bus, volScale);
+        playCompletionBirdChirp(ctx, bus, volScale);
         break;
       }
 
@@ -957,7 +957,7 @@ export function playCardHaptic(
 }
 
 /**
- * 🔔 오직 TTS 음성 낭독 완독 시에만 울리는 영롱한 티베트 싱잉볼 알림 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
+ * 오직 TTS 음성 낭독 완독 시 한 번 재생하는 짧은 새 지저귐 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
  */
 export function playAiResultNotification(options?: AudioHapticOptions): void {
   try {

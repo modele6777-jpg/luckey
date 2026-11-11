@@ -46,10 +46,10 @@ const { outputFiles } = await build({
       if (fakeSession.type !== 'ambient') throw Error('Idle app took playback audio focus');
       setBgmPlaybackSessionActive(true);
       configureAmbientAudioSession();
-      if (fakeSession.type !== 'playback') throw Error('Playing BGM lacks background session');
+      if (fakeSession.type !== 'ambient') throw Error('Playing BGM must preserve nonexclusive ambient policy');
       setBgmPlaybackSessionActive(false);
       if (fakeSession.type !== 'ambient') throw Error('Pause did not release playback session');
-      return { tracks: tracks.length, nativePlaybackWithSuspendedContextSeconds: progressed, sessionTransitions: 'ambient → playback → ambient', minRms: Math.min(...tracks.map(t => t.rms)) };
+      return { tracks: tracks.length, nativePlaybackWithSuspendedContextSeconds: progressed, sessionTransitions: 'ambient → ambient → ambient', minRms: Math.min(...tracks.map(t => t.rms)) };
     };
   ` }, bundle: true, format: 'iife', write: false, platform: 'browser', logLevel: 'silent',
 });

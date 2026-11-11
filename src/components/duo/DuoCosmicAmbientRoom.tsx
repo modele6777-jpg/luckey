@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Sparkles, Music, Activity } from 'lucide-react';
+import { Sparkles, Music, Activity, Headphones, Pause, Play } from 'lucide-react';
 import './duo-cosmic-room.css';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { getVisualRhythmBeatConfig, VisualRhythmBinauralPlayer } from '@/lib/visualRhythmBinaural';
 
 interface DuoCosmicAmbientRoomProps {
   isLight?: boolean;
@@ -87,9 +88,12 @@ function getEngineShortSummary(engine: DceEngineMeta): string {
 
 export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLight = false }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const binauralPlayerRef = useRef<VisualRhythmBinauralPlayer | null>(null);
+  if (!binauralPlayerRef.current) binauralPlayerRef.current = new VisualRhythmBinauralPlayer();
 
   // BPM 리듬 설정 (기본 90 BPM)
   const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90);
+  const [isBinauralPlaying, setIsBinauralPlaying] = useState(false);
   // 🔮 252대 DCE 엔진 무조건 랜덤 셔플로 시작
   const [activeEngineIdx, setActiveEngineIdx] = useState<number>(() => {
     return Math.floor(Math.random() * ALL_DCE_ENGINES.length);
@@ -98,6 +102,10 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
   // 🎵 음악 비트 탭 싱크 (애플뮤직 박자에 맞춰 화면 탭 시 템포 실측 동기화)
   const tapTimesRef = useRef<number[]>([]);
   const lastTapRippleRef = useRef<{ time: number } | null>(null);
+
+  useEffect(() => () => {
+    binauralPlayerRef.current?.stop();
+  }, []);
 
   const handleTapSync = useCallback(() => {
     triggerHaptic('whitehole');
@@ -117,6 +125,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         const calculatedBpm = Math.round(60000 / avgInterval);
         const clamped = Math.min(180, Math.max(50, calculatedBpm));
         setAmbientTempoBpm(clamped);
+        binauralPlayerRef.current?.updateBpm(clamped);
       }
     }
   }, []);
@@ -139,7 +148,18 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
   const handleSelectBpm = useCallback((bpm: number) => {
     triggerHaptic('whitehole');
     setAmbientTempoBpm(bpm);
+    binauralPlayerRef.current?.updateBpm(bpm);
   }, []);
+
+  const handleToggleBinauralBeat = useCallback(() => {
+    triggerHaptic('whitehole');
+    if (isBinauralPlaying) {
+      binauralPlayerRef.current?.stop();
+      setIsBinauralPlaying(false);
+      return;
+    }
+    setIsBinauralPlaying(binauralPlayerRef.current?.start(ambientTempoBpm) ?? false);
+  }, [ambientTempoBpm, isBinauralPlaying]);
 
   // 🎵 외부 음악과 함께 클릭 시: iOS 애플뮤직 앱(music://) 바로 실행
   const handleOpenAppleMusic = useCallback(() => {
@@ -461,6 +481,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
 
   const currentEngine = ALL_DCE_ENGINES[activeEngineIdx] || ALL_DCE_ENGINES[0];
   const currentSummary = getEngineShortSummary(currentEngine);
+  const binauralConfig = getVisualRhythmBeatConfig(ambientTempoBpm);
 
   return (
     <section className={'cosmic-room ' + (isLight ? 'cosmic-room--light' : '')} aria-label="코스믹 룸">
@@ -509,7 +530,17 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
             <span className="cosmic-room-card-heading"><Activity size={13} /> 비주얼 리듬</span>
             <p><strong>{ambientTempoBpm}</strong><span>BPM</span></p>
           </div>
-
+          <button
+            type="button"
+            aria-pressed={isBinauralPlaying}
+            onClick={handleToggleBinauralBeat}
+            className={`cosmic-room-binaural-btn${isBinauralPlaying ? ' is-active' : ''}`}
+            title={`${isBinauralPlaying ? '바이노럴 비트 끄기' : '바이노럴 비트 켜기'} · ${binauralConfig.waveLabel} 좌우 차이 · 스테레오 헤드폰 권장`}
+          >
+            {isBinauralPlaying ? <Pause size={12} /> : <Play size={12} />}
+            <Headphones size={13} />
+            <span>{isBinauralPlaying ? '비트 정지' : '바이노럴 비트'}</span>
+          </button>
         </div>
 
         {/* BPM 프리셋 칩 (명상 60 / 편안하게 90 / 집중 120) */}

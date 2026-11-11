@@ -29,7 +29,7 @@ import { GlobalScrollToTopOnHeaderTap } from "./components/navigation/GlobalScro
 import { BgMusicPlayer } from "./components/trinity/BgMusicPlayer";
 import { initTTSAudioLifecycle } from "./lib/audio";
 import { shouldUsePageTransitions, shouldMountBgMusicPlayer, isDualPaneLayout, isDuoUnfoldedState } from "./lib/perfMode";
-import { isDuoDividerDoubleTap, mapDuoPaneSide, type DuoDividerTap } from "./lib/duoPaneSwap";
+import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import AuroraBackground from "./components/AuroraBackground";
 import HubHome from "./pages/HubHome";
@@ -293,10 +293,13 @@ function AppContent() {
       document.documentElement.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
       document.body.classList.toggle('duo-unfolded-landscape', state.unfolded && state.orientation === 'landscape');
 
-      // 펼침 → 접힘: 마지막에 만진 쪽이 접힌 화면이 된다.
+      // 펼침 → 접힘: 좌우 순서를 초기화해 다음 재펼침 때 Lucy를 오른쪽에 둔다.
+      // 진행 중이던 경계 더블탭도 취소한다.
       // 좌측이 코스믹 룸이면 이전 채널로 보내지 않고 코스믹 룸을 유지한다.
       // 접힌 채로 가로로 돌리는 것은 이 전환이 아니다. 지금 페이지만 가로로 남긴다.
-      if (wasUnfolded && !isNowUnfolded) {
+      if (shouldResetDuoPaneSwapOnFold(wasUnfolded, isNowUnfolded)) {
+        setDuoPanesSwapped(false);
+        duoDividerTapRef.current = null;
         const cover = resolveFoldCover({
           lastTouched: lastTouchedDuoPaneRef.current,
           currentPath: window.location.pathname || '/',

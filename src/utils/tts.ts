@@ -27,7 +27,7 @@ import { registerAudioDeviceChangeListener } from '../lib/audioDeviceChangeMonit
 
 export interface TTSPlaybackOptions {
   skipCompletionChime?: boolean;
-  isChatMode?: boolean; // 채팅 대화 낭독 시 싱잉볼 완료음 생략 플래그
+  isChatMode?: boolean; // 채팅 대화 낭독 시 완료 새소리 생략 플래그
   isAutoPlay?: boolean;
   isAutoPlayback?: boolean;
   isUserToggleClick?: boolean;
@@ -744,7 +744,7 @@ export const playTTSInChunks = async (
         break;
       }
 
-      // 완독 성공 시 저장된 위치 초기화 및 완료 싱잉볼 종소리 재생 (채팅 대화는 제외)
+      // 완독 성공 시 저장된 위치 초기화 및 완료 새 지저귐 재생 (채팅 대화는 제외)
       if (isLastChunk) {
         lastTTSProgress = null;
         if (!options?.skipCompletionChime && !options?.isChatMode) {
