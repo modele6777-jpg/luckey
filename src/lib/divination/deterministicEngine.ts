@@ -329,6 +329,9 @@ import { calculateKoreanGosanYoonSeonDoFiveFriends, formatKoreanGosanYoonSeonDoF
 import { calculateItalianPicoDellaMirandolaDignity, formatItalianPicoDellaMirandolaDignityPrompt, type ItalianPicoDellaMirandolaDignityResult, ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION } from './italianPicoDellaMirandolaDignityEngine';
 import { calculateAustrianFranzKafkaExistentialTruth, formatAustrianFranzKafkaExistentialTruthPrompt, type AustrianFranzKafkaExistentialTruthResult, AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION } from './austrianFranzKafkaExistentialTruthEngine';
 import { calculateKoreanPoeunJeongMongJuDansimga, formatKoreanPoeunJeongMongJuDansimgaPrompt, type KoreanPoeunJeongMongJuDansimgaResult, KOREAN_POEUN_JEONG_MONG_JU_DANSIMGA_VERSION } from './koreanPoeunJeongMongJuDansimgaEngine';
+import { calculateFrenchSimoneDeBeauvoirAmbiguityFreedom, formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt, type FrenchSimoneDeBeauvoirAmbiguityFreedomResult, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION } from './frenchSimoneDeBeauvoirAmbiguityFreedomEngine';
+import { calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology, formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt, type FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult, FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION } from './frenchMauriceMerleauPontyEmbodiedPhenomenologyEngine';
+import { calculateKoreanSamyeongdaesaSongunYujeong, formatKoreanSamyeongdaesaSongunYujeongPrompt, type KoreanSamyeongdaesaSongunYujeongResult, KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION } from './koreanSamyeongdaesaSongunYujeongEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -678,6 +681,9 @@ export interface DeterministicEngineReport {
   italianPicoDellaMirandolaDignityResult?: ItalianPicoDellaMirandolaDignityResult | null;
   austrianFranzKafkaExistentialTruthResult?: AustrianFranzKafkaExistentialTruthResult | null;
   koreanPoeunJeongMongJuDansimgaResult?: KoreanPoeunJeongMongJuDansimgaResult | null;
+  frenchSimoneDeBeauvoirAmbiguityFreedomResult?: FrenchSimoneDeBeauvoirAmbiguityFreedomResult | null;
+  frenchMauriceMerleauPontyEmbodiedPhenomenologyResult?: FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult | null;
+  koreanSamyeongdaesaSongunYujeongResult?: KoreanSamyeongdaesaSongunYujeongResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3962,6 +3968,33 @@ try {
     }
   })()));
 
+  // 300. 프랑스 시몬 드 보부아르 《애매성의 윤리학·제2의 성》 주체적 자기창조 & 애매성의 윤리·자유의 상호 연대 지혜 엔진
+  const frenchSimoneDeBeauvoirAmbiguityFreedomResult = calculateSupplement('frenchSimoneDeBeauvoirAmbiguityFreedomResult', () => ((() => {
+    try {
+      return calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 301. 프랑스 모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체(Corps-sujet) & 원초적 지각·살(Chair)의 상호교감 지혜 엔진
+  const frenchMauriceMerleauPontyEmbodiedPhenomenologyResult = calculateSupplement('frenchMauriceMerleauPontyEmbodiedPhenomenologyResult', () => ((() => {
+    try {
+      return calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 302. 대한민국 사명대사 송운 유정 《분충서난록·사명당대사집》 살신성인 호국대의 & 대일담판 3,500포로 쇄환 자비구제·출세간 초연 지혜 엔진
+  const koreanSamyeongdaesaSongunYujeongResult = calculateSupplement('koreanSamyeongdaesaSongunYujeongResult', () => ((() => {
+    try {
+      return calculateKoreanSamyeongdaesaSongunYujeong(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4297,6 +4330,9 @@ try {
     italianPicoDellaMirandolaDignityResult,
     austrianFranzKafkaExistentialTruthResult,
     koreanPoeunJeongMongJuDansimgaResult,
+    frenchSimoneDeBeauvoirAmbiguityFreedomResult,
+    frenchMauriceMerleauPontyEmbodiedPhenomenologyResult,
+    koreanSamyeongdaesaSongunYujeongResult,
     tools: toolsMap,
   };
 }
@@ -4623,6 +4659,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'italianPicoDellaMirandolaDignity', nameKo: '조반니 피코 델라 미란돌라 인간의존엄성에관한연설 자유의지 자기형성적주체성 무한한잠재력 보편적지혜융합 내면정화평정', icon: '🏛️', category: 'deep_master', summary: '피코 델라 미란돌라의 인간 존엄성 사상으로 고정된 한계를 넘어 자유의지로 스스로를 조각하는 자기형성 주체성, 무한한 잠재력과 보편적 지혜의 조화를 체득합니다.' },
   { key: 'austrianFranzKafkaExistentialTruth', nameKo: '프란츠 카프카 변신 성 실존적정직성 부조리직시 소외속고독한존엄 얼어붙은바다를깨는도끼 끈질긴진실추구', icon: '📜', category: 'deep_master', summary: '프란츠 카프카의 실존 문학 사상으로 자기기만을 거부하는 실존적 정직성, 얼어붙은 바다를 깨는 도끼와 같은 통찰, 소외 속에서도 잃지 않는 고독한 영혼의 존엄을 체득합니다.' },
   { key: 'koreanPoeunJeongMongJuDansimga', nameKo: '포은 정몽주 단심가 포은집 일편단심 도의적신의 난세극복경세외교 대의명분 동방이학지조 불굴선비기개', icon: '🩸', category: 'deep_master', summary: '포은 정몽주 선생의 단심가 사상으로 백 번 고쳐 죽어도 변치 않는 일편단심(一片丹心)의 도의적 신의와 지조, 적진 앞에서도 당당한 기품의 경세외교 지략을 체득합니다.' },
+  { key: 'frenchSimoneDeBeauvoirAmbiguityFreedom', nameKo: '시몬 드 보부아르 애매성의윤리학 제2의성 주체적자기창조 상호자유연대 상황돌파실천 실존적용기회복탄력성', icon: '🕊️', category: 'deep_master', summary: '시몬 드 보부아르의 실존주의 윤리 사상으로 기성 규범을 넘어서는 주체적 자기창조, 삶의 애매성을 품는 정직한 성숙, 타인의 자유와 함께 해방되는 연대의 지혜를 체득합니다.' },
+  { key: 'frenchMauriceMerleauPontyEmbodiedPhenomenology', nameKo: '모리스 메를로퐁티 지각의현상학 눈과마음 신체주체 원초적지각 살의상호교감 예술적감각안목 현상학적접지', icon: '👁️', category: 'deep_master', summary: '모리스 메를로퐁티의 신체현상학 사상으로 머릿속 관념을 벗어난 신체-주체(Corps-sujet)의 살아있는 감각, 세계와 하나로 얽히는 살(Chair)의 상호교감과 현상학적 대지 접지를 체득합니다.' },
+  { key: 'koreanSamyeongdaesaSongunYujeong', nameKo: '사명대사 송운 유정 분충서난록 사명집 살신성인호국대의 대일담판3500포로쇄환 생사초월자비희사 경세구민보살행 출세간무소유', icon: '⚔️', category: 'deep_master', summary: '사명대사 송운 유정 선생의 호국불교 사상으로 살신성인의 구국 헌신, 적진 속에서 3,500여 피랍 동포를 온전히 구출해 낸 위대한 외교 담판과 생사초월 자비구제, 초연한 무소유를 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4685,6 +4724,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'frenchSimoneDeBeauvoirAmbiguityFreedom',
+    'koreanSamyeongdaesaSongunYujeong',
     'italianPicoDellaMirandolaDignity',
     'koreanPoeunJeongMongJuDansimga',
     'britishThomasMoreUtopia',
@@ -4859,6 +4900,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'frenchSimoneDeBeauvoirAmbiguityFreedom',
+    'frenchMauriceMerleauPontyEmbodiedPhenomenology',
     'koreanPoeunJeongMongJuDansimga',
     'dutchDesideriusErasmusPraiseOfFolly',
     'koreanGosanYoonSeonDoFiveFriends',
@@ -5028,6 +5071,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'frenchMauriceMerleauPontyEmbodiedPhenomenology',
+    'koreanSamyeongdaesaSongunYujeong',
     'koreanGosanYoonSeonDoFiveFriends',
     'britishThomasMoreUtopia',
     'koreanHeoJunDonguiBogamYangsaeng',
@@ -5062,6 +5107,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'frenchMauriceMerleauPontyEmbodiedPhenomenology',
+    'frenchSimoneDeBeauvoirAmbiguityFreedom',
     'italianPicoDellaMirandolaDignity',
     'austrianFranzKafkaExistentialTruth',
     'frenchGillesDeleuzeRhizomeBecoming',
@@ -5107,6 +5154,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'frenchSimoneDeBeauvoirAmbiguityFreedom',
+    'frenchMauriceMerleauPontyEmbodiedPhenomenology',
+    'koreanSamyeongdaesaSongunYujeong',
     'italianPicoDellaMirandolaDignity',
     'austrianFranzKafkaExistentialTruth',
     'koreanPoeunJeongMongJuDansimga',
