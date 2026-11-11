@@ -8,7 +8,6 @@ interface DailyOracleResult {
   luckyColor: string;
   remedy: string;
   symbol: string;
-  frequency: string;
   spiritualEnergy?: string;
   blessingMessage?: string;
   focusPlaylist?: string;
@@ -27,8 +26,6 @@ export interface TarotDetailEntry {
   luckyColor: string;
   luckyNum: string;
   symbolWord: string;
-  frequency: string;
-  playlist: string;
 }
 
 export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
@@ -43,8 +40,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "순백의 화이트 (Pure White)",
     luckyNum: "0",
     symbolWord: "새로운 시작과 순수한 도약",
-    frequency: "963Hz 송과체 정화 주파수",
-    playlist: "963Hz Pure Consciousness",
   },
   major_1: {
     element: "공기/에테르 (Ether)",
@@ -56,8 +51,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "진홍빛 루비 레드 (Ruby Red)",
     luckyNum: "1",
     symbolWord: "창조의 지팡이와 무한대(∞)",
-    frequency: "528Hz 기적과 변형 주파수",
-    playlist: "528Hz Transformation & Miracles",
   },
   major_2: {
     element: "물 (Water)",
@@ -69,8 +62,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "깊은 인디고 블루 (Midnight Indigo)",
     luckyNum: "2",
     symbolWord: "지혜의 석류와 보아스·야긴 기둥",
-    frequency: "852Hz 직관 회복 주파수",
-    playlist: "852Hz Intuition & Inner Vision",
   },
   major_3: {
     element: "대지 (Earth)",
@@ -82,8 +73,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "에메랄드 그린 & 로즈 핑크",
     luckyNum: "3",
     symbolWord: "풍요의 밀이삭과 비너스의 별",
-    frequency: "639Hz 조화와 연결 주파수",
-    playlist: "639Hz Heart Harmony",
   },
   major_4: {
     element: "불 (Fire)",
@@ -95,8 +84,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "황실의 버건디 레드 (Royal Burgundy)",
     luckyNum: "4",
     symbolWord: "단단한 입방체 옥좌와 권장의 보주",
-    frequency: "417Hz 변화 촉진과 질서 정립",
-    playlist: "417Hz Grounding & Structure",
   },
   major_5: {
     element: "대지 (Earth)",
@@ -108,8 +95,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "고결한 사프란 골드 (Saffron Gold)",
     luckyNum: "5",
     symbolWord: "삼중관과 천국의 열쇠",
-    frequency: "741Hz 문제 해결과 명료한 표현",
-    playlist: "741Hz Wisdom & Clarity",
   },
   major_6: {
     element: "공기 (Air)",
@@ -121,8 +106,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "파스텔 코랄 & 피치 핑크",
     luckyNum: "6",
     symbolWord: "대천사 라파엘의 축복과 생명나무",
-    frequency: "639Hz 관계 치유와 사랑의 공명",
-    playlist: "639Hz Deep Soul Connection",
   },
   major_7: {
     element: "물/불 (Water/Fire)",
@@ -134,8 +117,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "코발트 블루 & 실버 아머",
     luckyNum: "7",
     symbolWord: "별자리 차양막과 승리의 전차",
-    frequency: "528Hz 의지력 극대화 주파수",
-    playlist: "528Hz Unstoppable Drive",
   },
   major_8: {
     element: "불 (Fire)",
@@ -147,8 +128,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "황금빛 엠버 옐로우 (Warm Amber)",
     luckyNum: "8",
     symbolWord: "장미 덩굴과 무한대(∞)의 면류관",
-    frequency: "528Hz 마음의 평화와 내면 치유",
-    playlist: "528Hz Inner Strength Flow",
   },
   major_9: {
     element: "대지 (Earth)",
@@ -160,8 +139,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "안개의 애쉬 그레이 & 등불의 웜골드",
     luckyNum: "9",
     symbolWord: "지혜의 지팡이와 진리의 육각별",
-    frequency: "432Hz 우주 자연 동조 주파수",
-    playlist: "432Hz Deep Meditation",
   },
   major_10: {
     element: "불/대지 (Fire/Earth)",
@@ -173,8 +150,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "광채의 바이올렛 & 일렉트릭 골드",
     luckyNum: "10",
     symbolWord: "스핑크스와 아누비스의 수레바퀴",
-    frequency: "528Hz 운명 개척과 파동 정렬",
-    playlist: "528Hz Quantum Leap & Luck",
   },
   major_11: {
     element: "공기 (Air)",
@@ -186,8 +161,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "청명한 로열 스카이 블루 (True Blue)",
     luckyNum: "11",
     symbolWord: "균형의 황금 천칭과 양날의 검",
-    frequency: "741Hz 진실과 정의의 주파수",
-    playlist: "741Hz Truth & Alignment",
   },
   major_12: {
     element: "물 (Water)",
@@ -199,8 +172,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "신비로운 아쿠아 마린 & 세룰리안",
     luckyNum: "12",
     symbolWord: "후광이 깃든 거꾸로 선 나무",
-    frequency: "396Hz 죄책감과 두려움 해방",
-    playlist: "396Hz Letting Go & Renewal",
   },
   major_13: {
     element: "물 (Water)",
@@ -212,8 +183,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "흑요석 블랙 & 새벽의 화이트 골드",
     luckyNum: "13",
     symbolWord: "신비의 백장미 깃발과 떠오르는 태양",
-    frequency: "396Hz 정화와 근원적 탈피",
-    playlist: "396Hz Liberation & Rebirth",
   },
   major_14: {
     element: "불/물 (Fire/Water)",
@@ -225,8 +194,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "청량한 오팔 민트 & 라벤더",
     luckyNum: "14",
     symbolWord: "두 개의 성배와 무지개 날개",
-    frequency: "528Hz 완전한 심신 조화 주파수",
-    playlist: "528Hz Harmony & Alchemy",
   },
   major_15: {
     element: "대지 (Earth)",
@@ -238,8 +205,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "딥 차콜 블랙 & 핏빛 스칼렛",
     luckyNum: "15",
     symbolWord: "뒤집힌 오망성과 느슨한 목사슬",
-    frequency: "417Hz 부정적 카르마 정화",
-    playlist: "417Hz Shadow Release",
   },
   major_16: {
     element: "불 (Fire)",
@@ -251,8 +216,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "번개의 일렉트릭 옐로우 & 번트 오렌지",
     luckyNum: "16",
     symbolWord: "떨어지는 왕관과 천상의 번개",
-    frequency: "417Hz 구속 타파와 의식 각성",
-    playlist: "417Hz Breaking Chains",
   },
   major_17: {
     element: "공기/물 (Air/Water)",
@@ -264,8 +227,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "청아한 스타라이트 실버 & 시안 블루",
     luckyNum: "17",
     symbolWord: "여덟 갈래 북극성과 생명의 샘물",
-    frequency: "528Hz 영혼 치유와 희망의 파동",
-    playlist: "528Hz Starlight Healing",
   },
   major_18: {
     element: "물 (Water)",
@@ -277,8 +238,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "달빛의 펄 실버 & 미드나잇 블루",
     luckyNum: "18",
     symbolWord: "달을 향해 짖는 늑대와 가재",
-    frequency: "852Hz 환상 타파와 직관 명료화",
-    playlist: "852Hz Dreamscape & Intuition",
   },
   major_19: {
     element: "불 (Fire)",
@@ -290,8 +249,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "눈부신 썬 플레임 옐로우 & 골드",
     luckyNum: "19",
     symbolWord: "백마를 탄 아이와 활짝 핀 해바라기",
-    frequency: "528Hz 활력 충전과 극상의 행운",
-    playlist: "528Hz Solar Radiance",
   },
   major_20: {
     element: "불/물 (Fire/Water)",
@@ -303,8 +260,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "천상의 에테르 화이트 & 골든 브라스",
     luckyNum: "20",
     symbolWord: "대천사 가브리엘의 황금 나팔",
-    frequency: "963Hz 영적 부활과 주파수 도약",
-    playlist: "963Hz Awakening & Rebirth",
   },
   major_21: {
     element: "대지/에테르 (Earth/Ether)",
@@ -316,8 +271,6 @@ export const TAROT_DETAILS: Record<string, TarotDetailEntry> = {
     luckyColor: "우주의 코스믹 인디고 & 무지개 오팔",
     luckyNum: "21",
     symbolWord: "월계수 화환과 네 수호자의 합일",
-    frequency: "528Hz 완전한 성취와 우주 공명",
-    playlist: "528Hz Cosmic Wholeness",
   },
 };
 
@@ -343,8 +296,6 @@ export function getSuitDetails(card: any): TarotDetailEntry {
       luckyColor: "타오르는 스칼렛 오렌지",
       luckyNum: "3",
       symbolWord: "싹이 돋아난 생명의 지팡이",
-      frequency: "528Hz 활력과 열정의 파동",
-      playlist: "528Hz Passion & Vitality",
     };
   }
   if (card.type === "cups") {
@@ -358,8 +309,6 @@ export function getSuitDetails(card: any): TarotDetailEntry {
       luckyColor: "투명한 아쿠아 마린 블루",
       luckyNum: "2",
       symbolWord: "넘쳐흐르는 황금 성배",
-      frequency: "639Hz 사랑과 마음의 치유",
-      playlist: "639Hz Heart Resonance",
     };
   }
   if (card.type === "swords") {
@@ -373,8 +322,6 @@ export function getSuitDetails(card: any): TarotDetailEntry {
       luckyColor: "차가운 다이아몬드 실버",
       luckyNum: "1",
       symbolWord: "구름을 뚫고 솟은 지혜의 검",
-      frequency: "741Hz 직관과 명료한 사고",
-      playlist: "741Hz Pure Intellect",
     };
   }
   if (card.type === "pentacles") {
@@ -388,8 +335,6 @@ export function getSuitDetails(card: any): TarotDetailEntry {
       luckyColor: "풍요로운 에메랄드 골드",
       luckyNum: "8",
       symbolWord: "대지의 결실을 맺는 황금 코인",
-      frequency: "432Hz 현실 접지와 풍요 주파수",
-      playlist: "432Hz Earth Abundance",
     };
   }
 
@@ -403,8 +348,6 @@ export function getSuitDetails(card: any): TarotDetailEntry {
     luckyColor: "황금빛 골드",
     luckyNum: "7",
     symbolWord: "우주의 조화",
-    frequency: "528Hz",
-    playlist: "528Hz Solfeggio Resonance",
   };
 }
 
@@ -423,8 +366,6 @@ export function getTarotCardDetails(card: any): TarotDetailEntry {
       luckyColor: "황금빛 골드",
       luckyNum: "7",
       symbolWord: "우주의 조화",
-      frequency: "528Hz",
-      playlist: "528Hz Solfeggio Resonance",
     };
   }
   const id = card.id || "";
@@ -629,7 +570,7 @@ ${isReversed ? `${revData?.advice || '지금은 억지로 결과를 서두르기
 
 ### 🌿 4. 운의 흐름을 바꿀 마스터의 실천 처방 (개운 가이드)
 - **오늘의 핵심 실천**: ${luckyAction}
-- **추천 사운드 & 공명 주파수**: **${details.frequency}**의 공명 주파수를 의식하며, 가슴 한가운데 손을 얹고 깊은 복식호흡 3회를 진행해 보세요.
+- **마음 정돈**: 가슴 한가운데 손을 얹고 깊은 복식호흡 3회를 진행해 보세요.
 
 ### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언
 > _"${getCardSoulBlessing(card)}"_
@@ -642,10 +583,9 @@ ${isReversed ? `${revData?.advice || '지금은 억지로 결과를 서두르기
     luckyColor: details.luckyColor,
     remedy: `오늘의 개운 실천: ${luckyAction}. [${cardName}] 카드의 조화로운 기운을 마음에 품고 차분하게 나아가기`,
     symbol: details.symbolWord,
-    frequency: details.frequency,
     spiritualEnergy: `[${cardName}] 카드가 오늘 당신의 마음에 든든한 중심과 긍정 기운을 불어넣습니다.`,
     blessingMessage: `오늘 하루 당신의 모든 발걸음 위에 [${cardName}]의 밝은 행운이 함께하길 축복합니다.`,
-    focusPlaylist: details.playlist,
+    focusPlaylist: "Calm Ambient Instrumental",
   };
 }
 
@@ -660,8 +600,6 @@ interface SedonaCardProfile {
   dailyPractice: string;
   remedyAction: string;
   symbol: string;
-  frequency: string;
-  playlist: string;
   luckyNum: string;
   luckyColor: string;
 }
@@ -675,8 +613,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "오늘 스스로의 작은 실수나 불완전함을 마주할 때마다 '이것 또한 순수한 과정이다'라고 인정하며 부드럽게 넘어가기",
     remedyAction: "자책감이 올라올 때마다 백색 빛으로 가슴을 정화하며 10초간 완벽주의 내려놓기",
     symbol: "정화의 백수정 (White Quartz)",
-    frequency: "528Hz 정화와 근원적 순수 주파수",
-    playlist: "528Hz Pure White Cleansing",
     luckyNum: "1",
     luckyColor: "순수한 스노우 화이트 & 펄"
   },
@@ -688,8 +624,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "타인의 부탁에 앞서 내 호흡과 신체 긴장을 먼저 살피고, 어깨와 명치의 힘을 툭 빼는 1분 휴식 갖기",
     remedyAction: "무리한 일정 속에서 3번 깊게 심호흡하며 '나는 지금 온전히 쉴 자격이 있다'고 허락하기",
     symbol: "생명의 에메랄드 리프 (Emerald Leaf)",
-    frequency: "528Hz 세포 재생과 심신 조화 주파수",
-    playlist: "528Hz Forest Deep Healing",
     luckyNum: "4",
     luckyColor: "싱그러운 포레스트 에메랄드 그린"
   },
@@ -701,8 +635,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "복잡한 고민이 시작될 때 '생각은 내가 아니다'를 선언하고, 미간(제3의 눈)에 의식을 두며 머리의 열 식히기",
     remedyAction: "논리적 분석을 멈추고 30초간 눈을 감은 채 심장의 고동 소리에만 집중하기",
     symbol: "직관의 심해 등불 (Indigo Lantern)",
-    frequency: "741Hz 직관 개안과 의식 명료화",
-    playlist: "741Hz Deep Indigo Insight",
     luckyNum: "7",
     luckyColor: "심해의 미드나잇 인디고 블루"
   },
@@ -714,8 +646,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "남과의 비교가 올라올 때마다 '나는 이미 충분하다'를 가슴에 새기고 지금 손에 쥔 것들에 감사하기",
     remedyAction: "타인의 시선을 의식하지 않고 오늘 내가 해낸 작은 결실 하나를 스스로 온전히 축하해주기",
     symbol: "풍요의 황금 태양관 (Golden Sun Crown)",
-    frequency: "528Hz 풍요와 자존감 회복 주파수",
-    playlist: "528Hz Golden Solar Abundance",
     luckyNum: "8",
     luckyColor: "찬란한 앰버 골드 & 썬샤인"
   },
@@ -727,8 +657,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "울컥하는 화나 조급함이 올라올 때 즉각 말을 멈추고 10초간 찬물을 마시거나 가볍게 손발을 털어내기",
     remedyAction: "분노의 감정을 공격이 아닌 긍정적인 신체 스트레칭 에너지로 전환하여 방출하기",
     symbol: "용기의 루비 불꽃 (Ruby Flame)",
-    frequency: "417Hz 부정적 감정 해체와 정화",
-    playlist: "417Hz Crimson Fire Transmutation",
     luckyNum: "9",
     luckyColor: "강렬한 루비 크림슨 & 버건디"
   },
@@ -740,8 +668,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "기쁜 척 억지로 반응하지 않고, 지금 느껴지는 솔직한 피로감이나 담담함을 나 자신에게 솔직히 인정해주기",
     remedyAction: "가식을 내려놓고 편안한 호흡과 함께 자연스러운 내 표정을 회복하기",
     symbol: "명랑의 황금 프리즘 (Solar Prism)",
-    frequency: "528Hz 활력 충전과 감정 자유 주파수",
-    playlist: "528Hz Solar Joy & Warmth",
     luckyNum: "3",
     luckyColor: "산뜻한 레몬 옐로우 & 시트린"
   },
@@ -753,8 +679,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "막연한 망상에 빠지기보다 손으로 만질 수 있는 주변의 물건을 정리하거나 현실의 작은 과제 하나를 차분히 매듭짓기",
     remedyAction: "발바닥 감각에 집중하며 영적 이상을 현실의 실천적 행동으로 접지(Grounding)하기",
     symbol: "신비의 아메시스트 (Amethyst Orb)",
-    frequency: "963Hz 고차원 영성 통합 주파수",
-    playlist: "963Hz Cosmic Violet Awakening",
     luckyNum: "7",
     luckyColor: "고귀한 로열 바이올렛 & 라벤더"
   },
@@ -766,8 +690,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "남의 시선보다 내 마음의 편안함을 최우선에 두고, 내키지 않는 요청에는 부드럽고 단호하게 선 긋기",
     remedyAction: "가슴 한가운데 손을 얹고 '나는 나를 있는 그대로 깊이 사랑하고 존중한다'고 속삭여주기",
     symbol: "무조건적 사랑의 로즈쿼츠 (Rose Quartz Heart)",
-    frequency: "639Hz 관계 조화와 자비의 주파수",
-    playlist: "639Hz Heart Harmony & Compassion",
     luckyNum: "6",
     luckyColor: "포근한 파스텔 로즈 핑크"
   },
@@ -779,8 +701,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "목과 턱의 긴장을 풀고 깊은 한숨과 함께 억눌린 음성을 작게 내뱉으며 목 차크라를 활짝 열어주기",
     remedyAction: "솔직한 내 생각이나 감정을 일기장에 여과 없이 단숨에 적어내려가며 표현의 숨통 틔우기",
     symbol: "자유로운 청록의 깃털 (Turquoise Feather)",
-    frequency: "741Hz 표현의 해방과 목 차크라 정렬",
-    playlist: "741Hz Ocean Flow & Free Expression",
     luckyNum: "5",
     luckyColor: "청량한 오션 터콰이즈 & 민트"
   },
@@ -792,8 +712,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "감정이 소용돌이칠 때 억지로 멈추려 하지 말고, 밤하늘에 흘러가는 구름을 보듯 한 걸음 물러서서 지켜보기",
     remedyAction: "은빛 달빛을 상상하며 가슴속 차가운 서러움을 따뜻한 온기로 감싸 안아주기",
     symbol: "치유의 은빛 초승달 (Silver Crescent)",
-    frequency: "852Hz 영적 직관과 감정 정화 주파수",
-    playlist: "852Hz Moonlight Serenade & Peace",
     luckyNum: "2",
     luckyColor: "영롱한 펄 실버 & 문라이트"
   },
@@ -805,8 +723,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "양발을 바닥에 단단히 딛고 선 채 대지로부터 차오르는 든든한 안정감을 온몸으로 느껴보기",
     remedyAction: "돈이나 미래 걱정이 올라올 때마다 '대지가 나를 지탱하고 있다'며 흙의 기운으로 접지하기",
     symbol: "안식의 앰버 스톤 (Amber Grounding Gem)",
-    frequency: "396Hz 두려움 해방과 루트 차크라 접지",
-    playlist: "396Hz Root Earth Grounding",
     luckyNum: "4",
     luckyColor: "묵직한 웜 앰버 & 어스 브라운"
   },
@@ -818,8 +734,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "사소한 즐거움(맛있는 음식, 음악 감상)을 마주했을 때 어떠한 자책 없이 온전히 음미하기",
     remedyAction: "나 자신에게 '너는 행복을 누릴 자격이 충분하다'고 다정하게 축복 건네기",
     symbol: "축제의 산호 가지 (Coral Branch)",
-    frequency: "528Hz 기쁨의 회복과 친밀감 주파수",
-    playlist: "528Hz Living Coral Celebration",
     luckyNum: "6",
     luckyColor: "화사한 리빙 코랄 & 살구빛"
   },
@@ -831,8 +745,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "누군가의 행동이 마음에 들지 않을 때 '이 또한 우주의 한 조각이다'라며 판단의 스위치를 끄기",
     remedyAction: "다양성을 포용하는 무지개 빛을 가슴에 품고 모든 갈등의 대립각을 부드럽게 지우기",
     symbol: "통합의 무지개 스펙트럼 (Rainbow Prism)",
-    frequency: "528Hz 전체성 회복과 다차원 통합",
-    playlist: "528Hz Rainbow Spectrum Unity",
     luckyNum: "7",
     luckyColor: "신비로운 레인보우 홀로그램"
   },
@@ -844,8 +756,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "타인을 경계하느라 굳어진 턱과 미간의 힘을 풀고, 내면의 고요한 성채 속에서 깊은 안전감을 만끽하기",
     remedyAction: "가상의 방어벽을 걷어내고 내 본연의 맑은 빛으로 공간을 스스로 수호하기",
     symbol: "수호의 흑요석 방패 (Obsidian Shield)",
-    frequency: "417Hz 부정적 에너지 반사와 카르마 차단",
-    playlist: "417Hz Obsidian Impenetrable Guard",
     luckyNum: "1",
     luckyColor: "단단한 옵시디언 블랙 & 차콜"
   },
@@ -857,8 +767,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "결과를 재촉하고 싶은 충동이 들 때마다 '가장 완벽한 때에 순리대로 풀린다'를 3번 되뇌기",
     remedyAction: "사파이어의 깊은 파란빛을 들이마시며 가슴속 의심의 파도를 잠재우기",
     symbol: "신뢰의 사파이어 젬 (Sapphire Gem)",
-    frequency: "741Hz 진실한 평화와 의식의 안정",
-    playlist: "741Hz Deep Sapphire Ocean Serenity",
     luckyNum: "8",
     luckyColor: "고결한 로열 사파이어 블루"
   },
@@ -870,8 +778,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "스스로가 작게 느껴질 때마다 상처를 견뎌낸 가슴을 토닥이며 '너는 있는 그대로 참 곱고 귀하다'고 위로해주기",
     remedyAction: "부족한 나를 탓하지 않고 영롱한 진주의 빛으로 내면의 결함을 보석으로 승화하기",
     symbol: "순수의 영롱한 진주 (Lustrous Pearl)",
-    frequency: "528Hz 내면의 미와 영혼 치유 주파수",
-    playlist: "528Hz Pearl Purity & Rebirth",
     luckyNum: "2",
     luckyColor: "우아한 오팔 펄 화이트 & 크림"
   },
@@ -883,8 +789,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "따뜻한 물을 천천히 마시며 의식을 머리에서 배꼽(단전)과 발바닥으로 부드럽게 끌어내리기",
     remedyAction: "신발을 벗고 발바닥을 문지르며 과열된 머리의 열기를 대지로 시원하게 방출하기",
     symbol: "연결의 구리 코일 (Copper Conductor)",
-    frequency: "432Hz 신체 신경 정렬과 접지 주파수",
-    playlist: "432Hz Copper Grounding Flow",
     luckyNum: "3",
     luckyColor: "붉은빛의 샤이니 코퍼 메탈릭"
   },
@@ -896,8 +800,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "늘 하던 익숙한 습관이나 생각의 틀을 오늘 의도적으로 한 가지 바꾸어보며 뇌를 깨우기",
     remedyAction: "과거의 나에 대한 미련을 접고 백금의 빛으로 새로운 의식 차원으로 도약하기",
     symbol: "도약의 백금 날개 (Platinum Wings)",
-    frequency: "963Hz 차원 상승과 의식 도약 주파수",
-    playlist: "963Hz Platinum Quantum Evolution",
     luckyNum: "9",
     luckyColor: "빛나는 플래티넘 실버 & 메탈릭"
   },
@@ -909,8 +811,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "힘들다는 감정을 솔직히 인정하고, 주변 사람의 작은 배려나 도움을 기꺼이 받아들이기",
     remedyAction: "어깨를 무겁게 짓누르던 갑옷을 내려놓고 청동 방패의 든든한 품에 내 짐을 맡기기",
     symbol: "불굴의 청동 방패 (Bronze Aegis)",
-    frequency: "432Hz 내면의 뚝심과 회복탄력성",
-    playlist: "432Hz Bronze Pillar of Strength",
     luckyNum: "5",
     luckyColor: "중후한 앤티크 브론즈 & 코퍼"
   },
@@ -922,8 +822,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "몸의 특정 부위에 긴장이 느껴질 때 비취의 시원한 옥빛을 떠올리며 그 부위를 이완하기",
     remedyAction: "온몸의 세포에 옥빛 생명수를 붓듯 따뜻한 감사와 온기를 불어넣기",
     symbol: "조화와 치유의 비취석 (Jade Amulet)",
-    frequency: "528Hz 완전한 생명 균형과 건강 주파수",
-    playlist: "528Hz Imperial Jade Harmony",
     luckyNum: "8",
     luckyColor: "청아한 임페리얼 제이드 그린"
   },
@@ -935,8 +833,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "우선순위가 아닌 불필요한 생각들을 종이에 적어 구겨 버리고, 오직 지금 해야 할 딱 한 가지에만 몰입하기",
     remedyAction: "잡념의 안개를 걷어내고 수정 구슬처럼 투명한 명료함으로 오늘의 핵심에 집중하기",
     symbol: "투명한 진리의 수정구 (Crystal Sphere)",
-    frequency: "852Hz 뇌파 동조와 직관적 명료성",
-    playlist: "852Hz Pure Crystal Clarity",
     luckyNum: "1",
     luckyColor: "투명한 크리스탈 클리어 & 아이스 블루"
   },
@@ -948,8 +844,6 @@ const SEDONA_CARD_PROFILES: Record<string, SedonaCardProfile> = {
     dailyPractice: "밤하늘이나 먼 지평선을 바라보며 가슴을 활짝 열고 우주의 무한한 품에 나를 내맡기기",
     remedyAction: "왜소한 나를 내려놓고 은하계의 품 안에서 광대무변한 참나의 자유를 호흡하기",
     symbol: "무한의 나선 성운 (Cosmic Nebula Vortex)",
-    frequency: "963Hz 우주 의식과의 완전한 합일",
-    playlist: "963Hz Cosmic Nebula Infinite Expansion",
     luckyNum: "0",
     luckyColor: "심오한 네뷸라 퍼플 & 코스믹 블랙"
   }
@@ -977,8 +871,6 @@ export function buildSpecificSedonaDailyOracle(
     dailyPractice: `오늘 하루 [${cardName}]의 빛을 가슴에 품고 호흡과 함께 저항을 10초간 흘려보내기`,
     remedyAction: `[${cardName}] 카드의 테마(${keywords})를 상기하며, 호흡을 내쉴 때마다 가슴속 긴장과 저항을 온전히 흘려보내기`,
     symbol: `${cardName}의 정화 크리스탈`,
-    frequency: "528Hz 솔페지오 사랑과 치유의 주파수",
-    playlist: "528Hz Cellular Healing & Release",
     luckyNum: "7",
     luckyColor: `${cardName}의 고유 오라 빛깔`
   };
@@ -1014,10 +906,8 @@ ${profile.dailyPractice}
     luckyColor: profile.luckyColor,
     remedy: profile.remedyAction,
     symbol: profile.symbol,
-    frequency: profile.frequency,
-    spiritualEnergy: `[${cardName}] 카드의 치유 파동이 가슴 차크라와 공명하여 에고의 저항(${keywords})을 녹여내고 본연의 평온을 회복시킵니다.`,
+    spiritualEnergy: `[${cardName}] 카드의 상징을 마음에 담아 에고의 저항(${keywords})을 놓아주고 본연의 평온을 회복해 보세요.`,
     blessingMessage: `모든 집착과 긴장이 스러진 고요한 자리에서 [${cardName}]의 청정한 빛이 당신의 오늘 하루를 온전히 축복합니다.`,
-    focusPlaylist: profile.playlist,
+    focusPlaylist: "Calm Ambient Instrumental",
   };
 }
-

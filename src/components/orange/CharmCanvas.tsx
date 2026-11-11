@@ -1037,7 +1037,7 @@ export const CharmCanvas: React.FC<CharmCanvasProps> = ({ onSuggestText, onChang
             {/* User credentials analysis display (Saju HUD) */}
             <div className="bg-zinc-900/40 border border-white/5 rounded-2xl p-4 sm:p-5 space-y-4 font-sans min-w-0">
               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 block">
-                나의 오행 주파수 감도 (My Sa-ju Elements Balance)
+                나의 오행 균형 감도 (My Sa-ju Elements Balance)
               </span>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">

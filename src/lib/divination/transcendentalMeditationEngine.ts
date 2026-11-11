@@ -1,12 +1,12 @@
 /**
  * =========================================================================
- * LUCKEY 초월 명상 & 브레인웨이브 동조 엔진 (Transcendental Meditation Engine)
+ * LUCKEY 초월 명상 & 마음 안정 엔진 (Transcendental Meditation Engine)
  * =========================================================================
  * 
  * [엔진 개요]
- * 사주명리의 일간(日干) 오행 기운 및 음양 편중도와 뇌과학적 브레인웨이브
- * (알파·세타·델타·감마파)를 정밀 결합하여, 사용자의 자율신경계 과부하를
- * 즉각 해소하고 초월적 평정심(Equanimity)을 회복하는 개인화 명상 리추얼을 도출합니다.
+ * 사주명리의 일간(日干) 오행 기운 및 음양 편중도를 결합하여, 사용자의
+ * 긴장을 낮추고 초월적 평정심(Equanimity)을 회복하는 개인화 명상 리추얼을
+ * 도출합니다.
  * 주역 곤위지(坤爲地, 수용적 침묵)와 건위천(乾爲天, 창조적 직관)의 기운을
  * 24시간 중 최적의 황금 시진(Golden Time)에 동조시킵니다.
  */
@@ -26,12 +26,11 @@ export type MeditationStyle =
   | '소리 만트라 & 하트 공명 (Mantra Sound)'
   | '불꽃 트라타카 시각화 (Trataka Focus)';
 
-export type BrainwaveFrequency = '알파파 (8-12Hz: 평정·몰입)' | '세타파 (4-7Hz: 심층 영감·치유)' | '델타파 (1-3Hz: 완전 리셋·재생)' | '감마파 (30-50Hz: 초월적 각성)';
+export type MeditationIntention = '평정·몰입' | '연결·영감' | '안정·그라운딩' | '명료·관조' | '고요·내면 관찰';
 
 export interface MeditationPrescription {
   primaryStyle: MeditationStyle;
-  targetBrainwave: BrainwaveFrequency;
-  solfeggioHz: number; // 432Hz, 528Hz, 639Hz, 741Hz, 852Hz, 963Hz
+  intendedMindState: MeditationIntention;
   optimalTimeWindow: string; // 예: "묘시(卯時, 05:00~07:00) 여명 각성"
   postureAndBreathing: {
     posture: string;
@@ -63,10 +62,9 @@ export function runTranscendentalMeditationEngine(
 
   const element = sajuRes?.dayMaster?.element || '금';
 
-  // 일간 오행별 기본 명상 스타일 및 솔페지오 주파수 매핑
+  // 일간 오행별 기본 명상 스타일 및 마음의 방향 매핑
   let primaryStyle: MeditationStyle = '비파사나 통찰 관조 (Vipassana Insight)';
-  let solfeggioHz = 528;
-  let targetBrainwave: BrainwaveFrequency = '알파파 (8-12Hz: 평정·몰입)';
+  let intendedMindState: MeditationIntention = '평정·몰입';
   let zenEnergyArchetype = '맑은 거울 같은 통찰의 관조자';
   let posture = '가슴을 활짝 편 반가부좌, 턱을 살짝 당긴 수평 시선';
   let breathRatio = '4초 들숨 - 4초 멈춤 - 6초 날숨 (미주신경 활성 호흡)';
@@ -74,40 +72,35 @@ export function runTranscendentalMeditationEngine(
 
   if (element === '목') {
     primaryStyle = '소리 만트라 & 하트 공명 (Mantra Sound)';
-    solfeggioHz = 639; // 관계·조화·하트 주파수
-    targetBrainwave = '세타파 (4-7Hz: 심층 영감·치유)';
+    intendedMindState = '연결·영감';
     zenEnergyArchetype = '생명수를 머금은 봄나무 같은 자비로운 명상가';
     posture = '척추를 위로 가볍게 신장시킨 좌선 자세, 양손은 단전 위 무드라';
     breathRatio = '5초 들숨 - 2초 머금음 - 5초 날숨 (자연스러운 순환 호흡)';
     mentalAnchor = '가슴 중앙 아나하타 차크라의 따뜻한 녹색 빛에 집중';
   } else if (element === '화') {
     primaryStyle = '불꽃 트라타카 시각화 (Trataka Focus)';
-    solfeggioHz = 741; // 직관·자기표현·정화 주파수
-    targetBrainwave = '알파파 (8-12Hz: 평정·몰입)';
+    intendedMindState = '평정·몰입';
     zenEnergyArchetype = '타오르는 불꽃 속을 응시하는 정열의 연금술사';
     posture = '허리를 곧게 세우고 어깨의 힘을 툭 떨어뜨린 편안한 의자 자세';
     breathRatio = '4초 들숨 - 7초 멈춤 - 8초 부드러운 날숨 (4-7-8 이완 호흡)';
     mentalAnchor = '눈앞 1미터 지점 가상의 촛불 중심부에 시선을 고정';
   } else if (element === '토') {
     primaryStyle = '그라운딩 단전 호흡 (Earth Grounding)';
-    solfeggioHz = 432; // 우주 자연 조화 진동수
-    targetBrainwave = '델타파 (1-3Hz: 완전 리셋·재생)';
+    intendedMindState = '안정·그라운딩';
     zenEnergyArchetype = '어떤 풍파에도 흔들리지 않는 대지(大地)의 닻';
     posture = '두 발을 바닥에 완벽히 밀착시킨 채 체중을 대지에 온전히 맡김';
     breathRatio = '4초 들숨 - 4초 멈춤 - 4초 날숨 - 4초 비움 (정방형 박스 호흡)';
     mentalAnchor = '아랫배 배꼽 아래 5cm 하단전의 묵직한 중력감에 주의 집중';
   } else if (element === '금') {
     primaryStyle = '비파사나 통찰 관조 (Vipassana Insight)';
-    solfeggioHz = 852; // 영적 질서·통찰 주파수
-    targetBrainwave = '알파파 (8-12Hz: 평정·몰입)';
+    intendedMindState = '명료·관조';
     zenEnergyArchetype = '서릿발 칼날처럼 잡념을 가르는 순수 이성의 선객';
     posture = '가슴을 활짝 편 반가부좌, 턱을 살짝 당긴 수평 시선';
     breathRatio = '4초 들숨 - 2초 멈춤 - 6초 날숨 (미주신경 이완 안정 호흡)';
     mentalAnchor = '떠오르는 잡념을 잡지도 밀어내지도 않고 흐르는 구름처럼 관찰';
   } else if (element === '수') {
     primaryStyle = '젠 침묵 좌선 (Zen Emptiness)';
-    solfeggioHz = 963; // 초월 의식·사하스라라 주파수
-    targetBrainwave = '세타파 (4-7Hz: 심층 영감·치유)';
+    intendedMindState = '고요·내면 관찰';
     zenEnergyArchetype = '심연의 바다를 품은 무한한 침묵의 탐구자';
     posture = '벽을 마주보고 반쯤 눈을 뜬 채 45도 아래를 바라보는 조용한 좌선';
     breathRatio = '들숨과 날숨을 의식하지 않고 숨결이 스스로 쉬어지도록 방하착';
@@ -146,8 +139,7 @@ export function runTranscendentalMeditationEngine(
 
   const prescription: MeditationPrescription = {
     primaryStyle,
-    targetBrainwave,
-    solfeggioHz,
+    intendedMindState,
     optimalTimeWindow,
     postureAndBreathing: {
       posture,
@@ -156,10 +148,10 @@ export function runTranscendentalMeditationEngine(
     }
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 브레인웨이브 지능 v1.0.0]
+  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 마음 안정 지능 v1.0.0]
 - 명상 페르소나 아키타입: ${zenEnergyArchetype} (마음 평정 지수: ${equanimityScore}점 / 이완 잠재력: ${stressReleasePotential}점)
 - 추천 명상 양식: ${primaryStyle}
-- 뇌파 동조 & 주파수: ${targetBrainwave} / 솔페지오 ${solfeggioHz}Hz
+- 명상 의도: ${intendedMindState}
 - 오늘 최적 명상 윈도우: ${optimalTimeWindow}
 - 호흡 및 자세: [자세] ${posture} | [호흡] ${breathRatio} | [닻] ${mentalAnchor}
 - 주역 젠 만트라 (${ichingZenState.hexagramName}): "${ichingZenState.mantraText}"`;
@@ -191,4 +183,3 @@ export function calculateTranscendentalMeditation(params?: {
 export function formatTranscendentalMeditationPrompt(res: TranscendentalMeditationResult): string {
   return res.synthesisPromptGuidance;
 }
-

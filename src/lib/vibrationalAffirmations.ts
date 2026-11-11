@@ -15,7 +15,6 @@ export interface VibrationalAffirmationItem {
   category: string;
   text: string;
   theme: string;
-  frequency?: number;
 }
 
 export interface UserCounselingVibeContext {
@@ -46,7 +45,7 @@ export const VIBE_PRESETS: VibePreset[] = [
 
 export const VIBRATIONAL_AFFIRMATIONS_BY_CATEGORY: Record<string, string[]> = {
   wealth: [
-    "나의 존재 주파수는 무한한 우주의 부와 번영에 완전히 정렬되었으며, 돈과 기회는 밤낮없이 자연스러운 강물처럼 흘러든다.",
+    "나의 삶과 선택은 풍요와 번영을 향해 나아가며, 돈과 기회는 자연스러운 강물처럼 흘러든다.",
     "나는 결핍을 메우려는 자가 아니라 풍요의 발원지이며, 나의 모든 영감과 실행은 황금빛 결실로 즉각 물질화된다.",
     "부와 성공은 나의 타고난 상태이며, 오늘 내 계좌와 삶의 모든 영역에 상상 이상의 풍성한 기적이 쏟아져 들어온다.",
     "결핍과 조급함의 환상은 완전히 녹아내렸고, 나는 이미 이루어진 경제적 자유의 깊은 안도감 속에서 당당히 숨 쉰다.",
@@ -67,8 +66,8 @@ export const VIBRATIONAL_AFFIRMATIONS_BY_CATEGORY: Record<string, string[]> = {
   love: [
     "나의 가슴 중심에서 뿜어져 나오는 순수한 사랑의 파동이 나와 영혼의 결이 완벽히 일치하는 인연을 지금 자석처럼 끌어당긴다.",
     "나는 있는 그대로 온전하고 사랑받기에 마땅한 존재이며, 서로를 깊이 존중하고 영혼을 치유하는 진실한 관계가 이미 시작되었다.",
-    "외로움과 결핍의 주파수는 봄눈 녹듯 사라졌고, 충만한 온기와 신뢰가 나와 그 사람의 시공간을 가득 채운다.",
-    "우리는 이미 서로의 주파수를 알아보고 있으며, 우주는 가장 완벽하고 다정한 타이밍에 우리의 만남을 기적처럼 성사시킨다.",
+    "외로움과 결핍감은 봄눈 녹듯 사라졌고, 충만한 온기와 신뢰가 나와 그 사람의 시공간을 가득 채운다.",
+    "우리는 서로의 마음을 알아보고 있으며, 가장 다정한 타이밍에 우리의 만남을 만들어 간다.",
     "내 삶에 흐르는 모든 사랑은 날마다 더 깊어지고, 매 순간 따뜻한 눈빛과 진심 어린 연결로 가득하다.",
     "과거의 상처는 가장 단단한 다이아몬드가 되었으며, 나는 다시 사랑하고 사랑받을 완전한 준비가 되었다.",
     "우리의 관계는 우주의 축복 속에 매일 더 맑고 순수한 기쁨으로 피어난다."
@@ -110,17 +109,6 @@ export const VIBRATIONAL_AFFIRMATIONS_BY_CATEGORY: Record<string, string[]> = {
     "어제의 한계는 오늘의 디딤돌이 되었고, 나는 날마다 더 강하고 지혜로운 존재로 찬란히 거듭난다.",
     "새로운 길을 여는 자의 담대함이 내 피 속에 흐르며, 나는 기적의 선구자로서 당당히 승리한다."
   ]
-};
-
-export const FREQUENCY_AFFIRMATIONS: Record<number, string> = {
-  396: "396Hz 근원 정화 주파수가 내 안의 모든 죄책감과 두려움을 해체하고, 순수한 자기 확신의 터전을 다시 세운다.",
-  417: "417Hz 변화 촉진 파동이 과거의 부정적 굴레와 정체된 카르마를 부드럽게 씻어내어 새로운 기적의 장을 연다.",
-  432: "432Hz 우주 자연 배음의 파동이 내 신체와 의식을 정화하며, 자연의 완벽한 순리와 조화로운 리듬에 나를 일치시킨다.",
-  528: "528Hz 기적과 변형의 빛이 세포 핵과 DNA를 깨우며, 불가능을 가능으로 뒤바꾸는 양자 도약이 지금 이 순간 현실화된다.",
-  639: "639Hz 사랑과 융합의 주파수가 나와 세상의 모든 단절을 치유하며, 서로를 성장시키는 깊은 신뢰의 다리를 놓는다.",
-  741: "741Hz 직관과 내면 각성의 파동이 모든 영적 막힘을 뚫어내고, 명료한 통찰과 진실의 빛으로 나의 길을 환히 비춘다.",
-  852: "852Hz 순수 영적 질서의 주파수가 나를 가장 높은 차원의 신성한 자아와 직결시키며, 영혼의 궁극적 안식을 선사한다.",
-  963: "963Hz 왕관 차크라 신성 연결음이 내 의식을 무한한 우주 의식과 하나로 합일시키며 기적을 일상으로 창조한다."
 };
 
 /**
@@ -204,17 +192,15 @@ export function getUserCounselingVibeContext(): UserCounselingVibeContext {
  * 1. User's counseling context (resolving past tensions)
  * 2. Current emotional vibe (enhancing resonant energy)
  * 3. User's specific target wish
- * 4. Frequency tone alignment
  */
 export function synthesizeVibeAttunedAffirmation(params: {
   category: string;
   wish: string;
-  frequency: number;
   counselingTopic: string;
   currentVibe: string;
   cycleOffset?: number;
 }): string {
-  const { wish, frequency, counselingTopic, currentVibe, cycleOffset = 0 } = params;
+  const { wish, counselingTopic, currentVibe, cycleOffset = 0 } = params;
 
   const cleanWish = (wish || '간절한 소망의 완전한 성취').trim().replace(/['"“”.]/g, '');
   const shortWish = cleanWish.length > 25 ? cleanWish.slice(0, 25) + '...' : cleanWish;
@@ -227,13 +213,13 @@ export function synthesizeVibeAttunedAffirmation(params: {
   // Dynamic templates designed to address counseling resolution, emotional vibe transformation, and quantum wish realization
   const templates = [
     // Template 1: Emotional Vibe + Quantum Collapse
-    `내 안에 차오르는 '${cleanVibe}'의 기운이 ${frequency}Hz 기적의 파동과 완벽히 공명하며, '${shortWish}'의 눈부신 성취를 지금 이 순간 즉각 물질화한다.`,
+    `내 안에 차오르는 '${cleanVibe}'의 기운을 바탕으로, '${shortWish}'의 눈부신 성취를 지금 이 순간 향해 나아간다.`,
 
     // Template 2: Counseling Resolution to Breakthrough
-    `'${shortTopic}'에 얽매였던 과거의 모든 저항은 봄눈 녹듯 사라졌고, '${cleanVibe}'의 높은 주파수 속에서 '${shortWish}'은(는) 이미 확정된 현실로 펼쳐진다.`,
+    `'${shortTopic}'에 얽매였던 과거의 모든 저항은 봄눈 녹듯 사라졌고, '${cleanVibe}'의 차분한 마음으로 '${shortWish}'을(를) 향해 간다.`,
 
-    // Template 3: Frequency Grounding + Sensory Presence
-    `${frequency}Hz 황금빛 공명 속에서 나는 더 이상 바라는 결핍의 상태가 아니며, '${cleanVibe}'의 충만한 미소로 '${shortWish}'의 결실을 평온히 누린다.`,
+    // Template 3: Grounding + Sensory Presence
+    `고요한 마음으로 지금의 나를 받아들이며, '${cleanVibe}'의 충만한 미소로 '${shortWish}'을(를) 향한 한 걸음을 내딛는다.`,
 
     // Template 4: Soul Journey Alignment
     `'${shortTopic}'을(를) 거치며 단단해진 나의 영혼은 지금 온 우주의 전폭적인 사랑을 받고 있으며, '${shortWish}'을(를) 향한 길마다 상상 이상의 은총이 쏟아져 내린다.`,
@@ -242,17 +228,17 @@ export function synthesizeVibeAttunedAffirmation(params: {
     `나의 온몸 수십조 개 세포는 '${cleanVibe}'의 찬란한 빛으로 진동하고 있으며, '${shortWish}'의 실현으로 인한 벅찬 안도감과 감사가 내 신경계를 가득 채운다.`,
 
     // Template 6: Energetic Magnetism
-    `우주는 나의 고요하고 흔들림 없는 '${cleanVibe}' 파동에 열렬히 화답하며, '${shortWish}'의 완성을 위해 필요한 사람, 기회, 재물을 자석처럼 끌어당긴다.`,
+    `나는 고요하고 흔들림 없는 마음으로 '${cleanVibe}'을(를) 지키며, '${shortWish}'의 완성을 위해 필요한 사람과 기회를 찾아 나선다.`,
 
     // Template 7: Quantum Leap Alchemy
-    `시공간의 장벽은 이미 무너졌다. '${shortTopic}'을(를) 넘어선 나의 의식은 이미 '${shortWish}'이(가) 완성된 시점에 닻을 내렸으며, 현실은 그 진동을 따라 즉각 재배열된다.`,
+    `나는 '${shortTopic}'을(를) 지나며 배운 것을 바탕으로 '${shortWish}'에 한 걸음 가까워지고, 현실적인 선택으로 변화를 만들어간다.`,
 
     // Template 8: Divine Freedom & Abundance
     `나는 '${cleanVibe}'의 자유로운 창조자로서 당당히 숨 쉬며, '${shortWish}'의 기적적인 결실을 온 세상과 함께 나눌 가장 완전한 그릇이 되었다.`
   ];
 
   // Dynamic hash variation ensuring non-repetition across cycle offsets
-  const seed = (cleanWish.length * 17 + frequency * 11 + cleanVibe.length * 7 + Math.abs(cycleOffset)) % templates.length;
+  const seed = (cleanWish.length * 17 + cleanVibe.length * 7 + Math.abs(cycleOffset)) % templates.length;
   return templates[seed];
 }
 
@@ -261,12 +247,10 @@ export function synthesizeVibeAttunedAffirmation(params: {
  * - Specific user counseling topic
  * - User's current vibe
  * - Category & target wish
- * - Frequency
  */
 export function getDynamicVibrationalAffirmation(
   category: string,
   wish?: string,
-  frequency: number = 528,
   cycleOffset: number = 0,
   contextOverride?: Partial<UserCounselingVibeContext>
 ): { affirmation: string; totalOptions: number; currentIndex: number; context: UserCounselingVibeContext } {
@@ -277,7 +261,7 @@ export function getDynamicVibrationalAffirmation(
   };
 
   const pool = VIBRATIONAL_AFFIRMATIONS_BY_CATEGORY[category] || VIBRATIONAL_AFFIRMATIONS_BY_CATEGORY.wealth;
-  const total = pool.length + 5; // pool items + frequency item + 3 vibe-attuned procedural variations
+  const total = pool.length + 4; // pool items + 4 vibe-attuned procedural variations
   const safeIndex = Math.abs(cycleOffset) % total;
 
   if (safeIndex < 2) {
@@ -285,7 +269,6 @@ export function getDynamicVibrationalAffirmation(
     const synthesized = synthesizeVibeAttunedAffirmation({
       category,
       wish: wish || '간절한 소망의 완전한 성취',
-      frequency,
       counselingTopic: context.counselingTopic,
       currentVibe: context.currentVibe,
       cycleOffset: safeIndex + cycleOffset
@@ -304,19 +287,11 @@ export function getDynamicVibrationalAffirmation(
       currentIndex: safeIndex,
       context
     };
-  } else if (safeIndex === pool.length + 2 && FREQUENCY_AFFIRMATIONS[frequency]) {
-    return {
-      affirmation: FREQUENCY_AFFIRMATIONS[frequency],
-      totalOptions: total,
-      currentIndex: safeIndex,
-      context
-    };
   } else {
     // Secondary vibe variation
     const synthesized = synthesizeVibeAttunedAffirmation({
       category,
       wish: wish || '간절한 소망의 완전한 성취',
-      frequency,
       counselingTopic: context.counselingTopic,
       currentVibe: context.currentVibe,
       cycleOffset: cycleOffset + 5
@@ -337,33 +312,30 @@ export function getDynamicVibrationalAffirmation(
 export async function generateAIVibrationalAffirmation(params: {
   category: string;
   wish: string;
-  frequency: number;
   counselingTopic: string;
   currentVibe: string;
   cycleOffset?: number;
 }): Promise<string> {
-  const { category, wish, frequency, counselingTopic, currentVibe, cycleOffset = 0 } = params;
+  const { category, wish, counselingTopic, currentVibe, cycleOffset = 0 } = params;
 
   const fallback = synthesizeVibeAttunedAffirmation({
     category,
     wish,
-    frequency,
     counselingTopic,
     currentVibe,
     cycleOffset
   });
 
   try {
-    const prompt = `[양자 현실화 고진동 확언(VIBRATIONAL ANCHOR AFFIRMATION) 실시간 생성]
+    const prompt = `[현실적인 마음 정돈 확언 실시간 생성]
 - 사용자 최근 상담 주제/고민: "${counselingTopic}"
 - 사용자 현재 기분(Vibe): "${currentVibe}"
 - 현실화 소망 목표: "${wish}"
-- 동조 솔페지오 주파수: ${frequency}Hz
 - 셔플 회차 시드: ${cycleOffset}
 
 [요구사항]:
 1. 상투적이거나 형식적인 뻔한 문장을 절대 금지합니다.
-2. 사용자의 최근 상담 주제("${counselingTopic}")에서 오는 내면의 불안이나 저항을 깨끗이 해소하고, 현재 기분("${currentVibe}")의 높은 주파수와 결합하여 소원("${wish}")이 이미 이루어진 감격을 표현하세요.
+2. 사용자의 최근 상담 주제("${counselingTopic}")에서 오는 내면의 불안이나 저항을 돌아보고, 현재 기분("${currentVibe}")을 담아 소원("${wish}")을 향한 현실적인 확신을 표현하세요.
 3. 1인칭 현재형("나는 ~이다", "나의 존재는 ~한다")으로 40자~75자 내외의 1문장으로만 작성하세요.
 4. 따옴표나 기타 서두 인사말 없이 순수 확언 문장만 출력하세요.`;
 
@@ -371,7 +343,7 @@ export async function generateAIVibrationalAffirmation(params: {
     const aiCall = (async () => {
       const resp = await invokeLLM({
         messages: [
-          { role: 'system', content: '당신은 양자 현실화 고진동 확언 마스터입니다. 사용자의 상담 주제와 감정 Vibe를 완벽히 융합한 전율 돋는 1문장 고진동 확언을 출력하세요.' },
+          { role: 'system', content: '당신은 사용자의 상담 주제와 감정을 반영해 차분하고 실천 가능한 1문장 확언을 작성하는 도우미입니다.' },
           { role: 'user', content: prompt }
         ]
       });

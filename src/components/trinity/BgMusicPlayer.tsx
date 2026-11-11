@@ -39,7 +39,8 @@ import {
 
 import { FLOW_AUDIO_TRACKS, FLOW_TRACK_GENERATORS, getTrackNormalizationGain } from "@/lib/proceduralBgmSuite";
 import { useMoodSound } from "@/hooks/useMoodSound";
-import type { MoodSoundId } from "@/lib/moodSoundEngine";
+import { pickRandomNatureMood, type MoodSoundId } from "@/lib/moodSoundEngine";
+import { buildNextShuffleOrder, shuffleTrackIndices } from "@/lib/backgroundMixSelection";
 
 type BgmTrack = {
   name: string;
@@ -63,26 +64,6 @@ export const isProceduralTrack = (url: string) => url.startsWith("flow-") || url
 
 // The premium 30-track procedural suite
 const AUDIO_TRACKS: BgmTrack[] = FLOW_AUDIO_TRACKS;
-
-function shuffleTrackIndices(length: number): number[] {
-  const arr = Array.from({ length }, (_, i) => i);
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function buildNextShuffleOrder(trackCount: number, avoidIndex: number): number[] {
-  let nextShuffled = shuffleTrackIndices(trackCount);
-  if (trackCount > 1 && nextShuffled[0] === avoidIndex) {
-    const swapWith = nextShuffled.findIndex((idx, i) => i > 0 && idx !== avoidIndex);
-    if (swapWith > 0) {
-      [nextShuffled[0], nextShuffled[swapWith]] = [nextShuffled[swapWith], nextShuffled[0]];
-    }
-  }
-  return nextShuffled;
-}
 
 function buildInitialTrackLibrary(): BgmTrack[] {
   // 사용자의 요청: 기존 음악은 전부 삭제하고 어플에 맞춘 30곡으로 깨끗이 구성
@@ -288,6 +269,8 @@ export function BgMusicPlayer() {
     presets: moodPresets,
     currentPreset: currentMoodPreset,
     togglePlay: toggleMoodPlay,
+    startMood: startMoodSound,
+    stop: stopMoodSound,
     setMood: setMoodSound,
     setVolume: setMoodVolume,
     closePicker: closeMoodPicker,
@@ -693,6 +676,7 @@ export function BgMusicPlayer() {
   };
 
   const pausePlayback = () => {
+    stopMoodSound();
     setBgmPlaybackSessionActive(false);
     isPlayingRef.current = false;
     setIsPlaying(false);
@@ -1133,6 +1117,7 @@ export function BgMusicPlayer() {
     if (userGesture) {
       setBgmPlaybackSessionActive(true);
       primeNativeBgmPlayback(audioRef.current, true);
+      void startMoodSound(pickRandomNatureMood());
     }
   };
 
@@ -1710,40 +1695,14 @@ export function BgMusicPlayer() {
     } : null);
   }, [isPlaying, currentTrack?.name, currentTrack?.artist]);
 
-  useEffect(() => {
-    const restore = () => {
-      if (!isPlayingRef.current) return;
-      const audio = audioRef.current;
-      if (audio?.src && audio.paused && !renderingProceduralTrackRef.current) {
-        setBgmPlaybackSessionActive(true);
-        void audio.play().catch(() => {});
-      }
-    };
-
-    const audio = audioRef.current;
-    const handleAutoPause = () => {
-      // Guard against iOS pausing audio during screen lock or background app switch
-      if (isPlayingRef.current && audio && audio.paused && audio.src && !renderingProceduralTrackRef.current) {
-        setTimeout(() => {
-          if (isPlayingRef.current && audio && audio.paused) {
-            void audio.play().catch(() => {});
-          }
-        }, 50);
-      }
-    };
-
-    audio?.addEventListener('pause', handleAutoPause);
-    document.addEventListener('visibilitychange', restore);
-    window.addEventListener('pageshow', restore);
-    window.addEventListener('focus', restore);
-    return () => {
-      audio?.removeEventListener('pause', handleAutoPause);
-      document.removeEventListener('visibilitychange', restore);
-      window.removeEventListener('pageshow', restore);
-      window.removeEventListener('focus', restore);
-      setBgmPlaybackSessionActive(false);
-      updateAppMediaSession('bgm', null);
-    };
+  useEffect(() => () => {
+    playbackGenerationRef.current += 1;
+    isPlayingRef.current = false;
+    stopMoodSound();
+    try { audioRef.current?.pause(); } catch (_) {}
+    stopProceduralSynth();
+    setBgmPlaybackSessionActive(false);
+    updateAppMediaSession('bgm', null);
   }, []);
 
   // --- CLICK OUTSIDE TO COLLAPSE EXPANDED PLAYER & VOLUME SLIDER ---
@@ -2225,7 +2184,6 @@ export function BgMusicPlayer() {
                         { id: "all", label: "전체", count: tracks.length },
                         { id: "사주·오행", label: "사주·오행", count: tracks.filter((t) => t.category === "사주·오행").length },
                         { id: "오라클 타로", label: "오라클 타로", count: tracks.filter((t) => t.category === "오라클 타로").length },
-                        { id: "솔페지오", label: "솔페지오", count: tracks.filter((t) => t.category === "솔페지오").length },
                         { id: "세도나 방하착", label: "세도나 방하착", count: tracks.filter((t) => t.category === "세도나 방하착").length },
                         { id: "호오포노포노", label: "호오포노포노", count: tracks.filter((t) => t.category === "호오포노포노").length },
                         { id: "양자·뮤즈", label: "양자·뮤즈", count: tracks.filter((t) => t.category === "양자·뮤즈").length },

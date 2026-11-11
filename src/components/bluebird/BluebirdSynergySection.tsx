@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Flame, Sparkles, Mail, Send, Check, Copy, RefreshCw, Volume2, VolumeX, Shield, Award, Feather, Wind, Layers, ArrowRight, BookOpen, FileText } from 'lucide-react';
 import { useApp, getPersistentUserProfile } from '@/contexts/AppContext';
@@ -59,14 +59,14 @@ export function generateContextualPureZero(
   const codeSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
 
   return {
-    title: `〈${theme} 소각〉 417Hz 영점 백지 환생`,
+    title: `〈${theme} 소각〉 영점 백지 환생`,
     cleansingCode: `ZERO-FUSION-${codeSuffix}`,
     incineratedLetter: clean,
     extractedCoreWound: `비밀 편지에 털어놓은 "${shortSnippet}"에 얽힌 ${targetSubject}`,
     fusionMatrix: {
       hooponoponoElement: `호오포노포노 4대 정화 진언(미안합니다·용서하세요·고맙습니다·사랑합니다)의 파동이 편지에 담긴 "${shortSnippet}"의 기억을 제로(Zero) 상태로 정화합니다.`,
       letterElement: `편지에 고백한 ${targetSubject}을 숨김없이 직시하여, 마음에 억압되어 있던 무의식적 고통의 패턴을 해방의 제단에 올렸습니다.`,
-      transmutationAlchemy: `비밀 편지의 무거운 아픔이 417Hz 푸른 불꽃에 닿아 소각되었으며, 어떠한 카르마의 잔재도 남지 않은 완전한 순수 백지로 승화되었습니다.`
+      transmutationAlchemy: `비밀 편지의 무거운 아픔이 푸른 불꽃에 닿아 소각되었으며, 어떠한 카르마의 잔재도 남지 않은 완전한 순수 백지로 승화되었습니다.`
     },
     hoponoponoWhisper: {
       sorry: `편지에 적힌 "${shortSnippet}"의 기억 속에서 오랫동안 상처받고 아파했던 나 자신과 모든 인연에게 진심으로 미안합니다.`,
@@ -88,7 +88,7 @@ const INITIAL_ZERO: PureZeroData = {
   fusionMatrix: {
     hooponoponoElement: "4대 정화 파동 (미안합니다 · 용서하세요 · 고맙습니다 · 사랑합니다)",
     letterElement: "내면의 상처와 억압된 감정의 고백 편지",
-    transmutationAlchemy: "기억의 매듭을 푸른 417Hz 불꽃으로 승화시켜 0(Zero State) 백지로 재탄생"
+    transmutationAlchemy: "기억의 매듭을 푸른 불꽃으로 승화시켜 0(Zero State) 백지로 재탄생"
   },
   hoponoponoWhisper: {
     sorry: "나의 무의식 속에 쌓여 있던 기억과 고통의 패턴들에 대해 미안합니다.",
@@ -109,7 +109,6 @@ export function BluebirdSynergySection() {
   const [isIncinerated, setIsIncinerated] = useState<boolean>(false);
   const [pureZeroData, setPureZeroData] = useState<PureZeroData>(INITIAL_ZERO);
   const [copied, setCopied] = useState<boolean>(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [recentSavedNotes, setRecentSavedNotes] = useState<{ title: string; content: string }[]>([]);
   const isTTSActive = useTTSActive();
 
@@ -121,8 +120,6 @@ export function BluebirdSynergySection() {
 
   const totalHooponoponoCleansings = sorryCount + forgiveCount + thankCount + loveCount;
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
 
   // Load any secret notes saved in right-menu [LETTER]
   useEffect(() => {
@@ -166,69 +163,9 @@ export function BluebirdSynergySection() {
     setConfessionText(text);
   };
 
-  const toggle417Hz = () => {
-    if (isAudioPlaying) {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
-      audioCtxRef.current = null;
-      oscRef.current = null;
-      setIsAudioPlaying(false);
-    } else {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(417, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 1.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        oscRef.current = osc;
-        setIsAudioPlaying(true);
-      } catch (e) {
-        console.warn('Audio synthesis error:', e);
-      }
-    }
-  };
-
-  // Play a short ethereal chime when incineration completes
-  const playIncinerationChime = () => {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(528, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(417, ctx.currentTime + 1.5);
-      gain.gain.setValueAtTime(0.05, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 1.7);
-      setTimeout(() => {
-        try { ctx.close(); } catch (e) {}
-      }, 1800);
-    } catch (e) {}
-  };
 
   useEffect(() => {
     return () => {
-      try {
-        oscRef.current?.stop();
-        audioCtxRef.current?.close();
-      } catch (e) {}
       stopTTS();
     };
   }, []);
@@ -268,7 +205,7 @@ export function BluebirdSynergySection() {
 
 반드시 아래 JSON 형식으로만 응답하세요:
 {
-  "title": "편지 내용과 호오포노포노가 융합된 맞춤 소각 명칭 (예: [편지의 핵심 상처]를 정화하는 417Hz 순수 백지 환생)",
+  "title": "편지 내용과 호오포노포노가 융합된 맞춤 소각 명칭 (예: [편지의 핵심 상처]를 정화하는 순수 백지 환생)",
   "cleansingCode": "영문 대문자 시길 코드 (예: ZERO-CLEANSE-HEAL)",
   "extractedCoreWound": "편지에서 읽어낸 핵심 고통/얽힌 기억 (한 줄 요약)",
   "fusionMatrix": {
@@ -339,7 +276,6 @@ export function BluebirdSynergySection() {
       result.incineratedLetter = currentLetter;
       setPureZeroData(result);
       setIsIncinerated(true);
-      playIncinerationChime();
       recordPrismFeature({
         app: 'bluebird',
         featureName: 'Bluebird Pure Zero Synergy',
@@ -380,7 +316,6 @@ export function BluebirdSynergySection() {
                 <Sparkles size={12} className="text-sky-400 animate-pulse" />
                 HO'OPONOPONO ✕ LETTER FUSION
               </span>
-              <span className="text-[10px] text-white/40 font-mono">417Hz PURIFICATION</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
               <Feather className="text-sky-400 drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]" size={28} />
@@ -391,17 +326,6 @@ export function BluebirdSynergySection() {
             </p>
           </div>
 
-          <button
-            onClick={toggle417Hz}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-bold font-sans flex items-center gap-2 border transition-all cursor-pointer shrink-0 ${
-              isAudioPlaying
-                ? 'bg-sky-500 text-black border-sky-400 shadow-[0_0_20px_rgba(14,165,233,0.6)] animate-pulse'
-                : 'bg-white/5 hover:bg-white/10 text-white/80 border-white/10'
-            }`}
-          >
-            {isAudioPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            <span>{isAudioPlaying ? '417Hz 정화음 재생 중' : '417Hz 정화음 켜기'}</span>
-          </button>
         </div>
       </div>
 
@@ -535,7 +459,7 @@ export function BluebirdSynergySection() {
                   호오포노포노 4대 파동으로 비밀 편지의 상처를 푸른 불꽃에 소각하는 중...
                 </div>
                 <div className="text-xs text-white/50 font-mono">
-                  417Hz 카르마 클리어링 & 순수 백지 환생 연금술 적용 중
+                  카르마 클리어링 & 순수 백지 환생 연금술 적용 중
                 </div>
               </div>
             ) : (
@@ -613,7 +537,7 @@ export function BluebirdSynergySection() {
               </span>
               <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-200 border border-red-500/30 font-mono font-bold flex items-center gap-1">
                 <Check size={11} className="text-emerald-400" />
-                417Hz 푸른 불꽃 소각 완료
+                푸른 불꽃 소각 완료
               </span>
             </div>
 

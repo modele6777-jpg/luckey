@@ -3,7 +3,7 @@
  * Procedural Web Audio synthesis providing subtle, high-grade tactile acoustic feedback
  * categorized into distinct interaction profiles:
  * - Success: Sharp, decisive tactile pulses & radiant affirmation chimes
- * - Breathing & Meditation: Soft, undulating rhythmic vibrations & bio-harmonic frequencies (432Hz / 528Hz / singing bowl)
+ * - Breathing & Meditation: Soft, undulating rhythmic vibrations and gentle audio cues
  * - Card: Real tactile linen card sliding friction glides, flips & deck flutters
  * - Selection: Crisp mechanical micro-switch ticks
  * - Alert: Muted wooden dull thuds & gentle warning notifications
@@ -12,7 +12,7 @@
  */
 
 import { getSharedAudioContext, getMasterAudioBus } from './audio';
-import { playCompletionBowl } from './completionBowl';
+import { playCompletionBirdChirp } from './completionBirdChirp';
 
 export type HapticCategory =
   | 'success'      // Sharp pulse confirmation & triumphant achievements
@@ -29,16 +29,16 @@ export type AudioHapticType =
   | 'save_success'       // Saved confirmation with radiant double-chime + sharp double pulse
   | 'save_auto'          // Discrete water droplet bell ping for auto-saves
   | 'milestone_success'  // Triumphant multi-stage sharp ripple pulse & golden chord flourish
-  | 'ai_result_chime'    // 또렷한 싱잉볼 완료 알림 (대화 제외)
+  | 'ai_result_chime'    // 짧은 새 지저귐 완료 알림 (대화 제외)
 
   // --- Breathing category (soft, rhythmic vibration & respiratory bio-harmonics) ---
-  | 'breathe_inhale'     // Gentle swelling rhythmic wave [25, 75, 40, 75, 55] + 432Hz breath expansion
-  | 'breathe_hold'       // Ultra-soft anchor micro-pulse [12] + serene 528Hz crystal still tone
+  | 'breathe_inhale'     // Gentle swelling rhythmic wave [25, 75, 40, 75, 55] + soft note cue
+  | 'breathe_hold'       // Ultra-soft anchor micro-pulse [12] + soft sustained note
   | 'breathe_exhale'     // Gentle soothing descending release wave [50, 80, 35, 90, 20] + warm relaxing decay
 
   // --- Meditation category (soft rhythmic pulsing & sacred singing bowl) ---
-  | 'meditation_cycle'   // Soft rhythmic double heartbeat pulse [16, 140, 16] + 136.1Hz Om fundamental
-  | 'meditation_bell'    // Resonant Tibetan singing bowl chime [22, 45, 30] + rich 528Hz Solfeggio harmonics
+  | 'meditation_cycle'   // Soft rhythmic double heartbeat pulse [16, 140, 16] + mellow low note
+  | 'meditation_bell'    // Resonant Tibetan singing bowl chime [22, 45, 30] with gentle overtones
 
   // --- Card category (tactile linen card friction & snaps) ---
   | 'card_draw'          // Drawing a tarot or oracle card (paper friction sweep + warm body + celestial shimmer)
@@ -97,8 +97,8 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
   ai_result_chime: {
     vibration: [18, 35, 22],
     category: 'success',
-    label: 'TTS 및 작업 완료 싱잉볼',
-    description: '또렷한 중음역 타종과 2.3초의 부드러운 여운이 있는 싱잉볼 (대화 제외)',
+    label: 'TTS 및 작업 완료 새소리',
+    description: 'TTS 완독 뒤 한 번 울리는 0.66초의 부드러운 새 지저귐 (대화 제외)',
   },
 
   // Breathing (Soft Rhythmic)
@@ -106,13 +106,13 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
     vibration: [25, 75, 40, 75, 55],
     category: 'breathing',
     label: '들숨 (Inhale)',
-    description: '폐와 가슴의 확장을 모사하는 3단계 부드러운 리드미컬 팽창 진동과 432Hz 숨결 음향',
+    description: '폐와 가슴의 확장을 모사하는 3단계 부드러운 리드미컬 팽창 진동과 낮고 잔잔한 안내음',
   },
   breathe_hold: {
     vibration: 12,
     category: 'breathing',
     label: '숨 참음 (Hold)',
-    description: '고요한 현존을 돕는 극미세 중심 앵커 진동과 528Hz 하모닉스',
+    description: '고요한 현존을 돕는 극미세 중심 앵커 진동과 짧고 은은한 안내음',
   },
   breathe_exhale: {
     vibration: [50, 80, 35, 90, 20],
@@ -126,7 +126,7 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
     vibration: [16, 140, 16],
     category: 'meditation',
     label: '명상 리듬 (Heartbeat)',
-    description: '심장 박동을 닮은 포근한 이중 펄스 진동과 136.1Hz 옴(Om) 기저음',
+    description: '심장 박동을 닮은 포근한 이중 펄스 진동과 은은한 안내음',
   },
   meditation_bell: {
     vibration: [22, 45, 30],
@@ -525,7 +525,7 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       }
 
       case 'ai_result_chime': {
-        playCompletionBowl(ctx, bus, volScale);
+        playCompletionBirdChirp(ctx, bus, volScale);
         break;
       }
 
@@ -553,11 +553,11 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
         noise.start(now);
         noise.stop(now + 1.0);
 
-        // 432Hz Healing Frequency gentle swelling tone
+        // Gentle swelling A4 cue
         const osc = ctx.createOscillator();
         const oscGain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(432, now);
+        osc.frequency.setValueAtTime(440, now);
         oscGain.gain.setValueAtTime(0.0001, now);
         oscGain.gain.linearRampToValueAtTime(0.06 * volScale, now + 0.5);
         oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
@@ -570,11 +570,11 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       }
 
       case 'breathe_hold': {
-        // Serene 528Hz crystal still tone (Solfeggio Love/Miracle frequency)
+        // Soft sustained C5 cue
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(528, now);
+        osc.frequency.setValueAtTime(523.25, now);
 
         gain.gain.setValueAtTime(0.0001, now);
         gain.gain.linearRampToValueAtTime(0.045 * volScale, now + 0.05);
@@ -608,12 +608,12 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
         noise.start(now);
         noise.stop(now + 1.2);
 
-        // Relaxing descending tone (432Hz -> 216Hz)
+        // Relaxing descending A4-to-A3 tone
         const osc = ctx.createOscillator();
         const oscGain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(432, now);
-        osc.frequency.exponentialRampToValueAtTime(216, now + 1.0);
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 1.0);
 
         oscGain.gain.setValueAtTime(0.0001, now);
         oscGain.gain.linearRampToValueAtTime(0.05 * volScale, now + 0.3);
@@ -630,15 +630,15 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       // 3. MEDITATION CATEGORY (Rhythmic Pulse & Tibetan Singing Bowl)
       // ===============================================================
       case 'meditation_cycle': {
-        // Soft rhythmic double heartbeat (136.1Hz fundamental)
+        // Soft rhythmic double heartbeat with a mellow low note
         const beatOffsets = [0, 0.16];
         beatOffsets.forEach((offset, idx) => {
           const t = now + offset;
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(136.1, t);
-          osc.frequency.exponentialRampToValueAtTime(70, t + 0.08);
+          osc.frequency.setValueAtTime(130.81, t);
+          osc.frequency.exponentialRampToValueAtTime(65.41, t + 0.08);
 
           gain.gain.setValueAtTime(0.0001, t);
           gain.gain.linearRampToValueAtTime((0.08 - idx * 0.02) * volScale, t + 0.008);
@@ -653,11 +653,11 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       }
 
       case 'meditation_bell': {
-        // Authentic Tibetan singing bowl bell synthesis: 528Hz + 1056Hz + 1440Hz + sub 264Hz
+        // Soft Tibetan singing-bowl-style chime with gentle musical overtones
         const harmonics = [
-          { freq: 264.0, gain: 0.08, decay: 1.4 },
-          { freq: 528.0, gain: 0.16, decay: 1.8 },
-          { freq: 1056.0, gain: 0.06, decay: 1.2 },
+          { freq: 261.63, gain: 0.08, decay: 1.4 },
+          { freq: 523.25, gain: 0.16, decay: 1.8 },
+          { freq: 1046.5, gain: 0.06, decay: 1.2 },
           { freq: 1440.0, gain: 0.03, decay: 0.9 },
         ];
 
@@ -957,7 +957,7 @@ export function playCardHaptic(
 }
 
 /**
- * 🔔 오직 TTS 음성 낭독 완독 시에만 울리는 영롱한 티베트 싱잉볼 알림 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
+ * 오직 TTS 음성 낭독 완독 시 한 번 재생하는 짧은 새 지저귐 (일반 채팅 대화 및 단순 텍스트 생성은 생략)
  */
 export function playAiResultNotification(options?: AudioHapticOptions): void {
   try {

@@ -167,7 +167,7 @@ app.post([/.*\/chat\/completions$/, "/api/openai/v1/chat/completions", "/openai/
   }
 });
 
-// TTS generation endpoint with resilient fallbacks (EdgeTTS -> Google TTS -> OpenAI TTS)
+// TTS generation endpoint backed by server-only Edge Neural TTS.
 // Load TTS dependencies only when the TTS route is invoked.
 
 app.post("/api/ai/tts", async (req, res) => {
@@ -259,7 +259,6 @@ app.post("/api/ai/daily-bgm", async (req, res) => {
   try {
     const {
       focusPlaylist,
-      frequency,
       cardName,
       symbol,
       dateKey,
@@ -273,7 +272,6 @@ app.post("/api/ai/daily-bgm", async (req, res) => {
     const { generateDailyBgmBuffer } = await import("../server/api-lib/generateDailyBgm.ts");
     const { buffer, durationSec } = generateDailyBgmBuffer({
       focusPlaylist: String(focusPlaylist),
-      frequency: frequency ? String(frequency) : undefined,
       cardName: cardName ? String(cardName) : undefined,
       symbol: symbol ? String(symbol) : undefined,
       dateKey: String(dateKey),

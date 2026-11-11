@@ -496,24 +496,6 @@ export const PRISM_ALL_APP_DESTINATIONS: PrismMenuDestination[] = [
     contextReason: '미세 에너지 바디의 7대 차크라를 조화롭게 일치시키는 정렬 명상 추천',
     tossTargetId: 'heal',
   },
-  // 27. 바이노럴 비트 & 힐링 주파수
-  {
-    id: 'heal_frequency',
-    name: '바이노럴 힐링 주파수',
-    subName: '뇌파 동조 432Hz & 528Hz 사운드',
-    path: '/heal?tab=frequency',
-    basePath: '/heal',
-    emoji: '🔔',
-    badge: '힐링 주파수',
-    themeColor: '#06b6d4',
-    buttonClass: 'bg-cyan-600/20 hover:bg-cyan-600/35 text-cyan-200 hover:text-cyan-100',
-    textClass: 'text-cyan-300',
-    borderClass: 'border-cyan-500/40',
-    keywords: ['주파수', '432hz', '528hz', '바이노럴', '싱잉볼', '음향치유', '사운드배스', '뇌파동조', '소리치유'],
-    intentRegex: /주파수|432hz|528hz|바이노럴|싱잉볼|음향치유|사운드배스/i,
-    contextReason: '치유의 진동 주파수로 뇌파를 알파·세타파로 유도하는 사운드 힐링 추천',
-    tossTargetId: 'heal',
-  },
   // 28. 에필로그 밤 서재
   {
     id: 'epilogue_journal',
@@ -874,11 +856,11 @@ export function getRecommendedMenu(
     // 피로/신체 스트레스/호흡 맥락
     if (/피곤|지쳤|숨|뻐근|목|어깨|스트레스|휴식|졸려|답답/.test(trimmed)) {
       if (menu.id === 'heal_wellness' || menu.id === 'heal_breathing' || menu.id === 'hub_ecpr') score += 22;
-      if (menu.id === 'heal_sedona' || menu.id === 'bluebird_sanctuary' || menu.id === 'heal_frequency') score += 16;
+      if (menu.id === 'heal_sedona' || menu.id === 'bluebird_sanctuary') score += 16;
     }
     // 차크라/영적 에너지 맥락
     if (/차크라|에너지|오라|기운|명상|수련/.test(trimmed)) {
-      if (menu.id === 'heal_chakra' || menu.id === 'heal_frequency') score += 25;
+      if (menu.id === 'heal_chakra') score += 25;
     }
     // 기록/생각 정리/저녁/기억 맥락
     if (/생각|정리|오늘|하루|마무리|기억|적어|일기|추억/.test(trimmed)) {
@@ -969,4 +951,3 @@ export function getRecommendedMenu(
     top3: shuffledTop3,
   };
 }
-

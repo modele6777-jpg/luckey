@@ -30,7 +30,6 @@ export interface TarotShareData {
   adviceHeadline?: string;
   adviceText?: string;
   rawBlessing?: string;
-  frequency?: string;
   luckyNumber?: string;
   luckyColor?: string;
 }
@@ -95,7 +94,6 @@ export function formatTarotShareText(data: TarotShareData): string {
 
   // Energy & Blessing
   const cosmicInfo = [
-    data.frequency ? `주파수: ${data.frequency}` : null,
     data.luckyNumber ? `행운수: ${data.luckyNumber}` : null,
     data.luckyColor ? `행운색: ${data.luckyColor}` : null,
   ].filter(Boolean).join(' · ');
@@ -568,7 +566,6 @@ export async function generateTarotCardCanvas(data: TarotShareData): Promise<HTM
 
   // Energy Pills
   const pills = [
-    data.frequency ? `주파수: ${data.frequency}` : '528Hz 사랑과 치유',
     data.luckyNumber ? `행운수: ${data.luckyNumber}` : '행운수: 7',
     data.luckyColor ? `행운색: ${data.luckyColor}` : '행운색: 황금빛 골드',
   ];

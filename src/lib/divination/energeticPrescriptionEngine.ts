@@ -10,13 +10,10 @@
  * 2. 바이오 에너지 & 인체 장부·차크라 맵핑:
  *    - 오행-오장육부(간담·심소장·비위·폐대장·신방광) 및 7대 차크라와의 정밀 연계를 통해
  *      신체 활력, 피로 지점, 에너지 불균형 징후를 진단
- * 3. 솔페지오 주파수 & 음파 파동 룰베이스 처방:
- *    - 결핍 오행을 치유·공명시키는 전용 솔페지오 주파수(396Hz, 417Hz, 528Hz, 639Hz, 741Hz, 852Hz) 및
- *      청취 프로토콜을 1:1 결정론적 매핑
- * 4. 1분 마이크로 개운 행동 프로토콜 (Micro-Ritual):
+ * 3. 1분 마이크로 개운 행동 프로토콜 (Micro-Ritual):
  *    - 바쁜 현대인이 일상에서 즉각 실천할 수 있는 60초 미세 행동(호흡, 오감 앵커링, 제스처)을
  *      결핍 기운에 맞추어 처방
- * 5. 라이프스타일 & 공간 오행 처방:
+ * 4. 라이프스타일 & 공간 오행 처방:
  *    - 보약 컬러(Hex), 식이 처방(오미), 힐링 아로마, 풍수 방위 및 데일리 확언 도출
  */
 
@@ -40,20 +37,6 @@ export interface SingleElementDiagnosis {
   associatedChakra: string;
   psychologicalFunction: string;
   fatigueSymptom: string;
-}
-
-export interface SolfeggioPrescription {
-  primaryHz: number;
-  secondaryHz: number;
-  frequencyName: string;
-  healingMetaphor: string;
-  scientificResonance: string;
-  listeningProtocol: {
-    recommendedTime: string;
-    durationMinutes: number;
-    recommendedHeadphone: boolean;
-    instruction: string;
-  };
 }
 
 export interface MicroRitualItem {
@@ -114,13 +97,10 @@ export interface EnergeticPrescriptionResult {
     vitalityRecoveryVector: string;
   };
 
-  // 3. 솔페지오 주파수 음파 처방
-  solfeggioPrescription: SolfeggioPrescription;
-
-  // 4. 1분 마이크로 개운 행동
+  // 3. 1분 마이크로 개운 행동
   microRituals: MicroRitualItem[];
 
-  // 5. 라이프스타일 & 공간 오행 처방
+  // 4. 라이프스타일 & 공간 오행 처방
   lifestyleRemedy: LifestyleRemedy;
 }
 
@@ -132,12 +112,6 @@ const ELEMENT_META: Record<FiveElement, {
   chakra: string;
   psycho: string;
   fatigue: string;
-  solfeggioPrimary: number;
-  solfeggioSecondary: number;
-  solfeggioName: string;
-  solfeggioMetaphor: string;
-  solfeggioResonance: string;
-  solfeggioTime: string;
   colors: Array<{ name: string; hex: string; role: string }>;
   taste: string;
   foods: string[];
@@ -155,12 +129,6 @@ const ELEMENT_META: Record<FiveElement, {
     chakra: '제4 아나하타(가슴 차크라) & 제3 마니푸라',
     psycho: '새로운 시작, 추진력, 창의적 영감, 결단력, 진취성',
     fatigue: '눈 피로, 안구 건조, 어깨·목 결림, 근육 경련, 결단 우유부단, 신경성 짜증',
-    solfeggioPrimary: 528,
-    solfeggioSecondary: 417,
-    solfeggioName: '528Hz (기적과 생명력의 주파수 · DNA 회복)',
-    solfeggioMetaphor: '겨울 얼음을 뚫고 솟아오르는 파릇한 새싹의 생명력과 세포 소생의 파동',
-    solfeggioResonance: '자율신경계 코르티솔 분비를 완화하고 가슴과 간 경락의 정체된 기운을 틔워 결단력과 생기를 깨웁니다.',
-    solfeggioTime: '오전 06:00 ~ 10:00 (목 기운이 생동하는 아침 시간대 또는 기상 직후)',
     colors: [
       { name: '포레스트 그린', hex: '#15803d', role: '주 기운 보충' },
       { name: '세이지 민트', hex: '#6ee7b7', role: '신경 이완 및 순환' },
@@ -208,12 +176,6 @@ const ELEMENT_META: Record<FiveElement, {
     chakra: '제3 마니푸라(태양신경총) & 제2 스바디스타나',
     psycho: '자기표현, 열정, 카리스마, 친화력, 직관적 확신, 기쁨',
     fatigue: '가슴 답답함, 두근거림, 안면 열감, 수면 불규칙, 동기 저하, 위축감, 수족냉증',
-    solfeggioPrimary: 639,
-    solfeggioSecondary: 741,
-    solfeggioName: '639Hz (심장 차크라 공명 · 관계 조화와 내면의 불꽃)',
-    solfeggioMetaphor: '얼어붙은 마음을 사르르 녹이는 따스한 모닥불과 태양빛의 온기 파동',
-    solfeggioResonance: '심장 박동 변이도(HRV)를 안정화하고 자존감과 타인과의 연결감을 강화하여 차가운 에너지를 따뜻하게 덥혀줍니다.',
-    solfeggioTime: '오전 11:00 ~ 13:00 (화 기운이 극대화되는 정오 전후 또는 나른한 오후)',
     colors: [
       { name: '앰버 크림슨', hex: '#e11d48', role: '심장 열정 활성화' },
       { name: '선셋 코랄', hex: '#fb923c', role: '생기와 온기 확산' },
@@ -261,12 +223,6 @@ const ELEMENT_META: Record<FiveElement, {
     chakra: '제1 물라다라(뿌리 차크라) & 제3 마니푸라',
     psycho: '안정감, 신뢰, 포용력, 흔들리지 않는 중심, 중재력, 현실 적응',
     fatigue: '소화불량, 더부룩함, 생각 과부하, 쓸데없는 걱정(반추), 무기력증, 뼈/관절 허약',
-    solfeggioPrimary: 396,
-    solfeggioSecondary: 432,
-    solfeggioName: '396Hz (해방과 접지 · 두려움과 불안을 씻어내는 대지의 파동)',
-    solfeggioMetaphor: '거센 비바람에도 흔들리지 않는 거대한 대지이자 단단한 산맥의 접지 파동',
-    solfeggioResonance: '머릿속에 쏠린 과도한 사유(생각 과부하)를 복부와 발바닥으로 하강시켜 단단한 현실 감각을 복원합니다.',
-    solfeggioTime: '오후 13:00 ~ 15:00 또는 저녁 식사 후 휴식 시간대',
     colors: [
       { name: '어스 샌드', hex: '#d97706', role: '안정적 중심 유지' },
       { name: '테라코타 웜', hex: '#b45309', role: '위장 온기 보호' },
@@ -314,12 +270,6 @@ const ELEMENT_META: Record<FiveElement, {
     chakra: '제5 비슈다(목 차크라) & 제6 아즈나(미간 차크라)',
     psycho: '체계화, 군더더기 제거, 명확한 기준, 결단, 절제, 핵심 요약',
     fatigue: '호흡 얕음, 피부 건조, 비염/기침, 경계선 모호(거절 못함), 산만함, 정리정돈 불가',
-    solfeggioPrimary: 741,
-    solfeggioSecondary: 852,
-    solfeggioName: '741Hz (정화와 명료성 · 직관과 결단의 크리스털 파동)',
-    solfeggioMetaphor: '불필요한 잡음을 서슬 퍼렇게 베어내는 다이아몬드 칼날과 청명한 가을 하늘의 공명',
-    solfeggioResonance: '복잡다단한 정보 과부하를 걷어내고 목과 호흡기 차크라를 정화해 단호하고 명쾌한 우선순위를 세워줍니다.',
-    solfeggioTime: '오후 15:00 ~ 19:00 (업무 정돈 및 하루 마무리 시간대)',
     colors: [
       { name: '스노우 펄 화이트', hex: '#f8fafc', role: '군더더기 없는 순결성' },
       { name: '플래티넘 실버', hex: '#94a3b8', role: '명료한 기준과 구조' },
@@ -367,12 +317,6 @@ const ELEMENT_META: Record<FiveElement, {
     chakra: '제2 스바디스타나(천골 차크라) & 제7 사하스라라',
     psycho: '유연성, 깊은 통찰, 회복 탄력성, 지혜, 수용성, 심층 휴식',
     fatigue: '만성 부신 피로, 허리/하체 시림, 귀 울림(이명), 두려움/공포감, 탈진, 번아웃',
-    solfeggioPrimary: 417,
-    solfeggioSecondary: 852,
-    solfeggioName: '417Hz & 174Hz (심층 정화와 원기 충전 · 심해의 재생 파동)',
-    solfeggioMetaphor: '깊은 밤 잔잔한 바다처럼 모든 상처를 끌어안고 본래의 원기를 되살리는 생명수의 파동',
-    solfeggioResonance: '부신피질 호르몬 축(HPA Axis)을 진정시키고 깊은 이완 상태(세타파)로 유도하여 세포 단위의 휴식을 공급합니다.',
-    solfeggioTime: '오후 21:00 ~ 23:00 (취침 전 또는 격렬한 일과 직후 휴식 시간)',
     colors: [
       { name: '미드나잇 옵시디언', hex: '#0f172a', role: '심층 에너지 보존' },
       { name: '딥 사파이어', hex: '#1e3a8a', role: '고요한 통찰 촉진' },
@@ -415,8 +359,7 @@ const ELEMENT_META: Record<FiveElement, {
 };
 
 /**
- * 사용자 프로필을 바탕으로 결핍 오행 및 바이오 에너지를 정밀 연산하고
- * 솔페지오 주파수 및 1분 마이크로 개운 행동을 확정 매핑합니다.
+ * 사용자 프로필을 바탕으로 오행 균형, 생활 습관 조언과 1분 마이크로 개운 행동을 계산합니다.
  */
 export function calculateEnergeticPrescription(options: {
   profile?: UserProfile;
@@ -507,22 +450,7 @@ export function calculateEnergeticPrescription(options: {
   else if (excessElements.length > 0) vitalityLevel = '에너지 분산';
   else if (voidList.length === 0 && deficientList.length <= 1) vitalityLevel = '균형 순환';
 
-  // 5. 솔페지오 주파수 확정 매핑
-  const solfeggioPrescription: SolfeggioPrescription = {
-    primaryHz: primaryMeta.solfeggioPrimary,
-    secondaryHz: primaryMeta.solfeggioSecondary,
-    frequencyName: primaryMeta.solfeggioName,
-    healingMetaphor: primaryMeta.solfeggioMetaphor,
-    scientificResonance: primaryMeta.solfeggioResonance,
-    listeningProtocol: {
-      recommendedTime: primaryMeta.solfeggioTime,
-      durationMinutes: 15,
-      recommendedHeadphone: true,
-      instruction: `조용한 환경에서 볼륨을 편안한 40~50%로 맞추고, ${primaryMeta.solfeggioPrimary}Hz 파동을 배경에 흐르게 둔 채 호흡에 집중하십시오.`
-    }
-  };
-
-  // 6. 1분 마이크로 개운 행동 확정
+  // 5. 1분 마이크로 개운 행동 확정
   const microRituals: MicroRitualItem[] = [...primaryMeta.rituals];
   if (secondaryLacking) {
     const secMeta = ELEMENT_META[secondaryLacking];
@@ -531,7 +459,7 @@ export function calculateEnergeticPrescription(options: {
     }
   }
 
-  // 7. 라이프스타일 처방
+  // 6. 라이프스타일 처방
   const lifestyleRemedy: LifestyleRemedy = {
     luckyColors: primaryMeta.colors,
     foodPrescription: {
@@ -579,7 +507,6 @@ export function calculateEnergeticPrescription(options: {
       vitalityRecoveryVector: `${primaryLacking} 기운을 보완하여 ${primaryMeta.organYin}의 정체된 에너지를 순환시키고 ${primaryMeta.psycho}의 활력을 깨움`,
     },
 
-    solfeggioPrescription,
     microRituals,
     lifestyleRemedy,
   };
@@ -592,7 +519,6 @@ export function calculateEnergeticPrescription(options: {
 export function formatEnergeticPrescriptionPrompt(res: EnergeticPrescriptionResult): string {
   const d = res.elementDiagnosis;
   const b = res.bioEnergeticAlignment;
-  const s = res.solfeggioPrescription;
   const l = res.lifestyleRemedy;
 
   const ritualLines = res.microRituals.map((r, i) =>
@@ -620,17 +546,10 @@ export function formatEnergeticPrescriptionPrompt(res: EnergeticPrescriptionResu
    - 결핍 시 심신 피로 징후: ${b.psychologicalImbalance}
    - 활력 회복 벡터: ${b.vitalityRecoveryVector}
 
-3. [솔페지오 주파수 & 음파 진동 처방 (Solfeggio Soundwave)]:
-   - 추천 주파수: ★ ${s.frequencyName} (보조: ${s.secondaryHz}Hz)
-   - 파동 메타포: ${s.healingMetaphor}
-   - 공명 치유 기전: ${s.scientificResonance}
-   - 추천 청취 시점: ${s.listeningProtocol.recommendedTime} (${s.listeningProtocol.durationMinutes}분, 헤드폰 권장)
-   - 청취 가이드: ${s.listeningProtocol.instruction}
-
-4. [1분 마이크로 개운 행동 프로토콜 (60-Second Micro-Rituals)]:
+3. [1분 마이크로 개운 행동 프로토콜 (60-Second Micro-Rituals)]:
 ${ritualLines}
 
-5. [라이프스타일 & 공간 오행 처방]:
+4. [라이프스타일 & 공간 오행 처방]:
    - 보약 컬러: ${colorLines}
    - 오미(五味) 식이: ${l.foodPrescription.taste} 계열 | 추천 식재료: ${l.foodPrescription.keyIngredients.join(', ')} | 추천 음료: ${l.foodPrescription.drinkRecommendation}
    - 아로마 에센셜 오일: ${l.aromaEssentialOils.join(', ')}
@@ -638,6 +557,6 @@ ${ritualLines}
    - 데일리 확언 문장: "${l.dailyAffirmation}"
 ======================================================================
 [★ 루시 답변 가이드]:
-- 사용자가 피로, 건강, 개운, 오행, 주파수, 라이프스타일을 물을 때 위 실측 데이터를 기반으로 지혜롭고 자상하게 처방해줘.
-- 단순 미신이 아닌 '오행 수리 연산 × 자율신경계 사운드 테라피 × 1분 초미세 행동'의 현대적 바이오웰니스 언어로 풀어줘.`;
+- 사용자가 피로, 건강, 개운, 오행, 라이프스타일을 물을 때 위 실측 데이터를 기반으로 지혜롭고 자상하게 처방해줘.
+- 단순 미신이 아닌 '오행 수리 연산 × 일상 속 자기 돌봄 × 1분 초미세 행동'의 현대적 웰니스 언어로 풀어줘.`;
 }

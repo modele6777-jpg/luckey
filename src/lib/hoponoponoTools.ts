@@ -224,7 +224,7 @@ export const HOPONOPONO_TOOL_CATALOG: HoponoponoToolCatalogItem[] = [
     emoji: '✨',
     category: 'classic',
     summary: '지금 나의 내면 상태에 가장 알맞은 정화 도구를 골라줍니다.',
-    coreEffect: '영혼의 주파수에 맞춘 최적의 정화 도구 자동 처방',
+    coreEffect: '현재의 고민과 감정에 맞는 정화 도구를 선택하도록 안내',
   },
 ];
 

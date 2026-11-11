@@ -25,7 +25,6 @@ export default async function handler(req: { method?: string; body?: unknown }, 
     const { generateDailyBgmBuffer } = await import("../../server/api-lib/generateDailyBgm.ts");
     const { buffer, durationSec } = generateDailyBgmBuffer({
       focusPlaylist,
-      frequency: body.frequency ? String(body.frequency) : undefined,
       cardName: body.cardName ? String(body.cardName) : undefined,
       symbol: body.symbol ? String(body.symbol) : undefined,
       dateKey,

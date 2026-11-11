@@ -89,7 +89,7 @@ const TWELVE_AEONS_BASE: Omit<DivineAeon, 'resonanceScore'>[] = [
     nameKo: '에클레시아',
     greekName: 'Ecclesia',
     divineAttribute: '빛의 존재들의 거룩한 연대',
-    illuminationGift: '고립된 고독을 깨고 같은 영적 주파수를 지닌 소울메이트와의 공명',
+    illuminationGift: '고립감을 덜고 비슷한 가치관을 나누는 사람과의 깊은 유대',
   },
   {
     id: 'bythos',

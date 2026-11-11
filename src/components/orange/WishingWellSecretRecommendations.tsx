@@ -141,7 +141,7 @@ export function WishingWellSecretRecommendations({
         </div>
       </div>
 
-      {/* Secret Frequency Capsule */}
+      {/* Secret Intention Capsule */}
       <div className="relative z-10 p-3.5 sm:p-4 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-7 h-7 rounded-xl bg-amber-400/20 border border-amber-300/30 flex items-center justify-center text-amber-300 shrink-0">

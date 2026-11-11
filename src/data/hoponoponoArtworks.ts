@@ -236,7 +236,7 @@ export const HOPONOPONO_ARTWORK_GALLERY: CleansingArtworkTheme[] = [
     title: '셀레나이트의 순백 광채',
     description: '달의 순수성을 담은 셀레나이트 기둥이 모든 탁한 기운을 빛으로 정화합니다.',
     imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=85',
-    promptSeed: 'Radiant white selenite crystal monolith emitting soft pearlescent luminescence in sacred sanctuary, high frequency healing',
+    promptSeed: 'Radiant white selenite crystal monolith emitting soft pearlescent luminescence in a calm sacred sanctuary',
   },
   {
     id: 'rose_quartz_self_love',
@@ -406,4 +406,3 @@ export function buildDynamicCleansingImagePrompt(symbol: string, subject: string
 
   return `A breathtaking meditative artwork symbolizing Ho'oponopono spiritual purification: "${cleanSymbol}" gently cleansing and transforming: "${cleanSubject}". ${randomStyle}, 8k resolution, NanoBanana art style, masterpiece, peaceful, serene, divine tranquility, no text, no watermarks.`;
 }
-

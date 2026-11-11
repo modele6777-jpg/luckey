@@ -174,7 +174,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
         title: '3단계 창조 공식 (Ask · Believe · Receive)',
         shortLabel: '창조 공식',
         description: '소원을 우주에 요청하고, 확신으로 믿으며, 기쁨으로 수신하는 3단계 절대 공식입니다.',
-        narration: '3단계 창조 공식. 요청하고, 믿고, 받으라. 우주는 당신이 진정으로 느끼는 주파수에 완벽히 응답합니다.',
+        narration: '3단계 창조 공식. 원하는 것을 분명히 적고, 감사한 점을 돌아보며, 오늘 할 수 있는 행동으로 이어가세요.',
         sections: [
           {
             title: '1. Ask (명확한 요청)',
@@ -190,7 +190,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
             principles: [
               '물리적 눈앞에 보이기 전에 영적 차원에서 이미 완성되었음을 아는 것입니다.',
               '‘어떻게(How)’ 이루어질지는 우주의 몫이므로 당신이 통제하려 하지 마세요.',
-              '의심과 불안이 올라올 때는 즉시 감사의 마음으로 주파수를 전환하세요.',
+              '의심과 불안이 올라올 때는 잠시 멈춰 감사한 일을 떠올리며 마음을 가라앉히세요.',
             ],
             steps: ['보이지 않아도 확신하기', '통제 내려놓기', '의심을 감사로 바꾸기'],
           },
@@ -198,7 +198,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
             title: '3. Receive (감사의 수신)',
             principles: [
               '소원이 실제로 이루어졌을 때 느낄 벅찬 감격과 환희를 지금 미리 느끼세요.',
-              '감사는 받는 주파수에 접속하는 가장 빠르고 강력한 열쇠입니다.',
+              '감사는 지금 가진 것을 알아차리고 다음 행동을 시작하게 도와줍니다.',
               '내면의 영감이 떠오를 때 가벼운 마음으로 기쁘게 즉각 행동하세요.',
             ],
             steps: ['벅찬 감정 미리 느끼기', '매일 밤 감사 돌 쥐기', '영감에 즉각 행동하기'],
@@ -210,8 +210,8 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
         roman: 'Ⅱ',
         title: '10가지 시크릿 실천 도구 (Secret Tools)',
         shortLabel: '실천 도구',
-        description: '일상에서 잠재의식을 프로그래밍하고 주파수를 급상승시키는 10대 도구입니다.',
-        narration: '시크릿 10대 실천 도구. 비전보드, 감사의 돌, 시크릿 시프터, 수표 명상으로 주파수를 고정하세요.',
+        description: '일상에서 목표를 기억하고 작은 실천을 이어가도록 돕는 10가지 도구입니다.',
+        narration: '시크릿 10대 실천 도구. 비전보드, 감사의 돌, 시크릿 시프터, 수표 명상으로 마음을 차분히 모아보세요.',
         sections: [
           {
             title: '1. 비전보드 (Vision Board)',
@@ -223,7 +223,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
           },
           {
             title: '3. 시크릿 시프터 (Secret Shifters)',
-            details: '기분이 다운될 때 좋아하는 음악, 반려동물 생각, 아름다운 추억을 떠올려 1분 만에 주파수를 전환합니다.',
+            details: '기분이 가라앉을 때 좋아하는 음악, 반려동물, 아름다운 추억을 떠올려 잠시 마음을 환기합니다.',
           },
           {
             title: '4. 우주 은행 풍요 수표 (Magic Check)',
@@ -241,7 +241,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
         sections: [
           {
             title: '1. 진동의 법칙 (Law of Vibration)',
-            details: '우주의 모든 것은 에너지이며 일정한 주파수로 진동합니다. 비슷한 진동수를 가진 것끼리 서로 끌어당깁니다.',
+            details: '이 책은 마음가짐과 행동이 일상에서의 선택과 경험에 영향을 줄 수 있다고 설명합니다.',
           },
           {
             title: '2. 상응의 법칙 (Law of Correspondence)',
@@ -255,7 +255,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
         title: '시크릿 AI 코칭 바이블 (Secret Bible)',
         shortLabel: 'AI 코칭 질문',
         description: 'Lucy(오렌지 딥리즈닝 모드)와 함께 1:1로 끌어당김을 코칭받으세요.',
-        narration: '시크릿 코칭 바이블. Lucy와 질문을 나누며 풍요의 주파수를 즉시 동조하세요.',
+        narration: '시크릿 코칭 바이블. Lucy와 질문을 나누며 목표를 돌아보고 오늘 할 수 있는 행동을 찾아보세요.',
         sections: [],
         coachingQuestions: [
           {
@@ -333,7 +333,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
       {
         id: 'tarot_gnosis',
         roman: 'Ⅲ',
-        title: '타로 주파수 & 영지주의 그노시스',
+        title: '타로 상징 & 영지주의 그노시스',
         shortLabel: '타로·그노시스',
         description: '메이저 아르카나 22장의 상징성과 내면의 신성한 불꽃을 깨우는 영적 통찰입니다.',
         narration: '타로와 그노시스. 물질계의 착각을 꿰뚫고 참된 지혜의 빛으로 영혼을 각성하세요.',
@@ -404,7 +404,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
         roman: 'Ⅱ',
         title: '데이비드 호킨스 의식 레벨 & 놓아버림',
         shortLabel: '호킨스 놓아버림',
-        description: '수치심, 죄책감, 무기력의 낮은 주파수에서 용기와 사랑, 평화의 높은 의식으로 도약하는 비결입니다.',
+        description: '수치심, 죄책감, 무기력에 머무르지 않고 용기와 사랑, 평온을 회복하는 방법을 살펴봅니다.',
         narration: '호킨스 놓아버림. 감정에 이름을 붙이거나 스토리를 만들지 말고, 신체적 에너지 전압만 고요히 지켜보세요.',
         sections: [
           {
@@ -677,7 +677,7 @@ export const HANDBOOK_DATA: Record<HandbookChannel, HandbookUniverse> = {
           {
             title: '✨ TRINITY (트리니티)',
             subtitle: '천문 정밀 사주 & 운명 오라클 & 기적수업',
-            details: '정밀 만세력 사주원국, 타로 주파수 리딩, 기적수업(ACIM) 용서의 원리로 삶의 전환점과 개운법을 밝힙니다.',
+            details: '정밀 만세력 사주원국, 타로 리딩, 기적수업(ACIM) 용서의 원리로 삶의 전환점과 개운법을 살펴봅니다.',
           },
           {
             title: '⚡ AURA (아우라 / HEAL)',

@@ -1,4 +1,4 @@
-export const DAILY_BGM_ALGO_VERSION = 2;
+export const DAILY_BGM_ALGO_VERSION = 3;
 
 export type DailyBgmRecipe = {
   seed: number;
@@ -13,7 +13,6 @@ export type DailyBgmRecipe = {
 
 export type DailyBgmInput = {
   focusPlaylist: string;
-  frequency?: string;
   cardName?: string;
   symbol?: string;
   dateKey: string;
@@ -38,14 +37,6 @@ function mulberry32(seed: number) {
   };
 }
 
-function parseFrequencyHz(frequency?: string): number | null {
-  if (!frequency) return null;
-  const match = String(frequency).match(/(\d{2,4})\s*hz/i);
-  if (!match) return null;
-  const hz = Number(match[1]);
-  return Number.isFinite(hz) ? hz : null;
-}
-
 function detectTexture(focusPlaylist: string): DailyBgmRecipe['texture'] {
   const mood = focusPlaylist.toLowerCase();
   if (mood.includes('rain') || mood.includes('비') || mood.includes('cozy')) return 'rain';
@@ -54,7 +45,6 @@ function detectTexture(focusPlaylist: string): DailyBgmRecipe['texture'] {
   return 'soft';
 }
 
-const SOLFEGGIO = [174.61, 285.34, 396.0, 417.3, 528.0, 639.0, 741.0, 852.0, 963.0];
 const PENTATONIC = [130.81, 146.83, 164.81, 196.0, 220.0, 261.63, 293.66, 329.63, 392.0, 440.0];
 
 export function buildDailyBgmRecipe(input: DailyBgmInput): DailyBgmRecipe {
@@ -63,19 +53,14 @@ export function buildDailyBgmRecipe(input: DailyBgmInput): DailyBgmRecipe {
     input.trackKey,
     input.dateKey,
     input.focusPlaylist,
-    input.frequency || '',
     input.cardName || '',
     input.symbol || '',
   ].join('|');
   const seed = hashString(seedSource);
   const rand = mulberry32(seed);
 
-  const parsedHz = parseFrequencyHz(input.frequency);
-  let rootHz = parsedHz ?? SOLFEGGIO[seed % SOLFEGGIO.length];
-  if (rootHz > 320) rootHz = rootHz / 2;
-  if (rootHz < 90) rootHz = rootHz * 2;
-
   const rootIndex = Math.floor(rand() * PENTATONIC.length);
+  const rootHz = PENTATONIC[rootIndex];
   const padNotes = [
     PENTATONIC[rootIndex % PENTATONIC.length],
     PENTATONIC[(rootIndex + 2) % PENTATONIC.length],

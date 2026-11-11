@@ -415,7 +415,7 @@ ${growthResult?.dominant_element ? `(주요 역량 영역: ${growthResult.domina
           ? '미안해, 잠시 생각의 숲을 헤매고 있었어... 네가 뽑은 카드의 따뜻한 빛은 언제나 네 곁에 머물고 있어. 다시 이야기해 줄래? 💛'
           : oracleMode === 'miracle'
           ? '잠시 생각의 파동이 흩어졌지만, 네 안의 참된 평화는 언제나 안전해. 다시 한번 마음을 들려줄래? 🕊️'
-          : '잠시 네트워크 주파수가 흔들렸어! 하지만 네 실행 모멘텀은 멈추지 않아. 다시 한번 들려줘! ⚡',
+          : '잠시 네트워크 연결이 잠시 흔들렸어! 하지만 네 실행 모멘텀은 멈추지 않아. 다시 한번 들려줘! ⚡',
         time: getKoreanTime(),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
@@ -492,7 +492,7 @@ ${growthResult?.dominant_element ? `(주요 역량 영역: ${growthResult.domina
               <h4 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
                 <span>{oracleMode === 'miracle' ? '평화의 동행자 제제' : '내면아이 제제'}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 font-medium">
-                  {oracleMode === 'healing' ? '힐링 상담봇' : oracleMode === 'miracle' ? '기적수업 동행봇' : '마인드셋 코치'}
+                  {oracleMode === 'healing' ? '마음 돌봄 상담봇' : oracleMode === 'miracle' ? '기적수업 동행봇' : '마인드셋 코치'}
                 </span>
               </h4>
             </div>

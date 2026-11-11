@@ -21,6 +21,7 @@ export interface ProfileBasic {
   nickname?: string;        // 닉네임 (루시가 부를 이름)
   birthdate?: string;       // YYYY-MM-DD
   birthtime?: string;       // HH:MM
+  birthTimeAccuracy?: 'exact' | 'approximate' | 'unknown';
   gender?: 'male' | 'female' | 'other';
   birthCity?: string;
   lunarSolar?: 'solar' | 'lunar';
@@ -266,7 +267,7 @@ export interface SharedState {
   lastHealSoulSync?: number;
   lastMuseDailySync?: number;
   lastMuseSoulSync?: number;
-  soulHistory?: { name: string; value: number }[]; // For SoulFrequencyChart
+  soulHistory?: { name: string; value: number }[]; // For SoulProgressChart
   emotionHistory?: { name: string; value: number }[]; // For EmotionDistribution
   lastEnergyAnalysis?: number; // timestamp
   focusPlaylists?: string[]; // Saved focus music playlists

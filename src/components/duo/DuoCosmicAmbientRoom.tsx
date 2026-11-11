@@ -1,133 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Sparkles, Music, Activity, Play, Pause, Volume2 } from 'lucide-react';
+import { Sparkles, Music, Activity, Headphones, Pause, Play } from 'lucide-react';
 import './duo-cosmic-room.css';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { getVisualRhythmBeatConfig, VisualRhythmBinauralPlayer } from '@/lib/visualRhythmBinaural';
 
 interface DuoCosmicAmbientRoomProps {
   isLight?: boolean;
-}
-
-// 🎧 Web Audio API 기반 순수 바이노럴 비트 합성기 (스테레오 채널 분리)
-class BinauralBeatSynthesizer {
-  private ctx: AudioContext | null = null;
-  private leftOsc: OscillatorNode | null = null;
-  private rightOsc: OscillatorNode | null = null;
-  private masterGain: GainNode | null = null;
-  private isPlaying: boolean = false;
-
-  public static getBeatFreq(bpm: number): { beatHz: number; carrierHz: number; waveLabel: string } {
-    if (bpm <= 65) {
-      return { beatHz: 4.5, carrierHz: 216, waveLabel: '세타파(θ) 4.5Hz · 깊은 명상' };
-    }
-    if (bpm <= 95) {
-      return { beatHz: 10.0, carrierHz: 220, waveLabel: '알파파(α) 10Hz · 편안한 이완' };
-    }
-    return { beatHz: 15.0, carrierHz: 240, waveLabel: '베타파(β) 15Hz · 집중과 각성' };
-  }
-
-  public start(bpm: number): boolean {
-    try {
-      this.stop();
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return false;
-
-      const ctx = new AudioCtx();
-      this.ctx = ctx;
-
-      const { beatHz, carrierHz } = BinauralBeatSynthesizer.getBeatFreq(bpm);
-
-      // 좌측 채널: carrierHz (예: 216Hz, 220Hz, 240Hz)
-      const leftOsc = ctx.createOscillator();
-      leftOsc.type = 'sine';
-      leftOsc.frequency.setValueAtTime(carrierHz, ctx.currentTime);
-
-      // 우측 채널: carrierHz + beatHz (예: 220.5Hz, 230Hz, 255Hz)
-      const rightOsc = ctx.createOscillator();
-      rightOsc.type = 'sine';
-      rightOsc.frequency.setValueAtTime(carrierHz + beatHz, ctx.currentTime);
-
-      // 스테레오 채널 분리 머저
-      const merger = ctx.createChannelMerger(2);
-
-      const leftGain = ctx.createGain();
-      leftGain.gain.setValueAtTime(0.5, ctx.currentTime);
-      leftOsc.connect(leftGain);
-      leftGain.connect(merger, 0, 0); // 좌측 이어폰
-
-      const rightGain = ctx.createGain();
-      rightGain.gain.setValueAtTime(0.5, ctx.currentTime);
-      rightOsc.connect(rightGain);
-      rightGain.connect(merger, 0, 1); // 우측 이어폰
-
-      // 부드러운 페이드인
-      const masterGain = ctx.createGain();
-      masterGain.gain.setValueAtTime(0.001, ctx.currentTime);
-      masterGain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.5);
-
-      merger.connect(masterGain);
-      masterGain.connect(ctx.destination);
-
-      leftOsc.start();
-      rightOsc.start();
-
-      this.leftOsc = leftOsc;
-      this.rightOsc = rightOsc;
-      this.masterGain = masterGain;
-      this.isPlaying = true;
-
-      if (ctx.state === 'suspended') {
-        void ctx.resume();
-      }
-      return true;
-    } catch (e) {
-      console.warn('Binaural beat synthesis error:', e);
-      return false;
-    }
-  }
-
-  public updateBpm(bpm: number) {
-    if (!this.isPlaying || !this.ctx || !this.leftOsc || !this.rightOsc) return;
-    try {
-      const { beatHz, carrierHz } = BinauralBeatSynthesizer.getBeatFreq(bpm);
-      const now = this.ctx.currentTime;
-      this.leftOsc.frequency.linearRampToValueAtTime(carrierHz, now + 0.3);
-      this.rightOsc.frequency.linearRampToValueAtTime(carrierHz + beatHz, now + 0.3);
-    } catch (_) {}
-  }
-
-  public stop() {
-    if (this.ctx && this.masterGain) {
-      try {
-        const now = this.ctx.currentTime;
-        this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-        this.masterGain.gain.linearRampToValueAtTime(0.001, now + 0.25);
-        setTimeout(() => {
-          try {
-            this.leftOsc?.stop();
-            this.rightOsc?.stop();
-            this.leftOsc?.disconnect();
-            this.rightOsc?.disconnect();
-            this.ctx?.close();
-          } catch (_) {}
-          this.ctx = null;
-          this.leftOsc = null;
-          this.rightOsc = null;
-          this.masterGain = null;
-          this.isPlaying = false;
-        }, 280);
-      } catch (_) {
-        this.ctx = null;
-        this.isPlaying = false;
-      }
-    } else {
-      this.isPlaying = false;
-    }
-  }
-
-  public getIsPlaying(): boolean {
-    return this.isPlaying;
-  }
 }
 
 // 📖 252대 DCE 엔진별 핵심 통찰 및 요약 설명 생성기
@@ -209,21 +88,24 @@ function getEngineShortSummary(engine: DceEngineMeta): string {
 
 export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLight = false }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const binauralPlayerRef = useRef<VisualRhythmBinauralPlayer | null>(null);
+  if (!binauralPlayerRef.current) binauralPlayerRef.current = new VisualRhythmBinauralPlayer();
 
   // BPM 리듬 설정 (기본 90 BPM)
   const [ambientTempoBpm, setAmbientTempoBpm] = useState<number>(90);
+  const [isBinauralPlaying, setIsBinauralPlaying] = useState(false);
   // 🔮 252대 DCE 엔진 무조건 랜덤 셔플로 시작
   const [activeEngineIdx, setActiveEngineIdx] = useState<number>(() => {
     return Math.floor(Math.random() * ALL_DCE_ENGINES.length);
   });
 
-  // 바이노럴 비트 합성기 상태
-  const [isBinauralPlaying, setIsBinauralPlaying] = useState<boolean>(false);
-  const synthRef = useRef<BinauralBeatSynthesizer | null>(null);
-
   // 🎵 음악 비트 탭 싱크 (애플뮤직 박자에 맞춰 화면 탭 시 템포 실측 동기화)
   const tapTimesRef = useRef<number[]>([]);
   const lastTapRippleRef = useRef<{ time: number } | null>(null);
+
+  useEffect(() => () => {
+    binauralPlayerRef.current?.stop();
+  }, []);
 
   const handleTapSync = useCallback(() => {
     triggerHaptic('whitehole');
@@ -243,18 +125,9 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         const calculatedBpm = Math.round(60000 / avgInterval);
         const clamped = Math.min(180, Math.max(50, calculatedBpm));
         setAmbientTempoBpm(clamped);
-        if (synthRef.current?.getIsPlaying()) {
-          synthRef.current.updateBpm(clamped);
-        }
+        binauralPlayerRef.current?.updateBpm(clamped);
       }
     }
-  }, []);
-
-  useEffect(() => {
-    synthRef.current = new BinauralBeatSynthesizer();
-    return () => {
-      synthRef.current?.stop();
-    };
   }, []);
 
   // 무조건 랜덤 셔플 (10초 주기)
@@ -271,31 +144,22 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
     return () => clearInterval(timer);
   }, []);
 
-  // BPM 변경 시 바이노럴 비트 주파수 연동
+  // BPM 변경: 시각 리듬과 탭 동기화에만 사용
   const handleSelectBpm = useCallback((bpm: number) => {
     triggerHaptic('whitehole');
     setAmbientTempoBpm(bpm);
-    if (synthRef.current?.getIsPlaying()) {
-      synthRef.current.updateBpm(bpm);
-    }
+    binauralPlayerRef.current?.updateBpm(bpm);
   }, []);
 
-  // 바이노럴 비트 재생 / 정지 토글
   const handleToggleBinauralBeat = useCallback(() => {
     triggerHaptic('whitehole');
-    const synth = synthRef.current;
-    if (!synth) return;
-
     if (isBinauralPlaying) {
-      synth.stop();
+      binauralPlayerRef.current?.stop();
       setIsBinauralPlaying(false);
-    } else {
-      const ok = synth.start(ambientTempoBpm);
-      if (ok) {
-        setIsBinauralPlaying(true);
-      }
+      return;
     }
-  }, [isBinauralPlaying, ambientTempoBpm]);
+    setIsBinauralPlaying(binauralPlayerRef.current?.start(ambientTempoBpm) ?? false);
+  }, [ambientTempoBpm, isBinauralPlaying]);
 
   // 🎵 외부 음악과 함께 클릭 시: iOS 애플뮤직 앱(music://) 바로 실행
   const handleOpenAppleMusic = useCallback(() => {
@@ -403,7 +267,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         cy,
         width * 0.45
       );
-      goldNebula.addColorStop(0, isBinauralPlaying ? 'rgba(245, 158, 11, 0.20)' : 'rgba(245, 158, 11, 0.12)');
+      goldNebula.addColorStop(0, 'rgba(245, 158, 11, 0.12)');
       goldNebula.addColorStop(0.6, 'rgba(245, 158, 11, 0.03)');
       goldNebula.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = goldNebula;
@@ -526,10 +390,10 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = isBinauralPlaying ? 'rgba(251, 191, 36, 0.85)' : 'rgba(245, 158, 11, 0.70)';
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.70)';
       ctx.lineWidth = 3.2;
       ctx.shadowColor = '#fbbf24';
-      ctx.shadowBlur = isBinauralPlaying ? 16 : 10;
+      ctx.shadowBlur = 10;
       ctx.stroke();
 
       // [파동 선 4: 백열 순백 코어 필라멘트]
@@ -585,7 +449,7 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         }
       }
 
-      // 7. 은은하고 신비로운 캡션 텍스트 (우측 상단 528Hz & 좌측 상단 BPM 앰비언트)
+      // 7. 은은하고 신비로운 캡션 텍스트 (좌측 상단 BPM 앰비언트)
       ctx.save();
       ctx.font = '500 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.fillStyle = 'rgba(251, 191, 36, 0.75)';
@@ -599,12 +463,6 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
       ctx.fillText('COSMIC RESONANCE', 16, 36);
 
       ctx.textAlign = 'right';
-      ctx.font = '500 10px -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(52, 211, 153, 0.75)';
-      ctx.shadowColor = '#10b981';
-      ctx.shadowBlur = 6;
-      ctx.fillText('528Hz LOVE FREQUENCY', width - 16, 24);
-
       ctx.font = '400 8.5px -apple-system, sans-serif';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.40)';
       ctx.shadowBlur = 0;
@@ -619,10 +477,11 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', updateCanvasSize);
     };
-  }, [ambientTempoBpm, isBinauralPlaying]);
+  }, [ambientTempoBpm]);
 
   const currentEngine = ALL_DCE_ENGINES[activeEngineIdx] || ALL_DCE_ENGINES[0];
   const currentSummary = getEngineShortSummary(currentEngine);
+  const binauralConfig = getVisualRhythmBeatConfig(ambientTempoBpm);
 
   return (
     <section className={'cosmic-room ' + (isLight ? 'cosmic-room--light' : '')} aria-label="코스믹 룸">
@@ -664,32 +523,23 @@ export const DuoCosmicAmbientRoom: React.FC<DuoCosmicAmbientRoomProps> = ({ isLi
         <p>{currentSummary}</p>
       </section>
 
-      {/* 3️⃣ 하단 카드: 비주얼 리듬 (BPM + 바이노럴 비트 재생/정지 버튼 + 프리셋 3종) */}
+      {/* 3️⃣ 하단 카드: 비주얼 리듬 (BPM + 프리셋 3종) */}
       <section className="cosmic-room-tempo cosmic-room-card" aria-label="비주얼 리듬 설정">
         <div className="cosmic-room-tempo-heading">
           <div>
             <span className="cosmic-room-card-heading"><Activity size={13} /> 비주얼 리듬</span>
             <p><strong>{ambientTempoBpm}</strong><span>BPM</span></p>
           </div>
-
-          {/* 바이노럴 비트 재생/정지 버튼 */}
           <button
             type="button"
+            aria-pressed={isBinauralPlaying}
             onClick={handleToggleBinauralBeat}
-            className={`cosmic-room-binaural-btn ${isBinauralPlaying ? 'is-active' : ''}`}
-            title={`${ambientTempoBpm} BPM에 조율된 바이노럴 비트 (${BinauralBeatSynthesizer.getBeatFreq(ambientTempoBpm).waveLabel}) 재생`}
+            className={`cosmic-room-binaural-btn${isBinauralPlaying ? ' is-active' : ''}`}
+            title={`${isBinauralPlaying ? '바이노럴 비트 끄기' : '바이노럴 비트 켜기'} · ${binauralConfig.waveLabel} 좌우 차이 · 스테레오 헤드폰 권장`}
           >
-            {isBinauralPlaying ? (
-              <>
-                <Volume2 size={13} className="animate-pulse" />
-                <span>비트 정지</span>
-              </>
-            ) : (
-              <>
-                <Play size={12} fill="currentColor" />
-                <span>바이노럴 비트</span>
-              </>
-            )}
+            {isBinauralPlaying ? <Pause size={12} /> : <Play size={12} />}
+            <Headphones size={13} />
+            <span>{isBinauralPlaying ? '비트 정지' : '바이노럴 비트'}</span>
           </button>
         </div>
 

@@ -51,7 +51,15 @@ import {
   type FiveElement,
   type DailySajuReport
 } from '@/lib/sajuAnalysis';
-import { inspectSajuProfile } from '@/lib/sajuInput';
+import { assertSajuClock, inspectSajuProfile } from '@/lib/sajuInput';
+import {
+  buildSajuStructuredFallbackAnswer,
+  buildSajuConsultationSystemPrompt,
+  buildSajuConsultationUserMessage,
+  inferSajuConsultationTopic,
+  SAJU_CONSULTATION_TOPICS,
+  type SajuConsultationTopic,
+} from '@/lib/divination/consultationGuidance';
 import { invokeLLM } from '@/lib/ai';
 import { playTTS, playTTSInChunks, stopTTS, useTTSActive } from '@/utils/tts';
 
@@ -100,12 +108,18 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   const [editName, setEditName] = useState(profileName);
   const [editBirthdate, setEditBirthdate] = useState(profile?.basic?.birthdate || '');
   const [editBirthtime, setEditBirthtime] = useState(profile?.basic?.birthtime || '');
+  const [editBirthTimeAccuracy, setEditBirthTimeAccuracy] = useState<'exact' | 'approximate' | 'unknown'>(profile?.basic?.birthTimeAccuracy || (profile?.basic?.birthtime ? 'approximate' : 'unknown'));
+  const [editLunarSolar, setEditLunarSolar] = useState<'solar' | 'lunar'>(profile?.basic?.lunarSolar || 'solar');
+  const [editIsLeapMonth, setEditIsLeapMonth] = useState(Boolean(profile?.basic?.isLeapMonth));
+  const [profileInputError, setProfileInputError] = useState('');
   const [editGender, setEditGender] = useState<'male' | 'female'>(profile?.basic?.gender === 'female' ? 'female' : 'male');
   const [copied, setCopied] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // AI 질의응답 상태
   const [questionInput, setQuestionInput] = useState('');
+  const [consultationTopic, setConsultationTopic] = useState<SajuConsultationTopic>('personality');
+  const [consultationContext, setConsultationContext] = useState('');
   const [aiAnswers, setAiAnswers] = useState<Array<{ q: string; a: string; time: string; isLoading?: boolean }>>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [activeConsultTtsIdx, setActiveConsultTtsIdx] = useState<number | null>(null);
@@ -188,16 +202,39 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
   // 프로필 저장 핸들러
   const handleSaveProfile = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    const [year, month, day] = editBirthdate.split('-');
+    let validated;
+    try {
+      validated = assertSajuClock({
+        year,
+        month,
+        day,
+        birthtime: editBirthTimeAccuracy === 'unknown' ? undefined : editBirthtime,
+        isLunar: editLunarSolar === 'lunar',
+        isLeapMonth: editLunarSolar === 'lunar' && editIsLeapMonth,
+      });
+    } catch (error) {
+      setProfileInputError(error instanceof Error ? error.message : '생년월일과 달력 정보를 확인해 주세요.');
+      return;
+    }
     const chosenEditName = editName.trim() || profileName;
+    const savedBirthTimeAccuracy = validated.birthtime ? editBirthTimeAccuracy : 'unknown';
     const newProfile = {
       basic: {
+        ...profile?.basic,
         ...(chosenEditName ? { name: chosenEditName } : {}),
-        birthdate: editBirthdate,
-        birthtime: editBirthtime,
+        birthdate: validated.birthdate,
+        birthtime: savedBirthTimeAccuracy === 'unknown' ? undefined : validated.birthtime,
+        birthTimeAccuracy: savedBirthTimeAccuracy,
         gender: editGender,
+        lunarSolar: editLunarSolar,
+        isLeapMonth: editLunarSolar === 'lunar' && editIsLeapMonth,
       },
     };
     void updateSharedState({ userProfile: newProfile }, 'TRINITY');
+    setEditBirthtime(savedBirthTimeAccuracy === 'unknown' ? '' : validated.birthtime || '');
+    setEditBirthTimeAccuracy(savedBirthTimeAccuracy);
+    setProfileInputError('');
     setIsEditingProfile(false);
   };
 
@@ -299,18 +336,24 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
   // AI 명리 1:1 상담 질문 전송
   const handleAskAI = async (customQ?: string) => {
-    const q = (customQ || questionInput).trim();
-    if (!q || isAiLoading || !saju) return;
+    const rawQuestion = (customQ || questionInput).trim();
+    if (!rawQuestion || isAiLoading || !saju) return;
+    const activeTopic = customQ ? (inferSajuConsultationTopic(rawQuestion) || consultationTopic) : consultationTopic;
+    const context = activeTopic === 'current_concern' ? consultationContext.trim() : '';
+    const q = buildSajuConsultationUserMessage({ topic: activeTopic, question: rawQuestion, context });
+    const topicLabel = SAJU_CONSULTATION_TOPICS.find((topic) => topic.id === activeTopic)?.label || '사주 상담';
+    const displayedQuestion = `${topicLabel}: ${rawQuestion}${context ? ` · 상황: ${context}` : ''}`;
 
     const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
     setQuestionInput('');
+    setConsultationContext('');
     setIsAiLoading(true);
 
     const pendingIdx = aiAnswers.length;
     setAiAnswers((prev) => [
       ...prev,
       {
-        q,
+        q: displayedQuestion,
         a: '',
         time,
         isLoading: true,
@@ -320,14 +363,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
     try {
       let answerText = '';
 
-      const systemPrompt = `당신은 대한민국 최고의 정통 사주명리학 대가이자 직관적인 카운슬러 '루시(Lucy)'입니다.
-내담자의 사주 원국: [일간] ${saju.dayMaster.hanja} (${saju.dayMaster.symbolName}, ${saju.dayMaster.archetypeTitle}, 오행 ${saju.dayMaster.element}) / [표면 개수] ${saju.elements.strengthLabel || saju.elements.dominant.name}. 일간 오행과 개수가 많은 오행을 같은 말로 섞지 마세요. 표면 개수 0으로 건강·재물·운명을 정하지 마세요. 시주가 없으면 6글자 부분 결과입니다.
-
-[명리 AI 마스터 심층 상담실 절대 준수 원칙]:
-1. [오직 질문에만 직접 답변]: 내담자가 문의한 구체적 질문("${q}")에 대해서만 즉시 직접 답변하세요.
-2. [묻지 않은 내용 일체 생략]: 질문에서 묻지 않은 사주 원국 설명, 오행 구성 나열, 2026년 세운 해설, 개운 음식/색상/장소 나열 등을 절대 덧붙이지 마세요.
-3. [초간결 2~3문장 엄수]: 인사말("안녕하세요", "질문해주신 ~에 대하여" 등)이나 형식적인 서론, 긴 불릿 포인트 목록 없이, 질문에 대한 명쾌한 결론과 핵심 조언만 공백 포함 2~3문장(최대 150자 내외)으로 명확히 답하세요.
-4. [단도직입적 명쾌함]: 두루뭉술하거나 장황한 덕담을 늘어놓지 말고, 질문한 문제에 대한 명리학적 판단(가능 여부, 유리한 시기, 주의할 점 등)을 시원하게 결론지어 제시하세요.`;
+      const systemPrompt = buildSajuConsultationSystemPrompt(saju, profile, activeTopic);
 
       try {
         const reply = await invokeLLM({
@@ -361,7 +397,13 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
       // LLM 응답이 비어있거나 장애/타임아웃 또는 일반론적 폴백 감지 시 자체 정밀 명리 마스터 분석 엔진으로 즉각 완성
       if (!answerText) {
-        answerText = generateSajuMasterConsultation(saju, q);
+        answerText = buildSajuStructuredFallbackAnswer({
+          chart: saju,
+          profile,
+          topic: activeTopic,
+          question: rawQuestion,
+          fallbackText: generateSajuMasterConsultation(saju, q),
+        });
       }
 
       const finalAnswer = answerText;
@@ -375,7 +417,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
       // 🔊 대답이 나올 때 자동으로 내 질문과 대답 낭독
       if (isAutoTtsEnabled && finalAnswer) {
-        const speechScript = buildConsultationSpeechText(q, finalAnswer);
+        const speechScript = buildConsultationSpeechText(displayedQuestion, finalAnswer);
         stopTTS();
         setActiveConsultTtsIdx(pendingIdx);
         playTTSInChunks(speechScript, 'Kore', 110).finally(() => {
@@ -384,7 +426,13 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
       }
     } catch (err) {
       console.error('Failed to get saju AI advice:', err);
-      const fallbackText = generateSajuMasterConsultation(saju, q);
+      const fallbackText = buildSajuStructuredFallbackAnswer({
+        chart: saju,
+        profile,
+        topic: activeTopic,
+        question: rawQuestion,
+        fallbackText: generateSajuMasterConsultation(saju, q),
+      });
       setAiAnswers((prev) =>
         prev.map((item, idx) =>
           idx === pendingIdx || (idx === prev.length - 1 && item.isLoading)
@@ -396,7 +444,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
       // 🔊 대답이 나올 때 자동으로 내 질문과 대답 낭독
       if (isAutoTtsEnabled && fallbackText) {
-        const speechScript = buildConsultationSpeechText(q, fallbackText);
+        const speechScript = buildConsultationSpeechText(displayedQuestion, fallbackText);
         stopTTS();
         setActiveConsultTtsIdx(pendingIdx);
         playTTSInChunks(speechScript, 'Kore', 110).finally(() => {
@@ -413,7 +461,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
     '💼 내 오행에 가장 어울리는 직업과 업무 스타일은?',
     '💰 내 사주 원국의 재물 흐름과 돈을 모으는 비결은?',
     '❤️ 나의 연애 성향과 나를 채워주는 좋은 인연의 기운은?',
-    '⚡ 2026년 나에게 가장 중요한 터닝 포인트와 기회는?',
+    '⚡ 올해 나에게 중요한 흐름과 기회는?',
     '🌿 부족한 오행을 일상에서 가장 쉽게 채우는 현실 팁은?',
   ];
 
@@ -440,7 +488,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
               영혼의 설계도 — 사주 오행 & 만세력 리포트
             </h3>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto leading-relaxed">
-              {inspectSajuProfile(profile)?.message || '생년월일과 태어난 시간을 입력하시면, 정통 명리학 기반의 사주 4주 8자 원국표와 목·화·토·금·수 오행 밸런스를 즉시 분석해 드립니다.'}
+              {inspectSajuProfile(profile)?.message || '생년월일을 입력하면 기존 사주 계산기로 원국과 오행을 분석해 드립니다. 태어난 시간을 모르면 시주를 제외한 부분 명식으로 진행해요.'}
             </p>
           </div>
 
@@ -458,7 +506,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
 
             <div className="grid grid-cols-2 gap-3 layout-form-grid" data-form-columns="2">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-zinc-400">생년월일 (양력)</label>
+                <label className="text-xs font-bold text-zinc-400">생년월일</label>
                 <input
                   type="date"
                   required
@@ -469,15 +517,64 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-zinc-400">태어난 시간 (생시)</label>
+                <label className="text-xs font-bold text-zinc-400">태어난 시간 (선택)</label>
                 <input
                   type="time"
                   value={editBirthtime}
+                  disabled={editBirthTimeAccuracy === 'unknown'}
                   onChange={(e) => setEditBirthtime(e.target.value)}
                   className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <span className="block text-xs font-bold text-zinc-400">달력 기준</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['solar', 'lunar'] as const).map((calendar) => (
+                    <button
+                      key={calendar}
+                      type="button"
+                      aria-pressed={editLunarSolar === calendar}
+                      onClick={() => {
+                        setEditLunarSolar(calendar);
+                        if (calendar === 'solar') setEditIsLeapMonth(false);
+                      }}
+                      className={`py-2.5 rounded-xl border text-xs font-bold ${editLunarSolar === calendar ? 'bg-amber-500/20 border-amber-400 text-amber-200' : 'bg-white/5 border-white/10 text-zinc-400'}`}
+                    >
+                      {calendar === 'solar' ? '양력' : '음력'}
+                    </button>
+                  ))}
+                </div>
+                {editLunarSolar === 'lunar' && (
+                  <label className="flex items-center gap-2 text-xs text-zinc-300 py-1">
+                    <input type="checkbox" checked={editIsLeapMonth} onChange={(event) => setEditIsLeapMonth(event.target.checked)} />
+                    윤달
+                  </label>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-zinc-400" htmlFor="saju-birth-time-accuracy">태어난 시간의 정확도</label>
+                <select
+                  id="saju-birth-time-accuracy"
+                  value={editBirthTimeAccuracy}
+                  onChange={(event) => {
+                    const value = event.target.value as 'exact' | 'approximate' | 'unknown';
+                    setEditBirthTimeAccuracy(value);
+                    if (value === 'unknown') setEditBirthtime('');
+                  }}
+                  className="w-full px-4 py-3 rounded-2xl bg-[#24262b] border border-white/10 text-white text-sm focus:border-amber-400 focus:outline-none"
+                >
+                  <option value="exact">정확한 기록</option>
+                  <option value="approximate">대략 기억</option>
+                  <option value="unknown">모름</option>
+                </select>
+                <p className="text-[11px] text-zinc-500">모르면 생시를 비우고 시주 없이 계산해요.</p>
+              </div>
+            </div>
+
+            {profileInputError && <p role="alert" className="text-xs text-rose-300">{profileInputError}</p>}
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-400">성별</label>
@@ -602,6 +699,10 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                   setEditName(profileName);
                   setEditBirthdate(profile?.basic?.birthdate || '');
                   setEditBirthtime(profile?.basic?.birthtime || '');
+                  setEditBirthTimeAccuracy(profile?.basic?.birthTimeAccuracy || (profile?.basic?.birthtime ? 'approximate' : 'unknown'));
+                  setEditLunarSolar(profile?.basic?.lunarSolar || 'solar');
+                  setEditIsLeapMonth(Boolean(profile?.basic?.isLeapMonth));
+                  setProfileInputError('');
                   setEditGender(profile?.basic?.gender === 'female' ? 'female' : 'male');
                 }
                 setIsEditingProfile(!isEditingProfile);
@@ -619,13 +720,13 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           <div className="flex items-center gap-1.5">
             <Calendar size={13} className="text-amber-400" />
             <span className="text-zinc-500">생년월일:</span>
-            <span className="text-white font-bold">{saju.birthdate} (양력)</span>
+            <span className="text-white font-bold">{saju.birthdate} ({saju.isLunar ? `음력${profile?.basic?.isLeapMonth ? ' 윤달' : ' 평달'}` : '양력'}{saju.isLunar && saju.solarEquivalentDate ? ` · ${saju.solarEquivalentDate} 환산` : ''})</span>
           </div>
           <span className="text-white/20">•</span>
           <div className="flex items-center gap-1.5">
             <Clock size={13} className="text-amber-400" />
             <span className="text-zinc-500">생시:</span>
-            <span className="text-white font-bold">{saju.birthtime || '시간 미지정'}</span>
+            <span className="text-white font-bold">{saju.birthtime ? `${saju.birthtime} · ${profile?.basic?.birthTimeAccuracy === 'exact' ? '정확' : profile?.basic?.birthTimeAccuracy === 'unknown' ? '정확도 모름' : '대략/미확인'}` : '시간 미지정 · 시주 없음'}</span>
           </div>
           <span className="text-white/20">•</span>
           <div className="flex items-center gap-1.5">
@@ -651,7 +752,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
               onSubmit={handleSaveProfile}
               className="mt-5 p-5 rounded-2xl bg-black/40 border border-white/10 space-y-4"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 layout-form-grid" data-form-columns="4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 layout-form-grid" data-form-columns="4">
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold text-zinc-400">성함</label>
                   <input
@@ -662,7 +763,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-zinc-400">생년월일</label>
+                    <label className="text-[11px] font-bold text-zinc-400">생년월일</label>
                   <input
                     type="date"
                     required
@@ -672,10 +773,11 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-zinc-400">생시 (태어난 시간)</label>
+                  <label className="text-[11px] font-bold text-zinc-400">생시 (선택)</label>
                   <input
                     type="time"
                     value={editBirthtime}
+                    disabled={editBirthTimeAccuracy === 'unknown'}
                     onChange={(e) => setEditBirthtime(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-white text-xs focus:outline-none focus:border-amber-400"
                   />
@@ -690,10 +792,58 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
                     <option value="male">남성</option>
                     <option value="female">여성</option>
                   </select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <span className="block text-[11px] font-bold text-zinc-400">달력 기준</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['solar', 'lunar'] as const).map((calendar) => (
+                        <button
+                          key={calendar}
+                          type="button"
+                          aria-pressed={editLunarSolar === calendar}
+                          onClick={() => {
+                            setEditLunarSolar(calendar);
+                            if (calendar === 'solar') setEditIsLeapMonth(false);
+                          }}
+                          className={`py-2 rounded-xl border text-xs font-bold ${editLunarSolar === calendar ? 'bg-amber-500/20 border-amber-400 text-amber-200' : 'bg-white/5 border-white/10 text-zinc-400'}`}
+                        >
+                          {calendar === 'solar' ? '양력' : '음력'}
+                        </button>
+                      ))}
+                    </div>
+                    {editLunarSolar === 'lunar' && (
+                      <label className="flex items-center gap-2 text-xs text-zinc-300 py-1">
+                        <input type="checkbox" checked={editIsLeapMonth} onChange={(event) => setEditIsLeapMonth(event.target.checked)} />
+                        윤달
+                      </label>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold text-zinc-400" htmlFor="saju-inline-birth-time-accuracy">태어난 시간의 정확도</label>
+                    <select
+                      id="saju-inline-birth-time-accuracy"
+                      value={editBirthTimeAccuracy}
+                      onChange={(event) => {
+                        const value = event.target.value as 'exact' | 'approximate' | 'unknown';
+                        setEditBirthTimeAccuracy(value);
+                        if (value === 'unknown') setEditBirthtime('');
+                      }}
+                      className="w-full px-3 py-2 rounded-xl bg-[#24262b] border border-white/15 text-white text-xs focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="exact">정확한 기록</option>
+                      <option value="approximate">대략 기억</option>
+                      <option value="unknown">모름</option>
+                    </select>
+                    <p className="text-[10px] text-zinc-500">모르면 생시를 비우고 시주 없이 계산해요.</p>
+                  </div>
+                </div>
+
+                {profileInputError && <p role="alert" className="text-xs text-rose-300">{profileInputError}</p>}
+
+                <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile(false)}
@@ -1775,6 +1925,38 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
           <div ref={chatEndRef} />
         </div>
 
+        <div className="px-4 py-3 bg-[#1f2126] border-t border-white/10 space-y-2.5 shrink-0">
+          <span className="text-[11px] font-mono text-amber-400 font-bold">먼저 보고 싶은 주제를 골라주세요</span>
+          <div className="flex flex-wrap gap-2">
+            {SAJU_CONSULTATION_TOPICS.map((topic) => (
+              <button
+                key={topic.id}
+                type="button"
+                aria-pressed={consultationTopic === topic.id}
+                onClick={() => setConsultationTopic(topic.id)}
+                disabled={isAiLoading}
+                className={`px-3 py-1.5 rounded-full border text-[11px] font-medium transition-all ${consultationTopic === topic.id ? 'bg-amber-400/20 border-amber-400/50 text-amber-200' : 'bg-white/[0.04] border-white/10 text-zinc-300 hover:border-white/25'}`}
+              >
+                {topic.label}
+              </button>
+            ))}
+          </div>
+          {consultationTopic === 'current_concern' && (
+            <input
+              type="text"
+              value={consultationContext}
+              onChange={(event) => setConsultationContext(event.target.value)}
+              disabled={isAiLoading}
+              aria-label="지금 고민의 추가 맥락"
+              placeholder="필요할 때만 상황·선택지·궁금한 기간을 덧붙여 주세요"
+              className="w-full py-2 px-3 rounded-xl bg-white/[0.05] border border-white/10 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-amber-400/50"
+            />
+          )}
+          {consultationTopic === 'yearly_trend' && (
+            <p className="text-[10px] text-zinc-500">계산된 세운: {saju.annual2026.yearName}. 다른 연도는 계산값이 없으면 임의로 추정하지 않아요.</p>
+          )}
+        </div>
+
         {/* 퀵 추천 질문 칩 */}
         <div className="px-4 py-2.5 bg-[#1f2126] border-t border-white/10 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0">
           <span className="text-[11px] font-mono text-amber-400 font-bold shrink-0 flex items-center gap-1 pl-1">
@@ -1806,7 +1988,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
             value={questionInput}
             onChange={(e) => setQuestionInput(e.target.value)}
             disabled={isAiLoading}
-            placeholder="내 사주 원국에 대해 궁금한 점을 적어보세요 (예: 올해 이직이나 시험운은?)"
+            placeholder="선택한 주제에 관해 궁금한 점을 적어보세요 (예: 올해 이직에서 살펴볼 점은?)"
             className="flex-1 py-3 px-4 rounded-2xl bg-white/[0.07] border border-white/15 focus:border-yellow-400/60 text-white text-xs sm:text-sm placeholder-zinc-500 focus:outline-none transition-all"
           />
           <button

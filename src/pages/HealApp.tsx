@@ -24,7 +24,6 @@ import { OneMinuteMeditationView } from '@/components/heal/OneMinuteMeditationVi
 import { AuraSynergySection } from '@/components/heal/AuraSynergySection';
 import { useSwipeableTabs } from '@/hooks/useSwipeableTabs';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
-import { useBinauralBeat } from '@/hooks/useBinauralBeat';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { z } from 'zod';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
@@ -74,7 +73,6 @@ const QuickInsightSchema = z.object({
   luckyColor: z.string().optional().default('에메랄드 힐링 그린'),
   remedy: z.string().optional().default('따뜻한 차 한 잔과 함께 5분간 고요히 심호흡하기'),
   symbol: z.string().optional().default('치유의 크리스탈'),
-  frequency: z.string().optional().default('528Hz'),
   spiritualEnergy: z.string().optional().default('치유의 오라 에너지가 내면의 긴장을 부드럽게 이완시킵니다.'),
   blessingMessage: z.string().optional().default('오늘 하루 당신의 몸과 마음에 깊은 쉼과 평온이 가득하기를 축복합니다.'),
 });
@@ -137,7 +135,7 @@ interface TimeSpaceCard {
 const CANDIDATE_DEEP_CARDS: TimeSpaceCard[] = [
   { stem: '丙', branch: '午', stemName: '병(丙)', branchName: '오(午)', name: '丙午', title: '병오 (丙午) "태양의 도약"', element: '화', elementEn: 'Fire', color: '#ef4444', emoji: '🔥', desc: '강렬한 하늘의 양기와 땅의 열정이 정렬하여, 지친 기맥을 일순간에 가동시키는 순환의 열정 비전입니다.' },
   { stem: '甲', branch: '辰', stemName: '갑(甲)', branchName: '진(辰)', name: '甲辰', title: '갑진 (甲辰) "푸른 용의 태동"', element: '목', elementEn: 'Wood', color: '#22c55e', emoji: '🌱', desc: '나무의 굳건한 솟구침과 비옥한 토양이 만나 척추 정렬도와 바디 코어의 활기찬 탄력을 깨웁니다.' },
-  { stem: '庚', branch: '子', stemName: '경(庚)', branchName: '자(子)', name: '庚子', title: '경자 (庚子) "새벽빛 은비"', element: '금', elementEn: 'Metal', color: '#94a3b8', emoji: '💎', desc: '정제된 가을 금속의 예리함과 겨울 밤하늘의 맑은 물이 만나 뇌 세포의 피로를 완전히 걷어내고 시야를 투명하게 정화합니다.' },
+  { stem: '庚', branch: '子', stemName: '경(庚)', branchName: '자(子)', name: '庚子', title: '경자 (庚子) "새벽빛 은비"', element: '금', elementEn: 'Metal', color: '#94a3b8', emoji: '💎', desc: '정제된 가을 금속의 예리함과 겨울 밤하늘의 맑은 물이 만나 피로를 덜고 시야를 맑게 가다듬습니다.' },
   { stem: '壬', branch: '寅', stemName: '임(壬)', branchName: '인(寅)', name: '壬寅', title: '임인 (壬寅) "심연의 흑호"', element: '수', elementEn: 'Water', color: '#3b82f6', emoji: '💧', desc: '깊은 지혜의 강물과 역동적인 봄의 나무가 교화되어 온몸의 신경망 전류를 안정시키고 막힘없는 순환을 회복합니다.' },
   { stem: '戊', branch: '戌', stemName: '무(戊)', branchName: '술(戌)', name: '戊戌', title: '무술 (戊戌) "황금빛 관방"', element: '토', elementEn: 'Earth', color: '#eab308', emoji: '🪨', desc: '중후하고 비옥한 산맥의 단단함을 겹쳐, 불안한 맥박을 차분하게 연수하고 대지에 중심을 내려놓는 접지 조율입니다.' },
   { stem: '丁', branch: '卯', stemName: '정(丁)', branchName: '묘(卯)', name: '丁卯', title: '정묘 (丁卯) "은하 등불"', element: '화', elementEn: 'Fire', color: '#f43f5e', emoji: '🕯️', desc: '어둠을 비추는 고요한 등불과 유연한 비단풀이 조우하여 심장 박동을 부드럽게 감싸고 밤시간에 완벽한 휴식을 선사합니다.' },
@@ -252,7 +250,7 @@ function processFateUnion(sajuText: string, card: TimeSpaceCard) {
     else if (card.element === '토') { elements.토 += 30; }
     else { elements[card.element] += 15; }
   } else {
-    resonanceText = `시공간 카드 '${card.name}'은 당신의 사주와 온화한 생기 상생을 이룩합니다. 자연스러운 원기 복구 시기로써, 평소 피로도가 축적되던 미립 신경 세포막을 부드럽게 이완하고 세포 호흡의 효율을 상향 평준화하는 무난하고 안온한 하루가 보증됩니다.`;
+    resonanceText = `시공간 카드 '${card.name}'은 당신의 사주와 온화한 생기 상생을 이룩합니다. 자연스러운 원기 복구 시기로써, 평소 피로도가 축적되던 긴장을 부드럽게 풀고 편안한 하루를 돕는 무난하고 안온한 흐름입니다.`;
     elements.목 += 5;
     elements.화 += 5;
     elements.토 += 5;
@@ -471,20 +469,7 @@ function DailyOracleSection({
           localStorage.setItem(`aura_daily_card_${firebaseUser?.uid || 'guest'}_${today}`, JSON.stringify(card));
           localStorage.setItem(`aura_daily_fate_${firebaseUser?.uid || 'guest'}_${today}`, JSON.stringify(fateResult));
           
-          try {
-            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(528, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1056, audioCtx.currentTime + 0.5);
-            gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
-          } catch (e) {}
+          playHapticSound(880);
           
           setTimeout(() => {
             setGachaStep(4);
@@ -933,7 +918,6 @@ export default function HealApp() {
   const cardContainerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const { firebaseUser, sharedState, updateSharedState, isChatOpen, setIsChatOpen, sendUnifiedMessage, openLucyChat, personaMessages, isGenerating } = useApp();
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('heal');
   const lucyMessages = personaMessages.lucy || [];
   const isSpecialFeatureChromeHidden = useSpecialFeatureChromeHidden();
 
@@ -1047,7 +1031,6 @@ export default function HealApp() {
         heal_sedona: 'meditation',
         heal_breathing: 'oneMinute',
         heal_chakra: 'oneMinute',
-        heal_frequency: 'oneMinute',
       };
       const targetTab = tabMap[targetMenuId] || 'oneMinute';
       setActiveMode(targetTab as any);
@@ -1071,7 +1054,6 @@ export default function HealApp() {
         heal_wellness: 'oneMinute',
         heal_breathing: 'oneMinute',
         heal_chakra: 'oneMinute',
-        heal_frequency: 'oneMinute',
         heal_hoponopono: 'meditation',
         heal_sedona: 'meditation',
       };
@@ -1491,7 +1473,7 @@ export default function HealApp() {
 
     const modePrompt = dailyMode === 'breathe' ? '세도나 메서드의 핵심 질문들을 거치면서 긴장 상태의 에고를 우주 무한의 차원으로 가볍고 평화롭게 흘려보내는 방하착(Letting Go)에 초점을 맞춰' :
                        dailyMode === 'reflect' ? '마음을 괴롭히는 결핍 욕구(통제욕, 인정욕, 안전욕, 분리욕)를 파헤치고 이를 완전히 수용하여 흘려보내는 데이비드 호킨스 박사식 심층 무의식 투사로' :
-                       dailyMode === 'oracle' ? '의식 지도(Scale of Consciousness) 상에서 현재의 감정 주파수를 짚어보고, 용기/수용/사랑/평화의 정위로 고양시키는 정밀한 정제 코칭으로' : 
+                       dailyMode === 'oracle' ? '의식 지도(Scale of Consciousness) 상에서 현재의 감정 상태를 살펴보고, 용기/수용/사랑/평화의 정위로 고양시키는 정밀한 정제 코칭으로' :
                        dailyMode === 'care' ? '마음의 완강한 저항(Resistance)과 억압된 감정 에너지를 있는 그대로 항복(Surrender)해 흘려보내는 따뜻하고 우아한 방하착 기도 및 확언으로' : '세도나 메서드의 흘려보내기 4문답과 데이비드 호킨스의 항복 기술을 융합한 최적의 정서 자유 지침화로';
 
     const userProfileStr = sharedState?.userProfile ? JSON.stringify(sharedState.userProfile) : "프로필 정보 없음";
@@ -1554,7 +1536,6 @@ export default function HealApp() {
         drawnCard: activeCard,
         diagnosis: String(data.diagnosis || ''),
         remedy: String(data.remedy || ''),
-        frequency: String(data.frequency || '528Hz'),
         dateKey: todayK,
       });
 
@@ -1612,7 +1593,7 @@ export default function HealApp() {
     const userProfileStr = sharedState?.userProfile ? JSON.stringify(sharedState.userProfile) : JSON.stringify(form);
     const recentMemory = sharedState?.healMemory || sharedState?.globalMemory || "최근 기록 없음";
     const dailyContext = dailyResult 
-      ? `오늘의 Daily 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol}, 주파수: ${dailyResult.frequency})`
+      ? `오늘의 Daily 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol})`
       : "오늘의 Daily 진단 데이터 없음";
 
     try {
@@ -1944,11 +1925,11 @@ export default function HealApp() {
                                        </div>
                                        <div className="flex flex-col">
                                          <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest leading-none">Aura & Bio-Resonance Analysis</span>
-                                         <span className="text-[8px] text-white/40 mt-0.5 font-sans leading-none">아우라 에너지 및 생체 주파수 분석</span>
+                                         <span className="text-[8px] text-white/40 mt-0.5 font-sans leading-none">아우라 에너지 및 회복 상태 분석</span>
                                        </div>
                                      </div>
                                      <p className="text-[9px] text-white/50 bg-white/[0.02] border border-white/5 rounded-lg px-2.5 py-1.5 mb-2 leading-relaxed font-sans font-medium">
-                                       ✨ 오늘의 아우라(Aura) 방어막 두께와 생체 주파수의 균형을 진단하여 에너지 회복을 돕는 파동 분석입니다.
+                                       ✨ 오늘의 아우라(Aura) 상태와 회복 방향을 살펴 에너지 회복을 돕는 분석입니다.
                                      </p>
                                      <p className="text-white/80 font-sans leading-relaxed text-xs">{insightResult.cosmicAspect}</p>
                                   </div>
@@ -2180,11 +2161,11 @@ export default function HealApp() {
                                     </div>
                                     <div className="flex flex-col">
                                       <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest leading-none">Aura & Bio-Resonance Analysis</span>
-                                      <span className="text-[8px] text-white/40 mt-0.5 font-sans leading-none">아우라 에너지 및 생체 주파수 분석</span>
+                                      <span className="text-[8px] text-white/40 mt-0.5 font-sans leading-none">아우라 에너지 및 회복 상태 분석</span>
                                     </div>
                                   </div>
                                   <p className="text-[9px] text-white/50 bg-white/[0.02] border border-white/5 rounded-lg px-2.5 py-1.5 mb-2 leading-relaxed font-sans font-medium">
-                                    ✨ 오늘의 아우라(Aura) 방어막 두께와 생체 주파수의 균형을 진단하여 에너지 회복을 돕는 파동 분석입니다.
+                                    ✨ 오늘의 아우라(Aura) 상태와 회복 방향을 살펴 에너지 회복을 돕는 분석입니다.
                                   </p>
                                   <p className="text-white/80 font-sans leading-relaxed text-xs">{insightResult.cosmicAspect}</p>
                                 </div>
@@ -2270,7 +2251,7 @@ export default function HealApp() {
               </div>
 
               <p className="text-sm text-white/60 leading-relaxed font-sans break-keep">
-                이 댑의 {limitModalInfo.type === 'daily' ? '데일리 비전' : '소울 분석'} 기능은 하루에 한 번만 실행할 수 있습니다. 이미 오늘의 주파수가 우주와 동조되었습니다. 에필로그에서 이전의 찬란했던 동조 기록들을 살펴보세요.
+                이 댑의 {limitModalInfo.type === 'daily' ? '데일리 비전' : '소울 분석'} 기능은 하루에 한 번만 실행할 수 있습니다. 이미 오늘의 연결이 완료되었습니다. 에필로그에서 이전의 찬란했던 동조 기록들을 살펴보세요.
               </p>
 
               <button
@@ -2289,4 +2270,3 @@ export default function HealApp() {
     </div>
   );
 }
-

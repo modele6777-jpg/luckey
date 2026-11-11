@@ -1,10 +1,11 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Sun, Palette, Quote, ChevronDown, Check, Music, X } from 'lucide-react';
 import { pickDailySeededItem, getDateSeed, getTodayDateKey } from '@/lib/dailyCache';
 import { TAROT_DECK, getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import { getTarotCardDetails, getTarotLuckyAction } from '@/lib/dailyTarotOracle';
 import { MUSE_ART_CATALOG } from '@/lib/museDailyArt';
+import { ImageOutputActions } from '@/components/ImageOutputActions';
 import {
   buildAppleMusicClassicalSearchUrl,
   resolveAppleMusicClassicalEmbedUrl,
@@ -12,6 +13,7 @@ import {
 import { COSMIC_MORNING_AFFIRMATIONS } from '@/data/cosmicMorningAffirmations';
 import { TarotCardBackFace } from '@/components/trinity/TarotCardBackFace';
 import { useTarotCardBack } from '@/hooks/useTarotCardBack';
+import { buildPollinationsArtworkUrl, getWikimediaFilePathUrl, resolveArtworkImage } from '@/utils/artworkImage';
 
 type RoutineStepId = 'fortune' | 'art' | 'affirm';
 
@@ -135,10 +137,69 @@ export function DailyCosmicRoutineCard() {
     if (next && id !== 'fortune') markDone(id);
   };
 
-  // 이미지 로드 실패(오프라인 등) 시 그라디언트 폴백
+  // 작품 원본이 실패하면 Wikimedia resolver를 한 번 거친 뒤 AI 재현본을 한 번 요청합니다.
   const [artImageFailed, setArtImageFailed] = useState(false);
+  const [artImageFallbackUrl, setArtImageFallbackUrl] = useState<string | null>(null);
   const [cardImageFailed, setCardImageFailed] = useState(false);
   const [imageRetryTick, setImageRetryTick] = useState(0);
+  const [isRoutineArtImageOpen, setIsRoutineArtImageOpen] = useState(false);
+  const artFallbackRequestedRef = useRef(false);
+  const artFilePathRetryRef = useRef(false);
+  const artAiFallbackActiveRef = useRef(false);
+
+  const loadAiArtFallback = useCallback(async () => {
+    if (artFallbackRequestedRef.current) return;
+    artFallbackRequestedRef.current = true;
+    artAiFallbackActiveRef.current = true;
+    const immediateFallbackUrl = buildPollinationsArtworkUrl(art.entry);
+    setArtImageFallbackUrl(immediateFallbackUrl);
+    try {
+      const fallback = await resolveArtworkImage(art.entry, { forcePollinations: true });
+      setArtImageFallbackUrl(
+        fallback.displayUrl || fallback.url || immediateFallbackUrl,
+      );
+    } catch {
+      setArtImageFallbackUrl(immediateFallbackUrl);
+    }
+  }, [art.entry]);
+
+  useEffect(() => {
+    artFallbackRequestedRef.current = false;
+    artFilePathRetryRef.current = false;
+    artAiFallbackActiveRef.current = false;
+    setArtImageFailed(false);
+    setArtImageFallbackUrl(null);
+    if (!art.entry.imageUrl) void loadAiArtFallback();
+  }, [art.entry.imageUrl, loadAiArtFallback]);
+
+  const handleArtImageError = useCallback(() => {
+    if (artAiFallbackActiveRef.current) {
+      setArtImageFailed(true);
+      return;
+    }
+
+    if (!artFilePathRetryRef.current) {
+      const filePathUrl = getWikimediaFilePathUrl(art.entry.imageUrl || '');
+      if (filePathUrl && filePathUrl !== (artImageFallbackUrl ?? art.entry.imageUrl)) {
+        artFilePathRetryRef.current = true;
+        setArtImageFallbackUrl(filePathUrl);
+        return;
+      }
+    }
+
+    void loadAiArtFallback();
+  }, [art.entry.imageUrl, artImageFallbackUrl, loadAiArtFallback]);
+
+  const routineArtImageUrl = artImageFallbackUrl ?? art.entry.imageUrl ?? '';
+  useEffect(() => {
+    if (!routineArtImageUrl || artImageFailed) return;
+    const isAiFallback = artAiFallbackActiveRef.current;
+    const timer = window.setTimeout(() => {
+      if (isAiFallback) setArtImageFailed(true);
+      else handleArtImageError();
+    }, isAiFallback ? 20000 : 10000);
+    return () => window.clearTimeout(timer);
+  }, [routineArtImageUrl, artImageFailed, handleArtImageError]);
 
   const stepPanel = (id: RoutineStepId) => {
     if (id === 'fortune') {
@@ -286,15 +347,32 @@ export function DailyCosmicRoutineCard() {
       return (
         <div className="flex flex-col sm:flex-row gap-4 items-stretch">
           <div className="relative w-full sm:w-44 h-40 sm:h-44 shrink-0 rounded-2xl overflow-hidden border border-white/15 bg-gradient-to-br from-indigo-950/60 to-purple-950/40">
-            {!artImageFailed && art.entry.imageUrl ? (
-              <img
-                key={imageRetryTick}
-                src={art.entry.imageUrl}
-                alt={art.entry.title}
-                className="w-full h-full object-cover"
-                onError={() => setArtImageFailed(true)}
-                loading="lazy"
-              />
+            {!artImageFailed && routineArtImageUrl ? (
+              <>
+                <ImageOutputActions
+                  src={routineArtImageUrl}
+                  alt={`${art.entry.title} — ${art.entry.creator}`}
+                  filename={`daily-art-${art.entry.title}-${getTodayDateKey()}`}
+                  isOpen={isRoutineArtImageOpen}
+                  onOpenChange={setIsRoutineArtImageOpen}
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsRoutineArtImageOpen(true)}
+                  aria-label={`${art.entry.title} 크게 보기`}
+                  title="작품 크게 보기"
+                  className="absolute inset-0 w-full h-full cursor-zoom-in"
+                >
+                  <img
+                    key={imageRetryTick}
+                    src={routineArtImageUrl}
+                    alt={`${art.entry.title} — ${art.entry.creator}`}
+                    className="w-full h-full object-cover"
+                    onError={handleArtImageError}
+                    loading="lazy"
+                  />
+                </button>
+              </>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Palette size={26} className="text-indigo-300/70" />
@@ -309,6 +387,16 @@ export function DailyCosmicRoutineCard() {
             <p className="text-[11px] font-semibold text-indigo-300/90">{art.entry.creator} · {art.entry.era}</p>
             <p className="text-[13px] leading-relaxed text-white/85 font-medium break-keep line-clamp-3">{art.entry.description}</p>
             <p className="text-[11px] italic text-white/55 leading-relaxed break-keep">"{art.entry.quote}"</p>
+            {art.entry.imageAttribution && (
+              <a
+                href={art.entry.imageAttributionUrl ?? art.entry.imageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-[10px] text-white/45 hover:text-white/70 underline underline-offset-2"
+              >
+                이미지: {art.entry.imageAttribution} · {art.entry.imageLicenseName ?? "라이선스"}
+              </a>
+            )}
             {art.song ? (
               <div className="pt-2 space-y-2">
                 <div className="flex items-center gap-1.5 text-[11px] font-semibold text-white/70">

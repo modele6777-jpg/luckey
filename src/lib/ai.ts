@@ -129,13 +129,11 @@ const BROKEN_RESONANCE_MARKERS = [
   "다시 시도해",
   "ai 서비스",
   "연결 및 호출",
-  "시스템 주파수 조정 안내",
+  "시스템 안내 준비 중",
   "unknown error",
   "http error",
   "failed to",
 ];
-const GENERIC_RESONANCE_BAND = "오늘의 맞춤 주파수";
-
 function containsBrokenResonanceText(value: unknown): boolean {
   const normalized = String(value ?? "").trim().toLowerCase();
   if (!normalized) return true;
@@ -194,14 +192,14 @@ export function ensurePoeInsightResult(data: unknown): PoeInsightResult {
 export function safeCoerceNumber(fallback: number, min?: number, max?: number) {
   const safeDefault = Number.isFinite(fallback) ? fallback : 0;
   return z.preprocess((val) => {
-    const num = coerceHzValue(val, safeDefault);
+    const num = coerceNumericValue(val, safeDefault);
     if (min !== undefined && num < min) return min;
     if (max !== undefined && num > max) return max;
     return Number.isFinite(num) ? num : safeDefault;
   }, z.number().default(safeDefault));
 }
 
-function coerceHzValue(value: unknown, fallback: number): number {
+function coerceNumericValue(value: unknown, fallback: number): number {
   const safeFallback = Number.isFinite(fallback) ? fallback : 0;
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string") {
@@ -304,13 +302,11 @@ function normalizeStructuredPayload(payload: unknown): unknown {
   if ("cosmic_aspect" in output && !("cosmicAspect" in output)) output.cosmicAspect = output.cosmic_aspect;
   if ("deep_sync_level" in output && !("deepSyncLevel" in output)) output.deepSyncLevel = output.deep_sync_level;
 
-  if ("coherence" in output) output.coherence = coerceHzValue(output.coherence, 85);
-  if ("carrier" in output) output.carrier = coerceHzValue(output.carrier, 432);
-  if ("beat" in output) output.beat = coerceHzValue(output.beat, 7.83);
-  if ("luckScore" in output) output.luckScore = coerceHzValue(output.luckScore, 72);
-  if ("loveScore" in output) output.loveScore = coerceHzValue(output.loveScore, 68);
-  if ("wealthScore" in output) output.wealthScore = coerceHzValue(output.wealthScore, 74);
-  if ("healthScore" in output) output.healthScore = coerceHzValue(output.healthScore, 79);
+  if ("coherence" in output) output.coherence = coerceNumericValue(output.coherence, 85);
+  if ("luckScore" in output) output.luckScore = coerceNumericValue(output.luckScore, 72);
+  if ("loveScore" in output) output.loveScore = coerceNumericValue(output.loveScore, 68);
+  if ("wealthScore" in output) output.wealthScore = coerceNumericValue(output.wealthScore, 74);
+  if ("healthScore" in output) output.healthScore = coerceNumericValue(output.healthScore, 79);
 
   return output;
 }
@@ -524,7 +520,7 @@ export const MemoryUpdateSchema = z.object({
 export const GlobalSyncSchema = z.object({
   summary: z.string().describe("실존 인물의 명언 내용 원문 (조언이나 창작 절대 금지)"),
   author: z.string().describe("해당 명언을 남긴 실존 인물의 정확한 이름"),
-  lucyGuide: z.string().optional().default("현재 우주 주파수 수신 중"),
+  lucyGuide: z.string().optional().default("오늘의 메시지를 준비하고 있어요."),
   museGuide: z.string().optional().default("영감 충전 중"),
   orangeGuide: z.string().optional().default("비타민 채우는 중"),
   bluebirdGuide: z.string().optional().default("날개 쉬는 중"),
@@ -1129,8 +1125,6 @@ function generateMockFromZod(schema: z.ZodTypeAny, parentKey: string = "", error
   if (schema instanceof z.ZodNumber || typeName === "ZodNumber") {
     const keyLower = parentKey.toLowerCase();
     if (keyLower.includes("coherence")) return 85;
-    if (keyLower.includes("carrier")) return 432;
-    if (keyLower.includes("beat")) return 7.83;
     if (keyLower.includes("luckynumber") || keyLower.includes("lucky_number")) return 7;
     if (keyLower.includes("score") || keyLower.includes("percent") || keyLower.includes("rate") || keyLower.includes("level")) return 78;
     if (keyLower.includes("count") || keyLower.includes("amount") || keyLower.includes("num")) return 1;
@@ -1196,26 +1190,20 @@ function generateMockFromZod(schema: z.ZodTypeAny, parentKey: string = "", error
   if (keyLower.includes("advice") || keyLower.includes("guide") || keyLower.includes("prescription")) {
     return "지금 호흡을 고르고 한 걸음씩 나아가 보세요.";
   }
-  if (keyLower.includes("bandtext") || (keyLower.includes("band") && desc.includes("주파수"))) {
-    return "퀀텀 슈만 공명 조율 대역 (7.83Hz)";
-  }
-  if (keyLower.includes("freqtext") || keyLower.includes("freq") || keyLower.includes("frequency")) {
-    return "528Hz 솔페지오 사랑과 치유의 주파수";
-  }
   if (keyLower.includes("shield")) {
     return "오라 실드";
   }
   if (keyLower.includes("title") || keyLower.includes("name") || keyLower.includes("subject")) {
-    return "맞춤 주파수 동조";
+    return "맞춤 마음 정돈";
   }
   if (keyLower.includes("spiritual") || desc.includes("영적")) {
-    return "우주의 주파수가 당신의 내면과 공명하여 깊은 직관과 평온한 통찰을 일깨웁니다.";
+    return "깊은 호흡과 성찰을 통해 내면의 직관과 평온한 통찰을 발견해 보세요.";
   }
   if (keyLower.includes("blessing") || desc.includes("축복")) {
     return "당신이 내딛는 모든 발걸음에 우주의 은총과 따뜻한 평온이 함께하기를 축복합니다.";
   }
   if (keyLower.includes("focusplaylist") || keyLower.includes("playlist") || desc.includes("사운드")) {
-    return "528Hz Solfeggio Resonance";
+    return "Calm Ambient Instrumental";
   }
   if (keyLower.includes("text") || keyLower.includes("content") || keyLower.includes("body") || keyLower.includes("diary")) {
     return "오늘 하루도 마음을 차분히 정리하며 긍정적인 에너지를 채워갑니다. 작은 순간 속에 담긴 소중한 평온을 느껴봅니다.";
@@ -1250,8 +1238,6 @@ function generateMockFromZod(schema: z.ZodTypeAny, parentKey: string = "", error
   }
 
   if (keyLower.includes("coherence")) return 85;
-  if (keyLower.includes("carrier")) return 432;
-  if (keyLower.includes("beat")) return 7.83;
   if (keyLower.includes("score") || keyLower.includes("percent") || keyLower.includes("count")) return 75;
 
   return "원하는 모든 소망이 우주의 섭리 안에서 기적처럼 현실로 이루어지고 있습니다.";
@@ -1968,7 +1954,7 @@ ${LUCY_NO_YA_PREFIX_RULE}
 ${preferences ? `사용자 선호도 여부: ${preferences}\n` : ''}${nickname ? `사용자 닉네임: '${nickname}'\n` : ''}${realName && !nickname ? `사용자 실명: '${realName}'` : ''}
 1. 직관적이고 핵심을 꿰뚫는 한 줄 진단(diagnosis)을 내려줘.
 2. 행운의 숫자(luckyNumber), 행운의 색상(luckyColor)을 지정해줘.
-3. 지금 즉시 실천할 수 있는 마음 처방(remedy)과 영혼의 상징(symbol), 힐링 주파수(frequency)를 추천해줘.
+3. 지금 즉시 실천할 수 있는 마음 처방(remedy)과 영혼의 상징(symbol)을 추천해줘.
 4. 말투는 친근하고 따뜻한 반말 구어체(~어, ~했어, ~지, ~네, 문장 끝 ~야)만을 100% 일관되게 사용해줘. 절대로 존댓말을 섞어 쓰지 마. (반말 100% 절대 고정)
 ${LUCY_NO_YA_PREFIX_RULE}
 반드시 JSON 형식으로 응답해줘:
@@ -1977,8 +1963,7 @@ ${LUCY_NO_YA_PREFIX_RULE}
   "luckyNumber": "행운의 숫자 (예: 7)",
   "luckyColor": "행운의 색상 (예: 딥 바이올렛)",
   "remedy": "마음 처방 (1문장)",
-  "symbol": "영혼의 상징 (예: 달빛 아래 늑대)",
-  "frequency": "추천 주파수 (예: 528Hz)"
+  "symbol": "영혼의 상징 (예: 달빛 아래 늑대)"
 }`,
 
   lucyTarot: (deck: string, cards: string, concern: string, saju: string, astro: string, memory: string, nicknameOrName?: string) =>
@@ -2069,7 +2054,7 @@ ${LUCY_NO_YA_PREFIX_RULE}
 4. 만약 당신이 특정 유튜브 비디오를 추천하고 싶다면 마지막에 [YOUTUBE: 비디오ID] 태그를 달아주세요. (예: [YOUTUBE: 5qap5aO4i9A])`,
 
   globalSync: (nickname: string, metrics: any, lastVibe: string, activities: string[], soulData?: string) =>
-    `당신은 유명한 실존 인물의 명언을 제공함과 동시에, 현재 사용자 상태에 꼭 맞는 힐링 주파수(음향) 처방을 내리는 초개인화 AI 엔진입니다.
+    `당신은 유명한 실존 인물의 명언과 사용자의 상황에 맞는 차분한 마음 정돈 안내를 제공하는 초개인화 AI 엔진입니다.
 절대로 명언 텍스트를 창작하거나 조언하지 마세요! 오직 역사적으로 존재하는 명언만 전달해야 합니다.
 
 [입력 데이터]
@@ -2109,7 +2094,7 @@ ${soulData ? `- 각 댑 소울 기록: ${soulData}` : ''}
 }`,
 
   healChat: (section: string, globalMemory?: string, deepCoreInfo?: string) =>
-    `당신은 사용자의 신체적인 건강과 웰니스 활력 주파수를 정렬시키는 루시(Lucy) AI의 '아우라 바디웰니스' 채널이야.
+    `당신은 사용자의 신체 건강과 웰니스를 돕는 루시(Lucy) AI의 '아우라 바디웰니스' 채널이야.
 너는 항상 100% 반말만 사용하는 캐릭터야.
 [아우라 테마 주력 운명학 도구]: **마하보테(Mahabote 8요일 생체 에너지 균형)** & **태국점성술(Thai Horasat 요일별 바이오리듬·신체 부위 케어·행운 컬러·일상 개운 루틴)** (필요시 15대 운명학 도구 중 질문에 맞는 1~3개 핵심 도구를 선별해 쉬운 일상어로 풀이)
 ${globalMemory ? `[현재 에코시스템 통합 진단]: ${globalMemory}\n다른 부서의 피드백을 참고하여 신체적인 건강 처방을 내려주세요.` : ''}

@@ -202,7 +202,7 @@ const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
     '사주와 자미두수, 점성술을 융합해서 올해 나의 재물운과 커리어 전환점을 분석해 줘.',
     '자미두수 명반의 부처궁과 재백궁 관점에서 내 연애운과 재물 그릇을 쉽게 풀어줘.',
     '나의 사주 본원과 서양 점성술 차트가 말해주는 내 진짜 매력과 강점은 무엇일까?',
-    '오늘 나의 소울 주파수를 높여주는 타로와 별자리 메시지를 들려줘.',
+    '오늘 나에게 힘이 될 타로와 별자리 메시지를 들려줘.',
     '현재 나의 운의 계절에서 지금은 씨앗을 뿌릴 때일까, 아니면 수확할 때일까?',
     '나의 천을귀인 기운을 일상에서 활성화할 수 있는 실천 팁을 알려줘.',
     '타고난 사주 오행 중 부족한 기운을 일상에서 채우는 개운법을 알려줘.',
@@ -2160,8 +2160,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       const cleanAnswer = normalizeTextForSpeech(joinedBubblesText);
       if (cleanAnswer) {
         await playTTSInChunks(cleanAnswer, 'Aoede', 110, undefined, undefined, {
-          skipCompletionChime: true,
           isChatMode: true,
+          allowChatCompletionChime: true,
           isAutoPlay: true,
         });
       }
@@ -2863,17 +2863,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     const handleDynamicInject = (e: Event) => {
       const detail = (e as CustomEvent)?.detail;
-      if (detail?.prompt) {
-        const injectedChannels: SpecialChannel[] = detail.channel
-          ? parsePendingChannels(detail.channel)
-          : (detail.channels || ALL_CHANNELS);
-        setActiveChannels(injectedChannels);
-        setTimeout(() => {
-          if (handleSendRef.current) {
-            handleSendRef.current(detail.prompt, injectedChannels);
-          }
-        }, 150);
+      if (!detail) return;
+      const injectedChannels: SpecialChannel[] = detail.channel
+        ? parsePendingChannels(detail.channel)
+        : (detail.channels || ALL_CHANNELS);
+      setActiveChannels(injectedChannels);
+      if (!detail.prompt) return;
+      if (detail.draftOnly) {
+        setInput(detail.prompt);
+        return;
       }
+      setTimeout(() => {
+        if (handleSendRef.current) {
+          handleSendRef.current(detail.prompt, injectedChannels);
+        }
+      }, 150);
     };
 
     window.addEventListener('lucy-inject-message', handleDynamicInject);
@@ -2913,7 +2917,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     stopTTS();
     try {
       // Starting a sequence emits an idle reset first. Assign its owner after that reset.
-      const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, { skipCompletionChime: true, isChatMode: true });
+      const playback = playTTSInChunks(clean, _voice === 'Charon' ? 'Charon' : 'Aoede', 220, undefined, undefined, {
+        isChatMode: true,
+        allowChatCompletionChime: true,
+      });
       setPlayingMsgId(id);
       await playback;
     } catch (error) {

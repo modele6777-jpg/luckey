@@ -71,7 +71,7 @@ export const FLOW_ARCHETYPES: Record<FlowArchetype, FlowArchetypeDetail> = {
 };
 
 export interface FlowEnvironmentMatrix {
-  soundFrequency: string;        // 최적 사운드 주파수 (Hz / 노이즈)
+  soundscape: string;            // 집중을 돕는 일반 사운드 선택
   lightingEnvironment: string;   // 집중력을 높이는 조명 환경
   ignitionRitual: string;        // 30초 영감 점화 리추얼
   distractionShield: string;     // 몰입을 방해하는 1순위 노이즈 차단법
@@ -149,7 +149,7 @@ export function calculateDeepWorkFlow(params?: {
 
   // 3. 환경 매트릭스
   const environment: FlowEnvironmentMatrix = {
-    soundFrequency: '528Hz DNA 수복 & 창의성 활성화 주파수 / 딥 브라운 노이즈 (Brown Noise)',
+    soundscape: '가사가 적은 잔잔한 집중 음악 또는 딥 브라운 노이즈 (Brown Noise)',
     lightingEnvironment: '데스크 스탠드 4000K 뉴트럴 화이트 (주변은 은은한 간접 조명)',
     ignitionRitual: '책상 위 불필요한 물건 10초 정리 ➔ 물 한 모금 ➔ 단 1개의 이번 스프린트 목표 메모 ➔ 즉시 타이머 가동',
     distractionShield: '모바일 기기 비행기 모드 또는 시야 밖 격리, 메신저 알림 100% 무음 처리'
@@ -165,7 +165,7 @@ export function calculateDeepWorkFlow(params?: {
   const summary = `[딥워크 몰입] 아키타입: ${archetype.title}. ` +
     `몰입 지수: ${flowFocusScore}점 [${flowStateTitle}]. ` +
     `추천 세션: ${archetype.optimalSprintMinutes}분 몰입 / ${archetype.restProtocolMinutes}분 이완. ` +
-    `사운드: 528Hz / 브라운 노이즈.`;
+    `사운드: 집중 음악 또는 브라운 노이즈.`;
 
   return {
     engineVersion: DEEP_WORK_FLOW_VERSION,
@@ -190,10 +190,10 @@ export function formatDeepWorkFlowPrompt(res: DeepWorkFlowResult): string {
   • 권장 스프린트 리듬: **${res.archetype.optimalSprintMinutes}분 집중 ➔ ${res.archetype.restProtocolMinutes}분 리셋**
 - 몰입 포커스 지수: **${res.flowFocusScore}점** [${res.flowStateTitle}]
 - 최적 환경 매트릭스:
-  • 사운드 주파수: ${res.environment.soundFrequency}
+  • 사운드 스케이프: ${res.environment.soundscape}
   • 조명: ${res.environment.lightingEnvironment}
   • 30초 점화 리추얼: ${res.environment.ignitionRitual}
   • 노이즈 차단막: ${res.environment.distractionShield}
 - 창작 길신: 문창(${res.creativeStars.munchang}), 화개(${res.creativeStars.hwagae})
-※ 루시 지침: 진정한 창작과 생산성은 억지로 버티는 노동이 아니라, 방해 없는 환경에서 자신의 뇌파를 무아지경 몰입(Flow)으로 데려가는 예술입니다. 사용자가 산만함 없이 가장 나다운 딥워크 리듬을 타고 고도의 집중력을 발휘할 수 있도록 맞춤 세션 시간과 점화 리추얼을 감각적으로 가이드해 주세요.`;
+※ 루시 지침: 진정한 창작과 생산성은 억지로 버티는 노동이 아니라, 방해 없는 환경에서 자신만의 몰입 리듬을 찾는 과정입니다. 사용자가 산만함 없이 집중할 수 있도록 맞춤 세션 시간, 사운드 스케이프와 점화 리추얼을 감각적으로 가이드해 주세요.`;
 }

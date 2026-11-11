@@ -112,10 +112,10 @@ const NINE_BON_WAYS: BonWayPath[] = [
   {
     wayIndex: 7,
     tibetanName: '아카르 텍파 (Akar Thegpa)',
-    koreanName: '백색 아(A) 진언과 소리 진동의 길',
+    koreanName: '백색 아(A) 진언과 호흡 수행의 길',
     category: '결과승(Resultant)',
-    sacredPractice: '태초의 무생(無生)을 상징하는 백색 아(A) 음조로 마음의 탁기를 태우고 진동수를 승화',
-    soulGuidance: '맑은 목소리로 깊은 호흡을 내쉬며 부정적인 생각의 파동을 빛의 주파수로 조율하십시오.'
+    sacredPractice: '태초의 무생(無生)을 상징하는 백색 아(A) 음조를 따라 호흡과 마음을 가라앉히기',
+    soulGuidance: '맑은 목소리로 깊게 호흡하며 부정적인 생각에서 한 걸음 물러나 마음을 차분히 가다듬으십시오.'
   },
   {
     wayIndex: 8,

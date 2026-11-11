@@ -34,9 +34,8 @@ import { MuseSongAppleMusicPlayer, ensureAppleMusicClassicalUrl } from "@/compon
 import { recordPrismFeature } from "@/lib/prismOmniSync";
 import {
   resolveArtworkImage,
-  buildPollinationsArtworkUrl,
-  getWikimediaFullResUrl,
-  getWikimediaFilePathUrl,
+  buildDailyArtworkFallbackUrls,
+  DAILY_ART_LOCAL_FALLBACK_URL,
   isAiArtworkUrl,
   isAiArtworkSource,
   resolveArtworkSource,
@@ -47,6 +46,7 @@ import { useApp } from "@/contexts/AppContext";
 import { sendArtRecommendationToLucy } from "@/lib/oracleDeepInsight";
 import { getPendingPrismToss, clearPrismToss, type PrismTossPayload } from "@/lib/prismToss";
 import { KOREAN_FAMOUS_POEMS } from "@/lib/koreanFamousPoems";
+import { withTimeout } from "@/lib/asyncTimeout";
 
 interface FamousPoem {
   title: string;
@@ -1009,7 +1009,7 @@ const DAILY_ART_FALLBACKS: ArtFallbackEntry[] = [
     artworkType: "미술 (유화)",
     era: "인상주의 · 1916년",
     description: "빛의 변화에 따른 물그림자의 색조를 끊임없이 기록한 명작입니다. 연못의 깊이에 침잠하여 경계 없는 평온함을 선물하며 번뇌를 녹여내어 깊은 명상적 합일에 이르게 합니다.",
-    whyRecommended: "지금 당신의 마음에 고요하고 부드러운 치유가 필요합니다. 세세한 격리된 감정을 흐르는 빛줄기에 스며들게 함으로써 창작의 근원 주파수를 정화해 줍니다.",
+    whyRecommended: "지금 당신의 마음에 고요하고 부드러운 치유가 필요합니다. 세세한 감정을 흐르는 빛줄기에 스며들게 하며 새로운 창작 영감을 건넵니다.",
     challenges: [
       "눈을 감고 정갈한 호수 수면을 바라보는 명상을 3분간 진행해 보세요.",
       "노트 중심에 파란색이나 보라색 크레용으로 가볍게 퍼져나가는 원형 물결을 어루만지듯 그려보세요."
@@ -1026,7 +1026,7 @@ const DAILY_ART_FALLBACKS: ArtFallbackEntry[] = [
     artworkType: "미술 (유화)",
     era: "후기 인상주의 · 1889년",
     description: "요동치는 푸른 밤하늘과 소용돌이치는 황금빛 별들이 영혼의 격정을 예술로 승화한 걸작입니다. 내면의 혼란을 창조적 에너지로 치유하는 강렬한 울림을 줍니다.",
-    whyRecommended: "당신의 깊은 무의식에 잠재된 열정과 빛을 일깨울 시간입니다. 어두운 밤하늘 속에서도 영롱하게 빛나는 별의 주파수에 주파수를 맞추어 보세요.",
+    whyRecommended: "당신의 깊은 무의식에 잠재된 열정과 빛을 일깨울 시간입니다. 어두운 밤하늘 속에서도 영롱하게 빛나는 별에서 오늘의 영감을 발견해 보세요.",
     challenges: [
       "밤하늘을 올려다보며 가장 밝게 빛나는 별 하나를 찾아 10초간 응시해 보세요.",
       "노란색 펜으로 나만의 빛나는 별 모양을 스케치북에 힘있게 휘갈겨 보세요."
@@ -1667,8 +1667,7 @@ function sanitizeArtRecommendation(raw: ArtRecommendation, offset?: number): Art
   return rec;
 }
 
-function isAiRecreatedArtworkSource(source: ArtworkImageSource | null, url?: string | null, fallbackIndex?: number): boolean {
-  if (isAiArtworkUrl(url) || (typeof fallbackIndex === "number" && fallbackIndex >= 2)) return true;
+function isAiRecreatedArtworkSource(source: ArtworkImageSource | null, url?: string | null): boolean {
   return isAiArtworkSource(source, url);
 }
 
@@ -1816,6 +1815,25 @@ function touchArtCacheDate(): void {
 export function ArtRecommendationView() {
   const { sharedState, updateSharedState, openLucyChat, sendUnifiedMessage } = useApp();
   const [loading, setLoading] = useState(false);
+  const [autoPlayDocentRequestId, setAutoPlayDocentRequestId] = useState<number | null>(null);
+  const autoPlayDocentSequenceRef = useRef(0);
+  const autoPlayedDocentFingerprintRef = useRef<string | null>(null);
+  const requestDocentAutoPlay = useCallback(() => {
+    const requestId = ++autoPlayDocentSequenceRef.current;
+    setAutoPlayDocentRequestId(requestId);
+  }, []);
+  const requestDocentAutoPlayFor = useCallback((art: ArtRecommendation) => {
+    const fingerprint = [
+      getTodayDateKey(), art.catalogId || '', art.title, art.creator || '',
+      art.famousPoem?.title || '', art.famousSong?.title || '', art.whyRecommended || '',
+    ].join('|');
+    if (autoPlayedDocentFingerprintRef.current === fingerprint) return;
+    autoPlayedDocentFingerprintRef.current = fingerprint;
+    requestDocentAutoPlay();
+  }, [requestDocentAutoPlay]);
+  const consumeDocentAutoPlay = useCallback((requestId: number) => {
+    setAutoPlayDocentRequestId((current) => current === requestId ? null : current);
+  }, []);
   const [loadingImage, setLoadingImage] = useState(false);
   const [recommendation, setRecommendation] = useState<ArtRecommendation | null>(() => {
     if (typeof window !== "undefined" && isArtCacheFresh()) {
@@ -1885,6 +1903,7 @@ export function ArtRecommendationView() {
     if (!cachedRec) return false;
 
     setRecommendation(cachedRec);
+    requestDocentAutoPlayFor(cachedRec);
     setCompletedChallenges({});
 
     const cachedMoodLabel = localStorage.getItem(ART_CACHE_KEYS.mood);
@@ -1901,11 +1920,11 @@ export function ArtRecommendationView() {
     }
 
     return true;
-  }, []);
+  }, [requestDocentAutoPlayFor]);
 
   const [imageFallbackIndex, setImageFallbackIndex] = useState(0);
   const [imageLoadError, setImageLoadError] = useState(false);
-  const [imageApiError, setImageApiError] = useState('');
+  const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
 
   // Safety timer to prevent infinite image loading state (15s for high-res / AI generation)
   useEffect(() => {
@@ -1920,7 +1939,7 @@ export function ArtRecommendationView() {
   useEffect(() => {
     setImageFallbackIndex(0);
     setImageLoadError(false);
-    setImageApiError('');
+    setLoadedImageUrl(null);
   }, [recommendation?.catalogId, recommendation?.title]);
 
   const generateNanobananaImage = useCallback(async (
@@ -1930,21 +1949,24 @@ export function ArtRecommendationView() {
     if (isGeneratingImageRef.current) return;
     isGeneratingImageRef.current = true;
     setLoadingImage(true);
-    setImageApiError('');
     try {
-      const { displayUrl, source } = await resolveArtworkImage(
-        {
-          title: art.title,
-          titleOriginal: art.titleOriginal,
-          creator: art.creator,
-          creatorOriginal: art.creatorOriginal,
-          artworkType: art.artworkType,
-          era: art.era,
-          description: art.description,
-          aestheticTone: art.aestheticTone,
-          dailyArtImageUrl: art.imageUrl,
-        },
-        options,
+      const { displayUrl, source } = await withTimeout(
+        resolveArtworkImage(
+          {
+            title: art.title,
+            titleOriginal: art.titleOriginal,
+            creator: art.creator,
+            creatorOriginal: art.creatorOriginal,
+            artworkType: art.artworkType,
+            era: art.era,
+            description: art.description,
+            aestheticTone: art.aestheticTone,
+            dailyArtImageUrl: art.imageUrl,
+          },
+          options,
+        ),
+        15000,
+        '작품 이미지를 불러오지 못했습니다. 다시 시도해 주세요.',
       );
 
       setNanobananaImage(displayUrl);
@@ -1968,9 +1990,7 @@ export function ArtRecommendationView() {
         }, 'MUSE');
       }
     } catch (e) {
-      console.error("Failed to resolve artwork image:", e);
-      setImageApiError(e instanceof Error ? e.message : '작품 이미지를 불러오지 못했습니다. 다시 시도해 주세요.');
-      setImageLoadError(true);
+      console.warn("Artwork image provider unavailable; keeping the local image fallback available.", e);
     } finally {
       setLoadingImage(false);
       isGeneratingImageRef.current = false;
@@ -2016,7 +2036,11 @@ export function ArtRecommendationView() {
           orderBy("createdAt", "desc"),
           limit(3)
         );
-         const querySnapshot = await getDocs(q);
+        const querySnapshot = await withTimeout(
+          getDocs(q),
+          4000,
+          'Daily ART 사용자 기록 조회 시간이 초과되었습니다.',
+        );
         if (!querySnapshot.empty) {
           userContext = querySnapshot.docs
             .map((doc) => doc.data().content || "")
@@ -2035,12 +2059,12 @@ export function ArtRecommendationView() {
       const response = await fetch("/api/ai/recommend-art", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(12000),
         body: JSON.stringify({
           currentMood: dailyMood.promptMood,
           moodId: dailyMood.id,
           userContext,
           userConcern: concernText,
-          energyFrequency: "528Hz",
           dateKey: getTodayDateKey(),
           randomOffset: offset,
           excludeCatalogIds,
@@ -2054,6 +2078,7 @@ export function ArtRecommendationView() {
       const enriched = sanitizeArtRecommendation(data, offset);
       
       setRecommendation(enriched);
+      requestDocentAutoPlayFor(enriched);
       touchArtCacheDate();
       localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(enriched));
       recordArtworkHistory(enriched);
@@ -2076,12 +2101,13 @@ export function ArtRecommendationView() {
       } catch (_) {}
       
       // Auto-trigger picture drawing inspired by this masterpiece
-      await generateNanobananaImage(enriched);
+      void generateNanobananaImage(enriched);
     } catch (e) {
       console.error(e);
       // Fallback
       const genericFallback = getDailyArtFallback(offset);
       setRecommendation(genericFallback);
+      requestDocentAutoPlayFor(genericFallback);
       touchArtCacheDate();
       localStorage.setItem(ART_CACHE_KEYS.recommendation, JSON.stringify(genericFallback));
       recordArtworkHistory(genericFallback);
@@ -2102,11 +2128,11 @@ export function ArtRecommendationView() {
         }, 'MUSE');
       } catch (_) {}
 
-      await generateNanobananaImage(genericFallback);
+      void generateNanobananaImage(genericFallback);
     } finally {
       setLoading(false);
     }
-  }, [customConcern, generateNanobananaImage, restoreDailyArtFromCache, sharedState?.dailyArts, updateSharedState]);
+  }, [customConcern, generateNanobananaImage, requestDocentAutoPlayFor, restoreDailyArtFromCache, sharedState?.dailyArts, updateSharedState]);
 
   // Prism Toss processing handler: binds Oracle Tarot's 3-card sequence & anchor masterpiece
   const handleTossedArtRecommendation = useCallback(async (toss: PrismTossPayload) => {
@@ -2199,7 +2225,7 @@ export function ArtRecommendationView() {
           artworkType: catalogMatch.artworkType,
           era: catalogMatch.era,
           description: toss.contextMessage || catalogMatch.description,
-          whyRecommended: `오라클 타로 [${cardNames || '영혼의 3장'}]의 서사적 조합과 완전한 주파수로 공명하는 예술 처방입니다.`,
+          whyRecommended: `오라클 타로 [${cardNames || '영혼의 3장'}]의 서사와 잘 어울리는 예술 영감 처방입니다.`,
           challenges: catalogMatch.defaultChallenges ? [...catalogMatch.defaultChallenges] : [],
           aestheticTone: catalogMatch.aestheticTone,
           quote: toss.anchorArtQuote || catalogMatch.quote,
@@ -2221,7 +2247,7 @@ export function ArtRecommendationView() {
           titleOriginal: anchorTitle || fallbackMatch.titleOriginal,
           quote: toss.anchorArtQuote || fallbackMatch.quote,
           description: toss.contextMessage || fallbackMatch.description,
-          whyRecommended: `오라클 타로에서 도출된 [${cardNames}] 3장의 카드 시퀀스와 완전한 주파수로 공명하는 예술 처방입니다.`,
+          whyRecommended: `오라클 타로에서 도출된 [${cardNames}] 3장의 카드 시퀀스에서 출발한 예술 영감 처방입니다.`,
         };
       }
 
@@ -2279,6 +2305,7 @@ export function ArtRecommendationView() {
         const backup = JSON.parse(backupRaw);
         if (backup.recommendation) {
           setRecommendation(backup.recommendation);
+          requestDocentAutoPlayFor(backup.recommendation);
           setNanobananaImage(backup.image || null);
           const effectiveSrc = resolveArtworkSource(backup.imageSource, backup.image);
           setArtworkImageSource(effectiveSrc);
@@ -2294,7 +2321,7 @@ export function ArtRecommendationView() {
     if (!restoreDailyArtFromCache()) {
       void handleRecommendArt();
     }
-  }, [handleRecommendArt, restoreDailyArtFromCache]);
+  }, [handleRecommendArt, requestDocentAutoPlayFor, restoreDailyArtFromCache]);
 
   // Cross-device synchronization from cloud sharedState
   useEffect(() => {
@@ -2339,6 +2366,7 @@ export function ArtRecommendationView() {
       if (cloudArt && typeof cloudArt === "object" && (cloudArt.recommendation || cloudArt.title)) {
         const rec = cloudArt.recommendation || cloudArt;
         setRecommendation(rec);
+        requestDocentAutoPlayFor(rec);
         const img = cloudArt.image || cloudArt.nanobananaImage || cloudArt.imageUrl || rec.imageUrl;
         if (img) setNanobananaImage(img);
         const rawSource = cloudArt.imageSource || cloudArt.artworkImageSource;
@@ -2359,7 +2387,7 @@ export function ArtRecommendationView() {
       window.removeEventListener("prism:feature_updated", handleSync);
       window.removeEventListener("prism:daily_art_updated", handleSync);
     };
-  }, [restoreDailyArtFromCache, sharedState?.dailyArts]);
+  }, [requestDocentAutoPlayFor, restoreDailyArtFromCache, sharedState?.dailyArts]);
 
   // Global event listener to trigger Daily ART generation from subnav or floating controls
   useEffect(() => {
@@ -2394,7 +2422,7 @@ export function ArtRecommendationView() {
 
   const loadingMessages = [
     "퀀텀 시냅스를 정렬하여 당신의 최근 내면 흐름을 수집하고 있습니다...",
-    "동조 주파수 파동(Hz)과 마인드풀 에너지의 완벽한 조화를 스캔하는 중...",
+    "마음 상태와 예술적 영감에 어울리는 명작을 찾는 중...",
     "DailyArt Magazine의 Masterpiece Stories에서 검증된 명작을 큐레이션합니다...",
     "예술이 전하는 영감과 실천적 미션을 마법처럼 조율하는 마지막 단계..."
   ];
@@ -2408,6 +2436,7 @@ export function ArtRecommendationView() {
         console.log('[ArtRecommendationView] Midnight transition detected. Resetting to new day:', nowKey);
         setCurrentDateKey(nowKey);
         setRecommendation(null);
+        setAutoPlayDocentRequestId(null);
         setNanobananaImage(null);
         setArtworkImageSource(null);
         setCustomConcern("");
@@ -2519,37 +2548,26 @@ export function ArtRecommendationView() {
 
   const fallbackUrls = useMemo(() => {
     if (!recommendation) return [];
-    const list: string[] = [];
-
-    // 1. [★ 최우선 대원칙] 미술관 공식 소장본 원작 스캔 — 서버리스 프록시를 거치지 않는 직링 4단 계단식 폴백
-    if (recommendation.imageUrl && !isAiArtworkUrl(recommendation.imageUrl)) {
-      const raw = recommendation.imageUrl.trim();
-      // 1순위: 원본 직링 (CDN 즉시 로드)
-      list.push(raw);
-      // 2순위: 인코딩된 원본 직링 (유니코드 파일명 대응)
-      list.push(encodeURI(raw));
-      // 3순위: 위키미디어 원본 풀 해상도 URL (썸네일 경로 제거)
-      const fullRes = getWikimediaFullResUrl(raw);
-      if (fullRes) list.push(fullRes);
-      // 4순위: 위키미디어 Special:FilePath 리졸버 (파일명으로 재요청)
-      const filePath = getWikimediaFilePathUrl(raw);
-      if (filePath) list.push(filePath);
-    }
-
-    // 5. Saved/resolved nanobananaImage (if valid and not duplicate)
-    if (nanobananaImage && nanobananaImage !== "null" && nanobananaImage !== "undefined") {
-      list.push(nanobananaImage);
-    }
-
-    // 6. [최종 안전망] AI 명화 재현 (Pollinations) — 원작을 불러올 수 없는 작품도 반드시 표시
-    list.push(buildPollinationsArtworkUrl(recommendation));
-
-    return [...new Set(list.filter(Boolean))];
+    return buildDailyArtworkFallbackUrls(recommendation.imageUrl, nanobananaImage);
   }, [nanobananaImage, recommendation]);
 
   const effectiveImage = useMemo(() => {
     return fallbackUrls[imageFallbackIndex] || fallbackUrls[0] || "";
   }, [fallbackUrls, imageFallbackIndex]);
+
+  useEffect(() => {
+    if (!effectiveImage || imageLoadError || loadedImageUrl === effectiveImage) return;
+    const timer = window.setTimeout(() => {
+      if (imageFallbackIndex + 1 < fallbackUrls.length) {
+        setImageFallbackIndex((current) => current === imageFallbackIndex ? current + 1 : current);
+        setLoadingImage(true);
+      } else {
+        setLoadingImage(false);
+        setImageLoadError(true);
+      }
+    }, 10000);
+    return () => window.clearTimeout(timer);
+  }, [effectiveImage, imageLoadError, loadedImageUrl, imageFallbackIndex, fallbackUrls.length]);
 
   // Ensure image generation starts immediately whenever recommendation is ready
   useEffect(() => {
@@ -3004,6 +3022,8 @@ export function ArtRecommendationView() {
                   오늘의 명곡, 명시, 명화를 뮤즈가 하나의 감동적인 이야기로 엮어 순서대로 생생하게 음성 안내해 드립니다.
                 </p>
                 <MuseDocentAudio
+                  autoPlayRequestId={autoPlayDocentRequestId}
+                  onAutoPlayConsumed={consumeDocentAutoPlay}
                   artwork={{
                     imageUrl: effectiveImage,
                     title: recommendation.title,
@@ -3169,9 +3189,6 @@ export function ArtRecommendationView() {
                     </span>
                   </div>
                   
-                  <div className="text-[10px] font-mono tracking-widest text-[#a5b4fc]/80 bg-[#a5b4fc]/5 border border-[#a5b4fc]/10 px-3 py-1.5 rounded-xl">
-                    ENERGY FREQUENCY: 528Hz Sync
-                  </div>
                 </div>
 
                 {/* Title & Creator */}
@@ -3218,9 +3235,14 @@ export function ArtRecommendationView() {
                         alt={`${recommendation.title} — ${recommendation.creator}`}
                         referrerPolicy="no-referrer"
                         onLoad={() => {
+                          setLoadedImageUrl(effectiveImage);
                           setLoadingImage(false);
                           setImageLoadError(false);
-                          if (isAiArtworkUrl(effectiveImage) || imageFallbackIndex >= 2) {
+                          if (effectiveImage === DAILY_ART_LOCAL_FALLBACK_URL) {
+                            setArtworkImageSource("local_fallback");
+                            safeLocalStorage.setItem(ART_CACHE_KEYS.image, effectiveImage);
+                            localStorage.setItem(ART_CACHE_KEYS.imageSource, "local_fallback");
+                          } else if (isAiArtworkUrl(effectiveImage)) {
                             if (artworkImageSource !== "pollinations" && artworkImageSource !== "ai_replica") {
                               setArtworkImageSource("pollinations");
                               localStorage.setItem(ART_CACHE_KEYS.imageSource, "pollinations");
@@ -3228,14 +3250,11 @@ export function ArtRecommendationView() {
                           }
                         }}
                         onError={() => {
+                          setLoadedImageUrl(null);
                           if (imageFallbackIndex + 1 < fallbackUrls.length) {
                             const nextIndex = imageFallbackIndex + 1;
                             setImageFallbackIndex(nextIndex);
-                            const nextUrl = fallbackUrls[nextIndex];
-                            if (isAiArtworkUrl(nextUrl) || nextIndex >= 2) {
-                              setArtworkImageSource("pollinations");
-                              localStorage.setItem(ART_CACHE_KEYS.imageSource, "pollinations");
-                            }
+                            setLoadingImage(true);
                           } else {
                             setLoadingImage(false);
                             setImageLoadError(true);
@@ -3277,7 +3296,6 @@ export function ArtRecommendationView() {
                       <p className="text-xs text-amber-200/70 font-medium mb-4">
                         {recommendation.creator} · {recommendation.era}
                       </p>
-                      {imageApiError && <p role="status" className="mb-4 max-w-sm text-xs text-amber-100/90">{imageApiError}</p>}
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -3322,7 +3340,9 @@ export function ArtRecommendationView() {
 
                 {effectiveImage && !loadingImage && (
                   <p className="text-[10px] text-amber-200/80 text-center leading-relaxed px-2 -mt-2">
-                    {isAiRecreatedArtworkSource(artworkImageSource, effectiveImage, imageFallbackIndex)
+                    {effectiveImage === DAILY_ART_LOCAL_FALLBACK_URL
+                      ? "🎨 외부 이미지 연결이 원활하지 않아 기본 전시 이미지를 표시하고 있습니다. 작품 제목·작가·원작 출처는 그대로 유지됩니다."
+                      : isAiRecreatedArtworkSource(artworkImageSource, effectiveImage)
                       ? "✨ 원작의 저작권 보호 또는 소장처 정책으로 인해 원작의 구성과 색채를 정밀 분석하여 재현한 고화질 미학 버전입니다."
                       : "🏛️ 시카고 미술관 / 메트로폴리탄 / 위키미디어 / DailyArt 공식 소장 원작 스캔본입니다. (저작권 등으로 로드 불가 시 AI 재현본으로 자동 전환됩니다.)"}
                   </p>
@@ -3385,7 +3405,7 @@ export function ArtRecommendationView() {
                 <div className="p-5 md:p-6 rounded-[24px] bg-blue-500/[0.03] border border-blue-500/10 space-y-3 animate-fade-in">
                   <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-blue-300">
                     <Sparkles size={11} className="animate-pulse" />
-                    뮤즈의 주파수 가이드 전언
+                    뮤즈의 창작 영감 가이드
                   </span>
                   <p className="text-xs md:text-sm text-blue-100/80 leading-relaxed font-sans font-medium">
                     {recommendation.whyRecommended}

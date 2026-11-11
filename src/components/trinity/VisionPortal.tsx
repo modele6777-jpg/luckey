@@ -360,7 +360,7 @@ export function VisionPortal({
                 </motion.h2>
                 <p className="text-sm md:text-base text-white/20 font-sans max-w-xl mx-auto leading-relaxed">
                   "당신의 문장이 운명의 좌표를 설정합니다. <br />
-                  루시가 그 주파수를 읽고 영원의 지도를 그리게 하세요."
+                  루시가 그 마음을 읽고 영원의 지도를 그리게 하세요."
                 </p>
               </div>
 

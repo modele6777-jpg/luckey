@@ -38,7 +38,6 @@ export interface ShugendoYamabushiTenRealmsReport {
   symbolicRebirthScore: number; // 0 ~ 100 의사재생(擬死再生) 통과도
   sixRootsPurificationScore: number; // 0 ~ 100 6근청정(六根淸淨) 정화도
   kujiKiriWardDefenseScore: number; // 0 ~ 100 구지신인(九字神印: 臨兵鬪者皆陣烈在前) 결계력
-  horagaiResonanceFrequency: number; // 호라가이(소라 나팔) 영적 차원 진동수 (Hz, e.g. 432Hz ~ 741Hz)
   currentInitiationRealm: TenRealmStage; // 현재 영혼이 통과 중인 주재 계위
   highestAwakenedRealm: TenRealmStage; // 가장 높이 개화된 영적 계위
   yamabushiAsceticPointers: string; // 야마부시 산악 지혜 요결
@@ -169,10 +168,6 @@ export function calculateShugendoYamabushiTenRealms(
   const sixRootsPurificationScore = Math.min(100, Math.max(38, 48 + ((seed * 37) % 50)));
   const kujiKiriWardDefenseScore = Math.min(100, Math.max(45, 55 + ((seed * 41) % 43)));
 
-  // 호라가이 솔페지오 기반 공명 주파수 (432, 528, 639, 741 Hz)
-  const freqs = [432, 528, 639, 741];
-  const horagaiResonanceFrequency = freqs[seed % freqs.length];
-
   const yamabushiAsceticPointers = `오미네산의 험준한 절벽을 오르듯, 현재 당신의 영혼은 [${currentInitiationRealm.nameKo}(${currentInitiationRealm.kanji})]의 시련을 통과하고 있습니다. ${currentInitiationRealm.transmutationTask}에 집중할 때 비로소 [${highestAwakenedRealm.nameKo}]의 본래 힘이 발현됩니다.`;
   const waterfallTakiGyoRitual = `찬 물로 세수를 하거나 샤워 시 30초간 냉수를 쐬며 "육근청정(六根淸淨), 구지신인 임·병·투·자·개·진·열·재·전(臨兵鬪者皆陣烈在前)"을 마음속으로 외쳐 사기(邪氣)를 물리치고 중심을 세우십시오.`;
 
@@ -182,7 +177,6 @@ export function calculateShugendoYamabushiTenRealms(
     symbolicRebirthScore,
     sixRootsPurificationScore,
     kujiKiriWardDefenseScore,
-    horagaiResonanceFrequency,
     currentInitiationRealm,
     highestAwakenedRealm,
     yamabushiAsceticPointers,
@@ -194,7 +188,7 @@ export function formatShugendoYamabushiTenRealmsPrompt(rep: ShugendoYamabushiTen
   return `[고대 일본 슈겐도(修驗道) 야마부시 10계수행 & 6근청정 실측 데이터]
 · 엔진 버전: v${rep.engineVersion}
 · 의사재생(擬死再生) 통과도: ${rep.symbolicRebirthScore}/100 | 6근청정(六根淸淨) 정화도: ${rep.sixRootsPurificationScore}/100
-· 구지신인(九字神印) 결계 방어력: ${rep.kujiKiriWardDefenseScore}/100 | 호라가이 영적 공명 주파수: ${rep.horagaiResonanceFrequency}Hz
+· 구지신인(九字神印) 결계 방어력: ${rep.kujiKiriWardDefenseScore}/100
 · 현재 당면 통과의례 계위: [${rep.currentInitiationRealm.nameKo} (${rep.currentInitiationRealm.kanji})] — 정화도 ${rep.currentInitiationRealm.purificationScore}%
   - 영적 영역: ${rep.currentInitiationRealm.spiritualDomain}
   - 전환 과제: ${rep.currentInitiationRealm.transmutationTask}

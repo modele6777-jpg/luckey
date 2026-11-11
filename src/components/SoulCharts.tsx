@@ -29,11 +29,11 @@ interface ChartProps {
   className?: string;
 }
 
-export const SoulFrequencyChart: React.FC<ChartProps> = ({ data, height = 250, color = "#60A5FA", className = "" }) => {
+export const SoulProgressChart: React.FC<ChartProps> = ({ data, height = 250, color = "#60A5FA", className = "" }) => {
   if (!data || data.length === 0) {
     return (
       <div className={cn("w-full flex items-center justify-center border border-white/5 rounded-3xl", className)} style={{ height }}>
-        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">No frequency data yet</p>
+        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">No progress data yet</p>
       </div>
     );
   }

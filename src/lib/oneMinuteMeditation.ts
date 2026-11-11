@@ -10,8 +10,6 @@ export interface MeditationTheme {
   nameKo: string;
   nameEn: string;
   emoji: string;
-  frequency: number;
-  freqLabel: string;
   color: string;
   badgeBg: string;
   borderColor: string;
@@ -33,8 +31,6 @@ export const MEDITATION_THEMES: MeditationTheme[] = [
     nameKo: '스트레스 해소 & 전신 이완',
     nameEn: 'Stress Relief & Full Relaxation',
     emoji: '🌿',
-    frequency: 432,
-    freqLabel: '432Hz 자연 치유 주파수',
     color: 'text-emerald-300',
     badgeBg: 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30',
     borderColor: 'border-emerald-500/30',
@@ -54,13 +50,11 @@ export const MEDITATION_THEMES: MeditationTheme[] = [
     nameKo: '마인드 리셋 & 잡념 비우기',
     nameEn: 'Mind Reset & Thought Release',
     emoji: '🌊',
-    frequency: 528,
-    freqLabel: '528Hz 변형 & 기적의 주파수',
     color: 'text-cyan-300',
     badgeBg: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30',
     borderColor: 'border-cyan-500/30',
     gradient: 'from-cyan-900/40 via-blue-900/30 to-zinc-950/20',
-    description: '과열된 뇌파를 식히고 꼬리를 물던 생각들을 강물에 띄우듯 맑게 정화합니다.',
+    description: '꼬리를 물던 생각들을 강물에 띄우듯 맑게 정리합니다.',
     breathingPattern: { inhale: 4, hold: 4, exhale: 4, cycles: 5 }, // Box breathing
     affirmation: '나는 지나가는 생각들이 아니라, 이를 바라보는 맑은 하늘입니다.',
     guideSteps: [
@@ -75,8 +69,6 @@ export const MEDITATION_THEMES: MeditationTheme[] = [
     nameKo: '자기 자비 & 자존감 회복',
     nameEn: 'Self-Compassion & Heart Healing',
     emoji: '💖',
-    frequency: 639,
-    freqLabel: '639Hz 심장 차크라 & 연결 주파수',
     color: 'text-rose-300',
     badgeBg: 'bg-rose-500/20 text-rose-200 border-rose-500/30',
     borderColor: 'border-rose-500/30',
@@ -96,8 +88,6 @@ export const MEDITATION_THEMES: MeditationTheme[] = [
     nameKo: '생체 에너지 & 맑은 집중',
     nameEn: 'Pranic Energy & Clear Focus',
     emoji: '✨',
-    frequency: 741,
-    freqLabel: '741Hz 직관 & 에너지 각성 주파수',
     color: 'text-amber-300',
     badgeBg: 'bg-amber-500/20 text-amber-200 border-amber-500/30',
     borderColor: 'border-amber-500/30',
@@ -108,7 +98,7 @@ export const MEDITATION_THEMES: MeditationTheme[] = [
     guideSteps: [
       '척추를 곧게 펴고 정수리가 하늘로 가볍게 뻗어 오르는 감각을 엽니다.',
       '황금빛 활력 에너지가 아랫배 단전까지 채워지도록 호흡합니다 (4초).',
-      '온몸의 세포가 빛으로 충전되는 에너지를 간직합니다 (4초).',
+      '온몸에 맑은 생기를 채우며 고요히 머뭅니다 (4초).',
       '탁한 기운을 밖으로 시원하게 배출하며 집중력을 회복합니다 (4초).'
     ]
   },
@@ -117,8 +107,6 @@ export const MEDITATION_THEMES: MeditationTheme[] = [
     nameKo: '수면 유도 & 깊은 쉼',
     nameEn: 'Deep Sleep & Peaceful Surrender',
     emoji: '🌙',
-    frequency: 396,
-    freqLabel: '396Hz 무의식 안정 & 방하착 주파수',
     color: 'text-indigo-300',
     badgeBg: 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30',
     borderColor: 'border-indigo-500/30',
@@ -144,7 +132,6 @@ export interface OneMinuteMeditationRecord {
   completedAt: number;
   dateKey: string;
   durationSeconds: number;
-  frequency: number;
   affirmation: string;
   note?: string;
   userCondition?: string;
@@ -157,7 +144,6 @@ export const OneMinuteMeditationSchema = z.object({
   meditationTitle: z.string().describe("1분 명상의 핵심 맞춤 제목 (예: '숨결로 채우는 60초 긴장 이완', '과부하된 뇌를 식히는 60초 마인드 리셋')"),
   themeSummary: z.string().describe("오늘 사용자 상태에 맞춘 1분 명상 핵심 치유 포인트 (1~2문장)"),
   emoji: z.string().describe("명상을 상징하는 이모지 (예: 🌿, 🌊, 💖, ✨, 🌙)"),
-  frequencySuggestion: z.string().describe("추천 주파수 및 이유 (예: '528Hz — 복잡한 마음을 즉각 정화하고 뇌파를 안정시킵니다')"),
   mindfulBreathingTip: z.string().describe("호흡 중 마음에 새길 60초 집중 포인트 (1문장)"),
   guidedVoiceScript: z.string().describe("60초 동안 음성 또는 마음속으로 낭독할 차분하고 다정한 명상 스크립트 (약 120~180자)"),
   completionAffirmation: z.string().describe("사용자의 구체적인 고민과 상태에 100% 직결되는 1인칭 현재형 맞춤 치유 확언 (예: '내 머릿속의 모든 복잡한 생각이 맑은 강물처럼 흘러가고, 깊은 평온과 통찰이 내 안에 머뭅니다' / '오늘 나의 모든 수고와 무게를 숨과 함께 내려놓고, 완벽한 안식 속에서 깊이 잠듭니다') (1문장)"),
@@ -173,36 +159,34 @@ export function inferThemeFromConcern(concern: string): { themeId: MeditationThe
   if (/잠|수면|불면|밤|야간|피곤해서\s*자|자고\s*싶|악몽|뒤척|새벽|숙면/.test(text)) {
     return {
       themeId: 'deep_sleep',
-      reason: '수면 유도 및 생각의 스위치를 끄는 396Hz 방하착 테마가 적합합니다.',
+      reason: '수면 유도 및 생각의 스위치를 끄는 깊은 쉼 테마가 적합합니다.',
     };
   }
   if (/자책|자존감|우울|비교|외로|상처|속상|눈물|죄책|미안|자신감|위로|따뜻|칭찬|자비|마음\s*아|서러|서운/.test(text)) {
     return {
       themeId: 'self_compassion',
-      reason: '내면을 따뜻하게 감싸 안는 639Hz 심장 차크라 자기 자비 테마가 적합합니다.',
+      reason: '내면을 따뜻하게 감싸 안는 자기 자비 테마가 적합합니다.',
     };
   }
   if (/무기력|피로|멍|졸려|나태|지침|에너지|활력|의욕|집중|아침|기운|각성|생체/.test(text)) {
     return {
       themeId: 'energy_boost',
-      reason: '단전의 생체 에너지를 깨우는 741Hz 프라나 집중 테마가 적합합니다.',
+      reason: '생체 에너지와 맑은 집중을 돕는 테마가 적합합니다.',
     };
   }
   if (/잡념|머리|복잡|생각|뇌|과부하|정리|번아웃|과열|쉴\s*새|멍때|지끈|두통|어지/.test(text)) {
     return {
       themeId: 'mind_reset',
-      reason: '과열된 뇌파를 식히고 잡념을 맑게 비워내는 528Hz 마인드 리셋 테마가 적합합니다.',
+      reason: '잡념을 맑게 비워내는 마인드 리셋 테마가 적합합니다.',
     };
   }
   return {
     themeId: 'stress_relief',
-    reason: '굳은 긴장과 교감신경을 부드럽게 이완시키는 432Hz 자연 치유 테마가 적합합니다.',
+    reason: '굳은 긴장을 부드럽게 이완시키는 스트레스 해소 테마가 적합합니다.',
   };
 }
 
-/**
- * Web Audio Solfeggio Tone synthesizer for 1-minute meditation
- */
+/** Short meditation sound effects. */
 class MeditationSoundEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
@@ -223,45 +207,6 @@ class MeditationSoundEngine {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume().catch(() => {});
     }
-  }
-
-  public playTone(freq: number) {
-    try {
-      this.initContext();
-      if (!this.ctx || !this.masterGain) return;
-
-      this.stopTone();
-
-      const osc = this.ctx.createOscillator();
-      const toneGain = this.ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-
-      // Smooth fade-in
-      toneGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
-      toneGain.gain.exponentialRampToValueAtTime(0.08, this.ctx.currentTime + 1.2);
-
-      osc.connect(toneGain);
-      toneGain.connect(this.masterGain);
-
-      osc.start();
-      this.oscNode = osc;
-      this.isRunning = true;
-    } catch (e) {
-      console.warn('[MeditationSound] Tone error:', e);
-    }
-  }
-
-  public stopTone() {
-    if (this.oscNode) {
-      try {
-        this.oscNode.stop();
-        this.oscNode.disconnect();
-      } catch (_) {}
-      this.oscNode = null;
-    }
-    this.isRunning = false;
   }
 
   public playSingingBowlBell() {
@@ -435,7 +380,7 @@ export async function generatePersonalizedMeditationGuide(
 
 [모드: AI 추천 테마 자동 분석 모드]
 - 사용자 상태 / 고민: "${userCondition || '일상적인 피로와 긴장 완화'}"
-- AI 자동 진단 매칭 테마: ${theme.nameKo} (${theme.nameEn}, ${theme.frequency}Hz)
+- AI 자동 진단 매칭 테마: ${theme.nameKo} (${theme.nameEn})
 - 진단 배경: ${inferred.reason}
 
 반드시 아래 JSON 포맷으로만 응답하세요:
@@ -445,12 +390,11 @@ export async function generatePersonalizedMeditationGuide(
   "meditationTitle": "${theme.emoji} 맞춤 1분 명상 제목",
   "themeSummary": "1분 명상 핵심 치유 포인트 (1~2문장)",
   "emoji": "${theme.emoji}",
-  "frequencySuggestion": "${theme.frequency}Hz — ${theme.nameKo}",
   "mindfulBreathingTip": "들숨 ${theme.breathingPattern.inhale}초, 멈춤 ${theme.breathingPattern.hold}초, 날숨 ${theme.breathingPattern.exhale}초 호흡 집중 포인트",
   "guidedVoiceScript": "60초 동안 낭독할 차분하고 다정한 명상 스크립트 (약 100~160자)",
   "completionAffirmation": "사용자의 고민('${userCondition || '일상 피로'}')을 직접 치유하고 승화시키는 1인칭 현재형 맞춤 확언 1문장"
 }`
-    : `사용자가 베이스 테마로 '${theme.nameKo}'(${theme.nameEn}, ${theme.frequency}Hz)를 선택하였습니다. 60초 맞춤 명상 가이드를 설계해 주세요.
+    : `사용자가 베이스 테마로 '${theme.nameKo}'(${theme.nameEn})를 선택하였습니다. 60초 맞춤 명상 가이드를 설계해 주세요.
 
 [모드: 사용자 지정 베이스 테마 모드]
 - 선택된 베이스 테마: ${theme.nameKo} (${theme.nameEn})
@@ -463,7 +407,6 @@ export async function generatePersonalizedMeditationGuide(
   "meditationTitle": "${theme.emoji} ${theme.nameKo} 60초 명상",
   "themeSummary": "1분 명상 핵심 치유 포인트 (1~2문장)",
   "emoji": "${theme.emoji}",
-  "frequencySuggestion": "${theme.frequency}Hz — ${theme.nameKo}",
   "mindfulBreathingTip": "들숨 ${theme.breathingPattern.inhale}초, 멈춤 ${theme.breathingPattern.hold}초, 날숨 ${theme.breathingPattern.exhale}초 호흡 팁",
   "guidedVoiceScript": "60초 동안 낭독할 차분하고 다정한 명상 스크립트 (약 100~160자)",
   "completionAffirmation": "사용자의 상태에 꼭 맞춘 1인칭 현재형 치유 확언 1문장"
@@ -483,7 +426,6 @@ export async function generatePersonalizedMeditationGuide(
       meditationTitle: rawResult?.meditationTitle || fallback.meditationTitle,
       themeSummary: rawResult?.themeSummary || fallback.themeSummary,
       emoji: rawResult?.emoji || theme.emoji || fallback.emoji,
-      frequencySuggestion: rawResult?.frequencySuggestion || `${theme.frequency}Hz — ${theme.nameKo}`,
       mindfulBreathingTip: rawResult?.mindfulBreathingTip || fallback.mindfulBreathingTip,
       guidedVoiceScript: rawResult?.guidedVoiceScript || fallback.guidedVoiceScript,
       completionAffirmation: rawResult?.completionAffirmation || fallback.completionAffirmation,
@@ -529,7 +471,7 @@ export function generateTailoredAffirmationFromConcern(themeId: MeditationThemeI
       `과열되었던 내 머릿속의 모든 생각들이 맑은 시냇물처럼 흘러가고, 맑고 투명한 평온이 찾아옵니다.`,
       `나는 머릿속을 스쳐가는 생각들이 아니라, 이를 고요히 품고 있는 맑고 드넓은 푸른 하늘입니다.`,
       `복잡하게 엉킨 실타래를 내려놓습니다. 지금 내게 필요한 맑은 통찰과 여백이 생겨납니다.`,
-      `뇌파가 깊고 고요한 알파파로 가라앉으며, 내 안의 중심이 단단하고 차분하게 정렬됩니다.`,
+      `호흡의 리듬에 따라 내 안의 중심이 단단하고 차분하게 정렬됩니다.`,
       `하나씩 천천히, 내 호흡의 리듬에 맞춰 머릿속 무거운 짐을 가볍게 비워냅니다.`
     ];
     return mindResetAffirmations[seed % mindResetAffirmations.length];
@@ -550,9 +492,9 @@ export function generateTailoredAffirmationFromConcern(themeId: MeditationThemeI
   // 4. 무기력 / 피로 / 활력 / 집중 / 기운 / 에너지
   if (/무기력|피로|멍|졸려|나태|지침|에너지|활력|의욕|집중|아침|기운|각성|생체/.test(text)) {
     const energyAffirmations = [
-      `내 몸과 마음의 모든 세포에 맑고 생생한 활력과 깨어있는 집중 에너지가 가득 차오릅니다.`,
+      `내 몸과 마음에 맑고 생생한 활력과 깨어있는 집중이 가득 차오릅니다.`,
       `숨을 들이쉴 때마다 황금빛 생명력이 단전에서부터 정수리까지 맑게 깨어납니다.`,
-      `피로했던 세포들이 맑은 산소를 머금고 다시 싱그럽게 피어납니다. 나는 생기로 가득합니다.`,
+      `피로했던 몸과 마음이 맑은 숨을 머금고 다시 생기로 가득합니다.`,
       `나의 의식은 명료하며, 오늘 내게 주어진 순간들을 열정적이고 유쾌하게 창조해 나갑니다.`,
       `지쳤던 에너지가 빠르게 재충전되고, 내 안의 무한한 잠재력이 깨어납니다.`
     ];
@@ -595,7 +537,6 @@ export function getFallbackPrescription(themeId: MeditationThemeId, userConditio
       ? `'${userCondition}' 상태를 부드럽게 감싸 안고 60초 동안 신경계를 안정화합니다.`
       : theme.description,
     emoji: theme.emoji,
-    frequencySuggestion: theme.freqLabel,
     mindfulBreathingTip: `들숨 ${theme.breathingPattern.inhale}초, 멈춤 ${theme.breathingPattern.hold}초, 날숨 ${theme.breathingPattern.exhale}초의 리듬으로 긴장을 흘려보내세요.`,
     guidedVoiceScript: `편안하게 자리에 앉아 어깨의 힘을 뺍니다. 코로 들어오는 시원한 공기와 함께 내면의 중심을 찾습니다. 잠시 숨을 머금고, 길게 내쉬며 오늘 쌓인 모든 피로와 잔상을 우주로 흘려보냅니다. 지금 이 순간, 당신은 온전히 안전하고 평온합니다.`,
     completionAffirmation: customAffirmation,
@@ -647,7 +588,6 @@ export async function saveMeditationCompletion(
     completedAt: now,
     dateKey: today,
     durationSeconds: 60,
-    frequency: theme.frequency,
     affirmation,
     userCondition,
     aiPrescribedGuide: guideScript,

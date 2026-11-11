@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { configureAmbientAudioSession, initTTSAudioLifecycle, playTTSAudio, pauseTTSAudio, resumeTTSAudio, stopTTSPlayback, getTTSPlaybackProgress, getSharedAudioContext, setBgmPlaybackSessionActive, configurePlaybackAudioSession, configureTransientDuckingAudioSession } from '../src/lib/audio';
 import { getSpeechMediaElement, primeSpeechMedia } from '../src/lib/speechMedia';
 
-test('speech, resume, BGM and compatibility entry points always retain nonexclusive mixing', async () => {
+test('speech, resume, BGM and compatibility entry points always retain nonexclusive ambient mixing', async () => {
   let type = 'auto', plays = 0, loads = 0, contexts = 0;
   const param = () => ({ value: 1, setValueAtTime() {} });
   const node = () => ({ connect() {}, disconnect() {}, gain: param(), threshold: param(), knee: param(), ratio: param(), attack: param(), release: param() });
@@ -36,10 +36,10 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     initTTSAudioLifecycle(); configureAmbientAudioSession(); primeSpeechMedia(false);
     assert.equal(type, 'ambient'); assert.equal(contexts, 0); assert.equal(plays, 0);
     setBgmPlaybackSessionActive(true); configurePlaybackAudioSession(); configureTransientDuckingAudioSession();
-    assert.equal(type, 'playback');
+    assert.equal(type, 'ambient');
     const audio = getSpeechMediaElement() as unknown as Media;
     const first = playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm', 24000, undefined, true);
-    assert.equal(type, 'playback'); assert.equal(plays, 1); assert.equal(loads, 0);
+    assert.equal(type, 'ambient'); assert.equal(plays, 1); assert.equal(loads, 0);
     audio.currentTime = 1.25;
     pauseTTSAudio();
     assert.equal(audio.paused, true);
@@ -47,7 +47,7 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     assert.equal(plays, 1, 'returning must not override an explicit user pause');
     type = 'auto'; // Model a browser resetting the category between playback calls.
     resumeTTSAudio();
-    assert.equal(type, 'playback'); assert.equal(audio.currentTime, 1.25);
+    assert.equal(type, 'ambient'); assert.equal(audio.currentTime, 1.25);
     const ctx = getSharedAudioContext(); assert.equal(ctx.state, 'suspended');
     assert.equal(getTTSPlaybackProgress()?.elapsed, 1.25);
     audio.dispatchEvent(new Event('ended')); await first;
@@ -56,7 +56,7 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     assert.equal(loads, 0, 'chunk transitions must not clear/load the shared native element');
     audio.pause();
     doc.dispatchEvent(new Event('visibilitychange'));
-    assert.equal(audio.paused, false, 'a system interruption may recover if user play intent remains active');
+    assert.equal(audio.paused, true, 'visibility changes must not restart paused audio or reclaim external audio focus');
     stopTTSPlayback(); await second;
     assert.equal(type, 'ambient'); assert.equal(audio.paused, true); assert.equal(audio.src, '');
   } finally {

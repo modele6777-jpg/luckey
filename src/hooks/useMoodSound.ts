@@ -24,6 +24,14 @@ export function useMoodSound() {
     return moodSoundEngine.togglePlay(targetMood);
   }, []);
 
+  const startMood = useCallback((moodId: MoodSoundId) => {
+    return moodSoundEngine.startMood(moodId);
+  }, []);
+
+  const stop = useCallback(() => {
+    moodSoundEngine.stop();
+  }, []);
+
   const setMood = useCallback((moodId: MoodSoundId) => {
     return moodSoundEngine.setMood(moodId);
   }, []);
@@ -52,6 +60,8 @@ export function useMoodSound() {
     currentPreset,
     presets: MOOD_PRESETS,
     togglePlay,
+    startMood,
+    stop,
     setMood,
     setVolume,
     openPicker,

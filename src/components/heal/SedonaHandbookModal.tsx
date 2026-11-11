@@ -88,7 +88,7 @@ export const SEDONA_BIBLE_SECTIONS = [
       "홀리스틱 릴리즈(원함과 원치 않음을 번갈아 느끼기)를 통해 극성을 영구 중화하세요."
     ],
     steps: [
-      "두려움(100)·분노(150)에서 용기(200)로 의식 주파수를 도약시키는 비결은?",
+      "두려움(100)·분노(150)에서 용기(200)로 의식의 흐름을 도약시키는 비결은?",
       "수용(350)과 사랑(500)의 상태를 일상에서 유지하는 3가지 습관을 알려줘",
       "홀리스틱 릴리즈(원함과 원치 않음을 번갈아 느끼기)를 쉽게 설명해줘"
     ]
@@ -143,7 +143,7 @@ export const SEDONA_SACRED_PROCESSES = [
     chantKo: `나는 이 감정을 바꾸거나 없애려 하지 않고, 있는 그대로 바라보며 머뭅니다.
 모든 판단과 저항을 내려놓을 때, 무의식의 묵은 전압이 스스로 빠져나갑니다.
 어둠이 걷힌 자리에 본래 나의 신성한 빛과 평화가 찬란하게 차오릅니다.`,
-    chantEn: `I surrender all resistance to this energy. I let it run its course without judgment. As the voltage clears, high-frequency peace and love naturally emerge.`,
+    chantEn: `I surrender all resistance to this energy. I let it run its course without judgment. As the tension clears, a sense of peace and love can gently emerge.`,
   },
   {
     id: 'core_wants_release',
@@ -278,10 +278,10 @@ export const SEDONA_TOOLS_CATALOG: SedonaToolItem[] = [
     nameEn: 'Hawkins Map of Consciousness Shift',
     emoji: '🪜',
     category: 'hawkins',
-    summary: '죄책감·수치심(20~30)에서 용기(200)와 사랑(500)으로 주파수를 의도적으로 전환하기',
+    summary: '죄책감·수치심(20~30)에서 용기(200)와 사랑(500)으로 감정과 관점을 의식적으로 전환하기',
     howToPractice: '현재 내 감정의 위치를 의식 지도에서 확인하고, 용기(‘내가 이 감정을 책임지겠다’)의 임계점을 넘어 사랑으로 도약합니다.',
     hawkinsLevel: '의식 도약: 200(용기) -> 540(기쁨)',
-    affirmation: '나의 의식 주파수는 지금 이 순간 두려움에서 무한한 사랑과 기쁨으로 상승합니다.',
+    affirmation: '나의 의식의 흐름은 지금 이 순간 두려움에서 무한한 사랑과 기쁨으로 상승합니다.',
   },
   {
     id: 'abiding_in_the_self',
@@ -327,7 +327,7 @@ const SEDONA_AUDIOBOOK_NARRATIONS: Record<string, string> = {
 넷째, 참나의 현존: 당신은 오고 가는 감정 구름이 아니라, 그것을 바라보는 영원히 맑고 고요한 하늘 그 자체입니다.`,
   tools: `제2장, 10가지 감정 해방 실천 도구입니다.
 가슴 열기 호흡은 날숨과 함께 응어리진 가슴의 답답함을 우주로 방출하는 도구입니다.
-호킨스 의식 지도는 두려움과 죄책감의 저주파수에서 용기와 사랑의 고주파수로 도약하는 내비게이션입니다.
+호킨스 의식 지도는 두려움과 죄책감의 무거운 감정에서 용기와 사랑의 마음으로 나아가는 안내입니다.
 튜브 방출 명상은 몸 전체를 빈 대나무 관으로 상상하여 감정을 즉시 흘려보내는 기법입니다.`,
   map: `제3장, 데이비드 호킨스 박사의 의식 지도 해설입니다.
 200의 용기는 삶을 주도적으로 책임지는 위대한 영적 분기점입니다.
@@ -649,7 +649,7 @@ export function SedonaHandbookModal({
                       호킨스 의식 지도와 의식장 도약
                     </h3>
                     <p className="text-xs text-white/60 font-sans">
-                      감정을 억압하지 않고 흘려보낼 때, 당신의 의식 주파수는 저절로 상위 차원으로 도약합니다.
+                      감정을 억압하지 않고 흘려보낼 때, 당신의 의식의 흐름은 저절로 상위 차원으로 도약합니다.
                     </p>
                   </div>
 

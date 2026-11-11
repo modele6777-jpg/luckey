@@ -108,7 +108,7 @@ import {
 import { DailyOracleLoadingOverlay } from "@/components/DailyOracleLoadingOverlay";
 import { z } from "zod";
 import { Streamdown } from "@/components/Streamdown";
-import { useBinauralBeat } from "@/hooks/useBinauralBeat";
+import { useBackgroundMood } from "@/hooks/useBackgroundMood";
 import { openChannelIntro } from "@/components/common/ChannelIntroModal";
 import { LucKeyLogoText } from "@/components/LucKeyLogoText";
 import { ArtistWayBible } from "@/components/muse/ArtistWayBible";
@@ -119,7 +119,7 @@ import { MuseSynergySection } from "@/components/muse/MuseSynergySection";
 import { TTSButton } from "@/components/TTSButton";
 import { AnimatedText } from "@/components/AnimatedText";
 import {
-  SoulFrequencyChart,
+  SoulProgressChart,
   SpiritualGrowthRadar,
 } from "@/components/SoulCharts";
 import { CalendarView } from "@/components/CalendarView";
@@ -377,7 +377,6 @@ const QuickInsightSchema = z.object({
   luckyColor: z.string(),
   remedy: z.string(),
   symbol: z.string(),
-  frequency: z.union([z.string(), z.number()]).transform((v) => String(v)),
 });
 
 function StatBar({
@@ -619,7 +618,7 @@ export default function MuseApp() {
   } = useApp();
   const lucyMessages = personaMessages.lucy || [];
   const isSpecialFeatureChromeHidden = useSpecialFeatureChromeHidden();
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('muse');
+  const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('muse');
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -1312,7 +1311,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
           },
           {
             role: "user",
-            content: `오늘 내가 뽑은 영감 카드는 [${activeCard?.name || ''} ${activeCard?.emoji || ''}] (${activeCard?.keyphrase || ''})야. ${(opts?.userConcern || dailyUserConcern).trim() ? `내 현재 고민/상황은 "${(opts?.userConcern || dailyUserConcern).trim()}"이야. ` : ''}이 카드의 모티브를 중심으로, ${modePrompt} 오늘 나의 예술적 주파수와 창작 비전을 깊이 있게 진단해줘.`,
+            content: `오늘 내가 뽑은 영감 카드는 [${activeCard?.name || ''} ${activeCard?.emoji || ''}] (${activeCard?.keyphrase || ''})야. ${(opts?.userConcern || dailyUserConcern).trim() ? `내 현재 고민/상황은 "${(opts?.userConcern || dailyUserConcern).trim()}"이야. ` : ''}이 카드의 모티브를 중심으로, ${modePrompt} 오늘 나의 감정과 창작 영감을 깊이 있게 진단해줘.`,
           },
         ],
         schema: QuickInsightSchema,
@@ -1333,7 +1332,6 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
           drawnCard: activeCard,
           diagnosis: String(data.diagnosis || ''),
           remedy: String(data.remedy || ''),
-          frequency: String(data.frequency || '639Hz'),
           symbol: String(data.symbol || activeCard?.name || ''),
           dateKey: todayK,
         });
@@ -1440,7 +1438,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
     const recentMemory =
       sharedState?.museMemory || sharedState?.globalMemory || "최근 기록 없음";
     const dailyContext = dailyResult
-      ? `오늘의 Daily 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol}, 주파수: ${dailyResult.frequency})`
+      ? `오늘의 Daily 진단: ${dailyResult.diagnosis} (상징: ${dailyResult.symbol})`
       : "오늘의 Daily 진단 데이터 없음";
 
     try {
@@ -1452,7 +1450,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
           },
           {
             role: "user",
-            content: `나의 영혼과 창작 주파수를 꿰뚫어보는 완벽하고 깊이 있는 에너지 진단 리포트를 작성해줘.`,
+            content: `나의 감정과 창작 영감을 살피는 깊이 있는 에너지 진단 리포트를 작성해줘.`,
           },
         ],
         schema: EnergyAnalysisSchema,
@@ -1618,7 +1616,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
               >
                 <RefreshCw size={48} className="text-blue-400 animate-spin" />
                 <p className="mt-6 text-sm text-blue-400 font-bold uppercase tracking-widest animate-pulse">
-                  Analyzing Energy Frequency...
+                  Analyzing Creative Flow...
                 </p>
               </motion.div>
             ) : (activeMode as any) === "soul_inactive" ? (
@@ -1741,10 +1739,10 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                           </div>
                           <div className="flex flex-col">
                             <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">
-                              Inspiration Nebula & Creative Frequency
+                              Inspiration Nebula & Creative Flow
                             </span>
                             <span className="text-[10px] text-white/40 mt-0.5 font-sans">
-                              영감의 성좌와 예술적 주파수 분석
+                              영감의 성좌와 창작 흐름 분석
                             </span>
                           </div>
                         </div>
@@ -1769,7 +1767,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                         Energy Analysis
                       </h3>
                       <p className="text-sm text-white/40 font-sans leading-relaxed">
-                        "현재 당신의 예술적 주파수와 창조적 감각을 다차원적으로
+                        "현재 당신의 창작 감각과 감정의 흐름을 다차원적으로
                         분석합니다. 뮤즈의 영감과 결합하여 오늘의 창작 선언문을
                         발행하세요."
                       </p>
@@ -1821,8 +1819,8 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                           </h4>
                           <p className="text-xs text-white/50 max-w-lg mx-auto leading-relaxed break-keep">
                             내면에 움트고 있는 독창적 예술 정신을 일깨울 뮤즈
-                            카드를 선택합니다. 고도의 영감 필드에 주파수를
-                            정렬하고 터치하세요.
+                            카드를 선택합니다. 좋아하는 음악을 떠올리고
+                            카드를 터치하세요.
                           </p>
                         </div>
 
@@ -2140,8 +2138,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                               </button>
                             ) : (
                               <div className="py-2.5 px-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 font-bold font-sans text-center">
-                                ✓ 오늘의 예술 충전도가 창작 영감 주파수 피조
-                                필터 깊숙이 편입되었습니다.
+                                ✓ 오늘의 예술 충전도가 창작 영감과 음악 감상에 반영되었습니다.
                               </div>
                             )}
                           </div>
@@ -2155,7 +2152,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                       {false ? (
                         <div className="p-8 rounded-[40px] text-center border-2 border-dashed border-white/10 bg-white/[0.01] text-white/30 text-xs">
                           위 오늘의 예술 창조 융합 카드를 먼저 드로우하여 영감
-                          오라클 주파수를 정렬한 다음 비전을 확인하세요.
+                          오라클 비전을 확인하세요.
                         </div>
                       ) : (
                         <motion.button
@@ -2185,7 +2182,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                           <p className="text-sm text-white/40 font-sans leading-relaxed max-w-sm mx-auto">
                             {isDailyOracleLoading
                               ? "영감의 채널을 여는 중입니다..."
-                              : "오늘의 예술적 우주는 당신에게 어떤 주파수를 보내고 있을까요? 오라클 비전을 통해 확인하세요."}
+                              : "오늘의 예술적 우주는 어떤 영감을 보내고 있을까요? 오라클 비전을 통해 확인하세요."}
                           </p>
                         </motion.button>
                       )}
@@ -2585,7 +2582,7 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                 <div className="flex flex-col items-center justify-center py-20 relative z-10">
                   <RefreshCw size={48} className="text-blue-400 animate-spin" />
                   <p className="mt-6 text-sm text-blue-400 font-bold uppercase tracking-widest animate-pulse">
-                    Analyzing Energy Frequency...
+                    Analyzing Creative Flow...
                   </p>
                 </div>
               ) : insightResult ? (
@@ -2679,10 +2676,10 @@ ${concernContext ? `사용자가 들려준 현재 고민과 상황에 100% 공�
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-none">
-                            Inspiration Nebula & Creative Frequency
+                            Inspiration Nebula & Creative Flow
                           </span>
                           <span className="text-[9px] text-white/40 mt-0.5 font-sans leading-none">
-                            영감의 성좌와 예술적 주파수 분석
+                            영감의 성좌와 창작 흐름 분석
                           </span>
                         </div>
                       </div>

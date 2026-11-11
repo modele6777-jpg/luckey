@@ -52,6 +52,8 @@ export interface MuseDocentArtwork {
 
 interface MuseDocentAudioProps {
   artwork: MuseDocentArtwork;
+  autoPlayRequestId?: number | null;
+  onAutoPlayConsumed?: (requestId: number) => void;
 }
 
 function docentCacheKey(artwork: MuseDocentArtwork): string {
@@ -93,7 +95,7 @@ async function readDocentResponse(response: Response): Promise<{ reply?: string;
   }
 }
 
-export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
+export function MuseDocentAudio({ artwork, autoPlayRequestId = null, onAutoPlayConsumed }: MuseDocentAudioProps) {
   const [expanded, setExpanded] = useState(false);
   const [phase, setPhase] = useState<PlayerPhase>("idle");
   const [script, setScript] = useState("");
@@ -105,6 +107,8 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
   const abortRef = useRef(false);
   const playbackRunRef = useRef(0);
   const pausedRef = useRef(false);
+  const autoPlayRequestedRef = useRef<number | null>(null);
+  const scriptRequestRef = useRef<{ cacheKey: string; promise: Promise<string> } | null>(null);
 
   const persistScript = useCallback(
     (text: string) => {
@@ -119,37 +123,50 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
     && artwork.famousSong?.title
   );
 
-  const fetchScript = useCallback(async () => {
-    const response = await fetch("/api/muse/docent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        imageUrl: artwork.imageUrl,
-        title: artwork.title,
-        creator: artwork.creator,
-        artworkType: artwork.artworkType,
-        era: artwork.era,
-        description: artwork.description,
-        whyRecommended: artwork.whyRecommended,
-        aestheticTone: artwork.aestheticTone,
-        quote: artwork.quote,
-        famousPoem: artwork.famousPoem,
-        famousSong: artwork.famousSong,
-        messages: [],
-        isFirstMessage: true,
-        mode: "audio",
-      }),
-    });
+  const fetchScript = useCallback((): Promise<string> => {
+    const cacheKey = docentCacheKey(artwork);
+    if (scriptRequestRef.current?.cacheKey === cacheKey) return scriptRequestRef.current.promise;
 
-    const data = await readDocentResponse(response);
-    if (!response.ok) {
-      throw new Error(data.error || "도슨트 음성 스크립트를 받지 못했습니다.");
-    }
-    if (!data.reply?.trim()) {
-      throw new Error("도슨트 음성 스크립트가 비어 있습니다.");
-    }
+    const request = (async () => {
+      const response = await fetch("/api/muse/docent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(20000),
+        body: JSON.stringify({
+          imageUrl: artwork.imageUrl,
+          title: artwork.title,
+          creator: artwork.creator,
+          artworkType: artwork.artworkType,
+          era: artwork.era,
+          description: artwork.description,
+          whyRecommended: artwork.whyRecommended,
+          aestheticTone: artwork.aestheticTone,
+          quote: artwork.quote,
+          famousPoem: artwork.famousPoem,
+          famousSong: artwork.famousSong,
+          messages: [],
+          isFirstMessage: true,
+          mode: "audio",
+        }),
+      });
 
-    return data.reply as string;
+      const data = await readDocentResponse(response);
+      if (!response.ok) {
+        throw new Error(data.error || "도슨트 음성 스크립트를 받지 못했습니다.");
+      }
+      if (!data.reply?.trim()) {
+        throw new Error("도슨트 음성 스크립트가 비어 있습니다.");
+      }
+
+      return data.reply as string;
+    })();
+
+    scriptRequestRef.current = { cacheKey, promise: request };
+    void request.then(
+      () => { if (scriptRequestRef.current?.promise === request) scriptRequestRef.current = null; },
+      () => { if (scriptRequestRef.current?.promise === request) scriptRequestRef.current = null; },
+    );
+    return request;
   }, [artwork]);
 
   const prepareScript = useCallback(
@@ -214,7 +231,12 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
     if (script.trim() && getCurrentTTSState().activeFullText === normalizeTextForSpeech(script)) stopTTS();
   }, [artwork.title, artwork.creator]);
 
-  const startAudioPlayback = useCallback(async (narrationText: string) => {
+  const startAudioPlayback = useCallback(async (narrationText: string, isAutoPlay = false) => {
+    if (isAutoPlay && getCurrentTTSState().activeSessionId) {
+      setError("다른 음성이 재생 중이어서 자동 도슨트는 건너뛰었습니다. 원하실 때 재생 버튼을 눌러 주세요.");
+      setPhase("error");
+      return;
+    }
     // 1. 기존 진행 중인 모든 재생을 정지하고 세션 초기화
     stopTTS();
     pausedRef.current = false;
@@ -224,7 +246,9 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
 
     try {
       // 긴 도슨트 전체를 자연스러운 문장 단위(150자) 파이프라인 프리페칭 스트리밍으로 1번째 문장부터 순차 재생
-      await playTTSInChunks(narrationText, "Kore", 150, "차분");
+      await playTTSInChunks(narrationText, "Kore", 150, "차분", undefined, isAutoPlay
+        ? { isAutoPlay: true, isAutoPlayback: true, skipCompletionChime: true }
+        : undefined);
       if (playbackRunRef.current === playbackRun && !abortRef.current && !pausedRef.current) {
         setPhase("done");
       }
@@ -232,14 +256,21 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
       if (playbackRunRef.current !== playbackRun) return;
       console.warn("[MuseDocentAudio] playback error:", err);
       const message = err instanceof Error ? err.message : "음성 재생 오류가 발생했습니다.";
-      setError(message);
+      setError(isAutoPlay ? `${message} 브라우저가 자동 재생을 막았다면 아래 재생 버튼을 눌러 주세요.` : message);
       setPhase("error");
     }
   }, []);
 
-  const startGuide = useCallback(async () => {
+  const startGuide = useCallback(async (isAutoPlay = false) => {
     if (!hasTrioContent) {
       setError("오늘의 명시·명곡 정보가 준비되면 도슨트를 들을 수 있습니다.");
+      setPhase("error");
+      return;
+    }
+
+    if (isAutoPlay && getCurrentTTSState().activeSessionId) {
+      setExpanded(true);
+      setError("다른 음성이 재생 중이어서 자동 도슨트는 건너뛰었습니다. 원하실 때 재생 버튼을 눌러 주세요.");
       setPhase("error");
       return;
     }
@@ -264,7 +295,7 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
     if (cached?.trim()) {
       prepareScript(cached);
       setPhase("preparing");
-      await startAudioPlayback(cached);
+      await startAudioPlayback(cached, isAutoPlay);
       return;
     }
 
@@ -275,13 +306,20 @@ export function MuseDocentAudio({ artwork }: MuseDocentAudioProps) {
       if (abortRef.current) return;
 
       prepareScript(narration);
-      await startAudioPlayback(narration);
+      await startAudioPlayback(narration, isAutoPlay);
     } catch (err) {
       const message = err instanceof Error ? err.message : "음성 가이드 오류";
       setError(message);
       setPhase("error");
     }
   }, [artwork, fetchScript, hasTrioContent, prepareScript, startAudioPlayback]);
+
+  useEffect(() => {
+    if (autoPlayRequestId === null || autoPlayRequestedRef.current === autoPlayRequestId) return;
+    autoPlayRequestedRef.current = autoPlayRequestId;
+    void startGuide(true);
+    onAutoPlayConsumed?.(autoPlayRequestId);
+  }, [autoPlayRequestId, onAutoPlayConsumed, startGuide]);
 
   const handlePauseResume = () => {
     const audio = getTTSAudioElement();

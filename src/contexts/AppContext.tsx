@@ -14,6 +14,11 @@ import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, l
 import { buildLucySharedBackground } from '../lib/lucySharedBackground';
 import { buildFullProfilePrompt } from '../lib/divination/profileContext';
 import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
+import {
+  buildSajuChatGuidance,
+  buildTarotInterpretationGuidance,
+  isSajuConsultationRequest,
+} from '../lib/divination/consultationGuidance';
 import { useLucyProConversation } from '@/hooks/useLucyProConversation';
 import { resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -51,6 +56,7 @@ import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLuc
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
+import { shouldPreserveDuoSplitForLucyAction } from '../lib/duoLucyActionRouting';
 
 export type PersonaType = 'lucy' | 'orange' | 'trinity' | 'aura' | 'bluebird' | 'muse';
 
@@ -368,17 +374,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         epilogue: 'master',  // 🌟 에필로그: 5대 우주 지능 올인원 PRO 마스터 모드
       };
       const targetMode = options?.mode || channelModeMap[persona || 'lucy'] || 'casual';
-      safeSessionStorage.setItem('lucy_pro_pending_channel', targetMode);
-      if (options?.autoSendPrompt) {
-        safeSessionStorage.setItem('lucy_injected_auto_send', options.autoSendPrompt);
-        safeSessionStorage.setItem('lucy_injected_input_draft', options.autoSendPrompt);
+      const preserveDuoSplit = shouldPreserveDuoSplitForLucyAction(
+        typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport')),
+        typeof document !== 'undefined' && Boolean(document.getElementById('duo-lucy-viewport')),
+      );
+      if (preserveDuoSplit) {
+        const prompt = options?.autoSendPrompt || options?.draftPrompt;
         window.dispatchEvent(new CustomEvent('lucy-inject-message', {
-          detail: { prompt: options.autoSendPrompt, channel: targetMode }
+          detail: {
+            channel: targetMode,
+            ...(prompt ? { prompt } : {}),
+            ...(options?.draftPrompt && !options?.autoSendPrompt ? { draftOnly: true } : {}),
+          },
         }));
-      } else if (options?.draftPrompt) {
-        safeSessionStorage.setItem('lucy_injected_input_draft', options.draftPrompt);
+      } else {
+        safeSessionStorage.setItem('lucy_pro_pending_channel', targetMode);
+        if (options?.autoSendPrompt) {
+          safeSessionStorage.setItem('lucy_injected_auto_send', options.autoSendPrompt);
+          safeSessionStorage.setItem('lucy_injected_input_draft', options.autoSendPrompt);
+          window.dispatchEvent(new CustomEvent('lucy-inject-message', {
+            detail: { prompt: options.autoSendPrompt, channel: targetMode }
+          }));
+        } else if (options?.draftPrompt) {
+          safeSessionStorage.setItem('lucy_injected_input_draft', options.draftPrompt);
+        }
+        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
       }
-      window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
     }
   }, []);
 
@@ -2253,6 +2274,15 @@ ${responseProfile.rule}`;
       }
     }
 
+    const sajuAudit = (options?.calculationAudit || toolSelection.calculationAudit || [])
+      .some(item => item.toolId === 'saju' && item.sentToModel);
+    if (isSajuConsultationRequest(effectiveUserText) || sajuAudit) {
+      systemPrompt += `\n\n${buildSajuChatGuidance(Boolean(sajuObj), effectiveUserText)}`;
+    }
+    if (tarotDraw) {
+      systemPrompt += `\n\n${buildTarotInterpretationGuidance({ question: effectiveUserText, hasAppDraw: true })}`;
+    }
+
     const _isPerfReduced = isPerfReduced() || isStandalonePWA();
     
     // Format conversation properly for the API (only user/assistant roles after system)
@@ -2454,7 +2484,7 @@ ${responseProfile.rule}`;
               { collectionName: 'lucy_history', logType: 'chat_sync', logTitle: '루시 마스터 대화' },
               { collectionName: 'orange_history', logType: 'chat_sync', logTitle: '오렌지 다이어리 교감' },
               { collectionName: 'bluebird_history', logType: 'chat_sync', logTitle: '블루버드 라디오 교감' },
-              { collectionName: 'heal_history', logType: 'chat_sync', logTitle: '아우라 주파수 조율' },
+              { collectionName: 'heal_history', logType: 'chat_sync', logTitle: '아우라 웰니스 대화' },
               { collectionName: 'muse_history', logType: 'chat_sync', logTitle: '뮤즈 영감 싱크' },
               { collectionName: 'trinity_history', logType: 'chat_sync', logTitle: '트리니티 오라클 자문' }
             ];

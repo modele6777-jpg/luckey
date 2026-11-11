@@ -27,7 +27,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { useApp, getPersistentUserProfile, setPersistentUserProfile } from '@/contexts/AppContext';
-import { useBinauralBeat } from '@/hooks/useBinauralBeat';
+import { useBackgroundMood } from '@/hooks/useBackgroundMood';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { useScrollToTopOnChange } from '@/hooks/useScrollToTopOnChange';
 import { useSpecialFeatureChromeHidden, SPECIAL_FEATURE_CHROME_HIDDEN_CLASS } from '@/components/SpecialFeaturePanel';
@@ -279,7 +279,7 @@ export default function EpilogueApp() {
   const [currentSection, setCurrentSection] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('epilogue');
+  const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('epilogue');
   const [syncingDevices, setSyncingDevices] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -877,12 +877,12 @@ export default function EpilogueApp() {
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/15 dark:bg-slate-900">
               <label htmlFor="profile-chart-reference" className="mb-2 block text-sm font-semibold text-slate-900 dark:text-slate-100">명식·해석 참고자료</label>
-              <p className="mb-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">보관한 사주·자미두수·숙요 자료입니다. Lucy와 Lucy +가 함께 참고하며, 수정한 내용은 자동 저장됩니다.</p>
+              <p className="mb-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">직접 보관한 명식·계산 기준·선호하는 풀이 방식입니다. Lucy와 Lucy +가 대화에서 함께 참고하며, 수정한 내용은 자동 저장됩니다.</p>
               <textarea id="profile-chart-reference" value={fate.referenceNotes} maxLength={18000} rows={10}
                 onChange={(e) => setFate((f) => ({ ...f, referenceNotes: e.target.value }))}
                 placeholder="명식과 계산 기준, 해석 참고자료를 입력하세요."
                 className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm leading-relaxed text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:border-white/20 dark:bg-slate-950 dark:text-slate-100" />
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">자료의 기준일과 실제 오늘 날짜는 구분해서 해석합니다.</p>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">풀이 방식은 계산값이 아닙니다. 실제 산출값·전통적 해석을 구분하고, 자료의 기준일을 오늘 날짜로 바꾸지 않습니다.</p>
             </div>
             <InputField
               label="인생의 주요 목표 / 방향"

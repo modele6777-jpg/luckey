@@ -24,10 +24,10 @@ export { prepareNaturalSpeechText };
 import { trackSpeechHighlight } from '../lib/speechHighlightTiming';
 import { isIOSDevice } from '../lib/perfMode';
 import { registerAudioDeviceChangeListener } from '../lib/audioDeviceChangeMonitor';
+import { shouldPlayTTSCompletionChime, type TTSCompletionPolicyOptions } from '../lib/ttsCompletionPolicy';
+import { getResumableTTSChunkIndex, type TTSChunkProgress } from '../lib/ttsChunkResume';
 
-export interface TTSPlaybackOptions {
-  skipCompletionChime?: boolean;
-  isChatMode?: boolean; // 채팅 대화 낭독 시 싱잉볼 완료음 생략 플래그
+export interface TTSPlaybackOptions extends TTSCompletionPolicyOptions {
   isAutoPlay?: boolean;
   isAutoPlayback?: boolean;
   isUserToggleClick?: boolean;
@@ -199,6 +199,12 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
           }
           if (failure?.code === 'TTS_PROVIDER_UNAVAILABLE') {
             throw new TTSAudioRequestError('서버 음성을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.', response.status, 'TTS_PROVIDER_UNAVAILABLE');
+          }
+          if (failure?.code === 'GEMINI_API_KEY_INVALID') {
+            throw new TTSAudioRequestError('Gemini API 키 인증이 거부되었습니다. 서버의 API 키 설정을 확인해 주세요.', response.status, 'GEMINI_API_KEY_INVALID');
+          }
+          if (failure?.code === 'GEMINI_TTS_ACCESS_DENIED') {
+            throw new TTSAudioRequestError('Gemini TTS 모델 접근 권한이 거부되었습니다. API 키의 프로젝트·모델 권한을 확인해 주세요.', response.status, 'GEMINI_TTS_ACCESS_DENIED');
           }
           if (response.status === 503 && (failure?.code === 'TTS_NOT_CONFIGURED' || /API.*키|키.*설정/.test(String(failure?.error || '')))) {
             throw new TTSAudioRequestError('AI 음성 API 키가 설정되지 않았습니다. 사이트의 API 설정을 확인해 주세요.', 503, 'TTS_NOT_CONFIGURED');
@@ -486,7 +492,7 @@ export const playTTS = async (
       }
       if (ttsState.activeSessionId === sessionToVerify && !isSequenceChunk) {
         stopTTS();
-        if (!options?.skipCompletionChime && !options?.isChatMode) {
+        if (shouldPlayTTSCompletionChime(options)) {
           try { playAiResultNotification(); } catch (_) {}
         }
       }
@@ -590,14 +596,6 @@ export function prefetchTTSChunks(
 }
 
 // 🎯 낭독 청취 위치 기억: 알림 등으로 끊기거나 일시정지 시 처음부터 다시 듣지 않고 해당 청크부터 이어듣기 지원
-interface TTSChunkProgress {
-  fullText: string;
-  chunkIndex: number;
-  totalChunks: number;
-  chunks: string[];
-  voice: string;
-  updatedAt: number;
-}
 let lastTTSProgress: TTSChunkProgress | null = null;
 
 export function resetTTSProgress(text?: string): void {
@@ -645,20 +643,13 @@ export const playTTSInChunks = async (
   const chunks = splitSpeechIntoChunks(cleanText, effectiveMaxLen);
   if (chunks.length === 0) return;
 
-  // 알림이나 일시정지로 인해 중간에 끊겼던 경우, 처음부터 다시 듣지 않고 중단 지점부터 이어듣기
-  let startChunkIndex = 0;
-  if (
-    !options?.isUserToggleClick &&
-    lastTTSProgress &&
-    lastTTSProgress.fullText === cleanText &&
-    lastTTSProgress.voice === (voice === 'Charon' ? 'Charon' : 'Aoede') &&
-    lastTTSProgress.chunks.length === chunks.length &&
-    lastTTSProgress.chunks.every((chunk, index) => chunk === chunks[index]) &&
-    lastTTSProgress.chunkIndex > 0 &&
-    lastTTSProgress.chunkIndex < chunks.length &&
-    Date.now() - lastTTSProgress.updatedAt < 15 * 60 * 1000
-  ) {
-    startChunkIndex = lastTTSProgress.chunkIndex;
+  // 중간 청크 오류 후에는 완료된 청크를 건너뛰고 사용자가 누른 재생에서 이어 듣습니다.
+  const startChunkIndex = getResumableTTSChunkIndex(lastTTSProgress, {
+    fullText: cleanText,
+    voice,
+    chunks,
+  });
+  if (startChunkIndex > 0) {
     console.log(`[TTS] Resuming playback from interrupted chunk ${startChunkIndex + 1}/${chunks.length}`);
   }
 
@@ -744,10 +735,10 @@ export const playTTSInChunks = async (
         break;
       }
 
-      // 완독 성공 시 저장된 위치 초기화 및 완료 싱잉볼 종소리 재생 (채팅 대화는 제외)
+      // 완독 성공 시 위치를 초기화하고 마지막 청크 뒤에만 완료 새 지저귐 재생
       if (isLastChunk) {
         lastTTSProgress = null;
-        if (!options?.skipCompletionChime && !options?.isChatMode) {
+        if (shouldPlayTTSCompletionChime(options)) {
           try {
             playAiResultNotification();
           } catch (_) {}

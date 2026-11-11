@@ -24,7 +24,7 @@ export interface BluebirdDailyMissionItem {
   duration: string;
   completed: boolean;
   actionTip: string;
-  autoDetectType?: 'chant' | 'cleanse' | 'binaural';
+  autoDetectType?: 'chant' | 'cleanse' | 'ambient';
 }
 
 export interface JourneyMilestone {
@@ -157,15 +157,15 @@ export const DEFAULT_BLUEBIRD_DAILY_MISSIONS: BluebirdDailyMissionItem[] = [
   },
   {
     id: 'bb_m_breathe',
-    title: '1분 평화 호흡 & 바이노럴 비트',
-    subtitle: '파랑새 힐링 주파수를 켜고 1분간 깊은 복식호흡으로 이완',
+    title: '1분 평화 호흡 & 배경음',
+    subtitle: '차분한 배경음을 켜고 1분간 깊은 복식호흡으로 이완',
     category: 'breathe',
     emoji: '🌬️',
     points: 20,
     duration: '1분',
     completed: false,
-    actionTip: '좌측 상단의 파랑새 바이노럴 비트 아이콘을 켜고 차분하게 숨을 고르세요.',
-    autoDetectType: 'binaural',
+    actionTip: '좌측 상단의 배경음 아이콘을 열고 편안한 소리를 선택한 뒤 차분하게 숨을 고르세요.',
+    autoDetectType: 'ambient',
   },
   {
     id: 'bb_m_compassion',

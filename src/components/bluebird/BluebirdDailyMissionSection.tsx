@@ -23,8 +23,8 @@ interface BluebirdDailyMissionSectionProps {
   onCompleteAllMissions: () => void;
   onNavigateToCleanse?: () => void;
   onIncrementChant?: () => void;
-  onToggleBinaural?: () => void;
-  isBinauralPlaying?: boolean;
+  onToggleBackgroundMood?: () => void;
+  isBackgroundMoodPlaying?: boolean;
 }
 
 export function BluebirdDailyMissionSection({
@@ -34,8 +34,8 @@ export function BluebirdDailyMissionSection({
   onCompleteAllMissions,
   onNavigateToCleanse,
   onIncrementChant,
-  onToggleBinaural,
-  isBinauralPlaying,
+  onToggleBackgroundMood,
+  isBackgroundMoodPlaying,
 }: BluebirdDailyMissionSectionProps) {
   const [selectedMilestone, setSelectedMilestone] = useState<JourneyMilestone | null>(null);
   const [copiedShare, setCopiedShare] = useState(false);
@@ -270,13 +270,13 @@ export function BluebirdDailyMissionSection({
                     </button>
                   )}
 
-                  {mission.autoDetectType === 'binaural' && onToggleBinaural && (
+                  {mission.autoDetectType === 'ambient' && onToggleBackgroundMood && (
                     <button
                       type="button"
-                      onClick={onToggleBinaural}
-                      className="px-2.5 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 text-[11px] font-bold flex items-center gap-1 transition-all"
+                      onClick={onToggleBackgroundMood}
+                      className="px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 text-[11px] font-bold flex items-center gap-1 transition-all"
                     >
-                      <span>{isBinauralPlaying ? '주파수 끄기' : '주파수 켜기'}</span>
+                      <span>{isBackgroundMoodPlaying ? '배경음 끄기' : '배경음 켜기'}</span>
                       <ArrowRight size={11} />
                     </button>
                   )}

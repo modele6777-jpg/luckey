@@ -67,12 +67,6 @@ class SoundscapeEngine {
       case 'bowl':
         this.createSingingBowl();
         break;
-      case 'freq432':
-        this.createHealing432Hz();
-        break;
-      case 'freq528':
-        this.createHealing528Hz();
-        break;
       case 'om':
         this.createZenOmDrone();
         break;
@@ -395,109 +389,6 @@ class SoundscapeEngine {
     } catch (e) {}
   }
 
-  // 7. ✨ 432Hz 치유 주파수 (Healing Solfeggio Tone & Alpha Entrainment)
-  createHealing432Hz() {
-    const osc1 = this.ctx.createOscillator(); // 432Hz
-    const osc2 = this.ctx.createOscillator(); // 438Hz (6Hz 알파파 유도 바이노럴 비트)
-    const oscSub = this.ctx.createOscillator(); // 216Hz 온기 서브하모닉
-
-    osc1.frequency.setValueAtTime(432, this.ctx.currentTime);
-    osc2.frequency.setValueAtTime(438, this.ctx.currentTime);
-    oscSub.frequency.setValueAtTime(216, this.ctx.currentTime);
-
-    const gain1 = this.ctx.createGain();
-    const gain2 = this.ctx.createGain();
-    const gainSub = this.ctx.createGain();
-
-    gain1.gain.setValueAtTime(0.24, this.ctx.currentTime);
-    gain2.gain.setValueAtTime(0.22, this.ctx.currentTime);
-    gainSub.gain.setValueAtTime(0.18, this.ctx.currentTime);
-
-    // 부드러운 호흡식 트레몰로 LFO
-    const tremolo = this.ctx.createOscillator();
-    tremolo.frequency.setValueAtTime(0.08, this.ctx.currentTime); // 12초 주기
-    const tremoloGain = this.ctx.createGain();
-    tremoloGain.gain.setValueAtTime(0.06, this.ctx.currentTime);
-
-    tremolo.connect(tremoloGain);
-    tremoloGain.connect(gain1.gain);
-
-    const droneGain = this.ctx.createGain();
-    droneGain.gain.setValueAtTime(0.6, this.ctx.currentTime);
-
-    osc1.connect(gain1);
-    osc2.connect(gain2);
-    oscSub.connect(gainSub);
-
-    gain1.connect(droneGain);
-    gain2.connect(droneGain);
-    gainSub.connect(droneGain);
-    droneGain.connect(this.masterGain);
-
-    osc1.start();
-    osc2.start();
-    oscSub.start();
-    tremolo.start();
-
-    this.activeNodes['freq432'] = {
-      stop: () => {
-        try {
-          osc1.stop(); osc2.stop(); oscSub.stop(); tremolo.stop();
-          droneGain.disconnect();
-        } catch (e) {}
-      }
-    };
-  }
-
-  // 8. 💖 528Hz 평온·스트레스 해소 주파수 (Transformation & Miracle Tone)
-  createHealing528Hz() {
-    const oscMain = this.ctx.createOscillator(); // 528Hz
-    const oscHarmonic = this.ctx.createOscillator(); // 1056Hz (옥타브)
-    const oscRoot = this.ctx.createOscillator(); // 264Hz (베이스)
-
-    oscMain.frequency.setValueAtTime(528, this.ctx.currentTime);
-    oscHarmonic.frequency.setValueAtTime(1056, this.ctx.currentTime);
-    oscRoot.frequency.setValueAtTime(264, this.ctx.currentTime);
-
-    const gMain = this.ctx.createGain();
-    const gHarm = this.ctx.createGain();
-    const gRoot = this.ctx.createGain();
-
-    gMain.gain.setValueAtTime(0.28, this.ctx.currentTime);
-    gHarm.gain.setValueAtTime(0.08, this.ctx.currentTime);
-    gRoot.gain.setValueAtTime(0.22, this.ctx.currentTime);
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1200, this.ctx.currentTime);
-
-    oscMain.connect(gMain);
-    oscHarmonic.connect(gHarm);
-    oscRoot.connect(gRoot);
-
-    gMain.connect(filter);
-    gHarm.connect(filter);
-    gRoot.connect(filter);
-
-    const finalGain = this.ctx.createGain();
-    finalGain.gain.setValueAtTime(0.58, this.ctx.currentTime);
-    filter.connect(finalGain);
-    finalGain.connect(this.masterGain);
-
-    oscMain.start();
-    oscHarmonic.start();
-    oscRoot.start();
-
-    this.activeNodes['freq528'] = {
-      stop: () => {
-        try {
-          oscMain.stop(); oscHarmonic.stop(); oscRoot.stop();
-          finalGain.disconnect();
-        } catch (e) {}
-      }
-    };
-  }
-
   // 9. 🧘 젠 옴(Om) 명상 보컬 드론 (Deep Zen Om Resonance)
   createZenOmDrone() {
     const osc108 = this.ctx.createOscillator();
@@ -810,7 +701,7 @@ class SoundscapeEngine {
       }
 
       const now = this.ctx.currentTime;
-      const baseFreq = options.freq || 528; // 528Hz Solfeggio / 432Hz 치유 주파수
+      const baseFreq = options.freq || 440;
       const masterVol = options.volume !== undefined ? options.volume : 0.7;
       const duration = options.duration || 6.8;
 
@@ -843,10 +734,10 @@ class SoundscapeEngine {
         malletNoise.stop(now + 0.25);
       } catch (_) {}
 
-      // 2. 티베트 싱잉볼 고유 배음 파셜 (Sub-base + Fundamental + Beating + Rich Harmonics)
+      // 2. 티베트 싱잉볼 고유 배음 파셜
       const partials = [
-        { f: baseFreq * 0.5, gain: 0.32, decay: duration * 0.98 },      // 온기 있는 서브 베이스 (264Hz)
-        { f: baseFreq, gain: 0.48, decay: duration },                    // 맑고 청아한 기본음 (528Hz)
+        { f: baseFreq * 0.5, gain: 0.32, decay: duration * 0.98 },      // 온기 있는 서브 베이스
+        { f: baseFreq, gain: 0.48, decay: duration },                    // 맑고 청아한 기본음
         { f: baseFreq + 1.25, gain: 0.36, decay: duration * 0.96 },     // 맥놀이 진동 코러스 (+1.25Hz)
         { f: baseFreq * 2.01, gain: 0.20, decay: duration * 0.75 },     // 1차 고조파 (1061Hz)
         { f: baseFreq * 3.015, gain: 0.11, decay: duration * 0.55 },    // 2차 고조파 (1591Hz)

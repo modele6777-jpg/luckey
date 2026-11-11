@@ -6,12 +6,6 @@ import {
   MOOD_PRESETS,
   MoodPreset,
 } from '@/lib/moodSoundEngine';
-import {
-  BinauralPreset,
-  BINAURAL_PRESETS,
-  normalizeBinauralAppId,
-} from '@/lib/binauralBeats';
-
 const APP_TO_MOOD_MAP: Record<string, MoodSoundId> = {
   hub: 'rain',
   bluebird: 'forest',
@@ -19,10 +13,10 @@ const APP_TO_MOOD_MAP: Record<string, MoodSoundId> = {
   orange: 'whitenoise',
   muse: 'forest',
   epilogue: 'ocean',
-  trinity: 'binaural',
+  trinity: 'rain',
 };
 
-export function useBinauralBeat(currentAppId?: string) {
+export function useBackgroundMood(currentAppId?: string) {
   const [moodState, setMoodState] = useState<MoodAudioState>(() => moodSoundEngine.getState());
 
   useEffect(() => {
@@ -31,7 +25,6 @@ export function useBinauralBeat(currentAppId?: string) {
     });
   }, []);
 
-  const normalizedCurrent = currentAppId ? normalizeBinauralAppId(currentAppId) : null;
   const isCurrentAppPlaying = moodState.isPlaying;
 
   const toggle = useCallback((targetAppId?: string) => {
@@ -62,17 +55,14 @@ export function useBinauralBeat(currentAppId?: string) {
     moodSoundEngine.setPickerOpen(true);
   }, []);
 
-  const preset: BinauralPreset | undefined = normalizedCurrent ? BINAURAL_PRESETS[normalizedCurrent] : undefined;
   const currentMood: MoodPreset = MOOD_PRESETS.find(p => p.id === moodState.activeMood) || MOOD_PRESETS[0];
 
   return {
     isPlaying: moodState.isPlaying,
     isCurrentAppPlaying,
     activeAppId: currentAppId || null,
-    activePreset: preset || null,
     activeMood: moodState.activeMood,
     currentMood,
-    preset,
     toggle,
     start,
     stop,

@@ -11,11 +11,12 @@ interface TTSButtonProps {
   onClick?: () => void;
   emotion?: string;
   skipCompletionChime?: boolean;
+  disabled?: boolean;
   /** @deprecated 모든 TTS 재생은 1.0 배속으로 영구 고정됩니다 */
   speed?: number;
 }
 
-export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', className = "", onPlay, onClick, emotion, skipCompletionChime }) => {
+export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', className = "", onPlay, onClick, emotion, skipCompletionChime, disabled = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,6 +35,7 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', clas
   }, [cleanText]);
 
   const handleSpeak = async () => {
+    if (disabled) return;
     // If already playing or loading, a click halts the playback and resets
     if (isPlaying || isLoading) {
       stopTTS();
@@ -66,11 +68,12 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, voice = 'Kore', clas
     <span className="inline-flex items-center gap-2">
     <motion.button
       type="button"
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
+      whileHover={disabled ? undefined : { scale: 1.1 }}
+      whileTap={disabled ? undefined : { scale: 0.9 }}
       onClick={handleSpeak}
-      className={`p-2 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-blue-400 hover:bg-white/10 transition-all ${className}`}
-      title={isPlaying ? "Stop playing" : isLoading ? "Stop loading" : "Listen to response"}
+      disabled={disabled}
+      className={`p-2 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-blue-400 hover:bg-white/10 transition-all disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-white/40 disabled:hover:bg-white/5 ${className}`}
+      title={disabled ? '문구 전체를 정확히 입력하면 음성을 들을 수 있어요' : isPlaying ? "Stop playing" : isLoading ? "Stop loading" : "Listen to response"}
     >
       {isLoading ? (
         <Loader2 size={14} className="animate-spin text-blue-400" />

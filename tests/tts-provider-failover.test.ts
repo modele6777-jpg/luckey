@@ -1,18 +1,114 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { synthesizeWithGemini } from '../api/ai/tts';
+import { synthesizeSpeechWithFallback, synthesizeWithGemini } from '../api/ai/tts';
 import { createTTSHandler } from '../server/api-lib/ttsHandler';
 
-test('Gemini requires configured credentials and does not retry account quota failures across models', async () => {
+test('Gemini requires configured credentials and reports rate limits after bounded model failover', async () => {
   let requests = 0;
   const quota = async () => { requests++; return new Response('{}', { status: 429 }); };
-  assert.equal(await synthesizeWithGemini('설명', 'Aoede', { request: quota as typeof fetch }), null);
+  await assert.rejects(
+    synthesizeWithGemini('설명', 'Aoede', { request: quota as typeof fetch }),
+    error => (error as any).status === 503 && (error as any).code === 'TTS_NOT_CONFIGURED',
+  );
   assert.equal(requests, 0, 'no source-embedded/demo credential may trigger a request');
-  assert.equal(await synthesizeWithGemini('설명', 'Aoede', { apiKey: 'test-only', request: quota as typeof fetch, models: ['configured-a', 'configured-b'] }), null);
-  assert.equal(requests, 1, 'account quota affects all models, so do not try another model');
+  await assert.rejects(
+    synthesizeWithGemini('설명', 'Aoede', { apiKey: 'test-only', request: quota as typeof fetch, models: ['configured-a', 'configured-b'] }),
+    error => (error as any).status === 429 && (error as any).code === 'MEDIA_RATE_LIMIT',
+  );
+  assert.equal(requests, 2, 'try one alternate model, then surface the provider rate limit');
 });
 
-test('Gemini 3.8 Interactions TTS returns WAV from the documented REST audio step', async () => {
+test('Gemini 429 falls through to Edge, but an Edge failure does not mask the rate-limit cause', async () => {
+  const attempts: string[] = [];
+  const edge = createTTSHandler(async () => {
+    attempts.push('edge');
+    throw Object.assign(new Error('private Edge response'), { status: 403 });
+  });
+
+  await assert.rejects(
+    synthesizeSpeechWithFallback('낭독 문장', 'Aoede', '차분', {
+      synthesizeGemini: async () => {
+        attempts.push('gemini');
+        throw Object.assign(new Error('quota'), { status: 429, code: 'MEDIA_RATE_LIMIT' });
+      },
+      synthesizeEdge: edge,
+    }),
+    error => {
+      assert.equal((error as any).status, 429);
+      assert.equal((error as any).code, 'MEDIA_RATE_LIMIT');
+      assert.doesNotMatch((error as Error).message, /private Edge response/);
+      return true;
+    },
+  );
+  assert.deepEqual(attempts, ['gemini', 'edge']);
+});
+
+test('Gemini invalid-key and model-permission responses are classified without exposing the key', async () => {
+  const cases = [
+    { status: 401, payload: { error: { status: 'UNAUTHENTICATED', details: [{ reason: 'API_KEY_INVALID' }] } }, code: 'GEMINI_API_KEY_INVALID' },
+    { status: 400, payload: { error: { status: 'INVALID_ARGUMENT', message: 'API key not valid. Please pass a valid API key.' } }, code: 'GEMINI_API_KEY_INVALID' },
+    { status: 403, payload: { error: { status: 'PERMISSION_DENIED', details: [{ reason: 'API_KEY_SERVICE_BLOCKED' }] } }, code: 'GEMINI_TTS_ACCESS_DENIED' },
+  ];
+  for (const item of cases) {
+    await assert.rejects(
+      synthesizeWithGemini('확인 문장', 'Aoede', {
+        apiKey: 'test-only-secret', models: ['model'],
+        request: async () => Response.json(item.payload, { status: item.status }),
+      }),
+      error => {
+        assert.equal((error as any).status, item.status);
+        assert.equal((error as any).code, item.code);
+        assert.doesNotMatch((error as Error).message, /test-only-secret/);
+        return true;
+      },
+    );
+  }
+});
+
+test('Gemini retries a transient server error once, then returns neural audio', async () => {
+  const audio = Buffer.from('RIFF\u0000\u0000\u0000\u0000WAVEtest').toString('base64');
+  let requests = 0, waited = 0;
+  const result = await synthesizeWithGemini('짧은 확인', 'Aoede', {
+    apiKey: 'test-only', models: ['model'], delay: async ms => { waited += ms; },
+    request: async () => {
+      requests++;
+      if (requests === 1) return Response.json({}, { status: 503 });
+      return Response.json({ output_audio: { data: audio, mime_type: 'audio/wav' } });
+    },
+  });
+  assert.equal(requests, 2);
+  assert.equal(waited, 250);
+  assert.equal(result?.provider, 'gemini');
+});
+
+test('Gemini 429 can recover through successful Edge audio', async () => {
+  const result = await synthesizeSpeechWithFallback('낭독 문장', 'Aoede', '차분', {
+    synthesizeGemini: async () => { throw Object.assign(new Error('quota'), { status: 429, code: 'MEDIA_RATE_LIMIT' }); },
+    synthesizeEdge: async () => ({ audioContent: 'ZWRnZQ==', encoding: 'mp3', sampleRate: 24000, provider: 'edge-neural' }),
+  });
+  assert.equal(result.provider, 'edge-neural');
+  assert.equal(result.audioContent, 'ZWRnZQ==');
+});
+
+test('Gemini Lite neural TTS can serve when the preferred model is rate-limited', async () => {
+  const audio = Buffer.from('RIFF\u0000\u0000\u0000\u0000WAVEtest').toString('base64');
+  const attemptedModels: string[] = [];
+  const result = await synthesizeWithGemini('안녕하세요.', 'Aoede', {
+    apiKey: 'test-only',
+    models: ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'],
+    request: async (_url, init) => {
+      const model = JSON.parse(String(init?.body)).model;
+      attemptedModels.push(model);
+      if (model === 'gemini-3.8-flash-tts') return new Response('{}', { status: 429 });
+      return Response.json({ output_audio: { data: audio, mime_type: 'audio/wav' } });
+    },
+  });
+  assert.deepEqual(attemptedModels, ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts']);
+  assert.equal(result?.audioContent, audio);
+  assert.equal(result?.provider, 'gemini');
+});
+
+test('Gemini 3.8 Interactions TTS returns WAV from the REST audio step', async () => {
   const audio = Buffer.from('RIFF\u0000\u0000\u0000\u0000WAVEtest').toString('base64');
   const result = await synthesizeWithGemini('안녕하세요.', 'Aoede', {
     apiKey: 'test-only',

@@ -18,7 +18,7 @@ import { HUB_TIME_PRESETS } from '@/lib/copyTone';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
 import { UniverseInsightCard } from '@/components/UniverseInsightCard';
 import { type UniverseInsightItem } from '@/data/universeInsights';
-import { useBinauralBeat } from '@/hooks/useBinauralBeat';
+import { useBackgroundMood } from '@/hooks/useBackgroundMood';
 import { LucKeyLogoText } from '@/components/LucKeyLogoText';
 import { openChannelIntro } from '@/components/common/ChannelIntroModal';
 import { GoalProgressRingDashboard } from '@/components/goals/GoalProgressRingDashboard';
@@ -71,12 +71,12 @@ const APPS = [
     id: 'bluebird',
     name: 'BLUEBIRD',
     subtitle: '예술 정서',
-    desc: '시적 문장과 바이노럴 힐링 사운드로 메마른 감성과 영혼을 맑게 정화하는 예술 치유처',
+    desc: '시적 문장과 잔잔한 배경음악으로 감성을 돌보고 영감을 발견하는 예술 공간',
     icon: Bird,
     color: 'oklch(0.65 0.18 240)',
     path: '/bluebird',
     persona: 'BLUEBIRD',
-    personaDesc: '소리 치유 & 시적 공감 큐레이터',
+    personaDesc: '음악과 시적 공감 큐레이터',
     vibeKeyword: '예술 정서',
   },
   {
@@ -179,7 +179,7 @@ type GlobalInsightData = {
 const DEFAULT_GLOBAL_INSIGHT: GlobalInsightData = {
   summary: "진정한 발견의 여정은 새로운 풍경을 찾는 것이 아니라, 새로운 눈을 가지는 데 있다.",
   author: "마르셀 프루스트",
-  lucyGuide: "현재 우주 주파수 수신 중",
+  lucyGuide: "오늘의 메시지를 준비하고 있어요.",
   museGuide: "영감 충전 중",
   orangeGuide: "비타민 채우는 중",
   bluebirdGuide: "날개 쉬는 중",
@@ -339,7 +339,7 @@ export default function HubHome() {
 
   const vibe = sharedState?.currentVibe;
   const sourceApp = sharedState?.sourceApp;
-  const { isCurrentAppPlaying: isBinauralPlaying, toggle: toggleBinaural } = useBinauralBeat('hub');
+  const { isCurrentAppPlaying: isBackgroundMoodPlaying, toggle: toggleBackgroundMood } = useBackgroundMood('hub');
   const [isSyncingGlobal, setIsSyncingGlobal] = useState(false);
   const [globalData, setGlobalData] = useState<GlobalInsightData>(() => {
     try {

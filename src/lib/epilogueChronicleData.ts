@@ -6,7 +6,6 @@ export interface CosmicFocusOption {
   label: string;
   desc: string;
   icon: string;
-  frequency: number;
 }
 
 export const COSMIC_FOCUS_OPTIONS: CosmicFocusOption[] = [
@@ -14,57 +13,49 @@ export const COSMIC_FOCUS_OPTIONS: CosmicFocusOption[] = [
     id: 'integration',
     label: '자아 통합 & 그림자 포용',
     desc: '낮 동안 마주친 분열과 불안을 인정하고 온전한 내면의 평화로 승화',
-    icon: '🧘',
-    frequency: 963
+    icon: '🧘'
   },
   {
     id: 'quantum',
     label: '양자 현실화 & 풍요 도약',
-    desc: '의식의 진동수를 최고조로 끌어올려 내일 펼쳐질 기적의 현실을 선취',
-    icon: '⚡',
-    frequency: 528
+    desc: '의식의 방향을 선명하게 가다듬어 내일 펼쳐질 기적의 현실을 선취',
+    icon: '⚡'
   },
   {
     id: 'surrender',
     label: '감정 정화 & 완전한 방하착',
     desc: '마음에 걸린 모든 집착과 통제욕을 수면의 심연 속으로 100% 항복',
-    icon: '🌊',
-    frequency: 639
+    icon: '🌊'
   },
   {
     id: 'awakening',
     label: '영적 각성 & 고차원 자각',
     desc: '에고의 경계를 넘어 우주 전체와 내가 하나임을 자각하는 송과체 정렬',
-    icon: '👁️',
-    frequency: 852
+    icon: '👁️'
   },
   {
     id: 'love',
     label: '무조건적 사랑 & 호오포노포노',
     desc: '미안합니다, 용서하세요, 고맙습니다, 사랑합니다로 영혼 백지 환생',
-    icon: '🤍',
-    frequency: 417
+    icon: '🤍'
   },
   {
     id: 'creative',
     label: '창조적 영감 & 천재성 개화',
     desc: '잠든 동안 잠재의식 속 숨겨진 아이디어와 예술적 통찰의 불꽃 점화',
-    icon: '🎨',
-    frequency: 741
+    icon: '🎨'
   },
   {
     id: 'fortune',
     label: '직관 통찰 & 대운의 순류',
     desc: '하늘과 땅의 음양오행 기운이 나의 사주와 대운을 돕는 순리 동조',
-    icon: '✨',
-    frequency: 528
+    icon: '✨'
   },
   {
     id: 'abyssal_peace',
     label: '심연의 안식 & 잠재의식 리셋',
-    desc: '모든 생각의 스위치를 끄고 완전한 델타파 안식 속에서 세포 치유',
-    icon: '🌙',
-    frequency: 432
+    desc: '모든 생각의 스위치를 끄고 깊은 안식 속에서 몸과 마음을 회복',
+    icon: '🌙'
   }
 ];
 
@@ -79,7 +70,6 @@ export interface ChronicleStampData {
   sevenPrismStampStatus: {
     space: string;
     seal: string;
-    frequency?: string;
     status: string;
   }[];
   preSleepPrimingAffirmation: string;
@@ -135,7 +125,6 @@ export function loadChronicleArchive(): ChronicleStampData[] {
  */
 export function getDynamicSoulChronicle(
   focusId: string,
-  frequency: number = 432,
   customInsight: string = '',
   userProfile?: UserProfile | null,
   dateSeedKey?: string
