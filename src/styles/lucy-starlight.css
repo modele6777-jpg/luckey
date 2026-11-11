@@ -772,9 +772,10 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-voice-status { background: #
 .lucy-chat-footer {
   box-sizing: border-box !important;
   min-height: calc(74px + max(2px, env(safe-area-inset-bottom, 0px))) !important;
-  height: calc(74px + max(2px, env(safe-area-inset-bottom, 0px))) !important;
-  max-height: calc(74px + max(2px, env(safe-area-inset-bottom, 0px))) !important;
-  overflow: hidden !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
 }
 .lucy-input-stack {
   width: 100% !important;

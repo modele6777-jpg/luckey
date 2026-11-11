@@ -3530,8 +3530,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           color: isLight ? '#1e293b' : '#ffffff',
           overflowX: 'hidden',
           boxSizing: 'border-box',
-          height: 'calc(74px + max(2px, env(safe-area-inset-bottom, 0px)))',
-          maxHeight: 'calc(74px + max(2px, env(safe-area-inset-bottom, 0px)))',
         }}
         className={`lucy-chat-footer w-full max-w-full overflow-x-hidden px-1.5 sm:px-2.5 backdrop-blur-xl border-t shadow-xs shrink-0 z-40 relative transition-colors duration-300 flex flex-col justify-center ${
           isLight
@@ -3556,7 +3554,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Live Auto-Detect Indicator Badge */}
           <AnimatePresence>
-            {isAutoDetect && autoDetectedTitle && input.trim().length >= 2 && (
+            {isAutoDetect && isInputFocused && autoDetectedTitle && input.trim().length >= 2 && (
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
