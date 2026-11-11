@@ -125,7 +125,7 @@ export default function CalmApp() {
 
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = "Key - 막힌 운을 여는 40가지 개운(開運) 리추얼 & 운기 노트";
+    document.title = "Key - 막힌 운을 여는 40가지 개운법 & 50가지 민감성 케어 90대 실천 성전";
 
     // Handle messages from iframe (navigation to Lucy, frame ready signal, or text selection)
     const handleMessage = (e: MessageEvent) => {

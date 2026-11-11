@@ -106,7 +106,7 @@ export const INITIAL_PRISM_ROUTES: PrismRouteDefinition[] = [
     runeSymbol: 'ᚲ',
     runeName: 'Kenaz',
     runeMeaning: '막힌 운을 여는 개운(開運)의 열쇠',
-    description: '막힌 운을 틔우는 40가지 개운 리추얼, 오행 정화 호흡, 소원 확언 & 운기(運氣) 노트',
+    description: '막힌 운을 틔우는 90가지 개운·마음 실천 리추얼, 오행 정화 호흡, 소원 확언 & 운기(運氣) 노트',
     themeColor: '#0ea5e9',
     accentGlow: 'rgba(14, 165, 233, 0.9)',
     isActive: true,

@@ -100,7 +100,7 @@ export const TOSS_DESTINATIONS: Record<string, TossDestination> = {
     subName: '개운(開運) 리추얼 & 운기 정화 성전',
     icon: '🔑',
     path: '/key',
-    description: '막힌 운을 여는 40가지 개운 리추얼과 오행 파동 정화 노트',
+    description: '막힌 운을 여는 90가지 개운·마음 실천 리추얼과 오행 파동 정화 노트',
     themeColor: '#0ea5e9',
   },
   calm: {
@@ -109,7 +109,7 @@ export const TOSS_DESTINATIONS: Record<string, TossDestination> = {
     subName: '개운(開運) 리추얼 & 운기 정화 성전',
     icon: '🔑',
     path: '/key',
-    description: '막힌 운을 여는 40가지 개운 리추얼과 오행 파동 정화 노트',
+    description: '막힌 운을 여는 90가지 개운·마음 실천 리추얼과 오행 파동 정화 노트',
     themeColor: '#0ea5e9',
   },
   key: {
@@ -118,7 +118,7 @@ export const TOSS_DESTINATIONS: Record<string, TossDestination> = {
     subName: '개운(開運) 리추얼 & 운기 정화 성전',
     icon: '🔑',
     path: '/key',
-    description: '막힌 운을 여는 40가지 개운 리추얼과 오행 파동 정화 노트',
+    description: '막힌 운을 여는 90가지 개운·마음 실천 리추얼과 오행 파동 정화 노트',
     themeColor: '#0ea5e9',
   },
   profile: {
