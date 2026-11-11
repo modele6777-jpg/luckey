@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { resetAppScroll } from '@/utils/scrollToTop';
-import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { playAudioHaptic } from '@/lib/audioHaptics';
 
 /**
  * 📱 아이폰 상태바 / 상단 헤더 탭 시 최상단 스크롤(Scroll-to-Top) 전역 컨트롤러
@@ -65,13 +65,13 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       resetAppScroll('smooth', target);
 
       try {
-        triggerHaptic('light');
-      } catch (_) {
-        if (typeof navigator !== 'undefined' && navigator.vibrate) {
-          try {
-            navigator.vibrate(10);
-          } catch (_) {}
-        }
+        playAudioHaptic('tap_light');
+      } catch (_) {}
+
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate?.(10);
+        } catch (_) {}
       }
 
       try {
