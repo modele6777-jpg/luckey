@@ -1,12 +1,35 @@
-/** Keep iOS web-app audio nonexclusive so Apple Music can continue playing.
- * Every playback entry point uses this policy; background playback must never
- * silently promote it to the exclusive `playback` session category.
+/** Keep iOS web-app audio nonexclusive while idle, but retain background playback
+ * ('playback' audioSession) whenever speech (TTS) or background music (BGM) is actively playing,
+ * ensuring screen-off (lock screen) and app-switch playback never pauses.
  */
+
+let isAudioActive = false;
+
+export function setAppAudioActive(active: boolean): void {
+  isAudioActive = active;
+  if (typeof navigator === 'undefined' || !('audioSession' in navigator)) return;
+  try {
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+    if (session) {
+      const target = active ? 'playback' : 'ambient';
+      if (session.type !== target) session.type = target;
+    }
+  } catch { /* Session selection is unavailable on some browsers/iOS versions. */ }
+}
+
+export function isAppAudioActive(): boolean {
+  return isAudioActive;
+}
+
 export function applyAudioMixingPolicy(): void {
   if (typeof navigator === 'undefined' || !('audioSession' in navigator)) return;
   try {
     const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
-    if (session && session.type !== 'ambient') session.type = 'ambient';
+    if (session) {
+      // If audio is actively playing, keep 'playback' so screen-off and app-switch playback never halts.
+      const target = isAudioActive ? 'playback' : 'ambient';
+      if (session.type !== target) session.type = target;
+    }
   } catch { /* Session selection is unavailable on some browsers/iOS versions. */ }
 }
 
@@ -21,7 +44,6 @@ export function installAudioMixingPolicy(): void {
   window.addEventListener('keydown', applyAudioMixingPolicy, { capture: true });
   window.addEventListener('pageshow', applyAudioMixingPolicy);
   window.addEventListener('focus', applyAudioMixingPolicy);
-  document.addEventListener('play', applyAudioMixingPolicy, true);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') applyAudioMixingPolicy();
   });

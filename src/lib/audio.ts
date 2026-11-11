@@ -1,4 +1,4 @@
-import { applyAudioMixingPolicy } from './audioMixingPolicy';
+import { applyAudioMixingPolicy, setAppAudioActive, isAppAudioActive } from './audioMixingPolicy';
 import { getSpeechMediaElement, primeSpeechMedia, stopSpeechMedia, speechMediaProgress, isSpeechMediaPlaying, pauseSpeechMedia, resumeSpeechMedia, playSpeechMedia } from './speechMedia';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from './wakeLock';
 import { recoverSpeechContext } from './audioRecovery';
@@ -634,20 +634,35 @@ function stopTTSKeepAlive() { configureAmbientAudioSession(); }
 
 let speechSessionActive = false;
 
-export function setBgmPlaybackSessionActive(_active: boolean): void {
-  configureAmbientAudioSession();
+export function setBgmPlaybackSessionActive(active: boolean): void {
+  setAppAudioActive(active);
+  if (active) {
+    if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
+      try { (navigator as any).audioSession.type = 'playback'; } catch (_) {}
+    }
+  } else if (!speechSessionActive) {
+    configureAmbientAudioSession();
+  }
 }
 
 export function configureAmbientAudioSession(): void {
   applyAudioMixingPolicy();
 }
 
-/** Compatibility entry points must preserve the nonexclusive mixing policy. */
+/** Compatibility entry points must preserve background playback when requested. */
 export function configureTransientDuckingAudioSession(): void { configureAmbientAudioSession(); }
-export function configurePlaybackAudioSession(): void { configureAmbientAudioSession(); }
+export function configurePlaybackAudioSession(): void {
+  setAppAudioActive(true);
+  if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
+    try { (navigator as any).audioSession.type = 'playback'; } catch (_) {}
+  }
+}
 export function configureSpeechAudioSession(): void {
   speechSessionActive = true;
-  configureAmbientAudioSession();
+  setAppAudioActive(true);
+  if (typeof navigator !== 'undefined' && 'audioSession' in navigator) {
+    try { (navigator as any).audioSession.type = 'playback'; } catch (_) {}
+  }
 }
 
 export function getTTSAudioElement(): HTMLAudioElement {
@@ -1356,11 +1371,14 @@ export function initTTSAudioLifecycle(): void {
     if (document.visibilityState === 'visible') {
       handleVisibleResume();
     } else if (document.visibilityState === 'hidden') {
-      // Do NOT reassign navigator.audioSession.type on screen lock (prevents OS audio session reset pause).
-      // Instead, ensure AudioContext stays running if the OS briefly suspends it during lock transition.
+      // Keep TTS and BGM actively playing when screen locks or app goes to background
       ensureAudioContextRunningForTTS();
-      setTimeout(ensureAudioContextRunningForTTS, 80);
-      setTimeout(ensureAudioContextRunningForTTS, 250);
+      setTimeout(ensureAudioContextRunningForTTS, 50);
+      setTimeout(ensureAudioContextRunningForTTS, 200);
+      const media = speechMediaProgress();
+      if (media && ttsShouldBePlaying && !ttsUserExplicitlyPaused && media.paused) {
+        resumeSpeechMedia();
+      }
     }
   });
   window.addEventListener('pageshow', handleVisibleResume);

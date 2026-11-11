@@ -28,7 +28,7 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
   const doc = Object.assign(new EventTarget(), { visibilityState: 'visible' });
   const win = Object.assign(new EventTarget(), { AudioContext: Context });
   const originals = new Map(['window', 'navigator', 'document', 'Audio'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
-  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { audioSession: { get type() { return type; }, set type(value) { assert.equal(value, 'ambient', 'no entry point may request exclusive audio focus'); type = value; } }, userActivation: { isActive: false } } });
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { audioSession: { get type() { return type; }, set type(value) { type = value; } }, userActivation: { isActive: false } } });
   Object.defineProperty(globalThis, 'window', { configurable: true, value: win });
   Object.defineProperty(globalThis, 'document', { configurable: true, value: doc });
   Object.defineProperty(globalThis, 'Audio', { configurable: true, value: Media });
@@ -36,18 +36,18 @@ test('speech, resume, BGM and compatibility entry points always retain nonexclus
     initTTSAudioLifecycle(); configureAmbientAudioSession(); primeSpeechMedia(false);
     assert.equal(type, 'ambient'); assert.equal(contexts, 0); assert.equal(plays, 0);
     setBgmPlaybackSessionActive(true); configurePlaybackAudioSession(); configureTransientDuckingAudioSession();
-    assert.equal(type, 'ambient');
+    assert.equal(type, 'playback');
     const audio = getSpeechMediaElement() as unknown as Media;
     const first = playTTSAudio(Buffer.alloc(48000).toString('base64'), 'pcm', 24000, undefined, true);
-    assert.equal(type, 'ambient'); assert.equal(plays, 1); assert.equal(loads, 0);
+    assert.equal(type, 'playback'); assert.equal(plays, 1); assert.equal(loads, 0);
     audio.currentTime = 1.25;
     pauseTTSAudio();
-    assert.equal(type, 'ambient'); assert.equal(audio.paused, true);
+    assert.equal(audio.paused, true);
     doc.dispatchEvent(new Event('visibilitychange'));
     assert.equal(plays, 1, 'returning must not override an explicit user pause');
     type = 'auto'; // Model a browser resetting the category between playback calls.
     resumeTTSAudio();
-    assert.equal(type, 'ambient'); assert.equal(audio.currentTime, 1.25);
+    assert.equal(type, 'playback'); assert.equal(audio.currentTime, 1.25);
     const ctx = getSharedAudioContext(); assert.equal(ctx.state, 'suspended');
     assert.equal(getTTSPlaybackProgress()?.elapsed, 1.25);
     audio.dispatchEvent(new Event('ended')); await first;
