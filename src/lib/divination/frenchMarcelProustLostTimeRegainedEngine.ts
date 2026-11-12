@@ -49,6 +49,8 @@ export interface FrenchMarcelProustLostTimeResult {
   };
 }
 
+export type FrenchMarcelProustLostTimeRegainedResult = FrenchMarcelProustLostTimeResult;
+
 export const PROUST_THEMES: ProustTheme[] = [
   {
     themeKey: 'madeleineInvoluntaryMemory',
