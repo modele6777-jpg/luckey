@@ -347,6 +347,9 @@ import { calculateKoreanBaekSeokDeerWhiteWallPoeticPurity, formatKoreanBaekSeokD
 import { calculateFrenchPaulRicoeurNarrativeIdentityHealing, formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt, type FrenchPaulRicoeurNarrativeIdentityHealingResult, FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION } from './frenchPaulRicoeurNarrativeIdentityHealingEngine';
 import { calculateRussianAntonChekhovQuietEnduranceCompassion, formatRussianAntonChekhovQuietEnduranceCompassionPrompt, type RussianAntonChekhovQuietEnduranceCompassionResult, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION } from './russianAntonChekhovQuietEnduranceCompassionEngine';
 import { calculateKoreanSeopoKimManJungGuunmongAwakening, formatKoreanSeopoKimManJungGuunmongAwakeningPrompt, type KoreanSeopoKimManJungGuunmongAwakeningResult, KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION } from './koreanSeopoKimManJungGuunmongAwakeningEngine';
+import { calculateBritishVirginiaWoolfRoomOfOnesOwn, formatBritishVirginiaWoolfRoomOfOnesOwnPrompt, type BritishVirginiaWoolfRoomOfOnesOwnResult, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION } from './britishVirginiaWoolfRoomOfOnesOwnEngine';
+import { calculateFrenchVictorHugoLesMiserables, formatFrenchVictorHugoLesMiserablesPrompt, type FrenchVictorHugoLesMiserablesResult, FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION } from './frenchVictorHugoLesMiserablesEngine';
+import { calculateKoreanHeoGyunHongGildongYuldoguk, formatKoreanHeoGyunHongGildongYuldogukPrompt, type KoreanHeoGyunHongGildongYuldogukResult, KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION } from './koreanHeoGyunHongGildongYuldogukEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -714,6 +717,9 @@ export interface DeterministicEngineReport {
   frenchPaulRicoeurNarrativeIdentityHealingResult?: FrenchPaulRicoeurNarrativeIdentityHealingResult | null;
   russianAntonChekhovQuietEnduranceCompassionResult?: RussianAntonChekhovQuietEnduranceCompassionResult | null;
   koreanSeopoKimManJungGuunmongAwakeningResult?: KoreanSeopoKimManJungGuunmongAwakeningResult | null;
+  britishVirginiaWoolfRoomOfOnesOwnResult?: BritishVirginiaWoolfRoomOfOnesOwnResult | null;
+  frenchVictorHugoLesMiserablesResult?: FrenchVictorHugoLesMiserablesResult | null;
+  koreanHeoGyunHongGildongYuldogukResult?: KoreanHeoGyunHongGildongYuldogukResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4160,6 +4166,33 @@ try {
     }
   })()));
 
+  // 318. 영국 버지니아 울프 《자기만의 방·등대로》 자기만의 방 & 존재의 순간들·양성구유적 창조성 지혜 엔진
+  const britishVirginiaWoolfRoomOfOnesOwnResult = calculateSupplement('britishVirginiaWoolfRoomOfOnesOwnResult', () => ((() => {
+    try {
+      return calculateBritishVirginiaWoolfRoomOfOnesOwn(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 319. 프랑스 빅토르 위고 《레 미제라블》 자비와 구원 & 도덕적 양심·인도주의적 연대 지혜 엔진
+  const frenchVictorHugoLesMiserablesResult = calculateSupplement('frenchVictorHugoLesMiserablesResult', () => ((() => {
+    try {
+      return calculateFrenchVictorHugoLesMiserables(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 320. 대한민국 교산 허균 《홍길동전·유재론·호민론》 인재 등용 혁신 & 호민의 기개·율도국 개척 지혜 엔진
+  const koreanHeoGyunHongGildongYuldogukResult = calculateSupplement('koreanHeoGyunHongGildongYuldogukResult', () => ((() => {
+    try {
+      return calculateKoreanHeoGyunHongGildongYuldoguk(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4513,6 +4546,9 @@ try {
     frenchPaulRicoeurNarrativeIdentityHealingResult,
     russianAntonChekhovQuietEnduranceCompassionResult,
     koreanSeopoKimManJungGuunmongAwakeningResult,
+    britishVirginiaWoolfRoomOfOnesOwnResult,
+    frenchVictorHugoLesMiserablesResult,
+    koreanHeoGyunHongGildongYuldogukResult,
     tools: toolsMap,
   };
 }
@@ -4857,6 +4893,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchPaulRicoeurNarrativeIdentityHealing', nameKo: '폴 리쾨르 시간과이야기 자기자신으로서의타자 기억역사망각 서사적정체성 미장앙트리그 해석학적치유 용서와화해', icon: '📖', category: 'deep_master', summary: '폴 리쾨르의 철학적 해석학 사상으로 삶의 불협화음 속에서 의미의 화음을 길어 올리는 서사화(Mise en intrigue), 타자를 품는 윤리적 자기성, 상처받은 기억을 치유하고 자유를 선물하는 성숙한 화해와 용서를 체득합니다.' },
   { key: 'russianAntonChekhovQuietEnduranceCompassion', nameKo: '안톤 체호프 바냐아저씨 갈매기 일상의진실직시 묵묵한인내 우리는살아가야합니다 담담한자비 소박한품격 오늘심는한그루나무', icon: '🌿', category: 'deep_master', summary: '안톤 체호프의 실존적 휴머니즘 문학 철학으로 허위의식을 걷어내고 삶의 있는 그대로의 진실을 응시하며, "우리는 살아가야 합니다"의 묵묵한 일상 노동과 성실한 인내, 상처 입은 이들을 향한 담담하고 깊은 연민과 위로를 체득합니다.' },
   { key: 'koreanSeopoKimManJungGuunmongAwakening', nameKo: '서포 김만중 구운몽 사씨남정기 서포만필 일장춘몽대오각성 금강경반야공관 본래면목회복 사씨정경순결 유배지효심승화 초연한평정', icon: '☁️', category: 'deep_master', summary: '서포 김만중 선생의 위대한 고전 문학 철학으로 세속의 덧없는 부귀영화를 꿰뚫어 보고 참된 본성을 회복하는 일장춘몽의 대오각성, 금강경 반야공관의 맑은 초연함, 절해고도 유배의 시련 속에서도 홀어머니를 위로한 지극한 효심과 승화의 지혜를 체득합니다.' },
+  { key: 'britishVirginiaWoolfRoomOfOnesOwn', nameKo: '버지니아 울프 자기만의방 등대로 댈러웨이부인 사유의독립성 존재의순간들 양성구유적지성 의식의흐름 등대적회복탄력성', icon: '🕯️', category: 'deep_master', summary: '버지니아 울프의 모더니즘 문학 철학으로 세속의 간섭을 닫아거는 자기만의 방의 사유 독립성, 일상의 껍질을 뚫고 터져 나오는 존재의 순간들(Moments of Being), 이성과 감성이 상호 공명하는 양성구유적 창조성과 등대적 회복탄력성을 체득합니다.' },
+  { key: 'frenchVictorHugoLesMiserables', nameKo: '빅토르 위고 레미제라블 노트르담드파리 미리엘주교은촛대 자비와구원 도덕적양심 나는누구인가 인도주의적연대 불굴의영웅적기개', icon: '✨', category: 'deep_master', summary: '빅토르 위고의 낭만주의 인도주의 문학 철학으로 응징을 녹여내는 미리엘 주교의 대자비와 영혼의 구원, 안락함을 버리고 진실을 선택하는 도덕적 양심, 가장 낮은 곳의 이웃을 향한 뜨거운 연대와 불굴의 영웅적 회복탄력성을 체득합니다.' },
+  { key: 'koreanHeoGyunHongGildongYuldoguk', nameKo: '교산 허균 홍길동전 성소부부고 유재론 호민론 인재등용혁신 편견타파 호민기개 불의항거 활빈대동정의 율도국이상향개척 파격의진보', icon: '🌊', category: 'deep_master', summary: '교산 허균 선생의 개혁적 문학 철학으로 신분과 편견을 깨뜨리는 유재론(遺才論)의 인재 혁신, 불의에 분연히 맞서는 호민(豪民)의 당당한 기백, 약자를 구휼하는 활빈의 대동 정의와 새로운 이상향 율도국(栗島國)을 개척하는 파격의 진보성을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4918,6 +4957,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'koreanHeoGyunHongGildongYuldoguk',
+    'britishVirginiaWoolfRoomOfOnesOwn',
+    'frenchVictorHugoLesMiserables',
     'frenchPaulRicoeurNarrativeIdentityHealing',
     'russianAntonChekhovQuietEnduranceCompassion',
     'americanJohnDeweyPragmaticInquiryGrowth',
@@ -5099,6 +5141,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'frenchVictorHugoLesMiserables',
+    'britishVirginiaWoolfRoomOfOnesOwn',
+    'koreanHeoGyunHongGildongYuldoguk',
     'frenchPaulRicoeurNarrativeIdentityHealing',
     'russianAntonChekhovQuietEnduranceCompassion',
     'koreanSeopoKimManJungGuunmongAwakening',
@@ -5276,6 +5321,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'frenchVictorHugoLesMiserables',
+    'britishVirginiaWoolfRoomOfOnesOwn',
     'russianAntonChekhovQuietEnduranceCompassion',
     'koreanSeopoKimManJungGuunmongAwakening',
     'russianFyodorDostoevskyKaramazovSoulCompassion',
@@ -5317,6 +5364,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'britishVirginiaWoolfRoomOfOnesOwn',
+    'koreanHeoGyunHongGildongYuldoguk',
+    'frenchVictorHugoLesMiserables',
     'frenchPaulRicoeurNarrativeIdentityHealing',
     'koreanSeopoKimManJungGuunmongAwakening',
     'koreanBaekSeokDeerWhiteWallPoeticPurity',
@@ -5372,6 +5422,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'britishVirginiaWoolfRoomOfOnesOwn',
+    'frenchVictorHugoLesMiserables',
+    'koreanHeoGyunHongGildongYuldoguk',
     'frenchPaulRicoeurNarrativeIdentityHealing',
     'russianAntonChekhovQuietEnduranceCompassion',
     'koreanSeopoKimManJungGuunmongAwakening',
