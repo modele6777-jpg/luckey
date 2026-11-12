@@ -5,7 +5,7 @@ import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
 import { getOrderedLuckeyPageKeysForCurrentApp, oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronUp, ChevronDown, Clover, KeyRound, CircleHelp } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clover, KeyRound } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
@@ -55,51 +55,6 @@ function getAdjacentSidebarAppPath(currentLocation: string, direction: 'previous
   return SIDEBAR_APP_ORDER[nextIndex].path;
 }
 
-function isVisibleScrollRoot(element: HTMLElement) {
-  const rect = element.getBoundingClientRect();
-  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
-  return rect.width > 0 && rect.height > 0 && style?.display !== 'none' && style?.visibility !== 'hidden';
-}
-
-function isScrollableRoot(element: HTMLElement) {
-  return element.scrollHeight > element.clientHeight + 1;
-}
-
-function getPrimaryScrollRoots(doc: Document) {
-  const preferredRoots = Array.from(doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .lucy-chat-main'))
-    .filter((element) => !element.closest('#main-sidebar-navigation') && isVisibleScrollRoot(element));
-  const scrollablePreferredRoots = preferredRoots.filter(isScrollableRoot);
-  if (scrollablePreferredRoots.length > 0) return scrollablePreferredRoots;
-
-  const pageRoot = doc.scrollingElement as HTMLElement | null;
-  if (pageRoot && isVisibleScrollRoot(pageRoot) && isScrollableRoot(pageRoot)) return [pageRoot];
-
-  const fallbackRoots = Array.from(doc.querySelectorAll<HTMLElement>('.overflow-y-auto, .overflow-y-scroll'))
-    .filter((element) => !element.closest('#main-sidebar-navigation') && isVisibleScrollRoot(element) && isScrollableRoot(element));
-  return fallbackRoots.filter((element) => !fallbackRoots.some((candidate) =>
-    candidate !== element && candidate.contains(element)
-  ));
-}
-
-function isAtVerticalScrollBoundary(edge: 'top' | 'bottom') {
-  if (typeof document === 'undefined') return false;
-  const roots = new Set<HTMLElement>(getPrimaryScrollRoots(document));
-  document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((frame) => {
-    if (!isVisibleScrollRoot(frame)) return;
-    try {
-      if (!frame.contentDocument) return;
-      getPrimaryScrollRoots(frame.contentDocument).forEach((root) => roots.add(root));
-    } catch (_) {}
-  });
-
-  const scrollableRoots = Array.from(roots).filter(isScrollableRoot);
-  if (scrollableRoots.length === 0) return true;
-  return scrollableRoots.every((element) => edge === 'top'
-    ? element.scrollTop <= 2
-    : element.scrollHeight - element.clientHeight - element.scrollTop <= 2
-  );
-}
-
 export function BigBangButton() {
   let location = '/';
   let navigate = (to: string) => {
@@ -136,7 +91,9 @@ export function BigBangButton() {
       typeof window !== 'undefined'
         ? (window.location.pathname || '/').split('?')[0].split('#')[0]
         : '/';
-    const isDomInLucyChat =
+    const isSplitChannelView = isDualPaneLayout() && typeof document !== 'undefined' &&
+      Boolean(document.getElementById('duo-content-viewport'));
+    const isDomInLucyChat = !isSplitChannelView &&
       typeof document !== 'undefined' &&
       (document.documentElement.classList.contains('in-lucy-chat') ||
         document.body.classList.contains('in-lucy-chat') ||
@@ -347,23 +304,29 @@ export function BigBangButton() {
     }, remainingMs);
   }, []);
 
-  // 🎯 좌측 화면과 우측 메뉴(네비게이션)를 제외한 오직 '루시채팅창'의 가로 정중앙 추적
-  const [chatCenterLeft, setChatCenterLeft] = useState<number | null>(null);
+  // 🎯 확장 분할에서는 앱 콘텐츠 패널에, 단독 화면에서는 기존 활성 영역에 버튼을 정렬합니다.
+  const [panelCenterLeft, setPanelCenterLeft] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const updateCenter = () => {
-      // 1. 펼침 화면(듀얼 뷰)에서는 전담 우측 루시 채팅 뷰포트(#duo-lucy-viewport) 우선
+      // Split navigation belongs to the channel pane; Lucy on the other pane must not own the control.
+      const duoContent = document.getElementById('duo-content-viewport');
       const duoLucy = document.getElementById('duo-lucy-viewport');
-      // 2. 단독 루시 화면(.lucy-chat-shell) 또는 메인 영역(.sites-pinned-main)
-      const target = duoLucy || document.querySelector('.lucy-chat-shell') || document.querySelector('.sites-pinned-main');
+      const target = duoContent || duoLucy || document.querySelector('.lucy-chat-shell') || document.querySelector('.sites-pinned-main');
       if (target) {
         const rect = target.getBoundingClientRect();
         if (rect.width > 0) {
           const centerX = Math.round(rect.left + rect.width / 2);
-          setChatCenterLeft(centerX);
+          setPanelCenterLeft(centerX);
           document.documentElement.style.setProperty('--lucy-chat-center-x', `${centerX}px`);
+          if (duoContent && duoLucy) {
+            const bottomOffset = Math.max(0, window.innerHeight - rect.bottom + 12);
+            document.documentElement.style.setProperty('--duo-content-bottom-offset', `${bottomOffset}px`);
+          } else {
+            document.documentElement.style.removeProperty('--duo-content-bottom-offset');
+          }
           return;
         }
       }
@@ -371,8 +334,9 @@ export function BigBangButton() {
       const sidebar = document.querySelector('.sites-pinned-sidebar');
       const sbWidth = sidebar ? sidebar.getBoundingClientRect().width : 80;
       const fallbackCenter = Math.round((window.innerWidth - sbWidth) / 2);
-      setChatCenterLeft(fallbackCenter);
+      setPanelCenterLeft(fallbackCenter);
       document.documentElement.style.setProperty('--lucy-chat-center-x', `${fallbackCenter}px`);
+      document.documentElement.style.removeProperty('--duo-content-bottom-offset');
     };
 
     updateCenter();
@@ -382,6 +346,8 @@ export function BigBangButton() {
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(() => updateCenter());
+      const duoContent = document.getElementById('duo-content-viewport');
+      if (duoContent) ro.observe(duoContent);
       const duoLucy = document.getElementById('duo-lucy-viewport');
       if (duoLucy) ro.observe(duoLucy);
       const main = document.querySelector('.sites-pinned-main');
@@ -390,6 +356,8 @@ export function BigBangButton() {
 
     const mo = new MutationObserver(() => updateCenter());
     mo.observe(document.body, { childList: true, subtree: true });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     return () => {
       window.removeEventListener('resize', updateCenter);
@@ -1297,7 +1265,7 @@ export function BigBangButton() {
     setIsAborted(false);
     const context = serializeCurrentView(location);
 
-    // 🧭 상하좌우 방향 탭은 경계 앱 이동 또는 좌우 DApp 이동만 실행합니다.
+    // 🧭 위·아래는 메뉴 순서대로 앱을 바꾸고, 좌우는 현재 앱의 내부 화면만 이동합니다.
     // Touch has no preceding hover; use the press snapshot instead of a render closure.
     const targetDir = start.pointerType === 'touch'
       ? start.direction
@@ -1321,11 +1289,11 @@ export function BigBangButton() {
       setHoverDirection('none');
       showDirectionFeedback(targetDir);
       if (targetDir === 'north') {
-        if (isAtVerticalScrollBoundary('top') && navigateToAdjacentMenuApp('previous', 'north')) {
+        if (navigateToAdjacentMenuApp('previous', 'north')) {
           triggerHaptic('wormhole');
         }
       } else if (targetDir === 'south') {
-        if (isAtVerticalScrollBoundary('bottom') && navigateToAdjacentMenuApp('next', 'south')) {
+        if (navigateToAdjacentMenuApp('next', 'south')) {
           triggerHaptic('wormhole');
         }
       } else if (targetDir === 'west') {
@@ -1646,9 +1614,9 @@ export function BigBangButton() {
           isQuickChatOpen || voiceModeInfo.isOpen ? 'z-[9995]' : 'z-[410]'
         }`}
         style={
-          chatCenterLeft != null
+          panelCenterLeft != null
             ? {
-                left: `${chatCenterLeft}px`,
+                left: `${panelCenterLeft}px`,
                 right: 'auto',
                 marginLeft: 0,
                 marginRight: 0,
@@ -1930,8 +1898,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 위·아래: 콘텐츠 경계에서 이전·다음 앱으로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 루시 채팅 프로 / 드래그: 장식 효과만, 페이지 이동 없음)`}
-              aria-label={`빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 위·아래: 콘텐츠 경계에서 이전·다음 앱으로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 채팅 프로, 드래그는 화면 이동 없음`}
+              title={`빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 루시 채팅 프로 / 드래그: 장식 효과만, 페이지 이동 없음)`}
+              aria-label={`빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 채팅 프로, 드래그는 화면 이동 없음`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -2167,7 +2135,7 @@ export function BigBangButton() {
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
                   {cloverWind !== 'off' ? (
-                    <CircleHelp data-bigbang-center-gesture="recommend" size={26} strokeWidth={1.8} className="-rotate-45 text-emerald-100 drop-shadow-[0_0_8px_#6ee7b7]" aria-hidden="true" />
+                    <span data-bigbang-center-drag-core="true" className="w-2.5 h-2.5 rounded-full bg-emerald-200/85 blur-[1px] animate-pulse" aria-hidden="true" />
                   ) : !isPressing && centerDirection !== 'none' && DestinationIcon ? (
                     <DestinationIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerDirection === 'north' || centerDirection === 'south' ? (

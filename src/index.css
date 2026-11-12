@@ -3390,12 +3390,12 @@ html.duo-unfolded-landscape .sites-pinned-main {
 
 html.duo-unfolded-landscape .bottom-safe-fab-center,
 body.duo-unfolded-landscape .bottom-safe-fab-center {
-  left: var(--lucy-chat-center-x, 75vw) !important;
+  left: var(--lucy-chat-center-x, 25vw) !important;
   right: auto !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   transform: translateX(-50%) !important;
-  bottom: calc(var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px) !important;
+  bottom: var(--duo-content-bottom-offset, calc(var(--sidebar-footer-height, calc(84px + max(4px, env(safe-area-inset-bottom, 0px)))) + 44px)) !important;
 }
 
 html.duo-unfolded-landscape .prism-hub-header {
@@ -3487,7 +3487,7 @@ body.duo-unfolded-portrait .bottom-safe-fab-center {
   left: var(--lucy-chat-center-x, 50%) !important;
   right: auto !important;
   transform: translateX(-50%) !important;
-  bottom: calc(var(--lucy-footer-height, calc(env(safe-area-inset-bottom, 0px) + 5rem)) + 54px + 16px) !important;
+  bottom: var(--duo-content-bottom-offset, calc(50vh + 39px + env(safe-area-inset-bottom, 0px) / 2)) !important;
 }
 
 html.duo-unfolded-portrait .prism-hub-header {
@@ -3772,7 +3772,7 @@ body.duo-unfolded-landscape.duo-panels-swapped #circular-tarot-modal-container {
 }
 html.duo-unfolded-landscape.duo-panels-swapped .bottom-safe-fab-center,
 body.duo-unfolded-landscape.duo-panels-swapped .bottom-safe-fab-center {
-  left: 25vw !important;
+  left: var(--lucy-chat-center-x, 75vw) !important;
   right: auto !important;
 }
 html.duo-unfolded-landscape.duo-panels-swapped .prism-xs-subnav:not(.duo-page-nav),

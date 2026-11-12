@@ -9,54 +9,83 @@ const start = source.indexOf('  const handlePointerUp =');
 const end = source.indexOf('  const hoverContainerRef =', start);
 const handler = stripTypeScriptTypes(source.slice(start, end)) + '\nhandlePointerUp(event);';
 
-function release({pointerType = 'touch', direction = 'none', duration = 300, distance = 0, aborted = false}) {
+function release({ pointerType = 'touch', direction = 'none', duration = 80, distance = 0, disabled = false, aborted = false } = {}) {
   const calls = [];
   const context = {
-    event: {clientX: distance, clientY: 0},
-    performance: {now: () => duration},
+    event: { pointerId: 1, clientX: distance, clientY: 0 },
+    performance: { now: () => duration },
     Math,
-    location: '/',
-    DRAG_RECOMMEND_THRESHOLD: 26,
+    location: '/heal',
+    DRAG_ACTIVATION_THRESHOLD: 26,
+    WARP_ABORT_DISTANCE: 60,
     isAborted: false,
     isChatView: false,
+    isCycleNavigationDisabled: disabled,
     clearTimeout: () => calls.push('clearTimer'),
-    calculateWarpMetrics: () => ({isAborted: aborted}),
+    calculateWarpMetrics: () => ({ isAborted: aborted }),
     serializeCurrentView: () => ({}),
     cleanupGlobalPointerListeners: () => {},
     stopBlackHoleContinuousHaptic: () => {},
     resetActiveWormholePeek: () => {},
     clearPendingSelection: () => {},
     getActiveSelectionText: () => '',
-    triggerHaptic: () => {},
-    checkIsInLucyChat: () => false,
-    omniWarpAudio: {playAbort: () => calls.push('abort')},
-    goToNextRecommended: () => calls.push('drag'),
-    sessionStorage: {removeItem: () => {}},
+    triggerHaptic: (kind) => calls.push(`haptic:${kind}`),
+    showDirectionFeedback: (value) => calls.push(`feedback:${value}`),
+    navigateToAdjacentMenuApp: (side, value) => {
+      calls.push(`menu:${side}:${value}`);
+      return true;
+    },
+    goToPreviousDapp: () => calls.push('inside:previous'),
+    goToNextDapp: () => calls.push('inside:next'),
+    cancelOutOfRangeDrag: () => calls.push('cancel'),
+    blowCloverWind: () => calls.push('visual-drag'),
+    finishCloverWind: () => calls.push('visual-settle'),
+    omniWarpAudio: { playAbort: () => calls.push('abort') },
+    sessionStorage: { removeItem: () => {} },
+    touchStartRef: { current: { time: 0, x: 0, y: 0, pointerType, direction } },
+    maxDragDistanceRef: { current: distance },
+    downDirectionRef: { current: direction },
+    isPttRecordingRef: { current: false },
+    singleTapTimerRef: { current: 123 },
+    lastTapTimeRef: { current: 0 },
+    visualDragRef: { current: false },
   };
   for (const name of new Set(source.match(/\bset[A-Z]\w*(?=\()/g))) context[name] = () => {};
-  for (const name of new Set(source.match(/\b\w+Ref(?=\.current)/g))) context[name] = {current: null};
+  for (const name of new Set(source.match(/\b\w+Ref(?=\.current)/g))) context[name] = { current: null };
   Object.assign(context, {
-    touchStartRef: {current: {time: 0, x: 0, y: 0, pointerType, direction}},
-    maxDragDistanceRef: {current: distance},
-    downDirectionRef: {current: direction},
-    isPttRecordingRef: {current: false},
-    singleTapTimerRef: {current: 123},
-    cardinalActionsRef: {current: Object.fromEntries(['scrollToTop', 'scrollToBottom', 'navigateBack', 'navigateForward'].map(name => [name, () => calls.push(name)]))},
-    setQuickChatVoiceActive: value => { if (value) calls.push('voice'); },
+    touchStartRef: { current: { time: 0, x: 0, y: 0, pointerType, direction } },
+    maxDragDistanceRef: { current: distance },
+    downDirectionRef: { current: direction },
+    isPttRecordingRef: { current: false },
+    singleTapTimerRef: { current: 123 },
+    lastTapTimeRef: { current: 0 },
+    visualDragRef: { current: false },
   });
   vm.runInNewContext(handler, context);
   return calls;
 }
 
-const actions = {north: 'scrollToTop', south: 'scrollToBottom', west: 'navigateBack', east: 'navigateForward'};
-for (const [direction, action] of Object.entries(actions)) {
+const north = ['clearTimer', 'feedback:north', 'menu:previous:north', 'haptic:wormhole'];
+const south = ['clearTimer', 'feedback:south', 'menu:next:south', 'haptic:wormhole'];
+assert.deepEqual(release({ direction: 'north' }), north);
+assert.deepEqual(release({ direction: 'south' }), south);
+assert.deepEqual(release({ direction: 'west' }), ['clearTimer', 'feedback:west', 'inside:previous']);
+assert.deepEqual(release({ direction: 'east' }), ['clearTimer', 'feedback:east', 'inside:next']);
+
+// Key/Lucy disable horizontal channel cycling only; vertical menu movement remains available.
+assert.deepEqual(release({ direction: 'west', disabled: true }), []);
+assert.deepEqual(release({ direction: 'east', disabled: true }), []);
+assert.deepEqual(release({ direction: 'north', disabled: true }), north);
+assert.deepEqual(release({ direction: 'south', disabled: true }), south);
+
+// Up/down taps switch apps regardless of scroll position; left/right stay in-app; drags never navigate.
+for (const direction of ['north', 'south', 'west', 'east']) {
   for (const duration of [80, 300, 800]) {
-    assert.deepEqual(release({direction, duration, distance: 8}), ['clearTimer', action], `${direction} ${duration}ms without mouse hover`);
+    const calls = release({ direction, duration });
+    assert.equal(calls.some(call => call.startsWith('menu:') || call.startsWith('inside:')), true, `${direction} tap at ${duration}ms navigates`);
   }
-  assert.deepEqual(release({direction, distance: 26}), ['clearTimer', 'drag']);
 }
-assert.deepEqual(release({direction: 'east', pointerType: 'mouse', duration: 80}), ['clearTimer', 'navigateForward']);
-assert.deepEqual(release({direction: 'east', pointerType: 'mouse', duration: 300}), ['voice', 'clearTimer']);
-assert.deepEqual(release({duration: 300}), ['voice', 'clearTimer']);
-assert.deepEqual(release({direction: 'north', aborted: true}), ['abort']);
-console.log('Passed 20 gesture regressions: four directions, touch duration/jitter, drag, mouse, center hold, cancellation.');
+assert.deepEqual(release({ direction: 'east', distance: 26 }), ['visual-drag', 'visual-settle', 'clearTimer']);
+assert.deepEqual(release({ direction: 'south', distance: 80 }), ['cancel']);
+assert.deepEqual(release({ direction: 'north', aborted: true }), ['abort', 'haptic:abort']);
+console.log('Passed Big Bang gesture regressions: unconditional vertical menu navigation, horizontal in-channel moves, disabled-state, taps, drag no-navigation, and cancellation.');

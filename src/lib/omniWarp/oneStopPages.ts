@@ -11,12 +11,23 @@ export const ONE_STOP_PAGE_TABS: Record<string, readonly [string, string][]> = {
 
 const LUCKEY_CHANNEL_ORDER = ['/prologue', '/orange', '/trinity', '/heal', '/bluebird', '/muse', '/epilogue'];
 
+const HORIZONTAL_PAGE_ALIASES: Record<string, string> = {
+  // Aura mission is a sheet inside the one-minute view, not one of its swipe tabs.
+  '/heal?tab=mission': '/heal?tab=oneMinute',
+};
+
 function getOrderedChannelPageKeys(channelPath: string): string[] {
   const tabs = [...(ONE_STOP_PAGE_TABS[channelPath] || [])];
   if (channelPath === '/epilogue') {
     tabs.sort(([a], [b]) => Number(a === 'profile') - Number(b === 'profile'));
   }
   return tabs.map(([tab]) => normalizeOneStopPage(channelPath + '?tab=' + encodeURIComponent(tab)));
+}
+
+function getOrderedHorizontalChannelPageKeys(channelPath: string): string[] {
+  return getOrderedChannelPageKeys(channelPath).filter((page) =>
+    !(channelPath === '/heal' && page === '/heal?tab=mission')
+  );
 }
 
 export function normalizeOneStopPage(canonical: string): string {
@@ -54,16 +65,18 @@ export function getOrderedLuckeyPageKeys(): string[] {
 
 /** Returns only the internal pages belonging to the current top-level app. */
 export function getOrderedLuckeyPageKeysForCurrentApp(current: string): string[] {
-  const currentPage = normalizeOneStopPage(current || '/');
+  const normalizedPage = normalizeOneStopPage(current || '/');
+  const currentPage = HORIZONTAL_PAGE_ALIASES[normalizedPage] || normalizedPage;
   for (const channelPath of LUCKEY_CHANNEL_ORDER) {
-    const pages = getOrderedChannelPageKeys(channelPath);
+    const pages = getOrderedHorizontalChannelPageKeys(channelPath);
     if (pages.includes(currentPage)) return pages;
   }
   return [];
 }
 
 function moveWithinCurrentApp(current: string, offset: -1 | 1): string {
-  const currentPage = normalizeOneStopPage(current || '/');
+  const normalizedPage = normalizeOneStopPage(current || '/');
+  const currentPage = HORIZONTAL_PAGE_ALIASES[normalizedPage] || normalizedPage;
   const pages = getOrderedLuckeyPageKeysForCurrentApp(currentPage);
   const index = pages.indexOf(currentPage);
   if (index < 0) return oneStopNavigationPath(currentPage);

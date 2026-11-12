@@ -19,13 +19,24 @@ test('the ordered listing covers every Luckey internal page exactly once', () =>
 
 test('horizontal navigation cycles only within the current top-level app', () => {
   for (const path of getOrderedLuckeyPageKeys()) {
-    const pages = getOrderedLuckeyPageKeysForCurrentApp(path);
     const current = normalizeOneStopPage(path);
+    if (current === '/heal?tab=mission') continue;
+    const pages = getOrderedLuckeyPageKeysForCurrentApp(path);
     const index = pages.indexOf(current);
     assert.notEqual(index, -1, `${path} belongs to one app's internal page list`);
     assert.equal(normalizeOneStopPage(nextOrderedLuckeyPage(path)), pages[(index + 1) % pages.length]);
     assert.equal(normalizeOneStopPage(previousOrderedLuckeyPage(path)), pages[(index - 1 + pages.length) % pages.length]);
   }
+});
+
+test('Aura left/right follows its three swipe tabs and treats mission as the one-minute view', () => {
+  const pages = ['/heal', '/heal?tab=oneMinute', '/heal?tab=synergy'];
+  assert.deepEqual(getOrderedLuckeyPageKeysForCurrentApp('/heal?tab=meditation'), pages);
+  assert.deepEqual(getOrderedLuckeyPageKeysForCurrentApp('/heal?tab=mission'), pages);
+  assert.equal(nextOrderedLuckeyPage('/heal?tab=synergy'), '/heal?tab=meditation');
+  assert.equal(previousOrderedLuckeyPage('/heal?tab=meditation'), '/heal?tab=synergy');
+  assert.equal(nextOrderedLuckeyPage('/heal?tab=mission'), '/heal?tab=synergy');
+  assert.equal(previousOrderedLuckeyPage('/heal?tab=mission'), '/heal?tab=meditation');
 });
 
 test('app boundaries wrap locally and unsupported routes do not jump to another app', () => {
