@@ -32,6 +32,66 @@ import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCirc
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
 
+const SIDEBAR_APP_ORDER: { path: string; aliases: string[] }[] = [
+  { path: '/', aliases: ['/', '/chat', '/lucy'] },
+  { path: '/key', aliases: ['/key', '/calm', '/orb', '/gateway', '/crystal', '/pharmacy'] },
+  { path: '/prologue', aliases: ['/prologue', '/universe', '/ecpr', '/todo', '/mission', '/synergy', '/aegis'] },
+  { path: '/orange', aliases: ['/orange'] },
+  { path: '/trinity', aliases: ['/trinity', '/oracle'] },
+  { path: '/heal', aliases: ['/heal', '/aura'] },
+  { path: '/bluebird', aliases: ['/bluebird'] },
+  { path: '/muse', aliases: ['/muse'] },
+  { path: '/epilogue', aliases: ['/epilogue', '/profile', '/chronicle'] },
+];
+
+function getAdjacentSidebarAppPath(currentLocation: string, direction: 'previous' | 'next') {
+  const currentPath = (currentLocation || '/').split(/[?#]/)[0] || '/';
+  const currentIndex = SIDEBAR_APP_ORDER.findIndex(({ aliases }) => aliases.some((alias) =>
+    currentPath === alias || (alias !== '/' && currentPath.startsWith(`${alias}/`))
+  ));
+  if (currentIndex < 0) return null;
+  const offset = direction === 'next' ? 1 : -1;
+  const nextIndex = (currentIndex + offset + SIDEBAR_APP_ORDER.length) % SIDEBAR_APP_ORDER.length;
+  return SIDEBAR_APP_ORDER[nextIndex].path;
+}
+
+function isAtVerticalScrollBoundary(edge: 'top' | 'bottom') {
+  if (typeof document === 'undefined') return false;
+  const roots = new Set<HTMLElement>();
+  const addVisibleRoot = (node: Element | null) => {
+    if (!node) return;
+    const element = node as HTMLElement;
+    const rect = element.getBoundingClientRect();
+    const view = element.ownerDocument.defaultView;
+    const style = view?.getComputedStyle(element);
+    if (rect.width <= 0 || rect.height <= 0 || style?.display === 'none' || style?.visibility === 'hidden') return;
+    roots.add(element);
+  };
+
+  const selectors = '[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll';
+  document.querySelectorAll<HTMLElement>(selectors).forEach((element) => {
+    if (!element.closest('#main-sidebar-navigation')) addVisibleRoot(element);
+  });
+  const pageRoot = document.scrollingElement as HTMLElement | null;
+  if (pageRoot?.scrollHeight && pageRoot.scrollHeight > pageRoot.clientHeight + 1) addVisibleRoot(pageRoot);
+
+  document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((frame) => {
+    try {
+      if (!frame.contentDocument) return;
+      const frameRoots = frame.contentDocument.querySelectorAll<HTMLElement>(selectors);
+      frameRoots.forEach(addVisibleRoot);
+      addVisibleRoot(frame.contentDocument.scrollingElement as HTMLElement | null);
+    } catch (_) {}
+  });
+
+  const scrollableRoots = Array.from(roots).filter((element) => element.scrollHeight > element.clientHeight + 1);
+  if (scrollableRoots.length === 0) return true;
+  return scrollableRoots.every((element) => edge === 'top'
+    ? element.scrollTop <= 2
+    : element.scrollHeight - element.clientHeight - element.scrollTop <= 2
+  );
+}
+
 export function BigBangButton() {
   let location = '/';
   let navigate = (to: string) => {
@@ -87,6 +147,12 @@ export function BigBangButton() {
   }, [location]);
 
   const isChatView = checkIsInLucyChat();
+  const currentCleanPath = (location || '/').split(/[?#]/)[0] || '/';
+  const windowCleanPath = typeof window !== 'undefined' ? (window.location.pathname || '/').split(/[?#]/)[0] || '/' : currentCleanPath;
+  const isKeyChannel = [currentCleanPath, windowCleanPath].some((path) =>
+    ['/key', '/calm', '/orb', '/gateway', '/crystal', '/pharmacy'].some((alias) => path === alias || path.startsWith(`${alias}/`))
+  );
+  const isCycleNavigationDisabled = isChatView || isKeyChannel;
 
   const [isPressing, setIsPressing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -224,6 +290,16 @@ export function BigBangButton() {
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
     setClickedDirection(direction);
     directionFeedbackTimer.current = setTimeout(() => setClickedDirection('none'), 1000);
+  };
+  const navigateToAdjacentMenuApp = (direction: 'previous' | 'next', feedbackDirection: 'north' | 'south') => {
+    const path = getAdjacentSidebarAppPath(location, direction);
+    if (!path) return false;
+    showDirectionFeedback(feedbackDirection, path);
+    (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    navigate(path);
+    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
+    window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
+    return true;
   };
   useEffect(() => () => {
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
@@ -1085,22 +1161,22 @@ export function BigBangButton() {
   );
 
   const goToPreviousDapp = useCallback(() => {
-    if (checkIsInLucyChat()) return;
+    if (isCycleNavigationDisabled) return;
     const previousPath = previousOrderedLuckeyPage(getCurrentOneStopPage(location));
     showDirectionFeedback('west', previousPath);
     const tab = new URL(previousPath, 'https://luckey.local').searchParams.get('tab') || undefined;
     triggerHaptic('wormhole');
     handleRuneNavigate(previousPath, tab);
-  }, [location, handleRuneNavigate, checkIsInLucyChat]);
+  }, [location, handleRuneNavigate, isCycleNavigationDisabled]);
 
   const goToNextDapp = useCallback(() => {
-    if (checkIsInLucyChat()) return;
+    if (isCycleNavigationDisabled) return;
     const nextPath = nextOrderedLuckeyPage(getCurrentOneStopPage(location));
     showDirectionFeedback('east', nextPath);
     const tab = new URL(nextPath, 'https://luckey.local').searchParams.get('tab') || undefined;
     triggerHaptic('wormhole');
     handleRuneNavigate(nextPath, tab);
-  }, [location, handleRuneNavigate, checkIsInLucyChat]);
+  }, [location, handleRuneNavigate, isCycleNavigationDisabled]);
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement> | PointerEvent) => {
     if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
@@ -1200,9 +1276,9 @@ export function BigBangButton() {
     const targetDir = start.pointerType === 'touch'
       ? start.direction
       : downDirectionRef.current;
-    const isDisabledLucyChatDirection =
-      checkIsInLucyChat() && (targetDir === 'west' || targetDir === 'east');
-    if (!isDragGesture && isDisabledLucyChatDirection && (start.pointerType === 'touch' || duration < 220)) {
+    const isDisabledChannelDirection =
+      isCycleNavigationDisabled && (targetDir === 'west' || targetDir === 'east');
+    if (!isDragGesture && isDisabledChannelDirection && (start.pointerType === 'touch' || duration < 220)) {
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
@@ -1219,22 +1295,30 @@ export function BigBangButton() {
       setHoverDirection('none');
       showDirectionFeedback(targetDir);
       if (targetDir === 'north') {
-        const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
-        if (isDuo) {
-          const contentEl = document.getElementById('duo-content-viewport');
-          const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
-          scrollRoot?.scrollTo({ top: 0, behavior: 'smooth' });
+        if (isAtVerticalScrollBoundary('top') && navigateToAdjacentMenuApp('previous', 'north')) {
+          triggerHaptic('wormhole');
         } else {
-          cardinalActionsRef.current?.scrollToTop(e);
+          const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
+          if (isDuo) {
+            const contentEl = document.getElementById('duo-content-viewport');
+            const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
+            scrollRoot?.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            cardinalActionsRef.current?.scrollToTop(e);
+          }
         }
       } else if (targetDir === 'south') {
-        const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
-        if (isDuo) {
-          const contentEl = document.getElementById('duo-content-viewport');
-          const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
-          scrollRoot?.scrollTo({ top: scrollRoot.scrollHeight, behavior: 'smooth' });
+        if (isAtVerticalScrollBoundary('bottom') && navigateToAdjacentMenuApp('next', 'south')) {
+          triggerHaptic('wormhole');
         } else {
-          cardinalActionsRef.current?.scrollToBottom(e);
+          const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
+          if (isDuo) {
+            const contentEl = document.getElementById('duo-content-viewport');
+            const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
+            scrollRoot?.scrollTo({ top: scrollRoot.scrollHeight, behavior: 'smooth' });
+          } else {
+            cardinalActionsRef.current?.scrollToBottom(e);
+          }
         }
       } else if (targetDir === 'west') {
         goToPreviousDapp();
@@ -1568,7 +1652,7 @@ export function BigBangButton() {
         <div
           ref={hoverContainerRef}
           data-bigbang="true"
-          data-cycle-navigation-disabled={isChatView ? 'true' : 'false'}
+          data-cycle-navigation-disabled={isCycleNavigationDisabled ? 'true' : 'false'}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}

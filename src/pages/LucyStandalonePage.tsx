@@ -4189,8 +4189,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           <motion.button
             type="button"
             data-sidebar-aware="true"
-            aria-label="최근 대화로 돌아가기"
-            title="최근 대화로 돌아가기"
+            aria-label="최근대화"
+            title="최근대화"
             onClick={() => {
               isUserScrolledUpRef.current = false;
               setShowReturnToRecentConversation(false);
@@ -4200,17 +4200,17 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.94 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed left-4 z-50 inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-slate-950/90 px-4 py-2.5 text-xs font-semibold text-amber-100 shadow-[0_8px_25px_rgba(245,158,11,0.25)] backdrop-blur-md transition-colors hover:bg-slate-900 active:scale-95 cursor-pointer"
+            className="fixed right-4 z-50 inline-flex items-center gap-1 rounded-full border border-amber-400/50 bg-slate-950/90 px-2.5 py-1.5 text-[11px] font-semibold text-amber-100 shadow-[0_8px_25px_rgba(245,158,11,0.25)] backdrop-blur-md transition-colors hover:bg-slate-900 active:scale-95 cursor-pointer"
             style={{
-              left: 16,
-              right: 'auto',
+              right: 'calc(var(--sites-sidebar-width, 80px) + 16px)',
+              left: 'auto',
               transform: 'none',
               zIndex: 500,
               bottom: `calc(var(--sidebar-footer-height, var(--lucy-footer-height, 140px)) + ${isLucyUserOverriding && isTTSActive && hasLucyActiveHighlight ? '160px' : '100px'})`,
             }}
           >
-            <ChevronDown size={15} className="text-amber-300" />
-            <span>최근 대화로 돌아가기</span>
+            <ChevronDown size={13} className="text-amber-300" />
+            <span>최근대화</span>
           </motion.button>
         )}
       </AnimatePresence>

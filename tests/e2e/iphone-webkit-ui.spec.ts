@@ -5,6 +5,7 @@ async function openLucy(page, path = '/chat') {
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     localStorage.setItem('lu_unlocked_date', today);
+    sessionStorage.setItem('pwa_prompt_dismissed', 'true');
   });
   await page.goto(path);
   const lockScreen = page.locator('[data-pin-screen]');
@@ -14,6 +15,47 @@ async function openLucy(page, path = '/chat') {
   }
   await expect(page.locator('.lucy-chat-footer')).toBeVisible();
   await expect(page.locator('.lucy-chat-footer textarea')).toBeVisible();
+}
+
+async function openKeyChannel(page) {
+  await page.addInitScript(() => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('lu_unlocked_date', today);
+    sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+  });
+  await page.goto('/key');
+  const lockScreen = page.locator('[data-pin-screen]');
+  if (await lockScreen.count()) {
+    for (const digit of '1202') await page.keyboard.press(digit);
+    await expect(lockScreen).toHaveCount(0);
+  }
+  await expect(page.locator('iframe[title="Key"]')).toBeVisible();
+  await expect(page.locator('div[data-bigbang="true"]')).toBeVisible();
+  const dismissInstall = page.getByRole('button', { name: '다음에 할게요' });
+  if (await dismissInstall.isVisible().catch(() => false)) await dismissInstall.click();
+  await expect.poll(() => page.locator('iframe[title="Key"]').evaluate((frame) =>
+    (frame as HTMLIFrameElement).contentDocument?.readyState === 'complete'
+  )).toBe(true);
+}
+
+async function setContentScrollBoundary(page, edge: 'top' | 'bottom') {
+  await page.evaluate((targetEdge) => {
+    const selectors = '[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll';
+    const move = (element: HTMLElement | null) => {
+      if (element) element.scrollTop = targetEdge === 'top' ? 0 : element.scrollHeight;
+    };
+    document.querySelectorAll<HTMLElement>(selectors).forEach((element) => {
+      if (!element.closest('#main-sidebar-navigation')) move(element);
+    });
+    move(document.scrollingElement as HTMLElement | null);
+    document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((frame) => {
+      const frameDoc = frame.contentDocument;
+      if (!frameDoc) return;
+      frameDoc.querySelectorAll<HTMLElement>(selectors).forEach((element) => move(element));
+      move(frameDoc.scrollingElement as HTMLElement | null);
+    });
+  }, edge);
 }
 
 test('update modal changelog copy stays visible in WebKit light and dark themes', async ({ page }) => {
@@ -27,8 +69,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Lucy 최신 대화 복귀·Key 상단 탭 고정');
-  await expect(item).toContainText('Lucy 채팅에서 과거 대화까지 스크롤하면 최근 대화로 돌아가기 버튼이 나타납니다.');
+  await expect(summary).toContainText('Lucy·Key UI 및 Big Bang 채널 이동 개선');
+  await expect(item).toContainText('최근 대화 복귀 버튼 문구를 ‘최근대화’로 줄이고 버튼 크기를 축소했습니다.');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -42,6 +84,12 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
       width: rect.width,
       height: rect.height,
     };
+  });
+  await page.locator('html').evaluate((element) => {
+    element.classList.remove('dark');
+    element.classList.add('light');
+    element.setAttribute('data-theme', 'light');
+    element.style.colorScheme = 'light';
   });
   const lightSummary = await readRenderedText(summary);
   const lightItem = await readRenderedText(item);
@@ -180,6 +228,55 @@ test('Big Bang left and right controls stay disabled in Lucy chat', async ({ pag
   }
 });
 
+test('Big Bang left and right controls stay disabled in the Key channel', async ({ page }) => {
+  await openKeyChannel(page);
+  const bigBang = page.locator('div[data-bigbang="true"]');
+  await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
+  const box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Key');
+  const keyUrl = page.url();
+  const centerY = box.y + box.height / 2;
+  for (const offsetX of [-36, 36]) {
+    await page.touchscreen.tap(box.x + box.width / 2 + offsetX, centerY);
+    await expect(page).toHaveURL(keyUrl);
+  }
+});
+
+test('Big Bang vertical controls follow right-menu app order at content boundaries', async ({ page }) => {
+  await openLucy(page);
+  const bigBang = page.locator('div[data-bigbang="true"]');
+  await expect(bigBang).toBeVisible();
+  await setContentScrollBoundary(page, 'bottom');
+  let box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Lucy');
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
+  await expect(page).toHaveURL(/\/key$/);
+
+  await openKeyChannel(page);
+  await setContentScrollBoundary(page, 'bottom');
+  box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Key');
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
+  expect([null, 'universe']).toContain(new URL(page.url()).searchParams.get('tab'));
+});
+
+test('Big Bang north at the Key channel top boundary returns to Lucy', async ({ page }) => {
+  await openKeyChannel(page);
+  await setContentScrollBoundary(page, 'top');
+  await page.waitForTimeout(200);
+  const bigBang = page.locator('div[data-bigbang="true"]');
+  const box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Key');
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 - 36);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('.lucy-chat-footer')).toBeVisible();
+});
+
 test('mobile composer and input remain inside the visible WebKit viewport after keyboard-sized resize', async ({ page }) => {
   await openLucy(page);
   const composer = page.locator('.lucy-chat-footer textarea');
@@ -235,9 +332,20 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   });
   await page.waitForTimeout(350);
 
-  const returnButton = page.getByRole('button', { name: '최근 대화로 돌아가기' });
+  const returnButton = page.getByRole('button', { name: '최근대화' });
   await messages.evaluate(element => { element.scrollTop = 0; element.dispatchEvent(new Event('scroll')); });
   await expect(returnButton).toBeVisible();
+  await expect(returnButton).toHaveText('최근대화');
+  const returnButtonBox = await returnButton.boundingBox();
+  const viewport = page.viewportSize();
+  const sidebarBox = await page.locator('#main-sidebar-navigation').boundingBox();
+  expect(returnButtonBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(sidebarBox).not.toBeNull();
+  if (!returnButtonBox || !viewport || !sidebarBox) throw new Error('Lucy recent conversation button geometry is unavailable');
+  expect(returnButtonBox.width).toBeLessThan(110);
+  expect(Math.abs(viewport.width - (returnButtonBox.x + returnButtonBox.width) - sidebarBox.width - 16)).toBeLessThanOrEqual(3);
+  expect(returnButtonBox.y).toBeGreaterThan(viewport.height / 2);
   await returnButton.click();
   await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
   await expect(returnButton).toBeHidden();
