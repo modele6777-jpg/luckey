@@ -178,8 +178,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Big Bang 상·하 즉시 메뉴 전환과 모바일 입력 보완');
-  await expect(item).toContainText('상·하 탭은 스크롤 위치와 무관하게 이전·다음 메뉴 앱으로 즉시 전환');
+  await expect(summary).toContainText('Key 로딩 오버레이와 Big Bang 모바일 터치 차단 수정');
+  await expect(item).toContainText('Key iframe이 늦게 열려도 로딩 오버레이를 1초 내 자동 해제');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -358,6 +358,36 @@ test('Big Bang left and right controls stay disabled in the Key channel', async 
     await page.touchscreen.tap(box.x + box.width / 2 + offsetX, centerY);
     await expect(page).toHaveURL(keyUrl);
   }
+});
+
+test('Key loading fallback does not consume the first Big Bang south touch', async ({ page }) => {
+  await page.addInitScript(() => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('lu_unlocked_date', today);
+    sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+    sessionStorage.setItem('profileModalDismissed', '1');
+  });
+  await page.route('**/calm/index.html*', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await route.continue().catch(() => {});
+  });
+  await page.goto('/key', { waitUntil: 'domcontentloaded' });
+
+  const loader = page.locator('[data-app-channel-loader="true"][aria-label^="Key 개운"]');
+  await expect(loader).toBeVisible();
+  await expect(loader).toBeHidden({ timeout: 2000 });
+
+  const bigBang = page.locator('#bigbang-omnibutton');
+  await expect(bigBang).toBeVisible();
+  const box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing while the Key iframe is delayed');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2 + 36;
+  await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x, y });
+  await page.touchscreen.tap(x, y);
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
 });
 
 test('Big Bang follows the channel pane in expanded dual view while Lucy remains on the other pane', async ({ page }) => {

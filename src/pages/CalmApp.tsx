@@ -124,6 +124,12 @@ export default function CalmApp() {
   }, []);
 
   useEffect(() => {
+    if (!isLoading) return;
+    const fallbackTimer = window.setTimeout(() => setIsLoading(false), 1000);
+    return () => window.clearTimeout(fallbackTimer);
+  }, [isLoading]);
+
+  useEffect(() => {
     const prevTitle = document.title;
     document.title = "Key - 막힌 운을 여는 40가지 개운법 & 50가지 민감성 케어 90대 실천 성전";
 
@@ -182,13 +188,7 @@ export default function CalmApp() {
     };
     window.addEventListener("message", handleMessage);
 
-    // Guaranteed fallback: maximum 1000ms display so the user is never stuck in infinite loading
-    const fallbackTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
     return () => {
-      clearTimeout(fallbackTimer);
       document.title = prevTitle;
       window.removeEventListener("message", handleMessage);
     };
