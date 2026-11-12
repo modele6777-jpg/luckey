@@ -8,6 +8,14 @@ import { calculateDetailedSaju } from './sajuAnalysis';
 import { buildUserNatalSummary } from './astrologyAnalysis';
 import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, getCalculationAudit } from './divination/deterministicEngine';
 import { calculateKyusei } from './divination/kyuseiEngine';
+import { calculateMahabote } from './divination/mahaboteEngine';
+import { calculateThaiHorasat } from './divination/thaiHorasatEngine';
+import { calculateKabbalah } from './divination/kabbalahEngine';
+import { calculateTarotMaster } from './divination/tarotMasterEngine';
+import { calculateTojeong } from './divination/tojeongEngine';
+import { calculateTaiyi } from './divination/taiyiEngine';
+import { calculateSukuyoAdvanced } from './divination/sukuyoEngine';
+import { calculateVedicAdvanced } from './divination/vedicEngine';
 import { routeAndExecute } from './divination/smartAgentRouter';
 
 export type DivinationToolId =
@@ -332,6 +340,35 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간, 우세 오행: ${saju.elements.dominant.name}, 간이 용신 추정: ${saju.yongsin.name}` : '입력 확인 필요: 사주 미계산';
     let animal = MAHABOTE_ANIMALS[dow];
     if (dow === 3) animal = !time ? '수요일 오전/오후 구분은 생시 필요' : time.hour < 12 ? '수요일 오전·수성·엄니 코끼리' : '수요일 오후·라후·엄니 없는 코끼리';
+
+    // 6. 마하보테 (미얀마 7궁 명반 및 8요일 성좌 결정론 산법)
+    let mahaboteLine: string;
+    try {
+      const mb = calculateMahabote({ profile, targetYear: new Date().getFullYear() });
+      if (mb.status === 'calculated' && mb.rootHouse && mb.currentAgeTransit) {
+        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}.`;
+      } else {
+        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.`;
+      }
+    } catch {
+      mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.`;
+    }
+
+    // 12. 태국점성술 (호라삿 8요일 행성·마하탁사 108년 대운·4원소 탓 신체 활력 결정론 산법)
+    const colors = ['빨강', '노랑·크림', '분홍', '초록', '주황', '파랑', '보라'];
+    let thaiLine: string;
+    try {
+      const th = calculateThaiHorasat({ profile, targetDate: new Date() });
+      if (th.status === 'calculated' && th.birthDayPlanet && th.mahaThaksa && th.fourElements) {
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}) · 4대 원소 ${th.fourElements.birthThaat.korean} 신체 활력 ${th.fourElements.vitalityIndex}점.`;
+      } else {
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
+      }
+    } catch {
+      thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
+    }
+
+    // 14. 구성학 (9궁 명반 및 본명성·월명성·길방위)
     let kyuseiLine: string;
     try {
       const ks = calculateKyusei({ profile, targetDate: new Date() });
@@ -341,14 +378,70 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     } catch {
       kyuseiLine = '- 구성학: 기준일 절기 범위 확인이 필요해 미계산. 임의 본명성·방위반을 지어내지 말 것.';
     }
-    const colors = ['빨강', '노랑·크림', '분홍', '초록', '주황', '파랑', '보라'];
+
+    // 10. 카발라 (10 세피로트 · 22 경로 · 생년월일 게마트리아 결정론 산법)
+    let kabbalahLine = '';
+    try {
+      const kb = calculateKabbalah({ profile });
+      if (kb.status === 'calculated' && kb.numerology) {
+        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 활성 경로 ${kb.numerology.soulPath.number}번(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName}) · 3기둥 밸런스(자비 ${kb.numerology.pillarBalance.mercy}% / 엄격 ${kb.numerology.pillarBalance.severity}% / 균형 ${kb.numerology.pillarBalance.mildness}%).`;
+      }
+    } catch (_) {}
+
+    // 4. 타로 (78장 아르카나 수비학 소울·퍼스널리티·올해의 성장 카드 결정론 산법)
+    let tarotLine = '';
+    try {
+      const tm = calculateTarotMaster({ profile, targetYear: new Date().getFullYear(), now: new Date() });
+      if (tm.status === 'calculated') {
+        tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name} · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name} · 4원소 밸런스(불 ${tm.elementalBalance.fire}% / 물 ${tm.elementalBalance.water}% / 공기 ${tm.elementalBalance.air}% / 흙 ${tm.elementalBalance.earth}%).`;
+      }
+    } catch (_) {}
+
+    // 5. 숙요 (27숙 본명숙 · 7대 숙격 · 4방신 결정론 산법)
+    let sukuyoLine = '';
+    try {
+      const sk = calculateSukuyoAdvanced({ profile });
+      if (sk.status === 'calculated' && sk.mansion) {
+        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal}) · 숙격 ${sk.mansion.shukgukHanja} · 4방신 ${sk.mansion.group}.`;
+      }
+    } catch (_) {}
+
+    // 7. 베딕 점성술 (27 나크샤트라 · 빔쇼타리 다샤 결정론 산법)
+    let vedicLine = '';
+    try {
+      const vd = calculateVedicAdvanced({ profile });
+      if (vd.status === 'calculated' && vd.nakshatra) {
+        const lord = vd.currentDasha?.mahadasha.lord || vd.nakshatra.lord;
+        const sign = vd.rashi?.chandra.name || '미상';
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name}(지배성: ${vd.nakshatra.lord}) · 빔쇼타리 대운 ${lord} 마하다샤 · 달 라시 ${sign}.`;
+      }
+    } catch (_) {}
+
+    // 13. 토정비결 (이지함 144괘문 수리 산법)
+    let tojeongLine = '';
+    try {
+      const tj = calculateTojeong({ profile, targetYear: new Date().getFullYear() });
+      if (tj.status === 'calculated') {
+        tojeongLine = `\n- 토정비결: ${tj.targetYear}년 작괘 제${tj.hexagramCode}괘(${tj.hexagramName}) · 연간 총론: "${tj.annualSummary}".`;
+      }
+    } catch (_) {}
+
+    // 15. 태을신수 (16궁 연국 적년 수리 산법)
+    let taiyiLine = '';
+    try {
+      const ty = calculateTaiyi({ profile, targetYear: new Date().getFullYear(), targetDate: new Date() });
+      if (ty.status === 'calculated' && ty.calculation) {
+        taiyiLine = `\n- 태을신수: 적년 ${ty.calculation.accumulatedYears}년 · 16궁 재궁 [${ty.calculation.taiyiPalaceName}] · 시대 대세: "${ty.macroActionStrategy}".`;
+      }
+    } catch (_) {}
+
     return `[개인화 계산 입력] ${solarDateString} 양력${isLunar ? ' (음력·윤달 설정 환산)' : ''}${time ? ` ${profile.basic.birthtime}` : ' · 생시 미입력'}
 - 사주명리: ${sajuBrief}. 자미두수·토정비결의 계산을 대신하지 않음.
 - 서양 점성술: ${buildUserNatalSummary(profile)}
 ${buildAdditionalBirthDigest(profile)}
-- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.
-- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.
-${kyuseiLine}
+${mahaboteLine}
+${thaiLine}
+${kyuseiLine}${kabbalahLine}${tarotLine}${sukuyoLine}${vedicLine}${tojeongLine}${taiyiLine}
 - 육임·일반 기문·주역: 프로필 계산실 또는 이번 채팅 엔진에서 실제 산출한 결과가 제공된 경우만 해석. 현재 대화에 결과가 없으면 임의 포국·작괘 금지. 토정비결·태을신수·홍국기문 수리는 결정론 엔진이 등록 프로필의 생년월일시 원국으로 계산하며, 입력이 없으면 임의 포국으로 대체하지 말 것.`;
   } catch {
     return '[개인화 계산 중단] 생년월일·생시·양음력·윤달 입력을 확인해야 합니다. 잘못된 날짜를 다른 날짜로 자동 보정하거나 개인 차트를 생성하지 말 것.';
