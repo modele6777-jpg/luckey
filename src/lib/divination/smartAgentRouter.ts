@@ -108,8 +108,8 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
       confidence: 0.98,
       targetTools: ['saju', 'astrology', 'ziwei', 'sukuyo', 'vedic', 'iching', 'liuren', 'qimen', 'mahabote', 'kyusei'],
       deepEngineKeys: ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => e.key),
-      deepEnginesKo: [`${ALL_DCE_ENGINES.length}대 전원 총동원`],
-      deepEngineGuidance: `동서양 ${ALL_DCE_ENGINES.length}대 운명학 및 철학 엔진의 산출값과 상징적 관점을 종합적으로 검토하여 입체적 통찰 제시`,
+      deepEnginesKo: [`심층 참고 관점 ${ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').length}개 중 질문과 입력에 맞는 항목`],
+      deepEngineGuidance: `기초 도구의 실제 계산 결과와 질문에 관련되어 전달된 심층 상징 참고 관점을 구분하여 종합한다. 카탈로그 등록 수는 실행 증거가 아니며, 미실행·오류·미기록 항목을 사용했다고 주장하지 않는다.`,
       routingReason: '요청한 종합 상담에 필요한 도구의 계산 결과 비교',
       suggestedFocusPrompt: '인생의 큰 흐름(대운)부터 구체적 사건과 오늘의 타이밍까지 7대 테마별로 균형 있게 조망해 줘.',
       isMasterMobilization: true,
@@ -483,8 +483,8 @@ export function routeAndExecute(params: {
   });
 
   const deepBlock = routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
-    ? `\n- ${ALL_DCE_ENGINES.length}대 DCE 심층 특화 엔진: **${routePlan.deepEnginesKo.join(' · ')}**
-- 심층 엔진 융합 가이드: ${routePlan.deepEngineGuidance}`
+    ? `\n- 질문에 맞춰 선택한 심층 참고 관점: **${routePlan.deepEnginesKo.join(' · ')}**
+- 심층 관점 융합 가이드: ${routePlan.deepEngineGuidance}`
     : '';
 
   const promptInjection = `${deterministicDataBlock}

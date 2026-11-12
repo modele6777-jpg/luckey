@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import { getGeminiApiKey } from "../../server/geminiKey.ts";
 import { applyRestrictedCors, bodyTooLarge, rejectDisallowedOrigin } from "../../server/api-lib/publicAccess.ts";
+import { createTtsDiagnosticId, logTtsDiagnostic } from "../../server/api-lib/ttsDiagnostics.ts";
 
 const DEFAULT_TTS_MODELS = ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"];
 const REQUEST_TIMEOUT_MS = 24_000;
@@ -114,10 +115,12 @@ export async function synthesizeWithGemini(
   voice?: string,
   dependencies?: TTSDependencies,
   emotion?: string,
+  diagnosticId?: string,
 ): Promise<TTSAudioResult | null> {
+  const requestId = createTtsDiagnosticId(diagnosticId);
   const geminiKeys = getGeminiApiKeys(dependencies);
   if (!geminiKeys.length) {
-    throw Object.assign(new Error('Gemini TTS API key is not configured.'), { status: 503, code: 'TTS_NOT_CONFIGURED' });
+    throw Object.assign(new Error('Gemini TTS API key is not configured.'), { status: 503, code: 'TTS_NOT_CONFIGURED', diagnosticId: requestId, provider: 'gemini' });
   }
   const request = dependencies?.request || fetch;
   const delay = dependencies?.delay || ((ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms)));
@@ -128,9 +131,10 @@ export async function synthesizeWithGemini(
     ? [preferredModel, ...DEFAULT_TTS_MODELS.filter(model => model !== preferredModel)]
     : DEFAULT_TTS_MODELS);
   let geminiRateLimited = false;
+  let geminiQuotaExhausted = false;
   let retryAfterSeconds: number | undefined;
-  let authFailure: { status: number; reason: string; code: 'GEMINI_API_KEY_INVALID' | 'GEMINI_TTS_ACCESS_DENIED' } | undefined;
-  let lastFailure: { status: number; reason: string } | undefined;
+  let authFailure: { status: number; reason: string; model: string; code: 'GEMINI_API_KEY_INVALID' | 'GEMINI_TTS_ACCESS_DENIED' } | undefined;
+  let lastFailure: { status: number; reason: string; model: string } | undefined;
 
   for (const geminiKey of geminiKeys) {
     for (const model of models) {
@@ -161,23 +165,33 @@ export async function synthesizeWithGemini(
 
           if (!response.ok) {
             const errorPayload = await response.json().catch(() => null) as any;
+            const details = Array.isArray(errorPayload?.error?.details) ? errorPayload.error.details : [];
+            const violations = details.flatMap((detail: any) => Array.isArray(detail?.violations) ? detail.violations : []);
             const detailParts = [errorPayload?.error?.status,
-              ...(Array.isArray(errorPayload?.error?.details)
-                ? errorPayload.error.details.map((detail: any) => detail?.reason)
-                : [])]
+              ...details.map((detail: any) => detail?.reason),
+              ...violations.map((violation: any) => violation?.reason)]
               .filter((part: unknown): part is string => typeof part === 'string')
               .map((part: string) => part.replace(/[^A-Za-z0-9_.:/-]/g, '').slice(0, 60))
               .filter(Boolean);
             let reason = detailParts.join(',').slice(0, 100);
             const providerMessage = String(errorPayload?.error?.message || '').toUpperCase();
+            const quotaSignals = [providerMessage, String(errorPayload?.error?.status || ''), ...details.flatMap((detail: any) => [detail?.quotaId, detail?.quotaMetric, detail?.description]), ...violations.flatMap((violation: any) => [violation?.quotaId, violation?.quotaMetric, violation?.description])].filter(Boolean).join(' ').toUpperCase();
+            const quotaExhausted = /QUOTA[_ -]?(EXHAUSTED|EXCEEDED)|DAILY|PER.?DAY|MONTHLY|USAGE[_ -]?LIMIT[_ -]?EXCEEDED/.test(quotaSignals) || violations.some((violation: any) => String(violation?.quotaValue) === '0');
             const invalidKey = response.status === 401 ||
               /API.?KEY.{0,30}(INVALID|NOT VALID)|INVALID.{0,30}API.?KEY/.test(providerMessage);
             if (invalidKey && !reason.includes('API_KEY_INVALID')) reason = [reason, 'API_KEY_INVALID'].filter(Boolean).join(',');
-            console.warn(`[ai/tts] Gemini model ${model} HTTP ${response.status}${reason ? ` (${reason})` : ''}`);
+            const permissionDenied = response.status === 403 || /PERMISSION_DENIED|API_KEY_SERVICE_BLOCKED|API_KEY_HTTP_REFERRER_BLOCKED|API_KEY_IP_ADDRESS_BLOCKED/.test(reason.toUpperCase());
             const rateLimited = response.status === 429 || /RESOURCE_EXHAUSTED|QUOTA[_ ]EXCEEDED|RATE[_ ]LIMIT/.test(reason.toUpperCase());
+            const modelUnavailable = response.status === 404 || /MODEL[_ -]?(NOT[_ -]?FOUND|UNAVAILABLE)|NOT_FOUND/.test(reason.toUpperCase());
+            const attemptCode = invalidKey ? 'GEMINI_API_KEY_INVALID' : permissionDenied ? 'GEMINI_TTS_ACCESS_DENIED' : quotaExhausted ? 'MEDIA_QUOTA_EXHAUSTED' : rateLimited ? 'MEDIA_RATE_LIMIT' : modelUnavailable ? 'GEMINI_TTS_MODEL_UNAVAILABLE' : response.status >= 500 ? 'GEMINI_TTS_TEMPORARY' : 'GEMINI_TTS_REQUEST_FAILED';
+            logTtsDiagnostic({
+              event: 'provider_failure', requestId, provider: 'gemini', model,
+              error: Object.assign(new Error('Gemini TTS provider attempt failed.'), { status: response.status, providerStatus: response.status, code: attemptCode, providerCode: reason || undefined }),
+            });
             if (rateLimited) {
               // A model-specific rate/quota limit may leave the Lite neural model available.
               geminiRateLimited = true;
+              geminiQuotaExhausted ||= quotaExhausted;
               const header = response.headers.get("retry-after");
               const supplied = header
                 ? (/^\d+(?:\.\d+)?$/.test(header) ? Number(header) : (Date.parse(header) - Date.now()) / 1000)
@@ -188,11 +202,11 @@ export async function synthesizeWithGemini(
               break;
             }
             if (invalidKey) {
-              authFailure = { status: response.status, reason, code: 'GEMINI_API_KEY_INVALID' };
+              authFailure = { status: response.status, reason, model, code: 'GEMINI_API_KEY_INVALID' };
               break;
             }
-            if (response.status === 403 || /PERMISSION_DENIED|API_KEY_SERVICE_BLOCKED|API_KEY_HTTP_REFERRER_BLOCKED|API_KEY_IP_ADDRESS_BLOCKED/.test(reason.toUpperCase())) {
-              authFailure = { status: response.status, reason, code: 'GEMINI_TTS_ACCESS_DENIED' };
+            if (permissionDenied) {
+              authFailure = { status: response.status, reason, model, code: 'GEMINI_TTS_ACCESS_DENIED' };
               break;
             }
             if (response.status >= 500 && transientRetries < 1) {
@@ -200,7 +214,7 @@ export async function synthesizeWithGemini(
               await delay(250);
               continue;
             }
-            lastFailure = { status: response.status, reason };
+            lastFailure = { status: response.status, reason, model };
             break;
           }
 
@@ -208,17 +222,19 @@ export async function synthesizeWithGemini(
           const audio = extractAudio(payload);
           const result = audio ? normalizedAudio(audio, voiceName) : null;
           if (result) return result;
-          lastFailure = { status: 502, reason: 'EMPTY_AUDIO' };
+          lastFailure = { status: 502, reason: 'EMPTY_AUDIO', model };
+          logTtsDiagnostic({ event: 'provider_failure', requestId, provider: 'gemini', model, error: Object.assign(new Error('Gemini returned no audio.'), { status: 502, code: 'GEMINI_TTS_EMPTY_RESPONSE' }) });
           break;
         } catch (error) {
           const errorName = error instanceof Error ? error.name : 'RequestError';
-          console.warn(`[ai/tts] Gemini model ${model} failed: ${errorName}`);
+          const status = errorName === 'TimeoutError' || errorName === 'AbortError' ? 504 : 502;
+          logTtsDiagnostic({ event: 'provider_failure', requestId, provider: 'gemini', model, error: Object.assign(new Error('Gemini TTS request failed.'), { status, providerStatus: status, providerCode: errorName, code: status === 504 ? 'GEMINI_TTS_TIMEOUT' : 'GEMINI_TTS_TEMPORARY' }) });
           if (error instanceof TypeError && transientRetries < 1) {
             transientRetries++;
             await delay(250);
             continue;
           }
-          lastFailure = { status: errorName === 'TimeoutError' || errorName === 'AbortError' ? 504 : 502, reason: errorName };
+          lastFailure = { status, reason: errorName, model };
           break;
         }
       }
@@ -232,20 +248,36 @@ export async function synthesizeWithGemini(
     throw Object.assign(new Error(`Gemini TTS ${invalidKey ? 'API key authentication failed' : 'model access was denied'}${reason}.`), {
       status: authFailure.status,
       code: authFailure.code,
+      provider: 'gemini',
+      model: authFailure.model,
+      providerStatus: authFailure.status,
+      providerCode: authFailure.reason,
+      diagnosticId: requestId,
     });
   }
   if (geminiRateLimited) {
-    throw Object.assign(new Error("Gemini neural TTS is temporarily rate limited."), {
+    const code = geminiQuotaExhausted ? 'MEDIA_QUOTA_EXHAUSTED' : 'MEDIA_RATE_LIMIT';
+    throw Object.assign(new Error(geminiQuotaExhausted ? "Gemini neural TTS quota is exhausted." : "Gemini neural TTS is temporarily rate limited."), {
       status: 429,
-      code: "MEDIA_RATE_LIMIT",
+      code,
+      provider: 'gemini',
+      providerStatus: 429,
+      ...(lastFailure?.model ? { model: lastFailure.model } : {}),
+      diagnosticId: requestId,
       ...(retryAfterSeconds ? { retryAfterSeconds } : {}),
     });
   }
-  const failure = lastFailure || { status: 502, reason: 'NO_AUDIO_RESPONSE' };
-  const code = failure.reason === 'EMPTY_AUDIO' ? 'GEMINI_TTS_EMPTY_RESPONSE' : 'GEMINI_TTS_TEMPORARY';
-  throw Object.assign(new Error(`Gemini TTS failed with HTTP ${failure.status}${failure.reason ? ` (${failure.reason})` : ''}.`), {
+  const failure = lastFailure || { status: 502, reason: 'NO_AUDIO_RESPONSE', model: '' };
+  const modelUnavailable = failure.status === 404 || /MODEL[_ -]?(NOT[_ -]?FOUND|UNAVAILABLE)|NOT_FOUND/.test(failure.reason.toUpperCase());
+  const code = failure.reason === 'EMPTY_AUDIO' ? 'GEMINI_TTS_EMPTY_RESPONSE' : modelUnavailable ? 'GEMINI_TTS_MODEL_UNAVAILABLE' : 'GEMINI_TTS_TEMPORARY';
+  throw Object.assign(new Error(modelUnavailable ? 'Gemini TTS model is unavailable.' : `Gemini TTS failed with HTTP ${failure.status}${failure.reason ? ` (${failure.reason})` : ''}.`), {
     status: 502,
     code,
+    provider: 'gemini',
+    ...(failure.model ? { model: failure.model } : {}),
+    providerStatus: failure.status,
+    providerCode: failure.reason,
+    diagnosticId: requestId,
   });
 }
 
@@ -259,7 +291,7 @@ type TTSAudioResponse = {
 
 type TTSFailoverDependencies = {
   synthesizeGemini?: typeof synthesizeWithGemini;
-  synthesizeEdge?: (options: { text: string; voice?: string; emotion?: string }) => Promise<TTSAudioResponse>;
+  synthesizeEdge?: (options: { text: string; voice?: string; emotion?: string; requestId?: string }) => Promise<TTSAudioResponse>;
 };
 
 /** Gemini is primary; server-only Edge audio is a fallback and never masks Gemini diagnostics. */
@@ -268,17 +300,18 @@ export async function synthesizeSpeechWithFallback(
   voice?: string,
   emotion?: string,
   dependencies: TTSFailoverDependencies = {},
+  diagnosticId?: string,
 ): Promise<TTSAudioResponse> {
+  const requestId = createTtsDiagnosticId(diagnosticId);
   let geminiResult: TTSAudioResult | null = null;
   let geminiError: unknown;
   try {
-    geminiResult = await (dependencies.synthesizeGemini || synthesizeWithGemini)(text, voice, undefined, emotion);
+    geminiResult = await (dependencies.synthesizeGemini || synthesizeWithGemini)(text, voice, undefined, emotion, requestId);
   } catch (error) {
     geminiError = error;
-    const failure = error as { status?: number; code?: string };
-    if (['GEMINI_API_KEY_INVALID', 'GEMINI_TTS_ACCESS_DENIED', 'MEDIA_RATE_LIMIT', 'TTS_NOT_CONFIGURED'].includes(failure?.code || '')) {
-      console.error(`[ai/tts] Gemini primary diagnostic: ${failure.code} HTTP ${failure.status || 'unknown'}`);
-    }
+    if (error && typeof error === 'object') Object.assign(error, { diagnosticId: requestId });
+    const failure = error as { model?: string };
+    logTtsDiagnostic({ event: 'primary_failure', requestId, provider: 'gemini', model: failure?.model || process.env.GEMINI_TTS_MODEL || DEFAULT_TTS_MODELS[0], error });
   }
   if (geminiResult) return geminiResult;
 
@@ -287,12 +320,12 @@ export async function synthesizeSpeechWithFallback(
     return handleTTS(options);
   });
   try {
-    return await synthesizeEdge({ text, voice, emotion });
+    const result = await synthesizeEdge({ text, voice, emotion, requestId });
+    if (geminiError) logTtsDiagnostic({ event: 'fallback_success', requestId, provider: 'edge-neural', model: result.voice, primaryError: geminiError });
+    return result;
   } catch (edgeError) {
     if (geminiError) {
-      const primary = geminiError as { status?: number; code?: string };
-      const backup = edgeError as { status?: number; code?: string };
-      console.error(`[ai/tts] Edge backup failed after Gemini ${primary.code || 'failure'} HTTP ${primary.status || 'unknown'}; Edge ${backup.code || 'failure'} HTTP ${backup.status || 'unknown'}`);
+      logTtsDiagnostic({ event: 'fallback_chain_failure', requestId, provider: 'fallback-chain', primaryError: geminiError, fallbackError: edgeError });
       throw geminiError;
     }
     throw edgeError;
@@ -303,6 +336,9 @@ export default async function handler(
   req: { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> },
   res: Response,
 ) {
+  const vercelId = req.headers?.['x-vercel-id'];
+  const requestId = createTtsDiagnosticId(Array.isArray(vercelId) ? vercelId[0] : vercelId);
+  res.setHeader('X-TTS-Diagnostic-ID', requestId);
   try {
     const expressReq = req as Parameters<typeof rejectDisallowedOrigin>[0];
     applyRestrictedCors(expressReq, res);
@@ -327,11 +363,12 @@ export default async function handler(
     if (!text) return res.status(400).json({ error: "Empty speech text" });
 
     // Server-only Gemini → Edge Neural TTS. Browser-native and translator voices are excluded.
-    const result = await synthesizeSpeechWithFallback(text, voice, emotion);
+    const result = await synthesizeSpeechWithFallback(text, voice, emotion, {}, requestId);
     return res.status(200).json(result);
   } catch (err: unknown) {
-    console.error("[ai/tts] Vercel error:", err);
-    const failure = err as { status?: number; code?: string; retryAfterSeconds?: number };
+    const failure = err as { status?: number; code?: string; retryAfterSeconds?: number; diagnosticId?: string; model?: string };
+    const diagnosticId = createTtsDiagnosticId(failure?.diagnosticId || requestId);
+    logTtsDiagnostic({ event: 'request_failure', requestId: diagnosticId, provider: 'tts-api', model: failure?.model, error: err });
     const message = err instanceof Error ? err.message : "TTS generation failed";
     const retryAfter = Number(failure?.retryAfterSeconds);
     const hasRetry = Number.isFinite(retryAfter) && retryAfter > 0;
@@ -339,6 +376,7 @@ export default async function handler(
     return res.status(failure?.status || 500).json({
       error: message,
       ...(failure?.code ? { code: failure.code } : {}),
+      diagnosticId,
       ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}),
     });
   }

@@ -4669,7 +4669,7 @@ export function getFiredEngineBadges(
   options?: FormatDeterministicEngineOptions
 ): string[] {
   return getCalculationAudit(report, options).filter(item => item.sentToModel)
-    .map(item => `${item.status === 'symbolic' ? '상징 참고' : '계산 근거'} · ${item.name}`);
+    .map(item => `${item.status === 'symbolic' ? '상징 참고' : item.status === 'partial' ? '부분 계산' : '계산 근거'} · ${item.name}`);
 }
 
 const REVIEW_PENDING_CORE = new Set(['sukuyo', 'mahabote', 'kabbalah']);
@@ -4696,23 +4696,22 @@ export function getMasterSymbolicReview(report: DeterministicEngineReport, optio
 }
 
 export function getCalculationAudit(report: DeterministicEngineReport, options?: FormatDeterministicEngineOptions): CalculationAuditItem[] {
-  const isMaster = options?.isMasterMobilization !== false;
   const core = getIncludedCalculationTools(report, options).map(tool => {
     const symbolic = report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId);
     const perspectives = symbolic ? getSymbolicPerspective(tool.data) : [];
+    const status = symbolic ? (perspectives.length ? 'symbolic' as const : 'skipped' as const) : tool.status;
+    const sentToModel = status === 'symbolic'
+      ? perspectives.length > 0
+      : status === 'calculated' && tool.data != null;
     return {
       toolId: tool.toolId, name: tool.toolKoName,
-      status: (symbolic && tool.data != null) || isMaster ? 'symbolic' as const : tool.status,
-      sentToModel: isMaster || (symbolic ? perspectives.length > 0 : tool.status === 'calculated' && tool.data != null),
+      status,
+      sentToModel,
       ...((tool.note || tool.limitations?.length) ? { note: [tool.note, ...(tool.limitations || [])].filter(Boolean).join(' · ') } : {}),
       ...(tool.method ? { method: tool.method } : {}),
     };
   });
-  const symbolicReviews = getMasterSymbolicReview(report, options).map(({ perspectives, ...item }) => ({
-    ...item,
-    status: isMaster ? 'symbolic' as const : item.status,
-    sentToModel: isMaster ? true : item.sentToModel,
-  }));
+  const symbolicReviews = getMasterSymbolicReview(report, options).map(({ perspectives: _perspectives, ...item }) => item);
   return [...core, ...symbolicReviews];
 }
 
@@ -5359,13 +5358,18 @@ export function formatDeterministicEnginePrompt(
   options?: FormatDeterministicEngineOptions
 ): string {
   const included = getIncludedCalculationTools(report, options);
-  const evidence = included.map(tool => ({
-    tool: tool.toolKoName, status: report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId) && tool.data != null ? 'symbolic' : tool.status, method: tool.method,
-    note: tool.note, limitations: tool.limitations,
-    ...(report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId)
-      ? { perspectives: getSymbolicPerspective(tool.data) }
-      : tool.status === 'calculated' && tool.data != null ? { data: tool.data } : {}),
-  }));
+  const evidence = included.map(tool => {
+    const symbolic = report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId);
+    const perspectives = symbolic ? getSymbolicPerspective(tool.data) : [];
+    return {
+      tool: tool.toolKoName,
+      status: symbolic ? (perspectives.length ? 'symbolic' : 'skipped') : tool.status,
+      method: tool.method,
+      note: tool.note,
+      limitations: tool.limitations,
+      ...(symbolic ? { perspectives } : tool.status === 'calculated' && tool.data != null ? { data: tool.data } : {}),
+    };
+  });
   const calculated = included.filter(tool => tool.status === 'calculated' && tool.data != null && !(report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId)));
   const symbolicReview = getMasterSymbolicReview(report, options);
   return `[이번 질문의 계산 근거 및 한계]

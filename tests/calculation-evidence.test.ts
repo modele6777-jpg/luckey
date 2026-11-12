@@ -51,6 +51,21 @@ test('master prompt and displayed evidence originate from the same successful to
   assert.doesNotMatch(selected.promptInjection, /100% 확정 수치|영적 방패율:|전원 총동원/);
 });
 
+test('master audit separates calculated results, symbolic references and skipped entries', () => {
+  const report = runDeterministicEngine({ profile, question: '직업운 종합 분석', forceAllTools: true, reviewAll: true });
+  const audit = getCalculationAudit(report);
+  const deep = audit.filter(item => ALL_DCE_ENGINES.find(engine => engine.key === item.toolId)?.category === 'deep_master');
+
+  assert.equal(audit.length, 307);
+  assert.equal(deep.length, 292);
+  assert.ok(audit.some(item => item.status === 'calculated' && item.sentToModel));
+  assert.ok(audit.some(item => item.status === 'symbolic' && item.sentToModel));
+  assert.ok(audit.some(item => item.status === 'skipped' && !item.sentToModel));
+  assert.ok(deep.every(item => ['symbolic', 'skipped', 'error'].includes(item.status)));
+  assert.ok(deep.every(item => item.sentToModel === (item.status === 'symbolic')));
+  assert.ok(audit.some(item => item.status !== 'symbolic'), 'the full catalogue is not counted as symbolic use');
+});
+
 test('calculators with unresolved reference fixtures stay symbolic and out of numeric evidence', () => {
   const report = runDeterministicEngine({ profile, question: '종합 분석', forceAllTools: true, coreOnly: true });
   for (const id of ['sukuyo', 'mahabote', 'kabbalah']) {

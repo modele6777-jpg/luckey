@@ -338,6 +338,7 @@ export async function processMCPJsonRpc(message: any, context: { authorized?: bo
         error: {
           code: -32603,
           message: toolErr?.message || 'Tool execution failed',
+          ...(name === 'generate_tts' && (toolErr?.code || toolErr?.diagnosticId) ? { data: { ...(toolErr?.code ? { ttsCode: toolErr.code } : {}), ...(toolErr?.diagnosticId ? { diagnosticId: toolErr.diagnosticId } : {}) } } : {}),
         },
       };
     }

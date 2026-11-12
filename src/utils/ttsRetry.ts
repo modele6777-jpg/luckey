@@ -15,8 +15,9 @@ export async function retrySpeechRequest<T>(request: () => Promise<T>, options: 
       const failure = error as { status?: number; code?: string };
       if (
         !options.isActive() ||
-        ['TTS_NOT_CONFIGURED', 'TTS_PROVIDER_UNAVAILABLE', 'MEDIA_QUOTA_EXHAUSTED', 'MEDIA_RATE_LIMIT',
-          'GEMINI_API_KEY_INVALID', 'GEMINI_TTS_ACCESS_DENIED'].includes(failure?.code || '') ||
+        ['TTS_NOT_CONFIGURED', 'TTS_PROVIDER_UNAVAILABLE', 'TTS_EDGE_ACCESS_DENIED', 'TTS_MODEL_UNAVAILABLE', 'GEMINI_TTS_MODEL_UNAVAILABLE', 'TTS_INVALID_KEY',
+          'TTS_PERMISSION_DENIED', 'TTS_QUOTA_EXHAUSTED', 'TTS_RATE_LIMITED', 'MEDIA_QUOTA_EXHAUSTED',
+          'MEDIA_RATE_LIMIT', 'GEMINI_API_KEY_INVALID', 'GEMINI_TTS_ACCESS_DENIED'].includes(failure?.code || '') ||
         failure?.status === 429 ||
         (failure?.status && failure.status < 500 && failure.status !== 408) ||
         retriesUsed >= maxRetries
