@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.7.367",
+    "summary": "Lucy 복귀 상태·Zod lockfile 일관성 수정",
+    "builtAt": "2026-11-12T08:16:33Z",
+    "items": [
+      "앱을 백그라운드에서 다시 열어 최신 대화로 이동할 때 과거 대화 복귀 버튼의 stale 표시를 지웁니다.",
+      "Zod 4 schema conversion에 맞춰 Bun lockfile을 package.json과 동기화하고 이전 Zod 3 resolver를 제거합니다.",
+      "npm/Bun lockfile의 앱 버전과 의존성 메타데이터를 동기화해 재현 가능한 설치를 검증합니다.",
+      "백그라운드 복귀 후 최신 대화 버튼이 숨겨지는 iPhone WebKit 회귀 테스트를 추가합니다."
+    ]
+  },
+  {
     "version": "1.7.366",
     "summary": "Lucy 최신 대화 복귀·Key 상단 탭 고정",
     "builtAt": "2026-11-12T07:26:55.129Z",

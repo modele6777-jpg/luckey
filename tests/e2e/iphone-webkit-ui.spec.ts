@@ -255,6 +255,18 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   await page.mouse.click(headerBox.x + headerBox.width / 2, blankAreaY);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
   await expect(returnButton).toBeVisible();
+  await page.evaluate(() => {
+    let visibility: 'hidden' | 'visible' = 'hidden';
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => visibility,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
+  await expect(returnButton).toBeHidden();
 });
 
 test('Key channel tabs stay fixed below the brand bar while the page scrolls', async ({ page }) => {

@@ -2503,6 +2503,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         wasAppHiddenRef.current = false;
         // 다른 앱이나 홈 화면에서 돌아왔을 때만 1회 최신 대화로 정렬
         isUserScrolledUpRef.current = false;
+        setShowReturnToRecentConversation(false);
         scrollToBottom(true, false);
       }
     };
