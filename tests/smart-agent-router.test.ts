@@ -23,8 +23,8 @@ test('smart agent router routes career strategy to Machiavelli, Ryu Seong-ryong,
   assert.ok(plan.deepEngineKeys?.includes('koreanDasanJeongYagyongMokminSimseo'));
   assert.ok(plan.deepEnginesKo?.some(name => name.includes('마키아벨리')));
 
-  const routed = routeAndExecute({ text: '이직 면접과 커리어 전략을 알려줘', profile });
-  assert.match(routed.promptInjection, /질문에 맞춰 선택한 심층 참고 관점/);
+  const routed = routeAndExecute({ text: '이직 면접과 커리어 전략을 알려줘', profile, isMasterRequested: true });
+  assert.match(routed.promptInjection, /프로 마스터 심층 참고 관점/);
   assert.match(routed.promptInjection, /마키아벨리/);
   assert.match(routed.promptInjection, /심층 관점 융합 가이드/);
 });
@@ -37,9 +37,39 @@ test('smart agent router routes love relationship to Jung archetype, Sehando, Pa
   assert.ok(plan.deepEngineKeys?.includes('frenchPascalPenseesHeartReason'));
   assert.ok(plan.deepEngineKeys?.includes('islamicSufiRumiMasnaviDivineLove'));
 
-  const routed = routeAndExecute({ text: '남친과의 연애 궁합을 봐줘', profile });
+  const routed = routeAndExecute({ text: '남친과의 연애 궁합을 봐줘', profile, isMasterRequested: true });
   assert.match(routed.promptInjection, /추사 김정희 세한도/);
   assert.match(routed.promptInjection, /파스칼 팡세/);
+});
+
+test('ordinary mode enforces basic engine >= 1 (excluding casual) and excludes deep engines', () => {
+  // 1. 수다모드(casual): 기본 도구 제외
+  const casual = routeAndExecute({ text: '안녕', profile, isMasterRequested: false });
+  assert.equal(casual.routePlan.isCasual, true);
+  assert.equal(casual.routePlan.targetTools.length, 0);
+  assert.equal(casual.promptInjection, '');
+
+  // 2. 일반 상담: 기본 도구 1개 이상 필수 & 심층 도구 배제 (기본 15대만 고정)
+  const query = routeAndExecute({ text: '오늘 시험 결과가 어떻게 될까?', profile, isMasterRequested: false });
+  assert.equal(query.routePlan.isCasual, false);
+  assert.ok(query.routePlan.targetTools.length >= 1);
+  assert.equal(query.routePlan.deepEngineKeys?.length, 0);
+  assert.doesNotMatch(query.promptInjection, /심층 참고 관점/);
+});
+
+test('pro mode disables casual mode completely and enforces basic >= 1 and deep >= 1', () => {
+  // 1. 인사말이어도 수다모드로 빠지지 않고 기본 >= 1, 심층 >= 1 발동
+  const greeting = routeAndExecute({ text: '안녕', profile, isMasterRequested: true });
+  assert.equal(greeting.routePlan.isCasual, false);
+  assert.ok(greeting.routePlan.targetTools.length >= 1);
+  assert.ok((greeting.routePlan.deepEngineKeys?.length ?? 0) >= 1);
+
+  // 2. 일반 질문에서도 기본 >= 1, 심층 >= 1 발동
+  const query = routeAndExecute({ text: '사업 투자 타이밍 좀 봐줘', profile, isMasterRequested: true });
+  assert.equal(query.routePlan.isCasual, false);
+  assert.ok(query.routePlan.targetTools.length >= 1);
+  assert.ok((query.routePlan.deepEngineKeys?.length ?? 0) >= 1);
+  assert.match(query.promptInjection, /프로 마스터 심층 참고 관점/);
 });
 
 test('smart agent router routes immediate decision to Kierkegaard, Descartes, and Sun Tzu', () => {
