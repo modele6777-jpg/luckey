@@ -1,10 +1,10 @@
 {
-  "version": "1.7.360",
-  "builtAt": "2026-11-12T04:04:25.094Z",
-  "summary": "Firebase 경로의 gRPC 취약 버전 교체",
+  "version": "1.7.361",
+  "builtAt": "2026-11-12T04:17:25.172Z",
+  "summary": "Zod 메모리 고갈 취약점 수정",
   "items": [
-    "Firestore가 끌어오는 @grpc/grpc-js를 취약 버전 1.9.16에서 수정 버전 1.13.7로 고정합니다",
-    "Firebase SDK major downgrade 없이 gRPC 취약점 두 건을 해결하고 종속성 경로를 검증합니다",
-    "Firestore 동기화와 iPhone WebKit UI 회귀 테스트를 수행합니다"
+    "검증되지 않은 길이 제한 배열 입력으로 메모리가 고갈될 수 있는 Zod 취약점을 수정된 4.6.7로 해결합니다",
+    "구조화 응답 스키마를 Zod 4 내장 JSON Schema API로 변환해 transform 입력 형태와 열거형을 보존합니다",
+    "사용하지 않는 deprecated zod-to-json-schema 의존성을 제거하고 MCP·전체 회귀 테스트를 검증합니다"
   ]
 }

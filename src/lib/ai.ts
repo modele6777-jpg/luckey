@@ -1041,16 +1041,21 @@ export async function invokeECPRPrescriptionLLM(params: {
 /**
  * Invokes the LLM and validates the JSON response against a Zod schema.
  */
-import { zodToJsonSchema } from "zod-to-json-schema";
 import { PRISM_VOICE_RULES } from "./copyTone";
 
 function generateMockFromZod(schema: z.ZodTypeAny, parentKey: string = "", errorContext?: string): any {
   if (!schema) return "";
 
-  const typeName = (schema as any)._def?.typeName || schema.constructor?.name || "";
+  const schemaDefinition = (schema as any)._def;
+  const typeName = schemaDefinition?.typeName || schema.constructor?.name || "";
+  const definitionType = schemaDefinition?.type || "";
 
-  if (schema instanceof z.ZodEffects || typeName === "ZodEffects") {
-    return generateMockFromZod((schema as any).innerType?.() || (schema as any)._def?.schema, parentKey, errorContext);
+  if (typeName === "ZodEffects" || typeName === "ZodPipe" || typeName === "ZodTransform" || definitionType === "pipe") {
+    const innerSchema = (schema as any).innerType?.()
+      || schemaDefinition?.schema
+      || (schema as any).in
+      || schemaDefinition?.in;
+    return innerSchema ? generateMockFromZod(innerSchema, parentKey, errorContext) : "";
   }
   if (schema instanceof z.ZodOptional || schema instanceof z.ZodNullable || typeName === "ZodOptional" || typeName === "ZodNullable") {
     return generateMockFromZod((schema as any).unwrap?.() || (schema as any)._def?.innerType, parentKey, errorContext);
@@ -1086,11 +1091,12 @@ function generateMockFromZod(schema: z.ZodTypeAny, parentKey: string = "", error
   }
 
   if (schema instanceof z.ZodEnum || typeName === "ZodEnum") {
-    const vals = (schema as any)._def?.values;
-    return Array.isArray(vals) && vals.length > 0 ? vals[0] : "apathy";
+    const rawValues = (schema as any)._def?.values || (schema as any).options || (schema as any)._def?.entries;
+    const vals = Array.isArray(rawValues) ? rawValues : Object.values(rawValues || {});
+    return vals.length > 0 ? vals[0] : "apathy";
   }
 
-  if (schema instanceof z.ZodNativeEnum || typeName === "ZodNativeEnum") {
+  if (typeName === "ZodNativeEnum") {
     const values = Object.values((schema as any)._def?.values || {});
     return values[0] || "";
   }
@@ -1252,7 +1258,11 @@ export async function invokeLLMStructured<T extends z.ZodTypeAny>(params: {
   const maxRetries = params.maxRetries ?? 1;
   let lastError: any;
 
-  const schemaJson = zodToJsonSchema(params.schema as any);
+  const schemaJson = z.toJSONSchema(params.schema as any, {
+    target: "draft-07",
+    io: "input",
+    unrepresentable: "any",
+  });
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {

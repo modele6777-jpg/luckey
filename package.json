@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.360",
+  "version": "1.7.361",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -71,8 +71,7 @@
     "vite": "^8.0.10",
     "vite-plugin-pwa": "^1.2.0",
     "wouter": "^3.9.0",
-    "zod": "^3.25.76",
-    "zod-to-json-schema": "^3.25.2"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
