@@ -313,6 +313,9 @@ import { calculateKoreanSeopoKimManJungGuunmongAwakening, formatKoreanSeopoKimMa
 import { calculateBritishVirginiaWoolfRoomOfOnesOwn, formatBritishVirginiaWoolfRoomOfOnesOwnPrompt, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION } from '../src/lib/divination/britishVirginiaWoolfRoomOfOnesOwnEngine';
 import { calculateFrenchVictorHugoLesMiserables, formatFrenchVictorHugoLesMiserablesPrompt, FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION } from '../src/lib/divination/frenchVictorHugoLesMiserablesEngine';
 import { calculateKoreanHeoGyunHongGildongYuldoguk, formatKoreanHeoGyunHongGildongYuldogukPrompt, KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION } from '../src/lib/divination/koreanHeoGyunHongGildongYuldogukEngine';
+import { calculateAustrianRainerMariaRilkeLetters, formatAustrianRainerMariaRilkeLettersPrompt, AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION } from '../src/lib/divination/austrianRainerMariaRilkeLettersToYoungPoetEngine';
+import { calculateSpanishMiguelDeCervantesDonQuixote, formatSpanishMiguelDeCervantesDonQuixotePrompt, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION } from '../src/lib/divination/spanishMiguelDeCervantesDonQuixoteEngine';
+import { calculateKoreanIlyeonSamgukYusa, formatKoreanIlyeonSamgukYusaPrompt, KOREAN_ILYEON_SAMGUK_YUSA_VERSION } from '../src/lib/divination/koreanIlyeonSamgukYusaHeritageEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5972,6 +5975,48 @@ test('Heo Gyun Hong Gildong & Yuldoguk Engine: calculates Talent Liberation, Hom
   const prompt = formatKoreanHeoGyunHongGildongYuldogukPrompt(rep);
   assert(prompt.includes('교산 허균 《홍길동전·유재론·호민론》 인재 등용·호민 기개·율도국 지표'));
   assert(prompt.includes(rep.activeHeoGyunTheme.themeTitleKo));
+});
+
+test('Rainer Maria Rilke Letters to a Young Poet Engine: calculates Loving Solitude, Living Questions, and Elegiac Sublimation', () => {
+  const rep = calculateAustrianRainerMariaRilkeLetters(profile);
+  assert.equal(rep.engineVersion, AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION);
+  assert(rep.lovingSolitudeInwardScore >= 0 && rep.lovingSolitudeInwardScore <= 100);
+  assert(rep.livingTheQuestionsIndex >= 0 && rep.livingTheQuestionsIndex <= 100);
+  assert(rep.contemplativeGazingIndex >= 0 && rep.contemplativeGazingIndex <= 100);
+  assert(rep.elegiacSublimationScore >= 0 && rep.elegiacSublimationScore <= 100);
+  assert(rep.openHorizonResilienceScore >= 0 && rep.openHorizonResilienceScore <= 100);
+  assert(rep.activeRilkeTheme.themeTitleKo.length > 0);
+  const prompt = formatAustrianRainerMariaRilkeLettersPrompt(rep);
+  assert(prompt.includes('라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 고독 사랑·질문 품기 지표'));
+  assert(prompt.includes(rep.activeRilkeTheme.themeTitleKo));
+});
+
+test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage Against Windmills, and Humor Resilience', () => {
+  const rep = calculateSpanishMiguelDeCervantesDonQuixote(profile);
+  assert.equal(rep.engineVersion, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION);
+  assert(rep.nobleIdealismScore >= 0 && rep.nobleIdealismScore <= 100);
+  assert(rep.courageAgainstWindmillsIndex >= 0 && rep.courageAgainstWindmillsIndex <= 100);
+  assert(rep.quixoteSanchoBalanceScore >= 0 && rep.quixoteSanchoBalanceScore <= 100);
+  assert(rep.compassionateHumorResilienceIndex >= 0 && rep.compassionateHumorResilienceIndex <= 100);
+  assert(rep.autonomousSelfCreationScore >= 0 && rep.autonomousSelfCreationScore <= 100);
+  assert(rep.activeCervantesTheme.themeTitleKo.length > 0);
+  const prompt = formatSpanishMiguelDeCervantesDonQuixotePrompt(rep);
+  assert(prompt.includes('미겔 데 세르반테스 《돈키호테》 고결한 이상주의·풍차 앞 불굴의 용기 지표'));
+  assert(prompt.includes(rep.activeCervantesTheme.themeTitleKo));
+});
+
+test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing, and Cheoyong Tolerance', () => {
+  const rep = calculateKoreanIlyeonSamgukYusa(profile);
+  assert.equal(rep.engineVersion, KOREAN_ILYEON_SAMGUK_YUSA_VERSION);
+  assert(rep.hongikInganPrideScore >= 0 && rep.hongikInganPrideScore <= 100);
+  assert(rep.hyanggaHealingIndex >= 0 && rep.hyanggaHealingIndex <= 100);
+  assert(rep.cheoyongToleranceScore >= 0 && rep.cheoyongToleranceScore <= 100);
+  assert(rep.grassrootsCompassionIndex >= 0 && rep.grassrootsCompassionIndex <= 100);
+  assert(rep.culturalPreservationResilience >= 0 && rep.culturalPreservationResilience <= 100);
+  assert(rep.activeIlyeonTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanIlyeonSamgukYusaPrompt(rep);
+  assert(prompt.includes('보각국사 일연 《삼국유사》 홍익인간 자주 자긍심·향가 치유·처용 관용 지표'));
+  assert(prompt.includes(rep.activeIlyeonTheme.themeTitleKo));
 });
 
 

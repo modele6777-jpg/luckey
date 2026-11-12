@@ -350,6 +350,9 @@ import { calculateKoreanSeopoKimManJungGuunmongAwakening, formatKoreanSeopoKimMa
 import { calculateBritishVirginiaWoolfRoomOfOnesOwn, formatBritishVirginiaWoolfRoomOfOnesOwnPrompt, type BritishVirginiaWoolfRoomOfOnesOwnResult, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION } from './britishVirginiaWoolfRoomOfOnesOwnEngine';
 import { calculateFrenchVictorHugoLesMiserables, formatFrenchVictorHugoLesMiserablesPrompt, type FrenchVictorHugoLesMiserablesResult, FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION } from './frenchVictorHugoLesMiserablesEngine';
 import { calculateKoreanHeoGyunHongGildongYuldoguk, formatKoreanHeoGyunHongGildongYuldogukPrompt, type KoreanHeoGyunHongGildongYuldogukResult, KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION } from './koreanHeoGyunHongGildongYuldogukEngine';
+import { calculateAustrianRainerMariaRilkeLetters, formatAustrianRainerMariaRilkeLettersPrompt, type AustrianRainerMariaRilkeLettersResult, AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION } from './austrianRainerMariaRilkeLettersToYoungPoetEngine';
+import { calculateSpanishMiguelDeCervantesDonQuixote, formatSpanishMiguelDeCervantesDonQuixotePrompt, type SpanishMiguelDeCervantesDonQuixoteResult, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION } from './spanishMiguelDeCervantesDonQuixoteEngine';
+import { calculateKoreanIlyeonSamgukYusa, formatKoreanIlyeonSamgukYusaPrompt, type KoreanIlyeonSamgukYusaResult, KOREAN_ILYEON_SAMGUK_YUSA_VERSION } from './koreanIlyeonSamgukYusaHeritageEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -720,6 +723,9 @@ export interface DeterministicEngineReport {
   britishVirginiaWoolfRoomOfOnesOwnResult?: BritishVirginiaWoolfRoomOfOnesOwnResult | null;
   frenchVictorHugoLesMiserablesResult?: FrenchVictorHugoLesMiserablesResult | null;
   koreanHeoGyunHongGildongYuldogukResult?: KoreanHeoGyunHongGildongYuldogukResult | null;
+  austrianRainerMariaRilkeLettersResult?: AustrianRainerMariaRilkeLettersResult | null;
+  spanishMiguelDeCervantesDonQuixoteResult?: SpanishMiguelDeCervantesDonQuixoteResult | null;
+  koreanIlyeonSamgukYusaResult?: KoreanIlyeonSamgukYusaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4193,6 +4199,33 @@ try {
     }
   })()));
 
+  // 321. 오스트리아 라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 내면의 고독 사랑·질문 품기·사물 응시와 존재 변용 지혜 엔진
+  const austrianRainerMariaRilkeLettersResult = calculateSupplement('austrianRainerMariaRilkeLettersResult', () => ((() => {
+    try {
+      return calculateAustrianRainerMariaRilkeLetters(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 322. 스페인 미겔 데 세르반테스 《돈키호테》 불가능한 꿈을 향한 고결한 이상주의·풍차 앞 불굴의 용기·해학적 회복탄력성 지혜 엔진
+  const spanishMiguelDeCervantesDonQuixoteResult = calculateSupplement('spanishMiguelDeCervantesDonQuixoteResult', () => ((() => {
+    try {
+      return calculateSpanishMiguelDeCervantesDonQuixote(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 323. 대한민국 보각국사 일연 선사 《삼국유사》 홍익인간 자주 자긍심·향가 서정 치유·처용 관용과 문화 회복탄력성 지혜 엔진
+  const koreanIlyeonSamgukYusaResult = calculateSupplement('koreanIlyeonSamgukYusaResult', () => ((() => {
+    try {
+      return calculateKoreanIlyeonSamgukYusa(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4549,6 +4582,9 @@ try {
     britishVirginiaWoolfRoomOfOnesOwnResult,
     frenchVictorHugoLesMiserablesResult,
     koreanHeoGyunHongGildongYuldogukResult,
+    austrianRainerMariaRilkeLettersResult,
+    spanishMiguelDeCervantesDonQuixoteResult,
+    koreanIlyeonSamgukYusaResult,
     tools: toolsMap,
   };
 }
@@ -4896,6 +4932,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'britishVirginiaWoolfRoomOfOnesOwn', nameKo: '버지니아 울프 자기만의방 등대로 댈러웨이부인 사유의독립성 존재의순간들 양성구유적지성 의식의흐름 등대적회복탄력성', icon: '🕯️', category: 'deep_master', summary: '버지니아 울프의 모더니즘 문학 철학으로 세속의 간섭을 닫아거는 자기만의 방의 사유 독립성, 일상의 껍질을 뚫고 터져 나오는 존재의 순간들(Moments of Being), 이성과 감성이 상호 공명하는 양성구유적 창조성과 등대적 회복탄력성을 체득합니다.' },
   { key: 'frenchVictorHugoLesMiserables', nameKo: '빅토르 위고 레미제라블 노트르담드파리 미리엘주교은촛대 자비와구원 도덕적양심 나는누구인가 인도주의적연대 불굴의영웅적기개', icon: '✨', category: 'deep_master', summary: '빅토르 위고의 낭만주의 인도주의 문학 철학으로 응징을 녹여내는 미리엘 주교의 대자비와 영혼의 구원, 안락함을 버리고 진실을 선택하는 도덕적 양심, 가장 낮은 곳의 이웃을 향한 뜨거운 연대와 불굴의 영웅적 회복탄력성을 체득합니다.' },
   { key: 'koreanHeoGyunHongGildongYuldoguk', nameKo: '교산 허균 홍길동전 성소부부고 유재론 호민론 인재등용혁신 편견타파 호민기개 불의항거 활빈대동정의 율도국이상향개척 파격의진보', icon: '🌊', category: 'deep_master', summary: '교산 허균 선생의 개혁적 문학 철학으로 신분과 편견을 깨뜨리는 유재론(遺才論)의 인재 혁신, 불의에 분연히 맞서는 호민(豪民)의 당당한 기백, 약자를 구휼하는 활빈의 대동 정의와 새로운 이상향 율도국(栗島國)을 개척하는 파격의 진보성을 체득합니다.' },
+  { key: 'austrianRainerMariaRilkeLetters', nameKo: '라이너 마리아 릴케 젊은시인에게주는편지 두이노의비가 말테의수기 고독사랑 질문품기 사물응시 존재의변용 대지의찬가 초연한평정', icon: '🌹', category: 'deep_master', summary: '라이너 마리아 릴케의 실존적 서정 문학 철학으로 세속의 소음을 넘어 자신의 고독을 사랑하는 깊은 침잠, 조급함 없이 질문 자체를 살아내는 숭고한 인내, 사물의 존재 신비를 응시하는 감수성과 고통을 찬가로 승화시키는 존재의 변용(Verwandlung)을 체득합니다.' },
+  { key: 'spanishMiguelDeCervantesDonQuixote', nameKo: '미겔 데 세르반테스 돈키호테 라만차의기사 불가능한꿈 고결한이상주의 풍차앞불굴의용기 산초판사우정조화 해학적회복탄력성 자기창조적주체성', icon: '🛡️', category: 'deep_master', summary: '미겔 데 세르반테스의 불멸의 고전 《돈키호테》 철학으로 냉소와 계산에 물들지 않고 불가능한 꿈을 향해 나아가는 고결한 이상주의, 풍차 앞에서도 물러서지 않는 숭고한 용기, 이상과 현실의 우정 어린 조화, 실패를 웃음으로 보듬는 해학적 회복탄력성을 체득합니다.' },
+  { key: 'koreanIlyeonSamgukYusa', nameKo: '보각국사 일연 삼국유사 홍익인간개천자주성 향가서정치유 제망매가 처용관용대도량 민중자비기적 문화적회복탄력성', icon: '📜', category: 'deep_master', summary: '보각국사 일연 선사의 불후의 민족 고전 《삼국유사》 철학으로 몽골 침략의 국난 속에서도 천손(天孫)의 홍익인간 자주 자긍심, 슬픔을 노래로 녹여내는 향가의 서정적 치유, 분노와 원한을 춤과 노래로 감화시키는 처용의 위대한 관용, 폐허 속에서도 민족의 얼과 기억을 지켜낸 불굴의 문화적 회복탄력성을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4957,6 +4996,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'spanishMiguelDeCervantesDonQuixote',
+    'koreanIlyeonSamgukYusa',
+    'austrianRainerMariaRilkeLetters',
     'koreanHeoGyunHongGildongYuldoguk',
     'britishVirginiaWoolfRoomOfOnesOwn',
     'frenchVictorHugoLesMiserables',
@@ -5141,6 +5183,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'austrianRainerMariaRilkeLetters',
+    'koreanIlyeonSamgukYusa',
+    'spanishMiguelDeCervantesDonQuixote',
     'frenchVictorHugoLesMiserables',
     'britishVirginiaWoolfRoomOfOnesOwn',
     'koreanHeoGyunHongGildongYuldoguk',
@@ -5321,6 +5366,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'austrianRainerMariaRilkeLetters',
+    'koreanIlyeonSamgukYusa',
+    'spanishMiguelDeCervantesDonQuixote',
     'frenchVictorHugoLesMiserables',
     'britishVirginiaWoolfRoomOfOnesOwn',
     'russianAntonChekhovQuietEnduranceCompassion',
@@ -5364,6 +5412,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'austrianRainerMariaRilkeLetters',
+    'koreanIlyeonSamgukYusa',
+    'spanishMiguelDeCervantesDonQuixote',
     'britishVirginiaWoolfRoomOfOnesOwn',
     'koreanHeoGyunHongGildongYuldoguk',
     'frenchVictorHugoLesMiserables',
@@ -5422,6 +5473,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'austrianRainerMariaRilkeLetters',
+    'spanishMiguelDeCervantesDonQuixote',
+    'koreanIlyeonSamgukYusa',
     'britishVirginiaWoolfRoomOfOnesOwn',
     'frenchVictorHugoLesMiserables',
     'koreanHeoGyunHongGildongYuldoguk',

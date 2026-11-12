@@ -1307,5 +1307,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanHeoGyunHongGildongYuldoguk": {
     "field": "koreanHeoGyunHongGildongYuldogukResult",
     "traceKey": "koreanHeoGyunHongGildongYuldogukResult"
+  },
+  "austrianRainerMariaRilkeLetters": {
+    "field": "austrianRainerMariaRilkeLettersResult",
+    "traceKey": "austrianRainerMariaRilkeLettersResult"
+  },
+  "spanishMiguelDeCervantesDonQuixote": {
+    "field": "spanishMiguelDeCervantesDonQuixoteResult",
+    "traceKey": "spanishMiguelDeCervantesDonQuixoteResult"
+  },
+  "koreanIlyeonSamgukYusa": {
+    "field": "koreanIlyeonSamgukYusaResult",
+    "traceKey": "koreanIlyeonSamgukYusaResult"
   }
 };
