@@ -482,10 +482,12 @@ export function selectOptimalDivinationTools(
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();
 
+  const isExplicitMasterRequest = policy.allowMaster !== false && (
+    /마스터\s*모드|올인원|15개\s*도구|15대\s*도구|15가지\s*도구|총동원|전부\s*비교|종합\s*비교|전체\s*진단/.test(lower)
+  );
+
   const isMasterDetected = policy.allowMaster !== false && (
-    Boolean(isMasterMode) ||
-    activeChannels.length === 7 ||
-    /마스터\s*모드|올인원|15개\s*도구|15대\s*도구|15가지\s*도구|총동원|전부\s*비교|종합\s*비교/.test(lower)
+    Boolean(isMasterMode) || isExplicitMasterRequest || activeChannels.length === 7
   );
 
   // Honor named traditions before inferring a topic. Qualified astrology names
@@ -506,8 +508,8 @@ export function selectOptimalDivinationTools(
     targetTools: explicitTools.length ? explicitTools : undefined,
   });
 
-  // 0. 가벼운 일상 인사/단순 맞장구일 때 (활성 채널이 없는 경우)
-  if (routed.routePlan.isCasual) {
+  // 0. 가벼운 일상 인사/단순 맞장구일 때 (단, 프로 모드에서는 수다모드 없음)
+  if (routed.routePlan.isCasual && !isMasterDetected) {
     return {
       selectedTools: [],
       isCasualMessage: true,
@@ -517,8 +519,8 @@ export function selectOptimalDivinationTools(
     };
   }
 
-  // 1. 올인원 마스터 모드 풀가동 (15개 도구 총동원)
-  if (isMasterDetected || routed.routePlan.isMasterMobilization) {
+  // 1. 올인원 종합 마스터 모드 풀가동 (명시적 종합/올인원 요청 시)
+  if (isExplicitMasterRequest || routed.routePlan.isMasterMobilization) {
     const allTools = Object.values(FIFTEEN_DIVINATION_TOOLS);
     return {
       selectedTools: allTools,
@@ -531,10 +533,15 @@ export function selectOptimalDivinationTools(
     };
   }
 
-  // 2. 스마트 에이전트 라우터가 선별한 2~3개 타깃 도구 매핑
+  // 2. 스마트 에이전트 라우터가 선별한 1~3개 타깃 도구 매핑 (프로 모드: 기본 1개 이상 + 심층 1개 이상 / 일반 모드: 기본 15대만 1개 이상)
   const selectedTools = routed.routePlan.targetTools
     .map((id) => FIFTEEN_DIVINATION_TOOLS[id])
     .filter(Boolean);
+
+  // 기본엔진 1개 이상 필수 보장 (수다모드가 아닐 때)
+  if (selectedTools.length === 0 && !routed.routePlan.isCasual) {
+    selectedTools.push(FIFTEEN_DIVINATION_TOOLS['saju']);
+  }
 
   // 활성 채널이 단일/부분 융합으로 설정된 경우 보강
   if (!explicitTools.length && activeChannels.length > 0 && selectedTools.length < 3) {

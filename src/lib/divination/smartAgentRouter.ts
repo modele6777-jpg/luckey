@@ -82,6 +82,7 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
     clean.length <= 15 &&
     /^(안녕|하이|루시야|반가워|고마워|땡큐|ㅋㅋ+|ㅎㅎ+|응|그래|맞아|좋아|오케이|잘\s*자|굿모닝|좋은\s*아침)[.!~?\s]*$/i.test(clean);
 
+  // 일반 모드 수다 필터 (프로 모드에서는 수다모드 완전 배제)
   if (isShortGreeting && !isMasterRequested) {
     return {
       intent: 'casual_greeting',
@@ -97,11 +98,28 @@ export function analyzeQuestionIntent(text: string, isMasterRequested = false, a
     };
   }
 
-  // 1. 올인원 종합 마스터 모드 요청 판별
-  if (allowMaster && (
-    isMasterRequested ||
-    /마스터\s*모드|올인원|15대|15가지|총동원|전체\s*진단|종합\s*분석|전체\s*비교|모든\s*도구/.test(lower)
-  )) {
+  // 1. 프로 모드 인사말: 수다모드 없이 마스터 청사진/일진으로 응대 (기본 1개 이상 + 심층 1개 이상 필수)
+  if (isShortGreeting && isMasterRequested) {
+    return {
+      intent: 'master_blueprint',
+      intentKoName: '프로 마스터 종합 인사 및 성찰',
+      confidence: 0.98,
+      targetTools: ['saju', 'astrology'],
+      deepEngineKeys: ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').map(e => e.key),
+      deepEnginesKo: [`심층 참고 관점 ${ALL_DCE_ENGINES.filter(e => e.category === 'deep_master').length}개 중 질문과 입력에 맞는 항목`],
+      deepEngineGuidance: `기초 도구의 실제 계산 결과와 질문에 관련되어 전달된 심층 상징 참고 관점을 구분하여 종합한다. 카탈로그 등록 수는 실행 증거가 아니며, 미실행·오류·미기록 항목을 사용했다고 주장하지 않는다.`,
+      routingReason: '프로 모드 마스터 상시 응대 (기본 운명 팩트 + 심층 실존 지혜)',
+      suggestedFocusPrompt: '프로 마스터로서 다정하면서도 통찰력 있게 인사하고, 질문자의 타고난 기운과 오늘의 흐름을 조망해 줘.',
+      isMasterMobilization: true,
+      isCasual: false,
+    };
+  }
+
+  // 2. 올인원 종합 마스터 모드 요청 판별 (명시적 종합/올인원 요청 시)
+  const isExplicitMasterRequest = allowMaster && (
+    /마스터\s*모드|올인원|15대|15가지|총동원|전체\s*진단|종합\s*분석|전체\s*비교|모든\s*도구|종합\s*청사진|전체\s*운명/.test(lower)
+  );
+  if (isExplicitMasterRequest) {
     return {
       intent: 'master_blueprint',
       intentKoName: '올인원 마스터 종합 청사진',
@@ -444,13 +462,43 @@ export function routeAndExecute(params: {
   allowMaster?: boolean;
   targetTools?: DivinationToolId[];
 }): RoutedExecutionResult {
-  const routePlan = analyzeQuestionIntent(params.text, params.isMasterRequested, params.allowMaster);
+  const isMaster = Boolean(params.isMasterRequested);
+  const routePlan = analyzeQuestionIntent(params.text, isMaster, params.allowMaster);
   if (!routePlan.isMasterMobilization && params.targetTools?.length) {
     routePlan.targetTools = [...new Set(params.targetTools)];
     routePlan.isCasual = false;
     routePlan.intentKoName = '지정한 도구로 상담';
     routePlan.routingReason = '사용자가 명시한 도구를 우선 적용';
     routePlan.suggestedFocusPrompt = '지정한 도구의 실제 결과와 계산 한계 안에서 질문에 답해줘.';
+  }
+
+  // [일반 모드 vs 프로 모드 필수 규칙 적용]
+  if (isMaster) {
+    // 👑 프로 모드:
+    // 1. 수다 모드 완전 배제
+    routePlan.isCasual = false;
+    // 2. 기본엔진 1개 이상 필수 보장
+    if (!routePlan.targetTools || routePlan.targetTools.length === 0) {
+      routePlan.targetTools = ['saju', 'astrology'];
+    }
+    // 3. 심층엔진 1개 이상 필수 보장
+    if (!routePlan.deepEngineKeys || routePlan.deepEngineKeys.length === 0) {
+      routePlan.deepEngineKeys = ['chronoTransit', 'specialStarsMatrix', 'germanNietzscheZarathustraAmorFati'];
+      routePlan.deepEnginesKo = ['실시간 행성 트랜짓', '15대 신살', '니체 아모르파티'];
+      routePlan.deepEngineGuidance = '기초 운명학 수리 결과와 심층 실존적 통찰을 유기적으로 융합하여 프로 마스터의 조언을 제시해 줘.';
+    }
+  } else {
+    // 🌿 일반 모드:
+    if (!routePlan.isCasual) {
+      // 1. 수다모드가 아닐 때: 기본엔진 1개 이상 필수 보장
+      if (!routePlan.targetTools || routePlan.targetTools.length === 0) {
+        routePlan.targetTools = ['saju'];
+      }
+      // 2. 기본 15대 엔진만 나오게 고정 (심층엔진 완전 배제)
+      routePlan.deepEngineKeys = [];
+      routePlan.deepEnginesKo = [];
+      routePlan.deepEngineGuidance = undefined;
+    }
   }
 
   if (routePlan.isCasual) {
@@ -482,10 +530,18 @@ export function routeAndExecute(params: {
     isMasterMobilization: routePlan.isMasterMobilization,
   });
 
-  const deepBlock = routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
-    ? `\n- 질문에 맞춰 선택한 심층 참고 관점: **${routePlan.deepEnginesKo.join(' · ')}**
-- 심층 관점 융합 가이드: ${routePlan.deepEngineGuidance}`
+  // 심층 참고 관점 융합 블록:
+  // - 일반 모드(!isMaster): 기본 15대만 고정이므로 심층 블록 없음
+  // - 프로 모드(isMaster): 기본엔진과 함께 심층엔진이 필수로 융합 주입됨
+  const deepBlock = isMaster && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
+    ? `\n- [프로 마스터 심층 참고 관점]: **${routePlan.deepEnginesKo.join(' · ')}**
+- [심층 관점 융합 가이드]: ${routePlan.deepEngineGuidance || '선별된 심층 철학·심리학 지혜를 기본 운명학 수리 결과와 유기적으로 융합하여 실존적 돌파구를 제시해 줘.'}`
     : '';
+
+  // 배지: 프로 모드에서는 기본 도구와 심층 관점 배지가 둘 다 표출
+  const finalBadges = isMaster && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
+    ? [...toolsForBadge, ...routePlan.deepEnginesKo.slice(0, 3).map(name => `상징 참고 · ${name}`)]
+    : toolsForBadge;
 
   const promptInjection = `${deterministicDataBlock}
 
@@ -497,13 +553,13 @@ export function routeAndExecute(params: {
 - 중점 답변 가이드: ${routePlan.suggestedFocusPrompt}
 ======================================================================
 [루시 답변 필수 지침]:
-1. 위 라우팅된 도구의 실제 계산 데이터(JSON)와 심층 특화 엔진의 철학·상징적 해법을 유기적으로 융합하되, 단순 지식을 나열하지 말고 질문자의 현실 상황과 마음에 딱 들어맞는 살아있는 비유로 풀어줘.
-2. 서론 없이 첫 문장부터 질문자의 속마음을 꿰뚫으며 시작하고, 당장 실천할 구체적 행동 팁과 깊은 영적 위로를 카톡식 다중 말풍선(\`\\n\\n\`)으로 전해줘.`;
+1. ${isMaster ? '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)와 심층 특화 엔진의 철학·상징적 해법을 유기적으로 융합하되, 단순 지식을 나열하지 말고 질문자의 현실 상황과 마음에 딱 들어맞는 살아있는 비유로 깊이 있게 풀어줘.' : '위 라우팅된 기본 15대 운명학 도구의 실제 계산 데이터(JSON)를 바탕으로 군더더기 없이 명쾌하고 다정하게 풀어줘.'}
+2. 서론 없이 첫 문장부터 질문자의 속마음을꿰뚫으며 시작하고, 당장 실천할 구체적 행동 팁과 깊은 영적 위로를 카톡식 다중 말풍선(\`\\n\\n\`)으로 전해줘.`;
 
   return {
     routePlan,
     engineReport,
     promptInjection,
-    toolsForBadge,
+    toolsForBadge: finalBadges,
   };
 }
