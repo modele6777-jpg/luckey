@@ -6,6 +6,7 @@ async function openLucy(page, path = '/chat') {
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     localStorage.setItem('lu_unlocked_date', today);
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+    sessionStorage.setItem('profileModalDismissed', '1');
   });
   await page.goto(path);
   const lockScreen = page.locator('[data-pin-screen]');
@@ -40,6 +41,7 @@ async function openKeyChannel(page) {
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     localStorage.setItem('lu_unlocked_date', today);
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+    sessionStorage.setItem('profileModalDismissed', '1');
   });
   await page.goto('/key');
   const lockScreen = page.locator('[data-pin-screen]');
@@ -56,6 +58,15 @@ async function openKeyChannel(page) {
   )).toBe(true);
   await expect(lockScreen).toHaveCount(0);
   await page.waitForTimeout(200);
+}
+
+async function expectHiddenDirectionTarget(bigBang: import('@playwright/test').Locator, direction: string, channel: string) {
+  const glyphLayer = bigBang.locator('[data-bigbang-direction-targets]');
+  await expect(glyphLayer).toBeHidden();
+  await expect(glyphLayer.locator('svg')).toHaveCount(0);
+  const target = bigBang.locator(`[data-bigbang-direction-target="${direction}"][data-bigbang-target-channel="${channel}"]`);
+  await expect(target).toHaveCount(1);
+  await expect(target).toBeHidden();
 }
 
 async function setContentScrollBoundary(page, edge: 'top' | 'bottom') {
@@ -310,8 +321,8 @@ test('Big Bang left and right controls stay disabled in Lucy chat', async ({ pag
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toBeVisible();
   await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
-  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="epilogue"]')).toBeVisible();
-  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="key"]')).toBeVisible();
+  await expectHiddenDirectionTarget(bigBang, 'north', 'epilogue');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'key');
   await expect(bigBang.locator('[data-bigbang-direction-target="west"]')).toHaveCount(0);
   await expect(bigBang.locator('[data-bigbang-direction-target="east"]')).toHaveCount(0);
   const box = await bigBang.boundingBox();
@@ -331,8 +342,8 @@ test('Big Bang left and right controls stay disabled in the Key channel', async 
   await openKeyChannel(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
-  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="lucy"]')).toBeVisible();
-  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="prologue"]')).toBeVisible();
+  await expectHiddenDirectionTarget(bigBang, 'north', 'lucy');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'prologue');
   await expect(bigBang.locator('[data-bigbang-direction-target="west"]')).toHaveCount(0);
   await expect(bigBang.locator('[data-bigbang-direction-target="east"]')).toHaveCount(0);
   const box = await bigBang.boundingBox();
@@ -377,7 +388,7 @@ test('Big Bang south uses the primary Lucy boundary even when an unrelated inner
   expect(scrollState.unrelatedTop).toBe(0);
 
   const bigBang = page.locator('div[data-bigbang="true"]').first();
-  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="key"]')).toBeVisible();
+  await expectHiddenDirectionTarget(bigBang, 'south', 'key');
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Lucy');
@@ -390,7 +401,7 @@ test('Big Bang vertical controls follow right-menu app order at content boundari
   await openLucy(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toBeVisible();
-  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="key"]')).toBeVisible();
+  await expectHiddenDirectionTarget(bigBang, 'south', 'key');
   await setContentScrollBoundary(page, 'bottom');
   await expectContentScrollBoundary(page, 'bottom');
   let box = await bigBang.boundingBox();
@@ -402,8 +413,8 @@ test('Big Bang vertical controls follow right-menu app order at content boundari
 
   await expect(page).toHaveURL(/\/key$/);
   await expect(page.locator('iframe[title="Key"]')).toBeVisible();
-  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="lucy"]')).toBeVisible();
-  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="prologue"]')).toBeVisible();
+  await expectHiddenDirectionTarget(bigBang, 'north', 'lucy');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'prologue');
   await setContentScrollBoundary(page, 'bottom');
   await expectContentScrollBoundary(page, 'bottom');
   box = await bigBang.boundingBox();
@@ -415,9 +426,37 @@ test('Big Bang vertical controls follow right-menu app order at content boundari
   await page.touchscreen.tap(southX, southY);
   await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   expect([null, 'universe']).toContain(new URL(page.url()).searchParams.get('tab'));
-  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="key"]')).toBeVisible();
-  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="orange"]')).toBeVisible();
+  await expectHiddenDirectionTarget(bigBang, 'north', 'key');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'orange');
+});
 
+test('Big Bang destination marker suppresses the first-visit oracle modal on Trinity', async ({ page }) => {
+  await openPrologue(page, '/prologue');
+  await page.evaluate(() => {
+    sessionStorage.setItem('prism_bigbang_navigation_target', JSON.stringify({
+      path: '/trinity',
+      timestamp: Date.now(),
+    }));
+  });
+  await page.goto('/trinity');
+  await expect(page.locator('#bigbang-omnibutton')).toBeVisible();
+  await page.waitForTimeout(3_000);
+  await expect(page.locator('#today-tarot-narration-modal')).toHaveCount(0);
+});
+
+test('Big Bang south tap in a Lucky channel does not scroll before the content boundary', async ({ page }) => {
+  await openPrologue(page, '/prologue');
+  const scrollRoot = page.locator('[data-app-scroll-root]').first();
+  await expect.poll(() => scrollRoot.evaluate(element => (element as HTMLElement).scrollHeight - (element as HTMLElement).clientHeight)).toBeGreaterThan(0);
+  await expect.poll(() => scrollRoot.evaluate(element => (element as HTMLElement).scrollTop)).toBe(0);
+  const bigBang = page.locator('div[data-bigbang="true"]').first();
+  const box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Prologue');
+  const beforeUrl = page.url();
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
+  await expect(page).toHaveURL(beforeUrl);
+  await expect.poll(() => scrollRoot.evaluate(element => (element as HTMLElement).scrollTop)).toBe(0);
 });
 
 test('Big Bang left and right navigation stay inside Prologue and show its symbol', async ({ page }) => {
@@ -426,7 +465,7 @@ test('Big Bang left and right navigation stay inside Prologue and show its symbo
   await expect(bigBang).toBeVisible();
   const initialUrl = page.url();
   for (const [direction, channel] of [['north', 'key'], ['south', 'orange'], ['west', 'prologue'], ['east', 'prologue']]) {
-    await expect(bigBang.locator(`[data-bigbang-direction-target="${direction}"][data-bigbang-target-channel="${channel}"]`)).toBeVisible();
+    await expectHiddenDirectionTarget(bigBang, direction, channel);
   }
   let box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
@@ -476,7 +515,7 @@ test('Big Bang drag does not navigate to a page or app', async ({ page }) => {
 test('Big Bang north at the Key channel top boundary returns to Lucy', async ({ page }) => {
   await openKeyChannel(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
-  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="lucy"]')).toBeVisible();
+  await expectHiddenDirectionTarget(bigBang, 'north', 'lucy');
   await setContentScrollBoundary(page, 'top');
   await expectContentScrollBoundary(page, 'top');
   await page.waitForTimeout(200);

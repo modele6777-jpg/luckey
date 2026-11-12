@@ -311,6 +311,12 @@ export function BigBangButton() {
     if (!path) return false;
     showDirectionFeedback(feedbackDirection, path);
     (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    try {
+      sessionStorage.setItem('prism_bigbang_navigation_target', JSON.stringify({
+        path: new URL(path, window.location.href).pathname,
+        timestamp: Date.now(),
+      }));
+    } catch { /* ignore */ }
     navigate(path);
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path } }));
@@ -2139,24 +2145,20 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
-              <div className="absolute inset-0 z-20 pointer-events-none -rotate-45" data-bigbang-direction-targets="true" aria-hidden="true">
+              <div hidden data-bigbang-direction-targets="true" aria-hidden="true">
                 {[
-                  { direction: 'north' as const, target: directionTargets.north, position: 'left-1/2 top-[7px] -translate-x-1/2' },
-                  { direction: 'east' as const, target: directionTargets.east, position: 'right-[7px] top-1/2 -translate-y-1/2' },
-                  { direction: 'south' as const, target: directionTargets.south, position: 'left-1/2 bottom-[7px] -translate-x-1/2' },
-                  { direction: 'west' as const, target: directionTargets.west, position: 'left-[7px] top-1/2 -translate-y-1/2' },
-                ].map(({ direction, target, position }) => {
+                  { direction: 'north' as const, target: directionTargets.north },
+                  { direction: 'east' as const, target: directionTargets.east },
+                  { direction: 'south' as const, target: directionTargets.south },
+                  { direction: 'west' as const, target: directionTargets.west },
+                ].map(({ direction, target }) => {
                   if (!target) return null;
-                  const DirectionIcon = target.icon;
                   return (
                     <span
                       key={direction}
                       data-bigbang-direction-target={direction}
                       data-bigbang-target-channel={target.id}
-                      className={`absolute flex h-[16px] w-[16px] items-center justify-center rounded-full border border-cyan-100/60 bg-slate-950/90 text-cyan-100 shadow-[0_0_7px_rgba(34,211,238,0.55)] ${position}`}
-                    >
-                      <DirectionIcon size={10} strokeWidth={2.2} />
-                    </span>
+                    />
                   );
                 })}
               </div>

@@ -25,6 +25,29 @@ interface UseDailyOracleFirstVisitProps {
   runOracle: (runOpts?: any) => Promise<any> | any;
 }
 
+const BIGBANG_NAVIGATION_TARGET_KEY = "prism_bigbang_navigation_target";
+const BIGBANG_NAVIGATION_TARGET_MAX_AGE_MS = 30_000;
+
+function consumeBigBangNavigationTarget(pathname: string) {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = sessionStorage.getItem(BIGBANG_NAVIGATION_TARGET_KEY);
+    if (!raw) return false;
+    const target = JSON.parse(raw);
+    const age = Date.now() - Number(target?.timestamp);
+    if (!target?.path || !Number.isFinite(age) || age < 0 || age > BIGBANG_NAVIGATION_TARGET_MAX_AGE_MS) {
+      sessionStorage.removeItem(BIGBANG_NAVIGATION_TARGET_KEY);
+      return false;
+    }
+    if (target.path !== pathname) return false;
+    sessionStorage.removeItem(BIGBANG_NAVIGATION_TARGET_KEY);
+    return true;
+  } catch (_) {
+    try { sessionStorage.removeItem(BIGBANG_NAVIGATION_TARGET_KEY); } catch (_) {}
+    return false;
+  }
+}
+
 export function useDailyOracleFirstVisit({
   appPrefix,
   featureKey,
@@ -43,9 +66,16 @@ export function useDailyOracleFirstVisit({
   runOracle,
 }: UseDailyOracleFirstVisitProps) {
   const preparedSessionKeyRef = useRef<string | null>(null);
+  const checkedBigBangEntryRef = useRef(false);
+  const suppressFirstVisitModalRef = useRef(false);
 
   useEffect(() => {
     if (!uid || !enabled || isLoading) return;
+
+    if (!checkedBigBangEntryRef.current) {
+      checkedBigBangEntryRef.current = true;
+      suppressFirstVisitModalRef.current = consumeBigBangNavigationTarget(window.location.pathname);
+    }
 
     const sessionKey = `${appPrefix}:${uid}:${getTodayDateKey()}`;
 
@@ -79,8 +109,10 @@ export function useDailyOracleFirstVisit({
     const hasSeen = hasSeenOracleModalToday(uid);
     if (!hasSeen && !dailyResult && !resolved) {
       try {
-        setShowDailyModal(true);
-        markOracleModalSeen(uid);
+        if (!suppressFirstVisitModalRef.current) {
+          setShowDailyModal(true);
+          markOracleModalSeen(uid);
+        }
       } catch (e) {
         console.warn("Error triggering first visit daily oracle modal:", e);
       }
