@@ -17,6 +17,23 @@ async function openLucy(page, path = '/chat') {
   await expect(page.locator('.lucy-chat-footer textarea')).toBeVisible();
 }
 
+async function openPrologue(page, path = '/todo') {
+  await page.addInitScript(() => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('lu_unlocked_date', today);
+    sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+    sessionStorage.setItem('profileModalDismissed', '1');
+  });
+  await page.goto(path);
+  const lockScreen = page.locator('[data-pin-screen]');
+  if (await lockScreen.count()) {
+    for (const digit of '1202') await page.keyboard.press(digit);
+    await expect(lockScreen).toHaveCount(0);
+  }
+  await expect(page.locator('#bigbang-omnibutton')).toBeVisible();
+}
+
 async function openKeyChannel(page) {
   await page.addInitScript(() => {
     const now = new Date();
@@ -109,10 +126,37 @@ async function addBigBangScrollProbe(page) {
   });
 }
 
+async function setLucyPrimaryScrollAtBottomWithUnrelatedListAtTop(page) {
+  return page.evaluate(() => {
+    const primary = document.querySelector<HTMLElement>('.lucy-chat-main');
+    if (!primary) throw new Error('Lucy primary conversation scroller is missing');
+    const filler = document.createElement('div');
+    filler.dataset.bigbangBoundaryTestFill = 'true';
+    filler.style.cssText = 'height:1200px;flex:none;pointer-events:none';
+    primary.append(filler);
+    const previousBehavior = primary.style.scrollBehavior;
+    primary.style.scrollBehavior = 'auto';
+    primary.scrollTop = primary.scrollHeight - primary.clientHeight;
+    primary.style.scrollBehavior = previousBehavior;
+
+    const unrelated = document.createElement('div');
+    unrelated.id = 'bigbang-unrelated-scroll-probe';
+    unrelated.className = 'overflow-y-auto';
+    unrelated.style.cssText = 'position:fixed;left:1px;top:1px;width:40px;height:40px;opacity:0;pointer-events:none;z-index:-1';
+    unrelated.innerHTML = '<div style="height:400px"></div>';
+    document.body.append(unrelated);
+    unrelated.scrollTop = 0;
+    return {
+      primaryRemaining: primary.scrollHeight - primary.clientHeight - primary.scrollTop,
+      unrelatedTop: unrelated.scrollTop,
+      unrelatedMax: unrelated.scrollHeight - unrelated.clientHeight,
+    };
+  });
+}
+
 test('update modal changelog copy stays visible in WebKit light and dark themes', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('prism_refresh_update_notice', '1'));
   await openLucy(page, '/chat?mode=pro');
-  await page.evaluate(() => sessionStorage.setItem('prism_refresh_update_notice', '1'));
-  await page.reload();
 
   const modal = page.locator('.update-notice-modal');
   await expect(modal).toBeVisible();
@@ -120,8 +164,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Big Bang 버튼의 콘텐츠 스크롤 제거');
-  await expect(item).toContainText('Big Bang 위·아래 버튼은 콘텐츠를 스크롤하지 않습니다.');
+  await expect(summary).toContainText('Big Bang 세로 경계 전환과 모바일 입력 보완');
+  await expect(item).toContainText('상·하 탭은 대표 콘텐츠의 최상단·최하단 경계에서만');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -177,7 +221,7 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   });
 });
 
-test('Lucy Pro engine count opens the visible 307-entry catalog and meanings', async ({ page }) => {
+test('Lucy Pro engine count opens the visible 316-entry catalog and meanings', async ({ page }) => {
   await openLucy(page, '/chat?mode=pro');
   const trigger = page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ });
   await expect(trigger).toBeVisible();
@@ -199,10 +243,10 @@ test('Lucy Pro engine count opens the visible 307-entry catalog and meanings', a
   await expect(dialog).toContainText('개 표시');
   await search.fill('실시간 행성 트랜짓');
   await expect(dialog).toContainText('실시간 행성 트랜짓');
-  await expect(dialog.getByRole('link', { name: /Cosmobiology/ })).toBeVisible();
+  await expect(dialog.getByRole('link')).toHaveCount(0);
   await search.fill('오행 바이오에너지');
   await expect(dialog).toContainText('이름을 바탕으로 한 앱 내 해석');
-  await expect(dialog).toContainText('이름 기반 앱 내 해석 · 직접 출처 미확인');
+  await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
 test('Lucy Pro engine catalog fills the mobile viewport and its list scrolls without auto-opening the keyboard', async ({ page }) => {
@@ -266,6 +310,10 @@ test('Big Bang left and right controls stay disabled in Lucy chat', async ({ pag
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toBeVisible();
   await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
+  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="epilogue"]')).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="key"]')).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="west"]')).toHaveCount(0);
+  await expect(bigBang.locator('[data-bigbang-direction-target="east"]')).toHaveCount(0);
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing');
@@ -283,6 +331,10 @@ test('Big Bang left and right controls stay disabled in the Key channel', async 
   await openKeyChannel(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
+  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="lucy"]')).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="prologue"]')).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="west"]')).toHaveCount(0);
+  await expect(bigBang.locator('[data-bigbang-direction-target="east"]')).toHaveCount(0);
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Key');
@@ -317,10 +369,28 @@ test('Big Bang north and south controls do not scroll content away from boundari
   }
 });
 
+test('Big Bang south uses the primary Lucy boundary even when an unrelated inner list is not at its edge', async ({ page }) => {
+  await openLucy(page);
+  const scrollState = await setLucyPrimaryScrollAtBottomWithUnrelatedListAtTop(page);
+  expect(scrollState.primaryRemaining).toBeLessThanOrEqual(2);
+  expect(scrollState.unrelatedMax).toBeGreaterThan(0);
+  expect(scrollState.unrelatedTop).toBe(0);
+
+  const bigBang = page.locator('div[data-bigbang="true"]').first();
+  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="key"]')).toBeVisible();
+  const box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Lucy');
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
+  await expect(page).toHaveURL(/\/key$/);
+  await expect(page.locator('[data-bigbang-center-channel="key"][data-bigbang-center-direction="south"]')).toBeVisible();
+});
+
 test('Big Bang vertical controls follow right-menu app order at content boundaries', async ({ page }) => {
   await openLucy(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="key"]')).toBeVisible();
   await setContentScrollBoundary(page, 'bottom');
   await expectContentScrollBoundary(page, 'bottom');
   let box = await bigBang.boundingBox();
@@ -328,8 +398,12 @@ test('Big Bang vertical controls follow right-menu app order at content boundari
   if (!box) throw new Error('Big Bang hit area is missing in Lucy');
   await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
   await expect(page).toHaveURL(/\/key$/);
+  await expect(page.locator('[data-bigbang-center-channel="key"][data-bigbang-center-direction="south"]')).toBeVisible();
 
-  await openKeyChannel(page);
+  await expect(page).toHaveURL(/\/key$/);
+  await expect(page.locator('iframe[title="Key"]')).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="lucy"]')).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="prologue"]')).toBeVisible();
   await setContentScrollBoundary(page, 'bottom');
   await expectContentScrollBoundary(page, 'bottom');
   box = await bigBang.boundingBox();
@@ -341,15 +415,71 @@ test('Big Bang vertical controls follow right-menu app order at content boundari
   await page.touchscreen.tap(southX, southY);
   await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   expect([null, 'universe']).toContain(new URL(page.url()).searchParams.get('tab'));
+  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="key"]')).toBeVisible();
+  await expect(bigBang.locator('[data-bigbang-direction-target="south"][data-bigbang-target-channel="orange"]')).toBeVisible();
 
+});
+
+test('Big Bang left and right navigation stay inside Prologue and show its symbol', async ({ page }) => {
+  await openPrologue(page);
+  const bigBang = page.locator('div[data-bigbang="true"]').first();
+  await expect(bigBang).toBeVisible();
+  const initialUrl = page.url();
+  for (const [direction, channel] of [['north', 'key'], ['south', 'orange'], ['west', 'prologue'], ['east', 'prologue']]) {
+    await expect(bigBang.locator(`[data-bigbang-direction-target="${direction}"][data-bigbang-target-channel="${channel}"]`)).toBeVisible();
+  }
+  let box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Prologue');
+  await page.touchscreen.tap(box.x + box.width / 2 + 36, box.y + box.height / 2);
+  await expect(page).toHaveURL(/\/prologue\?tab=universe$/);
+  await expect(page.locator('[data-bigbang-center-channel="prologue"][data-bigbang-center-direction="east"]')).toBeVisible();
+
+  const afterEastUrl = page.url();
+  await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'false');
+  box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing after east navigation');
+  const westX = box.x + box.width / 2 - 36;
+  const westY = box.y + box.height / 2;
+  await page.waitForFunction(
+    ({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')),
+    { x: westX, y: westY },
+    { timeout: 5000 },
+  );
+  await page.touchscreen.tap(westX, westY);
+  await expect(page.locator('[data-bigbang-center-channel="prologue"][data-bigbang-center-direction="west"]')).toBeVisible();
+  await expect(page).toHaveURL(initialUrl);
+  expect(page.url()).not.toBe(afterEastUrl);
+  await expect(page.locator('[data-bigbang-center-channel="prologue"][data-bigbang-center-direction="west"]')).toBeVisible();
+});
+
+test('Big Bang drag does not navigate to a page or app', async ({ page }) => {
+  await openPrologue(page);
+  const button = page.locator('#bigbang-omnibutton');
+  await expect(button).toBeVisible();
+  const before = page.url();
+  const box = await button.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang button is missing for drag test');
+
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 34, y, { steps: 4 });
+  await page.mouse.up();
+  await page.waitForTimeout(700);
+  await expect(page).toHaveURL(before);
 });
 
 test('Big Bang north at the Key channel top boundary returns to Lucy', async ({ page }) => {
   await openKeyChannel(page);
+  const bigBang = page.locator('div[data-bigbang="true"]');
+  await expect(bigBang.locator('[data-bigbang-direction-target="north"][data-bigbang-target-channel="lucy"]')).toBeVisible();
   await setContentScrollBoundary(page, 'top');
   await expectContentScrollBoundary(page, 'top');
   await page.waitForTimeout(200);
-  const bigBang = page.locator('div[data-bigbang="true"]');
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Key');
@@ -358,6 +488,7 @@ test('Big Bang north at the Key channel top boundary returns to Lucy', async ({ 
   await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x: northX, y: northY });
   await page.touchscreen.tap(northX, northY);
   await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('[data-bigbang-center-channel="lucy"][data-bigbang-center-direction="north"]')).toBeVisible();
   await expect(page.locator('.lucy-chat-footer')).toBeVisible();
 });
 

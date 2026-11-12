@@ -9,6 +9,16 @@ export const ONE_STOP_PAGE_TABS: Record<string, readonly [string, string][]> = {
   '/prologue': [['universe', '프롤로그'], ['ecpr', '마음처방'], ['todo', '투두']],
 };
 
+const LUCKEY_CHANNEL_ORDER = ['/prologue', '/orange', '/trinity', '/heal', '/bluebird', '/muse', '/epilogue'];
+
+function getOrderedChannelPageKeys(channelPath: string): string[] {
+  const tabs = [...(ONE_STOP_PAGE_TABS[channelPath] || [])];
+  if (channelPath === '/epilogue') {
+    tabs.sort(([a], [b]) => Number(a === 'profile') - Number(b === 'profile'));
+  }
+  return tabs.map(([tab]) => normalizeOneStopPage(channelPath + '?tab=' + encodeURIComponent(tab)));
+}
+
 export function normalizeOneStopPage(canonical: string): string {
   const url = new URL(canonical, 'https://luckey.local');
   let tab = url.searchParams.get('tab') || '';
@@ -31,32 +41,41 @@ export function oneStopNavigationPath(page: string): string {
   return !url.search && defaultTab ? page + '?tab=' + defaultTab : page;
 }
 
-/** The seven Luckey apps and their actual URL-addressable internal dapps. */
 export function getLuckeyPageKeys(): string[] {
   return [...new Set(Object.entries(ONE_STOP_PAGE_TABS).flatMap(([path, tabs]) =>
     tabs.map(([tab]) => normalizeOneStopPage(path + '?tab=' + encodeURIComponent(tab)))
   ))];
 }
 
-/** Fixed channel/tab order for the right-hand Big Bang control. Profile ends the tour. */
+/** Flattened app/tab order for catalogs and completeness checks; horizontal navigation uses per-app pages. */
 export function getOrderedLuckeyPageKeys(): string[] {
-  const channels = ['/prologue', '/orange', '/trinity', '/heal', '/bluebird', '/muse', '/epilogue'];
-  return channels.flatMap(path => {
-    const tabs = [...ONE_STOP_PAGE_TABS[path]];
-    if (path === '/epilogue') tabs.sort(([a], [b]) => Number(a === 'profile') - Number(b === 'profile'));
-    return tabs.map(([tab]) => normalizeOneStopPage(path + '?tab=' + encodeURIComponent(tab)));
-  });
+  return LUCKEY_CHANNEL_ORDER.flatMap(getOrderedChannelPageKeys);
 }
 
+/** Returns only the internal pages belonging to the current top-level app. */
+export function getOrderedLuckeyPageKeysForCurrentApp(current: string): string[] {
+  const currentPage = normalizeOneStopPage(current || '/');
+  for (const channelPath of LUCKEY_CHANNEL_ORDER) {
+    const pages = getOrderedChannelPageKeys(channelPath);
+    if (pages.includes(currentPage)) return pages;
+  }
+  return [];
+}
+
+function moveWithinCurrentApp(current: string, offset: -1 | 1): string {
+  const currentPage = normalizeOneStopPage(current || '/');
+  const pages = getOrderedLuckeyPageKeysForCurrentApp(currentPage);
+  const index = pages.indexOf(currentPage);
+  if (index < 0) return oneStopNavigationPath(currentPage);
+  return oneStopNavigationPath(pages[(index + offset + pages.length) % pages.length]);
+}
+
+/** Horizontal right movement wraps inside the current app and never switches apps. */
 export function nextOrderedLuckeyPage(current: string): string {
-  const pages = getOrderedLuckeyPageKeys();
-  const index = pages.indexOf(normalizeOneStopPage(current || '/'));
-  return oneStopNavigationPath(pages[(index + 1) % pages.length]);
+  return moveWithinCurrentApp(current, 1);
 }
 
-/** Reverse the same tour; entering from outside Luckey starts at Epilogue Profile. */
+/** Horizontal left movement wraps inside the current app and never switches apps. */
 export function previousOrderedLuckeyPage(current: string): string {
-  const pages = getOrderedLuckeyPageKeys();
-  const index = pages.indexOf(normalizeOneStopPage(current || '/'));
-  return oneStopNavigationPath(pages[index < 0 ? pages.length - 1 : (index - 1 + pages.length) % pages.length]);
+  return moveWithinCurrentApp(current, -1);
 }

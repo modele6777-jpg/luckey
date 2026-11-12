@@ -14,6 +14,12 @@ test('engine catalogue separates 15 foundational tools from 301 deep perspective
   assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 301 });
 });
 
+test('all listed catalog entries retain a readable meaning', () => {
+  for (const engine of ALL_DCE_ENGINES) {
+    assert.ok(getEngineCatalogMeaning(engine).trim(), `missing meaning for ${engine.key}`);
+  }
+});
+
 test('foundational tool meanings use their registered practical focus', () => {
   const saju = ALL_DCE_ENGINES.find(engine => engine.key === 'saju')!;
   assert.equal(saju.category, 'foundational');

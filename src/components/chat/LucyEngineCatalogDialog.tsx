@@ -3,11 +3,8 @@ import { Search, Sparkles, X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import {
-  DEEP_PERSPECTIVE_RESEARCH_COUNTS,
   ENGINE_CATALOG_COUNTS,
   getEngineCatalogMeaning,
-  getEngineCatalogResearch,
-  getEngineCatalogSources,
 } from '@/lib/divination/engineCatalog';
 
 interface LucyEngineCatalogDialogProps {
@@ -103,8 +100,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                   <p><strong className={isLight ? 'text-slate-900' : 'text-white'}>기초 도구:</strong> 사주·점성술·주역 등 등록된 계산 범위예요. 실제 결과는 질문·입력·실행 상태에 따라 달라져요.</p>
                   <p><strong className={isLight ? 'text-slate-900' : 'text-white'}>심층 관점:</strong> 전통·철학·신화·심리의 주제를 빌린 참고용 해석 렌즈예요. 전부 실행되거나 수치 계산되는 것은 아니에요.</p>
                   <p>답변별 상태에서 <b>계산 완료</b>는 실제 산출 결과, <b>상징 참고</b>는 정성적 해석, <b>부분 계산·미실행·미지원·오류</b>는 각기 제한·미선택/입력 부족·아직 구현되지 않음·산출 실패를 뜻합니다. 답변 기록에 없는 항목은 사용됐다고 확인할 수 없습니다.</p>
-                  <p><strong className={isLight ? 'text-slate-900' : 'text-white'}>심층 관점 뜻·출처:</strong> 이번에 개별 조사한 {DEEP_PERSPECTIVE_RESEARCH_COUNTS.total}개 중 {DEEP_PERSPECTIVE_RESEARCH_COUNTS.supported}개에는 확인한 자료 링크를 표시하고, {DEEP_PERSPECTIVE_RESEARCH_COUNTS.unsupported}개는 직접 출처를 확인하지 못해 이름 기반 앱 내 해석으로 구분해요. 앱 고유 표현이 공인된 전통·과학 용어라는 뜻은 아니에요.</p>
-                </div>
+                  </div>
               </details>
             </div>
 
@@ -152,8 +148,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                 <ul className="space-y-2">
                   {filteredEngines.map(engine => {
                     const isFoundational = engine.category === 'foundational';
-                    const research = getEngineCatalogResearch(engine);
-                    const sources = getEngineCatalogSources(engine);
                     return (
                       <li key={engine.key} className={`rounded-2xl border p-3 sm:p-3.5 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}>
                         <div className="flex items-start gap-2.5">
@@ -166,25 +160,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                               </span>
                             </div>
                             <p className={`mt-1.5 text-[11px] leading-relaxed sm:text-xs ${muted}`}>{getEngineCatalogMeaning(engine)}</p>
-                            {research && (
-                              <div className={`mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] ${isLight ? 'text-amber-800' : 'text-amber-300'}`}>
-                                {sources.length ? sources.map((source, index) => (
-                                  <a
-                                    key={source.url}
-                                    href={source.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title={research.evidence || undefined}
-                                    aria-label={`출처: ${source.title}`}
-                                    className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
-                                  >
-                                    {index === 0 ? '출처: ' : ''}{source.title}
-                                  </a>
-                                )) : (
-                                  <span>{research.supported ? '출처 링크를 확인할 수 없습니다' : '이름 기반 앱 내 해석 · 직접 출처 미확인'}</span>
-                                )}
-                              </div>
-                            )}
                           </div>
                         </div>
                       </li>

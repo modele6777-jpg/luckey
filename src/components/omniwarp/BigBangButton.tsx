@@ -2,7 +2,7 @@ import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
 import { BigBangLuckyBreeze } from './BigBangLuckyBreeze';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
-import { oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
+import { getOrderedLuckeyPageKeysForCurrentApp, oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { ChevronUp, ChevronDown, Clover, KeyRound, CircleHelp } from 'lucide-react';
@@ -55,36 +55,44 @@ function getAdjacentSidebarAppPath(currentLocation: string, direction: 'previous
   return SIDEBAR_APP_ORDER[nextIndex].path;
 }
 
+function isVisibleScrollRoot(element: HTMLElement) {
+  const rect = element.getBoundingClientRect();
+  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+  return rect.width > 0 && rect.height > 0 && style?.display !== 'none' && style?.visibility !== 'hidden';
+}
+
+function isScrollableRoot(element: HTMLElement) {
+  return element.scrollHeight > element.clientHeight + 1;
+}
+
+function getPrimaryScrollRoots(doc: Document) {
+  const preferredRoots = Array.from(doc.querySelectorAll<HTMLElement>('[data-app-scroll-root], .lucy-chat-main'))
+    .filter((element) => !element.closest('#main-sidebar-navigation') && isVisibleScrollRoot(element));
+  const scrollablePreferredRoots = preferredRoots.filter(isScrollableRoot);
+  if (scrollablePreferredRoots.length > 0) return scrollablePreferredRoots;
+
+  const pageRoot = doc.scrollingElement as HTMLElement | null;
+  if (pageRoot && isVisibleScrollRoot(pageRoot) && isScrollableRoot(pageRoot)) return [pageRoot];
+
+  const fallbackRoots = Array.from(doc.querySelectorAll<HTMLElement>('.overflow-y-auto, .overflow-y-scroll'))
+    .filter((element) => !element.closest('#main-sidebar-navigation') && isVisibleScrollRoot(element) && isScrollableRoot(element));
+  return fallbackRoots.filter((element) => !fallbackRoots.some((candidate) =>
+    candidate !== element && candidate.contains(element)
+  ));
+}
+
 function isAtVerticalScrollBoundary(edge: 'top' | 'bottom') {
   if (typeof document === 'undefined') return false;
-  const roots = new Set<HTMLElement>();
-  const addVisibleRoot = (node: Element | null) => {
-    if (!node) return;
-    const element = node as HTMLElement;
-    const rect = element.getBoundingClientRect();
-    const view = element.ownerDocument.defaultView;
-    const style = view?.getComputedStyle(element);
-    if (rect.width <= 0 || rect.height <= 0 || style?.display === 'none' || style?.visibility === 'hidden') return;
-    roots.add(element);
-  };
-
-  const selectors = '[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll';
-  document.querySelectorAll<HTMLElement>(selectors).forEach((element) => {
-    if (!element.closest('#main-sidebar-navigation')) addVisibleRoot(element);
-  });
-  const pageRoot = document.scrollingElement as HTMLElement | null;
-  if (pageRoot?.scrollHeight && pageRoot.scrollHeight > pageRoot.clientHeight + 1) addVisibleRoot(pageRoot);
-
+  const roots = new Set<HTMLElement>(getPrimaryScrollRoots(document));
   document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((frame) => {
+    if (!isVisibleScrollRoot(frame)) return;
     try {
       if (!frame.contentDocument) return;
-      const frameRoots = frame.contentDocument.querySelectorAll<HTMLElement>(selectors);
-      frameRoots.forEach(addVisibleRoot);
-      addVisibleRoot(frame.contentDocument.scrollingElement as HTMLElement | null);
+      getPrimaryScrollRoots(frame.contentDocument).forEach((root) => roots.add(root));
     } catch (_) {}
   });
 
-  const scrollableRoots = Array.from(roots).filter((element) => element.scrollHeight > element.clientHeight + 1);
+  const scrollableRoots = Array.from(roots).filter(isScrollableRoot);
   if (scrollableRoots.length === 0) return true;
   return scrollableRoots.every((element) => edge === 'top'
     ? element.scrollTop <= 2
@@ -152,7 +160,17 @@ export function BigBangButton() {
   const isKeyChannel = [currentCleanPath, windowCleanPath].some((path) =>
     ['/key', '/calm', '/orb', '/gateway', '/crystal', '/pharmacy'].some((alias) => path === alias || path.startsWith(`${alias}/`))
   );
-  const isCycleNavigationDisabled = isChatView || isKeyChannel;
+  const currentOneStopPage = getCurrentOneStopPage(location);
+  const currentAppPages = getOrderedLuckeyPageKeysForCurrentApp(currentOneStopPage);
+  const isCycleNavigationDisabled = isChatView || isKeyChannel || currentAppPages.length < 2;
+  const previousAppPath = getAdjacentSidebarAppPath(location, 'previous');
+  const nextAppPath = getAdjacentSidebarAppPath(location, 'next');
+  const directionTargets = {
+    north: previousAppPath ? getDestinationChannel(previousAppPath) : null,
+    south: nextAppPath ? getDestinationChannel(nextAppPath) : null,
+    west: isCycleNavigationDisabled ? null : getDestinationChannel(previousOrderedLuckeyPage(currentOneStopPage)),
+    east: isCycleNavigationDisabled ? null : getDestinationChannel(nextOrderedLuckeyPage(currentOneStopPage)),
+  };
 
   const [isPressing, setIsPressing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -252,12 +270,14 @@ export function BigBangButton() {
   const centerDirection = isPressing ? hoverDirection : clickedDirection;
   const [feedbackChannel, setFeedbackChannel] = useState<ReturnType<typeof getDestinationChannel> | null>(null);
   const DestinationIcon = feedbackChannel?.icon;
+  const navigationFeedbackStorageKey = 'luckey-bigbang-navigation-feedback';
   const [gestureFeedback, setGestureFeedback] = useState<'tap' | 'hold' | 'double' | null>(null);
   const gestureFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const centerGesture = isPressing && durationMs >= 220 && hoverDirection === 'none' ? 'hold' : gestureFeedback;
   const showGestureFeedback = (gesture: 'tap' | 'hold' | 'double') => {
     if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
+    try { sessionStorage.removeItem(navigationFeedbackStorageKey); } catch { /* ignore */ }
     setClickedDirection('none');
     setGestureFeedback(gesture);
     gestureFeedbackTimer.current = setTimeout(() => setGestureFeedback(null), 1200);
@@ -268,7 +288,23 @@ export function BigBangButton() {
     if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
     setClickedDirection(direction);
-    directionFeedbackTimer.current = setTimeout(() => setClickedDirection('none'), 1000);
+    const feedbackDurationMs = destination ? 4000 : 1000;
+    if (destination) {
+      try {
+        sessionStorage.setItem(navigationFeedbackStorageKey, JSON.stringify({
+          direction,
+          destination,
+          expiresAt: Date.now() + feedbackDurationMs,
+        }));
+      } catch { /* ignore */ }
+    } else {
+      try { sessionStorage.removeItem(navigationFeedbackStorageKey); } catch { /* ignore */ }
+    }
+    directionFeedbackTimer.current = setTimeout(() => {
+      setClickedDirection('none');
+      setFeedbackChannel(null);
+      try { sessionStorage.removeItem(navigationFeedbackStorageKey); } catch { /* ignore */ }
+    }, feedbackDurationMs);
   };
   const navigateToAdjacentMenuApp = (direction: 'previous' | 'next', feedbackDirection: 'north' | 'south') => {
     const path = getAdjacentSidebarAppPath(location, direction);
@@ -283,6 +319,26 @@ export function BigBangButton() {
   useEffect(() => () => {
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
     if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
+  }, []);
+  useEffect(() => {
+    let stored: { direction?: string; destination?: string; expiresAt?: number } | null = null;
+    try {
+      const raw = sessionStorage.getItem(navigationFeedbackStorageKey);
+      if (raw) stored = JSON.parse(raw);
+    } catch { /* ignore */ }
+    const validDirections = ['north', 'south', 'west', 'east'];
+    const remainingMs = Number(stored?.expiresAt) - Date.now();
+    if (!stored || !validDirections.includes(stored.direction || '') || !stored.destination || remainingMs <= 0) {
+      try { sessionStorage.removeItem(navigationFeedbackStorageKey); } catch { /* ignore */ }
+      return;
+    }
+    setFeedbackChannel(getDestinationChannel(stored.destination));
+    setClickedDirection(stored.direction as typeof hoverDirection);
+    directionFeedbackTimer.current = setTimeout(() => {
+      setClickedDirection('none');
+      setFeedbackChannel(null);
+      try { sessionStorage.removeItem(navigationFeedbackStorageKey); } catch { /* ignore */ }
+    }, remainingMs);
   }, []);
 
   // 🎯 좌측 화면과 우측 메뉴(네비게이션)를 제외한 오직 '루시채팅창'의 가로 정중앙 추적
@@ -1195,7 +1251,7 @@ export function BigBangButton() {
     } catch (_) {}
 
     activePointerIdRef.current = null;
-    // Check cancellation before the visual-drag branch can commit a recommendation.
+    // Check cancellation before the visual-drag branch; dragging must never navigate.
     if (maxDist > WARP_ABORT_DISTANCE) {
       cancelOutOfRangeDrag();
       return;
@@ -1212,7 +1268,6 @@ export function BigBangButton() {
       setDurationMs(0);
       setIsAborted(false);
       resetActiveWormholePeek();
-      goToNextRecommended(undefined, undefined, false, true);
       return;
     }
 
@@ -1869,8 +1924,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / ${isChatView ? '루시 채팅에서는 좌우 버튼 비활성화' : '왼쪽 버튼: 에필로그부터 프롤로그까지 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 순서대로 이동'} / 길게 누름: 루시 채팅 프로 / 드래그: 실버·아이스블루 별빛 궤적)`}
-              aria-label={`빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / ${isChatView ? '루시 채팅에서는 좌우 버튼 비활성화' : '왼쪽 버튼: 에필로그부터 프롤로그까지 역순 이동, 오른쪽 버튼: Universe부터 Profile까지 순서대로 이동'}, 길게 누름: 루시 채팅 프로, 드래그: 실버·아이스블루 별빛 궤적`}
+              title={`빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 위·아래: 콘텐츠 경계에서 이전·다음 앱으로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 루시 채팅 프로 / 드래그: 장식 효과만, 페이지 이동 없음)`}
+              aria-label={`빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 위·아래: 콘텐츠 경계에서 이전·다음 앱으로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 채팅 프로, 드래그는 화면 이동 없음`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -2084,17 +2139,39 @@ export function BigBangButton() {
                 )}
               </AnimatePresence>
 
+              <div className="absolute inset-0 z-20 pointer-events-none -rotate-45" data-bigbang-direction-targets="true" aria-hidden="true">
+                {[
+                  { direction: 'north' as const, target: directionTargets.north, position: 'left-1/2 top-[7px] -translate-x-1/2' },
+                  { direction: 'east' as const, target: directionTargets.east, position: 'right-[7px] top-1/2 -translate-y-1/2' },
+                  { direction: 'south' as const, target: directionTargets.south, position: 'left-1/2 bottom-[7px] -translate-x-1/2' },
+                  { direction: 'west' as const, target: directionTargets.west, position: 'left-[7px] top-1/2 -translate-y-1/2' },
+                ].map(({ direction, target, position }) => {
+                  if (!target) return null;
+                  const DirectionIcon = target.icon;
+                  return (
+                    <span
+                      key={direction}
+                      data-bigbang-direction-target={direction}
+                      data-bigbang-target-channel={target.id}
+                      className={`absolute flex h-[16px] w-[16px] items-center justify-center rounded-full border border-cyan-100/60 bg-slate-950/90 text-cyan-100 shadow-[0_0_7px_rgba(34,211,238,0.55)] ${position}`}
+                    >
+                      <DirectionIcon size={10} strokeWidth={2.2} />
+                    </span>
+                  );
+                })}
+              </div>
+
               {/* Big Bang center: directional chevrons on activation, dot while idle */}
               <div className="relative z-20 w-full h-full rounded-full flex items-center justify-center text-center select-none pointer-events-none">
                 <div className="relative flex items-center justify-center pointer-events-none">
                   {cloverWind !== 'off' ? (
                     <CircleHelp data-bigbang-center-gesture="recommend" size={26} strokeWidth={1.8} className="-rotate-45 text-emerald-100 drop-shadow-[0_0_8px_#6ee7b7]" aria-hidden="true" />
+                  ) : !isPressing && centerDirection !== 'none' && DestinationIcon ? (
+                    <DestinationIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerDirection === 'north' || centerDirection === 'south' ? (
                     centerDirection === 'north'
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                       : <ChevronDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
-                  ) : (centerDirection === 'west' || centerDirection === 'east') && DestinationIcon ? (
-                    <DestinationIcon data-bigbang-center-channel={feedbackChannel?.id} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerGesture === 'tap' ? (
                     <svg data-bigbang-center-gesture="tap" width="25" height="25" viewBox="0 0 26 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="-rotate-45 text-cyan-200" aria-hidden="true">
                       {[0, 120, 240].map(angle => <path key={angle} d="M13 14C9 12 5 8 7 5C9 2 12 4 13 6C14 4 17 2 19 5C21 8 17 12 13 14Z" transform={`rotate(${angle} 13 14)`} fill="currentColor" fillOpacity="0.18" />)}
