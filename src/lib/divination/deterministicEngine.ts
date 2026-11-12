@@ -338,6 +338,9 @@ import { calculateFrenchMichelFoucaultCareOfSelfAesthetics, formatFrenchMichelFo
 import { calculateGermanWalterBenjaminAuraNowTime, formatGermanWalterBenjaminAuraNowTimePrompt, type GermanWalterBenjaminAuraNowTimeResult, GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION } from './germanWalterBenjaminAuraNowTimeEngine';
 import { calculateFrenchEmmanuelLevinasFaceOfOtherHospitality, formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt, type FrenchEmmanuelLevinasFaceOfOtherHospitalityResult, FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION } from './frenchEmmanuelLevinasFaceOfOtherHospitalityEngine';
 import { calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia, formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt, type GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult, GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION } from './germanTheodorAdornoNegativeDialecticsMinimaMoraliaEngine';
+import { calculateFrenchJacquesDerridaDeconstructionDifferance, formatFrenchJacquesDerridaDeconstructionDifferancePrompt, type FrenchJacquesDerridaDeconstructionDifferanceResult, FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION } from './frenchJacquesDerridaDeconstructionDifferanceEngine';
+import { calculateGermanJurgenHabermasCommunicativeAction, formatGermanJurgenHabermasCommunicativeActionPrompt, type GermanJurgenHabermasCommunicativeActionResult, GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION } from './germanJurgenHabermasCommunicativeActionEngine';
+import { calculateFrenchRolandBarthesSemioticsPunctum, formatFrenchRolandBarthesSemioticsPunctumPrompt, type FrenchRolandBarthesSemioticsPunctumResult, FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION } from './frenchRolandBarthesSemioticsPunctumEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -696,6 +699,9 @@ export interface DeterministicEngineReport {
   germanWalterBenjaminAuraNowTimeResult?: GermanWalterBenjaminAuraNowTimeResult | null;
   frenchEmmanuelLevinasFaceOfOtherHospitalityResult?: FrenchEmmanuelLevinasFaceOfOtherHospitalityResult | null;
   germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult?: GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult | null;
+  frenchJacquesDerridaDeconstructionDifferanceResult?: FrenchJacquesDerridaDeconstructionDifferanceResult | null;
+  germanJurgenHabermasCommunicativeActionResult?: GermanJurgenHabermasCommunicativeActionResult | null;
+  frenchRolandBarthesSemioticsPunctumResult?: FrenchRolandBarthesSemioticsPunctumResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4061,6 +4067,33 @@ try {
     }
   })()));
 
+  // 309. 프랑스 자크 데리다 《그라마톨로지·법의 힘》 해체(Deconstruction)·차연(Différance)·미결정성·아포리아 돌파 지혜 엔진
+  const frenchJacquesDerridaDeconstructionDifferanceResult = calculateSupplement('frenchJacquesDerridaDeconstructionDifferanceResult', () => ((() => {
+    try {
+      return calculateFrenchJacquesDerridaDeconstructionDifferance(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 310. 독일 위르겐 하버마스 《의사소통행위이론·공론장의 구조변동》 더 나은 논증의 힘·상호이해 지향·생활세계 수호 지혜 엔진
+  const germanJurgenHabermasCommunicativeActionResult = calculateSupplement('germanJurgenHabermasCommunicativeActionResult', () => ((() => {
+    try {
+      return calculateGermanJurgenHabermasCommunicativeAction(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 311. 프랑스 롤랑 바르트 《신화론·밝은 방·텍스트의 즐거움》 저자의 죽음·푼크툼(Punctum)·기호학적 탈신화화 지혜 엔진
+  const frenchRolandBarthesSemioticsPunctumResult = calculateSupplement('frenchRolandBarthesSemioticsPunctumResult', () => ((() => {
+    try {
+      return calculateFrenchRolandBarthesSemioticsPunctum(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4405,6 +4438,9 @@ try {
     germanWalterBenjaminAuraNowTimeResult,
     frenchEmmanuelLevinasFaceOfOtherHospitalityResult,
     germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult,
+    frenchJacquesDerridaDeconstructionDifferanceResult,
+    germanJurgenHabermasCommunicativeActionResult,
+    frenchRolandBarthesSemioticsPunctumResult,
     tools: toolsMap,
   };
 }
@@ -4740,6 +4776,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'germanWalterBenjaminAuraNowTime', nameKo: '발터 벤야민 역사의개념에대하여 기술복제시대 아우라 역사의천사 지금시간 Jetztzeit 파편구원 산책자수집가', icon: '⏳', category: 'deep_master', summary: '발터 벤야민의 비판 미학 사상으로 고유한 일회적 현존성인 아우라(Aura)의 회복, 폐허를 직시하는 역사의 천사의 성찰, 찰나에서 역사의 문을 여는 지금-시간(Jetztzeit)의 결단을 체득합니다.' },
   { key: 'frenchEmmanuelLevinasFaceOfOtherHospitality', nameKo: '에마뉘엘 레비나스 전체성과무한 존재와다르게 타자의얼굴 무한한책임 무조건적환대 비폭력평화 살림의윤리', icon: '🤝', category: 'deep_master', summary: '에마뉘엘 레비나스의 윤리 제일철학 사상으로 나만의 에고를 넘어 상대의 고유한 존엄을 응시하는 타자의 얼굴(Visage), 핑계 없는 무한한 책임, 낯선 이를 너그럽게 품는 무조건적 환대를 체득합니다.' },
   { key: 'germanTheodorAdornoNegativeDialecticsMinimaMoralia', nameKo: '테오도어 아도르노 부정변증법 미니마모랄리아 비동일자수호 손상된삶의성찰 도구적이성극복 불협화음의진실 성좌적사유', icon: '🎼', category: 'deep_master', summary: '테오도어 아도르노의 비판 철학 사상으로 집단의 획일화에 맞서 고유한 차이를 지키는 비동일자(Das Nichtidentische)의 구원, 모순에 타협하지 않는 손상된 삶의 성찰, 가짜 조화를 거부하는 불협화음의 진실성을 체득합니다.' },
+  { key: 'frenchJacquesDerridaDeconstructionDifferance', nameKo: '자크 데리다 그라마톨로지 유령론 해체 차연 Differance 이항대립해체 미결정성 환대 아포리아돌파', icon: '📜', category: 'deep_master', summary: '자크 데리다의 해체주의 철학으로 고정된 독단적 이분법을 깨뜨리는 차연(Différance)의 사유, 미결정성의 한계를 돌파하는 결단과 낯선 타자를 향한 조건 없는 환대를 체득합니다.' },
+  { key: 'germanJurgenHabermasCommunicativeAction', nameKo: '위르겐 하버마스 의사소통행위이론 공론장의구조변동 더나은논증의힘 상호이해지향 이상적담화상황 생활세계식민화극복', icon: '🗣️', category: 'deep_master', summary: '위르겐 하버마스의 비판 소통 철학으로 독단적 강제 없는 더 나은 논증의 힘, 타자와의 왜곡 없는 상호이해 지향, 이상적 담화 상황과 도구적 합리성에 맞선 생활세계의 건강성을 체득합니다.' },
+  { key: 'frenchRolandBarthesSemioticsPunctum', nameKo: '롤랑 바르트 신화론 밝은방 텍스트의즐거움 저자의죽음 푼크툼 스투디움 기호학적탈신화화 능동적재창조', icon: '📸', category: 'deep_master', summary: '롤랑 바르트의 기호학 및 문학비평 사상으로 상투적 통념을 벗겨내는 현대 신화의 탈신화화, 심장을 찌르는 감동인 푼크툼(Punctum)의 직관, 독자의 능동적 재창조와 텍스트의 즐거움을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -5189,6 +5228,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'frenchJacquesDerridaDeconstructionDifferance',
+    'frenchRolandBarthesSemioticsPunctum',
     'germanWalterBenjaminAuraNowTime',
     'germanTheodorAdornoNegativeDialecticsMinimaMoralia',
     'frenchMauriceMerleauPontyEmbodiedPhenomenology',
@@ -5238,6 +5279,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'frenchJacquesDerridaDeconstructionDifferance',
+    'germanJurgenHabermasCommunicativeAction',
+    'frenchRolandBarthesSemioticsPunctum',
     'germanWalterBenjaminAuraNowTime',
     'frenchEmmanuelLevinasFaceOfOtherHospitality',
     'germanTheodorAdornoNegativeDialecticsMinimaMoralia',

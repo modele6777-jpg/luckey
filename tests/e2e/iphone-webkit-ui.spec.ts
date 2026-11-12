@@ -134,9 +134,9 @@ test('Lucy Pro engine count opens the visible 307-entry catalog and meanings', a
 
   const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('등록 목록 313개');
+  await expect(dialog).toContainText('등록 목록 316개');
   await expect(dialog).toContainText('15개 기초 도구');
-  await expect(dialog).toContainText('298개 심층 관점');
+  await expect(dialog).toContainText('301개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
   await dialog.getByText('관점 뜻과 답변별 상태 안내', { exact: true }).click();
   await expect(dialog).toContainText('상징 참고');

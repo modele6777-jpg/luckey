@@ -301,6 +301,9 @@ import { calculateFrenchMichelFoucaultCareOfSelfAesthetics, formatFrenchMichelFo
 import { calculateGermanWalterBenjaminAuraNowTime, formatGermanWalterBenjaminAuraNowTimePrompt, GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION } from '../src/lib/divination/germanWalterBenjaminAuraNowTimeEngine';
 import { calculateFrenchEmmanuelLevinasFaceOfOtherHospitality, formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt, FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION } from '../src/lib/divination/frenchEmmanuelLevinasFaceOfOtherHospitalityEngine';
 import { calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia, formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt, GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION } from '../src/lib/divination/germanTheodorAdornoNegativeDialecticsMinimaMoraliaEngine';
+import { calculateFrenchJacquesDerridaDeconstructionDifferance, formatFrenchJacquesDerridaDeconstructionDifferancePrompt, FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION } from '../src/lib/divination/frenchJacquesDerridaDeconstructionDifferanceEngine';
+import { calculateGermanJurgenHabermasCommunicativeAction, formatGermanJurgenHabermasCommunicativeActionPrompt, GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION } from '../src/lib/divination/germanJurgenHabermasCommunicativeActionEngine';
+import { calculateFrenchRolandBarthesSemioticsPunctum, formatFrenchRolandBarthesSemioticsPunctumPrompt, FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION } from '../src/lib/divination/frenchRolandBarthesSemioticsPunctumEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5792,6 +5795,48 @@ test('Theodor Adorno Negative Dialectics and Minima Moralia Engine: calculates N
   const prompt = formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(rep);
   assert(prompt.includes('테오도어 아도르노 《부정변증법》 비동일자 수호·미니마 모랄리아 지표'));
   assert(prompt.includes(rep.activeAdornoTheme.themeTitleKo));
+});
+
+test('Jacques Derrida Deconstruction and Differance Engine: calculates Differance, Binary Deconstruction, Aporia, and Hospitality', () => {
+  const rep = calculateFrenchJacquesDerridaDeconstructionDifferance(profile);
+  assert.equal(rep.engineVersion, FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION);
+  assert(rep.differancePostponementSpacializationScore >= 0 && rep.differancePostponementSpacializationScore <= 100);
+  assert(rep.binaryOppositionDeconstructionIndex >= 0 && rep.binaryOppositionDeconstructionIndex <= 100);
+  assert(rep.aporiaBreakthroughResolutionScore >= 0 && rep.aporiaBreakthroughResolutionScore <= 100);
+  assert(rep.unconditionalHospitalityEmpathyIndex >= 0 && rep.unconditionalHospitalityEmpathyIndex <= 100);
+  assert(rep.pharmakonTransformativeHealingScore >= 0 && rep.pharmakonTransformativeHealingScore <= 100);
+  assert(rep.activeDerridaTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchJacquesDerridaDeconstructionDifferancePrompt(rep);
+  assert(prompt.includes('자크 데리다 《그라마톨로지》 해체(Deconstruction)·차연(Différance) 지표'));
+  assert(prompt.includes(rep.activeDerridaTheme.themeTitleKo));
+});
+
+test('Jurgen Habermas Communicative Action and Public Sphere Engine: calculates Better Argument, Mutual Understanding, and Lifeworld Defense', () => {
+  const rep = calculateGermanJurgenHabermasCommunicativeAction(profile);
+  assert.equal(rep.engineVersion, GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION);
+  assert(rep.betterArgumentUnforcedForceScore >= 0 && rep.betterArgumentUnforcedForceScore <= 100);
+  assert(rep.mutualUnderstandingOrientationIndex >= 0 && rep.mutualUnderstandingOrientationIndex <= 100);
+  assert(rep.idealSpeechSituationFairnessScore >= 0 && rep.idealSpeechSituationFairnessScore <= 100);
+  assert(rep.lifeworldColonizationDefenseIndex >= 0 && rep.lifeworldColonizationDefenseIndex <= 100);
+  assert(rep.deliberativeDemocraticConsensusScore >= 0 && rep.deliberativeDemocraticConsensusScore <= 100);
+  assert(rep.activeHabermasTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanJurgenHabermasCommunicativeActionPrompt(rep);
+  assert(prompt.includes('위르겐 하버마스 《의사소통행위이론》 더 나은 논증의 힘·공론장 지표'));
+  assert(prompt.includes(rep.activeHabermasTheme.themeTitleKo));
+});
+
+test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition, Demythologization, and Death of Author', () => {
+  const rep = calculateFrenchRolandBarthesSemioticsPunctum(profile);
+  assert.equal(rep.engineVersion, FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION);
+  assert(rep.punctumAffectiveIntuitionScore >= 0 && rep.punctumAffectiveIntuitionScore <= 100);
+  assert(rep.mythologicalDemythologizationIndex >= 0 && rep.mythologicalDemythologizationIndex <= 100);
+  assert(rep.deathOfAuthorScriptibleReaderScore >= 0 && rep.deathOfAuthorScriptibleReaderScore <= 100);
+  assert(rep.plaisirDuTexteSensualDelightIndex >= 0 && rep.plaisirDuTexteSensualDelightIndex <= 100);
+  assert(rep.polyphonicSignifierFluidityScore >= 0 && rep.polyphonicSignifierFluidityScore <= 100);
+  assert(rep.activeBarthesTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchRolandBarthesSemioticsPunctumPrompt(rep);
+  assert(prompt.includes('롤랑 바르트 《신화론》·《밝은 방》 푼크툼(Punctum)·기호학 지표'));
+  assert(prompt.includes(rep.activeBarthesTheme.themeTitleKo));
 });
 
 

@@ -1259,5 +1259,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "germanTheodorAdornoNegativeDialecticsMinimaMoralia": {
     "field": "germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult",
     "traceKey": "germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult"
+  },
+  "frenchJacquesDerridaDeconstructionDifferance": {
+    "field": "frenchJacquesDerridaDeconstructionDifferanceResult",
+    "traceKey": "frenchJacquesDerridaDeconstructionDifferanceResult"
+  },
+  "germanJurgenHabermasCommunicativeAction": {
+    "field": "germanJurgenHabermasCommunicativeActionResult",
+    "traceKey": "germanJurgenHabermasCommunicativeActionResult"
+  },
+  "frenchRolandBarthesSemioticsPunctum": {
+    "field": "frenchRolandBarthesSemioticsPunctumResult",
+    "traceKey": "frenchRolandBarthesSemioticsPunctumResult"
   }
 };
