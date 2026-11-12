@@ -298,6 +298,9 @@ import { calculateKoreanSamyeongdaesaSongunYujeong, formatKoreanSamyeongdaesaSon
 import { calculateKoreanShinSaimdangChochungdoArtVirtue, formatKoreanShinSaimdangChochungdoArtVirtuePrompt, KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION } from '../src/lib/divination/koreanShinSaimdangChochungdoArtVirtueEngine';
 import { calculateGermanEdmundHusserlPhenomenologicalReduction, formatGermanEdmundHusserlPhenomenologicalReductionPrompt, GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION } from '../src/lib/divination/germanEdmundHusserlPhenomenologicalReductionEngine';
 import { calculateFrenchMichelFoucaultCareOfSelfAesthetics, formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt, FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION } from '../src/lib/divination/frenchMichelFoucaultCareOfSelfAestheticsEngine';
+import { calculateGermanWalterBenjaminAuraNowTime, formatGermanWalterBenjaminAuraNowTimePrompt, GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION } from '../src/lib/divination/germanWalterBenjaminAuraNowTimeEngine';
+import { calculateFrenchEmmanuelLevinasFaceOfOtherHospitality, formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt, FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION } from '../src/lib/divination/frenchEmmanuelLevinasFaceOfOtherHospitalityEngine';
+import { calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia, formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt, GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION } from '../src/lib/divination/germanTheodorAdornoNegativeDialecticsMinimaMoraliaEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5747,6 +5750,48 @@ test('Michel Foucault Care of Self Aesthetics Engine: calculates Care of Self, D
   const prompt = formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(rep);
   assert(prompt.includes('미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표'));
   assert(prompt.includes(rep.activeFoucaultTheme.themeTitleKo));
+});
+
+test('Walter Benjamin Aura and Now-Time Engine: calculates Aura Authenticity, Angelus Novus, and Messianic Jetztzeit', () => {
+  const rep = calculateGermanWalterBenjaminAuraNowTime(profile);
+  assert.equal(rep.engineVersion, GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION);
+  assert(rep.auraAuthenticityResonanceScore >= 0 && rep.auraAuthenticityResonanceScore <= 100);
+  assert(rep.angelusNovusHistoricalInsightIndex >= 0 && rep.angelusNovusHistoricalInsightIndex <= 100);
+  assert(rep.jetztzeitMessianicMomentumScore >= 0 && rep.jetztzeitMessianicMomentumScore <= 100);
+  assert(rep.flaneurDialecticalIlluminationIndex >= 0 && rep.flaneurDialecticalIlluminationIndex <= 100);
+  assert(rep.allegoricalRedemptionScore >= 0 && rep.allegoricalRedemptionScore <= 100);
+  assert(rep.activeBenjaminTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanWalterBenjaminAuraNowTimePrompt(rep);
+  assert(prompt.includes('발터 벤야민 《역사의 개념에 대하여》 아우라·지금-시간(Jetztzeit) 지표'));
+  assert(prompt.includes(rep.activeBenjaminTheme.themeTitleKo));
+});
+
+test('Emmanuel Levinas Face of the Other and Hospitality Engine: calculates Face Encounter, Infinite Responsibility, and Hospitality', () => {
+  const rep = calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(profile);
+  assert.equal(rep.engineVersion, FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION);
+  assert(rep.faceOfOtherEncounterScore >= 0 && rep.faceOfOtherEncounterScore <= 100);
+  assert(rep.infiniteResponsibilityIndex >= 0 && rep.infiniteResponsibilityIndex <= 100);
+  assert(rep.unconditionalHospitalityScore >= 0 && rep.unconditionalHospitalityScore <= 100);
+  assert(rep.beyondTotalityInfinityIndex >= 0 && rep.beyondTotalityInfinityIndex <= 100);
+  assert(rep.vulnerabilityProtectionScore >= 0 && rep.vulnerabilityProtectionScore <= 100);
+  assert(rep.activeLevinasTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(rep);
+  assert(prompt.includes('에마뉘엘 레비나스 《전체성과 무한》 타자의 얼굴·무한한 책임 지표'));
+  assert(prompt.includes(rep.activeLevinasTheme.themeTitleKo));
+});
+
+test('Theodor Adorno Negative Dialectics and Minima Moralia Engine: calculates Non-Identical Safeguard, Damaged Life, and Dissonance Tolerance', () => {
+  const rep = calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(profile);
+  assert.equal(rep.engineVersion, GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION);
+  assert(rep.nonIdenticalSafeguardScore >= 0 && rep.nonIdenticalSafeguardScore <= 100);
+  assert(rep.damagedLifeCriticalReflectionIndex >= 0 && rep.damagedLifeCriticalReflectionIndex <= 100);
+  assert(rep.instrumentalReasonTranscendenceScore >= 0 && rep.instrumentalReasonTranscendenceScore <= 100);
+  assert(rep.dissonanceResilienceIndex >= 0 && rep.dissonanceResilienceIndex <= 100);
+  assert(rep.constellationDialecticsScore >= 0 && rep.constellationDialecticsScore <= 100);
+  assert(rep.activeAdornoTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(rep);
+  assert(prompt.includes('테오도어 아도르노 《부정변증법》 비동일자 수호·미니마 모랄리아 지표'));
+  assert(prompt.includes(rep.activeAdornoTheme.themeTitleKo));
 });
 
 

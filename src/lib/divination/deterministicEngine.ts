@@ -335,6 +335,9 @@ import { calculateKoreanSamyeongdaesaSongunYujeong, formatKoreanSamyeongdaesaSon
 import { calculateKoreanShinSaimdangChochungdoArtVirtue, formatKoreanShinSaimdangChochungdoArtVirtuePrompt, type KoreanShinSaimdangChochungdoArtVirtueResult, KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION } from './koreanShinSaimdangChochungdoArtVirtueEngine';
 import { calculateGermanEdmundHusserlPhenomenologicalReduction, formatGermanEdmundHusserlPhenomenologicalReductionPrompt, type GermanEdmundHusserlPhenomenologicalReductionResult, GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION } from './germanEdmundHusserlPhenomenologicalReductionEngine';
 import { calculateFrenchMichelFoucaultCareOfSelfAesthetics, formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt, type FrenchMichelFoucaultCareOfSelfAestheticsResult, FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION } from './frenchMichelFoucaultCareOfSelfAestheticsEngine';
+import { calculateGermanWalterBenjaminAuraNowTime, formatGermanWalterBenjaminAuraNowTimePrompt, type GermanWalterBenjaminAuraNowTimeResult, GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION } from './germanWalterBenjaminAuraNowTimeEngine';
+import { calculateFrenchEmmanuelLevinasFaceOfOtherHospitality, formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt, type FrenchEmmanuelLevinasFaceOfOtherHospitalityResult, FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION } from './frenchEmmanuelLevinasFaceOfOtherHospitalityEngine';
+import { calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia, formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt, type GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult, GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION } from './germanTheodorAdornoNegativeDialecticsMinimaMoraliaEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -690,6 +693,9 @@ export interface DeterministicEngineReport {
   koreanShinSaimdangChochungdoArtVirtueResult?: KoreanShinSaimdangChochungdoArtVirtueResult | null;
   germanEdmundHusserlPhenomenologicalReductionResult?: GermanEdmundHusserlPhenomenologicalReductionResult | null;
   frenchMichelFoucaultCareOfSelfAestheticsResult?: FrenchMichelFoucaultCareOfSelfAestheticsResult | null;
+  germanWalterBenjaminAuraNowTimeResult?: GermanWalterBenjaminAuraNowTimeResult | null;
+  frenchEmmanuelLevinasFaceOfOtherHospitalityResult?: FrenchEmmanuelLevinasFaceOfOtherHospitalityResult | null;
+  germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult?: GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4028,6 +4034,33 @@ try {
     }
   })()));
 
+  // 306. 독일 발터 벤야민 《역사의 개념에 대하여·기술복제시대》 아우라(Aura)·역사의 천사·지금-시간(Jetztzeit)·파편과 구원의 지혜 엔진
+  const germanWalterBenjaminAuraNowTimeResult = calculateSupplement('germanWalterBenjaminAuraNowTimeResult', () => ((() => {
+    try {
+      return calculateGermanWalterBenjaminAuraNowTime(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 307. 프랑스 에마뉘엘 레비나스 《전체성과 무한·존재와 다르게》 타자의 얼굴(Visage)·무조건적 환대·무한한 윤리적 책임 지혜 엔진
+  const frenchEmmanuelLevinasFaceOfOtherHospitalityResult = calculateSupplement('frenchEmmanuelLevinasFaceOfOtherHospitalityResult', () => ((() => {
+    try {
+      return calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 308. 독일 테오도어 아도르노 《부정변증법·미니마 모랄리아》 비동일자(Das Nichtidentische) 수호·손상된 삶의 성찰·미학적 비판 지혜 엔진
+  const germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult = calculateSupplement('germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult', () => ((() => {
+    try {
+      return calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4369,6 +4402,9 @@ try {
     koreanShinSaimdangChochungdoArtVirtueResult,
     germanEdmundHusserlPhenomenologicalReductionResult,
     frenchMichelFoucaultCareOfSelfAestheticsResult,
+    germanWalterBenjaminAuraNowTimeResult,
+    frenchEmmanuelLevinasFaceOfOtherHospitalityResult,
+    germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult,
     tools: toolsMap,
   };
 }
@@ -4701,6 +4737,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'koreanShinSaimdangChochungdoArtVirtue', nameKo: '신사임당 초충도 사친 유대관령망친정 화육생명관조 효애성심 소박한격조 예술적현철 자아실현 온화한감화동반성장', icon: '🎨', category: 'deep_master', summary: '신사임당 선생의 초충도·사친 예술 철학으로 미물에서도 우주의 생명을 포착하는 세밀한 관조, 지극한 효애성심과 소박한 품격, 시대의 한계를 넘어선 주체적 자아실현과 온화한 감화력을 체득합니다.' },
   { key: 'germanEdmundHusserlPhenomenologicalReduction', nameKo: '에드문트 후설 순수현상학의이념들 유럽학문의위기 사태자체로 판단중지에포케 본질직관 생활세계 의식의지향성', icon: '🔍', category: 'deep_master', summary: '에드문트 후설의 현상학 사상으로 상투적 선입견을 괄호에 넣는 판단중지(에포케, Epoché), 왜곡 없는 경험으로 돌아가는 사태 자체로(Zu den Sachen selbst), 본질직관과 구체적 생활세계 접지를 체득합니다.' },
   { key: 'frenchMichelFoucaultCareOfSelfAesthetics', nameKo: '미셸 푸코 주체의해석학 성의역사 감시와처벌 자기배려 판옵티콘규율탈피 존재의미학 파레시아진실용기 자기통치주권', icon: '🏛️', category: 'deep_master', summary: '미셸 푸코의 비판 철학 사상으로 내면화된 규율 권력의 길들이기를 해체하고, 스스로의 영혼을 가꾸는 자기 배려(Souci de soi), 권력 앞의 진실 발언 파레시아(Parrhesia), 삶을 예술로 빚는 존재의 미학을 체득합니다.' },
+  { key: 'germanWalterBenjaminAuraNowTime', nameKo: '발터 벤야민 역사의개념에대하여 기술복제시대 아우라 역사의천사 지금시간 Jetztzeit 파편구원 산책자수집가', icon: '⏳', category: 'deep_master', summary: '발터 벤야민의 비판 미학 사상으로 고유한 일회적 현존성인 아우라(Aura)의 회복, 폐허를 직시하는 역사의 천사의 성찰, 찰나에서 역사의 문을 여는 지금-시간(Jetztzeit)의 결단을 체득합니다.' },
+  { key: 'frenchEmmanuelLevinasFaceOfOtherHospitality', nameKo: '에마뉘엘 레비나스 전체성과무한 존재와다르게 타자의얼굴 무한한책임 무조건적환대 비폭력평화 살림의윤리', icon: '🤝', category: 'deep_master', summary: '에마뉘엘 레비나스의 윤리 제일철학 사상으로 나만의 에고를 넘어 상대의 고유한 존엄을 응시하는 타자의 얼굴(Visage), 핑계 없는 무한한 책임, 낯선 이를 너그럽게 품는 무조건적 환대를 체득합니다.' },
+  { key: 'germanTheodorAdornoNegativeDialecticsMinimaMoralia', nameKo: '테오도어 아도르노 부정변증법 미니마모랄리아 비동일자수호 손상된삶의성찰 도구적이성극복 불협화음의진실 성좌적사유', icon: '🎼', category: 'deep_master', summary: '테오도어 아도르노의 비판 철학 사상으로 집단의 획일화에 맞서 고유한 차이를 지키는 비동일자(Das Nichtidentische)의 구원, 모순에 타협하지 않는 손상된 삶의 성찰, 가짜 조화를 거부하는 불협화음의 진실성을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4940,6 +4979,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'frenchEmmanuelLevinasFaceOfOtherHospitality',
     'frenchSimoneDeBeauvoirAmbiguityFreedom',
     'frenchMauriceMerleauPontyEmbodiedPhenomenology',
     'koreanPoeunJeongMongJuDansimga',
@@ -5149,6 +5189,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'germanWalterBenjaminAuraNowTime',
+    'germanTheodorAdornoNegativeDialecticsMinimaMoralia',
     'frenchMauriceMerleauPontyEmbodiedPhenomenology',
     'frenchSimoneDeBeauvoirAmbiguityFreedom',
     'italianPicoDellaMirandolaDignity',
@@ -5196,6 +5238,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'germanWalterBenjaminAuraNowTime',
+    'frenchEmmanuelLevinasFaceOfOtherHospitality',
+    'germanTheodorAdornoNegativeDialecticsMinimaMoralia',
     'frenchMichelFoucaultCareOfSelfAesthetics',
     'germanEdmundHusserlPhenomenologicalReduction',
     'koreanShinSaimdangChochungdoArtVirtue',
