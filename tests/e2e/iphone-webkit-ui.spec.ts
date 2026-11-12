@@ -90,6 +90,7 @@ test('Lucy Pro engine count opens the visible 307-entry catalog and meanings', a
   await expect(dialog).toContainText('15개 기초 도구');
   await expect(dialog).toContainText('292개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
+  await dialog.getByText('관점 뜻과 답변별 상태 안내', { exact: true }).click();
   await expect(dialog).toContainText('상징 참고');
   await expect.poll(() => dialog.evaluate(element => getComputedStyle(element).opacity)).toBe('1');
 
@@ -97,6 +98,49 @@ test('Lucy Pro engine count opens the visible 307-entry catalog and meanings', a
   await search.fill('사주명리');
   await expect(dialog).toContainText('사주명리');
   await expect(dialog).toContainText('개 표시');
+});
+
+test('Lucy Pro engine catalog fills the mobile viewport and its list scrolls without auto-opening the keyboard', async ({ page }) => {
+  await openLucy(page, '/chat?mode=pro');
+  await page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
+  const search = dialog.getByRole('searchbox', { name: '엔진과 관점 검색' });
+  await expect(dialog).toBeVisible();
+  const closeButton = dialog.getByRole('button', { name: '엔진 목록 닫기' });
+  await expect(closeButton).toBeVisible();
+  await expect(closeButton).toContainText('닫기');
+  await expect(search).not.toBeFocused();
+
+  const viewport = await page.evaluate(() => ({
+    width: window.visualViewport?.width ?? window.innerWidth,
+    height: window.visualViewport?.height ?? window.innerHeight,
+  }));
+  const dialogBounds = await dialog.boundingBox();
+  expect(dialogBounds).not.toBeNull();
+  if (!dialogBounds) throw new Error('Lucy engine catalog dialog is missing');
+  expect(dialogBounds.width).toBeGreaterThan(viewport.width * 0.94);
+  expect(dialogBounds.height).toBeGreaterThan(viewport.height * 0.94);
+
+  const list = page.getByTestId('lucy-engine-catalog-list');
+  const metrics = await list.evaluate(element => {
+    const style = getComputedStyle(element);
+    return {
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+      overflowY: style.overflowY,
+      touchAction: style.touchAction,
+    };
+  });
+  expect(metrics.clientHeight).toBeGreaterThan(viewport.height * 0.45);
+  expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight + 500);
+  expect(metrics.overflowY).toBe('auto');
+  expect(metrics.touchAction).toBe('pan-y');
+
+  await list.evaluate(element => { element.scrollTop = 400; });
+  await expect.poll(() => list.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await closeButton.click();
+  await expect(dialog).toHaveCount(0);
 });
 
 test('AI detection badge appears only for a focused non-casual query', async ({ page }) => {
