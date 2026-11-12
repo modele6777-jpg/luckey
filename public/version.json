@@ -1,10 +1,10 @@
 {
-  "version": "1.7.359",
-  "builtAt": "2026-11-12T03:40:15.444Z",
-  "summary": "루시 채팅에서 Big Bang 좌우 이동 비활성화",
+  "version": "1.7.360",
+  "builtAt": "2026-11-12T04:04:25.094Z",
+  "summary": "Firebase 경로의 gRPC 취약 버전 교체",
   "items": [
-    "루시 채팅에서 Big Bang 좌우 방향 입력이 Universe나 Profile로 이동하지 않도록 비활성화합니다",
-    "루시 채팅 외 화면의 순환 이동과 Big Bang 중앙·상하·길게 누르기 동작은 유지합니다",
-    "좌우 입력이 루시 채팅을 벗어나지 않는 iPhone WebKit 회귀 검사를 추가합니다"
+    "Firestore가 끌어오는 @grpc/grpc-js를 취약 버전 1.9.16에서 수정 버전 1.13.7로 고정합니다",
+    "Firebase SDK major downgrade 없이 gRPC 취약점 두 건을 해결하고 종속성 경로를 검증합니다",
+    "Firestore 동기화와 iPhone WebKit UI 회귀 테스트를 수행합니다"
   ]
 }

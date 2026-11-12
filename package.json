@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.359",
+  "version": "1.7.360",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -86,5 +86,8 @@
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.13.7"
   }
 }
