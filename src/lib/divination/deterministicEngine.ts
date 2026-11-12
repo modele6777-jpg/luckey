@@ -344,6 +344,9 @@ import { calculateFrenchRolandBarthesSemioticsPunctum, formatFrenchRolandBarthes
 import { calculateAmericanJohnDeweyPragmaticInquiryGrowth, formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt, type AmericanJohnDeweyPragmaticInquiryGrowthResult, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION } from './americanJohnDeweyPragmaticInquiryGrowthEngine';
 import { calculateRussianFyodorDostoevskyKaramazovSoulCompassion, formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt, type RussianFyodorDostoevskyKaramazovSoulCompassionResult, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION } from './russianFyodorDostoevskyKaramazovSoulCompassionEngine';
 import { calculateKoreanBaekSeokDeerWhiteWallPoeticPurity, formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt, type KoreanBaekSeokDeerWhiteWallPoeticPurityResult, KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION } from './koreanBaekSeokDeerWhiteWallPoeticPurityEngine';
+import { calculateFrenchPaulRicoeurNarrativeIdentityHealing, formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt, type FrenchPaulRicoeurNarrativeIdentityHealingResult, FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION } from './frenchPaulRicoeurNarrativeIdentityHealingEngine';
+import { calculateRussianAntonChekhovQuietEnduranceCompassion, formatRussianAntonChekhovQuietEnduranceCompassionPrompt, type RussianAntonChekhovQuietEnduranceCompassionResult, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION } from './russianAntonChekhovQuietEnduranceCompassionEngine';
+import { calculateKoreanSeopoKimManJungGuunmongAwakening, formatKoreanSeopoKimManJungGuunmongAwakeningPrompt, type KoreanSeopoKimManJungGuunmongAwakeningResult, KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION } from './koreanSeopoKimManJungGuunmongAwakeningEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -708,6 +711,9 @@ export interface DeterministicEngineReport {
   americanJohnDeweyPragmaticInquiryGrowthResult?: AmericanJohnDeweyPragmaticInquiryGrowthResult | null;
   russianFyodorDostoevskyKaramazovSoulCompassionResult?: RussianFyodorDostoevskyKaramazovSoulCompassionResult | null;
   koreanBaekSeokDeerWhiteWallPoeticPurityResult?: KoreanBaekSeokDeerWhiteWallPoeticPurityResult | null;
+  frenchPaulRicoeurNarrativeIdentityHealingResult?: FrenchPaulRicoeurNarrativeIdentityHealingResult | null;
+  russianAntonChekhovQuietEnduranceCompassionResult?: RussianAntonChekhovQuietEnduranceCompassionResult | null;
+  koreanSeopoKimManJungGuunmongAwakeningResult?: KoreanSeopoKimManJungGuunmongAwakeningResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4127,6 +4133,33 @@ try {
     }
   })()));
 
+  // 315. 프랑스 폴 리쾨르 《시간과 이야기·자기 자신으로서의 타자》 서사적 정체성 & 해석학적 치유·기억과 용서 지혜 엔진
+  const frenchPaulRicoeurNarrativeIdentityHealingResult = calculateSupplement('frenchPaulRicoeurNarrativeIdentityHealingResult', () => ((() => {
+    try {
+      return calculateFrenchPaulRicoeurNarrativeIdentityHealing(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 316. 러시아 안톤 체호프 《바냐 아저씨·갈매기》 일상의 진실 직시 & 묵묵한 인내·담담한 자비와 위로 지혜 엔진
+  const russianAntonChekhovQuietEnduranceCompassionResult = calculateSupplement('russianAntonChekhovQuietEnduranceCompassionResult', () => ((() => {
+    try {
+      return calculateRussianAntonChekhovQuietEnduranceCompassion(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 317. 대한민국 서포 김만중 《구운몽·사씨남정기》 일장춘몽 세속 환상 각성 & 금강경 공관·지극한 효성·초연한 회복탄력성 지혜 엔진
+  const koreanSeopoKimManJungGuunmongAwakeningResult = calculateSupplement('koreanSeopoKimManJungGuunmongAwakeningResult', () => ((() => {
+    try {
+      return calculateKoreanSeopoKimManJungGuunmongAwakening(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4477,6 +4510,9 @@ try {
     americanJohnDeweyPragmaticInquiryGrowthResult,
     russianFyodorDostoevskyKaramazovSoulCompassionResult,
     koreanBaekSeokDeerWhiteWallPoeticPurityResult,
+    frenchPaulRicoeurNarrativeIdentityHealingResult,
+    russianAntonChekhovQuietEnduranceCompassionResult,
+    koreanSeopoKimManJungGuunmongAwakeningResult,
     tools: toolsMap,
   };
 }
@@ -4818,6 +4854,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'americanJohnDeweyPragmaticInquiryGrowth', nameKo: '존 듀이 경험과자연 민주주의와교육 반성적사고 지성적탐구 도구주의 도구적지성 성장그자체로서의삶 유기체환경상호작용', icon: '🌱', category: 'deep_master', summary: '존 듀이의 실용주의 및 도구주의 철학으로 고착된 독단을 깨는 반성적 사고(Reflective Thinking), 문제 해결을 위한 지성적 탐구(Inquiry), 유기체와 환경의 능동적 상호작용과 도달점 없는 영원한 성장으로서의 삶을 체득합니다.' },
   { key: 'russianFyodorDostoevskyKaramazovSoulCompassion', nameKo: '표도르 도스토옙스키 카라마조프가의형제들 죄와벌 영혼의심연직시 대자비 고통을통한정화 대지의입맞춤 살아있는생명긍정 적극적사랑', icon: '🕊️', category: 'deep_master', summary: '표도르 도스토옙스키의 심원한 실존 문학 철학으로 영혼의 가장 깊은 심연과 모순을 정직하게 응시하고, 고통을 성장의 양분으로 승화시키는 정화, 살아 숨 쉬는 대지와 생명을 향한 뜨거운 적극적 사랑(Active Love)과 대자비를 체득합니다.' },
   { key: 'koreanBaekSeokDeerWhiteWallPoeticPurity', nameKo: '백석 사슴 흰바람벽이있어 나와나타샤와흰당나귀 가난하고외롭고높고쓸쓸한 영혼의맑은존엄 토속적정감 초연한고결성 자아성찰', icon: '🦌', category: 'deep_master', summary: '백석 시인의 고결한 민족 서정 철학으로 가난하고 외롭고 쓸쓸한 시련 속에서도 훼손되지 않는 영혼의 높고 맑은 존엄성, 따스한 토속적 공동체 정감과 흰 당나귀처럼 눈 쌓인 밤을 담담히 걸어가는 초연한 자아 성찰을 체득합니다.' },
+  { key: 'frenchPaulRicoeurNarrativeIdentityHealing', nameKo: '폴 리쾨르 시간과이야기 자기자신으로서의타자 기억역사망각 서사적정체성 미장앙트리그 해석학적치유 용서와화해', icon: '📖', category: 'deep_master', summary: '폴 리쾨르의 철학적 해석학 사상으로 삶의 불협화음 속에서 의미의 화음을 길어 올리는 서사화(Mise en intrigue), 타자를 품는 윤리적 자기성, 상처받은 기억을 치유하고 자유를 선물하는 성숙한 화해와 용서를 체득합니다.' },
+  { key: 'russianAntonChekhovQuietEnduranceCompassion', nameKo: '안톤 체호프 바냐아저씨 갈매기 일상의진실직시 묵묵한인내 우리는살아가야합니다 담담한자비 소박한품격 오늘심는한그루나무', icon: '🌿', category: 'deep_master', summary: '안톤 체호프의 실존적 휴머니즘 문학 철학으로 허위의식을 걷어내고 삶의 있는 그대로의 진실을 응시하며, "우리는 살아가야 합니다"의 묵묵한 일상 노동과 성실한 인내, 상처 입은 이들을 향한 담담하고 깊은 연민과 위로를 체득합니다.' },
+  { key: 'koreanSeopoKimManJungGuunmongAwakening', nameKo: '서포 김만중 구운몽 사씨남정기 서포만필 일장춘몽대오각성 금강경반야공관 본래면목회복 사씨정경순결 유배지효심승화 초연한평정', icon: '☁️', category: 'deep_master', summary: '서포 김만중 선생의 위대한 고전 문학 철학으로 세속의 덧없는 부귀영화를 꿰뚫어 보고 참된 본성을 회복하는 일장춘몽의 대오각성, 금강경 반야공관의 맑은 초연함, 절해고도 유배의 시련 속에서도 홀어머니를 위로한 지극한 효심과 승화의 지혜를 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4879,6 +4918,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'frenchPaulRicoeurNarrativeIdentityHealing',
+    'russianAntonChekhovQuietEnduranceCompassion',
     'americanJohnDeweyPragmaticInquiryGrowth',
     'frenchMichelFoucaultCareOfSelfAesthetics',
     'koreanShinSaimdangChochungdoArtVirtue',
@@ -5058,6 +5099,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'frenchPaulRicoeurNarrativeIdentityHealing',
+    'russianAntonChekhovQuietEnduranceCompassion',
+    'koreanSeopoKimManJungGuunmongAwakening',
     'russianFyodorDostoevskyKaramazovSoulCompassion',
     'koreanBaekSeokDeerWhiteWallPoeticPurity',
     'frenchEmmanuelLevinasFaceOfOtherHospitality',
@@ -5232,6 +5276,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'russianAntonChekhovQuietEnduranceCompassion',
+    'koreanSeopoKimManJungGuunmongAwakening',
     'russianFyodorDostoevskyKaramazovSoulCompassion',
     'koreanShinSaimdangChochungdoArtVirtue',
     'germanEdmundHusserlPhenomenologicalReduction',
@@ -5271,6 +5317,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'frenchPaulRicoeurNarrativeIdentityHealing',
+    'koreanSeopoKimManJungGuunmongAwakening',
     'koreanBaekSeokDeerWhiteWallPoeticPurity',
     'americanJohnDeweyPragmaticInquiryGrowth',
     'frenchJacquesDerridaDeconstructionDifferance',
@@ -5324,6 +5372,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'frenchPaulRicoeurNarrativeIdentityHealing',
+    'russianAntonChekhovQuietEnduranceCompassion',
+    'koreanSeopoKimManJungGuunmongAwakening',
     'americanJohnDeweyPragmaticInquiryGrowth',
     'russianFyodorDostoevskyKaramazovSoulCompassion',
     'koreanBaekSeokDeerWhiteWallPoeticPurity',

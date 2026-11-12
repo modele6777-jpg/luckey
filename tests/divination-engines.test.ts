@@ -307,6 +307,9 @@ import { calculateFrenchRolandBarthesSemioticsPunctum, formatFrenchRolandBarthes
 import { calculateAmericanJohnDeweyPragmaticInquiryGrowth, formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION } from '../src/lib/divination/americanJohnDeweyPragmaticInquiryGrowthEngine';
 import { calculateRussianFyodorDostoevskyKaramazovSoulCompassion, formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION } from '../src/lib/divination/russianFyodorDostoevskyKaramazovSoulCompassionEngine';
 import { calculateKoreanBaekSeokDeerWhiteWallPoeticPurity, formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt, KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION } from '../src/lib/divination/koreanBaekSeokDeerWhiteWallPoeticPurityEngine';
+import { calculateFrenchPaulRicoeurNarrativeIdentityHealing, formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt, FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION } from '../src/lib/divination/frenchPaulRicoeurNarrativeIdentityHealingEngine';
+import { calculateRussianAntonChekhovQuietEnduranceCompassion, formatRussianAntonChekhovQuietEnduranceCompassionPrompt, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION } from '../src/lib/divination/russianAntonChekhovQuietEnduranceCompassionEngine';
+import { calculateKoreanSeopoKimManJungGuunmongAwakening, formatKoreanSeopoKimManJungGuunmongAwakeningPrompt, KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION } from '../src/lib/divination/koreanSeopoKimManJungGuunmongAwakeningEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5882,6 +5885,48 @@ test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solit
   const prompt = formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(rep);
   assert(prompt.includes('백석 《사슴·흰 바람벽이 있어》 순수 고결성·맑은 존엄(Poetic Purity) 지표'));
   assert(prompt.includes(rep.activeBaekSeokTheme.themeTitleKo));
+});
+
+test('Paul Ricoeur Narrative Identity and Healing Engine: calculates Emplotment, Ipso-Identity, and Forgiveness Resilience', () => {
+  const rep = calculateFrenchPaulRicoeurNarrativeIdentityHealing(profile);
+  assert.equal(rep.engineVersion, FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION);
+  assert(rep.narrativeIdentityEmplotmentScore >= 0 && rep.narrativeIdentityEmplotmentScore <= 100);
+  assert(rep.ipsoIdentityEthicalAlterityIndex >= 0 && rep.ipsoIdentityEthicalAlterityIndex <= 100);
+  assert(rep.hermeneuticHealingMemoryIndex >= 0 && rep.hermeneuticHealingMemoryIndex <= 100);
+  assert(rep.metaphoricalInnovationHopeScore >= 0 && rep.metaphoricalInnovationHopeScore <= 100);
+  assert(rep.reconciliationForgivenessResilience >= 0 && rep.reconciliationForgivenessResilience <= 100);
+  assert(rep.activeRicoeurTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(rep);
+  assert(prompt.includes('폴 리쾨르 《시간과 이야기·자기 자신으로서의 타자》 서사적 정체성·치유 지표'));
+  assert(prompt.includes(rep.activeRicoeurTheme.themeTitleKo));
+});
+
+test('Anton Chekhov Quiet Endurance and Compassion Engine: calculates Unpretentious Truthfulness, Diligence, and Fortitude', () => {
+  const rep = calculateRussianAntonChekhovQuietEnduranceCompassion(profile);
+  assert.equal(rep.engineVersion, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION);
+  assert(rep.unpretentiousTruthfulnessScore >= 0 && rep.unpretentiousTruthfulnessScore <= 100);
+  assert(rep.quietEnduranceDiligenceIndex >= 0 && rep.quietEnduranceDiligenceIndex <= 100);
+  assert(rep.subtleCompassionEmpathyIndex >= 0 && rep.subtleCompassionEmpathyIndex <= 100);
+  assert(rep.innerDecencyIntegrityScore >= 0 && rep.innerDecencyIntegrityScore <= 100);
+  assert(rep.gentleFortitudeHopeResilience >= 0 && rep.gentleFortitudeHopeResilience <= 100);
+  assert(rep.activeChekhovTheme.themeTitleKo.length > 0);
+  const prompt = formatRussianAntonChekhovQuietEnduranceCompassionPrompt(rep);
+  assert(prompt.includes('안톤 체호프 《바냐 아저씨·갈매기》 일상의 진실·묵묵한 인내 지표'));
+  assert(prompt.includes(rep.activeChekhovTheme.themeTitleKo));
+});
+
+test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Penetration, Void True Self, and Equanimity', () => {
+  const rep = calculateKoreanSeopoKimManJungGuunmongAwakening(profile);
+  assert.equal(rep.engineVersion, KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION);
+  assert(rep.guunmongIllusoryFamePenetrationScore >= 0 && rep.guunmongIllusoryFamePenetrationScore <= 100);
+  assert(rep.prajnaparamitaVoidTrueSelfIndex >= 0 && rep.prajnaparamitaVoidTrueSelfIndex <= 100);
+  assert(rep.righteousIntegrityMoralFidelityIndex >= 0 && rep.righteousIntegrityMoralFidelityIndex <= 100);
+  assert(rep.filialDevotionLiterarySublimationScore >= 0 && rep.filialDevotionLiterarySublimationScore <= 100);
+  assert(rep.transcendentEquanimityResilience >= 0 && rep.transcendentEquanimityResilience <= 100);
+  assert(rep.activeGuunmongTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(rep);
+  assert(prompt.includes('서포 김만중 《구운몽·사씨남정기》 일장춘몽 각성·반야공관 지표'));
+  assert(prompt.includes(rep.activeGuunmongTheme.themeTitleKo));
 });
 
 

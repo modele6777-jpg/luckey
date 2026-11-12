@@ -1283,5 +1283,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanBaekSeokDeerWhiteWallPoeticPurity": {
     "field": "koreanBaekSeokDeerWhiteWallPoeticPurityResult",
     "traceKey": "koreanBaekSeokDeerWhiteWallPoeticPurityResult"
+  },
+  "frenchPaulRicoeurNarrativeIdentityHealing": {
+    "field": "frenchPaulRicoeurNarrativeIdentityHealingResult",
+    "traceKey": "frenchPaulRicoeurNarrativeIdentityHealingResult"
+  },
+  "russianAntonChekhovQuietEnduranceCompassion": {
+    "field": "russianAntonChekhovQuietEnduranceCompassionResult",
+    "traceKey": "russianAntonChekhovQuietEnduranceCompassionResult"
+  },
+  "koreanSeopoKimManJungGuunmongAwakening": {
+    "field": "koreanSeopoKimManJungGuunmongAwakeningResult",
+    "traceKey": "koreanSeopoKimManJungGuunmongAwakeningResult"
   }
 };
