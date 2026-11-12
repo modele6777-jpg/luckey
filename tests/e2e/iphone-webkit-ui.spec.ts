@@ -37,13 +37,19 @@ async function openKeyChannel(page) {
   await expect.poll(() => page.locator('iframe[title="Key"]').evaluate((frame) =>
     (frame as HTMLIFrameElement).contentDocument?.readyState === 'complete'
   )).toBe(true);
+  await expect(lockScreen).toHaveCount(0);
+  await page.waitForTimeout(200);
 }
 
 async function setContentScrollBoundary(page, edge: 'top' | 'bottom') {
   await page.evaluate((targetEdge) => {
     const selectors = '[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll';
     const move = (element: HTMLElement | null) => {
-      if (element) element.scrollTop = targetEdge === 'top' ? 0 : element.scrollHeight;
+      if (!element) return;
+      const previousScrollBehavior = element.style.scrollBehavior;
+      element.style.scrollBehavior = 'auto';
+      element.scrollTop = targetEdge === 'top' ? 0 : Math.max(0, element.scrollHeight - element.clientHeight);
+      element.style.scrollBehavior = previousScrollBehavior;
     };
     document.querySelectorAll<HTMLElement>(selectors).forEach((element) => {
       if (!element.closest('#main-sidebar-navigation')) move(element);
@@ -58,6 +64,51 @@ async function setContentScrollBoundary(page, edge: 'top' | 'bottom') {
   }, edge);
 }
 
+async function expectContentScrollBoundary(page, edge: 'top' | 'bottom') {
+  await expect.poll(() => page.evaluate((targetEdge) => {
+    const roots = new Set<HTMLElement>();
+    const addVisibleRoot = (node: Element | null) => {
+      if (!node) return;
+      const element = node as HTMLElement;
+      const rect = element.getBoundingClientRect();
+      const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+      if (rect.width <= 0 || rect.height <= 0 || style?.display === 'none' || style?.visibility === 'hidden') return;
+      roots.add(element);
+    };
+    const selectors = '[data-app-scroll-root], .lucy-chat-main, .overflow-y-auto, .overflow-y-scroll';
+    document.querySelectorAll<HTMLElement>(selectors).forEach((element) => {
+      if (!element.closest('#main-sidebar-navigation')) addVisibleRoot(element);
+    });
+    const pageRoot = document.scrollingElement as HTMLElement | null;
+    if (pageRoot?.scrollHeight && pageRoot.scrollHeight > pageRoot.clientHeight + 1) addVisibleRoot(pageRoot);
+    document.querySelectorAll<HTMLIFrameElement>('iframe').forEach((frame) => {
+      try {
+        if (!frame.contentDocument) return;
+        frame.contentDocument.querySelectorAll<HTMLElement>(selectors).forEach(addVisibleRoot);
+        addVisibleRoot(frame.contentDocument.scrollingElement as HTMLElement | null);
+      } catch (_) {}
+    });
+    const scrollableRoots = Array.from(roots).filter((element) => element.scrollHeight > element.clientHeight + 1);
+    return scrollableRoots.length === 0 || scrollableRoots.every((element) => targetEdge === 'top'
+      ? element.scrollTop <= 2
+      : element.scrollHeight - element.clientHeight - element.scrollTop <= 2
+    );
+  }, edge)).toBe(true);
+}
+
+async function addBigBangScrollProbe(page) {
+  return page.evaluate(() => {
+    const root = document.createElement('div');
+    root.id = 'bigbang-scroll-probe';
+    root.dataset.appScrollRoot = 'true';
+    root.style.cssText = 'position:fixed;left:0;top:0;width:40px;height:40px;overflow:auto;opacity:0;pointer-events:none;z-index:-1';
+    root.innerHTML = '<div style="width:1px;height:400px"></div>';
+    document.body.append(root);
+    root.scrollTop = 120;
+    return { scrollTop: root.scrollTop, clientHeight: root.clientHeight, scrollHeight: root.scrollHeight };
+  });
+}
+
 test('update modal changelog copy stays visible in WebKit light and dark themes', async ({ page }) => {
   await openLucy(page, '/chat?mode=pro');
   await page.evaluate(() => sessionStorage.setItem('prism_refresh_update_notice', '1'));
@@ -69,8 +120,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Lucy·Key UI 및 Big Bang 채널 이동 개선');
-  await expect(item).toContainText('최근 대화 복귀 버튼 문구를 ‘최근대화’로 줄이고 버튼 크기를 축소했습니다.');
+  await expect(summary).toContainText('Big Bang 버튼의 콘텐츠 스크롤 제거');
+  await expect(item).toContainText('Big Bang 위·아래 버튼은 콘텐츠를 스크롤하지 않습니다.');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -243,11 +294,35 @@ test('Big Bang left and right controls stay disabled in the Key channel', async 
   }
 });
 
+test('Big Bang north and south controls do not scroll content away from boundaries', async ({ page }) => {
+  await openLucy(page);
+  const probe = await addBigBangScrollProbe(page);
+  expect(probe.clientHeight).toBeGreaterThan(0);
+  expect(probe.scrollHeight).toBeGreaterThan(probe.clientHeight);
+  expect(probe.scrollTop).toBe(120);
+
+  const bigBang = page.locator('div[data-bigbang="true"]');
+  const box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing in Lucy');
+  const chatUrl = page.url();
+  const centerX = box.x + box.width / 2;
+  const centerY = box.y + box.height / 2;
+
+  for (const offsetY of [-36, 36]) {
+    await page.touchscreen.tap(centerX, centerY + offsetY);
+    await expect(page).toHaveURL(chatUrl);
+    await page.waitForTimeout(500);
+    await expect.poll(() => page.locator('#bigbang-scroll-probe').evaluate(element => (element as HTMLElement).scrollTop)).toBe(120);
+  }
+});
+
 test('Big Bang vertical controls follow right-menu app order at content boundaries', async ({ page }) => {
   await openLucy(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toBeVisible();
   await setContentScrollBoundary(page, 'bottom');
+  await expectContentScrollBoundary(page, 'bottom');
   let box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Lucy');
@@ -256,23 +331,32 @@ test('Big Bang vertical controls follow right-menu app order at content boundari
 
   await openKeyChannel(page);
   await setContentScrollBoundary(page, 'bottom');
+  await expectContentScrollBoundary(page, 'bottom');
   box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Key');
-  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
+  const southX = box.x + box.width / 2;
+  const southY = box.y + box.height / 2 + 36;
+  await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x: southX, y: southY });
+  await page.touchscreen.tap(southX, southY);
   await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   expect([null, 'universe']).toContain(new URL(page.url()).searchParams.get('tab'));
+
 });
 
 test('Big Bang north at the Key channel top boundary returns to Lucy', async ({ page }) => {
   await openKeyChannel(page);
   await setContentScrollBoundary(page, 'top');
+  await expectContentScrollBoundary(page, 'top');
   await page.waitForTimeout(200);
   const bigBang = page.locator('div[data-bigbang="true"]');
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Key');
-  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 - 36);
+  const northX = box.x + box.width / 2;
+  const northY = box.y + box.height / 2 - 36;
+  await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x: northX, y: northY });
+  await page.touchscreen.tap(northX, northY);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator('.lucy-chat-footer')).toBeVisible();
 });

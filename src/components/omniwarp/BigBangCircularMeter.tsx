@@ -2,10 +2,6 @@ import React, { useId, useCallback, useState, useEffect, useRef, useMemo } from 
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocation } from 'wouter';
 import { WarpPhase } from '@/lib/omniWarp/types';
-import { resetAppScroll, resetAppScrollToBottom } from '@/utils/scrollToTop';
-import { playAudioHaptic } from '@/lib/audioHaptics';
-import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
-
 // 12방위 외곽 룬 문자 각인 (Elder Futhark) - 아케인 서클 미세 글리프 유지
 const OUTER_MINI_RUNES = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ'];
 
@@ -356,15 +352,6 @@ export function findCurrentCycleStepIndex(
   return 0;
 }
 
-export interface BigBangCircularMeterActions {
-  scrollToTop: (e?: any) => void;
-  scrollToBottom: (e?: any) => void;
-  navigateBack: (e?: any) => void;
-  navigateForward: (e?: any) => void;
-  prevStep: BigBangCycleNavStep;
-  nextStep: BigBangCycleNavStep;
-}
-
 interface BigBangCircularMeterProps {
   /** 사용자가 누르고 있는지 여부 */
   isPressing: boolean;
@@ -382,8 +369,6 @@ interface BigBangCircularMeterProps {
   idleCycleProgress?: number;
   /** 🌌 더블탭 시 고대 룬 문자 사이로 우주로 빨려들어가는 하이퍼스페이스 애니메이션 상태 */
   isCosmicSuction?: boolean;
-  /** 🧭 상하좌우 원뿔 모핑 액션 등록 콜백 */
-  onRegisterActions?: (actions: BigBangCircularMeterActions) => void;
   /** Right-hand control advances through every Luckey dapp in fixed order. */
   onNextPage: () => void;
   /** Left-hand control jumps immediately to the current recommendation. */
@@ -394,7 +379,7 @@ interface BigBangCircularMeterProps {
  * 🔮 빅뱅 아케인 마법진 매트릭스 (BigBang Arcane Magic Circle)
  * - 현대적이고 신비로운 대형 코스믹 아케인 서클 시스템
  * - 직경 144px로 확대되어 76~84px 크기의 코스믹 옵시디언 버튼을 웅장하고 유려하게 감쌈
- * - 4방위 고정 금빛 아이콘: 상(최상단 스크롤 쉐브론), 하(최하단 스크롤 쉐브론), 좌(3선 메뉴), 우(음표 배경음 컨트롤)
+ * - 4방위 고정 금빛 아이콘: 상·하(콘텐츠 경계에서 앱 전환), 좌(3선 메뉴), 우(음표 배경음 컨트롤)
  * - 더블탭/드래그 시: 시공간이 수렴하며 우주 심연으로 빨려들어가는 하이퍼스페이스 흡입 연출
  */
 export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
@@ -405,7 +390,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
   activePhase = 'idle',
   isAborted = false,
   isCosmicSuction = false,
-  onRegisterActions,
   onNextPage,
   onPreviousPage,
 }: BigBangCircularMeterProps) {
@@ -421,54 +405,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       setImplodingDotId((current) => (current === dotId ? null : current));
     }, 240);
   }, []);
-
-  // 🚀 상단(North) 점 탭 시 화면/대화창 최상단 부드러운 스크롤 이동
-  const handleScrollToTop = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    triggerDotPulse('north');
-
-    try {
-      playAudioHaptic('tap_impact');
-    } catch (_) {}
-    try {
-      triggerHaptic('wormhole');
-    } catch (_) {}
-
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      try {
-        navigator.vibrate(20);
-      } catch (_) {}
-    }
-
-    resetAppScroll('smooth');
-    window.dispatchEvent(new CustomEvent('prism:scroll_to_top'));
-  }, [triggerDotPulse]);
-
-  // 🚀 하단(South) 점 탭 시 화면/대화창 최하단 부드러운 스크롤 이동
-  const handleScrollToBottom = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    triggerDotPulse('south');
-
-    try {
-      playAudioHaptic('tap_impact');
-    } catch (_) {}
-    try {
-      triggerHaptic('wormhole');
-    } catch (_) {}
-
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      try {
-        navigator.vibrate(20);
-      } catch (_) {}
-    }
-
-    resetAppScrollToBottom('smooth');
-    window.dispatchEvent(new CustomEvent('prism:scroll_to_bottom'));
-  }, [triggerDotPulse]);
 
   let location = '/';
   let navigate = (to: string) => {
@@ -612,20 +548,6 @@ export const BigBangCircularMeter = React.memo(function BigBangCircularMeter({
       window.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, [handleNavigateBack, handleNavigateForward, isCosmicSuction, isPressing]);
-
-  // 🧭 부모(BigBangButton)에게 상하좌우 액션 핸들러 및 댑 정보 전달
-  useEffect(() => {
-    if (onRegisterActions) {
-      onRegisterActions({
-        scrollToTop: handleScrollToTop,
-        scrollToBottom: handleScrollToBottom,
-        navigateBack: handleNavigateBack,
-        navigateForward: handleNavigateForward,
-        prevStep,
-        nextStep,
-      });
-    }
-  }, [onRegisterActions, handleScrollToTop, handleScrollToBottom, handleNavigateBack, handleNavigateForward, prevStep, nextStep]);
 
   // 마우스 호버 해제 또는 다른 곳 클릭/터치 시 4방위 버튼 효과 즉시 해제
   useEffect(() => {

@@ -28,7 +28,7 @@ import { triggerHaptic, startBlackHoleContinuousHaptic, stopBlackHoleContinuousH
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { peekPendingSelection, clearPendingSelection, getLiveSelectedText } from '@/lib/selectionBridge';
 import { isDuoUnfoldedState, isDualPaneLayout } from '@/lib/perfMode';
-import { BigBangCircularMeter, BigBangCircularMeterActions } from './BigBangCircularMeter';
+import { BigBangCircularMeter } from './BigBangCircularMeter';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
 
@@ -166,34 +166,13 @@ export function BigBangButton() {
   const [isAborted, setIsAborted] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragDistance, setDragDistance] = useState(0);
-  const [isPageScrolling, setIsPageScrolling] = useState(false);
-  const lastScrollTimeRef = useRef<number>(0);
   const maxDragDistanceRef = useRef<number>(0);
-  const touchStartedWhileScrollingRef = useRef<boolean>(false);
 
   // 💬 루시 퀵 대화 말풍선 열림 여부, 음성모드 여부 및 초기 프롬프트 상태
   const [isQuickChatOpen, setIsQuickChatOpen] = useState(false);
   const [quickChatVoiceActive, setQuickChatVoiceActive] = useState(false);
   const [quickChatInitialPrompt, setQuickChatInitialPrompt] = useState('');
   const [quickChatAutoSend, setQuickChatAutoSend] = useState(false);
-
-  // 스크롤 중에는 추천 1순위나 HUD 칩이 미리 노출되지 않도록 감지 (내부 스크롤 컨테이너까지 capture: true로 감지)
-  useEffect(() => {
-    let scrollTimer: ReturnType<typeof setTimeout> | null = null;
-    const handleScroll = () => {
-      lastScrollTimeRef.current = Date.now();
-      setIsPageScrolling(true);
-      if (scrollTimer) clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        setIsPageScrolling(false);
-      }, 240);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll, { capture: true });
-      if (scrollTimer) clearTimeout(scrollTimer);
-    };
-  }, []);
 
   // 🎯 OmniWarp BigBang Controller: 화이트홀(빛비춤) · 블랙홀(어두운 심연) 상태
   const [activeHole, setActiveHole] = useState<'whitehole' | 'blackhole'>('whitehole');
@@ -306,9 +285,6 @@ export function BigBangButton() {
     if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
   }, []);
 
-  const cardinalActionsRef = useRef<BigBangCircularMeterActions | null>(null);
-  const [cardinalInfo, setCardinalInfo] = useState<{ prevStepName?: string; nextStepName?: string }>({});
-
   // 🎯 좌측 화면과 우측 메뉴(네비게이션)를 제외한 오직 '루시채팅창'의 가로 정중앙 추적
   const [chatCenterLeft, setChatCenterLeft] = useState<number | null>(null);
 
@@ -364,14 +340,6 @@ export function BigBangButton() {
   // ☁️ 탭 & 홀드 시 뭉게구름 피어오름(Cloud Genesis) 이펙트 상태
   const [cloudBurstSeed, setCloudBurstSeed] = useState<number>(0);
   const cloudBurstTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleRegisterActions = useCallback((actions: BigBangCircularMeterActions) => {
-    cardinalActionsRef.current = actions;
-    setCardinalInfo({
-      prevStepName: actions.prevStep?.name,
-      nextStepName: actions.nextStep?.name,
-    });
-  }, []);
 
   // 🎯 마우스 및 터치 위치 기반 4방위(상/하/좌/우) 물방울 방향 계산
   const calculateCardinalDirection = useCallback(
@@ -852,9 +820,6 @@ export function BigBangButton() {
     if (singleTapTimerRef.current) { clearTimeout(singleTapTimerRef.current); singleTapTimerRef.current = null; }
     setQuickChatInitialPrompt('');
     setQuickChatAutoSend(false);
-
-    const wasScrolling = (Date.now() - lastScrollTimeRef.current < 180) || isPageScrolling;
-    touchStartedWhileScrollingRef.current = wasScrolling;
     maxDragDistanceRef.current = 0;
 
     cleanupGlobalPointerListeners();
@@ -1271,7 +1236,7 @@ export function BigBangButton() {
     setIsAborted(false);
     const context = serializeCurrentView(location);
 
-    // 🧭 [원뿔 방향 탭] 상하좌우 원뿔 각진 방향 클릭/터치 시 쉐브론 화살표 기능(스크롤 및 댑 순환 이동) 즉시 실행!
+    // 🧭 상하좌우 방향 탭은 경계 앱 이동 또는 좌우 DApp 이동만 실행합니다.
     // Touch has no preceding hover; use the press snapshot instead of a render closure.
     const targetDir = start.pointerType === 'touch'
       ? start.direction
@@ -1297,28 +1262,10 @@ export function BigBangButton() {
       if (targetDir === 'north') {
         if (isAtVerticalScrollBoundary('top') && navigateToAdjacentMenuApp('previous', 'north')) {
           triggerHaptic('wormhole');
-        } else {
-          const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
-          if (isDuo) {
-            const contentEl = document.getElementById('duo-content-viewport');
-            const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
-            scrollRoot?.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
-            cardinalActionsRef.current?.scrollToTop(e);
-          }
         }
       } else if (targetDir === 'south') {
         if (isAtVerticalScrollBoundary('bottom') && navigateToAdjacentMenuApp('next', 'south')) {
           triggerHaptic('wormhole');
-        } else {
-          const isDuo = typeof document !== 'undefined' && Boolean(document.getElementById('duo-content-viewport'));
-          if (isDuo) {
-            const contentEl = document.getElementById('duo-content-viewport');
-            const scrollRoot = contentEl?.querySelector('[data-app-scroll-root]') || contentEl;
-            scrollRoot?.scrollTo({ top: scrollRoot.scrollHeight, behavior: 'smooth' });
-          } else {
-            cardinalActionsRef.current?.scrollToBottom(e);
-          }
         }
       } else if (targetDir === 'west') {
         goToPreviousDapp();
@@ -1735,7 +1682,6 @@ export function BigBangButton() {
                 activePhase={activePhase}
                 isAborted={isAborted}
                 isCosmicSuction={isCosmicSuctionActive}
-                onRegisterActions={handleRegisterActions}
                 onNextPage={goToNextDapp}
                 onPreviousPage={goToPreviousDapp}
               />
