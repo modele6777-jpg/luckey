@@ -384,14 +384,14 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     try {
       const kb = calculateKabbalah({ profile });
       if (kb.status === 'calculated' && kb.numerology) {
-        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 활성 경로 ${kb.numerology.soulPath.pathNumber}번(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotMajor.name}) · 3기둥 밸런스(자비 ${kb.numerology.pillarBalance.mercy}% / 엄격 ${kb.numerology.pillarBalance.severity}% / 균형 ${kb.numerology.pillarBalance.mildness}%).`;
+        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 활성 경로 ${kb.numerology.soulPath.number}번(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotName}) · 3기둥 밸런스(자비 ${kb.numerology.pillarBalance.mercy}% / 엄격 ${kb.numerology.pillarBalance.severity}% / 균형 ${kb.numerology.pillarBalance.mildness}%).`;
       }
     } catch (_) {}
 
     // 4. 타로 (78장 아르카나 수비학 소울·퍼스널리티·올해의 성장 카드 결정론 산법)
     let tarotLine = '';
     try {
-      const tm = calculateTarotMaster({ profile, targetYear: new Date().getFullYear(), questionTimestamp: Date.now() });
+      const tm = calculateTarotMaster({ profile, targetYear: new Date().getFullYear(), now: new Date() });
       if (tm.status === 'calculated') {
         tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name} · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name} · 4원소 밸런스(불 ${tm.elementalBalance.fire}% / 물 ${tm.elementalBalance.water}% / 공기 ${tm.elementalBalance.air}% / 흙 ${tm.elementalBalance.earth}%).`;
       }
@@ -402,7 +402,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     try {
       const sk = calculateSukuyoAdvanced({ profile });
       if (sk.status === 'calculated' && sk.mansion) {
-        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.name}(${sk.mansion.element} / ${sk.mansion.animal}) · 숙격 ${sk.shukguk?.ko || '미상'} · 4방신 ${sk.mansion.fourGods}.`;
+        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.fullName}(${sk.mansion.animal}) · 숙격 ${sk.mansion.shukgukHanja} · 4방신 ${sk.mansion.group}.`;
       }
     } catch (_) {}
 
@@ -411,9 +411,9 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     try {
       const vd = calculateVedicAdvanced({ profile });
       if (vd.status === 'calculated' && vd.nakshatra) {
-        const lord = vd.currentDasha?.mahadasha.lord || '미상';
-        const sign = vd.rashi?.chandra.sign || '미상';
-        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name}(지배성: ${vd.nakshatra.rulingPlanet}) · 빔쇼타리 대운 ${lord} 마하다샤 · 달 라시 ${sign}.`;
+        const lord = vd.currentDasha?.mahadasha.lord || vd.nakshatra.lord;
+        const sign = vd.rashi?.chandra.name || '미상';
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name}(지배성: ${vd.nakshatra.lord}) · 빔쇼타리 대운 ${lord} 마하다샤 · 달 라시 ${sign}.`;
       }
     } catch (_) {}
 
