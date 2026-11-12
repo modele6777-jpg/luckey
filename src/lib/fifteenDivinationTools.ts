@@ -344,9 +344,9 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     // 6. 마하보테 (미얀마 7궁 명반 및 8요일 성좌 결정론 산법)
     let mahaboteLine: string;
     try {
-      const mb = calculateMahabote({ profile, targetDate: new Date() });
-      if (mb.status === 'calculated') {
-        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.ageDasha.currentAge}세 나이 다샤(${mb.ageDasha.currentPlanet.koreanName} · ${mb.ageDasha.housePlacement.houseName}) · 길방위: ${mb.remedy.luckyDirection} · 길색: ${mb.remedy.luckyColor}.`;
+      const mb = calculateMahabote({ profile, targetYear: new Date().getFullYear() });
+      if (mb.status === 'calculated' && mb.rootHouse && mb.currentAgeTransit) {
+        mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}.`;
       } else {
         mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. 7궁 명반 미계산.`;
       }
@@ -359,8 +359,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     let thaiLine: string;
     try {
       const th = calculateThaiHorasat({ profile, targetDate: new Date() });
-      if (th.status === 'calculated') {
-        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.currentDasha.planet.planet} ${th.mahaThaksa.currentDasha.rulingYears}년 주기, 속성: ${th.mahaThaksa.currentDasha.attribute.nameKo}) · 4대 원소 ${th.fourElements.dominantElement.nameKo}(${th.fourElements.dominantElement.translit}) 신체 활력 ${th.vitalityIndex.score}점.`;
+      if (th.status === 'calculated' && th.birthDayPlanet && th.mahaThaksa && th.fourElements) {
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}) · 4대 원소 ${th.fourElements.birthThaat.korean} 신체 활력 ${th.fourElements.vitalityIndex}점.`;
       } else {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
       }
@@ -383,8 +383,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     let kabbalahLine = '';
     try {
       const kb = calculateKabbalah({ profile });
-      if (kb.status === 'calculated') {
-        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.lifePathSephirah.name}(${kb.lifePathSephirah.hebrew} · ${kb.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.personalitySephirah.name} · 소울 패스 활성 경로 ${kb.soulPath.pathNumber}번(${kb.soulPath.hebrewLetter} ${kb.soulPath.tarotMajor.name}) · 3기둥 밸런스(자비 ${kb.pillarBalance.mercy}% / 엄격 ${kb.pillarBalance.severity}% / 균형 ${kb.pillarBalance.mildness}%).`;
+      if (kb.status === 'calculated' && kb.numerology) {
+        kabbalahLine = `\n- 카발라 생명나무: 라이프 패스 세피라 ${kb.numerology.lifePathSephirah.name}(${kb.numerology.lifePathSephirah.hebrew} · ${kb.numerology.lifePathSephirah.title}) · 퍼스널리티 세피라 ${kb.numerology.personalitySephirah.name} · 소울 패스 활성 경로 ${kb.numerology.soulPath.pathNumber}번(${kb.numerology.soulPath.hebrewLetter} ${kb.numerology.soulPath.tarotMajor.name}) · 3기둥 밸런스(자비 ${kb.numerology.pillarBalance.mercy}% / 엄격 ${kb.numerology.pillarBalance.severity}% / 균형 ${kb.numerology.pillarBalance.mildness}%).`;
       }
     } catch (_) {}
 
@@ -401,8 +401,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     let sukuyoLine = '';
     try {
       const sk = calculateSukuyoAdvanced({ profile });
-      if (sk.status === 'calculated') {
-        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.name}(${sk.mansion.element} / ${sk.mansion.animal}) · 숙격 ${sk.mansion.category} · 4방신 ${sk.mansion.fourGods}.`;
+      if (sk.status === 'calculated' && sk.mansion) {
+        sukuyoLine = `\n- 숙요경(27숙): 본명숙 ${sk.mansion.name}(${sk.mansion.element} / ${sk.mansion.animal}) · 숙격 ${sk.shukguk?.ko || '미상'} · 4방신 ${sk.mansion.fourGods}.`;
       }
     } catch (_) {}
 
@@ -410,8 +410,10 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     let vedicLine = '';
     try {
       const vd = calculateVedicAdvanced({ profile });
-      if (vd.status === 'calculated') {
-        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name}(지배성: ${vd.nakshatra.rulingPlanet}) · 빔쇼타리 대운 ${vd.vimshottariDasha.currentLord} 마하다샤 · 달 라시 ${vd.moonSign.sign}.`;
+      if (vd.status === 'calculated' && vd.nakshatra) {
+        const lord = vd.currentDasha?.mahadasha.lord || '미상';
+        const sign = vd.rashi?.chandra.sign || '미상';
+        vedicLine = `\n- 베딕 조티시: 달 나크샤트라 ${vd.nakshatra.name}(지배성: ${vd.nakshatra.rulingPlanet}) · 빔쇼타리 대운 ${lord} 마하다샤 · 달 라시 ${sign}.`;
       }
     } catch (_) {}
 
@@ -420,7 +422,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     try {
       const tj = calculateTojeong({ profile, targetYear: new Date().getFullYear() });
       if (tj.status === 'calculated') {
-        tojeongLine = `\n- 토정비결: ${tj.targetYear}년 작괘 제${tj.gwaeNumber}괘(${tj.upperGwae.name}·${tj.middleGwae.name}·${tj.lowerGwae.name}) · 연간 총론: "${tj.annualTheme}".`;
+        tojeongLine = `\n- 토정비결: ${tj.targetYear}년 작괘 제${tj.hexagramCode}괘(${tj.hexagramName}) · 연간 총론: "${tj.annualSummary}".`;
       }
     } catch (_) {}
 
@@ -428,8 +430,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     let taiyiLine = '';
     try {
       const ty = calculateTaiyi({ profile, targetYear: new Date().getFullYear(), targetDate: new Date() });
-      if (ty.status === 'calculated') {
-        taiyiLine = `\n- 태을신수: 적년 ${ty.accumulatedYears}년 · 16궁 재궁 [${ty.taiyiPosition.palaceName}] · 시대 대세: "${ty.macroCycleTheme}".`;
+      if (ty.status === 'calculated' && ty.calculation) {
+        taiyiLine = `\n- 태을신수: 적년 ${ty.calculation.accumulatedYears}년 · 16궁 재궁 [${ty.calculation.taiyiPalaceName}] · 시대 대세: "${ty.macroActionStrategy}".`;
       }
     } catch (_) {}
 
