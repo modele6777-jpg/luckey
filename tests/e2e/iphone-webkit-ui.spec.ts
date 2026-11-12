@@ -27,8 +27,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Lucy Pro 심층 관점 229개 개별 뜻·출처 안내');
-  await expect(item).toContainText('조사 대상 심층 관점 229개에 항목별 뜻을 추가했습니다.');
+  await expect(summary).toContainText('Lucy 최신 대화 복귀·Key 상단 탭 고정');
+  await expect(item).toContainText('Lucy 채팅에서 과거 대화까지 스크롤하면 최근 대화로 돌아가기 버튼이 나타납니다.');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -218,4 +218,72 @@ test('mobile composer and input remain inside the visible WebKit viewport after 
   expect(geometry.inputBottom).toBeLessThanOrEqual(geometry.viewportHeight + 2);
   expect(geometry.inputRight).toBeLessThanOrEqual(geometry.viewportWidth + 2);
   expect(geometry.inputScrollWidth).toBeLessThanOrEqual(geometry.inputClientWidth + 2);
+});
+
+test('Lucy can return to the latest conversation and tap blank header space to reach its top', async ({ page }) => {
+  await openLucy(page);
+  const messages = page.locator('.lucy-chat-main');
+  await messages.evaluate(element => {
+    const wrapper = element.firstElementChild;
+    if (!wrapper) throw new Error('Lucy message wrapper is missing');
+    for (let index = 0; index < 8; index += 1) {
+      const spacer = document.createElement('div');
+      spacer.dataset.scrollRegressionFixture = 'true';
+      spacer.style.height = '260px';
+      wrapper.appendChild(spacer);
+    }
+  });
+  await page.waitForTimeout(350);
+
+  const returnButton = page.getByRole('button', { name: '최근 대화로 돌아가기' });
+  await messages.evaluate(element => { element.scrollTop = 0; element.dispatchEvent(new Event('scroll')); });
+  await expect(returnButton).toBeVisible();
+  await returnButton.click();
+  await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
+  await expect(returnButton).toBeHidden();
+
+  await page.getByRole('button', { name: '대화 검색' }).click();
+  await messages.evaluate(element => { element.scrollTop = 400; element.dispatchEvent(new Event('scroll')); });
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
+  const header = page.locator('[data-lucy-header-tap-scroll="true"]');
+  await header.evaluate(element => { (element as HTMLElement).style.paddingBottom = '40px'; });
+  const headerBox = await header.boundingBox();
+  expect(headerBox).not.toBeNull();
+  if (!headerBox) throw new Error('Lucy chat header is missing');
+  const blankAreaY = headerBox.y + headerBox.height - 2;
+  expect(blankAreaY).toBeGreaterThan(76);
+  await page.mouse.click(headerBox.x + headerBox.width / 2, blankAreaY);
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
+  await expect(returnButton).toBeVisible();
+});
+
+test('Key channel tabs stay fixed below the brand bar while the page scrolls', async ({ page }) => {
+  await page.goto('/calm/index.html?no_auto=1');
+  const tabs = page.locator('.view-tabs-container');
+  const topNav = page.locator('.top-nav');
+  await expect(tabs).toBeVisible();
+  await expect(topNav).toBeVisible();
+  await page.evaluate(() => {
+    const tabs = document.querySelector('.view-tabs-container');
+    if (!tabs) throw new Error('Key tab row is missing');
+    const tabDocumentTop = tabs.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, tabDocumentTop + 400);
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+  const layout = await page.evaluate(() => {
+    const nav = document.querySelector('.top-nav');
+    const tabs = document.querySelector('.view-tabs-container');
+    if (!nav || !tabs) throw new Error('Key navigation elements are missing');
+    return {
+      navTop: nav.getBoundingClientRect().top,
+      navBottom: nav.getBoundingClientRect().bottom,
+      tabsTop: tabs.getBoundingClientRect().top,
+      tabsPosition: getComputedStyle(tabs).position,
+    };
+  });
+  expect(layout.tabsPosition).toBe('sticky');
+  expect(layout.navTop).toBeGreaterThanOrEqual(-1);
+  expect(layout.tabsTop).toBeGreaterThanOrEqual(layout.navBottom - 2);
+  expect(layout.tabsTop).toBeLessThanOrEqual(layout.navBottom + 3);
 });

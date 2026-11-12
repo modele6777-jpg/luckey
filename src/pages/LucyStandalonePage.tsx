@@ -1311,6 +1311,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
+  const [showReturnToRecentConversation, setShowReturnToRecentConversation] = useState(false);
+
+  const scrollToConversationTop = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const hasScrollableHistory = container.scrollHeight - container.clientHeight > 80;
+    isUserScrolledUpRef.current = hasScrollableHistory;
+    setShowReturnToRecentConversation(hasScrollableHistory);
+    container.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   // 🎯 TTS 낭독 중인 하이라이트 문장 화면 수직 중앙(50%) 자동 정렬 스마트 스크롤
   const {
@@ -2363,8 +2373,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 바닥에서 80px 이상 떨어져 있으면 사용자가 과거 대화를 읽는 중으로 엄격 보장
     if (distanceFromBottom > 80) {
       isUserScrolledUpRef.current = true;
+      setShowReturnToRecentConversation(true);
     } else if (distanceFromBottom <= 35) {
       isUserScrolledUpRef.current = false;
+      setShowReturnToRecentConversation(false);
     }
   }, []);
 
@@ -2396,8 +2408,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         return;
       }
       if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        isUserScrolledUpRef.current = true;
+        scrollToConversationTop();
         setTimeout(() => {
           if (messagesContainerRef.current && messagesContainerRef.current.scrollTop > 0) {
             messagesContainerRef.current.scrollTop = 0;
@@ -2407,7 +2418,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
     window.addEventListener('prism-scroll-to-top', handleScrollToTopEvent);
     return () => window.removeEventListener('prism-scroll-to-top', handleScrollToTopEvent);
-  }, []);
+  }, [scrollToConversationTop]);
 
   // Keep the callback stable: playback changes must not rerun the mount scroll effect.
   const ttsBlocksAutoScrollRef = useRef(false);
@@ -2509,6 +2520,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       if (messagesContainerRef.current) {
         messagesContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         isUserScrolledUpRef.current = true; // 사용자가 상단으로 이동했으므로 상태 갱신
+        setShowReturnToRecentConversation(messagesContainerRef.current.scrollHeight - messagesContainerRef.current.clientHeight > 80);
       }
     };
     window.addEventListener('prism:scroll_to_top', handleScrollToTopEvent);
@@ -2521,6 +2533,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     const handleScrollToBottomEvent = () => {
       isUserScrolledUpRef.current = false;
+      setShowReturnToRecentConversation(false);
       scrollToBottom(true, true);
     };
     window.addEventListener('prism:scroll_to_bottom', handleScrollToBottomEvent);
@@ -3028,6 +3041,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       {/* PRO Top Header Bar */}
       <header 
         data-top-bar="true"
+        data-lucy-header-tap-scroll="true"
+        onClick={(event) => {
+          const target = event.target;
+          if (target instanceof HTMLElement && target.closest('button, a, input, select, textarea, [role="button"], [data-no-scroll-top]')) return;
+          scrollToConversationTop();
+        }}
         style={{
           paddingTop: isDuoPortrait ? 'max(8px, 0.5rem)' : 'max(14px, calc(env(safe-area-inset-top, 0px) + 10px))',
           overflowX: 'hidden',
@@ -4163,6 +4182,37 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         fixed
         className="!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+12px)] sm:!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+16px)]"
       />
+
+      <AnimatePresence>
+        {showReturnToRecentConversation && (
+          <motion.button
+            type="button"
+            data-sidebar-aware="true"
+            aria-label="최근 대화로 돌아가기"
+            title="최근 대화로 돌아가기"
+            onClick={() => {
+              isUserScrolledUpRef.current = false;
+              setShowReturnToRecentConversation(false);
+              scrollToBottom(true, true);
+            }}
+            initial={{ opacity: 0, y: 12, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.94 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed left-4 z-50 inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-slate-950/90 px-4 py-2.5 text-xs font-semibold text-amber-100 shadow-[0_8px_25px_rgba(245,158,11,0.25)] backdrop-blur-md transition-colors hover:bg-slate-900 active:scale-95 cursor-pointer"
+            style={{
+              left: 16,
+              right: 'auto',
+              transform: 'none',
+              zIndex: 500,
+              bottom: `calc(var(--sidebar-footer-height, var(--lucy-footer-height, 140px)) + ${isLucyUserOverriding && isTTSActive && hasLucyActiveHighlight ? '160px' : '100px'})`,
+            }}
+          >
+            <ChevronDown size={15} className="text-amber-300" />
+            <span>최근 대화로 돌아가기</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* 🔊 Auto-TTS Feedback Toast */}
       <AnimatePresence>
