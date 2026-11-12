@@ -1235,5 +1235,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanSamyeongdaesaSongunYujeong": {
     "field": "koreanSamyeongdaesaSongunYujeongResult",
     "traceKey": "koreanSamyeongdaesaSongunYujeongResult"
+  },
+  "koreanShinSaimdangChochungdoArtVirtue": {
+    "field": "koreanShinSaimdangChochungdoArtVirtueResult",
+    "traceKey": "koreanShinSaimdangChochungdoArtVirtueResult"
+  },
+  "germanEdmundHusserlPhenomenologicalReduction": {
+    "field": "germanEdmundHusserlPhenomenologicalReductionResult",
+    "traceKey": "germanEdmundHusserlPhenomenologicalReductionResult"
+  },
+  "frenchMichelFoucaultCareOfSelfAesthetics": {
+    "field": "frenchMichelFoucaultCareOfSelfAestheticsResult",
+    "traceKey": "frenchMichelFoucaultCareOfSelfAestheticsResult"
   }
 };
