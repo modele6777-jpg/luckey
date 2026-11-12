@@ -1247,5 +1247,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "frenchMichelFoucaultCareOfSelfAesthetics": {
     "field": "frenchMichelFoucaultCareOfSelfAestheticsResult",
     "traceKey": "frenchMichelFoucaultCareOfSelfAestheticsResult"
+  },
+  "germanWalterBenjaminAuraNowTime": {
+    "field": "germanWalterBenjaminAuraNowTimeResult",
+    "traceKey": "germanWalterBenjaminAuraNowTimeResult"
+  },
+  "frenchEmmanuelLevinasFaceOfOtherHospitality": {
+    "field": "frenchEmmanuelLevinasFaceOfOtherHospitalityResult",
+    "traceKey": "frenchEmmanuelLevinasFaceOfOtherHospitalityResult"
+  },
+  "germanTheodorAdornoNegativeDialecticsMinimaMoralia": {
+    "field": "germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult",
+    "traceKey": "germanTheodorAdornoNegativeDialecticsMinimaMoraliaResult"
   }
 };
