@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.356",
+  "version": "1.7.357",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -32,10 +32,8 @@
     "@trpc/react-query": "^11.16.0",
     "@trpc/server": "^11.16.0",
     "@vitejs/plugin-react": "^6.0.1",
-    "adm-zip": "^0.5.17",
     "astronomy-engine": "2.1.19",
     "autoprefixer": "^10.4.21",
-    "axios": "^1.15.2",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -45,7 +43,6 @@
     "express": "^4.21.2",
     "firebase": "^12.12.1",
     "framer-motion": "^12.38.0",
-    "google-tts-api": "^2.0.2",
     "html-to-image": "^1.11.13",
     "http-proxy-middleware": "^4.0.0",
     "iztro": "2.6.3",
@@ -84,5 +81,8 @@
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.186.0",
     "sharp": "^0.35.4"
+  },
+  "allowScripts": {
+    "esbuild": true
   }
 }

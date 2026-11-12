@@ -2735,7 +2735,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   let activeOracleAudio = null;
-  let activeOracleUtterance = null;
   let activeOracleStage = null;
   let isPlayingAllTeaching = false;
 
@@ -2773,12 +2772,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {}
       activeOracleAudio = null;
     }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch (e) {}
-    }
-    activeOracleUtterance = null;
     activeOracleStage = null;
     isPlayingAllTeaching = false;
     resetOracleStageButtons();
@@ -2835,7 +2828,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const finishPlayback = (completed = true) => {
       activeOracleAudio = null;
-      activeOracleUtterance = null;
       activeOracleStage = null;
       resetOracleStageButtons();
       restoreSoundscapeVolume();
@@ -3048,13 +3040,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3분 체화 명상 리추얼 및 실시간 음성 TTS 가이드 엔진
   let ritualTimer = null;
   let autoAdvanceTimer = null;
-  let browserTtsInterval = null;
   let ritualStage = 1;
   let ritualSecondsLeft = 60;
   let ttsEnabled = true;
   let ttsVoice = 'Aoede';
   let activeTtsAudio = null;
-  let activeUtterance = null;
   const clientTtsCache = new Map();
 
   // 단계별 텍스트 가이드
@@ -3144,10 +3134,6 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(autoAdvanceTimer);
       autoAdvanceTimer = null;
     }
-    if (browserTtsInterval) {
-      clearInterval(browserTtsInterval);
-      browserTtsInterval = null;
-    }
     if (activeTtsAudio) {
       try {
         activeTtsAudio.pause();
@@ -3155,12 +3141,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {}
       activeTtsAudio = null;
     }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch (e) {}
-    }
-    activeUtterance = null;
     setVoiceIndicatorStatus('idle');
     restoreSoundscapeVolume();
   }

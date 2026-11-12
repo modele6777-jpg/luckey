@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.7.357",
+    "builtAt": "2026-11-12T00:27:27Z",
+    "summary": "Calm 음성 정책·보안 패치·설치 재현성 개선",
+    "items": [
+      "Calm에서 미사용 Web Speech 취소 코드를 제거해 페이지 전역 음성 대기를 건드리지 않도록 합니다",
+      "안내 음성은 서버 생성 TTS만 유지하고, 사용하지 않는 Google Translate TTS·axios·adm-zip 패키지를 제거합니다",
+      "비강제 호환 업데이트로 critical DOMPurify 보안 경고를 해소하고 적용 가능한 보안 패치를 반영합니다",
+      "npm 잠금 파일의 누락된 플랫폼 의존성을 복구하고 esbuild 설치 스크립트만 허용해 npm ci와 빌드를 재현 가능하게 합니다"
+    ]
+  },
+  {
     "version": "1.7.356",
     "builtAt": "2026-11-11T23:34:20Z",
     "summary": "업데이트 변경점 본문 표시를 iOS/WebKit까지 강화",
