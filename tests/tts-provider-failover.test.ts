@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { synthesizeSpeechWithFallback, synthesizeWithGemini } from '../api/ai/tts';
 import { createTTSHandler } from '../server/api-lib/ttsHandler';
+import { synthesizeWithEdgeTTS } from '../server/api-lib/edgeTts';
 
 test('Gemini requires configured credentials and reports rate limits after bounded model failover', async () => {
   let requests = 0;
@@ -16,6 +17,35 @@ test('Gemini requires configured credentials and reports rate limits after bound
     error => (error as any).status === 429 && (error as any).code === 'MEDIA_RATE_LIMIT',
   );
   assert.equal(requests, 2, 'try one alternate model, then surface the provider rate limit');
+});
+
+test('Gemini daily quota exhaustion is distinct from a temporary rate limit', async () => {
+  await assert.rejects(
+    synthesizeWithGemini('설명', 'Aoede', {
+      apiKey: 'test-only', models: ['model'],
+      request: async () => Response.json({ error: {
+        status: 'RESOURCE_EXHAUSTED',
+        message: 'Daily quota exceeded',
+        details: [{ violations: [{ quotaId: 'requests_per_day', quotaValue: '0' }] }],
+      } }, { status: 429 }),
+    }),
+    error => (error as any).status === 429 && (error as any).code === 'MEDIA_QUOTA_EXHAUSTED',
+  );
+});
+
+test('Gemini model 404 is distinguishable from credential and permission failures', async () => {
+  const models: string[] = [];
+  await assert.rejects(
+    synthesizeWithGemini('설명', 'Aoede', {
+      apiKey: 'test-only', models: ['model-a', 'model-b'],
+      request: async (_url, init) => {
+        models.push(JSON.parse(String(init?.body)).model);
+        return Response.json({ error: { status: 'NOT_FOUND', message: 'Model not found' } }, { status: 404 });
+      },
+    }),
+    error => (error as any).status === 502 && (error as any).code === 'GEMINI_TTS_MODEL_UNAVAILABLE',
+  );
+  assert.deepEqual(models, ['model-a', 'model-b']);
 });
 
 test('Gemini 429 falls through to Edge, but an Edge failure does not mask the rate-limit cause', async () => {
@@ -143,12 +173,57 @@ test('Gemini raw Linear PCM is wrapped as WAV for the shared audio player', asyn
   assert.equal(wav.subarray(8, 12).toString('ascii'), 'WAVE');
 });
 
-test('backup authorization failures surface as non-retryable provider unavailability', async () => {
+test('Edge HTTP 403 is preserved as access denial and briefly suppresses repeat attempts', async () => {
   let requests = 0;
   const handle = createTTSHandler(async () => { requests++; throw Object.assign(new Error('access denied'), { status: 403 }); });
-  await assert.rejects(handle({ text: '낭독 문장' }), error => (error as any).code === 'TTS_PROVIDER_UNAVAILABLE');
-  await assert.rejects(handle({ text: '다음 문장' }), error => (error as any).code === 'TTS_PROVIDER_UNAVAILABLE');
+  await assert.rejects(handle({ text: '낭독 문장', requestId: 'iad1::edge-test-1234' }), error => (error as any).code === 'TTS_EDGE_ACCESS_DENIED');
+  await assert.rejects(handle({ text: '다음 문장', requestId: 'iad1::edge-test-5678' }), error => (error as any).code === 'TTS_EDGE_ACCESS_DENIED');
   assert.equal(requests, 1);
+});
+
+test('Edge chunk failure reports its position and upstream HTTP status', async () => {
+  let calls = 0;
+  await assert.rejects(
+    synthesizeWithEdgeTTS('첫 번째 문장입니다. 두 번째 문장입니다.', undefined, async () => {
+      calls++;
+      if (calls === 2) throw Object.assign(new Error('private upstream detail'), { status: 403, code: 'EDGE_HTTP_FORBIDDEN' });
+      return Buffer.from([1, 2, 3]);
+    }),
+    error => {
+      assert.equal((error as any).code, 'TTS_CHUNK_FAILED');
+      assert.equal((error as any).status, 502);
+      assert.equal((error as any).providerStatus, 403);
+      assert.equal((error as any).chunkIndex, 2);
+      assert.equal((error as any).chunkCount, 2);
+      return true;
+    },
+  );
+  assert.equal(calls, 2);
+});
+
+test('fallback diagnostics correlate Gemini and Edge categories without logging speech or provider messages', async () => {
+  const originalError = console.error;
+  const logs: string[] = [];
+  console.error = (...args: unknown[]) => { logs.push(args.map(String).join(' ')); };
+  try {
+    const edge = createTTSHandler(async () => { throw Object.assign(new Error('secret-key and private Edge response'), { status: 403 }); });
+    await assert.rejects(
+      synthesizeSpeechWithFallback('private narration text', 'Aoede', 'calm', {
+        synthesizeGemini: async () => { throw Object.assign(new Error('secret-key invalid'), { status: 400, code: 'GEMINI_API_KEY_INVALID' }); },
+        synthesizeEdge: edge,
+      }, 'iad1::tts-request-123456'),
+      error => (error as any).code === 'GEMINI_API_KEY_INVALID' && (error as any).diagnosticId === 'iad1::tts-request-123456',
+    );
+  } finally {
+    console.error = originalError;
+  }
+
+  const records = logs.map(line => JSON.parse(line.replace(/^\[tts_diagnostic\] /, '')));
+  assert(records.some(record => record.event === 'tts.primary_failure' && record.errorType === 'invalid_key'));
+  assert(records.some(record => record.event === 'tts.provider_failure' && record.errorType === 'permission_denied'));
+  assert(records.some(record => record.event === 'tts.fallback_chain_failure' && record.primaryErrorType === 'invalid_key' && record.fallbackErrorType === 'permission_denied'));
+  assert(records.every(record => record.requestId === 'iad1::tts-request-123456'));
+  assert.doesNotMatch(logs.join('\n'), /private narration text|secret-key|private Edge response/);
 });
 
 test('browser speech synthesis and translator TTS remain excluded', async () => {

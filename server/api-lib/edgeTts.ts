@@ -354,8 +354,14 @@ export function buildEdgeTtsSsmlMessage(chunk: string, voice: string, lang: stri
     `<voice name='${voice}'><prosody pitch='+0Hz' rate='+0%' volume='+0%'>${escaped}</prosody></voice></speak>`;
 }
 
+export type EdgeTtsChunkSynthesizer = (chunk: string, voice: string, lang: string, timeoutMs?: number) => Promise<Buffer>;
+
 /** 신경망 TTS로 mp3 음성을 합성합니다. 실패 시 예외를 던지므로 호출부가 적절히 안내할 수 있습니다. */
-export async function synthesizeWithEdgeTTS(speech: string, voice?: string): Promise<EdgeTtsResult> {
+export async function synthesizeWithEdgeTTS(
+  speech: string,
+  voice?: string,
+  synthesizeChunk: EdgeTtsChunkSynthesizer = synthesizeChunkWithEdgeNeural,
+): Promise<EdgeTtsResult> {
   const clean = String(speech || '').trim();
   if (!clean) throw new Error('낭독할 문장이 비어 있습니다.');
 
@@ -366,8 +372,27 @@ export async function synthesizeWithEdgeTTS(speech: string, voice?: string): Pro
   const parts: Buffer[] = [];
   for (let index = 0; index < chunks.length; index++) {
     // ⚡ 빠른 실패: 재시도·기계음 폴백 없이 단 한 번만 시도합니다.
-    const audio = await synthesizeChunkWithEdgeNeural(chunks[index], resolved.voice, lang);
-    parts.push(audio);
+    try {
+      const audio = await synthesizeChunk(chunks[index], resolved.voice, lang);
+      if (!audio?.length) throw Object.assign(new Error('Edge TTS returned an empty chunk.'), { status: 502, code: 'TTS_EMPTY_AUDIO' });
+      parts.push(audio);
+    } catch (error) {
+      const failure = error as { status?: number; providerStatus?: number; code?: string };
+      const providerStatus = Number(failure?.providerStatus ?? failure?.status);
+      const providerCode = typeof failure?.code === 'string'
+        ? failure.code
+        : Number.isFinite(providerStatus) ? `HTTP_${providerStatus}` : undefined;
+      throw Object.assign(new Error('Edge Neural TTS failed while synthesizing a speech chunk.'), {
+        status: 502,
+        code: 'TTS_CHUNK_FAILED',
+        provider: 'edge-neural',
+        model: resolved.voice,
+        ...(Number.isFinite(providerStatus) ? { providerStatus } : {}),
+        ...(providerCode ? { providerCode } : {}),
+        chunkIndex: index + 1,
+        chunkCount: chunks.length,
+      });
+    }
   }
 
   const combined = Buffer.concat(parts);

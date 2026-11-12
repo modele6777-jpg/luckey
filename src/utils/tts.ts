@@ -121,7 +121,7 @@ export function getTTSCacheKey(text: string, _voice?: string, _emotion?: string,
 }
 
 class TTSAudioRequestError extends Error {
-  constructor(message: string, public status = 0, public code = '') { super(message); }
+  constructor(message: string, public status = 0, public code = '', public diagnosticId?: string) { super(message); }
 }
 let ttsRequestQueue: Promise<unknown> = Promise.resolve();
 let activeTTSRequest: { controller: AbortController; cancel: () => void; key: string } | null = null;
@@ -188,28 +188,37 @@ function requestAIAudio(text: string, emotion?: string, voice = 'Aoede', session
           const failure = await response.json().catch(() => null);
           if (controller.signal.aborted) throw new Error('음성 요청이 취소되었습니다.');
           if (response.status === 429) {
-            if (failure?.code === 'MEDIA_QUOTA_EXHAUSTED') {
-              throw new TTSAudioRequestError('AI 음성 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정 확인이 필요합니다.', 429, 'MEDIA_QUOTA_EXHAUSTED');
+            if (['MEDIA_QUOTA_EXHAUSTED', 'TTS_QUOTA_EXHAUSTED'].includes(String(failure?.code || ''))) {
+              throw new TTSAudioRequestError('AI 음성 제공자의 사용 한도가 소진되었습니다. API 결제·한도 설정을 확인해 주세요.', 429, String(failure?.code), failure?.diagnosticId);
             }
             const waitMs = rateLimitWaitMs(response, failure);
             ttsRateLimitUntil = Date.now() + waitMs;
             if (paced && attempt < attempts - 1) continue;
             const waitSec = Math.max(1, Math.ceil(waitMs / 1000));
-            throw new TTSAudioRequestError(`음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 ${waitSec}초 뒤 다시 눌러 주세요.`, 429, 'MEDIA_RATE_LIMIT');
+            throw new TTSAudioRequestError(`음성 요청이 일시적으로 몰려 잠시 지연되었습니다. 약 ${waitSec}초 뒤 다시 눌러 주세요.`, 429, String(failure?.code || 'MEDIA_RATE_LIMIT'), failure?.diagnosticId);
           }
-          if (failure?.code === 'TTS_PROVIDER_UNAVAILABLE') {
-            throw new TTSAudioRequestError('서버 음성을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.', response.status, 'TTS_PROVIDER_UNAVAILABLE');
+          if (['TTS_PROVIDER_UNAVAILABLE', 'TTS_EDGE_ACCESS_DENIED'].includes(String(failure?.code || ''))) {
+            throw new TTSAudioRequestError('서버 음성 제공자의 접근이 거부되었습니다. 잠시 후 다시 시도해 주세요.', response.status, String(failure?.code), failure?.diagnosticId);
           }
-          if (failure?.code === 'GEMINI_API_KEY_INVALID') {
-            throw new TTSAudioRequestError('Gemini API 키 인증이 거부되었습니다. 서버의 API 키 설정을 확인해 주세요.', response.status, 'GEMINI_API_KEY_INVALID');
+          if (['GEMINI_TTS_MODEL_UNAVAILABLE', 'TTS_MODEL_UNAVAILABLE'].includes(String(failure?.code || ''))) {
+            throw new TTSAudioRequestError('음성 모델을 사용할 수 없습니다. 서버의 모델 설정과 접근 권한을 확인해 주세요.', response.status, String(failure?.code), failure?.diagnosticId);
           }
-          if (failure?.code === 'GEMINI_TTS_ACCESS_DENIED') {
-            throw new TTSAudioRequestError('Gemini TTS 모델 접근 권한이 거부되었습니다. API 키의 프로젝트·모델 권한을 확인해 주세요.', response.status, 'GEMINI_TTS_ACCESS_DENIED');
+          if (['GEMINI_API_KEY_INVALID', 'TTS_INVALID_KEY'].includes(String(failure?.code || ''))) {
+            throw new TTSAudioRequestError('음성 제공자의 API 키 인증이 거부되었습니다. 서버의 API 키 설정을 확인해 주세요.', response.status, String(failure?.code), failure?.diagnosticId);
+          }
+          if (['GEMINI_TTS_ACCESS_DENIED', 'TTS_PERMISSION_DENIED'].includes(String(failure?.code || ''))) {
+            throw new TTSAudioRequestError('음성 모델 접근 권한이 거부되었습니다. API 키의 프로젝트·모델 권한을 확인해 주세요.', response.status, String(failure?.code), failure?.diagnosticId);
           }
           if (response.status === 503 && (failure?.code === 'TTS_NOT_CONFIGURED' || /API.*키|키.*설정/.test(String(failure?.error || '')))) {
-            throw new TTSAudioRequestError('AI 음성 API 키가 설정되지 않았습니다. 사이트의 API 설정을 확인해 주세요.', 503, 'TTS_NOT_CONFIGURED');
+            throw new TTSAudioRequestError('AI 음성 API 키가 설정되지 않았습니다. 사이트의 API 설정을 확인해 주세요.', 503, 'TTS_NOT_CONFIGURED', failure?.diagnosticId);
           }
-          throw new TTSAudioRequestError(response.status === 401 || response.status === 403 ? 'AI 음성 API 인증·권한을 확인해 주세요.' : 'AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status);
+          if (failure?.code === 'TTS_CHUNK_FAILED') {
+            throw new TTSAudioRequestError('음성의 일부 구간을 생성하지 못했습니다. 다시 시도해 주세요.', response.status, 'TTS_CHUNK_FAILED', failure?.diagnosticId);
+          }
+          if (failure?.code === 'TTS_TIMEOUT') {
+            throw new TTSAudioRequestError('음성 생성 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.', response.status, 'TTS_TIMEOUT', failure?.diagnosticId);
+          }
+          throw new TTSAudioRequestError(response.status === 401 || response.status === 403 ? 'AI 음성 API 인증·권한을 확인해 주세요.' : 'AI 음성을 생성하지 못했습니다. 잠시 후 다시 눌러 주세요.', response.status, String(failure?.code || ''), failure?.diagnosticId);
         }
         const data = await response.json();
         if (!data?.audioContent) throw new TTSAudioRequestError('AI 음성 응답이 비어 있습니다. 다시 눌러 주세요.', 502);

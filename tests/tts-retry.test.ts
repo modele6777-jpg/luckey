@@ -39,6 +39,9 @@ test('permanent quota errors do not loop', async () => {
 test('provider unavailable and exhausted rate-limit errors do not auto-retry', async () => {
   for (const failure of [
     Object.assign(new Error('provider unavailable'), { status: 503, code: 'TTS_PROVIDER_UNAVAILABLE' }),
+    Object.assign(new Error('provider access denied'), { status: 503, code: 'TTS_EDGE_ACCESS_DENIED' }),
+    Object.assign(new Error('invalid key'), { status: 503, code: 'TTS_INVALID_KEY' }),
+    Object.assign(new Error('quota exhausted'), { status: 429, code: 'TTS_QUOTA_EXHAUSTED' }),
     Object.assign(new Error('rate limited'), { status: 429, code: 'MEDIA_RATE_LIMIT' }),
   ]) {
     let calls = 0;
@@ -47,4 +50,15 @@ test('provider unavailable and exhausted rate-limit errors do not auto-retry', a
     }));
     assert.equal(calls, 1);
   }
+});
+
+test('a transient chunk failure retries the current speech request without skipping ahead', async () => {
+  let calls = 0, waited = 0;
+  const result = await retrySpeechRequest(async () => {
+    if (++calls === 1) throw Object.assign(new Error('chunk failed'), { status: 502, code: 'TTS_CHUNK_FAILED' });
+    return 'recovered chunk audio';
+  }, { isActive: () => true, waitUntilResumed: async () => true, delay: async ms => { waited += ms; } });
+  assert.equal(calls, 2);
+  assert.equal(waited, 2000);
+  assert.equal(result, 'recovered chunk audio');
 });

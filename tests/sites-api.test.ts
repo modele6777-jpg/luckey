@@ -168,7 +168,9 @@ test('Sites reports a rejected speech provider without retrying it or exposing i
     const response = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요.' }), {}, fetch, synthesize);
     assert.equal(response?.status, 503);
     const result = await response!.json();
-    assert.equal(result.code, 'TTS_PROVIDER_UNAVAILABLE');
+    assert.equal(result.code, 'TTS_EDGE_ACCESS_DENIED');
+    assert.ok(result.diagnosticId);
+    assert.equal(response!.headers.get('X-TTS-Diagnostic-ID'), result.diagnosticId);
     assert.ok(!JSON.stringify(result).includes('private upstream details'));
   }
   assert.equal(calls, 1);

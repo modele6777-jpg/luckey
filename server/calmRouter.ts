@@ -260,7 +260,7 @@ calmRouter.post("/api/tts", async (req: Request, res: Response) => {
   // Generative AI speech only. Failure never enables a device/standard voice.
   try {
     const { handleTTS } = await import("./api-lib/ttsHandler.ts");
-    const result = await handleTTS({ text: cleanText, voice });
+    const result = await handleTTS({ text: cleanText, voice, requestId: req.get("x-vercel-id") || undefined });
     if (result && result.audioContent) {
       const mimeType = result.encoding === "mp3" ? "audio/mpeg" : "audio/wav";
       const audioDataUrl = `data:${mimeType};base64,${result.audioContent}`;
@@ -272,9 +272,14 @@ calmRouter.post("/api/tts", async (req: Request, res: Response) => {
       return res.json({ audio: audioDataUrl, cached: false });
     }
   } catch (err: any) {
+    const retryAfter = Number(err?.retryAfterSeconds);
+    if (Number.isFinite(retryAfter) && retryAfter > 0) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
+    if (err?.diagnosticId) res.setHeader("X-TTS-Diagnostic-ID", err.diagnosticId);
     return res.status(err?.status || 502).json({
       error: err?.message || "AI 자연 음성을 생성하지 못했습니다.",
       ...(err?.code ? { code: err.code } : {}),
+      ...(Number.isFinite(retryAfter) && retryAfter > 0 ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}),
+      ...(err?.diagnosticId ? { diagnosticId: err.diagnosticId } : {}),
     });
   }
   return res.status(502).json({ error: "AI 자연 음성을 생성하지 못했습니다." });

@@ -17,7 +17,7 @@ const routes = new Set([
   '/api/muse/artwork-image/proxy', '/api/health',
 ]);
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
-class ApiError extends Error { constructor(public status: number, message: string, public retryAfterSeconds?: number, public code?: string, public providerDetails?: { providerCode: string; limitKind?: string; limit?: number }) { super(message); } }
+class ApiError extends Error { constructor(public status: number, message: string, public retryAfterSeconds?: number, public code?: string, public providerDetails?: { providerCode: string; limitKind?: string; limit?: number }, public diagnosticId?: string) { super(message); } }
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 const keyFor = (env: Runtime) => text(env.gemini || env.GEMINI_API_KEY || env.GOOGLE_GENAI_API_KEY);
 const required = (value: unknown, label: string, max = 12000) => {
@@ -201,13 +201,13 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     if (route === '/api/ai/tts') {
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
       try {
-        return json(await synthesize({ text: speech, voice: body.voice }));
+        return json(await synthesize({ text: speech, voice: body.voice, requestId: request.headers.get('x-vercel-id') || undefined }));
       } catch (edgeError) {
-        if (request.signal.aborted) throw new ApiError(504, '음성 생성 요청이 취소되었습니다. 다시 눌러 주세요.');
-        if ((edgeError as { code?: string })?.code === 'TTS_PROVIDER_UNAVAILABLE') {
-          throw new ApiError(503, '서버 음성 연결을 사용할 수 없습니다.', undefined, 'TTS_PROVIDER_UNAVAILABLE');
-        }
-        throw new ApiError(502, '음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.');
+        const failure = edgeError as { status?: number; code?: string; retryAfterSeconds?: number; diagnosticId?: string };
+        if (request.signal.aborted) throw new ApiError(504, '음성 생성 요청이 취소되었습니다. 다시 눌러 주세요.', undefined, 'TTS_TIMEOUT', undefined, failure?.diagnosticId);
+        const suppliedStatus = Number(failure?.status);
+        const status = Number.isInteger(suppliedStatus) && suppliedStatus >= 400 && suppliedStatus <= 599 ? suppliedStatus : 502;
+        throw new ApiError(status, edgeError instanceof Error ? edgeError.message : '음성 생성에 일시적인 오류가 발생했습니다. 잠시 후 다시 눌러 주세요.', failure?.retryAfterSeconds, failure?.code || 'TTS_PROVIDER_UNAVAILABLE', undefined, failure?.diagnosticId);
       }
     }
     if (route === '/api/ai/image') return json({ imageUrl: await makeImage(request, env, fetchApi, required(body.prompt, '이미지 설명', 8000), body.aspectRatio) });
@@ -285,6 +285,10 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     if (error instanceof ApiError) {
       const response = json({ error: error.message, ...error.providerDetails, ...(error.code ? { code: error.code } : {}), ...(error.retryAfterSeconds ? { retryAfterSeconds: error.retryAfterSeconds } : {}) }, error.status);
       if (error.retryAfterSeconds) response.headers.set('Retry-After', String(error.retryAfterSeconds));
+      if (error.diagnosticId) {
+        response.headers.set('X-TTS-Diagnostic-ID', error.diagnosticId);
+        return Response.json({ error: error.message, ...error.providerDetails, ...(error.code ? { code: error.code } : {}), ...(error.retryAfterSeconds ? { retryAfterSeconds: error.retryAfterSeconds } : {}), diagnosticId: error.diagnosticId }, { status: error.status, headers: response.headers });
+      }
       return response;
     }
     return json({ error: '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.' }, 502);

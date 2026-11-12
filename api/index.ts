@@ -179,14 +179,14 @@ app.post("/api/ai/tts", async (req, res) => {
 
   try {
     const { handleTTS } = await import("../server/api-lib/ttsHandler.ts");
-    const result = await handleTTS({ text, voice, emotion, rate, speed, pitch });
+    const result = await handleTTS({ text, voice, emotion, rate, speed, pitch, requestId: req.get("x-vercel-id") || undefined });
     return res.status(200).json(result);
   } catch (err: any) {
-    console.error("Vercel TTS generation error:", err);
     const retryAfter = Number(err?.retryAfterSeconds);
     const hasRetry = Number.isFinite(retryAfter) && retryAfter > 0;
     if (hasRetry) res.setHeader("Retry-After", String(Math.ceil(retryAfter)));
-    return res.status(err?.status || 500).json({ error: err.message || "Failed to generate TTS", ...(err?.code ? { code: err.code } : {}), ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}) });
+    if (err?.diagnosticId) res.setHeader("X-TTS-Diagnostic-ID", err.diagnosticId);
+    return res.status(err?.status || 500).json({ error: err.message || "Failed to generate TTS", ...(err?.code ? { code: err.code } : {}), ...(hasRetry ? { retryAfterSeconds: Math.ceil(retryAfter) } : {}), ...(err?.diagnosticId ? { diagnosticId: err.diagnosticId } : {}) });
   }
 });
 
