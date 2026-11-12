@@ -178,8 +178,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Key 로딩 오버레이와 Big Bang 모바일 터치 차단 수정');
-  await expect(item).toContainText('Key iframe이 늦게 열려도 로딩 오버레이를 1초 내 자동 해제');
+  await expect(summary).toContainText('Lucy Pro 7개 채널 테마별 엔진·관점 분류');
+  await expect(item).toContainText('기초 도구 15개와 심층 관점 316개, 총 331개');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -261,6 +261,38 @@ test('Lucy Pro engine count opens the visible 331-entry catalog and meanings', a
   await search.fill('오행 바이오에너지');
   await expect(dialog).toContainText('이름을 바탕으로 한 앱 내 해석');
   await expect(dialog.getByRole('link')).toHaveCount(0);
+});
+
+test('Lucy Pro groups all 331 catalog entries under the seven channel themes', async ({ page }) => {
+  await openLucy(page, '/chat?mode=pro');
+  await page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
+  await expect(dialog).toBeVisible();
+  const entries = dialog.getByTestId('lucy-engine-catalog-entry');
+  await expect(entries).toHaveCount(331);
+
+  const themeIds = ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as const;
+  let groupedCount = 0;
+  for (const themeId of themeIds) {
+    const group = dialog.getByTestId(`lucy-engine-theme-${themeId}`);
+    await expect(group).toBeVisible();
+    const count = await group.getByTestId('lucy-engine-catalog-entry').count();
+    expect(count).toBeGreaterThan(0);
+    groupedCount += count;
+  }
+  expect(groupedCount).toBe(331);
+  await expect(dialog.getByRole('link')).toHaveCount(0);
+
+  const themeNav = dialog.getByRole('navigation', { name: 'Lucy Pro 7개 채널 테마' });
+  const auraFilter = themeNav.getByRole('button', { name: /아우라/ });
+  await auraFilter.click();
+  await expect(auraFilter).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog.getByTestId('lucy-engine-theme-aura')).toBeVisible();
+  await expect(dialog.getByTestId('lucy-engine-theme-prologue')).toHaveCount(0);
+  const auraCount = Number((await auraFilter.textContent())?.match(/\d+$/)?.[0]);
+  expect(auraCount).toBeGreaterThan(0);
+  await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(auraCount);
 });
 
 test('Lucy Pro engine catalog fills the mobile viewport and its list scrolls without auto-opening the keyboard', async ({ page }) => {

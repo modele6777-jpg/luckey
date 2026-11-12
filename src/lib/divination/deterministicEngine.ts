@@ -1,6 +1,7 @@
 import { getSymbolicPerspective } from './symbolicPerspective';
 import { MASTER_REVIEW_BINDINGS } from './masterReviewBindings';
 import type { CalculationAuditItem } from './calculationAudit';
+import type { SevenThemeChannel } from '../fifteenDivinationTools';
 /**
  * =========================================================================
  * LUCKEY 결정론적 자체 계산 엔진 (Deterministic Calculation Engine)
@@ -4636,7 +4637,11 @@ export interface DceEngineMeta {
   nameKo: string;
   icon: string;
   category: 'foundational' | 'deep_master';
+  /** Human-readable meaning for the catalog; new entries should set this or summary. */
+  meaning?: string;
   summary?: string;
+  /** Optional explicit override; Lucy Pro infers a primary channel theme when omitted. */
+  primaryTheme?: SevenThemeChannel;
 }
 
 export const ALL_DCE_ENGINES: DceEngineMeta[] = [
