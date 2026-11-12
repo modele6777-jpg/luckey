@@ -310,6 +310,9 @@ import { calculateKoreanBaekSeokDeerWhiteWallPoeticPurity, formatKoreanBaekSeokD
 import { calculateFrenchPaulRicoeurNarrativeIdentityHealing, formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt, FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION } from '../src/lib/divination/frenchPaulRicoeurNarrativeIdentityHealingEngine';
 import { calculateRussianAntonChekhovQuietEnduranceCompassion, formatRussianAntonChekhovQuietEnduranceCompassionPrompt, RUSSIAN_ANTON_CHEKHOV_QUIET_ENDURANCE_COMPASSION_VERSION } from '../src/lib/divination/russianAntonChekhovQuietEnduranceCompassionEngine';
 import { calculateKoreanSeopoKimManJungGuunmongAwakening, formatKoreanSeopoKimManJungGuunmongAwakeningPrompt, KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION } from '../src/lib/divination/koreanSeopoKimManJungGuunmongAwakeningEngine';
+import { calculateBritishVirginiaWoolfRoomOfOnesOwn, formatBritishVirginiaWoolfRoomOfOnesOwnPrompt, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION } from '../src/lib/divination/britishVirginiaWoolfRoomOfOnesOwnEngine';
+import { calculateFrenchVictorHugoLesMiserables, formatFrenchVictorHugoLesMiserablesPrompt, FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION } from '../src/lib/divination/frenchVictorHugoLesMiserablesEngine';
+import { calculateKoreanHeoGyunHongGildongYuldoguk, formatKoreanHeoGyunHongGildongYuldogukPrompt, KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION } from '../src/lib/divination/koreanHeoGyunHongGildongYuldogukEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5927,6 +5930,48 @@ test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Pen
   const prompt = formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(rep);
   assert(prompt.includes('서포 김만중 《구운몽·사씨남정기》 일장춘몽 각성·반야공관 지표'));
   assert(prompt.includes(rep.activeGuunmongTheme.themeTitleKo));
+});
+
+test('Virginia Woolf Room of One\'s Own Engine: calculates Autonomy, Moments of Being, and Androgynous Mind', () => {
+  const rep = calculateBritishVirginiaWoolfRoomOfOnesOwn(profile);
+  assert.equal(rep.engineVersion, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION);
+  assert(rep.roomOfOnesOwnAutonomyScore >= 0 && rep.roomOfOnesOwnAutonomyScore <= 100);
+  assert(rep.momentsOfBeingInsightIndex >= 0 && rep.momentsOfBeingInsightIndex <= 100);
+  assert(rep.androgynousMindCreativityScore >= 0 && rep.androgynousMindCreativityScore <= 100);
+  assert(rep.streamOfConsciousnessFlowIndex >= 0 && rep.streamOfConsciousnessFlowIndex <= 100);
+  assert(rep.lighthouseResilienceScore >= 0 && rep.lighthouseResilienceScore <= 100);
+  assert(rep.activeWoolfTheme.themeTitleKo.length > 0);
+  const prompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(rep);
+  assert(prompt.includes('버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표'));
+  assert(prompt.includes(rep.activeWoolfTheme.themeTitleKo));
+});
+
+test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Humanitarian Solidarity', () => {
+  const rep = calculateFrenchVictorHugoLesMiserables(profile);
+  assert.equal(rep.engineVersion, FRENCH_VICTOR_HUGO_LES_MISERABLES_VERSION);
+  assert(rep.mercyAndRedemptionScore >= 0 && rep.mercyAndRedemptionScore <= 100);
+  assert(rep.moralConscienceDignityIndex >= 0 && rep.moralConscienceDignityIndex <= 100);
+  assert(rep.humanitarianSolidarityScore >= 0 && rep.humanitarianSolidarityScore <= 100);
+  assert(rep.cosmicJusticeIdealIndex >= 0 && rep.cosmicJusticeIdealIndex <= 100);
+  assert(rep.indomitableHeroicResilience >= 0 && rep.indomitableHeroicResilience <= 100);
+  assert(rep.activeHugoTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchVictorHugoLesMiserablesPrompt(rep);
+  assert(prompt.includes('빅토르 위고 《레 미제라블》 자비와 도덕적 양심·인도주의 지표'));
+  assert(prompt.includes(rep.activeHugoTheme.themeTitleKo));
+});
+
+test('Heo Gyun Hong Gildong & Yuldoguk Engine: calculates Talent Liberation, Homin Spirit, and Pioneer Agency', () => {
+  const rep = calculateKoreanHeoGyunHongGildongYuldoguk(profile);
+  assert.equal(rep.engineVersion, KOREAN_HEO_GYUN_HONG_GILDONG_YULDOGUK_VERSION);
+  assert(rep.talentLiberationOvercomingPrejudiceScore >= 0 && rep.talentLiberationOvercomingPrejudiceScore <= 100);
+  assert(rep.righteousCivicCourageHominIndex >= 0 && rep.righteousCivicCourageHominIndex <= 100);
+  assert(rep.greatHarmonyJusticeHwalbindangScore >= 0 && rep.greatHarmonyJusticeHwalbindangScore <= 100);
+  assert(rep.visionaryPioneerYuldogukIndex >= 0 && rep.visionaryPioneerYuldogukIndex <= 100);
+  assert(rep.progressiveReformResilience >= 0 && rep.progressiveReformResilience <= 100);
+  assert(rep.activeHeoGyunTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanHeoGyunHongGildongYuldogukPrompt(rep);
+  assert(prompt.includes('교산 허균 《홍길동전·유재론·호민론》 인재 등용·호민 기개·율도국 지표'));
+  assert(prompt.includes(rep.activeHeoGyunTheme.themeTitleKo));
 });
 
 

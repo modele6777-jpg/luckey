@@ -1295,5 +1295,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanSeopoKimManJungGuunmongAwakening": {
     "field": "koreanSeopoKimManJungGuunmongAwakeningResult",
     "traceKey": "koreanSeopoKimManJungGuunmongAwakeningResult"
+  },
+  "britishVirginiaWoolfRoomOfOnesOwn": {
+    "field": "britishVirginiaWoolfRoomOfOnesOwnResult",
+    "traceKey": "britishVirginiaWoolfRoomOfOnesOwnResult"
+  },
+  "frenchVictorHugoLesMiserables": {
+    "field": "frenchVictorHugoLesMiserablesResult",
+    "traceKey": "frenchVictorHugoLesMiserablesResult"
+  },
+  "koreanHeoGyunHongGildongYuldoguk": {
+    "field": "koreanHeoGyunHongGildongYuldogukResult",
+    "traceKey": "koreanHeoGyunHongGildongYuldogukResult"
   }
 };
