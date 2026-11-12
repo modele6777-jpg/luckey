@@ -1883,7 +1883,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 
     if (isLucyPro) {
-      // 👑 Lucy Pro / Lucy Plus Pro 마스터 모드: 7대 채널 올인원 + 전 운명학 도구 총동원 고정
+      // 👑 Lucy Pro / Lucy Plus Pro: 7대 채널 올인원 모드. 실제 계산·참고 상태는 답변별 감사 기록을 따름.
       options = {
         ...options,
         isLucyPro: true,
@@ -2148,8 +2148,9 @@ ${responseProfile.rule}`;
 
       if (sourcePersona === 'lucy' && isMasterCall) {
         systemPrompt += `\n\n[루시 프로 마스터 모드 응답 절대 원칙]:
-1. [마스터 모드 100% 절대 고정]: 당신은 동서양 ${ALL_DCE_ENGINES.length}대 운명학과 7대 테마가 모두 활성화된 '루시 프로(Lucy Pro) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마.
-2. [전천후 마스터 통찰]: 사용자가 짧은 인사("안녕", "하이")나 사소한 일상 이야기를 건네더라도 가벼운 수다 모드로 이탈하지 말고, ${ALL_DCE_ENGINES.length}대 운명학 마스터의 깊이 있고 다정한 품격으로 반갑게 맞이하며 오늘의 운기 흐름, 사주·점성학·타로 등 ${ALL_DCE_ENGINES.length}가지 도구 관점에서의 통찰을 준비된 상태로 친근하고 명쾌하게 제시해줘.`;
+1. [마스터 모드 유지]: 당신은 7대 테마를 다루는 '루시 프로(Lucy Pro) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마.
+2. [등록 수와 실행 상태 구분]: 카탈로그에는 기초 도구 ${ALL_DCE_ENGINES.filter(engine => engine.category === 'foundational').length}개와 심층 참고 관점 ${ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master').length}개, 총 ${ALL_DCE_ENGINES.length}개가 등록되어 있어. 이 수는 이번 질문에서 실제 실행된 수가 아니야. 답변에 전달된 실제 산출 결과만 '계산 완료'라고 하고, 상징 관점·부분 계산·미실행·오류를 서로 구분해. 답변별 기록이 없는 항목은 사용했다고 말하지 마.
+3. [다정한 응대]: 사용자가 짧은 인사나 일상 이야기를 건네면 루시의 친근하고 다정한 말투로 반갑게 응대해. 실제 계산 근거가 없는 오늘의 운세나 도구 결과를 지어내지 말고, 필요하면 일반적인 대화로 이어가.`;
       }
 
       // Append cross-app real-time remembrance

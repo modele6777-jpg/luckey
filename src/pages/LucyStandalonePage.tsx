@@ -65,42 +65,68 @@ import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
+import { LucyEngineCatalogDialog } from '@/components/chat/LucyEngineCatalogDialog';
+import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import '@/styles/lucy-starlight.css';
 
-function CalculationAuditToolList({ tools }: { tools: string[] }) {
+function CalculationAuditToolList({ tools, catalogTotal }: { tools: CalculationAuditItem[]; catalogTotal?: number }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const threshold = 3;
-  const isLong = tools.length > threshold;
-  const displayedTools = isLong && !isExpanded ? tools.slice(0, threshold) : tools;
+  const calculatedCount = tools.filter(item => item.status === 'calculated').length;
+  const partialCount = tools.filter(item => item.status === 'partial').length;
+  const symbolicCount = tools.filter(item => item.status === 'symbolic').length;
+  const skippedCount = tools.filter(item => item.status === 'skipped').length;
+  const unsupportedCount = tools.filter(item => item.status === 'not_implemented').length;
+  const errorCount = tools.filter(item => item.status === 'error').length;
+  const evidencedTools = tools.filter(item => item.sentToModel);
+  const displayedTools = isExpanded ? tools : evidencedTools.slice(0, threshold);
+  const isLong = tools.length > threshold || (catalogTotal !== undefined && catalogTotal > tools.length);
+  const unrecordedCount = catalogTotal === undefined ? 0 : Math.max(0, catalogTotal - tools.length);
 
   return (
-    <span data-used-calculation-tools="true" className="inline-flex max-w-full flex-wrap items-center gap-1 text-[10px] text-amber-700 dark:text-amber-200">
+    <span data-calculation-audit="true" className="inline-flex max-w-full flex-wrap items-center gap-1 text-[10px] text-amber-700 dark:text-amber-200">
       <button
         type="button"
         onClick={() => isLong && setIsExpanded(prev => !prev)}
         className={`shrink-0 rounded-full border border-amber-400/40 px-2 py-0.5 font-medium transition-colors ${
           isLong ? 'cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-950/50 flex items-center gap-0.5 font-semibold' : 'cursor-default'
         }`}
-        title={isLong ? (isExpanded ? '도구 목록 접기' : '도구 전체 목록 펼치기') : undefined}
+        title={isLong ? (isExpanded ? '답변별 전체 상태 접기' : '답변별 전체 상태 펼치기') : '답변별 계산·참고 상태'}
       >
-        <span>사용 도구 {tools.length}개</span>
+        <span>실행 기록</span>
         {isLong && (
           <ChevronDown size={10} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
         )}
       </button>
-      {displayedTools.map(name => (
-        <span key={name} className="shrink-0 rounded-full border border-amber-400/30 px-2 py-0.5">
-          {name}
+      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">계산 {calculatedCount}</span>
+      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">부분 {partialCount}</span>
+      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">상징 참고 {symbolicCount}</span>
+      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">미실행 {skippedCount}</span>
+      {unsupportedCount > 0 && <span className="rounded-full border border-amber-400/30 px-2 py-0.5">미지원 {unsupportedCount}</span>}
+      {errorCount > 0 && <span className="rounded-full border border-amber-400/30 px-2 py-0.5">오류 {errorCount}</span>}
+      {unrecordedCount > 0 && <span className="rounded-full border border-dashed border-amber-500/50 px-2 py-0.5">미기록 {unrecordedCount}</span>}
+      {displayedTools.map(item => {
+        const statusLabels: Record<CalculationAuditItem['status'], string> = {
+          calculated: '계산 완료', partial: '부분 계산', symbolic: '상징 참고',
+          skipped: '미실행', not_implemented: '미지원', error: '오류',
+        };
+        return (
+        <span key={item.toolId} title={[item.note, item.method].filter(Boolean).join(' · ')} className="shrink-0 rounded-full border border-amber-400/30 px-2 py-0.5">
+          {statusLabels[item.status]} · {item.name}
         </span>
-      ))}
+        );
+      })}
+      {!isExpanded && tools.length > 0 && evidencedTools.length === 0 && (
+        <span className="shrink-0 rounded-full border border-dashed border-amber-400/50 px-2 py-0.5">확인된 계산·참고 결과 없음</span>
+      )}
       {isLong && !isExpanded && (
         <button
           type="button"
           onClick={() => setIsExpanded(true)}
           className="shrink-0 rounded-full border border-dashed border-amber-400/50 px-1.5 py-0.5 text-[9px] text-amber-600 dark:text-amber-300 hover:bg-amber-100/40 cursor-pointer font-medium"
-          title="전체 도구 목록 펼치기"
+          title="답변별 모든 계산 상태 펼치기"
         >
-          +{tools.length - threshold}개 더보기
+          +상태 {tools.length}개 보기
         </button>
       )}
       {isLong && isExpanded && (
@@ -261,18 +287,18 @@ const CHANNEL_PROMPT_POOLS: Record<SpecialChannel, string[]> = {
   ]
 };
 
-// 👑 7대 채널 풀가동 PRO 마스터 Pool (DCE 운명학 도구 총동원 비교 분석)
+// 👑 Lucy Pro 마스터 추천 질문 (계산 근거와 심층 참고 관점을 구분)
 const MASTER_PROMPT_POOL = [
-  `${ALL_DCE_ENGINES.length}가지 운명학·결정론 엔진을 총동원해서 올해 나의 운세와 핵심 전환점을 7대 테마별로 비교 분석해 줘.`,
-  `지금 내가 고민 중인 중요한 선택을 ${ALL_DCE_ENGINES.length}개 엔진 관점으로 비교 분석하고 공통 결론을 내려줘.`,
-  `사주·점성술·자미두수·홍국기문·주역 등 ${ALL_DCE_ENGINES.length}대 엔진을 총동원해 내 재물운과 커리어 돌파구를 비교해 줘.`,
-  `알아차림과 통찰, 그리고 ${ALL_DCE_ENGINES.length}대 운명학 지혜를 총동원해 지금 내 고민을 입체적으로 비교 분석해 줘.`,
-  `내면의 본질과 잠재된 가능성을 7대 테마 ${ALL_DCE_ENGINES.length}개 엔진으로 비교 진단해 줘.`,
-  `나의 사주·심리·신체 에너지와 인생 전략을 ${ALL_DCE_ENGINES.length}개 엔진으로 총망라해서 통합 비교해 줘.`,
-  `현재 직면한 중대한 전환점을 7대 테마와 ${ALL_DCE_ENGINES.length}대 운명학 관점에서 입체적으로 비교 분석해 줘.`,
-  `내 영혼의 최고 잠재력을 끌어올리기 위한 ${ALL_DCE_ENGINES.length}대 도구 비교 분석 마스터 로드맵을 설계해 줘.`,
-  `내 운명의 타이밍에 맞춘 비즈니스 & 라이프 마스터플랜을 ${ALL_DCE_ENGINES.length}개 엔진 비교로 설계해 줘.`,
-  `우주적 동시성과 1원칙 논리가 만나는 최고의 의사결정 해답을 ${ALL_DCE_ENGINES.length}개 엔진 비교 분석으로 제시해 줘.`
+  '올해의 흐름을 7대 테마로 살펴보고, 실제 계산된 결과와 상징 참고 관점을 분리해 알려줘.',
+  '중요한 선택을 이번 질문에서 계산된 도구와 관련 있는 심층 관점으로 비교해 줘.',
+  '사주·점성술·자미두수·주역 등 실제 산출된 근거와 정성적 참고를 구분해 재물과 커리어를 살펴봐 줘.',
+  '지금 고민을 여러 시선으로 비춰보되, 계산 결과와 철학적 관점이 무엇인지 나눠서 설명해 줘.',
+  '내면의 본질과 가능성을 7대 테마로 조망하고 근거가 없는 내용은 상징 참고라고 밝혀줘.',
+  '사주·심리·신체 에너지·인생 전략 중 이번 질문에서 확인된 결과만 근거로 통합해 줘.',
+  '중대한 전환점을 계산 근거와 심층 참고 관점으로 나눠 비교해 줘.',
+  '나의 가능성을 살펴보되, 실제 계산된 항목과 영감·철학의 비유를 분명히 구분해 줘.',
+  '비즈니스와 삶의 큰 계획을 세우고, 계산된 결과와 참고 관점의 한계를 함께 알려줘.',
+  '의사결정의 여러 시선을 비교하되 미실행·미기록 항목은 사용했다고 말하지 말아줘.'
 ];
 
 // 💬 일상 대화 & 힐링 & 인생 조언을 위한 풍부한 캐주얼 추천 질문 풀 (동적 순환)
@@ -785,7 +811,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const useWhiteTheme = false;
 
   useEffect(() => {
-    // 👑 빅뱅 버튼 홀드: 화면 접힘/펼침 상관없이 무조건 285대 풀엔진 'Lucy Pro' 진입!
+    // 👑 빅뱅 버튼 홀드: 화면 접힘/펼침 상관없이 Lucy Pro 진입.
     const handleEvolvePro = () => {
       safeLocalStorage.setItem('lucy_tier_mode', 'pro');
       safeSessionStorage.setItem('lucy_tier_mode', 'pro');
@@ -800,8 +826,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       const isCosmic = isDual && (path === '/' || path === '/chat' || path === '/lucy' || path === '/chat/pro');
       setModeSwitchToast(
         isCosmic
-          ? `👑 Lucy+ Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
-          : `👑 Lucy Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+          ? '👑 Lucy+ Pro 전환 · 계산·참고 상태는 질문별로 기록돼요'
+          : '👑 Lucy Pro 전환 · 계산·참고 상태는 질문별로 기록돼요'
       );
       setTimeout(() => setModeSwitchToast(null), 2500);
     };
@@ -1126,10 +1152,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               try { triggerHaptic('whitehole'); } catch (_) {}
               setModeSwitchToast(
                 isCosmic
-                  ? `👑 듀오 펼침 · Lucy+ Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
+                  ? '👑 듀오 펼침 · Lucy+ Pro'
                   : isDual
-                  ? `👑 듀오 펼침 · Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
-                  : `👑 듀오 접힘 · Lucy Pro (${ALL_DCE_ENGINES.length}대 풀엔진)`
+                  ? '👑 듀오 펼침 · Lucy Pro'
+                  : '👑 듀오 접힘 · Lucy Pro'
               );
               setTimeout(() => setModeSwitchToast(null), 2000);
               return 'pro';
@@ -1816,6 +1842,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 프로필 모달 상태
   const [isChatProfileModalOpen, setIsChatProfileModalOpen] = useState(false);
+  const [isEngineCatalogOpen, setIsEngineCatalogOpen] = useState(false);
   const [editingChatProfile, setEditingChatProfile] = useState<ChatTargetProfile | null>(null);
 
   const handleOpenAddChatProfile = useCallback(() => {
@@ -1997,7 +2024,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   const currentModeTagline = useMemo(() => {
     if (isCasualChat) return '루시와 편안하게 나누는 친근하고 따뜻한 일상 대화';
-    if (isFullProMaster) return '7대 우주 지능 전원 풀가동 (서막·전략·운명·치유·위로·창의·회고 최고 출력)';
+    if (isFullProMaster) return '7대 테마를 바탕으로 질문별 계산 결과와 심층 참고 관점을 구분해 안내';
     if (isSingleSpecial) {
       const ch = activeChannels[0];
       return (ch && SPECIAL_CHANNELS[ch]?.tagline) || '특화 지능 통찰';
@@ -2066,8 +2093,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           return {
             ...m,
             content: m.content
-              .replace(/\d+대\s*운명학/g, `${ALL_DCE_ENGINES.length}대 운명학`)
-              .replace(/\d+가지\s*(?:운명학\s*도구|결정론\s*엔진|운명학·결정론\s*엔진)/g, `${ALL_DCE_ENGINES.length}가지 운명학·결정론 엔진`),
+              .replace(/\d+대\s*운명학/g, '운명학')
+              .replace(/\d+가지\s*(?:운명학\s*도구|결정론\s*엔진|운명학·결정론\s*엔진)/g, '운명학 도구·관점'),
           };
         }
         if (!isMasterGreeting && (m.mode === 'master' || m.content.includes('마스터 모드') || m.content.includes('운명학 올인원'))) {
@@ -2581,7 +2608,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     let channels = effectiveForcedChannels !== undefined ? effectiveForcedChannels : activeChannels;
     if (isMasterMode) {
-      // 👑 Lucy Ultra 마스터 모드: 올인원프로 모드 + 285대 운명학 도구 전원 총동원 고정
+      // 👑 Lucy Pro 마스터 모드: 7대 테마를 사용하고, 실제 계산·참고 상태는 질문별 기록을 따름
       channels = ALL_CHANNELS;
       setActiveChannels(ALL_CHANNELS);
       setAutoDetectedTitle('올인원프로 모드');
@@ -2656,7 +2683,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       targetPersona = 'lucy';
     }
 
-    // 🔮 질문 의도와 활성 테마에 맞춰 운명학 도구 지침 주입 (일반/단일/시너지: 1~3개 핵심 선별, 마스터 모드: 15개 전원 총동원 비교 분석)
+    // 🔮 질문 의도와 활성 테마에 맞춰 도구 지침을 주입하고, 계산 근거와 상징 참고를 구분
     const divinationSelection: SelectedDivinationToolsResult = isCasual
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode });
@@ -3051,8 +3078,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                           triggerHaptic('whitehole');
                           setModeSwitchToast(
                             isCosmicRoomActive
-                              ? `👑 Lucy+ Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
-                              : `👑 Lucy Pro 발동! ${ALL_DCE_ENGINES.length}대 풀엔진 가동`
+                              ? '👑 Lucy+ Pro 전환 · 계산·참고 상태는 질문별로 기록돼요'
+                              : '👑 Lucy Pro 전환 · 계산·참고 상태는 질문별로 기록돼요'
                           );
                           setTimeout(() => setModeSwitchToast(null), 2500);
                         }
@@ -3072,14 +3099,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       type="button"
                       onClick={() => {
                         triggerHaptic('whitehole');
-                        setModeSwitchToast(`👑 총 ${ALL_DCE_ENGINES.length}대 운명학·결정론 엔진 도구 풀가동 중`);
-                        setTimeout(() => setModeSwitchToast(null), 2000);
+                        setIsEngineCatalogOpen(true);
                       }}
                       className="inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-400/30 whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none"
-                      title={`총 ${ALL_DCE_ENGINES.length}대 운명학·결정론 엔진 도구 가동 중`}
+                      title={`등록된 엔진·관점 ${ALL_DCE_ENGINES.length}개 목록 보기`}
+                      aria-label={`Lucy Pro 엔진과 관점 목록 ${ALL_DCE_ENGINES.length}개 보기`}
+                      aria-haspopup="dialog"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                      엔진 도구 {ALL_DCE_ENGINES.length}개
+                      엔진·관점 {ALL_DCE_ENGINES.length}개
                     </button>
                   )}
                 </div>
@@ -3312,20 +3340,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   <span data-message-mode-badge="true"
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${msgModeInfo.badgeColor}`}>
                     <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
-                    <span>{msgModeInfo.badgeLabel}</span>
+                  <span>{msgModeInfo.badgeLabel}</span>
                   </span>
 
                   {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && (() => {
-                    let tools = [...new Map(msg.calculationAudit
-                      .filter(item => ['calculated', 'symbolic'].includes(item.status) && (item.sentToModel || msgModeInfo.isMaster))
-                      .map(item => [item.toolId, item.status === 'symbolic' ? `${item.name} (상징)` : item.name])).values()];
-                    if (msgModeInfo.isMaster && tools.length < ALL_DCE_ENGINES.length) {
-                      const existingNames = new Set(tools.map(t => t.replace(/ \(상징\)$/, '')));
-                      const missing = ALL_DCE_ENGINES.filter(e => !existingNames.has(e.nameKo)).map(e => `${e.nameKo} (상징)`);
-                      tools = [...tools, ...missing];
-                    }
-                    if (!tools.length) return null;
-                    return <CalculationAuditToolList tools={tools} />;
+                    const tools = [...new Map(msg.calculationAudit.map(item => [item.toolId, item])).values()];
+                    if (!tools.length && !msgModeInfo.isMaster) return null;
+                    return <CalculationAuditToolList tools={tools} catalogTotal={msgModeInfo.isMaster ? ALL_DCE_ENGINES.length : undefined} />;
                   })()}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
@@ -3492,7 +3513,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 <div className="flex flex-col gap-0.5 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs sm:text-sm font-black tracking-tight bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
-                      {showPlusMarker ? 'Lucy+ Pro' : 'Lucy Pro'} {ALL_DCE_ENGINES.length}대 풀엔진 가동 중
+                      {showPlusMarker ? 'Lucy+ Pro' : 'Lucy Pro'} · 질문별 계산·참고 관점 검토 중
                     </span>
                     <div className="flex gap-1 items-center ml-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -3501,7 +3522,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </div>
                   </div>
                   <span className={`text-[10px] sm:text-[11px] font-medium truncate ${isLight ? 'text-amber-800/80' : 'text-amber-300/70'}`}>
-                    전 운명학·결정론 지표를 심층 대조하여 정밀한 통찰을 빚고 있어요...
+                    실제 산출된 결과와 상징 참고 관점을 구분해 살펴보고 있어요...
                   </span>
                 </div>
               </div>
@@ -4174,6 +4195,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         totalProfilesCount={activeProfiles.length}
         existingProfiles={activeProfiles}
         userRealName={sharedState?.userProfile?.basic?.name || getPersistentUserProfile()?.basic?.name || '박주형'}
+      />
+
+      <LucyEngineCatalogDialog
+        isOpen={isEngineCatalogOpen}
+        onClose={() => setIsEngineCatalogOpen(false)}
+        isLight={isLight}
       />
 
       {/* End of content */}

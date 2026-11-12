@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 async function openLucy(page, path = '/chat') {
+  await page.addInitScript(() => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('lu_unlocked_date', today);
+  });
   await page.goto(path);
   const lockScreen = page.locator('[data-pin-screen]');
   if (await lockScreen.count()) {
@@ -22,6 +27,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
+  await expect(summary).toContainText('Lucy Pro 엔진 목록과 iPhone 업데이트 안내 표시 개선');
+  await expect(item).toContainText('Lucy Pro 상단 엔진 수를 누르면 307개 목록');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -46,6 +53,17 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   expect(lightItem.text.length).toBeGreaterThan(0);
   expect(lightItem.textFill).toBe('rgb(51, 65, 85)');
 
+  const visibleGlyphOpacity = await summary.evaluate((element) => {
+    let opacity = 1;
+    let current: HTMLElement | null = element as HTMLElement;
+    while (current) {
+      opacity *= Number(getComputedStyle(current).opacity);
+      current = current.parentElement;
+    }
+    return opacity;
+  });
+  expect(visibleGlyphOpacity).toBeGreaterThan(0.95);
+
   await page.locator('html').evaluate((element) => {
     element.classList.remove('light');
     element.classList.add('dark');
@@ -58,6 +76,27 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   await expect.poll(() => readRenderedText(item)).toMatchObject({
     textFill: 'rgb(203, 213, 225)',
   });
+});
+
+test('Lucy Pro engine count opens the visible 307-entry catalog and meanings', async ({ page }) => {
+  await openLucy(page, '/chat?mode=pro');
+  const trigger = page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('등록 목록 307개');
+  await expect(dialog).toContainText('15개 기초 도구');
+  await expect(dialog).toContainText('292개 심층 관점');
+  await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
+  await expect(dialog).toContainText('상징 참고');
+  await expect.poll(() => dialog.evaluate(element => getComputedStyle(element).opacity)).toBe('1');
+
+  const search = dialog.getByRole('searchbox', { name: '엔진과 관점 검색' });
+  await search.fill('사주명리');
+  await expect(dialog).toContainText('사주명리');
+  await expect(dialog).toContainText('개 표시');
 });
 
 test('AI detection badge appears only for a focused non-casual query', async ({ page }) => {

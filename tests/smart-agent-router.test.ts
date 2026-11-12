@@ -24,9 +24,9 @@ test('smart agent router routes career strategy to Machiavelli, Ryu Seong-ryong,
   assert.ok(plan.deepEnginesKo?.some(name => name.includes('마키아벨리')));
 
   const routed = routeAndExecute({ text: '이직 면접과 커리어 전략을 알려줘', profile });
-  assert.match(routed.promptInjection, /246대 DCE 심층 특화 엔진/);
+  assert.match(routed.promptInjection, /질문에 맞춰 선택한 심층 참고 관점/);
   assert.match(routed.promptInjection, /마키아벨리/);
-  assert.match(routed.promptInjection, /심층 엔진 융합 가이드/);
+  assert.match(routed.promptInjection, /심층 관점 융합 가이드/);
 });
 
 test('smart agent router routes love relationship to Jung archetype, Sehando, Pascal, and Rumi', () => {

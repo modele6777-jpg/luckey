@@ -1,6 +1,5 @@
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X, RefreshCw, Check } from 'lucide-react';
 import type { ChangelogEntry } from '@/lib/updateNotice';
 import type { UpdateNoticeMode } from '@/hooks/useUpdateNotice';
@@ -53,20 +52,12 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
   };
 
   return (
-    <ScreenPortal><AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+    <ScreenPortal>
+        <div
           className="fixed inset-0 z-[1200] flex items-end sm:items-center justify-center p-3 sm:p-4 pb-safe bg-black/70 backdrop-blur-xl"
           onClick={onClose}
         >
-          <motion.div
-            initial={{ scale: 0.94, y: 18, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.94, y: 18, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+          <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="update-notice-title"
@@ -177,9 +168,8 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
                 확인
               </button>
             )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence></ScreenPortal>
+          </div>
+        </div>
+    </ScreenPortal>
   );
 }
