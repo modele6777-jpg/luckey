@@ -15,7 +15,7 @@ test('master reviews every registered tool and only exposes qualitative suppleme
   assert.equal(new Set(audit.map(item => item.toolId)).size, ALL_DCE_ENGINES.length);
   for (const engine of ALL_DCE_ENGINES.filter(item => item.category === 'deep_master')) assert.ok(MASTER_REVIEW_BINDINGS[engine.key]);
   const symbolic = getMasterSymbolicReview(report);
-  assert.equal(symbolic.length, 292);
+  assert.equal(symbolic.length, 295);
   assert.ok(symbolic.some(item => item.sentToModel));
   assert.ok(symbolic.every(item => !item.sentToModel || item.status === 'symbolic'));
   for (const item of symbolic) for (const view of item.perspectives) assert.doesNotMatch(view, /[0-9%％]/);
@@ -27,10 +27,10 @@ test('master reviews every registered tool and only exposes qualitative suppleme
 test('missing input is not replaced with a default birthday during master review', () => {
   const report = runDeterministicEngine({ coreOnly:true, reviewAll:true, forceAllTools:true });
   const review = getMasterSymbolicReview(report);
-  assert.equal(review.length, 292);
+  assert.equal(review.length, 295);
   assert.ok(review.every(item => !item.sentToModel));
   assert.equal(report.gyeogamYurokResult, null);
-  assert.equal(getCalculationAudit(report).length, 307);
+  assert.equal(getCalculationAudit(report).length, 310);
 });
 
 test('failed supplementary results are excluded instead of counted from the catalogue', () => {

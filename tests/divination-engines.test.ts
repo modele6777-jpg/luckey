@@ -295,6 +295,9 @@ import { calculateKoreanPoeunJeongMongJuDansimga, formatKoreanPoeunJeongMongJuDa
 import { calculateFrenchSimoneDeBeauvoirAmbiguityFreedom, formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION } from '../src/lib/divination/frenchSimoneDeBeauvoirAmbiguityFreedomEngine';
 import { calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology, formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt, FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION } from '../src/lib/divination/frenchMauriceMerleauPontyEmbodiedPhenomenologyEngine';
 import { calculateKoreanSamyeongdaesaSongunYujeong, formatKoreanSamyeongdaesaSongunYujeongPrompt, KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION } from '../src/lib/divination/koreanSamyeongdaesaSongunYujeongEngine';
+import { calculateKoreanShinSaimdangChochungdoArtVirtue, formatKoreanShinSaimdangChochungdoArtVirtuePrompt, KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION } from '../src/lib/divination/koreanShinSaimdangChochungdoArtVirtueEngine';
+import { calculateGermanEdmundHusserlPhenomenologicalReduction, formatGermanEdmundHusserlPhenomenologicalReductionPrompt, GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION } from '../src/lib/divination/germanEdmundHusserlPhenomenologicalReductionEngine';
+import { calculateFrenchMichelFoucaultCareOfSelfAesthetics, formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt, FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION } from '../src/lib/divination/frenchMichelFoucaultCareOfSelfAestheticsEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5702,6 +5705,48 @@ test('Samyeongdaesa Songun Yujeong Engine: calculates Righteous Devotion, Diplom
   const prompt = formatKoreanSamyeongdaesaSongunYujeongPrompt(rep);
   assert(prompt.includes('사명대사 송운 유정 《분충서난록》 호국대의 및 자비구제 지표'));
   assert(prompt.includes(rep.activeSamyeongTheme.themeTitleKo));
+});
+
+test('Shin Saimdang Chochungdo Art Virtue Engine: calculates Nature Vitality, Filial Concord, and Sage Self-Realization', () => {
+  const rep = calculateKoreanShinSaimdangChochungdoArtVirtue(profile);
+  assert.equal(rep.engineVersion, KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION);
+  assert(rep.natureVitalityContemplationScore >= 0 && rep.natureVitalityContemplationScore <= 100);
+  assert(rep.filialPietyAffectionIndex >= 0 && rep.filialPietyAffectionIndex <= 100);
+  assert(rep.sageSelfRealizationScore >= 0 && rep.sageSelfRealizationScore <= 100);
+  assert(rep.modestEleganceIndex >= 0 && rep.modestEleganceIndex <= 100);
+  assert(rep.nurturingWisdomScore >= 0 && rep.nurturingWisdomScore <= 100);
+  assert(rep.activeSaimdangTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanShinSaimdangChochungdoArtVirtuePrompt(rep);
+  assert(prompt.includes('신사임당 《초충도》 자연관조 및 현철자아실현 지표'));
+  assert(prompt.includes(rep.activeSaimdangTheme.themeTitleKo));
+});
+
+test('Edmund Husserl Phenomenological Reduction Engine: calculates Epoché Suspension, Zu den Sachen selbst, and Wesensschau Insight', () => {
+  const rep = calculateGermanEdmundHusserlPhenomenologicalReduction(profile);
+  assert.equal(rep.engineVersion, GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION);
+  assert(rep.phenomenologicalEpochéScore >= 0 && rep.phenomenologicalEpochéScore <= 100);
+  assert(rep.returnToThingsThemselvesIndex >= 0 && rep.returnToThingsThemselvesIndex <= 100);
+  assert(rep.essentialWesensschauScore >= 0 && rep.essentialWesensschauScore <= 100);
+  assert(rep.intentionalityFocusIndex >= 0 && rep.intentionalityFocusIndex <= 100);
+  assert(rep.lebensweltGroundingScore >= 0 && rep.lebensweltGroundingScore <= 100);
+  assert(rep.activeHusserlTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanEdmundHusserlPhenomenologicalReductionPrompt(rep);
+  assert(prompt.includes('에드문트 후설 《순수현상학의 이념들》 현상학적 환원 및 본질직관 지표'));
+  assert(prompt.includes(rep.activeHusserlTheme.themeTitleKo));
+});
+
+test('Michel Foucault Care of Self Aesthetics Engine: calculates Care of Self, Discipline Liberation, and Parrhesia Courage', () => {
+  const rep = calculateFrenchMichelFoucaultCareOfSelfAesthetics(profile);
+  assert.equal(rep.engineVersion, FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION);
+  assert(rep.careOfSelfEpimeleiaScore >= 0 && rep.careOfSelfEpimeleiaScore <= 100);
+  assert(rep.discourseDisciplineLiberationIndex >= 0 && rep.discourseDisciplineLiberationIndex <= 100);
+  assert(rep.aestheticsOfExistenceScore >= 0 && rep.aestheticsOfExistenceScore <= 100);
+  assert(rep.parrhesiaTruthCourageIndex >= 0 && rep.parrhesiaTruthCourageIndex <= 100);
+  assert(rep.selfMasteryGovernanceScore >= 0 && rep.selfMasteryGovernanceScore <= 100);
+  assert(rep.activeFoucaultTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(rep);
+  assert(prompt.includes('미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표'));
+  assert(prompt.includes(rep.activeFoucaultTheme.themeTitleKo));
 });
 
 

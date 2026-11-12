@@ -332,6 +332,9 @@ import { calculateKoreanPoeunJeongMongJuDansimga, formatKoreanPoeunJeongMongJuDa
 import { calculateFrenchSimoneDeBeauvoirAmbiguityFreedom, formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt, type FrenchSimoneDeBeauvoirAmbiguityFreedomResult, FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION } from './frenchSimoneDeBeauvoirAmbiguityFreedomEngine';
 import { calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology, formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt, type FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult, FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION } from './frenchMauriceMerleauPontyEmbodiedPhenomenologyEngine';
 import { calculateKoreanSamyeongdaesaSongunYujeong, formatKoreanSamyeongdaesaSongunYujeongPrompt, type KoreanSamyeongdaesaSongunYujeongResult, KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION } from './koreanSamyeongdaesaSongunYujeongEngine';
+import { calculateKoreanShinSaimdangChochungdoArtVirtue, formatKoreanShinSaimdangChochungdoArtVirtuePrompt, type KoreanShinSaimdangChochungdoArtVirtueResult, KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION } from './koreanShinSaimdangChochungdoArtVirtueEngine';
+import { calculateGermanEdmundHusserlPhenomenologicalReduction, formatGermanEdmundHusserlPhenomenologicalReductionPrompt, type GermanEdmundHusserlPhenomenologicalReductionResult, GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION } from './germanEdmundHusserlPhenomenologicalReductionEngine';
+import { calculateFrenchMichelFoucaultCareOfSelfAesthetics, formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt, type FrenchMichelFoucaultCareOfSelfAestheticsResult, FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION } from './frenchMichelFoucaultCareOfSelfAestheticsEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -684,6 +687,9 @@ export interface DeterministicEngineReport {
   frenchSimoneDeBeauvoirAmbiguityFreedomResult?: FrenchSimoneDeBeauvoirAmbiguityFreedomResult | null;
   frenchMauriceMerleauPontyEmbodiedPhenomenologyResult?: FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult | null;
   koreanSamyeongdaesaSongunYujeongResult?: KoreanSamyeongdaesaSongunYujeongResult | null;
+  koreanShinSaimdangChochungdoArtVirtueResult?: KoreanShinSaimdangChochungdoArtVirtueResult | null;
+  germanEdmundHusserlPhenomenologicalReductionResult?: GermanEdmundHusserlPhenomenologicalReductionResult | null;
+  frenchMichelFoucaultCareOfSelfAestheticsResult?: FrenchMichelFoucaultCareOfSelfAestheticsResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -3995,6 +4001,33 @@ try {
     }
   })()));
 
+  // 303. 대한민국 신사임당 《초충도·사친·유대관령망친정》 화육생명 관조 & 효애성심·소박한 격조의 예술적 현철 자아실현 지혜 엔진
+  const koreanShinSaimdangChochungdoArtVirtueResult = calculateSupplement('koreanShinSaimdangChochungdoArtVirtueResult', () => ((() => {
+    try {
+      return calculateKoreanShinSaimdangChochungdoArtVirtue(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 304. 독일 에드문트 후설 《이념들·논리연구·위기》 사태 자체로(Zu den Sachen selbst) & 현상학적 환원(에포케, Epoché)·생활세계 본질직관 지혜 엔진
+  const germanEdmundHusserlPhenomenologicalReductionResult = calculateSupplement('germanEdmundHusserlPhenomenologicalReductionResult', () => ((() => {
+    try {
+      return calculateGermanEdmundHusserlPhenomenologicalReduction(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 305. 프랑스 미셸 푸코 《감시와 처벌·주체의 해석학》 담론과 규율 권력의 해체 & 자기 배려(Souci de soi)·존재의 미학 실존 지혜 엔진
+  const frenchMichelFoucaultCareOfSelfAestheticsResult = calculateSupplement('frenchMichelFoucaultCareOfSelfAestheticsResult', () => ((() => {
+    try {
+      return calculateFrenchMichelFoucaultCareOfSelfAesthetics(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4333,6 +4366,9 @@ try {
     frenchSimoneDeBeauvoirAmbiguityFreedomResult,
     frenchMauriceMerleauPontyEmbodiedPhenomenologyResult,
     koreanSamyeongdaesaSongunYujeongResult,
+    koreanShinSaimdangChochungdoArtVirtueResult,
+    germanEdmundHusserlPhenomenologicalReductionResult,
+    frenchMichelFoucaultCareOfSelfAestheticsResult,
     tools: toolsMap,
   };
 }
@@ -4662,6 +4698,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchSimoneDeBeauvoirAmbiguityFreedom', nameKo: '시몬 드 보부아르 애매성의윤리학 제2의성 주체적자기창조 상호자유연대 상황돌파실천 실존적용기회복탄력성', icon: '🕊️', category: 'deep_master', summary: '시몬 드 보부아르의 실존주의 윤리 사상으로 기성 규범을 넘어서는 주체적 자기창조, 삶의 애매성을 품는 정직한 성숙, 타인의 자유와 함께 해방되는 연대의 지혜를 체득합니다.' },
   { key: 'frenchMauriceMerleauPontyEmbodiedPhenomenology', nameKo: '모리스 메를로퐁티 지각의현상학 눈과마음 신체주체 원초적지각 살의상호교감 예술적감각안목 현상학적접지', icon: '👁️', category: 'deep_master', summary: '모리스 메를로퐁티의 신체현상학 사상으로 머릿속 관념을 벗어난 신체-주체(Corps-sujet)의 살아있는 감각, 세계와 하나로 얽히는 살(Chair)의 상호교감과 현상학적 대지 접지를 체득합니다.' },
   { key: 'koreanSamyeongdaesaSongunYujeong', nameKo: '사명대사 송운 유정 분충서난록 사명집 살신성인호국대의 대일담판3500포로쇄환 생사초월자비희사 경세구민보살행 출세간무소유', icon: '⚔️', category: 'deep_master', summary: '사명대사 송운 유정 선생의 호국불교 사상으로 살신성인의 구국 헌신, 적진 속에서 3,500여 피랍 동포를 온전히 구출해 낸 위대한 외교 담판과 생사초월 자비구제, 초연한 무소유를 체득합니다.' },
+  { key: 'koreanShinSaimdangChochungdoArtVirtue', nameKo: '신사임당 초충도 사친 유대관령망친정 화육생명관조 효애성심 소박한격조 예술적현철 자아실현 온화한감화동반성장', icon: '🎨', category: 'deep_master', summary: '신사임당 선생의 초충도·사친 예술 철학으로 미물에서도 우주의 생명을 포착하는 세밀한 관조, 지극한 효애성심과 소박한 품격, 시대의 한계를 넘어선 주체적 자아실현과 온화한 감화력을 체득합니다.' },
+  { key: 'germanEdmundHusserlPhenomenologicalReduction', nameKo: '에드문트 후설 순수현상학의이념들 유럽학문의위기 사태자체로 판단중지에포케 본질직관 생활세계 의식의지향성', icon: '🔍', category: 'deep_master', summary: '에드문트 후설의 현상학 사상으로 상투적 선입견을 괄호에 넣는 판단중지(에포케, Epoché), 왜곡 없는 경험으로 돌아가는 사태 자체로(Zu den Sachen selbst), 본질직관과 구체적 생활세계 접지를 체득합니다.' },
+  { key: 'frenchMichelFoucaultCareOfSelfAesthetics', nameKo: '미셸 푸코 주체의해석학 성의역사 감시와처벌 자기배려 판옵티콘규율탈피 존재의미학 파레시아진실용기 자기통치주권', icon: '🏛️', category: 'deep_master', summary: '미셸 푸코의 비판 철학 사상으로 내면화된 규율 권력의 길들이기를 해체하고, 스스로의 영혼을 가꾸는 자기 배려(Souci de soi), 권력 앞의 진실 발언 파레시아(Parrhesia), 삶을 예술로 빚는 존재의 미학을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4723,6 +4762,8 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'frenchMichelFoucaultCareOfSelfAesthetics',
+    'koreanShinSaimdangChochungdoArtVirtue',
     'frenchSimoneDeBeauvoirAmbiguityFreedom',
     'koreanSamyeongdaesaSongunYujeong',
     'italianPicoDellaMirandolaDignity',
@@ -5070,6 +5111,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'koreanShinSaimdangChochungdoArtVirtue',
+    'germanEdmundHusserlPhenomenologicalReduction',
     'frenchMauriceMerleauPontyEmbodiedPhenomenology',
     'koreanSamyeongdaesaSongunYujeong',
     'koreanGosanYoonSeonDoFiveFriends',
@@ -5153,6 +5196,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'frenchMichelFoucaultCareOfSelfAesthetics',
+    'germanEdmundHusserlPhenomenologicalReduction',
+    'koreanShinSaimdangChochungdoArtVirtue',
     'frenchSimoneDeBeauvoirAmbiguityFreedom',
     'frenchMauriceMerleauPontyEmbodiedPhenomenology',
     'koreanSamyeongdaesaSongunYujeong',
