@@ -353,6 +353,9 @@ import { calculateKoreanHeoGyunHongGildongYuldoguk, formatKoreanHeoGyunHongGildo
 import { calculateAustrianRainerMariaRilkeLetters, formatAustrianRainerMariaRilkeLettersPrompt, type AustrianRainerMariaRilkeLettersResult, AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION } from './austrianRainerMariaRilkeLettersToYoungPoetEngine';
 import { calculateSpanishMiguelDeCervantesDonQuixote, formatSpanishMiguelDeCervantesDonQuixotePrompt, type SpanishMiguelDeCervantesDonQuixoteResult, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION } from './spanishMiguelDeCervantesDonQuixoteEngine';
 import { calculateKoreanIlyeonSamgukYusa, formatKoreanIlyeonSamgukYusaPrompt, type KoreanIlyeonSamgukYusaResult, KOREAN_ILYEON_SAMGUK_YUSA_VERSION } from './koreanIlyeonSamgukYusaHeritageEngine';
+import { calculateBritishWilliamShakespeareTragicWisdom, formatBritishWilliamShakespeareTragicWisdomPrompt, type BritishWilliamShakespeareTragicWisdomResult, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION } from './britishWilliamShakespeareTragicWisdomEngine';
+import { calculateFrenchMarcelProustLostTimeRegained, formatFrenchMarcelProustLostTimeRegainedPrompt, type FrenchMarcelProustLostTimeRegainedResult, FRENCH_MARCEL_PROUST_LOST_TIME_VERSION } from './frenchMarcelProustLostTimeRegainedEngine';
+import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt, type KoreanKimSoWolAzaleaResult, KOREAN_KIM_SO_WOL_AZALEA_VERSION } from './koreanKimSoWolAzaleaFlowerPoeticGraceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -726,6 +729,9 @@ export interface DeterministicEngineReport {
   austrianRainerMariaRilkeLettersResult?: AustrianRainerMariaRilkeLettersResult | null;
   spanishMiguelDeCervantesDonQuixoteResult?: SpanishMiguelDeCervantesDonQuixoteResult | null;
   koreanIlyeonSamgukYusaResult?: KoreanIlyeonSamgukYusaResult | null;
+  britishWilliamShakespeareTragicWisdomResult?: BritishWilliamShakespeareTragicWisdomResult | null;
+  frenchMarcelProustLostTimeRegainedResult?: FrenchMarcelProustLostTimeRegainedResult | null;
+  koreanKimSoWolAzaleaResult?: KoreanKimSoWolAzaleaResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4226,6 +4232,33 @@ try {
     }
   })()));
 
+  // 324. 영국 윌리엄 셰익스피어 《햄릿·맥베스·템페스트·소네트》 인간 본성 심연 직시·실존적 결단·화해 대용서 및 준비되어 있음의 평정 지혜 엔진
+  const britishWilliamShakespeareTragicWisdomResult = calculateSupplement('britishWilliamShakespeareTragicWisdomResult', () => ((() => {
+    try {
+      return calculateBritishWilliamShakespeareTragicWisdom(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 325. 프랑스 마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간의 찬란한 진실·감각의 심층 복원과 내면 영원성 지혜 엔진
+  const frenchMarcelProustLostTimeRegainedResult = calculateSupplement('frenchMarcelProustLostTimeRegainedResult', () => ((() => {
+    try {
+      return calculateFrenchMarcelProustLostTimeRegained(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 326. 대한민국 소월 김소월 시인 《진달래꽃·산유화·초혼》 지순한 헌신적 사랑·한(恨)의 서정적 승화·자연 달관과 민초 회복탄력성 지혜 엔진
+  const koreanKimSoWolAzaleaResult = calculateSupplement('koreanKimSoWolAzaleaResult', () => ((() => {
+    try {
+      return calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4585,6 +4618,9 @@ try {
     austrianRainerMariaRilkeLettersResult,
     spanishMiguelDeCervantesDonQuixoteResult,
     koreanIlyeonSamgukYusaResult,
+    britishWilliamShakespeareTragicWisdomResult,
+    frenchMarcelProustLostTimeRegainedResult,
+    koreanKimSoWolAzaleaResult,
     tools: toolsMap,
   };
 }
@@ -4935,6 +4971,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'austrianRainerMariaRilkeLetters', nameKo: '라이너 마리아 릴케 젊은시인에게주는편지 두이노의비가 말테의수기 고독사랑 질문품기 사물응시 존재의변용 대지의찬가 초연한평정', icon: '🌹', category: 'deep_master', summary: '라이너 마리아 릴케의 실존적 서정 문학 철학으로 세속의 소음을 넘어 자신의 고독을 사랑하는 깊은 침잠, 조급함 없이 질문 자체를 살아내는 숭고한 인내, 사물의 존재 신비를 응시하는 감수성과 고통을 찬가로 승화시키는 존재의 변용(Verwandlung)을 체득합니다.' },
   { key: 'spanishMiguelDeCervantesDonQuixote', nameKo: '미겔 데 세르반테스 돈키호테 라만차의기사 불가능한꿈 고결한이상주의 풍차앞불굴의용기 산초판사우정조화 해학적회복탄력성 자기창조적주체성', icon: '🛡️', category: 'deep_master', summary: '미겔 데 세르반테스의 불멸의 고전 《돈키호테》 철학으로 냉소와 계산에 물들지 않고 불가능한 꿈을 향해 나아가는 고결한 이상주의, 풍차 앞에서도 물러서지 않는 숭고한 용기, 이상과 현실의 우정 어린 조화, 실패를 웃음으로 보듬는 해학적 회복탄력성을 체득합니다.' },
   { key: 'koreanIlyeonSamgukYusa', nameKo: '보각국사 일연 삼국유사 홍익인간개천자주성 향가서정치유 제망매가 처용관용대도량 민중자비기적 문화적회복탄력성', icon: '📜', category: 'deep_master', summary: '보각국사 일연 선사의 불후의 민족 고전 《삼국유사》 철학으로 몽골 침략의 국난 속에서도 천손(天孫)의 홍익인간 자주 자긍심, 슬픔을 노래로 녹여내는 향가의 서정적 치유, 분노와 원한을 춤과 노래로 감화시키는 처용의 위대한 관용, 폐허 속에서도 민족의 얼과 기억을 지켜낸 불굴의 문화적 회복탄력성을 체득합니다.' },
+  { key: 'britishWilliamShakespeareTragicWisdom', nameKo: '윌리엄 셰익스피어 햄릿 템페스트 맥베스 비극적심연직시 실존적결단 템페스트대용서 화해와관용 소네트예술적영원성 준비되어있음이전부다', icon: '🎭', category: 'deep_master', summary: '윌리엄 셰익스피어의 불멸의 극문학 철학으로 인간 본성의 심연과 고뇌를 정직하게 응시하는 통찰, "사느냐 죽느냐"의 실존적 주체 결단, 복수의 지팡이를 꺾고 관용으로 품는 템페스트의 성숙한 화해와 "준비되어 있음이 전부다(The readiness is all)"의 초연한 섭리 평정을 체득합니다.' },
+  { key: 'frenchMarcelProustLostTimeRegained', nameKo: '마르셀 프루스트 잃어버린시간을찾아서 마들렌비자발적기억 되찾은시간 미세감각안목 참된자아발견 시간초월내면성전', icon: '☕', category: 'deep_master', summary: '마르셀 프루스트의 대작 《잃어버린 시간을 찾아서》 철학으로 마들렌 조각처럼 살아 숨 쉬는 감각의 향기로 진실을 깨우는 비자발적 기억, 세속의 허영을 벗겨낸 참된 자아의 발견, 흘러가는 시간의 무상함을 딛고 내면의 영원한 성전을 완성하는 되찾은 시간(Le Temps retrouvé)의 구원을 체득합니다.' },
+  { key: 'koreanKimSoWolAzalea', nameKo: '소월 김소월 진달래꽃 산유화 초혼 접동새 지순한헌신 축복의꽃 애이불비 슬픔의서정적승화 자연순환달관 강인한민초회복탄력성', icon: '🌸', category: 'deep_master', summary: '소월 김소월 시인의 민족 서정 문학 철학으로 떠나는 임의 앞길에 꽃을 뿌리는 지순한 사랑의 헌신, 비탄을 원망 대신 눈부신 절제의 노래로 빚는 슬픔의 승화, 저만치 혼자 피어있는 산유화의 고결한 자연 순환 달관과 척박한 땅에서도 보습을 쥐는 강인한 민초의 생명력을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4996,6 +5035,9 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'britishWilliamShakespeareTragicWisdom',
+    'frenchMarcelProustLostTimeRegained',
+    'koreanKimSoWolAzalea',
     'spanishMiguelDeCervantesDonQuixote',
     'koreanIlyeonSamgukYusa',
     'austrianRainerMariaRilkeLetters',
@@ -5183,6 +5225,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'koreanKimSoWolAzalea',
+    'britishWilliamShakespeareTragicWisdom',
+    'frenchMarcelProustLostTimeRegained',
     'austrianRainerMariaRilkeLetters',
     'koreanIlyeonSamgukYusa',
     'spanishMiguelDeCervantesDonQuixote',
@@ -5366,6 +5411,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'koreanKimSoWolAzalea',
+    'frenchMarcelProustLostTimeRegained',
+    'britishWilliamShakespeareTragicWisdom',
     'austrianRainerMariaRilkeLetters',
     'koreanIlyeonSamgukYusa',
     'spanishMiguelDeCervantesDonQuixote',
@@ -5412,6 +5460,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'frenchMarcelProustLostTimeRegained',
+    'britishWilliamShakespeareTragicWisdom',
+    'koreanKimSoWolAzalea',
     'austrianRainerMariaRilkeLetters',
     'koreanIlyeonSamgukYusa',
     'spanishMiguelDeCervantesDonQuixote',
@@ -5473,6 +5524,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'britishWilliamShakespeareTragicWisdom',
+    'frenchMarcelProustLostTimeRegained',
+    'koreanKimSoWolAzalea',
     'austrianRainerMariaRilkeLetters',
     'spanishMiguelDeCervantesDonQuixote',
     'koreanIlyeonSamgukYusa',

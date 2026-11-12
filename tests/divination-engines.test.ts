@@ -316,6 +316,9 @@ import { calculateKoreanHeoGyunHongGildongYuldoguk, formatKoreanHeoGyunHongGildo
 import { calculateAustrianRainerMariaRilkeLetters, formatAustrianRainerMariaRilkeLettersPrompt, AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION } from '../src/lib/divination/austrianRainerMariaRilkeLettersToYoungPoetEngine';
 import { calculateSpanishMiguelDeCervantesDonQuixote, formatSpanishMiguelDeCervantesDonQuixotePrompt, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION } from '../src/lib/divination/spanishMiguelDeCervantesDonQuixoteEngine';
 import { calculateKoreanIlyeonSamgukYusa, formatKoreanIlyeonSamgukYusaPrompt, KOREAN_ILYEON_SAMGUK_YUSA_VERSION } from '../src/lib/divination/koreanIlyeonSamgukYusaHeritageEngine';
+import { calculateBritishWilliamShakespeareTragicWisdom, formatBritishWilliamShakespeareTragicWisdomPrompt, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION } from '../src/lib/divination/britishWilliamShakespeareTragicWisdomEngine';
+import { calculateFrenchMarcelProustLostTimeRegained, formatFrenchMarcelProustLostTimeRegainedPrompt, FRENCH_MARCEL_PROUST_LOST_TIME_VERSION } from '../src/lib/divination/frenchMarcelProustLostTimeRegainedEngine';
+import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt, KOREAN_KIM_SO_WOL_AZALEA_VERSION } from '../src/lib/divination/koreanKimSoWolAzaleaFlowerPoeticGraceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -6017,6 +6020,48 @@ test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing,
   const prompt = formatKoreanIlyeonSamgukYusaPrompt(rep);
   assert(prompt.includes('보각국사 일연 《삼국유사》 홍익인간 자주 자긍심·향가 치유·처용 관용 지표'));
   assert(prompt.includes(rep.activeIlyeonTheme.themeTitleKo));
+});
+
+test('William Shakespeare Tragic Wisdom Engine: calculates Tragic Depth, Existential Action, and Readiness', () => {
+  const rep = calculateBritishWilliamShakespeareTragicWisdom(profile);
+  assert.equal(rep.engineVersion, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION);
+  assert(rep.tragicDepthConfrontationScore >= 0 && rep.tragicDepthConfrontationScore <= 100);
+  assert(rep.existentialActionResolveIndex >= 0 && rep.existentialActionResolveIndex <= 100);
+  assert(rep.tempestForgivenessGraceScore >= 0 && rep.tempestForgivenessGraceScore <= 100);
+  assert(rep.poeticImmortalityAestheticsIndex >= 0 && rep.poeticImmortalityAestheticsIndex <= 100);
+  assert(rep.sereneFortitudeResilienceScore >= 0 && rep.sereneFortitudeResilienceScore <= 100);
+  assert(rep.activeShakespeareTheme.themeTitleKo.length > 0);
+  const prompt = formatBritishWilliamShakespeareTragicWisdomPrompt(rep);
+  assert(prompt.includes('윌리엄 셰익스피어 《햄릿·템페스트》 비극적 통찰·실존적 결단 지표'));
+  assert(prompt.includes(rep.activeShakespeareTheme.themeTitleKo));
+});
+
+test('Marcel Proust Lost Time Regained Engine: calculates Involuntary Memory, Time Regained, and Aesthetic Insight', () => {
+  const rep = calculateFrenchMarcelProustLostTimeRegained(profile);
+  assert.equal(rep.engineVersion, FRENCH_MARCEL_PROUST_LOST_TIME_VERSION);
+  assert(rep.involuntaryMemoryDepthScore >= 0 && rep.involuntaryMemoryDepthScore <= 100);
+  assert(rep.lostTimeRegainedWisdomIndex >= 0 && rep.lostTimeRegainedWisdomIndex <= 100);
+  assert(rep.subtleSensoryAestheticsScore >= 0 && rep.subtleSensoryAestheticsScore <= 100);
+  assert(rep.authenticSelfDiscoveryIndex >= 0 && rep.authenticSelfDiscoveryIndex <= 100);
+  assert(rep.timeTranscendenceResilienceScore >= 0 && rep.timeTranscendenceResilienceScore <= 100);
+  assert(rep.activeProustTheme.themeTitleKo.length > 0);
+  const prompt = formatFrenchMarcelProustLostTimeRegainedPrompt(rep);
+  assert(prompt.includes('마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간 지표'));
+  assert(prompt.includes(rep.activeProustTheme.themeTitleKo));
+});
+
+test('Kim So-wol Azalea Flower Poetic Grace Engine: calculates Devoted Love, Grief Sublimation, and Grassroots Resilience', () => {
+  const rep = calculateKoreanKimSoWolAzaleaFlowerPoeticGrace(profile);
+  assert.equal(rep.engineVersion, KOREAN_KIM_SO_WOL_AZALEA_VERSION);
+  assert(rep.devotedLoveBlessingScore >= 0 && rep.devotedLoveBlessingScore <= 100);
+  assert(rep.griefPoeticSublimationIndex >= 0 && rep.griefPoeticSublimationIndex <= 100);
+  assert(rep.sanYuHwaNatureAttunementScore >= 0 && rep.sanYuHwaNatureAttunementScore <= 100);
+  assert(rep.soulInvocationLongingIndex >= 0 && rep.soulInvocationLongingIndex <= 100);
+  assert(rep.dauntlessGrassrootsResilienceScore >= 0 && rep.dauntlessGrassrootsResilienceScore <= 100);
+  assert(rep.activeKimSoWolTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(rep);
+  assert(prompt.includes('소월 김소월 《진달래꽃·산유화·초혼》 지순한 헌신·슬픔의 승화 지표'));
+  assert(prompt.includes(rep.activeKimSoWolTheme.themeTitleKo));
 });
 
 
