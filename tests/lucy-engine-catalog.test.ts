@@ -9,9 +9,9 @@ import {
   getEngineCatalogSources,
 } from '../src/lib/divination/engineCatalog';
 
-test('engine catalogue separates 15 foundational tools from 301 deep perspectives', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 316);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 301 });
+test('engine catalogue separates 15 foundational tools from 304 deep perspectives', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 319);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 304 });
 });
 
 test('all listed catalog entries retain a readable meaning', () => {

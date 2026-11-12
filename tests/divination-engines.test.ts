@@ -304,6 +304,9 @@ import { calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia, formatGerm
 import { calculateFrenchJacquesDerridaDeconstructionDifferance, formatFrenchJacquesDerridaDeconstructionDifferancePrompt, FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION } from '../src/lib/divination/frenchJacquesDerridaDeconstructionDifferanceEngine';
 import { calculateGermanJurgenHabermasCommunicativeAction, formatGermanJurgenHabermasCommunicativeActionPrompt, GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION } from '../src/lib/divination/germanJurgenHabermasCommunicativeActionEngine';
 import { calculateFrenchRolandBarthesSemioticsPunctum, formatFrenchRolandBarthesSemioticsPunctumPrompt, FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION } from '../src/lib/divination/frenchRolandBarthesSemioticsPunctumEngine';
+import { calculateAmericanJohnDeweyPragmaticInquiryGrowth, formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION } from '../src/lib/divination/americanJohnDeweyPragmaticInquiryGrowthEngine';
+import { calculateRussianFyodorDostoevskyKaramazovSoulCompassion, formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION } from '../src/lib/divination/russianFyodorDostoevskyKaramazovSoulCompassionEngine';
+import { calculateKoreanBaekSeokDeerWhiteWallPoeticPurity, formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt, KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION } from '../src/lib/divination/koreanBaekSeokDeerWhiteWallPoeticPurityEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -5837,6 +5840,48 @@ test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition,
   const prompt = formatFrenchRolandBarthesSemioticsPunctumPrompt(rep);
   assert(prompt.includes('롤랑 바르트 《신화론》·《밝은 방》 푼크툼(Punctum)·기호학 지표'));
   assert(prompt.includes(rep.activeBarthesTheme.themeTitleKo));
+});
+
+test('John Dewey Pragmatic Inquiry and Growth Engine: calculates Reflective Thinking, Instrumental Intelligence, and Life as Growth', () => {
+  const rep = calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile);
+  assert.equal(rep.engineVersion, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION);
+  assert(rep.reflectiveThinkingInquiryScore >= 0 && rep.reflectiveThinkingInquiryScore <= 100);
+  assert(rep.instrumentalIntelligenceAdaptabilityIndex >= 0 && rep.instrumentalIntelligenceAdaptabilityIndex <= 100);
+  assert(rep.growthAsLifeProcessVitalityScore >= 0 && rep.growthAsLifeProcessVitalityScore <= 100);
+  assert(rep.organismEnvironmentInteractionHarmonyIndex >= 0 && rep.organismEnvironmentInteractionHarmonyIndex <= 100);
+  assert(rep.democraticCooperationEmpathyScore >= 0 && rep.democraticCooperationEmpathyScore <= 100);
+  assert(rep.activeDeweyTheme.themeTitleKo.length > 0);
+  const prompt = formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(rep);
+  assert(prompt.includes('존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표'));
+  assert(prompt.includes(rep.activeDeweyTheme.themeTitleKo));
+});
+
+test('Fyodor Dostoevsky Karamazov Soul Compassion Engine: calculates Soul Abyss Confrontation, Active Love, and Suffering Purification', () => {
+  const rep = calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile);
+  assert.equal(rep.engineVersion, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION);
+  assert(rep.soulAbyssHonestConfrontationScore >= 0 && rep.soulAbyssHonestConfrontationScore <= 100);
+  assert(rep.activeLoveCompassionIndex >= 0 && rep.activeLoveCompassionIndex <= 100);
+  assert(rep.sufferingPurificationTranscendenceScore >= 0 && rep.sufferingPurificationTranscendenceScore <= 100);
+  assert(rep.kissingTheEarthLivingVitalityIndex >= 0 && rep.kissingTheEarthLivingVitalityIndex <= 100);
+  assert(rep.universalBrotherhoodSolidarityScore >= 0 && rep.universalBrotherhoodSolidarityScore <= 100);
+  assert(rep.activeDostoevskyTheme.themeTitleKo.length > 0);
+  const prompt = formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt(rep);
+  assert(prompt.includes('도스토옙스키 《카라마조프 가의 형제들·죄와 벌》 심연 직시·대자비(Active Love) 지표'));
+  assert(prompt.includes(rep.activeDostoevskyTheme.themeTitleKo));
+});
+
+test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solitude, Folk Warmth, and Steadfast Resilience', () => {
+  const rep = calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(profile);
+  assert.equal(rep.engineVersion, KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION);
+  assert(rep.nobleSolitudePurityScore >= 0 && rep.nobleSolitudePurityScore <= 100);
+  assert(rep.folkWarmthCommunityAffinityIndex >= 0 && rep.folkWarmthCommunityAffinityIndex <= 100);
+  assert(rep.unyieldingPoeticIntegrityScore >= 0 && rep.unyieldingPoeticIntegrityScore <= 100);
+  assert(rep.transcendentWhiteWallReflectionIndex >= 0 && rep.transcendentWhiteWallReflectionIndex <= 100);
+  assert(rep.sereneSteadfastResilienceScore >= 0 && rep.sereneSteadfastResilienceScore <= 100);
+  assert(rep.activeBaekSeokTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(rep);
+  assert(prompt.includes('백석 《사슴·흰 바람벽이 있어》 순수 고결성·맑은 존엄(Poetic Purity) 지표'));
+  assert(prompt.includes(rep.activeBaekSeokTheme.themeTitleKo));
 });
 
 

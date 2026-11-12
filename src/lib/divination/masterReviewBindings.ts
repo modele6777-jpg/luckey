@@ -1271,5 +1271,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "frenchRolandBarthesSemioticsPunctum": {
     "field": "frenchRolandBarthesSemioticsPunctumResult",
     "traceKey": "frenchRolandBarthesSemioticsPunctumResult"
+  },
+  "americanJohnDeweyPragmaticInquiryGrowth": {
+    "field": "americanJohnDeweyPragmaticInquiryGrowthResult",
+    "traceKey": "americanJohnDeweyPragmaticInquiryGrowthResult"
+  },
+  "russianFyodorDostoevskyKaramazovSoulCompassion": {
+    "field": "russianFyodorDostoevskyKaramazovSoulCompassionResult",
+    "traceKey": "russianFyodorDostoevskyKaramazovSoulCompassionResult"
+  },
+  "koreanBaekSeokDeerWhiteWallPoeticPurity": {
+    "field": "koreanBaekSeokDeerWhiteWallPoeticPurityResult",
+    "traceKey": "koreanBaekSeokDeerWhiteWallPoeticPurityResult"
   }
 };

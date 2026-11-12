@@ -341,6 +341,9 @@ import { calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia, formatGerm
 import { calculateFrenchJacquesDerridaDeconstructionDifferance, formatFrenchJacquesDerridaDeconstructionDifferancePrompt, type FrenchJacquesDerridaDeconstructionDifferanceResult, FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION } from './frenchJacquesDerridaDeconstructionDifferanceEngine';
 import { calculateGermanJurgenHabermasCommunicativeAction, formatGermanJurgenHabermasCommunicativeActionPrompt, type GermanJurgenHabermasCommunicativeActionResult, GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION } from './germanJurgenHabermasCommunicativeActionEngine';
 import { calculateFrenchRolandBarthesSemioticsPunctum, formatFrenchRolandBarthesSemioticsPunctumPrompt, type FrenchRolandBarthesSemioticsPunctumResult, FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION } from './frenchRolandBarthesSemioticsPunctumEngine';
+import { calculateAmericanJohnDeweyPragmaticInquiryGrowth, formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt, type AmericanJohnDeweyPragmaticInquiryGrowthResult, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION } from './americanJohnDeweyPragmaticInquiryGrowthEngine';
+import { calculateRussianFyodorDostoevskyKaramazovSoulCompassion, formatRussianFyodorDostoevskyKaramazovSoulCompassionPrompt, type RussianFyodorDostoevskyKaramazovSoulCompassionResult, RUSSIAN_FYODOR_DOSTOEVSKY_KARAMAZOV_SOUL_COMPASSION_VERSION } from './russianFyodorDostoevskyKaramazovSoulCompassionEngine';
+import { calculateKoreanBaekSeokDeerWhiteWallPoeticPurity, formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt, type KoreanBaekSeokDeerWhiteWallPoeticPurityResult, KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION } from './koreanBaekSeokDeerWhiteWallPoeticPurityEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -702,6 +705,9 @@ export interface DeterministicEngineReport {
   frenchJacquesDerridaDeconstructionDifferanceResult?: FrenchJacquesDerridaDeconstructionDifferanceResult | null;
   germanJurgenHabermasCommunicativeActionResult?: GermanJurgenHabermasCommunicativeActionResult | null;
   frenchRolandBarthesSemioticsPunctumResult?: FrenchRolandBarthesSemioticsPunctumResult | null;
+  americanJohnDeweyPragmaticInquiryGrowthResult?: AmericanJohnDeweyPragmaticInquiryGrowthResult | null;
+  russianFyodorDostoevskyKaramazovSoulCompassionResult?: RussianFyodorDostoevskyKaramazovSoulCompassionResult | null;
+  koreanBaekSeokDeerWhiteWallPoeticPurityResult?: KoreanBaekSeokDeerWhiteWallPoeticPurityResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4094,6 +4100,33 @@ try {
     }
   })()));
 
+  // 312. 미국 존 듀이 《경험과 자연·민주주의와 교육》 도구주의 반성적 사고 & 지성적 탐구·성장으로서의 삶 지혜 엔진
+  const americanJohnDeweyPragmaticInquiryGrowthResult = calculateSupplement('americanJohnDeweyPragmaticInquiryGrowthResult', () => ((() => {
+    try {
+      return calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 313. 러시아 표도르 도스토옙스키 《카라마조프 가의 형제들·죄와 벌》 심연 직시와 영혼의 대자비·고통의 정화와 생명 긍정 지혜 엔진
+  const russianFyodorDostoevskyKaramazovSoulCompassionResult = calculateSupplement('russianFyodorDostoevskyKaramazovSoulCompassionResult', () => ((() => {
+    try {
+      return calculateRussianFyodorDostoevskyKaramazovSoulCompassion(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 314. 대한민국 백석 《사슴·흰 바람벽이 있어》 가난하고 외롭고 높고 쓸쓸한 순수 고결성 & 토속적 생명력·영혼의 맑은 존엄 지혜 엔진
+  const koreanBaekSeokDeerWhiteWallPoeticPurityResult = calculateSupplement('koreanBaekSeokDeerWhiteWallPoeticPurityResult', () => ((() => {
+    try {
+      return calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(profile);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4441,6 +4474,9 @@ try {
     frenchJacquesDerridaDeconstructionDifferanceResult,
     germanJurgenHabermasCommunicativeActionResult,
     frenchRolandBarthesSemioticsPunctumResult,
+    americanJohnDeweyPragmaticInquiryGrowthResult,
+    russianFyodorDostoevskyKaramazovSoulCompassionResult,
+    koreanBaekSeokDeerWhiteWallPoeticPurityResult,
     tools: toolsMap,
   };
 }
@@ -4779,6 +4815,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'frenchJacquesDerridaDeconstructionDifferance', nameKo: '자크 데리다 그라마톨로지 유령론 해체 차연 Differance 이항대립해체 미결정성 환대 아포리아돌파', icon: '📜', category: 'deep_master', summary: '자크 데리다의 해체주의 철학으로 고정된 독단적 이분법을 깨뜨리는 차연(Différance)의 사유, 미결정성의 한계를 돌파하는 결단과 낯선 타자를 향한 조건 없는 환대를 체득합니다.' },
   { key: 'germanJurgenHabermasCommunicativeAction', nameKo: '위르겐 하버마스 의사소통행위이론 공론장의구조변동 더나은논증의힘 상호이해지향 이상적담화상황 생활세계식민화극복', icon: '🗣️', category: 'deep_master', summary: '위르겐 하버마스의 비판 소통 철학으로 독단적 강제 없는 더 나은 논증의 힘, 타자와의 왜곡 없는 상호이해 지향, 이상적 담화 상황과 도구적 합리성에 맞선 생활세계의 건강성을 체득합니다.' },
   { key: 'frenchRolandBarthesSemioticsPunctum', nameKo: '롤랑 바르트 신화론 밝은방 텍스트의즐거움 저자의죽음 푼크툼 스투디움 기호학적탈신화화 능동적재창조', icon: '📸', category: 'deep_master', summary: '롤랑 바르트의 기호학 및 문학비평 사상으로 상투적 통념을 벗겨내는 현대 신화의 탈신화화, 심장을 찌르는 감동인 푼크툼(Punctum)의 직관, 독자의 능동적 재창조와 텍스트의 즐거움을 체득합니다.' },
+  { key: 'americanJohnDeweyPragmaticInquiryGrowth', nameKo: '존 듀이 경험과자연 민주주의와교육 반성적사고 지성적탐구 도구주의 도구적지성 성장그자체로서의삶 유기체환경상호작용', icon: '🌱', category: 'deep_master', summary: '존 듀이의 실용주의 및 도구주의 철학으로 고착된 독단을 깨는 반성적 사고(Reflective Thinking), 문제 해결을 위한 지성적 탐구(Inquiry), 유기체와 환경의 능동적 상호작용과 도달점 없는 영원한 성장으로서의 삶을 체득합니다.' },
+  { key: 'russianFyodorDostoevskyKaramazovSoulCompassion', nameKo: '표도르 도스토옙스키 카라마조프가의형제들 죄와벌 영혼의심연직시 대자비 고통을통한정화 대지의입맞춤 살아있는생명긍정 적극적사랑', icon: '🕊️', category: 'deep_master', summary: '표도르 도스토옙스키의 심원한 실존 문학 철학으로 영혼의 가장 깊은 심연과 모순을 정직하게 응시하고, 고통을 성장의 양분으로 승화시키는 정화, 살아 숨 쉬는 대지와 생명을 향한 뜨거운 적극적 사랑(Active Love)과 대자비를 체득합니다.' },
+  { key: 'koreanBaekSeokDeerWhiteWallPoeticPurity', nameKo: '백석 사슴 흰바람벽이있어 나와나타샤와흰당나귀 가난하고외롭고높고쓸쓸한 영혼의맑은존엄 토속적정감 초연한고결성 자아성찰', icon: '🦌', category: 'deep_master', summary: '백석 시인의 고결한 민족 서정 철학으로 가난하고 외롭고 쓸쓸한 시련 속에서도 훼손되지 않는 영혼의 높고 맑은 존엄성, 따스한 토속적 공동체 정감과 흰 당나귀처럼 눈 쌓인 밤을 담담히 걸어가는 초연한 자아 성찰을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(
@@ -4840,6 +4879,7 @@ function getIncludedCalculationTools(report: DeterministicEngineReport, options?
 
 const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
   career_strategy: [
+    'americanJohnDeweyPragmaticInquiryGrowth',
     'frenchMichelFoucaultCareOfSelfAesthetics',
     'koreanShinSaimdangChochungdoArtVirtue',
     'frenchSimoneDeBeauvoirAmbiguityFreedom',
@@ -5018,6 +5058,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   relationship_love: [
+    'russianFyodorDostoevskyKaramazovSoulCompassion',
+    'koreanBaekSeokDeerWhiteWallPoeticPurity',
     'frenchEmmanuelLevinasFaceOfOtherHospitality',
     'frenchSimoneDeBeauvoirAmbiguityFreedom',
     'frenchMauriceMerleauPontyEmbodiedPhenomenology',
@@ -5190,6 +5232,7 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'guiguziLiangtouqian',
   ],
   vitality_wellness: [
+    'russianFyodorDostoevskyKaramazovSoulCompassion',
     'koreanShinSaimdangChochungdoArtVirtue',
     'germanEdmundHusserlPhenomenologicalReduction',
     'frenchMauriceMerleauPontyEmbodiedPhenomenology',
@@ -5228,6 +5271,8 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'hinduKundalini',
   ],
   creative_mind: [
+    'koreanBaekSeokDeerWhiteWallPoeticPurity',
+    'americanJohnDeweyPragmaticInquiryGrowth',
     'frenchJacquesDerridaDeconstructionDifferance',
     'frenchRolandBarthesSemioticsPunctum',
     'germanWalterBenjaminAuraNowTime',
@@ -5279,6 +5324,9 @@ const INTENT_SPECIALIZED_ENGINES: Record<string, string[]> = {
     'slavicSvarog',
   ],
   life_reflection: [
+    'americanJohnDeweyPragmaticInquiryGrowth',
+    'russianFyodorDostoevskyKaramazovSoulCompassion',
+    'koreanBaekSeokDeerWhiteWallPoeticPurity',
     'frenchJacquesDerridaDeconstructionDifferance',
     'germanJurgenHabermasCommunicativeAction',
     'frenchRolandBarthesSemioticsPunctum',
