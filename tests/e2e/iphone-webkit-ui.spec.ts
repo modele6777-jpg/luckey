@@ -27,8 +27,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Lucy Pro 엔진 목록과 iPhone 업데이트 안내 표시 개선');
-  await expect(item).toContainText('Lucy Pro 상단 엔진 수를 누르면 307개 목록');
+  await expect(summary).toContainText('Lucy Pro 심층 관점 229개 개별 뜻·출처 안내');
+  await expect(item).toContainText('조사 대상 심층 관점 229개에 항목별 뜻을 추가했습니다.');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -98,6 +98,12 @@ test('Lucy Pro engine count opens the visible 307-entry catalog and meanings', a
   await search.fill('사주명리');
   await expect(dialog).toContainText('사주명리');
   await expect(dialog).toContainText('개 표시');
+  await search.fill('실시간 행성 트랜짓');
+  await expect(dialog).toContainText('실시간 행성 트랜짓');
+  await expect(dialog.getByRole('link', { name: /Cosmobiology/ })).toBeVisible();
+  await search.fill('오행 바이오에너지');
+  await expect(dialog).toContainText('이름을 바탕으로 한 앱 내 해석');
+  await expect(dialog).toContainText('이름 기반 앱 내 해석 · 직접 출처 미확인');
 });
 
 test('Lucy Pro engine catalog fills the mobile viewport and its list scrolls without auto-opening the keyboard', async ({ page }) => {
