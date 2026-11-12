@@ -3840,6 +3840,18 @@ html.dark .update-notice-modal .update-notice-note {
   color: #334155 !important;
   -webkit-text-fill-color: #334155 !important;
 }
+html.light .update-notice-modal .update-notice-summary,
+html.light .update-notice-modal .update-notice-note {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+html.light .update-notice-modal .update-notice-item {
+  color: #334155 !important;
+}
+html.light .update-notice-modal .update-notice-item > span:not(.text-amber-500) {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
 html.dark .update-notice-modal .update-notice-summary,
 html.dark .update-notice-modal .update-notice-note {
   color: #f8fafc !important;

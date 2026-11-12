@@ -67,6 +67,9 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.94, y: 18, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="update-notice-title"
             className="update-notice-modal w-full max-w-md max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-950 border border-amber-500/30 dark:border-yellow-500/20 rounded-[28px] sm:rounded-[32px] p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:shadow-[0_0_50px_rgba(234,179,8,0.15)] relative backdrop-blur-2xl"
             onClick={(e) => e.stopPropagation()}
           >
@@ -87,7 +90,7 @@ export function UpdateNoticeModal({ isOpen, entries, mode = 'auto', onClose, onA
                 <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-amber-600 dark:text-yellow-400/90 font-mono">
                   PRISM Update
                 </p>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-sans truncate">
+                <h3 id="update-notice-title" className="text-lg font-bold text-slate-900 dark:text-white font-sans truncate">
                   {isNewVersionAvailable
                     ? '새로운 버전 업데이트 가능'
                     : mode === 'manual'

@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.7.357",
+  "version": "1.7.358",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -16,7 +16,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "deploy:firestore-rules": "firebase deploy --only firestore:rules",
-    "build:sites": "vite build --mode sites && node scripts/build-sites.mjs"
+    "build:sites": "vite build --mode sites && node scripts/build-sites.mjs",
+    "test:webkit": "playwright test --project=webkit-iphone"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
@@ -75,6 +76,7 @@
   },
   "devDependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
+    "@playwright/test": "^1.65.0",
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
