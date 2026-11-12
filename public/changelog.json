@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.359",
+    "builtAt": "2026-11-12T03:40:15.444Z",
+    "summary": "루시 채팅에서 Big Bang 좌우 이동 비활성화",
+    "items": [
+      "루시 채팅에서 Big Bang 좌우 방향 입력이 Universe나 Profile로 이동하지 않도록 비활성화합니다",
+      "루시 채팅 외 화면의 순환 이동과 Big Bang 중앙·상하·길게 누르기 동작은 유지합니다",
+      "좌우 입력이 루시 채팅을 벗어나지 않는 iPhone WebKit 회귀 검사를 추가합니다"
+    ]
+  },
+  {
     "version": "1.7.358",
     "builtAt": "2026-11-12T01:25:14.687Z",
     "summary": "iPhone WebKit 회귀 검증과 업데이트 안내 가독성 개선",

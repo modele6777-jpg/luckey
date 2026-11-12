@@ -1085,20 +1085,22 @@ export function BigBangButton() {
   );
 
   const goToPreviousDapp = useCallback(() => {
+    if (checkIsInLucyChat()) return;
     const previousPath = previousOrderedLuckeyPage(getCurrentOneStopPage(location));
     showDirectionFeedback('west', previousPath);
     const tab = new URL(previousPath, 'https://luckey.local').searchParams.get('tab') || undefined;
     triggerHaptic('wormhole');
     handleRuneNavigate(previousPath, tab);
-  }, [location, handleRuneNavigate]);
+  }, [location, handleRuneNavigate, checkIsInLucyChat]);
 
   const goToNextDapp = useCallback(() => {
+    if (checkIsInLucyChat()) return;
     const nextPath = nextOrderedLuckeyPage(getCurrentOneStopPage(location));
     showDirectionFeedback('east', nextPath);
     const tab = new URL(nextPath, 'https://luckey.local').searchParams.get('tab') || undefined;
     triggerHaptic('wormhole');
     handleRuneNavigate(nextPath, tab);
-  }, [location, handleRuneNavigate]);
+  }, [location, handleRuneNavigate, checkIsInLucyChat]);
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement> | PointerEvent) => {
     if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
@@ -1198,6 +1200,14 @@ export function BigBangButton() {
     const targetDir = start.pointerType === 'touch'
       ? start.direction
       : downDirectionRef.current;
+    const isDisabledLucyChatDirection =
+      checkIsInLucyChat() && (targetDir === 'west' || targetDir === 'east');
+    if (!isDragGesture && isDisabledLucyChatDirection && (start.pointerType === 'touch' || duration < 220)) {
+      setActivePhase('idle');
+      setGauge(0);
+      setDurationMs(0);
+      return;
+    }
     if (!isDragGesture && targetDir !== 'none' && (start.pointerType === 'touch' || duration < 220)) {
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
@@ -1558,6 +1568,7 @@ export function BigBangButton() {
         <div
           ref={hoverContainerRef}
           data-bigbang="true"
+          data-cycle-navigation-disabled={isChatView ? 'true' : 'false'}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
@@ -1828,8 +1839,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title="빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동 / 길게 누름: 루시 채팅 프로 / 드래그: 실버·아이스블루 별빛 궤적)"
-              aria-label="빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 왼쪽 버튼: 에필로그부터 프롤로그까지 모든 댑 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 모든 댑 순서대로 이동, 길게 누름: 루시 채팅 프로, 드래그: 실버·아이스블루 별빛 궤적"
+              title={`빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / ${isChatView ? '루시 채팅에서는 좌우 버튼 비활성화' : '왼쪽 버튼: 에필로그부터 프롤로그까지 역순 이동 / 오른쪽 버튼: Universe부터 Profile까지 순서대로 이동'} / 길게 누름: 루시 채팅 프로 / 드래그: 실버·아이스블루 별빛 궤적)`}
+              aria-label={`빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / ${isChatView ? '루시 채팅에서는 좌우 버튼 비활성화' : '왼쪽 버튼: 에필로그부터 프롤로그까지 역순 이동, 오른쪽 버튼: Universe부터 Profile까지 순서대로 이동'}, 길게 누름: 루시 채팅 프로, 드래그: 실버·아이스블루 별빛 궤적`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

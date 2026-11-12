@@ -73,6 +73,24 @@ test('AI detection badge appears only for a focused non-casual query', async ({ 
   await expect(badge).toHaveCount(0);
 });
 
+test('Big Bang left and right controls stay disabled in Lucy chat', async ({ page }) => {
+  await openLucy(page);
+  const bigBang = page.locator('div[data-bigbang="true"]');
+  await expect(bigBang).toBeVisible();
+  await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'true');
+  const box = await bigBang.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang hit area is missing');
+
+  const chatUrl = page.url();
+  const centerY = box.y + box.height / 2;
+  for (const offsetX of [-36, 36]) {
+    await page.touchscreen.tap(box.x + box.width / 2 + offsetX, centerY);
+    await expect(page).toHaveURL(chatUrl);
+    await expect(page.locator('.lucy-chat-footer')).toBeVisible();
+  }
+});
+
 test('mobile composer and input remain inside the visible WebKit viewport after keyboard-sized resize', async ({ page }) => {
   await openLucy(page);
   const composer = page.locator('.lucy-chat-footer textarea');
