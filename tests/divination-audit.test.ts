@@ -127,3 +127,17 @@ test('annual flow updates beyond 2026 and Korean daily reports do not depend on 
     assert.match(generateDailySajuReport(next,new Date('2026-10-28T16:00:00Z')).dateStr,/2026년 10월 29일/);
   } finally { Date.now = original; }
 });
+
+test('15 tools digest incorporates deterministic calculations for Mahabote 7-house chart, Thai Horasat dasha, Kabbalah, Tarot, and Tojeong', () => {
+  const p = profile('1990-05-17', '14:30');
+  const digest = buildUserFifteenToolsDigest(p);
+  assert.match(digest, /마하보테 8요일 부분 계산.*7궁 명반 포국/);
+  assert.match(digest, /태국점성술 요일 상징.*호라삿 정밀 차트/);
+  assert.match(digest, /카발라 생명나무/);
+  assert.match(digest, /타로 마스터 수비학/);
+  assert.match(digest, /토정비결/);
+  assert.match(digest, /태을신수/);
+  assert.match(digest, /숙요경/);
+  assert.match(digest, /베딕 조티시/);
+});
+
