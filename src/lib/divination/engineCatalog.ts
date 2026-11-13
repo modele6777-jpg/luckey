@@ -6,7 +6,22 @@ import {
   type SevenThemeChannel,
 } from '../fifteenDivinationTools';
 
-export const ENGINE_CATALOG_COUNTS = ALL_DCE_ENGINES.reduce(
+/**
+ * Keep the user-facing catalog at the owner's approved 331 entries (15 + 316).
+ * These three engines were added to the runtime registry in v1.7.386; they remain
+ * available internally but are not listed until the catalog count is approved to expand.
+ */
+const HIDDEN_FROM_APPROVED_CATALOG = new Set([
+  'irishJamesJoyceUlyssesEpiphany',
+  'germanHermannHesseDemianSteppenwolf',
+  'koreanHanYongUnSilenceOfNim',
+]);
+
+export const LUCY_PRO_CATALOG_ENGINES = ALL_DCE_ENGINES.filter(
+  engine => !HIDDEN_FROM_APPROVED_CATALOG.has(engine.key),
+);
+
+export const ENGINE_CATALOG_COUNTS = LUCY_PRO_CATALOG_ENGINES.reduce(
   (counts, engine) => {
     counts[engine.category] += 1;
     return counts;
@@ -154,7 +169,7 @@ export function getEngineCatalogThemeInfo(engine: DceEngineMeta): LucyProChannel
   return themeById.get(getEngineCatalogTheme(engine)) ?? LUCY_PRO_CHANNEL_THEMES[2];
 }
 
-export const ENGINE_CATALOG_THEME_COUNTS = ALL_DCE_ENGINES.reduce(
+export const ENGINE_CATALOG_THEME_COUNTS = LUCY_PRO_CATALOG_ENGINES.reduce(
   (counts, engine) => {
     counts[getEngineCatalogTheme(engine)] += 1;
     return counts;

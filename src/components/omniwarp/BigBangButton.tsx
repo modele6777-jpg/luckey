@@ -305,17 +305,26 @@ export function BigBangButton() {
     }, remainingMs);
   }, []);
 
-  // 🎯 확장 분할에서는 앱 콘텐츠 패널에, 단독 화면에서는 기존 활성 영역에 버튼을 정렬합니다.
+  // 🎯 확장 가로 분할에서는 원래 Lucy 패널 중심에 버튼을 두고, 세로 분할과 단독 화면은 기존 위치를 유지합니다.
   const [panelCenterLeft, setPanelCenterLeft] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const updateCenter = () => {
-      // Split navigation belongs to the channel pane; Lucy on the other pane must not own the control.
+      // Restore the button's original landscape position over Lucy. Direction handlers
+      // still resolve from the current channel location, so left/right stays in that pane.
       const duoContent = document.getElementById('duo-content-viewport');
       const duoLucy = document.getElementById('duo-lucy-viewport');
-      const target = duoContent || duoLucy || document.querySelector('.lucy-chat-shell') || document.querySelector('.sites-pinned-main');
+      const isExpandedLandscapeSplit = Boolean(
+        duoContent && duoLucy && (
+          document.documentElement.classList.contains('duo-unfolded-landscape') ||
+          document.body.classList.contains('duo-unfolded-landscape')
+        ),
+      );
+      const target = isExpandedLandscapeSplit
+        ? duoLucy
+        : duoContent || duoLucy || document.querySelector('.lucy-chat-shell') || document.querySelector('.sites-pinned-main');
       if (target) {
         const rect = target.getBoundingClientRect();
         if (rect.width > 0) {

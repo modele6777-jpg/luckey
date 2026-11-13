@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
-import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
+import { type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import type { SevenThemeChannel } from '@/lib/fifteenDivinationTools';
 import {
   ENGINE_CATALOG_COUNTS,
   ENGINE_CATALOG_THEME_COUNTS,
   getEngineCatalogMeaning,
   getEngineCatalogTheme,
+  LUCY_PRO_CATALOG_ENGINES,
   LUCY_PRO_CHANNEL_THEMES,
 } from '@/lib/divination/engineCatalog';
 
@@ -48,7 +49,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
 
   const filteredEngines = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
-    return ALL_DCE_ENGINES.filter(engine => {
+    return LUCY_PRO_CATALOG_ENGINES.filter(engine => {
       if (!matchesFilter(engine, filter)) return false;
       const theme = getEngineCatalogTheme(engine);
       if (themeFilter !== 'all' && theme !== themeFilter) return false;
@@ -90,7 +91,8 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
           aria-describedby="lucy-engine-catalog-intro"
           onClick={event => event.stopPropagation()}
           style={{ height: 'calc(var(--app-height, 100dvh) - 1rem)', maxHeight: 'calc(var(--app-height, 100dvh) - 1rem)' }}
-          className={`flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl sm:rounded-3xl ${surface}`}
+          data-catalog-theme={isLight ? 'light' : 'dark'}
+          className={`lucy-engine-catalog-dialog flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl sm:rounded-3xl ${surface}`}
         >
           <header className={`flex shrink-0 items-center justify-between gap-3 border-b px-4 py-4 sm:px-6 ${isLight ? 'border-amber-100' : 'border-white/10'}`}>
             <div className="flex min-w-0 items-center gap-3">
@@ -99,7 +101,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
               </span>
               <div className="min-w-0">
                 <h2 id="lucy-engine-catalog-title" className="text-base font-black sm:text-lg">Lucy Pro 엔진·관점 안내</h2>
-                <p className={`text-[11px] sm:text-xs ${muted}`}>등록 목록 {ALL_DCE_ENGINES.length}개 · 질문별 실행 여부와는 별개예요</p>
+                <p className={`text-[11px] sm:text-xs ${muted}`}>등록 목록 {LUCY_PRO_CATALOG_ENGINES.length}개 · 질문별 실행 여부와는 별개예요</p>
               </div>
             </div>
             <button type="button" onClick={onClose} aria-label="엔진 목록 닫기" title="닫기" className={`flex h-11 min-w-[72px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold transition-colors ${isLight ? 'border-amber-300 bg-amber-50 text-slate-800 hover:bg-amber-100' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'}`}>
@@ -138,7 +140,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
             </div>
             <nav aria-label="엔진 목록 분류" className="flex gap-2 overflow-x-auto pb-0.5">
               {FILTERS.map(item => {
-                const count = item.id === 'all' ? ALL_DCE_ENGINES.length : ENGINE_CATALOG_COUNTS[item.id];
+                const count = item.id === 'all' ? LUCY_PRO_CATALOG_ENGINES.length : ENGINE_CATALOG_COUNTS[item.id];
                 const selected = filter === item.id;
                 return (
                   <button
@@ -161,7 +163,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                 aria-pressed={themeFilter === 'all'}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${themeFilter === 'all' ? 'bg-amber-400 text-slate-950' : inactivePill}`}
               >
-                모든 테마 {ALL_DCE_ENGINES.length}
+                모든 테마 {LUCY_PRO_CATALOG_ENGINES.length}
               </button>
               {LUCY_PRO_CHANNEL_THEMES.map(theme => {
                 const selected = themeFilter === theme.id;
@@ -194,10 +196,10 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                   <section key={theme.id} data-testid={`lucy-engine-theme-${theme.id}`} aria-label={`${theme.label} 테마`}>
                     <header className={`mb-2 rounded-xl border px-3 py-2 ${subtleSurface}`}>
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-sm font-black">{theme.label}</h3>
-                        <span className={`text-[11px] font-bold ${muted}`}>{engines.length}개</span>
+                        <h3 className="lucy-engine-catalog-theme-name text-sm font-black">{theme.label}</h3>
+                        <span className={`lucy-engine-catalog-theme-count text-[11px] font-bold ${muted}`}>{engines.length}개</span>
                       </div>
-                      <p className={`mt-0.5 text-[10px] sm:text-[11px] ${muted}`}>{theme.description}</p>
+                      <p className={`lucy-engine-catalog-theme-description mt-0.5 text-[10px] sm:text-[11px] ${muted}`}>{theme.description}</p>
                     </header>
                     <ul className="space-y-2">
                       {engines.map(engine => {
@@ -208,21 +210,21 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                             data-testid="lucy-engine-catalog-entry"
                             data-engine-key={engine.key}
                             data-engine-theme={theme.id}
-                            className={`rounded-2xl border p-3 sm:p-3.5 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}
+                            className={`lucy-engine-catalog-entry rounded-2xl border p-3 sm:p-3.5 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}
                           >
                             <div className="flex items-start gap-2.5">
                               <span aria-hidden="true" className="pt-0.5 text-lg">{engine.icon}</span>
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
-                                  <h4 className="text-xs font-bold leading-relaxed sm:text-sm">{engine.nameKo}</h4>
-                                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${isFoundational ? 'bg-sky-500/15 text-sky-700 dark:text-sky-300' : 'bg-violet-500/15 text-violet-700 dark:text-violet-300'}`}>
+                                  <h4 className="lucy-engine-catalog-entry-name text-xs font-bold leading-relaxed sm:text-sm">{engine.nameKo}</h4>
+                                  <span data-engine-category={engine.category} className={`lucy-engine-catalog-entry-category rounded-full px-2 py-0.5 text-[9px] font-bold ${isFoundational ? 'bg-sky-500/15 text-sky-700 dark:text-sky-300' : 'bg-violet-500/15 text-violet-700 dark:text-violet-300'}`}>
                                     {isFoundational ? '기초 도구' : '심층 참고 관점'}
                                   </span>
-                                  <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-bold text-amber-800 dark:text-amber-300">
+                                  <span className="lucy-engine-catalog-entry-theme rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-bold text-amber-800 dark:text-amber-300">
                                     테마: {theme.label}
                                   </span>
                                 </div>
-                                <p className={`mt-1.5 text-[11px] leading-relaxed sm:text-xs ${muted}`}>
+                                <p className={`lucy-engine-catalog-entry-meaning mt-1.5 text-[11px] leading-relaxed sm:text-xs ${muted}`}>
                                   <strong className={isLight ? 'text-slate-800' : 'text-slate-200'}>뜻:</strong> {getEngineCatalogMeaning(engine)}
                                 </p>
                               </div>

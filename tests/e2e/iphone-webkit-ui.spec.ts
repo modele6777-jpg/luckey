@@ -235,7 +235,7 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   });
 });
 
-test('Lucy Pro engine count opens the visible 334-entry catalog and meanings', async ({ page }) => {
+test('Lucy Pro engine count opens the visible 331-entry catalog and meanings', async ({ page }) => {
   await openLucy(page, '/chat?mode=pro');
   const trigger = page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ });
   await expect(trigger).toBeVisible();
@@ -243,10 +243,19 @@ test('Lucy Pro engine count opens the visible 334-entry catalog and meanings', a
 
   const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('등록 목록 334개');
+  await expect(dialog).toContainText('등록 목록 331개');
   await expect(dialog).toContainText('15개 기초 도구');
-  await expect(dialog).toContainText('319개 심층 관점');
+  await expect(dialog).toContainText('316개 심층 관점');
   await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
+  const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
+    const dialogElement = element.closest('[role="dialog"]');
+    const theme = dialogElement?.getAttribute('data-catalog-theme');
+    const style = getComputedStyle(element);
+    return { theme, color: style.color, textFill: style.webkitTextFillColor };
+  });
+  const expectedNameColor = nameStyle.theme === 'light' ? 'rgb(15, 23, 42)' : 'rgb(241, 245, 249)';
+  expect(nameStyle.color).toBe(expectedNameColor);
+  expect(nameStyle.textFill).toBe(expectedNameColor);
   await dialog.getByText('관점 뜻과 답변별 상태 안내', { exact: true }).click();
   await expect(dialog).toContainText('상징 참고');
   await expect.poll(() => dialog.evaluate(element => getComputedStyle(element).opacity)).toBe('1');
@@ -263,14 +272,14 @@ test('Lucy Pro engine count opens the visible 334-entry catalog and meanings', a
   await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
-test('Lucy Pro groups all 334 catalog entries under the seven channel themes', async ({ page }) => {
+test('Lucy Pro groups all 331 catalog entries under the seven channel themes', async ({ page }) => {
   await openLucy(page, '/chat?mode=pro');
   await page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
-  await expect(entries).toHaveCount(334);
+  await expect(entries).toHaveCount(331);
 
   const themeIds = ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as const;
   let groupedCount = 0;
@@ -281,7 +290,7 @@ test('Lucy Pro groups all 334 catalog entries under the seven channel themes', a
     expect(count).toBeGreaterThan(0);
     groupedCount += count;
   }
-  expect(groupedCount).toBe(334);
+  expect(groupedCount).toBe(331);
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
   const themeNav = dialog.getByRole('navigation', { name: 'Lucy Pro 7개 채널 테마' });
@@ -422,13 +431,17 @@ test('Key loading fallback does not consume the first Big Bang south touch', asy
   await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
 });
 
-test('Big Bang follows the channel pane in expanded dual view while Lucy remains on the other pane', async ({ page }) => {
+test('Big Bang stays over Lucy while left and right change only the channel pane', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await openPrologue(page, '/heal?device=duo&tab=meditation');
   const channelPane = page.locator('#duo-content-viewport');
   const lucyPane = page.locator('#duo-lucy-viewport');
   await expect(channelPane).toBeVisible();
   await expect(lucyPane).toBeVisible();
+  const lucyComposer = lucyPane.locator('.lucy-chat-footer textarea');
+  await expect(lucyComposer).toBeVisible();
+  const lucyComposerValueBefore = await lucyComposer.inputValue();
+  const lucyUserMessageCountBefore = await lucyPane.locator('.lucy-chat-main > div > [class*="items-end"]').count();
   await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('in-lucy-chat'))).toBe(true);
 
   const bigBang = page.locator('div[data-bigbang="true"]').first();
@@ -443,11 +456,10 @@ test('Big Bang follows the channel pane in expanded dual view while Lucy remains
     expect(lucyBox).not.toBeNull();
     expect(buttonBox).not.toBeNull();
     if (!contentBox || !lucyBox || !buttonBox) throw new Error('Expanded split pane geometry is unavailable');
-    expect(buttonBox.x).toBeGreaterThanOrEqual(contentBox.x);
-    expect(buttonBox.x + buttonBox.width).toBeLessThanOrEqual(contentBox.x + contentBox.width);
+    expect(buttonBox.x).toBeGreaterThanOrEqual(lucyBox.x);
+    expect(buttonBox.x + buttonBox.width).toBeLessThanOrEqual(lucyBox.x + lucyBox.width);
     expect(buttonBox.y).toBeGreaterThanOrEqual(contentBox.y);
     expect(buttonBox.y + buttonBox.height).toBeLessThanOrEqual(contentBox.y + contentBox.height);
-    expect(buttonBox.x + buttonBox.width).toBeLessThanOrEqual(lucyBox.x);
 
     const x = buttonBox.x + buttonBox.width / 2 + offsetX;
     const y = buttonBox.y + buttonBox.height / 2;
@@ -456,6 +468,8 @@ test('Big Bang follows the channel pane in expanded dual view while Lucy remains
     await expect(page).toHaveURL(new RegExp(`/heal\\?tab=${targetTab}$`));
     await expect(channelPane).toBeVisible();
     await expect(lucyPane).toBeVisible();
+    await expect(lucyComposer).toHaveValue(lucyComposerValueBefore);
+    await expect(lucyPane.locator('.lucy-chat-main > div > [class*="items-end"]')).toHaveCount(lucyUserMessageCountBefore);
   }
 });
 

@@ -65,6 +65,7 @@ import { joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { LucyKakaoBubbleGroup } from '@/components/chat/LucyKakaoBubbleGroup';
 import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
+import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
 import { LucyEngineCatalogDialog } from '@/components/chat/LucyEngineCatalogDialog';
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import '@/styles/lucy-starlight.css';
@@ -3122,12 +3123,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         setIsEngineCatalogOpen(true);
                       }}
                       className="inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-400/30 whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none"
-                      title={`등록된 엔진·관점 ${ALL_DCE_ENGINES.length}개 목록 보기`}
-                      aria-label={`Lucy Pro 엔진과 관점 목록 ${ALL_DCE_ENGINES.length}개 보기`}
+                      title={`등록된 엔진·관점 ${LUCY_PRO_CATALOG_ENGINES.length}개 목록 보기`}
+                      aria-label={`Lucy Pro 엔진과 관점 목록 ${LUCY_PRO_CATALOG_ENGINES.length}개 보기`}
                       aria-haspopup="dialog"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                      엔진·관점 {ALL_DCE_ENGINES.length}개
+                      엔진·관점 {LUCY_PRO_CATALOG_ENGINES.length}개
                     </button>
                   )}
                 </div>

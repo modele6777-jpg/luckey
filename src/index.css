@@ -3864,3 +3864,55 @@ html.dark .update-notice-modal .update-notice-item > span:not(.text-amber-500) {
   color: #cbd5e1 !important;
   -webkit-text-fill-color: #cbd5e1 !important;
 }
+
+/* Lucy Pro catalog cards have their own surface theme; isolate copy from global dark remaps. */
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-name,
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-category,
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-theme,
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-meaning,
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-theme-name,
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-theme-count,
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-theme-description {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-category[data-engine-category="foundational"] {
+  color: #075985 !important;
+  -webkit-text-fill-color: #075985 !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-category[data-engine-category="deep_master"] {
+  color: #5b21b6 !important;
+  -webkit-text-fill-color: #5b21b6 !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-theme {
+  color: #92400e !important;
+  -webkit-text-fill-color: #92400e !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-entry-meaning,
+.lucy-engine-catalog-dialog[data-catalog-theme="light"] .lucy-engine-catalog-theme-description {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-entry-name,
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-theme-name {
+  color: #f1f5f9 !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-entry-category[data-engine-category="foundational"] {
+  color: #7dd3fc !important;
+  -webkit-text-fill-color: #7dd3fc !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-entry-category[data-engine-category="deep_master"] {
+  color: #c4b5fd !important;
+  -webkit-text-fill-color: #c4b5fd !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-entry-theme {
+  color: #fcd34d !important;
+  -webkit-text-fill-color: #fcd34d !important;
+}
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-entry-meaning,
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-theme-count,
+.lucy-engine-catalog-dialog[data-catalog-theme="dark"] .lucy-engine-catalog-theme-description {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}

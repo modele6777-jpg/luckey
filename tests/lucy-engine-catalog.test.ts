@@ -10,27 +10,33 @@ import {
   getEngineCatalogResearch,
   getEngineCatalogSources,
   getEngineCatalogTheme,
+  LUCY_PRO_CATALOG_ENGINES,
   LUCY_PRO_CHANNEL_THEMES,
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('engine catalogue keeps all 334 items: 15 foundational tools and 319 deep perspectives', () => {
+test('Lucy Pro catalog shows the approved 331 entries while preserving the 334-engine runtime registry', () => {
   assert.equal(LUCY_PRO_ENGINE_COUNT, ALL_DCE_ENGINES.length);
   assert.equal(ALL_DCE_ENGINES.length, 334);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 319 });
-  assert.equal(new Set(ALL_DCE_ENGINES.map(engine => engine.key)).size, 334);
+  assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 331);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 316 });
+  assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 331);
+  assert.deepEqual(
+    ALL_DCE_ENGINES.filter(engine => !LUCY_PRO_CATALOG_ENGINES.some(item => item.key === engine.key)).map(engine => engine.key).sort(),
+    ['germanHermannHesseDemianSteppenwolf', 'irishJamesJoyceUlyssesEpiphany', 'koreanHanYongUnSilenceOfNim'].sort(),
+  );
 });
 
 test('every listed engine has a readable meaning and one of the seven channel themes', () => {
   const totalThemeCount = Object.values(ENGINE_CATALOG_THEME_COUNTS).reduce((sum, count) => sum + count, 0);
   assert.equal(LUCY_PRO_CHANNEL_THEMES.length, 7);
-  assert.equal(totalThemeCount, ALL_DCE_ENGINES.length);
+  assert.equal(totalThemeCount, LUCY_PRO_CATALOG_ENGINES.length);
 
   for (const theme of LUCY_PRO_CHANNEL_THEMES) {
     assert.ok(ENGINE_CATALOG_THEME_COUNTS[theme.id] > 0, `empty channel theme: ${theme.id}`);
   }
 
-  for (const engine of ALL_DCE_ENGINES) {
+  for (const engine of LUCY_PRO_CATALOG_ENGINES) {
     assert.ok(getEngineCatalogMeaning(engine).trim(), `missing meaning for ${engine.key}`);
     assert.ok(LUCY_PRO_CHANNEL_THEMES.some(theme => theme.id === getEngineCatalogTheme(engine)), `missing theme for ${engine.key}`);
   }
