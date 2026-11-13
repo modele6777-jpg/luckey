@@ -1,7 +1,7 @@
 /**
  * =========================================================================
- * LUCKEY 자미두수 유년 사화(四化: 록·권·과·기) 동적 비성 엔진
- * (Ziwei Flying Stars Dynamic Engine)
+ * LUCKEY 자미두수 유년 사화(四化: 록·권·과·기) 동적 비성 및 삼방사정 밸런스 엔진
+ * (Ziwei Flying Stars Dynamic & SanFangSiZheng Balance Engine)
  * =========================================================================
  * 
  * [설계 철학 & 핵심 원칙]
@@ -15,14 +15,20 @@
  *    - 화기(化忌): 집착, 스트레스, 병목이 도사려 가장 신중을 기해야 할 [집중 과제 스팟]
  * 3. 12궁 라이프 도메인(명궁·형제·부처·자녀·재백·질액·천이·노복·관록·전택·복덕·부모) 매핑:
  *    - 각 사화가 떨어진 궁위와 그 맞은편 충궁(沖宮)의 역학 관계를 입체적으로 분석
- * 4. 연도별 유년 테마 및 전략적 승부수 도출:
- *    - 어디에 베팅하고(화록/화권), 어디서 리스크를 방어해야 하는지(화기) 명쾌한 가이드 제공
+ * 4. [신규 고도화] 삼방사정(三方四正) 사화 집결도 및 종합 돌파력 스코어:
+ *    - 명궁·재백궁·관록궁·천이궁 핵심 축의 길흉 배치 계량화
+ * 5. [신규 고도화] 록기교충(祿忌交衝) 및 화기 리스크 방어선 구축:
+ *    - 화록과 화기의 상대 궁위 역학(동궁, 교충, 삼합, 독립) 분석 및 자산 방어 지침
+ * 6. [신규 고도화] 유년 4분기 완급 조절 타임라인:
+ *    - 봄(화록 발아) -> 여름(화권 추진) -> 가을(화과 수확) -> 겨울(화기 결산)
  */
 
 import type { UserProfile } from '../sharedState';
 import { calculateZiwei } from './birthCharts';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
+
+export const ZIWEI_FLYING_STARS_ENGINE_VERSION = 'LUCKEY-ZFSE-v1.1.0';
 
 export type MutagenType = '화록(化祿)' | '화권(化權)' | '화과(化科)' | '화기(化忌)';
 
@@ -36,6 +42,32 @@ export interface MutagenPlacement {
   oppositePalaceBranch: string;
   significance: string; // 핵심 의미
   actionStrategy: string; // 실천 전략
+}
+
+export interface SanFangSiZhengBalance {
+  myMingPalaceName: string; // 명궁
+  sanFangPalaces: string[]; // 재백궁, 관록궁
+  siZhengOppositePalace: string; // 천이궁
+  mutagensInCorePalaces: MutagenPlacement[];
+  breakthroughPowerScore: number; // 0 ~ 100
+  patternGrade: '최상위 대도약격 (Supreme Breakthrough)' | '안정적 실속격 (Solid Growth)' | '신중한 수성격 (Prudent Defense)';
+  coreDynamicsAdvice: string;
+}
+
+export interface LuJiConflictDynamics {
+  luPalaceName: string;
+  jiPalaceName: string;
+  relationType: '록기동궁(祿忌同宮 · 극적 반전형)' | '록기교충(祿忌交衝 · 대궁 충돌 방어형)' | '삼합연계(三合連繫 · 우회 활로형)' | '각궁독립(各宮獨立 · 안정 분리형)';
+  conflictSeverity: '높음 (집중 관리 필요)' | '중간 (완급 조절 필요)' | '낮음 (자연스러운 해소)';
+  defenseLine: string;
+  wealthPreservationAdvice: string;
+}
+
+export interface QuarterlyFlyingStarsPacing {
+  quarter: 'Q1 (봄)' | 'Q2 (여름)' | 'Q3 (가을)' | 'Q4 (겨울)';
+  activeMutagen: MutagenType;
+  pacingTheme: string;
+  tacticalFocus: string;
 }
 
 export interface ZiweiFlyingStarsResult {
@@ -74,6 +106,10 @@ export interface ZiweiFlyingStarsResult {
     keyVulnerability: string;
     strategicVerdict: string;
   };
+
+  sanFangSiZhengBalance: SanFangSiZhengBalance;
+  luJiConflictDynamics: LuJiConflictDynamics;
+  quarterlyPacing: QuarterlyFlyingStarsPacing[];
 }
 
 // 십간사화 정통 기준표
@@ -105,6 +141,18 @@ const OPPOSITE_BRANCH: Record<string, string> = {
   '辰': '戌', '戌': '辰',
   '巳': '亥', '亥': '巳',
 };
+
+// 12지지 삼합 군
+const TRINE_GROUPS: string[][] = [
+  ['신', '자', '진', '申', '子', '辰'],
+  ['해', '묘', '미', '亥', '卯', '未'],
+  ['인', '오', '술', '寅', '午', '戌'],
+  ['사', '유', '축', '巳', '酉', '丑'],
+];
+
+function isTrineRelation(b1: string, b2: string): boolean {
+  return TRINE_GROUPS.some((g) => g.includes(b1) && g.includes(b2));
+}
 
 // 12궁 성격 해설
 const PALACE_DESCRIPTIONS: Record<string, string> = {
@@ -255,6 +303,103 @@ export function calculateZiweiFlyingStars(options?: {
     actionStrategy: `${jiPalace.name}의 영역에서 과도한 욕심이나 조급증을 내려놓고, 문제를 회피하기보다 차분히 매듭을 짓는 수양의 자세가 필요합니다.`
   };
 
+  // 5. 삼방사정(三方四正) 사화 집결도 및 돌파력 산출
+  const coreFourPalaceNames = ['명궁', '재백궁', '관록궁', '천이궁'];
+  const allMutagens = [luPlacement, quanPlacement, kePlacement, jiPlacement];
+  const mutagensInCorePalaces = allMutagens.filter((m) => coreFourPalaceNames.includes(m.targetPalaceName));
+
+  let coreScoreDelta = 0;
+  mutagensInCorePalaces.forEach((m) => {
+    if (m.mutagenKey === 'lu') coreScoreDelta += 28;
+    else if (m.mutagenKey === 'quan') coreScoreDelta += 24;
+    else if (m.mutagenKey === 'ke') coreScoreDelta += 18;
+    else if (m.mutagenKey === 'ji') coreScoreDelta -= 14;
+  });
+
+  const breakthroughPowerScore = Math.min(98, Math.max(45, 62 + coreScoreDelta));
+
+  let patternGrade: SanFangSiZhengBalance['patternGrade'] = '안정적 실속격 (Solid Growth)';
+  if (breakthroughPowerScore >= 82) patternGrade = '최상위 대도약격 (Supreme Breakthrough)';
+  else if (breakthroughPowerScore <= 58) patternGrade = '신중한 수성격 (Prudent Defense)';
+
+  const coreDynamicsAdvice =
+    mutagensInCorePalaces.length > 0
+      ? `인생의 핵심 축인 삼방사정(${coreFourPalaceNames.join('·')})에 ${mutagensInCorePalaces.map((m) => `${m.targetPalaceName}[${m.mutagen}]`).join(', ')}이 직접 감응하므로, 올해는 사회적 성취와 커리어에서 결정적인 승부수를 띄울 수 있는 해입니다.`
+      : `올해 사화 에너지가 내면 및 생활 기반 궁위(전택·복덕·노복 등)에 집중되어 있으므로, 외형 확장보다는 기반을 단단히 다지고 내실을 충전하는 데 유리합니다.`;
+
+  const sanFangSiZhengBalance: SanFangSiZhengBalance = {
+    myMingPalaceName: '명궁',
+    sanFangPalaces: ['재백궁', '관록궁'],
+    siZhengOppositePalace: '천이궁',
+    mutagensInCorePalaces,
+    breakthroughPowerScore,
+    patternGrade,
+    coreDynamicsAdvice,
+  };
+
+  // 6. 록기교충(祿忌交衝) 리스크 방어선 역학 도출
+  let relationType: LuJiConflictDynamics['relationType'] = '각궁독립(各宮獨立 · 안정 분리형)';
+  let conflictSeverity: LuJiConflictDynamics['conflictSeverity'] = '낮음 (자연스러운 해소)';
+
+  if (luPalace.branch === jiPalace.branch) {
+    relationType = '록기동궁(祿忌同宮 · 극적 반전형)';
+    conflictSeverity = '높음 (집중 관리 필요)';
+  } else if (OPPOSITE_BRANCH[luPalace.branch] === jiPalace.branch) {
+    relationType = '록기교충(祿忌交衝 · 대궁 충돌 방어형)';
+    conflictSeverity = '높음 (집중 관리 필요)';
+  } else if (isTrineRelation(luPalace.branch, jiPalace.branch)) {
+    relationType = '삼합연계(三合連繫 · 우회 활로형)';
+    conflictSeverity = '중간 (완급 조절 필요)';
+  }
+
+  const defenseLine =
+    relationType === '록기동궁(祿忌同宮 · 극적 반전형)'
+      ? `${luPalace.name}에 화록과 화기가 동시에 얽혀 있으므로, 큰 기회 뒤에 숨은 계약상 독소 조항이나 세부 리스크를 이중 삼중으로 검증해야 합니다.`
+      : relationType === '록기교충(祿忌交衝 · 대궁 충돌 방어형)'
+      ? `${luPalace.name}(화록)과 ${jiPalace.name}(화기)가 정면 충돌하므로, 한쪽의 성과가 다른 쪽의 손실로 번지지 않도록 완충 지대를 설정해야 합니다.`
+      : relationType === '삼합연계(三合連繫 · 우회 활로형)'
+      ? `${luPalace.name}의 성과가 ${jiPalace.name}의 부담으로 이어질 수 있으나, ${kePlacement.targetPalaceName}(화과)의 귀인 조력으로 우회 돌파가 가능합니다.`
+      : `${luPalace.name}의 기회와 ${jiPalace.name}의 과제가 분리되어 작동하므로, 화록의 혜택을 온전히 누리며 화기의 병목만 차분히 관리하면 충분합니다.`;
+
+  const wealthPreservationAdvice = `${luPalace.name}에서 얻은 수익과 성과의 30% 이상을 즉시 안전 자산으로 이전하거나 ${jiPalace.name}의 취약점 보완에 재투자하여 리스크를 원천 봉쇄하십시오.`;
+
+  const luJiConflictDynamics: LuJiConflictDynamics = {
+    luPalaceName: luPalace.name,
+    jiPalaceName: jiPalace.name,
+    relationType,
+    conflictSeverity,
+    defenseLine,
+    wealthPreservationAdvice,
+  };
+
+  // 7. 유년 4분기 완급 조절 타임라인
+  const quarterlyPacing: QuarterlyFlyingStarsPacing[] = [
+    {
+      quarter: 'Q1 (봄)',
+      activeMutagen: '화록(化祿)',
+      pacingTheme: `[${luPalace.name}] 기회 발아 및 씨앗 뿌리기`,
+      tacticalFocus: `${luPalace.name}에서 유입되는 새로운 제안과 자원을 적극적으로 탐색하고 초기 기반을 다지십시오.`,
+    },
+    {
+      quarter: 'Q2 (여름)',
+      activeMutagen: '화권(化權)',
+      pacingTheme: `[${quanPalace.name}] 결단과 저돌적 추진`,
+      tacticalFocus: `${quanPalace.name}의 권한과 영향력을 과감하게 행사하여 프로젝트를 강력히 진두지휘하십시오.`,
+    },
+    {
+      quarter: 'Q3 (가을)',
+      activeMutagen: '화과(化科)',
+      pacingTheme: `[${kePalace.name}] 공적 인정과 평판 정립`,
+      tacticalFocus: `${kePalace.name}에서 시험 합격, 라이선스, 대외적 브랜드 신뢰도를 공고히 다져 결실을 거두십시오.`,
+    },
+    {
+      quarter: 'Q4 (겨울)',
+      activeMutagen: '화기(化忌)',
+      pacingTheme: `[${jiPalace.name}] 내실 점검과 리스크 결산`,
+      tacticalFocus: `${jiPalace.name}에서 발생할 수 있는 마찰과 누수를 선제 점검하고, 무리한 확장 대신 차분히 결산하십시오.`,
+    },
+  ];
+
   // 올해 전략적 종합 진단 도출
   const overallTheme = `${yearGanZhiKr}에는 [${luPlacement.targetPalaceName}]의 화록 기회와 [${quanPlacement.targetPalaceName}]의 화권 주도력을 무기로 삼고, [${jiPlacement.targetPalaceName}]의 화기 병목을 방어하는 것이 승부의 열쇠입니다.`;
   const wealthAndCareerAxis = `재정 및 커리어는 ${luPlacement.targetPalaceName}과 ${quanPlacement.targetPalaceName}의 연계가 주도하며, 실질적인 권한 확대와 수익화가 동시에 가능합니다.`;
@@ -264,7 +409,7 @@ export function calculateZiweiFlyingStars(options?: {
   const strategicVerdict = `화록으로 씨를 뿌리고 화권으로 과감히 밀어붙이되, 화기 자리에서는 한 박자 쉬어가는 완급 조절이 올해의 대승을 완성합니다.`;
 
   return {
-    engineVersion: 'LUCKEY-ZFSE-v1.0.0',
+    engineVersion: ZIWEI_FLYING_STARS_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
@@ -296,6 +441,10 @@ export function calculateZiweiFlyingStars(options?: {
       keyVulnerability,
       strategicVerdict,
     },
+
+    sanFangSiZhengBalance,
+    luJiConflictDynamics,
+    quarterlyPacing,
   };
 }
 
@@ -306,6 +455,8 @@ export function calculateZiweiFlyingStars(options?: {
 export function formatZiweiFlyingStarsPrompt(res: ZiweiFlyingStarsResult): string {
   const m = res.mutagens;
   const s = res.yearlyStrategy;
+  const sf = res.sanFangSiZhengBalance;
+  const lj = res.luJiConflictDynamics;
 
   return `[🌌 자미두수 유년 사화(四化) 동적 비성 실측 데이터 (Ziwei Flying Stars Core)]
 ======================================================================
@@ -329,7 +480,20 @@ export function formatZiweiFlyingStarsPrompt(res: ZiweiFlyingStarsResult): strin
      * 의미: ${m.ji.significance}
      * 전략: ${m.ji.actionStrategy}
 
-2. [올해의 입체 전략 로드맵]:
+2. [삼방사정(三方四正) 사화 집결도 및 돌파력]:
+   - 핵심 축: ${sf.myMingPalaceName} + 삼합(${sf.sanFangPalaces.join('·')}) + 대궁(${sf.siZhengOppositePalace})
+   - 돌파력 스코어: ${sf.breakthroughPowerScore}점 [${sf.patternGrade}]
+   - 핵심 역학 진단: ${sf.coreDynamicsAdvice}
+
+3. [록기교충(祿忌交衝) 리스크 방어선]:
+   - 역학 관계: ${lj.luPalaceName}(화록) ⇄ ${lj.jiPalaceName}(화기) [${lj.relationType}, 위험도: ${lj.conflictSeverity}]
+   - 방어 가이드: ${lj.defenseLine}
+   - 자산 및 성과 보존: ${lj.wealthPreservationAdvice}
+
+4. [유년 4분기 완급 조절 타임라인]:
+${res.quarterlyPacing.map((q) => `   - ${q.quarter}: ${q.pacingTheme} -> ${q.tacticalFocus}`).join('\n')}
+
+5. [올해의 입체 전략 로드맵]:
    - 핵심 총평: "${s.overallTheme}"
    - 재물 & 커리어 축: ${s.wealthAndCareerAxis}
    - 인연 & 심신 밸런스 축: ${s.relationshipAndHealthAxis}
@@ -338,6 +502,6 @@ export function formatZiweiFlyingStarsPrompt(res: ZiweiFlyingStarsResult): strin
    - 결론적 승부수: "${s.strategicVerdict}"
 ======================================================================
 [★ 루시 자미두수 비성 상담 지침]:
-- 사용자가 올해 운세, 커리어 방향, 재물운, 직업 이동, 스트레스 원인을 물을 때 위 실측 사화 낙궁(화록/화권/화과/화기)을 명쾌한 인생의 나침반으로 제시해줘.
+- 사용자가 올해 운세, 커리어 방향, 재물운, 직업 이동, 스트레스 원인을 물을 때 위 실측 사화 낙궁(화록/화권/화과/화기), 삼방사정 돌파력, 록기 방어선, 4분기 타임라인을 명쾌한 인생의 나침반으로 제시해줘.
 - 단순 길흉 이분법을 넘어, '화록의 기회'를 잡고 '화권의 주도권'을 행사하며 '화기의 병목'을 지혜롭게 방어하는 입체적 성장 전략을 다정하게 들려줘.`;
 }
