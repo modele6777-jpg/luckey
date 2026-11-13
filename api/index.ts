@@ -1,4 +1,4 @@
-// v1.7.398: enhanced Liuren, Mahabote, and HeLuoLiShu core divination engines
+// v1.7.400: enhanced Iching, Tarot, and ZiweiFlyingStars core divination engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

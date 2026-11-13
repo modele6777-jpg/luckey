@@ -13,6 +13,7 @@ import { calculateLiurenMaster, formatLiurenMasterPrompt, LIUREN_MASTER_ENGINE_V
 import { calculateIchingMaster, formatIchingMasterPrompt, ICHING_MASTER_ENGINE_VERSION } from '../src/lib/divination/ichingMasterEngine';
 import { calculateTarotMaster, formatTarotMasterPrompt, TAROT_MASTER_ENGINE_VERSION } from '../src/lib/divination/tarotMasterEngine';
 import { calculateHeLuoLiShu, formatHeLuoLiShuPrompt, HELUOLISHU_ENGINE_VERSION } from '../src/lib/divination/heLuoLiShuEngine';
+import { calculateZiweiFlyingStars, formatZiweiFlyingStarsPrompt, ZIWEI_FLYING_STARS_ENGINE_VERSION } from '../src/lib/divination/ziweiFlyingStarsEngine';
 import { calculateDynamicClashTrigger, formatDynamicClashPrompt, DYNAMIC_CLASH_ENGINE_VERSION } from '../src/lib/divination/dynamicClashTriggerEngine';
 import { calculateTwelveSpiritsCycle, formatTwelveSpiritsPrompt, TWELVE_SPIRITS_ENGINE_VERSION } from '../src/lib/divination/twelveSpiritsCycleEngine';
 import { calculatePythagoreanLifecycle, formatPythagoreanLifecyclePrompt, PYTHAGOREAN_LIFECYCLE_VERSION } from '../src/lib/divination/pythagoreanLifecycleEngine';
@@ -1858,6 +1859,11 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
   assert(res.reversed.number >= 1 && res.reversed.number <= 64);
   assert(res.decisionScore >= 0 && res.decisionScore <= 100);
   assert(res.tiYong.relationship.length > 0);
+  assert.equal(res.yaoStages.length, 6);
+  assert(res.dominantStage.position >= 1 && res.dominantStage.position <= 6);
+  assert(res.hexagramDynamics.momentumScore >= 0 && res.hexagramDynamics.momentumScore <= 100);
+  assert(res.palGongSeYing.seYao >= 1 && res.palGongSeYing.seYao <= 6);
+  assert(res.palGongSeYing.yingYao >= 1 && res.palGongSeYing.yingYao <= 6);
   const prompt = formatIchingMasterPrompt(res);
   assert(prompt.includes(ICHING_MASTER_ENGINE_VERSION));
   assert(prompt.includes('본괘(本卦)'));
@@ -1866,6 +1872,8 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
   assert(prompt.includes('착괘(錯卦/그림자)'));
   assert(prompt.includes('종괘(綜卦/상대관점)'));
   assert(prompt.includes('체용(體用) 생극제화'));
+  assert(prompt.includes('효위(爻位) 6단계 성장 역학'));
+  assert(prompt.includes('경방 8궁(八宮) 및 세응(世應) 상호작용'));
 });
 
 test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·연간 카드 및 4원소 밸런스 검증', () => {
@@ -1879,12 +1887,39 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   const totalPct = res.elementalBalance.fire + res.elementalBalance.water + res.elementalBalance.air + res.elementalBalance.earth;
   assert.equal(totalPct, 100);
   assert(res.tarotVitalityScore >= 0 && res.tarotVitalityScore <= 100);
+  assert.equal(res.cardPolarities.length, 3);
+  assert(res.sephiraMapping.soulSephira.sephiraName.length > 0);
+  assert(res.suitManifestation.suitName.length > 0);
   const prompt = formatTarotMasterPrompt(res);
   assert(prompt.includes(TAROT_MASTER_ENGINE_VERSION));
   assert(prompt.includes('생애 소울 카드'));
   assert(prompt.includes('생애 퍼스널리티 카드'));
   assert(prompt.includes('올해의 성장 카드'));
   assert(prompt.includes('3카드 타임라인 스프레드'));
+  assert(prompt.includes('카발라 생명나무 세피라 조응'));
+  assert(prompt.includes('마이너 아르카나 수트 실천 지침'));
+});
+
+test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 밸런스 검증', () => {
+  const res = calculateZiweiFlyingStars({ profile, targetYear: 2026 });
+  assert.equal(res.engineVersion, ZIWEI_FLYING_STARS_ENGINE_VERSION);
+  assert.equal(res.targetYear, 2026);
+  assert(res.mutagens.lu.starName.length > 0);
+  assert(res.mutagens.quan.starName.length > 0);
+  assert(res.mutagens.ke.starName.length > 0);
+  assert(res.mutagens.ji.starName.length > 0);
+  assert(res.sanFangSiZhengBalance.breakthroughPowerScore >= 0 && res.sanFangSiZhengBalance.breakthroughPowerScore <= 100);
+  assert(res.luJiConflictDynamics.relationType.length > 0);
+  assert.equal(res.quarterlyPacing.length, 4);
+  const prompt = formatZiweiFlyingStarsPrompt(res);
+  assert(prompt.includes(ZIWEI_FLYING_STARS_ENGINE_VERSION));
+  assert(prompt.includes('화록(化祿)'));
+  assert(prompt.includes('화권(化權)'));
+  assert(prompt.includes('화과(化科)'));
+  assert(prompt.includes('화기(化忌)'));
+  assert(prompt.includes('삼방사정(三方四正) 사화 집결도'));
+  assert(prompt.includes('록기교충(祿忌交衝) 리스크 방어선'));
+  assert(prompt.includes('유년 4분기 완급 조절 타임라인'));
 });
 
 test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 일생 마스터플랜 검증', () => {
