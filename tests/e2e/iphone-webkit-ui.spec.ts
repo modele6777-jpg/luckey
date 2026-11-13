@@ -802,6 +802,25 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   await page.mouse.click(headerBox.x + headerBox.width / 2, blankAreaY);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
   await expect(returnButton).toBeVisible();
+
+  await messages.evaluate(element => { element.scrollTop = 400; element.dispatchEvent(new Event('scroll')); });
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
+  await messages.evaluate(element => {
+    const originalScrollTo = element.scrollTo.bind(element);
+    (window as any).__lucyTopScrollCalls = 0;
+    Object.defineProperty(element, 'scrollTo', {
+      configurable: true,
+      value: (options?: ScrollToOptions) => {
+        if (typeof options === 'object' && options?.top === 0) (window as any).__lucyTopScrollCalls += 1;
+        return originalScrollTo(options as ScrollToOptions);
+      },
+    });
+  });
+  await page.mouse.click(headerBox.x + headerBox.width / 2, Math.min(headerBox.y + 30, 60));
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
+  expect(await page.evaluate(() => (window as any).__lucyTopScrollCalls)).toBe(1);
+  await messages.evaluate(element => { delete (element as any).scrollTo; delete (window as any).__lucyTopScrollCalls; });
+
   await page.evaluate(() => {
     let visibility: 'hidden' | 'visible' = 'hidden';
     Object.defineProperty(document, 'visibilityState', {

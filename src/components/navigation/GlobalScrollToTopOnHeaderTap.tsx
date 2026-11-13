@@ -15,6 +15,7 @@ export function GlobalScrollToTopOnHeaderTap(): null {
     let startY = 0;
     let startTime = 0;
     let isDragging = false;
+    let lastTouchScrollAt = 0;
 
     const getSafeAreaTop = (): number => {
       if (typeof window === 'undefined') return 44;
@@ -114,7 +115,13 @@ export function GlobalScrollToTopOnHeaderTap(): null {
     };
 
     const executeScrollToTop = (scrollTarget: HTMLElement | null) => {
-      resetAppScroll('smooth', scrollTarget);
+      const isLucyTarget = Boolean(
+        scrollTarget?.closest('#duo-lucy-viewport, .lucy-chat-shell') ||
+        (!document.getElementById('duo-content-viewport') && document.querySelector('.lucy-chat-shell'))
+      );
+      // Lucy handles this event on its own message scroller; avoid scheduling a second
+      // smooth scroll across every scrollable descendant in the pane.
+      if (!isLucyTarget) resetAppScroll('smooth', scrollTarget);
 
       try {
         playAudioHaptic('tap_light');
@@ -168,6 +175,7 @@ export function GlobalScrollToTopOnHeaderTap(): null {
 
       const scrollTarget = getNotchScrollTarget(endX, endY, target);
       if (scrollTarget !== false) {
+        lastTouchScrollAt = Date.now();
         executeScrollToTop(scrollTarget);
       }
     };
@@ -176,6 +184,10 @@ export function GlobalScrollToTopOnHeaderTap(): null {
       const target = (document.elementFromPoint(e.clientX, e.clientY) || e.target) as HTMLElement | null;
       const scrollTarget = getNotchScrollTarget(e.clientX, e.clientY, target);
       if (scrollTarget !== false) {
+        // A touch tap may also emit a synthetic click; consume both at the notch so
+        // the React header handler cannot schedule another scroll.
+        e.stopPropagation();
+        if (Date.now() - lastTouchScrollAt < 700) return;
         executeScrollToTop(scrollTarget);
       }
     };
