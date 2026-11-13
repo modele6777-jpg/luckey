@@ -1,4 +1,4 @@
-// v1.7.403: enhanced Thai Horasat, Hongguk Qimen, and Ziwei Flying Stars core engines
+// v1.7.404: Western Astrology major aspects & modalities + Da Liu Ren & I Ching digest integration
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

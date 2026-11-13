@@ -201,6 +201,16 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
 export interface NatalPlacement {
   sign: ZodiacSignInfo;
   degree: number; // 0 ~ 29.99
+  longitude: number; // 0 ~ 359.99
+}
+
+export interface NatalAspect {
+  bodyA: string;
+  bodyB: string;
+  aspectName: '합(0°)' | '육합(60°)' | '사각(90°)' | '삼합(120°)' | '충(180°)';
+  symbol: '☌' | '⚹' | '□' | '△' | '☍';
+  orb: number;
+  quality: '융합' | '조화' | '긴장';
 }
 
 export interface NatalChartResult {
@@ -220,6 +230,13 @@ export interface NatalChartResult {
     water: number;
     dominant: '불' | '흙' | '공기' | '물';
   };
+  modalities: {
+    cardinal: number;
+    fixed: number;
+    mutable: number;
+    dominant: '활동궁' | '고정궁' | '변통궁';
+  };
+  majorAspects: NatalAspect[];
   summaryText: string;
   psychologicalBlueprint: string;
   limitations: string[];
@@ -237,7 +254,55 @@ function longitudeToPlacement(lonDeg: number): NatalPlacement {
   const signIndex = Math.floor(normalized / 30);
   const degree = normalized % 30;
   const sign = ZODIAC_SIGNS[signIndex] || ZODIAC_SIGNS[0];
-  return { sign, degree: Math.min(29.99, Math.round(degree * 100) / 100) };
+  return {
+    sign,
+    degree: Math.min(29.99, Math.round(degree * 100) / 100),
+    longitude: Math.min(359.99, Math.round(normalized * 100) / 100),
+  };
+}
+
+const MAJOR_ASPECT_DEFS: Array<{
+  angle: number;
+  aspectName: NatalAspect['aspectName'];
+  symbol: NatalAspect['symbol'];
+  quality: NatalAspect['quality'];
+  baseOrb: number;
+}> = [
+  { angle: 0, aspectName: '합(0°)', symbol: '☌', quality: '융합', baseOrb: 8 },
+  { angle: 180, aspectName: '충(180°)', symbol: '☍', quality: '긴장', baseOrb: 8 },
+  { angle: 120, aspectName: '삼합(120°)', symbol: '△', quality: '조화', baseOrb: 7 },
+  { angle: 90, aspectName: '사각(90°)', symbol: '□', quality: '긴장', baseOrb: 7 },
+  { angle: 60, aspectName: '육합(60°)', symbol: '⚹', quality: '조화', baseOrb: 5 },
+];
+
+function computeMajorAspects(
+  bodies: Array<{ name: string; isLuminary: boolean; placement: NatalPlacement }>,
+): NatalAspect[] {
+  const aspects: NatalAspect[] = [];
+  for (let i = 0; i < bodies.length; i++) {
+    for (let j = i + 1; j < bodies.length; j++) {
+      const a = bodies[i];
+      const b = bodies[j];
+      const rawDiff = Math.abs(a.placement.longitude - b.placement.longitude);
+      const sep = rawDiff > 180 ? 360 - rawDiff : rawDiff;
+      for (const def of MAJOR_ASPECT_DEFS) {
+        const maxOrb = a.isLuminary || b.isLuminary ? def.baseOrb : Math.max(4, def.baseOrb - 1);
+        const orb = Math.round(Math.abs(sep - def.angle) * 100) / 100;
+        if (orb <= maxOrb) {
+          aspects.push({
+            bodyA: a.name,
+            bodyB: b.name,
+            aspectName: def.aspectName,
+            symbol: def.symbol,
+            orb,
+            quality: def.quality,
+          });
+          break;
+        }
+      }
+    }
+  }
+  return aspects.sort((x, y) => x.orb - y.orb);
 }
 
 /**
@@ -279,15 +344,19 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
     mcPlacement = longitudeToPlacement(Math.atan2(Math.sin(ramc), Math.cos(ramc) * Math.cos(eps)) * 180 / Math.PI);
   }
 
-  // 5. 4원소 분포 계산
+  // 5. 4원소 & 3모달리티(활동·고정·변통) 분포 및 주요 행성 각도(Aspects) 계산
   const allPlacements = [sunPlacement, moonPlacement, ascPlacement, mercuryPlacement, venusPlacement, marsPlacement].filter((placement): placement is NatalPlacement => placement !== null);
   let fire = 0, earth = 0, air = 0, water = 0;
+  let cardinal = 0, fixed = 0, mutable = 0;
   allPlacements.forEach(p => {
     const weight = p === sunPlacement ? 3 : p === moonPlacement || p === ascPlacement ? 2.5 : 1;
     if (p.sign.element === '불') fire += weight;
     if (p.sign.element === '흙') earth += weight;
     if (p.sign.element === '공기') air += weight;
     if (p.sign.element === '물') water += weight;
+    if (p.sign.modality === '활동궁') cardinal += weight;
+    if (p.sign.modality === '고정궁') fixed += weight;
+    if (p.sign.modality === '변통궁') mutable += weight;
   });
 
   const totalWeight = fire + earth + air + water || 1;
@@ -303,8 +372,33 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
     ) as '불' | '흙' | '공기' | '물'
   };
 
+  const totalModality = cardinal + fixed + mutable || 1;
+  const modalities = {
+    cardinal: Math.round((cardinal / totalModality) * 100),
+    fixed: Math.round((fixed / totalModality) * 100),
+    mutable: Math.round((mutable / totalModality) * 100),
+    dominant: (
+      cardinal >= fixed && cardinal >= mutable ? '활동궁' :
+      fixed >= mutable ? '고정궁' : '변통궁'
+    ) as '활동궁' | '고정궁' | '변통궁',
+  };
+
+  const majorAspects = computeMajorAspects([
+    { name: '태양', isLuminary: true, placement: sunPlacement },
+    ...(birthTime ? [{ name: '달', isLuminary: true, placement: moonPlacement }] : []),
+    { name: '수성', isLuminary: false, placement: mercuryPlacement },
+    { name: '금성', isLuminary: false, placement: venusPlacement },
+    { name: '화성', isLuminary: false, placement: marsPlacement },
+    { name: '목성', isLuminary: false, placement: jupiterPlacement },
+    { name: '토성', isLuminary: false, placement: saturnPlacement },
+  ]);
+
+  const aspectSummary = majorAspects.length > 0
+    ? ` · 주요 어스펙트: ${majorAspects.slice(0, 3).map(a => `${a.bodyA}${a.symbol}${a.bodyB}(${a.aspectName}, 오차 ${a.orb}°)`).join(', ')}`
+    : '';
+
   // 6. 요약 텍스트
-  const summaryText = `서양 열대황도: 태양 ${sunPlacement.sign.name}, 달 ${moonPlacement.sign.name}${!birthTime || !locationKnown ? ' (시간·시간대 참고값·미확정)' : ''}${ascPlacement ? `, 상승 ${ascPlacement.sign.name}, MC ${mcPlacement!.sign.name}` : ', 상승궁·MC 계산 불가'} (수성 ${mercuryPlacement.sign.name}, 금성 ${venusPlacement.sign.name}, 화성 ${marsPlacement.sign.name}, 목성 ${jupiterPlacement.sign.name}, 토성 ${saturnPlacement.sign.name}). ${limitations.join(' ')}`;
+  const summaryText = `서양 열대황도: 태양 ${sunPlacement.sign.name}, 달 ${moonPlacement.sign.name}${!birthTime || !locationKnown ? ' (시간·시간대 참고값·미확정)' : ''}${ascPlacement ? `, 상승 ${ascPlacement.sign.name}, MC ${mcPlacement!.sign.name}` : ', 상승궁·MC 계산 불가'} (수성 ${mercuryPlacement.sign.name}, 금성 ${venusPlacement.sign.name}, 화성 ${marsPlacement.sign.name}, 목성 ${jupiterPlacement.sign.name}, 토성 ${saturnPlacement.sign.name}) · 우세 원소 ${elements.dominant} · 우세 양상 ${modalities.dominant}${aspectSummary}. ${limitations.join(' ')}`;
   const psychologicalBlueprint = `${sunPlacement.sign.name}의 ${sunPlacement.sign.coreTrait}을 상징적 성찰로 참고하세요.${birthTime && locationKnown ? ` 달 ${moonPlacement.sign.name}의 정서적 상징도 함께 살펴볼 수 있습니다.` : ' 출생시간·출생지가 확인되지 않아 달과 상승궁의 성향은 확정하지 않습니다.'}`;
 
   return {
@@ -318,6 +412,8 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
     jupiter: jupiterPlacement,
     saturn: saturnPlacement,
     elements,
+    modalities,
+    majorAspects,
     summaryText,
     psychologicalBlueprint, limitations, timeZone, utcInstant: instant.toISOString(), timeKnown: !!birthTime, locationKnown
   };
