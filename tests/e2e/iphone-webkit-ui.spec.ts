@@ -1000,6 +1000,24 @@ test('pull-to-refresh indicator centers over the folded main canvas, excluding t
   await expect(indicator).toBeHidden();
 });
 
+test('pull-to-refresh ignores cross-origin Firebase Auth iframes without WebKit errors', async ({ page }) => {
+  const frameAccessErrors: string[] = [];
+  page.on('pageerror', error => {
+    if (error.message.includes('Blocked a frame with origin')) frameAccessErrors.push(error.message);
+  });
+  await openLucy(page);
+  await page.evaluate(() => {
+    const frame = document.createElement('iframe');
+    frame.src = 'https://lucyuniverse-fc423.firebaseapp.com/__/auth/iframe';
+    frame.title = 'cross-origin-auth-regression';
+    frame.width = '1';
+    frame.height = '1';
+    document.body.appendChild(frame);
+  });
+  await page.waitForTimeout(1000);
+  expect(frameAccessErrors).toEqual([]);
+});
+
 test('pull-to-refresh indicator centers on the full-width unfolded portrait canvas', async ({ page }) => {
   await page.setViewportSize({ width: 700, height: 900 });
   await openLucy(page);

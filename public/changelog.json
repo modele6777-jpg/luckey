@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.395",
+    "builtAt": "2026-11-13T09:04:53.000Z",
+    "summary": "WebKit 외부 인증 iframe 접근 예외 수정",
+    "items": [
+      "당김 새로고침은 같은 출처와 about:blank/srcdoc iframe만 살피고, Firebase 인증 iframe 같은 외부 프레임은 네이티브 스크롤에 맡겨 교차 출처 접근 예외를 막습니다.",
+      "iPhone WebKit 회귀 테스트는 외부 인증 iframe을 스캔해도 브라우저 보안 예외가 발생하지 않는지 검증합니다."
+    ]
+  },
+  {
     "version": "1.7.394",
     "builtAt": "2026-11-13T08:50:17.000Z",
     "summary": "Lucy 상태 배지 숨김·WebKit 상단 이동 애니메이션 개선",

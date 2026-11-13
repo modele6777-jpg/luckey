@@ -102,11 +102,23 @@ export function PullToRefresh({ onRefresh, refreshing }: { onRefresh: () => Prom
     window.addEventListener('message', handleBridgeMessage);
     cleanups.push(() => window.removeEventListener('message', handleBridgeMessage));
 
+    const isSameOriginFrame = (frame: HTMLIFrameElement) => {
+      const src = frame.getAttribute('src')?.trim();
+      if (!src || src.startsWith('about:blank') || src.startsWith('about:srcdoc')) return true;
+      try {
+        return new URL(src, window.location.href).origin === window.location.origin;
+      } catch {
+        return false;
+      }
+    };
+
     const scan = () => {
       document.querySelectorAll('iframe').forEach(frame => {
         const attach = () => {
+          if (!isSameOriginFrame(frame)) return;
           try {
-            if (frame.contentDocument) bind(frame.contentDocument);
+            const frameDocument = frame.contentDocument;
+            if (frameDocument) bind(frameDocument);
           } catch { /* External embeds keep native scrolling. */ }
         };
         if (!frames.has(frame)) {
