@@ -347,7 +347,7 @@ export function calculateTiebanShenshu(
 
 export function formatTiebanShenshuPrompt(report: TiebanReport): string {
   const macroBlock = report.yuanHuiYunShi
-    ? `\n- 황극경세서 원회운세: ${report.yuanHuiYunShi.currentEpoch} (${report.yuanHuiYunShi.cyclicalPhase}, 공명도 ${report.resonanceScore}점)\n  * 거시 시대 궤적 조언: ${report.yuanHuiYunShi.macroCycleAdvice}`
+    ? `\n- 황극경세서 원회운세: ${report.yuanHuiYunShi.currentEpoch} (${report.yuanHuiYunShi.cyclicalPhase}, 공명도 ${report.yuanHuiYunShi.resonanceScore}점)\n  * 거시 시대 궤적 조언: ${report.yuanHuiYunShi.macroCycleAdvice}`
     : '';
   const rhythmBlock = report.naYinRhythmHarmony
     ? `\n- 12율려 음양 조화: 주재음 ${report.naYinRhythmHarmony.dominantTone} (조화도 ${report.naYinRhythmHarmony.pitchHarmonicsScore}점)\n  * 율려 공명: ${report.naYinRhythmHarmony.elementalResonance}`
