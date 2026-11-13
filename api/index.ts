@@ -1,4 +1,4 @@
-// v1.7.397: enhanced Tojeong, Kyusei, and Taiyi core divination engines
+// v1.7.398: enhanced Liuren, Mahabote, and HeLuoLiShu core divination engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

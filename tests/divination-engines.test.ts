@@ -1003,9 +1003,17 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
 
   // Prompt formatting
   const prompt = formatMahabotePrompt(r1);
-  assert(prompt.includes('LUCKEY-MB-v1.0.0'));
+  assert(prompt.includes(MAHABOTE_ENGINE_VERSION));
   assert(prompt.includes('마하보테'));
   assert(prompt.includes('본명궁'));
+  assert(r1.planetaryAffinity !== undefined);
+  assert(r1.planetaryAffinity!.planetaryHarmonyScore >= 45 && r1.planetaryAffinity!.planetaryHarmonyScore <= 98);
+  assert(r1.domainAffinities !== undefined);
+  assert(r1.domainAffinities!.leadershipHonor >= 0 && r1.domainAffinities!.leadershipHonor <= 100);
+  assert(r1.transitInteraction !== undefined);
+  assert(r1.transitInteraction!.phase.length > 0);
+  assert(prompt.includes('행성 조화도 및 친화수리'));
+  assert(prompt.includes('4대 인생 영역 친화도'));
 
   // Skipped without birthdate
   const skipped = calculateMahabote({ profile: null });
@@ -1824,11 +1832,18 @@ test('Liuren Master Engine: 사과·삼전·12천장 정통 결단 산출 및 �
   assert(res.threeTransmissions[0].stage.includes('초전'));
   assert(res.decisionScore >= 0 && res.decisionScore <= 100);
   assert(res.primaryGeneral.name.length > 0);
+  assert(res.interpersonalDynamic !== undefined);
+  assert(res.interpersonalDynamic.fourLessonsHarmonyScore >= 40 && res.interpersonalDynamic.fourLessonsHarmonyScore <= 98);
+  assert(res.transmissionDynamics !== undefined);
+  assert(res.transmissionDynamics.actionMomentumIndex >= 0 && res.transmissionDynamics.actionMomentumIndex <= 100);
+  assert(res.transmissionDynamics.breakthroughStrategy.length > 0);
   const prompt = formatLiurenMasterPrompt(res);
   assert(prompt.includes(LIUREN_MASTER_ENGINE_VERSION));
   assert(prompt.includes('사과(四課) 포국'));
   assert(prompt.includes('삼전(三傳) 타임라인'));
   assert(prompt.includes('결단 스코어'));
+  assert(prompt.includes('사과 생극 역학'));
+  assert(prompt.includes('삼전 추진 역학'));
 });
 
 test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) 및 체용 생극제화 검증', () => {
@@ -1882,11 +1897,18 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(res.yuanTangYao >= 1 && res.yuanTangYao <= 6);
   assert(res.lifeCycleBalance.earlyLifeScore >= 0 && res.lifeCycleBalance.earlyLifeScore <= 100);
   assert(res.lifeCycleBalance.matureLifeScore >= 0 && res.lifeCycleBalance.matureLifeScore <= 100);
+  assert(res.yinYangBalance !== undefined);
+  assert(res.yinYangBalance.yinYangBalanceIndex >= 0 && res.yinYangBalance.yinYangBalanceIndex <= 100);
+  assert(res.yuanTangDetail !== undefined);
+  assert(res.yuanTangDetail.potencyScore >= 50 && res.yuanTangDetail.potencyScore <= 98);
+  assert.equal(res.decadeTrajectory.length, 5);
   const prompt = formatHeLuoLiShuPrompt(res);
   assert(prompt.includes(HELUOLISHU_ENGINE_VERSION));
   assert(prompt.includes('선천본괘'));
   assert(prompt.includes('원당효'));
   assert(prompt.includes('후천변괘'));
+  assert(prompt.includes('음양 체질'));
+  assert(prompt.includes('생애 대운별 주역 궤적'));
 });
 
 test('Dynamic Clash Trigger Engine: 실시간 삼형·육충·파해 동적 격발 및 에너지 승화 검증', () => {

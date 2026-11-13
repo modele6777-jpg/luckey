@@ -18,14 +18,20 @@
  *
  * 4. 구종과격(九宗課格):
  *    원수과·중심과·섭해과·요극과·묘성과·별책과·팔전과·복음과·반음과 판정.
+ *
+ * 5. [v1.7.398 고도화]:
+ *    - 사과(四課) 일간상신(나/주체)과 일지상신(상대/환경) 간의 오행 생극제화(生剋制化) 수리 판정
+ *    - 사과 기운 조화도(fourLessonsHarmonyScore, 40~98점) 및 대인/환경 상호작용 역학 구조화
+ *    - 삼전(三傳) 진행 진퇴(進退) 템포 및 12천장 길흉 비중 기반 행동 모멘텀 지수(actionMomentumIndex) 산출
+ *    - 국면별 실천 돌파 개운 전략(breakthroughStrategy) 결정론적 탑재
  */
 
 import { calculateLiuren } from './eventCharts';
 
-export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v1.0.0';
+export const LIUREN_MASTER_ENGINE_VERSION = 'LUCKEY-LR-v1.1.0';
 
 export const LIUREN_MASTER_METHOD =
-  '대육임(大六壬) 정통 월장가시 천지반 12궁 포국, 사과(간상·간음·지상·지음), 삼전(초전·중전·말전 발용) 구종과격, 12천장 승차 길흉 판정 및 0~100점 결단 스코어 결정론적 산출';
+  '대육임(大六壬) 정통 월장가시 천지반 12궁 포국, 사과(간상·간음·지상·지음) 오행 생극제화 수리 판정, 삼전(초전·중전·말전 발용) 구종과격 및 전개 템포, 12천장 승차 길흉 판정 및 0~100점 결단·행동 모멘텀 스코어 결정론적 산출';
 
 export type LiurenLessonId = 'first' | 'second' | 'third' | 'fourth';
 
@@ -53,6 +59,23 @@ export interface LiurenGeneralInfo {
   advice: string;
 }
 
+export interface LiurenInterpersonalDynamic {
+  subjectUpper: string;
+  environmentUpper: string;
+  subjectElement: string;
+  environmentElement: string;
+  relationType: '생입(生入)' | '생출(生出)' | '극출(剋出)' | '극입(剋入)' | '비화(比和)';
+  relationMeaning: string;
+  fourLessonsHarmonyScore: number; // 40 ~ 98
+}
+
+export interface LiurenTransmissionDynamics {
+  tempo: '신속 추진형 (Fast Forward)' | '점진 안착형 (Steady Progress)' | '전략 조율형 (Strategic Pivot)';
+  flowMeaning: string;
+  actionMomentumIndex: number; // 0 ~ 100
+  breakthroughStrategy: string;
+}
+
 export interface LiurenMasterResult {
   engineVersion: string;
   method: string;
@@ -74,6 +97,8 @@ export interface LiurenMasterResult {
     relationshipAdvice: string;
     strategicCaution: string;
   };
+  interpersonalDynamic: LiurenInterpersonalDynamic;
+  transmissionDynamics: LiurenTransmissionDynamics;
 }
 
 const GENERAL_DATA: Record<string, LiurenGeneralInfo> = {
@@ -90,6 +115,84 @@ const GENERAL_DATA: Record<string, LiurenGeneralInfo> = {
   '태음': { name: '태음(太陰)', nature: '길신', attribute: '은밀한 후원·기획·사색·여성 조력', advice: '물밑에서 철저히 내실을 다지고 전략적 기획을 완성하세요.' },
   '천후': { name: '천후(天后)', nature: '길신', attribute: '온정·순리·여성 귀인·심리적 안정', advice: '부드러운 유연함으로 상대를 포용할 때 난제가 풀립니다.' },
 };
+
+/**
+ * 12지지 오행 배속
+ */
+const BRANCH_ELEMENTS: Record<string, string> = {
+  '子': '수(水)', '亥': '수(水)',
+  '寅': '목(木)', '卯': '목(木)',
+  '巳': '화(火)', '午': '화(火)',
+  '申': '금(金)', '酉': '금(金)',
+  '辰': '토(土)', '戌': '토(土)', '丑': '토(土)', '未': '토(土)',
+};
+
+/**
+ * 오행 생극 판정 (주체 vs 환경)
+ */
+function evaluateElementRelation(subjEl: string, envEl: string): {
+  relationType: '생입(生入)' | '생출(生出)' | '극출(剋出)' | '극입(剋入)' | '비화(比和)';
+  meaning: string;
+  harmonyScore: number;
+} {
+  const s = subjEl[0]; // 수, 목, 화, 금, 토
+  const e = envEl[0];
+  if (s === e) {
+    return {
+      relationType: '비화(比和)',
+      meaning: '나와 상대·환경의 오행이 상응하여 동등한 눈높이의 상호 협력과 대등한 연대가 성립합니다.',
+      harmonyScore: 88,
+    };
+  }
+  // 환경이 나를 생함 (생입)
+  if (
+    (e === '수' && s === '목') ||
+    (e === '목' && s === '화') ||
+    (e === '화' && s === '토') ||
+    (e === '토' && s === '금') ||
+    (e === '금' && s === '수')
+  ) {
+    return {
+      relationType: '생입(生入)',
+      meaning: '환경과 상대방이 나를 전폭적으로 지지하며 강력한 귀인의 원조와 자원이 흘러들어옵니다 (대길).',
+      harmonyScore: 96,
+    };
+  }
+  // 내가 환경을 생함 (생출)
+  if (
+    (s === '수' && e === '목') ||
+    (s === '목' && e === '화') ||
+    (s === '화' && e === '토') ||
+    (s === '토' && e === '금') ||
+    (s === '금' && e === '수')
+  ) {
+    return {
+      relationType: '생출(生出)',
+      meaning: '나의 역량과 노력을 먼저 베풀어 신뢰를 쌓아야 하며, 선투자 후수확의 단계적 결실을 맺습니다.',
+      harmonyScore: 75,
+    };
+  }
+  // 내가 환경을 극함 (극출)
+  if (
+    (s === '수' && e === '화') ||
+    (s === '화' && e === '금') ||
+    (s === '금' && e === '목') ||
+    (s === '목' && e === '토') ||
+    (s === '토' && e === '수')
+  ) {
+    return {
+      relationType: '극출(剋出)',
+      meaning: '내가 확실한 주도권을 쥐고 상대와 시장 환경을 통제하여 실질적인 재물과 성과를 쟁취합니다.',
+      harmonyScore: 84,
+    };
+  }
+  // 환경이 나를 극함 (극입)
+  return {
+    relationType: '극입(剋入)',
+    meaning: '외부의 엄격한 규제나 상대방의 까다로운 요구가 압박하므로 정면 돌파 대신 지혜로운 조율이 필요합니다.',
+    harmonyScore: 54,
+  };
+}
 
 /**
  * 대육임 정통 수리 계산 및 사과·삼전·12천장 결단 마스터 엔진 실행
@@ -178,6 +281,62 @@ export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterR
   else if (baseScore >= 40) decisionGrade = '전략 수정 (Caution & Pivot)';
   else decisionGrade = '전면 보류 (Strong Stop)';
 
+  // 1. 사과 생극제화 수리 분석 (제1과 일간상신 vs 제3과 일지상신)
+  const subjUpper = fourLessons[0]?.upper || '午';
+  const envUpper = fourLessons[2]?.upper || '子';
+  const subjElement = BRANCH_ELEMENTS[subjUpper] || '화(火)';
+  const envElement = BRANCH_ELEMENTS[envUpper] || '수(水)';
+  const elemEval = evaluateElementRelation(subjElement, envElement);
+
+  const interpersonalDynamic: LiurenInterpersonalDynamic = {
+    subjectUpper: subjUpper,
+    environmentUpper: envUpper,
+    subjectElement: subjElement,
+    environmentElement: envElement,
+    relationType: elemEval.relationType,
+    relationMeaning: elemEval.meaning,
+    fourLessonsHarmonyScore: elemEval.harmonyScore,
+  };
+
+  // 2. 삼전 추진 역학 및 행동 모멘텀 분석
+  const luckyGenerals = ['귀인', '청룡', '육합', '태상', '태음', '천후'];
+  let luckyCount = 0;
+  threeTransmissions.forEach((t) => {
+    if (luckyGenerals.some((g) => t.general.includes(g))) luckyCount++;
+  });
+
+  const branchOrder = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  const b1 = branchOrder.indexOf(threeTransmissions[0]?.branch || '寅');
+  const b2 = branchOrder.indexOf(threeTransmissions[1]?.branch || '午');
+  const b3 = branchOrder.indexOf(threeTransmissions[2]?.branch || '戌');
+
+  let tempo: LiurenTransmissionDynamics['tempo'] = '점진 안착형 (Steady Progress)';
+  let flowMeaning = '삼전이 안정적으로 전개되며 단계별 확인을 통해 내실을 다져가는 국면입니다.';
+
+  if ((b2 === (b1 + 1) % 12 || b2 === (b1 + 2) % 12) && (b3 === (b2 + 1) % 12 || b3 === (b2 + 2) % 12)) {
+    tempo = '신속 추진형 (Fast Forward)';
+    flowMeaning = '초전에서 말전으로 기운이 순조롭게 전진하여 속도감 있는 결실과 성과 창출이 기대됩니다.';
+  } else if ((b2 + 12 - b1) % 12 >= 8 || (b3 + 12 - b2) % 12 >= 8) {
+    tempo = '전략 조율형 (Strategic Pivot)';
+    flowMeaning = '초전의 서두름을 가라앉히고 중전과 말전에서 잠재 리스크를 선제적으로 조율해야 할 시점입니다.';
+  }
+
+  const actionMomentumIndex = Math.min(100, Math.max(30, 40 + luckyCount * 18 + (baseScore > 70 ? 10 : 0)));
+
+  const breakthroughStrategy =
+    luckyCount >= 2
+      ? `길신(${threeTransmissions.map((t) => t.general).join('·')})의 기운이 두터우므로 망설임을 걷어내고 선제적으로 협력과 투자를 제안하세요.`
+      : elemEval.relationType === '생입(生入)' || elemEval.relationType === '비화(比和)'
+      ? '상대와 환경의 우호적 반응을 지렛대 삼아 문서화된 합의를 도출하고 단계를 밟아가세요.'
+      : '단기 성급한 결단보다는 중전의 고비를 넘길 수 있는 대안 루트를 마련한 뒤 신중히 추진하세요.';
+
+  const transmissionDynamics: LiurenTransmissionDynamics = {
+    tempo,
+    flowMeaning,
+    actionMomentumIndex,
+    breakthroughStrategy,
+  };
+
   return {
     engineVersion: LIUREN_MASTER_ENGINE_VERSION,
     method: LIUREN_MASTER_METHOD,
@@ -199,6 +358,8 @@ export function calculateLiurenMaster(instant: Date = new Date()): LiurenMasterR
       relationshipAdvice: `제1과(${fourLessons[0]?.upper})와 제3과(${fourLessons[2]?.upper})의 생극 관계를 살펴 일방적 요구 대신 상호 이익을 제안하세요.`,
       strategicCaution: matchedGeneral.advice,
     },
+    interpersonalDynamic,
+    transmissionDynamics,
   };
 }
 
@@ -214,17 +375,21 @@ export function formatLiurenMasterPrompt(res: LiurenMasterResult): string {
 - 결단 스코어: ${res.decisionScore}점 (${res.decisionGrade})
 - 주도 12천장: ${res.primaryGeneral.name} [${res.primaryGeneral.nature}] - ${res.primaryGeneral.attribute}
 - 사과(四課) 포국:
-  1. 제1과(일간상신/나의 외적위치): ${res.fourLessons[0]?.upper}/${res.fourLessons[0]?.lower}
+  1. 제1과(일간상신/나의 외적위치): ${res.fourLessons[0]?.upper}/${res.fourLessons[0]?.lower} (${res.interpersonalDynamic.subjectElement})
   2. 제2과(일간음신/나의 내적심리): ${res.fourLessons[1]?.upper}/${res.fourLessons[1]?.lower}
-  3. 제3과(일지상신/상대의 환경): ${res.fourLessons[2]?.upper}/${res.fourLessons[2]?.lower}
+  3. 제3과(일지상신/상대의 환경): ${res.fourLessons[2]?.upper}/${res.fourLessons[2]?.lower} (${res.interpersonalDynamic.environmentElement})
   4. 제4과(일지음신/상대의 의도): ${res.fourLessons[3]?.upper}/${res.fourLessons[3]?.lower}
-- 삼전(三傳) 타임라인:
+- 사과 생극 역학: 제1과 상신(${res.interpersonalDynamic.subjectUpper}) vs 제3과 상신(${res.interpersonalDynamic.environmentUpper}) -> ${res.interpersonalDynamic.relationType} (${res.interpersonalDynamic.relationMeaning}) [사과 조화도: ${res.interpersonalDynamic.fourLessonsHarmonyScore}점]
+- 삼전(三傳) 타임라인 & 추진 역학:
   • 초전(발용/시작): ${res.threeTransmissions[0]?.branch} (${res.threeTransmissions[0]?.general}) -> ${res.threeTransmissions[0]?.timelineRole}
   • 중전(과정/고비): ${res.threeTransmissions[1]?.branch} (${res.threeTransmissions[1]?.general}) -> ${res.threeTransmissions[1]?.timelineRole}
   • 말전(귀결/수확): ${res.threeTransmissions[2]?.branch} (${res.threeTransmissions[2]?.general}) -> ${res.threeTransmissions[2]?.timelineRole}
-- 실천 프로토콜:
+  • 전개 템포: ${res.transmissionDynamics.tempo} | 행동 모멘텀: ${res.transmissionDynamics.actionMomentumIndex}점
+  • 전개 흐름: ${res.transmissionDynamics.flowMeaning}
+- 실천 프로토콜 & 돌파 전략:
   • 타이밍: ${res.actionProtocols.timingAdvice}
   • 관계 전략: ${res.actionProtocols.relationshipAdvice}
   • 핵심 주의: ${res.actionProtocols.strategicCaution}
+  • 돌파 개운 전략: ${res.transmissionDynamics.breakthroughStrategy}
 ※ 루시 지침: 대육임은 인사처신의 거울입니다. 사용자가 질문한 일의 시작(초전), 진행(중전), 결말(말전)과 상대방과의 심리적 역학(사과)을 명쾌하고 든든하게 해설해 주세요.`;
 }
