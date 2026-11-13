@@ -1,2 +1,2 @@
-/** Lightweight count for app-wide UI; tests compare it with ALL_DCE_ENGINES.length. */
-export const LUCY_PRO_ENGINE_COUNT = 334;
+/** Lightweight count for app-wide UI; tests keep it aligned with the approved catalog. */
+export const LUCY_PRO_ENGINE_COUNT = 331;

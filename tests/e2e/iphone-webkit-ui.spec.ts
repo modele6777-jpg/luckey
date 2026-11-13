@@ -178,8 +178,11 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('근거 검수·문학 엔진 정확도·대화 기억·Lucy Pro 카탈로그 개선');
-  await expect(item).toContainText('검수기 장애·잘못된 승인·오류 보정');
+  const releaseResponse = await page.request.get('/version.json');
+  expect(releaseResponse.ok()).toBeTruthy();
+  const release = await releaseResponse.json() as { summary: string; items: string[] };
+  await expect(summary).toContainText(release.summary);
+  await expect(item).toContainText(release.items[0]);
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
