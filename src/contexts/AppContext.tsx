@@ -95,6 +95,7 @@ export interface SendUnifiedMessageOptions {
   isLucyPlus?: boolean;
   isLucyPro?: boolean;
   isPro?: boolean;
+  requireBasicAndDeep?: boolean;
 }
 
 interface AppContextValue {
@@ -2067,15 +2068,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = Boolean(isLucyPro);
+    const requireBasicAndDeep = sourcePersona === 'lucy' || isMasterCall || Boolean(options?.requireBasicAndDeep);
     const isCasualMode =
-      !options?.tarotCardMarkers && !isMasterCall && (
+      !options?.tarotCardMarkers && !requireBasicAndDeep && (
         options?.mode === 'casual' ||
         (!options?.mode && responseLength === 'short' && activeThemeList.length === 0)
       );
     const toolSelection: SelectedDivinationToolsResult = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: isMasterCall })
+      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: requireBasicAndDeep, requireBasicAndDeep })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '', selectionReason: '', firedEngineBadges: [] };
     const toolsIncludedInPrompt = isCasualMode
       ? []
@@ -2085,7 +2087,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ? options?.usedTools || []
       : [];
     const isFastCasualPath =
-      !isMasterCall &&
+      !requireBasicAndDeep &&
       sourcePersona === 'lucy' &&
       responseLength === 'short' &&
       toolSelection.isCasualMessage &&
@@ -2138,7 +2140,7 @@ ${responseProfile.rule}`;
 
       systemPrompt += `\n\n${LUCY_CHAT_VOICE_RULES}`;
 
-      if (sourcePersona === 'lucy' && !isMasterCall && (options?.mode === 'casual' || !options?.channels?.length)) {
+      if (sourcePersona === 'lucy' && !requireBasicAndDeep && (options?.mode === 'casual' || !options?.channels?.length)) {
         systemPrompt += `\n\n[★ 루시 기본 일상 수다 모드 핵심 지침]:
 1. [친근하고 다정한 수다 친구]: 당신은 사용자의 가장 가깝고 편안한 단짝 수다 친구 '루시'입니다. 딱딱한 멘토나 AI 상담사처럼 훈계/설교하지 말고, 카톡이나 DM을 나누듯 친근한 반말(또는 사용자의 어조에 맞춘 다정한 어투)로 즐겁게 수다를 떨어주세요.
 2. [카톡식 다중 말풍선 티키타카]: 일장연설이나 한 덩어리의 긴 문단 대신, 실제 카톡하듯이 **빈 줄(\`\\n\\n\`)로 구분된 2~3개의 짧은 말풍선 단락**(각 말풍선당 1~2문장)으로 쪼개어 가볍고 자연스럽게 답하세요.
@@ -2151,6 +2153,13 @@ ${responseProfile.rule}`;
 1. [마스터 모드 유지 & 수다모드 완전 배제]: 당신은 7대 테마를 다루는 '루시 프로(Lucy Pro) 마스터'야. 절대로 "가벼운 일상 수다를 떨까?", "수다 떨 준비가 되어 있어" 같은 수다 모드(casual) 대사나 질문을 하지 마. 어떤 질문이나 인사에도 항상 마스터로서 깊이 있게 응대해.
 2. [기본 운명 팩트 + 심층 지혜 융합]: 질문에 대해 15대 기초 운명학 도구의 수리 계산 근거(사주·자미·타로 등)와 함께, 선별된 316대 심층 철학·심리학 지혜를 유기적으로 융합하여 깊이 있는 마스터의 통찰을 제시해. 답변에 전달된 실제 산출 결과만 '계산 완료'라고 하고, 상징 관점·부분 계산·미실행·오류를 서로 구분해. 카탈로그 등록 수(${ALL_DCE_ENGINES.length}개)는 이번 턴 실제 실행 수가 아니므로 실행된 도구만 정직하게 언급해.
 3. [다정한 마스터 응대]: 사용자가 짧은 인사나 일상 이야기를 건네더라도 가벼운 잡담으로 넘기지 말고, 타고난 사주·점성술 원국과 오늘의 시간적 흐름, 실존적 지혜를 짚어주며 깊이 있고 다정하게 응대해.`;
+      }
+
+      if (sourcePersona === 'lucy' && requireBasicAndDeep && !isMasterCall) {
+        systemPrompt += `\n\n[Lucy 기본 도구·심층 관점 필수 원칙]:
+1. 모든 질문에서 라우터가 선택한 15대 기초 도구 중 하나 이상과 심층 해석 관점 하나 이상을 함께 활용해. 가벼운 인사도 도구 선택을 생략하지 마.
+2. 심층 관점은 상징 참고이며 별도 개인 계산 결과나 검증된 원전 인용처럼 표현하지 마. 이번 질문에 전달된 실제 계산 결과만 계산했다고 설명해.
+3. 질문에 맞는 선택 도구만 사용하고, 사용자가 전체 분석을 명시적으로 요청하지 않는 한 전체 카탈로그를 동원하지 마.`;
       }
 
       // Append cross-app real-time remembrance

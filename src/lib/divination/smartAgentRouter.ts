@@ -459,10 +459,12 @@ export function routeAndExecute(params: {
   text: string;
   profile?: UserProfile | null;
   isMasterRequested?: boolean;
+  requireBasicAndDeep?: boolean;
   allowMaster?: boolean;
   targetTools?: DivinationToolId[];
 }): RoutedExecutionResult {
   const isMaster = Boolean(params.isMasterRequested);
+  const requireBasicAndDeep = isMaster || Boolean(params.requireBasicAndDeep);
   const routePlan = analyzeQuestionIntent(params.text, isMaster, params.allowMaster);
   if (!routePlan.isMasterMobilization && params.targetTools?.length) {
     routePlan.targetTools = [...new Set(params.targetTools)];
@@ -472,33 +474,26 @@ export function routeAndExecute(params: {
     routePlan.suggestedFocusPrompt = '지정한 도구의 실제 결과와 계산 한계 안에서 질문에 답해줘.';
   }
 
-  // [일반 모드 vs 프로 모드 필수 규칙 적용]
-  if (isMaster) {
-    // 👑 프로 모드:
-    // 1. 수다 모드 완전 배제
+  // Lucy and Lucy Plus require one basic tool plus one symbolic deep perspective.
+  // This is selective execution, not full-catalog/master mobilization.
+  if (requireBasicAndDeep) {
     routePlan.isCasual = false;
-    // 2. 기본엔진 1개 이상 필수 보장
     if (!routePlan.targetTools || routePlan.targetTools.length === 0) {
-      routePlan.targetTools = ['saju', 'astrology'];
+      routePlan.targetTools = isMaster ? ['saju', 'astrology'] : ['saju'];
     }
-    // 3. 상징 해석 관점 1개 이상 선택 보장 (별도 결정론적 계산을 뜻하지 않음)
     if (!routePlan.deepEngineKeys || routePlan.deepEngineKeys.length === 0) {
       routePlan.deepEngineKeys = ['germanNietzscheZarathustraAmorFati'];
       routePlan.deepEnginesKo = ['니체의 아모르파티 해석 관점'];
-      routePlan.deepEngineGuidance = '이 선택 관점은 상징적 참고로만 사용하고 별도 결정론적 계산이나 검증된 원전 인용처럼 표현하지 않는다. 기초 도구의 실제 계산 결과와 구분해 질문에 맞는 실천 조언을 제시한다.';
+      routePlan.deepEngineGuidance = '선택 관점은 상징적 참고로만 사용하고 별도 결정론적 계산이나 검증된 원전 인용처럼 표현하지 않는다. 기초 도구의 실제 계산 결과와 구분해 질문에 맞는 실천 조언을 제시한다.';
     }
-  } else {
-    // 🌿 일반 모드:
-    if (!routePlan.isCasual) {
-      // 1. 수다모드가 아닐 때: 기본엔진 1개 이상 필수 보장
-      if (!routePlan.targetTools || routePlan.targetTools.length === 0) {
-        routePlan.targetTools = ['saju'];
-      }
-      // 2. 기본 15대 엔진만 나오게 고정 (심층엔진 완전 배제)
-      routePlan.deepEngineKeys = [];
-      routePlan.deepEnginesKo = [];
-      routePlan.deepEngineGuidance = undefined;
+  } else if (!routePlan.isCasual) {
+    // Ordinary Lucy calls keep their historical basic-tool-only policy.
+    if (!routePlan.targetTools || routePlan.targetTools.length === 0) {
+      routePlan.targetTools = ['saju'];
     }
+    routePlan.deepEngineKeys = [];
+    routePlan.deepEnginesKo = [];
+    routePlan.deepEngineGuidance = undefined;
   }
 
   if (routePlan.isCasual) {
@@ -530,16 +525,14 @@ export function routeAndExecute(params: {
     isMasterMobilization: routePlan.isMasterMobilization,
   });
 
-  // 심층 참고 관점 융합 블록 (deep keys are interpretive lenses, not extra calculations):
-  // - 일반 모드(!isMaster): 기본 15대만 고정이므로 심층 블록 없음
-  // - 프로 모드(isMaster): 기본 계산과 별도로 선택된 상징 관점이 참고 정보로 주입됨
-  const deepBlock = isMaster && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
-    ? `\n- [프로 마스터 선택 관점(상징 참고 · 별도 결정론적 계산 아님)]: **${routePlan.deepEnginesKo.join(' · ')}**
+  // Deep perspectives are symbolic references, never extra deterministic calculations.
+  const deepBlock = requireBasicAndDeep && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
+    ? `\n- [Lucy 심층 선택 관점(상징 참고 · 별도 결정론적 계산 아님)]: **${routePlan.deepEnginesKo.join(' · ')}**
 - [심층 관점 융합 가이드]: ${routePlan.deepEngineGuidance || '선택 관점은 상징적 참고로만 사용한다. 별도 계산이나 검증된 원전 인용처럼 표현하지 말고 기본 도구의 실제 결과와 구분해 실천 조언을 제시한다.'}`
     : '';
 
   // 배지: 기본 계산은 계산 상태로, 선택한 해석 관점은 '상징 참고'로 구분해 표출
-  const finalBadges = isMaster && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
+  const finalBadges = requireBasicAndDeep && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
     ? [...toolsForBadge, ...routePlan.deepEnginesKo.slice(0, 3).map(name => `상징 참고 · ${name}`)]
     : toolsForBadge;
 
@@ -553,7 +546,7 @@ export function routeAndExecute(params: {
 - 중점 답변 가이드: ${routePlan.suggestedFocusPrompt}
 ======================================================================
 [루시 답변 필수 지침]:
-1. ${isMaster ? '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)와 선택된 심층 해석 관점을 구분해 활용해. 심층 관점은 상징 참고일 뿐 별도 개인별 계산 결과가 아니며, 검증된 출처가 없는 문구를 저자의 직접 인용처럼 쓰지 마. 질문자의 현실 상황에 맞는 실천 조언을 다정하고 깊이 있게 풀어줘.' : '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)를 바탕으로 군더더기 없이 명쾌하고 다정하게 풀어줘.'}
+1. ${requireBasicAndDeep ? '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)와 선택된 심층 해석 관점을 구분해 활용해. 심층 관점은 상징 참고일 뿐 별도 개인별 계산 결과가 아니며, 검증된 출처가 없는 문구를 저자의 직접 인용처럼 쓰지 마. 질문자의 현실 상황에 맞는 실천 조언을 다정하고 깊이 있게 풀어줘.' : '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)를 바탕으로 군더더기 없이 명쾌하고 다정하게 풀어줘.'}
 2. 서론 없이 첫 문장부터 질문자의 속마음을꿰뚫으며 시작하고, 당장 실천할 구체적 행동 팁과 깊은 영적 위로를 카톡식 다중 말풍선(\`\\n\\n\`)으로 전해줘.`;
 
   return {

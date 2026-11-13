@@ -31,7 +31,7 @@ export const INITIAL_PRISM_ROUTES: PrismRouteDefinition[] = [
     name: '루시 대화 (메인)',
     subName: '영혼의 가이드와 1:1 대화',
     path: '/',
-    aliases: ['/chat', '/lucy'],
+    aliases: ['/chat', '/lucy', '/chat/pro'],
     icon: '✨',
     runeSymbol: 'ᛞ',
     runeName: 'Dagaz',
@@ -41,12 +41,6 @@ export const INITIAL_PRISM_ROUTES: PrismRouteDefinition[] = [
     accentGlow: 'rgba(192, 132, 252, 0.9)',
     isActive: true,
     category: 'channel',
-  },
-  {
-    id: 'lucy-pro', name: '루시 채팅 프로', subName: '항상 마스터 모드',
-    path: '/chat/pro', aliases: [], icon: '👑', runeSymbol: 'ᛞ', runeName: 'Dagaz',
-    runeMeaning: '통합 지혜', description: '7대 채널 올인원 마스터 전용 루시 채팅',
-    themeColor: '#f59e0b', accentGlow: 'rgba(245,158,11,.6)', isActive: true, category: 'channel',
   },
   {
     id: 'hub',

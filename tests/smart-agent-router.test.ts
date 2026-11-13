@@ -25,7 +25,7 @@ test('smart agent router routes career strategy to Machiavelli, Ryu Seong-ryong,
   assert.ok(plan.deepEnginesKo?.some(name => name.includes('마키아벨리')));
 
   const routed = routeAndExecute({ text: '이직 면접과 커리어 전략을 알려줘', profile, isMasterRequested: true });
-  assert.match(routed.promptInjection, /프로 마스터 선택 관점/);
+  assert.match(routed.promptInjection, /Lucy 심층 선택 관점/);
   assert.match(routed.promptInjection, /마키아벨리/);
   assert.match(routed.promptInjection, /심층 관점 융합 가이드/);
 });
@@ -58,7 +58,7 @@ test('ordinary mode enforces basic engine >= 1 (excluding casual) and excludes d
   assert.doesNotMatch(query.promptInjection, /심층 참고 관점/);
 });
 
-test('pro mode disables casual mode completely and enforces basic >= 1 and deep >= 1', () => {
+test('master requests disable casual mode completely and enforce basic >= 1 and deep >= 1', () => {
   // 1. 인사말이어도 수다모드로 빠지지 않고 기본 >= 1, 심층 >= 1 발동
   const greeting = routeAndExecute({ text: '안녕', profile, isMasterRequested: true });
   assert.equal(greeting.routePlan.isCasual, false);
@@ -70,10 +70,10 @@ test('pro mode disables casual mode completely and enforces basic >= 1 and deep 
   assert.equal(query.routePlan.isCasual, false);
   assert.ok(query.routePlan.targetTools.length >= 1);
   assert.ok((query.routePlan.deepEngineKeys?.length ?? 0) >= 1);
-  assert.match(query.promptInjection, /프로 마스터 선택 관점/);
+  assert.match(query.promptInjection, /Lucy 심층 선택 관점/);
 });
 
-test('pro deep perspectives are labelled as symbolic references, not extra calculations', () => {
+test('deep perspectives are labelled as symbolic references, not extra calculations', () => {
   const routed = routeAndExecute({ text: '이번 이직에서 커리어 방향을 어떻게 잡을까?', profile, isMasterRequested: true });
   assert.equal(routed.routePlan.isMasterMobilization, false);
   assert.equal(routed.engineReport?.masterReview, false);
@@ -89,6 +89,19 @@ test('pro deep perspectives are labelled as symbolic references, not extra calcu
   });
   assert.ok(audit.length > 0);
   assert.ok(audit.every(item => !routed.routePlan.deepEngineKeys?.includes(item.toolId)));
+});
+
+test('Lucy and Lucy+ require a basic tool and one symbolic deep perspective, even for greetings', () => {
+  for (const text of ['안녕', '이번 이직에서 커리어 방향을 어떻게 잡을까?']) {
+    const routed = routeAndExecute({ text, profile, requireBasicAndDeep: true, allowMaster: false });
+    assert.equal(routed.routePlan.isCasual, false, text);
+    assert.ok(routed.routePlan.targetTools.length >= 1, text);
+    assert.ok((routed.routePlan.deepEngineKeys?.length ?? 0) >= 1, text);
+    assert.equal(routed.routePlan.isMasterMobilization, false, text);
+    assert.equal(routed.engineReport?.masterReview, false, text);
+    assert.ok(routed.toolsForBadge.some(badge => badge.startsWith('상징 참고 · ')), text);
+    assert.match(routed.promptInjection, /Lucy 심층 선택 관점/, text);
+  }
 });
 
 test('smart agent router routes immediate decision to Kierkegaard, Descartes, and Sun Tzu', () => {

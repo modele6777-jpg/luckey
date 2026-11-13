@@ -100,7 +100,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                 <Sparkles size={20} />
               </span>
               <div className="min-w-0">
-                <h2 id="lucy-engine-catalog-title" className="text-base font-black sm:text-lg">Lucy Pro 엔진·관점 안내</h2>
+                <h2 id="lucy-engine-catalog-title" className="text-base font-black sm:text-lg">Lucy 엔진·관점 안내</h2>
                 <p className={`text-[11px] sm:text-xs ${muted}`}>등록 목록 {LUCY_PRO_CATALOG_ENGINES.length}개 · 질문별 실행 여부와는 별개예요</p>
               </div>
             </div>
@@ -156,7 +156,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
               })}
               <span className={`ml-auto shrink-0 self-center text-[11px] ${muted}`}>{filteredEngines.length}개 표시</span>
             </nav>
-            <nav aria-label="Lucy Pro 7개 채널 테마" className="flex gap-2 overflow-x-auto pb-0.5">
+            <nav aria-label="Lucy 7개 채널 테마" className="flex gap-2 overflow-x-auto pb-0.5">
               <button
                 type="button"
                 onClick={() => setThemeFilter('all')}

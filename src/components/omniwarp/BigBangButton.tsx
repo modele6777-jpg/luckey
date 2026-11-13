@@ -1,8 +1,6 @@
 import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
 import { BigBangLuckyBreeze } from './BigBangLuckyBreeze';
-import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
-import { LUCY_PRO_DEEP_PERSPECTIVE_COUNT } from '@/lib/divination/engineCatalogCount';
 import { getOrderedLuckeyPageKeysForCurrentApp, oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
@@ -32,6 +30,7 @@ import { isDuoUnfoldedState, isDualPaneLayout } from '@/lib/perfMode';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
+const DOUBLE_TAP_WINDOW_MS = 300;
 
 const SIDEBAR_APP_ORDER: { path: string; aliases: string[] }[] = [
   { path: '/', aliases: ['/', '/chat', '/lucy'] },
@@ -723,32 +722,26 @@ export function BigBangButton() {
       maxDragDistanceRef.current = dist;
     }
     // Tap/hold retain their actions; visual drags returned before warp metrics.
-    const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
     const elapsed = now - start.time;
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
-    // 👑 롱프레스 홀드: 오직 500ms 이상 지속해서 꾹 누르고 있을 때만 프로 모드 타겟으로 전환
-    if (elapsed >= 500 && !(start.pointerType === 'touch' && start.direction !== 'none')) {
+    // A stationary center hold previews the same Key destination used on release.
+    if (elapsed >= 500 && start.direction === 'none') {
       currentHole = 'whitehole';
-      const isTextToss = Boolean(textToToss);
       target = {
-        id: 'lucy',
-        icon: '👑',
+        id: 'key',
+        icon: '🔑',
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: `Lucy Pro (${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개 심층 관점)`,
-        actionType: isTextToss ? 'smart_toss' : 'navigate',
-        previewLabel: isTextToss
-          ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ Lucy Pro 전달`
-          : `[홀드] Lucy Pro · 심층 관점 ${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개`,
-        previewDescription: isTextToss
-          ? `선택한 문장을 Lucy Pro에 전달합니다. 등록된 심층 관점 ${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개와 기초 도구 중 질문에 맞는 항목을 참고합니다.`
-          : `빅뱅 홀드 히든 모드 · Lucy Pro가 심층 관점 ${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개와 기초 도구 중 질문에 맞는 항목을 참고합니다.`,
-        destinationPath: location,
-        themeColor: '#fde68a',
-        accentGlow: 'rgba(253, 230, 138, 0.85)',
+        title: 'Key · 개운 리추얼',
+        actionType: 'navigate',
+        previewLabel: '[홀드] Key 채널로 이동',
+        previewDescription: '빅뱅 버튼을 길게 누르면 Key 개운 리추얼로 이동합니다.',
+        destinationPath: '/key',
+        themeColor: '#38bdf8',
+        accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
 
       // Resolve the hold on release so dragging can still cancel it.
@@ -759,7 +752,7 @@ export function BigBangButton() {
         id: 'menu', icon: '🍀', phase: 'whitehole', gauge: metrics.virtualForce,
         aiTemperature: temp, title: '네잎클로버 메뉴', actionType: 'navigate',
         previewLabel: '탭: 메뉴 · 더블탭: 추천 워프',
-        previewDescription: '선택 문장 · 탭: Lucy 전달 · 홀드: Lucy + 전달',
+        previewDescription: '선택 문장 · 탭: Lucy 전달 · 홀드: Key 이동',
         destinationPath: location, themeColor: '#38bdf8', accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
     }
@@ -1273,7 +1266,6 @@ export function BigBangButton() {
     }
 
     setIsAborted(false);
-    const context = serializeCurrentView(location);
 
     // 🧭 위·아래는 메뉴 순서대로 앱을 바꾸고, 좌우는 현재 앱의 내부 화면만 이동합니다.
     // Touch has no preceding hover; use the press snapshot instead of a render closure.
@@ -1282,13 +1274,13 @@ export function BigBangButton() {
       : downDirectionRef.current;
     const isDisabledChannelDirection =
       isCycleNavigationDisabled && (targetDir === 'west' || targetDir === 'east');
-    if (!isDragGesture && isDisabledChannelDirection && (start.pointerType === 'touch' || duration < 220)) {
+    if (!isDragGesture && isDisabledChannelDirection) {
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
       return;
     }
-    if (!isDragGesture && targetDir !== 'none' && (start.pointerType === 'touch' || duration < 220)) {
+    if (!isDragGesture && targetDir !== 'none') {
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = null;
@@ -1320,103 +1312,88 @@ export function BigBangButton() {
       return;
     }
 
-    // 🎙️ [홀드 완료: 오직 duration >= 500ms 의도적 롱프레스 홀드에서만 루시 프로 진입!]
-    // 탭은 절대 프로 모드로 진입하지 않습니다.
-    const isHoldGesture = !isDragGesture && duration >= 500 && dist < DRAG_ACTIVATION_THRESHOLD;
+    // A stationary center hold navigates to Key; directional holds retain their direction action.
+    const isHoldGesture = !isDragGesture && duration >= 500 && dist < DRAG_ACTIVATION_THRESHOLD && targetDir === 'none';
     if (isHoldGesture) {
       showGestureFeedback('hold');
       isPttRecordingRef.current = false;
       triggerHaptic('whitehole');
-      setIsQuickChatOpen(false);
-      setQuickChatVoiceActive(false);
       if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
       singleTapTimerRef.current = null;
       lastTapTimeRef.current = 0;
-      // Mode-only navigation must not prime speech or claim OS audio focus.
-      const textToToss = touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText();
-      const prompt = textToToss.trim() ? `내가 선택한 문장이야:\n"${textToToss}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.` : '';
       safeSessionStorage.removeItem('lucy_chat_voice_requested');
-      
-      const inLucyChat = checkIsInLucyChat();
-      safeSessionStorage.setItem('lucy_tier_mode', 'pro');
-      safeLocalStorage.setItem('lucy_tier_mode', 'pro');
-      safeSessionStorage.setItem('lucy_plus_active', 'true');
-      safeLocalStorage.setItem('lucy_plus_active', 'true');
-
-      const isWide = isDuoUnfoldedState().unfolded;
-
-      if (inLucyChat || isWide) {
-        // 🌟 현재 Lucy 화면 내 또는 듀얼 뷰(펼침: 좌측 루시 상시 마운트)인 경우, 우측 화면을 이탈하지 않고 좌측 루시를 즉각 'Lucy Pro'로 진화!
-        window.dispatchEvent(new CustomEvent('prism:evolve_lucy_pro', { detail: { prompt } }));
-        if (prompt) {
-          window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] } }));
-        }
-      } else {
-        // 🌟 단일 뷰(접힘) 외부 화면인 경우 Lucy(/chat?mode=pro)로 이동하면서 Lucy Pro 가동!
-        if (prompt) {
-          safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
-        }
-        (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-        navigate('/chat?mode=pro');
-        window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat?mode=pro' } }));
-        window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/chat' } }));
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('prism:evolve_lucy_pro', { detail: { prompt } }));
-        }, 100);
-      }
-
       window.getSelection()?.removeAllRanges();
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
       clearPendingSelection();
+      setHasSelectionToss(false);
+      setSelectionPreviewText('');
+      goToKeyChannel();
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
       return;
     }
 
-    // ⚡ [탭 완료: duration < 500ms - 프로 모드 절대 진입 불가]
     const isTapGesture = !isDragGesture && !isHoldGesture && dist < DRAG_ACTIVATION_THRESHOLD;
     if (isTapGesture) {
-      const selectedText = (touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText()).trim();
-      if (selectedText) {
-        showGestureFeedback('tap');
-        const prompt = `내가 선택한 문장이야:\n"${selectedText}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+      const now = performance.now();
+      const doubleTap = lastTapTimeRef.current > 0 && now - lastTapTimeRef.current <= DOUBLE_TAP_WINDOW_MS;
+      if (doubleTap) {
         if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = null;
         lastTapTimeRef.current = 0;
+        showGestureFeedback('double');
+        window.getSelection()?.removeAllRanges();
+        setIsQuickChatOpen(false);
+        setQuickChatVoiceActive(false);
         const normalTier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
         safeSessionStorage.setItem('lucy_tier_mode', normalTier);
         safeLocalStorage.setItem('lucy_tier_mode', normalTier);
-        safeSessionStorage.removeItem('lucy_plus_active');
-        safeLocalStorage.removeItem('lucy_plus_active');
-        safeSessionStorage.setItem('lucy_plus_active', 'false');
-        safeLocalStorage.setItem('lucy_plus_active', 'false');
-        safeSessionStorage.setItem('lucy_force_ai_mode', 'true');
-        safeSessionStorage.removeItem('lucy_chat_voice_requested');
-        triggerHaptic('whitehole');
-        if (checkIsInLucyChat()) {
-          window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
-          window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: [] } }));
-        } else {
-          safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
-          safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
-          handleRuneNavigate('/chat?mode=ai');
-        }
-        window.getSelection()?.removeAllRanges();
-        lastValidSelectionRef.current = '';
-        touchStartSelectionRef.current = '';
-        clearPendingSelection();
-        setHasSelectionToss(false);
-        setSelectionPreviewText('');
-        setIsQuickChatOpen(false);
-        setActivePhase('idle');
-        setGauge(0);
-        setDurationMs(0);
+        goToNextRecommended(undefined, undefined, true);
         return;
       }
-      const now = performance.now();
-      const doubleTap = lastTapTimeRef.current > 0 && now - lastTapTimeRef.current <= 360;
+
+      const selectedText = (touchStartSelectionRef.current || lastValidSelectionRef.current || getActiveSelectionText()).trim();
+      if (selectedText) {
+        const prompt = `내가 선택한 문장이야:\n"${selectedText}"\n\n이 내용에 대해 핵심과 따뜻한 피드백을 친절하게 이야기해 줘.`;
+        if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+        lastTapTimeRef.current = now;
+        singleTapTimerRef.current = setTimeout(() => {
+          singleTapTimerRef.current = null;
+          lastTapTimeRef.current = 0;
+          showGestureFeedback('tap');
+          const normalTier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
+          safeSessionStorage.setItem('lucy_tier_mode', normalTier);
+          safeLocalStorage.setItem('lucy_tier_mode', normalTier);
+          safeSessionStorage.removeItem('lucy_plus_active');
+          safeLocalStorage.removeItem('lucy_plus_active');
+          safeSessionStorage.setItem('lucy_plus_active', 'false');
+          safeLocalStorage.setItem('lucy_plus_active', 'false');
+          safeSessionStorage.setItem('lucy_force_ai_mode', 'true');
+          safeSessionStorage.removeItem('lucy_chat_voice_requested');
+          triggerHaptic('whitehole');
+          if (checkIsInLucyChat()) {
+            window.dispatchEvent(new CustomEvent('prism:revert_lucy_ai'));
+            window.dispatchEvent(new CustomEvent('lucy-inject-message', { detail: { prompt, channels: [] } }));
+          } else {
+            safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
+            safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
+            handleRuneNavigate('/chat?mode=ai');
+          }
+          window.getSelection()?.removeAllRanges();
+          lastValidSelectionRef.current = '';
+          touchStartSelectionRef.current = '';
+          clearPendingSelection();
+          setHasSelectionToss(false);
+          setSelectionPreviewText('');
+          setIsQuickChatOpen(false);
+          setActivePhase('idle');
+          setGauge(0);
+          setDurationMs(0);
+        }, DOUBLE_TAP_WINDOW_MS);
+        return;
+      }
       if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
       singleTapTimerRef.current = null;
       setIsQuickChatOpen(false);
@@ -1424,25 +1401,16 @@ export function BigBangButton() {
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
-      if (doubleTap) {
-        showGestureFeedback('double');
-        lastTapTimeRef.current = 0;
-        const normalTier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
-        safeSessionStorage.setItem('lucy_tier_mode', normalTier);
-        safeLocalStorage.setItem('lucy_tier_mode', normalTier);
-        window.dispatchEvent(new CustomEvent('prism:revert_lucy_normal'));
-        goToKeyChannel();
-      } else {
-        lastTapTimeRef.current = now;
-        singleTapTimerRef.current = setTimeout(() => {
+      lastTapTimeRef.current = now;
+      singleTapTimerRef.current = setTimeout(() => {
           singleTapTimerRef.current = null;
           lastTapTimeRef.current = 0;
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 🌟 빅뱅 버튼 1회 탭: 프로 모드로 절대 진입하지 않음!
-          // - 펼침: 오직 루시 플러스('plus') 고정 & 좌측 코스믹 룸 토글 (일반 루시 진입 금지)
-          // - 접힘: 오직 루시 AI('ai') 고정 (루시 플러스 진입 금지)
+          // A single center tap keeps the existing Lucy / Lucy+ action.
+          // - Expanded: remain on Lucy+.
+          // - Folded: remain on Lucy AI.
           const isWide = isDuoUnfoldedState().unfolded;
           if (isWide) {
             safeSessionStorage.setItem('lucy_tier_mode', 'plus');
@@ -1463,8 +1431,7 @@ export function BigBangButton() {
           }
 
           handleRuneNavigate(`/chat?mode=${targetTier}`);
-        }, 250);
-      }
+      }, DOUBLE_TAP_WINDOW_MS);
       return;
     }
 
@@ -1688,7 +1655,7 @@ export function BigBangButton() {
                 className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-950/95 backdrop-blur-xl border border-cyan-400/60 text-[10px] font-bold text-cyan-200 shadow-[0_4px_24px_rgba(0,240,255,0.45)] pointer-events-none flex items-center gap-1.5 z-50 animate-pulse ring-1 ring-cyan-400/40"
               >
                 <span className="text-xs">💬</span>
-                <span>선택한 문장 · 탭: Lucy · 홀드: Lucy Pro</span>
+                <span>선택한 문장 · 탭: Lucy · 홀드: Key</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1908,8 +1875,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: 루시 채팅 / 더블탭: KEY / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 루시 채팅 프로 / 드래그: 장식 효과만, 페이지 이동 없음)`}
-              aria-label={`빅뱅 버튼 · 탭: 루시 채팅, 더블탭: KEY / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 채팅 프로, 드래그는 화면 이동 없음`}
+              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: 추천 앱으로 바로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: Key로 이동 / 드래그: 장식 효과만, 페이지 이동 없음)`}
+              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 더블탭: 추천 앱으로 바로 이동 / 위·아래: 스크롤 위치와 무관하게 메뉴 앱 순서대로 이동 / ${isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: Key로 이동, 드래그는 화면 이동 없음`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (

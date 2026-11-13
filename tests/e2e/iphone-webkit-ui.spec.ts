@@ -238,13 +238,21 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   });
 });
 
-test('Lucy Pro engine count opens the visible 331-entry catalog and meanings', async ({ page }) => {
+test('legacy Pro URL normalizes to Lucy and keeps the shared catalog available', async ({ page }) => {
   await openLucy(page, '/chat?mode=pro');
-  const trigger = page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ });
+  await expect(page).toHaveURL(/\/chat\?mode=ai$/);
+  await expect(page.getByText('Lucy Pro', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Lucy 엔진과 관점 목록 331개/ })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).toBe('ai');
+});
+
+test('Lucy engine count opens the visible 331-entry catalog and meanings', async ({ page }) => {
+  await openLucy(page);
+  const trigger = page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ });
   await expect(trigger).toBeVisible();
   await trigger.click();
 
-  const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
+  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('등록 목록 331개');
   await expect(dialog).toContainText('15개 기초 도구');
@@ -275,11 +283,11 @@ test('Lucy Pro engine count opens the visible 331-entry catalog and meanings', a
   await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
-test('Lucy Pro groups all 331 catalog entries under the seven channel themes', async ({ page }) => {
-  await openLucy(page, '/chat?mode=pro');
-  await page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ }).click();
+test('Lucy groups all 331 catalog entries under the seven channel themes', async ({ page }) => {
+  await openLucy(page);
+  await page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
+  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
   await expect(entries).toHaveCount(331);
@@ -302,7 +310,7 @@ test('Lucy Pro groups all 331 catalog entries under the seven channel themes', a
   expect(groupedCount).toBe(331);
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
-  const themeNav = dialog.getByRole('navigation', { name: 'Lucy Pro 7개 채널 테마' });
+  const themeNav = dialog.getByRole('navigation', { name: 'Lucy 7개 채널 테마' });
   const auraFilter = themeNav.getByRole('button', { name: /아우라/ });
   await auraFilter.click();
   await expect(auraFilter).toHaveAttribute('aria-pressed', 'true');
@@ -313,11 +321,11 @@ test('Lucy Pro groups all 331 catalog entries under the seven channel themes', a
   await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(auraCount);
 });
 
-test('Lucy Pro engine catalog fills the mobile viewport and its list scrolls without auto-opening the keyboard', async ({ page }) => {
-  await openLucy(page, '/chat?mode=pro');
-  await page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ }).click();
+test('Lucy engine catalog fills the mobile viewport and its list scrolls without auto-opening the keyboard', async ({ page }) => {
+  await openLucy(page);
+  await page.getByRole('button', { name: /Lucy 엔진과 관점 목록/ }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
+  const dialog = page.getByRole('dialog', { name: 'Lucy 엔진·관점 안내' });
   const search = dialog.getByRole('searchbox', { name: '엔진과 관점 검색' });
   await expect(dialog).toBeVisible();
   const closeButton = dialog.getByRole('button', { name: '엔진 목록 닫기' });
@@ -408,6 +416,81 @@ test('Big Bang left and right controls stay disabled in the Key channel', async 
     await page.touchscreen.tap(box.x + box.width / 2 + offsetX, centerY);
     await expect(page).toHaveURL(keyUrl);
   }
+});
+
+test('Big Bang center double tap jumps to the recommended app without firing a single-tap action', async ({ page }) => {
+  await openLucy(page);
+  const button = page.locator('#bigbang-omnibutton');
+  await expect(button).toBeVisible();
+  await page.waitForTimeout(150);
+  const box = await button.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang button is missing for double-tap test');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+
+  await page.evaluate(() => {
+    (window as any).__bigBangTestCommit = null;
+    (window as any).__bigBangNormalTapCount = 0;
+    window.addEventListener('prism:bigbang_commit', (event) => {
+      (window as any).__bigBangTestCommit = (event as CustomEvent).detail;
+    }, { once: true });
+    window.addEventListener('prism:revert_lucy_normal', () => {
+      (window as any).__bigBangNormalTapCount += 1;
+    });
+  });
+
+  await page.evaluate(({ x, y }) => {
+    const target = document.querySelector<HTMLElement>('#bigbang-omnibutton');
+    if (!target) throw new Error('Big Bang button is missing from the page');
+    const tap = () => {
+      const common = {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 7,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: x,
+        clientY: y,
+        button: 0,
+      };
+      target.dispatchEvent(new PointerEvent('pointerdown', { ...common, buttons: 1 }));
+      target.dispatchEvent(new PointerEvent('pointerup', { ...common, buttons: 0 }));
+    };
+    tap();
+    tap();
+  }, { x, y });
+  await expect.poll(() => page.evaluate(() => Boolean((window as any).__bigBangTestCommit?.target?.destinationPath))).toBe(true);
+  const commit = await page.evaluate(() => (window as any).__bigBangTestCommit);
+  expect(commit.isDoubleTapSuction).toBe(false);
+  const destination = commit.target.destinationPath as string;
+  expect(destination).not.toBe('/chat');
+  const expected = new URL(destination, page.url());
+  await expect.poll(() => {
+    const current = new URL(page.url());
+    return `${current.pathname}${current.search}`;
+  }).toBe(`${expected.pathname}${expected.search}`);
+  await page.waitForTimeout(350);
+  expect(await page.evaluate(() => (window as any).__bigBangNormalTapCount)).toBe(0);
+});
+
+test('Big Bang center long press navigates directly to Key', async ({ page }) => {
+  await openLucy(page);
+  const button = page.locator('#bigbang-omnibutton');
+  await expect(button).toBeVisible();
+  const box = await button.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) throw new Error('Big Bang button is missing for hold test');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.waitForTimeout(650);
+  await page.mouse.up();
+  await expect(page).toHaveURL(/\/key$/);
+  await expect(page.locator('iframe[title="Key"]')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('lucy_tier_mode'))).not.toBe('pro');
 });
 
 test('Key loading fallback does not consume the first Big Bang south touch', async ({ page }) => {

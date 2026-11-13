@@ -471,14 +471,14 @@ export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile, q
 
 /**
  * 사용자의 질문과 활성화된 7대 테마(channels)를 분석해 질문에 맞는 도구를 선별합니다.
- * Pro persona 자체는 전체 계산을 의미하지 않으며, 명시적 올인원/종합 요청 또는 master mobilization에서만 카탈로그 전체를 동원합니다.
+ * 기본+심층 정책은 선택 실행이며, 명시적 올인원/종합 요청에서만 카탈로그 전체를 동원합니다.
  */
 export function selectOptimalDivinationTools(
   userText: string,
   activeChannels: SevenThemeChannel[] = [],
   profile?: UserProfile,
   isMasterMode?: boolean,
-  policy: { allowMaster?: boolean } = {}
+  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean } = {}
 ): SelectedDivinationToolsResult {
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();
@@ -490,6 +490,7 @@ export function selectOptimalDivinationTools(
   const isMasterDetected = policy.allowMaster !== false && (
     Boolean(isMasterMode) || isExplicitMasterRequest || activeChannels.length === 7
   );
+  const requireBasicAndDeep = isMasterDetected || policy.requireBasicAndDeep === true;
 
   // Honor named traditions before inferring a topic. Qualified astrology names
   // must not accidentally match the generic Western astrology keyword.
@@ -505,12 +506,13 @@ export function selectOptimalDivinationTools(
     text: clean,
     profile,
     isMasterRequested: isMasterDetected,
+    requireBasicAndDeep: policy.requireBasicAndDeep,
     allowMaster: policy.allowMaster,
     targetTools: explicitTools.length ? explicitTools : undefined,
   });
 
-  // 0. 가벼운 일상 인사/단순 맞장구일 때 (단, 프로 모드에서는 수다모드 없음)
-  if (routed.routePlan.isCasual && !isMasterDetected) {
+  // 0. Casual routing is available only when the caller does not require basic + deep coverage.
+  if (routed.routePlan.isCasual && !requireBasicAndDeep) {
     return {
       selectedTools: [],
       isCasualMessage: true,
@@ -534,7 +536,7 @@ export function selectOptimalDivinationTools(
     };
   }
 
-  // 2. 스마트 에이전트 라우터가 선별한 1~3개 타깃 도구 매핑 (프로 모드: 기본 1개 이상 + 심층 1개 이상 / 일반 모드: 기본 15대만 1개 이상)
+  // 2. Map the router's selective basic tools; required Lucy policy also includes a symbolic deep perspective.
   const selectedTools = routed.routePlan.targetTools
     .map((id) => FIFTEEN_DIVINATION_TOOLS[id])
     .filter(Boolean);
