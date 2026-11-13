@@ -348,12 +348,204 @@ export interface ThaiHorasatResult {
     vitalityIndex: number; // 0~100 활력 에너지 지수
     balanceNote: string; // 원소 균형 진단 문구
   };
+  planetaryFriendEnemyDynamic?: ThaiPlanetaryFriendEnemyDynamic;
+  mahaThaksaAntardasha?: ThaiMahaThaksaAntardasha;
+  seasonalThaatTactics?: ThaiSeasonalThaatTactics;
   remedies?: {
     luckyColors: ReadonlyArray<string>;
     luckyDirection: string;
     practice: string; // 개운 실천법
   };
   note?: string;
+}
+
+/** 태국 호라삿 행성 친우(쿳밋)·원수(쿳사뚜) 역학 */
+export interface ThaiPlanetaryFriendEnemyDynamic {
+  birthPlanetName: string;
+  dashaPlanetName: string;
+  relationshipType: '대친우(คู่มิตร · 쿳밋)' | '상호보완(คู่สมพล · 쿳솜퐁)' | '중립조화(เป็นกลาง · 뻰끌랑)' | '대원수(คู่ศัตรู · 쿳사뚜)';
+  affinityScore: number; // 40~98
+  strategicInteraction: string;
+}
+
+/** 마하탁사 서브 다샤(Antardasha / 소운) 8단계 국면 수리 분할 */
+export interface ThaiMahaThaksaAntardasha {
+  antardashaPlanetId: ThaiDayPlanetId;
+  antardashaPlanetName: string;
+  antardashaAttribute: string;
+  subCycleOrder: number; // 1~8
+  pacingTempo: '신속 추진형 (Fast Forward)' | '점진 안착형 (Steady Progress)' | '전략 조율형 (Strategic Pivot)';
+  actionAdvice: string;
+}
+
+/** 4대 원소(Thaat) 사계절 순환 신체 리듬 & 4대 완급 조절 결단 윈도우 */
+export interface ThaiSeasonalThaatTactics {
+  peakActionSeason: string;
+  defensiveSeason: string;
+  seasonalPacingGuidance: string;
+  vitalityPreservationMotto: string;
+}
+
+/** 태국 전통 호라삿 쿳밋(대친우쌍), 쿳사뚜(대원수쌍), 쿳솜퐁(상호보완쌍) */
+export function calculateThaiPlanetaryFriendEnemyDynamic(
+  birthPlanetId: ThaiDayPlanetId,
+  dashaPlanetId: ThaiDayPlanetId
+): ThaiPlanetaryFriendEnemyDynamic {
+  const birthPlanet = thaiDayPlanetById(birthPlanetId);
+  const dashaPlanet = thaiDayPlanetById(dashaPlanetId);
+
+  // 4대 대친우쌍 (쿳밋 คู่มิตร): 일-목, 월-금, 화-수, 토-라후
+  const GREAT_FRIENDS: ReadonlyArray<[ThaiDayPlanetId, ThaiDayPlanetId]> = [
+    ['sun', 'jupiter'],
+    ['moon', 'venus'],
+    ['mars', 'mercury'],
+    ['saturn', 'rahu'],
+  ];
+
+  // 4대 대원수쌍 (쿳사뚜 คู่ศัตรู): 일-화, 월-라후, 목-토, 금-수
+  const GREAT_ENEMIES: ReadonlyArray<[ThaiDayPlanetId, ThaiDayPlanetId]> = [
+    ['sun', 'mars'],
+    ['moon', 'rahu'],
+    ['jupiter', 'saturn'],
+    ['venus', 'mercury'],
+  ];
+
+  // 4대 상호보완쌍 (쿳솜퐁 คู่สมพล): 일-라후, 월-목, 화-금, 수-토
+  const COMPLEMENTARY_ALLIES: ReadonlyArray<[ThaiDayPlanetId, ThaiDayPlanetId]> = [
+    ['sun', 'rahu'],
+    ['moon', 'jupiter'],
+    ['mars', 'venus'],
+    ['mercury', 'saturn'],
+  ];
+
+  const matchesPair = (pairs: ReadonlyArray<[ThaiDayPlanetId, ThaiDayPlanetId]>) =>
+    pairs.some(([p1, p2]) => (birthPlanetId === p1 && dashaPlanetId === p2) || (birthPlanetId === p2 && dashaPlanetId === p1));
+
+  let relationshipType: ThaiPlanetaryFriendEnemyDynamic['relationshipType'];
+  let affinityScore: number;
+  let strategicInteraction: string;
+
+  if (birthPlanetId === dashaPlanetId) {
+    relationshipType = '대친우(คู่มิตร · 쿳밋)';
+    affinityScore = 92;
+    strategicInteraction = `출생 수호신 ${birthPlanet.thaiName}(${birthPlanet.planet})의 원형적 기운이 대운에 온전히 회귀하여, 자아 정체성과 주체적 결단력이 최고조에 달하는 본명 회귀 성취기입니다.`;
+  } else if (matchesPair(GREAT_FRIENDS)) {
+    relationshipType = '대친우(คู่มิตร · 쿳밋)';
+    affinityScore = 95;
+    strategicInteraction = `출생 수호신 ${birthPlanet.thaiName}과(와) 대운 지배성 ${dashaPlanet.thaiName}이(가) 태국 정통 호라삿의 4대 대친우(쿳밋) 동맹을 이룹니다. 뜻밖의 귀인 원조와 환경의 강력한 후원이 결합하는 대길의 순풍 국면입니다.`;
+  } else if (matchesPair(COMPLEMENTARY_ALLIES)) {
+    relationshipType = '상호보완(คู่สมพล · 쿳솜퐁)';
+    affinityScore = 87;
+    strategicInteraction = `출생 수호신과 대운 지배성이 결핍을 상호 보완하는 쿳솜퐁 연합을 형성합니다. 서로 다른 역량의 파트너십 구축 및 외연 확장 전략에서 최상의 시너지를 발휘합니다.`;
+  } else if (matchesPair(GREAT_ENEMIES)) {
+    relationshipType = '대원수(คู่ศัตรู · 쿳사뚜)';
+    affinityScore = 48;
+    strategicInteraction = `출생 수호신과 대운 지배성이 4대 대원수(쿳사뚜) 긴장 축에 대면합니다. 성급한 감정적 충돌이나 무리한 정면 승부를 피하고, 철저한 계약 점검과 방어적 내실 관리에 주력하십시오.`;
+  } else {
+    relationshipType = '중립조화(เป็นกลาง · 뻰끌랑)';
+    affinityScore = 74;
+    strategicInteraction = `두 행성이 원만한 중립 조화 상태를 이룹니다. 외부 요행에 휘둘리지 않고 성실한 노력과 단계적 실행을 통해 안정된 성취를 축적해 나가는 평온기입니다.`;
+  }
+
+  return {
+    birthPlanetName: `${birthPlanet.thaiName}(${birthPlanet.planet})`,
+    dashaPlanetName: `${dashaPlanet.thaiName}(${dashaPlanet.planet})`,
+    relationshipType,
+    affinityScore,
+    strategicInteraction,
+  };
+}
+
+/** 마하탁사 서브 다샤(Antardasha / 소운) 8단계 국면 수리 분할 */
+export function calculateThaiMahaThaksaAntardasha(
+  birthPlanetId: ThaiDayPlanetId,
+  currentDashaPlanetId: ThaiDayPlanetId,
+  currentDashaYears: number,
+  currentDashaStartAge: number,
+  cyclePosition: number
+): ThaiMahaThaksaAntardasha {
+  const dashaIdx = MAHA_THAKSA_ORDER.findIndex((p) => p.id === currentDashaPlanetId);
+  const orderedSubPlanets: Array<{ id: ThaiDayPlanetId; years: number }> = [];
+  for (let i = 0; i < MAHA_THAKSA_ORDER.length; i++) {
+    const idx = (dashaIdx + i) % MAHA_THAKSA_ORDER.length;
+    orderedSubPlanets.push(MAHA_THAKSA_ORDER[idx]);
+  }
+
+  const elapsedYearsInDasha = Math.max(0, cyclePosition - currentDashaStartAge);
+  let accumulated = 0;
+  let subOrder = 1;
+  let activeSubPlanetId: ThaiDayPlanetId = orderedSubPlanets[0].id;
+
+  for (let i = 0; i < orderedSubPlanets.length; i++) {
+    const subSpan = (currentDashaYears * orderedSubPlanets[i].years) / MAHA_THAKSA_TOTAL_YEARS;
+    if (elapsedYearsInDasha <= accumulated + subSpan || i === orderedSubPlanets.length - 1) {
+      activeSubPlanetId = orderedSubPlanets[i].id;
+      subOrder = i + 1;
+      break;
+    }
+    accumulated += subSpan;
+  }
+
+  const subPlanet = thaiDayPlanetById(activeSubPlanetId);
+  const subAttr = decideThaiDashaAttribute(birthPlanetId, activeSubPlanetId, currentDashaStartAge + Math.floor(accumulated));
+
+  let pacingTempo: ThaiMahaThaksaAntardasha['pacingTempo'];
+  let actionAdvice: string;
+
+  if (['라차(왕)', '데차', '시리'].includes(subAttr.korean)) {
+    pacingTempo = '신속 추진형 (Fast Forward)';
+    actionAdvice = `소운 지배성 ${subPlanet.thaiName}의 길상이 강력하여 주저하지 말고 핵심 과제를 선제적으로 밀어붙일 때입니다.`;
+  } else if (['물라', '몬뜨리', '우사하'].includes(subAttr.korean)) {
+    pacingTempo = '점진 안착형 (Steady Progress)';
+    actionAdvice = `소운의 흐름이 실리와 축적을 돕고 있으므로, 성실한 단계적 실행과 신뢰 구축으로 내실을 다지십시오.`;
+  } else {
+    pacingTempo = '전략 조율형 (Strategic Pivot)';
+    actionAdvice = `소운 구간에 주의 속성(${subAttr.korean})이 걸려 있으므로 속도를 조절하고 불필요한 마찰을 사전 차단하십시오.`;
+  }
+
+  return {
+    antardashaPlanetId: activeSubPlanetId,
+    antardashaPlanetName: `${subPlanet.thaiName}(${subPlanet.planet})`,
+    antardashaAttribute: `${subAttr.thai} ${subAttr.korean}`,
+    subCycleOrder: subOrder,
+    pacingTempo,
+    actionAdvice,
+  };
+}
+
+/** 4대 원소(Thaat) 사계절 순환 신체 리듬 & 4대 완급 조절 결단 윈도우 */
+export function calculateThaiSeasonalThaatTactics(birthThaatId: ThaiThaatId): ThaiSeasonalThaatTactics {
+  switch (birthThaatId) {
+    case 'din':
+      return {
+        peakActionSeason: '가을·겨울(10~12월 흙의 안정기)',
+        defensiveSeason: '봄철(4~6월 바람·신경 과도기)',
+        seasonalPacingGuidance: '대지의 차분한 기운이 지배할 때 장기 프로젝트와 재정 자산을 굳건히 다지십시오. 건조한 봄철에는 신경 과민을 누그러뜨리고 관절과 소화기계를 보호하십시오.',
+        vitalityPreservationMotto: '중후하고 흔들림 없는 대지의 지혜로 자산을 지킨다.',
+      };
+    case 'nam':
+      return {
+        peakActionSeason: '여름·초가을(7~9월 물의 정화기)',
+        defensiveSeason: '겨울·초봄(1~3월 심화 발화기)',
+        seasonalPacingGuidance: '물의 유연한 순환을 타고 감수성과 인간관계를 넓히기에 적합합니다. 건조하고 열기 어린 초봄에는 체액과 림프 순환을 맑게 유지하십시오.',
+        vitalityPreservationMotto: '모든 막힘을 부드럽게 감싸고 돌아가는 흐르는 물의 순리.',
+      };
+    case 'lom':
+      return {
+        peakActionSeason: '봄·초여름(4~6월 바람의 창의·소통기)',
+        defensiveSeason: '늦가을·겨울(10~12월 한랭 정체기)',
+        seasonalPacingGuidance: '빠른 기동성과 창의적 기획, 기민한 네트워크 확장에 뛰어난 모멘텀을 발휘합니다. 찬 바람이 부는 겨울철에는 호흡기와 수면 리듬을 엄격히 수호하십시오.',
+        vitalityPreservationMotto: '자유롭게 넘나들되 뿌리를 잃지 않는 바람의 민첩함.',
+      };
+    case 'fai':
+    default:
+      return {
+        peakActionSeason: '초봄(1~3월 불의 개척·추진기)',
+        defensiveSeason: '한여름(7~9월 습열 염증기)',
+        seasonalPacingGuidance: '승부처에서 폭발적인 추진력과 리더십을 발휘하기에 최적입니다. 습기와 무더위가 겹치는 여름철에는 급격한 감정 폭발과 과열을 경계하고 쿨다운 휴식을 취하십시오.',
+        vitalityPreservationMotto: '어둠을 밝히되 자신을 태우지 않는 지혜로운 불꽃.',
+      };
+  }
 }
 
 /**
@@ -438,6 +630,11 @@ export function calculateThaiHorasat(params: {
       ? '수요일 출생인데 생시가 없어 태국 통행 관례대로 낮·밤을 통합한 주간(프라 풋 · 수성) 기준으로 계산했습니다. 생시를 등록하면 밤(18:00~06:00) 출생은 프라 라후 수호신으로 정밀 판정됩니다.'
       : '';
 
+    // 4. 호라삿 행성 친우(쿳밋)·원수(쿳사뚜) 역학, 마하탁사 소운(Antardasha), 4원소 계절 결단 윈도우
+    const planetaryFriendEnemyDynamic = calculateThaiPlanetaryFriendEnemyDynamic(birthPlanet.id, currentSegment.planetId);
+    const mahaThaksaAntardasha = calculateThaiMahaThaksaAntardasha(birthPlanet.id, currentSegment.planetId, currentSegment.years, currentSegment.startAge, cyclePosition);
+    const seasonalThaatTactics = calculateThaiSeasonalThaatTactics(birthThaat.id);
+
     return {
       status: 'calculated',
       engineVersion: THAI_HORASAT_ENGINE_VERSION,
@@ -474,6 +671,9 @@ export function calculateThaiHorasat(params: {
         vitalityIndex,
         balanceNote,
       },
+      planetaryFriendEnemyDynamic,
+      mahaThaksaAntardasha,
+      seasonalThaatTactics,
       remedies: {
         luckyColors: birthPlanet.colors,
         luckyDirection: birthPlanet.direction,
@@ -514,6 +714,15 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
     `- 4대 원소(Thaat) 진단: 타고난 원소 ${fe.birthThaat.korean}(${fe.birthThaat.thai}, 담당 ${fe.birthThaat.bodySystems}) / 현재 시즌 원소 ${fe.currentThaat.korean}(${fe.currentThaat.thai})`,
     `  * 원소 균형: ${fe.balanceNote}`,
     `  * 활력 에너지 지수: ${fe.vitalityIndex}/100`,
+    result.planetaryFriendEnemyDynamic
+      ? `[호라삿 행성 친우·원수 역학]\n- 관계 유형: ${result.planetaryFriendEnemyDynamic.relationshipType} · 친화 공명 지수 ${result.planetaryFriendEnemyDynamic.affinityScore}/100\n  * 상호작용: ${result.planetaryFriendEnemyDynamic.strategicInteraction}`
+      : '',
+    result.mahaThaksaAntardasha
+      ? `[마하탁사 소운(Antardasha)]\n- 현재 소운 지배성: ${result.mahaThaksaAntardasha.antardashaPlanetName} (제${result.mahaThaksaAntardasha.subCycleOrder}소운 · 속성: ${result.mahaThaksaAntardasha.antardashaAttribute}) · 템포: ${result.mahaThaksaAntardasha.pacingTempo}\n  * 실행 가이드: ${result.mahaThaksaAntardasha.actionAdvice}`
+      : '',
+    result.seasonalThaatTactics
+      ? `[4대 원소(Thaat) 계절 결단 윈도우]\n- 최적 추진 시즌: ${result.seasonalThaatTactics.peakActionSeason} · 내실 수성 시즌: ${result.seasonalThaatTactics.defensiveSeason}\n  * 완급 조절: ${result.seasonalThaatTactics.seasonalPacingGuidance}\n  * 활력 격언: "${result.seasonalThaatTactics.vitalityPreservationMotto}"`
+      : '',
     `- 개운 처방: 행운색 ${rem.luckyColors.join('·')} · 길방위 ${rem.luckyDirection}`,
     `  * 실천법: ${rem.practice}`,
     `- [AI 해석 절대 지침]: 본 리포트는 태국 정통 호라삿 수리로 산출된 100% 확정 배속입니다. 수호신·대운 구간·속성 등급·원소 진단을 임의로 바꾸지 말고 상담에 정확히 반영하십시오.`,

@@ -16,6 +16,8 @@ import { calculateTojeong } from './divination/tojeongEngine';
 import { calculateTaiyi } from './divination/taiyiEngine';
 import { calculateSukuyoAdvanced } from './divination/sukuyoEngine';
 import { calculateVedicAdvanced } from './divination/vedicEngine';
+import { calculateHonggukQimen } from './divination/honggukQimenEngine';
+import { calculateZiweiFlyingStars } from './divination/ziweiFlyingStarsEngine';
 import { routeAndExecute } from './divination/smartAgentRouter';
 
 export type DivinationToolId =
@@ -362,7 +364,8 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     try {
       const th = calculateThaiHorasat({ profile, targetDate: referenceDate });
       if (th.status === 'calculated' && th.birthDayPlanet && th.mahaThaksa && th.fourElements) {
-        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}) · 4대 원소 ${th.fourElements.birthThaat.korean} 신체 활력 ${th.fourElements.vitalityIndex}점.`;
+        const dyn = th.planetaryFriendEnemyDynamic ? ` · 친우역학: ${th.planetaryFriendEnemyDynamic.relationshipType}` : '';
+        thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}${dyn}) · 4대 원소 ${th.fourElements.birthThaat.korean} 신체 활력 ${th.fourElements.vitalityIndex}점.`;
       } else {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. 정밀 호라삿 차트 미계산.`;
       }
@@ -437,14 +440,36 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
       }
     } catch (_) {}
 
+    // 9. 홍국기문 (조선 정통 4주 9궁 세효·응효·중궁·삼형·통기·8문 결정론 산법)
+    let qimenLine = '';
+    try {
+      const hq = calculateHonggukQimen({ profile, targetYear: referenceDate.getFullYear() });
+      if (hq.status === 'calculated' && hq.keyPoints && hq.samhyeong && hq.tonggi && hq.eightGatesVerdict) {
+        const se = hq.keyPoints.seYao;
+        const eung = hq.keyPoints.eungYao;
+        const jg = hq.keyPoints.jungGung;
+        const gate = se.gate || hq.eightGatesVerdict.seYaoGate || '중궁기궁';
+        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory}) · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극위험 ${hq.samhyeong.riskIndex}점) · 5행 통기 순환도 ${hq.tonggi.score}점.`;
+      }
+    } catch (_) {}
+
+    // 3. 자미두수 유년 사화 (12궁 명반 사화·삼방사정·록기교충 결정론 산법)
+    let ziweiLine = '';
+    try {
+      const zw = calculateZiweiFlyingStars({ profile, targetYear: referenceDate.getFullYear() });
+      if (zw && zw.sanFangSiZhengBalance && zw.luJiConflictDynamics) {
+        ziweiLine = `\n- 자미두수 유년 사화: 명궁 [${zw.sanFangSiZhengBalance.myMingPalaceName}] · 삼방사정 돌파력 ${zw.sanFangSiZhengBalance.breakthroughPowerScore}점(${zw.sanFangSiZhengBalance.patternGrade}) · 록기 역학 [${zw.luJiConflictDynamics.relationType}](록: ${zw.luJiConflictDynamics.luPalaceName} / 기: ${zw.luJiConflictDynamics.jiPalaceName}).`;
+      }
+    } catch (_) {}
+
     return `[개인화 계산 입력] ${solarDateString} 양력${isLunar ? ' (음력·윤달 설정 환산)' : ''}${time ? ` ${profile.basic.birthtime}` : ' · 생시 미입력'}
 - 사주명리: ${sajuBrief}. 자미두수·토정비결의 계산을 대신하지 않음.
 - 서양 점성술: ${buildUserNatalSummary(profile)}
 ${buildAdditionalBirthDigest(profile)}
 ${mahaboteLine}
 ${thaiLine}
-${kyuseiLine}${kabbalahLine}${tarotLine}${sukuyoLine}${vedicLine}${tojeongLine}${taiyiLine}
-- 육임·일반 기문·주역: 프로필 계산실 또는 이번 채팅 엔진에서 실제 산출한 결과가 제공된 경우만 해석. 현재 대화에 결과가 없으면 임의 포국·작괘 금지. 토정비결·태을신수·홍국기문 수리는 결정론 엔진이 등록 프로필의 생년월일시 원국으로 계산하며, 입력이 없으면 임의 포국으로 대체하지 말 것.`;
+${kyuseiLine}${kabbalahLine}${tarotLine}${sukuyoLine}${vedicLine}${tojeongLine}${taiyiLine}${qimenLine}${ziweiLine}
+- 육임·일반 기문(차보법)·주역: 프로필 계산실 또는 이번 채팅 엔진에서 실제 산출한 결과가 제공된 경우만 해석. 현재 대화에 결과가 없으면 임의 포국·작괘 금지. 토정비결·태을신수·홍국기문 수리는 결정론 엔진이 등록 프로필의 생년월일시 원국으로 계산하며, 입력이 없으면 임의 포국으로 대체하지 말 것.`;
   } catch {
     return '[개인화 계산 중단] 생년월일·생시·양음력·윤달 입력을 확인해야 합니다. 잘못된 날짜를 다른 날짜로 자동 보정하거나 개인 차트를 생성하지 말 것.';
   }
