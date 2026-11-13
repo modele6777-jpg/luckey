@@ -20,17 +20,22 @@
  *
  * 4. 사주와 주역의 완벽한 융합:
  *    사주의 4주 8자가 어떤 주역 괘상으로 치환되는지 0ms로 정밀 해석.
+ *
+ * 5. [v1.7.398 고도화]:
+ *    - 천수·지수 기수/우수 밸런스 및 하도낙서 음양 조화 지표(yinYangBalance)
+ *    - 원당효(元堂爻) 당위(當位)·응비(應比) 적합도 및 심층 역량 지수(yuanTangDetail)
+ *    - 10년 단위 생애 대운별 주역 궤적(decadeTrajectory: 20대~60대+)
+ *    - 인생 전·후반전 질적 비약을 완성하는 핵심 개운 전략(lifeTransitionKey)
  */
 
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, SajuAnalysisResult } from '../sajuAnalysis';
 import { hexagram } from './iching';
-import type { HexagramView } from './ichingMasterEngine';
 
-export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v1.0.0';
+export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v1.1.0';
 
 export const HELUOLISHU_METHOD =
-  '하락이수(河洛理數) 정통 상수역학 산법: 사주 8자 하도낙서 천수(25)·지수(30) 치환, 선천본괘(先天本卦)·원당효(元堂爻)·후천변괘(後天變卦) 결정론적 산출 및 청년/장년 2대 인생 주기 지수 산출';
+  '하락이수(河洛理數) 정통 상수역학 산법: 사주 8자 하도낙서 천수(25)·지수(30) 치환, 선천본괘(先天本卦)·원당효(元堂爻)·후천변괘(後天變卦) 결정론적 산출, 음양 밸런스·원당효 당위성·10년 대운 주역 궤적 및 청년/장년 2대 인생 주기 지수 산출';
 
 export interface HeLuoHexagram {
   number: number;
@@ -39,6 +44,27 @@ export interface HeLuoHexagram {
   lower: string;
   period: string; // '청년기 (출생~30세)' or '장년/완성기 (30세 이후)'
   coreMeaning: string;
+}
+
+export interface HeLuoYinYangBalance {
+  yinYangRatio: string;
+  yinYangBalanceIndex: number; // 0 ~ 100
+  constitutionTrait: '양성 주도 추진형 (Dynamic Leader)' | '음성 내실 수성형 (Grounded Builder)' | '음양 중화 완벽조화형 (Harmonious Synthesizer)';
+  balanceGuidance: string;
+}
+
+export interface HeLuoYuanTangDetail {
+  positionType: '양위(陽位: 1·3·5효)' | '음위(陰位: 2·4·6효)';
+  bitValue: '양효(陽爻)' | '음효(陰爻)';
+  alignment: '정위당위(正位當位)' | '득중응비(得中應比)' | '유연변통(柔軟變通)';
+  potencyScore: number; // 50 ~ 98
+  vocationAdvice: string;
+}
+
+export interface HeLuoDecadeStage {
+  stage: string;
+  theme: string;
+  advice: string;
 }
 
 export interface HeLuoLiShuResult {
@@ -57,6 +83,10 @@ export interface HeLuoLiShuResult {
     goldenEra: '청년기 선천 주도형' | '장년기 후천 대도약형' | '평생 지속 성장형';
   };
   masterStrategicGuidance: string;
+  yinYangBalance: HeLuoYinYangBalance;
+  yuanTangDetail: HeLuoYuanTangDetail;
+  decadeTrajectory: HeLuoDecadeStage[];
+  lifeTransitionKey: string;
 }
 
 // 천간 상수 (갑기9 을경8 병신7 정임6 무계5)
@@ -148,6 +178,87 @@ export function calculateHeLuoLiShu(params?: {
     6: '상효(上爻) 원당: 원숙한 지혜와 다음 세대를 위한 멘토링에 소명이 있습니다. 성취 이후의 나눔과 명예가 당신을 빛냅니다.',
   };
 
+  // 1. 천수·지수 음양 밸런스 지수 계산
+  const totalNum = heavenSum + earthSum;
+  const heavenRatio = Math.round((heavenSum / Math.max(1, totalNum)) * 100);
+  const diff = Math.abs(heavenSum - earthSum);
+  const yinYangBalanceIndex = Math.min(100, Math.max(40, 100 - diff * 2));
+
+  let constitutionTrait: HeLuoYinYangBalance['constitutionTrait'] = '음양 중화 완벽조화형 (Harmonious Synthesizer)';
+  let balanceGuidance = '천수와 지수의 음양이 완벽하게 균형을 이루어 이상과 현실 감각이 조화롭습니다.';
+
+  if (heavenSum > earthSum + 8) {
+    constitutionTrait = '양성 주도 추진형 (Dynamic Leader)';
+    balanceGuidance = '천수(기수)의 양기가 강렬하여 비전을 제시하고 개척하는 능력이 탁월합니다. 현실 디테일과 체계 관리를 보완하면 무적입니다.';
+  } else if (earthSum > heavenSum + 8) {
+    constitutionTrait = '음성 내실 수성형 (Grounded Builder)';
+    balanceGuidance = '지수(우수)의 음기가 두터워 신중하고 탄탄하게 내실을 축적하는 힘이 강력합니다. 때로는 과감한 결단과 속도전을 발동하세요.';
+  }
+
+  const yinYangBalance: HeLuoYinYangBalance = {
+    yinYangRatio: `천수(양) ${heavenSum} : 지수(음) ${earthSum} (양기 비중 ${heavenRatio}%)`,
+    yinYangBalanceIndex,
+    constitutionTrait,
+    balanceGuidance,
+  };
+
+  // 2. 원당효 당위(當位) 및 응비(應比) 심층 분석
+  const isYangPosition = yuanTangYao === 1 || yuanTangYao === 3 || yuanTangYao === 5;
+  const rawYuanTangBit = innateBits[yuanTangYao - 1]; // 1=양효, 0=음효
+  const isYangBit = rawYuanTangBit === 1;
+
+  let alignment: HeLuoYuanTangDetail['alignment'] = '유연변통(柔軟變通)';
+  let potencyScore = 75;
+
+  if ((isYangPosition && isYangBit) || (!isYangPosition && !isYangBit)) {
+    alignment = '정위당위(正位當位)';
+    potencyScore = 94;
+  } else if (yuanTangYao === 2 || yuanTangYao === 5) {
+    alignment = '득중응비(得中應比)';
+    potencyScore = 90;
+  } else {
+    potencyScore = 80;
+  }
+
+  const yuanTangDetail: HeLuoYuanTangDetail = {
+    positionType: isYangPosition ? '양위(陽位: 1·3·5효)' : '음위(陰位: 2·4·6효)',
+    bitValue: isYangBit ? '양효(陽爻)' : '음효(陰爻)',
+    alignment,
+    potencyScore,
+    vocationAdvice: `${yuanTangMeanings[yuanTangYao] || ''} (${alignment} - 잠재 역량 발휘도 ${potencyScore}점)`,
+  };
+
+  // 3. 생애 10년 단위 대운 주역 궤적
+  const decadeTrajectory: HeLuoDecadeStage[] = [
+    {
+      stage: '20대 (청년 입신기)',
+      theme: `선천본괘(${innateGua.name})의 기틀 구축`,
+      advice: '기초 소양을 닦고 다양한 경험을 통해 타고난 본질적 역량을 체화하세요.',
+    },
+    {
+      stage: '30대 (사회적 도약기)',
+      theme: `원당 제${yuanTangYao}효의 잠재력 각성`,
+      advice: '독립적인 전문성과 신뢰를 확립하고 인생의 주도적 영역을 개척하세요.',
+    },
+    {
+      stage: '40대 (후천 전성기)',
+      theme: `후천변괘(${acquiredGua.name})의 비약적 대약진`,
+      advice: '30세 이후 열리는 후천의 기운을 타고 조직과 사회의 핵심 리더로 비상하세요.',
+    },
+    {
+      stage: '50대 (원숙과 확장기)',
+      theme: '영향력의 시스템화 및 가치 영속화',
+      advice: '개인 성취를 넘어 동료와 후배를 위한 성장 발판을 마련하고 영향력을 공고히 하세요.',
+    },
+    {
+      stage: '60대 이후 (명예와 완성기)',
+      theme: '인생 주역 대원만 및 초연한 평정',
+      advice: '축적된 지혜를 세상에 나눔으로써 삶의 최고봉 명예와 존엄한 결실을 누리세요.',
+    },
+  ];
+
+  const lifeTransitionKey = `선천의 ${innateGua.name}으로 내실을 다진 후, 원당 제${yuanTangYao}효(${alignment})의 스위치를 켜서 후천의 ${acquiredGua.name}으로 도약하는 전인적 대도약 전략`;
+
   return {
     engineVersion: HELUOLISHU_ENGINE_VERSION,
     method: HELUOLISHU_METHOD,
@@ -178,6 +289,10 @@ export function calculateHeLuoLiShu(params?: {
       goldenEra,
     },
     masterStrategicGuidance: `선천의 ${innateGua.name}으로 내실을 다지고, 원당 제${yuanTangYao}효의 소명을 완수하여, 30세 이후 후천의 ${acquiredGua.name}으로 인생의 비약적 대성공을 완성하세요. (${goldenEra})`,
+    yinYangBalance,
+    yuanTangDetail,
+    decadeTrajectory,
+    lifeTransitionKey,
   };
 }
 
@@ -185,15 +300,25 @@ export function calculateHeLuoLiShu(params?: {
  * 프롬프트 주입용 마스터 포맷터
  */
 export function formatHeLuoLiShuPrompt(res: HeLuoLiShuResult): string {
+  const dtStr = res.decadeTrajectory
+    .map((d) => `  * ${d.stage}: ${d.theme} -> ${d.advice}`)
+    .join('\n');
+
   return `[하락이수(河洛理數) 사주·주역 융합 선천괘·후천괘·원당효 리포트 (엔진: ${res.engineVersion})]
-- 상수 계산: 사주 하도낙서 천수(天數) ${res.heavenNumber} / 지수(地數) ${res.earthNumber}
+- 상수 계산: 사주 하도낙서 천수(天數) ${res.heavenNumber} / 지수(地數) ${res.earthNumber} [${res.yinYangBalance.yinYangRatio}]
+  • 음양 체질: ${res.yinYangBalance.constitutionTrait} (조화도 지수: ${res.yinYangBalance.yinYangBalanceIndex}점)
+  • 조화 가이드: ${res.yinYangBalance.balanceGuidance}
 - 선천본괘(先天本卦 / 출생~30세 청년기): ${res.innateHexagram.name} (${res.innateHexagram.upper} 상 / ${res.innateHexagram.lower} 하)
   • 의미: ${res.innateHexagram.coreMeaning} (청년기 활력 스코어: ${res.lifeCycleBalance.earlyLifeScore}점)
-- 원당효(元堂爻 / 영혼의 핵심 소명 효): 제${res.yuanTangYao}효
+- 원당효(元堂爻 / 영혼의 핵심 소명 효): 제${res.yuanTangYao}효 [${res.yuanTangDetail.positionType} ${res.yuanTangDetail.bitValue} / ${res.yuanTangDetail.alignment}]
   • 원당효 해설: ${res.yuanTangMeaning}
+  • 원당효 잠재 역량: ${res.yuanTangDetail.potencyScore}점
 - 후천변괘(後天變卦 / 30세 이후 장년·완성기): ${res.acquiredHexagram.name} (${res.acquiredHexagram.upper} 상 / ${res.acquiredHexagram.lower} 하)
   • 의미: ${res.acquiredHexagram.coreMeaning} (장년기 도약 스코어: ${res.lifeCycleBalance.matureLifeScore}점)
 - 인생 주기 황금기: ${res.lifeCycleBalance.goldenEra}
+- 생애 대운별 주역 궤적 (20대~60대+):
+${dtStr}
+- 대전환 핵심 비결: ${res.lifeTransitionKey}
 - 마스터 거시 전략: "${res.masterStrategicGuidance}"
 ※ 루시 지침: 하락이수는 사주 8자가 주역 64괘의 대하드라마로 치환되는 동양 최고봉 수리 명학입니다. 청년기(선천)의 기본 바탕과 30세 이후(후천)의 대성공 괘상, 그리고 평생의 소명이 담긴 원당효를 입체적으로 해설해 주세요.`;
 }
