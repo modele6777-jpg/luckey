@@ -2628,7 +2628,7 @@ ${responseProfile.rule}`;
       }
 
       const errStr = (err?.message || "") + JSON.stringify(err);
-      let errorMsg = "(※ 일시적인 네트워크 지연이 발생했습니다. 다시 메시지를 보내주시면 정성껏 답변해 드릴게요.)";
+      let errorMsg = "(※ 답변을 마무리하지 못했어요. 잠시 후 다시 메시지를 보내 주세요.)";
 
       if (errStr.includes('prepayment credits') || errStr.includes('depleted') || errStr.includes('RESOURCE_EXHAUSTED')) {
         errorMsg = "⚠️ [Google AI Studio 크레딧 소진 안내]\n현재 API 키 프로젝트의 선불 크레딧(Prepayment Credits)이 소진되어 Google에서 API 호출을 일시 차단(429 RESOURCE_EXHAUSTED)했습니다.\n\n💡 해결 방법:\n1. Google AI Studio (https://aistudio.google.com/app/apikey)에서 결제 설정이 없는 '무료 티어(Free of charge)' 새 API 키를 발급받아 교체하시거나,\n2. https://ai.studio/projects 에서 선불 크레딧을 충전해 주시면 즉시 정상 대화가 재개됩니다.";

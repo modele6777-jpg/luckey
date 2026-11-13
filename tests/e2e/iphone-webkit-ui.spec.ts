@@ -808,21 +808,8 @@ test('Lucy can return to the latest conversation and tap blank header space to r
 
   await messages.evaluate(element => { element.scrollTop = 400; element.dispatchEvent(new Event('scroll')); });
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
-  await messages.evaluate(element => {
-    const originalScrollTo = element.scrollTo.bind(element);
-    (window as any).__lucyTopScrollCalls = 0;
-    Object.defineProperty(element, 'scrollTo', {
-      configurable: true,
-      value: (options?: ScrollToOptions) => {
-        if (typeof options === 'object' && options?.top === 0) (window as any).__lucyTopScrollCalls += 1;
-        return originalScrollTo(options as ScrollToOptions);
-      },
-    });
-  });
   await page.mouse.click(headerBox.x + headerBox.width / 2, Math.min(headerBox.y + 30, 60));
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
-  expect(await page.evaluate(() => (window as any).__lucyTopScrollCalls)).toBe(1);
-  await messages.evaluate(element => { delete (element as any).scrollTo; delete (window as any).__lucyTopScrollCalls; });
 
   await page.evaluate(() => {
     let visibility: 'hidden' | 'visible' = 'hidden';
@@ -836,6 +823,121 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   });
   await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
   await expect(returnButton).toBeHidden();
+});
+
+test('Lucy reaches the exact top of a long rendered conversation and recent conversation returns to the bottom', async ({ page }) => {
+  await page.addInitScript(() => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const base = Date.now() - 60 * 60 * 1000;
+    const history = Array.from({ length: 36 }, (_, index) => ({
+      id: `scroll-regression-${index + 1}`,
+      role: index % 2 === 0 ? 'user' : 'assistant',
+      persona: 'lucy',
+      channel: 'lucy',
+      content: Array.from({ length: 10 + (index % 5) }, (_, line) =>
+        `긴 대화 회귀 검증 ${index + 1}번째 메시지의 ${line + 1}번째 내용입니다. 실제 Lucy 메시지 컴포넌트가 줄바꿈과 문단 간격을 렌더링하도록 충분한 문장을 포함합니다. 오늘 고민과 다음 선택을 차분히 돌아보며 현실적인 방법을 찾습니다.`
+      ).join('\n'),
+      timestamp: base + index * 60_000,
+    }));
+    localStorage.setItem('chat_history_unified_v3', JSON.stringify(history));
+    localStorage.setItem('lucy_daily_first_entry_date_v1', today);
+    localStorage.setItem('lucy_daily_first_visit_done_date_v1', today);
+  });
+  await openLucy(page);
+
+  const messages = page.locator('.lucy-chat-main');
+  await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.clientHeight)).toBeGreaterThan(3000);
+  expect(await messages.locator('[data-forward-bubble]').count()).toBeGreaterThanOrEqual(18);
+
+  const returnButton = page.getByRole('button', { name: '최근대화' });
+  await messages.evaluate(element => {
+    element.style.scrollBehavior = 'auto';
+    element.scrollTop = Math.floor((element.scrollHeight - element.clientHeight) * 0.82);
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(returnButton).toBeVisible();
+
+  const header = page.locator('[data-lucy-header-tap-scroll="true"]');
+  const topTap = await header.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const blocked = 'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], [data-brand-logo], audio, video, iframe, .lucy-header-actions, .prism-subnav-btn, .duo-page-nav';
+    const y = 30;
+    const x = [rect.left + rect.width * 0.5, rect.left + rect.width * 0.42, rect.left + rect.width * 0.58]
+      .find(candidate => !document.elementFromPoint(candidate, y)?.closest(blocked));
+    if (x == null) throw new Error('Lucy blank upper-center tap area is missing');
+    return { x, y };
+  });
+  await page.touchscreen.tap(topTap.x, topTap.y);
+  expect(await messages.evaluate(element => element.scrollTop)).toBeLessThanOrEqual(2);
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThanOrEqual(2);
+  await expect(returnButton).toBeVisible();
+
+  await messages.evaluate(element => {
+    element.scrollTop = Math.floor((element.scrollHeight - element.clientHeight) * 0.75);
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeGreaterThan(80);
+  await header.evaluate(element => { (element as HTMLElement).style.paddingBottom = '40px'; });
+  const headerBox = await header.boundingBox();
+  expect(headerBox).not.toBeNull();
+  if (!headerBox) throw new Error('Lucy chat header is missing');
+  const blankAreaY = headerBox.y + headerBox.height - 2;
+  expect(blankAreaY).toBeGreaterThan(76);
+  await page.mouse.click(headerBox.x + headerBox.width / 2, blankAreaY);
+  expect(await messages.evaluate(element => element.scrollTop)).toBeLessThanOrEqual(2);
+  await expect(returnButton).toBeVisible();
+
+  const returnButtonBox = await returnButton.boundingBox();
+  const viewport = page.viewportSize();
+  const sidebarBox = await page.locator('#main-sidebar-navigation').boundingBox();
+  expect(returnButtonBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(sidebarBox).not.toBeNull();
+  if (!returnButtonBox || !viewport || !sidebarBox) throw new Error('Lucy recent conversation button geometry is unavailable');
+  expect(returnButtonBox.width).toBeLessThan(110);
+  expect(Math.abs(viewport.width - (returnButtonBox.x + returnButtonBox.width) - sidebarBox.width - 16)).toBeLessThanOrEqual(3);
+  expect(returnButtonBox.y).toBeGreaterThan(viewport.height / 2);
+  await returnButton.click();
+  await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
+  await expect(returnButton).toBeHidden();
+});
+
+test('pull-to-refresh indicator centers over the folded main canvas, excluding the sidebar', async ({ page }) => {
+  await openLucy(page);
+  const messages = page.locator('.lucy-chat-main');
+  await messages.evaluate(element => {
+    const x = element.getBoundingClientRect().left + element.getBoundingClientRect().width / 2;
+    const createTouchEvent = (type: string, y: number) => {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'touches', {
+        value: [{ identifier: 1, target: element, clientX: x, clientY: y }],
+      });
+      element.dispatchEvent(event);
+    };
+    createTouchEvent('touchstart', 10);
+    createTouchEvent('touchmove', 220);
+  });
+
+  const indicator = page.locator('.pull-refresh-indicator');
+  await expect(indicator).toBeVisible();
+  await expect(indicator).toHaveAttribute('aria-label', '놓으면 새로고침');
+  const indicatorBox = await indicator.boundingBox();
+  const mainBox = await messages.boundingBox();
+  const sidebarBox = await page.locator('#main-sidebar-navigation').boundingBox();
+  const viewport = page.viewportSize();
+  expect(indicatorBox).not.toBeNull();
+  expect(mainBox).not.toBeNull();
+  expect(sidebarBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (!indicatorBox || !mainBox || !sidebarBox || !viewport) throw new Error('Refresh indicator geometry is unavailable');
+  const indicatorCenter = indicatorBox.x + indicatorBox.width / 2;
+  const mainCenter = mainBox.x + mainBox.width / 2;
+  const expectedMainCenter = (viewport.width - sidebarBox.width) / 2;
+  expect(Math.abs(mainCenter - expectedMainCenter)).toBeLessThanOrEqual(2);
+  expect(Math.abs(indicatorCenter - mainCenter)).toBeLessThanOrEqual(1);
+  await messages.evaluate(element => element.dispatchEvent(new Event('touchcancel', { bubbles: true, cancelable: true })));
+  await expect(indicator).toBeHidden();
 });
 
 test('Key channel tabs stay fixed below the brand bar while the page scrolls', async ({ page }) => {

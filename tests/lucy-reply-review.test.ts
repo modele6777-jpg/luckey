@@ -23,6 +23,17 @@ test('reviewer cannot approve overclaimed counts or guaranteed success',async()=
  await assert.rejects(reviewLucyReply('100% 성공을 보장해',{...base,request:async()=>JSON.stringify({valid:true,issues:[],revisedReply:''})}));
  await assert.rejects(reviewLucyReply('초안',{...base,request:async()=>JSON.stringify({valid:false,issues:['보장'],revisedReply:'무조건 성공'})}));
 });
+test('compacts long review context under the completion API message limit while preserving the full draft',async()=>{
+ const draft='사용자의 최신 질문을 반영한 완전한 검토 초안입니다. 이 내용은 생략되면 안 됩니다.';
+ const conversation=Array.from({length:8},(_,i)=>({role:(i%2?'assistant':'user') as 'assistant'|'user',content:`history-${i}-start ${'긴 대화 맥락 '.repeat(250)} history-${i}-end`}));
+ let captured='';
+ const result=await reviewLucyReply(draft,{...base,evidence:`evidence-start ${'근거 자료 '.repeat(1800)} evidence-end`,conversation,request:async messages=>{captured=messages[1].content;assert.ok(JSON.stringify(captured).length<=7600);return JSON.stringify({valid:true,issues:[],revisedReply:''});}});
+ assert.equal(result,draft);
+ const payload=JSON.parse(captured);
+ assert.equal(payload.draft,draft);
+ assert.ok(payload.conversation.length<conversation.length);
+ assert.ok(payload.conversation.at(-1).content.includes('history-7-end'));
+});
 test('malformed review and cancellation never publish the draft',async()=>{
  await assert.rejects(reviewLucyReply('초안',{...base,request:async()=>'검사 완료'}));
  await assert.rejects(reviewLucyReply('초안',{...base,request:async()=>{throw new Error('review service unavailable');}}));
