@@ -179,7 +179,7 @@
   box-shadow: 0 6px 24px #0002;
 }
 
-html.duo-unfolded-portrait .pull-refresh-indicator,
-body.duo-unfolded-portrait .pull-refresh-indicator {
+html.duo-unfolded-mode .pull-refresh-indicator,
+body.duo-unfolded-mode .pull-refresh-indicator {
   left: 50vw !important;
 }

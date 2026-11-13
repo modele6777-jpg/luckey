@@ -283,6 +283,12 @@ test('Lucy Pro groups all 331 catalog entries under the seven channel themes', a
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
   await expect(entries).toHaveCount(331);
+  const meaningTexts = await entries.locator('.lucy-engine-catalog-entry-meaning').allTextContents();
+  expect(meaningTexts).toHaveLength(331);
+  for (const meaning of meaningTexts) {
+    expect(meaning.trim()).not.toMatch(/^뜻\s*:/);
+    expect(meaning.trim().length).toBeGreaterThan(0);
+  }
 
   const themeIds = ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as const;
   let groupedCount = 0;
@@ -1048,6 +1054,41 @@ test('pull-to-refresh indicator centers on the full-width unfolded portrait canv
   expect(viewport).not.toBeNull();
   if (!indicatorBox || !sidebarBox || !viewport) throw new Error('Unfolded portrait refresh geometry is unavailable');
   expect(Math.abs(sidebarBox.width - viewport.width)).toBeLessThanOrEqual(2);
+  expect(Math.abs(indicatorBox.x + indicatorBox.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(1);
+  await messages.evaluate(element => element.dispatchEvent(new Event('touchcancel', { bubbles: true, cancelable: true })));
+  await expect(indicator).toBeHidden();
+});
+
+test('pull-to-refresh indicator centers at the top of the full unfolded landscape viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 700 });
+  await openLucy(page);
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-landscape/);
+  await expect(page.locator('#duo-content-viewport')).toBeVisible();
+  await setContentScrollBoundary(page, 'top');
+
+  const messages = page.locator('#duo-lucy-viewport .lucy-chat-main');
+  await expect(messages).toBeVisible();
+  await messages.evaluate(element => {
+    const x = element.getBoundingClientRect().left + element.getBoundingClientRect().width / 2;
+    const createTouchEvent = (type: string, y: number) => {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'touches', { value: [{ identifier: 1, target: element, clientX: x, clientY: y }] });
+      element.dispatchEvent(event);
+    };
+    createTouchEvent('touchstart', 10);
+    createTouchEvent('touchmove', 220);
+  });
+
+  const indicator = page.locator('.pull-refresh-indicator');
+  await expect(indicator).toBeVisible();
+  const indicatorBox = await indicator.boundingBox();
+  const sidebarBox = await page.locator('#main-sidebar-navigation').boundingBox();
+  const viewport = page.viewportSize();
+  expect(indicatorBox).not.toBeNull();
+  expect(sidebarBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (!indicatorBox || !sidebarBox || !viewport) throw new Error('Unfolded landscape refresh geometry is unavailable');
+  expect(sidebarBox.width).toBeLessThan(viewport.width);
   expect(Math.abs(indicatorBox.x + indicatorBox.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(1);
   await messages.evaluate(element => element.dispatchEvent(new Event('touchcancel', { bubbles: true, cancelable: true })));
   await expect(indicator).toBeHidden();

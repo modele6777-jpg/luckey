@@ -225,7 +225,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
                                   </span>
                                 </div>
                                 <p className={`lucy-engine-catalog-entry-meaning mt-1.5 text-[11px] leading-relaxed sm:text-xs ${muted}`}>
-                                  <strong className={isLight ? 'text-slate-800' : 'text-slate-200'}>뜻:</strong> {getEngineCatalogMeaning(engine)}
+                                  {getEngineCatalogMeaning(engine)}
                                 </p>
                               </div>
                             </div>
