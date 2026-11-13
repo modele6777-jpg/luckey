@@ -23,14 +23,25 @@ test('reviewer cannot approve overclaimed counts or guaranteed success',async()=
  await assert.rejects(reviewLucyReply('100% 성공을 보장해',{...base,request:async()=>JSON.stringify({valid:true,issues:[],revisedReply:''})}));
  await assert.rejects(reviewLucyReply('초안',{...base,request:async()=>JSON.stringify({valid:false,issues:['보장'],revisedReply:'무조건 성공'})}));
 });
-test('compacts long review context under the completion API message limit while preserving the full draft',async()=>{
- const draft='사용자의 최신 질문을 반영한 완전한 검토 초안입니다. 이 내용은 생략되면 안 됩니다.';
+test('compacts long review context under the completion API limit without changing draft formatting or splitting Unicode',async()=>{
+ const draft='사용자의 최신 질문을 반영한 완전한 검토 초안입니다.\n\n| 근거 | 확인 |\n|---|---|\n| 결과 | 참고용 |\n\n- 다음 행동을 정리해요.';
  const conversation=Array.from({length:8},(_,i)=>({role:(i%2?'assistant':'user') as 'assistant'|'user',content:`history-${i}-start ${'긴 대화 맥락 '.repeat(250)} history-${i}-end`}));
+ const marker=' …[중략]… ';
+ const head=Math.ceil((1200-marker.length)/2);
+ const heading='근거 제목\n';
+ const evidence=`${heading}${'x'.repeat(head-heading.length-1)}😀${'y'.repeat(2600)}\n중간 근거\n${'z'.repeat(1400)}😀evidence-end`;
  let captured='';
- const result=await reviewLucyReply(draft,{...base,evidence:`evidence-start ${'근거 자료 '.repeat(1800)} evidence-end`,conversation,request:async messages=>{captured=messages[1].content;assert.ok(JSON.stringify(captured).length<=7600);return JSON.stringify({valid:true,issues:[],revisedReply:''});}});
+ const result=await reviewLucyReply(draft,{...base,evidence,conversation,request:async messages=>{captured=messages[1].content;assert.ok(JSON.stringify(captured).length<=7600);assert.match(messages[0].content,/중략 표시/);return JSON.stringify({valid:true,issues:[],revisedReply:''});}});
  assert.equal(result,draft);
  const payload=JSON.parse(captured);
  assert.equal(payload.draft,draft);
+ assert.ok(payload.evidence.includes('\n'));
+ assert.ok(payload.evidence.includes('😀evidence-end'));
+ for(let i=0;i<payload.evidence.length;i++){
+  const code=payload.evidence.charCodeAt(i);
+  if(code>=0xd800&&code<=0xdbff){assert.ok(i+1<payload.evidence.length&&payload.evidence.charCodeAt(i+1)>=0xdc00&&payload.evidence.charCodeAt(i+1)<=0xdfff,'high surrogate must have its matching low surrogate');i++;}
+  else assert.ok(code<0xdc00||code>0xdfff,'low surrogate must have its matching high surrogate');
+ }
  assert.ok(payload.conversation.length<conversation.length);
  assert.ok(payload.conversation.at(-1).content.includes('history-7-end'));
 });

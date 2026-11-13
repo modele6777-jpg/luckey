@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '../src/lib/divination/deterministicEngine';
-import { LUCY_PRO_ENGINE_COUNT } from '../src/lib/divination/engineCatalogCount';
+import { LUCY_PRO_DEEP_PERSPECTIVE_COUNT } from '../src/lib/divination/engineCatalogCount';
 import {
   DEEP_PERSPECTIVE_RESEARCH_COUNTS,
   ENGINE_CATALOG_COUNTS,
@@ -15,11 +15,11 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('Lucy Pro catalog and Big Bang count match the approved 331 entries while preserving the 334-engine runtime registry', () => {
+test('Lucy Pro catalog distinguishes 331 total entries from 316 deep perspectives', () => {
   assert.equal(ALL_DCE_ENGINES.length, 334);
   assert.equal(LUCY_PRO_CATALOG_ENGINES.length, 331);
-  assert.equal(LUCY_PRO_ENGINE_COUNT, LUCY_PRO_CATALOG_ENGINES.length);
-  assert.equal(LUCY_PRO_ENGINE_COUNT, 331);
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, ENGINE_CATALOG_COUNTS.deep_master);
+  assert.equal(LUCY_PRO_DEEP_PERSPECTIVE_COUNT, 316);
   assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 316 });
   assert.equal(new Set(LUCY_PRO_CATALOG_ENGINES.map(engine => engine.key)).size, 331);
   assert.deepEqual(

@@ -30,7 +30,9 @@ for (const fixture of LUCY_CONSULTATION_FIXTURES) {
         requests++;
         const supplied=JSON.parse(messages[1].content);
         assert.ok(supplied.detectedIssues.length);
-        assert.deepEqual(supplied.execution,audit);
+        const counts=audit.reduce((result,item)=>{result[item.status]=(result[item.status]||0)+1;return result;},{} as Record<string,number>);
+        assert.deepEqual(supplied.execution.counts,counts);
+        assert.deepEqual(supplied.execution.tools,audit.filter(item=>item.sentToModel).slice(-8).map(item=>({toolId:item.toolId,name:item.name,status:item.status})));
         return JSON.stringify({valid:false,issues:conflicts,revisedReply:corrected});
       }});
       assert.equal(requests,1);

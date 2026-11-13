@@ -2,7 +2,7 @@ import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
 import { BigBangLuckyBreeze } from './BigBangLuckyBreeze';
 import { LUCY_PRO_PATH } from '@/lib/lucyChatPageMode';
-import { LUCY_PRO_ENGINE_COUNT } from '@/lib/divination/engineCatalogCount';
+import { LUCY_PRO_DEEP_PERSPECTIVE_COUNT } from '@/lib/divination/engineCatalogCount';
 import { getOrderedLuckeyPageKeysForCurrentApp, oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
@@ -738,14 +738,14 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: `Lucy Pro (${LUCY_PRO_ENGINE_COUNT}대 풀엔진)`,
+        title: `Lucy Pro (${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개 심층 관점)`,
         actionType: isTextToss ? 'smart_toss' : 'navigate',
         previewLabel: isTextToss
           ? `[홀드] "${textToToss.slice(0, 16)}..." ➔ Lucy Pro 전달`
-          : `[홀드] Lucy Pro ${LUCY_PRO_ENGINE_COUNT}대 풀엔진 가동`,
+          : `[홀드] Lucy Pro · 심층 관점 ${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개`,
         previewDescription: isTextToss
-          ? `선택한 문장을 Lucy Pro ${LUCY_PRO_ENGINE_COUNT}대 풀엔진 마스터 모드로 전달합니다`
-          : `빅뱅 홀드 히든 모드 · ${LUCY_PRO_ENGINE_COUNT}대 운명학 올인원 Lucy Pro를 가동합니다`,
+          ? `선택한 문장을 Lucy Pro에 전달합니다. 등록된 심층 관점 ${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개와 기초 도구 중 질문에 맞는 항목을 참고합니다.`
+          : `빅뱅 홀드 히든 모드 · Lucy Pro가 심층 관점 ${LUCY_PRO_DEEP_PERSPECTIVE_COUNT}개와 기초 도구 중 질문에 맞는 항목을 참고합니다.`,
         destinationPath: location,
         themeColor: '#fde68a',
         accentGlow: 'rgba(253, 230, 138, 0.85)',

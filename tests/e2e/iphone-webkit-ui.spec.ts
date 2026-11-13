@@ -940,19 +940,54 @@ test('pull-to-refresh indicator centers over the folded main canvas, excluding t
   await expect(indicator).toBeHidden();
 });
 
+test('pull-to-refresh indicator centers on the full-width unfolded portrait canvas', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 900 });
+  await openLucy(page);
+  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+  await expect(page.locator('#duo-content-viewport')).toBeVisible();
+  await setContentScrollBoundary(page, 'top');
+
+  const messages = page.locator('#duo-lucy-viewport .lucy-chat-main');
+  await expect(messages).toBeVisible();
+  await messages.evaluate(element => {
+    const x = element.getBoundingClientRect().left + element.getBoundingClientRect().width / 2;
+    const createTouchEvent = (type: string, y: number) => {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'touches', { value: [{ identifier: 1, target: element, clientX: x, clientY: y }] });
+      element.dispatchEvent(event);
+    };
+    createTouchEvent('touchstart', 10);
+    createTouchEvent('touchmove', 220);
+  });
+
+  const indicator = page.locator('.pull-refresh-indicator');
+  await expect(indicator).toBeVisible();
+  const indicatorBox = await indicator.boundingBox();
+  const sidebarBox = await page.locator('#main-sidebar-navigation').boundingBox();
+  const viewport = page.viewportSize();
+  expect(indicatorBox).not.toBeNull();
+  expect(sidebarBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (!indicatorBox || !sidebarBox || !viewport) throw new Error('Unfolded portrait refresh geometry is unavailable');
+  expect(Math.abs(sidebarBox.width - viewport.width)).toBeLessThanOrEqual(2);
+  expect(Math.abs(indicatorBox.x + indicatorBox.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(1);
+  await messages.evaluate(element => element.dispatchEvent(new Event('touchcancel', { bubbles: true, cancelable: true })));
+  await expect(indicator).toBeHidden();
+});
+
 test('Key channel tabs stay fixed below the brand bar while the page scrolls', async ({ page }) => {
   await page.goto('/calm/index.html?no_auto=1');
   const tabs = page.locator('.view-tabs-container');
   const topNav = page.locator('.top-nav');
   await expect(tabs).toBeVisible();
   await expect(topNav).toBeVisible();
-  await page.evaluate(() => {
-    const tabs = document.querySelector('.view-tabs-container');
-    if (!tabs) throw new Error('Key tab row is missing');
-    const tabDocumentTop = tabs.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo(0, tabDocumentTop + 400);
-  });
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  const scrollTarget = await tabs.evaluate(element => element.getBoundingClientRect().top + window.scrollY + 400);
+  await page.evaluate(target => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    document.body.style.scrollBehavior = 'auto';
+    window.scrollTo(0, target);
+  }, scrollTarget);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(scrollTarget - 1);
 
   const layout = await page.evaluate(() => {
     const nav = document.querySelector('.top-nav');
