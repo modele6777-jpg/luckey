@@ -67,82 +67,7 @@ import { LucyCosmicBackground } from '@/components/chat/LucyCosmicBackground';
 import { ALL_DCE_ENGINES } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_ENGINES } from '@/lib/divination/engineCatalog';
 import { LucyEngineCatalogDialog } from '@/components/chat/LucyEngineCatalogDialog';
-import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import '@/styles/lucy-starlight.css';
-
-function CalculationAuditToolList({ tools, catalogTotal }: { tools: CalculationAuditItem[]; catalogTotal?: number }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const threshold = 3;
-  const calculatedCount = tools.filter(item => item.status === 'calculated').length;
-  const partialCount = tools.filter(item => item.status === 'partial').length;
-  const symbolicCount = tools.filter(item => item.status === 'symbolic').length;
-  const skippedCount = tools.filter(item => item.status === 'skipped').length;
-  const unsupportedCount = tools.filter(item => item.status === 'not_implemented').length;
-  const errorCount = tools.filter(item => item.status === 'error').length;
-  const evidencedTools = tools.filter(item => item.sentToModel);
-  const displayedTools = isExpanded ? tools : evidencedTools.slice(0, threshold);
-  const isLong = tools.length > threshold || (catalogTotal !== undefined && catalogTotal > tools.length);
-  const unrecordedCount = catalogTotal === undefined ? 0 : Math.max(0, catalogTotal - tools.length);
-
-  return (
-    <span data-calculation-audit="true" className="inline-flex max-w-full flex-wrap items-center gap-1 text-[10px] text-amber-700 dark:text-amber-200">
-      <button
-        type="button"
-        onClick={() => isLong && setIsExpanded(prev => !prev)}
-        className={`shrink-0 rounded-full border border-amber-400/40 px-2 py-0.5 font-medium transition-colors ${
-          isLong ? 'cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-950/50 flex items-center gap-0.5 font-semibold' : 'cursor-default'
-        }`}
-        title={isLong ? (isExpanded ? '답변별 전체 상태 접기' : '답변별 전체 상태 펼치기') : '답변별 계산·참고 상태'}
-      >
-        <span>실행 기록</span>
-        {isLong && (
-          <ChevronDown size={10} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-        )}
-      </button>
-      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">계산 {calculatedCount}</span>
-      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">부분 {partialCount}</span>
-      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">상징 참고 {symbolicCount}</span>
-      <span className="rounded-full border border-amber-400/30 px-2 py-0.5">미실행 {skippedCount}</span>
-      {unsupportedCount > 0 && <span className="rounded-full border border-amber-400/30 px-2 py-0.5">미지원 {unsupportedCount}</span>}
-      {errorCount > 0 && <span className="rounded-full border border-amber-400/30 px-2 py-0.5">오류 {errorCount}</span>}
-      {unrecordedCount > 0 && <span className="rounded-full border border-dashed border-amber-500/50 px-2 py-0.5">미기록 {unrecordedCount}</span>}
-      {displayedTools.map(item => {
-        const statusLabels: Record<CalculationAuditItem['status'], string> = {
-          calculated: '계산 완료', partial: '부분 계산', symbolic: '상징 참고',
-          skipped: '미실행', not_implemented: '미지원', error: '오류',
-        };
-        return (
-        <span key={item.toolId} title={[item.note, item.method].filter(Boolean).join(' · ')} className="shrink-0 rounded-full border border-amber-400/30 px-2 py-0.5">
-          {statusLabels[item.status]} · {item.name}
-        </span>
-        );
-      })}
-      {!isExpanded && tools.length > 0 && evidencedTools.length === 0 && (
-        <span className="shrink-0 rounded-full border border-dashed border-amber-400/50 px-2 py-0.5">확인된 계산·참고 결과 없음</span>
-      )}
-      {isLong && !isExpanded && (
-        <button
-          type="button"
-          onClick={() => setIsExpanded(true)}
-          className="shrink-0 rounded-full border border-dashed border-amber-400/50 px-1.5 py-0.5 text-[9px] text-amber-600 dark:text-amber-300 hover:bg-amber-100/40 cursor-pointer font-medium"
-          title="답변별 모든 계산 상태 펼치기"
-        >
-          +상태 {tools.length}개 보기
-        </button>
-      )}
-      {isLong && isExpanded && (
-        <button
-          type="button"
-          onClick={() => setIsExpanded(false)}
-          className="shrink-0 rounded-full border border-dashed border-amber-400/50 px-1.5 py-0.5 text-[9px] text-amber-600 dark:text-amber-300 hover:bg-amber-100/40 cursor-pointer font-medium"
-          title="도구 목록 접기"
-        >
-          접기
-        </button>
-      )}
-    </span>
-  );
-}
 
 // Helper: Compress uploaded images to prevent UI stutter and huge payload overhead
 function compressImageIfNeeded(file: File): Promise<string> {
@@ -1313,23 +1238,79 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isTTSActive = useTTSActive();
   const isUserScrolledUpRef = useRef(false);
   const [showReturnToRecentConversation, setShowReturnToRecentConversation] = useState(false);
+  const isAutoScrollingRef = useRef(false);
+  const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const topScrollTimerRef = useRef<number | null>(null);
+  const topScrollRestoreRef = useRef<(() => void) | null>(null);
+
+  const cancelTopScrollAnimation = useCallback(() => {
+    if (topScrollTimerRef.current !== null) window.clearTimeout(topScrollTimerRef.current);
+    topScrollTimerRef.current = null;
+    topScrollRestoreRef.current?.();
+    topScrollRestoreRef.current = null;
+    isAutoScrollingRef.current = false;
+  }, []);
 
   const scrollToConversationTop = useCallback(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
+    cancelTopScrollAnimation();
     const hasScrollableHistory = container.scrollHeight - container.clientHeight > 80;
     isUserScrolledUpRef.current = hasScrollableHistory;
     setShowReturnToRecentConversation(hasScrollableHistory);
-    // A top tap must not depend on a long scroll animation completing.
-    // Reset the Lucy pane's scroll roots synchronously so it always reaches zero.
-    let scrollRoot: HTMLElement | null = container;
-    while (scrollRoot) {
-      if (scrollRoot.scrollTop !== 0) scrollRoot.scrollTop = 0;
-      scrollRoot = scrollRoot.parentElement;
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current);
+      autoScrollTimerRef.current = null;
     }
-    const documentScroller = container.ownerDocument.scrollingElement;
-    if (documentScroller && documentScroller.scrollTop !== 0) documentScroller.scrollTop = 0;
-  }, []);
+
+    const roots = new Set<HTMLElement>([container]);
+    for (let root = container.parentElement; root; root = root.parentElement) {
+      if (root.scrollTop > 0) roots.add(root);
+    }
+    const documentScroller = container.ownerDocument.scrollingElement as HTMLElement | null;
+    if (documentScroller?.scrollTop && documentScroller.scrollTop > 0) roots.add(documentScroller);
+    const positions = [...roots].map((element) => {
+      const start = element.scrollTop;
+      const previousBehavior = element.style.scrollBehavior;
+      element.style.scrollBehavior = 'auto';
+      return { element, start, previousBehavior };
+    });
+    topScrollRestoreRef.current = () => {
+      positions.forEach(({ element, previousBehavior }) => { element.style.scrollBehavior = previousBehavior; });
+      topScrollRestoreRef.current = null;
+    };
+
+    const finish = () => {
+      positions.forEach(({ element }) => { element.scrollTop = 0; });
+      topScrollRestoreRef.current?.();
+      topScrollRestoreRef.current = null;
+      topScrollTimerRef.current = null;
+      isAutoScrollingRef.current = false;
+    };
+    const maxStart = Math.max(...positions.map(({ start }) => start));
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    if (maxStart <= 1 || reduceMotion) {
+      finish();
+      return;
+    }
+
+    // Keep auto-bottom effects from pulling the conversation away while the user returns to its top.
+    isAutoScrollingRef.current = true;
+    const duration = 460;
+    let startedAt: number | null = null;
+    const animate = () => {
+      const now = performance.now();
+      if (startedAt === null) startedAt = now;
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      positions.forEach(({ element, start }) => { element.scrollTop = start * (1 - eased); });
+      if (progress < 1) topScrollTimerRef.current = window.setTimeout(animate, 16);
+      else finish();
+    };
+    topScrollTimerRef.current = window.setTimeout(animate, 0);
+  }, [cancelTopScrollAnimation]);
+
+  useEffect(() => () => cancelTopScrollAnimation(), [cancelTopScrollAnimation]);
 
   // 🎯 TTS 낭독 중인 하이라이트 문장 화면 수직 중앙(50%) 자동 정렬 스마트 스크롤
   const {
@@ -2370,9 +2351,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
   }, [lucyDayPeriod]);
 
-  const isAutoScrollingRef = useRef(false);
-  const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
-
   // Smart non-intrusive scroll handling
   const handleScroll = useCallback(() => {
     if (isAutoScrollingRef.current) return;
@@ -2431,6 +2409,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const scrollToBottom = useCallback((force = false, smooth = true) => {
     if (!messagesContainerRef.current) return;
     if (!force && (isUserScrolledUpRef.current || ttsBlocksAutoScrollRef.current || manualTtsActiveRef.current)) return;
+    if (force) cancelTopScrollAnimation();
 
     isAutoScrollingRef.current = true;
     if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
@@ -2443,7 +2422,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       top: container.scrollHeight,
       behavior: smooth ? 'smooth' : 'auto',
     });
-  }, []);
+  }, [cancelTopScrollAnimation]);
 
   // Continuous height & image layout observer for smooth uncropped scrolling
   useEffect(() => {
@@ -2521,18 +2500,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🚀 최상단 스크롤 이벤트 수신 시 루시 대화창 최상단으로 부드럽게 스크롤
   useEffect(() => {
-    const handleScrollToTopEvent = () => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        isUserScrolledUpRef.current = true; // 사용자가 상단으로 이동했으므로 상태 갱신
-        setShowReturnToRecentConversation(messagesContainerRef.current.scrollHeight - messagesContainerRef.current.clientHeight > 80);
-      }
-    };
+    const handleScrollToTopEvent = () => scrollToConversationTop();
     window.addEventListener('prism:scroll_to_top', handleScrollToTopEvent);
     return () => {
       window.removeEventListener('prism:scroll_to_top', handleScrollToTopEvent);
     };
-  }, []);
+  }, [scrollToConversationTop]);
 
   // 🚀 최하단 스크롤 이벤트 수신 시 루시 대화창 최하단으로 부드럽게 스크롤
   useEffect(() => {
@@ -3366,12 +3339,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     <span aria-hidden="true">{msgModeInfo.badgeIcon}</span>
                   <span>{msgModeInfo.badgeLabel}</span>
                   </span>
-
-                  {!isUser && !isGreeting && Array.isArray(msg.calculationAudit) && (() => {
-                    const tools = [...new Map(msg.calculationAudit.map(item => [item.toolId, item])).values()];
-                    if (!tools.length && !msgModeInfo.isMaster) return null;
-                    return <CalculationAuditToolList tools={tools} catalogTotal={msgModeInfo.isMaster ? ALL_DCE_ENGINES.length : undefined} />;
-                  })()}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>

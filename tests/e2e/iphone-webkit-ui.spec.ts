@@ -825,7 +825,38 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   await expect(returnButton).toBeHidden();
 });
 
-test('Lucy reaches the exact top of a long rendered conversation and recent conversation returns to the bottom', async ({ page }) => {
+test('Lucy keeps the Trinity theme and answer but hides calculation status chips', async ({ page }) => {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    const history = [
+      {
+        id: 'audit-ui-user', role: 'user', persona: 'lucy', channel: 'trinity', channels: ['trinity'], mode: 'trinity',
+        content: '트리니티 타로 결과를 확인해줘.', timestamp: now - 60_000,
+      },
+      {
+        id: 'audit-ui-answer', role: 'assistant', persona: 'lucy', channel: 'trinity', channels: ['trinity'], mode: 'trinity',
+        content: '타로 결과 보존 확인: 실제 카드 해석 내용.', timestamp: now,
+        calculationAudit: [{ toolId: 'tarot', name: '타로', status: 'calculated', sentToModel: true, note: 'fixture', method: 'fixture' }],
+      },
+    ];
+    localStorage.setItem('chat_history_unified_v3', JSON.stringify(history));
+  });
+  await openLucy(page);
+
+  await expect(page.getByText('타로 결과 보존 확인: 실제 카드 해석 내용.')).toBeVisible();
+  await expect(page.locator('[data-message-mode-badge="true"]').filter({ hasText: '트리니티' }).first()).toBeVisible();
+  await expect(page.locator('[data-calculation-audit="true"]')).toHaveCount(0);
+  await expect(page.getByText('실행 기록', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('계산 완료 · 타로', { exact: true })).toHaveCount(0);
+
+  const savedAudit = await page.evaluate(() => {
+    const history = JSON.parse(localStorage.getItem('chat_history_unified_v3') || '[]');
+    return history.find((message: { id?: string }) => message.id === 'audit-ui-answer')?.calculationAudit;
+  });
+  expect(savedAudit).toEqual([{ toolId: 'tarot', name: '타로', status: 'calculated', sentToModel: true, note: 'fixture', method: 'fixture' }]);
+});
+
+test('Lucy smoothly reaches the exact top of a long conversation and recent conversation returns to the bottom', async ({ page }) => {
   await page.addInitScript(() => {
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -843,6 +874,7 @@ test('Lucy reaches the exact top of a long rendered conversation and recent conv
     localStorage.setItem('chat_history_unified_v3', JSON.stringify(history));
     localStorage.setItem('lucy_daily_first_entry_date_v1', today);
     localStorage.setItem('lucy_daily_first_visit_done_date_v1', today);
+    localStorage.setItem('lucy_chat_auto_tts', 'false');
   });
   await openLucy(page);
 
@@ -857,6 +889,8 @@ test('Lucy reaches the exact top of a long rendered conversation and recent conv
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await expect(returnButton).toBeVisible();
+  const touchStartTop = await messages.evaluate(element => element.scrollTop);
+  expect(touchStartTop).toBeGreaterThan(80);
 
   const header = page.locator('[data-lucy-header-tap-scroll="true"]');
   const topTap = await header.evaluate(element => {
@@ -868,9 +902,30 @@ test('Lucy reaches the exact top of a long rendered conversation and recent conv
     if (x == null) throw new Error('Lucy blank upper-center tap area is missing');
     return { x, y };
   });
+  await page.evaluate(() => {
+    const messages = document.querySelector('.lucy-chat-main') as HTMLElement | null;
+    if (!messages) throw new Error('Lucy message scroller is missing');
+    const state = window as Window & { __lucyTopScrollTrace?: number[] };
+    state.__lucyTopScrollTrace = [];
+    const sampleUntil = performance.now() + 1000;
+    const sample = () => {
+      state.__lucyTopScrollTrace?.push(messages.scrollTop);
+      if (performance.now() >= sampleUntil) window.clearInterval(sampleTimer);
+    };
+    const sampleTimer = window.setInterval(sample, 16);
+    sample();
+  });
   await page.touchscreen.tap(topTap.x, topTap.y);
-  expect(await messages.evaluate(element => element.scrollTop)).toBeLessThanOrEqual(2);
-  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThanOrEqual(2);
+  await expect.poll(() => page.evaluate((start) =>
+    (window as Window & { __lucyTopScrollTrace?: number[] }).__lucyTopScrollTrace?.some(position => position > 2 && position < start - 2) ?? false,
+    touchStartTop
+  )).toBe(true);
+  const touchMotionTrace = await page.evaluate(() => (window as Window & { __lucyTopScrollTrace?: number[] }).__lucyTopScrollTrace ?? []);
+  expect(touchMotionTrace.some(position => position > 2 && position < touchStartTop - 2)).toBe(true);
+  await page.evaluate(() => window.dispatchEvent(new Event('lucy-chat-content-resized')));
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBe(0);
+  await page.waitForTimeout(520);
+  expect(await messages.evaluate(element => element.scrollTop)).toBe(0);
   await expect(returnButton).toBeVisible();
 
   await messages.evaluate(element => {
@@ -884,8 +939,13 @@ test('Lucy reaches the exact top of a long rendered conversation and recent conv
   if (!headerBox) throw new Error('Lucy chat header is missing');
   const blankAreaY = headerBox.y + headerBox.height - 2;
   expect(blankAreaY).toBeGreaterThan(76);
+  const mouseStartTop = await messages.evaluate(element => element.scrollTop);
+  expect(mouseStartTop).toBeGreaterThan(80);
   await page.mouse.click(headerBox.x + headerBox.width / 2, blankAreaY);
-  expect(await messages.evaluate(element => element.scrollTop)).toBeLessThanOrEqual(2);
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(mouseStartTop - 1);
+  await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBe(0);
+  await page.waitForTimeout(520);
+  expect(await messages.evaluate(element => element.scrollTop)).toBe(0);
   await expect(returnButton).toBeVisible();
 
   const returnButtonBox = await returnButton.boundingBox();
