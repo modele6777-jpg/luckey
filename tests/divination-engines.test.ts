@@ -6222,6 +6222,69 @@ test('Taiyi engine: enhanced macro strategic matrix, balance score, and decision
   assert(prompt.includes('결단 실행 윈도우'));
 });
 
+test('Sukuyo, Kabbalah, and Hongguk Qimen engines: enhanced multi-dimensional numerical matrices and cross-verifications', () => {
+  // 1. Sukuyo Enhanced
+  const sy = calculateSukuyoAdvanced({ profile: { basic: { birthdate: '2000-08-16', gender: 'female' as const } } });
+  assert.equal(sy.status, 'calculated');
+  assert.ok(sy.planetaryGuard);
+  assert(sy.planetaryGuard.guardScore >= 40 && sy.planetaryGuard.guardScore <= 98);
+  assert.ok(sy.planetaryGuard.favorableWeekday.length > 0);
+  assert.ok(sy.planetaryGuard.yearlyAdvice.length > 0);
+  assert.ok(sy.celestialQuadrant);
+  assert.ok(sy.celestialQuadrant.degreesSpan.length > 0);
+  assert.ok(sy.celestialQuadrant.guardianSpirit.length > 0);
+  assert.ok(sy.sanKyuCycle);
+  assert([1, 2, 3].includes(sy.sanKyuCycle.cycleOrder));
+  assert.ok(sy.sanKyuCycle.nineMansionPhase.length > 0);
+  assert.ok(sy.sanKyuCycle.actionCompass.length > 0);
+  const syPrompt = formatSukuyoPrompt(sy);
+  assert(syPrompt.includes('칠요 행성 수호'));
+  assert(syPrompt.includes('천구 사분면'));
+  assert(syPrompt.includes('3구 비법(三九秘法)'));
+
+  // 2. Kabbalah Enhanced
+  const kb = calculateKabbalah({ profile: { basic: { birthdate: '1995-03-25', gender: 'male' as const } } });
+  assert.equal(kb.status, 'calculated');
+  assert.ok(kb.numerology?.lightningFlash);
+  assert(kb.numerology!.lightningFlash.ascensionPotentialIndex >= 50 && kb.numerology!.lightningFlash.ascensionPotentialIndex <= 98);
+  assert.ok(kb.numerology!.lightningFlash.stageTitle.length > 0);
+  assert.ok(kb.numerology!.lightningFlash.spiritualLesson.length > 0);
+  assert.ok(kb.numerology?.tipherethAlignment);
+  assert(kb.numerology!.tipherethAlignment.harmonyScore >= 40 && kb.numerology!.tipherethAlignment.harmonyScore <= 98);
+  assert.ok(kb.numerology!.tipherethAlignment.solarHeartGuidance.length > 0);
+  assert.ok(kb.numerology?.fourWorldsSpectrum);
+  assert.equal(
+    kb.numerology!.fourWorldsSpectrum.atziluth +
+    kb.numerology!.fourWorldsSpectrum.beriah +
+    kb.numerology!.fourWorldsSpectrum.yetzirah +
+    kb.numerology!.fourWorldsSpectrum.assiah,
+    100
+  );
+  assert.ok(kb.numerology!.fourWorldsSpectrum.manifestationAdvice.length > 0);
+  const kbPrompt = formatKabbalahPrompt(kb);
+  assert(kbPrompt.includes('창조의 번개(Lightning Flash)'));
+  assert(kbPrompt.includes('티페레트(태양·심장) 조화도'));
+  assert(kbPrompt.includes('4대 세계 친화도'));
+
+  // 3. Hongguk Qimen Enhanced
+  const hq = calculateHonggukQimen({ profile: { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } } });
+  assert.equal(hq.status, 'calculated');
+  assert.ok(hq.heavenEarthResonance);
+  assert(hq.heavenEarthResonance.seYaoResonance.resonanceScore >= 40 && hq.heavenEarthResonance.seYaoResonance.resonanceScore <= 98);
+  assert.ok(hq.heavenEarthResonance.seYaoResonance.interpretation.length > 0);
+  assert.ok(hq.threeWondersAlliance);
+  assert(hq.threeWondersAlliance.wondersEmpowermentIndex >= 45 && hq.threeWondersAlliance.wondersEmpowermentIndex <= 98);
+  assert.ok(hq.threeWondersAlliance.nobleSponsorship.length > 0);
+  assert.ok(hq.tacticalSeasonWindows);
+  assert.ok(hq.tacticalSeasonWindows.peakActionSeason.length > 0);
+  assert.ok(hq.tacticalSeasonWindows.strategicPacingAdvice.length > 0);
+  const hqPrompt = formatHonggukQimenPrompt(hq);
+  assert(hqPrompt.includes('천지반 홍국수 생극 공명'));
+  assert(hqPrompt.includes('삼기(三奇) 득기 회합'));
+  assert(hqPrompt.includes('4계절 거시 결단 윈도우'));
+});
+
+
 
 
 

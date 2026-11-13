@@ -279,6 +279,30 @@ export function soulPathNumberToPath(soulPathNumber: number): number {
   return soulPathNumber + 10;
 }
 
+/** 창조의 번개 하강 계위 및 상승 잠재력 */
+export interface KabbalahLightningFlash {
+  descentStage: number; // 1~10 (0은 다트)
+  stageTitle: string;
+  ascensionPotentialIndex: number; // 50~98
+  spiritualLesson: string;
+}
+
+/** 티페레트(태양·심장) 중심성 조화도 */
+export interface KabbalahTipherethAlignment {
+  harmonyScore: number; // 40~98
+  balanceStatus: '상위 지성 지향형' | '중도 태양 통합형' | '하위 실천 구현형';
+  solarHeartGuidance: string;
+}
+
+/** 4대 세계 친화도 스펙트럼 */
+export interface KabbalahFourWorldsSpectrum {
+  atziluth: number; // 원형계/불 %
+  beriah: number; // 창조계/물 %
+  yetzirah: number; // 형성계/바람 %
+  assiah: number; // 물질계/흙 %
+  manifestationAdvice: string;
+}
+
 export interface KabbalahNumerology {
   rawDigitSum: number; // YYYYMMDD 전 자리 합 원값
   lifePathNumber: number; // 1~10 또는 마스터 넘버 11·22·33
@@ -295,6 +319,9 @@ export interface KabbalahNumerology {
     mildness: number; // 균형의 기둥
   };
   dominantWorld: KabbalahWorld; // 라이프 패스 세피라가 속한 세계
+  lightningFlash?: KabbalahLightningFlash;
+  tipherethAlignment?: KabbalahTipherethAlignment;
+  fourWorldsSpectrum?: KabbalahFourWorldsSpectrum;
 }
 
 export interface KabbalahResult {
@@ -339,6 +366,110 @@ function pillarBalanceOf(activatedSephirahNumbers: ReadonlyArray<number>): Kabba
   const severity = pct(tally.severity);
   const mildness = 100 - mercy - severity; // 합이 정확히 100이 되도록 균형 기둥이 나머지를 흡수
   return { mercy, severity, mildness };
+}
+
+function calculateLightningFlash(sephirahNumber: number, rawDigitSum: number, isDaath: boolean): KabbalahLightningFlash {
+  const stage = isDaath ? 0 : sephirahNumber;
+  const stageTitles: Record<number, string> = {
+    0: '심연의 비밀문 (다트 — 발현되지 않은 직관 지식)',
+    1: '제1계위 원초의 빛 (케테르 — 신성한 의지의 시원)',
+    2: '제2계위 무한한 확장 (호크마 — 원초적 지혜의 폭발)',
+    3: '제3계위 형태의 수용 (비나 — 원초적 이해의 잉태)',
+    4: '제4계위 자비로운 은총 (헤세드 — 무조건적 사랑과 기회)',
+    5: '제5계위 준엄한 정화 (게부라 — 정의와 절제의 심판)',
+    6: '제6계위 태양의 중심 (티페레트 — 아름다움과 자기 조화)',
+    7: '제7계위 승리의 열정 (네차크 — 예술적 감성과 본능의 불꽃)',
+    8: '제8계위 영광의 지성 (호드 — 언어와 논리의 명료함)',
+    9: '제9계위 상상의 파동 (예소드 — 무의식과 현실의 교두보)',
+    10: '제10계위 물질적 결실 (말쿠트 — 구체적 완성의 왕국)',
+  };
+  const baseAscension = 55;
+  const ascensionPotentialIndex = Math.min(98, Math.max(50, baseAscension + ((rawDigitSum * 7 + (stage || 6) * 3) % 41)));
+  const lessons: Record<number, string> = {
+    0: '보이지 않는 진리를 두려워하지 않고, 침묵 속에서 직관적 통찰을 현실에 번역해 내는 것이 과제입니다.',
+    1: '자기 안의 원초적 창조 의지를 믿고, 편협한 집착에서 벗어나 모든 가능성에 자기를 활짝 열어두십시오.',
+    2: '솟구치는 아이디어와 통찰을 주저 없이 행동으로 옮기되, 방향을 잃지 않도록 지혜의 초점을 잡으십시오.',
+    3: '상황의 한계와 경계를 탓하지 말고, 제약을 가장 아름다운 형태를 빚어내는 창조의 틀로 수용하십시오.',
+    4: '타인과 세계를 향한 무조건적 사랑을 실천하되, 지나친 관용이 무질서로 흐르지 않도록 중심을 지키십시오.',
+    5: '불필요한 욕망과 군더더기를 과감히 잘라내고, 엄격한 자기 규율을 통해 순수한 영혼의 힘을 단련하십시오.',
+    6: '자비와 엄격, 이상과 현실의 대립을 따스한 가슴의 중심에서 포용하고, 참된 자기다움을 꽃피우십시오.',
+    7: '가슴속 순수한 열정과 창작 욕구를 억누르지 말고, 끈기 있는 몰입을 통해 생명력을 세상에 드러내십시오.',
+    8: '복잡한 감정을 명료한 사유와 정직한 언어로 정제하고, 논리적 질서 속에서 진실을 소통하십시오.',
+    9: '무의식의 꿈과 상상을 방치하지 말고, 성실한 습관과 감각 훈련을 통해 단단한 현실의 기초로 안착시키십시오.',
+    10: '추상적인 이상에 머물지 말고, 일상의 작은 행동과 물질적 책임을 온전히 완수하며 천국을 땅 위에 세우십시오.',
+  };
+
+  return {
+    descentStage: stage,
+    stageTitle: stageTitles[stage] || '알 수 없는 계위',
+    ascensionPotentialIndex,
+    spiritualLesson: lessons[stage] || '자기 고유의 세피라를 관조하며 통합을 이루십시오.',
+  };
+}
+
+function calculateTipherethAlignment(sephirahNumber: number, isDaath: boolean): KabbalahTipherethAlignment {
+  const num = isDaath ? 3 : sephirahNumber;
+  const dist = Math.abs(num - 6);
+  const harmonyScore = Math.min(98, Math.max(40, 96 - dist * 8));
+
+  let balanceStatus: '상위 지성 지향형' | '중도 태양 통합형' | '하위 실천 구현형';
+  let solarHeartGuidance: string;
+
+  if (num === 6) {
+    balanceStatus = '중도 태양 통합형';
+    solarHeartGuidance = '생명나무의 심장인 티페레트와 완전한 조화를 이루고 있습니다. 지성과 본능, 이상과 현실을 자연스럽게 조율하는 천부적 균형 감각을 발휘하십시오.';
+  } else if (num < 6) {
+    balanceStatus = '상위 지성 지향형';
+    solarHeartGuidance = '상위 삼각형(케테르·호크마·비나) 및 고위 세피라의 높은 이상과 지적 에너지를 품고 있습니다. 고결한 통찰을 가슴(티페레트)의 온기로 녹여 세상과 연결하십시오.';
+  } else {
+    balanceStatus = '하위 실천 구현형';
+    solarHeartGuidance = '하위 세피라(네차크·호드·예소드·말쿠트)의 생생한 감각과 실천적 감수성이 발달해 있습니다. 세속의 분주함에 휩쓸리지 않도록 가슴(티페레트)의 고요한 중심으로 자주 돌아오십시오.';
+  }
+
+  return {
+    harmonyScore,
+    balanceStatus,
+    solarHeartGuidance,
+  };
+}
+
+function calculateFourWorldsSpectrum(activatedSephiroth: ReadonlyArray<number>): KabbalahFourWorldsSpectrum {
+  let atziluthCount = 0; // 1~3 (다트 포함 시 1)
+  let beriahCount = 0;   // 4~5
+  let yetzirahCount = 0; // 6~9
+  let assiahCount = 0;   // 10
+
+  for (const s of activatedSephiroth) {
+    if (s <= 3) atziluthCount++;
+    else if (s <= 5) beriahCount++;
+    else if (s <= 9) yetzirahCount++;
+    else assiahCount++;
+  }
+
+  const total = activatedSephiroth.length || 1;
+  const atziluth = Math.round((atziluthCount / total) * 100);
+  const beriah = Math.round((beriahCount / total) * 100);
+  const yetzirah = Math.round((yetzirahCount / total) * 100);
+  const assiah = Math.max(0, 100 - (atziluth + beriah + yetzirah));
+
+  let manifestationAdvice = '';
+  if (atziluth >= 40) {
+    manifestationAdvice = '원형계(불)의 영적 영감이 강합니다. 직관을 구체적 계획서와 실천으로 단계별로 안착시키는 아시야(물질계) 훈련이 중요합니다.';
+  } else if (beriah >= 40) {
+    manifestationAdvice = '창조계(물)의 거대한 감성적 에너지를 품고 있습니다. 영혼의 열망을 맑은 지적 구조로 정리할 때 가장 위대한 창작물이 탄생합니다.';
+  } else if (yetzirah >= 40) {
+    manifestationAdvice = '형성계(바람)의 활발한 사고와 소통 역량이 돋보입니다. 생각에만 머무르지 않고 손에 잡히는 구체적 결과물을 맺는 마무리에 집중하십시오.';
+  } else {
+    manifestationAdvice = '물질계(흙)의 탁월한 실행력과 현실 감각을 갖추고 있습니다. 당장의 손익에 매몰되지 않고 더 높은 영적 가치를 일상에 스며들게 하십시오.';
+  }
+
+  return {
+    atziluth,
+    beriah,
+    yetzirah,
+    assiah,
+    manifestationAdvice,
+  };
 }
 
 /**
@@ -392,6 +523,12 @@ export function calculateKabbalah(params: { profile?: UserProfile | null }): Kab
     // 6. 지배 세계: 라이프 패스 세피라가 속한 층위 (다트는 심연 — 베리아 위 비나 경계로 두지 않고 케테르 층 아칠루트에 둔다)
     const dominantWorld = worldOfSephirah(lifePathNumber === 22 ? 1 : lifePathSephirah.number);
 
+    // 7. 라이트닝 플래시, 티페레트 조화도, 4대 세계 친화도 산출
+    const isDaath = lifePathNumber === 22;
+    const lightningFlash = calculateLightningFlash(lifePathNumber === 22 ? 0 : lifePathSephirah.number, rawDigitSum, isDaath);
+    const tipherethAlignment = calculateTipherethAlignment(lifePathNumber === 22 ? 3 : lifePathSephirah.number, isDaath);
+    const fourWorldsSpectrum = calculateFourWorldsSpectrum(activated);
+
     return {
       status: 'calculated',
       engineVersion: KABBALAH_ENGINE_VERSION,
@@ -413,6 +550,9 @@ export function calculateKabbalah(params: { profile?: UserProfile | null }): Kab
         soulPath,
         pillarBalance,
         dominantWorld,
+        lightningFlash,
+        tipherethAlignment,
+        fourWorldsSpectrum,
       },
       tree: {
         sephiroth: SEPHIROTH_10,
@@ -451,9 +591,28 @@ export function formatKabbalahPrompt(result: KabbalahResult): string {
     `  * 영적 상승 테마: ${n.soulPath.spiritualTheme}`,
     `- 3기둥 밸런스: 자비(확장) ${n.pillarBalance.mercy}% · 엄격(수축) ${n.pillarBalance.severity}% · 균형(통합) ${n.pillarBalance.mildness}%`,
     `- 지배 세계: 제${n.dominantWorld.order}세계 ${n.dominantWorld.name}(${n.dominantWorld.translit} / ${n.dominantWorld.korean}·${n.dominantWorld.element}) — ${n.dominantWorld.description} · 세피로트 층위 ${n.dominantWorld.sephirahRange}`,
+  ];
+
+  if (n.lightningFlash) {
+    lines.push(
+      `- 창조의 번개(Lightning Flash): ${n.lightningFlash.stageTitle} (영혼 승화 잠재력 ${n.lightningFlash.ascensionPotentialIndex}점)\n  * 영적 과제: ${n.lightningFlash.spiritualLesson}`,
+    );
+  }
+  if (n.tipherethAlignment) {
+    lines.push(
+      `- 티페레트(태양·심장) 조화도: ${n.tipherethAlignment.harmonyScore}점 [${n.tipherethAlignment.balanceStatus}]\n  * 조율 가이드: ${n.tipherethAlignment.solarHeartGuidance}`,
+    );
+  }
+  if (n.fourWorldsSpectrum) {
+    lines.push(
+      `- 4대 세계 친화도: 아칠루트(원형계·불) ${n.fourWorldsSpectrum.atziluth}% · 베리아(창조계·물) ${n.fourWorldsSpectrum.beriah}% · 예치라(형성계·바람) ${n.fourWorldsSpectrum.yetzirah}% · 아시야(물질계·흙) ${n.fourWorldsSpectrum.assiah}%\n  * 현실 구현 조언: ${n.fourWorldsSpectrum.manifestationAdvice}`,
+    );
+  }
+
+  lines.push(
     `- 나무 구조: 10 세피로트(케테르~말쿠트) + 숨겨진 다트 · 3대 기둥(자비·엄격·균형) · 4개 세계(아칠루트·베리아·예치라·아시야) · 22 경로(알레프~타브 = 타로 메이저 0~21)`,
     `- [AI 해석 절대 지침]: 본 리포트는 생년월일 게마트리아 수리로 산출된 100% 확정 배속입니다. 세피라·경로·타로 배속을 임의로 바꾸지 말고, 다트는 발현되지 않은 숨겨진 세피라이므로 일반 세피로트처럼 단정하지 마십시오.`,
-  ];
+  );
 
   if (isDaath) {
     lines.splice(3, 0, `  * 다트 보충: ${DAATH.description}`);
