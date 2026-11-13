@@ -6111,6 +6111,61 @@ test('Han Yong-un engine uses a verified literary theme, query matching, and no 
   assert.equal(integrity.activeHanYongUnTheme.themeKey, 'simWooJangUnbendingIntegrity');
 });
 
+test('Tojeong engine: enhanced trigram analysis, five-element relation, and seasonal flow weighting', () => {
+  const r = calculateTojeong({ profile: { basic: { birthdate: '1990-05-20', lunarSolar: 'lunar' as const } }, targetYear: 2026 });
+  assert.equal(r.status, 'calculated');
+  assert.ok(r.trigramAnalysis);
+  assert.equal(r.trigramAnalysis.upperElement, '목(木)');
+  assert.equal(r.trigramAnalysis.lowerElement, '목(木)');
+  assert.equal(r.trigramAnalysis.elementRelation, '비화(比和)');
+  assert(r.trigramAnalysis.harmonyScore >= 40 && r.trigramAnalysis.harmonyScore <= 98);
+  assert(r.trigramAnalysis.seasonalFlow.springScore >= 30 && r.trigramAnalysis.seasonalFlow.springScore <= 95);
+  assert(r.trigramAnalysis.seasonalFlow.summerScore >= 30 && r.trigramAnalysis.seasonalFlow.summerScore <= 95);
+  assert(r.trigramAnalysis.seasonalFlow.autumnScore >= 30 && r.trigramAnalysis.seasonalFlow.autumnScore <= 95);
+  assert(r.trigramAnalysis.seasonalFlow.winterScore >= 30 && r.trigramAnalysis.seasonalFlow.winterScore <= 95);
+  assert.ok(r.trigramAnalysis.seasonalFlow.peakSeason.length > 0);
+  assert.ok(r.trigramAnalysis.hexagramEssenceAdvice.includes('손위풍'));
+  const prompt = formatTojeongPrompt(r);
+  assert(prompt.includes('오행 생극제화 및 사계절 순환 심층 분석'));
+  assert(prompt.includes('비화(比和)'));
+});
+
+test('Kyusei engine: enhanced 8-directional scores matrix and honmyosei annual star synergy', () => {
+  const r = calculateKyusei({ profile: { basic: { birthdate: '1990-05-17', gender: 'female' as const, birthCity: '서울' } }, targetDate: new Date('2026-11-02T00:00:00Z') });
+  assert.equal(r.status, 'calculated');
+  assert.ok(r.directionalScores);
+  assert.equal(r.directionalScores.length, 8);
+  for (const dir of r.directionalScores) {
+    assert(dir.score >= 0 && dir.score <= 100);
+    assert(['최길', '길', '평', '주의', '대흉'].includes(dir.level));
+    assert(dir.recommendedActivities.length > 0);
+  }
+  assert.ok(r.honmyoseiSynergy);
+  assert.equal(r.honmyoseiSynergy.annualStarRelation, '비화(比和)');
+  assert(r.honmyoseiSynergy.synergyScore >= 0 && r.honmyoseiSynergy.synergyScore <= 100);
+  assert.ok(r.honmyoseiSynergy.annualThemeGuidance.length > 0);
+  const prompt = formatKyuseiPrompt(r);
+  assert(prompt.includes('8대 방위별 목적 적합도 매트릭스'));
+  assert(prompt.includes('본명성-연성 조화도'));
+});
+
+test('Taiyi engine: enhanced macro strategic matrix, balance score, and decision window timing', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const r = calculateTaiyi({ profile, targetYear: 2026 });
+  assert.equal(r.status, 'calculated');
+  assert.ok(r.macroStrategicMatrix);
+  assert(r.macroStrategicMatrix.juBalanceScore >= 0 && r.macroStrategicMatrix.juBalanceScore <= 100);
+  assert(r.macroStrategicMatrix.initiativeIndex >= 0 && r.macroStrategicMatrix.initiativeIndex <= 100);
+  assert(r.macroStrategicMatrix.defensiveIndex >= 0 && r.macroStrategicMatrix.defensiveIndex <= 100);
+  assert.ok(r.macroStrategicMatrix.macroPhase.length > 0);
+  assert.ok(r.macroStrategicMatrix.tacticalWindowAdvice.length > 0);
+  const prompt = formatTaiyiPrompt(r);
+  assert(prompt.includes('거시 전략 매트릭스'));
+  assert(prompt.includes('공수 역학 밸런스 지수'));
+  assert(prompt.includes('결단 실행 윈도우'));
+});
+
+
 
 
 
