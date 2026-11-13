@@ -1,4 +1,4 @@
-// v1.7.401: enhanced Sukuyo, Kabbalah, and Hongguk Qimen core divination engines
+// v1.7.402: enhanced Tieban Shenshu, 28 Mansions, and Vedic core divination engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

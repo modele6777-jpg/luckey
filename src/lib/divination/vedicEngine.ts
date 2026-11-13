@@ -111,6 +111,26 @@ export interface VedicCurrentDasha {
   antardasha: { ordinal: number; lord: string; startDate: string; endDate: string };
 }
 
+export interface DashaPlanetarySynergy {
+  relationship: '미트라(Mitra·상생 우호)' | '사마(Sama·평형 중립)' | '샤트루(Shatru·긴장 단련)';
+  synergyScore: number; // 45 ~ 98점
+  karmicFocus: string;
+}
+
+export interface KendraTrikonaProsperity {
+  dharmaProsperityScore: number; // 40 ~ 98점
+  dominantHousePillar: string; // 예: '제1하우스 탄누(Tanu) & 제9하우스 다르마(Dharma) 축'
+  lifePillarAdvice: string;
+}
+
+export interface PurusharthaAlignment {
+  dharmaWeight: number; // 0 ~ 100%
+  arthaWeight: number; // 0 ~ 100%
+  kamaWeight: number; // 0 ~ 100%
+  mokshaWeight: number; // 0 ~ 100%
+  primarySpiritualAim: string;
+}
+
 export interface VedicResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
@@ -128,6 +148,9 @@ export interface VedicResult {
     surya: VedicRashiInfo; // 수리야 라시 (태양)
     lagna: VedicRashiInfo | null; // 라그나 라시 (생시+지원 도시 필요)
   };
+  dashaPlanetarySynergy?: DashaPlanetarySynergy | null;
+  kendraTrikonaProsperity?: KendraTrikonaProsperity | null;
+  purusharthaAlignment?: PurusharthaAlignment | null;
   note?: string;
 }
 
@@ -473,6 +496,115 @@ export function calculateVedicAdvanced(params: {
     lagna = rashiOfLongitude(normalize360(ascTropical - ayanamsa));
   }
 
+  // 6. 나바그라하 다샤 행성 조화도 (Dasha Planetary Synergy)
+  let dashaPlanetarySynergy: DashaPlanetarySynergy | null = null;
+  if (currentDasha) {
+    const mLord = currentDasha.mahadasha.lord;
+    const aLord = currentDasha.antardasha.lord;
+    const friends: Record<string, string[]> = {
+      '태양': ['달', '화성', '목성'],
+      '달': ['태양', '수성'],
+      '화성': ['태양', '달', '목성'],
+      '수성': ['태양', '금성'],
+      '목성': ['태양', '달', '화성'],
+      '금성': ['수성', '토성', '라후'],
+      '토성': ['수성', '금성', '라후'],
+      '라후': ['금성', '토성'],
+      '케투': ['금성', '토성'],
+    };
+    const enemies: Record<string, string[]> = {
+      '태양': ['금성', '토성', '라후'],
+      '달': ['라후', '케투'],
+      '화성': ['수성', '라후'],
+      '수성': ['달'],
+      '목성': ['수성', '금성'],
+      '금성': ['태양', '달'],
+      '토성': ['태양', '달', '화성'],
+      '라후': ['태양', '달', '화성'],
+      '케투': ['태양', '달', '화성'],
+    };
+
+    if (mLord === aLord) {
+      dashaPlanetarySynergy = {
+        relationship: '사마(Sama·평형 중립)',
+        synergyScore: 85,
+        karmicFocus: `마하다샤 주인 ${mLord}의 자가(自家) 안타르다샤 구간으로, 본연의 행성적 카르마가 가장 순수하게 발현되는 내실 구축기입니다.`,
+      };
+    } else if (friends[mLord]?.includes(aLord)) {
+      dashaPlanetarySynergy = {
+        relationship: '미트라(Mitra·상생 우호)',
+        synergyScore: 92,
+        karmicFocus: `마하다샤 주인 ${mLord}와 안타르다샤 주인 ${aLord}가 상생 우호(Mitra)를 형성하여 대내외적 협력과 기회의 확장이 순조롭습니다.`,
+      };
+    } else if (enemies[mLord]?.includes(aLord)) {
+      dashaPlanetarySynergy = {
+        relationship: '샤트루(Shatru·긴장 단련)',
+        synergyScore: 58,
+        karmicFocus: `마하다샤 주인 ${mLord}와 안타르다샤 주인 ${aLord}가 상충 긴장(Shatru)에 놓여 있어 조급한 확장을 삼가고 인내와 수양이 필요한 단련기입니다.`,
+      };
+    } else {
+      dashaPlanetarySynergy = {
+        relationship: '사마(Sama·평형 중립)',
+        synergyScore: 76,
+        karmicFocus: `마하다샤 주인 ${mLord}와 안타르다샤 주인 ${aLord}가 균형 중립(Sama)을 이루어 차분한 실행과 안정적 결실을 도모하기에 적합합니다.`,
+      };
+    }
+  }
+
+  // 7. 켄드라·트리코나 다르마 번영 스펙트럼 (Kendra-Trikona Prosperity)
+  const PILLARS = [
+    '제1하우스 탄누(Tanu·신체·정체성) & 제9하우스 다르마(Dharma·행운·영성) 축',
+    '제4하우스 반두(Bandhu·가정·내면안정) & 제10하우스 카르마(Karma·직업·명예) 축',
+    '제5하우스 푸트라(Putra·지성·창의성) & 제1하우스 탄누(Tanu·주권) 축',
+    '제7하우스 자야(Jaya·동반자·파트너십) & 제9하우스 다르마(Dharma·진리) 축',
+  ];
+  const pillarIdx = (chandra.index + surya.index) % 4;
+  const dominantHousePillar = PILLARS[pillarIdx];
+  const dharmaProsperityScore = Math.min(98, Math.max(45, 65 + ((chandra.index * 7 + surya.index * 13) % 32)));
+  const kendraTrikonaProsperity: KendraTrikonaProsperity = {
+    dharmaProsperityScore,
+    dominantHousePillar,
+    lifePillarAdvice: `찬드라(${chandra.name})와 수리야(${surya.name})의 조응으로 형성된 ${dominantHousePillar}을(를) 중심으로 삶의 중심축을 확립할 때 카르마적 번영 지수가 극대화됩니다.`,
+  };
+
+  // 8. 4대 푸루샤르타 인생 목적 가중치 (Purushartha Alignment)
+  let dharmaWeight = 25;
+  let arthaWeight = 25;
+  let kamaWeight = 25;
+  let mokshaWeight = 25;
+  let primarySpiritualAim = '다르마(Dharma·의로운 소명 완수)';
+
+  switch (nakshatra.tattva) {
+    case '지(土·Prithvi)':
+      dharmaWeight = 30; arthaWeight = 40; kamaWeight = 15; mokshaWeight = 15;
+      primarySpiritualAim = '아르타(Artha·물질적 토대 구축과 번영)';
+      break;
+    case '수(水·Apas)':
+      dharmaWeight = 15; arthaWeight = 15; kamaWeight = 30; mokshaWeight = 40;
+      primarySpiritualAim = '모크샤(Moksha·감성적 치유와 영적 정화)';
+      break;
+    case '화(火·Tejas)':
+      dharmaWeight = 40; arthaWeight = 30; kamaWeight = 20; mokshaWeight = 10;
+      primarySpiritualAim = '다르마(Dharma·정의로운 행동과 리더십 발휘)';
+      break;
+    case '풍(風·Vayu)':
+      dharmaWeight = 20; arthaWeight = 25; kamaWeight = 40; mokshaWeight = 15;
+      primarySpiritualAim = '카마(Kama·지적 탐구와 창조적 열망 실현)';
+      break;
+    case '공(空·Akasha)':
+      dharmaWeight = 25; arthaWeight = 15; kamaWeight = 15; mokshaWeight = 45;
+      primarySpiritualAim = '모크샤(Moksha·초월적 직관과 내면의 자유)';
+      break;
+  }
+
+  const purusharthaAlignment: PurusharthaAlignment = {
+    dharmaWeight,
+    arthaWeight,
+    kamaWeight,
+    mokshaWeight,
+    primarySpiritualAim,
+  };
+
   return {
     status: 'calculated',
     engineVersion: VEDIC_ENGINE_VERSION,
@@ -490,6 +622,9 @@ export function calculateVedicAdvanced(params: {
     antardashaCount,
     currentDasha,
     rashi: { chandra, surya, lagna },
+    dashaPlanetarySynergy,
+    kendraTrikonaProsperity,
+    purusharthaAlignment,
   };
 }
 
@@ -532,6 +667,18 @@ export function formatVedicPrompt(result: VedicResult): string {
       ].join('\n')
     : '- 현재 다샤: 기준 시점이 120년 다샤 주기 범위 밖이거나 산출 불가';
 
+  const synergyLine = result.dashaPlanetarySynergy
+    ? `- 다샤 행성 조화: ${result.dashaPlanetarySynergy.relationship} (조화도 ${result.dashaPlanetarySynergy.synergyScore}점)\n  * 카르마적 초점: ${result.dashaPlanetarySynergy.karmicFocus}`
+    : '';
+
+  const kendraLine = result.kendraTrikonaProsperity
+    ? `- 켄드라·트리코나 번영: ${result.kendraTrikonaProsperity.dominantHousePillar} (번영도 ${result.kendraTrikonaProsperity.dharmaProsperityScore}점)\n  * 지탱 기둥 조언: ${result.kendraTrikonaProsperity.lifePillarAdvice}`
+    : '';
+
+  const purusharthaLine = result.purusharthaAlignment
+    ? `- 4대 푸루샤르타 인생 목적: 주 목적 [${result.purusharthaAlignment.primarySpiritualAim}]\n  * 가중치: 다르마 ${result.purusharthaAlignment.dharmaWeight}% | 아르타 ${result.purusharthaAlignment.arthaWeight}% | 카마 ${result.purusharthaAlignment.kamaWeight}% | 모크샤 ${result.purusharthaAlignment.mokshaWeight}%`
+    : '';
+
   const timelineLines = result.mahadashas
     .map((m) => {
       const mark = current && current.mahadasha.ordinal === m.ordinal ? ' ◀ 현재' : '';
@@ -555,7 +702,7 @@ ${birthLine}
 ${nakshatraLines}
 ${rashiLines}
 ${currentLines}
-- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
+${synergyLine ? synergyLine + '\n' : ''}${kendraLine ? kendraLine + '\n' : ''}${purusharthaLine ? purusharthaLine + '\n' : ''}- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
 ${timelineLines}
 - [AI 해석 절대 지침]: 본 리포트는 항성황도 천문 계산으로 산출된 100% 확정 수리입니다. 나크샤트라·파다·다샤 주인과 기간을 임의로 바꾸지 말고, 마하다샤(대운 주제)와 안타르다샤(소운 세부)의 계층 구조에 맞춰 상담하십시오. 아얀암사는 평균 세차율 근사이므로 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
 `.trim();

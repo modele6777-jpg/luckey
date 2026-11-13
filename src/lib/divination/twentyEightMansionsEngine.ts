@@ -95,6 +95,26 @@ export interface TwentyEightMansionsDomainScore {
   bestDates: TwentyEightMansionsBestDate[]; // 향후 28일 내 최적 택일 후보 (최대 3일)
 }
 
+export interface ThreeEnclosuresResonance {
+  celestialCourt: '자미원(紫微垣·황궁본체)' | '태미원(太微垣·조정경륜)' | '천시원(天市垣·시장교역)';
+  courtTheme: string;
+  resonanceScore: number; // 40 ~ 98점
+}
+
+export interface CelestialBeastAlignment {
+  beastName: string; // 청룡, 현무, 백호, 주작
+  directionMatch: '순행 상합(順行相合)' | '방위 비화(方位比和)' | '기운 충극(氣運衝剋)' | '내실 조율(內實調律)';
+  harmonyIndex: number; // 40 ~ 98점
+  tacticalOrientationAdvice: string;
+}
+
+export interface QuadrantTransition {
+  phaseName: string; // 청룡 발아기, 현무 심화기, 백호 결단기, 주작 결실기
+  cycleDay: number; // 1 ~ 28일 순환 내 순번
+  phaseEnergy: string;
+  pacingGuide: string;
+}
+
 export interface TwentyEightMansionsResult {
   status: 'calculated';
   engineVersion: string;
@@ -109,6 +129,9 @@ export interface TwentyEightMansionsResult {
   domainScores: TwentyEightMansionsDomainScore[]; // 6대 영역 택일 스코어
   overallVerdict: string; // 종합 판정
   overallGuide: string; // 종합 개운 행동 가이드
+  threeEnclosuresResonance?: ThreeEnclosuresResonance;
+  celestialBeastAlignment?: CelestialBeastAlignment;
+  quadrantTransition?: QuadrantTransition;
 }
 
 /** 28수 원시 정의 (색인 0=각(角) ~ 27=진(軫), 정통 회귀 순서) */
@@ -371,7 +394,98 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date }): Twe
     };
   });
 
-  // 4. 종합 판정 및 가이드
+  // 4. 천문 3원(三垣) 공명 산출
+  const ENCLOSURES: Array<'자미원(紫微垣·황궁본체)' | '태미원(太微垣·조정경륜)' | '천시원(天市垣·시장교역)'> = [
+    '자미원(紫微垣·황궁본체)',
+    '태미원(太微垣·조정경륜)',
+    '천시원(天市垣·시장교역)',
+  ];
+  const enclosureIdx = mansionIndex % 3;
+  const celestialCourt = ENCLOSURES[enclosureIdx];
+  const courtThemes: Record<typeof celestialCourt, string> = {
+    '자미원(紫微垣·황궁본체)': '북극성과 황궁을 호위하는 중심성으로, 내면의 주권과 중심 가치를 확립하는 데 최상의 기운입니다.',
+    '태미원(太微垣·조정경륜)': '조정 대신들이 경륜을 펼치는 자리로, 협상·기획·리더십과 공적 협력을 추진하기에 길합니다.',
+    '천시원(天市垣·시장교역)': '만백성이 모여 재화와 지혜를 교환하는 시장의 자리로, 상거래·투자·홍보 및 활발한 교류에 길합니다.',
+  };
+  const threeEnclosuresResonance: ThreeEnclosuresResonance = {
+    celestialCourt,
+    courtTheme: courtThemes[celestialCourt],
+    resonanceScore: Math.min(98, Math.max(45, 62 + ((jdn * 7 + mansionIndex * 11) % 35))),
+  };
+
+  // 5. 4방신 신수 진법 및 일진 방위 조화도
+  const beastName = mansion.group.includes('동') ? '청룡(靑龍)' : mansion.group.includes('북') ? '현무(玄武)' : mansion.group.includes('서') ? '백호(白虎)' : '주작(朱雀)';
+  let directionMatch: '순행 상합(順行相合)' | '방위 비화(方位比和)' | '기운 충극(氣運衝剋)' | '내실 조율(內實調律)';
+  let harmonyIndex: number;
+  const isEastZhi = [2, 3, 4].includes(zhiIdx);
+  const isSouthZhi = [5, 6, 7].includes(zhiIdx);
+  const isWestZhi = [8, 9, 10].includes(zhiIdx);
+  const isNorthZhi = [11, 0, 1].includes(zhiIdx);
+
+  if (
+    (beastName === '청룡(靑龍)' && isEastZhi) ||
+    (beastName === '주작(朱雀)' && isSouthZhi) ||
+    (beastName === '백호(白虎)' && isWestZhi) ||
+    (beastName === '현무(玄武)' && isNorthZhi)
+  ) {
+    directionMatch = '방위 비화(方位比和)';
+    harmonyIndex = 92;
+  } else if (
+    (beastName === '청룡(靑龍)' && isSouthZhi) ||
+    (beastName === '주작(朱雀)' && isWestZhi) ||
+    (beastName === '백호(白虎)' && isNorthZhi) ||
+    (beastName === '현무(玄武)' && isEastZhi)
+  ) {
+    directionMatch = '순행 상합(順行相合)';
+    harmonyIndex = 88;
+  } else if (
+    (beastName === '청룡(靑龍)' && isWestZhi) ||
+    (beastName === '주작(朱雀)' && isNorthZhi) ||
+    (beastName === '백호(白虎)' && isEastZhi) ||
+    (beastName === '현무(玄武)' && isSouthZhi)
+  ) {
+    directionMatch = '기운 충극(氣運衝剋)';
+    harmonyIndex = 55;
+  } else {
+    directionMatch = '내실 조율(內實調律)';
+    harmonyIndex = 74;
+  }
+
+  const celestialBeastAlignment: CelestialBeastAlignment = {
+    beastName,
+    directionMatch,
+    harmonyIndex,
+    tacticalOrientationAdvice: `당일 직성 신수 ${beastName}와 일진 간지 지지(${ZHI[zhiIdx]})가 ${directionMatch}의 역학을 이루어 기운 조화도 ${harmonyIndex}점을 형성합니다.`,
+  };
+
+  // 6. 28일 순환 4대 국면(청룡·현무·백호·주작 7수 윈도우)
+  const cycleDay = mansionIndex + 1;
+  let phaseName = '동방청룡 발아도약기';
+  let phaseEnergy = '목(木)기 발아 — 창의적 기획과 신규 프로젝트 착수';
+  let pacingGuide = '기초를 다지고 새로운 제안을 세상에 내어놓기에 적합합니다.';
+
+  if (cycleDay >= 8 && cycleDay <= 14) {
+    phaseName = '북방현무 심화축적기';
+    phaseEnergy = '수(水)기 저장 — 지혜 축적과 시스템 보안·내실 다지기';
+    pacingGuide = '외부 확장보다 데이터 정비와 계약 조항 점검에 집중하십시오.';
+  } else if (cycleDay >= 15 && cycleDay <= 21) {
+    phaseName = '서방백호 결단수렴기';
+    phaseEnergy = '금(金)기 결단 — 불필요한 군더더기 정리와 과감한 구조조정';
+    pacingGuide = '명확한 기준을 세우고 타협 없는 결단으로 실속을 취하십시오.';
+  } else if (cycleDay >= 22) {
+    phaseName = '남방주작 성취만개기';
+    phaseEnergy = '화(火)기 결실 — 대외 홍보와 결과물 발표, 교류 성취';
+    pacingGuide = '성과를 알리고 네트워크를 통해 협력의 결실을 수확하십시오.';
+  }
+
+  const quadrantTransition: QuadrantTransition = {
+    phaseName,
+    cycleDay,
+    phaseEnergy,
+    pacingGuide,
+  };
+
+  // 7. 종합 판정 및 가이드
   const bestDomain = domainScores.reduce((a, b) => (b.score > a.score ? b : a));
   const worstDomain = domainScores.reduce((a, b) => (b.score < a.score ? b : a));
   const targetDateString = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -392,6 +506,9 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date }): Twe
     domainScores,
     overallVerdict,
     overallGuide,
+    threeEnclosuresResonance,
+    celestialBeastAlignment,
+    quadrantTransition,
   };
 }
 
@@ -410,6 +527,16 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
     )
     .join('\n');
 
+  const enclosureBlock = result.threeEnclosuresResonance
+    ? `\n- 천문 3원(三垣) 공명: ${result.threeEnclosuresResonance.celestialCourt} (공명도 ${result.threeEnclosuresResonance.resonanceScore}점)\n  * 3원 테마: ${result.threeEnclosuresResonance.courtTheme}`
+    : '';
+  const beastBlock = result.celestialBeastAlignment
+    ? `\n- 4방신 신수 조화: ${result.celestialBeastAlignment.beastName} — ${result.celestialBeastAlignment.directionMatch} (조화도 ${result.celestialBeastAlignment.harmonyIndex}점)\n  * 방위 전술: ${result.celestialBeastAlignment.tacticalOrientationAdvice}`
+    : '';
+  const quadrantBlock = result.quadrantTransition
+    ? `\n- 28일 순환 국면: ${result.quadrantTransition.phaseName} (순환 ${result.quadrantTransition.cycleDay}일차)\n  * 위상 에너지: ${result.quadrantTransition.phaseEnergy}\n  * 완급 조절: ${result.quadrantTransition.pacingGuide}`
+    : '';
+
   return `
 [천상열차분야지도(天象列次分野之圖) 28수 일진·택일 결정론적 산출 리포트 (${TWENTY_EIGHT_MANSIONS_ENGINE_VERSION})]
 - 대상 일자: ${result.targetDate} (한국 표준시) · 율리우스적일 ${result.julianDayNumber}
@@ -417,7 +544,7 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
 - 28수 직성(直星): ${result.mansion.fullName} — ${result.mansion.group} · ${result.mansion.index + 1}번째 수
   * 오행·칠요: ${result.mansion.element} / ${result.mansion.luminary} · 상징 신수: ${result.mansion.animal} · 길흉 본의: ${result.mansion.grade}
   * 본의 요해: ${result.mansion.gradeMeaning}
-  * 7원 4주기 검증: 직성 칠요(${result.mansion.luminary}) ↔ 요일(${result.weekdayLuminary}) ${result.luminaryWeekdayAligned ? '완전 일치' : '불일치'}
+  * 7원 4주기 검증: 직성 칠요(${result.mansion.luminary}) ↔ 요일(${result.weekdayLuminary}) ${result.luminaryWeekdayAligned ? '완전 일치' : '불일치'}${enclosureBlock}${beastBlock}${quadrantBlock}
 - 6대 영역 택일(擇日) 스코어:
 ${domainLines}
 - 종합 판정: ${result.overallVerdict}

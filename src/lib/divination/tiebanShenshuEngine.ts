@@ -33,6 +33,26 @@ export interface TiebanClause {
   actionableGuidance: string;    // 현실적 실천 조언
 }
 
+export interface YuanHuiYunShiCycle {
+  currentEpoch: string;          // 당면 거시 회·세(會·世) 국면
+  cyclicalPhase: '개창운(開創運)' | '융성운(隆盛運)' | '수렴운(收斂運)' | '정화운(淨化運)';
+  resonanceScore: number;        // 거시 원회운세 공명도 (45 ~ 98점)
+  macroCycleAdvice: string;      // 시대 궤적과의 조화 실행 조언
+}
+
+export interface NaYinRhythmHarmony {
+  dominantTone: string;          // 12율려 주재음 (황종, 대려, 태주 등)
+  pitchHarmonicsScore: number;   // 율려 음양 조화도 (40 ~ 98점)
+  elementalResonance: string;    // 사주 납음오행 공명 분석
+}
+
+export interface TiebanTacticalWindows {
+  earlyBreakthrough: string;     // 전반기 선제 돌파 윈도우
+  midConsolidation: string;      // 중반기 내실 결실 윈도우
+  latePreservation: string;      // 후반기 수성 지혜 윈도우
+  masterMotto: string;           // 철판신수 심결 핵심 잠언
+}
+
 export interface TiebanReport {
   engineVersion: string;
   calculatedAt: string;
@@ -43,6 +63,9 @@ export interface TiebanReport {
   timingClause: TiebanClause;    // 대운 행운 결단 조식
   wisdomClause: TiebanClause;    // 천기 심층 경책 조식
   heavenlyAccordIndex: number;   // 0 ~ 100 천기 조화 지수
+  yuanHuiYunShi?: YuanHuiYunShiCycle;
+  naYinRhythmHarmony?: NaYinRhythmHarmony;
+  tacticalWindows?: TiebanTacticalWindows;
 }
 
 const TAI_XUAN_STEM_MAP: Record<number, number> = {
@@ -259,6 +282,53 @@ export function calculateTiebanShenshu(
   // 4. 천기 조화 지수
   const heavenlyAccordIndex = Math.min(99, Math.max(62, Math.round(75 + (inherentPrimeNumber % 25) - 3)));
 
+  // 5. 황극경세서 원회운세(元會運世) 거시 주기론 연계
+  const CYCLICAL_PHASES: Array<'개창운(開創運)' | '융성운(隆盛運)' | '수렴운(收斂運)' | '정화운(淨化運)'> = [
+    '개창운(開創運)',
+    '융성운(隆盛運)',
+    '수렴운(收斂運)',
+    '정화운(淨化運)',
+  ];
+  const phaseIdx = (inherentPrimeNumber + birthYear) % 4;
+  const cyclicalPhase = CYCLICAL_PHASES[phaseIdx];
+  const currentEpoch = `오회(午會) 지화명이(地火明夷) 대국 제${((inherentPrimeNumber * 7 + birthYear) % 360) + 1}세`;
+  const macroResonanceScore = Math.min(98, Math.max(48, 65 + ((inherentPrimeNumber * 13) % 32)));
+  const macroCycleAdvices: Record<typeof cyclicalPhase, string> = {
+    '개창운(開創運)': '새로운 판을 열고 기초를 다지는 시기이므로 과거의 전례에 얽매이지 말고 독창적인 길을 개척하십시오.',
+    '융성운(隆盛運)': '역량과 네트워크가 만개하는 전성기이므로 자원을 과감히 결합하여 영향력을 극대화하십시오.',
+    '수렴운(收斂運)': '무분별한 확장보다 핵심 실속과 결실을 거두어들이고 조직과 내실을 재정비할 때입니다.',
+    '정화운(淨化運)': '묵은 부채와 불필요한 번뇌를 비워내고 차기 도약을 위한 영적·지적 자양분을 축적하십시오.',
+  };
+  const yuanHuiYunShi: YuanHuiYunShiCycle = {
+    currentEpoch,
+    cyclicalPhase,
+    resonanceScore: macroResonanceScore,
+    macroCycleAdvice: macroCycleAdvices[cyclicalPhase],
+  };
+
+  // 6. 사기 납음오행 및 12율려(十二律呂) 조화도
+  const TWELVE_TONES = [
+    '황종(黃鐘)', '대려(大呂)', '태주(太簇)', '협종(夾鐘)',
+    '고선(姑洗)', '중려(仲呂)', '유빈(蕤賓)', '임종(林鐘)',
+    '이칙(夷則)', '남려(南呂)', '무역(無射)', '응종(應鐘)',
+  ];
+  const toneIdx = (inherentPrimeNumber + birthHour) % 12;
+  const dominantTone = TWELVE_TONES[toneIdx];
+  const pitchHarmonicsScore = Math.min(98, Math.max(45, 60 + (inherentPrimeNumber % 35) + (kuaIdx % 5) * 2));
+  const naYinRhythmHarmony: NaYinRhythmHarmony = {
+    dominantTone,
+    pitchHarmonicsScore,
+    elementalResonance: `선천 태현수 ${inherentPrimeNumber}와 ${kuaName} 괘기가 12율려 중 ${dominantTone}의 파동과 공명하여 오행 순환의 균형을 유지합니다.`,
+  };
+
+  // 7. 철판신수 3대 결단 윈도우 및 심결 잠언
+  const tacticalWindows: TiebanTacticalWindows = {
+    earlyBreakthrough: `제${inherentClause.clauseNumber}조 성정 에너지를 발현하여 상반기에는 대담한 시도와 선제적 기선 제압에 집중하십시오.`,
+    midConsolidation: `제${affinityClause.clauseNumber}조 인연의 합을 활용하여 중반기에는 신뢰할 수 있는 동반자와 조력 구조를 공고히 하십시오.`,
+    latePreservation: `제${wisdomClause.clauseNumber}조 심층 경책을 나침반 삼아 연말에는 무리한 모험을 지양하고 성과를 수성하십시오.`,
+    masterMotto: `소강절 철판심결: "數在天地 運在人心(수는 천지에 있으나 운은 사람의 마음에 달렸도다)".`,
+  };
+
   return {
     engineVersion: TIEBAN_SHENSHU_VERSION,
     calculatedAt: new Date().toISOString(),
@@ -269,13 +339,26 @@ export function calculateTiebanShenshu(
     timingClause,
     wisdomClause,
     heavenlyAccordIndex,
+    yuanHuiYunShi,
+    naYinRhythmHarmony,
+    tacticalWindows,
   };
 }
 
 export function formatTiebanShenshuPrompt(report: TiebanReport): string {
+  const macroBlock = report.yuanHuiYunShi
+    ? `\n- 황극경세서 원회운세: ${report.yuanHuiYunShi.currentEpoch} (${report.yuanHuiYunShi.cyclicalPhase}, 공명도 ${report.yuanHuiYunShi.resonanceScore}점)\n  * 거시 시대 궤적 조언: ${report.yuanHuiYunShi.macroCycleAdvice}`
+    : '';
+  const rhythmBlock = report.naYinRhythmHarmony
+    ? `\n- 12율려 음양 조화: 주재음 ${report.naYinRhythmHarmony.dominantTone} (조화도 ${report.naYinRhythmHarmony.pitchHarmonicsScore}점)\n  * 율려 공명: ${report.naYinRhythmHarmony.elementalResonance}`
+    : '';
+  const tacticalBlock = report.tacticalWindows
+    ? `\n5. 철판 3대 결단 윈도우 및 심결 잠언:\n   * 전반기 돌파: ${report.tacticalWindows.earlyBreakthrough}\n   * 중반기 결실: ${report.tacticalWindows.midConsolidation}\n   * 후반기 수성: ${report.tacticalWindows.latePreservation}\n   * 비전 심결: ${report.tacticalWindows.masterMotto}`
+    : '';
+
   return `[고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진]
 - 선천 태현 기본수: ${report.inherentPrimeNumber} / 주재 괘상: ${report.kuaName}
-- 천기 조화 지수: ${report.heavenlyAccordIndex}점 (100점 만점)
+- 천기 조화 지수: ${report.heavenlyAccordIndex}점 (100점 만점)${macroBlock}${rhythmBlock}
 1. 선천 본원 성정 조식 (제${report.inherentClause.clauseNumber}조):
    * 격국명: ${report.inherentClause.title}
    * 시경 원전: "${report.inherentClause.classicalPoem}"
@@ -292,5 +375,5 @@ export function formatTiebanShenshuPrompt(report: TiebanReport): string {
 4. 천기 심층 경책 조식 (제${report.wisdomClause.clauseNumber}조):
    * 경책명: ${report.wisdomClause.title}
    * 잠언 원전: "${report.wisdomClause.classicalPoem}"
-   * 수양 지혜: ${report.wisdomClause.actionableGuidance}`;
+   * 수양 지혜: ${report.wisdomClause.actionableGuidance}${tacticalBlock}`;
 }
