@@ -967,6 +967,16 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   assert(prompt.includes('LUCKEY-TM-v1.0.0'));
   assert(prompt.includes('천상열차분야지도') && prompt.includes('28수 직성'));
   assert(prompt.includes('필월오(畢月烏)') && prompt.includes('계약·협상') && prompt.includes('휴식·치유·내실'));
+  // 천문 3원, 4방신 신수 조화, 28일 순환 국면 검증
+  assert(r.threeEnclosuresResonance?.celestialCourt !== undefined);
+  assert(r.threeEnclosuresResonance!.resonanceScore >= 40 && r.threeEnclosuresResonance!.resonanceScore <= 98);
+  assert.equal(r.celestialBeastAlignment?.beastName, '백호(白虎)');
+  assert(r.celestialBeastAlignment!.harmonyIndex >= 40 && r.celestialBeastAlignment!.harmonyIndex <= 98);
+  assert.equal(r.quadrantTransition?.phaseName, '서방백호 결단수렴기');
+  assert.equal(r.quadrantTransition?.cycleDay, 19);
+  assert(prompt.includes('천문 3원(三垣) 공명'));
+  assert(prompt.includes('4방신 신수 조화'));
+  assert(prompt.includes('28일 순환 국면'));
 
   // 결정론 엔진 통합 바인딩 (생년월일 무관 당일 일진 기준 산출)
   const report = runDeterministicEngine({ profile: { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } }, question: '이사 날짜 알려줘' });
@@ -1172,6 +1182,23 @@ test('Vedic engine: determinism, null-safe noon fallback, safe skip and prompt f
 
   // 프롬프트 포맷터
   const prompt = formatVedicPrompt(r1);
+  assert(prompt.includes('정통 베딕 조티시'));
+  // 나바그라하 다샤 행성 조화, 켄드라·트리코나 번영, 4대 푸루샤르타 검증
+  assert(r1.dashaPlanetarySynergy !== null && r1.dashaPlanetarySynergy !== undefined);
+  assert(r1.dashaPlanetarySynergy!.synergyScore >= 45 && r1.dashaPlanetarySynergy!.synergyScore <= 98);
+  assert(r1.kendraTrikonaProsperity !== null && r1.kendraTrikonaProsperity !== undefined);
+  assert(r1.kendraTrikonaProsperity!.dharmaProsperityScore >= 40 && r1.kendraTrikonaProsperity!.dharmaProsperityScore <= 98);
+  assert(r1.purusharthaAlignment !== null && r1.purusharthaAlignment !== undefined);
+  assert.equal(
+    r1.purusharthaAlignment!.dharmaWeight +
+      r1.purusharthaAlignment!.arthaWeight +
+      r1.purusharthaAlignment!.kamaWeight +
+      r1.purusharthaAlignment!.mokshaWeight,
+    100
+  );
+  assert(prompt.includes('다샤 행성 조화'));
+  assert(prompt.includes('켄드라·트리코나 번영'));
+  assert(prompt.includes('4대 푸루샤르타 인생 목적'));
   assert(prompt.includes('LUCKEY-VD-v1.0.0'));
   assert(prompt.includes('빔쇼타리'));
   assert(prompt.includes('나크샤트라'));
@@ -3052,9 +3079,20 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert(rep.kuaName.length > 0);
   assert(rep.inherentClause.clauseNumber >= 1 && rep.inherentClause.clauseNumber <= 12000);
   assert(rep.heavenlyAccordIndex >= 0 && rep.heavenlyAccordIndex <= 100);
+  // 황극경세서 원회운세, 12율려, 3대 결단 윈도우 검증
+  assert(rep.yuanHuiYunShi?.currentEpoch && rep.yuanHuiYunShi.currentEpoch.length > 0);
+  assert(['개창운(開創運)', '융성운(隆盛運)', '수렴운(收斂運)', '정화운(淨化運)'].includes(rep.yuanHuiYunShi!.cyclicalPhase));
+  assert(rep.yuanHuiYunShi!.resonanceScore >= 45 && rep.yuanHuiYunShi!.resonanceScore <= 98);
+  assert(rep.naYinRhythmHarmony?.dominantTone && rep.naYinRhythmHarmony.dominantTone.length > 0);
+  assert(rep.naYinRhythmHarmony!.pitchHarmonicsScore >= 40 && rep.naYinRhythmHarmony!.pitchHarmonicsScore <= 98);
+  assert(rep.tacticalWindows?.earlyBreakthrough && rep.tacticalWindows.earlyBreakthrough.length > 0);
+  assert(rep.tacticalWindows?.masterMotto.includes('數在天地 運在人心'));
   const prompt = formatTiebanShenshuPrompt(rep);
   assert(prompt.includes('고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진'));
   assert(prompt.includes(rep.kuaName));
+  assert(prompt.includes('원회운세'));
+  assert(prompt.includes('12율려'));
+  assert(prompt.includes('결단 윈도우'));
 });
 
 test('Tibetan Bon Nine Ways & Five Soul Vitalities Engine: calculates active way, vitalities and mantra', () => {
