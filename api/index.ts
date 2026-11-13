@@ -1,4 +1,4 @@
-// v1.7.402: enhanced Tieban Shenshu, 28 Mansions, and Vedic core divination engines
+// v1.7.403: enhanced Thai Horasat, Hongguk Qimen, and Ziwei Flying Stars core engines
 import { getLucyRequestFallbacks, requestWithModelFallback } from '../src/lib/lucyModelPolicy.ts';
 import "dotenv/config";
 import express from "express";

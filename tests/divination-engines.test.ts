@@ -1418,11 +1418,29 @@ test('Thai Horasat engine binds into the deterministic engine report and prompt'
   assert.equal(report.tools.thai_astrology.status, 'calculated'); // partial → calculated 승격
   const prompt = formatDeterministicEnginePrompt(report);
   assert(prompt.includes('LUCKEY-TH-v1.0.0'));
+  // 태국 호라삿 친우·원수 역학, 마하탁사 소운, 4원소 계절 결단 윈도우 검증
+  assert(report.thaiHorasatResult!.planetaryFriendEnemyDynamic !== null && report.thaiHorasatResult!.planetaryFriendEnemyDynamic !== undefined);
+  assert(report.thaiHorasatResult!.planetaryFriendEnemyDynamic!.affinityScore >= 40 && report.thaiHorasatResult!.planetaryFriendEnemyDynamic!.affinityScore <= 98);
+  assert(report.thaiHorasatResult!.mahaThaksaAntardasha !== null && report.thaiHorasatResult!.mahaThaksaAntardasha !== undefined);
+  assert.ok(report.thaiHorasatResult!.mahaThaksaAntardasha!.antardashaPlanetName.length > 0);
+  assert(report.thaiHorasatResult!.seasonalThaatTactics !== null && report.thaiHorasatResult!.seasonalThaatTactics !== undefined);
+  assert.ok(report.thaiHorasatResult!.seasonalThaatTactics!.peakActionSeason.length > 0);
+  assert(prompt.includes('호라삿 행성 친우·원수 역학'));
+  assert(prompt.includes('마하탁사 소운(Antardasha)'));
+  assert(prompt.includes('4대 원소(Thaat) 계절 결단 윈도우'));
   const noProfile = runDeterministicEngine({ profile: null });
   assert(noProfile.thaiHorasatResult?.status === 'skipped');
   assert.equal(noProfile.tools.thai_astrology.status, 'skipped');
   // 프로필이 있으면 15개 도구 전부 calculated 이상 (not_implemented 0 유지)
   assert.equal(Object.values(report.tools).filter((t) => t.status === 'not_implemented').length, 0);
+});
+
+test('buildUserFifteenToolsDigest integrates Hongguk Qimen and Ziwei Flying Stars into synapse perception digest', () => {
+  const profile = { basic: { birthdate: '1995-03-25', birthtime: '14:30', gender: 'male' as const, birthCity: '서울' } };
+  const digest = buildUserFifteenToolsDigest(profile);
+  assert.match(digest, /홍국기문\(4주 9궁\): 세효/);
+  assert.match(digest, /자미두수 유년 사화: 명궁/);
+  assert.match(digest, /태국점성술 요일 상징/);
 });
 
 import { calculateKabbalah, formatKabbalahPrompt, KABBALAH_ENGINE_VERSION, KABBALAH_METHOD, SEPHIROTH_10, PATHS_22, FOUR_WORLDS, THREE_PILLARS, DAATH, kabbalahSephirahByNumber, kabbalahPathByNumber, reduceGematria, digitSum, soulPathNumberToPath } from '../src/lib/divination/kabbalahEngine';
