@@ -1320,7 +1320,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const hasScrollableHistory = container.scrollHeight - container.clientHeight > 80;
     isUserScrolledUpRef.current = hasScrollableHistory;
     setShowReturnToRecentConversation(hasScrollableHistory);
-    container.scrollTo({ top: 0, behavior: 'smooth' });
+    // A top tap must not depend on a long scroll animation completing.
+    // Reset the Lucy pane's scroll roots synchronously so it always reaches zero.
+    let scrollRoot: HTMLElement | null = container;
+    while (scrollRoot) {
+      if (scrollRoot.scrollTop !== 0) scrollRoot.scrollTop = 0;
+      scrollRoot = scrollRoot.parentElement;
+    }
+    const documentScroller = container.ownerDocument.scrollingElement;
+    if (documentScroller && documentScroller.scrollTop !== 0) documentScroller.scrollTop = 0;
   }, []);
 
   // 🎯 TTS 낭독 중인 하이라이트 문장 화면 수직 중앙(50%) 자동 정렬 스마트 스크롤

@@ -164,7 +164,7 @@
 .pull-refresh-indicator {
   position: fixed;
   top: max(12px, env(safe-area-inset-top, 0px));
-  left: 50vw !important;
+  left: calc((100vw - var(--sites-sidebar-width, 80px)) / 2) !important;
   transform: translate(-50%, 0);
   z-index: 11000;
   pointer-events: none;
