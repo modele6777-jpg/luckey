@@ -106,6 +106,32 @@ export interface SukuyoPartnerMatrix {
   fullMatrix: SukuyoMatrixRow[]; // 내 본명숙 기준 27숙 전수 양방향 매트릭스
 }
 
+/** 칠요 행성 수호 및 능범 안정도 */
+export interface SukuyoPlanetaryGuard {
+  dominantLuminary: SevenLuminary;
+  elementAffinity: string;
+  guardScore: number; // 40~98점
+  favorableWeekday: string;
+  yearlyAdvice: string;
+}
+
+/** 4방신 천구 사분면 및 계절 가중치 */
+export interface SukuyoCelestialQuadrant {
+  quadrant: SukuyoDirectionGroup;
+  degreesSpan: string;
+  guardianSpirit: string;
+  elementAffinity: string;
+  seasonalWeight: string;
+}
+
+/** 3구 비법(三九秘法) 주기 및 행동 나침반 */
+export interface SukuyoSanKyuCycle {
+  nineMansionPhase: '제1구(일구: 본명·업태 심원기)' | '제2구(이구: 영안성 도약번영기)' | '제3구(삼구: 쇠위괴 수렴연마기)';
+  cycleOrder: number; // 1~3
+  phaseTheme: string;
+  actionCompass: string;
+}
+
 export interface SukuyoResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
@@ -121,6 +147,9 @@ export interface SukuyoResult {
     lifeGuide: string; // 숙격 기반 인생 성향 가이드
   };
   selfDynamics?: string; // 본명숙·숙격 종합 역학
+  planetaryGuard?: SukuyoPlanetaryGuard;
+  celestialQuadrant?: SukuyoCelestialQuadrant;
+  sanKyuCycle?: SukuyoSanKyuCycle;
   partnerMatrix?: SukuyoPartnerMatrix | null; // 파트너가 있을 때만
   note?: string;
 }
@@ -403,6 +432,118 @@ export function calculateSukuyoAdvanced(params: {
     };
   }
 
+function calculatePlanetaryGuard(mansion: SukuyoMansionInfo, solarYear: number): SukuyoPlanetaryGuard {
+  const lum = mansion.luminary;
+  const weekdays: Record<SevenLuminary, string> = {
+    '일(日)': '일요일',
+    '월(月)': '월요일',
+    '화(火)': '화요일',
+    '수(水)': '수요일',
+    '목(木)': '목요일',
+    '금(金)': '금요일',
+    '토(土)': '토요일',
+  };
+  const elementAffinities: Record<SevenLuminary, string> = {
+    '목(木)': '목성(세성 歲星)의 생명력과 확장적 지혜',
+    '금(金)': '금성(태백성 太白星)의 결단력과 미적 감각',
+    '토(土)': '토성(진성 鎭星)의 신중한 기초와 지속력',
+    '일(日)': '태양(일요성 日曜星)의 자존감과 영웅적 리더십',
+    '월(月)': '태음(월요성 月曜星)의 섬세한 직관과 수용적 포용력',
+    '화(火)': '화성(형혹성 熒惑星)의 과감한 돌파력과 추진 열정',
+    '수(水)': '수성(진성 辰星)의 유연한 기동성과 명석한 소통력',
+  };
+  const baseGuard = 68;
+  const yearOffset = solarYear % 7;
+  const mansionOffset = (mansion.index * 3) % 23;
+  const guardScore = Math.min(98, Math.max(42, baseGuard + yearOffset * 2 + (mansionOffset - 11)));
+
+  const adviceMap: Record<SevenLuminary, string> = {
+    '목(木)': '배움과 네트워크 확장에 길하며, 서두르지 않고 뿌리를 깊게 내리는 장기 프로젝트에서 성과가 두드러집니다.',
+    '금(金)': '계약과 원칙 정리에 유리하며, 불필요한 군더더기를 쳐내고 핵심 가치에 집중할 때 돌파구가 열립니다.',
+    '토(土)': '부동산·자산 관리와 내실 다지기에 최적기이며, 약속과 신용을 철저히 지키는 자세가 후반기 큰 자산이 됩니다.',
+    '일(日)': '독립적 주도권 행사와 대외 발표에 최상이며, 타인의 시선에 위축되지 않고 솔직한 신념을 펼치십시오.',
+    '월(月)': '내면 감정 정화와 정서적 유대에 집중할 시기이며, 조급한 결단보다는 직관적 흐름을 관찰하는 인내가 필요합니다.',
+    '화(火)': '막힌 정체를 깨는 속도전에 유리하나 감정적 충돌을 경계하고, 에너지를 구체적 실행 결과물로 집중시키십시오.',
+    '수(水)': '정보 수집과 다각도 대안 모색에 길하며, 유연한 소통과 기록 습관이 뜻밖의 실마리를 가져옵니다.',
+  };
+
+  return {
+    dominantLuminary: lum,
+    elementAffinity: elementAffinities[lum],
+    guardScore,
+    favorableWeekday: weekdays[lum],
+    yearlyAdvice: adviceMap[lum],
+  };
+}
+
+function calculateCelestialQuadrant(mansion: SukuyoMansionInfo): SukuyoCelestialQuadrant {
+  const group = mansion.group;
+  const quadrantMap: Record<SukuyoDirectionGroup, { degreesSpan: string; guardianSpirit: string; elementAffinity: string; seasonalWeight: string }> = {
+    '동방청룡(東方靑龍)': {
+      degreesSpan: '동방 7숙(각·항·저·방·심·미·기) — 춘분~하지 0°~90°',
+      guardianSpirit: '푸른 용의 청신한 봄 기운과 창조적 발아',
+      elementAffinity: '목(木) — 시작과 비약적 성장',
+      seasonalWeight: '봄철에 추진 모멘텀이 극대화되며, 새 기획과 도전에 최상의 시너지를 발휘합니다.',
+    },
+    '북방현무(北方玄武)': {
+      degreesSpan: '북방 7숙(두·우·여·허·위·실·벽) — 동지~춘분 270°~360°',
+      guardianSpirit: '검은 거북과 뱀의 심원한 지혜와 영적 수호',
+      elementAffinity: '수(水) — 내실 저장과 전략적 침잠',
+      seasonalWeight: '겨울철에 내적 통찰과 연구 역량이 극대화되며, 비밀 유지와 내실 완비에 길합니다.',
+    },
+    '서방백호(西方白虎)': {
+      degreesSpan: '서방 7숙(규·루·위·묘·필·자·삼) — 추분~동지 180°~270°',
+      guardianSpirit: '하얀 호랑이의 서릿발 같은 결단과 정의',
+      elementAffinity: '금(金) — 수확과 냉철한 분별',
+      seasonalWeight: '가을철에 결실 수확과 계약 매듭이 빨라지며, 옥석 가리기에 최상의 성과를 냅니다.',
+    },
+    '남방주작(南方朱雀)': {
+      degreesSpan: '남방 7숙(정·귀·류·성·장·익·진) — 하지~추분 90°~180°',
+      guardianSpirit: '붉은 봉황의 찬란한 빛과 성스러운 도약',
+      elementAffinity: '화(火) — 열정과 대외적 명예',
+      seasonalWeight: '여름철에 대외 인지도와 가시적 확장이 절정에 이르며, 대중적 성과 표출에 유리합니다.',
+    },
+  };
+
+  const q = quadrantMap[group];
+  return {
+    quadrant: group,
+    degreesSpan: q.degreesSpan,
+    guardianSpirit: q.guardianSpirit,
+    elementAffinity: q.elementAffinity,
+    seasonalWeight: q.seasonalWeight,
+  };
+}
+
+function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
+  const cycleOrder = Math.floor(mansion.index / 9) + 1;
+  const phaseList: Array<'제1구(일구: 본명·업태 심원기)' | '제2구(이구: 영안성 도약번영기)' | '제3구(삼구: 쇠위괴 수렴연마기)'> = [
+    '제1구(일구: 본명·업태 심원기)',
+    '제2구(이구: 영안성 도약번영기)',
+    '제3구(삼구: 쇠위괴 수렴연마기)',
+  ];
+  const nineMansionPhase = phaseList[cycleOrder - 1];
+
+  const themeList = [
+    '자신의 본래 기질과 천명을 확인하고, 영혼의 동반자 및 카르마적 인연을 식별하는 정체성 확립기',
+    '사회적 영향력 확장, 재물과 성과의 성취, 안정적인 인맥 네트워크를 구축하는 성장 번영기',
+    '외부 팽창을 절제하고, 닥쳐올 수 있는 리스크를 선제 방어하며 다음 주기를 준비하는 지혜의 연마기',
+  ];
+
+  const compassList = [
+    '무리한 외연 확장보다는 내실과 기술 연마에 주력하고, 명(命)·업(業)·태(胎) 숙을 가진 이들과의 심층 신뢰를 다지십시오.',
+    '기회가 올 때 적극적으로 제안을 수락하고, 영(榮)·안(安)·성(成) 숙과의 협업을 통해 프로젝트 완결 속도를 높이십시오.',
+    '계약 문서와 재정 누수를 철저히 검토하고, 무리한 분쟁을 피하며 쇠(衰)·위(危)·괴(壞) 국면의 긴장을 성숙한 포용으로 승화하십시오.',
+  ];
+
+  return {
+    nineMansionPhase,
+    cycleOrder,
+    phaseTheme: themeList[cycleOrder - 1],
+    actionCompass: compassList[cycleOrder - 1],
+  };
+}
+
   // 1. 본명숙(本命宿) 산출
   const myIndex = sukuyoIndexFromLunar(lunar.month, lunar.day);
   const mansion = mansionInfo(myIndex);
@@ -410,6 +551,11 @@ export function calculateSukuyoAdvanced(params: {
   // 2. 7대 숙격 판정
   const shukgukMeta = SHUKGUK_META[mansion.shukguk];
   const selfDynamics = `본명숙은 ${mansion.fullName} — ${mansion.group} 소속 · 칠요 ${mansion.luminary}(${mansion.element}) · 상징 신수 ${mansion.animal}입니다. ${shukgukMeta.hanja}에 속해 ${shukgukMeta.trait}의 기질을 타고났으며, ${shukgukMeta.lifeGuide}`;
+
+  // 2.5 칠요 수호, 사분면, 3구 비법 심층 수리 산출
+  const planetaryGuard = calculatePlanetaryGuard(mansion, solarDate.year);
+  const celestialQuadrant = calculateCelestialQuadrant(mansion);
+  const sanKyuCycle = calculateSanKyuCycle(mansion);
 
   // 3. 파트너 궁합 매트릭스 (상대 프로필이 있을 때만)
   let partnerMatrix: SukuyoPartnerMatrix | null = null;
@@ -465,6 +611,9 @@ export function calculateSukuyoAdvanced(params: {
       lifeGuide: shukgukMeta.lifeGuide,
     },
     selfDynamics,
+    planetaryGuard,
+    celestialQuadrant,
+    sanKyuCycle,
     partnerMatrix,
   };
 }
@@ -486,6 +635,24 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
   const shukgukLine = result.shukguk
     ? `- 7대 숙격(宿格): ${result.shukguk.ko} — ${result.shukguk.trait}\n  * 동일 숙격: ${result.shukguk.members}\n  * 성향 가이드: ${result.shukguk.lifeGuide}`
     : '';
+
+  const deepLines: string[] = [];
+  if (result.planetaryGuard) {
+    deepLines.push(
+      `- 칠요 행성 수호: ${result.planetaryGuard.dominantLuminary} — ${result.planetaryGuard.elementAffinity} (능범 안정도 ${result.planetaryGuard.guardScore}점 · 추천 요일: ${result.planetaryGuard.favorableWeekday})\n  * 수호 조언: ${result.planetaryGuard.yearlyAdvice}`,
+    );
+  }
+  if (result.celestialQuadrant) {
+    deepLines.push(
+      `- 천구 사분면: ${result.celestialQuadrant.quadrant} — ${result.celestialQuadrant.degreesSpan} (${result.celestialQuadrant.guardianSpirit})\n  * 사계절 가중치: ${result.celestialQuadrant.seasonalWeight}`,
+    );
+  }
+  if (result.sanKyuCycle) {
+    deepLines.push(
+      `- 3구 비법(三九秘法) 주기: ${result.sanKyuCycle.nineMansionPhase} — ${result.sanKyuCycle.phaseTheme}\n  * 행동 나침반: ${result.sanKyuCycle.actionCompass}`,
+    );
+  }
+  const deepBlock = deepLines.join('\n');
 
   const partnerBlock = result.partnerMatrix
     ? [
@@ -511,6 +678,7 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
 ${mansionLines}
 ${shukgukLine}
 - 종합 역학: ${result.selfDynamics}
+${deepBlock}
 ${partnerBlock}
 - 6대 관계성 판정 체계: 명(命)=동일 숙의 운명적 거울 · 업·태(業·胎)=영혼의 파트너 · 영·쇠(榮·衰)=번영 vs 소모 · 안·위(安·危)=지지자 vs 긴장 · 성·괴(成·壞)=성취 vs 파괴 · 우·친(友·親)=가장 편안한 유대
 - 3거리 역학: 근거리 1~4숙(즉각적 공명과 마찰) · 중거리 5~13숙(협력과 성장) · 원거리 14~26숙(시공을 넘는 끌림)

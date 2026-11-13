@@ -209,7 +209,37 @@ export interface HonggukQimenResult {
     summary: string;
     advice: string;
   };
+  heavenEarthResonance?: HonggukHeavenEarthResonance;
+  threeWondersAlliance?: HonggukThreeWondersAlliance;
+  tacticalSeasonWindows?: HonggukTacticalSeasonWindows;
   note?: string;
+}
+
+/** 홍국수 천지반 생극제화 공명 */
+export interface HonggukHeavenEarthResonance {
+  seYaoResonance: {
+    heavenStar: number;
+    earthStar: number;
+    relation: '천생지(天生地)' | '지생천(地生天)' | '천극지(天剋地)' | '지극천(地剋天)' | '천지비화(天地比和)';
+    resonanceScore: number; // 40~98
+    interpretation: string;
+  };
+  overallBalance: string;
+}
+
+/** 삼기(三奇) 회합 및 귀인 원조력 */
+export interface HonggukThreeWondersAlliance {
+  wondersDetected: ReadonlyArray<'을기(乙奇·일기)' | '병기(丙奇·월기)' | '정기(丁奇·성기)'>;
+  deukGi: boolean;
+  wondersEmpowermentIndex: number; // 45~98
+  nobleSponsorship: string;
+}
+
+/** 4계절 결단 윈도우 및 거시 전술 가이드 */
+export interface HonggukTacticalSeasonWindows {
+  peakActionSeason: '봄(木·진손궁)' | '여름(火·리궁)' | '가을(金·건태궁)' | '겨울(水·감궁)' | '환절기(土·곤간궁)';
+  defensiveSeason: '봄(木·진손궁)' | '여름(火·리궁)' | '가을(金·건태궁)' | '겨울(水·감궁)' | '환절기(土·곤간궁)';
+  strategicPacingAdvice: string;
 }
 
 /** 수리 수를 1~9 구성환원(낙서 순환)한다. */
@@ -243,6 +273,118 @@ function judgeRelation(fromLabel: string, toLabel: string, fromEl: string, toEl:
     return { from: fromLabel, to: toLabel, fromElement: fromEl, toElement: toEl, relation: '상생', note: `${toLabel}의 ${toEl}기운이 ${fromLabel}의 ${fromEl}기운을 생(生)한다 — ${toLabel}이(가) ${fromLabel}을(를) 도와주는 순환 구조.` };
   }
   return { from: fromLabel, to: toLabel, fromElement: fromEl, toElement: toEl, relation: '상극', note: `${toLabel}의 ${toEl}기운이 ${fromLabel}의 ${fromEl}기운을 극(剋)한다 — ${toLabel}의 압박에 ${fromLabel}이(가) 휘어지는 판이므로 방어 설계가 필요하다.` };
+}
+
+function numberToHadoElement(num: number): '목' | '화' | '토' | '금' | '수' {
+  const mod = ((Math.round(num) - 1) % 10 + 10) % 10 + 1; // 1~10
+  if (mod === 1 || mod === 6) return '수';
+  if (mod === 2 || mod === 7) return '화';
+  if (mod === 3 || mod === 8) return '목';
+  if (mod === 4 || mod === 9) return '금';
+  return '토';
+}
+
+function calculateHeavenEarthResonance(seYaoPalace: HonggukQimenPalace): HonggukHeavenEarthResonance {
+  const hNum = seYaoPalace.heavenStarNumber;
+  const eNum = seYaoPalace.earthStarNumber;
+  const hEl = numberToHadoElement(hNum);
+  const eEl = numberToHadoElement(eNum);
+
+  const givesBirth: Record<string, string> = { '목': '화', '화': '토', '토': '금', '금': '수', '수': '목' };
+  const overcomes: Record<string, string> = { '목': '토', '토': '수', '수': '화', '화': '금', '금': '목' };
+
+  let relation: '천생지(天生地)' | '지생천(地生天)' | '천극지(天剋地)' | '지극천(地剋天)' | '천지비화(天地比和)';
+  let resonanceScore: number;
+  let interpretation: string;
+
+  if (hEl === eEl) {
+    relation = '천지비화(天地比和)';
+    resonanceScore = 86;
+    interpretation = `세효궁에 임한 천반수(${hNum}·${hEl})와 지반수(${eNum}·${eEl})가 같은 기운을 이룹니다. 환경과 본신의 목표가 일치하여 흔들림 없는 단단한 집중력을 발휘합니다.`;
+  } else if (givesBirth[hEl] === eEl) {
+    relation = '천생지(天生地)';
+    resonanceScore = 94;
+    interpretation = `천반수(${hNum}·${hEl})가 지반수(${eNum}·${eEl})를 생합니다. 하늘의 때와 외부 기회가 내 기반과 역량을 풍요롭게 밀어주는 최상의 순풍 형세입니다.`;
+  } else if (givesBirth[eEl] === hEl) {
+    relation = '지생천(地生天)';
+    resonanceScore = 90;
+    interpretation = `지반수(${eNum}·${eEl})가 천반수(${hNum}·${hEl})를 생합니다. 내부 역량과 준비된 노력이 바깥의 기회를 활짝 꽃피워 성과를 거두는 구조입니다.`;
+  } else if (overcomes[hEl] === eEl) {
+    relation = '천극지(天剋地)';
+    resonanceScore = 58;
+    interpretation = `천반수(${hNum}·${hEl})가 지반수(${eNum}·${eEl})를 극합니다. 외부 환경의 변화와 요구가 급격하여 내부에 피로와 부담을 가중시키므로, 체력과 일정을 완급 조절해야 합니다.`;
+  } else {
+    relation = '지극천(地剋天)';
+    resonanceScore = 52;
+    interpretation = `지반수(${eNum}·${eEl})가 천반수(${hNum}·${hEl})를 극합니다. 주체의 고집이나 기존 관성이 시류와 엇박자를 낼 수 있으니, 고집을 풀고 유연하게 상황에 호응하십시오.`;
+  }
+
+  const overallBalance = `세효궁 천지반 공명 지수 ${resonanceScore}점 (${relation}) — 천수 ${hNum}과 지수 ${eNum}의 오행 상호작용이 균형 있게 작동합니다.`;
+
+  return {
+    seYaoResonance: {
+      heavenStar: hNum,
+      earthStar: eNum,
+      relation,
+      resonanceScore,
+      interpretation,
+    },
+    overallBalance,
+  };
+}
+
+function calculateThreeWondersAlliance(gans: ReadonlyArray<string>): HonggukThreeWondersAlliance {
+  const wondersDetected: Array<'을기(乙奇·일기)' | '병기(丙奇·월기)' | '정기(丁奇·성기)'> = [];
+  if (gans.includes('乙')) wondersDetected.push('을기(乙奇·일기)');
+  if (gans.includes('丙')) wondersDetected.push('병기(丙奇·월기)');
+  if (gans.includes('丁')) wondersDetected.push('정기(丁奇·성기)');
+
+  const deukGi = wondersDetected.length > 0;
+  const wondersEmpowermentIndex = deukGi ? Math.min(98, 72 + wondersDetected.length * 8) : 48;
+  const nobleSponsorship = deukGi
+    ? `원국에 삼기(${wondersDetected.join('·')})의 상서로운 기운이 서려 위기마다 결정적 원조와 문서상 조력의 빛이 비칩니다.`
+    : '삼기가 직접 원국에 임하지 않으므로 외부 기적에 기대기보다, 자력갱생의 실력과 철저한 리스크 관리로 돌파해야 합니다.';
+
+  return {
+    wondersDetected,
+    deukGi,
+    wondersEmpowermentIndex,
+    nobleSponsorship,
+  };
+}
+
+function calculateTacticalSeasonWindows(seYaoPalaceNumber: number): HonggukTacticalSeasonWindows {
+  let peakActionSeason: '봄(木·진손궁)' | '여름(火·리궁)' | '가을(金·건태궁)' | '겨울(水·감궁)' | '환절기(土·곤간궁)';
+  let defensiveSeason: '봄(木·진손궁)' | '여름(火·리궁)' | '가을(金·건태궁)' | '겨울(水·감궁)' | '환절기(土·곤간궁)';
+  let strategicPacingAdvice: string;
+
+  if (seYaoPalaceNumber === 1) {
+    peakActionSeason = '겨울(水·감궁)';
+    defensiveSeason = '여름(火·리궁)';
+    strategicPacingAdvice = '겨울철에 내적 통찰과 연구, 비밀 기획 추진의 모멘텀이 극대화됩니다. 한여름에는 과도한 노출과 감정적 분쟁을 삼가고 내실을 지키십시오.';
+  } else if (seYaoPalaceNumber === 3 || seYaoPalaceNumber === 4) {
+    peakActionSeason = '봄(木·진손궁)';
+    defensiveSeason = '가을(金·건태궁)';
+    strategicPacingAdvice = '봄철에 새로운 사업과 기획을 착수하는 돌파력이 최고조에 달합니다. 가을철 계약과 정산 시점에는 세밀한 문구 검토로 리스크를 막으십시오.';
+  } else if (seYaoPalaceNumber === 9) {
+    peakActionSeason = '여름(火·리궁)';
+    defensiveSeason = '겨울(水·감궁)';
+    strategicPacingAdvice = '여름철에 대외 인지도와 명예, 가시적 성과를 세상에 알리기에 최적기입니다. 겨울철에는 에너지를 충전하고 번아웃을 방지하는 수성이 필요합니다.';
+  } else if (seYaoPalaceNumber === 6 || seYaoPalaceNumber === 7) {
+    peakActionSeason = '가을(金·건태궁)';
+    defensiveSeason = '봄(木·진손궁)';
+    strategicPacingAdvice = '가을철에 결실 수확과 핵심 계약, 명확한 결단이 가장 강력하게 성사됩니다. 봄철에는 성급하게 일을 벌이기보다 기존 기반을 정비하십시오.';
+  } else {
+    peakActionSeason = '환절기(土·곤간궁)';
+    defensiveSeason = '봄(木·진손궁)';
+    strategicPacingAdvice = '계절이 바뀌는 환절기마다 조직 재정비와 자산 가치 보존의 기회가 찾아옵니다. 서두르지 않고 중후하게 중심을 잡는 태도가 승착이 됩니다.';
+  }
+
+  return {
+    peakActionSeason,
+    defensiveSeason,
+    strategicPacingAdvice,
+  };
 }
 
 /**
@@ -455,6 +597,13 @@ export function calculateHonggukQimen(params: {
 
     const timeNote = timeKnown ? '' : '생시가 없어 시주를 뺀 3주 수리로 포국했다. 생시를 등록하면 천반수·지반수 중궁과 세효·응효 궁위가 재정렬된다.';
 
+    // 세효궁 천지반 공명, 원국 삼기 회합, 계절별 결단 윈도우 산출
+    const seYaoPalace = palaces.find((p) => p.palace === seYao.palace) || palaces[0];
+    const heavenEarthResonance = calculateHeavenEarthResonance(seYaoPalace);
+    const allGans = numerals.map((n) => n.gan);
+    const threeWondersAlliance = calculateThreeWondersAlliance(allGans);
+    const tacticalSeasonWindows = calculateTacticalSeasonWindows(seYao.palace);
+
     return {
       status: 'calculated',
       engineVersion: HONGGUK_QIMEN_ENGINE_VERSION,
@@ -495,6 +644,9 @@ export function calculateHonggukQimen(params: {
         summary,
         advice,
       },
+      heavenEarthResonance,
+      threeWondersAlliance,
+      tacticalSeasonWindows,
       note: timeNote || undefined,
     };
   } catch (err: any) {
@@ -554,6 +706,10 @@ ${relations}
 - 격국: ${verdict.pattern}
 - 총평: ${verdict.summary}
 - 처방: ${verdict.advice}
+
+${result.heavenEarthResonance ? `[천지반 홍국수 생극 공명]\n- ${result.heavenEarthResonance.overallBalance}\n  * 해석: ${result.heavenEarthResonance.seYaoResonance.interpretation}` : ''}
+${result.threeWondersAlliance ? `[삼기(三奇) 득기 회합]\n- 감지된 삼기: ${result.threeWondersAlliance.wondersDetected.length ? result.threeWondersAlliance.wondersDetected.join(' · ') : '없음'} · 원조력 ${result.threeWondersAlliance.wondersEmpowermentIndex}/100\n  * 귀인 조력: ${result.threeWondersAlliance.nobleSponsorship}` : ''}
+${result.tacticalSeasonWindows ? `[4계절 거시 결단 윈도우]\n- 최적 추진기: ${result.tacticalSeasonWindows.peakActionSeason} · 내실 수성기: ${result.tacticalSeasonWindows.defensiveSeason}\n  * 전술 가이드: ${result.tacticalSeasonWindows.strategicPacingAdvice}` : ''}
 
 위 포국은 사주 4주 간지의 하도·낙서 수리로 직접 계산한 고정 결과다. 궁위·문·삼형·통기를 임의로 바꾸어 말하지 말고, 세효(사용자)를 주체로 응효(상대·환경)와 대비해 해석하라. 상대 프로필이 별도로 있어도 이 포국의 응효는 사용자 원국의 상대 자리임을 유지하라.`;
 }
