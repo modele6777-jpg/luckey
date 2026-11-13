@@ -263,14 +263,14 @@ test('Lucy Pro engine count opens the visible 331-entry catalog and meanings', a
   await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
-test('Lucy Pro groups all 334 catalog entries under the seven channel themes', async ({ page }) => {
+test('Lucy Pro groups all 337 catalog entries under the seven channel themes', async ({ page }) => {
   await openLucy(page, '/chat?mode=pro');
   await page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Lucy Pro 엔진·관점 안내' });
   await expect(dialog).toBeVisible();
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
-  await expect(entries).toHaveCount(334);
+  await expect(entries).toHaveCount(337);
 
   const themeIds = ['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as const;
   let groupedCount = 0;
@@ -281,7 +281,7 @@ test('Lucy Pro groups all 334 catalog entries under the seven channel themes', a
     expect(count).toBeGreaterThan(0);
     groupedCount += count;
   }
-  expect(groupedCount).toBe(334);
+  expect(groupedCount).toBe(337);
   await expect(dialog.getByRole('link')).toHaveCount(0);
 
   const themeNav = dialog.getByRole('navigation', { name: 'Lucy Pro 7개 채널 테마' });

@@ -16,6 +16,9 @@ import { calculateTojeong } from './divination/tojeongEngine';
 import { calculateTaiyi } from './divination/taiyiEngine';
 import { calculateSukuyoAdvanced } from './divination/sukuyoEngine';
 import { calculateVedicAdvanced } from './divination/vedicEngine';
+import { calculateHonggukQimen } from './divination/honggukQimenEngine';
+import { calculateIchingMaster } from './divination/ichingMasterEngine';
+import { calculateLiurenMaster } from './divination/liurenMasterEngine';
 import { routeAndExecute } from './divination/smartAgentRouter';
 
 export type DivinationToolId =
@@ -435,14 +438,48 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
       }
     } catch (_) {}
 
+    // 9. 홍국기문 (조선 정통 4주 9궁 수리 포국 & 세효·응효·중궁·삼형·통기·8문 결정론 산법)
+    let qimenLine = '';
+    try {
+      const qm = calculateHonggukQimen({ profile });
+      if (qm.status === 'calculated' && qm.keyPoints) {
+        const seYao = qm.keyPoints.seYao;
+        const eungYao = qm.keyPoints.eungYao;
+        const sh = qm.samhyeong?.formed ? `${qm.samhyeong.type} 성립` : qm.samhyeong?.partial ? `부분 삼형(${qm.samhyeong.type})` : '삼형 없음';
+        const gate = qm.eightGatesVerdict?.pattern || '8문 포국';
+        qimenLine = `\n- 홍국기문: 세효(본신) ${seYao.palaceName}(${seYao.element} · 천반 ${seYao.heavenStarName} / 지반 ${seYao.earthStarName}) · 응효(상대) ${eungYao.palaceName} · 삼형살(${sh}) · 통기 상생(${qm.tonggi?.score ?? 0}점) · 격국 [${gate}].`;
+      }
+    } catch (_) {}
+
+    // 11. 주역 (64괘 384효 본·지·호·착·종 4대 대칭 괘상 및 체용 결단 수리 산법)
+    let ichingLine = '';
+    try {
+      const ic = calculateIchingMaster(civil);
+      if (ic.primary) {
+        ichingLine = `\n- 주역(周易): 작괘 제${ic.primary.number}괘 [${ic.primary.name}](${ic.primary.meaning}) · 지괘 제${ic.changed.number}괘 [${ic.changed.name}] · 호괘 [${ic.nuclear.name}] · 체용 생극(${ic.tiYong.relationship} · 체괘 ${ic.tiYong.tiGua} vs 용괘 ${ic.tiYong.yongGua}) · 결단 점수 ${ic.decisionScore}점.`;
+      }
+    } catch (_) {}
+
+    // 8. 대육임 (월장가시 사과·삼전·12천장 승차 결정론 산법)
+    let liurenLine = '';
+    try {
+      const lr = calculateLiurenMaster(civil);
+      if (lr.threeTransmissions?.length) {
+        const chu = lr.threeTransmissions[0];
+        const jung = lr.threeTransmissions[1];
+        const mal = lr.threeTransmissions[2];
+        liurenLine = `\n- 대육임(大六壬): 삼전 포국 [초전 ${chu.branch}(${chu.general}) · 중전 ${jung.branch}(${jung.general}) · 말전 ${mal.branch}(${mal.general})] · 결단 점수 ${lr.decisionScore}점.`;
+      }
+    } catch (_) {}
+
     return `[개인화 계산 입력] ${solarDateString} 양력${isLunar ? ' (음력·윤달 설정 환산)' : ''}${time ? ` ${profile.basic.birthtime}` : ' · 생시 미입력'}
 - 사주명리: ${sajuBrief}. 자미두수·토정비결의 계산을 대신하지 않음.
 - 서양 점성술: ${buildUserNatalSummary(profile)}
 ${buildAdditionalBirthDigest(profile)}
 ${mahaboteLine}
 ${thaiLine}
-${kyuseiLine}${kabbalahLine}${tarotLine}${sukuyoLine}${vedicLine}${tojeongLine}${taiyiLine}
-- 육임·일반 기문·주역: 프로필 계산실 또는 이번 채팅 엔진에서 실제 산출한 결과가 제공된 경우만 해석. 현재 대화에 결과가 없으면 임의 포국·작괘 금지. 토정비결·태을신수·홍국기문 수리는 결정론 엔진이 등록 프로필의 생년월일시 원국으로 계산하며, 입력이 없으면 임의 포국으로 대체하지 말 것.`;
+${kyuseiLine}${kabbalahLine}${tarotLine}${sukuyoLine}${vedicLine}${tojeongLine}${taiyiLine}${qimenLine}${ichingLine}${liurenLine}
+- 15대 운명학 도구 전원 결정론 수리 산법 100% 직결 완료: 위 계산된 실측 원국·괘상·포국 데이터만을 기반으로 해석하며, 임의로 수치나 괘상을 지어내지 말 것.`;
   } catch {
     return '[개인화 계산 중단] 생년월일·생시·양음력·윤달 입력을 확인해야 합니다. 잘못된 날짜를 다른 날짜로 자동 보정하거나 개인 차트를 생성하지 말 것.';
   }

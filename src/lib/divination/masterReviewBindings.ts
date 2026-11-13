@@ -1343,5 +1343,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanHanYongUnSilenceOfNim": {
     "field": "koreanHanYongUnSilenceOfNimResult",
     "traceKey": "koreanHanYongUnSilenceOfNimResult"
+  },
+  "argentineJorgeLuisBorgesLabyrinthsAleph": {
+    "field": "argentineJorgeLuisBorgesLabyrinthsAlephResult",
+    "traceKey": "argentineJorgeLuisBorgesLabyrinthsAlephResult"
+  },
+  "koreanParkKyungNiTojiLifeSovereignty": {
+    "field": "koreanParkKyungNiTojiLifeSovereigntyResult",
+    "traceKey": "koreanParkKyungNiTojiLifeSovereigntyResult"
+  },
+  "koreanJeongJiYongNostalgiaPoeticGrace": {
+    "field": "koreanJeongJiYongNostalgiaPoeticGraceResult",
+    "traceKey": "koreanJeongJiYongNostalgiaPoeticGraceResult"
   }
 };

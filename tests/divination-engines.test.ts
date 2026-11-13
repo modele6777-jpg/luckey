@@ -322,6 +322,9 @@ import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAza
 import { calculateIrishJamesJoyceUlyssesEpiphany, formatIrishJamesJoyceUlyssesEpiphanyPrompt, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION } from '../src/lib/divination/irishJamesJoyceUlyssesEpiphanyEngine';
 import { calculateGermanHermannHesseDemianSteppenwolf, formatGermanHermannHesseDemianSteppenwolfPrompt, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION } from '../src/lib/divination/germanHermannHesseDemianSteppenwolfEngine';
 import { calculateKoreanHanYongUnSilenceOfNim, formatKoreanHanYongUnSilenceOfNimPrompt, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from '../src/lib/divination/koreanHanYongUnSilenceOfNimEngine';
+import { calculateArgentineJorgeLuisBorgesLabyrinthsAleph, formatArgentineJorgeLuisBorgesLabyrinthsAlephPrompt, ARGENTINE_JORGE_LUIS_BORGES_LABYRINTHS_ALEPH_VERSION } from '../src/lib/divination/argentineJorgeLuisBorgesLabyrinthsAlephEngine';
+import { calculateKoreanParkKyungNiTojiLifeSovereignty, formatKoreanParkKyungNiTojiLifeSovereigntyPrompt, KOREAN_PARK_KYUNG_NI_TOJI_VERSION } from '../src/lib/divination/koreanParkKyungNiTojiLifeSovereigntyEngine';
+import { calculateKoreanJeongJiYongNostalgiaPoeticGrace, formatKoreanJeongJiYongNostalgiaPoeticGracePrompt, KOREAN_JEONG_JI_YONG_NOSTALGIA_VERSION } from '../src/lib/divination/koreanJeongJiYongNostalgiaPoeticGraceEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -6107,6 +6110,48 @@ test('Han Yong-un Silence of Nim Engine: calculates Paradoxical Love, Unbending 
   const prompt = formatKoreanHanYongUnSilenceOfNimPrompt(rep);
   assert(prompt.includes('만해 한용운 《님의 침묵·심우장》 역설적 사랑·서릿발 자주지조 지표'));
   assert(prompt.includes(rep.activeHanYongUnTheme.themeTitleKo));
+});
+
+test('Jorge Luis Borges Labyrinths Aleph Engine: calculates Aleph Cosmic Intuition, Forking Paths Labyrinth, and Inner Light Resilience', () => {
+  const rep = calculateArgentineJorgeLuisBorgesLabyrinthsAleph(profile);
+  assert.equal(rep.engineVersion, ARGENTINE_JORGE_LUIS_BORGES_LABYRINTHS_ALEPH_VERSION);
+  assert(rep.alephCosmicIntuitionScore >= 0 && rep.alephCosmicIntuitionScore <= 100);
+  assert(rep.labyrinthIntellectualPlayIndex >= 0 && rep.labyrinthIntellectualPlayIndex <= 100);
+  assert(rep.babelLibraryTruthQuestScore >= 0 && rep.babelLibraryTruthQuestScore <= 100);
+  assert(rep.infiniteTimeMirrorReflectionIndex >= 0 && rep.infiniteTimeMirrorReflectionIndex <= 100);
+  assert(rep.innerLightVisionResilienceScore >= 0 && rep.innerLightVisionResilienceScore <= 100);
+  assert(rep.activeBorgesTheme.themeTitleKo.length > 0);
+  const prompt = formatArgentineJorgeLuisBorgesLabyrinthsAlephPrompt(rep);
+  assert(prompt.includes('호르헤 루이스 보르헤스 《픽션들·알레프》 미로·무한 시간 및 알레프 직관 지표'));
+  assert(prompt.includes(rep.activeBorgesTheme.themeTitleKo));
+});
+
+test('Park Kyung-ni Toji Life Sovereignty Engine: calculates Great Earth Dignity, Han Transmutation, and Indomitable Resilience', () => {
+  const rep = calculateKoreanParkKyungNiTojiLifeSovereignty(profile);
+  assert.equal(rep.engineVersion, KOREAN_PARK_KYUNG_NI_TOJI_VERSION);
+  assert(rep.tojiGreatEarthLifeDignityScore >= 0 && rep.tojiGreatEarthLifeDignityScore <= 100);
+  assert(rep.hanTransmutationVitalityIndex >= 0 && rep.hanTransmutationVitalityIndex <= 100);
+  assert(rep.seoiSovereignAutonomyScore >= 0 && rep.seoiSovereignAutonomyScore <= 100);
+  assert(rep.organicCosmicCoexistenceIndex >= 0 && rep.organicCosmicCoexistenceIndex <= 100);
+  assert(rep.unyieldingRootedResilienceScore >= 0 && rep.unyieldingRootedResilienceScore <= 100);
+  assert(rep.activeParkKyungNiTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanParkKyungNiTojiLifeSovereigntyPrompt(rep);
+  assert(prompt.includes('박경리 대하소설 《토지(土地)》 대지 생명사상 및 주체적 자립 지표'));
+  assert(prompt.includes(rep.activeParkKyungNiTheme.themeTitleKo));
+});
+
+test('Jeong Ji-yong Nostalgia Poetic Grace Engine: calculates Modernist Elegance, Glass Window Sorrow Restraint, and Spiritual Purity', () => {
+  const rep = calculateKoreanJeongJiYongNostalgiaPoeticGrace(profile);
+  assert.equal(rep.engineVersion, KOREAN_JEONG_JI_YONG_NOSTALGIA_VERSION);
+  assert(rep.modernistPoeticEleganceScore >= 0 && rep.modernistPoeticEleganceScore <= 100);
+  assert(rep.glassWindowGriefRestraintIndex >= 0 && rep.glassWindowGriefRestraintIndex <= 100);
+  assert(rep.nostalgiaHomecomingSoulAnchorScore >= 0 && rep.nostalgiaHomecomingSoulAnchorScore <= 100);
+  assert(rep.baengnokdamSpiritualPurityIndex >= 0 && rep.baengnokdamSpiritualPurityIndex <= 100);
+  assert(rep.untaintedInnerSerenityScore >= 0 && rep.untaintedInnerSerenityScore <= 100);
+  assert(rep.activeJeongJiYongTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanJeongJiYongNostalgiaPoeticGracePrompt(rep);
+  assert(prompt.includes('정지용 《향수·유리창·백록담》 모더니즘 서정 절제 및 맑은 영혼 지표'));
+  assert(prompt.includes(rep.activeJeongJiYongTheme.themeTitleKo));
 });
 
 

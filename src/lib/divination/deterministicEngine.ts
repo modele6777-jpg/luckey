@@ -360,6 +360,9 @@ import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAza
 import { calculateIrishJamesJoyceUlyssesEpiphany, formatIrishJamesJoyceUlyssesEpiphanyPrompt, type IrishJamesJoyceUlyssesEpiphanyResult, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION } from './irishJamesJoyceUlyssesEpiphanyEngine';
 import { calculateGermanHermannHesseDemianSteppenwolf, formatGermanHermannHesseDemianSteppenwolfPrompt, type GermanHermannHesseDemianSteppenwolfResult, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION } from './germanHermannHesseDemianSteppenwolfEngine';
 import { calculateKoreanHanYongUnSilenceOfNim, formatKoreanHanYongUnSilenceOfNimPrompt, type KoreanHanYongUnSilenceOfNimResult, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from './koreanHanYongUnSilenceOfNimEngine';
+import { calculateArgentineJorgeLuisBorgesLabyrinthsAleph, formatArgentineJorgeLuisBorgesLabyrinthsAlephPrompt, type ArgentineJorgeLuisBorgesLabyrinthsAlephResult, ARGENTINE_JORGE_LUIS_BORGES_LABYRINTHS_ALEPH_VERSION } from './argentineJorgeLuisBorgesLabyrinthsAlephEngine';
+import { calculateKoreanParkKyungNiTojiLifeSovereignty, formatKoreanParkKyungNiTojiLifeSovereigntyPrompt, type KoreanParkKyungNiTojiLifeSovereigntyResult, KOREAN_PARK_KYUNG_NI_TOJI_VERSION } from './koreanParkKyungNiTojiLifeSovereigntyEngine';
+import { calculateKoreanJeongJiYongNostalgiaPoeticGrace, formatKoreanJeongJiYongNostalgiaPoeticGracePrompt, type KoreanJeongJiYongNostalgiaPoeticGraceResult, KOREAN_JEONG_JI_YONG_NOSTALGIA_VERSION } from './koreanJeongJiYongNostalgiaPoeticGraceEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -739,6 +742,9 @@ export interface DeterministicEngineReport {
   irishJamesJoyceUlyssesEpiphanyResult?: IrishJamesJoyceUlyssesEpiphanyResult | null;
   germanHermannHesseDemianSteppenwolfResult?: GermanHermannHesseDemianSteppenwolfResult | null;
   koreanHanYongUnSilenceOfNimResult?: KoreanHanYongUnSilenceOfNimResult | null;
+  argentineJorgeLuisBorgesLabyrinthsAlephResult?: ArgentineJorgeLuisBorgesLabyrinthsAlephResult | null;
+  koreanParkKyungNiTojiLifeSovereigntyResult?: KoreanParkKyungNiTojiLifeSovereigntyResult | null;
+  koreanJeongJiYongNostalgiaPoeticGraceResult?: KoreanJeongJiYongNostalgiaPoeticGraceResult | null;
 
   tools: {
     saju: ToolCalculationEnvelope<Partial<SajuAnalysisResult>>;
@@ -4293,6 +4299,33 @@ try {
     }
   })()));
 
+  // 330. 아르헨티나 호르헤 루이스 보르헤스 《픽션들·알레프》 미로·무한 시간 및 알레프 직관 지혜 엔진
+  const argentineJorgeLuisBorgesLabyrinthsAlephResult = calculateSupplement('argentineJorgeLuisBorgesLabyrinthsAlephResult', () => ((() => {
+    try {
+      return calculateArgentineJorgeLuisBorgesLabyrinthsAleph(profile, question);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 331. 대한민국 박경리 대하소설 《토지(土地)》 대지 생명사상·한(恨)의 승화 및 주체적 자립 지혜 엔진
+  const koreanParkKyungNiTojiLifeSovereigntyResult = calculateSupplement('koreanParkKyungNiTojiLifeSovereigntyResult', () => ((() => {
+    try {
+      return calculateKoreanParkKyungNiTojiLifeSovereignty(profile, question);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
+  // 332. 대한민국 정지용 《향수·유리창·백록담》 모더니즘 서정 절제·영혼의 맑음 및 감각적 품격 지혜 엔진
+  const koreanJeongJiYongNostalgiaPoeticGraceResult = calculateSupplement('koreanJeongJiYongNostalgiaPoeticGraceResult', () => ((() => {
+    try {
+      return calculateKoreanJeongJiYongNostalgiaPoeticGrace(profile, question);
+    } catch (_) {
+      return null;
+    }
+  })()));
+
 
   return {
     masterReview: Boolean(params.reviewAll),
@@ -4658,6 +4691,9 @@ try {
     irishJamesJoyceUlyssesEpiphanyResult,
     germanHermannHesseDemianSteppenwolfResult,
     koreanHanYongUnSilenceOfNimResult,
+    argentineJorgeLuisBorgesLabyrinthsAlephResult,
+    koreanParkKyungNiTojiLifeSovereigntyResult,
+    koreanJeongJiYongNostalgiaPoeticGraceResult,
     tools: toolsMap,
   };
 }
@@ -5018,6 +5054,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'irishJamesJoyceUlyssesEpiphany', nameKo: '제임스 조이스 율리시스 에피파니 의식의흐름 세속적일상의신성화 실존적긍정 삶을향한예스 내면오디세이', icon: '🌊', category: 'deep_master', summary: '제임스 조이스의 모더니즘 문학 철학으로 평범한 일상의 한순간에서 영혼의 신비가 섬광처럼 드러나는 에피파니(Epiphany), 억압과 미로를 뚫고 나아가는 의식의 자유로운 흐름, 그리고 삶의 모든 환희와 슬픔을 온몸으로 긍정하는 "그래요 나는 말했어요 그래요 나는 할 거예요 그래요(Yes I said yes I will Yes)"의 절대적 실존 긍정을 체득합니다.' },
   { key: 'germanHermannHesseDemianSteppenwolf', nameKo: '헤르만 헤세 데미안 싯다르타 유리알유희 알을깨는투쟁 아프락사스선악합일 내면의빛 자기자신에게이르는길 초연한강물의지혜', icon: '🕊️', category: 'deep_master', summary: '헤르만 헤세의 실존적 영성 문학 철학으로 기존 세계의 껍질을 깨뜨리고 참된 자아로 비상하는 아프락사스(Abraxas)의 투쟁, 내면의 고독과 양극성을 조화롭게 포용하는 지혜, 그리고 모든 존재의 흐름을 사랑으로 품어 안는 싯다르타의 강물과 같은 초연한 내면 평화를 체득합니다.' },
   { key: 'koreanHanYongUnSilenceOfNim', nameKo: '만해 한용운 님의침묵 조선불교유신론 역설적사랑 이별을사랑의새원천으로 서릿발자주지조 불굴의독립기개 대자비회복탄력성', icon: '🕯️', category: 'deep_master', summary: '만해 한용운 선사의 위대한 민족 독립 정신과 불교 선시 철학으로 이별의 슬픔을 헛된 눈물 대신 새로운 희망의 에너지로 돌려세우는 역설적 사랑의 승화, 일제의 암흑 속에서도 꺾이지 않은 서릿발 같은 자주 지조, 그리고 시대의 아픔을 온몸으로 껴안는 불굴의 대자비 회복탄력성을 체득합니다.' },
+  { key: 'argentineJorgeLuisBorgesLabyrinthsAleph', nameKo: '호르헤 루이스 보르헤스 픽션들 알레프 바벨의도서관 미로 갈래길의정원 무한시간 불멸의거울 내면의빛 초연한관조', icon: '🌌', category: 'deep_master', summary: '호르헤 루이스 보르헤스의 환상·형이상학 문학 철학으로 온 우주의 시공간이 하나의 점에 응축된 알레프(Aleph)의 총체적 직관, 무한히 갈라지는 가능성의 미로를 탐험하는 지적 유연성, 바벨의 도서관 혼란 속에서도 중심을 잃지 않는 진리 탐구심과 내면의 빛을 체득합니다.' },
+  { key: 'koreanParkKyungNiTojiLifeSovereignty', nameKo: '박경리 대하소설 토지 대지생명사상 한의승화 최서희주체자립 존엄성 유기적공존윤리 불굴의대지적회복탄력성', icon: '🌾', category: 'deep_master', summary: '박경리 선생의 대하소설 《토지》 대지 생명사상으로 어떤 비극 속에서도 훼손되지 않는 인간의 숭고한 생명 존엄, 뼈아픈 한(恨)을 삭여 삶을 다시 일구는 창조적 승화의 힘, 폭풍우 앞에서도 비굴하지 않게 운명을 주도하는 최서희적 당당한 주권과 불굴의 대지적 회복탄력성을 체득합니다.' },
+  { key: 'koreanJeongJiYongNostalgiaPoeticGrace', nameKo: '정지용 향수 유리창 백록담 춘설 모더니즘시어 감각적세련도 비애절제력 마음의고향 영혼의맑음 초연한내면평정심', icon: '🪟', category: 'deep_master', summary: '정지용 시인의 모더니즘 서정 미학으로 우리말의 눈부신 감각적 세련미와 고결한 품격, 가슴 찢어지는 상실 속에서도 차가운 유리창을 닦듯 감정을 정돈하는 비애 절제력, 영혼의 따스한 안식처인 고향의 기억, 백록담의 서늘한 정갈함처럼 세속의 티끌을 씻어내는 내면 평정심을 체득합니다.' },
 ];
 
 export function getFiredEngineBadges(

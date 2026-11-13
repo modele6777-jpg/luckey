@@ -139,5 +139,8 @@ test('15 tools digest incorporates deterministic calculations for Mahabote 7-hou
   assert.match(digest, /태을신수/);
   assert.match(digest, /숙요경/);
   assert.match(digest, /베딕 조티시/);
+  assert.match(digest, /홍국기문/);
+  assert.match(digest, /주역\(周易\)/);
+  assert.match(digest, /대육임\(大六壬\)/);
 });
 
