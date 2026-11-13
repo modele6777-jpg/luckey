@@ -89,6 +89,15 @@ export interface TaiyiCalculationDetails {
   outcomeReason: string;
 }
 
+export interface TaiyiMacroStrategicMatrix {
+  juBalanceScore: number; // 0 ~ 100: 주산과 객산의 장단산 및 수리 비율 기반 공수 밸런스 지수
+  macroPhase: '대세 개척기(陽動)' | '전략 성장기(順行)' | '안정 성숙기(和合)' | '전환 변혁기(陰靜)';
+  phaseDescription: string;
+  initiativeIndex: number; // 선제 추진력 (0~100)
+  defensiveIndex: number; // 안정 방어력 (0~100)
+  tacticalWindowAdvice: string;
+}
+
 export interface TaiyiResult {
   status: TaiyiStatus;
   engineVersion: string;
@@ -100,6 +109,7 @@ export interface TaiyiResult {
   threeGi: TaiyiThreeGi | null;
   fiveBlessings: { palace: number; palaceName: string; meaning: string } | null;
   macroActionStrategy: string;
+  macroStrategicMatrix?: TaiyiMacroStrategicMatrix;
   note?: string;
 }
 
@@ -323,6 +333,15 @@ export function calculateTaiyi(params: {
     macroActionStrategy = `당해 연도는 주객이 상생 화합하는 대길국입니다. 독점하기보다는 파트너, 플랫폼, 고객과 가치를 공유하는 상생 모델을 구축할 때 폭발적인 성장이 일어납니다. 오복길성이 머무는 ${fiveBlessings.palaceName}방과의 인연을 적극 활용하세요.`;
   }
 
+  const macroStrategicMatrix = calculateMacroStrategicMatrix(
+    juNumber,
+    juSan,
+    gaekSan,
+    juSanType,
+    gaekSanType,
+    outcome,
+  );
+
   return {
     status: 'calculated',
     engineVersion: TAIYI_ENGINE_VERSION,
@@ -354,6 +373,72 @@ export function calculateTaiyi(params: {
     threeGi,
     fiveBlessings,
     macroActionStrategy,
+    macroStrategicMatrix,
+  };
+}
+
+function calculateMacroStrategicMatrix(
+  juNumber: number,
+  juSan: number,
+  gaekSan: number,
+  juSanType: '단산(短算)' | '장산(長算)' | '무산(無算)',
+  gaekSanType: '단산(短算)' | '장산(長算)' | '무산(無算)',
+  outcome: TaiyiGameOutcome,
+): TaiyiMacroStrategicMatrix {
+  let macroPhase: TaiyiMacroStrategicMatrix['macroPhase'] = '안정 성숙기(和合)';
+  let phaseDescription = '체계적 성숙과 파트너십이 힘을 발휘하는 국면입니다.';
+  if (juNumber <= 18) {
+    macroPhase = '대세 개척기(陽動)';
+    phaseDescription = '새로운 방향성을 정립하고 불확실성을 뚫고 도약하는 진취적 국면입니다.';
+  } else if (juNumber <= 36) {
+    macroPhase = '전략 성장기(順行)';
+    phaseDescription = '기존 성과를 바탕으로 가속도를 붙여 외연을 넓히는 성장 국면입니다.';
+  } else if (juNumber <= 54) {
+    macroPhase = '안정 성숙기(和合)';
+    phaseDescription = '다양한 이해관계자와의 조화와 가치 공유가 최우선인 성숙 국면입니다.';
+  } else {
+    macroPhase = '전환 변혁기(陰靜)';
+    phaseDescription = '기존 방식을 정돈하고 차기 대주기를 준비하는 성찰과 전환의 국면입니다.';
+  }
+
+  const diff = juSan - gaekSan;
+  let juBalanceScore = Math.max(30, Math.min(95, Math.round(50 + diff * 2.5)));
+  if (juSanType === '장산(長算)' && gaekSanType !== '장산(長算)') {
+    juBalanceScore = Math.min(95, juBalanceScore + 10);
+  } else if (gaekSanType === '장산(長算)' && juSanType !== '장산(長算)') {
+    juBalanceScore = Math.max(25, juBalanceScore - 10);
+  }
+
+  let initiativeIndex = 50;
+  let defensiveIndex = 50;
+
+  if (outcome.startsWith('주자 승')) {
+    initiativeIndex = Math.min(96, Math.max(75, 60 + juSan));
+    defensiveIndex = Math.max(30, Math.min(65, 80 - gaekSan));
+  } else if (outcome.startsWith('객자 승')) {
+    initiativeIndex = Math.max(35, Math.min(60, 60 - juSan));
+    defensiveIndex = Math.min(95, Math.max(70, 50 + gaekSan));
+  } else {
+    initiativeIndex = 75;
+    defensiveIndex = 75;
+  }
+
+  let tacticalWindowAdvice = '';
+  if (outcome.startsWith('주자 승')) {
+    tacticalWindowAdvice = '상반기에 명확한 비전과 제안을 선제 제시하여 판을 이끌고, 하반기에는 성과를 굳히는 전략이 가장 유리합니다.';
+  } else if (outcome.startsWith('객자 승')) {
+    tacticalWindowAdvice = '상반기에는 시장과 경쟁자의 동향을 면밀히 관망하며 준비하고, 하반기에 빈틈을 파고드는 역습 타이밍을 노리십시오.';
+  } else {
+    tacticalWindowAdvice = '연중 지속적으로 제휴와 상생 협력을 도모하되, 상반기 파트너십 구축 후 하반기 공동 프로젝트 가동이 최상의 시너지를 냅니다.';
+  }
+
+  return {
+    juBalanceScore,
+    macroPhase,
+    phaseDescription,
+    initiativeIndex,
+    defensiveIndex,
+    tacticalWindowAdvice,
   };
 }
 
@@ -383,7 +468,10 @@ export function formatTaiyiPrompt(result: TaiyiResult): string {
   * 신기(臣基·실무협업): ${tg?.sinGi.palaceName}궁 [${tg?.sinGi.rating}등급] — ${tg?.sinGi.desc}
   * 민기(民基·시장반응): ${tg?.minGi.palaceName}궁 [${tg?.minGi.rating}등급] — ${tg?.minGi.desc}
 - 오복(五福) 길성: ${fb?.palaceName}궁 입궁 (${fb?.meaning})
-- 거시 전략 조언: ${result.macroActionStrategy}
+- 거시 전략 조언: ${result.macroActionStrategy}${result.macroStrategicMatrix ? `\n- 거시 전략 매트릭스:
+  * 시대 국면: ${result.macroStrategicMatrix.macroPhase} — ${result.macroStrategicMatrix.phaseDescription}
+  * 공수 역학 밸런스 지수: 주도권 밸런스 ${result.macroStrategicMatrix.juBalanceScore}점/100점 (추진력 ${result.macroStrategicMatrix.initiativeIndex} vs 방어력 ${result.macroStrategicMatrix.defensiveIndex})
+  * 결단 실행 윈도우: ${result.macroStrategicMatrix.tacticalWindowAdvice}` : ''}
 - [AI 해석 절대 지침]: 본 리포트는 100% 전통 역법 수리로 계산된 실측 데이터입니다. 주산/객산 수리 및 승부 판정을 임의 변경하지 말고, 거시적 타이밍과 시대 흐름 조언에 충실히 반영하십시오.
 `.trim();
 }

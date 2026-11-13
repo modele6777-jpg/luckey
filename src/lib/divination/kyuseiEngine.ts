@@ -87,6 +87,19 @@ export interface KyuseiStarIdentity {
   element: KyuseiElement;
 }
 
+export interface KyuseiDirectionScore {
+  direction: KyuseiDirection;
+  score: number; // 0 ~ 100
+  level: '최길' | '길' | '평' | '주의' | '대흉';
+  recommendedActivities: string[];
+}
+
+export interface KyuseiHonmyoseiSynergy {
+  annualStarRelation: '생입(生入)' | '비화(比和)' | '생출(生出)' | '극출(克出)' | '극입(克入)';
+  synergyScore: number; // 0 ~ 100
+  annualThemeGuidance: string;
+}
+
 export interface KyuseiResult {
   status: KyuseiStatus;
   note?: string;
@@ -112,6 +125,8 @@ export interface KyuseiResult {
     summary: string;
   } | null;
   usageScenarios: Array<{ scenario: string; direction: KyuseiDirection; advice: string }>;
+  directionalScores?: KyuseiDirectionScore[];
+  honmyoseiSynergy?: KyuseiHonmyoseiSynergy;
 }
 
 // ---------------------------------------------------------------------------
@@ -575,6 +590,9 @@ export function calculateKyusei(params: {
       ]
     : [];
 
+  const directionalScores = calculateDirectionalScores(fortuneDirections, hazards);
+  const honmyoseiSynergy = calculateHonmyoseiSynergy(honStar, annualChart.centerStar);
+
   const { utc, kst } = kstTimestamps(now);
 
   return {
@@ -611,6 +629,123 @@ export function calculateKyusei(params: {
     fortuneDirections,
     topFortuneDirection,
     usageScenarios,
+    directionalScores,
+    honmyoseiSynergy,
+  };
+}
+
+function calculateDirectionalScores(
+  fortuneDirections: KyuseiFortuneDirection[],
+  hazards: KyuseiHazard[],
+): KyuseiDirectionScore[] {
+  const directions: KyuseiDirection[] = ['북', '북동', '동', '남동', '남', '남서', '서', '북서'];
+  const hazardByDir = new Map<KyuseiDirection, KyuseiHazard[]>();
+  for (const h of hazards) {
+    if (h.direction) {
+      const list = hazardByDir.get(h.direction) ?? [];
+      list.push(h);
+      hazardByDir.set(h.direction, list);
+    }
+  }
+
+  const fortuneByDir = new Map<KyuseiDirection, KyuseiFortuneDirection>();
+  for (const f of fortuneDirections) {
+    fortuneByDir.set(f.direction, f);
+  }
+
+  return directions.map((dir) => {
+    const dirHazards = hazardByDir.get(dir) ?? [];
+    const fortune = fortuneByDir.get(dir);
+
+    const hasCriticalHazard = dirHazards.some((h) => h.name.includes('오황') || h.name.includes('암검'));
+    const hasMajorHazard = dirHazards.some((h) => h.name.includes('파살') || h.name.includes('본명'));
+
+    let score = 65;
+    let level: KyuseiDirectionScore['level'] = '평';
+    let activities: string[] = ['일상적 업무 및 산책', '온라인 비대면 교류'];
+
+    if (hasCriticalHazard) {
+      level = '대흉';
+      score = 25;
+      activities = ['공사·토목 금지', '장거리 이동 회피', '신규 계약 보류 및 내실 유지'];
+    } else if (hasMajorHazard) {
+      level = '주의';
+      score = 45;
+      activities = ['무리한 확장 자제', '중요 의사결정 재점검', '주변과의 마찰 주의'];
+    } else if (fortune?.clean && fortune.grade === '최길') {
+      level = '최길';
+      score = 95;
+      activities = ['신규 사업 론칭 및 확장', '핵심 계약 및 투자 유치', '이사·여행·개운 이동'];
+    } else if (fortune?.clean && fortune.grade === '길') {
+      level = '길';
+      score = 85;
+      activities = ['중요 비즈니스 미팅', '지인 교류 및 협력 관계 구축', '자기 계발 및 학습'];
+    } else if (fortune?.clean) {
+      level = '길';
+      score = 75;
+      activities = ['재충전 및 힐링 여행', '새로운 아이디어 구상'];
+    }
+
+    return {
+      direction: dir,
+      score,
+      level,
+      recommendedActivities: activities,
+    };
+  });
+}
+
+function calculateHonmyoseiSynergy(
+  honStar: number,
+  annualCenterStar: number,
+): KyuseiHonmyoseiSynergy {
+  const honEl = STARS[honStar]?.element ?? '수(水)';
+  const annEl = STARS[annualCenterStar]?.element ?? '수(水)';
+
+  const baseOf = (el: KyuseiElement): '수' | '토' | '목' | '금' | '화' => {
+    if (el.startsWith('수')) return '수';
+    if (el.startsWith('토')) return '토';
+    if (el.startsWith('목')) return '목';
+    if (el.startsWith('금')) return '금';
+    return '화';
+  };
+
+  const h = baseOf(honEl);
+  const a = baseOf(annEl);
+
+  const generates: Record<string, string> = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
+  const controls: Record<string, string> = { 목: '토', 토: '수', 수: '화', 화: '금', 금: '목' };
+
+  let relation: KyuseiHonmyoseiSynergy['annualStarRelation'] = '비화(比和)';
+  let score = 88;
+  let guidance = '당해 연성과 본명성이 동기감응하여 독립적 역량과 주체적 성취가 빛나는 해입니다.';
+
+  if (h === a) {
+    relation = '비화(比和)';
+    score = 88;
+    guidance = '당해 연성과 본명성의 오행이 일치하여 내면의 잠재력이 강하게 발현되며 자립 기반을 확립하는 시기입니다.';
+  } else if (generates[a] === h) {
+    relation = '생입(生入)';
+    score = 94;
+    guidance = '연성의 기운이 본명성을 풍요롭게 생(生)하므로 주변의 조력과 환경적 기회가 활짝 열리는 최길의 해입니다.';
+  } else if (generates[h] === a) {
+    relation = '생출(生出)';
+    score = 78;
+    guidance = '자신의 재능과 노력을 외부로 표출하여 세상을 감동시키고 결실을 거두는 활발한 활동의 해입니다.';
+  } else if (controls[h] === a) {
+    relation = '극출(克出)';
+    score = 72;
+    guidance = '강한 도전 정신과 주도적 결단력으로 장애물을 극복하고 스스로 길을 개척하는 돌파의 시기입니다.';
+  } else if (controls[a] === h) {
+    relation = '극입(克入)';
+    score = 62;
+    guidance = '외부 환경의 압박과 시련이 따를 수 있으므로 방어적 태세를 갖추고 내실을 다지며 때를 기다리는 것이 현명합니다.';
+  }
+
+  return {
+    annualStarRelation: relation,
+    synergyScore: score,
+    annualThemeGuidance: guidance,
   };
 }
 
@@ -665,7 +800,11 @@ ${hazardLines}
 ${fortuneLines}
 
 6. [활용 시나리오 — 이사·여행·미팅·출장]:
-${usageLines}
+${usageLines}${result.directionalScores ? `\n======================================================================
+[8대 방위별 목적 적합도 매트릭스 및 본명성-연성 동회 심층 수리 평가]
+${result.directionalScores.map(d => `   • [${d.direction}] ${d.score}점/100점 (${d.level}) → 권장: ${d.recommendedActivities.join(', ')}`).join('\n')}
+   * 본명성-연성 조화도: ${result.honmyoseiSynergy?.annualStarRelation} (${result.honmyoseiSynergy?.synergyScore}점/100점)
+   * 연간 테마 가이드: ${result.honmyoseiSynergy?.annualThemeGuidance}` : ''}
 ======================================================================
 [★ 루시 구성학 상담 지침]:
 - 위 3반(연반·월반·일반) 포국과 흉살 방위는 순수 수리로 직접 비성한 확정 데이터다. 다른 포국을 지어내지 마십시오.

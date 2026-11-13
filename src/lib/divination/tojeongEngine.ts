@@ -38,6 +38,25 @@ export interface TojeongMonthlyFortune {
   tip: string;
 }
 
+export type FiveElement = '목(木)' | '화(火)' | '토(土)' | '금(金)' | '수(水)';
+export type TrigramElementRelation = '상생(生入)' | '상생(生出)' | '비화(比和)' | '상극(克出)' | '상극(克入)';
+
+export interface TojeongTrigramAnalysis {
+  upperElement: FiveElement;
+  lowerElement: FiveElement;
+  elementRelation: TrigramElementRelation;
+  elementRelationDesc: string;
+  harmonyScore: number; // 0 ~ 100
+  seasonalFlow: {
+    springScore: number;
+    summerScore: number;
+    autumnScore: number;
+    winterScore: number;
+    peakSeason: '봄(1~3월)' | '여름(4~6월)' | '가을(7~9월)' | '겨울(10~12월)';
+  };
+  hexagramEssenceAdvice: string;
+}
+
 export interface TojeongResult {
   status: TojeongStatus;
   note?: string;
@@ -67,6 +86,7 @@ export interface TojeongResult {
   luckGrade: TojeongLuckGrade;
   annualSummary: string;
   monthlyFortunes: TojeongMonthlyFortune[];
+  trigramAnalysis?: TojeongTrigramAnalysis;
 }
 
 // ---------------------------------------------------------------------------
@@ -547,6 +567,15 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
     return { month, fortune, tip };
   });
 
+  const trigramAnalysis = calculateTrigramAnalysis(
+    upperGua,
+    middleGua,
+    lowerGua,
+    hexagramName,
+    entry.grade,
+    monthlyFortunes,
+  );
+
   const { utc, kst } = kstTimestamps(now);
 
   return {
@@ -577,6 +606,121 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
     luckGrade: entry.grade,
     annualSummary,
     monthlyFortunes,
+    trigramAnalysis,
+  };
+}
+
+const TRIGRAM_FIVE_ELEMENT: Record<number, FiveElement> = {
+  1: '금(金)', // 건(乾)
+  2: '금(金)', // 태(兌)
+  3: '화(火)', // 이(離)
+  4: '목(木)', // 진(震)
+  5: '목(木)', // 손(巽)
+  6: '수(水)', // 감(坎)
+  7: '토(土)', // 간(艮)
+  8: '토(土)', // 곤(坤)
+};
+
+function calculateTrigramAnalysis(
+  upperGua: number,
+  middleGua: number,
+  lowerGua: number,
+  hexagramName: string,
+  luckGrade: TojeongLuckGrade,
+  monthlyFortunes: TojeongMonthlyFortune[],
+): TojeongTrigramAnalysis {
+  const upperElement = TRIGRAM_FIVE_ELEMENT[upperGua] ?? '금(金)';
+  const lowerElement = TRIGRAM_FIVE_ELEMENT[middleGua] ?? '목(木)';
+
+  const baseOf = (el: FiveElement): '목' | '화' | '토' | '금' | '수' => {
+    if (el.startsWith('목')) return '목';
+    if (el.startsWith('화')) return '화';
+    if (el.startsWith('토')) return '토';
+    if (el.startsWith('금')) return '금';
+    return '수';
+  };
+
+  const uBase = baseOf(upperElement);
+  const lBase = baseOf(lowerElement);
+
+  const generates: Record<string, string> = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
+  const controls: Record<string, string> = { 목: '토', 토: '수', 수: '화', 화: '금', 금: '목' };
+
+  let elementRelation: TrigramElementRelation = '비화(比和)';
+  let elementRelationDesc = '상하 괘의 오행이 서로 조화되어 평온함과 결속을 다지는 형세';
+  let baseHarmony = 85;
+
+  if (uBase === lBase) {
+    elementRelation = '비화(比和)';
+    elementRelationDesc = '내외 오행이 같은 기운으로 결집하여 묵묵한 내실을 다지기 좋은 상';
+    baseHarmony = 82;
+  } else if (generates[lBase] === uBase) {
+    elementRelation = '상생(生入)';
+    elementRelationDesc = '내괘가 외괘를 든든하게 생하여 안으로부터 추진력이 솟아나는 대길의 상';
+    baseHarmony = 92;
+  } else if (generates[uBase] === lBase) {
+    elementRelation = '상생(生出)';
+    elementRelationDesc = '외괘가 내괘를 온화하게 비추어 베풀수록 복이 돌아오는 은혜의 상';
+    baseHarmony = 86;
+  } else if (controls[lBase] === uBase) {
+    elementRelation = '상극(克出)';
+    elementRelationDesc = '내면의 역량으로 외부의 도전을 다스려 주도권을 쟁취하는 개척의 상';
+    baseHarmony = 74;
+  } else if (controls[uBase] === lBase) {
+    elementRelation = '상극(克入)';
+    elementRelationDesc = '외부 여건의 제약이 따르므로 신중한 방어와 수양이 요구되는 경계의 상';
+    baseHarmony = 62;
+  }
+
+  const harmonyScore = Math.max(40, Math.min(98, baseHarmony + (lowerGua - 2) * 3));
+
+  const gradeBaseScore: Record<TojeongLuckGrade, number> = {
+    대길: 90,
+    길: 80,
+    평: 70,
+    주의: 55,
+    흉: 45,
+  };
+  const gBase = gradeBaseScore[luckGrade] ?? 70;
+
+  const scoreMonth = (idx: number): number => {
+    const f = monthlyFortunes[idx]?.fortune ?? '';
+    let bonus = 0;
+    if (/길|형통|복|귀인|화합|성취/.test(f)) bonus += 8;
+    if (/주의|경계|구설|손재|불리/.test(f)) bonus -= 8;
+    return Math.max(30, Math.min(95, gBase + bonus));
+  };
+
+  const springScore = Math.round((scoreMonth(0) + scoreMonth(1) + scoreMonth(2)) / 3);
+  const summerScore = Math.round((scoreMonth(3) + scoreMonth(4) + scoreMonth(5)) / 3);
+  const autumnScore = Math.round((scoreMonth(6) + scoreMonth(7) + scoreMonth(8)) / 3);
+  const winterScore = Math.round((scoreMonth(9) + scoreMonth(10) + scoreMonth(11)) / 3);
+
+  const seasons = [
+    { label: '봄(1~3월)' as const, score: springScore },
+    { label: '여름(4~6월)' as const, score: summerScore },
+    { label: '가을(7~9월)' as const, score: autumnScore },
+    { label: '겨울(10~12월)' as const, score: winterScore },
+  ];
+  seasons.sort((a, b) => b.score - a.score);
+  const peakSeason = seasons[0].label;
+
+  const hexagramEssenceAdvice = `[${hexagramName}] 대성괘의 핵심 기운은 '${elementRelationDesc}'에 있습니다. 성급한 확장을 경계하고 ${peakSeason}의 고조된 운기 타이밍에 주력 과업을 집중하십시오.`;
+
+  return {
+    upperElement,
+    lowerElement,
+    elementRelation,
+    elementRelationDesc,
+    harmonyScore,
+    seasonalFlow: {
+      springScore,
+      summerScore,
+      autumnScore,
+      winterScore,
+      peakSeason,
+    },
+    hexagramEssenceAdvice,
   };
 }
 
@@ -601,7 +745,12 @@ export function formatTojeongPrompt(result: TojeongResult): string {
 [총론(總論)] ${result.annualSummary}
 
 [12개월 괘상(月別 詳細)과 행동 전략]
-${monthLines}
+${monthLines}${result.trigramAnalysis ? `\n======================================================================
+[상·중괘 오행 생극제화 및 사계절 순환 심층 분석]
+- 상괘 오행: ${result.trigramAnalysis.upperElement} vs 중괘 오행: ${result.trigramAnalysis.lowerElement} → [${result.trigramAnalysis.elementRelation}] (${result.trigramAnalysis.elementRelationDesc})
+- 괘상 기운 조화도: ${result.trigramAnalysis.harmonyScore}점/100점
+- 사계절 운기 흐름: 봄 ${result.trigramAnalysis.seasonalFlow.springScore}점 · 여름 ${result.trigramAnalysis.seasonalFlow.summerScore}점 · 가을 ${result.trigramAnalysis.seasonalFlow.autumnScore}점 · 겨울 ${result.trigramAnalysis.seasonalFlow.winterScore}점 (최고 성운기: ${result.trigramAnalysis.seasonalFlow.peakSeason})
+- 핵심 개운 지침: ${result.trigramAnalysis.hexagramEssenceAdvice}` : ''}
 ======================================================================
 [★ 루시 토정비결 상담 지침]:
 - 위 괘문은 태세수·월건수·일진수 수리로 직접 작괘한 확정 데이터다. 괘 코드(${result.hexagramCode})와 다른 괘를 지어내지 마십시오.
