@@ -447,7 +447,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
         const eungYao = qm.keyPoints.eungYao;
         const sh = qm.samhyeong?.formed ? `${qm.samhyeong.type} 성립` : qm.samhyeong?.partial ? `부분 삼형(${qm.samhyeong.type})` : '삼형 없음';
         const gate = qm.eightGatesVerdict?.pattern || '8문 포국';
-        qimenLine = `\n- 홍국기문: 세효(본신) ${seYao.palaceName}(${seYao.element} · 천반 ${seYao.heavenStarName} / 지반 ${seYao.earthStarName}) · 응효(상대) ${eungYao.palaceName} · 삼형살(${sh}) · 통기 상생(${qm.tonggi?.score ?? 0}점) · 격국 [${gate}].`;
+        qimenLine = `\n- 홍국기문: 세효(본신) ${seYao.palaceName}(${seYao.element} · ${seYao.star}${seYao.gate ? ` ${seYao.gate}` : ''}) · 응효(상대) ${eungYao.palaceName} · 삼형살(${sh}) · 통기 상생(${qm.tonggi?.score ?? 0}점) · 격국 [${gate}].`;
       }
     } catch (_) {}
 
