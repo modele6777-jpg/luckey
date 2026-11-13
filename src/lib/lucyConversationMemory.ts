@@ -59,7 +59,7 @@ export function selectLucyConversationMemory(account:string,entries:readonly Luc
     let names=anchors(entry.text);
     const previous=[...annotated].reverse().find(item=>item.tags.length||isExplicitLucyTopicSwitch(item.entry.text));
     if(previous&&isMemoryFollowUp(entry.text)&&entry.timestamp-previous.entry.timestamp<30*86400000&&!isExplicitLucyTopicSwitch(entry.text)) {
-      if(!tags.length||isBareProgress(entry.text))tags=previous.tags;
+      tags=tags.length&&!isBareProgress(entry.text)?[...new Set([...previous.tags,...tags])]:previous.tags;
       if(!names.length&&tags.some(tag=>previous.tags.includes(tag)))names=previous.names;
     }
     annotated.push({entry,tags,names});

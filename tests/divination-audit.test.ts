@@ -141,3 +141,12 @@ test('15 tools digest incorporates deterministic calculations for Mahabote 7-hou
   assert.match(digest, /베딕 조티시/);
 });
 
+test('15 tools digest is repeatable for an explicit reference date', () => {
+  const p = profile('1990-05-17', '14:30');
+  const asOf = new Date('2024-06-15T12:00:00.000Z');
+  const first = buildUserFifteenToolsDigest(p, asOf);
+  assert.equal(buildUserFifteenToolsDigest(p, asOf), first);
+  assert.match(first, /2024년/);
+  assert.notEqual(buildUserFifteenToolsDigest(p, new Date('2025-06-15T12:00:00.000Z')), first);
+  assert.equal(asOf.toISOString(), '2024-06-15T12:00:00.000Z');
+});

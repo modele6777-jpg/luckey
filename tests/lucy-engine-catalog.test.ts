@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '../src/lib/divination/deterministicEngine';
+import { LUCY_PRO_ENGINE_COUNT } from '../src/lib/divination/engineCatalogCount';
 import {
   DEEP_PERSPECTIVE_RESEARCH_COUNTS,
   ENGINE_CATALOG_COUNTS,
@@ -14,6 +15,7 @@ import {
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
 test('engine catalogue keeps all 334 items: 15 foundational tools and 319 deep perspectives', () => {
+  assert.equal(LUCY_PRO_ENGINE_COUNT, ALL_DCE_ENGINES.length);
   assert.equal(ALL_DCE_ENGINES.length, 334);
   assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 319 });
   assert.equal(new Set(ALL_DCE_ENGINES.map(engine => engine.key)).size, 334);
@@ -117,6 +119,20 @@ test('future unresearched entries still receive a cautious meaning and default c
   assert.match(meaning, /참고 관점/);
   assert.match(meaning, /개인별 계산·측정·예측 결과를 뜻하지는 않습니다/);
   assert.equal(getEngineCatalogTheme(futureEngine), 'trinity');
+});
+
+test('Joyce, Hesse, and Han Yong-un catalog meanings avoid unsupported quotations and personal measures', () => {
+  const joyce = getEngineCatalogMeaning(ALL_DCE_ENGINES.find(engine => engine.key === 'irishJamesJoyceUlyssesEpiphany')!);
+  assert.match(joyce, /Stephen Hero/);
+  assert.doesNotMatch(joyce, /Yes I said yes I will Yes|\/100/);
+
+  const hesse = getEngineCatalogMeaning(ALL_DCE_ENGINES.find(engine => engine.key === 'germanHermannHesseDemianSteppenwolf')!);
+  assert.match(hesse, /문학적 관점/);
+  assert.doesNotMatch(hesse, /양극성.*치유|치유.*양극성/);
+
+  const han = getEngineCatalogMeaning(ALL_DCE_ENGINES.find(engine => engine.key === 'koreanHanYongUnSilenceOfNim')!);
+  assert.match(han, /확인되지 않은 인용/);
+  assert.match(han, /동의와 안전/);
 });
 
 test('multiple references remain available to internal review while the dialog may omit their links', () => {

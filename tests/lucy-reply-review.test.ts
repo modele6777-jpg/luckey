@@ -6,12 +6,12 @@ const audit=[{toolId:'saju',name:'사주명리',status:'calculated' as const,sen
 const base={question:'직업운',evidence:'사주 계산 결과와 상징 관점',audit};
 test('master candidates never silently include Flash Lite',()=>{
  const models=modelCandidates(LUCY_MASTER_MODEL,LUCY_MASTER_FALLBACK_MODELS);
- assert.equal(models[0],'gemini-3.1-pro-preview');assert.ok(models.includes('gemini-3.6-flash'));
+ assert.equal(models[0],LUCY_MASTER_MODEL);assert.ok(models.includes('gemini-3.6-flash'));
  assert.ok(models.every(model=>!model.includes('lite')&&isMasterTierModel(model)));
 });
 test('approves unchanged grounded reply after receiving evidence',async()=>{
  const draft='사주 계산을 참고하되 결과를 확정할 수는 없어. 작은 계획부터 세워보자.';
- const result=await reviewLucyReply(draft,{...base,request:async messages=>{assert.ok(messages[1].content.includes('사주 계산 결과'));return JSON.stringify({valid:true,issues:[],revisedReply:''});}});
+ const result=await reviewLucyReply(draft,{...base,request:async messages=>{assert.ok(messages[1].content.includes('사주 계산 결과'));assert.match(messages[0].content,/동의·안전·법적 경계/);return JSON.stringify({valid:true,issues:[],revisedReply:''});}});
  assert.equal(result,draft);
 });
 test('replaces unsupported draft with the reviewed correction',async()=>{
@@ -25,6 +25,7 @@ test('reviewer cannot approve overclaimed counts or guaranteed success',async()=
 });
 test('malformed review and cancellation never publish the draft',async()=>{
  await assert.rejects(reviewLucyReply('초안',{...base,request:async()=>'검사 완료'}));
+ await assert.rejects(reviewLucyReply('초안',{...base,request:async()=>{throw new Error('review service unavailable');}}));
  const control=new AbortController();control.abort();let calls=0;
  await assert.rejects(reviewLucyReply('초안',{...base,signal:control.signal,request:async()=>{calls++;return '{}';}}));assert.equal(calls,0);
 });

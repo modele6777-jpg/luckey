@@ -325,9 +325,11 @@ const KOR_WEEKDAYS = ['일요일(태양)', '월요일(달)', '화요일(화성)'
 const MAHABOTE_ANIMALS = ['가루다(일요일·명예와 비상)', '호랑이(월요일·섬세한 매력)', '사자(화요일·용기와 추진력)', '엄니 코끼리(수요일·소통과 지혜)', '쥐(목요일·통찰과 성찰)', '기니피그(금요일·예술과 공감)', '나가 용(토요일·인내와 깊은 내공)'];
 /**
  * 사용자의 생년월일시 프로필로부터 15대 운명학 도구가 즉시 활용할 수 있는 핵심 개인화 시드 지표를 계산합니다.
+ * 결과의 연도·시점 의존 항목은 asOfDate를 기준으로 합니다. 반복 가능한 결과가 필요하면 기준일을 전달하세요.
  */
-export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
+export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Date = new Date()): string {
   if (!profile?.basic?.birthdate) return '[개인화 계산 미실시] 생년월일 미입력. 명반·본명성·요일·별자리를 임의 지정하지 말 것.';
+  const referenceDate = new Date(asOfDate.getTime());
   try {
     const { solarDate, solarDateString, isLunar } = resolveEffectiveSolarDate(profile.basic.birthdate.trim(), profile.basic.lunarSolar, profile.basic.isLeapMonth ?? false);
     const { year, month, day } = solarDate;
@@ -344,7 +346,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     // 6. 마하보테 (미얀마 7궁 명반 및 8요일 성좌 결정론 산법)
     let mahaboteLine: string;
     try {
-      const mb = calculateMahabote({ profile, targetYear: new Date().getFullYear() });
+      const mb = calculateMahabote({ profile, targetYear: referenceDate.getFullYear() });
       if (mb.status === 'calculated' && mb.rootHouse && mb.currentAgeTransit) {
         mahaboteLine = `- 마하보테 8요일 부분 계산: ${KOR_WEEKDAYS[dow]} · ${animal}. [7궁 명반 포국]: 본명궁 ${mb.rootHouse.houseName}(${mb.rootHouse.category}) · 소수력 잉여수 ${mb.remainder} · 당해 ${mb.currentAgeTransit.currentAge}세 나이 다샤(${mb.currentAgeTransit.transitHouseName}) · 길방위: ${mb.remedies?.luckyDirection || '동쪽'} · 길색: ${mb.remedies?.luckyColors?.join(', ') || '흰색'}.`;
       } else {
@@ -358,7 +360,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     const colors = ['빨강', '노랑·크림', '분홍', '초록', '주황', '파랑', '보라'];
     let thaiLine: string;
     try {
-      const th = calculateThaiHorasat({ profile, targetDate: new Date() });
+      const th = calculateThaiHorasat({ profile, targetDate: referenceDate });
       if (th.status === 'calculated' && th.birthDayPlanet && th.mahaThaksa && th.fourElements) {
         thaiLine = `- 태국점성술 요일 상징: ${KOR_WEEKDAYS[dow]} · 전통 색상 ${colors[dow]}. [호라삿 정밀 차트]: 수호신 ${th.birthDayPlanet.thaiName}(${th.birthDayPlanet.character}) · 마하탁사 108년 대운(${th.mahaThaksa.current.planet.planet} 대운 · 속성: ${th.mahaThaksa.current.attribute.korean}) · 4대 원소 ${th.fourElements.birthThaat.korean} 신체 활력 ${th.fourElements.vitalityIndex}점.`;
       } else {
@@ -371,7 +373,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     // 14. 구성학 (9궁 명반 및 본명성·월명성·길방위)
     let kyuseiLine: string;
     try {
-      const ks = calculateKyusei({ profile, targetDate: new Date() });
+      const ks = calculateKyusei({ profile, targetDate: referenceDate });
       kyuseiLine = ks.status === 'calculated'
         ? `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name} · 월명성 ${ks.getmyosei.name} · 당해 연성 ${ks.annualChart.centerStarName}(${ks.targetYearGanZhi}년). 연·월·일반 포국과 오황살·암검살·세파·월파·본명살·본명적살, 최길방위는 결정론 엔진 리포트(kyuseiResult)의 실측 데이터로 안내.`
         : `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
@@ -391,7 +393,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     // 4. 타로 (78장 아르카나 수비학 소울·퍼스널리티·올해의 성장 카드 결정론 산법)
     let tarotLine = '';
     try {
-      const tm = calculateTarotMaster({ profile, targetYear: new Date().getFullYear(), now: new Date() });
+      const tm = calculateTarotMaster({ profile, targetYear: referenceDate.getFullYear(), now: referenceDate });
       if (tm.status === 'calculated') {
         tarotLine = `\n- 타로 마스터 수비학: 소울 카드 ${tm.soulCard.name} · 퍼스널리티 카드 ${tm.personalityCard.name} · ${tm.currentYear}년 성장 카드 ${tm.yearCard.name} · 4원소 밸런스(불 ${tm.elementalBalance.fire}% / 물 ${tm.elementalBalance.water}% / 공기 ${tm.elementalBalance.air}% / 흙 ${tm.elementalBalance.earth}%).`;
       }
@@ -420,7 +422,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     // 13. 토정비결 (이지함 144괘문 수리 산법)
     let tojeongLine = '';
     try {
-      const tj = calculateTojeong({ profile, targetYear: new Date().getFullYear() });
+      const tj = calculateTojeong({ profile, targetYear: referenceDate.getFullYear() });
       if (tj.status === 'calculated') {
         tojeongLine = `\n- 토정비결: ${tj.targetYear}년 작괘 제${tj.hexagramCode}괘(${tj.hexagramName}) · 연간 총론: "${tj.annualSummary}".`;
       }
@@ -429,7 +431,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     // 15. 태을신수 (16궁 연국 적년 수리 산법)
     let taiyiLine = '';
     try {
-      const ty = calculateTaiyi({ profile, targetYear: new Date().getFullYear(), targetDate: new Date() });
+      const ty = calculateTaiyi({ profile, targetYear: referenceDate.getFullYear(), targetDate: referenceDate });
       if (ty.status === 'calculated' && ty.calculation) {
         taiyiLine = `\n- 태을신수: 적년 ${ty.calculation.accumulatedYears}년 · 16궁 재궁 [${ty.calculation.taiyiPalaceName}] · 시대 대세: "${ty.macroActionStrategy}".`;
       }
@@ -468,9 +470,8 @@ export function buildMasterFifteenToolsComparisonPrompt(profile?: UserProfile, q
 }
 
 /**
- * 사용자의 질문과 활성화된 7대 테마(channels)를 분석하여
- * - 일반/단일/부분 융합 모드: 가장 적합한 1~3개의 핵심 운명학 도구를 자동 선별
- * - 올인원 마스터 모드(7대 테마 전원 활성 또는 isMasterMode): 15개 도구 전원 총동원 & 7대 테마별 비교 분석 프롬프트 생성
+ * 사용자의 질문과 활성화된 7대 테마(channels)를 분석해 질문에 맞는 도구를 선별합니다.
+ * Pro persona 자체는 전체 계산을 의미하지 않으며, 명시적 올인원/종합 요청 또는 master mobilization에서만 카탈로그 전체를 동원합니다.
  */
 export function selectOptimalDivinationTools(
   userText: string,

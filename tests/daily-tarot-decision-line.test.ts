@@ -97,7 +97,7 @@ test('saju summaries and multi-card prompts do not use the direction title as th
     theme: 'daily',
   });
   assert.equal(prompt.promptTemplate.includes('제목에 맞춘'), false);
-  assert.match(prompt.promptTemplate, /무엇을 조심해야 하는지/);
+  assert.match(prompt.promptTemplate, /구체적인 주의점/);
 });
 
 test('a multi-card summary does not keep a bare direction title', () => {

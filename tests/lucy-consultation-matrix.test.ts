@@ -15,7 +15,8 @@ for (const fixture of LUCY_CONSULTATION_FIXTURES) {
     test(`${fixture.id} ${fixture.category}: ${master?'master':'normal'} repeat ${repeat}`,async()=>{
       const selection=selectOptimalDivinationTools(fixture.question,[],fixture.profile,master,{allowMaster:master});
       const audit=selection.calculationAudit || [];
-      if(master) assert.equal(audit.length,ALL_DCE_ENGINES.length);
+      if(selection.isMasterMobilization) assert.equal(audit.length,ALL_DCE_ENGINES.length);
+      else assert.ok(audit.length<ALL_DCE_ENGINES.length,'selective consultations must not claim a full-catalogue audit');
       if(!master&&fixture.id==='20') assert.equal(selection.selectedTools.length,0);
       const saju=audit.some(item=>item.toolId==='saju'&&item.status==='calculated'&&item.sentToModel)?calculateDetailedSaju(fixture.profile):null;
       const facts=buildLucyCriticalFacts(saju,draw);

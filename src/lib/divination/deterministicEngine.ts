@@ -357,9 +357,9 @@ import { calculateKoreanIlyeonSamgukYusa, formatKoreanIlyeonSamgukYusaPrompt, ty
 import { calculateBritishWilliamShakespeareTragicWisdom, formatBritishWilliamShakespeareTragicWisdomPrompt, type BritishWilliamShakespeareTragicWisdomResult, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION } from './britishWilliamShakespeareTragicWisdomEngine';
 import { calculateFrenchMarcelProustLostTimeRegained, formatFrenchMarcelProustLostTimeRegainedPrompt, type FrenchMarcelProustLostTimeRegainedResult, FRENCH_MARCEL_PROUST_LOST_TIME_VERSION } from './frenchMarcelProustLostTimeRegainedEngine';
 import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt, type KoreanKimSoWolAzaleaResult, KOREAN_KIM_SO_WOL_AZALEA_VERSION } from './koreanKimSoWolAzaleaFlowerPoeticGraceEngine';
-import { calculateIrishJamesJoyceUlyssesEpiphany, formatIrishJamesJoyceUlyssesEpiphanyPrompt, type IrishJamesJoyceUlyssesEpiphanyResult, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION } from './irishJamesJoyceUlyssesEpiphanyEngine';
-import { calculateGermanHermannHesseDemianSteppenwolf, formatGermanHermannHesseDemianSteppenwolfPrompt, type GermanHermannHesseDemianSteppenwolfResult, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION } from './germanHermannHesseDemianSteppenwolfEngine';
-import { calculateKoreanHanYongUnSilenceOfNim, formatKoreanHanYongUnSilenceOfNimPrompt, type KoreanHanYongUnSilenceOfNimResult, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from './koreanHanYongUnSilenceOfNimEngine';
+import { calculateIrishJamesJoyceUlyssesEpiphany, type IrishJamesJoyceUlyssesEpiphanyResult, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION } from './irishJamesJoyceUlyssesEpiphanyEngine';
+import { calculateGermanHermannHesseDemianSteppenwolf, type GermanHermannHesseDemianSteppenwolfResult, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION } from './germanHermannHesseDemianSteppenwolfEngine';
+import { calculateKoreanHanYongUnSilenceOfNim, type KoreanHanYongUnSilenceOfNimResult, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from './koreanHanYongUnSilenceOfNimEngine';
 
 
 export type CalculationToolStatus = 'calculated' | 'partial' | 'symbolic' | 'not_implemented' | 'skipped' | 'error';
@@ -4266,28 +4266,28 @@ try {
     }
   })()));
 
-  // 327. 아일랜드 제임스 조이스 《율리시스·젊은 예술가의 초상》 에피파니·의식의 흐름 및 절대 긍정 지혜 엔진
+  // 327. 제임스 조이스 작품에서 질문과 관련된 문학적 관점을 선택하는 질적 참고 엔진
   const irishJamesJoyceUlyssesEpiphanyResult = calculateSupplement('irishJamesJoyceUlyssesEpiphanyResult', () => ((() => {
     try {
-      return calculateIrishJamesJoyceUlyssesEpiphany(profile);
+      return calculateIrishJamesJoyceUlyssesEpiphany(question);
     } catch (_) {
       return null;
     }
   })()));
 
-  // 328. 독일 헤르만 헤세 《데미안·싯다르타·황야의 이리》 알을 깨는 투쟁·내면의 빛·아프락사스 합일 및 싯다르타 강물의 평정 지혜 엔진
+  // 328. 헤르만 헤세 작품에서 질문과 관련된 문학적 관점을 선택하는 질적 참고 엔진
   const germanHermannHesseDemianSteppenwolfResult = calculateSupplement('germanHermannHesseDemianSteppenwolfResult', () => ((() => {
     try {
-      return calculateGermanHermannHesseDemianSteppenwolf(profile);
+      return calculateGermanHermannHesseDemianSteppenwolf(question);
     } catch (_) {
       return null;
     }
   })()));
 
-  // 329. 대한민국 만해 한용운 《님의 침묵·조선불교유신론·심우장》 역설적 사랑 승화·서릿발 자주지조·대자비 보살행 및 불굴의 회복탄력성 지혜 엔진
+  // 329. 한용운 작품에서 질문과 관련된 문학적 관점을 선택하는 질적 참고 엔진
   const koreanHanYongUnSilenceOfNimResult = calculateSupplement('koreanHanYongUnSilenceOfNimResult', () => ((() => {
     try {
-      return calculateKoreanHanYongUnSilenceOfNim(profile);
+      return calculateKoreanHanYongUnSilenceOfNim(question);
     } catch (_) {
       return null;
     }
@@ -5015,9 +5015,9 @@ export const ALL_DCE_ENGINES: DceEngineMeta[] = [
   { key: 'britishWilliamShakespeareTragicWisdom', nameKo: '윌리엄 셰익스피어 햄릿 템페스트 맥베스 비극적심연직시 실존적결단 템페스트대용서 화해와관용 소네트예술적영원성 준비되어있음이전부다', icon: '🎭', category: 'deep_master', summary: '윌리엄 셰익스피어의 불멸의 극문학 철학으로 인간 본성의 심연과 고뇌를 정직하게 응시하는 통찰, "사느냐 죽느냐"의 실존적 주체 결단, 복수의 지팡이를 꺾고 관용으로 품는 템페스트의 성숙한 화해와 "준비되어 있음이 전부다(The readiness is all)"의 초연한 섭리 평정을 체득합니다.' },
   { key: 'frenchMarcelProustLostTimeRegained', nameKo: '마르셀 프루스트 잃어버린시간을찾아서 마들렌비자발적기억 되찾은시간 미세감각안목 참된자아발견 시간초월내면성전', icon: '☕', category: 'deep_master', summary: '마르셀 프루스트의 대작 《잃어버린 시간을 찾아서》 철학으로 마들렌 조각처럼 살아 숨 쉬는 감각의 향기로 진실을 깨우는 비자발적 기억, 세속의 허영을 벗겨낸 참된 자아의 발견, 흘러가는 시간의 무상함을 딛고 내면의 영원한 성전을 완성하는 되찾은 시간(Le Temps retrouvé)의 구원을 체득합니다.' },
   { key: 'koreanKimSoWolAzalea', nameKo: '소월 김소월 진달래꽃 산유화 초혼 접동새 지순한헌신 축복의꽃 애이불비 슬픔의서정적승화 자연순환달관 강인한민초회복탄력성', icon: '🌸', category: 'deep_master', summary: '소월 김소월 시인의 민족 서정 문학 철학으로 떠나는 임의 앞길에 꽃을 뿌리는 지순한 사랑의 헌신, 비탄을 원망 대신 눈부신 절제의 노래로 빚는 슬픔의 승화, 저만치 혼자 피어있는 산유화의 고결한 자연 순환 달관과 척박한 땅에서도 보습을 쥐는 강인한 민초의 생명력을 체득합니다.' },
-  { key: 'irishJamesJoyceUlyssesEpiphany', nameKo: '제임스 조이스 율리시스 에피파니 의식의흐름 세속적일상의신성화 실존적긍정 삶을향한예스 내면오디세이', icon: '🌊', category: 'deep_master', summary: '제임스 조이스의 모더니즘 문학 철학으로 평범한 일상의 한순간에서 영혼의 신비가 섬광처럼 드러나는 에피파니(Epiphany), 억압과 미로를 뚫고 나아가는 의식의 자유로운 흐름, 그리고 삶의 모든 환희와 슬픔을 온몸으로 긍정하는 "그래요 나는 말했어요 그래요 나는 할 거예요 그래요(Yes I said yes I will Yes)"의 절대적 실존 긍정을 체득합니다.' },
-  { key: 'germanHermannHesseDemianSteppenwolf', nameKo: '헤르만 헤세 데미안 싯다르타 유리알유희 알을깨는투쟁 아프락사스선악합일 내면의빛 자기자신에게이르는길 초연한강물의지혜', icon: '🕊️', category: 'deep_master', summary: '헤르만 헤세의 실존적 영성 문학 철학으로 기존 세계의 껍질을 깨뜨리고 참된 자아로 비상하는 아프락사스(Abraxas)의 투쟁, 내면의 고독과 양극성을 조화롭게 포용하는 지혜, 그리고 모든 존재의 흐름을 사랑으로 품어 안는 싯다르타의 강물과 같은 초연한 내면 평화를 체득합니다.' },
-  { key: 'koreanHanYongUnSilenceOfNim', nameKo: '만해 한용운 님의침묵 조선불교유신론 역설적사랑 이별을사랑의새원천으로 서릿발자주지조 불굴의독립기개 대자비회복탄력성', icon: '🕯️', category: 'deep_master', summary: '만해 한용운 선사의 위대한 민족 독립 정신과 불교 선시 철학으로 이별의 슬픔을 헛된 눈물 대신 새로운 희망의 에너지로 돌려세우는 역설적 사랑의 승화, 일제의 암흑 속에서도 꺾이지 않은 서릿발 같은 자주 지조, 그리고 시대의 아픔을 온몸으로 껴안는 불굴의 대자비 회복탄력성을 체득합니다.' },
+  { key: 'irishJamesJoyceUlyssesEpiphany', nameKo: '제임스 조이스 율리시스 에피파니 의식의흐름 세속적일상의신성화 실존적긍정 삶을향한예스 내면오디세이', icon: '🌊', category: 'deep_master', summary: "《Stephen Hero》에서 설명되는 에피파니 개념과 이후 작품 속 일상 장면을 참고해 질문과 관련된 문학적 관점을 제안합니다. 《율리시스》의 인물 해석은 문학적 읽기일 뿐이며 개인 점수·심리 진단·미래 예측은 하지 않습니다." },
+  { key: 'germanHermannHesseDemianSteppenwolf', nameKo: '헤르만 헤세 데미안 싯다르타 유리알유희 알을깨는투쟁 아프락사스선악합일 내면의빛 자기자신에게이르는길 초연한강물의지혜', icon: '🕊️', category: 'deep_master', summary: "《데미안》·《싯다르타》·《황야의 이리》에서 변화·강물·자기 이해의 주제를 질문에 맞춰 살피는 문학적 관점입니다. 수치화된 평가·심리 진단·치료·미래 예측은 하지 않습니다." },
+  { key: 'koreanHanYongUnSilenceOfNim', nameKo: '만해 한용운 님의침묵 조선불교유신론 역설적사랑 이별을사랑의새원천으로 서릿발자주지조 불굴의독립기개 대자비회복탄력성', icon: '🕯️', category: 'deep_master', summary: "《님의 침묵》 등 한용운의 작품을 통해 이별·희망·양심·배려를 살피는 문학적 관점입니다. 확인되지 않은 인용이나 개인 점수·관계 예측을 제공하지 않으며, 헌신은 동의와 안전의 경계를 존중합니다." },
 ];
 
 export function getFiredEngineBadges(
@@ -5839,6 +5839,7 @@ skipped/error/partial/symbolic/not_implemented는 계산 성공으로 표현하�
 등록된 엔진 개수나 마스터 모드만으로 전체 엔진이 실행됐다고 말하지 않는다.
 해시 기반 점수·영적 방패율·에너지 지수는 정밀 계산 및 측정값이 아니며 이번 답변의 수치 근거에서 제외했다.
 철학·신화 관점을 사용하면 '상징적 참고'로 명시하고 실제 측정·의학·과학적 검증으로 표현하지 않는다.
+심층 관점 문장은 앱이 구성한 질적 조언이다. 검증된 출처·판본·위치가 함께 제공되지 않으면 원전 직접 인용, 특정 저자의 발언, 역사적 사실로 귀속하거나 따옴표로 재현하지 않는다.
 타로 수비학·생일카드 계산은 무작위 카드 추첨이 아니다. 실제 추첨은 별도로 제공된 앱 추첨 기록만 인정한다.
 응답에는 이번 질문에 실제 사용한 계산 근거와 필요한 한계만 짧게 알려준다.
 
@@ -5850,5 +5851,6 @@ ${report.masterReview ? `[마스터 전체 검토: ${getCalculationAudit(report,
 skipped/error는 입력 부족·실패·제공할 안전한 관점 없음으로 제외한 항목이다. 모두 사용했다고 주장하지 않는다.
 사용 가능한 계산과 상징 관점을 빠짐없이 검토하고, 질문과 관련된 공통점·차이·충돌을 종합한다. 서로 모순되면 억지로 일치시켜 결론내리지 않는다.
 상징은 상징이라고 밝히며 확률·건강 진단·미래 보장·영적 수치로 바꾸지 않는다.
+환대·책임·사랑을 핑계로 자기희생이나 무조건적 순응을 권하지 않는다. 동의·안전·법적 경계를 존중하고, 위험이 있으면 경계를 세우거나 도움을 요청하도록 안내한다.
 ${JSON.stringify(symbolicReview, null, 2)}` : ''}`;
 }

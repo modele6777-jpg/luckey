@@ -481,11 +481,11 @@ export function routeAndExecute(params: {
     if (!routePlan.targetTools || routePlan.targetTools.length === 0) {
       routePlan.targetTools = ['saju', 'astrology'];
     }
-    // 3. 심층엔진 1개 이상 필수 보장
+    // 3. 상징 해석 관점 1개 이상 선택 보장 (별도 결정론적 계산을 뜻하지 않음)
     if (!routePlan.deepEngineKeys || routePlan.deepEngineKeys.length === 0) {
-      routePlan.deepEngineKeys = ['chronoTransit', 'specialStarsMatrix', 'germanNietzscheZarathustraAmorFati'];
-      routePlan.deepEnginesKo = ['실시간 행성 트랜짓', '15대 신살', '니체 아모르파티'];
-      routePlan.deepEngineGuidance = '기초 운명학 수리 결과와 심층 실존적 통찰을 유기적으로 융합하여 프로 마스터의 조언을 제시해 줘.';
+      routePlan.deepEngineKeys = ['germanNietzscheZarathustraAmorFati'];
+      routePlan.deepEnginesKo = ['니체의 아모르파티 해석 관점'];
+      routePlan.deepEngineGuidance = '이 선택 관점은 상징적 참고로만 사용하고 별도 결정론적 계산이나 검증된 원전 인용처럼 표현하지 않는다. 기초 도구의 실제 계산 결과와 구분해 질문에 맞는 실천 조언을 제시한다.';
     }
   } else {
     // 🌿 일반 모드:
@@ -530,15 +530,15 @@ export function routeAndExecute(params: {
     isMasterMobilization: routePlan.isMasterMobilization,
   });
 
-  // 심층 참고 관점 융합 블록:
+  // 심층 참고 관점 융합 블록 (deep keys are interpretive lenses, not extra calculations):
   // - 일반 모드(!isMaster): 기본 15대만 고정이므로 심층 블록 없음
-  // - 프로 모드(isMaster): 기본엔진과 함께 심층엔진이 필수로 융합 주입됨
+  // - 프로 모드(isMaster): 기본 계산과 별도로 선택된 상징 관점이 참고 정보로 주입됨
   const deepBlock = isMaster && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
-    ? `\n- [프로 마스터 심층 참고 관점]: **${routePlan.deepEnginesKo.join(' · ')}**
-- [심층 관점 융합 가이드]: ${routePlan.deepEngineGuidance || '선별된 심층 철학·심리학 지혜를 기본 운명학 수리 결과와 유기적으로 융합하여 실존적 돌파구를 제시해 줘.'}`
+    ? `\n- [프로 마스터 선택 관점(상징 참고 · 별도 결정론적 계산 아님)]: **${routePlan.deepEnginesKo.join(' · ')}**
+- [심층 관점 융합 가이드]: ${routePlan.deepEngineGuidance || '선택 관점은 상징적 참고로만 사용한다. 별도 계산이나 검증된 원전 인용처럼 표현하지 말고 기본 도구의 실제 결과와 구분해 실천 조언을 제시한다.'}`
     : '';
 
-  // 배지: 프로 모드에서는 기본 도구와 심층 관점 배지가 둘 다 표출
+  // 배지: 기본 계산은 계산 상태로, 선택한 해석 관점은 '상징 참고'로 구분해 표출
   const finalBadges = isMaster && routePlan.deepEnginesKo?.length && !routePlan.isMasterMobilization
     ? [...toolsForBadge, ...routePlan.deepEnginesKo.slice(0, 3).map(name => `상징 참고 · ${name}`)]
     : toolsForBadge;
@@ -553,7 +553,7 @@ export function routeAndExecute(params: {
 - 중점 답변 가이드: ${routePlan.suggestedFocusPrompt}
 ======================================================================
 [루시 답변 필수 지침]:
-1. ${isMaster ? '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)와 심층 특화 엔진의 철학·상징적 해법을 유기적으로 융합하되, 단순 지식을 나열하지 말고 질문자의 현실 상황과 마음에 딱 들어맞는 살아있는 비유로 깊이 있게 풀어줘.' : '위 라우팅된 기본 15대 운명학 도구의 실제 계산 데이터(JSON)를 바탕으로 군더더기 없이 명쾌하고 다정하게 풀어줘.'}
+1. ${isMaster ? '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)와 선택된 심층 해석 관점을 구분해 활용해. 심층 관점은 상징 참고일 뿐 별도 개인별 계산 결과가 아니며, 검증된 출처가 없는 문구를 저자의 직접 인용처럼 쓰지 마. 질문자의 현실 상황에 맞는 실천 조언을 다정하고 깊이 있게 풀어줘.' : '위 라우팅된 기본 도구의 실제 계산 데이터(JSON)를 바탕으로 군더더기 없이 명쾌하고 다정하게 풀어줘.'}
 2. 서론 없이 첫 문장부터 질문자의 속마음을꿰뚫으며 시작하고, 당장 실천할 구체적 행동 팁과 깊은 영적 위로를 카톡식 다중 말풍선(\`\\n\\n\`)으로 전해줘.`;
 
   return {

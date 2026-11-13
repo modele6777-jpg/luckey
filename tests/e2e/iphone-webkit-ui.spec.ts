@@ -178,8 +178,8 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   const item = modal.locator('.update-notice-item > span:not(.text-amber-500)').first();
   await expect(summary).toBeVisible();
   await expect(item).toBeVisible();
-  await expect(summary).toContainText('Lucy Pro 7개 채널 테마별 엔진·관점 분류');
-  await expect(item).toContainText('기초 도구 15개와 심층 관점 316개, 총 331개');
+  await expect(summary).toContainText('근거 검수·문학 엔진 정확도·대화 기억·Lucy Pro 카탈로그 개선');
+  await expect(item).toContainText('검수기 장애·잘못된 승인·오류 보정');
 
   const readRenderedText = async (locator) => locator.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -235,7 +235,7 @@ test('update modal changelog copy stays visible in WebKit light and dark themes'
   });
 });
 
-test('Lucy Pro engine count opens the visible 331-entry catalog and meanings', async ({ page }) => {
+test('Lucy Pro engine count opens the visible 334-entry catalog and meanings', async ({ page }) => {
   await openLucy(page, '/chat?mode=pro');
   const trigger = page.getByRole('button', { name: /Lucy Pro 엔진과 관점 목록/ });
   await expect(trigger).toBeVisible();

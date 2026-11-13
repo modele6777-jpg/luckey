@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { routeAndExecute, analyzeQuestionIntent } from '../src/lib/divination/smartAgentRouter';
+import { ALL_DCE_ENGINES, getCalculationAudit } from '../src/lib/divination/deterministicEngine';
 import { extractEpisodicLedgerFromMemoryEntries, formatEpisodicSoulMemory } from '../src/lib/lucyEpisodicMemoryEngine';
 
 const profile = {
@@ -24,7 +25,7 @@ test('smart agent router routes career strategy to Machiavelli, Ryu Seong-ryong,
   assert.ok(plan.deepEnginesKo?.some(name => name.includes('마키아벨리')));
 
   const routed = routeAndExecute({ text: '이직 면접과 커리어 전략을 알려줘', profile, isMasterRequested: true });
-  assert.match(routed.promptInjection, /프로 마스터 심층 참고 관점/);
+  assert.match(routed.promptInjection, /프로 마스터 선택 관점/);
   assert.match(routed.promptInjection, /마키아벨리/);
   assert.match(routed.promptInjection, /심층 관점 융합 가이드/);
 });
@@ -69,7 +70,25 @@ test('pro mode disables casual mode completely and enforces basic >= 1 and deep 
   assert.equal(query.routePlan.isCasual, false);
   assert.ok(query.routePlan.targetTools.length >= 1);
   assert.ok((query.routePlan.deepEngineKeys?.length ?? 0) >= 1);
-  assert.match(query.promptInjection, /프로 마스터 심층 참고 관점/);
+  assert.match(query.promptInjection, /프로 마스터 선택 관점/);
+});
+
+test('pro deep perspectives are labelled as symbolic references, not extra calculations', () => {
+  const routed = routeAndExecute({ text: '이번 이직에서 커리어 방향을 어떻게 잡을까?', profile, isMasterRequested: true });
+  assert.equal(routed.routePlan.isMasterMobilization, false);
+  assert.equal(routed.engineReport?.masterReview, false);
+  assert.ok(routed.routePlan.deepEngineKeys?.length);
+  assert.ok(routed.routePlan.deepEngineKeys?.every(key => ALL_DCE_ENGINES.some(engine => engine.key === key && engine.category === 'deep_master')));
+  assert.ok(routed.toolsForBadge.some(badge => badge.startsWith('상징 참고 · ')));
+  assert.match(routed.promptInjection, /상징 참고 · 별도 결정론적 계산 아님/);
+  assert.match(routed.promptInjection, /별도 개인별 계산 결과가 아니며/);
+  const audit = getCalculationAudit(routed.engineReport!, {
+    focusTools: routed.routePlan.targetTools,
+    intent: routed.routePlan.intent,
+    isMasterMobilization: false,
+  });
+  assert.ok(audit.length > 0);
+  assert.ok(audit.every(item => !routed.routePlan.deepEngineKeys?.includes(item.toolId)));
 });
 
 test('smart agent router routes immediate decision to Kierkegaard, Descartes, and Sun Tzu', () => {

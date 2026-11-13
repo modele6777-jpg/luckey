@@ -6067,49 +6067,49 @@ test('Kim So-wol Azalea Flower Poetic Grace Engine: calculates Devoted Love, Gri
   assert(prompt.includes(rep.activeKimSoWolTheme.themeTitleKo));
 });
 
-test('James Joyce Ulysses Epiphany Engine: calculates Everyday Epiphany, Stream of Consciousness, and Vital Yes Affirmation', () => {
-  const rep = calculateIrishJamesJoyceUlyssesEpiphany(profile);
+test('James Joyce engine selects a qualitative literary perspective from the question without fake scores or quotations', () => {
+  const rep = calculateIrishJamesJoyceUlyssesEpiphany('창작과 독립적인 예술');
   assert.equal(rep.engineVersion, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION);
-  assert(rep.epiphanyEverydayRevelationScore >= 0 && rep.epiphanyEverydayRevelationScore <= 100);
-  assert(rep.streamOfConsciousnessLibertyIndex >= 0 && rep.streamOfConsciousnessLibertyIndex <= 100);
-  assert(rep.daedalianArtisticAutonomyScore >= 0 && rep.daedalianArtisticAutonomyScore <= 100);
-  assert(rep.odysseyCompassionateReconciliationIndex >= 0 && rep.odysseyCompassionateReconciliationIndex <= 100);
-  assert(rep.vitalYesCosmicAffirmationScore >= 0 && rep.vitalYesCosmicAffirmationScore <= 100);
-  assert(rep.activeJoyceTheme.themeTitleKo.length > 0);
+  assert.equal(rep.activeJoyceTheme.themeKey, 'forgeInSoulSmithy');
+  assert.equal(Object.hasOwn(rep, 'epiphanyEverydayRevelationScore'), false);
+  assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   const prompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(rep);
-  assert(prompt.includes('제임스 조이스 《율리시스·젊은 예술가의 초상》 에피파니·실존적 긍정 지표'));
-  assert(prompt.includes(rep.activeJoyceTheme.themeTitleKo));
+  assert.match(prompt, /문학적 참고/);
+  assert.doesNotMatch(prompt, /\/100|원전 명대사|길 잃은 고양이|A man of genius/);
+
+  const epiphany = calculateIrishJamesJoyceUlyssesEpiphany('일상의 에피파니와 관찰');
+  assert.match(epiphany.activeJoyceTheme.literaryInsight, /Stephen Hero/);
+
+  const bloom = calculateIrishJamesJoyceUlyssesEpiphany('타인을 돕는 친절과 돌봄');
+  assert.equal(bloom.activeJoyceTheme.themeKey, 'bloomCompassion');
+  assert.match(bloom.activeJoyceTheme.literaryInsight, /집 안의 고양이/);
+  assert.doesNotMatch(bloom.activeJoyceTheme.literaryInsight, /길 잃은/);
 });
 
-test('Hermann Hesse Demian Steppenwolf Engine: calculates Egg-Breaking Abraxas Flight, River Equanimity, and Polarity Healing', () => {
-  const rep = calculateGermanHermannHesseDemianSteppenwolf(profile);
+test('Hermann Hesse engine matches the question to a literary theme and omits mismatched quotations and fake metrics', () => {
+  const rep = calculateGermanHermannHesseDemianSteppenwolf('강물의 흐름과 현재를 살피기');
   assert.equal(rep.engineVersion, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION);
-  assert(rep.eggBreakingSelfRealizationScore >= 0 && rep.eggBreakingSelfRealizationScore <= 100);
-  assert(rep.innerLightDestinyAttunementIndex >= 0 && rep.innerLightDestinyAttunementIndex <= 100);
-  assert(rep.siddharthaRiverEquanimityScore >= 0 && rep.siddharthaRiverEquanimityScore <= 100);
-  assert(rep.steppenwolfPolarityHealingIndex >= 0 && rep.steppenwolfPolarityHealingIndex <= 100);
-  assert(rep.castaliaEarthlyServiceResilienceScore >= 0 && rep.castaliaEarthlyServiceResilienceScore <= 100);
-  assert(rep.activeHesseTheme.themeTitleKo.length > 0);
+  assert.equal(rep.activeHesseTheme.themeKey, 'siddharthaRiverOneness');
+  assert.equal(Object.hasOwn(rep, 'siddharthaRiverEquanimityScore'), false);
+  assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   const prompt = formatGermanHermannHesseDemianSteppenwolfPrompt(rep);
-  assert(prompt.includes('헤르만 헤세 《데미안·싯다르타·황야의 이리》 자아실현·내면 평정 지표'));
-  assert(prompt.includes(rep.activeHesseTheme.themeTitleKo));
+  assert.match(prompt, /문학적 참고/);
+  assert.doesNotMatch(prompt, /\/100|원문|원전|Das Wasser lief|Die Welt zu lieben|양극성 치유/);
 });
 
-test('Han Yong-un Silence of Nim Engine: calculates Paradoxical Love, Unbending Integrity, and Dawn-Forging Resilience', () => {
-  const rep = calculateKoreanHanYongUnSilenceOfNim(profile);
+test('Han Yong-un engine uses a verified literary theme, query matching, and no fabricated aphorisms or measures', () => {
+  const rep = calculateKoreanHanYongUnSilenceOfNim('이별과 상실에서 희망을 찾기');
   assert.equal(rep.engineVersion, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION);
-  assert(rep.paradoxicalLoveTranscendenceScore >= 0 && rep.paradoxicalLoveTranscendenceScore <= 100);
-  assert(rep.unbendingIntegritySovereigntyIndex >= 0 && rep.unbendingIntegritySovereigntyIndex <= 100);
-  assert(rep.greatCompassionBodhisattvaResolveScore >= 0 && rep.greatCompassionBodhisattvaResolveScore <= 100);
-  assert(rep.silenceListeningSpiritualDepthIndex >= 0 && rep.silenceListeningSpiritualDepthIndex <= 100);
-  assert(rep.indomitableDawnForgingResilienceScore >= 0 && rep.indomitableDawnForgingResilienceScore <= 100);
-  assert(rep.activeHanYongUnTheme.themeTitleKo.length > 0);
+  assert.equal(rep.activeHanYongUnTheme.themeKey, 'silenceOfNimSublimation');
+  assert.equal(Object.hasOwn(rep, 'paradoxicalLoveTranscendenceScore'), false);
+  assert.equal(Object.hasOwn(rep, 'calculatedAtKst'), false);
   const prompt = formatKoreanHanYongUnSilenceOfNimPrompt(rep);
-  assert(prompt.includes('만해 한용운 《님의 침묵·심우장》 역설적 사랑·서릿발 자주지조 지표'));
-  assert(prompt.includes(rep.activeHanYongUnTheme.themeTitleKo));
+  assert.match(prompt, /문학적 참고/);
+  assert.doesNotMatch(prompt, /\/100|마음은 본래 자유로운|님은 갔으나 반드시 다시 온다|원전 명구/);
+
+  const integrity = calculateKoreanHanYongUnSilenceOfNim('자유와 양심, 자주와 존엄');
+  assert.equal(integrity.activeHanYongUnTheme.themeKey, 'simWooJangUnbendingIntegrity');
 });
-
-
 
 
 

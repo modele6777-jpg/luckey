@@ -2,15 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS, requestWithModelFallback, getLucyRequestFallbacks, LUCY_REVIEW_MODEL } from '../src/lib/lucyModelPolicy';
 
-test('master survives primary and first fallback failure without downgrading to Lite', async () => {
+test('master recovers only within its configured non-Lite candidate tier', async () => {
   const tried: string[] = [];
+  const candidates = [LUCY_MASTER_MODEL, ...LUCY_MASTER_FALLBACK_MODELS];
   const result = await requestWithModelFallback(LUCY_MASTER_MODEL, LUCY_MASTER_FALLBACK_MODELS, async model => {
     tried.push(model);
-    if (tried.length < 3) throw new Error('provider unavailable');
+    if (model !== candidates.at(-1)) throw new Error('provider unavailable');
     return 'verified response';
   });
-  assert.deepEqual(tried, [LUCY_MASTER_MODEL, ...LUCY_MASTER_FALLBACK_MODELS]);
-  assert.equal(result.modelUsed, LUCY_MASTER_FALLBACK_MODELS[1]);
+  assert.deepEqual(tried, candidates);
+  assert.equal(result.modelUsed, candidates.at(-1));
   assert.equal(result.response, 'verified response');
   assert.ok(tried.every(model => !model.includes('lite')));
 });

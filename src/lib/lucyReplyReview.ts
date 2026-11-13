@@ -40,22 +40,30 @@ export async function reviewLucyReply(draft: string, options: {
 도구 간 모순·유파 한계를 확인하고, 부족한 입력은 질문하되 일반 조언은 계속해. 미래·의학적 완치·정확성을 보장하지 마.
 오행 비율을 체내 수분·질병·장기 기능의 측정치로 바꾸지 마. 사주만으로 질병이나 상대의 속마음을 확정하지 마.
 결론과 근거, 실천할 행동, 확인이 필요한 부분이 질문에 맞게 연결되는지도 검토해. 직업·연애·뜻 설명 질문에 관계없는 물 마시기·반신욕 같은 공통 처방을 억지로 붙이지 말고, 해당 질문의 선택이나 이해를 돕는 구체적 행동을 제시해. 사고과정은 공개하지 마.
+환대·책임·사랑을 핑계로 자기희생이나 무조건적 순응을 권하지 마. 동의·안전·법적 경계를 존중하고, 위험이 있으면 경계를 세우거나 도움을 요청하도록 안내해.
 반드시 JSON 객체만 반환해: {"valid":boolean,"issues":string[],"revisedReply":string}. valid가 true면 초안을 그대로 승인해. false면 근거를 지키는 완성된 한국어 반말 답변을 revisedReply에 써. 지적사항만 출력하지 마.` },
       { role:'user', content:JSON.stringify({question:options.question,evidence:options.evidence,conversation:options.conversation,criticalFacts:options.facts ? formatLucyCriticalFacts(options.facts) : undefined,execution:options.audit,detectedIssues:issues,draft}) },
     ]);
   } catch (err) {
-    console.warn('[reviewLucyReply] Review request failed or timed out; approving draft:', err);
-    return draft;
+    console.warn('[reviewLucyReply] Review request failed; refusing to publish an unverified draft:', err);
+    if (options.signal?.aborted) throw new Error('답변 검증이 취소되었습니다.');
+    throw new Error('답변 검증에 실패해 확인되지 않은 초안을 게시하지 않습니다.');
   }
   if (options.signal?.aborted) throw new Error('답변 검증이 취소되었습니다.');
   let verdict: { valid?: unknown; issues?: unknown; revisedReply?: unknown };
   try { verdict = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')); }
   catch {
-    console.warn('[reviewLucyReply] Reviewer returned non-JSON; approving draft');
+    throw new Error('답변 검증 결과가 올바른 JSON이 아닙니다.');
+  }
+  if (typeof verdict.valid !== 'boolean' || !Array.isArray(verdict.issues) || !verdict.issues.every(issue => typeof issue === 'string')) {
+    throw new Error('답변 검증 결과 형식이 유효하지 않습니다.');
+  }
+  if (verdict.valid) {
+    if (issues.length > 0 || verdict.issues.length > 0) throw new Error('검증기가 확인된 답변 모순을 승인해 초안을 게시하지 않습니다.');
     return draft;
   }
-  if (typeof verdict.valid !== 'boolean' || !Array.isArray(verdict.issues)) return draft;
-  if (verdict.valid) return draft;
   const answer = typeof verdict.revisedReply === 'string' ? verdict.revisedReply.trim() : '';
-  return answer || draft;
+  if (!answer) throw new Error('검증된 수정 답변이 없어 초안을 게시하지 않습니다.');
+  if (conflicts(answer).length > 0) throw new Error('수정된 답변에도 확인되지 않은 내용이 남아 있어 게시하지 않습니다.');
+  return answer;
 }
