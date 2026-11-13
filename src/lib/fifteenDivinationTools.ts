@@ -444,12 +444,12 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
     let qimenLine = '';
     try {
       const hq = calculateHonggukQimen({ profile, targetYear: referenceDate.getFullYear() });
-      if (hq.status === 'calculated' && hq.keyPoints && hq.sanHyeong && hq.tongGi && hq.eightDoors) {
+      if (hq.status === 'calculated' && hq.keyPoints && hq.samhyeong && hq.tonggi && hq.eightGatesVerdict) {
         const se = hq.keyPoints.seYao;
         const eung = hq.keyPoints.eungYao;
         const jg = hq.keyPoints.jungGung;
-        const door = hq.eightDoors.seYaoDoor;
-        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.number}) · 응효 [${eung.palaceName}](${eung.element}·${eung.number}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${door.doorName}(${door.nature}) · 삼형살 ${hq.sanHyeong.hasSanHyeong ? `${hq.sanHyeong.sanHyeongType} 성립` : '미성립'}(파극위험 ${hq.sanHyeong.severityScore}점) · 5행 통기 순환도 ${hq.tongGi.smoothnessScore}점.`;
+        const gate = se.gate || hq.eightGatesVerdict.seYaoGate || '중궁기궁';
+        qimenLine = `\n- 홍국기문(4주 9궁): 세효 [${se.palaceName}](${se.element}·${se.star}) · 응효 [${eung.palaceName}](${eung.element}·${eung.star}) · 중궁 [${jg.palaceName}](${jg.element}) · 세효 8문 ${gate}(${se.gateCategory}) · 삼형살 ${hq.samhyeong.formed ? `${hq.samhyeong.type || '삼형'} 성립` : hq.samhyeong.partial ? '부분형' : '미성립'}(파극위험 ${hq.samhyeong.riskIndex}점) · 5행 통기 순환도 ${hq.tonggi.score}점.`;
       }
     } catch (_) {}
 
