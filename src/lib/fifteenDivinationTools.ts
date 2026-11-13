@@ -337,7 +337,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile): string {
     civil.setUTCHours(time?.hour ?? 12, time?.minute ?? 0, 0, 0);
     const dow = civil.getUTCDay();
     const saju = calculateDetailedSaju(profile);
-    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간, 우세 오행: ${saju.elements.dominant.name}, 간이 용신 추정: ${saju.yongsin.name}` : '입력 확인 필요: 사주 미계산';
+    const sajuBrief = saju ? `${saju.dayMaster.hanja}(${saju.dayMaster.korean}) 일간 · 4주: ${saju.pillars.year.ganZhi}년 ${saju.pillars.month.ganZhi}월 ${saju.pillars.day.ganZhi}일${saju.pillars.hour ? ` ${saju.pillars.hour.ganZhi}시` : ''} · 격국: ${saju.geokguk.name} · ${saju.sinGangSinYak.korean} · 용신: ${saju.yongsin.name} · 우세 오행: ${saju.elements.dominant.name}(목${saju.elements.wood} 화${saju.elements.fire} 토${saju.elements.earth} 금${saju.elements.metal} 수${saju.elements.water})` : '입력 확인 필요: 사주 미계산';
     let animal = MAHABOTE_ANIMALS[dow];
     if (dow === 3) animal = !time ? '수요일 오전/오후 구분은 생시 필요' : time.hour < 12 ? '수요일 오전·수성·엄니 코끼리' : '수요일 오후·라후·엄니 없는 코끼리';
 

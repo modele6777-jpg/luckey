@@ -13,10 +13,10 @@ import {
 } from '../src/lib/divination/engineCatalog';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '../src/lib/fifteenDivinationTools';
 
-test('engine catalogue keeps all 331 items: 15 foundational tools and 316 deep perspectives', () => {
-  assert.equal(ALL_DCE_ENGINES.length, 331);
-  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 316 });
-  assert.equal(new Set(ALL_DCE_ENGINES.map(engine => engine.key)).size, 331);
+test('engine catalogue keeps all 334 items: 15 foundational tools and 319 deep perspectives', () => {
+  assert.equal(ALL_DCE_ENGINES.length, 334);
+  assert.deepEqual(ENGINE_CATALOG_COUNTS, { foundational: 15, deep_master: 319 });
+  assert.equal(new Set(ALL_DCE_ENGINES.map(engine => engine.key)).size, 334);
 });
 
 test('every listed engine has a readable meaning and one of the seven channel themes', () => {

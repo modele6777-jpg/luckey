@@ -1331,5 +1331,17 @@ export const MASTER_REVIEW_BINDINGS: Record<string, { field: string; traceKey: s
   "koreanKimSoWolAzalea": {
     "field": "koreanKimSoWolAzaleaResult",
     "traceKey": "koreanKimSoWolAzaleaResult"
+  },
+  "irishJamesJoyceUlyssesEpiphany": {
+    "field": "irishJamesJoyceUlyssesEpiphanyResult",
+    "traceKey": "irishJamesJoyceUlyssesEpiphanyResult"
+  },
+  "germanHermannHesseDemianSteppenwolf": {
+    "field": "germanHermannHesseDemianSteppenwolfResult",
+    "traceKey": "germanHermannHesseDemianSteppenwolfResult"
+  },
+  "koreanHanYongUnSilenceOfNim": {
+    "field": "koreanHanYongUnSilenceOfNimResult",
+    "traceKey": "koreanHanYongUnSilenceOfNimResult"
   }
 };

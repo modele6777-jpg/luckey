@@ -319,6 +319,9 @@ import { calculateKoreanIlyeonSamgukYusa, formatKoreanIlyeonSamgukYusaPrompt, KO
 import { calculateBritishWilliamShakespeareTragicWisdom, formatBritishWilliamShakespeareTragicWisdomPrompt, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION } from '../src/lib/divination/britishWilliamShakespeareTragicWisdomEngine';
 import { calculateFrenchMarcelProustLostTimeRegained, formatFrenchMarcelProustLostTimeRegainedPrompt, FRENCH_MARCEL_PROUST_LOST_TIME_VERSION } from '../src/lib/divination/frenchMarcelProustLostTimeRegainedEngine';
 import { calculateKoreanKimSoWolAzaleaFlowerPoeticGrace, formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt, KOREAN_KIM_SO_WOL_AZALEA_VERSION } from '../src/lib/divination/koreanKimSoWolAzaleaFlowerPoeticGraceEngine';
+import { calculateIrishJamesJoyceUlyssesEpiphany, formatIrishJamesJoyceUlyssesEpiphanyPrompt, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION } from '../src/lib/divination/irishJamesJoyceUlyssesEpiphanyEngine';
+import { calculateGermanHermannHesseDemianSteppenwolf, formatGermanHermannHesseDemianSteppenwolfPrompt, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION } from '../src/lib/divination/germanHermannHesseDemianSteppenwolfEngine';
+import { calculateKoreanHanYongUnSilenceOfNim, formatKoreanHanYongUnSilenceOfNimPrompt, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION } from '../src/lib/divination/koreanHanYongUnSilenceOfNimEngine';
 
 import { extractEpisodicMemoryLedger, buildLucyEpisodicMemoryPrompt, LUCY_EPISODIC_MEMORY_ENGINE_VERSION } from '../src/lib/lucyEpisodicMemoryEngine';
 const profile={basic:{birthdate:'2000-08-16',birthtime:'04:00',gender:'female' as const,birthCity:'서울'}};
@@ -6062,6 +6065,48 @@ test('Kim So-wol Azalea Flower Poetic Grace Engine: calculates Devoted Love, Gri
   const prompt = formatKoreanKimSoWolAzaleaFlowerPoeticGracePrompt(rep);
   assert(prompt.includes('소월 김소월 《진달래꽃·산유화·초혼》 지순한 헌신·슬픔의 승화 지표'));
   assert(prompt.includes(rep.activeKimSoWolTheme.themeTitleKo));
+});
+
+test('James Joyce Ulysses Epiphany Engine: calculates Everyday Epiphany, Stream of Consciousness, and Vital Yes Affirmation', () => {
+  const rep = calculateIrishJamesJoyceUlyssesEpiphany(profile);
+  assert.equal(rep.engineVersion, IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION);
+  assert(rep.epiphanyEverydayRevelationScore >= 0 && rep.epiphanyEverydayRevelationScore <= 100);
+  assert(rep.streamOfConsciousnessLibertyIndex >= 0 && rep.streamOfConsciousnessLibertyIndex <= 100);
+  assert(rep.daedalianArtisticAutonomyScore >= 0 && rep.daedalianArtisticAutonomyScore <= 100);
+  assert(rep.odysseyCompassionateReconciliationIndex >= 0 && rep.odysseyCompassionateReconciliationIndex <= 100);
+  assert(rep.vitalYesCosmicAffirmationScore >= 0 && rep.vitalYesCosmicAffirmationScore <= 100);
+  assert(rep.activeJoyceTheme.themeTitleKo.length > 0);
+  const prompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(rep);
+  assert(prompt.includes('제임스 조이스 《율리시스·젊은 예술가의 초상》 에피파니·실존적 긍정 지표'));
+  assert(prompt.includes(rep.activeJoyceTheme.themeTitleKo));
+});
+
+test('Hermann Hesse Demian Steppenwolf Engine: calculates Egg-Breaking Abraxas Flight, River Equanimity, and Polarity Healing', () => {
+  const rep = calculateGermanHermannHesseDemianSteppenwolf(profile);
+  assert.equal(rep.engineVersion, GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION);
+  assert(rep.eggBreakingSelfRealizationScore >= 0 && rep.eggBreakingSelfRealizationScore <= 100);
+  assert(rep.innerLightDestinyAttunementIndex >= 0 && rep.innerLightDestinyAttunementIndex <= 100);
+  assert(rep.siddharthaRiverEquanimityScore >= 0 && rep.siddharthaRiverEquanimityScore <= 100);
+  assert(rep.steppenwolfPolarityHealingIndex >= 0 && rep.steppenwolfPolarityHealingIndex <= 100);
+  assert(rep.castaliaEarthlyServiceResilienceScore >= 0 && rep.castaliaEarthlyServiceResilienceScore <= 100);
+  assert(rep.activeHesseTheme.themeTitleKo.length > 0);
+  const prompt = formatGermanHermannHesseDemianSteppenwolfPrompt(rep);
+  assert(prompt.includes('헤르만 헤세 《데미안·싯다르타·황야의 이리》 자아실현·내면 평정 지표'));
+  assert(prompt.includes(rep.activeHesseTheme.themeTitleKo));
+});
+
+test('Han Yong-un Silence of Nim Engine: calculates Paradoxical Love, Unbending Integrity, and Dawn-Forging Resilience', () => {
+  const rep = calculateKoreanHanYongUnSilenceOfNim(profile);
+  assert.equal(rep.engineVersion, KOREAN_HAN_YONG_UN_SILENCE_OF_NIM_VERSION);
+  assert(rep.paradoxicalLoveTranscendenceScore >= 0 && rep.paradoxicalLoveTranscendenceScore <= 100);
+  assert(rep.unbendingIntegritySovereigntyIndex >= 0 && rep.unbendingIntegritySovereigntyIndex <= 100);
+  assert(rep.greatCompassionBodhisattvaResolveScore >= 0 && rep.greatCompassionBodhisattvaResolveScore <= 100);
+  assert(rep.silenceListeningSpiritualDepthIndex >= 0 && rep.silenceListeningSpiritualDepthIndex <= 100);
+  assert(rep.indomitableDawnForgingResilienceScore >= 0 && rep.indomitableDawnForgingResilienceScore <= 100);
+  assert(rep.activeHanYongUnTheme.themeTitleKo.length > 0);
+  const prompt = formatKoreanHanYongUnSilenceOfNimPrompt(rep);
+  assert(prompt.includes('만해 한용운 《님의 침묵·심우장》 역설적 사랑·서릿발 자주지조 지표'));
+  assert(prompt.includes(rep.activeHanYongUnTheme.themeTitleKo));
 });
 
 
