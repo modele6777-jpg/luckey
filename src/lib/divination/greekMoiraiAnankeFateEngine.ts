@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '1.0.0';
+export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.0.0';
 
 export interface MoiraiGoddessAspect {
   name: string;
@@ -26,6 +26,7 @@ export interface MoiraiGoddessAspect {
 export interface GreekMoiraiAnankeFateReport {
   engineVersion: string;
   timestamp: string;
+  calculatedAtKst: string;
   clotho: MoiraiGoddessAspect; // 발원과 탄생의 실
   lachesis: MoiraiGoddessAspect; // 측정과 배분의 실
   atropos: MoiraiGoddessAspect; // 결단과 종결의 실
@@ -34,6 +35,23 @@ export interface GreekMoiraiAnankeFateReport {
   spindleAlignment: string; // 물레 회전 방향 및 영혼의 공명
   kairosTimingGuidance: string; // 카이로스(결정적 시점) 돌파 지침
   mythOfErSoulChoice: string; // 에르의 신화에 따른 영혼의 지혜 처방
+  situationalMoiraiAudit: {
+    questionFocus: string;
+    threadStage: string;
+    anankeTensionNote: string;
+    spindleWarning: string;
+  };
+  temporalMoiraiRhythm: {
+    calculatedAtKst: string;
+    olympianHourWindow: string;
+    seasonalSpindlePhase: string;
+    kairosActionNote: string;
+  };
+  moiraiSynthesisMatrix: {
+    coreMandate: string;
+    sacredBoundary: string;
+    reflectiveQuestion: string;
+  };
 }
 
 function simpleHash(str: string): number {
@@ -120,9 +138,65 @@ export function calculateGreekMoiraiAnankeFate(options?: {
   const mythOfErSoulChoice = `에르의 신화가 전하듯 영혼은 환생 전 스스로의 삶의 원형을 선택합니다. ` +
     `현재 당신의 시련이나 기회는 우연이 아닌 영혼이 설계한 성장의 디딤돌이니, [${dominantGoddess}]의 기운을 나침반 삼아 당당히 주도권을 쥐십시오.`;
 
+  const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const kstDate = new Date(kstMs);
+  const kstHour = kstDate.getUTCHours();
+  const kstMonth = kstDate.getUTCMonth() + 1;
+  const calculatedAtKst = `${kstDate.getUTCFullYear()}-${String(kstMonth).padStart(2, '0')}-${String(kstDate.getUTCDate()).padStart(2, '0')} ${String(kstHour).padStart(2, '0')}:${String(kstDate.getUTCMinutes()).padStart(2, '0')} KST`;
+
+  const qLower = question.toLowerCase();
+  const questionFocus = /연애|사랑|결혼|재회|관계|이별|짝|배우자/.test(qLower)
+    ? '인연의 실타래와 감정의 필연성 감사'
+    : /이직|직장|사업|계약|돈|재물|투자|승진|창업/.test(qLower)
+    ? '현실 자원 배분과 사업적 결단의 실 감사'
+    : /건강|휴식|회복|마음|불안|수면/.test(qLower)
+    ? '생명력 방적과 낡은 피로의 절단 감사'
+    : '에르의 신화 영혼 선택과 카이로스 국면 감사';
+
+  const threadStage = dominantGoddess === '클로토(새로운 발원)'
+    ? '제1국면: 클로토의 방적기(새로운 인과가 잣기 시작하는 발원기)'
+    : dominantGoddess === '라케시스(조율과 배분)'
+    ? '제2국면: 라케시스의 측량대(주어진 몫과 관계의 길이를 재는 조율기)'
+    : '제3국면: 아트로포스의 은빛 가위(군더더기를 끊고 매듭짓는 결단기)';
+
+  const anankeTensionNote = necessityRatio >= 75
+    ? '아낭케의 필연 축이 단단히 맞물려 억지 우회보다 정면 돌파가 순리인 국면입니다.'
+    : '가능성의 여백이 넓어 질문자의 의식적 선택이 실타래의 결을 바꾸는 국면입니다.';
+
+  const spindleWarning = dominantGoddess === '아트로포스(단호한 매듭)'
+    ? '끝난 인연이나 낡은 방식을 미련으로 붙들면 물레가 엉킵니다.'
+    : dominantGoddess === '클로토(새로운 발원)'
+    ? '시작의 조급함으로 준비되지 않은 약속을 남발하지 마십시오.'
+    : '타인의 몫과 나의 몫을 혼동해 과도한 책임을 떠안지 마십시오.';
+
+  const olympianHourWindow = kstHour >= 5 && kstHour < 11
+    ? '아침 에오스·클로토의 실 잣기 창(새로운 기획과 초안 발원에 유리)'
+    : kstHour >= 11 && kstHour < 17
+    ? '정오 아폴론·라케시스의 측량 창(조건 조율과 실무 배분에 유리)'
+    : kstHour >= 17 && kstHour < 22
+    ? '황혼 아낭케·아트로포스의 결단 창(우선순위 정리와 불필요한 요소 정리에 유리)'
+    : '심야 에르의 신화 묵상 창(내면의 영혼 선택을 반추하고 침묵으로 가라앉히기에 유리)';
+
+  const seasonalSpindlePhase = kstMonth >= 3 && kstMonth <= 5
+    ? '춘분 페르세포네의 귀환기(잠자던 실마리가 지상으로 올라오는 발아 국면)'
+    : kstMonth >= 6 && kstMonth <= 8
+    ? '하지 태양 마차의 절정기(가장 팽팽한 추진력으로 과업을 밀고 나가는 국면)'
+    : kstMonth >= 9 && kstMonth <= 11
+    ? '추분 데메테르의 수확·측량기(결실을 계량하고 쭉정이를 가려내는 국면)'
+    : '동지 하데스·아낭케의 심연 숙성기(외부 팽창을 줄이고 다음 주기를 응축하는 국면)';
+
+  const kairosActionNote = `현재 ${olympianHourWindow}과 ${seasonalSpindlePhase}가 교차하므로, ${kairosTimingGuidance}`;
+
+  const moiraiSynthesisMatrix = {
+    coreMandate: `${dominantGoddess}의 축에서 ${questionFocus}을 수행하며 주체적으로 실타래를 쥐십시오.`,
+    sacredBoundary: `아낭케의 물레가 전하는 경계: ${spindleWarning}`,
+    reflectiveQuestion: `지금 내 손에 쥔 실타래 중 클로토처럼 새로 잣아야 할 것과 아트로포스처럼 단호히 끊어야 할 것은 무엇인가요?`,
+  };
+
   return {
     engineVersion: GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION,
     timestamp: now.toISOString(),
+    calculatedAtKst,
     clotho,
     lachesis,
     atropos,
@@ -131,17 +205,35 @@ export function calculateGreekMoiraiAnankeFate(options?: {
     spindleAlignment,
     kairosTimingGuidance,
     mythOfErSoulChoice,
+    situationalMoiraiAudit: {
+      questionFocus,
+      threadStage,
+      anankeTensionNote,
+      spindleWarning,
+    },
+    temporalMoiraiRhythm: {
+      calculatedAtKst,
+      olympianHourWindow,
+      seasonalSpindlePhase,
+      kairosActionNote,
+    },
+    moiraiSynthesisMatrix,
   };
 }
 
 export function formatGreekMoiraiAnankeFatePrompt(rep: GreekMoiraiAnankeFateReport): string {
   return `[고대 그리스 델포이 삼여신 모이라이(Moirai) 운명의 실타래 & 아낭케(Ananke) 필연 실측 데이터]
-· 엔진 버전: v${rep.engineVersion}
-· 주도적 운명 여신: ${rep.dominantGoddess} (아낭케 필연성 지수: ${rep.necessityRatio}/100)
-· 클로토(방적·발원): 위력 ${rep.clotho.powerScore}/100 [${rep.clotho.threadTension}] - ${rep.clotho.insight}
-· 라케시스(측정·배분): 위력 ${rep.lachesis.powerScore}/100 [${rep.lachesis.threadTension}] - ${rep.lachesis.insight}
-· 아트로포스(절단·결단): 위력 ${rep.atropos.powerScore}/100 [${rep.atropos.threadTension}] - ${rep.atropos.insight}
+· 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.temporalMoiraiRhythm.calculatedAtKst}
+· 주도적 운명 여신: ${rep.dominantGoddess}
+· 질문 맥락 감사: ${rep.situationalMoiraiAudit.questionFocus} (${rep.situationalMoiraiAudit.threadStage})
+· 필연성 위상: ${rep.situationalMoiraiAudit.anankeTensionNote}
+· 클로토(방적·발원) [${rep.clotho.threadTension}]: ${rep.clotho.insight}
+· 라케시스(측정·배분) [${rep.lachesis.threadTension}]: ${rep.lachesis.insight}
+· 아트로포스(절단·결단) [${rep.atropos.threadTension}]: ${rep.atropos.insight}
 · 아낭케 물레 궤적: ${rep.spindleAlignment}
+· 시공간 리듬: ${rep.temporalMoiraiRhythm.olympianHourWindow} · ${rep.temporalMoiraiRhythm.seasonalSpindlePhase}
 · 카이로스 타이밍 돌파 지침: ${rep.kairosTimingGuidance}
-· 에르의 신화 영혼 처방: ${rep.mythOfErSoulChoice}`;
+· 에르의 신화 영혼 처방: ${rep.mythOfErSoulChoice}
+· 교차 매트릭스 핵심 지침: ${rep.moiraiSynthesisMatrix.coreMandate}
+· 신성 경계 및 성찰 질문: ${rep.moiraiSynthesisMatrix.sacredBoundary} | "${rep.moiraiSynthesisMatrix.reflectiveQuestion}"`;
 }

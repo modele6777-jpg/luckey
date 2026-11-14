@@ -2902,15 +2902,18 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
 });
 
 test('Delphic Maxims Oracle Engine: calculates soul maxim, situational oracle and clarity', () => {
-  const rep = calculateDelphicMaximsOracle({ profile });
+  const rep = calculateDelphicMaximsOracle({ profile, question: '결정과 약속의 기준' });
   assert.equal(rep.engineVersion, DELPHIC_MAXIMS_VERSION);
   assert(rep.coreSoulMaxim.maximIndex >= 1);
   assert(rep.situationalOracleMaxim.maximIndex >= 1);
   assert(rep.apollonianClarityScore >= 0 && rep.apollonianClarityScore <= 100);
   assert(rep.pythianOracleInsight.length > 0);
+  assert(rep.temporalDelphicRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.situationalDelphicAudit.questionFocus.length > 0);
   const prompt = formatDelphicMaximsOraclePrompt(rep);
   assert(prompt.includes('고대 그리스 델포이 아폴론 신탁'));
   assert(prompt.includes(rep.coreSoulMaxim.greekText));
+  assert(!prompt.includes('/ 100점'));
 });
 
 test('Ayurvedic Tridosha & Prana Engine: calculates prakriti, vikriti and subtle energies', () => {
@@ -3013,14 +3016,17 @@ test('Slavic Svarog Circle & Rod Ancestral Karma Engine: calculates svarog hall,
 });
 
 test('Essene Communion Tree Engine: calculates morning/evening angels, tree trinity and guidance', () => {
-  const rep = calculateEsseneCommunion(profile);
+  const rep = calculateEsseneCommunion(profile, new Date('2026-11-15T05:55:00Z'), '마음의 평화와 치유');
   assert.equal(rep.engineVersion, ESSENE_COMMUNION_VERSION);
   assert(rep.morningEarthlyAngel.koreanName.length > 0);
   assert(rep.eveningHeavenlyAngel.koreanName.length > 0);
   assert(rep.communionVibrationalScore >= 0 && rep.communionVibrationalScore <= 100);
+  assert(rep.temporalEsseneRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.situationalEsseneAudit.questionFocus.length > 0);
   const prompt = formatEsseneCommunionPrompt(rep);
   assert(prompt.includes('에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진'));
   assert(prompt.includes(rep.morningEarthlyAngel.koreanName));
+  assert(!prompt.includes('점'));
 });
 
 test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth rulers and medicine rx', () => {
@@ -3599,9 +3605,12 @@ test('Greek Moirai Ananke Fate Engine: calculates Clotho, Lachesis, Atropos powe
   assert(rep.atropos.powerScore >= 0 && rep.atropos.powerScore <= 100);
   assert(rep.necessityRatio >= 0 && rep.necessityRatio <= 100);
   assert(rep.dominantGoddess.length > 0);
+  assert(rep.temporalMoiraiRhythm.calculatedAtKst.includes('KST'));
+  assert(rep.situationalMoiraiAudit.questionFocus.length > 0);
   const prompt = formatGreekMoiraiAnankeFatePrompt(rep);
   assert(prompt.includes('고대 그리스 델포이 삼여신 모이라이(Moirai)'));
   assert(prompt.includes(rep.dominantGoddess));
+  assert(!prompt.includes('/100'));
 });
 
 test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and sand cleansing index', () => {
