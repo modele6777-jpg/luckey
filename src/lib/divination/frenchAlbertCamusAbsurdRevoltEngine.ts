@@ -1,19 +1,14 @@
 /**
  * 프랑스/알제리 알베르 카뮈(Albert Camus) 《시지프 신화(Le Mythe de Sisyphe)》 & 《반항하는 인간》 부조리(Absurde)의 자각 & 지치지 않는 반항(Révolte)과 실존적 열정 엔진
  *
- * 프랑스 문학의 불멸의 거장이자 1957년 노벨 문학상 최연소 수상 철학자 알베르 카뮈(Albert Camus, 1913~1960)의 핵심 원전 기반:
- * 1. 부조리의 명석한 자각(Lucidité de l'absurde): 명료한 의미를 갈망하는 인간의 이성과 영원히 침묵하는 세계 사이의 근원적 균열을 회피하지 않고 직시하는 지적 정직성.
- * 2. 지치지 않는 형이상학적 반항(Révolte métaphysique): 헛된 환상이나 자기기만에 도피하지 않고, 매일 자신의 바위를 밀어 올리며 부조리한 운명에 당당히 맞서는 인간적 존엄.
- * 3. 삶의 충만한 열정(Passion de vivre): 미래의 천국이나 보상에 현재를 희생시키지 않고, 지중해의 눈부신 태양처럼 지금 이 순간의 대지와 감각을 가장 뜨겁게 긍정함.
- * 4. 환상을 걷어낸 실존적 자유(Liberté absurde): 절대자의 보증이 사라진 백지 위에서 자신의 선택과 행동을 스스로 온전히 책임지며 누리는 투명한 주체성.
- * 5. 시지프의 행복과 연대(Bonheur de Sisyphe & Solidarité): "산꼭대기를 향한 투쟁 그 자체만으로도 인간의 마음을 가득 채우기에 충분하다"는 긍정과 고통받는 이들과의 따뜻한 연대.
+ * 프랑스 문학의 불멸의 거장이자 1957년 노벨 문학상 최연소 수상 철학자 알베르 카뮈(Albert Camus, 1913~1960)의 핵심 원전 기반.
  *
- * @version LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v1.0.0
+ * @version LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v1.0.0';
+export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.0.0';
 
 export interface CamusTheme {
   themeKey: string;
@@ -31,6 +26,30 @@ export interface CamusAphorism {
   actionGuidance: string;
 }
 
+export interface CamusSituationalAbsurdAudit {
+  themeKo: string;
+  sourceCitation: string;
+  frenchQuote: string;
+  translationKo: string;
+  falseEscapeTrap: string;
+  sisyphusFirstStep: string;
+}
+
+export interface CamusTemporalRevoltRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  revoltFocus: '명석한 자각(Lucidité)' | '반항의 지속(Révolte)' | '현재의 열정(Passion)' | '연대의 온기(Solidarité)';
+  lucidityClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface CamusSynthesisMatrix {
+  absurdLucidity: number;
+  revoltPersistence: number;
+  presentPassion: number;
+  overallSynthesis: number;
+}
+
 export interface AlbertCamusAbsurdRevoltResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -43,6 +62,9 @@ export interface AlbertCamusAbsurdRevoltResult {
   // 세부 분석
   activeCamusTheme: CamusTheme;
   focalCamusAphorism: CamusAphorism;
+  situationalAbsurdAudit: CamusSituationalAbsurdAudit;
+  temporalRevoltRhythm: CamusTemporalRevoltRhythm;
+  camusSynthesisMatrix: CamusSynthesisMatrix;
   camusComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -125,8 +147,103 @@ export const CAMUS_APHORISMS: CamusAphorism[] = [
   },
 ];
 
+function buildSituationalAbsurdAudit(question?: string): CamusSituationalAbsurdAudit {
+  const q = (question ?? '').trim();
+  if (/반복|지루|허무|무의미|제자리|바위|힘들/.test(q)) {
+    return {
+      themeKo: '시지프의 행복(Le Bonheur de Sisyphe)과 반복의 존엄',
+      sourceCitation: '《시지프 신화(Le Mythe de Sisyphe)》 결어',
+      frenchQuote: "La lutte elle-même vers les sommets suffit à remplir un cœur d'homme.",
+      translationKo: '산꼭대기를 향한 투쟁 그 자체만으로도 인간의 마음을 가득 채우기에 충분하다.',
+      falseEscapeTrap: '결과가 보이지 않는다는 이유로 오늘의 수고 자체를 무가치하다고 덮어 버리는 체념.',
+      sisyphusFirstStep: '오늘 내가 밀어 올릴 바위 1개를 정직하게 고르고, 결과 평가 없이 그 1시간의 몰입 자체를 온전히 누리십시오.',
+    };
+  }
+  if (/부당|억울|불의|갈등|관계|상처|연대/.test(q)) {
+    return {
+      themeKo: '반항하는 인간(L’Homme révolté)과 존엄의 연대',
+      sourceCitation: '《반항하는 인간(L’Homme révolté)》 서문',
+      frenchQuote: 'Je me révolte, donc nous sommes.',
+      translationKo: '나는 반항한다, 그러므로 우리는 존재한다.',
+      falseEscapeTrap: '분노를 삭이거나 냉소로 도망치며, 내가 지켜야 할 존엄의 선조차 흐려 버리는 침묵.',
+      sisyphusFirstStep: '감정적 폭발 대신, "여기까지는 허용할 수 없다"는 존엄의 선 한 줄을 침착하고 분명하게 표현하십시오.',
+    };
+  }
+  if (/불안|미래|외로|겨울|막막|실패/.test(q)) {
+    return {
+      themeKo: '티파사의 불패의 여름(Été invincible)과 현재 긍정',
+      sourceCitation: '《티파사로의 귀환(Retour à Tipasa)》',
+      frenchQuote: "Au milieu de l'hiver, j'apprenais enfin qu'il y avait en moi un été invincible.",
+      translationKo: '겨울의 한복판에서 나는 마침내 내 안에 불패의 여름이 있음을 깨달았다.',
+      falseEscapeTrap: '아직 오지 않은 미래의 보장만을 기다리며 지금 눈앞의 햇살과 숨결을 유예하는 습관.',
+      sisyphusFirstStep: '오늘 하루 중 단 15분이라도 바깥 공기와 온기를 느끼며, 미래 걱정 없이 지금 살아 있음을 감각하십시오.',
+    };
+  }
+  return {
+    themeKo: '부조리의 명석한 자각(Lucidité)과 백지의 자유',
+    sourceCitation: '《시지프 신화》 · 〈부조리의 추론〉',
+    frenchQuote: "L'absurde naît de cette confrontation entre l'appel humain et le silence déraisonnable du monde.",
+    translationKo: '부조리는 인간의 명료한 갈망과 세계의 비합리적인 침묵이 정면으로 부딪칠 때 태어난다.',
+    falseEscapeTrap: '세상이 내 기대대로 답해 주지 않는다고 원망하며 스스로의 선택권마저 내려놓는 도피.',
+    sisyphusFirstStep: '막연한 환상을 한 겹 걷어내고, 지금 내가 직접 통제해 바꿀 수 있는 오늘의 작은 한 수부터 실행하십시오.',
+  };
+}
+
+function buildTemporalRevoltRhythm(now?: Date): CamusTemporalRevoltRhythm {
+  const ref = now ?? new Date();
+  const kst = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 티파사의 햇살처럼 생의 열정(Passion)이 대지에 깨어나는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 불패의 여름(Été invincible)으로 정면 돌파하는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 헛된 환상을 걷어내고 명석한 자각(Lucidité)을 세우는 계절'
+          : '겨울 — 시련의 한복판에서도 내면의 불꽃과 연대를 지키는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '오전 명석한 자각(Lucidité) 출발 창',
+      seasonalTone,
+      revoltFocus: '명석한 자각(Lucidité)',
+      lucidityClarityIndex: 91,
+      rhythmDirective: '거짓 위안 없이 현실을 투명하게 직시하기 좋은 오전입니다. 오늘 밀어 올릴 핵심 바위 하나를 고르십시오.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '한낮 반항의 지속(Révolte) 돌파 창',
+      seasonalTone,
+      revoltFocus: '반항의 지속(Révolte)',
+      lucidityClarityIndex: 86,
+      rhythmDirective: '피로와 변수에 부딪히는 낮 시간입니다. 자포자기하지 않고 묵묵히 한 걸음 더 밀어 올리는 것이 승리입니다.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 현재의 열정·연대(Solidarité) 창',
+      seasonalTone,
+      revoltFocus: '연대의 온기(Solidarité)',
+      lucidityClarityIndex: 84,
+      rhythmDirective: '결과 걱정을 잠시 접고, 곁에 있는 사람과의 따뜻한 대화와 오늘 저녁의 온기를 온전히 누리십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 불패의 여름(Été invincible) 내면 응시 창',
+    seasonalTone,
+    revoltFocus: '현재의 열정(Passion)',
+    lucidityClarityIndex: 80,
+    rhythmDirective: '세계의 침묵이 깊어지는 심야입니다. 내 안의 꺾이지 않는 생명력을 확인하며 고요히 쉬십시오.',
+  };
+}
+
 export function calculateAlbertCamusAbsurdRevolt(
-  profile: UserProfile
+  profile: UserProfile,
+  question?: string,
+  now?: Date,
 ): AlbertCamusAbsurdRevoltResult {
   const p = profile as any;
   const name = profile?.basic?.name ?? p?.name ?? '방문자';
@@ -154,6 +271,20 @@ export function calculateAlbertCamusAbsurdRevolt(
 
   const activeCamusTheme = CAMUS_THEMES[themeIndex];
   const focalCamusAphorism = CAMUS_APHORISMS[aphorismIndex];
+  const situationalAbsurdAudit = buildSituationalAbsurdAudit(question);
+  const temporalRevoltRhythm = buildTemporalRevoltRhythm(now);
+
+  const absurdLucidity = Math.min(99, Math.round((absurdLucidityAwakeningScore + lucidFreedomAutonomyScore) / 2));
+  const revoltPersistence = Math.min(99, Math.round((unceasingRevoltDignityScore + temporalRevoltRhythm.lucidityClarityIndex) / 2));
+  const presentPassion = Math.min(99, Math.round((passionateVitalityIndex + sisyphusHappinessResilienceScore) / 2));
+  const overallSynthesis = Math.round((absurdLucidity + revoltPersistence + presentPassion) / 3);
+
+  const camusSynthesisMatrix: CamusSynthesisMatrix = {
+    absurdLucidity,
+    revoltPersistence,
+    presentPassion,
+    overallSynthesis,
+  };
 
   const guidanceTitle = `알베르 카뮈 부조리와 반항 지혜: ${activeCamusTheme.themeTitleKo}`;
   const philosophicalCounsel = `알베르 카뮈의 철학은 무의미한 세계 앞에서 절망하거나 비겁한 도피에 빠지지 않고, 당당한 반항과 뜨거운 열정으로 삶을 긍정하도록 촉구합니다. ` +
@@ -163,7 +294,7 @@ export function calculateAlbertCamusAbsurdRevolt(
 
   return {
     engineVersion: FRENCH_ALBERT_CAMUS_VERSION,
-    calculatedAtKst: new Date().toISOString(),
+    calculatedAtKst: (now ?? new Date()).toISOString(),
     absurdLucidityAwakeningScore,
     unceasingRevoltDignityScore,
     passionateVitalityIndex,
@@ -171,6 +302,9 @@ export function calculateAlbertCamusAbsurdRevolt(
     sisyphusHappinessResilienceScore,
     activeCamusTheme,
     focalCamusAphorism,
+    situationalAbsurdAudit,
+    temporalRevoltRhythm,
+    camusSynthesisMatrix,
     camusComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -187,11 +321,11 @@ export function formatAlbertCamusAbsurdRevoltPrompt(res: AlbertCamusAbsurdRevolt
     `- 환상을 걷어낸 실존적 자유도(Liberté): ${res.lucidFreedomAutonomyScore}/100`,
     `- 시지프의 행복 회복탄력성(Bonheur): ${res.sisyphusHappinessResilienceScore}/100`,
     `- 핵심 실존 테마: ${res.activeCamusTheme.themeTitleKo} [${res.activeCamusTheme.themeTitleFrench}]`,
-    `- 철학적 통찰: ${res.activeCamusTheme.existentialInsight}`,
-    `- 실천적 조언: ${res.activeCamusTheme.practicalCounsel}`,
-    `- 핵심 경구: "${res.focalCamusAphorism.aphorismKo}"`,
-    `- 원전 출처: "${res.focalCamusAphorism.aphorismFrench}" [${res.focalCamusAphorism.sourceContext}]`,
-    `- 구체적 실천 지침: ${res.focalCamusAphorism.actionGuidance}`,
+    `- 질문 맥락 부조리 감사 (${res.situationalAbsurdAudit.themeKo} · ${res.situationalAbsurdAudit.sourceCitation}): "${res.situationalAbsurdAudit.translationKo}" [${res.situationalAbsurdAudit.frenchQuote}]`,
+    `- 거짓 도피 경계: ${res.situationalAbsurdAudit.falseEscapeTrap}`,
+    `- 시지프의 첫걸음: ${res.situationalAbsurdAudit.sisyphusFirstStep}`,
+    `- KST 반항 리듬: ${res.temporalRevoltRhythm.kstWindow} (${res.temporalRevoltRhythm.revoltFocus}, 명료도 ${res.temporalRevoltRhythm.lucidityClarityIndex}/100) — ${res.temporalRevoltRhythm.rhythmDirective}`,
+    `- 카뮈 매트릭스: 부조리 자각 ${res.camusSynthesisMatrix.absurdLucidity} / 반항 지속 ${res.camusSynthesisMatrix.revoltPersistence} / 현재 열정 ${res.camusSynthesisMatrix.presentPassion} (종합 ${res.camusSynthesisMatrix.overallSynthesis}/100)`,
     `- 종합 실존철학 권면: ${res.camusComprehensiveGuidance.philosophicalCounsel}`,
   ].join('\n');
 }

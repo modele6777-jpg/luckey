@@ -3577,7 +3577,7 @@ try {
   // 250. 프랑스/알제리 알베르 카뮈 시지프 신화 & 반항하는 인간 부조리 자각 & 실존적 반항 엔진
   const albertCamusAbsurdRevoltResult = calculateSupplement('albertCamusAbsurdRevoltResult', () => ((() => {
     try {
-      return calculateAlbertCamusAbsurdRevolt(profile);
+      return calculateAlbertCamusAbsurdRevolt(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -3595,7 +3595,7 @@ try {
   // 252. 프랑스 장 폴 사르트르 존재와 무 & 실존주의는 휴머니즘이다 실존적 자유·주체적 기획 & 진정성과 앙가주망 엔진
   const jeanPaulSartreExistentialismResult = calculateSupplement('jeanPaulSartreExistentialismResult', () => ((() => {
     try {
-      return calculateJeanPaulSartreExistentialism(profile);
+      return calculateJeanPaulSartreExistentialism(profile, question, now);
     } catch (_) {
       return null;
     }
@@ -4027,7 +4027,7 @@ try {
   // 300. 프랑스 시몬 드 보부아르 《애매성의 윤리학·제2의 성》 주체적 자기창조 & 애매성의 윤리·자유의 상호 연대 지혜 엔진
   const frenchSimoneDeBeauvoirAmbiguityFreedomResult = calculateSupplement('frenchSimoneDeBeauvoirAmbiguityFreedomResult', () => ((() => {
     try {
-      return calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(profile);
+      return calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(profile, question, now);
     } catch (_) {
       return null;
     }
