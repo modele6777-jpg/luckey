@@ -6,7 +6,7 @@ import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocation } from 'wouter';
 import { ChevronUp, ChevronDown, Clover, KeyRound } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { WarpPhase, OmniWarpTarget, OmniWarpContext } from '@/lib/omniWarp/types';
+import { WarpPhase, OmniWarpTarget, OmniWarpContext, WarpForceMetrics } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
 import { serializeCurrentView, synthesizeWarpTarget, isDisallowedWarpDestination } from '@/lib/omniWarp/omniWarpEngine';
 import {
@@ -1000,7 +1000,39 @@ export function BigBangButton() {
     }
   };
 
-  const goToKeyChannel = useCallback(() => {
+  const dispatchBigBangRouteTransition = useCallback((destinationPath: string, title: string, metrics?: WarpForceMetrics) => {
+    if (typeof window === 'undefined') return;
+    const phase: WarpPhase = 'wormhole';
+    const target: OmniWarpTarget = {
+      id: destinationPath.startsWith('/key') ? 'key' : 'lucy',
+      phase,
+      gauge: 1,
+      aiTemperature: 0,
+      title,
+      name: title,
+      actionType: 'navigate',
+      destinationPath,
+      previewLabel: `[Big Bang 전환] ${title}`,
+      previewDescription: `${title}으로 이동합니다.`,
+      themeColor: '#8B5CF6',
+      accentGlow: 'rgba(168, 85, 247, 0.72)',
+    };
+    const transitionMetrics: WarpForceMetrics = metrics
+      ? { ...metrics, phase }
+      : { hardwarePressure: 0, touchArea: 0, durationMs: 0, virtualForce: 1, isAborted: false, phase };
+    window.dispatchEvent(new CustomEvent('prism:bigbang_commit', {
+      detail: {
+        phase,
+        isDoubleTapSuction: false,
+        target,
+        context: serializeCurrentView(location),
+        metrics: transitionMetrics,
+        timestamp: Date.now(),
+      },
+    }));
+  }, [location]);
+
+  const goToKeyChannel = useCallback((metrics?: WarpForceMetrics) => {
     if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
     singleTapTimerRef.current = null;
     lastTapTimeRef.current = 0;
@@ -1017,11 +1049,12 @@ export function BigBangButton() {
     setGauge(0);
     setDurationMs(0);
     triggerHaptic('wormhole');
+    if (!isKeyChannel) dispatchBigBangRouteTransition('/key', 'KEY 채널', metrics);
     (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
     navigate('/key');
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/key' } }));
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
-  }, [navigate]);
+  }, [dispatchBigBangRouteTransition, isKeyChannel, navigate]);
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 또는 추천 카드에서 실행 - 룬 문자 사이 우주 흡입 워프 연출)
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any, immediate = false, luckyDrag = false) => {
@@ -1328,7 +1361,7 @@ export function BigBangButton() {
       clearPendingSelection();
       setHasSelectionToss(false);
       setSelectionPreviewText('');
-      goToKeyChannel();
+      goToKeyChannel(metrics);
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
@@ -1379,6 +1412,7 @@ export function BigBangButton() {
           } else {
             safeSessionStorage.setItem('lucy_pro_pending_channel', 'casual');
             safeSessionStorage.setItem('lucy_injected_auto_send', prompt);
+            dispatchBigBangRouteTransition('/chat?mode=ai', 'Lucy', metrics);
             handleRuneNavigate('/chat?mode=ai');
           }
           window.getSelection()?.removeAllRanges();
@@ -1415,6 +1449,7 @@ export function BigBangButton() {
           if (isWide) {
             safeSessionStorage.setItem('lucy_tier_mode', 'plus');
             safeLocalStorage.setItem('lucy_tier_mode', 'plus');
+            if (currentCleanPath !== '/') dispatchBigBangRouteTransition('/', 'Lucy', metrics);
             handleRuneNavigate('/');
             window.dispatchEvent(new CustomEvent('prism:revert_lucy_normal', { detail: { tier: 'plus' } }));
             return;
@@ -1430,6 +1465,7 @@ export function BigBangButton() {
             return;
           }
 
+          dispatchBigBangRouteTransition(`/chat?mode=${targetTier}`, 'Lucy', metrics);
           handleRuneNavigate(`/chat?mode=${targetTier}`);
       }, DOUBLE_TAP_WINDOW_MS);
       return;

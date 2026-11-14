@@ -191,6 +191,7 @@ export function BigBangExpansionOverlay() {
     <AnimatePresence>
       <motion.div
         key="bigbang-overlay"
+        data-testid="bigbang-transition-overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
