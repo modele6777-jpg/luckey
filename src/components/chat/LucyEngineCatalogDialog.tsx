@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
-import { ScreenPortal } from '@/components/layout/ScreenPortal';
+import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import { type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import type { SevenThemeChannel } from '@/lib/fifteenDivinationTools';
 import {
@@ -36,17 +36,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
   const [themeFilter, setThemeFilter] = useState<CatalogThemeFilter>('all');
   const [query, setQuery] = useState('');
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [isOpen, onClose]);
-
   const filteredEngines = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
     return LUCY_PRO_CATALOG_ENGINES.filter(engine => {
@@ -79,12 +68,13 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
     : 'border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/10';
 
   return (
-    <ScreenPortal>
+    <WorkspacePortal onClose={onClose}>
       <div
         className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/75 p-2 backdrop-blur-md sm:p-5"
         onClick={onClose}
       >
         <section
+          id="lucy-engine-catalog-dialog"
           role="dialog"
           aria-modal="true"
           aria-labelledby="lucy-engine-catalog-title"
@@ -244,6 +234,6 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight }: LucyEngine
           </div>
         </section>
       </div>
-    </ScreenPortal>
+    </WorkspacePortal>
   );
 }

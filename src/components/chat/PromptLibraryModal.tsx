@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { ScreenPortal } from '@/components/layout/ScreenPortal';
+import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import './prompt-library.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -98,7 +98,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <ScreenPortal><AnimatePresence>
+    <WorkspacePortal onClose={onClose}><AnimatePresence>
       <div 
         id="hori-prompt-library-modal-backdrop"
         className="fixed inset-0 z-[10030] flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-md"
@@ -112,7 +112,7 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
           exit={{ opacity: 0, scale: 0.95, y: 16 }}
           transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full h-[90vh] max-h-[860px] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden relative"
+          className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full h-full max-h-[860px] min-h-0 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden relative"
         >
           {/* Header */}
           <div className="px-5 sm:px-7 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-gradient-to-r from-amber-500/5 via-purple-500/5 to-blue-500/5">
@@ -417,6 +417,6 @@ export const PromptLibraryModal: React.FC<PromptLibraryModalProps> = ({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence></ScreenPortal>
+    </AnimatePresence></WorkspacePortal>
   );
 };

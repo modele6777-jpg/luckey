@@ -1,3 +1,4 @@
+import { DialogTriggerButton } from '@/components/layout/DialogTriggerButton';
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
@@ -3038,20 +3039,22 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       <LucyModeName plus={showPlusMarker} pro={false} isLight={isLight} />
                     </span>
                   </h1>
-                  <button
+                  <DialogTriggerButton
                     type="button"
                     onClick={() => {
-                      triggerHaptic('whitehole');
                       setIsEngineCatalogOpen(true);
+                      triggerHaptic('whitehole');
                     }}
-                    className="inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-400/30 whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none"
+                    className="inline-flex items-center gap-1.5 min-h-[36px] px-2 rounded-[6px] text-[10px] font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-400/30 whitespace-nowrap shrink-0 hover:bg-amber-500/25 transition-colors cursor-pointer select-none"
                     title={`등록된 엔진·관점 ${LUCY_PRO_CATALOG_ENGINES.length}개 목록 보기`}
                     aria-label={`Lucy 엔진과 관점 목록 ${LUCY_PRO_CATALOG_ENGINES.length}개 보기`}
                     aria-haspopup="dialog"
+                    aria-expanded={isEngineCatalogOpen}
+                    aria-controls="lucy-engine-catalog-dialog"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                     엔진·관점 {LUCY_PRO_CATALOG_ENGINES.length}개
-                  </button>
+                  </DialogTriggerButton>
                 </div>
               </div>
             </div>
@@ -3841,11 +3844,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             )}
 
             {/* ✨ 추천질문 전체보기 모달 트리거 아이콘 버튼 */}
-            <button
+            <DialogTriggerButton
               id="lucy-open-prompt-library-btn"
               type="button"
+              aria-haspopup="dialog"
+              aria-expanded={isPromptLibraryOpen}
+              aria-controls="hori-prompt-library-dialog"
               onClick={() => setIsPromptLibraryOpen(true)}
-              className={`w-[22px] h-[22px] sm:w-[24px] sm:h-[24px] p-0 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 transition-all shrink-0 cursor-pointer active:scale-95 flex items-center justify-center shadow-2xs group ${
+              className={`w-9 h-9 min-w-9 min-h-9 p-0 rounded-lg bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 hover:from-amber-500/25 hover:to-yellow-500/30 border border-amber-400/80 dark:border-amber-500/60 transition-all shrink-0 cursor-pointer active:scale-95 flex items-center justify-center shadow-2xs group ${
                 isLight ? 'text-amber-900' : 'text-white'
               }`}
               style={{ color: isLight ? '#78350f' : '#ffffff' }}
@@ -3853,7 +3859,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               aria-label="추천질문 라이브러리 열기"
             >
               <Sparkles size={11} className="sm:w-3 sm:h-3 text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-            </button>
+            </DialogTriggerButton>
 
             {/* 새로고침 셔플 버튼 */}
             <button

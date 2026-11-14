@@ -1,3 +1,4 @@
+import { DialogTriggerButton } from '@/components/layout/DialogTriggerButton';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { isLucyTarotDrawOpen } from '@/lib/lucyTarotIntegrity';
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -1230,16 +1231,19 @@ export function UnifiedChat() {
                   className="w-full px-4 py-3 overflow-x-auto scroll-smooth touch-pan-x flex items-center gap-2 cursor-grab active:cursor-grabbing select-none [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(0,0,0,0.3)] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-black/30 [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/40"
                 >
                   <div className="flex items-center gap-2 pr-10 pl-1 w-max">
-                    <button
+                    <DialogTriggerButton
                       id="unified-chat-open-prompt-library-btn"
                       type="button"
+                      aria-haspopup="dialog"
+                      aria-expanded={isPromptLibraryOpen}
+                      aria-controls="hori-prompt-library-dialog"
                       onClick={() => setIsPromptLibraryOpen(true)}
                       className="p-2.5 rounded-full border border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 transition-all shrink-0 cursor-pointer shadow-md active:scale-95 flex items-center justify-center backdrop-blur-md group"
                       title="사주·타로·점성술·자미두수 77가지 추천질문 전체보기"
                       aria-label="추천질문 라이브러리 열기"
                     >
                       <Sparkles size={13} className="text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
-                    </button>
+                    </DialogTriggerButton>
                     {displayPrompts.map((p, idx) => (
                       <button
                         key={idx}
