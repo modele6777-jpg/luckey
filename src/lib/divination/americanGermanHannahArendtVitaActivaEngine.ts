@@ -3,12 +3,12 @@
  *
  * 20세기 정치철학자 한나 아렌트(Hannah Arendt, 1906~1975)의 주저 《인간의 조건(The Human Condition, 1958)》, 《예루살렘의 아이히만》, 《정신의 삶》 원전 기반의 정성적 성찰 엔진.
  *
- * @version LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v1.1.0
+ * @version LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.0.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v1.1.0';
+export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.0.0';
 
 export type ArendtQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -28,6 +28,21 @@ export interface ArendtAphorism {
   actionGuidance: string;
 }
 
+export interface ArendtTemporalVitaActivaRhythm {
+  kstWindow: string;
+  seasonalTone: string;
+  vitaActivaFocus: '탄생성(Natality)' | '공적 행위(Action)' | '사유와 대화(Thinking)' | '용서와 약속(Forgiveness & Promise)';
+  natalityClarityIndex: number;
+  rhythmDirective: string;
+}
+
+export interface ArendtSynthesisMatrix {
+  natalityInitiation: number;
+  reflectiveConscience: number;
+  pluralitySolidarity: number;
+  overallSynthesis: number;
+}
+
 export interface HannahArendtVitaActivaResult {
   engineVersion: string;
   calculatedAtKst: string;
@@ -41,6 +56,8 @@ export interface HannahArendtVitaActivaResult {
   // 세부 정성 분석
   activeArendtTheme: ArendtTheme;
   focalArendtAphorism: ArendtAphorism;
+  temporalVitaActivaRhythm: ArendtTemporalVitaActivaRhythm;
+  arendtSynthesisMatrix: ArendtSynthesisMatrix;
   practiceGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -164,6 +181,56 @@ const ARENDT_TOPIC_GUIDANCE: Record<
   },
 };
 
+function buildTemporalVitaActivaRhythm(now: Date): ArendtTemporalVitaActivaRhythm {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const hour = kst.getUTCHours();
+  const month = kst.getUTCMonth() + 1;
+
+  const seasonalTone =
+    month >= 3 && month <= 5
+      ? '봄 — 탄생성(Natality)으로 새로운 시작의 첫 문장을 여는 계절'
+      : month >= 6 && month <= 8
+        ? '여름 — 말과 행위(Action)로 타자들과 공적 연대를 넓히는 계절'
+        : month >= 9 && month <= 11
+          ? '가을 — 다원성과 약속의 책임을 차분히 매듭짓는 계절'
+          : '겨울 — 내면의 소리 없는 대화(Thinking)로 판단력을 벼리는 계절';
+
+  if (hour >= 5 && hour < 11) {
+    return {
+      kstWindow: '오전 탄생성(Natality) 새 출발 창',
+      seasonalTone,
+      vitaActivaFocus: '탄생성(Natality)',
+      natalityClarityIndex: 91,
+      rhythmDirective: '어제의 관성을 끊고 새 문장을 시작하기 가장 좋은 오전입니다. 작지만 분명한 첫 행동을 여십시오.',
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    return {
+      kstWindow: '한낮 공적 행위(Action)·다원성 교류 창',
+      seasonalTone,
+      vitaActivaFocus: '공적 행위(Action)',
+      natalityClarityIndex: 86,
+      rhythmDirective: '타인들과 말과 행위로 만나는 낮 시간입니다. 관행 뒤로 숨지 말고 진솔하고 대등하게 소통하십시오.',
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      kstWindow: '저녁 용서와 약속(Forgiveness & Promise) 정돈 창',
+      seasonalTone,
+      vitaActivaFocus: '용서와 약속(Forgiveness & Promise)',
+      natalityClarityIndex: 84,
+      rhythmDirective: '지나간 일의 자책은 용서로 풀고, 내일을 향한 신뢰의 약속 1가지만 분명히 남기십시오.',
+    };
+  }
+  return {
+    kstWindow: '심야 소리 없는 대화(Thinking) 성찰 창',
+    seasonalTone,
+    vitaActivaFocus: '사유와 대화(Thinking)',
+    natalityClarityIndex: 80,
+    rhythmDirective: '바깥의 소음이 잦아든 심야입니다. 나 자신과의 조용한 대화 속에서 판단의 기준을 점검하십시오.',
+  };
+}
+
 export function calculateHannahArendtVitaActiva(
   profile: UserProfile,
   question = '',
@@ -198,6 +265,19 @@ export function calculateHannahArendtVitaActiva(
   const activeArendtTheme = ARENDT_THEMES[themeIndex];
   const focalArendtAphorism = ARENDT_APHORISMS[aphorismIndex];
   const topicGuide = ARENDT_TOPIC_GUIDANCE[questionTopic];
+  const temporalVitaActivaRhythm = buildTemporalVitaActivaRhythm(now);
+
+  const natalityInitiation = Math.min(99, Math.round((natalityRenewalCapacityScore + vitaActivaBalanceScore) / 2));
+  const reflectiveConscience = Math.min(99, Math.round((banalityOfEvilOvercomingThinkingScore + temporalVitaActivaRhythm.natalityClarityIndex) / 2));
+  const pluralitySolidarity = Math.min(99, Math.round((publicRealmPluralityIndex + forgivenessAndPromiseFidelityScore) / 2));
+  const overallSynthesis = Math.round((natalityInitiation + reflectiveConscience + pluralitySolidarity) / 3);
+
+  const arendtSynthesisMatrix: ArendtSynthesisMatrix = {
+    natalityInitiation,
+    reflectiveConscience,
+    pluralitySolidarity,
+    overallSynthesis,
+  };
 
   const practiceGuidance = `${activeArendtTheme.practicalCounsel} ${topicGuide.practice}`;
   const ritualAction = topicGuide.ritual;
@@ -221,6 +301,8 @@ export function calculateHannahArendtVitaActiva(
     forgivenessAndPromiseFidelityScore,
     activeArendtTheme,
     focalArendtAphorism,
+    temporalVitaActivaRhythm,
+    arendtSynthesisMatrix,
     practiceGuidance,
     ritualAction,
     reflectionFocus,
@@ -244,6 +326,8 @@ export function formatHannahArendtVitaActivaPrompt(res: HannahArendtVitaActivaRe
     `- 성찰 질문: ${res.reflectionFocus}`,
     `- 핵심 원전 경구: "${res.focalArendtAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalArendtAphorism.aphorismEn}" [${res.focalArendtAphorism.sourceContext}]`,
+    `- KST 활동적 삶 리듬: ${res.temporalVitaActivaRhythm.kstWindow} (${res.temporalVitaActivaRhythm.vitaActivaFocus}, 명료도 ${res.temporalVitaActivaRhythm.natalityClarityIndex}/100) — ${res.temporalVitaActivaRhythm.rhythmDirective}`,
+    `- 아렌트 매트릭스: 탄생성 착수 ${res.arendtSynthesisMatrix.natalityInitiation} / 사유 양심 ${res.arendtSynthesisMatrix.reflectiveConscience} / 다원성 연대 ${res.arendtSynthesisMatrix.pluralitySolidarity} (종합 ${res.arendtSynthesisMatrix.overallSynthesis}/100)`,
     `- 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');

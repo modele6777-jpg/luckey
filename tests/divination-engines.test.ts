@@ -6710,6 +6710,44 @@ test('v2.0.0 qualitative/temporal/matrix deepening: Spinoza Ethica, Mencius Hoye
   assert.ok(yangmingPrompt.includes('양명학 매트릭스'));
 });
 
+test('v2.0.0 qualitative/temporal/matrix deepening: William James, Hannah Arendt, and Thoreau Walden', () => {
+  const testProfile = {
+    basic: {
+      name: '남희',
+      birthdate: '1988-05-12',
+      birthtime: '09:30',
+      gender: 'female' as const,
+      calendarType: 'solar' as const,
+    },
+  };
+  const now = new Date('2026-11-14T10:15:00.000Z'); // KST 19:15
+
+  const james = calculateAmericanWilliamJamesPragmatism(testProfile, '확신이 서지 않아 결정을 망설이고 있어요', now);
+  assert.equal(james.engineVersion, AMERICAN_WILLIAM_JAMES_VERSION);
+  assert.ok(james.situationalPragmatismAudit.sourceCitation.includes('신념의 의지'));
+  assert.ok(james.temporalPragmatismRhythm.pragmatismClarityIndex >= 50 && james.temporalPragmatismRhythm.pragmatismClarityIndex <= 99);
+  assert.ok(james.jamesSynthesisMatrix.overallSynthesis >= 50);
+  const jamesPrompt = formatAmericanWilliamJamesPragmatismPrompt(james);
+  assert.ok(jamesPrompt.includes('질문 맥락 실용 감사'));
+  assert.ok(jamesPrompt.includes('제임스 매트릭스'));
+
+  const arendt = calculateHannahArendtVitaActiva(testProfile, '새로운 시작을 앞두고 고민이 돼요', now);
+  assert.equal(arendt.engineVersion, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION);
+  assert.ok(arendt.temporalVitaActivaRhythm.natalityClarityIndex >= 50 && arendt.temporalVitaActivaRhythm.natalityClarityIndex <= 99);
+  assert.ok(arendt.arendtSynthesisMatrix.overallSynthesis >= 50);
+  const arendtPrompt = formatHannahArendtVitaActivaPrompt(arendt);
+  assert.ok(arendtPrompt.includes('KST 활동적 삶 리듬'));
+  assert.ok(arendtPrompt.includes('아렌트 매트릭스'));
+
+  const thoreau = calculateHenryDavidThoreauWalden(testProfile, '마음이 복잡해서 단순하게 정리하고 싶어요', now);
+  assert.equal(thoreau.engineVersion, AMERICAN_HENRY_DAVID_THOREAU_VERSION);
+  assert.ok(thoreau.temporalWaldenRhythm.waldenClarityIndex >= 50 && thoreau.temporalWaldenRhythm.waldenClarityIndex <= 99);
+  assert.ok(thoreau.thoreauSynthesisMatrix.overallSynthesis >= 50);
+  const thoreauPrompt = formatHenryDavidThoreauWaldenPrompt(thoreau);
+  assert.ok(thoreauPrompt.includes('KST 월든 리듬'));
+  assert.ok(thoreauPrompt.includes('월든 매트릭스'));
+});
+
 
 
 
